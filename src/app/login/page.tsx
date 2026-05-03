@@ -86,7 +86,7 @@ function LoginContent() {
       return;
     }
 
-    setStatusMessage('가입/로그인 링크를 보냈습니다. 메일함에서 달빛선생 링크를 열어 주세요.');
+    setStatusMessage('가입/로그인 링크를 보냈습니다. 메일함에서 달빛인생 링크를 열어 주세요.');
   }
 
   return (
@@ -217,7 +217,7 @@ export default function LoginPage() {
       {/* Brand mark */}
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="app-moon-orb h-12 w-12" />
-        <div className="font-[var(--font-heading)] text-lg tracking-[0.22em] text-[var(--app-ivory)]">달빛선생</div>
+        <div className="font-[var(--font-heading)] text-lg tracking-[0.22em] text-[var(--app-ivory)]">달빛인생</div>
         <div className="text-xs tracking-[0.46em] text-[var(--app-gold-soft)]">月 光 先 生</div>
       </div>
       <Suspense fallback={<div className="text-white/50">로딩중...</div>}>

@@ -1,9 +1,9 @@
-export const SITE_NAME = '달빛선생';
+export const SITE_NAME = '달빛인생';
 export const DEFAULT_DESCRIPTION =
-  '문득 궁금하신 날, 당신을 위한 여섯 가지 지혜. 사주, 명리, 타로, 궁합, 별자리, 띠운세를 품격 있는 흐름으로 잇는 사주 웹앱 달빛선생입니다.';
+  '오늘의 운세와 타로부터 사주, 궁합, 띠운세까지 가볍게 확인하는 모바일 운세 서비스 달빛인생입니다.';
 export const DEFAULT_OG_IMAGE = '/og-image.png';
 
-const FALLBACK_SITE_URL = 'https://saju-app-lac.vercel.app';
+const FALLBACK_SITE_URL = 'https://ganji-saju.vercel.app';
 
 function normalizeSiteUrl(value: string | undefined): string | null {
   if (!value) return null;

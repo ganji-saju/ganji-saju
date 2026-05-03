@@ -194,7 +194,7 @@ export function getSubscriptionPlanLabel(plan: string) {
   }
 
   if (plan === 'premium_monthly') {
-    return 'Premium 대화 멤버십';
+    return '프리미엄 대화 멤버십';
   }
 
   return plan;

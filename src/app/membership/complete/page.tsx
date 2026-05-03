@@ -19,14 +19,14 @@ interface Props {
 
 const PLAN_LABELS = {
   basic: '라이트 대화 멤버십',
-  premium: 'Premium 대화 멤버십',
-  lifetime: '나의 명리 기준서',
+  premium: '프리미엄 대화 멤버십',
+  lifetime: '보관형 사주 리포트',
 } as const;
 
 const COMPLETE_FLOW_POINTS = [
   '먼저 열린 결과나 멤버십 화면에서 오늘 바로 해보실 한 가지를 고릅니다.',
-  '기준서는 PDF와 보관함, 대화로 이어지고 멤버십은 질문을 계속 이어가는 데 맞춰집니다.',
-  '결제가 끝난 뒤에도 같은 기준 위에서 다시 펼쳐볼 수 있도록 흐름을 연결해 둡니다.',
+  '보관형 리포트는 PDF와 보관함, 대화로 이어지고 멤버십은 질문을 계속 이어가는 데 맞춰집니다.',
+  '결제가 끝난 뒤에도 같은 흐름 위에서 다시 펼쳐볼 수 있도록 연결해 둡니다.',
 ] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -71,7 +71,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
               {planLabel}
             </Badge>,
           ]}
-          title="이제 달빛선생의 흐름 위에서 바로 이어가실 수 있습니다"
+          title="이제 달빛인생에서 바로 이어가실 수 있습니다"
           description={`${planLabel} 이용이 시작되었습니다. ${completeGuide.welcome}`}
         />
 
@@ -116,15 +116,15 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
           <SupportRail
             surface="panel"
             eyebrow="이용 방식"
-            title="결제는 끝났고, 이제 같은 기준 위에서 이어집니다"
-            description="기준서, 보관함, 대화가 서로 따로 노는 것이 아니라 한 흐름으로 이어진다는 점을 먼저 보여드립니다."
+            title="결제는 끝났고, 이제 같은 흐름으로 이어집니다"
+            description="리포트, 보관함, 대화가 서로 따로 노는 것이 아니라 한 흐름으로 이어진다는 점을 먼저 보여드립니다."
           >
             <BulletList items={COMPLETE_FLOW_POINTS} />
             <FeatureCard
               className="mt-5"
               surface="soft"
               eyebrow="열린 화면"
-              description={slug && planSlug === 'lifetime' ? '선택하신 사주 결과에 연결된 명리 기준서를 바로 열 수 있습니다.' : '지금 선택하신 상품에 맞는 다음 화면으로 자연스럽게 이어집니다.'}
+              description={slug && planSlug === 'lifetime' ? '선택하신 사주 결과에 연결된 보관형 리포트를 바로 열 수 있습니다.' : '지금 선택하신 상품에 맞는 다음 화면으로 자연스럽게 이어집니다.'}
             />
           </SupportRail>
         </section>
@@ -142,7 +142,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
                   href={primaryHref}
                   className="moon-cta-primary"
                 >
-                  {slug && planSlug === 'lifetime' ? '열린 명리 기준서 보기' : completeGuide.primaryLabel}
+                  {slug && planSlug === 'lifetime' ? '열린 보관형 리포트 보기' : completeGuide.primaryLabel}
                 </Link>
                 <Link
                   href="/"

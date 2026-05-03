@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { DALBIT_TEACHERS } from '@/content/moonlight';
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 
 type DetailSectionKey = 'wealth' | 'love' | 'career' | 'health';
@@ -47,6 +48,8 @@ const SECTIONS = [
   { key: 'career', label: '직업운' },
   { key: 'health', label: '건강운' },
 ] as const;
+
+const SAJU_TEACHER = DALBIT_TEACHERS.find((teacher) => teacher.slug === 'saju-yong') ?? DALBIT_TEACHERS[0];
 
 const DETAIL_SECTION_META: Record<
   DetailSectionKey,
@@ -177,14 +180,14 @@ function DetailTopicReport({
 
   return (
     <article
-      className="overflow-hidden rounded-[26px] border bg-[rgba(255,255,255,0.035)]"
+      className="overflow-hidden rounded-[26px] border bg-white"
       style={{ borderColor: meta.line }}
     >
       <div
         className="border-b px-5 py-5"
         style={{
           borderColor: meta.line,
-          background: `linear-gradient(135deg, ${meta.soft}, rgba(8,10,18,0.72))`,
+          background: `linear-gradient(135deg, ${meta.soft}, #ffffff)`,
         }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -240,7 +243,7 @@ function DetailTopicReport({
                   className="rounded-full border px-3 py-1 text-xs font-semibold"
                   style={{
                     borderColor: meta.line,
-                    backgroundColor: 'rgba(255,255,255,0.035)',
+                    backgroundColor: '#ffffff',
                     color: meta.color,
                   }}
                 >
@@ -255,7 +258,7 @@ function DetailTopicReport({
           {content.blocks.map((block, index) => (
             <section
               key={`${topic}-${block.title}-${index}`}
-              className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(8,10,18,0.3)] px-4 py-4"
+              className="rounded-[22px] border border-[var(--app-line)] bg-white px-4 py-4"
             >
               <div className="flex items-center gap-2">
                 <span
@@ -386,8 +389,8 @@ export default function DetailUnlock({
 
   if (state === 'unlocked' && content) {
     return (
-      <section className="relative overflow-hidden rounded-[32px] border border-[var(--app-gold)]/26 bg-[linear-gradient(180deg,rgba(14,18,34,0.98),rgba(5,10,22,0.98))] p-5 sm:p-7">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(210,176,114,0.62),transparent)]" />
+      <section className="relative overflow-hidden rounded-[32px] border border-[var(--app-pink-line)] bg-[linear-gradient(180deg,#ffffff,#fff7fb)] p-5 shadow-[0_18px_48px_rgba(216,27,114,0.08)] sm:p-7">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,79,154,0.56),transparent)]" />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">분야별 깊이보기</div>
@@ -400,7 +403,7 @@ export default function DetailUnlock({
               {access === 'reused' ? '이미 구매함' : '해금 완료'}
             </Badge>
             <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
-              {counselorId === 'male' ? '달빛 남선생 기준' : '달빛 여선생 기준'}
+              {SAJU_TEACHER.teacherName}
             </Badge>
             {remaining !== null ? (
               <span className="text-xs text-[var(--app-copy-soft)]">잔여 코인 {remaining}개</span>
@@ -485,13 +488,13 @@ export default function DetailUnlock({
 
   if (isIncludedInPremium) {
     return (
-      <section className="relative overflow-hidden rounded-[32px] border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(10,25,31,0.94),rgba(5,10,22,0.98))] p-5 sm:p-7">
+      <section className="relative overflow-hidden rounded-[32px] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff,#ecfdf5)] p-5 shadow-[0_18px_48px_rgba(15,159,122,0.08)] sm:p-7">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(52,211,153,0.55),transparent)]" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
-            <div className="app-caption text-emerald-200/80">이미 포함된 심층 해석</div>
+            <div className="app-caption text-emerald-700">이미 포함된 긴 풀이</div>
             <h2 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">
-              명리 기준서에서 이어서 보시면 됩니다
+              보관형 사주 리포트에서 이어서 보시면 됩니다
             </h2>
             <p className="app-body-copy mt-3 text-sm">
               이 결과는 {premiumAccessLabel}으로 전체 리포트 열람이 가능합니다. 기본 결과 아래에서
@@ -508,7 +511,7 @@ export default function DetailUnlock({
             href={premiumHref}
             className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--app-gold)]/38 bg-[var(--app-gold)]/14 px-6 text-sm font-semibold text-[var(--app-gold-text)] shadow-[0_16px_42px_rgba(210,176,114,0.12)] transition hover:bg-[var(--app-gold)]/20"
           >
-            명리 기준서 이어보기
+            보관형 사주 리포트 이어보기
           </Link>
         ) : null}
 
@@ -522,9 +525,8 @@ export default function DetailUnlock({
     <section className="space-y-5">
       {children ? <div className="space-y-5">{children}</div> : null}
 
-      <div className="relative overflow-hidden rounded-[28px] border border-[var(--app-line-strong)] bg-[linear-gradient(180deg,rgba(7,19,39,0.92),rgba(4,10,24,0.98))] p-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,176,114,0.16),transparent_42%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(2,8,23,0.72))]" />
+      <div className="relative overflow-hidden rounded-[28px] border border-[var(--app-pink-line)] bg-[linear-gradient(180deg,#ffffff,#fff7fb)] p-6 shadow-[0_18px_48px_rgba(216,27,114,0.08)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,79,154,0.12),transparent_42%)]" />
 
         <div className="relative z-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -541,22 +543,20 @@ export default function DetailUnlock({
 
         <p className="app-body-copy mt-4 max-w-2xl text-sm">
           기본 결과를 먼저 읽고, 재물·연애·직업·생활 리듬 중 더 궁금한 장면만 선택해서 펼칩니다.
-          명리 기준서에는 이 흐름이 더 넓게 포함됩니다.
+          보관형 사주 리포트에는 이 흐름이 더 넓게 포함됩니다.
           {' '}
-          {counselorId === 'male'
-            ? '선택한 달빛 남선생 기준으로 결론, 보류, 확인 순서를 먼저 잡아드립니다.'
-            : '선택한 달빛 여선생 기준으로 흐름의 맥락과 관계의 온도까지 섬세하게 풀어드립니다.'}
+          {SAJU_TEACHER.teacherName}이 오늘 바로 볼 결론과 보류할 지점을 먼저 잡아드립니다.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {[
             '이미 충분하면 열지 않아도 되는 선택형 심화입니다.',
             '한 번 연 같은 결과는 다시 코인이 차감되지 않습니다.',
-            '더 큰 흐름은 명리 기준서에서 한 번에 이어집니다.',
+            '더 큰 흐름은 보관형 사주 리포트에서 한 번에 이어집니다.',
           ].map((item) => (
             <div
               key={item}
-              className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy)]"
+              className="rounded-[18px] border border-[var(--app-line)] bg-white/75 px-4 py-4 text-sm leading-7 text-[var(--app-copy)]"
             >
               {item}
             </div>
@@ -567,7 +567,7 @@ export default function DetailUnlock({
           {SECTIONS.map(({ key, label }) => (
             <div
               key={key}
-              className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] p-4"
+              className="rounded-[22px] border border-[var(--app-line)] bg-white/70 p-4"
             >
               <div className="text-sm font-medium text-[var(--app-ivory)]">{label}</div>
               <p className="mt-2 text-sm leading-relaxed text-[var(--app-copy)]">
@@ -577,7 +577,7 @@ export default function DetailUnlock({
           ))}
         </div>
 
-        <div className="relative z-20 mt-6 rounded-[24px] border border-[var(--app-line)] bg-[rgba(2,8,23,0.56)] p-5 text-center backdrop-blur-sm">
+        <div className="relative z-20 mt-6 rounded-[24px] border border-[var(--app-line)] bg-white/86 p-5 text-center backdrop-blur-sm">
           <p className="font-semibold text-[var(--app-ivory)]">분야별 깊이보기</p>
           <p className="mt-2 text-sm text-[var(--app-copy-muted)]">
             재물·연애·직업·건강 4개 영역을 한 번에 열고, 같은 결과는 이후에도 다시 차감하지 않습니다.

@@ -80,16 +80,16 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
 
 const TODAY_FORTUNE_GUIDE = [
   {
-    eyebrow: '빠른 무료 결과',
-    body: '오늘 가장 걸리는 고민 한 가지를 먼저 고르면, 무료 결과로 짧고 분명하게 확인할 수 있습니다.',
+    eyebrow: '핵심 한 줄',
+    body: '오늘 가장 걸리는 고민 하나를 고르면 먼저 한 줄로 방향을 잡아드립니다.',
   },
   {
-    eyebrow: '오늘 고민 중심',
-    body: '원국 전체를 길게 읽기보다 연락, 돈, 미팅, 관계, 컨디션처럼 지금 가장 급한 흐름을 먼저 짚습니다.',
+    eyebrow: '조심할 것',
+    body: '말, 돈, 관계, 컨디션 중 오늘 흔들리기 쉬운 지점을 짧게 알려드립니다.',
   },
   {
-    eyebrow: '더 깊게는 기준서',
-    body: '오늘의 흐름이 마음에 걸리면, 원국과 대운까지 이어지는 명리 기준서로 자연스럽게 확장하실 수 있습니다.',
+    eyebrow: '오늘 할 행동',
+    body: '읽고 끝나지 않도록 지금 바로 해볼 작은 행동 하나로 마무리합니다.',
   },
 ] as const;
 
@@ -183,7 +183,7 @@ export function TodayFortuneExperience({
         if (cancelled) return;
 
         if (!response.ok || !data?.ok || !data.result) {
-          setUnlockError(data?.error ?? '구매한 오늘운 상세를 여는 중 오류가 있었습니다.');
+          setUnlockError(data?.error ?? '구매한 오늘 자세히 보기를 여는 중 오류가 있었습니다.');
           return;
         }
 
@@ -191,10 +191,10 @@ export function TodayFortuneExperience({
         setPremiumResult(data.result);
         setRemainingCredits(data.remaining ?? null);
         if (data.access === 'purchased') {
-          setPurchasedNotice('이미 구매한 오늘운 상세를 다시 열었습니다. 코인은 차감하지 않았습니다.');
+          setPurchasedNotice('이미 구매한 오늘 자세히 보기를 다시 열었습니다. 코인은 차감하지 않았습니다.');
         }
       } catch {
-        if (!cancelled) setUnlockError('구매한 오늘운 상세를 여는 중 네트워크 오류가 있었습니다.');
+        if (!cancelled) setUnlockError('구매한 오늘 자세히 보기를 여는 중 네트워크 오류가 있었습니다.');
       } finally {
         if (!cancelled) setUnlocking(false);
       }
@@ -284,7 +284,7 @@ export function TodayFortuneExperience({
       }
 
       if (!response.ok || !data?.ok || !data.result) {
-        setUnlockError(data?.error ?? '심화풀이를 여는 중 오류가 있었습니다.');
+        setUnlockError(data?.error ?? '오늘 자세히 보기를 여는 중 오류가 있었습니다.');
         setRemainingCredits(data?.remaining ?? null);
         return;
       }
@@ -293,7 +293,7 @@ export function TodayFortuneExperience({
       setPremiumResult(data.result);
       setRemainingCredits(data.remaining ?? null);
       if (data.access === 'purchased') {
-        setPurchasedNotice('이미 구매한 오늘운 상세를 다시 열었습니다. 코인은 차감하지 않았습니다.');
+        setPurchasedNotice('이미 구매한 오늘 자세히 보기를 다시 열었습니다. 코인은 차감하지 않았습니다.');
       }
       trackMoonlightEvent('premium_result_viewed', {
         from: 'today-fortune',
@@ -301,7 +301,7 @@ export function TodayFortuneExperience({
         sourceSessionId: freeResult.sourceSessionId,
       });
     } catch {
-      setUnlockError('심화풀이를 여는 중 네트워크 오류가 있었습니다.');
+      setUnlockError('오늘 자세히 보기를 여는 중 네트워크 오류가 있었습니다.');
     } finally {
       setUnlocking(false);
     }
@@ -344,23 +344,22 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-      <SectionSurface surface="lunar" size="lg">
-        <div className="app-starfield" />
-        <div className="relative z-10">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+      <section className="dalbit-section">
+        <div>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 px-3 py-1 text-xs text-[var(--app-gold-text)]">
-              빠른 무료 체크
+            <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
+              무료 오늘운세
             </span>
-            <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
-              오늘 고민 기준
+            <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-xs font-bold text-[var(--app-copy-muted)]">
+              짧게 보고 필요할 때만 더 보기
             </span>
           </div>
           <SectionHeader
             className="mt-5"
-            title="오늘의 흐름을 가볍게 먼저 확인해보세요"
+            title="오늘, 무엇만 조심하면 좋을까요?"
             titleClassName="text-4xl sm:text-5xl"
-            description="연락, 돈, 미팅, 관계, 컨디션처럼 오늘 가장 걸리는 한 가지를 먼저 고르시면 무료 결과로 짧고 분명하게 보여드립니다. 더 깊은 판단이 필요할 때만 심화풀이와 기준서로 이어지는 구조입니다."
+            description="연락, 돈, 일, 관계, 컨디션처럼 지금 걸리는 한 가지를 고르세요. 무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다."
             descriptionClassName="max-w-3xl text-base sm:text-lg"
           />
 
@@ -383,7 +382,7 @@ export function TodayFortuneExperience({
             />
           </div>
 
-          <ProductGrid columns={3} className="mt-6">
+          <ProductGrid columns={3} className="mt-5">
             {TODAY_FORTUNE_GUIDE.map((item) => (
               <FeatureCard
                 key={item.eyebrow}
@@ -394,7 +393,7 @@ export function TodayFortuneExperience({
             ))}
           </ProductGrid>
         </div>
-      </SectionSurface>
+      </section>
 
       <div className="mt-6 grid gap-6">
         {pendingHitMemo ? (
@@ -452,10 +451,10 @@ export function TodayFortuneExperience({
 
             <SectionSurface surface="panel">
               <SectionHeader
-                eyebrow="다음으로 이어보기"
-                title="오늘의 흐름이 더 궁금해지셨다면, 이 방향으로 이어보실 수 있습니다"
+                eyebrow="더 보고 싶을 때"
+                title="무료 결과가 마음에 남으면 여기서만 이어보세요"
                 titleClassName="text-2xl"
-                description="오늘 운세는 빠른 체크에 가깝고, 아래 동선은 같은 질문을 더 긴 호흡으로 이어보는 입구입니다."
+                description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 자연스럽게 이어집니다."
                 descriptionClassName="text-[var(--app-copy)]"
               />
 

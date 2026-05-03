@@ -30,7 +30,7 @@ interface Props {
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '타로 결과',
-    description: '카드 의미와 사주 연결 해석을 함께 보여주는 달빛선생의 타로 결과 화면입니다.',
+    description: '카드 의미와 사주 연결 해석을 함께 보여주는 달빛인생의 타로 결과 화면입니다.',
     alternates: {
       canonical: '/tarot/daily/result',
     },
@@ -69,7 +69,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
             </Badge>,
           ]}
           title={currentQuestion}
-          description="먼저 카드는 지금 마음에 걸린 장면을 보여주고, 이어서 그 질문이 사주 흐름과 어디에서 만나는지 차분히 연결해드립니다."
+          description="먼저 지금 마음에 가장 가까운 한 줄을 보여드리고, 더 궁금할 때만 사주나 대화로 이어갑니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
@@ -120,7 +120,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
             <FeatureCard
               className="mt-4"
               surface="panel"
-              eyebrow="사주와 이어 읽으면"
+              eyebrow="사주와 같이 보면"
               description={reading.sajuBlend}
             />
           </SupportRail>
@@ -187,17 +187,17 @@ export default async function TarotResultPage({ searchParams }: Props) {
                 }}
                 className="moon-cta-secondary"
               >
-                달빛선생께 더 여쭙기
+                달빛인생에 이어 묻기
               </Link>
             </ActionCluster>
           </SectionSurface>
 
           <SectionSurface surface="panel" size="lg">
             <SectionHeader
-              eyebrow="프리미엄 3장 확장 흐름"
-              title="한 장 뒤에 숨은 층을 더 열어보면"
+              eyebrow="더 자세히 보기"
+              title="한 장이 마음에 남으면 더 이어볼 수 있습니다"
               titleClassName="text-3xl"
-              description="현재 흐름, 숨은 원인, 오늘의 조언을 3장 구조로 더 펼쳐보는 확장 리딩입니다."
+              description="현재 흐름, 숨은 마음, 오늘의 조언을 더 짧고 분명하게 이어보는 확장 리딩입니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
@@ -214,8 +214,8 @@ export default async function TarotResultPage({ searchParams }: Props) {
             </ProductGrid>
 
             <ActionCluster className="mt-6">
-              <Link href="/membership" className="moon-cta-secondary">
-                심층 해석 플랜 보기
+              <Link href="/pricing" className="moon-cta-secondary">
+                990원 소액 풀이 보기
               </Link>
             </ActionCluster>
           </SectionSurface>

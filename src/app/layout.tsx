@@ -70,7 +70,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${brandSerif.variable} ${classicBatang.variable} dark h-full antialiased`}
+      className={`${brandSerif.variable} ${classicBatang.variable} h-full antialiased`}
       data-app-layout="vertical"
       data-reading-comfort="standard"
       suppressHydrationWarning

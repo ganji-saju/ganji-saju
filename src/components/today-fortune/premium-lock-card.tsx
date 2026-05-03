@@ -25,28 +25,28 @@ export function PremiumLockCard({
   errorMessage,
 }: PremiumLockCardProps) {
   return (
-    <section className="relative overflow-hidden rounded-[1.8rem] border border-[var(--app-gold)]/26 bg-[linear-gradient(180deg,rgba(14,18,34,0.98),rgba(5,10,22,0.98))] p-6">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(210,176,114,0.18),transparent_42%)]" />
+    <section className="relative overflow-hidden rounded-[1.8rem] border border-[var(--app-pink-line)] bg-white p-6 shadow-[0_18px_52px_rgba(216,27,114,0.1)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,79,154,0.13),transparent_42%)]" />
       <div className="relative z-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="app-caption">다음 행동</div>
-            <h3 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">오늘 심화풀이 1코인</h3>
+            <div className="app-caption">더 자세히 보기</div>
+            <h3 className="mt-3 text-xl font-black tracking-tight text-[var(--app-ink)]">오늘 자세히 보기</h3>
           </div>
-          <span className="rounded-full border border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 px-3 py-1 text-xs text-[var(--app-gold-text)]">
-            {coinCost}코인
+          <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
+            550원 또는 {coinCost}코인
           </span>
         </div>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">{copy}</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {[
-            '시간대별 유리/주의 행동',
-            '피해야 할 행동 3가지와 추천 행동 3가지',
-            '선택 시나리오와 대운·세운·월운·일진 단서',
+            '오늘 조심할 시간대',
+            '피할 말과 추천 행동',
+            '지금 바로 할 작은 선택',
           ].map((item) => (
             <div
               key={item}
-              className="rounded-[1.05rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm text-[var(--app-copy)]"
+              className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-4 py-4 text-sm font-bold text-[var(--app-copy)]"
             >
               {item}
             </div>
@@ -61,14 +61,14 @@ export function PremiumLockCard({
                 from: 'today-fortune',
                 concern: concernId,
                 sourceSessionId,
-                productCode: 'TODAY_DEEP_READING',
+                productCode: 'TODAY_DETAIL_VIEW',
               });
               onUnlock();
             }}
             size="lg"
           >
             <Lock className="mr-2 h-4 w-4" />
-            {loading ? '열어보는 중...' : '오늘 심화풀이 1코인으로 열기'}
+            {loading ? '열어보는 중...' : '1코인으로 열기'}
           </Button>
           <Link
             href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
@@ -79,7 +79,7 @@ export function PremiumLockCard({
               variant="outline"
               size="lg"
             >
-              990원으로 바로 열기
+              550원으로 바로 열기
             </Button>
           </Link>
           <Link href="/credits?from=today-fortune" className="inline-flex">

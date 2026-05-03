@@ -9,7 +9,7 @@ type SafetyNoticeProps = {
 };
 
 const COMMON_COPY =
-  '달빛선생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은 전문 기준과 도움을 우선해 주세요.';
+  '달빛인생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은 전문 기준과 도움을 우선해 주세요.';
 
 const VARIANT_META: Record<
   SafetyNoticeVariant,
@@ -31,7 +31,7 @@ const VARIANT_META: Record<
   health: {
     label: '건강·생활',
     title: '건강 해석은 생활 리듬 관리 관점에서만 읽습니다',
-    body: '몸의 상태나 치료 판단은 전문 진료가 필요한 영역입니다. 달빛선생은 생활 리듬과 피로 관리에 대한 참고 흐름만 다룹니다.',
+    body: '몸의 상태나 치료 판단은 전문 진료가 필요한 영역입니다. 달빛인생은 생활 리듬과 피로 관리에 대한 참고 흐름만 다룹니다.',
     icon: HeartPulse,
     tone: 'border-[var(--app-coral)]/22 bg-[var(--app-coral)]/10 text-[var(--app-copy)]',
   },

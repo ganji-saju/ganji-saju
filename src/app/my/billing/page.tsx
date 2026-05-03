@@ -32,7 +32,7 @@ const TYPE_LABELS: Record<string, string> = {
 const FEATURE_LABELS: Record<string, string> = {
   detail_report: '분야별 깊이보기',
   calendar: '월간 달력 열기',
-  lifetime_report: '명리 기준서 열람',
+  lifetime_report: '보관형 사주 리포트 열람',
   yearly_report: '올해 전략서 열람',
   ai_chat: '대화 이용',
   ai_chat_bundle: '대화 묶음 사용',
@@ -75,7 +75,7 @@ function getTransactionFeatureLabel(
 
 function getTransactionLabel(transaction: Awaited<ReturnType<typeof getAccountDashboardData>>['recentTransactions'][number]) {
   if (transaction.feature === 'lifetime_report') {
-    return '명리 기준서 권한';
+    return '보관형 리포트 권한';
   }
 
   if (transaction.type === 'subscription') {

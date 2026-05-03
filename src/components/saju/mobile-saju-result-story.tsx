@@ -549,9 +549,9 @@ export function MobileSajuResultStory({
       label: '다음',
       title: '소장과 신뢰',
       eyebrow: '다시 볼 기준',
-      summary: '결과를 본 뒤에는 기준서를 보관하고, 판단 단서와 대화로 이어갈 수 있습니다.',
+      summary: '결과를 본 뒤에는 보관형 리포트와 대화로 이어갈 수 있습니다.',
       detailHref: `/saju/${slug}/premium`,
-      detailLabel: '명리 기준서 보기',
+      detailLabel: '긴 사주풀이 보기',
       render: () => (
         <StoryBody className="content-start">
           {strongestTimeline ? (
@@ -593,13 +593,13 @@ export function MobileSajuResultStory({
               href={`/saju/${slug}/premium`}
               className="moon-action-primary"
             >
-              명리 기준서로 이어보기
+              긴 사주풀이로 이어보기
             </Link>
             <Link
               href="/dialogue"
               className="moon-action-muted moon-action-compact"
             >
-              달빛선생에게 이어서 묻기
+              달빛인생에 이어서 묻기
             </Link>
           </div>
         </StoryBody>

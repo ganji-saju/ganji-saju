@@ -66,7 +66,13 @@ export default function TossMembershipCheckout({
   }, []);
 
   async function handlePayment() {
-    if ((packageId === 'lifetime_report' || packageId.startsWith('taste_')) && !slug && packageId !== 'taste_love_question') {
+    if (
+      (packageId === 'lifetime_report' ||
+        packageId === 'taste_today_detail' ||
+        packageId === 'taste_monthly_calendar' ||
+        packageId === 'taste_year_core') &&
+      !slug
+    ) {
       setErrorMessage('이 상품은 먼저 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
       return;
     }

@@ -50,9 +50,9 @@ interface Props {
 }
 
 const CHECKOUT_FLOW_POINTS = [
-  '선택한 상품이 대화형 멤버십인지, 소장형 기준서인지 먼저 다시 확인합니다.',
+  '선택한 상품이 대화형 멤버십인지, 보관형 리포트인지 먼저 다시 확인합니다.',
   '결제 방법은 카드와 계좌이체 중에서 고르실 수 있고, 승인 뒤 이용권이 바로 반영됩니다.',
-  '기준서 상품은 특정 결과 화면과 연결되기 때문에, 결과 식별자가 있는지 마지막으로 살펴봅니다.',
+  '결과와 연결되는 상품은 해당 결과 식별자가 있는지 마지막으로 살펴봅니다.',
 ] as const;
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -72,36 +72,52 @@ type CheckoutGuide = {
 
 const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   'today-detail': {
-    title: '오늘운 상세',
+    title: '오늘 자세히 보기',
+    price: '550원',
+    reassurance: '오늘 만든 무료 결과에서 걸리는 부분만 조금 더 여는 소액 풀이입니다. 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
+    nextRange: '오늘 핵심, 조심할 것, 바로 할 행동까지 짧게 열립니다.',
+    opens: ['오늘 자세히 보기', '이미 구매한 오늘운 재열람', '대화로 이어 묻기'],
+    notices: ['오늘 자세히 보기는 현재 결과 식별자와 연결됩니다.', '다시 열 때는 구매 여부를 먼저 확인합니다.'],
+  },
+  'love-question': {
+    title: '연애 마음 확인',
     price: '990원',
-    reassurance: '오늘 만든 무료 결과에 붙는 심화풀이입니다. 결제 뒤 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
-    nextRange: '오늘 핵심, 주의 행동, 바로 할 일까지 짧게 열립니다.',
-    opens: ['오늘 심화풀이 결과', '이미 구매한 오늘운 재열람', '대화로 이어 묻기'],
-    notices: ['오늘운 상세는 현재 결과 식별자와 연결됩니다.', '다시 열 때는 구매 여부를 먼저 확인합니다.'],
+    reassurance: '상대의 마음, 내 마음, 다시 말 걸 타이밍을 부담 없이 먼저 열 수 있는 소액 풀이입니다.',
+    nextRange: '상대와의 거리감, 연락 타이밍, 오늘의 말투를 봅니다.',
+    opens: ['연애 질문 풀이', '궁합 입력 화면', '대화 연결'],
+    notices: ['로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.', '구매 후에는 checkout에서 중복 결제를 막습니다.'],
+  },
+  'money-pattern': {
+    title: '돈이 새는 패턴',
+    price: '990원',
+    reassurance: '재물운을 크게 말하기보다 오늘부터 줄일 수 있는 지출 습관을 먼저 봅니다.',
+    nextRange: '돈이 새는 장면, 조심할 소비, 지킬 행동을 짧게 봅니다.',
+    opens: ['재물 질문 풀이', '사주 입력 흐름', '대화 연결'],
+    notices: ['소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.', '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.'],
+  },
+  'work-flow': {
+    title: '일/직장 흐름',
+    price: '990원',
+    reassurance: '직장운을 길게 풀기보다 오늘의 말, 역할, 움직일 타이밍을 짧게 봅니다.',
+    nextRange: '오늘 일에서 조심할 말, 유리한 태도, 다음 선택을 봅니다.',
+    opens: ['일 질문 풀이', '사주 입력 흐름', '대화 연결'],
+    notices: ['소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.', '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.'],
   },
   'monthly-calendar': {
     title: '월간 달력',
     price: '1,900원',
     reassurance: '선택한 사주 결과와 월에 붙는 달력형 해금입니다. 이미 연 달은 다시 코인을 쓰지 않습니다.',
     nextRange: '좋은 날, 확인할 날, 결정일을 달력으로 봅니다.',
-    opens: ['선택한 월간 달력', '해당 월 재열람', '명리 기준서 확장 동선'],
-    notices: ['월간 달력은 결과와 월 정보가 있어야 연결됩니다.', '평생 기준서 권한이 있으면 별도 결제 없이 열립니다.'],
-  },
-  'love-question': {
-    title: '연애 질문 1회',
-    price: '2,900원',
-    reassurance: '궁합 입력과 결과 흐름에서 연애 질문을 부담 없이 먼저 열 수 있는 소액 상품입니다.',
-    nextRange: '상대와의 거리감, 연락 타이밍, 다시 말 걸기 좋은 지점을 봅니다.',
-    opens: ['궁합 입력 화면', '연애 질문 구매 상태 표시', '궁합 결과와 대화 연결'],
-    notices: ['로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.', '구매 후에는 checkout에서 중복 결제를 막습니다.'],
+    opens: ['선택한 월간 달력', '해당 월 재열람', '긴 사주풀이로 이어보기'],
+    notices: ['월간 달력은 결과와 월 정보가 있어야 연결됩니다.', '보관형 리포트 권한이 있으면 별도 결제 없이 열립니다.'],
   },
   'year-core': {
     title: '올해 핵심 3줄',
     price: '3,900원',
     reassurance: '선택한 사주 결과에 붙는 올해 요약 상품입니다. 결제 뒤 올해 전략 흐름으로 바로 이동합니다.',
     nextRange: '올해 핵심 주제, 주의 패턴, 밀어도 되는 달을 먼저 봅니다.',
-    opens: ['올해 전략 요약', '연간 리포트 진입', '평생 기준서 확장 동선'],
-    notices: ['올해 핵심은 특정 사주 결과에 연결됩니다.', '명리 기준서 전체 소장권과는 별도 상품입니다.'],
+    opens: ['올해 전략 요약', '연간 흐름 보기', '긴 사주풀이로 이어보기'],
+    notices: ['올해 핵심은 특정 사주 결과에 연결됩니다.', '전체 보관형 리포트와는 별도 상품입니다.'],
   },
 };
 
@@ -117,7 +133,7 @@ function parseYearMonthScope(scope?: string) {
 }
 
 async function resolveTasteScopeKey(product: TasteProductId, slug?: string, scope?: string) {
-  if (product === 'love-question') return null;
+  if (product === 'love-question' || product === 'money-pattern' || product === 'work-flow') return null;
   if (!slug) return null;
   if (product === 'today-detail') return buildTodayDetailScopeKey(slug);
 
@@ -137,6 +153,8 @@ async function resolveTasteScopeKey(product: TasteProductId, slug?: string, scop
 function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string) {
   if (product === 'today-detail') return `/today-fortune?paid=${product}`;
   if (product === 'love-question') return '/compatibility/input?relationship=lover&paid=love-question';
+  if (product === 'money-pattern') return '/saju/new?focus=wealth&paid=money-pattern';
+  if (product === 'work-flow') return '/saju/new?focus=career&paid=work-flow';
   if (slug && product === 'monthly-calendar') return `/saju/${encodeURIComponent(slug)}/premium#fortune-calendar`;
   if (slug && product === 'year-core') return `/saju/${encodeURIComponent(slug)}/premium#yearly-report`;
   return '/membership';
@@ -200,8 +218,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               {selected.title}
             </Badge>,
           ]}
-          title="결제 전에 마지막 기준을 함께 확인합니다"
-          description="대화형 멤버십인지, 소장형 기준서인지에 따라 결제 뒤 열리는 흐름이 다릅니다. 가격, 반영 방식, 다시 여실 위치까지 한 번에 정리했습니다."
+          title="결제 전에 열리는 내용을 확인합니다"
+          description="대화형 멤버십인지, 보관형 리포트인지, 또는 550원/990원 소액 풀이인지에 따라 결제 뒤 이동하는 화면이 다릅니다. 가격과 다시 볼 위치를 짧게 정리했습니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
@@ -323,7 +341,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               eyebrow="결제 진행"
               title="이제 결제를 열면 됩니다"
               titleClassName="text-3xl"
-              description="기준서 상품은 특정 결과 화면과 연결되기 때문에, 필요한 식별자가 있는지 먼저 확인한 뒤 결제를 엽니다."
+              description="결과에 연결되는 상품은 필요한 식별자가 있는지 먼저 확인한 뒤 결제를 엽니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
@@ -332,7 +350,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 className="mt-6"
                 surface="soft"
                 eyebrow="결과 식별자가 필요합니다"
-                description="나의 명리 기준서는 특정 사주 결과에 붙는 소장권입니다. 먼저 사주 결과를 만든 뒤, 해당 결과의 ‘명리 기준서 열기’ 버튼으로 오시면 결제 직후 바로 전체 기준서가 열립니다."
+                description="보관형 사주 리포트는 특정 사주 결과에 붙는 소장권입니다. 먼저 사주 결과를 만든 뒤, 해당 결과의 긴 풀이 보기 버튼으로 오시면 결제 직후 바로 전체 리포트가 열립니다."
                 footer={
                   <ActionCluster>
                     <Link

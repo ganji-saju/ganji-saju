@@ -39,14 +39,14 @@ interface Package {
 }
 
 const PACKAGES: Package[] = [
-  { id: 'credit_1', label: '체험', price: 500, credits: 1, desc: '짧은 심화 풀이를 한 번 열어보기 좋은 입문 패키지' },
-  { id: 'credit_3', label: '스타터', price: 990, credits: 3, desc: '연애·재물·직장 심화 리포트 첫 결제에 가장 잘 맞는 구간', highlight: true },
+  { id: 'credit_1', label: '체험', price: 500, credits: 1, desc: '궁금한 주제 하나를 가볍게 열어보기 좋은 입문 패키지' },
+  { id: 'credit_3', label: '스타터', price: 990, credits: 3, desc: '연애·재물·일 흐름을 작게 이어보기 좋은 첫 결제 구간', highlight: true },
   { id: 'credit_7', label: '기본', price: 2000, credits: 7, desc: '주제 여러 개를 이어서 보는 사용자에게 가장 안정적인 묶음' },
   { id: 'subscription_30', label: '월간 코인팩', price: 9900, credits: 36, desc: '매달 자동 충전으로 36코인을 넉넉하게 이어가는 코인 전용 플랜 · 스타터 10회보다 6코인이 더 붙습니다', isSubscription: true },
 ];
 
 const CREDIT_FLOW_POINTS = [
-  '코인은 필요한 심화 해석을 그때그때 여는 용도로 두고, 멤버십과 역할을 분리합니다.',
+  '코인은 필요한 소액 풀이를 그때그때 여는 용도로 두고, 멤버십과 역할을 분리합니다.',
   '무엇이 열리는지, 어떤 결과가 저장되는지, 자동 결제 여부를 결제 전에 먼저 보여드립니다.',
   '결제 뒤에는 MY와 코인 센터에서 상태와 이용 흐름을 다시 확인하실 수 있습니다.',
 ] as const;
@@ -148,11 +148,11 @@ function CreditsPageContent() {
               key="usage"
               className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
             >
-              원하실 때만 조용히 여는 심화 해석
+              원하실 때만 조용히 여는 소액 풀이
             </Badge>,
           ]}
           title="필요한 만큼만 열고, 자주 보시면 넉넉하게 이어갑니다"
-          description="코인은 필요하실 때만 심화 해석을 여는 작은 열쇠입니다. 자주 찾는 주제는 가볍게 충전해서 쓰시고, 반복해서 읽는 분은 월간 코인팩으로 더 넉넉하게 이어가실 수 있게 준비했습니다."
+          description="코인은 필요하실 때만 소액 풀이를 여는 작은 열쇠입니다. 자주 찾는 주제는 가볍게 충전해서 쓰시고, 반복해서 읽는 분은 월간 코인팩으로 더 넉넉하게 이어가실 수 있게 준비했습니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
@@ -160,9 +160,9 @@ function CreditsPageContent() {
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="코인 쓰는 방식"
-              title="무료 탐색 뒤에 필요한 심화 해석만 조용히 엽니다"
+              title="무료 탐색 뒤에 필요한 소액 풀이만 조용히 엽니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="코인은 멤버십과 달리, 필요하신 순간에만 결과 안쪽의 심화 해석을 여는 방식입니다. 과하게 밀지 않고, 필요한 장면에만 쓰이도록 역할을 분리했습니다."
+              description="코인은 멤버십과 달리, 필요하신 순간에만 결과 안쪽의 소액 풀이를 여는 방식입니다. 과하게 밀지 않고, 필요한 장면에만 쓰이도록 역할을 분리했습니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 

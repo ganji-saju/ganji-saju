@@ -2,7 +2,13 @@ import type { PlanSlug } from '@/content/moonlight';
 
 export type PaymentPackageKind = 'credits' | 'subscription' | 'lifetime_report' | 'taste_product';
 export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
-export type TasteProductId = 'today-detail' | 'monthly-calendar' | 'love-question' | 'year-core';
+export type TasteProductId =
+  | 'today-detail'
+  | 'love-question'
+  | 'money-pattern'
+  | 'work-flow'
+  | 'monthly-calendar'
+  | 'year-core';
 
 export interface PaymentPackage {
   id: string;
@@ -39,7 +45,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'membership_premium',
-    name: 'Premium 대화 멤버십',
+    name: '프리미엄 대화 멤버십',
     credits: 10,
     price: 9900,
     kind: 'subscription',
@@ -48,7 +54,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'lifetime_report',
-    name: '나의 명리 기준서',
+    name: '보관형 사주 리포트',
     credits: 0,
     price: 49000,
     kind: 'lifetime_report',
@@ -57,12 +63,36 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'taste_today_detail',
-    name: '오늘운 상세',
+    name: '오늘 자세히 보기',
     credits: 0,
-    price: 990,
+    price: 550,
     kind: 'taste_product',
     tasteProductId: 'today-detail',
     requiresSlug: true,
+  },
+  {
+    id: 'taste_love_question',
+    name: '연애 마음 확인',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'love-question',
+  },
+  {
+    id: 'taste_money_pattern',
+    name: '돈이 새는 패턴',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'money-pattern',
+  },
+  {
+    id: 'taste_work_flow',
+    name: '일/직장 흐름',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'work-flow',
   },
   {
     id: 'taste_monthly_calendar',
@@ -72,14 +102,6 @@ export const PAYMENT_PACKAGES = [
     kind: 'taste_product',
     tasteProductId: 'monthly-calendar',
     requiresSlug: true,
-  },
-  {
-    id: 'taste_love_question',
-    name: '연애 질문 1회',
-    credits: 0,
-    price: 2900,
-    kind: 'taste_product',
-    tasteProductId: 'love-question',
   },
   {
     id: 'taste_year_core',
@@ -102,16 +124,20 @@ const MEMBERSHIP_PACKAGE_BY_PLAN: Record<PlanSlug, PackageId> = {
 
 const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'today-detail': 'taste_today_detail',
-  'monthly-calendar': 'taste_monthly_calendar',
   'love-question': 'taste_love_question',
+  'money-pattern': 'taste_money_pattern',
+  'work-flow': 'taste_work_flow',
+  'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
   return (
     value === 'today-detail' ||
-    value === 'monthly-calendar' ||
     value === 'love-question' ||
+    value === 'money-pattern' ||
+    value === 'work-flow' ||
+    value === 'monthly-calendar' ||
     value === 'year-core'
   );
 }

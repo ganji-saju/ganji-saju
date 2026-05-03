@@ -49,30 +49,31 @@ let creditRefreshUserId: string | null = null;
 let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
-  홈: { glyph: '月', accent: 'var(--app-gold)', description: '오늘의 흐름' },
-  해석: { glyph: '解', accent: 'var(--app-gold-text)', description: '사주·명리·궁합' },
-  대화: { glyph: '對', accent: 'var(--app-jade)', description: '질문과 상담' },
-  마이: { glyph: '我', accent: 'var(--app-copy-muted)', description: '기록과 결제' },
-  사주: { glyph: '四', accent: 'var(--app-gold)', description: '네 기둥의 해석' },
-  명리: { glyph: '命', accent: 'var(--app-gold-soft)', description: '반복되는 삶의 이유' },
-  타로: { glyph: '塔', accent: 'var(--app-plum)', description: '지금 선택의 지혜' },
-  궁합: { glyph: '宮', accent: 'var(--app-jade)', description: '두 사람의 결' },
-  별자리: { glyph: '星', accent: 'var(--app-sky)', description: '별빛의 오늘' },
-  띠운세: { glyph: '支', accent: 'var(--app-coral)', description: '한 해의 리듬' },
-  안내: { glyph: '問', accent: 'var(--app-gold-text)', description: '도움말과 기준' },
+  홈: { glyph: '月', accent: 'var(--app-pink)', description: '오늘의 시작' },
+  운세: { glyph: '今', accent: 'var(--app-pink-strong)', description: '무료 오늘운' },
+  대화: { glyph: '問', accent: 'var(--app-pink)', description: '질문과 상담' },
+  마이: { glyph: '我', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
+  오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
+  사주: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
+  명리: { glyph: '寅', accent: 'var(--app-pink-soft-strong)', description: '명리호선생' },
+  타로: { glyph: '卯', accent: 'var(--app-pink-strong)', description: '타로토선생' },
+  궁합: { glyph: '未', accent: 'var(--app-pink)', description: '궁합양선생' },
+  별자리: { glyph: '星', accent: 'var(--app-pink-soft-strong)', description: '오늘 감정선' },
+  띠운세: { glyph: '支', accent: 'var(--app-pink)', description: '십이간지 운' },
+  안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '도움말' },
 };
 
-const MOBILE_SHORTCUT_LABEL_ORDER = ['사주', '궁합', '명리', '타로', '별자리', '띠운세', '안내'] as const;
+const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리', '명리', '안내'] as const;
 const MOBILE_SHORTCUT_GROUPS = [
-  { title: '핵심 해석', labels: ['사주', '궁합', '명리'] as const },
-  { title: '가벼운 탐색', labels: ['타로', '별자리', '띠운세'] as const },
-  { title: '도움말', labels: ['안내'] as const },
+  { title: '무료로 시작', labels: ['오늘운', '타로'] as const },
+  { title: '인기 풀이', labels: ['사주', '궁합', '띠운세'] as const },
+  { title: '더 보기', labels: ['별자리', '명리', '안내'] as const },
 ] as const;
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
-  해석: '기준서',
+  운세: '운세',
   대화: '상담',
-  마이: '보관',
+  마이: '마이',
 };
 
 function matchesPath(item: NavItem, pathname: string) {
@@ -89,8 +90,8 @@ function matchesPath(item: NavItem, pathname: string) {
 function getNavMeta(item: NavItem) {
   return NAV_META[item.label] ?? {
     glyph: item.label.slice(0, 1),
-    accent: 'var(--app-gold)',
-    description: '달빛선생',
+    accent: 'var(--app-pink)',
+    description: '달빛인생',
   };
 }
 
@@ -115,14 +116,14 @@ function DockIcon({ label }: { label: string }) {
   switch (label) {
     case '홈':
       return <MoonStar className="h-4 w-4" />;
-    case '해석':
-      return <BookOpenText className="h-4 w-4" />;
+    case '운세':
+      return <Sparkles className="h-4 w-4" />;
     case '대화':
       return <MessageCircleMore className="h-4 w-4" />;
     case '마이':
       return <UserRound className="h-4 w-4" />;
     default:
-      return <MoonStar className="h-4 w-4" />;
+      return <BookOpenText className="h-4 w-4" />;
   }
 }
 
@@ -312,15 +313,15 @@ function DesktopSidebar({
       <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
         <Link href="/" className="group block">
           <div className="font-[var(--font-heading)] text-[11px] tracking-[0.48em] text-[var(--app-gold)]/72">
-            月 光 先 生
+            DALBIT LIFE
           </div>
           <div className="mt-3 flex items-center gap-3">
             <div className="app-moon-orb h-10 w-10" />
             <div>
               <div className="font-[var(--font-heading)] text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
-                달빛선생
+                달빛인생
               </div>
-              <div className="text-xs text-[var(--app-copy-soft)]">천 년의 지혜</div>
+              <div className="text-xs text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
             </div>
           </div>
         </Link>
@@ -334,7 +335,7 @@ function DesktopSidebar({
             </div>
             <div className="min-w-0">
               <div className="truncate text-sm font-medium text-[var(--app-ivory)]">
-                {displayName} 선생님
+                {displayName}님
               </div>
               <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
                 {user ? `${credits ?? '...'} 코인 보유` : '로그인하면 기록 저장'}
@@ -436,7 +437,7 @@ function MobileChrome({
   const contextDescription =
     activeShortcutMeta?.description ??
     activePrimaryMeta?.description ??
-    '프리미엄 명리 기준서';
+    '오늘의 운세와 타로';
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -449,10 +450,10 @@ function MobileChrome({
           <div className="flex items-center justify-between gap-3">
             <Link href="/" className="app-top-brand min-w-0">
               <div className="app-top-brand-kicker truncate font-[var(--font-heading)] text-[10px] tracking-[0.42em] text-[var(--app-gold)]/72">
-                月 光 先 生
+                DALBIT LIFE
               </div>
               <div className="app-top-brand-title truncate text-xl font-semibold tracking-tight text-[var(--app-ivory)]">
-                달빛선생
+                달빛인생
               </div>
               <div className="app-top-brand-context mt-2 flex flex-wrap items-center gap-1.5">
                 {activePrimaryItem ? (

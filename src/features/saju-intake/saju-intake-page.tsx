@@ -190,7 +190,12 @@ function getCurrentYearMonthScope() {
 }
 
 function buildPostSubmitHref(id: string, focusTopic: OnboardingFocusTopic, product: TasteProductId | null) {
-  if (product === 'monthly-calendar' || product === 'year-core') {
+  if (
+    product === 'monthly-calendar' ||
+    product === 'year-core' ||
+    product === 'money-pattern' ||
+    product === 'work-flow'
+  ) {
     const params = new URLSearchParams({
       product,
       slug: id,

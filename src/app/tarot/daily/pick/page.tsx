@@ -45,7 +45,7 @@ const PICKER_MIND_CUES = [
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '타로 카드 뽑기',
-    description: '질문을 품고 카드를 선택하는 달빛선생의 타로 카드 뽑기 화면입니다.',
+    description: '질문을 품고 카드를 선택하는 달빛인생의 타로 카드 뽑기 화면입니다.',
     alternates: {
       canonical: '/tarot/daily/pick',
     },
@@ -78,12 +78,11 @@ export default async function TarotPickPage({ searchParams }: Props) {
               {sourceLabel}
             </Badge>,
           ]}
-          title="질문을 한 번 품고, 끌리는 한 장을 고릅니다"
+          title="질문을 떠올리고, 끌리는 한 장을 고르세요"
           description={
             <>
               지금 들고 오신 질문은 <span className="text-[var(--app-plum)]">“{currentQuestion}”</span>
-              입니다. 정답을 맞히려 하기보다, 이 질문에서 마음이 어디에 걸려 있는지
-              먼저 보고 들어갑니다.
+              입니다. 정답을 맞히려 하기보다, 지금 마음이 먼저 닿는 카드를 골라보세요.
             </>
           }
         />
@@ -92,8 +91,8 @@ export default async function TarotPickPage({ searchParams }: Props) {
           <SupportRail
             surface="panel"
             eyebrow="카드를 고르기 전에"
-            title="마음을 한 번 가다듬고 들어가면 좋습니다"
-            description="카드는 지금 가장 선명한 감정선에 먼저 반응합니다. 질문을 크게 바꾸지 말고, 같은 마음으로 한 장을 골라 보시면 더 읽기 쉬워집니다."
+            title="생각을 길게 하지 않아도 괜찮습니다"
+            description="한 사람, 한 사건, 한 마음만 떠올리고 고르세요. 잘 모르겠으면 랜덤 뽑기를 눌러도 됩니다."
           >
             <BulletList items={PICKER_POINTS} />
 
@@ -118,8 +117,8 @@ export default async function TarotPickPage({ searchParams }: Props) {
 
             <SectionHeader
               className="mt-6"
-              eyebrow="프리미엄 3장 확장"
-              title="더 깊게 보면 이런 흐름으로 이어집니다"
+              eyebrow="더 자세히 보기"
+              title="한 장이 마음에 남으면 더 이어볼 수 있습니다"
               titleClassName="text-2xl"
             />
             <ProductGrid columns={3} className="mt-4">

@@ -11,7 +11,6 @@ import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
 import {
   TAROT_CARD_KEYWORDS,
-  TAROT_MIND_ENTRY_POINTS,
   TAROT_QUESTION_OPTIONS,
 } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -24,14 +23,14 @@ const DAILY_TAROT_QUESTION = '오늘 하루 어떤 메시지가 있을까';
 
 const TAROT_FLOW_POINTS = [
   '타로는 지금 눈앞의 감정과 장면을 빠르게 비춥니다.',
-  '사주는 그 감정이 왜 반복되는지, 내 기질과 시기의 흐름에서 더 길게 설명합니다.',
-  '카드 결과가 마음에 남으면 같은 질문을 사주 결과나 상담으로 이어갈 수 있습니다.',
+  '결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동으로 먼저 정리합니다.',
+  '카드 결과가 마음에 남으면 같은 질문을 사주나 상담으로 이어갈 수 있습니다.',
 ] as const;
 
 export const metadata: Metadata = {
   title: '타로',
   description:
-    '질문을 고르고 카드 뽑기 화면으로 이어지는 달빛선생의 오늘의 타로 메인 화면입니다.',
+    '질문을 고르고 카드 뽑기 화면으로 이어지는 달빛인생의 오늘의 타로 화면입니다.',
   alternates: {
     canonical: '/tarot/daily',
   },
@@ -62,39 +61,17 @@ export default async function DailyTarotPage() {
               빠른 무료 탐색
             </Badge>,
           ]}
-          title="카드를 고르기 전에, 마음의 질문부터 정합니다"
-          description="타로를 보러 오는 마음은 대부분 답답함, 기대, 망설임에서 시작됩니다. 먼저 질문을 고르고 한 장을 뽑으면, 결과에서는 그 마음이 사주 흐름과 어디에서 만나는지까지 이어서 보여드립니다."
+          title="지금 마음에 가까운 질문을 먼저 고르세요"
+          description="타로는 길게 읽기보다 지금 마음을 빨리 비추는 입구입니다. 질문을 고르고 한 장을 뽑으면, 핵심 한 줄과 오늘 해볼 행동을 먼저 보여드립니다."
         />
-
-        <SectionSurface surface="panel">
-          <SectionHeader
-            eyebrow="타로를 보는 마음"
-            title="이럴 때는 바로 카드를 고르기보다, 먼저 마음의 결을 정해보세요"
-            titleClassName="text-2xl sm:text-3xl"
-            description="질문이 흐리면 카드도 흐리게 읽힙니다. 지금 내 마음이 어느 쪽에 가까운지 먼저 확인하면, 뽑은 카드의 메시지가 훨씬 또렷해집니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-          <ProductGrid columns={3} className="mt-5">
-            {TAROT_MIND_ENTRY_POINTS.map((item, index) => (
-              <FeatureCard
-                key={item.title}
-                surface="soft"
-                eyebrow={String(index + 1).padStart(2, '0')}
-                title={item.title}
-                titleClassName="text-xl"
-                description={item.body}
-              />
-            ))}
-          </ProductGrid>
-        </SectionSurface>
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
             <SectionHeader
               eyebrow="질문 고르기"
-              title="먼저 무엇이 궁금한지 골라 보세요"
+              title="무엇이 제일 마음에 걸리나요?"
               titleClassName="text-3xl"
-              description="카드는 질문의 결에 따라 전혀 다르게 읽힙니다. 가장 가까운 질문을 먼저 고르면 뽑기와 결과 흐름이 더 자연스럽게 이어집니다."
+              description="가장 가까운 질문을 고르면 바로 카드 뽑기로 이어집니다. 답은 짧게, 행동은 분명하게 보여드립니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
@@ -170,18 +147,18 @@ export default async function DailyTarotPage() {
 
           <SupportRail
             surface="lunar"
-            eyebrow="타로를 여는 방식"
-            title="타로는 지금 마음, 사주는 반복되는 흐름을 봅니다"
-            description="타로는 오늘의 장면을 빠르게 비추고, 사주는 그 장면이 내 삶에서 왜 반복되는지 길게 설명합니다. 그래서 타로는 입구, 사주는 기준서로 나눠 읽습니다."
+            eyebrow="무료 타로 흐름"
+            title="카드 한 장으로 오늘 마음부터 봅니다"
+            description="먼저 지금 마음을 짧게 확인하고, 더 궁금할 때만 사주나 대화로 이어갑니다."
           >
             <BulletList items={TAROT_FLOW_POINTS} />
 
             <FeatureCard
               className="mt-5"
               surface="soft"
-              eyebrow="프리미엄 확장 리딩"
-              title="사주 + 타로 3장 확장"
-              description="한 장의 메시지 뒤에 현재 흐름, 숨은 원인, 오늘의 조언을 붙여 읽으면 질문의 결이 훨씬 또렷해집니다."
+              eyebrow="더 자세히 보기"
+              title="연애 마음 확인 990원"
+              description="한 장의 메시지가 마음에 남으면 현재 흐름, 숨은 마음, 오늘의 조언을 더 짧게 이어볼 수 있게 준비합니다."
             />
 
             <ProductGrid columns={3} className="mt-4">
@@ -269,10 +246,10 @@ export default async function DailyTarotPage() {
 
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
-            eyebrow="시니어 친화 타로 카피"
-            title="강한 단어보다 오래 남는 문장으로 바꿔 읽습니다"
+            eyebrow="쉬운 문장"
+            title="무섭게 말하지 않고, 오늘 할 수 있는 말로 바꿉니다"
             titleClassName="text-3xl"
-            description="무료 탐색에서도 공포성 표현보다 생활에 붙는 언어를 먼저 드리기 위한 기준입니다."
+            description="무료 타로에서도 공포성 표현보다 생활에 붙는 언어를 먼저 드립니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />
 

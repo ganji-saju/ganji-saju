@@ -2,6 +2,20 @@ export type MoonlightTone = 'gold' | 'goldSoft' | 'jade' | 'plum' | 'sky' | 'cor
 export type MoonlightNavTone = 'service' | 'acquisition';
 export type PlanSlug = 'basic' | 'premium' | 'lifetime';
 export type CompatibilityRelationshipSlug = 'lover' | 'family' | 'friend' | 'partner';
+export type DalbitTeacherSlug =
+  | 'mg-ji'
+  | 'today-so'
+  | 'myeongri-ho'
+  | 'tarot-to'
+  | 'saju-yong'
+  | 'dream-baem'
+  | 'move-mal'
+  | 'compat-yang'
+  | 'face-won'
+  | 'wealth-dak'
+  | 'palm-meong'
+  | 'luck-dwaeji';
+export type DalbitTeacherStatus = 'active' | 'coming-soon';
 
 export interface MoonlightNavItem {
   label: string;
@@ -104,14 +118,31 @@ export interface MoonlightTasteProduct {
   result: string;
   href: string;
   status: string;
+  teacherSlug: DalbitTeacherSlug;
+}
+
+export interface DalbitTeacherCard {
+  slug: DalbitTeacherSlug;
+  teacherName: string;
+  animal: string;
+  zodiac: string;
+  zodiacOrder: number;
+  serviceTitle: string;
+  shortLabel: string;
+  role: string;
+  question: string;
+  href: string;
+  productPosition: string;
+  status: DalbitTeacherStatus;
 }
 
 export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
   { label: '홈', href: '/' },
   {
-    label: '해석',
-    href: '/interpretation',
+    label: '운세',
+    href: '/today-fortune',
     matchPrefixes: [
+      '/today-fortune',
       '/interpretation',
       '/saju',
       '/myeongri',
@@ -130,12 +161,13 @@ export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
 ] as const;
 
 export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
+  { label: '오늘운', href: '/today-fortune', matchPrefixes: ['/today-fortune'], tone: 'acquisition' },
+  { label: '타로', href: '/tarot/daily', matchPrefixes: ['/tarot'], tone: 'acquisition' },
   { label: '사주', href: '/saju/new', matchPrefixes: ['/saju'], tone: 'service' },
-  { label: '명리', href: '/myeongri', matchPrefixes: ['/myeongri'], tone: 'service' },
-  { label: '타로', href: '/tarot/daily', matchPrefixes: ['/tarot'], tone: 'service' },
   { label: '궁합', href: '/compatibility', matchPrefixes: ['/compatibility'], tone: 'service' },
-  { label: '별자리', href: '/star-sign', matchPrefixes: ['/star-sign'], tone: 'service' },
   { label: '띠운세', href: '/zodiac', matchPrefixes: ['/zodiac'], tone: 'service' },
+  { label: '별자리', href: '/star-sign', matchPrefixes: ['/star-sign'], tone: 'service' },
+  { label: '명리', href: '/myeongri', matchPrefixes: ['/myeongri'], tone: 'service' },
   { label: '안내', href: '/guide', matchPrefixes: ['/guide', '/method', '/about-engine', '/sample-report'], tone: 'service' },
 ] as const;
 
@@ -167,7 +199,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
     slug: 'love',
     label: '연애',
     question: '연애가 자꾸 꼬이는 이유',
-    productName: '관계 패턴 기준서',
+    productName: '관계 패턴 풀이',
     reportAnswer: '반복되는 서운함, 연락 속도, 다시 이어질 가능성을 사주와 관계 흐름으로 나눠 봅니다.',
     href: '/saju/new?focus=love',
   },
@@ -175,7 +207,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
     slug: 'money',
     label: '돈',
     question: '돈이 모이지 않는 패턴',
-    productName: '재물 흐름 기준서',
+    productName: '재물 흐름 풀이',
     reportAnswer: '돈이 들어오는 방식보다 새는 지점과 지켜야 할 루틴을 먼저 정리합니다.',
     href: '/saju/new?focus=wealth',
   },
@@ -183,7 +215,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
     slug: 'career',
     label: '일',
     question: '이직해도 되는 시기',
-    productName: '일과 자리 기준서',
+    productName: '일과 자리 풀이',
     reportAnswer: '버텨야 할 때와 옮겨야 할 때를 역할, 대운, 올해 흐름으로 구분합니다.',
     href: '/saju/new?focus=career',
   },
@@ -191,7 +223,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
     slug: 'family',
     label: '가족',
     question: '가족과 부딪히는 이유',
-    productName: '가족 관계 기준서',
+    productName: '가족 관계 풀이',
     reportAnswer: '부모, 자녀, 배우자 사이에서 반복되는 말과 역할의 엇갈림을 봅니다.',
     href: '/saju/new?focus=family',
   },
@@ -199,7 +231,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
     slug: 'year',
     label: '올해 흐름',
     question: '올해 밀어도 되는 달',
-    productName: '올해 전략 기준서',
+    productName: '올해 전략 풀이',
     reportAnswer: '좋은 달, 한 번 더 확인할 달, 차분히 정리할 달을 먼저 지도처럼 보여줍니다.',
     href: '/saju/new?focus=year',
   },
@@ -228,48 +260,233 @@ export const REPORT_PREVIEW_VALUE_POINTS = [
   },
   {
     title: '대화 연결',
-    body: '리포트를 읽은 뒤 같은 기준 위에서 달빛선생에게 이어서 질문할 수 있습니다.',
+    body: '풀이를 읽은 뒤 같은 흐름 위에서 달빛인생에게 이어서 질문할 수 있습니다.',
   },
 ] as const;
 
 export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'today-detail',
-    title: '오늘운 상세',
-    price: '990원',
+    title: '오늘 자세히 보기',
+    price: '550원',
     question: '오늘 무엇을 조심하면 좋을까',
-    result: '오늘 핵심 한 줄, 조심할 패턴, 바로 할 행동을 짧게 봅니다.',
-    href: '/today-fortune?concern=general',
-    status: '오늘운으로 연결',
-  },
-  {
-    slug: 'monthly-calendar',
-    title: '월간 달력',
-    price: '1,900원',
-    question: '이번 달 밀어도 되는 날은 언제일까',
-    result: '좋은 날, 확인할 날, 차분히 정리할 날을 달력형으로 확인합니다.',
-    href: '/saju/new?product=monthly-calendar',
-    status: '명식 입력 후 연결',
+    result: '무료 결과에서 걸린 부분만 조금 더 짧게 봅니다.',
+    href: '/today-fortune?concern=general&product=today-detail',
+    status: '오늘운 결과 후 연결',
+    teacherSlug: 'saju-yong',
   },
   {
     slug: 'love-question',
-    title: '연애 질문 1회',
-    price: '2,900원',
-    question: '상대와 다시 이어질 가능성',
-    result: '감정의 속도, 연락 타이밍, 다시 말 걸기 좋은 지점을 짧게 봅니다.',
+    title: '연애 마음 확인',
+    price: '990원',
+    question: '상대와 다시 이어질 수 있을까',
+    result: '상대의 속도, 내 마음, 다시 말 걸 타이밍을 짧게 봅니다.',
     href: '/membership/checkout?product=love-question&from=taste-product',
-    status: '결제 후 궁합 입력',
+    status: '연애 질문으로 연결',
+    teacherSlug: 'compat-yang',
   },
   {
-    slug: 'year-core',
-    title: '올해 핵심 3줄',
-    price: '3,900원',
-    question: '올해 제일 중요한 선택은 무엇일까',
-    result: '올해 핵심 주제, 조심할 패턴, 밀어도 되는 달을 3줄로 압축합니다.',
-    href: '/saju/new?product=year-core',
-    status: '기준서 전 맛보기',
+    slug: 'money-pattern',
+    title: '돈이 새는 패턴',
+    price: '990원',
+    question: '왜 돈이 잘 모이지 않을까',
+    result: '돈이 들어오는 말보다, 지켜야 할 습관을 먼저 봅니다.',
+    href: '/saju/new?focus=wealth&product=money-pattern',
+    status: '재물 질문으로 연결',
+    teacherSlug: 'myeongri-ho',
+  },
+  {
+    slug: 'work-flow',
+    title: '일/직장 흐름',
+    price: '990원',
+    question: '지금 버틸까, 움직일까',
+    result: '오늘의 역할, 말의 강도, 일에서 조심할 장면을 짧게 봅니다.',
+    href: '/saju/new?focus=career&product=work-flow',
+    status: '일 질문으로 연결',
+    teacherSlug: 'myeongri-ho',
   },
 ] as const;
+
+const DALBIT_TEACHER_GUIDE_HREF = '/guide?teacher=';
+
+export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
+  {
+    slug: 'mg-ji',
+    teacherName: '엠지쥐선생',
+    animal: '쥐',
+    zodiac: '子',
+    zodiacOrder: 1,
+    serviceTitle: 'MBTI',
+    shortLabel: '성향 놀이',
+    role: '가벼운 성향 테스트와 운세를 연결하는 확장 메뉴입니다.',
+    question: '나는 어떤 말투와 관계 방식에 가까울까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}mg-ji`,
+    productPosition: '무료 성향 테스트와 소액 궁금증 상품으로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'today-so',
+    teacherName: '오늘소선생',
+    animal: '소',
+    zodiac: '丑',
+    zodiacOrder: 2,
+    serviceTitle: '오늘 루틴',
+    shortLabel: '생활 조언',
+    role: '오늘의 운세를 생활 리듬, 습관, 작은 실천으로 바꾸는 확장 메뉴입니다.',
+    question: '오늘 하루를 편하게 넘기려면 무엇부터 하면 좋을까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}today-so`,
+    productPosition: '출석, 루틴, 무료 오늘 조언, 리워드 흐름으로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'myeongri-ho',
+    teacherName: '명리호선생',
+    animal: '호랑이',
+    zodiac: '寅',
+    zodiacOrder: 3,
+    serviceTitle: '명리',
+    shortLabel: '조금 더 깊게',
+    role: '돈, 일, 반복되는 선택처럼 조금 더 깊게 봐야 할 문제를 정리합니다.',
+    question: '왜 이 패턴이 자꾸 반복될까?',
+    href: '/myeongri',
+    productPosition: '돈이 새는 패턴 990원, 일/직장 흐름 990원과 연결됩니다.',
+    status: 'active',
+  },
+  {
+    slug: 'tarot-to',
+    teacherName: '타로토선생',
+    animal: '토끼',
+    zodiac: '卯',
+    zodiacOrder: 4,
+    serviceTitle: '타로',
+    shortLabel: '지금 마음 보기',
+    role: '카드 한 장으로 지금 마음, 망설임, 오늘 해볼 행동을 빠르게 보여줍니다.',
+    question: '지금 내 마음은 어디로 기울어 있을까?',
+    href: '/tarot/daily',
+    productPosition: '무료 타로에서 시작하고, 마음이 남으면 990원 풀이로 이어집니다.',
+    status: 'active',
+  },
+  {
+    slug: 'saju-yong',
+    teacherName: '사주용선생',
+    animal: '용',
+    zodiac: '辰',
+    zodiacOrder: 5,
+    serviceTitle: '사주',
+    shortLabel: '내 흐름 보기',
+    role: '생년월일과 태어난 시간을 바탕으로 오늘과 올해의 큰 흐름을 짚습니다.',
+    question: '나는 지금 어떤 흐름 위에 있을까?',
+    href: '/saju/new',
+    productPosition: '무료 사주, 오늘 자세히 보기 550원, 긴 사주풀이로 이어집니다.',
+    status: 'active',
+  },
+  {
+    slug: 'dream-baem',
+    teacherName: '꿈뱀선생',
+    animal: '뱀',
+    zodiac: '巳',
+    zodiacOrder: 6,
+    serviceTitle: '꿈해몽',
+    shortLabel: '마음 신호',
+    role: '꿈에 남은 장면을 무의식, 감정, 오늘의 조심 포인트로 풀어내는 확장 메뉴입니다.',
+    question: '어젯밤 꿈은 지금 마음의 어떤 신호일까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}dream-baem`,
+    productPosition: '무료 꿈 키워드 해석과 990원 자세히 보기로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'move-mal',
+    teacherName: '이동말선생',
+    animal: '말',
+    zodiac: '午',
+    zodiacOrder: 7,
+    serviceTitle: '이동운',
+    shortLabel: '이직·이사·여행',
+    role: '움직여도 되는 시기, 방향, 이직과 이사의 부담을 가볍게 확인하는 확장 메뉴입니다.',
+    question: '지금 움직여도 괜찮을까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}move-mal`,
+    productPosition: '이직, 이사, 여행, 방향 질문형 990원 상품으로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'compat-yang',
+    teacherName: '궁합양선생',
+    animal: '양',
+    zodiac: '未',
+    zodiacOrder: 8,
+    serviceTitle: '궁합',
+    shortLabel: '상대와의 결',
+    role: '나와 상대의 속도, 거리감, 부딪히는 말을 관계 중심으로 풀어줍니다.',
+    question: '이 사람과 다시 잘 맞출 수 있을까?',
+    href: '/compatibility/input',
+    productPosition: '연애 마음 확인 990원, 궁합 입력, 관계 풀이로 이어집니다.',
+    status: 'active',
+  },
+  {
+    slug: 'face-won',
+    teacherName: '관상원선생',
+    animal: '원숭이',
+    zodiac: '申',
+    zodiacOrder: 9,
+    serviceTitle: '관상',
+    shortLabel: '인상과 분위기',
+    role: '관상과 첫인상 풀이를 안전한 표현 기준 안에서 확장할 메뉴입니다.',
+    question: '내 인상은 어떤 분위기로 전해질까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}face-won`,
+    productPosition: '사진/자가진단 기반 무료 입구와 소액 풀이로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'wealth-dak',
+    teacherName: '재물닭선생',
+    animal: '닭',
+    zodiac: '酉',
+    zodiacOrder: 10,
+    serviceTitle: '재물운',
+    shortLabel: '돈 습관',
+    role: '소비, 저축, 돈이 새는 장면을 더 직관적으로 보여주는 재물 특화 확장 메뉴입니다.',
+    question: '돈이 새는 지점은 어디일까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}wealth-dak`,
+    productPosition: '재물 질문, 소비 패턴, 월간 돈 흐름 상품으로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'palm-meong',
+    teacherName: '손금멍선생',
+    animal: '개',
+    zodiac: '戌',
+    zodiacOrder: 11,
+    serviceTitle: '손금',
+    shortLabel: '손바닥 단서',
+    role: '이미지 기반 손금 풀이로 확장할 수 있는 준비 중 메뉴입니다.',
+    question: '내 손에는 어떤 생활 단서가 보일까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}palm-meong`,
+    productPosition: '사진 입력형 무료 맛보기와 990원 자세히 보기로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+  {
+    slug: 'luck-dwaeji',
+    teacherName: '복돼지선생',
+    animal: '돼지',
+    zodiac: '亥',
+    zodiacOrder: 12,
+    serviceTitle: '행운',
+    shortLabel: '복·쿠폰·리워드',
+    role: '출석, 행운 카드, 쿠폰, 카카오 친구 유도 같은 리워드 흐름을 맡는 확장 메뉴입니다.',
+    question: '오늘 받을 수 있는 작은 행운은 무엇일까?',
+    href: `${DALBIT_TEACHER_GUIDE_HREF}luck-dwaeji`,
+    productPosition: '출석 리워드, 무료 행운 카드, 쿠폰 안내로 확장 예정입니다.',
+    status: 'coming-soon',
+  },
+] as const;
+
+export const ACTIVE_DALBIT_TEACHERS = DALBIT_TEACHERS.filter(
+  (teacher) => teacher.status === 'active'
+);
+
+export const COMING_SOON_DALBIT_TEACHERS = DALBIT_TEACHERS.filter(
+  (teacher) => teacher.status === 'coming-soon'
+);
 
 export const TRUST_SIGNALS = [
   {
@@ -685,7 +902,7 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
   {
     key: 'returning',
     title: '재방문 리마인더',
-    body: '달빛선생이 기다리고 있습니다. 오늘의 한 줄을 놓치지 마세요.',
+    body: '달빛인생이 기다리고 있습니다. 오늘의 한 줄을 놓치지 마세요.',
     timeLabel: '3일 미접속',
     cadence: '리텐션',
     tone: 'gold',
@@ -731,7 +948,7 @@ export const RETENTION_SCENARIOS: readonly MoonlightRetentionScenario[] = [
   },
   {
     trigger: '생일',
-    action: '새 한 해 리듬 요약과 심층 리포트 진입 제안',
+    action: '새 한 해 리듬 요약과 자세히 보기 진입 제안',
     purpose: '의미 있는 개인 이벤트를 유료 전환 지점으로 연결',
   },
 ] as const;
@@ -753,7 +970,7 @@ export const MY_MENU_BLUEPRINT = [
     href: '/my/profile',
   },
   {
-    title: '프리미엄 플랜',
+    title: '대화 플랜',
     description: '이용 기간과 혜택 관리하기',
     href: '/membership',
   },
@@ -780,30 +997,30 @@ export const PLAN_BLUEPRINT = [
     title: '라이트 대화 멤버십',
     price: '월 4,900원',
     badge: '대화로 가볍게 시작',
-    summary: '명리 기준서를 읽기 전, 짧은 질문과 오늘의 흐름을 조용히 이어보는 가장 가벼운 대화용 플랜입니다.',
-    features: ['매일 해석 10회', '명리 기준서 미리보기 월 2회', '고전 인용 표시', '대화 상담 월 30턴'],
+    summary: '짧은 질문과 오늘의 흐름을 조용히 이어보는 가장 가벼운 대화용 플랜입니다.',
+    features: ['매일 해석 10회', '긴 사주풀이 미리보기 월 2회', '고전 인용 표시', '대화 상담 월 30턴'],
     fit: '지금 궁금한 질문을 가볍게 이어 묻고 싶은 분',
-    opens: ['마음이 흔들릴 때 짧게 여쭙는 대화', '월 2회 기준서 미리보기', '광고 없이 차분히 읽는 해석'],
+    opens: ['마음이 흔들릴 때 짧게 여쭙는 대화', '월 2회 긴 사주풀이 미리보기', '광고 없이 차분히 읽는 해석'],
   },
   {
     slug: 'premium' as const,
-    title: 'Premium 대화 멤버십',
+    title: '프리미엄 대화 멤버십',
     price: '월 9,900원',
     badge: '질문을 계속 이어가는 중심 플랜',
     summary: '사주, 궁합, 가족 이야기, 오늘의 흐름까지 생활 가까운 질문을 넉넉하게 이어보는 대화 중심 구독 플랜입니다.',
-    features: ['모든 해석 무제한', '궁합 분석 월 3회', '가족 사주 5명', '명리 기준서 미리보기 월 10회', '대화 상담 무제한'],
-    fit: '기준서를 읽은 뒤 계속 질문하며 생활에 붙여 쓰고 싶은 분',
-    opens: ['궁합과 가족 사주를 넉넉히 펼쳐보기', '기준서 미리보기 월 10회', '대화 상담 무제한'],
+    features: ['모든 해석 무제한', '궁합 분석 월 3회', '가족 사주 5명', '긴 사주풀이 미리보기 월 10회', '대화 상담 무제한'],
+    fit: '풀이를 읽은 뒤 계속 질문하며 생활에 붙여 쓰고 싶은 분',
+    opens: ['궁합과 가족 사주를 넉넉히 펼쳐보기', '긴 사주풀이 미리보기 월 10회', '대화 상담 무제한'],
   },
   {
     slug: 'lifetime' as const,
-    title: '나의 명리 기준서',
+    title: '보관형 사주 리포트',
     price: '49,000원',
     badge: '한 번 결제 · 평생 소장',
     summary: '원국, 격국, 용신, 대운을 한 권의 보관형 리포트로 남기는 소장형 상품입니다.',
-    features: ['7개 섹션 완성형 기준서', '고전 원문 인용', 'PDF 다운로드', '평생 무료 업데이트'],
+    features: ['7개 섹션 완성형 풀이', '고전 원문 인용', 'PDF 다운로드', '평생 무료 업데이트'],
     fit: '한 번의 결제로 내 명리 기준을 오래 보관하고 싶은 분',
-    opens: ['격국·용신·대운을 한 권의 기준서로', 'PDF와 MY 보관함으로 오래 남기기', '해석이 다듬어질 때 다시 펼쳐보기'],
+    opens: ['격국·용신·대운을 한 권의 보관형 풀이로', 'PDF와 MY 보관함으로 오래 남기기', '해석이 다듬어질 때 다시 펼쳐보기'],
   },
 ] as const;
 
@@ -839,7 +1056,7 @@ export const INTERPRETATION_JOURNEY = [
   },
   {
     title: '3. 필요할 때 더 깊이 들어갑니다',
-    body: '격국, 용신, 대운처럼 오래 품고 볼 내용은 명리 기준서로 차분히 열어드립니다.',
+    body: '격국, 용신, 대운처럼 오래 품고 볼 내용은 보관형 사주 리포트로 차분히 열어드립니다.',
   },
 ] as const;
 
@@ -859,7 +1076,7 @@ export const SAJU_PREMIUM_PREVIEW = [
 ] as const;
 
 export const SAJU_PREMIUM_VALUE_POINTS = [
-  '원국만 설명하는 데서 멈추지 않고, 강약과 격국을 함께 엮어 기준서처럼 정리합니다.',
+  '원국만 설명하는 데서 멈추지 않고, 강약과 격국을 함께 엮어 보관형 풀이로 정리합니다.',
   '현재 대운과 세운을 붙여 “왜 지금 이런가”를 한 화면에서 읽게 합니다.',
   'PDF와 MY 보관함에 함께 남아, 이후 월운과 대화도 같은 기준 위에서 이어집니다.',
 ] as const;
@@ -982,7 +1199,7 @@ export const TAROT_MIND_ENTRY_POINTS = [
   },
   {
     title: '사주까지 보기엔 아직 가벼울 때',
-    body: '바로 기준서를 열기 전, 오늘 마음의 방향만 먼저 확인하고 싶을 때 타로가 입구가 됩니다.',
+    body: '긴 풀이를 보기 전, 오늘 마음의 방향만 먼저 확인하고 싶을 때 타로가 입구가 됩니다.',
   },
 ] as const;
 
@@ -1017,23 +1234,23 @@ export const CHECKOUT_PLAN_GUIDE: Record<
     price: '월 4,900원',
     nextRange: '첫 결제 후 30일 이용',
     reassurance: '가볍게 시작해도 질문을 이어가는 흐름은 충분히 경험하실 수 있습니다.',
-    opens: ['명리 기준서 미리보기 월 2회', '기본 해석과 대화 상담', '광고 없는 차분한 이용'],
+    opens: ['긴 사주풀이 미리보기 월 2회', '기본 해석과 대화 상담', '광고 없는 차분한 이용'],
     notices: ['첫 결제 후 30일 이용권으로 반영', '마이페이지에서 상태 확인 가능', '열람 전 환불 기준 함께 안내'],
   },
   premium: {
-    title: 'Premium 대화 멤버십',
+    title: '프리미엄 대화 멤버십',
     price: '월 9,900원',
     nextRange: '첫 결제 후 30일 이용',
     reassurance: '가족 사주, 궁합, 대화까지 가장 넓게 이어 쓰실 수 있는 메인 구독 플랜입니다.',
-    opens: ['궁합 분석과 가족 사주 5명', '명리 기준서 미리보기 월 10회', '대화 상담 무제한'],
+    opens: ['궁합 분석과 가족 사주 5명', '긴 사주풀이 미리보기 월 10회', '대화 상담 무제한'],
     notices: ['첫 결제 후 30일 이용권으로 반영', '언제든 플랜 화면에서 상태 확인 가능', '이용 내역과 환불 기준을 한 번 더 고지'],
   },
   lifetime: {
-    title: '나의 명리 기준서',
+    title: '보관형 사주 리포트',
     price: '49,000원',
     nextRange: '한 번 결제 · 평생 소장',
     reassurance: '월 구독 없이 완성본 하나를 오래 보관하고 싶은 분께 맞는 소장형 선택입니다.',
-    opens: ['7개 섹션 완성형 기준서', 'PDF 다운로드', '업데이트 반영본 재열람'],
+    opens: ['7개 섹션 완성형 풀이', 'PDF 다운로드', '업데이트 반영본 재열람'],
     notices: ['자동 갱신 없음', '결제 즉시 전체 리포트 열람', '평생 보관용 저장본 제공'],
   },
 } as const;
@@ -1051,27 +1268,27 @@ export const COMPLETE_PLAN_GUIDE: Record<
 > = {
   basic: {
     welcome: '가볍게 시작하셨지만, 핵심 해석을 읽기엔 충분한 첫걸음입니다.',
-    giftTitle: '이번 달 기준서 미리보기 2회',
-    giftBody: '기본 해석을 보다가 더 깊이 보고 싶은 결과가 나오면 바로 명리 기준서 미리보기로 이어가실 수 있습니다.',
-    nextSteps: ['사주 기본 해석부터 저장하기', '마음에 남는 질문을 대화로 이어보기', '첫 기준서 미리보기 1회 써보기'],
+    giftTitle: '이번 달 긴 사주풀이 미리보기 2회',
+    giftBody: '기본 해석을 보다가 더 깊이 보고 싶은 결과가 나오면 바로 긴 사주풀이 미리보기로 이어가실 수 있습니다.',
+    nextSteps: ['사주 기본 해석부터 저장하기', '마음에 남는 질문을 대화로 이어보기', '첫 긴 사주풀이 미리보기 1회 써보기'],
     primaryHref: '/saju/new',
     primaryLabel: '내 첫 해석 시작하기',
   },
   premium: {
     welcome: '프리미엄 멤버로 모시게 되어 기쁩니다. 가장 넓은 해석 흐름이 지금부터 열립니다.',
-    giftTitle: '첫 명리 기준서 미리보기',
+    giftTitle: '첫 긴 사주풀이 미리보기',
     giftBody: '궁합, 가족 사주, 대화까지 함께 쓰실 수 있는 메인 플랜의 핵심 혜택이 바로 열렸습니다.',
-    nextSteps: ['명리 기준서 미리보기 1건 바로 열기', '가족 사주 한 분 저장하기', '궁합 결과를 프리미엄 버전으로 읽어보기'],
+    nextSteps: ['긴 사주풀이 미리보기 1건 바로 열기', '가족 사주 한 분 저장하기', '궁합 결과를 프리미엄 버전으로 읽어보기'],
     primaryHref: '/saju/new',
-    primaryLabel: '지금 기준서 미리보기 열기',
+    primaryLabel: '지금 긴 풀이 미리보기 열기',
   },
   lifetime: {
     welcome: '한 번의 결제로 완성형 리포트를 오래 간직하실 수 있게 되었습니다.',
-    giftTitle: '평생 소장 기준서',
+    giftTitle: '평생 소장 리포트',
     giftBody: '격국, 용신, 대운, 세운까지 담긴 7개 섹션 완성본과 PDF 저장본이 바로 준비됩니다.',
-    nextSteps: ['내 명식으로 완성형 기준서 열기', 'PDF 저장본 확인하기', '업데이트 반영본 다시 보기'],
+    nextSteps: ['내 명식으로 완성형 풀이 열기', 'PDF 저장본 확인하기', '업데이트 반영본 다시 보기'],
     primaryHref: '/saju/new',
-    primaryLabel: '완성형 기준서 열기',
+    primaryLabel: '완성형 리포트 열기',
   },
 } as const;
 
@@ -1300,7 +1517,7 @@ export const SETTINGS_BLUEPRINT = [
 export const FAMILY_PLAN_LIMITS = [
   '무료·라이트: 본인만 저장',
   '프리미엄: 본인 + 가족 5명',
-  '평생 심층: 본인 + 가족 10명',
+  '보관형 리포트: 본인 + 가족 10명',
 ] as const;
 
 export const STAR_SIGN_BLUEPRINT = {

@@ -48,7 +48,7 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
           href={backHref}
           className="moon-action-muted"
         >
-          기준서로 돌아가기
+          리포트로 돌아가기
         </Link>
       </div>
     </div>

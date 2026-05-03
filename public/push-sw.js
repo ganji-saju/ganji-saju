@@ -1,6 +1,6 @@
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || '달빛선생 알림';
+  const title = data.title || '달빛인생 알림';
   const options = {
     body: data.body || '새로운 흐름이 도착했습니다.',
     icon: data.icon || '/globe.svg',

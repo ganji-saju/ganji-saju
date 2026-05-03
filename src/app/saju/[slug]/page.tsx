@@ -23,7 +23,7 @@ import { GroundingDecisionTrace } from '@/components/saju/grounding-decision-tra
 import { SajuFactEvidencePanel } from '@/components/saju/saju-fact-evidence-panel';
 import { Badge } from '@/components/ui/badge';
 import DetailUnlock from '@/components/detail-unlock';
-import { TRUST_SIGNALS } from '@/content/moonlight';
+import { DALBIT_TEACHERS, TASTE_PRODUCTS, TRUST_SIGNALS } from '@/content/moonlight';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -178,41 +178,60 @@ const SCORE_CARD_VISUALS: Record<
   }
 > = {
   overall: {
-    panel: 'border-amber-300/34 bg-[linear-gradient(145deg,rgba(245,158,11,0.2),rgba(18,20,33,0.94))]',
-    caption: 'text-amber-200',
-    score: 'text-amber-50',
-    bar: 'bg-amber-300',
-    glow: 'bg-amber-300/18',
+    panel: 'border-pink-200 bg-[linear-gradient(145deg,#ffffff,#fff0f7)]',
+    caption: 'text-[var(--app-pink-strong)]',
+    score: 'text-[var(--app-ink)]',
+    bar: 'bg-[var(--app-pink)]',
+    glow: 'bg-pink-200/55',
   },
   love: {
-    panel: 'border-rose-300/30 bg-[linear-gradient(145deg,rgba(244,63,94,0.16),rgba(18,20,33,0.94))]',
-    caption: 'text-rose-200',
-    score: 'text-rose-50',
-    bar: 'bg-rose-300',
-    glow: 'bg-rose-300/16',
+    panel: 'border-rose-200 bg-[linear-gradient(145deg,#ffffff,#fff1f2)]',
+    caption: 'text-rose-600',
+    score: 'text-[var(--app-ink)]',
+    bar: 'bg-rose-400',
+    glow: 'bg-rose-200/55',
   },
   wealth: {
-    panel: 'border-emerald-300/30 bg-[linear-gradient(145deg,rgba(16,185,129,0.17),rgba(18,20,33,0.94))]',
-    caption: 'text-emerald-200',
-    score: 'text-emerald-50',
-    bar: 'bg-emerald-300',
-    glow: 'bg-emerald-300/15',
+    panel: 'border-emerald-200 bg-[linear-gradient(145deg,#ffffff,#ecfdf5)]',
+    caption: 'text-emerald-700',
+    score: 'text-[var(--app-ink)]',
+    bar: 'bg-emerald-400',
+    glow: 'bg-emerald-200/55',
   },
   career: {
-    panel: 'border-sky-300/30 bg-[linear-gradient(145deg,rgba(14,165,233,0.16),rgba(18,20,33,0.94))]',
-    caption: 'text-sky-200',
-    score: 'text-sky-50',
-    bar: 'bg-sky-300',
-    glow: 'bg-sky-300/15',
+    panel: 'border-sky-200 bg-[linear-gradient(145deg,#ffffff,#eff6ff)]',
+    caption: 'text-sky-700',
+    score: 'text-[var(--app-ink)]',
+    bar: 'bg-sky-400',
+    glow: 'bg-sky-200/55',
   },
   relationship: {
-    panel: 'border-fuchsia-300/26 bg-[linear-gradient(145deg,rgba(217,70,239,0.13),rgba(18,20,33,0.94))]',
-    caption: 'text-fuchsia-200',
-    score: 'text-fuchsia-50',
-    bar: 'bg-fuchsia-300',
-    glow: 'bg-fuchsia-300/14',
+    panel: 'border-fuchsia-200 bg-[linear-gradient(145deg,#ffffff,#fdf4ff)]',
+    caption: 'text-fuchsia-700',
+    score: 'text-[var(--app-ink)]',
+    bar: 'bg-fuchsia-400',
+    glow: 'bg-fuchsia-200/55',
   },
 };
+
+const TEACHER_BY_SLUG = new Map(DALBIT_TEACHERS.map((teacher) => [teacher.slug, teacher]));
+const RESULT_TEACHER = TEACHER_BY_SLUG.get('saju-yong') ?? DALBIT_TEACHERS[0];
+
+function buildResultTasteProductHref(productSlug: string, slug: string) {
+  const encodedSlug = encodeURIComponent(slug);
+
+  switch (productSlug) {
+    case 'today-detail':
+      return '/today-fortune?concern=general&product=today-detail&from=saju-result';
+    case 'love-question':
+      return '/membership/checkout?product=love-question&from=saju-result';
+    case 'money-pattern':
+    case 'work-flow':
+      return `/membership/checkout?product=${productSlug}&slug=${encodedSlug}&from=saju-result`;
+    default:
+      return '/pricing';
+  }
+}
 
 function formatCurrentLuckBody(currentLuck: SajuCurrentLuck | null, report?: SajuReport) {
   if (!currentLuck) {
@@ -432,7 +451,7 @@ async function getPremiumReportAccessLabel(slug: string, readingKey: string) {
 
   if (entitlement) return '평생 소장 권한';
   if (canUseSubscriptionForPremiumReport(subscription)) {
-    return subscription?.plan === 'premium_monthly' ? 'Premium 이용권' : '라이트 이용권';
+    return subscription?.plan === 'premium_monthly' ? '프리미엄 이용권' : '라이트 이용권';
   }
 
   return null;
@@ -479,6 +498,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const cautionPatterns = buildCautionPatterns(report);
   const favorableChoices = buildFavorableChoices(report);
   const isTimeUnknown = input.unknownTime === true || input.hour === undefined;
+  const resultTasteProducts = TASTE_PRODUCTS.map((product) => ({
+    ...product,
+    href: buildResultTasteProductHref(product.slug, slug),
+    teacher: TEACHER_BY_SLUG.get(product.teacherSlug),
+  }));
 
   return (
     <AppShell header={<SiteHeader />}>
@@ -488,15 +512,79 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <div className="space-y-5 sm:space-y-6">
         <SajuScreenNav slug={slug} current="result" />
 
+        <section className="dalbit-result-first-card">
+          <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr] lg:items-start">
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="dalbit-teacher-chip">
+                  <span>{RESULT_TEACHER.zodiac}</span>
+                  {RESULT_TEACHER.teacherName}
+                </span>
+                <span className="dalbit-mini-badge">{report.focusBadge}</span>
+                <span className="dalbit-mini-badge">내 풀이 결과</span>
+              </div>
+
+              <div>
+                <h1 className="dalbit-result-title">{report.headline}</h1>
+                <p className="dalbit-result-lead">{report.dayMasterSummary}</p>
+                <p className="mt-3 text-xs leading-5 text-[var(--app-copy-muted)]">
+                  {formatBirthSummary(input)}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="dalbit-result-action-card">
+                  <div className="app-caption text-[var(--app-jade)]">오늘 해볼 것</div>
+                  <h2>{report.primaryAction.title}</h2>
+                  <p>{report.primaryAction.description}</p>
+                </div>
+                <div className="dalbit-result-action-card dalbit-result-action-card-caution">
+                  <div className="app-caption text-[var(--app-coral)]">오늘 조심할 것</div>
+                  <h2>{report.cautionAction.title}</h2>
+                  <p>{report.cautionAction.description}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="dalbit-section-heading mb-0">
+                <h2 className="text-2xl">더 궁금한 부분만 이어보세요</h2>
+                <p>
+                  전체를 길게 읽기 전, 지금 마음에 걸리는 질문만 550원/990원 소액 풀이로 연결합니다.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {resultTasteProducts.map((product) => (
+                  <Link key={product.slug} href={product.href} className="dalbit-price-card">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-black text-[var(--app-pink-strong)]">
+                        {product.price}
+                      </span>
+                      {product.teacher ? (
+                        <span className="dalbit-product-teacher">
+                          <span>{product.teacher.zodiac}</span>
+                          {product.teacher.teacherName}
+                        </span>
+                      ) : null}
+                    </div>
+                    <h3>{product.title}</h3>
+                    <p>{product.result}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <SectionSurface surface="lunar" size="lg" className="moon-result-hero">
           <div className="grid gap-8 lg:grid-cols-[1.18fr_0.82fr] lg:items-start">
             <div className="self-start">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-                  {report.focusBadge}
+                  {RESULT_TEACHER.teacherName}
                 </Badge>
                 <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                  개인 결과 페이지 · 검색 제외
+                  계산 기준 요약
                 </Badge>
               </div>
               <p className="app-caption mt-5">{formatBirthSummary(input)}</p>
@@ -610,7 +698,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   eyebrow="다음 단계"
                   title="핵심을 확인하셨다면, 필요한 깊이만 바로 이어보실 수 있습니다"
                   titleClassName="text-3xl"
-                  description="심층 리포트는 더 긴 기준서로, 대화는 지금 막 확인한 결과를 이어 묻는 흐름으로 연결됩니다. PDF 저장은 명리 기준서 소장권에서 바로 이어집니다."
+                  description="긴 사주풀이는 더 오래 볼 내용으로, 대화는 지금 막 확인한 결과를 이어 묻는 흐름으로 연결됩니다. PDF 저장은 보관형 리포트에서 바로 이어집니다."
                 />
                 <ActionCluster className="mt-6">
                   <TrackedLink
@@ -619,7 +707,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     eventParams={{ slug, from: 'result_next_actions' }}
                     className="moon-cta-primary"
                   >
-                    심층 리포트로 이어보기
+                    긴 사주풀이 보기
                   </TrackedLink>
                   <TrackedLink
                     href={`/saju/${slug}/premium/print`}
@@ -635,7 +723,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     eventParams={{ slug, from: 'result_next_actions' }}
                     className="moon-action-secondary"
                   >
-                    달빛선생에게 이어서 묻기
+                    달빛인생에 이어서 묻기
                   </TrackedLink>
                 </ActionCluster>
               </div>
@@ -643,8 +731,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               <ProductGrid columns={2}>
                 <FeatureCard
                   surface="soft"
-                  eyebrow="심층 리포트"
-                  title="기준서를 더 길게"
+                  eyebrow="긴 사주풀이"
+                  title="더 오래 볼 내용"
                   titleClassName="text-2xl"
                   description="원국, 격국, 용신, 대운과 주제별 해석을 한 권의 구조로 더 길게 확인합니다."
                 />
@@ -653,7 +741,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   eyebrow="PDF 소장"
                   title="다시 읽을 기준 남기기"
                   titleClassName="text-2xl"
-                  description="명리 기준서 소장권을 열면 표지, 요약, 판단 단서, 본문을 인쇄용 화면에서 PDF로 저장할 수 있습니다."
+                  description="보관형 사주 리포트를 열면 표지, 요약, 판단 단서, 본문을 인쇄용 화면에서 PDF로 저장할 수 있습니다."
                 />
                 <FeatureCard
                   surface="soft"
@@ -717,7 +805,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   aria-current={isFocusedScore ? 'page' : undefined}
                   data-selected={isFocusedScore ? 'true' : 'false'}
                   className={cn(
-                    'moon-topic-score-card group relative overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_48px_rgba(0,0,0,0.22)]',
+                    'moon-topic-score-card group relative overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_48px_rgba(216,27,114,0.08)]',
                     visual.panel,
                     isFocusedScore ? 'ring-1 ring-[var(--app-gold)]/45' : ''
                   )}
@@ -731,7 +819,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       <span className={cn('text-4xl font-semibold', visual.score)}>{score.score}</span>
                       <span className="pb-1 text-sm text-[var(--app-copy-soft)]">/ 100</span>
                     </div>
-                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/10">
                       <div className={cn('h-full rounded-full', visual.bar)} style={{ width: `${score.score}%` }} />
                     </div>
                     <p className="mt-4 text-sm leading-7 text-[var(--app-copy)]">{score.summary}</p>
@@ -741,7 +829,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                           'rounded-full border px-2.5 py-1 transition-colors',
                           isFocusedScore
                             ? 'border-[var(--app-gold)]/35 bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
-                            : 'border-white/10 bg-white/5 text-[var(--app-copy-soft)] group-hover:border-white/20 group-hover:text-[var(--app-ivory)]'
+                            : 'border-[var(--app-line)] bg-white/70 text-[var(--app-copy-soft)] group-hover:border-[var(--app-pink-line)] group-hover:text-[var(--app-ink)]'
                         )}
                       >
                         {isFocusedScore ? '현재 해석' : '눌러서 보기'}
@@ -751,7 +839,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                           'text-sm transition-all duration-200',
                           isFocusedScore
                             ? 'translate-x-0 text-[var(--app-gold-text)]'
-                            : 'text-[var(--app-copy-soft)] group-hover:translate-x-1 group-hover:text-[var(--app-ivory)]'
+                            : 'text-[var(--app-copy-soft)] group-hover:translate-x-1 group-hover:text-[var(--app-ink)]'
                         )}
                       >
                         →
@@ -793,7 +881,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
                 총론, 상반기·하반기, 일·재물·연애·관계·건강·이동 흐름, 12개월 요약까지 한 번에 정리한
-                올해 전략서를 명리 기준서 안에서 확인할 수 있습니다.
+                올해 전략서를 보관형 사주 리포트 안에서 확인할 수 있습니다.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -804,7 +892,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 2026 올해 전략서 보기
               </Link>
               <span className="text-xs text-[var(--app-copy-soft)]">
-                명리 기준서 안의 올해 전략서로 이어집니다
+                보관형 사주 리포트 안의 올해 전략서로 이어집니다
               </span>
             </div>
           </div>

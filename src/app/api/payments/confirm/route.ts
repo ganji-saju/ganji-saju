@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { isSubscriptionPackage, isTasteProductPackage } from '@/lib/payments/catalog';
+import { isSubscriptionPackage, isTasteProductPackage, type TasteProductId } from '@/lib/payments/catalog';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
 import { addCredits, getCredits } from '@/lib/credits/deduct';
@@ -27,11 +27,11 @@ function parseYearMonthScope(scope: string | null) {
 }
 
 async function resolveTasteProductScope(
-  productId: 'today-detail' | 'monthly-calendar' | 'love-question' | 'year-core',
+  productId: TasteProductId,
   slug: string | null,
   scope: string | null
 ) {
-  if (productId === 'love-question') return null;
+  if (productId === 'love-question' || productId === 'money-pattern' || productId === 'work-flow') return null;
   if (!slug) return null;
   if (productId === 'today-detail') return buildTodayDetailScopeKey(slug);
 

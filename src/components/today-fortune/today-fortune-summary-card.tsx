@@ -6,18 +6,17 @@ export function TodayFortuneSummaryCard({
   result: TodayFortuneFreeResult;
 }) {
   return (
-    <section className="moon-lunar-panel p-6 sm:p-7">
-      <div className="app-starfield" />
-      <div className="relative z-10">
+    <section className="dalbit-section p-6 sm:p-7">
+      <div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 px-3 py-1 text-xs text-[var(--app-gold-text)]">
+          <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
             {result.oneLine.eyebrow}
           </span>
-          <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
+          <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-xs font-bold text-[var(--app-copy-muted)]">
             무료 결과
           </span>
         </div>
-        <h2 className="mt-4 font-[var(--font-heading)] text-3xl leading-tight text-[var(--app-ivory)] sm:text-4xl">
+        <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight text-[var(--app-ink)] sm:text-4xl">
           {result.oneLine.headline}
         </h2>
         <p className="mt-4 max-w-3xl text-sm leading-8 text-[var(--app-copy)]">

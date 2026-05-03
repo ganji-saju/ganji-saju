@@ -1,5 +1,9 @@
 export const MOONLIGHT_ANALYTICS_EVENTS = [
   'home_view',
+  'home_free_today_click',
+  'home_free_tarot_click',
+  'home_service_menu_click',
+  'home_taste_product_click',
   'premium_home_hero_primary_click',
   'premium_home_sample_click',
   'sample_report_start_click',

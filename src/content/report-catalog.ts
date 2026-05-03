@@ -11,7 +11,7 @@ export interface ProductReportCardData {
 export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
   {
     slug: 'life-standard',
-    title: '나의 명리 기준서',
+    title: '보관형 사주 리포트',
     summary: '원국·격국·용신·대운 종합',
     recommendation: '내 사주의 바탕과 평생 흐름을 한 번에 정리하고 싶은 분',
     whatToCheck: '원국 구조, 격국 후보, 용신 판단, 대운 흐름',
@@ -37,7 +37,7 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
   },
   {
     slug: 'relationship-standard',
-    title: '궁합 기준서',
+    title: '궁합 보관 리포트',
     summary: '두 사람의 구조, 갈등, 보완점',
     recommendation: '연인·배우자·동업 관계의 결을 더 입체적으로 알고 싶은 분',
     whatToCheck: '기본 결, 충돌 지점, 보완 방식, 오래 가는 대화법',
@@ -46,7 +46,7 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
   },
   {
     slug: 'family-report',
-    title: '가족 명리 리포트',
+    title: '가족 사주 리포트',
     summary: '부모·자녀·배우자 관계 구조',
     recommendation: '가족 안에서 반복되는 역할과 거리감을 정리하고 싶은 분',
     whatToCheck: '가족 관계 구조, 기대 역할, 부딪히는 패턴, 조율 포인트',

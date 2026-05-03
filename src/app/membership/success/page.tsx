@@ -23,7 +23,7 @@ type ConfirmStatus = 'loading' | 'success' | 'error';
 
 const SUCCESS_FLOW_POINTS = [
   'Toss 승인 뒤 서버에서 이용권을 다시 확인하고, 바로 열 수 있는 화면으로 연결합니다.',
-  '기준서 상품이면 연결된 결과 화면으로, 멤버십이면 완료 안내 화면으로 부드럽게 이어집니다.',
+  '보관형 리포트 상품이면 연결된 결과 화면으로, 멤버십이면 완료 안내 화면으로 부드럽게 이어집니다.',
   '결제 확인이 오래 걸리지 않도록 이 단계는 짧고 분명하게 유지합니다.',
 ] as const;
 
@@ -170,10 +170,10 @@ function SuccessState({
             결제 완료
           </Badge>,
         ]}
-        title={isPremiumResult ? '기준서로 이어질 준비를 마쳤습니다' : '이용권이 반영되었습니다'}
+        title={isPremiumResult ? '결과 화면으로 이어질 준비를 마쳤습니다' : '이용권이 반영되었습니다'}
         description={
           isPremiumResult
-            ? '결제 확인이 끝났습니다. 연결된 명리 기준서 화면으로 바로 이동하거나, 완료 안내에서 다음 흐름을 이어가실 수 있습니다.'
+            ? '결제 확인이 끝났습니다. 연결된 결과 화면으로 바로 이동하거나, 완료 안내에서 다음 흐름을 이어가실 수 있습니다.'
             : '결제 확인이 끝났습니다. 다음 화면에서 바로 열어보실 항목을 선택하실 수 있습니다.'
         }
       />
@@ -185,7 +185,7 @@ function SuccessState({
             eyebrow="반영 완료"
             title="결제 뒤 흐름을 바로 이어갑니다"
             titleClassName="text-3xl text-[var(--app-gold-text)]"
-            description="확인 단계가 끝났으니, 이제 같은 기준 위에서 기준서나 멤버십 흐름으로 자연스럽게 이어집니다."
+            description="확인 단계가 끝났으니, 이제 같은 흐름 위에서 리포트나 멤버십 화면으로 자연스럽게 이어집니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />
           <FeatureCard
@@ -194,7 +194,7 @@ function SuccessState({
             eyebrow="지금 상태"
             description={
               isPremiumResult
-                ? '연결된 결과 화면으로 바로 이동할 수 있습니다. 기준서와 대화, 보관함 흐름도 같은 기준 위에서 이어집니다.'
+                ? '연결된 결과 화면으로 바로 이동할 수 있습니다. 리포트와 대화, 보관함 흐름도 같은 화면에서 이어집니다.'
                 : '완료 안내 화면에서 오늘 바로 열어보실 항목을 고르실 수 있습니다.'
             }
           />
