@@ -9,9 +9,11 @@ import {
   BookOpenText,
   CreditCard,
   Grid2x2,
+  Heart,
   LogOut,
   MessageCircleMore,
   MoonStar,
+  Plus,
   Settings2,
   Sparkles,
   UserRound,
@@ -50,9 +52,10 @@ let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
   홈: { glyph: '月', accent: 'var(--app-pink)', description: '오늘의 시작' },
-  운세: { glyph: '今', accent: 'var(--app-pink-strong)', description: '무료 오늘운' },
-  대화: { glyph: '問', accent: 'var(--app-pink)', description: '질문과 상담' },
-  마이: { glyph: '我', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
+  사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '정보 입력' },
+  무료운세: { glyph: '猫', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
+  대화방: { glyph: '問', accent: 'var(--app-pink)', description: '질문과 상담' },
+  보관함: { glyph: '箱', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
   오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
   사주: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
   명리: { glyph: '寅', accent: 'var(--app-pink-soft-strong)', description: '명리호선생' },
@@ -71,9 +74,10 @@ const MOBILE_SHORTCUT_GROUPS = [
 ] as const;
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
-  운세: '운세',
-  대화: '상담',
-  마이: '마이',
+  사주추가: '사주추가',
+  무료운세: '무료운세',
+  대화방: '대화방',
+  보관함: '보관함',
 };
 
 function matchesPath(item: NavItem, pathname: string) {
@@ -116,11 +120,13 @@ function DockIcon({ label }: { label: string }) {
   switch (label) {
     case '홈':
       return <MoonStar className="h-4 w-4" />;
-    case '운세':
-      return <Sparkles className="h-4 w-4" />;
-    case '대화':
+    case '사주추가':
+      return <Plus className="h-4 w-4" />;
+    case '무료운세':
+      return <Heart className="h-5 w-5" />;
+    case '대화방':
       return <MessageCircleMore className="h-4 w-4" />;
-    case '마이':
+    case '보관함':
       return <UserRound className="h-4 w-4" />;
     default:
       return <BookOpenText className="h-4 w-4" />;
@@ -445,46 +451,27 @@ function MobileChrome({
 
   return (
     <>
-      <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-[rgba(8,10,18,0.9)] backdrop-blur lg:hidden">
-        <div className="app-top-header-inner app-top-header-main px-4 py-4">
+      <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95 backdrop-blur">
+        <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
             <Link href="/" className="app-top-brand min-w-0">
-              <div className="app-top-brand-kicker truncate font-[var(--font-heading)] text-[10px] tracking-[0.42em] text-[var(--app-gold)]/72">
-                DALBIT LIFE
-              </div>
-              <div className="app-top-brand-title truncate text-xl font-semibold tracking-tight text-[var(--app-ivory)]">
-                달빛인생
-              </div>
-              <div className="app-top-brand-context mt-2 flex flex-wrap items-center gap-1.5">
-                {activePrimaryItem ? (
-                  <span className="app-top-context-chip">
-                    <span
-                      className="font-[var(--font-heading)]"
-                      style={{ color: activePrimaryMeta?.accent ?? 'var(--app-gold)' }}
-                    >
-                      {activePrimaryMeta?.glyph}
-                    </span>
-                    <span>{activePrimaryItem.label}</span>
-                  </span>
-                ) : null}
-                {activeShortcutItem && activeShortcutItem.label !== activePrimaryItem?.label ? (
-                  <span className="app-top-context-chip app-top-context-chip-muted">
-                    <span
-                      className="font-[var(--font-heading)]"
-                      style={{ color: activeShortcutMeta?.accent ?? 'var(--app-copy-muted)' }}
-                    >
-                      {activeShortcutMeta?.glyph}
-                    </span>
-                    <span>{activeShortcutItem.label}</span>
-                  </span>
-                ) : null}
-              </div>
-              <div className="app-top-context-note mt-1 truncate">
-                {contextDescription}
+              <div className="app-brand-lockup">
+                <div className="app-brand-mini-logo">
+                  <span>990</span>
+                  <strong>사주</strong>
+                </div>
+                <div className="min-w-0">
+                  <div className="app-top-brand-title truncate">
+                    달빛인생
+                  </div>
+                  <div className="app-top-context-note truncate">
+                    {contextDescription}
+                  </div>
+                </div>
               </div>
             </Link>
 
-            <nav className="app-top-primary-nav hidden min-w-0 items-center gap-1 lg:flex" aria-label="주요 메뉴">
+            <nav className="app-top-primary-nav hidden min-w-0 items-center gap-1 md:flex" aria-label="주요 메뉴">
               {PRIMARY_NAV_ITEMS.map((item) => {
                 const active = matchesPath(item, pathname);
                 const meta = getNavMeta(item);
@@ -495,7 +482,7 @@ function MobileChrome({
                     href={item.href}
                     data-active={active}
                     scroll={false}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--app-ivory)]"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-extrabold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
                   >
                     <span className="font-[var(--font-heading)]" style={{ color: meta.accent }}>
                       {meta.glyph}
@@ -507,26 +494,23 @@ function MobileChrome({
             </nav>
 
             <div className="app-top-actions flex items-center gap-2">
-              <div className="hidden sm:block">
+              <div className="hidden xl:block">
                 <LayoutModeControl compact />
               </div>
-              <Link href="/membership" className="app-top-action-link hidden lg:inline-flex">
-                멤버십
-              </Link>
               <Link
                 href="/credits"
-                className="app-top-credit-chip inline-flex"
+                className="app-top-credit-chip hidden md:inline-flex"
                 aria-label={`보유 코인 ${creditLabel(user, credits)}`}
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 {creditLabel(user, credits)}
               </Link>
               {user ? (
-                <Link href="/my" className="app-top-action-link hidden lg:inline-flex">
+                <Link href="/my" className="app-top-login inline-flex">
                   보관
                 </Link>
               ) : (
-                <Link href={authHref} className="app-top-login hidden lg:inline-flex">
+                <Link href={authHref} className="app-top-login inline-flex">
                   로그인
                 </Link>
               )}
@@ -535,7 +519,7 @@ function MobileChrome({
                 onClick={() => setMobileMenuOpen((current) => !current)}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-global-menu"
-                className="app-mobile-menu-trigger inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 text-[var(--app-ivory)] transition-colors hover:bg-[var(--app-surface-strong)] lg:hidden"
+                className="app-mobile-menu-trigger inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 text-[var(--app-ivory)] transition-colors hover:bg-[var(--app-surface-strong)] md:hidden"
                 aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
               >
                 {mobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Grid2x2 className="h-4.5 w-4.5" />}
@@ -635,7 +619,7 @@ function MobileChrome({
           ) : null}
         </div>
 
-        <div className="app-top-header-shortcuts hidden border-t border-[var(--app-line)] bg-[var(--app-surface-muted)] lg:block">
+        <div className="app-top-header-shortcuts hidden border-t border-[var(--app-line)] bg-[var(--app-surface-muted)]">
           <div className="app-top-category-inner mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-8 py-3">
             {HEADER_SECONDARY_NAV_ITEMS.map((item) => {
               const active = matchesPath(item, pathname);
@@ -660,16 +644,18 @@ function MobileChrome({
         </div>
       </header>
 
-      <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-4 py-3 lg:hidden" aria-label="주 메뉴">
-        <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-4">
+      <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden" aria-label="주 메뉴">
+        <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
           {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
             const active = matchesPath(item, pathname);
+            const isCenter = item.label === '무료운세';
 
             return (
               <Link
                 key={item.label}
                 href={item.href}
                 data-active={active}
+                data-center={isCenter ? 'true' : undefined}
                 aria-current={active ? 'page' : undefined}
                 className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
               >
@@ -838,13 +824,6 @@ export default function SiteHeader() {
 
   return (
     <>
-      <DesktopSidebar
-        pathname={pathname}
-        user={user}
-        credits={credits}
-        authHref={authHref}
-        onSignOut={signOut}
-      />
       <MobileChrome
         pathname={pathname}
         user={user}

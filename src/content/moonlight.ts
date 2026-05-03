@@ -139,25 +139,28 @@ export interface DalbitTeacherCard {
 export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
   { label: '홈', href: '/' },
   {
-    label: '운세',
+    label: '사주추가',
+    href: '/saju/new',
+    matchPrefixes: ['/saju'],
+  },
+  {
+    label: '무료운세',
     href: '/today-fortune',
     matchPrefixes: [
       '/today-fortune',
-      '/interpretation',
-      '/saju',
-      '/myeongri',
-      '/compatibility',
-      '/star-sign',
-      '/zodiac',
       '/tarot',
+      '/zodiac',
+      '/star-sign',
+      '/interpretation',
+      '/myeongri',
       '/guide',
       '/method',
       '/about-engine',
       '/sample-report',
     ],
   },
-  { label: '대화', href: '/dialogue', matchPrefixes: ['/dialogue'] },
-  { label: '마이', href: '/my', matchPrefixes: ['/my', '/membership', '/credits'] },
+  { label: '대화방', href: '/dialogue', matchPrefixes: ['/dialogue', '/compatibility'] },
+  { label: '보관함', href: '/my', matchPrefixes: ['/my', '/membership', '/credits'] },
 ] as const;
 
 export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
