@@ -494,9 +494,6 @@ function MobileChrome({
             </nav>
 
             <div className="app-top-actions flex items-center gap-2">
-              <div className="hidden xl:block">
-                <LayoutModeControl compact />
-              </div>
               <Link
                 href="/credits"
                 className="app-top-credit-chip hidden md:inline-flex"

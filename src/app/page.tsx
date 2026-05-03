@@ -20,7 +20,7 @@ const SERVICE_CARDS = [
   {
     title: '990원 사주',
     subtitle: '용하다고 소문난 사주 해설',
-    price: '1주문',
+    price: '990원',
     href: '/saju/new',
     category: '사주',
     visual: '사주',
@@ -30,7 +30,7 @@ const SERVICE_CARDS = [
   {
     title: '궁합 해설',
     subtitle: '우리 사이는 몇 점? 궁합도 잘봐요',
-    price: '1주문',
+    price: '990원',
     href: '/compatibility/input',
     category: '궁합',
     visual: '궁합',
