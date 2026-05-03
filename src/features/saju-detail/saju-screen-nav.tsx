@@ -6,7 +6,7 @@ const SAJU_SCREEN_ITEMS = [
   { key: 'overview', label: '사주', getHref: (slug: string) => `/saju/${slug}/overview` },
   { key: 'nature', label: '성정', getHref: (slug: string) => `/saju/${slug}/nature` },
   { key: 'elements', label: '오행', getHref: (slug: string) => `/saju/${slug}/elements` },
-  { key: 'premium', label: '명리 기준서', getHref: (slug: string) => `/saju/${slug}/premium` },
+  { key: 'premium', label: '깊은 사주풀이', getHref: (slug: string) => `/saju/${slug}/premium` },
 ] as const;
 
 interface SajuScreenNavProps {

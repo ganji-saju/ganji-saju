@@ -20,7 +20,7 @@ import {
 
 export const metadata: Metadata = {
   title: '이용 안내',
-  description: '달빛선생의 사주, 명리, 궁합, 타로, 리포트 보관과 상담 연결을 한곳에 모았습니다.',
+  description: '달빛인생의 사주, 명리, 궁합, 타로, 리포트 보관과 상담 연결을 한곳에 모았습니다.',
   alternates: { canonical: '/guide' },
 };
 
@@ -55,7 +55,7 @@ const GUIDE_LINKS = [
   },
   {
     title: '대화로 이어가기',
-    body: '리포트를 읽은 뒤 남는 질문은 달빛선생에게 이어서 물어볼 수 있습니다.',
+    body: '리포트를 읽은 뒤 남는 질문은 달빛인생에게 이어서 물어볼 수 있습니다.',
     href: '/dialogue',
     cta: '대화 시작',
     icon: <MessageCircleMore className="h-5 w-5" />,
@@ -83,7 +83,7 @@ const HOME_MOVED_GUIDES = [
   },
   {
     title: '리포트 상품과 보관',
-    body: '명리 기준서, 연간 전략서, PDF, MY 보관함처럼 소장형 흐름은 멤버십에서 비교합니다.',
+    body: '깊은 사주풀이, 연간 전략서, PDF, MY 보관함처럼 소장형 흐름은 멤버십에서 비교합니다.',
     href: '/membership',
     cta: '상품 보기',
   },
@@ -131,11 +131,11 @@ export default function GuidePage() {
               eyebrow="처음 오셨다면"
               title="궁금한 깊이에 맞춰 바로 시작하시면 됩니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="오래 남길 기준서는 사주에서, 관계는 궁합에서, 가벼운 하루 흐름은 무료 운세에서 시작하면 가장 덜 헷갈립니다."
+              description="오래 남길 풀이는 사주에서, 관계는 궁합에서, 가벼운 하루 흐름은 무료 운세에서 시작하면 가장 덜 헷갈립니다."
               actions={
                 <ActionCluster>
                   <Link href="/saju/new" className="moon-cta-primary">
-                    내 명리 기준서 만들기
+                    내 깊은 사주풀이 만들기
                   </Link>
                   <Link
                     href="/interpretation"
@@ -174,7 +174,7 @@ export default function GuidePage() {
               eyebrow="결과 활용"
               title="궁금한 영역부터 바로 보시면 됩니다"
               titleClassName="text-3xl"
-              description="달빛선생 리포트는 한 줄 요약, 재물·관계·일 같은 분야, 오늘 할 행동을 먼저 보도록 정리합니다."
+              description="달빛인생 리포트는 한 줄 요약, 재물·관계·일 같은 분야, 오늘 할 행동을 먼저 보도록 정리합니다."
             />
             <BulletList items={READING_FLOW} className="mt-6" />
           </SectionSurface>
@@ -185,7 +185,7 @@ export default function GuidePage() {
             eyebrow="홈에서 분리한 정보"
             title="사주풀이 외의 안내는 이곳에서 찾으시면 됩니다"
             titleClassName="text-3xl"
-            description="홈은 명리 기준서 시작에 집중하고, 여러 서비스와 도움말은 안내 페이지에 모았습니다."
+            description="홈은 깊은 사주풀이 시작에 집중하고, 여러 서비스와 도움말은 안내 페이지에 모았습니다."
           />
 
           <ProductGrid columns={3} className="mt-6">
@@ -251,7 +251,7 @@ export default function GuidePage() {
               eyebrow="풀이 깊이"
               title="가벼운 운세와 소장 리포트는 구분해서 봅니다"
               titleClassName="text-3xl"
-              description="무료 탐색은 오늘의 감을 잡는 입구이고, 명리 기준서는 오래 남겨 다시 읽는 리포트입니다."
+              description="무료 탐색은 오늘의 감을 잡는 입구이고, 깊은 사주풀이는 오래 남겨 다시 읽는 리포트입니다."
             />
             <div className="mt-6 grid gap-4">
               {INTERPRETATION_LAYERS.map((layer) => (

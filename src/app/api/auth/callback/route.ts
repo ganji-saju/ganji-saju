@@ -1,19 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+function getSafeNext(value: string | null) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+  return value;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
-
-  console.log('[Auth Callback] code:', !!code, 'next:', next, 'origin:', origin);
+  const next = getSafeNext(searchParams.get('next'));
 
   if (code) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.redirect(
+        `${origin}/login?next=${encodeURIComponent(next)}&error=oauth_config`
+      );
+    }
+
     const response = NextResponse.redirect(`${origin}${next}`);
 
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      supabaseUrl,
+      supabaseAnonKey,
       {
         cookies: {
           getAll() {
@@ -28,11 +40,17 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    console.log('[Auth Callback] session user:', data?.user?.email, 'error:', error?.message);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(
+        `${origin}/login?next=${encodeURIComponent(next)}&error=oauth`
+      );
+    }
+
     return response;
   }
 
-  console.log('[Auth Callback] no code — redirecting to', next);
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(
+    `${origin}/login?next=${encodeURIComponent(next)}&error=oauth`
+  );
 }

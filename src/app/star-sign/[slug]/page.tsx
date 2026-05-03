@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${item.label} 별자리`,
-    description: `${item.label}의 오늘 흐름과 사주 크로스 관점을 함께 보는 달빛선생의 별자리 상세 화면입니다.`,
+    description: `${item.label}의 오늘 흐름과 사주 크로스 관점을 함께 보는 달빛인생의 별자리 상세 화면입니다.`,
     alternates: {
       canonical: `/star-sign/${item.slug}`,
     },
@@ -83,7 +83,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             </Badge>,
           ]}
           title={`${item.label}에게 오늘 별빛이 전하는 말`}
-          description={`${item.summary} 달빛선생은 이 흐름을 “${meta.seniorCopy}”라는 한 문장으로 먼저 받아들인 뒤, 오늘의 감정선과 선택의 온도를 차분히 읽어드립니다.`}
+          description={`${item.summary} 달빛인생은 이 흐름을 “${meta.seniorCopy}”라는 한 문장으로 먼저 받아들인 뒤, 오늘의 감정선과 선택의 온도를 차분히 읽어드립니다.`}
         />
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">

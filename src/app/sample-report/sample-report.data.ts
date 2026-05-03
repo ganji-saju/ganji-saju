@@ -2,7 +2,7 @@ import type { DecisionTraceItem } from "@/lib/saju/report-contract";
 
 export const SAMPLE_REPORT_HERO = {
   eyebrow: "샘플 리포트",
-  title: "달빛선생 리포트 구조를 먼저 확인하세요",
+  title: "달빛인생 리포트 구조를 먼저 확인하세요",
   description:
     "아래 샘플은 가상 인물을 기준으로 구성한 예시입니다. 실제 리포트는 입력하신 출생 정보와 계산 기준에 따라 달라집니다.",
 } as const;
@@ -71,7 +71,7 @@ export const SAMPLE_DECISION_TRACE: DecisionTraceItem[] = [
     title: "격국 후보",
     rule: "월령, 투출, 강약 순서로 격국 후보 검토",
     result:
-      "한 가지 격만 단정하지 않고, 우선 후보와 보조 후보를 함께 검토합니다. 달빛선생은 격국 후보를 먼저 보여드리고, 왜 한 해석을 우선했는지 이어서 설명하는 흐름을 유지합니다.",
+      "한 가지 격만 단정하지 않고, 우선 후보와 보조 후보를 함께 검토합니다. 달빛인생은 격국 후보를 먼저 보여드리고, 왜 한 해석을 우선했는지 이어서 설명하는 흐름을 유지합니다.",
     confidence: "orthodox",
   },
   {

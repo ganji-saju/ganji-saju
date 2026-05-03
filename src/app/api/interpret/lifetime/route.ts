@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   if (!user) {
     return NextResponse.json(
-      { ok: false, error: '명리 기준서는 로그인 후 열람할 수 있습니다.' },
+      { ok: false, error: '깊은 사주풀이는 로그인 후 열람할 수 있습니다.' },
       { status: 401 }
     );
   }

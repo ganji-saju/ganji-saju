@@ -36,7 +36,7 @@ import {
 export const metadata: Metadata = {
   title: "샘플 리포트",
   description:
-    "달빛선생의 프리미엄 명리 리포트가 어떤 깊이와 판단 단서로 이어지는지 결제 전에 먼저 확인해보세요.",
+    "달빛인생의 프리미엄 명리 리포트가 어떤 깊이와 판단 단서로 이어지는지 결제 전에 먼저 확인해보세요.",
   alternates: {
     canonical: "/sample-report",
   },
@@ -70,7 +70,7 @@ export default function SampleReportPage() {
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="샘플 대상"
-              title={`${SAMPLE_SUBJECT.label} ${SAMPLE_SUBJECT.name}의 기준서 예시입니다`}
+              title={`${SAMPLE_SUBJECT.label} ${SAMPLE_SUBJECT.name}의 풀이 예시입니다`}
               titleClassName="text-3xl text-[var(--app-gold-text)]"
               description={
                 <>
@@ -88,7 +88,7 @@ export default function SampleReportPage() {
                     eventParams={{ from: "sample_report_hero" }}
                     className="moon-action-primary"
                   >
-                    내 명리 기준서 만들기
+                    내 깊은 사주풀이 만들기
                   </TrackedLink>
                   <TrackedLink
                     href="/about-engine"
@@ -122,7 +122,7 @@ export default function SampleReportPage() {
           <SupportRail
             eyebrow="이 미리보기에서 먼저 보는 것"
             title="결과의 깊이를 먼저 짧게 훑어보실 수 있습니다"
-            description="달빛선생 리포트는 한 줄 요약에서 끝나지 않고, 판단 단서와 소장 가치까지 함께 남깁니다."
+            description="달빛인생 리포트는 한 줄 요약에서 끝나지 않고, 판단 단서와 소장 가치까지 함께 남깁니다."
           >
             <BulletList items={SAMPLE_PREVIEW_GUIDE} />
             <div className="mt-5 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy-soft)]">
@@ -175,7 +175,7 @@ export default function SampleReportPage() {
             eyebrow="어떤 질문에 답하나요"
             title="사용자는 상품명이 아니라, 자기 문제의 이름으로 들어옵니다"
             titleClassName="text-3xl"
-            description="명리 기준서라는 상위 브랜드는 유지하되, 샘플에서는 연애, 돈, 일, 가족, 올해 흐름처럼 실제 질문을 먼저 보여줍니다."
+            description="깊은 사주풀이라는 상위 브랜드는 유지하되, 샘플에서는 연애, 돈, 일, 가족, 올해 흐름처럼 실제 질문을 먼저 보여줍니다."
             descriptionClassName="text-[var(--app-copy)]"
           />
           <ProductGrid columns={3} className="mt-6">
@@ -219,10 +219,10 @@ export default function SampleReportPage() {
 
         <SectionSurface surface="panel">
           <SectionHeader
-            eyebrow="기준서 구성"
-            title="한 권의 기준서가 어떻게 펼쳐지는지, 14개 대섹션으로 압축해 보여드립니다"
+            eyebrow="풀이 구성"
+            title="한 권의 풀이가 어떻게 펼쳐지는지, 14개 대섹션으로 압축해 보여드립니다"
             titleClassName="text-3xl"
-            description="샘플 기준서는 한 줄 총평에서 시작해 원국, 운의 흐름, 실행 전략, 판단 단서까지 한 번의 해석으로 이어지도록 설계했습니다."
+            description="샘플 풀이는 한 줄 총평에서 시작해 원국, 운의 흐름, 실행 전략, 판단 단서까지 한 번의 해석으로 이어지도록 설계했습니다."
             descriptionClassName="text-[var(--app-copy)]"
           />
 
@@ -257,7 +257,7 @@ export default function SampleReportPage() {
               eyebrow="판단 단서 미리보기"
               title="왜 이렇게 보았는지, 필요한 때만 펼쳐볼 수 있습니다"
               titleClassName="text-3xl"
-              description="달빛선생은 중심 결론을 먼저 보여주고, 더 알고 싶을 때만 판단 단서를 따로 펼쳐볼 수 있게 남깁니다."
+              description="달빛인생은 중심 결론을 먼저 보여주고, 더 알고 싶을 때만 판단 단서를 따로 펼쳐볼 수 있게 남깁니다."
               descriptionClassName="text-[var(--app-copy)]"
             />
             <div className="mt-6">
@@ -295,10 +295,10 @@ export default function SampleReportPage() {
 
         <SectionSurface surface="panel">
           <SectionHeader
-            eyebrow="맛보기에서 기준서까지"
+            eyebrow="맛보기에서 풀이까지"
             title="처음부터 큰 리포트가 부담스러우면 작은 풀이로 먼저 확인합니다"
             titleClassName="text-3xl"
-            description="오늘운 상세, 월간 달력, 연애 질문, 올해 핵심 3줄은 기준서 전 단계의 부담 없는 체험 상품으로 배치합니다."
+            description="오늘운 상세, 월간 달력, 연애 질문, 올해 핵심 3줄은 풀이 전 단계의 부담 없는 체험 상품으로 배치합니다."
             descriptionClassName="text-[var(--app-copy)]"
           />
           <ProductGrid columns={4} className="mt-6">
@@ -317,7 +317,7 @@ export default function SampleReportPage() {
 
         <SectionSurface surface="panel">
           <SectionHeader
-            eyebrow="달빛선생의 신뢰 장치"
+            eyebrow="달빛인생의 신뢰 장치"
             title="보관, 판단 단서, 안전한 표현을 결과물 안에 남깁니다"
             titleClassName="text-3xl"
             description="공포성 단정이나 과장된 적중률 대신, 사용자가 다시 확인할 수 있는 기준을 리포트 안에 남기는 방식입니다."
@@ -339,7 +339,7 @@ export default function SampleReportPage() {
         <SectionSurface surface="hero">
           <SectionHeader
             eyebrow="다음 단계"
-            title="샘플 구조가 마음에 드셨다면, 이제 선생님의 기준서를 직접 만들어보셔도 좋습니다"
+            title="샘플 구조가 마음에 드셨다면, 이제 선생님의 풀이를 직접 만들어보셔도 좋습니다"
             titleClassName="text-3xl"
             description="실제 결과는 입력하신 출생 정보, 시간 기준, 판단 단서에 따라 개별적으로 계산됩니다. 어떤 질문을 먼저 풀고 싶은지에 따라 전문 선생과 리포트의 방향도 함께 고르실 수 있습니다."
             descriptionClassName="text-[var(--app-copy)]"
@@ -349,7 +349,7 @@ export default function SampleReportPage() {
                   href="/saju/new"
                   className="moon-action-primary"
                 >
-                  내 명리 기준서 만들기
+                  내 깊은 사주풀이 만들기
                 </Link>
                 <Link
                   href="/membership"

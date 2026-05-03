@@ -21,7 +21,7 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 const ZODIAC_POINTS = [
   '띠운세는 익숙한 언어로 올해의 큰 방향과 오늘의 포인트를 먼저 읽는 데 잘 맞습니다.',
   '큰 결정보다 생활 리듬, 관계, 소비의 우선순위를 고를 때 더 부드럽게 참고하실 수 있습니다.',
-  '더 깊은 개인 기준은 사주 결과와 기준서 흐름으로 이어집니다.',
+  '더 깊은 개인 기준은 사주 결과와 풀이 흐름으로 이어집니다.',
 ] as const;
 
 export const metadata: Metadata = {

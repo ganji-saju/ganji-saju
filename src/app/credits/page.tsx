@@ -62,6 +62,7 @@ function CreditsPageContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(DEFAULT_TOSS_PAYMENT_METHOD);
   const entrySource = searchParams.get('from') ?? 'credits';
   const hasPaymentError = searchParams.get('error') === 'fail';
@@ -80,9 +81,16 @@ function CreditsPageContent() {
       location.href = `/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`;
       return;
     }
+
+    if (!process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY) {
+      setErrorMessage('Toss 결제 키가 아직 설정되지 않았습니다. 운영 설정을 확인한 뒤 다시 시도해 주세요.');
+      return;
+    }
+
     setLoading(pkg.id);
+    setErrorMessage('');
     try {
-      const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!);
+      const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
       const orderId = `order_${pkg.id}_${paymentMethod.toLowerCase()}_${Date.now()}`;
       const successParams = new URLSearchParams({
@@ -122,6 +130,7 @@ function CreditsPageContent() {
       });
     } catch (error) {
       console.error(error);
+      setErrorMessage('결제창을 여는 중 문제가 생겼습니다. 잠시 뒤 다시 시도해 주세요.');
     } finally {
       setLoading(null);
     }
@@ -236,6 +245,15 @@ function CreditsPageContent() {
                 surface="soft"
                 eyebrow="다시 확인"
                 description="결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다."
+              />
+            ) : null}
+
+            {errorMessage ? (
+              <FeatureCard
+                className="mt-5 border-rose-300/55 bg-rose-50"
+                surface="soft"
+                eyebrow="결제 설정 확인"
+                description={errorMessage}
               />
             ) : null}
 

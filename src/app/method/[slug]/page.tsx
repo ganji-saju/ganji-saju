@@ -37,17 +37,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${item.title} | 달빛선생`,
+    title: `${item.title} | 달빛인생`,
     description: item.description,
     keywords: item.keywords,
     alternates: {
       canonical: `/method/${item.slug}`,
     },
     openGraph: {
-      title: `${item.title} | 달빛선생`,
+      title: `${item.title} | 달빛인생`,
       description: item.description,
       url: `https://saju-app-lac.vercel.app/method/${item.slug}`,
-      siteName: '달빛선생',
+      siteName: '달빛인생',
       locale: 'ko_KR',
       type: 'article',
     },
@@ -67,14 +67,14 @@ function buildMethodFaqs(item: EngineMethodEntry) {
     {
       question: `${item.title}에서 먼저 확인해야 할 기준은 무엇인가요?`,
       answer: firstSection
-        ? `${firstSection.body} 달빛선생에서는 ${visibleChecks} 같은 기준을 결과 화면에서 함께 확인할 수 있습니다.`
+        ? `${firstSection.body} 달빛인생에서는 ${visibleChecks} 같은 기준을 결과 화면에서 함께 확인할 수 있습니다.`
         : `${visibleChecks} 같은 기준을 먼저 확인하는 편이 좋습니다.`,
     },
     {
-      question: '달빛선생에서는 이 주제를 어떤 방식으로 보여주나요?',
+      question: '달빛인생에서는 이 주제를 어떤 방식으로 보여주나요?',
       answer: secondSection
-        ? `${secondSection.body} 결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 명리 기준서로 이어서 확인할 수 있습니다.`
-        : '결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 명리 기준서로 이어서 확인할 수 있습니다.',
+        ? `${secondSection.body} 결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 깊은 사주풀이로 이어서 확인할 수 있습니다.`
+        : '결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 깊은 사주풀이로 이어서 확인할 수 있습니다.',
     },
   ];
 }
@@ -113,11 +113,11 @@ export default async function MethodDetailPage({ params }: Props) {
     keywords: item.keywords,
     author: {
       '@type': 'Organization',
-      name: '달빛선생',
+      name: '달빛인생',
     },
     publisher: {
       '@type': 'Organization',
-      name: '달빛선생',
+      name: '달빛인생',
       url: 'https://saju-app-lac.vercel.app',
     },
     about: item.keywords.map((keyword) => ({
@@ -160,7 +160,7 @@ export default async function MethodDetailPage({ params }: Props) {
               <Badge className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
                 {item.eyebrow}
               </Badge>
-              <Badge className="border-white/10 bg-white/5 text-white/68">풀이 기준 글</Badge>
+              <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">풀이 기준 글</Badge>
             </div>
 
             <SectionHeader
@@ -171,7 +171,7 @@ export default async function MethodDetailPage({ params }: Props) {
               descriptionClassName="text-[var(--app-copy)]"
             />
 
-            <div className="mt-6 rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] p-5">
+            <div className="mt-6 rounded-[22px] border border-[var(--app-line)] bg-white p-5">
               <div className="text-sm text-[var(--app-copy-soft)]">이 글이 답하려는 질문</div>
               <p className="font-display mt-3 text-lg font-semibold text-[var(--app-ivory)]">{item.question}</p>
               <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{item.lead}</p>
@@ -285,7 +285,7 @@ export default async function MethodDetailPage({ params }: Props) {
             <SupportRail
               surface="lunar"
               eyebrow="체크 포인트"
-              title="달빛선생에서는 이 기준이 실제로 보입니다"
+              title="달빛인생에서는 이 기준이 실제로 보입니다"
               description="결과 화면에서 사용자가 직접 확인할 수 있는 지점만 짧게 모았습니다."
             >
               <BulletList items={item.checklist} />

@@ -101,7 +101,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   model: null,
   errorMessage: null,
   text:
-    '편하게 물으세요. 로그인되어 있고 MY 프로필에 생년월일이 저장돼 있으면 명리 기준서를 다시 입력하지 않아도 그 정보를 먼저 놓고 바로 풀어드립니다. 처음 3회는 무료이고, 이후에는 3회 묶음마다 3코인으로 이어집니다.',
+    '편하게 물으세요. 로그인되어 있고 MY 프로필에 생년월일이 저장돼 있으면 깊은 사주풀이를 다시 입력하지 않아도 그 정보를 먼저 놓고 바로 풀어드립니다. 처음 3회는 무료이고, 이후에는 3회 묶음마다 3코인으로 이어집니다.',
 };
 
 function createMessageId(prefix: string) {
@@ -201,7 +201,7 @@ function formatProfileConnection(profile: ProfileApiProfile | null): ProfileConn
     return {
       status: 'partial',
       summary: '저장된 내 정보가 아직 부족합니다',
-      detail: 'MY 프로필에 생년월일을 저장하면 상담에서 기준서를 다시 입력하지 않아도 됩니다.',
+      detail: 'MY 프로필에 생년월일을 저장하면 상담에서 풀이를 다시 입력하지 않아도 됩니다.',
     };
   }
 
@@ -484,7 +484,7 @@ export function DialogueChatPanel({
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
               로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면
-              명리 기준서를 다시 입력하지 않아도 됩니다. 질문만 남기시면
+              깊은 사주풀이를 다시 입력하지 않아도 됩니다. 질문만 남기시면
               저장된 기준을 먼저 놓고 상담하듯 답변을 이어갑니다.
             </p>
             {sourceSessionId && concernId ? (
@@ -593,7 +593,7 @@ export function DialogueChatPanel({
         {status === 'loading' ? (
           <div className="flex justify-start">
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-              <span>달빛선생이 답변을 정리하고 있습니다</span>
+              <span>달빛인생이 답변을 정리하고 있습니다</span>
               <span className="ml-2 inline-flex gap-1 align-middle">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/70" />
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/55 [animation-delay:120ms]" />

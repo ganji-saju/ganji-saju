@@ -114,7 +114,7 @@ export async function grantLifetimeReportEntitlement(
     .single();
 
   if (error || !data) {
-    throw new Error(error?.message ?? '명리 기준서 권한을 저장하지 못했습니다.');
+    throw new Error(error?.message ?? '깊은 사주풀이 권한을 저장하지 못했습니다.');
   }
 
   return mapEntitlement(data as EntitlementTransactionRow);

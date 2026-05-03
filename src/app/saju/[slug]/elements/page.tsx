@@ -98,7 +98,7 @@ export default async function SajuElementsPage({ params }: Props) {
 
         <SwipeSectionDeck
           title="오행 균형을 한 장씩 넘겨 봅니다"
-          description="원형 차트, 오행별 카드, 다음 기준서 진입을 화면 단위로 나눴습니다."
+          description="원형 차트, 오행별 카드, 다음 풀이 진입을 화면 단위로 나눴습니다."
         >
           <SwipeSectionSlide
             eyebrow="균형"
@@ -216,7 +216,7 @@ export default async function SajuElementsPage({ params }: Props) {
             href={`/saju/${slug}/premium`}
             className="moon-action-secondary"
           >
-            다음: 명리 기준서
+            다음: 깊은 사주풀이
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
             </section>

@@ -13,18 +13,18 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 import { ENGINE_METHOD_ENTRIES } from '@/lib/engine-method-pages';
 
 export const metadata: Metadata = {
-  title: '풀이가 달라지는 이유 | 달빛선생',
+  title: '풀이가 달라지는 이유 | 달빛인생',
   description:
     'AI 사주가 왜 다르게 보이는지, 출생지와 시간 기준이 왜 중요한지 생활 언어로 풀어낸 도움말입니다.',
   alternates: {
     canonical: '/method',
   },
   openGraph: {
-    title: '달빛선생 풀이 도움말',
+    title: '달빛인생 풀이 도움말',
     description:
       '결과가 다르게 보일 때 확인하면 좋은 AI 사주·진태양시·용신 도움말을 모았습니다.',
     url: 'https://saju-app-lac.vercel.app/method',
-    siteName: '달빛선생',
+    siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'website',
   },
@@ -54,7 +54,7 @@ export default function MethodIndexPage() {
             >
               풀이 기준 도움말
             </Badge>,
-            <Badge key="seo" className="border-white/10 bg-white/5 text-white/70">
+            <Badge key="seo" className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">
               AI 사주 · 진태양시 · 용신 해설
             </Badge>,
           ]}
@@ -75,7 +75,7 @@ export default function MethodIndexPage() {
             <div className="mt-6 grid gap-6 lg:grid-cols-[0.94fr_1.06fr]">
               <BulletList items={READING_GUIDE} />
 
-              <div className="rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
+              <div className="rounded-[20px] border border-[var(--app-line)] bg-white px-5 py-5">
                 <div className="app-caption mb-3">궁금할 때 볼 주제</div>
                 <BulletList items={READING_ORDER} />
               </div>
@@ -120,7 +120,7 @@ export default function MethodIndexPage() {
                 key={entry.slug}
                 surface="soft"
                 badge={
-                  <Badge className="border-white/10 bg-white/5 text-white/62">기준서 연계 글</Badge>
+                  <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">풀이 연계 글</Badge>
                 }
                 eyebrow={entry.eyebrow}
                 title={entry.title}
@@ -128,7 +128,7 @@ export default function MethodIndexPage() {
                 description={
                   <>
                     <p>{entry.summary}</p>
-                    <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy-soft)]">
+                    <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-4 text-sm leading-7 text-[var(--app-copy-soft)]">
                       {entry.question}
                     </div>
                   </>

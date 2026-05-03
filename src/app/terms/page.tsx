@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { SectionSurface } from '@/components/layout/section-surface';
+import { Badge } from '@/components/ui/badge';
+import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '이용약관',
   description:
-    '사주명리 서비스 이용 조건, 코인 정책, 결제 및 책임 제한에 대한 안내입니다.',
+    '달빛인생 이용 조건, 코인 정책, 결제 및 책임 제한에 대한 안내입니다.',
   alternates: {
     canonical: '/terms',
   },
@@ -14,7 +17,7 @@ const sections = [
   {
     title: '1. 서비스 개요',
     body: [
-      '사주명리는 사용자가 입력한 생년월일시를 바탕으로 사주 분석 결과와 부가 콘텐츠를 제공하는 웹 서비스입니다.',
+      '달빛인생은 사용자가 입력한 생년월일시를 바탕으로 사주 분석 결과와 부가 콘텐츠를 제공하는 웹 서비스입니다.',
       '서비스는 무료 기능과 코인 기반 유료 기능으로 구성되며, 운영상 필요에 따라 기능과 가격 정책은 변경될 수 있습니다.',
     ],
   },
@@ -57,34 +60,34 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
-      <SiteHeader />
-
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <div className="mb-10 space-y-3">
-          <p className="text-sm font-medium text-indigo-300">Legal</p>
-          <h1 className="text-3xl font-bold sm:text-4xl">이용약관</h1>
-          <p className="max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
-            사주명리 서비스 이용과 코인 결제, 계정 사용, 책임 제한에 관한 기본 조건을 안내합니다.
-          </p>
-        </div>
+    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
+      <AppPage className="max-w-3xl space-y-6">
+        <PageHero
+          badges={
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              Legal
+            </Badge>
+          }
+          title="이용약관"
+          description="달빛인생 이용과 코인 결제, 계정 사용, 책임 제한에 관한 기본 조건을 안내합니다."
+        />
 
         <div className="space-y-5">
           {sections.map(section => (
-            <section
+            <SectionSurface
               key={section.title}
-              className="rounded-2xl border border-white/10 bg-white/5 p-6"
+              size="md"
             >
-              <h2 className="mb-3 text-lg font-semibold text-white">{section.title}</h2>
-              <div className="space-y-3 text-sm leading-6 text-white/70">
+              <h2 className="mb-3 text-lg font-semibold text-[var(--app-ink)]">{section.title}</h2>
+              <div className="space-y-3 text-sm leading-6 text-[var(--app-copy)]">
                 {section.body.map(paragraph => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
-            </section>
+            </SectionSurface>
           ))}
         </div>
-      </div>
-    </main>
+      </AppPage>
+    </AppShell>
   );
 }

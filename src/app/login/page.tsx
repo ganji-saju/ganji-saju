@@ -11,6 +11,12 @@ function getSafeNext(value: string | null) {
   return value;
 }
 
+function getRedirectOrigin() {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
+  if (configuredUrl?.startsWith('http')) return configuredUrl;
+  return location.origin;
+}
+
 function getEmailLoginError(message?: string) {
   if (!message) return '로그인 링크를 보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
 
@@ -28,9 +34,16 @@ function getEmailLoginError(message?: string) {
 function LoginContent() {
   const searchParams = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
+  const callbackError = searchParams.get('error');
   const [email, setEmail] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState(
+    callbackError === 'oauth_config'
+      ? '로그인 환경변수가 비어 있습니다. Supabase URL과 공개 키를 운영 환경에 설정해 주세요.'
+      : callbackError === 'oauth'
+      ? '소셜 로그인 연결이 완료되지 않았습니다. Google/Kakao 제공자 설정과 리다이렉트 주소를 확인해 주세요.'
+      : ''
+  );
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
 
   async function signInWithProvider(provider: 'google' | 'kakao') {
@@ -40,14 +53,21 @@ function LoginContent() {
       return;
     }
 
+    setErrorMessage('');
+    setStatusMessage('');
     const supabase = createClient();
+    const providerLabel = provider === 'google' ? 'Google' : '카카오';
 
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: `${getRedirectOrigin()}/api/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
+
+    if (error) {
+      setErrorMessage(`${providerLabel} 로그인 설정을 확인해 주세요. ${error.message}`);
+    }
   }
 
   async function requestEmailLink(event: React.FormEvent<HTMLFormElement>) {
@@ -74,7 +94,7 @@ function LoginContent() {
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmedEmail,
       options: {
-        emailRedirectTo: `${location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${getRedirectOrigin()}/api/auth/callback?next=${encodeURIComponent(next)}`,
         shouldCreateUser: true,
       },
     });
@@ -93,12 +113,12 @@ function LoginContent() {
     <div className="app-panel w-full max-w-md p-7 text-center sm:p-8">
       <div className="mb-2">
         <div className="app-caption mb-3">연락처로 간편 로그인</div>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight text-[var(--app-ivory)]">
-          ✦ 사주명리
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-[var(--app-ink)]">
+          달빛인생 로그인
         </h1>
         <p className="mt-3 text-sm leading-6 text-[var(--app-copy-muted)]">
           {hasSupabaseBrowserEnv
-            ? '이메일 링크로 바로 가입하고 코인 3개를 무료로 받아보세요.'
+            ? '무료 운세를 보고, 마음에 드는 풀이를 저장하려면 로그인하세요.'
             : '로컬 환경에서는 Supabase 설정 후 로그인을 사용할 수 있습니다.'}
         </p>
       </div>
@@ -110,8 +130,8 @@ function LoginContent() {
         >
           이메일 주소
         </label>
-        <div className="flex gap-2 rounded-2xl border border-[var(--app-line-strong)] bg-[var(--app-surface-muted)] p-2 focus-within:border-[var(--app-gold)]/70">
-          <span className="inline-flex h-11 items-center rounded-xl bg-[var(--app-surface-strong)] px-3 text-sm text-[var(--app-gold-text)]">
+        <div className="flex gap-2 rounded-2xl border border-[var(--app-line-strong)] bg-[var(--app-pink-soft)] p-2 focus-within:border-[var(--app-pink)]/70">
+          <span className="inline-flex h-11 items-center rounded-xl bg-white px-3 text-sm text-[var(--app-pink-strong)]">
             MAIL
           </span>
           <input
@@ -122,20 +142,20 @@ function LoginContent() {
             placeholder="name@example.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-base text-[var(--app-ivory)] outline-none placeholder:text-[var(--app-copy-soft)]"
+            className="min-w-0 flex-1 bg-transparent text-base text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
           />
         </div>
         <Button
           type="submit"
           disabled={isSubmittingEmail || !hasSupabaseBrowserEnv}
-          className="h-11 w-full rounded-2xl border border-[var(--app-gold)]/40 bg-[var(--app-gold)] text-[var(--app-ink)] hover:bg-[var(--app-gold-text)]"
+          className="h-11 w-full rounded-2xl"
         >
           {isSubmittingEmail ? '링크 보내는 중...' : '가입/로그인 링크 받기'}
         </Button>
       </form>
 
       <section className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-left">
-        <div className="text-sm font-medium text-[var(--app-ivory)]">휴대폰 인증은 준비 중입니다</div>
+        <div className="text-sm font-medium text-[var(--app-ink)]">휴대폰 인증은 준비 중입니다</div>
         <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
           SMS provider 연동 전까지는 이메일 링크로 가입/로그인을 진행합니다.
         </p>
@@ -159,13 +179,13 @@ function LoginContent() {
       </section>
 
       {statusMessage ? (
-        <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ivory)]">
+        <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
           {statusMessage}
         </p>
       ) : null}
 
       {errorMessage ? (
-        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ivory)]">
+        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
           {errorMessage}
         </p>
       ) : null}
@@ -192,7 +212,7 @@ function LoginContent() {
         <Button
           onClick={() => signInWithProvider('google')}
           disabled={!hasSupabaseBrowserEnv}
-          className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl bg-white text-slate-900 hover:bg-white/90"
+          className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl border border-[var(--app-line)] bg-white text-slate-900 hover:bg-[var(--app-pink-soft)]"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -213,14 +233,15 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <main className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-white">
-      {/* Brand mark */}
+    <main className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
       <div className="flex flex-col items-center gap-2 text-center">
-        <div className="app-moon-orb h-12 w-12" />
-        <div className="font-[var(--font-heading)] text-lg tracking-[0.22em] text-[var(--app-ivory)]">달빛인생</div>
-        <div className="text-xs tracking-[0.46em] text-[var(--app-gold-soft)]">月 光 先 生</div>
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+          달
+        </div>
+        <div className="font-[var(--font-heading)] text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+        <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
       </div>
-      <Suspense fallback={<div className="text-white/50">로딩중...</div>}>
+      <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
         <LoginContent />
       </Suspense>
     </main>

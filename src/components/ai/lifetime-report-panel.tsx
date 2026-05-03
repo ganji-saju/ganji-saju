@@ -167,7 +167,7 @@ function LifetimeAtAGlance({
         <div>
           <div className="app-caption">한 장 요약</div>
           <h3 className="mt-3 font-display text-2xl text-[var(--app-ivory)]">
-            긴 기준서는 먼저 이 네 장면만 보셔도 됩니다
+            긴 풀이는 먼저 이 네 장면만 보셔도 됩니다
           </h3>
           <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
             전문 용어는 아래로 접어두고, 생활에서 바로 느껴지는 돈·일·관계·리듬부터 카드로 분리했습니다.
@@ -456,7 +456,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           | null;
 
         if (!response.ok || !payload || !('ok' in payload) || payload.ok !== true) {
-          setError(payload && 'error' in payload && payload.error ? payload.error : '명리 기준서를 불러오지 못했습니다.');
+          setError(payload && 'error' in payload && payload.error ? payload.error : '깊은 사주풀이를 불러오지 못했습니다.');
           setState('error');
           return;
         }
@@ -465,7 +465,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         setState('ready');
       } catch (fetchError) {
         if ((fetchError as Error).name === 'AbortError') return;
-        setError('명리 기준서를 불러오는 중 오류가 발생했습니다.');
+        setError('깊은 사주풀이를 불러오는 중 오류가 발생했습니다.');
         setState('error');
       }
     }
@@ -479,12 +479,12 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
     return (
       <section id="lifetime-report" className="moon-lunar-panel p-6 sm:p-7">
         <div className="app-starfield" />
-        <div className="app-caption">명리 기준서 생성 중</div>
+        <div className="app-caption">깊은 사주풀이 생성 중</div>
         <h2 className="font-display mt-4 text-3xl text-[var(--app-ivory)]">
-          원국 중심 기준서를 정리하고 있습니다
+          원국 중심 풀이를 정리하고 있습니다
         </h2>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-          타고난 구조와 보완 방향, 대운 흐름을 묶어 다시 열어볼 수 있는 기준서로 재구성하고 있습니다.
+          타고난 구조와 보완 방향, 대운 흐름을 묶어 다시 열어볼 수 있는 풀이로 재구성하고 있습니다.
         </p>
         <div className="mt-6 grid gap-3 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
@@ -501,8 +501,8 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
   if (state === 'error' || !data) {
     return (
       <section id="lifetime-report" className="app-panel space-y-4 border-rose-400/20 p-6">
-        <div className="app-caption text-rose-200/80">명리 기준서 오류</div>
-        <p className="font-medium text-rose-200">{error || '명리 기준서를 불러오지 못했습니다.'}</p>
+        <div className="app-caption text-rose-200/80">깊은 사주풀이 오류</div>
+        <p className="font-medium text-rose-200">{error || '깊은 사주풀이를 불러오지 못했습니다.'}</p>
         <Button
           onClick={() => setReloadToken((value) => value + 1)}
           variant="outline"
@@ -523,9 +523,9 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="app-starfield" />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="app-caption">명리 기준서 본문</div>
+            <div className="app-caption">깊은 사주풀이 본문</div>
             <h2 className="font-display mt-4 text-3xl text-[var(--app-ivory)]">
-              내 사주의 원본 해설서를 평생 기준서로 정리했습니다
+              내 사주의 원본 해설서를 평생 풀이로 정리했습니다
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
               어려운 계산 항목은 뒤로 빼고, “나는 어떤 환경에서 잘 살아나는가”가 먼저 보이도록 정리했습니다.
@@ -694,10 +694,10 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             grounding={data.grounding}
             kasiComparison={data.kasiComparison}
             metadata={data.metadata}
-            title="이 명리 기준서가 참고한 세부 단서"
+            title="이 깊은 사주풀이가 참고한 세부 단서"
           />
           <EngineMethodLinks
-            title="명리 기준서를 읽을 때 같이 보면 좋은 글"
+            title="깊은 사주풀이를 읽을 때 같이 보면 좋은 글"
             description="보완 방향, 시간 기준, 대운 흐름처럼 풀이를 더 깊게 보고 싶을 때 필요한 기준만 따로 모았습니다."
             slugs={[
               'why-pattern-judgments-diverge',

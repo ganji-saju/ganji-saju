@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { SectionSurface } from '@/components/layout/section-surface';
+import { Badge } from '@/components/ui/badge';
+import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '개인정보처리방침',
   description:
-    '사주명리 서비스에서 수집하는 개인정보 항목, 이용 목적, 보관 및 보호 정책을 안내합니다.',
+    '달빛인생에서 수집하는 개인정보 항목, 이용 목적, 보관 및 보호 정책을 안내합니다.',
   alternates: {
     canonical: '/privacy',
   },
@@ -57,34 +60,34 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
-      <SiteHeader />
-
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <div className="mb-10 space-y-3">
-          <p className="text-sm font-medium text-indigo-300">Privacy</p>
-          <h1 className="text-3xl font-bold sm:text-4xl">개인정보처리방침</h1>
-          <p className="max-w-2xl text-sm leading-6 text-white/60 sm:text-base">
-            사주명리 서비스가 어떤 정보를 수집하고, 어떤 목적과 기준으로 보관·이용하는지 안내합니다.
-          </p>
-        </div>
+    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
+      <AppPage className="max-w-3xl space-y-6">
+        <PageHero
+          badges={
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              Privacy
+            </Badge>
+          }
+          title="개인정보처리방침"
+          description="달빛인생이 어떤 정보를 수집하고, 어떤 기준으로 보관·이용하는지 안내합니다."
+        />
 
         <div className="space-y-5">
           {sections.map(section => (
-            <section
+            <SectionSurface
               key={section.title}
-              className="rounded-2xl border border-white/10 bg-white/5 p-6"
+              size="md"
             >
-              <h2 className="mb-3 text-lg font-semibold text-white">{section.title}</h2>
-              <div className="space-y-3 text-sm leading-6 text-white/70">
+              <h2 className="mb-3 text-lg font-semibold text-[var(--app-ink)]">{section.title}</h2>
+              <div className="space-y-3 text-sm leading-6 text-[var(--app-copy)]">
                 {section.body.map(paragraph => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
-            </section>
+            </SectionSurface>
           ))}
         </div>
-      </div>
-    </main>
+      </AppPage>
+    </AppShell>
   );
 }

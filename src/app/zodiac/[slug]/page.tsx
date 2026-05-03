@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${item.label} 운세`,
-    description: `${item.label}의 연운 메시지와 오늘의 포인트를 함께 보는 달빛선생의 띠별 상세 화면입니다.`,
+    description: `${item.label}의 연운 메시지와 오늘의 포인트를 함께 보는 달빛인생의 띠별 상세 화면입니다.`,
     alternates: {
       canonical: `/zodiac/${item.slug}`,
     },

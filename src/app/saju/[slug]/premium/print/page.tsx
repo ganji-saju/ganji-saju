@@ -36,8 +36,8 @@ const PRINT_SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string 
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: '명리 기준서 PDF 저장',
-    description: '평생 소장용 명리 기준서를 PDF로 저장하기 위한 인쇄 화면입니다.',
+    title: '깊은 사주풀이 PDF 저장',
+    description: '평생 소장용 깊은 사주풀이를 PDF로 저장하기 위한 인쇄 화면입니다.',
     robots: {
       index: false,
       follow: false,
@@ -152,10 +152,10 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               PDF 저장 권한 필요
             </Badge>
             <h1 className="mt-5 font-display text-4xl text-[var(--app-ivory)] sm:text-5xl">
-              명리 기준서 PDF는 소장권에서 열립니다
+              깊은 사주풀이 PDF는 소장권에서 열립니다
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
-              PDF 저장본은 평생 소장 기준서 본문과 함께 제공됩니다. 기준서를 열면 같은 명식으로 다시 들어와도
+              PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 명식으로 다시 들어와도
               이 화면에서 PDF 저장을 이어갈 수 있습니다.
             </p>
             {!isOwner ? (
@@ -168,13 +168,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
                 className="moon-action-primary"
               >
-                명리 기준서 열기
+                깊은 사주풀이 열기
               </Link>
               <Link
                 href={backHref}
                 className="moon-action-muted"
               >
-                기준서 화면으로 돌아가기
+                풀이 화면으로 돌아가기
               </Link>
             </div>
           </section>
@@ -194,8 +194,8 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
         <article className="pdf-print-document">
           <header className="pdf-print-cover">
-            <div className="pdf-print-brand">달빛선생</div>
-            <p className="pdf-print-kicker">평생 소장 명리 기준서</p>
+            <div className="pdf-print-brand">달빛인생</div>
+            <p className="pdf-print-kicker">평생 소장 깊은 사주풀이</p>
             <h1>{report.cover.headline}</h1>
             <p className="pdf-print-lead">{interpretation.oneLineSummary}</p>
             <div className="pdf-print-meta">
@@ -270,7 +270,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
           </section>
 
           <footer className="pdf-print-footer">
-            달빛선생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은
+            달빛인생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은
             전문 기준과 도움을 우선해 주세요.
           </footer>
         </article>

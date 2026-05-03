@@ -4743,12 +4743,15 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .moon-action-primary,
 .moon-action-secondary,
-.moon-action-muted {
+.moon-action-muted,
+.moon-cta-primary,
+.moon-cta-secondary {
   border-radius: 9999px !important;
   font-weight: 900 !important;
 }
 
-.moon-action-primary {
+.moon-action-primary,
+.moon-cta-primary {
   border-color: transparent !important;
   background: var(--app-pink) !important;
   color: #ffffff !important;
@@ -4756,10 +4759,36 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .moon-action-secondary,
-.moon-action-muted {
+.moon-action-muted,
+.moon-cta-secondary {
   border-color: rgba(255, 79, 154, 0.22) !important;
   background: var(--app-pink-soft) !important;
   color: var(--app-pink-strong) !important;
+}
+
+.moon-payment-row {
+  background: #ffffff !important;
+  border-color: var(--app-line) !important;
+  color: var(--app-ink) !important;
+}
+
+.moon-payment-row:hover,
+.moon-payment-row[data-selected="true"] {
+  background: var(--app-pink-soft) !important;
+  border-color: var(--app-pink-line) !important;
+}
+
+.moon-plan-card,
+.moon-plan-card[data-featured="true"] {
+  border-color: var(--app-line) !important;
+  background: #ffffff !important;
+  color: var(--app-ink) !important;
+  box-shadow: 0 14px 34px rgba(17, 17, 20, 0.07) !important;
+}
+
+.moon-plan-card:hover {
+  border-color: var(--app-pink-line) !important;
+  box-shadow: 0 18px 42px rgba(216, 27, 114, 0.12) !important;
 }
 
 @media (min-width: 768px) {

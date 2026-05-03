@@ -315,7 +315,7 @@ export function renderLifetimeInterpretationReport(
     renderBulletLines(report.yearlyAppendix.goodPeriods),
     '### 조심할 시기',
     renderBulletLines(report.yearlyAppendix.cautionPeriods),
-    '## 명리 기준서 한 줄 총정리',
+    '## 깊은 사주풀이 한 줄 총정리',
     `**${interpretation.oneLineSummary}**`,
   ]
     .filter(Boolean)
@@ -373,8 +373,8 @@ export function createLifetimeInterpretationPrompt(
 
   return {
     instructions: [
-      '너는 평생 사주 기준서를 쓰는 명리 전문 해석가이다.',
-      '이 리포트는 연간 운세가 아니라 원국 중심 명리 기준서다.',
+      '너는 평생 사주 풀이를 쓰는 명리 전문 해석가이다.',
+      '이 리포트는 연간 운세가 아니라 원국 중심 깊은 사주풀이다.',
       counselorInstructions,
       '반드시 JSON만 반환한다. markdown, 코드블록, 설명 문장은 금지한다.',
       '출력 JSON 형식:',
@@ -398,7 +398,7 @@ export function createLifetimeInterpretationPrompt(
       '}',
       '규칙:',
       '- 명리 용어를 쓰더라도 바로 쉬운 말로 풀어준다.',
-      '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 기준서처럼 쓴다.',
+      '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 표현은 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
       '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다.',

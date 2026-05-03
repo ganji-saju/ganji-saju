@@ -153,11 +153,11 @@ export default async function SajuOverviewPage({ params }: Props) {
 
           <SwipeSectionSlide
             eyebrow="다음 선택"
-            title="기본 해석과 명리 기준서"
-            description="무료 기본 해석과 보관형 기준서 진입을 한 화면에서 고릅니다."
+            title="기본 해석과 깊은 사주풀이"
+            description="무료 기본 해석과 보관형 풀이 진입을 한 화면에서 고릅니다."
             navLabel="해석"
           >
-            {/* ─── 기본 해석 + 명리 기준서 ─── */}
+            {/* ─── 기본 해석 + 깊은 사주풀이 ─── */}
             <section className="grid gap-5 lg:grid-cols-[1fr_0.96fr]">
 
           <div className="space-y-3">
@@ -191,21 +191,21 @@ export default async function SajuOverviewPage({ params }: Props) {
             ))}
           </div>
 
-          {/* 명리 기준서 paywall */}
+          {/* 깊은 사주풀이 paywall */}
           <article className="moon-lunar-panel p-6">
             <div className="app-starfield" />
             <div className="relative z-10">
               <div className="flex items-center justify-between gap-3">
-                <div className="app-caption">명리 기준서</div>
+                <div className="app-caption">깊은 사주풀이</div>
                 <span className="rounded-full border border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 px-3 py-1 text-[10px] tracking-[0.18em] text-[var(--app-gold-text)]">
                   PREMIUM
                 </span>
               </div>
               <div className="mt-3 font-display text-2xl text-[var(--app-gold-text)]">
-                나의 명리 기준서
+                나의 깊은 사주풀이
               </div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                7가지 항목을 평생 소장용 기준서로 정리합니다. 격국, 용신, 대운, 세운, 분야별 조망까지 한 번에 이어집니다.
+                7가지 항목을 평생 소장용 풀이로 정리합니다. 격국, 용신, 대운, 세운, 분야별 조망까지 한 번에 이어집니다.
               </p>
 
               <div className="mt-5 space-y-2">
@@ -230,7 +230,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                   href={`/saju/${slug}/premium`}
                   className="moon-action-primary"
                 >
-                  명리 기준서 열기 <ArrowRight className="h-4 w-4" />
+                  깊은 사주풀이 열기 <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/membership"

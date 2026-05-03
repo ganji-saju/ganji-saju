@@ -244,7 +244,7 @@ function buildUnlockedReportSections(reading: ReadingRecord): PremiumReportSecti
     {
       eyebrow: '생활 분야',
       title: '6. 재물·연애·직장·관계',
-      lead: '명리 기준서에서는 한 분야만 따로 떼어 보지 않고, 돈·마음·역할·사람 사이의 균형을 함께 봅니다.',
+      lead: '깊은 사주풀이에서는 한 분야만 따로 떼어 보지 않고, 돈·마음·역할·사람 사이의 균형을 함께 봅니다.',
       decision: '유료 상세에서는 분야별 운을 길게 늘어놓기보다, 지금 실제로 판단해야 할 우선순위를 나눠 보여줍니다.',
       paragraphs: compactStrings([
         `재물: ${wealthReport.primaryAction.description}`,
@@ -412,8 +412,8 @@ function PremiumSectionIntro({
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: '명리 기준서',
-    description: '사주 명리 기준서와 연간 부록의 미리보기 및 열람 화면입니다.',
+    title: '깊은 사주풀이',
+    description: '사주 깊은 사주풀이와 연간 부록의 미리보기 및 열람 화면입니다.',
     robots: { index: false, follow: false },
   };
 }
@@ -456,25 +456,25 @@ export default async function SajuPremiumPage({ params }: Props) {
 
   const targetYear = new Date().getFullYear();
   const heroLabel = hasLifetimeAccess
-    ? '명리 기준서 · 전체 열람'
+    ? '깊은 사주풀이 · 전체 열람'
     : yearlyAccessLabel
       ? `${targetYear} 올해 전략서 · 전체 열람`
-      : '명리 기준서 · 미리보기';
+      : '깊은 사주풀이 · 미리보기';
   const heroTitle = hasLifetimeAccess
-    ? '내 명리 기준서'
+    ? '내 깊은 사주풀이'
     : yearlyAccessLabel
       ? `${targetYear} 올해 전략서`
-      : '내 명리 기준서 미리보기';
+      : '내 깊은 사주풀이 미리보기';
   const heroDescription = hasLifetimeAccess
     ? '원국 기준을 먼저 확인하고, 같은 기준 위에서 올해 흐름과 월간 달력을 이어봅니다.'
     : yearlyAccessLabel
-      ? '올해 흐름과 월간 타이밍을 먼저 확인하고, 필요하면 평생 소장 기준서로 확장합니다.'
+      ? '올해 흐름과 월간 타이밍을 먼저 확인하고, 필요하면 평생 소장 풀이로 확장합니다.'
       : '결제 전에는 실제로 어떤 답을 얻을 수 있는지 먼저 보고, 필요한 경우 소장권으로 이어집니다.';
   const readingSteps: PremiumReadingStep[] = hasLifetimeAccess
     ? [
         {
-          label: '기준서',
-          title: '명리 기준서 본문',
+          label: '풀이',
+          title: '깊은 사주풀이 본문',
           description: '타고난 구조와 평생 흐름을 먼저 확인합니다.',
           href: '#premium-lifetime',
           status: '열림',
@@ -486,7 +486,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           description: '올해 주제와 분야별 선택 기준을 이어봅니다.',
           href: '#premium-yearly',
           status: '열림',
-          note: '기준서를 올해 선택으로 옮깁니다.',
+          note: '풀이를 올해 선택으로 옮깁니다.',
         },
         {
           label: '달별',
@@ -517,7 +517,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           },
           {
             label: '확장',
-            title: '평생 소장 기준서',
+            title: '평생 소장 풀이',
             description: '원국과 대운 기준을 오래 남기는 상품입니다.',
             href: '#premium-upgrade',
             status: '선택',
@@ -527,7 +527,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       : [
           {
             label: '미리보기',
-            title: '기준서 미리보기',
+            title: '풀이 미리보기',
             description: '결제 전 본문 구성과 소장 가치를 확인합니다.',
             href: '#premium-preview',
             status: '공개',
@@ -543,7 +543,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           },
           {
             label: '샘플',
-            title: '샘플 기준서',
+            title: '샘플 풀이',
             description: '완성형 리포트의 실제 풀이를 봅니다.',
             href: REPORT_SAMPLE_HREF,
             status: '보기',
@@ -551,10 +551,10 @@ export default async function SajuPremiumPage({ params }: Props) {
           },
         ];
   const readingMapDescription = hasLifetimeAccess
-    ? '명리 기준서는 원국의 바탕, 올해 전략, 달별 실행이 한 흐름으로 이어지도록 정리했습니다.'
+    ? '깊은 사주풀이는 원국의 바탕, 올해 전략, 달별 실행이 한 흐름으로 이어지도록 정리했습니다.'
     : yearlyAccessLabel
-      ? '구독 권한에서는 올해 전략과 달별 흐름을 먼저 보고, 필요한 경우 원국 기준서를 별도 소장으로 확장합니다.'
-      : '아직 결제 전이라면 미리보기, 달별 흐름, 샘플 기준서에서 실제로 남는 내용을 먼저 확인하시면 됩니다.';
+      ? '구독 권한에서는 올해 전략과 달별 흐름을 먼저 보고, 필요한 경우 원국 풀이를 별도 소장으로 확장합니다.'
+      : '아직 결제 전이라면 미리보기, 달별 흐름, 샘플 풀이에서 실제로 남는 내용을 먼저 확인하시면 됩니다.';
 
   return (
     <AppShell header={<SiteHeader />}>
@@ -647,7 +647,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 긴 설명보다, 남는 가치부터 확인합니다
               </h2>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                기준서는 상품명이 아니라 실제 질문에 답하는 결과물입니다. 결제 전에는 예시, 답하는 질문, 보관 가치, 대화 연결만 먼저 보셔도 충분합니다.
+                풀이는 상품명이 아니라 실제 질문에 답하는 결과물입니다. 결제 전에는 예시, 답하는 질문, 보관 가치, 대화 연결만 먼저 보셔도 충분합니다.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
@@ -668,7 +668,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           <section className="app-panel p-5 sm:p-6">
             <div className="app-caption">작은 맛보기</div>
             <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
-              기준서가 부담스러우면 작은 질문부터 열어봅니다
+              풀이가 부담스러우면 작은 질문부터 열어봅니다
             </h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {TASTE_PRODUCTS.map((product) => (
@@ -700,7 +700,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <PremiumSectionIntro
               eyebrow="2장 · 올해 전략"
               title={`${targetYear}년에 실제로 무엇을 조절할지 봅니다`}
-              description="평생 기준서에서 잡은 성향과 보완 방향을 올해의 일, 돈, 관계, 생활 리듬으로 옮긴 부록입니다."
+              description="평생 풀이에서 잡은 성향과 보완 방향을 올해의 일, 돈, 관계, 생활 리듬으로 옮긴 부록입니다."
             />
             <div id="premium-yearly" className="scroll-mt-28">
               <YearlyReportPanel slug={slug} targetYear={targetYear} />
@@ -719,7 +719,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <PremiumSectionIntro
               eyebrow="1장 · 올해 전략"
               title="구독 권한으로 열린 올해 흐름부터 읽습니다"
-              description="지금은 올해 주제와 월별 타이밍이 중심입니다. 평생 기준서는 별도 소장 상품이므로 원국 해설과 대운 지도는 아래에서 확장합니다."
+              description="지금은 올해 주제와 월별 타이밍이 중심입니다. 평생 풀이는 별도 소장 상품이므로 원국 해설과 대운 지도는 아래에서 확장합니다."
             />
             <div id="premium-yearly" className="scroll-mt-28">
               <YearlyReportPanel slug={slug} targetYear={targetYear} />
@@ -734,7 +734,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
             <PremiumSectionIntro
               eyebrow="3장 · 소장 확장"
-              title="올해 운의 바탕이 되는 기준서를 별도로 남깁니다"
+              title="올해 운의 바탕이 되는 풀이를 별도로 남깁니다"
               description="연간 전략을 반복해서 읽다 보면 결국 원국 기준이 필요해집니다. 이 영역은 결제 상품과 링크를 그대로 유지한 확장 카드입니다."
             />
             <section id="premium-upgrade" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.92fr_1.08fr]">
@@ -745,16 +745,16 @@ export default async function SajuPremiumPage({ params }: Props) {
                     {yearlyAccessLabel}
                   </Badge>
                   <Badge className="border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] text-[var(--app-copy-soft)]">
-                    기준서 본문은 별도 권한
+                    풀이 본문은 별도 권한
                   </Badge>
                 </div>
                 <h2 className="mt-4 font-display text-3xl text-[var(--app-gold-text)]">
-                  올해 전략서는 열려 있고, 명리 기준서는 별도로 보관합니다
+                  올해 전략서는 열려 있고, 깊은 사주풀이는 별도로 보관합니다
                 </h2>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
                   지금 권한으로는 올해 흐름과 월별 타이밍을 모두 읽을 수 있습니다. 다만 평생 소장권은 원국의
                   본질, 강약, 격국, 용신, 관계 패턴, 재물 체질, 직업 방향, 건강 리듬, 대운 10년 지도를
-                  장기 기준서로 보관하는 별도 상품입니다.
+                  장기 풀이로 보관하는 별도 상품입니다.
                 </p>
                 <div className="mt-6 grid gap-3">
                   {SAJU_PREMIUM_SECTIONS.map((item) => (
@@ -766,11 +766,11 @@ export default async function SajuPremiumPage({ params }: Props) {
               </article>
               <article className="moon-plan-card p-6" data-featured="true">
                 <div className="font-display text-2xl text-[var(--app-gold-text)]">
-                  평생 소장 기준서로 확장하기
+                  평생 소장 풀이로 확장하기
                 </div>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  올해 전략서가 “올해의 흐름”이라면, 평생 소장 기준서는 “내 사주의 원본 해설서”입니다.
-                  같은 단서를 쓰더라도 역할이 다르기 때문에, 원국 중심 기준서는 별도의 보관형 본문으로
+                  올해 전략서가 “올해의 흐름”이라면, 평생 소장 풀이는 “내 사주의 원본 해설서”입니다.
+                  같은 단서를 쓰더라도 역할이 다르기 때문에, 원국 중심 풀이는 별도의 보관형 본문으로
                   나뉘어야 합니다.
                 </p>
                 <div className="mt-5 grid gap-3">
@@ -781,9 +781,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                   ))}
                 </div>
                 <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-                  <div className="font-display text-2xl text-[var(--app-gold-text)]">명리 기준서 · 49,000원</div>
+                  <div className="font-display text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
                   <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                    기준서 본문과 올해 부록을 함께 열고, 같은 명식으로 다시 들어와도 계속
+                    풀이 본문과 올해 부록을 함께 열고, 같은 명식으로 다시 들어와도 계속
                     읽으실 수 있습니다.
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -791,7 +791,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                       href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
                       className="moon-action-primary"
                     >
-                      기준서 열기
+                      풀이 열기
                     </Link>
                     <Link
                       href={`/saju/${slug}`}
@@ -808,7 +808,7 @@ export default async function SajuPremiumPage({ params }: Props) {
         <>
         <PremiumSectionIntro
           eyebrow="미리보기 · 결제 전"
-          title="기준서에서 실제로 무엇이 남는지 먼저 확인합니다"
+          title="풀이에서 실제로 무엇이 남는지 먼저 확인합니다"
           description="잠긴 본문을 길게 보여주기보다, 첫 섹션의 톤과 소장 상품의 핵심을 빠르게 확인하도록 정리했습니다."
           aside="결제 링크와 상품 ID는 변경하지 않았습니다."
         />
@@ -817,7 +817,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <div className="app-starfield" />
             <div className="app-caption">결제 전 미리보기</div>
             <div className="mt-4 font-display text-2xl text-[var(--app-ivory)]">
-              ① 기준서 첫 섹션 미리보기
+              ① 풀이 첫 섹션 미리보기
             </div>
             <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
               선생님의 일주는 {sajuData.pillars.day.ganzi}입니다. {sajuData.dayMaster.metaphor ?? '자연의 상징'}이
@@ -830,7 +830,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <p className="text-sm leading-8 text-[var(--app-copy)]">
                   이 일간의 세부 풀이에서는 타고난 표현 방식, 관계에서 피로가 쌓이는 지점,
                   대운 안에서 오래 가져갈 기준을 이어서 정리합니다. 본문은 개인의 명식 기준으로
-                  다시 쓰이며, 같은 기준서에서 다시 열람할 수 있습니다.
+                  다시 쓰이며, 같은 풀이에서 다시 열람할 수 있습니다.
                 </p>
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -855,7 +855,7 @@ export default async function SajuPremiumPage({ params }: Props) {
 
           <article className="moon-plan-card p-6" data-featured="true">
             <div className="font-display text-2xl text-[var(--app-gold-text)]">
-              7개 섹션 완성형 기준서
+              7개 섹션 완성형 풀이
             </div>
             <div className="mt-5 grid gap-2">
               {SAJU_PREMIUM_SECTIONS.map((item) => (
@@ -869,7 +869,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
 
             <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5">
-              <div className="app-caption">왜 여기서 기준서로 넘어가실까요?</div>
+              <div className="app-caption">왜 여기서 풀이로 넘어가실까요?</div>
               <div className="mt-4 space-y-3">
                 {SAJU_PREMIUM_VALUE_POINTS.map((item) => (
                   <div key={item} className="text-sm leading-7 text-[var(--app-copy)]">
@@ -884,7 +884,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <div className="mt-4 grid gap-3">
                 {[
                   '판단 단서와 본문이 함께 남는 PDF 저장본',
-                  'MY 보관함에서 다시 여는 기준서 본문',
+                  'MY 보관함에서 다시 여는 풀이 본문',
                   '업데이트 반영본을 나중에 다시 확인하는 재열람 구조',
                 ].map((item) => (
                   <div key={item} className="text-sm leading-7 text-[var(--app-copy)]">
@@ -895,7 +895,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
 
             <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-              <div className="font-display text-2xl text-[var(--app-gold-text)]">명리 기준서 · 49,000원</div>
+              <div className="font-display text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                 오늘 바로 7개 섹션 본문과 PDF 저장, MY 보관함 재열람, 이후 업데이트 반영이 함께 열립니다.
               </p>
@@ -904,7 +904,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
                   className="moon-action-primary"
                 >
-                  기준서 열기
+                  풀이 열기
                 </Link>
                 <Link
                   href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
@@ -916,7 +916,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   href={REPORT_SAMPLE_HREF}
                   className="moon-action-muted"
                 >
-                  샘플 기준서 다시 보기
+                  샘플 풀이 다시 보기
                 </Link>
               </div>
             </div>
@@ -924,7 +924,7 @@ export default async function SajuPremiumPage({ params }: Props) {
         </section>
         <PremiumSectionIntro
           eyebrow="부록 · 달별 흐름"
-          title="월간 달력은 기준서를 열기 전에도 구조를 볼 수 있습니다"
+          title="월간 달력은 풀이를 열기 전에도 구조를 볼 수 있습니다"
           description="월별 흐름은 긴 풀이를 대신하는 실행 보조 영역입니다. 실제 해금과 재열람 정책은 기존 달력 로직을 그대로 따릅니다."
         />
         <div id="premium-calendar" className="scroll-mt-28">
@@ -934,7 +934,7 @@ export default async function SajuPremiumPage({ params }: Props) {
         )}
 
         <section className="app-panel p-5 sm:p-6">
-          <div className="app-caption">달빛선생의 신뢰 기준</div>
+          <div className="app-caption">달빛인생의 신뢰 기준</div>
           <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
             무섭게 맞힌다는 말보다, 다시 확인할 수 있는 기준을 남깁니다
           </h2>

@@ -13,7 +13,7 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '십신',
-  description: '십신으로 열 가지 관계와 역할 패턴을 읽는 달빛선생의 명리 탐구 화면입니다.',
+  description: '십신으로 열 가지 관계와 역할 패턴을 읽는 달빛인생의 명리 탐구 화면입니다.',
   alternates: {
     canonical: '/myeongri/ten-gods',
   },
@@ -55,7 +55,7 @@ export default function TenGodsPage() {
               eyebrow="십신으로 보는 반복 패턴"
               title="좋고 나쁨보다, 어떤 관계와 역할이 반복되는지를 먼저 봅니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="십신은 한 장짜리 성격 해석이 아니라, 돈과 자리, 사람과 책임이 내 삶에 들어오는 방식을 읽는 언어입니다. 달빛선생에서는 겁을 주는 말보다 실제로 반복되는 장면을 설명하는 데 더 가깝게 씁니다."
+              description="십신은 한 장짜리 성격 해석이 아니라, 돈과 자리, 사람과 책임이 내 삶에 들어오는 방식을 읽는 언어입니다. 달빛인생에서는 겁을 주는 말보다 실제로 반복되는 장면을 설명하는 데 더 가깝게 씁니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 

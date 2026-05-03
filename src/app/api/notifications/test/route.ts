@@ -41,7 +41,7 @@ export async function POST() {
 
     const payload = buildPushPayload({
       slotKey: 'morning',
-      title: '달빛선생 테스트 알림',
+      title: '달빛인생 테스트 알림',
       body:
         snapshot.latestReading?.dailyLine ??
         `${snapshot.displayName}께 브라우저 푸시 연결이 정상적으로 완료되었습니다.`,

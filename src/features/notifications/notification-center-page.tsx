@@ -440,7 +440,7 @@ export default function NotificationCenterPage({
       }
 
       setIsCurrentDeviceSubscribed(true);
-      setStatusMessage('이 브라우저가 달빛선생 알림 기기로 연결되었습니다.');
+      setStatusMessage('이 브라우저가 달빛인생 알림 기기로 연결되었습니다.');
     } catch (error) {
       setStatusMessage(
         error instanceof Error ? error.message : '브라우저 푸시 연결에 실패했습니다.'

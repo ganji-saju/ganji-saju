@@ -38,7 +38,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     description: '두 사람의 결이 어디에서 맞고 어긋나는지 봅니다.',
     href: '/compatibility?product=relationship-standard',
     statusLabel: '리포트에서 먼저 보기',
-    ctaLabel: '궁합 기준서 보기',
+    ctaLabel: '궁합 풀이 보기',
   },
   {
     slug: 'gamun',

@@ -10,7 +10,7 @@ Supabase Auth email templates are managed in the Supabase Dashboard, not deploye
 Recommended subject:
 
 ```text
-달빛선생 로그인 링크가 도착했습니다
+달빛인생 로그인 링크가 도착했습니다
 ```
 
 ## Dashboard Setup
@@ -31,16 +31,14 @@ Do not replace the button URL with `{{ .SiteURL }}` because that forces emails b
 For Vercel previews, add this Supabase Auth redirect allow-list entry:
 
 ```text
-https://*-kbeautys-projects.vercel.app/**
+https://*.vercel.app/**
 ```
 
 Recommended redirect entries:
 
 ```text
-https://saju-app-lac.vercel.app/**
-https://saju-app-kbeautys-projects.vercel.app/**
-https://saju-app-git-main-kbeautys-projects.vercel.app/**
-https://*-kbeautys-projects.vercel.app/**
+https://ganji-saju.vercel.app/**
+https://*.vercel.app/**
 http://localhost:3000/**
 ```
 

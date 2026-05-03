@@ -842,9 +842,9 @@ export default async function VerificationPage({ searchParams }: VerificationPag
         <section className="app-panel p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="app-caption">명리 기준서 운영 검증</div>
+              <div className="app-caption">깊은 사주풀이 운영 검증</div>
               <h2 className="mt-2 text-2xl font-semibold text-[var(--app-ivory)]">
-                명리 기준서 본문 / 올해 전략서 / 말투 분리 상태
+                깊은 사주풀이 본문 / 올해 전략서 / 말투 분리 상태
               </h2>
             </div>
             <JsonLink href={lifetimeApiHref} />

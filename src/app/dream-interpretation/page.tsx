@@ -1,9 +1,14 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { FeatureCard } from '@/components/layout/feature-card';
+import { ProductGrid } from '@/components/layout/product-grid';
+import { SectionHeader } from '@/components/layout/section-header';
+import { SectionSurface } from '@/components/layout/section-surface';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
+import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '꿈해몽',
@@ -15,68 +20,70 @@ export const metadata: Metadata = {
 
 export default function DreamInterpretationPage() {
   return (
-    <main className="min-h-screen bg-[#020817] text-white">
-      <SiteHeader />
-
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <section className="rounded-[32px] border border-[#d2b072]/18 bg-[linear-gradient(180deg,rgba(7,19,39,0.94),rgba(10,18,36,0.96))] p-7">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="border-[#d2b072]/30 bg-[#d2b072]/10 text-[#f5dfaa]">
+    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
+      <AppPage className="space-y-6">
+        <PageHero
+          badges={[
+            <Badge
+              key="dream"
+              className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]"
+            >
               꿈해몽
-            </Badge>
-            <Badge className="border-white/10 bg-white/5 text-white/62">
-              마음에 남은 장면을 풀어보는 무료 해석
-            </Badge>
-          </div>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-[#f8f1df] sm:text-5xl">
-            자주 찾는 꿈해몽
-          </h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-white/66">
-            꿈은 정답보다 마음의 결을 비추는 장면에 가깝습니다. 자주 떠오르는 꿈의 상징을 짧고 읽기 쉽게 정리해, 지금 감정과 조용히 이어보실 수 있게 했습니다.
-          </p>
-        </section>
+            </Badge>,
+            <Badge
+              key="free"
+              className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]"
+            >
+              무료 풀이
+            </Badge>,
+          ]}
+          title="마음에 남은 꿈을 짧게 풀어보세요"
+          description="꿈은 정답보다 지금 마음의 결을 비추는 장면에 가깝습니다. 자주 떠오르는 상징을 쉽고 짧게 정리했습니다."
+        />
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2">
+        <ProductGrid columns={2}>
           {DREAM_ENTRIES.map((item) => (
             <Link
               key={item.slug}
               href={`/dream-interpretation/${item.slug}`}
-              className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 transition-colors hover:bg-white/[0.06]"
+              className="group"
             >
-              <h2 className="text-2xl font-semibold text-[#f8f1df]">{item.title}</h2>
-              <p className="mt-4 text-sm leading-7 text-white/60">{item.summary}</p>
-              <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="text-sm text-white/45">보통 이렇게 해석합니다</div>
-                <p className="mt-2 text-sm leading-7 text-white/68">{item.meaning}</p>
-              </div>
-              <p className="mt-4 text-sm leading-7 text-white/58">{item.action}</p>
-              <div className="mt-5 text-sm font-medium text-[#d2b072]">꿈 풀이 자세히 보기</div>
+              <FeatureCard
+                surface="soft"
+                className="h-full transition group-hover:-translate-y-0.5 group-hover:border-[var(--app-pink-line)] group-hover:shadow-[0_18px_36px_rgba(216,27,114,0.12)]"
+                eyebrow="무료 꿈해몽"
+                title={item.title}
+                description={item.summary}
+                footer={<div className="text-sm font-semibold text-[var(--app-pink-strong)]">꿈 풀이 보기</div>}
+              />
             </Link>
           ))}
-        </section>
+        </ProductGrid>
 
-        <section className="mt-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6">
-          <h2 className="text-2xl font-semibold text-[#f8f1df]">감정 흐름을 더 정교하게 보고 싶다면</h2>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60">
+        <SectionSurface size="lg">
+          <SectionHeader
+            eyebrow="다음으로 보기"
+            title="감정 흐름을 더 보고 싶다면"
+            description={
+              <>
             꿈해몽은 상징을 가볍게 헤아리는 첫 걸음입니다. 더 개인화된 질문이나 지금 흐름이 궁금하시다면 오늘의 타로나 사주 리포트로 이어보시면 좋습니다.
-          </p>
+              </>
+            }
+          />
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/tarot/daily">
-              <Button className="rounded-full bg-[#d2b072] px-6 text-[#111827] hover:bg-[#e3c68d]">
+              <Button className="px-6">
                 오늘의 타로 보기
               </Button>
             </Link>
             <Link href="/saju/new">
-              <Button
-                variant="outline"
-                className="rounded-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-              >
-                맞춤 사주 리포트 보기
+              <Button variant="outline">
+                사주 입력하기
               </Button>
             </Link>
           </div>
-        </section>
-      </div>
-    </main>
+        </SectionSurface>
+      </AppPage>
+    </AppShell>
   );
 }

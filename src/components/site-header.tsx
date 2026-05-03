@@ -73,19 +73,19 @@ export default function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#07101f]/85 backdrop-blur supports-[backdrop-filter]:bg-[#07101f]/75">
+    <header className="sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/92 backdrop-blur supports-[backdrop-filter]:bg-white/86">
       <div className="px-4 sm:px-6">
         <div className="flex items-center justify-between gap-4 py-4">
           <div className="flex min-w-0 items-center gap-4">
             <Link
               href="/"
-              className="min-w-0 text-[#f7ecd5] transition-opacity hover:opacity-90"
+              className="min-w-0 text-[var(--app-ink)] transition-opacity hover:opacity-90"
             >
-              <div className="text-xs uppercase tracking-[0.28em] text-[#d2b072]/80">
-                Daily Fortune Platform
+              <div className="text-xs font-semibold text-[var(--app-pink-strong)]">
+                오늘 바로 보는 운세
               </div>
               <div className="truncate text-lg font-semibold tracking-tight sm:text-xl">
-                사주명리
+                달빛인생
               </div>
             </Link>
 

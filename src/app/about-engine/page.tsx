@@ -14,9 +14,9 @@ import { ENGINE_METHOD_ENTRIES } from '@/lib/engine-method-pages';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: '달빛선생 풀이 기준 | AI 사주 기준',
+  title: '달빛인생 풀이 기준 | AI 사주 기준',
   description:
-    '달빛선생이 사주풀이를 어떻게 더 안정적으로 보여주는지, 진태양시·격국·용신·대운 기준을 쉽게 정리한 안내입니다.',
+    '달빛인생이 사주풀이를 어떻게 더 안정적으로 보여주는지, 진태양시·격국·용신·대운 기준을 쉽게 정리한 안내입니다.',
   keywords: [
     'AI 사주',
     '사주 계산 기준',
@@ -24,15 +24,15 @@ export const metadata: Metadata = {
     '격국 해석',
     '용신 계산',
     '대운 세운',
-    '달빛선생 풀이 기준',
+    '달빛인생 풀이 기준',
   ],
   alternates: { canonical: '/about-engine' },
   openGraph: {
-    title: '달빛선생 풀이 기준',
+    title: '달빛인생 풀이 기준',
     description:
-      '명식 계산을 먼저 고정하고, AI는 계산된 구조를 설명하는 역할만 한다는 달빛선생의 기준을 정리했습니다.',
+      '명식 계산을 먼저 고정하고, AI는 계산된 구조를 설명하는 역할만 한다는 달빛인생의 기준을 정리했습니다.',
     url: 'https://saju-app-lac.vercel.app/about-engine',
-    siteName: '달빛선생',
+    siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'article',
   },
@@ -58,7 +58,7 @@ const ENGINE_PRINCIPLES = [
   {
     title: '명식 계산을 먼저 고정합니다',
     body:
-      '달빛선생은 출생 정보로 명식과 운의 구조를 먼저 계산합니다. 격국, 용신, 대운처럼 결과를 크게 바꾸는 항목은 AI가 대화 중에 새로 추측하지 않도록 분리합니다.',
+      '달빛인생은 출생 정보로 명식과 운의 구조를 먼저 계산합니다. 격국, 용신, 대운처럼 결과를 크게 바꾸는 항목은 AI가 대화 중에 새로 추측하지 않도록 분리합니다.',
   },
   {
     title: 'AI는 설명 레이어로만 사용합니다',
@@ -68,7 +68,7 @@ const ENGINE_PRINCIPLES = [
   {
     title: '판단 단서는 필요할 때 확인할 수 있어야 합니다',
     body:
-      '좋은 사주 리포트는 길이보다 납득이 중요합니다. 달빛선생은 강약, 격국 후보, 용신 후보, 공식 음양력 대조, 참고 해석 여부를 필요한 때 확인할 수 있게 둡니다.',
+      '좋은 사주 리포트는 길이보다 납득이 중요합니다. 달빛인생은 강약, 격국 후보, 용신 후보, 공식 음양력 대조, 참고 해석 여부를 필요한 때 확인할 수 있게 둡니다.',
   },
 ] as const;
 
@@ -140,7 +140,7 @@ const FAQS = [
   {
     question: 'AI가 직접 사주를 계산하지 않는다는 뜻은 무엇인가요?',
     answer:
-      '달빛선생은 출생 정보에서 명식, 강약, 격국, 용신, 대운·세운을 먼저 계산한 뒤 AI가 그 결과를 설명합니다. 대화 중에 AI가 격국이나 용신을 새로 추측하지 않도록 역할을 분리합니다.',
+      '달빛인생은 출생 정보에서 명식, 강약, 격국, 용신, 대운·세운을 먼저 계산한 뒤 AI가 그 결과를 설명합니다. 대화 중에 AI가 격국이나 용신을 새로 추측하지 않도록 역할을 분리합니다.',
   },
   {
     question: '왜 분 단위 출생시각과 출생지를 같이 묻나요?',
@@ -160,7 +160,7 @@ const FAQS = [
   {
     question: '사주 리포트만으로 투자나 의료 판단을 해도 되나요?',
     answer:
-      '아니요. 달빛선생은 의료, 법률, 투자, 위기 상황을 사주 해석과 분리합니다. 사주는 참고용 구조 해석으로만 사용하고, 고위험 판단은 별도 전문 기준을 따라야 합니다.',
+      '아니요. 달빛인생은 의료, 법률, 투자, 위기 상황을 사주 해석과 분리합니다. 사주는 참고용 구조 해석으로만 사용하고, 고위험 판단은 별도 전문 기준을 따라야 합니다.',
   },
 ] as const;
 
@@ -195,8 +195,8 @@ export default function AboutEnginePage() {
               {item}
             </Badge>
           ))}
-          title="달빛선생은 어떻게 사주를 계산하나요?"
-          description="달빛선생은 명식과 운의 구조를 먼저 계산하고, AI는 그 결과를 이해하기 쉬운 문장으로 풀어주는 서비스입니다."
+          title="달빛인생은 어떻게 사주를 계산하나요?"
+          description="달빛인생은 명식과 운의 구조를 먼저 계산하고, AI는 그 결과를 이해하기 쉬운 문장으로 풀어주는 서비스입니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
@@ -267,9 +267,9 @@ export default function AboutEnginePage() {
             <SectionSurface id="why-not-just-ai" surface="panel" className="scroll-mt-28">
               <SectionHeader
                 eyebrow="왜 AI만으로 보지 않나"
-                title="일반 AI 사주와 달빛선생의 차이는 말투보다 풀이 기준에 있습니다"
+                title="일반 AI 사주와 달빛인생의 차이는 말투보다 풀이 기준에 있습니다"
                 titleClassName="text-3xl"
-                description="일반적인 대화형 AI는 설명을 잘 쓰지만, 명식 계산과 격국·용신 해석은 입력 방식과 프롬프트 길이에 따라 흔들릴 수 있습니다. 달빛선생은 계산과 설명을 분리해, 흔들리기 쉬운 부분을 먼저 고정합니다."
+                description="일반적인 대화형 AI는 설명을 잘 쓰지만, 명식 계산과 격국·용신 해석은 입력 방식과 프롬프트 길이에 따라 흔들릴 수 있습니다. 달빛인생은 계산과 설명을 분리해, 흔들리기 쉬운 부분을 먼저 고정합니다."
                 descriptionClassName="app-reading-prose text-[var(--app-copy)]"
               />
 
@@ -277,7 +277,7 @@ export default function AboutEnginePage() {
                 <div className="grid grid-cols-[0.92fr_1fr_1fr] border-b border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] text-xs text-[var(--app-copy-soft)]">
                   <div className="px-4 py-3">구분</div>
                   <div className="px-4 py-3">일반 AI 해석</div>
-                  <div className="px-4 py-3">달빛선생</div>
+                  <div className="px-4 py-3">달빛인생</div>
                 </div>
                 {COMPARISON_ROWS.map(([label, left, right]) => (
                   <div
@@ -332,7 +332,7 @@ export default function AboutEnginePage() {
                 eyebrow="판단 단서"
                 title="왜 그렇게 보았는지 필요할 때만 펼쳐봅니다"
                 titleClassName="text-3xl"
-                description="달빛선생의 명리 기준서는 결론을 먼저 보여주고, 더 알고 싶은 분만 판단 단서를 펼쳐볼 수 있게 구성합니다."
+                description="달빛인생의 깊은 사주풀이는 결론을 먼저 보여주고, 더 알고 싶은 분만 판단 단서를 펼쳐볼 수 있게 구성합니다."
                 descriptionClassName="app-reading-prose text-[var(--app-copy)]"
               />
 
@@ -425,7 +425,7 @@ export default function AboutEnginePage() {
                 eyebrow="핵심 문장"
                 title="좋은 해석은 말맛보다 기준에서 먼저 갈립니다"
                 titleClassName="text-2xl"
-                description="달빛선생은 명식, 절기, 격국, 용신, 대운의 풀이 기준을 먼저 잡고, 선생의 말투는 그 결과를 이해하기 쉽게 풀어주는 설명 레이어로만 사용합니다."
+                description="달빛인생은 명식, 절기, 격국, 용신, 대운의 풀이 기준을 먼저 잡고, 선생의 말투는 그 결과를 이해하기 쉽게 풀어주는 설명 레이어로만 사용합니다."
                 descriptionClassName="text-[var(--app-copy)]"
               />
             </SectionSurface>
@@ -476,7 +476,7 @@ export default function AboutEnginePage() {
                     href={`/method/${entry.slug}`}
                     className="text-sm text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
                   >
-                    기준서와 연결된 글 보기
+                    풀이와 연결된 글 보기
                   </Link>
                 }
               />

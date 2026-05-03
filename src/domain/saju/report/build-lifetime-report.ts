@@ -191,7 +191,7 @@ export function buildLifetimeReport(
     targetYear,
     pillars,
     cover: {
-      headline: `${sajuData.pillars.day.ganzi} 일주 기준 명리 기준서`,
+      headline: `${sajuData.pillars.day.ganzi} 일주 기준 깊은 사주풀이`,
       oneLineSummary: `이 사주는 ${supportLabels} 기운을 삶의 기준으로 들일 때 실력이 가장 안정적으로 오래 갑니다.`,
       keywords: buildKeywords({
         dayMasterStem: sajuData.dayMaster.stem,

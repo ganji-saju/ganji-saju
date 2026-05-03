@@ -14,7 +14,7 @@ import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
 
 export const metadata: Metadata = {
   title: '대화',
-  description: '달빛선생께 자주 여쭙는 질문과 안전한 대화 원칙을 확인하세요.',
+  description: '달빛인생께 자주 여쭙는 질문과 안전한 대화 원칙을 확인하세요.',
   alternates: { canonical: '/dialogue' },
 };
 
@@ -42,7 +42,7 @@ export default async function DialoguePage({
   const usageItems = [
     ['처음 3회', '무료'],
     ['이후 3회 묶음', '코인 3개'],
-    ['MY 프로필', '기준서 입력 없이 자동 적용'],
+    ['MY 프로필', '풀이 입력 없이 자동 적용'],
   ] as const;
 
   return (
@@ -51,10 +51,10 @@ export default async function DialoguePage({
         <SectionSurface surface="hero" size="md">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
-              eyebrow="달빛선생과 대화"
+              eyebrow="달빛인생과 대화"
               title="궁금한 것만 바로 물어보세요"
               titleClassName="text-3xl sm:text-4xl"
-              description="로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면, 상담에서 명리 기준서를 다시 입력하지 않아도 됩니다. 질문만 남기면 저장된 내 정보 기준으로 이어갑니다."
+              description="로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면, 상담에서 깊은 사주풀이를 다시 입력하지 않아도 됩니다. 질문만 남기면 저장된 내 정보 기준으로 이어갑니다."
               descriptionClassName="text-[var(--app-copy)]"
               actions={
                 <ActionCluster>
@@ -106,7 +106,7 @@ export default async function DialoguePage({
               eyebrow="자주 여쭙는 이야기"
               title="질문이 막막하실 때는, 먼저 이런 결로 시작하셔도 좋습니다"
               titleClassName="text-3xl"
-              description="대화는 크게 재물, 가족, 이동, 마음, 생활 같은 생활 질문에서 시작하고, 필요하면 기준서와 관계 리포트로 자연스럽게 이어집니다."
+              description="대화는 크게 재물, 가족, 이동, 마음, 생활 같은 생활 질문에서 시작하고, 필요하면 풀이와 관계 리포트로 자연스럽게 이어집니다."
               descriptionClassName="text-[var(--app-copy)]"
             />
 
@@ -174,7 +174,7 @@ export default async function DialoguePage({
             <SectionSurface surface="panel">
               <SectionHeader
                 eyebrow="이용 방식"
-                title="대화는 가볍게 시작하고, 기준서가 있으면 더 깊어집니다"
+                title="대화는 가볍게 시작하고, 풀이가 있으면 더 깊어집니다"
                 titleClassName="text-2xl"
               />
               <ProductGrid columns={2} className="mt-5">

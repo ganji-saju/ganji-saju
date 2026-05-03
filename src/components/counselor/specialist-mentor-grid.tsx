@@ -70,7 +70,7 @@ export function SpecialistMentorGrid({
 
       <p className="mt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
         대화 persona는 순차적으로 확장할 예정이며, 지금은 각 전문 선생이 먼저 잘 맞는 리포트와
-        기준서 흐름으로 안내합니다.
+        풀이 흐름으로 안내합니다.
       </p>
     </div>
   );

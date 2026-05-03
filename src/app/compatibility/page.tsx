@@ -59,14 +59,14 @@ export default function CompatibilityPage() {
           badges={
             <>
               <span className="rounded-full border border-[var(--app-jade)]/24 bg-[var(--app-jade)]/10 px-3 py-1 text-xs text-[var(--app-jade)]">
-                관계 기준서 입구
+                관계 풀이 입구
               </span>
               <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
                 질문별 관계 선택
               </span>
             </>
           }
-          title="관계 기준서를 보기 전에, 어떤 관계를 풀고 싶은지 고르세요"
+          title="관계 풀이를 보기 전에, 어떤 관계를 풀고 싶은지 고르세요"
           description="궁합은 한 사람의 운세를 더하는 기능보다, 두 사람의 결이 어디에서 맞고 어긋나는지 보는 입구에 가깝습니다. 관계를 고른 뒤 질문의 결을 좁혀가시면 됩니다."
         />
 
@@ -74,7 +74,7 @@ export default function CompatibilityPage() {
           <SectionSurface surface="panel">
             <SectionHeader
               eyebrow="관계 선택"
-              title="질문이 분명할수록 궁합 기준서도 더 선명해집니다"
+              title="질문이 분명할수록 궁합 풀이도 더 선명해집니다"
               titleClassName="text-3xl"
               description="연인·배우자, 부모·자녀, 형제·친구, 동업·파트너처럼 관계의 결을 고르면, 같은 궁합이라도 어디에 초점을 둘지가 훨씬 또렷해집니다."
               descriptionClassName="text-[var(--app-copy)]"
@@ -119,7 +119,7 @@ export default function CompatibilityPage() {
 
           <SupportRail
             surface="muted"
-            eyebrow="궁합 기준서에서 함께 보는 것"
+            eyebrow="궁합 풀이에서 함께 보는 것"
             title="궁합은 감정만이 아니라 구조와 타이밍을 함께 읽습니다"
             description="관계가 잘 맞는지 여부만 단정하기보다, 어디에서 힘이 맞고 어디에서 속도가 어긋나는지 층을 나눠 설명하는 방식에 더 가깝습니다."
           >
@@ -146,7 +146,7 @@ export default function CompatibilityPage() {
           <div className="app-starfield" />
           <SectionHeader
             eyebrow="프리미엄 전용"
-            title="두 사람의 결이 어디서 닮고 어디서 어긋나는지, 기준서 형태로 정리합니다"
+            title="두 사람의 결이 어디서 닮고 어디서 어긋나는지, 풀이 형태로 정리합니다"
             titleClassName="text-3xl text-[var(--app-gold-text)]"
             description="처음이시라면 관계를 고르고 입력 화면까지 먼저 천천히 둘러보실 수 있습니다. 프리미엄 궁합 해석은 갈등이 반복되는 이유, 가까워지는 방식, 올해 대화 타이밍까지 조금 더 길고 차분한 결과물로 이어집니다."
             descriptionClassName="text-[var(--app-copy)]"

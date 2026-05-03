@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 const QUICK_GUIDE = [
   {
-    title: '오래 볼 기준서가 필요할 때',
+    title: '오래 볼 풀이가 필요할 때',
     body: '사주와 명리에서 나의 바탕, 오행, 대운, 올해 흐름을 먼저 확인합니다.',
     href: '/saju/new',
     cta: '사주 시작',
@@ -78,7 +78,7 @@ export default function InterpretationPage() {
               actions={
                 <ActionCluster>
                   <Link href="/saju/new" className="moon-cta-primary">
-                    내 명리 기준서 만들기
+                    내 깊은 사주풀이 만들기
                   </Link>
                   <Link
                     href="/guide"
