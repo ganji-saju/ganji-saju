@@ -10,11 +10,17 @@ function normalizeSiteUrl(value: string | undefined): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
 
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed.replace(/\/$/, '');
-  }
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
 
-  return `https://${trimmed.replace(/\/$/, '')}`;
+  try {
+    const url = new URL(withProtocol);
+    if (url.hostname.endsWith('.supabase.co')) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 export function getSiteUrl(): string {

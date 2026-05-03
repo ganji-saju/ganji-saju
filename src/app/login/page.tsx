@@ -13,7 +13,14 @@ function getSafeNext(value: string | null) {
 
 function getRedirectOrigin() {
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
-  if (configuredUrl?.startsWith('http')) return configuredUrl;
+  if (configuredUrl?.startsWith('http')) {
+    try {
+      const url = new URL(configuredUrl);
+      if (!url.hostname.endsWith('.supabase.co')) return url.origin;
+    } catch {
+      // Fall back to the browser origin below.
+    }
+  }
   return location.origin;
 }
 
