@@ -150,6 +150,7 @@ function easyResultCopy(value: string | null | undefined, maxSentences?: number)
     .replace(/이번 달 흐름/gu, '이번 달 분위기')
     .replace(/올해 흐름/gu, '올해 분위기')
     .replace(/큰 흐름/gu, '긴 흐름')
+    .replace(/(올해 분위기|이번 달 분위기|긴 흐름)이/gu, '$1가')
     .replace(/\s{2,}/g, ' ')
     .trim();
 

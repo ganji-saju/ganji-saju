@@ -40,12 +40,11 @@ const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/신살/gu, '보조 신호'],
   [/십신/gu, '관계 역할'],
   [/천간/gu, '겉으로 드러나는 기질'],
-  [/지지/gu, '속에 깔린 기질'],
   [/지장간/gu, '숨은 기질'],
   [/원국/gu, '타고난 사주'],
   [/명식/gu, '내 사주'],
   [/일간/gu, '타고난 기질'],
-  [/일주/gu, '태어난 날'],
+  [/일주(?!일)/gu, '태어난 날'],
   [/시주/gu, '태어난 시간'],
   [/월령/gu, '태어난 계절'],
   [/대운/gu, '긴 흐름'],
@@ -74,6 +73,7 @@ export function simplifySajuCopy(value: string | null | undefined) {
   }
 
   return text
+    .replace(/채워속에 깔린 기질\s*않는/gu, '채워지지 않는')
     .replace(/관계와 변화 신호[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
     .replace(/비어 있는 흐름[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
     .replace(/보조 신호[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
