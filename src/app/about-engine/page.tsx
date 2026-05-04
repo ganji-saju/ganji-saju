@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: '달빛인생 풀이 기준',
     description:
       '명식 계산을 먼저 고정하고, AI는 계산된 구조를 설명하는 역할만 한다는 달빛인생의 기준을 정리했습니다.',
-    url: 'https://saju-app-lac.vercel.app/about-engine',
+    url: 'https://ganji-saju.vercel.app/about-engine',
     siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'article',

@@ -13,7 +13,8 @@ This note captures the mobile polishing pass that followed the broader premium w
 
 ## Production Status
 
-- Production alias: `https://saju-app-lac.vercel.app`
+- Legacy production alias at that time: `https://saju-app-lac.vercel.app`
+- Current ganji-saju production alias: `https://ganji-saju.vercel.app`
 - Status at verification: live
 
 ## What Changed

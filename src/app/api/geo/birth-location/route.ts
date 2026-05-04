@@ -125,7 +125,7 @@ export async function GET(req: Request) {
       headers: {
         Accept: 'application/json',
         'User-Agent': getGeocoderUserAgent(),
-        Referer: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://saju-app-lac.vercel.app',
+        Referer: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://ganji-saju.vercel.app',
       },
       signal: createTimeoutSignal(),
       next: { revalidate: 86_400 },

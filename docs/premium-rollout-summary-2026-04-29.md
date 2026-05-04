@@ -122,7 +122,8 @@ All were confirmed to return `200`.
 
 ## Production
 
-- Production alias: `https://saju-app-lac.vercel.app`
+- Legacy production alias at that time: `https://saju-app-lac.vercel.app`
+- Current ganji-saju production alias: `https://ganji-saju.vercel.app`
 - Status at verification: production live and serving the updated sample-report copy from the Wave 5 brochure pass
 
 ## Intentionally Excluded Local-Only Materials

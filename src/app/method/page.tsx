@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: '달빛인생 풀이 도움말',
     description:
       '결과가 다르게 보일 때 확인하면 좋은 AI 사주·진태양시·용신 도움말을 모았습니다.',
-    url: 'https://saju-app-lac.vercel.app/method',
+    url: 'https://ganji-saju.vercel.app/method',
     siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'website',

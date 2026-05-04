@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.product_entitlements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
   product_id TEXT NOT NULL CHECK (
-    product_id IN ('today-detail', 'monthly-calendar', 'love-question', 'year-core')
+    product_id IN ('today-detail', 'monthly-calendar', 'love-question', 'money-pattern', 'work-flow', 'year-core')
   ),
   scope_key TEXT NOT NULL DEFAULT 'global',
   order_id TEXT,
@@ -59,7 +59,7 @@ FROM public.credit_transactions
 WHERE type = 'purchase'
   AND feature = 'taste_product'
   AND metadata->>'kind' = 'taste_product'
-  AND metadata->>'productId' IN ('today-detail', 'monthly-calendar', 'love-question', 'year-core')
+  AND metadata->>'productId' IN ('today-detail', 'monthly-calendar', 'love-question', 'money-pattern', 'work-flow', 'year-core')
 ON CONFLICT (user_id, product_id, scope_key) DO UPDATE
 SET
   order_id = COALESCE(public.product_entitlements.order_id, EXCLUDED.order_id),

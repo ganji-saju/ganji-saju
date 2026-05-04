@@ -5,6 +5,10 @@ export const DEFAULT_OG_IMAGE = '/og-image.png';
 
 const FALLBACK_SITE_URL = 'https://ganji-saju.vercel.app';
 
+function isVercelAutoDomain(url: URL) {
+  return url.hostname.endsWith('.vercel.app') && url.origin !== FALLBACK_SITE_URL;
+}
+
 function normalizeSiteUrl(value: string | undefined): string | null {
   if (!value) return null;
   const trimmed = value.trim();
@@ -17,6 +21,7 @@ function normalizeSiteUrl(value: string | undefined): string | null {
   try {
     const url = new URL(withProtocol);
     if (url.hostname.endsWith('.supabase.co')) return null;
+    if (isVercelAutoDomain(url)) return null;
     return url.origin;
   } catch {
     return null;
