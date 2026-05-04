@@ -39,7 +39,7 @@ test('deriveStarSignSlug resolves western sign boundaries correctly', () => {
   assert.equal(deriveStarSignSlug(3, 21), 'aries');
 });
 
-test('deriveZodiacSlug resolves eastern zodiac from birth year', () => {
+test('deriveZodiacSlug resolves simple calendar-year zodiac fallback', () => {
   assert.equal(deriveZodiacSlug(1982), 'dog');
   assert.equal(deriveZodiacSlug(1984), 'rat');
   assert.equal(deriveZodiacSlug(1991), 'goat');

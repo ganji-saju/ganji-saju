@@ -3,15 +3,11 @@ import type { Metadata } from 'next';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
-import {
-  ZODIAC_BLUEPRINT,
-  ZODIAC_META,
-} from '@/content/moonlight';
+import { ZODIAC_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
@@ -19,15 +15,15 @@ import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profi
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 const ZODIAC_POINTS = [
-  '띠운세는 익숙한 언어로 올해의 큰 방향과 오늘의 포인트를 먼저 읽는 데 잘 맞습니다.',
-  '큰 결정보다 생활 리듬, 관계, 소비의 우선순위를 고를 때 더 부드럽게 참고하실 수 있습니다.',
-  '더 깊은 개인 기준은 사주 결과와 풀이 흐름으로 이어집니다.',
+  '달빛인생의 띠는 사주 결과와 같은 입춘 기준으로 맞춥니다.',
+  '1982년 1월 29일처럼 입춘 전 생일은 단순 연도표와 다르게 닭띠로 읽을 수 있습니다.',
+  '띠운세는 내 띠 하나만 먼저 보고, 더 깊은 기준은 사주 결과로 이어집니다.',
 ] as const;
 
 export const metadata: Metadata = {
-  title: '띠별 운세',
+  title: '내 띠 운세',
   description:
-    '12띠 전체의 흐름과 연운 메시지를 한 화면에서 차분히 살펴보세요.',
+    '생년월일과 입춘 기준으로 내 띠를 먼저 확인하고 오늘의 흐름을 가볍게 살펴보세요.',
   alternates: {
     canonical: '/zodiac',
   },
@@ -38,11 +34,8 @@ export default async function ZodiacPage() {
   const personalizedSlug = buildZodiacSlugFromProfile(profile);
   const readingSlug = buildProfileReadingSlug(profile);
   const featured =
-    ZODIAC_FORTUNES.find(
-      (item) => item.slug === (personalizedSlug ?? ZODIAC_BLUEPRINT.highlightedSlug)
-    ) ??
-    ZODIAC_FORTUNES[0];
-  const featuredMeta = ZODIAC_META[featured.slug as keyof typeof ZODIAC_META];
+    personalizedSlug ? ZODIAC_FORTUNES.find((item) => item.slug === personalizedSlug) ?? null : null;
+  const featuredMeta = featured ? ZODIAC_META[featured.slug as keyof typeof ZODIAC_META] : null;
   const hasPersonalizedProfile = Boolean(profile && personalizedSlug);
 
   return (
@@ -63,88 +56,83 @@ export default async function ZodiacPage() {
               빠른 무료 탐색
             </Badge>,
           ]}
-          title="익숙한 띠의 언어로 올해의 흐름을 먼저 읽습니다"
-          description="띠운세는 큰 방향과 오늘의 포인트를 익숙한 언어로 먼저 보여주는 입구입니다. 생활 리듬을 부드럽게 참고하고, 더 깊은 개인 기준은 사주 해석으로 이어가실 수 있습니다."
+          title="내 띠 하나만 먼저 봅니다"
+          description="띠운세는 12개를 모두 펼쳐 비교하는 화면보다, 저장된 생년월일로 계산한 내 띠를 먼저 보여주는 편이 더 정확하고 덜 헷갈립니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
           <SectionSurface surface="panel" size="lg" className="text-center">
             <SectionHeader
-              eyebrow={hasPersonalizedProfile ? 'MY 프로필 기준 띠' : '오늘 먼저 보는 띠'}
-              title={hasPersonalizedProfile ? `선생님은 ${featured.label}` : featured.label}
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
+              eyebrow={hasPersonalizedProfile ? 'MY 프로필 기준' : '먼저 내 띠 확인'}
+              title={hasPersonalizedProfile && featured ? `내 띠는 ${featured.label}` : '생년월일을 넣으면 내 띠만 보여드립니다'}
+              titleClassName="text-3xl text-[var(--app-ink)]"
               description={
-                hasPersonalizedProfile
-                  ? '저장된 생년월일 기준으로 계산한 연주 흐름입니다.'
-                  : '12지지의 흐름 중 오늘 먼저 읽기 좋은 띠를 골랐습니다.'
+                hasPersonalizedProfile && featured
+                  ? '사주 결과와 같은 입춘 기준으로 계산했습니다.'
+                  : '연도만 보는 표가 아니라 생년월일을 함께 봐야 입춘 전후가 정확히 맞습니다.'
               }
               descriptionClassName="mx-auto text-[var(--app-copy-muted)]"
             />
-            <div className="mt-6 text-6xl">{featuredMeta.symbol}</div>
-            <FeatureCard
-              className="mt-6 text-left"
-              surface="soft"
-              eyebrow={`${featured.label}의 2026년`}
-              description={`${featuredMeta.yearlyMessage}. ${featured.todayFocus}`}
-            />
+            <div className="mt-6 text-6xl">{featuredMeta?.symbol ?? '🎂'}</div>
+            {featured && featuredMeta ? (
+              <FeatureCard
+                className="mt-6 text-left"
+                surface="soft"
+                eyebrow={`${featured.label}의 2026년`}
+                description={`${featuredMeta.yearlyMessage}. ${featured.todayFocus}`}
+              />
+            ) : (
+              <FeatureCard
+                className="mt-6 text-left"
+                surface="soft"
+                eyebrow="입춘 전후 보정"
+                description="예를 들어 1982년 1월 29일은 단순 연도표로는 개띠처럼 보일 수 있지만, 사주 기준으로는 입춘 전이라 닭띠로 읽는 흐름이 맞습니다."
+              />
+            )}
           </SectionSurface>
 
           <SupportRail
             surface="lunar"
-            eyebrow="띠운세 읽는 방식"
-            title="큰 방향은 가볍게, 깊은 기준은 사주로 분리합니다"
-            description="띠운세는 연운과 생활 리듬을 익숙한 말로 먼저 보는 입구 역할에 두고, 더 깊은 질문은 사주 결과로 이어집니다."
+            eyebrow="띠운세 기준"
+            title="연도표가 아니라 생년월일 기준으로 맞춥니다"
+            description="같은 1982년생이라도 입춘 전후에 따라 띠가 달라질 수 있습니다. 그래서 달빛인생은 사주 결과와 같은 기준으로 띠를 맞춥니다."
           >
             {hasPersonalizedProfile ? (
               <FeatureCard
                 surface="soft"
-                eyebrow="약한 개인화 연결"
-                description="저장된 MY 프로필 생년 기준으로 선생님의 띠를 먼저 보여드렸습니다. 이 흐름은 빠른 탐색이고, 더 깊은 기준은 사주 결과로 이어집니다."
+                eyebrow="내 띠만 먼저"
+                description="저장된 생년월일로 내 띠를 먼저 보여드립니다. 다른 띠는 기본 화면에서 펼치지 않습니다."
               />
             ) : null}
             <BulletList className={hasPersonalizedProfile ? 'mt-5' : ''} items={ZODIAC_POINTS} />
             <ActionCluster className="mt-5">
-              <Link href={`/zodiac/${featured.slug}`} className="moon-cta-primary">
-                {hasPersonalizedProfile ? '내 띠 바로 보기' : `${featured.label} 자세히 보기`}
-              </Link>
+              {featured ? (
+                <Link href={`/zodiac/${featured.slug}`} className="moon-cta-primary">
+                  내 띠 바로 보기
+                </Link>
+              ) : null}
               <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="moon-cta-secondary">
-                {readingSlug ? '내 사주로 이어보기' : '맞춤 사주 보기'}
+                {readingSlug ? '내 사주로 이어보기' : '생년월일로 내 띠 확인'}
               </Link>
             </ActionCluster>
           </SupportRail>
         </section>
 
-        <SectionSurface surface="panel" size="lg">
+        <SectionSurface surface="panel" size="md">
           <SectionHeader
-            eyebrow="12띠"
-            title="각 띠의 연운 한 줄"
-            titleClassName="text-3xl"
-            description="무료 탐색군 내부에서도 같은 카드 폭과 문장 밀도를 유지해, 어떤 띠를 눌러도 같은 리듬으로 읽히게 정리했습니다."
+            eyebrow="헷갈릴 때"
+            title="띠가 다르게 보이면 생년월일로 다시 맞춰보세요"
+            titleClassName="text-2xl"
+            description="띠운세는 다른 띠를 나열하기보다 내 생년월일 기준으로 하나만 보는 편이 더 편합니다. 특히 1월, 2월 초 출생은 입춘 전후를 함께 확인해야 합니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
+            actions={
+              <ActionCluster>
+                <Link href="/saju/new" className="moon-cta-primary">
+                  생년월일로 다시 확인
+                </Link>
+              </ActionCluster>
+            }
           />
-
-          <ProductGrid columns={3} className="mt-6">
-            {ZODIAC_FORTUNES.map((item) => {
-              const meta = ZODIAC_META[item.slug as keyof typeof ZODIAC_META];
-              return (
-                <FeatureCard
-                  key={item.slug}
-                  surface="soft"
-                  eyebrow={`${meta.symbol} 연주 흐름`}
-                  title={item.label}
-                  description={meta.yearlyMessage}
-                  footer={
-                    <Link
-                      href={`/zodiac/${item.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      이 띠 흐름 읽기
-                    </Link>
-                  }
-                />
-              );
-            })}
-          </ProductGrid>
         </SectionSurface>
       </AppPage>
     </AppShell>

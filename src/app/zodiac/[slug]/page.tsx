@@ -1,17 +1,13 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
-import {
-  ZODIAC_BLUEPRINT,
-  ZODIAC_META,
-} from '@/content/moonlight';
+import { ZODIAC_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
@@ -34,11 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const item = getZodiac(slug);
 
-  if (!item) return { title: '띠별 운세' };
+  if (!item) return { title: '내 띠 운세' };
 
   return {
     title: `${item.label} 운세`,
-    description: `${item.label}의 연운 메시지와 오늘의 포인트를 함께 보는 달빛인생의 띠별 상세 화면입니다.`,
+    description: `${item.label}의 오늘 포인트와 가볍게 실천할 행동을 확인하는 달빛인생 띠운세입니다.`,
     alternates: {
       canonical: `/zodiac/${item.slug}`,
     },
@@ -56,9 +52,13 @@ export default async function ZodiacDetailPage({ params }: Props) {
   const readingSlug = buildProfileReadingSlug(profile);
   const personalizedItem =
     personalizedSlug ? ZODIAC_FORTUNES.find((entry) => entry.slug === personalizedSlug) ?? null : null;
+
+  if (personalizedItem && personalizedItem.slug !== item.slug) {
+    redirect(`/zodiac/${personalizedItem.slug}`);
+  }
+
   const isPersonalizedMatch = personalizedSlug === item.slug;
   const meta = ZODIAC_META[item.slug as keyof typeof ZODIAC_META];
-  const relatedItems = ZODIAC_FORTUNES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
 
   return (
     <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
@@ -75,11 +75,11 @@ export default async function ZodiacDetailPage({ params }: Props) {
               key="basis"
               className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
             >
-              연주 기준
+              입춘 기준
             </Badge>,
           ]}
-          title={`${item.label}의 ${ZODIAC_BLUEPRINT.yearlyLabel}`}
-          description={`${meta.yearlyMessage}. 오늘의 포인트와 올해의 기조를 함께 놓고 보면, 급한 판단보다 생활의 리듬을 더 편안하게 가다듬으실 수 있습니다.`}
+          title={`${item.label} 오늘 흐름`}
+          description={`${meta.yearlyMessage}. 길게 비교하기보다 오늘 붙잡을 포인트와 행동 하나만 먼저 정리해드립니다.`}
         />
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -87,7 +87,7 @@ export default async function ZodiacDetailPage({ params }: Props) {
             <SectionHeader
               eyebrow="올해 먼저 읽는 기조"
               title={item.label}
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
+              titleClassName="text-3xl text-[var(--app-ink)]"
               description={meta.yearlyMessage}
               descriptionClassName="mx-auto max-w-xl text-[var(--app-copy)]"
             />
@@ -97,8 +97,8 @@ export default async function ZodiacDetailPage({ params }: Props) {
           <SupportRail
             surface="lunar"
             eyebrow="오늘 붙잡을 포인트"
-            title="연운과 오늘의 결을 같이 읽습니다"
-            description="띠운세는 크게 좋은지 나쁜지보다, 올해의 기조 위에서 오늘 어떤 리듬을 조절하면 좋은지 읽는 데 초점을 둡니다."
+            title="오늘 바로 참고할 것만 남깁니다"
+            description="띠운세는 12띠를 비교하는 화면보다 내 띠의 오늘 포인트를 빠르게 확인할 때 가장 편합니다."
           >
             {personalizedItem ? (
               <FeatureCard
@@ -106,8 +106,8 @@ export default async function ZodiacDetailPage({ params }: Props) {
                 eyebrow="MY 프로필 기준"
                 description={
                   isPersonalizedMatch
-                    ? `저장된 MY 프로필 기준으로 선생님의 띠는 ${personalizedItem.label}입니다. 지금 보고 계신 흐름이 바로 선생님 기준 연운입니다.`
-                    : `저장된 MY 프로필 기준으로는 ${personalizedItem.label}가 선생님의 띠입니다. 지금은 ${item.label} 흐름을 비교해서 보고 계십니다.`
+                    ? `저장된 생년월일을 입춘 기준으로 계산해 ${personalizedItem.label}로 맞췄습니다.`
+                    : `저장된 생년월일 기준으로는 ${personalizedItem.label}입니다. 내 띠 화면으로 다시 맞춥니다.`
                 }
               />
             ) : null}
@@ -126,8 +126,8 @@ export default async function ZodiacDetailPage({ params }: Props) {
             <FeatureCard
               className="mt-4"
               surface="panel"
-              eyebrow="연운과 월운 흐름"
-              description="띠별 운세는 연운으로 큰 방향을 보고, 월운으로 당장 조정할 생활 리듬을 읽는 데 잘 어울립니다. 큰 결정보다 관계, 일정, 소비의 우선순위를 고를 때 특히 더 도움이 됩니다."
+              eyebrow="사주와 기준 맞춤"
+              description="입춘 전후 생일은 단순 연도표와 다를 수 있습니다. 더 정확한 흐름은 생년월일 전체를 넣은 사주 결과에서 이어서 볼 수 있습니다."
             />
           </SupportRail>
         </section>
@@ -135,9 +135,9 @@ export default async function ZodiacDetailPage({ params }: Props) {
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
             eyebrow="다음으로 이어보기"
-            title="더 깊은 기준이 필요하면 사주 흐름으로 넘어갑니다"
+            title="더 자세히 보고 싶을 때만 사주로 이어갑니다"
             titleClassName="text-3xl"
-            description="무료 탐색에서 프리미엄 진입으로 넘어갈 때도 주 행동과 보조 행동만 남겨, 화면 안에서 선택지가 과밀해지지 않도록 정리했습니다."
+            description="띠운세는 가볍게 오늘 방향을 보는 입구입니다. 내 생년월일 전체 흐름이 궁금할 때만 사주풀이로 넘어가면 됩니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             actions={
               <ActionCluster>
@@ -145,43 +145,11 @@ export default async function ZodiacDetailPage({ params }: Props) {
                   {readingSlug ? '내 사주로 이어보기' : '맞춤 사주로 이어보기'}
                 </Link>
                 <Link href="/zodiac" className="moon-cta-secondary">
-                  띠별 목록으로 돌아가기
+                  내 띠 다시 확인
                 </Link>
               </ActionCluster>
             }
           />
-        </SectionSurface>
-
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="다른 띠도 보기"
-            title="비슷한 해의 결을 함께 비교해 보세요"
-            titleClassName="text-3xl"
-          />
-
-          <ProductGrid columns={3} className="mt-6">
-            {relatedItems.map((entry) => {
-              const relatedMeta = ZODIAC_META[entry.slug as keyof typeof ZODIAC_META];
-
-              return (
-                <FeatureCard
-                  key={entry.slug}
-                  surface="soft"
-                  eyebrow={`${relatedMeta.symbol} 연주 흐름`}
-                  title={entry.label}
-                  description={relatedMeta.yearlyMessage}
-                  footer={
-                    <Link
-                      href={`/zodiac/${entry.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      이 띠 흐름 읽기
-                    </Link>
-                  }
-                />
-              );
-            })}
-          </ProductGrid>
         </SectionSurface>
       </AppPage>
     </AppShell>
