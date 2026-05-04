@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
-import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import {
   isMissingBirthLocationColumnError,
   isMissingBirthMinuteColumnError,
@@ -8,6 +12,7 @@ import {
   isMissingFamilyProfilesTableError,
   isMissingPreferredCounselorColumnError,
   upsertProfile,
+  upsertProfileWithClient,
   type UserProfile,
 } from '@/lib/profile';
 import type { SolarTimeMode } from '@/lib/saju/types';
@@ -403,7 +408,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await upsertProfile(user.id, profile);
+    if (hasSupabaseServiceEnv) {
+      await upsertProfile(user.id, profile);
+    } else {
+      await upsertProfileWithClient(user.id, profile, supabase);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

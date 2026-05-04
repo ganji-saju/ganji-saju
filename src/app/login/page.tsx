@@ -35,6 +35,13 @@ type SignupForm = {
   timeRule: 'standard' | 'trueSolarTime';
 };
 
+type SignupResponse = {
+  success?: boolean;
+  next?: string;
+  profileSaved?: boolean;
+  error?: string;
+};
+
 const DEFAULT_SIGNUP_FORM: SignupForm = {
   displayName: '',
   email: '',
@@ -143,6 +150,31 @@ function formatOptionNumber(value: number) {
   return String(value).padStart(2, '0');
 }
 
+function buildProfilePayloadFromSignupForm(form: SignupForm) {
+  const birthLocation =
+    BIRTH_LOCATION_PRESETS.find((location) => location.code === form.birthLocationCode) ??
+    BIRTH_LOCATION_PRESETS[0];
+
+  return {
+    displayName: form.displayName,
+    calendarType: form.calendarType,
+    timeRule: form.timeRule,
+    birthYear: form.birthYear,
+    birthMonth: form.birthMonth,
+    birthDay: form.birthDay,
+    gender: form.gender,
+    unknownBirthTime: form.unknownBirthTime,
+    birthHour: form.birthHour,
+    birthMinute: form.birthMinute,
+    birthLocationCode: birthLocation.code,
+    birthLocationLabel: birthLocation.label,
+    birthLatitude: birthLocation.latitude,
+    birthLongitude: birthLocation.longitude,
+    solarTimeMode: form.timeRule === 'trueSolarTime' ? 'longitude' : 'standard',
+    note: '',
+  };
+}
+
 function FieldLabel({
   children,
   htmlFor,
@@ -235,7 +267,11 @@ function LoginContent() {
     }
   }
 
-  async function signInWithPassword(email: string, password: string) {
+  async function signInWithPassword(
+    email: string,
+    password: string,
+    options: { redirect?: boolean } = {}
+  ) {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
@@ -247,9 +283,27 @@ function LoginContent() {
       return false;
     }
 
-    router.replace(afterLoginHref);
-    router.refresh();
+    if (options.redirect !== false) {
+      router.replace(afterLoginHref);
+      router.refresh();
+    }
     return true;
+  }
+
+  async function saveProfileAfterSignup() {
+    const response = await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildProfilePayloadFromSignupForm(signupForm)),
+    });
+
+    const data = (await response.json().catch(() => null)) as
+      | { success?: boolean; error?: string }
+      | null;
+
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.error ?? '사주 기본정보를 저장하지 못했습니다.');
+    }
   }
 
   async function submitSignup(event: FormEvent<HTMLFormElement>) {
@@ -291,9 +345,7 @@ function LoginContent() {
       }),
     });
 
-    const data = (await response.json().catch(() => null)) as
-      | { success?: boolean; next?: string; error?: string }
-      | null;
+    const data = (await response.json().catch(() => null)) as SignupResponse | null;
 
     if (!response.ok || !data?.success) {
       setIsSubmittingSignup(false);
@@ -301,11 +353,31 @@ function LoginContent() {
       return;
     }
 
-    setStatusMessage('회원가입이 완료됐습니다. 사주 입력 화면에 내 정보를 불러오는 중입니다.');
-    const signedIn = await signInWithPassword(signupForm.email, signupForm.password);
+    setStatusMessage('회원가입이 완료됐습니다. 사주 기본정보를 저장하는 중입니다.');
+    const signedIn = await signInWithPassword(signupForm.email, signupForm.password, {
+      redirect: false,
+    });
     if (!signedIn) {
       setStatusMessage('회원가입은 완료됐습니다. 로그인 탭에서 비밀번호로 다시 로그인해 주세요.');
+      setIsSubmittingSignup(false);
+      return;
     }
+
+    if (!data.profileSaved) {
+      try {
+        await saveProfileAfterSignup();
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : '사주 기본정보를 저장하지 못했습니다.'
+        );
+        setStatusMessage('회원가입과 로그인은 완료됐지만 사주 기본정보 저장을 확인해 주세요.');
+        setIsSubmittingSignup(false);
+        return;
+      }
+    }
+
+    router.replace(data.next ?? afterLoginHref);
+    router.refresh();
     setIsSubmittingSignup(false);
   }
 

@@ -623,9 +623,12 @@ export async function getOptionalSignedInProfile(): Promise<UserProfile | null> 
   }
 }
 
-export async function upsertProfile(userId: string, profile: UserProfile) {
-  const service = await createServiceClient();
+type ProfileWriterClient = Pick<
+  Awaited<ReturnType<typeof createClient>> | Awaited<ReturnType<typeof createServiceClient>>,
+  'from'
+>;
 
+function buildProfilePayload(userId: string, profile: UserProfile) {
   const payload = {
     user_id: userId,
     display_name: profile.displayName || null,
@@ -646,13 +649,28 @@ export async function upsertProfile(userId: string, profile: UserProfile) {
     updated_at: new Date().toISOString(),
   };
 
+  return payload;
+}
+
+export async function upsertProfileWithClient(
+  userId: string,
+  profile: UserProfile,
+  client: ProfileWriterClient
+) {
+  const payload = buildProfilePayload(userId, profile);
+
   const response = await writeProfilePayloadWithFallback(profile, payload, (nextPayload) =>
-    service.from('profiles').upsert(nextPayload)
+    client.from('profiles').upsert(nextPayload)
   );
 
   if (response.error) {
     throw new Error(getErrorMessage(response.error));
   }
+}
+
+export async function upsertProfile(userId: string, profile: UserProfile) {
+  const service = await createServiceClient();
+  await upsertProfileWithClient(userId, profile, service);
 }
 
 export async function updatePreferredCounselor(
