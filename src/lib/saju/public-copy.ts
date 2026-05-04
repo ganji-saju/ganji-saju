@@ -15,6 +15,7 @@ const TECHNICAL_SENTENCE_PATTERNS = [
 
 const SCORE_PATTERNS = [
   /(?:총운|연애운|재물운|직장운|직업운|관계운|전체 흐름)(?:은|는)?\s*\d+점\s*(?:기준입니다|입니다|으로)?[.,]?\s*/gu,
+  /[가-힣·/\s]+흐름(?:은|는)?\s*\d+점\s*(?:기준입니다|입니다|으로)?[.,]?\s*/gu,
   /\d+점\s*기준입니다[.,]?\s*/gu,
 ];
 
@@ -73,6 +74,13 @@ export function simplifySajuCopy(value: string | null | undefined) {
   }
 
   return text
+    .replace(/관계와 변화 신호[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
+    .replace(/비어 있는 흐름[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
+    .replace(/보조 신호[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
+    .replace(/조절할 기운[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
+    .replace(/(판단 힌트|선택 힌트|풀이 안내|계산 정보)을/gu, '$1를')
+    .replace(/(올해 분위기|이번 달 분위기|긴 흐름)이/gu, '$1가')
+    .replace(/정보로는/gu, '정보로 보면')
     .replace(/\s+([.,!?。])/g, '$1')
     .replace(/\s{2,}/g, ' ')
     .trim();
