@@ -1,7 +1,7 @@
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { Element, Stem, SajuResult } from './types';
 
-// 오행 한글 이름 및 속성
+// 다섯 기운의 쉬운 표시 이름과 속성
 export const ELEMENT_INFO: Record<Element, {
   name: string;
   color: string;
@@ -9,34 +9,34 @@ export const ELEMENT_INFO: Record<Element, {
   keywords: string[];
 }> = {
   목: {
-    name: '木 (목)',
+    name: '성장 기운',
     color: '#4CAF50',
     traits: ['성장', '발전', '창의성', '인자함'],
-    keywords: ['봄', '동쪽', '청색', '간담', '3·4월'],
+    keywords: ['성장', '시작', '아이디어', '관계 확장', '봄'],
   },
   화: {
-    name: '火 (화)',
+    name: '표현 기운',
     color: '#F44336',
     traits: ['열정', '예의', '표현력', '통찰력'],
-    keywords: ['여름', '남쪽', '적색', '심장', '5·6월'],
+    keywords: ['표현', '열정', '주목', '결정', '여름'],
   },
   토: {
-    name: '土 (토)',
+    name: '안정 기운',
     color: '#FF9800',
     traits: ['신뢰', '안정', '중재력', '포용력'],
-    keywords: ['환절기', '중앙', '황색', '비장', '사계절'],
+    keywords: ['안정', '정리', '중재', '신뢰', '기반'],
   },
   금: {
-    name: '金 (금)',
+    name: '정리 기운',
     color: '#9E9E9E',
     traits: ['결단력', '의리', '정의감', '추진력'],
-    keywords: ['가을', '서쪽', '백색', '폐대장', '7·8월'],
+    keywords: ['정리', '판단', '마무리', '원칙', '가을'],
   },
   수: {
-    name: '水 (수)',
+    name: '생각 기운',
     color: '#2196F3',
     traits: ['지혜', '유연성', '직관력', '깊이'],
-    keywords: ['겨울', '북쪽', '흑색', '신방광', '11·12월'],
+    keywords: ['생각', '휴식', '유연함', '감정', '겨울'],
   },
 };
 

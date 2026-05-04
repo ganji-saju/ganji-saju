@@ -8,10 +8,10 @@ import { SAJU_BASIC_SECTIONS, SAJU_PREMIUM_SECTIONS } from '@/content/moonlight'
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import {
   formatBirthSummary,
-  formatHiddenStems,
   getPillarEntries,
 } from '@/features/saju-detail/saju-screen-helpers';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
@@ -21,17 +21,17 @@ interface Props {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: '사주',
-    description: '사주 원국과 기본 해석 진입 화면입니다.',
+    title: '내 사주',
+    description: '내 사주를 쉬운 말로 먼저 확인하는 화면입니다.',
     robots: { index: false, follow: false },
   };
 }
 
 const PILLAR_LABELS: Record<string, string> = {
-  '년': '년주 (年柱)',
-  '월': '월주 (月柱)',
-  '일': '일주 (日柱)',
-  '시': '시주 (時柱)',
+  '년': '태어난 해',
+  '월': '태어난 달',
+  '일': '태어난 날',
+  '시': '태어난 시간',
 };
 
 export default async function SajuOverviewPage({ params }: Props) {
@@ -48,50 +48,45 @@ export default async function SajuOverviewPage({ params }: Props) {
       <AppPage className="space-y-6">
         <SajuScreenNav slug={slug} current="overview" />
 
-        {/* ─── HERO ─── */}
         <section className="moon-lunar-panel p-8 sm:p-10">
           <div className="app-starfield" />
           <div className="relative z-10 flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left lg:items-end lg:justify-between">
             <div>
-              <div className="font-hanja text-[10px] tracking-[0.62em] text-[var(--app-gold)]/60">四 柱 命 理</div>
-              <h1 className="mt-4 font-display text-5xl font-semibold text-[var(--app-gold-text)] sm:text-6xl">
-                사주
+              <div className="app-caption">내 풀이</div>
+              <h1 className="mt-4 text-4xl font-black text-[var(--app-ink)] sm:text-5xl">
+                내 사주를 쉽게 봅니다
               </h1>
               <p className="mt-4 max-w-xl text-base leading-8 text-[var(--app-copy-muted)]">
-                태어난 년·월·일·시의 네 기둥에 깃든 하늘의 결을 읽어드립니다.
+                먼저 타고난 기질과 오늘 연결되는 포인트만 보고, 전문표는 궁금할 때만 펼쳐보세요.
               </p>
               <p className="mt-2 text-sm text-[var(--app-copy-soft)]">{formatBirthSummary(input)}</p>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="app-moon-orb h-16 w-16" />
-              <div className="text-xs tracking-[0.42em] text-[var(--app-gold-soft)]">
-                일간 <span className="font-hanja">{sajuData.dayMaster.stem}</span>
-              </div>
-            </div>
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              무료 기본 풀이
+            </Badge>
           </div>
         </section>
 
         <SwipeSectionDeck
-          title="사주 기본 화면을 한 장씩 넘겨 봅니다"
-          description="사주 기본표와 해석 진입을 분리해 처음 보는 화면의 부담을 줄였습니다."
+          title="처음에는 쉬운 풀이만 봅니다"
+          description="전문표보다 성향, 오늘 연결, 다음 행동을 먼저 확인합니다."
         >
           <SwipeSectionSlide
-            eyebrow="기본표"
-            title="사주 기본표 네 기둥"
-            description="년·월·일·시의 기본 구조를 먼저 확인합니다."
-            navLabel="기본표"
+            eyebrow="내 정보"
+            title="태어난 정보로 보는 큰 흐름"
+            description="한자표 대신 어디에서 어떤 기운이 강하게 보이는지 쉽게 표시합니다."
+            navLabel="내 정보"
           >
-            {/* ─── 사주 기본표 4기둥 ─── */}
             <section className="app-panel p-6 sm:p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="app-caption">사주 기본표</div>
-              <h2 className="mt-2 font-display text-2xl text-[var(--app-ivory)]">
-                선생님의 四柱
+              <div className="app-caption">쉬운 정보</div>
+              <h2 className="mt-2 text-2xl font-black text-[var(--app-ivory)]">
+                전문표는 접고, 먼저 쉽게 봅니다
               </h2>
             </div>
-            <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-              일간 {sajuData.dayMaster.stem}
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              내 기질
             </Badge>
           </div>
 
@@ -103,34 +98,27 @@ export default async function SajuOverviewPage({ params }: Props) {
                   key={label}
                   className={`rounded-[1.35rem] border px-4 py-5 text-center transition-colors ${
                     isDay
-                      ? 'border-[var(--app-gold)]/42 bg-[linear-gradient(180deg,rgba(212,176,106,0.16),rgba(12,16,28,0.96))] shadow-[0_0_28px_rgba(212,176,106,0.1)]'
+                      ? 'border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] shadow-[0_12px_28px_rgba(216,27,114,0.08)]'
                       : 'border-[var(--app-line)] bg-[var(--app-surface-muted)]'
                   }`}
                 >
-                  <div className={`text-[10px] tracking-[0.28em] ${isDay ? 'text-[var(--app-gold)]' : 'text-[var(--app-copy-soft)]'}`}>
+                  <div className={`text-[10px] font-black tracking-[0.08em] ${isDay ? 'text-[var(--app-pink-strong)]' : 'text-[var(--app-copy-soft)]'}`}>
                     {PILLAR_LABELS[label] ?? label}
                   </div>
-                  {isDay && <div className="mt-1 text-[9px] tracking-[0.18em] text-[var(--app-gold)]/60">나의 본질</div>}
+                  {isDay && <div className="mt-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">나를 가장 잘 보여주는 자리</div>}
 
-                  {/* 천간 */}
                   <div className={`mt-4 border-b pb-3 ${isDay ? 'border-[var(--app-gold)]/20' : 'border-[var(--app-line)]'}`}>
-                    <div className="text-[9px] tracking-[0.2em] text-[var(--app-copy-soft)]">천간</div>
-                    <div className={`font-hanja mt-1 text-4xl font-semibold ${isDay ? 'text-[var(--app-gold-text)]' : 'text-[var(--app-ivory)]'}`}>
-                      {pillar?.stem ?? '?'}
+                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">겉으로 보이는 기질</div>
+                    <div className={`mt-2 text-lg font-black ${isDay ? 'text-[var(--app-pink-strong)]' : 'text-[var(--app-ivory)]'}`}>
+                      {pillar ? ELEMENT_INFO[pillar.stemElement].name : '시간 미입력'}
                     </div>
                   </div>
 
-                  {/* 지지 */}
                   <div className="mt-3">
-                    <div className="text-[9px] tracking-[0.2em] text-[var(--app-copy-soft)]">지지</div>
-                    <div className="font-hanja mt-1 text-3xl font-semibold text-[var(--app-ivory)]">
-                      {pillar?.branch ?? '?'}
+                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">속에 깔린 기질</div>
+                    <div className="mt-2 text-lg font-black text-[var(--app-ivory)]">
+                      {pillar ? ELEMENT_INFO[pillar.branchElement].name : '미입력'}
                     </div>
-                    {pillar && (
-                      <div className="font-hanja mt-2 text-[10px] text-[var(--app-copy-soft)]">
-                        {formatHiddenStems(pillar) ?? '—'}
-                      </div>
-                    )}
                     {!pillar && (
                       <div className="mt-2 text-[10px] text-[var(--app-copy-soft)]">미입력</div>
                     )}
@@ -141,11 +129,7 @@ export default async function SajuOverviewPage({ params }: Props) {
           </div>
 
           <div className="mt-5 rounded-[1.2rem] border border-[var(--app-gold)]/16 bg-[var(--app-surface-muted)] px-5 py-4 text-sm leading-8 text-[var(--app-copy)]">
-            일간{' '}
-            <span className="font-hanja text-base text-[var(--app-gold-text)]">
-              {sajuData.dayMaster.stem}
-            </span>
-            은 {sajuData.dayMaster.metaphor ?? '자연의 상징'}로 읽습니다.{' '}
+            내 사주는 {sajuData.dayMaster.metaphor ?? '자연의 상징'}처럼 드러나는 기질을 중심으로 읽습니다.{' '}
             {sajuData.dayMaster.description}
           </div>
             </section>

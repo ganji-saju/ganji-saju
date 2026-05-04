@@ -64,8 +64,8 @@ const NATURE_GUIDE: Record<
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: '타고난 성정',
-    description: '사주 기본 해석 중 타고난 성정 화면입니다.',
+    title: '타고난 성향',
+    description: '타고난 성향을 쉬운 말로 확인하는 화면입니다.',
     robots: { index: false, follow: false },
   };
 }
@@ -95,56 +95,55 @@ export default async function SajuNaturePage({ params }: Props) {
           badges={
             <>
               <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-                사주 · 기본 해석 1/2
+                사주 · 기본 풀이 1/2
               </Badge>
               <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
                 {formatBirthSummary(input)}
               </Badge>
             </>
           }
-          title="타고난 성정"
-          description="일간의 비유와 기질의 장점, 그리고 감정이 앞설 때 조절해야 할 포인트를 먼저 읽는 화면입니다."
+          title="타고난 성향"
+          description="내 장점이 잘 살아나는 장면과 감정이 앞설 때 조심할 점을 먼저 봅니다."
         />
 
         <SwipeSectionDeck
-          title="성정 해석을 한 장씩 넘겨 봅니다"
-          description="타고난 기질, 사람 앞에서 드러나는 모습, 다음 행동을 화면 단위로 나눴습니다."
+          title="내 성향을 쉽게 정리합니다"
+          description="타고난 기질, 사람 앞에서 드러나는 모습, 다음 행동을 간단히 나눠 봅니다."
         >
           <SwipeSectionSlide
             eyebrow="기질"
-            title="타고난 성정 핵심"
-            description="일간 비유와 기질의 장점을 먼저 확인합니다."
+            title="타고난 성향 핵심"
+            description="내 장점과 조심할 점을 먼저 확인합니다."
             navLabel="기질"
           >
             <section className="grid gap-6 xl:grid-cols-[1.06fr_0.94fr]">
               <SectionSurface surface="hero" size="lg" className="overflow-hidden">
             <div className="app-starfield" />
             <div className="relative z-10 grid gap-6 lg:grid-cols-[0.38fr_0.62fr] lg:items-center">
-              <div className="rounded-[1.75rem] border border-[var(--app-gold)]/20 bg-[rgba(255,255,255,0.03)] px-5 py-6 text-center shadow-[0_22px_55px_rgba(0,0,0,0.25)]">
-                <div className="mx-auto flex h-22 w-22 items-center justify-center rounded-full border border-[var(--app-gold)]/24 bg-[radial-gradient(circle_at_50%_35%,rgba(236,201,133,0.22),rgba(12,16,28,0.96))] font-[var(--font-heading)] text-6xl text-[var(--app-gold-text)]">
-                  {sajuData.dayMaster.stem}
+              <div className="rounded-[1.75rem] border border-[var(--app-pink-line)] bg-white px-5 py-6 text-center shadow-[0_18px_42px_rgba(216,27,114,0.1)]">
+                <div className="mx-auto flex h-22 w-22 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-2xl font-black text-[var(--app-pink-strong)]">
+                  {ELEMENT_INFO[element].traits[0]}
                 </div>
-                <div className="mt-4 text-base text-[var(--app-ivory)]">
-                  {sajuData.dayMaster.stem}
-                  {sajuData.dayMaster.element} 일간
+                <div className="mt-4 text-base font-black text-[var(--app-ivory)]">
+                  {ELEMENT_INFO[element].name}
                 </div>
-                <div className="mt-2 text-xs tracking-[0.28em] text-[var(--app-gold)]/72">
+                <div className="mt-2 text-xs font-semibold text-[var(--app-copy-muted)]">
                   {metaphor}
                 </div>
               </div>
 
               <div className="space-y-5">
                 <SectionHeader
-                  eyebrow="일간 비유"
+                  eyebrow="성향 비유"
                   title={`${metaphor}처럼 드러나는 기질`}
-                  description={`${sajuData.dayMaster.stem}${sajuData.dayMaster.element} 일간은 ${guide.strength}`}
+                  description={guide.strength}
                   titleClassName="text-3xl sm:text-[2.2rem]"
                 />
                 <div className="flex flex-wrap gap-2">
                   {traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full border border-[var(--app-gold)]/20 bg-[rgba(236,201,133,0.08)] px-3 py-1 text-xs text-[var(--app-gold-text)]"
+                      className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink-strong)]"
                     >
                       {trait}
                     </span>
@@ -160,7 +159,7 @@ export default async function SajuNaturePage({ params }: Props) {
           <SupportRail
             eyebrow="생활 힌트"
             title="사람 앞에서 어떻게 드러나는지 먼저 봅니다"
-            description="성정 페이지는 길게 설명하기보다, 언제 힘이 붙고 언제 감정이 먼저 나가는지를 먼저 짚은 뒤 오행 균형으로 이어집니다."
+            description="성향 화면은 길게 설명하기보다, 언제 힘이 붙고 언제 감정이 먼저 나가는지를 먼저 짚은 뒤 기운 균형으로 이어집니다."
             surface="muted"
           >
             <div className="grid gap-3">
@@ -190,13 +189,13 @@ export default async function SajuNaturePage({ params }: Props) {
           <SwipeSectionSlide
             eyebrow="정리"
             title="생활 리듬과 다음 화면"
-            description="성향 키워드와 다음 오행 균형 화면으로 이어지는 선택을 모았습니다."
+            description="성향 키워드와 다음 기운 균형 화면으로 이어지는 선택을 모았습니다."
             navLabel="정리"
           >
             <ProductGrid columns={3}>
           <FeatureCard
             eyebrow="성향 키워드"
-            title={`${ELEMENT_INFO[element].name}의 결`}
+            title={`${ELEMENT_INFO[element].name}의 느낌`}
             description={`이 기질은 ${traits.join(' · ')} 쪽으로 강점을 보입니다.`}
             surface="panel"
           />
@@ -208,15 +207,15 @@ export default async function SajuNaturePage({ params }: Props) {
           />
           <FeatureCard
             eyebrow="다음 화면"
-            title="오행 균형으로 이어집니다"
-            description="성정이 어떤 결로 드러나는지 읽었다면, 다음 화면에서는 다섯 기운의 배치를 원형으로 확인하게 됩니다."
+            title="기운 균형으로 이어집니다"
+            description="성향이 어떻게 드러나는지 읽었다면, 다음 화면에서는 다섯 기운의 배치를 원형으로 확인합니다."
             surface="panel"
             footer={
               <Link
                 href={`/saju/${slug}/elements`}
                 className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
               >
-                오행 균형 보기
+                기운 균형 보기
                 <ArrowRight className="h-4 w-4" />
               </Link>
             }
@@ -234,7 +233,7 @@ export default async function SajuNaturePage({ params }: Props) {
             href={`/saju/${slug}/elements`}
             className="moon-action-secondary"
           >
-            다음: 오행 균형
+            다음: 기운 균형
           </Link>
             </section>
           </SwipeSectionSlide>

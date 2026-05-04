@@ -2,12 +2,12 @@ import { ELEMENT_INFO } from '@/lib/saju/elements';
 import type { Element } from '@/lib/saju/types';
 
 const ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
-const ELEMENT_HANJA: Record<Element, string> = {
-  목: '木',
-  화: '火',
-  토: '土',
-  금: '金',
-  수: '水',
+const ELEMENT_DISPLAY: Record<Element, string> = {
+  목: '성장',
+  화: '표현',
+  토: '안정',
+  금: '정리',
+  수: '생각',
 };
 
 const ORBIT_LAYOUT: Record<Element, { angle: number; x: number; y: number }> = {
@@ -94,12 +94,12 @@ export default function FiveElementOrbitChart({
       </svg>
 
       <div className="app-element-orbit-core">
-        <div className="app-caption">오행 중심</div>
-        <div className="mt-3 font-[var(--font-heading)] text-[1.9rem] text-[var(--app-gold-text)]">
-          五行
+        <div className="app-caption">기운 중심</div>
+        <div className="mt-3 text-[1.6rem] font-black text-[var(--app-pink-strong)]">
+          다섯 기운
         </div>
         <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
-          주도 {ELEMENT_HANJA[dominant]} · 보완 {ELEMENT_HANJA[weakest]}
+          강한 쪽 {ELEMENT_DISPLAY[dominant]} · 채울 쪽 {ELEMENT_DISPLAY[weakest]}
         </div>
       </div>
 
@@ -123,13 +123,13 @@ export default function FiveElementOrbitChart({
             data-dominant={isDominant}
             data-weakest={isWeakest}
           >
-            <div className="app-element-orbit-node-hanja">{ELEMENT_HANJA[element]}</div>
-            <div className="app-element-orbit-node-label">{element}</div>
+            <div className="app-element-orbit-node-hanja">{ELEMENT_DISPLAY[element]}</div>
+            <div className="app-element-orbit-node-label">{element} 기운</div>
             <div className="app-element-orbit-node-value">{Math.round(value.percentage)}%</div>
             {isDominant ? (
-              <div className="app-element-orbit-node-tag">주도</div>
+              <div className="app-element-orbit-node-tag">강함</div>
             ) : isWeakest ? (
-              <div className="app-element-orbit-node-tag">보완</div>
+              <div className="app-element-orbit-node-tag">채움</div>
             ) : null}
           </div>
         );

@@ -44,10 +44,10 @@ interface Props {
 }
 
 const SECTIONS = [
-  { key: 'wealth', label: '재물운' },
-  { key: 'love', label: '연애운' },
-  { key: 'career', label: '직업운' },
-  { key: 'health', label: '건강운' },
+  { key: 'wealth', label: '돈 흐름' },
+  { key: 'love', label: '연애 흐름' },
+  { key: 'career', label: '일 흐름' },
+  { key: 'health', label: '생활 리듬' },
 ] as const;
 
 const SAJU_TEACHER = DALBIT_TEACHERS.find((teacher) => teacher.slug === 'saju-yong') ?? DALBIT_TEACHERS[0];
@@ -65,8 +65,8 @@ const DETAIL_SECTION_META: Record<
   }
 > = {
   wealth: {
-    eyebrow: '돈의 구조',
-    focus: '핵심 재물 흐름',
+    eyebrow: '돈',
+    focus: '지금 볼 돈 흐름',
     guidance: '수입·지출·기회 판단을 분리해서 읽어보세요.',
     color: '#34d399',
     soft: 'rgba(52,211,153,0.11)',
@@ -74,8 +74,8 @@ const DETAIL_SECTION_META: Record<
     label: '재물',
   },
   love: {
-    eyebrow: '감정의 온도',
-    focus: '핵심 애정 흐름',
+    eyebrow: '연애',
+    focus: '지금 볼 마음 흐름',
     guidance: '상대의 반응보다 표현 방식과 속도에 주목해 보세요.',
     color: '#fb7185',
     soft: 'rgba(251,113,133,0.11)',
@@ -83,8 +83,8 @@ const DETAIL_SECTION_META: Record<
     label: '연애',
   },
   career: {
-    eyebrow: '역할과 성과',
-    focus: '핵심 직업 흐름',
+    eyebrow: '일',
+    focus: '지금 볼 일 흐름',
     guidance: '자리, 책임, 제안 타이밍을 나눠서 확인해 보세요.',
     color: '#38bdf8',
     soft: 'rgba(56,189,248,0.11)',
@@ -92,9 +92,9 @@ const DETAIL_SECTION_META: Record<
     label: '직업',
   },
   health: {
-    eyebrow: '몸의 균형',
-    focus: '핵심 건강 흐름',
-    guidance: '강한 기운과 약한 기운이 생활 리듬에 주는 영향을 봅니다.',
+    eyebrow: '생활',
+    focus: '지금 볼 생활 리듬',
+    guidance: '생활 리듬에서 먼저 손볼 포인트를 봅니다.',
     color: '#a78bfa',
     soft: 'rgba(167,139,250,0.12)',
     line: 'rgba(167,139,250,0.34)',
@@ -104,7 +104,7 @@ const DETAIL_SECTION_META: Record<
 
 const TONE_LABELS: Record<NonNullable<DetailTopicBlock['tone']>, string> = {
   core: '핵심',
-  basis: '단서',
+  basis: '이유',
   action: '실천',
   caution: '주의',
   flow: '운 흐름',
@@ -308,7 +308,7 @@ function ReferenceDetails({ children }: { children?: ReactNode }) {
   return (
     <details className="mt-6 rounded-[24px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
       <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--app-copy)]">
-        세부 계산 단서 보기
+        전문 정보 보기
       </summary>
       <div className="mt-4 space-y-5">{children}</div>
     </details>
@@ -413,7 +413,7 @@ export default function DetailUnlock({
           <div>
             <div className="app-caption">분야별 깊이보기</div>
             <h2 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">
-              재물·연애·직업·생활 리듬 해석이 열려 있습니다
+              돈·연애·일·생활 리듬 풀이가 열려 있습니다
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -432,7 +432,7 @@ export default function DetailUnlock({
         <p className="app-body-copy text-sm">
           {access === 'reused'
             ? '이전에 열었던 같은 결과라 코인 차감 없이 다시 보여드립니다.'
-            : '좋은 말만 길게 나열하지 않고, 지금 실제로 궁금한 장면부터 읽을 수 있게 분야별 핵심과 주의 포인트를 먼저 정리했습니다.'}
+            : '지금 실제로 궁금한 장면부터 읽을 수 있게 분야별 핵심과 조심할 점을 먼저 정리했습니다.'}
         </p>
 
         {children ? <div className="mt-6 space-y-5">{children}</div> : null}
@@ -512,11 +512,11 @@ export default function DetailUnlock({
           <div className="max-w-2xl">
             <div className="app-caption text-emerald-700">이미 포함된 긴 풀이</div>
             <h2 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">
-              보관형 사주 리포트에서 이어서 보시면 됩니다
+              깊은 사주풀이 안에 포함된 내용입니다
             </h2>
             <p className="app-body-copy mt-3 text-sm">
               이 결과는 {premiumAccessLabel}으로 전체 리포트 열람이 가능합니다. 기본 결과 아래에서
-              1코인을 다시 쓰게 하지 않고, 포함된 해석을 그대로 이어 보여드립니다.
+              1코인을 다시 쓰게 하지 않고, 포함된 풀이로 이어 보여드립니다.
             </p>
           </div>
           <Badge className="border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
@@ -529,7 +529,7 @@ export default function DetailUnlock({
             href={premiumHref}
             className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--app-gold)]/38 bg-[var(--app-gold)]/14 px-6 text-sm font-semibold text-[var(--app-gold-text)] shadow-[0_16px_42px_rgba(210,176,114,0.12)] transition hover:bg-[var(--app-gold)]/20"
           >
-            보관형 사주 리포트 이어보기
+            깊은 사주풀이 이어보기
           </Link>
         ) : null}
 
@@ -561,7 +561,7 @@ export default function DetailUnlock({
 
         <p className="app-body-copy mt-4 max-w-2xl text-sm">
           기본 결과를 먼저 읽고, 재물·연애·직업·생활 리듬 중 더 궁금한 장면만 선택해서 펼칩니다.
-          보관형 사주 리포트에는 이 흐름이 더 넓게 포함됩니다.
+          깊은 사주풀이에는 이 흐름이 더 넓게 포함됩니다.
           {' '}
           {SAJU_TEACHER.teacherName}이 오늘 바로 볼 결론과 보류할 지점을 먼저 잡아드립니다.
         </p>
@@ -570,7 +570,7 @@ export default function DetailUnlock({
           {[
             '이미 충분하면 열지 않아도 되는 선택형 심화입니다.',
             '한 번 연 같은 결과는 다시 코인이 차감되지 않습니다.',
-            '더 큰 흐름은 보관형 사주 리포트에서 한 번에 이어집니다.',
+            '더 큰 흐름은 깊은 사주풀이에서 한 번에 이어집니다.',
           ].map((item) => (
             <div
               key={item}
@@ -598,7 +598,7 @@ export default function DetailUnlock({
         <div className="relative z-20 mt-6 rounded-[24px] border border-[var(--app-line)] bg-white/86 p-5 text-center backdrop-blur-sm">
           <p className="font-semibold text-[var(--app-ivory)]">분야별 깊이보기</p>
           <p className="mt-2 text-sm text-[var(--app-copy-muted)]">
-            재물·연애·직업·건강 4개 영역을 한 번에 열고, 같은 결과는 이후에도 다시 차감하지 않습니다.
+            돈·연애·일·건강 4개 영역을 한 번에 열고, 같은 결과는 이후에도 다시 차감하지 않습니다.
           </p>
           <Button
             onClick={handleUnlock}
@@ -625,10 +625,10 @@ function getPreviewCopy(key: (typeof SECTIONS)[number]['key']) {
     case 'wealth':
       return '현재 운 흐름 안에서 금전 감각이 살아나는 구간과 지출을 조심할 구간을 함께 읽습니다.';
     case 'love':
-      return '관계의 속도와 표현 강약을 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
+      return '관계의 속도와 표현 온도를 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
     case 'career':
       return '큰 흐름과 올해 흐름을 바탕으로 포지션 변화, 확장 타이밍, 일의 결을 더 구체적으로 읽습니다.';
     case 'health':
-      return '과한 기운과 약한 기운을 함께 보고 생활 리듬에서 먼저 손볼 포인트를 제안합니다.';
+      return '많이 쓰는 기운과 채워야 할 기운을 함께 보고 생활 리듬에서 먼저 손볼 포인트를 제안합니다.';
   }
 }

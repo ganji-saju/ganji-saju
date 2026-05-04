@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const SAJU_SCREEN_ITEMS = [
-  { key: 'result', label: '통합 결과', getHref: (slug: string) => `/saju/${slug}` },
-  { key: 'overview', label: '사주', getHref: (slug: string) => `/saju/${slug}/overview` },
-  { key: 'nature', label: '성정', getHref: (slug: string) => `/saju/${slug}/nature` },
-  { key: 'elements', label: '오행', getHref: (slug: string) => `/saju/${slug}/elements` },
-  { key: 'premium', label: '깊은 사주풀이', getHref: (slug: string) => `/saju/${slug}/premium` },
+  { key: 'result', label: '요약', getHref: (slug: string) => `/saju/${slug}` },
+  { key: 'overview', label: '내 사주', getHref: (slug: string) => `/saju/${slug}/overview` },
+  { key: 'nature', label: '성향', getHref: (slug: string) => `/saju/${slug}/nature` },
+  { key: 'elements', label: '기운 균형', getHref: (slug: string) => `/saju/${slug}/elements` },
+  { key: 'premium', label: '깊게 보기', getHref: (slug: string) => `/saju/${slug}/premium` },
 ] as const;
 
 interface SajuScreenNavProps {

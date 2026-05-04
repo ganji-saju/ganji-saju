@@ -56,7 +56,7 @@ export function ReportOneMinuteSummary({
         eyebrow="1분 요약"
         title="먼저, 지금 필요한 답만 짚어드립니다"
         titleClassName="text-3xl"
-        description="전문 설명보다 핵심 한 줄, 조심할 패턴, 오늘 할 행동, 더 깊게 볼 주제를 먼저 보여드립니다."
+        description="복잡한 설명보다 핵심 한 줄, 조심할 패턴, 오늘 할 행동, 더 깊게 볼 주제를 먼저 보여드립니다."
       />
 
       <FeatureCard
@@ -69,7 +69,7 @@ export function ReportOneMinuteSummary({
 
       {isTimeUnknown ? (
         <div className="mt-4 rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy)]">
-          태어난 시간이 정확하지 않아 시주 중심 해석은 보수적으로 낮춰 읽습니다.
+          태어난 시간이 정확하지 않아 시간에 민감한 풀이는 조심해서 읽습니다.
         </div>
       ) : null}
 
