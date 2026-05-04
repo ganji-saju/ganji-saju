@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
   return value;
@@ -9,6 +11,38 @@ function getSafeNext(value: string | null) {
 function getSafeProvider(value: string | null) {
   if (value === 'google' || value === 'kakao') return value;
   return null;
+}
+
+function getConfiguredOrigin() {
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
+  if (!configuredUrl?.startsWith('http')) return null;
+
+  try {
+    const url = new URL(configuredUrl);
+    if (url.hostname.endsWith('.supabase.co')) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function getRedirectOrigin(requestOrigin: string) {
+  const configuredOrigin = getConfiguredOrigin();
+  if (configuredOrigin) return configuredOrigin;
+
+  try {
+    const url = new URL(requestOrigin);
+    const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    if (isLocal) return url.origin;
+
+    const isVercelAutoDomain =
+      url.hostname.endsWith('.vercel.app') && url.origin !== CANONICAL_SITE_ORIGIN;
+    if (isVercelAutoDomain) return CANONICAL_SITE_ORIGIN;
+
+    return url.origin;
+  } catch {
+    return CANONICAL_SITE_ORIGIN;
+  }
 }
 
 function buildLoginRedirect({
@@ -34,7 +68,9 @@ function buildLoginRedirect({
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url);
+  const requestUrl = new URL(req.url);
+  const { searchParams } = requestUrl;
+  const origin = getRedirectOrigin(requestUrl.origin);
   const code = searchParams.get('code');
   const next = getSafeNext(searchParams.get('next'));
   const provider = getSafeProvider(searchParams.get('provider'));

@@ -6,9 +6,22 @@ import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 
+const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
   return value;
+}
+
+function isLocalOrigin(url: URL) {
+  return url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+}
+
+function shouldUseCanonicalOrigin(url: URL) {
+  return (
+    url.hostname.endsWith('.vercel.app') &&
+    url.origin !== CANONICAL_SITE_ORIGIN
+  );
 }
 
 function getRedirectOrigin() {
@@ -21,7 +34,15 @@ function getRedirectOrigin() {
       // Fall back to the browser origin below.
     }
   }
-  return location.origin;
+
+  try {
+    const browserUrl = new URL(location.origin);
+    if (isLocalOrigin(browserUrl)) return browserUrl.origin;
+    if (shouldUseCanonicalOrigin(browserUrl)) return CANONICAL_SITE_ORIGIN;
+    return browserUrl.origin;
+  } catch {
+    return CANONICAL_SITE_ORIGIN;
+  }
 }
 
 function getProviderLabel(value: string | null) {
