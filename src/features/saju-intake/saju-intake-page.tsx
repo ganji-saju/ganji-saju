@@ -373,6 +373,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const touchStartXRef = useRef<number | null>(null);
   const hasTrackedStartRef = useRef(false);
   const hasTrackedBirthStartRef = useRef(false);
+  const hasAutoAppliedProfileRef = useRef(false);
 
   const steps = useMemo(
     () => (consentAccepted ? [PROFILE_STEP, ...BASE_STEPS] : [PROFILE_STEP, ...BASE_STEPS, CONSENT_STEP]),
@@ -466,6 +467,21 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         const options = buildSavedProfileOptions(data);
         setSavedProfileOptions(options);
         setProfileLoadStatus(options.length > 0 ? 'ready' : 'empty');
+
+        const autoProfileParam =
+          typeof window === 'undefined'
+            ? null
+            : new URLSearchParams(window.location.search).get('autoProfile');
+        const shouldAutoApplyProfile =
+          autoProfileParam === '1' || autoProfileParam === 'true' || autoProfileParam === 'signup';
+        const selfProfile = options.find((profile) => profile.source === 'self');
+
+        if (shouldAutoApplyProfile && selfProfile && !hasAutoAppliedProfileRef.current) {
+          hasAutoAppliedProfileRef.current = true;
+          applySavedProfile(selfProfile);
+          setProfileLoadMessage('회원가입 때 저장한 내 정보를 입력칸에 자동으로 불러왔습니다.');
+          window.history.replaceState(null, '', '/saju/new');
+        }
       } catch {
         if (cancelled) return;
         setProfileLoadStatus('error');

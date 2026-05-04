@@ -1,12 +1,56 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+import { Suspense, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
+import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
+import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
 const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_YEAR - index);
+const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
+const DAYS = Array.from({ length: 31 }, (_, index) => index + 1);
+const HOURS = Array.from({ length: 24 }, (_, index) => index);
+const MINUTES = Array.from({ length: 12 }, (_, index) => index * 5);
+
+type LoginMode = 'signup' | 'login';
+type GenderValue = 'male' | 'female' | '';
+
+type SignupForm = {
+  displayName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  calendarType: 'solar' | 'lunar';
+  birthYear: string;
+  birthMonth: string;
+  birthDay: string;
+  gender: GenderValue;
+  unknownBirthTime: boolean;
+  birthHour: string;
+  birthMinute: string;
+  birthLocationCode: string;
+  timeRule: 'standard' | 'trueSolarTime';
+};
+
+const DEFAULT_SIGNUP_FORM: SignupForm = {
+  displayName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  calendarType: 'solar',
+  birthYear: '',
+  birthMonth: '',
+  birthDay: '',
+  gender: '',
+  unknownBirthTime: false,
+  birthHour: '',
+  birthMinute: '0',
+  birthLocationCode: 'seoul',
+  timeRule: 'standard',
+};
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
@@ -73,32 +117,99 @@ function getOAuthLoginError(error: string | null, provider: string | null, reaso
   return '';
 }
 
-function getEmailLoginError(message?: string) {
-  if (!message) return '로그인 링크를 보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
-
-  if (message.toLowerCase().includes('email')) {
-    return '이메일 형식이나 Supabase Email Auth 설정을 확인해 주세요.';
+function getPasswordLoginError(message?: string) {
+  const normalized = message?.toLowerCase() ?? '';
+  if (!message) return '로그인을 완료하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+  if (normalized.includes('invalid') || normalized.includes('credential')) {
+    return '이메일 또는 비밀번호가 맞지 않습니다.';
   }
-
-  if (message.toLowerCase().includes('rate')) {
-    return '로그인 링크 요청이 너무 잦습니다. 잠시 뒤 다시 시도해 주세요.';
+  if (normalized.includes('confirm')) {
+    return '이메일 인증 설정을 확인해 주세요. 현재는 바로 로그인할 수 있도록 가입 처리합니다.';
   }
-
   return message;
 }
 
+function getAfterLoginHref(next: string) {
+  if (next === '/' || next === '/login') return '/saju/new?autoProfile=1';
+  if (!next.startsWith('/saju/new')) return next;
+
+  const [path, query = ''] = next.split('?');
+  const params = new URLSearchParams(query);
+  params.set('autoProfile', '1');
+  return `${path}?${params.toString()}`;
+}
+
+function formatOptionNumber(value: number) {
+  return String(value).padStart(2, '0');
+}
+
+function FieldLabel({
+  children,
+  htmlFor,
+}: {
+  children: ReactNode;
+  htmlFor?: string;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="text-xs font-bold text-[var(--app-copy-muted)]"
+    >
+      {children}
+    </label>
+  );
+}
+
+function NativeSelect({
+  id,
+  value,
+  onChange,
+  children,
+  disabled,
+  className = '',
+}: {
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <select
+      id={id}
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      className={`h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-3 text-sm font-semibold text-[var(--app-ink)] outline-none transition focus:border-[var(--app-pink)] ${className}`}
+    >
+      {children}
+    </select>
+  );
+}
+
 function LoginContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
   const callbackError = searchParams.get('error');
   const callbackProvider = searchParams.get('provider');
   const callbackReason = searchParams.get('reason');
-  const [email, setEmail] = useState('');
+  const [mode, setMode] = useState<LoginMode>('signup');
+  const [signupForm, setSignupForm] = useState<SignupForm>(DEFAULT_SIGNUP_FORM);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState(
     getOAuthLoginError(callbackError, callbackProvider, callbackReason)
   );
-  const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
+  const [isSubmittingSignup, setIsSubmittingSignup] = useState(false);
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
+
+  const afterLoginHref = useMemo(() => getAfterLoginHref(next), [next]);
+
+  function updateSignupForm<K extends keyof SignupForm>(key: K, value: SignupForm[K]) {
+    setSignupForm((current) => ({ ...current, [key]: value }));
+  }
 
   async function signInWithProvider(provider: 'google' | 'kakao') {
     if (!hasSupabaseBrowserEnv) {
@@ -115,7 +226,7 @@ function LoginContent() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${getRedirectOrigin()}/api/auth/callback?provider=${provider}&next=${encodeURIComponent(next)}`,
+        redirectTo: `${getRedirectOrigin()}/api/auth/callback?provider=${provider}&next=${encodeURIComponent(afterLoginHref)}`,
       },
     });
 
@@ -124,113 +235,398 @@ function LoginContent() {
     }
   }
 
-  async function requestEmailLink(event: React.FormEvent<HTMLFormElement>) {
+  async function signInWithPassword(email: string, password: string) {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (error) {
+      setErrorMessage(getPasswordLoginError(error.message));
+      return false;
+    }
+
+    router.replace(afterLoginHref);
+    router.refresh();
+    return true;
+  }
+
+  async function submitSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!hasSupabaseBrowserEnv) {
-      setErrorMessage('Supabase 환경변수가 없어 로컬에서는 로그인 링크를 보낼 수 없습니다.');
+      setErrorMessage('Supabase 환경변수가 없어 로컬에서는 회원가입을 사용할 수 없습니다.');
       setStatusMessage('');
       return;
     }
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail.includes('@')) {
-      setErrorMessage('로그인에 사용할 이메일 주소를 입력해 주세요.');
+    if (signupForm.password !== signupForm.confirmPassword) {
+      setErrorMessage('비밀번호 확인이 서로 다릅니다.');
       setStatusMessage('');
       return;
     }
 
-    setIsSubmittingEmail(true);
+    setIsSubmittingSignup(true);
     setErrorMessage('');
     setStatusMessage('');
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmedEmail,
-      options: {
-        emailRedirectTo: `${getRedirectOrigin()}/api/auth/callback?next=${encodeURIComponent(next)}`,
-        shouldCreateUser: true,
-      },
+    const response = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        displayName: signupForm.displayName,
+        email: signupForm.email,
+        password: signupForm.password,
+        calendarType: signupForm.calendarType,
+        birthYear: signupForm.birthYear,
+        birthMonth: signupForm.birthMonth,
+        birthDay: signupForm.birthDay,
+        gender: signupForm.gender,
+        unknownBirthTime: signupForm.unknownBirthTime,
+        birthHour: signupForm.birthHour,
+        birthMinute: signupForm.birthMinute,
+        birthLocationCode: signupForm.birthLocationCode,
+        timeRule: signupForm.timeRule,
+      }),
     });
 
-    setIsSubmittingEmail(false);
+    const data = (await response.json().catch(() => null)) as
+      | { success?: boolean; next?: string; error?: string }
+      | null;
 
-    if (error) {
-      setErrorMessage(getEmailLoginError(error.message));
+    if (!response.ok || !data?.success) {
+      setIsSubmittingSignup(false);
+      setErrorMessage(data?.error ?? '회원가입을 완료하지 못했습니다.');
       return;
     }
 
-    setStatusMessage('가입/로그인 링크를 보냈습니다. 메일함에서 달빛인생 링크를 열어 주세요.');
+    setStatusMessage('회원가입이 완료됐습니다. 사주 입력 화면에 내 정보를 불러오는 중입니다.');
+    const signedIn = await signInWithPassword(signupForm.email, signupForm.password);
+    if (!signedIn) {
+      setStatusMessage('회원가입은 완료됐습니다. 로그인 탭에서 비밀번호로 다시 로그인해 주세요.');
+    }
+    setIsSubmittingSignup(false);
   }
 
+  async function submitLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!hasSupabaseBrowserEnv) {
+      setErrorMessage('Supabase 환경변수가 없어 로컬에서는 로그인을 사용할 수 없습니다.');
+      setStatusMessage('');
+      return;
+    }
+
+    if (!loginForm.email.includes('@') || loginForm.password.length < 1) {
+      setErrorMessage('이메일과 비밀번호를 입력해 주세요.');
+      setStatusMessage('');
+      return;
+    }
+
+    setIsSubmittingLogin(true);
+    setErrorMessage('');
+    setStatusMessage('');
+    await signInWithPassword(loginForm.email, loginForm.password);
+    setIsSubmittingLogin(false);
+  }
+
+  const disabled = !hasSupabaseBrowserEnv;
+
   return (
-    <div className="app-panel w-full max-w-md p-7 text-center sm:p-8">
-      <div className="mb-2">
-        <div className="app-caption mb-3">연락처로 간편 로그인</div>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight text-[var(--app-ink)]">
-          달빛인생 로그인
+    <div className="app-panel w-full max-w-3xl p-5 text-center sm:p-8">
+      <div className="mb-5">
+        <div className="app-caption mb-3">회원가입하면 입력을 반복하지 않아요</div>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
+          달빛인생 시작하기
         </h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--app-copy-muted)]">
-          {hasSupabaseBrowserEnv
-            ? '무료 운세를 보고, 마음에 드는 풀이를 저장하려면 로그인하세요.'
-            : '로컬 환경에서는 Supabase 설정 후 로그인을 사용할 수 있습니다.'}
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--app-copy-muted)]">
+          이메일과 비밀번호로 가입하고, 생년월일과 출생지를 한 번 저장하면 사주풀이 입력란에 자동으로 불러옵니다.
         </p>
       </div>
 
-      <form className="mt-6 space-y-3 text-left" onSubmit={requestEmailLink}>
-        <label
-          className="text-xs font-medium text-[var(--app-copy-muted)]"
-          htmlFor="login-email"
-        >
-          이메일 주소
-        </label>
-        <div className="flex gap-2 rounded-2xl border border-[var(--app-line-strong)] bg-[var(--app-pink-soft)] p-2 focus-within:border-[var(--app-pink)]/70">
-          <span className="inline-flex h-11 items-center rounded-xl bg-white px-3 text-sm text-[var(--app-pink-strong)]">
-            MAIL
-          </span>
-          <input
-            id="login-email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-base text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
-          />
-        </div>
-        <Button
-          type="submit"
-          disabled={isSubmittingEmail || !hasSupabaseBrowserEnv}
-          className="h-11 w-full rounded-2xl"
-        >
-          {isSubmittingEmail ? '링크 보내는 중...' : '가입/로그인 링크 받기'}
-        </Button>
-      </form>
+      <div className="grid grid-cols-2 gap-2 rounded-3xl bg-[var(--app-surface-muted)] p-1.5">
+        {[
+          ['signup', '회원가입'],
+          ['login', '로그인'],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => {
+              setMode(value as LoginMode);
+              setErrorMessage('');
+              setStatusMessage('');
+            }}
+            className={`h-11 rounded-2xl text-sm font-black transition ${
+              mode === value
+                ? 'bg-[var(--app-pink)] text-white shadow-[0_12px_24px_rgba(216,27,114,0.24)]'
+                : 'text-[var(--app-copy-muted)]'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <section className="mt-4 rounded-2xl border border-dashed border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-left">
-        <div className="text-sm font-medium text-[var(--app-ink)]">휴대폰 인증은 준비 중입니다</div>
-        <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
-          SMS provider 연동 전까지는 이메일 링크로 가입/로그인을 진행합니다.
+      {mode === 'signup' ? (
+        <form className="mt-6 space-y-5 text-left" onSubmit={submitSignup}>
+          <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabel htmlFor="signup-name">이름 또는 별명</FieldLabel>
+                <input
+                  id="signup-name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="예: 지윤"
+                  value={signupForm.displayName}
+                  onChange={(event) => updateSignupForm('displayName', event.target.value)}
+                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="signup-email">이메일</FieldLabel>
+                <input
+                  id="signup-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  placeholder="name@example.com"
+                  value={signupForm.email}
+                  onChange={(event) => updateSignupForm('email', event.target.value)}
+                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="signup-password">비밀번호</FieldLabel>
+                <input
+                  id="signup-password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="8자 이상"
+                  value={signupForm.password}
+                  onChange={(event) => updateSignupForm('password', event.target.value)}
+                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="signup-password-confirm">비밀번호 확인</FieldLabel>
+                <input
+                  id="signup-password-confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="한 번 더 입력"
+                  value={signupForm.confirmPassword}
+                  onChange={(event) => updateSignupForm('confirmPassword', event.target.value)}
+                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-black text-[var(--app-ink)]">기본 사주 정보</div>
+                <p className="mt-1 text-xs leading-5 text-[var(--app-copy-muted)]">
+                  저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
+                </p>
+              </div>
+              <NativeSelect
+                value={signupForm.calendarType}
+                onChange={(value) => updateSignupForm('calendarType', value as SignupForm['calendarType'])}
+                className="max-w-[112px]"
+              >
+                <option value="solar">양력</option>
+                <option value="lunar">음력</option>
+              </NativeSelect>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <NativeSelect
+                id="birth-year"
+                value={signupForm.birthYear}
+                onChange={(value) => updateSignupForm('birthYear', value)}
+              >
+                <option value="">년</option>
+                {YEARS.map((year) => (
+                  <option key={year} value={year}>
+                    {year}년
+                  </option>
+                ))}
+              </NativeSelect>
+              <NativeSelect
+                value={signupForm.birthMonth}
+                onChange={(value) => updateSignupForm('birthMonth', value)}
+              >
+                <option value="">월</option>
+                {MONTHS.map((month) => (
+                  <option key={month} value={month}>
+                    {formatOptionNumber(month)}월
+                  </option>
+                ))}
+              </NativeSelect>
+              <NativeSelect
+                value={signupForm.birthDay}
+                onChange={(value) => updateSignupForm('birthDay', value)}
+              >
+                <option value="">일</option>
+                {DAYS.map((day) => (
+                  <option key={day} value={day}>
+                    {formatOptionNumber(day)}일
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabel>성별</FieldLabel>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    ['male', '남성'],
+                    ['female', '여성'],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => updateSignupForm('gender', value as GenderValue)}
+                      className={`h-12 rounded-2xl border text-sm font-black transition ${
+                        signupForm.gender === value
+                          ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
+                          : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <FieldLabel>출생 시간</FieldLabel>
+                <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                  <NativeSelect
+                    value={signupForm.birthHour}
+                    disabled={signupForm.unknownBirthTime}
+                    onChange={(value) => updateSignupForm('birthHour', value)}
+                  >
+                    <option value="">시</option>
+                    {HOURS.map((hour) => (
+                      <option key={hour} value={hour}>
+                        {formatOptionNumber(hour)}시
+                      </option>
+                    ))}
+                  </NativeSelect>
+                  <NativeSelect
+                    value={signupForm.birthMinute}
+                    disabled={signupForm.unknownBirthTime}
+                    onChange={(value) => updateSignupForm('birthMinute', value)}
+                  >
+                    {MINUTES.map((minute) => (
+                      <option key={minute} value={minute}>
+                        {formatOptionNumber(minute)}분
+                      </option>
+                    ))}
+                  </NativeSelect>
+                  <label className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-white px-3 text-xs font-bold text-[var(--app-copy-muted)]">
+                    <input
+                      type="checkbox"
+                      checked={signupForm.unknownBirthTime}
+                      onChange={(event) =>
+                        updateSignupForm('unknownBirthTime', event.target.checked)
+                      }
+                      className="accent-[var(--app-pink)]"
+                    />
+                    모름
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabel htmlFor="birth-location">출생지</FieldLabel>
+                <NativeSelect
+                  id="birth-location"
+                  value={signupForm.birthLocationCode}
+                  onChange={(value) => updateSignupForm('birthLocationCode', value)}
+                >
+                  {BIRTH_LOCATION_PRESETS.map((location) => (
+                    <option key={location.code} value={location.code}>
+                      {location.label}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </div>
+              <div className="space-y-2">
+                <FieldLabel htmlFor="time-rule">시간 기준</FieldLabel>
+                <NativeSelect
+                  id="time-rule"
+                  value={signupForm.timeRule}
+                  onChange={(value) => updateSignupForm('timeRule', value as SignupForm['timeRule'])}
+                >
+                  <option value="standard">표준시</option>
+                  <option value="trueSolarTime">진태양시</option>
+                </NativeSelect>
+              </div>
+            </div>
+          </section>
+
+          <Button
+            type="submit"
+            disabled={disabled || isSubmittingSignup}
+            className="h-12 w-full rounded-2xl text-base font-black"
+          >
+            {isSubmittingSignup ? '회원가입 중...' : '회원가입하고 사주정보 불러오기'}
+          </Button>
+        </form>
+      ) : (
+        <form className="mt-6 space-y-4 text-left" onSubmit={submitLogin}>
+          <div className="space-y-2">
+            <FieldLabel htmlFor="login-email">이메일</FieldLabel>
+            <input
+              id="login-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              value={loginForm.email}
+              onChange={(event) =>
+                setLoginForm((current) => ({ ...current, email: event.target.value }))
+              }
+              className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel htmlFor="login-password">비밀번호</FieldLabel>
+            <input
+              id="login-password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="가입할 때 만든 비밀번호"
+              value={loginForm.password}
+              onChange={(event) =>
+                setLoginForm((current) => ({ ...current, password: event.target.value }))
+              }
+              className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+            />
+          </div>
+          <Button
+            type="submit"
+            disabled={disabled || isSubmittingLogin}
+            className="h-12 w-full rounded-2xl text-base font-black"
+          >
+            {isSubmittingLogin ? '로그인 중...' : '로그인하고 내 정보 불러오기'}
+          </Button>
+        </form>
+      )}
+
+      {!hasSupabaseBrowserEnv ? (
+        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+          로컬 환경에서는 Supabase URL과 공개 키를 설정해야 회원가입과 로그인을 사용할 수 있습니다.
         </p>
-        {/*
-          TODO(phone-auth): Supabase Auth Phone provider와 SMS provider가 준비되면
-          이 안내 영역을 실제 휴대폰 OTP 폼으로 교체합니다.
-
-          구현 시 필요한 흐름:
-          1. 입력값을 E.164 형식으로 정규화합니다. 예: 010-1234-5678 -> +821012345678
-          2. supabase.auth.signInWithOtp({
-               phone: normalizedPhone,
-               options: { channel: 'sms', shouldCreateUser: true },
-             })
-          3. 사용자가 받은 인증번호로 supabase.auth.verifyOtp({
-               phone: normalizedPhone,
-               token,
-               type: 'sms',
-             })
-          4. 성공 후 router.replace(next) 또는 router.refresh()로 보호 페이지를 갱신합니다.
-        */}
-      </section>
+      ) : null}
 
       {statusMessage ? (
         <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
@@ -246,15 +642,15 @@ function LoginContent() {
 
       <div className="my-6 flex items-center gap-3 text-xs text-[var(--app-copy-soft)]">
         <span className="h-px flex-1 bg-[var(--app-line)]" />
-        다른 방식으로 계속하기
+        간편 로그인
         <span className="h-px flex-1 bg-[var(--app-line)]" />
       </div>
 
-      <div className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Button
           onClick={() => signInWithProvider('kakao')}
-          disabled={!hasSupabaseBrowserEnv}
-          className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl font-medium"
+          disabled={disabled}
+          className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl font-bold"
           style={{ backgroundColor: '#FEE500', color: '#191919' }}
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#191919">
@@ -265,7 +661,7 @@ function LoginContent() {
 
         <Button
           onClick={() => signInWithProvider('google')}
-          disabled={!hasSupabaseBrowserEnv}
+          disabled={disabled}
           className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl border border-[var(--app-line)] bg-white text-slate-900 hover:bg-[var(--app-pink-soft)]"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -279,7 +675,7 @@ function LoginContent() {
       </div>
 
       <p className="pt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
-        로그인 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
+        회원가입 또는 로그인 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
       </p>
     </div>
   );
