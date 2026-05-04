@@ -503,9 +503,13 @@ function MobileChrome({
                 {creditLabel(user, credits)}
               </Link>
               {user ? (
-                <Link href="/my" className="app-top-login inline-flex">
-                  보관
-                </Link>
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="app-top-login inline-flex"
+                >
+                  로그아웃
+                </button>
               ) : (
                 <Link href={authHref} className="app-top-login inline-flex">
                   로그인
@@ -678,62 +682,88 @@ export default function SiteHeader() {
   const [credits, setCredits] = useState<number | null>(cachedHeaderCredits?.credits ?? null);
 
   useEffect(() => {
-    if (!hasSupabaseBrowserEnv) return;
+    if (!hasSupabaseBrowserEnv) {
+      cachedHeaderUser = null;
+      setUser(null);
+      setCredits(null);
+      return;
+    }
 
     let isActive = true;
     const supabase = createClient();
 
-    void getCurrentBrowserUser(supabase).then((user) => {
-      if (!isActive) return;
+    const sendNotificationHeartbeat = () => {
+      try {
+        const previous = window.localStorage.getItem(NOTIFICATION_HEARTBEAT_KEY);
+        const shouldSendHeartbeat =
+          !previous ||
+          Date.now() - new Date(previous).getTime() > 6 * 60 * 60 * 1000;
 
-      cachedHeaderUser = user;
-      setUser(user);
+        if (!shouldSendHeartbeat) return;
 
-      if (user) {
-        const cachedCredits = getCachedCreditSnapshot(user.id);
-        if (cachedCredits) {
-          setCredits(cachedCredits.credits);
-        }
+        void fetch('/api/notifications/heartbeat', {
+          method: 'POST',
+        })
+          .then(() => {
+            window.localStorage.setItem(
+              NOTIFICATION_HEARTBEAT_KEY,
+              new Date().toISOString()
+            );
+          })
+          .catch(() => undefined);
+      } catch {}
+    };
 
-        try {
-          const previous = window.localStorage.getItem(NOTIFICATION_HEARTBEAT_KEY);
-          const shouldSendHeartbeat =
-            !previous ||
-            Date.now() - new Date(previous).getTime() > 6 * 60 * 60 * 1000;
-
-          if (shouldSendHeartbeat) {
-            void fetch('/api/notifications/heartbeat', {
-              method: 'POST',
-            })
-              .then(() => {
-                window.localStorage.setItem(
-                  NOTIFICATION_HEARTBEAT_KEY,
-                  new Date().toISOString()
-                );
-              })
-              .catch(() => undefined);
-          }
-        } catch {}
-
-        if (!shouldRefreshCreditSnapshot(cachedCredits)) return;
-
-        void refreshCreditSnapshot(user.id, async () => {
-          const { data: creditRow } = await supabase
-            .from('user_credits')
-            .select('balance, subscription_balance')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-          return (creditRow?.balance ?? 0) + (creditRow?.subscription_balance ?? 0);
-        }).then((snapshot) => {
-          if (isActive && snapshot?.userId === user.id) {
-            setCredits(snapshot.credits);
-          }
-        });
-      } else {
-        clearCreditSnapshot();
+    const refreshCreditsForUser = (nextUser: User) => {
+      const cachedCredits = getCachedCreditSnapshot(nextUser.id);
+      if (cachedCredits) {
+        setCredits(cachedCredits.credits);
+      } else if (cachedHeaderCredits?.userId !== nextUser.id) {
         setCredits(null);
       }
+
+      if (!shouldRefreshCreditSnapshot(cachedCredits)) return;
+
+      void refreshCreditSnapshot(nextUser.id, async () => {
+        const { data: creditRow } = await supabase
+          .from('user_credits')
+          .select('balance, subscription_balance')
+          .eq('user_id', nextUser.id)
+          .maybeSingle();
+
+        return (creditRow?.balance ?? 0) + (creditRow?.subscription_balance ?? 0);
+      }).then((snapshot) => {
+        if (isActive && snapshot?.userId === nextUser.id) {
+          setCredits(snapshot.credits);
+        }
+      });
+    };
+
+    const applyHeaderUser = (nextUser: User | null) => {
+      if (!isActive) return;
+
+      cachedHeaderUser = nextUser;
+      setUser(nextUser);
+
+      if (!nextUser) {
+        clearCreditSnapshot();
+        setCredits(null);
+        return;
+      }
+
+      sendNotificationHeartbeat();
+      refreshCreditsForUser(nextUser);
+    };
+
+    const syncHeaderUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      const sessionUser = data.session?.user ?? null;
+      applyHeaderUser(sessionUser ?? (await getCurrentBrowserUser(supabase)));
+    };
+
+    void syncHeaderUser().catch(() => {
+      if (!isActive) return;
+      applyHeaderUser(null);
     });
 
     const {
@@ -741,35 +771,16 @@ export default function SiteHeader() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isActive) return;
 
-      cachedHeaderUser = session?.user ?? null;
-      setUser(session?.user ?? null);
+      applyHeaderUser(session?.user ?? null);
 
-      if (!session?.user) {
-        clearCreditSnapshot();
-        setCredits(null);
-        return;
+      if (
+        _event === 'SIGNED_IN' ||
+        _event === 'SIGNED_OUT' ||
+        _event === 'TOKEN_REFRESHED' ||
+        _event === 'USER_UPDATED'
+      ) {
+        router.refresh();
       }
-
-      const cachedCredits = getCachedCreditSnapshot(session.user.id);
-      if (cachedCredits) {
-        setCredits(cachedCredits.credits);
-      }
-
-      if (!shouldRefreshCreditSnapshot(cachedCredits)) return;
-
-      void refreshCreditSnapshot(session.user.id, async () => {
-        const { data: creditRow } = await supabase
-          .from('user_credits')
-          .select('balance, subscription_balance')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        return (creditRow?.balance ?? 0) + (creditRow?.subscription_balance ?? 0);
-      }).then((snapshot) => {
-        if (isActive && snapshot?.userId === session.user.id) {
-          setCredits(snapshot.credits);
-        }
-      });
     });
 
     const syncCreditsFromEvent = (event: Event) => {
@@ -793,14 +804,27 @@ export default function SiteHeader() {
       setCredits(nextCredits);
     };
 
+    const syncHeaderUserFromFocus = () => {
+      void syncHeaderUser().catch(() => undefined);
+    };
+
+    const syncHeaderUserFromVisibility = () => {
+      if (document.visibilityState !== 'visible') return;
+      void syncHeaderUser().catch(() => undefined);
+    };
+
     window.addEventListener('moonlight:credits-updated', syncCreditsFromEvent);
+    window.addEventListener('focus', syncHeaderUserFromFocus);
+    document.addEventListener('visibilitychange', syncHeaderUserFromVisibility);
 
     return () => {
       isActive = false;
       subscription.unsubscribe();
       window.removeEventListener('moonlight:credits-updated', syncCreditsFromEvent);
+      window.removeEventListener('focus', syncHeaderUserFromFocus);
+      document.removeEventListener('visibilitychange', syncHeaderUserFromVisibility);
     };
-  }, []);
+  }, [router]);
 
   async function signOut() {
     if (!hasSupabaseBrowserEnv) {
@@ -815,6 +839,7 @@ export default function SiteHeader() {
     setUser(null);
     setCredits(null);
     router.push('/');
+    router.refresh();
   }
 
   const authHref = `/login?next=${encodeURIComponent(pathname)}`;
