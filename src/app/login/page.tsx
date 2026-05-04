@@ -24,6 +24,34 @@ function getRedirectOrigin() {
   return location.origin;
 }
 
+function getProviderLabel(value: string | null) {
+  if (value === 'google') return 'Google';
+  if (value === 'kakao') return '카카오';
+  return '소셜';
+}
+
+function getOAuthLoginError(error: string | null, provider: string | null, reason: string | null) {
+  const providerLabel = getProviderLabel(provider);
+
+  if (error === 'oauth_config') {
+    return '로그인 환경변수가 비어 있습니다. Supabase URL과 공개 키를 운영 환경에 설정해 주세요.';
+  }
+
+  if (error === 'oauth_provider') {
+    return `${providerLabel} 로그인 제공자 설정이 아직 완료되지 않았습니다. Supabase Provider와 ${providerLabel} 개발자 콘솔의 콜백 주소를 확인해 주세요.`;
+  }
+
+  if (error === 'oauth_exchange') {
+    return `${providerLabel} 로그인 세션 연결이 완료되지 않았습니다. 브라우저 쿠키 허용과 Supabase Redirect URL 설정을 확인해 주세요.${reason ? ` (${reason})` : ''}`;
+  }
+
+  if (error === 'oauth') {
+    return `${providerLabel} 로그인 연결이 완료되지 않았습니다. Provider 설정과 리다이렉트 주소를 확인해 주세요.`;
+  }
+
+  return '';
+}
+
 function getEmailLoginError(message?: string) {
   if (!message) return '로그인 링크를 보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
 
@@ -42,14 +70,12 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
   const callbackError = searchParams.get('error');
+  const callbackProvider = searchParams.get('provider');
+  const callbackReason = searchParams.get('reason');
   const [email, setEmail] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState(
-    callbackError === 'oauth_config'
-      ? '로그인 환경변수가 비어 있습니다. Supabase URL과 공개 키를 운영 환경에 설정해 주세요.'
-      : callbackError === 'oauth'
-      ? '소셜 로그인 연결이 완료되지 않았습니다. Google/Kakao 제공자 설정과 리다이렉트 주소를 확인해 주세요.'
-      : ''
+    getOAuthLoginError(callbackError, callbackProvider, callbackReason)
   );
   const [isSubmittingEmail, setIsSubmittingEmail] = useState(false);
 
@@ -68,7 +94,7 @@ function LoginContent() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${getRedirectOrigin()}/api/auth/callback?next=${encodeURIComponent(next)}`,
+        redirectTo: `${getRedirectOrigin()}/api/auth/callback?provider=${provider}&next=${encodeURIComponent(next)}`,
       },
     });
 

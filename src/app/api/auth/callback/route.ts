@@ -6,10 +6,52 @@ function getSafeNext(value: string | null) {
   return value;
 }
 
+function getSafeProvider(value: string | null) {
+  if (value === 'google' || value === 'kakao') return value;
+  return null;
+}
+
+function buildLoginRedirect({
+  origin,
+  next,
+  error,
+  provider,
+  reason,
+}: {
+  origin: string;
+  next: string;
+  error: string;
+  provider?: string | null;
+  reason?: string | null;
+}) {
+  const params = new URLSearchParams({
+    next,
+    error,
+  });
+  if (provider) params.set('provider', provider);
+  if (reason) params.set('reason', reason.slice(0, 120));
+  return `${origin}/login?${params.toString()}`;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
   const code = searchParams.get('code');
   const next = getSafeNext(searchParams.get('next'));
+  const provider = getSafeProvider(searchParams.get('provider'));
+  const providerError = searchParams.get('error');
+  const providerErrorDescription = searchParams.get('error_description');
+
+  if (providerError && !code) {
+    return NextResponse.redirect(
+      buildLoginRedirect({
+        origin,
+        next,
+        error: 'oauth_provider',
+        provider,
+        reason: providerErrorDescription ?? providerError,
+      })
+    );
+  }
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -17,7 +59,7 @@ export async function GET(req: NextRequest) {
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return NextResponse.redirect(
-        `${origin}/login?next=${encodeURIComponent(next)}&error=oauth_config`
+        buildLoginRedirect({ origin, next, error: 'oauth_config', provider })
       );
     }
 
@@ -43,7 +85,13 @@ export async function GET(req: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       return NextResponse.redirect(
-        `${origin}/login?next=${encodeURIComponent(next)}&error=oauth`
+        buildLoginRedirect({
+          origin,
+          next,
+          error: 'oauth_exchange',
+          provider,
+          reason: error.message,
+        })
       );
     }
 
@@ -51,6 +99,6 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.redirect(
-    `${origin}/login?next=${encodeURIComponent(next)}&error=oauth`
+    buildLoginRedirect({ origin, next, error: 'oauth', provider })
   );
 }
