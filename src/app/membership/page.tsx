@@ -28,7 +28,7 @@ const COLLECTIBLE_REPORTS = [
     slug: 'life-standard',
     title: '보관형 사주 리포트',
     price: '49,000원~79,000원',
-    summary: '원국·격국·용신·대운 종합',
+    summary: '타고난 성향·올해 흐름·선택 힌트 종합',
     recommendation: '내 사주의 바탕과 평생 흐름을 한 번의 결과물로 남기고 싶은 분',
     href: '/saju/new?product=life-standard',
     badge: '핵심',
@@ -74,7 +74,7 @@ const DIALOGUE_PLAN_GUIDES = {
     href: '/membership/checkout?plan=basic&from=membership',
   },
   premium: {
-    lead: '리포트 기준 위에서 대화와 가족 해석을 넉넉하게 이어보기',
+    lead: '이미 본 풀이를 바탕으로 대화와 가족 해석을 넉넉하게 이어보기',
     body: '이미 읽은 풀이를 생활 질문과 가족 이야기, 궁합 해석까지 길게 붙여 쓰고 싶은 분께 맞는 중심 플랜입니다.',
     cta: '프리미엄 멤버십 시작하기',
     href: '/membership/checkout?plan=premium&from=membership',
@@ -83,19 +83,19 @@ const DIALOGUE_PLAN_GUIDES = {
 
 const COMPARISON_ROWS = [
   {
-    label: '명식 계산',
+    label: '출생 정보 확인',
     ai: '입력 문맥을 바탕으로 단순화될 수 있습니다.',
-    moonlight: '출생 정보로 명식과 운의 구조를 먼저 계산한 뒤 결과를 설명합니다.',
+    moonlight: '출생 정보를 바탕으로 오늘 흐름과 사주풀이를 안정적으로 정리합니다.',
   },
   {
-    label: '격국·용신',
+    label: '풀이 흐름',
     ai: '상담 흐름에 따라 해석 결이 흔들릴 수 있습니다.',
-    moonlight: '격국 후보, 강약, 용신의 판단 단서를 함께 남깁니다.',
+    moonlight: '전문 용어보다 사용자가 바로 읽을 수 있는 결론과 행동 힌트를 남깁니다.',
   },
   {
     label: '시간 처리',
     ai: '출생시각과 출생지의 경계 조건을 단순 처리하기 쉽습니다.',
-    moonlight: '출생시각·출생지·절기·시간 기준을 따로 반영합니다.',
+    moonlight: '출생시각과 출생지를 확인해 시간대별 흐름을 더 조심스럽게 정리합니다.',
   },
   {
     label: '설명 방식',
@@ -110,7 +110,7 @@ const COMPARISON_ROWS = [
   {
     label: '대화 연결',
     ai: '새 질문마다 설명 맥락이 새로 흔들릴 수 있습니다.',
-    moonlight: '리포트 기준 위에서 질문을 계속 이어갑니다.',
+    moonlight: '이미 본 풀이를 바탕으로 질문을 계속 이어갑니다.',
   },
 ] as const;
 
@@ -134,10 +134,10 @@ const CATALOG_PROOF_GROUPS = [
   },
   {
     eyebrow: '대화 연결',
-    title: '질문은 리포트 기준 위에서 이어집니다',
+    title: '질문은 이미 본 풀이에서 이어집니다',
     points: [
       COMPARISON_ROWS[5].moonlight,
-      '샘플 리포트와 풀이 기준 예시를 먼저 보고 결정하셔도 됩니다.',
+      '샘플 풀이를 먼저 보고 결정하셔도 됩니다.',
     ],
   },
 ] as const;
@@ -151,13 +151,13 @@ const PRE_PURCHASE_LINKS = [
     href: REPORT_SAMPLE_HREF,
   },
   {
-    title: '풀이 기준 보기',
-    body: '달빛인생이 어떤 기준으로 결과를 안정적으로 보여주는지 정리해둔 문서입니다.',
+    title: '풀이 안내 보기',
+    body: '달빛인생이 결과를 어떻게 쉽게 정리하는지 모아둔 안내입니다.',
     href: '/about-engine',
   },
   {
-    title: '풀이 기준 예시 보기',
-    body: '격국 후보, 용신 판단, 시간 기준이 화면에서 어떻게 정리되는지 먼저 확인합니다.',
+    title: '풀이 예시 보기',
+    body: '어려운 말보다 핵심 요약과 행동 힌트가 어떻게 보이는지 먼저 확인합니다.',
     href: '/about-engine#decision-trace',
   },
 ] as const;
@@ -459,7 +459,7 @@ export default async function MembershipPage({
                   eyebrow="3. 결정 전에 확인할 것"
                   title="비교와 도움말도 상품 결정에 필요한 만큼만 남겼습니다"
                   titleClassName="text-3xl"
-                  description="결제 전에 먼저 봐도 좋은 샘플과 풀이 기준, 그리고 어떤 상품이 내 질문에 맞는지를 한곳에 모았습니다."
+                  description="결제 전에 먼저 봐도 좋은 샘플 풀이와 내 질문에 맞는 상품을 한곳에 모았습니다."
                   descriptionClassName="max-w-3xl"
                 />
 
@@ -501,7 +501,7 @@ export default async function MembershipPage({
                   <div className="app-starfield" />
                   <SectionHeader
                     eyebrow="결제 전 확인"
-                    title="샘플과 풀이 기준을 먼저 보셔도 괜찮습니다"
+                    title="샘플 풀이를 먼저 보셔도 괜찮습니다"
                     titleClassName="text-3xl text-[var(--app-gold-text)]"
                     description="리포트를 먼저 만들면 무엇이 내 바탕인지가 남고, 이후의 대화는 그 흐름 위에서 훨씬 덜 흔들립니다. 아직 망설이신다면 아래 세 가지부터 보셔도 좋습니다."
                     descriptionClassName="text-[var(--app-copy)]"
@@ -560,10 +560,10 @@ export default async function MembershipPage({
         <section className="mt-8">
           <SectionSurface surface="panel">
             <SectionHeader
-              eyebrow="구매 전 신뢰 기준"
-              title="무리한 공포 표현보다, 다시 확인 가능한 기준을 앞에 둡니다"
+              eyebrow="구매 전 확인"
+              title="무리한 공포 표현보다, 다시 확인 가능한 풀이를 앞에 둡니다"
               titleClassName="text-3xl"
-              description="달빛인생의 전환 장치는 과장된 적중률이 아니라 저장, 재열람, 풀이 기준, 시간·출생지 기준, 안전한 표현입니다."
+              description="달빛인생의 전환 장치는 과장된 적중률이 아니라 저장, 재열람, 출생 정보 확인, 안전한 표현입니다."
               descriptionClassName="max-w-3xl"
             />
             <ProductGrid columns={3} className="mt-6">

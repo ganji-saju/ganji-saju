@@ -32,7 +32,7 @@ type ReportKeepsakeSectionProps = {
 
 const DEFAULT_TITLE = '한 번 보고 사라지지 않도록 보관합니다';
 const DEFAULT_DESCRIPTION =
-  '명식, 격국, 용신, 대운의 기준은 시간이 지나도 다시 확인할 수 있어야 합니다. 달빛인생 리포트는 PDF와 MY 보관함, 대화 상담으로 이어집니다.';
+  '내 사주의 핵심, 올해 흐름, 중요한 선택 힌트는 시간이 지나도 다시 확인할 수 있어야 합니다. 달빛인생 리포트는 PDF와 MY 보관함, 대화 상담으로 이어집니다.';
 
 function actionClassName(variant: ReportKeepsakeAction['variant']) {
   switch (variant) {
@@ -76,7 +76,7 @@ export function ReportKeepsakeSection({
     },
     {
       title: '대화 연결',
-      body: '리포트 기준 위에서 달빛인생에게 이어서 질문할 수 있습니다.',
+      body: '이미 본 풀이를 바탕으로 달빛인생에게 이어서 질문할 수 있습니다.',
       href: dialogueHref,
       ctaLabel: '대화 이어보기',
       icon: MessageCircleMore,
@@ -84,7 +84,7 @@ export function ReportKeepsakeSection({
     },
     {
       title: '업데이트',
-      body: '연간·월간 흐름은 같은 명리 기준 위에서 다시 정리됩니다.',
+      body: '연간·월간 흐름은 같은 사주 정보 위에서 다시 정리됩니다.',
       href: updatesHref,
       ctaLabel: '흐름 다시 보기',
       icon: RefreshCw,

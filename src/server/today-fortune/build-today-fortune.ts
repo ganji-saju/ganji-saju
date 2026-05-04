@@ -14,6 +14,7 @@ import {
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { resolveMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
 import type {
@@ -259,7 +260,7 @@ function normalizeSentenceKey(text: string) {
 }
 
 function stripEvidenceBoilerplate(text: string) {
-  return text
+  return simplifySajuCopy(text)
     .replace(/^쉽게 말하면\s*/g, '')
     .replace(/^전문적으로는\s*/g, '')
     .replace(/\s+/g, ' ')
@@ -307,7 +308,7 @@ function withKoreanParticle(value: string, consonantParticle: string, vowelParti
 }
 
 function polishFortuneCopy(text: string) {
-  return text
+  return simplifySajuCopy(text)
     .replace(/([^\s]+\s*\([^)]+\))\([^)]+\)/g, '$1')
     .replace(/([^\s]+(?:\s*\([^)]+\))?)을\(를\)/g, (_, value: string) => withKoreanParticle(value, '을', '를'))
     .replace(/([0-9]+점)로 계산되어/g, (_, value: string) => `${withKoreanParticle(value, '으로', '로')} 계산되어`)
@@ -471,7 +472,7 @@ function joinUniqueSentences(parts: Array<string | null | undefined>) {
   const sentences: string[] = [];
 
   for (const part of compactStrings(parts)) {
-    for (const sentence of splitSentences(part)) {
+    for (const sentence of splitSentences(simplifySajuCopy(part))) {
       const key = normalizeSentenceKey(sentence);
       if (!key || seen.has(key)) continue;
       seen.add(key);
@@ -487,9 +488,10 @@ function uniqueStrings(parts: Array<string | null | undefined>, limit?: number) 
   const result: string[] = [];
 
   for (const part of compactStrings(parts)) {
-    if (seen.has(part)) continue;
-    seen.add(part);
-    result.push(part);
+    const readablePart = simplifySajuCopy(part);
+    if (!readablePart || seen.has(readablePart)) continue;
+    seen.add(readablePart);
+    result.push(readablePart);
     if (limit && result.length >= limit) break;
   }
 
@@ -535,7 +537,7 @@ function buildReasonSnippet(
   unknownBirthTime: boolean
 ) {
   const defaultBase =
-    '오늘 해석은 일간과 현재 운의 강약을 먼저 잡고, 그 위에 관계와 돈, 말의 속도를 겹쳐 읽습니다.';
+    '오늘은 내 기운의 균형과 현재 흐름을 함께 보고, 관계와 돈, 말의 속도를 현실적으로 조절하는 날입니다.';
 
   const normalizedTitle = evidenceCard?.title?.replace(/\s*·\s*/g, ' ').trim();
   const normalizedBody = evidenceCard?.body ? stripEvidenceBoilerplate(evidenceCard.body) : '';
@@ -546,13 +548,13 @@ function buildReasonSnippet(
 
     switch (evidenceCard.key) {
       case 'strength':
-        base = `${evidenceCard.label}은 ${withKoreanParticle(sentenceTitle, '으로', '로')} 계산되어 ${normalizedBody}`;
+        base = `${evidenceCard.label}은 ${withKoreanParticle(sentenceTitle, '으로', '로')} 보이며 ${normalizedBody}`;
         break;
       case 'pattern':
-        base = `${evidenceCard.label}은 ${sentenceTitle}로 잡히며 ${normalizedBody}`;
+        base = `${evidenceCard.label}은 ${sentenceTitle} 흐름으로 보이며 ${normalizedBody}`;
         break;
       case 'yongsin':
-        base = `${evidenceCard.label}은 ${sentenceTitle}로 읽으며 ${normalizedBody}`;
+        base = `${evidenceCard.label}은 ${sentenceTitle} 쪽을 보완 힌트로 보며 ${normalizedBody}`;
         break;
       case 'relations':
         base = `${evidenceCard.label}은 ${sentenceTitle}로 읽히고 ${normalizedBody}`;
@@ -570,7 +572,7 @@ function buildReasonSnippet(
   if (!unknownBirthTime) return polishFortuneCopy(base);
 
   return polishFortuneCopy(
-    `${base} 다만 태어난 시간이 없어 시주(時柱) 기반 세부 타이밍은 보수적으로 줄여 읽습니다.`
+    `${base} 다만 태어난 시간이 없어 시간대별 세부 흐름은 보수적으로 줄여 읽습니다.`
   );
 }
 
@@ -588,7 +590,7 @@ function buildKasiSummary(kasiComparison: KasiSingleInputComparison | null | und
     return {
       available: true,
       ok: true,
-      summary: `KASI 역법과 대조했을 때 음력일과 일진이 일치합니다. 기준 음력일은 ${lunarDate}, 일진은 ${kasiComparison.kasi.lunIljin ?? '미제공'}입니다.`,
+      summary: `공식 달력 정보와 대조했을 때 음력일과 하루 흐름이 일치합니다. 음력일은 ${lunarDate}, 하루 흐름은 ${kasiComparison.kasi.lunIljin ?? '미제공'}입니다.`,
     };
   }
 
@@ -600,7 +602,7 @@ function buildKasiSummary(kasiComparison: KasiSingleInputComparison | null | und
   return {
     available: true,
     ok: false,
-    summary: `KASI 대조에서 ${issueSummary}가 확인됐습니다. 기준 음력일은 ${lunarDate}, 일진은 ${kasiComparison.kasi.lunIljin ?? '미제공'}입니다.`,
+    summary: `공식 달력 대조에서 ${issueSummary}가 확인됐습니다. 음력일은 ${lunarDate}, 하루 흐름은 ${kasiComparison.kasi.lunIljin ?? '미제공'}입니다.`,
   };
 }
 
@@ -614,29 +616,31 @@ function buildTodayGroundingSummary(
     focusReport.focusTopic === 'today'
       ? grounding?.evidenceJson.classics.cards ?? focusReport.evidenceCards
       : focusReport.evidenceCards;
-  const primaryConcept = focusReport.evidenceCards[0]?.label ?? grounding?.evidenceJson.primaryConcept ?? '용신';
+  const primaryConcept = simplifySajuCopy(
+    focusReport.evidenceCards[0]?.label ?? grounding?.evidenceJson.primaryConcept ?? '보완 힌트'
+  );
   const strengthLine =
     grounding?.evidenceJson.strength.level && grounding?.evidenceJson.strength.score !== null
-      ? `강약 ${grounding.evidenceJson.strength.level} · ${grounding.evidenceJson.strength.score}점`
-      : `강약 ${sajuData.strength?.level ?? '판정 준비 중'}`;
+      ? `기운의 균형 ${grounding.evidenceJson.strength.level}`
+      : `기운의 균형 ${sajuData.strength?.level ?? '정리 중'}`;
   const patternLine =
     grounding?.evidenceJson.pattern.name
-      ? `격국 ${grounding.evidenceJson.pattern.name}${grounding.evidenceJson.pattern.tenGod ? ` · ${grounding.evidenceJson.pattern.tenGod}` : ''}`
-      : `격국 ${sajuData.pattern?.name ?? '판정 준비 중'}`;
+      ? `역할 흐름 ${grounding.evidenceJson.pattern.name}${grounding.evidenceJson.pattern.tenGod ? ` · ${grounding.evidenceJson.pattern.tenGod}` : ''}`
+      : `역할 흐름 ${sajuData.pattern?.name ?? '정리 중'}`;
   const yongsinLine =
     grounding?.evidenceJson.yongsin.primary
-      ? `용신 ${grounding.evidenceJson.yongsin.primary}${grounding.evidenceJson.yongsin.support.length > 0 ? ` · 보조 ${grounding.evidenceJson.yongsin.support.join(' · ')}` : ''}`
-      : `용신 ${sajuData.yongsin?.primary?.label ?? '판정 준비 중'}`;
+      ? `보완 힌트 ${grounding.evidenceJson.yongsin.primary}${grounding.evidenceJson.yongsin.support.length > 0 ? ` · 보조 ${grounding.evidenceJson.yongsin.support.join(' · ')}` : ''}`
+      : `보완 힌트 ${sajuData.yongsin?.primary?.label ?? '정리 중'}`;
   const luckLine = grounding?.evidenceJson.luckFlow.currentMajorLuck
-    ? `현재 대운 ${grounding.evidenceJson.luckFlow.currentMajorLuck}`
+    ? `현재 큰 흐름 ${grounding.evidenceJson.luckFlow.currentMajorLuck}`
     : grounding?.evidenceJson.luckFlow.saewoon
-      ? `현재 세운 ${grounding.evidenceJson.luckFlow.saewoon}`
-      : `현재 운 ${sajuData.currentLuck?.saewoon?.ganzi ?? '정리 중'}`;
+      ? `올해 흐름 ${grounding.evidenceJson.luckFlow.saewoon}`
+      : `현재 흐름 ${sajuData.currentLuck?.saewoon?.ganzi ?? '정리 중'}`;
 
   return {
     primaryConcept,
     factLines: [
-      `일간 ${sajuData.dayMaster.stem}${sajuData.dayMaster.element ? ` · ${sajuData.dayMaster.element}` : ''}`,
+      `나를 나타내는 기운 ${sajuData.dayMaster.stem}${sajuData.dayMaster.element ? ` · ${sajuData.dayMaster.element}` : ''}`,
       strengthLine,
       patternLine,
       yongsinLine,
@@ -720,13 +724,13 @@ function getEvidenceActionHints(
 function getLuckFactLine(sajuData: SajuDataV1) {
   return compactStrings([
     sajuData.currentLuck?.currentMajorLuck?.ganzi
-      ? `${sajuData.currentLuck.currentMajorLuck.ganzi} 대운`
+      ? `${sajuData.currentLuck.currentMajorLuck.ganzi} 큰 흐름`
       : null,
     sajuData.currentLuck?.saewoon?.ganzi
-      ? `${sajuData.currentLuck.saewoon.ganzi} 세운`
+      ? `${sajuData.currentLuck.saewoon.ganzi} 올해 흐름`
       : null,
     sajuData.currentLuck?.wolwoon?.ganzi
-      ? `${sajuData.currentLuck.wolwoon.ganzi} 월운`
+      ? `${sajuData.currentLuck.wolwoon.ganzi} 이번 달 흐름`
       : null,
   ]).join(' / ');
 }
@@ -919,22 +923,22 @@ function getTimeBlockElementImpact(sajuData: SajuDataV1, stemElement: Element, b
 
   if (primaryElement && branchElement === primaryElement) {
     delta += 8;
-    supportLines.push(`${branchElement} 기운이 1순위 용신과 맞닿습니다.`);
+    supportLines.push(`${branchElement} 기운이 오늘의 보완 힌트와 맞닿습니다.`);
   }
   if (primaryElement && stemElement === primaryElement) {
     delta += 4;
-    supportLines.push(`${stemElement} 기운이 오늘 보완축을 한 번 더 밀어줍니다.`);
+    supportLines.push(`${stemElement} 기운이 오늘 부족한 부분을 한 번 더 받쳐줍니다.`);
   }
   if (supportElements.includes(branchElement)) {
     delta += 5;
-    supportLines.push(`${branchElement} 기운이 보조 용신과 이어져 작은 선택을 받쳐줍니다.`);
+    supportLines.push(`${branchElement} 기운이 보조 힌트와 이어져 작은 선택을 받쳐줍니다.`);
   }
   if (supportElements.includes(stemElement)) {
     delta += 2;
   }
   if (cautionElements.includes(branchElement)) {
     delta -= 6;
-    cautionLines.push(`${branchElement} 기운이 기신 축과 닿아 과한 반응을 키우기 쉽습니다.`);
+    cautionLines.push(`${branchElement} 기운이 조절할 흐름과 닿아 과한 반응을 키우기 쉽습니다.`);
   }
   if (cautionElements.includes(stemElement)) {
     delta -= 3;
@@ -943,7 +947,7 @@ function getTimeBlockElementImpact(sajuData: SajuDataV1, stemElement: Element, b
   if (sajuData.strength?.level === '신강') {
     if (branchElement === outputElement || branchElement === officerElement) {
       delta += 3;
-      supportLines.push(`${branchElement} 기운이 강한 일간의 힘을 밖으로 잘 빼줍니다.`);
+      supportLines.push(`${branchElement} 기운이 강한 내 기운을 밖으로 잘 풀어줍니다.`);
     }
     if (branchElement === dayMasterElement || branchElement === resourceElement) {
       delta -= 3;
@@ -958,7 +962,7 @@ function getTimeBlockElementImpact(sajuData: SajuDataV1, stemElement: Element, b
     }
     if (branchElement === outputElement || branchElement === officerElement) {
       delta -= 4;
-      cautionLines.push(`${branchElement} 기운이 약한 일간의 체력을 더 빨리 소모시킬 수 있습니다.`);
+      cautionLines.push(`${branchElement} 기운이 약한 내 기운을 더 빨리 소모시킬 수 있습니다.`);
     }
   }
 
@@ -1184,7 +1188,7 @@ function buildTimeWindows(
             item.relationSummary,
             item.hint ? `이 시간대에는 "${item.hint}"부터 먼저 쓰는 편이 좋습니다.` : null,
             item.supportiveDelta >= 6
-              ? `${item.timeGanzi}시는 보완축과 맞물려 작은 확인을 실제 성과로 바꾸기 좋습니다.`
+              ? `${item.timeGanzi}시는 보완 힌트와 맞물려 작은 확인을 실제 성과로 바꾸기 좋습니다.`
               : item.actionLead,
             item.luckFact ? `지금은 ${item.luckFact}을 함께 보면 이 시간대 판단이 더 또렷해집니다.` : null,
           ])
@@ -1257,13 +1261,13 @@ function buildEvidenceLines(
   unknownBirthTime: boolean
 ) {
   const lines = [
-    `${focusReport.evidenceCards[0]?.label ?? '사주 근거'} · ${focusReport.evidenceCards[0]?.title ?? focusReport.summary}`,
-    `대운·세운·월운 교차 · ${sajuData.currentLuck?.currentMajorLuck?.ganzi ?? '대운 준비 중'} / ${sajuData.currentLuck?.saewoon?.ganzi ?? '세운 준비 중'} / ${sajuData.currentLuck?.wolwoon?.ganzi ?? '월운 준비 중'}`,
-    `보완축 · ${sajuData.yongsin?.plainSummary ?? '용신 보완축을 차분히 쓰는 편이 좋습니다.'}`,
+    `${focusReport.evidenceCards[0]?.label ?? '오늘 흐름'} · ${focusReport.evidenceCards[0]?.title ?? focusReport.summary}`,
+    `큰 흐름 · ${sajuData.currentLuck?.currentMajorLuck?.ganzi ?? '정리 중'} / ${sajuData.currentLuck?.saewoon?.ganzi ?? '올해 흐름 정리 중'} / ${sajuData.currentLuck?.wolwoon?.ganzi ?? '이번 달 흐름 정리 중'}`,
+    `보완 힌트 · ${sajuData.yongsin?.plainSummary ?? '부족한 부분을 차분히 채우는 편이 좋습니다.'}`,
   ];
 
   if (unknownBirthTime) {
-    lines.push('태어난 시간이 없어 시주 기반 타이밍은 줄여 읽고, 일간·월령·현재 운 중심으로 판단했습니다.');
+    lines.push('태어난 시간이 없어 시간대별 흐름은 줄여 읽고, 전체 흐름 중심으로 정리했습니다.');
   }
 
   if (todayReport.evidenceCards[1]?.title) {
@@ -1292,7 +1296,7 @@ function buildRecommendedActions(
       getLuckFactLine(sajuData)
         ? `지금은 ${getLuckFactLine(sajuData)}을 같이 보며 ${concernCopy.favorableTail}`
         : concernCopy.favorableTail,
-      `보완축 ${sajuData.yongsin?.primary?.label ?? '용신'}을 생활 루틴으로 쓰면 체감 안정감이 더 큽니다.`,
+      `오늘 부족한 부분을 생활 루틴으로 채우면 체감 안정감이 더 큽니다.`,
     ],
     3
   );
@@ -1318,7 +1322,7 @@ function buildAvoidActions(
       cautionAction,
       ...cautionHints.map((item) => `${item}을 놓친 채 밀어붙이지 않는 편이 좋습니다.`),
       input.unknownTime
-        ? '태어난 시간이 없으니 세부 타이밍보다 큰 흐름을 먼저 믿는 편이 안전합니다.'
+        ? '태어난 시간이 없으니 세부 타이밍보다 전체 흐름을 먼저 보는 편이 안전합니다.'
         : getLuckFactLine(sajuData)
           ? `${getLuckFactLine(sajuData)}이 겹친 날이라 반응이 좋더라도 같은 속도로 하루 종일 밀지 않는 편이 낫습니다.`
           : concernCopy.cautionTail,

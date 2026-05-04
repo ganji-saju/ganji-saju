@@ -34,6 +34,7 @@ import type {
   SajuYearlyAiInterpretation,
   SajuYearlyAiMonthlyFlow,
 } from '@/server/ai/saju-yearly-interpretation';
+import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
 interface Props {
   slug: string;
@@ -90,7 +91,7 @@ const CORE_CATEGORY_GUIDE = {
     icon: BriefcaseBusiness,
     opportunityLabel: '기회 장면',
     cautionLabel: '주의 장면',
-    actionLabel: '실행 기준',
+    actionLabel: '오늘 할 일',
   },
   wealth: {
     label: '재물운',
@@ -98,7 +99,7 @@ const CORE_CATEGORY_GUIDE = {
     icon: WalletCards,
     opportunityLabel: '돈 기회',
     cautionLabel: '새는 장면',
-    actionLabel: '돈 기준',
+    actionLabel: '돈 관리',
   },
   love: {
     label: '연애운',
@@ -106,7 +107,7 @@ const CORE_CATEGORY_GUIDE = {
     icon: Heart,
     opportunityLabel: '통하는 장면',
     cautionLabel: '엉키는 장면',
-    actionLabel: '표현 기준',
+    actionLabel: '표현 방법',
   },
   relationship: {
     label: '관계운',
@@ -114,7 +115,7 @@ const CORE_CATEGORY_GUIDE = {
     icon: UsersRound,
     opportunityLabel: '살리는 장면',
     cautionLabel: '긁히는 장면',
-    actionLabel: '거리 기준',
+    actionLabel: '거리 조절',
   },
 } as const;
 
@@ -169,7 +170,7 @@ const YEARLY_AREA_LABEL: Record<YearlyMonthFlow['relatedAreas'][number], string>
 };
 
 function splitParagraphs(text: string) {
-  return text
+  return simplifySajuCopy(text)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((paragraph) => paragraph.trim())
@@ -187,7 +188,7 @@ function renderCompactParagraphs(text: string, limit = 2) {
 }
 
 function tightenUiLine(text: string, maxLength = 104) {
-  const compact = text.replace(/\s+/g, ' ').trim();
+  const compact = simplifySajuCopy(text).replace(/\s+/g, ' ').trim();
   if (compact.length <= maxLength) return compact;
   const sliced = compact.slice(0, maxLength).trim();
   return /[.!?。]$/.test(sliced) ? sliced : `${sliced}...`;
@@ -216,7 +217,7 @@ function buildMonthlyFallback(flow: SajuYearlyAiMonthlyFlow): YearlyMonthFlow {
     summary: flow.summary,
     opportunity: flow.focus || '이미 준비된 선택 한두 가지를 먼저 꺼내 보세요.',
     caution: flow.caution || '확정 전에 한 번 더 비교하고 확인하는 편이 좋습니다.',
-    action: flow.action || '욕심을 넓히기보다 기준을 먼저 세우고 움직이세요.',
+    action: flow.action || '욕심을 넓히기보다 오늘 할 일을 먼저 좁혀서 움직이세요.',
     relatedAreas: ['work', 'wealth'],
     basis: [],
   };
@@ -387,7 +388,7 @@ function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
 
       <p className="mt-3 text-sm leading-7 text-[var(--app-ivory)]">{tightenUiLine(flow.summary, 104)}</p>
       <div className="mt-4 rounded-[18px] border border-emerald-400/18 bg-emerald-400/6 px-4 py-3">
-        <div className="app-caption text-emerald-100">이번 달 행동 기준</div>
+        <div className="app-caption text-emerald-100">이번 달 바로 할 일</div>
         <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.action, 84)}</p>
       </div>
 
@@ -404,7 +405,7 @@ function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
         <div className="mt-3 grid gap-3">
           <div className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
             <div className="app-caption text-[var(--app-gold-soft)]">먼저 볼 질문</div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{flow.focusQuestion}</p>
+            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(flow.focusQuestion)}</p>
           </div>
           <div className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
             <div className="app-caption text-[var(--app-gold-soft)]">밀어볼 것</div>
@@ -420,12 +421,12 @@ function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
       {flow.basis.length > 0 ? (
         <details className="group mt-4">
           <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-            판단 기준 따로 보기
+            세부 단서 보기
           </summary>
           <div className="mt-3 grid gap-2">
             {flow.basis.map((item) => (
               <div key={item} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                {item}
+                {simplifySajuCopy(item)}
               </div>
             ))}
           </div>
@@ -511,12 +512,12 @@ function CoreAreaCard({
       {item.basis.length > 0 ? (
         <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          판단 기준 따로 보기
+          세부 단서 보기
         </summary>
           <div className="mt-3 grid gap-2">
             {item.basis.map((line) => (
               <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                {line}
+            {simplifySajuCopy(line)}
               </div>
             ))}
           </div>
@@ -553,9 +554,9 @@ function SupportAreaCard({
         </div>
       </div>
       <div className="mt-4 space-y-3">
-        <p className="text-sm leading-7 text-[var(--app-copy)]">{section.summary}</p>
-        <p className="text-sm leading-7 text-[var(--app-copy-muted)]">{section.caution}</p>
-        <p className="text-sm leading-7 text-[var(--app-copy)]">{section.action}</p>
+        <p className="text-sm leading-7 text-[var(--app-copy)]">{limitSajuSentences(section.summary, 2)}</p>
+        <p className="text-sm leading-7 text-[var(--app-copy-muted)]">{limitSajuSentences(section.caution, 2)}</p>
+        <p className="text-sm leading-7 text-[var(--app-copy)]">{limitSajuSentences(section.action, 2)}</p>
       </div>
       <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
@@ -568,7 +569,7 @@ function SupportAreaCard({
       {basis.length > 0 ? (
         <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          판단 기준 따로 보기
+          세부 단서 보기
         </summary>
           <div className="mt-3 grid gap-2">
             {basis.map((line) => (
@@ -629,7 +630,7 @@ function buildMonthlySectionDescription(report: SajuYearlyReport) {
     .slice(0, 4)
     .join(' · ');
 
-  return `좋은 말만 길게 적지 않고, 사람들이 실제로 궁금해하는 ${repeatedAreas} 중심으로 “이번 달 밀어도 되는 일 / 한 번 더 확인할 일 / 행동 기준”이 먼저 보이게 정리했습니다.`;
+  return `좋은 말만 길게 적지 않고, 사람들이 실제로 궁금해하는 ${repeatedAreas} 중심으로 “이번 달 밀어도 되는 일 / 한 번 더 확인할 일 / 오늘 할 일”이 먼저 보이게 정리했습니다.`;
 }
 
 function YearlyMonthlySection({
@@ -764,7 +765,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           {targetYear}년 올해 전략서를 정리하고 있습니다
         </h2>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-          원국, 세운, 월운, 대운의 단서를 다시 맞추고, 같은 기준 위에서 올해의 선택 포인트를 재구성하고 있습니다.
+          타고난 사주와 올해·이번 달 흐름을 다시 맞추고, 올해의 선택 포인트를 쉽게 정리하고 있습니다.
         </p>
         <div className="mt-6 grid gap-3 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
@@ -824,12 +825,12 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             올해 흐름을 바로 읽습니다
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-            긴 설명보다 먼저 필요한 결론을 앞에 둡니다. 일, 돈, 관계, 달별 타이밍을 같은 기준으로 이어서 확인하세요.
+            긴 설명보다 먼저 필요한 결론을 앞에 둡니다. 일, 돈, 관계, 달별 타이밍을 한 흐름으로 확인하세요.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-            {data.counselorId === 'male' ? '달빛 남선생 기준' : '달빛 여선생 기준'}
+            {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
           </Badge>
           <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
             {data.cached ? '저장된 리포트' : '새로 정리'}
@@ -949,15 +950,15 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             title="이 올해 전략서가 참고한 세부 단서"
           />
           <EngineMethodLinks
-            title="올해 흐름을 읽을 때 같이 보면 좋은 기준"
-            description="대운과 세운을 어떻게 같이 읽는지, 시간을 모를 때 어디까지 보수적으로 낮춰야 하는지, 공망과 신살은 어느 선까지 참고해야 하는지를 함께 정리했습니다."
+            title="더 깊게 보고 싶을 때만 보는 글"
+            description="시간을 모를 때 어디까지 조심해서 읽는지, 보조 신호는 어느 선까지 참고하는지 따로 정리했습니다."
             slugs={[
               'how-to-read-daewoon-and-sewoon-together',
               'what-if-birth-hour-is-unknown',
               'how-far-to-trust-gongmang-and-shinsal',
             ]}
             ctaHref="/method"
-            ctaLabel="관련 기준 더 보기"
+            ctaLabel="관련 글 더 보기"
             compact
           />
         </div>

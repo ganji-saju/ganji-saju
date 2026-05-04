@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 const READING_FLOW = [
   '처음 1분은 한 줄 총평과 핵심 주제만 확인합니다.',
-  '왜 그렇게 봤는지는 판단 단서에서 따로 펼쳐봅니다.',
+  '세부 단서는 궁금할 때만 따로 펼쳐봅니다.',
   '본문은 재물, 관계, 일, 생활 리듬처럼 궁금한 영역부터 읽습니다.',
   '오래 볼 내용은 PDF와 MY 보관함에 남기고, 추가 질문은 대화로 이어갑니다.',
 ] as const;
@@ -40,15 +40,15 @@ const GUIDE_LINKS = [
     icon: <FileText className="h-5 w-5" />,
   },
   {
-    title: '계산 기준',
-    body: '출생 시간, 절기, 진태양시처럼 결과에 영향을 주는 기준을 따로 확인합니다.',
+    title: '계산 정보',
+    body: '출생 시간, 절기, 진태양시처럼 결과에 영향을 주는 정보를 따로 확인합니다.',
     href: '/method',
-    cta: '기준 보기',
+    cta: '안내 보기',
     icon: <Compass className="h-5 w-5" />,
   },
   {
     title: '풀이 흐름',
-    body: '명식, 격국, 용신, 대운을 어떻게 생활 조언으로 바꾸는지 정리해 둔 안내입니다.',
+    body: '어려운 사주 용어를 어떻게 생활 조언으로 바꾸는지 정리해 둔 안내입니다.',
     href: '/about-engine#decision-trace',
     cta: '흐름 보기',
     icon: <BookOpenText className="h-5 w-5" />,
@@ -270,9 +270,9 @@ export default function GuidePage() {
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="더 자세한 안내"
-              title="기준과 예시는 필요할 때만 펼쳐보세요"
+              title="세부 안내와 예시는 필요할 때만 펼쳐보세요"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="계산 기준이나 풀이 흐름은 일반 풀이 화면에서 길게 반복하지 않고, 아래 페이지로 분리했습니다."
+              description="계산 정보나 풀이 흐름은 일반 풀이 화면에서 길게 반복하지 않고, 아래 페이지로 분리했습니다."
             />
 
             <ProductGrid columns={2} className="mt-6">

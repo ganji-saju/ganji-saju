@@ -1,4 +1,5 @@
 import type { FocusTopic, ReportEvidenceCard, ReportEvidenceKey, ReportScore } from './types';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 
 export type InterpretationScoreBand = 'high' | 'mid' | 'low';
 
@@ -198,13 +199,13 @@ export function selectEvidenceCard(
 export function toEvidenceSnippet(card: ReportEvidenceCard | null) {
   if (!card) return null;
   const candidate = card.body ?? card.plainSummary ?? card.title;
-  const normalized = candidate
+  const normalized = simplifySajuCopy(candidate)
     .replace(/^(강약|격국|용신|합충|공망|신살)\s*메모:\s*/u, '')
     .replace(/^쉽게 말하면\s*/, '')
     .replace(/^전문적으로는\s*/, '')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!normalized) return `${card.label} 기준은 ${card.title}입니다.`;
+  if (!normalized) return `${card.label} 흐름을 참고했습니다.`;
 
   const [firstSentence] = normalized.split(/(?<=[.!?])\s+/);
   return (firstSentence ?? normalized).trim();

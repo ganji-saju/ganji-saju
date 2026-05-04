@@ -49,10 +49,10 @@ const NATURE_GUIDE: Record<
     support: '내가 맡을 몫과 내려둘 몫을 나누면 중심감은 살고 피로는 줄어듭니다.',
   },
   금: {
-    strength: '기준을 세우고, 정리하고, 결론을 또렷하게 만드는 힘이 가장 돋보입니다.',
+    strength: '정리하고, 결론을 또렷하게 만드는 힘이 가장 돋보입니다.',
     social: '모호한 장면에서 방향을 정리하거나, 필요한 선을 분명히 할 때 믿음을 줍니다.',
     caution: '판단이 날카로워질수록 사람의 감정보다 결과를 먼저 보고 차갑게 읽힐 수 있습니다.',
-    support: '결론 앞에 맥락 한 줄을 먼저 두면 강한 기준이 부드럽게 받아들여집니다.',
+    support: '결론 앞에 맥락 한 줄을 먼저 두면 강한 판단이 부드럽게 받아들여집니다.',
   },
   수: {
     strength: '큰 흐름을 읽고 여지를 남기며 움직이는 포용력과 기획력이 살아 있습니다.',
@@ -158,9 +158,9 @@ export default async function SajuNaturePage({ params }: Props) {
           </SectionSurface>
 
           <SupportRail
-            eyebrow="읽는 기준"
+            eyebrow="생활 힌트"
             title="사람 앞에서 어떻게 드러나는지 먼저 봅니다"
-            description="성정 페이지는 길게 단정하기보다, 언제 힘이 붙고 언제 감정이 먼저 나가는지를 먼저 짚은 뒤 오행 균형으로 이어지게 설계했습니다."
+            description="성정 페이지는 길게 설명하기보다, 언제 힘이 붙고 언제 감정이 먼저 나가는지를 먼저 짚은 뒤 오행 균형으로 이어집니다."
             surface="muted"
           >
             <div className="grid gap-3">

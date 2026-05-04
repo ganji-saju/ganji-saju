@@ -3,6 +3,7 @@ import {
   buildReportCounselorInstructions,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 export const SAJU_YEARLY_INTERPRETATION_PROMPT_VERSION = 'saju-yearly-interpret-v7';
@@ -91,11 +92,11 @@ const MIN_MONTHS = 12;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
-  return value.replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  return simplifySajuCopy(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 function splitSentences(value: string) {
-  return value
+  return simplifySajuCopy(value)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((line) => line.trim())
@@ -208,7 +209,7 @@ function renderMonthlyLines(flows: SajuYearlyAiMonthlyFlow[]) {
         flow.summary,
         flow.focus ? `- 먼저 볼 것: ${flow.focus}` : null,
         flow.caution ? `- 조심할 것: ${flow.caution}` : null,
-        flow.action ? `- 행동 기준: ${flow.action}` : null,
+        flow.action ? `- 오늘 할 일: ${flow.action}` : null,
       ]
         .filter(Boolean)
         .join('\n')
@@ -302,11 +303,11 @@ export function buildFallbackYearlyInterpretation(
       introPrefix,
       report.overview.summary,
       `${report.firstHalf.summary} ${report.secondHalf.summary}`,
-      `올해는 ${report.annualContext.yearGanji} 세운과 ${
+      `올해는 ${report.annualContext.yearGanji} 흐름과 ${
         report.annualContext.currentMajorLuck
-          ? `${report.annualContext.currentMajorLuck} 대운`
-          : '현재 원국의 중심축'
-      }이 겹쳐 작동하므로, 큰 기회와 경계 시기를 함께 읽는 것이 중요합니다.`,
+          ? `${report.annualContext.currentMajorLuck} 큰 흐름`
+          : '타고난 사주의 중심 흐름'
+      }이 겹쳐 작동하므로, 기회와 조심할 시기를 함께 읽는 것이 중요합니다.`,
     ].join(' '),
     keywords,
     firstHalf: `${report.firstHalf.summary} 특히 ${report.firstHalf.opportunity} 다만 ${report.firstHalf.caution} 상반기 실천은 ${report.firstHalf.action}`,
@@ -643,10 +644,10 @@ export function createYearlyInterpretationPrompt(
 
   const schemaLine =
     section === 'monthly'
-      ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"행동 기준"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"행동 기준"}]}'
+      ? '{"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}]}'
       : section === 'narrative'
         ? '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}'
-        : '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"행동 기준"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"행동 기준"}],"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}';
+        : '{"opening":"첫 문단 장문","keywords":["키워드: 설명","..."],"firstHalf":"상반기 장문","secondHalf":"하반기 장문","categories":{"work":"일·직업운 장문","wealth":"재물운 장문","love":"연애·결혼운 장문","relationship":"인간관계운 장문","health":"건강운 장문","move":"이동·변화운 장문"},"monthlyFlows":[{"month":1,"summary":"1월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"},...,{"month":12,"summary":"12월 핵심 장면","focus":"먼저 볼 질문과 기회","caution":"조심할 장면","action":"오늘 할 일"}],"goodPeriods":["좋은 시기 설명","..."],"cautionPeriods":["주의 시기 설명","..."],"actionAdvice":["행동 조언","..."],"oneLineSummary":"마지막 한 줄 요약"}';
 
   const sectionSpecificInstructions =
     section === 'monthly'
@@ -669,14 +670,15 @@ export function createYearlyInterpretationPrompt(
 
   return {
     instructions: [
-      '당신은 연간 운세 전략 리포트를 쓰는 명리 기반 해석가입니다.',
-      '제공된 JSON 근거 안에서만 해석하고, 없는 격국·신살·고전 출처·사건을 새로 만들지 않습니다.',
-      '결과물은 길게 늘인 장문이 아니라, 한 해의 흐름과 행동 전략이 바로 읽히는 프리미엄 리포트용 데이터여야 합니다.',
-      '명리 용어를 쓰더라도 바로 쉬운 한국어 풀이를 붙이고, 추상적인 표현만 반복하지 말고 실제 상황이 떠오르게 설명합니다.',
+      '당신은 한국 운세 서비스를 쓰는 일반 사용자가 한 해 흐름을 쉽게 이해하도록 정리하는 생활 조언 에디터입니다.',
+      '제공된 JSON 정보 안에서만 해석하고, 없는 사건이나 공포스러운 예언을 새로 만들지 않습니다.',
+      '결과물은 길게 늘인 장문이 아니라, 한 해의 흐름과 행동 조언이 바로 읽히는 모바일 운세 데이터여야 합니다.',
+      '사용자는 명리학을 배우러 온 사람이 아니라 올해 무엇을 조심하고 어떻게 움직일지 알고 싶어 합니다.',
       '과장, 희망고문, 공포 조장, 운명을 단정하는 표현은 피합니다.',
       '무조건, 반드시, 100% 같은 단정 표현은 쓰지 않습니다.',
-      'recentFeedbackSummary가 있으면 최근 실제 반응을 참고해 표현 강도만 미세 조정하고, 세운·월운·원국 근거보다 앞세우지 않습니다.',
-      '연애, 일, 재물, 관계, 건강, 이동의 현실 주제를 우선하고, 왜 이런 흐름이 오는지 세운·월운·강약·용신 근거를 자연스럽게 녹여냅니다.',
+      'recentFeedbackSummary가 있으면 최근 실제 반응을 참고해 표현 강도만 미세 조정하고, 계산 설명보다 사용자 체감을 앞세웁니다.',
+      '격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
+      '연애, 일, 재물, 관계, 건강, 이동의 현실 주제를 우선하고, 왜 그런 흐름인지보다 그래서 무엇을 하면 좋은지를 먼저 씁니다.',
       '길게 늘어놓기보다 읽기 쉽게 씁니다. 한 문단은 2~3문장을 넘기지 않고, 같은 접속어와 같은 결론 구조를 반복하지 않습니다.',
       '카드 안 문구는 설명보다 판단이 먼저 보여야 합니다. 짧게 잘라서 한 번에 읽히게 씁니다.',
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
@@ -688,10 +690,10 @@ export function createYearlyInterpretationPrompt(
       'categories의 6개 분야는 각 분야마다 "무슨 장면이 핵심인지 / 무엇을 조심할지 / 어떻게 행동할지"가 바로 읽히게 2~3문장 안에서 정리합니다.',
       'monthlyFlows는 1월부터 12월까지 서로 다른 질문을 던져야 합니다. 같은 문장 구조, 같은 도입, 같은 결론을 반복하지 않습니다.',
       'monthlyFlows는 사용자가 실제로 궁금해하는 선택 장면, 돈과 일의 판단, 관계 조율, 달력에 표시해 둘 만한 포인트를 우선해서 씁니다.',
-      'monthlyFlows는 체감 가능한 변화 중심으로 쓰고, 설명보다 판단 기준이 먼저 보이게 씁니다. 한 달 설명을 장문 단락 하나로 늘리지 않습니다.',
+      'monthlyFlows는 체감 가능한 변화 중심으로 쓰고, 설명보다 오늘 할 일이 먼저 보이게 씁니다. 한 달 설명을 장문 단락 하나로 늘리지 않습니다.',
       'monthlyFlows의 summary, focus, caution, action은 서로 역할이 겹치지 않게 씁니다. 같은 말을 조금 바꿔 반복하지 않습니다.',
       'goodPeriods와 cautionPeriods는 시기와 이유, 활용 또는 방어 전략이 함께 드러나야 합니다.',
-      'actionAdvice는 3~6개로 작성하고, 한 해를 잘 보내기 위한 실제 행동 기준을 줍니다.',
+      'actionAdvice는 3~6개로 작성하고, 한 해를 잘 보내기 위한 실제 행동 힌트를 줍니다.',
       'oneLineSummary는 단정하고 기억에 남게 마무리합니다.',
       ...sectionSpecificInstructions,
       ...buildReportCounselorInstructions(counselorId),

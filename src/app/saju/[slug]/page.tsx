@@ -19,7 +19,6 @@ import { SectionSurface } from '@/components/layout/section-surface';
 import { ReportKeepsakeSection } from '@/components/report/report-keepsake-section';
 import { ReportOneMinuteSummary } from '@/components/report/report-one-minute-summary';
 import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
-import { GroundingDecisionTrace } from '@/components/saju/grounding-decision-trace';
 import { SajuFactEvidencePanel } from '@/components/saju/saju-fact-evidence-panel';
 import { Badge } from '@/components/ui/badge';
 import DetailUnlock from '@/components/detail-unlock';
@@ -30,6 +29,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { toSlug } from '@/lib/saju/pillars';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Branch, Element, Stem } from '@/lib/saju/types';
 import { isReadingId, resolveReading } from '@/lib/saju/readings';
 import { buildSajuInterpretationGrounding, buildSajuReport, FOCUS_TOPIC_META } from '@/domain/saju/report';
@@ -84,7 +84,7 @@ function formatBirthSummary(input: {
     input.hour !== undefined && input.minute !== undefined
       ? ` ${String(input.minute).padStart(2, '0')}분`
       : '';
-  const timeLabel = input.hour !== undefined ? `${input.hour}시${minuteLabel} 기준` : '태어난 시간 미입력';
+  const timeLabel = input.hour !== undefined ? `${input.hour}시${minuteLabel}` : '태어난 시간 미입력';
   const genderLabel = input.gender
     ? input.gender === 'male'
       ? '남성'
@@ -123,9 +123,9 @@ function formatCurrentLuckTitle(currentLuck: SajuCurrentLuck | null) {
   if (!currentLuck) return '현재 운 계산 준비 중';
 
   const parts = [
-    currentLuck.currentMajorLuck?.ganzi ? `대운 ${currentLuck.currentMajorLuck.ganzi}` : null,
-    currentLuck.saewoon?.ganzi ? `세운 ${currentLuck.saewoon.ganzi}` : null,
-    currentLuck.wolwoon?.ganzi ? `월운 ${currentLuck.wolwoon.ganzi}` : null,
+    currentLuck.currentMajorLuck?.ganzi ? `큰 흐름 ${currentLuck.currentMajorLuck.ganzi}` : null,
+    currentLuck.saewoon?.ganzi ? `올해 ${currentLuck.saewoon.ganzi}` : null,
+    currentLuck.wolwoon?.ganzi ? `이번 달 ${currentLuck.wolwoon.ganzi}` : null,
   ].filter(Boolean);
 
   return parts.length > 0 ? parts.join(' · ') : '현재 운 계산 준비 중';
@@ -235,7 +235,7 @@ function buildResultTasteProductHref(productSlug: string, slug: string) {
 
 function formatCurrentLuckBody(currentLuck: SajuCurrentLuck | null, report?: SajuReport) {
   if (!currentLuck) {
-    return '현재 대운과 세운, 월운을 아직 계산하지 못했습니다. 운 계산이 연결되면 이 자리에 현재 시점 해석이 표시됩니다.';
+    return '현재 흐름을 아직 계산하지 못했습니다. 운 계산이 연결되면 이 자리에 지금 시점의 조언이 표시됩니다.';
   }
 
   const enriched = report
@@ -343,7 +343,7 @@ function formatLuckDescriptorBody(descriptor: SajuLuckDescriptor | null) {
   if (!descriptor) return '운 정보가 아직 비어 있습니다.';
 
   return descriptor.notes.length > 0
-    ? descriptor.notes.join(' ')
+    ? simplifySajuCopy(descriptor.notes.join(' '))
     : '기본 간지 계산은 완료되었고 설명 문장은 아직 비어 있습니다.';
 }
 
@@ -584,7 +584,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   {RESULT_TEACHER.teacherName}
                 </Badge>
                 <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                  계산 기준 요약
+                  내 풀이 요약
                 </Badge>
               </div>
               <p className="app-caption mt-5">{formatBirthSummary(input)}</p>
@@ -599,7 +599,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
             <div className="grid self-start gap-4 lg:border-l lg:border-[var(--app-line)] lg:pl-6">
               <div className="moon-lunar-panel p-5">
-                <div className="app-caption">사주 원국</div>
+                <div className="app-caption">사주 기본표</div>
                 <div className="mt-3 flex items-end justify-between gap-3">
                   <div>
                     <div className="font-[var(--font-heading)] text-2xl font-semibold text-[var(--app-gold-text)]">
@@ -610,7 +610,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     </p>
                   </div>
                   <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-                    원국
+                    기본표
                   </Badge>
                 </div>
                 <div className="moon-saju-grid mt-5">
@@ -689,8 +689,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 isTimeUnknown={isTimeUnknown}
               />
 
-              <GroundingDecisionTrace grounding={grounding} kasiComparison={kasiComparison} />
-
               <SectionSurface surface="panel">
             <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
               <div>
@@ -734,12 +732,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   eyebrow="긴 사주풀이"
                   title="더 오래 볼 내용"
                   titleClassName="text-2xl"
-                  description="원국, 격국, 용신, 대운과 주제별 해석을 한 권의 구조로 더 길게 확인합니다."
+                  description="타고난 성향, 일·돈·관계, 큰 흐름을 한 권처럼 더 길게 확인합니다."
                 />
                 <FeatureCard
                   surface="soft"
                   eyebrow="PDF 소장"
-                  title="다시 읽을 기준 남기기"
+                  title="다시 읽을 내용 남기기"
                   titleClassName="text-2xl"
                   description="보관형 사주 리포트를 열면 표지, 요약, 판단 단서, 본문을 인쇄용 화면에서 PDF로 저장할 수 있습니다."
                 />
@@ -748,14 +746,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   eyebrow="대화 연결"
                   title="지금 결과에서 바로 질문"
                   titleClassName="text-2xl"
-                  description="방금 읽은 기준 위에서, 생활 질문이나 선택 고민을 이어서 묻는 흐름으로 연결됩니다."
+                  description="방금 읽은 풀이를 바탕으로 생활 질문이나 선택 고민을 이어서 물어볼 수 있습니다."
                 />
                 <FeatureCard
                   surface="soft"
                   eyebrow="올해 전략"
                   title="올해 흐름까지 확장"
                   titleClassName="text-2xl"
-                  description="월별 리듬, 기회 달, 조심할 달은 올해 전략서에서 같은 명리 기준 위로 이어집니다."
+                  description="월별 리듬, 기회 달, 조심할 달은 올해 전략서에서 이어집니다."
                   footer={
                     <Link
                       href={`/saju/${slug}/premium#yearly-report`}
@@ -877,7 +875,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <div>
               <div className="app-caption">올해 전략서 진입</div>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
-                2026 올해 전략서로 들어가면 월별 판단 기준까지 길게 읽을 수 있습니다.
+                2026 올해 전략서로 들어가면 월별로 밀어도 되는 일과 한 번 더 확인할 일을 볼 수 있습니다.
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
                 총론, 상반기·하반기, 일·재물·연애·관계·건강·이동 흐름, 12개월 요약까지 한 번에 정리한
@@ -903,7 +901,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <section id="result-flow" className="space-y-4 scroll-mt-24">
           <SectionHeader
             eyebrow="운 흐름"
-            title="오늘과 이번 달, 대운 흐름"
+            title="오늘과 이번 달, 큰 흐름"
             titleClassName="text-2xl sm:text-3xl"
             description="현재 시점에서 이어지는 시간 흐름을 한 화면으로 묶었습니다."
           />
@@ -933,26 +931,33 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
         <section id="result-evidence" className="space-y-4 scroll-mt-24">
           <SectionHeader
-            eyebrow="단서와 보관"
-            title="왜 이렇게 보았는지와 다시 읽을 가치"
+            eyebrow="보관"
+            title="다시 보고 싶을 때만 세부 단서를 확인합니다"
             titleClassName="text-2xl sm:text-3xl"
-            description="풀이의 바탕이 된 단서와 PDF·보관함 가치를 별도 화면으로 모았습니다."
+            description="처음 읽을 때는 풀이와 행동 조언만 보셔도 충분합니다. 계산 단서는 궁금할 때만 펼쳐보세요."
           />
-            <SajuFactEvidencePanel
-              grounding={grounding}
-              kasiComparison={kasiComparison}
-              primaryClassicItems={primaryClassicItems}
-              showDecisionTrace={false}
-            />
+            <details className="rounded-[24px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--app-copy)]">
+                세부 계산 단서 보기
+              </summary>
+              <div className="mt-4">
+                <SajuFactEvidencePanel
+                  grounding={grounding}
+                  kasiComparison={kasiComparison}
+                  primaryClassicItems={primaryClassicItems}
+                  showDecisionTrace={false}
+                />
+              </div>
+            </details>
 
             <ReportKeepsakeSection pdfHref={`/saju/${slug}/premium/print`} />
 
             <SectionSurface surface="panel">
               <SectionHeader
                 eyebrow="신뢰 장치"
-                title="결과는 다시 확인할 수 있는 기준으로 남깁니다"
+                title="결과는 다시 확인할 수 있게 남깁니다"
                 titleClassName="text-3xl"
-                description="사주풀이가 한 번 읽고 끝나지 않도록 저장, 재열람, 판단 단서, 시간·출생지 기준, 안전한 표현을 함께 노출합니다."
+                description="사주풀이가 한 번 읽고 끝나지 않도록 저장, 재열람, 시간·출생지 정보, 안전한 표현을 함께 챙깁니다."
               />
               <ProductGrid columns={3} className="mt-6">
                 {TRUST_SIGNALS.map((signal) => (
@@ -990,8 +995,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     </h2>
                   </div>
                   <p className="max-w-xl text-sm leading-7 text-[var(--app-copy-muted)]">
-                    강약, 격국, 용신과 합충·공망·신살은 해석의 배경입니다. 카드마다 먼저 쉬운 설명을 보여드리고,
-                    자세한 계산과 용어는 아래에 접어두었습니다.
+                    세부 계산 용어는 해석의 배경입니다. 처음에는 쉬운 설명만 보시고,
+                    자세한 계산 단서는 아래에 접어두었습니다.
                   </p>
                 </div>
 
@@ -1024,7 +1029,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                           {card.plainSummary || card.technicalSummary ? (
                             <div className="rounded-2xl border border-[var(--app-line)] bg-[rgba(8,10,18,0.32)] px-3 py-3">
                               <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--app-gold-soft)]">
-                                기준 메모
+                                세부 메모
                               </div>
                               <div className="mt-2 space-y-2">
                                 {card.plainSummary ? (
@@ -1122,7 +1127,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-[var(--app-ivory)]">사주 명반</h2>
                 <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                  사주팔자 원국
+                  사주 기본표
                 </Badge>
               </div>
 
@@ -1350,15 +1355,15 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
                 <div className="mt-5 grid gap-3">
                   <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
-                    <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">현재 대운</div>
+                    <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">현재 큰 흐름</div>
                     <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
                       {sajuData.currentLuck?.currentMajorLuck
                         ? `${sajuData.currentLuck.currentMajorLuck.ganzi} · ${formatMajorLuckWindow(sajuData.currentLuck.currentMajorLuck)}`
-                        : '성별이 있어야 대운 방향을 확정할 수 있습니다.'}
+                        : '성별이 있어야 큰 흐름의 방향을 확정할 수 있습니다.'}
                     </div>
                     <p className="app-body-copy mt-2 text-sm">
                       {currentMajorFlow?.body ??
-                        '현재 저장본에는 대운 범위가 아직 비어 있습니다.'}
+                        '현재 저장본에는 큰 흐름 범위가 아직 비어 있습니다.'}
                     </p>
                     {currentMajorFlow?.points && currentMajorFlow.points.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -1376,9 +1381,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">세운</div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">올해 흐름</div>
                       <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
-                        {formatLuckDescriptorTitle('세운', sajuData.currentLuck?.saewoon ?? null)}
+                        {formatLuckDescriptorTitle('올해 흐름', sajuData.currentLuck?.saewoon ?? null)}
                       </div>
                       <p className="app-body-copy mt-2 text-sm">
                         {formatLuckDescriptorBody(sajuData.currentLuck?.saewoon ?? null)}
@@ -1386,9 +1391,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     </div>
 
                     <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
-                      <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">월운</div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">이번 달 흐름</div>
                       <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
-                        {formatLuckDescriptorTitle('월운', sajuData.currentLuck?.wolwoon ?? null)}
+                        {formatLuckDescriptorTitle('이번 달 흐름', sajuData.currentLuck?.wolwoon ?? null)}
                       </div>
                       <p className="app-body-copy mt-2 text-sm">
                         {formatLuckDescriptorBody(sajuData.currentLuck?.wolwoon ?? null)}
@@ -1401,7 +1406,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               <article className="app-panel p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="app-caption">대운 10주기</div>
+                    <div className="app-caption">10년 단위 큰 흐름</div>
                     <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">인생 흐름 캘린더</h2>
                   </div>
                   <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
@@ -1441,13 +1446,13 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     </div>
                     <p className="app-body-copy mt-4 text-sm">
                       {sajuData.majorLuck && sajuData.majorLuck.length > majorLuckPreview.length
-                        ? `저장본에는 총 ${sajuData.majorLuck.length}개 대운 주기가 들어 있고, 화면에는 현재 흐름 파악이 쉬운 앞부분만 먼저 보여줍니다.`
+                        ? `저장본에는 총 ${sajuData.majorLuck.length}개 큰 흐름 주기가 들어 있고, 화면에는 현재 흐름 파악이 쉬운 앞부분만 먼저 보여줍니다.`
                         : '절기 일수 미세보정 전 기본 계산값을 먼저 노출하고 있습니다.'}
                     </p>
                   </>
                 ) : (
                   <p className="app-body-copy mt-5 text-sm">
-                    성별이 있어야 대운 순행·역행을 확정할 수 있어 현재 저장본에는 대운 주기가 비어 있습니다.
+                    성별이 있어야 큰 흐름의 방향을 확정할 수 있어 현재 저장본에는 관련 주기가 비어 있습니다.
                   </p>
                 )}
               </article>

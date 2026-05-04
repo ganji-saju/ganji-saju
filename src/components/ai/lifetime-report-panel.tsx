@@ -22,6 +22,7 @@ import type { SajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
 import type { AiFallbackReason, AiGenerationSource } from '@/server/ai/openai-text';
 import type { SajuLifetimeReport } from '@/domain/saju/report/lifetime-types';
 import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
+import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
 interface Props {
   slug: string;
@@ -59,19 +60,19 @@ interface LifetimeInterpretationResponse {
 }
 
 const SECTION_META = [
-  { key: 'coreIdentity', label: '원국의 본질' },
-  { key: 'strengthBalance', label: '강약 / 오행 균형' },
-  { key: 'patternAndYongsin', label: '격국 / 용신' },
+  { key: 'coreIdentity', label: '타고난 성향' },
+  { key: 'strengthBalance', label: '기운의 균형' },
+  { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
   { key: 'relationshipPattern', label: '관계 패턴' },
   { key: 'wealthStyle', label: '재물 감각' },
   { key: 'careerDirection', label: '직업 방향' },
   { key: 'healthRhythm', label: '건강 리듬' },
-  { key: 'majorLuckTimeline', label: '대운 10년 흐름 지도' },
+  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ] as const;
 
 function splitParagraphs(text: string) {
-  return text
+  return simplifySajuCopy(text)
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?。])\s+/)
     .map((paragraph) => paragraph.trim())
@@ -90,7 +91,7 @@ function FactCard({ label, body }: { label: string; body: string }) {
   return (
     <div className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
       <div className="app-caption text-[var(--app-gold-soft)]">{label}</div>
-      <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{body}</p>
+      <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{limitSajuSentences(body, 2)}</p>
     </div>
   );
 }
@@ -101,12 +102,12 @@ function BasisNotes({ items }: { items: string[] }) {
   return (
     <details className="group mt-5">
       <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-        판단 기준 따로 보기
+        세부 단서 보기
       </summary>
       <div className="mt-3 grid gap-2">
         {items.map((line) => (
           <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-            {line}
+            {simplifySajuCopy(line)}
           </div>
         ))}
       </div>
@@ -173,7 +174,7 @@ function LifetimeAtAGlance({
             전문 용어는 아래로 접어두고, 생활에서 바로 느껴지는 돈·일·관계·리듬부터 카드로 분리했습니다.
           </p>
           <div className="mt-4 rounded-[1rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-3">
-            <div className="app-caption text-[var(--app-gold-soft)]">평생 기준 한 줄</div>
+            <div className="app-caption text-[var(--app-gold-soft)]">평생 기억할 한 줄</div>
             <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
               {interpretation.lifetimeRule}
             </p>
@@ -242,12 +243,12 @@ function LifetimeSectionBody({
           </div>
           <details className="group mt-5">
             <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              판단 기준 따로 보기
+              세부 단서 보기
             </summary>
             <div className="mt-3 grid gap-2">
               {report.coreIdentity.basis.map((line) => (
                 <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  {line}
+                  {simplifySajuCopy(line)}
                 </div>
               ))}
             </div>
@@ -277,7 +278,7 @@ function LifetimeSectionBody({
             <div className="mt-3 flex flex-wrap gap-2">
               {report.strengthBalance.balanceGuide.map((item) => (
                 <span key={item} className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-xs leading-6 text-[var(--app-copy)]">
-                  {item}
+                  {simplifySajuCopy(item)}
                 </span>
               ))}
             </div>
@@ -290,7 +291,7 @@ function LifetimeSectionBody({
           <div className="mt-4 grid gap-3 lg:grid-cols-3">
             <FactCard label="삶의 역할" body={report.patternAndYongsin.patternRole} />
             <FactCard label="보완 방향" body={report.patternAndYongsin.yongsinDirection} />
-            <FactCard label="평생 선택 기준" body={report.patternAndYongsin.choiceRule} />
+            <FactCard label="평생 선택 힌트" body={report.patternAndYongsin.choiceRule} />
           </div>
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
             <div className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
@@ -316,12 +317,12 @@ function LifetimeSectionBody({
           </div>
           <details className="group mt-5">
             <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              보완 기준 따로 보기
+              세부 단서 보기
             </summary>
             <div className="mt-3 grid gap-2">
               {report.patternAndYongsin.detailLines.map((line) => (
                 <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  {line}
+                  {simplifySajuCopy(line)}
                 </div>
               ))}
             </div>
@@ -393,7 +394,7 @@ function LifetimeSectionBody({
                 </Badge>
                 {cycle.isCurrent ? (
                   <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]">
-                    현재 대운
+                    현재 큰 흐름
                   </Badge>
                 ) : null}
               </div>
@@ -481,10 +482,10 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="app-starfield" />
         <div className="app-caption">깊은 사주풀이 생성 중</div>
         <h2 className="font-display mt-4 text-3xl text-[var(--app-ivory)]">
-          원국 중심 풀이를 정리하고 있습니다
+          타고난 사주풀이를 정리하고 있습니다
         </h2>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-          타고난 구조와 보완 방향, 대운 흐름을 묶어 다시 열어볼 수 있는 풀이로 재구성하고 있습니다.
+          타고난 성향과 보완 방향, 큰 흐름을 묶어 다시 열어볼 수 있는 풀이로 재구성하고 있습니다.
         </p>
         <div className="mt-6 grid gap-3 lg:grid-cols-3">
           {Array.from({ length: 3 }, (_, index) => (
@@ -533,7 +534,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-              {data.counselorId === 'male' ? '달빛 남선생 기준' : '달빛 여선생 기준'}
+              {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
             </Badge>
             <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
               새로 정리
@@ -555,7 +556,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           <div className="rounded-[24px] border border-[var(--app-gold)]/18 bg-[rgba(210,176,114,0.08)] px-5 py-5">
             <div className="space-y-3">{renderParagraphs(interpretation.opening)}</div>
             <div className="mt-5 rounded-[18px] border border-[var(--app-line)] bg-[rgba(7,9,16,0.28)] px-4 py-4">
-              <div className="app-caption text-[var(--app-gold-soft)]">이 사주의 평생 기준</div>
+              <div className="app-caption text-[var(--app-gold-soft)]">이 사주의 평생 힌트</div>
               <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{interpretation.lifetimeRule}</p>
             </div>
           </div>
@@ -595,8 +596,8 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               필요한 장으로 바로 이동합니다
             </h3>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-              처음에는 전체 기준을 훑고, 다시 볼 때는 돈·일·관계처럼 필요한 장만 골라 들어가도 됩니다.
-              세부 단서와 기준은 각 장 아래의 접힌 영역으로 분리했습니다.
+              처음에는 전체 흐름을 훑고, 다시 볼 때는 돈·일·관계처럼 필요한 장만 골라 들어가도 됩니다.
+              세부 계산 단서는 각 장 아래의 접힌 영역으로 분리했습니다.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -698,7 +699,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           />
           <EngineMethodLinks
             title="깊은 사주풀이를 읽을 때 같이 보면 좋은 글"
-            description="보완 방향, 시간 기준, 대운 흐름처럼 풀이를 더 깊게 보고 싶을 때 필요한 기준만 따로 모았습니다."
+            description="보완 방향, 출생 시간, 큰 흐름처럼 풀이를 더 깊게 보고 싶을 때 필요한 글만 따로 모았습니다."
             slugs={[
               'why-pattern-judgments-diverge',
               'why-yongsin-is-hard',
@@ -706,7 +707,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               'how-far-to-trust-gongmang-and-shinsal',
             ]}
             ctaHref="/method"
-            ctaLabel="관련 기준 더 보기"
+            ctaLabel="관련 글 더 보기"
             compact
           />
         </div>

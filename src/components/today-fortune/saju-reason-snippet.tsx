@@ -7,9 +7,9 @@ export function SajuReasonSnippet({
 }) {
   return (
     <section className="rounded-[1.45rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5">
-      <div className="app-caption">사주 단서 1줄</div>
+      <div className="app-caption">오늘 흐름 1줄</div>
       <div className="mt-2 text-xs tracking-[0.18em] text-[var(--app-gold-soft)]">
-        핵심 기준 · {result.groundingSummary.primaryConcept}
+        핵심 힌트 · {result.groundingSummary.primaryConcept}
       </div>
       <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{result.reasonSnippet.body}</p>
       <div className="mt-4 flex flex-wrap gap-2">

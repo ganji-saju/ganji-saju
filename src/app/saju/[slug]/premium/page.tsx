@@ -75,7 +75,7 @@ function formatLuckRange(cycle: { startAge: number | null; endAge: number | null
 }
 
 function formatMajorLuckLine(cycle: NonNullable<ReadingRecord['sajuData']['majorLuck']>[number]) {
-  const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 대운 흐름은 세부 해석 보강 대상입니다.';
+  const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 큰 흐름은 세부 풀이 보강 대상입니다.';
   return `${formatLuckRange(cycle)} · ${cycle.ganzi}: ${note}`;
 }
 
@@ -145,22 +145,22 @@ function buildUnlockedReportSections(reading: ReadingRecord): PremiumReportSecti
         todayReport.summaryHighlights[0],
       ]),
       keyPoints: compactList([
-        `원국: ${pillars.join(' · ')}`,
-        `월령 기준: ${sajuData.pillars.month.ganzi}`,
+        `사주 기본표: ${pillars.join(' · ')}`,
+        `태어난 달 흐름: ${sajuData.pillars.month.ganzi}`,
         `일간 상징: ${sajuData.dayMaster.metaphor ?? sajuData.dayMaster.stem}`,
       ]),
       actionItems: compactList([
         '내가 빨리 반응하는 상황과 늦게 결정해야 하는 상황을 구분하세요.',
-        '성향을 장점/단점으로만 보지 말고 잘 맞는 환경을 찾는 기준으로 쓰세요.',
+        '성향을 장점/단점으로만 보지 말고 잘 맞는 환경을 찾는 힌트로 쓰세요.',
       ], 2),
     },
     {
       eyebrow: '균형 진단',
-      title: '2. 오행 분포와 강약',
+      title: '2. 오행 분포와 기운의 균형',
       lead: `${dominant} 기운이 가장 앞에 있고, ${weakest} 기운을 어떻게 보완하느냐가 평생 균형의 핵심입니다.`,
       decision: strength?.body ?? `${dominant}은 쓰기 쉬운 장점이고, ${weakest}은 의식적으로 보완해야 하는 약한 축입니다.`,
       paragraphs: compactStrings([
-        strength?.title ? `강약 기준은 ${strength.title}입니다.` : null,
+        strength?.title ? `기운 균형은 ${strength.title} 흐름입니다.` : null,
         todayReport.summaryHighlights[1],
       ]),
       keyPoints: compactList([
@@ -174,20 +174,20 @@ function buildUnlockedReportSections(reading: ReadingRecord): PremiumReportSecti
       ),
     },
     {
-      eyebrow: '명식 구조',
-      title: '3. 격국과 용신',
+      eyebrow: '사주 구조',
+      title: '3. 역할 흐름과 보완 힌트',
       lead: compactStrings([
-        pattern ? `${pattern.title}을 기준으로 삶의 역할과 관계 패턴을 먼저 읽습니다.` : null,
+        pattern ? `${pattern.title} 흐름으로 반복되는 역할과 관계 패턴을 먼저 읽습니다.` : null,
         yongsinLabel ? `보완 축은 ${yongsinLabel}입니다.` : null,
       ]).join(' '),
-      decision: yongsin?.body ?? `이 명식은 ${supportLabels} 기운을 어떻게 쓰느냐가 균형의 핵심입니다.`,
+      decision: yongsin?.body ?? `이 사주는 ${supportLabels} 기운을 어떻게 쓰느냐가 균형의 핵심입니다.`,
       paragraphs: compactStrings([
-        pattern?.title ? `격국 기준은 ${pattern.title}입니다.` : null,
+        pattern?.title ? `역할 흐름은 ${pattern.title}입니다.` : null,
         yongsin?.title ? `보완 축 메모: ${yongsin.title}` : null,
         `평생 운을 볼 때는 타고난 구조를 고정값으로 단정하기보다, ${supportLabels} 기운을 생활 환경과 선택 안에 얼마나 안정적으로 들이는지가 중요합니다.`,
       ]),
       keyPoints: compactList([
-        pattern ? `격국: ${pattern.title}` : null,
+        pattern ? `역할 흐름: ${pattern.title}` : null,
         yongsinLabel ? `보완 축: ${yongsinLabel}` : null,
         yongsin?.details.find((detail) => detail.includes('후보')),
       ]),
@@ -198,35 +198,35 @@ function buildUnlockedReportSections(reading: ReadingRecord): PremiumReportSecti
     },
     {
       eyebrow: '인생 큰 흐름',
-      title: '4. 대운으로 보는 장기 운세',
+      title: '4. 10년 단위로 보는 큰 흐름',
       lead: currentMajor
-        ? `현재는 ${currentMajor.ganzi} 대운권에 있어 ${formatLuckRange(currentMajor)} 구간의 선택이 다음 흐름을 여는 기준이 됩니다.`
-        : '대운은 10년 단위로 삶의 배경이 바뀌는 큰 흐름입니다.',
-      decision: majorFlow?.body ?? '대운은 사건 하나를 맞히는 항목이 아니라, 선택의 배경과 장기 과제를 읽는 항목입니다.',
+        ? `현재는 ${currentMajor.ganzi} 큰 흐름 안에 있어 ${formatLuckRange(currentMajor)} 구간의 선택이 다음 흐름을 여는 힌트가 됩니다.`
+        : '10년 단위 흐름은 삶의 배경이 바뀌는 큰 흐름입니다.',
+      decision: majorFlow?.body ?? '큰 흐름은 사건 하나를 맞히는 항목이 아니라, 선택의 배경과 장기 과제를 읽는 항목입니다.',
       paragraphs: compactStrings([
         majorFlow?.headline,
-        '아래 대운 목록은 특정 사건을 단정하기보다, 어느 시기에 확장·정리·관계 조율의 과제가 커지는지 보는 장기 지도입니다.',
+        '아래 목록은 특정 사건을 단정하기보다, 어느 시기에 확장·정리·관계 조율의 과제가 커지는지 보는 장기 지도입니다.',
       ]),
       keyPoints: majorFlow?.points,
       actionItems: compactList([
         majorFlow?.points?.find((point) => point.startsWith('장기 실행')),
-        '올해 결정은 지금 대운의 장기 과제와 맞는지 먼저 확인하세요.',
+        '올해 결정은 지금의 장기 과제와 맞는지 먼저 확인하세요.',
       ], 2),
       highlights: majorLuckHighlights.length > 0
         ? majorLuckHighlights
-        : ['성별 또는 생시 정보가 부족해 대운 시작 시점은 아직 산정되지 않았습니다.'],
+        : ['성별 또는 생시 정보가 부족해 큰 흐름의 시작 시점은 아직 산정되지 않았습니다.'],
     },
     {
       eyebrow: '현재 운',
-      title: '5. 세운과 월운',
+      title: '5. 올해와 이번 달 흐름',
       lead: compactStrings([
-        saewoon?.ganzi ? `${saewoon.ganzi} 세운` : null,
-        wolwoon?.ganzi ? `${wolwoon.ganzi} 월운` : null,
-      ]).join(' · ') || '현재 세운과 월운은 기본 흐름 중심으로 해석합니다.',
+        saewoon?.ganzi ? `${saewoon.ganzi} 올해 흐름` : null,
+        wolwoon?.ganzi ? `${wolwoon.ganzi} 이번 달 흐름` : null,
+      ]).join(' · ') || '현재 올해와 이번 달 흐름은 기본 흐름 중심으로 해석합니다.',
       decision: compactStrings([
         todayFlow?.body,
         monthlyFlow?.body,
-      ]).join(' ') || '현재 운은 세운과 월운을 함께 놓고 오늘의 선택 속도와 이번 달 루틴을 조절하는 방식으로 봅니다.',
+      ]).join(' ') || '현재 운은 올해와 이번 달 흐름을 함께 놓고 오늘의 선택 속도와 이번 달 루틴을 조절하는 방식으로 봅니다.',
       paragraphs: compactStrings([
         saewoon?.notes.join(' '),
         wolwoon?.notes.join(' '),
@@ -466,7 +466,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       ? `${targetYear} 올해 전략서`
       : '내 깊은 사주풀이 미리보기';
   const heroDescription = hasLifetimeAccess
-    ? '원국 기준을 먼저 확인하고, 같은 기준 위에서 올해 흐름과 월간 달력을 이어봅니다.'
+    ? '타고난 사주를 먼저 확인하고, 올해 흐름과 월간 달력을 이어봅니다.'
     : yearlyAccessLabel
       ? '올해 흐름과 월간 타이밍을 먼저 확인하고, 필요하면 평생 소장 풀이로 확장합니다.'
       : '결제 전에는 실제로 어떤 답을 얻을 수 있는지 먼저 보고, 필요한 경우 소장권으로 이어집니다.';
@@ -483,7 +483,7 @@ export default async function SajuPremiumPage({ params }: Props) {
         {
           label: '올해',
           title: `${targetYear} 올해 전략서`,
-          description: '올해 주제와 분야별 선택 기준을 이어봅니다.',
+          description: '올해 주제와 분야별 선택 힌트를 이어봅니다.',
           href: '#premium-yearly',
           status: '열림',
           note: '풀이를 올해 선택으로 옮깁니다.',
@@ -518,7 +518,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           {
             label: '확장',
             title: '평생 소장 풀이',
-            description: '원국과 대운 기준을 오래 남기는 상품입니다.',
+            description: '타고난 사주와 큰 흐름을 오래 남기는 상품입니다.',
             href: '#premium-upgrade',
             status: '선택',
             note: '올해 운의 바탕을 따로 보관합니다.',
@@ -551,9 +551,9 @@ export default async function SajuPremiumPage({ params }: Props) {
           },
         ];
   const readingMapDescription = hasLifetimeAccess
-    ? '깊은 사주풀이는 원국의 바탕, 올해 전략, 달별 실행이 한 흐름으로 이어지도록 정리했습니다.'
+    ? '깊은 사주풀이는 타고난 바탕, 올해 전략, 달별 실행이 한 흐름으로 이어지도록 정리했습니다.'
     : yearlyAccessLabel
-      ? '구독 권한에서는 올해 전략과 달별 흐름을 먼저 보고, 필요한 경우 원국 풀이를 별도 소장으로 확장합니다.'
+      ? '구독 권한에서는 올해 전략과 달별 흐름을 먼저 보고, 필요한 경우 타고난 사주풀이를 별도 소장으로 확장합니다.'
       : '아직 결제 전이라면 미리보기, 달별 흐름, 샘플 풀이에서 실제로 남는 내용을 먼저 확인하시면 됩니다.';
 
   return (
@@ -575,7 +575,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 {heroDescription}
               </p>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-                지금 궁금한 선택, 올해 흐름, 다시 볼 기준을 한 화면에서 바로 확인할 수 있게 정리했습니다.
+                지금 궁금한 선택, 올해 흐름, 다시 볼 내용을 한 화면에서 바로 확인할 수 있게 정리했습니다.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 {readingSteps.map((step) => (
@@ -689,9 +689,9 @@ export default async function SajuPremiumPage({ params }: Props) {
         {hasLifetimeAccess ? (
           <>
             <PremiumSectionIntro
-              eyebrow="1장 · 평생 기준"
-              title="내 사주의 원본 기준을 먼저 확인합니다"
-              description="원국, 강약, 격국, 용신, 관계와 일의 결을 한 번에 훑은 뒤 올해 운으로 넘어가면 같은 문장도 덜 흩어져 보입니다."
+              eyebrow="1장 · 평생 힌트"
+              title="내 사주의 큰 흐름을 먼저 확인합니다"
+              description="타고난 성향, 관계와 일의 결을 먼저 훑은 뒤 올해 운으로 넘어가면 같은 문장도 덜 흩어져 보입니다."
               aside="긴 본문 안의 판단 단서는 각 장의 접힌 영역으로 분리했습니다."
             />
             <div id="premium-lifetime" className="scroll-mt-28">
@@ -719,7 +719,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <PremiumSectionIntro
               eyebrow="1장 · 올해 전략"
               title="구독 권한으로 열린 올해 흐름부터 읽습니다"
-              description="지금은 올해 주제와 월별 타이밍이 중심입니다. 평생 풀이는 별도 소장 상품이므로 원국 해설과 대운 지도는 아래에서 확장합니다."
+              description="지금은 올해 주제와 월별 타이밍이 중심입니다. 평생 풀이는 별도 소장 상품이므로 타고난 성향과 큰 흐름은 아래에서 확장합니다."
             />
             <div id="premium-yearly" className="scroll-mt-28">
               <YearlyReportPanel slug={slug} targetYear={targetYear} />
@@ -727,7 +727,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <PremiumSectionIntro
               eyebrow="2장 · 월간 실행"
               title="해금한 월간 흐름은 실행 전에 다시 봅니다"
-              description="월별 달력은 올해 전략을 실제 날짜 감각으로 옮기는 영역입니다. 이미 열린 항목은 같은 명식에서 다시 확인하는 흐름으로 이어집니다."
+              description="월별 달력은 올해 전략을 실제 날짜 감각으로 옮기는 영역입니다. 이미 열린 항목은 같은 사주에서 다시 확인하는 흐름으로 이어집니다."
             />
             <div id="premium-calendar" className="scroll-mt-28">
               <FortuneCalendarPanel slug={slug} targetYear={targetYear} hasLifetimeAccess={false} />
@@ -735,7 +735,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <PremiumSectionIntro
               eyebrow="3장 · 소장 확장"
               title="올해 운의 바탕이 되는 풀이를 별도로 남깁니다"
-              description="연간 전략을 반복해서 읽다 보면 결국 원국 기준이 필요해집니다. 이 영역은 결제 상품과 링크를 그대로 유지한 확장 카드입니다."
+              description="연간 전략을 반복해서 읽다 보면 결국 타고난 사주 흐름이 필요해집니다. 이 영역은 결제 상품과 링크를 그대로 유지한 확장 카드입니다."
             />
             <section id="premium-upgrade" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.92fr_1.08fr]">
               <article className="moon-lunar-panel p-6">
@@ -752,8 +752,8 @@ export default async function SajuPremiumPage({ params }: Props) {
                   올해 전략서는 열려 있고, 깊은 사주풀이는 별도로 보관합니다
                 </h2>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  지금 권한으로는 올해 흐름과 월별 타이밍을 모두 읽을 수 있습니다. 다만 평생 소장권은 원국의
-                  본질, 강약, 격국, 용신, 관계 패턴, 재물 체질, 직업 방향, 건강 리듬, 대운 10년 지도를
+                  지금 권한으로는 올해 흐름과 월별 타이밍을 모두 읽을 수 있습니다. 다만 평생 소장권은 타고난
+                  성향, 관계 패턴, 재물 체질, 직업 방향, 건강 리듬, 10년 단위 큰 흐름을
                   장기 풀이로 보관하는 별도 상품입니다.
                 </p>
                 <div className="mt-6 grid gap-3">
@@ -770,7 +770,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 </div>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
                   올해 전략서가 “올해의 흐름”이라면, 평생 소장 풀이는 “내 사주의 원본 해설서”입니다.
-                  같은 단서를 쓰더라도 역할이 다르기 때문에, 원국 중심 풀이는 별도의 보관형 본문으로
+                  같은 단서를 쓰더라도 역할이 다르기 때문에, 타고난 사주 중심 풀이는 별도의 보관형 본문으로
                   나뉘어야 합니다.
                 </p>
                 <div className="mt-5 grid gap-3">
@@ -783,7 +783,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
                   <div className="font-display text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
                   <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                    풀이 본문과 올해 부록을 함께 열고, 같은 명식으로 다시 들어와도 계속
+                    풀이 본문과 올해 부록을 함께 열고, 같은 사주로 다시 들어와도 계속
                     읽으실 수 있습니다.
                   </p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -829,7 +829,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <div className="select-none blur-[5px] opacity-65">
                 <p className="text-sm leading-8 text-[var(--app-copy)]">
                   이 일간의 세부 풀이에서는 타고난 표현 방식, 관계에서 피로가 쌓이는 지점,
-                  대운 안에서 오래 가져갈 기준을 이어서 정리합니다. 본문은 개인의 명식 기준으로
+                  큰 흐름 안에서 오래 가져갈 힌트를 이어서 정리합니다. 본문은 개인의 사주 흐름으로
                   다시 쓰이며, 같은 풀이에서 다시 열람할 수 있습니다.
                 </p>
               </div>
@@ -934,9 +934,9 @@ export default async function SajuPremiumPage({ params }: Props) {
         )}
 
         <section className="app-panel p-5 sm:p-6">
-          <div className="app-caption">달빛인생의 신뢰 기준</div>
+          <div className="app-caption">달빛인생의 약속</div>
           <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
-            무섭게 맞힌다는 말보다, 다시 확인할 수 있는 기준을 남깁니다
+            무섭게 맞힌다는 말보다, 다시 확인할 수 있는 풀이를 남깁니다
           </h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             {TRUST_SIGNALS.map((signal) => (

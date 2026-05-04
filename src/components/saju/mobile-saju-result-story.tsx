@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { TRUST_SIGNALS } from '@/content/moonlight';
 import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Element } from '@/lib/saju/types';
 import { cn } from '@/lib/utils';
 
@@ -359,16 +360,16 @@ export function MobileSajuResultStory({
               지금 핵심 한 줄
             </p>
             <h1 className="mt-3 text-[1.32rem] font-semibold leading-tight tracking-tight text-[var(--app-ivory)]">
-              {headline}
+              {simplifySajuCopy(headline)}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-[var(--app-copy)]">{dayMasterSummary}</p>
+            <p className="mt-3 text-sm leading-6 text-[var(--app-copy)]">{simplifySajuCopy(dayMasterSummary)}</p>
             <p className="mt-3 text-[11px] leading-5 text-[var(--app-copy-soft)]">{birthSummary}</p>
           </div>
           <div className="grid gap-2">
             <StoryReadablePanel
               eyebrow="더 깊게 볼 주제"
               title={keyThemes[0] ?? '핵심 흐름'}
-              body={keyThemes[1] ?? '오늘의 실행 기준과 오행 균형을 함께 보면 흐름이 더 또렷해집니다.'}
+              body={keyThemes[1] ?? '오늘 할 일과 오행 균형을 함께 보면 흐름이 더 또렷해집니다.'}
             />
             <div className="grid grid-cols-2 gap-2">
               <StoryInlineFact
@@ -389,7 +390,7 @@ export function MobileSajuResultStory({
           </div>
           <details className="group rounded-[1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-3">
             <summary className="cursor-pointer list-none text-xs font-semibold text-[var(--app-gold-text)]">
-              원국 네 기둥 함께 보기
+              사주 기본표 함께 보기
             </summary>
             <div className="mt-3">
               <MiniPillarGrid pillars={pillars} />
@@ -402,8 +403,8 @@ export function MobileSajuResultStory({
       id: 'today',
       label: '오늘',
       title: '오늘과 올해 조언',
-      eyebrow: '지금 쓸 기준',
-      summary: '오늘의 행동과 올해의 큰 흐름을 함께 보면 선택 기준이 더 안정됩니다.',
+      eyebrow: '지금 쓸 힌트',
+      summary: '오늘의 행동과 올해의 큰 흐름을 함께 보면 선택이 더 안정됩니다.',
       detailHref: `/saju/${slug}?topic=today`,
       detailLabel: '오늘 흐름 보기',
       render: () => (
@@ -548,7 +549,7 @@ export function MobileSajuResultStory({
       id: 'next',
       label: '다음',
       title: '소장과 신뢰',
-      eyebrow: '다시 볼 기준',
+      eyebrow: '다시 볼 풀이',
       summary: '결과를 본 뒤에는 보관형 리포트와 대화로 이어갈 수 있습니다.',
       detailHref: `/saju/${slug}/premium`,
       detailLabel: '긴 사주풀이 보기',

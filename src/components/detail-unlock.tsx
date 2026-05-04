@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DALBIT_TEACHERS } from '@/content/moonlight';
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
+import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
 type DetailSectionKey = 'wealth' | 'love' | 'career' | 'health';
 
@@ -155,13 +156,13 @@ function HighlightedText({
 }
 
 function fallbackTopicContent(text: string): DetailTopicContent {
-  const [lead = '', ...rest] = splitReadableParagraphs(text);
+  const [lead = '', ...rest] = splitReadableParagraphs(simplifySajuCopy(text));
 
   return {
-    lead,
+    lead: limitSajuSentences(lead, 2),
     blocks: rest.map((body, index) => ({
       title: index === 0 ? '세부 풀이' : `세부 풀이 ${index + 1}`,
-      body,
+      body: limitSajuSentences(body, 2),
       tone: index === 0 ? 'basis' : 'flow',
     })),
   };
@@ -233,7 +234,11 @@ function DetailTopicReport({
             ) : null}
           </div>
           <p className="mt-3 text-base font-semibold leading-8 text-[var(--app-ivory)] sm:text-lg">
-            <HighlightedText text={content.lead} keywords={content.highlights} color={meta.color} />
+            <HighlightedText
+              text={limitSajuSentences(content.lead, 2)}
+              keywords={content.highlights}
+              color={meta.color}
+            />
           </p>
           {content.highlights && content.highlights.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -272,7 +277,7 @@ function DetailTopicReport({
               <h3 className="mt-3 text-base font-semibold text-[var(--app-ivory)]">{block.title}</h3>
               <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">
                 <HighlightedText
-                  text={block.body}
+                  text={limitSajuSentences(block.body, 2)}
                   keywords={[...(content.highlights ?? []), ...(block.keywords ?? [])]}
                   color={block.tone === 'caution' ? '#fb7185' : meta.color}
                 />
@@ -295,6 +300,19 @@ function getTopicContent(
   }
 
   return fallbackTopicContent(content[topic]);
+}
+
+function ReferenceDetails({ children }: { children?: ReactNode }) {
+  if (!children) return null;
+
+  return (
+    <details className="mt-6 rounded-[24px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
+      <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--app-copy)]">
+        세부 계산 단서 보기
+      </summary>
+      <div className="mt-4 space-y-5">{children}</div>
+    </details>
+  );
 }
 
 export default function DetailUnlock({
@@ -454,7 +472,7 @@ export default function DetailUnlock({
           </div>
         </div>
 
-        {referenceChildren ? <div className="mt-6 space-y-5">{referenceChildren}</div> : null}
+        <ReferenceDetails>{referenceChildren}</ReferenceDetails>
       </section>
     );
   }
@@ -516,7 +534,7 @@ export default function DetailUnlock({
         ) : null}
 
         {children ? <div className="mt-6 space-y-5">{children}</div> : null}
-        {referenceChildren ? <div className="mt-6 space-y-5">{referenceChildren}</div> : null}
+        <ReferenceDetails>{referenceChildren}</ReferenceDetails>
       </section>
     );
   }
@@ -597,7 +615,7 @@ export default function DetailUnlock({
         </div>
       </div>
 
-      {referenceChildren ? <div className="space-y-5">{referenceChildren}</div> : null}
+      <ReferenceDetails>{referenceChildren}</ReferenceDetails>
     </section>
   );
 }
@@ -609,7 +627,7 @@ function getPreviewCopy(key: (typeof SECTIONS)[number]['key']) {
     case 'love':
       return '관계의 속도와 표현 강약을 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
     case 'career':
-      return '대운과 세운을 바탕으로 포지션 변화, 확장 타이밍, 일의 결을 더 구체적으로 읽습니다.';
+      return '큰 흐름과 올해 흐름을 바탕으로 포지션 변화, 확장 타이밍, 일의 결을 더 구체적으로 읽습니다.';
     case 'health':
       return '과한 기운과 약한 기운을 함께 보고 생활 리듬에서 먼저 손볼 포인트를 제안합니다.';
   }

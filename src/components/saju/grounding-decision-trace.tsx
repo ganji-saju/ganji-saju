@@ -2,16 +2,17 @@ import { buildGroundingDecisionTrace } from '@/domain/saju/report/grounding-deci
 import type { SajuInterpretationGrounding } from '@/domain/saju/report';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import { DecisionTracePanel } from '@/components/report/decision-trace-panel';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { DecisionTraceItem, ReportMetadata } from '@/lib/saju/report-contract';
 
 function formatTimeRuleLabel(grounding: SajuInterpretationGrounding) {
   const mode = grounding.factJson.calendarConversion.solarTimeMode;
   const jasi = grounding.factJson.calendarConversion.jasiMethod;
 
-  if (mode === 'longitude') return '진태양시 기준';
-  if (jasi === 'split') return '조자시 기준';
-  if (jasi === 'unified') return '야자시 기준';
-  return '표준시 기준';
+  if (mode === 'longitude') return '진태양시 반영';
+  if (jasi === 'split') return '조자시 반영';
+  if (jasi === 'unified') return '야자시 반영';
+  return '표준시 반영';
 }
 
 function formatBirthInputLine(grounding: SajuInterpretationGrounding) {
@@ -29,7 +30,7 @@ function formatBirthInputLine(grounding: SajuInterpretationGrounding) {
 export function GroundingDecisionTrace({
   grounding,
   kasiComparison,
-  title = '왜 이렇게 보았나요',
+  title = '세부 흐름 보기',
   compact = false,
 }: {
   grounding: SajuInterpretationGrounding;
@@ -50,19 +51,20 @@ export function GroundingDecisionTrace({
 
     const rule =
       index === 0
-        ? '양력/음력 변환과 절기 기준 확인'
+        ? '양력/음력과 계절 흐름 확인'
         : index === 1
-          ? '출생지와 시간 규칙에 따른 시각 보정'
+          ? '출생지와 시간 정보 확인'
           : index === 2
-            ? '월령, 투출, 강약 순서로 격국 후보 검토'
+            ? '태어난 달의 기운과 전체 균형 확인'
             : index === 3
-              ? '격국·강약·계절성을 묶어 보완 기운 확인'
+              ? '전체 균형과 보완 힌트 확인'
               : index === 4
-                ? '대운·세운·월운을 현재 질문과 연결'
+                ? '큰 흐름, 올해 흐름, 이번 달 흐름을 현재 질문과 연결'
                 : undefined;
 
-    const result = [step.emphasis, step.body].filter(Boolean).join(' ');
-    const note = index === trace.steps.length - 1 ? trace.notes.join(' ') : undefined;
+    const result = simplifySajuCopy([step.emphasis, step.body].filter(Boolean).join(' '));
+    const note =
+      index === trace.steps.length - 1 ? simplifySajuCopy(trace.notes.join(' ')) : undefined;
 
     let confidence: DecisionTraceItem['confidence'] = 'orthodox';
     if (index === 1 && !grounding.factJson.birthInput.hourKnown) {
@@ -75,7 +77,7 @@ export function GroundingDecisionTrace({
 
     return {
       step: String(index + 1).padStart(2, '0'),
-      title: step.title,
+      title: simplifySajuCopy(step.title),
       input,
       rule,
       result,

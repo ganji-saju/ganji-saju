@@ -3,6 +3,7 @@ import {
   buildReportCounselorInstructions,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { ReadingRecord } from '@/lib/saju/readings';
 
 export const SAJU_LIFETIME_INTERPRETATION_PROMPT_VERSION = 'saju-lifetime-interpret-v1';
@@ -34,14 +35,14 @@ export interface ParsedSajuLifetimeAiInterpretation {
 }
 
 const SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string }> = [
-  { key: 'coreIdentity', label: '원국의 본질' },
-  { key: 'strengthBalance', label: '강약 / 오행 균형' },
-  { key: 'patternAndYongsin', label: '격국 / 용신' },
+  { key: 'coreIdentity', label: '타고난 성향' },
+  { key: 'strengthBalance', label: '기운의 균형' },
+  { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
   { key: 'relationshipPattern', label: '관계 패턴' },
   { key: 'wealthStyle', label: '재물 감각' },
   { key: 'careerDirection', label: '직업 방향' },
   { key: 'healthRhythm', label: '건강 리듬' },
-  { key: 'majorLuckTimeline', label: '대운 10년 흐름 지도' },
+  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ];
 
@@ -54,7 +55,7 @@ const MAX_SUMMARY_LENGTH = 220;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
-  return value.replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  return simplifySajuCopy(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 function normalizeStringArray(
@@ -109,7 +110,7 @@ function formatKeywordLine(entry: string) {
 }
 
 function renderBulletLines(lines: string[]) {
-  return lines.map((line) => `- ${line}`).join('\n');
+  return lines.map((line) => `- ${simplifySajuCopy(line)}`).join('\n');
 }
 
 function serializePillar(pillar: ReadingRecord['sajuData']['pillars']['year'] | null) {
@@ -153,7 +154,7 @@ function buildSectionFallback(
         report.strengthBalance.strongAxis,
         report.strengthBalance.weakAxis,
         `에너지가 새는 지점은 ${report.strengthBalance.energyDrain}`,
-        `회복 기준은 ${report.strengthBalance.recovery}`,
+        `회복 힌트는 ${report.strengthBalance.recovery}`,
       ].join(' ');
     case 'patternAndYongsin':
       return [
@@ -199,7 +200,7 @@ function buildSectionFallback(
         report.majorLuckTimeline.currentMeaning,
         ...report.majorLuckTimeline.cycles
           .slice(0, 3)
-          .map((cycle) => `${cycle.ageLabel} ${cycle.ganzi}는 ${cycle.phase}로 보고 ${cycle.summary}`),
+          .map((cycle) => `${cycle.ageLabel} ${cycle.ganzi} 흐름은 ${cycle.phase} 쪽으로 읽고 ${cycle.summary}`),
       ].join(' ');
     case 'lifetimeStrategy':
       return [
@@ -220,11 +221,11 @@ export function buildFallbackLifetimeInterpretation(
   report: SajuLifetimeReport,
   counselorId: MoonlightCounselorId = 'female'
 ): SajuLifetimeAiInterpretation {
-  return {
+  const fallback = {
     opening:
       counselorId === 'male'
-        ? `${report.targetYear}년 기준으로 다시 보더라도, 이 명식은 먼저 자기 기준을 세우고 그 기준 위에서 사람과 돈과 일을 조율할 때 가장 안정적입니다. ${report.cover.oneLineSummary}`
-        : `${report.targetYear}년의 흐름을 곁에 두고 읽어도, 이 명식의 본질은 쉽게 바뀌지 않습니다. ${report.cover.oneLineSummary}`,
+        ? `${report.targetYear}년 흐름을 곁에 두고 보더라도, 이 사주는 먼저 자기 원칙을 세우고 그 위에서 사람과 돈과 일을 조율할 때 가장 안정적입니다. ${report.cover.oneLineSummary}`
+        : `${report.targetYear}년의 흐름을 곁에 두고 읽어도, 이 사주의 큰 결은 쉽게 바뀌지 않습니다. ${report.cover.oneLineSummary}`,
     keywords: report.cover.keywords.map((item) => `${item.label}: ${item.reason}`).slice(0, 5),
     lifetimeRule: report.cover.lifetimeRule,
     sections: SECTION_ORDER.reduce((acc, entry) => {
@@ -233,6 +234,27 @@ export function buildFallbackLifetimeInterpretation(
     }, {} as Record<SajuLifetimeAiSectionKey, string>),
     rememberRules: report.lifetimeStrategy.rememberRules.slice(0, 5),
     oneLineSummary: report.cover.oneLineSummary,
+  };
+
+  return normalizeLifetimeInterpretation(fallback);
+}
+
+function normalizeLifetimeInterpretation(
+  interpretation: SajuLifetimeAiInterpretation
+): SajuLifetimeAiInterpretation {
+  return {
+    opening: cleanText(interpretation.opening, MAX_OPENING_LENGTH),
+    keywords: interpretation.keywords.map((item) => cleanText(item, MAX_KEYWORD_LENGTH)).filter(Boolean).slice(0, 5),
+    lifetimeRule: cleanText(interpretation.lifetimeRule, MAX_RULE_LENGTH),
+    sections: SECTION_ORDER.reduce((acc, entry) => {
+      acc[entry.key] = cleanText(interpretation.sections[entry.key], MAX_SECTION_LENGTH);
+      return acc;
+    }, {} as Record<SajuLifetimeAiSectionKey, string>),
+    rememberRules: interpretation.rememberRules
+      .map((item) => cleanText(item, MAX_REMEMBER_LENGTH))
+      .filter(Boolean)
+      .slice(0, 5),
+    oneLineSummary: cleanText(interpretation.oneLineSummary, MAX_SUMMARY_LENGTH),
   };
 }
 
@@ -266,14 +288,14 @@ export function parseLifetimeInterpretationText(
 
     return {
       ok: true,
-      interpretation: {
+      interpretation: normalizeLifetimeInterpretation({
         opening,
         keywords: keywords.slice(0, 5),
         lifetimeRule,
         sections,
         rememberRules: rememberRules.slice(0, 5),
         oneLineSummary,
-      },
+      }),
       errorMessage: null,
     };
   } catch (error) {
@@ -296,13 +318,13 @@ export function renderLifetimeInterpretationReport(
     interpretation.opening,
     '## 핵심 키워드',
     interpretation.keywords.map(formatKeywordLine).join('\n\n'),
-    '## 이 사주의 평생 기준',
+    '## 이 사주의 평생 힌트',
     interpretation.lifetimeRule,
     ...SECTION_ORDER.flatMap((entry) => [
       `## ${entry.label}`,
       ensureParagraph(interpretation.sections[entry.key], ''),
     ]),
-    '## 평생 반복해서 기억할 기준 5개',
+    '## 평생 반복해서 기억할 것 5개',
     renderBulletLines(interpretation.rememberRules),
     '## 부록: 올해 요약',
     `**${report.yearlyAppendix.yearLabel} · ${report.yearlyAppendix.yearGanji}**`,
@@ -373,8 +395,8 @@ export function createLifetimeInterpretationPrompt(
 
   return {
     instructions: [
-      '너는 평생 사주 풀이를 쓰는 명리 전문 해석가이다.',
-      '이 리포트는 연간 운세가 아니라 원국 중심 깊은 사주풀이다.',
+      '너는 한국 운세 서비스를 쓰는 일반 사용자가 이해하기 쉽게 평생 사주풀이를 정리하는 생활 조언 에디터이다.',
+      '이 리포트는 사주 공부 자료가 아니라 사용자가 자기 성향과 선택 습관을 쉽게 이해하도록 돕는 깊은 사주풀이다.',
       counselorInstructions,
       '반드시 JSON만 반환한다. markdown, 코드블록, 설명 문장은 금지한다.',
       '출력 JSON 형식:',
@@ -397,13 +419,15 @@ export function createLifetimeInterpretationPrompt(
       '  "oneLineSummary": string',
       '}',
       '규칙:',
-      '- 명리 용어를 쓰더라도 바로 쉬운 말로 풀어준다.',
+      '- 사용자는 명리학을 배우러 온 사람이 아니라 자기 인생의 흐름과 선택을 알고 싶어 한다.',
+      '- 격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않는다. 필요하면 쉬운 생활 언어로만 바꾼다.',
+      '- 계산 과정, 기준 설명, 점수 설명을 반복하지 말고 결론, 조심할 패턴, 오늘 할 행동을 먼저 쓴다.',
       '- 올해 운세처럼 쓰지 말고, 평생 반복해서 참고할 풀이처럼 쓴다.',
       '- 과장, 공포 조장, 무조건/반드시/100% 같은 단정 표현은 금지한다.',
       '- recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 문장의 단정 강도만 조정한다.',
       '- 각 section 문자열은 짧은 문장 여러 개로 이어진 밀도 높은 문단이어야 한다.',
       '- opening은 첫 문단부터 흡입력 있게 쓰되 상담실 톤을 유지한다.',
-      '- rememberRules는 실제 생활에 바로 적용 가능한 기준 5개로 쓴다.',
+      '- rememberRules는 실제 생활에 바로 적용 가능한 짧은 기억 문장 5개로 쓴다.',
     ].join('\n'),
     input: JSON.stringify({
       ...createGrounding(record, report, counselorId),

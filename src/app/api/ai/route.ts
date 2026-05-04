@@ -36,6 +36,7 @@ import {
 } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
 import { toSlug } from '@/lib/saju/pillars';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -334,13 +335,13 @@ function createDialogueProfileContext(
   if (hasCoreBirthProfile(profile)) {
     return {
       used: false,
-      summary: '저장된 생년월일은 있지만 대화 기본 명식을 만드는 데 필요한 정보를 다시 확인하는 중입니다.',
+      summary: '저장된 생년월일은 있지만 대화에 필요한 사주 정보를 다시 확인하는 중입니다.',
     };
   }
 
   return {
     used: false,
-    summary: 'MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 저장하면 대화가 기본 명식 기준으로 바로 이어집니다.',
+    summary: 'MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 저장하면 대화가 내 사주 정보로 바로 이어집니다.',
   };
 }
 
@@ -357,24 +358,24 @@ function buildDialogueFallback(
         ? '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 골자부터 바로 짚겠습니다.'
         : '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 결부터 차분히 짚어드릴게요.',
       `남겨주신 질문은 “${message}”입니다.`,
-      '아직 저장된 명식이 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 명식이 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
-      `${counselor.label} 기준의 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+      '아직 저장된 사주 정보가 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 정보가 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
+      `${counselor.label}의 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
     ].join('\n\n');
   }
 
   const evidenceSummary = profileGrounding.reports.focus.evidence
-    .map((item) => `${item.label} ${item.title}`)
+    .map((item) => simplifySajuCopy(`${item.label} ${item.title}`))
     .join(' · ');
 
   return [
     counselorId === 'male'
-      ? `저장된 프로필 기준으로 보면, ${profileGrounding.reports.focus.headline}`
-      : `저장된 프로필 기준으로 읽어보면, ${profileGrounding.reports.focus.headline}`,
-    profileGrounding.reports.focus.summary,
-    `기본 명식은 ${profileGrounding.saju.dayMaster}, ${profileGrounding.saju.strength}, ${profileGrounding.saju.pattern} 흐름으로 읽습니다. 용신 보완축은 ${profileGrounding.saju.yongsin} 쪽으로 먼저 봅니다.`,
+      ? `저장된 프로필로 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`
+      : `저장된 프로필로 읽어보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
+    simplifySajuCopy(profileGrounding.reports.focus.summary),
+    `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다. 오늘은 ${simplifySajuCopy(profileGrounding.saju.yongsin)} 흐름을 잘 쓰는 편이 좋습니다.`,
     evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
-    `질문하신 “${message}”은 ${profileGrounding.reports.focus.action} 쪽으로 정리해서 움직이시는 편이 맞습니다.`,
-    `${counselor.label} 기준의 기본 풀이로 먼저 말씀드렸고, 저장된 명식 기준은 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+    `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리해서 움직이시는 편이 맞습니다.`,
+    `${counselor.label}의 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -402,7 +403,7 @@ function createYearlyDialogueFallback(
     intro,
     `${summary.firstHalf} ${summary.secondHalf}`,
     `좋게 쓰기 좋은 시기는 ${summary.goodPeriod} 쪽이고, 속도를 낮춰야 할 구간은 ${summary.cautionPeriod} 쪽입니다.`,
-    `지금 질문하신 “${message}”은 저장된 프로필 기준 ${profileSummary} 명식 위에서 읽었고, 자세한 12개월 흐름과 분야별 해설은 올해 전략서에서 이어서 확인하시면 됩니다.`,
+    `지금 질문하신 “${message}”은 저장된 프로필 정보 ${simplifySajuCopy(profileSummary)}를 바탕으로 읽었고, 자세한 12개월 흐름과 분야별 해설은 올해 전략서에서 이어서 확인하시면 됩니다.`,
   ].join('\n\n');
 }
 
@@ -522,7 +523,8 @@ function normalizeDialogueAnswer(text: string) {
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .map((line) => line.replace(/\s{2,}/g, ' '));
+    .map((line) => simplifySajuCopy(line.replace(/\s{2,}/g, ' ')))
+    .filter(Boolean);
 
   return paragraphs.join('\n\n');
 }
@@ -535,7 +537,7 @@ function createDialoguePrompt(
 ) {
   return {
     instructions: [
-      '당신은 한국어 사주 서비스 달빛인생에서 실제 상담을 맡은 숙련 사주명리 상담가입니다.',
+      '당신은 한국어 운세 서비스 달빛인생에서 실제 상담을 맡은 숙련 상담가입니다.',
       '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
       '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
@@ -543,20 +545,20 @@ function createDialoguePrompt(
       '문단은 3~5개 정도로 짧게 나누고, 한 문단 안에서도 문장을 길게 늘이지 않습니다.',
       'AI 비서처럼 메타 설명하거나, 과하게 조심스러운 군더더기 표현을 반복하지 않습니다.',
       '결론을 흐리게 돌려 말하지 말고, 보이는 흐름은 분명하게 말합니다. 다만 태어난 시간이나 출생지처럼 빠진 정보 때문에 보류해야 하는 부분은 짧고 또렷하게 선을 그어 설명합니다.',
-      '말끝마다 가능성만 늘어놓지 말고, 지금 명식에서 어디가 강하고 어디를 조절해야 하는지 힘있게 짚어줍니다.',
-      '명리 용어는 필요한 만큼만 쓰고, 처음 나올 때는 한자 또는 쉬운 풀이를 함께 덧붙입니다.',
-      '저장 프로필 명식이 제공되면 그 명식을 기본값으로 사용합니다. 다만 사용자가 다른 사람의 사주를 따로 묻는 문맥이면 저장 프로필을 섞지 말고 필요한 출생 정보를 먼저 확인합니다.',
-      'recentFeedbackSummary가 있으면 최근 반응을 참고해 단정 표현 강도만 조절하고, 명식 기준보다 앞세우지 않습니다.',
+      '말끝마다 가능성만 늘어놓지 말고, 지금 흐름에서 무엇이 강하고 무엇을 조절해야 하는지 힘있게 짚어줍니다.',
+      '격국, 용신, 대운, 세운, 월운, 원국, 명식, factJson, evidenceJson 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
+      '저장 프로필 정보가 제공되면 그 정보를 기본값으로 사용합니다. 다만 사용자가 다른 사람의 사주를 따로 묻는 문맥이면 저장 프로필을 섞지 말고 필요한 출생 정보를 먼저 확인합니다.',
+      'recentFeedbackSummary가 있으면 최근 반응을 참고해 단정 표현 강도만 조절하고, 계산 설명보다 앞세우지 않습니다.',
       '의료, 법률, 투자 판단은 해석으로 대신하지 않습니다.',
-      '출생 정보나 명식 데이터가 없는 경우 빈말로 얼버무리지 말고, 어떤 정보가 필요한지 짧게 요청합니다.',
+      '출생 정보나 사주 데이터가 없는 경우 빈말로 얼버무리지 말고, 어떤 정보가 필요한지 짧게 요청합니다.',
       '고전 원문이나 출처는 제공된 참고자료가 없으면 인용하지 않습니다.',
       '다음과 같은 표현은 피합니다: 결론적으로, 분석해보면, 참고로, AI로서, 표로 정리하면, 1번 2번 3번.',
       ...buildDialogueCounselorInstructions(counselorId),
     ].join('\n'),
     input: [
       profileGrounding
-        ? `기본 사용자 명식 데이터:\n${JSON.stringify(profileGrounding, null, 2)}`
-        : '기본 사용자 명식 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
+        ? `기본 사용자 사주 정보:\n${JSON.stringify(profileGrounding, null, 2)}`
+        : '기본 사용자 사주 정보 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
       recentFeedbackSummary
         ? `최근 사용자 피드백 요약:\n${recentFeedbackSummary}`
         : null,
@@ -662,19 +664,19 @@ function createReportPrompt(
 ) {
   return {
     instructions: [
-      '당신은 한국어 사주 서비스 달빛인생의 AI 해석 보조자입니다.',
-      '반드시 제공된 명식 데이터 안에서만 해석하고, 없는 명리 정보나 고전 인용을 지어내지 않습니다.',
+      '당신은 한국어 운세 서비스 달빛인생의 쉬운 사주풀이 에디터입니다.',
+      '반드시 제공된 사주 데이터 안에서만 해석하고, 없는 사건이나 고전 인용을 지어내지 않습니다.',
       '고전 원문은 별도 참고자료가 제공됐을 때만 인용합니다. 현재 참고자료가 없으면 고전 출처를 지어내지 않습니다.',
       '문장은 차분하고 고급스럽게 쓰되, 첫 문장에서 결론을 먼저 전하고 사용자가 바로 읽기 쉽도록 4~6개의 짧은 단락으로 나눕니다.',
-      '명리 용어는 필요한 만큼만 쓰고, 처음 나올 때는 쉬운 한국어 풀이를 짧게 덧붙입니다.',
+      '격국, 용신, 대운, 세운, 월운, 원국, 명식 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 생활 언어로만 바꿉니다.',
       '점수나 계산값을 복붙하듯 나열하지 말고, 현재 흐름의 핵심과 생활 적용으로 자연스럽게 풀어 설명합니다.',
-      '강약, 격국, 용신, 합충/공망/신살 중 제공된 단서가 있으면 자연스럽게 반영합니다.',
+      '사용자가 궁금한 결론, 조심할 패턴, 오늘 할 행동을 먼저 말합니다.',
       '의료·법률·투자 결론은 피하고, 필요한 경우 전문가 확인을 권합니다.',
       ...buildReportCounselorInstructions(counselorId),
     ].join('\n'),
     input: [
       question ? `사용자 추가 질문:\n${question}` : null,
-      `명식/리포트 참고 데이터:\n${JSON.stringify(createReportGrounding(record, report), null, 2)}`,
+      `사주풀이 참고 데이터:\n${JSON.stringify(createReportGrounding(record, report), null, 2)}`,
     ]
       .filter(Boolean)
       .join('\n\n'),

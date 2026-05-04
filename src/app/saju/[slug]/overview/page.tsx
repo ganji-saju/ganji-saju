@@ -73,19 +73,19 @@ export default async function SajuOverviewPage({ params }: Props) {
 
         <SwipeSectionDeck
           title="사주 기본 화면을 한 장씩 넘겨 봅니다"
-          description="원국 확인과 기본 해석 진입을 분리해 처음 보는 화면의 부담을 줄였습니다."
+          description="사주 기본표와 해석 진입을 분리해 처음 보는 화면의 부담을 줄였습니다."
         >
           <SwipeSectionSlide
-            eyebrow="원국"
-            title="사주 원국 네 기둥"
+            eyebrow="기본표"
+            title="사주 기본표 네 기둥"
             description="년·월·일·시의 기본 구조를 먼저 확인합니다."
-            navLabel="원국"
+            navLabel="기본표"
           >
-            {/* ─── 사주 원국 4기둥 ─── */}
+            {/* ─── 사주 기본표 4기둥 ─── */}
             <section className="app-panel p-6 sm:p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="app-caption">사주 원국</div>
+              <div className="app-caption">사주 기본표</div>
               <h2 className="mt-2 font-display text-2xl text-[var(--app-ivory)]">
                 선생님의 四柱
               </h2>
@@ -205,7 +205,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                 나의 깊은 사주풀이
               </div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                7가지 항목을 평생 소장용 풀이로 정리합니다. 격국, 용신, 대운, 세운, 분야별 조망까지 한 번에 이어집니다.
+                7가지 항목을 평생 소장용 풀이로 정리합니다. 타고난 성향, 올해 흐름, 재물·일·관계 조언까지 한 번에 이어집니다.
               </p>
 
               <div className="mt-5 space-y-2">

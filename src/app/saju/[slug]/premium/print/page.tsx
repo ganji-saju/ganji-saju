@@ -23,14 +23,14 @@ interface Props {
 }
 
 const PRINT_SECTION_ORDER: Array<{ key: SajuLifetimeAiSectionKey; label: string }> = [
-  { key: 'coreIdentity', label: '원국의 본질' },
-  { key: 'strengthBalance', label: '강약과 오행 균형' },
-  { key: 'patternAndYongsin', label: '격국과 보완 방향' },
+  { key: 'coreIdentity', label: '타고난 성향' },
+  { key: 'strengthBalance', label: '기운의 균형' },
+  { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
   { key: 'relationshipPattern', label: '관계 패턴' },
   { key: 'wealthStyle', label: '재물 감각' },
   { key: 'careerDirection', label: '직업 방향' },
   { key: 'healthRhythm', label: '생활 리듬' },
-  { key: 'majorLuckTimeline', label: '대운 흐름 지도' },
+  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ];
 
@@ -67,7 +67,7 @@ function formatBirthLine(input: {
   const minuteLabel = input.minute !== undefined ? `${String(input.minute).padStart(2, '0')}분` : '';
   const timeLabel = input.hour !== undefined ? `${input.hour}시 ${minuteLabel}`.trim() : '시간 미입력';
   const locationLabel = input.birthLocation?.label ?? '출생지 미입력';
-  const timeModeLabel = input.solarTimeMode === 'longitude' ? '진태양시 보정' : '표준시 기준';
+  const timeModeLabel = input.solarTimeMode === 'longitude' ? '진태양시 반영' : '표준시 반영';
 
   return `${input.year}년 ${input.month}월 ${input.day}일 · ${timeLabel} · ${genderLabel} · ${locationLabel} · ${timeModeLabel}`;
 }
@@ -155,7 +155,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               깊은 사주풀이 PDF는 소장권에서 열립니다
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
-              PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 명식으로 다시 들어와도
+              PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 사주로 다시 들어와도
               이 화면에서 PDF 저장을 이어갈 수 있습니다.
             </p>
             {!isOwner ? (
@@ -213,7 +213,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               ))}
             </div>
             <div className="pdf-print-rule">
-              <strong>평생 기준</strong>
+              <strong>평생 힌트</strong>
               <p>{interpretation.lifetimeRule}</p>
             </div>
           </section>
@@ -229,7 +229,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
           <section className="pdf-print-section">
             <div className="pdf-print-section-kicker">10</div>
-            <h2>대운 흐름표</h2>
+            <h2>10년 단위 큰 흐름표</h2>
             <div className="pdf-print-cycle-list">
               {report.majorLuckTimeline.cycles.map((cycle) => (
                 <div key={`${cycle.ageLabel}-${cycle.ganzi}`} className="pdf-print-cycle">
@@ -261,7 +261,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
           <section className="pdf-print-section">
             <div className="pdf-print-section-kicker">12</div>
-            <h2>반복해서 기억할 기준</h2>
+            <h2>반복해서 기억할 것</h2>
             <ul className="pdf-print-list">
               {interpretation.rememberRules.map((rule) => (
                 <li key={rule}>{rule}</li>
@@ -271,7 +271,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
           <footer className="pdf-print-footer">
             달빛인생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은
-            전문 기준과 도움을 우선해 주세요.
+            전문가의 도움을 우선해 주세요.
           </footer>
         </article>
       </AppPage>

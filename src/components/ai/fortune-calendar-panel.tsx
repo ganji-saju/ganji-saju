@@ -298,7 +298,7 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
       <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-4 py-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-gold-text)]">
           <Clock3 className="size-4" aria-hidden="true" />
-          오늘의 행동 기준
+          오늘 할 일
         </div>
         <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{entry.actionHint}</p>
       </div>

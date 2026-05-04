@@ -11,6 +11,11 @@ import {
   getLuckyElementsFromSajuData,
   getPersonalityFromSajuData,
 } from '@/lib/saju/elements';
+import {
+  limitSajuSentences,
+  simplifySajuCopy,
+  simplifySajuCopyList,
+} from '@/lib/saju/public-copy';
 import type { BirthInput, Element } from '@/lib/saju/types';
 import type {
   FocusTopic,
@@ -18,6 +23,7 @@ import type {
   FocusTopicOption,
   ReportEvidenceCard,
   ReportEvidenceComputed,
+  ReportEvidenceKey,
   ReportInsight,
   ReportScore,
   ReportTimelineItem,
@@ -944,7 +950,7 @@ function buildTopicActions(
             `총운 ${scoreMap.overall}점 기준입니다.`,
             rule.actionLeads[scoreBand],
             leadEvidenceSnippet,
-            `${bestTone.move} 탭을 바꾸면 연애, 재물, 직장, 관계에 맞춘 실행 포인트로 다시 해석됩니다.`,
+            `${bestTone.move} 더 궁금한 분야는 아래 카드에서 필요한 부분만 이어서 보면 됩니다.`,
           ]).join(' '),
         },
         cautionAction: {
@@ -952,7 +958,7 @@ function buildTopicActions(
           description: compactStrings([
             rule.cautionLeads[scoreBand],
             cautionEvidenceSnippet,
-            `${cautionTone.avoid} 오늘 탭에서는 전체 균형을 먼저 보고, 세부 탭에서는 해당 분야의 판단 기준을 따로 봅니다.`,
+            `${cautionTone.avoid} 오늘은 전체 흐름을 먼저 보고, 세부 분야는 꼭 필요한 것만 고르는 편이 덜 피곤합니다.`,
           ]).join(' '),
         },
       };
@@ -1227,6 +1233,98 @@ function buildDates(input: BirthInput, data: SajuDataV1) {
   };
 }
 
+function getPublicEvidenceLabel(key: ReportEvidenceKey) {
+  switch (key) {
+    case 'strength':
+      return '균형';
+    case 'pattern':
+      return '역할 흐름';
+    case 'yongsin':
+      return '보완 힌트';
+    case 'relations':
+      return '관계 변화';
+    case 'gongmang':
+      return '확인할 빈자리';
+    case 'specialSals':
+      return '보조 신호';
+    default:
+      return '세부 단서';
+  }
+}
+
+function getPublicEvidenceTitle(card: ReportEvidenceCard) {
+  switch (card.key) {
+    case 'strength':
+      return '기운이 어떻게 쓰이는지 봅니다';
+    case 'pattern':
+      return '반복해서 맡게 되는 역할을 봅니다';
+    case 'yongsin':
+      return '균형을 잡는 힌트를 봅니다';
+    case 'relations':
+      return '관계와 변화가 생기는 지점을 봅니다';
+    case 'gongmang':
+      return '확인이 필요한 빈자리를 봅니다';
+    case 'specialSals':
+      return '보조로 참고할 신호를 봅니다';
+    default:
+      return simplifySajuCopy(card.title);
+  }
+}
+
+function toPublicEvidenceCard(card: ReportEvidenceCard): ReportEvidenceCard {
+  return {
+    ...card,
+    label: getPublicEvidenceLabel(card.key),
+    title: getPublicEvidenceTitle(card),
+    body: limitSajuSentences(card.body, 2),
+    details: simplifySajuCopyList(card.details, 3),
+    practicalActions: card.practicalActions
+      ? simplifySajuCopyList(card.practicalActions, 4)
+      : card.practicalActions,
+    plainSummary: card.plainSummary ? simplifySajuCopy(card.plainSummary) : card.plainSummary,
+    technicalSummary: card.technicalSummary
+      ? simplifySajuCopy(card.technicalSummary)
+      : card.technicalSummary,
+  };
+}
+
+function toPublicReport(report: SajuReport): SajuReport {
+  return {
+    ...report,
+    headline: simplifySajuCopy(report.headline),
+    dayMasterSummary: limitSajuSentences(report.dayMasterSummary, 2),
+    summary: limitSajuSentences(report.summary, 3),
+    summaryHighlights: simplifySajuCopyList(report.summaryHighlights, 3),
+    evidenceCards: report.evidenceCards.map(toPublicEvidenceCard),
+    scores: report.scores.map((score) => ({
+      ...score,
+      summary: limitSajuSentences(score.summary, 1),
+    })),
+    primaryAction: {
+      ...report.primaryAction,
+      title: simplifySajuCopy(report.primaryAction.title),
+      description: limitSajuSentences(report.primaryAction.description, 2),
+    },
+    cautionAction: {
+      ...report.cautionAction,
+      title: simplifySajuCopy(report.cautionAction.title),
+      description: limitSajuSentences(report.cautionAction.description, 2),
+    },
+    insights: report.insights.map((insight) => ({
+      ...insight,
+      eyebrow: simplifySajuCopy(insight.eyebrow),
+      title: simplifySajuCopy(insight.title),
+      body: limitSajuSentences(insight.body, 2),
+    })),
+    timeline: report.timeline.map((item) => ({
+      ...item,
+      headline: simplifySajuCopy(item.headline),
+      body: limitSajuSentences(item.body, 2),
+      points: item.points ? simplifySajuCopyList(item.points, 2) : item.points,
+    })),
+  };
+}
+
 export function normalizeFocusTopic(value?: string): FocusTopic {
   if (!value) return 'today';
   if (value in FOCUS_TOPIC_META) return value as FocusTopic;
@@ -1269,7 +1367,7 @@ export function buildSajuReport(
     evidenceCards
   );
 
-  return {
+  return toPublicReport({
     focusTopic,
     focusLabel: meta.label,
     focusBadge: meta.badge,
@@ -1287,7 +1385,7 @@ export function buildSajuReport(
     luckyDates,
     cautionDates,
     supportElements,
-  };
+  });
 }
 
 function formatSymbolList(symbols: SajuSymbolRef[]) {

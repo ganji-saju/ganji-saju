@@ -20,42 +20,42 @@ export type DecisionTracePanelProps = {
 const FALLBACK_DECISION_TRACE: DecisionTraceItem[] = [
   {
     step: '01',
-    title: '명식 계산 기준',
-    rule: '양력/음력 변환과 절기 기준 확인',
+    title: '출생 정보 확인',
+    rule: '양력/음력과 계절 흐름 확인',
     result:
-      '현재 화면에 연결된 리포트 기준을 바탕으로, 양력/음력 변환과 절기 기준부터 먼저 정리해 보여드립니다.',
+      '현재 화면에 연결된 사주 정보를 바탕으로, 날짜와 계절 흐름부터 먼저 정리해 보여드립니다.',
     confidence: 'orthodox',
   },
   {
     step: '02',
     title: '시간 보정 검토',
-    rule: '출생지와 시간 규칙에 따른 시각 보정',
+    rule: '출생지와 시간 정보 확인',
     result:
-      '출생시각과 출생지 정보가 충분하면 시간 보정을 함께 검토하고, 부족하면 시주 판단을 줄여 보수적으로 읽습니다.',
+      '출생시각과 출생지 정보가 충분하면 시간 흐름을 함께 보고, 부족하면 시간대별 풀이는 줄여서 읽습니다.',
     confidence: 'input_limited',
   },
   {
     step: '03',
-    title: '격국 후보 검토',
-    rule: '월령, 투출, 강약을 함께 보고 중심 후보 정리',
+    title: '타고난 역할 흐름',
+    rule: '태어난 달의 기운과 전체 균형 확인',
     result:
-      '격국은 한 가지 이름만 바로 고정하지 않고, 월령과 투출, 강약을 함께 보며 먼저 후보를 정리합니다.',
+      '한 가지 이름으로 단정하기보다, 반복해서 드러나는 역할감과 반응 방식을 함께 정리합니다.',
     confidence: 'orthodox',
   },
   {
     step: '04',
-    title: '보완 기운 확인',
-    rule: '격국·강약·계절성을 묶어 보완하면 좋은 기운 확인',
+    title: '보완 힌트 확인',
+    rule: '전체 균형과 계절 흐름을 함께 확인',
     result:
-      '용신은 부족한 오행을 기계적으로 채우기보다, 격국 유지와 계절 균형을 함께 보며 정리합니다.',
+      '부족한 부분을 기계적으로 채우기보다, 생활에서 어떻게 균형을 잡을지 중심으로 정리합니다.',
     confidence: 'orthodox',
   },
   {
     step: '05',
-    title: '현재 운 연결',
-    rule: '대운·세운·월운을 현재 질문과 연결',
+    title: '현재 흐름 연결',
+    rule: '큰 흐름, 올해 흐름, 이번 달 흐름을 질문과 연결',
     result:
-      '현재 질문은 대운, 세운, 월운의 겹침을 함께 보고 연결하며, 한 시점의 감각만으로 단정하지 않습니다.',
+      '현재 질문은 큰 흐름과 올해, 이번 달의 흐름을 함께 보고 연결하며, 한 시점의 감각만으로 단정하지 않습니다.',
     confidence: 'reference',
   },
   {
@@ -94,7 +94,7 @@ function buildMetaLine({
   timeRule,
   isTimeUnknown,
 }: Pick<DecisionTracePanelProps, 'timeRule' | 'isTimeUnknown'>) {
-  const parts = ['현재 풀이 기준'];
+  const parts = ['현재 풀이 정보'];
 
   if (timeRule) parts.push(timeRule);
   if (isTimeUnknown) parts.push('출생시각 미입력은 보수적으로 반영');
@@ -107,8 +107,8 @@ export function DecisionTracePanel({
   metadata,
   timeRule,
   isTimeUnknown = false,
-  title = '왜 이렇게 보았나요',
-  description = '아래 내용은 이 풀이가 어떤 단서를 중요하게 본 것인지 짧게 정리한 것입니다.',
+  title = '세부 흐름 보기',
+  description = '처음 읽을 때는 건너뛰어도 괜찮습니다. 더 깊게 보고 싶을 때만 펼쳐보세요.',
   compact = false,
 }: DecisionTracePanelProps) {
   const hasTrackedOpenRef = useRef(false);
@@ -169,7 +169,7 @@ export function DecisionTracePanel({
                   ) : null}
 
                   {item.rule ? (
-                    <div className="mt-2 text-xs leading-6 text-[var(--app-gold-text)]">판단 메모 · {item.rule}</div>
+                    <div className="mt-2 text-xs leading-6 text-[var(--app-gold-text)]">세부 메모 · {item.rule}</div>
                   ) : null}
 
                   <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{item.result}</p>
@@ -185,7 +185,7 @@ export function DecisionTracePanel({
       </div>
 
       <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
-        <div className="app-caption text-[var(--app-gold-soft)]">풀이 기준</div>
+        <div className="app-caption text-[var(--app-gold-soft)]">풀이 정보</div>
         <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
           {buildMetaLine({
             timeRule,

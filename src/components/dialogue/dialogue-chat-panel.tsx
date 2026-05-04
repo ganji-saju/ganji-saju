@@ -164,26 +164,26 @@ function getConnectionSummary(
   }
 
   if (!latestAssistant || latestAssistant.id === INITIAL_MESSAGE.id) {
-    return 'MY 프로필에 생년월일이 있으면 상담에서 다시 입력하지 않습니다. 처음 3회는 무료이고, 이후에는 정밀 답변 기준으로 3회 묶음마다 3코인이 차감됩니다.';
+    return 'MY 프로필에 생년월일이 있으면 상담에서 다시 입력하지 않습니다. 처음 3회는 무료이고, 이후에는 정밀 답변 3회 묶음마다 3코인이 차감됩니다.';
   }
 
   if (latestAssistant.source === 'openai') {
     const billingLabel = getBillingLabel(latestAssistant.billing);
     const profileLabel =
       latestAssistant.profileContext?.used && latestAssistant.profileContext.summary
-        ? ` 저장 프로필 기준: ${latestAssistant.profileContext.summary}`
+        ? ` 저장 프로필: ${latestAssistant.profileContext.summary}`
         : '';
     return `최근 답변은 상담 답변으로 정리되었습니다.${billingLabel ? ` ${billingLabel}` : ''}${profileLabel}`;
   }
 
   if (latestAssistant.source === 'fallback') {
     const profileLabel = latestAssistant.profileContext?.summary
-      ? ` ${latestAssistant.profileContext.used ? '저장 프로필 기준으로' : ''} ${latestAssistant.profileContext.summary}`
+      ? ` ${latestAssistant.profileContext.used ? '저장 프로필로' : ''} ${latestAssistant.profileContext.summary}`
       : '';
     return `최근 답변은 기본 답변으로 표시되었습니다.${latestAssistant.configured === false ? ' 상담 답변 연결 전입니다.' : ''}${profileLabel}`;
   }
 
-  return '안전 안내 기준으로 일반 대화를 중단했습니다.';
+  return '안전 안내에 따라 일반 대화를 중단했습니다.';
 }
 
 function hasBirthProfile(
@@ -485,7 +485,7 @@ export function DialogueChatPanel({
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
               로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면
               깊은 사주풀이를 다시 입력하지 않아도 됩니다. 질문만 남기시면
-              저장된 기준을 먼저 놓고 상담하듯 답변을 이어갑니다.
+              저장된 내 정보를 먼저 놓고 상담하듯 답변을 이어갑니다.
             </p>
             {sourceSessionId && concernId ? (
               <p className="mt-3 max-w-3xl text-xs leading-6 text-[var(--app-gold-text)]">
@@ -498,7 +498,7 @@ export function DialogueChatPanel({
                 onChange={(nextCounselor) => void selectCounselor(nextCounselor)}
                 variant="compact"
                 title="대화를 맡을 선생"
-                description="고르신 선생의 말투로 질문을 받아드립니다. 명식 계산 기준은 그대로 유지됩니다."
+                description="고르신 선생의 말투로 질문을 받아드립니다. 내 사주 정보는 그대로 유지됩니다."
               />
             </div>
             <div className={`mt-4 rounded-[1.15rem] border px-4 py-3 ${getProfileStateClass(profileConnection.status)}`}>

@@ -19,6 +19,11 @@ import {
   getLuckyElementsFromSajuData,
   getPersonalityFromSajuData,
 } from '@/lib/saju/elements';
+import {
+  limitSajuSentences,
+  simplifySajuCopy,
+  simplifySajuCopyList,
+} from '@/lib/saju/public-copy';
 import { buildSajuReport, type ReportEvidenceKey } from '@/domain/saju/report';
 
 type DetailBlockTone = 'core' | 'basis' | 'action' | 'caution' | 'flow' | 'safety';
@@ -322,19 +327,28 @@ function buildDetailReportContent(
     ],
   };
 
+  const readableDetails = {
+    wealth: toReadableDetailTopic(wealthDetail),
+    love: toReadableDetailTopic(loveDetail),
+    career: toReadableDetailTopic(careerDetail),
+    health: toReadableDetailTopic(healthDetail),
+  };
+
   return {
-    wealth: flattenDetailTopic(wealthDetail),
-    love: flattenDetailTopic(loveDetail),
-    career: flattenDetailTopic(careerDetail),
-    health: flattenDetailTopic(healthDetail),
+    wealth: flattenDetailTopic(readableDetails.wealth),
+    love: flattenDetailTopic(readableDetails.love),
+    career: flattenDetailTopic(readableDetails.career),
+    health: flattenDetailTopic(readableDetails.health),
     detailSections: {
-      wealth: wealthDetail,
-      love: loveDetail,
-      career: careerDetail,
-      health: healthDetail,
+      wealth: readableDetails.wealth,
+      love: readableDetails.love,
+      career: readableDetails.career,
+      health: readableDetails.health,
     },
     luckyColor: dominant.color,
-    luckyKeywords: [...new Set(lucky.flatMap((element) => ELEMENT_INFO[element].keywords.slice(0, 2)))],
+    luckyKeywords: simplifySajuCopyList([
+      ...new Set(lucky.flatMap((element) => ELEMENT_INFO[element].keywords.slice(0, 2))),
+    ]),
   };
 }
 
@@ -383,7 +397,7 @@ function formatEvidencePoint(
   const card = report.evidenceCards.find((item) => item.key === key);
   if (!card) return '';
 
-  return `${card.label} 기준 · ${card.title}. ${card.body ?? card.plainSummary}`;
+  return simplifySajuCopy(`${card.label} · ${card.title}. ${card.body ?? card.plainSummary}`);
 }
 
 function flattenDetailTopic(topic: DetailTopicReportContent) {
@@ -404,4 +418,19 @@ function joinNarrative(parts: Array<string | undefined>) {
     .map((part) => part?.trim())
     .filter(Boolean)
     .join(' ');
+}
+
+function toReadableDetailTopic(topic: DetailTopicReportContent): DetailTopicReportContent {
+  return {
+    ...topic,
+    lead: limitSajuSentences(topic.lead, 2),
+    scoreLabel: topic.scoreLabel,
+    highlights: simplifySajuCopyList(topic.highlights),
+    blocks: topic.blocks.map((block) => ({
+      ...block,
+      title: simplifySajuCopy(block.title),
+      body: limitSajuSentences(block.body, 2),
+      keywords: block.keywords ? simplifySajuCopyList(block.keywords) : block.keywords,
+    })),
+  };
 }

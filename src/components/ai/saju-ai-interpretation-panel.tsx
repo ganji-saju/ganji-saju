@@ -5,6 +5,7 @@ import { CounselorSelector } from '@/components/counselor/counselor-selector';
 import type { FocusTopic } from '@/domain/saju/report';
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import type { MoonlightCounselorId } from '@/lib/counselors';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { SajuAiInterpretation } from '@/server/ai/saju-interpretation';
 import { cn } from '@/lib/utils';
 import { AiSourceBadge } from './ai-source-badge';
@@ -223,12 +224,12 @@ export function SajuAiInterpretationPanel({
         <div>
           <div className="app-caption">AI 신뢰 해석 · {focusLabel}</div>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
-            {interpretation.headline}
+            {simplifySajuCopy(interpretation.headline)}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
             {status === 'loading'
-              ? '계산된 기준을 바탕으로 해석 문장을 정리하는 중입니다.'
-              : interpretation.summary}
+              ? '입력된 사주 정보를 바탕으로 읽기 쉬운 풀이를 정리하는 중입니다.'
+              : simplifySajuCopy(interpretation.summary)}
           </p>
           <div className="mt-4 max-w-4xl">
             <CounselorSelector
@@ -239,7 +240,7 @@ export function SajuAiInterpretationPanel({
               }}
               variant="compact"
               title="사주를 읽는 선생"
-              description="같은 명식을 어떤 말결로 듣고 싶은지 골라보세요. 선택한 선생 기준으로 AI 해석이 다시 정리됩니다."
+              description="같은 사주풀이를 어떤 말결로 듣고 싶은지 골라보세요. 선택한 선생 말투로 다시 정리됩니다."
             />
           </div>
         </div>
@@ -258,7 +259,7 @@ export function SajuAiInterpretationPanel({
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-copy-soft)]">
               Insight {index + 1}
             </div>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{insight}</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(insight)}</p>
           </div>
         ))}
       </div>
@@ -266,7 +267,7 @@ export function SajuAiInterpretationPanel({
       <div className="mt-6">
         <div className="app-caption">두 선생 비교 리딩</div>
         <p className="mt-2 text-sm leading-7 text-[var(--app-copy-soft)]">
-          같은 명식 기준을 두 선생의 말결로 나란히 봅니다. 계산 기준은 같고, 설명의 결만 다르게 정리됩니다.
+          같은 사주풀이를 두 선생의 말결로 나란히 봅니다. 내용의 방향은 유지하고, 설명의 결만 다르게 정리됩니다.
         </p>
         <div className="mt-4 grid gap-4 xl:grid-cols-2">
           {comparisonOrder.map((compareCounselorId) => {
@@ -291,7 +292,7 @@ export function SajuAiInterpretationPanel({
                       {compareCounselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
                     </div>
                     <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
-                      {isActive ? '현재 선택된 기준' : '비교용 톤'}
+                      {isActive ? '현재 선택됨' : '비교용 톤'}
                     </div>
                   </div>
                   <span
@@ -306,10 +307,10 @@ export function SajuAiInterpretationPanel({
                   </span>
                 </div>
                 <div className="mt-4 text-lg font-semibold leading-8 text-[var(--app-ivory)]">
-                  {compareState.interpretation.headline}
+                  {simplifySajuCopy(compareState.interpretation.headline)}
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                  {compareState.interpretation.summary}
+                  {simplifySajuCopy(compareState.interpretation.summary)}
                 </p>
                 <div className="mt-4 grid gap-2">
                   {compareState.interpretation.insights.slice(0, 2).map((insight, index) => (
@@ -317,7 +318,7 @@ export function SajuAiInterpretationPanel({
                       key={`${compareCounselorId}-${index}-${insight}`}
                       className="rounded-[1rem] border border-[var(--app-line)] bg-[rgba(8,10,18,0.28)] px-3 py-3 text-sm leading-7 text-[var(--app-copy)]"
                     >
-                      {insight}
+                      {simplifySajuCopy(insight)}
                     </div>
                   ))}
                 </div>
@@ -328,7 +329,7 @@ export function SajuAiInterpretationPanel({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs leading-6 text-[var(--app-copy-soft)]">
-        <span>{result.counselorId === 'male' ? '달빛 남선생 기준' : '달빛 여선생 기준'}</span>
+        <span>{result.counselorId === 'male' ? '달빛 남선생 풀이' : '달빛 여선생 풀이'}</span>
         {result.source === 'openai' ? (
           <span>{result.cached ? '저장된 해석' : '새로 정리'}</span>
         ) : (
