@@ -1,3 +1,5 @@
+import { simplifySajuCopy, simplifySajuCopyList } from '@/lib/saju/public-copy';
+
 export interface EngineMethodSection {
   title: string;
   body: string;
@@ -28,7 +30,7 @@ export function getEngineMethodEntriesBySlug(slugs: string[]) {
     .filter((item): item is EngineMethodEntry => Boolean(item));
 }
 
-export const ENGINE_METHOD_ENTRIES: EngineMethodEntry[] = [
+const RAW_ENGINE_METHOD_ENTRIES: EngineMethodEntry[] = [
   {
     slug: 'why-ai-saju-can-drift',
     title: 'AI 사주가 왜 흔들리는가',
@@ -417,3 +419,73 @@ export const ENGINE_METHOD_ENTRIES: EngineMethodEntry[] = [
       '공망과 신살을 어디까지 믿어야 하느냐는 질문의 답은, “중심 해석을 보강하는 선까지”입니다. 달빛인생은 이 항목을 두려움이 아니라 재확인과 속도 조절의 신호로 다루는 쪽을 선택합니다.',
   },
 ];
+
+const METHOD_TITLE_OVERRIDES: Record<string, string> = {
+  'why-ai-saju-can-drift': 'AI 사주 결과가 왜 달라질까',
+  'what-is-true-solar-time': '출생지와 시간이 왜 필요할까',
+  'why-yongsin-is-hard': '부족한 기운은 어떻게 읽을까',
+  'why-pattern-judgments-diverge': '타고난 역할 흐름은 왜 다르게 보일까',
+  'what-if-birth-hour-is-unknown': '태어난 시간을 모르면 어디까지 볼 수 있을까',
+  'why-ai-saju-differs-from-calendar-apps': '만세력 앱과 결과가 왜 다를까',
+  'why-jeolgi-matters-in-chart-calculation': '계절 흐름은 왜 볼까',
+  'how-to-read-daewoon-and-sewoon-together': '큰 흐름과 올해 흐름은 어떻게 같이 볼까',
+  'how-far-to-trust-gongmang-and-shinsal': '불안한 보조 해석은 어디까지 믿을까',
+};
+
+const METHOD_EYEBROW_OVERRIDES: Record<string, string> = {
+  'why-ai-saju-can-drift': '결과 차이 도움말',
+  'what-is-true-solar-time': '시간과 장소 도움말',
+  'why-yongsin-is-hard': '균형 보기 도움말',
+  'why-pattern-judgments-diverge': '타고난 역할 도움말',
+  'what-if-birth-hour-is-unknown': '시간 미상 도움말',
+  'why-ai-saju-differs-from-calendar-apps': '앱 결과 차이 도움말',
+  'why-jeolgi-matters-in-chart-calculation': '계절 흐름 도움말',
+  'how-to-read-daewoon-and-sewoon-together': '올해 흐름 도움말',
+  'how-far-to-trust-gongmang-and-shinsal': '불안 줄이기 도움말',
+};
+
+function simplifyMethodText(value: string) {
+  return simplifySajuCopy(value)
+    .replace(/AI 사주가 왜 흔들리는가/g, 'AI 사주 결과가 왜 달라질까')
+    .replace(/AI 사주가 왜 흔들리는지/g, 'AI 사주 결과가 왜 달라지는지')
+    .replace(/설명 레이어/g, '설명 방식')
+    .replace(/계산 정보/g, '풀이 정보')
+    .replace(/구조 해석/g, '흐름 설명')
+    .replace(/계산과 설명/g, '풀이와 설명')
+    .replace(/계산된 결과/g, '정리된 결과')
+    .replace(/계산된 구조/g, '정리된 흐름')
+    .replace(/계산을 먼저/g, '정보를 먼저')
+    .replace(/계산을/g, '풀이 정보를')
+    .replace(/계산/g, '풀이 정보')
+    .replace(/판단 힌트/g, '확인 단서')
+    .replace(/판단/g, '확인')
+    .replace(/기준/g, '안내')
+    .replace(/명리/g, '사주풀이')
+    .replace(/참고 해석/g, '참고용 해석')
+    .replace(/논쟁적 해석/g, '의견이 갈릴 수 있는 해석')
+    .replace(/뼈대/g, '큰 흐름')
+    .replace(/역할 흐름/g, '타고난 역할')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function simplifyMethodEntry(entry: EngineMethodEntry): EngineMethodEntry {
+  return {
+    ...entry,
+    title: METHOD_TITLE_OVERRIDES[entry.slug] ?? simplifyMethodText(entry.title),
+    eyebrow: METHOD_EYEBROW_OVERRIDES[entry.slug] ?? simplifyMethodText(entry.eyebrow),
+    summary: simplifyMethodText(entry.summary),
+    description: simplifyMethodText(entry.description),
+    question: simplifyMethodText(entry.question),
+    lead: simplifyMethodText(entry.lead),
+    keywords: simplifySajuCopyList(entry.keywords).map((keyword) => simplifyMethodText(keyword)),
+    sections: entry.sections.map((section) => ({
+      title: simplifyMethodText(section.title),
+      body: simplifyMethodText(section.body),
+    })),
+    checklist: entry.checklist.map((item) => simplifyMethodText(item)),
+    closing: simplifyMethodText(entry.closing),
+  };
+}
+
+export const ENGINE_METHOD_ENTRIES: EngineMethodEntry[] = RAW_ENGINE_METHOD_ENTRIES.map(simplifyMethodEntry);

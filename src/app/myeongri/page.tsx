@@ -15,7 +15,7 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '명리',
-  description: '일간, 오행, 십신을 내 명식 위에 얹어 반복되는 인생 패턴의 이유를 읽는 명리 기준 화면입니다.',
+  description: '타고난 기질, 다섯 기운, 반복되는 관계 패턴을 쉬운 말로 확인하는 달빛인생 명리 화면입니다.',
   alternates: {
     canonical: '/myeongri',
   },
@@ -23,22 +23,22 @@ export const metadata: Metadata = {
 
 const EXPLORATIONS = [
   {
-    title: '일주와 기본 기질',
-    body: '태어난 날의 기둥을 중심으로 성정과 반응 방식, 삶의 기본 결을 읽습니다.',
+    title: '타고난 기질',
+    body: '내가 어떤 상황에서 편해지고, 어떤 장면에서 예민해지는지 기본 결을 살펴봅니다.',
     hook: '나는 어떤 결의 사람인가',
     href: '/saju/new',
     badge: '日柱',
   },
   {
-    title: '오행의 강약과 균형',
-    body: '무엇이 강하고 무엇이 메마른지, 왜 늘 같은 장면에서 힘이 붙거나 꺼지는지 살펴봅니다.',
+    title: '다섯 기운의 균형',
+    body: '무엇이 넘치고 무엇이 부족한지, 일상에서 어떤 방식으로 힘이 붙거나 빠지는지 살펴봅니다.',
     hook: '내 안의 다섯 기운은 어디서 흔들리는가',
     href: '/saju/new',
     badge: '五行',
   },
   {
-    title: '십신과 관계 패턴',
-    body: '돈, 일, 사람, 역할이 반복되는 방식과 삶에 자주 등장하는 장면을 십신으로 풉니다.',
+    title: '반복되는 관계 패턴',
+    body: '돈, 일, 사람, 책임이 내 삶에서 어떤 모습으로 반복되는지 쉽게 풀어봅니다.',
     hook: '왜 늘 비슷한 관계와 역할이 반복되는가',
     href: '/myeongri/ten-gods',
     badge: '十神',
@@ -46,9 +46,9 @@ const EXPLORATIONS = [
 ] as const;
 
 const MYEONGRI_RULES = [
-  '명리는 점괘보다 구조 해석에 가깝습니다. 먼저 타고난 결을 읽고, 그 위에 관계와 선택을 올립니다.',
-  '하나의 개념만 단독으로 보기보다, 일간·오행·십신을 같이 놓고 읽어야 왜 그런 해석이 나오는지 더 분명해집니다.',
-  '설명만 읽는 것보다 내 명식 결과와 번갈아 보는 편이 훨씬 빠르게 이해됩니다.',
+  '명리는 무서운 예언보다 반복되는 성향을 설명하는 언어에 가깝습니다.',
+  '하나의 단어만 외우기보다, 내 기질과 관계 패턴을 함께 보면 더 쉽게 이해됩니다.',
+  '설명만 읽는 것보다 내 실제 사주 결과와 번갈아 보는 편이 훨씬 빠르게 와닿습니다.',
 ] as const;
 
 export default async function MyeongriPage() {
@@ -64,7 +64,7 @@ export default async function MyeongriPage() {
               key="myeongri"
               className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
             >
-              명리 기준
+              명리 쉽게 보기
             </Badge>,
             <Badge
               key="scope"
@@ -73,8 +73,8 @@ export default async function MyeongriPage() {
               일간 · 오행 · 십신
             </Badge>,
           ]}
-          title="개념을 따로 외우기보다, 내 사주 위에서 바로 읽는 명리 화면입니다"
-          description="명리는 성격 테스트가 아니라 원국의 결, 강약, 관계 패턴을 읽는 기준입니다. 설명만 따로 늘어놓지 않고, 실제 사주 결과와 이어지는 언어로 정리했습니다."
+          title="개념을 외우기보다, 내 삶에서 반복되는 장면을 먼저 봅니다"
+          description="명리는 어려운 단어를 배우는 페이지가 아니라, 내가 왜 비슷한 고민을 반복하는지 쉽게 확인하는 도움말입니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
@@ -84,7 +84,7 @@ export default async function MyeongriPage() {
               eyebrow="내 패턴의 바탕"
               title="반복되는 장면의 이유를 내 사주 위에서 확인합니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="일간과 오행은 내 기운의 바탕을, 십신은 사람과 역할의 반복을 보여줍니다. 설명을 외우기보다 내 결과와 바로 이어서 봅니다."
+              description="타고난 기질은 내 반응의 바탕을, 다섯 기운과 관계 패턴은 자주 반복되는 생활 장면을 보여줍니다. 설명을 외우기보다 내 결과와 바로 이어서 봅니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
@@ -103,9 +103,9 @@ export default async function MyeongriPage() {
 
           <SupportRail
             surface="panel"
-            eyebrow="풀이 기준"
+            eyebrow="풀이 힌트"
             title="명리는 겁을 주는 말이 아니라 반복되는 이유를 설명하는 언어입니다"
-            description="개념을 많이 보여주는 것보다, 왜 그 판단이 나왔는지와 내 선택에 어떻게 연결되는지를 더 먼저 보이도록 정리했습니다."
+            description="개념을 많이 보여주는 것보다, 내 선택과 생활 조언에 어떻게 이어지는지를 먼저 보이도록 정리했습니다."
           >
             <BulletList items={MYEONGRI_RULES} />
 
@@ -115,7 +115,7 @@ export default async function MyeongriPage() {
               eyebrow="바로 이어보기"
               description={
                 readingSlug
-                  ? '저장된 사주 결과가 있다면, 개념 설명보다 먼저 내 명식으로 바로 확인하는 편이 가장 이해가 빠릅니다.'
+                  ? '저장된 사주 결과가 있다면, 개념 설명보다 먼저 내 사주로 바로 확인하는 편이 가장 이해가 빠릅니다.'
                   : '저장된 사주 결과가 없다면, 명리 설명을 읽다가 바로 사주 시작 화면으로 넘어가도 흐름이 끊기지 않게 두었습니다.'
               }
             />
@@ -126,9 +126,9 @@ export default async function MyeongriPage() {
           <SectionSurface surface="panel" size="lg">
             <SectionHeader
               eyebrow="내 사주로 이어보기"
-              title="개념 설명보다, 선생님의 명식 위에서 바로 확인할 수 있습니다"
+              title="개념 설명보다, 내 사주 위에서 바로 확인할 수 있습니다"
               titleClassName="text-3xl"
-              description="읽다가 궁금해진 개념은 실제 결과 화면으로 넘어가면 훨씬 빠르게 이해됩니다. 내 사주를 기준으로 일간, 오행, 십신을 번갈아 확인해 보세요."
+              description="읽다가 궁금해진 개념은 실제 결과 화면으로 넘어가면 훨씬 빠르게 이해됩니다. 내 사주를 보며 기질, 다섯 기운, 관계 패턴을 번갈아 확인해 보세요."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
               actions={
                 <ActionCluster>
@@ -153,7 +153,7 @@ export default async function MyeongriPage() {
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
             eyebrow="탐구 주제"
-            title="명리 안에서 가장 자주 다시 보게 되는 세 갈래"
+            title="명리 안에서 가장 자주 다시 보게 되는 세 가지"
             titleClassName="text-3xl"
             description="설명을 길게 늘어놓기보다, 실제로 많이 다시 보게 되는 세 갈래만 먼저 정리했습니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"

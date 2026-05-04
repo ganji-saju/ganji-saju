@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 
 const TEN_GOD_RULES = [
   '십신은 좋고 나쁨을 바로 가르는 카드가 아니라, 사람과 역할이 반복되는 방식을 읽는 언어입니다.',
-  '정재·편재는 돈의 구조를, 정관·편관은 책임과 압박의 구조를, 비견·겁재는 사람 사이 거리 조절을 드러냅니다.',
-  '십신 하나만 떼어 보지 말고, 일간과 오행 균형, 대운 흐름 위에 얹어 읽어야 실제 삶의 장면과 맞물립니다.',
+  '돈, 책임, 인정, 사람 사이 거리처럼 일상에서 자주 부딪히는 주제를 쉽게 나누어 봅니다.',
+  '십신 하나만 외우기보다, 내 현재 고민과 연결해서 볼 때 실제 삶의 장면과 더 잘 맞물립니다.',
 ] as const;
 
 export default function TenGodsPage() {
@@ -44,7 +44,7 @@ export default function TenGodsPage() {
               十神 · 열 가지 관계 패턴
             </Badge>,
           ]}
-          title="십신은 사람과 역할이 왜 늘 비슷하게 반복되는지 읽는 기준입니다"
+          title="십신은 사람과 역할이 왜 비슷하게 반복되는지 보는 힌트입니다"
           description="배우자, 동료, 돈, 인정, 책임처럼 삶에서 자주 부딪히는 장면을 십신으로 읽으면, 왜 같은 고민이 반복되는지가 더 또렷해집니다."
         />
 
@@ -55,7 +55,7 @@ export default function TenGodsPage() {
               eyebrow="십신으로 보는 반복 패턴"
               title="좋고 나쁨보다, 어떤 관계와 역할이 반복되는지를 먼저 봅니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="십신은 한 장짜리 성격 해석이 아니라, 돈과 자리, 사람과 책임이 내 삶에 들어오는 방식을 읽는 언어입니다. 달빛인생에서는 겁을 주는 말보다 실제로 반복되는 장면을 설명하는 데 더 가깝게 씁니다."
+              description="십신은 한 장짜리 성격 해석이 아니라, 돈과 자리, 사람과 책임이 내 삶에 들어오는 방식을 읽는 언어입니다. 달빛인생에서는 겁을 주는 말보다 실제로 반복되는 장면을 설명하는 데 가깝게 씁니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
@@ -85,9 +85,9 @@ export default function TenGodsPage() {
 
           <SupportRail
             surface="panel"
-            eyebrow="함께 보면 좋은 기준"
-            title="십신은 단독 지식보다 내 명식 위에 올려놓았을 때 더 선명합니다"
-            description="일간과 오행 균형, 대운 흐름과 함께 읽을 때 지금 가장 도드라지는 관계 패턴을 더 정확하게 볼 수 있습니다."
+            eyebrow="함께 보면 좋은 힌트"
+            title="십신은 단독 지식보다 내 사주 위에 올려놓았을 때 더 선명합니다"
+            description="내 기질과 다섯 기운의 균형과 함께 읽을 때 지금 가장 도드라지는 관계 패턴을 더 쉽게 볼 수 있습니다."
           >
             <BulletList items={TEN_GOD_RULES} />
 
@@ -96,7 +96,7 @@ export default function TenGodsPage() {
               eyebrow="바로 이어보기"
               title="개념을 읽었다면, 내 사주 결과로 바로 넘어가 보세요"
               titleClassName="text-xl"
-              description="십신은 실제 명식 위에서 확인할 때 훨씬 빠르게 체감됩니다."
+              description="십신은 실제 내 사주 위에서 확인할 때 훨씬 빠르게 체감됩니다."
               descriptionClassName="text-[var(--app-copy)]"
               actions={
                 <ActionCluster>

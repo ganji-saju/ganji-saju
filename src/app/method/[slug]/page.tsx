@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!item) {
     return {
-      title: '계산 기준 읽을거리',
+      title: '풀이 도움말',
     };
   }
 
@@ -65,16 +65,16 @@ function buildMethodFaqs(item: EngineMethodEntry) {
       answer: item.lead,
     },
     {
-      question: `${item.title}에서 먼저 확인해야 할 기준은 무엇인가요?`,
+      question: `${item.title}에서 먼저 확인하면 좋은 점은 무엇인가요?`,
       answer: firstSection
-        ? `${firstSection.body} 달빛인생에서는 ${visibleChecks} 같은 기준을 결과 화면에서 함께 확인할 수 있습니다.`
-        : `${visibleChecks} 같은 기준을 먼저 확인하는 편이 좋습니다.`,
+        ? `${firstSection.body} 달빛인생에서는 ${visibleChecks} 같은 내용을 결과 화면에서 쉽게 확인할 수 있습니다.`
+        : `${visibleChecks} 같은 내용을 먼저 확인하는 편이 좋습니다.`,
     },
     {
       question: '달빛인생에서는 이 주제를 어떤 방식으로 보여주나요?',
       answer: secondSection
-        ? `${secondSection.body} 결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 깊은 사주풀이로 이어서 확인할 수 있습니다.`
-        : '결과 화면에서는 판단 단서와 체크 포인트를 같이 보여주고, 필요한 경우 풀이 기준과 깊은 사주풀이로 이어서 확인할 수 있습니다.',
+        ? `${secondSection.body} 결과 화면에서는 핵심 요약과 체크 포인트를 먼저 보여주고, 필요한 경우 더 깊은 풀이로 이어서 확인할 수 있습니다.`
+        : '결과 화면에서는 핵심 요약과 체크 포인트를 먼저 보여주고, 필요한 경우 더 깊은 풀이로 이어서 확인할 수 있습니다.',
     },
   ];
 }
@@ -160,7 +160,7 @@ export default async function MethodDetailPage({ params }: Props) {
               <Badge className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
                 {item.eyebrow}
               </Badge>
-              <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">풀이 기준 글</Badge>
+              <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">쉬운 도움말</Badge>
             </div>
 
             <SectionHeader
@@ -182,7 +182,7 @@ export default async function MethodDetailPage({ params }: Props) {
             surface="muted"
             eyebrow="도움말"
             title="궁금한 부분만 가볍게 확인하세요"
-            description="내 결과를 보다가 낯선 기준이 나올 때, 필요한 단락만 짧게 확인할 수 있도록 정리했습니다."
+            description="내 결과를 보다가 낯선 말이 나올 때, 필요한 단락만 짧게 확인할 수 있도록 정리했습니다."
           >
             <nav className="app-reading-nav">
               <div className="app-caption mb-3">바로 보기</div>
@@ -203,7 +203,7 @@ export default async function MethodDetailPage({ params }: Props) {
                 href="/about-engine"
                 className="moon-action-secondary"
               >
-                풀이 기준 보기
+                풀이 안내 보기
               </Link>
               <Link
                 href="/sample-report"
@@ -257,7 +257,7 @@ export default async function MethodDetailPage({ params }: Props) {
             <SectionSurface surface="hero">
               <SectionHeader
                 eyebrow="마무리 문장"
-                title="읽은 기준을 실제 결과와 연결할 때 비로소 이 문서의 역할이 완성됩니다"
+                title="읽은 내용을 실제 결과와 연결할 때 이 문서의 역할이 완성됩니다"
                 titleClassName="text-3xl"
                 description={<span className="app-reading-prose">{item.closing}</span>}
                 descriptionClassName="text-[var(--app-copy)]"
@@ -273,7 +273,7 @@ export default async function MethodDetailPage({ params }: Props) {
                       href="/membership"
                       className="moon-action-muted"
                     >
-                      멤버십 기준 보기
+                      상품 보기
                     </Link>
                   </ActionCluster>
                 }
@@ -285,7 +285,7 @@ export default async function MethodDetailPage({ params }: Props) {
             <SupportRail
               surface="lunar"
               eyebrow="체크 포인트"
-              title="달빛인생에서는 이 기준이 실제로 보입니다"
+              title="달빛인생에서는 이 내용이 실제 결과와 이어집니다"
               description="결과 화면에서 사용자가 직접 확인할 수 있는 지점만 짧게 모았습니다."
             >
               <BulletList items={item.checklist} />
@@ -324,7 +324,7 @@ export default async function MethodDetailPage({ params }: Props) {
         <SectionSurface surface="panel">
           <SectionHeader
             eyebrow="넓게 이어보기"
-            title="같은 기준 위에서 더 넓게 읽어볼 만한 글들입니다"
+            title="같은 흐름으로 더 넓게 읽어볼 만한 글들입니다"
             titleClassName="text-3xl"
           />
           <ProductGrid columns={3} className="mt-6">

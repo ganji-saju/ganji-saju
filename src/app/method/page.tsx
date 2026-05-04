@@ -15,14 +15,14 @@ import { ENGINE_METHOD_ENTRIES } from '@/lib/engine-method-pages';
 export const metadata: Metadata = {
   title: '풀이가 달라지는 이유 | 달빛인생',
   description:
-    'AI 사주가 왜 다르게 보이는지, 출생지와 시간 기준이 왜 중요한지 생활 언어로 풀어낸 도움말입니다.',
+    '사주 결과가 왜 다르게 보이는지, 출생지와 시간이 왜 필요한지 생활 언어로 풀어낸 도움말입니다.',
   alternates: {
     canonical: '/method',
   },
   openGraph: {
     title: '달빛인생 풀이 도움말',
     description:
-      '결과가 다르게 보일 때 확인하면 좋은 AI 사주·진태양시·용신 도움말을 모았습니다.',
+      '결과가 다르게 보일 때 확인하면 좋은 출생 시간, 출생지, 풀이 흐름 도움말을 모았습니다.',
     url: 'https://ganji-saju.vercel.app/method',
     siteName: '달빛인생',
     locale: 'ko_KR',
@@ -37,9 +37,9 @@ const READING_GUIDE = [
 ] as const;
 
 const READING_ORDER = [
-  'AI 사주가 왜 흔들리는가',
-  '진태양시란 무엇인가',
-  '용신 계산은 왜 어려운가',
+  'AI 사주 결과가 왜 달라질까',
+  '출생지와 시간이 왜 필요할까',
+  '부족한 기운은 어떻게 읽을까',
 ] as const;
 
 export default function MethodIndexPage() {
@@ -52,10 +52,10 @@ export default function MethodIndexPage() {
               key="method-guide"
               className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]"
             >
-              풀이 기준 도움말
+              풀이 도움말
             </Badge>,
             <Badge key="seo" className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">
-              AI 사주 · 진태양시 · 용신 해설
+              시간 · 장소 · 큰 흐름
             </Badge>,
           ]}
           title="결과가 왜 달라지는지 궁금할 때만 보세요"
@@ -68,7 +68,7 @@ export default function MethodIndexPage() {
               eyebrow="헷갈릴 때 확인"
               title="결과가 다르게 보이는 이유만 짧게 정리합니다"
               titleClassName="text-3xl"
-              description="출생 시간, 출생지, 용신처럼 결과에 영향을 주는 부분만 생활 언어로 풀었습니다."
+              description="출생 시간, 출생지, 큰 흐름처럼 결과에 영향을 주는 부분만 생활 언어로 풀었습니다."
               descriptionClassName="text-[var(--app-copy)]"
             />
 
@@ -93,7 +93,7 @@ export default function MethodIndexPage() {
                 href="/about-engine"
                 className="moon-action-secondary"
               >
-                풀이 기준 보기
+                풀이 안내 보기
               </Link>
               <Link
                 href="/saju/new"
@@ -107,7 +107,7 @@ export default function MethodIndexPage() {
 
         <SectionSurface surface="panel">
           <SectionHeader
-            eyebrow="계산 기준 읽을거리 목록"
+            eyebrow="궁금할 때 보는 도움말"
             title="설명은 길게 흩어놓기보다, 질문 단위로 나누어 읽기 좋게 정리했습니다"
             titleClassName="text-3xl"
             description="각 글은 하나의 질문에만 집중하고, 마지막에는 다음으로 읽기 좋은 주제를 이어서 제안합니다."
@@ -120,7 +120,7 @@ export default function MethodIndexPage() {
                 key={entry.slug}
                 surface="soft"
                 badge={
-                  <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">풀이 연계 글</Badge>
+                  <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">쉬운 도움말</Badge>
                 }
                 eyebrow={entry.eyebrow}
                 title={entry.title}
@@ -138,7 +138,7 @@ export default function MethodIndexPage() {
                     href={`/method/${entry.slug}`}
                     className="text-sm text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
                   >
-                    상세 읽기
+                    이어서 읽기
                   </Link>
                 }
               />
