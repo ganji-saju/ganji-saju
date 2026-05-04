@@ -524,7 +524,7 @@ function LoginContent() {
 
       <div
         className={`grid gap-2 rounded-3xl bg-[var(--app-surface-muted)] p-1.5 ${
-          mode === 'reset' ? 'grid-cols-1' : 'grid-cols-3'
+          mode === 'reset' ? 'grid-cols-1' : 'grid-cols-2'
         }`}
       >
         {(mode === 'reset'
@@ -532,7 +532,6 @@ function LoginContent() {
           : [
               ['signup', '회원가입'],
               ['login', '로그인'],
-              ['recover', '아이디/비번 찾기'],
             ]
         ).map(([value, label]) => (
           <button
@@ -544,7 +543,7 @@ function LoginContent() {
               setStatusMessage('');
             }}
             className={`h-11 rounded-2xl text-sm font-black transition ${
-              mode === value
+              mode === value || (mode === 'recover' && value === 'login')
                 ? 'bg-[var(--app-pink)] text-white shadow-[0_12px_24px_rgba(216,27,114,0.24)]'
                 : 'text-[var(--app-copy-muted)]'
             }`}
@@ -811,7 +810,7 @@ function LoginContent() {
               setErrorMessage('');
               setStatusMessage('');
             }}
-            className="w-full text-center text-xs font-bold text-[var(--app-pink-strong)] underline underline-offset-4"
+            className="flex h-11 w-full items-center justify-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] text-sm font-black text-[var(--app-pink-strong)] transition hover:border-[var(--app-pink)]/50 hover:bg-white"
           >
             아이디 또는 비밀번호를 잊으셨나요?
           </button>
