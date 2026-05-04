@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import { parseBirthInputDraft } from '@/domain/saju/validators/birth-input';
 import { toSlug } from '@/lib/saju/pillars';
 import { createReading, deleteReadingForUser, getReadingCountForUser } from '@/lib/saju/readings';
@@ -21,11 +25,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (!hasSupabaseServerEnv) {
     return NextResponse.json(
       {
         id: toSlug(parsed.input),
@@ -40,15 +40,40 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user && !hasSupabaseServiceEnv) {
+    return NextResponse.json(
+      {
+        id: toSlug(parsed.input),
+        mode: 'preview',
+      },
+      { status: 200 }
+    );
+  }
+
   try {
     const id = await createReading(parsed.input, user?.id ?? null);
     return NextResponse.json({ id });
   } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (
+      !hasSupabaseServiceEnv &&
+      /row-level security|permission denied|violates row-level security|policy/i.test(message)
+    ) {
+      return NextResponse.json(
+        {
+          id: toSlug(parsed.input),
+          mode: 'preview',
+          warning: 'readings_owner_policy_required',
+        },
+        { status: 200 }
+      );
+    }
+
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
+          message
+            ? message
             : '사주 결과를 생성하지 못했습니다.',
       },
       { status: 500 }

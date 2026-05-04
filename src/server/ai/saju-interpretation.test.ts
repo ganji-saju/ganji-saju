@@ -76,8 +76,8 @@ test('buildFallbackInterpretation can derive summary and insights from grounding
 
   const interpretation = buildFallbackInterpretation(report, 'female', grounding);
 
-  assert.match(interpretation.summary, /강약|격국|용신/);
-  assert.ok(interpretation.insights.some((item) => /강약|격국|용신|합충|공망|신살/.test(item)));
+  assert.match(interpretation.summary, /흐름|균형|역할|보완/);
+  assert.ok(interpretation.insights.some((item) => /흐름|균형|역할|관계|보완/.test(item)));
 });
 
 test('createInterpretationPrompt now sends fact and evidence JSON without report fallback prose', () => {

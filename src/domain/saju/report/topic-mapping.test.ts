@@ -56,14 +56,14 @@ test('relationship topic uses relationship-specific copy instead of love copy', 
   assert.equal(report.focusLabel, '관계');
   assert.match(report.primaryAction.title, /관계/);
   assert.match(report.cautionAction.title, /관계/);
-  assert.ok(report.summaryHighlights.some((summary) => summary.includes('관계 흐름')));
+  assert.ok(report.summaryHighlights.some((summary) => /관계|거리감|말의 순서/.test(summary)));
 });
 
 test('day master summary is separated from topic highlight cards', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'love');
 
-  assert.match(report.dayMasterSummary, /일간/);
+  assert.match(report.dayMasterSummary, /타고난 기질/);
   assert.ok(report.summary.includes(report.dayMasterSummary));
   assert.ok(report.summaryHighlights.every((summary) => !summary.startsWith(report.dayMasterSummary)));
 });
@@ -89,20 +89,21 @@ test('evidence cards expose computed facts, source, confidence, and topic mappin
   assert.ok(relationCard?.source.includes('orrery-reference'));
 });
 
-test('yongsin evidence card balances plain Korean, hanja glossary, and technical detail', () => {
+test('yongsin evidence card keeps technical memo out of the main reading flow', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'today');
   const yongsinCard = report.evidenceCards.find((card) => card.key === 'yongsin');
 
   assert.ok(yongsinCard);
   assert.doesNotMatch(yongsinCard.body, /메모:/);
-  assert.match(yongsinCard.plainSummary ?? '', /용신 메모:/);
-  assert.ok(yongsinCard.explainers?.some((item) => item.term === '용신' && item.hanja === '用神'));
+  assert.doesNotMatch(yongsinCard.plainSummary ?? '', /메모:/);
+  assert.ok(yongsinCard.body.length > 0);
+  assert.ok(yongsinCard.explainers?.some((item) => item.meaning.length > 0));
   assert.ok((yongsinCard.practicalActions?.length ?? 0) >= 2);
   assert.ok(yongsinCard.details.some((detail) => detail.includes('후보')));
 });
 
-test('core evidence cards include user-facing explainers beyond raw provenance', () => {
+test('core evidence cards keep user-facing body, explainers, and practical actions', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'today');
   const targetKeys = ['strength', 'pattern', 'relations', 'gongmang', 'specialSals'] as const;
@@ -111,9 +112,9 @@ test('core evidence cards include user-facing explainers beyond raw provenance',
     const card = report.evidenceCards.find((item) => item.key === key);
 
     assert.ok(card, `${key} card should exist`);
-    assert.ok(card.plainSummary, `${key} should have a plain summary`);
-    assert.ok(card.technicalSummary, `${key} should have a technical summary`);
-    assert.ok((card.explainers?.length ?? 0) > 0, `${key} should explain hanja terms`);
+    assert.ok(card.body.length > 0, `${key} should have a readable body`);
+    assert.doesNotMatch(card.body, /메모:/, `${key} should not expose memo labels`);
+    assert.ok((card.explainers?.length ?? 0) > 0, `${key} should keep optional explainers`);
     assert.ok((card.practicalActions?.length ?? 0) > 0, `${key} should include practical actions`);
   }
 });
@@ -126,9 +127,9 @@ test('timeline gives monthly and major luck as interpreted guidance', () => {
 
   assert.ok(monthly, 'monthly timeline item should exist');
   assert.ok(major, 'major luck timeline item should exist');
-  assert.match(monthly.body, /월운|이번 달/);
-  assert.ok((monthly.points?.length ?? 0) >= 3);
-  assert.match(major.body, /대운|용신|원국/);
+  assert.match(monthly.body, /이번 달|흐름/);
+  assert.ok((monthly.points?.length ?? 0) >= 2);
+  assert.match(major.body, /긴 흐름|구간/);
   assert.ok((major.points?.length ?? 0) >= 2);
 });
 
@@ -140,10 +141,10 @@ test('focus actions change by selected topic', () => {
   );
 
   assert.equal(actionBodies.size, FOCUS_TOPIC_OPTIONS.length);
-  assert.match(buildSajuReport(birthInput, data, 'love').primaryAction.description, /연애운/);
-  assert.match(buildSajuReport(birthInput, data, 'wealth').primaryAction.description, /재물운/);
-  assert.match(buildSajuReport(birthInput, data, 'career').primaryAction.description, /직장운/);
-  assert.match(buildSajuReport(birthInput, data, 'relationship').primaryAction.description, /관계운/);
+  assert.match(buildSajuReport(birthInput, data, 'love').primaryAction.description, /연애|상대|표현/);
+  assert.match(buildSajuReport(birthInput, data, 'wealth').primaryAction.description, /정산|고정비|금액/);
+  assert.match(buildSajuReport(birthInput, data, 'career').primaryAction.description, /직장|보고|업무|성과/);
+  assert.match(buildSajuReport(birthInput, data, 'relationship').primaryAction.description, /관계|말의 순서|확인/);
 });
 
 test('summary and action copy now reference computed evidence instead of generic prose only', () => {

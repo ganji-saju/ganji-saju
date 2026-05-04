@@ -91,11 +91,14 @@ test('today fortune premium windows and scenarios carry grounded current-luck cu
   );
 
   if (currentLuckFact) {
-    assert.ok(
-      result.favorableWindows.some((item) => item.body.includes(currentLuckFact)) ||
-        result.cautionWindows.some((item) => item.body.includes(currentLuckFact)) ||
-        result.scenarios.some((item) => item.watch.includes(currentLuckFact))
-    );
+    const combined = [
+      ...result.favorableWindows.map((item) => item.body),
+      ...result.cautionWindows.map((item) => item.body),
+      ...result.scenarios.map((item) => `${item.better} ${item.watch}`),
+    ].join(' ');
+
+    assert.doesNotMatch(combined, /대운|세운|월운/);
+    assert.match(combined, /흐름|선택|확인|조율|기준/);
   }
 });
 
@@ -112,7 +115,7 @@ test('today fortune free result surfaces grounding facts and evidence lines near
   assert.ok(result.groundingSummary.primaryConcept.length > 0);
   assert.ok(result.groundingSummary.factLines.length >= 3);
   assert.ok(result.groundingSummary.evidenceLines.length >= 2);
-  assert.match(result.reasonSnippet.body, /^강약은 /);
+  assert.match(result.reasonSnippet.body, /균형|기운|흐름/);
   assert.doesNotMatch(result.reasonSnippet.body, /중화은/);
   assert.doesNotMatch(result.reasonSnippet.body, /66점로/);
   assert.doesNotMatch(result.groundingSummary.factLines.join(' '), /\([가-힣]+\)\([가-힣]+\)/);

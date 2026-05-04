@@ -1,5 +1,7 @@
 import {
+  createPublicServerClient,
   createServiceClient,
+  hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import type { ReportEvidenceKey } from '@/domain/saju/report';
@@ -162,19 +164,21 @@ export async function getClassicEvidence({
 }): Promise<ClassicEvidenceResult> {
   const normalizedConcept = normalizeClassicEvidenceQuery(concept);
 
-  if (!hasSupabaseServiceEnv) {
+  if (!hasSupabaseServerEnv) {
     return {
       concept: normalizedConcept,
       count: 0,
       items: [],
       status: 'missing-env',
       setupRequired: true,
-      error: 'Supabase service environment is not configured.',
+      error: 'Supabase environment is not configured.',
     };
   }
 
   try {
-    const supabase = await createServiceClient();
+    const supabase = hasSupabaseServiceEnv
+      ? await createServiceClient()
+      : createPublicServerClient();
     const { data, error } = await supabase.rpc('search_classic_evidence', {
       p_concept: normalizedConcept,
       p_limit: clampClassicEvidenceLimit(limit),

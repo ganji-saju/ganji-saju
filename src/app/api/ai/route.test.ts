@@ -32,7 +32,7 @@ test('dialogue prompt keeps an expert counselor tone and infers focus topic from
   const prompt = createDialoguePrompt('올해 재물운을 단도직입적으로 봐줘', null, 'male');
   const alternatePrompt = createDialoguePrompt('그 사람 마음이 아직 남아 있을까요', null, 'female');
 
-  assert.match(prompt.instructions, /숙련 사주명리 상담가/);
+  assert.match(prompt.instructions, /숙련 상담가/);
   assert.match(prompt.instructions, /마크다운 기호를 쓰지 않습니다/);
   assert.match(prompt.instructions, /로봇처럼 설명하지 말고 실제 역술가/);
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);

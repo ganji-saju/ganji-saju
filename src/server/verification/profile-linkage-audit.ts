@@ -179,15 +179,19 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
   {
     key: 'zodiac',
     label: '띠운세',
-    status: 'partial',
+    status: 'ready',
     usesSelfProfile: true,
     usesFamilyProfiles: false,
-    usesSharedBirthSchema: false,
-    usesSajuEngine: false,
+    usesSharedBirthSchema: true,
+    usesSajuEngine: true,
     detail:
-      '띠운세는 MY 프로필 생년이 있으면 해당 띠를 먼저 보여주고, 저장된 사주 결과로 이어보는 CTA를 함께 보여주는 약한 개인화 상태입니다.',
-    continuity: '콘텐츠형 흐름 + MY 프로필 약한 개인화',
-    sourceRefs: ['/src/app/zodiac/page.tsx', '/src/app/zodiac/[slug]/page.tsx'],
+      '띠운세는 MY 프로필 생년월일을 공통 BirthInput으로 바꾼 뒤 실제 사주 엔진의 연주 지지를 읽어 내 띠를 맞춥니다. 입춘 전후 생일도 사주 결과와 같은 기준으로 맞습니다.',
+    continuity: 'MY 프로필 → 공통 입력 → 사주 엔진 연주 → 내 띠 운세',
+    sourceRefs: [
+      '/src/lib/profile-personalization.ts',
+      '/src/app/zodiac/page.tsx',
+      '/src/app/zodiac/[slug]/page.tsx',
+    ],
   },
   {
     key: 'myeongri',
@@ -242,15 +246,15 @@ export function getProfileLinkageVerificationAudit(): ProfileLinkageAudit {
       },
       {
         key: 'content-services-standalone',
-        label: '타로/별자리/띠운세/명리 탐구의 개인화 수준을 정확히 구분했는가',
+        label: '타로/별자리/명리 탐구와 엔진 연결 서비스를 정확히 구분했는가',
         ok: true,
         detail:
-          '이 기능들은 전체 해석을 사주 계산 흐름으로 다시 만드는 구조는 아니지만, MY 프로필이 있으면 약한 개인화나 사주 브리지 CTA를 제공합니다.',
+          '타로/별자리/명리 탐구는 약한 개인화나 사주 브리지 CTA 수준이고, 띠운세는 실제 사주 엔진 연주 기준으로 내 띠를 계산합니다.',
       },
     ],
     services: SERVICES,
     warnings: [
-      '타로, 별자리, 띠운세, 명리 탐구는 사주 전체를 자동 재해석하지는 않으며, 현재는 약한 개인화 또는 브리지 CTA 수준으로만 연결됩니다.',
+      '타로, 별자리, 명리 탐구는 사주 전체를 자동 재해석하지는 않으며, 현재는 약한 개인화 또는 브리지 CTA 수준으로만 연결됩니다.',
       '사주 결과/AI 대화는 일부 profile 기반 설정을 읽지만, 본문 해석 자체는 생성된 reading이나 질문 컨텍스트 중심으로 이어집니다.',
     ],
   };

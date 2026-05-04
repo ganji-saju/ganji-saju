@@ -1,4 +1,8 @@
-import { createServiceClient } from '@/lib/supabase/server';
+import {
+  createClient,
+  createServiceClient,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import { fromSlug } from './pillars';
 import type { BirthInput, SajuResult as LegacySajuResult } from './types';
 import {
@@ -34,6 +38,8 @@ interface ReadingRow {
   gender: 'male' | 'female' | null;
   result_json: unknown;
 }
+
+type SupabaseReadingsClient = Awaited<ReturnType<typeof createServiceClient>>;
 
 export interface PersistedReadingEnvelope {
   _grounding?: SajuInterpretationGrounding;
@@ -157,11 +163,7 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
   };
 }
 
-export async function createReading(
-  input: BirthInput,
-  userId: string | null
-): Promise<string> {
-  const supabase = await createServiceClient();
+export async function buildReadingInsertPayload(input: BirthInput, userId: string | null) {
   const sajuData = calculateSajuDataV1(input);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
@@ -170,17 +172,39 @@ export async function createReading(
   const metadata = buildPersistedSajuReadingMetadata(normalizedInput, sajuData, grounding, kasiComparison);
   const persistedResultJson = createStoredReadingResultJson(sajuData, grounding, kasiComparison, metadata);
 
+  return {
+    user_id: userId,
+    birth_year: input.year,
+    birth_month: input.month,
+    birth_day: input.day,
+    birth_hour: input.hour ?? null,
+    gender: input.gender ?? null,
+    result_json: persistedResultJson,
+  };
+}
+
+async function getPrivilegedOrSessionClient(userId?: string | null): Promise<SupabaseReadingsClient> {
+  if (hasSupabaseServiceEnv) {
+    return createServiceClient();
+  }
+
+  if (!userId) {
+    throw new Error('로그인하지 않은 사주 결과 저장에는 Supabase 서비스 키가 필요합니다.');
+  }
+
+  return createClient() as Promise<SupabaseReadingsClient>;
+}
+
+export async function createReading(
+  input: BirthInput,
+  userId: string | null
+): Promise<string> {
+  const supabase = await getPrivilegedOrSessionClient(userId);
+  const payload = await buildReadingInsertPayload(input, userId);
+
   const { data, error } = await supabase
     .from('readings')
-    .insert({
-      user_id: userId,
-      birth_year: input.year,
-      birth_month: input.month,
-      birth_day: input.day,
-      birth_hour: input.hour ?? null,
-      gender: input.gender ?? null,
-      result_json: persistedResultJson,
-    })
+    .insert(payload)
     .select('id')
     .single();
 
@@ -194,7 +218,7 @@ export async function createReading(
 export async function getReadingById(id: string): Promise<ReadingRecord | null> {
   if (!isReadingId(id)) return null;
 
-  const supabase = await createServiceClient();
+  const supabase = await getPrivilegedOrSessionClient('authenticated-read');
   const { data, error } = await supabase
     .from('readings')
     .select(
@@ -211,7 +235,7 @@ export async function getReadingById(id: string): Promise<ReadingRecord | null> 
 export async function deleteReadingForUser(id: string, userId: string): Promise<boolean> {
   if (!isReadingId(id)) return false;
 
-  const supabase = await createServiceClient();
+  const supabase = await getPrivilegedOrSessionClient(userId);
   const { data, error } = await supabase
     .from('readings')
     .delete()
@@ -228,7 +252,7 @@ export async function deleteReadingForUser(id: string, userId: string): Promise<
 }
 
 export async function getReadingCountForUser(userId: string): Promise<number> {
-  const supabase = await createServiceClient();
+  const supabase = await getPrivilegedOrSessionClient(userId);
   const { count, error } = await supabase
     .from('readings')
     .select('id', { count: 'exact', head: true })

@@ -52,8 +52,8 @@ test('buildFallbackLifetimeInterpretation renders a structured lifetime report w
 
   assert.ok(interpretation.keywords.length >= 3);
   assert.equal(interpretation.rememberRules.length, 5);
-  assert.ok(rendered.includes('## 원국의 본질'));
-  assert.ok(rendered.includes('## 격국 / 용신'));
+  assert.ok(rendered.includes('## 타고난 성향'));
+  assert.ok(rendered.includes('## 역할과 보완 힌트'));
   assert.ok(rendered.includes('## 부록: 올해 요약'));
   assert.ok(rendered.length >= 2500);
 });
@@ -80,8 +80,8 @@ test('createLifetimeInterpretationPrompt keeps lifetime report prompt separate f
   const grounding = JSON.parse(prompt.input) as Record<string, unknown>;
 
   assert.equal(getLifetimeInterpretationPromptVersion('male'), 'saju-lifetime-interpret-v1-male');
-  assert.match(prompt.instructions, /평생 사주 풀이/);
-  assert.match(prompt.instructions, /연간 운세가 아니라 원국 중심 깊은 사주풀이/);
+  assert.match(prompt.instructions, /평생 사주풀이/);
+  assert.match(prompt.instructions, /사주 공부 자료가 아니라/);
   assert.match(prompt.instructions, /달빛 남선생/);
   assert.equal('factJson' in grounding, true);
   assert.equal('evidenceJson' in grounding, true);
