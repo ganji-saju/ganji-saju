@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
 
 const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
 
@@ -90,10 +91,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (code) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseServerUrl || !supabaseAnonKey) {
       return NextResponse.redirect(
         buildLoginRedirect({ origin, next, error: 'oauth_config', provider })
       );
@@ -102,7 +100,7 @@ export async function GET(req: NextRequest) {
     const response = NextResponse.redirect(`${origin}${next}`);
 
     const supabase = createServerClient(
-      supabaseUrl,
+      supabaseServerUrl,
       supabaseAnonKey,
       {
         cookies: {
