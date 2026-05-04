@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getBirthLocationPreset } from '@/lib/saju/birth-location';
 import type { UnifiedCalendarType, UnifiedTimeRule } from '@/lib/saju/unified-birth-entry';
 import {
-  createPublicServerClient,
   createServiceClient,
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
@@ -119,36 +118,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (!hasSupabaseServiceEnv) {
-    const publicClient = createPublicServerClient();
-    const { data, error } = await publicClient.auth.signUp({
-      email: parsed.email,
-      password: parsed.password,
-      options: {
-        data: {
-          display_name: parsed.profile.displayName,
-          signup_source: 'dalbit-insaeng-profile-signup',
-        },
+    return NextResponse.json(
+      {
+        error:
+          '회원가입을 바로 로그인 방식으로 처리하려면 Supabase 서비스 키가 필요합니다. SUPABASE_SERVICE_ROLE_KEY를 설정해 주세요.',
       },
-    });
-
-    if (error || !data.user) {
-      const message = error?.message ?? '회원가입을 완료하지 못했습니다.';
-      return NextResponse.json(
-        {
-          error: isExistingUserError(message)
-            ? '이미 가입된 이메일입니다. 로그인 탭에서 비밀번호로 로그인해 주세요.'
-            : message,
-        },
-        { status: isExistingUserError(message) ? 409 : 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      userId: data.user.id,
-      profileSaved: false,
-      next: '/saju/new?autoProfile=1',
-    });
+      { status: 500 }
+    );
   }
 
   const service = await createServiceClient();

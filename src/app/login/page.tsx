@@ -131,9 +131,14 @@ function getPasswordLoginError(message?: string) {
     return '이메일 또는 비밀번호가 맞지 않습니다.';
   }
   if (normalized.includes('confirm')) {
-    return '이메일 인증 설정을 확인해 주세요. 현재는 바로 로그인할 수 있도록 가입 처리합니다.';
+    return '이메일 로그인 상태를 정리하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
   }
   return message;
+}
+
+function isEmailNotConfirmedError(message?: string) {
+  const normalized = message?.toLowerCase() ?? '';
+  return normalized.includes('confirm');
 }
 
 function getRecoveryError(message?: string) {
@@ -292,7 +297,7 @@ function LoginContent() {
   async function signInWithPassword(
     email: string,
     password: string,
-    options: { redirect?: boolean } = {}
+    options: { redirect?: boolean; allowConfirmRetry?: boolean } = {}
   ) {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
@@ -301,6 +306,29 @@ function LoginContent() {
     });
 
     if (error) {
+      if (options.allowConfirmRetry !== false && isEmailNotConfirmedError(error.message)) {
+        setStatusMessage('이메일 로그인 상태를 정리한 뒤 다시 로그인하고 있어요.');
+
+        const response = await fetch('/api/auth/confirm-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = (await response.json().catch(() => null)) as
+          | { success?: boolean; error?: string }
+          | null;
+
+        if (response.ok && data?.success) {
+          return signInWithPassword(email, password, {
+            ...options,
+            allowConfirmRetry: false,
+          });
+        }
+
+        setErrorMessage(data?.error ?? getPasswordLoginError(error.message));
+        return false;
+      }
+
       setErrorMessage(getPasswordLoginError(error.message));
       return false;
     }
@@ -378,6 +406,7 @@ function LoginContent() {
     setStatusMessage('회원가입이 완료됐습니다. 사주 기본정보를 저장하는 중입니다.');
     const signedIn = await signInWithPassword(signupForm.email, signupForm.password, {
       redirect: false,
+      allowConfirmRetry: true,
     });
     if (!signedIn) {
       setStatusMessage('회원가입은 완료됐습니다. 로그인 탭에서 비밀번호로 다시 로그인해 주세요.');
@@ -421,7 +450,9 @@ function LoginContent() {
     setIsSubmittingLogin(true);
     setErrorMessage('');
     setStatusMessage('');
-    await signInWithPassword(loginForm.email, loginForm.password);
+    await signInWithPassword(loginForm.email, loginForm.password, {
+      allowConfirmRetry: true,
+    });
     setIsSubmittingLogin(false);
   }
 
