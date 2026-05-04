@@ -447,7 +447,7 @@ function LoginContent() {
 
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getRedirectOrigin()}/api/auth/callback?next=${encodeURIComponent('/login?mode=reset-password')}`,
+      redirectTo: `${getRedirectOrigin()}/reset-password?next=${encodeURIComponent(afterLoginHref)}`,
     });
 
     setIsSubmittingRecovery(false);

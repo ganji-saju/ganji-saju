@@ -6,6 +6,14 @@ const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+  try {
+    const url = new URL(value, CANONICAL_SITE_ORIGIN);
+    if (url.pathname === '/login' && url.searchParams.get('mode') === 'reset-password') {
+      return '/reset-password';
+    }
+  } catch {
+    // Keep the original safe relative path below.
+  }
   return value;
 }
 
