@@ -4567,8 +4567,11 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-season-banner {
   position: relative;
+  box-sizing: border-box;
+  width: calc(100vw - 2rem);
+  max-width: calc(430px - 2rem);
   min-height: 11.1rem;
-  margin: 1rem 1.25rem 0;
+  margin: 1rem auto 0;
   overflow: hidden;
   border: 1px solid var(--app-line);
   border-radius: 1.5rem;
@@ -4606,13 +4609,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-season-banner[data-tone="pink"] .gangi-season-glow {
-  right: 1.5rem;
-  top: auto;
-  bottom: 1.75rem;
-  width: 4.2rem;
-  height: 4.2rem;
-  background: radial-gradient(circle at 34% 30%, #fff8d8, #ffd875 70%);
-  opacity: 1;
+  display: none;
 }
 
 .gangi-season-banner[data-tone="night"] .gangi-season-glow {
@@ -4631,7 +4628,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-banner-copy {
   position: relative;
   z-index: 2;
-  width: min(100%, 17.5rem);
+  width: min(100%, 16.25rem);
 }
 
 .gangi-banner-kicker {
@@ -4654,7 +4651,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.55rem 0 0;
   color: currentColor;
   font-family: var(--font-body);
-  font-size: clamp(1.6rem, 7.2vw, 2.15rem);
+  font-size: clamp(1.42rem, 5.6vw, 2rem);
   font-weight: 950;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -4705,7 +4702,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-banner-visual {
   position: absolute;
-  right: 1.75rem;
+  right: 1.35rem;
   top: 50%;
   z-index: 2;
   transform: translateY(-35%);
@@ -4713,8 +4710,8 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-banner-moon {
   display: block;
-  width: 4.25rem;
-  height: 4.25rem;
+  width: 4rem;
+  height: 4rem;
   border-radius: 9999px;
   background: radial-gradient(circle at 34% 30%, #fff8d8, #ffd875 70%);
   box-shadow: 0 18px 42px rgba(17, 17, 20, 0.1);
@@ -5817,8 +5814,8 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .app-top-notification-button {
   display: inline-flex;
-  height: 2.45rem;
-  width: 2.45rem;
+  height: 2.25rem;
+  width: 2.25rem;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
@@ -5826,13 +5823,22 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .app-mobile-menu-trigger {
-  height: 2.45rem !important;
-  min-height: 2.45rem !important;
-  width: 2.45rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  width: 2.25rem !important;
   border: 0 !important;
   background: transparent !important;
   padding-inline: 0 !important;
   box-shadow: none !important;
+}
+
+.app-top-actions {
+  flex-shrink: 0;
+  gap: 0.35rem !important;
+}
+
+.app-top-login {
+  padding-inline: 0.85rem !important;
 }
 
 .today-concern-grid {
