@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SafetyNotice } from '@/components/common/safety-notice';
-import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
@@ -11,7 +10,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { DIALOGUE_GUARDRAILS, DIALOGUE_PRESETS } from '@/content/moonlight';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
-import { GangiCharacter } from '@/components/gangi/gangi-ui';
+import { GangiCharacter, GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import {
   DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
@@ -55,43 +54,17 @@ export default async function DialoguePage({
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <AppPage className="gangi-subpage space-y-6">
-        <SectionSurface surface="hero" size="md">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <SectionHeader
-              eyebrow="달빛인생과 대화"
-              title="궁금한 것만 바로 물어보세요"
-              titleClassName="text-3xl sm:text-4xl"
-              description="로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면, 상담에서 깊은 사주풀이를 다시 입력하지 않아도 됩니다. 질문만 남기면 저장된 내 정보 기준으로 이어갑니다."
-              descriptionClassName="text-[var(--app-copy)]"
-              actions={
-                <ActionCluster>
-                  <Link
-                    href="#dialogue-input"
-                    className="gangi-primary-button"
-                  >
-                    바로 질문하기
-                  </Link>
-                  <Link
-                    href="/my/profile"
-                    className="gangi-secondary-button"
-                  >
-                    내 정보 확인하기
-                  </Link>
-                </ActionCluster>
-              }
-            />
-            <div className="flex flex-wrap gap-2 lg:max-w-sm lg:justify-end">
-              {['재물', '가족', '이동', '마음', '생활'].map((cat) => (
-                <span
-                  key={cat}
-                  className={`rounded-full border px-3 py-1 text-xs ${CATEGORY_COLORS[cat] ?? 'border-[var(--app-line)] text-[var(--app-copy-muted)]'}`}
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-        </SectionSurface>
+        <GangiPageHeader title="대화방" />
+        <GangiIntro
+          title={
+            <>
+              어떤 선생님과
+              <br />
+              이야기 나눠볼까요?
+            </>
+          }
+          description="궁금한 분야의 선생님을 고르세요. 선택한 분야에 맞춰 AI가 전문적으로 답합니다."
+        />
 
         <section className="gangi-card-panel p-5">
           <SectionHeader

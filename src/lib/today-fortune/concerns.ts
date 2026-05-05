@@ -97,7 +97,8 @@ export function getTodayConcern(concernId: ConcernId) {
 }
 
 export function getTodayConcernEntries(expanded: boolean) {
-  const primary = TODAY_CONCERNS.slice(0, 4);
+  const primaryIds: ConcernId[] = ['general', 'love_contact', 'money_spend', 'work_meeting'];
+  const primary = primaryIds.map((id) => TODAY_CONCERN_MAP[id]);
   return expanded ? TODAY_CONCERNS : primary;
 }
 

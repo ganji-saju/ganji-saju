@@ -22,6 +22,48 @@ export type GangiServiceCard = {
   tag?: string;
 };
 
+export type GangiHomeBanner = {
+  id: string;
+  kicker: string;
+  title: string;
+  description: string;
+  cta: string;
+  href: string;
+  zodiac?: GangiZodiacKey;
+  tone: 'pink' | 'soft' | 'night';
+};
+
+export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
+  {
+    id: 'today-flow',
+    kicker: '오늘의 한 줄',
+    title: '5월 5일, 작은 결정이 큰 흐름을 바꾸는 날',
+    description: '오늘은 크게 벌리기보다 한 가지를 고르는 쪽이 좋아요.',
+    cta: '오늘운세 보러가기',
+    href: '/today-fortune?concern=general',
+    tone: 'pink',
+  },
+  {
+    id: 'zodiac-week',
+    kicker: '이번 주의 띠',
+    title: '호랑이띠, 새 기회가 오는 주',
+    description: '연락 한 통이 일주일을 바꿀 수 있어요.',
+    cta: '12띠 운세 모두 보기',
+    href: '/zodiac',
+    zodiac: 'tiger',
+    tone: 'soft',
+  },
+  {
+    id: 'star-week',
+    kicker: '이번 주 별자리',
+    title: '전갈자리, 흐름을 바꾸는 한 주',
+    description: '오랫동안 미뤘던 일이 마무리되는 시기예요.',
+    cta: '자세히 보기',
+    href: '/star-sign',
+    tone: 'night',
+  },
+] as const;
+
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'today',

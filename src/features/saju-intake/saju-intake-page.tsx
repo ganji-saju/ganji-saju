@@ -8,7 +8,6 @@ import { ActionCluster } from '@/components/layout/action-cluster';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   UnifiedBirthInfoFields,
@@ -397,7 +396,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     [consentAccepted]
   );
   const activeStep = steps[activeIndex] ?? steps[0];
-  const progressLabel = `${activeIndex + 1} / ${steps.length}`;
   const recentGuestDetail = recentGuestDraft ? formatRecentGuestDetail(recentGuestDraft) : '';
   const selectedEntryPoint =
     QUESTION_ENTRY_POINTS.find((entry) => entry.slug === selectedEntrySlug) ?? QUESTION_ENTRY_POINTS[0];
@@ -1048,25 +1046,15 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
         <GangiPageHeader title="사주 입력" />
         <GangiIntro
-          eyebrow={progressLabel}
           title={
             <>
-              지금 궁금한 것부터
+              사주를 보려면
               <br />
-              고르고 시작해요
+              이 정도면 충분해요
             </>
           }
-          description="생년월일과 성별을 한 화면에서 받고, 저장된 정보나 최근 입력이 있으면 더 빨리 결과로 이어집니다."
-        >
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
-              {consentAccepted ? '3단계 빠른 입력' : '4단계 빠른 입력'}
-            </Badge>
-            <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">
-              저장 정보 선택 가능
-            </Badge>
-          </div>
-        </GangiIntro>
+          description="이름은 풀이 화면에서 부르는 용도예요. 생년월일, 성별, 태어난 시간만 먼저 알려주세요."
+        />
 
         <section className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr] lg:gap-6">
           <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { GangiMiniCard, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
@@ -75,20 +75,6 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
   ],
 };
 
-const TODAY_FORTUNE_GUIDE = [
-  {
-    eyebrow: '핵심 한 줄',
-    body: '오늘 가장 걸리는 고민 하나를 고르면 먼저 한 줄로 방향을 잡아드립니다.',
-  },
-  {
-    eyebrow: '조심할 것',
-    body: '말, 돈, 관계, 컨디션 중 오늘 흔들리기 쉬운 지점을 짧게 알려드립니다.',
-  },
-  {
-    eyebrow: '오늘 할 행동',
-    body: '읽고 끝나지 않도록 지금 바로 해볼 작은 행동 하나로 마무리합니다.',
-  },
-] as const;
 
 interface TodayFortuneApiResponse {
   ok?: boolean;
@@ -341,59 +327,39 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="gangi-subpage px-4 py-6">
-      <section className="gangi-pink-panel p-5">
-        <div>
-          <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
-              무료 오늘운세
-            </span>
-            <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-xs font-bold text-[var(--app-copy-muted)]">
-              짧게 보고 필요할 때만 더 보기
-            </span>
-          </div>
-          <div className="mt-5">
-            <h1 className="text-[1.45rem] font-black leading-[1.35] tracking-[-0.02em] text-[var(--app-ink)]">
-              오늘 어떤 부분이 가장 궁금해요?
-            </h1>
-            <p className="mt-2 text-sm font-bold leading-6 text-[rgba(17,17,20,0.64)]">
-              무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다.
-            </p>
-          </div>
+    <div className="gangi-subpage pb-8">
+      <GangiPageHeader title="오늘운세" />
+      <GangiIntro
+        title={
+          <>
+            오늘 어떤 부분이
+            <br />
+            가장 궁금해요?
+          </>
+        }
+        description="한 가지를 골라야 더 또렷이 보여드려요."
+      />
 
-          <div className="mt-6">
-            <TodayConcernSelector
-              value={concernId}
-              onChange={(next) => {
-                setConcernId(next);
-                setDraft((current) => ({ ...current, concernId: next }));
-                setFreeResult(null);
-                setPremiumResult(null);
-                setUnlockError(null);
-                trackMoonlightEvent('today_concern_selected', {
-                  from: 'today-fortune',
-                  concern: next,
-                });
-              }}
-              expanded={expanded}
-              onToggleExpanded={() => setExpanded((current) => !current)}
-            />
-          </div>
-
-          <div className="gangi-mini-grid">
-            {TODAY_FORTUNE_GUIDE.map((item, index) => (
-              <GangiMiniCard
-                key={item.eyebrow}
-                label={String(index + 1).padStart(2, '0')}
-                title={item.eyebrow}
-                desc={item.body}
-              />
-            ))}
-          </div>
-        </div>
+      <section className="px-4">
+        <TodayConcernSelector
+          value={concernId}
+          onChange={(next) => {
+            setConcernId(next);
+            setDraft((current) => ({ ...current, concernId: next }));
+            setFreeResult(null);
+            setPremiumResult(null);
+            setUnlockError(null);
+            trackMoonlightEvent('today_concern_selected', {
+              from: 'today-fortune',
+              concern: next,
+            });
+          }}
+          expanded={expanded}
+          onToggleExpanded={() => setExpanded((current) => !current)}
+        />
       </section>
 
-      <div className="mt-6 grid gap-6">
+      <div className="mt-6 grid gap-6 px-4">
         {pendingHitMemo ? (
           <HitMemoWidget
             session={pendingHitMemo}

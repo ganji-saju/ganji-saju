@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { GangiCharacter } from '@/components/gangi/gangi-ui';
@@ -7,38 +8,66 @@ import type {
   GangiHomeCategoryKey,
   GangiServiceCard,
 } from '@/content/gangi-market';
-import { GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
+import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
 
 export function GangiSeasonBanner({ onTrack }: { onTrack?: TrackHandler }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeBanner = GANGI_HOME_BANNERS[activeIndex] ?? GANGI_HOME_BANNERS[0];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % GANGI_HOME_BANNERS.length);
+    }, 4200);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   return (
-    <section className="gangi-season-banner" aria-label="이번 주 추천 운세">
+    <section
+      className="gangi-season-banner"
+      data-tone={activeBanner.tone}
+      aria-label="추천 운세 배너"
+    >
       <div className="gangi-season-glow" />
-      <div>
-        <p className="gangi-banner-kicker">이번 주의 띠</p>
-        <h1>
-          호랑이띠,
-          <br />
-          새 기회가 오는 주
-        </h1>
+      <div className="gangi-banner-copy">
+        <p className="gangi-banner-kicker">{activeBanner.kicker}</p>
+        <h1>{activeBanner.title}</h1>
+        <p className="gangi-banner-desc">{activeBanner.description}</p>
+        <Link
+          href={activeBanner.href}
+          className="gangi-banner-button"
+          onClick={() =>
+            onTrack?.({
+              from: 'home_banner',
+              banner: activeBanner.id,
+              menu: activeBanner.cta,
+            })
+          }
+        >
+          {activeBanner.cta}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
-      <div className="gangi-banner-bottom">
-        <p>
-          연락 한 통이 일주일을
-          <br />
-          바꿀 수 있어요.
-        </p>
-        <GangiCharacter zodiac="tiger" size="lg" />
+      <div className="gangi-banner-visual" aria-hidden="true">
+        {activeBanner.zodiac ? (
+          <GangiCharacter zodiac={activeBanner.zodiac} size="lg" />
+        ) : (
+          <span className="gangi-banner-moon" />
+        )}
       </div>
-      <Link
-        href="/zodiac"
-        className="gangi-banner-button"
-        onClick={() => onTrack?.({ from: 'home_banner', menu: '띠운세' })}
-      >
-        12띠 운세 모두 보기
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      <div className="gangi-banner-dots" aria-label="배너 선택">
+        {GANGI_HOME_BANNERS.map((banner, index) => (
+          <button
+            key={banner.id}
+            type="button"
+            aria-label={String(index + 1) + '번째 배너 보기'}
+            aria-current={activeIndex === index ? 'true' : undefined}
+            onClick={() => setActiveIndex(index)}
+          />
+        ))}
+      </div>
     </section>
   );
 }

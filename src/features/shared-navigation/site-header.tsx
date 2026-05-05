@@ -8,8 +8,8 @@ import {
   Bell,
   BookOpenText,
   CreditCard,
-  Grid2x2,
   Heart,
+  Menu,
   LogOut,
   MessageCircleMore,
   MoonStar,
@@ -501,6 +501,9 @@ function MobileChrome({
                 <CreditCard className="h-3.5 w-3.5" />
                 {creditLabel(user, credits)}
               </Link>
+              <Link href="/notifications" className="app-top-notification-button" aria-label="알림">
+                <Bell className="h-5 w-5" />
+              </Link>
               {user ? (
                 <button
                   type="button"
@@ -522,8 +525,7 @@ function MobileChrome({
                 className="app-mobile-menu-trigger inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 text-[var(--app-ivory)] transition-colors hover:bg-[var(--app-surface-strong)] md:hidden"
                 aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
               >
-                {mobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Grid2x2 className="h-4.5 w-4.5" />}
-                <span>{mobileMenuOpen ? '닫기' : '메뉴'}</span>
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>

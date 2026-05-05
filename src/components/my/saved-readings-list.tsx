@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { GangiCharacter, type GangiZodiacKey } from '@/components/gangi/gangi-ui';
 import type { AccountReading } from '@/lib/account';
 
 interface SavedReadingsListProps {
@@ -28,6 +28,11 @@ function formatCreatedAt(value: string) {
   }).format(new Date(value));
 }
 
+function formatShortCreatedAt(value: string) {
+  const date = new Date(value);
+  return `${date.getMonth() + 1}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
 function formatBirthLabel(reading: AccountReading) {
   const hourLabel = reading.birthHour === null ? '시간 미입력' : `${reading.birthHour}시`;
   const genderLabel =
@@ -38,6 +43,25 @@ function formatBirthLabel(reading: AccountReading) {
         : '성별 미선택';
 
   return `${reading.birthYear}.${reading.birthMonth}.${reading.birthDay} · ${hourLabel} · ${genderLabel}`;
+}
+
+const ZODIAC_BY_YEAR_MOD: GangiZodiacKey[] = [
+  'monkey',
+  'rooster',
+  'dog',
+  'pig',
+  'rat',
+  'ox',
+  'tiger',
+  'rabbit',
+  'dragon',
+  'snake',
+  'horse',
+  'sheep',
+];
+
+function getDisplayZodiac(reading: AccountReading): GangiZodiacKey {
+  return ZODIAC_BY_YEAR_MOD[((reading.birthYear % 12) + 12) % 12] ?? 'rooster';
 }
 
 export default function SavedReadingsList({
@@ -90,53 +114,49 @@ export default function SavedReadingsList({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm text-[var(--app-copy)]">
-        전체 <span className="font-semibold text-[var(--app-gold-text)]">{count}개</span> 중{' '}
-        <span className="font-semibold text-[var(--app-ivory)]">{visibleRangeLabel}</span>를 보고 있습니다.
-        이미 만든 결과는 다시 열어 비교할 수 있고, 삭제하면 서버 기준 개수도 함께 줄어듭니다.
+      <div className="gangi-vault-summary">
+        <span>전체 {count}개</span>
+        <strong>{visibleRangeLabel}</strong>
       </div>
 
       {message ? (
-        <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm text-[var(--app-gold-text)]">
+        <div className="rounded-[1.35rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-black text-[var(--app-pink-strong)]">
           {message}
         </div>
       ) : null}
 
       {items.length === 0 ? (
-        <div className="app-panel-muted border-dashed p-7 text-sm leading-7 text-[var(--app-copy-muted)]">
+        <div className="rounded-[1.6rem] border border-dashed border-[var(--app-line)] bg-white p-7 text-sm leading-7 text-[var(--app-copy-muted)]">
           {count > 0
-            ? '현재 페이지의 결과를 모두 삭제했습니다. 새로고침 후 남은 결과 페이지로 정리됩니다.'
-            : '아직 저장된 결과가 없습니다. 새 사주 리포트를 만들면 결과보관함에 자동으로 쌓입니다.'}
+            ? '현재 페이지의 결과를 모두 삭제했습니다.'
+            : '아직 저장된 풀이가 없습니다.'}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="gangi-vault-list">
           {items.map((reading) => (
-            <article key={reading.id} className="app-panel p-6">
+            <article key={reading.id} className="gangi-vault-item">
               <Link
                 href={`/saju/${reading.id}`}
-                className="block transition-colors hover:text-[var(--app-gold-text)]"
+                className="gangi-vault-link"
               >
-                <div className="app-caption">저장일 {formatCreatedAt(reading.createdAt)}</div>
-                <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">
-                  {reading.birthMonth}월 {reading.birthDay}일 리포트
-                </h2>
-                <p className="app-body-copy mt-4 text-sm">{formatBirthLabel(reading)}</p>
-                <div className="mt-6 text-sm text-[var(--app-gold-soft)]">리포트 다시 열기</div>
+                <GangiCharacter zodiac={getDisplayZodiac(reading)} />
+                <span className="gangi-vault-copy">
+                  <em>사주 · {formatShortCreatedAt(reading.createdAt)}</em>
+                  <strong>{reading.birthMonth}월 {reading.birthDay}일 풀이</strong>
+                  <small>{formatBirthLabel(reading)}</small>
+                </span>
+                <span className="gangi-vault-arrow" aria-hidden="true">›</span>
               </Link>
 
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--app-line)] pt-4">
-                <span className="text-xs leading-5 text-[var(--app-copy-soft)]">
-                  이미 만든 결과는 보관함에서 다시 열 수 있습니다.
-                </span>
-                <Button
+              <div className="gangi-vault-actions">
+                <button
                   type="button"
-                  variant="destructive"
-                  size="sm"
                   disabled={deletingId === reading.id}
                   onClick={() => deleteReading(reading.id)}
+                  className="gangi-vault-delete"
                 >
                   {deletingId === reading.id ? '삭제 중...' : '삭제'}
-                </Button>
+                </button>
               </div>
             </article>
           ))}
