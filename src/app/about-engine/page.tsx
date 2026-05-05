@@ -198,7 +198,7 @@ export default function AboutEnginePage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <SectionSurface surface="lunar">
+          <SectionSurface surface="panel">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="풀이 안내 요약"
@@ -242,13 +242,13 @@ export default function AboutEnginePage() {
             <ActionCluster>
               <Link
                 href="/saju/new"
-                className="moon-action-primary"
+                className="gangi-primary-button"
               >
                 사주 시작하기
               </Link>
               <Link
                 href="/sample-report"
-                className="moon-action-muted"
+                className="gangi-secondary-button"
               >
                 샘플 풀이 보기
               </Link>
@@ -341,7 +341,7 @@ export default function AboutEnginePage() {
                     className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(7,9,16,0.28)] px-4 py-4"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="font-hanja mt-0.5 text-sm text-[var(--app-gold)]/60">
+                      <span className=" mt-0.5 text-sm text-[var(--app-gold)]/60">
                         {String(index + 1).padStart(2, '0')}
                       </span>
                       <p className="text-sm leading-7 text-[var(--app-copy)]">{item}</p>
@@ -407,7 +407,7 @@ export default function AboutEnginePage() {
                     key={item.question}
                     className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4"
                   >
-                    <summary className="font-display cursor-pointer list-none text-sm font-semibold text-[var(--app-ivory)]">
+                    <summary className=" cursor-pointer list-none text-sm font-semibold text-[var(--app-ivory)]">
                       {item.question}
                     </summary>
                     <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{item.answer}</p>
@@ -437,13 +437,13 @@ export default function AboutEnginePage() {
               <ActionCluster>
                 <Link
                   href="/sample-report"
-                  className="moon-action-secondary"
+                  className="gangi-secondary-button"
                 >
                   샘플 풀이 보기
                 </Link>
                 <Link
                   href="/membership"
-                  className="moon-action-muted"
+                  className="gangi-secondary-button"
                 >
                   상품 보기
                 </Link>

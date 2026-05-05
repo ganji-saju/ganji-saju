@@ -76,7 +76,7 @@ export function SafetyNotice({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="app-caption">안전한 해석 안내</div>
-          <h2 className="mt-2 font-display text-2xl text-[var(--app-ivory)]">{meta.title}</h2>
+          <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">{meta.title}</h2>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
           <Icon className="h-3.5 w-3.5" />

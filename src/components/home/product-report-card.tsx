@@ -12,7 +12,7 @@ export function ProductReportCard({ item }: ProductReportCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="app-caption">고민별 리포트</div>
-          <h3 className="mt-3 font-display text-2xl text-[var(--app-ivory)]">{item.title}</h3>
+          <h3 className="mt-3 text-2xl text-[var(--app-ivory)]">{item.title}</h3>
         </div>
         {item.badge ? (
           <span className="rounded-full border border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 px-3 py-1 text-xs text-[var(--app-gold-text)]">

@@ -128,13 +128,13 @@ export default function CompatibilityPage() {
             <ActionCluster className="mt-5">
               <Link
                 href="/membership"
-                className="moon-action-primary"
+                className="gangi-primary-button"
               >
                 프리미엄 기준 보기
               </Link>
               <Link
                 href="/sample-report"
-                className="moon-action-muted"
+                className="gangi-secondary-button"
               >
                 샘플 리포트 보기
               </Link>
@@ -142,7 +142,7 @@ export default function CompatibilityPage() {
           </SupportRail>
         </section>
 
-        <SectionSurface surface="lunar">
+        <SectionSurface surface="panel">
           <div className="app-starfield" />
           <SectionHeader
             eyebrow="프리미엄 전용"
@@ -154,13 +154,13 @@ export default function CompatibilityPage() {
               <ActionCluster>
                 <Link
                   href="/membership"
-                  className="moon-action-primary"
+                  className="gangi-primary-button"
                 >
                   <Lock className="h-3.5 w-3.5" /> 멤버십으로 열기
                 </Link>
                 <Link
                   href="/compatibility/input?relationship=lover"
-                  className="moon-action-muted"
+                  className="gangi-secondary-button"
                 >
                   입력 흐름 먼저 보기
                 </Link>

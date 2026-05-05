@@ -66,7 +66,7 @@ export default function SampleReportPage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <SectionSurface as="article" surface="lunar">
+          <SectionSurface as="article" surface="panel">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="샘플 대상"
@@ -86,7 +86,7 @@ export default function SampleReportPage() {
                     href="/saju/new"
                     eventName="sample_report_start_click"
                     eventParams={{ from: "sample_report_hero" }}
-                    className="moon-action-primary"
+                    className="gangi-primary-button"
                   >
                     내 깊은 사주풀이 만들기
                   </TrackedLink>
@@ -94,7 +94,7 @@ export default function SampleReportPage() {
                     href="/about-engine"
                     eventName="sample_report_engine_click"
                     eventParams={{ from: "sample_report_hero" }}
-                    className="moon-action-muted"
+                    className="gangi-secondary-button"
                   >
                     풀이 기준 보기
                   </TrackedLink>
@@ -147,11 +147,11 @@ export default function SampleReportPage() {
                   href="/saju/new"
                   eventName="sample_report_start_click"
                   eventParams={{ from: "sample_report_preview_value" }}
-                  className="moon-action-primary"
+                  className="gangi-primary-button"
                 >
                   질문으로 시작하기
                 </TrackedLink>
-                <Link href="/membership" className="moon-action-secondary">
+                <Link href="/membership" className="gangi-secondary-button">
                   상품 기준 보기
                 </Link>
               </ActionCluster>
@@ -241,7 +241,7 @@ export default function SampleReportPage() {
                   key={item}
                   className="flex items-start gap-3 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy)]"
                 >
-                  <span className="font-hanja text-sm text-[var(--app-gold)]/75">
+                  <span className=" text-sm text-[var(--app-gold)]/75">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <span>{item}</span>
@@ -271,7 +271,7 @@ export default function SampleReportPage() {
             </div>
           </SectionSurface>
 
-          <SectionSurface as="article" surface="lunar">
+          <SectionSurface as="article" surface="panel">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="고전과 생활 언어"
@@ -280,12 +280,12 @@ export default function SampleReportPage() {
               description="한자와 고전 원문은 맥락을 보여주는 층으로, 생활 언어 해석은 실행에 옮기기 위한 층으로 나누어 제시합니다."
               descriptionClassName="text-[var(--app-copy)]"
             />
-            <blockquote className="mt-5 rounded-[20px] border border-[var(--app-gold)]/16 bg-[var(--app-gold)]/8 px-5 py-5 font-classic text-base leading-8 text-[var(--app-gold-text)]">
+            <blockquote className="mt-5 rounded-[20px] border border-[var(--app-gold)]/16 bg-[var(--app-gold)]/8 px-5 py-5 text-base leading-8 text-[var(--app-gold-text)]">
               用神은 부족한 오행을 기계적으로 채우는 표기가 아니라, 격국과 계절, 강약의
               균형을 함께 보고 판단하는 보완 축입니다.
             </blockquote>
             <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-              실제 리포트에서는 <span className="font-hanja">甲木 · 用神 · 格局</span> 같은
+              실제 리포트에서는 <span className="">甲木 · 用神 · 格局</span> 같은
               표기를 별도 역할로 보여주고, 고전 원문은 해석문과 섞지 않고 분리해 제시합니다.
             </p>
           </SectionSurface>
@@ -347,13 +347,13 @@ export default function SampleReportPage() {
               <ActionCluster>
                 <Link
                   href="/saju/new"
-                  className="moon-action-primary"
+                  className="gangi-primary-button"
                 >
                   내 깊은 사주풀이 만들기
                 </Link>
                 <Link
                   href="/membership"
-                  className="moon-action-muted"
+                  className="gangi-secondary-button"
                 >
                   프리미엄 기준 보기
                 </Link>

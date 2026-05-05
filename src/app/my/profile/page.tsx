@@ -102,7 +102,7 @@ export default async function MyProfilePage() {
         </SectionSurface>
 
         <SupportRail
-          surface="lunar"
+          surface="panel"
           eyebrow="이 정보로 이어지는 곳"
           title="한 번 저장해두면 같은 입력 기준으로 이어집니다"
           description="매번 다시 입력하지 않고, 저장된 정보를 여러 서비스가 같은 기준 위에서 이어받도록 정리했습니다."

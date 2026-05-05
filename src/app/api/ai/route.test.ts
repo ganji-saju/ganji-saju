@@ -24,20 +24,20 @@ declare const test: (name: string, fn: () => Promise<void> | void) => void;
 test('dialogue fallback copy explains that fallback answers do not charge coins', () => {
   const text = buildDialogueFallback('오늘 관계운을 짧게 알려줘');
 
-  assert.match(text, /달빛 여선생|흐름/);
+  assert.match(text, /궁합과 관계|흐름/);
   assert.match(text, /횟수와 코인을 차감하지 않습니다/);
 });
 
-test('dialogue prompt keeps an expert counselor tone and infers focus topic from the question', () => {
-  const prompt = createDialoguePrompt('올해 재물운을 단도직입적으로 봐줘', null, 'male');
-  const alternatePrompt = createDialoguePrompt('그 사람 마음이 아직 남아 있을까요', null, 'female');
+test('dialogue prompt uses the selected zodiac expert and infers focus topic from the question', () => {
+  const prompt = createDialoguePrompt('올해 재물운을 단도직입적으로 봐줘', null, 'rooster');
+  const alternatePrompt = createDialoguePrompt('그 사람 마음이 아직 남아 있을까요', null, 'sheep');
 
   assert.match(prompt.instructions, /숙련 상담가/);
   assert.match(prompt.instructions, /마크다운 기호를 쓰지 않습니다/);
   assert.match(prompt.instructions, /로봇처럼 설명하지 말고 실제 역술가/);
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);
-  assert.match(prompt.instructions, /달빛 남선생/);
-  assert.match(alternatePrompt.instructions, /달빛 여선생/);
+  assert.match(prompt.instructions, /닭띠 재물운/);
+  assert.match(alternatePrompt.instructions, /양띠 궁합과 관계/);
   assert.equal(inferDialogueFocusTopic('올해 재물운을 단도직입적으로 봐줘'), 'wealth');
   assert.equal(inferDialogueFocusTopic('요즘 부모님이랑 관계가 왜 이렇게 꼬일까'), 'relationship');
 });

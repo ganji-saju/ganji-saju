@@ -153,7 +153,7 @@ export function DecisionTracePanel({
               className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(7,9,16,0.28)] px-4 py-4"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 font-hanja text-sm text-[var(--app-gold)]/60">{item.step}</span>
+                <span className="mt-0.5 text-sm text-[var(--app-gold)]/60">{item.step}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="text-sm font-semibold text-[var(--app-ivory)]">{item.title}</div>

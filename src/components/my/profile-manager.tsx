@@ -427,7 +427,7 @@ export default function ProfileManager({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="app-caption">내 기본 정보</div>
-            <h2 className="mt-2 font-[var(--font-heading)] text-2xl text-[var(--app-ivory)]">
+            <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
               오늘운세와 사주 시작하기가 이 정보를 같이 씁니다
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -528,7 +528,7 @@ export default function ProfileManager({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="app-caption">가족 보관함</div>
-            <h2 className="mt-2 font-[var(--font-heading)] text-2xl text-[var(--app-ivory)]">
+            <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
               가족, 연인, 친구의 기준 정보도 같은 방식으로 저장합니다
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">

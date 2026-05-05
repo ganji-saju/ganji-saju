@@ -125,7 +125,7 @@ export default function GuidePage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="처음 오셨다면"
@@ -134,12 +134,12 @@ export default function GuidePage() {
               description="오래 남길 풀이는 사주에서, 관계는 궁합에서, 가벼운 하루 흐름은 무료 운세에서 시작하면 가장 덜 헷갈립니다."
               actions={
                 <ActionCluster>
-                  <Link href="/saju/new" className="moon-cta-primary">
+                  <Link href="/saju/new" className="gangi-primary-button">
                     내 깊은 사주풀이 만들기
                   </Link>
                   <Link
                     href="/interpretation"
-                    className="moon-action-secondary"
+                    className="gangi-secondary-button"
                   >
                     해석 입구 보기
                   </Link>
@@ -226,7 +226,7 @@ export default function GuidePage() {
                 <FeatureCard
                   key={card.slug}
                   surface="soft"
-                  eyebrow={<span className={`font-hanja tracking-[0.22em] ${tone.text}`}>{card.hanja}</span>}
+                  eyebrow={<span className={` tracking-[0.22em] ${tone.text}`}>{card.hanja}</span>}
                   title={card.title}
                   titleClassName={`text-2xl ${tone.text}`}
                   description={card.description}
@@ -266,7 +266,7 @@ export default function GuidePage() {
             </div>
           </SectionSurface>
 
-          <SectionSurface surface="lunar">
+          <SectionSurface surface="panel">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="더 자세한 안내"

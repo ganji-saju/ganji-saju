@@ -173,7 +173,7 @@ function CreditsPageContent() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="코인 쓰는 방식"
@@ -284,7 +284,7 @@ function CreditsPageContent() {
                     <button
                       onClick={() => handlePurchase(pkg)}
                       disabled={loading === pkg.id}
-                      className="moon-action-primary moon-action-compact min-w-[112px]"
+                      className="gangi-primary-button moon-action-compact min-w-[112px]"
                     >
                       {loading === pkg.id ? '처리중...' : `${selectedMethod.shortLabel} 구매`}
                     </button>
@@ -295,7 +295,7 @@ function CreditsPageContent() {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="이런 것이 열립니다"
             title="코인은 어디에서 쓰이는지부터 분명히 보여드립니다"
             description="코인 센터는 단순 결제창이 아니라, 어떤 해석을 여는 열쇠인지 먼저 이해시키는 역할을 합니다."
@@ -319,10 +319,10 @@ function CreditsPageContent() {
             />
 
             <ActionCluster className="mt-5">
-              <Link href="/membership" className="moon-cta-secondary">
+              <Link href="/membership" className="gangi-secondary-button">
                 멤버십 자세히 보기
               </Link>
-              <Link href="/my/billing" className="moon-cta-secondary">
+              <Link href="/my/billing" className="gangi-secondary-button">
                 결제/구독 관리 열기
               </Link>
             </ActionCluster>

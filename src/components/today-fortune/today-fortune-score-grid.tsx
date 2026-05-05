@@ -24,7 +24,7 @@ export function TodayFortuneScoreGrid({
             className={`rounded-[1.2rem] border px-4 py-4 ${TONES[score.key] ?? TONES.condition}`}
           >
             <div className="text-xs tracking-[0.18em]">{score.label}</div>
-            <div className="mt-3 font-[var(--font-heading)] text-3xl font-semibold">
+            <div className="mt-3 text-3xl font-semibold">
               {score.score}
             </div>
             <p className="mt-2 text-xs leading-6 opacity-90">{score.summary}</p>

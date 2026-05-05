@@ -101,7 +101,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="먼저 짚어드리는 핵심"
             title={reading.answer}
             description="긴 설명보다 먼저, 지금 질문에 가장 가까운 한 줄과 오늘 바로 붙잡을 포인트를 먼저 드립니다."
@@ -173,7 +173,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
             <ActionCluster className="mt-6">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="moon-cta-primary"
+                className="gangi-primary-button"
               >
                 {readingSlug ? '내 사주 흐름과 함께 보기' : '내 사주와 겹쳐 읽기'}
               </Link>
@@ -185,7 +185,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
                     question: '방금 본 타로 결과를 제 사주 흐름까지 함께 놓고 보면 어떻게 읽어야 하나요?',
                   },
                 }}
-                className="moon-cta-secondary"
+                className="gangi-secondary-button"
               >
                 달빛인생에 이어 묻기
               </Link>
@@ -214,7 +214,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
             </ProductGrid>
 
             <ActionCluster className="mt-6">
-              <Link href="/pricing" className="moon-cta-secondary">
+              <Link href="/pricing" className="gangi-secondary-button">
                 990원 소액 풀이 보기
               </Link>
             </ActionCluster>

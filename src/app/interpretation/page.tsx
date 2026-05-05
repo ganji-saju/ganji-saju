@@ -68,7 +68,7 @@ export default function InterpretationPage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="빠른 시작"
@@ -77,12 +77,12 @@ export default function InterpretationPage() {
               description="처음이라면 아래 셋 중 하나만 고르셔도 충분합니다. 더 자세한 도움말은 안내 페이지에서 따로 보실 수 있습니다."
               actions={
                 <ActionCluster>
-                  <Link href="/saju/new" className="moon-cta-primary">
+                  <Link href="/saju/new" className="gangi-primary-button">
                     내 깊은 사주풀이 만들기
                   </Link>
                   <Link
                     href="/guide"
-                    className="moon-action-secondary"
+                    className="gangi-secondary-button"
                   >
                     이용 안내 보기
                   </Link>
@@ -121,7 +121,7 @@ export default function InterpretationPage() {
             <ActionCluster className="mt-5">
               <Link
                 href={REPORT_SAMPLE_HREF}
-                className="moon-action-secondary"
+                className="gangi-secondary-button"
               >
                 샘플 리포트
               </Link>
@@ -151,7 +151,7 @@ export default function InterpretationPage() {
                 <FeatureCard
                   key={card.slug}
                   surface="soft"
-                  eyebrow={<span className={`font-hanja tracking-[0.22em] ${tone.text}`}>{card.hanja}</span>}
+                  eyebrow={<span className={` tracking-[0.22em] ${tone.text}`}>{card.hanja}</span>}
                   title={card.title}
                   titleClassName={`text-2xl ${tone.text}`}
                   description={card.hook}
@@ -201,7 +201,7 @@ export default function InterpretationPage() {
             </div>
           </SectionSurface>
 
-          <SectionSurface surface="lunar">
+          <SectionSurface surface="panel">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="개념과 기준"
@@ -211,12 +211,12 @@ export default function InterpretationPage() {
             />
 
             <ActionCluster className="mt-6">
-              <Link href="/guide" className="moon-cta-primary">
+              <Link href="/guide" className="gangi-primary-button">
                 이용 안내 보기
               </Link>
               <Link
                 href="/method"
-                className="moon-action-secondary"
+                className="gangi-secondary-button"
               >
                 계산 기준 보기
               </Link>

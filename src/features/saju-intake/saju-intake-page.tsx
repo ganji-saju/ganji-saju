@@ -38,7 +38,8 @@ import {
 } from './onboarding-storage';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export type OnboardingStep = 'empathy' | 'birth' | 'nickname' | 'consent';
 type SwipeStepId = 'profile' | 'birth' | 'location' | 'consent';
@@ -870,11 +871,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 className={cn(
                   'group rounded-full border px-3 py-2 text-center text-sm font-semibold transition-colors sm:px-4 sm:py-2.5',
                   isSelected
-                    ? 'border-[var(--app-gold)]/42 bg-[var(--app-gold)]/10'
-                    : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] hover:border-[var(--app-gold)]/30 hover:bg-[var(--app-gold)]/8'
+                    ? 'border-[var(--app-pink)]/42 bg-[var(--app-pink)]/10'
+                    : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] hover:border-[var(--app-pink)]/30 hover:bg-[var(--app-pink)]/8'
                 )}
               >
-                <span className={isSelected ? 'text-[var(--app-ivory)]' : 'text-[var(--app-copy)]'}>
+                <span className={isSelected ? 'text-[var(--app-ink)]' : 'text-[var(--app-copy)]'}>
                   {entry.label}
                 </span>
               </button>
@@ -882,36 +883,36 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           })}
         </div>
 
-        <div className="rounded-[1.05rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-3">
+        <div className="rounded-[1.05rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--app-ivory)]">
+              <div className="text-sm font-semibold text-[var(--app-ink)]">
                 {selectedEntryPoint.question}
               </div>
               <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy)]">
                 {selectedEntryPoint.reportAnswer}
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-gold-text)]">
+            <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
               선택됨
             </span>
           </div>
         </div>
 
         {recentGuestDraft ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-gold)]/28 bg-[linear-gradient(135deg,rgba(210,176,114,0.14),rgba(255,255,255,0.035))] px-4 py-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)]">
+          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--app-ivory)]">최근 입력한 정보가 있어요</div>
+                <div className="text-sm font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
                 <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy-muted)]">
                   로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
                 </p>
               </div>
-              <span className="rounded-full border border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-gold-text)]">
+              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
                 로컬 저장
               </span>
             </div>
-            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] px-3 py-2.5 text-xs leading-6 text-[var(--app-copy)]">
+            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-xs leading-6 text-[var(--app-copy)]">
               {recentGuestDetail}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -937,8 +938,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadStatus === 'anonymous' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ivory)]">비로그인으로도 바로 볼 수 있습니다</div>
+          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4">
+            <div className="text-sm font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
             <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
               {recentGuestDraft
                 ? '지금은 새 정보를 직접 입력하거나, 이 기기에 남아 있는 최근 정보를 불러올 수 있습니다.'
@@ -954,7 +955,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               </Button>
               <Link
                 href="/login?next=/saju/new"
-                className="moon-action-secondary moon-action-compact"
+                className="gangi-secondary-button"
               >
                 로그인
               </Link>
@@ -964,7 +965,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
         {profileLoadStatus === 'empty' ? (
           <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ivory)]">아직 저장된 정보가 없습니다</div>
+            <div className="text-sm font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
             <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
               이번에 입력한 정보는 다음부터 바로 불러올 수 있게 저장됩니다.
             </p>
@@ -972,7 +973,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadStatus === 'error' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-sm leading-6 text-rose-100">
+          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-sm leading-6 text-rose-700">
             {profileLoadMessage}
           </div>
         ) : null}
@@ -985,11 +986,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   key={profile.id}
                   type="button"
                   onClick={() => applySavedProfile(profile)}
-                  className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-gold)]/38 hover:bg-[var(--app-gold)]/8"
+                  className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-pink)]/38 hover:bg-[var(--app-pink)]/8"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 text-sm font-medium text-[var(--app-ivory)]">{profile.label}</div>
-                    <span className="shrink-0 rounded-full border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/8 px-2 py-0.5 text-[10px] text-[var(--app-gold-text)]">
+                    <div className="min-w-0 text-sm font-medium text-[var(--app-ink)]">{profile.label}</div>
+                    <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[10px] text-[var(--app-pink-strong)]">
                       선택
                     </span>
                   </div>
@@ -1001,7 +1002,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadMessage && profileLoadStatus !== 'error' ? (
-          <p className="rounded-full border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-3 py-2 text-xs leading-5 text-[var(--app-gold-text)]">
+          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-xs leading-5 text-[var(--app-pink-strong)]">
             {profileLoadMessage}
           </p>
         ) : null}
@@ -1045,25 +1046,27 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
-        <PageHero
-          className="saju-intake-hero"
-          badges={[
-            <Badge
-              key="count"
-              className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]"
-            >
-              {progressLabel}
-            </Badge>,
-            <Badge
-              key="layout"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              {consentAccepted ? '3단계 빠른 입력' : '4단계 빠른 입력'}
-            </Badge>,
-          ]}
-          title="질문을 고르고, 필요한 정보만 빠르게 입력합니다"
+        <GangiPageHeader title="사주 입력" />
+        <GangiIntro
+          eyebrow={progressLabel}
+          title={
+            <>
+              지금 궁금한 것부터
+              <br />
+              고르고 시작해요
+            </>
+          }
           description="생년월일과 성별을 한 화면에서 받고, 저장된 정보나 최근 입력이 있으면 더 빨리 결과로 이어집니다."
-        />
+        >
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              {consentAccepted ? '3단계 빠른 입력' : '4단계 빠른 입력'}
+            </Badge>
+            <Badge className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">
+              저장 정보 선택 가능
+            </Badge>
+          </div>
+        </GangiIntro>
 
         <section className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr] lg:gap-6">
           <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">
@@ -1082,9 +1085,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                     className={cn(
                       'h-2.5 rounded-full transition-all',
                       index === activeIndex
-                        ? 'w-10 bg-[var(--app-gold)]'
+                        ? 'w-10 bg-[var(--app-pink)]'
                         : index < activeIndex
-                          ? 'w-5 bg-[var(--app-gold)]/48'
+                          ? 'w-5 bg-[var(--app-pink)]/48'
                           : 'w-5 bg-[var(--app-line)]'
                     )}
                     aria-label={`${index + 1}단계 ${item.eyebrow}`}
@@ -1136,17 +1139,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                               },
                             }))
                           }
-                          className="mt-1 h-4 w-4 rounded border-[var(--app-line)] bg-transparent accent-[var(--app-gold)]"
+                          className="mt-1 h-4 w-4 rounded border-[var(--app-line)] bg-transparent accent-[var(--app-pink)]"
                         />
                         <span className="min-w-0">
-                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--app-ivory)]">
+                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--app-ink)]">
                             {consent.title}
                             <span
                               className={cn(
                                 'rounded-full border px-2 py-0.5 text-[10px]',
                                 consent.required
                                   ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
-                                  : 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]'
+                                  : 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]'
                               )}
                             >
                               {consent.required ? '필수' : '선택'}
@@ -1180,7 +1183,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </div>
 
             {errorMessage ? (
-              <div className="mt-6 rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ivory)]">
+              <div className="mt-6 rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
                 {errorMessage}
               </div>
             ) : null}
@@ -1208,12 +1211,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </ActionCluster>
           </SectionSurface>
 
-          <SectionSurface surface="lunar" size="lg">
-            <div className="app-starfield" />
+          <SectionSurface surface="panel" size="lg">
             <SectionHeader
               eyebrow="빠른 시작"
               title="입력은 짧게, 풀이는 바로 이어갑니다"
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
+              titleClassName="text-3xl text-[var(--app-pink-strong)]"
               description={fastPathDescription}
             />
 
@@ -1221,14 +1223,14 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               {fastPathSteps.map(([number, title, body]) => (
                 <div
                   key={title}
-                  className="rounded-[1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] px-4 py-3"
+                  className="rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-xs font-semibold text-[var(--app-gold-text)]">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 text-xs font-semibold text-[var(--app-pink-strong)]">
                       {number}
                     </span>
                     <span>
-                      <span className="block text-sm font-semibold text-[var(--app-ivory)]">{title}</span>
+                      <span className="block text-sm font-semibold text-[var(--app-ink)]">{title}</span>
                       <span className="mt-1 block text-xs leading-5 text-[var(--app-copy-muted)]">{body}</span>
                     </span>
                   </div>
@@ -1236,17 +1238,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               ))}
             </div>
 
-            <div className="mt-5 rounded-[1rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-3 text-xs leading-5 text-[var(--app-gold-text)]">
+            <div className="mt-5 rounded-[1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-3 text-xs leading-5 text-[var(--app-pink-strong)]">
               {STEP_HINTS[1]} {STEP_HINTS[2]}
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <Link href="/my/profile" className="app-top-action-link shrink-0">
+              <Link href="/my/profile" className="gangi-secondary-button shrink-0">
                 프로필 관리
               </Link>
               <Link
                 href="/guide"
-                className="moon-action-muted moon-action-compact"
+                className="gangi-secondary-button"
               >
                 입력 기준 보기
               </Link>

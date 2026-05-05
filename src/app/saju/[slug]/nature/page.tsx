@@ -225,13 +225,13 @@ export default async function SajuNaturePage({ params }: Props) {
             <section className="flex flex-wrap gap-3">
           <Link
             href={`/saju/${slug}/overview`}
-            className="moon-action-muted"
+            className="gangi-secondary-button"
           >
             이전
           </Link>
           <Link
             href={`/saju/${slug}/elements`}
-            className="moon-action-secondary"
+            className="gangi-secondary-button"
           >
             다음: 기운 균형
           </Link>

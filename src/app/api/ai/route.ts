@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  buildDialogueCounselorInstructions,
   buildReportCounselorInstructions,
-  getMoonlightCounselorMeta,
   normalizeMoonlightCounselor,
   resolveMoonlightCounselor,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
+import {
+  buildDialogueExpertInstructions,
+  getDialogueExpertMeta,
+  inferDialogueExpertIdFromMessage,
+  normalizeDialogueExpertId,
+  resolveDialogueExpertId,
+  type DialogueExpertId,
+} from '@/lib/dialogue-experts';
 import { detectSafeRedirect } from '@/domain/safety/safe-redirect';
 import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { buildYearlyReport } from '@/domain/saju/report';
@@ -53,7 +59,7 @@ type AiMode = 'dialogue' | 'saju-report';
 interface DialogueAiRequest {
   mode: 'dialogue';
   message: string;
-  counselorId?: MoonlightCounselorId;
+  expertId?: DialogueExpertId;
   sourceSessionId?: string;
   concernId?: string;
   from?: string;
@@ -155,12 +161,12 @@ function parseAiRequest(payload: unknown): ParsedAiRequest | null {
 
   if (mode === 'dialogue') {
     const message = readString(data, 'message');
-    const counselorId = normalizeMoonlightCounselor(data.counselorId);
+    const expertId = normalizeDialogueExpertId(data.expertId);
     return message
       ? {
           mode,
           message,
-          counselorId: counselorId ?? undefined,
+          expertId: expertId ?? undefined,
           sourceSessionId: readString(data, 'sourceSessionId') || undefined,
           concernId: readString(data, 'concernId') || undefined,
           from: readString(data, 'from') || undefined,
@@ -348,18 +354,16 @@ function createDialogueProfileContext(
 function buildDialogueFallback(
   message: string,
   profileGrounding?: DialogueProfileGrounding | null,
-  counselorId: MoonlightCounselorId = 'female'
+  expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message))
 ) {
-  const counselor = getMoonlightCounselorMeta(counselorId);
+  const expert = getDialogueExpertMeta(expertId);
 
   if (!profileGrounding) {
     return [
-      counselorId === 'male'
-        ? '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 골자부터 바로 짚겠습니다.'
-        : '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 결부터 차분히 짚어드릴게요.',
+      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.animal}띠 ${expert.label} 기준으로 먼저 핵심만 짚겠습니다.`,
       `남겨주신 질문은 “${message}”입니다.`,
       '아직 저장된 사주 정보가 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 정보가 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
-      `${counselor.label}의 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+      `${expert.label} 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
     ].join('\n\n');
   }
 
@@ -368,14 +372,12 @@ function buildDialogueFallback(
     .join(' · ');
 
   return [
-    counselorId === 'male'
-      ? `저장된 프로필로 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`
-      : `저장된 프로필로 읽어보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
+    `${expert.animal}띠 ${expert.label} 관점에서 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
     simplifySajuCopy(profileGrounding.reports.focus.summary),
     `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다. 오늘은 ${simplifySajuCopy(profileGrounding.saju.yongsin)} 흐름을 잘 쓰는 편이 좋습니다.`,
     evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
     `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리해서 움직이시는 편이 맞습니다.`,
-    `${counselor.label}의 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+    `${expert.label} 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -385,7 +387,7 @@ function createYearlyDialogueFallback(
   message: string,
   profileSummary: string,
   targetYear: number,
-  counselorId: MoonlightCounselorId,
+  expertId: DialogueExpertId,
   summary: {
     overview: string;
     firstHalf: string;
@@ -394,10 +396,8 @@ function createYearlyDialogueFallback(
     cautionPeriod: string;
   }
 ) {
-  const intro =
-    counselorId === 'male'
-      ? `${targetYear}년 흐름부터 바로 잘라 말씀드리면, ${summary.overview}`
-      : `${targetYear}년 흐름을 먼저 차분히 잡아보면, ${summary.overview}`;
+  const expert = getDialogueExpertMeta(expertId);
+  const intro = `${expert.animal}띠 ${expert.label} 관점에서 ${targetYear}년 흐름을 먼저 잡아보면, ${summary.overview}`;
 
   return [
     intro,
@@ -410,7 +410,7 @@ function createYearlyDialogueFallback(
 function createYearlyDialoguePrompt(input: {
   message: string;
   targetYear: number;
-  counselorId: MoonlightCounselorId;
+  expertId: DialogueExpertId;
   profileSummary: string;
   yearlyEvidence: ReturnType<typeof buildYearlyReport>;
   recentFeedbackSummary?: string | null;
@@ -426,7 +426,7 @@ function createYearlyDialoguePrompt(input: {
       '마크다운 기호, 번호 목록, 별표는 쓰지 않습니다.',
       '결론은 실제 역술가처럼 단정한 존댓말로 말하되, 과장하거나 운명을 단정하지 않습니다.',
       '질문에 대한 답은 요약까지만 하고, 더 자세한 12개월 흐름과 분야별 해설은 올해 전략서에서 본다는 느낌으로 마무리합니다.',
-      ...buildDialogueCounselorInstructions(input.counselorId),
+      ...buildDialogueExpertInstructions(input.expertId),
     ].join('\n'),
     input: JSON.stringify(
       {
@@ -459,7 +459,7 @@ function createYearlyDialoguePrompt(input: {
 function createYearlyDialogueBridge(
   profile: UserProfile,
   message: string,
-  counselorId: MoonlightCounselorId,
+  expertId: DialogueExpertId,
   recentFeedbackSummary?: string | null
 ): DialogueYearlyBridge | null {
   if (!hasCoreBirthProfile(profile) || !isYearlyDialogueIntent(message)) {
@@ -493,12 +493,12 @@ function createYearlyDialogueBridge(
     prompt: createYearlyDialoguePrompt({
       message,
       targetYear,
-      counselorId,
+      expertId,
       profileSummary,
       yearlyEvidence: yearlyReport,
       recentFeedbackSummary,
     }),
-    fallbackText: createYearlyDialogueFallback(message, profileSummary, targetYear, counselorId, {
+    fallbackText: createYearlyDialogueFallback(message, profileSummary, targetYear, expertId, {
       overview: yearlyReport.overview.summary,
       firstHalf: yearlyReport.firstHalf.summary,
       secondHalf: yearlyReport.secondHalf.summary,
@@ -532,12 +532,15 @@ function normalizeDialogueAnswer(text: string) {
 function createDialoguePrompt(
   message: string,
   profileGrounding?: DialogueProfileGrounding | null,
-  counselorId: MoonlightCounselorId = 'female',
+  expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message)),
   recentFeedbackSummary?: string | null
 ) {
+  const expert = getDialogueExpertMeta(expertId);
+
   return {
     instructions: [
       '당신은 한국어 운세 서비스 달빛인생에서 실제 상담을 맡은 숙련 상담가입니다.',
+      `사용자가 선택한 12간지 전문 분야는 ${expert.animal}띠 ${expert.label}입니다.`,
       '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
       '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
@@ -553,7 +556,7 @@ function createDialoguePrompt(
       '출생 정보나 사주 데이터가 없는 경우 빈말로 얼버무리지 말고, 어떤 정보가 필요한지 짧게 요청합니다.',
       '고전 원문이나 출처는 제공된 참고자료가 없으면 인용하지 않습니다.',
       '다음과 같은 표현은 피합니다: 결론적으로, 분석해보면, 참고로, AI로서, 표로 정리하면, 1번 2번 3번.',
-      ...buildDialogueCounselorInstructions(counselorId),
+      ...buildDialogueExpertInstructions(expertId),
     ].join('\n'),
     input: [
       profileGrounding
@@ -717,14 +720,15 @@ async function handleDialogue(request: DialogueAiRequest) {
   const profileGrounding = createDialogueProfileGrounding(profile, request.message);
   const profileContext = createDialogueProfileContext(profile, profileGrounding);
   const recentFeedbackSummary = await getRecentFortuneFeedbackSummary(user.id);
-  const counselorId = resolveMoonlightCounselor(
-    request.counselorId,
-    profile.preferredCounselor
+  const expertId = resolveDialogueExpertId(
+    request.expertId,
+    inferDialogueExpertIdFromMessage(request.message)
   );
+  const expert = getDialogueExpertMeta(expertId);
   const yearlyBridge = createYearlyDialogueBridge(
     profile,
     request.message,
-    counselorId,
+    expertId,
     recentFeedbackSummary
   );
 
@@ -750,12 +754,12 @@ async function handleDialogue(request: DialogueAiRequest) {
     : createDialoguePrompt(
         request.message,
         profileGrounding,
-        counselorId,
+        expertId,
         recentFeedbackSummary
       );
   const fallbackText = yearlyBridge
     ? yearlyBridge.fallbackText
-    : buildDialogueFallback(request.message, profileGrounding, counselorId);
+    : buildDialogueFallback(request.message, profileGrounding, expertId);
   const result = await generateAiText({
     ...prompt,
     fallbackText,
@@ -774,7 +778,8 @@ async function handleDialogue(request: DialogueAiRequest) {
       ok: true,
       mode: request.mode,
       configured,
-      counselorId,
+      expertId,
+      expertLabel: expert.label,
       billing: createAiChatBillingSummary('not_charged_fallback', availableCredits, turnPlan),
       profileContext,
       ...dialogueResult,
@@ -792,7 +797,8 @@ async function handleDialogue(request: DialogueAiRequest) {
       ok: true,
       mode: request.mode,
       configured,
-      counselorId,
+      expertId,
+      expertLabel: expert.label,
       billing: createAiChatBillingSummary('result_intro_free', availableCredits, turnPlan),
       profileContext,
       ...dialogueResult,
@@ -808,7 +814,8 @@ async function handleDialogue(request: DialogueAiRequest) {
           ok: false,
           error: '코인이 부족합니다.',
           configured,
-          counselorId,
+          expertId,
+          expertLabel: expert.label,
           billing: createAiChatBillingSummary('insufficient_credits', deducted.remaining, turnPlan),
         },
         { status: 402 }
@@ -819,7 +826,8 @@ async function handleDialogue(request: DialogueAiRequest) {
       ok: true,
       mode: request.mode,
       configured,
-      counselorId,
+      expertId,
+      expertLabel: expert.label,
       billing: createAiChatBillingSummary('charged_bundle', deducted.remaining, turnPlan),
       profileContext,
       ...dialogueResult,
@@ -832,7 +840,8 @@ async function handleDialogue(request: DialogueAiRequest) {
     ok: true,
     mode: request.mode,
     configured,
-    counselorId,
+    expertId,
+    expertLabel: expert.label,
     billing: createAiChatBillingSummary(turnPlan.status, availableCredits, turnPlan),
     profileContext,
     ...dialogueResult,

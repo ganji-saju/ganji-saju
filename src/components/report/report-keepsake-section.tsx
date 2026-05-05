@@ -37,11 +37,11 @@ const DEFAULT_DESCRIPTION =
 function actionClassName(variant: ReportKeepsakeAction['variant']) {
   switch (variant) {
     case 'primary':
-      return 'moon-action-primary';
+      return 'gangi-primary-button';
     case 'secondary':
-      return 'moon-action-secondary';
+      return 'gangi-secondary-button';
     default:
-      return 'moon-action-muted';
+      return 'gangi-secondary-button';
   }
 }
 

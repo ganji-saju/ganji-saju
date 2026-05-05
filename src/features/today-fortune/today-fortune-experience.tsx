@@ -3,10 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
+import { GangiMiniCard, GangiSection } from '@/components/gangi/gangi-ui';
 import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
@@ -355,13 +352,14 @@ export function TodayFortuneExperience({
               짧게 보고 필요할 때만 더 보기
             </span>
           </div>
-          <SectionHeader
-            className="mt-5"
-            title="오늘 어떤 부분이 가장 궁금해요?"
-            titleClassName="text-3xl"
-            description="한 가지를 골라야 더 또렷이 보여드립니다. 무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다."
-            descriptionClassName="max-w-3xl text-sm sm:text-base"
-          />
+          <div className="mt-5">
+            <h1 className="text-[1.45rem] font-black leading-[1.35] tracking-[-0.02em] text-[var(--app-ink)]">
+              오늘 어떤 부분이 가장 궁금해요?
+            </h1>
+            <p className="mt-2 text-sm font-bold leading-6 text-[rgba(17,17,20,0.64)]">
+              무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다.
+            </p>
+          </div>
 
           <div className="mt-6">
             <TodayConcernSelector
@@ -382,16 +380,16 @@ export function TodayFortuneExperience({
             />
           </div>
 
-          <ProductGrid columns={3} className="mt-5">
-            {TODAY_FORTUNE_GUIDE.map((item) => (
-              <FeatureCard
+          <div className="gangi-mini-grid">
+            {TODAY_FORTUNE_GUIDE.map((item, index) => (
+              <GangiMiniCard
                 key={item.eyebrow}
-                surface="soft"
-                eyebrow={item.eyebrow}
-                description={item.body}
+                label={String(index + 1).padStart(2, '0')}
+                title={item.eyebrow}
+                desc={item.body}
               />
             ))}
-          </ProductGrid>
+          </div>
         </div>
       </section>
 
@@ -415,7 +413,7 @@ export function TodayFortuneExperience({
         {freeResult ? (
           <>
             {purchasedNotice ? (
-              <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-50">
+              <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
                 {purchasedNotice}
               </div>
             ) : null}
@@ -449,32 +447,23 @@ export function TodayFortuneExperience({
               />
             </section>
 
-            <SectionSurface surface="panel">
-              <SectionHeader
-                eyebrow="더 보고 싶을 때"
-                title="무료 결과가 마음에 남으면 여기서만 이어보세요"
-                titleClassName="text-2xl"
-                description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 자연스럽게 이어집니다."
-                descriptionClassName="text-[var(--app-copy)]"
-              />
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <GangiSection
+              eyebrow="더 보고 싶을 때"
+              title="무료 결과가 마음에 남으면 여기서만 이어보세요"
+              description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 자연스럽게 이어집니다."
+            >
+              <div className="grid gap-3">
                 {relatedLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="group rounded-[1.45rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-gold)]/28"
-                  >
-                    <div className="app-caption">다른 기능으로 이어보기</div>
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <h3 className="text-xl font-semibold text-[var(--app-ivory)]">{item.label}</h3>
-                      <ArrowRight className="h-4 w-4 text-[var(--app-gold)] transition-transform duration-200 group-hover:translate-x-1" />
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{item.body}</p>
+                  <Link key={item.label} href={item.href} className="gangi-list-link">
+                    <span className="gangi-list-copy">
+                      <strong>{item.label}</strong>
+                      <em>{item.body}</em>
+                    </span>
+                    <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
                   </Link>
                 ))}
               </div>
-            </SectionSurface>
+            </GangiSection>
           </>
         ) : null}
       </div>

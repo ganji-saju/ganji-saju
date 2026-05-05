@@ -88,7 +88,7 @@ export default async function StarSignPage() {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="별자리 × 사주"
             title="빠른 탐색과 깊은 해석의 역할을 분명히 나눕니다"
             description="별자리 흐름은 가볍게 먼저 보고, 더 깊은 반복 패턴은 사주와 겹쳐 읽는 쪽이 가장 자연스럽습니다."
@@ -102,10 +102,10 @@ export default async function StarSignPage() {
             ) : null}
             <BulletList className={hasPersonalizedProfile ? 'mt-5' : ''} items={STAR_SIGN_POINTS} />
             <ActionCluster className="mt-5">
-              <Link href={`/star-sign/${featured.slug}`} className="moon-cta-primary">
+              <Link href={`/star-sign/${featured.slug}`} className="gangi-primary-button">
                 {hasPersonalizedProfile ? '내 별자리 바로 보기' : '별자리 흐름 자세히 보기'}
               </Link>
-              <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="moon-cta-secondary">
+              <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-secondary-button">
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
               </Link>
             </ActionCluster>

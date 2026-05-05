@@ -242,7 +242,7 @@ function DesktopNavLink({
     >
       <span
         className={cn(
-          'flex shrink-0 items-center justify-center rounded-xl border bg-[var(--app-surface-muted)] font-[var(--font-heading)] font-semibold',
+          'flex shrink-0 items-center justify-center rounded-xl border bg-[var(--app-surface-muted)] font-semibold',
           compact ? 'h-7 w-7 text-xs' : 'h-8 w-8 text-sm'
         )}
         style={{
@@ -287,7 +287,7 @@ function DesktopNavChip({ item, pathname }: { item: NavItem; pathname: string })
       className="app-nav-card flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium text-[var(--app-copy-muted)]"
     >
       <span
-        className="font-[var(--font-heading)] text-xs"
+        className=" text-xs"
         style={{ color: meta.accent }}
       >
         {meta.glyph}
@@ -318,13 +318,13 @@ function DesktopSidebar({
 
       <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
         <Link href="/" className="group block">
-          <div className="font-[var(--font-heading)] text-[11px] tracking-[0.48em] text-[var(--app-gold)]/72">
+          <div className=" text-[11px] tracking-[0.48em] text-[var(--app-gold)]/72">
             DALBIT LIFE
           </div>
           <div className="mt-3 flex items-center gap-3">
             <div className="app-moon-orb h-10 w-10" />
             <div>
-              <div className="font-[var(--font-heading)] text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
+              <div className=" text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
                 달빛인생
               </div>
               <div className="text-xs text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
@@ -336,7 +336,7 @@ function DesktopSidebar({
       <div className="relative z-10 border-b border-[var(--app-line)] px-5 py-3">
         <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 font-[var(--font-heading)] text-lg text-[var(--app-gold-text)]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 text-lg text-[var(--app-gold-text)]">
               {user ? '我' : '月'}
             </div>
             <div className="min-w-0">
@@ -354,7 +354,7 @@ function DesktopSidebar({
               <button
                 type="button"
                 onClick={onSignOut}
-                className="moon-action-muted moon-action-compact w-full"
+                className="gangi-secondary-button moon-action-compact w-full"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 로그아웃
@@ -363,7 +363,7 @@ function DesktopSidebar({
               <Link
                 href={authHref}
                 scroll={false}
-                className="moon-action-primary moon-action-compact w-full"
+                className="gangi-primary-button moon-action-compact w-full"
               >
                 로그인
               </Link>
@@ -373,7 +373,7 @@ function DesktopSidebar({
               <Link
                 href="/credits"
                 scroll={false}
-                className="moon-action-muted moon-action-compact"
+                className="gangi-secondary-button moon-action-compact"
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 코인 충전
@@ -381,7 +381,7 @@ function DesktopSidebar({
               <Link
                 href="/membership"
                 scroll={false}
-                className="moon-action-secondary moon-action-compact"
+                className="gangi-secondary-button moon-action-compact"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 프리미엄
@@ -484,7 +484,7 @@ function MobileChrome({
                     scroll={false}
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-extrabold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
                   >
-                    <span className="font-[var(--font-heading)]" style={{ color: meta.accent }}>
+                    <span className="" style={{ color: meta.accent }}>
                       {meta.glyph}
                     </span>
                     <span>{getMobileDockLabel(item)}</span>
@@ -556,7 +556,7 @@ function MobileChrome({
                               )}
                             >
                               <span
-                                className="app-mobile-shortcut-glyph font-[var(--font-heading)]"
+                                className="app-mobile-shortcut-glyph"
                                 style={{ color: meta.accent }}
                               >
                                 {meta.glyph}

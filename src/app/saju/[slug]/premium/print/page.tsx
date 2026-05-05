@@ -151,7 +151,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
               PDF 저장 권한 필요
             </Badge>
-            <h1 className="mt-5 font-display text-4xl text-[var(--app-ivory)] sm:text-5xl">
+            <h1 className="mt-5 text-4xl text-[var(--app-ivory)] sm:text-5xl">
               깊은 사주풀이 PDF는 소장권에서 열립니다
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
@@ -166,13 +166,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
-                className="moon-action-primary"
+                className="gangi-primary-button"
               >
                 깊은 사주풀이 열기
               </Link>
               <Link
                 href={backHref}
-                className="moon-action-muted"
+                className="gangi-secondary-button"
               >
                 풀이 화면으로 돌아가기
               </Link>

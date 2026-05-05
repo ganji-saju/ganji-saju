@@ -545,7 +545,7 @@ function LoginContent() {
     <div className="app-panel w-full max-w-3xl p-5 text-center sm:p-8">
       <div className="mb-5">
         <div className="app-caption mb-3">회원가입하면 입력을 반복하지 않아요</div>
-        <h1 className="font-heading text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
+        <h1 className=" text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
           달빛인생 시작하기
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--app-copy-muted)]">
@@ -1014,7 +1014,7 @@ export default function LoginPage() {
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
           달
         </div>
-        <div className="font-[var(--font-heading)] text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+        <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
         <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
       </div>
       <div className="gangi-subpage">

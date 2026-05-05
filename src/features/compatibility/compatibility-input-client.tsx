@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +23,8 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { GangiActionRow, GangiIntro, GangiMiniCard, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type PersonKey = 'self' | 'partner';
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
@@ -256,11 +255,11 @@ function SavedProfileQuickFill({
   if (profiles.length === 0) return null;
 
   return (
-    <div className="mt-5 rounded-[1.35rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 p-4 sm:p-5">
+    <div className="mt-5 rounded-[1.35rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 p-4 sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="app-caption text-[var(--app-gold-text)]">빠른 채우기</div>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ivory)]">
+          <div className="app-caption text-[var(--app-pink-strong)]">빠른 채우기</div>
+          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ink)]">
             저장한 이름을 눌러 바로 넣을 수 있습니다
           </h3>
         </div>
@@ -279,7 +278,7 @@ function SavedProfileQuickFill({
               className={
                 group.tone === 'jade'
                   ? 'mb-2 text-xs font-semibold text-[var(--app-jade)]'
-                  : 'mb-2 text-xs font-semibold text-[var(--app-gold-text)]'
+                  : 'mb-2 text-xs font-semibold text-[var(--app-pink-strong)]'
               }
             >
               {group.label}
@@ -294,7 +293,7 @@ function SavedProfileQuickFill({
                   className={
                     group.tone === 'jade'
                       ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-sm font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
-                      : 'shrink-0 rounded-full border border-[var(--app-gold)]/25 bg-[rgba(255,255,255,0.035)] px-4 py-2 text-sm font-semibold text-[var(--app-gold-text)] transition-colors hover:bg-[var(--app-gold)]/12'
+                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-sm font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
                   }
                 >
                   {profile.nickname}
@@ -560,102 +559,59 @@ export function CompatibilityInputClient({
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="input"
-              className="border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]"
-            >
-              궁합 입력
-            </Badge>,
-            <Badge
-              key="relationship"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              {selected.title}
-            </Badge>,
-          ]}
-          title="두 사람의 흐름을 한 번에 봐요"
-          description="저장된 사람을 고르지 않아도 괜찮습니다. 내 정보와 상대 정보를 함께 입력하면 바로 관계의 결을 읽어드립니다."
+        <GangiPageHeader title="궁합 입력" backHref="/compatibility" />
+        <GangiIntro
+          eyebrow="궁합"
+          title={
+            <>
+              내 정보와 상대 정보를
+              <br />
+              함께 넣어 바로 봅니다
+            </>
+          }
+          description="로그인하지 않아도 두 사람 정보를 직접 입력할 수 있고, 저장된 사람은 이름만 눌러 빠르게 채울 수 있습니다."
         />
-
         {hasLoveQuestionPurchase ? (
-          <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-50">
+          <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
             연애 질문 1회 상품이 구매되어 있습니다. 이 화면에서는 추가 결제 없이 두 사람 정보를 넣고 결과로 이어가시면 됩니다.
           </div>
         ) : null}
 
-        <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg" className="app-mobile-safe-section">
-            <div className="app-starfield" />
-            <SectionHeader
-              eyebrow="관계 렌즈"
-              title={`${selected.title} 궁합은 이 장면부터 풀어봅니다`}
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description={RELATIONSHIP_GUIDE[selected.slug]}
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-              actions={
-                <ActionCluster>
-                  <button
-                    type="button"
-                    onClick={submitManualCompatibility}
-                    className="moon-cta-primary"
-                  >
-                    이 정보로 궁합 보기
-                  </button>
-                  <Link
-                    href="/compatibility"
-                    className="moon-action-secondary"
-                  >
-                    궁합 허브로
-                  </Link>
-                </ActionCluster>
-              }
-            />
-
-            <ProductGrid columns={4} className="mt-5 grid-cols-2 md:grid-cols-2 xl:grid-cols-4">
-              {COMPATIBILITY_RELATIONSHIPS.map((item) => (
-                <FeatureCard
-                  key={item.slug}
-                  surface="soft"
-                  eyebrow={item.title}
-                  badge={
-                    item.slug === selected.slug ? (
-                      <Badge className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-                        현재 선택
-                      </Badge>
-                    ) : null
-                  }
-                  footer={
-                    <button
-                      type="button"
-                      onClick={() => selectRelationship(item.slug)}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      선택하기
-                    </button>
-                  }
-                />
-              ))}
-            </ProductGrid>
-          </SectionSurface>
-
-          <SupportRail
-            surface="panel"
-            eyebrow="입력 방식"
-            title="직접 입력이 기본이고, 저장된 정보는 보조입니다"
-            description="처음 방문한 분도 막히지 않도록 두 사람 정보를 바로 받습니다. 로그인 사용자는 저장된 내 정보와 가족 정보를 불러와 더 빨리 시작할 수 있습니다."
-          >
-            <BulletList items={INPUT_FLOW_POINTS} />
-            <FeatureCard
-              className="mt-5"
-              surface="soft"
-              eyebrow="필요한 데이터"
-              title="왜 두 사람 정보가 모두 필요한가요?"
-              description="일간과 표현 속도, 관계의 보완축을 함께 비교하기 위해 두 사람 모두의 생년월일과 가능한 범위의 출생 시간이 필요합니다."
-            />
-          </SupportRail>
-        </section>
+        <GangiSection
+          eyebrow="관계 렌즈"
+          title={selected.title + ' 궁합으로 봅니다'}
+          description={RELATIONSHIP_GUIDE[selected.slug]}
+          tone="pink"
+        >
+          <div className="gangi-topic-grid !px-0 !pb-0 !pt-0">
+            {COMPATIBILITY_RELATIONSHIPS.map((item) => (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => selectRelationship(item.slug)}
+                className="gangi-topic-card"
+                data-active={item.slug === selected.slug ? 'true' : undefined}
+              >
+                <span className="gangi-topic-icon">{item.icon}</span>
+                <h2>{item.title}</h2>
+                <p>{item.hook}</p>
+              </button>
+            ))}
+          </div>
+          <div className="gangi-mini-grid">
+            {INPUT_FLOW_POINTS.slice(0, 3).map((point, index) => (
+              <GangiMiniCard key={point} label={String(index + 1).padStart(2, '0')} desc={point} />
+            ))}
+          </div>
+          <GangiActionRow>
+            <button type="button" onClick={submitManualCompatibility} className="gangi-primary-button">
+              이 정보로 궁합 보기
+            </button>
+            <Link href="/compatibility" className="gangi-secondary-button">
+              궁합 허브로
+            </Link>
+          </GangiActionRow>
+        </GangiSection>
 
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
@@ -682,8 +638,8 @@ export function CompatibilityInputClient({
             <section className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
               <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <div className="app-caption text-[var(--app-gold-text)]">나</div>
-                  <h2 className="mt-2 font-[var(--font-heading)] text-2xl text-[var(--app-ivory)]">
+                  <div className="app-caption text-[var(--app-pink-strong)]">나</div>
+                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
                     내 정보
                   </h2>
                 </div>
@@ -718,7 +674,7 @@ export function CompatibilityInputClient({
               <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <div className="app-caption text-[var(--app-jade)]">상대</div>
-                  <h2 className="mt-2 font-[var(--font-heading)] text-2xl text-[var(--app-ivory)]">
+                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
                     상대 정보
                   </h2>
                 </div>
@@ -751,7 +707,7 @@ export function CompatibilityInputClient({
           </div>
 
           {errorMessage ? (
-            <div className="mt-5 rounded-[1rem] border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-7 text-[var(--app-ivory)]">
+            <div className="mt-5 rounded-[1rem] border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
               {errorMessage}
             </div>
           ) : null}
@@ -760,7 +716,7 @@ export function CompatibilityInputClient({
             <button
               type="button"
               onClick={submitManualCompatibility}
-              className="moon-cta-primary"
+              className="gangi-primary-button"
             >
               이 정보로 궁합 보기
             </button>
@@ -793,7 +749,7 @@ export function CompatibilityInputClient({
                   <div className="mt-3">
                     <Link
                       href="/login?next=/compatibility/input"
-                      className="moon-action-secondary moon-action-compact"
+                      className="gangi-secondary-button"
                     >
                       로그인하고 불러오기
                     </Link>
@@ -824,12 +780,12 @@ export function CompatibilityInputClient({
                     <FeatureCard
                       key={profile.id}
                       surface="soft"
-                      className={matched ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/8' : undefined}
+                      className={matched ? 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/8' : undefined}
                       eyebrow={profile.relationship}
                       title={profile.label}
                       badge={
                         matched ? (
-                          <Badge className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
+                          <Badge className="border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]">
                             이 렌즈와 잘 맞음
                           </Badge>
                         ) : null
@@ -840,14 +796,14 @@ export function CompatibilityInputClient({
                           <button
                             type="button"
                             onClick={() => applySavedProfile('self', profile)}
-                            className="moon-action-muted moon-action-compact"
+                            className="gangi-secondary-button"
                           >
                             내 정보로 채우기
                           </button>
                           <button
                             type="button"
                             onClick={() => applySavedProfile('partner', profile)}
-                            className="moon-action-primary moon-action-compact"
+                            className="gangi-primary-button"
                           >
                             상대 정보로 채우기
                           </button>

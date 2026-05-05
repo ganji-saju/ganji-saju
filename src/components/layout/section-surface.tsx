@@ -12,7 +12,7 @@ interface SectionSurfaceProps extends HTMLAttributes<HTMLElement> {
 const SURFACE_CLASSNAME: Record<NonNullable<SectionSurfaceProps['surface']>, string> = {
   panel: 'app-panel',
   muted: 'app-panel-muted',
-  lunar: 'moon-lunar-panel',
+  lunar: 'app-panel',
   hero: 'app-hero-card',
 };
 

@@ -60,7 +60,7 @@ export default function MySettingsPage() {
         </SectionSurface>
 
         <SupportRail
-          surface="lunar"
+          surface="panel"
           eyebrow="레이아웃 보기"
           title="PC 보기 방식을 선생님께 맞게 바꿉니다"
           description="모바일은 하단 독 중심의 안정적인 보기로 고정하고, PC에서만 세로형 좌측 사이드바와 가로형 상단 네비를 선택할 수 있습니다."

@@ -812,7 +812,7 @@ export default function NotificationCenterPage({
                   <div className="text-[10px] tracking-[0.2em] text-[var(--app-gold)]/70">
                     {widgetDateLabel}
                   </div>
-                  <div className="mt-4 font-[var(--font-heading)] text-lg leading-7 text-[var(--app-ivory)]">
+                  <div className="mt-4 text-lg leading-7 text-[var(--app-ivory)]">
                     {snapshot.latestReading?.dailyLine ?? '오늘은 서두르지 않으시는 것이 가장 큰 지혜입니다'}
                   </div>
                   <div className="mt-4 flex gap-2 text-[11px]">
@@ -827,12 +827,12 @@ export default function NotificationCenterPage({
 
                 <div className="rounded-[1.6rem] border border-[var(--app-gold)]/26 bg-[linear-gradient(135deg,rgba(10,18,36,0.98),rgba(22,26,46,0.94))] p-5">
                   <div className="flex items-center justify-between">
-                    <div className="font-[var(--font-heading)] text-sm tracking-[0.25em] text-[var(--app-gold)]/72">
+                    <div className=" text-sm tracking-[0.25em] text-[var(--app-gold)]/72">
                       月光先生
                     </div>
                     <div className="text-[11px] text-[var(--app-copy-soft)]">오늘의 리듬</div>
                   </div>
-                  <div className="mt-4 font-[var(--font-heading)] text-lg leading-7 text-[var(--app-ivory)]">
+                  <div className="mt-4 text-lg leading-7 text-[var(--app-ivory)]">
                     {snapshot.latestReading?.dailyLine ?? '서두르지 않으시는 것이 가장 큰 지혜'}
                   </div>
                   <div className="mt-4 text-xs leading-6 text-[var(--app-copy-muted)]">
@@ -923,7 +923,7 @@ export default function NotificationCenterPage({
                     </p>
                     <Link
                       href={snapshot.latestReading.href}
-                      className="moon-action-secondary mt-5"
+                      className="gangi-secondary-button mt-5"
                     >
                       최근 결과 다시 보기
                     </Link>

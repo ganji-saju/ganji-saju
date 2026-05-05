@@ -29,7 +29,7 @@ export function SectionHeader({
       {eyebrow ? <div className="app-caption">{eyebrow}</div> : null}
       <h2
         className={cn(
-          'moon-section-title',
+          'app-section-title',
           centered && 'mx-auto',
           titleClassName
         )}

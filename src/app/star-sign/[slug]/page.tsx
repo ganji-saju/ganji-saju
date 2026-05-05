@@ -99,7 +99,7 @@ export default async function StarSignDetailPage({ params }: Props) {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="오늘 읽는 방식"
             title="별자리 흐름은 감정의 온도를 먼저 비춥니다"
             description="별자리는 빠른 감정선과 관계 온도를 읽는 데 잘 맞고, 더 깊은 반복 패턴은 사주와 함께 볼 때 훨씬 선명해집니다."
@@ -141,10 +141,10 @@ export default async function StarSignDetailPage({ params }: Props) {
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             actions={
               <ActionCluster>
-                <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="moon-cta-primary">
+                <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-primary-button">
                   {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
                 </Link>
-                <Link href="/star-sign" className="moon-cta-secondary">
+                <Link href="/star-sign" className="gangi-secondary-button">
                   별자리 목록으로 돌아가기
                 </Link>
               </ActionCluster>

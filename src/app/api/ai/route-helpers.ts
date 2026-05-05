@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { normalizeMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
 import {
-  buildDialogueCounselorInstructions,
-  getMoonlightCounselorMeta,
-  normalizeMoonlightCounselor,
-  type MoonlightCounselorId,
-} from '@/lib/counselors';
+  buildDialogueExpertInstructions,
+  getDialogueExpertMeta,
+  inferDialogueExpertIdFromMessage,
+  normalizeDialogueExpertId,
+  resolveDialogueExpertId,
+  type DialogueExpertId,
+} from '@/lib/dialogue-experts';
 import { detectSafeRedirect } from '@/domain/safety/safe-redirect';
 import type { FocusTopic } from '@/domain/saju/report/types';
 import { createAiChatBillingSummary } from '@/lib/credits/ai-chat-access';
@@ -16,7 +19,7 @@ type AiMode = 'dialogue' | 'saju-report';
 interface DialogueAiRequest {
   mode: 'dialogue';
   message: string;
-  counselorId?: MoonlightCounselorId;
+  expertId?: DialogueExpertId;
   sourceSessionId?: string;
   concernId?: string;
   from?: string;
@@ -98,12 +101,12 @@ export function parseAiRequest(payload: unknown): ParsedAiRequest | null {
 
   if (mode === 'dialogue') {
     const message = readString(data, 'message');
-    const counselorId = normalizeMoonlightCounselor(data.counselorId);
+    const expertId = normalizeDialogueExpertId(data.expertId);
     return message
       ? {
           mode,
           message,
-          counselorId: counselorId ?? undefined,
+          expertId: expertId ?? undefined,
           sourceSessionId: readString(data, 'sourceSessionId') || undefined,
           concernId: readString(data, 'concernId') || undefined,
           from: readString(data, 'from') || undefined,
@@ -184,18 +187,16 @@ export function isYearlyDialogueIntent(message: string) {
 export function buildDialogueFallback(
   message: string,
   profileGrounding?: DialogueProfileGrounding | null,
-  counselorId: MoonlightCounselorId = 'female'
+  expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message))
 ) {
-  const counselor = getMoonlightCounselorMeta(counselorId);
+  const expert = getDialogueExpertMeta(expertId);
 
   if (!profileGrounding) {
     return [
-      counselorId === 'male'
-        ? '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 골자부터 바로 짚겠습니다.'
-        : '지금은 대화 연결이 잠시 비어 있어, 먼저 흐름의 결부터 차분히 짚어드릴게요.',
+      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.animal}띠 ${expert.label} 기준으로 먼저 핵심만 짚겠습니다.`,
       `남겨주신 질문은 “${message}”입니다.`,
       '아직 저장된 사주 정보가 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 정보가 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
-      `${counselor.label}의 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+      `${expert.label} 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
     ].join('\n\n');
   }
 
@@ -204,14 +205,12 @@ export function buildDialogueFallback(
     .join(' · ');
 
   return [
-    counselorId === 'male'
-      ? `저장된 프로필로 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`
-      : `저장된 프로필로 읽어보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
+    `${expert.animal}띠 ${expert.label} 관점에서 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
     simplifySajuCopy(profileGrounding.reports.focus.summary),
     `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다. 오늘은 ${simplifySajuCopy(profileGrounding.saju.yongsin)} 흐름을 잘 쓰는 편이 좋습니다.`,
     evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
     `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리해서 움직이시는 편이 맞습니다.`,
-    `${counselor.label}의 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+    `${expert.label} 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -241,12 +240,15 @@ export function normalizeDialogueAnswer(text: string) {
 export function createDialoguePrompt(
   message: string,
   profileGrounding?: DialogueProfileGrounding | null,
-  counselorId: MoonlightCounselorId = 'female',
+  expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message)),
   recentFeedbackSummary?: string | null
 ) {
+  const expert = getDialogueExpertMeta(expertId);
+
   return {
     instructions: [
       '당신은 한국어 운세 서비스 달빛인생에서 실제 상담을 맡은 숙련 상담가입니다.',
+      `사용자가 선택한 12간지 전문 분야는 ${expert.animal}띠 ${expert.label}입니다.`,
       '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
       '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
@@ -260,7 +262,7 @@ export function createDialoguePrompt(
       'recentFeedbackSummary가 있으면 최근 반응을 참고해 단정 표현 강도만 조절하고, 계산 설명보다 앞세우지 않습니다.',
       '의료, 법률, 투자 판단은 해석으로 대신하지 않습니다.',
       '출생 정보나 사주 데이터가 없는 경우 빈말로 얼버무리지 말고, 어떤 정보가 필요한지 짧게 요청합니다.',
-      buildDialogueCounselorInstructions(counselorId),
+      ...buildDialogueExpertInstructions(expertId),
       '',
       profileGrounding
         ? [

@@ -26,7 +26,7 @@
 | 입력 UX | 현재 방향은 좋지만 더 압축 필요 | 질문 선택, 생년월일, 출생지, 동의가 단계별로 나뉘며 정보량이 많음 | 모바일 기준 3-screen 이하, 프로필 우선 적용 | 입력 완료율 +20~25% 목표 |
 | 결과 UX | 정보가 많고 위계가 약함 | 요약, 근거, CTA, 고전, AI 해석, PDF가 한 화면에 과밀 | 상단 800px 안에 `판정/조심/액션/근거/CTA`만 노출 | 결과 이탈률 -20%, 유료 전환 +15% |
 | 해석 문장 | 고리타분하고 장황함 | “흐름, 기운, 차분히, 좋습니다” 반복 | Punch Copy Engine 도입 | 첫 결과 이해 시간 3초 이하 |
-| 디자인 시스템 | 바디 폰트 기준 불명확 | Noto Serif/Gowun Batang 중심, body는 Pretendard fallback | Noto Sans KR 바디, 세리프는 한자/타이틀 한정 | 가독성, 현대감 개선 |
+| 디자인 시스템 | 바디 폰트 기준 불명확 | 장식용 serif/batang 분리 기준 제거 | Noto Sans KR 단일 폰트 | 가독성, 현대감 개선 |
 | Codex 작업 | 기능은 많으나 제품 판단이 흐림 | PR마다 기능 단위 개선, 경험 단위 우선순위 부족 | P0/P1/P2 명령서로 재정렬 | 개발 리워크 감소 |
 
 ---
@@ -286,21 +286,18 @@ Step 4. 결과 보기
 
 ```ts
 // src/app/layout.tsx
-import { Noto_Sans_KR, Noto_Serif_KR, Gowun_Batang } from 'next/font/google';
+import { Noto_Sans_KR } from 'next/font/google';
 
 const bodySans = Noto_Sans_KR({
   weight: ['400', '500', '600', '700'],
   display: 'swap',
   preload: false,
-  variable: '--font-noto-sans-kr',
+  variable: '--font-dalbit-sans',
 });
 ```
 
 ```css
---font-body: var(--font-noto-sans-kr), system-ui, 'Apple SD Gothic Neo', sans-serif;
---font-display: var(--font-noto-sans-kr), system-ui, sans-serif;
---font-classic: var(--font-gowun-batang), var(--font-noto-serif-kr), serif;
---font-hanja: var(--font-noto-serif-kr), serif;
+--font-body: var(--font-dalbit-sans), 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 ```
 
 세리프는 다음에만 사용한다.
@@ -421,7 +418,7 @@ export interface PunchReading {
 ## 7. 폰트 시스템 수정
 `src/app/layout.tsx`, `src/app/globals.css`를 수정한다.
 - Body 기본 폰트를 `Noto Sans KR`로 지정한다.
-- `Noto Serif KR`, `Gowun Batang`은 한자/고전/브랜드 장식에만 제한한다.
+- 장식용 명조/바탕 폰트는 사용하지 않고 Noto Sans KR 단일 계열로 유지한다.
 - mobile line-height와 word-break는 유지한다.
 
 ## 8. 검증

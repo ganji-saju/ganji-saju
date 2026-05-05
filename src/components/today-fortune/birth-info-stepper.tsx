@@ -188,7 +188,7 @@ export function BirthInfoStepper({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">Birth Info Stepper</div>
-          <h2 className="mt-3 font-[var(--font-heading)] text-2xl text-[var(--app-ivory)]">
+          <h2 className="mt-3 text-2xl text-[var(--app-ivory)]">
             생년월일과 출생 정보를 넣어 오늘 흐름을 좁혀보세요
           </h2>
         </div>

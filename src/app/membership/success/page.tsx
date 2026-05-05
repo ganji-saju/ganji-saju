@@ -179,7 +179,7 @@ function SuccessState({
       />
 
       <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="lunar" size="lg">
+        <SectionSurface surface="panel" size="lg">
           <div className="app-starfield" />
           <SectionHeader
             eyebrow="반영 완료"

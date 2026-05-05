@@ -188,7 +188,7 @@ export default async function MyBillingPage() {
         </SectionSurface>
 
         <SupportRail
-          surface="lunar"
+          surface="panel"
           eyebrow="정책 안내"
           title="결제와 환불은 이 기준으로 움직입니다"
           description="복잡한 정책을 길게 늘어놓기보다, 실제로 확인할 가능성이 높은 기준만 짧게 남겨두었습니다."

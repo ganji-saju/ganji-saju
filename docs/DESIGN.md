@@ -44,8 +44,8 @@
 
 ## 4. 타이포그래피
 
-- 기본 글꼴은 `Pretendard`, `Apple SD Gothic Neo`, `Noto Sans KR`, sans-serif 계열을 사용합니다.
-- 장식성 제목이나 이벤트 배너에서만 명조 계열을 제한적으로 사용합니다.
+- 기본 글꼴은 `Noto Sans KR`, `Apple SD Gothic Neo`, `Malgun Gothic`, system-ui, sans-serif 계열을 사용합니다.
+- 장식성 제목, 이벤트 배너, 한자 표기도 별도 명조 계열로 분리하지 않고 같은 고딕 계열 안에서 굵기와 색으로 위계를 만듭니다.
 - 한글 제목은 줄바꿈이 어색하지 않도록 `word-break: keep-all`, `line-break: strict`를 우선합니다.
 - 글자 간격은 기본적으로 `0`을 유지합니다.
 - 모바일 본문은 15px 이상, 주요 버튼은 14px 이상을 권장합니다.

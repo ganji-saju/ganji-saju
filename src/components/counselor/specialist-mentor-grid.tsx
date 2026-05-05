@@ -35,7 +35,7 @@ export function SpecialistMentorGrid({
             key={mentor.slug}
             surface="soft"
             eyebrow={
-              <span className="font-hanja text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
+              <span className=" text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
                 {mentor.hanja}
               </span>
             }

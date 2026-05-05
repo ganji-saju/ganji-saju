@@ -7,13 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-body: var(--font-noto-sans-kr), "Noto Sans KR", system-ui, "Apple SD Gothic Neo", sans-serif;
-  --font-display: var(--font-noto-serif-kr), "Noto Serif KR", "Nanum Myeongjo", serif;
-  --font-classic: var(--font-gowun-batang), var(--font-noto-serif-kr), "Noto Serif KR", "Nanum Myeongjo", serif;
-  --font-hanja: var(--font-noto-serif-kr), "Noto Serif KR", "Nanum Myeongjo", serif;
+  --font-body: var(--font-dalbit-sans), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-sans: var(--font-body);
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
-  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -88,12 +84,12 @@
   --app-bg: #ffffff;
   --app-ink: #111114;
   --app-ink-strong: #050507;
-  --app-surface: rgba(255, 255, 255, 0.92);
+  --app-surface: #ffffff;
   --app-surface-strong: #ffffff;
-  --app-surface-soft: #fff7fb;
-  --app-surface-muted: rgba(255, 239, 247, 0.72);
-  --app-line: rgba(244, 190, 214, 0.72);
-  --app-line-strong: rgba(255, 79, 154, 0.34);
+  --app-surface-soft: #fff0f7;
+  --app-surface-muted: #fafafb;
+  --app-line: rgba(17, 17, 20, 0.08);
+  --app-line-strong: rgba(17, 17, 20, 0.16);
   --app-pink: #ff4f9a;
   --app-pink-strong: #d81b72;
   --app-pink-soft: #fff0f7;
@@ -331,20 +327,6 @@
 }
 
 @layer components {
-  .font-display {
-    font-family: var(--font-display);
-    letter-spacing: -0.035em;
-  }
-
-  .font-classic {
-    font-family: var(--font-classic);
-    letter-spacing: -0.02em;
-  }
-
-  .font-hanja {
-    font-family: var(--font-hanja);
-    letter-spacing: 0.02em;
-  }
 
   .app-shell {
     position: relative;
@@ -834,7 +816,7 @@
   }
 
   .app-hero-title {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: clamp(2.05rem, 7vw, 2.75rem);
     line-height: 1.16;
     letter-spacing: -0.03em;
@@ -1034,7 +1016,7 @@
   }
 
   .app-feature-title {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.2rem;
     line-height: 1.5;
     color: var(--app-ink);
@@ -1299,7 +1281,7 @@
   }
 
   .moon-section-title {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: clamp(1.6rem, 2vw, 2.4rem);
     line-height: 1.42;
     letter-spacing: -0.02em;
@@ -1341,7 +1323,7 @@
   }
 
   .moon-wisdom-hanja {
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 0.72rem;
     letter-spacing: 0.35em;
     color: rgba(210, 176, 114, 0.72);
@@ -1445,14 +1427,14 @@
   }
 
   .wisdom-category-hanja {
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 0.78rem;
     letter-spacing: 0.54em;
   }
 
   .wisdom-category-title {
     margin-top: 1.45rem;
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: clamp(2.45rem, 4vw, 3.8rem);
     font-weight: 500;
     line-height: 1.1;
@@ -1465,7 +1447,7 @@
 
   .wisdom-category-hook {
     margin-top: 1.35rem;
-    font-family: var(--font-classic);
+    font-family: var(--font-body);
     font-size: clamp(1.2rem, 1.7vw, 1.75rem);
     line-height: 1.65;
     color: var(--app-ivory);
@@ -1563,7 +1545,7 @@
     position: absolute;
     top: 0.85rem;
     right: 1rem;
-    font-family: var(--font-heading);
+    font-family: var(--font-body);
     font-size: 3.5rem;
     line-height: 1;
     color: rgba(212, 176, 106, 0.06);
@@ -1845,7 +1827,7 @@
   }
 
   .moon-hero-brand-text {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 1.6rem;
     font-weight: 600;
     letter-spacing: 0.26em;
@@ -1854,7 +1836,7 @@
   }
 
   .moon-hero-brand-sub {
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 0.7rem;
     letter-spacing: 0.62em;
     color: var(--app-gold-soft);
@@ -1881,7 +1863,7 @@
   }
 
   .moon-hero-h1 {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: clamp(1.75rem, 3.8vw, 3rem);
     font-weight: 500;
     line-height: 1.32;
@@ -2220,7 +2202,7 @@
       radial-gradient(circle at 36% 28%, #fff 0 16%, transparent 17%),
       linear-gradient(135deg, var(--app-pink), var(--app-pink-strong));
     color: white;
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-size: 2rem;
     font-weight: 900;
     box-shadow: 0 18px 42px rgba(216, 27, 114, 0.24);
@@ -2343,7 +2325,7 @@
       radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.92) 0 13%, transparent 14%),
       linear-gradient(135deg, var(--app-pink), var(--app-pink-strong));
     color: #fff;
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 1.35rem;
     font-weight: 900;
     box-shadow: 0 12px 28px rgba(216, 27, 114, 0.18);
@@ -2400,7 +2382,7 @@
   }
 
   .dalbit-product-teacher span {
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 0.82rem;
   }
 
@@ -2763,7 +2745,7 @@
     inset: 0.72rem 0.45rem auto;
     z-index: 1;
     color: rgba(255, 255, 255, 0.92);
-    font-family: var(--font-classic);
+    font-family: var(--font-body);
     font-size: clamp(2.6rem, 13vw, 4.6rem);
     font-weight: 950;
     line-height: 0.95;
@@ -3180,7 +3162,7 @@
   }
 
   .dalbit-teacher-chip span {
-    font-family: var(--font-hanja);
+    font-family: var(--font-body);
     font-size: 1rem;
   }
 
@@ -4235,7 +4217,7 @@
 }
 
 .pdf-print-brand {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.35rem;
   color: var(--app-gold-text);
 }
@@ -4253,7 +4235,7 @@
 .pdf-print-cover h1 {
   margin-top: 1.4rem;
   max-width: 46rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: clamp(2.4rem, 5vw, 4rem);
   line-height: 1.12;
 }
@@ -4282,7 +4264,7 @@
 .pdf-print-summary h2,
 .pdf-print-section h2 {
   margin-top: 0.35rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 1.8rem;
   line-height: 1.28;
   color: #161922;
@@ -4968,7 +4950,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   z-index: 1;
   margin: 0.375rem 0 0;
   color: var(--app-ink);
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 1.42rem;
   font-weight: 900;
   line-height: 1.32;
@@ -5020,7 +5002,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   place-items: center;
   border-radius: 9999px;
   color: #ffffff;
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 1.45rem;
   font-weight: 900;
   line-height: 1;
@@ -5316,7 +5298,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-sub-intro h1 {
   margin: 0;
   color: var(--app-ink);
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 1.42rem;
   font-weight: 900;
   line-height: 1.38;
@@ -5329,6 +5311,61 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.62;
+}
+
+
+.gangi-section {
+  margin-inline: 1rem;
+  border: 1px solid var(--app-line);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  padding: 1.125rem;
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 8px 24px -12px rgba(17, 17, 20, 0.1);
+}
+
+.gangi-section-pink {
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
+}
+
+.gangi-section-title {
+  margin: 0.35rem 0 0;
+  color: var(--app-ink);
+  font-family: var(--font-body);
+  font-size: 1.22rem;
+  font-weight: 950;
+  line-height: 1.38;
+  letter-spacing: -0.02em;
+}
+
+.gangi-section-desc {
+  margin: 0.55rem 0 0;
+  color: rgba(17, 17, 20, 0.64);
+  font-size: 0.84rem;
+  font-weight: 720;
+  line-height: 1.6;
+}
+
+.gangi-section-body {
+  margin-top: 1rem;
+}
+
+.gangi-action-row {
+  display: grid;
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+
+.gangi-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--app-pink-line);
+  background: var(--app-pink-soft);
+  padding: 0.35rem 0.72rem;
+  color: var(--app-pink-strong);
+  font-size: 0.72rem;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .gangi-card-panel {
@@ -5363,6 +5400,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-ink);
   text-align: left;
   box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04);
+}
+
+.gangi-list-link[data-active="true"] {
+  border-color: var(--app-pink);
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
+  box-shadow: 0 12px 28px rgba(216, 27, 114, 0.12);
 }
 
 .gangi-list-copy {
@@ -5472,7 +5515,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   left: 0;
   right: 0;
   color: var(--app-pink);
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 0.64rem;
   letter-spacing: 0.16em;
   text-align: center;
@@ -5587,7 +5630,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-purchase-summary h2 {
   margin: 0.25rem 0 0;
   color: var(--app-ink);
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 1.42rem;
   font-weight: 950;
   line-height: 1.35;
@@ -5611,7 +5654,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-purchase-price strong {
   color: var(--app-pink-strong);
-  font-family: var(--font-classic);
+  font-family: var(--font-body);
   font-size: 1.9rem;
   font-weight: 950;
   line-height: 1;
@@ -5786,6 +5829,47 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-style: normal;
   font-weight: 720;
   line-height: 1.45;
+}
+
+.gangi-expert-chip {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--app-line);
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 0.55rem 0.65rem;
+  color: var(--app-ink);
+  text-align: left;
+}
+
+.gangi-expert-chip span {
+  display: grid;
+  height: 1.7rem;
+  width: 1.7rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 0.6rem;
+  background: var(--app-pink-soft);
+  color: var(--app-pink-strong);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.gangi-expert-chip strong {
+  min-width: 0;
+  color: var(--app-ink);
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.gangi-expert-chip[data-active="true"] {
+  border-color: var(--app-pink);
+  background: var(--app-pink-soft);
+  box-shadow: 0 10px 24px rgba(216, 27, 114, 0.12);
 }
 
 .gangi-subpage .app-subnav {

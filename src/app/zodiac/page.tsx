@@ -115,7 +115,7 @@ export default async function ZodiacPage() {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="띠운세 기준"
             title="연도표가 아니라 생년월일 기준으로 맞춥니다"
             description="같은 1982년생이라도 입춘 전후에 따라 띠가 달라질 수 있습니다. 그래서 달빛인생은 사주 결과와 같은 기준으로 띠를 맞춥니다."
@@ -130,11 +130,11 @@ export default async function ZodiacPage() {
             <BulletList className={hasPersonalizedProfile ? 'mt-5' : ''} items={ZODIAC_POINTS} />
             <ActionCluster className="mt-5">
               {featured ? (
-                <Link href={`/zodiac/${featured.slug}`} className="moon-cta-primary">
+                <Link href={`/zodiac/${featured.slug}`} className="gangi-primary-button">
                   내 띠 바로 보기
                 </Link>
               ) : null}
-              <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="moon-cta-secondary">
+              <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-secondary-button">
                 {readingSlug ? '내 사주로 이어보기' : '생년월일로 내 띠 확인'}
               </Link>
             </ActionCluster>
@@ -150,7 +150,7 @@ export default async function ZodiacPage() {
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             actions={
               <ActionCluster>
-                <Link href="/saju/new" className="moon-cta-primary">
+                <Link href="/saju/new" className="gangi-primary-button">
                   생년월일로 다시 확인
                 </Link>
               </ActionCluster>

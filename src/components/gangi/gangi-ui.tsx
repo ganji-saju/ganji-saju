@@ -157,6 +157,45 @@ export function GangiMiniCard({
   );
 }
 
+
+export function GangiSection({
+  eyebrow,
+  title,
+  description,
+  children,
+  tone = 'white',
+  className = '',
+}: {
+  eyebrow?: string;
+  title?: ReactNode;
+  description?: ReactNode;
+  children?: ReactNode;
+  tone?: 'white' | 'pink';
+  className?: string;
+}) {
+  return (
+    <section className={`gangi-section ${tone === 'pink' ? 'gangi-section-pink' : ''} ${className}` }>
+      {eyebrow ? <p className="gangi-sub-eyebrow">{eyebrow}</p> : null}
+      {title ? <h2 className="gangi-section-title">{title}</h2> : null}
+      {description ? <p className="gangi-section-desc">{description}</p> : null}
+      {children ? <div className="gangi-section-body">{children}</div> : null}
+    </section>
+  );
+}
+
+export function GangiActionRow({
+  children,
+  className = '',
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return <div className={`gangi-action-row ${className}`}>{children}</div>;
+}
+
+export function GangiPill({ children }: { children: ReactNode }) {
+  return <span className="gangi-pill">{children}</span>;
+}
 export function GangiPurchaseSummary({
   title,
   price,

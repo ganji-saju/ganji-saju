@@ -343,7 +343,7 @@ export function SajuAiInterpretationPanel({
           type="button"
           onClick={() => void loadInterpretation()}
           disabled={status === 'loading'}
-          className="moon-action-primary"
+          className="gangi-primary-button"
         >
           {status === 'loading' ? '불러오는 중' : cacheEnabled ? '저장된 해석 확인' : '해석 정리하기'}
         </button>

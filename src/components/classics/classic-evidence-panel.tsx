@@ -65,7 +65,7 @@ function ClassicEvidenceCard({ item }: { item: ClassicEvidenceItem }) {
         </summary>
         <blockquote
           lang="zh-Hant"
-          className="font-classic mt-3 break-words rounded-2xl border border-[var(--app-gold)]/14 bg-[var(--app-surface-muted)] px-4 py-4 text-base leading-8 text-[var(--app-gold-text)]"
+          className=" mt-3 break-words rounded-2xl border border-[var(--app-gold)]/14 bg-[var(--app-surface-muted)] px-4 py-4 text-base leading-8 text-[var(--app-gold-text)]"
         >
           {item.passage.originalZh}
         </blockquote>

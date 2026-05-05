@@ -78,7 +78,7 @@ export default async function MyeongriPage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="내 패턴의 바탕"
@@ -134,13 +134,13 @@ export default async function MyeongriPage() {
                 <ActionCluster>
                   <Link
                     href={`/saju/${readingSlug}`}
-                    className="moon-action-primary"
+                    className="gangi-primary-button"
                   >
                     내 통합 결과 보기
                   </Link>
                   <Link
                     href={`/saju/${readingSlug}/elements`}
-                    className="moon-action-muted"
+                    className="gangi-secondary-button"
                   >
                     내 오행 바로 보기
                   </Link>

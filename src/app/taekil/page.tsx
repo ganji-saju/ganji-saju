@@ -58,7 +58,7 @@ export default function TaekilPage() {
         <section className="px-5 pb-6">
           <div className="gangi-pink-panel p-5">
             <p className="gangi-sub-eyebrow mb-0">예시</p>
-            <h2 className="mt-3 font-[var(--font-classic)] text-[1.28rem] font-black leading-snug text-[var(--app-ink)]">
+            <h2 className="mt-3 text-[1.28rem] font-black leading-snug text-[var(--app-ink)]">
               앞으로 두 달,
               <br />
               먼저 볼 날을 골라드려요
@@ -68,7 +68,7 @@ export default function TaekilPage() {
                 <div key={day.date} className="gangi-card-panel flex items-center gap-3 p-3">
                   <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-white">
                     <span className="text-[10px] font-black text-[var(--app-pink-strong)]">{day.date.split(' ')[0]}</span>
-                    <strong className="font-[var(--font-classic)] text-xl leading-none">{Number.parseInt(day.date.split(' ')[1], 10)}</strong>
+                    <strong className=" text-xl leading-none">{Number.parseInt(day.date.split(' ')[1], 10)}</strong>
                     <span className="text-[9px] font-bold text-[rgba(17,17,20,0.56)]">{day.weekday}요일</span>
                   </div>
                   <div className="min-w-0 flex-1">

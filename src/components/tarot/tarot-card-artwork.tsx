@@ -63,7 +63,7 @@ export function TarotCardArtwork({
         <div className="flex h-full flex-col justify-between">
           <div className="flex items-center justify-between gap-3">
             <span
-              className={cn('font-[var(--font-heading)] text-xs tracking-[0.22em]', tone.accentClassName)}
+              className={cn(' text-xs tracking-[0.22em]', tone.accentClassName)}
             >
               {shortName}
             </span>
@@ -80,7 +80,7 @@ export function TarotCardArtwork({
                   tone.motifClassName
                 )}
               >
-                <div className={cn('font-[var(--font-heading)] text-6xl', tone.accentClassName)}>
+                <div className={cn(' text-6xl', tone.accentClassName)}>
                   {cardMarker || tone.marker}
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function TarotCardArtwork({
           )}
 
           <div>
-            <figcaption className="mt-2 line-clamp-2 font-[var(--font-heading)] text-xl leading-tight text-[var(--app-ivory)]">
+            <figcaption className="mt-2 line-clamp-2 text-xl leading-tight text-[var(--app-ivory)]">
               {displayName}
             </figcaption>
             <div className="mt-2 text-xs text-[var(--app-copy-soft)]">{arcanaLabel}</div>

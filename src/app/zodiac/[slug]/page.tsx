@@ -95,7 +95,7 @@ export default async function ZodiacDetailPage({ params }: Props) {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="오늘 붙잡을 포인트"
             title="오늘 바로 참고할 것만 남깁니다"
             description="띠운세는 12띠를 비교하는 화면보다 내 띠의 오늘 포인트를 빠르게 확인할 때 가장 편합니다."
@@ -141,10 +141,10 @@ export default async function ZodiacDetailPage({ params }: Props) {
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             actions={
               <ActionCluster>
-                <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="moon-cta-primary">
+                <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-primary-button">
                   {readingSlug ? '내 사주로 이어보기' : '맞춤 사주로 이어보기'}
                 </Link>
-                <Link href="/zodiac" className="moon-cta-secondary">
+                <Link href="/zodiac" className="gangi-secondary-button">
                   내 띠 다시 확인
                 </Link>
               </ActionCluster>

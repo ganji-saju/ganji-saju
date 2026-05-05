@@ -31,7 +31,7 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
         <button
           type="button"
           onClick={handlePrint}
-          className="moon-action-primary"
+          className="gangi-primary-button"
         >
           <Download className="h-4 w-4" aria-hidden="true" />
           PDF로 저장
@@ -39,14 +39,14 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
         <button
           type="button"
           onClick={handlePrint}
-          className="moon-action-secondary"
+          className="gangi-secondary-button"
         >
           <Printer className="h-4 w-4" aria-hidden="true" />
           인쇄
         </button>
         <Link
           href={backHref}
-          className="moon-action-muted"
+          className="gangi-secondary-button"
         >
           리포트로 돌아가기
         </Link>

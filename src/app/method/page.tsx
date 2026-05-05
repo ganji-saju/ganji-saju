@@ -83,7 +83,7 @@ export default function MethodIndexPage() {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="바로 이어보기"
             title="설명보다 내 풀이가 먼저입니다"
             description="도움말은 궁금할 때만 확인하고, 실제 결과 화면에서는 핵심 요약과 분야별 조언을 먼저 보시면 됩니다."
@@ -91,13 +91,13 @@ export default function MethodIndexPage() {
             <ActionCluster>
               <Link
                 href="/about-engine"
-                className="moon-action-secondary"
+                className="gangi-secondary-button"
               >
                 풀이 안내 보기
               </Link>
               <Link
                 href="/saju/new"
-                className="moon-action-primary"
+                className="gangi-primary-button"
               >
                 사주 시작하기
               </Link>

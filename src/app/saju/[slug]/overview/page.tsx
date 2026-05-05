@@ -146,7 +146,7 @@ export default async function SajuOverviewPage({ params }: Props) {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="font-display text-2xl text-[var(--app-ivory)]">기본 해석</h2>
+              <h2 className=" text-2xl text-[var(--app-ivory)]">기본 해석</h2>
               <Badge className="border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]">무료</Badge>
             </div>
 
@@ -163,7 +163,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                 className="moon-wisdom-link-card group flex items-start gap-4"
                 data-tone="gold"
               >
-                <div className="font-hanja flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/8 text-sm text-[var(--app-gold-text)]">
+                <div className=" flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/8 text-sm text-[var(--app-gold-text)]">
                   {String(index + 1).padStart(2, '0')}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -185,7 +185,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                   PREMIUM
                 </span>
               </div>
-              <div className="mt-3 font-display text-2xl text-[var(--app-gold-text)]">
+              <div className="mt-3 text-2xl text-[var(--app-gold-text)]">
                 나의 깊은 사주풀이
               </div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
@@ -212,13 +212,13 @@ export default async function SajuOverviewPage({ params }: Props) {
               <div className="mt-6 flex flex-col gap-2.5">
                 <Link
                   href={`/saju/${slug}/premium`}
-                  className="moon-action-primary"
+                  className="gangi-primary-button"
                 >
                   깊은 사주풀이 열기 <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/membership"
-                  className="moon-action-secondary moon-action-compact"
+                  className="gangi-secondary-button moon-action-compact"
                 >
                   플랜 비교 보기
                 </Link>

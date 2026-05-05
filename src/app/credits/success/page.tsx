@@ -47,7 +47,7 @@ function LoadingState() {
       />
 
       <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-        <SectionSurface surface="lunar" size="lg">
+        <SectionSurface surface="panel" size="lg">
           <div className="app-starfield" />
           <SectionHeader
             eyebrow="확인 중"
@@ -137,7 +137,7 @@ function SuccessState({ coins }: { coins: number }) {
       />
 
       <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-        <SectionSurface surface="lunar" size="lg">
+        <SectionSurface surface="panel" size="lg">
           <div className="app-starfield" />
           <SectionHeader
             eyebrow="충전 결과"

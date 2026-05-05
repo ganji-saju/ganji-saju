@@ -345,7 +345,7 @@ function PremiumReadingMap({
       <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
         <div>
           <div className="app-caption">리포트 핵심</div>
-          <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)]">
+          <h2 className="mt-3 text-2xl text-[var(--app-ivory)]">
             {title}
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -401,7 +401,7 @@ function PremiumSectionIntro({
       <div className="grid gap-4 lg:grid-cols-[1fr_0.42fr] lg:items-end">
         <div>
           <div className="app-caption text-[var(--app-gold-soft)]">{eyebrow}</div>
-          <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
+          <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
             {title}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -576,7 +576,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
                 {heroLabel}
               </Badge>
-              <h1 className="mt-5 font-display text-4xl text-[var(--app-ivory)] sm:text-5xl">
+              <h1 className="mt-5 text-4xl text-[var(--app-ivory)] sm:text-5xl">
                 {heroTitle}
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
@@ -590,7 +590,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   <Link
                     key={step.href}
                     href={step.href}
-                    className="moon-action-secondary"
+                    className="gangi-secondary-button"
                   >
                     {step.label} 보기
                   </Link>
@@ -600,7 +600,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     href={`/saju/${slug}/premium/print`}
                     eventName="report_pdf_click"
                     eventParams={{ slug, from: 'premium_hero', status: 'available' }}
-                    className="moon-action-primary"
+                    className="gangi-primary-button"
                   >
                     PDF로 저장하기
                   </TrackedLink>
@@ -651,7 +651,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
             <div>
               <div className="app-caption">결제 전 확인</div>
-              <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
+              <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
                 긴 설명보다, 남는 가치부터 확인합니다
               </h2>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -675,7 +675,7 @@ export default async function SajuPremiumPage({ params }: Props) {
         {!hasLifetimeAccess ? (
           <section className="app-panel p-5 sm:p-6">
             <div className="app-caption">작은 맛보기</div>
-            <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
+            <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
               풀이가 부담스러우면 작은 질문부터 열어봅니다
             </h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -756,7 +756,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     풀이 본문은 별도 권한
                   </Badge>
                 </div>
-                <h2 className="mt-4 font-display text-3xl text-[var(--app-gold-text)]">
+                <h2 className="mt-4 text-3xl text-[var(--app-gold-text)]">
                   올해 전략서는 열려 있고, 깊은 사주풀이는 별도로 보관합니다
                 </h2>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -773,7 +773,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 </div>
               </article>
               <article className="moon-plan-card p-6" data-featured="true">
-                <div className="font-display text-2xl text-[var(--app-gold-text)]">
+                <div className=" text-2xl text-[var(--app-gold-text)]">
                   평생 소장 풀이로 확장하기
                 </div>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -789,7 +789,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   ))}
                 </div>
                 <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-                  <div className="font-display text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
+                  <div className=" text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
                   <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                     풀이 본문과 올해 부록을 함께 열고, 같은 사주로 다시 들어와도 계속
                     읽으실 수 있습니다.
@@ -797,13 +797,13 @@ export default async function SajuPremiumPage({ params }: Props) {
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
                     <Link
                       href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
-                      className="moon-action-primary"
+                      className="gangi-primary-button"
                     >
                       풀이 열기
                     </Link>
                     <Link
                       href={`/saju/${slug}`}
-                      className="moon-action-secondary"
+                      className="gangi-secondary-button"
                     >
                       기본 결과로 돌아가기
                     </Link>
@@ -824,7 +824,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           <article className="moon-lunar-panel p-6">
             <div className="app-starfield" />
             <div className="app-caption">결제 전 미리보기</div>
-            <div className="mt-4 font-display text-2xl text-[var(--app-ivory)]">
+            <div className="mt-4 text-2xl text-[var(--app-ivory)]">
               ① 풀이 첫 섹션 미리보기
             </div>
             <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -862,7 +862,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           </article>
 
           <article className="moon-plan-card p-6" data-featured="true">
-            <div className="font-display text-2xl text-[var(--app-gold-text)]">
+            <div className=" text-2xl text-[var(--app-gold-text)]">
               7개 섹션 완성형 풀이
             </div>
             <div className="mt-5 grid gap-2">
@@ -903,26 +903,26 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
 
             <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-              <div className="font-display text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
+              <div className=" text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                 오늘 바로 7개 섹션 본문과 PDF 저장, MY 보관함 재열람, 이후 업데이트 반영이 함께 열립니다.
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Link
                   href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
-                  className="moon-action-primary"
+                  className="gangi-primary-button"
                 >
                   풀이 열기
                 </Link>
                 <Link
                   href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
-                  className="moon-action-secondary"
+                  className="gangi-secondary-button"
                 >
                   멤버십으로 먼저 보기
                 </Link>
                 <Link
                   href={REPORT_SAMPLE_HREF}
-                  className="moon-action-muted"
+                  className="gangi-secondary-button"
                 >
                   샘플 풀이 다시 보기
                 </Link>
@@ -943,7 +943,7 @@ export default async function SajuPremiumPage({ params }: Props) {
 
         <section className="app-panel p-5 sm:p-6">
           <div className="app-caption">달빛인생의 약속</div>
-          <h2 className="mt-3 font-display text-2xl text-[var(--app-ivory)] sm:text-3xl">
+          <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
             무섭게 맞힌다는 말보다, 다시 확인할 수 있는 풀이를 남깁니다
           </h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">

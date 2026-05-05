@@ -4,12 +4,16 @@ import Link from 'next/link';
 import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiSourceBadge } from '@/components/ai/ai-source-badge';
-import { CounselorSelector } from '@/components/counselor/counselor-selector';
+import { GangiCharacter } from '@/components/gangi/gangi-ui';
 import { Button } from '@/components/ui/button';
-import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { AiChatBillingSummary } from '@/lib/credits/ai-chat-access';
-import type { MoonlightCounselorId } from '@/lib/counselors';
+import {
+  DIALOGUE_EXPERTS,
+  getDialogueExpertMeta,
+  normalizeDialogueExpertId,
+  type DialogueExpertId,
+} from '@/lib/dialogue-experts';
 
 type AiSource = 'openai' | 'fallback' | 'safe_redirect';
 type FallbackReason = 'ai_not_configured' | 'empty_ai_response' | 'openai_error';
@@ -34,7 +38,8 @@ interface DialogueAiResponse {
   fallbackReason?: FallbackReason | null;
   errorMessage?: string | null;
   redirectPath?: string | null;
-  counselorId?: MoonlightCounselorId | null;
+  expertId?: DialogueExpertId | null;
+  expertLabel?: string | null;
   cta?: {
     label: string;
     href: string;
@@ -57,7 +62,8 @@ interface ChatMessage {
   } | null;
   fallbackReason?: FallbackReason | null;
   errorMessage?: string | null;
-  counselorId?: MoonlightCounselorId | null;
+  expertId?: DialogueExpertId | null;
+  expertLabel?: string | null;
   cta?: {
     label: string;
     href: string;
@@ -71,6 +77,7 @@ interface DialogueChatPanelProps {
   concernId?: string;
   entrySource?: string;
   autoStart?: boolean;
+  initialExpertId?: DialogueExpertId;
 }
 
 interface ProfileApiProfile {
@@ -101,7 +108,7 @@ const INITIAL_MESSAGE: ChatMessage = {
   model: null,
   errorMessage: null,
   text:
-    '편하게 물으세요. 로그인되어 있고 MY 프로필에 생년월일이 저장돼 있으면 깊은 사주풀이를 다시 입력하지 않아도 그 정보를 먼저 놓고 바로 풀어드립니다. 처음 3회는 무료이고, 이후에는 3회 묶음마다 3코인으로 이어집니다.',
+    '편하게 물으세요. 이제 대화 담당 선생을 따로 고르지 않고, 선택한 12간지 전문 분야에 맞춰 답변합니다. 로그인되어 있고 MY 프로필에 생년월일이 저장돼 있으면 그 정보를 먼저 놓고 바로 풀어드립니다.',
 };
 
 function createMessageId(prefix: string) {
@@ -293,12 +300,15 @@ export function DialogueChatPanel({
   concernId,
   entrySource,
   autoStart = false,
+  initialExpertId = 'dragon',
 }: DialogueChatPanelProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const autoStartedRef = useRef(false);
-  const { counselorId, selectCounselor } = usePreferredCounselor();
+  const [expertId, setExpertId] = useState<DialogueExpertId>(
+    normalizeDialogueExpertId(initialExpertId) ?? 'dragon'
+  );
   const [input, setInput] = useState('');
   const [status, setStatus] = useState<ChatStatus>('idle');
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
@@ -312,6 +322,7 @@ export function DialogueChatPanel({
   const latestAssistant = messages.findLast((message) => message.role === 'assistant');
   const badgeState = getBadgeState(status, latestAssistant);
   const connectionSummary = getConnectionSummary(latestAssistant, status);
+  const selectedExpert = getDialogueExpertMeta(expertId);
 
   function applyPreset(question: string) {
     setInput(question);
@@ -403,7 +414,7 @@ export function DialogueChatPanel({
         body: JSON.stringify({
           mode: 'dialogue',
           message: trimmedInput,
-          counselorId,
+          expertId,
           sourceSessionId,
           concernId,
           from: entrySource,
@@ -437,7 +448,8 @@ export function DialogueChatPanel({
         profileContext: payload.profileContext ?? null,
         fallbackReason: payload.fallbackReason ?? null,
         errorMessage: payload.errorMessage ?? null,
-        counselorId: payload.counselorId ?? counselorId,
+        expertId: payload.expertId ?? expertId,
+        expertLabel: payload.expertLabel ?? selectedExpert.label,
         cta: payload.cta ?? null,
       };
 
@@ -479,7 +491,7 @@ export function DialogueChatPanel({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="app-caption">AI 대화</div>
-            <h2 className="mt-3 font-[var(--font-heading)] text-3xl text-[var(--app-ivory)]">
+            <h2 className="mt-3 text-3xl text-[var(--app-ivory)]">
               내 정보를 불러와 바로 상담합니다
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
@@ -492,14 +504,41 @@ export function DialogueChatPanel({
                 오늘 결과에서 이어진 질문입니다. 첫 결과 기반 질문은 코인 차감 없이 먼저 답해드립니다.
               </p>
             ) : null}
-            <div className="mt-4 max-w-4xl">
-              <CounselorSelector
-                value={counselorId}
-                onChange={(nextCounselor) => void selectCounselor(nextCounselor)}
-                variant="compact"
-                title="대화를 맡을 선생"
-                description="고르신 선생의 말투로 질문을 받아드립니다. 내 사주 정보는 그대로 유지됩니다."
-              />
+            <div className="mt-4 rounded-[1.15rem] border border-[var(--app-pink-line)] bg-white/85 px-4 py-4">
+              <div className="flex items-start gap-3">
+                <GangiCharacter zodiac={selectedExpert.id} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-black text-[var(--app-pink-strong)]">
+                    선택한 전문 분야
+                  </div>
+                  <div className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
+                    {selectedExpert.animal}띠 · {selectedExpert.label}
+                  </div>
+                  <p className="mt-1 text-xs font-bold leading-6 text-[var(--app-copy-muted)]">
+                    {selectedExpert.description}
+                  </p>
+                </div>
+              </div>
+
+              <details className="mt-3">
+                <summary className="cursor-pointer list-none text-xs font-black text-[var(--app-pink-strong)]">
+                  전문 분야 바꾸기
+                </summary>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {DIALOGUE_EXPERTS.map((expert) => (
+                    <button
+                      key={expert.id}
+                      type="button"
+                      onClick={() => setExpertId(expert.id)}
+                      data-active={expertId === expert.id}
+                      className="gangi-expert-chip"
+                    >
+                      <span>{expert.glyph}</span>
+                      <strong>{expert.label}</strong>
+                    </button>
+                  ))}
+                </div>
+              </details>
             </div>
             <div className={`mt-4 rounded-[1.15rem] border px-4 py-3 ${getProfileStateClass(profileConnection.status)}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -565,11 +604,11 @@ export function DialogueChatPanel({
                   <div className="mt-3 flex flex-wrap gap-2 text-xs leading-6 text-[var(--app-copy-soft)]">
                     {message.source === 'openai' ? (
                       <span>
-                        {message.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'} · 정밀 답변
+                        {message.expertLabel ?? getDialogueExpertMeta(message.expertId).label} · 정밀 답변
                       </span>
                     ) : (
                       <span>
-                        {message.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'} ·{' '}
+                        {message.expertLabel ?? getDialogueExpertMeta(message.expertId).label} ·{' '}
                         {message.configured === false
                           ? '기본 답변 · 정밀 답변 연결 전'
                           : getFallbackLabel(message.fallbackReason)}
@@ -631,7 +670,7 @@ export function DialogueChatPanel({
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="moon-action-primary"
+            className="gangi-primary-button"
           >
             {status === 'loading' ? '답변 확인 중' : '보내기'}
           </button>

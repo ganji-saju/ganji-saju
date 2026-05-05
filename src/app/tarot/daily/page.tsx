@@ -1,272 +1,111 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { TarotCardArtwork } from '@/components/tarot/tarot-card-artwork';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import {
-  TAROT_CARD_KEYWORDS,
-  TAROT_QUESTION_OPTIONS,
-} from '@/content/moonlight';
+  GangiIntro,
+  GangiMiniCard,
+  GangiPageHeader,
+} from '@/components/gangi/gangi-ui';
+import { TarotCardArtwork } from '@/components/tarot/tarot-card-artwork';
+import { TAROT_QUESTION_OPTIONS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { getOptionalSignedInProfile } from '@/lib/profile';
-import { buildProfileReadingSlug } from '@/lib/profile-personalization';
-import { getTarotSpreadForQuestion, getTodayTarotPreview } from '@/lib/tarot-api';
+import { getTodayTarotPreview } from '@/lib/tarot-api';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-
-const DAILY_TAROT_QUESTION = '오늘 하루 어떤 메시지가 있을까';
-
-const TAROT_FLOW_POINTS = [
-  '타로는 지금 눈앞의 감정과 장면을 빠르게 비춥니다.',
-  '결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동으로 먼저 정리합니다.',
-  '카드 결과가 마음에 남으면 같은 질문을 사주나 상담으로 이어갈 수 있습니다.',
-] as const;
 
 export const metadata: Metadata = {
   title: '타로',
-  description:
-    '질문을 고르고 카드 뽑기 화면으로 이어지는 달빛인생의 오늘의 타로 화면입니다.',
+  description: '질문을 고르고 카드 한 장을 뽑아 오늘 마음의 흐름을 바로 확인하세요.',
   alternates: {
     canonical: '/tarot/daily',
   },
 };
 
 export default async function DailyTarotPage() {
-  const profile = await getOptionalSignedInProfile();
-  const readingSlug = buildProfileReadingSlug(profile);
   const featuredReading = await getTodayTarotPreview();
-  const premiumSpread = await getTarotSpreadForQuestion(DAILY_TAROT_QUESTION);
-  const sourceLabel = featuredReading.source === 'api' ? '78장 덱 기준' : '로컬 덱 기준';
+  const sourceLabel = featuredReading.source === 'api' ? '78장 덱 기준' : '오늘의 카드 기준';
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
-        <section className="gangi-sub-intro text-center">
-          <p className="gangi-sub-eyebrow">무료 타로</p>
-          <h1>
-            오늘 마음에
-            <br />
-            한 장만 뽑아볼까요?
-          </h1>
-          <p className="gangi-sub-desc">
-            잠시 눈을 감고, 가장 궁금한 한 가지를 마음속에 떠올려보세요.
-          </p>
+      <AppPage className="gangi-subpage space-y-5">
+        <GangiPageHeader title="타로 한 장" backHref="/free" />
+
+        <GangiIntro
+          eyebrow="무료 타로"
+          title={
+            <>
+              오늘 마음에
+              <br />
+              한 장만 뽑아볼까요?
+            </>
+          }
+          description="지금 가장 궁금한 한 가지를 떠올리고, 마음이 가는 카드로 바로 이어가세요."
+        >
           <div className="gangi-card-stack" aria-hidden="true">
             {[0, 1, 2, 3, 4].map((index) => (
               <span key={index} className="gangi-tarot-card" />
             ))}
           </div>
-          <Link
-            href="/tarot/daily/pick"
-            className="mx-auto mt-5 flex h-12 max-w-xs items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-sm font-black text-white"
-          >
+          <Link href="/tarot/daily/pick" className="gangi-primary-button mx-auto mt-5 max-w-xs">
             카드 뽑으러 가기
           </Link>
-        </section>
+        </GangiIntro>
 
-        <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="질문 고르기"
-              title="무엇이 제일 마음에 걸리나요?"
-              titleClassName="text-3xl"
-              description="가장 가까운 질문을 고르면 바로 카드 뽑기로 이어집니다. 답은 짧게, 행동은 분명하게 보여드립니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
-            <ProductGrid columns={2} className="mt-6">
-              {TAROT_QUESTION_OPTIONS.map((question) => (
-                <FeatureCard
-                  key={question.label}
-                  surface="soft"
-                  eyebrow={
-                    <span className="flex items-center gap-2">
-                      <span className="font-hanja text-base text-[var(--app-gold-text)]">
-                        {question.emoji}
-                      </span>
-                      <span>{question.intent}</span>
-                    </span>
-                  }
-                  title={question.label}
-                  description={question.description}
-                  badge={
-                    <span className="rounded-full border border-[var(--app-plum)]/25 bg-[var(--app-plum)]/10 px-2.5 py-1 text-[11px] text-[var(--app-plum)]">
-                      {question.when}
-                    </span>
-                  }
-                  footer={
-                    <Link
-                      href={{
-                        pathname: '/tarot/daily/pick',
-                        query: { question: question.label },
-                      }}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-plum)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      이 질문으로 카드 뽑기
-                    </Link>
-                  }
-                  />
-              ))}
-            </ProductGrid>
-
-            <SectionHeader
-              className="mt-8"
-              eyebrow="직접 질문 쓰기"
-              title="지금 마음에 떠오르는 문장을 그대로 적어도 좋습니다"
-              titleClassName="text-2xl"
-            />
-
-            <form
-              action="/tarot/daily/pick"
-              className="mt-5 rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4"
+        <section className="gangi-topic-grid" aria-label="타로 질문 선택">
+          {TAROT_QUESTION_OPTIONS.slice(0, 6).map((question) => (
+            <Link
+              key={question.label}
+              href={{ pathname: '/tarot/daily/pick', query: { question: question.label } }}
+              className="gangi-topic-card"
             >
-              <label
-                htmlFor="tarot-question"
-                className="block text-xs tracking-[0.2em] text-[var(--app-copy-soft)]"
-              >
-                직접 질문 쓰기
-              </label>
-              <textarea
-                id="tarot-question"
-                name="question"
-                rows={3}
-                placeholder="예: 지금 마음을 전해도 괜찮을까요"
-                className="mt-3 w-full resize-none rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm text-[var(--app-ivory)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-plum)]/45"
-              />
-              <ActionCluster className="mt-4">
-                <button
-                  type="submit"
-                  className="moon-action-primary"
-                >
-                  카드 뽑기로 이어가기
-                </button>
-              </ActionCluster>
-            </form>
-          </SectionSurface>
-
-          <SupportRail
-            surface="lunar"
-            eyebrow="무료 타로 흐름"
-            title="카드 한 장으로 오늘 마음부터 봅니다"
-            description="먼저 지금 마음을 짧게 확인하고, 더 궁금할 때만 사주나 대화로 이어갑니다."
-          >
-            <BulletList items={TAROT_FLOW_POINTS} />
-
-            <FeatureCard
-              className="mt-5"
-              surface="soft"
-              eyebrow="더 자세히 보기"
-              title="연애 마음 확인 990원"
-              description="한 장의 메시지가 마음에 남으면 현재 흐름, 숨은 마음, 오늘의 조언을 더 짧게 이어볼 수 있게 준비합니다."
-            />
-
-            <ProductGrid columns={3} className="mt-4">
-              {premiumSpread.map(({ position, reading }) => (
-                <FeatureCard
-                  key={position}
-                  surface="soft"
-                  eyebrow={position}
-                  description={reading.displayName}
-                />
-              ))}
-            </ProductGrid>
-
-            <ActionCluster className="mt-5">
-              <Link
-                href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="moon-action-secondary"
-              >
-                {readingSlug ? '이 질문을 내 사주 흐름과 함께 보기' : '사주와 함께 보기'}
-              </Link>
-            </ActionCluster>
-          </SupportRail>
+              <span className="gangi-topic-icon">{question.emoji}</span>
+              <h2>{question.label}</h2>
+              <p>{question.description}</p>
+            </Link>
+          ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-          <SectionSurface surface="panel" size="lg" className="text-center">
-            <SectionHeader
-              eyebrow="오늘의 카드 미리보기"
-              title="한 장의 그림이 먼저 건네는 말"
-              titleClassName="text-3xl"
-              descriptionClassName="mx-auto max-w-xl text-[var(--app-copy)]"
-              description="질문을 바로 고르기 전에, 오늘의 카드가 어떤 온도로 말을 거는지 먼저 살펴보실 수 있습니다."
+        <section className="gangi-card-panel mx-4 p-4">
+          <p className="gangi-sub-eyebrow mb-3">직접 질문 쓰기</p>
+          <form action="/tarot/daily/pick" className="grid gap-3">
+            <textarea
+              name="question"
+              rows={3}
+              placeholder="예: 지금 마음을 전해도 괜찮을까요"
+              className="min-h-24 w-full resize-none rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3 text-sm font-bold leading-6 text-[var(--app-ink)] outline-none placeholder:text-[rgba(17,17,20,0.38)] focus:border-[var(--app-pink)]"
             />
-
-            <div className="mt-6">
-              <TarotCardArtwork
-                cardId={featuredReading.card.name_short}
-                shortName={featuredReading.shortName}
-                displayName={featuredReading.displayName}
-                cardMarker={featuredReading.cardMarker}
-                arcanaLabel={featuredReading.arcanaLabel}
-                className="mx-auto w-[min(14rem,72vw)]"
-                priority
-              />
-            </div>
-            <div className="mt-4 font-display text-2xl font-semibold text-[var(--app-ivory)]">
-              {featuredReading.displayName}
-            </div>
-            <div className="mt-2 text-sm text-[var(--app-copy-muted)]">{sourceLabel}</div>
-          </SectionSurface>
-
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="오늘의 한마디"
-              title={featuredReading.answer}
-              titleClassName="text-3xl"
-              description={featuredReading.guidance}
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
-            <FeatureCard
-              className="mt-6"
-              surface="soft"
-              eyebrow="질문의 속뜻"
-              description={featuredReading.questionInsight}
-            />
-
-            <ActionCluster className="mt-6">
-              <Link
-                href={{
-                  pathname: '/tarot/daily/result',
-                  query: {
-                    question: DAILY_TAROT_QUESTION,
-                    cardId: featuredReading.card.name_short,
-                    orientation: featuredReading.orientation,
-                  },
-                }}
-                className="moon-cta-primary"
-              >
-                이 카드로 오늘 리딩 보기
-              </Link>
-            </ActionCluster>
-          </SectionSurface>
+            <button type="submit" className="gangi-secondary-button">
+              이 질문으로 카드 뽑기
+            </button>
+          </form>
         </section>
 
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="쉬운 문장"
-            title="무섭게 말하지 않고, 오늘 할 수 있는 말로 바꿉니다"
-            titleClassName="text-3xl"
-            description="무료 타로에서도 공포성 표현보다 생활에 붙는 언어를 먼저 드립니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
+        <section className="gangi-pink-panel mx-4 p-5 text-center">
+          <p className="gangi-sub-eyebrow mb-3">오늘의 카드 미리보기</p>
+          <TarotCardArtwork
+            cardId={featuredReading.card.name_short}
+            shortName={featuredReading.shortName}
+            displayName={featuredReading.displayName}
+            cardMarker={featuredReading.cardMarker}
+            arcanaLabel={featuredReading.arcanaLabel}
+            className="mx-auto w-[min(13rem,70vw)]"
+            priority
           />
+          <h2 className="mt-4 text-2xl font-black text-[var(--app-ink)]">
+            {featuredReading.displayName}
+          </h2>
+          <p className="mt-2 text-xs font-bold text-[rgba(17,17,20,0.54)]">{sourceLabel}</p>
+          <p className="mt-4 text-sm font-bold leading-7 text-[var(--app-copy)]">
+            {featuredReading.answer}
+          </p>
+        </section>
 
-          <ProductGrid columns={3} className="mt-6">
-            {TAROT_CARD_KEYWORDS.map(([name, copy]) => (
-              <FeatureCard
-                key={name}
-                surface="soft"
-                eyebrow={name}
-                description={copy}
-              />
-            ))}
-          </ProductGrid>
-        </SectionSurface>
+        <section className="gangi-card-panel mx-4 p-4">
+          <p className="gangi-sub-eyebrow mb-3">결과는 이렇게 보여드려요</p>
+          <div className="gangi-mini-grid">
+            <GangiMiniCard label="01" title="핵심 한 줄" desc="먼저 지금 마음의 방향을 짧게 봅니다." />
+            <GangiMiniCard label="02" title="조심할 것" desc="오늘 흔들리기 쉬운 지점을 알려드립니다." />
+            <GangiMiniCard label="03" title="해볼 행동" desc="읽고 바로 해볼 작은 행동으로 마무리합니다." />
+          </div>
+        </section>
       </AppPage>
     </AppShell>
   );

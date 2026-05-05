@@ -76,7 +76,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="이제 열리는 것"
@@ -140,13 +140,13 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
               <ActionCluster>
                 <Link
                   href={primaryHref}
-                  className="moon-cta-primary"
+                  className="gangi-primary-button"
                 >
                   {slug && planSlug === 'lifetime' ? '열린 보관형 리포트 보기' : completeGuide.primaryLabel}
                 </Link>
                 <Link
                   href="/"
-                  className="moon-cta-secondary"
+                  className="gangi-secondary-button"
                 >
                   홈으로 돌아가기
                 </Link>

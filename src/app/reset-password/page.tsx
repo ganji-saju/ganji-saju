@@ -159,7 +159,7 @@ function ResetPasswordContent() {
     <div className="app-panel w-full max-w-xl p-5 text-center sm:p-8">
       <div className="mb-5">
         <div className="app-caption mb-3">계정 보안</div>
-        <h1 className="font-heading text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
+        <h1 className=" text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
           새 비밀번호 설정
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--app-copy-muted)]">
@@ -264,7 +264,7 @@ export default function ResetPasswordPage() {
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
           달
         </div>
-        <div className="font-[var(--font-heading)] text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+        <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
         <div className="text-xs text-[var(--app-copy-muted)]">비밀번호 재설정</div>
       </div>
       <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>

@@ -49,7 +49,7 @@ export default function TenGodsPage() {
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
+          <SectionSurface surface="panel" size="lg">
             <div className="app-starfield" />
             <SectionHeader
               eyebrow="십신으로 보는 반복 패턴"
@@ -102,13 +102,13 @@ export default function TenGodsPage() {
                 <ActionCluster>
                   <Link
                     href="/saju/new"
-                    className="moon-action-primary"
+                    className="gangi-primary-button"
                   >
                     내 사주 시작하기
                   </Link>
                   <Link
                     href="/interpretation"
-                    className="moon-action-muted"
+                    className="gangi-secondary-button"
                   >
                     다른 해석 보기
                   </Link>

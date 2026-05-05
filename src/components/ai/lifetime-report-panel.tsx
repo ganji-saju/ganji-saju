@@ -167,7 +167,7 @@ function LifetimeAtAGlance({
       <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
         <div>
           <div className="app-caption">한 장 요약</div>
-          <h3 className="mt-3 font-display text-2xl text-[var(--app-ivory)]">
+          <h3 className="mt-3 text-2xl text-[var(--app-ivory)]">
             긴 풀이는 먼저 이 네 장면만 보셔도 됩니다
           </h3>
           <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -481,7 +481,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       <section id="lifetime-report" className="moon-lunar-panel p-6 sm:p-7">
         <div className="app-starfield" />
         <div className="app-caption">깊은 사주풀이 생성 중</div>
-        <h2 className="font-display mt-4 text-3xl text-[var(--app-ivory)]">
+        <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
           타고난 사주풀이를 정리하고 있습니다
         </h2>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -525,7 +525,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">깊은 사주풀이 본문</div>
-            <h2 className="font-display mt-4 text-3xl text-[var(--app-ivory)]">
+            <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
               내 사주의 원본 해설서를 평생 풀이로 정리했습니다
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -571,7 +571,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               ].map(([label, value]) => (
                 <div key={label} className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-center">
                   <div className="app-caption">{label}</div>
-                  <div className="font-hanja mt-3 text-2xl font-semibold text-[var(--app-ivory)]">{value}</div>
+                  <div className=" mt-3 text-2xl font-semibold text-[var(--app-ivory)]">{value}</div>
                 </div>
               ))}
             </div>
@@ -592,7 +592,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="grid gap-5 lg:grid-cols-[0.74fr_1.26fr] lg:items-start">
           <div>
             <div className="app-caption">본문 목차</div>
-            <h3 className="mt-3 font-display text-2xl text-[var(--app-ivory)]">
+            <h3 className="mt-3 text-2xl text-[var(--app-ivory)]">
               필요한 장으로 바로 이동합니다
             </h3>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -633,7 +633,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               </Badge>
               <div className="app-caption">{section.label}</div>
             </div>
-            <h3 className="font-display mt-3 text-2xl text-[var(--app-ivory)]">
+            <h3 className=" mt-3 text-2xl text-[var(--app-ivory)]">
               {reportSection.headline}
             </h3>
             <div className="mt-4 rounded-[20px] border border-[var(--app-gold)]/18 bg-[rgba(210,176,114,0.08)] px-5 py-5">
@@ -661,7 +661,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             {report.yearlyAppendix.yearGanji}
           </Badge>
         </div>
-        <h3 className="font-display mt-4 text-2xl text-[var(--app-ivory)]">
+        <h3 className=" mt-4 text-2xl text-[var(--app-ivory)]">
           {report.yearlyAppendix.headline}
         </h3>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -679,7 +679,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href={report.yearlyAppendix.ctaAnchor}
-            className="moon-action-primary"
+            className="gangi-primary-button"
           >
             {report.yearlyAppendix.ctaLabel}
           </Link>

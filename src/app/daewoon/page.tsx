@@ -50,7 +50,7 @@ export default function DaewoonPage() {
         <section className="px-5 pb-6">
           <div className="gangi-pink-panel p-5">
             <p className="gangi-sub-eyebrow mb-0">현재 흐름 예시</p>
-            <h2 className="mt-3 font-[var(--font-classic)] text-[1.35rem] font-black leading-snug text-[var(--app-ink)]">
+            <h2 className="mt-3 text-[1.35rem] font-black leading-snug text-[var(--app-ink)]">
               지금은 큰 흐름이
               <br />
               바뀌는 전환기예요
@@ -80,7 +80,7 @@ export default function DaewoonPage() {
                     {period.score}
                   </span>
                 </div>
-                <h3 className="mt-2 font-[var(--font-classic)] text-base font-black">{period.title}</h3>
+                <h3 className="mt-2 text-base font-black">{period.title}</h3>
                 <p className="mt-1 text-xs font-bold text-[rgba(17,17,20,0.64)]">{period.desc}</p>
               </article>
             ))}

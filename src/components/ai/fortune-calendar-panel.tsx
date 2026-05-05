@@ -484,7 +484,7 @@ export default function FortuneCalendarPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">Fortune Calendar</div>
-          <h2 className="mt-4 font-[var(--font-heading)] text-3xl text-[var(--app-ivory)]">
+          <h2 className="mt-4 text-3xl text-[var(--app-ivory)]">
             달별로 한눈에 보는 결정일과 주의 날
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-8 text-[var(--app-copy)]">
@@ -666,7 +666,7 @@ export default function FortuneCalendarPanel({
             ) : (
               <>
                 <div className="app-caption">잠금 안내</div>
-                <h3 className="mt-3 font-[var(--font-heading)] text-2xl text-[var(--app-gold-text)]">
+                <h3 className="mt-3 text-2xl text-[var(--app-gold-text)]">
                   {selectedMonth}월 흐름을 열면 좋은 날과 주의 날이 바로 갈립니다
                 </h3>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
@@ -699,13 +699,13 @@ export default function FortuneCalendarPanel({
                   </Button>
                   <Link
                     href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
-                    className="moon-action-secondary moon-action-compact"
+                    className="gangi-secondary-button moon-action-compact"
                   >
                     1,900원으로 열기
                   </Link>
                   <Link
                     href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
-                    className="moon-action-muted moon-action-compact"
+                    className="gangi-secondary-button moon-action-compact"
                   >
                     코인팩 보기
                   </Link>

@@ -100,7 +100,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
                 {hasPreviousPage ? (
                   <Link
                     href={buildResultsPageHref(currentPage - 1)}
-                    className="moon-action-muted moon-action-compact"
+                    className="gangi-secondary-button moon-action-compact"
                   >
                     이전 30개
                   </Link>
@@ -108,7 +108,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
                 {hasNextPage ? (
                   <Link
                     href={buildResultsPageHref(currentPage + 1)}
-                    className="moon-action-secondary moon-action-compact"
+                    className="gangi-secondary-button moon-action-compact"
                   >
                     다음 30개
                   </Link>
@@ -119,7 +119,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
         </SectionSurface>
 
         <SupportRail
-          surface="lunar"
+          surface="panel"
           eyebrow="보관함 기준"
           title="다시 여는 흐름도 처음과 같은 문법으로 정리합니다"
           description="보관함은 새 결과를 만드는 흐름과 분리되지 않고, 이미 만든 결과를 다시 열고 질문을 바꾸어 비교하는 흐름으로 이어집니다."

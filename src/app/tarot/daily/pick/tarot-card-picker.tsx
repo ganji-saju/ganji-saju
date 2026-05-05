@@ -203,7 +203,7 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
                 style={{ backgroundColor: tone.light }}
               />
               <span
-                className="relative z-10 self-end font-[var(--font-heading)] text-[10px] tracking-[0.2em]"
+                className="relative z-10 self-end text-[10px] tracking-[0.2em]"
                 style={{ color: tone.accent }}
               >
                 CARD

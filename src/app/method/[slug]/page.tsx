@@ -173,7 +173,7 @@ export default async function MethodDetailPage({ params }: Props) {
 
             <div className="mt-6 rounded-[22px] border border-[var(--app-line)] bg-white p-5">
               <div className="text-sm text-[var(--app-copy-soft)]">이 글이 답하려는 질문</div>
-              <p className="font-display mt-3 text-lg font-semibold text-[var(--app-ivory)]">{item.question}</p>
+              <p className=" mt-3 text-lg font-semibold text-[var(--app-ivory)]">{item.question}</p>
               <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{item.lead}</p>
             </div>
           </SectionSurface>
@@ -201,13 +201,13 @@ export default async function MethodDetailPage({ params }: Props) {
             <ActionCluster>
               <Link
                 href="/about-engine"
-                className="moon-action-secondary"
+                className="gangi-secondary-button"
               >
                 풀이 안내 보기
               </Link>
               <Link
                 href="/sample-report"
-                className="moon-action-muted"
+                className="gangi-secondary-button"
               >
                 샘플 리포트 보기
               </Link>
@@ -245,7 +245,7 @@ export default async function MethodDetailPage({ params }: Props) {
                     key={faq.question}
                     className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4"
                   >
-                    <h2 className="font-display text-sm font-semibold text-[var(--app-ivory)]">
+                    <h2 className=" text-sm font-semibold text-[var(--app-ivory)]">
                       {faq.question}
                     </h2>
                     <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{faq.answer}</p>
@@ -265,13 +265,13 @@ export default async function MethodDetailPage({ params }: Props) {
                   <ActionCluster>
                     <Link
                       href="/saju/new"
-                      className="moon-action-primary"
+                      className="gangi-primary-button"
                     >
                       사주 시작하기
                     </Link>
                     <Link
                       href="/membership"
-                      className="moon-action-muted"
+                      className="gangi-secondary-button"
                     >
                       상품 보기
                     </Link>
@@ -283,7 +283,7 @@ export default async function MethodDetailPage({ params }: Props) {
 
           <aside className="app-reading-rail">
             <SupportRail
-              surface="lunar"
+              surface="panel"
               eyebrow="체크 포인트"
               title="달빛인생에서는 이 내용이 실제 결과와 이어집니다"
               description="결과 화면에서 사용자가 직접 확인할 수 있는 지점만 짧게 모았습니다."

@@ -35,7 +35,7 @@ export function EngineMethodLinks({
         </div>
         <Link
           href={ctaHref}
-          className="moon-action-muted moon-action-compact"
+          className="gangi-secondary-button moon-action-compact"
         >
           {ctaLabel}
         </Link>

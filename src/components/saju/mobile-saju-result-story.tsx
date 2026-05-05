@@ -592,13 +592,13 @@ export function MobileSajuResultStory({
             ))}
             <Link
               href={`/saju/${slug}/premium`}
-              className="moon-action-primary"
+              className="gangi-primary-button"
             >
               긴 사주풀이로 이어보기
             </Link>
             <Link
               href="/dialogue"
-              className="moon-action-muted moon-action-compact"
+              className="gangi-secondary-button moon-action-compact"
             >
               달빛인생에 이어서 묻기
             </Link>
@@ -690,7 +690,7 @@ export function MobileSajuResultStory({
             {isLast ? (
               <Link
                 href="/saju/new"
-                className="moon-action-secondary moon-action-compact"
+                className="gangi-secondary-button moon-action-compact"
               >
                 새 리포트
               </Link>

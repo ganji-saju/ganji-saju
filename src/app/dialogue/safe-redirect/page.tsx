@@ -70,7 +70,7 @@ export default function SafeRedirectPage() {
           </SectionSurface>
 
           <SupportRail
-            surface="lunar"
+            surface="panel"
             eyebrow="지금 연결하실 수 있는 곳"
             title={primary.label}
             description={`${primary.detail} ${primary.note}`}
@@ -81,10 +81,10 @@ export default function SafeRedirectPage() {
               title={primary.phone}
             />
             <ActionCluster className="mt-5">
-              <a href={primaryPhoneHref} className="moon-cta-primary">
+              <a href={primaryPhoneHref} className="gangi-primary-button">
                 바로 전화 걸기
               </a>
-              <Link href="/dialogue" className="moon-cta-secondary">
+              <Link href="/dialogue" className="gangi-secondary-button">
                 대화 화면으로 돌아가기
               </Link>
             </ActionCluster>

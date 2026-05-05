@@ -30,7 +30,7 @@ export function SajuFactEvidencePanel({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="app-caption">풀이에 참고한 정보</div>
-          <h2 className="font-display mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+          <h2 className=" mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
             내 풀이가 어떤 정보를 참고했는지 궁금할 때만 확인하세요.
           </h2>
         </div>
@@ -51,13 +51,13 @@ export function SajuFactEvidencePanel({
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <article className="moon-orbit-card p-5">
           <div className="app-caption">내 사주의 기본 정보</div>
-          <div className="font-hanja mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
+          <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {factJson.pillars.year.ganzi} · {factJson.pillars.month.ganzi} · {factJson.pillars.day.ganzi}
             {factJson.pillars.hour ? ` · ${factJson.pillars.hour.ganzi}` : ''}
           </div>
           <div className="mt-4 grid gap-2 text-sm leading-7 text-[var(--app-copy)]">
             <div>
-              나를 나타내는 기운: <span className="font-hanja">{factJson.dayMaster.stem}</span> · {factJson.dayMaster.element}
+              나를 나타내는 기운: <span className="">{factJson.dayMaster.stem}</span> · {factJson.dayMaster.element}
             </div>
             <div>강한 오행: {factJson.fiveElements.dominant}</div>
             <div>약한 오행: {factJson.fiveElements.weakest}</div>
@@ -71,7 +71,7 @@ export function SajuFactEvidencePanel({
 
         <article className="moon-orbit-card p-5">
           <div className="app-caption">기운의 균형</div>
-          <div className="font-display mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
+          <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {evidenceJson.strength.level ?? '미계산'} {evidenceJson.strength.score !== null ? `· ${evidenceJson.strength.score}점` : ''}
           </div>
           <div className="mt-4 grid gap-2">
@@ -92,7 +92,7 @@ export function SajuFactEvidencePanel({
 
         <article className="moon-orbit-card p-5">
           <div className="app-caption">보완하면 좋은 흐름</div>
-          <div className="font-hanja mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
+          <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {evidenceJson.yongsin.primary ?? '미계산'}
           </div>
           <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
@@ -104,7 +104,7 @@ export function SajuFactEvidencePanel({
                 key={`${candidate.method}-${candidate.primary}-${candidate.score}`}
                 className="rounded-2xl border border-[var(--app-line)] bg-[rgba(8,10,18,0.32)] px-3 py-3"
               >
-                <div className="font-hanja text-sm font-medium text-[var(--app-ivory)]">
+                <div className=" text-sm font-medium text-[var(--app-ivory)]">
                   보완 후보 · {candidate.score}점
                 </div>
                 {candidate.plainSummary ? (
@@ -117,7 +117,7 @@ export function SajuFactEvidencePanel({
 
         <article className="moon-orbit-card p-5">
           <div className="app-caption">보조 참고 정보</div>
-          <div className="font-display mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
+          <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             필요한 경우에만 보조 정보를 함께 확인합니다.
           </div>
           {primaryClassic ? (

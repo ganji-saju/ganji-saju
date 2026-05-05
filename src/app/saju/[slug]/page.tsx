@@ -431,10 +431,10 @@ function CardLinkedClassicEvidence({
         {items.slice(0, 1).map((item) => (
           <div
             key={item.passage.id}
-            className="rounded-2xl border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-4"
+            className="rounded-2xl border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4"
           >
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-[var(--app-copy-soft)]">
-              <span className="rounded-full border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/10 px-2.5 py-1 text-[var(--app-gold-text)]">
+              <span className="rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[var(--app-pink-strong)]">
                 {item.work.titleKo}
               </span>
               <span>{item.section.path}</span>
@@ -454,7 +454,7 @@ function CardLinkedClassicEvidence({
               </summary>
               <blockquote
                 lang="zh-Hant"
-                className="mt-3 break-words rounded-2xl border border-[var(--app-pink-line)] bg-white px-3 py-3 font-[var(--font-heading)] text-sm leading-7 text-[var(--app-copy)]"
+                className="mt-3 break-words rounded-2xl border border-[var(--app-pink-line)] bg-white px-3 py-3 text-sm leading-7 text-[var(--app-copy)]"
               >
                 {item.passage.originalZh}
               </blockquote>
@@ -623,7 +623,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     href={`/saju/${slug}/premium`}
                     eventName="report_deep_report_click"
                     eventParams={{ slug, from: 'result_first_card' }}
-                    className="moon-cta-primary"
+                    className="gangi-primary-button"
                   >
                     긴 사주풀이 보기
                   </TrackedLink>
@@ -631,7 +631,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     href="/dialogue"
                     eventName="report_dialogue_continue_click"
                     eventParams={{ slug, from: 'result_first_card' }}
-                    className="moon-action-secondary"
+                    className="gangi-secondary-button"
                   >
                     이어서 묻기
                   </TrackedLink>
@@ -699,7 +699,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     href={`/saju/${slug}/premium`}
                     eventName="report_deep_report_click"
                     eventParams={{ slug, from: 'result_next_actions' }}
-                    className="moon-cta-primary"
+                    className="gangi-primary-button"
                   >
                     긴 사주풀이 보기
                   </TrackedLink>
@@ -707,7 +707,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     href={`/saju/${slug}/premium/print`}
                     eventName="report_pdf_click"
                     eventParams={{ slug, from: 'result_next_actions', status: 'print_page' }}
-                    className="moon-action-muted"
+                    className="gangi-secondary-button"
                   >
                     PDF로 소장하기
                   </TrackedLink>
@@ -715,7 +715,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     href="/dialogue"
                     eventName="report_dialogue_continue_click"
                     eventParams={{ slug, from: 'result_next_actions' }}
-                    className="moon-action-secondary"
+                    className="gangi-secondary-button"
                   >
                     달빛인생에 이어서 묻기
                   </TrackedLink>
@@ -753,7 +753,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   footer={
                     <Link
                       href={`/saju/${slug}/premium#yearly-report`}
-                      className="text-sm text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
+                      className="text-sm text-[var(--app-pink-strong)] underline underline-offset-4 hover:text-[var(--app-ink)]"
                     >
                       올해 전략서 바로 보기
                     </Link>
@@ -776,7 +776,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="app-caption">분야별 흐름</div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
                 오늘, 연애, 돈, 일, 관계를 한 흐름 안에서 이어 봅니다.
               </h2>
             </div>
@@ -799,9 +799,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   aria-current={isFocusedScore ? 'page' : undefined}
                   data-selected={isFocusedScore ? 'true' : 'false'}
                   className={cn(
-                    'moon-topic-score-card group relative overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_48px_rgba(216,27,114,0.08)]',
+                    'gangi-card-panel group relative overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_48px_rgba(216,27,114,0.08)]',
                     visual.panel,
-                    isFocusedScore ? 'ring-1 ring-[var(--app-gold)]/45' : ''
+                    isFocusedScore ? 'ring-1 ring-[var(--app-pink)]/45' : ''
                   )}
                 >
                   <div className={cn('pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full blur-3xl', visual.glow)} />
@@ -822,7 +822,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         className={cn(
                           'rounded-full border px-2.5 py-1 transition-colors',
                           isFocusedScore
-                            ? 'border-[var(--app-gold)]/35 bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
+                            ? 'border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 text-[var(--app-pink-strong)]'
                             : 'border-[var(--app-line)] bg-white/70 text-[var(--app-copy-soft)] group-hover:border-[var(--app-pink-line)] group-hover:text-[var(--app-ink)]'
                         )}
                       >
@@ -832,7 +832,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         className={cn(
                           'text-sm transition-all duration-200',
                           isFocusedScore
-                            ? 'translate-x-0 text-[var(--app-gold-text)]'
+                            ? 'translate-x-0 text-[var(--app-pink-strong)]'
                             : 'text-[var(--app-copy-soft)] group-hover:translate-x-1 group-hover:text-[var(--app-ink)]'
                         )}
                       >
@@ -845,18 +845,18 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             })}
           </div>
 
-          <div className="moon-lunar-panel mt-4 overflow-hidden rounded-[24px] border-[var(--app-gold)]/22">
+          <div className="gangi-card-panel mt-4 overflow-hidden rounded-[24px] border-[var(--app-pink)]/22">
             <div className="grid gap-0 lg:grid-cols-2">
               <div className="p-4 sm:p-5">
                 <div className="app-caption">{report.focusLabel} 실행 포인트</div>
-                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ivory)]">
+                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
                   {easyResultCopy(report.primaryAction.title, 1)}
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(report.primaryAction.description, 2)}</p>
               </div>
               <div className="border-t border-[var(--app-line)] p-4 sm:p-5 lg:border-l lg:border-t-0">
                 <div className="app-caption">{report.focusLabel} 주의 포인트</div>
-                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ivory)]">
+                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
                   {easyResultCopy(report.cautionAction.title, 1)}
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(report.cautionAction.description, 2)}</p>
@@ -865,12 +865,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           </div>
         </section>
 
-        <section className="moon-lunar-panel p-6 sm:p-7">
-          <div className="app-starfield" />
+        <section className="gangi-card-panel p-6 sm:p-7">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="app-caption">올해 전략서 진입</div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
                 2026 올해 전략서로 들어가면 월별로 밀어도 되는 일과 한 번 더 확인할 일을 볼 수 있습니다.
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -881,7 +880,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={`/saju/${slug}/premium#yearly-report`}
-                className="rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/14 px-5 py-3 text-sm font-semibold text-[var(--app-gold-text)] transition-colors hover:bg-[var(--app-gold)]/20"
+                className="rounded-full border border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 px-5 py-3 text-sm font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/20"
               >
                 2026 올해 전략서 보기
               </Link>
@@ -905,7 +904,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           {report.timeline.map((item) => (
             <article key={item.label} className="app-panel p-6">
               <div className="app-caption">{item.label}</div>
-              <h2 className="mt-3 text-2xl font-semibold leading-8 text-[var(--app-ivory)]">{easyResultCopy(item.headline, 1)}</h2>
+              <h2 className="mt-3 text-2xl font-semibold leading-8 text-[var(--app-ink)]">{easyResultCopy(item.headline, 1)}</h2>
               <p className="app-body-copy mt-4 text-sm">{easyResultCopy(item.body, 2)}</p>
               {item.points && item.points.length > 0 ? (
                 <div className="mt-5 grid gap-2">
@@ -986,7 +985,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <div className="app-caption">세부 정보</div>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
                       궁금할 때만 전문 단서를 펼쳐보세요.
                     </h2>
                   </div>
@@ -1010,7 +1009,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                           참고
                         </span>
                       </div>
-                      <h3 className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">{easyResultCopy(card.title, 1)}</h3>
+                      <h3 className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ink)]">{easyResultCopy(card.title, 1)}</h3>
                       <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">
                         {easyResultCopy(card.body, 2)}
                       </p>
@@ -1047,7 +1046,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                               <div className="mt-3 grid gap-2">
                                 {card.explainers.map((item) => (
                                   <div key={`${card.key}-${item.term}`} className="text-sm leading-7 text-[var(--app-copy)]">
-                                    <span className="font-semibold text-[var(--app-ivory)]">
+                                    <span className="font-semibold text-[var(--app-ink)]">
                                       {easyResultCopy(item.term, 1)}
                                     </span>
                                     <span className="text-[var(--app-copy-soft)]"> · {easyResultCopy(item.meaning, 1)}</span>
@@ -1123,7 +1122,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="app-caption">전문 정보</div>
-                    <h2 className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">전문 사주표 보기</h2>
+                    <h2 className="mt-2 text-lg font-semibold text-[var(--app-ink)]">전문 사주표 보기</h2>
                     <p className="mt-1 text-sm leading-6 text-[var(--app-copy-muted)]">
                       처음에는 보지 않아도 됩니다. 자세한 계산표가 궁금할 때만 펼쳐보세요.
                     </p>
@@ -1150,7 +1149,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   <div key={label} className="flex h-7 items-center justify-center">
                     {pillar ? (
                       label === '일' ? (
-                        <span className="rounded-full border border-[var(--app-gold-soft)]/30 bg-[var(--app-gold-soft)]/10 px-2 py-0.5 text-[11px] text-[var(--app-gold-soft)]">
+                        <span className="rounded-full border border-[var(--app-gold-soft)]/30 bg-[var(--app-gold-soft)]/10 px-2 py-0.5 text-[11px] text-[var(--app-pink-strong)]">
                           나
                         </span>
                       ) : (
@@ -1173,7 +1172,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         character={pillar.stem}
                         hint={formatStemHint(pillar)}
                         color={ELEMENT_INFO[pillar.stemElement].color}
-                        className="font-[var(--font-heading)] text-[3rem] font-bold leading-none sm:text-[3.45rem]"
+                        className=" text-[3rem] font-bold leading-none sm:text-[3.45rem]"
                       />
                     ) : (
                       <span className="text-xs text-[var(--app-copy-muted)]">시간</span>
@@ -1190,7 +1189,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         character={pillar.branch}
                         hint={formatBranchHint(pillar)}
                         color={ELEMENT_INFO[pillar.branchElement].color}
-                        className="font-[var(--font-heading)] text-[3rem] font-bold leading-none sm:text-[3.45rem]"
+                        className=" text-[3rem] font-bold leading-none sm:text-[3.45rem]"
                       />
                     ) : (
                       <span className="text-xs text-[var(--app-copy-muted)]">미입력</span>
@@ -1215,7 +1214,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                                 character={hs.stem}
                                 hint={formatHiddenStemHint(hs.stem, hs.element)}
                                 color={ELEMENT_INFO[hs.element].color}
-                                className="font-[var(--font-heading)] text-base font-medium leading-none"
+                                className=" text-base font-medium leading-none"
                               />
                             </span>
                           );
@@ -1256,7 +1255,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
             <section className="grid gap-3">
               <div className="flex flex-col gap-3 rounded-[22px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 lg:flex-row lg:items-center">
-                <div className="min-w-40 text-sm font-semibold text-[var(--app-ivory)]">오늘 균형을 돕는 기운</div>
+                <div className="min-w-40 text-sm font-semibold text-[var(--app-ink)]">오늘 균형을 돕는 기운</div>
                 <div className="flex flex-wrap gap-2">
                   {report.supportElements.map((element) => (
                     <span
@@ -1277,7 +1276,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               <div className="rounded-[22px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="max-w-sm">
-                    <div className="text-sm font-semibold text-[var(--app-ivory)]">기운 균형</div>
+                    <div className="text-sm font-semibold text-[var(--app-ink)]">기운 균형</div>
                     <p className="mt-2 text-sm leading-7 text-[var(--app-copy-muted)]">
                       다섯 기운은 점수보다 어디에 힘이 몰리고, 어디를 보완하면 좋은지 보는 그림입니다.
                     </p>
@@ -1323,7 +1322,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         >
                           {ELEMENT_INFO[element].name}
                         </div>
-                        <div className="mt-2 text-xl font-semibold text-[var(--app-ivory)]">
+                        <div className="mt-2 text-xl font-semibold text-[var(--app-ink)]">
                           {Math.round(value.percentage)}%
                         </div>
                         <div className="mt-1 text-xs text-[var(--app-copy-soft)]">{value.count}개</div>
@@ -1348,7 +1347,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <section className="grid gap-4 lg:grid-cols-[0.88fr_1.12fr]">
               <article className="app-panel p-6">
                 <div className="app-caption">요즘 흐름</div>
-                <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">
+                <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">
                   {formatCurrentLuckTitle(sajuData.currentLuck)}
                 </h2>
                 <p className="app-body-copy mt-4 text-sm">{formatCurrentLuckBody(sajuData.currentLuck, report)}</p>
@@ -1356,7 +1355,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <div className="mt-5 grid gap-3">
                   <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
                     <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">앞으로 이어질 흐름</div>
-                    <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
+                    <div className="mt-2 text-lg font-semibold text-[var(--app-ink)]">
                       {sajuData.currentLuck?.currentMajorLuck
                         ? formatMajorLuckWindow(sajuData.currentLuck.currentMajorLuck)
                         : '성별 정보가 있으면 앞으로의 흐름을 더 자세히 볼 수 있습니다.'}
@@ -1385,7 +1384,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">올해 분위기</div>
-                      <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
+                      <div className="mt-2 text-lg font-semibold text-[var(--app-ink)]">
                         {formatLuckDescriptorTitle('올해 분위기', sajuData.currentLuck?.saewoon ?? null)}
                       </div>
                       <p className="app-body-copy mt-2 text-sm">
@@ -1395,7 +1394,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
                     <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">이번 달 분위기</div>
-                      <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
+                      <div className="mt-2 text-lg font-semibold text-[var(--app-ink)]">
                         {formatLuckDescriptorTitle('이번 달 분위기', sajuData.currentLuck?.wolwoon ?? null)}
                       </div>
                       <p className="app-body-copy mt-2 text-sm">
@@ -1410,7 +1409,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <div className="app-caption">긴 흐름</div>
-                    <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">앞으로의 흐름 지도</h2>
+                    <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">앞으로의 흐름 지도</h2>
                   </div>
                   <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
                     간단 보기
@@ -1429,14 +1428,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                             className={cn(
                               'rounded-2xl border p-4 transition-colors',
                               isCurrent
-                                ? 'border-[var(--app-gold)]/40 bg-[var(--app-gold)]/10'
+                                ? 'border-[var(--app-pink)]/40 bg-[var(--app-pink)]/10'
                                 : 'border-[var(--app-line)] bg-[var(--app-surface-muted)]'
                             )}
                           >
                             <div className="flex items-center justify-between gap-3">
-                              <div className="text-lg font-semibold text-[var(--app-ivory)]">흐름 {cycle.index + 1}</div>
+                              <div className="text-lg font-semibold text-[var(--app-ink)]">흐름 {cycle.index + 1}</div>
                               {isCurrent ? (
-                                <Badge className="border-[var(--app-gold)]/35 bg-[var(--app-gold)]/14 text-[var(--app-gold-soft)]">
+                                <Badge className="border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 text-[var(--app-pink-strong)]">
                                   현재
                                 </Badge>
                               ) : null}

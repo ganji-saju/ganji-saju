@@ -311,7 +311,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   <ActionCluster>
                     <Link
                       href="/saju/new"
-                      className="moon-cta-primary"
+                      className="gangi-primary-button"
                     >
                       사주 결과 먼저 만들기
                     </Link>
@@ -328,13 +328,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   <ActionCluster>
                     <Link
                       href={`/saju/new?product=${selectedProduct}`}
-                      className="moon-cta-primary"
+                      className="gangi-primary-button"
                     >
                       사주 결과 먼저 만들기
                     </Link>
                     <Link
                       href="/membership"
-                      className="moon-action-muted"
+                      className="gangi-secondary-button"
                     >
                       상품 목록으로
                     </Link>
@@ -351,13 +351,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   <ActionCluster>
                     <Link
                       href={alreadyPurchasedHref}
-                      className="moon-cta-primary"
+                      className="gangi-primary-button"
                     >
                       구매한 상품 열기
                     </Link>
                     <Link
                       href="/my/billing"
-                      className="moon-action-muted"
+                      className="gangi-secondary-button"
                     >
                       결제 상태 확인
                     </Link>

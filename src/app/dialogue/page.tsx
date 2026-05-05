@@ -11,7 +11,11 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { DIALOGUE_GUARDRAILS, DIALOGUE_PRESETS } from '@/content/moonlight';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
-import { GANGI_TEACHERS, GangiListLink } from '@/components/gangi/gangi-ui';
+import { GangiCharacter } from '@/components/gangi/gangi-ui';
+import {
+  DIALOGUE_EXPERTS,
+  normalizeDialogueExpertId,
+} from '@/lib/dialogue-experts';
 
 export const metadata: Metadata = {
   title: '대화',
@@ -37,9 +41,11 @@ export default async function DialoguePage({
     concern?: string;
     from?: string;
     autoStart?: string;
+    expert?: string;
   }>;
 }) {
   const params = await searchParams;
+  const selectedExpertId = normalizeDialogueExpertId(params.expert) ?? 'dragon';
   const usageItems = [
     ['처음 3회', '무료'],
     ['이후 3회 묶음', '코인 3개'],
@@ -61,13 +67,13 @@ export default async function DialoguePage({
                 <ActionCluster>
                   <Link
                     href="#dialogue-input"
-                    className="moon-action-primary"
+                    className="gangi-primary-button"
                   >
                     바로 질문하기
                   </Link>
                   <Link
                     href="/my/profile"
-                    className="moon-action-muted"
+                    className="gangi-secondary-button"
                   >
                     내 정보 확인하기
                   </Link>
@@ -89,22 +95,31 @@ export default async function DialoguePage({
 
         <section className="gangi-card-panel p-5">
           <SectionHeader
-            eyebrow="선생님 고르기"
-            title="어떤 선생님과 이야기 나눠볼까요?"
+            eyebrow="12간지 전문 분야"
+            title="무엇을 물어볼지 먼저 고르세요"
             titleClassName="text-2xl"
-            description="궁금한 분야의 선생님을 고르면 대화 주제를 더 빨리 잡을 수 있습니다."
+            description="이제 대화를 맡는 선생을 따로 고르지 않습니다. 선택한 12간지 분야에 맞춰 AI가 전문적으로 답합니다."
             descriptionClassName="text-[var(--app-copy)]"
           />
           <div className="mt-5 flex flex-col gap-2.5">
-            {GANGI_TEACHERS.map((teacher) => (
-              <GangiListLink
-                key={teacher.name}
-                href={teacher.href}
-                zodiac={teacher.zodiac}
-                title={`${teacher.name} · ${teacher.topic}`}
-                desc={teacher.desc}
-                price={teacher.price}
-              />
+            {DIALOGUE_EXPERTS.map((expert) => (
+              <Link
+                key={expert.id}
+                href={`/dialogue?expert=${expert.id}#dialogue-chat`}
+                className="gangi-list-link"
+                data-active={selectedExpertId === expert.id}
+              >
+                <GangiCharacter zodiac={expert.id} />
+                <span className="gangi-list-copy">
+                  <strong>
+                    {expert.animal}띠 · {expert.label}
+                  </strong>
+                  <em>{expert.description}</em>
+                </span>
+                <span className="gangi-list-price">
+                  {selectedExpertId === expert.id ? '선택됨' : '선택'}
+                </span>
+              </Link>
             ))}
           </div>
         </section>
@@ -120,6 +135,7 @@ export default async function DialoguePage({
             concernId={params.concern}
             entrySource={params.from}
             autoStart={params.autoStart === '1'}
+            initialExpertId={selectedExpertId}
           />
         </section>
 
@@ -145,7 +161,7 @@ export default async function DialoguePage({
                     surface="soft"
                     eyebrow={
                       <div className="flex items-center gap-2">
-                        <span className="font-hanja text-xs text-[var(--app-gold)]/65">
+                        <span className=" text-xs text-[var(--app-gold)]/65">
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         <span
@@ -171,7 +187,7 @@ export default async function DialoguePage({
 
           <div className="flex flex-col gap-4">
             <SupportRail
-              surface="lunar"
+              surface="panel"
               eyebrow="대화 원칙"
               title="이런 결로 답해드립니다"
               description="길흉을 단정하기보다, 이미 계산된 구조를 생활 언어로 다시 정리하고 다음 질문이 생기도록 돕는 쪽에 더 가깝습니다."
