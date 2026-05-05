@@ -479,8 +479,7 @@ export default function FortuneCalendarPanel({
   }
 
   return (
-    <section id="fortune-calendar" className="moon-lunar-panel p-6 sm:p-7">
-      <div className="app-starfield" />
+    <section id="fortune-calendar" className="gangi-report-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">Fortune Calendar</div>

@@ -314,7 +314,6 @@ function DesktopSidebar({
 
   return (
     <aside className="app-desktop-sidebar hidden flex-col overflow-hidden lg:flex">
-      <div className="app-starfield" />
 
       <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
         <Link href="/" className="group block">

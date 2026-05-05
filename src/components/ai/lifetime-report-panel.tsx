@@ -478,8 +478,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
   if (state === 'loading') {
     return (
-      <section id="lifetime-report" className="moon-lunar-panel p-6 sm:p-7">
-        <div className="app-starfield" />
+      <section id="lifetime-report" className="gangi-report-panel p-6 sm:p-7">
         <div className="app-caption">깊은 사주풀이 생성 중</div>
         <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
           타고난 사주풀이를 정리하고 있습니다
@@ -520,8 +519,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
   return (
     <section id="lifetime-report" className="space-y-6">
-      <section className="moon-lunar-panel p-6 sm:p-7">
-        <div className="app-starfield" />
+      <section className="gangi-report-panel p-6 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">깊은 사주풀이 본문</div>

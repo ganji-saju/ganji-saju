@@ -143,7 +143,6 @@ export default function CompatibilityPage() {
         </section>
 
         <SectionSurface surface="panel">
-          <div className="app-starfield" />
           <SectionHeader
             eyebrow="프리미엄 전용"
             title="두 사람의 결이 어디서 닮고 어디서 어긋나는지, 풀이 형태로 정리합니다"

@@ -199,7 +199,6 @@ export default function AboutEnginePage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
           <SectionSurface surface="panel">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="풀이 안내 요약"
               title="결과가 왜 달라질 수 있는지만 쉽게 정리합니다"

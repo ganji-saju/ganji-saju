@@ -167,7 +167,7 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
               onClick={() => setSelectedCardId(card.cardId)}
               style={getCardBackStyle(card, selected)}
               className={cn(
-                'group relative flex aspect-[7/10] min-h-[5.75rem] flex-col justify-between overflow-hidden rounded-[0.85rem] border p-2 text-left transition-[filter,transform,border-color] duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-gold)]/75',
+                'group relative flex aspect-[7/10] min-h-[5.75rem] flex-col justify-between overflow-hidden rounded-[0.85rem] border p-2 text-left transition-[filter,transform,border-color] duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink)]/75',
                 selected && 'brightness-110'
               )}
             >

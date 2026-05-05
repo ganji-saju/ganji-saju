@@ -449,7 +449,7 @@ export default function ProfileManager({
                   setProfileForm((current) => ({ ...current, displayName: event.target.value }))
                 }
                 placeholder="예: 민지"
-                className="moon-form-control h-12 px-3 text-sm"
+                className="gangi-form-control h-12 px-3 text-sm"
               />
             </div>
 
@@ -469,7 +469,7 @@ export default function ProfileManager({
                 }
                 rows={4}
                 placeholder="예: 태어난 시간은 오전으로만 기억남"
-                className="moon-form-control min-h-28 px-3 py-3 text-sm leading-7"
+                className="gangi-form-control min-h-28 px-3 py-3 text-sm leading-7"
               />
             </div>
           </div>
@@ -596,7 +596,7 @@ export default function ProfileManager({
                     setFamilyForm((current) => ({ ...current, label: event.target.value }))
                   }
                   placeholder="이름 또는 별칭"
-                  className="moon-form-control h-12 px-3 text-sm"
+                  className="gangi-form-control h-12 px-3 text-sm"
                 />
               </div>
               <div>
@@ -606,7 +606,7 @@ export default function ProfileManager({
                   onChange={(event) =>
                     setFamilyForm((current) => ({ ...current, relationship: event.target.value }))
                   }
-                  className="moon-form-control h-12 px-3 text-sm"
+                  className="gangi-form-control h-12 px-3 text-sm"
                 >
                   {RELATIONSHIP_OPTIONS.map((option) => (
                     <option key={option} value={option} className="bg-slate-950">
@@ -633,7 +633,7 @@ export default function ProfileManager({
                 }
                 rows={4}
                 placeholder="예: 엄마, 음력 생일만 기억남"
-                className="moon-form-control min-h-28 px-3 py-3 text-sm leading-7"
+                className="gangi-form-control min-h-28 px-3 py-3 text-sm leading-7"
               />
             </div>
 

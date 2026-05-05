@@ -67,7 +67,6 @@ export default function SampleReportPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <SectionSurface as="article" surface="panel">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="샘플 대상"
               title={`${SAMPLE_SUBJECT.label} ${SAMPLE_SUBJECT.name}의 풀이 예시입니다`}
@@ -272,7 +271,6 @@ export default function SampleReportPage() {
           </SectionSurface>
 
           <SectionSurface as="article" surface="panel">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="고전과 생활 언어"
               title="원전 인용과 현대 해석은 같은 층으로 섞지 않습니다"

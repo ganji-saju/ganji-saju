@@ -25,8 +25,7 @@ export function SajuFactEvidencePanel({
   const primaryClassic = primaryClassicItems[0] ?? null;
 
   return (
-    <section className="moon-lunar-panel p-6 sm:p-7">
-      <div className="app-starfield" />
+    <section className="gangi-report-panel p-6 sm:p-7">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="app-caption">풀이에 참고한 정보</div>
@@ -49,7 +48,7 @@ export function SajuFactEvidencePanel({
       ) : null}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <article className="moon-orbit-card p-5">
+        <article className="gangi-evidence-card p-5">
           <div className="app-caption">내 사주의 기본 정보</div>
           <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {factJson.pillars.year.ganzi} · {factJson.pillars.month.ganzi} · {factJson.pillars.day.ganzi}
@@ -69,7 +68,7 @@ export function SajuFactEvidencePanel({
           </div>
         </article>
 
-        <article className="moon-orbit-card p-5">
+        <article className="gangi-evidence-card p-5">
           <div className="app-caption">기운의 균형</div>
           <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {evidenceJson.strength.level ?? '미계산'} {evidenceJson.strength.score !== null ? `· ${evidenceJson.strength.score}점` : ''}
@@ -90,7 +89,7 @@ export function SajuFactEvidencePanel({
           </div>
         </article>
 
-        <article className="moon-orbit-card p-5">
+        <article className="gangi-evidence-card p-5">
           <div className="app-caption">보완하면 좋은 흐름</div>
           <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {evidenceJson.yongsin.primary ?? '미계산'}
@@ -115,7 +114,7 @@ export function SajuFactEvidencePanel({
           </div>
         </article>
 
-        <article className="moon-orbit-card p-5">
+        <article className="gangi-evidence-card p-5">
           <div className="app-caption">보조 참고 정보</div>
           <div className=" mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             필요한 경우에만 보조 정보를 함께 확인합니다.
@@ -143,7 +142,7 @@ export function SajuFactEvidencePanel({
           </div>
         </article>
 
-        <article className="moon-orbit-card p-5 lg:col-span-2">
+        <article className="gangi-evidence-card p-5 lg:col-span-2">
           <div className="app-caption">달력 확인</div>
           <div className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
             {hasKasiMatch === null

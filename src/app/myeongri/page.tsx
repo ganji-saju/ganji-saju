@@ -79,7 +79,6 @@ export default async function MyeongriPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="내 패턴의 바탕"
               title="반복되는 장면의 이유를 내 사주 위에서 확인합니다"

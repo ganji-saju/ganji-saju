@@ -569,8 +569,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       <AppPage className="space-y-6">
         <SajuScreenNav slug={slug} current="premium" />
 
-        <section className="moon-lunar-panel p-7 sm:p-8">
-          <div className="app-starfield" />
+        <section className="gangi-report-panel p-7 sm:p-8">
           <div className="grid gap-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
             <div>
               <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
@@ -746,8 +745,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               description="연간 전략을 반복해서 읽다 보면 결국 타고난 사주 흐름이 필요해집니다. 이 영역은 결제 상품과 링크를 그대로 유지한 확장 카드입니다."
             />
             <section id="premium-upgrade" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-              <article className="moon-lunar-panel p-6">
-                <div className="app-starfield" />
+              <article className="gangi-report-panel p-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className="border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
                     {yearlyAccessLabel}
@@ -766,13 +764,13 @@ export default async function SajuPremiumPage({ params }: Props) {
                 </p>
                 <div className="mt-6 grid gap-3">
                   {SAJU_PREMIUM_SECTIONS.map((item) => (
-                    <div key={item} className="moon-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
+                    <div key={item} className="gangi-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
                       {item}
                     </div>
                   ))}
                 </div>
               </article>
-              <article className="moon-plan-card p-6" data-featured="true">
+              <article className="gangi-plan-card p-6" data-featured="true">
                 <div className=" text-2xl text-[var(--app-gold-text)]">
                   평생 소장 풀이로 확장하기
                 </div>
@@ -783,7 +781,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 </p>
                 <div className="mt-5 grid gap-3">
                   {SAJU_PREMIUM_VALUE_POINTS.map((item) => (
-                    <div key={item} className="moon-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
+                    <div key={item} className="gangi-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
                       {item}
                     </div>
                   ))}
@@ -821,8 +819,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           aside="결제 링크와 상품 ID는 변경하지 않았습니다."
         />
         <section id="premium-preview" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className="moon-lunar-panel p-6">
-            <div className="app-starfield" />
+          <article className="gangi-report-panel p-6">
             <div className="app-caption">결제 전 미리보기</div>
             <div className="mt-4 text-2xl text-[var(--app-ivory)]">
               ① 풀이 첫 섹션 미리보기
@@ -852,7 +849,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               {SAJU_PREMIUM_PREVIEW.map((item) => (
                 <div
                   key={item.title}
-                  className="moon-payment-row px-4 py-4"
+                  className="gangi-payment-row px-4 py-4"
                 >
                   <div className="text-sm font-medium text-[var(--app-ivory)]">{item.title}</div>
                   <p className="mt-2 text-sm leading-7 text-[var(--app-copy-muted)]">{item.body}</p>
@@ -861,7 +858,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
           </article>
 
-          <article className="moon-plan-card p-6" data-featured="true">
+          <article className="gangi-plan-card p-6" data-featured="true">
             <div className=" text-2xl text-[var(--app-gold-text)]">
               7개 섹션 완성형 풀이
             </div>
@@ -869,7 +866,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               {SAJU_PREMIUM_SECTIONS.map((item) => (
                 <div
                   key={item}
-                  className="moon-payment-row px-4 py-3 text-sm text-[var(--app-copy)]"
+                  className="gangi-payment-row px-4 py-3 text-sm text-[var(--app-copy)]"
                 >
                   {item}
                 </div>

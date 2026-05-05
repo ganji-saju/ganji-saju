@@ -387,33 +387,6 @@
     animation: app-moon-float 4.2s ease-in-out infinite;
   }
 
-  .app-starfield {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .app-starfield::before,
-  .app-starfield::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle at 14% 18%, rgba(236, 201, 133, 0.82) 0 1px, transparent 1.6px),
-      radial-gradient(circle at 42% 34%, rgba(236, 201, 133, 0.52) 0 1px, transparent 1.4px),
-      radial-gradient(circle at 72% 16%, rgba(236, 201, 133, 0.72) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 84% 68%, rgba(123, 163, 204, 0.52) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 28% 78%, rgba(236, 201, 133, 0.42) 0 1px, transparent 1.4px);
-    opacity: 0.32;
-    animation: app-star-twinkle 3.6s ease-in-out infinite;
-  }
-
-  .app-starfield::after {
-    transform: translateY(24%);
-    opacity: 0.18;
-    animation-delay: 1.2s;
-  }
 
   .app-desktop-sidebar {
     position: fixed;
@@ -1353,26 +1326,19 @@
     transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .moon-lunar-panel {
+  .gangi-report-panel {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(154, 127, 78, 0.42);
-    background:
-      radial-gradient(ellipse at 18% 18%, rgba(212, 176, 106, 0.14), transparent 58%),
-      linear-gradient(180deg, rgba(22, 26, 46, 0.96), rgba(8, 10, 18, 0.98));
-    border-radius: 1.55rem;
-    box-shadow:
-      inset 0 1px 0 rgba(236, 201, 133, 0.08),
-      0 20px 58px rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--app-line);
+    border-radius: 1.25rem;
+    background: #ffffff;
+    color: var(--app-ink);
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 12px 30px -14px rgba(17, 17, 20, 0.16);
   }
 
-  .moon-lunar-panel > * {
+  .gangi-report-panel > * {
     position: relative;
     z-index: 1;
-  }
-
-  .moon-lunar-panel > .app-starfield {
-    z-index: 0;
   }
 
   .wisdom-category-page {
@@ -1491,24 +1457,24 @@
     background: var(--app-gold-text);
   }
 
-  .moon-orbit-card {
+  .gangi-evidence-card {
     position: relative;
     overflow: hidden;
     border: 1px solid var(--app-line);
-    border-radius: 1.25rem;
-    background: rgba(22, 26, 46, 0.74);
+    border-radius: 1.15rem;
+    background: #ffffff;
+    color: var(--app-ink);
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 10px 24px -16px rgba(17, 17, 20, 0.18);
     transition:
       transform 180ms ease,
       border-color 180ms ease,
-      background-color 180ms ease,
       box-shadow 180ms ease;
   }
 
-  .moon-orbit-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(212, 176, 106, 0.3);
-    background: rgba(31, 37, 64, 0.78);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+  .gangi-evidence-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--app-pink-line);
+    box-shadow: 0 14px 32px -18px rgba(216, 27, 114, 0.24);
   }
 
   .moon-saju-grid {
@@ -1587,90 +1553,92 @@
     }
   }
 
-  .moon-form-control {
+  .gangi-form-control {
     min-height: 2.8rem;
     width: 100%;
-    border: 1px solid rgba(212, 176, 106, 0.16);
+    border: 1px solid var(--app-line);
     border-radius: 0.95rem;
-    background: rgba(8, 10, 18, 0.38);
-    color: var(--app-ivory);
-    box-shadow: inset 0 1px 0 rgba(236, 201, 133, 0.04);
+    background: #ffffff;
+    color: var(--app-ink);
+    box-shadow: inset 0 1px 0 rgba(17, 17, 20, 0.04);
     transition:
       border-color 160ms ease,
       background-color 160ms ease,
       box-shadow 160ms ease;
   }
 
-  .moon-form-control::placeholder {
-    color: rgba(155, 160, 176, 0.58);
+  .gangi-form-control::placeholder {
+    color: rgba(17, 17, 20, 0.42);
   }
 
-  .moon-form-control:focus-visible {
-    border-color: rgba(212, 176, 106, 0.46);
-    background: rgba(15, 18, 32, 0.72);
+  .gangi-form-control:focus-visible {
+    border-color: var(--app-pink);
+    background: #ffffff;
     box-shadow:
-      0 0 0 3px rgba(212, 176, 106, 0.1),
-      inset 0 1px 0 rgba(236, 201, 133, 0.06);
+      0 0 0 3px rgba(255, 79, 154, 0.13),
+      inset 0 1px 0 rgba(17, 17, 20, 0.04);
     outline: none;
   }
 
-  .moon-form-control:disabled {
+  .gangi-form-control:disabled {
     cursor: not-allowed;
-    opacity: 0.45;
+    opacity: 0.52;
   }
 
-  .moon-plan-card {
+  .gangi-plan-card {
     position: relative;
     overflow: hidden;
     border: 1px solid var(--app-line);
-    border-radius: 1.55rem;
-    background:
-      radial-gradient(circle at 20% 0%, rgba(236, 201, 133, 0.08), transparent 34%),
-      linear-gradient(180deg, rgba(22, 26, 46, 0.94), rgba(8, 10, 18, 0.96));
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+    border-radius: 1.25rem;
+    background: #ffffff;
+    color: var(--app-ink);
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 12px 30px -14px rgba(17, 17, 20, 0.16);
     transition:
       transform 180ms ease,
       border-color 180ms ease,
       box-shadow 180ms ease;
   }
 
-  .moon-plan-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(212, 176, 106, 0.3);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  .gangi-plan-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--app-pink-line);
+    box-shadow: 0 16px 38px -18px rgba(216, 27, 114, 0.24);
   }
 
-  .moon-plan-card[data-featured="true"] {
-    border-color: rgba(212, 176, 106, 0.46);
-    background:
-      radial-gradient(circle at 18% 0%, rgba(236, 201, 133, 0.18), transparent 42%),
-      radial-gradient(circle at 100% 18%, rgba(107, 166, 139, 0.08), transparent 24%),
-      linear-gradient(180deg, rgba(35, 30, 45, 0.98), rgba(10, 18, 36, 0.98));
+  .gangi-plan-card[data-featured="true"] {
+    border-color: var(--app-pink-line);
+    background: linear-gradient(135deg, #fff0f7, #ffffff);
   }
 
-  .moon-payment-row {
+  .gangi-payment-row {
     position: relative;
     border: 1px solid var(--app-line);
-    border-radius: 1.1rem;
-    background: rgba(31, 37, 64, 0.38);
+    border-radius: 1rem;
+    background: #ffffff;
+    color: var(--app-ink);
     transition:
       border-color 160ms ease,
       background-color 160ms ease,
       transform 160ms ease;
   }
 
-  .moon-payment-row:hover {
+  .gangi-payment-row:hover {
     transform: translateY(-1px);
-    border-color: rgba(212, 176, 106, 0.24);
-    background: rgba(31, 37, 64, 0.58);
+    border-color: var(--app-pink-line);
+    background: var(--app-pink-soft);
   }
 
-  .moon-payment-row[data-selected="true"] {
-    border-color: rgba(212, 176, 106, 0.5);
-    background: rgba(212, 176, 106, 0.11);
+  .gangi-payment-row[data-selected="true"] {
+    border-color: var(--app-pink);
+    background: var(--app-pink-soft);
   }
 
-  /* ─── HERO SECTION ─── */
+  .app-top-action-link:focus-visible {
+    outline: 3px solid rgba(255, 79, 154, 0.22);
+    outline-offset: 3px;
+  }
+
+  /* ─── HERO SECTION ─── */  /* ─── HERO SECTION ─── */
 
   .moon-hero {
     position: relative;
@@ -1896,211 +1864,6 @@
   .moon-hero-concern-card,
   .moon-counselor-selector-wrap {
     width: 100%;
-  }
-
-  /* CTA buttons */
-  .moon-action-primary,
-  .moon-cta-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.85rem;
-    gap: 0.45rem;
-    padding-inline: 1.45rem;
-    border-radius: 9999px;
-    border: 1px solid rgba(236, 201, 133, 0.58);
-    background: linear-gradient(135deg, var(--app-gold), var(--app-gold-bright));
-    color: var(--app-bg);
-    font-size: 0.93rem;
-    font-weight: 700;
-    line-height: 1.15;
-    text-align: center;
-    white-space: nowrap;
-    box-shadow:
-      0 16px 36px rgba(210, 176, 114, 0.24),
-      0 3px 12px rgba(0, 0, 0, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35);
-    transition:
-      border-color 180ms ease,
-      transform 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .moon-action-primary:hover,
-  .moon-cta-primary:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 233, 177, 0.78);
-    box-shadow:
-      0 20px 46px rgba(210, 176, 114, 0.34),
-      0 8px 24px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.42);
-  }
-
-  .moon-action-secondary,
-  .moon-cta-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.85rem;
-    gap: 0.45rem;
-    padding-inline: 1.45rem;
-    border-radius: 9999px;
-    border: 1px solid rgba(212, 176, 106, 0.35);
-    background: rgba(212, 176, 106, 0.12);
-    color: var(--app-gold-text);
-    font-size: 0.93rem;
-    font-weight: 700;
-    line-height: 1.15;
-    text-align: center;
-    white-space: nowrap;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 10px 28px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(10px);
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease,
-      transform 180ms ease;
-  }
-
-  .moon-action-secondary:hover,
-  .moon-cta-secondary:hover {
-    border-color: rgba(212, 176, 106, 0.58);
-    background: rgba(212, 176, 106, 0.19);
-    color: var(--app-ivory);
-    transform: translateY(-2px);
-  }
-
-  .moon-action-muted,
-  .moon-action-danger,
-  .moon-action-ghost,
-  .moon-action-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    border-radius: 9999px;
-    font-weight: 700;
-    line-height: 1.15;
-    text-align: center;
-    white-space: nowrap;
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease,
-      transform 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .moon-action-muted {
-    min-height: 2.85rem;
-    border: 1px solid var(--app-line);
-    background: var(--app-surface-muted);
-    padding-inline: 1.45rem;
-    color: var(--app-copy);
-    font-size: 0.93rem;
-  }
-
-  .moon-action-muted:hover {
-    border-color: rgba(212, 176, 106, 0.24);
-    background: var(--app-surface-strong);
-    color: var(--app-ivory);
-    transform: translateY(-2px);
-  }
-
-  .moon-action-danger {
-    min-height: 2.55rem;
-    border: 1px solid rgba(251, 113, 133, 0.28);
-    background: rgba(251, 113, 133, 0.1);
-    padding-inline: 1.05rem;
-    color: rgb(255, 205, 213);
-    font-size: 0.82rem;
-  }
-
-  .moon-action-danger:hover {
-    border-color: rgba(251, 113, 133, 0.44);
-    background: rgba(251, 113, 133, 0.16);
-    color: rgb(255, 235, 239);
-    transform: translateY(-1px);
-  }
-
-  .moon-action-ghost {
-    min-height: 2.55rem;
-    border: 1px solid transparent;
-    background: transparent;
-    padding-inline: 0.95rem;
-    color: var(--app-copy-muted);
-    font-size: 0.88rem;
-  }
-
-  .moon-action-ghost:hover {
-    border-color: rgba(212, 176, 106, 0.2);
-    background: rgba(212, 176, 106, 0.08);
-    color: var(--app-gold-text);
-  }
-
-  .moon-action-chip {
-    min-height: 2.3rem;
-    border: 1px solid rgba(212, 176, 106, 0.28);
-    background: rgba(212, 176, 106, 0.08);
-    padding-inline: 0.95rem;
-    color: var(--app-gold-text);
-    font-size: 0.82rem;
-  }
-
-  .moon-action-chip:hover {
-    border-color: rgba(212, 176, 106, 0.48);
-    background: rgba(212, 176, 106, 0.15);
-    color: var(--app-ivory);
-  }
-
-  .moon-action-icon {
-    width: 2.75rem;
-    min-width: 2.75rem;
-    padding-inline: 0;
-  }
-
-  .moon-action-primary:focus-visible,
-  .moon-action-secondary:focus-visible,
-  .moon-action-muted:focus-visible,
-  .moon-action-danger:focus-visible,
-  .moon-action-ghost:focus-visible,
-  .moon-action-chip:focus-visible,
-  .moon-cta-primary:focus-visible,
-  .moon-cta-secondary:focus-visible,
-  .app-top-action-link:focus-visible {
-    outline: 3px solid rgba(236, 201, 133, 0.26);
-    outline-offset: 3px;
-  }
-
-  .moon-action-primary:active,
-  .moon-action-secondary:active,
-  .moon-action-muted:active,
-  .moon-action-danger:active,
-  .moon-action-ghost:active,
-  .moon-action-chip:active,
-  .moon-cta-primary:active,
-  .moon-cta-secondary:active {
-    transform: translateY(0);
-  }
-
-  .moon-action-primary[aria-disabled='true'],
-  .moon-action-secondary[aria-disabled='true'],
-  .moon-action-muted[aria-disabled='true'],
-  .moon-action-danger[aria-disabled='true'],
-  .moon-action-ghost[aria-disabled='true'],
-  .moon-action-chip[aria-disabled='true'],
-  .moon-action-primary:disabled,
-  .moon-action-secondary:disabled,
-  .moon-action-muted:disabled,
-  .moon-action-danger:disabled,
-  .moon-action-ghost:disabled,
-  .moon-action-chip:disabled {
-    cursor: not-allowed;
-    opacity: 0.58;
-    transform: none;
-    box-shadow: none;
   }
 
   .dalbit-home-hero {
@@ -2903,17 +2666,6 @@
       gap: 0.65rem;
     }
 
-    .moon-action-primary,
-    .moon-action-secondary,
-    .moon-action-muted,
-    .moon-cta-primary,
-    .moon-cta-secondary {
-      width: 100%;
-      min-height: 2.9rem;
-      padding-inline: 1.2rem;
-      font-size: 0.92rem;
-    }
-
     .moon-hero-concern-card {
       border-radius: 1.4rem;
       padding: 1rem 0.95rem;
@@ -3235,7 +2987,7 @@
     box-shadow: 0 20px 58px rgba(216, 27, 114, 0.08);
   }
 
-  .saju-result-page .moon-lunar-panel {
+  .saju-result-page .gangi-report-panel {
     border-color: var(--app-pink-line);
     background:
       radial-gradient(circle at 12% 0%, rgba(255, 79, 154, 0.08), transparent 28%),
@@ -3244,7 +2996,7 @@
   }
 
   .saju-result-page .moon-saju-pillar,
-  .saju-result-page .moon-orbit-card {
+  .saju-result-page .gangi-evidence-card {
     border-color: var(--app-line);
     background: rgba(255, 255, 255, 0.78);
   }
@@ -3254,7 +3006,7 @@
     background: var(--app-pink-soft);
   }
 
-  .saju-result-page .moon-orbit-card:hover {
+  .saju-result-page .gangi-evidence-card:hover {
     border-color: rgba(255, 79, 154, 0.34);
     background: #ffffff;
     box-shadow: 0 16px 34px rgba(216, 27, 114, 0.1);
@@ -3321,71 +3073,6 @@
     border-color: rgba(212, 176, 106, 0.24);
     background: linear-gradient(180deg, rgba(31, 37, 64, 0.85), rgba(22, 26, 46, 0.88));
   }
-
-  /* ─── SAJU TOPIC SCORE CARD ─── */
-
-  .moon-topic-score-card {
-    isolation: isolate;
-    transition:
-      transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 220ms ease,
-      box-shadow 220ms ease,
-      filter 220ms ease;
-  }
-
-  .moon-topic-score-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 22%),
-      radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.12), transparent 26%);
-    opacity: 0;
-    transition: opacity 220ms ease;
-  }
-
-  .moon-topic-score-card:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow:
-      0 20px 46px rgba(216, 27, 114, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    filter: saturate(1.04);
-  }
-
-  .moon-topic-score-card:hover::before {
-    opacity: 1;
-  }
-
-  .moon-topic-score-card[data-selected="true"] {
-    transform: translateY(-2px);
-    box-shadow:
-      0 20px 52px rgba(216, 27, 114, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  }
-
-  .moon-topic-score-card[data-selected="true"]::before {
-    opacity: 1;
-  }
-
-  .moon-topic-score-card[data-selected="true"]::after {
-    content: "";
-    position: absolute;
-    inset: auto 1.2rem 0.7rem 1.2rem;
-    height: 2px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(255, 79, 154, 0.15), rgba(255, 79, 154, 0.95), rgba(255, 79, 154, 0.18));
-    pointer-events: none;
-  }
-
-  /* ─── MY PAGE IMPROVEMENTS ─── */
-
-  .my-stat-number {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-  }
-
-  /* ─── SECTION DIVIDER ─── */
 
   .moon-section-divider {
     display: flex;
@@ -4424,7 +4111,7 @@ html[data-reading-comfort="large"] body {
   font-size: 17px;
 }
 
-html[data-reading-comfort="large"] :where(.app-shell, .moon-lunar-panel, .app-hero-card) {
+html[data-reading-comfort="large"] :where(.app-shell, .gangi-report-panel, .app-hero-card) {
   --app-copy: rgba(246, 240, 226, 0.9);
   --app-copy-muted: rgba(194, 199, 211, 0.94);
   --app-copy-soft: rgba(148, 154, 170, 0.98);
@@ -4434,7 +4121,7 @@ html[data-reading-comfort="large"] :where(
   .app-hero-description,
   .app-section-copy,
   .app-feature-copy,
-  .moon-lunar-panel p,
+  .gangi-report-panel p,
   .saju-mobile-story-body p,
   .saju-mobile-story-body li,
   .app-reading-nav-link,
@@ -4545,9 +4232,6 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   opacity: 0.42 !important;
 }
 
-.app-starfield {
-  display: none !important;
-}
 
 .app-shell-with-navigation .app-shell-content,
 [data-app-layout="vertical"] .saju-intake-shell,
@@ -4779,7 +4463,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-weight: 950 !important;
 }
 
-.moon-lunar-panel,
+.gangi-report-panel,
 .app-panel,
 .app-panel-muted,
 .app-hero-card,
@@ -4792,7 +4476,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   box-shadow: 0 14px 34px rgba(17, 17, 20, 0.07) !important;
 }
 
-.moon-lunar-panel::before,
+.gangi-report-panel::before,
 .app-panel::before,
 .app-panel-muted::before,
 .app-hero-card::before {
@@ -4803,9 +4487,9 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .app-hero-title,
 .app-section-title,
 .section-header-title,
-.moon-lunar-panel h1,
-.moon-lunar-panel h2,
-.moon-lunar-panel h3,
+.gangi-report-panel h1,
+.gangi-report-panel h2,
+.gangi-report-panel h3,
 .app-panel h1,
 .app-panel h2,
 .app-panel h3 {
@@ -4815,8 +4499,8 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   line-break: strict;
 }
 
-.moon-lunar-panel p,
-.moon-lunar-panel li,
+.gangi-report-panel p,
+.gangi-report-panel li,
 .app-panel p,
 .app-panel li,
 .app-hero-description,
@@ -4826,52 +4510,27 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   line-break: strict;
 }
 
-.moon-action-primary,
-.moon-action-secondary,
-.moon-action-muted,
-.moon-cta-primary,
-.moon-cta-secondary {
-  border-radius: 9999px !important;
-  font-weight: 900 !important;
-}
-
-.moon-action-primary,
-.moon-cta-primary {
-  border-color: transparent !important;
-  background: var(--app-pink) !important;
-  color: #ffffff !important;
-  box-shadow: 0 12px 28px rgba(216, 27, 114, 0.24) !important;
-}
-
-.moon-action-secondary,
-.moon-action-muted,
-.moon-cta-secondary {
-  border-color: rgba(255, 79, 154, 0.22) !important;
-  background: var(--app-pink-soft) !important;
-  color: var(--app-pink-strong) !important;
-}
-
-.moon-payment-row {
+.gangi-payment-row {
   background: #ffffff !important;
   border-color: var(--app-line) !important;
   color: var(--app-ink) !important;
 }
 
-.moon-payment-row:hover,
-.moon-payment-row[data-selected="true"] {
+.gangi-payment-row:hover,
+.gangi-payment-row[data-selected="true"] {
   background: var(--app-pink-soft) !important;
   border-color: var(--app-pink-line) !important;
 }
 
-.moon-plan-card,
-.moon-plan-card[data-featured="true"] {
+.gangi-plan-card,
+.gangi-plan-card[data-featured="true"] {
   border-color: var(--app-line) !important;
   background: #ffffff !important;
   color: var(--app-ink) !important;
   box-shadow: 0 14px 34px rgba(17, 17, 20, 0.07) !important;
 }
 
-.moon-plan-card:hover {
+.gangi-plan-card:hover {
   border-color: var(--app-pink-line) !important;
   box-shadow: 0 18px 42px rgba(216, 27, 114, 0.12) !important;
 }
@@ -5661,7 +5320,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-subpage .app-panel,
-.gangi-subpage .moon-lunar-panel,
+.gangi-subpage .gangi-report-panel,
 .gangi-subpage .app-hero-card,
 .gangi-subpage .app-feature-card-soft {
   border-color: var(--app-line) !important;
@@ -5681,23 +5340,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-pink-strong) !important;
 }
 
-.gangi-subpage .app-starfield {
-  display: none !important;
-}
 
-.gangi-subpage .moon-action-primary,
-.gangi-subpage .moon-cta-primary {
-  background: var(--app-pink) !important;
-  color: #ffffff !important;
-}
-
-.gangi-subpage .moon-action-secondary,
-.gangi-subpage .moon-action-muted,
-.gangi-subpage .moon-cta-secondary {
-  border-color: var(--app-line) !important;
-  background: #ffffff !important;
-  color: var(--app-ink) !important;
-}
 
 .gangi-primary-button,
 .gangi-secondary-button {

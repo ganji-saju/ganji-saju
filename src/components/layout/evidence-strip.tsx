@@ -19,7 +19,7 @@ export function EvidenceStrip({ items, className }: EvidenceStripProps) {
           className="rounded-[1.1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm leading-7 text-[var(--app-copy)]"
         >
           {item.title ? (
-            <div className="mb-1 text-xs tracking-[0.2em] text-[var(--app-gold-text)]">
+            <div className="mb-1 text-xs tracking-[0.2em] text-[var(--app-pink-strong)]">
               {item.title}
             </div>
           ) : null}

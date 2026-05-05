@@ -69,7 +69,7 @@ function LoadingState() {
         badges={[
           <Badge
             key="loading"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
+            className="border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]"
           >
             결제 확인 중
           </Badge>,
@@ -165,7 +165,7 @@ function SuccessState({
         badges={[
           <Badge
             key="success"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
+            className="border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]"
           >
             결제 완료
           </Badge>,
@@ -180,11 +180,10 @@ function SuccessState({
 
       <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
         <SectionSurface surface="panel" size="lg">
-          <div className="app-starfield" />
           <SectionHeader
             eyebrow="반영 완료"
             title="결제 뒤 흐름을 바로 이어갑니다"
-            titleClassName="text-3xl text-[var(--app-gold-text)]"
+            titleClassName="text-3xl text-[var(--app-pink-strong)]"
             description="확인 단계가 끝났으니, 이제 같은 흐름 위에서 리포트나 멤버십 화면으로 자연스럽게 이어집니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />

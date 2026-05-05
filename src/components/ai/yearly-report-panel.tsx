@@ -758,8 +758,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
   if (state === 'loading') {
     return (
-      <section className="moon-lunar-panel p-6">
-        <div className="app-starfield" />
+      <section className="gangi-report-panel p-6">
         <div className="app-caption">올해 전략서 생성 중</div>
         <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
           {targetYear}년 올해 전략서를 정리하고 있습니다
@@ -816,8 +815,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
   });
 
   return (
-    <section id="yearly-report" className="moon-lunar-panel p-6 sm:p-7">
-      <div className="app-starfield" />
+    <section id="yearly-report" className="gangi-report-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">{targetYear} 올해 전략서</div>

@@ -108,7 +108,6 @@ export default async function SajuElementsPage({ params }: Props) {
           >
             <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
               <section className="app-hero-card app-section-frame-lg overflow-hidden">
-            <div className="app-starfield" />
             <div className="relative z-10">
               <div className="app-caption">다섯 기운의 배치</div>
               <h2 className="mt-3 text-3xl font-black leading-tight text-[var(--app-ink)] sm:text-[2.35rem]">

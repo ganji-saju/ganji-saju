@@ -69,7 +69,6 @@ export default function InterpretationPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="빠른 시작"
               title="가장 많이 찾는 세 가지 길"
@@ -202,7 +201,6 @@ export default function InterpretationPage() {
           </SectionSurface>
 
           <SectionSurface surface="panel">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="개념과 기준"
               title="도움말은 별도 안내에서 확인하세요"

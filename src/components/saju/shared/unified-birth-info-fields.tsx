@@ -136,7 +136,7 @@ export function UnifiedBirthInfoFields({
                       className={cn(
                         'rounded-full border px-4 py-2 text-sm',
                         draft.calendarType === item.value
-                          ? 'border-[var(--app-gold)]/32 bg-[var(--app-gold)]/10 text-[var(--app-ivory)]'
+                          ? 'border-[var(--app-pink)]/32 bg-[var(--app-pink)]/10 text-[var(--app-ink)]'
                           : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
                       )}
                     >
@@ -160,7 +160,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         applyDateSelectPatch({ year: event.target.value, month: draft.month, day: draft.day });
                       }}
-                      className="moon-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
                     >
                       <option value="">연도 선택</option>
                       {YEAR_OPTIONS.map((value) => (
@@ -197,7 +197,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         applyDateSelectPatch({ year: draft.year, month: event.target.value, day: draft.day });
                       }}
-                      className="moon-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
                     >
                       <option value="">월 선택</option>
                       {MONTH_OPTIONS.map((value) => (
@@ -234,7 +234,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         onChange({ day: event.target.value });
                       }}
-                      className="moon-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
                     >
                       <option value="">일 선택</option>
                       {dayOptions.map((value) => (
@@ -280,11 +280,11 @@ export function UnifiedBirthInfoFields({
                     className={cn(
                       'rounded-[1.2rem] border px-5 py-5 text-left transition-colors',
                       draft.gender === item.value
-                        ? 'border-[var(--app-gold)]/38 bg-[var(--app-gold)]/12 text-[var(--app-ivory)]'
+                        ? 'border-[var(--app-pink)]/38 bg-[var(--app-pink)]/12 text-[var(--app-ink)]'
                         : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)] hover:bg-[var(--app-surface-strong)]'
                     )}
                   >
-                    <span className="block text-lg font-semibold text-[var(--app-ivory)]">{item.label}</span>
+                    <span className="block text-lg font-semibold text-[var(--app-ink)]">{item.label}</span>
                     <span className="mt-2 block text-sm leading-6 text-[var(--app-copy-muted)]">{item.body}</span>
                   </button>
                 ))}
@@ -312,7 +312,7 @@ export function UnifiedBirthInfoFields({
                     unknownBirthTime: event.target.value === '',
                   });
                 }}
-                className="moon-form-control h-10 w-full rounded-lg px-3 text-sm"
+                className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
               >
                 {HOUR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -403,7 +403,7 @@ export function UnifiedBirthInfoFields({
                 className={cn(
                   'rounded-full border px-3 py-1.5 text-xs',
                   draft.birthLocationCode === preset.code
-                    ? 'border-[var(--app-gold)]/30 bg-[var(--app-gold)]/10 text-[var(--app-ivory)]'
+                    ? 'border-[var(--app-pink)]/30 bg-[var(--app-pink)]/10 text-[var(--app-ink)]'
                     : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
                 )}
               >
@@ -422,9 +422,9 @@ export function UnifiedBirthInfoFields({
                     trigger(onStarted);
                     onLocationResultSelect(item);
                   }}
-                  className="block w-full rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-left text-sm text-[var(--app-copy)] transition-colors hover:border-[var(--app-gold)]/28 hover:text-[var(--app-ivory)]"
+                  className="block w-full rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-left text-sm text-[var(--app-copy)] transition-colors hover:border-[var(--app-pink)]/28 hover:text-[var(--app-ink)]"
                 >
-                  <div className="font-medium text-[var(--app-ivory)]">{item.label}</div>
+                  <div className="font-medium text-[var(--app-ink)]">{item.label}</div>
                   <div className="mt-1 text-xs leading-6 text-[var(--app-copy-soft)]">
                     {item.displayName} · 위도 {item.latitude} · 경도 {item.longitude}
                   </div>
@@ -446,7 +446,7 @@ export function UnifiedBirthInfoFields({
                 onChange({ timeRule: event.target.value as UnifiedTimeRule });
               }}
               disabled={timeRuleDisabled}
-              className="moon-form-control h-10 w-full rounded-lg px-3 text-sm disabled:opacity-60"
+              className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm disabled:opacity-60"
             >
               {TIME_RULE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>

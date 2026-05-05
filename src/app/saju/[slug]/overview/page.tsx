@@ -48,8 +48,7 @@ export default async function SajuOverviewPage({ params }: Props) {
       <AppPage className="space-y-6">
         <SajuScreenNav slug={slug} current="overview" />
 
-        <section className="moon-lunar-panel p-8 sm:p-10">
-          <div className="app-starfield" />
+        <section className="gangi-report-panel p-8 sm:p-10">
           <div className="relative z-10 flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left lg:items-end lg:justify-between">
             <div>
               <div className="app-caption">내 풀이</div>
@@ -176,8 +175,7 @@ export default async function SajuOverviewPage({ params }: Props) {
           </div>
 
           {/* 깊은 사주풀이 paywall */}
-          <article className="moon-lunar-panel p-6">
-            <div className="app-starfield" />
+          <article className="gangi-report-panel p-6">
             <div className="relative z-10">
               <div className="flex items-center justify-between gap-3">
                 <div className="app-caption">깊은 사주풀이</div>

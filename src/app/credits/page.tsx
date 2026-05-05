@@ -174,7 +174,6 @@ function CreditsPageContent() {
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="코인 쓰는 방식"
               title="무료 탐색 뒤에 필요한 소액 풀이만 조용히 엽니다"

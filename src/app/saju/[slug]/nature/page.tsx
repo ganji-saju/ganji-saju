@@ -118,7 +118,6 @@ export default async function SajuNaturePage({ params }: Props) {
           >
             <section className="grid gap-6 xl:grid-cols-[1.06fr_0.94fr]">
               <SectionSurface surface="hero" size="lg" className="overflow-hidden">
-            <div className="app-starfield" />
             <div className="relative z-10 grid gap-6 lg:grid-cols-[0.38fr_0.62fr] lg:items-center">
               <div className="rounded-[1.75rem] border border-[var(--app-pink-line)] bg-white px-5 py-6 text-center shadow-[0_18px_42px_rgba(216,27,114,0.1)]">
                 <div className="mx-auto flex h-22 w-22 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-2xl font-black text-[var(--app-pink-strong)]">

@@ -60,7 +60,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
           badges={[
             <Badge
               key="status"
-              className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
+              className="border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]"
             >
               {payment === 'confirmed' ? '결제 완료' : '이용 시작'}
             </Badge>,
@@ -77,11 +77,10 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="이제 열리는 것"
               title="결제 직후 가장 먼저 가져가실 흐름"
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
+              titleClassName="text-3xl text-[var(--app-pink-strong)]"
               description="한 번에 많은 기능을 나열하기보다, 지금 바로 해보시면 좋은 순서를 먼저 보여드립니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
@@ -98,7 +97,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
               className="mt-8"
               eyebrow="지금 바로 해보시면 좋은 것"
               title="다음 한 걸음을 이렇게 권합니다"
-              titleClassName="text-2xl text-[var(--app-ivory)]"
+              titleClassName="text-2xl text-[var(--app-ink)]"
             />
 
             <ProductGrid columns={3} className="mt-5">

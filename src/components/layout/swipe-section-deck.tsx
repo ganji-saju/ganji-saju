@@ -71,7 +71,7 @@ export function SwipeSectionDeck({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="app-caption">SLIDE VIEW</div>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
               {title}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -79,7 +79,7 @@ export function SwipeSectionDeck({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="rounded-full border border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 px-3 py-1 text-xs text-[var(--app-gold-text)]">
+            <span className="rounded-full border border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 px-3 py-1 text-xs text-[var(--app-pink-strong)]">
               {activeIndex + 1} / {items.length}
             </span>
             <Button
@@ -114,8 +114,8 @@ export function SwipeSectionDeck({
               className={cn(
                 'shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors',
                 activeIndex === index
-                  ? 'border-[var(--app-gold)]/35 bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
-                  : 'border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'
+                  ? 'border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 text-[var(--app-pink-strong)]'
+                  : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)] hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]'
               )}
             >
               {getSlideLabel(item, index)}
@@ -153,9 +153,9 @@ export function SwipeSectionSlide({
 }: SwipeSectionSlideProps) {
   return (
     <section className={cn('min-w-0', className)}>
-      <div className="mb-4 rounded-[1.35rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-4 sm:px-5">
+      <div className="mb-4 rounded-[1.35rem] border border-[var(--app-line)] bg-white px-4 py-4 sm:px-5">
         {eyebrow ? <div className="app-caption">{eyebrow}</div> : null}
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ivory)]">
+        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
           {title}
         </h3>
         {description ? (

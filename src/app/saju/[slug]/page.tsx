@@ -999,7 +999,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     <article
                       key={card.key}
                       className={cn(
-                        'moon-orbit-card p-5',
+                        'gangi-evidence-card p-5',
                         shouldEvidenceCardUseFullRow(card) ? 'md:col-span-2' : undefined
                       )}
                     >

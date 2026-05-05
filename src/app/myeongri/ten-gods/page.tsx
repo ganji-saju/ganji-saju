@@ -50,7 +50,6 @@ export default function TenGodsPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="십신으로 보는 반복 패턴"
               title="좋고 나쁨보다, 어떤 관계와 역할이 반복되는지를 먼저 봅니다"

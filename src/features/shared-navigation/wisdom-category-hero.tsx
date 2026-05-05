@@ -24,7 +24,6 @@ export function WisdomCategoryHero({
 
   return (
     <section className={cn('wisdom-category-hero', className)} data-tone={card.tone}>
-      <div className="app-starfield" />
       <div className="wisdom-category-hero-content">
         <div className={cn('wisdom-category-hanja', tone.text)}>{card.hanja}</div>
         <h1 className={cn('wisdom-category-title', tone.text)}>{card.title}</h1>

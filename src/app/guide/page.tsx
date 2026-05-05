@@ -126,7 +126,6 @@ export default function GuidePage() {
 
         <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
           <SectionSurface surface="panel" size="lg">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="처음 오셨다면"
               title="궁금한 깊이에 맞춰 바로 시작하시면 됩니다"
@@ -267,7 +266,6 @@ export default function GuidePage() {
           </SectionSurface>
 
           <SectionSurface surface="panel">
-            <div className="app-starfield" />
             <SectionHeader
               eyebrow="더 자세한 안내"
               title="세부 안내와 예시는 필요할 때만 펼쳐보세요"

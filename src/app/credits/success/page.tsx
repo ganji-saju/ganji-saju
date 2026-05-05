@@ -48,7 +48,6 @@ function LoadingState() {
 
       <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
         <SectionSurface surface="panel" size="lg">
-          <div className="app-starfield" />
           <SectionHeader
             eyebrow="확인 중"
             title="승인과 충전 반영을 짧게 확인합니다"
@@ -138,7 +137,6 @@ function SuccessState({ coins }: { coins: number }) {
 
       <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
         <SectionSurface surface="panel" size="lg">
-          <div className="app-starfield" />
           <SectionHeader
             eyebrow="충전 결과"
             title={`${coins}코인이 반영되었습니다`}

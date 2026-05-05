@@ -39,8 +39,8 @@ export default function TossPaymentMethodPicker({
               onClick={() => onChange(option.code)}
               aria-pressed={isSelected}
               className={cn(
-                'moon-payment-row px-4 py-3 text-left',
-                isSelected ? 'text-[var(--app-ivory)]' : 'text-[var(--app-copy)]'
+                'gangi-payment-row px-4 py-3 text-left',
+                isSelected ? 'text-[var(--app-ink)]' : 'text-[var(--app-copy)]'
               )}
               data-selected={isSelected ? 'true' : 'false'}
             >
@@ -49,7 +49,7 @@ export default function TossPaymentMethodPicker({
                   className={cn(
                     'flex h-5 w-5 items-center justify-center rounded-full text-xs',
                     isSelected
-                      ? 'bg-[var(--app-gold)] text-[var(--app-bg)]'
+                      ? 'bg-[var(--app-pink)] text-white'
                       : 'border border-[var(--app-line)] text-transparent'
                   )}
                 >

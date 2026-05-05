@@ -210,6 +210,7 @@
 - `GangiActionRow`: 한 섹션 안의 CTA 묶음. 주 행동 1개, 보조 행동 1개를 기본으로 합니다.
 - `GangiListLink`: 상품, 메뉴, 다음 행동을 한 줄 카드로 보여주는 기본 리스트 컴포넌트입니다.
 - `GangiMiniCard`: 결과 요약, 단계, 짧은 근거를 2~3개로 나눠 보여주는 작은 카드입니다.
+- `gangi-form-control`, `gangi-payment-row`, `gangi-plan-card`, `gangi-report-panel`, `gangi-evidence-card`: 기존 `moon-*` 표면을 대체하는 production CSS primitive입니다. 새 코드에서는 `moon-*` 클래스를 추가하지 않습니다.
 
 새 화면을 만들 때는 shadcn 컴포넌트를 직접 조합하기보다 위 컴포넌트로 먼저 구성합니다. 기존 `SectionSurface`, `SectionHeader`, `FeatureCard`, `ProductGrid`는 아직 남은 화면을 위한 호환 계층으로 보고, 신규 핵심 플로우에는 되도록 추가하지 않습니다.
 
@@ -217,7 +218,7 @@
 
 전역 CSS는 한 번에 삭제하지 않습니다. 아래 순서로 줄입니다.
 
-1. 핵심 플로우에서 `moon-action-*`, `moon-lunar-panel`, `app-starfield` 직접 사용을 먼저 제거합니다.
+1. 핵심 플로우에서 `moon-action-*`, `moon-lunar-panel`, `app-starfield` 직접 사용은 제거된 상태를 유지합니다. 새 화면에서는 다시 추가하지 않습니다.
 2. 사용처가 0개가 된 클래스만 `globals.css`에서 삭제합니다.
 3. `--app-gold` 계열 변수는 당장 제거하지 않고 핑크 alias로 유지합니다. 남은 화면이 모두 `--app-pink`로 이동한 뒤 삭제합니다.
 4. 전문/고전 페이지에 남은 레거시 문법은 핵심 전환 흐름 뒤에 정리합니다.

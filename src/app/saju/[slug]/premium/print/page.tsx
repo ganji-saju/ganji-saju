@@ -146,8 +146,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
     return (
       <AppShell>
         <AppPage className="space-y-6 py-8">
-          <section className="moon-lunar-panel p-7 sm:p-8">
-            <div className="app-starfield" />
+          <section className="gangi-report-panel p-7 sm:p-8">
             <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
               PDF 저장 권한 필요
             </Badge>

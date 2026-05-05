@@ -22,20 +22,21 @@
 
 ## Legacy class audit
 
-2026-05-05 기준 `src/app/globals.css`에 남아 있고, `src`에서 확인된 주요 레거시 클래스 사용량입니다.
+2026-05-05 추가 정리 후 핵심 레거시 클래스 사용량입니다. `src/app/globals.css` 자체와 문서 내 언급은 제외하고 실제 production 소스 사용처를 기준으로 봅니다.
 
-| class | src usage | 처리 방향 |
+| class | src usage | 처리 결과 |
 | --- | ---: | --- |
-| `app-starfield` | 38 | 핵심 플로우에서 제거. 문서/프리미엄 잔여 화면은 후속 정리 |
-| `moon-lunar-panel` | 27 | GangiSection 또는 app-panel로 치환 후 삭제 후보 |
-| `moon-action-compact` | 0 | 이번 패스에서 사용처 제거. CSS 블록도 제거 완료 |
-| `moon-action-primary/secondary` | 20 | Gangi 버튼으로 치환 후 삭제 후보 |
-| `moon-cta-primary/secondary` | 16 | Gangi 버튼으로 치환 후 삭제 후보 |
-| `moon-hero-*` | 40+ | 홈 신형에서는 미사용. 안내/레거시 컴포넌트 정리 후 삭제 후보 |
-| `moon-topic-score-card` | 7 | 결과 화면에서 Gangi 카드로 치환 후 삭제 후보 |
-| `moon-orbit-card` | 10 | 사주 세부/근거 카드에 남음. 접힘 영역 정리 때 치환 |
-| `moon-form-control` | 14 | 입력 폼 공통 컴포넌트 교체 후 삭제 후보 |
-| `moon-payment-row` | 11 | 결제 화면 Gangi 상품 행으로 정리 후 삭제 후보 |
+| `app-starfield` | 0 | 사용처 제거. CSS 장식 블록 삭제 |
+| `moon-lunar-panel` | 0 | `gangi-report-panel`로 치환 |
+| `moon-action-primary/secondary` | 0 | CSS 버튼 블록 삭제. 신규 CTA는 `gangi-primary-button`/`gangi-secondary-button` 사용 |
+| `moon-cta-primary/secondary` | 0 | CSS CTA 블록 삭제 |
+| `moon-topic-score-card` | 0 | CSS 블록 삭제 |
+| `moon-orbit-card` | 0 | `gangi-evidence-card`로 치환 |
+| `moon-form-control` | 0 | `gangi-form-control`로 치환 |
+| `moon-payment-row` | 0 | `gangi-payment-row`로 치환 |
+| `moon-plan-card` | 0 | `gangi-plan-card`로 치환 |
+| `moon-hero-*` | 잔여 | 구형 랜딩/안내 화면 호환용. 핵심 상품 플로우에는 신규 추가 금지 |
+| `app-gold*` | 잔여 | alias 유지. 핵심 입력/결과/결제 공통 컴포넌트는 `app-pink*`로 이동 |
 
 ## 이번 패스에서 건드리지 않는 것
 
