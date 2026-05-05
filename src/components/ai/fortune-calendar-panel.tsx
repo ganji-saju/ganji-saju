@@ -699,13 +699,13 @@ export default function FortuneCalendarPanel({
                   </Button>
                   <Link
                     href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
-                    className="gangi-secondary-button moon-action-compact"
+                    className="gangi-secondary-button"
                   >
                     1,900원으로 열기
                   </Link>
                   <Link
                     href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
-                    className="gangi-secondary-button moon-action-compact"
+                    className="gangi-secondary-button"
                   >
                     코인팩 보기
                   </Link>

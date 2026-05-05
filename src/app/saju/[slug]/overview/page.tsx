@@ -218,7 +218,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                 </Link>
                 <Link
                   href="/membership"
-                  className="gangi-secondary-button moon-action-compact"
+                  className="gangi-secondary-button"
                 >
                   플랜 비교 보기
                 </Link>

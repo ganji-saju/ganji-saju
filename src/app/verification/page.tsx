@@ -68,7 +68,7 @@ function JsonLink({ href }: { href: string }) {
   return (
     <Link
       href={href}
-      className="gangi-secondary-button moon-action-compact"
+      className="gangi-secondary-button"
     >
       진단 원문
     </Link>

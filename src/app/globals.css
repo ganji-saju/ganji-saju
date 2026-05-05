@@ -2055,12 +2055,6 @@
     color: var(--app-ivory);
   }
 
-  .moon-action-compact {
-    min-height: 2.4rem;
-    padding-inline: 1rem;
-    font-size: 0.82rem;
-  }
-
   .moon-action-icon {
     width: 2.75rem;
     min-width: 2.75rem;

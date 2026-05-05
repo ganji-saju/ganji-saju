@@ -1589,9 +1589,9 @@ export function toneClasses(tone: MoonlightTone) {
   switch (tone) {
     case 'goldSoft':
       return {
-        text: 'text-[var(--app-gold-soft)]',
-        border: 'border-[var(--app-gold-soft)]/28',
-        bg: 'bg-[var(--app-gold-soft)]/10',
+        text: 'text-[var(--app-pink-strong)]',
+        border: 'border-[var(--app-pink)]/28',
+        bg: 'bg-[var(--app-pink)]/10',
       };
     case 'jade':
       return {

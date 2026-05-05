@@ -14,7 +14,7 @@ interface SupportRailProps {
 const SURFACE_CLASSNAME: Record<NonNullable<SupportRailProps['surface']>, string> = {
   panel: 'app-panel',
   muted: 'app-panel-muted',
-  lunar: 'moon-lunar-panel',
+  lunar: 'app-panel',
 };
 
 export function SupportRail({

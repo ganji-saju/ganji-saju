@@ -100,7 +100,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
                 {hasPreviousPage ? (
                   <Link
                     href={buildResultsPageHref(currentPage - 1)}
-                    className="gangi-secondary-button moon-action-compact"
+                    className="gangi-secondary-button"
                   >
                     이전 30개
                   </Link>
@@ -108,7 +108,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
                 {hasNextPage ? (
                   <Link
                     href={buildResultsPageHref(currentPage + 1)}
-                    className="gangi-secondary-button moon-action-compact"
+                    className="gangi-secondary-button"
                   >
                     다음 30개
                   </Link>

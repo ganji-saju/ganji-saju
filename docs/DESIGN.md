@@ -196,3 +196,29 @@
 - 모바일 하단 도크가 콘텐츠를 가리지 않는가
 - 상품 노출이 결제 압박처럼 보이지 않는가
 - 달빛선생 시절 문구가 남아 있지 않은가
+
+
+## 15. Ganji Design System v1
+
+현재 production 기준 공통 컴포넌트는 `src/components/gangi/gangi-ui.tsx`를 우선합니다.
+
+핵심 API:
+
+- `GangiPageHeader`: 모바일 앱형 서브페이지 상단 헤더
+- `GangiIntro`: 첫 설명 영역. 한 화면에서 바로 이해되는 짧은 제목과 설명만 둡니다.
+- `GangiSection`: 흰 카드 또는 연핑크 카드형 섹션. 새 섹션의 기본 표면입니다.
+- `GangiActionRow`: 한 섹션 안의 CTA 묶음. 주 행동 1개, 보조 행동 1개를 기본으로 합니다.
+- `GangiListLink`: 상품, 메뉴, 다음 행동을 한 줄 카드로 보여주는 기본 리스트 컴포넌트입니다.
+- `GangiMiniCard`: 결과 요약, 단계, 짧은 근거를 2~3개로 나눠 보여주는 작은 카드입니다.
+
+새 화면을 만들 때는 shadcn 컴포넌트를 직접 조합하기보다 위 컴포넌트로 먼저 구성합니다. 기존 `SectionSurface`, `SectionHeader`, `FeatureCard`, `ProductGrid`는 아직 남은 화면을 위한 호환 계층으로 보고, 신규 핵심 플로우에는 되도록 추가하지 않습니다.
+
+## 16. Legacy Style Cleanup Policy
+
+전역 CSS는 한 번에 삭제하지 않습니다. 아래 순서로 줄입니다.
+
+1. 핵심 플로우에서 `moon-action-*`, `moon-lunar-panel`, `app-starfield` 직접 사용을 먼저 제거합니다.
+2. 사용처가 0개가 된 클래스만 `globals.css`에서 삭제합니다.
+3. `--app-gold` 계열 변수는 당장 제거하지 않고 핑크 alias로 유지합니다. 남은 화면이 모두 `--app-pink`로 이동한 뒤 삭제합니다.
+4. 전문/고전 페이지에 남은 레거시 문법은 핵심 전환 흐름 뒤에 정리합니다.
+5. 삭제 전에는 반드시 `npm run typecheck`, `npm test`, `npm run build`를 통과시킵니다.

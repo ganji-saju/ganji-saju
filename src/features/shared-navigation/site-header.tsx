@@ -354,7 +354,7 @@ function DesktopSidebar({
               <button
                 type="button"
                 onClick={onSignOut}
-                className="gangi-secondary-button moon-action-compact w-full"
+                className="gangi-secondary-button w-full"
               >
                 <LogOut className="h-3.5 w-3.5" />
                 로그아웃
@@ -363,7 +363,7 @@ function DesktopSidebar({
               <Link
                 href={authHref}
                 scroll={false}
-                className="gangi-primary-button moon-action-compact w-full"
+                className="gangi-primary-button w-full"
               >
                 로그인
               </Link>
@@ -373,7 +373,7 @@ function DesktopSidebar({
               <Link
                 href="/credits"
                 scroll={false}
-                className="gangi-secondary-button moon-action-compact"
+                className="gangi-secondary-button"
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 코인 충전
@@ -381,7 +381,7 @@ function DesktopSidebar({
               <Link
                 href="/membership"
                 scroll={false}
-                className="gangi-secondary-button moon-action-compact"
+                className="gangi-secondary-button"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 프리미엄

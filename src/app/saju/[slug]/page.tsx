@@ -1149,7 +1149,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   <div key={label} className="flex h-7 items-center justify-center">
                     {pillar ? (
                       label === '일' ? (
-                        <span className="rounded-full border border-[var(--app-gold-soft)]/30 bg-[var(--app-gold-soft)]/10 px-2 py-0.5 text-[11px] text-[var(--app-pink-strong)]">
+                        <span className="rounded-full border border-[var(--app-pink)]/30 bg-[var(--app-pink)]/10 px-2 py-0.5 text-[11px] text-[var(--app-pink-strong)]">
                           나
                         </span>
                       ) : (

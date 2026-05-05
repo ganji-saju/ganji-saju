@@ -284,7 +284,7 @@ function CreditsPageContent() {
                     <button
                       onClick={() => handlePurchase(pkg)}
                       disabled={loading === pkg.id}
-                      className="gangi-primary-button moon-action-compact min-w-[112px]"
+                      className="gangi-primary-button min-w-[112px]"
                     >
                       {loading === pkg.id ? '처리중...' : `${selectedMethod.shortLabel} 구매`}
                     </button>

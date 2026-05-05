@@ -598,7 +598,7 @@ export function MobileSajuResultStory({
             </Link>
             <Link
               href="/dialogue"
-              className="gangi-secondary-button moon-action-compact"
+              className="gangi-secondary-button"
             >
               달빛인생에 이어서 묻기
             </Link>
@@ -690,7 +690,7 @@ export function MobileSajuResultStory({
             {isLast ? (
               <Link
                 href="/saju/new"
-                className="gangi-secondary-button moon-action-compact"
+                className="gangi-secondary-button"
               >
                 새 리포트
               </Link>
