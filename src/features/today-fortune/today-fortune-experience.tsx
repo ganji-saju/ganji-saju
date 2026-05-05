@@ -344,8 +344,8 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-      <section className="dalbit-section">
+    <div className="gangi-subpage px-4 py-6">
+      <section className="gangi-pink-panel p-5">
         <div>
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
@@ -357,10 +357,10 @@ export function TodayFortuneExperience({
           </div>
           <SectionHeader
             className="mt-5"
-            title="오늘, 무엇만 조심하면 좋을까요?"
-            titleClassName="text-4xl sm:text-5xl"
-            description="연락, 돈, 일, 관계, 컨디션처럼 지금 걸리는 한 가지를 고르세요. 무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다."
-            descriptionClassName="max-w-3xl text-base sm:text-lg"
+            title="오늘 어떤 부분이 가장 궁금해요?"
+            titleClassName="text-3xl"
+            description="한 가지를 골라야 더 또렷이 보여드립니다. 무료 결과는 핵심 한 줄, 조심할 것, 오늘 해볼 행동만 먼저 보여드립니다."
+            descriptionClassName="max-w-3xl text-sm sm:text-base"
           />
 
           <div className="mt-6">

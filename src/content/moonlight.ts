@@ -145,8 +145,9 @@ export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
   },
   {
     label: '무료운세',
-    href: '/today-fortune',
+    href: '/free',
     matchPrefixes: [
+      '/free',
       '/today-fortune',
       '/tarot',
       '/zodiac',
@@ -160,7 +161,7 @@ export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
     ],
   },
   { label: '대화방', href: '/dialogue', matchPrefixes: ['/dialogue', '/compatibility'] },
-  { label: '보관함', href: '/my', matchPrefixes: ['/my', '/membership', '/credits'] },
+  { label: '보관함', href: '/my/results', matchPrefixes: ['/my', '/membership', '/credits'] },
 ] as const;
 
 export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
@@ -306,6 +307,26 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
     result: '오늘의 역할, 말의 강도, 일에서 조심할 장면을 짧게 봅니다.',
     href: '/saju/new?focus=career&product=work-flow',
     status: '일 질문으로 연결',
+    teacherSlug: 'myeongri-ho',
+  },
+  {
+    slug: 'monthly-calendar',
+    title: '월간 달력',
+    price: '1,900원',
+    question: '이번 달 좋은 날과 조심할 날은 언제일까',
+    result: '좋은 날, 한 번 더 확인할 날, 차분히 정리할 날을 달력처럼 봅니다.',
+    href: '/saju/new?product=monthly-calendar',
+    status: '사주 결과 생성 후 연결',
+    teacherSlug: 'today-so',
+  },
+  {
+    slug: 'year-core',
+    title: '올해 핵심 3줄',
+    price: '3,900원',
+    question: '올해 무엇을 밀고, 무엇을 조심할까',
+    result: '올해의 핵심 주제, 주의 패턴, 밀어도 되는 달을 짧게 정리합니다.',
+    href: '/saju/new?product=year-core',
+    status: '사주 결과 생성 후 연결',
     teacherSlug: 'myeongri-ho',
   },
 ] as const;

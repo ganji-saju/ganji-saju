@@ -13,6 +13,7 @@ import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { GANGI_ZODIAC, GangiCharacter } from '@/components/gangi/gangi-ui';
 
 const ZODIAC_POINTS = [
   '달빛인생의 띠는 사주 결과와 같은 입춘 기준으로 맞춥니다.',
@@ -39,8 +40,8 @@ export default async function ZodiacPage() {
   const hasPersonalizedProfile = Boolean(profile && personalizedSlug);
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={[
             <Badge
@@ -56,9 +57,31 @@ export default async function ZodiacPage() {
               빠른 무료 탐색
             </Badge>,
           ]}
-          title="내 띠 하나만 먼저 봅니다"
-          description="띠운세는 12개를 모두 펼쳐 비교하는 화면보다, 저장된 생년월일로 계산한 내 띠를 먼저 보여주는 편이 더 정확하고 덜 헷갈립니다."
+          title="내 띠 하나를 먼저 봅니다"
+          description="띠운세는 생년월일과 입춘 기준으로 내 띠를 먼저 맞추는 편이 더 정확하고 덜 헷갈립니다."
         />
+
+        <section className="gangi-card-panel p-5">
+          <SectionHeader
+            eyebrow="12띠 바로 선택"
+            title="생년월일이 없어도 띠를 눌러 가볍게 볼 수 있어요"
+            titleClassName="text-2xl"
+            description="내 프로필이 있으면 내 띠를 먼저 보여주고, 없으면 여기서 직접 고르면 됩니다."
+            descriptionClassName="text-[var(--app-copy)]"
+          />
+          <div className="mt-5 grid grid-cols-4 gap-2">
+            {GANGI_ZODIAC.map((zodiac) => (
+              <Link
+                key={zodiac.key}
+                href={`/zodiac/${zodiac.key}`}
+                className="rounded-[0.9rem] border border-[var(--app-line)] bg-white px-2 py-3 text-center"
+              >
+                <GangiCharacter zodiac={zodiac.key} size="sm" className="mx-auto" />
+                <span className="mt-1.5 block text-[11px] font-black text-[var(--app-ink)]">{zodiac.name}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
           <SectionSurface surface="panel" size="lg" className="text-center">

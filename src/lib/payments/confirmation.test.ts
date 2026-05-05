@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { validatePaymentConfirmationPayload } from './confirmation';
+import { getPackage, isSubscriptionPackage } from './catalog';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -18,6 +19,14 @@ test('payment confirmation accepts a valid subscription package', () => {
   assert.equal(result.input.pkg.subscriptionPlan, 'premium_monthly');
   assert.equal(result.input.slug, null);
   assert.equal(result.input.scope, null);
+});
+
+test('bonus coin package does not masquerade as a dialogue membership', () => {
+  const pkg = getPackage('subscription_30');
+
+  assert.ok(pkg);
+  assert.equal(pkg.name, '보너스 36 코인');
+  assert.equal(isSubscriptionPackage(pkg), false);
 });
 
 test('payment confirmation rejects tampered package amount', () => {

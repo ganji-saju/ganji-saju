@@ -31,7 +31,7 @@ import { toSlug } from '@/lib/saju/pillars';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Branch, Element, Stem } from '@/lib/saju/types';
 import { isReadingId, resolveReading } from '@/lib/saju/readings';
-import { buildSajuInterpretationGrounding, buildSajuReport, FOCUS_TOPIC_META } from '@/domain/saju/report';
+import { buildPunchReading, buildSajuInterpretationGrounding, buildSajuReport, FOCUS_TOPIC_META } from '@/domain/saju/report';
 import type { ReportEvidenceCard, ReportScore, SajuReport } from '@/domain/saju/report';
 import { compareBirthInputWithKasi } from '@/domain/saju/validation/kasi-calendar';
 import { buildFallbackInterpretation } from '@/server/ai/saju-interpretation';
@@ -256,7 +256,13 @@ function buildResultTasteProductHref(productSlug: string, slug: string) {
       return '/membership/checkout?product=love-question&from=saju-result';
     case 'money-pattern':
     case 'work-flow':
+    case 'year-core':
       return `/membership/checkout?product=${productSlug}&slug=${encodedSlug}&from=saju-result`;
+    case 'monthly-calendar': {
+      const now = new Date();
+      const scope = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      return `/membership/checkout?product=monthly-calendar&slug=${encodedSlug}&scope=${scope}&from=saju-result`;
+    }
     default:
       return '/pricing';
   }
@@ -535,6 +541,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     href: buildResultTasteProductHref(product.slug, slug),
     teacher: TEACHER_BY_SLUG.get(product.teacherSlug),
   }));
+  const punchReading = buildPunchReading(report);
 
   return (
     <AppShell header={<SiteHeader />}>
@@ -557,8 +564,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </div>
 
               <div>
-                <h1 className="dalbit-result-title">{easyResultCopy(report.headline, 1)}</h1>
-                <p className="dalbit-result-lead">{easyResultCopy(report.dayMasterSummary, 2)}</p>
+                <div className="app-caption text-[var(--app-pink-strong)]">판정</div>
+                <h1 className="dalbit-result-title">{easyResultCopy(punchReading.verdict, 1)}</h1>
+                <p className="dalbit-result-lead">{easyResultCopy(punchReading.why, 1)}</p>
                 <p className="mt-3 text-xs leading-5 text-[var(--app-copy-muted)]">
                   {formatBirthSummary(input)}
                 </p>
@@ -566,45 +574,85 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="dalbit-result-action-card">
-                  <div className="app-caption text-[var(--app-jade)]">오늘 해볼 것</div>
-                  <h2>{easyResultCopy(report.primaryAction.title, 1)}</h2>
-                  <p>{easyResultCopy(report.primaryAction.description, 2)}</p>
+                  <div className="app-caption text-[var(--app-coral)]">조심</div>
+                  <h2>{easyResultCopy(punchReading.caution, 1)}</h2>
+                  <p>불안하게 단정하지 않고, 반복될 수 있는 행동만 먼저 짚습니다.</p>
                 </div>
-                <div className="dalbit-result-action-card dalbit-result-action-card-caution">
-                  <div className="app-caption text-[var(--app-coral)]">오늘 조심할 것</div>
-                  <h2>{easyResultCopy(report.cautionAction.title, 1)}</h2>
-                  <p>{easyResultCopy(report.cautionAction.description, 2)}</p>
+                <div className="dalbit-result-action-card">
+                  <div className="app-caption text-[var(--app-jade)]">액션</div>
+                  <h2>{easyResultCopy(punchReading.action, 1)}</h2>
+                  <p>지금 바로 할 수 있는 한 가지 행동으로 줄여서 봅니다.</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="dalbit-section-heading mb-0">
-                <h2 className="text-2xl">더 궁금한 부분만 이어보세요</h2>
-                <p>
-                  전체를 길게 읽기 전, 지금 마음에 걸리는 질문만 550원/990원 소액 풀이로 연결합니다.
+            <div className="space-y-4">
+              <div className="dalbit-result-evidence-card">
+                <div className="app-caption text-[var(--app-pink-strong)]">근거</div>
+                <h2>왜 이렇게 보았는지, 단서는 접어서 남깁니다</h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {punchReading.evidence.map((item) => (
+                    <span key={item} className="dalbit-mini-badge">
+                      {easyResultCopy(item, 1)}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm leading-7 text-[var(--app-copy-muted)]">
+                  자세한 계산 단서는 아래 근거 영역에서 따로 확인하실 수 있습니다.
                 </p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {resultTasteProducts.map((product) => (
-                  <Link key={product.slug} href={product.href} className="dalbit-price-card">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-black text-[var(--app-pink-strong)]">
-                        {product.price}
-                      </span>
-                      {product.teacher ? (
-                        <span className="dalbit-product-teacher">
-                          <span>{product.teacher.zodiac}</span>
-                          {product.teacher.teacherName}
-                        </span>
-                      ) : null}
-                    </div>
-                    <h3>{easyResultCopy(product.title, 1)}</h3>
-                    <p>{easyResultCopy(product.result, 1)}</p>
-                  </Link>
-                ))}
+
+              <div className="dalbit-result-evidence-card">
+                <div className="app-caption text-[var(--app-pink-strong)]">다음 선택</div>
+                <h2>핵심만 봤다면, 필요한 깊이만 이어보세요</h2>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <TrackedLink
+                    href={`/saju/${slug}/premium`}
+                    eventName="report_deep_report_click"
+                    eventParams={{ slug, from: 'result_first_card' }}
+                    className="moon-cta-primary"
+                  >
+                    긴 사주풀이 보기
+                  </TrackedLink>
+                  <TrackedLink
+                    href="/dialogue"
+                    eventName="report_dialogue_continue_click"
+                    eventParams={{ slug, from: 'result_first_card' }}
+                    className="moon-action-secondary"
+                  >
+                    이어서 묻기
+                  </TrackedLink>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div className="dalbit-section-heading mb-0">
+            <h2 className="text-2xl">더 궁금한 부분만 이어보세요</h2>
+            <p>
+              전체를 길게 읽기 전, 지금 마음에 걸리는 질문만 소액 풀이로 연결합니다.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {resultTasteProducts.map((product) => (
+              <Link key={product.slug} href={product.href} className="dalbit-price-card">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-black text-[var(--app-pink-strong)]">
+                    {product.price}
+                  </span>
+                  {product.teacher ? (
+                    <span className="dalbit-product-teacher">
+                      <span>{product.teacher.zodiac}</span>
+                      {product.teacher.teacherName}
+                    </span>
+                  ) : null}
+                </div>
+                <h3>{easyResultCopy(product.title, 1)}</h3>
+                <p>{easyResultCopy(product.result, 1)}</p>
+              </Link>
+            ))}
           </div>
         </section>
 

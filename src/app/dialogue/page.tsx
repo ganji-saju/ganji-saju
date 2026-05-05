@@ -11,6 +11,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { DIALOGUE_GUARDRAILS, DIALOGUE_PRESETS } from '@/content/moonlight';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
+import { GANGI_TEACHERS, GangiListLink } from '@/components/gangi/gangi-ui';
 
 export const metadata: Metadata = {
   title: '대화',
@@ -46,8 +47,8 @@ export default async function DialoguePage({
   ] as const;
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-0">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+      <AppPage className="gangi-subpage space-y-6">
         <SectionSurface surface="hero" size="md">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
@@ -85,6 +86,28 @@ export default async function DialoguePage({
             </div>
           </div>
         </SectionSurface>
+
+        <section className="gangi-card-panel p-5">
+          <SectionHeader
+            eyebrow="선생님 고르기"
+            title="어떤 선생님과 이야기 나눠볼까요?"
+            titleClassName="text-2xl"
+            description="궁금한 분야의 선생님을 고르면 대화 주제를 더 빨리 잡을 수 있습니다."
+            descriptionClassName="text-[var(--app-copy)]"
+          />
+          <div className="mt-5 flex flex-col gap-2.5">
+            {GANGI_TEACHERS.map((teacher) => (
+              <GangiListLink
+                key={teacher.name}
+                href={teacher.href}
+                zodiac={teacher.zodiac}
+                title={`${teacher.name} · ${teacher.topic}`}
+                desc={teacher.desc}
+                price={teacher.price}
+              />
+            ))}
+          </div>
+        </section>
 
         <section id="dialogue-chat" className="scroll-mt-24">
           <DialogueChatPanel

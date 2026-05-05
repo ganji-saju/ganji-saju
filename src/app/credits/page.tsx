@@ -14,6 +14,7 @@ import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-p
 import SiteHeader from '@/features/shared-navigation/site-header';
 import LegalLinks from '@/components/legal-links';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
@@ -28,26 +29,33 @@ const hasSupabaseBrowserEnv = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-interface Package {
-  id: string;
-  label: string;
-  price: number;
-  credits: number;
-  desc: string;
-  highlight?: boolean;
-  isSubscription?: boolean;
-}
+const CREDIT_PACKAGE_DESCRIPTIONS: Record<string, { desc: string; badge: string; highlight?: boolean }> = {
+  credit_1: {
+    badge: '코인 패키지',
+    desc: '궁금한 주제 하나를 가볍게 열어보기 좋은 입문 패키지',
+  },
+  credit_3: {
+    badge: '첫 결제 추천',
+    desc: '연애·재물·일 흐름을 작게 이어보기 좋은 첫 결제 구간',
+    highlight: true,
+  },
+  credit_7: {
+    badge: '코인 패키지',
+    desc: '주제 여러 개를 이어서 보는 사용자에게 가장 안정적인 묶음',
+  },
+  subscription_30: {
+    badge: '보너스 코인팩',
+    desc: '스타터 10회보다 6코인이 더 붙는 36코인 보너스 묶음입니다. 멤버십 플랜과는 따로 관리됩니다.',
+  },
+};
 
-const PACKAGES: Package[] = [
-  { id: 'credit_1', label: '체험', price: 500, credits: 1, desc: '궁금한 주제 하나를 가볍게 열어보기 좋은 입문 패키지' },
-  { id: 'credit_3', label: '스타터', price: 990, credits: 3, desc: '연애·재물·일 흐름을 작게 이어보기 좋은 첫 결제 구간', highlight: true },
-  { id: 'credit_7', label: '기본', price: 2000, credits: 7, desc: '주제 여러 개를 이어서 보는 사용자에게 가장 안정적인 묶음' },
-  { id: 'subscription_30', label: '월간 코인팩', price: 9900, credits: 36, desc: '매달 자동 충전으로 36코인을 넉넉하게 이어가는 코인 전용 플랜 · 스타터 10회보다 6코인이 더 붙습니다', isSubscription: true },
-];
+const PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
+  ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
+);
 
 const CREDIT_FLOW_POINTS = [
   '코인은 필요한 소액 풀이를 그때그때 여는 용도로 두고, 멤버십과 역할을 분리합니다.',
-  '무엇이 열리는지, 어떤 결과가 저장되는지, 자동 결제 여부를 결제 전에 먼저 보여드립니다.',
+  '무엇이 열리는지, 어떤 결과가 저장되는지, 멤버십과 어떻게 다른지 결제 전에 먼저 보여드립니다.',
   '결제 뒤에는 MY와 코인 센터에서 상태와 이용 흐름을 다시 확인하실 수 있습니다.',
 ] as const;
 
@@ -55,7 +63,7 @@ const UNLOCK_EXAMPLES = [
   '1코인 · 분야별 깊이보기 한 번 열기',
   '3코인 · 연애·재물·직장 세 주제를 이어서 보기',
   '7코인 · 월간 테마나 선택 심화를 넓게 펼쳐보기',
-  '36코인 · 자주 여는 분을 위한 월간 보너스 패키지',
+  '36코인 · 자주 여는 분을 위한 보너스 코인팩',
 ] as const;
 
 function CreditsPageContent() {
@@ -76,7 +84,7 @@ function CreditsPageContent() {
     void getCurrentBrowserUser(supabase).then((user) => setIsLoggedIn(Boolean(user)));
   }, []);
 
-  async function handlePurchase(pkg: Package) {
+  async function handlePurchase(pkg: PaymentPackage) {
     if (!isLoggedIn) {
       location.href = `/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`;
       return;
@@ -106,7 +114,7 @@ function CreditsPageContent() {
       const paymentRequest = {
         amount: { currency: 'KRW', value: pkg.price },
         orderId,
-        orderName: `${pkg.label} ${pkg.credits}코인`,
+        orderName: `${pkg.name} ${pkg.credits}코인`,
         successUrl: `${location.origin}/credits/success?${successParams.toString()}`,
         failUrl: `${location.origin}/credits?error=fail`,
       } as const;
@@ -138,13 +146,13 @@ function CreditsPageContent() {
 
   const selectedMethod = getTossPaymentMethodOption(paymentMethod);
   const highlightedPackage = useMemo(
-    () => PACKAGES.find((item) => item.highlight) ?? PACKAGES[0],
+    () => PACKAGES.find((item) => CREDIT_PACKAGE_DESCRIPTIONS[item.id]?.highlight) ?? PACKAGES[0],
     []
   );
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={[
             <Badge
@@ -161,7 +169,7 @@ function CreditsPageContent() {
             </Badge>,
           ]}
           title="필요한 만큼만 열고, 자주 보시면 넉넉하게 이어갑니다"
-          description="코인은 필요하실 때만 소액 풀이를 여는 작은 열쇠입니다. 자주 찾는 주제는 가볍게 충전해서 쓰시고, 반복해서 읽는 분은 월간 코인팩으로 더 넉넉하게 이어가실 수 있게 준비했습니다."
+          description="코인은 필요하실 때만 소액 풀이를 여는 작은 열쇠입니다. 자주 찾는 주제는 가볍게 충전해서 쓰시고, 반복해서 읽는 분은 보너스 코인팩으로 더 넉넉하게 이어가실 수 있게 준비했습니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
@@ -189,7 +197,7 @@ function CreditsPageContent() {
               <FeatureCard
                 surface="soft"
                 eyebrow="자주 찾으신다면"
-                description="반복해서 읽게 되는 분은 월간 코인팩으로 더 넉넉하게 이어가실 수 있습니다."
+                description="반복해서 읽게 되는 분은 보너스 코인팩으로 더 넉넉하게 이어가실 수 있습니다."
               />
             </ProductGrid>
 
@@ -197,8 +205,8 @@ function CreditsPageContent() {
               className="mt-6"
               surface="soft"
               eyebrow="추천 시작점"
-              title={`${highlightedPackage.label} · ${highlightedPackage.credits}코인`}
-              description={highlightedPackage.desc}
+              title={`${highlightedPackage.name} · ${highlightedPackage.credits}코인`}
+              description={CREDIT_PACKAGE_DESCRIPTIONS[highlightedPackage.id]?.desc}
             />
           </SectionSurface>
 
@@ -206,7 +214,7 @@ function CreditsPageContent() {
             surface="panel"
             eyebrow="결제 전 기준"
             title="무엇이 열리는지 먼저 확인하고 고르시면 됩니다"
-            description="무엇이 열리는지, 어떤 결과가 저장되는지, 자동 결제 여부는 결제 전에 먼저 보이도록 정리했습니다."
+            description="무엇이 열리는지, 어떤 결과가 저장되는지, 멤버십과 어떻게 다른지는 결제 전에 먼저 보이도록 정리했습니다."
           >
             <BulletList items={CREDIT_FLOW_POINTS} />
 
@@ -229,7 +237,7 @@ function CreditsPageContent() {
           <SectionSurface surface="panel" size="lg">
             <SectionHeader
               eyebrow="코인 패키지"
-              title="첫 결제부터 월간 코인팩까지"
+              title="첫 결제부터 보너스 코인팩까지"
               titleClassName="text-3xl"
               description="패키지는 가격보다 쓰임새가 먼저 보이도록 정리했습니다. 결제 수단을 고른 뒤, 각 카드에서 바로 구매하실 수 있습니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
@@ -262,13 +270,13 @@ function CreditsPageContent() {
                 <FeatureCard
                   key={pkg.id}
                   surface="soft"
-                  eyebrow={pkg.isSubscription ? '월간 코인팩' : pkg.highlight ? '첫 결제 추천' : '코인 패키지'}
-                  title={`${pkg.label} · ${pkg.credits}코인`}
+                  eyebrow={CREDIT_PACKAGE_DESCRIPTIONS[pkg.id]?.badge ?? '코인 패키지'}
+                  title={`${pkg.name} · ${pkg.credits}코인`}
                   description={
                     <>
-                      <span className="block">{pkg.desc}</span>
+                      <span className="block">{CREDIT_PACKAGE_DESCRIPTIONS[pkg.id]?.desc}</span>
                       <span className="mt-2 block text-[var(--app-gold-text)]">
-                        {pkg.price.toLocaleString()}원{pkg.isSubscription ? '/월' : ''}
+                        {pkg.price.toLocaleString()}원
                       </span>
                     </>
                   }
@@ -307,7 +315,7 @@ function CreditsPageContent() {
               className="mt-5"
               surface="soft"
               eyebrow="멤버십 안내"
-              description="멤버십은 결과 보관과 반복 열람 가치에 초점을 두고, 월간 코인팩은 심화풀이를 자주 여는 분을 위한 코인 전용 흐름으로 나누어두었습니다."
+              description="멤버십은 결과 보관과 반복 열람 가치에 초점을 두고, 보너스 코인팩은 심화풀이를 자주 여는 분을 위한 코인 전용 흐름으로 나누어두었습니다."
             />
 
             <ActionCluster className="mt-5">
@@ -329,8 +337,8 @@ export default function CreditsPage() {
   return (
     <Suspense
       fallback={
-        <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-          <AppPage className="space-y-6">
+        <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+          <AppPage className="gangi-subpage space-y-6">
             <SectionSurface surface="panel" size="lg" className="text-center text-[var(--app-copy)]">
               코인 센터를 불러오는 중입니다.
             </SectionSurface>

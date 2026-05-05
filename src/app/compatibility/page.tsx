@@ -53,8 +53,8 @@ const COMPATIBILITY_GUIDE = [
 
 export default function CompatibilityPage() {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-0">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={
             <>

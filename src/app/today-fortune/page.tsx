@@ -17,7 +17,7 @@ export default async function TodayFortunePage({
   const { concern, paid, sourceSessionId } = await searchParams;
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-0">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <TodayFortuneExperience
         initialConcernId={concern}
         paidProduct={paid}

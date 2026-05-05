@@ -22,42 +22,51 @@ import {
   TASTE_PRODUCTS,
   TRUST_SIGNALS,
 } from '@/content/moonlight';
+import {
+  formatPaymentPackagePrice,
+  getMembershipPackage,
+} from '@/lib/payments/catalog';
+
+const LIFETIME_REPORT_PACKAGE = getMembershipPackage('lifetime');
+const LIFETIME_REPORT_PRICE = LIFETIME_REPORT_PACKAGE
+  ? formatPaymentPackagePrice(LIFETIME_REPORT_PACKAGE)
+  : '49,000원';
 
 const COLLECTIBLE_REPORTS = [
   {
     slug: 'life-standard',
     title: '보관형 사주 리포트',
-    price: '49,000원~79,000원',
+    price: LIFETIME_REPORT_PRICE,
     summary: '타고난 성향·올해 흐름·선택 힌트 종합',
     recommendation: '내 사주의 바탕과 평생 흐름을 한 번의 결과물로 남기고 싶은 분',
-    href: '/saju/new?product=life-standard',
+    href: '/saju/new?plan=lifetime',
     badge: '핵심',
-    status: '지금 시작 가능',
+    status: '사주 결과 생성 후 결제 연결',
   },
   {
     slug: 'yearly-2026',
     title: '2026 연간 운세 전략서',
-    price: '39,000원~69,000원',
+    price: '결제 준비 중',
     summary: '월별 흐름·주의 달·기회 달',
     recommendation: '올해의 달별 전략과 timing을 미리 보고 싶은 분',
-    href: '/saju/new?product=yearly-2026',
+    href: '/saju/new?focus=year',
     badge: '시즌',
-    status: '올해 흐름으로 연결',
+    status: '무료 결과 후 연간 요약과 달력 상품으로 연결',
   },
   {
     slug: 'relationship-standard',
     title: '궁합 보관 리포트',
-    price: '59,000원~89,000원',
+    price: '결제 준비 중',
     summary: '관계 구조·갈등·보완점',
     recommendation: '두 사람의 맞물림과 부딪히는 지점을 관계 구조로 정리하고 싶은 분',
     href: '/compatibility?product=relationship-standard',
     badge: '관계',
-    status: '궁합 흐름으로 연결',
+    status: '궁합 입력 흐름으로 연결',
   },
   {
     slug: 'family-report',
     title: '가족 명리 리포트',
-    price: '99,000원~129,000원',
+    price: '준비 중',
     summary: '부모·자녀·배우자 구조',
     recommendation: '가족 안에서 반복되는 역할과 충돌 지점을 함께 정리하고 싶은 분',
     href: '/membership?focus=family-report',

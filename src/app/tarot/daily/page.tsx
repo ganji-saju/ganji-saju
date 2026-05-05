@@ -8,7 +8,6 @@ import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { SupportRail } from '@/components/layout/support-rail';
-import { Badge } from '@/components/ui/badge';
 import {
   TAROT_CARD_KEYWORDS,
   TAROT_QUESTION_OPTIONS,
@@ -17,7 +16,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug } from '@/lib/profile-personalization';
 import { getTarotSpreadForQuestion, getTodayTarotPreview } from '@/lib/tarot-api';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 const DAILY_TAROT_QUESTION = '오늘 하루 어떤 메시지가 있을까';
 
@@ -44,26 +43,30 @@ export default async function DailyTarotPage() {
   const sourceLabel = featuredReading.source === 'api' ? '78장 덱 기준' : '로컬 덱 기준';
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="tarot"
-              className="border-[var(--app-plum)]/25 bg-[var(--app-plum)]/10 text-[var(--app-plum)]"
-            >
-              오늘의 타로
-            </Badge>,
-            <Badge
-              key="free"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              빠른 무료 탐색
-            </Badge>,
-          ]}
-          title="지금 마음에 가까운 질문을 먼저 고르세요"
-          description="타로는 길게 읽기보다 지금 마음을 빨리 비추는 입구입니다. 질문을 고르고 한 장을 뽑으면, 핵심 한 줄과 오늘 해볼 행동을 먼저 보여드립니다."
-        />
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
+        <section className="gangi-sub-intro text-center">
+          <p className="gangi-sub-eyebrow">무료 타로</p>
+          <h1>
+            오늘 마음에
+            <br />
+            한 장만 뽑아볼까요?
+          </h1>
+          <p className="gangi-sub-desc">
+            잠시 눈을 감고, 가장 궁금한 한 가지를 마음속에 떠올려보세요.
+          </p>
+          <div className="gangi-card-stack" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <span key={index} className="gangi-tarot-card" />
+            ))}
+          </div>
+          <Link
+            href="/tarot/daily/pick"
+            className="mx-auto mt-5 flex h-12 max-w-xs items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-sm font-black text-white"
+          >
+            카드 뽑으러 가기
+          </Link>
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <SectionSurface surface="panel" size="lg">

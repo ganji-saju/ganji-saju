@@ -74,7 +74,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   },
   {
     id: 'general',
-    label: '그냥 오늘의 흐름',
+    label: '가볍게 오늘 흐름',
     hanja: '流',
     shortLabel: '총운',
     prompt: '오늘 전체 흐름',

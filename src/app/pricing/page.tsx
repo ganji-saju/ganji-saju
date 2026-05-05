@@ -13,7 +13,12 @@ import {
   TASTE_PRODUCTS,
 } from '@/content/moonlight';
 import { PRODUCT_REPORT_CATALOG } from '@/content/report-catalog';
-import { PAYMENT_PACKAGES } from '@/lib/payments/catalog';
+import {
+  PAYMENT_PACKAGES,
+  formatPaymentPackagePrice,
+  formatWon,
+  getMembershipPackage,
+} from '@/lib/payments/catalog';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -24,15 +29,18 @@ export const metadata: Metadata = {
   },
 };
 
+const LIFETIME_PRICE = getMembershipPackage('lifetime');
+const LIGHT_PLAN_PRICE = getMembershipPackage('basic');
+
 const REPORT_PRICE_BY_SLUG: Record<string, string> = {
-  'life-standard': '49,000원~79,000원',
-  'yearly-2026': '39,000원~69,000원',
-  'career-money': '49,000원~79,000원',
-  'relationship-standard': '59,000원~89,000원',
-  'family-report': '99,000원~129,000원',
-  decision: '39,000원~69,000원',
-  monthly: '1,900원부터',
-  dialogue: '월 4,900원부터',
+  'life-standard': LIFETIME_PRICE ? formatPaymentPackagePrice(LIFETIME_PRICE) : '49,000원',
+  'yearly-2026': '결제 준비 중',
+  'career-money': '결제 준비 중',
+  'relationship-standard': '결제 준비 중',
+  'family-report': '준비 중',
+  decision: '준비 중',
+  monthly: '1,900원',
+  dialogue: LIGHT_PLAN_PRICE ? `${formatPaymentPackagePrice(LIGHT_PLAN_PRICE)}부터` : '월 4,900원부터',
 };
 
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits' || item.id === 'subscription_30');
@@ -40,14 +48,10 @@ const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime')
 const ACTIVE_TEACHERS = ACTIVE_DALBIT_TEACHERS;
 const TEACHER_BY_SLUG = new Map(DALBIT_TEACHERS.map((teacher) => [teacher.slug, teacher]));
 
-function formatWon(value: number) {
-  return `${value.toLocaleString('ko-KR')}원`;
-}
-
 export default function PricingPage() {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-8">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-8">
         <PageHero
           title="달빛인생 가격 한눈보기"
           description="처음부터 큰 결제를 고르지 않아도 됩니다. 무료 오늘운세와 타로를 본 뒤, 지금 궁금한 질문만 550원/990원으로 가볍게 이어보세요."

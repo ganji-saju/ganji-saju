@@ -28,11 +28,10 @@ export const PAYMENT_PACKAGES = [
   { id: 'credit_7', name: '기본 7 코인', credits: 7, price: 2000, kind: 'credits' },
   {
     id: 'subscription_30',
-    name: '월간 코인팩 36',
+    name: '보너스 36 코인',
     credits: 36,
     price: 9900,
     kind: 'subscription',
-    subscriptionPlan: 'plus_monthly',
   },
   {
     id: 'membership_plus',
@@ -158,11 +157,20 @@ export function getTasteProductPackage(product: TasteProductId) {
 export function isSubscriptionPackage(
   pkg: PaymentPackage
 ): pkg is PaymentPackage & { subscriptionPlan: SubscriptionPlan } {
-  return pkg.kind === 'subscription' && Boolean(pkg.subscriptionPlan);
+  return pkg.kind === 'subscription' && Boolean(pkg.planSlug) && Boolean(pkg.subscriptionPlan);
 }
 
 export function isTasteProductPackage(
   pkg: PaymentPackage
 ): pkg is PaymentPackage & { tasteProductId: TasteProductId } {
   return pkg.kind === 'taste_product' && isTasteProductId(pkg.tasteProductId);
+}
+
+export function formatWon(value: number) {
+  return `${value.toLocaleString('ko-KR')}원`;
+}
+
+export function formatPaymentPackagePrice(pkg: PaymentPackage) {
+  const price = formatWon(pkg.price);
+  return pkg.kind === 'subscription' && pkg.planSlug ? `월 ${price}` : price;
 }

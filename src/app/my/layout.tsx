@@ -20,8 +20,8 @@ export default function MyLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <AppShell header={<SiteHeader />}>
-      <AppPage className="space-y-6 lg:space-y-8">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
+      <AppPage className="gangi-subpage space-y-6 lg:space-y-8">
         <AccountShellNav />
         {children}
       </AppPage>

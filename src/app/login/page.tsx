@@ -1009,7 +1009,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <main className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
+    <main className="app-shell gangi-subpage-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
           달
@@ -1017,9 +1017,11 @@ export default function LoginPage() {
         <div className="font-[var(--font-heading)] text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
         <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
       </div>
-      <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
-        <LoginContent />
-      </Suspense>
+      <div className="gangi-subpage">
+        <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
+          <LoginContent />
+        </Suspense>
+      </div>
     </main>
   );
 }

@@ -12,10 +12,10 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
   {
     slug: 'life-standard',
     title: '보관형 사주 리포트',
-    summary: '원국·격국·용신·대운 종합',
-    recommendation: '내 사주의 바탕과 평생 흐름을 한 번에 정리하고 싶은 분',
-    whatToCheck: '원국 구조, 격국 후보, 용신 판단, 대운 흐름',
-    href: '/saju/new?product=life-standard',
+    summary: '내 성향, 올해 흐름, 선택 힌트를 한 번에 정리',
+    recommendation: '내 사주의 바탕과 앞으로의 흐름을 한 번에 남기고 싶은 분',
+    whatToCheck: '타고난 성향, 반복되는 패턴, 올해 조언, 다시 볼 요약',
+    href: '/saju/new?plan=lifetime',
     badge: '핵심',
   },
   {

@@ -7,8 +7,11 @@ import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import { Badge } from '@/components/ui/badge';
+import {
+  GangiIntro,
+  GangiPageHeader,
+  GangiPurchaseSummary,
+} from '@/components/gangi/gangi-ui';
 import {
   CHECKOUT_PLAN_GUIDE,
   CHECKOUT_METHODS,
@@ -17,6 +20,7 @@ import {
 } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
+  formatPaymentPackagePrice,
   getMembershipPackage,
   getTasteProductPackage,
   isTasteProductId,
@@ -36,7 +40,7 @@ import {
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   searchParams: Promise<{
@@ -177,6 +181,9 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const paymentPackage = selectedProduct
     ? getTasteProductPackage(selectedProduct)
     : getMembershipPackage(selectedPlan);
+  const displayPrice = paymentPackage
+    ? formatPaymentPackagePrice(paymentPackage)
+    : selected.price;
   let alreadyPurchasedHref: string | null = null;
 
   if (
@@ -201,87 +208,36 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="checkout"
-              className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-            >
-              결제
-            </Badge>,
-            <Badge
-              key="plan"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              {selected.title}
-            </Badge>,
-          ]}
-          title="결제 전에 열리는 내용을 확인합니다"
-          description="대화형 멤버십인지, 보관형 리포트인지, 또는 550원/990원 소액 풀이인지에 따라 결제 뒤 이동하는 화면이 다릅니다. 가격과 다시 볼 위치를 짧게 정리했습니다."
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
+        <GangiPageHeader title="결제" backHref="/membership" />
+        <GangiIntro
+          eyebrow="결제 확인"
+          title={
+            <>
+              결제 전에
+              <br />
+              열리는 내용을 확인해요
+            </>
+          }
+          description="가격과 바로 열리는 내용을 먼저 확인하고, 실제 결제는 아래 버튼에서 진행합니다."
         />
 
-        <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-          <SectionSurface surface="lunar" size="lg">
-            <div className="app-starfield" />
+        <section className="px-4 sm:px-0">
+          <GangiPurchaseSummary
+            title={selected.title}
+            price={displayPrice}
+            description={selected.reassurance}
+            opens={selected.opens}
+          />
+          <div className="gangi-card-panel mt-4 p-4">
             <SectionHeader
-              eyebrow="선택한 상품"
-              title={selected.title}
-              titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description={selected.reassurance}
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-              actions={
-                <ActionCluster>
-                  <Link
-                    href="/membership"
-                    className="moon-action-secondary"
-                  >
-                    멤버십으로 돌아가기
-                  </Link>
-                </ActionCluster>
-              }
+              eyebrow="결제 전 체크"
+              title="한 번 더 확인할 내용"
+              titleClassName="text-2xl"
+              description="결제 버튼을 누르기 전에 상품 성격과 다시 볼 위치만 짧게 확인합니다."
+              descriptionClassName="text-[var(--app-copy)]"
             />
-
-            <ProductGrid columns={2} className="mt-6">
-              <FeatureCard
-                surface="soft"
-                eyebrow="가격"
-                title={selected.price}
-                description={selected.nextRange}
-              />
-              <FeatureCard
-                surface="soft"
-                eyebrow="결제 뒤 바로 열리는 것"
-                description={selected.opens[0] ?? '선택한 상품 안내를 먼저 확인하실 수 있습니다.'}
-              />
-            </ProductGrid>
-
-            <SectionHeader
-              className="mt-8"
-              eyebrow="결제 뒤 바로 확인"
-              title="이 상품으로 바로 열리는 내용입니다"
-              titleClassName="text-2xl text-[var(--app-ivory)]"
-            />
-
-            <ProductGrid columns={3} className="mt-5">
-              {selected.opens.map((item, index) => (
-                <FeatureCard
-                  key={item}
-                  surface="soft"
-                  eyebrow={String(index + 1).padStart(2, '0')}
-                  description={item}
-                />
-              ))}
-            </ProductGrid>
-          </SectionSurface>
-
-          <SupportRail
-            surface="panel"
-            eyebrow="결제 전 체크"
-            title="지금 이 화면에서 함께 보실 기준"
-            description="결제 버튼을 누르기 전에 무엇을 다시 확인하면 좋은지, 한쪽에 짧게 정리했습니다."
-          >
             <BulletList items={CHECKOUT_FLOW_POINTS} />
             <FeatureCard
               className="mt-5"
@@ -289,7 +245,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               eyebrow="안심 안내"
               description={MEMBERSHIP_REASSURANCE.join(' ')}
             />
-          </SupportRail>
+          </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">

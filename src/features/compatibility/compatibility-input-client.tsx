@@ -558,8 +558,8 @@ export function CompatibilityInputClient({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={[
             <Badge
@@ -575,8 +575,8 @@ export function CompatibilityInputClient({
               {selected.title}
             </Badge>,
           ]}
-          title="두 사람 정보를 바로 입력해 궁합을 봅니다"
-          description="저장된 사람을 고르지 않아도 괜찮습니다. 로그인하지 않은 상태에서도 내 정보와 상대 정보를 함께 입력하면 바로 관계의 결을 읽어드립니다."
+          title="두 사람의 흐름을 한 번에 봐요"
+          description="저장된 사람을 고르지 않아도 괜찮습니다. 내 정보와 상대 정보를 함께 입력하면 바로 관계의 결을 읽어드립니다."
         />
 
         {hasLoveQuestionPurchase ? (

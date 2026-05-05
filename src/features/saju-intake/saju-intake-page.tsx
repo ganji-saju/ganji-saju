@@ -162,6 +162,7 @@ const FAST_PATH_STEPS = [
   ['1', '질문 선택', '지금 궁금한 문제를 먼저 고릅니다.'],
   ['2', '기본 정보', '생년월일과 성별을 한 번에 입력합니다.'],
   ['3', '시간·출생지', '시간을 모르면 시간 모름으로 열 수 있습니다.'],
+  ['4', '필수 동의', '처음 한 번만 확인하고 다음부터는 건너뜁니다.'],
 ] as const;
 
 const ENTRY_FOCUS_TOPIC_BY_SLUG = {
@@ -189,7 +190,21 @@ function getCurrentYearMonthScope() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function buildPostSubmitHref(id: string, focusTopic: OnboardingFocusTopic, product: TasteProductId | null) {
+function buildPostSubmitHref(
+  id: string,
+  focusTopic: OnboardingFocusTopic,
+  product: TasteProductId | null,
+  plan: 'lifetime' | null
+) {
+  if (plan === 'lifetime') {
+    const params = new URLSearchParams({
+      plan,
+      slug: id,
+      from: 'saju-new',
+    });
+    return `/membership/checkout?${params.toString()}`;
+  }
+
   if (
     product === 'monthly-calendar' ||
     product === 'year-core' ||
@@ -370,6 +385,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const [selectedEntrySlug, setSelectedEntrySlug] =
     useState<(typeof QUESTION_ENTRY_POINTS)[number]['slug']>('today');
   const [pendingProduct, setPendingProduct] = useState<TasteProductId | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<'lifetime' | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const hasTrackedStartRef = useRef(false);
   const hasTrackedBirthStartRef = useRef(false);
@@ -395,12 +411,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('focus');
     const productParam =
       typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('product');
+    const planParam =
+      typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('plan');
     const initialFocusTopic = normalizeEntryFocusParam(focusParam);
     if (isTasteProductId(productParam)) {
       setPendingProduct(productParam);
       if (productParam === 'monthly-calendar' || productParam === 'year-core') {
         setSelectedEntrySlug('year');
       }
+    }
+    if (planParam === 'lifetime' || productParam === 'life-standard') {
+      setPendingPlan('lifetime');
     }
     if (focusParam && focusParam in ENTRY_FOCUS_TOPIC_BY_SLUG) {
       setSelectedEntrySlug(focusParam as (typeof QUESTION_ENTRY_POINTS)[number]['slug']);
@@ -759,7 +780,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         }).catch(() => undefined);
       }
 
-      router.push(buildPostSubmitHref(data.id, form.focusTopic, pendingProduct));
+      router.push(buildPostSubmitHref(data.id, form.focusTopic, pendingProduct, pendingPlan));
     } catch {
       const fallbackId = toSlug(parsed.input);
       if (!consentAccepted) {
@@ -779,7 +800,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         saveRecentGuestInput(form);
       }
       clearOnboardingDraft();
-      router.push(buildPostSubmitHref(fallbackId, form.focusTopic, pendingProduct));
+      router.push(buildPostSubmitHref(fallbackId, form.focusTopic, pendingProduct, pendingPlan));
     } finally {
       setIsSubmitting(false);
     }
@@ -1016,10 +1037,14 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           ? '결과 준비 중...'
           : '동의하고 사주풀이 열기'
         : '다음 화면';
+  const fastPathSteps = consentAccepted ? FAST_PATH_STEPS.slice(0, 3) : FAST_PATH_STEPS;
+  const fastPathDescription = consentAccepted
+    ? '저장된 정보가 없을 때도 세 흐름만 지나면 결과 화면으로 넘어갑니다.'
+    : '처음에는 필수 동의까지 확인하고, 다음 입력부터는 세 흐름으로 바로 넘어갑니다.';
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-0">
-      <AppPage className="saju-intake-page space-y-4 sm:space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+      <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
         <PageHero
           className="saju-intake-hero"
           badges={[
@@ -1033,7 +1058,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               key="layout"
               className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
             >
-              3단계 빠른 입력
+              {consentAccepted ? '3단계 빠른 입력' : '4단계 빠른 입력'}
             </Badge>,
           ]}
           title="질문을 고르고, 필요한 정보만 빠르게 입력합니다"
@@ -1189,11 +1214,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               eyebrow="빠른 시작"
               title="입력은 짧게, 풀이는 바로 이어갑니다"
               titleClassName="text-3xl text-[var(--app-gold-text)]"
-              description="저장된 정보가 없을 때도 세 흐름만 지나면 결과 화면으로 넘어갑니다."
+              description={fastPathDescription}
             />
 
             <div className="mt-6 grid gap-2.5">
-              {FAST_PATH_STEPS.map(([number, title, body]) => (
+              {fastPathSteps.map(([number, title, body]) => (
                 <div
                   key={title}
                   className="rounded-[1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] px-4 py-3"

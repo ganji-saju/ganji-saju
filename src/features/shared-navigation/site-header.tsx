@@ -53,7 +53,7 @@ let creditCacheVersion = 0;
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
   홈: { glyph: '月', accent: 'var(--app-pink)', description: '오늘의 시작' },
   사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '정보 입력' },
-  무료운세: { glyph: '猫', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
+  무료운세: { glyph: '今', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
   대화방: { glyph: '問', accent: 'var(--app-pink)', description: '질문과 상담' },
   보관함: { glyph: '箱', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
   오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
@@ -457,8 +457,8 @@ function MobileChrome({
             <Link href="/" className="app-top-brand min-w-0">
               <div className="app-brand-lockup">
                 <div className="app-brand-mini-logo">
-                  <span>990</span>
-                  <strong>사주</strong>
+                  <span>달</span>
+                  <strong>빛</strong>
                 </div>
                 <div className="min-w-0">
                   <div className="app-top-brand-title truncate">
@@ -532,7 +532,7 @@ function MobileChrome({
           {mobileMenuOpen ? (
             <div
               id="mobile-global-menu"
-              className="app-mobile-menu-panel mt-4 rounded-[1.4rem] border border-[var(--app-line)] bg-[rgba(7,11,24,0.94)] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.34)]"
+              className="app-mobile-menu-panel mt-4 rounded-[1.4rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_18px_48px_rgba(17,17,20,0.12)]"
             >
               <div className="app-top-service-label">메뉴</div>
               <div className="mt-3 space-y-3">

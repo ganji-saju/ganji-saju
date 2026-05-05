@@ -311,7 +311,15 @@ function getTasteProductHref(productSlug: string, encodedSlug: string, targetYea
     return '/membership/checkout?product=love-question&from=saju-premium';
   }
 
-  return '/today-fortune?concern=general';
+  if (productSlug === 'money-pattern' || productSlug === 'work-flow') {
+    return `/membership/checkout?product=${productSlug}&slug=${encodedSlug}&from=saju-premium`;
+  }
+
+  if (productSlug === 'today-detail') {
+    return `/membership/checkout?product=today-detail&slug=${encodedSlug}&scope=general&from=saju-premium`;
+  }
+
+  return '/pricing';
 }
 
 type PremiumReadingStep = {

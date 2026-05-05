@@ -707,7 +707,7 @@ export default function FortuneCalendarPanel({
                     href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
                     className="moon-action-muted moon-action-compact"
                   >
-                    월간 코인팩 보기
+                    코인팩 보기
                   </Link>
                 </div>
               </>
