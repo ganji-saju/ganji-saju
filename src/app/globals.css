@@ -5661,3 +5661,145 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   background: #ffffff !important;
   color: var(--app-ink) !important;
 }
+
+.gangi-primary-button,
+.gangi-secondary-button {
+  display: inline-flex;
+  min-height: 2.85rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 950;
+  line-height: 1.1;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.gangi-primary-button {
+  border: 1px solid var(--app-pink);
+  background: var(--app-pink);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.2);
+}
+
+.gangi-secondary-button {
+  border: 1px solid var(--app-line);
+  background: #ffffff;
+  color: var(--app-ink);
+}
+
+.gangi-primary-button:hover,
+.gangi-secondary-button:hover {
+  transform: translateY(-1px);
+}
+
+.gangi-tarot-picker .gangi-sub-eyebrow,
+.gangi-card-panel .gangi-sub-eyebrow,
+.gangi-pink-panel .gangi-sub-eyebrow {
+  margin-bottom: 0;
+}
+
+.gangi-result-card {
+  border: 1px solid var(--app-line);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #ffffff, #fff8fc);
+  padding: 1rem;
+}
+
+.gangi-result-card span {
+  display: inline-flex;
+  border-radius: 9999px;
+  background: var(--app-pink-soft);
+  padding: 0.28rem 0.6rem;
+  color: var(--app-pink-strong);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.gangi-result-card h2 {
+  margin-top: 0.65rem;
+  color: var(--app-ink);
+  font-size: 1.05rem;
+  font-weight: 950;
+  line-height: 1.45;
+}
+
+.gangi-result-card p {
+  margin-top: 0.45rem;
+  color: var(--app-copy);
+  font-size: 0.86rem;
+  font-weight: 720;
+  line-height: 1.62;
+}
+
+.gangi-result-card em {
+  display: block;
+  margin-top: 0.75rem;
+  border-radius: 0.875rem;
+  background: var(--app-pink-soft);
+  padding: 0.75rem;
+  color: var(--app-copy-muted);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 760;
+  line-height: 1.55;
+}
+
+.gangi-vault-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--app-line);
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 0.82rem;
+  color: var(--app-ink);
+}
+
+.gangi-vault-link span {
+  min-width: 0;
+}
+
+.gangi-vault-link strong,
+.gangi-vault-link em {
+  display: block;
+}
+
+.gangi-vault-link strong {
+  color: var(--app-ink);
+  font-size: 0.88rem;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.gangi-vault-link em {
+  margin-top: 0.15rem;
+  color: rgba(17, 17, 20, 0.58);
+  font-size: 0.73rem;
+  font-style: normal;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.gangi-subpage .app-subnav {
+  margin-inline: 1rem;
+  border: 1px solid var(--app-line);
+  background: #ffffff;
+}
+
+.gangi-subpage .app-subnav-link {
+  color: rgba(17, 17, 20, 0.62);
+  font-weight: 950;
+}
+
+.gangi-subpage .app-subnav-link[data-active="true"] {
+  background: var(--app-pink);
+  color: #ffffff;
+}

@@ -1,9 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
+import { GangiIntro, GangiMiniCard, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { COMPATIBILITY_RELATIONSHIPS } from '@/content/moonlight';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
 import { ManualCompatibilityResultClient } from '@/features/compatibility/manual-compatibility-result-client';
@@ -20,7 +17,7 @@ import {
   type BirthProfileFields,
 } from '@/lib/profile';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   searchParams: Promise<{ relationship?: string; familyId?: string; source?: string; paid?: string }>;
@@ -52,42 +49,37 @@ function SetupState({
   body: string;
 }) {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="setup"
-              className="border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]"
-            >
-              궁합 준비
-            </Badge>,
-          ]}
-          title="먼저 두 사람의 정보를 갖춰 주세요"
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
+        <GangiPageHeader title="궁합" backHref="/compatibility/input" />
+        <GangiIntro
+          eyebrow="궁합 준비"
+          title={
+            <>
+              두 사람 정보를
+              <br />
+              먼저 채워주세요
+            </>
+          }
           description={body}
         />
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="다음 단계"
-            title="저장된 정보가 없어도 직접 입력으로 바로 이어갈 수 있습니다"
-            titleClassName="text-3xl"
-            description="내 정보와 상대 정보를 이 화면에서 함께 입력하면, 저장된 사람을 고르지 않아도 바로 궁합 결과를 열 수 있습니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            actions={
-              <ActionCluster>
-                <Link href={relationshipHref} className="moon-cta-primary">
-                  두 사람 정보 입력하기
-                </Link>
-                <Link
-                  href="/my/profile"
-                  className="moon-action-muted"
-                >
-                  MY 프로필 열기
-                </Link>
-              </ActionCluster>
-            }
-          />
-        </SectionSurface>
+        <section className="px-4 pb-8 sm:px-0">
+          <div className="gangi-pink-panel p-4">
+            <GangiMiniCard
+              label="바로 보기"
+              title="저장된 사람이 없어도 됩니다"
+              desc="내 정보와 상대 정보를 함께 입력하면 바로 궁합 결과로 이어집니다."
+            />
+            <div className="mt-4 grid gap-2">
+              <Link href={relationshipHref} className="gangi-primary-button">
+                두 사람 정보 입력하기
+              </Link>
+              <Link href="/my/profile" className="gangi-secondary-button">
+                MY 프로필 열기
+              </Link>
+            </div>
+          </div>
+        </section>
       </AppPage>
     </AppShell>
   );
@@ -171,8 +163,8 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
   );
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
         <CompatibilityResultView
           selected={selected}
           compatibility={compatibility}

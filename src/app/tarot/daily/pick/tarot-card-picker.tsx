@@ -104,32 +104,32 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
   };
 
   return (
-    <article className="app-panel p-4 sm:p-6">
+    <article className="gangi-card-panel gangi-tarot-picker p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="app-caption">펼쳐진 덱</div>
-          <h2 className="mt-3 font-[var(--font-heading)] text-3xl text-[var(--app-ivory)]">
+          <div className="gangi-sub-eyebrow mb-2">펼쳐진 덱</div>
+          <h2 className="text-xl font-black leading-7 text-[var(--app-ink)]">
             마음이 머무는 한 장
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">
-            카드를 잘 고르려고 애쓰지 않으셔도 됩니다. 질문을 떠올렸을 때
-            가장 먼저 눈이 가는 카드, 또는 이상하게 다시 보게 되는 카드가 오늘의 입구입니다.
+          <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-[var(--app-copy-muted)]">
+            먼저 눈이 가는 카드가 있으면 그 카드로 충분합니다.
+            망설여지면 랜덤으로 맡겨도 괜찮아요.
           </p>
         </div>
-        <span className="inline-flex h-5 w-fit items-center justify-center rounded-full border border-[var(--app-plum)]/25 bg-[var(--app-plum)]/10 px-2 text-xs font-medium text-[var(--app-plum)]">
+        <span className="inline-flex h-6 w-fit items-center justify-center rounded-full bg-[var(--app-pink-soft)] px-3 text-xs font-black text-[var(--app-pink-strong)]">
           {sourceLabel}
         </span>
       </div>
 
-      <div className="mt-5 grid gap-2 rounded-[1.1rem] border border-[var(--app-gold)]/16 bg-[var(--app-gold)]/8 p-3 text-xs leading-6 text-[var(--app-copy)] sm:grid-cols-3">
+      <div className="mt-4 grid gap-2 rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-3 text-xs font-bold leading-6 text-[var(--app-copy)] sm:grid-cols-3">
         <div>
-          <span className="text-[var(--app-gold-text)]">1.</span> 질문을 한 번만 천천히 읽기
+          <span className="text-[var(--app-pink-strong)]">1.</span> 질문 떠올리기
         </div>
         <div>
-          <span className="text-[var(--app-gold-text)]">2.</span> 눈이 먼저 가는 카드 보기
+          <span className="text-[var(--app-pink-strong)]">2.</span> 끌리는 카드 보기
         </div>
         <div>
-          <span className="text-[var(--app-gold-text)]">3.</span> 망설이면 랜덤으로 맡기기
+          <span className="text-[var(--app-pink-strong)]">3.</span> 망설이면 랜덤
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
           type="button"
           onClick={handleRandomDraw}
           disabled={isPending || cards.length === 0}
-          className="moon-action-primary"
+          className="gangi-primary-button"
         >
           <Sparkles className="h-4 w-4" aria-hidden="true" />
           랜덤으로 한 장 뽑기
@@ -147,14 +147,14 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
           type="button"
           onClick={reshuffleDeck}
           disabled={isPending || cards.length === 0}
-          className="moon-action-muted"
+          className="gangi-secondary-button"
         >
           <Shuffle className="h-4 w-4" aria-hidden="true" />
           다시 섞기
         </button>
       </div>
 
-      <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 xl:grid-cols-10">
+      <div className="mt-5 grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 xl:grid-cols-10">
         {drawDeck.map((card) => {
           const selected = selectedCardId === card.cardId;
           const tone = CARD_BACK_TONES[card.backTone];
@@ -213,8 +213,8 @@ export function TarotCardPicker({ cards, question, sourceLabel }: TarotCardPicke
         })}
       </div>
 
-      <p className="mt-5 text-center text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
-        잘 모르겠다면 랜덤 버튼을 눌러도 괜찮습니다
+      <p className="mt-5 text-center text-xs font-black text-[var(--app-copy-soft)]">
+        카드를 누르면 바로 결과로 이동합니다
       </p>
     </article>
   );

@@ -9,6 +9,7 @@ import type {
 } from '@/domain/saju/engine/saju-data-v1';
 import { SajuAiInterpretationPanel } from '@/components/ai/saju-ai-interpretation-panel';
 import { SafetyNotice } from '@/components/common/safety-notice';
+import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
@@ -544,11 +545,23 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const punchReading = buildPunchReading(report);
 
   return (
-    <AppShell header={<SiteHeader />}>
-      <AppPage className="saju-result-page space-y-5 sm:space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <SajuResultViewTracker slug={slug} />
 
         <div className="space-y-5 sm:space-y-6">
+        <GangiPageHeader title="사주풀이" backHref="/saju/new" />
+        <GangiIntro
+          eyebrow={report.focusBadge}
+          title={
+            <>
+              지금 내 흐름을
+              <br />
+              쉽게 풀어드릴게요
+            </>
+          }
+          description={formatBirthSummary(input)}
+        />
         <SajuScreenNav slug={slug} current="result" />
 
         <section className="dalbit-result-first-card">

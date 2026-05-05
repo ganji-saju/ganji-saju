@@ -1,44 +1,31 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import { Badge } from '@/components/ui/badge';
+import { GangiIntro, GangiMiniCard, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   getTarotPickerDeck,
   getTarotSpreadForQuestion,
   normalizeQuestion,
 } from '@/lib/tarot-api';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { TarotCardPicker } from './tarot-card-picker';
 
 interface Props {
   searchParams: Promise<{ question?: string }>;
 }
 
-const PICKER_POINTS = [
-  '질문을 한 번만 천천히 읽고, 한 사람 또는 한 사건만 떠올려 주세요.',
-  '눈이 먼저 머무는 카드가 있으면 직접 고르고, 잘 모르겠으면 랜덤 뽑기를 누르셔도 좋습니다.',
-  '결과 화면에서는 카드의 말, 질문의 속뜻, 사주 흐름과 이어지는 지점을 순서대로 보여드립니다.',
-] as const;
-
 const PICKER_MIND_CUES = [
   {
-    title: '상대 마음이 궁금하다면',
-    body: '그 사람이 한 말보다, 내가 계속 붙들고 있는 장면 하나를 떠올립니다.',
+    title: '상대 마음',
+    body: '계속 떠오르는 장면 하나만 생각해요.',
   },
   {
-    title: '선택이 고민이라면',
-    body: '가장 두려운 선택과 가장 끌리는 선택 중 어느 쪽이 더 큰지 먼저 느껴봅니다.',
+    title: '선택 고민',
+    body: '끌리는 쪽과 불안한 쪽을 같이 떠올려요.',
   },
   {
-    title: '오늘 흐름이 궁금하다면',
-    body: '오늘 꼭 조심하고 싶은 말, 돈, 관계 중 하나만 마음에 올려둡니다.',
+    title: '오늘 흐름',
+    body: '말, 돈, 관계 중 하나만 골라 생각해요.',
   },
 ] as const;
 
@@ -61,95 +48,68 @@ export default async function TarotPickPage({ searchParams }: Props) {
   const pickerCards = pickerDeck.cards.map(({ card }) => ({ cardId: card.name_short }));
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="pick"
-              className="border-[var(--app-plum)]/25 bg-[var(--app-plum)]/10 text-[var(--app-plum)]"
-            >
-              카드 뽑기
-            </Badge>,
-            <Badge
-              key="source"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              {sourceLabel}
-            </Badge>,
-          ]}
-          title="질문을 떠올리고, 끌리는 한 장을 고르세요"
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
+        <GangiPageHeader title="타로" backHref="/tarot/daily" />
+
+        <GangiIntro
+          eyebrow="무료 타로"
+          title={
+            <>
+              질문을 떠올리고
+              <br />
+              한 장만 골라요
+            </>
+          }
           description={
             <>
-              지금 들고 오신 질문은 <span className="text-[var(--app-plum)]">“{currentQuestion}”</span>
-              입니다. 정답을 맞히려 하기보다, 지금 마음이 먼저 닿는 카드를 골라보세요.
+              지금 질문은 <strong>“{currentQuestion}”</strong> 입니다.
+              정답을 맞히기보다 마음이 먼저 닿는 카드를 고르면 됩니다.
             </>
           }
         />
 
-        <section className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]">
-          <SupportRail
-            surface="panel"
-            eyebrow="카드를 고르기 전에"
-            title="생각을 길게 하지 않아도 괜찮습니다"
-            description="한 사람, 한 사건, 한 마음만 떠올리고 고르세요. 잘 모르겠으면 랜덤 뽑기를 눌러도 됩니다."
-          >
-            <BulletList items={PICKER_POINTS} />
-
-            <FeatureCard
-              className="mt-5"
-              surface="soft"
-              eyebrow="질문"
-              title={currentQuestion}
-              description="이 질문을 바꾸지 말고, 같은 마음으로 한 장을 골라 주세요."
-            />
-
-            <div className="mt-4 grid gap-3">
+        <section className="px-4 sm:px-0">
+          <div className="gangi-pink-panel p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="gangi-sub-eyebrow mb-2">뽑기 전 마음 정리</p>
+                <h2 className="text-lg font-black leading-7 text-[var(--app-ink)]">
+                  오래 생각하지 말고, 먼저 끌리는 카드를 보세요
+                </h2>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
+                {sourceLabel}
+              </span>
+            </div>
+            <div className="gangi-mini-grid">
               {PICKER_MIND_CUES.map((cue) => (
-                <FeatureCard
-                  key={cue.title}
-                  surface="soft"
-                  eyebrow={cue.title}
-                  description={cue.body}
-                />
+                <GangiMiniCard key={cue.title} label={cue.title} desc={cue.body} />
               ))}
             </div>
+          </div>
+        </section>
 
-            <SectionHeader
-              className="mt-6"
-              eyebrow="더 자세히 보기"
-              title="한 장이 마음에 남으면 더 이어볼 수 있습니다"
-              titleClassName="text-2xl"
-            />
-            <ProductGrid columns={3} className="mt-4">
-              {premiumSpread.map(({ position }) => (
-                <FeatureCard key={position} surface="soft" eyebrow={position} />
+        <section className="px-4 sm:px-0">
+          <TarotCardPicker
+            cards={pickerCards}
+            question={currentQuestion}
+            sourceLabel={sourceLabel}
+          />
+        </section>
+
+        <section className="px-4 pb-8 sm:px-0">
+          <div className="gangi-card-panel p-4">
+            <p className="gangi-sub-eyebrow mb-2">다음에 더 볼 수 있는 것</p>
+            <div className="grid gap-2">
+              {premiumSpread.slice(0, 3).map(({ position }) => (
+                <GangiMiniCard key={position} label={position} desc="결과 화면에서 이어서 확인" />
               ))}
-            </ProductGrid>
-
-            <ActionCluster className="mt-5">
-              <Link href="/tarot/daily" className="moon-cta-secondary">
-                질문 다시 고르기
-              </Link>
-            </ActionCluster>
-          </SupportRail>
-
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="펼쳐진 덱"
-              title="이제 한 장을 골라 주세요"
-              titleClassName="text-3xl"
-              description="직접 한 장을 고르거나 랜덤으로 맡기면 결과 화면으로 바로 이어집니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-            <div className="mt-6">
-              <TarotCardPicker
-                cards={pickerCards}
-                question={currentQuestion}
-                sourceLabel={sourceLabel}
-              />
             </div>
-          </SectionSurface>
+            <Link href="/tarot/daily" className="gangi-secondary-button mt-4">
+              질문 다시 고르기
+            </Link>
+          </div>
         </section>
       </AppPage>
     </AppShell>

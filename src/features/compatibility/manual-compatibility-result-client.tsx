@@ -2,10 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
+import { GangiIntro, GangiMiniCard, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { COMPATIBILITY_RELATIONSHIPS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
@@ -15,7 +12,7 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
 import { buildCompatibilityInterpretation } from '@/lib/compatibility';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface ManualCompatibilityResultClientProps {
   relationship?: string;
@@ -30,42 +27,37 @@ function resolveRelationship(value: string | undefined): CompatibilityRelationsh
 
 function MissingManualState({ relationship }: { relationship: CompatibilityRelationshipSlug }) {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="manual-missing"
-              className="border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]"
-            >
-              궁합 입력 필요
-            </Badge>,
-          ]}
-          title="두 사람 정보를 먼저 입력해 주세요"
-          description="비로그인 궁합은 이 브라우저 안에 입력 정보를 잠시 보관해 결과를 만듭니다. 입력 정보가 없으면 새로 입력한 뒤 바로 결과를 열 수 있습니다."
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
+        <GangiPageHeader title="궁합" backHref="/compatibility/input" />
+        <GangiIntro
+          eyebrow="입력 필요"
+          title={
+            <>
+              두 사람 정보를
+              <br />
+              다시 넣어주세요
+            </>
+          }
+          description="이 브라우저에 남아 있는 궁합 입력 정보가 없습니다. 새로 입력하면 바로 결과를 볼 수 있습니다."
         />
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="다음 단계"
-            title="내 정보와 상대 정보를 함께 입력하면 바로 궁합을 볼 수 있습니다"
-            titleClassName="text-3xl"
-            description="저장된 사람을 고르지 않아도 괜찮습니다. 이름 또는 호칭, 생년월일, 가능한 범위의 출생 시간만 입력하면 기본 궁합 결과로 이어집니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            actions={
-              <ActionCluster>
-                <Link href={`/compatibility/input?relationship=${relationship}`} className="moon-cta-primary">
-                  두 사람 정보 입력하기
-                </Link>
-                <Link
-                  href="/compatibility"
-                  className="moon-action-muted"
-                >
-                  궁합 허브로
-                </Link>
-              </ActionCluster>
-            }
-          />
-        </SectionSurface>
+        <section className="px-4 pb-8 sm:px-0">
+          <div className="gangi-pink-panel p-4">
+            <GangiMiniCard
+              label="바로 시작"
+              title="저장 없이도 궁합을 볼 수 있어요"
+              desc="내 정보와 상대 정보를 함께 넣으면 결과가 바로 만들어집니다."
+            />
+            <div className="mt-4 grid gap-2">
+              <Link href={`/compatibility/input?relationship=${relationship}`} className="gangi-primary-button">
+                두 사람 정보 입력하기
+              </Link>
+              <Link href="/compatibility" className="gangi-secondary-button">
+                궁합 메뉴로
+              </Link>
+            </div>
+          </div>
+        </section>
       </AppPage>
     </AppShell>
   );
@@ -114,11 +106,11 @@ export function ManualCompatibilityResultClient({
 
   if (!isLoaded) {
     return (
-      <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-        <AppPage className="space-y-6">
-          <SectionSurface surface="panel" size="lg">
-            <div className="text-sm text-[var(--app-copy-muted)]">입력하신 궁합 정보를 확인하고 있습니다.</div>
-          </SectionSurface>
+      <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+        <AppPage className="gangi-subpage space-y-5">
+          <div className="gangi-card-panel m-4 p-4 text-sm font-bold text-[var(--app-copy-muted)] sm:m-0">
+            입력하신 궁합 정보를 확인하고 있습니다.
+          </div>
         </AppPage>
       </AppShell>
     );
@@ -129,8 +121,8 @@ export function ManualCompatibilityResultClient({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
         <CompatibilityResultView
           selected={selected}
           compatibility={compatibility}
