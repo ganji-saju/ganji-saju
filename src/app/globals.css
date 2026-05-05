@@ -5852,6 +5852,16 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 0 !important;
 }
 
+@media (max-width: 767px) {
+  .dalbit-market-shell,
+  .dalbit-market-shell .app-shell-content,
+  .dalbit-market-shell .gangi-home {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-inline: 0 !important;
+  }
+}
+
 .today-concern-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
