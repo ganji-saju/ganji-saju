@@ -4557,7 +4557,8 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 /* gangisaju.zip index.html implementation: mobile card-mall home */
 .gangi-home {
-  width: min(100%, 430px);
+  width: 100%;
+  max-width: 430px;
   margin-inline: auto;
   background: #ffffff;
   color: var(--app-ink);
@@ -4568,10 +4569,10 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-season-banner {
   position: relative;
   box-sizing: border-box;
-  width: calc(100vw - 2rem);
-  max-width: calc(430px - 2rem);
+  width: auto;
+  max-width: none;
   min-height: 11.1rem;
-  margin: 1rem auto 0;
+  margin: 1rem 1.25rem 0;
   overflow: hidden;
   border: 1px solid var(--app-line);
   border-radius: 1.5rem;
@@ -5835,10 +5836,20 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .app-top-actions {
   flex-shrink: 0;
   gap: 0.35rem !important;
+  margin-left: auto;
 }
 
 .app-top-login {
   padding-inline: 0.85rem !important;
+}
+
+.dalbit-market-shell,
+.dalbit-market-shell .app-shell-content {
+  overflow-x: hidden !important;
+}
+
+.dalbit-market-shell .app-shell-content {
+  padding-inline: 0 !important;
 }
 
 .today-concern-grid {
