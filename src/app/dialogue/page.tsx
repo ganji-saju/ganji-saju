@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { SafetyNotice } from '@/components/common/safety-notice';
 import { SectionHeader } from '@/components/layout/section-header';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { DIALOGUE_PRESETS } from '@/content/moonlight';
-import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
 import { GangiCharacter, GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import {
   DIALOGUE_EXPERTS,
@@ -32,6 +31,27 @@ export default async function DialoguePage({
 }) {
   const params = await searchParams;
   const selectedExpertId = normalizeDialogueExpertId(params.expert) ?? 'dragon';
+  const shouldOpenRoom = Boolean(
+    params.expert ||
+      params.question ||
+      params.sourceSessionId ||
+      params.concern ||
+      params.from ||
+      params.autoStart
+  );
+
+  if (shouldOpenRoom) {
+    const nextParams = new URLSearchParams();
+
+    if (params.question) nextParams.set('question', params.question);
+    if (params.sourceSessionId) nextParams.set('sourceSessionId', params.sourceSessionId);
+    if (params.concern) nextParams.set('concern', params.concern);
+    if (params.from) nextParams.set('from', params.from);
+    if (params.autoStart) nextParams.set('autoStart', params.autoStart);
+
+    const query = nextParams.toString();
+    redirect(`/dialogue/${selectedExpertId}${query ? `?${query}` : ''}`);
+  }
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
@@ -58,7 +78,7 @@ export default async function DialoguePage({
             {DIALOGUE_EXPERTS.map((expert) => (
               <Link
                 key={expert.id}
-                href={`/dialogue?expert=${expert.id}#dialogue-chat`}
+                href={`/dialogue/${expert.id}`}
                 className="gangi-list-link"
                 data-active={selectedExpertId === expert.id}
               >
@@ -75,21 +95,6 @@ export default async function DialoguePage({
               </Link>
             ))}
           </div>
-        </section>
-
-        <section id="dialogue-chat" className="scroll-mt-24">
-          <DialogueChatPanel
-            presets={DIALOGUE_PRESETS.map((p) => ({
-              category: p.category,
-              question: p.question,
-            }))}
-            initialQuestion={params.question}
-            sourceSessionId={params.sourceSessionId}
-            concernId={params.concern}
-            entrySource={params.from}
-            autoStart={params.autoStart === '1'}
-            initialExpertId={selectedExpertId}
-          />
         </section>
 
         <section>

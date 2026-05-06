@@ -77,6 +77,7 @@ interface DialogueChatPanelProps {
   entrySource?: string;
   autoStart?: boolean;
   initialExpertId?: DialogueExpertId;
+  roomMode?: boolean;
 }
 
 interface ProfileApiProfile {
@@ -99,15 +100,24 @@ type ProfileConnectionState =
   | { status: 'partial'; summary: string; detail: string }
   | { status: 'error'; summary: string; detail: string };
 
-const INITIAL_MESSAGE: ChatMessage = {
-  id: 'assistant-intro',
-  role: 'assistant',
-  source: undefined,
-  fallbackReason: null,
-  model: null,
-  errorMessage: null,
-  text: '편하게 물어보세요. 저장된 내 정보가 있으면 바로 이어서 봅니다.',
-};
+function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): ChatMessage {
+  const expert = getDialogueExpertMeta(expertId);
+  const teacherName = `${expert.animal} 선생`;
+
+  return {
+    id: `assistant-intro-${expert.id}`,
+    role: 'assistant',
+    source: undefined,
+    fallbackReason: null,
+    model: null,
+    errorMessage: null,
+    expertId: expert.id,
+    expertLabel: expert.label,
+    text: roomMode
+      ? `안녕하세요, ${teacherName}이에요. 무엇이 궁금하세요?`
+      : `${teacherName}에게 편하게 물어보세요.`,
+  };
+}
 
 function createMessageId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -246,6 +256,7 @@ export function DialogueChatPanel({
   entrySource,
   autoStart = false,
   initialExpertId = 'dragon',
+  roomMode = false,
 }: DialogueChatPanelProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -256,7 +267,9 @@ export function DialogueChatPanel({
   );
   const [input, setInput] = useState('');
   const [status, setStatus] = useState<ChatStatus>('idle');
-  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    createInitialMessage(normalizeDialogueExpertId(initialExpertId) ?? 'dragon', roomMode),
+  ]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [profileConnection, setProfileConnection] = useState<ProfileConnectionState>({
     status: 'checking',
@@ -265,6 +278,12 @@ export function DialogueChatPanel({
   });
 
   const selectedExpert = getDialogueExpertMeta(expertId);
+
+  useEffect(() => {
+    const normalized = normalizeDialogueExpertId(initialExpertId) ?? 'dragon';
+    setExpertId(normalized);
+    setMessages([createInitialMessage(normalized, roomMode)]);
+  }, [initialExpertId, roomMode]);
 
   function applyPreset(question: string) {
     setInput(question);
@@ -428,7 +447,14 @@ export function DialogueChatPanel({
   }
 
   return (
-    <article className="app-panel overflow-hidden p-0 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+    <article
+      className={
+        roomMode
+          ? 'gangi-chat-room-panel'
+          : 'app-panel overflow-hidden p-0 shadow-[0_24px_80px_rgba(0,0,0,0.28)]'
+      }
+    >
+      {!roomMode ? (
       <div className="border-b border-[var(--app-line)] bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -500,9 +526,14 @@ export function DialogueChatPanel({
           </div>
         </div>
       </div>
+      ) : null}
 
       <div
-        className="h-[min(42vh,28rem)] min-h-[16rem] space-y-4 overflow-y-auto scroll-smooth px-5 py-5 sm:h-[min(54vh,38rem)] sm:min-h-[22rem] sm:px-6 lg:h-[min(62vh,46rem)]"
+        className={
+          roomMode
+            ? 'gangi-chat-room-messages'
+            : 'h-[min(42vh,28rem)] min-h-[16rem] space-y-4 overflow-y-auto scroll-smooth px-5 py-5 sm:h-[min(54vh,38rem)] sm:min-h-[22rem] sm:px-6 lg:h-[min(62vh,46rem)]'
+        }
         aria-live="polite"
       >
         {messages.map((message) => {
@@ -511,14 +542,21 @@ export function DialogueChatPanel({
           return (
             <div
               key={message.id}
-              className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${roomMode && !isUser ? 'items-start gap-3' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
             >
+              {roomMode && !isUser ? (
+                <GangiCharacter zodiac={message.expertId ?? selectedExpert.id} size="sm" className="mt-1" />
+              ) : null}
               <div
-                className={`max-w-[min(100%,42rem)] rounded-[1.25rem] border px-4 py-4 ${
-                  isUser
-                    ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/12 text-[var(--app-ivory)]'
-                    : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
-                }`}
+                className={
+                  roomMode
+                    ? `gangi-chat-bubble ${isUser ? 'gangi-chat-bubble-user' : 'gangi-chat-bubble-assistant'}`
+                    : `max-w-[min(100%,42rem)] rounded-[1.25rem] border px-4 py-4 ${
+                        isUser
+                          ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/12 text-[var(--app-ivory)]'
+                          : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
+                      }`
+                }
               >
                 <DialogueMessageText text={message.text} animate={!isUser && message.animate} />
                 {!isUser && message.cta ? (
@@ -556,12 +594,16 @@ export function DialogueChatPanel({
       <form
         id="dialogue-input"
         onSubmit={handleSubmit}
-        className="scroll-mt-24 border-t border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6"
+        className={
+          roomMode
+            ? 'gangi-chat-composer'
+            : 'scroll-mt-24 border-t border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6'
+        }
       >
-        <label className="block text-sm font-medium text-[var(--app-gold-text)]">
+        <label className={roomMode ? 'sr-only' : 'block text-sm font-medium text-[var(--app-gold-text)]'}>
           지금 묻고 싶은 말
         </label>
-        <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className={roomMode ? 'gangi-chat-composer-row' : 'mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end'}>
           <textarea
             ref={textareaRef}
             value={input}
@@ -572,23 +614,27 @@ export function DialogueChatPanel({
                 setErrorMessage(null);
               }
             }}
-            rows={3}
-            className="min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60"
-            placeholder="예: 올해 돈 흐름이 궁금해요."
+            rows={roomMode ? 1 : 3}
+            className={
+              roomMode
+                ? 'gangi-chat-input'
+                : 'min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60'
+            }
+            placeholder={`${selectedExpert.animal} 선생에게 물어보기`}
           />
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="gangi-primary-button"
+            className={roomMode ? 'gangi-chat-send' : 'gangi-primary-button'}
           >
             {status === 'loading' ? '답변 확인 중' : '보내기'}
           </button>
         </div>
-        <div className="mt-4">
+        <div className={roomMode ? 'mt-3' : 'mt-4'}>
           <div className="mb-2 text-xs font-medium tracking-[0.08em] text-[var(--app-pink-strong)]">
             바로 물어보기
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className={roomMode ? 'gangi-chat-presets' : 'flex flex-wrap gap-2'}>
             {presets.map((preset) => {
               const active = input.trim() === preset.question;
               return (
@@ -610,7 +656,7 @@ export function DialogueChatPanel({
             })}
           </div>
         </div>
-        <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
+        <p className={roomMode ? 'mt-2 text-[11px] font-bold leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
           처음 3회 무료 · 이후 3회 3코인
         </p>
 

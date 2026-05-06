@@ -6408,3 +6408,207 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-expert-chip strong {
   font-weight: 760 !important;
 }
+
+/* 12지신 대화방: 선생을 고르면 독립 채팅방처럼 보이게 합니다. */
+.gangi-chat-room-shell {
+  background: #ffffff !important;
+}
+
+.gangi-chat-room-shell .app-shell-content {
+  min-height: 100dvh;
+}
+
+.gangi-chat-room-page {
+  display: flex;
+  min-height: calc(100dvh - var(--app-mobile-dock-clearance));
+  flex-direction: column;
+  gap: 0;
+  padding: 0 !important;
+}
+
+.app-page.gangi-chat-room-page {
+  width: min(100%, 34rem) !important;
+  max-width: min(100%, 34rem) !important;
+}
+
+.gangi-chat-room-top {
+  height: 4.45rem;
+  grid-template-columns: 3.25rem 1fr 3.25rem;
+  border-bottom-color: rgba(17, 17, 20, 0.08);
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.03);
+}
+
+.gangi-chat-room-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+  text-align: left;
+}
+
+.gangi-chat-room-title h1 {
+  margin: 0;
+  color: var(--app-ink);
+  font-size: 1.08rem;
+  font-weight: 860;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.gangi-chat-room-title p {
+  display: flex;
+  margin: 0.2rem 0 0;
+  align-items: center;
+  gap: 0.34rem;
+  color: #32a36b;
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.gangi-chat-room-title p span {
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #32b56f;
+  box-shadow: 0 0 0 0.18rem rgba(50, 181, 111, 0.12);
+}
+
+.gangi-chat-room-panel {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  background: #fafafb;
+}
+
+.gangi-chat-room-messages {
+  min-height: 18rem;
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 2rem 1rem 1.25rem;
+}
+
+.gangi-chat-bubble {
+  max-width: min(78%, 24rem);
+  border: 1px solid rgba(17, 17, 20, 0.08);
+  border-radius: 1.25rem;
+  padding: 0.9rem 1rem;
+  color: var(--app-ink);
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04);
+}
+
+.gangi-chat-bubble p {
+  margin: 0;
+  color: inherit;
+  font-size: 0.95rem;
+  font-weight: 520;
+  line-height: 1.72;
+  letter-spacing: 0;
+}
+
+.gangi-chat-bubble-assistant {
+  border-top-left-radius: 0.45rem;
+  background: #ffffff;
+}
+
+.gangi-chat-bubble-user {
+  border-color: rgba(255, 79, 154, 0.2);
+  border-top-right-radius: 0.45rem;
+  background: var(--app-pink);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(255, 79, 154, 0.18);
+}
+
+.gangi-chat-composer {
+  border-top: 1px solid rgba(17, 17, 20, 0.08);
+  background: #ffffff;
+  padding: 0.8rem 1rem calc(0.95rem + env(safe-area-inset-bottom));
+}
+
+.gangi-chat-composer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.gangi-chat-input {
+  min-height: 2.85rem;
+  max-height: 7.5rem;
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--app-line);
+  border-radius: 9999px;
+  background: #fafafb;
+  padding: 0.76rem 1rem;
+  color: var(--app-ink);
+  font-size: 0.9rem;
+  font-weight: 620;
+  line-height: 1.35;
+  outline: none;
+}
+
+.gangi-chat-input::placeholder {
+  color: rgba(17, 17, 20, 0.42);
+}
+
+.gangi-chat-input:focus {
+  border-color: rgba(255, 79, 154, 0.6);
+  background: #ffffff;
+  box-shadow: 0 0 0 0.2rem rgba(255, 79, 154, 0.1);
+}
+
+.gangi-chat-send {
+  min-height: 2.85rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--app-pink);
+  padding-inline: 1rem;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 840;
+  box-shadow: 0 10px 24px rgba(255, 79, 154, 0.18);
+}
+
+.gangi-chat-send:disabled {
+  opacity: 0.62;
+}
+
+.gangi-chat-presets {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+  scrollbar-width: none;
+}
+
+.gangi-chat-presets::-webkit-scrollbar {
+  display: none;
+}
+
+.gangi-chat-presets button {
+  flex: 0 0 auto;
+  border-color: var(--app-line) !important;
+  background: #ffffff !important;
+  color: var(--app-ink) !important;
+  font-weight: 720;
+}
+
+.gangi-chat-presets button span:first-child {
+  color: var(--app-pink-strong) !important;
+}
+
+@media (min-width: 768px) {
+  .gangi-chat-room-page {
+    min-height: calc(100dvh - 2rem);
+    border-inline: 1px solid rgba(17, 17, 20, 0.06);
+  }
+
+  .app-page.gangi-chat-room-page {
+    width: min(100%, 40rem) !important;
+    max-width: min(100%, 40rem) !important;
+  }
+}
