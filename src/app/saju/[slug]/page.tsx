@@ -9,7 +9,7 @@ import type {
 } from '@/domain/saju/engine/saju-data-v1';
 import { SajuAiInterpretationPanel } from '@/components/ai/saju-ai-interpretation-panel';
 import { SafetyNotice } from '@/components/common/safety-notice';
-import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SectionHeader } from '@/components/layout/section-header';
 import { ReportOneMinuteSummary } from '@/components/report/report-one-minute-summary';
@@ -17,7 +17,6 @@ import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
 import { SajuFactEvidencePanel } from '@/components/saju/saju-fact-evidence-panel';
 import { Badge } from '@/components/ui/badge';
 import DetailUnlock from '@/components/detail-unlock';
-import { DALBIT_TEACHERS, TASTE_PRODUCTS } from '@/content/moonlight';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -234,15 +233,12 @@ const SCORE_CARD_VISUALS: Record<
   },
 };
 
-const TEACHER_BY_SLUG = new Map(DALBIT_TEACHERS.map((teacher) => [teacher.slug, teacher]));
-const RESULT_TEACHER = TEACHER_BY_SLUG.get('saju-yong') ?? DALBIT_TEACHERS[0];
-
 function buildResultTasteProductHref(productSlug: string, slug: string) {
   const encodedSlug = encodeURIComponent(slug);
 
   switch (productSlug) {
     case 'today-detail':
-      return '/today-fortune?concern=general&product=today-detail&from=saju-result';
+      return `/membership/checkout?product=today-detail&slug=${encodedSlug}&scope=general&from=saju-result`;
     case 'love-question':
       return '/membership/checkout?product=love-question&from=saju-result';
     case 'money-pattern':
@@ -311,6 +307,27 @@ const BRANCH_READINGS: Record<Branch, string> = {
   '戌': '술',
   '亥': '해',
 };
+
+const COMPACT_ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
+
+const COMPACT_RESULT_CARD_FALLBACKS: Array<{
+  key: ReportScore['key'] | 'health';
+  label: string;
+  color: string;
+  fallback: string;
+}> = [
+  { key: 'wealth', label: '재물', color: '#D59B2E', fallback: '꾸준한 흐름' },
+  { key: 'love', label: '연애', color: '#E05298', fallback: '마음 천천히 보기' },
+  { key: 'career', label: '직업', color: '#3F8796', fallback: '변화에 강함' },
+  { key: 'health', label: '건강', color: '#5C8A63', fallback: '수면 챙기기' },
+];
+
+function getCompactScoreText(score: ReportScore | undefined, fallback: string) {
+  if (!score) return fallback;
+  if (score.score >= 74) return score.key === 'love' ? '표현해도 좋음' : '밀어도 좋음';
+  if (score.score >= 62) return fallback;
+  return '천천히 보기';
+}
 
 function formatStemHint(pillar: SajuPillar) {
   return `${pillar.stem} · ${STEM_READINGS[pillar.stem]} · ${pillar.yinYang}${ELEMENT_INFO[pillar.stemElement].name.split(' ')[0]}`;
@@ -448,12 +465,16 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const cautionPatterns = buildCautionPatterns(report);
   const favorableChoices = buildFavorableChoices(report);
   const isTimeUnknown = input.unknownTime === true || input.hour === undefined;
-  const resultTasteProducts = TASTE_PRODUCTS.map((product) => ({
-    ...product,
-    href: buildResultTasteProductHref(product.slug, slug),
-    teacher: TEACHER_BY_SLUG.get(product.teacherSlug),
-  }));
   const punchReading = buildPunchReading(report);
+  const todayDetailHref = buildResultTasteProductHref('today-detail', slug);
+  const scoreByKey = new Map(report.scores.map((score) => [score.key, score]));
+  const compactResultCards = COMPACT_RESULT_CARD_FALLBACKS.map((item) => ({
+    ...item,
+    value: getCompactScoreText(
+      item.key === 'health' ? undefined : scoreByKey.get(item.key),
+      item.fallback
+    ),
+  }));
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -461,103 +482,95 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <SajuResultViewTracker slug={slug} />
 
         <div className="space-y-5 sm:space-y-6">
-        <GangiPageHeader title="사주풀이" backHref="/saju/new" />
-        <GangiIntro
-          eyebrow={report.focusBadge}
-          title={
-            <>
-              지금 내 흐름을
-              <br />
-              쉽게 풀어드릴게요
-            </>
-          }
-          description={formatBirthSummary(input)}
-        />
+        <GangiPageHeader title="사주" backHref="/saju/new" />
         <SajuScreenNav slug={slug} current="result" />
 
-        <section className="dalbit-result-first-card">
-          <div className="grid gap-5">
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="dalbit-teacher-chip">
-                  <span>{RESULT_TEACHER.zodiac}</span>
-                  {RESULT_TEACHER.teacherName}
-                </span>
-                <span className="dalbit-mini-badge">{report.focusBadge}</span>
-                <span className="dalbit-mini-badge">내 풀이 결과</span>
+        <section className="space-y-4">
+          <article className="relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(255,211,76,0.28),transparent_18%),radial-gradient(circle_at_52%_8%,rgba(255,211,76,0.26),transparent_4%)]" />
+            <div className="relative">
+              <div className="text-sm font-semibold text-[#ffd24d]">{report.focusBadge} · 사주팔자</div>
+              <div className="mt-4 grid grid-cols-4 gap-2">
+                {pillars.map((item) => {
+                  const pillar = item.pillar;
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-[1.1rem] border border-white/14 bg-white/7 px-2 py-3 text-center"
+                    >
+                      <div className="text-xs font-semibold text-white/55">{item.label}주</div>
+                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
+                        {pillar?.stem ?? '-'}
+                      </div>
+                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
+                        {pillar?.branch ?? '-'}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div>
-                <div className="app-caption text-[var(--app-pink-strong)]">한 줄 풀이</div>
-                <h1 className="dalbit-result-title">{easyResultCopy(punchReading.verdict, 1)}</h1>
-                <p className="dalbit-result-lead">{easyResultCopy(punchReading.why, 1)}</p>
-                <p className="mt-3 text-xs leading-5 text-[var(--app-copy-muted)]">
-                  {formatBirthSummary(input)}
-                </p>
-              </div>
-
-              <div className="grid gap-3">
-                <div className="dalbit-result-action-card">
-                  <div className="app-caption text-[var(--app-coral)]">조심</div>
-                  <h2>{easyResultCopy(punchReading.caution, 1)}</h2>
-                </div>
-                <div className="dalbit-result-action-card">
-                  <div className="app-caption text-[var(--app-jade)]">액션</div>
-                  <h2>{easyResultCopy(punchReading.action, 1)}</h2>
-                </div>
-              </div>
+              <p className="mt-4 text-xs leading-5 text-white/58">{formatBirthSummary(input)}</p>
             </div>
+          </article>
 
-            <div className="space-y-4">
-              <div className="dalbit-result-evidence-card">
-                <div className="app-caption text-[var(--app-pink-strong)]">다음 선택</div>
-                <h2>더 보고 싶은 부분만 이어보세요</h2>
-                <div className="mt-5 grid gap-3">
-                  <TrackedLink
-                    href={`/saju/${slug}/premium`}
-                    eventName="report_deep_report_click"
-                    eventParams={{ slug, from: 'result_first_card' }}
-                    className="gangi-primary-button"
-                  >
-                    긴 사주풀이 보기
-                  </TrackedLink>
-                  <TrackedLink
-                    href="/dialogue"
-                    eventName="report_dialogue_continue_click"
-                    eventParams={{ slug, from: 'result_first_card' }}
-                    className="gangi-secondary-button"
-                  >
-                    이어서 묻기
-                  </TrackedLink>
-                </div>
-              </div>
+          <article className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
+            <div className="text-sm font-bold text-[var(--app-pink-strong)]">한 줄 요약</div>
+            <h1 className="mt-3 text-[1.85rem] font-medium leading-[1.42] tracking-[-0.02em] text-[var(--app-ink)] sm:text-4xl">
+              {easyResultCopy(punchReading.verdict, 1)}
+            </h1>
+          </article>
+
+          <article className="rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
+            <h2 className="text-lg font-semibold text-[var(--app-ink)]">오행 균형</h2>
+            <div className="mt-5 grid grid-cols-5 gap-3">
+              {COMPACT_ELEMENT_ORDER.map((element) => {
+                const value = sajuData.fiveElements.byElement[element].percentage;
+                const height = `${Math.max(18, Math.min(100, Math.round(value)))}%`;
+                return (
+                  <div key={element} className="flex flex-col items-center gap-2">
+                    <div className="flex h-20 w-full items-end overflow-hidden rounded-xl bg-[var(--app-surface-muted)]">
+                      <div
+                        className="w-full rounded-xl"
+                        style={{ height, backgroundColor: ELEMENT_INFO[element].color }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-[var(--app-ink)]">{element}</span>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </section>
+          </article>
 
-        <section className="space-y-3">
-          <div className="dalbit-section-heading mb-0">
-            <h2 className="text-2xl">더 궁금한 부분만 이어보세요</h2>
-          </div>
-          <div className="grid gap-3">
-            {resultTasteProducts.map((product) => (
-              <Link key={product.slug} href={product.href} className="dalbit-price-card">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-black text-[var(--app-pink-strong)]">
-                    {product.price}
-                  </span>
-                  {product.teacher ? (
-                    <span className="dalbit-product-teacher">
-                      <span>{product.teacher.zodiac}</span>
-                      {product.teacher.teacherName}
-                    </span>
-                  ) : null}
+          <div className="grid grid-cols-2 gap-3">
+            {compactResultCards.map((item) => (
+              <article
+                key={item.label}
+                className="rounded-[1.2rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-copy)]">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  {item.label}
                 </div>
-                <h3>{easyResultCopy(product.title, 1)}</h3>
-                <p>{easyResultCopy(product.result, 1)}</p>
-              </Link>
+                <p className="mt-3 text-lg font-semibold leading-7 text-[var(--app-ink)]">{item.value}</p>
+              </article>
             ))}
           </div>
+
+          <article className="rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
+            <p className="text-sm font-semibold text-white/72">더 깊게 보고 싶다면</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">오늘 자세히 보기 · 550원</h2>
+            <p className="mt-2 text-sm leading-6 text-white/68">
+              시간별로 무엇을 하면 좋을지만 짧게 정리해드려요.
+            </p>
+            <TrackedLink
+              href={todayDetailHref}
+              eventName="report_deep_report_click"
+              eventParams={{ slug, product: 'today-detail', from: 'result_compact_card' }}
+              className="mt-5 inline-flex rounded-full bg-[var(--app-pink)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(236,72,153,0.28)]"
+            >
+              풀이 열기
+            </TrackedLink>
+          </article>
         </section>
 
         <section id="result-summary" className="space-y-4 scroll-mt-24">
