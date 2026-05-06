@@ -53,6 +53,13 @@ const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/연운/gu, '올해 흐름'],
   [/일진/gu, '하루 흐름'],
   [/정관격|편관격|정재격|편재격|식신격|상관격|정인격|편인격|비견격|겁재격/gu, '역할 흐름'],
+  [/밀어붙이는/gu, '무리하게 진행하는'],
+  [/밀어붙이기/gu, '무리하게 진행하기'],
+  [/밀어붙이면/gu, '무리하면'],
+  [/밀어도 되는/gu, '진행하기 좋은'],
+  [/밀어도/gu, '진행해도'],
+  [/밀기보다/gu, '무리하기보다'],
+  [/밀고/gu, '진행하고'],
 ];
 
 export function simplifySajuCopy(value: string | null | undefined) {

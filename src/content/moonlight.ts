@@ -222,7 +222,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
   {
     slug: 'year',
     label: '올해 흐름',
-    question: '올해 밀어도 되는 달',
+    question: '올해 진행하기 좋은 달',
     productName: '올해 전략 풀이',
     reportAnswer: '좋은 달, 한 번 더 확인할 달, 차분히 정리할 달을 먼저 지도처럼 보여줍니다.',
     href: '/saju/new?focus=year',
@@ -311,8 +311,8 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
     slug: 'year-core',
     title: '올해 핵심 3줄',
     price: '3,900원',
-    question: '올해 무엇을 밀고, 무엇을 조심할까',
-    result: '올해의 핵심 주제, 주의 패턴, 밀어도 되는 달을 짧게 정리합니다.',
+    question: '올해 무엇을 해보고, 무엇을 조심할까',
+    result: '올해의 핵심 주제, 주의 패턴, 진행하기 좋은 달을 짧게 정리합니다.',
     href: '/saju/new?product=year-core',
     status: '사주 결과 생성 후 연결',
     teacherSlug: 'myeongri-ho',
@@ -693,7 +693,7 @@ export const DIALOGUE_PRESETS: readonly MoonlightDialoguePreset[] = [
     category: '가족',
     question: '아이의 진로에 도움이 될 이야기',
     previewAnswer:
-      '진로는 운보다 기질을 먼저 보는 편이 오래 갑니다. 아이가 힘을 얻는 방식과 지치기 쉬운 방식을 먼저 읽고, 그다음 올해 흐름이 어느 쪽을 밀어주는지 차분히 연결해드립니다.',
+      '진로는 운보다 기질을 먼저 보는 편이 오래 갑니다. 아이가 힘을 얻는 방식과 지치기 쉬운 방식을 먼저 읽고, 그다음 올해 흐름이 어느 쪽에 힘을 실어주는지 차분히 연결해드립니다.',
     followUp: '학업, 취업, 전환 중 어떤 고민인지 더 말씀해주시면 답이 선명해집니다.',
   },
   {
@@ -1283,7 +1283,7 @@ export const TAROT_QUESTION_OPTIONS: readonly MoonlightTarotQuestionOption[] = [
     emoji: '✅',
     label: '지금 결정해야 할 선택에 대하여',
     intent: '결정과 타이밍',
-    description: '밀어도 되는지, 한 번 더 확인해야 하는지, 지금 선택의 수위를 정하고 싶을 때 봅니다.',
+    description: '지금 바로 진행해도 되는지, 한 번 더 확인해야 하는지 선택의 수위를 정하고 싶을 때 봅니다.',
     when: '계약·이직·고백 전',
   },
   {

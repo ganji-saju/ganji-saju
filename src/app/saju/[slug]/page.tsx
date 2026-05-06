@@ -277,7 +277,7 @@ const COMPACT_RESULT_CARD_FALLBACKS: Array<{
 
 function getCompactScoreText(score: ReportScore | undefined, fallback: string) {
   if (!score) return fallback;
-  if (score.score >= 74) return score.key === 'love' ? '표현해도 좋음' : '밀어도 좋음';
+  if (score.score >= 74) return score.key === 'love' ? '표현해도 좋음' : '진행해도 좋음';
   if (score.score >= 62) return fallback;
   return '천천히 보기';
 }
@@ -548,7 +548,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <div>
               <div className="app-caption">올해 흐름</div>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
-                월별로 밀어도 되는 때와 쉬어갈 때를 따로 볼 수 있어요.
+                월별로 진행하기 좋은 때와 쉬어갈 때를 따로 볼 수 있어요.
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-3">

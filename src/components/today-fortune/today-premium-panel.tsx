@@ -10,11 +10,20 @@ function trimEasySentence(value: string) {
     .replace(/권장/g, '추천')
     .replace(/흐름/g, '분위기')
     .replace(/기준/g, '생각할 점')
+    .replace(/밀어붙이/g, '무리하게 진행하')
+    .replace(/밀기보다/g, '무리하기보다')
+    .replace(/밀어도 되는/g, '진행하기 좋은')
+    .replace(/밀어도/g, '진행해도')
+    .replace(/밀고/g, '진행하고')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
-  const firstSentence = cleaned.split(/(?<=[.!?。])\s+/u)[0]?.trim() ?? cleaned;
-  return firstSentence.length > 64 ? `${firstSentence.slice(0, 64).trim()}...` : firstSentence;
+  const sentences = cleaned
+    .split(/(?<=[.!?。])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  return sentences.slice(0, 2).join(' ') || cleaned;
 }
 
 export function TodayPremiumPanel({
@@ -41,27 +50,27 @@ export function TodayPremiumPanel({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <article className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 p-5">
+        <article className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 p-4 sm:p-5">
           <div className="text-sm font-semibold text-[var(--app-jade)]">좋은 시간</div>
           <div className="mt-4 space-y-3">
             {favorableWindows.map((item) => (
               <div key={`${item.range}-${item.title}`} className="rounded-[1rem] border border-emerald-200 bg-white p-4">
                 <div className="text-xs font-semibold text-[var(--app-jade)]">{item.range}</div>
-                <div className="mt-2 text-base font-semibold text-[var(--app-ink)]">{trimEasySentence(item.title)}</div>
-                <p className="mt-2 text-sm leading-6 text-[var(--app-copy)]">{trimEasySentence(item.body)}</p>
+                <div className="mt-2 break-keep text-base font-semibold leading-6 text-[var(--app-ink)]">{trimEasySentence(item.title)}</div>
+                <p className="mt-2 break-keep text-sm leading-6 text-[var(--app-copy)]">{trimEasySentence(item.body)}</p>
               </div>
             ))}
           </div>
         </article>
 
-        <article className="rounded-[1.35rem] border border-rose-200 bg-rose-50 p-5">
+        <article className="rounded-[1.35rem] border border-rose-200 bg-rose-50 p-4 sm:p-5">
           <div className="text-sm font-semibold text-[var(--app-coral)]">조심할 시간</div>
           <div className="mt-4 space-y-3">
             {cautionWindows.map((item) => (
               <div key={`${item.range}-${item.title}`} className="rounded-[1rem] border border-rose-200 bg-white p-4">
                 <div className="text-xs font-semibold text-[var(--app-coral)]">{item.range}</div>
-                <div className="mt-2 text-base font-semibold text-[var(--app-ink)]">{trimEasySentence(item.title)}</div>
-                <p className="mt-2 text-sm leading-6 text-[var(--app-copy)]">{trimEasySentence(item.body)}</p>
+                <div className="mt-2 break-keep text-base font-semibold leading-6 text-[var(--app-ink)]">{trimEasySentence(item.title)}</div>
+                <p className="mt-2 break-keep text-sm leading-6 text-[var(--app-copy)]">{trimEasySentence(item.body)}</p>
               </div>
             ))}
           </div>

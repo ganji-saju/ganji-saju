@@ -63,7 +63,7 @@ export const SAMPLE_DECISION_TRACE: DecisionTraceItem[] = [
     title: "기운의 균형",
     rule: "오행 분포와 전체 균형 확인",
     result:
-      "혼자 밀어붙이는 힘보다 주변 구조를 활용할 때 에너지를 더 안정적으로 씁니다. 그래서 생활에서 힘을 어디에 써야 하는지 먼저 정리합니다.",
+      "혼자 몰아가는 힘보다 주변 구조를 활용할 때 에너지를 더 안정적으로 씁니다. 그래서 생활에서 힘을 어디에 써야 하는지 먼저 정리합니다.",
     confidence: "orthodox",
   },
   {

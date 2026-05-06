@@ -81,9 +81,13 @@ test('today fortune premium windows and scenarios carry grounded current-luck cu
     .filter(Boolean)
     .join(' / ');
 
-  assert.ok(
-    result.favorableWindows.some((item) => item.title.includes('기준과 역할')) &&
-      result.cautionWindows.some((item) => item.title.includes('확답이 부담'))
+  assert.ok(result.favorableWindows.every((item) => item.title.includes('좋아')));
+  assert.ok(result.cautionWindows.every((item) => item.title.includes('·')));
+  assert.ok(result.favorableWindows.every((item) => !/[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]시/.test(item.title)));
+  assert.ok(result.cautionWindows.every((item) => !/[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]시/.test(item.title)));
+  assert.doesNotMatch(
+    [...result.favorableWindows, ...result.cautionWindows].map((item) => `${item.title} ${item.body}`).join(' '),
+    /기운|보완 힌트|선택 힌트/
   );
   assert.deepEqual(
     result.scenarios.map((item) => item.title),
@@ -98,7 +102,7 @@ test('today fortune premium windows and scenarios carry grounded current-luck cu
     ].join(' ');
 
     assert.doesNotMatch(combined, /대운|세운|월운/);
-    assert.match(combined, /흐름|선택|확인|조율|기준/);
+    assert.match(combined, /확인|조율|진행|정리|시작/);
   }
 });
 
@@ -159,8 +163,10 @@ test('today fortune time windows vary their body copy across different ranges', 
 
   assert.equal(result.favorableWindows.length, 2);
   assert.equal(result.cautionWindows.length, 2);
-  assert.ok(result.favorableWindows.every((item) => item.title.includes('시 ·')));
-  assert.ok(result.cautionWindows.every((item) => item.title.includes('시 ·')));
+  assert.ok(result.favorableWindows.every((item) => !/[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]시/.test(item.title)));
+  assert.ok(result.cautionWindows.every((item) => !/[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]시/.test(item.title)));
+  assert.ok(result.favorableWindows.every((item) => item.title.includes('·')));
+  assert.ok(result.cautionWindows.every((item) => item.title.includes('·')));
   assert.notEqual(result.favorableWindows[0]?.range, result.favorableWindows[1]?.range);
   assert.notEqual(result.cautionWindows[0]?.range, result.cautionWindows[1]?.range);
   assert.notEqual(result.favorableWindows[0]?.body, result.favorableWindows[1]?.body);

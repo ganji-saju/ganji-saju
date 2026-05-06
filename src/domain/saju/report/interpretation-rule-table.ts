@@ -59,7 +59,7 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
     actionLeads: {
       high: '좋은 마음을 크게 증명하기보다 짧고 분명하게 전하는 쪽이 잘 맞습니다.',
       mid: '상대가 받아들이기 쉬운 속도로 표현하는 것이 오늘 연애운의 핵심입니다.',
-      low: '지금은 마음을 밀어붙이기보다 불편한 부분을 키우지 않는 방식이 낫습니다.',
+      low: '지금은 마음을 몰아가기보다 불편한 부분을 키우지 않는 방식이 낫습니다.',
     },
     cautionTitles: {
       high: '반응을 재촉하지 않기',

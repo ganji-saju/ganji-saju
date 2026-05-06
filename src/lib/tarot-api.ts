@@ -169,12 +169,12 @@ const MAJOR_THEMES: Record<
   'The Chariot': {
     theme: '전진과 통제',
     focus: '마음을 모아 한 방향으로 움직이는 태도',
-    action: '오늘은 여러 길보다 가장 중요한 한 길을 먼저 밀어보세요.',
+    action: '오늘은 여러 길보다 가장 중요한 한 길을 먼저 해보세요.',
     sajuElement: '운의 속도를 조절하며 나아가는 힘',
   },
   Fortitude: {
     theme: '용기와 부드러운 힘',
-    focus: '밀어붙이기보다 다스리는 태도',
+    focus: '무리하기보다 다스리는 태도',
     action: '센 말보다 차분한 말로 상황을 안정시켜보세요.',
     sajuElement: '강한 기운을 온화하게 쓰는 힘',
   },
@@ -503,7 +503,7 @@ function buildQuestionInsight(context: TarotQuestionContext) {
     case 'reconciliation':
       return `이 질문은 다시 이어질 수 있는지만이 아니라, 예전의 상처와 방식이 얼마나 정리되었는지를 함께 묻는 질문입니다. ${moodLine}`;
     case 'decision':
-      return `이 질문은 무엇이 맞는지보다, 지금 밀어도 되는지 아니면 한 번 더 보고 가야 하는지를 확인하려는 질문입니다. ${moodLine}`;
+      return `이 질문은 무엇이 맞는지보다, 지금 바로 진행해도 되는지 아니면 한 번 더 보고 가야 하는지를 확인하려는 질문입니다. ${moodLine}`;
     case 'timing':
       return `이 질문은 결과보다 흐름의 타이밍을 보려는 질문입니다. ${moodLine}`;
     case 'general':
@@ -610,7 +610,7 @@ function buildDirectAnswer(
 
   if (context.intent === 'decision' || context.tone === 'choice') {
     if (flow === 'open') {
-      return '밀어도 됩니다. 다만 감정만 믿고 크게 가기보다, 작게 시험해 보며 반응을 확인하는 방식이 가장 좋습니다.';
+      return '진행해도 됩니다. 다만 감정만 믿고 크게 가기보다, 작게 시험해 보며 반응을 확인하는 방식이 가장 좋습니다.';
     }
 
     if (flow === 'steady') {
@@ -840,7 +840,7 @@ function buildSajuBlendCopy(
     context.domain === 'relationship'
       ? '타로는 지금 관계에서 마음이 어디에 걸려 있는지를 먼저 보여줍니다. 사주로 이어 보면 내가 관계에서 기대하고 물러서는 방식, 반복되는 거리감까지 더 길게 읽을 수 있습니다.'
       : context.domain === 'career'
-        ? '타로는 오늘 일과 방향 앞에서 느끼는 망설임을 보여줍니다. 사주로 이어 보면 내가 일을 밀어붙이는 방식, 버티는 힘, 바꾸기 좋은 시기를 함께 볼 수 있습니다.'
+        ? '타로는 오늘 일과 방향 앞에서 느끼는 망설임을 보여줍니다. 사주로 이어 보면 내가 일을 진행하는 방식, 버티는 힘, 바꾸기 좋은 시기를 함께 볼 수 있습니다.'
         : context.domain === 'money'
           ? '타로는 지금 돈과 선택 앞에서 생기는 긴장감을 보여줍니다. 사주로 이어 보면 재물을 모으고 쓰는 방식, 무리하기 쉬운 흐름, 지켜야 할 기준을 더 구체적으로 볼 수 있습니다.'
           : '타로는 오늘 마음에 남은 장면을 보여줍니다. 사주로 이어 보면 그 장면이 내 성향과 운의 리듬에서 왜 익숙하게 반복되는지 확인할 수 있습니다.';

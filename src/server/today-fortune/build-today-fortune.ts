@@ -218,10 +218,10 @@ const CONCERN_WINDOW_COPY: Record<
   },
   energy_health: {
     favorableTitle: '힘을 써도 버틸 수 있는 시간',
-    favorableTail: '집중해야 할 일은 짧게 끊어 밀고, 중간 회복 구간을 분명히 두는 편이 맞습니다.',
+    favorableTail: '집중해야 할 일은 짧게 나누고, 중간 회복 시간을 분명히 두는 편이 맞습니다.',
     cautionTitle: '피로가 누적되기 쉬운 시간',
     cautionTail: '몰아서 움직이기보다 쉬는 길이와 강도를 미리 정해두는 편이 안전합니다.',
-    actNowTitle: '일정을 강하게 밀어붙일 때',
+    actNowTitle: '일정을 바로 진행할 때',
     waitTitle: '중간에 쉬어가며 쓸 때',
     actNowTail: '짧은 성과는 날 수 있지만 회복 구간이 없으면 뒷심이 급히 떨어질 수 있습니다.',
     waitTail: '집중 시간은 오히려 길어지고 판단도 차분해지기 쉽습니다.',
@@ -235,6 +235,137 @@ const CONCERN_WINDOW_COPY: Record<
     waitTitle: '흐름을 먼저 보고 움직일 때',
     actNowTail: '작게라도 먼저 끝내는 행동이 하루 전체의 기준을 만들어 줍니다.',
     waitTail: '우선순위를 먼저 세우면 뒤쪽 선택이 훨씬 가벼워집니다.',
+  },
+};
+
+const TIME_BRANCH_LABELS: Record<Branch, string> = {
+  子: '밤 정리',
+  丑: '새벽 점검',
+  寅: '아침 준비',
+  卯: '아침 시작',
+  辰: '오전 정리',
+  巳: '오전 집중',
+  午: '점심 전후',
+  未: '오후 정돈',
+  申: '오후 확인',
+  酉: '저녁 마무리',
+  戌: '저녁 정리',
+  亥: '밤 휴식',
+};
+
+const TIME_BRANCH_WINDOW_COPY: Record<
+  Branch,
+  {
+    favorableTitle: string;
+    favorableBody: string;
+    cautionTitle: string;
+    cautionBody: string;
+  }
+> = {
+  子: {
+    favorableTitle: '내일 할 일 하나만 정하기 좋아요',
+    favorableBody: '생각이 많아지는 시간이라 큰 결론보다 내일 첫 행동 하나를 적어두면 편합니다.',
+    cautionTitle: '늦은 결론은 줄여요',
+    cautionBody: '감정이 길어지기 쉬워 중요한 답장은 아침에 다시 보는 편이 좋습니다.',
+  },
+  丑: {
+    favorableTitle: '돈과 약속을 차분히 확인하기 좋아요',
+    favorableBody: '급히 바꾸기보다 빠진 금액, 시간, 약속을 조용히 확인하기 좋은 때입니다.',
+    cautionTitle: '혼자 오래 붙잡지 마세요',
+    cautionBody: '생각이 무거워지면 작은 일도 크게 느껴질 수 있어 잠깐 멈추는 편이 좋습니다.',
+  },
+  寅: {
+    favorableTitle: '아침 준비를 시작하기 좋아요',
+    favorableBody: '복잡한 일보다 몸을 깨우고 오늘 할 일을 가볍게 펼치기 좋은 시간입니다.',
+    cautionTitle: '서두른 출발은 줄여요',
+    cautionBody: '급하게 시작하면 빠뜨리는 일이 생기기 쉬워 순서를 먼저 확인하세요.',
+  },
+  卯: {
+    favorableTitle: '연락과 가벼운 시작에 좋아요',
+    favorableBody: '짧은 연락, 간단한 정리, 작은 시작처럼 부담 없는 행동에 잘 맞습니다.',
+    cautionTitle: '말이 빨라지지 않게 해요',
+    cautionBody: '좋은 뜻도 길게 말하면 부담이 될 수 있어 짧고 부드럽게 전하세요.',
+  },
+  辰: {
+    favorableTitle: '해야 할 일을 정리하기 좋아요',
+    favorableBody: '머릿속에 흩어진 일을 목록으로 나누면 오늘의 우선순위가 잘 보입니다.',
+    cautionTitle: '계획만 늘리지 마세요',
+    cautionBody: '생각이 많아져 실행이 늦어질 수 있으니 가장 작은 일부터 시작하세요.',
+  },
+  巳: {
+    favorableTitle: '집중해서 처리하기 좋아요',
+    favorableBody: '짧게 몰입해서 끝낼 수 있는 일에 잘 맞습니다. 알림은 잠시 줄여도 좋습니다.',
+    cautionTitle: '말과 판단이 뜨거워질 수 있어요',
+    cautionBody: '확답이나 결제는 한 번 더 확인하고, 감정적인 말은 조금 식힌 뒤 전하세요.',
+  },
+  午: {
+    favorableTitle: '사람과 맞추기 좋아요',
+    favorableBody: '혼자 결정하기보다 함께 확인하고 조율하는 일에 잘 맞는 시간입니다.',
+    cautionTitle: '기분대로 정하지 마세요',
+    cautionBody: '순간 기분이 선택을 크게 만들 수 있어 금액과 약속은 다시 확인하세요.',
+  },
+  未: {
+    favorableTitle: '오후 계획을 다듬기 좋아요',
+    favorableBody: '오전에 놓친 것을 정리하고 남은 일을 현실적으로 줄이기 좋은 때입니다.',
+    cautionTitle: '피로한 상태의 약속은 줄여요',
+    cautionBody: '컨디션이 흔들리면 판단도 흐려질 수 있어 무리한 약속은 피하세요.',
+  },
+  申: {
+    favorableTitle: '결정 전 확인하기 좋아요',
+    favorableBody: '바로 정하기보다 비교, 확인, 재점검을 거치면 실수가 줄어듭니다.',
+    cautionTitle: '마음이 급해지기 쉬워요',
+    cautionBody: '빨리 끝내고 싶은 마음이 커질 수 있어 중요한 선택은 숫자와 조건을 보세요.',
+  },
+  酉: {
+    favorableTitle: '마무리와 정리에 좋아요',
+    favorableBody: '오늘 한 일을 정리하고, 남은 답장이나 확인을 깔끔하게 끝내기 좋습니다.',
+    cautionTitle: '평가에 예민해지지 마세요',
+    cautionBody: '상대 반응을 크게 해석하기 쉬우니 사실과 감정을 나눠서 보세요.',
+  },
+  戌: {
+    favorableTitle: '하루를 정리하기 좋아요',
+    favorableBody: '새 일을 늘리기보다 오늘 끝낸 것과 남길 것을 나누면 마음이 가벼워집니다.',
+    cautionTitle: '늦은 시간 확답은 줄여요',
+    cautionBody: '피곤한 상태에서는 말이 딱딱해질 수 있어 중요한 대화는 짧게만 하세요.',
+  },
+  亥: {
+    favorableTitle: '마음 정리와 휴식에 좋아요',
+    favorableBody: '몸을 쉬게 하고 마음에 남은 일을 덜어내기 좋은 시간입니다.',
+    cautionTitle: '생각을 오래 굴리지 마세요',
+    cautionBody: '늦은 고민은 커지기 쉬워 내일 확인할 것만 적고 쉬는 편이 좋습니다.',
+  },
+};
+
+const CONCERN_EASY_TIME_COPY: Record<
+  ConcernId,
+  {
+    favorable: string;
+    caution: string;
+  }
+> = {
+  love_contact: {
+    favorable: '연락은 짧게, 부담 없는 말부터 시작해보세요.',
+    caution: '상대 반응을 바로 결론으로 보지 말고 한 템포 늦춰보세요.',
+  },
+  money_spend: {
+    favorable: '새로 사기보다 금액, 조건, 고정비를 먼저 확인하기 좋습니다.',
+    caution: '즉흥 결제나 권유성 구매는 잠시 보류하는 편이 낫습니다.',
+  },
+  work_meeting: {
+    favorable: '회의나 약속은 역할, 조건, 다음 할 일을 짧게 정리하면 좋습니다.',
+    caution: '합의가 덜 된 일에 바로 확답하지 말고 한 번 더 조율하세요.',
+  },
+  relationship_conflict: {
+    favorable: '큰 대화보다 사실 확인과 짧은 질문으로 시작하는 편이 좋습니다.',
+    caution: '서운한 마음을 결론처럼 말하면 길어질 수 있어 표현을 낮춰보세요.',
+  },
+  energy_health: {
+    favorable: '힘든 일은 짧게 나누고, 쉬는 시간을 먼저 정하면 덜 지칩니다.',
+    caution: '몸을 몰아서 쓰기보다 속도를 낮추고 물, 식사, 휴식을 챙기세요.',
+  },
+  general: {
+    favorable: '큰 계획보다 지금 끝낼 수 있는 작은 일 하나에 잘 맞습니다.',
+    caution: '생각만 길어지거나 너무 서두르면 흐름이 흐트러질 수 있습니다.',
   },
 };
 
@@ -773,11 +904,11 @@ function buildOneLineBody(
     case 'work_meeting':
       return joinUniqueSentences([focusLead, '회의나 계약은 결론을 서두르기보다 먼저 기준을 분명히 세우는 편이 좋습니다.']);
     case 'relationship_conflict':
-      return joinUniqueSentences([focusLead, '감정을 크게 밀기보다 질문 한 마디로 온도를 낮추는 쪽이 안전합니다.']);
+      return joinUniqueSentences([focusLead, '감정을 크게 키우기보다 질문 한 마디로 온도를 낮추는 쪽이 안전합니다.']);
     case 'energy_health':
       return joinUniqueSentences([
         todayLead,
-        '몸을 밀어붙이는 시간과 쉬어야 할 구간을 나눠 쓰는 것이 중요합니다.',
+        '몸을 쓰는 시간과 쉬어야 할 구간을 나눠 쓰는 것이 중요합니다.',
       ]);
     case 'general':
     default:
@@ -1059,7 +1190,7 @@ function buildTimeBlockEvaluations(
     ).join(' ');
     const cautionSummary = uniqueStrings(
       [
-        `${timePillar.timeGanzi}시는 ${timePillar.branchElement} 기운이 튀어나와 감정이나 판단을 과하게 밀기 쉬운 블록입니다.`,
+        `${timePillar.timeGanzi}시는 ${timePillar.branchElement} 기운이 튀어나와 감정이나 판단이 과해지기 쉬운 블록입니다.`,
         ...elementImpact.cautionLines,
         relationImpact.cautionLabels[0]
           ? `${relationImpact.cautionLabels.join(', ')}이 겹치면 작은 반응도 크게 받아들이기 쉽습니다.`
@@ -1131,6 +1262,59 @@ function pickTimeBlockWindows(
   return selected.slice(0, 2);
 }
 
+function limitEasyTimeSentences(value: string, maxSentences = 3) {
+  const sentences = splitSentences(simplifySajuCopy(value))
+    .map((sentence) =>
+      sentence
+        .replace(/밀어붙이/gu, '무리하게 진행하')
+        .replace(/밀기보다/gu, '무리하기보다')
+        .replace(/밀어도 되는/gu, '진행하기 좋은')
+        .replace(/밀어도/gu, '진행해도')
+        .replace(/밀고/gu, '진행하고')
+        .replace(/기운/gu, '분위기')
+        .replace(/보완 힌트/gu, '도움 되는 점')
+        .replace(/선택 힌트/gu, '선택할 때 볼 점')
+        .replace(/\s+/g, ' ')
+        .trim()
+    )
+    .filter(Boolean);
+
+  return sentences.slice(0, maxSentences).join(' ');
+}
+
+function buildTimeWindowTitle(item: TodayTimeBlockEvaluation, type: 'favorable' | 'caution') {
+  const branchCopy = TIME_BRANCH_WINDOW_COPY[item.branch];
+  const suffix = type === 'favorable' ? branchCopy.favorableTitle : branchCopy.cautionTitle;
+  return `${TIME_BRANCH_LABELS[item.branch]} · ${suffix}`;
+}
+
+function buildTimeWindowBody(
+  concernId: ConcernId,
+  item: TodayTimeBlockEvaluation,
+  type: 'favorable' | 'caution'
+) {
+  const branchCopy = TIME_BRANCH_WINDOW_COPY[item.branch];
+  const concernCopy = CONCERN_EASY_TIME_COPY[concernId];
+  const branchBody = type === 'favorable' ? branchCopy.favorableBody : branchCopy.cautionBody;
+  const concernBody = type === 'favorable' ? concernCopy.favorable : concernCopy.caution;
+  const scoreBody =
+    type === 'favorable'
+      ? item.score >= 78
+        ? '중요한 일도 바로 크게 잡기보다 작게 시작하면 좋습니다.'
+        : '부담 없는 일부터 하면 흐름이 편해집니다.'
+      : item.score <= 58
+        ? '오늘은 속도를 낮추고 확인을 하나 더 넣는 편이 안전합니다.'
+        : '무리한 결론만 피하면 크게 흔들리지 않습니다.';
+  const hintBody = item.hint
+    ? `먼저 할 일은 "${limitEasyTimeSentences(item.hint, 1)}"입니다.`
+    : null;
+
+  return limitEasyTimeSentences(
+    joinUniqueSentences([branchBody, concernBody, hintBody, scoreBody]),
+    3
+  );
+}
+
 function toTodayScores(
   todayReport: SajuReport,
   loveReport: SajuReport,
@@ -1170,38 +1354,13 @@ function buildTimeWindows(
   sajuData: SajuDataV1,
   type: 'favorable' | 'caution'
 ): TodayTimeWindow[] {
-  const concernCopy = CONCERN_WINDOW_COPY[concernId];
   const evaluations = pickTimeBlockWindows(buildTimeBlockEvaluations(concernId, report, sajuData), type);
 
   return evaluations.map((item) => ({
     range: item.range,
     mood: type,
-    title:
-      type === 'favorable'
-        ? `${item.timeGanzi}시 · ${concernCopy.favorableTitle}`
-        : `${item.timeGanzi}시 · ${concernCopy.cautionTitle}`,
-    body:
-      type === 'favorable'
-        ? joinUniqueSentences([
-            item.evidenceSnippet,
-            item.supportSummary,
-            item.relationSummary,
-            item.hint ? `이 시간대에는 "${item.hint}"부터 먼저 쓰는 편이 좋습니다.` : null,
-            item.supportiveDelta >= 6
-              ? `${item.timeGanzi}시는 보완 힌트와 맞물려 작은 확인을 실제 성과로 바꾸기 좋습니다.`
-              : item.actionLead,
-            item.luckFact ? `지금은 ${item.luckFact}을 함께 보면 이 시간대 판단이 더 또렷해집니다.` : null,
-          ])
-        : joinUniqueSentences([
-            item.evidenceSnippet,
-            item.cautionSummary,
-            item.relationSummary,
-            item.hint ? `이 시간대에는 ${withKoreanParticle(`"${item.hint}"`, '을', '를')} 먼저 점검해야 과열을 줄일 수 있습니다.` : null,
-            item.relationDelta <= -5
-              ? `${item.timeGanzi}시는 말보다 여파가 오래 남기 쉬워 결제나 확답을 한 번 더 늦추는 편이 안전합니다.`
-              : item.actionLead,
-            item.luckFact ? `지금은 ${item.luckFact}이 겹쳐 보여 이 시간대 반응을 크게 믿지 않는 편이 안전합니다.` : null,
-          ]),
+    title: buildTimeWindowTitle(item, type),
+    body: buildTimeWindowBody(concernId, item, type),
   }));
 }
 
@@ -1320,7 +1479,7 @@ function buildAvoidActions(
   const actions = uniqueStrings(
     [
       cautionAction,
-      ...cautionHints.map((item) => `${item}을 놓친 채 밀어붙이지 않는 편이 좋습니다.`),
+      ...cautionHints.map((item) => `${item}을 놓친 채 무리하게 진행하지 않는 편이 좋습니다.`),
       input.unknownTime
         ? '태어난 시간이 없으니 세부 타이밍보다 전체 흐름을 먼저 보는 편이 안전합니다.'
         : getLuckFactLine(sajuData)

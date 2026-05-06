@@ -36,7 +36,7 @@ const COLLECTIBLE_REPORTS = [
     slug: 'yearly-2026',
     title: '올해 흐름 리포트',
     price: '준비 중',
-    summary: '밀어도 되는 달, 확인할 달, 쉬어갈 달을 먼저 봅니다.',
+    summary: '진행하기 좋은 달, 확인할 달, 쉬어갈 달을 먼저 봅니다.',
     href: '/saju/new?focus=year',
     zodiac: 'tiger' as const,
   },

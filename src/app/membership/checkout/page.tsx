@@ -111,7 +111,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     title: '올해 핵심 3줄',
     price: '3,900원',
     reassurance: '선택한 사주 결과에 붙는 올해 요약 상품입니다. 결제 뒤 올해 전략 흐름으로 바로 이동합니다.',
-    nextRange: '올해 핵심 주제, 주의 패턴, 밀어도 되는 달을 먼저 봅니다.',
+    nextRange: '올해 핵심 주제, 주의 패턴, 진행하기 좋은 달을 먼저 봅니다.',
     opens: ['올해 전략 요약', '연간 흐름 보기', '긴 사주풀이로 이어보기'],
     notices: ['올해 핵심은 특정 사주 결과에 연결됩니다.', '전체 보관형 리포트와는 별도 상품입니다.'],
   },

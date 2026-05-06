@@ -57,7 +57,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     label: '깊은 사주',
     topic: '타고난 흐름과 반복 패턴',
     description: '반복되는 선택, 흐름, 큰 방향을 깊게 봅니다.',
-    answerFrame: '타고난 흐름과 반복 패턴을 생활 언어로 풀고, 장기적으로 무엇을 밀고 줄일지 답합니다.',
+    answerFrame: '타고난 흐름과 반복 패턴을 생활 언어로 풀고, 장기적으로 무엇을 해보고 줄일지 답합니다.',
     keywords: ['사주', '흐름', '패턴', '방향', '반복'],
   },
   {

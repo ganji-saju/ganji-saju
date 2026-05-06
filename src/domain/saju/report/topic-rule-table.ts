@@ -38,7 +38,7 @@ export const REPORT_TOPIC_RULE_TABLE: Record<ReportEvidenceKey, ReportTopicRule>
       '일간을 돕는 힘과 누르는 힘의 균형은 모든 주제의 기본 체력, 속도, 감정 반응을 읽는 1차 근거입니다.',
     topicInfluence: {
       today: '오늘의 추진 속도와 쉬어야 할 지점을 정합니다.',
-      love: '감정 표현을 먼저 밀어도 되는지, 상대 흐름을 더 기다려야 하는지 가릅니다.',
+      love: '감정 표현을 먼저 해도 되는지, 상대 흐름을 더 기다려야 하는지 가릅니다.',
       wealth: '확장보다 보존이 필요한지, 움직여도 되는 체력인지 판단합니다.',
       career: '책임을 넓혀도 되는지, 역할을 줄이고 완성도를 높여야 하는지 봅니다.',
       relationship: '주도권과 조율 사이의 균형을 잡는 기준입니다.',

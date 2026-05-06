@@ -40,7 +40,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
     staticUpsellCopy: '오늘 협상·계약에 유리한 시간 확인',
     followUpQuestions: [
       '오후 미팅에서 어떤 말을 피해야 하나요?',
-      '오늘 계약은 밀어붙이는 편이 좋을까요?',
+      '오늘 계약은 바로 진행해도 괜찮을까요?',
       '미팅에서 먼저 꺼내면 좋은 포인트는 무엇인가요?',
     ],
   },

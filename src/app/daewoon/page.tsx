@@ -10,7 +10,7 @@ import {
 
 export const metadata: Metadata = {
   title: '대운 · 올해 흐름',
-  description: '10년 흐름과 올해 밀어도 되는 달을 모바일 운세형 카드로 확인하는 달빛인생 대운 화면입니다.',
+  description: '10년 흐름과 올해 진행하기 좋은 달을 모바일 운세형 카드로 확인하는 달빛인생 대운 화면입니다.',
   alternates: { canonical: '/daewoon' },
 };
 

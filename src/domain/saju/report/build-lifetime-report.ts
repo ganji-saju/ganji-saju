@@ -70,7 +70,7 @@ function buildKeywords(input: {
     },
     {
       label: `보완 축 ${input.supportLabels}`,
-      reason: '평생 운은 강한 기운을 더 밀기보다, 이 보완 축을 생활 안에 안정적으로 들이는 쪽에서 좋아집니다.',
+      reason: '평생 운은 강한 기운을 더 키우기보다, 이 보완 축을 생활 안에 안정적으로 들이는 쪽에서 좋아집니다.',
     },
     {
       label: `강한 축 ${input.dominant}`,
@@ -180,7 +180,7 @@ export function buildLifetimeReport(
       `${formatElementName(element as Element)} ${value.percentage}% · ${value.state} · ${value.score}점`
   );
   const rememberRules = [
-    `강한 ${dominant} 기운은 밀어붙일 때보다 방향을 정하고 쓸 때 오래 갑니다.`,
+    `강한 ${dominant} 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.`,
     `${supportLabels} 기운을 생활 루틴으로 만들수록 명식의 장점이 안정적으로 살아납니다.`,
     `${weakest} 축이 약해지는 날에는 속도보다 리듬을 먼저 바로잡는 편이 좋습니다.`,
     '관계와 일에서 서운함이나 조급함을 결론처럼 말하기보다, 사실과 기준을 먼저 정리해야 합니다.',
@@ -201,7 +201,7 @@ export function buildLifetimeReport(
         supportLabels,
         currentMajorLuck: currentMajorLuck?.ganzi ?? null,
       }),
-      lifetimeRule: `${sajuData.dayMaster.stem} 일간의 추진력과 ${dominant} 기운의 장점은 이미 충분합니다. 평생 운을 살리는 기준은 더 세게 밀어붙이는 것이 아니라, ${supportLabels} 보완 축을 반복 가능한 습관과 선택 기준으로 만드는 데 있습니다.`,
+      lifetimeRule: `${sajuData.dayMaster.stem} 일간의 추진력과 ${dominant} 기운의 장점은 이미 충분합니다. 평생 운을 살리는 기준은 더 세게 몰아가는 것이 아니라, ${supportLabels} 보완 축을 반복 가능한 습관과 선택 기준으로 만드는 데 있습니다.`,
       basis: compactStrings([
         `원국: ${[pillars.year, pillars.month, pillars.day, pillars.hour ?? '시주 미입력'].join(' · ')}`,
         strength?.title ? `강약 기준: ${strength.title}` : null,

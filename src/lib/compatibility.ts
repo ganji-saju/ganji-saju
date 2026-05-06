@@ -351,7 +351,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
     return {
       score: -5,
       title: '일간 충이 걸리는 관계',
-      body: `${selfStem}과 ${partnerStem}은 생각을 밀어붙이는 방향이 달라, 결정을 빨리 내릴수록 마찰이 생기기 쉽습니다.`,
+      body: `${selfStem}과 ${partnerStem}은 생각을 진행하는 속도가 달라, 결정을 빨리 내릴수록 마찰이 생기기 쉽습니다.`,
     };
   }
 

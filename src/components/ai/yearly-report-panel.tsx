@@ -132,9 +132,9 @@ const MOMENTUM_META: Record<
   }
 > = {
   rise: {
-    label: '밀어도 되는 달',
+    label: '진행하기 좋은 달',
     shortLabel: '좋음',
-    guideLabel: '밀어도 되는 달',
+    guideLabel: '진행하기 좋은 달',
     icon: CheckCircle2,
     badgeClassName: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-100',
     panelClassName: 'border-emerald-400/24 bg-emerald-400/8',
@@ -302,7 +302,7 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
           먼저 색으로 봅니다
         </h3>
         <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-          밀어도 되는 달과 한 번 더 확인할 달만 먼저 나눠 봅니다.
+          진행하기 좋은 달과 한 번 더 확인할 달만 먼저 나눠 봅니다.
         </p>
         <div className="mt-5 grid gap-3">
           <MomentumSummaryRow tone="rise" flows={grouped.rise} />
@@ -408,7 +408,7 @@ function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
             <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(flow.focusQuestion)}</p>
           </div>
           <div className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-            <div className="app-caption text-[var(--app-gold-soft)]">밀어볼 것</div>
+            <div className="app-caption text-[var(--app-gold-soft)]">진행해볼 것</div>
             <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.opportunity, 104)}</p>
           </div>
           <div className="rounded-[16px] border border-rose-400/18 bg-rose-400/6 px-4 py-3">
@@ -630,7 +630,7 @@ function buildMonthlySectionDescription(report: SajuYearlyReport) {
     .slice(0, 4)
     .join(' · ');
 
-  return `좋은 말만 길게 적지 않고, 사람들이 실제로 궁금해하는 ${repeatedAreas} 중심으로 “이번 달 밀어도 되는 일 / 한 번 더 확인할 일 / 오늘 할 일”이 먼저 보이게 정리했습니다.`;
+  return `좋은 말만 길게 적지 않고, 사람들이 실제로 궁금해하는 ${repeatedAreas} 중심으로 “이번 달 바로 해볼 일 / 한 번 더 확인할 일 / 오늘 할 일”이 먼저 보이게 정리했습니다.`;
 }
 
 function YearlyMonthlySection({
@@ -656,7 +656,7 @@ function YearlyMonthlySection({
 
       {report ? (
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <TimingWindowCard title="밀어도 되는 시기" windows={report.goodPeriods} tone="good" />
+          <TimingWindowCard title="진행하기 좋은 시기" windows={report.goodPeriods} tone="good" />
           <TimingWindowCard title="한 번 더 확인할 시기" windows={report.cautionPeriods} tone="caution" />
         </div>
       ) : null}

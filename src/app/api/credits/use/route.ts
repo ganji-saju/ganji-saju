@@ -188,7 +188,7 @@ function buildDetailReportContent(
   const isMaleCounselor = counselorId === 'male';
   const wealthDetail: DetailTopicReportContent = {
     lead: isMaleCounselor
-      ? `${wealthReport.headline} 재물운은 ${wealthScore}점입니다. 이번 심화 해석은 “돈이 들어오나”보다 “어디서 새고, 어디서 붙잡아야 하며, 무엇은 지금 밀고 무엇은 보류해야 하는가”를 먼저 정리해 드립니다.`
+      ? `${wealthReport.headline} 재물운은 ${wealthScore}점입니다. 이번 심화 해석은 “돈이 들어오나”보다 “어디서 새고, 어디서 붙잡아야 하며, 무엇은 지금 진행하고 무엇은 보류해야 하는가”를 먼저 정리해 드립니다.`
       : `${wealthReport.headline} 재물운은 ${wealthScore}점으로, 무조건 돈이 들어온다는 약속보다 지금 내 돈의 결이 어디에서 흔들리고 어디에서 붙는지 먼저 읽는 점수입니다.`,
     scoreLabel: `${wealthScore}점`,
     highlights: ['재물운', `${wealthScore}점`, '지출 구조', '정산', '보류', '고정비'],
@@ -243,7 +243,7 @@ function buildDetailReportContent(
       {
         tone: 'basis' as const,
         title: '왜 이런 표현이 더 잘 통하는가',
-        body: `${supportLabels ? `이번 흐름을 돕는 오행은 ${supportLabels}입니다.` : ''} ${formatEvidencePoint(relationshipReport, 'relations')} 이 흐름은 친밀감을 밀어붙이기보다 안부, 칭찬, 약속 확인처럼 부담이 낮은 표현에 쓰는 편이 안정적입니다.`,
+        body: `${supportLabels ? `이번 흐름을 돕는 오행은 ${supportLabels}입니다.` : ''} ${formatEvidencePoint(relationshipReport, 'relations')} 이 흐름은 친밀감을 몰아가기보다 안부, 칭찬, 약속 확인처럼 부담이 낮은 표현에 쓰는 편이 안정적입니다.`,
         keywords: compactText(['돕는 오행', supportLabels, '안부', '칭찬', '약속 확인']),
       },
       {
@@ -303,7 +303,7 @@ function buildDetailReportContent(
       {
         tone: 'basis' as const,
         title: '몸이 먼저 흔들리는 장면',
-        body: `${saju.dayMaster.stem}일간은 ${dominant.name} 기운이 강하게 드러나는 명식이라, 과로하거나 한쪽 리듬으로 몰릴 때 피로가 쌓이기 쉽습니다. 그래서 오늘은 강하게 밀어붙이는 관리보다 수면, 식사, 움직임의 균형을 먼저 잡는 편이 안전합니다.`,
+        body: `${saju.dayMaster.stem}일간은 ${dominant.name} 기운이 강하게 드러나는 명식이라, 과로하거나 한쪽 리듬으로 몰릴 때 피로가 쌓이기 쉽습니다. 그래서 오늘은 강하게 몰아가는 관리보다 수면, 식사, 움직임의 균형을 먼저 잡는 편이 안전합니다.`,
         keywords: [saju.dayMaster.stem, dominant.name, '수면', '식사', '움직임'],
       },
       {

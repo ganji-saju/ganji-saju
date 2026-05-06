@@ -342,7 +342,7 @@ export function MobileSajuResultStory({
   const rhythmBody =
     cautionPatterns[1] ??
     evidenceCards.find((card) => card.label.includes('강약') || card.title.includes('균형'))?.body ??
-    '생활 리듬은 무리하게 밀기보다 회복과 확인의 간격을 함께 보는 편이 좋습니다.';
+    '생활 리듬은 무리하기보다 회복과 확인의 간격을 함께 보는 편이 좋습니다.';
 
   const slides: StorySlide[] = [
     {

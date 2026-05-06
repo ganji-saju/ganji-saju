@@ -56,7 +56,7 @@ const TONE_META: Record<
   },
   good: {
     label: '좋은 날',
-    description: '가볍게 밀고, 연락하고, 정리해도 좋은 날',
+    description: '연락하고, 정리하고, 가볍게 진행해도 좋은 날',
     cellClassName: 'border-emerald-300/35 bg-emerald-400/14 text-emerald-50',
     badgeClassName: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-100',
     railClassName: 'bg-emerald-300',
@@ -647,7 +647,7 @@ export default function FortuneCalendarPanel({
                       entries={pickToneEntries(data.report, ['decision'], 3, 'high')}
                     />
                     <CalendarHintGroup
-                      title="가볍게 밀어도 되는 날"
+                      title="가볍게 진행해도 좋은 날"
                       tone="good"
                       entries={pickToneEntries(data.report, ['good'], 3, 'high')}
                     />
@@ -666,7 +666,7 @@ export default function FortuneCalendarPanel({
                   {selectedMonth}월 흐름을 열면 좋은 날과 주의 날이 바로 갈립니다
                 </h3>
                 <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  이 달의 캘린더를 열면 결정일, 좋은 날, 보통 날, 주의 날이 색으로 정리되고, 각 날짜에 무엇을 밀고 무엇을 늦춰야 하는지 바로 읽을 수 있습니다.
+                  이 달의 캘린더를 열면 결정일, 좋은 날, 보통 날, 주의 날이 색으로 정리되고, 각 날짜에 무엇을 바로 해도 되는지와 무엇을 늦춰야 하는지 바로 읽을 수 있습니다.
                 </p>
                 <div className="mt-5 rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
                   <div className="app-caption text-[var(--app-gold-soft)]">열리면 보이는 것</div>

@@ -106,7 +106,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'daewoon',
     title: '올해 흐름',
-    desc: '밀어도 되는 달',
+    desc: '진행하기 좋은 달',
     price: '990원',
     href: '/daewoon',
     zodiac: 'tiger',

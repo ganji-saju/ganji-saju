@@ -66,7 +66,7 @@ export function buildTodayFortune() {
 
 export const ZODIAC_FORTUNES: ZodiacFortune[] = [
   { slug: 'rat', label: '쥐띠', years: '1996, 1984, 1972, 1960', summary: '작은 흐름을 먼저 읽어야 손실을 줄일 수 있는 날입니다.', todayFocus: '재물과 일정 정리', action: '급한 결정보다 체크리스트를 먼저 보세요.' },
-  { slug: 'ox', label: '소띠', years: '1997, 1985, 1973, 1961', summary: '느리더라도 꾸준히 밀어붙이는 힘이 강하게 작동합니다.', todayFocus: '직장과 성과 관리', action: '미뤄둔 정리를 끝내면 마음이 훨씬 편해집니다.' },
+  { slug: 'ox', label: '소띠', years: '1997, 1985, 1973, 1961', summary: '느리더라도 꾸준히 이어가는 힘이 강하게 작동합니다.', todayFocus: '직장과 성과 관리', action: '미뤄둔 정리를 끝내면 마음이 훨씬 편해집니다.' },
   { slug: 'tiger', label: '호랑이띠', years: '1998, 1986, 1974, 1962', summary: '주도권을 잡을 기회가 오지만 말의 온도 조절이 중요합니다.', todayFocus: '관계와 협업', action: '강한 표현보다 선명한 제안이 더 효과적입니다.' },
   { slug: 'rabbit', label: '토끼띠', years: '1999, 1987, 1975, 1963', summary: '감각이 좋은 날이라 취향과 직감이 꽤 잘 맞습니다.', todayFocus: '연애와 소통', action: '먼저 다가가되 속도를 과하게 높이지 마세요.' },
   { slug: 'dragon', label: '용띠', years: '2000, 1988, 1976, 1964', summary: '큰 그림을 볼수록 오히려 오늘 해야 할 일이 선명해집니다.', todayFocus: '새로운 기회', action: '들어온 제안을 흘려보내지 말고 메모해두세요.' },

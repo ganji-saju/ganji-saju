@@ -152,13 +152,13 @@ const MONTH_DECISION_GUIDE: Record<
   },
   6: {
     question: '속도를 줄여야 할지, 리듬을 다시 세워야 할지 어디가 먼저일까?',
-    summaryLead: '무리해서 밀기보다 생활 리듬을 다시 맞추는 편이 이득입니다.',
+    summaryLead: '무리하기보다 생활 리듬을 다시 맞추는 편이 이득입니다.',
     opportunityLead: '생활 패턴과 일정 구조를 다시 맞추는 움직임이 체감 회복으로 이어집니다.',
-    cautionLead: '체력이 흔들릴 때 의지만으로 밀어붙이면 만족도보다 피로가 먼저 커집니다.',
+    cautionLead: '체력이 흔들릴 때 의지만으로 버티면 만족도보다 피로가 먼저 커집니다.',
     actionLead: '휴식과 일정의 간격부터 다시 조정하세요.',
   },
   7: {
-    question: '성과와 계산이 현실화될 때 무엇을 밀고 무엇을 남겨야 할까?',
+    question: '성과와 계산이 현실화될 때 무엇을 진행하고 무엇을 남겨야 할까?',
     summaryLead: '성과와 숫자를 정리해 보여줄수록 실속이 생기는 달입니다.',
     opportunityLead: '실적, 정산, 결과 확인처럼 숫자로 남는 장면에서 진도가 납니다.',
     cautionLead: '성과를 급히 키우려다 기준 없는 확장을 하면 수고만 커질 수 있습니다.',
@@ -416,7 +416,7 @@ function createYearlyKeywords(
       ? `${context.pattern}|반복해서 맡게 되는 역할과 책임의 결을 보여줍니다.`
       : null,
     context.strength
-      ? `${context.strength}|올해 밀어붙일지, 조율할지의 기준이 됩니다.`
+      ? `${context.strength}|올해 바로 진행할지, 조율할지의 기준이 됩니다.`
       : null,
     dominant ? `${dominant} 활용|가장 익숙하고 강한 기운을 어떻게 잘 써야 하는지 알려줍니다.` : null,
   ])
