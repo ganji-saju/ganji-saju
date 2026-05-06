@@ -1585,6 +1585,135 @@
     opacity: 0.52;
   }
 
+  .unified-birth-form {
+    align-items: start;
+  }
+
+  .gangi-birth-field {
+    min-width: 0;
+  }
+
+  .gangi-birth-label {
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 720;
+    color: var(--app-ink);
+  }
+
+  .gangi-birth-input {
+    min-height: 3.25rem;
+    border-radius: 1.05rem;
+    font-weight: 620;
+  }
+
+  .gangi-birth-date-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .gangi-birth-segment {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .gangi-birth-choice,
+  .gangi-birth-card-choice {
+    min-height: 3.2rem;
+    border: 1px solid var(--app-line);
+    border-radius: 1.05rem;
+    background: #ffffff;
+    color: var(--app-copy);
+    font-size: 0.95rem;
+    font-weight: 760;
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .gangi-birth-card-choice {
+    padding-inline: 1rem;
+    text-align: center;
+  }
+
+  .gangi-birth-choice.is-selected,
+  .gangi-birth-card-choice.is-selected {
+    border-color: rgba(216, 27, 114, 0.34);
+    background: var(--app-pink);
+    color: #ffffff;
+    box-shadow: 0 12px 24px -18px rgba(216, 27, 114, 0.8);
+  }
+
+  .gangi-birth-choice.is-selected *,
+  .gangi-birth-card-choice.is-selected * {
+    color: #ffffff;
+  }
+
+  .gangi-birth-unknown {
+    display: flex;
+    min-height: 3.1rem;
+    align-items: center;
+    gap: 0.55rem;
+    border: 1px solid var(--app-line);
+    border-radius: 1.05rem;
+    background: var(--app-pink-soft);
+    padding-inline: 0.9rem;
+    font-size: 0.88rem;
+    font-weight: 720;
+    color: var(--app-ink);
+  }
+
+  .gangi-birth-search-button {
+    display: inline-flex !important;
+    min-height: 3.25rem;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.05rem !important;
+    border-color: var(--app-line) !important;
+    background: #ffffff !important;
+    color: var(--app-ink) !important;
+    font-weight: 760;
+  }
+
+  .gangi-birth-search-button * {
+    color: var(--app-ink) !important;
+  }
+
+  .gangi-birth-location-presets {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+  }
+
+  .gangi-birth-location-presets::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gangi-birth-chip {
+    min-height: 2.35rem;
+    flex: 0 0 auto;
+    border: 1px solid var(--app-line);
+    border-radius: 999px;
+    background: #ffffff;
+    padding-inline: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 720;
+    color: var(--app-copy);
+  }
+
+  .gangi-birth-chip.is-selected {
+    border-color: rgba(216, 27, 114, 0.28);
+    background: var(--app-pink-soft);
+    color: var(--app-pink-strong);
+  }
+
   .gangi-plan-card {
     position: relative;
     overflow: hidden;
@@ -3815,6 +3944,19 @@
   min-height: 0;
 }
 
+.saju-intake-page {
+  width: min(100%, 46rem);
+}
+
+.saju-intake-helper-card {
+  padding: 1rem !important;
+}
+
+.saju-intake-helper-card .app-section-title {
+  font-size: 1.35rem;
+  line-height: 1.22;
+}
+
 @media (max-width: 640px) {
   .app-swipe-section-deck {
     margin-inline: -0.25rem;
@@ -3846,6 +3988,16 @@
 
   .saju-intake-main-card {
     padding: 1.5rem !important;
+  }
+
+  .saju-intake-helper-card {
+    padding: 1.35rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .saju-intake-page {
+    width: min(100%, 52rem);
   }
 }
 
@@ -5009,6 +5161,47 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   line-break: strict;
 }
 
+.gangi-subpage.saju-intake-page {
+  width: min(100%, 46rem);
+}
+
+@media (min-width: 1024px) {
+  .gangi-subpage.saju-intake-page {
+    width: min(100%, 52rem);
+  }
+}
+
+.gangi-login-subpage {
+  width: min(100%, 48rem);
+}
+
+.gangi-login-card {
+  border-radius: 1.65rem !important;
+}
+
+.gangi-login-sub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 680;
+  color: var(--app-copy-muted);
+}
+
+.gangi-login-sub-actions button {
+  color: var(--app-copy-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.22rem;
+  transition: color 160ms ease;
+}
+
+.gangi-login-sub-actions button:hover {
+  color: var(--app-pink-strong);
+}
+
 .gangi-sub-header {
   position: sticky;
   top: 0;
@@ -5869,8 +6062,9 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
   .app-top-header-inner,
   [data-app-layout="horizontal"] .app-top-header-inner {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right)) !important;
   }
 
   .app-top-header-main {
@@ -5878,48 +6072,50 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   }
 
   .app-top-header-main .app-top-brand {
-    max-width: 9.5rem !important;
+    max-width: calc(100vw - 10.25rem) !important;
     padding-right: 0 !important;
   }
 
   .app-top-actions,
   .app-top-header-main .app-top-actions {
-    position: absolute !important;
-    right: 3.45rem !important;
-    top: 50% !important;
-    display: grid !important;
-    grid-template-columns: 2.25rem 3.45rem !important;
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
     align-items: center !important;
-    gap: 0.35rem !important;
-    transform: translateY(-50%) !important;
+    gap: 0.25rem !important;
+    margin-left: auto !important;
+    transform: none !important;
   }
 
   .app-top-header-main .app-top-login {
     min-height: 2.35rem !important;
-    width: 3.45rem !important;
-    padding-inline: 0 !important;
-    font-size: 0.82rem !important;
+    width: auto !important;
+    min-width: 3.25rem !important;
+    padding-inline: 0.72rem !important;
+    font-size: 0.8rem !important;
   }
 
   .app-top-header-main .app-top-notification-button {
-    position: fixed !important;
-    right: 6.95rem !important;
-    top: 0.78rem !important;
-    z-index: 80 !important;
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
   }
 
   .app-top-header-main .app-top-login {
-    position: fixed !important;
-    right: 3.2rem !important;
-    top: 0.64rem !important;
-    z-index: 80 !important;
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
   }
 
   .app-top-header-main .app-mobile-menu-trigger {
-    position: fixed !important;
-    right: 0.75rem !important;
-    top: 0.74rem !important;
-    z-index: 80 !important;
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
   }
 
   .dalbit-market-shell .gangi-season-banner {
@@ -6007,4 +6203,44 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-size: 0.86rem;
   font-style: normal;
   font-weight: 760;
+}
+
+/* Final typography softening: the app should feel clear, not over-bold. */
+.app-shell {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app-shell :where(h1, h2, h3, h4, strong, b, .font-black, .font-extrabold) {
+  letter-spacing: 0 !important;
+}
+
+.gangi-home :where(h1, h2, h3, strong, .gangi-banner-kicker, .gangi-banner-button, .gangi-card-tag),
+.gangi-subpage :where(h1, h2, h3, strong),
+.app-panel :where(h1, h2, h3, strong) {
+  font-weight: 760 !important;
+}
+
+.app-shell :where(.font-black) {
+  font-weight: 760 !important;
+}
+
+.app-shell :where(.font-extrabold) {
+  font-weight: 700 !important;
+}
+
+.app-shell :where(.font-bold) {
+  font-weight: 660 !important;
+}
+
+.gangi-home :where(p, small, em, span),
+.gangi-subpage :where(p, small, em, span) {
+  letter-spacing: 0 !important;
+}
+
+.today-concern-card strong,
+.gangi-vault-filter span,
+.gangi-vault-copy strong,
+.gangi-expert-chip strong {
+  font-weight: 760 !important;
 }

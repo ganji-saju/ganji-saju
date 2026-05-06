@@ -114,14 +114,19 @@ export function UnifiedBirthInfoFields({
   }
 
   return (
-    <div className={cn('grid gap-5', sections.length === 1 ? 'lg:grid-cols-1' : 'lg:grid-cols-2')}>
+    <div
+      className={cn(
+        'unified-birth-form grid gap-4 sm:gap-5',
+        sections.length === 1 ? 'lg:grid-cols-1' : 'lg:grid-cols-2'
+      )}
+    >
       {showDate || showGender ? (
         <div className="space-y-4">
           {showDate ? (
             <>
-              <div>
-                <Label className="mb-2 block text-sm text-[var(--app-copy)]">양력 / 음력</Label>
-                <div className="flex flex-wrap gap-2">
+              <div className="gangi-birth-field">
+                <Label className="gangi-birth-label">양력 / 음력</Label>
+                <div className="gangi-birth-segment">
                   {[
                     { value: 'solar', label: '양력' },
                     { value: 'lunar', label: '음력' },
@@ -133,12 +138,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         onChange({ calendarType: item.value as UnifiedCalendarType });
                       }}
-                      className={cn(
-                        'rounded-full border px-4 py-2 text-sm',
-                        draft.calendarType === item.value
-                          ? 'border-[var(--app-pink)]/32 bg-[var(--app-pink)]/10 text-[var(--app-ink)]'
-                          : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
-                      )}
+                      className={cn('gangi-birth-choice', draft.calendarType === item.value && 'is-selected')}
                     >
                       {item.label}
                     </button>
@@ -146,9 +146,9 @@ export function UnifiedBirthInfoFields({
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div>
-                  <Label htmlFor={fieldId('birth-year')} className="mb-2 block text-sm text-[var(--app-copy)]">
+              <div className="gangi-birth-date-grid">
+                <div className="gangi-birth-field">
+                  <Label htmlFor={fieldId('birth-year')} className="gangi-birth-label">
                     년
                   </Label>
                   {dateInputVariant === 'select' ? (
@@ -160,7 +160,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         applyDateSelectPatch({ year: event.target.value, month: draft.month, day: draft.day });
                       }}
-                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     >
                       <option value="">연도 선택</option>
                       {YEAR_OPTIONS.map((value) => (
@@ -181,11 +181,12 @@ export function UnifiedBirthInfoFields({
                       placeholder="1982"
                       autoComplete="off"
                       inputMode="numeric"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     />
                   )}
                 </div>
-                <div>
-                  <Label htmlFor={fieldId('birth-month')} className="mb-2 block text-sm text-[var(--app-copy)]">
+                <div className="gangi-birth-field">
+                  <Label htmlFor={fieldId('birth-month')} className="gangi-birth-label">
                     월
                   </Label>
                   {dateInputVariant === 'select' ? (
@@ -197,7 +198,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         applyDateSelectPatch({ year: draft.year, month: event.target.value, day: draft.day });
                       }}
-                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     >
                       <option value="">월 선택</option>
                       {MONTH_OPTIONS.map((value) => (
@@ -218,11 +219,12 @@ export function UnifiedBirthInfoFields({
                       placeholder="1"
                       autoComplete="off"
                       inputMode="numeric"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     />
                   )}
                 </div>
-                <div>
-                  <Label htmlFor={fieldId('birth-day')} className="mb-2 block text-sm text-[var(--app-copy)]">
+                <div className="gangi-birth-field">
+                  <Label htmlFor={fieldId('birth-day')} className="gangi-birth-label">
                     일
                   </Label>
                   {dateInputVariant === 'select' ? (
@@ -234,7 +236,7 @@ export function UnifiedBirthInfoFields({
                         trigger(onStarted);
                         onChange({ day: event.target.value });
                       }}
-                      className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     >
                       <option value="">일 선택</option>
                       {dayOptions.map((value) => (
@@ -255,6 +257,7 @@ export function UnifiedBirthInfoFields({
                       placeholder="29"
                       autoComplete="off"
                       inputMode="numeric"
+                      className="gangi-form-control gangi-birth-input px-3 text-sm"
                     />
                   )}
                 </div>
@@ -263,12 +266,12 @@ export function UnifiedBirthInfoFields({
           ) : null}
 
           {showGender ? (
-            <div>
-              <Label className="mb-2 block text-sm text-[var(--app-copy)]">성별</Label>
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="gangi-birth-field">
+              <Label className="gangi-birth-label">성별</Label>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {[
-                  { value: 'female', label: '여성', body: '여성 명식 기준으로 흐름을 정리합니다.' },
-                  { value: 'male', label: '남성', body: '남성 명식 기준으로 흐름을 정리합니다.' },
+                  { value: 'female', label: '여성' },
+                  { value: 'male', label: '남성' },
                 ].map((item) => (
                   <button
                     key={item.value}
@@ -277,15 +280,9 @@ export function UnifiedBirthInfoFields({
                       trigger(onStarted);
                       onChange({ gender: item.value });
                     }}
-                    className={cn(
-                      'rounded-[1.2rem] border px-5 py-5 text-left transition-colors',
-                      draft.gender === item.value
-                        ? 'border-[var(--app-pink)]/38 bg-[var(--app-pink)]/12 text-[var(--app-ink)]'
-                        : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)] hover:bg-[var(--app-surface-strong)]'
-                    )}
+                    className={cn('gangi-birth-card-choice', draft.gender === item.value && 'is-selected')}
                   >
-                    <span className="block text-lg font-semibold text-[var(--app-ink)]">{item.label}</span>
-                    <span className="mt-2 block text-sm leading-6 text-[var(--app-copy-muted)]">{item.body}</span>
+                    <span className="block text-base font-black text-[var(--app-ink)] sm:text-lg">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -296,9 +293,9 @@ export function UnifiedBirthInfoFields({
 
       {showLocationTime ? (
         <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-            <div>
-              <Label htmlFor={fieldId('birth-hour')} className="mb-2 block text-sm text-[var(--app-copy)]">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="gangi-birth-field">
+              <Label htmlFor={fieldId('birth-hour')} className="gangi-birth-label">
                 태어난 시간
               </Label>
               <select
@@ -312,7 +309,7 @@ export function UnifiedBirthInfoFields({
                     unknownBirthTime: event.target.value === '',
                   });
                 }}
-                className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm"
+                className="gangi-form-control gangi-birth-input px-3 text-sm"
               >
                 {HOUR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -321,8 +318,8 @@ export function UnifiedBirthInfoFields({
                 ))}
               </select>
             </div>
-            <div>
-              <Label htmlFor={fieldId('birth-minute')} className="mb-2 block text-sm text-[var(--app-copy)]">
+            <div className="gangi-birth-field">
+              <Label htmlFor={fieldId('birth-minute')} className="gangi-birth-label">
                 분
               </Label>
               <Input
@@ -337,9 +334,10 @@ export function UnifiedBirthInfoFields({
                 placeholder="45"
                 autoComplete="off"
                 inputMode="numeric"
+                className="gangi-form-control gangi-birth-input px-3 text-sm"
               />
             </div>
-            <label className="mt-8 flex items-center gap-2 text-sm text-[var(--app-copy)]">
+            <label className="gangi-birth-unknown sm:col-span-2">
               <input
                 type="checkbox"
                 checked={draft.unknownBirthTime}
@@ -351,14 +349,14 @@ export function UnifiedBirthInfoFields({
                     minute: event.target.checked ? '' : draft.minute,
                   });
                 }}
-                className="h-4 w-4 rounded border-[var(--app-line)]"
+                className="h-4 w-4 rounded border-[var(--app-line)] accent-[var(--app-pink)]"
               />
-              시간 모름
+              태어난 시간을 잘 모르겠어요
             </label>
           </div>
 
-          <div>
-            <Label htmlFor={fieldId('birth-location')} className="mb-2 block text-sm text-[var(--app-copy)]">
+          <div className="gangi-birth-field">
+            <Label htmlFor={fieldId('birth-location')} className="gangi-birth-label">
               출생지
             </Label>
             <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -375,12 +373,14 @@ export function UnifiedBirthInfoFields({
                 }}
                 placeholder="서울, 부산, 수원처럼 입력"
                 autoComplete="off"
+                className="gangi-form-control gangi-birth-input px-3 text-sm"
               />
               <Button
                 type="button"
                 onClick={onLocationSearch}
                 disabled={locationLoading}
                 variant="outline"
+                className="gangi-birth-search-button"
               >
                 <Search className="mr-2 h-4 w-4" />
                 {locationLoading ? '검색 중...' : '좌표 찾기'}
@@ -391,7 +391,7 @@ export function UnifiedBirthInfoFields({
             ) : null}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="gangi-birth-location-presets">
             {BIRTH_LOCATION_PRESETS.map((preset) => (
               <button
                 key={preset.code}
@@ -400,12 +400,7 @@ export function UnifiedBirthInfoFields({
                   trigger(onStarted);
                   onPresetSelect(preset.code);
                 }}
-                className={cn(
-                  'rounded-full border px-3 py-1.5 text-xs',
-                  draft.birthLocationCode === preset.code
-                    ? 'border-[var(--app-pink)]/30 bg-[var(--app-pink)]/10 text-[var(--app-ink)]'
-                    : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]'
-                )}
+                className={cn('gangi-birth-chip', draft.birthLocationCode === preset.code && 'is-selected')}
               >
                 {preset.label}
               </button>
@@ -433,8 +428,8 @@ export function UnifiedBirthInfoFields({
             </div>
           ) : null}
 
-          <div>
-            <Label htmlFor={fieldId('time-rule')} className="mb-2 block text-sm text-[var(--app-copy)]">
+          <div className="gangi-birth-field">
+            <Label htmlFor={fieldId('time-rule')} className="gangi-birth-label">
               시간 기준
             </Label>
             <select
@@ -446,11 +441,11 @@ export function UnifiedBirthInfoFields({
                 onChange({ timeRule: event.target.value as UnifiedTimeRule });
               }}
               disabled={timeRuleDisabled}
-              className="gangi-form-control h-10 w-full rounded-lg px-3 text-sm disabled:opacity-60"
+              className="gangi-form-control gangi-birth-input px-3 text-sm disabled:opacity-60"
             >
               {TIME_RULE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label} · {option.desc}
+                  {option.label}
                 </option>
               ))}
             </select>

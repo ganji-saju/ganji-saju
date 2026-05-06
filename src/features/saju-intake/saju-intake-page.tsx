@@ -1056,7 +1056,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           description="이름은 풀이 화면에서 부르는 용도예요. 생년월일, 성별, 태어난 시간만 먼저 알려주세요."
         />
 
-        <section className="grid gap-4 lg:grid-cols-[1.04fr_0.96fr] lg:gap-6">
+        <section className="grid gap-4 lg:gap-5">
           <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">
             <div className="mb-4 flex items-center justify-between gap-3 sm:mb-6">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -1199,7 +1199,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </ActionCluster>
           </SectionSurface>
 
-          <SectionSurface surface="panel" size="lg">
+          <SectionSurface surface="panel" size="lg" className="saju-intake-helper-card">
             <SectionHeader
               eyebrow="빠른 시작"
               title="입력은 짧게, 풀이는 바로 이어갑니다"

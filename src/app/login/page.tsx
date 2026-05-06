@@ -166,8 +166,8 @@ function formatOptionNumber(value: number) {
 function getInitialLoginMode(value: string | null): LoginMode {
   if (value === 'reset-password') return 'reset';
   if (value === 'recover') return 'recover';
-  if (value === 'login') return 'login';
-  return 'signup';
+  if (value === 'signup') return 'signup';
+  return 'login';
 }
 
 function buildProfilePayloadFromSignupForm(form: SignupForm) {
@@ -540,49 +540,58 @@ function LoginContent() {
   }
 
   const disabled = !hasSupabaseBrowserEnv;
+  const modeCopy = {
+    login: {
+      eyebrow: '로그인',
+      title: '다시 들어오기',
+      description: '가입한 이메일과 비밀번호로 로그인하면 저장된 사주정보를 바로 불러옵니다.',
+    },
+    signup: {
+      eyebrow: '회원가입',
+      title: '처음 시작하기',
+      description: '이메일과 비밀번호를 만들고, 사주 기본정보를 한 번 저장해 두세요.',
+    },
+    recover: {
+      eyebrow: '아이디 · 비밀번호 찾기',
+      title: '이메일로 확인하기',
+      description: '달빛인생 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일로 재설정 링크를 보내드립니다.',
+    },
+    reset: {
+      eyebrow: '비밀번호 재설정',
+      title: '새 비밀번호 만들기',
+      description: '이메일 인증 링크로 확인된 상태에서 새 비밀번호를 저장합니다.',
+    },
+  }[mode];
 
   return (
-    <div className="app-panel w-full max-w-3xl p-5 text-center sm:p-8">
+    <div
+      className={`app-panel gangi-login-card w-full p-5 text-center sm:p-8 ${
+        mode === 'signup' ? 'max-w-3xl' : 'max-w-md'
+      }`}
+    >
       <div className="mb-5">
-        <div className="app-caption mb-3">회원가입하면 입력을 반복하지 않아요</div>
+        <div className="app-caption mb-3">{modeCopy.eyebrow}</div>
         <h1 className=" text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
-          달빛인생 시작하기
+          {modeCopy.title}
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--app-copy-muted)]">
-          이메일과 비밀번호로 가입하고, 생년월일과 출생지를 한 번 저장하면 사주풀이 입력란에 자동으로 불러옵니다.
+          {modeCopy.description}
         </p>
       </div>
 
-      <div
-        className={`grid gap-2 rounded-3xl bg-[var(--app-surface-muted)] p-1.5 ${
-          mode === 'reset' ? 'grid-cols-1' : 'grid-cols-2'
-        }`}
-      >
-        {(mode === 'reset'
-          ? [['reset', '새 비밀번호 설정']]
-          : [
-              ['signup', '회원가입'],
-              ['login', '로그인'],
-            ]
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => {
-              setMode(value as LoginMode);
-              setErrorMessage('');
-              setStatusMessage('');
-            }}
-            className={`h-11 rounded-2xl text-sm font-black transition ${
-              mode === value || (mode === 'recover' && value === 'login')
-                ? 'bg-[var(--app-pink)] text-white shadow-[0_12px_24px_rgba(216,27,114,0.24)]'
-                : 'text-[var(--app-copy-muted)]'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {mode !== 'login' ? (
+        <button
+          type="button"
+          onClick={() => {
+            setMode('login');
+            setErrorMessage('');
+            setStatusMessage('');
+          }}
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-black text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+        >
+          로그인 화면으로 돌아가기
+        </button>
+      ) : null}
 
       {mode === 'signup' ? (
         <form className="mt-6 space-y-5 text-left" onSubmit={submitSignup}>
@@ -834,17 +843,29 @@ function LoginContent() {
           >
             {isSubmittingLogin ? '로그인 중...' : '로그인하고 내 정보 불러오기'}
           </Button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('recover');
-              setErrorMessage('');
-              setStatusMessage('');
-            }}
-            className="flex h-11 w-full items-center justify-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] text-sm font-black text-[var(--app-pink-strong)] transition hover:border-[var(--app-pink)]/50 hover:bg-white"
-          >
-            아이디 또는 비밀번호를 잊으셨나요?
-          </button>
+          <div className="gangi-login-sub-actions">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setErrorMessage('');
+                setStatusMessage('');
+              }}
+            >
+              회원가입
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('recover');
+                setErrorMessage('');
+                setStatusMessage('');
+              }}
+            >
+              아이디 / 비밀번호 찾기
+            </button>
+          </div>
         </form>
       ) : mode === 'recover' ? (
         <form className="mt-6 space-y-4 text-left" onSubmit={submitRecovery}>
@@ -962,7 +983,7 @@ function LoginContent() {
         </p>
       ) : null}
 
-      {mode !== 'reset' ? (
+      {mode === 'login' || mode === 'signup' ? (
         <>
           <div className="my-6 flex items-center gap-3 text-xs text-[var(--app-copy-soft)]">
             <span className="h-px flex-1 bg-[var(--app-line)]" />
@@ -1017,7 +1038,7 @@ export default function LoginPage() {
         <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
         <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
       </div>
-      <div className="gangi-subpage">
+      <div className="gangi-subpage gangi-login-subpage">
         <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
           <LoginContent />
         </Suspense>
