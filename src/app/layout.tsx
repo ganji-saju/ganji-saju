@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -76,6 +77,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
