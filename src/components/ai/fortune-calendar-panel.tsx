@@ -486,9 +486,6 @@ export default function FortuneCalendarPanel({
           <h2 className="mt-4 text-3xl text-[var(--app-ivory)]">
             달별로 한눈에 보는 결정일과 주의 날
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-8 text-[var(--app-copy)]">
-            긴 설명보다 먼저 달력에서 좋은 날, 확인할 날, 결정하기 좋은 날을 색으로 나눠 보여드립니다.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge className={hasLifetimeAccess ? TONE_META.decision.badgeClassName : TONE_META.average.badgeClassName}>

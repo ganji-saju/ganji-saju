@@ -56,7 +56,7 @@ export function ReportOneMinuteSummary({
         eyebrow="1분 요약"
         title="먼저, 지금 필요한 답만 짚어드립니다"
         titleClassName="text-3xl"
-        description="복잡한 설명보다 핵심 한 줄, 조심할 패턴, 오늘 할 행동, 더 깊게 볼 주제를 먼저 보여드립니다."
+        description="핵심 한 줄, 조심할 패턴, 오늘 할 행동만 먼저 봅니다."
       />
 
       <FeatureCard

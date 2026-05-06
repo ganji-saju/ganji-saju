@@ -3,12 +3,10 @@ import Link from 'next/link';
 import { ArrowRight, Lock } from 'lucide-react';
 import { COMPATIBILITY_RELATIONSHIPS } from '@/content/moonlight';
 import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
@@ -45,12 +43,6 @@ const RELATIONSHIP_TONES: Record<string, { type: string; icon: string; badge: st
   },
 };
 
-const COMPATIBILITY_GUIDE = [
-  '두 사람의 결이 어디에서 닮고 어디에서 어긋나는지 구조로 정리합니다.',
-  '갈등이 반복되는 이유와 가까워지는 방식의 차이를 생활 언어로 설명합니다.',
-  '관계의 현재 분위기뿐 아니라, 올해 대화 타이밍과 리듬까지 함께 살펴봅니다.',
-] as const;
-
 export default function CompatibilityPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
@@ -67,17 +59,14 @@ export default function CompatibilityPage() {
             </>
           }
           title="관계 풀이를 보기 전에, 어떤 관계를 풀고 싶은지 고르세요"
-          description="궁합은 한 사람의 운세를 더하는 기능보다, 두 사람의 결이 어디에서 맞고 어긋나는지 보는 입구에 가깝습니다. 관계를 고른 뒤 질문의 결을 좁혀가시면 됩니다."
+          description="연인, 가족, 친구, 동업 중 지금 궁금한 관계를 고르세요."
         />
 
-        <section className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <SectionSurface surface="panel">
+        <SectionSurface surface="panel">
             <SectionHeader
               eyebrow="관계 선택"
               title="질문이 분명할수록 궁합 풀이도 더 선명해집니다"
               titleClassName="text-3xl"
-              description="연인·배우자, 부모·자녀, 형제·친구, 동업·파트너처럼 관계의 결을 고르면, 같은 궁합이라도 어디에 초점을 둘지가 훨씬 또렷해집니다."
-              descriptionClassName="text-[var(--app-copy)]"
             />
 
             <ProductGrid columns={2} className="mt-6">
@@ -101,7 +90,7 @@ export default function CompatibilityPage() {
                     }
                     title={item.hook}
                     titleClassName="text-xl"
-                    description={`${item.title} 기준으로 질문을 좁혀 입력 화면에서 관계의 흐름을 바로 시작하실 수 있습니다.`}
+                    description={item.title}
                     footer={
                       <Link
                         href={`/compatibility/input?relationship=${item.slug}`}
@@ -115,40 +104,13 @@ export default function CompatibilityPage() {
                 );
               })}
             </ProductGrid>
-          </SectionSurface>
-
-          <SupportRail
-            surface="muted"
-            eyebrow="궁합 풀이에서 함께 보는 것"
-            title="궁합은 감정만이 아니라 구조와 타이밍을 함께 읽습니다"
-            description="관계가 잘 맞는지 여부만 단정하기보다, 어디에서 힘이 맞고 어디에서 속도가 어긋나는지 층을 나눠 설명하는 방식에 더 가깝습니다."
-          >
-            <BulletList items={COMPATIBILITY_GUIDE} />
-
-            <ActionCluster className="mt-5">
-              <Link
-                href="/membership"
-                className="gangi-primary-button"
-              >
-                프리미엄 기준 보기
-              </Link>
-              <Link
-                href="/sample-report"
-                className="gangi-secondary-button"
-              >
-                샘플 리포트 보기
-              </Link>
-            </ActionCluster>
-          </SupportRail>
-        </section>
+        </SectionSurface>
 
         <SectionSurface surface="panel">
           <SectionHeader
             eyebrow="프리미엄 전용"
             title="두 사람의 결이 어디서 닮고 어디서 어긋나는지, 풀이 형태로 정리합니다"
             titleClassName="text-3xl text-[var(--app-gold-text)]"
-            description="처음이시라면 관계를 고르고 입력 화면까지 먼저 천천히 둘러보실 수 있습니다. 프리미엄 궁합 해석은 갈등이 반복되는 이유, 가까워지는 방식, 올해 대화 타이밍까지 조금 더 길고 차분한 결과물로 이어집니다."
-            descriptionClassName="text-[var(--app-copy)]"
             actions={
               <ActionCluster>
                 <Link

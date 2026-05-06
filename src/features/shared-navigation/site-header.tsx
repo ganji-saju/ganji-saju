@@ -66,9 +66,9 @@ const NAV_META: Record<string, { glyph: string; accent: string; description: str
   안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
-const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리', '명리', '안내'] as const;
+const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리'] as const;
 const MOBILE_FEATURE_LABELS = new Set(['오늘운', '타로', '사주', '궁합']);
-const MOBILE_MORE_LABELS = new Set(['띠운세', '별자리', '명리', '안내']);
+const MOBILE_MORE_LABELS = new Set(['띠운세', '별자리']);
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
   사주추가: '사주추가',

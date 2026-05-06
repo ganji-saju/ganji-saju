@@ -589,32 +589,15 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <div className="dalbit-result-action-card">
                   <div className="app-caption text-[var(--app-coral)]">조심</div>
                   <h2>{easyResultCopy(punchReading.caution, 1)}</h2>
-                  <p>불안하게 단정하지 않고, 반복될 수 있는 행동만 먼저 짚습니다.</p>
                 </div>
                 <div className="dalbit-result-action-card">
                   <div className="app-caption text-[var(--app-jade)]">액션</div>
                   <h2>{easyResultCopy(punchReading.action, 1)}</h2>
-                  <p>지금 바로 할 수 있는 한 가지 행동으로 줄여서 봅니다.</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="dalbit-result-evidence-card">
-                <div className="app-caption text-[var(--app-pink-strong)]">근거</div>
-                <h2>왜 이렇게 보았는지, 단서는 접어서 남깁니다</h2>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {punchReading.evidence.map((item) => (
-                    <span key={item} className="dalbit-mini-badge">
-                      {easyResultCopy(item, 1)}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  자세한 계산 단서는 아래 근거 영역에서 따로 확인하실 수 있습니다.
-                </p>
-              </div>
-
               <div className="dalbit-result-evidence-card">
                 <div className="app-caption text-[var(--app-pink-strong)]">다음 선택</div>
                 <h2>핵심만 봤다면, 필요한 깊이만 이어보세요</h2>
@@ -735,7 +718,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   eyebrow="PDF 소장"
                   title="다시 읽을 내용 남기기"
                   titleClassName="text-2xl"
-                  description="보관형 사주 리포트를 열면 표지, 요약, 판단 단서, 본문을 인쇄용 화면에서 PDF로 저장할 수 있습니다."
+                  description="보관형 사주 리포트를 열면 표지, 요약, 본문을 인쇄용 화면에서 PDF로 저장할 수 있습니다."
                 />
                 <FeatureCard
                   surface="soft"
@@ -884,9 +867,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               >
                 2026 올해 전략서 보기
               </Link>
-              <span className="text-xs text-[var(--app-copy-soft)]">
-                보관형 사주 리포트 안의 올해 전략서로 이어집니다
-              </span>
             </div>
           </div>
         </section>
@@ -898,7 +878,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             eyebrow="시간 흐름"
             title="오늘, 이번 달, 앞으로의 흐름"
             titleClassName="text-2xl sm:text-3xl"
-            description="길게 설명하기보다 지금 확인할 순서대로 짧게 정리했습니다."
           />
             <section className="grid gap-4 lg:grid-cols-3">
           {report.timeline.map((item) => (
@@ -1465,10 +1444,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
         <section id="result-next" className="space-y-4 scroll-mt-24">
           <SectionHeader
-            eyebrow="안내"
-            title="마지막 안내"
+            eyebrow="건강 참고"
+            title="몸과 마음은 실제 상태를 우선하세요"
             titleClassName="text-2xl sm:text-3xl"
-            description="건강 관련 내용은 생활 참고로만 보고, 다른 생년월일이 궁금하면 새로 확인할 수 있습니다."
           />
             <SafetyNotice variant="health" />
 

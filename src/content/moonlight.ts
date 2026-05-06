@@ -153,11 +153,6 @@ export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
       '/zodiac',
       '/star-sign',
       '/interpretation',
-      '/myeongri',
-      '/guide',
-      '/method',
-      '/about-engine',
-      '/sample-report',
     ],
   },
   { label: '대화방', href: '/dialogue', matchPrefixes: ['/dialogue', '/compatibility'] },
@@ -171,8 +166,6 @@ export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
   { label: '궁합', href: '/compatibility', matchPrefixes: ['/compatibility'], tone: 'service' },
   { label: '띠운세', href: '/zodiac', matchPrefixes: ['/zodiac'], tone: 'service' },
   { label: '별자리', href: '/star-sign', matchPrefixes: ['/star-sign'], tone: 'service' },
-  { label: '명리', href: '/myeongri', matchPrefixes: ['/myeongri'], tone: 'service' },
-  { label: '안내', href: '/guide', matchPrefixes: ['/guide', '/method', '/about-engine', '/sample-report'], tone: 'service' },
 ] as const;
 
 export const HOME_DAILY_LINES = [
@@ -252,7 +245,7 @@ export const QUESTION_ENTRY_POINTS: readonly MoonlightQuestionEntryPoint[] = [
 export const REPORT_PREVIEW_VALUE_POINTS = [
   {
     title: '결과 예시 1장',
-    body: '긴 설명 전에 실제 화면처럼 한 줄 총평, 분야 카드, 다음 행동을 먼저 보여드립니다.',
+    body: '한 줄 총평, 분야 카드, 다음 행동을 바로 보여드립니다.',
   },
   {
     title: '답하는 질문',
@@ -522,8 +515,8 @@ export const TRUST_SIGNALS = [
     body: '해금한 리포트와 달력은 재열람을 전제로 안내합니다.',
   },
   {
-    title: '판단 단서 있음',
-    body: '왜 그렇게 보았는지는 본문과 분리해 필요할 때만 펼쳐볼 수 있습니다.',
+    title: '다시 확인 가능',
+    body: '중요한 결과는 보관함에서 다시 확인할 수 있습니다.',
   },
   {
     title: '시간·출생지 기준',
@@ -1022,7 +1015,7 @@ export const PLAN_BLUEPRINT = [
     price: '월 4,900원',
     badge: '대화로 가볍게 시작',
     summary: '짧은 질문과 오늘의 흐름을 조용히 이어보는 가장 가벼운 대화용 플랜입니다.',
-    features: ['매일 해석 10회', '긴 사주풀이 미리보기 월 2회', '고전 인용 표시', '대화 상담 월 30턴'],
+    features: ['매일 해석 10회', '사주풀이 미리보기 월 2회', '대화 상담 월 30턴', '보관함 다시 보기'],
     fit: '지금 궁금한 질문을 가볍게 이어 묻고 싶은 분',
     opens: ['마음이 흔들릴 때 짧게 여쭙는 대화', '월 2회 긴 사주풀이 미리보기', '광고 없이 차분히 읽는 해석'],
   },
@@ -1042,7 +1035,7 @@ export const PLAN_BLUEPRINT = [
     price: '49,000원',
     badge: '한 번 결제 · 평생 소장',
     summary: '원국, 격국, 용신, 대운을 한 권의 보관형 리포트로 남기는 소장형 상품입니다.',
-    features: ['7개 섹션 완성형 풀이', '고전 원문 인용', 'PDF 다운로드', '평생 무료 업데이트'],
+    features: ['7개 섹션 완성형 풀이', 'PDF 다운로드', 'MY 보관함 저장', '평생 무료 업데이트'],
     fit: '한 번의 결제로 내 명리 기준을 오래 보관하고 싶은 분',
     opens: ['격국·용신·대운을 한 권의 보관형 풀이로', 'PDF와 MY 보관함으로 오래 남기기', '해석이 다듬어질 때 다시 펼쳐보기'],
   },

@@ -822,9 +822,6 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
             올해 흐름을 바로 읽습니다
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-            긴 설명보다 먼저 필요한 결론을 앞에 둡니다. 일, 돈, 관계, 달별 타이밍을 한 흐름으로 확인하세요.
-          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">

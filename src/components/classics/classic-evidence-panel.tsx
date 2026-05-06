@@ -20,7 +20,7 @@ function formatClassicEvidenceStatus(status: string, count: number) {
 function formatClassicEvidenceSummary(item: ClassicEvidenceItem) {
   if (item.passage.commentaryKo) return item.passage.commentaryKo;
 
-  return `${item.work.titleKo} ${item.section.titleKo} 문단은 ${item.provenance.verificationStatus === 'reviewed' ? '검수된' : '검수 전'} 고전 참고자료입니다. 한글 풀이가 연결되면 이 영역에 먼저 표시됩니다.`;
+  return `${item.work.titleKo} ${item.section.titleKo} 자료입니다. 한글 풀이가 준비되면 이 영역에 표시됩니다.`;
 }
 
 function ClassicEvidenceCard({ item }: { item: ClassicEvidenceItem }) {
@@ -101,11 +101,10 @@ export async function ClassicEvidencePanel({
           <span>
             <span className="app-caption">참고 원문</span>
             <span className="mt-2 block text-lg font-semibold text-[var(--app-ivory)]">
-              {evidence.concept} 고전 문단은 필요할 때만 펼쳐봅니다
+              {evidence.concept} 참고 자료
             </span>
             <span className="mt-2 block text-sm leading-7 text-[var(--app-copy-muted)]">
-              일반 해석은 위 참고 카드만 봐도 충분합니다. 이 영역은 어떤 고전 원문과 연결했는지,
-              출처와 라이선스를 확인하려는 분을 위한 참고 자료입니다.
+              출처 확인이 필요한 경우에만 열어보세요.
             </span>
           </span>
           <span className="flex shrink-0 items-center gap-2">

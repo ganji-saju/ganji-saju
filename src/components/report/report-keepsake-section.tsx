@@ -58,7 +58,7 @@ export function ReportKeepsakeSection({
   const items = [
     {
       title: 'PDF 다운로드',
-      body: '표지, 목차, 요약, 본문, 판단 단서를 한 편의 리포트로 정리합니다.',
+      body: '표지, 요약, 본문을 한 편의 리포트로 정리합니다.',
       href: pdfHref,
       ctaLabel: pdfHref ? 'PDF 열기' : '준비 중',
       icon: FileText,

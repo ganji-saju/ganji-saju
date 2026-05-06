@@ -151,20 +151,6 @@ const CONSENT_STEP = {
   description: '한 번 동의하면 다음 입력부터는 다시 표시하지 않습니다.',
 };
 
-const STEP_HINTS = [
-  '생년월일과 성별을 한 화면에서 같이 선택합니다.',
-  '저장된 정보나 최근 입력이 있으면 이름만 눌러 건너뜁니다.',
-  '비로그인 최근 정보는 이 기기에만 남고 바로 지울 수 있습니다.',
-  '동의는 한 번 저장되면 다음 입력부터 자동으로 건너뜁니다.',
-] as const;
-
-const FAST_PATH_STEPS = [
-  ['1', '질문 선택', '지금 궁금한 문제를 먼저 고릅니다.'],
-  ['2', '기본 정보', '생년월일과 성별을 한 번에 입력합니다.'],
-  ['3', '시간·출생지', '시간을 모르면 시간 모름으로 열 수 있습니다.'],
-  ['4', '필수 동의', '처음 한 번만 확인하고 다음부터는 건너뜁니다.'],
-] as const;
-
 const ENTRY_FOCUS_TOPIC_BY_SLUG = {
   love: 'love',
   money: 'wealth',
@@ -1036,11 +1022,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           ? '결과 준비 중...'
           : '동의하고 사주풀이 열기'
         : '다음 화면';
-  const fastPathSteps = consentAccepted ? FAST_PATH_STEPS.slice(0, 3) : FAST_PATH_STEPS;
-  const fastPathDescription = consentAccepted
-    ? '저장된 정보가 없을 때도 세 흐름만 지나면 결과 화면으로 넘어갑니다.'
-    : '처음에는 필수 동의까지 확인하고, 다음 입력부터는 세 흐름으로 바로 넘어갑니다.';
-
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
@@ -1199,49 +1180,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </ActionCluster>
           </SectionSurface>
 
-          <SectionSurface surface="panel" size="lg" className="saju-intake-helper-card">
-            <SectionHeader
-              eyebrow="빠른 시작"
-              title="입력은 짧게, 풀이는 바로 이어갑니다"
-              titleClassName="text-3xl text-[var(--app-pink-strong)]"
-              description={fastPathDescription}
-            />
-
-            <div className="mt-6 grid gap-2.5">
-              {fastPathSteps.map(([number, title, body]) => (
-                <div
-                  key={title}
-                  className="rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 text-xs font-semibold text-[var(--app-pink-strong)]">
-                      {number}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold text-[var(--app-ink)]">{title}</span>
-                      <span className="mt-1 block text-xs leading-5 text-[var(--app-copy-muted)]">{body}</span>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 rounded-[1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-3 text-xs leading-5 text-[var(--app-pink-strong)]">
-              {STEP_HINTS[1]} {STEP_HINTS[2]}
-            </div>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Link href="/my/profile" className="gangi-secondary-button shrink-0">
-                프로필 관리
-              </Link>
-              <Link
-                href="/guide"
-                className="gangi-secondary-button"
-              >
-                입력 기준 보기
-              </Link>
-            </div>
-          </SectionSurface>
         </section>
       </AppPage>
     </AppShell>

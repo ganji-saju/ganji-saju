@@ -651,11 +651,8 @@ export default async function SajuPremiumPage({ params }: Props) {
             <div>
               <div className="app-caption">결제 전 확인</div>
               <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
-                긴 설명보다, 남는 가치부터 확인합니다
+                결제 전에는 받을 내용을 먼저 확인합니다
               </h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                풀이는 상품명이 아니라 실제 질문에 답하는 결과물입니다. 결제 전에는 예시, 답하는 질문, 보관 가치, 대화 연결만 먼저 보셔도 충분합니다.
-              </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               {REPORT_PREVIEW_VALUE_POINTS.map((item) => (
@@ -699,7 +696,6 @@ export default async function SajuPremiumPage({ params }: Props) {
               eyebrow="1장 · 평생 힌트"
               title="내 사주의 큰 흐름을 먼저 확인합니다"
               description="타고난 성향, 관계와 일의 결을 먼저 훑은 뒤 올해 운으로 넘어가면 같은 문장도 덜 흩어져 보입니다."
-              aside="긴 본문 안의 판단 단서는 각 장의 접힌 영역으로 분리했습니다."
             />
             <div id="premium-lifetime" className="scroll-mt-28">
               <LifetimeReportPanel slug={slug} targetYear={targetYear} />
@@ -888,7 +884,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <div className="app-caption">소장 가치</div>
               <div className="mt-4 grid gap-3">
                 {[
-                  '판단 단서와 본문이 함께 남는 PDF 저장본',
+                  '요약과 본문이 함께 남는 PDF 저장본',
                   'MY 보관함에서 다시 여는 풀이 본문',
                   '업데이트 반영본을 나중에 다시 확인하는 재열람 구조',
                 ].map((item) => (

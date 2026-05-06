@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
 import {
   STAR_SIGN_BLUEPRINT,
@@ -17,12 +15,6 @@ import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildStarSignSlugFromProfile } from '@/lib/profile-personalization';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
-
-const STAR_SIGN_POINTS = [
-  '별자리는 오늘 감정의 결과 관계 온도를 빠르게 읽는 데 잘 맞습니다.',
-  '더 깊은 반복 패턴과 시기 흐름은 사주 결과와 함께 볼 때 훨씬 또렷해집니다.',
-  '무료 탐색은 가볍게, 맞춤 해석은 프리미엄 흐름으로 분리합니다.',
-] as const;
 
 export const metadata: Metadata = {
   title: '별자리',
@@ -65,11 +57,10 @@ export default async function StarSignPage() {
             </Badge>,
           ]}
           title="별빛 언어로 오늘의 감정선을 먼저 읽습니다"
-          description="별자리는 오늘 마음의 결과 관계 온도를 가볍게 읽는 입구입니다. 익숙한 언어로 먼저 흐름을 보고, 더 깊은 바탕은 사주 해석으로 이어가실 수 있습니다."
+          description="오늘 마음에 닿는 별자리 흐름을 바로 확인하세요."
         />
 
-        <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
-          <SectionSurface surface="panel" size="lg" className="text-center">
+        <SectionSurface surface="panel" size="lg" className="text-center">
             <SectionHeader
               eyebrow={hasPersonalizedProfile ? 'MY 프로필 기준 별자리' : '오늘의 별자리'}
               title={hasPersonalizedProfile ? `선생님은 ${featured.label}` : featured.label}
@@ -85,22 +76,6 @@ export default async function StarSignPage() {
               title={featured.summary}
               description={featured.action}
             />
-          </SectionSurface>
-
-          <SupportRail
-            surface="panel"
-            eyebrow="별자리 × 사주"
-            title="빠른 탐색과 깊은 해석의 역할을 분명히 나눕니다"
-            description="별자리 흐름은 가볍게 먼저 보고, 더 깊은 반복 패턴은 사주와 겹쳐 읽는 쪽이 가장 자연스럽습니다."
-          >
-            {hasPersonalizedProfile ? (
-              <FeatureCard
-                surface="soft"
-                eyebrow="약한 개인화 연결"
-                description="저장된 MY 프로필 생일 기준으로 선생님의 별자리를 먼저 보여드렸습니다. 이 흐름은 감정의 입구이고, 더 깊은 기준은 사주 결과로 이어집니다."
-              />
-            ) : null}
-            <BulletList className={hasPersonalizedProfile ? 'mt-5' : ''} items={STAR_SIGN_POINTS} />
             <ActionCluster className="mt-5">
               <Link href={`/star-sign/${featured.slug}`} className="gangi-primary-button">
                 {hasPersonalizedProfile ? '내 별자리 바로 보기' : '별자리 흐름 자세히 보기'}
@@ -109,16 +84,13 @@ export default async function StarSignPage() {
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
               </Link>
             </ActionCluster>
-          </SupportRail>
-        </section>
+        </SectionSurface>
 
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
             eyebrow="12별자리"
             title="각 별자리의 한 줄 인상"
             titleClassName="text-3xl"
-            description="무료 탐색군에서도 카드 밀도를 통일해, 어떤 별자리를 열어도 같은 문법으로 읽히게 정리했습니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />
 
           <ProductGrid columns={3} className="mt-6">

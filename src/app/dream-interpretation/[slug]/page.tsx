@@ -86,15 +86,9 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
 
         <SectionSurface size="lg">
           <SectionHeader
-            eyebrow="가볍게 참고"
-            title="꿈은 지금 마음과 이어서 봅니다"
-            description="꿈해몽은 정답을 단정하기보다 지금 감정과 무의식 흐름을 읽는 작은 힌트에 가깝습니다."
+            eyebrow="다음으로"
+            title="마음에 남는 질문을 더 이어보세요"
           />
-          <div className="mt-5 space-y-3 text-sm leading-7 text-[var(--app-copy)]">
-            <p>꿈해몽은 정답을 단정하는 메뉴보다, 지금의 감정과 무의식 흐름을 읽는 가벼운 힌트에 가깝습니다.</p>
-            <p>같은 꿈도 최근 상황과 기분에 따라 읽는 방식이 달라질 수 있으니, 상징만 보지 말고 내 일상과 연결해서 보는 편이 좋습니다.</p>
-            <p>개인 질문이 더 중요해지는 순간에는 타로나 사주 리포트처럼 방향을 좁혀주는 메뉴가 더 잘 맞습니다.</p>
-          </div>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/tarot/daily">
               <Button className="px-6">
