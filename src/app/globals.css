@@ -6491,7 +6491,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   flex: 1;
   overflow-y: auto;
   scroll-behavior: smooth;
-  padding: 2rem 1rem 1.25rem;
+  padding: 1.8rem clamp(1.25rem, 5vw, 2rem) 1.4rem;
 }
 
 .gangi-chat-bubble {
@@ -6507,7 +6507,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0;
   color: inherit;
   font-size: 0.95rem;
-  font-weight: 520;
+  font-weight: 430;
   line-height: 1.72;
   letter-spacing: 0;
 }
@@ -6528,7 +6528,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-chat-composer {
   border-top: 1px solid rgba(17, 17, 20, 0.08);
   background: #ffffff;
-  padding: 0.8rem 1rem calc(0.95rem + env(safe-area-inset-bottom));
+  padding: 0.85rem clamp(1.25rem, 5vw, 2rem) calc(1rem + env(safe-area-inset-bottom));
 }
 
 .gangi-chat-composer-row {
@@ -6607,6 +6607,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 @media (min-width: 768px) {
   .gangi-chat-room-messages {
     gap: 1.2rem;
+    padding-inline: 2rem;
   }
 
   .gangi-chat-room-page {
