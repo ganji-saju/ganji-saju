@@ -6612,3 +6612,51 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
     max-width: min(100%, 40rem) !important;
   }
 }
+
+.saju-result-page :where(h1, h2, h3) {
+  font-weight: 660;
+  letter-spacing: 0;
+}
+
+.saju-result-page :where(p, li) {
+  font-weight: 430;
+}
+
+.saju-result-page :where(.font-bold, .font-black) {
+  font-weight: 680 !important;
+}
+
+.saju-result-page :where(.font-semibold) {
+  font-weight: 620 !important;
+}
+
+.saju-result-page .app-caption {
+  font-weight: 620;
+  letter-spacing: 0.08em;
+}
+
+.saju-result-page .app-body-copy {
+  line-height: 1.8;
+}
+
+.saju-readable-page :where(h1, h2, h3) {
+  font-weight: 660;
+  letter-spacing: 0;
+}
+
+.saju-readable-page :where(p, li) {
+  font-weight: 430;
+}
+
+.saju-readable-page :where(.font-black, .font-bold) {
+  font-weight: 680 !important;
+}
+
+.saju-readable-page :where(.font-semibold) {
+  font-weight: 620 !important;
+}
+
+.saju-readable-page .app-caption {
+  font-weight: 620;
+  letter-spacing: 0.08em;
+}

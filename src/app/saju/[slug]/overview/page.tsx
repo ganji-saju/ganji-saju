@@ -45,18 +45,18 @@ export default async function SajuOverviewPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />}>
-      <AppPage className="space-y-6">
+      <AppPage className="saju-readable-page space-y-6">
         <SajuScreenNav slug={slug} current="overview" />
 
         <section className="gangi-report-panel p-8 sm:p-10">
           <div className="relative z-10 flex flex-col items-center gap-5 text-center lg:flex-row lg:text-left lg:items-end lg:justify-between">
             <div>
               <div className="app-caption">내 풀이</div>
-              <h1 className="mt-4 text-4xl font-black text-[var(--app-ink)] sm:text-5xl">
-                내 사주를 쉽게 봅니다
+              <h1 className="mt-4 text-4xl font-semibold text-[var(--app-ink)] sm:text-5xl">
+                내 사주의 첫 느낌
               </h1>
               <p className="mt-4 max-w-xl text-base leading-8 text-[var(--app-copy-muted)]">
-                먼저 타고난 기질과 오늘 연결되는 포인트만 보고, 전문표는 궁금할 때만 펼쳐보세요.
+                타고난 기질과 오늘의 선택을 짧게 확인합니다.
               </p>
               <p className="mt-2 text-sm text-[var(--app-copy-soft)]">{formatBirthSummary(input)}</p>
             </div>
@@ -67,21 +67,18 @@ export default async function SajuOverviewPage({ params }: Props) {
         </section>
 
         <SwipeSectionDeck
-          title="처음에는 쉬운 풀이만 봅니다"
-          description="전문표보다 성향, 오늘 연결, 다음 행동을 먼저 확인합니다."
+          title="내 사주 요약"
         >
           <SwipeSectionSlide
-            eyebrow="내 정보"
-            title="태어난 정보로 보는 큰 흐름"
-            description="한자표 대신 어디에서 어떤 기운이 강하게 보이는지 쉽게 표시합니다."
+            title="타고난 기질"
             navLabel="내 정보"
           >
             <section className="app-panel p-6 sm:p-7">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="app-caption">쉬운 정보</div>
-              <h2 className="mt-2 text-2xl font-black text-[var(--app-ivory)]">
-                전문표는 접고, 먼저 쉽게 봅니다
+              <h2 className="mt-2 text-2xl font-semibold text-[var(--app-ivory)]">
+                내 안에서 먼저 드러나는 기질
               </h2>
             </div>
             <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
@@ -107,15 +104,15 @@ export default async function SajuOverviewPage({ params }: Props) {
                   {isDay && <div className="mt-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">나를 가장 잘 보여주는 자리</div>}
 
                   <div className={`mt-4 border-b pb-3 ${isDay ? 'border-[var(--app-gold)]/20' : 'border-[var(--app-line)]'}`}>
-                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">겉으로 보이는 기질</div>
-                    <div className={`mt-2 text-lg font-black ${isDay ? 'text-[var(--app-pink-strong)]' : 'text-[var(--app-ivory)]'}`}>
+                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">겉으로 드러나는 쪽</div>
+                    <div className={`mt-2 text-lg font-semibold ${isDay ? 'text-[var(--app-pink-strong)]' : 'text-[var(--app-ivory)]'}`}>
                       {pillar ? ELEMENT_INFO[pillar.stemElement].name : '시간 미입력'}
                     </div>
                   </div>
 
                   <div className="mt-3">
-                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">속에 깔린 기질</div>
-                    <div className="mt-2 text-lg font-black text-[var(--app-ivory)]">
+                    <div className="text-[11px] font-semibold text-[var(--app-copy-soft)]">속에서 받쳐주는 쪽</div>
+                    <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
                       {pillar ? ELEMENT_INFO[pillar.branchElement].name : '미입력'}
                     </div>
                     {!pillar && (
@@ -135,9 +132,7 @@ export default async function SajuOverviewPage({ params }: Props) {
           </SwipeSectionSlide>
 
           <SwipeSectionSlide
-            eyebrow="다음 선택"
-            title="기본 해석과 깊은 사주풀이"
-            description="무료 기본 해석과 보관형 풀이 진입을 한 화면에서 고릅니다."
+            title="더 볼 내용"
             navLabel="해석"
           >
             {/* ─── 기본 해석 + 깊은 사주풀이 ─── */}
@@ -145,7 +140,7 @@ export default async function SajuOverviewPage({ params }: Props) {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className=" text-2xl text-[var(--app-ivory)]">기본 해석</h2>
+              <h2 className="text-2xl text-[var(--app-ivory)]">무료로 더 보기</h2>
               <Badge className="border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]">무료</Badge>
             </div>
 
@@ -178,16 +173,16 @@ export default async function SajuOverviewPage({ params }: Props) {
           <article className="gangi-report-panel p-6">
             <div className="relative z-10">
               <div className="flex items-center justify-between gap-3">
-                <div className="app-caption">깊은 사주풀이</div>
+              <div className="app-caption">깊은 풀이</div>
                 <span className="rounded-full border border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 px-3 py-1 text-[10px] tracking-[0.18em] text-[var(--app-gold-text)]">
                   PREMIUM
                 </span>
               </div>
               <div className="mt-3 text-2xl text-[var(--app-gold-text)]">
-                나의 깊은 사주풀이
+                내 사주를 더 자세히 보기
               </div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                7가지 항목을 평생 소장용 풀이로 정리합니다. 타고난 성향, 올해 흐름, 재물·일·관계 조언까지 한 번에 이어집니다.
+                성향, 올해 흐름, 돈·일·관계 조언을 한 번에 이어서 봅니다.
               </p>
 
               <div className="mt-5 space-y-2">

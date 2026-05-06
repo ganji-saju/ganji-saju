@@ -78,7 +78,7 @@ export default async function SajuElementsPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />}>
-      <AppPage className="space-y-6">
+      <AppPage className="saju-readable-page space-y-6">
         <SajuScreenNav slug={slug} current="elements" />
 
         <PageHero
@@ -93,29 +93,25 @@ export default async function SajuElementsPage({ params }: Props) {
             </>
           }
           title="기운 균형"
-          description="다섯 기운이 어디에 몰리고 무엇을 채우면 좋은지 한눈에 정리합니다."
+          description="강한 쪽과 채우면 편한 쪽만 먼저 봅니다."
         />
 
         <SwipeSectionDeck
-          title="다섯 기운을 쉽게 봅니다"
-          description="원형 차트와 간단한 카드로 강한 쪽과 채울 쪽을 먼저 보여드립니다."
+          title="오행 균형"
         >
           <SwipeSectionSlide
-            eyebrow="균형"
-            title="다섯 기운의 배치"
-            description="막대 합계보다 배치와 간격을 먼저 확인합니다."
+            title="내 기운의 모양"
             navLabel="균형"
           >
             <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
               <section className="app-hero-card app-section-frame-lg overflow-hidden">
             <div className="relative z-10">
               <div className="app-caption">다섯 기운의 배치</div>
-              <h2 className="mt-3 text-3xl font-black leading-tight text-[var(--app-ink)] sm:text-[2.35rem]">
-                {ELEMENT_INFO[dominant].name}이 중심을 잡고, {ELEMENT_INFO[weakest].name}을 채우는 구조입니다
+              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[var(--app-ink)] sm:text-[2.35rem]">
+                {ELEMENT_INFO[dominant].name}이 강하고, {ELEMENT_INFO[weakest].name}을 채우면 편해요
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-8 text-[var(--app-copy)]">
-                점수보다 중요한 건 어디에 힘이 몰리고 무엇을 채우면 편해지는지입니다.
-                그래서 막대 대신 원형 배치로 먼저 보여드립니다.
+                복잡한 점수보다 생활에서 어떤 균형을 잡으면 좋은지 먼저 보여드립니다.
               </p>
               <div className="mt-8">
                 <FiveElementOrbitChart
@@ -128,8 +124,8 @@ export default async function SajuElementsPage({ params }: Props) {
           </section>
 
           <SupportRail
-            eyebrow="한눈에 읽는 균형 메모"
-            title="지금은 이렇게 채우면 편해집니다"
+            eyebrow="균형 메모"
+            title="이렇게 채우면 편해집니다"
             description={`${ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고, ${ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있습니다. ${supportGuide.support}`}
             surface="muted"
           >
@@ -143,7 +139,7 @@ export default async function SajuElementsPage({ params }: Props) {
               <FeatureCard
                 eyebrow="채울 쪽"
                 title={supportGuide.label}
-                description={`${ELEMENT_INFO[weakest].name}을 채우는 방향으로 생활 리듬을 잡을수록 해석이 훨씬 편안하게 읽힙니다.`}
+                description={`${ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.`}
                 surface="soft"
               />
               <FeatureCard
@@ -169,9 +165,7 @@ export default async function SajuElementsPage({ params }: Props) {
           </SwipeSectionSlide>
 
           <SwipeSectionSlide
-            eyebrow="기운별"
-            title="각 기운의 비중과 다음 선택"
-            description="강한 쪽과 채울 쪽을 카드로 다시 정리합니다."
+            title="기운별 보기"
             navLabel="기운별"
           >
             <ProductGrid columns={3}>
@@ -185,7 +179,7 @@ export default async function SajuElementsPage({ params }: Props) {
                 key={element}
                 eyebrow={isDominant ? '강한 쪽' : isWeakest ? '채울 쪽' : '분포'}
                 title={`${ELEMENT_INFO[element].name} ${Math.round(value.percentage)}%`}
-                description={`${ELEMENT_INFO[element].traits.slice(0, 2).join(' · ')} 기운이 ${value.state} 흐름으로 나타납니다.`}
+                description={`${ELEMENT_INFO[element].traits.slice(0, 2).join(' · ')} 쪽으로 ${value.state} 흐름입니다.`}
                 surface={isDominant ? 'panel' : 'muted'}
                 badge={
                   <span

@@ -299,10 +299,10 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
           <div className="app-caption text-[var(--app-gold-soft)]">연간 지도</div>
         </div>
         <h3 className="mt-3 text-2xl font-semibold leading-8 text-[var(--app-ivory)]">
-          먼저 색으로 보고, 필요한 달만 펼칩니다
+          먼저 색으로 봅니다
         </h3>
         <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-          열두 달을 전부 긴 글로 읽기 전에, 밀어도 되는 달과 한 번 더 확인할 달을 먼저 나눠 봅니다.
+          밀어도 되는 달과 한 번 더 확인할 달만 먼저 나눠 봅니다.
         </p>
         <div className="mt-5 grid gap-3">
           <MomentumSummaryRow tone="rise" flows={grouped.rise} />
@@ -421,7 +421,7 @@ function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
       {flow.basis.length > 0 ? (
         <details className="group mt-4">
           <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-            세부 단서 보기
+            풀이 배경 보기
           </summary>
           <div className="mt-3 grid gap-2">
             {flow.basis.map((item) => (
@@ -512,7 +512,7 @@ function CoreAreaCard({
       {item.basis.length > 0 ? (
         <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          세부 단서 보기
+          풀이 배경 보기
         </summary>
           <div className="mt-3 grid gap-2">
             {item.basis.map((line) => (
@@ -569,7 +569,7 @@ function SupportAreaCard({
       {basis.length > 0 ? (
         <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          세부 단서 보기
+          풀이 배경 보기
         </summary>
           <div className="mt-3 grid gap-2">
             {basis.map((line) => (
@@ -732,7 +732,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           | null;
 
         if (!response.ok || !payload || !('ok' in payload) || payload.ok !== true) {
-          setError(payload && 'error' in payload && payload.error ? payload.error : '올해 전략서를 불러오지 못했습니다.');
+          setError(payload && 'error' in payload && payload.error ? payload.error : '올해 흐름을 불러오지 못했습니다.');
           setState('error');
           return;
         }
@@ -741,7 +741,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         setState('ready');
       } catch (fetchError) {
         if ((fetchError as Error).name === 'AbortError') return;
-        setError('올해 전략서를 불러오는 중 오류가 발생했습니다.');
+        setError('올해 흐름을 불러오는 중 오류가 발생했습니다.');
         setState('error');
       }
     }
@@ -759,9 +759,9 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
   if (state === 'loading') {
     return (
       <section className="gangi-report-panel p-6">
-        <div className="app-caption">올해 전략서 생성 중</div>
+        <div className="app-caption">올해 흐름 정리 중</div>
         <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
-          {targetYear}년 올해 전략서를 정리하고 있습니다
+          {targetYear}년 흐름을 정리하고 있습니다
         </h2>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
           타고난 사주와 올해·이번 달 흐름을 다시 맞추고, 올해의 선택 포인트를 쉽게 정리하고 있습니다.
@@ -781,8 +781,8 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
   if (state === 'error' || !data) {
     return (
       <section className="app-panel space-y-4 border-rose-400/20 p-6">
-        <div className="app-caption text-rose-200/80">올해 전략서 오류</div>
-        <p className="font-medium text-rose-200">{error || '올해 전략서를 불러오지 못했습니다.'}</p>
+        <div className="app-caption text-rose-200/80">올해 흐름 오류</div>
+        <p className="font-medium text-rose-200">{error || '올해 흐름을 불러오지 못했습니다.'}</p>
         <Button
           onClick={() => setReloadToken((value) => value + 1)}
           variant="outline"
@@ -818,7 +818,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
     <section id="yearly-report" className="gangi-report-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="app-caption">{targetYear} 올해 전략서</div>
+          <div className="app-caption">{targetYear} 올해 흐름</div>
           <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
             올해 흐름을 바로 읽습니다
           </h2>
@@ -828,7 +828,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
           </Badge>
           <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
-            {data.cached ? '저장된 리포트' : '새로 정리'}
+            {data.cached ? '저장됨' : '새로 정리'}
           </Badge>
         </div>
       </div>
@@ -883,10 +883,10 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
       <div className="mt-6">
         <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-gold-soft)]">
-          올해 사람들이 가장 많이 묻는 4가지
+          사람들이 가장 많이 묻는 4가지
         </div>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-          직장운, 재물운, 연애운, 관계운은 긴 총평보다 “무슨 장면이 핵심인지 / 무엇을 조심할지 / 어떻게 움직일지”가 먼저 보이게 정리했습니다.
+          일, 돈, 연애, 관계에서 먼저 볼 장면만 나눠 정리했습니다.
         </p>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           {coreCards.map((item) => (
@@ -935,18 +935,18 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
       <details className="group mt-6" id="yearly-evidence">
         <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          세부 단서 확인
+          풀이 배경 보기
         </summary>
         <div className="mt-4 grid gap-4">
           <GroundingKasiSummary
             grounding={data.grounding}
             kasiComparison={data.kasiComparison}
             metadata={data.metadata}
-            title="이 올해 전략서가 참고한 세부 단서"
+            title="풀이 배경"
           />
           <EngineMethodLinks
             title="더 깊게 보고 싶을 때만 보는 글"
-            description="시간을 모를 때 어디까지 조심해서 읽는지, 보조 신호는 어느 선까지 참고하는지 따로 정리했습니다."
+            description="출생 시간이나 큰 흐름이 궁금할 때만 확인하세요."
             slugs={[
               'how-to-read-daewoon-and-sewoon-together',
               'what-if-birth-hour-is-unknown',

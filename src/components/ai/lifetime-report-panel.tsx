@@ -102,7 +102,7 @@ function BasisNotes({ items }: { items: string[] }) {
   return (
     <details className="group mt-5">
       <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-        세부 단서 보기
+        풀이 배경 보기
       </summary>
       <div className="mt-3 grid gap-2">
         {items.map((line) => (
@@ -168,13 +168,10 @@ function LifetimeAtAGlance({
         <div>
           <div className="app-caption">한 장 요약</div>
           <h3 className="mt-3 text-2xl text-[var(--app-ivory)]">
-            긴 풀이는 먼저 이 네 장면만 보셔도 됩니다
+            먼저 이 장면만 보세요
           </h3>
-          <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-            전문 용어는 아래로 접어두고, 생활에서 바로 느껴지는 돈·일·관계·리듬부터 카드로 분리했습니다.
-          </p>
           <div className="mt-4 rounded-[1rem] border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-3">
-            <div className="app-caption text-[var(--app-gold-soft)]">평생 기억할 한 줄</div>
+            <div className="app-caption text-[var(--app-gold-soft)]">기억할 한 줄</div>
             <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
               {interpretation.lifetimeRule}
             </p>
@@ -243,7 +240,7 @@ function LifetimeSectionBody({
           </div>
           <details className="group mt-5">
             <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              세부 단서 보기
+              풀이 배경 보기
             </summary>
             <div className="mt-3 grid gap-2">
               {report.coreIdentity.basis.map((line) => (
@@ -317,7 +314,7 @@ function LifetimeSectionBody({
           </div>
           <details className="group mt-5">
             <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              세부 단서 보기
+              풀이 배경 보기
             </summary>
             <div className="mt-3 grid gap-2">
               {report.patternAndYongsin.detailLines.map((line) => (
@@ -522,12 +519,12 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       <section className="gangi-report-panel p-6 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="app-caption">깊은 사주풀이 본문</div>
+            <div className="app-caption">깊은 풀이</div>
             <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
-              내 사주의 원본 해설서를 평생 풀이로 정리했습니다
+              내 사주를 자세히 정리했습니다
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-              어려운 계산 항목은 뒤로 빼고, “나는 어떤 환경에서 잘 살아나는가”가 먼저 보이도록 정리했습니다.
+              어떤 환경에서 잘 살아나는지, 어디서 무리하기 쉬운지 먼저 봅니다.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -559,7 +556,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             </div>
           </div>
           <div className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-            <div className="app-caption text-[var(--app-gold-soft)]">사주명반</div>
+            <div className="app-caption text-[var(--app-gold-soft)]">내 사주표</div>
             <div className="mt-4 grid grid-cols-2 gap-3">
               {[
                 ['년주', report.pillars.year],
@@ -589,13 +586,12 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       <section className="app-panel p-5 sm:p-6">
         <div className="grid gap-5 lg:grid-cols-[0.74fr_1.26fr] lg:items-start">
           <div>
-            <div className="app-caption">본문 목차</div>
+            <div className="app-caption">바로 보기</div>
             <h3 className="mt-3 text-2xl text-[var(--app-ivory)]">
               필요한 장으로 바로 이동합니다
             </h3>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-              처음에는 전체 흐름을 훑고, 다시 볼 때는 돈·일·관계처럼 필요한 장만 골라 들어가도 됩니다.
-              세부 계산 단서는 각 장 아래의 접힌 영역으로 분리했습니다.
+              돈·일·관계처럼 지금 필요한 장만 골라 볼 수 있습니다.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -686,18 +682,18 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
       <details className="group" id="lifetime-evidence">
         <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          세부 단서 확인
+          풀이 배경 보기
         </summary>
         <div className="mt-4 grid gap-4">
           <GroundingKasiSummary
             grounding={data.grounding}
             kasiComparison={data.kasiComparison}
             metadata={data.metadata}
-            title="이 깊은 사주풀이가 참고한 세부 단서"
+            title="풀이 배경"
           />
           <EngineMethodLinks
-            title="깊은 사주풀이를 읽을 때 같이 보면 좋은 글"
-            description="보완 방향, 출생 시간, 큰 흐름처럼 풀이를 더 깊게 보고 싶을 때 필요한 글만 따로 모았습니다."
+            title="더 알고 싶을 때만 보는 글"
+            description="출생 시간, 큰 흐름처럼 배경이 궁금할 때만 확인하세요."
             slugs={[
               'why-pattern-judgments-diverge',
               'why-yongsin-is-hard',

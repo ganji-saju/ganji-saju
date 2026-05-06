@@ -88,7 +88,7 @@ export default async function SajuNaturePage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />}>
-      <AppPage className="space-y-6">
+      <AppPage className="saju-readable-page space-y-6">
         <SajuScreenNav slug={slug} current="nature" />
 
         <PageHero
@@ -103,17 +103,14 @@ export default async function SajuNaturePage({ params }: Props) {
             </>
           }
           title="타고난 성향"
-          description="내 장점이 잘 살아나는 장면과 감정이 앞설 때 조심할 점을 먼저 봅니다."
+          description="내 장점이 살아나는 장면과 조심할 점만 짧게 봅니다."
         />
 
         <SwipeSectionDeck
-          title="내 성향을 쉽게 정리합니다"
-          description="타고난 기질, 사람 앞에서 드러나는 모습, 다음 행동을 간단히 나눠 봅니다."
+          title="성향 요약"
         >
           <SwipeSectionSlide
-            eyebrow="기질"
-            title="타고난 성향 핵심"
-            description="내 장점과 조심할 점을 먼저 확인합니다."
+            title="타고난 성향"
             navLabel="기질"
           >
             <section className="grid gap-6 xl:grid-cols-[1.06fr_0.94fr]">
@@ -123,7 +120,7 @@ export default async function SajuNaturePage({ params }: Props) {
                 <div className="mx-auto flex h-22 w-22 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-2xl font-black text-[var(--app-pink-strong)]">
                   {ELEMENT_INFO[element].traits[0]}
                 </div>
-                <div className="mt-4 text-base font-black text-[var(--app-ivory)]">
+                <div className="mt-4 text-base font-semibold text-[var(--app-ivory)]">
                   {ELEMENT_INFO[element].name}
                 </div>
                 <div className="mt-2 text-xs font-semibold text-[var(--app-copy-muted)]">
@@ -133,7 +130,7 @@ export default async function SajuNaturePage({ params }: Props) {
 
               <div className="space-y-5">
                 <SectionHeader
-                  eyebrow="성향 비유"
+                  eyebrow="성향"
                   title={`${metaphor}처럼 드러나는 기질`}
                   description={guide.strength}
                   titleClassName="text-3xl sm:text-[2.2rem]"
@@ -148,7 +145,7 @@ export default async function SajuNaturePage({ params }: Props) {
                     </span>
                   ))}
                 </div>
-                <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-5 py-5 text-sm leading-8 text-[var(--app-copy)]">
+                <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-white px-5 py-5 text-sm leading-8 text-[var(--app-copy)]">
                   {description}
                 </div>
               </div>
@@ -157,14 +154,14 @@ export default async function SajuNaturePage({ params }: Props) {
 
           <SupportRail
             eyebrow="생활 힌트"
-            title="사람 앞에서 어떻게 드러나는지 먼저 봅니다"
-            description="성향 화면은 길게 설명하기보다, 언제 힘이 붙고 언제 감정이 먼저 나가는지를 먼저 짚은 뒤 기운 균형으로 이어집니다."
+            title="이런 장면에서 잘 살아납니다"
+            description={guide.social}
             surface="muted"
           >
             <div className="grid gap-3">
               <FeatureCard
                 eyebrow="사람 앞에서는"
-                title="이런 장면에서 힘이 붙습니다"
+                title="힘이 붙는 장면"
                 description={guide.social}
                 surface="soft"
               />
@@ -186,9 +183,7 @@ export default async function SajuNaturePage({ params }: Props) {
           </SwipeSectionSlide>
 
           <SwipeSectionSlide
-            eyebrow="정리"
-            title="생활 리듬과 다음 화면"
-            description="성향 키워드와 다음 기운 균형 화면으로 이어지는 선택을 모았습니다."
+            title="생활 리듬"
             navLabel="정리"
           >
             <ProductGrid columns={3}>
@@ -201,13 +196,13 @@ export default async function SajuNaturePage({ params }: Props) {
           <FeatureCard
             eyebrow="생활 리듬"
             title="잘 맞는 분위기"
-            description={`계절과 공간의 언어로 보면 ${seasonHints} 쪽에서 마음이 풀리기 쉽습니다.`}
+            description={`${seasonHints} 쪽에서 마음이 풀리기 쉽습니다.`}
             surface="panel"
           />
           <FeatureCard
             eyebrow="다음 화면"
-            title="기운 균형으로 이어집니다"
-            description="성향이 어떻게 드러나는지 읽었다면, 다음 화면에서는 다섯 기운의 배치를 원형으로 확인합니다."
+            title="오행 균형 보기"
+            description="강한 쪽과 채우면 편한 쪽을 원형으로 확인합니다."
             surface="panel"
             footer={
               <Link

@@ -39,8 +39,8 @@ function getSlideLabel(child: ReactNode, index: number) {
 
 export function SwipeSectionDeck({
   children,
-  title = '한 화면씩 넘겨 보기',
-  description = '아래로 길게 이어지는 내용을 핵심 단위로 나누어 좌우로 넘기며 볼 수 있습니다.',
+  title = '핵심 보기',
+  description,
   className,
 }: SwipeSectionDeckProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -70,13 +70,14 @@ export function SwipeSectionDeck({
       <div className="mb-4 rounded-[1.4rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 sm:px-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <div className="app-caption">SLIDE VIEW</div>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
               {title}
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-              {description}
-            </p>
+            {description ? (
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
+                {description}
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span className="rounded-full border border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 px-3 py-1 text-xs text-[var(--app-pink-strong)]">
