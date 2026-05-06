@@ -5,7 +5,6 @@ import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import { Badge } from '@/components/ui/badge';
 import { ZODIAC_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -71,21 +70,14 @@ export default async function ZodiacDetailPage({ params }: Props) {
             >
               {meta.symbol} {item.label}
             </Badge>,
-            <Badge
-              key="basis"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              입춘 기준
-            </Badge>,
           ]}
           title={`${item.label} 오늘 흐름`}
-          description={`${meta.yearlyMessage}. 길게 비교하기보다 오늘 붙잡을 포인트와 행동 하나만 먼저 정리해드립니다.`}
         />
 
-        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="grid gap-6">
           <SectionSurface surface="panel" size="lg" className="text-center">
             <SectionHeader
-              eyebrow="올해 먼저 읽는 기조"
+              eyebrow="오늘"
               title={item.label}
               titleClassName="text-3xl text-[var(--app-ink)]"
               description={meta.yearlyMessage}
@@ -94,20 +86,21 @@ export default async function ZodiacDetailPage({ params }: Props) {
             <div className="mt-6 text-7xl">{meta.symbol}</div>
           </SectionSurface>
 
-          <SupportRail
-            surface="panel"
-            eyebrow="오늘 붙잡을 포인트"
-            title="오늘 바로 참고할 것만 남깁니다"
-            description="띠운세는 12띠를 비교하는 화면보다 내 띠의 오늘 포인트를 빠르게 확인할 때 가장 편합니다."
-          >
+          <SectionSurface surface="panel" size="lg">
+            <SectionHeader
+              eyebrow="오늘 포인트"
+              title="이것만 기억하세요"
+              titleClassName="text-2xl"
+            />
             {personalizedItem ? (
               <FeatureCard
+                className="mt-5"
                 surface="soft"
-                eyebrow="MY 프로필 기준"
+                eyebrow="내 띠"
                 description={
                   isPersonalizedMatch
-                    ? `저장된 생년월일을 입춘 기준으로 계산해 ${personalizedItem.label}로 맞췄습니다.`
-                    : `저장된 생년월일 기준으로는 ${personalizedItem.label}입니다. 내 띠 화면으로 다시 맞춥니다.`
+                    ? `${personalizedItem.label}로 맞춰 보여드립니다.`
+                    : `${personalizedItem.label} 화면으로 다시 맞춥니다.`
                 }
               />
             ) : null}
@@ -123,13 +116,7 @@ export default async function ZodiacDetailPage({ params }: Props) {
               eyebrow="행동 제안"
               description={item.action}
             />
-            <FeatureCard
-              className="mt-4"
-              surface="panel"
-              eyebrow="사주와 기준 맞춤"
-              description="입춘 전후 생일은 단순 연도표와 다를 수 있습니다. 더 정확한 흐름은 생년월일 전체를 넣은 사주 결과에서 이어서 볼 수 있습니다."
-            />
-          </SupportRail>
+          </SectionSurface>
         </section>
 
         <SectionSurface surface="panel" size="lg">
@@ -137,8 +124,6 @@ export default async function ZodiacDetailPage({ params }: Props) {
             eyebrow="다음으로 이어보기"
             title="더 자세히 보고 싶을 때만 사주로 이어갑니다"
             titleClassName="text-3xl"
-            description="띠운세는 가볍게 오늘 방향을 보는 입구입니다. 내 생년월일 전체 흐름이 궁금할 때만 사주풀이로 넘어가면 됩니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             actions={
               <ActionCluster>
                 <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-primary-button">

@@ -4,11 +4,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ActionCluster } from '@/components/layout/action-cluster';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,7 +20,7 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
-import { GangiActionRow, GangiIntro, GangiMiniCard, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiActionRow, GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type PersonKey = 'self' | 'partner';
@@ -84,26 +81,6 @@ interface LocationState {
   message: string;
   results: BirthLocationSearchResultLike[];
 }
-
-const RELATIONSHIP_GUIDE: Record<CompatibilityRelationshipSlug, string> = {
-  lover: '연인 · 배우자 궁합은 감정의 온도, 표현 속도, 서운함이 쌓이는 순서를 먼저 봅니다.',
-  family: '부모 · 자녀 궁합은 정이 있는 만큼 말의 무게와 역할 기대가 어떻게 오가는지를 중요하게 봅니다.',
-  friend: '형제 · 친구 궁합은 편안함의 정도, 거리감, 오래 갈 수 있는 연락 리듬을 중심으로 읽습니다.',
-  partner: '동업 · 파트너 궁합은 결정 속도, 책임 분담, 재물 감각이 얼마나 맞는지를 먼저 봅니다.',
-};
-
-const INPUT_FLOW_POINTS = [
-  '로그인하지 않아도 내 정보와 상대 정보를 바로 입력해 궁합 결과를 열 수 있습니다.',
-  '저장된 내 정보나 가족 정보가 있으면 입력칸에 불러와 빠르게 시작할 수 있습니다.',
-  '결과 화면에서는 두 사람의 결, 실전 포인트, 프리미엄 확장 순서로 이어집니다.',
-] as const;
-
-const DATA_REQUIREMENTS = [
-  '두 사람 모두 생년월일은 필수입니다.',
-  '태어난 시간은 생활 리듬과 세부 충돌 포인트를 더 정밀하게 봐줍니다.',
-  '출생지를 넣으면 진태양시와 경도 보정 기준을 더 안정적으로 적용할 수 있습니다.',
-  '관계 유형을 함께 골라야 연인, 가족, 친구, 동업 관계에 맞게 다르게 풀이할 수 있습니다.',
-] as const;
 
 function createInitialDraft(): UnifiedBirthEntryDraft {
   return {
@@ -569,7 +546,7 @@ export function CompatibilityInputClient({
               함께 넣어 바로 봅니다
             </>
           }
-          description="로그인하지 않아도 두 사람 정보를 직접 입력할 수 있고, 저장된 사람은 이름만 눌러 빠르게 채울 수 있습니다."
+          description="두 사람 정보를 넣고 바로 확인하세요."
         />
         {hasLoveQuestionPurchase ? (
           <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
@@ -580,7 +557,6 @@ export function CompatibilityInputClient({
         <GangiSection
           eyebrow="관계 렌즈"
           title={selected.title + ' 궁합으로 봅니다'}
-          description={RELATIONSHIP_GUIDE[selected.slug]}
           tone="pink"
         >
           <div className="gangi-topic-grid !px-0 !pb-0 !pt-0">
@@ -598,11 +574,6 @@ export function CompatibilityInputClient({
               </button>
             ))}
           </div>
-          <div className="gangi-mini-grid">
-            {INPUT_FLOW_POINTS.slice(0, 3).map((point, index) => (
-              <GangiMiniCard key={point} label={String(index + 1).padStart(2, '0')} desc={point} />
-            ))}
-          </div>
           <GangiActionRow>
             <button type="button" onClick={submitManualCompatibility} className="gangi-primary-button">
               이 정보로 궁합 보기
@@ -618,8 +589,6 @@ export function CompatibilityInputClient({
             eyebrow="직접 입력"
             title="내 정보와 상대 정보를 함께 입력해 주세요"
             titleClassName="text-3xl"
-            description="저장 여부와 관계없이 이 화면에서 바로 궁합 결과로 이어집니다. 시간이나 출생지가 불명확하면 가능한 범위 안에서 보수적으로 읽습니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />
 
           <SavedProfileQuickFill
@@ -725,118 +694,6 @@ export function CompatibilityInputClient({
             </span>
           </ActionCluster>
         </SectionSurface>
-
-        <section className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="저장된 정보 불러오기"
-              title="로그인 사용자는 저장된 내 정보와 가족 정보를 빠르게 채울 수 있습니다"
-              titleClassName="text-3xl"
-              description="직접 입력을 막지 않고, 저장된 정보는 입력을 줄여주는 보조 기능으로 둡니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
-            <div className="mt-6 grid gap-3">
-              {profileLoadStatus === 'loading' ? (
-                <div className="rounded-2xl border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm text-[var(--app-copy-muted)]">
-                  저장된 정보를 확인하고 있습니다.
-                </div>
-              ) : null}
-
-              {profileLoadStatus === 'anonymous' ? (
-                <div className="rounded-2xl border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  로그인하지 않아도 위 입력으로 바로 궁합을 볼 수 있습니다. 로그인하면 저장된 내 정보와 가족 정보를 불러올 수 있습니다.
-                  <div className="mt-3">
-                    <Link
-                      href="/login?next=/compatibility/input"
-                      className="gangi-secondary-button"
-                    >
-                      로그인하고 불러오기
-                    </Link>
-                  </div>
-                </div>
-              ) : null}
-
-              {profileLoadStatus === 'empty' ? (
-                <div className="rounded-2xl border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-6 text-[var(--app-copy-muted)]">
-                  아직 저장된 내 정보나 가족 정보가 없습니다. 위에서 직접 입력하시면 바로 결과를 볼 수 있습니다.
-                </div>
-              ) : null}
-
-              {profileLoadStatus === 'error' ? (
-                <div className="rounded-2xl border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
-                  {profileLoadMessage}
-                </div>
-              ) : null}
-
-            </div>
-
-            {sortedSavedProfiles.length > 0 ? (
-              <ProductGrid columns={2} className="mt-6">
-                {sortedSavedProfiles.map((profile) => {
-                  const matched = profile.source === 'family' && inferRelationshipMatch(profile.relationship, relationship);
-
-                  return (
-                    <FeatureCard
-                      key={profile.id}
-                      surface="soft"
-                      className={matched ? 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/8' : undefined}
-                      eyebrow={profile.relationship}
-                      title={profile.label}
-                      badge={
-                        matched ? (
-                          <Badge className="border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]">
-                            이 렌즈와 잘 맞음
-                          </Badge>
-                        ) : null
-                      }
-                      description={profile.detail}
-                      footer={
-                        <ActionCluster>
-                          <button
-                            type="button"
-                            onClick={() => applySavedProfile('self', profile)}
-                            className="gangi-secondary-button"
-                          >
-                            내 정보로 채우기
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => applySavedProfile('partner', profile)}
-                            className="gangi-primary-button"
-                          >
-                            상대 정보로 채우기
-                          </button>
-                        </ActionCluster>
-                      }
-                    />
-                  );
-                })}
-              </ProductGrid>
-            ) : null}
-          </SectionSurface>
-
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="궁합에 필요한 데이터"
-              title="결과 화면에 들어가기 전에 이 정보들이 준비돼 있으면 좋습니다"
-              titleClassName="text-3xl"
-              description="궁합은 단순히 좋다/나쁘다를 가르는 것보다, 두 사람의 결이 어디에서 맞고 어긋나는지를 읽는 데 집중합니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
-            <ProductGrid columns={2} className="mt-6">
-              {DATA_REQUIREMENTS.map((item, index) => (
-                <FeatureCard
-                  key={item}
-                  surface="soft"
-                  eyebrow={String(index + 1).padStart(2, '0')}
-                  description={item}
-                />
-              ))}
-            </ProductGrid>
-          </SectionSurface>
-        </section>
       </AppPage>
     </AppShell>
   );

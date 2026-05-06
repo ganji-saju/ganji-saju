@@ -42,7 +42,7 @@ const MENU_ZODIAC: Record<string, GangiZodiacKey> = {
   '프리미엄 플랜': 'rooster',
   '알림 센터': 'rabbit',
   '설정': 'ox',
-  '문의 · 도움말': 'rat',
+  '문의': 'rat',
 };
 
 export default async function MyPage() {

@@ -1002,8 +1002,8 @@ export const MY_MENU_BLUEPRINT = [
     href: '/my/settings',
   },
   {
-    title: '문의 · 도움말',
-    description: '궁금하신 점을 여쭈어보세요',
+    title: '문의',
+    description: '바로 물어보기',
     href: '/dialogue',
   },
 ] as const;

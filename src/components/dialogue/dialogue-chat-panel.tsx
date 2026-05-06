@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AiSourceBadge } from '@/components/ai/ai-source-badge';
 import { GangiCharacter } from '@/components/gangi/gangi-ui';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
@@ -107,34 +106,11 @@ const INITIAL_MESSAGE: ChatMessage = {
   fallbackReason: null,
   model: null,
   errorMessage: null,
-  text:
-    '편하게 물으세요. 이제 대화 담당 선생을 따로 고르지 않고, 선택한 12간지 전문 분야에 맞춰 답변합니다. 로그인되어 있고 MY 프로필에 생년월일이 저장돼 있으면 그 정보를 먼저 놓고 바로 풀어드립니다.',
+  text: '편하게 물어보세요. 저장된 내 정보가 있으면 바로 이어서 봅니다.',
 };
 
 function createMessageId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function getBadgeState(status: ChatStatus, latestAssistant?: ChatMessage) {
-  if (status === 'loading') return 'loading';
-  if (status === 'error') return 'error';
-  if (latestAssistant?.source === 'openai') return 'openai';
-  if (latestAssistant?.source === 'safe_redirect') return 'safe_redirect';
-  if (latestAssistant?.source === 'fallback') return 'fallback';
-  return 'idle';
-}
-
-function getFallbackLabel(reason: FallbackReason | null | undefined) {
-  switch (reason) {
-    case 'ai_not_configured':
-      return '정밀 답변 연결 전이라 기본 답변으로 표시 중입니다.';
-    case 'empty_ai_response':
-      return '정밀 답변 내용이 비어 있어 기본 답변으로 표시 중입니다.';
-    case 'openai_error':
-      return '정밀 답변을 불러오지 못해 기본 답변으로 표시 중입니다.';
-    default:
-      return '기본 답변으로 표시 중입니다.';
-  }
 }
 
 function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
@@ -160,37 +136,6 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
     default:
       return null;
   }
-}
-
-function getConnectionSummary(
-  latestAssistant: ChatMessage | undefined,
-  status: ChatStatus
-) {
-  if (status === 'loading') {
-    return '저장된 내 정보와 상담 가능 횟수를 확인한 뒤 답변을 준비하고 있습니다.';
-  }
-
-  if (!latestAssistant || latestAssistant.id === INITIAL_MESSAGE.id) {
-    return 'MY 프로필에 생년월일이 있으면 상담에서 다시 입력하지 않습니다. 처음 3회는 무료이고, 이후에는 정밀 답변 3회 묶음마다 3코인이 차감됩니다.';
-  }
-
-  if (latestAssistant.source === 'openai') {
-    const billingLabel = getBillingLabel(latestAssistant.billing);
-    const profileLabel =
-      latestAssistant.profileContext?.used && latestAssistant.profileContext.summary
-        ? ` 저장 프로필: ${latestAssistant.profileContext.summary}`
-        : '';
-    return `최근 답변은 상담 답변으로 정리되었습니다.${billingLabel ? ` ${billingLabel}` : ''}${profileLabel}`;
-  }
-
-  if (latestAssistant.source === 'fallback') {
-    const profileLabel = latestAssistant.profileContext?.summary
-      ? ` ${latestAssistant.profileContext.used ? '저장 프로필로' : ''} ${latestAssistant.profileContext.summary}`
-      : '';
-    return `최근 답변은 기본 답변으로 표시되었습니다.${latestAssistant.configured === false ? ' 상담 답변 연결 전입니다.' : ''}${profileLabel}`;
-  }
-
-  return '안전 안내에 따라 일반 대화를 중단했습니다.';
 }
 
 function hasBirthProfile(
@@ -316,12 +261,9 @@ export function DialogueChatPanel({
   const [profileConnection, setProfileConnection] = useState<ProfileConnectionState>({
     status: 'checking',
     summary: '내 정보 확인 중',
-    detail: '로그인 상태와 MY 프로필 저장 여부를 확인하고 있습니다.',
+    detail: '잠시만 기다려 주세요.',
   });
 
-  const latestAssistant = messages.findLast((message) => message.role === 'assistant');
-  const badgeState = getBadgeState(status, latestAssistant);
-  const connectionSummary = getConnectionSummary(latestAssistant, status);
   const selectedExpert = getDialogueExpertMeta(expertId);
 
   function applyPreset(question: string) {
@@ -487,21 +429,16 @@ export function DialogueChatPanel({
 
   return (
     <article className="app-panel overflow-hidden p-0 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
-      <div className="border-b border-[var(--app-line)] bg-[linear-gradient(135deg,rgba(210,176,114,0.12),rgba(10,18,36,0.96))] p-6">
+      <div className="border-b border-[var(--app-line)] bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="app-caption">AI 대화</div>
-            <h2 className="mt-3 text-3xl text-[var(--app-ivory)]">
-              내 정보를 불러와 바로 상담합니다
+            <div className="app-caption">대화</div>
+            <h2 className="mt-3 text-2xl text-[var(--app-ink)] sm:text-3xl">
+              바로 물어보세요
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
-              로그인되어 있고 MY 프로필에 생년월일이 저장되어 있으면
-              깊은 사주풀이를 다시 입력하지 않아도 됩니다. 질문만 남기시면
-              저장된 내 정보를 먼저 놓고 상담하듯 답변을 이어갑니다.
-            </p>
             {sourceSessionId && concernId ? (
-              <p className="mt-3 max-w-3xl text-xs leading-6 text-[var(--app-gold-text)]">
-                오늘 결과에서 이어진 질문입니다. 첫 결과 기반 질문은 코인 차감 없이 먼저 답해드립니다.
+              <p className="mt-2 max-w-3xl text-xs leading-6 text-[var(--app-pink-strong)]">
+                오늘 결과에서 이어진 첫 질문은 무료입니다.
               </p>
             ) : null}
             <div className="mt-4 rounded-[1.15rem] border border-[var(--app-pink-line)] bg-white/85 px-4 py-4">
@@ -514,7 +451,7 @@ export function DialogueChatPanel({
                   <div className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
                     {selectedExpert.animal}띠 · {selectedExpert.label}
                   </div>
-                  <p className="mt-1 text-xs font-bold leading-6 text-[var(--app-copy-muted)]">
+                  <p className="mt-1 text-xs font-bold leading-5 text-[var(--app-copy-muted)]">
                     {selectedExpert.description}
                   </p>
                 </div>
@@ -544,7 +481,7 @@ export function DialogueChatPanel({
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="text-sm font-semibold">{profileConnection.summary}</div>
-                  <p className="mt-1 text-xs leading-6 opacity-85">{profileConnection.detail}</p>
+                  <p className="mt-1 text-xs leading-5 opacity-85">{profileConnection.detail}</p>
                 </div>
                 {profileConnection.status === 'ready' ? (
                   <span className="w-fit rounded-full border border-current/20 px-3 py-1 text-[11px] font-medium">
@@ -560,11 +497,7 @@ export function DialogueChatPanel({
                 )}
               </div>
             </div>
-            <p className="mt-3 max-w-3xl text-xs leading-6 text-[var(--app-copy-soft)]">
-              {connectionSummary}
-            </p>
           </div>
-          <AiSourceBadge state={badgeState} />
         </div>
       </div>
 
@@ -598,30 +531,6 @@ export function DialogueChatPanel({
                     >
                       {message.cta.label}
                     </Button>
-                  </div>
-                ) : null}
-                {!isUser && (message.source || message.errorMessage || message.billing) ? (
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs leading-6 text-[var(--app-copy-soft)]">
-                    {message.source === 'openai' ? (
-                      <span>
-                        {message.expertLabel ?? getDialogueExpertMeta(message.expertId).label} · 정밀 답변
-                      </span>
-                    ) : (
-                      <span>
-                        {message.expertLabel ?? getDialogueExpertMeta(message.expertId).label} ·{' '}
-                        {message.configured === false
-                          ? '기본 답변 · 정밀 답변 연결 전'
-                          : getFallbackLabel(message.fallbackReason)}
-                      </span>
-                    )}
-                    {message.profileContext?.summary ? (
-                      <span>
-                        {message.profileContext.used ? '저장 프로필 기준' : '프로필 안내'} ·{' '}
-                        {message.profileContext.summary}
-                      </span>
-                    ) : null}
-                    {getBillingLabel(message.billing) ? <span>{getBillingLabel(message.billing)}</span> : null}
-                    {message.errorMessage ? <span>오류: {message.errorMessage}</span> : null}
                   </div>
                 ) : null}
               </div>
@@ -665,7 +574,7 @@ export function DialogueChatPanel({
             }}
             rows={3}
             className="min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60"
-            placeholder="예: 내 사주 기준으로 올해 재물 흐름을 단도직입적으로 말해줘."
+            placeholder="예: 올해 돈 흐름이 궁금해요."
           />
           <button
             type="submit"
@@ -676,8 +585,8 @@ export function DialogueChatPanel({
           </button>
         </div>
         <div className="mt-4">
-          <div className="mb-2 text-xs font-medium tracking-[0.08em] text-[var(--app-gold-text)]">
-            자주 여쭙는 이야기
+          <div className="mb-2 text-xs font-medium tracking-[0.08em] text-[var(--app-pink-strong)]">
+            바로 물어보기
           </div>
           <div className="flex flex-wrap gap-2">
             {presets.map((preset) => {
@@ -702,12 +611,7 @@ export function DialogueChatPanel({
           </div>
         </div>
         <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
-          처음 3회는 무료입니다. 이후에는 정밀 답변 기준으로 3회 묶음마다
-          3코인이 차감되고, 기본 답변과 안전 안내는 횟수와 코인을 차감하지
-          않습니다. 오늘 결과에서 이어진 첫 질문은 코인 차감 없이 먼저 답해드립니다.
-          로그인 후 MY 프로필에 저장된 출생 정보가 있으면 대화에서도
-          기본 명식으로 자동 사용합니다. 대화 저장은 아직 하지 않으며, 새로고침하면
-          현재 화면의 메시지는 사라집니다.
+          처음 3회 무료 · 이후 3회 3코인
         </p>
 
         {errorMessage ? (
