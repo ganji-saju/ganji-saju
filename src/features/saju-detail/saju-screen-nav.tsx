@@ -16,12 +16,12 @@ interface SajuScreenNavProps {
 
 export default function SajuScreenNav({ slug, current }: SajuScreenNavProps) {
   return (
-    <nav className="app-subnav">
+    <nav className="gangi-saju-subtabs" aria-label="사주 결과 메뉴">
       {SAJU_SCREEN_ITEMS.map((item) => (
         <Link
           key={item.key}
           href={item.getHref(slug)}
-          className={cn('app-subnav-link')}
+          className={cn('gangi-saju-subtab')}
           data-active={current === item.key}
         >
           {item.label}
