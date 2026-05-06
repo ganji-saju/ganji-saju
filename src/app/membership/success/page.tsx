@@ -17,6 +17,7 @@ import {
   readPendingLifetimeReportSlug,
 } from '@/lib/payments/lifetime-report';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
@@ -40,8 +41,17 @@ function buildPremiumResultHref(plan: string, slug: string | null) {
   return `/saju/${encodeURIComponent(slug)}/premium?${params.toString()}`;
 }
 
-function buildTasteProductHref(product: string | null, slug: string | null, scope: string | null) {
+function buildTasteProductHref(
+  product: string | null,
+  slug: string | null,
+  scope: string | null,
+  entrySource: string | null
+) {
   if (product === 'today-detail') {
+    if (slug && entrySource?.startsWith('saju')) {
+      return `${buildSajuTodayDetailHref(slug)}?paid=today-detail`;
+    }
+
     const params = new URLSearchParams({ paid: product, concern: scope || 'general' });
     if (slug) params.set('sourceSessionId', slug);
     return `/today-fortune/result?${params.toString()}`;
@@ -280,7 +290,7 @@ function SuccessContent() {
 
         const nextPlan = data.plan ?? plan;
         const nextProduct = data.product ?? product;
-        const productHref = buildTasteProductHref(nextProduct, slug, scope);
+        const productHref = buildTasteProductHref(nextProduct, slug, scope, entrySource);
         const premiumResultHref = buildPremiumResultHref(nextPlan, slug);
 
         if (typeof data.totalCredits === 'number') {

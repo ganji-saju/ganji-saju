@@ -32,6 +32,7 @@ import {
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
+import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -146,8 +147,10 @@ async function resolveTasteScopeKey(product: TasteProductId, slug?: string, scop
   return buildReadingProductScopeKey(readingKey);
 }
 
-function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string) {
+function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string, entrySource?: string) {
   if (product === 'today-detail') {
+    if (slug && entrySource?.startsWith('saju')) return buildSajuTodayDetailHref(slug);
+
     const params = new URLSearchParams({ paid: product, concern: 'general' });
     if (slug) params.set('sourceSessionId', slug);
     return `/today-fortune/result?${params.toString()}`;
@@ -197,7 +200,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     if (user) {
       const scopeKey = await resolveTasteScopeKey(selectedProduct, slug, scope);
       const entitlement = await getTasteProductEntitlement(user.id, selectedProduct, scopeKey);
-      if (entitlement) alreadyPurchasedHref = buildAlreadyPurchasedHref(selectedProduct, slug);
+      if (entitlement) alreadyPurchasedHref = buildAlreadyPurchasedHref(selectedProduct, slug, from);
     }
   }
 

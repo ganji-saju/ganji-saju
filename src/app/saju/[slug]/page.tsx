@@ -21,6 +21,11 @@ import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-t
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
+import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
+import {
+  buildSajuTodayDetailCheckoutHref,
+  buildSajuTodayDetailHref,
+} from '@/lib/saju/today-detail-links';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { toSlug } from '@/lib/saju/pillars';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
@@ -191,7 +196,7 @@ function buildResultTasteProductHref(productSlug: string, slug: string) {
 
   switch (productSlug) {
     case 'today-detail':
-      return `/membership/checkout?product=today-detail&slug=${encodedSlug}&scope=general&from=saju-result`;
+      return buildSajuTodayDetailCheckoutHref(slug);
     case 'love-question':
       return '/membership/checkout?product=love-question&from=saju-result';
     case 'money-pattern':
@@ -268,18 +273,54 @@ const COMPACT_RESULT_CARD_FALLBACKS: Array<{
   label: string;
   color: string;
   fallback: string;
+  scoreKey?: ReportScore['key'];
 }> = [
-  { key: 'wealth', label: '재물', color: '#D59B2E', fallback: '꾸준한 흐름' },
-  { key: 'love', label: '연애', color: '#E05298', fallback: '마음 천천히 보기' },
-  { key: 'career', label: '직업', color: '#3F8796', fallback: '변화에 강함' },
+  { key: 'wealth', label: '재물', color: '#D59B2E', fallback: '지출 정리 먼저', scoreKey: 'wealth' },
+  { key: 'love', label: '연애', color: '#E05298', fallback: '천천히 맞추기', scoreKey: 'love' },
+  { key: 'career', label: '직업', color: '#3F8796', fallback: '말 정리부터', scoreKey: 'career' },
   { key: 'health', label: '건강', color: '#5C8A63', fallback: '수면 챙기기' },
 ];
 
+function toCompactCardPhrase(value: string | null | undefined, fallback: string) {
+  const cleaned = easyResultCopy(value, 1)
+    .replace(/입니다\.?$/u, '')
+    .replace(/합니다\.?$/u, '')
+    .replace(/좋습니다\.?$/u, '좋음')
+    .replace(/괜찮은 흐름/u, '괜찮음')
+    .trim();
+  const firstChunk = cleaned.split(/[,.]/u)[0]?.trim() ?? '';
+
+  if (firstChunk.length > 0 && firstChunk.length <= 16) return firstChunk;
+  if (/지출|소비/u.test(cleaned)) return '지출 정리 먼저';
+  if (/투자|보수/u.test(cleaned)) return '새 투자 천천히';
+  if (/기회|수익/u.test(cleaned)) return '작은 기회 잡기';
+  if (/표현/u.test(cleaned)) return '표현해도 좋음';
+  if (/조율|거리감|분위기/u.test(cleaned)) return '분위기 조율';
+  if (/성과|발표|제안/u.test(cleaned)) return '성과 보여주기';
+  if (/커뮤니케이션|말|소통/u.test(cleaned)) return '말 정리부터';
+  if (/속도|무리|피로|수면|생활/u.test(cleaned)) return '무리하지 않기';
+
+  return fallback;
+}
+
 function getCompactScoreText(score: ReportScore | undefined, fallback: string) {
-  if (!score) return fallback;
-  if (score.score >= 74) return score.key === 'love' ? '표현해도 좋음' : '진행해도 좋음';
-  if (score.score >= 62) return fallback;
-  return '천천히 보기';
+  return toCompactCardPhrase(score?.summary, fallback);
+}
+
+function buildCompactResultCards(report: SajuReport) {
+  const scoreByKey = new Map(report.scores.map((score) => [score.key, score]));
+  const healthSource =
+    report.cautionAction.description ||
+    report.evidenceCards.find((card) => card.key === 'strength')?.practicalActions?.[0] ||
+    report.evidenceCards.find((card) => card.key === 'yongsin')?.plainSummary;
+
+  return COMPACT_RESULT_CARD_FALLBACKS.map((item) => ({
+    ...item,
+    value:
+      item.key === 'health'
+        ? toCompactCardPhrase(healthSource, item.fallback)
+        : getCompactScoreText(item.scoreKey ? scoreByKey.get(item.scoreKey) : undefined, item.fallback),
+  }));
 }
 
 function formatStemHint(pillar: SajuPillar) {
@@ -419,15 +460,17 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const favorableChoices = buildFavorableChoices(report);
   const isTimeUnknown = input.unknownTime === true || input.hour === undefined;
   const punchReading = buildPunchReading(report);
-  const todayDetailHref = buildResultTasteProductHref('today-detail', slug);
-  const scoreByKey = new Map(report.scores.map((score) => [score.key, score]));
-  const compactResultCards = COMPACT_RESULT_CARD_FALLBACKS.map((item) => ({
-    ...item,
-    value: getCompactScoreText(
-      item.key === 'health' ? undefined : scoreByKey.get(item.key),
-      item.fallback
-    ),
-  }));
+  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
+  const todayDetailHref = todayDetailEntitlement
+    ? buildSajuTodayDetailHref(slug)
+    : buildResultTasteProductHref('today-detail', slug);
+  const compactResultCards = buildCompactResultCards(report);
+  const currentMajorLuckForDisplay = sajuData.currentLuck?.currentMajorLuck ?? null;
+  const currentMajorFlowPoints = currentMajorFlow?.points ?? [];
+  const majorLuckCount = sajuData.majorLuck?.length ?? 0;
+  const currentMajorLuckWindow = currentMajorLuckForDisplay
+    ? formatMajorLuckWindow(currentMajorLuckForDisplay as SajuMajorLuckCycle)
+    : '성별 정보가 있으면 앞으로의 흐름을 더 자세히 볼 수 있습니다.';
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -468,7 +511,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
           <article className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
             <div className="text-sm font-bold text-[var(--app-pink-strong)]">한 줄 요약</div>
-            <h1 className="mt-3 text-[1.85rem] font-medium leading-[1.42] tracking-[-0.02em] text-[var(--app-ink)] sm:text-4xl">
+            <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
             </h1>
           </article>
@@ -518,14 +561,21 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <TrackedLink
               href={todayDetailHref}
               eventName="report_deep_report_click"
-              eventParams={{ slug, product: 'today-detail', from: 'result_compact_card' }}
+              eventParams={{
+                slug,
+                product: 'today-detail',
+                from: 'result_compact_card',
+                purchased: Boolean(todayDetailEntitlement),
+              }}
               className="mt-5 inline-flex rounded-full bg-[var(--app-pink)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(236,72,153,0.28)]"
             >
-              풀이 열기
+              {todayDetailEntitlement ? '구매한 풀이 열기' : '풀이 열기'}
             </TrackedLink>
           </article>
         </section>
 
+        {false ? (
+          <>
         <section id="result-summary" className="space-y-4 scroll-mt-24">
           <SectionHeader
             eyebrow="요약"
@@ -925,9 +975,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
                     <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">앞으로 이어질 흐름</div>
                     <div className="mt-2 text-lg font-semibold text-[var(--app-ink)]">
-                      {sajuData.currentLuck?.currentMajorLuck
-                        ? formatMajorLuckWindow(sajuData.currentLuck.currentMajorLuck)
-                        : '성별 정보가 있으면 앞으로의 흐름을 더 자세히 볼 수 있습니다.'}
+                      {currentMajorLuckWindow}
                     </div>
                     <p className="app-body-copy mt-2 text-sm">
                       {easyResultCopy(
@@ -936,9 +984,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         2
                       )}
                     </p>
-                    {currentMajorFlow?.points && currentMajorFlow.points.length > 0 ? (
+                    {currentMajorFlowPoints.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {currentMajorFlow.points.map((point) => (
+                        {currentMajorFlowPoints.map((point) => (
                           <span
                             key={`current-major-${point}`}
                             className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-xs leading-5 text-[var(--app-copy-muted)]"
@@ -1016,8 +1064,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       })}
                     </div>
                     <p className="app-body-copy mt-4 text-sm">
-                      {sajuData.majorLuck && sajuData.majorLuck.length > majorLuckPreview.length
-                        ? `전체 흐름은 ${sajuData.majorLuck.length}개 구간으로 이어지고, 화면에는 먼저 보기 쉬운 앞부분만 보여드립니다.`
+                      {majorLuckCount > majorLuckPreview.length
+                        ? `전체 흐름은 ${majorLuckCount}개 구간으로 이어지고, 화면에는 먼저 보기 쉬운 앞부분만 보여드립니다.`
                         : '지금 확인 가능한 흐름을 먼저 보여드립니다.'}
                     </p>
                   </>
@@ -1049,6 +1097,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </Link>
             </div>
         </section>
+          </>
+        ) : null}
         </div>
       </AppPage>
     </AppShell>
