@@ -176,7 +176,7 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
             className="gangi-tarot-spread-page"
             aria-label={`${spreadIndex + 1}번째 카드 묶음`}
           >
-            {spread.map((card) => {
+            {spread.map((card, cardIndex) => {
               const selected = selectedCardId === card.cardId;
               const tone = CARD_BACK_TONES[card.backTone];
 
@@ -186,9 +186,9 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
                   href={buildResultHref(question, card)}
                   aria-label={`${card.slot}번째 카드 선택`}
                   onClick={() => setSelectedCardId(card.cardId)}
-                  style={getCardBackStyle(card, selected)}
+                  style={getCardBackStyle(card, selected, cardIndex, spread.length)}
                   className={cn(
-                    'gangi-tarot-spread-card group relative flex aspect-[7/10] flex-col justify-between overflow-hidden border p-1.5 text-left transition-[filter,transform,border-color] duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink)]/75',
+                    'gangi-tarot-spread-card group flex aspect-[7/10] flex-col justify-between overflow-hidden border p-1.5 text-left transition-[filter,transform,border-color] duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink)]/75',
                     selected && 'is-selected'
                   )}
                 >
@@ -234,16 +234,26 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
 
 function getCardBackStyle(
   card: TarotPickerCardDraw,
-  selected: boolean
+  selected: boolean,
+  index: number,
+  total: number
 ): CSSProperties {
   const tone = CARD_BACK_TONES[card.backTone];
+  const center = (total - 1) / 2;
+  const fanOffset = index - center;
+  const angle = fanOffset * 4.8 + card.tilt * 0.25;
+  const lift = Math.abs(fanOffset) * 0.16 + (selected ? -0.35 : card.lift * 0.025);
+  const zIndex = selected ? 40 : index + 1;
 
   return {
+    '--fan-offset': fanOffset,
+    '--fan-angle': `${angle}deg`,
+    '--fan-lift': `${lift}rem`,
     background: tone.background,
     borderColor: selected ? 'rgba(210,176,114,0.82)' : tone.border,
     boxShadow: `0 12px 34px rgba(0,0,0,0.18), 0 0 ${10 + card.backGlow * 5}px ${tone.light}`,
-    transform: `translateY(${selected ? '-0.25rem' : `${card.lift * 0.025}rem`}) rotate(${card.tilt * 0.25}deg)`,
-  };
+    zIndex,
+  } as CSSProperties;
 }
 
 function chunkDeck<T>(deck: T[], size: number) {

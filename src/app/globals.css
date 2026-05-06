@@ -5842,7 +5842,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-tarot-stage {
   display: grid;
-  min-height: 29rem;
+  min-height: 28rem;
   align-content: start;
   justify-items: center;
   gap: 1rem;
@@ -5905,7 +5905,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   overflow-y: visible;
   scroll-padding-inline: 1rem;
   scroll-snap-type: x mandatory;
-  padding: 0.35rem 1rem 0.75rem;
+  padding: 0.35rem 1rem 0.9rem;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -5915,19 +5915,22 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-tarot-spread-page {
-  display: grid;
+  position: relative;
   width: 100%;
   min-width: 100%;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.55rem;
+  height: clamp(15rem, 56vw, 18rem);
   scroll-snap-align: center;
 }
 
 .gangi-tarot-spread-card {
-  min-width: 0;
+  position: absolute;
+  left: 50%;
+  bottom: 0.65rem;
+  width: clamp(3.05rem, 15vw, 4.75rem);
   border-radius: 0.72rem;
-  transform-origin: 50% 92%;
-  box-shadow: 0 10px 20px rgba(17, 17, 20, 0.13);
+  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.78rem, 3.45vw, 1.18rem)))) translateY(var(--fan-lift)) rotate(var(--fan-angle));
+  transform-origin: 50% 110%;
+  box-shadow: 0 12px 22px rgba(17, 17, 20, 0.16);
 }
 
 .gangi-tarot-spread-card.is-selected {
@@ -5963,8 +5966,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   }
 
   .gangi-tarot-spread-page {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-    gap: 0.75rem;
+    height: 20rem;
+  }
+
+  .gangi-tarot-spread-card {
+    width: clamp(4.4rem, 8vw, 5.75rem);
+    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1rem, 1.95vw, 1.5rem)))) translateY(var(--fan-lift)) rotate(var(--fan-angle));
   }
 }
 
