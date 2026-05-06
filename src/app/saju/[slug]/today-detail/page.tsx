@@ -138,8 +138,8 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
 
-        <section className="rounded-[1.8rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
-          <div className="text-sm font-bold text-[var(--app-pink-strong)]">구매한 풀이</div>
+        <section className="gangi-reading-hero">
+          <div className="gangi-chapter-eyebrow">구매한 풀이</div>
           <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
             오늘은 이 부분만 더 보면 충분해요
           </h1>
@@ -148,84 +148,66 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
           </p>
         </section>
 
-        <section className="rounded-[1.6rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
-          <div className="text-sm font-bold text-[var(--app-pink-strong)]">한눈에 보는 핵심</div>
-          <h2 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
-            {easyResultCopy(report.headline)}
-          </h2>
+        <section className="gangi-reading-chapters" aria-label="오늘 상세 풀이">
+          <article className="gangi-reading-chapter">
+            <div className="gangi-chapter-eyebrow">한눈에 보는 핵심</div>
+            <h2 className="gangi-chapter-title">{easyResultCopy(report.headline)}</h2>
+          </article>
+
           {isTimeUnknown ? (
-            <p className="mt-3 rounded-[1rem] bg-[var(--app-pink-soft)] px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
+            <p className="gangi-reading-note">
               태어난 시간이 정확하지 않아 시간에 민감한 풀이는 조심해서 읽습니다.
             </p>
           ) : null}
-          <div className="mt-5 grid gap-3">
-            {[
-              { title: '조심할 것', items: buildCautionPatterns(report) },
-              { title: '해볼 것', items: buildFavorableChoices(report) },
-              { title: '더 볼 주제', items: buildKeyThemes(report) },
-            ].map((group) => (
-              <article key={group.title} className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
-                <div className="text-sm font-bold text-[var(--app-pink-strong)]">{group.title}</div>
-                <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--app-copy)]">
-                  {group.items.map((item) => (
-                    <li key={`${group.title}-${item}`}>• {item}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
-        </section>
 
-        <section className="grid gap-3">
-          <article className="rounded-[1.3rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
-            <div className="text-sm font-bold text-[var(--app-pink-strong)]">오늘 해볼 일</div>
-            <h2 className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ink)]">
-              {easyResultCopy(report.primaryAction.title)}
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
-              {easyResultCopy(report.primaryAction.description, 2)}
-            </p>
+          {[
+            { title: '조심할 것', items: buildCautionPatterns(report) },
+            { title: '해볼 것', items: buildFavorableChoices(report) },
+            { title: '더 볼 주제', items: buildKeyThemes(report) },
+          ].map((group) => (
+            <article key={group.title} className="gangi-reading-chapter">
+              <div className="gangi-chapter-eyebrow">{group.title}</div>
+              <ul className="gangi-chapter-list">
+                {group.items.map((item) => (
+                  <li key={`${group.title}-${item}`}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+
+          <article className="gangi-reading-chapter">
+            <div className="gangi-chapter-eyebrow">오늘 해볼 일</div>
+            <h2 className="gangi-chapter-subtitle">{easyResultCopy(report.primaryAction.title)}</h2>
+            <p className="gangi-chapter-body">{easyResultCopy(report.primaryAction.description, 2)}</p>
           </article>
 
-          <article className="rounded-[1.3rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
-            <div className="text-sm font-bold text-[var(--app-pink-strong)]">오늘 줄일 일</div>
-            <h2 className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ink)]">
-              {easyResultCopy(report.cautionAction.title)}
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
-              {easyResultCopy(report.cautionAction.description, 2)}
-            </p>
+          <article className="gangi-reading-chapter">
+            <div className="gangi-chapter-eyebrow">오늘 줄일 일</div>
+            <h2 className="gangi-chapter-subtitle">{easyResultCopy(report.cautionAction.title)}</h2>
+            <p className="gangi-chapter-body">{easyResultCopy(report.cautionAction.description, 2)}</p>
           </article>
-        </section>
 
-        <section className="space-y-3">
-          <h2 className="px-1 text-xl font-semibold text-[var(--app-ink)]">흐름을 조금 더 보면</h2>
+          <div className="gangi-reading-chapter-heading">흐름을 조금 더 보면</div>
           {report.timeline.map((item) => (
             <article
               key={item.label}
-              className="rounded-[1.3rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+              className="gangi-reading-chapter"
             >
-              <div className="text-sm font-bold text-[var(--app-pink-strong)]">{item.label}</div>
-              <h3 className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
-                {easyResultCopy(item.headline)}
-              </h3>
-              <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
-                {easyResultCopy(item.body, 2)}
-              </p>
+              <div className="gangi-chapter-eyebrow">{item.label}</div>
+              <h3 className="gangi-chapter-subtitle">{easyResultCopy(item.headline)}</h3>
+              <p className="gangi-chapter-body">{easyResultCopy(item.body, 2)}</p>
             </article>
           ))}
-        </section>
 
-        <section className="space-y-3">
-          <h2 className="px-1 text-xl font-semibold text-[var(--app-ink)]">분야별로 짧게</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="gangi-reading-chapter-heading">분야별로 짧게</div>
+          <div className="gangi-chapter-mini-grid">
             {scoreCards.map((score) => (
               <article
                 key={score.key}
-                className="rounded-[1.2rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+                className="gangi-chapter-mini"
               >
-                <div className="text-sm font-bold text-[var(--app-pink-strong)]">{score.displayLabel}</div>
-                <p className="mt-3 text-sm font-semibold leading-7 text-[var(--app-ink)]">{score.summary}</p>
+                <div>{score.displayLabel}</div>
+                <p>{score.summary}</p>
               </article>
             ))}
           </div>
