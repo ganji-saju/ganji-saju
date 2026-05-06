@@ -228,3 +228,31 @@ export function GangiPurchaseSummary({
     </section>
   );
 }
+
+export function GangiLoadingOverlay({
+  title = '풀이를 준비하고 있어요',
+  description = '생년월일과 오늘 흐름을 맞춰보는 중입니다.',
+}: {
+  title?: string;
+  description?: string;
+}) {
+  return (
+    <div className="gangi-loading-overlay" role="status" aria-live="polite">
+      <div className="gangi-loading-card">
+        <div className="gangi-loading-moon" aria-hidden="true">
+          <span />
+          <i />
+        </div>
+        <div className="gangi-loading-copy">
+          <p>{title}</p>
+          <span>{description}</span>
+        </div>
+        <div className="gangi-loading-lines" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+    </div>
+  );
+}

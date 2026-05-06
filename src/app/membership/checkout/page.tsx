@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
 import {
   GangiIntro,
   GangiPageHeader,
@@ -14,8 +8,6 @@ import {
 } from '@/components/gangi/gangi-ui';
 import {
   CHECKOUT_PLAN_GUIDE,
-  CHECKOUT_METHODS,
-  MEMBERSHIP_REASSURANCE,
   type PlanSlug,
 } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -54,9 +46,9 @@ interface Props {
 }
 
 const CHECKOUT_FLOW_POINTS = [
-  '선택한 상품이 대화형 멤버십인지, 보관형 리포트인지 먼저 다시 확인합니다.',
-  '결제 방법은 카드와 계좌이체 중에서 고르실 수 있고, 승인 뒤 이용권이 바로 반영됩니다.',
-  '결과와 연결되는 상품은 해당 결과 식별자가 있는지 마지막으로 살펴봅니다.',
+  '토스 결제창에서 카드 또는 계좌이체로 결제합니다.',
+  '결제가 끝나면 구매한 풀이가 바로 열립니다.',
+  '이미 구매한 풀이는 다시 결제하지 않고 보관함에서 볼 수 있습니다.',
 ] as const;
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -209,163 +201,86 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
+      <AppPage className="gangi-subpage gangi-checkout-page space-y-5">
         <GangiPageHeader title="결제" backHref="/membership" />
         <GangiIntro
-          eyebrow="결제 확인"
           title={
             <>
-              결제 전에
+              선택한 풀이를
               <br />
-              열리는 내용을 확인해요
+              바로 열어볼게요
             </>
           }
-          description="가격과 바로 열리는 내용을 먼저 확인하고, 실제 결제는 아래 버튼에서 진행합니다."
+          description="금액과 열리는 내용을 확인한 뒤 토스 결제창에서 진행합니다."
         />
 
-        <section className="px-4 sm:px-0">
+        <section className="space-y-4 px-4 sm:px-0">
           <GangiPurchaseSummary
             title={selected.title}
             price={displayPrice}
             description={selected.reassurance}
             opens={selected.opens}
           />
-          <div className="gangi-card-panel mt-4 p-4">
-            <SectionHeader
-              eyebrow="결제 전 체크"
-              title="한 번 더 확인할 내용"
-              titleClassName="text-2xl"
-              description="결제 버튼을 누르기 전에 상품 성격과 다시 볼 위치만 짧게 확인합니다."
-              descriptionClassName="text-[var(--app-copy)]"
-            />
-            <BulletList items={CHECKOUT_FLOW_POINTS} />
-            <FeatureCard
-              className="mt-5"
-              surface="soft"
-              eyebrow="안심 안내"
-              description={MEMBERSHIP_REASSURANCE.join(' ')}
-            />
+
+          <div className="gangi-checkout-method-card">
+            <span className="gangi-checkout-method-icon" aria-hidden="true">
+              T
+            </span>
+            <div>
+              <strong>토스 결제</strong>
+              <p>결제창에서 카드와 계좌이체 중 편한 방식으로 진행합니다.</p>
+            </div>
+            <span className="gangi-checkout-selected-dot" aria-hidden="true" />
           </div>
+
+          {error === 'payment' ? (
+            <p className="gangi-checkout-alert">
+              결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다.
+            </p>
+          ) : null}
+
+          <ul className="gangi-checkout-notes">
+            {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr]">
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="결제 방법"
-              title="카드와 계좌이체 중에서 고르실 수 있습니다"
-              titleClassName="text-3xl"
-              description="기본으로 가장 많이 쓰는 방법을 먼저 보여드리고, 결제창 안에서 다시 바꾸실 수도 있습니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
-            <ProductGrid columns={2} className="mt-6">
-              {CHECKOUT_METHODS.map((method, index) => (
-                <FeatureCard
-                  key={method}
-                  surface="soft"
-                  eyebrow={index === 0 ? '기본 선택' : '선택 가능'}
-                  title={method}
-                />
-              ))}
-            </ProductGrid>
-
-            {error === 'payment' ? (
-              <FeatureCard
-                className="mt-5 border-rose-400/25 bg-rose-400/10"
-                surface="soft"
-                eyebrow="다시 확인"
-                description="결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다."
-              />
-            ) : null}
-
-            <FeatureCard
-              className="mt-5"
-              surface="soft"
-              eyebrow="한 번 더 살펴보실 것"
-              description={
-                <BulletList
-                  items={selected.notices}
-                  className="mt-0"
-                  itemClassName="text-[var(--app-copy)]"
-                />
-              }
-            />
-          </SectionSurface>
-
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="결제 진행"
-              title="이제 결제를 열면 됩니다"
-              titleClassName="text-3xl"
-              description="결과에 연결되는 상품은 필요한 식별자가 있는지 먼저 확인한 뒤 결제를 엽니다."
-              descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-            />
-
+        <section className="px-4 sm:px-0">
+          <div className="gangi-checkout-action-card">
             {paymentPackage?.kind === 'lifetime_report' && !slug ? (
-              <FeatureCard
-                className="mt-6"
-                surface="soft"
-                eyebrow="결과 식별자가 필요합니다"
-                description="보관형 사주 리포트는 특정 사주 결과에 붙는 소장권입니다. 먼저 사주 결과를 만든 뒤, 해당 결과의 긴 풀이 보기 버튼으로 오시면 결제 직후 바로 전체 리포트가 열립니다."
-                footer={
-                  <ActionCluster>
-                    <Link
-                      href="/saju/new"
-                      className="gangi-primary-button"
-                    >
-                      사주 결과 먼저 만들기
-                    </Link>
-                  </ActionCluster>
-                }
-              />
+              <div className="gangi-checkout-empty-state">
+                <strong>먼저 사주 결과가 필요합니다</strong>
+                <p>이 풀이는 특정 사주 결과에 붙습니다. 결과를 만든 뒤 다시 결제하면 바로 연결됩니다.</p>
+                <Link href="/saju/new" className="gangi-primary-button">
+                  사주 결과 먼저 만들기
+                </Link>
+              </div>
             ) : needsResultFirst && selectedProduct ? (
-              <FeatureCard
-                className="mt-6"
-                surface="soft"
-                eyebrow="결과 식별자가 필요합니다"
-                description="이 소액 상품은 특정 사주 결과나 오늘운 결과에 연결됩니다. 먼저 결과를 만든 뒤, 해당 화면의 구매 버튼으로 오시면 중복 결제 없이 바로 연결됩니다."
-                footer={
-                  <ActionCluster>
-                    <Link
-                      href={`/saju/new?product=${selectedProduct}`}
-                      className="gangi-primary-button"
-                    >
-                      사주 결과 먼저 만들기
-                    </Link>
-                    <Link
-                      href="/membership"
-                      className="gangi-secondary-button"
-                    >
-                      상품 목록으로
-                    </Link>
-                  </ActionCluster>
-                }
-              />
+              <div className="gangi-checkout-empty-state">
+                <strong>먼저 결과를 만들어 주세요</strong>
+                <p>소액 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.</p>
+                <Link href={`/saju/new?product=${selectedProduct}`} className="gangi-primary-button">
+                  사주 결과 먼저 만들기
+                </Link>
+                <Link href="/membership" className="gangi-secondary-button">
+                  상품 목록으로
+                </Link>
+              </div>
             ) : alreadyPurchasedHref ? (
-              <FeatureCard
-                className="mt-6 border-emerald-400/25 bg-emerald-400/10"
-                surface="soft"
-                eyebrow="이미 구매한 상품"
-                description="이 상품은 이미 구매되어 있습니다. 결제창을 다시 열지 않고 바로 열람 화면으로 이동하실 수 있습니다."
-                footer={
-                  <ActionCluster>
-                    <Link
-                      href={alreadyPurchasedHref}
-                      className="gangi-primary-button"
-                    >
-                      구매한 상품 열기
-                    </Link>
-                    <Link
-                      href="/my/billing"
-                      className="gangi-secondary-button"
-                    >
-                      결제 상태 확인
-                    </Link>
-                  </ActionCluster>
-                }
-              />
+              <div className="gangi-checkout-empty-state gangi-checkout-empty-state-success">
+                <strong>이미 구매한 풀이입니다</strong>
+                <p>결제창을 다시 열지 않고 바로 열람 화면으로 이동합니다.</p>
+                <Link href={alreadyPurchasedHref} className="gangi-primary-button">
+                  구매한 풀이 열기
+                </Link>
+                <Link href="/my/billing" className="gangi-secondary-button">
+                  결제 상태 확인
+                </Link>
+              </div>
             ) : paymentPackage ? (
-              <div className="mt-6">
+              <>
+                <p className="gangi-checkout-action-title">결제창 열기</p>
                 <TossMembershipCheckout
                   packageId={paymentPackage.id}
                   plan={selectedPlan}
@@ -376,16 +291,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   scope={scope}
                   entrySource={from ?? 'membership'}
                 />
-              </div>
+              </>
             ) : (
-              <FeatureCard
-                className="mt-6 border-rose-400/25 bg-rose-400/10"
-                surface="soft"
-                eyebrow="결제 정보를 찾지 못했습니다"
-                description="선택한 플랜의 결제 설정을 불러오지 못했습니다. 멤버십 화면으로 돌아가 다시 선택해 주세요."
-              />
+              <div className="gangi-checkout-empty-state">
+                <strong>결제 정보를 찾지 못했습니다</strong>
+                <p>멤버십 화면으로 돌아가 다시 선택해 주세요.</p>
+                <Link href="/membership" className="gangi-primary-button">
+                  상품 다시 선택
+                </Link>
+              </div>
             )}
-          </SectionSurface>
+          </div>
         </section>
       </AppPage>
     </AppShell>

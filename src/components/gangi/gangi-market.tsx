@@ -29,6 +29,23 @@ export function GangiSeasonBanner({ onTrack }: { onTrack?: TrackHandler }) {
       className="gangi-season-banner"
       data-tone={activeBanner.tone}
       aria-label="추천 운세 배너"
+      onPointerMove={(event) => {
+        const box = event.currentTarget.getBoundingClientRect();
+        const x = (event.clientX - box.left) / box.width - 0.5;
+        const y = (event.clientY - box.top) / box.height - 0.5;
+        event.currentTarget.style.setProperty('--banner-shift-x', `${x * 10}px`);
+        event.currentTarget.style.setProperty('--banner-shift-y', `${y * 8}px`);
+        event.currentTarget.style.setProperty('--banner-visual-x', `${x * -4.5}px`);
+        event.currentTarget.style.setProperty('--banner-visual-y', `${y * -3}px`);
+        event.currentTarget.style.setProperty('--banner-tilt', `${x * 1.8}deg`);
+      }}
+      onPointerLeave={(event) => {
+        event.currentTarget.style.setProperty('--banner-shift-x', '0px');
+        event.currentTarget.style.setProperty('--banner-shift-y', '0px');
+        event.currentTarget.style.setProperty('--banner-visual-x', '0px');
+        event.currentTarget.style.setProperty('--banner-visual-y', '0px');
+        event.currentTarget.style.setProperty('--banner-tilt', '0deg');
+      }}
     >
       <div className="gangi-season-glow" />
       <div className="gangi-banner-copy">

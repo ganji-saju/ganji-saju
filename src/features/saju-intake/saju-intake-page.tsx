@@ -37,7 +37,7 @@ import {
 } from './onboarding-storage';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiIntro, GangiLoadingOverlay, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export type OnboardingStep = 'empathy' | 'birth' | 'nickname' | 'consent';
@@ -1024,6 +1024,12 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         : '다음 화면';
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+      {isSubmitting ? (
+        <GangiLoadingOverlay
+          title="사주풀이를 준비하고 있어요"
+          description="입력한 정보로 오늘 볼 흐름을 정리하는 중입니다."
+        />
+      ) : null}
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
         <GangiPageHeader title="사주 입력" />
         <GangiIntro

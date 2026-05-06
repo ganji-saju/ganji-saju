@@ -21,7 +21,7 @@ interface TarotCardPickerProps {
   question: string;
 }
 
-const CARDS_PER_SPREAD = 16;
+const CARDS_PER_SPREAD = 18;
 
 const CARD_BACK_TONES: Record<
   TarotCardBackTone,
@@ -197,7 +197,7 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
                     alt={`${card.slot}번째 타로 카드`}
                     fill
                     sizes="(max-width: 640px) 22vw, (max-width: 1024px) 14vw, 9vw"
-                    quality={62}
+                    quality={70}
                     priority={card.slot <= CARDS_PER_SPREAD}
                     className="object-cover"
                   />
@@ -241,17 +241,22 @@ function getCardBackStyle(
   const tone = CARD_BACK_TONES[card.backTone];
   const center = (total - 1) / 2;
   const fanOffset = index - center;
-  const angle = fanOffset * 4.8 + card.tilt * 0.25;
-  const lift = Math.abs(fanOffset) * 0.16 + (selected ? -0.35 : card.lift * 0.025);
+  const normalizedDistance = Math.abs(fanOffset) / Math.max(1, center);
+  const angle = fanOffset * 4.95 + card.tilt * 0.18;
+  const lift = selected ? -1.15 : normalizedDistance * 1.65 + card.lift * 0.018;
+  const depth = selected ? 1.08 : 1 - normalizedDistance * 0.08;
   const zIndex = selected ? 40 : index + 1;
 
   return {
     '--fan-offset': fanOffset,
     '--fan-angle': `${angle}deg`,
     '--fan-lift': `${lift}rem`,
+    '--fan-depth': depth,
     background: tone.background,
-    borderColor: selected ? 'rgba(210,176,114,0.82)' : tone.border,
-    boxShadow: `0 12px 34px rgba(0,0,0,0.18), 0 0 ${10 + card.backGlow * 5}px ${tone.light}`,
+    borderColor: selected ? 'rgba(255,79,154,0.92)' : 'rgba(255,79,154,0.72)',
+    boxShadow: selected
+      ? `0 18px 42px rgba(216,27,114,0.24), 0 0 ${14 + card.backGlow * 5}px ${tone.light}`
+      : `0 14px 34px rgba(17,17,20,0.18), 0 0 ${10 + card.backGlow * 5}px ${tone.light}`,
     zIndex,
   } as CSSProperties;
 }
