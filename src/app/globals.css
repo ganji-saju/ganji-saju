@@ -5842,7 +5842,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-tarot-stage {
   display: grid;
-  min-height: 31rem;
+  min-height: 29rem;
   align-content: start;
   justify-items: center;
   gap: 1rem;
@@ -5900,12 +5900,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-tarot-carousel {
   display: flex;
   width: 100%;
-  gap: 1rem;
+  gap: 0.85rem;
   overflow-x: auto;
   overflow-y: visible;
-  scroll-padding-inline: max(1.25rem, calc((100% - 13.5rem) / 2));
+  scroll-padding-inline: 1rem;
   scroll-snap-type: x mandatory;
-  padding: 1.1rem max(1.25rem, calc((100% - 13.5rem) / 2)) 1.25rem;
+  padding: 0.35rem 1rem 0.75rem;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -5914,32 +5914,25 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   display: none;
 }
 
-.gangi-tarot-carousel-card {
-  width: min(56vw, 13.5rem);
-  max-width: 13.5rem;
-  border-radius: 1.15rem;
+.gangi-tarot-spread-page {
+  display: grid;
+  width: 100%;
+  min-width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
   scroll-snap-align: center;
+}
+
+.gangi-tarot-spread-card {
+  min-width: 0;
+  border-radius: 0.72rem;
   transform-origin: 50% 92%;
-  box-shadow: 0 18px 34px rgba(17, 17, 20, 0.16);
+  box-shadow: 0 10px 20px rgba(17, 17, 20, 0.13);
 }
 
-.gangi-tarot-carousel-card.is-active {
+.gangi-tarot-spread-card.is-selected {
   z-index: 2;
-  filter: brightness(1.08);
-}
-
-.gangi-tarot-pick-button {
-  display: inline-flex;
-  width: min(calc(100% - 2rem), 18rem);
-  min-height: 3.4rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
-  background: var(--app-pink);
-  color: #ffffff;
-  font-size: 1.05rem;
-  font-weight: 850;
-  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.22);
+  filter: brightness(1.1);
 }
 
 .gangi-tarot-shuffle {
@@ -5960,18 +5953,18 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 @media (min-width: 768px) {
   .gangi-tarot-stage {
-    min-height: 34rem;
+    min-height: 31rem;
     padding-top: 1.5rem;
   }
 
   .gangi-tarot-carousel {
-    scroll-padding-inline: max(2rem, calc((100% - 15rem) / 2));
-    padding-inline: max(2rem, calc((100% - 15rem) / 2));
+    scroll-padding-inline: 1.2rem;
+    padding-inline: 1.2rem;
   }
 
-  .gangi-tarot-carousel-card {
-    width: min(28vw, 15rem);
-    max-width: 15rem;
+  .gangi-tarot-spread-page {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 }
 
