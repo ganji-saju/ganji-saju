@@ -6484,6 +6484,9 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-chat-room-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
   min-height: 18rem;
   flex: 1;
   overflow-y: auto;
@@ -6602,6 +6605,10 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 @media (min-width: 768px) {
+  .gangi-chat-room-messages {
+    gap: 1.2rem;
+  }
+
   .gangi-chat-room-page {
     min-height: calc(100dvh - 2rem);
     border-inline: 1px solid rgba(17, 17, 20, 0.06);
