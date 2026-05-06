@@ -16,6 +16,7 @@ export interface DialogueExpertMeta {
   id: DialogueExpertId;
   glyph: string;
   animal: string;
+  teacherName: string;
   label: string;
   topic: string;
   description: string;
@@ -30,6 +31,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'rat',
     glyph: '鼠',
     animal: '쥐',
+    teacherName: '엠지쥐선생',
     label: '성향 풀이',
     topic: '성격, 말투, 관계 습관',
     description: '내가 왜 이렇게 반응하는지 성향과 마음 패턴을 짚습니다.',
@@ -40,6 +42,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'ox',
     glyph: '牛',
     animal: '소',
+    teacherName: '오늘소선생',
     label: '오늘운',
     topic: '오늘의 조심점과 행동',
     description: '오늘 해야 할 일과 피해야 할 행동을 짧게 정리합니다.',
@@ -50,6 +53,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'tiger',
     glyph: '虎',
     animal: '호랑이',
+    teacherName: '명리호선생',
     label: '깊은 사주',
     topic: '타고난 흐름과 반복 패턴',
     description: '반복되는 선택, 흐름, 큰 방향을 깊게 봅니다.',
@@ -60,6 +64,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'rabbit',
     glyph: '兎',
     animal: '토끼',
+    teacherName: '타로토선생',
     label: '타로 마음',
     topic: '지금 마음과 선택',
     description: '지금 마음이 어디에 걸려 있는지 카드식으로 읽습니다.',
@@ -70,6 +75,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'dragon',
     glyph: '龍',
     animal: '용',
+    teacherName: '사주용선생',
     label: '사주 종합',
     topic: '전체 운세와 핵심 판단',
     description: '사주, 오늘 흐름, 분야별 조언을 가장 균형 있게 봅니다.',
@@ -80,6 +86,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'snake',
     glyph: '蛇',
     animal: '뱀',
+    teacherName: '꿈뱀선생',
     label: '꿈과 마음',
     topic: '꿈, 무의식, 마음 신호',
     description: '꿈에 남은 장면이나 마음의 신호를 부드럽게 풀이합니다.',
@@ -90,6 +97,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'horse',
     glyph: '馬',
     animal: '말',
+    teacherName: '이동말선생',
     label: '이동과 일',
     topic: '이직, 이동, 새 출발',
     description: '이직, 이사, 여행, 새 시도 타이밍을 봅니다.',
@@ -100,6 +108,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'sheep',
     glyph: '羊',
     animal: '양',
+    teacherName: '궁합양선생',
     label: '궁합과 관계',
     topic: '연애, 가족, 인간관계',
     description: '상대와의 거리감, 말투, 다시 이어질 가능성을 봅니다.',
@@ -110,6 +119,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'monkey',
     glyph: '猿',
     animal: '원숭이',
+    teacherName: '관상원선생',
     label: '인상과 이미지',
     topic: '첫인상, 이미지, 사회적 분위기',
     description: '사람들에게 어떻게 보이는지와 이미지 운용을 봅니다.',
@@ -120,6 +130,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'rooster',
     glyph: '鶏',
     animal: '닭',
+    teacherName: '재물닭선생',
     label: '재물운',
     topic: '돈, 지출, 수입, 사업',
     description: '돈이 들어오고 새는 패턴을 현실적으로 짚습니다.',
@@ -130,6 +141,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'dog',
     glyph: '犬',
     animal: '개',
+    teacherName: '손금멍선생',
     label: '생활 습관',
     topic: '몸 상태, 습관, 생활 리듬',
     description: '무리하지 않는 생활 리듬과 컨디션 관리 관점으로 봅니다.',
@@ -140,6 +152,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
     id: 'pig',
     glyph: '猪',
     animal: '돼지',
+    teacherName: '복돼지선생',
     label: '행운과 기회',
     topic: '기회, 작은 행운, 좋은 타이밍',
     description: '작게 시도해볼 일과 기회를 잡는 방식을 봅니다.',
@@ -190,7 +203,7 @@ export function buildDialogueExpertInstructions(expertId: DialogueExpertId) {
   const expert = getDialogueExpertMeta(expertId);
 
   return [
-    `이번 답변의 전문 분야는 ${expert.animal}띠 ${expert.label}입니다.`,
+    `이번 답변의 전문 분야는 ${expert.teacherName} · ${expert.label}입니다.`,
     `주제 범위는 ${expert.topic}입니다.`,
     expert.answerFrame,
     `답변에서는 ${expert.keywords.join(', ')} 관점을 우선합니다.`,

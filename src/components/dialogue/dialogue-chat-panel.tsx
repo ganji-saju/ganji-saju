@@ -102,7 +102,7 @@ type ProfileConnectionState =
 
 function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): ChatMessage {
   const expert = getDialogueExpertMeta(expertId);
-  const teacherName = `${expert.animal} 선생`;
+  const teacherName = expert.teacherName;
 
   return {
     id: `assistant-intro-${expert.id}`,
@@ -475,7 +475,7 @@ export function DialogueChatPanel({
                     선택한 전문 분야
                   </div>
                   <div className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
-                    {selectedExpert.animal}띠 · {selectedExpert.label}
+                    {selectedExpert.teacherName}
                   </div>
                   <p className="mt-1 text-xs font-bold leading-5 text-[var(--app-copy-muted)]">
                     {selectedExpert.description}
@@ -497,7 +497,7 @@ export function DialogueChatPanel({
                       className="gangi-expert-chip"
                     >
                       <span>{expert.glyph}</span>
-                      <strong>{expert.label}</strong>
+                      <strong>{expert.teacherName}</strong>
                     </button>
                   ))}
                 </div>
@@ -620,7 +620,7 @@ export function DialogueChatPanel({
                 ? 'gangi-chat-input'
                 : 'min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60'
             }
-            placeholder={`${selectedExpert.animal} 선생에게 물어보기`}
+            placeholder={`${selectedExpert.teacherName}에게 물어보기`}
           />
           <button
             type="submit"

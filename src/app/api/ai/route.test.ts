@@ -36,8 +36,8 @@ test('dialogue prompt uses the selected zodiac expert and infers focus topic fro
   assert.match(prompt.instructions, /마크다운 기호를 쓰지 않습니다/);
   assert.match(prompt.instructions, /로봇처럼 설명하지 말고 실제 역술가/);
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);
-  assert.match(prompt.instructions, /닭띠 재물운/);
-  assert.match(alternatePrompt.instructions, /양띠 궁합과 관계/);
+  assert.match(prompt.instructions, /재물닭선생 · 재물운/);
+  assert.match(alternatePrompt.instructions, /궁합양선생 · 궁합과 관계/);
   assert.equal(inferDialogueFocusTopic('올해 재물운을 단도직입적으로 봐줘'), 'wealth');
   assert.equal(inferDialogueFocusTopic('요즘 부모님이랑 관계가 왜 이렇게 꼬일까'), 'relationship');
 });

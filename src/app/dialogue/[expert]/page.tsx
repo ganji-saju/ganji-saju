@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const meta = getDialogueExpertMeta(expertId);
 
   return {
-    title: `${meta.animal} 선생 대화방`,
+    title: `${meta.teacherName} 대화방`,
     description: `${meta.label}에 맞춰 궁금한 일을 바로 물어보는 달빛인생 대화방입니다.`,
     alternates: { canonical: `/dialogue/${expertId}` },
   };
@@ -55,7 +55,6 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
   if (!expertId) notFound();
 
   const meta = getDialogueExpertMeta(expertId);
-  const teacherName = `${meta.animal} 선생`;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell gangi-chat-room-shell pb-24 md:pb-10">
@@ -67,7 +66,7 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           <div className="gangi-chat-room-title">
             <GangiCharacter zodiac={expertId} size="sm" />
             <div>
-              <h1>{teacherName}</h1>
+              <h1>{meta.teacherName}</h1>
               <p>
                 <span aria-hidden="true" />
                 응답 중

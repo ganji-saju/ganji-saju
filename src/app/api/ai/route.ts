@@ -360,7 +360,7 @@ function buildDialogueFallback(
 
   if (!profileGrounding) {
     return [
-      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.animal}띠 ${expert.label} 기준으로 먼저 핵심만 짚겠습니다.`,
+      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.teacherName} 기준으로 먼저 핵심만 짚겠습니다.`,
       `남겨주신 질문은 “${message}”입니다.`,
       '아직 저장된 사주 정보가 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 정보가 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
       `${expert.label} 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
@@ -372,7 +372,7 @@ function buildDialogueFallback(
     .join(' · ');
 
   return [
-    `${expert.animal}띠 ${expert.label} 관점에서 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
+    `${expert.teacherName} 관점에서 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
     simplifySajuCopy(profileGrounding.reports.focus.summary),
     `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다. 오늘은 ${simplifySajuCopy(profileGrounding.saju.yongsin)} 흐름을 잘 쓰는 편이 좋습니다.`,
     evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
@@ -397,7 +397,7 @@ function createYearlyDialogueFallback(
   }
 ) {
   const expert = getDialogueExpertMeta(expertId);
-  const intro = `${expert.animal}띠 ${expert.label} 관점에서 ${targetYear}년 흐름을 먼저 잡아보면, ${summary.overview}`;
+  const intro = `${expert.teacherName} 관점에서 ${targetYear}년 흐름을 먼저 잡아보면, ${summary.overview}`;
 
   return [
     intro,
@@ -540,7 +540,7 @@ function createDialoguePrompt(
   return {
     instructions: [
       '당신은 한국어 운세 서비스 달빛인생에서 실제 상담을 맡은 숙련 상담가입니다.',
-      `사용자가 선택한 12간지 전문 분야는 ${expert.animal}띠 ${expert.label}입니다.`,
+      `사용자가 선택한 12간지 전문 분야는 ${expert.teacherName} · ${expert.label}입니다.`,
       '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
       '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',

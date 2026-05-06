@@ -85,9 +85,9 @@ export default async function DialoguePage({
                 <GangiCharacter zodiac={expert.id} />
                 <span className="gangi-list-copy">
                   <strong>
-                    {expert.animal}띠 · {expert.label}
+                    {expert.teacherName}
                   </strong>
-                  <em>{expert.description}</em>
+                  <em>{expert.label} · {expert.description}</em>
                 </span>
                 <span className="gangi-list-price">
                   {selectedExpertId === expert.id ? '선택됨' : '선택'}
