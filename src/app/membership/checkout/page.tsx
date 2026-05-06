@@ -147,7 +147,11 @@ async function resolveTasteScopeKey(product: TasteProductId, slug?: string, scop
 }
 
 function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string) {
-  if (product === 'today-detail') return `/today-fortune?paid=${product}`;
+  if (product === 'today-detail') {
+    const params = new URLSearchParams({ paid: product, concern: 'general' });
+    if (slug) params.set('sourceSessionId', slug);
+    return `/today-fortune?${params.toString()}`;
+  }
   if (product === 'love-question') return '/compatibility/input?relationship=lover&paid=love-question';
   if (product === 'money-pattern') return '/saju/new?focus=wealth&paid=money-pattern';
   if (product === 'work-flow') return '/saju/new?focus=career&paid=work-flow';

@@ -14,6 +14,7 @@ export interface BirthInputDraft {
   birthLocationLabel?: unknown;
   birthLatitude?: unknown;
   birthLongitude?: unknown;
+  birthLocation?: unknown;
   solarTimeMode?: unknown;
 }
 
@@ -45,6 +46,25 @@ function toNumber(value: unknown): number | null {
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function readBirthLocationObject(value: unknown): BirthInput['birthLocation'] | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const record = value as Record<string, unknown>;
+  const label = readString(record.label);
+  const latitude = toNumber(record.latitude);
+  const longitude = toNumber(record.longitude);
+
+  if (!label || latitude === null || longitude === null) return null;
+
+  return {
+    code: readString(record.code) || undefined,
+    label,
+    latitude,
+    longitude,
+    timezone: readString(record.timezone) || DEFAULT_BIRTH_TIMEZONE,
+  };
 }
 
 function getDaysInMonth(year: number, month: number): number {
@@ -110,6 +130,9 @@ export function isValidBirthInput(input: BirthInput): boolean {
 }
 
 function parseBirthLocation(draft: BirthInputDraft): BirthInput['birthLocation'] | 'invalid' {
+  const directLocation = readBirthLocationObject(draft.birthLocation);
+  if (directLocation) return directLocation;
+
   const code = readString(draft.birthLocationCode);
   if (!code) return null;
 

@@ -186,53 +186,6 @@ function buildFavorableChoices(report: SajuReport) {
   );
 }
 
-const SCORE_CARD_VISUALS: Record<
-  ReportScore['key'],
-  {
-    panel: string;
-    caption: string;
-    score: string;
-    bar: string;
-    glow: string;
-  }
-> = {
-  overall: {
-    panel: 'border-pink-200 bg-[linear-gradient(145deg,#ffffff,#fff0f7)]',
-    caption: 'text-[var(--app-pink-strong)]',
-    score: 'text-[var(--app-ink)]',
-    bar: 'bg-[var(--app-pink)]',
-    glow: 'bg-pink-200/55',
-  },
-  love: {
-    panel: 'border-rose-200 bg-[linear-gradient(145deg,#ffffff,#fff1f2)]',
-    caption: 'text-rose-600',
-    score: 'text-[var(--app-ink)]',
-    bar: 'bg-rose-400',
-    glow: 'bg-rose-200/55',
-  },
-  wealth: {
-    panel: 'border-emerald-200 bg-[linear-gradient(145deg,#ffffff,#ecfdf5)]',
-    caption: 'text-emerald-700',
-    score: 'text-[var(--app-ink)]',
-    bar: 'bg-emerald-400',
-    glow: 'bg-emerald-200/55',
-  },
-  career: {
-    panel: 'border-sky-200 bg-[linear-gradient(145deg,#ffffff,#eff6ff)]',
-    caption: 'text-sky-700',
-    score: 'text-[var(--app-ink)]',
-    bar: 'bg-sky-400',
-    glow: 'bg-sky-200/55',
-  },
-  relationship: {
-    panel: 'border-fuchsia-200 bg-[linear-gradient(145deg,#ffffff,#fdf4ff)]',
-    caption: 'text-fuchsia-700',
-    score: 'text-[var(--app-ink)]',
-    bar: 'bg-fuchsia-400',
-    glow: 'bg-fuchsia-200/55',
-  },
-};
-
 function buildResultTasteProductHref(productSlug: string, slug: string) {
   const encodedSlug = encodeURIComponent(slug);
 
@@ -590,102 +543,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             </section>
         </section>
 
-        <section id="result-topics" className="space-y-4 scroll-mt-24">
-          <SectionHeader
-            eyebrow="분야"
-            title="궁금한 분야만 골라보기"
-            titleClassName="text-2xl sm:text-3xl"
-          />
-            <section className="app-panel p-6 sm:p-7">
-          <div className="flex flex-col gap-3">
-            <div>
-              <div className="app-caption">분야별 풀이</div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
-                지금 가장 궁금한 것부터 보세요
-              </h2>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-3">
-            {report.scores.map((score) => {
-              const isFocusedScore = report.focusScoreKey === score.key;
-              const visual = SCORE_CARD_VISUALS[score.key];
-              const topicKey = score.key === 'overall' ? 'today' : score.key;
-
-              return (
-                <Link
-                  key={score.key}
-                  href={`/saju/${slug}?topic=${topicKey}`}
-                  scroll={false}
-                  aria-current={isFocusedScore ? 'page' : undefined}
-                  data-selected={isFocusedScore ? 'true' : 'false'}
-                  className={cn(
-                    'gangi-card-panel group relative overflow-hidden rounded-[24px] border p-5 shadow-[0_18px_48px_rgba(216,27,114,0.08)]',
-                    visual.panel,
-                    isFocusedScore ? 'ring-1 ring-[var(--app-pink)]/45' : ''
-                  )}
-                >
-                  <div className={cn('pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full blur-3xl', visual.glow)} />
-                  <div className="relative">
-                    <div className={cn('text-xs font-semibold uppercase tracking-[0.2em]', visual.caption)}>
-                      {score.label}
-                    </div>
-                    <div className="mt-3 flex items-end gap-2">
-                      <span className={cn('text-4xl font-semibold', visual.score)}>{score.score}</span>
-                      <span className="pb-1 text-sm text-[var(--app-copy-soft)]">/ 100</span>
-                    </div>
-                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/10">
-                      <div className={cn('h-full rounded-full', visual.bar)} style={{ width: `${score.score}%` }} />
-                    </div>
-                    <p className="mt-4 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(score.summary, 1)}</p>
-                    <div className="mt-5 flex items-center justify-between gap-3 text-xs">
-                      <span
-                        className={cn(
-                          'rounded-full border px-2.5 py-1 transition-colors',
-                          isFocusedScore
-                            ? 'border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 text-[var(--app-pink-strong)]'
-                            : 'border-[var(--app-line)] bg-white/70 text-[var(--app-copy-soft)] group-hover:border-[var(--app-pink-line)] group-hover:text-[var(--app-ink)]'
-                        )}
-                      >
-                        {isFocusedScore ? '현재 해석' : '눌러서 보기'}
-                      </span>
-                      <span
-                        className={cn(
-                          'text-sm transition-all duration-200',
-                          isFocusedScore
-                            ? 'translate-x-0 text-[var(--app-pink-strong)]'
-                            : 'text-[var(--app-copy-soft)] group-hover:translate-x-1 group-hover:text-[var(--app-ink)]'
-                        )}
-                      >
-                        →
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="gangi-card-panel mt-4 overflow-hidden rounded-[24px] border-[var(--app-pink)]/22">
-            <div className="grid gap-0">
-              <div className="p-4 sm:p-5">
-                <div className="app-caption">{report.focusLabel} 실행 포인트</div>
-                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
-                  {easyResultCopy(report.primaryAction.title, 1)}
-                </div>
-                <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(report.primaryAction.description, 2)}</p>
-              </div>
-              <div className="border-t border-[var(--app-line)] p-4 sm:p-5">
-                <div className="app-caption">{report.focusLabel} 주의 포인트</div>
-                <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
-                  {easyResultCopy(report.cautionAction.title, 1)}
-                </div>
-                <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(report.cautionAction.description, 2)}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section className="gangi-card-panel p-6 sm:p-7">
           <div className="flex flex-col gap-4">
             <div>
@@ -703,8 +560,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </Link>
             </div>
           </div>
-        </section>
-
         </section>
 
         <section id="result-flow" className="space-y-4 scroll-mt-24">
