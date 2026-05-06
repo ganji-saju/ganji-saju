@@ -23,7 +23,7 @@ test('birth location geocoder normalizes OpenStreetMap coordinates', async () =>
     assert.equal(url.searchParams.get('format'), 'jsonv2');
     assert.equal(url.searchParams.get('limit'), '5');
     assert.equal(url.searchParams.get('featureType'), 'settlement');
-    assert.equal((init?.headers as Record<string, string>)['User-Agent'].startsWith('saju-app/'), true);
+    assert.equal((init?.headers as Record<string, string>)['User-Agent'].startsWith('ganji-saju/'), true);
 
     return new Response(
       JSON.stringify([

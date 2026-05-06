@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CANONICAL_SITE_URL } from '@/lib/site';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
+const CANONICAL_SITE_HOST = new URL(CANONICAL_SITE_ORIGIN).hostname;
 
 function shouldForwardAuthCallback(req: NextRequest) {
   if (req.nextUrl.pathname !== '/') return false;
@@ -26,9 +28,33 @@ function buildCanonicalAuthCallback(req: NextRequest) {
   return callbackUrl;
 }
 
+function shouldRedirectToCanonicalHost(req: NextRequest) {
+  if (process.env.NODE_ENV !== 'production') return false;
+
+  const host = req.nextUrl.hostname;
+  if (host === CANONICAL_SITE_HOST) return false;
+  if (host === 'localhost' || host === '127.0.0.1') return false;
+
+  return (
+    host.endsWith('.vercel.app') ||
+    host === 'ganjisaju.kr' ||
+    host === 'www.ganjisaju.kr'
+  );
+}
+
+function buildCanonicalUrl(req: NextRequest) {
+  const canonicalUrl = new URL(req.nextUrl.pathname, CANONICAL_SITE_ORIGIN);
+  canonicalUrl.search = req.nextUrl.search;
+  return canonicalUrl;
+}
+
 export async function proxy(req: NextRequest) {
   let response = NextResponse.next({ request: req });
   const { pathname } = req.nextUrl;
+
+  if (shouldRedirectToCanonicalHost(req)) {
+    return NextResponse.redirect(buildCanonicalUrl(req), 308);
+  }
 
   if (shouldForwardAuthCallback(req)) {
     return NextResponse.redirect(buildCanonicalAuthCallback(req));

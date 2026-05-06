@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getSiteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_GEOCODER_URL = 'https://nominatim.openstreetmap.org/search';
-const DEFAULT_USER_AGENT = 'saju-app/1.0 (+https://github.com/kionya/saju-app)';
+const DEFAULT_USER_AGENT = 'ganji-saju/1.0 (+https://xn--s39at50bo6fmwa.kr)';
 const REQUEST_TIMEOUT_MS = 4_000;
 
 interface NominatimPlace {
@@ -125,7 +126,7 @@ export async function GET(req: Request) {
       headers: {
         Accept: 'application/json',
         'User-Agent': getGeocoderUserAgent(),
-        Referer: process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://ganji-saju.vercel.app',
+        Referer: process.env.NEXT_PUBLIC_SITE_URL?.trim() || getSiteUrl(),
       },
       signal: createTimeoutSignal(),
       next: { revalidate: 86_400 },

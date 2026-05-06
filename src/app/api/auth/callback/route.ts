@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { CANONICAL_SITE_URL } from '@/lib/site';
 import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';

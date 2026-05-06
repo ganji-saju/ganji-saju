@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
+import { CANONICAL_SITE_URL } from '@/lib/site';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_YEAR - index);
 const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
