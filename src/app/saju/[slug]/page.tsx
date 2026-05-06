@@ -476,7 +476,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <SajuScreenNav slug={slug} current="result" />
 
         <section className="dalbit-result-first-card">
-          <div className="grid gap-6 lg:grid-cols-[0.98fr_1.02fr] lg:items-start">
+          <div className="grid gap-5">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="dalbit-teacher-chip">
@@ -496,7 +496,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3">
                 <div className="dalbit-result-action-card">
                   <div className="app-caption text-[var(--app-coral)]">조심</div>
                   <h2>{easyResultCopy(punchReading.caution, 1)}</h2>
@@ -512,7 +512,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               <div className="dalbit-result-evidence-card">
                 <div className="app-caption text-[var(--app-pink-strong)]">다음 선택</div>
                 <h2>더 보고 싶은 부분만 이어보세요</h2>
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-5 grid gap-3">
                   <TrackedLink
                     href={`/saju/${slug}/premium`}
                     eventName="report_deep_report_click"
@@ -539,7 +539,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           <div className="dalbit-section-heading mb-0">
             <h2 className="text-2xl">더 궁금한 부분만 이어보세요</h2>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3">
             {resultTasteProducts.map((product) => (
               <Link key={product.slug} href={product.href} className="dalbit-price-card">
                 <div className="flex items-center justify-between gap-3">
@@ -584,7 +584,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             titleClassName="text-2xl sm:text-3xl"
           />
             <section className="app-panel p-6 sm:p-7">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3">
             <div>
               <div className="app-caption">분야별 풀이</div>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
@@ -593,7 +593,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-6 grid gap-3">
             {report.scores.map((score) => {
               const isFocusedScore = report.focusScoreKey === score.key;
               const visual = SCORE_CARD_VISUALS[score.key];
@@ -654,7 +654,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           </div>
 
           <div className="gangi-card-panel mt-4 overflow-hidden rounded-[24px] border-[var(--app-pink)]/22">
-            <div className="grid gap-0 lg:grid-cols-2">
+            <div className="grid gap-0">
               <div className="p-4 sm:p-5">
                 <div className="app-caption">{report.focusLabel} 실행 포인트</div>
                 <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
@@ -662,7 +662,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 </div>
                 <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{easyResultCopy(report.primaryAction.description, 2)}</p>
               </div>
-              <div className="border-t border-[var(--app-line)] p-4 sm:p-5 lg:border-l lg:border-t-0">
+              <div className="border-t border-[var(--app-line)] p-4 sm:p-5">
                 <div className="app-caption">{report.focusLabel} 주의 포인트</div>
                 <div className="mt-2 text-lg font-semibold leading-7 text-[var(--app-ink)]">
                   {easyResultCopy(report.cautionAction.title, 1)}
@@ -674,7 +674,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         </section>
 
         <section className="gangi-card-panel p-6 sm:p-7">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4">
             <div>
               <div className="app-caption">올해 흐름</div>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
@@ -700,7 +700,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             title="오늘, 이번 달, 앞으로의 흐름"
             titleClassName="text-2xl sm:text-3xl"
           />
-            <section className="grid gap-4 lg:grid-cols-3">
+            <section className="grid gap-4">
           {report.timeline.map((item) => (
             <article key={item.label} className="app-panel p-6">
               <div className="app-caption">{item.label}</div>
@@ -764,7 +764,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4">
                   {report.evidenceCards.map((card) => (
                     <article
                       key={card.key}
@@ -955,7 +955,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             </details>
 
             <section className="grid gap-3">
-              <div className="flex flex-col gap-3 rounded-[22px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 lg:flex-row lg:items-center">
+              <div className="flex flex-col gap-3 rounded-[22px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
                 <div className="min-w-40 text-sm font-semibold text-[var(--app-ink)]">오늘 균형을 돕는 기운</div>
                 <div className="flex flex-wrap gap-2">
                   {report.supportElements.map((element) => (
@@ -975,7 +975,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </div>
 
               <div className="rounded-[22px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-4">
                   <div className="max-w-sm">
                     <div className="text-sm font-semibold text-[var(--app-ink)]">기운 균형</div>
                     <p className="mt-2 text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -1006,7 +1006,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   </div>
                 </div>
 
-                <div className="mt-6 grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+                <div className="mt-6 grid gap-6">
                   <div className="mx-auto w-full max-w-[390px]">
                     <FiveElementOrbitChart
                       byElement={sajuData.fiveElements.byElement}
@@ -1014,7 +1014,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       weakest={sajuData.fiveElements.weakest}
                     />
                   </div>
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+                  <div className="grid gap-3">
                     {(Object.entries(sajuData.fiveElements.byElement) as [Element, (typeof sajuData.fiveElements.byElement)[Element]][]).map(([element, value]) => (
                       <div key={element} className="rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-4">
                         <div
@@ -1045,7 +1045,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               cacheEnabled={isReadingId(slug)}
             />
 
-            <section className="grid gap-4 lg:grid-cols-[0.88fr_1.12fr]">
+            <section className="grid gap-4">
               <article className="app-panel p-6">
                 <div className="app-caption">요즘 흐름</div>
                 <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">
@@ -1082,7 +1082,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     ) : null}
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3">
                     <div className="rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
                       <div className="text-xs uppercase tracking-[0.2em] text-[var(--app-copy-soft)]">올해 분위기</div>
                       <div className="mt-2 text-lg font-semibold text-[var(--app-ink)]">
@@ -1119,7 +1119,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
                 {majorLuckPreview.length > 0 ? (
                   <>
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-5 grid gap-3">
                       {majorLuckPreview.map((cycle) => {
                         const isCurrent = currentMajorIndex === cycle.index;
 

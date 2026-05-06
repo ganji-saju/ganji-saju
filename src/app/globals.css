@@ -3144,7 +3144,7 @@
       radial-gradient(circle at 88% 0%, rgba(255, 79, 154, 0.14), transparent 30%),
       linear-gradient(180deg, #ffffff, #fff7fb);
     box-shadow: 0 20px 58px rgba(216, 27, 114, 0.1);
-    padding: clamp(1.2rem, 3vw, 1.85rem);
+    padding: clamp(1.05rem, 4vw, 1.35rem);
   }
 
   .dalbit-teacher-chip {
@@ -3168,10 +3168,10 @@
 
   .dalbit-result-title {
     color: var(--app-ink);
-    font-size: clamp(2rem, 4vw, 3.35rem);
-    font-weight: 950;
-    line-height: 1.08;
-    letter-spacing: -0.045em;
+    font-size: clamp(2rem, 12vw, 2.72rem);
+    font-weight: 760;
+    line-height: 1.14;
+    letter-spacing: -0.015em;
     word-break: keep-all;
     text-wrap: balance;
   }
@@ -3180,9 +3180,9 @@
     margin-top: 1rem;
     max-width: 42rem;
     color: var(--app-copy);
-    font-size: clamp(1rem, 1.6vw, 1.16rem);
-    font-weight: 650;
-    line-height: 1.82;
+    font-size: clamp(1rem, 4vw, 1.08rem);
+    font-weight: 430;
+    line-height: 1.78;
     word-break: keep-all;
   }
 
@@ -3202,7 +3202,7 @@
     margin-top: 0.45rem;
     color: var(--app-ink);
     font-size: 1.05rem;
-    font-weight: 950;
+    font-weight: 680;
     line-height: 1.45;
   }
 
@@ -3226,7 +3226,7 @@
     margin-top: 0.45rem;
     color: var(--app-ink);
     font-size: 1.25rem;
-    font-weight: 950;
+    font-weight: 680;
     line-height: 1.45;
     word-break: keep-all;
   }
@@ -4039,8 +4039,8 @@
 
 @media (min-width: 1024px) {
   .saju-result-page {
-    padding-top: 2rem;
-    padding-bottom: 5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 4.5rem;
   }
 }
 
@@ -5316,6 +5316,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   max-width: min(calc(100vw - 2rem), 30rem) !important;
   margin-inline: auto !important;
   padding-inline: clamp(1rem, 4vw, 1.25rem);
+}
+
+.app-page.gangi-subpage.saju-result-page {
+  width: min(calc(100vw - 1.5rem), 28.5rem) !important;
+  max-width: min(calc(100vw - 1.5rem), 28.5rem) !important;
+  padding-inline: clamp(0.85rem, 3.8vw, 1.05rem);
 }
 
 .gangi-subpage.saju-intake-page {
