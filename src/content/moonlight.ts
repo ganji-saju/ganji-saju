@@ -331,7 +331,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'mg-ji',
     teacherName: '엠지쥐선생',
     animal: '쥐',
-    zodiac: '子',
+    zodiac: '🐭',
     zodiacOrder: 1,
     serviceTitle: 'MBTI',
     shortLabel: '성향 놀이',
@@ -345,7 +345,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'today-so',
     teacherName: '오늘소선생',
     animal: '소',
-    zodiac: '丑',
+    zodiac: '🐮',
     zodiacOrder: 2,
     serviceTitle: '오늘 루틴',
     shortLabel: '생활 조언',
@@ -359,7 +359,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'myeongri-ho',
     teacherName: '명리호선생',
     animal: '호랑이',
-    zodiac: '寅',
+    zodiac: '🐯',
     zodiacOrder: 3,
     serviceTitle: '명리',
     shortLabel: '조금 더 깊게',
@@ -373,7 +373,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'tarot-to',
     teacherName: '타로토선생',
     animal: '토끼',
-    zodiac: '卯',
+    zodiac: '🐰',
     zodiacOrder: 4,
     serviceTitle: '타로',
     shortLabel: '지금 마음 보기',
@@ -387,7 +387,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'saju-yong',
     teacherName: '사주용선생',
     animal: '용',
-    zodiac: '辰',
+    zodiac: '🐲',
     zodiacOrder: 5,
     serviceTitle: '사주',
     shortLabel: '내 흐름 보기',
@@ -401,7 +401,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'dream-baem',
     teacherName: '꿈뱀선생',
     animal: '뱀',
-    zodiac: '巳',
+    zodiac: '🐍',
     zodiacOrder: 6,
     serviceTitle: '꿈해몽',
     shortLabel: '마음 신호',
@@ -415,7 +415,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'move-mal',
     teacherName: '이동말선생',
     animal: '말',
-    zodiac: '午',
+    zodiac: '🐴',
     zodiacOrder: 7,
     serviceTitle: '이동운',
     shortLabel: '이직·이사·여행',
@@ -429,7 +429,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'compat-yang',
     teacherName: '궁합양선생',
     animal: '양',
-    zodiac: '未',
+    zodiac: '🐑',
     zodiacOrder: 8,
     serviceTitle: '궁합',
     shortLabel: '상대와의 결',
@@ -443,7 +443,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'face-won',
     teacherName: '관상원선생',
     animal: '원숭이',
-    zodiac: '申',
+    zodiac: '🐵',
     zodiacOrder: 9,
     serviceTitle: '관상',
     shortLabel: '인상과 분위기',
@@ -457,7 +457,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'wealth-dak',
     teacherName: '재물닭선생',
     animal: '닭',
-    zodiac: '酉',
+    zodiac: '🐔',
     zodiacOrder: 10,
     serviceTitle: '재물운',
     shortLabel: '돈 습관',
@@ -471,7 +471,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'palm-meong',
     teacherName: '손금멍선생',
     animal: '개',
-    zodiac: '戌',
+    zodiac: '🐶',
     zodiacOrder: 11,
     serviceTitle: '손금',
     shortLabel: '손바닥 단서',
@@ -485,7 +485,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     slug: 'luck-dwaeji',
     teacherName: '복돼지선생',
     animal: '돼지',
-    zodiac: '亥',
+    zodiac: '🐷',
     zodiacOrder: 12,
     serviceTitle: '행운',
     shortLabel: '복·쿠폰·리워드',
@@ -531,7 +531,7 @@ export const TRUST_SIGNALS = [
 export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   {
     slug: 'saju',
-    hanja: '四 柱',
+    hanja: '🐲',
     title: '사주',
     hook: '나는 어떤 사람으로 태어난 걸까',
     description: '태어난 때에 깃든 하늘의 결을 읽어, 선생님의 본성과 큰 흐름을 차분히 짚어드립니다.',
@@ -540,7 +540,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'myeongri',
-    hanja: '命 理',
+    hanja: '🐯',
     title: '명리',
     hook: '왜 유독 이 부분에서 늘 걸리는 걸까',
     description: '오행과 십신의 움직임으로, 자꾸 반복되는 삶의 장면이 왜 생기는지 들려드립니다.',
@@ -549,7 +549,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'tarot',
-    hanja: '塔 羅',
+    hanja: '🐰',
     title: '타로',
     hook: '지금 이 선택, 괜찮은 걸까',
     description: '지금 이 순간 마음 위로 스치는 기운을 한 장의 그림으로 읽어드립니다.',
@@ -558,7 +558,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'compatibility',
-    hanja: '宮 合',
+    hanja: '🐑',
     title: '궁합',
     hook: '우리, 정말 잘 맞는 사이일까',
     description: '두 사람의 결이 어디에서 닮고 어디에서 어긋나는지, 살가운 말로 풀어드립니다.',
@@ -567,7 +567,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'star-sign',
-    hanja: '星 座',
+    hanja: '✦',
     title: '별자리',
     hook: '저 먼 별빛이 내게 전하는 말',
     description: '오늘 마음의 결을 별빛 언어로 먼저 살피고, 사주와 만나는 지점까지 이어드립니다.',
@@ -576,7 +576,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'zodiac',
-    hanja: '十 二 支',
+    hanja: '🐾',
     title: '띠별 운세',
     hook: '올해 내 띠의 흐름은 어떠한가',
     description: '익숙한 띠의 흐름으로 오늘과 올 한 해의 기운을 부드럽게 짚어드립니다.',
@@ -630,9 +630,9 @@ export const SAJU_BASIC_SECTIONS = [
 export const SAJU_PREMIUM_SECTIONS = [
   '일주 본질',
   '오행 균형',
-  '격국(格局)',
-  '용신(用神)',
-  '대운(大運) 흐름',
+  '성향 구조',
+  '필요한 보완',
+  '큰 흐름',
   '2026 세운',
   '분야별 조망',
 ] as const;
@@ -1311,28 +1311,28 @@ export const COMPLETE_PLAN_GUIDE: Record<
 
 export const TAROT_QUESTION_OPTIONS: readonly MoonlightTarotQuestionOption[] = [
   {
-    emoji: '心',
+    emoji: '✨',
     label: '오늘 하루 어떤 메시지가 있을까',
     intent: '마음 정리',
     description: '딱히 큰 사건은 없지만 오늘 조심할 말, 붙잡을 기회, 마음의 온도를 알고 싶을 때 봅니다.',
     when: '아침이나 외출 전',
   },
   {
-    emoji: '緣',
+    emoji: '💗',
     label: '지금 고민 중인 관계에 대하여',
     intent: '상대와 관계',
     description: '그 사람 마음, 연락해도 되는지, 관계가 왜 어색해졌는지처럼 마음이 계속 걸릴 때 봅니다.',
     when: '연락 전이나 대화 후',
   },
   {
-    emoji: '決',
+    emoji: '✅',
     label: '지금 결정해야 할 선택에 대하여',
     intent: '결정과 타이밍',
     description: '밀어도 되는지, 한 번 더 확인해야 하는지, 지금 선택의 수위를 정하고 싶을 때 봅니다.',
     when: '계약·이직·고백 전',
   },
   {
-    emoji: '路',
+    emoji: '🧭',
     label: '앞으로의 방향에 대하여',
     intent: '흐름과 방향',
     description: '앞으로 무엇을 줄이고 무엇을 키워야 할지, 지금 삶의 방향이 맞는지 확인하고 싶을 때 봅니다.',
@@ -1363,7 +1363,7 @@ export const TAROT_CARD_READING_COPY = {
   },
   'The Moon': {
     arcana: 'XVIII',
-    title: '달(月) · The Moon',
+    title: '달 · The Moon',
     subtitle: '직관과 무의식',
     guidance:
       '보이는 것 뒤에 숨은 것을 살피라는 메시지입니다. 지금 관계에서 드러난 장면보다 드러나지 않은 진심이 더 중요합니다.',
@@ -1374,7 +1374,7 @@ export const TAROT_CARD_READING_COPY = {
   },
   'The Sun': {
     arcana: 'XIX',
-    title: '태양(日) · The Sun',
+    title: '태양 · The Sun',
     subtitle: '성취와 기쁨',
     guidance:
       '기운이 환하게 열리는 카드입니다. 움츠렸던 이야기나 관계를 조금 더 밝게 드러낼수록 흐름이 쉬워집니다.',
@@ -1396,7 +1396,7 @@ export const TAROT_CARD_READING_COPY = {
   },
   'The Lovers': {
     arcana: 'VI',
-    title: '연인(戀人) · The Lovers',
+    title: '연인 · The Lovers',
     subtitle: '선택과 조화',
     guidance:
       '마음이 향하는 쪽을 분명히 하라는 메시지입니다. 사람과 일 모두에서 무엇을 가까이 둘지 선택이 필요합니다.',
@@ -1407,7 +1407,7 @@ export const TAROT_CARD_READING_COPY = {
   },
   Death: {
     arcana: 'XIII',
-    title: '변화(變化) · Death',
+    title: '변화 · Death',
     subtitle: '정리와 재출발',
     guidance:
       '끝이 아니라 새로운 시작을 알리는 카드입니다. 오래 붙들고 있던 방식 하나를 정리하면 다음 장면이 열립니다.',
@@ -1421,61 +1421,61 @@ export const TAROT_CARD_READING_COPY = {
 export const TEN_GODS_GUIDE: readonly MoonlightTenGodCard[] = [
   {
     name: '정인',
-    hanja: '正印',
+    hanja: '배움',
     meaning: '학문 · 후원 · 어머니',
     seniorCopy: '나를 돌봐주는 손길, 그런 사람이 있으십니까',
   },
   {
     name: '편인',
-    hanja: '偏印',
+    hanja: '직감',
     meaning: '직관 · 전문기술',
     seniorCopy: '남다른 감각, 특별한 눈',
   },
   {
     name: '비견',
-    hanja: '比肩',
+    hanja: '나',
     meaning: '동료 · 형제 · 자존',
     seniorCopy: '나와 같은 결의 사람들',
   },
   {
     name: '겁재',
-    hanja: '劫財',
+    hanja: '경쟁',
     meaning: '경쟁 · 재물 분산',
     seniorCopy: '가까운 듯 가까이 있으면 닳는 인연',
   },
   {
     name: '식신',
-    hanja: '食神',
+    hanja: '표현',
     meaning: '표현 · 여유 · 자녀',
     seniorCopy: '내가 키워내는 것, 자녀 혹은 결실',
   },
   {
     name: '상관',
-    hanja: '傷官',
+    hanja: '재능',
     meaning: '재능 · 반항',
     seniorCopy: '재주가 넘쳐 틀을 벗어나는 자유로움',
   },
   {
     name: '정재',
-    hanja: '正財',
+    hanja: '저축',
     meaning: '고정 재물 · 배우자',
     seniorCopy: '꾸준히 쌓아올리신 것들',
   },
   {
     name: '편재',
-    hanja: '偏財',
+    hanja: '흐름',
     meaning: '유동 재물 · 활동',
     seniorCopy: '큰 물결처럼 들고 나는 재물',
   },
   {
     name: '정관',
-    hanja: '正官',
+    hanja: '자리',
     meaning: '명예 · 직장',
     seniorCopy: '나를 세워주는 자리, 그 이름',
   },
   {
     name: '편관',
-    hanja: '偏官',
+    hanja: '단련',
     meaning: '권력 · 경쟁',
     seniorCopy: '나를 단련시키는 힘',
   },
@@ -1560,7 +1560,7 @@ export const STAR_SIGN_META = {
 
 export const ZODIAC_BLUEPRINT = {
   highlightedSlug: 'snake',
-  yearlyLabel: '2026년 병오(丙午) · 말의 해',
+  yearlyLabel: '2026년 말의 해',
 } as const;
 
 export const ZODIAC_META = {

@@ -828,7 +828,7 @@ export default function NotificationCenterPage({
                 <div className="rounded-[1.6rem] border border-[var(--app-gold)]/26 bg-[linear-gradient(135deg,rgba(10,18,36,0.98),rgba(22,26,46,0.94))] p-5">
                   <div className="flex items-center justify-between">
                     <div className=" text-sm tracking-[0.25em] text-[var(--app-gold)]/72">
-                      月光先生
+                      달빛인생
                     </div>
                     <div className="text-[11px] text-[var(--app-copy-soft)]">오늘의 리듬</div>
                   </div>

@@ -5,7 +5,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'love_contact',
     label: '오늘 연락해도 될까?',
-    hanja: '戀',
+    hanja: '💗',
     shortLabel: '연락',
     prompt: '연락과 재회 흐름',
     focusTopic: 'love',
@@ -19,7 +19,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'money_spend',
     label: '돈이 새는 날일까?',
-    hanja: '財',
+    hanja: '💰',
     shortLabel: '지출',
     prompt: '지출과 결제 흐름',
     focusTopic: 'wealth',
@@ -33,7 +33,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'work_meeting',
     label: '미팅·계약 괜찮을까?',
-    hanja: '業',
+    hanja: '💼',
     shortLabel: '미팅',
     prompt: '협상과 계약 흐름',
     focusTopic: 'career',
@@ -47,7 +47,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'relationship_conflict',
     label: '말실수 조심해야 할까?',
-    hanja: '緣',
+    hanja: '💬',
     shortLabel: '구설',
     prompt: '관계와 말의 흐름',
     focusTopic: 'relationship',
@@ -61,7 +61,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'energy_health',
     label: '무리해도 되는 날일까?',
-    hanja: '身',
+    hanja: '🌿',
     shortLabel: '컨디션',
     prompt: '컨디션과 생활 리듬',
     focusTopic: 'today',
@@ -75,7 +75,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
   {
     id: 'general',
     label: '가볍게 오늘 흐름',
-    hanja: '流',
+    hanja: '✨',
     shortLabel: '총운',
     prompt: '오늘 전체 흐름',
     focusTopic: 'today',

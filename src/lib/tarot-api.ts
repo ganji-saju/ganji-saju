@@ -264,28 +264,28 @@ const SUIT_THEMES: Record<
 > = {
   cups: {
     korean: '컵',
-    marker: '水',
+    marker: '💧',
     theme: '감정과 관계',
     focus: '마음의 온도와 관계의 흐름',
     sajuElement: '수기처럼 흐르는 감정의 결',
   },
   pentacles: {
     korean: '펜타클',
-    marker: '土',
+    marker: '🪙',
     theme: '현실과 재물',
     focus: '손에 잡히는 안정과 생활의 기반',
     sajuElement: '토기처럼 쌓아가는 현실 감각',
   },
   swords: {
     korean: '소드',
-    marker: '風',
+    marker: '🌬',
     theme: '생각과 판단',
     focus: '말, 판단, 경계의 선',
     sajuElement: '금기처럼 분별하고 가르는 힘',
   },
   wands: {
     korean: '완드',
-    marker: '火',
+    marker: '🔥',
     theme: '의욕과 행동',
     focus: '움직임과 표현의 속도',
     sajuElement: '화기처럼 밖으로 뻗는 추진력',
@@ -905,10 +905,10 @@ function getKeyword(card: TarotApiCard, theme: { theme: string; focus: string })
 
 function getCardMarker(card: TarotApiCard) {
   if (card.type === 'major') {
-    return '大';
+    return '✦';
   }
 
-  return card.suit ? SUIT_THEMES[card.suit].marker : '月';
+  return card.suit ? SUIT_THEMES[card.suit].marker : '🌙';
 }
 
 function getArcanaLabel(card: TarotApiCard) {

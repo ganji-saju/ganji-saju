@@ -51,18 +51,18 @@ let creditRefreshUserId: string | null = null;
 let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
-  홈: { glyph: '月', accent: 'var(--app-pink)', description: '오늘의 시작' },
+  홈: { glyph: '🌙', accent: 'var(--app-pink)', description: '오늘의 시작' },
   사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '생년월일 입력' },
-  무료운세: { glyph: '今', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
-  대화방: { glyph: '問', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
-  보관함: { glyph: '箱', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
-  오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
-  사주: { glyph: '辰', accent: 'var(--app-pink)', description: '내 사주 풀이' },
-  명리: { glyph: '寅', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
-  타로: { glyph: '卯', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
-  궁합: { glyph: '未', accent: 'var(--app-pink)', description: '둘 사이 흐름' },
-  별자리: { glyph: '星', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
-  띠운세: { glyph: '支', accent: 'var(--app-pink)', description: '내 띠 오늘 흐름' },
+  무료운세: { glyph: '✨', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
+  대화방: { glyph: '💬', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
+  보관함: { glyph: '🔖', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
+  오늘운: { glyph: '🐮', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
+  사주: { glyph: '🐲', accent: 'var(--app-pink)', description: '내 사주 풀이' },
+  명리: { glyph: '🐯', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
+  타로: { glyph: '🐰', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
+  궁합: { glyph: '🐑', accent: 'var(--app-pink)', description: '둘 사이 흐름' },
+  별자리: { glyph: '✦', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
+  띠운세: { glyph: '🐾', accent: 'var(--app-pink)', description: '내 띠 오늘 흐름' },
   안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
@@ -333,7 +333,7 @@ function DesktopSidebar({
         <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-3">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 text-lg text-[var(--app-gold-text)]">
-              {user ? '我' : '月'}
+              {user ? '👤' : '🌙'}
             </div>
             <div className="min-w-0">
               <div className="truncate text-sm font-medium text-[var(--app-ivory)]">

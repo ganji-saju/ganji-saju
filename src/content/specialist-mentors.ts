@@ -12,7 +12,7 @@ export interface SpecialistMentorCardData {
 export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
   {
     slug: 'wollyeong',
-    hanja: '月令',
+    hanja: '🐲',
     title: '월령 선생',
     specialty: '격국·용신·원국 분석',
     description: '내 사주의 바탕과 오늘 선택을 짚어드립니다.',
@@ -22,7 +22,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
   },
   {
     slug: 'sewoon',
-    hanja: '歲運',
+    hanja: '🐴',
     title: '세운 선생',
     specialty: '올해·월별 전략',
     description: '대운 위에서 올해의 촉발점과 월별 리듬을 봅니다.',
@@ -32,7 +32,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
   },
   {
     slug: 'inyeon',
-    hanja: '因緣',
+    hanja: '🐑',
     title: '인연 선생',
     specialty: '궁합·관계',
     description: '두 사람의 결이 어디에서 맞고 어긋나는지 봅니다.',
@@ -42,7 +42,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
   },
   {
     slug: 'gamun',
-    hanja: '家門',
+    hanja: '🐶',
     title: '가문 선생',
     specialty: '가족·자녀·부모',
     description: '가족 구성원의 기질과 충돌 지점을 함께 정리합니다.',

@@ -3,18 +3,18 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export const GANGI_ZODIAC = [
-  { key: 'rat', name: '쥐', glyph: '鼠', colors: ['#7e7c8a', '#a8a4b6'] },
-  { key: 'ox', name: '소', glyph: '牛', colors: ['#8d6e52', '#bc9d7a'] },
-  { key: 'tiger', name: '호랑이', glyph: '虎', colors: ['#e08648', '#f6b26b'] },
-  { key: 'rabbit', name: '토끼', glyph: '兎', colors: ['#c8a3c8', '#e6cce6'] },
-  { key: 'dragon', name: '용', glyph: '龍', colors: ['#3f7a8c', '#6db0c4'] },
-  { key: 'snake', name: '뱀', glyph: '蛇', colors: ['#5b8a5b', '#94c094'] },
-  { key: 'horse', name: '말', glyph: '馬', colors: ['#c46a5a', '#e89a8a'] },
-  { key: 'sheep', name: '양', glyph: '羊', colors: ['#d6b27d', '#ecd2a5'] },
-  { key: 'monkey', name: '원숭이', glyph: '猿', colors: ['#8a6a3a', '#b69666'] },
-  { key: 'rooster', name: '닭', glyph: '鶏', colors: ['#d49a3a', '#f0c570'] },
-  { key: 'dog', name: '개', glyph: '犬', colors: ['#7a6555', '#a89380'] },
-  { key: 'pig', name: '돼지', glyph: '猪', colors: ['#d68aa8', '#eeb8cc'] },
+  { key: 'rat', name: '쥐', glyph: '🐭', colors: ['#7e7c8a', '#a8a4b6'] },
+  { key: 'ox', name: '소', glyph: '🐮', colors: ['#8d6e52', '#bc9d7a'] },
+  { key: 'tiger', name: '호랑이', glyph: '🐯', colors: ['#e08648', '#f6b26b'] },
+  { key: 'rabbit', name: '토끼', glyph: '🐰', colors: ['#c8a3c8', '#e6cce6'] },
+  { key: 'dragon', name: '용', glyph: '🐲', colors: ['#3f7a8c', '#6db0c4'] },
+  { key: 'snake', name: '뱀', glyph: '🐍', colors: ['#5b8a5b', '#94c094'] },
+  { key: 'horse', name: '말', glyph: '🐴', colors: ['#c46a5a', '#e89a8a'] },
+  { key: 'sheep', name: '양', glyph: '🐑', colors: ['#d6b27d', '#ecd2a5'] },
+  { key: 'monkey', name: '원숭이', glyph: '🐵', colors: ['#8a6a3a', '#b69666'] },
+  { key: 'rooster', name: '닭', glyph: '🐔', colors: ['#d49a3a', '#f0c570'] },
+  { key: 'dog', name: '개', glyph: '🐶', colors: ['#7a6555', '#a89380'] },
+  { key: 'pig', name: '돼지', glyph: '🐷', colors: ['#d68aa8', '#eeb8cc'] },
 ] as const;
 
 export type GangiZodiacKey = (typeof GANGI_ZODIAC)[number]['key'];
@@ -54,7 +54,7 @@ export function GangiCharacter({
       style={{ background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` } as CSSProperties}
       aria-hidden="true"
     >
-      {data.glyph}
+      <span className="gangi-character-face">{data.glyph}</span>
     </span>
   );
 }

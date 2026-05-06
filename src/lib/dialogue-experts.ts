@@ -29,7 +29,7 @@ export const DEFAULT_DIALOGUE_EXPERT_ID: DialogueExpertId = 'dragon';
 export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   {
     id: 'rat',
-    glyph: '鼠',
+    glyph: '🐭',
     animal: '쥐',
     teacherName: '엠지쥐선생',
     label: '성향 풀이',
@@ -40,7 +40,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'ox',
-    glyph: '牛',
+    glyph: '🐮',
     animal: '소',
     teacherName: '오늘소선생',
     label: '오늘운',
@@ -51,7 +51,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'tiger',
-    glyph: '虎',
+    glyph: '🐯',
     animal: '호랑이',
     teacherName: '명리호선생',
     label: '깊은 사주',
@@ -62,7 +62,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'rabbit',
-    glyph: '兎',
+    glyph: '🐰',
     animal: '토끼',
     teacherName: '타로토선생',
     label: '타로 마음',
@@ -73,7 +73,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'dragon',
-    glyph: '龍',
+    glyph: '🐲',
     animal: '용',
     teacherName: '사주용선생',
     label: '사주 종합',
@@ -84,7 +84,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'snake',
-    glyph: '蛇',
+    glyph: '🐍',
     animal: '뱀',
     teacherName: '꿈뱀선생',
     label: '꿈과 마음',
@@ -95,7 +95,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'horse',
-    glyph: '馬',
+    glyph: '🐴',
     animal: '말',
     teacherName: '이동말선생',
     label: '이동과 일',
@@ -106,7 +106,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'sheep',
-    glyph: '羊',
+    glyph: '🐑',
     animal: '양',
     teacherName: '궁합양선생',
     label: '궁합과 관계',
@@ -117,7 +117,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'monkey',
-    glyph: '猿',
+    glyph: '🐵',
     animal: '원숭이',
     teacherName: '관상원선생',
     label: '인상과 이미지',
@@ -128,7 +128,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'rooster',
-    glyph: '鶏',
+    glyph: '🐔',
     animal: '닭',
     teacherName: '재물닭선생',
     label: '재물운',
@@ -139,7 +139,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'dog',
-    glyph: '犬',
+    glyph: '🐶',
     animal: '개',
     teacherName: '손금멍선생',
     label: '생활 습관',
@@ -150,7 +150,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'pig',
-    glyph: '猪',
+    glyph: '🐷',
     animal: '돼지',
     teacherName: '복돼지선생',
     label: '행운과 기회',

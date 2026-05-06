@@ -18,7 +18,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   major: {
     family: 'major',
     label: 'Major Arcana',
-    marker: '大',
+    marker: '✦',
     accentClassName: 'text-[var(--app-gold)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(210,176,114,0.22),transparent_36%),linear-gradient(160deg,rgba(86,62,122,0.98),rgba(19,23,47,0.98))]',
@@ -28,7 +28,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   cups: {
     family: 'cups',
     label: 'Cups',
-    marker: '水',
+    marker: '💧',
     accentClassName: 'text-[var(--app-sky)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(108,173,205,0.24),transparent_36%),linear-gradient(160deg,rgba(42,79,116,0.98),rgba(12,24,45,0.98))]',
@@ -38,7 +38,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   pentacles: {
     family: 'pentacles',
     label: 'Pentacles',
-    marker: '土',
+    marker: '🪙',
     accentClassName: 'text-[var(--app-jade)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(121,178,139,0.22),transparent_36%),linear-gradient(160deg,rgba(45,86,72,0.98),rgba(16,31,37,0.98))]',
@@ -48,7 +48,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   swords: {
     family: 'swords',
     label: 'Swords',
-    marker: '風',
+    marker: '🌬',
     accentClassName: 'text-[var(--app-ivory)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(232,229,214,0.16),transparent_36%),linear-gradient(160deg,rgba(57,67,88,0.98),rgba(15,19,32,0.98))]',
@@ -58,7 +58,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   wands: {
     family: 'wands',
     label: 'Wands',
-    marker: '火',
+    marker: '🔥',
     accentClassName: 'text-[var(--app-coral)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(211,129,103,0.24),transparent_36%),linear-gradient(160deg,rgba(116,62,58,0.98),rgba(34,19,31,0.98))]',

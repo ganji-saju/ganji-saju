@@ -5049,24 +5049,33 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   border-radius: 9999px;
   color: #ffffff;
   font-family: var(--font-body);
-  font-size: 1.45rem;
+  font-size: 1.72rem;
   font-weight: 900;
   line-height: 1;
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.45), inset 0 -4px 0 rgba(0, 0, 0, 0.08);
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.08), 0 8px 18px rgba(17, 17, 20, 0.08);
+}
+
+.gangi-character-face {
+  display: grid;
+  width: 72%;
+  height: 72%;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.28);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.22));
 }
 
 .gangi-character[data-size="lg"] {
   width: 4rem;
   height: 4rem;
-  font-size: 1.65rem;
+  font-size: 1.98rem;
   animation: gangi-float-y 3.6s ease-in-out infinite;
 }
 
 .gangi-character[data-size="sm"] {
   width: 2.75rem;
   height: 2.75rem;
-  font-size: 1.15rem;
+  font-size: 1.32rem;
 }
 
 .gangi-free-actions {

@@ -25,21 +25,21 @@ const EXPLORATIONS = [
     body: '내가 어떤 상황에서 편해지고, 어떤 장면에서 예민해지는지 기본 결을 살펴봅니다.',
     hook: '나는 어떤 결의 사람인가',
     href: '/saju/new',
-    badge: '日柱',
+    badge: '기질',
   },
   {
     title: '다섯 기운의 균형',
     body: '무엇이 넘치고 무엇이 부족한지, 일상에서 어떤 방식으로 힘이 붙거나 빠지는지 살펴봅니다.',
     hook: '내 안의 다섯 기운은 어디서 흔들리는가',
     href: '/saju/new',
-    badge: '五行',
+    badge: '균형',
   },
   {
     title: '반복되는 관계 패턴',
     body: '돈, 일, 사람, 책임이 내 삶에서 어떤 모습으로 반복되는지 쉽게 풀어봅니다.',
     hook: '왜 늘 비슷한 관계와 역할이 반복되는가',
     href: '/myeongri/ten-gods',
-    badge: '十神',
+    badge: '패턴',
   },
 ] as const;
 
