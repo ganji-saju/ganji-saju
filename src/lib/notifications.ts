@@ -129,22 +129,12 @@ export async function getNotificationSnapshot(): Promise<NotificationSnapshot> {
 
 export function getNotificationSlotSummary(slot: NotificationSlotKey) {
   switch (slot) {
-    case 'morning':
-      return '아침 루틴';
-    case 'lunch':
-      return '점심 루틴';
-    case 'evening':
-      return '저녁 루틴';
-    case 'weekly':
-      return '주간 세운';
-    case 'monthly':
-      return '월간 리듬';
-    case 'seasonal':
-      return '절기 변화';
-    case 'birthday':
-      return '생일 리듬';
-    case 'returning':
-      return '재방문 리마인더';
+    case 'today-fortune':
+      return '오늘의 운세';
+    case 'today-tarot':
+      return '오늘의 타로';
+    case 'today-zodiac':
+      return '오늘의 띠운세';
     default:
       return '';
   }

@@ -70,14 +70,9 @@ export interface MoonlightToneOption {
 }
 
 export type NotificationSlotKey =
-  | 'morning'
-  | 'lunch'
-  | 'evening'
-  | 'weekly'
-  | 'monthly'
-  | 'seasonal'
-  | 'birthday'
-  | 'returning';
+  | 'today-fortune'
+  | 'today-tarot'
+  | 'today-zodiac';
 
 export interface MoonlightNotificationSlot {
   key: NotificationSlotKey;
@@ -861,68 +856,28 @@ export const ONBOARDING_TONE_OPTIONS: readonly MoonlightToneOption[] = [
 
 export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot[] = [
   {
-    key: 'morning',
-    title: '새 아침의 한 줄',
-    body: '선생님, 오늘의 흐름이 준비되었습니다.',
-    timeLabel: '07:00',
-    cadence: '매일 아침',
-    tone: 'gold',
-  },
-  {
-    key: 'lunch',
-    title: '점심 한 템포',
-    body: '오후의 기운을 살펴보시겠어요?',
-    timeLabel: '12:30',
-    cadence: '매일 점심',
-    tone: 'jade',
-  },
-  {
-    key: 'evening',
-    title: '하루를 돌아보며',
-    body: '오늘 하루 어떠셨나요. 내일을 위한 한 말씀을 준비했습니다.',
-    timeLabel: '20:00',
-    cadence: '매일 저녁',
+    key: 'today-fortune',
+    title: '오늘의 운세',
+    body: '오늘의 운세가 준비됐어요. 핵심 한 줄과 조심할 점만 짧게 확인해 보세요.',
+    timeLabel: '오전 8시',
+    cadence: '매일',
     tone: 'plum',
   },
   {
-    key: 'weekly',
-    title: '이번 주 세운',
-    body: '이번 주 큰 흐름이 새롭게 열렸습니다.',
-    timeLabel: '월요일 09:00',
-    cadence: '주간',
-    tone: 'gold',
-  },
-  {
-    key: 'monthly',
-    title: '새 달의 한 장',
-    body: '새 달의 리듬을 미리 살펴보세요.',
-    timeLabel: '매월 1일',
-    cadence: '월간',
-    tone: 'sky',
-  },
-  {
-    key: 'seasonal',
-    title: '절기 흐름 알림',
-    body: '계절의 기운이 바뀌는 날, 삶의 리듬도 함께 짚어드립니다.',
-    timeLabel: '입춘 · 입하 · 입추 · 입동',
-    cadence: '절기',
-    tone: 'jade',
-  },
-  {
-    key: 'birthday',
-    title: '생신 리듬 알림',
-    body: '새로운 한 해의 흐름이 시작되는 날을 축하와 함께 전합니다.',
-    timeLabel: '생일 08:00',
-    cadence: '연간',
+    key: 'today-tarot',
+    title: '오늘의 타로',
+    body: '오늘 마음에 필요한 타로 한 장을 뽑아보세요.',
+    timeLabel: '낮 12시',
+    cadence: '매일',
     tone: 'plum',
   },
   {
-    key: 'returning',
-    title: '재방문 리마인더',
-    body: '달빛인생이 기다리고 있습니다. 오늘의 한 줄을 놓치지 마세요.',
-    timeLabel: '3일 미접속',
-    cadence: '리텐션',
-    tone: 'gold',
+    key: 'today-zodiac',
+    title: '오늘의 띠운세',
+    body: '내 띠 기준 오늘 흐름을 가볍게 확인해 보세요.',
+    timeLabel: '오후 8시',
+    cadence: '매일',
+    tone: 'plum',
   },
 ] as const;
 

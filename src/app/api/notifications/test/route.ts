@@ -40,7 +40,7 @@ export async function POST() {
     }
 
     const payload = buildPushPayload({
-      slotKey: 'morning',
+      slotKey: 'today-fortune',
       title: '달빛인생 테스트 알림',
       body:
         snapshot.latestReading?.dailyLine ??

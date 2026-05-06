@@ -3,8 +3,8 @@ import NotificationCenterPage from '@/features/notifications/notification-center
 import { getNotificationSnapshot } from '@/lib/notifications';
 
 export const metadata: Metadata = {
-  title: '알림 센터',
-  description: '푸시 알림, 홈 위젯, 재방문 리텐션 흐름을 한곳에서 관리하는 달빛인생의 알림 센터입니다.',
+  title: '알림',
+  description: '오늘운세, 오늘타로, 오늘띠 알림만 간단히 켜고 끄는 달빛인생 알림 화면입니다.',
   alternates: {
     canonical: '/notifications',
   },

@@ -2,27 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { Bell, BellOff, CheckCircle2, Send } from 'lucide-react';
 import {
-  BellRing,
-  CalendarDays,
-  Clock3,
-  MoonStar,
-  Send,
-  Smartphone,
-  Sparkles,
-} from 'lucide-react';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
+  GangiActionRow,
+  GangiIntro,
+  GangiListLink,
+  GangiMiniCard,
+  GangiPageHeader,
+  GangiSection,
+} from '@/components/gangi/gangi-ui';
 import {
-  HOME_WIDGET_BLUEPRINT,
   NOTIFICATION_SCHEDULE_BLUEPRINT,
-  RETENTION_SCENARIOS,
   type NotificationSlotKey,
 } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -36,7 +26,7 @@ import {
   getCurrentBrowserUser,
 } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export type NotificationPageMode = 'center' | 'schedule' | 'widget';
 
@@ -58,6 +48,24 @@ const hasSupabaseBrowserEnv = Boolean(
 );
 const webPushPublicKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
 
+const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: string; label: string }> = {
+  'today-fortune': {
+    href: '/today-fortune',
+    desc: '오늘 핵심 한 줄과 조심할 점',
+    label: '오늘 보기',
+  },
+  'today-tarot': {
+    href: '/tarot/daily',
+    desc: '마음이 가는 카드 한 장',
+    label: '타로 뽑기',
+  },
+  'today-zodiac': {
+    href: '/zodiac',
+    desc: '내 띠 기준 오늘 흐름',
+    label: '띠운세 보기',
+  },
+};
+
 function createDefaultPreferences(): NotificationPreferences {
   return {
     enabled: true,
@@ -71,6 +79,21 @@ function createDefaultPreferences(): NotificationPreferences {
   };
 }
 
+function normalizeSlots(value: unknown) {
+  const defaults = createDefaultPreferences().slots;
+  if (!value || typeof value !== 'object') return defaults;
+
+  const incoming = value as Record<string, unknown>;
+  return Object.fromEntries(
+    NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => [
+      slot.key,
+      typeof incoming[slot.key] === 'boolean'
+        ? incoming[slot.key]
+        : defaults[slot.key],
+    ])
+  ) as Record<NotificationSlotKey, boolean>;
+}
+
 function loadPreferences(): NotificationPreferences {
   if (typeof window === 'undefined') return createDefaultPreferences();
 
@@ -80,18 +103,10 @@ function loadPreferences(): NotificationPreferences {
 
     const parsed = JSON.parse(raw) as Partial<NotificationPreferences>;
     const defaults = createDefaultPreferences();
-    const slots = Object.fromEntries(
-      NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => [
-        slot.key,
-        typeof parsed.slots?.[slot.key] === 'boolean'
-          ? parsed.slots[slot.key]
-          : defaults.slots[slot.key],
-      ])
-    ) as Record<NotificationSlotKey, boolean>;
 
     return {
       enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : defaults.enabled,
-      slots,
+      slots: normalizeSlots(parsed.slots),
       style:
         parsed.style === 'quiet' || parsed.style === 'normal' || parsed.style === 'sound'
           ? parsed.style
@@ -124,21 +139,10 @@ function normalizeServerPreferences(value: unknown): NotificationPreferences {
   if (!value || typeof value !== 'object') return defaults;
 
   const data = value as Record<string, unknown>;
-  const slots =
-    data.slots && typeof data.slots === 'object'
-      ? Object.fromEntries(
-          NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => [
-            slot.key,
-            typeof (data.slots as Record<string, unknown>)[slot.key] === 'boolean'
-              ? (data.slots as Record<string, boolean>)[slot.key]
-              : defaults.slots[slot.key],
-          ])
-        )
-      : defaults.slots;
 
   return {
     enabled: typeof data.enabled === 'boolean' ? data.enabled : defaults.enabled,
-    slots: slots as Record<NotificationSlotKey, boolean>,
+    slots: normalizeSlots(data.slots),
     style:
       data.style === 'quiet' || data.style === 'normal' || data.style === 'sound'
         ? (data.style as NotificationStyle)
@@ -158,33 +162,19 @@ function normalizeServerPreferences(value: unknown): NotificationPreferences {
   };
 }
 
-function formatVisitedDistance(lastSeenAt: string | null) {
-  if (!lastSeenAt) return '이번이 첫 방문입니다.';
-
-  const previous = new Date(lastSeenAt).getTime();
-  const diffDays = Math.floor((Date.now() - previous) / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 0) return '오늘 다시 들어오셨습니다.';
-  if (diffDays === 1) return '하루 만에 다시 돌아오셨습니다.';
-  return `${diffDays}일 만에 다시 돌아오셨습니다.`;
-}
-
 function computeUpcomingLabel(slot: (typeof NOTIFICATION_SCHEDULE_BLUEPRINT)[number]) {
   const now = new Date();
   const next = new Date(now);
 
-  if (slot.key === 'morning') {
-    next.setHours(7, 0, 0, 0);
-    if (next <= now) next.setDate(next.getDate() + 1);
-  } else if (slot.key === 'lunch') {
-    next.setHours(12, 30, 0, 0);
-    if (next <= now) next.setDate(next.getDate() + 1);
-  } else if (slot.key === 'evening') {
-    next.setHours(20, 0, 0, 0);
-    if (next <= now) next.setDate(next.getDate() + 1);
+  if (slot.key === 'today-fortune') {
+    next.setHours(8, 0, 0, 0);
+  } else if (slot.key === 'today-tarot') {
+    next.setHours(12, 0, 0, 0);
   } else {
-    return slot.timeLabel;
+    next.setHours(20, 0, 0, 0);
   }
+
+  if (next <= now) next.setDate(next.getDate() + 1);
 
   return new Intl.DateTimeFormat('ko-KR', {
     month: 'numeric',
@@ -192,10 +182,6 @@ function computeUpcomingLabel(slot: (typeof NOTIFICATION_SCHEDULE_BLUEPRINT)[num
     hour: 'numeric',
     minute: '2-digit',
   }).format(next);
-}
-
-function buildScheduleBody(body: string, honorific: string) {
-  return body.replace('선생님', honorific);
 }
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -212,7 +198,6 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export default function NotificationCenterPage({
-  mode,
   snapshot,
 }: {
   mode: NotificationPageMode;
@@ -222,7 +207,6 @@ export default function NotificationCenterPage({
     createDefaultPreferences()
   );
   const [displayName, setDisplayName] = useState(snapshot.displayName);
-  const [previousSeenAt, setPreviousSeenAt] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pushSupported, setPushSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -231,35 +215,24 @@ export default function NotificationCenterPage({
   const [isHydrated, setIsHydrated] = useState(false);
   const [isConnectingPush, setIsConnectingPush] = useState(false);
   const [isSendingTest, setIsSendingTest] = useState(false);
-  const [widgetDateLabel, setWidgetDateLabel] = useState('오늘의 흐름');
   const honorific = useMemo(() => getHonorificLabel(displayName), [displayName]);
 
   useEffect(() => {
     const onboardingDraft = loadOnboardingDraft();
     const localPreferences = loadPreferences();
-    const nowIso = new Date().toISOString();
     const hydratedPreferences = {
       ...localPreferences,
-      lastSeenAt: nowIso,
+      lastSeenAt: new Date().toISOString(),
     };
 
     if (onboardingDraft.nickname.trim()) {
       setDisplayName(onboardingDraft.nickname.trim());
     }
 
-    setPreviousSeenAt(localPreferences.lastSeenAt);
     setPreferences(hydratedPreferences);
     savePreferences(hydratedPreferences);
 
     if (typeof window !== 'undefined') {
-      setWidgetDateLabel(
-        new Intl.DateTimeFormat('ko-KR', {
-          month: 'long',
-          day: 'numeric',
-          weekday: 'short',
-        }).format(new Date())
-      );
-
       setPushSupported(
         'serviceWorker' in navigator &&
           'PushManager' in window &&
@@ -317,11 +290,10 @@ export default function NotificationCenterPage({
           ...nextPreferences,
           lastSeenAt: new Date().toISOString(),
         };
-        setPreviousSeenAt(nextPreferences.lastSeenAt);
         setPreferences(hydratedPreferences);
         savePreferences(hydratedPreferences);
       } catch {
-        // 로컬 fallback 유지
+        // 로컬 설정을 그대로 유지합니다.
       }
     }
 
@@ -336,25 +308,11 @@ export default function NotificationCenterPage({
     [preferences]
   );
 
-  const notificationCards = useMemo(
-    () =>
-      NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => ({
-        ...slot,
-        enabled: preferences.enabled && preferences.slots[slot.key],
-        preview: buildScheduleBody(slot.body, honorific),
-      })),
-    [honorific, preferences]
-  );
-
   const nextUpcoming = enabledSlots[0]
     ? isHydrated
       ? computeUpcomingLabel(enabledSlots[0])
       : enabledSlots[0].timeLabel
-    : '알림이 모두 꺼져 있습니다.';
-  const retentionCopy = isHydrated ? formatVisitedDistance(previousSeenAt) : '방문 기록을 확인하고 있습니다.';
-  const widgetBlueprint = HOME_WIDGET_BLUEPRINT.find(
-    (item) => item.size === preferences.widgetSize
-  );
+    : '꺼짐';
   const pushReady = pushSupported && Boolean(webPushPublicKey);
 
   async function persistPreferences(next: NotificationPreferences) {
@@ -372,7 +330,7 @@ export default function NotificationCenterPage({
 
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { error?: string } | null;
-        setStatusMessage(data?.error ?? '알림 설정을 서버에 저장하지 못했습니다.');
+        setStatusMessage(data?.error ?? '알림 설정을 저장하지 못했습니다.');
       }
     } catch {
       setStatusMessage('네트워크 오류로 서버 저장을 마치지 못했습니다.');
@@ -391,7 +349,7 @@ export default function NotificationCenterPage({
 
   async function connectPush() {
     if (!pushSupported) {
-      setStatusMessage('이 브라우저에서는 웹 푸시를 지원하지 않습니다.');
+      setStatusMessage('이 브라우저에서는 알림을 지원하지 않습니다.');
       return;
     }
 
@@ -401,7 +359,7 @@ export default function NotificationCenterPage({
     }
 
     if (!isLoggedIn) {
-      setStatusMessage('브라우저 푸시는 로그인 후 연결할 수 있습니다.');
+      setStatusMessage('알림 연결은 로그인 후 사용할 수 있습니다.');
       return;
     }
 
@@ -435,16 +393,14 @@ export default function NotificationCenterPage({
 
       if (!response.ok) {
         const data = (await response.json().catch(() => null)) as { error?: string } | null;
-        setStatusMessage(data?.error ?? '푸시 구독을 저장하지 못했습니다.');
+        setStatusMessage(data?.error ?? '알림 기기를 저장하지 못했습니다.');
         return;
       }
 
       setIsCurrentDeviceSubscribed(true);
-      setStatusMessage('이 브라우저가 달빛인생 알림 기기로 연결되었습니다.');
+      setStatusMessage('이 브라우저에서 알림을 받을 수 있습니다.');
     } catch (error) {
-      setStatusMessage(
-        error instanceof Error ? error.message : '브라우저 푸시 연결에 실패했습니다.'
-      );
+      setStatusMessage(error instanceof Error ? error.message : '알림 연결에 실패했습니다.');
     } finally {
       setIsConnectingPush(false);
     }
@@ -475,10 +431,10 @@ export default function NotificationCenterPage({
       });
 
       setIsCurrentDeviceSubscribed(false);
-      setStatusMessage('이 브라우저의 푸시 연결을 해제했습니다.');
+      setStatusMessage('이 브라우저의 알림 연결을 해제했습니다.');
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : '브라우저 푸시 연결 해제에 실패했습니다.'
+        error instanceof Error ? error.message : '알림 연결 해제에 실패했습니다.'
       );
     } finally {
       setIsConnectingPush(false);
@@ -505,7 +461,7 @@ export default function NotificationCenterPage({
         return;
       }
 
-      setStatusMessage('테스트 알림을 보냈습니다. 브라우저 알림창을 확인해 주세요.');
+      setStatusMessage('테스트 알림을 보냈습니다.');
     } catch {
       setStatusMessage('네트워크 오류로 테스트 알림을 보내지 못했습니다.');
     } finally {
@@ -514,459 +470,196 @@ export default function NotificationCenterPage({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5">
+        <GangiPageHeader title="알림" backHref="/" />
+
+        <GangiIntro
+          eyebrow="알림 설정"
+          title={
             <>
-              <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-                알림 센터
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                푸시 · 위젯 · 리텐션
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                {isCurrentDeviceSubscribed ? '브라우저 연결됨' : '브라우저 미연결'}
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                다음 예정 · {nextUpcoming}
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                최근 방문 · {retentionCopy}
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                권한 상태 · {permission}
-              </Badge>
+              오늘 받을 알림만
+              <br />
+              고르세요
             </>
           }
-          title={`${honorific}께 다시 말을 거는 모든 장치를 한곳에 모았습니다`}
-          description="아침과 저녁 푸시, 주간 세운, 홈 위젯, 미접속 리마인더까지 한 흐름으로 관리합니다. 단순 공지판이 아니라 다시 열어보게 만드는 재방문 흐름입니다."
-        />
-
-        <nav className="app-subnav">
-          <Link
-            href="/notifications"
-            className={cn(
-              'whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors',
-              mode === 'center'
-                ? 'bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
-                : 'text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'
-            )}
-          >
-            센터
-          </Link>
-          <Link
-            href="/notifications/schedule"
-            className={cn(
-              'whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors',
-              mode === 'schedule'
-                ? 'bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
-                : 'text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'
-            )}
-          >
-            푸시 스케줄
-          </Link>
-          <Link
-            href="/notifications/widget"
-            className={cn(
-              'whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors',
-              mode === 'widget'
-                ? 'bg-[var(--app-gold)]/14 text-[var(--app-gold-text)]'
-                : 'text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'
-            )}
-          >
-            홈 위젯
-          </Link>
-        </nav>
+          description="오늘운세, 오늘타로, 오늘띠만 짧게 보내드립니다."
+        >
+          <div className="gangi-mini-grid">
+            <GangiMiniCard label="받는 알림" title={`${enabledSlots.length}개`} />
+            <GangiMiniCard label="다음 알림" title={nextUpcoming} />
+            <GangiMiniCard
+              label="기기"
+              title={isCurrentDeviceSubscribed ? '연결됨' : '미연결'}
+            />
+          </div>
+        </GangiIntro>
 
         {statusMessage ? (
-          <SectionSurface
-            surface="muted"
-            className="border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-sm leading-7 text-[var(--app-ivory)]"
-          >
+          <section className="gangi-card-panel mx-4 p-4 text-sm font-bold leading-6 text-[var(--app-ink)]">
             {statusMessage}
-          </SectionSurface>
+          </section>
         ) : null}
 
-        {(mode === 'center' || mode === 'schedule') ? (
-          <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <SectionSurface surface="panel" size="lg">
-              <SectionHeader
-                eyebrow="오늘의 알림 보관함"
-                title="언제 다시 말을 걸지, 여기서 조용히 고릅니다"
-                description="주요 시간대별 메시지를 먼저 훑고, 필요한 시간만 켜 두는 방식으로 관리합니다."
-                titleClassName="text-3xl"
-              />
-              <div className="mt-5 space-y-3">
-                {notificationCards.map((slot) => (
-                  <div
-                    key={slot.key}
-                    className={cn(
-                      'rounded-[1.25rem] border px-4 py-4 transition-colors',
-                      slot.enabled
-                        ? 'border-[var(--app-line-strong)] bg-[var(--app-surface-strong)]'
-                        : 'border-[var(--app-line)] bg-[var(--app-surface-muted)]'
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-medium text-[var(--app-ivory)]">
-                          {slot.title}
-                        </div>
-                        <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
-                          {slot.cadence} · {slot.timeLabel}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updatePreferences((current) => ({
-                            ...current,
-                            slots: {
-                              ...current.slots,
-                              [slot.key]: !current.slots[slot.key],
-                            },
-                          }))
-                        }
-                        className={cn(
-                          'rounded-full border px-3 py-1 text-xs transition-colors',
-                          slot.enabled
-                            ? 'border-[var(--app-gold)]/30 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
-                            : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]'
-                        )}
-                      >
-                        {slot.enabled ? '켜짐' : '꺼짐'}
-                      </button>
-                    </div>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{slot.preview}</p>
-                  </div>
-                ))}
-              </div>
-            </SectionSurface>
-
-            <SupportRail
-              surface="panel"
-              eyebrow="보조 설정"
-              title="스타일, 기기 연결, 재방문 간격을 한 축에서 관리합니다"
-              description="설정을 흩어 놓지 않고, 실제 알림 시간대 오른쪽에서 함께 조절할 수 있게 정리했습니다."
+        <GangiSection
+          eyebrow={preferences.enabled ? '전체 켜짐' : '전체 꺼짐'}
+          title="받고 싶은 알림"
+          description={`${honorific}께 필요한 알림만 남겼습니다.`}
+        >
+          <GangiActionRow>
+            <button
+              type="button"
+              onClick={() =>
+                updatePreferences((current) => ({
+                  ...current,
+                  enabled: !current.enabled,
+                }))
+              }
+              className={preferences.enabled ? 'gangi-secondary-button' : 'gangi-primary-button'}
             >
-              <FeatureCard
-                surface="soft"
-                eyebrow="알림 스타일"
-                icon={<Clock3 className="h-5 w-5 text-[var(--app-gold)]" />}
-              >
-                <div className="grid gap-3">
-                  {[
-                    { value: 'quiet', label: '조용히' },
-                    { value: 'normal', label: '보통' },
-                    { value: 'sound', label: '소리' },
-                  ].map((style) => (
+              {preferences.enabled ? (
+                <>
+                  <BellOff className="h-4 w-4" />
+                  전체 끄기
+                </>
+              ) : (
+                <>
+                  <Bell className="h-4 w-4" />
+                  전체 켜기
+                </>
+              )}
+            </button>
+          </GangiActionRow>
+
+          <div className="mt-4 space-y-3">
+            {NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => {
+              const route = notificationRoutes[slot.key];
+              const enabled = preferences.enabled && preferences.slots[slot.key];
+
+              return (
+                <div
+                  key={slot.key}
+                  className={cn(
+                    'rounded-[1.25rem] border bg-white p-4 shadow-[0_8px_24px_-18px_rgba(17,17,20,0.32)]',
+                    enabled ? 'border-[var(--app-pink)]/36' : 'border-[var(--app-line)]'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[0.72rem] font-black text-[var(--app-pink-strong)]">
+                        {slot.cadence} · {slot.timeLabel}
+                      </p>
+                      <h2 className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
+                        {slot.title}
+                      </h2>
+                      <p className="mt-1 text-sm font-bold leading-6 text-[rgba(17,17,20,0.62)]">
+                        {route.desc}
+                      </p>
+                    </div>
                     <button
-                      key={style.value}
                       type="button"
                       onClick={() =>
                         updatePreferences((current) => ({
                           ...current,
-                          style: style.value as NotificationStyle,
+                          slots: {
+                            ...current.slots,
+                            [slot.key]: !current.slots[slot.key],
+                          },
                         }))
                       }
                       className={cn(
-                        'rounded-[1.15rem] border px-4 py-4 text-left text-sm transition-colors',
-                        preferences.style === style.value
-                          ? 'border-[var(--app-gold)]/32 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]'
-                          : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]'
+                        'min-w-16 rounded-full border px-3 py-1.5 text-xs font-black transition-colors',
+                        enabled
+                          ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
+                          : 'border-[var(--app-line)] bg-white text-[rgba(17,17,20,0.54)]'
                       )}
                     >
-                      {style.label}
+                      {enabled ? '받기' : '끔'}
                     </button>
-                  ))}
-                </div>
-                <Button
-                  onClick={() =>
-                    updatePreferences((current) => ({
-                      ...current,
-                      enabled: !current.enabled,
-                    }))
-                  }
-                  className="mt-5 w-full"
-                >
-                  {preferences.enabled ? '알림 전체 끄기' : '알림 전체 켜기'}
-                </Button>
-              </FeatureCard>
-
-              <FeatureCard
-                className="mt-4"
-                surface="soft"
-                eyebrow="브라우저 푸시 연결"
-                icon={<Send className="h-5 w-5 text-[var(--app-gold)]" />}
-              >
-                <div className="space-y-3 text-sm leading-7 text-[var(--app-copy)]">
-                  <p>
-                    {pushSupported
-                      ? '이 브라우저에서 웹 푸시 자체는 지원합니다.'
-                      : '이 브라우저 또는 현재 환경에서는 웹 푸시를 지원하지 않습니다.'}
-                  </p>
-                  <p>
-                    {isLoggedIn
-                      ? '로그인된 기기라면 연결 후 테스트 알림까지 바로 확인할 수 있습니다.'
-                      : '실제 푸시 연결은 로그인 후 저장됩니다.'}
-                  </p>
-                  <div className="grid gap-2">
-                    {[
-                      { label: '브라우저 지원', ready: pushSupported },
-                      { label: '공개키 설정', ready: Boolean(webPushPublicKey) },
-                      { label: '로그인 상태', ready: isLoggedIn },
-                      { label: '권한 허용', ready: permission === 'granted' },
-                    ].map((item) => (
-                      <div
-                        key={item.label}
-                        className={cn(
-                          'rounded-[1rem] border px-3 py-2 text-xs',
-                          item.ready
-                            ? 'border-emerald-400/20 bg-emerald-400/8 text-emerald-100'
-                            : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]'
-                        )}
-                      >
-                        {item.ready ? '준비됨' : '확인 필요'} · {item.label}
-                      </div>
-                    ))}
                   </div>
-                </div>
-                <div className="mt-5 flex flex-col gap-3">
-                  <Button
-                    onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
-                    disabled={isConnectingPush || !pushReady}
-                  >
-                    {isConnectingPush
-                      ? '연결 처리 중...'
-                      : isCurrentDeviceSubscribed
-                        ? '이 브라우저 연결 해제'
-                        : '이 브라우저 알림 연결'}
-                  </Button>
-                  {!pushReady ? (
-                    <p className="text-xs leading-6 text-[var(--app-copy-soft)]">
-                      브라우저 지원과 공개키 설정이 모두 준비되어야 실제 푸시 연결 버튼이 열립니다.
-                    </p>
-                  ) : null}
-                  <Button
-                    variant="outline"
-                    onClick={sendTestPush}
-                    disabled={isSendingTest || !isCurrentDeviceSubscribed}
-                  >
-                    {isSendingTest ? '테스트 발송 중...' : '테스트 알림 보내기'}
-                  </Button>
-                </div>
-              </FeatureCard>
-
-              <FeatureCard
-                className="mt-4"
-                surface="soft"
-                eyebrow="리텐션 상태"
-                icon={<CalendarDays className="h-5 w-5 text-[var(--app-gold)]" />}
-              >
-                <div className="space-y-3 text-sm leading-7 text-[var(--app-copy)]">
-                  <p>{retentionCopy}</p>
-                  <p>
-                    미접속 {preferences.inactivityReminderDays}일째가 되면 재방문 리마인더를
-                    보냅니다.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {[3, 5, 7].map((day) => (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() =>
-                          updatePreferences((current) => ({
-                            ...current,
-                            inactivityReminderDays: day as 3 | 5 | 7,
-                          }))
-                        }
-                        className={cn(
-                          'rounded-full border px-3 py-1 text-xs transition-colors',
-                          preferences.inactivityReminderDays === day
-                            ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]'
-                            : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]'
-                        )}
-                      >
-                        {day}일
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </FeatureCard>
-            </SupportRail>
-          </section>
-        ) : null}
-
-        {(mode === 'center' || mode === 'widget') ? (
-          <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
-            <SectionSurface surface="panel" size="lg">
-              <SectionHeader
-                eyebrow="홈 위젯 미리보기"
-                title="무료 탐색 이후의 한 줄 요약이 어떻게 남는지 먼저 봅니다"
-                description="오늘의 흐름, 최근 저장 결과, 요약 포인트가 어떤 비율로 보이는지 실제 미리보기 안에서 확인할 수 있습니다."
-                titleClassName="text-3xl"
-              />
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="rounded-[1.6rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5">
-                  <div className="text-[10px] tracking-[0.2em] text-[var(--app-gold)]/70">
-                    {widgetDateLabel}
-                  </div>
-                  <div className="mt-4 text-lg leading-7 text-[var(--app-ivory)]">
-                    {snapshot.latestReading?.dailyLine ?? '오늘은 서두르지 않으시는 것이 가장 큰 지혜입니다'}
-                  </div>
-                  <div className="mt-4 flex gap-2 text-[11px]">
-                    <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-3 py-1 text-[var(--app-copy)]">
-                      {snapshot.latestReading?.luckyColor ?? '흰색'}
-                    </span>
-                    <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-3 py-1 text-[var(--app-copy)]">
-                      {snapshot.latestReading?.luckyNumber ?? 7}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-[1.6rem] border border-[var(--app-gold)]/26 bg-[linear-gradient(135deg,rgba(10,18,36,0.98),rgba(22,26,46,0.94))] p-5">
-                  <div className="flex items-center justify-between">
-                    <div className=" text-sm tracking-[0.25em] text-[var(--app-gold)]/72">
-                      달빛인생
-                    </div>
-                    <div className="text-[11px] text-[var(--app-copy-soft)]">오늘의 리듬</div>
-                  </div>
-                  <div className="mt-4 text-lg leading-7 text-[var(--app-ivory)]">
-                    {snapshot.latestReading?.dailyLine ?? '서두르지 않으시는 것이 가장 큰 지혜'}
-                  </div>
-                  <div className="mt-4 text-xs leading-6 text-[var(--app-copy-muted)]">
-                    {snapshot.latestReading?.dayPillarLabel ?? '사주 저장 후 원국 요약 노출'} ·{' '}
-                    {snapshot.latestReading?.dominantElement ?? '수'} 용신 포인트
-                  </div>
-                  <div className="mt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
-                    {snapshot.latestReading?.currentLuckSummary ??
-                      '최근 저장한 결과가 생기면 현재 운 흐름도 여기서 함께 보여드립니다.'}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {(['small', 'medium', 'large'] as const).map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() =>
-                      updatePreferences((current) => ({
-                        ...current,
-                        widgetSize: size,
-                      }))
-                    }
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-xs transition-colors',
-                      preferences.widgetSize === size
-                        ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]'
-                        : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]'
-                    )}
-                  >
-                    {size === 'small'
-                      ? '작은 위젯'
-                      : size === 'medium'
-                        ? '중간 위젯'
-                        : '큰 위젯'}
-                  </button>
-                ))}
-              </div>
-            </SectionSurface>
-
-            <SupportRail
-              surface="panel"
-              eyebrow="보조 설명"
-              title="위젯 문법과 저장 결과 연동을 따로 읽을 수 있게 둡니다"
-              description="미리보기는 왼쪽에서 바로 보고, 설계 원칙과 최근 저장 결과 연결은 오른쪽에서 보조 정보로 읽는 구조입니다."
-            >
-              <FeatureCard
-                surface="soft"
-                eyebrow="위젯 설계"
-                icon={<MoonStar className="h-5 w-5 text-[var(--app-gold)]" />}
-              >
-                {widgetBlueprint ? (
-                  <>
-                    <h3 className="text-2xl font-semibold text-[var(--app-ivory)]">
-                      {widgetBlueprint.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                      {widgetBlueprint.summary}
-                    </p>
-                    <div className="mt-4 space-y-2 text-sm text-[var(--app-copy-muted)]">
-                      {widgetBlueprint.details.map((item) => (
-                        <div
-                          key={item}
-                          className="rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3"
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : null}
-              </FeatureCard>
-
-              <FeatureCard
-                className="mt-4"
-                surface="soft"
-                eyebrow="최근 저장 결과 연동"
-                icon={<Sparkles className="h-5 w-5 text-[var(--app-gold)]" />}
-              >
-                {snapshot.latestReading ? (
-                  <>
-                    <h3 className="text-2xl font-semibold text-[var(--app-ivory)]">
-                      {snapshot.latestReading.dayPillarLabel}
-                    </h3>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-                      강한 오행은 {snapshot.latestReading.dominantElement}, 보완 포인트는{' '}
-                      {snapshot.latestReading.weakestElement}입니다. 위젯에도 이 요약이 반영됩니다.
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold leading-6 text-[rgba(17,17,20,0.7)]">
+                      {slot.body}
                     </p>
                     <Link
-                      href={snapshot.latestReading.href}
-                      className="gangi-secondary-button mt-5"
+                      href={route.href}
+                      className="shrink-0 rounded-full border border-[var(--app-line)] bg-white px-3 py-2 text-xs font-black text-[var(--app-ink)]"
                     >
-                      최근 결과 다시 보기
+                      {route.label}
                     </Link>
-                  </>
-                ) : (
-                  <p className="mt-4 text-sm leading-7 text-[var(--app-copy)]">
-                    첫 사주를 저장하면 위젯에 일주, 오행 균형, 현재 운 흐름이 함께 나타납니다.
-                  </p>
-                )}
-              </FeatureCard>
-            </SupportRail>
-          </section>
-        ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </GangiSection>
 
-        {(mode === 'center' || mode === 'schedule') ? (
-          <SectionSurface surface="panel" size="lg">
-            <SectionHeader
-              eyebrow="리텐션 설계 원칙"
-              title="어떤 계기로 다시 열어보게 만드는지"
-              description="시나리오별 재방문 목적을 짧게 비교해서, 알림이 단순 공지가 아니라 다시 읽게 만드는 연결 장치라는 점을 분명히 둡니다."
-              titleClassName="text-3xl"
-            />
-            <ProductGrid columns={4} className="mt-5">
-              {RETENTION_SCENARIOS.map((scenario) => (
-                <FeatureCard
-                  key={scenario.trigger}
-                  surface="soft"
-                  eyebrow={scenario.trigger}
-                  description={
-                    <>
-                      <span className="block text-sm leading-7 text-[var(--app-copy)]">
-                        {scenario.action}
-                      </span>
-                      <span className="mt-3 block text-xs leading-6 text-[var(--app-copy-soft)]">
-                        {scenario.purpose}
-                      </span>
-                    </>
-                  }
-                />
-              ))}
-            </ProductGrid>
-          </SectionSurface>
-        ) : null}
+        <GangiSection
+          eyebrow="기기 연결"
+          title="브라우저 알림"
+          description="로그인한 기기에서만 실제 알림이 저장됩니다."
+          tone="pink"
+        >
+          <div className="grid gap-3">
+            {[
+              { label: '브라우저 지원', ready: pushSupported },
+              { label: '푸시 키 설정', ready: Boolean(webPushPublicKey) },
+              { label: '로그인 상태', ready: isLoggedIn },
+              { label: '알림 권한', ready: permission === 'granted' },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3"
+              >
+                <span className="text-sm font-black text-[var(--app-ink)]">{item.label}</span>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black',
+                    item.ready
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-[rgba(17,17,20,0.06)] text-[rgba(17,17,20,0.54)]'
+                  )}
+                >
+                  {item.ready ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
+                  {item.ready ? '준비됨' : '확인 필요'}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <GangiActionRow className="mt-4">
+            <button
+              type="button"
+              onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
+              disabled={isConnectingPush || !pushReady}
+              className="gangi-primary-button disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {isConnectingPush
+                ? '처리 중...'
+                : isCurrentDeviceSubscribed
+                  ? '이 기기 알림 끄기'
+                  : '이 기기 알림 켜기'}
+            </button>
+            <button
+              type="button"
+              onClick={sendTestPush}
+              disabled={isSendingTest || !isCurrentDeviceSubscribed}
+              className="gangi-secondary-button disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              <Send className="h-4 w-4" />
+              {isSendingTest ? '발송 중...' : '테스트'}
+            </button>
+          </GangiActionRow>
+        </GangiSection>
+
+        <div className="mx-4">
+          <GangiListLink
+            href="/free"
+            zodiac="rooster"
+            title="무료운세로 돌아가기"
+            desc="오늘운세, 타로, 띠운세를 바로 볼 수 있어요"
+          />
+        </div>
       </AppPage>
     </AppShell>
   );

@@ -16,31 +16,14 @@ import {
 } from '@/lib/web-push';
 
 function resolveDueSlotKeys(now: Date) {
-  const day = now.getDay();
-  const date = now.getDate();
-  const month = now.getMonth() + 1;
   const hour = now.getHours();
   const due = new Set<NotificationSlotKey>();
 
-  if (hour === 7) due.add('morning');
-  if (hour === 12) due.add('lunch');
-  if (hour === 10) due.add('returning');
-  if (hour === 20) due.add('evening');
-  if (day === 1 && hour === 9) due.add('weekly');
-  if (date === 1 && hour === 8) due.add('monthly');
-  if (hour === 8) due.add('birthday');
-
-  const seasonalDates = new Set(['2-4', '5-5', '8-7', '11-7']);
-  if (seasonalDates.has(`${month}-${date}`) && hour === 8) due.add('seasonal');
+  if (hour === 8) due.add('today-fortune');
+  if (hour === 12) due.add('today-tarot');
+  if (hour === 20) due.add('today-zodiac');
 
   return [...due];
-}
-
-function isReturningDue(lastSeenAt: string | null, thresholdDays: 3 | 5 | 7, now: Date) {
-  if (!lastSeenAt) return false;
-
-  const diffMs = now.getTime() - new Date(lastSeenAt).getTime();
-  return diffMs >= thresholdDays * 24 * 60 * 60 * 1000;
 }
 
 function getSlotBlueprint(slotKey: NotificationSlotKey) {
@@ -95,18 +78,7 @@ async function handleDispatch(
 
     const activeSlots = dueSlots.filter((slotKey) => {
       if (!recipient.preferences.slots[slotKey]) return false;
-      if (
-        slotKey === 'birthday' &&
-        (recipient.birthMonth !== now.getMonth() + 1 || recipient.birthDay !== now.getDate())
-      ) {
-        return false;
-      }
-      if (slotKey !== 'returning') return true;
-      return isReturningDue(
-        recipient.preferences.lastSeenAt,
-        recipient.preferences.inactivityReminderDays,
-        now
-      );
+      return true;
     });
 
     for (const slotKey of activeSlots) {
