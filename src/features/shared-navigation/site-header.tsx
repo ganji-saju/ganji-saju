@@ -52,26 +52,23 @@ let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
   홈: { glyph: '月', accent: 'var(--app-pink)', description: '오늘의 시작' },
-  사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '정보 입력' },
+  사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '생년월일 입력' },
   무료운세: { glyph: '今', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
-  대화방: { glyph: '問', accent: 'var(--app-pink)', description: '질문과 상담' },
+  대화방: { glyph: '問', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
   보관함: { glyph: '箱', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
-  오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
-  사주: { glyph: '辰', accent: 'var(--app-pink)', description: '사주용선생' },
-  명리: { glyph: '寅', accent: 'var(--app-pink-soft-strong)', description: '명리호선생' },
-  타로: { glyph: '卯', accent: 'var(--app-pink-strong)', description: '타로토선생' },
-  궁합: { glyph: '未', accent: 'var(--app-pink)', description: '궁합양선생' },
-  별자리: { glyph: '星', accent: 'var(--app-pink-soft-strong)', description: '오늘 감정선' },
-  띠운세: { glyph: '支', accent: 'var(--app-pink)', description: '십이간지 운' },
-  안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '도움말' },
+  오늘운: { glyph: '辰', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
+  사주: { glyph: '辰', accent: 'var(--app-pink)', description: '내 사주 풀이' },
+  명리: { glyph: '寅', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
+  타로: { glyph: '卯', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
+  궁합: { glyph: '未', accent: 'var(--app-pink)', description: '둘 사이 흐름' },
+  별자리: { glyph: '星', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
+  띠운세: { glyph: '支', accent: 'var(--app-pink)', description: '내 띠 오늘 흐름' },
+  안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
 const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리', '명리', '안내'] as const;
-const MOBILE_SHORTCUT_GROUPS = [
-  { title: '무료로 시작', labels: ['오늘운', '타로'] as const },
-  { title: '인기 풀이', labels: ['사주', '궁합', '띠운세'] as const },
-  { title: '더 보기', labels: ['별자리', '명리', '안내'] as const },
-] as const;
+const MOBILE_FEATURE_LABELS = new Set(['오늘운', '타로', '사주', '궁합']);
+const MOBILE_MORE_LABELS = new Set(['띠운세', '별자리', '명리', '안내']);
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
   사주추가: '사주추가',
@@ -437,6 +434,12 @@ function MobileChrome({
   const activePrimaryItem = findActiveItem(PRIMARY_NAV_ITEMS, pathname);
   const activeShortcutItem = findActiveItem(HEADER_SECONDARY_NAV_ITEMS, pathname);
   const orderedShortcutItems = orderMobileShortcutItems(HEADER_SECONDARY_NAV_ITEMS);
+  const featureShortcutItems = orderedShortcutItems.filter((item) =>
+    MOBILE_FEATURE_LABELS.has(item.label)
+  );
+  const moreShortcutItems = orderedShortcutItems.filter((item) =>
+    MOBILE_MORE_LABELS.has(item.label)
+  );
   const activePrimaryMeta = activePrimaryItem ? getNavMeta(activePrimaryItem) : null;
   const activeShortcutMeta = activeShortcutItem ? getNavMeta(activeShortcutItem) : null;
   const contextDescription =
@@ -535,56 +538,112 @@ function MobileChrome({
               id="mobile-global-menu"
               className="app-mobile-menu-panel mt-4 rounded-[1.4rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_18px_48px_rgba(17,17,20,0.12)]"
             >
-              <div className="app-top-service-label">메뉴</div>
-              <div className="mt-3 space-y-3">
-                {MOBILE_SHORTCUT_GROUPS.map((group) => (
-                  <div key={group.title}>
-                    <div className="app-mobile-menu-group-title">{group.title}</div>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      {orderedShortcutItems
-                        .filter((item) => group.labels.includes(item.label as never))
-                        .map((item) => {
-                          const active = matchesPath(item, pathname);
-                          const meta = getNavMeta(item);
-
-                          return (
-                            <Link
-                              key={item.label}
-                              href={item.href}
-                              className={cn(
-                                'app-mobile-shortcut-card',
-                                active && 'app-mobile-shortcut-card-active'
-                              )}
-                            >
-                              <span
-                                className="app-mobile-shortcut-glyph"
-                                style={{ color: meta.accent }}
-                              >
-                                {meta.glyph}
-                              </span>
-                              <span className="app-mobile-shortcut-label">{item.label}</span>
-                            </Link>
-                          );
-                        })}
-                    </div>
-                  </div>
-                ))}
+              <div className="app-mobile-menu-head">
+                <div className="min-w-0">
+                  <div className="app-mobile-menu-eyebrow">전체 메뉴</div>
+                  <div className="app-mobile-menu-title">지금 볼 운세를 고르세요</div>
+                  <div className="app-mobile-menu-subtitle">자주 쓰는 메뉴만 먼저 보여드려요.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="app-mobile-menu-close"
+                  aria-label="메뉴 닫기"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <Link href="/my/results" className="app-mobile-menu-utility">
+                {featureShortcutItems.map((item) => {
+                  const active = matchesPath(item, pathname);
+                  const meta = getNavMeta(item);
+
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        'app-mobile-feature-card',
+                        active && 'app-mobile-feature-card-active'
+                      )}
+                    >
+                      <span
+                        className="app-mobile-feature-glyph"
+                        style={{ backgroundColor: meta.accent }}
+                      >
+                        {meta.glyph}
+                      </span>
+                      <span className="app-mobile-feature-copy">
+                        <strong>{item.label}</strong>
+                        <em>{meta.description}</em>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4">
+                <div className="app-mobile-menu-group-title">다른 운세</div>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {moreShortcutItems.map((item) => {
+                    const active = matchesPath(item, pathname);
+                    const meta = getNavMeta(item);
+
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={cn(
+                          'app-mobile-shortcut-card',
+                          active && 'app-mobile-shortcut-card-active'
+                        )}
+                      >
+                        <span
+                          className="app-mobile-shortcut-glyph"
+                          style={{ color: meta.accent }}
+                        >
+                          {meta.glyph}
+                        </span>
+                        <span className="app-mobile-shortcut-label">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Link
+                  href="/my/results"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="app-mobile-menu-utility"
+                >
                   <BookOpenText className="h-4 w-4" />
                   <span>보관함</span>
                 </Link>
-                <Link href="/membership" className="app-mobile-menu-utility">
+                <Link
+                  href="/credits"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="app-mobile-menu-utility"
+                >
                   <CreditCard className="h-4 w-4" />
-                  <span>멤버십</span>
+                  <span>코인</span>
                 </Link>
-                <Link href="/notifications" className="app-mobile-menu-utility">
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="app-mobile-menu-utility"
+                >
                   <Bell className="h-4 w-4" />
                   <span>알림</span>
                 </Link>
-                <Link href="/my/settings" className="app-mobile-menu-utility">
+                <Link
+                  href="/my/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="app-mobile-menu-utility"
+                >
                   <Settings2 className="h-4 w-4" />
                   <span>설정</span>
                 </Link>
@@ -599,7 +658,10 @@ function MobileChrome({
                 {user ? (
                   <button
                     type="button"
-                    onClick={onSignOut}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      void onSignOut();
+                    }}
                     className="app-mobile-menu-auth"
                   >
                     <LogOut className="h-4 w-4" />
@@ -608,6 +670,7 @@ function MobileChrome({
                 ) : (
                   <Link
                     href={authHref}
+                    onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       buttonVariants({ variant: 'outline', size: 'sm' }),
                       'app-mobile-menu-auth justify-center border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-ivory)] hover:bg-[var(--app-surface)] hover:text-[var(--app-ivory)]'

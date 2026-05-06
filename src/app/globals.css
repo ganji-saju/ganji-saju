@@ -491,6 +491,119 @@
   .app-mobile-menu-panel {
     backdrop-filter: blur(18px);
     background: rgba(255, 255, 255, 0.96) !important;
+    width: min(100%, calc(100vw - 1.5rem));
+    max-width: 28rem;
+    margin-inline: auto;
+    max-height: calc(100dvh - 5.25rem - max(5.5rem, env(safe-area-inset-bottom)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .app-mobile-menu-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .app-mobile-menu-eyebrow {
+    color: var(--app-pink-strong);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .app-mobile-menu-title {
+    margin-top: 0.2rem;
+    color: var(--app-ink);
+    font-size: 1.12rem;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .app-mobile-menu-subtitle {
+    margin-top: 0.2rem;
+    color: rgba(17, 17, 20, 0.58);
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+
+  .app-mobile-menu-close {
+    display: inline-flex;
+    height: 2.35rem;
+    width: 2.35rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(17, 17, 20, 0.08);
+    border-radius: 9999px;
+    background: #ffffff;
+    color: var(--app-ink);
+    box-shadow: 0 8px 18px rgba(17, 17, 20, 0.08);
+  }
+
+  .app-mobile-feature-card {
+    display: flex;
+    min-height: 5.4rem;
+    align-items: center;
+    gap: 0.72rem;
+    border: 1px solid var(--app-line);
+    border-radius: 1.1rem;
+    background: #ffffff;
+    padding: 0.78rem;
+    color: var(--app-ink);
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  .app-mobile-feature-card:hover,
+  .app-mobile-feature-card-active {
+    border-color: rgba(255, 79, 154, 0.28);
+    box-shadow: 0 10px 28px -18px rgba(216, 27, 114, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .app-mobile-feature-glyph {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 9999px;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 950;
+    line-height: 1;
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.38),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  .app-mobile-feature-copy {
+    min-width: 0;
+  }
+
+  .app-mobile-feature-copy strong {
+    display: block;
+    color: var(--app-ink);
+    font-size: 0.92rem;
+    font-weight: 900;
+    line-height: 1.25;
+  }
+
+  .app-mobile-feature-copy em {
+    display: block;
+    margin-top: 0.18rem;
+    color: rgba(17, 17, 20, 0.58);
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 650;
+    line-height: 1.35;
   }
 
   .app-mobile-menu-group-title {
@@ -6053,11 +6166,25 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   }
 
   .dalbit-market-shell,
-  .dalbit-market-shell .app-shell-content,
-  .dalbit-market-shell .gangi-home {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    margin-inline: 0 !important;
+  .dalbit-market-shell .app-shell-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+  }
+
+  .dalbit-market-shell .gangi-home,
+  .gangi-subpage {
+    box-sizing: border-box !important;
+    width: min(100%, 30rem) !important;
+    max-width: 30rem !important;
+    margin-inline: auto !important;
+  }
+
+  .gangi-subpage.saju-intake-page,
+  .gangi-login-subpage {
+    width: min(100%, 30rem) !important;
+    max-width: 30rem !important;
+    margin-inline: auto !important;
   }
 
   .app-top-header-inner,
@@ -6119,29 +6246,29 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   }
 
   .dalbit-market-shell .gangi-season-banner {
-    width: min(390px, calc(100vw - 2.5rem)) !important;
-    max-width: min(390px, calc(100vw - 2.5rem)) !important;
-    margin-left: 1.25rem !important;
-    margin-right: 1.25rem !important;
+    width: auto !important;
+    max-width: none !important;
+    margin-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-right: clamp(0.875rem, 4vw, 1.25rem) !important;
   }
 
   .dalbit-market-shell .gangi-free-actions,
   .dalbit-market-shell .gangi-service-grid {
-    width: min(390px, calc(100vw - 2.5rem)) !important;
-    max-width: min(390px, calc(100vw - 2.5rem)) !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-left: 1.25rem !important;
-    margin-right: 1.25rem !important;
+    width: auto !important;
+    max-width: none !important;
+    padding-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    padding-right: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .dalbit-market-shell .gangi-category-tabs {
-    width: min(390px, calc(100vw - 2.5rem)) !important;
-    max-width: min(390px, calc(100vw - 2.5rem)) !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-left: 1.25rem !important;
-    margin-right: 1.25rem !important;
+    width: auto !important;
+    max-width: none !important;
+    padding-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    padding-right: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 
