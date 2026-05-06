@@ -7,15 +7,15 @@ export function OpportunityRiskCards({
 }) {
   return (
     <section className="grid gap-4 lg:grid-cols-2">
-      <article className="rounded-[1.45rem] border border-[var(--app-jade)]/24 bg-[rgba(52,211,153,0.08)] p-5">
-        <div className="app-caption text-[var(--app-jade)]">오늘의 기회</div>
-        <h3 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">{result.opportunity.title}</h3>
-        <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{result.opportunity.body}</p>
+      <article className="rounded-[1.45rem] border border-emerald-200 bg-emerald-50/70 p-5">
+        <div className="app-caption text-emerald-700">오늘 해볼 일</div>
+        <h3 className="mt-3 text-xl font-black tracking-tight text-[var(--app-ink)]">{result.opportunity.title}</h3>
+        <p className="mt-3 text-[15px] leading-8 text-[var(--app-copy)]">{result.opportunity.body}</p>
       </article>
-      <article className="rounded-[1.45rem] border border-[var(--app-coral)]/24 bg-[rgba(248,113,113,0.08)] p-5">
-        <div className="app-caption text-[var(--app-coral)]">오늘의 주의</div>
-        <h3 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">{result.risk.title}</h3>
-        <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">{result.risk.body}</p>
+      <article className="rounded-[1.45rem] border border-rose-200 bg-rose-50/70 p-5">
+        <div className="app-caption text-rose-600">오늘 줄일 일</div>
+        <h3 className="mt-3 text-xl font-black tracking-tight text-[var(--app-ink)]">{result.risk.title}</h3>
+        <p className="mt-3 text-[15px] leading-8 text-[var(--app-copy)]">{result.risk.body}</p>
       </article>
     </section>
   );

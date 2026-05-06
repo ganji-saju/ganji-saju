@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
@@ -91,6 +92,8 @@ interface TodayFortuneUnlockResponse {
   access?: 'charged' | 'reused' | 'purchased';
 }
 
+const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
+
 export function TodayFortuneExperience({
   initialConcernId,
   paidProduct,
@@ -100,6 +103,7 @@ export function TodayFortuneExperience({
   paidProduct?: string;
   paidSourceSessionId?: string;
 }) {
+  const router = useRouter();
   const { counselorId } = usePreferredCounselor();
   const [expanded, setExpanded] = useState(false);
   const [concernId, setConcernId] = useState<ConcernId>(normalizeConcernId(initialConcernId));
@@ -227,6 +231,15 @@ export function TodayFortuneExperience({
       }
 
       setFreeResult(data.result);
+      try {
+        window.localStorage.setItem('moonlight:fortune-session:last', data.result.sourceSessionId);
+        window.sessionStorage.setItem(
+          `${TODAY_RESULT_STORAGE_PREFIX}${data.result.sourceSessionId}`,
+          JSON.stringify(data.result)
+        );
+      } catch {
+        // Private browsing can block storage; navigation still continues.
+      }
       trackMoonlightEvent('birth_form_completed', {
         from: 'today-fortune',
         concern: concernId,
@@ -236,6 +249,9 @@ export function TodayFortuneExperience({
         concern: data.result.concernId,
         sourceSessionId: data.result.sourceSessionId,
       });
+      router.push(
+        `/today-fortune/result?sourceSessionId=${encodeURIComponent(data.result.sourceSessionId)}&concern=${encodeURIComponent(data.result.concernId)}`
+      );
     } catch {
       setErrorMessage('무료 결과를 만드는 중 네트워크 오류가 있었습니다.');
     } finally {

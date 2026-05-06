@@ -232,7 +232,7 @@ export function BirthInfoStepper({
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-[var(--app-copy-soft)]">
           {hasBirthCore(draft)
-            ? '입력이 준비되면 무료 결과를 먼저 보여드리고, 더 궁금한 부분만 오늘 자세히 보기로 이어집니다.'
+            ? '입력이 준비되면 결과 화면으로 이동해 오늘 한 줄을 보여드려요.'
             : '오늘의 고민에 맞춰 무료 결과를 만들려면 기본 출생 정보가 필요합니다.'}
         </p>
         <Button

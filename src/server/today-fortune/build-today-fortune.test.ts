@@ -183,8 +183,10 @@ test('today fortune opportunity and risk copy stays concise and grounded', () =>
     timeRule: 'standard',
   });
 
+  assert.notEqual(result.opportunity.title, result.risk.title);
   assert.doesNotMatch(result.opportunity.body, /^[^.!?]+점 기준입니다\./);
   assert.doesNotMatch(result.risk.body, /^[^.!?]+점 기준입니다\./);
-  assert.match(result.opportunity.body, /오늘은 ".+"부터 먼저 잡는 편이 좋습니다\./);
-  assert.match(result.risk.body, /오늘은 ".+"를 놓치면 흐름이 급히 거칠어질 수 있습니다\./);
+  assert.doesNotMatch(`${result.opportunity.body} ${result.risk.body}`, /대운|세운|월운|용신|격국|기운/);
+  assert.match(result.opportunity.body, /확인|챙길|끝내|정리|보내|적어/);
+  assert.match(result.risk.body, /피|미루|줄이|확인/);
 });

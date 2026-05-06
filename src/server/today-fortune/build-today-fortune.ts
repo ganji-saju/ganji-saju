@@ -238,6 +238,53 @@ const CONCERN_WINDOW_COPY: Record<
   },
 };
 
+const FREE_RESULT_GUIDE_COPY: Record<
+  ConcernId,
+  {
+    opportunityTitle: string;
+    opportunityBody: string;
+    riskTitle: string;
+    riskBody: string;
+  }
+> = {
+  love_contact: {
+    opportunityTitle: '먼저 건네도 좋은 말',
+    opportunityBody: '긴 고백보다 짧은 안부가 좋아요. 상대가 답하기 편한 문장 하나만 보내보세요.',
+    riskTitle: '오늘 줄일 말',
+    riskBody: '왜 답이 늦었는지 따지거나 마음을 바로 확인하려는 말은 피하는 편이 좋아요.',
+  },
+  money_spend: {
+    opportunityTitle: '오늘 챙길 돈',
+    opportunityBody: '새로 사기보다 이미 나가기로 한 돈, 구독료, 약속된 금액부터 확인해보세요.',
+    riskTitle: '오늘 미룰 결제',
+    riskBody: '권유만 듣고 바로 결제하는 일은 피하세요. 가격과 조건을 한 번 더 보면 충분합니다.',
+  },
+  work_meeting: {
+    opportunityTitle: '먼저 정하면 좋은 기준',
+    opportunityBody: '회의나 계약은 결론보다 조건, 일정, 책임 범위를 먼저 적어두면 편해요.',
+    riskTitle: '오늘 피할 확답',
+    riskBody: '아직 정리되지 않은 일에 바로 “네”라고 답하지 마세요. 확인 후 답해도 늦지 않습니다.',
+  },
+  relationship_conflict: {
+    opportunityTitle: '오해를 줄이는 말',
+    opportunityBody: '바로 판단하기보다 “내가 이렇게 이해해도 될까?”처럼 확인하는 말이 좋아요.',
+    riskTitle: '오늘 피할 표현',
+    riskBody: '항상, 절대, 너는 원래 같은 단정적인 말은 줄이세요. 대화가 커질 수 있습니다.',
+  },
+  energy_health: {
+    opportunityTitle: '오늘 살릴 컨디션',
+    opportunityBody: '중요한 일은 짧게 나눠서 해보세요. 중간에 쉬는 시간을 먼저 잡으면 훨씬 낫습니다.',
+    riskTitle: '오늘 무리할 일',
+    riskBody: '한 번에 몰아서 끝내려는 일정은 피하세요. 피곤해지면 판단도 같이 흐려질 수 있습니다.',
+  },
+  general: {
+    opportunityTitle: '오늘 먼저 끝낼 일',
+    opportunityBody: '큰 결정보다 미뤄둔 작은 일 하나를 끝내면 하루가 훨씬 가벼워져요.',
+    riskTitle: '오늘 줄일 습관',
+    riskBody: '생각만 오래 하거나 급하게 정하는 일은 줄이세요. 할 일 하나만 고르면 충분합니다.',
+  },
+};
+
 const TIME_BRANCH_LABELS: Record<Branch, string> = {
   子: '밤 정리',
   丑: '새벽 점검',
@@ -784,49 +831,12 @@ function buildTodayGroundingSummary(
   };
 }
 
-function buildOpportunityBody(
-  concernId: ConcernId,
-  focusReport: SajuReport,
-  sajuData: SajuDataV1
-) {
-  const concernCopy = CONCERN_WINDOW_COPY[concernId];
-  const evidenceSnippet = getTodayEvidenceSnippet(focusReport);
-  const actionLead = compactActionDescription(
-    focusReport.primaryAction.description,
-    evidenceSnippet
-  );
-  const leadHint = getEvidenceActionHints(focusReport, 'lead', 1)[0];
-  const luckFact = getLuckFactLine(sajuData);
-
-  return joinUniqueSentences([
-    evidenceSnippet,
-    actionLead,
-    leadHint ? `오늘은 "${leadHint}"부터 먼저 잡는 편이 좋습니다.` : null,
-    luckFact ? `지금은 ${luckFact}을 함께 보며 ${concernCopy.favorableTail}` : concernCopy.favorableTail,
-  ]);
+function buildOpportunityBody(concernId: ConcernId) {
+  return FREE_RESULT_GUIDE_COPY[concernId].opportunityBody;
 }
 
-function buildRiskBody(
-  concernId: ConcernId,
-  focusReport: SajuReport,
-  sajuData: SajuDataV1
-) {
-  const concernCopy = CONCERN_WINDOW_COPY[concernId];
-  const cautionCard = getTodayEvidenceCard(focusReport, 'caution');
-  const evidenceSnippet = cautionCard ? toEvidenceSnippet(cautionCard) : null;
-  const actionLead = compactActionDescription(
-    focusReport.cautionAction.description,
-    evidenceSnippet
-  );
-  const cautionHint = getEvidenceActionHints(focusReport, 'caution', 1)[0];
-  const luckFact = getLuckFactLine(sajuData);
-
-  return joinUniqueSentences([
-    evidenceSnippet,
-    actionLead,
-    cautionHint ? `오늘은 ${withKoreanParticle(`"${cautionHint}"`, '을', '를')} 놓치면 흐름이 급히 거칠어질 수 있습니다.` : null,
-    luckFact ? `지금은 ${luckFact}이 겹쳐 보여 단기 반응을 크게 믿지 않는 편이 안전합니다.` : concernCopy.cautionTail,
-  ].map((part) => (part ? polishFortuneCopy(part) : part)));
+function buildRiskBody(concernId: ConcernId) {
+  return FREE_RESULT_GUIDE_COPY[concernId].riskBody;
 }
 
 function getTodayEvidenceSnippet(report: SajuReport) {
@@ -1549,12 +1559,12 @@ export function buildTodayFortuneFreeResult(
     },
     scores,
     opportunity: {
-      title: `${concern.shortLabel} 쪽 기회`,
-      body: buildOpportunityBody(options.concernId, focusReport, sajuData),
+      title: FREE_RESULT_GUIDE_COPY[options.concernId].opportunityTitle,
+      body: buildOpportunityBody(options.concernId),
     },
     risk: {
-      title: `${concern.shortLabel} 쪽 주의`,
-      body: buildRiskBody(options.concernId, focusReport, sajuData),
+      title: FREE_RESULT_GUIDE_COPY[options.concernId].riskTitle,
+      body: buildRiskBody(options.concernId),
     },
     reasonSnippet: {
       title: '사주 근거 한 줄',
