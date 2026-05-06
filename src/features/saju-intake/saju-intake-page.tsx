@@ -117,8 +117,8 @@ interface BirthLocationSearchResponse {
 const PROFILE_STEP = {
   id: 'profile' as const,
   eyebrow: '궁금한 문제',
-  title: '먼저 무엇이 제일 궁금한지 고릅니다',
-  description: '연애, 돈, 일, 가족, 올해 흐름 중 지금 마음에 걸리는 주제를 먼저 정하고 입력을 시작합니다.',
+  title: '무엇이 궁금하세요?',
+  description: '연애, 돈, 일, 가족, 올해 흐름 중 하나를 먼저 고릅니다.',
 };
 
 const BASE_STEPS: Array<{
@@ -131,15 +131,15 @@ const BASE_STEPS: Array<{
   {
     id: 'birth',
     eyebrow: '기본 정보',
-    title: '생년월일과 성별을 한 번에 고릅니다',
-    description: '양력·음력, 연·월·일, 성별을 같은 화면에서 선택합니다.',
+    title: '생년월일과 성별',
+    description: '양력·음력, 연·월·일, 성별을 선택해 주세요.',
     sections: ['date', 'gender'],
   },
   {
     id: 'location',
     eyebrow: '출생지와 시간',
-    title: '시간과 출생지를 맞추면 바로 열립니다',
-    description: '시간을 모르면 시간 모름으로 진행할 수 있고, 출생지는 지역 버튼으로 빠르게 고를 수 있습니다.',
+    title: '태어난 시간과 출생지',
+    description: '시간을 모르면 시간 모름으로 진행해도 됩니다.',
     sections: ['location-time'],
   },
 ];
@@ -147,7 +147,7 @@ const BASE_STEPS: Array<{
 const CONSENT_STEP = {
   id: 'consent' as const,
   eyebrow: '동의',
-  title: '필수 동의만 확인합니다',
+  title: '동의하고 시작하기',
   description: '한 번 동의하면 다음 입력부터는 다시 표시하지 않습니다.',
 };
 
@@ -842,7 +842,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   function renderProfileStep() {
     return (
       <div className="mt-4 space-y-3">
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {QUESTION_ENTRY_POINTS.map((entry) => {
             const isSelected = selectedEntrySlug === entry.slug;
 
@@ -1034,7 +1034,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               이 정도면 충분해요
             </>
           }
-          description="이름은 풀이 화면에서 부르는 용도예요. 생년월일, 성별, 태어난 시간만 먼저 알려주세요."
+          description="생년월일, 성별, 태어난 시간만 먼저 알려주세요."
         />
 
         <section className="grid gap-4 lg:gap-5">

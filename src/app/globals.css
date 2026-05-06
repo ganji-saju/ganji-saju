@@ -1700,6 +1700,11 @@
 
   .unified-birth-form {
     align-items: start;
+    min-width: 0;
+  }
+
+  .gangi-subpage .unified-birth-form {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
   .gangi-birth-field {
@@ -1722,8 +1727,9 @@
 
   .gangi-birth-date-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(6.5rem, 1.25fr) repeat(2, minmax(4.7rem, 0.9fr));
     gap: 0.55rem;
+    min-width: 0;
   }
 
   .gangi-birth-segment {
@@ -1825,6 +1831,12 @@
     border-color: rgba(216, 27, 114, 0.28);
     background: var(--app-pink-soft);
     color: var(--app-pink-strong);
+  }
+
+  @media (max-width: 380px) {
+    .gangi-birth-date-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .gangi-plan-card {
@@ -4053,6 +4065,20 @@
   padding: 1rem !important;
 }
 
+.saju-intake-main-card .app-section-title {
+  max-width: 100%;
+  font-size: clamp(1.35rem, 6vw, 1.65rem) !important;
+  line-height: 1.22;
+  overflow-wrap: break-word;
+}
+
+.saju-intake-main-card .app-section-copy {
+  max-width: 100%;
+  font-size: 0.88rem;
+  line-height: 1.68;
+  overflow-wrap: break-word;
+}
+
 .saju-intake-active-slide {
   min-height: 0;
 }
@@ -5267,6 +5293,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-subpage {
   width: min(100%, 430px);
+  max-width: min(430px, calc(100vw - 2rem));
   margin-inline: auto;
   background: #ffffff;
   color: var(--app-ink);
@@ -5274,13 +5301,23 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   line-break: strict;
 }
 
-.gangi-subpage.saju-intake-page {
-  width: min(100%, 46rem);
+.app-page.gangi-subpage {
+  box-sizing: border-box;
+  width: min(calc(100vw - 2rem), 30rem) !important;
+  max-width: min(calc(100vw - 2rem), 30rem) !important;
+  margin-inline: auto !important;
+  padding-inline: clamp(1rem, 4vw, 1.25rem);
 }
 
-@media (min-width: 1024px) {
+.gangi-subpage.saju-intake-page {
+  width: min(calc(100vw - 2rem), 30rem) !important;
+  max-width: min(calc(100vw - 2rem), 30rem) !important;
+}
+
+@media (min-width: 768px) {
   .gangi-subpage.saju-intake-page {
-    width: min(100%, 52rem);
+    width: min(calc(100vw - 2rem), 46rem) !important;
+    max-width: min(calc(100vw - 2rem), 46rem) !important;
   }
 }
 

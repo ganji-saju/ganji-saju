@@ -77,7 +77,7 @@ export function UnifiedBirthInfoFields({
   onChange,
   onStarted,
   idPrefix = 'unified',
-  dateInputVariant = 'input',
+  dateInputVariant = 'select',
   visibleSections,
   locationLoading,
   locationMessage,
