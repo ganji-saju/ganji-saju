@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { GangiCharacter } from '@/components/gangi/gangi-ui';
 import type {
+  GangiHomeBanner,
   GangiHomeCategoryKey,
   GangiServiceCard,
 } from '@/content/gangi-market';
@@ -12,17 +13,30 @@ import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-marke
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
 
-export function GangiSeasonBanner({ onTrack }: { onTrack?: TrackHandler }) {
+export function GangiSeasonBanner({
+  banners = GANGI_HOME_BANNERS,
+  onTrack,
+}: {
+  banners?: readonly GangiHomeBanner[];
+  onTrack?: TrackHandler;
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeBanner = GANGI_HOME_BANNERS[activeIndex] ?? GANGI_HOME_BANNERS[0];
+  const safeBanners = banners.length ? banners : GANGI_HOME_BANNERS;
+  const activeBanner = safeBanners[activeIndex] ?? safeBanners[0];
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % GANGI_HOME_BANNERS.length);
+      setActiveIndex((current) => (current + 1) % safeBanners.length);
     }, 4200);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [safeBanners.length]);
+
+  useEffect(() => {
+    if (activeIndex >= safeBanners.length) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, safeBanners.length]);
 
   return (
     <section
@@ -75,7 +89,7 @@ export function GangiSeasonBanner({ onTrack }: { onTrack?: TrackHandler }) {
         )}
       </div>
       <div className="gangi-banner-dots" aria-label="배너 선택">
-        {GANGI_HOME_BANNERS.map((banner, index) => (
+        {safeBanners.map((banner, index) => (
           <button
             key={banner.id}
             type="button"
