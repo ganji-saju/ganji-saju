@@ -8,9 +8,7 @@ import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
 import YearlyReportPanel from '@/components/ai/yearly-report-panel';
 import {
   REPORT_SAMPLE_HREF,
-  REPORT_PREVIEW_VALUE_POINTS,
   SAJU_PREMIUM_SECTIONS,
-  SAJU_PREMIUM_PREVIEW,
   SAJU_PREMIUM_VALUE_POINTS,
   TASTE_PRODUCTS,
   TRUST_SIGNALS,
@@ -77,55 +75,31 @@ type PremiumReadingStep = {
   note: string;
 };
 
-function PremiumReadingMap({
-  title,
-  description,
-  steps,
+function SmallQuestionProducts({
+  encodedSlug,
+  targetYear,
 }: {
-  title: string;
-  description: string;
-  steps: PremiumReadingStep[];
+  encodedSlug: string;
+  targetYear: number;
 }) {
   return (
-    <section className="app-panel p-5 sm:p-6">
-      <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
-        <div>
-          <div className="app-caption">핵심 보기</div>
-          <h2 className="mt-3 text-2xl text-[var(--app-ivory)]">
-            {title}
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-            {description}
-          </p>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          {steps.map((step, index) => (
-            <Link
-              key={step.href}
-              href={step.href}
-              className="group flex min-h-[154px] flex-col rounded-[1.15rem] border border-[var(--app-line)] bg-white px-4 py-4 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-sm font-semibold text-[var(--app-gold-text)]">
-                  {index + 1}
-                </span>
-                <span className="rounded-full border border-[var(--app-line)] px-2.5 py-1 text-[11px] text-[var(--app-copy-soft)]">
-                  {step.status}
-                </span>
-              </div>
-              <div className="mt-4 app-caption text-[var(--app-gold-soft)]">{step.label}</div>
-              <div className="mt-2 text-base font-semibold leading-6 text-[var(--app-ivory)]">
-                {step.title}
-              </div>
-              <p className="mt-2 flex-1 text-sm leading-6 text-[var(--app-copy-muted)]">
-                {step.description}
-              </p>
-              <p className="mt-3 text-xs leading-5 text-[var(--app-copy-soft)]">
-                {step.note}
-              </p>
-            </Link>
-          ))}
-        </div>
+    <section className="rounded-[1.4rem] border border-[var(--app-line)] bg-white px-5 py-5 sm:px-6">
+      <div className="app-caption text-[var(--app-pink-strong)]">작은 질문</div>
+      <h2 className="mt-3 text-2xl text-[var(--app-ink)] sm:text-3xl">
+        궁금한 것 하나만 먼저 볼 수도 있어요
+      </h2>
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        {TASTE_PRODUCTS.map((product) => (
+          <Link
+            key={product.slug}
+            href={getTasteProductHref(product.slug, encodedSlug, targetYear)}
+            className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
+          >
+            <div className="text-xs font-semibold text-[var(--app-pink-strong)]">{product.price}</div>
+            <div className="mt-2 text-base font-semibold leading-6 text-[var(--app-ink)]">{product.title}</div>
+            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{product.result}</p>
+          </Link>
+        ))}
       </div>
     </section>
   );
@@ -147,7 +121,7 @@ function PremiumSectionIntro({
       <div className="grid gap-4 lg:grid-cols-[1fr_0.42fr] lg:items-end">
         <div>
           <div className="app-caption text-[var(--app-gold-soft)]">{eyebrow}</div>
-          <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
+          <h2 className="mt-3 text-2xl text-[var(--app-ink)] sm:text-3xl">
             {title}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
@@ -167,7 +141,7 @@ function PremiumSectionIntro({
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '깊은 사주풀이',
-    description: '사주 깊은 사주풀이와 연간 부록의 미리보기 및 열람 화면입니다.',
+    description: '사주 깊은 사주풀이와 연간 흐름 열람 화면입니다.',
     robots: { index: false, follow: false },
   };
 }
@@ -213,17 +187,17 @@ export default async function SajuPremiumPage({ params }: Props) {
     ? '깊은 풀이 · 열림'
     : yearlyAccessLabel
       ? `${targetYear} 올해 흐름 · 열림`
-      : '깊은 풀이 · 미리보기';
+      : '깊은 풀이 · 안내';
   const heroTitle = hasLifetimeAccess
     ? '내 사주를 자세히 봅니다'
     : yearlyAccessLabel
       ? `${targetYear} 올해 흐름`
-      : '깊은 풀이 미리보기';
+      : '깊은 풀이로 이어보기';
   const heroDescription = hasLifetimeAccess
     ? '타고난 성향, 올해 흐름, 월별 타이밍을 차례로 봅니다.'
     : yearlyAccessLabel
       ? '올해의 큰 주제와 월별 타이밍을 먼저 확인합니다.'
-      : '결제 전에는 어떤 내용이 열리는지 짧게 먼저 확인합니다.';
+      : '열리는 내용을 짧게 확인하고 필요한 풀이만 고릅니다.';
   const readingSteps: PremiumReadingStep[] = hasLifetimeAccess
     ? [
         {
@@ -257,38 +231,38 @@ export default async function SajuPremiumPage({ params }: Props) {
             label: '올해',
           title: `${targetYear} 올해 흐름`,
           description: '열려 있는 올해 흐름을 확인합니다.',
-            href: '#premium-yearly',
+            href: '#yearly-chapter-1',
             status: '열림',
-            note: '올해의 큰 주제부터 봅니다.',
+            note: '올해의 큰 주제부터 봅니다.'
           },
           {
-            label: '달별',
+            label: '달력',
             title: '달별 흐름',
             description: '월간 타이밍과 해금한 달을 다시 확인합니다.',
-            href: '#premium-calendar',
+            href: '#yearly-chapter-2',
             status: '연결',
-            note: '해금한 월은 다시 차감 없이 확인합니다.',
+            note: '해금한 월은 다시 차감 없이 확인합니다.'
           },
           {
             label: '확장',
             title: '자세한 사주풀이',
             description: '타고난 성향과 큰 흐름을 더 자세히 봅니다.',
-            href: '#premium-upgrade',
+            href: '#yearly-chapter-3',
             status: '선택',
-            note: '올해 운의 바탕을 따로 보관합니다.',
+            note: '올해 운의 바탕을 따로 보관합니다.'
           },
         ]
       : [
           {
-            label: '미리보기',
-            title: '미리보기',
-            description: '열리는 내용을 먼저 확인합니다.',
-            href: '#premium-preview',
+            label: '안내',
+            title: '열리는 내용',
+            description: '결제 전에 열리는 구성을 확인합니다.',
+            href: '#premium-guide',
             status: '공개',
-          note: '구매 전 결과의 밀도를 봅니다.',
+            note: '구매 전 구성을 봅니다.',
           },
           {
-            label: '달별',
+            label: '달력',
             title: '달별 흐름',
             description: '월간 흐름 구조를 먼저 살펴봅니다.',
             href: '#premium-calendar',
@@ -304,134 +278,48 @@ export default async function SajuPremiumPage({ params }: Props) {
             note: '완성본의 밀도를 비교합니다.',
           },
         ];
-  const readingMapDescription = hasLifetimeAccess
-    ? '타고난 성향, 올해 흐름, 달별 실행을 차례로 봅니다.'
-    : yearlyAccessLabel
-      ? '올해 흐름과 달별 타이밍을 먼저 보고, 필요할 때 자세한 풀이로 확장합니다.'
-      : '결제 전이라면 미리보기와 샘플로 열리는 내용을 먼저 확인하세요.';
 
   return (
     <AppShell header={<SiteHeader />}>
       <AppPage className="saju-readable-page space-y-6">
         <SajuScreenNav slug={slug} current="premium" />
 
-        <section className="gangi-report-panel p-7 sm:p-8">
-          <div className="grid gap-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-            <div>
-              <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-                {heroLabel}
-              </Badge>
-              <h1 className="mt-5 text-4xl font-semibold text-[var(--app-ivory)] sm:text-5xl">
-                {heroTitle}
-              </h1>
-              <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
-                {heroDescription}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {readingSteps.map((step) => (
-                  <Link
-                    key={step.href}
-                    href={step.href}
-                    className="gangi-secondary-button"
-                  >
-                    {step.label} 보기
-                  </Link>
-                ))}
-                {hasLifetimeAccess ? (
-                  <TrackedLink
-                    href={`/saju/${slug}/premium/print`}
-                    eventName="report_pdf_click"
-                    eventParams={{ slug, from: 'premium_hero', status: 'available' }}
-                    className="gangi-primary-button"
-                  >
-                    PDF로 저장하기
-                  </TrackedLink>
-                ) : null}
-              </div>
-            </div>
-            <aside className="rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5">
-              <div className="app-caption">지금 바로 볼 내용</div>
-              <div className="mt-4 grid gap-3">
-                {readingSteps.map((step, index) => (
-                  <Link
-                    key={step.title}
-                    href={step.href}
-                    className="group rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-sm font-semibold text-[var(--app-gold-text)]">
-                        {index + 1}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center justify-between gap-3">
-                          <span className="text-sm font-semibold text-[var(--app-ivory)]">
-                            {step.title}
-                          </span>
-                          <span className="shrink-0 rounded-full border border-[var(--app-line)] px-2.5 py-1 text-[11px] text-[var(--app-copy-soft)]">
-                            {step.status}
-                          </span>
-                        </span>
-                        <span className="mt-1 block text-sm leading-6 text-[var(--app-copy-muted)]">
-                          {step.description}
-                        </span>
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <PremiumReadingMap
-          title="필요한 내용만 골라봅니다"
-          description={readingMapDescription}
-          steps={readingSteps}
-        />
-
-        <section className="app-panel p-5 sm:p-6">
-          <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
-            <div>
-              <div className="app-caption">미리보기</div>
-              <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
-                열리는 내용을 먼저 확인합니다
-              </h2>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {REPORT_PREVIEW_VALUE_POINTS.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4"
-                >
-                  <div className="text-sm font-semibold text-[var(--app-ivory)]">{item.title}</div>
-                  <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{item.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {!hasLifetimeAccess ? (
-          <section className="app-panel p-5 sm:p-6">
-            <div className="app-caption">작은 질문</div>
-            <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
-              궁금한 것 하나만 먼저 볼 수도 있어요
-            </h2>
-            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {TASTE_PRODUCTS.map((product) => (
+        <section className="rounded-[1.6rem] border border-[var(--app-line)] bg-white p-6 shadow-[0_16px_44px_rgba(17,17,20,0.06)] sm:p-7">
+          <div className="max-w-4xl">
+            <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              {heroLabel}
+            </Badge>
+            <h1 className="mt-5 text-3xl font-semibold text-[var(--app-ink)] sm:text-5xl">
+              {heroTitle}
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
+              {heroDescription}
+            </p>
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-xl">
+              {readingSteps.map((step) => (
                 <Link
-                  key={product.slug}
-                  href={getTasteProductHref(product.slug, encodedSlug, targetYear)}
-                  className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
+                  key={step.href}
+                  href={step.href}
+                  className="gangi-secondary-button min-w-0 justify-center whitespace-nowrap px-2 text-center text-xs sm:text-sm"
                 >
-                  <div className="text-xs font-semibold text-[var(--app-gold-text)]">{product.price}</div>
-                  <div className="mt-2 text-base font-semibold leading-6 text-[var(--app-ivory)]">{product.title}</div>
-                  <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{product.result}</p>
+                  {step.label} 보기
                 </Link>
               ))}
             </div>
-          </section>
-        ) : null}
+            {hasLifetimeAccess ? (
+              <div className="mt-3 sm:max-w-xs">
+                <TrackedLink
+                  href={`/saju/${slug}/premium/print`}
+                  eventName="report_pdf_click"
+                  eventParams={{ slug, from: 'premium_hero', status: 'available' }}
+                  className="gangi-primary-button w-full justify-center"
+                >
+                  PDF로 저장하기
+                </TrackedLink>
+              </div>
+            ) : null}
+          </div>
+        </section>
 
         {hasLifetimeAccess ? (
           <>
@@ -470,95 +358,21 @@ export default async function SajuPremiumPage({ params }: Props) {
             <div id="premium-yearly" className="scroll-mt-28">
               <YearlyReportPanel slug={slug} targetYear={targetYear} />
             </div>
-            <PremiumSectionIntro
-              eyebrow="2장"
-              title="월별 흐름"
-              description="이미 열린 달은 다시 차감 없이 확인합니다."
-            />
-            <div id="premium-calendar" className="scroll-mt-28">
-              <FortuneCalendarPanel slug={slug} targetYear={targetYear} hasLifetimeAccess={false} />
-            </div>
-            <PremiumSectionIntro
-              eyebrow="3장"
-              title="더 자세히 보고 싶을 때"
-              description="타고난 성향과 큰 흐름까지 이어서 볼 수 있습니다."
-            />
-            <section id="premium-upgrade" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-              <article className="gangi-report-panel p-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
-                    {yearlyAccessLabel}
-                  </Badge>
-                  <Badge className="border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] text-[var(--app-copy-soft)]">
-                    별도 열림
-                  </Badge>
-                </div>
-                <h2 className="mt-4 text-3xl text-[var(--app-gold-text)]">
-                  올해 흐름은 열려 있고, 자세한 풀이는 별도로 볼 수 있어요
-                </h2>
-                <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  지금 권한으로는 올해 흐름과 월별 타이밍을 볼 수 있습니다. 더 자세한 풀이는
-                  성향, 돈, 일, 관계, 생활 리듬을 한 번에 이어서 보여줍니다.
-                </p>
-                <div className="mt-6 grid gap-3">
-                  {SAJU_PREMIUM_SECTIONS.map((item) => (
-                    <div key={item} className="gangi-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </article>
-              <article className="gangi-plan-card p-6" data-featured="true">
-                <div className=" text-2xl text-[var(--app-gold-text)]">
-                  자세한 사주풀이로 확장하기
-                </div>
-                <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  올해 흐름을 보다가 내 성향과 큰 흐름까지 궁금해질 때 이어서 봅니다.
-                </p>
-                <div className="mt-5 grid gap-3">
-                  {SAJU_PREMIUM_VALUE_POINTS.map((item) => (
-                    <div key={item} className="gangi-payment-row px-4 py-3 text-sm leading-7 text-[var(--app-copy)]">
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-                  <div className=" text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
-                  <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                    풀이 본문과 올해 부록을 함께 열고, 같은 사주로 다시 들어와도 계속
-                    읽으실 수 있습니다.
-                  </p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <Link
-                      href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
-                      className="gangi-primary-button"
-                    >
-                      풀이 열기
-                    </Link>
-                    <Link
-                      href={`/saju/${slug}`}
-                      className="gangi-secondary-button"
-                    >
-                      기본 결과로 돌아가기
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            </section>
+            <SmallQuestionProducts encodedSlug={encodedSlug} targetYear={targetYear} />
           </>
         ) : (
         <>
         <PremiumSectionIntro
-          eyebrow="미리보기"
+          eyebrow="안내"
           title="어떤 내용이 열리는지 먼저 확인합니다"
           description="잠긴 본문을 길게 보여주기보다 핵심만 짧게 보여드립니다."
           aside="결제 전 확인"
         />
-        <section id="premium-preview" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section id="premium-guide" className="grid scroll-mt-28 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <article className="gangi-report-panel p-6">
-            <div className="app-caption">미리보기</div>
-            <div className="mt-4 text-2xl text-[var(--app-ivory)]">
-              첫 내용 미리보기
+            <div className="app-caption">안내</div>
+            <div className="mt-4 text-2xl text-[var(--app-ink)]">
+              열리는 내용
             </div>
             <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
               이 사주는 {sajuData.dayMaster.metaphor ?? '자연의 상징'}처럼 드러나는 기질을 중심으로 봅니다.
@@ -579,16 +393,8 @@ export default async function SajuPremiumPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="mt-6 space-y-3">
-              {SAJU_PREMIUM_PREVIEW.map((item) => (
-                <div
-                  key={item.title}
-                  className="gangi-payment-row px-4 py-4"
-                >
-                  <div className="text-sm font-medium text-[var(--app-ivory)]">{item.title}</div>
-                  <p className="mt-2 text-sm leading-7 text-[var(--app-copy-muted)]">{item.body}</p>
-                </div>
-              ))}
+            <div className="mt-6 rounded-[1.2rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-5 py-5 text-sm leading-7 text-[var(--app-copy)]">
+              성향, 올해 흐름, 월별 흐름을 열어 필요한 부분만 이어서 볼 수 있습니다.
             </div>
           </article>
 
@@ -674,7 +480,7 @@ export default async function SajuPremiumPage({ params }: Props) {
 
         <section className="app-panel p-5 sm:p-6">
           <div className="app-caption">안심하고 보기</div>
-          <h2 className="mt-3 text-2xl text-[var(--app-ivory)] sm:text-3xl">
+          <h2 className="mt-3 text-2xl text-[var(--app-ink)] sm:text-3xl">
             무섭게 단정하지 않고, 다시 볼 수 있게 남깁니다
           </h2>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">

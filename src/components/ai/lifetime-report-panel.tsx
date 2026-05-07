@@ -295,7 +295,7 @@ function LifetimeSectionBody({
               <div className="app-caption text-[var(--app-gold-soft)]">살려야 할 기운</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {report.patternAndYongsin.supportSymbols.map((item) => (
-                  <span key={item} className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-100">
+                  <span key={item} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-800">
                     {item}
                   </span>
                 ))}
@@ -305,7 +305,7 @@ function LifetimeSectionBody({
               <div className="app-caption text-[var(--app-gold-soft)]">조절할 기운</div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {report.patternAndYongsin.cautionSymbols.map((item) => (
-                  <span key={item} className="rounded-full border border-rose-400/20 bg-rose-400/10 px-3 py-1 text-xs text-rose-100">
+                  <span key={item} className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs text-rose-800">
                     {item}
                   </span>
                 ))}
@@ -381,7 +381,7 @@ function LifetimeSectionBody({
                 <Badge
                   className={
                     cycle.phase === '확장기'
-                      ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-100'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                       : cycle.phase === '정리기'
                         ? 'border-sky-400/20 bg-sky-400/10 text-sky-100'
                         : 'border-[var(--app-gold)]/25 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'

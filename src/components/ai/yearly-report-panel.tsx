@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
@@ -136,27 +137,27 @@ const MOMENTUM_META: Record<
     shortLabel: '좋음',
     guideLabel: '진행하기 좋은 달',
     icon: CheckCircle2,
-    badgeClassName: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-100',
-    panelClassName: 'border-emerald-400/24 bg-emerald-400/8',
-    dotClassName: 'border-emerald-300/30 bg-emerald-300/14 text-emerald-100',
+    badgeClassName: 'yearly-tone-good',
+    panelClassName: 'yearly-tone-good',
+    dotClassName: 'yearly-tone-good',
   },
   steady: {
     label: '정리하는 달',
     shortLabel: '정리',
     guideLabel: '차분히 정리할 달',
     icon: Sparkles,
-    badgeClassName: 'border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] text-[var(--app-copy-soft)]',
-    panelClassName: 'border-[var(--app-line)] bg-[rgba(255,255,255,0.035)]',
-    dotClassName: 'border-[var(--app-line)] bg-[rgba(255,255,255,0.045)] text-[var(--app-copy)]',
+    badgeClassName: 'yearly-tone-steady',
+    panelClassName: 'yearly-tone-steady',
+    dotClassName: 'yearly-tone-steady',
   },
   caution: {
     label: '한 번 더 확인할 달',
     shortLabel: '확인',
     guideLabel: '한 번 더 확인할 달',
     icon: AlertTriangle,
-    badgeClassName: 'border-rose-400/25 bg-rose-400/10 text-rose-100',
-    panelClassName: 'border-rose-400/24 bg-rose-400/8',
-    dotClassName: 'border-rose-300/30 bg-rose-300/14 text-rose-100',
+    badgeClassName: 'yearly-tone-caution',
+    panelClassName: 'yearly-tone-caution',
+    dotClassName: 'yearly-tone-caution',
   },
 };
 
@@ -311,16 +312,16 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {highlightedGood ? (
-            <div className="rounded-[18px] border border-emerald-400/18 bg-emerald-400/6 px-4 py-3">
-              <div className="app-caption text-emerald-100">가장 쓰기 좋은 구간</div>
+            <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
+              <div className="app-caption">가장 쓰기 좋은 구간</div>
               <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
                 {highlightedGood.months.map((month) => `${month}월`).join(' · ')} · {highlightedGood.strategy}
               </p>
             </div>
           ) : null}
           {highlightedCaution ? (
-            <div className="rounded-[18px] border border-rose-400/18 bg-rose-400/6 px-4 py-3">
-              <div className="app-caption text-rose-100">확인이 필요한 구간</div>
+            <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
+              <div className="app-caption">확인이 필요한 구간</div>
               <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
                 {highlightedCaution.months.map((month) => `${month}월`).join(' · ')} · {highlightedCaution.strategy}
               </p>
@@ -365,80 +366,86 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
   );
 }
 
-function MonthlyFlowCard({ flow }: { flow: YearlyMonthFlow }) {
+function MonthlyFlowCard({
+  flow,
+  defaultOpen = false,
+}: {
+  flow: YearlyMonthFlow;
+  defaultOpen?: boolean;
+}) {
   const momentumMeta = MOMENTUM_META[flow.momentum];
   const areaLabel = flow.relatedAreas.map((area) => YEARLY_AREA_LABEL[area]).join(' · ');
   const MomentumIcon = momentumMeta.icon;
 
   return (
-    <article
+    <details
       id={`yearly-month-${flow.month}`}
-      className="scroll-mt-28 rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4"
+      className="scroll-mt-28 rounded-[22px] border border-[var(--app-line)] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(17,17,20,0.06)]"
+      open={defaultOpen ? true : undefined}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <div className="app-caption text-[var(--app-gold-soft)]">{flow.month}월</div>
-          <div className="mt-1 text-xs text-[var(--app-copy-soft)]">{areaLabel}</div>
+      <summary className="cursor-pointer list-none">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="app-caption text-[var(--app-pink-strong)]">{flow.month}월</div>
+            <p className="mt-2 text-base font-semibold leading-7 text-[var(--app-ink)]">
+              {tightenUiLine(flow.summary, 78)}
+            </p>
+            <div className="mt-1 text-xs text-[var(--app-copy-soft)]">{areaLabel}</div>
+          </div>
+          <Badge className={`${momentumMeta.badgeClassName} gap-1.5`}>
+            <MomentumIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            {momentumMeta.label}
+          </Badge>
         </div>
-        <Badge className={`${momentumMeta.badgeClassName} gap-1.5`}>
-          <MomentumIcon className="h-3.5 w-3.5" aria-hidden="true" />
-          {momentumMeta.label}
-        </Badge>
-      </div>
+      </summary>
 
-      <p className="mt-3 text-sm leading-7 text-[var(--app-ivory)]">{tightenUiLine(flow.summary, 104)}</p>
-      <div className="mt-4 rounded-[18px] border border-emerald-400/18 bg-emerald-400/6 px-4 py-3">
-        <div className="app-caption text-emerald-100">이번 달 바로 할 일</div>
-        <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.action, 84)}</p>
+      <div className="mt-4 grid gap-3">
+        <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
+          <div className="app-caption">이번 달 바로 할 일</div>
+          <p className="mt-2 text-sm leading-7">{tightenUiLine(flow.action, 84)}</p>
+        </div>
+        <div className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3">
+          <div className="app-caption text-[var(--app-pink-strong)]">먼저 볼 질문</div>
+          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(flow.focusQuestion)}</p>
+        </div>
+        <div className="rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-3">
+          <div className="app-caption text-[var(--app-pink-strong)]">진행해볼 것</div>
+          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.opportunity, 104)}</p>
+        </div>
+        <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
+          <div className="app-caption">한 번 더 확인할 것</div>
+          <p className="mt-2 text-sm leading-7">{tightenUiLine(flow.caution, 104)}</p>
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <Badge className="border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] text-[var(--app-copy-soft)]">
+        <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]">
           {flow.monthlyGanji ?? `${flow.month}월`}
         </Badge>
       </div>
 
-      <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          이 달 자세히 보기
-        </summary>
-        <div className="mt-3 grid gap-3">
-          <div className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-            <div className="app-caption text-[var(--app-gold-soft)]">먼저 볼 질문</div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(flow.focusQuestion)}</p>
-          </div>
-          <div className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-            <div className="app-caption text-[var(--app-gold-soft)]">진행해볼 것</div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.opportunity, 104)}</p>
-          </div>
-          <div className="rounded-[16px] border border-rose-400/18 bg-rose-400/6 px-4 py-3">
-            <div className="app-caption text-rose-100">한 번 더 확인할 것</div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.caution, 104)}</p>
-          </div>
-        </div>
-      </details>
-
       {flow.basis.length > 0 ? (
         <details className="group mt-4">
-          <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
+          <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
             풀이 배경 보기
           </summary>
           <div className="mt-3 grid gap-2">
             {flow.basis.map((item) => (
-              <div key={item} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div key={item} className="rounded-xl bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                 {simplifySajuCopy(item)}
               </div>
             ))}
           </div>
         </details>
       ) : null}
-    </article>
+    </details>
   );
 }
 
 function CoreAreaCard({
   item,
   prose,
+  defaultOpen = false,
 }: {
   item: {
     key: (typeof CORE_CATEGORY_ORDER)[number];
@@ -452,78 +459,87 @@ function CoreAreaCard({
     basis: string[];
   };
   prose: string;
+  defaultOpen?: boolean;
 }) {
   const meta = CORE_CATEGORY_GUIDE[item.key];
   const Icon = meta.icon;
 
   return (
-    <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-            <Icon className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div>
-            <div className="app-caption text-[var(--app-gold-soft)]">{meta.eyebrow}</div>
-            <h3 className="mt-1 text-xl font-semibold text-[var(--app-ivory)]">{item.label}</h3>
+    <details
+      className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5 shadow-[0_12px_28px_rgba(17,17,20,0.06)]"
+      open={defaultOpen ? true : undefined}
+    >
+      <summary className="cursor-pointer list-none">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+              <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <div className="app-caption text-[var(--app-pink-strong)]">{meta.eyebrow}</div>
+              <h3 className="mt-1 text-xl font-semibold text-[var(--app-ink)]">{item.label}</h3>
+            </div>
           </div>
+          {item.scoreLabel ? (
+            <Badge className="shrink-0 border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]">
+              {item.scoreLabel}
+            </Badge>
+          ) : null}
         </div>
-        {item.scoreLabel ? (
-          <Badge className="shrink-0 border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] text-[var(--app-copy-soft)]">
-            {item.scoreLabel}
-          </Badge>
-        ) : null}
-      </div>
+      </summary>
+
       <div className="mt-4 grid gap-3">
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-          <div className="app-caption text-[var(--app-gold-soft)]">올해 핵심</div>
+        <div className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3">
+          <div className="app-caption text-[var(--app-pink-strong)]">올해 핵심</div>
           <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.summary, 104)}</p>
         </div>
-        <div className="rounded-[18px] border border-emerald-400/18 bg-emerald-400/6 px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100">
+        <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
             <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
             {meta.opportunityLabel}
           </div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.opportunity, 100)}</p>
+          <p className="mt-2 text-sm leading-7">{tightenUiLine(item.opportunity, 100)}</p>
         </div>
-        <div className="rounded-[18px] border border-rose-400/18 bg-rose-400/6 px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-100">
+        <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
             <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
             {meta.cautionLabel}
           </div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.caution, 100)}</p>
+          <p className="mt-2 text-sm leading-7">{tightenUiLine(item.caution, 100)}</p>
         </div>
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--app-gold-soft)]">
+        <div className="rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
             <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             {meta.actionLabel}
           </div>
           <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.action, 88)}</p>
         </div>
       </div>
+
       <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
+        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
           풀이 자세히 보기
         </summary>
-        <div className="mt-3 space-y-3 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
+        <div className="mt-3 space-y-3 rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
           {renderCompactParagraphs(prose, 2)}
         </div>
       </details>
+
       {item.basis.length > 0 ? (
         <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          풀이 배경 보기
-        </summary>
+          <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
+            풀이 배경 보기
+          </summary>
           <div className="mt-3 grid gap-2">
             {item.basis.map((line) => (
-              <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-            {simplifySajuCopy(line)}
+              <div key={line} className="rounded-xl bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+                {simplifySajuCopy(line)}
               </div>
             ))}
           </div>
         </details>
       ) : null}
-    </article>
+    </details>
   );
 }
 
@@ -595,9 +611,9 @@ function TimingWindowCard({
 }) {
   const cardClassName =
     tone === 'good'
-      ? 'border-emerald-400/20 bg-emerald-400/8'
-      : 'border-rose-400/20 bg-rose-400/8';
-  const captionClassName = tone === 'good' ? 'text-emerald-100' : 'text-rose-100';
+      ? 'yearly-tone-good'
+      : 'yearly-tone-caution';
+  const captionClassName = '';
 
   return (
     <article className={`rounded-[22px] border px-4 py-4 ${cardClassName}`}>
@@ -663,7 +679,7 @@ function YearlyMonthlySection({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {monthlyFlows.map((flow) => (
-          <MonthlyFlowCard key={`${flow.month}-${flow.summary.slice(0, 12)}`} flow={flow} />
+          <MonthlyFlowCard key={`${flow.month}-${flow.summary.slice(0, 12)}`} flow={flow} defaultOpen={flow.month === 1} />
         ))}
       </div>
     </div>
@@ -679,12 +695,12 @@ function TimingSummaryBlock({
   items: string[];
   tone: 'good' | 'caution';
 }) {
-  const eyebrowClassName = tone === 'good' ? 'text-emerald-100' : 'text-rose-100';
+  const toneClassName = tone === 'good' ? 'yearly-tone-good' : 'yearly-tone-caution';
   const Icon = tone === 'good' ? CheckCircle2 : AlertTriangle;
 
   return (
-    <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-      <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] ${eyebrowClassName}`}>
+    <article className={`rounded-[24px] border px-5 py-5 ${toneClassName}`}>
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
         <Icon className="h-4 w-4" aria-hidden="true" />
         {title}
       </div>
@@ -699,12 +715,91 @@ function TimingSummaryBlock({
   );
 }
 
+type YearlyChapter = 1 | 2 | 3;
+
+function getChapterFromHash(hash: string): YearlyChapter | null {
+  if (hash === '#yearly-chapter-1') return 1;
+  if (hash === '#yearly-chapter-2') return 2;
+  if (hash === '#yearly-chapter-3') return 3;
+  return null;
+}
+
+function ChapterNavigation({
+  chapter,
+  onChange,
+}: {
+  chapter: YearlyChapter;
+  onChange: (chapter: YearlyChapter) => void;
+}) {
+  return (
+    <div className="mt-7 flex items-center justify-between gap-3 border-t border-[var(--app-line)] pt-5">
+      {chapter > 1 ? (
+        <Button type="button" variant="outline" onClick={() => onChange((chapter - 1) as YearlyChapter)}>
+          이전 페이지
+        </Button>
+      ) : (
+        <span />
+      )}
+      <div className="text-xs font-semibold text-[var(--app-copy-soft)]">{chapter} / 3</div>
+      {chapter < 3 ? (
+        <Button type="button" onClick={() => onChange((chapter + 1) as YearlyChapter)}>
+          다음 페이지
+        </Button>
+      ) : (
+        <span />
+      )}
+    </div>
+  );
+}
+
+function DeepReadingLinks({ slug }: { slug: string }) {
+  const encodedSlug = encodeURIComponent(slug);
+  const links = [
+    { label: '일주 본질', body: '내 사주의 기본 축을 봅니다.', href: `/saju/${encodedSlug}/overview` },
+    { label: '오행 균형', body: '목·화·토·금·수 균형을 봅니다.', href: `/saju/${encodedSlug}/elements` },
+    { label: '성향 구조', body: '성격과 관계 반응을 봅니다.', href: `/saju/${encodedSlug}/nature` },
+    { label: '프리미엄 PDF', body: '보관용 화면으로 이어집니다.', href: `/saju/${encodedSlug}/premium/print` },
+  ];
+
+  return (
+    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      {links.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className="rounded-[22px] border border-[var(--app-line)] bg-white px-5 py-5 shadow-[0_12px_28px_rgba(17,17,20,0.06)] transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
+        >
+          <div className="text-base font-semibold text-[var(--app-ink)]">{link.label}</div>
+          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{link.body}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export default function YearlyReportPanel({ slug, targetYear }: Props) {
   const { counselorId } = usePreferredCounselor();
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [data, setData] = useState<YearlyInterpretationResponse | null>(null);
   const [error, setError] = useState('');
   const [reloadToken, setReloadToken] = useState(0);
+  const [chapter, setChapter] = useState<YearlyChapter>(1);
+
+  useEffect(() => {
+    function syncChapterFromHash() {
+      const nextChapter = getChapterFromHash(window.location.hash);
+      if (!nextChapter) return;
+      setChapter(nextChapter);
+      window.setTimeout(() => {
+        document.getElementById('yearly-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+
+    syncChapterFromHash();
+    window.addEventListener('hashchange', syncChapterFromHash);
+
+    return () => window.removeEventListener('hashchange', syncChapterFromHash);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -814,20 +909,27 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
     };
   });
 
+  function goToChapter(nextChapter: YearlyChapter) {
+    setChapter(nextChapter);
+    window.setTimeout(() => {
+      document.getElementById('yearly-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
   return (
     <section id="yearly-report" className="gangi-report-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">{targetYear} 올해 흐름</div>
-          <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
-            올해 흐름을 바로 읽습니다
+          <h2 className="mt-4 text-3xl text-[var(--app-ink)]">
+            {chapter === 1 ? '올해 흐름을 바로 읽습니다' : chapter === 2 ? '월별 흐름을 봅니다' : '더 깊게 볼 부분을 고릅니다'}
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
+          <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
             {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
           </Badge>
-          <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
+          <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
             {data.cached ? '저장됨' : '새로 정리'}
           </Badge>
         </div>
@@ -844,120 +946,153 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         </Button>
       </div>
 
-      <div className="mt-6 rounded-[24px] border border-[var(--app-gold)]/18 bg-[rgba(210,176,114,0.08)] px-5 py-5">
-        <div className="app-caption text-[var(--app-gold-soft)]">올해 한 줄 먼저</div>
-        <p className=" mt-4 text-lg font-semibold leading-8 text-[var(--app-ivory)]">
-          {interpretation.oneLineSummary}
-        </p>
-        <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.opening, 2)}</div>
-      </div>
-
-      <YearlyVisualMap report={data.report} />
-
-      <div className="mt-6">
-        <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-gold-soft)]">
-          올해 핵심 키워드
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {interpretation.keywords.map((keyword) => (
-            <Badge
-              key={keyword}
-              className="h-auto rounded-full border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-3 py-2 text-left text-xs leading-6 text-[var(--app-copy)]"
-            >
-              {keyword}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-          <div className="app-caption text-[var(--app-gold-soft)]">상반기 먼저 볼 것</div>
-          <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.firstHalf, 3)}</div>
-        </article>
-        <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-          <div className="app-caption text-[var(--app-gold-soft)]">하반기 먼저 볼 것</div>
-          <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.secondHalf, 3)}</div>
-        </article>
-      </div>
-
-      <div className="mt-6">
-        <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-gold-soft)]">
-          사람들이 가장 많이 묻는 4가지
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-          일, 돈, 연애, 관계에서 먼저 볼 장면만 나눠 정리했습니다.
-        </p>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          {coreCards.map((item) => (
-            <CoreAreaCard
-              key={item.key}
-              item={item}
-              prose={interpretation.categories[item.key]}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <SupportAreaCard
-          label="건강·생활 리듬"
-          eyebrow="리듬 관리"
-          section={data.report.categories.health}
-          prose={interpretation.categories.health}
-          basis={data.report.categories.health.basis}
-        />
-        <SupportAreaCard
-          label="이동·변화"
-          eyebrow="자리와 이동"
-          section={data.report.categories.move}
-          prose={interpretation.categories.move}
-          basis={data.report.categories.move.basis}
-        />
-      </div>
-
-      <YearlyMonthlySection report={data.report} interpretation={interpretation} />
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <TimingSummaryBlock title="좋은 시기 활용법" items={data.interpretation.goodPeriods} tone="good" />
-        <TimingSummaryBlock title="조심해야 할 시기" items={data.interpretation.cautionPeriods} tone="caution" />
-        <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-          <div className="app-caption text-[var(--app-gold-soft)]">행동 조언</div>
-          <div className="mt-4 space-y-3">
-            {data.interpretation.actionAdvice.map((item) => (
-              <p key={item} className="text-sm leading-7 text-[var(--app-copy)]">
-                {item}
-              </p>
-            ))}
+      {chapter === 1 ? (
+        <>
+          <div className="mt-6 rounded-[24px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-5 py-5">
+            <div className="app-caption text-[var(--app-pink-strong)]">올해 한 줄 먼저</div>
+            <p className="mt-4 text-lg font-semibold leading-8 text-[var(--app-ink)]">
+              {interpretation.oneLineSummary}
+            </p>
+            <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.opening, 2)}</div>
           </div>
-        </article>
-      </div>
 
-      <details className="group mt-6" id="yearly-evidence">
-        <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          풀이 배경 보기
-        </summary>
-        <div className="mt-4 grid gap-4">
-          <GroundingKasiSummary
-            grounding={data.grounding}
-            kasiComparison={data.kasiComparison}
-            metadata={data.metadata}
-            title="풀이 배경"
-          />
-          <EngineMethodLinks
-            title="더 깊게 보고 싶을 때만 보는 글"
-            description="출생 시간이나 큰 흐름이 궁금할 때만 확인하세요."
-            slugs={[
-              'how-to-read-daewoon-and-sewoon-together',
-              'what-if-birth-hour-is-unknown',
-              'how-far-to-trust-gongmang-and-shinsal',
-            ]}
-            ctaHref="/method"
-            ctaLabel="관련 글 더 보기"
-            compact
-          />
-        </div>
-      </details>
+          <YearlyVisualMap report={data.report} />
+
+          <div className="mt-6">
+            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-pink-strong)]">
+              올해 핵심 키워드
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {interpretation.keywords.map((keyword) => (
+                <Badge
+                  key={keyword}
+                  className="yearly-keyword-badge h-auto max-w-full whitespace-normal break-keep rounded-full border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-2 text-left text-xs leading-6 text-[var(--app-copy)]"
+                >
+                  {keyword}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
+              <div className="app-caption text-[var(--app-pink-strong)]">상반기 먼저 볼 것</div>
+              <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.firstHalf, 3)}</div>
+            </article>
+            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
+              <div className="app-caption text-[var(--app-pink-strong)]">하반기 먼저 볼 것</div>
+              <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.secondHalf, 3)}</div>
+            </article>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-pink-strong)]">
+              사람들이 가장 많이 묻는 4가지
+            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
+              일, 돈, 연애, 관계에서 먼저 볼 장면만 나눠 정리했습니다.
+            </p>
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              {coreCards.map((item, index) => (
+                <CoreAreaCard
+                  key={item.key}
+                  item={item}
+                  prose={interpretation.categories[item.key]}
+                  defaultOpen={index === 0}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <SupportAreaCard
+              label="건강·생활 리듬"
+              eyebrow="리듬 관리"
+              section={data.report.categories.health}
+              prose={interpretation.categories.health}
+              basis={data.report.categories.health.basis}
+            />
+            <SupportAreaCard
+              label="이동·변화"
+              eyebrow="자리와 이동"
+              section={data.report.categories.move}
+              prose={interpretation.categories.move}
+              basis={data.report.categories.move.basis}
+            />
+          </div>
+        </>
+      ) : null}
+
+      {chapter === 2 ? (
+        <>
+          <YearlyMonthlySection report={data.report} interpretation={interpretation} />
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            <TimingSummaryBlock title="좋은 시기 활용법" items={data.interpretation.goodPeriods} tone="good" />
+            <TimingSummaryBlock title="조심해야 할 시기" items={data.interpretation.cautionPeriods} tone="caution" />
+            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
+              <div className="app-caption text-[var(--app-pink-strong)]">행동 조언</div>
+              <div className="mt-4 space-y-3">
+                {data.interpretation.actionAdvice.map((item) => (
+                  <p key={item} className="text-sm leading-7 text-[var(--app-copy)]">
+                    {item}
+                  </p>
+                ))}
+              </div>
+            </article>
+          </div>
+        </>
+      ) : null}
+
+      {chapter === 3 ? (
+        <>
+          <section className="mt-6 rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+                프리미엄 이용권
+              </Badge>
+              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
+                별도 열림
+              </Badge>
+            </div>
+            <h3 className="mt-4 text-2xl font-semibold text-[var(--app-ink)]">
+              더 궁금한 부분은 아래 버튼으로 이어보세요
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+              일주 본질, 오행 균형, 성향 구조는 각각 별도 화면으로 열리게 연결했습니다.
+            </p>
+            <DeepReadingLinks slug={slug} />
+          </section>
+
+          <details className="group mt-6" id="yearly-evidence">
+            <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-white px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
+              풀이 배경 보기
+            </summary>
+            <div className="mt-4 grid gap-4">
+              <GroundingKasiSummary
+                grounding={data.grounding}
+                kasiComparison={data.kasiComparison}
+                metadata={data.metadata}
+                title="풀이 배경"
+              />
+              <EngineMethodLinks
+                title="더 깊게 보고 싶을 때만 보는 글"
+                description="출생 시간이나 큰 흐름이 궁금할 때만 확인하세요."
+                slugs={[
+                  'how-to-read-daewoon-and-sewoon-together',
+                  'what-if-birth-hour-is-unknown',
+                  'how-far-to-trust-gongmang-and-shinsal',
+                ]}
+                ctaHref="/method"
+                ctaLabel="관련 글 더 보기"
+                compact
+              />
+            </div>
+          </details>
+        </>
+      ) : null}
+
+      <ChapterNavigation chapter={chapter} onChange={goToChapter} />
     </section>
   );
 }

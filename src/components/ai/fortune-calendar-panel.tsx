@@ -57,9 +57,9 @@ const TONE_META: Record<
   good: {
     label: '좋은 날',
     description: '연락하고, 정리하고, 가볍게 진행해도 좋은 날',
-    cellClassName: 'border-emerald-300/35 bg-emerald-400/14 text-emerald-50',
-    badgeClassName: 'border-emerald-400/25 bg-emerald-400/10 text-emerald-100',
-    railClassName: 'bg-emerald-300',
+    cellClassName: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+    badgeClassName: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    railClassName: 'bg-emerald-500',
     icon: CheckCircle2,
   },
   average: {
@@ -73,9 +73,9 @@ const TONE_META: Record<
   caution: {
     label: '주의 날',
     description: '돈, 말, 확답은 한 번 더 확인하는 날',
-    cellClassName: 'border-rose-300/35 bg-rose-400/14 text-rose-50',
-    badgeClassName: 'border-rose-400/25 bg-rose-400/10 text-rose-100',
-    railClassName: 'bg-rose-300',
+    cellClassName: 'border-rose-200 bg-rose-50 text-rose-900',
+    badgeClassName: 'border-rose-200 bg-rose-50 text-rose-800',
+    railClassName: 'bg-rose-500',
     icon: AlertTriangle,
   },
 };
@@ -624,15 +624,15 @@ export default function FortuneCalendarPanel({
                 ) : null}
 
                 <div className="mt-5 grid gap-3">
-                  <div className="rounded-[18px] border border-[var(--app-gold)]/22 bg-[var(--app-gold)]/10 px-4 py-4">
-                    <div className="app-caption text-[var(--app-gold-text)]">이번 달 먼저 움직일 날</div>
-                    <p className="mt-3 text-sm leading-7 text-[var(--app-ivory)]">
+                  <div className="yearly-tone-good rounded-[18px] border px-4 py-4">
+                    <div className="app-caption">이번 달 먼저 움직일 날</div>
+                    <p className="mt-3 text-sm leading-7">
                       {data.report.summary.decisionDays.join(' · ')}
                     </p>
                   </div>
-                  <div className="rounded-[18px] border border-rose-400/20 bg-rose-400/10 px-4 py-4">
-                    <div className="app-caption text-rose-100">확답을 늦추면 좋은 날</div>
-                    <p className="mt-3 text-sm leading-7 text-rose-50">{data.report.summary.cautionDays.join(' · ')}</p>
+                  <div className="yearly-tone-caution rounded-[18px] border px-4 py-4">
+                    <div className="app-caption">확답을 늦추면 좋은 날</div>
+                    <p className="mt-3 text-sm leading-7">{data.report.summary.cautionDays.join(' · ')}</p>
                   </div>
                 </div>
 

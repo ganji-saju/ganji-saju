@@ -8087,3 +8087,41 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-weight: 620;
   letter-spacing: 0.08em;
 }
+
+.yearly-tone-good {
+  border-color: rgba(16, 125, 72, 0.28) !important;
+  background: #ecfdf3 !important;
+  color: #064e3b !important;
+}
+
+.yearly-tone-good :where(p, span, div, strong, svg) {
+  color: #064e3b !important;
+}
+
+.yearly-tone-caution {
+  border-color: rgba(190, 18, 60, 0.24) !important;
+  background: #fff1f2 !important;
+  color: #881337 !important;
+}
+
+.yearly-tone-caution :where(p, span, div, strong, svg) {
+  color: #881337 !important;
+}
+
+.yearly-tone-steady {
+  border-color: rgba(82, 82, 91, 0.18) !important;
+  background: #f7f7f9 !important;
+  color: #27272a !important;
+}
+
+.yearly-tone-steady :where(p, span, div, strong, svg) {
+  color: #27272a !important;
+}
+
+.yearly-keyword-badge {
+  max-width: 100% !important;
+  height: auto !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
