@@ -1,9 +1,4 @@
 /* Screenshot simple mobile app polish */
-@media (max-width: 767px) {
-  .gangi-subpage-shell:has(.gangi-sub-header) .app-top-header {
-    display: none !important;
-  }
-}
 
 .app-brand-mini-logo {
   position: relative;

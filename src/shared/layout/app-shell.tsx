@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import SiteFooter from '@/components/site-footer';
+import SiteHeader from '@/features/shared-navigation/site-header';
 import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: ReactNode;
-  header?: ReactNode;
+  header?: ReactNode | null | false;
   dock?: ReactNode;
   footer?: ReactNode | null | false;
   className?: string;
@@ -23,12 +24,14 @@ interface PageHeroProps {
 }
 
 export function AppShell({ children, header, dock, footer, className }: AppShellProps) {
+  const headerNode =
+    header === false || header === null ? null : header ?? <SiteHeader />;
   const footerNode =
     footer === false || footer === null ? null : footer ?? <SiteFooter />;
 
   return (
-    <main className={cn('app-shell', header && 'app-shell-with-navigation', className)}>
-      {header}
+    <main className={cn('app-shell', headerNode && 'app-shell-with-navigation', className)}>
+      {headerNode}
       <div className="app-shell-content">{children}</div>
       {footerNode}
       {dock}

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type ResetState = 'checking' | 'ready' | 'missing' | 'saved';
 
@@ -259,17 +260,19 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
-          달
+    <AppShell className="gangi-subpage-shell" footer={false}>
+      <AppPage className="gangi-login-subpage flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+            달
+          </div>
+          <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+          <div className="text-xs text-[var(--app-copy-muted)]">비밀번호 재설정</div>
         </div>
-        <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
-        <div className="text-xs text-[var(--app-copy-muted)]">비밀번호 재설정</div>
-      </div>
-      <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
-        <ResetPasswordContent />
-      </Suspense>
-    </main>
+        <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
+          <ResetPasswordContent />
+        </Suspense>
+      </AppPage>
+    </AppShell>
   );
 }
