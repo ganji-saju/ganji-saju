@@ -3,6 +3,10 @@ import { CANONICAL_SITE_URL } from '@/lib/site';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const CANONICAL_SITE_HOST = new URL(CANONICAL_SITE_ORIGIN).hostname;
+const supabaseProxyUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseProxyKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 function shouldForwardAuthCallback(req: NextRequest) {
   if (req.nextUrl.pathname !== '/') return false;
@@ -65,8 +69,8 @@ export async function proxy(req: NextRequest) {
   }
 
   if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    !supabaseProxyUrl ||
+    !supabaseProxyKey
   ) {
     return response;
   }
@@ -78,8 +82,8 @@ export async function proxy(req: NextRequest) {
   const { createServerClient } = await import('@supabase/ssr');
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseProxyUrl,
+    supabaseProxyKey,
     {
       cookies: {
         getAll() {

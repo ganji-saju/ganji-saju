@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { buildSajuInterpretationGrounding, buildSajuReport } from '@/domain/saju/report';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { createReading, resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
@@ -70,11 +70,7 @@ export async function POST(req: NextRequest) {
   );
   let persistedKasiComparison = null;
 
-  if (
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (hasSupabaseServiceEnv) {
     try {
       sourceSessionId = await createReading(parsed.input, user?.id ?? null);
       const persistedReading = await resolveReading(sourceSessionId);

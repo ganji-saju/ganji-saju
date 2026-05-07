@@ -108,6 +108,15 @@ function createLocationState(): LocationState {
   };
 }
 
+function hasReusableCompatibilityDraft(draft: UnifiedBirthEntryDraft) {
+  return Boolean(
+    draft.year.trim() &&
+      draft.month.trim() &&
+      draft.day.trim() &&
+      draft.birthLocationCode.trim()
+  );
+}
+
 function hasBirthFields<T extends ProfileApiBirthFields | null | undefined>(
   profile: T
 ): profile is NonNullable<T> & { birthYear: number; birthMonth: number; birthDay: number } {
@@ -369,6 +378,13 @@ export function CompatibilityInputClient({
         const options = buildSavedProfileOptions(data);
         setSavedProfiles(options);
         setProfileLoadStatus(options.length > 0 ? 'ready' : 'empty');
+
+        const selfProfile = options.find((profile) => profile.source === 'self');
+        if (selfProfile && !hasReusableCompatibilityDraft(selfDraft)) {
+          setSelfDraft((current) => applyUnifiedBirthPatch(current, selfProfile.draft));
+          setSelfName(selfProfile.nickname || '나');
+          setProfileLoadMessage('로그인된 내 정보를 내 정보 칸에 자동으로 불러왔습니다.');
+        }
       } catch {
         if (cancelled) return;
         setProfileLoadStatus('error');

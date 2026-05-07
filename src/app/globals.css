@@ -6703,23 +6703,31 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-reading-hero {
   margin-inline: 1rem;
-  border-bottom: 1px solid var(--app-line);
-  padding: 1.15rem 0.25rem 1.35rem;
+  border: 1px solid color-mix(in srgb, var(--app-pink) 16%, var(--app-line));
+  border-radius: 1.55rem;
+  background:
+    radial-gradient(circle at right 18%, rgba(255, 218, 235, 0.7), transparent 34%),
+    #fff7fb;
+  padding: 1.2rem 1.1rem 1.35rem;
+  box-shadow: 0 14px 34px rgba(236, 72, 153, 0.08);
 }
 
 .gangi-reading-chapters {
   margin-inline: 1rem;
-  border-top: 1px solid var(--app-line);
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: 1.55rem;
   background: #ffffff;
+  box-shadow: 0 14px 38px rgba(17, 17, 20, 0.06);
 }
 
 .gangi-reading-chapter {
   border-bottom: 1px solid var(--app-line);
-  padding: 1.15rem 0.25rem 1.25rem;
+  padding: 1.15rem 1.1rem 1.25rem;
 }
 
 .gangi-reading-chapter-heading {
-  padding: 1.5rem 0.25rem 0.25rem;
+  padding: 1.5rem 1.1rem 0.25rem;
   color: var(--app-ink);
   font-size: 1.12rem;
   font-weight: 860;
@@ -6793,7 +6801,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-reading-note {
-  margin-top: 0.85rem;
+  margin: 0.85rem 1.1rem 0;
   border-left: 3px solid var(--app-pink);
   background: var(--app-pink-soft);
   padding: 0.8rem 0.9rem;
@@ -6807,7 +6815,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem 1rem;
   border-bottom: 1px solid var(--app-line);
-  padding: 0.9rem 0.25rem 1.35rem;
+  padding: 0.9rem 1.1rem 1.35rem;
 }
 
 .gangi-chapter-mini {

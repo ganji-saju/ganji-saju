@@ -24,6 +24,7 @@ import type { NotificationSnapshot } from '@/lib/notifications';
 import {
   createClient as createSupabaseClient,
   getCurrentBrowserUser,
+  hasSupabaseBrowserEnv,
 } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -43,9 +44,6 @@ interface NotificationPreferences {
 }
 
 const NOTIFICATION_STORAGE_KEY = 'moonlight:notification-preferences';
-const hasSupabaseBrowserEnv = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 const webPushPublicKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
 
 const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: string; label: string }> = {

@@ -259,6 +259,16 @@ function applyUnifiedBirthPatch(
   return next;
 }
 
+function hasReusableBirthDraft(draft: SajuOnboardingDraft) {
+  return Boolean(
+    draft.year.trim() &&
+      draft.month.trim() &&
+      draft.day.trim() &&
+      (draft.gender === 'male' || draft.gender === 'female') &&
+      draft.birthLocationCode.trim()
+  );
+}
+
 function hasBirthFields<T extends ProfileApiBirthFields | null | undefined>(
   profile: T
 ): profile is NonNullable<T> & { birthYear: number; birthMonth: number; birthDay: number } {
@@ -479,14 +489,19 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             ? null
             : new URLSearchParams(window.location.search).get('autoProfile');
         const shouldAutoApplyProfile =
-          autoProfileParam === '1' || autoProfileParam === 'true' || autoProfileParam === 'signup';
+          autoProfileParam === '1' ||
+          autoProfileParam === 'true' ||
+          autoProfileParam === 'signup' ||
+          !hasReusableBirthDraft(form);
         const selfProfile = options.find((profile) => profile.source === 'self');
 
         if (shouldAutoApplyProfile && selfProfile && !hasAutoAppliedProfileRef.current) {
           hasAutoAppliedProfileRef.current = true;
           applySavedProfile(selfProfile);
-          setProfileLoadMessage('회원가입 때 저장한 내 정보를 입력칸에 자동으로 불러왔습니다.');
-          window.history.replaceState(null, '', '/saju/new');
+          setProfileLoadMessage('로그인된 내 정보를 입력칸에 자동으로 불러왔습니다.');
+          if (autoProfileParam) {
+            window.history.replaceState(null, '', '/saju/new');
+          }
         }
       } catch {
         if (cancelled) return;

@@ -22,7 +22,7 @@ import {
 import { buttonVariants } from '@/components/ui/button';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
-import { createClient, getCurrentBrowserUser } from '@/lib/supabase/client';
+import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import {
   HEADER_SECONDARY_NAV_ITEMS,
@@ -31,9 +31,6 @@ import {
   type NavItem,
 } from '@/shared/config/site-navigation';
 
-const hasSupabaseBrowserEnv = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 const NOTIFICATION_HEARTBEAT_KEY = 'moonlight:notification-heartbeat-sent-at';
 const HEADER_CREDIT_CACHE_KEY = 'moonlight:header-credit-cache-v1';
 const HEADER_CREDIT_REFRESH_MS = 45 * 1000;

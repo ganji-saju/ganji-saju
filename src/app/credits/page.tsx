@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
-import { createClient, getCurrentBrowserUser } from '@/lib/supabase/client';
+import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import Link from 'next/link';
 import {
   DEFAULT_TOSS_PAYMENT_METHOD,
@@ -21,10 +21,6 @@ import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Badge } from '@/components/ui/badge';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
-
-const hasSupabaseBrowserEnv = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 const CREDIT_PACKAGE_DESCRIPTIONS: Record<string, { desc: string; badge: string; highlight?: boolean }> = {
   credit_1: {
