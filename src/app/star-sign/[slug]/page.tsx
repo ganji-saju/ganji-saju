@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Badge } from '@/components/ui/badge';
@@ -54,11 +54,11 @@ export default async function StarSignDetailPage({ params }: Props) {
   const profile = await getOptionalSignedInProfile();
   const readingSlug = buildProfileReadingSlug(profile);
   const meta = STAR_SIGN_META[item.slug as keyof typeof STAR_SIGN_META];
-  const relatedItems = STAR_SIGN_FORTUNES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
+  const relatedItems = STAR_SIGN_FORTUNES.filter((entry) => entry.slug !== item.slug);
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={[
             <Badge
@@ -86,7 +86,12 @@ export default async function StarSignDetailPage({ params }: Props) {
               description={item.todayFocus}
               descriptionClassName="mx-auto max-w-xl text-[var(--app-copy)]"
             />
-            <div className="mt-6 text-7xl">{meta.symbol}</div>
+            <GangiStarSignIcon
+              slug={item.slug}
+              symbol={meta.symbol}
+              size="lg"
+              className="mx-auto mt-6"
+            />
 
             <FeatureCard
               className="mt-6 text-left"
@@ -117,33 +122,27 @@ export default async function StarSignDetailPage({ params }: Props) {
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
             eyebrow="다른 별자리"
-            title="이 결의 차이를 함께 비교해 보세요"
-            titleClassName="text-3xl"
+            title="다른 별자리도 바로 볼 수 있어요"
+            titleClassName="text-2xl"
           />
 
-          <ProductGrid columns={3} className="mt-6">
+          <div className="gangi-star-sign-grid mt-5">
             {relatedItems.map((entry) => {
               const relatedMeta = STAR_SIGN_META[entry.slug as keyof typeof STAR_SIGN_META];
 
               return (
-                <FeatureCard
+                <Link
                   key={entry.slug}
-                  surface="soft"
-                  eyebrow={`${relatedMeta.symbol} ${entry.dateRange}`}
-                  title={entry.label}
-                  description={entry.summary}
-                  footer={
-                    <Link
-                      href={`/star-sign/${entry.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-sky)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      이 별자리 읽기
-                    </Link>
-                  }
-                />
+                  href={`/star-sign/${entry.slug}`}
+                  className="gangi-star-sign-card"
+                >
+                  <GangiStarSignIcon slug={entry.slug} symbol={relatedMeta.symbol} size="sm" />
+                  <strong>{entry.label}</strong>
+                  <em>{entry.dateRange}</em>
+                </Link>
               );
             })}
-          </ProductGrid>
+          </div>
         </SectionSurface>
       </AppPage>
     </AppShell>

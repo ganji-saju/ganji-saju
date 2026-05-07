@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Badge } from '@/components/ui/badge';
@@ -39,8 +39,8 @@ export default async function StarSignPage() {
   const hasPersonalizedProfile = Boolean(profile && personalizedSlug);
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={[
             <Badge
@@ -56,9 +56,35 @@ export default async function StarSignPage() {
               빠른 무료 탐색
             </Badge>,
           ]}
-          title="별빛 언어로 오늘의 감정선을 먼저 읽습니다"
-          description="오늘 마음에 닿는 별자리 흐름을 바로 확인하세요."
+          title="별자리를 골라 오늘운을 보세요"
+          description="열두 별자리 중 내 별자리를 누르면 바로 오늘 흐름을 볼 수 있습니다."
         />
+
+        <section className="gangi-card-panel p-5">
+          <SectionHeader
+            eyebrow="12별자리 바로 선택"
+            title="내 별자리를 골라보세요"
+            titleClassName="text-2xl"
+          />
+          <div className="gangi-star-sign-grid mt-5">
+            {STAR_SIGN_FORTUNES.map((item) => {
+              const meta = STAR_SIGN_META[item.slug as keyof typeof STAR_SIGN_META];
+
+              return (
+                <Link
+                  key={item.slug}
+                  href={`/star-sign/${item.slug}`}
+                  className="gangi-star-sign-card"
+                  data-active={item.slug === featured.slug ? 'true' : undefined}
+                >
+                  <GangiStarSignIcon slug={item.slug} symbol={meta.symbol} size="sm" />
+                  <strong>{item.label}</strong>
+                  <em>{item.dateRange}</em>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
 
         <SectionSurface surface="panel" size="lg" className="text-center">
             <SectionHeader
@@ -68,7 +94,12 @@ export default async function StarSignPage() {
               description={featured.dateRange}
               descriptionClassName="mx-auto text-[var(--app-copy-muted)]"
             />
-            <div className="mt-6 text-6xl">{featuredMeta.symbol}</div>
+            <GangiStarSignIcon
+              slug={featured.slug}
+              symbol={featuredMeta.symbol}
+              size="lg"
+              className="mx-auto mt-6"
+            />
             <FeatureCard
               className="mt-6 text-left"
               surface="soft"
@@ -84,43 +115,6 @@ export default async function StarSignPage() {
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
               </Link>
             </ActionCluster>
-        </SectionSurface>
-
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="12별자리"
-            title="각 별자리의 한 줄 인상"
-            titleClassName="text-3xl"
-          />
-
-          <ProductGrid columns={3} className="mt-6">
-            {STAR_SIGN_FORTUNES.map((item) => {
-              const meta = STAR_SIGN_META[item.slug as keyof typeof STAR_SIGN_META];
-
-              return (
-                <FeatureCard
-                  key={item.slug}
-                  surface="soft"
-                  eyebrow={`${meta.symbol} ${item.dateRange}`}
-                  title={item.label}
-                  description={
-                    <>
-                      <span className="block">{meta.seniorCopy}</span>
-                      <span className="mt-2 block text-[var(--app-copy-muted)]">{item.todayFocus}</span>
-                    </>
-                  }
-                  footer={
-                    <Link
-                      href={`/star-sign/${item.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-[var(--app-sky)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                    >
-                      이 별자리 읽기
-                    </Link>
-                  }
-                />
-              );
-            })}
-          </ProductGrid>
         </SectionSurface>
       </AppPage>
     </AppShell>

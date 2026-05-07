@@ -5309,6 +5309,108 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   font-size: 1.32rem;
 }
 
+.gangi-star-sign-icon {
+  --star-sign-from: var(--app-pink);
+  --star-sign-to: var(--app-plum);
+  display: grid;
+  width: 3.35rem;
+  height: 3.35rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.9), transparent 26%),
+    linear-gradient(135deg, var(--star-sign-from), var(--star-sign-to));
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.54),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.08),
+    0 10px 22px rgba(216, 27, 114, 0.12);
+}
+
+.gangi-star-sign-icon span {
+  display: grid;
+  width: 72%;
+  height: 72%;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.24));
+}
+
+.gangi-star-sign-icon[data-size="lg"] {
+  width: 4.25rem;
+  height: 4.25rem;
+  font-size: 2rem;
+  animation: gangi-float-y 3.8s ease-in-out infinite;
+}
+
+.gangi-star-sign-icon[data-size="sm"] {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.32rem;
+}
+
+.gangi-star-sign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.gangi-star-sign-card {
+  display: grid;
+  min-height: 7.4rem;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid var(--app-line);
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 0.78rem 0.45rem;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(17, 17, 20, 0.04);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.gangi-star-sign-card:hover,
+.gangi-star-sign-card:focus-visible,
+.gangi-star-sign-card[data-active="true"] {
+  border-color: rgba(255, 79, 154, 0.58);
+  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.1);
+  transform: translateY(-1px);
+}
+
+.gangi-star-sign-card strong {
+  display: block;
+  margin-top: 0.42rem;
+  color: var(--app-ink);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.gangi-star-sign-card em {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(17, 17, 20, 0.5);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 720;
+  line-height: 1.2;
+}
+
+@media (min-width: 520px) {
+  .gangi-star-sign-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .gangi-free-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
