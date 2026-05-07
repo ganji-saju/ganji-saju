@@ -8,6 +8,7 @@ import {
 import {
   buildDialogueExpertInstructions,
   getDialogueExpertMeta,
+  getDialogueExpertRagOverlay,
   inferDialogueExpertIdFromMessage,
   normalizeDialogueExpertId,
   resolveDialogueExpertId,
@@ -357,13 +358,15 @@ function buildDialogueFallback(
   expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message))
 ) {
   const expert = getDialogueExpertMeta(expertId);
+  const overlay = getDialogueExpertRagOverlay(expertId);
 
   if (!profileGrounding) {
     return [
-      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.teacherName} 기준으로 먼저 핵심만 짚겠습니다.`,
+      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.teacherName} 기준으로 먼저 ${overlay.primaryLens[0]}부터 짚겠습니다.`,
       `남겨주신 질문은 “${message}”입니다.`,
-      '아직 저장된 사주 정보가 연결되지 않았다면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 먼저 넣어 주세요. 기본 정보가 잡혀야 같은 질문도 훨씬 분명하게 풀립니다.',
-      `${expert.label} 기본 답변이며, 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+      `${overlay.answerOrder[0]} 그러려면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 넣어두는 편이 좋습니다.`,
+      `오늘은 ${overlay.actionPattern[0]} 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+      `${expert.label} 기본 답변으로 먼저 말씀드렸습니다.`,
     ].join('\n\n');
   }
 
@@ -372,11 +375,12 @@ function buildDialogueFallback(
     .join(' · ');
 
   return [
-    `${expert.teacherName} 관점에서 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
+    `${expert.teacherName} 관점에서는 ${overlay.primaryLens[0]}을 먼저 봅니다. 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
     simplifySajuCopy(profileGrounding.reports.focus.summary),
-    `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다. 오늘은 ${simplifySajuCopy(profileGrounding.saju.yongsin)} 흐름을 잘 쓰는 편이 좋습니다.`,
+    `이 질문은 ${overlay.answerOrder.join(' 그리고 ')} 흐름으로 보는 편이 맞습니다.`,
+    `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다.`,
     evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
-    `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리해서 움직이시는 편이 맞습니다.`,
+    `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리하고, 오늘 행동은 ${overlay.actionPattern[0]} 쪽으로 좁히시면 좋습니다.`,
     `${expert.label} 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
   ]
     .filter(Boolean)
@@ -536,6 +540,7 @@ function createDialoguePrompt(
   recentFeedbackSummary?: string | null
 ) {
   const expert = getDialogueExpertMeta(expertId);
+  const expertRagOverlay = getDialogueExpertRagOverlay(expertId);
 
   return {
     instructions: [
@@ -559,6 +564,7 @@ function createDialoguePrompt(
       ...buildDialogueExpertInstructions(expertId),
     ].join('\n'),
     input: [
+      `선택된 12지신 전문 오버레이 RAG:\n${JSON.stringify(expertRagOverlay, null, 2)}`,
       profileGrounding
         ? `기본 사용자 사주 정보:\n${JSON.stringify(profileGrounding, null, 2)}`
         : '기본 사용자 사주 정보 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',

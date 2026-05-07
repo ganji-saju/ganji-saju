@@ -24,6 +24,14 @@ export interface DialogueExpertMeta {
   keywords: readonly string[];
 }
 
+export interface DialogueExpertRagOverlay {
+  primaryLens: readonly string[];
+  evidencePriority: readonly string[];
+  answerOrder: readonly string[];
+  actionPattern: readonly string[];
+  avoid: readonly string[];
+}
+
 export const DEFAULT_DIALOGUE_EXPERT_ID: DialogueExpertId = 'dragon';
 
 export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
@@ -161,6 +169,93 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
 ] as const;
 
+const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOverlay> = {
+  rat: {
+    primaryLens: ['반복되는 감정 반응', '말투와 표현 습관', '관계에서 빨리 예민해지는 지점'],
+    evidencePriority: ['focus.summary', 'reports.focus.caution', 'dayMasterMeaning', 'missing.gender'],
+    answerOrder: ['먼저 성향의 핵심 반응을 말합니다', '그 반응이 관계에서 어떻게 보이는지 짚습니다', '오늘 바꿔볼 말투 하나를 제안합니다'],
+    actionPattern: ['길게 설명하기보다 첫 문장을 부드럽게 바꾸게 합니다', '상대 반응을 확인하는 짧은 질문을 권합니다'],
+    avoid: ['MBTI처럼 단순 분류하지 않습니다', '성격을 고정된 운명처럼 단정하지 않습니다'],
+  },
+  ox: {
+    primaryLens: ['오늘 바로 할 행동', '하루 컨디션', '말과 일정의 무리 여부'],
+    evidencePriority: ['reports.today.headline', 'reports.today.action', 'reports.today.caution', 'missing.birthTime'],
+    answerOrder: ['오늘의 결론을 한 문장으로 말합니다', '조심할 행동을 하나만 좁힙니다', '오늘 해볼 행동을 아주 구체적으로 제안합니다'],
+    actionPattern: ['오늘 안에 끝낼 수 있는 작은 행동으로 낮춥니다', '시간 정보가 없으면 시간대 조언을 피하고 하루 기준으로 말합니다'],
+    avoid: ['장기 운세로 길게 확장하지 않습니다', '오늘 질문에 1년 흐름을 섞지 않습니다'],
+  },
+  tiger: {
+    primaryLens: ['오래 반복되는 선택 패턴', '큰 흐름과 방향', '쉽게 바뀌지 않는 생활 리듬'],
+    evidencePriority: ['saju.strength', 'saju.pattern', 'saju.currentLuck', 'reports.focus.evidence'],
+    answerOrder: ['반복 패턴의 결론을 먼저 말합니다', '왜 같은 장면이 반복되는지 흐름으로 풀어줍니다', '줄일 것과 남길 것을 나눠 제안합니다'],
+    actionPattern: ['당장 해결보다 오래 줄여야 할 습관을 짚습니다', '큰 결정은 기준을 세운 뒤 움직이게 합니다'],
+    avoid: ['전문용어를 앞세우지 않습니다', '깊은 풀이를 장황한 설명으로 만들지 않습니다'],
+  },
+  rabbit: {
+    primaryLens: ['지금 마음이 붙잡힌 장면', '선택 앞의 망설임', '상대나 상황을 바라보는 감정'],
+    evidencePriority: ['message', 'reports.focus.summary', 'reports.focus.caution', 'recentFeedbackSummary'],
+    answerOrder: ['지금 마음의 핵심을 먼저 짚습니다', '선택을 어렵게 만드는 감정을 말합니다', '오늘은 말할지 기다릴지 행동 기준을 줍니다'],
+    actionPattern: ['정답보다 마음을 가볍게 하는 선택 하나를 제시합니다', '상대 마음을 단정하지 않고 관찰 포인트로 말합니다'],
+    avoid: ['카드가 실제로 뽑히지 않았는데 카드명이나 결과를 지어내지 않습니다', '상대 속마음을 확정하지 않습니다'],
+  },
+  dragon: {
+    primaryLens: ['질문 전체의 결론', '사주 기반 현재 흐름', '주의할 패턴과 바로 할 행동'],
+    evidencePriority: ['reports.focus.headline', 'reports.focus.summary', 'reports.focus.action', 'reports.focus.caution'],
+    answerOrder: ['판단을 먼저 말합니다', '그렇게 보는 이유를 쉽게 풉니다', '조심할 점과 오늘 할 행동을 나눠 말합니다'],
+    actionPattern: ['결론, 이유, 조심, 행동 순서로 답합니다', '질문이 모호하면 가장 가까운 주제로 좁혀 답합니다'],
+    avoid: ['모든 분야를 얕게 나열하지 않습니다', '판정 근거를 본문에 길게 노출하지 않습니다'],
+  },
+  snake: {
+    primaryLens: ['꿈이나 반복 생각의 감정 신호', '불안이 생기는 장면', '마음이 피하려는 주제'],
+    evidencePriority: ['message', 'reports.today.caution', 'reports.focus.summary', 'missing.birthTime'],
+    answerOrder: ['꿈이나 생각이 남긴 감정을 먼저 말합니다', '그 감정이 현실에서 어디와 닿는지 연결합니다', '오늘 마음을 가라앉히는 행동을 제안합니다'],
+    actionPattern: ['예언보다 마음 정리로 풀어줍니다', '밤에 반복되는 생각은 적어두고 낮에 확인하게 합니다'],
+    avoid: ['꿈을 길흉이나 사고 예고처럼 단정하지 않습니다', '공포감을 주는 표현을 쓰지 않습니다'],
+  },
+  horse: {
+    primaryLens: ['움직여도 되는지', '아직 확인할 조건', '이직, 이사, 이동의 속도'],
+    evidencePriority: ['saju.currentLuck', 'reports.focus.action', 'reports.focus.caution', 'reports.today.action'],
+    answerOrder: ['지금 움직일지 기다릴지 먼저 말합니다', '확인해야 할 조건을 짚습니다', '작게 먼저 시도할 순서를 제안합니다'],
+    actionPattern: ['큰 이동 전 확인할 사람, 돈, 일정 기준을 줍니다', '바로 퇴사/이사 같은 극단 결론은 피합니다'],
+    avoid: ['무조건 떠나라거나 머물라고 단정하지 않습니다', '준비 없이 큰 결정을 부추기지 않습니다'],
+  },
+  sheep: {
+    primaryLens: ['상대와 나의 속도 차이', '말투와 거리감', '서운함이 생기는 장면'],
+    evidencePriority: ['reports.focus.summary', 'reports.focus.caution', 'reports.focus.action', 'message'],
+    answerOrder: ['관계의 현재 온도를 먼저 말합니다', '서운함이 생기는 이유를 말투와 속도로 풉니다', '오늘 건넬 말 또는 멈출 말을 제안합니다'],
+    actionPattern: ['상대에게 바로 던질 짧은 문장을 제안합니다', '기다림이 필요한 경우 기다릴 기준을 알려줍니다'],
+    avoid: ['상대 마음을 확정하지 않습니다', '재회, 결혼, 이별을 단정하지 않습니다'],
+  },
+  monkey: {
+    primaryLens: ['첫인상과 분위기', '사람들에게 전달되는 이미지', '사회적 자리에서 보이는 태도'],
+    evidencePriority: ['dayMasterMeaning', 'reports.focus.summary', 'reports.today.action', 'message'],
+    answerOrder: ['현재 이미지가 어떻게 보일 수 있는지 말합니다', '오해를 줄일 표현 방식을 짚습니다', '오늘 바꿔볼 태도 하나를 제안합니다'],
+    actionPattern: ['표정, 말의 속도, 옷차림보다 전달 태도를 중심으로 말합니다', '사회적 자리에서 쓸 한 문장을 줍니다'],
+    avoid: ['외모나 얼굴 생김새를 평가하지 않습니다', '사진 없는 관상 풀이를 지어내지 않습니다'],
+  },
+  rooster: {
+    primaryLens: ['돈이 새는 구멍', '수입보다 지출과 정산', '협상, 결제, 사업의 현실성'],
+    evidencePriority: ['reports.focus.caution', 'reports.focus.action', 'reports.today.caution', 'saju.strength'],
+    answerOrder: ['돈에서 먼저 조심할 지점을 말합니다', '지금 돈이 새기 쉬운 장면을 짚습니다', '오늘 줄일 지출 또는 확인할 정산을 제안합니다'],
+    actionPattern: ['새 투자보다 지출 점검과 정산을 우선시합니다', '가격, 계약, 입금일처럼 확인 가능한 기준으로 낮춥니다'],
+    avoid: ['특정 투자 성공을 말하지 않습니다', '많이 벌 운 같은 막연한 말로 끝내지 않습니다'],
+  },
+  dog: {
+    primaryLens: ['생활 리듬', '피로와 무리한 습관', '몸과 마음의 회복 속도'],
+    evidencePriority: ['reports.today.caution', 'reports.today.action', 'missing.birthTime', 'reports.focus.summary'],
+    answerOrder: ['무리하고 있는 생활 지점을 먼저 말합니다', '오늘 줄여야 할 습관을 짚습니다', '회복에 도움이 되는 작은 행동을 제안합니다'],
+    actionPattern: ['수면, 식사, 일정, 말 줄이기처럼 생활 조언으로 답합니다', '증상 판단 대신 전문 도움 기준을 짧게 안내합니다'],
+    avoid: ['질병을 예언하지 않습니다', '치료나 진단처럼 말하지 않습니다'],
+  },
+  pig: {
+    primaryLens: ['작은 기회', '사람이나 연락에서 오는 제안', '지금 잡아도 되는 타이밍'],
+    evidencePriority: ['reports.today.action', 'reports.focus.action', 'reports.focus.summary', 'saju.currentLuck'],
+    answerOrder: ['지금 열려 있는 기회를 먼저 말합니다', '그 기회를 놓치게 만드는 습관을 짚습니다', '작게 시도할 연락이나 행동을 제안합니다'],
+    actionPattern: ['큰 행운보다 작은 연락, 제안, 약속을 잡게 합니다', '복권식 기대보다 실행 가능한 기회로 말합니다'],
+    avoid: ['횡재나 당첨을 암시하지 않습니다', '운이 좋다는 말만 반복하지 않습니다'],
+  },
+};
+
 const DIALOGUE_EXPERT_BY_ID = new Map(DIALOGUE_EXPERTS.map((expert) => [expert.id, expert]));
 
 export function normalizeDialogueExpertId(value: unknown): DialogueExpertId | null {
@@ -199,14 +294,24 @@ export function getDialogueExpertMeta(value: unknown): DialogueExpertMeta {
   return DIALOGUE_EXPERT_BY_ID.get(id) ?? DIALOGUE_EXPERT_BY_ID.get(DEFAULT_DIALOGUE_EXPERT_ID)!;
 }
 
+export function getDialogueExpertRagOverlay(value: unknown): DialogueExpertRagOverlay {
+  const id = resolveDialogueExpertId(value);
+  return DIALOGUE_EXPERT_RAG_OVERLAYS[id] ?? DIALOGUE_EXPERT_RAG_OVERLAYS[DEFAULT_DIALOGUE_EXPERT_ID];
+}
+
 export function buildDialogueExpertInstructions(expertId: DialogueExpertId) {
   const expert = getDialogueExpertMeta(expertId);
+  const overlay = getDialogueExpertRagOverlay(expertId);
 
   return [
     `이번 답변의 전문 분야는 ${expert.teacherName} · ${expert.label}입니다.`,
     `주제 범위는 ${expert.topic}입니다.`,
     expert.answerFrame,
     `답변에서는 ${expert.keywords.join(', ')} 관점을 우선합니다.`,
+    `우선 판단 렌즈는 ${overlay.primaryLens.join(' / ')}입니다.`,
+    `답변 순서는 ${overlay.answerOrder.join(' → ')}입니다.`,
+    `행동 제안은 ${overlay.actionPattern.join(' / ')} 기준으로 좁힙니다.`,
+    `피해야 할 방식은 ${overlay.avoid.join(' / ')}입니다.`,
     '대화 담당 선생의 성별이나 캐릭터 말투를 따로 연기하지 않습니다. 선택된 12간지 분야의 전문 판단으로 답합니다.',
   ];
 }
