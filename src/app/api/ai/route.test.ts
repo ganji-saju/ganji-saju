@@ -22,11 +22,11 @@ import { ensureDialogueExpertVisibleOpening } from '@/lib/dialogue-experts';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
-test('dialogue fallback copy explains that fallback answers do not charge coins', () => {
+test('dialogue fallback copy stays conversational without internal memo leakage', () => {
   const text = buildDialogueFallback('오늘 관계운을 짧게 알려줘');
 
-  assert.match(text, /궁합과 관계|흐름/);
-  assert.match(text, /횟수와 코인을 차감하지 않습니다/);
+  assert.match(text, /상대|질문/);
+  assert.doesNotMatch(text, /기본 흐름은|핵심 단서는|답변 순서|코인을 차감/);
 });
 
 test('dialogue prompt uses the selected zodiac expert and infers focus topic from the question', () => {
@@ -79,6 +79,17 @@ test('dialogue answer normalization removes markdown-like markers', () => {
   assert.equal(
     normalized,
     '올해는 재물운이 살아납니다.\n\n다만 서두르지는 마세요.\n\n정산부터 하세요.'
+  );
+});
+
+test('dialogue answer normalization drops internal saju memo leakage', () => {
+  const normalized = normalizeDialogueAnswer(
+    '오늘은 정리와 균형이 더 큰 성과로 이어지는 날입니다.\n\n기본 흐름은 壬 수, 중화 · 66점, 역할 흐름 쪽으로 읽습니다.\n\n핵심 단서는 균형 기운이 어떻게 쓰이는지 봅니다 · 역할 흐름 반복해서 맡게 되는 역할을 봅니다입니다.\n\n지금은 말을 줄이고 확인을 먼저 하는 편이 좋습니다.'
+  );
+
+  assert.equal(
+    normalized,
+    '오늘은 정리와 균형이 더 큰 성과로 이어지는 날입니다.\n\n지금은 말을 줄이고 확인을 먼저 하는 편이 좋습니다.'
   );
 });
 

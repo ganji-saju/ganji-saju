@@ -44,7 +44,7 @@ import {
 } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
 import { toSlug } from '@/lib/saju/pillars';
-import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -363,29 +363,31 @@ function buildDialogueFallback(
 
   if (!profileGrounding) {
     return [
-      `지금은 정밀 답변 연결이 잠시 비어 있어, ${expert.teacherName} 기준으로 먼저 ${overlay.primaryLens[0]}부터 짚겠습니다.`,
-      `남겨주신 질문은 “${message}”입니다.`,
-      `${overlay.answerOrder[0]} 그러려면 MY 프로필에 생년월일, 성별, 태어난 시간, 출생지를 넣어두는 편이 좋습니다.`,
-      `오늘은 ${overlay.actionPattern[0]} 이 답변은 횟수와 코인을 차감하지 않습니다.`,
-      `${expert.label} 기본 답변으로 먼저 말씀드렸습니다.`,
+      `${expert.teacherName}으로 보면, 이 질문은 ${overlay.primaryLens[0]}부터 짚는 게 좋습니다.`,
+      `정확한 생년월일과 태어난 시간이 있으면 더 개인적으로 볼 수 있어요. 지금은 질문 내용만 놓고 짧게 말씀드릴게요.`,
+      `오늘은 ${overlay.actionPattern[0]} 이 한 가지만 먼저 해보세요.`,
     ].join('\n\n');
   }
 
-  const evidenceSummary = profileGrounding.reports.focus.evidence
-    .map((item) => simplifySajuCopy(`${item.label} ${item.title}`))
-    .join(' · ');
+  const headline = limitSajuSentences(profileGrounding.reports.focus.headline, 1);
+  const summary = limitSajuSentences(profileGrounding.reports.focus.summary, 2);
+  const action = limitSajuSentences(profileGrounding.reports.focus.action, 1);
+  const caution = limitSajuSentences(profileGrounding.reports.focus.caution, 1);
 
   return [
-    `${expert.teacherName} 관점에서는 ${overlay.primaryLens[0]}을 먼저 봅니다. 저장된 프로필을 보면, ${simplifySajuCopy(profileGrounding.reports.focus.headline)}`,
-    simplifySajuCopy(profileGrounding.reports.focus.summary),
-    `이 질문은 ${overlay.answerOrder.join(' 그리고 ')} 흐름으로 보는 편이 맞습니다.`,
-    `기본 흐름은 ${simplifySajuCopy(profileGrounding.saju.dayMaster)}, ${simplifySajuCopy(profileGrounding.saju.strength)}, ${simplifySajuCopy(profileGrounding.saju.pattern)} 쪽으로 읽습니다.`,
-    evidenceSummary ? `핵심 단서는 ${evidenceSummary}입니다.` : null,
-    `질문하신 “${message}”은 ${simplifySajuCopy(profileGrounding.reports.focus.action)} 쪽으로 정리하고, 오늘 행동은 ${overlay.actionPattern[0]} 쪽으로 좁히시면 좋습니다.`,
-    `${expert.label} 기본 풀이로 먼저 말씀드렸고, 저장된 사주 정보는 그대로 반영했습니다. 이 답변은 횟수와 코인을 차감하지 않습니다.`,
+    `${expert.teacherName}으로 보면, ${headline}`,
+    summary,
+    action ? `지금은 ${action} 이 한 가지를 먼저 잡아보세요.` : null,
+    caution ? `조심할 점은 ${caution}` : null,
   ]
     .filter(Boolean)
     .join('\n\n');
+}
+
+function isDialogueInternalMemo(paragraph: string) {
+  return /(?:이 질문은 .*답변|이 질문은 .*흐름|기본 흐름은|핵심 단서는|보조 단서|우선 판단 렌즈|답변 순서|행동 제안 방식|피할 방식|오행\/균형|역할 흐름|보완 힌트|fact_?json|evidence_?json|engine[_ -]?version|rule[_ -]?set|[甲乙丙丁戊己庚辛壬癸]\s*타고난 기질|[木火土金水]\s*\([^)]+\)\s*(?:·|기운))/iu.test(
+    paragraph
+  );
 }
 
 function createYearlyDialogueFallback(
@@ -529,9 +531,28 @@ function normalizeDialogueAnswer(text: string) {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => simplifySajuCopy(line.replace(/\s{2,}/g, ' ')))
+    .filter((line) => !isDialogueInternalMemo(line))
     .filter(Boolean);
 
   return paragraphs.join('\n\n');
+}
+
+function formatDialogueProfileBrief(profileGrounding: DialogueProfileGrounding) {
+  return [
+    `기본 초점: ${profileGrounding.focusLabel}`,
+    `한 줄 소재: ${limitSajuSentences(profileGrounding.reports.focus.headline, 1)}`,
+    `짧은 해석: ${limitSajuSentences(profileGrounding.reports.focus.summary, 2)}`,
+    `바로 할 일: ${limitSajuSentences(profileGrounding.reports.focus.action, 1)}`,
+    `조심할 점: ${limitSajuSentences(profileGrounding.reports.focus.caution, 1)}`,
+    profileGrounding.missing.birthTime
+      ? '태어난 시간이 없어 시간대별 세부 흐름은 짧게만 말합니다.'
+      : null,
+    profileGrounding.missing.birthLocation
+      ? '출생지가 없어 지역 보정 이야기는 답변에 꺼내지 않습니다.'
+      : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function createDialoguePrompt(
@@ -552,6 +573,9 @@ function createDialoguePrompt(
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
       '마크다운 기호를 쓰지 않습니다. 별표 두 개, 샵, 글머리표, 번호 목록, 표식 문장을 쓰지 말고 자연스러운 문단으로만 답합니다.',
       '문단은 3~5개 정도로 짧게 나누고, 한 문단 안에서도 문장을 길게 늘이지 않습니다.',
+      '대화방 답변은 긴 사주 리포트가 아닙니다. 사용자의 사주에서 핵심 소재는 한두 줄만 쓰고, 나머지는 질문에 맞는 피드백으로 답합니다.',
+      '사용자에게 보이는 답변에는 “기본 흐름”, “핵심 단서”, “답변 순서”, “오행/균형”, “보완 힌트”, “저장 프로필 정보”, 한자 기호, 점수, 내부 JSON 이름을 쓰지 않습니다.',
+      '전문 근거는 화면에 드러내지 말고 쉬운 생활 언어로 바꿔 말합니다.',
       'AI 비서처럼 메타 설명하거나, 과하게 조심스러운 군더더기 표현을 반복하지 않습니다.',
       '결론을 흐리게 돌려 말하지 말고, 보이는 흐름은 분명하게 말합니다. 다만 태어난 시간이나 출생지처럼 빠진 정보 때문에 보류해야 하는 부분은 짧고 또렷하게 선을 그어 설명합니다.',
       '말끝마다 가능성만 늘어놓지 말고, 지금 흐름에서 무엇이 강하고 무엇을 조절해야 하는지 힘있게 짚어줍니다.',
@@ -565,10 +589,16 @@ function createDialoguePrompt(
       ...buildDialogueExpertInstructions(expertId),
     ].join('\n'),
     input: [
-      `선택된 12지신 전문 오버레이 RAG:\n${JSON.stringify(expertRagOverlay, null, 2)}`,
+      [
+        '선택된 12지신 전문 오버레이 RAG:',
+        `첫 문단 관점: ${expertRagOverlay.visibleOpening}`,
+        `질문을 볼 렌즈: ${expertRagOverlay.primaryLens.join(' / ')}`,
+        `피드백 방향: ${expertRagOverlay.actionPattern.join(' / ')}`,
+        `피해야 할 답변: ${expertRagOverlay.avoid.join(' / ')}`,
+      ].join('\n'),
       profileGrounding
-        ? `기본 사용자 사주 정보:\n${JSON.stringify(profileGrounding, null, 2)}`
-        : '기본 사용자 사주 정보 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
+        ? `대화용 개인화 소재:\n${formatDialogueProfileBrief(profileGrounding)}`
+        : '대화용 개인화 소재 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
       recentFeedbackSummary
         ? `최근 사용자 피드백 요약:\n${recentFeedbackSummary}`
         : null,
