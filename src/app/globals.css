@@ -5604,10 +5604,13 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.625rem;
   padding: 0.75rem 1.25rem 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 44rem;
 }
 
 .gangi-service-card {
   position: relative;
+  contain: content;
   display: flex;
   min-height: 9.25rem;
   min-width: 0;
@@ -5839,6 +5842,84 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
   .site-footer-company-item:nth-child(4) {
     grid-column: span 2;
+  }
+}
+
+
+/* Low-power mobile pass: keep the Ganji look, reduce paint/motion cost on older phones. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .gangi-season-banner {
+    transform: none !important;
+    box-shadow: 0 10px 22px -18px rgba(216, 27, 114, 0.5);
+    transition: background 160ms ease, color 160ms ease;
+    will-change: auto;
+  }
+
+  .gangi-season-banner::before,
+  .gangi-season-banner::after,
+  .gangi-banner-moon,
+  .gangi-character,
+  .gangi-loading-moon,
+  .gangi-loading-moon i,
+  .today-score-orb,
+  .today-score-ring,
+  .today-score-piece {
+    animation: none !important;
+  }
+
+  .gangi-season-banner::before {
+    display: none;
+  }
+
+  .gangi-season-banner::after {
+    opacity: 0.22;
+  }
+
+  .gangi-season-glow {
+    opacity: 0.24;
+  }
+
+  .gangi-banner-viewport {
+    cursor: default;
+  }
+
+  .gangi-free-action,
+  .gangi-category-tabs,
+  .gangi-service-card,
+  .gangi-list-link,
+  .gangi-mini-card,
+  .app-mobile-feature-card,
+  .app-mobile-menu-trigger,
+  .app-mobile-menu-close {
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04) !important;
+    transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease !important;
+  }
+
+  .gangi-service-card:active {
+    transform: none;
+  }
+
+  .app-top-header,
+  .app-mobile-menu-panel,
+  .gangi-loading-overlay,
+  .app-bottom-nav,
+  .app-bottom-dock,
+  .app-mobile-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gangi-banner-viewport {
+    scroll-behavior: auto;
+  }
+
+  .gangi-banner-dots button,
+  .gangi-service-card,
+  .gangi-free-action,
+  .gangi-category-tabs button {
+    transition: none !important;
   }
 }
 

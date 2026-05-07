@@ -44,7 +44,11 @@ export function GangiSeasonBanner({
   );
 
   useEffect(() => {
+    if (safeBanners.length <= 1) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const timer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
       setActiveIndex((current) => {
         const next = (current + 1) % safeBanners.length;
         window.requestAnimationFrame(() => {
@@ -53,7 +57,7 @@ export function GangiSeasonBanner({
         });
         return next;
       });
-    }, 5200);
+    }, 6500);
 
     return () => window.clearInterval(timer);
   }, [safeBanners.length]);
@@ -71,7 +75,8 @@ export function GangiSeasonBanner({
     scrollRafRef.current = window.requestAnimationFrame(() => {
       scrollRafRef.current = null;
       const next = Math.round(viewport.scrollLeft / Math.max(viewport.clientWidth, 1));
-      setActiveIndex(Math.min(Math.max(next, 0), safeBanners.length - 1));
+      const clamped = Math.min(Math.max(next, 0), safeBanners.length - 1);
+      setActiveIndex((current) => (current === clamped ? current : clamped));
     });
   }, [safeBanners.length]);
 
@@ -82,7 +87,7 @@ export function GangiSeasonBanner({
         className="gangi-banner-viewport"
         onScroll={handleScroll}
         onPointerDown={(event) => {
-          if (event.button !== 0) return;
+          if (event.pointerType !== 'mouse' || event.button !== 0) return;
           const target = event.target as HTMLElement;
           if (target.closest('a, button')) return;
           const viewport = viewportRef.current;
@@ -126,6 +131,7 @@ export function GangiSeasonBanner({
               className="gangi-season-banner"
               data-tone={banner.tone}
               onPointerMove={(event) => {
+                if (event.pointerType !== 'mouse') return;
                 const box = event.currentTarget.getBoundingClientRect();
                 const x = (event.clientX - box.left) / box.width - 0.5;
                 const y = (event.clientY - box.top) / box.height - 0.5;
