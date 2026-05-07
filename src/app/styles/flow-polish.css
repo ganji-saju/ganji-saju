@@ -1,0 +1,162 @@
+/* Final flow polish loaded last.
+   This file is intentionally scoped to conversion/result subpages.
+   It does not change the home screen, palette tokens, RAG, or reading content. */
+
+.gangi-subpage-shell .app-page.gangi-subpage {
+  width: min(calc(100vw - 1.25rem), 30rem) !important;
+  max-width: min(calc(100vw - 1.25rem), 30rem) !important;
+}
+
+@media (min-width: 768px) {
+  .gangi-subpage-shell .app-page.gangi-subpage {
+    width: min(calc(100vw - 3rem), 30rem) !important;
+    max-width: min(calc(100vw - 3rem), 30rem) !important;
+  }
+}
+
+.saju-result-page {
+  --result-card-radius: 1.6rem;
+}
+
+.saju-result-page > div {
+  gap: 1rem !important;
+}
+
+.saju-result-page .gangi-result-pillars,
+.saju-result-page .gangi-result-summary-card,
+.saju-result-page .gangi-result-elements-card,
+.saju-result-page .gangi-result-mini-card,
+.saju-result-page .gangi-result-next-step {
+  border-radius: var(--result-card-radius) !important;
+}
+
+.saju-result-page .gangi-result-pillars {
+  padding: clamp(1rem, 4vw, 1.15rem) !important;
+}
+
+.saju-result-page .gangi-result-pillars .grid {
+  gap: 0.45rem !important;
+}
+
+.saju-result-page .gangi-result-pillars .grid > div {
+  border-radius: 1rem !important;
+  padding-block: 0.72rem !important;
+}
+
+.saju-result-page .gangi-result-summary-card {
+  padding: 1.15rem !important;
+}
+
+.saju-result-page .gangi-result-summary-card h1 {
+  margin-top: 0.65rem !important;
+  font-size: clamp(1.16rem, 5vw, 1.36rem) !important;
+  font-weight: 620 !important;
+  line-height: 1.62 !important;
+}
+
+.saju-result-page .gangi-result-elements-card {
+  padding: 1.1rem !important;
+}
+
+.saju-result-page .gangi-result-elements-card h2 {
+  font-size: 1rem !important;
+  font-weight: 680 !important;
+}
+
+.saju-result-page .gangi-result-elements-card .grid {
+  gap: 0.55rem !important;
+}
+
+.saju-result-page .gangi-result-elements-card .h-20 {
+  height: 4.25rem !important;
+}
+
+.saju-result-page .gangi-result-mini-card {
+  min-height: 5.5rem;
+  padding: 0.95rem !important;
+  box-shadow: 0 12px 28px -22px rgba(17, 17, 20, 0.3) !important;
+}
+
+.saju-result-page .gangi-result-mini-card p {
+  margin-top: 0.55rem !important;
+  font-size: 1rem !important;
+  font-weight: 620 !important;
+  line-height: 1.45 !important;
+}
+
+.gangi-result-flow-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.38rem;
+  border: 1px solid var(--app-line);
+  border-radius: 9999px;
+  background: #ffffff;
+  padding: 0.35rem;
+  box-shadow: 0 10px 26px -24px rgba(17, 17, 20, 0.32);
+}
+
+.gangi-result-flow-strip span {
+  display: inline-flex;
+  min-height: 2.15rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--app-copy-muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.gangi-result-flow-strip span[data-active="true"] {
+  background: var(--app-ink);
+  color: #ffffff;
+}
+
+.saju-result-page .gangi-result-next-step {
+  border: 1px solid var(--app-pink-line) !important;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(255, 79, 154, 0.12), transparent 28%),
+    linear-gradient(180deg, #fff8fc 0%, #ffffff 100%) !important;
+  color: var(--app-ink) !important;
+  padding: 1.15rem !important;
+  box-shadow: 0 16px 38px -28px rgba(216, 27, 114, 0.42) !important;
+}
+
+.saju-result-page .gangi-result-next-step p {
+  color: var(--app-copy-muted) !important;
+  font-weight: 520 !important;
+}
+
+.saju-result-page .gangi-result-next-step h2 {
+  color: var(--app-ink) !important;
+  font-size: 1.28rem !important;
+  font-weight: 680 !important;
+  line-height: 1.35 !important;
+}
+
+.saju-result-page .gangi-result-next-step a {
+  min-height: 3.05rem;
+  align-items: center;
+}
+
+.gangi-checkout-page .gangi-sub-intro {
+  padding-bottom: 0 !important;
+}
+
+.gangi-checkout-page .gangi-sub-intro h1 {
+  font-size: 1.45rem !important;
+  line-height: 1.42 !important;
+}
+
+.gangi-checkout-page .gangi-checkout-notes {
+  gap: 0.45rem !important;
+  border: 1px solid var(--app-line);
+  background: #ffffff !important;
+  font-size: 0.78rem !important;
+  font-weight: 520 !important;
+}
+
+.gangi-checkout-page .gangi-checkout-action-card {
+  border-color: var(--app-pink-line) !important;
+}

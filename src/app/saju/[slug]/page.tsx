@@ -482,7 +482,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <SajuScreenNav slug={slug} current="result" />
 
         <section className="space-y-4">
-          <article className="relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
+          <article className="gangi-result-pillars relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(255,211,76,0.28),transparent_18%),radial-gradient(circle_at_52%_8%,rgba(255,211,76,0.26),transparent_4%)]" />
             <div className="relative">
               <div className="text-sm font-semibold text-[#ffd24d]">{report.focusBadge} · 사주팔자</div>
@@ -509,14 +509,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             </div>
           </article>
 
-          <article className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
+          <article className="gangi-result-summary-card rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
             <div className="text-sm font-medium text-[var(--app-pink-strong)]">한 줄 요약</div>
             <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
             </h1>
           </article>
 
-          <article className="rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
+          <article className="gangi-result-elements-card rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
             <h2 className="text-lg font-semibold text-[var(--app-ink)]">오행 균형</h2>
             <div className="mt-5 grid grid-cols-5 gap-3">
               {COMPACT_ELEMENT_ORDER.map((element) => {
@@ -541,7 +541,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {compactResultCards.map((item) => (
               <article
                 key={item.label}
-                className="rounded-[1.2rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+                className="gangi-result-mini-card rounded-[1.2rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
               >
                 <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-copy)]">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
@@ -552,7 +552,13 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             ))}
           </div>
 
-          <article className="rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
+          <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
+            <span data-active="true">무료 요약</span>
+            <span>오늘 상세</span>
+            <span>보관</span>
+          </div>
+
+          <article className="gangi-result-next-step rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
             <p className="text-sm font-semibold text-white/72">더 깊게 보고 싶다면</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">오늘 자세히 보기 · 550원</h2>
             <p className="mt-2 text-sm leading-6 text-white/68">
