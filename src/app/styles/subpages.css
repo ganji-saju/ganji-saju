@@ -1509,3 +1509,188 @@
   color: #ffffff;
   box-shadow: 0 10px 20px rgba(17, 17, 20, 0.12);
 }
+
+/* Lazyweb-informed subpage polish.
+   Scope is intentionally limited to non-home subpage shells so the home screen,
+   color system, and interpretation/RAG content remain untouched. */
+.gangi-subpage-shell {
+  --gangi-subpage-max: 30rem;
+  --gangi-subpage-card-radius: 1.45rem;
+  --gangi-subpage-card-shadow: 0 1px 0 rgba(17, 17, 20, 0.04),
+    0 18px 46px -30px rgba(17, 17, 20, 0.36);
+  --gangi-subpage-card-shadow-hover: 0 1px 0 rgba(17, 17, 20, 0.04),
+    0 22px 52px -30px rgba(216, 27, 114, 0.34);
+}
+
+.gangi-subpage-shell .app-shell-content {
+  display: flex;
+  justify-content: center;
+}
+
+.gangi-subpage-shell :where(.gangi-subpage, .app-page.gangi-subpage) {
+  isolation: isolate;
+  margin-inline: auto !important;
+}
+
+@media (min-width: 768px) {
+  .gangi-subpage-shell .app-page.gangi-subpage {
+    width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+    max-width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+  }
+
+  .gangi-subpage-shell .app-page.gangi-subpage.saju-intake-page,
+  .gangi-subpage-shell .app-page.gangi-subpage.gangi-checkout-page,
+  .gangi-subpage-shell .app-page.gangi-subpage.saju-result-page {
+    width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+    max-width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+  }
+}
+
+.gangi-subpage-shell .gangi-sub-header {
+  top: 3.25rem;
+  margin-inline: calc(clamp(0.5rem, 2vw, 0.75rem) * -1);
+  border-bottom-color: rgba(17, 17, 20, 0.08);
+  box-shadow: 0 12px 28px -26px rgba(17, 17, 20, 0.34);
+}
+
+.gangi-subpage-shell .gangi-sub-intro {
+  padding-inline: clamp(0.85rem, 4vw, 1.05rem);
+  padding-top: clamp(1.2rem, 5vw, 1.55rem);
+}
+
+.gangi-subpage-shell .gangi-sub-intro h1 {
+  max-width: 12em;
+}
+
+.gangi-subpage-shell .gangi-sub-desc {
+  max-width: 26rem;
+}
+
+.gangi-subpage-shell :where(
+  .gangi-section,
+  .app-panel,
+  .app-panel-muted,
+  .gangi-card-panel,
+  .gangi-pink-panel,
+  .gangi-purchase-summary,
+  .gangi-reading-hero,
+  .gangi-reading-chapters,
+  .gangi-checkout-method-card,
+  .gangi-checkout-action-card,
+  .gangi-result-card,
+  .gangi-vault-link,
+  .gangi-vault-summary
+) {
+  border-color: rgba(17, 17, 20, 0.09) !important;
+  border-radius: var(--gangi-subpage-card-radius) !important;
+  box-shadow: var(--gangi-subpage-card-shadow) !important;
+}
+
+.gangi-subpage-shell :where(
+  .gangi-section,
+  .app-panel,
+  .app-panel-muted,
+  .gangi-purchase-summary,
+  .gangi-reading-hero,
+  .gangi-reading-chapters
+) {
+  overflow: hidden;
+}
+
+.gangi-subpage-shell :where(.gangi-section, .app-panel, .app-panel-muted) {
+  padding: clamp(1rem, 4vw, 1.2rem);
+}
+
+.gangi-subpage-shell :where(.gangi-list-link, .gangi-vault-link, .gangi-checkout-method-card) {
+  min-height: 4.75rem;
+  padding: clamp(0.9rem, 3.8vw, 1.05rem);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.gangi-subpage-shell :where(.gangi-list-link, .gangi-vault-link, .gangi-checkout-method-card):hover {
+  border-color: rgba(255, 79, 154, 0.28) !important;
+  box-shadow: var(--gangi-subpage-card-shadow-hover) !important;
+  transform: translateY(-1px);
+}
+
+.gangi-subpage-shell :where(.gangi-list-copy strong, .gangi-mini-card strong, .gangi-vault-copy strong) {
+  letter-spacing: 0;
+}
+
+.gangi-subpage-shell :where(.gangi-list-copy em, .gangi-mini-card p, .gangi-vault-copy small) {
+  font-weight: var(--app-type-caption);
+}
+
+.gangi-subpage-shell :where(.gangi-mini-grid, .gangi-topic-grid) {
+  gap: clamp(0.55rem, 2.6vw, 0.75rem);
+}
+
+.gangi-subpage-shell .gangi-mini-card {
+  min-height: 5rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--gangi-subpage-card-shadow);
+}
+
+.gangi-subpage-shell :where(.gangi-saju-subtabs, .app-subnav, .gangi-vault-filter) {
+  scroll-padding-inline: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gangi-subpage-shell .gangi-saju-subtabs,
+.gangi-subpage-shell .app-subnav {
+  border-radius: 9999px;
+  box-shadow: 0 12px 30px -26px rgba(17, 17, 20, 0.32);
+}
+
+.gangi-subpage-shell :where(.gangi-saju-subtab, .app-subnav-link, .gangi-vault-filter span) {
+  min-height: 2.35rem;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+}
+
+.gangi-subpage-shell .gangi-checkout-method-card {
+  grid-template-columns: 3rem minmax(0, 1fr) 1.35rem;
+}
+
+.gangi-subpage-shell .gangi-checkout-action-card {
+  position: sticky;
+  bottom: max(5.7rem, calc(env(safe-area-inset-bottom) + 5.7rem));
+  z-index: 8;
+}
+
+.gangi-subpage-shell .gangi-tarot-result-page {
+  gap: 1rem;
+}
+
+.gangi-subpage-shell .gangi-tarot-reading-stack {
+  gap: 0.72rem;
+}
+
+.gangi-subpage-shell .gangi-tarot-reading-stack article {
+  border-radius: 1.3rem;
+  box-shadow: var(--gangi-subpage-card-shadow);
+}
+
+.gangi-subpage-shell .gangi-tarot-result-actions {
+  gap: 0.65rem;
+}
+
+.gangi-subpage-shell .gangi-tarot-result-actions a {
+  border-radius: 1.1rem;
+}
+
+.gangi-subpage-shell .gangi-reading-chapters {
+  display: grid;
+}
+
+.gangi-subpage-shell .gangi-reading-chapter:last-child {
+  border-bottom: 0;
+}
+
+.gangi-subpage-shell :where(.gangi-chapter-body, .gangi-chapter-list, .gangi-reading-note) {
+  font-weight: var(--app-type-body);
+}

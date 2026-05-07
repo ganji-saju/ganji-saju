@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ganji Subpage Design Improve</title>
+    <style>
+      body { margin: 0; background: #fff; color: #111114; font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif; }
+      main { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+      h1 { font-size: 32px; line-height: 1.2; margin: 0 0 12px; }
+      h2 { margin-top: 32px; font-size: 20px; }
+      p, li { color: rgba(17, 17, 20, 0.72); line-height: 1.7; }
+      .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
+      figure { margin: 0; border: 1px solid rgba(17,17,20,.09); border-radius: 22px; overflow: hidden; background: #fff8fc; }
+      img { display: block; width: 100%; height: auto; }
+      figcaption { padding: 12px 14px; font-weight: 700; }
+      code { background: #fff0f7; border-radius: 8px; padding: 2px 6px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Lazyweb Design Improve: Ganji Subpage Surfaces</h1>
+      <p>Design-only polish applied to subpage surfaces. Home, palette, and saju content/RAG were not changed.</p>
+      <h2>Current Screens Used</h2>
+      <div class="shots">
+        <figure><img src="references/current-saju-result.png" alt="Current saju result" /><figcaption>Saju result</figcaption></figure>
+        <figure><img src="references/current-tarot-result.png" alt="Current tarot result" /><figcaption>Tarot result</figcaption></figure>
+        <figure><img src="references/current-payment.png" alt="Current payment screen" /><figcaption>Payment</figcaption></figure>
+      </div>
+      <h2>Applied Changes</h2>
+      <ul>
+        <li>Centered mobile-app frame for subpages on desktop.</li>
+        <li>Unified card radius, border, and shadow for subpage surfaces.</li>
+        <li>Improved tap targets and horizontal chip/subtab polish.</li>
+        <li>Kept all colors bound to existing CSS variables.</li>
+      </ul>
+      <p>Changed file: <code>src/app/styles/subpages.css</code></p>
+    </main>
+  </body>
+</html>
