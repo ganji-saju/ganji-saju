@@ -570,6 +570,7 @@ function createDialoguePrompt(
       `사용자가 선택한 12간지 전문 분야는 ${expert.teacherName} · ${expert.label}입니다.`,
       '사용자의 질문에는 상담실에서 마주 앉아 바로 말하듯, 단정하고 또렷한 존댓말로 답합니다.',
       '말투는 로봇처럼 설명하지 말고 실제 역술가가 손님에게 풀어주듯 자연스럽고 사람다운 한국어로 답합니다.',
+      '반드시 사용자 질문의 핵심 단어와 상황을 붙잡고 답합니다. 저장된 사주 정보는 배경일 뿐이며, 질문과 상관없는 오늘운세나 일반 성향 설명으로 빠지지 않습니다.',
       '답변 첫 문장에서 판단을 먼저 잘라 말하고, 이어서 이유와 흐름을 붙인 뒤, 마지막에는 당장 어떻게 움직이면 좋을지 정리합니다.',
       '마크다운 기호를 쓰지 않습니다. 별표 두 개, 샵, 글머리표, 번호 목록, 표식 문장을 쓰지 말고 자연스러운 문단으로만 답합니다.',
       '문단은 3~5개 정도로 짧게 나누고, 한 문단 안에서도 문장을 길게 늘이지 않습니다.',
@@ -803,6 +804,40 @@ async function handleDialogue(request: DialogueAiRequest) {
     maxOutputTokens: yearlyBridge ? 420 : 600,
     timeoutMs: yearlyBridge ? 12_000 : undefined,
   });
+
+  if (!shouldChargeAiChat(result.source)) {
+    const statusCode = result.fallbackReason === 'ai_not_configured' ? 503 : 502;
+    const error =
+      result.fallbackReason === 'ai_not_configured'
+        ? 'OpenAI 연결 설정이 완료되지 않았습니다.'
+        : 'OpenAI 답변 연결에 실패했습니다. 잠시 후 다시 질문해 주세요.';
+
+    console.error('[ai/dialogue] OpenAI generation did not complete', {
+      fallbackReason: result.fallbackReason,
+      errorMessage: result.errorMessage,
+      configured,
+      expertId,
+    });
+
+    return NextResponse.json(
+      {
+        ok: false,
+        mode: request.mode,
+        configured,
+        source: result.source,
+        model: result.model,
+        fallbackReason: result.fallbackReason,
+        error,
+        errorMessage: process.env.NODE_ENV === 'production' ? null : result.errorMessage,
+        expertId,
+        expertLabel: expert.label,
+        billing: createAiChatBillingSummary('not_charged_fallback', availableCredits, turnPlan),
+        profileContext,
+      },
+      { status: statusCode }
+    );
+  }
+
   const dialogueText = ensureDialogueExpertVisibleOpening(
     normalizeDialogueAnswer(result.text),
     expertId
@@ -812,19 +847,6 @@ async function handleDialogue(request: DialogueAiRequest) {
     text: dialogueText || ensureDialogueExpertVisibleOpening(fallbackText, expertId),
     cta: yearlyBridge?.cta ?? null,
   };
-
-  if (!shouldChargeAiChat(result.source)) {
-    return NextResponse.json({
-      ok: true,
-      mode: request.mode,
-      configured,
-      expertId,
-      expertLabel: expert.label,
-      billing: createAiChatBillingSummary('not_charged_fallback', availableCredits, turnPlan),
-      profileContext,
-      ...dialogueResult,
-    });
-  }
 
   if (resultFollowupFreeAvailable && request.sourceSessionId) {
     await recordTodayResultFollowupFreeTurn(
