@@ -223,7 +223,7 @@ export function SajuAiInterpretationPanel({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="app-caption text-[var(--app-pink-strong)]">선생님 풀이 · {focusLabel}</div>
-          <h2 className="mt-3 text-2xl font-black tracking-tight text-[var(--app-ink)]">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-[var(--app-ink)]">
             {simplifySajuCopy(interpretation.headline)}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
@@ -256,7 +256,7 @@ export function SajuAiInterpretationPanel({
               shouldInsightUseFullRow(insight) ? 'md:col-span-2' : undefined
             )}
           >
-            <div className="text-[11px] font-black text-[var(--app-pink-strong)]">
+            <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
               포인트 {index + 1}
             </div>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(insight)}</p>

@@ -49,14 +49,14 @@ export function CompatibilityResultView({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="gangi-sub-eyebrow mb-2">관계 점수</p>
-              <h2 className="text-2xl font-black leading-8 text-[var(--app-ink)]">
+              <h2 className="text-2xl font-bold leading-8 text-[var(--app-ink)]">
                 {compatibility.label}
               </h2>
-              <p className="mt-2 text-sm font-bold leading-6 text-[var(--app-copy-muted)]">
+              <p className="mt-2 text-sm font-medium leading-6 text-[var(--app-copy-muted)]">
                 {compatibility.dataNote ?? compatibility.summary}
               </p>
             </div>
-            <strong className="text-3xl font-black text-[var(--app-pink-strong)]">
+            <strong className="text-3xl font-bold text-[var(--app-pink-strong)]">
               {compatibility.score}
             </strong>
           </div>
@@ -89,7 +89,7 @@ export function CompatibilityResultView({
               desc={compatibility.partnerData.dayMaster.description ?? partnerBirthSummary}
             />
           </div>
-          <p className="mt-4 rounded-2xl bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-bold leading-6 text-[var(--app-copy)]">
+          <p className="mt-4 rounded-2xl bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
             {compatibility.summary}
           </p>
         </div>
@@ -113,7 +113,7 @@ export function CompatibilityResultView({
 
       <section className="px-4 sm:px-0">
         <details className="gangi-card-panel p-4">
-          <summary className="cursor-pointer list-none text-sm font-black text-[var(--app-ink)]">
+          <summary className="cursor-pointer list-none text-sm font-bold text-[var(--app-ink)]">
             궁합 기준과 참고 단서 보기
           </summary>
           <div className="mt-4 grid gap-3">
@@ -133,10 +133,10 @@ export function CompatibilityResultView({
       <section className="px-4 pb-8 sm:px-0">
         <div className="gangi-pink-panel p-4">
           <p className="gangi-sub-eyebrow mb-2">더 보고 싶다면</p>
-          <h2 className="text-xl font-black leading-7 text-[var(--app-ink)]">
+          <h2 className="text-xl font-bold leading-7 text-[var(--app-ink)]">
             {premiumExpansion.ctaTitle}
           </h2>
-          <p className="mt-2 text-sm font-bold leading-6 text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--app-copy-muted)]">
             {premiumExpansion.ctaBody}
           </p>
           <div className="mt-4 grid gap-2">

@@ -66,7 +66,7 @@ export default async function ZodiacPage() {
                 className="rounded-[0.9rem] border border-[var(--app-line)] bg-white px-2 py-3 text-center"
               >
                 <GangiCharacter zodiac={zodiac.key} size="sm" className="mx-auto" />
-                <span className="mt-1.5 block text-[11px] font-black text-[var(--app-ink)]">{zodiac.name}</span>
+                <span className="mt-1.5 block text-[11px] font-bold text-[var(--app-ink)]">{zodiac.name}</span>
               </Link>
             ))}
           </div>

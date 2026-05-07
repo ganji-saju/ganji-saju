@@ -66,7 +66,7 @@ export default async function DailyTarotPage() {
               name="question"
               rows={3}
               placeholder="예: 지금 마음을 전해도 괜찮을까요"
-              className="min-h-24 w-full resize-none rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3 text-sm font-bold leading-6 text-[var(--app-ink)] outline-none placeholder:text-[rgba(17,17,20,0.38)] focus:border-[var(--app-pink)]"
+              className="min-h-24 w-full resize-none rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3 text-sm font-medium leading-6 text-[var(--app-ink)] outline-none placeholder:text-[rgba(17,17,20,0.38)] focus:border-[var(--app-pink)]"
             />
             <button type="submit" className="gangi-secondary-button">
               이 질문으로 카드 뽑기

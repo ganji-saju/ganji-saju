@@ -120,7 +120,7 @@ export default function SavedReadingsList({
       </div>
 
       {message ? (
-        <div className="rounded-[1.35rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-black text-[var(--app-pink-strong)]">
+        <div className="rounded-[1.35rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-bold text-[var(--app-pink-strong)]">
           {message}
         </div>
       ) : null}

@@ -471,20 +471,20 @@ export function DialogueChatPanel({
               <div className="flex items-start gap-3">
                 <GangiCharacter zodiac={selectedExpert.id} />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-black text-[var(--app-pink-strong)]">
+                  <div className="text-sm font-bold text-[var(--app-pink-strong)]">
                     선택한 전문 분야
                   </div>
-                  <div className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
+                  <div className="mt-1 text-lg font-bold leading-7 text-[var(--app-ink)]">
                     {selectedExpert.teacherName}
                   </div>
-                  <p className="mt-1 text-xs font-bold leading-5 text-[var(--app-copy-muted)]">
+                  <p className="mt-1 text-xs font-medium leading-5 text-[var(--app-copy-muted)]">
                     {selectedExpert.description}
                   </p>
                 </div>
               </div>
 
               <details className="mt-3">
-                <summary className="cursor-pointer list-none text-xs font-black text-[var(--app-pink-strong)]">
+                <summary className="cursor-pointer list-none text-xs font-bold text-[var(--app-pink-strong)]">
                   전문 분야 바꾸기
                 </summary>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -656,7 +656,7 @@ export function DialogueChatPanel({
             })}
           </div>
         </div>
-        <p className={roomMode ? 'mt-2 text-[11px] font-bold leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
+        <p className={roomMode ? 'mt-2 text-[11px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
           처음 3회 무료 · 이후 3회 3코인
         </p>
 

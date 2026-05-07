@@ -95,7 +95,7 @@ export default function FiveElementOrbitChart({
 
       <div className="app-element-orbit-core">
         <div className="app-caption">기운 중심</div>
-        <div className="mt-3 text-[1.6rem] font-black text-[var(--app-pink-strong)]">
+        <div className="mt-3 text-[1.6rem] font-bold text-[var(--app-pink-strong)]">
           다섯 기운
         </div>
         <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">

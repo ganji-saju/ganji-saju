@@ -94,10 +94,10 @@ export default function PricingPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="gangi-sub-eyebrow">{plan.badge}</p>
-                    <h2 className="mt-2 text-lg font-black leading-7 text-[var(--app-ink)]">{plan.title}</h2>
-                    <p className="mt-2 text-sm font-bold leading-6 text-[rgba(17,17,20,0.64)]">{plan.summary}</p>
+                    <h2 className="mt-2 text-lg font-bold leading-7 text-[var(--app-ink)]">{plan.title}</h2>
+                    <p className="mt-2 text-sm font-medium leading-6 text-[rgba(17,17,20,0.64)]">{plan.summary}</p>
                   </div>
-                  <strong className="shrink-0 text-sm font-black text-[var(--app-pink-strong)]">{plan.price}</strong>
+                  <strong className="shrink-0 text-sm font-bold text-[var(--app-pink-strong)]">{plan.price}</strong>
                 </div>
                 <div className="gangi-mini-grid">
                   {plan.opens.slice(0, 3).map((item, index) => (

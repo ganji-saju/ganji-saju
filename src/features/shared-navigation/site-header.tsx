@@ -481,7 +481,7 @@ function MobileChrome({
                     href={item.href}
                     data-active={active}
                     scroll={false}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-extrabold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
                   >
                     <span className="" style={{ color: meta.accent }}>
                       {meta.glyph}

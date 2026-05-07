@@ -50,12 +50,12 @@ export default function DaewoonPage() {
         <section className="px-5 pb-6">
           <div className="gangi-pink-panel p-5">
             <p className="gangi-sub-eyebrow mb-0">현재 흐름 예시</p>
-            <h2 className="mt-3 text-[1.35rem] font-black leading-snug text-[var(--app-ink)]">
+            <h2 className="mt-3 text-[1.35rem] font-bold leading-snug text-[var(--app-ink)]">
               지금은 큰 흐름이
               <br />
               바뀌는 전환기예요
             </h2>
-            <p className="mt-2 text-sm font-bold leading-6 text-[rgba(17,17,20,0.64)]">
+            <p className="mt-2 text-sm font-medium leading-6 text-[rgba(17,17,20,0.64)]">
               실제 결과에서는 내 생년월일 기준으로 현재 대운과 올해 흐름을 이어서 보여드립니다.
             </p>
           </div>
@@ -68,20 +68,20 @@ export default function DaewoonPage() {
               >
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
-                    <strong className="text-sm font-black text-[var(--app-ink)]">{period.age}</strong>
-                    <span className="ml-2 text-xs font-bold text-[rgba(17,17,20,0.56)]">{period.years}</span>
+                    <strong className="text-sm font-bold text-[var(--app-ink)]">{period.age}</strong>
+                    <span className="ml-2 text-xs font-medium text-[rgba(17,17,20,0.56)]">{period.years}</span>
                     {period.current ? (
-                      <span className="ml-2 rounded-full bg-[var(--app-pink)] px-2 py-0.5 text-[10px] font-black text-white">
+                      <span className="ml-2 rounded-full bg-[var(--app-pink)] px-2 py-0.5 text-[10px] font-bold text-white">
                         NOW
                       </span>
                     ) : null}
                   </div>
-                  <span className="text-sm font-black" style={{ color: period.color }}>
+                  <span className="text-sm font-bold" style={{ color: period.color }}>
                     {period.score}
                   </span>
                 </div>
-                <h3 className="mt-2 text-base font-black">{period.title}</h3>
-                <p className="mt-1 text-xs font-bold text-[rgba(17,17,20,0.64)]">{period.desc}</p>
+                <h3 className="mt-2 text-base font-bold">{period.title}</h3>
+                <p className="mt-1 text-xs font-medium text-[rgba(17,17,20,0.64)]">{period.desc}</p>
               </article>
             ))}
           </div>
@@ -90,7 +90,7 @@ export default function DaewoonPage() {
             <GangiMetricBar label="올해 움직임" value={88} color="#e6549a" />
           </div>
 
-          <Link href="/saju/new?focus=year&product=year-core" className="mt-5 flex h-12 items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-sm font-black text-white">
+          <Link href="/saju/new?focus=year&product=year-core" className="mt-5 flex h-12 items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-sm font-bold text-white">
             내 생년월일로 올해 흐름 보기
           </Link>
         </section>

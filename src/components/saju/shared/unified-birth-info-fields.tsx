@@ -282,7 +282,7 @@ export function UnifiedBirthInfoFields({
                     }}
                     className={cn('gangi-birth-card-choice', draft.gender === item.value && 'is-selected')}
                   >
-                    <span className="block text-base font-black text-[var(--app-ink)] sm:text-lg">{item.label}</span>
+                    <span className="block text-base font-bold text-[var(--app-ink)] sm:text-lg">{item.label}</span>
                   </button>
                 ))}
               </div>

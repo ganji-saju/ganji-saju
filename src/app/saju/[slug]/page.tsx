@@ -510,7 +510,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           </article>
 
           <article className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
-            <div className="text-sm font-bold text-[var(--app-pink-strong)]">한 줄 요약</div>
+            <div className="text-sm font-medium text-[var(--app-pink-strong)]">한 줄 요약</div>
             <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
             </h1>
@@ -791,7 +791,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         character={pillar.stem}
                         hint={formatStemHint(pillar)}
                         color={ELEMENT_INFO[pillar.stemElement].color}
-                        className=" text-[3rem] font-bold leading-none sm:text-[3.45rem]"
+                        className=" text-[3rem] font-medium leading-none sm:text-[3.45rem]"
                       />
                     ) : (
                       <span className="text-xs text-[var(--app-copy-muted)]">시간</span>
@@ -808,7 +808,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         character={pillar.branch}
                         hint={formatBranchHint(pillar)}
                         color={ELEMENT_INFO[pillar.branchElement].color}
-                        className=" text-[3rem] font-bold leading-none sm:text-[3.45rem]"
+                        className=" text-[3rem] font-medium leading-none sm:text-[3.45rem]"
                       />
                     ) : (
                       <span className="text-xs text-[var(--app-copy-muted)]">미입력</span>

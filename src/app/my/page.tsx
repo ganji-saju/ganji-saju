@@ -81,11 +81,11 @@ export default async function MyPage() {
           <div className="flex items-center gap-4">
             <GangiCharacter zodiac="dragon" size="lg" />
             <div className="min-w-0">
-              <p className="text-sm font-black text-[var(--app-pink-strong)]">{displayName}</p>
-              <h2 className="mt-1 text-xl font-black leading-7 text-[var(--app-ink)]">
+              <p className="text-sm font-bold text-[var(--app-pink-strong)]">{displayName}</p>
+              <h2 className="mt-1 text-xl font-bold leading-7 text-[var(--app-ink)]">
                 {mostRecentReading ? '최근 풀이를 바로 이어볼 수 있어요' : '첫 풀이를 저장해 보세요'}
               </h2>
-              <p className="mt-1 text-xs font-bold leading-5 text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--app-copy-muted)]">
                 {mostRecentReading
                   ? formatBirthLabel(mostRecentReading)
                   : '사주를 한 번 보면 MY에 다시 열 수 있게 정리됩니다.'}

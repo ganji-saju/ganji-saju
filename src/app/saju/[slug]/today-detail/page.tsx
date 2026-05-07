@@ -109,7 +109,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
         <AppPage className="gangi-subpage space-y-5">
           <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
           <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(15,23,42,0.06)]">
-            <div className="text-sm font-bold text-[var(--app-pink-strong)]">구매 후 열람</div>
+            <div className="text-sm font-medium text-[var(--app-pink-strong)]">구매 후 열람</div>
             <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
               이 풀이는 550원 결제 후 열립니다
             </h1>

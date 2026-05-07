@@ -107,6 +107,11 @@
   --app-copy: rgba(17, 17, 20, 0.76);
   --app-copy-muted: rgba(53, 54, 60, 0.7);
   --app-copy-soft: rgba(98, 99, 108, 0.82);
+  --app-type-title: 700;
+  --app-type-emphasis: 600;
+  --app-type-body: 450;
+  --app-type-caption: 400;
+  --app-type-button: 650;
   --app-shadow: 0 18px 52px rgba(216, 27, 114, 0.12);
   --app-mobile-dock-clearance: calc(6.75rem + env(safe-area-inset-bottom));
   --app-mobile-top-clearance: 8.5rem;
@@ -293,6 +298,22 @@
     overflow-wrap: break-word;
     line-break: strict;
     text-wrap: pretty;
+  }
+
+  :where(h1, h2, h3) {
+    font-weight: var(--app-type-title);
+    letter-spacing: 0;
+    line-height: 1.28;
+  }
+
+  :where(h4, h5, h6, strong, b, summary) {
+    font-weight: var(--app-type-emphasis);
+    letter-spacing: 0;
+  }
+
+  :where(p, li, dt, dd, figcaption, label, legend) {
+    font-weight: var(--app-type-body);
+    letter-spacing: 0;
   }
 
   body::before {
@@ -509,7 +530,7 @@
   .app-mobile-menu-eyebrow {
     color: var(--app-pink-strong);
     font-size: 0.72rem;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: 0;
   }
 
@@ -517,7 +538,7 @@
     margin-top: 0.2rem;
     color: var(--app-ink);
     font-size: 1.12rem;
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.25;
     letter-spacing: -0.01em;
   }
@@ -577,7 +598,7 @@
     border-radius: 9999px;
     color: #ffffff;
     font-size: 0.88rem;
-    font-weight: 950;
+    font-weight: 700;
     line-height: 1;
     box-shadow:
       inset 0 0 0 1.5px rgba(255, 255, 255, 0.38),
@@ -592,7 +613,7 @@
     display: block;
     color: var(--app-ink);
     font-size: 0.92rem;
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.25;
   }
 
@@ -1241,7 +1262,7 @@
 
   .app-element-orbit-node-hanja {
     font-size: 1rem;
-    font-weight: 950;
+    font-weight: 700;
     line-height: 1;
     color: color-mix(in srgb, var(--element-accent) 78%, var(--app-ink));
   }
@@ -1715,7 +1736,7 @@
     margin-bottom: 0.5rem;
     display: block;
     font-size: 0.92rem;
-    font-weight: 720;
+    font-weight: 600;
     color: var(--app-ink);
   }
 
@@ -1746,7 +1767,7 @@
     background: #ffffff;
     color: var(--app-copy);
     font-size: 0.95rem;
-    font-weight: 760;
+    font-weight: 650;
     transition:
       border-color 160ms ease,
       background-color 160ms ease,
@@ -1782,7 +1803,7 @@
     background: var(--app-pink-soft);
     padding-inline: 0.9rem;
     font-size: 0.88rem;
-    font-weight: 720;
+    font-weight: 600;
     color: var(--app-ink);
   }
 
@@ -1796,7 +1817,7 @@
     border-color: var(--app-line) !important;
     background: #ffffff !important;
     color: var(--app-ink) !important;
-    font-weight: 760;
+    font-weight: 650;
   }
 
   .gangi-birth-search-button * {
@@ -1823,7 +1844,7 @@
     background: #ffffff;
     padding-inline: 0.85rem;
     font-size: 0.8rem;
-    font-weight: 720;
+    font-weight: 600;
     color: var(--app-copy);
   }
 
@@ -2134,7 +2155,7 @@
     max-width: 42rem;
     color: var(--app-ink);
     font-size: clamp(2.6rem, 8vw, 5.8rem);
-    font-weight: 950;
+    font-weight: 700;
     line-height: 0.98;
     letter-spacing: -0.045em;
     text-wrap: balance;
@@ -2158,7 +2179,7 @@
     padding-inline: 0.9rem;
     color: var(--app-copy);
     font-size: 0.8rem;
-    font-weight: 800;
+    font-weight: 650;
     box-shadow: 0 8px 20px rgba(216, 27, 114, 0.05);
   }
 
@@ -2215,7 +2236,7 @@
     color: white;
     font-family: var(--font-body);
     font-size: 2rem;
-    font-weight: 900;
+    font-weight: 700;
     box-shadow: 0 18px 42px rgba(216, 27, 114, 0.24);
   }
 
@@ -2233,7 +2254,7 @@
   .dalbit-advice-row span {
     color: var(--app-pink-strong);
     font-size: 0.82rem;
-    font-weight: 900;
+    font-weight: 700;
   }
 
   .dalbit-advice-row strong {
@@ -2281,7 +2302,7 @@
   .today-score-reveal-copy span {
     color: var(--app-pink-strong);
     font-size: 0.82rem;
-    font-weight: 820;
+    font-weight: 700;
     line-height: 1.3;
   }
 
@@ -2289,7 +2310,7 @@
     margin-top: 0.55rem;
     color: var(--app-ink);
     font-size: clamp(1.9rem, 8vw, 3rem);
-    font-weight: 760;
+    font-weight: 650;
     line-height: 1.14;
     letter-spacing: 0;
     word-break: keep-all;
@@ -2345,7 +2366,7 @@
     display: block;
     transform: translateY(0.16em);
     font-size: clamp(3.4rem, 18vw, 5.4rem);
-    font-weight: 780;
+    font-weight: 650;
     line-height: 0.82;
     letter-spacing: -0.03em;
   }
@@ -2353,7 +2374,7 @@
   .today-score-unit {
     margin-top: -0.05rem;
     font-size: 0.86rem;
-    font-weight: 760;
+    font-weight: 650;
     line-height: 1;
   }
 
@@ -2385,7 +2406,7 @@
     padding: 0.35rem 0.68rem;
     color: var(--app-ink);
     font-size: 0.74rem;
-    font-weight: 740;
+    font-weight: 650;
     line-height: 1.1;
     box-shadow: 0 12px 26px rgba(17, 17, 20, 0.08);
     transform: rotate(var(--score-piece-rotate));
@@ -2450,7 +2471,7 @@
   .dalbit-brand-note h2 {
     color: var(--app-ink);
     font-size: clamp(1.55rem, 3vw, 2.35rem);
-    font-weight: 950;
+    font-weight: 700;
     line-height: 1.16;
     letter-spacing: -0.035em;
     text-wrap: balance;
@@ -2494,7 +2515,7 @@
   .dalbit-price-card h3 {
     color: var(--app-ink);
     font-size: 1.15rem;
-    font-weight: 950;
+    font-weight: 700;
     letter-spacing: -0.02em;
   }
 
@@ -2533,7 +2554,7 @@
     color: #fff;
     font-family: var(--font-body);
     font-size: 1.35rem;
-    font-weight: 900;
+    font-weight: 700;
     box-shadow: 0 12px 28px rgba(216, 27, 114, 0.18);
   }
 
@@ -2547,7 +2568,7 @@
     margin-bottom: 0.25rem;
     color: var(--app-pink-strong);
     font-size: 0.72rem;
-    font-weight: 950;
+    font-weight: 700;
     line-height: 1.35;
   }
 
@@ -2584,7 +2605,7 @@
     padding: 0.34rem 0.62rem;
     color: var(--app-pink-strong);
     font-size: 0.72rem;
-    font-weight: 950;
+    font-weight: 700;
   }
 
   .dalbit-product-teacher span {
@@ -2670,7 +2691,7 @@
     color: var(--app-pink-strong);
     font-family: var(--font-body);
     font-size: 1rem;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: 0.12em;
     writing-mode: vertical-rl;
     text-orientation: upright;
@@ -2715,7 +2736,7 @@
     color: var(--app-ink);
     font-family: var(--font-body);
     font-size: clamp(3.2rem, 14vw, 5.4rem);
-    font-weight: 950;
+    font-weight: 700;
     line-height: 0.9;
     letter-spacing: -0.04em;
     text-shadow: 0 8px 20px rgba(216, 27, 114, 0.12);
@@ -2732,7 +2753,7 @@
     margin-top: 0.6rem;
     color: rgba(17, 17, 20, 0.68);
     font-size: 0.82rem;
-    font-weight: 900;
+    font-weight: 700;
   }
 
   .dalbit-hero-button {
@@ -2745,7 +2766,7 @@
     padding-inline: 1rem;
     color: #fff;
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 700;
     box-shadow: 0 8px 16px rgba(17, 17, 20, 0.18);
   }
 
@@ -2791,14 +2812,14 @@
   .dalbit-market-sample article div {
     color: var(--app-pink-strong);
     font-size: 0.72rem;
-    font-weight: 950;
+    font-weight: 700;
   }
 
   .dalbit-market-sample article p {
     margin-top: 0.3rem;
     color: var(--app-ink);
     font-size: 0.84rem;
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.45;
   }
 
@@ -2825,7 +2846,7 @@
     padding-inline: 1rem;
     color: rgba(17, 17, 20, 0.72);
     font-size: 0.86rem;
-    font-weight: 950;
+    font-weight: 700;
   }
 
   .dalbit-category-tabs button[data-active="true"] {
@@ -2953,7 +2974,7 @@
     color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-body);
     font-size: clamp(2.6rem, 13vw, 4.6rem);
-    font-weight: 950;
+    font-weight: 700;
     line-height: 0.95;
     letter-spacing: -0.08em;
     text-align: center;
@@ -2987,14 +3008,14 @@
   .dalbit-market-price {
     color: var(--app-pink-strong);
     font-size: 0.8rem;
-    font-weight: 950;
+    font-weight: 700;
   }
 
   .dalbit-market-card h2 {
     margin-top: 0.2rem;
     color: var(--app-ink);
     font-size: 1rem;
-    font-weight: 950;
+    font-weight: 700;
     letter-spacing: -0.02em;
   }
 
@@ -3002,7 +3023,7 @@
     margin-top: 0.18rem;
     color: rgba(17, 17, 20, 0.52);
     font-size: 0.78rem;
-    font-weight: 750;
+    font-weight: 650;
     line-height: 1.45;
   }
 
@@ -3017,7 +3038,7 @@
     padding: 0.48rem 0.7rem;
     color: #fff;
     font-size: 0.74rem;
-    font-weight: 950;
+    font-weight: 700;
     box-shadow: 0 8px 16px rgba(216, 27, 114, 0.22);
   }
 
@@ -3042,7 +3063,7 @@
     padding-inline: 0.82rem;
     color: var(--app-copy);
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 700;
   }
 
   .dalbit-market-trust a {
@@ -3353,7 +3374,7 @@
     padding-inline: 0.9rem;
     color: var(--app-pink-strong);
     font-size: 0.85rem;
-    font-weight: 950;
+    font-weight: 700;
   }
 
   .dalbit-teacher-chip span {
@@ -3364,7 +3385,7 @@
   .dalbit-result-title {
     color: var(--app-ink);
     font-size: clamp(2rem, 12vw, 2.72rem);
-    font-weight: 760;
+    font-weight: 650;
     line-height: 1.14;
     letter-spacing: -0.015em;
     word-break: keep-all;
@@ -4780,7 +4801,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
     radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.42), transparent 32%),
     linear-gradient(135deg, #111114 0%, #2d2330 46%, var(--app-pink) 100%);
   color: #ffffff;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 0.9;
   box-shadow: 0 10px 22px rgba(216, 27, 114, 0.18);
 }
@@ -4801,7 +4822,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-ink) !important;
   font-family: var(--font-body) !important;
   font-size: 1.02rem !important;
-  font-weight: 950 !important;
+  font-weight: var(--app-type-title) !important;
   line-height: 1.1 !important;
   letter-spacing: 0 !important;
 }
@@ -4820,7 +4841,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   border-radius: 9999px !important;
   background: transparent !important;
   color: rgba(17, 17, 20, 0.66) !important;
-  font-weight: 850 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 .app-top-primary-nav a:hover,
@@ -4843,7 +4864,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 1.05rem !important;
   color: #111114 !important;
   font-size: 0.88rem !important;
-  font-weight: 950 !important;
+  font-weight: var(--app-type-button) !important;
   box-shadow: 0 8px 18px rgba(17, 17, 20, 0.1) !important;
 }
 
@@ -4935,18 +4956,18 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .app-mobile-dock-link[data-center="true"] .app-mobile-dock-label {
   margin-top: -0.2rem !important;
   color: var(--app-ink) !important;
-  font-weight: 900 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 .app-mobile-dock-label {
   font-size: 0.68rem !important;
-  font-weight: 780 !important;
+  font-weight: var(--app-type-caption) !important;
   letter-spacing: 0 !important;
 }
 
 .app-mobile-dock-link[data-active="true"] .app-mobile-dock-label {
   color: var(--app-pink-strong) !important;
-  font-weight: 950 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 .gangi-report-panel,
@@ -5156,7 +5177,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0;
   color: currentColor;
   font-size: 0.88rem;
-  font-weight: 950;
+  font-weight: 700;
   opacity: 0.86;
 }
 
@@ -5173,7 +5194,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: currentColor;
   font-family: var(--font-body);
   font-size: clamp(1.42rem, 5.6vw, 2rem);
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
   text-wrap: pretty;
@@ -5184,7 +5205,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   max-width: 12.5rem;
   color: currentColor;
   font-size: 0.92rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1.6;
   opacity: 0.74;
 }
@@ -5204,7 +5225,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 1.05rem;
   color: #ffffff;
   font-size: 0.92rem;
-  font-weight: 950;
+  font-weight: 700;
   box-shadow: 0 10px 24px rgba(17, 17, 20, 0.08);
 }
 
@@ -5281,7 +5302,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: #ffffff;
   font-family: var(--font-body);
   font-size: 1.72rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.08), 0 8px 18px rgba(17, 17, 20, 0.08);
 }
@@ -5324,7 +5345,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: #ffffff;
   font-family: var(--font-body);
   font-size: 1.55rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   box-shadow:
     inset 0 0 0 1.5px rgba(255, 255, 255, 0.54),
@@ -5391,7 +5412,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.42rem;
   color: var(--app-ink);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -5401,7 +5422,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: rgba(17, 17, 20, 0.5);
   font-size: 0.66rem;
   font-style: normal;
-  font-weight: 720;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -5437,14 +5458,14 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.45rem;
   color: var(--app-pink-strong);
   font-size: 0.68rem;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: 0.05em;
 }
 
 .gangi-free-action strong {
   margin-top: 0.1rem;
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -5496,7 +5517,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 0.875rem;
   color: rgba(17, 17, 20, 0.64);
   font-size: 0.86rem;
-  font-weight: 900;
+  font-weight: 700;
   transition: transform 120ms ease, color 120ms ease, background 120ms ease;
 }
 
@@ -5555,7 +5576,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.18rem 0.5rem;
   color: #ffffff;
   font-size: 0.62rem;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: 0.04em;
 }
 
@@ -5573,7 +5594,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.85rem 0 0;
   color: var(--app-ink);
   font-size: 0.98rem;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -5581,7 +5602,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.2rem 0 0;
   color: rgba(17, 17, 20, 0.64);
   font-size: 0.76rem;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.4;
 }
 
@@ -5592,7 +5613,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.5rem;
   color: var(--app-ink);
   font-size: 0.76rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-service-card[data-free="true"] .gangi-card-body span {
@@ -5624,7 +5645,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .site-footer-brand {
   color: var(--app-ink);
   font-size: 1rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1.3;
   letter-spacing: 0;
 }
@@ -5680,7 +5701,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .site-footer-company dt {
   color: rgba(17, 17, 20, 0.42);
   font-size: 0.68rem;
-  font-weight: 720;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -5925,7 +5946,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 1.15rem 0 0;
   color: var(--app-ink);
   font-size: 1.15rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-loading-copy span {
@@ -5992,7 +6013,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   background: var(--app-pink);
   color: #ffffff;
   font-size: 1.3rem;
-  font-weight: 950;
+  font-weight: 700;
   box-shadow: 0 12px 24px rgba(216, 27, 114, 0.22);
 }
 
@@ -6000,7 +6021,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   display: block;
   color: var(--app-ink);
   font-size: 1rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-checkout-method-card p {
@@ -6078,7 +6099,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0 0 0.8rem;
   color: var(--app-ink);
   font-size: 1.05rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-checkout-empty-state {
@@ -6089,7 +6110,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-checkout-empty-state strong {
   color: var(--app-ink);
   font-size: 1.05rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-checkout-empty-state p {
@@ -6305,7 +6326,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   background: rgba(255, 255, 255, 0.94);
   text-align: center;
   font-size: 1rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
   backdrop-filter: blur(12px);
 }
 
@@ -6331,7 +6352,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.38rem 0.75rem;
   color: var(--app-pink-strong);
   font-size: 0.74rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
 }
 
 .gangi-sub-intro h1 {
@@ -6339,7 +6360,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-ink);
   font-family: var(--font-body);
   font-size: 1.42rem;
-  font-weight: 900;
+  font-weight: var(--app-type-title);
   line-height: 1.38;
   letter-spacing: -0.02em;
 }
@@ -6348,7 +6369,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.55rem 0 0;
   color: rgba(17, 17, 20, 0.64);
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: var(--app-type-body);
   line-height: 1.62;
 }
 
@@ -6371,7 +6392,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-ink);
   font-family: var(--font-body);
   font-size: 1.22rem;
-  font-weight: 950;
+  font-weight: var(--app-type-title);
   line-height: 1.38;
   letter-spacing: -0.02em;
 }
@@ -6380,7 +6401,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.55rem 0 0;
   color: rgba(17, 17, 20, 0.64);
   font-size: 0.84rem;
-  font-weight: 720;
+  font-weight: var(--app-type-body);
   line-height: 1.6;
 }
 
@@ -6403,7 +6424,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.35rem 0.72rem;
   color: var(--app-pink-strong);
   font-size: 0.72rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -6456,7 +6477,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   display: block;
   color: var(--app-ink);
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-list-copy em {
@@ -6473,7 +6494,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   flex-shrink: 0;
   color: var(--app-pink-strong);
   font-size: 0.76rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-topic-grid {
@@ -6506,7 +6527,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.8rem 0 0;
   color: var(--app-ink);
   font-size: 1rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-topic-card p {
@@ -6597,12 +6618,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-metric-bar span {
   color: var(--app-ink);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .gangi-metric-bar strong {
   font-size: 0.86rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-metric-bar p {
@@ -6638,7 +6659,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   display: block;
   color: var(--app-pink-strong);
   font-size: 0.68rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
 }
 
 .gangi-mini-card strong {
@@ -6646,7 +6667,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.25rem;
   color: var(--app-ink);
   font-size: 0.92rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
   line-height: 1.35;
 }
 
@@ -6654,7 +6675,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.28rem 0 0;
   color: rgba(17, 17, 20, 0.64);
   font-size: 0.74rem;
-  font-weight: 740;
+  font-weight: var(--app-type-caption);
   line-height: 1.45;
 }
 
@@ -6671,7 +6692,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-ink);
   font-family: var(--font-body);
   font-size: 1.42rem;
-  font-weight: 950;
+  font-weight: var(--app-type-title);
   line-height: 1.35;
   letter-spacing: -0.02em;
 }
@@ -6680,7 +6701,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0.65rem 0 0;
   color: rgba(17, 17, 20, 0.66);
   font-size: 0.86rem;
-  font-weight: 720;
+  font-weight: var(--app-type-body);
   line-height: 1.62;
 }
 
@@ -6695,14 +6716,14 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-pink-strong);
   font-family: var(--font-body);
   font-size: 1.9rem;
-  font-weight: 950;
+  font-weight: var(--app-type-title);
   line-height: 1;
 }
 
 .gangi-purchase-price span {
   color: rgba(17, 17, 20, 0.56);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: var(--app-type-caption);
 }
 
 .gangi-subpage .app-panel,
@@ -6739,7 +6760,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   border-radius: 9999px;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: var(--app-type-button);
   line-height: 1.1;
   transition:
     transform 160ms ease,
@@ -6807,7 +6828,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.2rem;
   color: var(--app-ink);
   font-size: 1.1rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-tarot-carousel-controls {
@@ -6893,7 +6914,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 1.25rem;
   color: var(--app-ink);
   font-size: 1rem;
-  font-weight: 950;
+  font-weight: 700;
   box-shadow: 0 12px 28px rgba(17, 17, 20, 0.08);
 }
 
@@ -6937,14 +6958,14 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.28rem 0.6rem;
   color: var(--app-pink-strong);
   font-size: 0.7rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
 }
 
 .gangi-result-card h2 {
   margin-top: 0.65rem;
   color: var(--app-ink);
   font-size: 1.05rem;
-  font-weight: 950;
+  font-weight: var(--app-type-emphasis);
   line-height: 1.45;
 }
 
@@ -6952,7 +6973,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.45rem;
   color: var(--app-copy);
   font-size: 0.86rem;
-  font-weight: 720;
+  font-weight: var(--app-type-body);
   line-height: 1.62;
 }
 
@@ -6965,7 +6986,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-copy-muted);
   font-size: 0.8rem;
   font-style: normal;
-  font-weight: 760;
+  font-weight: var(--app-type-body);
   line-height: 1.55;
 }
 
@@ -6996,7 +7017,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-vault-copy strong {
   color: var(--app-ink);
   font-size: 1rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -7005,7 +7026,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-pink-strong);
   font-size: 0.78rem;
   font-style: normal;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.45;
 }
 
@@ -7013,14 +7034,14 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.15rem;
   color: rgba(17, 17, 20, 0.56);
   font-size: 0.78rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1.45;
 }
 
 .gangi-vault-arrow {
   color: rgba(17, 17, 20, 0.42);
   font-size: 2rem;
-  font-weight: 720;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -7035,12 +7056,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.72rem 0.9rem;
   color: var(--app-copy-muted);
   font-size: 0.86rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .gangi-vault-summary strong {
   color: var(--app-ink);
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-vault-filter {
@@ -7067,7 +7088,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 1.05rem;
   color: rgba(17, 17, 20, 0.62);
   font-size: 0.98rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-vault-filter span[data-active="true"] {
@@ -7097,7 +7118,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   background: transparent;
   color: rgba(17, 17, 20, 0.44);
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .gangi-vault-delete:disabled {
@@ -7133,14 +7154,14 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: var(--app-pink-strong);
   font-family: var(--font-body);
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-expert-chip strong {
   min-width: 0;
   color: var(--app-ink);
   font-size: 0.78rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -7178,7 +7199,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 0.55rem 0.85rem;
   color: rgba(17, 17, 20, 0.58);
   font-size: 0.82rem;
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
   transition:
@@ -7240,7 +7261,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding: 1.5rem 1.1rem 0.25rem;
   color: var(--app-ink);
   font-size: 1.12rem;
-  font-weight: 860;
+  font-weight: 700;
   line-height: 1.35;
   letter-spacing: 0;
 }
@@ -7248,7 +7269,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-chapter-eyebrow {
   color: var(--app-pink-strong);
   font-size: 0.78rem;
-  font-weight: 860;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0;
 }
@@ -7257,7 +7278,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.55rem;
   color: var(--app-ink);
   font-size: 1.45rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1.48;
   letter-spacing: 0;
   word-break: keep-all;
@@ -7267,7 +7288,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 0.5rem;
   color: var(--app-ink);
   font-size: 1.08rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1.55;
   letter-spacing: 0;
   word-break: keep-all;
@@ -7335,7 +7356,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-chapter-mini div {
   color: var(--app-pink-strong);
   font-size: 0.8rem;
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.3;
 }
 
@@ -7356,7 +7377,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
 .gangi-subpage .app-subnav-link {
   color: rgba(17, 17, 20, 0.62);
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .gangi-subpage .app-subnav-link[data-active="true"] {
@@ -7601,7 +7622,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin-top: 1.2rem;
   color: var(--app-ink);
   font-size: 1.08rem;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -7611,7 +7632,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   color: rgba(17,17,20,0.58);
   font-size: 0.86rem;
   font-style: normal;
-  font-weight: 760;
+  font-weight: 650;
 }
 
 /* Final typography softening: the app should feel clear, not over-bold. */
@@ -7627,19 +7648,19 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-home :where(h1, h2, h3, strong, .gangi-banner-kicker, .gangi-banner-button, .gangi-card-tag),
 .gangi-subpage :where(h1, h2, h3, strong),
 .app-panel :where(h1, h2, h3, strong) {
-  font-weight: 760 !important;
+  font-weight: var(--app-type-title) !important;
 }
 
 .app-shell :where(.font-black) {
-  font-weight: 760 !important;
+  font-weight: var(--app-type-title) !important;
 }
 
 .app-shell :where(.font-extrabold) {
-  font-weight: 700 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 .app-shell :where(.font-bold) {
-  font-weight: 660 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 .gangi-home :where(p, small, em, span),
@@ -7651,7 +7672,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-vault-filter span,
 .gangi-vault-copy strong,
 .gangi-expert-chip strong {
-  font-weight: 760 !important;
+  font-weight: var(--app-type-emphasis) !important;
 }
 
 /* 12지신 대화방: 선생을 고르면 독립 채팅방처럼 보이게 합니다. */
@@ -7695,7 +7716,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   margin: 0;
   color: var(--app-ink);
   font-size: 1.08rem;
-  font-weight: 860;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: 0;
 }
@@ -7707,7 +7728,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   gap: 0.34rem;
   color: #32a36b;
   font-size: 0.78rem;
-  font-weight: 760;
+  font-weight: 650;
   line-height: 1;
 }
 
@@ -7817,7 +7838,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   padding-inline: 1rem;
   color: #ffffff;
   font-size: 0.88rem;
-  font-weight: 840;
+  font-weight: 700;
   box-shadow: 0 10px 24px rgba(255, 79, 154, 0.18);
 }
 
@@ -7842,7 +7863,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   border-color: var(--app-line) !important;
   background: #ffffff !important;
   color: var(--app-ink) !important;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .gangi-chat-presets button span:first-child {

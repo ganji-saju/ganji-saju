@@ -58,7 +58,7 @@ export default function TaekilPage() {
         <section className="px-5 pb-6">
           <div className="gangi-pink-panel p-5">
             <p className="gangi-sub-eyebrow mb-0">예시</p>
-            <h2 className="mt-3 text-[1.28rem] font-black leading-snug text-[var(--app-ink)]">
+            <h2 className="mt-3 text-[1.28rem] font-bold leading-snug text-[var(--app-ink)]">
               앞으로 두 달,
               <br />
               먼저 볼 날을 골라드려요
@@ -67,16 +67,16 @@ export default function TaekilPage() {
               {DAYS.map((day, index) => (
                 <div key={day.date} className="gangi-card-panel flex items-center gap-3 p-3">
                   <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-[var(--app-line)] bg-white">
-                    <span className="text-[10px] font-black text-[var(--app-pink-strong)]">{day.date.split(' ')[0]}</span>
+                    <span className="text-[10px] font-bold text-[var(--app-pink-strong)]">{day.date.split(' ')[0]}</span>
                     <strong className=" text-xl leading-none">{Number.parseInt(day.date.split(' ')[1], 10)}</strong>
-                    <span className="text-[9px] font-bold text-[rgba(17,17,20,0.56)]">{day.weekday}요일</span>
+                    <span className="text-[9px] font-medium text-[rgba(17,17,20,0.56)]">{day.weekday}요일</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-black">{day.label}</div>
+                    <div className="text-sm font-bold">{day.label}</div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#f4f4f6]">
                       <span className="block h-full rounded-full bg-[var(--app-pink)]" style={{ width: `${day.score}%` }} />
                     </div>
-                    <div className="mt-1 text-[11px] font-bold text-[rgba(17,17,20,0.56)]">점수 {day.score} · 추천 {index + 1}</div>
+                    <div className="mt-1 text-[11px] font-medium text-[rgba(17,17,20,0.56)]">점수 {day.score} · 추천 {index + 1}</div>
                   </div>
                 </div>
               ))}

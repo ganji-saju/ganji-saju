@@ -31,9 +31,9 @@ export function PremiumLockCard({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">더 자세히 보기</div>
-            <h3 className="mt-3 text-xl font-black tracking-tight text-[var(--app-ink)]">오늘 자세히 보기</h3>
+            <h3 className="mt-3 text-xl font-bold tracking-tight text-[var(--app-ink)]">오늘 자세히 보기</h3>
           </div>
-          <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-black text-[var(--app-pink-strong)]">
+          <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-bold text-[var(--app-pink-strong)]">
             550원 또는 {coinCost}코인
           </span>
         </div>
@@ -46,7 +46,7 @@ export function PremiumLockCard({
           ].map((item) => (
             <div
               key={item}
-              className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-4 py-4 text-sm font-bold text-[var(--app-copy)]"
+              className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-4 py-4 text-sm font-medium text-[var(--app-copy)]"
             >
               {item}
             </div>

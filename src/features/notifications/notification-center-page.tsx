@@ -494,7 +494,7 @@ export default function NotificationCenterPage({
         </GangiIntro>
 
         {statusMessage ? (
-          <section className="gangi-card-panel mx-4 p-4 text-sm font-bold leading-6 text-[var(--app-ink)]">
+          <section className="gangi-card-panel mx-4 p-4 text-sm font-medium leading-6 text-[var(--app-ink)]">
             {statusMessage}
           </section>
         ) : null}
@@ -544,13 +544,13 @@ export default function NotificationCenterPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[0.72rem] font-black text-[var(--app-pink-strong)]">
+                      <p className="text-[0.72rem] font-bold text-[var(--app-pink-strong)]">
                         {slot.cadence} · {slot.timeLabel}
                       </p>
-                      <h2 className="mt-1 text-lg font-black leading-7 text-[var(--app-ink)]">
+                      <h2 className="mt-1 text-lg font-bold leading-7 text-[var(--app-ink)]">
                         {slot.title}
                       </h2>
-                      <p className="mt-1 text-sm font-bold leading-6 text-[rgba(17,17,20,0.62)]">
+                      <p className="mt-1 text-sm font-medium leading-6 text-[rgba(17,17,20,0.62)]">
                         {route.desc}
                       </p>
                     </div>
@@ -566,7 +566,7 @@ export default function NotificationCenterPage({
                         }))
                       }
                       className={cn(
-                        'min-w-16 rounded-full border px-3 py-1.5 text-xs font-black transition-colors',
+                        'min-w-16 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors',
                         enabled
                           ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
                           : 'border-[var(--app-line)] bg-white text-[rgba(17,17,20,0.54)]'
@@ -576,12 +576,12 @@ export default function NotificationCenterPage({
                     </button>
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold leading-6 text-[rgba(17,17,20,0.7)]">
+                    <p className="text-sm font-medium leading-6 text-[rgba(17,17,20,0.7)]">
                       {slot.body}
                     </p>
                     <Link
                       href={route.href}
-                      className="shrink-0 rounded-full border border-[var(--app-line)] bg-white px-3 py-2 text-xs font-black text-[var(--app-ink)]"
+                      className="shrink-0 rounded-full border border-[var(--app-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--app-ink)]"
                     >
                       {route.label}
                     </Link>
@@ -609,10 +609,10 @@ export default function NotificationCenterPage({
                 key={item.label}
                 className="flex items-center justify-between rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3"
               >
-                <span className="text-sm font-black text-[var(--app-ink)]">{item.label}</span>
+                <span className="text-sm font-bold text-[var(--app-ink)]">{item.label}</span>
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black',
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold',
                     item.ready
                       ? 'bg-emerald-50 text-emerald-700'
                       : 'bg-[rgba(17,17,20,0.06)] text-[rgba(17,17,20,0.54)]'

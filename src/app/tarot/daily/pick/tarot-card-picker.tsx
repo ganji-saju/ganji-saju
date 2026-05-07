@@ -207,7 +207,7 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
                     style={{ backgroundColor: tone.light, opacity: 0.18 + card.backGlow * 0.04 }}
                   />
                   <span
-                    className="relative z-10 self-end text-[9px] font-bold tracking-[0.12em]"
+                    className="relative z-10 self-end text-[9px] font-medium tracking-[0.12em]"
                     style={{ color: tone.accent }}
                   >
                     {card.slot}

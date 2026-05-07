@@ -108,7 +108,7 @@ export function ManualCompatibilityResultClient({
     return (
       <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
         <AppPage className="gangi-subpage space-y-5">
-          <div className="gangi-card-panel m-4 p-4 text-sm font-bold text-[var(--app-copy-muted)] sm:m-0">
+          <div className="gangi-card-panel m-4 p-4 text-sm font-medium text-[var(--app-copy-muted)] sm:m-0">
             입력하신 궁합 정보를 확인하고 있습니다.
           </div>
         </AppPage>

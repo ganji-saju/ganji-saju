@@ -64,7 +64,7 @@ export function TodayConcernSelector({
         <button
           type="button"
           onClick={onToggleExpanded}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-xs font-black text-[var(--app-copy-muted)] transition-colors hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--app-copy-muted)] transition-colors hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
         >
           {expanded ? (
             <>

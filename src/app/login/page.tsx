@@ -206,7 +206,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="text-xs font-bold text-[var(--app-copy-muted)]"
+      className="text-xs font-medium text-[var(--app-copy-muted)]"
     >
       {children}
     </label>
@@ -572,7 +572,7 @@ function LoginContent() {
     >
       <div className="mb-5">
         <div className="app-caption mb-3">{modeCopy.eyebrow}</div>
-        <h1 className=" text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
+        <h1 className=" text-3xl font-bold tracking-tight text-[var(--app-ink)] sm:text-4xl">
           {modeCopy.title}
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--app-copy-muted)]">
@@ -588,7 +588,7 @@ function LoginContent() {
             setErrorMessage('');
             setStatusMessage('');
           }}
-          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-black text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
         >
           로그인 화면으로 돌아가기
         </button>
@@ -653,7 +653,7 @@ function LoginContent() {
           <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-black text-[var(--app-ink)]">기본 사주 정보</div>
+                <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
                 <p className="mt-1 text-xs leading-5 text-[var(--app-copy-muted)]">
                   저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
                 </p>
@@ -717,7 +717,7 @@ function LoginContent() {
                       key={value}
                       type="button"
                       onClick={() => updateSignupForm('gender', value as GenderValue)}
-                      className={`h-12 rounded-2xl border text-sm font-black transition ${
+                      className={`h-12 rounded-2xl border text-sm font-bold transition ${
                         signupForm.gender === value
                           ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
                           : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -754,7 +754,7 @@ function LoginContent() {
                       </option>
                     ))}
                   </NativeSelect>
-                  <label className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-white px-3 text-xs font-bold text-[var(--app-copy-muted)]">
+                  <label className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-white px-3 text-xs font-medium text-[var(--app-copy-muted)]">
                     <input
                       type="checkbox"
                       checked={signupForm.unknownBirthTime}
@@ -801,7 +801,7 @@ function LoginContent() {
           <Button
             type="submit"
             disabled={disabled || isSubmittingSignup}
-            className="h-12 w-full rounded-2xl text-base font-black"
+            className="h-12 w-full rounded-2xl text-base font-bold"
           >
             {isSubmittingSignup ? '회원가입 중...' : '회원가입하고 사주정보 불러오기'}
           </Button>
@@ -840,7 +840,7 @@ function LoginContent() {
           <Button
             type="submit"
             disabled={disabled || isSubmittingLogin}
-            className="h-12 w-full rounded-2xl text-base font-black"
+            className="h-12 w-full rounded-2xl text-base font-bold"
           >
             {isSubmittingLogin ? '로그인 중...' : '로그인하고 내 정보 불러오기'}
           </Button>
@@ -871,7 +871,7 @@ function LoginContent() {
       ) : mode === 'recover' ? (
         <form className="mt-6 space-y-4 text-left" onSubmit={submitRecovery}>
           <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
-            <div className="text-sm font-black text-[var(--app-ink)]">
+            <div className="text-sm font-bold text-[var(--app-ink)]">
               이메일로 아이디 확인/비밀번호 재설정
             </div>
             <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
@@ -894,7 +894,7 @@ function LoginContent() {
           <Button
             type="submit"
             disabled={disabled || isSubmittingRecovery}
-            className="h-12 w-full rounded-2xl text-base font-black"
+            className="h-12 w-full rounded-2xl text-base font-bold"
           >
             {isSubmittingRecovery ? '메일 보내는 중...' : '이메일 인증 링크 받기'}
           </Button>
@@ -905,7 +905,7 @@ function LoginContent() {
               setErrorMessage('');
               setStatusMessage('');
             }}
-            className="w-full text-center text-xs font-bold text-[var(--app-copy-muted)] underline underline-offset-4"
+            className="w-full text-center text-xs font-medium text-[var(--app-copy-muted)] underline underline-offset-4"
           >
             로그인으로 돌아가기
           </button>
@@ -913,7 +913,7 @@ function LoginContent() {
       ) : (
         <form className="mt-6 space-y-4 text-left" onSubmit={submitPasswordReset}>
           <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
-            <div className="text-sm font-black text-[var(--app-ink)]">
+            <div className="text-sm font-bold text-[var(--app-ink)]">
               새 비밀번호를 설정해 주세요
             </div>
             <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
@@ -959,7 +959,7 @@ function LoginContent() {
           <Button
             type="submit"
             disabled={disabled || isSubmittingReset}
-            className="h-12 w-full rounded-2xl text-base font-black"
+            className="h-12 w-full rounded-2xl text-base font-bold"
           >
             {isSubmittingReset ? '저장 중...' : '새 비밀번호 저장하기'}
           </Button>
@@ -996,7 +996,7 @@ function LoginContent() {
             <Button
               onClick={() => signInWithProvider('kakao')}
               disabled={disabled}
-              className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl font-bold"
+              className="flex h-11 w-full items-center justify-center gap-3 rounded-2xl font-medium"
               style={{ backgroundColor: '#FEE500', color: '#191919' }}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#191919">
@@ -1033,7 +1033,7 @@ export default function LoginPage() {
   return (
     <main className="app-shell gangi-subpage-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
       <div className="flex flex-col items-center gap-2 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
           달
         </div>
         <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>

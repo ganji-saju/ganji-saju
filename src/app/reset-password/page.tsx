@@ -159,7 +159,7 @@ function ResetPasswordContent() {
     <div className="app-panel w-full max-w-xl p-5 text-center sm:p-8">
       <div className="mb-5">
         <div className="app-caption mb-3">계정 보안</div>
-        <h1 className=" text-3xl font-black tracking-tight text-[var(--app-ink)] sm:text-4xl">
+        <h1 className=" text-3xl font-bold tracking-tight text-[var(--app-ink)] sm:text-4xl">
           새 비밀번호 설정
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[var(--app-copy-muted)]">
@@ -170,7 +170,7 @@ function ResetPasswordContent() {
       <form className="space-y-4 text-left" onSubmit={submitPasswordReset}>
         <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
           {resetState === 'checking' ? (
-            <div className="rounded-2xl bg-[var(--app-pink-soft)] px-4 py-4 text-sm font-bold text-[var(--app-pink-strong)]">
+            <div className="rounded-2xl bg-[var(--app-pink-soft)] px-4 py-4 text-sm font-medium text-[var(--app-pink-strong)]">
               재설정 링크를 확인하고 있어요.
             </div>
           ) : null}
@@ -178,7 +178,7 @@ function ResetPasswordContent() {
           <div className="space-y-2">
             <label
               htmlFor="new-password"
-              className="text-xs font-bold text-[var(--app-copy-muted)]"
+              className="text-xs font-medium text-[var(--app-copy-muted)]"
             >
               새 비밀번호
             </label>
@@ -197,7 +197,7 @@ function ResetPasswordContent() {
           <div className="mt-4 space-y-2">
             <label
               htmlFor="new-password-confirm"
-              className="text-xs font-bold text-[var(--app-copy-muted)]"
+              className="text-xs font-medium text-[var(--app-copy-muted)]"
             >
               새 비밀번호 확인
             </label>
@@ -217,7 +217,7 @@ function ResetPasswordContent() {
         <Button
           type="submit"
           disabled={!isReady || isSubmitting}
-          className="h-12 w-full rounded-2xl text-base font-black"
+          className="h-12 w-full rounded-2xl text-base font-bold"
         >
           {isSubmitting ? '저장 중...' : '새 비밀번호 저장하기'}
         </Button>
@@ -238,13 +238,13 @@ function ResetPasswordContent() {
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
         <Link
           href="/login?mode=recover"
-          className="flex h-11 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] text-sm font-black text-[var(--app-pink-strong)] transition hover:border-[var(--app-pink)]/50 hover:bg-white"
+          className="flex h-11 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] text-sm font-bold text-[var(--app-pink-strong)] transition hover:border-[var(--app-pink)]/50 hover:bg-white"
         >
           재설정 링크 다시 받기
         </Link>
         <Link
           href="/login?mode=login"
-          className="flex h-11 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white text-sm font-black text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/50 hover:text-[var(--app-ink)]"
+          className="flex h-11 items-center justify-center rounded-2xl border border-[var(--app-line)] bg-white text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/50 hover:text-[var(--app-ink)]"
         >
           로그인으로 돌아가기
         </Link>
@@ -261,7 +261,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="app-shell flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 text-[var(--app-ink)]">
       <div className="flex flex-col items-center gap-2 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-black text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
           달
         </div>
         <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
