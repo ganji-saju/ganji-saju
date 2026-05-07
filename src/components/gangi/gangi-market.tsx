@@ -182,13 +182,3 @@ export function GangiServiceCardLink({
     </Link>
   );
 }
-
-export function GangiHomeFooter() {
-  return (
-    <footer className="gangi-home-footer">
-      달빛인생 · 오늘 바로 보는 운세
-      <br />
-      © 2026 Moonlight Life
-    </footer>
-  );
-}

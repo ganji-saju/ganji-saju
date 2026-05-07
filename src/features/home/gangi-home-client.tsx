@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   GangiCategoryTabs,
-  GangiHomeFooter,
   GangiQuickActionCard,
   GangiSeasonBanner,
   GangiServiceCardLink,
@@ -87,7 +86,6 @@ export function GangiHomeClient({
           ))}
         </section>
 
-        <GangiHomeFooter />
       </div>
     </AppShell>
   );

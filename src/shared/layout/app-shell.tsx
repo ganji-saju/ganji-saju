@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
+import SiteFooter from '@/components/site-footer';
 import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: ReactNode;
   header?: ReactNode;
   dock?: ReactNode;
+  footer?: ReactNode | null | false;
   className?: string;
 }
 
@@ -20,11 +22,15 @@ interface PageHeroProps {
   className?: string;
 }
 
-export function AppShell({ children, header, dock, className }: AppShellProps) {
+export function AppShell({ children, header, dock, footer, className }: AppShellProps) {
+  const footerNode =
+    footer === false || footer === null ? null : footer ?? <SiteFooter />;
+
   return (
     <main className={cn('app-shell', header && 'app-shell-with-navigation', className)}>
       {header}
       <div className="app-shell-content">{children}</div>
+      {footerNode}
       {dock}
     </main>
   );
