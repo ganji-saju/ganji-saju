@@ -6748,11 +6748,11 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-tarot-spread-card {
   position: absolute;
   left: 50%;
-  bottom: 1rem;
+  top: 52%;
   width: clamp(2.9rem, 12.8vw, 4.45rem);
   border-radius: 0.72rem;
   border-width: 2px;
-  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(var(--fan-lift)) rotate(var(--fan-angle)) scale(var(--fan-depth));
+  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(calc(-50% + var(--fan-lift))) rotate(var(--fan-angle)) scale(var(--fan-depth));
   transform-origin: 50% 110%;
   box-shadow: 0 14px 30px rgba(17, 17, 20, 0.2);
   will-change: transform, filter;
@@ -6762,7 +6762,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 .gangi-tarot-spread-card:focus-visible {
   z-index: 50 !important;
   filter: brightness(1.12) saturate(1.08);
-  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(calc(var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
+  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(calc(-50% + var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
 }
 
 .gangi-tarot-spread-card.is-selected {
@@ -6803,12 +6803,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 
   .gangi-tarot-spread-card {
     width: clamp(4rem, 6vw, 5.35rem);
-    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(var(--fan-lift)) rotate(var(--fan-angle)) scale(var(--fan-depth));
+    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(calc(-50% + var(--fan-lift))) rotate(var(--fan-angle)) scale(var(--fan-depth));
   }
 
   .gangi-tarot-spread-card:hover,
   .gangi-tarot-spread-card:focus-visible {
-    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(calc(var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
+    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(calc(-50% + var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
   }
 }
 

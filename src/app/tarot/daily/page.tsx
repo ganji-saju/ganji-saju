@@ -38,9 +38,11 @@ export default async function DailyTarotPage() {
               <span key={index} className="gangi-tarot-card" />
             ))}
           </div>
-          <Link href="/tarot/daily/pick" className="gangi-primary-button mx-auto mt-5 max-w-xs">
-            카드 뽑으러 가기
-          </Link>
+          <div className="mt-5 flex justify-center">
+            <Link href="/tarot/daily/pick" className="gangi-primary-button max-w-xs">
+              카드 뽑으러 가기
+            </Link>
+          </div>
         </GangiIntro>
 
         <section className="gangi-topic-grid" aria-label="타로 질문 선택">
