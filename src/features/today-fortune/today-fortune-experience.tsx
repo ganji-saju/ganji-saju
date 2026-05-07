@@ -12,6 +12,7 @@ import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-ris
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
 import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippet';
 import { TodayConcernSelector } from '@/components/today-fortune/today-concern-selector';
+import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
 import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-panel';
@@ -399,6 +400,7 @@ export function TodayFortuneExperience({
                 {purchasedNotice}
               </div>
             ) : null}
+            <TodayScoreReveal result={freeResult} />
             <TodayFortuneSummaryCard result={freeResult} />
             <TodayFortuneScoreGrid result={freeResult} />
             <OpportunityRiskCards result={freeResult} />
