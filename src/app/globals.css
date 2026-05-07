@@ -5091,6 +5091,37 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   line-break: strict;
 }
 
+.gangi-season-carousel {
+  width: auto;
+  max-width: none;
+  margin: 1rem 1.25rem 0;
+}
+
+.gangi-banner-viewport {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 1.5rem;
+  cursor: grab;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gangi-banner-viewport:active {
+  cursor: grabbing;
+}
+
+.gangi-banner-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.gangi-banner-track {
+  display: flex;
+  width: 100%;
+}
+
 .gangi-season-banner {
   --banner-shift-x: 0px;
   --banner-shift-y: 0px;
@@ -5100,10 +5131,12 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   position: relative;
   isolation: isolate;
   box-sizing: border-box;
-  width: auto;
+  width: 100%;
+  min-width: 100%;
   max-width: none;
   min-height: 11.1rem;
-  margin: 1rem 1.25rem 0;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
   overflow: hidden;
   border: 1px solid var(--app-line);
   border-radius: 1.5rem;
@@ -5280,33 +5313,26 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 .gangi-banner-dots {
-  position: absolute;
-  bottom: 0.75rem;
-  left: 50%;
+  position: relative;
   z-index: 3;
   display: flex;
-  gap: 0.28rem;
-  transform: translateX(-50%);
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  margin-top: 0.72rem;
 }
 
 .gangi-banner-dots button {
   height: 0.38rem;
   width: 0.38rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.45);
-  transition: width 160ms ease, background 160ms ease;
+  background: rgba(17, 17, 20, 0.16);
+  transition: width 180ms ease, height 180ms ease, background 180ms ease, opacity 180ms ease;
 }
 
 .gangi-banner-dots button[aria-current="true"] {
-  width: 1.15rem;
-  background: #ffffff;
-}
-
-.gangi-season-banner[data-tone="soft"] .gangi-banner-dots button {
-  background: rgba(216, 27, 114, 0.18);
-}
-
-.gangi-season-banner[data-tone="soft"] .gangi-banner-dots button[aria-current="true"] {
+  width: 1.35rem;
+  height: 3px;
   background: var(--app-pink);
 }
 
@@ -7595,7 +7621,7 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
     z-index: auto !important;
   }
 
-  .dalbit-market-shell .gangi-season-banner {
+  .dalbit-market-shell .gangi-season-carousel {
     width: auto !important;
     max-width: none !important;
     margin-left: clamp(0.875rem, 4vw, 1.25rem) !important;
