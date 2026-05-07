@@ -2308,13 +2308,14 @@
     position: relative;
     z-index: 2;
     display: grid;
-    min-height: 10.5rem;
+    min-height: 12.5rem;
     place-items: center;
     margin-top: 1rem;
   }
 
   .today-score-orb {
     position: relative;
+    z-index: 2;
     display: grid;
     width: clamp(8.4rem, 46vw, 12rem);
     aspect-ratio: 1;
@@ -2360,10 +2361,19 @@
     --score-piece-delay: 0ms;
     --score-piece-x: -42px;
     --score-piece-y: 28px;
+    --score-piece-float-x: -92px;
+    --score-piece-float-y: -48px;
+    --score-piece-rotate: 0deg;
     position: absolute;
     left: 50%;
     top: 50%;
     z-index: 1;
+    opacity: 0;
+    transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(0.86);
+    animation: today-score-piece-burst 2.15s cubic-bezier(0.18, 0.8, 0.2, 1) var(--score-piece-delay) both;
+  }
+
+  .today-score-piece-float {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2378,32 +2388,31 @@
     font-weight: 740;
     line-height: 1.1;
     box-shadow: 0 12px 26px rgba(17, 17, 20, 0.08);
-    opacity: 0;
-    transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(0.86);
-    animation: today-score-piece-fly 900ms cubic-bezier(0.18, 0.8, 0.2, 1) var(--score-piece-delay) both;
+    transform: rotate(var(--score-piece-rotate));
+    animation: today-score-piece-float 3.1s ease-in-out calc(var(--score-piece-delay) + 1.85s) infinite;
   }
 
-  .today-score-piece[data-tone="gold"] {
+  .today-score-piece[data-tone="gold"] .today-score-piece-float {
     color: #9a6c13;
   }
 
-  .today-score-piece[data-tone="pink"] {
+  .today-score-piece[data-tone="pink"] .today-score-piece-float {
     color: var(--app-pink-strong);
   }
 
-  .today-score-piece[data-tone="green"] {
+  .today-score-piece[data-tone="green"] .today-score-piece-float {
     color: var(--app-jade);
   }
 
-  .today-score-piece[data-tone="blue"] {
+  .today-score-piece[data-tone="blue"] .today-score-piece-float {
     color: var(--app-sky);
   }
 
-  .today-score-piece[data-tone="coral"] {
+  .today-score-piece[data-tone="coral"] .today-score-piece-float {
     color: var(--app-coral);
   }
 
-  .today-score-piece[data-tone="violet"] {
+  .today-score-piece[data-tone="violet"] .today-score-piece-float {
     color: var(--app-plum);
   }
 
@@ -2422,13 +2431,14 @@
   @media (prefers-reduced-motion: reduce) {
     .today-score-orb,
     .today-score-orb::after,
-    .today-score-piece {
+    .today-score-piece,
+    .today-score-piece-float {
       animation: none !important;
     }
 
     .today-score-piece {
-      opacity: 0.28;
-      transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(1);
+      opacity: 0.68;
+      transform: translate(calc(-50% + var(--score-piece-float-x)), calc(-50% + var(--score-piece-float-y))) scale(0.96);
     }
   }
 
@@ -5673,21 +5683,40 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
   }
 }
 
-@keyframes today-score-piece-fly {
+@keyframes today-score-piece-burst {
   0% {
     opacity: 0;
     transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(0.74);
   }
-  36% {
-    opacity: 1;
-  }
-  72% {
+  24% {
     opacity: 1;
     transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(1);
   }
+  46% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(0.48);
+  }
+  62% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(0.28);
+  }
+  82% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--score-piece-float-x)), calc(-50% + var(--score-piece-float-y))) scale(0.98);
+  }
   100% {
-    opacity: 0.58;
-    transform: translate(-50%, -50%) scale(0.46);
+    opacity: 0.9;
+    transform: translate(calc(-50% + var(--score-piece-float-x)), calc(-50% + var(--score-piece-float-y))) scale(0.94);
+  }
+}
+
+@keyframes today-score-piece-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--score-piece-rotate));
+  }
+  50% {
+    transform: translateY(-8px) rotate(var(--score-piece-rotate));
   }
 }
 

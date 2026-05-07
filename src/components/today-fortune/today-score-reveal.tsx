@@ -12,6 +12,15 @@ const SCORE_TONES: Record<TodayScoreItem['key'], string> = {
   condition: 'violet',
 };
 
+const FLOAT_POSITIONS = [
+  { x: '-92px', y: '-48px', rotate: '-5deg' },
+  { x: '94px', y: '-42px', rotate: '4deg' },
+  { x: '-112px', y: '34px', rotate: '6deg' },
+  { x: '112px', y: '38px', rotate: '-6deg' },
+  { x: '-42px', y: '78px', rotate: '-3deg' },
+  { x: '44px', y: '82px', rotate: '5deg' },
+] as const;
+
 function clampScore(score: number) {
   if (!Number.isFinite(score)) return 70;
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -45,6 +54,9 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
         delay: `${index * 110}ms`,
         x: `${index % 2 === 0 ? -1 : 1}${36 + index * 9}px`,
         y: `${index < 3 ? 1 : -1}${18 + index * 5}px`,
+        floatX: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].x,
+        floatY: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].y,
+        rotate: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].rotate,
       })),
     [result.scores]
   );
@@ -88,9 +100,12 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
               '--score-piece-delay': piece.delay,
               '--score-piece-x': piece.x,
               '--score-piece-y': piece.y,
+              '--score-piece-float-x': piece.floatX,
+              '--score-piece-float-y': piece.floatY,
+              '--score-piece-rotate': piece.rotate,
             } as CSSProperties}
           >
-            {piece.label}
+            <span className="today-score-piece-float">{piece.label}</span>
           </span>
         ))}
 
