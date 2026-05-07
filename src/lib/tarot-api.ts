@@ -77,6 +77,13 @@ interface TarotQuestionContext {
   mood: TarotQuestionMood;
 }
 
+interface TarotCardTheme {
+  theme: string;
+  focus: string;
+  action: string;
+  sajuElement: string;
+}
+
 const TAROT_API_CARDS_URL = 'https://tarotapi.dev/api/v1/cards';
 const REVALIDATE_SECONDS = 60 * 60 * 12;
 const TAROT_API_TIMEOUT_MS = 2_500;
@@ -571,74 +578,83 @@ function buildDirectAnswer(
   context: TarotQuestionContext
 ) {
   const flow = getCardFlowState(card, orientation);
+  const theme = getCardTheme(card);
+  const cardLead = buildCardLead(card, orientation, theme);
+  const withCardLead = (body: string) => `${cardLead} ${body}`;
 
   if (context.intent === 'feelings') {
     if (flow === 'open') {
-      return '지금 이 카드만 보면 마음이 완전히 식었다기보다, 아직 반응할 여지와 감정의 온도가 남아 있는 쪽에 가깝습니다.';
+      return withCardLead('마음이 완전히 식었다기보다, 아직 반응할 여지와 감정의 온도가 남아 있는 쪽에 가깝습니다.');
     }
 
     if (flow === 'steady') {
-      return '마음이 없다고 단정하기보다, 감정보다 현실과 안정성을 먼저 따지는 흐름이 더 강하게 보입니다.';
+      return withCardLead('마음이 없다고 단정하기보다, 감정보다 현실과 안정성을 먼저 따지는 흐름이 더 강하게 보입니다.');
     }
 
     if (flow === 'guarded') {
-      return '관심의 유무보다 경계와 판단이 먼저 올라와 있는 상태라, 속마음이 있어도 쉽게 드러나지 않을 수 있습니다.';
+      return withCardLead('관심의 유무보다 경계와 판단이 먼저 올라와 있어, 속마음이 있어도 쉽게 드러나지 않을 수 있습니다.');
     }
 
-    return '지금은 마음의 유무를 단정하기보다, 감정과 상황이 정리되지 않아 표현이 막혀 있는 흐름으로 보는 편이 더 맞습니다.';
+    return withCardLead('지금은 마음의 유무를 단정하기보다, 감정과 상황이 정리되지 않아 표현이 막혀 있는 흐름으로 보는 편이 더 맞습니다.');
   }
 
   if (context.intent === 'contact') {
     if (flow === 'open') {
-      return '지금은 큰 확인보다 가벼운 안부 정도는 닿을 수 있는 흐름입니다. 다만 무거운 결론을 바로 꺼내는 방식은 피하는 편이 좋습니다.';
+      return withCardLead('큰 확인보다 가벼운 안부 정도는 닿을 수 있는 흐름입니다. 다만 무거운 결론을 바로 꺼내는 방식은 피하는 편이 좋습니다.');
     }
 
     if (flow === 'blocked') {
-      return '지금 바로 답을 받으려는 연락은 부담이 될 수 있습니다. 짧고 가벼운 접점부터 열거나, 한 템포 두는 쪽이 더 낫습니다.';
+      return withCardLead('바로 답을 받으려는 연락은 부담이 될 수 있습니다. 짧고 가벼운 접점부터 열거나, 한 템포 두는 쪽이 더 낫습니다.');
     }
 
-    return '연락 자체가 문제라기보다 수위와 타이밍이 중요합니다. 확인받으려는 말보다 부담 없는 말이 더 잘 맞습니다.';
+    return withCardLead('연락 자체가 문제라기보다 수위와 타이밍이 중요합니다. 확인받으려는 말보다 부담 없는 말이 더 잘 맞습니다.');
   }
 
   if (context.intent === 'reconciliation') {
     if (flow === 'open' || flow === 'turning') {
-      return '다시 이어질 여지는 남아 있지만, 예전 방식 그대로 돌아가기보다 관계의 방식이 달라져야 길이 열립니다.';
+      return withCardLead('다시 이어질 여지는 남아 있지만, 예전 방식 그대로 돌아가기보다 관계의 방식이 달라져야 길이 열립니다.');
     }
 
-    return '재회 가능성을 단정히 닫을 단계는 아니지만, 지금은 감정보다 정리되지 않은 문제를 먼저 보는 흐름입니다.';
+    return withCardLead('재회 가능성을 단정히 닫을 단계는 아니지만, 지금은 감정보다 정리되지 않은 문제를 먼저 보는 흐름입니다.');
   }
 
   if (context.intent === 'decision' || context.tone === 'choice') {
     if (flow === 'open') {
-      return '진행해도 됩니다. 다만 감정만 믿고 크게 가기보다, 작게 시험해 보며 반응을 확인하는 방식이 가장 좋습니다.';
+      return withCardLead('진행해도 됩니다. 다만 감정만 믿고 크게 가기보다, 작게 시험해 보며 반응을 확인하는 방식이 가장 좋습니다.');
     }
 
     if (flow === 'steady') {
-      return '진행은 가능하지만 조건 점검이 먼저입니다. 기준과 현실선을 확인한 뒤 움직이면 후회가 줄어듭니다.';
+      return withCardLead('진행은 가능하지만 조건 점검이 먼저입니다. 기준과 현실선을 확인한 뒤 움직이면 후회가 줄어듭니다.');
     }
 
     if (flow === 'guarded' || flow === 'blocked') {
-      return '지금은 바로 결론을 내리기보다 한 박자 보류가 더 맞습니다. 섣불리 밀면 마음보다 피로가 커질 수 있습니다.';
+      return withCardLead('지금은 바로 결론을 내리기보다 한 박자 보류가 더 맞습니다. 서두르면 마음보다 피로가 커질 수 있습니다.');
     }
 
-    return '방향은 열려 있지만 서두를 때보다 관점을 한 번 바꿔 본 뒤 움직일 때 더 잘 맞는 흐름입니다.';
+    return withCardLead('방향은 열려 있지만 서두를 때보다 관점을 한 번 바꿔 본 뒤 움직일 때 더 잘 맞는 흐름입니다.');
   }
 
   if (context.domain === 'career') {
-    return flow === 'blocked'
-      ? '일과 방향은 아직 무리하게 키우기보다 정리와 재정비가 먼저입니다.'
-      : '일의 흐름은 열려 있습니다. 다만 속도보다 기준을 세운 전진이 더 오래 갑니다.';
+    return withCardLead(
+      flow === 'blocked'
+        ? '일과 방향은 아직 무리하게 키우기보다 정리와 재정비가 먼저입니다.'
+        : '일의 흐름은 열려 있습니다. 다만 속도보다 기준을 세운 전진이 더 오래 갑니다.'
+    );
   }
 
   if (context.domain === 'money') {
-    return flow === 'open'
-      ? '돈은 움직일 수 있지만, 지금은 큰 승부보다 작고 확실한 선택이 더 맞습니다.'
-      : '재물 흐름은 공격보다 점검이 먼저입니다. 새 지출보다 기존 구조를 정리하는 편이 안전합니다.';
+    return withCardLead(
+      flow === 'open'
+        ? '돈은 움직일 수 있지만, 지금은 큰 승부보다 작고 확실한 선택이 더 맞습니다.'
+        : '재물 흐름은 공격보다 점검이 먼저입니다. 새 지출보다 기존 구조를 정리하는 편이 안전합니다.'
+    );
   }
 
-  return flow === 'blocked'
-    ? '지금은 억지로 답을 만들기보다 마음과 상황을 한 번 정리하고 보는 흐름입니다.'
-    : '흐름은 나쁘지 않습니다. 오늘은 작게 움직이며 반응을 보는 쪽이 가장 맞습니다.';
+  return withCardLead(
+    flow === 'blocked'
+      ? '지금은 억지로 답을 만들기보다 마음과 상황을 한 번 정리하고 보는 흐름입니다.'
+      : '흐름은 나쁘지 않습니다. 오늘은 작게 움직이며 반응을 보는 쪽이 가장 맞습니다.'
+  );
 }
 
 function buildSpreadPositions(context: TarotQuestionContext) {
@@ -803,6 +819,7 @@ function buildTarotReading({
   const psychology = buildPsychologyCopy(card, orientation, context);
   const directAnswer = buildDirectAnswer(card, orientation, context);
   const questionInsight = buildQuestionInsight(context);
+  const action = buildCardAction(card, orientation, context, theme);
 
   return {
     card,
@@ -820,20 +837,90 @@ function buildTarotReading({
     answer: directAnswer,
     psychologyLabel: psychology.label,
     psychology: psychology.summary,
-    guidance: `${getDisplayName(card)}은 ${theme.theme}을 말합니다. ${TONE_FOCUS[tone](theme.theme, theme.focus)} ${orientationAdvice}`,
+    guidance: buildGuidanceCopy(card, orientation, tone, theme, orientationAdvice),
     sajuBlend: buildSajuBlendCopy(theme, context),
-    action: theme.action,
+    action,
     source,
     meaningExcerpt: compactMeaning(meaning),
   };
 }
 
+function buildCardLead(
+  card: TarotApiCard,
+  orientation: TarotOrientation,
+  theme: TarotCardTheme
+) {
+  const name = getPlainCardName(card);
+
+  if (card.type === 'major') {
+    return orientation === 'upright'
+      ? `${name} 카드는 ${theme.focus}을 먼저 보라고 말합니다.`
+      : `${name} 카드가 거꾸로 나와, ${theme.focus}이 바로 풀리기보다 잠시 막힌 모습입니다.`;
+  }
+
+  const suit = card.suit ? SUIT_THEMES[card.suit] : SUIT_THEMES.cups;
+  const value = VALUE_THEMES[card.value] ?? {
+    korean: card.value,
+    focus: '지금 필요한 균형',
+    action: '오늘 눈에 들어오는 작은 신호를 놓치지 말고 정리해보세요.',
+  };
+
+  return orientation === 'upright'
+    ? `${name} 카드는 ${suit.theme}에서 ${value.focus}이 핵심이라고 말합니다.`
+    : `${name} 카드가 거꾸로 나와, ${suit.focus}에서 ${value.focus}이 어긋나기 쉽습니다.`;
+}
+
+function buildCardAction(
+  card: TarotApiCard,
+  orientation: TarotOrientation,
+  context: TarotQuestionContext,
+  theme: TarotCardTheme
+) {
+  if (orientation === 'reversed') {
+    return `오늘은 ${theme.focus}을 바로 결론내기보다, 한 번 멈춰 확인하고 말과 행동을 줄이는 편이 좋습니다.`;
+  }
+
+  if (card.type === 'major') {
+    return theme.action;
+  }
+
+  const suitAction =
+    card.suit === 'cups'
+      ? '감정 표현은 짧고 부드럽게 하되, 답을 재촉하지 마세요.'
+      : card.suit === 'pentacles'
+        ? '돈, 일정, 약속처럼 손에 잡히는 것부터 먼저 정리하세요.'
+        : card.suit === 'swords'
+          ? '생각이 많아질수록 사실과 추측을 나누어 적어보세요.'
+          : card.suit === 'wands'
+            ? '하고 싶은 일은 크게 벌리지 말고 10분짜리 행동으로 시작하세요.'
+            : theme.action;
+
+  if (context.intent === 'contact') {
+    return card.suit === 'cups'
+      ? '연락은 짧고 다정하게 보내세요. 답을 바로 확인하려는 말은 빼는 편이 좋습니다.'
+      : suitAction;
+  }
+
+  if (context.domain === 'money' && card.suit !== 'pentacles') {
+    return `${suitAction} 돈 문제는 새로 쓰기보다 지금 새는 곳을 먼저 확인하세요.`;
+  }
+
+  return suitAction;
+}
+
+function buildGuidanceCopy(
+  card: TarotApiCard,
+  orientation: TarotOrientation,
+  tone: TarotQuestionTone,
+  theme: TarotCardTheme,
+  orientationAdvice: string
+) {
+  const name = getPlainCardName(card);
+  return `${name}의 핵심은 ${theme.theme}입니다. ${TONE_FOCUS[tone](theme.theme, theme.focus)} ${orientationAdvice}`;
+}
+
 function buildSajuBlendCopy(
-  theme: {
-    theme: string;
-    focus: string;
-    sajuElement: string;
-  },
+  theme: TarotCardTheme,
   context: TarotQuestionContext
 ) {
   const domainLine =
@@ -884,6 +971,17 @@ function getCardTheme(card: TarotApiCard) {
     action: valueTheme.action,
     sajuElement: suitTheme.sajuElement,
   };
+}
+
+function getPlainCardName(card: TarotApiCard) {
+  if (card.type === 'major') {
+    return MAJOR_CARD_NAMES[card.name] ?? card.name;
+  }
+
+  const suit = card.suit ? SUIT_THEMES[card.suit] : SUIT_THEMES.cups;
+  const value = VALUE_THEMES[card.value]?.korean ?? card.value;
+
+  return `${value} ${suit.korean}`;
 }
 
 function getDisplayName(card: TarotApiCard) {

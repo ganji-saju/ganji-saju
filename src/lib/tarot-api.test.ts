@@ -167,6 +167,34 @@ test('tarot reading adapts the answer and psychology to the asked question', asy
   }
 });
 
+test('tarot selected cards produce card-specific visible messages', async () => {
+  mockFetch(
+    (async () => {
+      throw new Error('network unavailable');
+    }) as typeof fetch
+  );
+
+  try {
+    const cups = await getTarotReadingForQuestion({
+      question: '오늘 하루 어떤 메시지가 있을까',
+      cardId: 'cu02',
+      orientation: 'upright',
+    });
+    const swords = await getTarotReadingForQuestion({
+      question: '오늘 하루 어떤 메시지가 있을까',
+      cardId: 'sw03',
+      orientation: 'upright',
+    });
+
+    assert.notEqual(cups.answer, swords.answer);
+    assert.notEqual(cups.action, swords.action);
+    assert.match(cups.answer, /컵|감정|관계/);
+    assert.match(swords.answer, /소드|생각|판단|말/);
+  } finally {
+    restoreFetch();
+  }
+});
+
 test('tarot spread positions change to match the relationship question intent', async () => {
   mockFetch(
     (async () => {
@@ -267,7 +295,7 @@ test('local tarot deck cards all resolve to an existing image file', async () =>
     assert.ok(
       deck.cards.every((card) => {
         const publicPath = getTarotCardImagePath(card.name_short);
-        return existsSync(`/Users/kionya/saju-app/public${publicPath}`);
+        return existsSync(`${process.cwd()}/public${publicPath}`);
       })
     );
   } finally {
