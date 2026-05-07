@@ -18,6 +18,7 @@ import {
   getAvailableCreditsTotal,
   shouldChargeAiChat,
 } from '@/lib/credits/ai-chat-access';
+import { ensureDialogueExpertVisibleOpening } from '@/lib/dialogue-experts';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
@@ -38,6 +39,7 @@ test('dialogue prompt uses the selected zodiac expert and infers focus topic fro
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);
   assert.match(prompt.instructions, /재물닭선생 · 재물운/);
   assert.match(prompt.instructions, /전문 오버레이 RAG/);
+  assert.match(prompt.instructions, /첫 문단은 반드시 이 관점으로 시작합니다/);
   assert.match(prompt.instructions, /돈이 새는 구멍/);
   assert.match(prompt.instructions, /특정 투자 성공을 말하지 않습니다/);
   assert.match(alternatePrompt.instructions, /궁합양선생 · 궁합과 관계/);
@@ -45,6 +47,23 @@ test('dialogue prompt uses the selected zodiac expert and infers focus topic fro
   assert.match(alternatePrompt.instructions, /상대 마음을 확정하지 않습니다/);
   assert.equal(inferDialogueFocusTopic('올해 재물운을 단도직입적으로 봐줘'), 'wealth');
   assert.equal(inferDialogueFocusTopic('요즘 부모님이랑 관계가 왜 이렇게 꼬일까'), 'relationship');
+});
+
+test('dialogue output visibly differs by selected zodiac expert', () => {
+  const genericText = '지금은 무리하게 넓히기보다 먼저 정리하는 흐름이 좋습니다.';
+
+  assert.match(
+    ensureDialogueExpertVisibleOpening(genericText, 'rooster'),
+    /재물닭선생 기준으로는 돈이 들어오는 말보다 새는 구멍부터 봅니다/
+  );
+  assert.match(
+    ensureDialogueExpertVisibleOpening(genericText, 'sheep'),
+    /궁합양선생 기준으로는 상대와 나의 속도 차이부터 봅니다/
+  );
+  assert.match(
+    ensureDialogueExpertVisibleOpening('재물닭선생입니다. 먼저 지출을 봅니다.', 'rooster'),
+    /^재물닭선생 기준으로는 돈이 들어오는 말보다 새는 구멍부터 봅니다/
+  );
 });
 
 test('annual dialogue intent detects yearly-report style questions without catching every short topical ask', () => {

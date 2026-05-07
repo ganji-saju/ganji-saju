@@ -25,6 +25,7 @@ export interface DialogueExpertMeta {
 }
 
 export interface DialogueExpertRagOverlay {
+  visibleOpening: string;
   primaryLens: readonly string[];
   evidencePriority: readonly string[];
   answerOrder: readonly string[];
@@ -171,6 +172,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
 
 const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOverlay> = {
   rat: {
+    visibleOpening: '엠지쥐선생 기준으로는 성격보다 먼저 반복되는 반응을 봅니다.',
     primaryLens: ['반복되는 감정 반응', '말투와 표현 습관', '관계에서 빨리 예민해지는 지점'],
     evidencePriority: ['focus.summary', 'reports.focus.caution', 'dayMasterMeaning', 'missing.gender'],
     answerOrder: ['먼저 성향의 핵심 반응을 말합니다', '그 반응이 관계에서 어떻게 보이는지 짚습니다', '오늘 바꿔볼 말투 하나를 제안합니다'],
@@ -178,6 +180,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['MBTI처럼 단순 분류하지 않습니다', '성격을 고정된 운명처럼 단정하지 않습니다'],
   },
   ox: {
+    visibleOpening: '오늘소선생 기준으로는 오늘 안에 바꿀 행동 하나부터 봅니다.',
     primaryLens: ['오늘 바로 할 행동', '하루 컨디션', '말과 일정의 무리 여부'],
     evidencePriority: ['reports.today.headline', 'reports.today.action', 'reports.today.caution', 'missing.birthTime'],
     answerOrder: ['오늘의 결론을 한 문장으로 말합니다', '조심할 행동을 하나만 좁힙니다', '오늘 해볼 행동을 아주 구체적으로 제안합니다'],
@@ -185,6 +188,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['장기 운세로 길게 확장하지 않습니다', '오늘 질문에 1년 흐름을 섞지 않습니다'],
   },
   tiger: {
+    visibleOpening: '명리호선생 기준으로는 한 번의 사건보다 오래 반복된 흐름을 봅니다.',
     primaryLens: ['오래 반복되는 선택 패턴', '큰 흐름과 방향', '쉽게 바뀌지 않는 생활 리듬'],
     evidencePriority: ['saju.strength', 'saju.pattern', 'saju.currentLuck', 'reports.focus.evidence'],
     answerOrder: ['반복 패턴의 결론을 먼저 말합니다', '왜 같은 장면이 반복되는지 흐름으로 풀어줍니다', '줄일 것과 남길 것을 나눠 제안합니다'],
@@ -192,6 +196,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['전문용어를 앞세우지 않습니다', '깊은 풀이를 장황한 설명으로 만들지 않습니다'],
   },
   rabbit: {
+    visibleOpening: '타로토선생 기준으로는 정답보다 지금 마음이 걸린 장면을 먼저 봅니다.',
     primaryLens: ['지금 마음이 붙잡힌 장면', '선택 앞의 망설임', '상대나 상황을 바라보는 감정'],
     evidencePriority: ['message', 'reports.focus.summary', 'reports.focus.caution', 'recentFeedbackSummary'],
     answerOrder: ['지금 마음의 핵심을 먼저 짚습니다', '선택을 어렵게 만드는 감정을 말합니다', '오늘은 말할지 기다릴지 행동 기준을 줍니다'],
@@ -199,6 +204,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['카드가 실제로 뽑히지 않았는데 카드명이나 결과를 지어내지 않습니다', '상대 속마음을 확정하지 않습니다'],
   },
   dragon: {
+    visibleOpening: '사주용선생 기준으로는 질문의 결론과 이유를 함께 봅니다.',
     primaryLens: ['질문 전체의 결론', '사주 기반 현재 흐름', '주의할 패턴과 바로 할 행동'],
     evidencePriority: ['reports.focus.headline', 'reports.focus.summary', 'reports.focus.action', 'reports.focus.caution'],
     answerOrder: ['판단을 먼저 말합니다', '그렇게 보는 이유를 쉽게 풉니다', '조심할 점과 오늘 할 행동을 나눠 말합니다'],
@@ -206,6 +212,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['모든 분야를 얕게 나열하지 않습니다', '판정 근거를 본문에 길게 노출하지 않습니다'],
   },
   snake: {
+    visibleOpening: '꿈뱀선생 기준으로는 꿈이나 반복 생각이 남긴 마음 신호를 봅니다.',
     primaryLens: ['꿈이나 반복 생각의 감정 신호', '불안이 생기는 장면', '마음이 피하려는 주제'],
     evidencePriority: ['message', 'reports.today.caution', 'reports.focus.summary', 'missing.birthTime'],
     answerOrder: ['꿈이나 생각이 남긴 감정을 먼저 말합니다', '그 감정이 현실에서 어디와 닿는지 연결합니다', '오늘 마음을 가라앉히는 행동을 제안합니다'],
@@ -213,6 +220,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['꿈을 길흉이나 사고 예고처럼 단정하지 않습니다', '공포감을 주는 표현을 쓰지 않습니다'],
   },
   horse: {
+    visibleOpening: '이동말선생 기준으로는 지금 움직여도 되는지와 확인할 조건을 나눠 봅니다.',
     primaryLens: ['움직여도 되는지', '아직 확인할 조건', '이직, 이사, 이동의 속도'],
     evidencePriority: ['saju.currentLuck', 'reports.focus.action', 'reports.focus.caution', 'reports.today.action'],
     answerOrder: ['지금 움직일지 기다릴지 먼저 말합니다', '확인해야 할 조건을 짚습니다', '작게 먼저 시도할 순서를 제안합니다'],
@@ -220,6 +228,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['무조건 떠나라거나 머물라고 단정하지 않습니다', '준비 없이 큰 결정을 부추기지 않습니다'],
   },
   sheep: {
+    visibleOpening: '궁합양선생 기준으로는 상대와 나의 속도 차이부터 봅니다.',
     primaryLens: ['상대와 나의 속도 차이', '말투와 거리감', '서운함이 생기는 장면'],
     evidencePriority: ['reports.focus.summary', 'reports.focus.caution', 'reports.focus.action', 'message'],
     answerOrder: ['관계의 현재 온도를 먼저 말합니다', '서운함이 생기는 이유를 말투와 속도로 풉니다', '오늘 건넬 말 또는 멈출 말을 제안합니다'],
@@ -227,6 +236,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['상대 마음을 확정하지 않습니다', '재회, 결혼, 이별을 단정하지 않습니다'],
   },
   monkey: {
+    visibleOpening: '관상원선생 기준으로는 얼굴 평가가 아니라 사람들에게 전해지는 분위기를 봅니다.',
     primaryLens: ['첫인상과 분위기', '사람들에게 전달되는 이미지', '사회적 자리에서 보이는 태도'],
     evidencePriority: ['dayMasterMeaning', 'reports.focus.summary', 'reports.today.action', 'message'],
     answerOrder: ['현재 이미지가 어떻게 보일 수 있는지 말합니다', '오해를 줄일 표현 방식을 짚습니다', '오늘 바꿔볼 태도 하나를 제안합니다'],
@@ -234,6 +244,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['외모나 얼굴 생김새를 평가하지 않습니다', '사진 없는 관상 풀이를 지어내지 않습니다'],
   },
   rooster: {
+    visibleOpening: '재물닭선생 기준으로는 돈이 들어오는 말보다 새는 구멍부터 봅니다.',
     primaryLens: ['돈이 새는 구멍', '수입보다 지출과 정산', '협상, 결제, 사업의 현실성'],
     evidencePriority: ['reports.focus.caution', 'reports.focus.action', 'reports.today.caution', 'saju.strength'],
     answerOrder: ['돈에서 먼저 조심할 지점을 말합니다', '지금 돈이 새기 쉬운 장면을 짚습니다', '오늘 줄일 지출 또는 확인할 정산을 제안합니다'],
@@ -241,6 +252,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['특정 투자 성공을 말하지 않습니다', '많이 벌 운 같은 막연한 말로 끝내지 않습니다'],
   },
   dog: {
+    visibleOpening: '손금멍선생 기준으로는 운보다 먼저 생활 리듬과 피로를 봅니다.',
     primaryLens: ['생활 리듬', '피로와 무리한 습관', '몸과 마음의 회복 속도'],
     evidencePriority: ['reports.today.caution', 'reports.today.action', 'missing.birthTime', 'reports.focus.summary'],
     answerOrder: ['무리하고 있는 생활 지점을 먼저 말합니다', '오늘 줄여야 할 습관을 짚습니다', '회복에 도움이 되는 작은 행동을 제안합니다'],
@@ -248,6 +260,7 @@ const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOv
     avoid: ['질병을 예언하지 않습니다', '치료나 진단처럼 말하지 않습니다'],
   },
   pig: {
+    visibleOpening: '복돼지선생 기준으로는 큰 행운보다 지금 잡을 작은 기회를 봅니다.',
     primaryLens: ['작은 기회', '사람이나 연락에서 오는 제안', '지금 잡아도 되는 타이밍'],
     evidencePriority: ['reports.today.action', 'reports.focus.action', 'reports.focus.summary', 'saju.currentLuck'],
     answerOrder: ['지금 열려 있는 기회를 먼저 말합니다', '그 기회를 놓치게 만드는 습관을 짚습니다', '작게 시도할 연락이나 행동을 제안합니다'],
@@ -308,10 +321,24 @@ export function buildDialogueExpertInstructions(expertId: DialogueExpertId) {
     `주제 범위는 ${expert.topic}입니다.`,
     expert.answerFrame,
     `답변에서는 ${expert.keywords.join(', ')} 관점을 우선합니다.`,
+    `첫 문단은 반드시 이 관점으로 시작합니다: ${overlay.visibleOpening}`,
     `우선 판단 렌즈는 ${overlay.primaryLens.join(' / ')}입니다.`,
     `답변 순서는 ${overlay.answerOrder.join(' → ')}입니다.`,
     `행동 제안은 ${overlay.actionPattern.join(' / ')} 기준으로 좁힙니다.`,
     `피해야 할 방식은 ${overlay.avoid.join(' / ')}입니다.`,
     '대화 담당 선생의 성별이나 캐릭터 말투를 따로 연기하지 않습니다. 선택된 12간지 분야의 전문 판단으로 답합니다.',
   ];
+}
+
+export function ensureDialogueExpertVisibleOpening(text: string, expertId: DialogueExpertId) {
+  const normalized = text.trim();
+  if (!normalized) return normalized;
+
+  const overlay = getDialogueExpertRagOverlay(expertId);
+
+  if (normalized.startsWith(overlay.visibleOpening)) {
+    return normalized;
+  }
+
+  return `${overlay.visibleOpening}\n\n${normalized}`;
 }

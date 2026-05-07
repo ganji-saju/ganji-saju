@@ -7,6 +7,7 @@ import {
 } from '@/lib/counselors';
 import {
   buildDialogueExpertInstructions,
+  ensureDialogueExpertVisibleOpening,
   getDialogueExpertMeta,
   getDialogueExpertRagOverlay,
   inferDialogueExpertIdFromMessage,
@@ -772,10 +773,13 @@ async function handleDialogue(request: DialogueAiRequest) {
     maxOutputTokens: yearlyBridge ? 420 : 600,
     timeoutMs: yearlyBridge ? 12_000 : undefined,
   });
-  const dialogueText = normalizeDialogueAnswer(result.text);
+  const dialogueText = ensureDialogueExpertVisibleOpening(
+    normalizeDialogueAnswer(result.text),
+    expertId
+  );
   const dialogueResult = {
     ...result,
-    text: dialogueText || fallbackText,
+    text: dialogueText || ensureDialogueExpertVisibleOpening(fallbackText, expertId),
     cta: yearlyBridge?.cta ?? null,
   };
 
