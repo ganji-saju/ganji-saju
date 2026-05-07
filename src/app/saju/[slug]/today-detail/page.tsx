@@ -138,6 +138,12 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
 
+        <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
+          <span>무료 요약</span>
+          <span data-active="true">오늘 상세</span>
+          <span>보관</span>
+        </div>
+
         <section className="gangi-reading-hero">
           <div className="gangi-chapter-eyebrow">구매한 풀이</div>
           <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
@@ -212,6 +218,11 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
             ))}
           </div>
         </section>
+
+        <div className="gangi-paid-detail-actions">
+          <Link href={`/saju/${encodeURIComponent(slug)}`}>무료 요약 다시 보기</Link>
+          <Link href="/my/results" data-primary="true">보관함에서 다시 보기</Link>
+        </div>
 
         <SafetyNotice variant="general" />
       </AppPage>

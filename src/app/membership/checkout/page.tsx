@@ -221,6 +221,14 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           description="금액과 열리는 내용을 확인한 뒤 토스 결제창에서 진행합니다."
         />
 
+        {selectedProduct ? (
+          <div className="gangi-result-flow-strip gangi-checkout-flow-strip" aria-label="소액 풀이 결제 흐름">
+            <span>무료 요약</span>
+            <span data-active="true">결제</span>
+            <span>상세 보기</span>
+          </div>
+        ) : null}
+
         <section className="space-y-4 px-4 sm:px-0">
           <GangiPurchaseSummary
             title={selected.title}

@@ -113,6 +113,10 @@
   color: #ffffff;
 }
 
+.gangi-checkout-flow-strip {
+  margin-inline: 1rem;
+}
+
 .saju-result-page .gangi-result-next-step {
   border: 1px solid var(--app-pink-line) !important;
   background:
@@ -159,4 +163,37 @@
 
 .gangi-checkout-page .gangi-checkout-action-card {
   border-color: var(--app-pink-line) !important;
+}
+
+.gangi-paid-detail-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.gangi-paid-detail-actions a {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--app-line);
+  border-radius: 1.1rem;
+  background: #ffffff;
+  color: var(--app-ink);
+  font-size: 0.9rem;
+  font-weight: 680;
+  box-shadow: 0 12px 28px -24px rgba(17, 17, 20, 0.32);
+}
+
+.gangi-paid-detail-actions a[data-primary="true"] {
+  border-color: var(--app-pink-line);
+  background: var(--app-pink);
+  color: #ffffff;
+  box-shadow: 0 16px 34px -24px rgba(216, 27, 114, 0.46);
+}
+
+@media (min-width: 420px) {
+  .gangi-paid-detail-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
