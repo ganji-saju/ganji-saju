@@ -1,0 +1,947 @@
+/* gangisaju.zip index.html implementation: mobile card-mall home */
+.gangi-home {
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
+  background: #ffffff;
+  color: var(--app-ink);
+  word-break: keep-all;
+  line-break: strict;
+}
+
+.gangi-season-carousel {
+  width: auto;
+  max-width: none;
+  margin: 1rem 1.25rem 0;
+}
+
+.gangi-banner-viewport {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 1.5rem;
+  cursor: grab;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gangi-banner-viewport:active {
+  cursor: grabbing;
+}
+
+.gangi-banner-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.gangi-banner-track {
+  display: flex;
+  width: 100%;
+}
+
+.gangi-season-banner {
+  --banner-shift-x: 0px;
+  --banner-shift-y: 0px;
+  --banner-visual-x: 0px;
+  --banner-visual-y: 0px;
+  --banner-tilt: 0deg;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
+  min-height: 11.1rem;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, #ff73b2 0%, #ed2782 100%);
+  padding: 1.45rem 1.45rem 1.2rem;
+  color: #ffffff;
+  box-shadow: 0 18px 34px -20px rgba(216, 27, 114, 0.58);
+  transform: perspective(900px) rotate(var(--banner-tilt)) translate3d(var(--banner-shift-x), var(--banner-shift-y), 0);
+  transition: background 220ms ease, color 220ms ease, transform 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+}
+
+.gangi-season-banner::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  background:
+    linear-gradient(115deg, transparent 0 28%, rgba(255, 255, 255, 0.26) 42%, transparent 58% 100%);
+  transform: translateX(-120%);
+  animation: gangi-banner-shine 5.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.gangi-season-banner::after {
+  position: absolute;
+  inset: 1rem;
+  z-index: 1;
+  content: "";
+  background-image:
+    radial-gradient(circle at 20% 72%, rgba(255, 255, 255, 0.56) 0 1.6px, transparent 2px),
+    radial-gradient(circle at 48% 18%, rgba(255, 213, 74, 0.72) 0 2px, transparent 2.4px),
+    radial-gradient(circle at 74% 56%, rgba(255, 255, 255, 0.44) 0 1.5px, transparent 2px);
+  opacity: 0.5;
+  animation: gangi-twinkle 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.gangi-season-banner[data-tone="soft"] {
+  border-color: rgba(216, 27, 114, 0.12);
+  background: linear-gradient(135deg, #fff0f7 0%, #ffe3ef 100%);
+  color: var(--app-ink);
+}
+
+.gangi-season-banner[data-tone="night"] {
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 70% 18%, rgba(255, 213, 74, 0.18), transparent 22%),
+    linear-gradient(135deg, #242236 0%, #34233e 100%);
+  color: #ffffff;
+}
+
+.gangi-season-glow {
+  position: absolute;
+  right: -1.2rem;
+  top: -1.5rem;
+  width: 8.4rem;
+  height: 8.4rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.18) 62%, transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.gangi-season-banner[data-tone="pink"] .gangi-season-glow {
+  display: none;
+}
+
+.gangi-season-banner[data-tone="night"] .gangi-season-glow {
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background-image:
+    radial-gradient(circle at 18% 74%, rgba(255, 213, 74, 0.78) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 42% 22%, rgba(255, 213, 74, 0.78) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 62% 50%, rgba(255, 213, 74, 0.58) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 76% 18%, rgba(255, 213, 74, 0.65) 0 2px, transparent 2.5px);
+  opacity: 0.78;
+}
+
+.gangi-banner-copy {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 16.25rem);
+}
+
+.gangi-banner-kicker {
+  margin: 0;
+  color: currentColor;
+  font-size: 0.88rem;
+  font-weight: 700;
+  opacity: 0.86;
+}
+
+.gangi-season-banner[data-tone="soft"] .gangi-banner-kicker {
+  color: var(--app-pink-strong);
+}
+
+.gangi-season-banner[data-tone="night"] .gangi-banner-kicker {
+  color: #ffd54a;
+}
+
+.gangi-season-banner h1 {
+  margin: 0.55rem 0 0;
+  color: currentColor;
+  font-family: var(--font-body);
+  font-size: clamp(1.42rem, 5.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.gangi-banner-desc {
+  margin: 1.35rem 0 0;
+  max-width: 12.5rem;
+  color: currentColor;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.6;
+  opacity: 0.74;
+}
+
+.gangi-banner-button {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.18);
+  padding-inline: 1.05rem;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(17, 17, 20, 0.08);
+}
+
+.gangi-season-banner[data-tone="soft"] .gangi-banner-button,
+.gangi-season-banner[data-tone="night"] .gangi-banner-button {
+  border-color: transparent;
+  background: var(--app-pink);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(216, 27, 114, 0.24);
+}
+
+.gangi-season-banner[data-tone="night"] .gangi-banner-button {
+  background: #ffd54a;
+  color: #111114;
+}
+
+.gangi-banner-visual {
+  position: absolute;
+  right: 1.35rem;
+  top: 50%;
+  z-index: 2;
+  transform: translate(var(--banner-visual-x), calc(-35% + var(--banner-visual-y)));
+  transition: transform 180ms ease;
+}
+
+.gangi-banner-moon {
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 34% 30%, #fff8d8, #ffd875 70%);
+  box-shadow: 0 18px 42px rgba(17, 17, 20, 0.1);
+  animation: gangi-float-y 4.5s ease-in-out infinite;
+}
+
+.gangi-banner-dots {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  margin-top: 0.72rem;
+}
+
+.gangi-banner-dots button {
+  height: 0.38rem;
+  width: 0.38rem;
+  border-radius: 9999px;
+  background: rgba(17, 17, 20, 0.16);
+  transition: width 180ms ease, height 180ms ease, background 180ms ease, opacity 180ms ease;
+}
+
+.gangi-banner-dots button[aria-current="true"] {
+  width: 1.35rem;
+  height: 3px;
+  background: var(--app-pink);
+}
+
+.gangi-character {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 9999px;
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 1.72rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.08), 0 8px 18px rgba(17, 17, 20, 0.08);
+}
+
+.gangi-character-face {
+  display: grid;
+  width: 72%;
+  height: 72%;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.28);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.22));
+}
+
+.gangi-character[data-size="lg"] {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.98rem;
+  animation: gangi-float-y 3.6s ease-in-out infinite;
+}
+
+.gangi-character[data-size="sm"] {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.32rem;
+}
+
+.gangi-star-sign-icon {
+  --star-sign-from: var(--app-pink);
+  --star-sign-to: var(--app-plum);
+  display: grid;
+  width: 3.35rem;
+  height: 3.35rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.9), transparent 26%),
+    linear-gradient(135deg, var(--star-sign-from), var(--star-sign-to));
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.54),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.08),
+    0 10px 22px rgba(216, 27, 114, 0.12);
+}
+
+.gangi-star-sign-icon span {
+  display: grid;
+  width: 72%;
+  height: 72%;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.24));
+}
+
+.gangi-star-sign-icon[data-size="lg"] {
+  width: 4.25rem;
+  height: 4.25rem;
+  font-size: 2rem;
+  animation: gangi-float-y 3.8s ease-in-out infinite;
+}
+
+.gangi-star-sign-icon[data-size="sm"] {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.32rem;
+}
+
+.gangi-star-sign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.gangi-star-sign-card {
+  display: grid;
+  min-height: 7.4rem;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid var(--app-line);
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 0.78rem 0.45rem;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(17, 17, 20, 0.04);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.gangi-star-sign-card:hover,
+.gangi-star-sign-card:focus-visible,
+.gangi-star-sign-card[data-active="true"] {
+  border-color: rgba(255, 79, 154, 0.58);
+  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.1);
+  transform: translateY(-1px);
+}
+
+.gangi-star-sign-card strong {
+  display: block;
+  margin-top: 0.42rem;
+  color: var(--app-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.gangi-star-sign-card em {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(17, 17, 20, 0.5);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+@media (min-width: 520px) {
+  .gangi-star-sign-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.gangi-free-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+  padding: 1rem 1.25rem 0;
+}
+
+.gangi-free-action {
+  position: relative;
+  display: flex;
+  min-height: 6.3rem;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 0.875rem;
+  color: var(--app-ink);
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04);
+}
+
+.gangi-free-label {
+  margin-top: 0.45rem;
+  color: var(--app-pink-strong);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.gangi-free-action strong {
+  margin-top: 0.1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.gangi-free-action em {
+  margin-top: 0.1rem;
+  color: rgba(17, 17, 20, 0.64);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.gangi-sun-mark {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, #fff8d9, #ffd479 60%, #f5b740);
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.gangi-card-mark {
+  width: 1.125rem;
+  height: 1.625rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(135deg, var(--app-pink), var(--app-pink-strong));
+  box-shadow: 2px 2px 0 #ffffff, 4px 4px 0 var(--app-line);
+}
+
+.gangi-category-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  margin: 1.25rem 1rem 0;
+  padding: 0.35rem;
+  border: 1px solid var(--app-line);
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(17, 17, 20, 0.045);
+  scrollbar-width: none;
+}
+
+.gangi-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.gangi-category-tabs button {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.25rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--app-line);
+  border-radius: 0.95rem;
+  background: #ffffff;
+  padding: 0.55rem 0.85rem;
+  color: rgba(17, 17, 20, 0.58);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+  white-space: nowrap;
+}
+
+.gangi-category-tabs button:hover {
+  background: var(--app-surface-muted);
+  color: var(--app-ink);
+}
+
+.gangi-category-tabs button[data-active="true"] {
+  border-color: transparent;
+  background: var(--app-ink);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(17, 17, 20, 0.12);
+}
+
+.gangi-category-tabs button[data-active="true"]::after {
+  position: absolute;
+  right: 0.48rem;
+  top: 0.48rem;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 9999px;
+  background: var(--app-pink);
+  content: "";
+}
+
+.gangi-service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 44rem;
+}
+
+.gangi-service-card {
+  position: relative;
+  contain: content;
+  display: flex;
+  min-height: 9.25rem;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  border-radius: 1.125rem;
+  background: #ffffff;
+  padding: 0.875rem;
+  color: var(--app-ink);
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 8px 24px -12px rgba(17, 17, 20, 0.1);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.gangi-service-card::before {
+  content: "";
+  position: absolute;
+  inset: auto -1.5rem -2.4rem auto;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  background: var(--app-pink-soft);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.gangi-service-card:active {
+  transform: scale(0.97);
+}
+
+.gangi-card-tag {
+  position: absolute;
+  right: 0.65rem;
+  top: 0.65rem;
+  z-index: 2;
+  border-radius: 9999px;
+  background: var(--app-ink);
+  padding: 0.18rem 0.5rem;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.gangi-card-tag[data-hot="true"] {
+  background: var(--app-pink);
+}
+
+.gangi-card-body {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+}
+
+.gangi-card-body h2 {
+  margin: 0.85rem 0 0;
+  color: var(--app-ink);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.gangi-card-body p {
+  margin: 0.2rem 0 0;
+  color: rgba(17, 17, 20, 0.64);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.gangi-card-body span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  color: var(--app-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.gangi-service-card[data-free="true"] .gangi-card-body span {
+  color: var(--app-pink-strong);
+}
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  padding: 0 1rem max(2rem, calc(env(safe-area-inset-bottom) + 6.5rem));
+}
+
+.site-footer-inner {
+  width: min(100%, 64rem);
+  margin-inline: auto;
+  border-top: 1px solid var(--app-line);
+  padding: 1.4rem 0 0;
+  color: rgba(17, 17, 20, 0.58);
+  font-size: 0.78rem;
+  font-weight: 520;
+  line-height: 1.7;
+}
+
+.site-footer-main {
+  display: grid;
+  gap: 1rem;
+}
+
+.site-footer-brand {
+  color: var(--app-ink);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.site-footer-copy {
+  margin-top: 0.35rem;
+  color: rgba(17, 17, 20, 0.58);
+  word-break: keep-all;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.7rem;
+}
+
+.site-footer-links a {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  border: 1px solid var(--app-line);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 0.35rem 0.72rem;
+  color: rgba(17, 17, 20, 0.74);
+  font-size: 0.74rem;
+  font-weight: 620;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.site-footer-links a:hover {
+  border-color: color-mix(in srgb, var(--app-pink) 34%, var(--app-line));
+  background: rgba(255, 79, 154, 0.08);
+  color: var(--app-pink-strong);
+}
+
+.site-footer-company {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1.15rem;
+}
+
+.site-footer-company-item {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.site-footer-company dt {
+  color: rgba(17, 17, 20, 0.42);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.site-footer-company dd {
+  margin: 0;
+  color: rgba(17, 17, 20, 0.72);
+  font-size: 0.78rem;
+  font-weight: 560;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.site-footer-company a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-footer-notice {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  border-left: 2px solid color-mix(in srgb, var(--app-pink) 36%, var(--app-line));
+  padding-left: 0.75rem;
+  color: rgba(17, 17, 20, 0.5);
+  font-size: 0.72rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.site-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  margin-top: 1.1rem;
+  color: rgba(17, 17, 20, 0.42);
+  font-size: 0.68rem;
+  font-weight: 620;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    padding-bottom: 2.5rem;
+  }
+
+  .site-footer-inner {
+    padding-top: 1.8rem;
+  }
+
+  .site-footer-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .site-footer-links {
+    justify-content: flex-end;
+  }
+
+  .site-footer-company {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem 1.5rem;
+  }
+
+  .site-footer-company-item:nth-child(4) {
+    grid-column: span 2;
+  }
+}
+
+
+/* Low-power mobile pass: keep the Ganji look, reduce paint/motion cost on older phones. */
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .gangi-season-banner {
+    transform: none !important;
+    box-shadow: 0 10px 22px -18px rgba(216, 27, 114, 0.5);
+    transition: background 160ms ease, color 160ms ease;
+    will-change: auto;
+  }
+
+  .gangi-season-banner::before,
+  .gangi-season-banner::after,
+  .gangi-banner-moon,
+  .gangi-character,
+  .gangi-loading-moon,
+  .gangi-loading-moon i,
+  .today-score-orb,
+  .today-score-ring,
+  .today-score-piece {
+    animation: none !important;
+  }
+
+  .gangi-season-banner::before {
+    display: none;
+  }
+
+  .gangi-season-banner::after {
+    opacity: 0.22;
+  }
+
+  .gangi-season-glow {
+    opacity: 0.24;
+  }
+
+  .gangi-banner-viewport {
+    cursor: default;
+  }
+
+  .gangi-free-action,
+  .gangi-category-tabs,
+  .gangi-service-card,
+  .gangi-list-link,
+  .gangi-mini-card,
+  .app-mobile-feature-card,
+  .app-mobile-menu-trigger,
+  .app-mobile-menu-close {
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04) !important;
+    transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease !important;
+  }
+
+  .gangi-service-card:active {
+    transform: none;
+  }
+
+  .app-top-header,
+  .app-mobile-menu-panel,
+  .gangi-loading-overlay,
+  .app-bottom-nav,
+  .app-bottom-dock,
+  .app-mobile-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gangi-banner-viewport {
+    scroll-behavior: auto;
+  }
+
+  .gangi-banner-dots button,
+  .gangi-service-card,
+  .gangi-free-action,
+  .gangi-category-tabs button {
+    transition: none !important;
+  }
+}
+
+@keyframes gangi-float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes today-score-orb-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes today-score-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes today-score-piece-burst {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(0.74);
+  }
+  24% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--score-piece-x)), calc(-50% + var(--score-piece-y))) scale(1);
+  }
+  46% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(0.48);
+  }
+  62% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(0.28);
+  }
+  82% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--score-piece-float-x)), calc(-50% + var(--score-piece-float-y))) scale(0.98);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translate(calc(-50% + var(--score-piece-float-x)), calc(-50% + var(--score-piece-float-y))) scale(0.94);
+  }
+}
+
+@keyframes today-score-piece-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--score-piece-rotate));
+  }
+  50% {
+    transform: translateY(-8px) rotate(var(--score-piece-rotate));
+  }
+}
+
+@keyframes gangi-banner-shine {
+  0%,
+  56% {
+    transform: translateX(-120%);
+  }
+  78%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes gangi-twinkle {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+
+@media (min-width: 768px) {
+  .gangi-home {
+    padding-top: 1rem;
+  }
+
+  .gangi-service-card:hover {
+    box-shadow: 0 12px 30px -16px rgba(216, 27, 114, 0.32);
+    transform: translateY(-1px);
+  }
+}

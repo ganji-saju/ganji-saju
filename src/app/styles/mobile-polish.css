@@ -1,0 +1,287 @@
+/* Screenshot simple mobile app polish */
+@media (max-width: 767px) {
+  .gangi-subpage-shell:has(.gangi-sub-header) .app-top-header {
+    display: none !important;
+  }
+}
+
+.app-brand-mini-logo {
+  position: relative;
+  border-radius: 9999px !important;
+  background: radial-gradient(circle at 35% 35%, #fff9df 0 32%, #ffd979 58%, #f2bf45 100%) !important;
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.72), 0 4px 12px rgba(17,17,20,0.12) !important;
+}
+
+.app-brand-mini-logo span,
+.app-brand-mini-logo strong {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.app-brand-mini-logo::after {
+  content: "";
+  position: absolute;
+  right: 0.14rem;
+  top: 0.18rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: -0.1rem 0.12rem 0 rgba(255, 255, 255, 0.9);
+}
+
+.app-top-context-note {
+  display: none !important;
+}
+
+.app-top-notification-button {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--app-ink);
+}
+
+.app-mobile-menu-trigger {
+  display: inline-flex !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  width: 2.25rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding-inline: 0 !important;
+  box-shadow: none !important;
+}
+
+.app-top-actions {
+  flex-shrink: 0;
+  gap: 0.35rem !important;
+  margin-left: auto;
+}
+
+.app-top-login {
+  padding-inline: 0.85rem !important;
+}
+
+.dalbit-market-shell,
+.dalbit-market-shell .app-shell-content {
+  overflow-x: hidden !important;
+}
+
+.dalbit-market-shell .app-shell-content {
+  padding-inline: 0 !important;
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .dalbit-market-shell,
+  .dalbit-market-shell .app-shell-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+  }
+
+  .dalbit-market-shell .gangi-home,
+  .gangi-subpage {
+    box-sizing: border-box !important;
+    width: min(100%, 30rem) !important;
+    max-width: 30rem !important;
+    margin-inline: auto !important;
+  }
+
+  .gangi-subpage.saju-intake-page,
+  .gangi-login-subpage {
+    width: min(100%, 30rem) !important;
+    max-width: 30rem !important;
+    margin-inline: auto !important;
+  }
+
+  .app-top-header-inner,
+  [data-app-layout="horizontal"] .app-top-header-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: max(0.75rem, env(safe-area-inset-left)) max(0.75rem, env(safe-area-inset-right)) !important;
+  }
+
+  .app-top-header-main {
+    position: relative !important;
+  }
+
+  .app-top-header-main .app-top-brand {
+    max-width: calc(100vw - 10.25rem) !important;
+    padding-right: 0 !important;
+  }
+
+  .app-top-actions,
+  .app-top-header-main .app-top-actions {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    display: flex !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    margin-left: auto !important;
+    transform: none !important;
+  }
+
+  .app-top-header-main .app-top-login {
+    min-height: 2.35rem !important;
+    width: auto !important;
+    min-width: 3.25rem !important;
+    padding-inline: 0.72rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .app-top-header-main .app-top-notification-button {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  .app-top-header-main .app-top-login {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  .app-top-header-main .app-mobile-menu-trigger {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  .dalbit-market-shell .gangi-season-carousel {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-right: clamp(0.875rem, 4vw, 1.25rem) !important;
+  }
+
+  .dalbit-market-shell .gangi-free-actions,
+  .dalbit-market-shell .gangi-service-grid {
+    width: auto !important;
+    max-width: none !important;
+    padding-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    padding-right: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .dalbit-market-shell .gangi-category-tabs {
+    width: auto !important;
+    max-width: none !important;
+    padding: 0.35rem !important;
+    margin-left: clamp(0.875rem, 4vw, 1.25rem) !important;
+    margin-right: clamp(0.875rem, 4vw, 1.25rem) !important;
+  }
+}
+
+.today-concern-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.today-concern-card {
+  min-height: 8.8rem;
+  border: 1px solid var(--app-line);
+  border-radius: 1.15rem;
+  background: #ffffff;
+  padding: 1.25rem 1rem;
+  text-align: left;
+  box-shadow: 0 1px 0 rgba(17,17,20,0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.today-concern-card[data-active="true"] {
+  border-color: var(--app-pink-line);
+  box-shadow: 0 14px 30px rgba(216,27,114,0.1);
+}
+
+.today-concern-icon {
+  display: grid;
+  height: 3.2rem;
+  width: 3.2rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--app-pink-soft);
+  color: var(--app-pink);
+}
+
+.today-concern-card:nth-child(3) .today-concern-icon {
+  background: #fbf1df;
+  color: #d0902b;
+}
+
+.today-concern-card:nth-child(4) .today-concern-icon {
+  background: #e8f0f3;
+  color: #3e8395;
+}
+
+.today-concern-card strong {
+  display: block;
+  margin-top: 1.2rem;
+  color: var(--app-ink);
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.today-concern-card em {
+  display: block;
+  margin-top: 0.28rem;
+  color: rgba(17,17,20,0.58);
+  font-size: 0.86rem;
+  font-style: normal;
+  font-weight: 650;
+}
+
+/* Final typography softening: the app should feel clear, not over-bold. */
+.app-shell {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app-shell :where(h1, h2, h3, h4, strong, b, .font-black, .font-extrabold) {
+  letter-spacing: 0 !important;
+}
+
+.gangi-home :where(h1, h2, h3, strong, .gangi-banner-kicker, .gangi-banner-button, .gangi-card-tag),
+.gangi-subpage :where(h1, h2, h3, strong),
+.app-panel :where(h1, h2, h3, strong) {
+  font-weight: var(--app-type-title) !important;
+}
+
+.app-shell :where(.font-black) {
+  font-weight: var(--app-type-title) !important;
+}
+
+.app-shell :where(.font-extrabold) {
+  font-weight: var(--app-type-emphasis) !important;
+}
+
+.app-shell :where(.font-bold) {
+  font-weight: var(--app-type-emphasis) !important;
+}
+
+.gangi-home :where(p, small, em, span),
+.gangi-subpage :where(p, small, em, span) {
+  letter-spacing: 0 !important;
+}
+
+.today-concern-card strong,
+.gangi-vault-filter span,
+.gangi-vault-copy strong,
+.gangi-expert-chip strong {
+  font-weight: var(--app-type-emphasis) !important;
+}

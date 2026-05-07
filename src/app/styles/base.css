@@ -1,0 +1,194 @@
+@layer base {
+  @keyframes app-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes app-moon-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes app-star-twinkle {
+    0%,
+    100% {
+      opacity: 0.25;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.95;
+      transform: scale(1.25);
+    }
+  }
+
+  @keyframes moon-star-drift {
+    0%,
+    100% {
+      opacity: 0.28;
+      transform: translateY(0) scale(1);
+    }
+    40% {
+      opacity: 0.85;
+      transform: translateY(-5px) scale(1.06);
+    }
+    70% {
+      opacity: 0.42;
+      transform: translateY(4px) scale(0.96);
+    }
+  }
+
+  @keyframes moon-hero-glow-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 28px rgba(212, 176, 106, 0.45),
+        0 0 72px rgba(212, 176, 106, 0.22),
+        0 0 140px rgba(212, 176, 106, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.36);
+    }
+    50% {
+      box-shadow:
+        0 0 40px rgba(212, 176, 106, 0.65),
+        0 0 96px rgba(212, 176, 106, 0.32),
+        0 0 180px rgba(212, 176, 106, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  @keyframes moon-scroll-bob {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      opacity: 0.9;
+      transform: translateX(-50%) translateY(7px);
+    }
+  }
+
+  @keyframes moon-scroll-dot-drop {
+    0% {
+      opacity: 1;
+      top: 0.3rem;
+    }
+    80% {
+      opacity: 0;
+      top: 1.1rem;
+    }
+    100% {
+      opacity: 0;
+      top: 0.3rem;
+    }
+  }
+
+  @keyframes moon-bg-orb-breathe {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes moon-reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100%;
+    background-color: #ffffff;
+    color: var(--app-ink);
+    font-family: var(--font-body);
+    overscroll-behavior-y: contain;
+    text-rendering: optimizeLegibility;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+  }
+  html {
+    @apply font-sans;
+    min-height: 100%;
+    scroll-padding-top: var(--app-mobile-top-clearance);
+    scroll-padding-bottom: var(--app-mobile-dock-clearance);
+    line-break: strict;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, legend, summary) {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-break: strict;
+    text-wrap: pretty;
+  }
+
+  :where(h1, h2, h3) {
+    font-weight: var(--app-type-title);
+    letter-spacing: 0;
+    line-height: 1.28;
+  }
+
+  :where(h4, h5, h6, strong, b, summary) {
+    font-weight: var(--app-type-emphasis);
+    letter-spacing: 0;
+  }
+
+  :where(p, li, dt, dd, figcaption, label, legend) {
+    font-weight: var(--app-type-body);
+    letter-spacing: 0;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255, 79, 154, 0.06) 0%, transparent 28%),
+      radial-gradient(circle at 88% 10%, rgba(255, 79, 154, 0.05) 0%, transparent 20%),
+      radial-gradient(circle at 78% 72%, rgba(0, 0, 0, 0.025) 0%, transparent 26%);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      linear-gradient(135deg, transparent 0%, rgba(255, 79, 154, 0.018) 18%, transparent 34%),
+      linear-gradient(215deg, transparent 0%, rgba(0, 0, 0, 0.012) 16%, transparent 30%);
+    opacity: 0.6;
+    mix-blend-mode: normal;
+  }
+
+  ::selection {
+    background: rgba(255, 79, 154, 0.22);
+    color: var(--app-ink);
+  }
+}
