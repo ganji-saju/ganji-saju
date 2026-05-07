@@ -810,6 +810,8 @@ async function handleDialogue(request: DialogueAiRequest) {
     const error =
       result.fallbackReason === 'ai_not_configured'
         ? 'OpenAI 연결 설정이 완료되지 않았습니다.'
+        : result.fallbackReason === 'quota_exceeded'
+          ? 'OpenAI 계정의 사용량 또는 결제 한도가 초과되어 답변을 만들지 못했습니다.'
         : 'OpenAI 답변 연결에 실패했습니다. 잠시 후 다시 질문해 주세요.';
 
     console.error('[ai/dialogue] OpenAI generation did not complete', {

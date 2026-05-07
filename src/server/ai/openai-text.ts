@@ -3,6 +3,7 @@ export type AiGenerationSource = 'openai' | 'fallback';
 export type AiFallbackReason =
   | 'ai_not_configured'
   | 'empty_ai_response'
+  | 'quota_exceeded'
   | 'openai_error';
 
 export interface AiTextRequest {
@@ -95,10 +96,20 @@ export async function generateAiText(
       errorMessage: null,
     };
   } catch (error) {
+    const status = typeof error === 'object' && error !== null && 'status' in error
+      ? (error as { status?: unknown }).status
+      : null;
+    const errorMessage =
+      error instanceof Error ? error.message : 'OpenAI 요청에 실패했습니다.';
+    const fallbackReason =
+      status === 429 && /quota|billing|plan|한도/i.test(errorMessage)
+        ? 'quota_exceeded'
+        : 'openai_error';
+
     return fallbackResult(
       request,
-      'openai_error',
-      error instanceof Error ? error.message : 'OpenAI 요청에 실패했습니다.'
+      fallbackReason,
+      errorMessage
     );
   }
 }

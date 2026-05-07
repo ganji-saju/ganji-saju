@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { AiSourceBadge } from './ai-source-badge';
 
 type AiSource = 'openai' | 'fallback';
-type FallbackReason = 'ai_not_configured' | 'empty_ai_response' | 'openai_error';
+type FallbackReason = 'ai_not_configured' | 'empty_ai_response' | 'quota_exceeded' | 'openai_error';
 
 interface InterpretResponse {
   ok?: boolean;
@@ -65,6 +65,8 @@ function getFallbackReasonLabel(reason: FallbackReason | null, fromApi: boolean)
       return '정밀 해석 연결 전이라 기본 해석으로 표시 중입니다.';
     case 'empty_ai_response':
       return '정밀 해석 내용이 비어 있어 기본 해석으로 표시 중입니다.';
+    case 'quota_exceeded':
+      return 'OpenAI 사용량 또는 결제 한도가 초과되어 기본 해석으로 표시 중입니다.';
     case 'openai_error':
       return '정밀 해석을 불러오지 못해 기본 해석으로 안전하게 전환했습니다.';
     default:

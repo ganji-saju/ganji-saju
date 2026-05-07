@@ -15,7 +15,7 @@ import {
 } from '@/lib/dialogue-experts';
 
 type AiSource = 'openai' | 'fallback' | 'safe_redirect';
-type FallbackReason = 'ai_not_configured' | 'empty_ai_response' | 'openai_error';
+type FallbackReason = 'ai_not_configured' | 'empty_ai_response' | 'quota_exceeded' | 'openai_error';
 type ChatStatus = 'idle' | 'loading' | 'error';
 
 interface DialoguePresetOption {
