@@ -153,7 +153,7 @@ function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string, entry
 
     const params = new URLSearchParams({ paid: product, concern: 'general' });
     if (slug) params.set('sourceSessionId', slug);
-    return `/today-fortune/result?${params.toString()}`;
+    return `/today-fortune/detail?${params.toString()}`;
   }
   if (product === 'love-question') return '/compatibility/input?relationship=lover&paid=love-question';
   if (product === 'money-pattern') return '/saju/new?focus=wealth&paid=money-pattern';

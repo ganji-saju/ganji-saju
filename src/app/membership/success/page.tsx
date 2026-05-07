@@ -54,7 +54,7 @@ function buildTasteProductHref(
 
     const params = new URLSearchParams({ paid: product, concern: scope || 'general' });
     if (slug) params.set('sourceSessionId', slug);
-    return `/today-fortune/result?${params.toString()}`;
+    return `/today-fortune/detail?${params.toString()}`;
   }
 
   if (product === 'love-question') {

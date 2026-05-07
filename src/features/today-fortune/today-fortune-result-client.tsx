@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
@@ -11,15 +11,9 @@ import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippe
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
-import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-panel';
-import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
-import type {
-  ConcernId,
-  TodayFortuneFreeResult,
-  TodayFortunePremiumResult,
-} from '@/lib/today-fortune/types';
+import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
 
@@ -50,15 +44,6 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
   ],
 };
 
-interface TodayFortuneUnlockResponse {
-  ok?: boolean;
-  freeResult?: TodayFortuneFreeResult;
-  result?: TodayFortunePremiumResult;
-  error?: string;
-  remaining?: number;
-  access?: 'charged' | 'reused' | 'purchased';
-}
-
 function readStoredResult(sourceSessionId: string | undefined) {
   if (!sourceSessionId) return null;
 
@@ -72,34 +57,23 @@ function readStoredResult(sourceSessionId: string | undefined) {
   }
 }
 
-function writeStoredResult(result: TodayFortuneFreeResult) {
-  try {
-    window.sessionStorage.setItem(
-      `${TODAY_RESULT_STORAGE_PREFIX}${result.sourceSessionId}`,
-      JSON.stringify(result)
-    );
-  } catch {
-    // Storage can be unavailable in private browsing. The visible result still works.
-  }
+function buildTodayDetailHref(result: TodayFortuneFreeResult) {
+  const params = new URLSearchParams({
+    sourceSessionId: result.sourceSessionId,
+    concern: result.concernId,
+  });
+
+  return `/today-fortune/detail?${params.toString()}`;
 }
 
 export function TodayFortuneResultClient({
   sourceSessionId,
   concern,
-  paidProduct,
 }: {
   sourceSessionId?: string;
   concern?: string;
-  paidProduct?: string;
 }) {
-  const { counselorId } = usePreferredCounselor();
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
-  const [premiumResult, setPremiumResult] = useState<TodayFortunePremiumResult | null>(null);
-  const [unlocking, setUnlocking] = useState(false);
-  const [unlockError, setUnlockError] = useState<string | null>(null);
-  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
-  const [purchasedNotice, setPurchasedNotice] = useState<string | null>(null);
-  const paidOpenAttemptedRef = useRef(false);
   const concernId = normalizeConcernId(concern);
   const relatedLinks = useMemo(() => RELATED_LINKS[freeResult?.concernId ?? concernId], [concernId, freeResult]);
 
@@ -115,61 +89,10 @@ export function TodayFortuneResultClient({
     });
   }, [sourceSessionId]);
 
-  async function handleUnlock() {
+  function handleUnlock() {
     if (!freeResult) return;
-
-    setUnlocking(true);
-    setUnlockError(null);
-
-    try {
-      const response = await fetch('/api/today-fortune/unlock', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceSessionId: freeResult.sourceSessionId,
-          concernId: freeResult.concernId,
-          counselorId,
-        }),
-      });
-      const data = (await response.json().catch(() => null)) as TodayFortuneUnlockResponse | null;
-
-      if (response.status === 401) {
-        window.location.href = `/login?next=${encodeURIComponent(`/today-fortune/result?sourceSessionId=${freeResult.sourceSessionId}&concern=${freeResult.concernId}`)}`;
-        return;
-      }
-
-      if (!response.ok || !data?.ok || !data.result) {
-        setUnlockError(data?.error ?? '오늘 자세히 보기를 여는 중 오류가 있었습니다.');
-        setRemainingCredits(data?.remaining ?? null);
-        return;
-      }
-
-      if (data.freeResult) {
-        setFreeResult(data.freeResult);
-        writeStoredResult(data.freeResult);
-      }
-      setPremiumResult(data.result);
-      setRemainingCredits(data.remaining ?? null);
-      if (data.access === 'purchased') {
-        setPurchasedNotice('이미 구매한 오늘 자세히 보기를 다시 열었습니다. 코인은 차감하지 않았습니다.');
-      }
-      trackMoonlightEvent('premium_result_viewed', {
-        from: 'today-fortune-result',
-        concern: freeResult.concernId,
-        sourceSessionId: freeResult.sourceSessionId,
-      });
-    } catch {
-      setUnlockError('오늘 자세히 보기를 여는 중 네트워크 오류가 있었습니다.');
-    } finally {
-      setUnlocking(false);
-    }
+    window.location.href = buildTodayDetailHref(freeResult);
   }
-
-  useEffect(() => {
-    if (paidOpenAttemptedRef.current || paidProduct !== 'today-detail' || !freeResult) return;
-    paidOpenAttemptedRef.current = true;
-    void handleUnlock();
-  }, [freeResult, paidProduct]);
 
   return (
     <div className="gangi-subpage pb-8">
@@ -193,37 +116,24 @@ export function TodayFortuneResultClient({
           </section>
         ) : (
           <>
-            {purchasedNotice ? (
-              <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
-                {purchasedNotice}
-              </div>
-            ) : null}
             <TodayScoreReveal result={freeResult} />
             <TodayFortuneSummaryCard result={freeResult} />
             <TodayFortuneScoreGrid result={freeResult} />
             <OpportunityRiskCards result={freeResult} />
             <SajuReasonSnippet result={freeResult} />
 
-            {premiumResult ? (
-              <TodayPremiumPanel result={premiumResult} />
-            ) : (
-              <PremiumLockCard
-                copy={freeResult.nextAction.copy}
-                coinCost={freeResult.nextAction.coinCost}
-                onUnlock={handleUnlock}
-                loading={unlocking}
-                sourceSessionId={freeResult.sourceSessionId}
-                concernId={freeResult.concernId}
-                errorMessage={
-                  unlockError ||
-                  (remainingCredits !== null ? `현재 잔여 코인 ${remainingCredits}개` : null)
-                }
-              />
-            )}
+            <PremiumLockCard
+              copy={freeResult.nextAction.copy}
+              coinCost={freeResult.nextAction.coinCost}
+              onUnlock={handleUnlock}
+              loading={false}
+              sourceSessionId={freeResult.sourceSessionId}
+              concernId={freeResult.concernId}
+            />
 
             <section className="app-panel p-6">
               <FollowUpQuestionChips
-                questions={(premiumResult ?? freeResult).followUpQuestions}
+                questions={freeResult.followUpQuestions}
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
               />

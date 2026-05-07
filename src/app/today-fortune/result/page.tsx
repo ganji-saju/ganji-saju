@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { TodayFortuneResultClient } from '@/features/today-fortune/today-fortune-result-client';
 import { AppShell } from '@/shared/layout/app-shell';
@@ -16,12 +17,20 @@ export default async function TodayFortuneResultPage({
 }) {
   const { sourceSessionId, concern, paid } = await searchParams;
 
+  if (paid === 'today-detail' && sourceSessionId) {
+    const params = new URLSearchParams({
+      sourceSessionId,
+      concern: concern || 'general',
+      paid,
+    });
+    redirect(`/today-fortune/detail?${params.toString()}`);
+  }
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <TodayFortuneResultClient
         sourceSessionId={sourceSessionId}
         concern={concern}
-        paidProduct={paid}
       />
     </AppShell>
   );
