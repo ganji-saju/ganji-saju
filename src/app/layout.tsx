@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 
 const brandSans = Noto_Sans_KR({
@@ -75,6 +76,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
+        <SupabaseRecoveryRedirect />
         {children}
         <Analytics />
         <SpeedInsights />

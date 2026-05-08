@@ -39,6 +39,31 @@ async function waitForRecoverySession(supabase: ReturnType<typeof createClient>)
   return null;
 }
 
+function readRecoveryTokensFromHash() {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  const type = params.get('type');
+
+  if (type !== 'recovery' || !accessToken || !refreshToken) return null;
+
+  return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  };
+}
+
+function cleanResetPasswordUrl(next: string) {
+  if (typeof window === 'undefined') return;
+
+  const cleanedUrl = next === '/saju/new?autoProfile=1'
+    ? '/reset-password'
+    : `/reset-password?next=${encodeURIComponent(next)}`;
+  window.history.replaceState(null, '', cleanedUrl);
+}
+
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,7 +90,18 @@ function ResetPasswordContent() {
       setResetState('checking');
       setErrorMessage('');
 
-      if (code) {
+      const recoveryTokens = readRecoveryTokensFromHash();
+      if (recoveryTokens) {
+        const { error } = await supabase.auth.setSession(recoveryTokens);
+        if (error) {
+          if (!active) return;
+          setResetState('missing');
+          setErrorMessage(getResetError(error.message));
+          return;
+        }
+
+        cleanResetPasswordUrl(next);
+      } else if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           if (!active) return;
@@ -74,12 +110,7 @@ function ResetPasswordContent() {
           return;
         }
 
-        if (typeof window !== 'undefined') {
-          const cleanedUrl = next === '/saju/new?autoProfile=1'
-            ? '/reset-password'
-            : `/reset-password?next=${encodeURIComponent(next)}`;
-          window.history.replaceState(null, '', cleanedUrl);
-        }
+        cleanResetPasswordUrl(next);
       }
 
       const session = await waitForRecoverySession(supabase);
