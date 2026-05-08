@@ -52,6 +52,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
 
       <SavedReadingsList
         readings={dashboard.recentReadings}
+        purchasedResults={dashboard.purchasedResults}
         totalCount={dashboard.readingCount}
         visibleStartIndex={firstVisibleIndex || 1}
       />

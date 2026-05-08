@@ -98,12 +98,16 @@ test('createInterpretationPrompt sends personalization, fact, and evidence JSON 
 
   assert.match(prompt.instructions, /personalizationContext/);
   assert.match(prompt.instructions, /서로 다른 사주가 같은/);
-  assert.match(prompt.input, /\[사주 원국\]/);
+  assert.match(prompt.input, /===사주 원국===/);
+  assert.match(prompt.input, /일간:/);
   assert.match(prompt.input, /일주:/);
+  assert.match(prompt.input, /년주:/);
+  assert.match(prompt.input, /월주:/);
+  assert.match(prompt.input, /시주:/);
   assert.match(prompt.input, /오행:/);
   assert.match(prompt.input, /십성:/);
-  assert.match(prompt.input, /\[이 사주의 고유 특성\]/);
-  assert.match(prompt.input, /\[풀이 지시\]/);
+  assert.match(prompt.input, /===이 사주의 고유 특성===/);
+  assert.match(prompt.input, /===풀이 지시===/);
   assert.match(prompt.instructions, /factJson/);
   assert.match(prompt.input, /"personalizationContext"/);
   assert.match(prompt.input, /"dayGanziCode"/);

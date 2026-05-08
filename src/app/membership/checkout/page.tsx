@@ -19,20 +19,17 @@ import {
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
+import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
-  buildMonthlyCalendarScopeKey,
-  buildReadingProductScopeKey,
-  buildTodayDetailScopeKey,
-  getTasteProductEntitlement,
-} from '@/lib/product-entitlements';
-import { toSlug } from '@/lib/saju/pillars';
-import { resolveReading } from '@/lib/saju/readings';
+  buildPurchasedProductHref,
+  resolvePaymentProductScope,
+} from '@/lib/payments/product-scope';
 import {
   createClient,
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -118,51 +115,6 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
 };
 
-function parseYearMonthScope(scope?: string) {
-  const match = scope?.match(/^(\d{4})-(\d{2})$/);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
-
-  return { year, month };
-}
-
-async function resolveTasteScopeKey(product: TasteProductId, slug?: string, scope?: string) {
-  if (product === 'love-question' || product === 'money-pattern' || product === 'work-flow') return null;
-  if (!slug) return null;
-  if (product === 'today-detail') return buildTodayDetailScopeKey(slug);
-
-  const reading = await resolveReading(slug);
-  const readingKey = reading ? toSlug(reading.input) : slug;
-
-  if (product === 'monthly-calendar') {
-    const yearMonth = parseYearMonthScope(scope);
-    return yearMonth
-      ? buildMonthlyCalendarScopeKey(readingKey, yearMonth.year, yearMonth.month)
-      : buildReadingProductScopeKey(readingKey);
-  }
-
-  return buildReadingProductScopeKey(readingKey);
-}
-
-function buildAlreadyPurchasedHref(product: TasteProductId, slug?: string, entrySource?: string) {
-  if (product === 'today-detail') {
-    if (slug && entrySource?.startsWith('saju')) return buildSajuTodayDetailHref(slug);
-
-    const params = new URLSearchParams({ paid: product, concern: 'general' });
-    if (slug) params.set('sourceSessionId', slug);
-    return `/today-fortune/detail?${params.toString()}`;
-  }
-  if (product === 'love-question') return '/compatibility/input?relationship=lover&paid=love-question';
-  if (product === 'money-pattern') return '/saju/new?focus=wealth&paid=money-pattern';
-  if (product === 'work-flow') return '/saju/new?focus=career&paid=work-flow';
-  if (slug && product === 'monthly-calendar') return `/saju/${encodeURIComponent(slug)}/premium#fortune-calendar`;
-  if (slug && product === 'year-core') return `/saju/${encodeURIComponent(slug)}/premium#yearly-report`;
-  return '/membership';
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '결제',
@@ -185,22 +137,39 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     : selected.price;
   let alreadyPurchasedHref: string | null = null;
 
-  if (
-    selectedProduct &&
-    paymentPackage &&
-    isTasteProductPackage(paymentPackage) &&
-    hasSupabaseServerEnv &&
-    hasSupabaseServiceEnv
-  ) {
+  if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (user) {
-      const scopeKey = await resolveTasteScopeKey(selectedProduct, slug, scope);
-      const entitlement = await getTasteProductEntitlement(user.id, selectedProduct, scopeKey);
-      if (entitlement) alreadyPurchasedHref = buildAlreadyPurchasedHref(selectedProduct, slug, from);
+      const paymentScope = await resolvePaymentProductScope({ pkg: paymentPackage, slug, scope });
+      if (selectedProduct && isTasteProductPackage(paymentPackage)) {
+        const entitlement = await getTasteProductEntitlement(
+          user.id,
+          selectedProduct,
+          paymentScope?.scopeKey ?? null
+        );
+        if (entitlement) {
+          alreadyPurchasedHref = buildPurchasedProductHref(selectedProduct, slug, {
+            from,
+            scope,
+          });
+        }
+      } else if (paymentPackage.kind === 'lifetime_report' && paymentScope?.readingKey) {
+        const entitlement = await getLifetimeReportEntitlement(
+          user.id,
+          paymentScope.readingKey,
+          paymentScope.slug ? [paymentScope.slug] : []
+        );
+        if (entitlement) {
+          alreadyPurchasedHref = buildPurchasedProductHref('lifetime-report', slug, {
+            from,
+            scope,
+          });
+        }
+      }
     }
   }
 

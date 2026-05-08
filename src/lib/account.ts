@@ -7,6 +7,10 @@ import {
 import { getManagedSubscription } from '@/lib/subscription';
 import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { BirthInput, Stem } from '@/lib/saju/types';
+import {
+  listPaidReadingSnapshotsForUser,
+  type PaidReadingSnapshot,
+} from '@/lib/payments/paid-reading-snapshots';
 
 export interface AccountCredits {
   balance: number;
@@ -33,6 +37,16 @@ export interface AccountReading {
   dayPillarLabel: string | null;
 }
 
+export interface AccountPurchasedResult {
+  id: string;
+  title: string;
+  summary: string | null;
+  productId: string;
+  href: string;
+  createdAt: string;
+  occurredOn: string | null;
+}
+
 export interface AccountTransaction {
   id: string;
   amount: number;
@@ -51,6 +65,7 @@ export interface AccountDashboardData {
   subscription: AccountSubscription | null;
   readingCount: number;
   recentReadings: AccountReading[];
+  purchasedResults: AccountPurchasedResult[];
   recentTransactions: AccountTransaction[];
 }
 
@@ -68,6 +83,7 @@ function buildLocalPreviewDashboard(): AccountDashboardData {
     subscription: null,
     readingCount: 0,
     recentReadings: [],
+    purchasedResults: [],
     recentTransactions: [],
   };
 }
@@ -83,6 +99,33 @@ function getResponseErrorMessage(error: unknown) {
 function assertAccountQueryOk(error: unknown, label: string) {
   if (!error) return;
   throw new Error(`${label} 정보를 불러오지 못했습니다. ${getResponseErrorMessage(error)}`);
+}
+
+function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
+  const slug = snapshot.sourceSlug ?? snapshot.readingId;
+
+  if (snapshot.productId === 'today-detail') {
+    if (slug) return `/saju/${encodeURIComponent(slug)}/today-detail`;
+    return '/today-fortune';
+  }
+
+  if (snapshot.productId === 'monthly-calendar' && slug) {
+    return `/saju/${encodeURIComponent(slug)}/premium#fortune-calendar`;
+  }
+
+  if (snapshot.productId === 'year-core' && slug) {
+    return `/saju/${encodeURIComponent(slug)}/premium#yearly-report`;
+  }
+
+  if (snapshot.productId === 'lifetime-report' && slug) {
+    return `/saju/${encodeURIComponent(slug)}/premium`;
+  }
+
+  if (snapshot.productId === 'love-question') return '/compatibility/input';
+  if (snapshot.productId === 'money-pattern') return '/saju/new?topic=wealth';
+  if (snapshot.productId === 'work-flow') return '/saju/new?topic=career';
+
+  return '/my/results';
 }
 
 export async function requireAccount(redirectPath: string) {
@@ -111,7 +154,7 @@ export async function getAccountDashboardData(
   const readingOffset = Math.max(0, options.readingOffset ?? 0);
   const transactionLimit = options.transactionLimit ?? 6;
 
-  const [creditsResponse, subscription, readingCountResponse, readingsResponse, transactionsResponse] =
+  const [creditsResponse, subscription, readingCountResponse, readingsResponse, transactionsResponse, purchasedResults] =
     await Promise.all([
       supabase
         .from('user_credits')
@@ -136,6 +179,10 @@ export async function getAccountDashboardData(
         .neq('amount', 0)
         .order('created_at', { ascending: false })
         .limit(transactionLimit),
+      listPaidReadingSnapshotsForUser(user.id, {
+        limit: Math.max(readingLimit, 10),
+        offset: readingOffset,
+      }),
     ]);
 
   assertAccountQueryOk(creditsResponse.error, '코인');
@@ -191,6 +238,15 @@ export async function getAccountDashboardData(
         gender: reading.gender,
         createdAt: reading.created_at,
       })) ?? [],
+    purchasedResults: purchasedResults.map((snapshot) => ({
+      id: snapshot.id,
+      title: snapshot.title,
+      summary: snapshot.summary,
+      productId: snapshot.productId,
+      href: buildPurchasedResultHref(snapshot),
+      createdAt: snapshot.createdAt,
+      occurredOn: snapshot.occurredOn,
+    })),
     recentTransactions:
       transactionsResponse.data?.map((transaction) => ({
         id: transaction.id,

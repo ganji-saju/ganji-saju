@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   buildSajuInterpretationGrounding,
+  buildInterpretSajuDataSnapshot,
+  buildSajuDataCacheHash,
   buildSajuReport,
+  isSameInterpretSajuDataSnapshot,
+  normalizeInterpretSajuDataSnapshot,
   normalizeFocusTopic,
+  type InterpretSajuDataSnapshot,
 } from '@/domain/saju/report';
 import {
   normalizeMoonlightCounselor,
@@ -36,6 +41,9 @@ interface InterpretRequest {
   topic?: string;
   regenerate?: boolean;
   counselorId?: MoonlightCounselorId;
+  profileId?: string;
+  sajuData?: InterpretSajuDataSnapshot;
+  sajuDataHash?: string;
 }
 
 interface CachedInterpretationRow {
@@ -64,6 +72,9 @@ function parseInterpretRequest(payload: unknown): InterpretRequest | null {
     topic: readString(data, 'topic') || undefined,
     regenerate: data.regenerate === true,
     counselorId: normalizeMoonlightCounselor(data.counselorId) ?? undefined,
+    profileId: readString(data, 'profileId') || undefined,
+    sajuData: normalizeInterpretSajuDataSnapshot(data.sajuData) ?? undefined,
+    sajuDataHash: readString(data, 'sajuDataHash') || undefined,
   };
 }
 
@@ -146,6 +157,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const sajuDataSnapshot = buildInterpretSajuDataSnapshot(reading.input, reading.sajuData);
+  const sajuDataHash = buildSajuDataCacheHash(reading.input, reading.sajuData);
+
+  if (parsed.sajuDataHash && parsed.sajuDataHash !== sajuDataHash) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: '사주 계산 데이터가 현재 결과와 맞지 않습니다. 새로 풀이를 생성해 주세요.',
+        code: 'saju_data_hash_mismatch',
+        expectedSajuDataHash: sajuDataHash,
+      },
+      { status: 409 }
+    );
+  }
+
+  if (parsed.sajuData && !isSameInterpretSajuDataSnapshot(parsed.sajuData, sajuDataSnapshot)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: '사주 계산 데이터가 현재 결과와 맞지 않습니다. 새로 풀이를 생성해 주세요.',
+        code: 'saju_data_snapshot_mismatch',
+        expectedSajuDataHash: sajuDataHash,
+      },
+      { status: 409 }
+    );
+  }
+
   const topic = normalizeFocusTopic(parsed.topic);
   const cacheable = isReadingId(parsed.readingId);
   const storedCounselor =
@@ -170,6 +208,8 @@ export async function POST(req: NextRequest) {
         cacheable,
         source: cached.source,
         model: cached.model,
+        sajuDataHash,
+        sajuDataSnapshot,
         fallbackReason: cached.fallback_reason,
         errorMessage: cached.error_message,
         metadata: buildSajuReportRuntimeMetadata(reading.metadata, {
@@ -237,6 +277,8 @@ export async function POST(req: NextRequest) {
     cacheable,
     source,
     model: aiResult.model,
+    sajuDataHash,
+    sajuDataSnapshot,
     fallbackReason,
     errorMessage,
     metadata: buildSajuReportRuntimeMetadata(reading.metadata, {

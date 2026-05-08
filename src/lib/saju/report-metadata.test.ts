@@ -30,6 +30,8 @@ test('report metadata keeps normalized engine and rule-set versions around readi
   assert.equal(metadata.factSchemaVersion, grounding.factJson.schemaVersion);
   assert.equal(metadata.evidenceSchemaVersion, grounding.evidenceJson.schemaVersion);
   assert.equal(metadata.verification.kasiCompared, false);
+  assert.match(metadata.sajuDataHash ?? '', /^saju_/);
+  assert.match(metadata.readingIdentityHash ?? '', /^reading_/);
 });
 
 test('report metadata can be extended with prompt and model information for UI responses', () => {

@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GangiCharacter, type GangiZodiacKey } from '@/components/gangi/gangi-ui';
-import type { AccountReading } from '@/lib/account';
+import type { AccountPurchasedResult, AccountReading } from '@/lib/account';
 
 interface SavedReadingsListProps {
   readings: AccountReading[];
+  purchasedResults?: AccountPurchasedResult[];
   totalCount: number;
   visibleStartIndex?: number;
 }
@@ -66,6 +67,7 @@ function getDisplayZodiac(reading: AccountReading): GangiZodiacKey {
 
 export default function SavedReadingsList({
   readings,
+  purchasedResults = [],
   totalCount,
   visibleStartIndex = 1,
 }: SavedReadingsListProps) {
@@ -74,9 +76,12 @@ export default function SavedReadingsList({
   const [count, setCount] = useState(totalCount);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const totalVisibleCount = count + purchasedResults.length;
   const visibleRangeLabel =
     items.length > 0
       ? `${visibleStartIndex}~${visibleStartIndex + items.length - 1}번째`
+      : purchasedResults.length > 0
+        ? `결제 풀이 ${purchasedResults.length}개`
       : '현재 페이지 비어 있음';
 
   async function deleteReading(id: string) {
@@ -115,7 +120,7 @@ export default function SavedReadingsList({
   return (
     <div className="space-y-4">
       <div className="gangi-vault-summary">
-        <span>전체 {count}개</span>
+        <span>전체 {totalVisibleCount}개</span>
         <strong>{visibleRangeLabel}</strong>
       </div>
 
@@ -125,7 +130,7 @@ export default function SavedReadingsList({
         </div>
       ) : null}
 
-      {items.length === 0 ? (
+      {items.length === 0 && purchasedResults.length === 0 ? (
         <div className="rounded-[1.6rem] border border-dashed border-[var(--app-line)] bg-white p-7 text-sm leading-7 text-[var(--app-copy-muted)]">
           {count > 0
             ? '현재 페이지의 결과를 모두 삭제했습니다.'
@@ -133,6 +138,20 @@ export default function SavedReadingsList({
         </div>
       ) : (
         <div className="gangi-vault-list">
+          {purchasedResults.map((item) => (
+            <article key={item.id} className="gangi-vault-item">
+              <Link href={item.href} className="gangi-vault-link">
+                <GangiCharacter zodiac="rabbit" />
+                <span className="gangi-vault-copy">
+                  <em>결제 풀이 · {item.occurredOn ?? formatShortCreatedAt(item.createdAt)}</em>
+                  <strong>{item.title}</strong>
+                  <small>{item.summary ?? '구매 당시 풀이를 다시 엽니다.'}</small>
+                </span>
+                <span className="gangi-vault-arrow" aria-hidden="true">›</span>
+              </Link>
+            </article>
+          ))}
+
           {items.map((reading) => (
             <article key={reading.id} className="gangi-vault-item">
               <Link

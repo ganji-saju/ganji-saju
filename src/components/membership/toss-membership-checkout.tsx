@@ -24,6 +24,15 @@ interface Props {
   entrySource?: string;
 }
 
+interface PaymentPrepareResponse {
+  ok?: boolean;
+  authenticated?: boolean;
+  alreadyPurchased?: boolean;
+  redirectHref?: string;
+  loginHref?: string;
+  error?: string;
+}
+
 export default function TossMembershipCheckout({
   packageId,
   plan,
@@ -87,6 +96,37 @@ export default function TossMembershipCheckout({
     setErrorMessage('');
 
     try {
+      const prepareResponse = await fetch('/api/payments/prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId,
+          product,
+          plan,
+          slug,
+          scope,
+          from: entrySource,
+        }),
+      });
+      const prepare = (await prepareResponse
+        .json()
+        .catch(() => null)) as PaymentPrepareResponse | null;
+
+      if (prepareResponse.status === 401 || prepare?.authenticated === false) {
+        location.href = prepare?.loginHref ?? `/login?next=${encodeURIComponent(checkoutPath)}`;
+        return;
+      }
+
+      if (!prepareResponse.ok || prepare?.error) {
+        setErrorMessage(prepare?.error ?? '결제 준비 중 문제가 생겼습니다.');
+        return;
+      }
+
+      if (prepare?.alreadyPurchased && prepare.redirectHref) {
+        location.href = prepare.redirectHref;
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
       const orderId = `membership_${packageId}_${paymentMethod.toLowerCase()}_${Date.now()}`;

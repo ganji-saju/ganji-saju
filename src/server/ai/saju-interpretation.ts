@@ -9,7 +9,7 @@ import {
 } from '@/lib/counselors';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
-export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v6';
+export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v7';
 
 export interface SajuAiInterpretation {
   headline: string;
@@ -191,6 +191,13 @@ function buildStrengthLine(grounding: SajuInterpretationGrounding) {
   return `${strength.일간강약 ?? '미산정'} (${strength.월령득기 ? '월령 득기' : '월령 보통'})`;
 }
 
+function formatPromptPillar(
+  pillar: SajuInterpretationGrounding['factJson']['pillars']['year'] | null
+) {
+  if (!pillar) return '미상';
+  return `${pillar.ganzi} (${pillar.stem}${pillar.branch})`;
+}
+
 function buildElementImbalanceLines(grounding: SajuInterpretationGrounding) {
   const ratio = grounding.personalizationContext.fiveElementRatio;
 
@@ -234,12 +241,16 @@ function buildStructuredInterpretationInput(
   };
 
   return [
-    '[사주 원국]',
+    '===사주 원국===',
+    `일간: ${grounding.factJson.dayMaster.stem}${grounding.factJson.dayMaster.element ? ` · ${grounding.factJson.dayMaster.element}` : ''}`,
+    `년주: ${formatPromptPillar(grounding.factJson.pillars.year)}`,
+    `월주: ${formatPromptPillar(grounding.factJson.pillars.month)}`,
     `일주: ${context.dayGanziHanja} (${context.dayGanziCode}) — ${
       context.sixtyGapja
         ? `${context.sixtyGapja.title}. ${context.sixtyGapja.core}`
         : '60갑자 특성 데이터 없음'
     }`,
+    `시주: ${formatPromptPillar(grounding.factJson.pillars.hour)}`,
     `오행: ${buildFiveElementLine(grounding)}`,
     `십성: ${buildTenGodLine(grounding)}`,
     `일간 강약: ${buildStrengthLine(grounding)}`,
@@ -248,7 +259,7 @@ function buildStructuredInterpretationInput(
       context.currentLuck.진행년수 !== null ? ` · 진행 ${context.currentLuck.진행년수}년차` : ''
     }`,
     '',
-    '[이 사주의 고유 특성]',
+    '===이 사주의 고유 특성===',
     ...compactStrings([
       context.sixtyGapja ? `- ${context.dayGanziCode}일주 특성: ${context.sixtyGapja.core}` : null,
       context.sixtyGapja?.strengths[0] ? `- 강점 후보: ${context.sixtyGapja.strengths.join(' / ')}` : null,
@@ -257,10 +268,11 @@ function buildStructuredInterpretationInput(
       ...buildElementImbalanceLines(grounding),
     ]),
     '',
-    '[풀이 지시]',
+    '===풀이 지시===',
     '- 이 사람만의 구체적 특성을 중심으로 풀이하라.',
+    '- 위 사주 원국의 수치와 다른 판단을 새로 만들지 말 것.',
+    '- 오행 비율, 십성 분포, 일간 강약, 용신/희신/기신 중 최소 3가지를 내부 근거로 사용하라.',
     '- 누구에게나 맞는 일반적인 사주 해설, 평균적인 위로, 반복 문장을 쓰지 말 것.',
-    '- 일주, 오행 불균형, 십성 분포, 강약, 용신/희신/기신, 현재 대운 중 최소 3개 축을 내부적으로 반영하라.',
     '- 전문용어는 본문에 직접 노출하지 말고 생활 장면으로 번역하라.',
     '- “오늘/이 주제에서 실제로 어떻게 나타나는가”를 구체적인 선택, 말투, 행동으로 바꿔라.',
     '- 출력은 JSON만 반환하라. headline, summary, insights 각각에 서로 다른 개인화 근거가 드러나야 한다.',
@@ -324,7 +336,7 @@ export function createInterpretationPrompt(
     instructions: [
       '당신은 한국 운세 서비스를 쓰는 생활 조언 에디터입니다.',
       '제공된 personalizationContext, factJson, evidenceJson 안에서만 해석하고, 없는 신살·격국·고전 출처를 새로 만들지 않습니다.',
-      '개인화의 1순위 근거는 [사주 원국]과 [이 사주의 고유 특성]입니다. dayGanziCode, sixtyGapja, fiveElementRatio, tenGodDistribution, strengthJudgement, yongsinKiyshin, currentLuck을 반드시 참고해 사람마다 다른 결론을 만듭니다.',
+      '개인화의 1순위 근거는 ===사주 원국===과 ===이 사주의 고유 특성===입니다. dayGanziCode, sixtyGapja, fiveElementRatio, tenGodDistribution, strengthJudgement, yongsinKiyshin, currentLuck을 반드시 참고해 사람마다 다른 결론을 만듭니다.',
       '사용자는 명리 공부가 아니라 오늘 내 삶에 필요한 말을 보러 왔습니다. 결론, 마음가짐, 오늘 할 행동을 먼저 씁니다.',
       'personalizationContext, factJson, evidenceJson, 격국, 용신, 대운, 세운, 월운 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 말로만 바꿉니다.',
       '점수나 계산값을 그대로 반복 나열하지 말고, 지금 어떤 선택을 하면 덜 흔들리는지 생활 언어로 씁니다.',

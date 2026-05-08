@@ -2,6 +2,12 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
+import {
+  getProductEntitlement,
+  grantProductEntitlement,
+  type ProductEntitlement,
+} from '@/lib/product-entitlements';
+import { buildLifetimeReportScopeKey } from '@/lib/payments/product-scope';
 
 export interface LifetimeReportEntitlement {
   id: string;
@@ -55,6 +61,21 @@ function mapEntitlement(row: EntitlementTransactionRow): LifetimeReportEntitleme
   };
 }
 
+function mapProductEntitlement(
+  entitlement: ProductEntitlement,
+  readingKey: string
+): LifetimeReportEntitlement {
+  return {
+    id: entitlement.id,
+    userId: entitlement.userId,
+    readingKey,
+    orderId: entitlement.orderId,
+    paymentKey: entitlement.paymentKey,
+    amount: entitlement.amount,
+    createdAt: entitlement.createdAt,
+  };
+}
+
 export async function getLifetimeReportEntitlement(
   userId: string | null | undefined,
   readingKey: string,
@@ -63,6 +84,16 @@ export async function getLifetimeReportEntitlement(
   if (!userId || !hasSupabaseServiceEnv) return null;
 
   const acceptedKeys = normalizeEntitlementReadingKeys(readingKey, legacyKeys);
+
+  for (const acceptedKey of acceptedKeys) {
+    const productEntitlement = await getProductEntitlement(
+      userId,
+      'lifetime-report',
+      buildLifetimeReportScopeKey(acceptedKey)
+    );
+    if (productEntitlement) return mapProductEntitlement(productEntitlement, acceptedKey);
+  }
+
   const service = await createServiceClient();
   const { data, error } = await service
     .from('credit_transactions')
@@ -87,20 +118,34 @@ export async function getLifetimeReportEntitlement(
   return matched ? mapEntitlement(matched) : null;
 }
 
-export async function grantLifetimeReportEntitlement(
+async function recordLegacyLifetimeReportTransaction(
   userId: string,
   readingKey: string,
   options: {
     orderId?: string | null;
     paymentKey?: string | null;
     amount?: number | null;
-  } = {},
-  legacyKeys: Array<string | null | undefined> = []
+  }
 ) {
-  const existing = await getLifetimeReportEntitlement(userId, readingKey, legacyKeys);
-  if (existing) return existing;
-
   const service = await createServiceClient();
+
+  if (options.paymentKey) {
+    const { data, error } = await service
+      .from('credit_transactions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('type', 'purchase')
+      .eq('feature', 'lifetime_report')
+      .contains('metadata', {
+        kind: 'lifetime_report',
+        paymentKey: options.paymentKey,
+      })
+      .limit(1);
+
+    if (error) throw new Error(error.message);
+    if (data && data.length > 0) return null;
+  }
+
   const { data, error } = await service
     .from('credit_transactions')
     .insert({
@@ -124,4 +169,49 @@ export async function grantLifetimeReportEntitlement(
   }
 
   return mapEntitlement(data as EntitlementTransactionRow);
+}
+
+export async function grantLifetimeReportEntitlement(
+  userId: string,
+  readingKey: string,
+  options: {
+    orderId?: string | null;
+    paymentKey?: string | null;
+    amount?: number | null;
+  } = {},
+  legacyKeys: Array<string | null | undefined> = []
+) {
+  const existing = await getLifetimeReportEntitlement(userId, readingKey, legacyKeys);
+  if (existing) return existing;
+
+  try {
+    const productEntitlement = await grantProductEntitlement(userId, 'lifetime-report', {
+      scopeKey: buildLifetimeReportScopeKey(readingKey),
+      orderId: options.orderId ?? null,
+      paymentKey: options.paymentKey ?? null,
+      amount: options.amount ?? null,
+      packageId: 'lifetime_report',
+    });
+
+    await recordLegacyLifetimeReportTransaction(userId, readingKey, options).catch((error) => {
+      console.warn('lifetime report entitlement audit write failed', error);
+    });
+
+    return mapProductEntitlement(productEntitlement, readingKey);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (
+      message.includes('relation "product_entitlements" does not exist') ||
+      message.includes('product_entitlements_product_id_check') ||
+      message.includes('check constraint')
+    ) {
+      const legacy = await recordLegacyLifetimeReportTransaction(userId, readingKey, options);
+      if (legacy) return legacy;
+    }
+    throw error;
+  }
+
+  const fallback = await getLifetimeReportEntitlement(userId, readingKey, legacyKeys);
+  if (!fallback) throw new Error('깊은 사주풀이 권한을 저장하지 못했습니다.');
+  return fallback;
 }

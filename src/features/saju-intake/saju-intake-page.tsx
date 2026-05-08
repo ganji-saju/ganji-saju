@@ -203,6 +203,7 @@ function buildPostSubmitHref(
       from: 'saju-new',
     });
     if (product === 'monthly-calendar') params.set('scope', getCurrentYearMonthScope());
+    if (product === 'year-core') params.set('scope', String(new Date().getFullYear()));
     return `/membership/checkout?${params.toString()}`;
   }
 

@@ -5,6 +5,10 @@ import type {
   SajuPendingSection,
   SajuComputationSource,
 } from '@/domain/saju/engine/saju-data-v1';
+import {
+  buildReadingIdentityHash,
+  buildSajuDataCacheHash,
+} from '@/domain/saju/report/interpret-api-contract';
 import type { SajuInterpretationGrounding } from '@/domain/saju/report';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import type { BirthInput } from '@/lib/saju/types';
@@ -61,6 +65,8 @@ export interface SajuPersistedReadingMetadata extends ReportMetadata {
     kasiCompared: boolean;
     kasiIssueCount: number;
   };
+  sajuDataHash?: string;
+  readingIdentityHash?: string;
 }
 
 export interface SajuReportRuntimeMetadata extends SajuPersistedReadingMetadata {
@@ -107,7 +113,10 @@ export function buildPersistedSajuReadingMetadata(
   input: BirthInput,
   sajuData: SajuDataV1,
   grounding: SajuInterpretationGrounding,
-  kasiComparison: KasiSingleInputComparison | null
+  kasiComparison: KasiSingleInputComparison | null,
+  options: {
+    userId?: string | null;
+  } = {}
 ): SajuPersistedReadingMetadata {
   return {
     schemaVersion: SAJU_READING_METADATA_V1,
@@ -130,6 +139,8 @@ export function buildPersistedSajuReadingMetadata(
       kasiCompared: kasiComparison !== null,
       kasiIssueCount: kasiComparison?.issues.length ?? 0,
     },
+    sajuDataHash: buildSajuDataCacheHash(input, sajuData),
+    readingIdentityHash: buildReadingIdentityHash(input, sajuData, options.userId),
   };
 }
 

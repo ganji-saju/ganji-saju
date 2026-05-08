@@ -3,11 +3,24 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import type { TasteProductId } from '@/lib/payments/catalog';
+import {
+  buildMonthlyCalendarScopeKey,
+  buildReadingProductScopeKey,
+  buildTodayDetailScopeKey,
+  normalizeEntitlementScopeKey,
+  type PaidProductId,
+} from '@/lib/payments/product-scope';
 
-export interface TasteProductEntitlement {
+export {
+  buildMonthlyCalendarScopeKey,
+  buildReadingProductScopeKey,
+  buildTodayDetailScopeKey,
+};
+
+export interface ProductEntitlement {
   id: string;
   userId: string;
-  productId: TasteProductId;
+  productId: PaidProductId;
   scopeKey: string | null;
   orderId: string | null;
   paymentKey: string | null;
@@ -15,6 +28,10 @@ export interface TasteProductEntitlement {
   packageId: string | null;
   createdAt: string;
 }
+
+export type TasteProductEntitlement = ProductEntitlement & {
+  productId: TasteProductId;
+};
 
 interface EntitlementTransactionRow {
   id: string;
@@ -27,7 +44,7 @@ interface EntitlementTransactionRow {
 interface ProductEntitlementRow {
   id: string;
   user_id: string;
-  product_id: TasteProductId;
+  product_id: PaidProductId;
   scope_key: string;
   order_id: string | null;
   payment_key: string | null;
@@ -36,24 +53,7 @@ interface ProductEntitlementRow {
   created_at: string;
 }
 
-export function buildReadingProductScopeKey(readingKey: string) {
-  return `reading:${readingKey}`;
-}
-
-export function buildTodayDetailScopeKey(sourceSessionId: string) {
-  return `today:${sourceSessionId}`;
-}
-
-export function buildMonthlyCalendarScopeKey(readingKey: string, year: number, month: number) {
-  return `calendar:${readingKey}:${year}-${String(month).padStart(2, '0')}`;
-}
-
-function normalizeScopeKey(scopeKey: string | null | undefined) {
-  const trimmed = scopeKey?.trim() ?? '';
-  return trimmed || 'global';
-}
-
-function mapProductTableEntitlement(row: ProductEntitlementRow): TasteProductEntitlement {
+function mapProductTableEntitlement(row: ProductEntitlementRow): ProductEntitlement {
   return {
     id: row.id,
     userId: row.user_id,
@@ -90,11 +90,11 @@ function matchesProductScope(metadata: Record<string, unknown>, scopeKey: string
 
 async function getProductTableEntitlement(
   userId: string,
-  productId: TasteProductId,
+  productId: PaidProductId,
   scopeKey: string | null
 ) {
   const service = await createServiceClient();
-  const normalizedScopeKey = normalizeScopeKey(scopeKey);
+  const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
   let query = service
     .from('product_entitlements')
     .select('id, user_id, product_id, scope_key, order_id, payment_key, package_id, amount, created_at')
@@ -116,6 +116,15 @@ async function getProductTableEntitlement(
 
   const row = (data as ProductEntitlementRow[] | null)?.[0] ?? null;
   return row ? mapProductTableEntitlement(row) : null;
+}
+
+export async function getProductEntitlement(
+  userId: string | null | undefined,
+  productId: PaidProductId,
+  scopeKey: string | null = null
+): Promise<ProductEntitlement | null> {
+  if (!userId || !hasSupabaseServiceEnv) return null;
+  return getProductTableEntitlement(userId, productId, scopeKey);
 }
 
 async function getLegacyTasteProductEntitlement(
@@ -155,8 +164,8 @@ export async function getTasteProductEntitlement(
 ): Promise<TasteProductEntitlement | null> {
   if (!userId || !hasSupabaseServiceEnv) return null;
 
-  const productTableEntitlement = await getProductTableEntitlement(userId, productId, scopeKey);
-  if (productTableEntitlement) return productTableEntitlement;
+  const productTableEntitlement = await getProductEntitlement(userId, productId, scopeKey);
+  if (productTableEntitlement) return productTableEntitlement as TasteProductEntitlement;
 
   return getLegacyTasteProductEntitlement(userId, productId, scopeKey);
 }
@@ -257,9 +266,9 @@ async function grantLegacyTasteProductEntitlement(
   return mapLegacyEntitlement(data as EntitlementTransactionRow);
 }
 
-export async function grantTasteProductEntitlement(
+export async function grantProductEntitlement(
   userId: string,
-  productId: TasteProductId,
+  productId: PaidProductId,
   options: {
     scopeKey?: string | null;
     orderId?: string | null;
@@ -269,7 +278,7 @@ export async function grantTasteProductEntitlement(
   } = {}
 ) {
   const scopeKey = options.scopeKey ?? null;
-  const normalizedScopeKey = normalizeScopeKey(scopeKey);
+  const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
   const existing = await getProductTableEntitlement(userId, productId, scopeKey);
   if (existing) return existing;
 
@@ -285,7 +294,7 @@ export async function grantTasteProductEntitlement(
       package_id: options.packageId ?? null,
       amount: options.amount ?? null,
       metadata: {
-        kind: 'taste_product',
+        kind: productId === 'lifetime-report' ? 'lifetime_report' : 'taste_product',
         productId,
         scopeKey: normalizedScopeKey,
         orderId: options.orderId ?? null,
@@ -302,17 +311,43 @@ export async function grantTasteProductEntitlement(
     if (duplicate) return duplicate;
   }
 
-  if (error?.code === '42P01') {
-    return grantLegacyTasteProductEntitlement(userId, productId, scopeKey, options);
+  if (error || !data) {
+    throw new Error(error?.message ?? '상품 이용권을 저장하지 못했습니다.');
   }
 
-  if (error || !data) {
-    throw new Error(error?.message ?? '소액 상품 이용권을 저장하지 못했습니다.');
+  return mapProductTableEntitlement(data as ProductEntitlementRow);
+}
+
+export async function grantTasteProductEntitlement(
+  userId: string,
+  productId: TasteProductId,
+  options: {
+    scopeKey?: string | null;
+    orderId?: string | null;
+    paymentKey?: string | null;
+    amount?: number | null;
+    packageId?: string | null;
+  } = {}
+) {
+  const scopeKey = options.scopeKey ?? null;
+
+  let entitlement: ProductEntitlement;
+  try {
+    entitlement = await grantProductEntitlement(userId, productId, options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (
+      message.includes('relation "product_entitlements" does not exist') ||
+      message.includes('product_entitlements_product_id_check')
+    ) {
+      return grantLegacyTasteProductEntitlement(userId, productId, scopeKey, options);
+    }
+    throw error;
   }
 
   await recordLegacyTasteProductTransaction(userId, productId, scopeKey, options).catch((error) => {
     console.warn('taste product entitlement audit write failed', error);
   });
 
-  return mapProductTableEntitlement(data as ProductEntitlementRow);
+  return entitlement as TasteProductEntitlement;
 }

@@ -1,51 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { isSubscriptionPackage, isTasteProductPackage, type TasteProductId } from '@/lib/payments/catalog';
+import { isSubscriptionPackage, isTasteProductPackage } from '@/lib/payments/catalog';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
 import { addCredits, getCredits } from '@/lib/credits/deduct';
 import { grantLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
-  buildMonthlyCalendarScopeKey,
-  buildReadingProductScopeKey,
-  buildTodayDetailScopeKey,
+  getProductEntitlement,
   grantTasteProductEntitlement,
 } from '@/lib/product-entitlements';
-import { toSlug } from '@/lib/saju/pillars';
-import { resolveReading } from '@/lib/saju/readings';
+import {
+  resolvePaymentProductScope,
+  type PaymentProductScope,
+} from '@/lib/payments/product-scope';
+import { upsertPaidReadingSnapshot } from '@/lib/payments/paid-reading-snapshots';
+import { ensureReadingOwnedByUser } from '@/lib/saju/readings';
 import { activateMembershipSubscription } from '@/lib/subscription';
 
-function parseYearMonthScope(scope: string | null) {
-  const match = scope?.match(/^(\d{4})-(\d{2})$/);
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
-
-  return { year, month };
-}
-
-async function resolveTasteProductScope(
-  productId: TasteProductId,
-  slug: string | null,
-  scope: string | null
-) {
-  if (productId === 'love-question' || productId === 'money-pattern' || productId === 'work-flow') return null;
-  if (!slug) return null;
-  if (productId === 'today-detail') return buildTodayDetailScopeKey(slug);
-
-  const reading = await resolveReading(slug);
-  const readingKey = reading ? toSlug(reading.input) : slug;
-
-  if (productId === 'monthly-calendar') {
-    const yearMonth = parseYearMonthScope(scope);
-    return yearMonth
-      ? buildMonthlyCalendarScopeKey(readingKey, yearMonth.year, yearMonth.month)
-      : buildReadingProductScopeKey(readingKey);
-  }
-
-  return buildReadingProductScopeKey(readingKey);
+async function attachOwnedReading(
+  paymentScope: PaymentProductScope | null,
+  userId: string
+): Promise<PaymentProductScope | null> {
+  if (!paymentScope?.reading) return paymentScope;
+  const ownedReading = await ensureReadingOwnedByUser(paymentScope.reading, userId);
+  return {
+    ...paymentScope,
+    reading: ownedReading,
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -71,6 +52,10 @@ export async function POST(req: NextRequest) {
   if (payment instanceof NextResponse) return payment;
 
   let totalCredits: number | null = null;
+  const paymentScope = await attachOwnedReading(
+    await resolvePaymentProductScope({ pkg, slug, scope }),
+    user.id
+  );
 
   if (pkg.credits > 0) {
     await addCredits(user.id, pkg.credits, pkg.kind === 'subscription' ? 'subscription' : 'purchase', {
@@ -89,37 +74,40 @@ export async function POST(req: NextRequest) {
       })
     : null;
 
-  let lifetimeReadingKey: string | null = null;
-  let lifetimeLegacyKeys: string[] = [];
-
-  if (pkg.kind === 'lifetime_report' && slug) {
-    const reading = await resolveReading(slug);
-    lifetimeReadingKey = reading ? toSlug(reading.input) : slug;
-
-    if (reading && slug !== lifetimeReadingKey) {
-      lifetimeLegacyKeys = [slug];
-    }
-  }
-
   const entitlement =
-    pkg.kind === 'lifetime_report' && lifetimeReadingKey
-      ? await grantLifetimeReportEntitlement(user.id, lifetimeReadingKey, {
+    pkg.kind === 'lifetime_report' && paymentScope?.readingKey
+      ? await grantLifetimeReportEntitlement(user.id, paymentScope.readingKey, {
           orderId,
           paymentKey,
           amount: parsedAmount,
-        }, lifetimeLegacyKeys)
+        }, paymentScope.slug ? [paymentScope.slug] : [])
       : null;
 
   const productEntitlement =
     isTasteProductPackage(pkg)
       ? await grantTasteProductEntitlement(user.id, pkg.tasteProductId, {
-          scopeKey: await resolveTasteProductScope(pkg.tasteProductId, slug, scope),
+          scopeKey: paymentScope?.scopeKey ?? null,
           orderId,
           paymentKey,
           amount: parsedAmount,
           packageId: pkg.id,
         })
       : null;
+
+  const lifetimeProductEntitlement =
+    pkg.kind === 'lifetime_report' && paymentScope?.scopeKey
+      ? await getProductEntitlement(user.id, 'lifetime-report', paymentScope.scopeKey)
+      : null;
+
+  if (paymentScope && (productEntitlement || lifetimeProductEntitlement)) {
+    await upsertPaidReadingSnapshot({
+      userId: user.id,
+      productId: paymentScope.productId,
+      entitlement: productEntitlement ?? lifetimeProductEntitlement,
+      scope: paymentScope,
+      sourceSlug: slug,
+    });
+  }
 
   return NextResponse.json({
     success: true,

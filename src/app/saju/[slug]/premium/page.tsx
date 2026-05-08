@@ -17,10 +17,8 @@ import {
 import { toSlug } from '@/lib/saju/pillars';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import {
-  buildReadingProductScopeKey,
-  getTasteProductEntitlement,
-} from '@/lib/product-entitlements';
+import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import {
@@ -49,7 +47,7 @@ function getTasteProductHref(productSlug: string, encodedSlug: string, targetYea
   }
 
   if (productSlug === 'year-core') {
-    return `/membership/checkout?product=year-core&slug=${encodedSlug}&from=saju-premium`;
+    return `/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium`;
   }
 
   if (productSlug === 'love-question') {
@@ -156,6 +154,7 @@ export default async function SajuPremiumPage({ params }: Props) {
   const { sajuData } = reading;
   const readingKey = toSlug(reading.input);
   const encodedSlug = encodeURIComponent(slug);
+  const targetYear = new Date().getFullYear();
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
 
@@ -169,7 +168,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       const [entitlement, subscription, yearCoreEntitlement] = await Promise.all([
         getLifetimeReportEntitlement(user.id, readingKey, [slug]),
         getManagedSubscription(user.id),
-        getTasteProductEntitlement(user.id, 'year-core', buildReadingProductScopeKey(readingKey)),
+        getTasteProductEntitlement(user.id, 'year-core', buildYearCoreScopeKey(readingKey, targetYear)),
       ]);
 
       if (entitlement) {
@@ -183,7 +182,6 @@ export default async function SajuPremiumPage({ params }: Props) {
     }
   }
 
-  const targetYear = new Date().getFullYear();
   const heroLabel = hasLifetimeAccess
     ? '깊은 풀이 · 열림'
     : yearlyAccessLabel

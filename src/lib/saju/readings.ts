@@ -149,9 +149,22 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
     persisted._grounding?.personalizationContext
       ? persisted._grounding
       : buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
-  const metadata =
-    persisted._metadata ??
-    buildPersistedSajuReadingMetadata(normalizedInput, sajuData, grounding, persisted._kasiComparison ?? null);
+  const rebuiltMetadata = buildPersistedSajuReadingMetadata(
+    normalizedInput,
+    sajuData,
+    grounding,
+    persisted._kasiComparison ?? null,
+    { userId: row.user_id }
+  );
+  const metadata = persisted._metadata
+    ? {
+        ...rebuiltMetadata,
+        ...persisted._metadata,
+        sajuDataHash: persisted._metadata.sajuDataHash ?? rebuiltMetadata.sajuDataHash,
+        readingIdentityHash:
+          persisted._metadata.readingIdentityHash ?? rebuiltMetadata.readingIdentityHash,
+      }
+    : rebuiltMetadata;
 
   return {
     id: row.id,
@@ -172,7 +185,13 @@ export async function buildReadingInsertPayload(input: BirthInput, userId: strin
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
   const grounding = buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
   const kasiComparison = await buildKasiComparisonSnapshot(normalizedInput);
-  const metadata = buildPersistedSajuReadingMetadata(normalizedInput, sajuData, grounding, kasiComparison);
+  const metadata = buildPersistedSajuReadingMetadata(
+    normalizedInput,
+    sajuData,
+    grounding,
+    kasiComparison,
+    { userId }
+  );
   const persistedResultJson = createStoredReadingResultJson(sajuData, grounding, kasiComparison, metadata);
 
   return {
@@ -216,6 +235,40 @@ export async function createReading(
   }
 
   return data.id;
+}
+
+export async function ensureReadingOwnedByUser(
+  reading: ReadingRecord,
+  userId: string
+): Promise<ReadingRecord> {
+  if (reading.userId === userId) return reading;
+  if (reading.userId && reading.userId !== userId) return reading;
+
+  if (isReadingId(reading.id)) {
+    const supabase = await getPrivilegedOrSessionClient(userId);
+    const { error } = await supabase
+      .from('readings')
+      .update({ user_id: userId })
+      .eq('id', reading.id)
+      .is('user_id', null);
+
+    if (error) {
+      console.warn('anonymous reading ownership update failed', error);
+      return reading;
+    }
+
+    return (await getReadingById(reading.id)) ?? {
+      ...reading,
+      userId,
+    };
+  }
+
+  const ownedReadingId = await createReading(reading.input, userId);
+  return (await getReadingById(ownedReadingId)) ?? {
+    ...reading,
+    id: ownedReadingId,
+    userId,
+  };
 }
 
 export async function getReadingById(id: string): Promise<ReadingRecord | null> {
