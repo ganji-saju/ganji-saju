@@ -741,6 +741,21 @@ function formatElementDistribution(data: SajuDataV1) {
   return `${dominantLabel} 기운이 ${dominant.percentage}%로 전면에 서 있고, ${weakestLabel} 기운은 ${weakest.percentage}% 수준이라 이 약한 축을 어떻게 보완하느냐가 해석의 핵심이 됩니다.`;
 }
 
+function getPublicElementCue(element: Element) {
+  switch (element) {
+    case '목':
+      return '새 시작';
+    case '화':
+      return '표현';
+    case '토':
+      return '정리';
+    case '금':
+      return '기준';
+    case '수':
+      return '생각';
+  }
+}
+
 function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
   const entries = getElementEntries(data);
   const strongest = entries[0]?.[1] ?? 0;
@@ -814,29 +829,39 @@ function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
   ];
 }
 
-function getHeadline(topic: FocusTopic, scoreMap: Record<ReportScore['key'], number>) {
+function getHeadline(
+  topic: FocusTopic,
+  scoreMap: Record<ReportScore['key'], number>,
+  data: SajuDataV1
+) {
+  const dominantCue = getPublicElementCue(data.fiveElements.dominant);
+  const weakestCue = getPublicElementCue(data.fiveElements.weakest);
+  const supportCue = getPublicElementCue(
+    getLuckyElementsFromSajuData(data)[0] ?? data.fiveElements.weakest
+  );
+
   switch (topic) {
     case 'love':
       return scoreMap.love >= 78
-        ? '연애운이 상승 구간입니다. 먼저 분위기를 여는 쪽이 유리합니다.'
-        : '연애운은 조율 구간입니다. 해답보다 대화의 온도가 더 중요합니다.';
+        ? `${dominantCue} 흐름이 살아 있어, 연애는 먼저 분위기를 여는 쪽이 좋습니다.`
+        : `${weakestCue} 보완이 필요해, 연애는 속도보다 말의 온도가 중요합니다.`;
     case 'wealth':
       return scoreMap.wealth >= 78
-        ? '재물운이 살아 있습니다. 작은 기회를 바로 잡는 감각이 중요합니다.'
-        : '재물운은 정리 구간입니다. 지출 구조를 먼저 가볍게 다듬어보세요.';
+        ? `${dominantCue} 흐름이 강해, 돈은 작은 기회를 바로 정리하는 감각이 중요합니다.`
+        : `${weakestCue} 보완이 필요해, 돈은 새 지출보다 기존 흐름 정리가 먼저입니다.`;
     case 'career':
       return scoreMap.career >= 78
-        ? '직장운이 전진 구간입니다. 제안과 피드백에 힘이 붙습니다.'
-        : '직장운은 정비 구간입니다. 속도보다 완성도를 먼저 챙기세요.';
+        ? `${dominantCue} 흐름이 살아 있어, 일은 제안과 피드백에 힘이 붙습니다.`
+        : `${supportCue} 보완이 필요해, 일은 속도보다 완성도를 먼저 챙기세요.`;
     case 'relationship':
       return scoreMap.relationship >= 76
-        ? '관계운이 따뜻하게 풀립니다. 짧은 안부가 흐름을 바꿉니다.'
-        : '관계운은 거리 조절이 핵심입니다. 감정보다 명확한 표현이 필요합니다.';
+        ? `${dominantCue} 흐름이 따뜻하게 풀려, 짧은 안부가 관계를 바꿉니다.`
+        : `${weakestCue} 보완이 필요해, 관계는 거리와 표현 순서를 맞추는 게 핵심입니다.`;
     case 'today':
     default:
       return scoreMap.overall >= 78
-        ? '오늘은 먼저 움직이는 쪽에 운이 붙는 날입니다.'
-        : '오늘은 정리와 균형이 더 큰 성과로 이어지는 날입니다.';
+        ? `${dominantCue} 흐름이 강해, 오늘은 먼저 움직일수록 체감이 빠릅니다.`
+        : `${weakestCue} 보완이 필요해, 오늘은 균형을 잡을수록 편해집니다.`;
   }
 }
 
@@ -1372,7 +1397,7 @@ export function buildSajuReport(
     focusLabel: meta.label,
     focusBadge: meta.badge,
     focusScoreKey,
-    headline: getHeadline(focusTopic, scoreMap),
+    headline: getHeadline(focusTopic, scoreMap, data),
     dayMasterSummary,
     summary: compactStrings([dayMasterSummary, ...summaryHighlights]).join(' '),
     summaryHighlights,

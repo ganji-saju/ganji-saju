@@ -92,6 +92,62 @@ function easyResultCopy(value: string | null | undefined, maxSentences?: number)
 
 const COMPACT_ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
 
+const ELEMENT_PUBLIC_LABELS: Record<Element, string> = {
+  목: '성장',
+  화: '표현',
+  토: '안정',
+  금: '정리',
+  수: '생각',
+};
+
+const FIELD_CARD_PHRASES: Record<
+  ReportScore['key'] | 'health',
+  Record<Element, string>
+> = {
+  overall: {
+    목: '새 시작 작게',
+    화: '표현 먼저',
+    토: '정리부터',
+    금: '기준 세우기',
+    수: '잠깐 멈춤',
+  },
+  love: {
+    목: '가볍게 시작',
+    화: '마음 표현',
+    토: '약속 지키기',
+    금: '말투 부드럽게',
+    수: '반응 기다리기',
+  },
+  wealth: {
+    목: '새 지출 줄이기',
+    화: '충동 결제 주의',
+    토: '고정비 정리',
+    금: '가격 비교 먼저',
+    수: '자료 보고 결정',
+  },
+  career: {
+    목: '새 제안 준비',
+    화: '성과 드러내기',
+    토: '할 일 고정',
+    금: '우선순위 정리',
+    수: '자료 확인',
+  },
+  relationship: {
+    목: '먼저 안부',
+    화: '따뜻하게 표현',
+    토: '약속 확인',
+    금: '선 넘지 않기',
+    수: '조용히 듣기',
+  },
+  health: {
+    목: '가볍게 움직이기',
+    화: '과열 줄이기',
+    토: '식사 리듬',
+    금: '몸 정리하기',
+    수: '수면 먼저',
+  },
+};
+
 const COMPACT_RESULT_CARD_FALLBACKS: Array<{
   key: ReportScore['key'] | 'health';
   label: string;
@@ -131,6 +187,38 @@ function getCompactScoreText(score: ReportScore | undefined, fallback: string) {
   return toCompactCardPhrase(score?.summary, fallback);
 }
 
+function getReportComputed(report: SajuReport) {
+  return report.evidenceCards.find((card) => card.computed.fiveElementRatio || card.computed.dayMaster)?.computed;
+}
+
+function getSupportElement(report: SajuReport): Element | null {
+  const yongsin = getReportComputed(report)?.yongsin?.[0];
+  const matched = yongsin?.match(/[목화토금수]/u)?.[0] as Element | undefined;
+  return matched ?? null;
+}
+
+function getWeakElement(report: SajuReport): Element | null {
+  const ratio = getReportComputed(report)?.fiveElementRatio;
+  if (!ratio) return null;
+
+  const sorted = (Object.entries(ratio) as [Element, number][])
+    .filter(([, value]) => Number.isFinite(value))
+    .sort((a, b) => a[1] - b[1]);
+
+  return sorted[0]?.[0] ?? null;
+}
+
+function getFieldCardValue(
+  key: ReportScore['key'] | 'health',
+  report: SajuReport,
+  score: ReportScore | undefined,
+  fallback: string
+) {
+  const element = key === 'health' ? getWeakElement(report) : getSupportElement(report);
+  if (element) return FIELD_CARD_PHRASES[key][element];
+  return getCompactScoreText(score, fallback);
+}
+
 function buildCompactResultCards(report: SajuReport) {
   const scoreByKey = new Map(report.scores.map((score) => [score.key, score]));
   const healthSource =
@@ -142,8 +230,13 @@ function buildCompactResultCards(report: SajuReport) {
     ...item,
     value:
       item.key === 'health'
-        ? toCompactCardPhrase(healthSource, item.fallback)
-        : getCompactScoreText(item.scoreKey ? scoreByKey.get(item.scoreKey) : undefined, item.fallback),
+        ? getFieldCardValue(item.key, report, undefined, toCompactCardPhrase(healthSource, item.fallback))
+        : getFieldCardValue(
+            item.key,
+            report,
+            item.scoreKey ? scoreByKey.get(item.scoreKey) : undefined,
+            item.fallback
+          ),
   }));
 }
 
@@ -212,10 +305,47 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
             </h1>
+            {punchReading.personalPoints.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {punchReading.personalPoints.map((point) => (
+                  <span
+                    key={point}
+                    className="rounded-full border border-[var(--app-pink-line)] bg-white/70 px-3 py-1.5 text-xs font-medium text-[var(--app-pink-strong)]"
+                  >
+                    {point}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </article>
 
+          <div className="grid gap-2.5">
+            {[
+              { label: '왜', value: punchReading.why },
+              { label: '조심', value: punchReading.caution },
+              { label: '오늘 할 일', value: punchReading.action },
+            ].map((item) => (
+              <article
+                key={item.label}
+                className="rounded-[1.1rem] border border-[var(--app-line)] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+              >
+                <div className="text-xs font-semibold text-[var(--app-pink-strong)]">{item.label}</div>
+                <p className="mt-1 text-[0.95rem] font-medium leading-6 text-[var(--app-ink)]">
+                  {easyResultCopy(item.value, 1)}
+                </p>
+              </article>
+            ))}
+          </div>
+
           <article className="gangi-result-elements-card rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
-            <h2 className="text-lg font-semibold text-[var(--app-ink)]">오행 균형</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-[var(--app-ink)]">오행 균형</h2>
+              {getSupportElement(report) ? (
+                <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-medium text-[var(--app-pink-strong)]">
+                  오늘 힌트 {ELEMENT_PUBLIC_LABELS[getSupportElement(report)!]}
+                </span>
+              ) : null}
+            </div>
             <div className="mt-5 grid grid-cols-5 gap-3">
               {COMPACT_ELEMENT_ORDER.map((element) => {
                 const value = sajuData.fiveElements.byElement[element].percentage;
