@@ -292,6 +292,7 @@ test('today fortune public labels use natural Korean particles', () => {
     combined,
     /정리을|정리이|표현를|표현가|시작를|시작가|기준를|기준가|생각를|생각가/
   );
+  assert.doesNotMatch(combined, /정돈형|생각형|점검형|준비형|연락형|집중형|조율형|확인형|마무리형|휴식형/);
 });
 
 test('today fortune one-line body does not repeat the same grounding sentence twice', () => {
