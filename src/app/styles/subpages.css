@@ -411,6 +411,20 @@
   width: min(100%, 48rem);
 }
 
+.gangi-auth-page {
+  box-sizing: border-box;
+  max-width: min(calc(100vw - 2rem), 48rem);
+  padding-inline: clamp(0.9rem, 3vw, 1rem);
+}
+
+.gangi-auth-page > * {
+  width: 100%;
+}
+
+.gangi-auth-page > .flex {
+  width: auto;
+}
+
 .gangi-login-card {
   border-radius: 1.65rem !important;
 }

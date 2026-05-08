@@ -146,8 +146,16 @@ function isEmailNotConfirmedError(message?: string) {
 function getRecoveryError(message?: string) {
   const normalized = message?.toLowerCase() ?? '';
   if (!message) return '이메일 확인 링크를 보내지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
-  if (normalized.includes('email')) return '이메일 형식을 확인해 주세요.';
-  if (normalized.includes('rate')) return '요청이 너무 잦습니다. 잠시 뒤 다시 시도해 주세요.';
+  if (
+    normalized.includes('rate') ||
+    normalized.includes('too many') ||
+    normalized.includes('over_email_send_rate_limit')
+  ) {
+    return '재설정 메일 요청이 너무 잦아 잠시 제한됐습니다. 이미 도착한 최신 메일을 확인하거나, 잠시 후 다시 시도해 주세요.';
+  }
+  if (normalized.includes('invalid') || normalized.includes('email')) {
+    return '이메일 형식을 확인해 주세요.';
+  }
   return message;
 }
 
@@ -567,7 +575,7 @@ function LoginContent() {
 
   return (
     <div
-      className={`app-panel gangi-login-card w-full p-5 text-center sm:p-8 ${
+      className={`app-panel gangi-login-card mx-auto w-full p-5 text-center sm:p-8 ${
         mode === 'signup' ? 'max-w-3xl' : 'max-w-md'
       }`}
     >
@@ -1033,7 +1041,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
-      <AppPage className="gangi-login-subpage flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
+      <AppPage className="gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
             달

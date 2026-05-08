@@ -188,7 +188,7 @@ function ResetPasswordContent() {
   const isReady = resetState === 'ready';
 
   return (
-    <div className="app-panel w-full max-w-xl p-5 text-center sm:p-8">
+    <div className="app-panel mx-auto w-full max-w-xl p-5 text-center sm:p-8">
       <div className="mb-5">
         <div className="app-caption mb-3">계정 보안</div>
         <h1 className=" text-3xl font-bold tracking-tight text-[var(--app-ink)] sm:text-4xl">
@@ -292,7 +292,7 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
-      <AppPage className="gangi-login-subpage flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
+      <AppPage className="gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
             달
