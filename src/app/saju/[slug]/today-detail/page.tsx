@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { SafetyNotice } from '@/components/common/safety-notice';
-import { buildSajuReport } from '@/domain/saju/report';
-import type { ReportScore, SajuReport } from '@/domain/saju/report';
+import { buildPunchReading, buildSajuReport } from '@/domain/saju/report';
+import type { PunchReading, ReportScore, SajuReport } from '@/domain/saju/report';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
@@ -35,8 +35,27 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function normalizeItemKey(value: string) {
+  return value
+    .replace(/[^\p{L}\p{N}]+/gu, '')
+    .slice(0, 28);
+}
+
 function uniqueNonEmpty(items: Array<string | null | undefined>, max = 3) {
-  return [...new Set(items.filter((item): item is string => Boolean(item && item.trim().length > 0)))].slice(0, max);
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  for (const item of items) {
+    const cleaned = item?.trim();
+    if (!cleaned) continue;
+    const key = normalizeItemKey(cleaned);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(cleaned);
+    if (result.length >= max) break;
+  }
+
+  return result;
 }
 
 function easyResultCopy(value: string | null | undefined, maxSentences = 1) {
@@ -57,13 +76,22 @@ function easyResultCopy(value: string | null | undefined, maxSentences = 1) {
   return sentences.length > 0 ? sentences.slice(0, maxSentences).join(' ') : cleaned;
 }
 
-function buildKeyThemes(report: SajuReport) {
-  return uniqueNonEmpty(report.summaryHighlights.map((item) => easyResultCopy(item)), 3);
-}
-
-function buildCautionPatterns(report: SajuReport) {
+function buildKeyThemes(report: SajuReport, punch: PunchReading) {
   return uniqueNonEmpty(
     [
+      punch.why,
+      report.summaryHighlights[0],
+      report.timeline[0]?.headline,
+      report.scores.find((score) => score.key === report.focusScoreKey)?.summary,
+    ].map((item) => easyResultCopy(item)),
+    3
+  );
+}
+
+function buildCautionPatterns(report: SajuReport, punch: PunchReading) {
+  return uniqueNonEmpty(
+    [
+      punch.caution,
       report.cautionAction.description,
       ...report.evidenceCards
         .filter((card) => ['relations', 'gongmang', 'specialSals'].includes(card.key))
@@ -73,9 +101,10 @@ function buildCautionPatterns(report: SajuReport) {
   ).map((item) => easyResultCopy(item));
 }
 
-function buildFavorableChoices(report: SajuReport) {
+function buildFavorableChoices(report: SajuReport, punch: PunchReading) {
   return uniqueNonEmpty(
     [
+      punch.action,
       report.primaryAction.description,
       ...report.evidenceCards.flatMap((card) => card.practicalActions ?? []),
     ],
@@ -130,6 +159,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
 
   const { input, sajuData } = reading;
   const report = buildSajuReport(input, sajuData, topic);
+  const punchReading = buildPunchReading(report);
   const isTimeUnknown = input.unknownTime === true || input.hour === undefined;
   const scoreCards = buildScoreCards(report);
 
@@ -157,7 +187,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
         <section className="gangi-reading-chapters" aria-label="오늘 상세 풀이">
           <article className="gangi-reading-chapter">
             <div className="gangi-chapter-eyebrow">한눈에 보는 핵심</div>
-            <h2 className="gangi-chapter-title">{easyResultCopy(report.headline)}</h2>
+            <h2 className="gangi-chapter-title">{easyResultCopy(punchReading.verdict || report.headline)}</h2>
           </article>
 
           {isTimeUnknown ? (
@@ -167,9 +197,9 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
           ) : null}
 
           {[
-            { title: '조심할 것', items: buildCautionPatterns(report) },
-            { title: '해볼 것', items: buildFavorableChoices(report) },
-            { title: '더 볼 주제', items: buildKeyThemes(report) },
+            { title: '조심할 것', items: buildCautionPatterns(report, punchReading) },
+            { title: '해볼 것', items: buildFavorableChoices(report, punchReading) },
+            { title: '더 볼 주제', items: buildKeyThemes(report, punchReading) },
           ].map((group) => (
             <article key={group.title} className="gangi-reading-chapter">
               <div className="gangi-chapter-eyebrow">{group.title}</div>

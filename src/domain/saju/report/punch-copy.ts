@@ -95,22 +95,26 @@ function subjectParticle(value: string) {
   return `${value}${hasBatchim(value) ? '이' : '가'}`;
 }
 
+function objectParticle(value: string) {
+  return `${value}${hasBatchim(value) ? '을' : '를'}`;
+}
+
 function evidenceLabel(card: ReportEvidenceCard) {
   if (card.key === 'strength' && card.computed.strength) {
-    return `균형 ${card.computed.strength}`;
+    return '오늘 균형';
   }
 
   if (card.key === 'pattern' && card.computed.pattern) {
     const tenGod = card.computed.tenGod ? TEN_GOD_PUBLIC_LABELS[card.computed.tenGod] : null;
-    return tenGod ? `반복 성향 ${tenGod}` : '반복 성향 확인';
+    return tenGod ?? '반복되는 모습';
   }
 
   if (card.key === 'yongsin' && card.computed.yongsin?.length) {
-    return `보완 포인트 ${card.computed.yongsin.slice(0, 2).map(publicElementName).join(' · ')}`;
+    return `오늘 힌트 ${card.computed.yongsin.slice(0, 2).map(publicElementName).join(' · ')}`;
   }
 
   if (card.key === 'relations' && card.computed.relations?.length) {
-    return `관계 단서 ${card.computed.relations.slice(0, 2).join(' · ')}`;
+    return '관계 변화';
   }
 
   return card.label;
@@ -159,11 +163,11 @@ function buildPersonalVerdict(report: SajuReport) {
   const focusLabel = report.focusLabel;
 
   if (strongest && weakest && supportElement) {
-    return `${subjectParticle(ELEMENT_LABELS[strongest[0]])} 강하고 ${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해, ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 좋아요.`;
+    return `${subjectParticle(ELEMENT_LABELS[strongest[0]])} 앞서고 ${subjectParticle(ELEMENT_LABELS[weakest[0]])} 비기 쉬워, ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 좋아요.`;
   }
 
   if (dayElement && supportElement) {
-    return `${ELEMENT_LABELS[dayElement]} 기질에 ${ELEMENT_LABELS[supportElement]} 보완이 필요해, 오늘은 ${ELEMENT_ACTIONS[supportElement].support}가 좋아요.`;
+    return `${ELEMENT_LABELS[dayElement]} 쪽으로 먼저 반응해서, 오늘은 ${ELEMENT_ACTIONS[supportElement].support}가 좋아요.`;
   }
 
   if (dayElement) {
@@ -183,7 +187,7 @@ function buildPersonalWhy(report: SajuReport) {
   return firstNonEmpty(
     [
       strongest && weakest
-        ? `${ELEMENT_LABELS[strongest[0]]} 흐름이 ${Math.round(strongest[1])}%로 가장 강하고, ${ELEMENT_LABELS[weakest[0]]} 흐름은 ${Math.round(weakest[1])}%라 선택의 균형이 여기서 갈립니다.`
+        ? `${ELEMENT_LABELS[strongest[0]]} 쪽이 가장 앞에 있고 ${ELEMENT_LABELS[weakest[0]]} 쪽이 비기 쉬워, 오늘 선택의 차이가 여기서 납니다.`
         : null,
       dayElement ? `${ELEMENT_LABELS[dayElement]} 기질은 상황을 ${ELEMENT_ACTIONS[dayElement].strength}으로 풀어가려는 편입니다.` : null,
       tenGodTone ? `반복 성향은 ${tenGodTone}으로 보입니다.` : null,
@@ -200,9 +204,9 @@ function buildPersonalCaution(report: SajuReport) {
   return firstNonEmpty(
     [
       weakest
-        ? `${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해질 때는 ${ELEMENT_ACTIONS[weakest[0]].weak}가 중요합니다.`
+        ? `${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해질 때는 ${ELEMENT_ACTIONS[weakest[0]].weak}가 중요해요.`
         : null,
-      supportElement ? `${ELEMENT_LABELS[supportElement]} 보완을 놓치면 같은 고민을 오래 붙잡기 쉽습니다.` : null,
+      supportElement ? `${objectParticle(ELEMENT_LABELS[supportElement])} 놓치면 같은 고민을 오래 붙잡기 쉽습니다.` : null,
     ],
     ''
   );
@@ -214,7 +218,7 @@ function buildPersonalAction(report: SajuReport) {
   const element = supportElement ?? dayElement;
 
   if (!element) return '';
-  return `${ELEMENT_LABELS[element]} 보완: ${ELEMENT_ACTIONS[element].support}`;
+  return `오늘 할 일: ${ELEMENT_ACTIONS[element].support}`;
 }
 
 function buildPersonalPoints(report: SajuReport) {

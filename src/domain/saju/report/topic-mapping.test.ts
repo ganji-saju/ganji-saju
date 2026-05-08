@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import {
   FOCUS_TOPIC_OPTIONS,
+  buildPunchReading,
   buildSajuReport,
   normalizeFocusTopic,
 } from '@/domain/saju/report';
@@ -152,5 +153,30 @@ test('summary and action copy now reference computed evidence instead of generic
   const report = buildSajuReport(birthInput, data, 'today');
   const combined = [report.summaryHighlights.join(' '), report.primaryAction.description, report.cautionAction.description].join(' ');
 
-  assert.match(combined, /중화|火 \(화\)|묶이거나 부딪히는/);
+  assert.match(combined, /새 시작|표현|정리|기준|생각|관계|돈|업무|말/);
+  assert.doesNotMatch(combined, /점 기준입니다|강약|격국|용신|합충|공망|신살/);
+});
+
+test('free punch and score summaries change across different saju inputs', () => {
+  const firstData = normalizeToSajuDataV1(birthInput, null);
+  const secondInput: BirthInput = {
+    year: 1977,
+    month: 6,
+    day: 11,
+    hour: 23,
+    gender: 'female',
+  };
+  const secondData = normalizeToSajuDataV1(secondInput, null);
+  const firstReport = buildSajuReport(birthInput, firstData, 'today');
+  const secondReport = buildSajuReport(secondInput, secondData, 'today');
+
+  assert.notEqual(firstReport.headline, secondReport.headline);
+  assert.notDeepEqual(
+    firstReport.scores.map((score) => score.summary),
+    secondReport.scores.map((score) => score.summary)
+  );
+  assert.notEqual(
+    buildPunchReading(firstReport).verdict,
+    buildPunchReading(secondReport).verdict
+  );
 });

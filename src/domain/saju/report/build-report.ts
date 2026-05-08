@@ -172,6 +172,138 @@ const LUCK_ELEMENT_GUIDE: Record<Element, { theme: string; chance: string; cauti
   },
 };
 
+const PUBLIC_ELEMENT_CUES: Record<Element, string> = {
+  목: '새 시작',
+  화: '표현',
+  토: '정리',
+  금: '기준',
+  수: '생각',
+};
+
+const ELEMENT_READING_COPY: Record<
+  Element,
+  {
+    label: string;
+    gift: string;
+    action: string;
+    avoid: string;
+    today: string;
+    love: string;
+    wealth: string;
+    career: string;
+    relationship: string;
+  }
+> = {
+  목: {
+    label: PUBLIC_ELEMENT_CUES.목,
+    gift: '새로운 일을 여는 힘',
+    action: '할 일을 하나만 골라 바로 시작하세요.',
+    avoid: '계획만 늘리면 마무리가 흐려질 수 있어요.',
+    today: '작은 시작 하나가 하루 분위기를 바꿉니다.',
+    love: '연애는 긴 설명보다 먼저 다가가는 짧은 말이 잘 맞습니다.',
+    wealth: '재물은 새 지출보다 앞으로 쓸 돈의 순서를 먼저 잡으세요.',
+    career: '일은 새 업무를 벌리기보다 시작할 한 가지를 분명히 고르세요.',
+    relationship: '관계는 먼저 안부를 묻는 쪽이 어색함을 풀어줍니다.',
+  },
+  화: {
+    label: PUBLIC_ELEMENT_CUES.화,
+    gift: '마음을 드러내는 힘',
+    action: '하고 싶은 말을 짧고 부드럽게 먼저 꺼내세요.',
+    avoid: '감정이 앞서면 말이 세게 들릴 수 있어요.',
+    today: '표현을 미루지 않을수록 흐름이 빨리 풀립니다.',
+    love: '연애는 마음을 숨기기보다 가벼운 표현으로 온도를 맞추세요.',
+    wealth: '재물은 충동 결제보다 왜 필요한지 한 줄로 적어보세요.',
+    career: '일은 보고와 발표처럼 드러나는 장면에서 힘이 붙습니다.',
+    relationship: '관계는 칭찬과 감사처럼 따뜻한 말이 먼저 닿습니다.',
+  },
+  토: {
+    label: PUBLIC_ELEMENT_CUES.토,
+    gift: '흩어진 것을 모으는 힘',
+    action: '일정, 돈, 약속 중 하나를 정리하세요.',
+    avoid: '붙잡는 일이 많아지면 몸과 마음이 무거워질 수 있어요.',
+    today: '정리를 먼저 하면 나머지 선택이 훨씬 가벼워집니다.',
+    love: '연애는 감정 결론보다 약속과 생활 리듬을 맞추는 쪽이 좋습니다.',
+    wealth: '재물은 고정비, 정산, 결제 예정액을 확인할 때 안정됩니다.',
+    career: '일은 맡은 범위와 마감을 정리하면 평가가 좋아집니다.',
+    relationship: '관계는 서로의 역할과 기대치를 차분히 맞추는 날입니다.',
+  },
+  금: {
+    label: PUBLIC_ELEMENT_CUES.금,
+    gift: '기준을 세우는 힘',
+    action: '오늘 꼭 할 일과 미룰 일을 나눠보세요.',
+    avoid: '기준이 지나치면 말이 차갑게 들릴 수 있어요.',
+    today: '우선순위를 줄일수록 판단이 또렷해집니다.',
+    love: '연애는 애매한 말보다 가능한 것과 어려운 것을 분명히 말하세요.',
+    wealth: '재물은 금액, 조건, 계약 내용을 확인할 때 손실을 줄입니다.',
+    career: '일은 기준과 책임 범위를 문장으로 남기면 안정됩니다.',
+    relationship: '관계는 말의 순서와 확인이 오해를 줄여줍니다.',
+  },
+  수: {
+    label: PUBLIC_ELEMENT_CUES.수,
+    gift: '흐름을 읽는 힘',
+    action: '바로 결정하기 전 자료와 마음을 한 번 확인하세요.',
+    avoid: '생각이 길어지면 실행이 늦어질 수 있어요.',
+    today: '잠깐 멈춰 확인하는 시간이 결과를 부드럽게 만듭니다.',
+    love: '연애는 감정을 단정하지 말고 상대의 흐름을 조금 더 보세요.',
+    wealth: '재물은 정보 확인과 비교가 먼저일 때 안정됩니다.',
+    career: '일은 자료를 모으고 방향을 다시 잡는 데 유리합니다.',
+    relationship: '관계는 바로 답하기보다 한 박자 두고 말하면 편해집니다.',
+  },
+};
+
+const PUBLIC_TEN_GOD_TONES: Record<TenGodCode, { label: string; strength: string; caution: string }> = {
+  비견: {
+    label: '내 기준이 뚜렷한 편',
+    strength: '스스로 정한 기준을 밀고 가는 힘',
+    caution: '혼자 다 떠안지 않기',
+  },
+  겁재: {
+    label: '가까운 사람과 역할을 나누는 편',
+    strength: '사람 사이의 힘겨루기를 빨리 감지하는 감각',
+    caution: '정 때문에 경계를 흐리지 않기',
+  },
+  식신: {
+    label: '꾸준히 만들어내는 편',
+    strength: '작게 쌓아 결과로 만드는 힘',
+    caution: '편한 쪽으로만 미루지 않기',
+  },
+  상관: {
+    label: '표현과 아이디어가 빠른 편',
+    strength: '답답한 틀을 새롭게 바꾸는 감각',
+    caution: '말이 앞서서 관계를 다치게 하지 않기',
+  },
+  편재: {
+    label: '기회와 사람을 넓게 보는 편',
+    strength: '새 기회를 빠르게 알아보는 감각',
+    caution: '너무 많은 일을 동시에 벌리지 않기',
+  },
+  정재: {
+    label: '돈과 일을 안정적으로 쌓는 편',
+    strength: '꾸준히 지키고 관리하는 힘',
+    caution: '변화가 필요할 때 너무 늦게 움직이지 않기',
+  },
+  편관: {
+    label: '압박 속에서 집중력이 살아나는 편',
+    strength: '어려운 상황에서도 버티는 힘',
+    caution: '긴장을 오래 품지 않기',
+  },
+  정관: {
+    label: '책임과 기준을 중요하게 보는 편',
+    strength: '맡은 일을 바르게 정리하는 힘',
+    caution: '스스로에게 너무 엄격해지지 않기',
+  },
+  편인: {
+    label: '혼자 깊게 파악하는 편',
+    strength: '남들이 놓친 흐름을 읽는 감각',
+    caution: '생각만 깊어지고 실행이 늦어지지 않기',
+  },
+  정인: {
+    label: '배움과 도움을 크게 쓰는 편',
+    strength: '도움을 받고 다시 키워내는 힘',
+    caution: '기다림이 길어져 선택을 미루지 않기',
+  },
+};
+
 const CORE_TERM_EXPLAINERS = {
   strength: [
     {
@@ -268,16 +400,13 @@ function getElementEntries(data: SajuDataV1) {
 }
 
 function getElementTone(element: Element) {
-  const info = ELEMENT_INFO[element];
-  const label = info.name.split(' ')[0];
-  const firstTrait = info.traits[0] ?? label;
-  const secondTrait = info.traits[1] ?? '장점';
+  const copy = ELEMENT_READING_COPY[element];
 
   return {
-    label,
-    move: `${label} 기운이 강한 날이라 ${withParticle(firstTrait, '과', '와')} ${withParticle(secondTrait, '을', '를')} 살려서 작게라도 바로 움직이는 편이 좋습니다.`,
-    avoid: `${label}의 장점만 앞세우기보다 ${info.keywords[0]}처럼 속도를 한 번 정리하고 과한 확신은 줄이는 편이 안정적입니다.`,
-    cue: info.keywords[0],
+    label: copy.label,
+    move: copy.today,
+    avoid: copy.avoid,
+    cue: copy.label,
   };
 }
 
@@ -378,64 +507,120 @@ function getDayMasterSummary(data: SajuDataV1) {
 
 function getSupportElementLabels(data: SajuDataV1) {
   return getLuckyElementsFromSajuData(data)
-    .map((element) => ELEMENT_INFO[element].name.split(' ')[0])
+    .map((element) => getPublicElementCue(element))
     .join(' · ');
+}
+
+function getPublicTenGodTone(data: SajuDataV1) {
+  const code = data.pattern?.tenGod ?? data.tenGods?.dominant;
+  return code ? PUBLIC_TEN_GOD_TONES[code] : null;
+}
+
+function getReportProfile(data: SajuDataV1) {
+  const supportElement = getLuckyElementsFromSajuData(data)[0] ?? data.fiveElements.weakest;
+  const dominantElement = data.fiveElements.dominant;
+  const weakestElement = data.fiveElements.weakest;
+  const dayElement = data.dayMaster.element;
+
+  return {
+    supportElement,
+    dominantElement,
+    weakestElement,
+    dayElement,
+    support: ELEMENT_READING_COPY[supportElement],
+    dominant: ELEMENT_READING_COPY[dominantElement],
+    weakest: ELEMENT_READING_COPY[weakestElement],
+    day: ELEMENT_READING_COPY[dayElement],
+    role: getPublicTenGodTone(data),
+    strength: data.strength?.level ?? null,
+  };
+}
+
+function stripTopicLead(value: string) {
+  return value
+    .replace(/^(연애|재물|일|직장|관계)은\s*/u, '')
+    .replace(/[.。]\s*$/u, '')
+    .trim();
+}
+
+function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDataV1) {
+  const profile = getReportProfile(data);
+  const isHigh = score >= 80;
+  const isMid = score >= 70;
+  const roleLabel = profile.role?.label ?? `${profile.day.label} 쪽이 먼저 반응하는 편`;
+
+  switch (key) {
+    case 'love':
+      if (isHigh) return `연애는 ${stripTopicLead(profile.support.love)} ${roleLabel}이라 먼저 부드럽게 열면 반응이 좋습니다.`;
+      if (isMid) return `연애는 마음 확인보다 ${profile.weakest.label}을 채우는 말투가 더 중요합니다.`;
+      return `연애는 서두르지 말고 ${stripTopicLead(profile.support.love)}.`;
+    case 'wealth':
+      if (isHigh) return `재물은 ${stripTopicLead(profile.support.wealth)} 손에 남는 돈을 만들기 좋습니다.`;
+      if (isMid) return `재물은 ${profile.dominant.label}보다 ${profile.support.label}을 챙길 때 흐름이 안정됩니다.`;
+      return `재물은 새 결제보다 고정비, 정산, 금액 확인을 먼저 보세요.`;
+    case 'career':
+      if (isHigh) return `직장은 ${stripTopicLead(profile.support.career)} 성과가 밖으로 보이기 쉽습니다.`;
+      if (isMid) return `직장은 ${profile.role?.strength ?? profile.support.gift}을 일의 순서로 옮기면 안정됩니다.`;
+      return `직장은 넓히기보다 맡은 업무와 보고 순서를 먼저 정리하세요.`;
+    case 'relationship':
+      if (isHigh) return `관계는 ${stripTopicLead(profile.support.relationship)} 먼저 말을 열기 좋습니다.`;
+      if (isMid) return `관계는 말의 순서와 확인을 맞추면 오해가 줄어듭니다.`;
+      return `관계는 바로 결론내기보다 거리와 표현을 천천히 맞추세요.`;
+    case 'overall':
+    default:
+      if (isHigh) return `${profile.dominant.gift}이 살아 있어 ${profile.support.action}`;
+      if (isMid) return `${roleLabel}이라 ${profile.support.action}`;
+      return `${profile.weakest.label}이 비기 쉬워 오늘은 ${profile.support.action}`;
+  }
 }
 
 function buildSummaryHighlights(
   data: SajuDataV1,
   topic: FocusTopic,
-  scoreMap: Record<ReportScore['key'], number>,
+  _scoreMap: Record<ReportScore['key'], number>,
   dominant: string,
   weakest: string,
-  evidenceCards: ReportEvidenceCard[]
+  _evidenceCards: ReportEvidenceCard[]
 ) {
-  const rule = getTopicInterpretationRule(topic);
-  const scoreBand = getInterpretationScoreBand(topic, scoreMap);
-  const leadEvidence = selectEvidenceCard(evidenceCards, rule.evidencePriority);
-  const cautionEvidence = selectEvidenceCard(evidenceCards, rule.cautionPriority);
-  const leadEvidenceSnippet = toEvidenceSnippet(leadEvidence);
-  const cautionEvidenceSnippet = toEvidenceSnippet(cautionEvidence);
-  const supportLabels = getSupportElementLabels(data) || dominant;
+  const profile = getReportProfile(data);
+  const supportLabels = getSupportElementLabels(data) || profile.support.label || dominant;
   const currentLuck = describeCurrentLuckHighlight(data.currentLuck);
-  const leadLine = compactStrings([rule.summaryLeads[scoreBand], leadEvidenceSnippet]).join(' ');
-  const cautionLine = compactStrings([
-    `${supportLabels} 기운을 살릴수록 좋지만, ${weakest} 축이 비면 해석이 거칠어질 수 있습니다.`,
-    cautionEvidenceSnippet,
-  ]).join(' ');
+  const roleLine = profile.role
+    ? `${profile.role.label}이라 ${profile.role.strength}이 오늘 선택에 먼저 드러납니다.`
+    : `${profile.day.label} 쪽으로 먼저 반응하는 편이라, 하루의 첫 선택이 중요합니다.`;
+  const balanceLine = `${profile.dominant.label}은 충분히 살아 있고 ${profile.weakest.label}은 비기 쉬워, ${supportLabels}을 챙길수록 하루가 덜 흔들립니다.`;
+  const cautionLine = `${weakest || profile.weakest.label} 쪽이 약해질 때는 ${profile.weakest.avoid}`;
 
   switch (topic) {
     case 'love':
       return compactStrings([
-        leadLine,
-        `연애 흐름은 ${scoreMap.love}점입니다. ${supportLabels} 기운을 표현 방식에 보태면 마음을 전하는 속도가 더 부드러워집니다.`,
+        roleLine,
+        `연애는 상대가 답하기 쉬운 표현부터 시작하면 마음의 온도가 더 부드럽게 맞춰집니다.`,
         currentLuck || cautionLine,
       ]).slice(0, 3);
     case 'wealth':
       return compactStrings([
-        leadLine,
-        `재물 흐름은 ${scoreMap.wealth}점입니다. ${dominant} 기운의 장점을 살리되 ${weakest} 축이 약해지는 지출 습관을 먼저 정리해야 합니다.`,
+        balanceLine,
+        `재물은 고정비, 정산, 금액 확인처럼 손에 남는 흐름을 먼저 보면 안정됩니다.`,
         currentLuck || cautionLine,
       ]).slice(0, 3);
     case 'career':
       return compactStrings([
-        leadLine,
-        `직장 흐름은 ${scoreMap.career}점입니다. ${supportLabels} 기운을 활용하면 제안, 정리, 피드백의 힘이 더 살아납니다.`,
-        data.pattern
-          ? `${data.pattern.name} 흐름을 기준으로 책임과 자리의 무게를 읽으면 오늘의 업무 판단이 더 선명해집니다.`
-          : currentLuck || cautionLine,
+        roleLine,
+        `직장은 업무 순서, 보고 방식, 성과가 보이는 장면을 먼저 정리하면 흐름이 살아납니다.`,
+        currentLuck || cautionLine,
       ]).slice(0, 3);
     case 'relationship':
       return compactStrings([
-        leadLine,
-        `관계 흐름은 ${scoreMap.relationship}점입니다. ${supportLabels} 기운을 살리면 가까운 사람과의 오해를 줄이고 대화의 온도를 맞추기 좋습니다.`,
+        balanceLine,
+        `관계는 말의 순서와 확인이 핵심입니다. 가까운 사람일수록 결론보다 안부와 일정 확인이 먼저입니다.`,
         currentLuck || cautionLine,
       ]).slice(0, 3);
     case 'today':
     default:
       return compactStrings([
-        leadLine,
-        `${dominant} 기운이 전면에 서 있어 장점은 빠르게 드러나지만, ${weakest} 보완을 의식할수록 오늘 흐름이 더 오래 안정적으로 이어집니다.`,
+        roleLine,
+        balanceLine,
         currentLuck || cautionLine,
       ]).slice(0, 3);
   }
@@ -542,16 +727,18 @@ function buildYongsinEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
 
   const yongsinLabel = formatSymbolList([yongsin.primary, ...yongsin.secondary]);
   const kiyshinLabel = yongsin.kiyshin.length > 0 ? formatSymbolList(yongsin.kiyshin) : '기신 미기재';
+  const publicYongsinLabel = formatPublicSymbolList([yongsin.primary, ...yongsin.secondary]);
+  const publicKiyshinLabel = yongsin.kiyshin.length > 0 ? formatPublicSymbolList(yongsin.kiyshin) : '';
   const candidateDetails = yongsin.candidates?.slice(0, 3).map(formatYongsinCandidateDetail) ?? [];
   const confidenceLabel = yongsin.confidence ?? '중간';
 
   return {
     key,
     label: '용신',
-    title: `1순위 ${yongsin.primary.label}${yongsin.secondary.length > 0 ? ` · 보조 ${formatSymbolList(yongsin.secondary)}` : ''}`,
-    body: `${yongsinLabel} 기운을 생활 리듬과 선택 기준에 안정적으로 들일수록 균형을 잡기 쉬운 명식입니다. ${
-      kiyshinLabel !== '기신 미기재'
-        ? `${kiyshinLabel} 기운은 과해질 때 속도와 감정, 체력 배분을 한 번 더 조절하는 편이 좋습니다.`
+    title: publicYongsinLabel ? `${publicYongsinLabel}을 챙기는 흐름` : `1순위 ${yongsin.primary.label}`,
+    body: `${publicYongsinLabel || '균형'} 쪽을 생활 속에서 챙기면 선택이 덜 흔들립니다. ${
+      publicKiyshinLabel
+        ? `${publicKiyshinLabel} 쪽이 과해질 때는 속도와 감정을 한 번 늦추세요.`
         : '과속하거나 한쪽으로 치우친 선택은 한 번 더 조절하는 편이 좋습니다.'
     }`,
     details: [
@@ -735,25 +922,30 @@ function describeTenGodNarrative(tenGods: SajuDataV1['tenGods']) {
 function formatElementDistribution(data: SajuDataV1) {
   const dominant = data.fiveElements.byElement[data.fiveElements.dominant];
   const weakest = data.fiveElements.byElement[data.fiveElements.weakest];
-  const dominantLabel = ELEMENT_INFO[data.fiveElements.dominant].name.split(' ')[0];
-  const weakestLabel = ELEMENT_INFO[data.fiveElements.weakest].name.split(' ')[0];
+  const dominantLabel = getPublicElementCue(data.fiveElements.dominant);
+  const weakestLabel = getPublicElementCue(data.fiveElements.weakest);
 
-  return `${dominantLabel} 기운이 ${dominant.percentage}%로 전면에 서 있고, ${weakestLabel} 기운은 ${weakest.percentage}% 수준이라 이 약한 축을 어떻게 보완하느냐가 해석의 핵심이 됩니다.`;
+  return `${dominantLabel} 쪽이 ${dominant.percentage}%로 가장 앞에 있고, ${weakestLabel} 쪽은 ${weakest.percentage}%라 이 빈칸을 어떻게 채우느냐가 오늘 선택의 차이를 만듭니다.`;
 }
 
 function getPublicElementCue(element: Element) {
-  switch (element) {
-    case '목':
-      return '새 시작';
-    case '화':
-      return '표현';
-    case '토':
-      return '정리';
-    case '금':
-      return '기준';
-    case '수':
-      return '생각';
-  }
+  return PUBLIC_ELEMENT_CUES[element];
+}
+
+function getElementFromSymbolLabel(value: string | null | undefined): Element | null {
+  const matched = (value ?? '').match(/[목화토금수]/u)?.[0] as Element | undefined;
+  return matched ?? null;
+}
+
+function formatPublicSymbolList(symbols: SajuSymbolRef[]) {
+  return [
+    ...new Set(
+      symbols
+        .map((symbol) => getElementFromSymbolLabel(symbol.label))
+        .filter((element): element is Element => Boolean(element))
+        .map((element) => getPublicElementCue(element))
+    ),
+  ].join(' · ');
 }
 
 function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
@@ -788,36 +980,11 @@ function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
   );
 
   const summaries: Record<ReportScore['key'], string> = {
-    overall:
-      overall >= 80
-        ? '전체 흐름이 살아 있어 먼저 움직이는 쪽이 유리합니다.'
-        : overall >= 70
-          ? '무리하지 않고 우선순위만 선명하게 잡으면 좋은 결과로 이어집니다.'
-          : '속도를 줄이고 균형을 맞출수록 결과가 안정됩니다.',
-    love:
-      love >= 80
-        ? '표현을 조금 더 먼저 꺼내도 괜찮은 흐름입니다.'
-        : love >= 70
-          ? '감정 확인보다 분위기 조율이 더 중요한 구간입니다.'
-          : '상대의 반응을 살피며 천천히 호흡을 맞추는 편이 좋습니다.',
-    wealth:
-      wealth >= 80
-        ? '작은 기회를 빠르게 연결하면 체감 수익으로 이어질 수 있습니다.'
-        : wealth >= 70
-          ? '지출 정리와 루틴 관리가 재물운을 안정시키는 날입니다.'
-          : '새 투자보다 보수적인 선택이 더 유리합니다.',
-    career:
-      career >= 80
-        ? '성과를 보여주기 좋은 흐름이라 제안과 발표에 힘이 붙습니다.'
-        : career >= 70
-          ? '정리된 커뮤니케이션이 일의 흐름을 매끈하게 만듭니다.'
-          : '확장보다 현재 역할의 완성도를 높이는 편이 좋습니다.',
-    relationship:
-      relationship >= 80
-        ? '가까운 사람과의 말길이 열리기 쉬워 먼저 확인하고 조율하기 좋습니다.'
-        : relationship >= 70
-          ? '감정의 결론보다 거리감과 표현 순서를 맞추는 것이 중요합니다.'
-          : '오해가 커지지 않도록 사실과 감정을 나눠 말하는 편이 안전합니다.',
+    overall: buildScoreSummary('overall', overall, data),
+    love: buildScoreSummary('love', love, data),
+    wealth: buildScoreSummary('wealth', wealth, data),
+    career: buildScoreSummary('career', career, data),
+    relationship: buildScoreSummary('relationship', relationship, data),
   };
 
   return [
@@ -870,18 +1037,15 @@ function buildTopicActions(
   topic: FocusTopic,
   supportElements: Element[],
   scoreMap: Record<ReportScore['key'], number>,
-  evidenceCards: ReportEvidenceCard[]
+  _evidenceCards: ReportEvidenceCard[]
 ) {
   const rule = getTopicInterpretationRule(topic);
   const scoreBand = getInterpretationScoreBand(topic, scoreMap);
-  const leadEvidence = selectEvidenceCard(evidenceCards, rule.evidencePriority);
-  const cautionEvidence = selectEvidenceCard(evidenceCards, rule.cautionPriority);
-  const leadEvidenceSnippet = toEvidenceSnippet(leadEvidence);
-  const cautionEvidenceSnippet = toEvidenceSnippet(cautionEvidence);
+  const profile = getReportProfile(data);
   const bestTone = getElementTone(supportElements[0] ?? data.fiveElements.dominant);
   const cautionTone = getElementTone(data.fiveElements.weakest);
-  const supportLabel = bestTone.label;
-  const weaknessLabel = cautionTone.label;
+  const supportLabel = profile.support.label;
+  const weaknessLabel = profile.weakest.label;
   const currentLuck = describeCurrentLuckHighlight(data.currentLuck);
 
   switch (topic) {
@@ -890,18 +1054,16 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `연애운 ${scoreMap.love}점 기준입니다.`,
-            rule.actionLeads[scoreBand],
-            leadEvidenceSnippet,
-            `${supportLabel} 기운을 말투에 실어 짧은 안부나 가벼운 칭찬을 먼저 건네보세요. 오늘은 고백처럼 큰 결론보다 상대가 편하게 반응할 수 있는 분위기 만들기가 핵심입니다.`,
+            `${profile.role?.label ?? `${supportLabel}이 필요한 흐름`}이라 연애에서는 말의 길이보다 온도가 먼저입니다.`,
+            profile.support.love,
+            '오늘은 고백처럼 큰 결론보다 상대가 편하게 답할 수 있는 한 문장이 더 잘 맞습니다.',
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
-            rule.cautionLeads[scoreBand],
-            cautionEvidenceSnippet,
-            `${weaknessLabel} 기운이 흔들리면 상대 반응을 성급히 해석하기 쉽습니다. 답을 재촉하거나 마음을 시험하는 말보다, 약속의 시간과 표현 수위를 부드럽게 조절하는 편이 안정적입니다.`,
+            `${weaknessLabel}이 비면 상대 반응을 내 마음대로 해석하기 쉽습니다.`,
+            '답을 재촉하거나 시험하는 말보다 약속 시간과 표현 수위를 부드럽게 맞추세요.',
           ]).join(' '),
         },
       };
@@ -910,18 +1072,16 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `재물운 ${scoreMap.wealth}점 기준입니다.`,
-            rule.actionLeads[scoreBand],
-            leadEvidenceSnippet,
-            `${supportLabel} 기운은 돈의 흐름을 구조화하는 데 쓰는 것이 좋습니다. 오늘은 새 투자보다 고정비, 미뤄둔 정산, 결제 예정액을 먼저 확인하면 체감 재물운이 안정됩니다.`,
+            `${supportLabel}을 돈의 흐름에 쓰면 안정감이 커집니다.`,
+            '오늘은 새 투자보다 고정비, 미뤄둔 정산, 결제 예정 금액을 먼저 확인하세요.',
+            `${profile.role?.caution ?? '급하게 넓히는 선택'}만 줄이면 손에 남는 돈이 달라집니다.`,
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
-            rule.cautionLeads[scoreBand],
-            cautionEvidenceSnippet,
-            `${weaknessLabel} 기운이 약해지는 방식의 소비는 만족보다 피로를 남기기 쉽습니다. 가격 비교 없이 결제하거나 지인 제안만 믿고 움직이는 선택은 오늘 한 번 더 보류하는 편이 좋습니다.`,
+            `${weaknessLabel}이 약해질 때는 만족보다 피로가 남는 소비가 늘 수 있습니다.`,
+            '가격 비교 없이 결제하거나 지인 제안만 믿고 움직이는 선택은 오늘 한 번 더 보류하세요.',
           ]).join(' '),
         },
       };
@@ -930,19 +1090,16 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `직장운 ${scoreMap.career}점 기준입니다.`,
-            rule.actionLeads[scoreBand],
-            leadEvidenceSnippet,
-            `${supportLabel} 기운을 업무 정리에 쓰세요. 오늘은 할 일을 세 단계로 나누고, 보고나 제안은 결론을 먼저 말한 뒤 근거를 붙이면 평가와 전달력이 좋아집니다.`,
+            `${supportLabel}을 업무에 쓰면 일의 순서가 또렷해집니다.`,
+            '오늘은 할 일을 세 단계로 나누고, 보고나 제안은 결론을 먼저 말한 뒤 근거를 붙이세요.',
+            `${profile.role?.strength ?? '내가 잘하는 방식'}을 성과로 보이게 만드는 쪽이 좋습니다.`,
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
-            rule.cautionLeads[scoreBand],
-            cautionEvidenceSnippet,
             currentLuck || '오늘은 단기 반응보다 선택의 방향을 먼저 정리하는 편이 좋습니다.',
-            '그래서 여러 일을 동시에 넓히기보다, 누가 무엇을 언제까지 맡는지 먼저 적어두는 편이 안전합니다.',
+            '여러 일을 동시에 넓히기보다 누가 무엇을 언제까지 맡는지 먼저 적어두세요.',
           ]).join(' '),
         },
       };
@@ -951,18 +1108,16 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `관계운 ${scoreMap.relationship}점 기준입니다.`,
-            rule.actionLeads[scoreBand],
-            leadEvidenceSnippet,
-            `가족, 친구, 동료에게는 ${supportLabel} 기운을 살린 짧은 확인이 좋습니다. 큰 대화보다 안부, 감사, 일정 확인처럼 부담이 낮은 말이 관계의 물꼬를 엽니다.`,
+            `관계는 ${supportLabel}을 살린 짧은 확인이 좋습니다.`,
+            '가족, 친구, 동료에게는 큰 대화보다 안부, 감사, 일정 확인처럼 부담이 낮은 말이 먼저입니다.',
+            '말의 순서와 확인을 맞추면 오해가 줄어듭니다.',
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
-            rule.cautionLeads[scoreBand],
-            cautionEvidenceSnippet,
-            `${weaknessLabel} 축이 흔들리면 말의 의도보다 감정의 잔상이 커질 수 있습니다. 오늘은 “네가 항상” 같은 단정 대신, 사실과 감정을 나눠 말하면 오해를 줄일 수 있습니다.`,
+            `${weaknessLabel}이 흔들리면 말의 의도보다 감정의 잔상이 커질 수 있습니다.`,
+            '오늘은 “네가 항상” 같은 단정 대신 사실과 감정을 나눠 말하세요.',
           ]).join(' '),
         },
       };
@@ -972,18 +1127,17 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `총운 ${scoreMap.overall}점 기준입니다.`,
-            rule.actionLeads[scoreBand],
-            leadEvidenceSnippet,
-            `${bestTone.move} 더 궁금한 분야는 아래 카드에서 필요한 부분만 이어서 보면 됩니다.`,
+            `${profile.role?.label ?? `${bestTone.label}이 중요한 흐름`}이라 오늘은 첫 행동을 작게 정하는 게 좋습니다.`,
+            bestTone.move,
+            profile.support.action,
           ]).join(' '),
         },
         cautionAction: {
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
-            rule.cautionLeads[scoreBand],
-            cautionEvidenceSnippet,
-            `${cautionTone.avoid} 오늘은 전체 흐름을 먼저 보고, 세부 분야는 꼭 필요한 것만 고르는 편이 덜 피곤합니다.`,
+            `${weaknessLabel}이 흔들리면 같은 고민을 오래 붙잡기 쉽습니다.`,
+            cautionTone.avoid,
+            '오늘은 꼭 필요한 일 하나만 고르면 충분합니다.',
           ]).join(' '),
         },
       };
@@ -998,13 +1152,14 @@ function buildQuestionFocusInsight(
 ): ReportInsight {
   const rule = getTopicInterpretationRule(topic);
   const leadEvidence = selectEvidenceCard(evidenceCards, rule.evidencePriority);
-  const leadEvidenceSnippet = toEvidenceSnippet(leadEvidence);
+  const leadEvidenceSnippet = simplifySajuCopy(toEvidenceSnippet(leadEvidence));
+  const supportText = supportLabels || dominant;
 
   switch (topic) {
     case 'love':
       return {
         eyebrow: '연애 포커스',
-        title: `${supportLabels || dominant} 기운으로 표현의 온도를 조절하는 날입니다.`,
+        title: `${supportText}으로 표현의 온도를 조절하는 날입니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
           '좋아하는 마음을 크게 증명하려 하기보다, 상대가 받아들이기 쉬운 말투와 속도를 먼저 고르는 편이 좋습니다. 오늘의 연애운은 결론보다 분위기 회복에 더 민감합니다.',
@@ -1013,7 +1168,7 @@ function buildQuestionFocusInsight(
     case 'wealth':
       return {
         eyebrow: '재물 포커스',
-        title: `${supportLabels || dominant} 기운을 돈의 구조 정리에 쓰면 좋습니다.`,
+        title: `${supportText}을 돈의 구조 정리에 쓰면 좋습니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
           '수입을 크게 늘리는 선택보다 반복 지출, 미뤄둔 정산, 약속된 금액을 확인하는 쪽이 오늘 재물운을 안정시킵니다. 작은 정리가 다음 기회를 잡는 기반이 됩니다.',
@@ -1022,7 +1177,7 @@ function buildQuestionFocusInsight(
     case 'career':
       return {
         eyebrow: '직장 포커스',
-        title: `${supportLabels || dominant} 기운을 역할 정리와 피드백에 쓰세요.`,
+        title: `${supportText}을 역할 정리와 피드백에 쓰세요.`,
         body: compactStrings([
           leadEvidenceSnippet,
           '오늘의 직장운은 무리한 확장보다 정확한 전달에서 힘이 납니다. 보고, 제안, 일정 조율은 핵심을 먼저 말하고 세부를 붙이는 방식이 유리합니다.',
@@ -1031,7 +1186,7 @@ function buildQuestionFocusInsight(
     case 'relationship':
       return {
         eyebrow: '관계 포커스',
-        title: `${supportLabels || dominant} 기운으로 가까운 사람과의 거리감을 조율합니다.`,
+        title: `${supportText}으로 가까운 사람과의 거리감을 조율합니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
           '가족, 친구, 동료와의 관계에서는 맞고 틀림보다 서로의 입장을 확인하는 과정이 중요합니다. 짧은 확인과 부드러운 선 긋기가 오해를 줄입니다.',
@@ -1041,7 +1196,7 @@ function buildQuestionFocusInsight(
     default:
       return {
         eyebrow: '오늘 포커스',
-        title: `${FOCUS_TOPIC_META[topic].label} 해석은 ${supportLabels || dominant} 기운을 먼저 활용하는 것이 좋습니다.`,
+        title: `${FOCUS_TOPIC_META[topic].label}은 ${supportText}을 먼저 활용하는 것이 좋습니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
           `${FOCUS_TOPIC_META[topic].subtitle} 먼저 체감되는 장점을 살리고, 조급함보다는 반복 가능한 행동으로 연결하는 편이 좋습니다.`,
@@ -1052,31 +1207,29 @@ function buildQuestionFocusInsight(
 
 function buildInsights(data: SajuDataV1, topic: FocusTopic, evidenceCards: ReportEvidenceCard[]): ReportInsight[] {
   const supportElements = getLuckyElementsFromSajuData(data);
-  const supportLabels = supportElements.map((element) => ELEMENT_INFO[element].name.split(' ')[0]).join(' · ');
-  const dominant = ELEMENT_INFO[data.fiveElements.dominant].name.split(' ')[0];
-  const weakest = ELEMENT_INFO[data.fiveElements.weakest].name.split(' ')[0];
-  const dayHiddenStems = data.pillars.day.hiddenStems.map((item) => item.stem).join(' · ');
+  const supportLabels = supportElements.map((element) => getPublicElementCue(element)).join(' · ');
+  const dominant = getPublicElementCue(data.fiveElements.dominant);
+  const weakest = getPublicElementCue(data.fiveElements.weakest);
+  const roleTone = getPublicTenGodTone(data);
 
   const insights: ReportInsight[] = [
     {
-      eyebrow: '일간 성향',
-      title: data.dayMaster.metaphor
-        ? `${data.dayMaster.stem} 일간 · ${data.dayMaster.metaphor}`
-        : `${data.dayMaster.stem} 일간의 기본 태도`,
-      body: `${getPersonalityFromSajuData(data)}${dayHiddenStems ? ` 일지 안쪽에는 ${dayHiddenStems} 기운이 숨어 있어 겉으로 드러나는 성향과 속마음의 결이 완전히 같지만은 않습니다.` : ''}`,
+      eyebrow: '타고난 반응',
+      title: roleTone?.label ?? `${getPublicElementCue(data.dayMaster.element)} 쪽이 먼저 반응합니다.`,
+      body: `${getPersonalityFromSajuData(data)} ${roleTone ? `${roleTone.strength}이 장점으로 살아나지만, ${roleTone.caution}가 필요합니다.` : '오늘은 장점을 크게 쓰기보다 생활 속에서 바로 할 수 있는 선택으로 옮기는 편이 좋습니다.'}`,
     },
     {
-      eyebrow: '오행 흐름',
-      title: `${dominant}가 강하고 ${weakest} 보완이 필요한 흐름입니다.`,
-      body: `${formatElementDistribution(data)} ${dominant}의 장점을 살릴수록 흐름이 부드럽게 풀리고, ${weakest} 기운을 생활 리듬 안에서 보완할수록 결과가 더 안정됩니다.`,
+      eyebrow: '내 안의 균형',
+      title: `${dominant}은 앞서고 ${weakest}은 비기 쉬운 흐름입니다.`,
+      body: `${formatElementDistribution(data)} ${dominant}을 장점으로 쓰되 ${weakest}을 생활 속에서 챙기면 결과가 더 안정됩니다.`,
     },
     buildQuestionFocusInsight(topic, supportLabels, dominant, evidenceCards),
   ];
 
   if (data.tenGods?.dominant) {
     insights.push({
-      eyebrow: '십신 패턴',
-      title: `${data.tenGods.dominant} 기운이 자주 드러나는 명식입니다.`,
+      eyebrow: '반복되는 모습',
+      title: PUBLIC_TEN_GOD_TONES[data.tenGods.dominant].label,
       body: describeTenGodNarrative(data.tenGods),
     });
   }
@@ -1096,7 +1249,7 @@ function getGanziElements(ganzi?: string | null) {
 }
 
 function formatElementLabels(elements: Element[]) {
-  return elements.map((element) => ELEMENT_INFO[element].name.split(' ')[0]).join(' · ');
+  return elements.map((element) => getPublicElementCue(element)).join(' · ');
 }
 
 function formatLuckWindow(cycle: NonNullable<SajuDataV1['currentLuck']>['currentMajorLuck']) {
@@ -1131,14 +1284,14 @@ function buildMonthlyLuckReading(data: SajuDataV1, topic: FocusTopic) {
   const dominant = data.fiveElements.dominant;
   const mainElement = monthlyElements[0] ?? supportElements[0] ?? dominant;
   const mainGuide = LUCK_ELEMENT_GUIDE[mainElement];
-  const supportLabel = supportMatch ? ELEMENT_INFO[supportMatch].name.split(' ')[0] : null;
+  const supportLabel = supportMatch ? getPublicElementCue(supportMatch) : null;
 
   return {
     headline: wolwoon?.ganzi
       ? `${wolwoon.ganzi} 월운은 ${formatElementLabels(monthlyElements) || mainGuide.theme} 흐름을 건드립니다.`
-      : `${ELEMENT_INFO[mainElement].name.split(' ')[0]} 중심 루틴을 만들면 흐름이 붙습니다.`,
+      : `${getPublicElementCue(mainElement)} 중심 루틴을 만들면 흐름이 붙습니다.`,
     body: wolwoon?.ganzi
-      ? `${wolwoon.ganzi} 월운은 ${mainGuide.theme}을 현실에서 점검하게 합니다. ${supportLabel ? `특히 ${supportLabel} 기운이 보완 축과 맞아 이번 달은 약한 부분을 실제 습관으로 채우기 좋습니다.` : mainGuide.chance} ${describeTopicLuckFocus(topic)}`
+      ? `${wolwoon.ganzi} 월운은 ${mainGuide.theme}을 현실에서 점검하게 합니다. ${supportLabel ? `특히 ${supportLabel}이 필요 흐름과 맞아 이번 달은 약한 부분을 실제 습관으로 채우기 좋습니다.` : mainGuide.chance} ${describeTopicLuckFocus(topic)}`
       : `이번 달은 ${mainGuide.theme}을 정리하는 흐름으로 읽습니다. 중요한 선택은 한 번에 몰지 말고 주 단위로 나눠 확인하는 편이 안정적입니다.`,
     points: compactStrings([
       `기회: ${mainGuide.chance}`,
@@ -1158,7 +1311,7 @@ function buildMajorLuckReading(data: SajuDataV1, topic: FocusTopic) {
       body: cautionTone.avoid,
       points: [
         '성별 또는 생시 정보가 채워지면 현재 대운 구간을 더 정확히 계산합니다.',
-        '대운이 비어 있을 때는 원국의 강약, 용신, 월운을 먼저 기준으로 삼습니다.',
+        '긴 흐름이 비어 있을 때는 현재 균형과 이번 달 흐름을 먼저 봅니다.',
       ],
     };
   }
@@ -1172,10 +1325,10 @@ function buildMajorLuckReading(data: SajuDataV1, topic: FocusTopic) {
   const window = formatLuckWindow(currentMajor);
   const supportText =
     supportMatches.length > 0
-      ? `${formatElementLabels(supportMatches)} 기운이 용신/보완 축과 맞아, 이 대운은 약한 부분을 채우는 방향으로 쓰기 좋습니다.`
+      ? `${formatElementLabels(supportMatches)}이 필요 흐름과 맞아, 이 긴 흐름은 약한 부분을 채우는 방향으로 쓰기 좋습니다.`
       : dominantMatches.length > 0
-        ? `${formatElementLabels(dominantMatches)} 기운이 원국의 강한 축을 다시 자극하므로, 성과는 빠르지만 과속과 피로를 조심해야 합니다.`
-        : `${formatElementLabels(majorElements)} 기운이 원국에 새 배경으로 들어와, 익숙한 방식보다 역할과 환경을 조정하는 선택이 중요합니다.`;
+        ? `${formatElementLabels(dominantMatches)}이 이미 강한 쪽을 다시 자극하므로, 성과는 빠르지만 과속과 피로를 조심해야 합니다.`
+        : `${formatElementLabels(majorElements)}이 새 배경으로 들어와, 익숙한 방식보다 역할과 환경을 조정하는 선택이 중요합니다.`;
 
   return {
     headline: `${currentMajor.ganzi} 대운은 ${mainGuide.theme}을 장기 과제로 올립니다.`,

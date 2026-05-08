@@ -53,6 +53,7 @@ const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/연운/gu, '올해 흐름'],
   [/일진/gu, '하루 흐름'],
   [/정관격|편관격|정재격|편재격|식신격|상관격|정인격|편인격|비견격|겁재격/gu, '역할 흐름'],
+  [/정돈형/gu, '차분히 정리하는 흐름'],
   [/밀어붙이는/gu, '무리하게 진행하는'],
   [/밀어붙이기/gu, '무리하게 진행하기'],
   [/밀어붙이면/gu, '무리하면'],
@@ -80,6 +81,16 @@ export function simplifySajuCopy(value: string | null | undefined) {
   }
 
   return text
+    .replace(/정리을/gu, '정리를')
+    .replace(/정리이/gu, '정리가')
+    .replace(/표현를/gu, '표현을')
+    .replace(/표현가/gu, '표현이')
+    .replace(/시작를/gu, '시작을')
+    .replace(/시작가/gu, '시작이')
+    .replace(/기준를/gu, '기준을')
+    .replace(/기준가/gu, '기준이')
+    .replace(/생각를/gu, '생각을')
+    .replace(/생각가/gu, '생각이')
     .replace(/채워속에 깔린 기질\s*않는/gu, '채워지지 않는')
     .replace(/관계와 변화 신호[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
     .replace(/비어 있는 흐름[은는]\s*[^.!?。]+[.!?。]?\s*/gu, '')
