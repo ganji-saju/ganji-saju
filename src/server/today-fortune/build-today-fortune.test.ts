@@ -6,10 +6,15 @@ import {
   selectEvidenceCard,
 } from '@/domain/saju/report/interpretation-rule-table';
 import { parseBirthInputDraft } from '@/domain/saju/validators/birth-input';
+import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import {
   buildTodayFortuneFreeResult,
   buildTodayFortunePremiumResult,
 } from './build-today-fortune';
+import type {
+  TodayCalendarType,
+  TodayTimeRule,
+} from '@/lib/today-fortune/types';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -48,6 +53,51 @@ function createSampleInput(
   }
 
   return parsed.input;
+}
+
+function createUnifiedSample(
+  overrides: Partial<{
+    calendarType: TodayCalendarType;
+    timeRule: TodayTimeRule;
+    year: string;
+    month: string;
+    day: string;
+    hour: string;
+    minute: string;
+    gender: string;
+    birthLocationCode: string;
+    birthLocationLabel: string;
+    birthLatitude: string;
+    birthLongitude: string;
+  }> = {}
+) {
+  const draft = {
+    calendarType: 'solar' as TodayCalendarType,
+    timeRule: 'standard' as TodayTimeRule,
+    year: '1982',
+    month: '1',
+    day: '29',
+    hour: '8',
+    minute: '45',
+    unknownBirthTime: false,
+    gender: 'male',
+    birthLocationCode: 'custom',
+    birthLocationLabel: '서울특별시',
+    birthLatitude: '37.5665',
+    birthLongitude: '126.9780',
+    ...overrides,
+  };
+  const parsed = resolveUnifiedBirthInput(draft, { requireGender: false });
+
+  if (!parsed.ok) {
+    throw new Error(`unified sample birth input should be valid: ${parsed.error}`);
+  }
+
+  return {
+    input: parsed.input,
+    calendarType: draft.calendarType,
+    timeRule: draft.timeRule,
+  };
 }
 
 test('today fortune premium actions reuse evidence practical actions instead of only fixed copy', () => {
@@ -168,6 +218,43 @@ test('today fortune free result changes visible copy for different birth data', 
     firstResult.scores.map((score) => score.summary),
     secondResult.scores.map((score) => score.summary)
   );
+});
+
+test('today fortune free result reflects time calendar and location differences in visible copy', () => {
+  const first = createUnifiedSample();
+  const second = createUnifiedSample({
+    calendarType: 'lunar',
+    timeRule: 'trueSolarTime',
+    hour: '22',
+    minute: '10',
+    gender: 'female',
+    birthLocationLabel: '부산광역시',
+    birthLatitude: '35.1796',
+    birthLongitude: '129.0756',
+  });
+  const firstData = calculateSajuDataV1(first.input);
+  const secondData = calculateSajuDataV1(second.input);
+  const firstResult = buildTodayFortuneFreeResult(first.input, firstData, {
+    concernId: 'general',
+    sourceSessionId: 'solar-seoul-morning',
+    calendarType: first.calendarType,
+    timeRule: first.timeRule,
+  });
+  const secondResult = buildTodayFortuneFreeResult(second.input, secondData, {
+    concernId: 'general',
+    sourceSessionId: 'lunar-busan-night',
+    calendarType: second.calendarType,
+    timeRule: second.timeRule,
+  });
+
+  assert.notEqual(firstResult.oneLine.body, secondResult.oneLine.body);
+  assert.notEqual(firstResult.opportunity.body, secondResult.opportunity.body);
+  assert.notEqual(firstResult.risk.body, secondResult.risk.body);
+  assert.notEqual(
+    firstResult.groundingSummary.factLines.join(' / '),
+    secondResult.groundingSummary.factLines.join(' / ')
+  );
+  assert.match(secondResult.oneLine.body, /음력|부산|출생지|시간|밤|저녁/);
 });
 
 test('today fortune one-line body does not repeat the same grounding sentence twice', () => {

@@ -524,6 +524,89 @@ const TEN_GOD_PUBLIC_TONES: Record<string, { headline: string; body: string; cau
   },
 };
 
+const PUBLIC_TIME_BRANCH_COPY: Record<
+  Branch,
+  {
+    label: string;
+    action: string;
+    caution: string;
+    summary: string;
+  }
+> = {
+  子: {
+    label: '밤 생각형',
+    action: '늦은 판단은 메모만 남기고 아침에 다시 보세요',
+    caution: '밤에 커진 걱정을 그대로 결론으로 삼지 마세요',
+    summary: '생각이 깊어질수록 답을 미루는 편이 안전합니다.',
+  },
+  丑: {
+    label: '새벽 점검형',
+    action: '돈, 약속, 준비물을 조용히 확인하세요',
+    caution: '혼자 오래 붙잡으면 작은 일도 무겁게 느껴질 수 있어요',
+    summary: '빠진 것을 찾아내는 감각이 살아납니다.',
+  },
+  寅: {
+    label: '아침 준비형',
+    action: '오늘 할 일을 두 가지로 줄여 시작하세요',
+    caution: '출발부터 너무 많은 일을 잡지 마세요',
+    summary: '시작의 힘은 좋지만 순서가 필요합니다.',
+  },
+  卯: {
+    label: '아침 연락형',
+    action: '짧은 연락이나 가벼운 시작을 먼저 해보세요',
+    caution: '좋은 뜻도 길게 설명하면 부담이 될 수 있어요',
+    summary: '말문을 부드럽게 여는 데 강점이 있습니다.',
+  },
+  辰: {
+    label: '오전 정리형',
+    action: '머릿속 일을 목록으로 나눠보세요',
+    caution: '계획만 늘리다 실행이 늦어지지 않게 하세요',
+    summary: '흩어진 일을 정리하면 하루가 편해집니다.',
+  },
+  巳: {
+    label: '오전 집중형',
+    action: '알림을 줄이고 한 가지 일에 집중하세요',
+    caution: '확답과 결제는 한 번 더 확인하세요',
+    summary: '집중력은 좋지만 판단이 빨라질 수 있습니다.',
+  },
+  午: {
+    label: '대화 조율형',
+    action: '혼자 정하기보다 한 사람과 확인해보세요',
+    caution: '기분만으로 약속이나 돈을 정하지 마세요',
+    summary: '사람과 맞추면 일이 더 쉽게 풀립니다.',
+  },
+  未: {
+    label: '오후 정돈형',
+    action: '남은 일을 현실적으로 줄여보세요',
+    caution: '피곤한 상태에서 새 약속을 늘리지 마세요',
+    summary: '오전에 놓친 것을 수습하기 좋습니다.',
+  },
+  申: {
+    label: '비교 확인형',
+    action: '바로 정하지 말고 조건을 비교하세요',
+    caution: '빨리 끝내고 싶은 마음이 실수를 부를 수 있어요',
+    summary: '확인과 재점검에서 안정감이 생깁니다.',
+  },
+  酉: {
+    label: '저녁 마무리형',
+    action: '답장, 정산, 약속 확인을 깔끔하게 끝내세요',
+    caution: '상대 반응을 너무 크게 해석하지 마세요',
+    summary: '마무리와 정리에 힘이 붙습니다.',
+  },
+  戌: {
+    label: '하루 정리형',
+    action: '오늘 끝낸 것과 내일 넘길 일을 나누세요',
+    caution: '피곤할 때 중요한 대화를 길게 끌지 마세요',
+    summary: '새로 늘리기보다 덜어내야 편합니다.',
+  },
+  亥: {
+    label: '밤 휴식형',
+    action: '몸을 쉬게 하고 내일 볼 것만 적어두세요',
+    caution: '늦은 고민을 오래 굴리지 마세요',
+    summary: '마음 정리와 회복이 먼저입니다.',
+  },
+};
+
 interface PublicTodayProfile {
   dayLabel: string;
   dominantElement: Element;
@@ -541,6 +624,14 @@ interface PublicTodayProfile {
   actionBody: string;
   balanceBody: string;
   cautionBody: string;
+  hourLabel: string;
+  hourAction: string;
+  hourCaution: string;
+  hourSummary: string;
+  calendarCue: string;
+  locationCue: string;
+  timeRuleCue: string;
+  signatureSeed: number;
 }
 
 function clampScore(value: number) {
@@ -904,16 +995,92 @@ function getPrimarySupportElement(sajuData: SajuDataV1) {
   return normalizeElement(sajuData.yongsin?.primary?.value ?? sajuData.yongsin?.primary?.label);
 }
 
-function buildPublicTodayProfile(sajuData: SajuDataV1): PublicTodayProfile {
+function buildSignatureSeed(
+  input: BirthInput,
+  sajuData: SajuDataV1,
+  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>
+) {
+  const locationSeed = input.birthLocation
+    ? Math.round(Math.abs(input.birthLocation.latitude * 10) + Math.abs(input.birthLocation.longitude * 10))
+    : 0;
+  const ganziSeed = Array.from(
+    `${sajuData.pillars.day.ganzi}${sajuData.pillars.hour?.ganzi ?? ''}`
+  ).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const calendarSeed = options.calendarType === 'lunar' ? 19 : 0;
+  const timeRuleSeed =
+    options.timeRule === 'trueSolarTime'
+      ? 29
+      : options.timeRule === 'earlyZi'
+        ? 17
+        : options.timeRule === 'nightZi'
+          ? 11
+          : 0;
+
+  return (
+    input.year * 3 +
+    input.month * 11 +
+    input.day * 17 +
+    (input.hour ?? 6) * 23 +
+    (input.minute ?? 0) +
+    locationSeed +
+    ganziSeed +
+    calendarSeed +
+    timeRuleSeed
+  );
+}
+
+function pickVariant<T>(items: T[], seed: number, offset = 0) {
+  return items[Math.abs(seed + offset) % items.length];
+}
+
+function buildCalendarCue(calendarType: TodayCalendarType) {
+  return calendarType === 'lunar'
+    ? '음력 생일은 양력 날짜로 바꿔 오늘 흐름에 맞춰 봤어요.'
+    : '양력 생일 기준으로 오늘 흐름을 봤어요.';
+}
+
+function buildTimeRuleCue(input: BirthInput, timeRule: TodayTimeRule) {
+  if (input.unknownTime) return '태어난 시간이 없어 하루 전체 흐름 중심으로 봤어요.';
+  if (timeRule === 'trueSolarTime' && input.birthLocation) {
+    return `${input.birthLocation.label}의 위치를 반영해 시간을 더 좁혀 봤어요.`;
+  }
+  if (timeRule === 'earlyZi') return '자시를 이른 밤 기준으로 나눠 봤어요.';
+  if (timeRule === 'nightZi') return '늦은 밤 자시를 한 흐름으로 묶어 봤어요.';
+  return '표준시 기준으로 태어난 시간을 반영했어요.';
+}
+
+function buildLocationCue(input: BirthInput) {
+  if (!input.birthLocation) return '출생지는 비어 있어 시간 해석은 넓게만 봤어요.';
+  if (input.solarTimeMode === 'longitude') {
+    return `${input.birthLocation.label} 출생지 보정까지 함께 봤어요.`;
+  }
+  return `${input.birthLocation.label} 출생 정보까지 함께 두고 봤어요.`;
+}
+
+function buildPublicTodayProfile(
+  input: BirthInput,
+  sajuData: SajuDataV1,
+  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>
+): PublicTodayProfile {
   const dominantElement = sajuData.fiveElements.dominant;
   const weakestElement = sajuData.fiveElements.weakest;
   const supportElement = getPrimarySupportElement(sajuData) ?? weakestElement;
   const tenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
   const roleTone = tenGod ? TEN_GOD_PUBLIC_TONES[tenGod] : null;
+  const signatureSeed = buildSignatureSeed(input, sajuData, options);
   const dayLabel = PUBLIC_ELEMENT_LABELS[sajuData.dayMaster.element];
   const supportCopy = PUBLIC_ELEMENT_COPY[supportElement];
   const dominantCopy = PUBLIC_ELEMENT_COPY[dominantElement];
   const weakestCopy = PUBLIC_ELEMENT_COPY[weakestElement];
+  const hourBranch = sajuData.pillars.hour?.branch ?? null;
+  const hourCopy = hourBranch
+    ? PUBLIC_TIME_BRANCH_COPY[hourBranch]
+    : {
+        label: '전체 흐름형',
+        action: '오늘은 시간보다 하루 전체 리듬을 먼저 보세요',
+        caution: '세부 시간에 맞추려 하기보다 무리한 선택을 줄이세요',
+        summary: '태어난 시간이 없어 하루 전체 흐름으로 넓게 봅니다.',
+      };
   const strengthBody =
     sajuData.strength?.level === '신강'
       ? '내가 먼저 끌고 가려는 힘이 강해지는 편입니다.'
@@ -941,6 +1108,14 @@ function buildPublicTodayProfile(sajuData: SajuDataV1): PublicTodayProfile {
       dominantElement === weakestElement
         ? supportCopy.weakCare
         : `${dominantCopy.strongCaution} ${weakestCopy.weakCare}`,
+    hourLabel: hourCopy.label,
+    hourAction: hourCopy.action,
+    hourCaution: hourCopy.caution,
+    hourSummary: hourCopy.summary,
+    calendarCue: buildCalendarCue(options.calendarType),
+    locationCue: buildLocationCue(input),
+    timeRuleCue: buildTimeRuleCue(input, options.timeRule),
+    signatureSeed,
   };
 }
 
@@ -961,7 +1136,14 @@ function buildPublicTodayHeadline(
       return `몸과 마음은 무리보다 회복이 먼저인 날`;
     case 'general':
     default:
-      return `${profile.roleHeadline}, ${profile.actionShort}`;
+      return pickVariant(
+        [
+          `${profile.roleHeadline}, ${profile.actionShort}`,
+          `${profile.hourLabel}이라 ${profile.supportLabel}을 챙기면 좋은 날`,
+          `${profile.dominantLabel}이 먼저 나오고 ${profile.weakestLabel}을 놓치기 쉬운 날`,
+        ],
+        profile.signatureSeed
+      );
   }
 }
 
@@ -986,21 +1168,45 @@ function buildPublicTodayBody(
   return joinUniqueSentences([
     profile.roleBody,
     profile.strengthBody,
+    profile.hourSummary,
     concernLine,
     `${profile.supportLabel} 쪽을 챙기면 좋아요. ${profile.actionBody}.`,
+    profile.hourAction,
     profile.cautionBody,
+    profile.calendarCue,
     unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
   ]);
 }
 
 function buildPublicReasonBody(profile: PublicTodayProfile, unknownBirthTime: boolean) {
-  return joinUniqueSentences([
-    `${profile.roleHeadline}입니다.`,
-    `${profile.dominantLabel} 쪽 반응이 먼저 나오고, ${profile.weakestLabel} 쪽은 놓치기 쉬워요.`,
-    `그래서 오늘은 ${profile.actionBody}.`,
-    profile.roleCaution,
-    unknownBirthTime ? '태어난 시간이 없으면 세부 시간보다 하루 전체 흐름을 중심으로 보세요.' : null,
-  ]);
+  return joinUniqueSentences(
+    pickVariant(
+      [
+        [
+          `${profile.roleHeadline}입니다.`,
+          `${profile.dominantLabel} 쪽 반응이 먼저 나오고, ${profile.weakestLabel} 쪽은 놓치기 쉬워요.`,
+          `그래서 오늘은 ${profile.actionBody}.`,
+          profile.roleCaution,
+        ],
+        [
+          `${profile.hourLabel}으로 봅니다.`,
+          profile.hourSummary,
+          `오늘 먼저 할 일은 ${profile.hourAction}.`,
+          profile.hourCaution,
+        ],
+        [
+          `${profile.supportLabel}을 챙기는 날입니다.`,
+          profile.locationCue,
+          profile.timeRuleCue,
+          `오늘은 ${profile.actionBody}.`,
+        ],
+      ],
+      profile.signatureSeed,
+      3
+    ).concat(
+      unknownBirthTime ? ['태어난 시간이 없으면 세부 시간보다 하루 전체 흐름을 중심으로 보세요.'] : []
+    )
+  );
 }
 
 function buildPublicGroundingSummary(
@@ -1013,6 +1219,7 @@ function buildPublicGroundingSummary(
       `내 기본 반응: ${profile.dayLabel}`,
       `강하게 나오는 쪽: ${profile.dominantLabel}`,
       `오늘 챙길 쪽: ${profile.supportLabel}`,
+      `시간 리듬: ${profile.hourLabel}`,
     ],
     evidenceLines: [
       profile.roleBody,
@@ -1059,11 +1266,24 @@ function buildAxisScoreSummary(
   const band = score >= 78 ? 'high' : score >= 68 ? 'mid' : 'low';
 
   if (key === 'overall') {
-    return band === 'high'
-      ? `${profile.roleHeadline}이라 ${copy.supportShort.replace('하세요', '하면')} 흐름이 빨리 열립니다.`
-      : band === 'mid'
-        ? `${label}을 챙기면 하루가 안정됩니다. ${copy.supportAction}.`
-        : `${label}을 놓치기 쉬워요. 오늘은 속도를 낮추고 ${copy.supportShort}.`;
+    return pickVariant(
+      band === 'high'
+        ? [
+            `${profile.roleHeadline}이라 ${copy.supportShort.replace('하세요', '하면')} 하루가 빨리 열립니다.`,
+            `${profile.hourLabel} 리듬이 살아 있어 ${profile.hourAction}.`,
+          ]
+        : band === 'mid'
+          ? [
+              `${label}을 챙기면 하루가 안정됩니다. ${copy.supportAction}.`,
+              `${profile.hourLabel}이라 ${profile.hourAction}.`,
+            ]
+          : [
+              `${label}을 놓치기 쉬워요. 오늘은 속도를 낮추고 ${copy.supportShort}.`,
+              `${profile.hourCaution}. 먼저 ${copy.supportShort}.`,
+            ],
+      profile.signatureSeed,
+      5
+    );
   }
 
   if (key === 'love') {
@@ -1098,11 +1318,24 @@ function buildAxisScoreSummary(
         : '서운함을 결론처럼 말하지 말고 한 번 더 확인하는 편이 안전합니다.';
   }
 
-  return band === 'high'
-    ? '몸이 가볍게 따라오는 편입니다. 그래도 쉬는 시간을 끼워 넣으세요.'
-    : band === 'mid'
-      ? `${label}이 부족해지면 쉽게 지칠 수 있어요. 중간 휴식을 먼저 잡으세요.`
-      : '무리해서 버티기보다 일정 하나를 줄이는 편이 낫습니다.';
+  return pickVariant(
+    band === 'high'
+      ? [
+          '몸이 가볍게 따라오는 편입니다. 그래도 쉬는 시간을 끼워 넣으세요.',
+          `${profile.hourLabel} 리듬을 살려 짧게 집중하고 쉬어가세요.`,
+        ]
+      : band === 'mid'
+        ? [
+            `${label}이 부족해지면 쉽게 지칠 수 있어요. 중간 휴식을 먼저 잡으세요.`,
+            `${profile.hourCaution}. 물, 식사, 쉬는 시간을 먼저 챙기세요.`,
+          ]
+        : [
+            '무리해서 버티기보다 일정 하나를 줄이는 편이 낫습니다.',
+            `${profile.hourLabel}이라 회복 구간을 먼저 비워두세요.`,
+          ],
+    profile.signatureSeed,
+    11
+  );
 }
 
 function buildPublicOpportunity(
@@ -1116,14 +1349,29 @@ function buildPublicOpportunity(
       body: joinUniqueSentences([
         staticCopy.opportunityBody,
         `${profile.supportLabel}을 챙기려면 ${profile.actionBody}.`,
+        profile.hourAction,
       ]),
     };
   }
 
-  return {
-    title: `${profile.supportLabel}을 살리는 작은 행동`,
-    body: `${profile.actionBody}. 이것 하나만 해도 오늘 흐름이 훨씬 덜 복잡해집니다.`,
-  };
+  return pickVariant(
+    [
+      {
+        title: `${profile.supportLabel}을 살리는 작은 행동`,
+        body: `${profile.actionBody}. 이것 하나만 해도 오늘이 훨씬 덜 복잡해집니다.`,
+      },
+      {
+        title: `${profile.hourLabel}에 맞는 첫 행동`,
+        body: `${profile.hourAction}. 크게 바꾸기보다 이 한 가지를 먼저 해보세요.`,
+      },
+      {
+        title: `${profile.dominantLabel}을 좋은 쪽으로 쓰기`,
+        body: `${profile.balanceBody} 그래서 오늘은 ${profile.actionBody}.`,
+      },
+    ],
+    profile.signatureSeed,
+    7
+  );
 }
 
 function buildPublicRisk(
@@ -1134,14 +1382,28 @@ function buildPublicRisk(
   if (concernId !== 'general') {
     return {
       title: staticCopy.riskTitle,
-      body: joinUniqueSentences([staticCopy.riskBody, profile.roleCaution]),
+      body: joinUniqueSentences([staticCopy.riskBody, profile.roleCaution, profile.hourCaution]),
     };
   }
 
-  return {
-    title: `${profile.weakestLabel}이 비는 순간`,
-    body: `${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}. ${profile.roleCaution}`,
-  };
+  return pickVariant(
+    [
+      {
+        title: `${profile.weakestLabel}이 비는 순간`,
+        body: `${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}. ${profile.roleCaution}`,
+      },
+      {
+        title: `${profile.hourLabel}에서 조심할 점`,
+        body: `${profile.hourCaution}. 급히 정하기보다 한 번 확인하세요.`,
+      },
+      {
+        title: `${profile.dominantLabel}이 과해질 때`,
+        body: `${PUBLIC_ELEMENT_COPY[profile.dominantElement].strongCaution}. 오늘은 ${profile.actionShort}.`,
+      },
+    ],
+    profile.signatureSeed,
+    13
+  );
 }
 
 function getTodayEvidenceSnippet(report: SajuReport) {
@@ -1767,7 +2029,7 @@ export function buildTodayFortuneFreeResult(
   const wealthReport = buildSajuReport(input, sajuData, 'wealth');
   const careerReport = buildSajuReport(input, sajuData, 'career');
   const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
-  const profile = buildPublicTodayProfile(sajuData);
+  const profile = buildPublicTodayProfile(input, sajuData, options);
   const conditionScore = buildConditionScore(todayReport, loveReport, wealthReport, sajuData);
   const scores = toTodayScores(
     todayReport,
