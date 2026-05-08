@@ -115,6 +115,31 @@ function BasisNotes({ items }: { items: string[] }) {
   );
 }
 
+function uniqueLifetimeBasisLines(items: Array<string | null | undefined>) {
+  return Array.from(
+    new Set(
+      items
+        .map((item) => item?.trim())
+        .filter((item): item is string => Boolean(item)),
+    ),
+  );
+}
+
+function getLifetimeBasisLines(
+  sectionKey: (typeof SECTION_META)[number]['key'],
+  report: SajuLifetimeReport,
+) {
+  if (sectionKey === 'patternAndYongsin') {
+    return uniqueLifetimeBasisLines([
+      ...report.patternAndYongsin.basis,
+      ...report.patternAndYongsin.detailLines,
+    ]);
+  }
+
+  const reportSection = report[sectionKey] as { basis?: string[] };
+  return uniqueLifetimeBasisLines(reportSection.basis ?? []);
+}
+
 function getLifetimeSectionId(sectionKey: (typeof SECTION_META)[number]['key']) {
   return `lifetime-${sectionKey}`;
 }
@@ -238,18 +263,6 @@ function LifetimeSectionBody({
             <FactCard label="강점 환경" body={report.coreIdentity.bestEnvironment} />
             <FactCard label="무너지기 쉬운 패턴" body={report.coreIdentity.weakPattern} />
           </div>
-          <details className="group mt-5">
-            <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              풀이 배경 보기
-            </summary>
-            <div className="mt-3 grid gap-2">
-              {report.coreIdentity.basis.map((line) => (
-                <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  {simplifySajuCopy(line)}
-                </div>
-              ))}
-            </div>
-          </details>
         </>
       );
     case 'strengthBalance':
@@ -312,18 +325,6 @@ function LifetimeSectionBody({
               </div>
             </div>
           </div>
-          <details className="group mt-5">
-            <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)]">
-              풀이 배경 보기
-            </summary>
-            <div className="mt-3 grid gap-2">
-              {report.patternAndYongsin.detailLines.map((line) => (
-                <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-                  {simplifySajuCopy(line)}
-                </div>
-              ))}
-            </div>
-          </details>
         </>
       );
     case 'relationshipPattern':
@@ -613,7 +614,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
       {SECTION_META.map((section, index) => {
         const reportSection = report[section.key];
-        const basisLines = 'basis' in reportSection ? reportSection.basis : [];
+        const basisLines = getLifetimeBasisLines(section.key, report);
 
         return (
           <section
@@ -682,7 +683,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
       <details className="group" id="lifetime-evidence">
         <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          풀이 배경 보기
+          계산 정보와 검증 보기
         </summary>
         <div className="mt-4 grid gap-4">
           <GroundingKasiSummary

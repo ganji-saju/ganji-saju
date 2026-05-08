@@ -82,7 +82,7 @@ export default async function SajuOverviewPage({ params }: Props) {
   const pillars = getPillarEntries(sajuData);
 
   return (
-    <AppShell header={<SiteHeader />}>
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
       <AppPage className="gangi-subpage saju-readable-page space-y-5 pb-24">
         <GangiPageHeader title="사주풀이" backHref={`/saju/${slug}`} />
         <SajuScreenNav slug={slug} current="overview" />

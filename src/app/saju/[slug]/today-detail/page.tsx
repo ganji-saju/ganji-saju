@@ -135,19 +135,19 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
   if (!entitlement) {
     return (
       <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-        <AppPage className="gangi-subpage space-y-5">
+        <AppPage className="gangi-subpage today-detail-page space-y-5">
           <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
-          <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(15,23,42,0.06)]">
-            <div className="text-sm font-medium text-[var(--app-pink-strong)]">구매 후 열람</div>
-            <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
+          <section className="gangi-today-detail-lock-card">
+            <div className="gangi-detail-kicker">구매 후 열람</div>
+            <h1>
               이 풀이는 550원 결제 후 열립니다
             </h1>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+            <p>
               이미 결제했다면 같은 계정으로 로그인한 뒤 다시 열어주세요.
             </p>
             <Link
               href={checkoutHref}
-              className="mt-5 inline-flex rounded-full bg-[var(--app-pink)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(236,72,153,0.28)]"
+              className="gangi-detail-primary-link"
             >
               550원 결제하고 열기
             </Link>
@@ -165,7 +165,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5">
+      <AppPage className="gangi-subpage today-detail-page space-y-5">
         <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
 
         <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
@@ -174,73 +174,83 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
           <span>보관</span>
         </div>
 
-        <section className="gangi-reading-hero">
-          <div className="gangi-chapter-eyebrow">구매한 풀이</div>
-          <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
-            오늘은 이 부분만 더 보면 충분해요
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-            긴 설명보다 오늘 바로 써먹을 말과 행동만 짧게 정리했습니다.
-          </p>
+        <section className="gangi-today-detail-hero">
+          <div>
+            <div className="gangi-detail-kicker">구매한 풀이</div>
+            <h1>오늘 바로 쓸 말과 행동만 정리했어요</h1>
+            <p>긴 풀이 대신 지금 필요한 핵심, 조심할 점, 해볼 일을 카드로 나눠 보여드립니다.</p>
+          </div>
+          <span>550원 풀이</span>
         </section>
 
-        <section className="gangi-reading-chapters" aria-label="오늘 상세 풀이">
-          <article className="gangi-reading-chapter">
-            <div className="gangi-chapter-eyebrow">한눈에 보는 핵심</div>
-            <h2 className="gangi-chapter-title">{easyResultCopy(punchReading.verdict || report.headline)}</h2>
+        <section className="gangi-today-detail-stack" aria-label="오늘 상세 풀이">
+          <article className="gangi-today-detail-main-card">
+            <div className="gangi-detail-kicker">한눈에 보는 핵심</div>
+            <h2>{easyResultCopy(punchReading.verdict || report.headline)}</h2>
+            {punchReading.personalPoints.length > 0 ? (
+              <div className="gangi-detail-chip-row">
+                {punchReading.personalPoints.map((point) => (
+                  <span key={point}>{point}</span>
+                ))}
+              </div>
+            ) : null}
           </article>
 
           {isTimeUnknown ? (
-            <p className="gangi-reading-note">
+            <p className="gangi-today-detail-note">
               태어난 시간이 정확하지 않아 시간에 민감한 풀이는 조심해서 읽습니다.
             </p>
           ) : null}
 
-          {[
-            { title: '조심할 것', items: buildCautionPatterns(report, punchReading) },
-            { title: '해볼 것', items: buildFavorableChoices(report, punchReading) },
-            { title: '더 볼 주제', items: buildKeyThemes(report, punchReading) },
-          ].map((group) => (
-            <article key={group.title} className="gangi-reading-chapter">
-              <div className="gangi-chapter-eyebrow">{group.title}</div>
-              <ul className="gangi-chapter-list">
-                {group.items.map((item) => (
-                  <li key={`${group.title}-${item}`}>{item}</li>
-                ))}
-              </ul>
+          <div className="gangi-today-detail-focus-grid">
+            {[
+              { title: '조심', label: '오늘 줄일 것', items: buildCautionPatterns(report, punchReading) },
+              { title: '행동', label: '오늘 해볼 것', items: buildFavorableChoices(report, punchReading) },
+              { title: '단서', label: '더 볼 주제', items: buildKeyThemes(report, punchReading) },
+            ].map((group) => (
+              <article key={group.title} className="gangi-today-detail-point-card">
+                <div className="gangi-detail-kicker">{group.title}</div>
+                <h3>{group.label}</h3>
+                <ul>
+                  {group.items.map((item) => (
+                    <li key={`${group.title}-${item}`}>{item}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <div className="gangi-today-detail-action-grid">
+            <article className="gangi-today-detail-action-card" data-tone="go">
+              <div className="gangi-detail-kicker">오늘 해볼 일</div>
+              <h2>{easyResultCopy(report.primaryAction.title)}</h2>
+              <p>{easyResultCopy(report.primaryAction.description, 2)}</p>
             </article>
-          ))}
 
-          <article className="gangi-reading-chapter">
-            <div className="gangi-chapter-eyebrow">오늘 해볼 일</div>
-            <h2 className="gangi-chapter-subtitle">{easyResultCopy(report.primaryAction.title)}</h2>
-            <p className="gangi-chapter-body">{easyResultCopy(report.primaryAction.description, 2)}</p>
-          </article>
-
-          <article className="gangi-reading-chapter">
-            <div className="gangi-chapter-eyebrow">오늘 줄일 일</div>
-            <h2 className="gangi-chapter-subtitle">{easyResultCopy(report.cautionAction.title)}</h2>
-            <p className="gangi-chapter-body">{easyResultCopy(report.cautionAction.description, 2)}</p>
-          </article>
-
-          <div className="gangi-reading-chapter-heading">흐름을 조금 더 보면</div>
-          {report.timeline.map((item) => (
-            <article
-              key={item.label}
-              className="gangi-reading-chapter"
-            >
-              <div className="gangi-chapter-eyebrow">{item.label}</div>
-              <h3 className="gangi-chapter-subtitle">{easyResultCopy(item.headline)}</h3>
-              <p className="gangi-chapter-body">{easyResultCopy(item.body, 2)}</p>
+            <article className="gangi-today-detail-action-card" data-tone="stop">
+              <div className="gangi-detail-kicker">오늘 줄일 일</div>
+              <h2>{easyResultCopy(report.cautionAction.title)}</h2>
+              <p>{easyResultCopy(report.cautionAction.description, 2)}</p>
             </article>
-          ))}
+          </div>
 
-          <div className="gangi-reading-chapter-heading">분야별로 짧게</div>
-          <div className="gangi-chapter-mini-grid">
+          <div className="gangi-today-detail-section-title">흐름을 조금 더 보면</div>
+          <div className="gangi-today-detail-timeline">
+            {report.timeline.map((item) => (
+              <article key={item.label}>
+                <div className="gangi-detail-kicker">{item.label}</div>
+                <h3>{easyResultCopy(item.headline)}</h3>
+                <p>{easyResultCopy(item.body, 2)}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="gangi-today-detail-section-title">분야별로 짧게</div>
+          <div className="gangi-today-detail-score-grid">
             {scoreCards.map((score) => (
               <article
                 key={score.key}
-                className="gangi-chapter-mini"
+                className="gangi-today-detail-score-card"
               >
                 <div>{score.displayLabel}</div>
                 <p>{score.summary}</p>

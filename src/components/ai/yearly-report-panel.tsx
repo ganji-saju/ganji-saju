@@ -427,7 +427,7 @@ function MonthlyFlowCard({
       {flow.basis.length > 0 ? (
         <details className="group mt-4">
           <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-            풀이 배경 보기
+            이 달 흐름 근거 보기
           </summary>
           <div className="mt-3 grid gap-2">
             {flow.basis.map((item) => (
@@ -528,7 +528,7 @@ function CoreAreaCard({
       {item.basis.length > 0 ? (
         <details className="group mt-4">
           <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-            풀이 배경 보기
+            올해 흐름 근거 보기
           </summary>
           <div className="mt-3 grid gap-2">
             {item.basis.map((line) => (
@@ -585,7 +585,7 @@ function SupportAreaCard({
       {basis.length > 0 ? (
         <details className="group mt-4">
         <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          풀이 배경 보기
+          생활 리듬 근거 보기
         </summary>
           <div className="mt-3 grid gap-2">
             {basis.map((line) => (
@@ -1066,7 +1066,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
           <details className="group mt-6" id="yearly-evidence">
             <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-white px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-              풀이 배경 보기
+              계산 정보와 검증 보기
             </summary>
             <div className="mt-4 grid gap-4">
               <GroundingKasiSummary

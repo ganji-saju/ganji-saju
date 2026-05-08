@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { TrackedLink } from '@/components/common/tracked-link';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { Badge } from '@/components/ui/badge';
 import FortuneCalendarPanel from '@/components/ai/fortune-calendar-panel';
 import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
@@ -280,8 +281,9 @@ export default async function SajuPremiumPage({ params }: Props) {
         ];
 
   return (
-    <AppShell header={<SiteHeader />}>
-      <AppPage className="saju-readable-page space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
+      <AppPage className="gangi-subpage saju-readable-page space-y-6 pb-24">
+        <GangiPageHeader title="깊게 보기" backHref={`/saju/${slug}`} />
         <SajuScreenNav slug={slug} current="premium" />
 
         <section className="rounded-[1.6rem] border border-[var(--app-line)] bg-white p-6 shadow-[0_16px_44px_rgba(17,17,20,0.06)] sm:p-7">
@@ -289,7 +291,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
               {heroLabel}
             </Badge>
-            <h1 className="mt-5 text-3xl font-semibold text-[var(--app-ink)] sm:text-5xl">
+            <h1 className="mt-5 text-2xl font-semibold leading-tight text-[var(--app-ink)] sm:text-3xl">
               {heroTitle}
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">

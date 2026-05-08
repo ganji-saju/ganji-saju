@@ -2,20 +2,20 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowRight } from 'lucide-react';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import { SwipeSectionDeck, SwipeSectionSlide } from '@/components/layout/swipe-section-deck';
-import { Badge } from '@/components/ui/badge';
+import {
+  GangiActionRow,
+  GangiIntro,
+  GangiMiniCard,
+  GangiPageHeader,
+  GangiSection,
+} from '@/components/gangi/gangi-ui';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -87,151 +87,68 @@ export default async function SajuNaturePage({ params }: Props) {
   const seasonHints = ELEMENT_INFO[element].keywords.slice(0, 3).join(' · ');
 
   return (
-    <AppShell header={<SiteHeader />}>
-      <AppPage className="saju-readable-page space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
+      <AppPage className="gangi-subpage saju-readable-page space-y-5 pb-24">
+        <GangiPageHeader title="성향" backHref={`/saju/${slug}/overview`} />
         <SajuScreenNav slug={slug} current="nature" />
 
-        <PageHero
-          badges={
+        <GangiIntro
+          eyebrow="타고난 성향"
+          title={`${metaphor}처럼 드러나는 나`}
+          description={
             <>
-              <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-                사주 · 기본 풀이 1/2
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                {formatBirthSummary(input)}
-              </Badge>
+              장점이 살아나는 장면과 조심할 점만 짧게 봅니다.
+              <br />
+              <span>{formatBirthSummary(input)}</span>
             </>
           }
-          title="타고난 성향"
-          description="내 장점이 살아나는 장면과 조심할 점만 짧게 봅니다."
         />
 
-        <SwipeSectionDeck
-          title="성향 요약"
+        <GangiSection
+          eyebrow="핵심"
+          title="내 장점이 살아나는 장면"
+          description={guide.strength}
         >
-          <SwipeSectionSlide
-            title="타고난 성향"
-            navLabel="기질"
-          >
-            <section className="grid gap-6 xl:grid-cols-[1.06fr_0.94fr]">
-              <SectionSurface surface="hero" size="lg" className="overflow-hidden">
-            <div className="relative z-10 grid gap-6 lg:grid-cols-[0.38fr_0.62fr] lg:items-center">
-              <div className="rounded-[1.75rem] border border-[var(--app-pink-line)] bg-white px-5 py-6 text-center shadow-[0_18px_42px_rgba(216,27,114,0.1)]">
-                <div className="mx-auto flex h-22 w-22 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-2xl font-bold text-[var(--app-pink-strong)]">
-                  {ELEMENT_INFO[element].traits[0]}
-                </div>
-                <div className="mt-4 text-base font-semibold text-[var(--app-ivory)]">
-                  {ELEMENT_INFO[element].name}
-                </div>
-                <div className="mt-2 text-xs font-semibold text-[var(--app-copy-muted)]">
-                  {metaphor}
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <SectionHeader
-                  eyebrow="성향"
-                  title={`${metaphor}처럼 드러나는 기질`}
-                  description={guide.strength}
-                  titleClassName="text-3xl sm:text-[2.2rem]"
-                />
-                <div className="flex flex-wrap gap-2">
-                  {traits.map((trait) => (
-                    <span
-                      key={trait}
-                      className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink-strong)]"
-                    >
-                      {trait}
-                    </span>
-                  ))}
-                </div>
-                <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-white px-5 py-5 text-sm leading-8 text-[var(--app-copy)]">
-                  {description}
-                </div>
-              </div>
-            </div>
-          </SectionSurface>
-
-          <SupportRail
-            eyebrow="생활 힌트"
-            title="이런 장면에서 잘 살아납니다"
-            description={guide.social}
-            surface="muted"
-          >
-            <div className="grid gap-3">
-              <FeatureCard
-                eyebrow="사람 앞에서는"
-                title="힘이 붙는 장면"
-                description={guide.social}
-                surface="soft"
-              />
-              <FeatureCard
-                eyebrow="흔들릴 때"
-                title="이 부분이 먼저 거칠어질 수 있습니다"
-                description={guide.caution}
-                surface="soft"
-              />
-              <FeatureCard
-                eyebrow="균형 메모"
-                title="이렇게 쓰면 장점이 더 오래 갑니다"
-                description={guide.support}
-                surface="soft"
-              />
-            </div>
-              </SupportRail>
-            </section>
-          </SwipeSectionSlide>
-
-          <SwipeSectionSlide
-            title="생활 리듬"
-            navLabel="정리"
-          >
-            <ProductGrid columns={3}>
-          <FeatureCard
-            eyebrow="성향 키워드"
-            title={`${ELEMENT_INFO[element].name}의 느낌`}
-            description={`이 기질은 ${traits.join(' · ')} 쪽으로 강점을 보입니다.`}
-            surface="panel"
-          />
-          <FeatureCard
-            eyebrow="생활 리듬"
-            title="잘 맞는 분위기"
-            description={`${seasonHints} 쪽에서 마음이 풀리기 쉽습니다.`}
-            surface="panel"
-          />
-          <FeatureCard
-            eyebrow="다음 화면"
-            title="오행 균형 보기"
-            description="강한 쪽과 채우면 편한 쪽을 원형으로 확인합니다."
-            surface="panel"
-            footer={
-              <Link
-                href={`/saju/${slug}/elements`}
-                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
+          <div className="flex flex-wrap gap-2">
+            {traits.map((trait) => (
+              <span
+                key={trait}
+                className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink-strong)]"
               >
-                기운 균형 보기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            }
-          />
-            </ProductGrid>
+                {trait}
+              </span>
+            ))}
+          </div>
+          <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">{description}</p>
+        </GangiSection>
 
-            <section className="flex flex-wrap gap-3">
-          <Link
-            href={`/saju/${slug}/overview`}
-            className="gangi-secondary-button"
-          >
-            이전
-          </Link>
-          <Link
-            href={`/saju/${slug}/elements`}
-            className="gangi-secondary-button"
-          >
-            다음: 기운 균형
-          </Link>
-            </section>
-          </SwipeSectionSlide>
-        </SwipeSectionDeck>
+        <GangiSection
+          eyebrow="생활 힌트"
+          title="이렇게 쓰면 더 편해요"
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <GangiMiniCard label="사람 앞에서는" title="힘이 붙는 장면" desc={guide.social} />
+            <GangiMiniCard label="흔들릴 때" title="먼저 거칠어질 수 있어요" desc={guide.caution} />
+            <GangiMiniCard label="균형 메모" title="장점을 오래 쓰는 법" desc={guide.support} />
+            <GangiMiniCard label="잘 맞는 분위기" title={ELEMENT_INFO[element].name} desc={seasonHints} />
+          </div>
+        </GangiSection>
+
+        <GangiSection
+          tone="pink"
+          eyebrow="다음"
+          title="기운 균형도 이어서 볼 수 있어요"
+          description="강한 쪽과 채우면 편한 쪽을 원형으로 확인합니다."
+        >
+          <GangiActionRow>
+            <Link href={`/saju/${slug}/elements`} className="gangi-primary-button">
+              기운 균형 보기 <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href={`/saju/${slug}/overview`} className="gangi-secondary-button">
+              내 사주로 돌아가기
+            </Link>
+          </GangiActionRow>
+        </GangiSection>
       </AppPage>
     </AppShell>
   );

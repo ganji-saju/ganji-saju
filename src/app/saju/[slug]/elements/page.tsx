@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowRight } from 'lucide-react';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SupportRail } from '@/components/layout/support-rail';
-import { SwipeSectionDeck, SwipeSectionSlide } from '@/components/layout/swipe-section-deck';
-import { Badge } from '@/components/ui/badge';
+import {
+  GangiActionRow,
+  GangiIntro,
+  GangiMiniCard,
+  GangiPageHeader,
+  GangiSection,
+} from '@/components/gangi/gangi-ui';
 import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
@@ -14,7 +16,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -77,144 +79,103 @@ export default async function SajuElementsPage({ params }: Props) {
   const supportGuide = ELEMENT_SUPPORT_GUIDE[weakest];
 
   return (
-    <AppShell header={<SiteHeader />}>
-      <AppPage className="saju-readable-page space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
+      <AppPage className="gangi-subpage saju-readable-page space-y-5 pb-24">
+        <GangiPageHeader title="기운 균형" backHref={`/saju/${slug}/nature`} />
         <SajuScreenNav slug={slug} current="elements" />
 
-        <PageHero
-          badges={
+        <GangiIntro
+          eyebrow="오행 균형"
+          title={`${ELEMENT_INFO[dominant].name}이 강하고, ${ELEMENT_INFO[weakest].name}을 채우면 편해요`}
+          description={
             <>
-              <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]">
-                사주 · 기본 풀이 2/2
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-                {formatBirthSummary(input)}
-              </Badge>
+              복잡한 점수보다 생활에서 어떤 균형을 잡으면 좋은지 먼저 보여드립니다.
+              <br />
+              <span>{formatBirthSummary(input)}</span>
             </>
           }
-          title="기운 균형"
-          description="강한 쪽과 채우면 편한 쪽만 먼저 봅니다."
         />
 
-        <SwipeSectionDeck
-          title="오행 균형"
+        <GangiSection
+          eyebrow="내 기운의 모양"
+          title="다섯 기운을 한눈에 봅니다"
+          description={`${ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고, ${ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있습니다.`}
         >
-          <SwipeSectionSlide
-            title="내 기운의 모양"
-            navLabel="균형"
-          >
-            <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-              <section className="app-hero-card app-section-frame-lg overflow-hidden">
-            <div className="relative z-10">
-              <div className="app-caption">다섯 기운의 배치</div>
-              <h2 className="mt-3 text-3xl font-semibold leading-tight text-[var(--app-ink)] sm:text-[2.35rem]">
-                {ELEMENT_INFO[dominant].name}이 강하고, {ELEMENT_INFO[weakest].name}을 채우면 편해요
-              </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-8 text-[var(--app-copy)]">
-                복잡한 점수보다 생활에서 어떤 균형을 잡으면 좋은지 먼저 보여드립니다.
-              </p>
-              <div className="mt-8">
-                <FiveElementOrbitChart
-                  byElement={sajuData.fiveElements.byElement}
-                  dominant={dominant}
-                  weakest={weakest}
-                />
-              </div>
-            </div>
-          </section>
+          <FiveElementOrbitChart
+            byElement={sajuData.fiveElements.byElement}
+            dominant={dominant}
+            weakest={weakest}
+          />
+        </GangiSection>
 
-          <SupportRail
-            eyebrow="균형 메모"
-            title="이렇게 채우면 편해집니다"
-            description={`${ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고, ${ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있습니다. ${supportGuide.support}`}
-            surface="muted"
-          >
-            <div className="grid gap-3">
-              <FeatureCard
-                eyebrow="강한 쪽"
-                title={ELEMENT_INFO[dominant].name}
-                description={`${ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.`}
-                surface="soft"
+        <GangiSection
+          eyebrow="균형 메모"
+          title="이렇게 채우면 편해집니다"
+          description={supportGuide.support}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <GangiMiniCard
+              label="강한 쪽"
+              title={ELEMENT_INFO[dominant].name}
+              desc={`${ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.`}
+            />
+            <GangiMiniCard
+              label="채울 쪽"
+              title={supportGuide.label}
+              desc={`${ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.`}
+            />
+            {supportGuide.habits.slice(0, 2).map((habit, index) => (
+              <GangiMiniCard
+                key={habit}
+                label={`작은 습관 ${index + 1}`}
+                title={habit}
               />
-              <FeatureCard
-                eyebrow="채울 쪽"
-                title={supportGuide.label}
-                description={`${ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.`}
-                surface="soft"
-              />
-              <FeatureCard
-                eyebrow="작은 습관"
-                title="생활에서 먼저 써볼 것"
-                description={
-                  <div className="grid gap-2">
-                    {supportGuide.habits.map((habit) => (
-                      <div
-                        key={habit}
-                        className="rounded-[0.95rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-3 text-sm leading-7 text-[var(--app-copy)]"
-                      >
-                        {habit}
-                      </div>
-                    ))}
-                  </div>
-                }
-                surface="soft"
-              />
-            </div>
-              </SupportRail>
-            </section>
-          </SwipeSectionSlide>
+            ))}
+          </div>
+        </GangiSection>
 
-          <SwipeSectionSlide
-            title="기운별 보기"
-            navLabel="기운별"
-          >
-            <ProductGrid columns={3}>
-          {ELEMENT_ORDER.map((element) => {
-            const value = sajuData.fiveElements.byElement[element];
-            const isDominant = dominant === element;
-            const isWeakest = weakest === element;
+        <GangiSection
+          eyebrow="기운별 보기"
+          title="각 기운은 이렇게 분포되어 있어요"
+        >
+          <div className="grid grid-cols-2 gap-3">
+            {ELEMENT_ORDER.map((element) => {
+              const value = sajuData.fiveElements.byElement[element];
+              const isDominant = dominant === element;
+              const isWeakest = weakest === element;
 
-            return (
-              <FeatureCard
-                key={element}
-                eyebrow={isDominant ? '강한 쪽' : isWeakest ? '채울 쪽' : '분포'}
-                title={`${ELEMENT_INFO[element].name} ${Math.round(value.percentage)}%`}
-                description={`${ELEMENT_INFO[element].traits.slice(0, 2).join(' · ')} 쪽으로 ${value.state} 흐름입니다.`}
-                surface={isDominant ? 'panel' : 'muted'}
-                badge={
-                  <span
-                    className="rounded-full border px-3 py-1 text-[11px]"
-                    style={{
-                      borderColor: `${ELEMENT_INFO[element].color}55`,
-                      color: ELEMENT_INFO[element].color,
-                      backgroundColor: `${ELEMENT_INFO[element].color}18`,
-                    }}
-                  >
-                    {ELEMENT_INFO[element].keywords.slice(0, 2).join(' · ')}
-                  </span>
-                }
-              />
-            );
-          })}
-            </ProductGrid>
+              return (
+                <div
+                  key={element}
+                  className="gangi-mini-card"
+                  style={{
+                    borderColor: isDominant || isWeakest ? `${ELEMENT_INFO[element].color}55` : undefined,
+                  }}
+                >
+                  <span>{isDominant ? '강한 쪽' : isWeakest ? '채울 쪽' : '분포'}</span>
+                  <strong>{ELEMENT_INFO[element].name} {Math.round(value.percentage)}%</strong>
+                  <p>{ELEMENT_INFO[element].traits.slice(0, 2).join(' · ')}</p>
+                </div>
+              );
+            })}
+          </div>
+        </GangiSection>
 
-            <section className="flex flex-wrap gap-3">
-          <Link
-            href={`/saju/${slug}/nature`}
-            className="gangi-secondary-button"
-          >
-            이전
-          </Link>
-          <Link
-            href={`/saju/${slug}/premium`}
-            className="gangi-secondary-button"
-          >
-            다음: 깊은 사주풀이
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-            </section>
-          </SwipeSectionSlide>
-        </SwipeSectionDeck>
+        <GangiSection
+          tone="pink"
+          eyebrow="다음"
+          title="더 깊게 보고 싶다면"
+          description="성향, 올해 흐름, 돈·일·관계 조언을 한 번에 이어서 봅니다."
+        >
+          <GangiActionRow>
+            <Link href={`/saju/${slug}/premium`} className="gangi-primary-button">
+              깊은 사주풀이 보기 <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link href={`/saju/${slug}/nature`} className="gangi-secondary-button">
+              성향으로 돌아가기
+            </Link>
+          </GangiActionRow>
+        </GangiSection>
       </AppPage>
     </AppShell>
   );
