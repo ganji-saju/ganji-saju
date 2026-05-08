@@ -16,6 +16,7 @@ type ReadingMetadataSchemaVersion = typeof SAJU_READING_METADATA_V1;
 type ReportGenerationSource = 'openai' | 'fallback' | null;
 
 export interface SajuBirthInputSnapshot {
+  name?: string | null;
   year: number;
   month: number;
   day: number;
@@ -71,6 +72,7 @@ export interface SajuReportRuntimeMetadata extends SajuPersistedReadingMetadata 
 
 function buildBirthInputSnapshot(input: BirthInput): SajuBirthInputSnapshot {
   return {
+    name: input.name ?? null,
     year: input.year,
     month: input.month,
     day: input.day,

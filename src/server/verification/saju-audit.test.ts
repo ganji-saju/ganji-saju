@@ -22,4 +22,14 @@ test('saju verification audit exposes calculation trace for deterministic slug',
   assert.ok(audit.calculation.yongsin?.rationale.length);
   assert.ok(audit.report.evidenceCards.length > 0);
   assert.ok(audit.checks.some((check) => check.key === 'legacy-classical-citation-layer'));
+  assert.ok(audit.checks.some((check) => check.key === 'similarity-prompt-divergence'));
+  assert.ok(audit.checks.some((check) => check.key === 'similarity-personalization-divergence'));
+  assert.ok(audit.outputSimilarity);
+  assert.equal(audit.outputSimilarity.samples[0].slug, '1982-1-29-8-male');
+  assert.equal(audit.outputSimilarity.samples[1].input.hour, 22);
+  assert.ok(
+    audit.outputSimilarity.differences.some((difference) => difference.startsWith('시주 '))
+  );
+  assert.equal(audit.outputSimilarity.checks.promptDiverges, true);
+  assert.equal(audit.outputSimilarity.checks.personalizationDiverges, true);
 });

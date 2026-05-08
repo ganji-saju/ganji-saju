@@ -9,6 +9,7 @@ import type {
   SajuInterpretationGrounding,
 } from './grounding-types';
 import { SAJU_EVIDENCE_JSON_V1, SAJU_FACT_JSON_V1 } from './grounding-types';
+import { buildSajuPersonalizationContext } from './personalization-context';
 
 function getPrimaryConcept(report: SajuReport) {
   const primaryEvidence = report.evidenceCards.find((card) => card.key === 'yongsin') ?? report.evidenceCards[0];
@@ -211,5 +212,6 @@ export function buildSajuInterpretationGrounding(
   return {
     factJson: buildFactJson(input, data),
     evidenceJson: buildEvidenceJson(data, report),
+    personalizationContext: buildSajuPersonalizationContext(data),
   };
 }

@@ -5,6 +5,7 @@ import {
   buildSajuReport,
   SAJU_EVIDENCE_JSON_V1,
   SAJU_FACT_JSON_V1,
+  SAJU_PERSONALIZATION_CONTEXT_V1,
 } from '@/domain/saju/report';
 import type { BirthInput } from '@/lib/saju/types';
 
@@ -26,6 +27,7 @@ test('buildSajuInterpretationGrounding creates fact_json and evidence_json from 
 
   assert.equal(grounding.factJson.schemaVersion, SAJU_FACT_JSON_V1);
   assert.equal(grounding.evidenceJson.schemaVersion, SAJU_EVIDENCE_JSON_V1);
+  assert.equal(grounding.personalizationContext.schemaVersion, SAJU_PERSONALIZATION_CONTEXT_V1);
   assert.ok(grounding.factJson.metadata.ruleSetVersion.length > 0);
   assert.equal(grounding.factJson.pillars.day.ganzi, data.pillars.day.ganzi);
   assert.equal(grounding.factJson.dayMaster.stem, data.dayMaster.stem);
@@ -38,4 +40,16 @@ test('buildSajuInterpretationGrounding creates fact_json and evidence_json from 
   );
   assert.ok(grounding.evidenceJson.classics.cards.length > 0);
   assert.ok(grounding.evidenceJson.classics.cards.some((card) => card.key === 'yongsin'));
+  assert.equal(grounding.personalizationContext.dayGanziHanja, data.pillars.day.ganzi);
+  assert.match(grounding.personalizationContext.dayGanziCode, /^[가-힣]{2}$/);
+  assert.ok(grounding.personalizationContext.sixtyGapja);
+  assert.deepEqual(
+    Object.keys(grounding.personalizationContext.fiveElementRatio).sort(),
+    ['금', '목', '수', '토', '화'].sort()
+  );
+  assert.deepEqual(
+    Object.keys(grounding.personalizationContext.tenGodDistribution).sort(),
+    ['비겁', '식상', '재성', '관성', '인성'].sort()
+  );
+  assert.ok(grounding.personalizationContext.promptFacts.some((item) => item.includes('일주코드')));
 });

@@ -76,11 +76,11 @@ test('buildFallbackInterpretation can derive summary and insights from grounding
 
   const interpretation = buildFallbackInterpretation(report, 'female', grounding);
 
-  assert.match(interpretation.summary, /흐름|균형|역할|보완/);
-  assert.ok(interpretation.insights.some((item) => /흐름|균형|역할|관계|보완/.test(item)));
+  assert.match(interpretation.summary, /흐름|바탕|균형|역할|보완/);
+  assert.ok(interpretation.insights.some((item) => /오늘의 방향|강점|주의|흐름|균형/.test(item)));
 });
 
-test('createInterpretationPrompt now sends fact and evidence JSON without report fallback prose', () => {
+test('createInterpretationPrompt sends personalization, fact, and evidence JSON without report fallback prose', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'today');
   const grounding = buildSajuInterpretationGrounding(birthInput, data, report);
@@ -96,8 +96,60 @@ test('createInterpretationPrompt now sends fact and evidence JSON without report
     null
   );
 
-  assert.match(prompt.instructions, /factJson과 evidenceJson/);
+  assert.match(prompt.instructions, /personalizationContext/);
+  assert.match(prompt.instructions, /서로 다른 사주가 같은/);
+  assert.match(prompt.input, /\[사주 원국\]/);
+  assert.match(prompt.input, /일주:/);
+  assert.match(prompt.input, /오행:/);
+  assert.match(prompt.input, /십성:/);
+  assert.match(prompt.input, /\[이 사주의 고유 특성\]/);
+  assert.match(prompt.input, /\[풀이 지시\]/);
+  assert.match(prompt.instructions, /factJson/);
+  assert.match(prompt.input, /"personalizationContext"/);
+  assert.match(prompt.input, /"dayGanziCode"/);
   assert.match(prompt.input, /"factJson"/);
   assert.match(prompt.input, /"evidenceJson"/);
   assert.doesNotMatch(prompt.input, /reportFallback/);
+});
+
+test('createInterpretationPrompt makes visibly different source prompts for different birth data', () => {
+  const firstData = normalizeToSajuDataV1(birthInput, null);
+  const firstReport = buildSajuReport(birthInput, firstData, 'today');
+  const firstGrounding = buildSajuInterpretationGrounding(birthInput, firstData, firstReport);
+  const secondBirthInput: BirthInput = {
+    year: 1995,
+    month: 6,
+    day: 15,
+    hour: 22,
+    gender: 'female',
+  };
+  const secondData = normalizeToSajuDataV1(secondBirthInput, null);
+  const secondReport = buildSajuReport(secondBirthInput, secondData, 'today');
+  const secondGrounding = buildSajuInterpretationGrounding(secondBirthInput, secondData, secondReport);
+
+  const firstPrompt = createInterpretationPrompt(
+    firstGrounding,
+    {
+      topic: firstReport.focusTopic,
+      label: firstReport.focusLabel,
+      scoreKey: firstReport.focusScoreKey,
+    },
+    'female',
+    null
+  );
+  const secondPrompt = createInterpretationPrompt(
+    secondGrounding,
+    {
+      topic: secondReport.focusTopic,
+      label: secondReport.focusLabel,
+      scoreKey: secondReport.focusScoreKey,
+    },
+    'female',
+    null
+  );
+
+  assert.notEqual(firstGrounding.personalizationContext.dayGanziCode, secondGrounding.personalizationContext.dayGanziCode);
+  assert.notEqual(firstPrompt.input, secondPrompt.input);
+  assert.match(firstPrompt.input, new RegExp(firstGrounding.personalizationContext.dayGanziCode));
+  assert.match(secondPrompt.input, new RegExp(secondGrounding.personalizationContext.dayGanziCode));
 });

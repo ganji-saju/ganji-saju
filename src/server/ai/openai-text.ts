@@ -12,6 +12,7 @@ export interface AiTextRequest {
   fallbackText: string;
   model?: string;
   maxOutputTokens?: number;
+  temperature?: number;
   timeoutMs?: number;
 }
 
@@ -80,6 +81,7 @@ export async function generateAiText(
       instructions: request.instructions,
       input: request.input,
       max_output_tokens: request.maxOutputTokens ?? 700,
+      temperature: request.temperature ?? undefined,
       store: false,
     });
     const text = response.output_text?.trim();

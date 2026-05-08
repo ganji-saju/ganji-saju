@@ -720,6 +720,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       return;
     }
 
+    const readingInput = {
+      ...parsed.input,
+      name: form.nickname.trim() || undefined,
+    };
+
     setIsSubmitting(true);
     setErrorMessage('');
 
@@ -727,7 +732,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       const response = await fetch('/api/readings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed.input),
+        body: JSON.stringify(readingInput),
       });
 
       const data = await response.json();
@@ -747,7 +752,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         focusTopic: form.focusTopic,
         calendarType: form.calendarType,
         timeRule: form.timeRule,
-        unknownBirthTime: parsed.input.unknownTime,
+        unknownBirthTime: readingInput.unknownTime,
         layout: 'swipe',
       });
 
@@ -763,26 +768,26 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             displayName: form.nickname.trim() || '나',
             calendarType: form.calendarType,
             timeRule: form.timeRule,
-            unknownBirthTime: parsed.input.unknownTime,
-            birthYear: parsed.input.year,
-            birthMonth: parsed.input.month,
-            birthDay: parsed.input.day,
-            birthHour: parsed.input.hour ?? null,
-            birthMinute: parsed.input.minute ?? null,
+            unknownBirthTime: readingInput.unknownTime,
+            birthYear: readingInput.year,
+            birthMonth: readingInput.month,
+            birthDay: readingInput.day,
+            birthHour: readingInput.hour ?? null,
+            birthMinute: readingInput.minute ?? null,
             birthLocationCode:
-              parsed.input.birthLocation?.code ?? form.birthLocationCode ?? null,
-            birthLocationLabel: parsed.input.birthLocation?.label ?? '',
-            birthLatitude: parsed.input.birthLocation?.latitude ?? null,
-            birthLongitude: parsed.input.birthLocation?.longitude ?? null,
-            solarTimeMode: parsed.input.solarTimeMode ?? 'standard',
-            gender: parsed.input.gender ?? null,
+              readingInput.birthLocation?.code ?? form.birthLocationCode ?? null,
+            birthLocationLabel: readingInput.birthLocation?.label ?? '',
+            birthLatitude: readingInput.birthLocation?.latitude ?? null,
+            birthLongitude: readingInput.birthLocation?.longitude ?? null,
+            solarTimeMode: readingInput.solarTimeMode ?? 'standard',
+            gender: readingInput.gender ?? null,
           }),
         }).catch(() => undefined);
       }
 
       router.push(buildPostSubmitHref(data.id, form.focusTopic, pendingProduct, pendingPlan));
     } catch {
-      const fallbackId = toSlug(parsed.input);
+      const fallbackId = toSlug(readingInput);
       if (!consentAccepted) {
         saveAcceptedRequiredConsents();
         setConsentAccepted(true);
@@ -793,7 +798,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         focusTopic: form.focusTopic,
         calendarType: form.calendarType,
         timeRule: form.timeRule,
-        unknownBirthTime: parsed.input.unknownTime,
+        unknownBirthTime: readingInput.unknownTime,
         layout: 'swipe',
       });
       if (form.loadedProfileSource !== 'family') {

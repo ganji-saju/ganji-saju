@@ -50,7 +50,7 @@ test('profile personalization helpers build slugs from saved MY profile', () => 
 
   assert.equal(buildStarSignSlugFromProfile(profile), 'aquarius');
   assert.equal(buildZodiacSlugFromProfile(profile), 'rooster');
-  assert.equal(buildProfileReadingSlug(profile), '1982-1-29-8-m45-male');
+  assert.equal(buildProfileReadingSlug(profile), '1982-1-29-8-m45-male-key03773a8');
 });
 
 test('deriveZodiacSlugFromBirthInput follows saju year pillar instead of simple calendar year', () => {

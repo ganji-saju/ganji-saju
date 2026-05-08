@@ -5,6 +5,7 @@ declare const test: (name: string, fn: () => void) => void;
 
 test('parseBirthInputDraft accepts preset birth location and longitude correction mode', () => {
   const parsed = parseBirthInputDraft({
+    name: ' 홍길동 ',
     year: '1982',
     month: '1',
     day: '29',
@@ -20,6 +21,7 @@ test('parseBirthInputDraft accepts preset birth location and longitude correctio
 
   assert.equal(parsed.input.birthLocation?.label, '서울');
   assert.equal(parsed.input.solarTimeMode, 'longitude');
+  assert.equal(parsed.input.name, '홍길동');
 });
 
 test('parseBirthInputDraft keeps direct birthLocation object from resolved input', () => {

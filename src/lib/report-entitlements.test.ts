@@ -7,7 +7,7 @@ import {
 
 test('normalizeEntitlementReadingKeys keeps canonical first and de-duplicates legacy aliases', () => {
   assert.deepEqual(
-    normalizeEntitlementReadingKeys('1982-1-29-8-male', [
+    normalizeEntitlementReadingKeys('1982-1-29-8-male-key12wkkzj', [
       'bc9963e5-eb00-4d97-8393-c5930273e7d4',
       '1982-1-29-8-male',
       '  ',
@@ -15,7 +15,11 @@ test('normalizeEntitlementReadingKeys keeps canonical first and de-duplicates le
       undefined,
       'bc9963e5-eb00-4d97-8393-c5930273e7d4',
     ]),
-    ['1982-1-29-8-male', 'bc9963e5-eb00-4d97-8393-c5930273e7d4']
+    [
+      '1982-1-29-8-male-key12wkkzj',
+      '1982-1-29-8-male',
+      'bc9963e5-eb00-4d97-8393-c5930273e7d4',
+    ]
   );
 });
 

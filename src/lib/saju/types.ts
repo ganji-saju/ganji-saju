@@ -33,6 +33,7 @@ export interface SajuResult {
 }
 
 export interface BirthInput {
+  name?: string;
   year: number;
   month: number;
   day: number;

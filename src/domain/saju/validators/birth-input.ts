@@ -2,6 +2,7 @@ import type { BirthInput } from '@/lib/saju/types';
 import { DEFAULT_BIRTH_TIMEZONE, getBirthLocationPreset } from '@/lib/saju/birth-location';
 
 export interface BirthInputDraft {
+  name?: unknown;
   year?: unknown;
   month?: unknown;
   day?: unknown;
@@ -216,8 +217,10 @@ export function parseBirthInputDraft(
 
   const solarTimeMode: BirthInput['solarTimeMode'] =
     draft.solarTimeMode === 'longitude' && birthLocation ? 'longitude' : 'standard';
+  const name = readString(draft.name);
 
   const input: BirthInput = {
+    name: name || undefined,
     year,
     month,
     day,

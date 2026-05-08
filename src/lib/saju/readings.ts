@@ -103,6 +103,7 @@ function deriveBirthInputFromSajuData(
   sajuData: SajuDataV1
 ): BirthInput {
   return {
+    name: fallback.name,
     year: sajuData.input.birth.year,
     month: sajuData.input.birth.month,
     day: sajuData.input.birth.day,
@@ -132,20 +133,22 @@ export function isReadingId(value: string): boolean {
 }
 
 function mapReadingRow(row: ReadingRow): ReadingRecord {
+  const persisted = extractPersistedReadingEnvelope(row.result_json);
   const input: BirthInput = {
+    name: persisted._metadata?.birthInputSnapshot.name ?? undefined,
     year: row.birth_year,
     month: row.birth_month,
     day: row.birth_day,
     hour: row.birth_hour ?? undefined,
     gender: row.gender ?? undefined,
   };
-  const persisted = extractPersistedReadingEnvelope(row.result_json);
   const sajuData = normalizeToSajuDataV1(input, row.result_json);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
   const grounding =
-    persisted._grounding ??
-    buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
+    persisted._grounding?.personalizationContext
+      ? persisted._grounding
+      : buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
   const metadata =
     persisted._metadata ??
     buildPersistedSajuReadingMetadata(normalizedInput, sajuData, grounding, persisted._kasiComparison ?? null);

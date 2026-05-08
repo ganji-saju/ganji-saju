@@ -3,8 +3,10 @@ import type { SajuPillar } from '@/domain/saju/engine/saju-data-v1';
 import type { FocusTopic, ReportEvidenceKey } from '@/domain/saju/report/types';
 import { isReadingId, resolveReading } from '@/lib/saju/readings';
 import { compareBirthInputWithKasi } from '@/domain/saju/validation/kasi-calendar';
+import { buildSajuOutputSimilarityAudit } from './saju-output-similarity';
 
 const DEFAULT_AUDIT_SLUG = '1982-1-29-8-male';
+const DEFAULT_SIMILARITY_COMPARISON_SLUG = '1982-1-29-22-male';
 
 export type SajuAuditStatus = 'ready' | 'not-found' | 'error';
 
@@ -55,9 +57,11 @@ function formatPillar(pillar: SajuPillar) {
 
 export async function getSajuVerificationAudit({
   slug = DEFAULT_AUDIT_SLUG,
+  compareSlug,
   topic,
 }: {
   slug?: string;
+  compareSlug?: string;
   topic?: string;
 } = {}) {
   const generatedAt = new Date().toISOString();
@@ -80,6 +84,16 @@ export async function getSajuVerificationAudit({
     const report = buildSajuReport(reading.input, data, normalizedTopic);
     const conceptForClassics = chooseClassicConcept(report);
     const grounding = buildSajuInterpretationGrounding(reading.input, data, report);
+    const similarityCompareSlug =
+      compareSlug ??
+      (slug === DEFAULT_SIMILARITY_COMPARISON_SLUG
+        ? DEFAULT_AUDIT_SLUG
+        : DEFAULT_SIMILARITY_COMPARISON_SLUG);
+    const outputSimilarity = await buildSajuOutputSimilarityAudit({
+      slugA: slug,
+      slugB: similarityCompareSlug,
+      topic: normalizedTopic,
+    });
     const legacyCitations = Array.isArray(
       (report as unknown as Record<string, unknown>).classicalCitations
     )
@@ -173,6 +187,32 @@ export async function getSajuVerificationAudit({
           ? 'buildSajuReport가 아직 구형 classicalCitations를 생성합니다. 화면/API/AI grounding에서 제거해야 합니다.'
           : '구형 고전 요약 레이어가 제거되었습니다.',
       },
+      {
+        key: 'similarity-prompt-divergence',
+        label: '두 입력 프롬프트 차이',
+        ok: outputSimilarity?.checks.promptDiverges ?? false,
+        detail: outputSimilarity
+          ? `비교 ${slug} ↔ ${similarityCompareSlug} · 프롬프트 유사도 ${outputSimilarity.metrics.promptInputSimilarity} / 허용 상한 ${outputSimilarity.threshold.promptMaxSimilarity}`
+          : `비교 대상 ${similarityCompareSlug} 결과를 만들지 못했습니다.`,
+      },
+      {
+        key: 'similarity-personalization-divergence',
+        label: '개인화 컨텍스트 차이',
+        ok: outputSimilarity?.checks.personalizationDiverges ?? false,
+        detail: outputSimilarity
+          ? `개인화 유사도 ${outputSimilarity.metrics.personalizationSimilarity} / 허용 상한 ${outputSimilarity.threshold.personalizationMaxSimilarity} · 차이: ${
+              outputSimilarity.differences.join(', ') || '감지 안 됨'
+            }`
+          : `비교 대상 ${similarityCompareSlug} 결과를 만들지 못했습니다.`,
+      },
+      {
+        key: 'similarity-report-surface-divergence',
+        label: '무료 결과 문구 차이',
+        ok: outputSimilarity?.checks.reportDiverges ?? false,
+        detail: outputSimilarity
+          ? `화면 문구 유사도 ${outputSimilarity.metrics.reportTextSimilarity} / 허용 상한 ${outputSimilarity.threshold.reportMaxSimilarity}`
+          : `비교 대상 ${similarityCompareSlug} 결과를 만들지 못했습니다.`,
+      },
     ];
 
     return {
@@ -238,6 +278,7 @@ export async function getSajuVerificationAudit({
       },
       grounding,
       kasiValidation,
+      outputSimilarity,
       checks,
       warnings: checks.filter((check) => !check.ok).map((check) => check.detail),
       errors: [],

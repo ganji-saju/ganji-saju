@@ -9,7 +9,7 @@ import {
 } from '@/lib/counselors';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 
-export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v4';
+export const SAJU_INTERPRETATION_PROMPT_VERSION = 'saju-interpret-v6';
 
 export interface SajuAiInterpretation {
   headline: string;
@@ -54,6 +54,7 @@ export function buildFallbackInterpretation(
   const summaryPrefix =
     counselorId === 'male' ? '핵심부터 보면, ' : '흐름을 차분히 읽어보면, ';
   const evidenceCards = grounding?.evidenceJson.classics.cards ?? [];
+  const personalContext = grounding?.personalizationContext;
   const primaryConcept = grounding?.evidenceJson.primaryConcept ?? null;
   const strengthSummary =
     grounding?.evidenceJson.strength.level && grounding?.evidenceJson.strength.score !== null
@@ -72,6 +73,9 @@ export function buildFallbackInterpretation(
       : null;
   const summaryCore = cleanText(
     compactStrings([
+      personalContext?.sixtyGapja
+        ? `${personalContext.sixtyGapja.title} 흐름이 기본 바탕입니다. ${personalContext.sixtyGapja.core}`
+        : null,
       primaryConcept ? `${primaryConcept} 흐름을 참고했습니다.` : null,
       strengthSummary,
       patternSummary,
@@ -80,6 +84,18 @@ export function buildFallbackInterpretation(
     ]).join(' '),
     MAX_SUMMARY_LENGTH
   );
+
+  const personalInsights = compactStrings([
+    personalContext?.sixtyGapja?.actionCue
+      ? `오늘의 방향: ${personalContext.sixtyGapja.actionCue}`
+      : null,
+    personalContext?.sixtyGapja?.strengths[0]
+      ? `강점: ${personalContext.sixtyGapja.strengths[0]}을 살리면 좋습니다.`
+      : null,
+    personalContext?.sixtyGapja?.watchPoints[0]
+      ? `주의: ${personalContext.sixtyGapja.watchPoints[0]}`
+      : null,
+  ]).map((item) => cleanText(simplifySajuCopy(item), MAX_INSIGHT_LENGTH));
 
   const groundingInsights = evidenceCards
     .slice(0, 3)
@@ -100,7 +116,9 @@ export function buildFallbackInterpretation(
       MAX_SUMMARY_LENGTH
     ),
     insights:
-      groundingInsights.length > 0
+      personalInsights.length > 0
+        ? personalInsights
+        : groundingInsights.length > 0
         ? groundingInsights.map((item) => cleanText(simplifySajuCopy(item), MAX_INSIGHT_LENGTH))
         : reportInsights.length > 0
           ? reportInsights.map((item) => cleanText(simplifySajuCopy(item), MAX_INSIGHT_LENGTH))
@@ -128,6 +146,128 @@ function extractJsonCandidate(text: string) {
   }
 
   return text;
+}
+
+const PROMPT_ELEMENT_ORDER = ['목', '화', '토', '금', '수'] as const;
+const PROMPT_TEN_GOD_ORDER = ['비겁', '식상', '재성', '관성', '인성'] as const;
+
+function classifyPromptStrength(value: number) {
+  if (value <= 0) return '없음';
+  if (value >= 2.5) return '강';
+  if (value >= 1.2) return '중';
+  return '약';
+}
+
+function formatRatio(value: number) {
+  return Number.isInteger(value) ? `${value}` : `${value.toFixed(1)}`;
+}
+
+function buildFiveElementLine(grounding: SajuInterpretationGrounding) {
+  const ratio = grounding.personalizationContext.fiveElementRatio;
+  return PROMPT_ELEMENT_ORDER.map((element) => `${element}${formatRatio(ratio[element] ?? 0)}%`).join(' ');
+}
+
+function buildTenGodLine(grounding: SajuInterpretationGrounding) {
+  const distribution = grounding.personalizationContext.tenGodDistribution;
+
+  return PROMPT_TEN_GOD_ORDER.map((group) => {
+    const value = distribution[group] ?? 0;
+    return `${group}(${classifyPromptStrength(value)}${value > 0 ? ` ${formatRatio(value)}` : ''})`;
+  }).join(' ');
+}
+
+function buildYongsinLine(grounding: SajuInterpretationGrounding) {
+  const yongsin = grounding.personalizationContext.yongsinKiyshin;
+
+  return [
+    yongsin.용신 ? `용신: ${yongsin.용신}` : '용신: 미산정',
+    yongsin.희신 ? `희신: ${yongsin.희신}` : null,
+    yongsin.기신 ? `기신: ${yongsin.기신}` : null,
+  ].filter(Boolean).join(' / ');
+}
+
+function buildStrengthLine(grounding: SajuInterpretationGrounding) {
+  const strength = grounding.personalizationContext.strengthJudgement;
+  return `${strength.일간강약 ?? '미산정'} (${strength.월령득기 ? '월령 득기' : '월령 보통'})`;
+}
+
+function buildElementImbalanceLines(grounding: SajuInterpretationGrounding) {
+  const ratio = grounding.personalizationContext.fiveElementRatio;
+
+  return PROMPT_ELEMENT_ORDER.flatMap((element) => {
+    const value = ratio[element] ?? 0;
+
+    if (value >= 35) {
+      return [`${element}가 강함: 이 기운은 장점으로 쓰면 추진력이나 존재감이 되지만, 과하면 속도 조절이 필요합니다.`];
+    }
+
+    if (value === 0) {
+      return [`${element}가 없음: 이 영역은 의식적으로 빌려 써야 하며, 생활 루틴과 선택 방식에서 보완이 필요합니다.`];
+    }
+
+    if (value <= 10) {
+      return [`${element}가 약함: 이 기운은 쉽게 부족해질 수 있어 하루 선택에서 작게 보완해야 합니다.`];
+    }
+
+    return [];
+  }).slice(0, 3);
+}
+
+function buildStructuredInterpretationInput(
+  grounding: SajuInterpretationGrounding,
+  focus: {
+    topic: FocusTopic;
+    label: string;
+    scoreKey: ReportScore['key'];
+  },
+  counselorId: MoonlightCounselorId,
+  recentFeedbackSummary?: string | null
+) {
+  const context = grounding.personalizationContext;
+  const rawPayload = {
+    counselor: { id: counselorId },
+    focus,
+    recentFeedbackSummary: recentFeedbackSummary ?? null,
+    personalizationContext: context,
+    factJson: grounding.factJson,
+    evidenceJson: grounding.evidenceJson,
+  };
+
+  return [
+    '[사주 원국]',
+    `일주: ${context.dayGanziHanja} (${context.dayGanziCode}) — ${
+      context.sixtyGapja
+        ? `${context.sixtyGapja.title}. ${context.sixtyGapja.core}`
+        : '60갑자 특성 데이터 없음'
+    }`,
+    `오행: ${buildFiveElementLine(grounding)}`,
+    `십성: ${buildTenGodLine(grounding)}`,
+    `일간 강약: ${buildStrengthLine(grounding)}`,
+    buildYongsinLine(grounding),
+    `대운현황: ${context.currentLuck.현재대운 ?? '미산정'}${
+      context.currentLuck.진행년수 !== null ? ` · 진행 ${context.currentLuck.진행년수}년차` : ''
+    }`,
+    '',
+    '[이 사주의 고유 특성]',
+    ...compactStrings([
+      context.sixtyGapja ? `- ${context.dayGanziCode}일주 특성: ${context.sixtyGapja.core}` : null,
+      context.sixtyGapja?.strengths[0] ? `- 강점 후보: ${context.sixtyGapja.strengths.join(' / ')}` : null,
+      context.sixtyGapja?.watchPoints[0] ? `- 주의 후보: ${context.sixtyGapja.watchPoints.join(' / ')}` : null,
+      context.sixtyGapja?.actionCue ? `- 행동 후보: ${context.sixtyGapja.actionCue}` : null,
+      ...buildElementImbalanceLines(grounding),
+    ]),
+    '',
+    '[풀이 지시]',
+    '- 이 사람만의 구체적 특성을 중심으로 풀이하라.',
+    '- 누구에게나 맞는 일반적인 사주 해설, 평균적인 위로, 반복 문장을 쓰지 말 것.',
+    '- 일주, 오행 불균형, 십성 분포, 강약, 용신/희신/기신, 현재 대운 중 최소 3개 축을 내부적으로 반영하라.',
+    '- 전문용어는 본문에 직접 노출하지 말고 생활 장면으로 번역하라.',
+    '- “오늘/이 주제에서 실제로 어떻게 나타나는가”를 구체적인 선택, 말투, 행동으로 바꿔라.',
+    '- 출력은 JSON만 반환하라. headline, summary, insights 각각에 서로 다른 개인화 근거가 드러나야 한다.',
+    '',
+    '[원본 데이터 JSON]',
+    JSON.stringify(rawPayload, null, 2),
+  ].join('\n');
 }
 
 export function parseInterpretationText(
@@ -173,27 +313,22 @@ export function createInterpretationPrompt(
   counselorId: MoonlightCounselorId = 'female',
   recentFeedbackSummary?: string | null
 ) {
-  const promptPayload = {
-    counselor: {
-      id: counselorId,
-    },
-    focus: {
-      topic: focus.topic,
-      label: focus.label,
-      scoreKey: focus.scoreKey,
-    },
-    recentFeedbackSummary: recentFeedbackSummary ?? null,
-    factJson: grounding.factJson,
-    evidenceJson: grounding.evidenceJson,
-  };
+  const structuredInput = buildStructuredInterpretationInput(
+    grounding,
+    focus,
+    counselorId,
+    recentFeedbackSummary
+  );
 
   return {
     instructions: [
       '당신은 한국 운세 서비스를 쓰는 생활 조언 에디터입니다.',
-      '제공된 factJson과 evidenceJson 안에서만 해석하고, 없는 신살·격국·고전 출처를 새로 만들지 않습니다.',
+      '제공된 personalizationContext, factJson, evidenceJson 안에서만 해석하고, 없는 신살·격국·고전 출처를 새로 만들지 않습니다.',
+      '개인화의 1순위 근거는 [사주 원국]과 [이 사주의 고유 특성]입니다. dayGanziCode, sixtyGapja, fiveElementRatio, tenGodDistribution, strengthJudgement, yongsinKiyshin, currentLuck을 반드시 참고해 사람마다 다른 결론을 만듭니다.',
       '사용자는 명리 공부가 아니라 오늘 내 삶에 필요한 말을 보러 왔습니다. 결론, 마음가짐, 오늘 할 행동을 먼저 씁니다.',
-      'factJson, evidenceJson, 격국, 용신, 대운, 세운, 월운 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 말로만 바꿉니다.',
+      'personalizationContext, factJson, evidenceJson, 격국, 용신, 대운, 세운, 월운 같은 내부 용어는 본문에 직접 쓰지 않습니다. 필요하면 쉬운 말로만 바꿉니다.',
       '점수나 계산값을 그대로 반복 나열하지 말고, 지금 어떤 선택을 하면 덜 흔들리는지 생활 언어로 씁니다.',
+      '서로 다른 사주가 같은 headline, 같은 summary, 같은 insights로 나오면 실패입니다. 반드시 해당 사주의 강한 기운, 약한 기운, 일주 특성, 보완 축 중 구체적인 차이를 반영합니다.',
       'recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 단정 표현의 강도만 조절하되, 계산 근거보다 앞세우지 않습니다.',
       '문장은 부드럽고 단정한 한국어로 쓰되, 과장하거나 운명을 단정하는 표현은 피합니다.',
       '의학, 법률, 투자, 생명·안전 문제는 단정하지 말고 생활 조언 수준으로 제한합니다.',
@@ -205,6 +340,6 @@ export function createInterpretationPrompt(
       'insights는 3~4개로 작성하며, 각 항목은 서로 겹치지 않게 강점/주의점/행동 제안/관계 또는 일의 포인트를 나눠 담습니다.',
       ...buildReportCounselorInstructions(counselorId),
     ].join('\n'),
-    input: JSON.stringify(promptPayload, null, 2),
+    input: structuredInput,
   };
 }

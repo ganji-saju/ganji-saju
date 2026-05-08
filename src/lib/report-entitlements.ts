@@ -25,7 +25,13 @@ export function normalizeEntitlementReadingKeys(
   primaryKey: string,
   legacyKeys: Array<string | null | undefined> = []
 ) {
-  return [...new Set([primaryKey, ...legacyKeys].map((key) => key?.trim() ?? '').filter(Boolean))];
+  const keys = [primaryKey, ...legacyKeys].map((key) => key?.trim() ?? '').filter(Boolean);
+  const compatibilityKeys = keys.flatMap((key) => {
+    const withoutHash = key.replace(/-key[0-9a-z]+$/i, '');
+    return withoutHash === key ? [key] : [key, withoutHash];
+  });
+
+  return [...new Set(compatibilityKeys)];
 }
 
 export function matchesEntitlementReadingKey(

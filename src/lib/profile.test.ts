@@ -40,8 +40,9 @@ test('toBirthInputFromProfile preserves solar profiles as the existing engine co
   assert.equal(input.day, 29);
   assert.equal(input.hour, 8);
   assert.equal(input.minute, 45);
+  assert.equal(input.name, '테스트');
   assert.equal(input.solarTimeMode, 'standard');
-  assert.equal(toSlug(input), '1982-1-29-8-m45-male');
+  assert.equal(toSlug(input), '1982-1-29-8-m45-male-key03773a8');
 });
 
 test('toBirthInputFromProfile converts lunar profiles before returning BirthInput', () => {

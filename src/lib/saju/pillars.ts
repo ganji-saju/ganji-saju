@@ -86,6 +86,44 @@ function decodeCoordinateFromSlug(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeSlugName(value: string | undefined) {
+  return value?.trim().replace(/\s+/g, ' ') || 'anonymous';
+}
+
+function getBirthTimeSlugCode(input: BirthInput) {
+  if (input.unknownTime || input.hour === undefined) {
+    return 'unknown_time';
+  }
+
+  return `h${input.hour}m${input.minute ?? 0}`;
+}
+
+function stableHash(value: string) {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(36).padStart(7, '0').slice(0, 10);
+}
+
+export function buildBirthSlugHashPayload(input: BirthInput) {
+  return [
+    normalizeSlugName(input.name),
+    input.year,
+    input.month,
+    input.day,
+    getBirthTimeSlugCode(input),
+    input.gender ?? 'unknown_gender',
+  ].join('|');
+}
+
+export function getBirthSlugHashToken(input: BirthInput) {
+  return `key${stableHash(buildBirthSlugHashPayload(input))}`;
+}
+
 export function calculateSaju(input: BirthInput): SajuResult {
   if (!isValidBirthInput(input)) {
     throw new Error('생년월일시 정보가 올바르지 않습니다.');
@@ -143,6 +181,8 @@ export function toSlug(input: BirthInput): string {
     if (input.jasiMethod && input.jasiMethod !== 'unified') {
       parts.push(`j${input.jasiMethod}`);
     }
+  } else {
+    parts.push('unknown_time');
   }
 
   if (input.gender) {
@@ -163,6 +203,8 @@ export function toSlug(input: BirthInput): string {
     }
   }
 
+  parts.push(getBirthSlugHashToken(input));
+
   return parts.join('-');
 }
 
@@ -182,6 +224,17 @@ export function fromSlug(slug: string): BirthInput | null {
   for (const token of parts.slice(3)) {
     if (token === 'male' || token === 'female') {
       result.gender = token;
+      continue;
+    }
+
+    if (token === 'unknown_time') {
+      result.unknownTime = true;
+      result.hour = undefined;
+      result.minute = undefined;
+      continue;
+    }
+
+    if (token.startsWith('key')) {
       continue;
     }
 

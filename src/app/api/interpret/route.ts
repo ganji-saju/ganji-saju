@@ -205,6 +205,7 @@ export async function POST(req: NextRequest) {
     fallbackText: JSON.stringify(fallback),
     model,
     maxOutputTokens: 900,
+    temperature: 0.7,
   });
   const parsedInterpretation = parseInterpretationText(aiResult.text, fallback);
   const source: AiGenerationSource =

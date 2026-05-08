@@ -405,6 +405,12 @@ export function toBirthInputFromProfile(
     birthDay: number;
   }
 ): BirthInput {
+  const profileName =
+    'displayName' in profile && typeof profile.displayName === 'string'
+      ? profile.displayName
+      : 'label' in profile && typeof profile.label === 'string'
+        ? profile.label
+        : undefined;
   const resolved = resolveUnifiedBirthInput(
     {
       calendarType: profile.calendarType,
@@ -425,7 +431,10 @@ export function toBirthInputFromProfile(
   );
 
   if (resolved.ok) {
-    return resolved.input;
+    return {
+      ...resolved.input,
+      name: profileName?.trim() || undefined,
+    };
   }
 
   const hasBirthLocation =
@@ -434,6 +443,7 @@ export function toBirthInputFromProfile(
     profile.birthLongitude !== null;
 
   return {
+    name: profileName?.trim() || undefined,
     year: profile.birthYear,
     month: profile.birthMonth,
     day: profile.birthDay,

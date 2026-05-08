@@ -536,6 +536,7 @@ function createSharedGrounding(
     pattern: data.pattern,
     yongsin: data.yongsin,
     currentLuck: data.currentLuck,
+    personalizationContext: record.grounding.personalizationContext,
     factJson: record.grounding.factJson,
     evidenceJson: record.grounding.evidenceJson,
     kasiComparison: record.kasiComparison,

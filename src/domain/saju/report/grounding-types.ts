@@ -17,6 +17,7 @@ import type {
   ReportEvidenceKey,
   ReportEvidenceSource,
 } from './types';
+import type { SajuPersonalizationContext } from './personalization-context';
 
 export const SAJU_FACT_JSON_V1 = 'saju-fact/v1' as const;
 export const SAJU_EVIDENCE_JSON_V1 = 'saju-evidence/v1' as const;
@@ -147,6 +148,7 @@ export interface SajuEvidenceJson {
 export interface SajuInterpretationGrounding {
   factJson: SajuFactJson;
   evidenceJson: SajuEvidenceJson;
+  personalizationContext: SajuPersonalizationContext;
 }
 
 export type SajuGroundingEvidenceCard = Pick<
