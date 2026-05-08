@@ -1139,8 +1139,8 @@ function buildPublicTodayHeadline(
       return pickVariant(
         [
           `${profile.roleHeadline}, ${profile.actionShort}`,
-          `${profile.hourLabel}이라 ${profile.supportLabel}을 챙기면 좋은 날`,
-          `${profile.dominantLabel}이 먼저 나오고 ${profile.weakestLabel}을 놓치기 쉬운 날`,
+          `${profile.hourLabel}이라 ${withKoreanParticle(profile.supportLabel, '을', '를')} 챙기면 좋은 날`,
+          `${withKoreanParticle(profile.dominantLabel, '이', '가')} 먼저 나오고 ${withKoreanParticle(profile.weakestLabel, '을', '를')} 놓치기 쉬운 날`,
         ],
         profile.signatureSeed
       );
@@ -1189,13 +1189,13 @@ function buildPublicReasonBody(profile: PublicTodayProfile, unknownBirthTime: bo
           profile.roleCaution,
         ],
         [
-          `${profile.hourLabel}으로 봅니다.`,
+          `${withKoreanParticle(profile.hourLabel, '으로', '로')} 봅니다.`,
           profile.hourSummary,
           `오늘 먼저 할 일은 ${profile.hourAction}.`,
           profile.hourCaution,
         ],
         [
-          `${profile.supportLabel}을 챙기는 날입니다.`,
+          `${withKoreanParticle(profile.supportLabel, '을', '를')} 챙기는 날입니다.`,
           profile.locationCue,
           profile.timeRuleCue,
           `오늘은 ${profile.actionBody}.`,
@@ -1223,7 +1223,7 @@ function buildPublicGroundingSummary(
     ],
     evidenceLines: [
       profile.roleBody,
-      `${profile.weakestLabel}이 부족해질 때는 ${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}`,
+      `${withKoreanParticle(profile.weakestLabel, '이', '가')} 부족해질 때는 ${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}`,
     ],
     kasi: {
       available: Boolean(kasiComparison),
@@ -1274,11 +1274,11 @@ function buildAxisScoreSummary(
           ]
         : band === 'mid'
           ? [
-              `${label}을 챙기면 하루가 안정됩니다. ${copy.supportAction}.`,
+              `${withKoreanParticle(label, '을', '를')} 챙기면 하루가 안정됩니다. ${copy.supportAction}.`,
               `${profile.hourLabel}이라 ${profile.hourAction}.`,
             ]
           : [
-              `${label}을 놓치기 쉬워요. 오늘은 속도를 낮추고 ${copy.supportShort}.`,
+              `${withKoreanParticle(label, '을', '를')} 놓치기 쉬워요. 오늘은 속도를 낮추고 ${copy.supportShort}.`,
               `${profile.hourCaution}. 먼저 ${copy.supportShort}.`,
             ],
       profile.signatureSeed,
@@ -1314,7 +1314,7 @@ function buildAxisScoreSummary(
     return band === 'high'
       ? '짧은 안부나 확인처럼 가벼운 말이 관계를 편하게 만듭니다.'
       : band === 'mid'
-        ? `${label}이 비면 오해가 커질 수 있어요. 사실과 기분을 나눠 말하세요.`
+        ? `${withKoreanParticle(label, '이', '가')} 비면 오해가 커질 수 있어요. 사실과 기분을 나눠 말하세요.`
         : '서운함을 결론처럼 말하지 말고 한 번 더 확인하는 편이 안전합니다.';
   }
 
@@ -1326,7 +1326,7 @@ function buildAxisScoreSummary(
         ]
       : band === 'mid'
         ? [
-            `${label}이 부족해지면 쉽게 지칠 수 있어요. 중간 휴식을 먼저 잡으세요.`,
+            `${withKoreanParticle(label, '이', '가')} 부족해지면 쉽게 지칠 수 있어요. 중간 휴식을 먼저 잡으세요.`,
             `${profile.hourCaution}. 물, 식사, 쉬는 시간을 먼저 챙기세요.`,
           ]
         : [
@@ -1348,7 +1348,7 @@ function buildPublicOpportunity(
       title: staticCopy.opportunityTitle,
       body: joinUniqueSentences([
         staticCopy.opportunityBody,
-        `${profile.supportLabel}을 챙기려면 ${profile.actionBody}.`,
+        `${withKoreanParticle(profile.supportLabel, '을', '를')} 챙기려면 ${profile.actionBody}.`,
         profile.hourAction,
       ]),
     };
@@ -1357,7 +1357,7 @@ function buildPublicOpportunity(
   return pickVariant(
     [
       {
-        title: `${profile.supportLabel}을 살리는 작은 행동`,
+        title: `${withKoreanParticle(profile.supportLabel, '을', '를')} 살리는 작은 행동`,
         body: `${profile.actionBody}. 이것 하나만 해도 오늘이 훨씬 덜 복잡해집니다.`,
       },
       {
@@ -1365,7 +1365,7 @@ function buildPublicOpportunity(
         body: `${profile.hourAction}. 크게 바꾸기보다 이 한 가지를 먼저 해보세요.`,
       },
       {
-        title: `${profile.dominantLabel}을 좋은 쪽으로 쓰기`,
+        title: `${withKoreanParticle(profile.dominantLabel, '을', '를')} 좋은 쪽으로 쓰기`,
         body: `${profile.balanceBody} 그래서 오늘은 ${profile.actionBody}.`,
       },
     ],
@@ -1389,7 +1389,7 @@ function buildPublicRisk(
   return pickVariant(
     [
       {
-        title: `${profile.weakestLabel}이 비는 순간`,
+        title: `${withKoreanParticle(profile.weakestLabel, '이', '가')} 비는 순간`,
         body: `${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}. ${profile.roleCaution}`,
       },
       {
@@ -1397,7 +1397,7 @@ function buildPublicRisk(
         body: `${profile.hourCaution}. 급히 정하기보다 한 번 확인하세요.`,
       },
       {
-        title: `${profile.dominantLabel}이 과해질 때`,
+        title: `${withKoreanParticle(profile.dominantLabel, '이', '가')} 과해질 때`,
         body: `${PUBLIC_ELEMENT_COPY[profile.dominantElement].strongCaution}. 오늘은 ${profile.actionShort}.`,
       },
     ],
@@ -1919,7 +1919,7 @@ function buildScenarioComparison(
       watch: joinUniqueSentences([
         cautionAction,
         cautionHint ? `${withKoreanParticle(`"${cautionHint}"`, '을', '를')} 같이 놓치면 작은 선택도 피로로 바뀌기 쉽습니다.` : null,
-        luckFact ? `특히 ${luckFact}이 겹친 날이라 단기 반응을 과신하지 않는 편이 좋습니다.` : null,
+        luckFact ? `특히 ${withKoreanParticle(luckFact, '이', '가')} 겹친 날이라 단기 반응을 과신하지 않는 편이 좋습니다.` : null,
       ]),
     },
     {
@@ -1979,7 +1979,7 @@ function buildRecommendedActions(
       primaryAction,
       ...leadHints.map((item) => `${item} 흐름부터 먼저 잡아보세요.`),
       getLuckFactLine(sajuData)
-        ? `지금은 ${getLuckFactLine(sajuData)}을 같이 보며 ${concernCopy.favorableTail}`
+        ? `지금은 ${withKoreanParticle(getLuckFactLine(sajuData), '을', '를')} 같이 보며 ${concernCopy.favorableTail}`
         : concernCopy.favorableTail,
       `오늘 부족한 부분을 생활 루틴으로 채우면 체감 안정감이 더 큽니다.`,
     ],
@@ -2005,11 +2005,11 @@ function buildAvoidActions(
   const actions = uniqueStrings(
     [
       cautionAction,
-      ...cautionHints.map((item) => `${item}을 놓친 채 무리하게 진행하지 않는 편이 좋습니다.`),
+      ...cautionHints.map((item) => `${withKoreanParticle(item, '을', '를')} 놓친 채 무리하게 진행하지 않는 편이 좋습니다.`),
       input.unknownTime
         ? '태어난 시간이 없으니 세부 타이밍보다 전체 흐름을 먼저 보는 편이 안전합니다.'
         : getLuckFactLine(sajuData)
-          ? `${getLuckFactLine(sajuData)}이 겹친 날이라 반응이 좋더라도 같은 속도로 하루 종일 밀지 않는 편이 낫습니다.`
+          ? `${withKoreanParticle(getLuckFactLine(sajuData), '이', '가')} 겹친 날이라 반응이 좋더라도 같은 속도로 하루 종일 밀지 않는 편이 낫습니다.`
           : concernCopy.cautionTail,
     ],
     3

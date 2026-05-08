@@ -257,6 +257,43 @@ test('today fortune free result reflects time calendar and location differences 
   assert.match(secondResult.oneLine.body, /음력|부산|출생지|시간|밤|저녁/);
 });
 
+test('today fortune public labels use natural Korean particles', () => {
+  const samples = [
+    createUnifiedSample({ year: '1982', month: '1', day: '29', hour: '8', minute: '45' }),
+    createUnifiedSample({ year: '1977', month: '4', day: '25', hour: '22', minute: '10' }),
+    createUnifiedSample({ year: '1995', month: '6', day: '15', hour: '13', minute: '30' }),
+    createUnifiedSample({ year: '2001', month: '11', day: '7', hour: '2', minute: '5' }),
+  ];
+  const combined = samples
+    .map((sample) => {
+      const sajuData = calculateSajuDataV1(sample.input);
+      const result = buildTodayFortuneFreeResult(sample.input, sajuData, {
+        concernId: 'general',
+        sourceSessionId: `particle-${sample.input.year}-${sample.input.month}-${sample.input.day}`,
+        calendarType: sample.calendarType,
+        timeRule: sample.timeRule,
+      });
+
+      return [
+        result.oneLine.headline,
+        result.oneLine.body,
+        result.reasonSnippet.body,
+        result.opportunity.title,
+        result.opportunity.body,
+        result.risk.title,
+        result.risk.body,
+        ...result.scores.map((score) => score.summary),
+        ...result.groundingSummary.evidenceLines,
+      ].join(' ');
+    })
+    .join(' ');
+
+  assert.doesNotMatch(
+    combined,
+    /정리을|정리이|표현를|표현가|시작를|시작가|기준를|기준가|생각를|생각가/
+  );
+});
+
 test('today fortune one-line body does not repeat the same grounding sentence twice', () => {
   const input = createSampleInput();
   const sajuData = calculateSajuDataV1(input);
