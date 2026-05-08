@@ -13,7 +13,16 @@ import {
 
 declare const test: (name: string, fn: () => void) => void;
 
-function createSampleInput() {
+function createSampleInput(
+  overrides: Partial<{
+    year: string;
+    month: string;
+    day: string;
+    hour: string;
+    minute: string;
+    gender: string;
+  }> = {}
+) {
   const parsed = parseBirthInputDraft(
     {
       year: '1982',
@@ -22,6 +31,7 @@ function createSampleInput() {
       hour: '8',
       minute: '45',
       gender: 'male',
+      ...overrides,
       birthLocationCode: 'seoul',
       birthLocationLabel: '서울특별시',
       birthLatitude: '37.5665',
@@ -106,7 +116,7 @@ test('today fortune premium windows and scenarios carry grounded current-luck cu
   }
 });
 
-test('today fortune free result surfaces grounding facts and evidence lines near the teaser', () => {
+test('today fortune free result keeps grounding public and action-oriented', () => {
   const input = createSampleInput();
   const sajuData = calculateSajuDataV1(input);
   const result = buildTodayFortuneFreeResult(input, sajuData, {
@@ -119,11 +129,45 @@ test('today fortune free result surfaces grounding facts and evidence lines near
   assert.ok(result.groundingSummary.primaryConcept.length > 0);
   assert.ok(result.groundingSummary.factLines.length >= 3);
   assert.ok(result.groundingSummary.evidenceLines.length >= 2);
-  assert.match(result.reasonSnippet.body, /균형|기운|흐름/);
+  assert.match(result.reasonSnippet.body, /오늘|먼저|챙기|말|정리|기준/);
+  assert.doesNotMatch(result.reasonSnippet.body, /강약|격국|용신|대운|세운|월운|기운|공식 달력/);
   assert.doesNotMatch(result.reasonSnippet.body, /중화은/);
   assert.doesNotMatch(result.reasonSnippet.body, /66점로/);
-  assert.doesNotMatch(result.groundingSummary.factLines.join(' '), /\([가-힣]+\)\([가-힣]+\)/);
-  assert.doesNotMatch(result.groundingSummary.evidenceLines.join(' '), /을\(를\)/);
+  assert.doesNotMatch(result.groundingSummary.factLines.join(' '), /[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]|\([가-힣]+\)\([가-힣]+\)/);
+  assert.doesNotMatch(result.groundingSummary.evidenceLines.join(' '), /을\(를\)|강약|격국|용신|공망|신살/);
+});
+
+test('today fortune free result changes visible copy for different birth data', () => {
+  const firstInput = createSampleInput();
+  const secondInput = createSampleInput({
+    year: '1977',
+    month: '4',
+    day: '25',
+    hour: '8',
+    minute: '45',
+    gender: 'female',
+  });
+  const firstData = calculateSajuDataV1(firstInput);
+  const secondData = calculateSajuDataV1(secondInput);
+  const firstResult = buildTodayFortuneFreeResult(firstInput, firstData, {
+    concernId: 'general',
+    sourceSessionId: 'first-reading',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+  const secondResult = buildTodayFortuneFreeResult(secondInput, secondData, {
+    concernId: 'general',
+    sourceSessionId: 'second-reading',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+
+  assert.notEqual(firstResult.oneLine.headline, secondResult.oneLine.headline);
+  assert.notEqual(firstResult.reasonSnippet.body, secondResult.reasonSnippet.body);
+  assert.notDeepEqual(
+    firstResult.scores.map((score) => score.summary),
+    secondResult.scores.map((score) => score.summary)
+  );
 });
 
 test('today fortune one-line body does not repeat the same grounding sentence twice', () => {

@@ -13,7 +13,7 @@ import {
 } from '@/domain/saju/report/interpretation-rule-table';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
-import { resolveMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
+import type { MoonlightCounselorId } from '@/lib/counselors';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
@@ -416,6 +416,133 @@ const CONCERN_EASY_TIME_COPY: Record<
   },
 };
 
+const PUBLIC_ELEMENT_LABELS: Record<Element, string> = {
+  목: '시작',
+  화: '표현',
+  토: '정리',
+  금: '기준',
+  수: '생각',
+};
+
+const PUBLIC_ELEMENT_COPY: Record<
+  Element,
+  {
+    supportAction: string;
+    supportShort: string;
+    weakCare: string;
+    strongCaution: string;
+    bodyCue: string;
+  }
+> = {
+  목: {
+    supportAction: '작은 계획 하나를 바로 시작해보세요',
+    supportShort: '작게 시작하세요',
+    weakCare: '시작을 미루다 보면 하루가 늘어질 수 있어요',
+    strongCaution: '일을 너무 많이 벌리면 마무리가 흐려질 수 있어요',
+    bodyCue: '새로운 일은 크게 벌리지 말고 작게 열 때 편합니다.',
+  },
+  화: {
+    supportAction: '짧게라도 먼저 표현해보세요',
+    supportShort: '짧게 표현하세요',
+    weakCare: '말을 너무 아끼면 오해가 길어질 수 있어요',
+    strongCaution: '감정이 앞서면 말이 세게 들릴 수 있어요',
+    bodyCue: '마음은 길게 설명하기보다 짧고 부드럽게 꺼낼 때 좋습니다.',
+  },
+  토: {
+    supportAction: '돈, 일정, 할 일을 한 번 정리해보세요',
+    supportShort: '먼저 정리하세요',
+    weakCare: '생활 리듬이 흩어지면 판단도 같이 흔들릴 수 있어요',
+    strongCaution: '붙잡는 일이 많아지면 몸과 마음이 무거워질 수 있어요',
+    bodyCue: '흩어진 일을 한곳에 모아두면 하루가 훨씬 안정됩니다.',
+  },
+  금: {
+    supportAction: '오늘의 기준을 두 개만 정해보세요',
+    supportShort: '기준을 세우세요',
+    weakCare: '기준이 흐리면 작은 선택도 오래 끌릴 수 있어요',
+    strongCaution: '정답을 빨리 내리려다 말이 딱딱해질 수 있어요',
+    bodyCue: '정할 것과 미룰 것을 나누면 선택이 쉬워집니다.',
+  },
+  수: {
+    supportAction: '잠깐 멈춰서 자료와 마음을 확인해보세요',
+    supportShort: '잠깐 확인하세요',
+    weakCare: '생각을 정리하지 않으면 감정이 안쪽에서 커질 수 있어요',
+    strongCaution: '생각이 길어지면 실행이 늦어질 수 있어요',
+    bodyCue: '바로 결론내기보다 한 번 확인하면 실수가 줄어듭니다.',
+  },
+};
+
+const TEN_GOD_PUBLIC_TONES: Record<string, { headline: string; body: string; caution: string }> = {
+  비견: {
+    headline: '혼자 해결하려는 마음이 강한 날',
+    body: '혼자 다 처리하려는 힘이 먼저 올라올 수 있어요.',
+    caution: '다 맡으려 하지 말고 하나는 나누세요.',
+  },
+  겁재: {
+    headline: '가까운 사람과 선을 맞춰야 하는 날',
+    body: '정 때문에 역할이나 돈의 경계가 흐려질 수 있어요.',
+    caution: '부탁을 바로 받기보다 가능한 범위를 먼저 말하세요.',
+  },
+  식신: {
+    headline: '꾸준히 만든 것이 힘이 되는 날',
+    body: '새로운 자극보다 해오던 것을 이어갈 때 편해요.',
+    caution: '기분 따라 루틴을 깨지 않는 편이 좋습니다.',
+  },
+  상관: {
+    headline: '말과 아이디어가 빨라지는 날',
+    body: '생각이 빠르게 튀어나와 분위기를 바꿀 수 있어요.',
+    caution: '솔직함이 세게 들리지 않게 한 번 낮춰 말하세요.',
+  },
+  편재: {
+    headline: '기회가 넓게 보이는 날',
+    body: '사람, 제안, 돈의 흐름이 넓게 보일 수 있어요.',
+    caution: '좋아 보여도 바로 잡기보다 조건을 먼저 확인하세요.',
+  },
+  정재: {
+    headline: '돈과 약속을 지키기 좋은 날',
+    body: '꾸준히 쌓는 일과 정해진 약속에서 안정감이 생겨요.',
+    caution: '변화를 무조건 미루기보다 필요한 조정은 작게 해보세요.',
+  },
+  편관: {
+    headline: '압박 속에서도 집중이 살아나는 날',
+    body: '부담이 있어도 해야 할 일을 좁히면 힘이 납니다.',
+    caution: '긴장을 오래 끌고 가지 말고 중간에 쉬어가세요.',
+  },
+  정관: {
+    headline: '책임과 기준이 중요해지는 날',
+    body: '역할을 바르게 해내려는 마음이 강해질 수 있어요.',
+    caution: '완벽하게 하려다 지치지 않게 우선순위를 줄이세요.',
+  },
+  편인: {
+    headline: '생각이 깊어지는 날',
+    body: '남들이 놓친 부분을 혼자 깊게 살피기 쉬워요.',
+    caution: '확인을 너무 오래 끌지 말고 기준을 정하면 멈추세요.',
+  },
+  정인: {
+    headline: '도움과 배움이 편하게 들어오는 날',
+    body: '혼자 버티기보다 묻고 배우면 일이 부드러워져요.',
+    caution: '기다리기만 하지 말고 필요한 도움을 먼저 요청하세요.',
+  },
+};
+
+interface PublicTodayProfile {
+  dayLabel: string;
+  dominantElement: Element;
+  weakestElement: Element;
+  supportElement: Element;
+  dominantLabel: string;
+  weakestLabel: string;
+  supportLabel: string;
+  tenGod: string | null;
+  roleHeadline: string;
+  roleBody: string;
+  roleCaution: string;
+  strengthBody: string;
+  actionShort: string;
+  actionBody: string;
+  balanceBody: string;
+  cautionBody: string;
+}
+
 function clampScore(value: number) {
   return Math.max(48, Math.min(92, Math.round(value)));
 }
@@ -435,14 +562,6 @@ function splitSentences(text: string) {
 
 function normalizeSentenceKey(text: string) {
   return text.replace(/\s+/g, ' ').trim();
-}
-
-function stripEvidenceBoilerplate(text: string) {
-  return simplifySajuCopy(text)
-    .replace(/^쉽게 말하면\s*/g, '')
-    .replace(/^전문적으로는\s*/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 function getLastReadableChar(value: string) {
@@ -634,17 +753,6 @@ function controllerOfElement(element: Element) {
   return CONTROLLER_OF_MAP[element];
 }
 
-function normalizeEvidenceTitleForSentence(
-  key: ReportEvidenceCard['key'],
-  title: string
-) {
-  if (key === 'strength') {
-    return title.replace(/\s*·\s*/g, ' ');
-  }
-
-  return title.replace(/\s*·\s*/g, ' · ');
-}
-
 function joinUniqueSentences(parts: Array<string | null | undefined>) {
   const seen = new Set<string>();
   const sentences: string[] = [];
@@ -708,50 +816,6 @@ function buildConditionScore(
     sajuData.strength?.level === '신약' ? -4 : sajuData.strength?.level === '신강' ? 2 : 0;
 
   return clampScore((overall + love + wealth) / 3 - balancePenalty + strengthAdjust);
-}
-
-function buildReasonSnippet(
-  evidenceCard: ReportEvidenceCard | undefined,
-  unknownBirthTime: boolean
-) {
-  const defaultBase =
-    '오늘은 내 기운의 균형과 현재 흐름을 함께 보고, 관계와 돈, 말의 속도를 현실적으로 조절하는 날입니다.';
-
-  const normalizedTitle = evidenceCard?.title?.replace(/\s*·\s*/g, ' ').trim();
-  const normalizedBody = evidenceCard?.body ? stripEvidenceBoilerplate(evidenceCard.body) : '';
-
-  let base = defaultBase;
-  if (evidenceCard && normalizedTitle && normalizedBody) {
-    const sentenceTitle = normalizeEvidenceTitleForSentence(evidenceCard.key, normalizedTitle);
-
-    switch (evidenceCard.key) {
-      case 'strength':
-        base = `${evidenceCard.label}은 ${withKoreanParticle(sentenceTitle, '으로', '로')} 보이며 ${normalizedBody}`;
-        break;
-      case 'pattern':
-        base = `${evidenceCard.label}은 ${sentenceTitle} 흐름으로 보이며 ${normalizedBody}`;
-        break;
-      case 'yongsin':
-        base = `${evidenceCard.label}은 ${sentenceTitle} 쪽을 보완 힌트로 보며 ${normalizedBody}`;
-        break;
-      case 'relations':
-        base = `${evidenceCard.label}은 ${sentenceTitle}로 읽히고 ${normalizedBody}`;
-        break;
-      default:
-        base = `${evidenceCard.label}은 ${sentenceTitle}로 읽으며 ${normalizedBody}`;
-        break;
-    }
-  } else if (evidenceCard?.plainSummary || evidenceCard?.technicalSummary || evidenceCard?.body) {
-    base = stripEvidenceBoilerplate(
-      evidenceCard.plainSummary || evidenceCard.technicalSummary || evidenceCard.body
-    );
-  }
-
-  if (!unknownBirthTime) return polishFortuneCopy(base);
-
-  return polishFortuneCopy(
-    `${base} 다만 태어난 시간이 없어 시간대별 세부 흐름은 보수적으로 줄여 읽습니다.`
-  );
 }
 
 function buildKasiSummary(kasiComparison: KasiSingleInputComparison | null | undefined) {
@@ -831,12 +895,253 @@ function buildTodayGroundingSummary(
   };
 }
 
-function buildOpportunityBody(concernId: ConcernId) {
-  return FREE_RESULT_GUIDE_COPY[concernId].opportunityBody;
+function normalizeElement(value: string | null | undefined): Element | null {
+  const matched = value?.match(/[목화토금수]/u)?.[0] as Element | undefined;
+  return matched ?? null;
 }
 
-function buildRiskBody(concernId: ConcernId) {
-  return FREE_RESULT_GUIDE_COPY[concernId].riskBody;
+function getPrimarySupportElement(sajuData: SajuDataV1) {
+  return normalizeElement(sajuData.yongsin?.primary?.value ?? sajuData.yongsin?.primary?.label);
+}
+
+function buildPublicTodayProfile(sajuData: SajuDataV1): PublicTodayProfile {
+  const dominantElement = sajuData.fiveElements.dominant;
+  const weakestElement = sajuData.fiveElements.weakest;
+  const supportElement = getPrimarySupportElement(sajuData) ?? weakestElement;
+  const tenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
+  const roleTone = tenGod ? TEN_GOD_PUBLIC_TONES[tenGod] : null;
+  const dayLabel = PUBLIC_ELEMENT_LABELS[sajuData.dayMaster.element];
+  const supportCopy = PUBLIC_ELEMENT_COPY[supportElement];
+  const dominantCopy = PUBLIC_ELEMENT_COPY[dominantElement];
+  const weakestCopy = PUBLIC_ELEMENT_COPY[weakestElement];
+  const strengthBody =
+    sajuData.strength?.level === '신강'
+      ? '내가 먼저 끌고 가려는 힘이 강해지는 편입니다.'
+      : sajuData.strength?.level === '신약'
+        ? '주변 분위기와 컨디션에 영향을 받기 쉬운 편입니다.'
+        : '상황을 보고 맞추는 감각이 살아 있는 편입니다.';
+
+  return {
+    dayLabel,
+    dominantElement,
+    weakestElement,
+    supportElement,
+    dominantLabel: PUBLIC_ELEMENT_LABELS[dominantElement],
+    weakestLabel: PUBLIC_ELEMENT_LABELS[weakestElement],
+    supportLabel: PUBLIC_ELEMENT_LABELS[supportElement],
+    tenGod,
+    roleHeadline: roleTone?.headline ?? `${dayLabel} 감각이 먼저 드러나는 날`,
+    roleBody: roleTone?.body ?? `${dayLabel} 쪽 성향이 오늘 선택의 첫 반응으로 올라옵니다.`,
+    roleCaution: roleTone?.caution ?? supportCopy.weakCare,
+    strengthBody,
+    actionShort: supportCopy.supportShort,
+    actionBody: supportCopy.supportAction,
+    balanceBody: `${dominantCopy.bodyCue} ${supportCopy.bodyCue}`,
+    cautionBody:
+      dominantElement === weakestElement
+        ? supportCopy.weakCare
+        : `${dominantCopy.strongCaution} ${weakestCopy.weakCare}`,
+  };
+}
+
+function buildPublicTodayHeadline(
+  concernId: ConcernId,
+  profile: PublicTodayProfile
+) {
+  switch (concernId) {
+    case 'love_contact':
+      return `마음은 ${profile.actionShort.replace('하세요', '하면')} 편해지는 날`;
+    case 'money_spend':
+      return `돈은 새로 쓰기보다 ${profile.actionShort.replace('하세요', '할')} 날`;
+    case 'work_meeting':
+      return `일은 ${profile.actionShort.replace('하세요', '할')} 때 풀리는 날`;
+    case 'relationship_conflict':
+      return `관계는 말보다 순서를 먼저 볼 날`;
+    case 'energy_health':
+      return `몸과 마음은 무리보다 회복이 먼저인 날`;
+    case 'general':
+    default:
+      return `${profile.roleHeadline}, ${profile.actionShort}`;
+  }
+}
+
+function buildPublicTodayBody(
+  concernId: ConcernId,
+  profile: PublicTodayProfile,
+  unknownBirthTime: boolean
+) {
+  const concernLine =
+    concernId === 'love_contact'
+      ? '오늘은 마음을 크게 확인하기보다 상대가 답하기 쉬운 한마디가 더 좋습니다.'
+      : concernId === 'money_spend'
+        ? '오늘은 새 결제보다 이미 나갈 돈과 약속된 금액을 먼저 보는 쪽이 낫습니다.'
+        : concernId === 'work_meeting'
+          ? '오늘은 결론을 빨리 내기보다 역할, 일정, 조건을 짧게 맞추는 편이 좋습니다.'
+          : concernId === 'relationship_conflict'
+            ? '오늘은 맞고 틀림을 가르기보다 오해가 커지지 않게 말의 순서를 낮추는 편이 좋습니다.'
+            : concernId === 'energy_health'
+              ? '오늘은 몰아서 버티기보다 쉬는 구간을 먼저 잡아야 오래 갑니다.'
+              : '오늘은 큰 결정보다 지금 바로 정리할 수 있는 작은 일 하나가 하루를 바꿉니다.';
+
+  return joinUniqueSentences([
+    profile.roleBody,
+    profile.strengthBody,
+    concernLine,
+    `${profile.supportLabel} 쪽을 챙기면 좋아요. ${profile.actionBody}.`,
+    profile.cautionBody,
+    unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
+  ]);
+}
+
+function buildPublicReasonBody(profile: PublicTodayProfile, unknownBirthTime: boolean) {
+  return joinUniqueSentences([
+    `${profile.roleHeadline}입니다.`,
+    `${profile.dominantLabel} 쪽 반응이 먼저 나오고, ${profile.weakestLabel} 쪽은 놓치기 쉬워요.`,
+    `그래서 오늘은 ${profile.actionBody}.`,
+    profile.roleCaution,
+    unknownBirthTime ? '태어난 시간이 없으면 세부 시간보다 하루 전체 흐름을 중심으로 보세요.' : null,
+  ]);
+}
+
+function buildPublicGroundingSummary(
+  profile: PublicTodayProfile,
+  kasiComparison: KasiSingleInputComparison | null | undefined
+) {
+  return {
+    primaryConcept: `${profile.supportLabel} 챙기기`,
+    factLines: [
+      `내 기본 반응: ${profile.dayLabel}`,
+      `강하게 나오는 쪽: ${profile.dominantLabel}`,
+      `오늘 챙길 쪽: ${profile.supportLabel}`,
+    ],
+    evidenceLines: [
+      profile.roleBody,
+      `${profile.weakestLabel}이 부족해질 때는 ${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}`,
+    ],
+    kasi: {
+      available: Boolean(kasiComparison),
+      ok: !kasiComparison || kasiComparison.issues.length === 0,
+      summary: kasiComparison && kasiComparison.issues.length > 0
+        ? '달력 기준은 일부 확인이 필요합니다.'
+        : '달력 기준 확인 완료',
+    },
+  };
+}
+
+function getAxisElement(key: TodayScoreItem['key'], profile: PublicTodayProfile) {
+  switch (key) {
+    case 'overall':
+      return profile.supportElement;
+    case 'love':
+      return profile.supportElement === '화' ? '화' : profile.weakestElement;
+    case 'wealth':
+      return profile.dominantElement === '토' || profile.dominantElement === '금'
+        ? profile.dominantElement
+        : profile.supportElement;
+    case 'career':
+      return profile.dominantElement;
+    case 'relationship':
+      return profile.weakestElement;
+    case 'condition':
+    default:
+      return profile.weakestElement;
+  }
+}
+
+function buildAxisScoreSummary(
+  key: TodayScoreItem['key'],
+  score: number,
+  profile: PublicTodayProfile
+) {
+  const element = getAxisElement(key, profile);
+  const label = PUBLIC_ELEMENT_LABELS[element];
+  const copy = PUBLIC_ELEMENT_COPY[element];
+  const band = score >= 78 ? 'high' : score >= 68 ? 'mid' : 'low';
+
+  if (key === 'overall') {
+    return band === 'high'
+      ? `${profile.roleHeadline}이라 ${copy.supportShort.replace('하세요', '하면')} 흐름이 빨리 열립니다.`
+      : band === 'mid'
+        ? `${label}을 챙기면 하루가 안정됩니다. ${copy.supportAction}.`
+        : `${label}을 놓치기 쉬워요. 오늘은 속도를 낮추고 ${copy.supportShort}.`;
+  }
+
+  if (key === 'love') {
+    return band === 'high'
+      ? '마음을 어렵게 설명하기보다 짧고 부드럽게 꺼내면 좋습니다.'
+      : band === 'mid'
+        ? `${label} 쪽을 챙기면 감정이 덜 엉킵니다. 답을 재촉하지 마세요.`
+        : '오늘은 확인보다 여백이 필요합니다. 말의 양을 줄이면 편해요.';
+  }
+
+  if (key === 'wealth') {
+    return band === 'high'
+      ? `${label} 감각이 살아 있어 작은 기회를 정리하기 좋습니다.`
+      : band === 'mid'
+        ? '새로 쓰기보다 이미 나갈 돈과 구독, 약속된 금액을 확인하세요.'
+        : '즉흥 결제는 미루고 필요한 것만 남기는 편이 안전합니다.';
+  }
+
+  if (key === 'career') {
+    return band === 'high'
+      ? `${label} 쪽 강점이 일에서 보입니다. 결론을 먼저 말하면 전달이 쉽습니다.`
+      : band === 'mid'
+        ? '할 일을 넓히기보다 맡은 범위와 마감부터 분명히 하세요.'
+        : '새 일을 더 받기보다 이미 맡은 일을 끝까지 정리하는 편이 좋습니다.';
+  }
+
+  if (key === 'relationship') {
+    return band === 'high'
+      ? '짧은 안부나 확인처럼 가벼운 말이 관계를 편하게 만듭니다.'
+      : band === 'mid'
+        ? `${label}이 비면 오해가 커질 수 있어요. 사실과 기분을 나눠 말하세요.`
+        : '서운함을 결론처럼 말하지 말고 한 번 더 확인하는 편이 안전합니다.';
+  }
+
+  return band === 'high'
+    ? '몸이 가볍게 따라오는 편입니다. 그래도 쉬는 시간을 끼워 넣으세요.'
+    : band === 'mid'
+      ? `${label}이 부족해지면 쉽게 지칠 수 있어요. 중간 휴식을 먼저 잡으세요.`
+      : '무리해서 버티기보다 일정 하나를 줄이는 편이 낫습니다.';
+}
+
+function buildPublicOpportunity(
+  concernId: ConcernId,
+  profile: PublicTodayProfile
+) {
+  const staticCopy = FREE_RESULT_GUIDE_COPY[concernId];
+  if (concernId !== 'general') {
+    return {
+      title: staticCopy.opportunityTitle,
+      body: joinUniqueSentences([
+        staticCopy.opportunityBody,
+        `${profile.supportLabel}을 챙기려면 ${profile.actionBody}.`,
+      ]),
+    };
+  }
+
+  return {
+    title: `${profile.supportLabel}을 살리는 작은 행동`,
+    body: `${profile.actionBody}. 이것 하나만 해도 오늘 흐름이 훨씬 덜 복잡해집니다.`,
+  };
+}
+
+function buildPublicRisk(
+  concernId: ConcernId,
+  profile: PublicTodayProfile
+) {
+  const staticCopy = FREE_RESULT_GUIDE_COPY[concernId];
+  if (concernId !== 'general') {
+    return {
+      title: staticCopy.riskTitle,
+      body: joinUniqueSentences([staticCopy.riskBody, profile.roleCaution]),
+    };
+  }
+
+  return {
+    title: `${profile.weakestLabel}이 비는 순간`,
+    body: `${PUBLIC_ELEMENT_COPY[profile.weakestElement].weakCare}. ${profile.roleCaution}`,
+  };
 }
 
 function getTodayEvidenceSnippet(report: SajuReport) {
@@ -874,58 +1179,6 @@ function getLuckFactLine(sajuData: SajuDataV1) {
       ? `${sajuData.currentLuck.wolwoon.ganzi} 이번 달 흐름`
       : null,
   ]).join(' / ');
-}
-
-function buildLeadNarrative(report: SajuReport) {
-  const baseSummary = report.summaryHighlights[0] ?? report.summary;
-  const evidenceSnippet = getTodayEvidenceSnippet(report);
-
-  if (!baseSummary) {
-    return evidenceSnippet ?? '';
-  }
-
-  if (!evidenceSnippet) {
-    return joinUniqueSentences([baseSummary]);
-  }
-
-  return joinUniqueSentences([baseSummary]);
-}
-
-function buildOneLineBody(
-  concernId: ConcernId,
-  concernLabel: string,
-  focusReport: SajuReport,
-  todayReport: SajuReport,
-  counselorId: MoonlightCounselorId
-) {
-  const focusLead = buildLeadNarrative(focusReport);
-  const todayLead = buildLeadNarrative(todayReport);
-
-  switch (concernId) {
-    case 'love_contact':
-      return joinUniqueSentences([
-        focusLead,
-        counselorId === 'male'
-          ? '먼저 닿는 말의 강도보다 속도를 조절하는 쪽이 낫습니다.'
-          : '먼저 닿는 말의 온도와 속도를 맞추는 쪽이 훨씬 자연스럽습니다.',
-      ]);
-    case 'money_spend':
-      return joinUniqueSentences([focusLead, '수입 확대보다 새는 돈을 막는 판단이 오늘 체감 차이를 크게 만듭니다.']);
-    case 'work_meeting':
-      return joinUniqueSentences([focusLead, '회의나 계약은 결론을 서두르기보다 먼저 기준을 분명히 세우는 편이 좋습니다.']);
-    case 'relationship_conflict':
-      return joinUniqueSentences([focusLead, '감정을 크게 키우기보다 질문 한 마디로 온도를 낮추는 쪽이 안전합니다.']);
-    case 'energy_health':
-      return joinUniqueSentences([
-        todayLead,
-        '몸을 쓰는 시간과 쉬어야 할 구간을 나눠 쓰는 것이 중요합니다.',
-      ]);
-    case 'general':
-    default:
-      return joinUniqueSentences([
-        `${concernLabel}으로 읽으면 ${todayLead}`,
-      ]);
-  }
 }
 
 function getTimeBlockBaseScore(report: SajuReport) {
@@ -1331,7 +1584,8 @@ function toTodayScores(
   wealthReport: SajuReport,
   careerReport: SajuReport,
   relationshipReport: SajuReport,
-  conditionScore: number
+  conditionScore: number,
+  profile: PublicTodayProfile
 ): TodayScoreItem[] {
   const baseScores: TodayScoreItem[] = [
     getScore(todayReport, 'overall'),
@@ -1345,14 +1599,14 @@ function toTodayScores(
       key: score.key as TodayScoreItem['key'],
       label: SCORE_LABELS[score.key],
       score: score.score,
-      summary: score.summary,
+      summary: buildAxisScoreSummary(score.key as TodayScoreItem['key'], score.score, profile),
     }));
 
   baseScores.push({
     key: 'condition',
     label: SCORE_LABELS.condition,
     score: conditionScore,
-    summary: '과로보다 리듬 조절이 중요합니다.',
+    summary: buildAxisScoreSummary('condition', conditionScore, profile),
   });
 
   return baseScores;
@@ -1508,20 +1762,12 @@ export function buildTodayFortuneFreeResult(
   options: TodayFortuneBuildOptions
 ): TodayFortuneFreeResult {
   const concern = getTodayConcern(options.concernId);
-  const counselorId = resolveMoonlightCounselor(options.counselorId);
   const todayReport = buildSajuReport(input, sajuData, 'today');
   const loveReport = buildSajuReport(input, sajuData, 'love');
   const wealthReport = buildSajuReport(input, sajuData, 'wealth');
   const careerReport = buildSajuReport(input, sajuData, 'career');
   const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
-  const reportByTopic = {
-    today: todayReport,
-    love: loveReport,
-    wealth: wealthReport,
-    career: careerReport,
-    relationship: relationshipReport,
-  } as const;
-  const focusReport = reportByTopic[concern.focusTopic];
+  const profile = buildPublicTodayProfile(sajuData);
   const conditionScore = buildConditionScore(todayReport, loveReport, wealthReport, sajuData);
   const scores = toTodayScores(
     todayReport,
@@ -1529,16 +1775,14 @@ export function buildTodayFortuneFreeResult(
     wealthReport,
     careerReport,
     relationshipReport,
-    conditionScore
+    conditionScore,
+    profile
   );
-  const reasonBody = buildReasonSnippet(focusReport.evidenceCards[0], Boolean(input.unknownTime));
-  const groundingSummary = buildTodayGroundingSummary(
-    options.grounding,
-    options.kasiComparison,
-    focusReport,
-    sajuData
-  );
+  const reasonBody = buildPublicReasonBody(profile, Boolean(input.unknownTime));
+  const groundingSummary = buildPublicGroundingSummary(profile, options.kasiComparison);
   const upsell = selectUpsell({ scores }, options.concernId);
+  const opportunity = buildPublicOpportunity(options.concernId, profile);
+  const risk = buildPublicRisk(options.concernId, profile);
 
   return {
     sourceSessionId: options.sourceSessionId,
@@ -1554,17 +1798,21 @@ export function buildTodayFortuneFreeResult(
     },
     oneLine: {
       eyebrow: `${concern.prompt} · ${concern.hanja}`,
-      headline: focusReport.headline,
-      body: buildOneLineBody(options.concernId, concern.label, focusReport, todayReport, counselorId),
+      headline: buildPublicTodayHeadline(options.concernId, profile),
+      body: buildPublicTodayBody(
+        options.concernId,
+        profile,
+        Boolean(input.unknownTime)
+      ),
     },
     scores,
     opportunity: {
-      title: FREE_RESULT_GUIDE_COPY[options.concernId].opportunityTitle,
-      body: buildOpportunityBody(options.concernId),
+      title: opportunity.title,
+      body: opportunity.body,
     },
     risk: {
-      title: FREE_RESULT_GUIDE_COPY[options.concernId].riskTitle,
-      body: buildRiskBody(options.concernId),
+      title: risk.title,
+      body: risk.body,
     },
     reasonSnippet: {
       title: '사주 근거 한 줄',
