@@ -24,6 +24,14 @@ const SCORE_CARD_LABELS: Partial<Record<ReportScore['key'], string>> = {
   relationship: '관계',
 };
 
+const SCORE_CARD_COLORS: Partial<Record<ReportScore['key'], string>> = {
+  wealth: '#D59B2E',
+  love: '#E05298',
+  career: '#3F8796',
+  relationship: '#5C8A63',
+  overall: 'var(--app-pink)',
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '오늘 자세히 보기',
@@ -118,8 +126,16 @@ function buildScoreCards(report: SajuReport) {
     .map((score) => ({
       ...score,
       displayLabel: SCORE_CARD_LABELS[score.key] ?? score.label,
+      color: SCORE_CARD_COLORS[score.key] ?? 'var(--app-pink)',
       summary: easyResultCopy(score.summary),
     }));
+}
+
+function getScoreStatus(score: number) {
+  if (score >= 75) return '좋음';
+  if (score >= 60) return '무난';
+  if (score >= 45) return '점검';
+  return '천천히';
 }
 
 export default async function SajuTodayDetailPage({ params, searchParams }: Props) {
@@ -169,8 +185,8 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
         <GangiPageHeader title="오늘 자세히 보기" backHref={`/saju/${encodeURIComponent(slug)}`} />
 
         <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
-          <span>무료 요약</span>
-          <span data-active="true">오늘 상세</span>
+          <span>총평</span>
+          <span data-active="true">상세</span>
           <span>보관</span>
         </div>
 
@@ -201,6 +217,35 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
               태어난 시간이 정확하지 않아 시간에 민감한 풀이는 조심해서 읽습니다.
             </p>
           ) : null}
+
+          <article className="gangi-today-detail-score-board" aria-label="분야별 점수 요약">
+            <div className="gangi-today-detail-score-board-head">
+              <h2>분야별 흐름</h2>
+              <span>{scoreCards.length}개 영역</span>
+            </div>
+            <div className="gangi-today-detail-score-bars">
+              {scoreCards.map((score, index) => (
+                <div key={score.key} className="gangi-today-detail-score-row">
+                  <span>{index + 1}</span>
+                  <strong>{score.displayLabel}</strong>
+                  <p>
+                    <i style={{ width: `${Math.max(0, Math.min(100, score.score))}%`, background: score.color }} />
+                  </p>
+                  <b>{score.score}</b>
+                  <em>{getScoreStatus(score.score)}</em>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <div className="gangi-today-detail-domain-strip" aria-label="분야 바로 보기">
+            {scoreCards.slice(0, 5).map((score, index) => (
+              <span key={score.key} data-active={index === 0}>
+                <i style={{ background: score.color }} />
+                {score.displayLabel}
+              </span>
+            ))}
+          </div>
 
           <div className="gangi-today-detail-focus-grid">
             {[

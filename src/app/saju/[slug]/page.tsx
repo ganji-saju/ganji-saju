@@ -161,6 +161,32 @@ const COMPACT_RESULT_CARD_FALLBACKS: Array<{
   { key: 'health', label: '건강', color: '#5C8A63', fallback: '수면 챙기기' },
 ];
 
+function formatTodayLabel() {
+  return new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  })
+    .format(new Date())
+    .replace(/\.\s?/g, '.')
+    .replace(/\.\s*\(/u, ' (')
+    .replace(/\s*\((.)\)/u, ' ($1)');
+}
+
+function getScoreStatus(score: number | null | undefined) {
+  if (typeof score !== 'number') return '확인';
+  if (score >= 75) return '좋음';
+  if (score >= 60) return '무난';
+  if (score >= 45) return '점검';
+  return '천천히';
+}
+
+function getOverallScore(report: SajuReport) {
+  return report.scores.find((score) => score.key === 'overall')?.score ?? null;
+}
+
 function toCompactCardPhrase(value: string | null | undefined, fallback: string) {
   const cleaned = easyResultCopy(value, 1)
     .replace(/입니다\.?$/u, '')
@@ -262,6 +288,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     ? buildSajuTodayDetailHref(slug)
     : buildSajuTodayDetailCheckoutHref(slug);
   const compactResultCards = buildCompactResultCards(report);
+  const overallScore = getOverallScore(report);
+  const focusScore = report.scores.find((score) => score.key === report.focusScoreKey);
+  const todayLabel = formatTodayLabel();
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -301,6 +330,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           </article>
 
           <article className="gangi-result-summary-card rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
+            <div className="gangi-result-date">{todayLabel}</div>
             <div className="text-sm font-medium text-[var(--app-pink-strong)]">한 줄 요약</div>
             <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
@@ -319,7 +349,22 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             ) : null}
           </article>
 
-          <div className="grid gap-2.5">
+          <article className="gangi-result-score-strip" aria-label="오늘 점수와 키워드">
+            <div>
+              <span>오늘 점수</span>
+              <strong>{overallScore ?? '--'}{overallScore !== null ? <em>점</em> : null}</strong>
+            </div>
+            <div>
+              <span>상태</span>
+              <strong>{getScoreStatus(overallScore)}</strong>
+            </div>
+            <div>
+              <span>키워드</span>
+              <strong>{focusScore?.label ?? report.focusBadge}</strong>
+            </div>
+          </article>
+
+          <div className="gangi-result-quick-grid">
             {[
               { label: '왜', value: punchReading.why },
               { label: '조심', value: punchReading.caution },
@@ -381,9 +426,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           </div>
 
           <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
-            <span data-active="true">무료 요약</span>
-            <span>오늘 상세</span>
-            <span>보관</span>
+            <span data-active="true">총평</span>
+            <span>상세</span>
+            <span>명식</span>
           </div>
 
           <article className="gangi-result-next-step rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
