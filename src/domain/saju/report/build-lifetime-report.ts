@@ -35,12 +35,178 @@ function formatLuckRange(cycle: { startAge: number | null; endAge: number | null
   return `${cycle.endAge}세 이전`;
 }
 
-function deriveLuckPhase(cycle: SajuMajorLuckCycle, isCurrent: boolean): LifetimeLuckPhase {
-  const note = cycle.notes.join(' ');
+const STEM_ELEMENT_BY_SYMBOL: Record<string, Element> = {
+  甲: '목',
+  乙: '목',
+  丙: '화',
+  丁: '화',
+  戊: '토',
+  己: '토',
+  庚: '금',
+  辛: '금',
+  壬: '수',
+  癸: '수',
+  갑: '목',
+  을: '목',
+  병: '화',
+  정: '화',
+  무: '토',
+  기: '토',
+  경: '금',
+  신: '금',
+  임: '수',
+  계: '수',
+};
 
-  if (isCurrent || /전환|재편|이동|변화|조정/.test(note)) return '전환기';
-  if (/확장|성과|표현|인정|노출|성장|기회/.test(note)) return '확장기';
-  return '정리기';
+const BRANCH_ELEMENT_BY_SYMBOL: Record<string, Element> = {
+  寅: '목',
+  卯: '목',
+  巳: '화',
+  午: '화',
+  辰: '토',
+  戌: '토',
+  丑: '토',
+  未: '토',
+  申: '금',
+  酉: '금',
+  子: '수',
+  亥: '수',
+  인: '목',
+  묘: '목',
+  사: '화',
+  오: '화',
+  진: '토',
+  술: '토',
+  축: '토',
+  미: '토',
+  신: '금',
+  유: '금',
+  자: '수',
+  해: '수',
+};
+
+const BRANCH_LUCK_HINT_BY_SYMBOL: Record<string, string> = {
+  子: '마음과 정보의 흐름이 자주 바뀔 수 있어, 중요한 약속과 돈의 흐름은 기록으로 남기는 습관이 필요합니다.',
+  亥: '멀리 보거나 방향을 바꾸고 싶은 마음이 커질 수 있어, 바로 움직이기보다 준비 시간을 충분히 두는 편이 좋습니다.',
+  寅: '새로운 일을 열 힘이 붙는 구간이라, 처음 만나는 사람과 배움이 이후 흐름을 크게 바꿀 수 있습니다.',
+  卯: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 기준이 중요합니다.',
+  巳: '속도와 표현이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
+  午: '주목과 성과가 앞으로 나오기 쉬워, 체력과 감정의 과열을 조절해야 좋은 결과가 오래 갑니다.',
+  辰: '쌓아 둔 역할과 생활 기반을 다시 점검하는 구간이라, 미뤄 둔 정리와 구조 조정이 흐름을 가볍게 만듭니다.',
+  戌: '마무리와 경계선이 중요한 구간이라, 애매하게 이어 온 일과 관계를 분명히 정리하는 편이 좋습니다.',
+  丑: '저장하고 버티는 힘이 커지는 구간이라, 돈과 생활 루틴을 안정적으로 묶어 두면 다음 선택이 편해집니다.',
+  未: '돌봄, 가족, 오래된 책임이 함께 올라올 수 있어, 내가 맡을 것과 나눌 것을 구분해야 지치지 않습니다.',
+  申: '일, 기술, 거래처럼 실무 기준이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
+  酉: '판단과 마감의 힘이 강해지므로, 끊고 남기는 기준을 세우되 말투는 부드럽게 조절하는 편이 좋습니다.',
+  자: '마음과 정보의 흐름이 자주 바뀔 수 있어, 중요한 약속과 돈의 흐름은 기록으로 남기는 습관이 필요합니다.',
+  해: '멀리 보거나 방향을 바꾸고 싶은 마음이 커질 수 있어, 바로 움직이기보다 준비 시간을 충분히 두는 편이 좋습니다.',
+  인: '새로운 일을 열 힘이 붙는 구간이라, 처음 만나는 사람과 배움이 이후 흐름을 크게 바꿀 수 있습니다.',
+  묘: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 기준이 중요합니다.',
+  사: '속도와 표현이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
+  오: '주목과 성과가 앞으로 나오기 쉬워, 체력과 감정의 과열을 조절해야 좋은 결과가 오래 갑니다.',
+  진: '쌓아 둔 역할과 생활 기반을 다시 점검하는 구간이라, 미뤄 둔 정리와 구조 조정이 흐름을 가볍게 만듭니다.',
+  술: '마무리와 경계선이 중요한 구간이라, 애매하게 이어 온 일과 관계를 분명히 정리하는 편이 좋습니다.',
+  축: '저장하고 버티는 힘이 커지는 구간이라, 돈과 생활 루틴을 안정적으로 묶어 두면 다음 선택이 편해집니다.',
+  미: '돌봄, 가족, 오래된 책임이 함께 올라올 수 있어, 내가 맡을 것과 나눌 것을 구분해야 지치지 않습니다.',
+  신: '일, 기술, 거래처럼 실무 기준이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
+  유: '판단과 마감의 힘이 강해지므로, 끊고 남기는 기준을 세우되 말투는 부드럽게 조절하는 편이 좋습니다.',
+};
+
+const ELEMENT_LUCK_READING: Record<
+  Element,
+  {
+    phase: Exclude<LifetimeLuckPhase, '전환기'>;
+    summary: string;
+    task: string;
+    supportTask: string;
+    dominantTask: string;
+  }
+> = {
+  목: {
+    phase: '성장기',
+    summary: '새로운 배움, 사람, 방향이 열리기 쉬운 구간입니다.',
+    task: '처음부터 크게 넓히기보다 새 인연과 공부를 작게 시험해 보고, 오래 갈 방향만 남기는 편이 좋습니다.',
+    supportTask: '부족했던 성장 축을 채우는 시기라 새 기술, 새 관계, 새 루틴을 작게 시작할수록 이후 흐름이 부드러워집니다.',
+    dominantTask: '이미 커진 성장 욕구가 더 강해질 수 있어, 벌이는 일보다 마무리할 일을 먼저 정해야 흔들림이 줄어듭니다.',
+  },
+  화: {
+    phase: '표현기',
+    summary: '말, 평판, 성과처럼 바깥으로 드러나는 일이 커지기 쉬운 구간입니다.',
+    task: '보여줄 것과 아껴둘 것을 구분하고, 성급한 반응보다 확인된 결과를 앞세우는 편이 좋습니다.',
+    supportTask: '표현과 추진력이 보완되는 시기라 발표, 홍보, 관계 회복처럼 밖으로 꺼내야 할 일을 미루지 않는 편이 좋습니다.',
+    dominantTask: '이미 뜨거운 기운이 더 빨라질 수 있어, 말과 결정의 속도를 낮추고 체력 회복 시간을 먼저 확보해야 합니다.',
+  },
+  토: {
+    phase: '기반기',
+    summary: '생활 기반, 책임, 자리 잡기가 중요한 구간입니다.',
+    task: '한 번에 바꾸려 하기보다 집, 일, 돈, 관계의 기본 구조를 단단하게 정리해야 다음 선택이 편해집니다.',
+    supportTask: '흩어진 생활을 묶어 주는 힘이 들어오므로, 계약·저축·거주·가족 역할처럼 오래 남을 기준을 세우기 좋습니다.',
+    dominantTask: '책임이 무거워지거나 고집으로 굳기 쉬우니, 혼자 떠안기보다 역할을 나누는 기준을 먼저 정해야 합니다.',
+  },
+  금: {
+    phase: '결정기',
+    summary: '정리, 선택, 기준 세우기가 강해지는 구간입니다.',
+    task: '관계를 끊거나 일을 마감하기 전에 무엇을 남길지 먼저 정하면, 결정이 날카로움보다 실속으로 이어집니다.',
+    supportTask: '기준을 세우는 힘이 보완되는 시기라 미뤄둔 정리, 계약, 경계선 세우기를 차분히 진행하기 좋습니다.',
+    dominantTask: '판단이 강해져 말이나 결정이 차갑게 보일 수 있으니, 정리하더라도 설명과 여지를 남기는 편이 좋습니다.',
+  },
+  수: {
+    phase: '준비기',
+    summary: '정보, 이동, 마음의 방향을 다시 살피는 구간입니다.',
+    task: '겉으로 성과를 재촉하기보다 배울 것, 만날 사람, 옮길 타이밍을 조용히 준비하면 다음 구간의 선택지가 넓어집니다.',
+    supportTask: '부족했던 유연함이 채워지는 시기라 쉬어 가며 정보를 모으고, 감정과 상황을 다시 읽는 시간이 도움이 됩니다.',
+    dominantTask: '생각이 많아져 결정이 늦어질 수 있으니, 고민을 기록하고 날짜를 정해 하나씩 결론 내리는 편이 좋습니다.',
+  },
+};
+
+function getGanziElements(ganzi: string): { stem: Element | null; branch: Element | null } {
+  const chars = Array.from(ganzi);
+
+  return {
+    stem: chars[0] ? (STEM_ELEMENT_BY_SYMBOL[chars[0]] ?? null) : null,
+    branch: chars[1] ? (BRANCH_ELEMENT_BY_SYMBOL[chars[1]] ?? null) : null,
+  };
+}
+
+function buildMajorLuckReading(
+  cycle: SajuMajorLuckCycle,
+  isCurrent: boolean,
+  context: {
+    supportElements: Element[];
+    dominant: Element;
+    weakest: Element;
+  }
+): { phase: LifetimeLuckPhase; summary: string; task: string } {
+  const { stem, branch } = getGanziElements(cycle.ganzi);
+  const branchSymbol = Array.from(cycle.ganzi)[1] ?? '';
+  const primaryElement = stem ?? branch ?? context.weakest;
+  const secondaryElement = branch && branch !== primaryElement ? branch : null;
+  const base = ELEMENT_LUCK_READING[primaryElement];
+  const isSupportFlow =
+    context.supportElements.includes(primaryElement) ||
+    (secondaryElement ? context.supportElements.includes(secondaryElement) : false);
+  const isDominantFlow =
+    primaryElement === context.dominant || (secondaryElement ? secondaryElement === context.dominant : false);
+  const phase = isCurrent ? '전환기' : base.phase;
+  const elementLine = secondaryElement
+    ? `${formatElementName(primaryElement)} 기운에 ${formatElementName(secondaryElement)} 기운이 섞여`
+    : `${formatElementName(primaryElement)} 기운이 중심이 되어`;
+  const relationLine = isSupportFlow
+    ? '내 사주에서 보완이 되는 축이라 잘 쓰면 부족했던 부분을 채워 주는 흐름입니다.'
+    : isDominantFlow
+      ? '이미 강한 축이 더 커지는 흐름이라 장점은 빨리 드러나지만 과하면 피로와 고집도 함께 커질 수 있습니다.'
+      : '내 사주의 강한 축과 약한 축 사이를 이어 주는 흐름이라, 생활 방식과 관계 선택을 조정하는 일이 중요합니다.';
+  const baseTask = isSupportFlow ? base.supportTask : isDominantFlow ? base.dominantTask : base.task;
+  const branchHint = BRANCH_LUCK_HINT_BY_SYMBOL[branchSymbol] ?? '';
+  const task = compactStrings([baseTask, branchHint]).join(' ');
+
+  return {
+    phase,
+    summary: `${elementLine} ${base.summary} ${relationLine}`,
+    task: isCurrent
+      ? `${task} 지금은 이 흐름이 현재 선택과 관계 조정에 직접 작동하므로, 당장 결론보다 순서와 이유를 먼저 확인하는 편이 좋습니다.`
+      : task,
+  };
 }
 
 function getCurrentKoreaYear() {
@@ -89,7 +255,12 @@ function buildKeywords(input: {
 
 function buildMajorLuckCycles(
   cycles: SajuMajorLuckCycle[] | null | undefined,
-  currentMajorLuckGanzi: string | null
+  currentMajorLuckGanzi: string | null,
+  context: {
+    supportElements: Element[];
+    dominant: Element;
+    weakest: Element;
+  }
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) {
     return [
@@ -106,22 +277,15 @@ function buildMajorLuckCycles(
 
   return cycles.slice(0, 10).map((cycle) => {
     const isCurrent = currentMajorLuckGanzi === cycle.ganzi;
-    const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 대운 과제는 세부 해석 보강 대상입니다.';
-    const phase = deriveLuckPhase(cycle, isCurrent);
+    const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 10년 흐름입니다.';
+    const reading = buildMajorLuckReading(cycle, isCurrent, context);
 
     return {
       ganzi: cycle.ganzi,
       ageLabel: formatLuckRange(cycle),
-      phase,
-      summary: isCurrent
-        ? `${note} 지금은 이 대운의 성격이 현재 선택과 관계 조정에 직접 작동합니다.`
-        : note,
-      task:
-        phase === '확장기'
-          ? '기회가 들어와도 기준 없이 넓히지 말고, 실력이 가장 잘 붙는 분야를 먼저 키우는 편이 좋습니다.'
-          : phase === '정리기'
-            ? '정리와 재배치, 역할 조정, 관계 정돈을 미루지 않는 것이 다음 흐름을 가볍게 만듭니다.'
-            : '자리, 역할, 판단 기준이 바뀌기 쉬운 구간이라 서두르기보다 이유와 순서를 먼저 확인해야 합니다.',
+      phase: reading.phase,
+      summary: `${note} ${reading.summary}`,
+      task: reading.task,
       isCurrent,
     };
   });
@@ -144,7 +308,8 @@ export function buildLifetimeReport(
 
   const dominant = formatElementName(sajuData.fiveElements.dominant);
   const weakest = formatElementName(sajuData.fiveElements.weakest);
-  const supportElements = getLuckyElementsFromSajuData(sajuData).map(formatElementName);
+  const supportElementKeys = getLuckyElementsFromSajuData(sajuData);
+  const supportElements = supportElementKeys.map(formatElementName);
   const supportLabels = supportElements.join(' · ') || dominant;
   const personality = getPersonalityFromSajuData(sajuData);
   const pillars = {
@@ -172,7 +337,12 @@ export function buildLifetimeReport(
   const majorTimeline = todayReport.timeline.find((item) => item.label === '대운 흐름') ?? null;
   const majorLuckCycles = buildMajorLuckCycles(
     sajuData.majorLuck,
-    currentMajorLuck?.ganzi ?? null
+    currentMajorLuck?.ganzi ?? null,
+    {
+      supportElements: supportElementKeys,
+      dominant: sajuData.fiveElements.dominant,
+      weakest: sajuData.fiveElements.weakest,
+    }
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(

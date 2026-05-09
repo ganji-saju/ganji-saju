@@ -45,3 +45,17 @@ test('buildLifetimeReport marks a current major-luck cycle when available', () =
       report.majorLuckTimeline.cycles[0]?.ganzi === '대운 미산정'
   );
 });
+
+test('buildLifetimeReport gives major-luck cycles distinct readings by ganzi', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((cycle) => cycle.ganzi !== '대운 미산정');
+
+  assert.ok(cycles.length >= 4);
+  assert.ok(new Set(cycles.map((cycle) => cycle.phase)).size >= 3);
+  assert.ok(new Set(cycles.map((cycle) => cycle.task)).size >= 4);
+  assert.doesNotMatch(
+    cycles.map((cycle) => cycle.task).join('\n'),
+    /정리와 재배치, 역할 조정, 관계 정돈을 미루지 않는 것/
+  );
+});

@@ -381,11 +381,17 @@ function LifetimeSectionBody({
                 </Badge>
                 <Badge
                   className={
-                    cycle.phase === '확장기'
+                    cycle.phase === '성장기'
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                      : cycle.phase === '정리기'
-                        ? 'border-sky-400/20 bg-sky-400/10 text-sky-100'
-                        : 'border-[var(--app-gold)]/25 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
+                      : cycle.phase === '표현기'
+                        ? 'border-pink-200 bg-pink-50 text-pink-700'
+                        : cycle.phase === '기반기'
+                          ? 'border-amber-200 bg-amber-50 text-amber-800'
+                          : cycle.phase === '결정기'
+                            ? 'border-sky-200 bg-sky-50 text-sky-800'
+                            : cycle.phase === '준비기'
+                              ? 'border-indigo-200 bg-indigo-50 text-indigo-800'
+                              : 'border-[var(--app-gold)]/25 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
                   }
                 >
                   {cycle.phase}

@@ -94,7 +94,13 @@ export interface LifetimeHealthRhythmSection {
   basis: string[];
 }
 
-export type LifetimeLuckPhase = '확장기' | '정리기' | '전환기';
+export type LifetimeLuckPhase =
+  | '성장기'
+  | '표현기'
+  | '기반기'
+  | '결정기'
+  | '준비기'
+  | '전환기';
 
 export interface LifetimeMajorLuckCycle {
   ganzi: string;
