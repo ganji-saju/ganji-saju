@@ -19,6 +19,7 @@ import {
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
+import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
@@ -151,7 +152,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           selectedProduct,
           paymentScope?.scopeKey ?? null
         );
-        if (entitlement) {
+        const coinUnlockedTodayDetail =
+          selectedProduct === 'today-detail' && paymentScope?.slug
+            ? await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)
+            : false;
+        if (entitlement || coinUnlockedTodayDetail) {
           alreadyPurchasedHref = buildPurchasedProductHref(selectedProduct, slug, {
             from,
             scope,

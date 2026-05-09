@@ -1,5 +1,6 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { ConcernId } from '@/lib/today-fortune/types';
@@ -18,9 +19,23 @@ export function FollowUpQuestionChips({
   const router = useRouter();
 
   return (
-    <div className="space-y-3">
-      <div className="app-caption">결과 기반 후속 질문</div>
-      <div className="flex flex-wrap gap-2">
+    <section className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[linear-gradient(180deg,#fff4fa_0%,#ffffff_100%)] p-5 shadow-[0_16px_38px_rgba(216,27,114,0.08)]">
+      <div className="flex items-start gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--app-pink)] text-white shadow-[0_12px_28px_rgba(216,27,114,0.2)]">
+          <MessageCircle className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <div className="text-sm font-normal leading-5 text-[var(--app-pink-strong)]">대화방으로 바로 이어가기</div>
+          <h3 className="mt-1 text-xl font-normal leading-8 text-[var(--app-ink)]">
+            지금 결과를 놓고 바로 물어보세요
+          </h3>
+          <p className="mt-2 text-sm font-normal leading-6 text-[var(--app-copy)]">
+            아래 질문을 누르면 대화방으로 이동해 이 결과를 기준으로 이어서 묻습니다.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2.5">
         {questions.map((question) => (
           <button
             key={question}
@@ -36,12 +51,12 @@ export function FollowUpQuestionChips({
                 `/dialogue?question=${encodeURIComponent(question)}&sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(concernId)}&from=today-fortune&autoStart=1`
               );
             }}
-            className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-2 text-xs text-[var(--app-copy)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-gold)]/28 hover:text-[var(--app-ivory)]"
+            className="w-full rounded-[1rem] border border-[rgba(216,27,114,0.16)] bg-white px-4 py-3.5 text-left text-[0.95rem] font-normal leading-6 text-[var(--app-ink)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-pink)] hover:bg-[var(--app-pink-soft)]"
           >
             {question}
           </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

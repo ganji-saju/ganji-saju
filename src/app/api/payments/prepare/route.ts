@@ -10,6 +10,7 @@ import {
 } from '@/lib/payments/product-scope';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
+import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 
@@ -109,15 +110,21 @@ export async function POST(req: NextRequest) {
         paymentScope.readingKey ?? paymentScope.slug ?? '',
         paymentScope.slug ? [paymentScope.slug] : []
       );
+  const coinUnlockedTodayDetail =
+    isTasteProductPackage(pkg) &&
+    pkg.tasteProductId === 'today-detail' &&
+    paymentScope.slug
+      ? await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)
+      : false;
 
-  if (entitlement) {
+  if (entitlement || coinUnlockedTodayDetail) {
     return NextResponse.json({
       ok: true,
       authenticated: true,
       alreadyPurchased: true,
       scopeKey: paymentScope.scopeKey,
       redirectHref: buildPurchasedProductHref(paymentScope.productId, slug, { from, scope }),
-      reason: 'existing_entitlement',
+      reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
     });
   }
 
