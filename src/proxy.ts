@@ -13,13 +13,12 @@ function shouldForwardAuthCallback(req: NextRequest) {
 
   const params = req.nextUrl.searchParams;
   return (
-    params.has('code') ||
     (params.has('error') && (params.has('error_code') || params.has('error_description')))
   );
 }
 
-function buildCanonicalAuthCallback(req: NextRequest) {
-  const callbackUrl = new URL('/api/auth/callback', CANONICAL_SITE_ORIGIN);
+function buildAuthCallbackUrl(req: NextRequest) {
+  const callbackUrl = new URL('/api/auth/callback', req.nextUrl.origin);
 
   req.nextUrl.searchParams.forEach((value, key) => {
     callbackUrl.searchParams.set(key, value);
@@ -61,7 +60,7 @@ export async function proxy(req: NextRequest) {
   }
 
   if (shouldForwardAuthCallback(req)) {
-    return NextResponse.redirect(buildCanonicalAuthCallback(req));
+    return NextResponse.redirect(buildAuthCallbackUrl(req));
   }
 
   if (process.env.NODE_ENV !== 'production') {

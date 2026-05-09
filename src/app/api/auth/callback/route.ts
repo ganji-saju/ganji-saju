@@ -30,16 +30,28 @@ function getConfiguredOrigin() {
   try {
     const url = new URL(configuredUrl);
     if (url.hostname.endsWith('.supabase.co')) return null;
+    if (isLegacyAuthHost(url.hostname) || isVercelAutoDomain(url)) return null;
     return url.origin;
   } catch {
     return null;
   }
 }
 
-function getRedirectOrigin(requestOrigin: string) {
-  const configuredOrigin = getConfiguredOrigin();
-  if (configuredOrigin) return configuredOrigin;
+function isVercelAutoDomain(url: URL) {
+  return url.hostname.endsWith('.vercel.app');
+}
 
+function isLegacyAuthHost(hostname: string) {
+  return (
+    hostname === 'ganjisaju.kr' ||
+    hostname === 'www.ganjisaju.kr' ||
+    hostname === 'ganji-saju.vercel.app' ||
+    hostname === 'ganji-saju-ganji-sajus-projects.vercel.app' ||
+    hostname === 'ganji-saju-ganji-saju.vercel.app'
+  );
+}
+
+function getRedirectOrigin(requestOrigin: string) {
   try {
     const url = new URL(requestOrigin);
     const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
@@ -47,12 +59,12 @@ function getRedirectOrigin(requestOrigin: string) {
 
     const isVercelAutoDomain =
       url.hostname.endsWith('.vercel.app') && url.origin !== CANONICAL_SITE_ORIGIN;
-    if (isVercelAutoDomain) return CANONICAL_SITE_ORIGIN;
-
-    return url.origin;
+    if (!isVercelAutoDomain && !isLegacyAuthHost(url.hostname)) return url.origin;
   } catch {
-    return CANONICAL_SITE_ORIGIN;
+    // Fall back to the configured origin below.
   }
+
+  return getConfiguredOrigin() ?? CANONICAL_SITE_ORIGIN;
 }
 
 function buildLoginRedirect({

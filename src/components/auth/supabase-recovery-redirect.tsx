@@ -21,9 +21,13 @@ function buildResetPasswordUrl({
 }) {
   const next = search.get('next');
   const code = search.get('code');
+  const tokenHash = search.get('token_hash');
+  const type = search.get('type');
   const params = new URLSearchParams();
 
   if (code) params.set('code', code);
+  if (tokenHash) params.set('token_hash', tokenHash);
+  if (type === 'recovery') params.set('type', type);
   if (next && next.startsWith('/') && !next.startsWith('//')) params.set('next', next);
 
   const query = params.toString();
@@ -43,11 +47,19 @@ export default function SupabaseRecoveryRedirect() {
       Boolean(hashParams.get('refresh_token'));
     const hasRecoveryCode =
       search.get('type') === 'recovery' && Boolean(search.get('code'));
+    const hasRecoveryTokenHash =
+      search.get('type') === 'recovery' && Boolean(search.get('token_hash'));
     const hasRootCode = pathname === '/' && Boolean(search.get('code'));
     const isLoginResetMode =
       pathname === '/login' && search.get('mode') === 'reset-password';
 
-    if (!hasRecoveryHash && !hasRecoveryCode && !hasRootCode && !isLoginResetMode) {
+    if (
+      !hasRecoveryHash &&
+      !hasRecoveryCode &&
+      !hasRecoveryTokenHash &&
+      !hasRootCode &&
+      !isLoginResetMode
+    ) {
       return;
     }
 

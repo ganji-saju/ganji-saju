@@ -21,6 +21,9 @@ function getSafeNext(value: string | null) {
 function getResetError(message?: string) {
   const normalized = message?.toLowerCase() ?? '';
   if (!message) return '비밀번호를 저장하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
+  if (normalized.includes('code verifier')) {
+    return '재설정 링크를 확인할 수 없습니다. 링크를 요청한 브라우저와 현재 브라우저가 다르거나, 콜백 주소가 바뀐 상태입니다. 이 창에서 재설정 링크를 다시 받아 주세요.';
+  }
   if (normalized.includes('session') || normalized.includes('expired')) {
     return '재설정 링크가 만료됐습니다. 아이디/비밀번호 찾기에서 링크를 다시 받아 주세요.';
   }
@@ -68,6 +71,8 @@ function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
+  const tokenType = searchParams.get('type');
   const next = useMemo(() => getSafeNext(searchParams.get('next')), [searchParams]);
   const [resetState, setResetState] = useState<ResetState>('checking');
   const [password, setPassword] = useState('');
@@ -93,6 +98,19 @@ function ResetPasswordContent() {
       const recoveryTokens = readRecoveryTokensFromHash();
       if (recoveryTokens) {
         const { error } = await supabase.auth.setSession(recoveryTokens);
+        if (error) {
+          if (!active) return;
+          setResetState('missing');
+          setErrorMessage(getResetError(error.message));
+          return;
+        }
+
+        cleanResetPasswordUrl(next);
+      } else if (tokenType === 'recovery' && tokenHash) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        });
         if (error) {
           if (!active) return;
           setResetState('missing');

@@ -72,30 +72,42 @@ function isLocalOrigin(url: URL) {
 
 function shouldUseCanonicalOrigin(url: URL) {
   return (
-    url.hostname.endsWith('.vercel.app') &&
+    (url.hostname.endsWith('.vercel.app') ||
+      url.hostname === 'ganji-saju.vercel.app' ||
+      url.hostname === 'ganji-saju-ganji-sajus-projects.vercel.app' ||
+      url.hostname === 'ganji-saju-ganji-saju.vercel.app' ||
+      url.hostname === 'ganjisaju.kr' ||
+      url.hostname === 'www.ganjisaju.kr') &&
     url.origin !== CANONICAL_SITE_ORIGIN
   );
 }
 
 function getRedirectOrigin() {
-  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
-  if (configuredUrl?.startsWith('http')) {
-    try {
-      const url = new URL(configuredUrl);
-      if (!url.hostname.endsWith('.supabase.co')) return url.origin;
-    } catch {
-      // Fall back to the browser origin below.
-    }
-  }
-
   try {
     const browserUrl = new URL(location.origin);
     if (isLocalOrigin(browserUrl)) return browserUrl.origin;
     if (shouldUseCanonicalOrigin(browserUrl)) return CANONICAL_SITE_ORIGIN;
     return browserUrl.origin;
   } catch {
-    return CANONICAL_SITE_ORIGIN;
+    // Fall back to the configured origin below.
   }
+
+  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
+  if (configuredUrl?.startsWith('http')) {
+    try {
+      const url = new URL(configuredUrl);
+      if (
+        !url.hostname.endsWith('.supabase.co') &&
+        !shouldUseCanonicalOrigin(url)
+      ) {
+        return url.origin;
+      }
+    } catch {
+      // Fall back to the browser origin below.
+    }
+  }
+
+  return CANONICAL_SITE_ORIGIN;
 }
 
 function getProviderLabel(value: string | null) {
@@ -116,6 +128,10 @@ function getOAuthLoginError(error: string | null, provider: string | null, reaso
   }
 
   if (error === 'oauth_exchange') {
+    const normalizedReason = reason?.toLowerCase() ?? '';
+    if (normalizedReason.includes('code verifier')) {
+      return `${providerLabel} 로그인 세션 연결이 완료되지 않았습니다. 로그인 시작 주소와 콜백 주소가 달라졌을 수 있어요. 현재 창에서 다시 로그인해 주세요.`;
+    }
     return `${providerLabel} 로그인 세션 연결이 완료되지 않았습니다. 브라우저 쿠키 허용과 Supabase Redirect URL 설정을 확인해 주세요.${reason ? ` (${reason})` : ''}`;
   }
 
