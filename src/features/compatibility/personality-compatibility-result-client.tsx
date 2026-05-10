@@ -691,6 +691,10 @@ export function PersonalityCompatibilityResultClient() {
   useEffect(() => {
     if (!payload || !result || !scopeKey || savedReport) return;
     if (accessState === 'idle' || accessState === 'checking') return;
+    if (accessState === 'error') {
+      setSaveStatus('error');
+      return;
+    }
 
     const resultType = accessState === 'granted' ? 'paid' : 'free';
     const saveKey = `${scopeKey}:${resultType}`;

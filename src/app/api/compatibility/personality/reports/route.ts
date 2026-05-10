@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { CompatibilityRelationshipType } from '@/domain/compatibility-personality';
 import { isPersonalityCompatibilityQuestionKey } from '@/features/compatibility/personality-compatibility-input-storage';
 import {
+  PERSONALITY_COMPATIBILITY_MINI_INCLUDED_SUBSCRIPTION_PLANS,
+  PERSONALITY_COMPATIBILITY_MINI_MEMBERSHIP_POLICY,
   PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
   PERSONALITY_COMPATIBILITY_MINI_PRICE,
 } from '@/lib/payments/personality-compatibility';
+import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import {
   createClient,
   hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
+import { getManagedSubscription } from '@/lib/subscription';
 import { readString } from '@/lib/api-utils';
 
 export const dynamic = 'force-dynamic';
@@ -66,6 +71,30 @@ function buildRevisitPath(id: string) {
   return `/compatibility/personality/result?reportId=${encodeURIComponent(id)}`;
 }
 
+function hasIncludedMembership(plan: string | null | undefined) {
+  return PERSONALITY_COMPATIBILITY_MINI_INCLUDED_SUBSCRIPTION_PLANS.some(
+    (includedPlan) => includedPlan === plan
+  );
+}
+
+async function hasPaidReportAccess(userId: string, scopeKey: string | null) {
+  if (!hasSupabaseServiceEnv) return false;
+
+  const [entitlement, subscription] = await Promise.all([
+    getTasteProductEntitlement(
+      userId,
+      PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
+      scopeKey
+    ).catch(() => null),
+    getManagedSubscription(userId).catch(() => null),
+  ]);
+
+  const membershipIncluded =
+    subscription?.status === 'active' && hasIncludedMembership(subscription.plan);
+
+  return Boolean(entitlement || membershipIncluded);
+}
+
 function sanitizeReportJson(
   reportJson: Record<string, unknown>,
   productCode: ReportProductCode,
@@ -85,7 +114,12 @@ function sanitizeReportJson(
   };
 }
 
-function mapReport(row: PersonalityCompatibilityReportRow) {
+function mapReport(row: PersonalityCompatibilityReportRow, hasPaidAccess: boolean) {
+  const effectiveProductCode =
+    row.product_code === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE && hasPaidAccess
+      ? PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
+      : 'free';
+
   return {
     id: row.id,
     scopeKey: row.scope_key,
@@ -94,9 +128,12 @@ function mapReport(row: PersonalityCompatibilityReportRow) {
     scoreJson: row.score_json,
     sajuFactsJson: row.saju_facts_json,
     personalityFactsJson: row.personality_facts_json,
-    reportJson: sanitizeReportJson(row.report_json, row.product_code, row.id),
-    productCode: row.product_code,
-    paidAmount: row.paid_amount,
+    reportJson: sanitizeReportJson(row.report_json, effectiveProductCode, row.id),
+    productCode: effectiveProductCode,
+    paidAmount:
+      effectiveProductCode === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
+        ? row.paid_amount
+        : null,
     createdAt: row.created_at,
   };
 }
@@ -137,7 +174,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '저장된 결과를 찾지 못했습니다.' }, { status: 404 });
   }
 
-  return NextResponse.json({ report: mapReport(data as PersonalityCompatibilityReportRow) });
+  const row = data as PersonalityCompatibilityReportRow;
+  const hasPaidAccess =
+    row.product_code === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
+      ? await hasPaidReportAccess(user.id, row.scope_key)
+      : false;
+
+  return NextResponse.json({ report: mapReport(row, hasPaidAccess) });
 }
 
 export async function POST(request: NextRequest) {
@@ -184,6 +227,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
+  const isPaidProduct = productCode === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE;
+  const hasPaidAccess = isPaidProduct ? await hasPaidReportAccess(user.id, scopeKey) : false;
+
+  if (isPaidProduct && !hasPaidAccess) {
+    return NextResponse.json(
+      {
+        error: '깊이보기 권한이 필요합니다.',
+        membershipPolicy: PERSONALITY_COMPATIBILITY_MINI_MEMBERSHIP_POLICY,
+      },
+      { status: 403 }
+    );
+  }
+
   const { data, error } = await supabase
     .from('compatibility_personality_reports')
     .upsert(
@@ -213,5 +269,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ report: mapReport(data as PersonalityCompatibilityReportRow) });
+  return NextResponse.json({
+    report: mapReport(data as PersonalityCompatibilityReportRow, hasPaidAccess),
+  });
 }
