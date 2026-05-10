@@ -144,9 +144,11 @@ if (hourOpts.length > 0) {
 // 5. readString 중복 정의 현황
 // ─────────────────────────────────────────
 section('5. 중복 함수 현황');
-const rsHits = grep('function readString', resolve(ROOT, 'src'), '--include="*.ts" --include="*.tsx"')
+// "function readString(" 패턴 — readStringValue는 제외, api-utils.ts 자체도 제외
+const rsHits = grep('function readString(', resolve(ROOT, 'src'), '--include="*.ts" --include="*.tsx"')
   .split('\n').filter(Boolean)
-  .filter(l => !l.includes('.test.'));
+  .filter(l => !l.includes('.test.'))
+  .filter(l => !l.includes('api-utils.ts'));  // 정의 파일 자체는 허용
 
 if (rsHits.length > 1) {
   warn(`readString: ${rsHits.length}곳에 중복 정의 — STEP 1 대상`);
