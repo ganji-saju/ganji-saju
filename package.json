@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "lint": "npm run verify:imports",
     "test": "node scripts/run-unit-tests.mjs",
     "typecheck": "tsc --noEmit --pretty false --incremental false -p tsconfig.json",
     "validate:kasi": "node scripts/validate-kasi-calendar.mjs",
