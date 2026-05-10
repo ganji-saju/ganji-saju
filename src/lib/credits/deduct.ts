@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server';
+import { readStringValue } from '@/lib/api-utils';
 
 export type Feature =
   | 'detail_report'   // 1 크레딧
@@ -38,10 +39,6 @@ function readNumber(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
-function readString(value: unknown) {
-  return typeof value === 'string' ? value : undefined;
-}
-
 function parseIdempotentCreditUnlockResult(data: unknown): IdempotentCreditUnlockResult {
   const payload = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
 
@@ -49,14 +46,14 @@ function parseIdempotentCreditUnlockResult(data: unknown): IdempotentCreditUnloc
     success: readBoolean(payload.success),
     remaining: readNumber(payload.remaining),
     reused: readBoolean(payload.reused),
-    error: readString(payload.error),
+    error: readStringValue(payload.error) || undefined,
   };
 }
 
 function isMissingIdempotentUnlockRpc(error: unknown) {
   const payload = error && typeof error === 'object' ? (error as Record<string, unknown>) : {};
-  const code = readString(payload.code);
-  const message = readString(payload.message) ?? '';
+  const code = readStringValue(payload.code);
+  const message = readStringValue(payload.message);
 
   return (
     code === 'PGRST202' ||

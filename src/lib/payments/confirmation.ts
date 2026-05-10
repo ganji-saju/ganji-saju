@@ -2,6 +2,7 @@ import {
   getPackage,
   type PaymentPackage,
 } from '@/lib/payments/catalog';
+import { readString } from '@/lib/api-utils';
 
 export interface PaymentConfirmationInput {
   paymentKey: string;
@@ -22,11 +23,6 @@ export type PaymentConfirmationValidation =
       ok: false;
       error: string;
     };
-
-function readString(payload: Record<string, unknown>, key: string) {
-  const value = payload[key];
-  return typeof value === 'string' ? value.trim() : '';
-}
 
 function readAmount(payload: Record<string, unknown>) {
   const amount = Number(payload.amount);

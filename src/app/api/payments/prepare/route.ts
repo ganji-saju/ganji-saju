@@ -13,11 +13,7 @@ import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
-
-function readString(data: Record<string, unknown>, key: string) {
-  const value = data[key];
-  return typeof value === 'string' ? value.trim() : '';
-}
+import { readString } from '@/lib/api-utils';
 
 function buildCheckoutPath(input: {
   packageId: string;

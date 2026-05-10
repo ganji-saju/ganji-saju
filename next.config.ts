@@ -14,6 +14,24 @@ function firstNonEmptyEnv(...keys: string[]) {
 }
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: '/about-engine', destination: '/interpretation', permanent: true },
+      { source: '/guide', destination: '/interpretation', permanent: true },
+      { source: '/gunghap', destination: '/compatibility/input', permanent: true },
+      { source: '/today', destination: '/today-fortune', permanent: false },
+      { source: '/method', destination: '/interpretation', permanent: true },
+      { source: '/method/:slug', destination: '/interpretation', permanent: true },
+      { source: '/myeongri/ten-gods', destination: '/myeongri', permanent: true },
+      { source: '/saju/new/consent', destination: '/saju/new', permanent: true },
+      { source: '/saju/new/empathy', destination: '/saju/new', permanent: true },
+      { source: '/saju/new/nickname', destination: '/saju/new', permanent: true },
+      { source: '/saju/new/birth', destination: '/saju/new', permanent: true },
+      { source: '/notifications/schedule', destination: '/notifications', permanent: true },
+      { source: '/notifications/widget', destination: '/notifications', permanent: true },
+      { source: '/my/results', destination: '/my', permanent: true },
+    ];
+  },
   env: {
     NEXT_PUBLIC_SUPABASE_URL: firstNonEmptyEnv(
       "NEXT_PUBLIC_SUPABASE_URL",
