@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   estimatePersonalityType,
   getPersonalityTypeProfile,
@@ -22,6 +22,7 @@ import {
   type PersonalityCompatibilityInputPayload,
   type PersonalityCompatibilityQuestionKey,
 } from '@/features/compatibility/personality-compatibility-input-storage';
+import { trackMoonlightEvent } from '@/lib/analytics';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { cn } from '@/lib/utils';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
@@ -362,6 +363,8 @@ function PersonalityInputPanel({
 
 export function PersonalityCompatibilityInputClient() {
   const router = useRouter();
+  const trackedProfileCompletionRef = useRef<Set<PersonKey>>(new Set());
+  const trackedCheckCompletionRef = useRef<Set<PersonKey>>(new Set());
   const [relationshipType, setRelationshipType] = useState<CompatibilityRelationshipType>('dating');
   const [selfName, setSelfName] = useState('나');
   const [partnerName, setPartnerName] = useState('상대');
@@ -380,6 +383,60 @@ export function PersonalityCompatibilityInputClient() {
   const selfSummary = useMemo(() => formatBirthSummary(selfDraft), [selfDraft]);
   const partnerSummary = useMemo(() => formatBirthSummary(partnerDraft), [partnerDraft]);
   const selectedQuestion = QUESTION_OPTIONS.find((item) => item.value === questionKey) ?? QUESTION_OPTIONS[0];
+
+  useEffect(() => {
+    trackMoonlightEvent('personality_compatibility_viewed', {
+      source: 'input_page',
+    });
+  }, []);
+
+  function selectRelationshipType(nextRelationshipType: CompatibilityRelationshipType) {
+    setRelationshipType(nextRelationshipType);
+    trackMoonlightEvent('relationship_type_selected', {
+      relationshipType: nextRelationshipType,
+      source: 'personality_compatibility_input',
+    });
+  }
+
+  function updatePersonality(target: PersonKey, patch: Partial<PersonalityState>) {
+    const updateState = target === 'self' ? setSelfPersonality : setPartnerPersonality;
+    const current = target === 'self' ? selfPersonality : partnerPersonality;
+    const next = { ...current, ...patch };
+
+    if (patch.typeCode && next.mode === 'direct') {
+      trackMoonlightEvent('personality_type_selected', {
+        profileSlot: target === 'self' ? 'a' : 'b',
+        inputMode: 'direct',
+        source: 'personality_compatibility_input',
+      });
+    }
+
+    if (
+      next.mode === 'check' &&
+      next.answers.length >= PERSONALITY_SELF_CHECK_QUESTIONS.length &&
+      !trackedCheckCompletionRef.current.has(target)
+    ) {
+      trackedCheckCompletionRef.current.add(target);
+      trackMoonlightEvent('personality_check_completed', {
+        profileSlot: target === 'self' ? 'a' : 'b',
+        inputMode: 'check',
+        source: 'personality_compatibility_input',
+      });
+    }
+
+    updateState(next);
+  }
+
+  function trackProfileCompleted(target: PersonKey) {
+    if (trackedProfileCompletionRef.current.has(target)) return;
+
+    trackedProfileCompletionRef.current.add(target);
+    trackMoonlightEvent(target === 'self' ? 'profile_a_completed' : 'profile_b_completed', {
+      profileSlot: target === 'self' ? 'a' : 'b',
+      relationshipType,
+      source: 'personality_compatibility_input',
+    });
+  }
 
   function updateDraft(target: PersonKey, patch: Partial<UnifiedBirthEntryDraft>) {
     if (target === 'self') {
@@ -488,6 +545,7 @@ export function PersonalityCompatibilityInputClient() {
       setIsSubmitted(false);
       return;
     }
+    trackProfileCompleted('self');
 
     const partnerParsed = resolveUnifiedBirthInput(partnerDraft, { requireGender: true });
     if (!partnerParsed.ok) {
@@ -495,6 +553,7 @@ export function PersonalityCompatibilityInputClient() {
       setIsSubmitted(false);
       return;
     }
+    trackProfileCompleted('partner');
 
     const selfPersonalityResult = getPersonalityResult(selfPersonality);
     if (!selfPersonalityResult) {
@@ -592,7 +651,7 @@ export function PersonalityCompatibilityInputClient() {
               <button
                 key={item.value}
                 type="button"
-                onClick={() => setRelationshipType(item.value)}
+                onClick={() => selectRelationshipType(item.value)}
                 className={cn(
                   'gangi-topic-card',
                   relationshipType === item.value &&
@@ -699,12 +758,12 @@ export function PersonalityCompatibilityInputClient() {
             <PersonalityInputPanel
               title="내 성향"
               state={selfPersonality}
-              onChange={(patch) => setSelfPersonality((current) => ({ ...current, ...patch }))}
+              onChange={(patch) => updatePersonality('self', patch)}
             />
             <PersonalityInputPanel
               title="상대 성향"
               state={partnerPersonality}
-              onChange={(patch) => setPartnerPersonality((current) => ({ ...current, ...patch }))}
+              onChange={(patch) => updatePersonality('partner', patch)}
             />
           </div>
         </GangiSection>

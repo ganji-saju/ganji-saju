@@ -40,12 +40,14 @@ import {
   PERSONALITY_COMPATIBILITY_MINI_PRICE,
   PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
 } from '@/lib/payments/personality-compatibility';
+import { trackMoonlightEvent } from '@/lib/analytics';
 import type { BirthInput } from '@/lib/saju/types';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type ResultLoadState = 'loading' | 'ready' | 'missing';
 type AccessState = 'idle' | 'checking' | 'granted' | 'locked' | 'error';
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'guest' | 'error';
+type ReportFeedbackValue = 'helpful' | 'needs_adjustment';
 
 interface EntitlementResponse {
   authenticated?: boolean;
@@ -496,6 +498,46 @@ function ShareCard({
   );
 }
 
+function ReportFeedback({
+  submittedValue,
+  onSubmit,
+}: {
+  submittedValue: ReportFeedbackValue | null;
+  onSubmit: (value: ReportFeedbackValue) => void;
+}) {
+  return (
+    <GangiSection
+      eyebrow="피드백"
+      title="이번 결과가 도움이 되었나요?"
+      description="자유 입력 없이 버튼 선택만 기록해 개인정보가 이벤트에 섞이지 않게 합니다."
+    >
+      <GangiActionRow>
+        <button
+          type="button"
+          onClick={() => onSubmit('helpful')}
+          className="gangi-secondary-button"
+          data-active={submittedValue === 'helpful' ? 'true' : undefined}
+        >
+          도움이 됐어요
+        </button>
+        <button
+          type="button"
+          onClick={() => onSubmit('needs_adjustment')}
+          className="gangi-secondary-button"
+          data-active={submittedValue === 'needs_adjustment' ? 'true' : undefined}
+        >
+          조금 아쉬워요
+        </button>
+      </GangiActionRow>
+      {submittedValue ? (
+        <p className="mt-3 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
+          피드백을 남겼습니다. 다음 결과 흐름을 다듬는 데 참고하겠습니다.
+        </p>
+      ) : null}
+    </GangiSection>
+  );
+}
+
 export function PersonalityCompatibilityResultClient() {
   const [payload, setPayload] = useState<PersonalityCompatibilityInputPayload | null>(null);
   const [savedReport, setSavedReport] = useState<SavedReportResponse | null>(null);
@@ -503,10 +545,12 @@ export function PersonalityCompatibilityResultClient() {
   const [loadState, setLoadState] = useState<ResultLoadState>('loading');
   const [accessState, setAccessState] = useState<AccessState>('idle');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [feedbackValue, setFeedbackValue] = useState<ReportFeedbackValue | null>(null);
   const [ctaMessage, setCtaMessage] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
   const saveAttemptKeyRef = useRef('');
+  const resultViewedRef = useRef(false);
   const result = useMemo(
     () => savedReport?.reportJson ?? (payload ? buildPersonalityCompatibilityFreeResult(payload) : null),
     [payload, savedReport]
@@ -535,6 +579,10 @@ export function PersonalityCompatibilityResultClient() {
         : null,
     [result, revisitPath]
   );
+  const analyticsRelationshipType = payload?.relationshipType ?? savedReport?.relationshipType ?? null;
+  const analyticsResultType = accessState === 'granted' ? 'paid' : 'free';
+  const analyticsProductCode =
+    accessState === 'granted' ? PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE : 'free';
 
   useEffect(() => {
     let isActive = true;
@@ -621,6 +669,26 @@ export function PersonalityCompatibilityResultClient() {
   }, [scopeKey, savedReport]);
 
   useEffect(() => {
+    if (!result || !analyticsRelationshipType || resultViewedRef.current) return;
+    if (accessState === 'idle' || accessState === 'checking') return;
+
+    resultViewedRef.current = true;
+    trackMoonlightEvent('free_result_viewed', {
+      relationshipType: analyticsRelationshipType,
+      resultType: analyticsResultType,
+      productCode: analyticsProductCode,
+      source: savedReport ? 'saved_report' : 'personality_compatibility_result',
+    });
+  }, [
+    accessState,
+    analyticsProductCode,
+    analyticsRelationshipType,
+    analyticsResultType,
+    result,
+    savedReport,
+  ]);
+
+  useEffect(() => {
     if (!payload || !result || !scopeKey || savedReport) return;
     if (accessState === 'idle' || accessState === 'checking') return;
 
@@ -689,6 +757,13 @@ export function PersonalityCompatibilityResultClient() {
     navigator.clipboard
       .writeText(text)
       .then(() => {
+        trackMoonlightEvent('report_shared', {
+          relationshipType: analyticsRelationshipType,
+          resultType: analyticsResultType,
+          productCode: analyticsProductCode,
+          shareMethod: 'copy_text',
+          source: 'personality_compatibility_report',
+        });
         setCopyMessage('개인 생년월일시와 상대 정보 없이 공유 문구를 복사했습니다.');
       })
       .catch(() => {
@@ -697,6 +772,12 @@ export function PersonalityCompatibilityResultClient() {
   }
 
   function handleAiCta() {
+    trackMoonlightEvent('ai_chat_started_from_report', {
+      relationshipType: analyticsRelationshipType,
+      resultType: analyticsResultType,
+      productCode: analyticsProductCode,
+      source: 'personality_compatibility_report',
+    });
     console.info('personality compatibility result cta clicked', {
       action: 'ai',
       relationshipType: payload?.relationshipType,
@@ -704,6 +785,26 @@ export function PersonalityCompatibilityResultClient() {
       hasPaidAccess: accessState === 'granted',
     });
     setCtaMessage('다음 단계에서 이 결과 맥락을 대화방에 전달할 수 있게 버튼 구조만 준비했습니다.');
+  }
+
+  function handlePaidUnlockClick() {
+    trackMoonlightEvent('paid_unlock_clicked', {
+      relationshipType: analyticsRelationshipType,
+      productCode: PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
+      amount: PERSONALITY_COMPATIBILITY_MINI_PRICE,
+      source: 'personality_compatibility_report',
+    });
+  }
+
+  function handleFeedbackSubmit(value: ReportFeedbackValue) {
+    setFeedbackValue(value);
+    trackMoonlightEvent('report_feedback_submitted', {
+      relationshipType: analyticsRelationshipType,
+      resultType: analyticsResultType,
+      productCode: analyticsProductCode,
+      feedbackValue: value,
+      source: 'personality_compatibility_report',
+    });
   }
 
   if (loadState === 'loading') return <LoadingState />;
@@ -798,7 +899,7 @@ export function PersonalityCompatibilityResultClient() {
                   깊이보기 열림
                 </span>
               ) : (
-                <Link href={checkoutHref} className="gangi-primary-button">
+                <Link href={checkoutHref} onClick={handlePaidUnlockClick} className="gangi-primary-button">
                   <Sparkles className="h-4 w-4" />
                   {PERSONALITY_COMPATIBILITY_MINI_PRICE.toLocaleString('ko-KR')}원으로 깊이보기
                 </Link>
@@ -819,6 +920,8 @@ export function PersonalityCompatibilityResultClient() {
             ) : null}
           </div>
         </section>
+
+        <ReportFeedback submittedValue={feedbackValue} onSubmit={handleFeedbackSubmit} />
 
         <section className="px-4 pb-8 sm:px-0">
           <p className="rounded-[1rem] border border-[var(--app-line)] bg-white/70 px-4 py-3 text-xs leading-6 text-[var(--app-copy-muted)]">

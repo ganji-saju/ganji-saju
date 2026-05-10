@@ -311,8 +311,10 @@ function SuccessContent() {
         setConfirmedPlan(nextPlan);
         trackMoonlightEvent('payment_completed', {
           from: entrySource,
+          source: entrySource,
           packageId,
           product: nextProduct,
+          productCode: nextProduct,
           amount: Number(amount),
           plan: nextPlan,
         });
