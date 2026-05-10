@@ -60,6 +60,13 @@ export function validatePaymentConfirmationPayload(
     };
   }
 
+  if (pkg.requiresScope && !scope) {
+    return {
+      ok: false,
+      error: '이 상품 결제에는 연결할 결과 범위가 필요합니다.',
+    };
+  }
+
   return {
     ok: true,
     input: {

@@ -14,6 +14,8 @@ import type {
   PersonalityCompatibilityInputPayload,
   PersonalityCompatibilityQuestionKey,
 } from '@/features/compatibility/personality-compatibility-input-storage';
+import { buildPersonalityCompatibilityScopeKey } from '@/lib/payments/personality-compatibility';
+import type { BirthInput } from '@/lib/saju/types';
 
 export interface PersonalityCompatibilityAxisSummary {
   key: CompatibilityScoreAxis;
@@ -28,6 +30,11 @@ export interface PersonalityCompatibilityLockedPreview {
   teaser: string;
 }
 
+export interface PersonalityCompatibilityPaidSection {
+  title: string;
+  body: string;
+}
+
 export interface PersonalityCompatibilityFreeResult {
   relationshipLabel: string;
   questionLabel: string;
@@ -37,6 +44,7 @@ export interface PersonalityCompatibilityFreeResult {
   keywords: string[];
   paragraphs: string[];
   lockedSections: PersonalityCompatibilityLockedPreview[];
+  paidSections: PersonalityCompatibilityPaidSection[];
   safetyNote: string;
 }
 
@@ -209,6 +217,50 @@ function buildNeutralSajuFacts(): CompatibilitySajuFacts {
   };
 }
 
+function buildBirthFingerprint(input: BirthInput) {
+  return {
+    year: input.year,
+    month: input.month,
+    day: input.day,
+    hour: input.unknownTime ? null : input.hour ?? null,
+    minute: input.unknownTime ? null : input.minute ?? null,
+    unknownTime: Boolean(input.unknownTime),
+    gender: input.gender ?? null,
+    birthLocationCode: input.birthLocation?.code ?? null,
+    solarTimeMode: input.solarTimeMode ?? null,
+  };
+}
+
+export function buildPersonalityCompatibilityReportFingerprint(
+  payload: PersonalityCompatibilityInputPayload
+) {
+  return JSON.stringify({
+    version: payload.version,
+    relationshipType: payload.relationshipType,
+    questionKey: payload.questionKey,
+    self: {
+      birthInput: buildBirthFingerprint(payload.self.birthInput),
+      personalityType: payload.self.personality.typeCode,
+      personalitySource: payload.self.personality.source,
+      personalityAxisScores: payload.self.personality.axisScores ?? null,
+    },
+    partner: {
+      birthInput: buildBirthFingerprint(payload.partner.birthInput),
+      personalityType: payload.partner.personality.typeCode,
+      personalitySource: payload.partner.personality.source,
+      personalityAxisScores: payload.partner.personality.axisScores ?? null,
+    },
+  });
+}
+
+export function buildPersonalityCompatibilityReportScopeKey(
+  payload: PersonalityCompatibilityInputPayload
+) {
+  return buildPersonalityCompatibilityScopeKey(
+    buildPersonalityCompatibilityReportFingerprint(payload)
+  );
+}
+
 function buildHeadline(
   payload: PersonalityCompatibilityInputPayload,
   scores: CompatibilityScoreResult
@@ -293,6 +345,55 @@ function buildParagraphs(
   ];
 }
 
+function buildPaidSections(
+  payload: PersonalityCompatibilityInputPayload,
+  score: CompatibilityScoreResult
+): PersonalityCompatibilityPaidSection[] {
+  const conflictBody =
+    score.conflictRiskScore >= 58
+      ? `${payload.self.name}님과 ${payload.partner.name}님은 감정 자체보다 확인 속도에서 어긋날 가능성이 있습니다. 한쪽은 바로 반응을 원하고, 다른 쪽은 정리할 시간을 원할 때 말의 온도가 올라가기 쉽습니다.`
+      : `${payload.self.name}님과 ${payload.partner.name}님은 갈등 신호가 크게 튀기보다 작은 오해가 쌓일 때 흔들릴 수 있습니다. 서운한 지점을 늦게 말하지 않는 편이 도움이 됩니다.`;
+  const toneBody =
+    score.communicationScore >= 70
+      ? '소통 지수는 받쳐주는 편이라 긴 설명보다 질문의 모양을 다듬는 쪽이 좋습니다. “왜 그랬어?”보다 “나는 이렇게 느꼈는데, 네 쪽은 어땠어?”처럼 여지를 남기는 말이 편합니다.'
+      : '소통 지수가 조심스럽게 잡혔습니다. 답을 재촉하거나 마음을 바로 확인하려는 말보다, “지금 부담되면 나중에 말해줘도 괜찮아”처럼 숨 쉴 공간을 주는 표현이 어울립니다.';
+  const timingBody =
+    score.recoveryScore >= 70
+      ? '오늘 먼저 연락한다면 긴 대화보다 짧은 안부형 문장이 어울립니다. 목적을 크게 열기보다 “생각나서 짧게 남겨. 답은 편할 때 줘도 괜찮아” 정도의 낮은 압력이 좋습니다.'
+      : '오늘은 바로 깊은 대화를 열기보다 분위기를 확인하는 쪽이 안전합니다. 먼저 연락한다면 질문 하나만 남기고, 답이 늦어도 추가 메시지를 겹치지 않는 방식이 도움이 됩니다.';
+  const repairBody =
+    score.conflictRiskScore >= 58
+      ? '추천 문장: “내가 답을 빨리 듣고 싶어서 말이 조금 앞섰던 것 같아. 네가 편한 속도도 같이 맞춰보고 싶어.”'
+      : '추천 문장: “요즘 내가 놓친 부분이 있었는지 궁금했어. 부담 주려는 건 아니고, 편하게 이야기해보고 싶어.”';
+  const longTermBody =
+    score.stabilityScore >= 70
+      ? '장기 관계는 감정의 크기보다 생활 기준을 맞추는 힘에서 안정됩니다. 역할, 연락 빈도, 혼자 있는 시간의 기준을 초반에 작게 합의하면 관계가 덜 소모됩니다.'
+      : '장기 관계를 보려면 서로의 생활 리듬을 먼저 확인하는 편이 좋습니다. 좋아하는 마음만으로 밀기보다 돈, 시간, 가족, 일상 루틴 같은 실제 기준을 작게 나누어 보는 방식이 어울립니다.';
+
+  return [
+    {
+      title: '반복 갈등의 진짜 원인',
+      body: guardCopy(conflictBody),
+    },
+    {
+      title: '상대가 부담을 느끼는 말투',
+      body: guardCopy(toneBody),
+    },
+    {
+      title: '오늘 먼저 연락해도 되는지',
+      body: guardCopy(timingBody),
+    },
+    {
+      title: '관계 회복 문장',
+      body: guardCopy(repairBody),
+    },
+    {
+      title: '장기 관계 가능성',
+      body: guardCopy(longTermBody),
+    },
+  ];
+}
+
 export function buildPersonalityCompatibilityFreeResult(
   payload: PersonalityCompatibilityInputPayload
 ): PersonalityCompatibilityFreeResult {
@@ -328,6 +429,7 @@ export function buildPersonalityCompatibilityFreeResult(
       title: guardCopy(section.title),
       teaser: guardCopy(section.teaser),
     })),
+    paidSections: buildPaidSections(payload, score),
     safetyNote: PERSONALITY_COMPATIBILITY_SAFETY_NOTE,
   };
 }

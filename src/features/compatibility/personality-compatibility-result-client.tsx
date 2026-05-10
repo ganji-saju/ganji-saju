@@ -22,14 +22,27 @@ import {
   type PersonalityCompatibilityInputPerson,
 } from '@/features/compatibility/personality-compatibility-input-storage';
 import {
+  buildPersonalityCompatibilityReportScopeKey,
   buildPersonalityCompatibilityFreeResult,
   type PersonalityCompatibilityFreeResult,
 } from '@/features/compatibility/personality-compatibility-result-builder';
+import {
+  PERSONALITY_COMPATIBILITY_MINI_PRICE,
+  PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
+} from '@/lib/payments/personality-compatibility';
 import type { BirthInput } from '@/lib/saju/types';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type ResultLoadState = 'loading' | 'ready' | 'missing';
-type MockCtaKind = 'unlock' | 'ai';
+type AccessState = 'idle' | 'checking' | 'granted' | 'locked' | 'error';
+
+interface EntitlementResponse {
+  authenticated?: boolean;
+  hasAccess?: boolean;
+  reason?: string | null;
+  membershipPolicy?: string;
+  error?: string;
+}
 
 const COMPATIBILITY_RELATIONSHIP_TYPES: readonly CompatibilityRelationshipType[] = [
   'dating',
@@ -241,12 +254,51 @@ function FreeInterpretation({ result }: { result: PersonalityCompatibilityFreeRe
   );
 }
 
-function LockedPreview({ result }: { result: PersonalityCompatibilityFreeResult }) {
+function LockedPreview({
+  result,
+  accessState,
+}: {
+  result: PersonalityCompatibilityFreeResult;
+  accessState: AccessState;
+}) {
+  if (accessState === 'granted') {
+    return (
+      <GangiSection
+        eyebrow="잠금 해제"
+        title="깊이보기 내용이 열렸습니다"
+        description="구매 권한이 확인된 결과 범위의 paidReport입니다."
+        tone="pink"
+      >
+        <div className="grid gap-3">
+          {result.paidSections.map((section) => (
+            <article
+              key={section.title}
+              className="rounded-[1.2rem] border border-[var(--app-pink)]/20 bg-white/90 px-4 py-4"
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+                  <Sparkles className="h-4 w-4" />
+                </span>
+                <h3 className="text-base font-bold text-[var(--app-ink)]">{section.title}</h3>
+              </div>
+              <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{section.body}</p>
+            </article>
+          ))}
+        </div>
+      </GangiSection>
+    );
+  }
+
+  const description =
+    accessState === 'checking'
+      ? '구매 이력을 확인하는 중입니다. 확인되면 이 영역이 자동으로 열립니다.'
+      : '990원 결제 후 현재 결과 범위에 연결된 상세 섹션이 열립니다.';
+
   return (
     <GangiSection
       eyebrow="잠금 영역"
       title="깊이보기에서 열리는 내용"
-      description="이번 단계에서는 결제 연결 없이, 열릴 섹션 구조만 보여줍니다."
+      description={description}
       tone="pink"
     >
       <div className="grid gap-3">
@@ -272,29 +324,83 @@ function LockedPreview({ result }: { result: PersonalityCompatibilityFreeResult 
 export function PersonalityCompatibilityResultClient() {
   const [payload, setPayload] = useState<PersonalityCompatibilityInputPayload | null>(null);
   const [loadState, setLoadState] = useState<ResultLoadState>('loading');
+  const [accessState, setAccessState] = useState<AccessState>('idle');
   const [ctaMessage, setCtaMessage] = useState('');
+  const [paymentNotice, setPaymentNotice] = useState('');
   const result = useMemo(
     () => (payload ? buildPersonalityCompatibilityFreeResult(payload) : null),
     [payload]
   );
+  const scopeKey = useMemo(
+    () => (payload ? buildPersonalityCompatibilityReportScopeKey(payload) : null),
+    [payload]
+  );
+  const checkoutHref = useMemo(() => {
+    if (!scopeKey) return '/compatibility/personality';
+
+    const params = new URLSearchParams({
+      product: PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
+      scope: scopeKey,
+      from: 'personality-compatibility-result',
+    });
+    return `/membership/checkout?${params.toString()}`;
+  }, [scopeKey]);
 
   useEffect(() => {
     const storedPayload = readStoredInputPayload();
     setPayload(storedPayload);
     setLoadState(storedPayload ? 'ready' : 'missing');
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'failed') {
+      setPaymentNotice('결제가 완료되지 않아 무료 결과로 돌아왔습니다.');
+    } else if (params.get('paid') === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE) {
+      setPaymentNotice('결제 확인 후 깊이보기 권한을 확인하고 있습니다.');
+    }
   }, []);
 
-  function handleMockCta(kind: MockCtaKind) {
+  useEffect(() => {
+    if (!scopeKey) return;
+
+    let isActive = true;
+    setAccessState('checking');
+
+    fetch(`/api/compatibility/personality/entitlement?scope=${encodeURIComponent(scopeKey)}`)
+      .then((response) => response.json().then((data) => ({ response, data })))
+      .then(({ response, data }: { response: Response; data: EntitlementResponse }) => {
+        if (!isActive) return;
+
+        if (!response.ok || data.error) {
+          setAccessState('error');
+          return;
+        }
+
+        setAccessState(data.hasAccess ? 'granted' : 'locked');
+        if (data.hasAccess) {
+          setPaymentNotice(
+            data.reason === 'membership'
+              ? '멤버십 정책으로 깊이보기가 열렸습니다.'
+              : '구매 이력이 확인되어 깊이보기가 열렸습니다.'
+          );
+        }
+      })
+      .catch(() => {
+        if (isActive) setAccessState('error');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [scopeKey]);
+
+  function handleAiCta() {
     console.info('personality compatibility result cta clicked', {
-      action: kind,
+      action: 'ai',
       relationshipType: payload?.relationshipType,
       questionKey: payload?.questionKey,
+      hasPaidAccess: accessState === 'granted',
     });
-    setCtaMessage(
-      kind === 'unlock'
-        ? '다음 단계에서 990원 상세 풀이 결제 흐름에 연결할 수 있게 버튼 구조만 준비했습니다.'
-        : '다음 단계에서 이 결과 맥락을 대화방에 전달할 수 있게 버튼 구조만 준비했습니다.'
-    );
+    setCtaMessage('다음 단계에서 이 결과 맥락을 대화방에 전달할 수 있게 버튼 구조만 준비했습니다.');
   }
 
   if (loadState === 'loading') return <LoadingState />;
@@ -334,7 +440,7 @@ export function PersonalityCompatibilityResultClient() {
         </GangiSection>
 
         <FreeInterpretation result={result} />
-        <LockedPreview result={result} />
+        <LockedPreview result={result} accessState={accessState} />
 
         <section className="px-4 pb-8 sm:px-0">
           <div className="gangi-pink-panel p-4">
@@ -343,20 +449,28 @@ export function PersonalityCompatibilityResultClient() {
               더 깊게 보거나, 이어서 물어볼 수 있게 준비했습니다
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-[var(--app-copy-muted)]">
-              실제 결제와 대화방 연결은 다음 단계에서 붙일 수 있도록 mock CTA로만 동작합니다.
+              깊이보기는 990원 결제 후 현재 결과 범위에 연결되며, 이미 구매한 결과는 다시 결제하지 않습니다.
             </p>
+            {paymentNotice ? (
+              <p className="mt-4 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
+                {paymentNotice}
+              </p>
+            ) : null}
             <GangiActionRow className="mt-4">
+              {accessState === 'granted' ? (
+                <span className="gangi-primary-button" aria-live="polite">
+                  <Sparkles className="h-4 w-4" />
+                  깊이보기 열림
+                </span>
+              ) : (
+                <Link href={checkoutHref} className="gangi-primary-button">
+                  <Sparkles className="h-4 w-4" />
+                  {PERSONALITY_COMPATIBILITY_MINI_PRICE.toLocaleString('ko-KR')}원으로 깊이보기
+                </Link>
+              )}
               <button
                 type="button"
-                onClick={() => handleMockCta('unlock')}
-                className="gangi-primary-button"
-              >
-                <Sparkles className="h-4 w-4" />
-                990원으로 깊이보기
-              </button>
-              <button
-                type="button"
-                onClick={() => handleMockCta('ai')}
+                onClick={handleAiCta}
                 className="gangi-secondary-button"
               >
                 <MessageCircleQuestion className="h-4 w-4" />

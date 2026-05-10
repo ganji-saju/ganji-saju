@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { hasForbiddenReportPhrase } from '@/domain/compatibility-personality';
 import type { PersonalityCompatibilityInputPayload } from './personality-compatibility-input-storage';
-import { buildPersonalityCompatibilityFreeResult } from './personality-compatibility-result-builder';
+import {
+  buildPersonalityCompatibilityFreeResult,
+  buildPersonalityCompatibilityReportScopeKey,
+} from './personality-compatibility-result-builder';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
@@ -54,6 +57,7 @@ test('personality compatibility free result exposes required preview sections', 
     ['끌림', '안정', '소통', '갈등', '회복']
   );
   assert.equal(result.paragraphs.length, 3);
+  assert.equal(result.paidSections.length, 5);
   assert.deepEqual(
     result.lockedSections.map((section) => section.title),
     [
@@ -72,8 +76,27 @@ test('personality compatibility free result exposes required preview sections', 
     ...result.keywords,
     ...result.paragraphs,
     ...result.lockedSections.flatMap((section) => [section.title, section.teaser]),
+    ...result.paidSections.flatMap((section) => [section.title, section.body]),
     result.safetyNote,
   ].join('\n');
 
   assert.equal(hasForbiddenReportPhrase(visibleCopy), false);
+});
+
+test('personality compatibility report scope is stable without storing names in the key', () => {
+  const first = buildPersonalityCompatibilityReportScopeKey(SAMPLE_PAYLOAD);
+  const second = buildPersonalityCompatibilityReportScopeKey({
+    ...SAMPLE_PAYLOAD,
+    self: {
+      ...SAMPLE_PAYLOAD.self,
+      name: '다른 별명',
+    },
+    partner: {
+      ...SAMPLE_PAYLOAD.partner,
+      name: '새 별명',
+    },
+  });
+
+  assert.match(first, /^personality-compatibility:[a-z0-9]+$/);
+  assert.equal(first, second);
 });

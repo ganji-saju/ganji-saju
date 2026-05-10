@@ -59,6 +59,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (pkg.requiresScope && !scope) {
+    return NextResponse.json(
+      { error: '이 상품은 먼저 결과를 만든 뒤 결제할 수 있습니다.' },
+      { status: 400 }
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
