@@ -4,6 +4,7 @@ import type { PersonalityCompatibilityInputPayload } from './personality-compati
 import {
   buildPersonalityCompatibilityFreeResult,
   buildPersonalityCompatibilityReportScopeKey,
+  buildPersonalityCompatibilityShareCardData,
 } from './personality-compatibility-result-builder';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
@@ -99,4 +100,32 @@ test('personality compatibility report scope is stable without storing names in 
 
   assert.match(first, /^personality-compatibility:[a-z0-9]+$/);
   assert.equal(first, second);
+});
+
+test('personality compatibility share card keeps private birth and partner details out', () => {
+  const privatePayload: PersonalityCompatibilityInputPayload = {
+    ...SAMPLE_PAYLOAD,
+    self: {
+      ...SAMPLE_PAYLOAD.self,
+      name: '민지',
+    },
+    partner: {
+      ...SAMPLE_PAYLOAD.partner,
+      name: '도윤',
+    },
+  };
+  const result = buildPersonalityCompatibilityFreeResult(privatePayload);
+  const shareCard = buildPersonalityCompatibilityShareCardData(result, {
+    revisitPath: '/compatibility/personality/result?reportId=abc',
+  });
+  const shareText = JSON.stringify(shareCard);
+
+  assert.equal(shareText.includes('민지'), false);
+  assert.equal(shareText.includes('도윤'), false);
+  assert.equal(shareText.includes('1994'), false);
+  assert.equal(shareText.includes('1992'), false);
+  assert.equal(shareText.includes('ENFP'), false);
+  assert.equal(shareText.includes('ISTJ'), false);
+  assert.equal(shareCard.axisHighlights.some((axis) => /\d/.test(axis.summary)), false);
+  assert.equal(shareCard.revisitPath, '/compatibility/personality/result?reportId=abc');
 });

@@ -560,7 +560,7 @@ export function PersonalityCompatibilityInputClient() {
               함께 넣어 준비합니다
             </>
           }
-          description="결과, 결제, 저장은 아직 연결하지 않고 입력 흐름만 확인하는 MVP 화면입니다."
+          description="입력 후 무료 결과, 깊이보기 결제, 저장과 공유 카드 흐름까지 이어집니다."
         >
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {['관계 유형', '내 정보', '상대 정보', '성향 입력', '현재 질문'].map((item, index) => (

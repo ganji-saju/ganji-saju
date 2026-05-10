@@ -35,6 +35,17 @@ export interface PersonalityCompatibilityPaidSection {
   body: string;
 }
 
+export interface PersonalityCompatibilityShareCardData {
+  relationshipKeywords: string[];
+  axisHighlights: {
+    label: '끌림' | '소통' | '회복';
+    summary: string;
+  }[];
+  todayMessage: string;
+  brandText: string;
+  revisitPath: string;
+}
+
 export interface PersonalityCompatibilityFreeResult {
   relationshipLabel: string;
   questionLabel: string;
@@ -46,6 +57,14 @@ export interface PersonalityCompatibilityFreeResult {
   lockedSections: PersonalityCompatibilityLockedPreview[];
   paidSections: PersonalityCompatibilityPaidSection[];
   safetyNote: string;
+}
+
+export interface PersonalityCompatibilityReportSnapshot extends PersonalityCompatibilityFreeResult {
+  version: 1;
+  resultType: 'free' | 'paid';
+  scopeKey: string;
+  shareCard: PersonalityCompatibilityShareCardData;
+  savedAt: string;
 }
 
 const RELATIONSHIP_LABELS: Record<CompatibilityRelationshipType, string> = {
@@ -392,6 +411,63 @@ function buildPaidSections(
       body: guardCopy(longTermBody),
     },
   ];
+}
+
+function buildShareAxisSummary(
+  label: '끌림' | '소통' | '회복',
+  value: number
+): string {
+  if (value >= 76) return `${label} 흐름이 자연스럽게 살아나는 편`;
+  if (value >= 62) return `${label} 흐름은 천천히 맞추기 좋은 편`;
+  return `${label} 흐름은 부담을 낮출수록 좋아지는 편`;
+}
+
+function isPrivateShareKeyword(keyword: string) {
+  return /^[EI][NS][FT][JP]\b/.test(keyword);
+}
+
+export function buildPersonalityCompatibilityShareCardData(
+  result: PersonalityCompatibilityFreeResult,
+  options: { revisitPath?: string | null } = {}
+): PersonalityCompatibilityShareCardData {
+  const publicKeywords = result.keywords
+    .filter((keyword) => !isPrivateShareKeyword(keyword))
+    .slice(0, 4);
+  const relationshipKeywords =
+    publicKeywords.length >= 3
+      ? publicKeywords
+      : [
+          ...publicKeywords,
+          '관계 온도 조율',
+          '짧은 확인',
+          '회복 여지',
+        ].slice(0, 4);
+
+  const todayMessage =
+    result.score.recoveryScore >= 70
+      ? '오늘은 긴 설명보다 짧고 다정한 확인이 도움이 됩니다.'
+      : '오늘은 답을 재촉하기보다 부담 낮은 한마디가 도움이 됩니다.';
+
+  return {
+    relationshipKeywords,
+    axisHighlights: [
+      {
+        label: '끌림',
+        summary: buildShareAxisSummary('끌림', result.score.attractionScore),
+      },
+      {
+        label: '소통',
+        summary: buildShareAxisSummary('소통', result.score.communicationScore),
+      },
+      {
+        label: '회복',
+        summary: buildShareAxisSummary('회복', result.score.recoveryScore),
+      },
+    ],
+    todayMessage: guardCopy(todayMessage),
+    brandText: '달빛인생',
+    revisitPath: options.revisitPath ?? '/compatibility/personality',
+  };
 }
 
 export function buildPersonalityCompatibilityFreeResult(
