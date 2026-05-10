@@ -1,25 +1,12 @@
-export const PERSONALITY_TYPE_CODES = [
-  'ISTJ',
-  'ISFJ',
-  'INFJ',
-  'INTJ',
-  'ISTP',
-  'ISFP',
-  'INFP',
-  'INTP',
-  'ESTP',
-  'ESFP',
-  'ENFP',
-  'ENTP',
-  'ESTJ',
-  'ESFJ',
-  'ENFJ',
-  'ENTJ',
-] as const;
-
-export type PersonalityTypeCode = (typeof PERSONALITY_TYPE_CODES)[number];
-
-export type PersonalityProfileSource = 'self_reported' | 'moonlight_check';
+export { PERSONALITY_TYPE_CODES } from '@/domain/personality/personality.types';
+export type {
+  PersonalityProfileSource,
+  PersonalityTypeCode,
+} from '@/domain/personality/personality.types';
+import type {
+  PersonalityProfileSource,
+  PersonalityTypeCode,
+} from '@/domain/personality/personality.types';
 
 export type PersonalityRelationshipType =
   | 'lover'

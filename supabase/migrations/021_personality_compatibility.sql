@@ -65,7 +65,7 @@ COMMENT ON TABLE public.personality_profiles IS
 COMMENT ON COLUMN public.personality_profiles.profile_id IS
   '저장된 상대/가족 프로필이면 family_profiles.id. NULL이면 본인 프로필 또는 비저장/수동 입력 참여자.';
 COMMENT ON COLUMN public.personality_profiles.type_code IS
-  '사용자 선택 또는 8문항 달빛 체크 결과. 공식 MBTI 검사/진단 결과가 아니다.';
+  '사용자 선택 또는 8문항 달빛 체크 결과. 의학적·심리학적 진단 결과가 아니다.';
 COMMENT ON COLUMN public.personality_profiles.answers_json IS
   '8문항 달빛 체크 답변과 요약 메타데이터. 불필요한 민감 자유서술은 저장하지 않는다.';
 COMMENT ON TABLE public.compatibility_personality_reports IS
