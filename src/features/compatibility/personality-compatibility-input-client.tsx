@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
   estimatePersonalityType,
@@ -360,6 +361,7 @@ function PersonalityInputPanel({
 }
 
 export function PersonalityCompatibilityInputClient() {
+  const router = useRouter();
   const [relationshipType, setRelationshipType] = useState<CompatibilityRelationshipType>('dating');
   const [selfName, setSelfName] = useState('나');
   const [partnerName, setPartnerName] = useState('상대');
@@ -540,10 +542,9 @@ export function PersonalityCompatibilityInputClient() {
       hasSelfBirthInput: true,
       hasPartnerBirthInput: true,
     });
-    window.history.replaceState(null, '', '/compatibility/personality?ready=1');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setErrorMessage('');
     setIsSubmitted(true);
+    router.push('/compatibility/personality/result');
   }
 
   return (

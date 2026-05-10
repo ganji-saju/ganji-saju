@@ -10,13 +10,17 @@ import type { BirthInput } from '@/lib/saju/types';
 export const PERSONALITY_COMPATIBILITY_INPUT_SESSION_KEY =
   'moonlight-personality-compatibility-input-v1';
 
+export const PERSONALITY_COMPATIBILITY_QUESTION_KEYS = [
+  'fit',
+  'conflict',
+  'heart',
+  'recovery',
+  'timing',
+  'long_term',
+] as const;
+
 export type PersonalityCompatibilityQuestionKey =
-  | 'fit'
-  | 'conflict'
-  | 'heart'
-  | 'recovery'
-  | 'timing'
-  | 'long_term';
+  (typeof PERSONALITY_COMPATIBILITY_QUESTION_KEYS)[number];
 
 export interface PersonalityCompatibilityInputPerson {
   name: string;
@@ -39,4 +43,15 @@ export interface PersonalityCompatibilityInputPayload {
   self: PersonalityCompatibilityInputPerson;
   partner: PersonalityCompatibilityInputPerson;
   createdAt: string;
+}
+
+export function isPersonalityCompatibilityQuestionKey(
+  value: unknown
+): value is PersonalityCompatibilityQuestionKey {
+  return (
+    typeof value === 'string' &&
+    PERSONALITY_COMPATIBILITY_QUESTION_KEYS.includes(
+      value as PersonalityCompatibilityQuestionKey
+    )
+  );
 }
