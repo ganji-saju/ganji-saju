@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "lint": "npm run verify:imports",
     "test": "node scripts/run-unit-tests.mjs",
     "typecheck": "tsc --noEmit --pretty false --incremental false -p tsconfig.json",
     "validate:kasi": "node scripts/validate-kasi-calendar.mjs",
@@ -16,7 +17,10 @@
     "seed:classics-summaries": "node scripts/seed-classic-korean-summaries.mjs",
     "validate:classics": "node scripts/validate-classics-corpus.mjs",
     "start": "next start",
-    "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs"
+    "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
+    "preflight": "node scripts/preflight-check.mjs",
+    "smoke": "node scripts/smoke-test.mjs",
+    "verify:imports": "node scripts/verify-imports.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -37,7 +41,8 @@
     "shadcn": "^4.2.0",
     "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.4.0",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "workflow": "^4.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

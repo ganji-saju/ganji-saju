@@ -1,4 +1,5 @@
 import type { BirthInput } from '@/lib/saju/types';
+import { readStringValue as readString } from '@/lib/api-utils';
 import { DEFAULT_BIRTH_TIMEZONE, getBirthLocationPreset } from '@/lib/saju/birth-location';
 
 export interface BirthInputDraft {
@@ -43,10 +44,6 @@ function toNumber(value: unknown): number | null {
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function readString(value: unknown) {
-  return typeof value === 'string' ? value.trim() : '';
 }
 
 function readBirthLocationObject(value: unknown): BirthInput['birthLocation'] | null {

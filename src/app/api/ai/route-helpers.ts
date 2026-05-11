@@ -11,13 +11,14 @@ import {
 } from '@/lib/dialogue-experts';
 import { detectSafeRedirect } from '@/domain/safety/safe-redirect';
 import type { FocusTopic } from '@/domain/saju/report/types';
+import { getCurrentKoreaYear, readString } from '@/lib/api-utils';
 import { createAiChatBillingSummary } from '@/lib/credits/ai-chat-access';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { isOpenAIConfigured } from '@/server/ai/openai-text';
 
 type AiMode = 'dialogue' | 'saju-report';
 
-interface DialogueAiRequest {
+export interface DialogueAiRequest {
   mode: 'dialogue';
   message: string;
   expertId?: DialogueExpertId;
@@ -26,7 +27,7 @@ interface DialogueAiRequest {
   from?: string;
 }
 
-interface SajuReportAiRequest {
+export interface SajuReportAiRequest {
   mode: 'saju-report';
   readingId: string;
   topic?: string;
@@ -77,21 +78,6 @@ export interface DialogueProfileGrounding {
       }>;
     };
   };
-}
-
-function readString(payload: Record<string, unknown>, key: string) {
-  const value = payload[key];
-  return typeof value === 'string' ? value.trim() : '';
-}
-
-function getCurrentKoreaYear() {
-  const formatted = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric',
-  }).format(new Date());
-  const parsed = Number.parseInt(formatted, 10);
-
-  return Number.isInteger(parsed) ? parsed : new Date().getFullYear();
 }
 
 export function parseAiRequest(payload: unknown): ParsedAiRequest | null {
@@ -314,5 +300,23 @@ export function createDialoguePrompt(
     ]
       .filter(Boolean)
       .join('\n'),
+    input: [
+      [
+        '선택된 12지신 전문 오버레이 RAG:',
+        `첫 문단 관점: ${expertRagOverlay.visibleOpening}`,
+        `질문을 볼 렌즈: ${expertRagOverlay.primaryLens.join(' / ')}`,
+        `피드백 방향: ${expertRagOverlay.actionPattern.join(' / ')}`,
+        `피해야 할 답변: ${expertRagOverlay.avoid.join(' / ')}`,
+      ].join('\n'),
+      profileGrounding
+        ? `대화용 개인화 소재:\n${formatDialogueProfileBrief(profileGrounding)}`
+        : '대화용 개인화 소재 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
+      recentFeedbackSummary
+        ? `최근 사용자 피드백 요약:\n${recentFeedbackSummary}`
+        : null,
+      `사용자 질문:\n${message}`,
+    ]
+      .filter(Boolean)
+      .join('\n\n'),
   };
 }

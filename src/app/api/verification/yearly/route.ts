@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getYearlyVerificationAudit } from '@/server/verification/yearly-audit';
 import { requireVerificationApiAccess } from '@/lib/verification-access';
+import { parseTargetYear } from '@/lib/api-utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function parseTargetYear(value: string | null) {
-  const year = value ? Number.parseInt(value, 10) : 2026;
-  return Number.isInteger(year) && year >= 1900 && year <= 2100 ? year : 2026;
-}
 
 export async function GET(req: NextRequest) {
   const deniedResponse = await requireVerificationApiAccess();

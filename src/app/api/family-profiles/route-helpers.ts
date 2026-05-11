@@ -1,3 +1,4 @@
+import { readStringValue as readString } from '@/lib/api-utils';
 import type { FamilyProfileInput } from '@/lib/profile';
 import type { SolarTimeMode } from '@/lib/saju/types';
 import type { UnifiedCalendarType, UnifiedTimeRule } from '@/lib/saju/unified-birth-entry';
@@ -14,10 +15,6 @@ function parseOptionalNumber(value: unknown, min: number, max: number) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < min || parsed > max) return null;
   return parsed;
-}
-
-function readString(value: unknown) {
-  return typeof value === 'string' ? value.trim() : '';
 }
 
 function readBirthPayloadValue(
