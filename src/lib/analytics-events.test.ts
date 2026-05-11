@@ -3,6 +3,24 @@ import { MOONLIGHT_ANALYTICS_EVENTS } from './analytics-events';
 
 declare const test: (name: string, fn: () => void) => void;
 
+test('home redesign events are registered', () => {
+  const requiredEvents = [
+    'home_viewed',
+    'home_hero_primary_clicked',
+    'home_hero_secondary_clicked',
+    'home_primary_feature_clicked',
+    'home_free_service_clicked',
+    'home_theme_service_clicked',
+    'home_ai_dialogue_clicked',
+    'home_archive_clicked',
+    'home_pricing_clicked',
+  ] as const;
+
+  for (const eventName of requiredEvents) {
+    assert.ok(MOONLIGHT_ANALYTICS_EVENTS.includes(eventName));
+  }
+});
+
 test('personality compatibility funnel events are registered', () => {
   const requiredEvents = [
     'personality_compatibility_viewed',

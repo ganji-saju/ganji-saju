@@ -1,12 +1,165 @@
 /* gangisaju.zip index.html implementation: mobile card-mall home */
 .gangi-home {
   width: 100%;
-  max-width: 430px;
+  max-width: min(100%, 72rem);
   margin-inline: auto;
-  background: #ffffff;
+  background: transparent;
   color: var(--app-ink);
   word-break: keep-all;
   line-break: strict;
+}
+
+.home-redesign {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 0.85rem max(2rem, calc(env(safe-area-inset-bottom) + 6.5rem));
+}
+
+.home-redesign-section {
+  scroll-margin-top: 5rem;
+}
+
+.home-redesign .app-card-grid {
+  align-items: stretch;
+}
+
+.home-redesign .app-feature-card,
+.home-redesign .app-feature-card-muted,
+.home-redesign .app-feature-card-soft {
+  box-shadow: 0 10px 28px rgba(17, 17, 20, 0.045);
+}
+
+.home-today-snapshot-row {
+  display: grid;
+  grid-auto-columns: minmax(13.5rem, 78%);
+  grid-auto-flow: column;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 0.15rem;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.home-today-snapshot-row::-webkit-scrollbar {
+  display: none;
+}
+
+.home-today-snapshot-row > * {
+  scroll-snap-align: start;
+}
+
+.home-redesign :where(a, button) {
+  touch-action: manipulation;
+}
+
+@media (max-width: 767px) {
+  .home-redesign {
+    gap: 0.85rem;
+    padding: 0.75rem 0.75rem max(2rem, calc(env(safe-area-inset-bottom) + 6.5rem));
+  }
+
+  .home-redesign > .app-hero-card,
+  .home-redesign > .home-redesign-section {
+    padding: 1.05rem;
+    border-radius: 1.35rem;
+  }
+
+  .home-redesign,
+  .home-redesign-section,
+  .home-redesign .app-section-header,
+  .home-redesign .app-card-grid,
+  .home-redesign .app-feature-card,
+  .home-redesign .app-feature-card-muted,
+  .home-redesign .app-feature-card-soft {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .home-redesign > .app-hero-card {
+    order: 1;
+  }
+
+  #home-primary-features {
+    order: 2;
+  }
+
+  #home-today-snapshot {
+    order: 3;
+  }
+
+  #home-free-start {
+    order: 4;
+  }
+
+  #home-theme-services {
+    order: 5;
+  }
+
+  #home-ai-dialogue {
+    order: 6;
+  }
+
+  #home-recent-reports {
+    order: 7;
+  }
+
+  #home-pricing {
+    order: 8;
+  }
+
+  #home-today-snapshot .app-section-copy {
+    display: none;
+  }
+
+  .home-redesign .app-section-header {
+    gap: 0.45rem;
+  }
+
+  .home-redesign .app-hero-description {
+    font-size: 0.93rem;
+    line-height: 1.62;
+  }
+
+  .home-redesign .app-section-copy,
+  .home-redesign .app-feature-copy {
+    overflow-wrap: anywhere;
+  }
+
+  #home-primary-features .app-section-copy {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .dalbit-market-shell .app-top-header-main .app-top-login {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .home-redesign {
+    gap: 1.25rem;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .home-today-snapshot-row {
+    grid-auto-columns: initial;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+    padding-bottom: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-redesign {
+    gap: 1.5rem;
+    padding-block: 2rem 4rem;
+  }
 }
 
 .gangi-season-carousel {
