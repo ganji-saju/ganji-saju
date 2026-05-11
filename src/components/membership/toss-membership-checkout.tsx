@@ -9,6 +9,7 @@ import {
   getTossPaymentMethodOption,
   type TossPaymentMethodCode,
 } from '@/lib/payments/methods';
+import { buildTossOrderId } from '@/lib/payments/order-id';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { savePendingLifetimeReportSlug } from '@/lib/payments/lifetime-report';
 import {
@@ -138,7 +139,11 @@ export default function TossMembershipCheckout({
 
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = `membership_${packageId}_${paymentMethod.toLowerCase()}_${Date.now()}`;
+      const orderId = buildTossOrderId({
+        prefix: 'membership',
+        packageId,
+        paymentMethod,
+      });
       const successParams = new URLSearchParams({
         packageId,
         plan,
