@@ -21,6 +21,8 @@ interface Props {
     concern?: string;
     from?: string;
     autoStart?: string;
+    sajuPersonalityReportId?: string;
+    lifeArea?: string;
   }>;
 }
 
@@ -85,6 +87,8 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           sourceSessionId={query.sourceSessionId}
           concernId={query.concern}
           entrySource={query.from}
+          sajuPersonalityReportId={query.sajuPersonalityReportId}
+          sajuPersonalityLifeArea={query.lifeArea}
           autoStart={query.autoStart === '1'}
           initialExpertId={expertId}
           roomMode

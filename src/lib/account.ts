@@ -11,6 +11,10 @@ import {
   listPaidReadingSnapshotsForUser,
   type PaidReadingSnapshot,
 } from '@/lib/payments/paid-reading-snapshots';
+import {
+  buildSajuPersonalityResultHref,
+  isSajuPersonalityMiniProductId,
+} from '@/lib/payments/saju-personality';
 
 export interface AccountCredits {
   balance: number;
@@ -122,6 +126,9 @@ function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
   }
 
   if (snapshot.productId === 'love-question') return '/compatibility/input';
+  if (isSajuPersonalityMiniProductId(snapshot.productId)) {
+    return buildSajuPersonalityResultHref(snapshot.scopeKey);
+  }
   if (snapshot.productId === 'money-pattern') return '/saju/new?topic=wealth';
   if (snapshot.productId === 'work-flow') return '/saju/new?topic=career';
 

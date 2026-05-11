@@ -32,6 +32,11 @@ import {
   PERSONALITY_COMPATIBILITY_MINI_PRICE,
 } from '@/lib/payments/personality-compatibility';
 import {
+  SAJU_PERSONALITY_MINI_NAME,
+  SAJU_PERSONALITY_MINI_PRICE,
+  SAJU_PERSONALITY_MINI_PRODUCT_CODE,
+} from '@/lib/payments/saju-personality';
+import {
   createClient,
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
@@ -126,6 +131,14 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     nextRange: '반복 갈등 원인, 부담되는 말투, 연락 온도, 회복 문장, 장기 관계 조건을 봅니다.',
     opens: ['성향궁합 깊이보기', '구매한 결과 재열람', '이어 묻기 준비'],
     notices: ['깊이보기는 현재 성향궁합 결과 범위와 연결됩니다.', '멤버십 포함 여부는 현재 정책상 별도 확인 항목입니다.'],
+  },
+  [SAJU_PERSONALITY_MINI_PRODUCT_CODE]: {
+    title: SAJU_PERSONALITY_MINI_NAME,
+    price: `${SAJU_PERSONALITY_MINI_PRICE.toLocaleString('ko-KR')}원`,
+    reassurance: '무료 성향사주 결과에 붙는 깊이보기입니다. 같은 결과 범위는 다시 결제하지 않고 열 수 있습니다.',
+    nextRange: '반복해서 지치는 지점, 관계와 일의 반응 방식, 돈과 성취 습관, 오늘의 실행 문장을 봅니다.',
+    opens: ['성향사주 깊이보기', '구매한 결과 재열람', 'AI 상담 연결 준비'],
+    notices: ['깊이보기는 현재 성향사주 결과 범위와 연결됩니다.', '프리미엄 멤버십 포함 여부는 정책 확인이 필요합니다.'],
   },
 };
 
@@ -276,6 +289,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 <p>깊이보기는 현재 무료 결과에 연결됩니다. 결과 화면의 버튼으로 오면 재결제를 막을 수 있습니다.</p>
                 <Link href="/compatibility/personality" className="gangi-primary-button">
                   성향궁합 결과 먼저 만들기
+                </Link>
+                <Link href="/membership" className="gangi-secondary-button">
+                  상품 목록으로
+                </Link>
+              </div>
+            ) : needsScopeFirst && selectedProduct === SAJU_PERSONALITY_MINI_PRODUCT_CODE ? (
+              <div className="gangi-checkout-empty-state">
+                <strong>먼저 성향사주 결과가 필요합니다</strong>
+                <p>깊이보기는 현재 무료 결과에 연결됩니다. 결과 화면의 버튼으로 오면 재결제를 막을 수 있습니다.</p>
+                <Link href="/saju/personality" className="gangi-primary-button">
+                  성향사주 결과 먼저 만들기
                 </Link>
                 <Link href="/membership" className="gangi-secondary-button">
                   상품 목록으로

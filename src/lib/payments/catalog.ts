@@ -5,6 +5,12 @@ import {
   PERSONALITY_COMPATIBILITY_MINI_PRICE,
   PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
 } from '@/lib/payments/personality-compatibility';
+import {
+  SAJU_PERSONALITY_MINI_NAME,
+  SAJU_PERSONALITY_MINI_PACKAGE_ID,
+  SAJU_PERSONALITY_MINI_PRICE,
+  SAJU_PERSONALITY_MINI_PRODUCT_CODE,
+} from '@/lib/payments/saju-personality';
 
 export type PaymentPackageKind = 'credits' | 'subscription' | 'lifetime_report' | 'taste_product';
 export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
@@ -15,7 +21,8 @@ export type TasteProductId =
   | 'work-flow'
   | 'monthly-calendar'
   | 'year-core'
-  | typeof PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE;
+  | typeof PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
+  | typeof SAJU_PERSONALITY_MINI_PRODUCT_CODE;
 
 export interface PaymentPackage {
   id: string;
@@ -128,6 +135,15 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
     requiresScope: true,
   },
+  {
+    id: SAJU_PERSONALITY_MINI_PACKAGE_ID,
+    name: SAJU_PERSONALITY_MINI_NAME,
+    credits: 0,
+    price: SAJU_PERSONALITY_MINI_PRICE,
+    kind: 'taste_product',
+    tasteProductId: SAJU_PERSONALITY_MINI_PRODUCT_CODE,
+    requiresScope: true,
+  },
 ] as const satisfies readonly PaymentPackage[];
 
 export type PackageId = (typeof PAYMENT_PACKAGES)[number]['id'];
@@ -146,6 +162,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
   [PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE]: PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
+  [SAJU_PERSONALITY_MINI_PRODUCT_CODE]: SAJU_PERSONALITY_MINI_PACKAGE_ID,
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -156,7 +173,8 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'work-flow' ||
     value === 'monthly-calendar' ||
     value === 'year-core' ||
-    value === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
+    value === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE ||
+    value === SAJU_PERSONALITY_MINI_PRODUCT_CODE
   );
 }
 
