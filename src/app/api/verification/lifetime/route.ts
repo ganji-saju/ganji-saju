@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLifetimeVerificationAudit } from '@/server/verification/lifetime-audit';
 import { requireVerificationApiAccess } from '@/lib/verification-access';
-
-function parseTargetYear(value: string | null) {
-  const parsed = value ? Number.parseInt(value, 10) : 2026;
-  return Number.isInteger(parsed) && parsed >= 1900 && parsed <= 2100 ? parsed : 2026;
-}
+import { parseTargetYear } from '@/lib/api-utils';
 
 export async function GET(req: NextRequest) {
   const deniedResponse = await requireVerificationApiAccess();

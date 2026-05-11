@@ -18,6 +18,10 @@ import {
 } from '@/lib/payments/lifetime-report';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
+import {
+  PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
+  buildPersonalityCompatibilityResultHref,
+} from '@/lib/payments/personality-compatibility';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
@@ -59,6 +63,10 @@ function buildTasteProductHref(
 
   if (product === 'love-question') {
     return '/compatibility/input?relationship=lover&paid=love-question';
+  }
+
+  if (product === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE) {
+    return buildPersonalityCompatibilityResultHref(scope);
   }
 
   if (slug && product === 'monthly-calendar') {
@@ -303,8 +311,10 @@ function SuccessContent() {
         setConfirmedPlan(nextPlan);
         trackMoonlightEvent('payment_completed', {
           from: entrySource,
+          source: entrySource,
           packageId,
           product: nextProduct,
+          productCode: nextProduct,
           amount: Number(amount),
           plan: nextPlan,
         });

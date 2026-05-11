@@ -11,6 +11,10 @@ import {
 } from '@/lib/payments/methods';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { savePendingLifetimeReportSlug } from '@/lib/payments/lifetime-report';
+import {
+  PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
+  buildPersonalityCompatibilityPaymentFailedHref,
+} from '@/lib/payments/personality-compatibility';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
 interface Props {
@@ -79,6 +83,11 @@ export default function TossMembershipCheckout({
       !slug
     ) {
       setErrorMessage('이 상품은 먼저 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
+      return;
+    }
+
+    if (packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID && !scope) {
+      setErrorMessage('이 상품은 먼저 성향궁합 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
       return;
     }
 
@@ -174,7 +183,10 @@ export default function TossMembershipCheckout({
         orderId,
         orderName,
         successUrl: `${location.origin}/membership/success?${successParams.toString()}`,
-        failUrl: `${location.origin}/membership/checkout?${failParams.toString()}`,
+        failUrl:
+          packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID
+            ? `${location.origin}${buildPersonalityCompatibilityPaymentFailedHref(scope)}`
+            : `${location.origin}/membership/checkout?${failParams.toString()}`,
       } as const;
 
       if (paymentMethod === 'CARD') {

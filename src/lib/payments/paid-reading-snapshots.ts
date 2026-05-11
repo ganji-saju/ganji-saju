@@ -7,6 +7,10 @@ import {
   type PaidProductId,
   type PaymentProductScope,
 } from '@/lib/payments/product-scope';
+import {
+  PERSONALITY_COMPATIBILITY_MINI_NAME,
+  isPersonalityCompatibilityMiniProductId,
+} from '@/lib/payments/personality-compatibility';
 import { isReadingId, type ReadingRecord } from '@/lib/saju/readings';
 import type { ProductEntitlement } from '@/lib/product-entitlements';
 
@@ -96,6 +100,9 @@ export function getPaidProductTitle(productId: PaidProductId) {
     case 'work-flow':
       return '일/직장 흐름';
     default:
+      if (isPersonalityCompatibilityMiniProductId(productId)) {
+        return PERSONALITY_COMPATIBILITY_MINI_NAME;
+      }
       return '구매한 풀이';
   }
 }
@@ -109,6 +116,10 @@ function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord |
 
   if (productId === 'lifetime-report') {
     return '결제 시점의 사주 계산값과 풀이 연결 정보를 보관합니다.';
+  }
+
+  if (isPersonalityCompatibilityMiniProductId(productId)) {
+    return '결제한 성향궁합 결과의 깊이보기 권한입니다.';
   }
 
   return reading
