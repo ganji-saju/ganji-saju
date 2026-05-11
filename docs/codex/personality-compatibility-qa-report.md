@@ -1,94 +1,235 @@
-# 달빛 성향궁합 MVP QA 리포트
+# 달빛 성향궁합 MVP 최종 QA 리포트
 
 - 작성일: 2026-05-11
 - 브랜치: `feature/personality-compatibility`
-- 기준 범위: `main...HEAD` 전체 변경 파일 목록을 확인했고, 심층 QA는 성향궁합 MVP와 직접 연결된 도메인, 입력/결과 UI, 결제, 저장/공유, analytics, Supabase migration 파일을 중심으로 수행했다.
-- 브라우저 QA 상태: Codex 인앱 브라우저에서 `http://localhost:3000/compatibility/personality`, `http://127.0.0.1:3000/compatibility/personality` 접근이 모두 `ERR_BLOCKED_BY_CLIENT`로 차단되어 실제 클릭 플로우는 수동 확인 필요로 남겼다.
+- 기준 커밋: `cdead3b test: complete QA for personality compatibility MVP`
+- 비교 기준: `main...HEAD` 및 현재 작업트리
+- 현재 작업트리 참고: `docs/codex/personality-compatibility-repo-audit.md`가 추가로 수정된 상태다. PR 전 커밋 또는 제외 여부를 결정해야 한다.
 
-## 1. 실행 검수 결과
+## 1. git diff 기준 변경사항 요약
+
+`git diff --stat main...HEAD` 기준 전체 변경은 163개 파일, 약 24,982 insertions / 6,510 deletions다. 성향궁합 MVP 외 변경이 함께 포함되어 있어 PR scope를 반드시 확인해야 한다.
+
+### 성향궁합 MVP 직접 변경
+
+- 성향궁합 입력/결과 라우트 추가: `/compatibility/personality`, `/compatibility/personality/result`
+- 궁합 메뉴에 성향궁합 진입 카드 추가
+- 사주 facts와 성향 facts를 받는 5축 scoring domain 추가
+- 무료/유료 리포트 schema, prompt builder, guardrail, copy 추가
+- 관계 유형, 두 사람 birth input, 성향 직접 선택/간단 체크, 현재 질문 입력 UI 추가
+- 무료 결과 UI, 5축 점수, 관계 키워드, 잠금 영역, CTA 추가
+- 990원 `personality_compatibility_mini` 결제/권한/scope 연결
+- 결과 저장/재조회 API와 Supabase migration 추가
+- 공유 카드 데이터/UI 및 analytics funnel event 추가
+- QA/설계/DB 문서 추가
+
+### MVP 범위를 벗어나거나 별도 PR로 분리 검토가 필요한 변경
+
+- `layout/` 디자인 산출물과 zip 파일 추가
+- `next.config.ts`, `package.json`, `package-lock.json`, scripts, skills 관련 변경
+- 홈 섹션 파일 삭제/개편, 일부 route `.gitkeep` 삭제
+- 사주 report builder, 오늘운세 builder, AI route, verification route 등 성향궁합 외 도메인 변경
+- 여러 문서와 refactor runbook 추가
+
+판정: 성향궁합 MVP 자체는 기능적으로 묶여 있지만, 현재 PR diff 전체는 MVP 범위를 넓게 초과한다. PR을 “성향궁합 MVP”로만 올릴 계획이면 branch split 또는 PR 설명에서 범위를 명확히 해야 한다.
+
+## 2. 실행 검수 결과
 
 | 항목 | 결과 | 메모 |
 | --- | --- | --- |
 | `npm run lint` | 통과 | `verify:imports` 6/6 통과 |
 | `npm run typecheck` | 통과 | `tsc --noEmit` 통과 |
 | `npm test` | 통과 | 166개 unit test + node test 5개 통과 |
-| `npm run build` | 통과 | Next build 통과, `/compatibility/personality`, `/compatibility/personality/result`, 관련 API route 포함 |
-| 인앱 브라우저 UI 확인 | 실패/차단 | 브라우저 확장 또는 클라이언트 정책으로 localhost 접근 차단 |
+| `npm run build` | 통과 | Next build 통과, 123개 static page 생성 완료 |
+| 인앱 브라우저 UI 확인 | 실패/차단 | `localhost`, `127.0.0.1` 모두 `ERR_BLOCKED_BY_CLIENT` |
 
-## 2. 변경 파일 검토 요약
+빌드 결과에서 다음 성향궁합 라우트가 포함됨을 확인했다.
 
-심층 검토한 주요 파일은 다음과 같다.
+- `/compatibility/personality`
+- `/compatibility/personality/result`
+- `/api/compatibility/personality/entitlement`
+- `/api/compatibility/personality/reports`
 
-- 점수/리포트/가드레일: `src/domain/compatibility-personality/*`
-- 성향 도메인: `src/domain/personality/*`
-- 입력/결과 UI: `src/app/compatibility/personality/*`, `src/features/compatibility/personality-compatibility-*`
-- 결제/권한: `src/lib/payments/personality-compatibility.ts`, `src/lib/payments/catalog.ts`, `src/lib/payments/product-scope.ts`, `src/lib/payments/confirmation.ts`, `src/app/api/payments/prepare/route.ts`, `src/app/api/payments/confirm/route.ts`, `src/app/membership/checkout/page.tsx`, `src/app/membership/success/page.tsx`
-- 저장/재조회: `src/app/api/compatibility/personality/reports/route.ts`, `supabase/migrations/021_personality_compatibility.sql`, `022_personality_compatibility_mini_entitlement.sql`, `023_personality_compatibility_report_scope.sql`
-- 이벤트: `src/lib/analytics-events.ts`, `src/lib/analytics-events.test.ts`, 입력/결과/결제 컴포넌트의 `trackMoonlightEvent` 호출부
-
-브랜치에는 성향궁합 외의 구조/문서/layout 변경도 포함되어 있다. 이번 QA에서는 해당 파일들을 전체 파일 목록 기준으로 확인했지만, 세부 동작 검증은 성향궁합 MVP 직접 영향 범위에 집중했다.
-
-## 3. 기능 QA
+## 3. 기능/권한 QA
 
 | 항목 | 결과 | 근거 |
 | --- | --- | --- |
-| 입력 플로우 | 부분 통과 | 정적 검토상 관계 유형, 내 정보, 상대 정보, 성향 직접 선택/간단 체크, 현재 질문, sessionStorage 저장, 결과 라우팅 구조가 연결되어 있다. 브라우저 클릭 검증은 차단으로 미수행. |
-| 무료 결과 화면 | 통과 | 결과 builder와 result client가 한 줄 결론, 5축 점수, 관계 키워드, 무료 3문단, 잠금 영역, CTA를 구성한다. 갈등 지수는 UI에서 높을수록 주의 신호라고 명시한다. |
-| 유료 결과 노출 방지 | 수정 후 통과 | UI는 `accessState === 'granted'`일 때만 `paidSections`를 노출한다. 추가로 reports API에서도 서버 측 권한 확인을 넣어 직접 API 호출 우회를 막았다. |
-| 결제 후 재열람 | 정적 통과 | 결제 prepare에서 기존 entitlement를 확인하고, confirm에서 scoped entitlement를 부여하며, success에서 scope 포함 결과 화면으로 redirect한다. 실제 Toss 승인과 운영 DB 재열람은 수동 확인 필요. |
-| 결제 실패 처리 | 정적 통과 | 성향궁합 990원 상품 실패 URL은 `/compatibility/personality/result?payment=failed&scope=...`로 복귀하며 결과 화면에 무료 결과 복귀 안내가 표시된다. |
-| 결과 저장/재조회 | 수정 후 통과 | reports API는 로그인 사용자 본인 row만 조회한다. 유료 row도 권한이 없으면 응답에서 `productCode: free`, `paidSections: []`, `paidAmount: null`로 내려간다. |
-| 공유 카드 개인정보 | 통과 | 공유 카드와 복사 문구는 관계 키워드, 끌림/소통/회복 요약, 오늘의 한마디, 브랜드 텍스트, 다시 보기 링크만 포함한다. 생년월일시, 성별, 상대 상세 정보는 포함하지 않는다. |
-| 이벤트 payload PII | 통과 | `relationshipType`, `productCode`, `amount`, `source`, `profileSlot`, `inputMode`, `feedbackValue` 중심이다. 이름, 생년월일, 성별, 상대 정보, 성향 코드, 축 점수는 analytics payload에 넣지 않는다. |
+| 입력 플로우 | 정적 통과 | 관계 유형, 내 정보, 상대 정보, 성향 직접 선택/간단 체크, 현재 질문, sessionStorage 저장, 결과 이동 구조 확인 |
+| 무료 결과 | 정적 통과 | 한 줄 결론, 5축 점수, 관계 키워드, 무료 3문단, 잠금 영역, CTA 구성 확인 |
+| 유료 결과 권한 분리 | 통과 | UI는 `accessState === 'granted'`일 때만 `paidSections` 표시 |
+| 저장 API 유료 권한 방어 | 통과 | 유료 productCode POST 시 entitlement 또는 포함 멤버십 없으면 403 반환 |
+| 재조회 API 유료 권한 방어 | 통과 | 유료 row라도 현재 권한 없으면 `productCode: free`, `paidSections: []`, `paidAmount: null`로 sanitize |
+| 결제 후 재열람 | 정적 통과 | prepare/confirm/success/product-scope가 `scope` 기반 entitlement와 결과 redirect를 연결 |
+| 결제 실패 복귀 | 정적 통과 | 성향궁합 결제 실패 시 무료 결과 route로 복귀하도록 fail URL 구성 |
+| 권한 확인 실패 시 저장 | 통과 | entitlement check error 상태에서는 무료 저장으로 덮어쓰지 않게 저장 중단 |
 
-## 4. 금지 표현 검색 결과
+운영/브라우저에서 아직 직접 확인하지 못한 부분:
 
-실행 검색어: `공식 MBTI`, `MBTI 검사`, `MBTI 진단`, `심리검사`, `무조건`, `반드시`, `절대`, `최악`, `파멸`, `헤어진다`, `결혼한다`, `재회한다`
+- Toss sandbox 실제 승인
+- 결제 실패 redirect
+- 로그인 전환 후 scope 유지
+- 저장된 reportId 재열람
+- 모바일 화면 클릭 플로우
 
-성향궁합 관련 사용자 노출 범위 집중 검색 결과:
+## 4. 개인정보/공유/analytics QA
 
-- 발견 위치: `src/domain/compatibility-personality/guardrails.ts`
-- 발견 위치: `src/domain/compatibility-personality/reportPrompt.test.ts`
-- 판정: guardrail 금지어 목록/치환표와 테스트 fixture 목적의 사용이다. 성향궁합 UI/결과/결제 사용자 문구에서는 직접 노출되지 않았다.
+### 공유 카드
+
+공유 카드 생성 함수는 다음 필드만 사용한다.
+
+- 관계 키워드
+- 끌림/소통/회복 요약
+- 오늘의 한마디
+- `달빛인생` 브랜드 텍스트
+- 다시 보기 링크
+
+확인 결과:
+
+- 생년월일시, 출생지, 성별, 이름, 상대 이름은 공유 텍스트에 포함되지 않는다.
+- 성향 유형 코드는 `isPrivateShareKeyword`로 공유 키워드에서 제외한다.
+- 공유 카드 UI 문구에도 개인정보를 넣지 않는다는 안내가 있다.
+
+주의:
+
+- 결과 화면 내부에는 입력 확인용으로 이름, 성향 코드, birth summary가 표시된다. 공유 카드에는 포함되지 않지만, 화면 스크린샷 공유 시 사용자가 해당 영역을 직접 캡처하지 않도록 UI/가이드 확인이 필요하다.
+
+### analytics payload
+
+확인한 이벤트:
+
+- `personality_compatibility_viewed`
+- `relationship_type_selected`
+- `profile_a_completed`
+- `profile_b_completed`
+- `personality_type_selected`
+- `personality_check_completed`
+- `free_result_viewed`
+- `paid_unlock_clicked`
+- `payment_completed`
+- `report_shared`
+- `ai_chat_started_from_report`
+- `report_feedback_submitted`
+
+payload 판정:
+
+- 포함: `relationshipType`, `productCode`, `amount`, `source`, `profileSlot`, `inputMode`, `resultType`, `feedbackValue`
+- 미포함: 이름, 생년월일, 출생시간, 성별, 상대 정보, birth summary, 성향 typeCode, axisScores
+
+결론: 성향궁합 analytics payload에 PII는 확인되지 않았다.
+
+## 5. 금지/단정 표현 QA
+
+검색어:
+
+- `공식 MBTI`
+- `MBTI 검사`
+- `MBTI 진단`
+- `심리검사`
+- `무조건`
+- `반드시`
+- `절대`
+- `최악`
+- `파멸`
+- `헤어진다`
+- `결혼한다`
+- `재회한다`
+
+성향궁합 직접 영향 범위 검색 결과:
+
+- `src/domain/compatibility-personality/guardrails.ts`: 금지어 목록과 치환표 목적
+- `src/domain/compatibility-personality/reportPrompt.test.ts`: guardrail 테스트 fixture 목적
+- 성향궁합 사용자 화면/결과/결제 카피에서 직접 노출되는 금지 표현은 발견되지 않았다.
+
+결혼/이별/재회 단정 표현 추가 검색 결과:
+
+- `배우자/결혼`, `결혼/장기 관계 가능성이 있는지`: 관계 유형/질문 라벨이며 단정 표현 아님
+- `promptBuilder.ts`의 `연애, 결혼, 친구...`: 관계 유형 설명이며 단정 표현 아님
+- 기존 궁합 입력의 `재회` regex: 저장 프로필 관계 추론용이며 성향궁합 결과 단정 표현 아님
+- `헤어진다`, `결혼한다`, `재회한다`: guardrail 목록/치환표와 테스트 fixture에서만 발견
 
 전체 repo 검색 결과:
 
-- `AGENTS.md`, product/docs QA 문서, 기존 사주/오늘운세 서버 prompt와 audit 코드에도 메타 목적 또는 기존 구현 목적의 표현이 남아 있다.
-- 이번 MVP 사용자 화면 직접 영향 범위 밖의 기존 문서/서버 prompt 표현은 변경하지 않았다.
-
-## 5. 발견 및 수정한 항목
-
-### 수정 1. 유료 리포트 저장 API 권한 검증 추가
-
-- 문제: 정상 UI는 권한 확인 뒤 유료 저장을 시도하지만, 로그인 사용자가 reports API에 직접 `productCode: personality_compatibility_mini`를 보내면 권한 없이 유료 report row를 저장할 여지가 있었다.
-- 수정 파일: `src/app/api/compatibility/personality/reports/route.ts`
-- 수정 내용: POST에서 유료 productCode 요청 시 entitlement 또는 포함 멤버십을 서버에서 확인하고, 권한이 없으면 403을 반환한다.
-- 보강 내용: GET에서도 저장 row가 유료 productCode이더라도 현재 사용자에게 해당 scope 권한이 없으면 무료 결과로 sanitize하여 응답한다.
-- 검증: 수정 후 `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` 모두 통과.
-
-### 수정 2. 권한 확인 실패 시 무료 저장으로 덮어쓰기 방지
-
-- 문제: 결과 화면에서 entitlement 확인이 네트워크/서버 오류로 실패하면 기존 로직상 `accessState: error`도 무료 결과처럼 저장 시도를 할 수 있었다.
-- 수정 파일: `src/features/compatibility/personality-compatibility-result-client.tsx`
-- 수정 내용: access check 에러 상태에서는 report save를 중단하고 저장 상태를 error로 표시한다.
-- 효과: 결제한 사용자의 기존 유료 저장본이 일시적인 권한 확인 실패로 무료 저장본에 덮이는 위험을 줄였다.
+- 문서, AGENTS, 기존 사주/오늘운세 prompt/audit 코드에 `반드시`, `무조건`, `절대` 등이 남아 있다.
+- 이번 성향궁합 MVP 사용자 노출 범위 밖의 기존 표현은 이번 QA에서 수정하지 않았다.
 
 ## 6. 남은 리스크
 
-- 인앱 브라우저가 localhost 접근을 차단해 실제 클릭 플로우, 모바일 레이아웃, CTA 클릭 후 화면 전환은 자동 검증하지 못했다.
-- 실제 Toss 결제 승인, 결제 실패 redirect, 운영 Supabase entitlement row 생성은 라이브 자격 증명과 결제 sandbox가 필요해 정적 검토와 build/test로만 확인했다.
-- Supabase migration `021`, `022`, `023`이 운영 DB에 적용되지 않으면 저장/권한/재조회 흐름이 실패할 수 있다.
-- `PERSONALITY_COMPATIBILITY_MINI_INCLUDED_SUBSCRIPTION_PLANS`는 빈 배열이고 정책은 `not_included`다. 프리미엄 멤버십 포함 여부는 서비스 정책 결정이 필요하다.
-- 카카오톡 공유 또는 이미지 저장은 기존 재사용 구현이 없어 UI와 공유 데이터 구조까지만 준비되어 있다.
-- 브랜치 전체에는 성향궁합 외 파일 변경도 많다. 이 브랜치를 그대로 배포한다면 성향궁합 외 변경사항까지 별도 회귀 확인이 필요하다.
+- 인앱 브라우저가 로컬 URL을 차단해 실제 클릭 QA와 스크린샷 캡처를 자동 수행하지 못했다.
+- PR diff가 성향궁합 MVP 외 변경을 많이 포함한다. 리뷰/배포 리스크를 줄이려면 PR split 권장.
+- 운영 DB에 `021`, `022`, `023` migration이 적용되지 않으면 저장/권한/재조회가 실패한다.
+- Toss console 또는 sandbox에서 `personality_compatibility_mini` 990원 결제 success/fail URL을 실제 확인해야 한다.
+- `PERSONALITY_COMPATIBILITY_MINI_INCLUDED_SUBSCRIPTION_PLANS`는 빈 배열이며 정책은 `not_included`다. 멤버십 포함 여부는 서비스 정책 결정 필요.
+- 카카오톡 공유/이미지 저장은 실제 외부 연동 없이 구조와 UI만 준비되어 있다.
 
-## 7. 배포 전 사람이 확인해야 할 항목
+## 7. 배포 전 사람이 확인해야 할 것
 
-- 로컬 또는 staging 브라우저에서 `/compatibility/personality` 입력 완료부터 `/compatibility/personality/result` 도착까지 실제 클릭으로 확인한다.
-- 비로그인 사용자가 990원 CTA 클릭 시 로그인으로 이동하고, 로그인 후 기존 결과 scope가 유지되는지 확인한다.
-- 결제 sandbox에서 `personality_compatibility_mini`, 990원, scope 포함 successUrl/failUrl이 Toss 콘솔 설정과 맞는지 확인한다.
-- 결제 성공 뒤 결과 화면이 `paid=personality_compatibility_mini&scope=...`로 돌아오고 깊이보기가 열리는지 확인한다.
-- 같은 scope로 재결제 시 checkout/prepare에서 기존 구매로 감지되어 재결제 없이 결과로 이동하는지 확인한다.
-- 저장된 `reportId` 링크를 새로고침/재접속했을 때 본인 계정에서 재조회되고, 다른 계정 또는 비로그인에서는 노출되지 않는지 확인한다.
-- 공유 카드와 복사 텍스트에 생년월일시, 성별, 이름, 상대 세부 정보가 들어가지 않는지 실제 화면에서 확인한다.
-- 운영 DB에 `compatibility_personality_reports` 테이블과 `product_entitlements` check constraint 확장이 적용됐는지 확인한다.
+- `/compatibility/personality` 입력 시작 화면 스크린샷
+- 성향 직접 선택 UI와 간단 체크 UI 스크린샷
+- `/compatibility/personality/result` 무료 결과 화면 스크린샷
+- 잠금 영역과 990원 CTA 스크린샷
+- 결제 checkout 화면 스크린샷
+- 결제 성공 후 깊이보기 열린 화면 스크린샷
+- 공유 카드 영역 스크린샷
+- 모바일 화면에서 입력 완료, 결과, 결제 CTA가 깨지지 않는지 확인
+- 다른 계정 또는 비로그인에서 저장된 `reportId` 접근 시 노출되지 않는지 확인
+- 결제 실패 시 무료 결과로 복귀하는지 확인
+
+## 8. PR description 초안
+
+```md
+## 작업 목적
+
+달빛인생 궁합 메뉴에 “달빛 성향궁합” MVP를 추가합니다. 사용자가 관계 유형, 두 사람의 생년월일시, 16유형 성향 직접 선택 또는 간단 체크, 현재 질문을 입력하면 사주 facts와 성향 facts를 결합해 5축 점수를 계산하고 무료/유료 결과를 제공합니다.
+
+## 주요 변경사항
+
+- `/compatibility/personality` 입력 플로우 추가
+- `/compatibility/personality/result` 무료 결과 및 깊이보기 결과 화면 추가
+- 사주 facts와 성향 facts를 결합하는 5축 점수 엔진 추가
+- 무료/유료 리포트 schema, prompt builder, guardrails, 기본 copy 추가
+- 990원 상품 `personality_compatibility_mini` 결제/권한/scope 연결
+- 성향궁합 결과 저장/재조회 API 및 Supabase migration 추가
+- 공유 카드 UI와 공유 텍스트 구조 추가
+- 성향궁합 funnel analytics event 추가
+- QA/설계/DB 문서 추가
+
+## 테스트 결과
+
+- `npm run lint` 통과
+- `npm run typecheck` 통과
+- `npm test` 통과: 166개 unit test + node test 5개
+- `npm run build` 통과
+
+## 스크린샷 필요 위치
+
+- 성향궁합 입력 첫 화면
+- 성향 직접 선택 화면
+- 간단 체크 화면
+- 무료 결과 화면
+- 잠금 영역과 990원 CTA
+- 결제 checkout 화면
+- 결제 후 깊이보기 열린 화면
+- 공유 카드 영역
+- 모바일 입력/결과 화면
+
+## 결제/개인정보 관련 확인 필요 사항
+
+- Toss sandbox에서 990원 결제 성공/실패 redirect 확인 필요
+- 운영 DB에 `021`, `022`, `023` migration 적용 필요
+- 같은 scope 재구매 방지 확인 필요
+- 저장된 reportId가 본인 계정에서만 재조회되는지 확인 필요
+- 공유 카드와 analytics payload에 생년월일시, 성별, 이름, 상대 정보가 들어가지 않는지 staging에서 재확인 필요
+- 프리미엄 멤버십에 성향궁합 깊이보기를 포함할지 정책 결정 필요
+
+## 롤백 방법
+
+- 라우트 노출 롤백: `/compatibility`의 성향궁합 진입 CTA 제거
+- UI 롤백: `src/app/compatibility/personality/*`, `src/features/compatibility/personality-compatibility-*` 제거 또는 route 차단
+- 결제 롤백: `personality_compatibility_mini` 상품 등록과 product-scope 분기 제거
+- DB 롤백: 운영 적용 전이면 `021`, `022`, `023` migration 배포 보류. 이미 적용했다면 신규 테이블/constraint 변경은 별도 rollback migration으로 처리
+- analytics 롤백: `analytics-events.ts`의 성향궁합 이벤트와 호출부 제거
+
+## PR scope 주의
+
+현재 branch diff에는 성향궁합 MVP 외 layout 산출물, 사주/오늘운세/홈/AI 관련 변경도 포함되어 있습니다. 성향궁합 MVP만 리뷰하려면 PR split을 권장합니다.
+```

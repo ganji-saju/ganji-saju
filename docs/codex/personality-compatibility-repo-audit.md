@@ -1,418 +1,312 @@
-# Personality Compatibility Repo Audit
+# 달빛 성향궁합 리포지토리 조사
 
-작성일: 2026-05-11  
-대상 브랜치: `feature/personality-compatibility`  
-범위: 달빛 성향궁합 구현 전 리포지토리 구조 조사
+- 작업 번호: 작업 0
+- 작성일: 2026-05-11
+- 대상 브랜치: `feature/personality-compatibility`
+- 조사 목적: 궁합 메뉴에 “달빛 성향궁합” MVP를 순차 구현하기 전, 라우팅/사주/궁합/결제/프로필 구조와 새 기능 부착 위치를 파악한다.
+- 작업 범위: 코드 구현 없음. 조사 문서만 작성한다.
+- 참고: 현재 브랜치에는 `src/app/compatibility/personality`, `src/domain/compatibility-personality`, `src/domain/personality` 등 성향궁합 관련 파일이 이미 존재한다. 이후 작업은 이 파일들을 새로 만들지, 재사용할지 먼저 결정해야 한다.
 
-## 1. 기술 스택과 명령
+## 1. package.json 기준 기술 스택과 명령
 
-### 프레임워크
+### 기술 스택
 
-- Next.js App Router 기반 프로젝트입니다.
-- `src/pages`는 없고, 라우팅은 `src/app` 아래에서 관리됩니다.
-- React 19, Next 16, TypeScript 5, Tailwind CSS 4를 사용합니다.
-- Supabase Auth/DB, Toss Payments, OpenAI, Vercel Analytics/Speed Insights가 연결되어 있습니다.
-
-### 주요 의존성
-
-- UI/프론트: `next`, `react`, `react-dom`, `lucide-react`, `tailwindcss`, `@tailwindcss/postcss`
-- DB/Auth: `@supabase/ssr`, `@supabase/supabase-js`
-- 결제: `@tosspayments/payment-widget-sdk`, `@tosspayments/tosspayments-sdk`
-- AI: `openai`
+- 런타임: Node.js `20.x`
+- 프레임워크: Next.js `16.2.3`, App Router
+- UI: React `19.2.4`, React DOM `19.2.4`, Tailwind CSS 4, shadcn, lucide-react
+- DB/Auth: Supabase SSR, Supabase JS
+- 결제: Toss Payments SDK, Toss payment-widget SDK
+- AI: OpenAI SDK
 - 사주/달력: `lunar-typescript`
-- 배포/관측: `@vercel/analytics`, `@vercel/speed-insights`
+- 관측: Vercel Analytics, Vercel Speed Insights
 - 알림: `web-push`
+- 언어/타입: TypeScript 5
 
-### package.json scripts
+### 주요 명령
 
 | 명령 | 역할 |
 | --- | --- |
 | `npm run dev` | Next 개발 서버 실행 |
-| `npm run build` | production build |
-| `npm test` | `scripts/run-unit-tests.mjs` 실행 |
+| `npm run build` | Next production build |
+| `npm run lint` | `npm run verify:imports` 실행 |
 | `npm run typecheck` | `tsc --noEmit --pretty false --incremental false -p tsconfig.json` |
-| `npm run start` | Next production server |
+| `npm test` | `node scripts/run-unit-tests.mjs` 실행 |
+| `npm run start` | Next production server 실행 |
 | `npm run preflight` | 배포 전 환경/설정 점검 |
 | `npm run smoke` | smoke test |
-| `npm run verify:imports` | import 검증 |
+| `npm run verify:imports` | import 경로 검증 |
 | `npm run validate:kasi` | KASI 달력 검증 |
 | `npm run validate:classics` | 고전 코퍼스 검증 |
 
-주의: `npm run lint` 스크립트는 현재 `package.json`에 없습니다.
+## 2. 현재 라우팅 구조
 
-## 2. 주요 폴더 구조
+라우팅은 `src/app` 아래의 App Router로 구성되어 있다. `src/pages` 폴더는 없다.
 
-### 앱 라우팅
+### 주요 화면 라우트
 
-- `src/app`
-  - Next.js App Router 라우트 루트입니다.
-  - 주요 서비스 라우트:
-    - `/`
-    - `/saju/new`
-    - `/saju/[slug]`
-    - `/saju/[slug]/premium`
-    - `/saju/[slug]/today-detail`
-    - `/compatibility`
-    - `/compatibility/input`
-    - `/compatibility/result`
-    - `/today-fortune`
-    - `/tarot/daily`
-    - `/membership`
-    - `/membership/checkout`
-    - `/membership/success`
-    - `/pricing`
-    - `/my`
-    - `/my/profile`
-    - `/my/billing`
-    - `/login`
-    - `/reset-password`
-  - 주요 API 라우트:
-    - `/api/ai`
-    - `/api/interpret`
-    - `/api/interpret/yearly`
-    - `/api/interpret/lifetime`
-    - `/api/profile`
-    - `/api/family-profiles`
-    - `/api/payments/prepare`
-    - `/api/payments/confirm`
-    - `/api/readings`
-    - `/api/credits/use`
-    - `/api/today-fortune/unlock`
-    - `/api/fortune-calendar`
+| 라우트 | 파일 | 역할 |
+| --- | --- | --- |
+| `/` | `src/app/page.tsx` | 홈 |
+| `/saju` | `src/app/saju/page.tsx` | 사주 진입 |
+| `/saju/new` | `src/app/saju/new/page.tsx` | 사주 입력 |
+| `/saju/[slug]` | `src/app/saju/[slug]/page.tsx` | 사주 결과 |
+| `/saju/[slug]/premium` | `src/app/saju/[slug]/premium/page.tsx` | 프리미엄 사주 결과 |
+| `/saju/[slug]/today-detail` | `src/app/saju/[slug]/today-detail/page.tsx` | 오늘운 상세 |
+| `/compatibility` | `src/app/compatibility/page.tsx` | 궁합 메뉴 |
+| `/compatibility/input` | `src/app/compatibility/input/page.tsx` | 기존 궁합 입력 |
+| `/compatibility/result` | `src/app/compatibility/result/page.tsx` | 기존 궁합 결과 |
+| `/compatibility/personality` | `src/app/compatibility/personality/page.tsx` | 성향궁합 입력 후보/현재 구현 |
+| `/compatibility/personality/result` | `src/app/compatibility/personality/result/page.tsx` | 성향궁합 결과 후보/현재 구현 |
+| `/membership` | `src/app/membership/page.tsx` | 멤버십/상품 |
+| `/membership/checkout` | `src/app/membership/checkout/page.tsx` | 결제 진입 |
+| `/membership/success` | `src/app/membership/success/page.tsx` | 결제 승인 후 처리 |
+| `/my` | `src/app/my/page.tsx` | MY/보관함 진입 |
+| `/my/profile` | `src/app/my/profile/page.tsx` | 사용자/가족 프로필 |
+| `/my/billing` | `src/app/my/billing/page.tsx` | 결제 상태 |
+| `/today-fortune` | `src/app/today-fortune/page.tsx` | 오늘운 |
+| `/tarot` | `src/app/tarot/page.tsx` | 타로 |
+| `/dialogue` | `src/app/dialogue/page.tsx` | AI 상담 |
 
-### UI/기능 레이어
+### 주요 API 라우트
 
-- `src/components`
-  - 공통 UI, Gangi 디자인 컴포넌트, 결제 UI, 사주 공유 입력 필드 등이 있습니다.
-- `src/features`
-  - 화면 단위 클라이언트 기능이 있습니다.
-  - 궁합은 `src/features/compatibility`에 집중되어 있습니다.
-- `src/shared/layout`
-  - 앱 쉘과 모바일 레이아웃 공통 구조가 있습니다.
-- `src/content`
-  - 서비스 카피, 상품/탭/선생/궁합 관계 타입 등 화면 콘텐츠 상수가 있습니다.
+| 라우트 | 파일 | 역할 |
+| --- | --- | --- |
+| `/api/profile` | `src/app/api/profile/route.ts` | 내 프로필 조회/저장 |
+| `/api/family-profiles` | `src/app/api/family-profiles/route.ts` | 가족/상대 프로필 CRUD |
+| `/api/readings` | `src/app/api/readings/route.ts` | 사주 결과 생성/저장 |
+| `/api/payments/prepare` | `src/app/api/payments/prepare/route.ts` | 결제 전 로그인/중복 구매/권한 확인 |
+| `/api/payments/confirm` | `src/app/api/payments/confirm/route.ts` | Toss 승인 후 코인/권한/스냅샷 반영 |
+| `/api/credits/use` | `src/app/api/credits/use/route.ts` | 코인 사용 |
+| `/api/interpret` | `src/app/api/interpret/route.ts` | 사주 AI 해석 |
+| `/api/interpret/yearly` | `src/app/api/interpret/yearly/route.ts` | 연간 해석 |
+| `/api/interpret/lifetime` | `src/app/api/interpret/lifetime/route.ts` | 보관형/평생 해석 |
+| `/api/compatibility/personality/entitlement` | `src/app/api/compatibility/personality/entitlement/route.ts` | 성향궁합 유료 권한 확인 후보/현재 구현 |
+| `/api/compatibility/personality/reports` | `src/app/api/compatibility/personality/reports/route.ts` | 성향궁합 결과 저장/재조회 후보/현재 구현 |
 
-### 도메인/서버/라이브러리
+## 3. 기존 사주/궁합 관련 코드
 
-- `src/domain/saju`
-  - 사주 엔진, 리포트 빌더, 검증 로직이 있습니다.
-- `src/lib`
-  - Supabase 접근, 프로필, 결제, 권한, 크레딧, 사주 타입/저장/읽기 유틸이 있습니다.
-- `src/server`
-  - AI 호출, 오늘운 빌더, 검증 서버 로직이 있습니다.
+### 사주 입력과 계산
 
-### DB와 마이그레이션
+- 공통 생년월일시 입력 컴포넌트: `src/components/saju/shared/unified-birth-info-fields.tsx`
+- 입력 정규화: `src/lib/saju/unified-birth-entry.ts`
+- 입력 검증: `src/domain/saju/validators/birth-input.ts`
+- 사주 타입: `src/lib/saju/types.ts`
+- 사주 엔진: `src/domain/saju/engine/saju-data-v1.ts`
+- 사주 저장/조회: `src/lib/saju/readings.ts`, `src/app/api/readings/route.ts`
+- 사주 리포트 빌더: `src/domain/saju/report/*`
+- KASI 검증: `src/domain/saju/validation/kasi-calendar.ts`
 
-- `supabase/migrations`
-  - 001부터 020까지 마이그레이션이 있습니다.
-  - `prisma`, 루트 `migrations`, `src/pages` 폴더는 현재 없습니다.
+주의할 점:
 
-## 3. 기존 사주 관련 파일
+- 새 성향궁합에서 사주 계산 자체를 새로 만들 필요는 없다.
+- `BirthInput` 또는 기존 사주 계산 결과에서 필요한 facts만 뽑아 scoring/report에 넘기는 구조가 안전하다.
+- 양력/음력, 태어난 시간 모름, 분, 출생지, 진태양시/야자시/조자시 처리는 `UnifiedBirthInfoFields`와 `resolveUnifiedBirthInput` 흐름을 재사용해야 한다.
 
-### 입력/결과 라우트
+### 기존 궁합 흐름
 
-- `src/app/saju/new/page.tsx`
-- `src/features/saju-intake/saju-intake-page.tsx`
-- `src/features/saju-intake/onboarding-storage.ts`
-- `src/app/saju/[slug]/page.tsx`
-- `src/app/saju/[slug]/premium/page.tsx`
-- `src/app/saju/[slug]/today-detail/page.tsx`
-- `src/app/saju/[slug]/overview/page.tsx`
-- `src/app/saju/[slug]/nature/page.tsx`
-- `src/app/saju/[slug]/elements/page.tsx`
+- 궁합 메뉴: `src/app/compatibility/page.tsx`
+- 기존 궁합 입력: `src/app/compatibility/input/page.tsx`
+- 기존 궁합 결과: `src/app/compatibility/result/page.tsx`
+- 입력 클라이언트: `src/features/compatibility/compatibility-input-client.tsx`
+- 수동 입력 저장: `src/features/compatibility/manual-compatibility-storage.ts`
+- 수동 결과 클라이언트: `src/features/compatibility/manual-compatibility-result-client.tsx`
+- 결과 뷰: `src/features/compatibility/compatibility-result-view.tsx`
+- 궁합 계산/해석: `src/lib/compatibility.ts`, `src/lib/compatibility.test.ts`
+- 관계 콘텐츠: `src/content/moonlight.ts`
 
-### 사주 엔진과 리포트
+현재 기존 궁합은 다음 방식으로 동작한다.
 
-- `src/domain/saju/engine/saju-data-v1.ts`
-- `src/domain/saju/engine/orrery-adapter.ts`
-- `src/domain/saju/report/build-report.ts`
-- `src/domain/saju/report/build-report-copy.ts`
-- `src/domain/saju/report/build-report-scores.ts`
-- `src/domain/saju/report/build-yearly-report.ts`
-- `src/domain/saju/report/build-lifetime-report.ts`
-- `src/domain/saju/report/build-fortune-calendar.ts`
-- `src/domain/saju/report/topic-rule-table.ts`
-- `src/domain/saju/report/types.ts`
-- `src/domain/saju/validators/birth-input.ts`
-- `src/domain/saju/validation/kasi-calendar.ts`
+- `/compatibility/input?relationship=...`에서 관계 유형을 받는다.
+- 로그인 사용자는 `/api/profile`에서 내 프로필과 가족 프로필을 불러와 빠른 채우기를 제공한다.
+- 비로그인/수동 입력은 `UnifiedBirthInfoFields`를 이용해 두 사람 정보를 입력한다.
+- 입력값은 `resolveUnifiedBirthInput`으로 `BirthInput`이 된다.
+- 수동 입력은 `sessionStorage`의 `moonlight:compatibility-manual-v1`에 저장된다.
+- 결과에서는 `buildCompatibilityInterpretation`이 기존 사주 엔진 결과를 바탕으로 관계 요약을 만든다.
 
-### 사주 저장/입력 유틸
+### 성향궁합 관련 현재 파일
 
-- `src/lib/saju/types.ts`
-- `src/lib/saju/unified-birth-entry.ts`
-- `src/lib/saju/birth-location.ts`
-- `src/lib/saju/readings.ts`
-- `src/lib/saju/pillars.ts`
-- `src/lib/saju/today-detail-access.ts`
-- `src/lib/saju/today-detail-links.ts`
-- `src/components/saju/shared/unified-birth-info-fields.tsx`
+현재 브랜치 기준 이미 존재하는 성향궁합 관련 파일은 다음과 같다.
 
-### AI 해석
+- 라우트: `src/app/compatibility/personality/page.tsx`
+- 결과 라우트: `src/app/compatibility/personality/result/page.tsx`
+- 입력 클라이언트: `src/features/compatibility/personality-compatibility-input-client.tsx`
+- 입력 저장 타입: `src/features/compatibility/personality-compatibility-input-storage.ts`
+- 결과 빌더: `src/features/compatibility/personality-compatibility-result-builder.ts`
+- 결과 클라이언트: `src/features/compatibility/personality-compatibility-result-client.tsx`
+- 점수/리포트 도메인: `src/domain/compatibility-personality/*`
+- 성향 도메인: `src/domain/personality/*`
+- 결제 config: `src/lib/payments/personality-compatibility.ts`
+- 성향궁합 저장 API: `src/app/api/compatibility/personality/reports/route.ts`
+- 성향궁합 권한 API: `src/app/api/compatibility/personality/entitlement/route.ts`
+- DB migration: `supabase/migrations/021_personality_compatibility.sql`, `022_personality_compatibility_mini_entitlement.sql`, `023_personality_compatibility_report_scope.sql`
 
-- `src/app/api/interpret/route.ts`
-- `src/app/api/interpret/yearly/route.ts`
-- `src/app/api/interpret/lifetime/route.ts`
-- `src/server/ai/saju-interpretation.ts`
-- `src/server/ai/yearly-interpretation.ts`
-- `src/server/ai/lifetime-interpretation.ts`
+다음 작업에서 이 파일들이 의도된 이전 작업 산출물인지, 아니면 clean-start 기준으로 다시 정리해야 하는지 먼저 확인하는 편이 좋다.
 
-## 4. 기존 궁합 관련 파일
+## 4. 기존 결제/코인/멤버십 관련 코드
 
-### 라우트
+### 상품 카탈로그와 결제
 
-- `src/app/compatibility/page.tsx`
-- `src/app/compatibility/input/page.tsx`
-- `src/app/compatibility/result/page.tsx`
+- 상품 카탈로그: `src/lib/payments/catalog.ts`
+- 상품 scope: `src/lib/payments/product-scope.ts`
+- 결제 payload 검증: `src/lib/payments/confirmation.ts`
+- Toss 승인: `src/lib/payments/toss.ts`
+- 결제 진입 UI: `src/components/membership/toss-membership-checkout.tsx`
+- 결제 페이지: `src/app/membership/checkout/page.tsx`
+- 결제 성공 페이지: `src/app/membership/success/page.tsx`
+- 결제 전 API: `src/app/api/payments/prepare/route.ts`
+- 결제 승인 API: `src/app/api/payments/confirm/route.ts`
 
-### 화면 컴포넌트
+현재 상품 유형은 `credits`, `subscription`, `lifetime_report`, `taste_product`로 나뉜다. 소액 풀이 상품은 `TasteProductId`로 관리된다.
 
-- `src/features/compatibility/compatibility-input-client.tsx`
-- `src/features/compatibility/compatibility-result-view.tsx`
-- `src/features/compatibility/manual-compatibility-result-client.tsx`
-- `src/features/compatibility/manual-compatibility-storage.ts`
+현재 브랜치 기준 `personality_compatibility_mini` 상품도 `taste_product`로 등록되어 있으며 `requiresScope: true`이다. clean-start 기준으로 추가한다면 이 패턴을 그대로 따르는 것이 맞다.
 
-### 도메인/계산
+### 권한/entitlement
 
-- `src/lib/compatibility.ts`
-- `src/lib/compatibility.test.ts`
+- 공통 상품 권한: `src/lib/product-entitlements.ts`
+- 보관형 리포트 권한: `src/lib/report-entitlements.ts`
+- 유료 결과 스냅샷: `src/lib/payments/paid-reading-snapshots.ts`
+- scope key 정규화: `src/lib/payments/product-scope.ts`
+- product entitlement DB: `supabase/migrations/016_product_entitlements.sql`, `018_product_entitlements_taste_product_check.sql`, `020_product_entitlements_paid_snapshots.sql`
 
-### 콘텐츠 상수
+성향궁합은 두 사람 입력 조합별로 재구매를 막아야 하므로 전역 상품보다 scope 기반 권한이 안전하다. 현재 브랜치의 성향궁합 상품도 `personality-compatibility` scope kind와 `scope` query를 사용한다.
 
-- `src/content/moonlight.ts`
-  - `CompatibilityRelationshipSlug`
-  - `COMPATIBILITY_RELATIONSHIPS`
-  - `COMPATIBILITY_RESULT_LABELS`
-  - `COMPATIBILITY_PREMIUM_EXPANSION`
-  - `MOONLIGHT_TASTE_PRODUCTS` 중 `love-question`
+### 코인/멤버십
 
-### 현재 궁합 흐름
+- 코인 차감: `src/lib/credits/deduct.ts`
+- 오늘운 상세 코인 접근: `src/lib/credits/detail-report-access.ts`
+- 월간 달력 코인 접근: `src/lib/credits/calendar-access.ts`
+- 코인 사용 API: `src/app/api/credits/use/route.ts`
+- 구독 상태: `src/lib/subscription.ts`
+- 구독 관리 API: `src/app/api/subscription/manage/route.ts`
+- MY 결제 상태: `src/app/my/billing/page.tsx`
 
-1. `/compatibility/input`에서 관계 타입을 query로 받습니다.
-2. 로그인 사용자는 `/api/profile`에서 내 프로필과 가족 프로필을 불러옵니다.
-3. 비로그인 사용자는 내 정보와 상대 정보를 직접 입력합니다.
-4. 입력값은 `UnifiedBirthInfoFields`와 `resolveUnifiedBirthInput`을 통해 `BirthInput`으로 정규화됩니다.
-5. 수동 입력 결과는 `sessionStorage`의 `moonlight:compatibility-manual-v1`에 저장됩니다.
-6. `/compatibility/result?source=manual` 또는 저장 프로필 기반 결과가 표시됩니다.
-7. `buildCompatibilityInterpretation`이 두 사람의 사주 데이터를 계산하고 관계 요약을 만듭니다.
+성향궁합 990원 결제는 기존 코인 차감 로직을 새로 만들기보다 `taste_product` 결제와 `product_entitlements` 권한 기준을 재사용하는 것이 가장 안전하다.
 
-## 5. 기존 결제/코인/멤버십 관련 파일
+## 5. 사용자 프로필/생년월일/태어난 시간 저장 구조
 
-### 상품 카탈로그
+### DB 구조
 
-- `src/lib/payments/catalog.ts`
-  - `PaymentPackageKind`
-  - `TasteProductId`
-  - `PAYMENT_PACKAGES`
-  - `getPackage`
-  - `getTasteProductPackage`
+- 기본 사용자 크레딧/구독/사주 기록: `supabase/migrations/001_initial.sql`
+- 사용자 프로필/가족 프로필: `supabase/migrations/003_profiles.sql`
+- 출생 분 컬럼: `supabase/migrations/005_profile_birth_minutes.sql`
+- 출생지/경도 보정 컬럼: `supabase/migrations/009_profile_birth_locations.sql`
+- 선호 상담사 컬럼: `supabase/migrations/010_profile_preferred_counselor.sql`
+- 양력/음력, 시간 규칙 컬럼: `supabase/migrations/014_profile_birth_calendar_fields.sql`
 
-현재 상품 종류:
+`profiles`와 `family_profiles`는 다음 계열 필드를 가진다.
 
-- 코인: `credit_1`, `credit_3`, `credit_7`
-- 구독/멤버십: `subscription_30`, `membership_plus`, `membership_premium`
-- 평생/보관형 리포트: `lifetime_report`
-- 소액 풀이:
-  - `today-detail`
-  - `love-question`
-  - `money-pattern`
-  - `work-flow`
-  - `monthly-calendar`
-  - `year-core`
-
-### 상품 scope와 중복 결제 방지
-
-- `src/lib/payments/product-scope.ts`
-  - `resolvePaymentProductScope`
-  - `buildTodayDetailScopeKey`
-  - `buildMonthlyCalendarScopeKey`
-  - `buildYearCoreScopeKey`
-  - `buildLifetimeReportScopeKey`
-  - `buildPurchasedProductHref`
-
-현재 `love-question`, `money-pattern`, `work-flow`은 전역 상품으로 처리됩니다.  
-성향궁합을 두 사람 단위로 과금하려면 전역 scope가 아니라 두 사람 입력 해시 또는 compatibility session key 기반 scope가 필요합니다.
-
-### 결제 API
-
-- `src/app/api/payments/prepare/route.ts`
-  - 결제창 진입 전 로그인 여부와 기존 권한을 확인합니다.
-  - 이미 구매한 상품은 결제창 대신 기존 열람 경로를 반환합니다.
-- `src/app/api/payments/confirm/route.ts`
-  - Toss 결제 승인 후 코인/구독/상품 권한을 부여합니다.
-  - `product_entitlements`와 `paid_reading_snapshots` 저장을 연결합니다.
-
-### 권한과 스냅샷
-
-- `src/lib/product-entitlements.ts`
-- `src/lib/report-entitlements.ts`
-- `src/lib/payments/paid-reading-snapshots.ts`
-
-### 코인 차감
-
-- `src/lib/credits/deduct.ts`
-- `src/lib/credits/detail-report-access.ts`
-- `src/lib/credits/calendar-access.ts`
-- `src/app/api/credits/use/route.ts`
-- `src/app/api/today-fortune/unlock/route.ts`
-
-## 6. 기존 사용자 프로필/출생정보 구조
-
-### 프로필 라이브러리
-
-- `src/lib/profile.ts`
-
-주요 타입:
-
-- `BirthProfileFields`
-- `UserProfile`
-- `FamilyProfile`
-- `FamilyProfileInput`
-
-저장되는 주요 출생 필드:
-
-- `calendarType`
-- `timeRule`
-- `birthYear`
-- `birthMonth`
-- `birthDay`
-- `birthHour`
-- `birthMinute`
-- `birthLocationCode`
-- `birthLocationLabel`
-- `birthLatitude`
-- `birthLongitude`
-- `solarTimeMode`
+- `display_name` 또는 `label`
+- `relationship`
+- `birth_year`, `birth_month`, `birth_day`
+- `birth_hour`, `birth_minute`
+- `birth_calendar_type`
+- `birth_time_rule`
+- `birth_location_code`, `birth_location_label`
+- `birth_latitude`, `birth_longitude`
+- `solar_time_mode`
 - `gender`
 - `note`
-- `preferredCounselor`
 
-### 프로필 API와 화면
+### 서버/라이브러리 구조
 
-- `src/app/api/profile/route.ts`
-- `src/app/api/profile/route-helpers.ts`
-- `src/app/api/family-profiles/route.ts`
-- `src/app/api/family-profiles/route-helpers.ts`
-- `src/components/my/profile-manager.tsx`
-- `src/app/my/profile/page.tsx`
-- `src/app/my/page.tsx`
+- 프로필 타입과 저장: `src/lib/profile.ts`
+- 프로필 API helper: `src/app/api/profile/route-helpers.ts`
+- 프로필 API: `src/app/api/profile/route.ts`
+- 가족 프로필 API: `src/app/api/family-profiles/route.ts`
+- MY 프로필 화면: `src/app/my/profile/page.tsx`
+- 프로필 관리 UI: `src/components/my/profile-manager.tsx`
 
-### BirthInput 변환
+중요 재사용 함수:
 
-- `src/lib/profile.ts`의 `toBirthInputFromProfile`
-- `src/lib/saju/unified-birth-entry.ts`의 `resolveUnifiedBirthInput`
+- `hasCoreBirthProfile`
+- `toBirthInputFromProfile`
+- `getProfileSettingsData`
+- `getOptionalSignedInProfile`
+- `resolveUnifiedBirthInput`
 
-성향궁합은 이 변환 흐름을 그대로 쓰는 것이 안전합니다.
+성향궁합에서 저장 프로필을 활용하려면 기존 궁합 입력의 빠른 채우기 구조를 재사용하는 것이 좋다. 비로그인/수동 입력은 기존처럼 sessionStorage 기반으로 시작할 수 있다.
 
-## 7. 기존 DB 구조
+## 6. 새 기능 부착 위치 제안
 
-마이그레이션 기준으로 확인한 구조입니다. 운영 DB에 실제로 모두 적용되었는지는 별도 `supabase migration list` 또는 SQL 확인이 필요합니다.
+### 메뉴/라우트
 
-### 사용자/프로필
+- 궁합 메뉴 진입점: `src/app/compatibility/page.tsx`
+- 권장 입력 라우트: `/compatibility/personality`
+- 권장 결과 라우트: `/compatibility/personality/result`
 
-- `profiles`
-  - 사용자 기본 프로필과 출생 정보
-- `family_profiles`
-  - 가족/상대 저장 프로필
+현재 브랜치 기준 해당 라우트가 이미 존재하므로, 다음 작업에서는 “새로 생성”보다 “현재 구현이 요구사항과 맞는지 확인 후 보완”이 안전하다.
 
-관련 마이그레이션:
+### 입력 UI
 
-- `003_profiles.sql`
-- `005_profile_birth_minutes.sql`
-- `009_profile_birth_locations.sql`
-- `010_profile_preferred_counselor.sql`
-- `014_profile_birth_calendar_fields.sql`
+- 권장 위치: `src/features/compatibility/personality-compatibility-input-client.tsx`
+- 재사용 대상:
+  - `UnifiedBirthInfoFields`
+  - `resolveUnifiedBirthInput`
+  - 기존 `compatibility-input-client.tsx`의 저장 프로필 빠른 채우기 패턴
+  - `src/domain/personality/selfCheck.ts`의 8문항 성향 체크 후보
 
-### 사주 결과/캐시
+### 점수/도메인 로직
 
-- `readings`
-  - 무료/기본 사주 결과 저장
-  - `019_readings_owner_mutations.sql`에서 로그인 사용자의 저장/삭제 정책이 추가되었습니다.
+- 권장 위치: `src/domain/compatibility-personality`
+- 이유:
+  - 기존 사주 엔진과 분리된 순수 로직으로 유지 가능
+  - UI/결제/저장과 분리 가능
+  - `compatibilityScore.test.ts`처럼 독립 테스트를 붙이기 좋음
 
-### 코인/구독
+주의:
 
-- `user_credits`
-- `credit_transactions`
-- `subscriptions`
+- 사주 계산은 `src/domain/saju/engine`을 새로 만들거나 수정하지 않는다.
+- `BirthInput` 또는 기존 계산 결과에서 사주 facts를 받아 성향 facts와 결합한다.
+- MBTI와 오행을 1:1로 매핑하지 않는다.
 
-관련 마이그레이션:
+### 결과/리포트 UI
 
-- `001_initial.sql`
-- `002_credit_functions.sql`
-- `015_idempotent_credit_unlocks.sql`
+- 권장 위치:
+  - `src/features/compatibility/personality-compatibility-result-builder.ts`
+  - `src/features/compatibility/personality-compatibility-result-client.tsx`
+- 무료 결과는 5축 점수와 짧은 해석 중심으로 제한한다.
+- 유료 결과는 entitlement 확인 뒤에만 잠금 영역을 해제한다.
 
-### 유료 상품 권한/스냅샷
+### 결제/권한
 
-- `product_entitlements`
-  - 유료 상품 해금 기준 테이블
-  - unique index: `(user_id, product_id, scope_key)`
-- `paid_reading_snapshots`
-  - 결제 당시 결과 스냅샷 저장
+- 권장 product code: `personality_compatibility_mini`
+- 권장 package id: `taste_personality_compatibility_mini`
+- 권장 가격: 990원
+- 권장 config 위치:
+  - `src/lib/payments/personality-compatibility.ts`
+  - `src/lib/payments/catalog.ts`
+  - `src/lib/payments/product-scope.ts`
+- 권장 권한 기준:
+  - `product_entitlements.user_id`
+  - `product_entitlements.product_id`
+  - `product_entitlements.scope_key`
 
-관련 마이그레이션:
+### 저장/공유
 
-- `016_product_entitlements.sql`
-- `018_product_entitlements_taste_product_check.sql`
-- `020_product_entitlements_paid_snapshots.sql`
+- 권장 저장 API: `src/app/api/compatibility/personality/reports/route.ts`
+- 권장 테이블: `compatibility_personality_reports`
+- 공유 카드에는 생년월일시, 성별, 이름, 상대 세부 정보가 노출되지 않아야 한다.
+- 다시 보기 링크는 `reportId` 또는 비식별 `scope_key` 기반으로 처리한다.
 
-주의: 새 `product_id`를 추가하려면 `product_entitlements_product_id_check` 제약을 확장하는 마이그레이션이 필요합니다.
+### 이벤트
 
-## 8. 새 기능 추천 위치
+- 권장 이벤트 정의: `src/lib/analytics-events.ts`
+- payload에는 `relationshipType`, `productCode`, `amount`, `source` 정도만 포함한다.
+- 이름, 생년월일, 태어난 시간, 성별, 상대 정보, 성향 코드, birth summary는 analytics payload에 넣지 않는다.
 
-### 가장 안전한 방향
+## 7. 다음 단계 제안
 
-기존 `/compatibility/input`과 `/compatibility/result` 흐름을 유지하고, 그 위에 `성향궁합` 모드를 얹는 방식이 가장 안전합니다.
+1. 현재 브랜치에 이미 있는 성향궁합 파일들이 이전 작업 산출물인지 확인한다.
+2. clean-start가 필요하면 현재 성향궁합 파일을 기준으로 삼지 말고, 작업 단위별로 새로 적용할 파일 목록을 확정한다.
+3. 다음 작업은 구현보다 먼저 “성향궁합 MVP 데이터 계약”을 확정하는 것이 좋다.
+4. 데이터 계약에는 관계 유형, 두 사람 birth input, 성향 입력 방식, 현재 질문, 사주 facts, 성향 facts, 5축 score shape, 무료/유료 report shape가 포함되어야 한다.
+5. 그 다음에 순수 scoring engine을 먼저 구현하고, UI/결제/저장은 후속 단계로 분리한다.
 
-이유:
+## 8. 조사 중 확인한 주의사항
 
-- 이미 내 정보/상대 정보 입력과 저장 프로필 불러오기가 구현되어 있습니다.
-- 비로그인 수동 입력 흐름도 이미 있습니다.
-- 사주 엔진을 새로 건드리지 않고 `BirthInput -> SajuDataV1 -> CompatibilityInterpretation` 흐름을 재사용할 수 있습니다.
-- 결제는 기존 `prepare -> checkout -> confirm -> entitlement -> snapshot` 흐름을 확장할 수 있습니다.
-
-### 추천 파일 위치
-
-| 목적 | 추천 위치 |
-| --- | --- |
-| 성향궁합 판단 타입/빌더 | `src/lib/personality-compatibility.ts` 또는 `src/lib/compatibility.ts` 내부 확장 |
-| 성향궁합 UI | `src/features/compatibility/` |
-| 관계/문제 선택 콘텐츠 | `src/content/moonlight.ts` |
-| 입력 화면 확장 | `src/features/compatibility/compatibility-input-client.tsx` |
-| 결과 화면 확장 | `src/features/compatibility/compatibility-result-view.tsx` 또는 신규 `personality-compatibility-result-view.tsx` |
-| 수동 입력 저장 | `src/features/compatibility/manual-compatibility-storage.ts` |
-| 결제 상품 추가 | `src/lib/payments/catalog.ts` |
-| scope key 추가 | `src/lib/payments/product-scope.ts` |
-| DB product_id 추가 | 신규 Supabase migration |
-| 보관함 표시 | `src/app/my/page.tsx`, `src/lib/payments/paid-reading-snapshots.ts` |
-
-### 피해야 할 변경
-
-- `src/domain/saju/engine`의 사주 계산 로직을 성향궁합 때문에 변경하지 않습니다.
-- 기존 `readings` slug 정책을 성향궁합 구현과 함께 바꾸지 않습니다.
-- 기존 결제 승인 로직을 직접 분기 추가로 복잡하게 만들기보다 `catalog`, `product-scope`, `product_entitlements` 체계를 먼저 확장합니다.
-- 무료 결과 단계에서는 새 DB 테이블을 만들지 않고 session/profile 기반 흐름으로 시작합니다.
-
-## 9. 다음 구현 순서
-
-1. 성향궁합 결과 타입 정의
-   - 무료 결과: 한 줄 요약, 잘 맞는 지점, 어긋나는 지점, 오늘 해볼 행동
-   - 상세 결과: 관계 온도, 표현 방식, 갈등 패턴, 회복 문장
-2. 기존 `buildCompatibilityInterpretation`을 건드리기 전에 별도 빌더를 추가하거나 래핑합니다.
-3. `/compatibility/input`에 `성향궁합` 진입 문구와 관계/문제 선택을 추가합니다.
-4. `/compatibility/result`에 성향궁합 무료 결과 화면을 연결합니다.
-5. 입력값을 바꿨을 때 결과가 실제로 달라지는지 테스트를 추가합니다.
-6. 소액 상세 상품을 붙일지 결정한 뒤, 결제 상품과 scope를 추가합니다.
-7. 유료 상세는 결제 완료 후 별도 결과 화면 또는 snapshot 기반 재열람으로 연결합니다.
-8. 보관함에서 성향궁합 결과가 당시 스냅샷으로 열리는지 확인합니다.
-9. 모바일 QA 후 typecheck/test/build를 실행합니다.
-
-## 10. 조사 결론
-
-성향궁합은 완전히 새 기능처럼 보이지만, 현재 코드베이스에는 이미 필요한 기반이 대부분 있습니다.
-
-- 입력 기반: `UnifiedBirthInfoFields`, `resolveUnifiedBirthInput`
-- 저장 기반: `profiles`, `family_profiles`, sessionStorage manual compatibility payload
-- 계산 기반: `normalizeToSajuDataV1`, `buildCompatibilityInterpretation`
-- 결제 기반: `PAYMENT_PACKAGES`, `product-scope`, `product_entitlements`
-- 보관 기반: `paid_reading_snapshots`
-
-따라서 첫 구현은 "새 엔진"보다 "기존 궁합 위에 성향궁합 결과 레이어 추가"가 가장 안전합니다. 결제 상품은 무료 결과 검증 후 별도 단계에서 붙이는 편이 좋습니다.
+- 현재 `npm run lint`는 일반 ESLint가 아니라 import 검증이다.
+- 기존 사주 계산 엔진은 이미 넓게 사용되므로 직접 수정하면 회귀 위험이 크다.
+- 기존 결제는 Toss 승인, prepare/confirm, entitlement, paid snapshot 흐름으로 이어진다.
+- 성향궁합 유료 해금은 전역 구매가 아니라 결과 scope별 구매로 설계하는 편이 적합하다.
+- 프로필/가족 프로필에는 개인정보에 가까운 출생정보가 저장되므로 analytics, 공유 카드, 로그에 원본값을 넣지 않아야 한다.
+- 공식 검사/진단처럼 보이는 표현은 피하고 “16유형 성향”, “성향 체크”, “참고용 자기이해 콘텐츠” 흐름으로 유지해야 한다.
