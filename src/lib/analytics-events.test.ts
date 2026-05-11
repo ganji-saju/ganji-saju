@@ -23,3 +23,25 @@ test('personality compatibility funnel events are registered', () => {
     assert.ok(MOONLIGHT_ANALYTICS_EVENTS.includes(eventName));
   }
 });
+
+test('saju personality funnel events are registered', () => {
+  const requiredEvents = [
+    'saju_personality_viewed',
+    'saju_personality_profile_selected',
+    'saju_personality_birth_info_completed',
+    'saju_personality_type_selected',
+    'saju_personality_check_completed',
+    'saju_personality_life_area_selected',
+    'saju_personality_free_result_viewed',
+    'saju_personality_paid_unlock_clicked',
+    'saju_personality_payment_completed',
+    'saju_personality_report_saved',
+    'saju_personality_report_shared',
+    'saju_personality_ai_chat_started',
+    'saju_personality_feedback_submitted',
+  ] as const;
+
+  for (const eventName of requiredEvents) {
+    assert.ok(MOONLIGHT_ANALYTICS_EVENTS.includes(eventName));
+  }
+});

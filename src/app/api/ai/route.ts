@@ -43,6 +43,8 @@ import { toSlug } from '@/lib/saju/pillars';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { createClient } from '@/lib/supabase/server';
+import { SAJU_PERSONALITY_MINI_PRODUCT_CODE } from '@/lib/payments/saju-personality';
+import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import {
   generateAiText,
   getOpenAIInterpretationModel,
@@ -59,6 +61,7 @@ import {
   parseAiRequest,
   type DialogueAiRequest,
   type DialogueProfileGrounding,
+  type DialogueSajuPersonalityPromptContext,
   type SajuReportAiRequest,
 } from './route-helpers';
 
@@ -85,6 +88,11 @@ interface DialogueYearlyBridge {
   fallbackText: string;
 }
 
+interface SajuPersonalityDialogueContext extends DialogueSajuPersonalityPromptContext {
+  reportId: string;
+  userId: string;
+}
+
 function formatStoredProfileSummary(profile: UserProfile) {
   const birthLabel = `${profile.birthYear}년 ${profile.birthMonth}월 ${profile.birthDay}일 양력`;
   const timeLabel =
@@ -100,6 +108,100 @@ function formatStoredProfileSummary(profile: UserProfile) {
     : '출생지 미입력';
 
   return [birthLabel, genderLabel, timeLabel, locationLabel].join(' · ');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readNumber(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : null;
+}
+
+function formatSajuPersonalityScoreSummary(scoreJson: Record<string, unknown>) {
+  const axisLabels: Array<[string, string]> = [
+    ['innerEnergyScore', '내면 에너지'],
+    ['expressionScore', '표현'],
+    ['decisionScore', '결정'],
+    ['executionRhythmScore', '실행 리듬'],
+    ['relationshipSensitivityScore', '관계 감도'],
+    ['growthDirectionScore', '성장 방향'],
+  ];
+  const axisLines = axisLabels
+    .map(([key, label]) => {
+      const score = readNumber(scoreJson[key]);
+      return score === null ? null : `${label} ${score}점`;
+    })
+    .filter(Boolean);
+  const totalScore = readNumber(scoreJson.totalClarityScore);
+
+  return [
+    totalScore === null ? null : `전체 선명도 ${totalScore}점`,
+    ...axisLines.slice(0, 6),
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
+function readPatternSummary(fusionFacts: Record<string, unknown>, key: string) {
+  const value = fusionFacts[key];
+  return isRecord(value) && typeof value.summary === 'string' ? value.summary : null;
+}
+
+function formatSajuPersonalityFusionSummary(fusionFacts: Record<string, unknown>) {
+  const summaries = [
+    readPatternSummary(fusionFacts, 'energyPattern'),
+    readPatternSummary(fusionFacts, 'decisionPattern'),
+    readPatternSummary(fusionFacts, 'relationshipPattern'),
+    readPatternSummary(fusionFacts, 'growthPattern'),
+    typeof fusionFacts.recommendedFocus === 'string'
+      ? `추천 초점: ${fusionFacts.recommendedFocus}`
+      : null,
+  ].filter(Boolean);
+
+  return summaries.join(' / ');
+}
+
+async function loadSajuPersonalityDialogueContext(
+  userId: string,
+  reportId: string | null | undefined
+): Promise<SajuPersonalityDialogueContext | null> {
+  const normalizedReportId = reportId?.trim();
+  if (!normalizedReportId) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('saju_personality_reports')
+    .select('id, user_id, scope_key, life_area, score_json, fusion_facts_json, product_code')
+    .eq('id', normalizedReportId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const row = data as {
+    id: string;
+    user_id: string;
+    scope_key: string | null;
+    life_area: string;
+    score_json: Record<string, unknown> | null;
+    fusion_facts_json: Record<string, unknown> | null;
+    product_code: string;
+  };
+  const entitlement = await getTasteProductEntitlement(
+    userId,
+    SAJU_PERSONALITY_MINI_PRODUCT_CODE,
+    row.scope_key
+  ).catch(() => null);
+
+  return {
+    reportId: row.id,
+    userId: row.user_id,
+    lifeArea: row.life_area,
+    scoreSummary: formatSajuPersonalityScoreSummary(row.score_json ?? {}),
+    fusionSummary: formatSajuPersonalityFusionSummary(row.fusion_facts_json ?? {}),
+    unlocked: Boolean(entitlement || row.product_code === SAJU_PERSONALITY_MINI_PRODUCT_CODE),
+  };
 }
 
 function createDialogueProfileGrounding(
@@ -465,6 +567,10 @@ async function handleDialogue(request: DialogueAiRequest) {
   const profileGrounding = createDialogueProfileGrounding(profile, request.message);
   const profileContext = createDialogueProfileContext(profile, profileGrounding);
   const recentFeedbackSummary = await getRecentFortuneFeedbackSummary(user.id);
+  const sajuPersonalityContext = await loadSajuPersonalityDialogueContext(
+    user.id,
+    request.sajuPersonalityReportId
+  );
   const expertId = resolveDialogueExpertId(
     request.expertId,
     inferDialogueExpertIdFromMessage(request.message)
@@ -500,7 +606,8 @@ async function handleDialogue(request: DialogueAiRequest) {
         request.message,
         profileGrounding,
         expertId,
-        recentFeedbackSummary
+        recentFeedbackSummary,
+        sajuPersonalityContext
       );
   const fallbackText = yearlyBridge
     ? yearlyBridge.fallbackText
@@ -572,6 +679,14 @@ async function handleDialogue(request: DialogueAiRequest) {
       expertLabel: expert.label,
       billing: createAiChatBillingSummary('result_intro_free', availableCredits, turnPlan),
       profileContext,
+      sajuPersonalityContext: sajuPersonalityContext
+        ? {
+            used: true,
+            reportId: sajuPersonalityContext.reportId,
+            lifeArea: sajuPersonalityContext.lifeArea,
+            unlocked: sajuPersonalityContext.unlocked,
+          }
+        : null,
       ...dialogueResult,
     });
   }
@@ -601,6 +716,14 @@ async function handleDialogue(request: DialogueAiRequest) {
       expertLabel: expert.label,
       billing: createAiChatBillingSummary('charged_bundle', deducted.remaining, turnPlan),
       profileContext,
+      sajuPersonalityContext: sajuPersonalityContext
+        ? {
+            used: true,
+            reportId: sajuPersonalityContext.reportId,
+            lifeArea: sajuPersonalityContext.lifeArea,
+            unlocked: sajuPersonalityContext.unlocked,
+          }
+        : null,
       ...dialogueResult,
     });
   }
@@ -615,6 +738,14 @@ async function handleDialogue(request: DialogueAiRequest) {
     expertLabel: expert.label,
     billing: createAiChatBillingSummary(turnPlan.status, availableCredits, turnPlan),
     profileContext,
+    sajuPersonalityContext: sajuPersonalityContext
+      ? {
+          used: true,
+          reportId: sajuPersonalityContext.reportId,
+          lifeArea: sajuPersonalityContext.lifeArea,
+          unlocked: sajuPersonalityContext.unlocked,
+        }
+      : null,
     ...dialogueResult,
   });
 }

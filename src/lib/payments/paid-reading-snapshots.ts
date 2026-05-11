@@ -11,6 +11,10 @@ import {
   PERSONALITY_COMPATIBILITY_MINI_NAME,
   isPersonalityCompatibilityMiniProductId,
 } from '@/lib/payments/personality-compatibility';
+import {
+  SAJU_PERSONALITY_MINI_NAME,
+  isSajuPersonalityMiniProductId,
+} from '@/lib/payments/saju-personality';
 import { isReadingId, type ReadingRecord } from '@/lib/saju/readings';
 import type { ProductEntitlement } from '@/lib/product-entitlements';
 
@@ -103,6 +107,9 @@ export function getPaidProductTitle(productId: PaidProductId) {
       if (isPersonalityCompatibilityMiniProductId(productId)) {
         return PERSONALITY_COMPATIBILITY_MINI_NAME;
       }
+      if (isSajuPersonalityMiniProductId(productId)) {
+        return SAJU_PERSONALITY_MINI_NAME;
+      }
       return '구매한 풀이';
   }
 }
@@ -120,6 +127,10 @@ function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord |
 
   if (isPersonalityCompatibilityMiniProductId(productId)) {
     return '결제한 성향궁합 결과의 깊이보기 권한입니다.';
+  }
+
+  if (isSajuPersonalityMiniProductId(productId)) {
+    return '결제한 성향사주 결과의 깊이보기 권한입니다.';
   }
 
   return reading
