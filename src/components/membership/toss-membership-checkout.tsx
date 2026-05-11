@@ -16,6 +16,10 @@ import {
   PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
   buildPersonalityCompatibilityPaymentFailedHref,
 } from '@/lib/payments/personality-compatibility';
+import {
+  SAJU_PERSONALITY_MINI_PACKAGE_ID,
+  buildSajuPersonalityPaymentFailedHref,
+} from '@/lib/payments/saju-personality';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
 interface Props {
@@ -89,6 +93,11 @@ export default function TossMembershipCheckout({
 
     if (packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID && !scope) {
       setErrorMessage('이 상품은 먼저 성향궁합 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
+      return;
+    }
+
+    if (packageId === SAJU_PERSONALITY_MINI_PACKAGE_ID && !scope) {
+      setErrorMessage('이 상품은 먼저 성향사주 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
       return;
     }
 
@@ -191,6 +200,8 @@ export default function TossMembershipCheckout({
         failUrl:
           packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID
             ? `${location.origin}${buildPersonalityCompatibilityPaymentFailedHref(scope)}`
+            : packageId === SAJU_PERSONALITY_MINI_PACKAGE_ID
+              ? `${location.origin}${buildSajuPersonalityPaymentFailedHref(scope)}`
             : `${location.origin}/membership/checkout?${failParams.toString()}`,
       } as const;
 

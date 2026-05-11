@@ -27,6 +27,8 @@ export default async function DialoguePage({
     from?: string;
     autoStart?: string;
     expert?: string;
+    sajuPersonalityReportId?: string;
+    lifeArea?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -37,7 +39,8 @@ export default async function DialoguePage({
       params.sourceSessionId ||
       params.concern ||
       params.from ||
-      params.autoStart
+      params.autoStart ||
+      params.sajuPersonalityReportId
   );
 
   if (shouldOpenRoom) {
@@ -48,6 +51,10 @@ export default async function DialoguePage({
     if (params.concern) nextParams.set('concern', params.concern);
     if (params.from) nextParams.set('from', params.from);
     if (params.autoStart) nextParams.set('autoStart', params.autoStart);
+    if (params.sajuPersonalityReportId) {
+      nextParams.set('sajuPersonalityReportId', params.sajuPersonalityReportId);
+    }
+    if (params.lifeArea) nextParams.set('lifeArea', params.lifeArea);
 
     const query = nextParams.toString();
     redirect(`/dialogue/${selectedExpertId}${query ? `?${query}` : ''}`);
