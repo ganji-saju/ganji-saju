@@ -30,7 +30,52 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type PersonKey = 'self' | 'partner';
 type PersonalityInputMode = 'direct' | 'check';
+type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
 type LocationSearchStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
+
+interface ProfileApiBirthFields {
+  calendarType: 'solar' | 'lunar';
+  timeRule: 'standard' | 'trueSolarTime' | 'nightZi' | 'earlyZi';
+  birthYear: number | null;
+  birthMonth: number | null;
+  birthDay: number | null;
+  birthHour: number | null;
+  birthMinute: number | null;
+  birthLocationCode: string | null;
+  birthLocationLabel: string;
+  birthLatitude: number | null;
+  birthLongitude: number | null;
+  solarTimeMode: 'standard' | 'longitude';
+  gender: 'male' | 'female' | null;
+}
+
+interface ProfileApiResponse {
+  authenticated: boolean;
+  profile: (ProfileApiBirthFields & {
+    displayName: string;
+    note: string;
+  }) | null;
+  familyProfiles: Array<
+    ProfileApiBirthFields & {
+      id: string;
+      label: string;
+      relationship: string;
+      note: string;
+      createdAt: string;
+    }
+  >;
+  error?: string;
+}
+
+interface SavedBirthProfile {
+  id: string;
+  source: 'self' | 'family';
+  label: string;
+  relationship: string;
+  nickname: string;
+  detail: string;
+  draft: UnifiedBirthEntryDraft;
+}
 
 interface LocationState {
   status: LocationSearchStatus;
@@ -147,6 +192,93 @@ function createPersonalityState(): PersonalityState {
   };
 }
 
+function hasReusableBirthDraft(draft: UnifiedBirthEntryDraft) {
+  return Boolean(draft.year.trim() && draft.month.trim() && draft.day.trim());
+}
+
+function hasBirthFields<T extends ProfileApiBirthFields | null | undefined>(
+  profile: T
+): profile is NonNullable<T> & { birthYear: number; birthMonth: number; birthDay: number } {
+  return Boolean(profile?.birthYear && profile.birthMonth && profile.birthDay);
+}
+
+function formatSavedProfileDetail(profile: ProfileApiBirthFields) {
+  const calendarLabel = profile.calendarType === 'lunar' ? '음력' : '양력';
+  const dateLabel = `${profile.birthYear}.${profile.birthMonth}.${profile.birthDay}`;
+  const hourLabel =
+    profile.birthHour === null
+      ? '시간 미입력'
+      : `${profile.birthHour}시${
+          profile.birthMinute === null ? '' : ` ${String(profile.birthMinute).padStart(2, '0')}분`
+        }`;
+  const genderLabel = profile.gender === 'male' ? '남성' : profile.gender === 'female' ? '여성' : '성별 미선택';
+  const locationLabel = profile.birthLocationLabel
+    ? ` · ${profile.birthLocationLabel}${profile.solarTimeMode === 'longitude' ? ' 경도 보정' : ''}`
+    : '';
+
+  return `${calendarLabel} ${dateLabel} · ${hourLabel} · ${genderLabel}${locationLabel}`;
+}
+
+function profileToDraft(profile: ProfileApiBirthFields & { birthYear: number; birthMonth: number; birthDay: number }) {
+  return {
+    calendarType: profile.calendarType ?? 'solar',
+    timeRule: profile.timeRule ?? 'standard',
+    year: String(profile.birthYear),
+    month: String(profile.birthMonth),
+    day: String(profile.birthDay),
+    hour: profile.birthHour === null ? '' : String(profile.birthHour),
+    minute: profile.birthHour === null || profile.birthMinute === null ? '' : String(profile.birthMinute),
+    unknownBirthTime: profile.birthHour === null,
+    gender: profile.gender ?? '',
+    birthLocationCode: profile.birthLocationCode ?? '',
+    birthLocationLabel: profile.birthLocationLabel ?? '',
+    birthLatitude: profile.birthLatitude === null ? '' : String(profile.birthLatitude),
+    birthLongitude: profile.birthLongitude === null ? '' : String(profile.birthLongitude),
+  } satisfies UnifiedBirthEntryDraft;
+}
+
+function buildSavedProfileOptions(data: ProfileApiResponse): SavedBirthProfile[] {
+  const options: SavedBirthProfile[] = [];
+
+  if (hasBirthFields(data.profile)) {
+    options.push({
+      id: 'self',
+      source: 'self',
+      label: data.profile.displayName ? `내 정보 · ${data.profile.displayName}` : '내 정보 불러오기',
+      relationship: '내 정보',
+      nickname: data.profile.displayName || '나',
+      detail: formatSavedProfileDetail(data.profile),
+      draft: profileToDraft(data.profile),
+    });
+  }
+
+  data.familyProfiles.forEach((profile) => {
+    if (!hasBirthFields(profile)) return;
+
+    options.push({
+      id: `family-${profile.id}`,
+      source: 'family',
+      label: `${profile.label} · ${profile.relationship}`,
+      relationship: profile.relationship,
+      nickname: profile.label,
+      detail: formatSavedProfileDetail(profile),
+      draft: profileToDraft(profile),
+    });
+  });
+
+  return options;
+}
+
+function inferRelationshipMatch(relationship: string, selected: CompatibilityRelationshipType) {
+  const value = relationship.trim();
+
+  if (selected === 'dating') return /연인|남자친구|여자친구|썸|애인|상대/.test(value);
+  if (selected === 'marriage') return /배우자|남편|아내|부부|결혼|약혼/.test(value);
+  if (selected === 'family') return /부모|엄마|아빠|어머니|아버지|자녀|아들|딸|가족/.test(value);
+  if (selected === 'business') return /동료|파트너|동업|상사|부하|팀원|거래처/.test(value);
+  return /친구|형제|자매|지인/.test(value);
+}
+
 function applyUnifiedBirthPatch(
   current: UnifiedBirthEntryDraft,
   patch: Partial<UnifiedBirthEntryDraft>
@@ -230,6 +362,78 @@ function updateAnswers(
 
 function getAnswerValue(answers: PersonalityCheckAnswer[], questionId: string) {
   return answers.find((answer) => answer.questionId === questionId)?.value ?? '';
+}
+
+function SavedProfileQuickFill({
+  profiles,
+  status,
+  onApply,
+}: {
+  profiles: SavedBirthProfile[];
+  status: ProfileLoadStatus;
+  onApply: (target: PersonKey, profile: SavedBirthProfile) => void;
+}) {
+  if (status === 'loading') {
+    return (
+      <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm text-[var(--app-copy-muted)]">
+        저장한 내 정보와 가족 정보를 확인하고 있습니다.
+      </div>
+    );
+  }
+
+  if (profiles.length === 0) return null;
+
+  return (
+    <div className="rounded-[1.35rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 p-4 sm:p-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="app-caption text-[var(--app-pink-strong)]">저장 정보</div>
+          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ink)]">
+            MY 프로필과 가족 정보를 바로 채울 수 있습니다
+          </h3>
+        </div>
+        <p className="text-xs leading-5 text-[var(--app-copy-soft)]">
+          성향은 별도로 직접 선택하거나 간단 체크로 입력해 주세요.
+        </p>
+      </div>
+
+      <div className="mt-4 grid gap-4">
+        {([
+          { key: 'self' as const, label: '내 정보에 넣기', tone: 'gold' },
+          { key: 'partner' as const, label: '상대 정보에 넣기', tone: 'jade' },
+        ]).map((group) => (
+          <div key={group.key}>
+            <div
+              className={
+                group.tone === 'jade'
+                  ? 'mb-2 text-xs font-semibold text-[var(--app-jade)]'
+                  : 'mb-2 text-xs font-semibold text-[var(--app-pink-strong)]'
+              }
+            >
+              {group.label}
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {profiles.map((profile) => (
+                <button
+                  key={`${group.key}-${profile.id}`}
+                  type="button"
+                  onClick={() => onApply(group.key, profile)}
+                  title={profile.detail}
+                  className={
+                    group.tone === 'jade'
+                      ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-sm font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
+                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-sm font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
+                  }
+                >
+                  {profile.nickname}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function PersonalityInputPanel({
@@ -370,6 +574,9 @@ export function PersonalityCompatibilityInputClient() {
   const [partnerName, setPartnerName] = useState('상대');
   const [selfDraft, setSelfDraft] = useState<UnifiedBirthEntryDraft>(() => createInitialDraft());
   const [partnerDraft, setPartnerDraft] = useState<UnifiedBirthEntryDraft>(() => createInitialDraft());
+  const [profileLoadStatus, setProfileLoadStatus] = useState<ProfileLoadStatus>('idle');
+  const [profileLoadMessage, setProfileLoadMessage] = useState('');
+  const [savedProfiles, setSavedProfiles] = useState<SavedBirthProfile[]>([]);
   const [selfPersonality, setSelfPersonality] = useState<PersonalityState>(() => createPersonalityState());
   const [partnerPersonality, setPartnerPersonality] = useState<PersonalityState>(() => createPersonalityState());
   const [questionKey, setQuestionKey] = useState<PersonalityCompatibilityQuestionKey>('fit');
@@ -383,11 +590,71 @@ export function PersonalityCompatibilityInputClient() {
   const selfSummary = useMemo(() => formatBirthSummary(selfDraft), [selfDraft]);
   const partnerSummary = useMemo(() => formatBirthSummary(partnerDraft), [partnerDraft]);
   const selectedQuestion = QUESTION_OPTIONS.find((item) => item.value === questionKey) ?? QUESTION_OPTIONS[0];
+  const sortedSavedProfiles = useMemo(
+    () =>
+      [...savedProfiles].sort((left, right) => {
+        const leftMatch = inferRelationshipMatch(left.relationship, relationshipType) ? 0 : 1;
+        const rightMatch = inferRelationshipMatch(right.relationship, relationshipType) ? 0 : 1;
+
+        if (left.source !== right.source) return left.source === 'self' ? -1 : 1;
+        if (leftMatch !== rightMatch) return leftMatch - rightMatch;
+        return left.label.localeCompare(right.label);
+      }),
+    [relationshipType, savedProfiles]
+  );
 
   useEffect(() => {
     trackMoonlightEvent('personality_compatibility_viewed', {
       source: 'input_page',
     });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSavedProfiles() {
+      setProfileLoadStatus('loading');
+      setProfileLoadMessage('');
+
+      try {
+        const response = await fetch('/api/profile', { cache: 'no-store' });
+        const data = (await response.json().catch(() => null)) as ProfileApiResponse | null;
+
+        if (cancelled) return;
+
+        if (!response.ok || !data) {
+          setProfileLoadStatus('error');
+          setProfileLoadMessage(data?.error ?? '저장된 프로필을 불러오지 못했습니다.');
+          return;
+        }
+
+        if (!data.authenticated) {
+          setProfileLoadStatus('anonymous');
+          return;
+        }
+
+        const options = buildSavedProfileOptions(data);
+        setSavedProfiles(options);
+        setProfileLoadStatus(options.length > 0 ? 'ready' : 'empty');
+
+        const selfProfile = options.find((profile) => profile.source === 'self');
+        if (selfProfile && !hasReusableBirthDraft(selfDraft)) {
+          setSelfDraft((current) => applyUnifiedBirthPatch(current, selfProfile.draft));
+          setSelfName(selfProfile.nickname || '나');
+          setProfileLoadMessage('로그인된 내 정보를 내 정보 칸에 자동으로 불러왔습니다.');
+        }
+      } catch {
+        if (cancelled) return;
+        setProfileLoadStatus('error');
+        setProfileLoadMessage('저장된 프로필을 확인하는 중 네트워크 오류가 발생했습니다.');
+      }
+    }
+
+    void loadSavedProfiles();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function selectRelationshipType(nextRelationshipType: CompatibilityRelationshipType) {
@@ -538,6 +805,19 @@ export function PersonalityCompatibilityInputClient() {
     });
   }
 
+  function applySavedProfile(target: PersonKey, profile: SavedBirthProfile) {
+    updateDraft(target, profile.draft);
+
+    if (target === 'self') {
+      setSelfName(profile.nickname || '나');
+      setProfileLoadMessage(`${profile.label} 정보를 내 정보 입력칸에 불러왔습니다.`);
+      return;
+    }
+
+    setPartnerName(profile.nickname || '상대');
+    setProfileLoadMessage(`${profile.label} 정보를 상대 정보 입력칸에 불러왔습니다.`);
+  }
+
   function submitPersonalityCompatibility() {
     const selfParsed = resolveUnifiedBirthInput(selfDraft, { requireGender: true });
     if (!selfParsed.ok) {
@@ -665,6 +945,18 @@ export function PersonalityCompatibilityInputClient() {
             ))}
           </div>
         </GangiSection>
+
+        <SavedProfileQuickFill
+          profiles={sortedSavedProfiles}
+          status={profileLoadStatus}
+          onApply={applySavedProfile}
+        />
+
+        {profileLoadMessage && profileLoadStatus !== 'error' ? (
+          <div className="rounded-2xl border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
+            {profileLoadMessage}
+          </div>
+        ) : null}
 
         <GangiSection
           eyebrow="2단계"
