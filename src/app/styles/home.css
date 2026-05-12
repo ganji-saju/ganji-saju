@@ -26,7 +26,7 @@
 .home-redesign .app-feature-card,
 .home-redesign .app-feature-card-muted,
 .home-redesign .app-feature-card-soft {
-  box-shadow: 0 10px 28px rgba(17, 17, 20, 0.045);
+  box-shadow: var(--gyeol-shadow-sm);
 }
 
 .home-today-snapshot-row {
@@ -135,9 +135,6 @@
     -webkit-line-clamp: 2;
   }
 
-  .dalbit-market-shell .app-top-header-main .app-top-login {
-    display: none !important;
-  }
 }
 
 @media (min-width: 768px) {

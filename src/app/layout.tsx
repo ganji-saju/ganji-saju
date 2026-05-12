@@ -7,7 +7,7 @@ import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redire
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 
 const brandSans = Noto_Sans_KR({
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   preload: false,
   variable: "--font-dalbit-sans",

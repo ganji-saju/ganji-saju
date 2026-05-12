@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import {
   estimatePersonalityType,
   getPersonalityTypeProfile,
@@ -16,7 +15,13 @@ import {
   UnifiedBirthInfoFields,
   type BirthLocationSearchResultLike,
 } from '@/components/saju/shared/unified-birth-info-fields';
-import { GangiActionRow, GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { AppPage as MoonlightAppPage } from '@/components/moonlight/AppPage';
+import { AxisChipGrid } from '@/components/moonlight/AxisChipGrid';
+import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
+import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
+import { StepFlowShell } from '@/components/moonlight/StepFlowShell';
+import { StickyActionBar } from '@/components/moonlight/StickyActionBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,12 +30,13 @@ import { trackMoonlightEvent } from '@/lib/analytics';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { cn } from '@/lib/utils';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AppShell } from '@/shared/layout/app-shell';
 import { saveSajuPersonalityInputPayload } from './saju-personality-input-storage';
 
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
 type LocationSearchStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 type PersonalityInputMode = 'direct' | 'check';
+type SajuPersonalityInputStep = 'profile' | 'personality' | 'lifeArea' | 'result';
 
 interface ProfileApiBirthFields {
   calendarType: 'solar' | 'lunar';
@@ -99,6 +105,33 @@ const LIFE_AREA_OPTIONS: Array<{
   { value: 'money_achievement', label: '돈/성취', description: '현실 감각과 성취 루틴을 봅니다.' },
   { value: 'year', label: '올해', description: '올해 붙잡을 성장 방향을 봅니다.' },
   { value: 'today', label: '오늘', description: '오늘 바로 실행할 작은 문장을 봅니다.' },
+];
+
+const SAJU_PERSONALITY_STEPS: Array<{
+  key: SajuPersonalityInputStep;
+  title: string;
+  description: string;
+}> = [
+  {
+    key: 'profile',
+    title: '내 정보를 확인해 주세요',
+    description: '저장된 프로필을 불러오거나 생년월일시를 새로 입력합니다.',
+  },
+  {
+    key: 'personality',
+    title: '16유형 성향을 알려 주세요',
+    description: '직접 선택하거나 8문항 성향 체크로 가볍게 추정합니다.',
+  },
+  {
+    key: 'lifeArea',
+    title: '관심영역을 골라 주세요',
+    description: '무료 결과에서 가장 먼저 보고 싶은 해석 초점을 선택합니다.',
+  },
+  {
+    key: 'result',
+    title: '무료 결과를 만들 준비가 됐어요',
+    description: '입력한 내용을 확인하고 무료 성향사주 결과로 이동합니다.',
+  },
 ];
 
 function createInitialDraft(): UnifiedBirthEntryDraft {
@@ -313,24 +346,17 @@ function SavedProfilePicker({
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-2">
       {profiles.map((profile) => (
-        <button
+        <ChoiceRow
           key={profile.id}
-          type="button"
           onClick={() => onApply(profile)}
-          className={cn(
-            'rounded-[1.25rem] border border-[var(--app-line)] bg-white px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-[var(--app-pink)]/30',
-            selectedProfileId === profile.id &&
-              'border-[var(--app-pink)]/45 bg-[var(--app-pink)]/8 shadow-[0_14px_30px_-24px_rgba(216,27,114,0.8)]'
-          )}
-        >
-          <span className="app-caption text-[var(--app-pink-strong)]">
-            {profile.source === 'self' ? '내 정보' : '저장 프로필'}
-          </span>
-          <strong className="mt-2 block text-base text-[var(--app-ink)]">{profile.label}</strong>
-          <span className="mt-2 block text-xs leading-5 text-[var(--app-copy-soft)]">{profile.detail}</span>
-        </button>
+          selected={selectedProfileId === profile.id}
+          leading={profile.source === 'self' ? '나' : '家'}
+          title={profile.label}
+          description={profile.detail}
+          trailing={profile.source === 'self' ? '내 정보' : '프로필'}
+        />
       ))}
     </div>
   );
@@ -351,50 +377,41 @@ function PersonalityInputPanel({
       ? getPersonalityTypeProfile(checkResult.typeCode)
       : null;
 
+  const typeItems = PERSONALITY_TYPE_CODES.map((code) => {
+    const profile = getPersonalityTypeProfile(code);
+
+    return {
+      id: code,
+      label: code,
+      value: profile.title,
+    };
+  });
+
   return (
-    <div className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-      <div className="grid gap-2 sm:grid-cols-2">
+    <div className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+      <div className="grid gap-2">
         {[
           { value: 'direct' as const, label: '16유형 직접 선택', desc: '이미 알고 있는 성향 코드를 고릅니다.' },
           { value: 'check' as const, label: '잘 몰라요. 성향 체크하기', desc: '8문항으로 가볍게 성향을 추정합니다.' },
         ].map((option) => (
-          <button
+          <ChoiceRow
             key={option.value}
-            type="button"
             onClick={() => onChange({ mode: option.value })}
-            className={cn(
-              'gangi-topic-card !min-h-0 !p-4 text-left',
-              state.mode === option.value &&
-                'border-[var(--app-pink)]/40 bg-[var(--app-pink)]/8 shadow-[0_12px_28px_-24px_rgba(216,27,114,0.8)]'
-            )}
-          >
-            <h2>{option.label}</h2>
-            <p>{option.desc}</p>
-          </button>
+            selected={state.mode === option.value}
+            title={option.label}
+            description={option.desc}
+            trailing={state.mode === option.value ? '선택됨' : undefined}
+          />
         ))}
       </div>
 
       {state.mode === 'direct' ? (
         <div className="mt-5">
-          <Label htmlFor="saju-personality-type" className="mb-2 block text-sm text-[var(--app-copy)]">
-            성향 코드
-          </Label>
-          <select
-            id="saju-personality-type"
-            value={state.typeCode}
-            onChange={(event) => onChange({ typeCode: event.target.value as PersonalityTypeCode | '' })}
-            className="gangi-form-control h-11 w-full px-3 text-sm"
-          >
-            <option value="">선택해 주세요</option>
-            {PERSONALITY_TYPE_CODES.map((code) => {
-              const profile = getPersonalityTypeProfile(code);
-              return (
-                <option key={code} value={code}>
-                  {code} · {profile.title}
-                </option>
-              );
-            })}
-          </select>
+          <AxisChipGrid
+            items={typeItems}
+            selectedId={state.typeCode}
+            onSelect={(item) => onChange({ typeCode: item.id as PersonalityTypeCode })}
+          />
           {selectedType ? (
             <p className="mt-3 rounded-[1rem] border border-[var(--app-jade)]/18 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
               {selectedType.title} · {selectedType.communicationStyle}
@@ -404,30 +421,23 @@ function PersonalityInputPanel({
       ) : (
         <div className="mt-5 space-y-4">
           {PERSONALITY_SELF_CHECK_QUESTIONS.map((question, index) => (
-            <div key={question.id} className="rounded-[1.1rem] border border-[var(--app-line)] bg-white px-4 py-4">
+            <div key={question.id} className="rounded-[1.1rem] border border-[var(--gyeol-line)] bg-white px-4 py-4">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--app-pink-soft)] text-xs font-bold text-[var(--app-pink-strong)]">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold leading-6 text-[var(--app-ink)]">{question.title}</p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="mt-3 grid gap-2">
                     {question.options.map((option) => (
-                      <button
+                      <ChoiceRow
                         key={option.value}
-                        type="button"
                         onClick={() =>
                           onChange({ answers: updateAnswers(state.answers, question.id, option.value) })
                         }
-                        className={cn(
-                          'gangi-birth-card-choice min-h-0 px-3 py-3 text-left',
-                          getAnswerValue(state.answers, question.id) === option.value && 'is-selected'
-                        )}
-                      >
-                        <span className="block text-sm font-semibold text-[var(--app-ink)]">
-                          {option.label}
-                        </span>
-                      </button>
+                        selected={getAnswerValue(state.answers, question.id) === option.value}
+                        title={option.label}
+                      />
                     ))}
                   </div>
                 </div>
@@ -463,7 +473,10 @@ export function SajuPersonalityInputClient() {
   const [lifeArea, setLifeArea] = useState<SajuPersonalityLifeArea>('basic');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [activeStep, setActiveStep] = useState<SajuPersonalityInputStep>('profile');
 
+  const activeStepIndex = SAJU_PERSONALITY_STEPS.findIndex((step) => step.key === activeStep);
+  const currentStep = SAJU_PERSONALITY_STEPS[activeStepIndex] ?? SAJU_PERSONALITY_STEPS[0];
   const birthSummary = useMemo(() => formatBirthSummary(birthDraft), [birthDraft]);
   const selectedLifeArea =
     LIFE_AREA_OPTIONS.find((option) => option.value === lifeArea) ?? LIFE_AREA_OPTIONS[0];
@@ -650,6 +663,49 @@ export function SajuPersonalityInputClient() {
     });
   }
 
+  function validateBirthStep() {
+    const parsed = resolveUnifiedBirthInput(birthDraft, { requireGender: true });
+    if (!parsed.ok) {
+      setErrorMessage(parsed.error);
+      return false;
+    }
+
+    if (!birthCompletedTrackedRef.current) {
+      birthCompletedTrackedRef.current = true;
+      trackMoonlightEvent('saju_personality_birth_info_completed', {
+        source: selectedProfile ? selectedProfile.source : 'manual',
+      });
+    }
+
+    setErrorMessage('');
+    return true;
+  }
+
+  function validatePersonalityStep() {
+    if (!getPersonalityResult(personality)) {
+      setErrorMessage('성향 유형을 직접 선택하거나 8문항 성향 체크를 모두 선택해 주세요.');
+      return false;
+    }
+
+    setErrorMessage('');
+    return true;
+  }
+
+  function goToPreviousStep() {
+    const previousStep = SAJU_PERSONALITY_STEPS[Math.max(0, activeStepIndex - 1)];
+    setErrorMessage('');
+    setActiveStep(previousStep.key);
+  }
+
+  function goToNextStep() {
+    if (activeStep === 'profile' && !validateBirthStep()) return;
+    if (activeStep === 'personality' && !validatePersonalityStep()) return;
+
+    const nextStep = SAJU_PERSONALITY_STEPS[Math.min(SAJU_PERSONALITY_STEPS.length - 1, activeStepIndex + 1)];
+    setErrorMessage('');
+    setActiveStep(nextStep.key);
+  }
+
   function submitSajuPersonalityInput() {
     const parsed = resolveUnifiedBirthInput(birthDraft, { requireGender: true });
     if (!parsed.ok) {
@@ -693,140 +749,119 @@ export function SajuPersonalityInputClient() {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
-        <GangiPageHeader title="성향사주 입력" backHref="/saju/new" />
-        <GangiIntro
-          eyebrow="달빛 성향사주"
-          title={
-            <>
-              사주로 보는 타고난 결,
-              <br />
-              성향으로 보는 선택 습관
-            </>
-          }
-          description="저장된 사주 정보를 불러오거나 새로 입력한 뒤, 16유형 성향 또는 성향 체크와 관심영역을 함께 선택합니다."
+      <MoonlightAppPage className="gangi-subpage space-y-5" size="md">
+        <FusionStrip />
+        <StepFlowShell
+          currentStep={activeStepIndex + 1}
+          totalSteps={SAJU_PERSONALITY_STEPS.length}
+          title={currentStep.title}
+          description={currentStep.description}
         >
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {['프로필 선택', '생년월일시', '성향 입력', '관심영역', '무료 결과'].map((item, index) => (
-              <div
-                key={item}
-                className="rounded-[1rem] border border-[var(--app-line)] bg-white/70 px-4 py-3 text-sm font-semibold text-[var(--app-ink)]"
-              >
-                <span className="mr-2 text-[var(--app-pink-strong)]">{index + 1}</span>
-                {item}
-              </div>
-            ))}
-          </div>
-        </GangiIntro>
-
-        {isSubmitted ? (
-          <div className="rounded-[1.2rem] border border-[var(--app-jade)]/24 bg-[var(--app-jade)]/10 px-4 py-3 text-sm leading-6 text-[var(--app-ink)]">
-            입력값을 임시 저장했습니다. 무료 결과 화면으로 이동합니다.
-          </div>
-        ) : null}
-
-        <GangiSection
-          eyebrow="1단계"
-          title="기존 프로필을 선택하거나 새로 입력해 주세요"
-          description="저장된 정보가 있으면 바로 불러오고, 없거나 다르게 보고 싶다면 아래 입력칸에서 새로 작성할 수 있습니다."
-          tone="pink"
-        >
-          <SavedProfilePicker
-            profiles={savedProfiles}
-            status={profileLoadStatus}
-            selectedProfileId={selectedProfile?.id ?? null}
-            onApply={applySavedProfile}
-          />
-          {profileLoadMessage ? (
-            <p
-              className={cn(
-                'mt-3 rounded-2xl border px-4 py-3 text-sm leading-6',
-                profileLoadStatus === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-700'
-                  : 'border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 text-[var(--app-copy)]'
-              )}
-            >
-              {profileLoadMessage}
-            </p>
+          {isSubmitted ? (
+            <div className="rounded-[1.2rem] border border-[var(--app-jade)]/24 bg-[var(--app-jade)]/10 px-4 py-3 text-sm leading-6 text-[var(--app-ink)]">
+              입력값을 임시 저장했습니다. 무료 결과 화면으로 이동합니다.
+            </div>
           ) : null}
-        </GangiSection>
 
-        <GangiSection
-          eyebrow="2단계"
-          title="생년월일시를 확인해 주세요"
-          description="기존 사주 입력과 같은 방식입니다. 태어난 시간을 모르면 시간 모름으로 진행할 수 있습니다."
-        >
-          <div className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <div className="app-caption text-[var(--app-pink-strong)]">개인 사주</div>
-                <h2 className="mt-2 text-2xl text-[var(--app-ink)]">내 정보</h2>
-              </div>
-              <div className="max-w-sm text-right text-xs leading-6 text-[var(--app-copy-soft)]">
-                {birthSummary}
-              </div>
-            </div>
-            <div className="mb-5">
-              <Label htmlFor="saju-personality-display-name" className="mb-2 block text-sm text-[var(--app-copy)]">
-                이름 또는 별명
-              </Label>
-              <Input
-                id="saju-personality-display-name"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="나"
-                className="gangi-form-control h-11 px-3 text-sm"
+          {activeStep === 'profile' ? (
+            <div className="space-y-4">
+              <SavedProfilePicker
+                profiles={savedProfiles}
+                status={profileLoadStatus}
+                selectedProfileId={selectedProfile?.id ?? null}
+                onApply={applySavedProfile}
               />
+              {profileLoadMessage ? (
+                <p
+                  className={cn(
+                    'rounded-2xl border px-4 py-3 text-sm leading-6',
+                    profileLoadStatus === 'error'
+                      ? 'border-rose-200 bg-rose-50 text-rose-700'
+                      : 'border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 text-[var(--app-copy)]'
+                  )}
+                >
+                  {profileLoadMessage}
+                </p>
+              ) : null}
+              <div className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <div className="app-caption text-[var(--app-pink-strong)]">내 정보</div>
+                    <h2 className="mt-2 text-xl font-bold text-[var(--app-ink)]">생년월일시 확인</h2>
+                  </div>
+                  <div className="max-w-sm text-left text-xs leading-6 text-[var(--app-copy-soft)] sm:text-right">
+                    {birthSummary}
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <Label htmlFor="saju-personality-display-name" className="mb-2 block text-sm text-[var(--app-copy)]">
+                    이름 또는 별명
+                  </Label>
+                  <Input
+                    id="saju-personality-display-name"
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    placeholder="나"
+                    className="gangi-form-control h-11 px-3 text-sm"
+                  />
+                </div>
+                <UnifiedBirthInfoFields
+                  idPrefix="saju-personality"
+                  draft={birthDraft}
+                  onChange={updateDraft}
+                  locationLoading={locationState.status === 'loading'}
+                  locationMessage={locationState.message}
+                  locationResults={locationState.results}
+                  onLocationSearch={searchBirthLocationCoordinates}
+                  onPresetSelect={updateBirthLocation}
+                  onLocationResultSelect={applyBirthLocationSearchResult}
+                />
+              </div>
             </div>
-            <UnifiedBirthInfoFields
-              idPrefix="saju-personality"
-              draft={birthDraft}
-              onChange={updateDraft}
-              locationLoading={locationState.status === 'loading'}
-              locationMessage={locationState.message}
-              locationResults={locationState.results}
-              onLocationSearch={searchBirthLocationCoordinates}
-              onPresetSelect={updateBirthLocation}
-              onLocationResultSelect={applyBirthLocationSearchResult}
-            />
-          </div>
-        </GangiSection>
+          ) : null}
 
-        <GangiSection
-          eyebrow="3단계"
-          title="성향을 입력해 주세요"
-          description="공식 검사나 진단이 아니라, 사주 해석에 붙일 참고용 성향 체크입니다."
-          tone="pink"
-        >
-          <PersonalityInputPanel
-            state={personality}
-            onChange={updatePersonality}
-          />
-        </GangiSection>
+          {activeStep === 'personality' ? (
+            <PersonalityInputPanel state={personality} onChange={updatePersonality} />
+          ) : null}
 
-        <GangiSection
-          eyebrow="4단계"
-          title="지금 가장 궁금한 관심영역을 골라 주세요"
-          description="무료 결과와 이후 깊이보기의 해석 초점이 달라집니다."
-        >
-          <div className="gangi-topic-grid !px-0 !pb-0 !pt-0">
-            {LIFE_AREA_OPTIONS.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => selectLifeArea(item.value)}
-                className={cn(
-                  'gangi-topic-card',
-                  lifeArea === item.value &&
-                    'border-[var(--app-pink)]/40 bg-[var(--app-pink)]/8 shadow-[0_12px_28px_-24px_rgba(216,27,114,0.8)]'
-                )}
-              >
-                <h2>{item.label}</h2>
-                <p>{item.description}</p>
-              </button>
-            ))}
-          </div>
-        </GangiSection>
+          {activeStep === 'lifeArea' ? (
+            <div className="grid gap-2">
+              {LIFE_AREA_OPTIONS.map((item) => (
+                <ChoiceRow
+                  key={item.value}
+                  onClick={() => selectLifeArea(item.value)}
+                  selected={lifeArea === item.value}
+                  title={item.label}
+                  description={item.description}
+                  trailing={lifeArea === item.value ? '선택됨' : undefined}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {activeStep === 'result' ? (
+            <div className="space-y-3 rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 text-sm leading-6 text-[var(--gyeol-muted)]">
+              <p>
+                <strong className="text-[var(--gyeol-text)]">내 정보</strong>
+                <br />
+                {birthSummary}
+              </p>
+              <p>
+                <strong className="text-[var(--gyeol-text)]">성향 입력</strong>
+                <br />
+                {personality.mode === 'direct'
+                  ? personality.typeCode || '아직 선택 전'
+                  : `성향 체크 ${personality.answers.length}/${PERSONALITY_SELF_CHECK_QUESTIONS.length}`}
+              </p>
+              <p>
+                <strong className="text-[var(--gyeol-text)]">관심영역</strong>
+                <br />
+                {selectedLifeArea.label}
+              </p>
+              <SafetyNotice />
+            </div>
+          ) : null}
+        </StepFlowShell>
 
         {errorMessage ? (
           <div className="rounded-[1.2rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-700">
@@ -834,21 +869,22 @@ export function SajuPersonalityInputClient() {
           </div>
         ) : null}
 
-        <GangiActionRow>
-          <Button type="button" variant="secondary" onClick={() => router.push('/saju/new')}>
-            일반 사주 입력으로 돌아가기
+        <StickyActionBar note="입력값은 무료 결과 생성을 위해 이 브라우저에만 임시 보관됩니다.">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={activeStepIndex === 0 ? () => router.push('/saju/new') : goToPreviousStep}
+          >
+            {activeStepIndex === 0 ? '일반 사주로' : '이전'}
           </Button>
-          <Button type="button" onClick={submitSajuPersonalityInput}>
-            무료 결과 보기
-            <ArrowRight className="h-4 w-4" />
+          <Button
+            type="button"
+            onClick={activeStep === 'result' ? submitSajuPersonalityInput : goToNextStep}
+          >
+            {activeStep === 'result' ? '무료 결과 보기' : '다음'}
           </Button>
-        </GangiActionRow>
-
-        <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-white/75 px-4 py-3 text-sm leading-6 text-[var(--app-copy-soft)]">
-          <CheckCircle2 className="mr-2 inline h-4 w-4 text-[var(--app-jade)]" />
-          이번 단계에서는 결제와 저장을 연결하지 않습니다. 입력값은 무료 결과 생성을 위해 이 브라우저에만 임시 보관됩니다.
-        </div>
-      </AppPage>
+        </StickyActionBar>
+      </MoonlightAppPage>
     </AppShell>
   );
 }
