@@ -21,6 +21,7 @@ import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortun
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneFeedbackAccuracyLabel } from '@/lib/fortune-feedback';
+import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   getPendingHitMemoSession,
@@ -145,16 +146,28 @@ export function TodayFortuneExperience({
   }
 
   async function handleSubmit() {
-    setLoading(true);
     setErrorMessage(null);
+    const requestDraft = {
+      ...draft,
+      concernId,
+    };
+    const parsedBirthInput = resolveUnifiedBirthInput(requestDraft, {
+      requireGender: false,
+    });
+
+    if (!parsedBirthInput.ok) {
+      setErrorMessage(parsedBirthInput.error);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch('/api/today-fortune', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...draft,
-          concernId,
+          ...requestDraft,
           counselorId,
         }),
       });

@@ -750,7 +750,7 @@ export function SajuPersonalityInputClient() {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <MoonlightAppPage className="gangi-subpage space-y-5" size="md">
+      <MoonlightAppPage className="gangi-subpage gangi-wide-flow space-y-5" size="md">
         <PageIntro
           eyebrow="달빛 성향사주"
           title="사주로 보는 타고난 결, 성향으로 보는 선택 습관"

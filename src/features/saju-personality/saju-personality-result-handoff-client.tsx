@@ -26,7 +26,6 @@ import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { buttonVariants } from '@/components/ui/button';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
-  SAJU_PERSONALITY_MINI_PACKAGE_ID,
   SAJU_PERSONALITY_MINI_PRICE,
   SAJU_PERSONALITY_MINI_PRODUCT_CODE,
 } from '@/lib/payments/saju-personality';
@@ -56,15 +55,6 @@ interface EntitlementResponse {
   authenticated?: boolean;
   hasAccess?: boolean;
   reason?: string | null;
-  error?: string;
-}
-
-interface PaymentPrepareResponse {
-  ok?: boolean;
-  authenticated?: boolean;
-  alreadyPurchased?: boolean;
-  redirectHref?: string;
-  loginHref?: string;
   error?: string;
 }
 
@@ -384,7 +374,6 @@ export function SajuPersonalityResultHandoffClient() {
   const [loadState, setLoadState] = useState<ResultLoadState>('loading');
   const [accessState, setAccessState] = useState<AccessState>('checking');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const [isStartingPayment, setIsStartingPayment] = useState(false);
   const [ctaMessage, setCtaMessage] = useState('');
   const [copyMessage, setCopyMessage] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
@@ -627,7 +616,7 @@ export function SajuPersonalityResultHandoffClient() {
       });
   }, [accessState, liveResult, payload, revisitPath, savedReport, scopeKey]);
 
-  async function handleUnlockPaidReport() {
+  function handlePaidUnlockClick() {
     if (!scopeKey) {
       setCtaMessage('먼저 성향사주 무료 결과를 만든 뒤 깊이보기를 열 수 있습니다.');
       return;
@@ -640,43 +629,7 @@ export function SajuPersonalityResultHandoffClient() {
       reportType: analyticsResultType,
       source: 'saju_personality_report',
     });
-    setIsStartingPayment(true);
     setCtaMessage('');
-
-    try {
-      const response = await fetch('/api/payments/prepare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          packageId: SAJU_PERSONALITY_MINI_PACKAGE_ID,
-          product: SAJU_PERSONALITY_MINI_PRODUCT_CODE,
-          scope: scopeKey,
-          from: 'saju-personality-result',
-        }),
-      });
-      const prepare = (await response.json().catch(() => null)) as PaymentPrepareResponse | null;
-
-      if (response.status === 401 || prepare?.authenticated === false) {
-        location.href = prepare?.loginHref ?? `/login?next=${encodeURIComponent(checkoutHref)}`;
-        return;
-      }
-
-      if (!response.ok || prepare?.error) {
-        setCtaMessage(prepare?.error ?? '결제 준비 중 문제가 생겼습니다.');
-        return;
-      }
-
-      if (prepare?.alreadyPurchased && prepare.redirectHref) {
-        location.href = prepare.redirectHref;
-        return;
-      }
-
-      location.href = checkoutHref;
-    } catch {
-      setCtaMessage('결제창으로 이동하는 중 문제가 생겼습니다. 잠시 뒤 다시 시도해 주세요.');
-    } finally {
-      setIsStartingPayment(false);
-    }
   }
 
   function handleCopyShareText() {
@@ -721,7 +674,7 @@ export function SajuPersonalityResultHandoffClient() {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
+      <AppPage className="gangi-subpage gangi-wide-flow space-y-6">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
         <PageIntro
           eyebrow="달빛 성향사주 결과"
@@ -802,15 +755,14 @@ export function SajuPersonalityResultHandoffClient() {
                   깊이보기 열림
                 </span>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleUnlockPaidReport}
-                  disabled={isStartingPayment || accessState === 'checking'}
+                <Link
+                  href={checkoutHref}
+                  onClick={handlePaidUnlockClick}
                   className={buttonVariants()}
                 >
-                  {isStartingPayment ? '결제 준비 중...' : '990원으로 깊이보기'}
+                  990원으로 깊이보기
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </Link>
               )}
             </div>
           </div>

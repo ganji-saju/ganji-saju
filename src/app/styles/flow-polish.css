@@ -14,6 +14,18 @@
   }
 }
 
+.gangi-subpage-shell .app-page.gangi-subpage.gangi-wide-flow {
+  width: min(calc(100vw - 1.25rem), 64rem) !important;
+  max-width: min(calc(100vw - 1.25rem), 64rem) !important;
+}
+
+@media (min-width: 768px) {
+  .gangi-subpage-shell .app-page.gangi-subpage.gangi-wide-flow {
+    width: min(calc(100vw - 3rem), 64rem) !important;
+    max-width: min(calc(100vw - 3rem), 64rem) !important;
+  }
+}
+
 .saju-result-page {
   --result-card-radius: 1.6rem;
 }
