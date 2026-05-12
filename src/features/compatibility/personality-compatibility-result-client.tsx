@@ -13,12 +13,15 @@ import {
 import {
   GangiActionRow,
   GangiIntro,
-  GangiMetricBar,
   GangiMiniCard,
   GangiPageHeader,
   GangiPill,
   GangiSection,
 } from '@/components/gangi/gangi-ui';
+import { AxisMeter } from '@/components/moonlight/AxisMeter';
+import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { ResultShell } from '@/components/moonlight/ResultShell';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import type { CompatibilityRelationshipType } from '@/domain/compatibility-personality';
 import { isPersonalityTypeCode, type PersonalityAxisScores } from '@/domain/personality';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -279,28 +282,29 @@ function LoadingState() {
 
 function ScoreSummary({ result }: { result: PersonalityCompatibilityFreeResult }) {
   return (
-    <GangiSection
-      eyebrow="5축 점수"
-      title="한 점수보다 다섯 축을 함께 봅니다"
-      description="갈등 지수는 높을수록 주의가 필요한 신호입니다."
-      tone="pink"
-    >
-      <div className="grid gap-3 sm:grid-cols-2">
+    <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+      <p className="app-caption text-[var(--app-pink-strong)]">5축 점수</p>
+      <h2 className="mt-2 text-xl font-bold text-[var(--gyeol-text)]">
+        한 점수보다 다섯 축을 함께 봅니다
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--gyeol-muted)]">
+        갈등 지수는 높을수록 주의가 필요한 신호입니다.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {result.axisSummaries.map((axis) => (
-          <article
+          <AxisMeter
             key={axis.key}
-            className="rounded-[1.25rem] border border-[var(--app-line)] bg-white/80 p-4"
-          >
-            <GangiMetricBar label={axis.label} value={axis.value} color={axis.color} />
-            <p className="mt-3 text-sm leading-6 text-[var(--app-copy-muted)]">{axis.caption}</p>
-          </article>
+            label={axis.label}
+            value={axis.value}
+            description={axis.caption}
+          />
         ))}
       </div>
       <p className="mt-4 rounded-[1rem] border border-[var(--app-line)] bg-white/70 px-4 py-3 text-sm font-semibold leading-6 text-[var(--app-ink)]">
         종합 참고점수 {result.score.totalScore}점 · 관계를 단정하기보다 조율 포인트를 나누어 보는
         값입니다.
       </p>
-    </GangiSection>
+    </section>
   );
 }
 
@@ -824,12 +828,21 @@ export function PersonalityCompatibilityResultClient() {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="성향궁합 결과" backHref="/compatibility/personality" />
-        <GangiIntro
-          eyebrow={`${result.relationshipLabel} · ${accessState === 'granted' ? '깊이보기' : '무료 결과'}`}
+        <ResultShell
           title={result.headline}
-          description={introDescription}
+          summary={introDescription}
+          keywords={[result.relationshipLabel, accessState === 'granted' ? '깊이보기' : '무료 결과', ...result.keywords]}
+          scoreSummary={
+            <AxisMeter
+              label="종합 참고점수"
+              value={result.score.totalScore}
+              description="관계의 결을 단정하지 않고, 끌림·안정·소통·갈등·회복을 함께 보는 참고 지표입니다."
+            />
+          }
         >
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <FusionStrip prefixLabel="사주 궁합" suffixLabel="성향 궁합" />
+
+          <div className="grid gap-3 sm:grid-cols-2">
             {payload ? (
               <>
                 <GangiMiniCard
@@ -858,80 +871,76 @@ export function PersonalityCompatibilityResultClient() {
               </>
             )}
           </div>
-        </GangiIntro>
 
-        <ScoreSummary result={result} />
+          <ScoreSummary result={result} />
 
-        <GangiSection eyebrow="관계 키워드" title="이 관계에서 먼저 보이는 단서">
-          <div className="flex flex-wrap gap-2">
-            {result.keywords.map((keyword) => (
-              <GangiPill key={keyword}>{keyword}</GangiPill>
-            ))}
-          </div>
-        </GangiSection>
+          <GangiSection eyebrow="관계 키워드" title="이 관계에서 먼저 보이는 단서">
+            <div className="flex flex-wrap gap-2">
+              {result.keywords.map((keyword) => (
+                <GangiPill key={keyword}>{keyword}</GangiPill>
+              ))}
+            </div>
+          </GangiSection>
 
-        <FreeInterpretation result={result} />
-        <LockedPreview result={result} accessState={accessState} />
-        {shareCard ? (
-          <ShareCard
-            data={shareCard}
-            reportId={reportId}
-            saveStatus={saveStatus}
-            onCopy={handleCopyShareText}
-            copyMessage={copyMessage}
-          />
-        ) : null}
+          <FreeInterpretation result={result} />
+          <LockedPreview result={result} accessState={accessState} />
+          {shareCard ? (
+            <ShareCard
+              data={shareCard}
+              reportId={reportId}
+              saveStatus={saveStatus}
+              onCopy={handleCopyShareText}
+              copyMessage={copyMessage}
+            />
+          ) : null}
 
-        <section className="px-4 pb-8 sm:px-0">
-          <div className="gangi-pink-panel p-4">
-            <p className="gangi-sub-eyebrow mb-2">다음 액션</p>
-            <h2 className="text-xl font-bold leading-7 text-[var(--app-ink)]">
-              더 깊게 보거나, 이어서 물어볼 수 있게 준비했습니다
-            </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-[var(--app-copy-muted)]">
-              깊이보기는 990원 결제 후 현재 결과 범위에 연결되며, 이미 구매한 결과는 다시 결제하지 않습니다.
-            </p>
-            {paymentNotice ? (
-              <p className="mt-4 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
-                {paymentNotice}
+          <section className="px-4 pb-8 sm:px-0">
+            <div className="gangi-pink-panel p-4">
+              <p className="gangi-sub-eyebrow mb-2">다음 액션</p>
+              <h2 className="text-xl font-bold leading-7 text-[var(--app-ink)]">
+                더 깊게 보거나, 이어서 물어볼 수 있게 준비했습니다
+              </h2>
+              <p className="mt-2 text-sm font-medium leading-6 text-[var(--app-copy-muted)]">
+                깊이보기는 990원 결제 후 현재 결과 범위에 연결되며, 이미 구매한 결과는 다시 결제하지 않습니다.
               </p>
-            ) : null}
-            <GangiActionRow className="mt-4">
-              {accessState === 'granted' ? (
-                <span className="gangi-primary-button" aria-live="polite">
-                  <Sparkles className="h-4 w-4" />
-                  깊이보기 열림
-                </span>
-              ) : (
-                <Link href={checkoutHref} onClick={handlePaidUnlockClick} className="gangi-primary-button">
-                  <Sparkles className="h-4 w-4" />
-                  {PERSONALITY_COMPATIBILITY_MINI_PRICE.toLocaleString('ko-KR')}원으로 깊이보기
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={handleAiCta}
-                className="gangi-secondary-button"
-              >
-                <MessageCircleQuestion className="h-4 w-4" />
-                AI에게 이어서 물어보기
-              </button>
-            </GangiActionRow>
-            {ctaMessage ? (
-              <p className="mt-4 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
-                {ctaMessage}
-              </p>
-            ) : null}
-          </div>
-        </section>
+              {paymentNotice ? (
+                <p className="mt-4 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
+                  {paymentNotice}
+                </p>
+              ) : null}
+              <GangiActionRow className="mt-4">
+                {accessState === 'granted' ? (
+                  <span className="gangi-primary-button" aria-live="polite">
+                    <Sparkles className="h-4 w-4" />
+                    깊이보기 열림
+                  </span>
+                ) : (
+                  <Link href={checkoutHref} onClick={handlePaidUnlockClick} className="gangi-primary-button">
+                    <Sparkles className="h-4 w-4" />
+                    {PERSONALITY_COMPATIBILITY_MINI_PRICE.toLocaleString('ko-KR')}원으로 깊이보기
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={handleAiCta}
+                  className="gangi-secondary-button"
+                >
+                  <MessageCircleQuestion className="h-4 w-4" />
+                  AI에게 이어서 물어보기
+                </button>
+              </GangiActionRow>
+              {ctaMessage ? (
+                <p className="mt-4 rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
+                  {ctaMessage}
+                </p>
+              ) : null}
+            </div>
+          </section>
 
-        <ReportFeedback submittedValue={feedbackValue} onSubmit={handleFeedbackSubmit} />
+          <ReportFeedback submittedValue={feedbackValue} onSubmit={handleFeedbackSubmit} />
 
-        <section className="px-4 pb-8 sm:px-0">
-          <p className="rounded-[1rem] border border-[var(--app-line)] bg-white/70 px-4 py-3 text-xs leading-6 text-[var(--app-copy-muted)]">
-            {result.safetyNote}
-          </p>
-        </section>
+          <SafetyNotice>{result.safetyNote}</SafetyNotice>
+        </ResultShell>
       </AppPage>
     </AppShell>
   );

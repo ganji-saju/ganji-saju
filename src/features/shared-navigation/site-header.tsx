@@ -13,14 +13,11 @@ import {
   LogOut,
   MessageCircleMore,
   MoonStar,
-  Plus,
   Settings2,
   Sparkles,
-  UserRound,
   X,
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
-import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
@@ -49,29 +46,34 @@ let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
   홈: { glyph: '🌙', accent: 'var(--app-pink)', description: '오늘의 시작' },
-  사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '생년월일 입력' },
-  무료운세: { glyph: '✨', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
-  대화방: { glyph: '💬', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
+  '내 풀이': { glyph: '四', accent: 'var(--app-pink)', description: '사주와 성향사주' },
+  관계: { glyph: '合', accent: 'var(--app-pink-soft-strong)', description: '궁합과 성향궁합' },
+  오늘: { glyph: '今', accent: 'var(--app-pink-strong)', description: '오늘의 결' },
+  대화: { glyph: '💬', accent: 'var(--app-pink)', description: 'AI에게 이어 묻기' },
+  성향사주: { glyph: '四×軸', accent: 'var(--app-pink)', description: '타고난 결과 선택 습관' },
+  성향궁합: { glyph: '合×軸', accent: 'var(--app-pink-soft-strong)', description: '두 사람의 관계 결' },
+  오늘운세: { glyph: '今', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
+  타로: { glyph: '☽', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
   보관함: { glyph: '🔖', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
+  가격: { glyph: '₩', accent: 'var(--app-pink)', description: '무료와 깊이보기' },
   오늘운: { glyph: '🐮', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
   사주: { glyph: '🐲', accent: 'var(--app-pink)', description: '내 사주 풀이' },
   명리: { glyph: '🐯', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
-  타로: { glyph: '🐰', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
   궁합: { glyph: '🐑', accent: 'var(--app-pink)', description: '둘 사이 흐름' },
   별자리: { glyph: '✦', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
   띠운세: { glyph: '🐾', accent: 'var(--app-pink)', description: '내 띠 오늘 흐름' },
   안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
-const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리'] as const;
-const MOBILE_FEATURE_LABELS = new Set(['오늘운', '타로', '사주', '궁합']);
-const MOBILE_MORE_LABELS = new Set(['띠운세', '별자리']);
+const MOBILE_SHORTCUT_LABEL_ORDER = ['성향사주', '성향궁합', '오늘운세', '타로', '보관함', '가격'] as const;
+const MOBILE_FEATURE_LABELS = new Set(['성향사주', '성향궁합']);
+const MOBILE_MORE_LABELS = new Set(['오늘운세', '타로', '보관함', '가격']);
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
-  사주추가: '사주추가',
-  무료운세: '무료운세',
-  대화방: '대화방',
-  보관함: '보관함',
+  '내 풀이': '내풀이',
+  관계: '관계',
+  오늘: '오늘',
+  대화: '대화',
 };
 
 function matchesPath(item: NavItem, pathname: string) {
@@ -114,14 +116,14 @@ function DockIcon({ label }: { label: string }) {
   switch (label) {
     case '홈':
       return <MoonStar className="h-4 w-4" />;
-    case '사주추가':
-      return <Plus className="h-4 w-4" />;
-    case '무료운세':
-      return <Heart className="h-5 w-5" />;
-    case '대화방':
+    case '내 풀이':
+      return <BookOpenText className="h-4 w-4" />;
+    case '관계':
+      return <Heart className="h-4 w-4" />;
+    case '오늘':
+      return <Sparkles className="h-4 w-4" />;
+    case '대화':
       return <MessageCircleMore className="h-4 w-4" />;
-    case '보관함':
-      return <UserRound className="h-4 w-4" />;
     default:
       return <BookOpenText className="h-4 w-4" />;
   }
@@ -182,6 +184,19 @@ function shouldRefreshCreditSnapshot(snapshot: HeaderCreditSnapshot | null) {
   return !snapshot || Date.now() - snapshot.fetchedAt > HEADER_CREDIT_REFRESH_MS;
 }
 
+function runWhenBrowserIdle(task: () => void) {
+  const idleWindow = window as Window & {
+    requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+  };
+
+  if (typeof idleWindow.requestIdleCallback === 'function') {
+    idleWindow.requestIdleCallback(task, { timeout: 2500 });
+    return;
+  }
+
+  window.setTimeout(task, 1200);
+}
+
 function refreshCreditSnapshot(userId: string, loadCredits: () => Promise<number>) {
   if (creditRefreshPromise && creditRefreshUserId === userId) return creditRefreshPromise;
 
@@ -209,208 +224,66 @@ function refreshCreditSnapshot(userId: string, loadCredits: () => Promise<number
   return creditRefreshPromise;
 }
 
-function DesktopNavLink({
-  item,
+function NavLinkGroup({
+  items,
   pathname,
-  compact = false,
 }: {
-  item: NavItem;
+  items: readonly NavItem[];
   pathname: string;
-  compact?: boolean;
 }) {
-  const active = matchesPath(item, pathname);
-  const meta = getNavMeta(item);
-
   return (
-    <Link
-      href={item.href}
-      scroll={false}
-      onClick={(event) => {
-        if (active) event.preventDefault();
-      }}
-      data-active={active}
-      className={cn(
-        'app-nav-card flex items-center text-[var(--app-copy-muted)]',
-        compact ? 'gap-2 px-2.5 py-1.5' : 'gap-2.5 px-3 py-2'
-      )}
-    >
-      <span
-        className={cn(
-          'flex shrink-0 items-center justify-center rounded-xl border bg-[var(--app-surface-muted)] font-semibold',
-          compact ? 'h-7 w-7 text-xs' : 'h-8 w-8 text-sm'
-        )}
-        style={{
-          borderColor: active ? meta.accent : 'var(--app-line)',
-          color: meta.accent,
-        }}
-      >
-        {meta.glyph}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-[var(--app-ivory)]">
-          {item.label}
-        </span>
-        {!compact ? (
-          <span className="mt-0.5 block truncate text-[11px] text-[var(--app-copy-soft)]">
-            {meta.description}
-          </span>
-        ) : null}
-      </span>
-      {active ? (
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: meta.accent }}
-        />
-      ) : null}
-    </Link>
+    <>
+      {items.map((item) => {
+        const active = matchesPath(item, pathname);
+        const meta = getNavMeta(item);
+
+        return (
+          <Link
+            key={item.label}
+            href={item.href}
+            data-active={active}
+            scroll={false}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
+          >
+            <span aria-hidden="true" style={{ color: meta.accent }}>
+              {meta.glyph}
+            </span>
+            <span>{getMobileDockLabel(item)}</span>
+          </Link>
+        );
+      })}
+    </>
   );
 }
 
-function DesktopNavChip({ item, pathname }: { item: NavItem; pathname: string }) {
-  const active = matchesPath(item, pathname);
-  const meta = getNavMeta(item);
-
+function MobileBottomNav({ pathname }: { pathname: string }) {
   return (
-    <Link
-      href={item.href}
-      scroll={false}
-      onClick={(event) => {
-        if (active) event.preventDefault();
-      }}
-      data-active={active}
-      className="app-nav-card flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium text-[var(--app-copy-muted)]"
-    >
-      <span
-        className=" text-xs"
-        style={{ color: meta.accent }}
-      >
-        {meta.glyph}
-      </span>
-      <span className="truncate">{item.label}</span>
-    </Link>
-  );
-}
+    <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden" aria-label="주 메뉴">
+      <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
+        {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
+          const active = matchesPath(item, pathname);
+          const isCenter = item.label === '오늘';
 
-function DesktopSidebar({
-  pathname,
-  user,
-  credits,
-  authHref,
-  onSignOut,
-}: {
-  pathname: string;
-  user: User | null;
-  credits: number | null;
-  authHref: string;
-  onSignOut: () => Promise<void>;
-}) {
-  const displayName = user?.email?.split('@')[0] ?? '방문자';
-
-  return (
-    <aside className="app-desktop-sidebar hidden flex-col overflow-hidden lg:flex">
-
-      <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
-        <Link href="/" className="group block">
-          <div className=" text-[11px] tracking-[0.48em] text-[var(--app-gold)]/72">
-            DALBIT LIFE
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <div className="app-moon-orb h-10 w-10" />
-            <div>
-              <div className=" text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
-                달빛인생
-              </div>
-              <div className="text-xs text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
-            </div>
-          </div>
-        </Link>
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              data-active={active}
+              data-center={isCenter ? 'true' : undefined}
+              aria-current={active ? 'page' : undefined}
+              className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
+            >
+              <span className="app-mobile-dock-icon">
+                <DockIcon label={item.label} />
+              </span>
+              <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
+                {getMobileDockLabel(item)}
+              </span>
+            </Link>
+          );
+        })}
       </div>
-
-      <div className="relative z-10 border-b border-[var(--app-line)] px-5 py-3">
-        <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 text-lg text-[var(--app-gold-text)]">
-              {user ? '👤' : '🌙'}
-            </div>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium text-[var(--app-ivory)]">
-                {displayName}님
-              </div>
-              <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
-                {user ? `${credits ?? '...'} 코인 보유` : '로그인하면 기록 저장'}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-3 grid gap-2">
-            {user ? (
-              <button
-                type="button"
-                onClick={onSignOut}
-                className="gangi-secondary-button w-full"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                로그아웃
-              </button>
-            ) : (
-              <Link
-                href={authHref}
-                scroll={false}
-                className="gangi-primary-button w-full"
-              >
-                로그인
-              </Link>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                href="/credits"
-                scroll={false}
-                className="gangi-secondary-button"
-              >
-                <CreditCard className="h-3.5 w-3.5" />
-                코인 충전
-              </Link>
-              <Link
-                href="/membership"
-                scroll={false}
-                className="gangi-secondary-button"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                프리미엄
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <nav className="relative z-10 flex-1 space-y-3 px-4 py-3">
-        <div>
-          <div className="app-caption px-2">주요 여정</div>
-          <div className="mt-2 space-y-1.5">
-            {PRIMARY_NAV_ITEMS.map((item) => (
-              <DesktopNavLink key={item.label} item={item} pathname={pathname} />
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="app-caption px-2">서비스 메뉴</div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {HEADER_SECONDARY_NAV_ITEMS.map((item) => (
-              <DesktopNavChip key={item.label} item={item} pathname={pathname} />
-            ))}
-          </div>
-        </div>
-      </nav>
-
-      <div className="relative z-10 border-t border-[var(--app-line)] px-5 py-3">
-        <div className="app-caption mb-2">보기 방식</div>
-        <LayoutModeControl />
-        <div className="app-caption mb-2 mt-3">읽기 크기</div>
-        <ReadingComfortControl />
-      </div>
-    </aside>
+    </nav>
   );
 }
 
@@ -442,7 +315,7 @@ function MobileChrome({
   const contextDescription =
     activeShortcutMeta?.description ??
     activePrimaryMeta?.description ??
-    '오늘의 운세와 타로';
+    '오늘의 결';
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -471,37 +344,19 @@ function MobileChrome({
             </Link>
 
             <nav className="app-top-primary-nav hidden min-w-0 items-center gap-1 md:flex" aria-label="주요 메뉴">
-              {PRIMARY_NAV_ITEMS.map((item) => {
-                const active = matchesPath(item, pathname);
-                const meta = getNavMeta(item);
-
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    data-active={active}
-                    scroll={false}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
-                  >
-                    <span className="" style={{ color: meta.accent }}>
-                      {meta.glyph}
-                    </span>
-                    <span>{getMobileDockLabel(item)}</span>
-                  </Link>
-                );
-              })}
+              <NavLinkGroup items={PRIMARY_NAV_ITEMS} pathname={pathname} />
             </nav>
 
             <div className="app-top-actions flex items-center gap-2">
               <Link
                 href="/credits"
-                className="app-top-credit-chip hidden md:inline-flex"
+                className="app-top-credit-chip inline-flex"
                 aria-label={`보유 코인 ${creditLabel(user, credits)}`}
               >
                 <CreditCard className="h-3.5 w-3.5" />
                 {creditLabel(user, credits)}
               </Link>
-              <Link href="/notifications" className="app-top-notification-button" aria-label="알림">
+              <Link href="/notifications" className="app-top-notification-button hidden md:inline-flex" aria-label="알림">
                 <Bell className="h-5 w-5" />
               </Link>
               {user ? (
@@ -538,8 +393,8 @@ function MobileChrome({
               <div className="app-mobile-menu-head">
                 <div className="min-w-0">
                   <div className="app-mobile-menu-eyebrow">전체 메뉴</div>
-                  <div className="app-mobile-menu-title">지금 볼 운세를 고르세요</div>
-                  <div className="app-mobile-menu-subtitle">자주 쓰는 메뉴만 먼저 보여드려요.</div>
+                  <div className="app-mobile-menu-title">오늘 볼 결을 고르세요</div>
+                  <div className="app-mobile-menu-subtitle">내 풀이, 관계, 오늘 흐름을 빠르게 이어갑니다.</div>
                 </div>
                 <button
                   type="button"
@@ -582,7 +437,7 @@ function MobileChrome({
               </div>
 
               <div className="mt-4">
-                <div className="app-mobile-menu-group-title">다른 운세</div>
+                <div className="app-mobile-menu-group-title">빠른 바로가기</div>
                 <div className="mt-2 grid grid-cols-4 gap-2">
                   {moreShortcutItems.map((item) => {
                     const active = matchesPath(item, pathname);
@@ -613,7 +468,7 @@ function MobileChrome({
 
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <Link
-                  href="/my/results"
+                  href="/my"
                   onClick={() => setMobileMenuOpen(false)}
                   className="app-mobile-menu-utility"
                 >
@@ -706,32 +561,7 @@ function MobileChrome({
         </div>
       </header>
 
-      <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden" aria-label="주 메뉴">
-        <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
-          {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
-            const active = matchesPath(item, pathname);
-            const isCenter = item.label === '무료운세';
-
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                data-active={active}
-                data-center={isCenter ? 'true' : undefined}
-                aria-current={active ? 'page' : undefined}
-                className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
-              >
-                <span className="app-mobile-dock-icon">
-                  <DockIcon label={item.label} />
-                </span>
-                <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
-                  {getMobileDockLabel(item)}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      <MobileBottomNav pathname={pathname} />
     </>
   );
 }
@@ -812,7 +642,9 @@ export default function SiteHeader() {
         return;
       }
 
-      sendNotificationHeartbeat();
+      runWhenBrowserIdle(() => {
+        if (isActive) sendNotificationHeartbeat();
+      });
       refreshCreditsForUser(nextUser);
     };
 

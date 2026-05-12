@@ -122,8 +122,8 @@
   body {
     @apply bg-background text-foreground;
     min-height: 100%;
-    background-color: #ffffff;
-    color: var(--app-ink);
+    background-color: var(--gyeol-color-background);
+    color: var(--gyeol-color-text);
     font-family: var(--font-body);
     overscroll-behavior-y: contain;
     text-rendering: optimizeLegibility;
@@ -169,9 +169,10 @@
     pointer-events: none;
     z-index: 0;
     background-image:
-      radial-gradient(circle at 12% 18%, rgba(255, 79, 154, 0.06) 0%, transparent 28%),
-      radial-gradient(circle at 88% 10%, rgba(255, 79, 154, 0.05) 0%, transparent 20%),
+      radial-gradient(circle at 12% 18%, var(--gyeol-color-orbit-soft) 0%, transparent 28%),
+      radial-gradient(circle at 88% 10%, var(--gyeol-color-moon-soft) 0%, transparent 20%),
       radial-gradient(circle at 78% 72%, rgba(0, 0, 0, 0.025) 0%, transparent 26%);
+    opacity: 0.82;
   }
 
   body::after {
@@ -181,14 +182,14 @@
     pointer-events: none;
     z-index: 0;
     background:
-      linear-gradient(135deg, transparent 0%, rgba(255, 79, 154, 0.018) 18%, transparent 34%),
+      linear-gradient(135deg, transparent 0%, rgba(255, 111, 169, 0.014) 18%, transparent 34%),
       linear-gradient(215deg, transparent 0%, rgba(0, 0, 0, 0.012) 16%, transparent 30%);
-    opacity: 0.6;
+    opacity: 0.45;
     mix-blend-mode: normal;
   }
 
   ::selection {
-    background: rgba(255, 79, 154, 0.22);
-    color: var(--app-ink);
+    background: var(--gyeol-color-orbit-soft);
+    color: var(--gyeol-color-text);
   }
 }

@@ -12,6 +12,10 @@ import {
   type PaidReadingSnapshot,
 } from '@/lib/payments/paid-reading-snapshots';
 import {
+  buildPersonalityCompatibilityResultHref,
+  isPersonalityCompatibilityMiniProductId,
+} from '@/lib/payments/personality-compatibility';
+import {
   buildSajuPersonalityResultHref,
   isSajuPersonalityMiniProductId,
 } from '@/lib/payments/saju-personality';
@@ -126,6 +130,9 @@ function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
   }
 
   if (snapshot.productId === 'love-question') return '/compatibility/input';
+  if (isPersonalityCompatibilityMiniProductId(snapshot.productId)) {
+    return buildPersonalityCompatibilityResultHref(snapshot.scopeKey);
+  }
   if (isSajuPersonalityMiniProductId(snapshot.productId)) {
     return buildSajuPersonalityResultHref(snapshot.scopeKey);
   }

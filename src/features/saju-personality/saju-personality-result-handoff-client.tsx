@@ -14,11 +14,14 @@ import {
 } from 'lucide-react';
 import {
   GangiIntro,
-  GangiMetricBar,
   GangiPageHeader,
   GangiPill,
   GangiSection,
 } from '@/components/gangi/gangi-ui';
+import { AxisMeter } from '@/components/moonlight/AxisMeter';
+import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { ResultShell } from '@/components/moonlight/ResultShell';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { buttonVariants } from '@/components/ui/button';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
@@ -150,23 +153,26 @@ function MissingInputState() {
 
 function ScoreSummary({ result }: { result: SajuPersonalityReportSnapshot }) {
   return (
-    <GangiSection
-      eyebrow="6축 점수"
-      title={`전체 선명도 ${result.scores.totalClarityScore}점`}
-      description="높을수록 좋은 운을 뜻하지 않고, 사주 facts와 성향 facts가 같은 방향을 얼마나 또렷하게 가리키는지 보여줍니다."
-    >
-      <div className="grid gap-3 md:grid-cols-2">
+    <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+      <p className="app-caption text-[var(--app-pink-strong)]">6축 점수</p>
+      <h2 className="mt-2 text-xl font-bold text-[var(--gyeol-text)]">
+        전체 선명도 {result.scores.totalClarityScore}점
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--gyeol-muted)]">
+        높을수록 좋은 운을 뜻하지 않고, 사주 facts와 성향 facts가 같은 방향을 얼마나 또렷하게
+        가리키는지 보여줍니다.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
         {result.axisSummaries.map((axis) => (
-          <div
+          <AxisMeter
             key={axis.key}
-            className="rounded-[1.1rem] border border-[var(--app-line)] bg-white px-4 py-4"
-          >
-            <GangiMetricBar label={axis.label} value={axis.value} color={axis.color} />
-            <p className="mt-2 text-xs leading-5 text-[var(--app-copy-soft)]">{axis.caption}</p>
-          </div>
+            label={axis.label}
+            value={axis.value}
+            description={axis.caption}
+          />
         ))}
       </div>
-    </GangiSection>
+    </section>
   );
 }
 
@@ -717,54 +723,62 @@ export function SajuPersonalityResultHandoffClient() {
       <AppPage className="gangi-subpage space-y-6">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
 
-        <GangiIntro
-          eyebrow={`${result.lifeAreaLabel} · ${accessState === 'granted' ? '깊이보기' : '무료 결과'}`}
+        <ResultShell
           title={result.headline}
-          description={
+          summary={
             payload
               ? '무료 결과는 짧은 요약만 제공합니다. 더 깊은 원인과 실행 전략은 잠금 영역에 남겨두었습니다.'
               : '저장된 성향사주 결과를 다시 불러왔습니다. 공유 카드에는 개인정보를 표시하지 않습니다.'
           }
-        />
+          keywords={[result.lifeAreaLabel, accessState === 'granted' ? '깊이보기' : '무료 결과', ...result.keywords]}
+          scoreSummary={
+            <AxisMeter
+              label="전체 선명도"
+              value={result.scores.totalClarityScore}
+              description="사주와 성향 facts가 같은 방향을 얼마나 또렷하게 가리키는지 보는 참고 지표입니다."
+            />
+          }
+        >
+          <FusionStrip />
 
-        {paymentNotice ? (
-          <p className="rounded-[1rem] border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
-            {paymentNotice}
-          </p>
-        ) : null}
+          {paymentNotice ? (
+            <p className="rounded-[1rem] border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm font-medium leading-6 text-[var(--app-copy)]">
+              {paymentNotice}
+            </p>
+          ) : null}
 
-        <GangiSection eyebrow={result.lifeAreaLabel} title="핵심 키워드">
-          <div className="flex flex-wrap gap-2">
-            {result.keywords.map((keyword) => (
-              <GangiPill key={keyword}>{keyword}</GangiPill>
-            ))}
+          <GangiSection eyebrow={result.lifeAreaLabel} title="핵심 요약">
+            <div className="flex flex-wrap gap-2">
+              {result.keywords.map((keyword) => (
+                <GangiPill key={keyword}>{keyword}</GangiPill>
+              ))}
+            </div>
+          </GangiSection>
+
+          <ScoreSummary result={result} />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <GangiSection eyebrow="사주 기반 짧은 해석" title="타고난 결" description={result.sajuSummary} />
+            <GangiSection
+              eyebrow="성향 기반 짧은 해석"
+              title="성향으로 드러나는 방식"
+              description={result.personalitySummary}
+            />
           </div>
-        </GangiSection>
 
-        <ScoreSummary result={result} />
+          <LockedOrPaidSections result={result} accessState={accessState} />
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <GangiSection eyebrow="사주 기반 짧은 해석" title="타고난 결" description={result.sajuSummary} />
-          <GangiSection
-            eyebrow="성향 기반 짧은 해석"
-            title="성향으로 드러나는 방식"
-            description={result.personalitySummary}
-          />
-        </div>
+          {shareCard ? (
+            <ShareCard
+              data={shareCard}
+              reportId={reportId}
+              saveStatus={saveStatus}
+              copyMessage={copyMessage}
+              onCopy={handleCopyShareText}
+            />
+          ) : null}
 
-        <LockedOrPaidSections result={result} accessState={accessState} />
-
-        {shareCard ? (
-          <ShareCard
-            data={shareCard}
-            reportId={reportId}
-            saveStatus={saveStatus}
-            copyMessage={copyMessage}
-            onCopy={handleCopyShareText}
-          />
-        ) : null}
-
-        <div className="rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_18px_50px_-34px_rgba(17,17,20,0.28)] sm:p-6">
+          <div className="rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_18px_50px_-34px_rgba(17,17,20,0.28)] sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="app-caption text-[var(--app-pink-strong)]">다음 행동</p>
@@ -829,23 +843,22 @@ export function SajuPersonalityResultHandoffClient() {
           <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
             프리미엄 멤버십 포함 여부는 정책 확인 필요 항목입니다.
           </p>
-        </div>
+          </div>
 
-        <FeedbackPanel selectedRating={feedbackRating} onSubmit={handleFeedbackSubmit} />
+          <FeedbackPanel selectedRating={feedbackRating} onSubmit={handleFeedbackSubmit} />
 
-        <p className="rounded-[1rem] border border-[var(--app-line)] bg-white/75 px-4 py-3 text-xs leading-6 text-[var(--app-copy-soft)]">
-          {result.safetyNote}
-        </p>
+          <SafetyNotice>{result.safetyNote}</SafetyNotice>
 
-        <div className="flex flex-wrap gap-3">
-          <Link href="/saju/personality" className={buttonVariants({ variant: 'secondary' })}>
-            <ArrowLeft className="h-4 w-4" />
-            다시 입력하기
-          </Link>
-          <Link href="/saju/new" className={cn(buttonVariants({ variant: 'outline' }))}>
-            일반 사주 보기
-          </Link>
-        </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/saju/personality" className={buttonVariants({ variant: 'secondary' })}>
+              <ArrowLeft className="h-4 w-4" />
+              다시 입력하기
+            </Link>
+            <Link href="/saju/new" className={cn(buttonVariants({ variant: 'outline' }))}>
+              일반 사주 보기
+            </Link>
+          </div>
+        </ResultShell>
       </AppPage>
     </AppShell>
   );
