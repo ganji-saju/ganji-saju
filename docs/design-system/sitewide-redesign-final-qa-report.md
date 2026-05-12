@@ -8,6 +8,8 @@
 
 결론은 **조건부 Go**다. `lint`, `typecheck`, `test`, `build`, `git diff --check`, `smoke`, `visual:qa`는 최종 통과했다. 다만 현재 작업은 `main` 브랜치의 dirty worktree에 쌓여 있으므로, 배포 전에는 반드시 별도 release 브랜치 또는 PR 단위로 커밋 범위를 정리해야 한다.
 
+추가 확인: Vercel Preview URL이 `https://간지사주.kr`로 자동 redirect되는 현상을 확인했고, 원인은 `src/proxy.ts`의 canonical host redirect가 `.vercel.app` preview 배포까지 포함했기 때문이다. Preview 실기기 QA가 가능하도록 `VERCEL_ENV=preview`에서는 canonical redirect를 적용하지 않도록 최소 수정했다.
+
 ## 2. Current Branch / Commit
 
 | 항목 | 값 |
@@ -254,6 +256,7 @@ Analytics payload 확인:
 - 로그인/유료 권한이 필요한 실제 결과 재열람은 실계정으로 확인해야 한다.
 - Toss live 결제는 자동 QA에서 실행하지 않았다.
 - result route의 무료/유료 상태별 visual QA는 session payload/권한 데이터가 필요해 preview smoke에서 추가 확인해야 한다.
+- Vercel Preview redirect 예외는 코드상 반영했으며, 새 Preview 배포 URL에서 `간지사주.kr`로 튕기지 않는지 실기기에서 재확인해야 한다.
 
 ## 15. Go / No-Go Decision
 
@@ -272,6 +275,7 @@ Go 근거:
 조건:
 
 - dirty `main` 상태를 정리해 release 브랜치 또는 PR로 커밋한다.
+- 새 Vercel Preview URL이 운영 도메인으로 redirect되지 않는지 확인한다.
 - Preview 배포에서 실계정 기준 결과/결제/보관함 재열람 smoke를 수행한다.
 - 운영 배포 전 Toss live 또는 sandbox/live 분리 확인을 완료한다.
 
