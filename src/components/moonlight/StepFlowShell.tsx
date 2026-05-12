@@ -9,6 +9,7 @@ interface StepFlowShellProps {
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
+  progressLabel?: string;
 }
 
 export function StepFlowShell({
@@ -19,6 +20,7 @@ export function StepFlowShell({
   children,
   footer,
   className,
+  progressLabel = '입력 단계 진행률',
 }: StepFlowShellProps) {
   const safeTotal = Math.max(1, totalSteps);
   const safeCurrent = Math.min(Math.max(1, currentStep), safeTotal);
@@ -33,7 +35,15 @@ export function StepFlowShell({
           </span>
           <span>{progress}%</span>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--gyeol-surface)]">
+        <div
+          className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--gyeol-surface)]"
+          role="progressbar"
+          aria-label={progressLabel}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+          aria-valuetext={`${safeCurrent} / ${safeTotal}`}
+        >
           <span
             className="block h-full rounded-full bg-[var(--gyeol-moon)]"
             style={{ width: `${progress}%` }}

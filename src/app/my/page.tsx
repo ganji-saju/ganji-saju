@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { FlowEntryList, type FlowEntryItem } from '@/components/moonlight/FlowEntryList';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
 import { LightSection } from '@/components/moonlight/LightSection';
 import { PageIntro } from '@/components/moonlight/PageIntro';
+import { ReportList, type ReportBadgeKind, type ReportListItem } from '@/components/moonlight/ReportList';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
 import {
@@ -27,12 +28,13 @@ function formatSavedDate(value: string) {
   }).format(new Date(value));
 }
 
-function getPurchasedReportBadge(productId: string) {
-  if (productId === 'saju_personality_mini') return '성향사주';
-  if (productId === 'personality_compatibility_mini') return '성향궁합';
-  if (productId === 'love-question') return '궁합';
-  if (productId === 'today-detail') return '오늘';
-  return '사주';
+function getPurchasedReportKind(productId: string): ReportBadgeKind {
+  if (productId === 'saju_personality_mini') return 'saju-personality';
+  if (productId === 'personality_compatibility_mini') return 'personality-compatibility';
+  if (productId === 'love-question') return 'compatibility';
+  if (productId === 'today-detail') return 'today';
+  if (productId === 'ai_chat' || productId === 'dialogue') return 'dialogue';
+  return 'saju';
 }
 
 export default async function MyPage() {
@@ -50,14 +52,14 @@ export default async function MyPage() {
         dashboard.subscription.renewsAt
       )}`
     : '아직 가입한 멤버십이 없습니다';
-  const reportRows: Array<FlowEntryItem & { createdAt: string }> = [
+  const reportRows: Array<ReportListItem & { createdAt: string }> = [
     ...dashboard.purchasedResults.map((report) => ({
       id: `purchased-${report.id}`,
       title: report.title,
       description: report.summary ?? `${formatSavedDate(report.createdAt)}에 열어본 리포트`,
-      href: report.href === '/my/results' ? '/my' : report.href,
-      badge: getPurchasedReportBadge(report.productId),
-      meta: '다시 보기',
+      href: report.href === '/my/results' ? '/my#recent-reports' : report.href,
+      kind: getPurchasedReportKind(report.productId),
+      meta: '재열람',
       createdAt: report.createdAt,
     })),
     ...dashboard.recentReadings.map((reading) => ({
@@ -65,14 +67,14 @@ export default async function MyPage() {
       title: reading.dayPillarLabel ? `${reading.dayPillarLabel} 사주 풀이` : '저장한 사주 풀이',
       description: `${formatSavedDate(reading.createdAt)} 저장 · 생년월일시는 목록에 표시하지 않습니다`,
       href: `/saju/${reading.id}`,
-      badge: '사주',
-      meta: '열기',
+      kind: 'saju' as const,
+      meta: '재열람',
       createdAt: reading.createdAt,
     })),
   ]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 8);
-  const reportItems: FlowEntryItem[] = reportRows.map(({ createdAt: _createdAt, ...item }) => item);
+  const reportItems: ReportListItem[] = reportRows.map(({ createdAt: _createdAt, ...item }) => item);
 
   return (
     <div className="space-y-5">
@@ -129,7 +131,7 @@ export default async function MyPage() {
             id: item.title,
             title: item.title,
             description: item.description,
-            href: item.href === '/my/results' ? '#recent-reports' : item.href,
+            href: item.href,
             meta: '이동',
           }))}
         />
@@ -142,13 +144,10 @@ export default async function MyPage() {
         className="pb-5"
       >
         <div id="recent-reports">
-          {reportItems.length > 0 ? (
-            <FlowEntryList items={reportItems} />
-          ) : (
-            <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4 text-sm leading-6 text-[var(--gyeol-muted)]">
-              아직 저장된 풀이가 없습니다. 사주나 성향사주를 본 뒤 MY에서 다시 확인할 수 있습니다.
-            </div>
-          )}
+          <ReportList
+            items={reportItems}
+            empty="아직 저장된 풀이가 없습니다. 사주나 성향사주를 본 뒤 MY에서 다시 확인할 수 있습니다."
+          />
         </div>
       </LightSection>
     </div>

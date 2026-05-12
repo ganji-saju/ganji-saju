@@ -133,7 +133,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'consult',
     title: '대화 상담',
-    desc: '선생님께 묻기',
+    desc: '12간지에게 묻기',
     price: '무료 시작',
     href: '/dialogue',
     zodiac: 'snake',
@@ -180,5 +180,11 @@ export const GANGI_FREE_HUB_ITEMS = [
     zodiac: 'horse',
     title: '띠운세',
     desc: '내 띠 기준 오늘 흐름',
+  },
+  {
+    href: '/star-sign',
+    zodiac: 'rabbit',
+    title: '별자리',
+    desc: '열두 별자리 오늘 흐름',
   },
 ] as const;

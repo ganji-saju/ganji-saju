@@ -14,12 +14,12 @@ import {
 } from '@/lib/dialogue-experts';
 
 export const metadata: Metadata = {
-  title: '대화',
-  description: '달빛인생 대화방에서 궁금한 일을 바로 물어보세요.',
+  title: '12간지 대화방',
+  description: '달빛인생 12간지 캐릭터와 사주와 성향의 결을 이어 물어보세요.',
   alternates: { canonical: '/dialogue' },
 };
 
-const RECOMMENDED_EXPERT_IDS = ['dragon', 'rat', 'sheep', 'ox'] as const;
+const RECOMMENDED_EXPERT_IDS = ['rat', 'rabbit', 'dragon'] as const;
 
 function buildExpertItem(expert: (typeof DIALOGUE_EXPERTS)[number]) {
   return {
@@ -28,7 +28,7 @@ function buildExpertItem(expert: (typeof DIALOGUE_EXPERTS)[number]) {
     description: `${expert.label} · ${expert.description}`,
     href: `/dialogue/${expert.id}`,
     badge: expert.topic,
-    meta: '선택',
+    meta: '대화',
   };
 }
 
@@ -80,9 +80,9 @@ export default async function DialoguePage({
       <AppPage className="gangi-subpage space-y-6">
         <GangiPageHeader title="대화방" />
         <PageIntro
-          eyebrow="AI Dialogue"
-          title="풀이를 보고 더 묻고 싶을 때"
-          description="추천 선생님을 먼저 고르고, 필요하면 전체 분야에서 더 좁혀 물어보세요."
+          eyebrow="12 Zodiac Dialogue"
+          title="12간지 캐릭터와 대화하기"
+          description="사주와 성향의 결을 캐릭터별 관점으로 풀어봅니다. 자축인묘 12간지 캐릭터가 질문의 방향을 함께 잡아드려요."
           actions={
             <Link href="/saju/personality" className="gangi-primary-button">
               성향사주 보고 묻기
@@ -91,9 +91,9 @@ export default async function DialoguePage({
         />
 
         <LightSection
-          eyebrow="추천 선생님"
-          title="자주 이어지는 질문 4가지"
-          description="사주, 성향, 관계, 오늘 흐름을 먼저 열어둡니다."
+          eyebrow="오늘의 추천 간지"
+          title="지금 많이 이어지는 질문 3가지"
+          description="오늘의 흐름, 관계의 말투, 큰 방향을 먼저 열어둡니다."
           surface="soft"
         >
           <FlowEntryList
@@ -107,13 +107,13 @@ export default async function DialoguePage({
         </LightSection>
 
         <LightSection
-          eyebrow="전체 선생님"
-          title="더 좁혀서 묻기"
-          description="필요할 때만 펼쳐보는 compact list입니다."
+          eyebrow="전체 12간지"
+          title="캐릭터별 관점으로 더 좁혀 묻기"
+          description="이미지가 없어도 한자와 동물 이름으로 가볍게 선택할 수 있는 compact list입니다."
         >
           <details>
             <summary className="cursor-pointer rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-3 text-sm font-bold text-[var(--gyeol-text)]">
-              12간지 전체 분야 보기
+              전체 12간지 보기
             </summary>
             <FlowEntryList
               className="mt-3"
@@ -126,7 +126,7 @@ export default async function DialoguePage({
         </LightSection>
 
         <SafetyNotice>
-          대화방은 사주와 성향 콘텐츠를 바탕으로 생각을 정리하는 참고용 상담입니다. 위기상황,
+          12간지 대화방은 사주와 성향 콘텐츠를 바탕으로 생각을 정리하는 참고용 상담입니다. 위기상황,
           의료·법률·투자 판단은 전문 도움을 우선해 주세요.
         </SafetyNotice>
       </AppPage>

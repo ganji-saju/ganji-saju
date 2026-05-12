@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, type MouseEvent, type ReactNode } from 'react';
+import { useEffect } from 'react';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import {
   MOONLIGHT_ANALYTICS_EVENTS,
@@ -41,22 +41,28 @@ function buildHomeAnalyticsPayload(element: HTMLElement) {
   return payload;
 }
 
-export function HomeAnalyticsBoundary({ children }: { children: ReactNode }) {
+export function HomeAnalyticsBoundary() {
   useEffect(() => {
     trackMoonlightEvent('home_viewed', { source: 'home_moonlight_flow' });
+
+    function handleTrackedClick(event: MouseEvent) {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const element = target.closest<HTMLElement>('[data-analytics-event]');
+      const eventName = element?.dataset.analyticsEvent;
+
+      if (!eventName || !isMoonlightAnalyticsEvent(eventName)) return;
+
+      trackMoonlightEvent(eventName, buildHomeAnalyticsPayload(element));
+    }
+
+    document.addEventListener('click', handleTrackedClick);
+
+    return () => {
+      document.removeEventListener('click', handleTrackedClick);
+    };
   }, []);
 
-  const handleTrackedClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    const element = target.closest<HTMLElement>('[data-analytics-event]');
-    const eventName = element?.dataset.analyticsEvent;
-
-    if (!eventName || !isMoonlightAnalyticsEvent(eventName)) return;
-
-    trackMoonlightEvent(eventName, buildHomeAnalyticsPayload(element));
-  }, []);
-
-  return <div onClick={handleTrackedClick}>{children}</div>;
+  return null;
 }

@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import {
   STAR_SIGN_BLUEPRINT,
   STAR_SIGN_META,
@@ -14,7 +13,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildStarSignSlugFromProfile } from '@/lib/profile-personalization';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '별자리',
@@ -41,31 +40,18 @@ export default async function StarSignPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="star-sign"
-              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]"
-            >
-              별자리
-            </Badge>,
-            <Badge
-              key="free"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              빠른 무료 탐색
-            </Badge>,
-          ]}
-          title="별자리를 골라 오늘운을 보세요"
-          description="열두 별자리 중 내 별자리를 누르면 바로 오늘 흐름을 볼 수 있습니다."
+        <PageIntro
+          eyebrow="오늘의 결 · 별자리"
+          title="별자리를 골라 오늘 흐름을 보세요"
+          description="열두 별자리 중 내 별자리를 누르면 오늘의 포인트와 바로 할 행동을 짧게 확인할 수 있습니다."
         />
 
-        <section className="gangi-card-panel p-5">
-          <SectionHeader
+        <LightSection
             eyebrow="12별자리 바로 선택"
             title="내 별자리를 골라보세요"
-            titleClassName="text-2xl"
-          />
+            description="모바일에서 누르기 쉽게 compact list로 정리했습니다."
+            surface="soft"
+        >
           <div className="gangi-star-sign-grid mt-5">
             {STAR_SIGN_FORTUNES.map((item) => {
               const meta = STAR_SIGN_META[item.slug as keyof typeof STAR_SIGN_META];
@@ -84,38 +70,65 @@ export default async function StarSignPage() {
               );
             })}
           </div>
-        </section>
+        </LightSection>
 
-        <SectionSurface surface="panel" size="lg" className="text-center">
-            <SectionHeader
+        <LightSection
               eyebrow={hasPersonalizedProfile ? 'MY 프로필 기준 별자리' : '오늘의 별자리'}
-              title={hasPersonalizedProfile ? `선생님은 ${featured.label}` : featured.label}
-              titleClassName="text-3xl text-[var(--app-sky)]"
+              title={hasPersonalizedProfile ? `내 별자리는 ${featured.label}` : featured.label}
               description={featured.dateRange}
-              descriptionClassName="mx-auto text-[var(--app-copy-muted)]"
-            />
+              className="text-center"
+        >
             <GangiStarSignIcon
               slug={featured.slug}
               symbol={featuredMeta.symbol}
               size="lg"
               className="mx-auto mt-6"
             />
-            <FeatureCard
-              className="mt-6 text-left"
-              surface="soft"
-              eyebrow="오늘 먼저 닿는 흐름"
-              title={featured.summary}
-              description={featured.action}
-            />
-            <ActionCluster className="mt-5">
-              <Link href={`/star-sign/${featured.slug}`} className="gangi-primary-button">
-                {hasPersonalizedProfile ? '내 별자리 바로 보기' : '별자리 흐름 자세히 보기'}
-              </Link>
-              <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-secondary-button">
-                {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
-              </Link>
-            </ActionCluster>
-        </SectionSurface>
+            <p className="mx-auto mt-5 max-w-2xl text-left text-sm leading-7 text-[var(--gyeol-muted)]">
+              <strong className="mb-1 block text-[var(--gyeol-text)]">오늘 먼저 닿는 흐름</strong>
+              {featured.summary} {featured.action}
+            </p>
+        </LightSection>
+
+        <LightSection
+          eyebrow="다음 흐름"
+          title="별빛을 본 뒤 필요한 풀이로 이어가기"
+          description="별자리는 오늘을 가볍게 보는 입구입니다. 더 깊은 기준은 사주와 성향사주, 남은 질문은 12간지 대화로 이어보세요."
+        >
+          <FlowEntryList
+            items={[
+              {
+                id: 'featured-star',
+                href: `/star-sign/${featured.slug}`,
+                title: hasPersonalizedProfile ? '내 별자리 바로 보기' : '별자리 흐름 자세히 보기',
+                description: `${featured.label}의 오늘 포인트를 확인합니다.`,
+                meta: '무료',
+              },
+              {
+                id: 'saju',
+                href: readingSlug ? `/saju/${readingSlug}` : '/saju/new',
+                title: readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기',
+                description: '별빛 언어를 내 사주의 큰 흐름으로 이어봅니다.',
+                meta: '이어보기',
+              },
+              {
+                id: 'saju-personality',
+                href: '/saju/personality',
+                title: '성향사주로 이어보기',
+                description: '사주 네 기둥과 16유형 성향으로 내 선택 습관을 봅니다.',
+                meta: '깊이보기',
+              },
+              {
+                id: 'dialogue',
+                href: '/dialogue',
+                title: '12간지 캐릭터에게 이어 묻기',
+                description: '오늘 남은 질문을 대화방에서 바로 이어갑니다.',
+                meta: '대화',
+              },
+            ]}
+          />
+        </LightSection>
+        <SafetyNotice />
       </AppPage>
     </AppShell>
   );

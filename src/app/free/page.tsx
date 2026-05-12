@@ -10,7 +10,7 @@ import { GANGI_FREE_HUB_ITEMS } from '@/content/gangi-market';
 
 export const metadata: Metadata = {
   title: '무료운세',
-  description: '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.',
+  description: '오늘운세, 타로 한 장, 띠운세, 별자리를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.',
   alternates: { canonical: '/free' },
 };
 
@@ -22,12 +22,12 @@ export default function FreeFortunePage() {
         <PageIntro
           eyebrow="Free Start"
           title="무료로 바로 보는 오늘의 결"
-          description="가입 없이도 오늘운세, 타로, 내 띠 흐름을 먼저 확인할 수 있어요."
+          description="가입 없이도 오늘운세, 타로, 내 띠, 별자리 흐름을 먼저 확인할 수 있어요."
         />
         <LightSection
           eyebrow="무료 시작"
           title="짧게 보고 필요한 풀이만 이어가기"
-          description="카드형 나열보다 바로 선택할 수 있는 리스트로 정리했습니다."
+          description="오늘의 가벼운 흐름을 먼저 보고, 남는 질문은 성향사주나 12간지 대화로 이어보세요."
           surface="soft"
         >
           <FlowEntryList

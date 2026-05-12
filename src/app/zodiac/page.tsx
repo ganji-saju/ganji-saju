@@ -1,17 +1,16 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { ZODIAC_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
-import { GANGI_ZODIAC, GangiCharacter } from '@/components/gangi/gangi-ui';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { GANGI_ZODIAC } from '@/components/gangi/gangi-ui';
 
 export const metadata: Metadata = {
   title: '내 띠 운세',
@@ -34,78 +33,91 @@ export default async function ZodiacPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="zodiac"
-              className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]"
-            >
-              띠운세
-            </Badge>,
-            <Badge
-              key="free"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              빠른 무료 탐색
-            </Badge>,
-          ]}
-          title="내 띠 하나를 먼저 봅니다"
+        <PageIntro
+          eyebrow="오늘의 결 · 띠운세"
+          title="내 띠 하나로 오늘 흐름을 가볍게 봅니다"
+          description="12간지 중 내 띠를 고르면 오늘의 포인트와 바로 할 행동을 짧게 확인할 수 있어요."
         />
 
-        <section className="gangi-card-panel p-5">
-          <SectionHeader
+        <LightSection
             eyebrow="12띠 바로 선택"
             title="띠를 골라 오늘운을 보세요"
-            titleClassName="text-2xl"
+            description="작은 카드 격자 대신 누르기 쉬운 row로 정리했습니다."
+            surface="soft"
+        >
+          <FlowEntryList
+            className="sm:grid-cols-2"
+            items={GANGI_ZODIAC.map((zodiac, index) => ({
+              id: zodiac.key,
+              href: `/zodiac/${zodiac.key}`,
+              title: zodiac.name,
+              description: `${index + 1}번째 12간지 흐름`,
+              badge: String(index + 1).padStart(2, '0'),
+              meta: '보기',
+            }))}
           />
-          <div className="mt-5 grid grid-cols-4 gap-2">
-            {GANGI_ZODIAC.map((zodiac) => (
-              <Link
-                key={zodiac.key}
-                href={`/zodiac/${zodiac.key}`}
-                className="rounded-[0.9rem] border border-[var(--app-line)] bg-white px-2 py-3 text-center"
-              >
-                <GangiCharacter zodiac={zodiac.key} size="sm" className="mx-auto" />
-                <span className="mt-1.5 block text-[11px] font-bold text-[var(--app-ink)]">{zodiac.name}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        </LightSection>
 
         <section className="grid gap-6">
-          <SectionSurface surface="panel" size="lg" className="text-center">
-            <SectionHeader
+          <LightSection
               eyebrow={hasPersonalizedProfile ? '내 띠' : '생년월일로 확인'}
               title={hasPersonalizedProfile && featured ? `내 띠는 ${featured.label}` : '내 띠를 자동으로 맞춰볼까요?'}
-              titleClassName="text-3xl text-[var(--app-ink)]"
-            />
-            <div className="mt-6 text-6xl">{featuredMeta?.symbol ?? '🎂'}</div>
+              description={
+                featured && featuredMeta
+                  ? `${featuredMeta.yearlyMessage}. ${featured.todayFocus}`
+                  : '생년월일을 입력하면 입춘 기준으로 내 띠를 더 정확히 이어볼 수 있습니다.'
+              }
+          >
             {featured && featuredMeta ? (
-              <FeatureCard
-                className="mt-6 text-left"
-                surface="soft"
-                eyebrow={`${featured.label}의 2026년`}
-                description={`${featuredMeta.yearlyMessage}. ${featured.todayFocus}`}
-              />
+              <p className="text-5xl" aria-hidden="true">{featuredMeta.symbol}</p>
             ) : (
-              <ActionCluster className="mt-6">
-                <Link href="/saju/new" className="gangi-primary-button">
-                  생년월일로 내 띠 확인
-                </Link>
-              </ActionCluster>
-            )}
-          </SectionSurface>
-
-          <ActionCluster>
-            {featured ? (
-              <Link href={`/zodiac/${featured.slug}`} className="gangi-primary-button">
-                내 띠 바로 보기
+              <Link href="/saju/new" className="gangi-primary-button">
+                생년월일로 내 띠 확인
               </Link>
-            ) : null}
-            <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-secondary-button">
-              {readingSlug ? '내 사주로 이어보기' : '생년월일로 확인'}
-            </Link>
-          </ActionCluster>
+            )}
+          </LightSection>
+
+          <LightSection
+            eyebrow="다음 흐름"
+            title="짧게 본 뒤 필요한 풀이로 이어가기"
+            description="띠운세는 무료 입구입니다. 더 깊은 자기이해나 질문은 성향사주와 12간지 대화로 이어보세요."
+          >
+            <FlowEntryList
+              items={[
+                ...(featured
+                  ? [{
+                      id: 'featured-zodiac',
+                      href: `/zodiac/${featured.slug}`,
+                      title: '내 띠 바로 보기',
+                      description: `${featured.label}의 오늘 포인트를 확인합니다.`,
+                      meta: '무료',
+                    }]
+                  : []),
+                {
+                  id: 'saju',
+                  href: readingSlug ? `/saju/${readingSlug}` : '/saju/new',
+                  title: readingSlug ? '내 사주로 이어보기' : '생년월일로 확인',
+                  description: '오늘 흐름을 내 사주의 큰 결로 이어봅니다.',
+                  meta: '이어보기',
+                },
+                {
+                  id: 'saju-personality',
+                  href: '/saju/personality',
+                  title: '성향사주로 이어보기',
+                  description: '사주 네 기둥과 16유형 성향으로 선택 습관을 봅니다.',
+                  meta: '깊이보기',
+                },
+                {
+                  id: 'dialogue',
+                  href: '/dialogue',
+                  title: '12간지 캐릭터에게 이어 묻기',
+                  description: '오늘의 띠 흐름에서 남은 질문을 대화로 이어갑니다.',
+                  meta: '대화',
+                },
+              ]}
+            />
+          </LightSection>
+          <SafetyNotice />
         </section>
       </AppPage>
     </AppShell>

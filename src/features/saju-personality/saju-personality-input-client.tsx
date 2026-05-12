@@ -19,6 +19,7 @@ import { AppPage as MoonlightAppPage } from '@/components/moonlight/AppPage';
 import { AxisChipGrid } from '@/components/moonlight/AxisChipGrid';
 import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
 import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { StepFlowShell } from '@/components/moonlight/StepFlowShell';
 import { StickyActionBar } from '@/components/moonlight/StickyActionBar';
@@ -133,6 +134,16 @@ const SAJU_PERSONALITY_STEPS: Array<{
     description: '입력한 내용을 확인하고 무료 성향사주 결과로 이동합니다.',
   },
 ];
+
+const PERSONALITY_TYPE_ITEMS = PERSONALITY_TYPE_CODES.map((code) => {
+  const profile = getPersonalityTypeProfile(code);
+
+  return {
+    id: code,
+    label: code,
+    value: profile.title,
+  };
+});
 
 function createInitialDraft(): UnifiedBirthEntryDraft {
   return {
@@ -377,16 +388,6 @@ function PersonalityInputPanel({
       ? getPersonalityTypeProfile(checkResult.typeCode)
       : null;
 
-  const typeItems = PERSONALITY_TYPE_CODES.map((code) => {
-    const profile = getPersonalityTypeProfile(code);
-
-    return {
-      id: code,
-      label: code,
-      value: profile.title,
-    };
-  });
-
   return (
     <div className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
       <div className="grid gap-2">
@@ -408,7 +409,7 @@ function PersonalityInputPanel({
       {state.mode === 'direct' ? (
         <div className="mt-5">
           <AxisChipGrid
-            items={typeItems}
+            items={PERSONALITY_TYPE_ITEMS}
             selectedId={state.typeCode}
             onSelect={(item) => onChange({ typeCode: item.id as PersonalityTypeCode })}
           />
@@ -750,6 +751,11 @@ export function SajuPersonalityInputClient() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <MoonlightAppPage className="gangi-subpage space-y-5" size="md">
+        <PageIntro
+          eyebrow="달빛 성향사주"
+          title="사주로 보는 타고난 결, 성향으로 보는 선택 습관"
+          description="年 月 日 時의 네 기둥과 I/E, S/N, T/F, J/P의 네 축을 함께 보되, 공식 검사처럼 단정하지 않는 참고용 자기이해 흐름입니다."
+        />
         <FusionStrip />
         <StepFlowShell
           currentStep={activeStepIndex + 1}

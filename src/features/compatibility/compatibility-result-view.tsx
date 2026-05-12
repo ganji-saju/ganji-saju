@@ -4,6 +4,7 @@ import {
   GangiPageHeader,
 } from '@/components/gangi/gangi-ui';
 import { AxisMeter } from '@/components/moonlight/AxisMeter';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { ResultShell } from '@/components/moonlight/ResultShell';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { SajuStrip } from '@/components/moonlight/SajuStrip';
@@ -39,6 +40,11 @@ export function CompatibilityResultView({
   return (
     <>
       <GangiPageHeader title="궁합 결과" backHref={retakeHref} />
+      <PageIntro
+        eyebrow="관계"
+        title="두 사람의 사주로 관계의 결을 봅니다"
+        description="기본 궁합은 두 사람의 생년월일시를 바탕으로 말투, 속도, 거리감을 참고용으로 정리합니다."
+      />
 
       <ResultShell
         title={compatibility.headline}

@@ -14,6 +14,8 @@ import { HomeAnalyticsBoundary } from '@/features/home/home-analytics-boundary';
 import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import { AppShell } from '@/shared/layout/app-shell';
 
+const ZODIAC_FLOW_GLYPHS = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'] as const;
+
 function trackedLinkProps({
   event,
   section,
@@ -65,10 +67,10 @@ function buildFlowItems(): readonly FlowEntryItem[] {
     {
       id: 'saju-personality',
       title: '01 나의 결 보기',
-      description: '사주 네 기둥과 16유형 성향으로 나의 선택 습관을 정리합니다.',
+      description: '사주×성향으로 내 선택 습관을 봅니다.',
       href: sajuPersonality?.href ?? HOME_ROUTES.sajuPersonality,
       badge: '성향사주',
-      meta: '무료 미리보기',
+      meta: '성향사주 시작',
       analyticsEvent: 'home_primary_feature_clicked',
       analyticsSection: 'flow_entry',
       analyticsTarget: 'saju_personality',
@@ -77,10 +79,10 @@ function buildFlowItems(): readonly FlowEntryItem[] {
     {
       id: 'personality-compatibility',
       title: '02 관계의 결 보기',
-      description: '나와 상대의 사주·성향 흐름을 함께 보고 관계의 리듬을 살핍니다.',
+      description: '두 사람의 사주와 성향이 어디서 닮고 어긋나는지 봅니다.',
       href: personalityCompatibility?.href ?? HOME_ROUTES.personalityCompatibility,
       badge: '성향궁합',
-      meta: '무료 미리보기',
+      meta: '성향궁합 시작',
       analyticsEvent: 'home_primary_feature_clicked',
       analyticsSection: 'flow_entry',
       analyticsTarget: 'personality_compatibility',
@@ -89,10 +91,10 @@ function buildFlowItems(): readonly FlowEntryItem[] {
     {
       id: 'today-flow',
       title: '03 오늘의 결 보기',
-      description: '오늘운세와 타로 한 장으로 지금 바로 고를 수 있는 흐름을 봅니다.',
+      description: '오늘운세, 타로, 띠, 별자리로 가볍게 시작합니다.',
       href: HOME_ROUTES.todayFortune,
       badge: '오늘운세',
-      meta: '무료',
+      meta: '오늘 흐름 보기',
       analyticsEvent: 'home_free_service_clicked',
       analyticsSection: 'flow_entry',
       analyticsTarget: 'today_fortune',
@@ -175,6 +177,26 @@ function TodayLine({ banner }: { banner: GangiHomeBanner | null }) {
           >
             타로 한 장 보기
           </HomeLink>
+          <HomeLink
+            href={HOME_ROUTES.zodiac}
+            variant="secondary"
+            event="home_free_service_clicked"
+            section="today_line"
+            target="zodiac"
+            serviceId="zodiac"
+          >
+            띠운세 보기
+          </HomeLink>
+          <HomeLink
+            href={HOME_ROUTES.starSign}
+            variant="secondary"
+            event="home_free_service_clicked"
+            section="today_line"
+            target="star_sign"
+            serviceId="star-sign"
+          >
+            별자리 보기
+          </HomeLink>
         </div>
       </div>
     </LightSection>
@@ -241,24 +263,36 @@ function ContinueSection({ isLoggedIn }: { isLoggedIn: boolean }) {
   );
 }
 
-function DialogueCta() {
+function ZodiacDialogueCta() {
   return (
     <LightSection
-      eyebrow="Dialogue"
-      title="풀이를 보고 더 묻기"
-      description="내 결과 관계의 결이 궁금해졌다면, 대화방에서 지금 질문으로 이어갈 수 있습니다."
+      eyebrow="Zodiac Dialogue"
+      title="12간지 캐릭터와 대화하기"
+      description="자축인묘 12간지 캐릭터가 사주와 성향의 결을 풀어줍니다."
       actions={
         <HomeLink
           href={HOME_ROUTES.dialogue}
           event="home_ai_dialogue_clicked"
-          section="dialogue"
+          section="zodiac_dialogue"
           target="dialogue"
           serviceId="dialogue"
         >
-          대화방 열기
+          12간지 대화방 열기
         </HomeLink>
       }
-    />
+    >
+      <div className="flex flex-wrap gap-1.5" aria-label="12간지 캐릭터 흐름">
+        {ZODIAC_FLOW_GLYPHS.map((glyph) => (
+          <span
+            key={glyph}
+            className="grid size-9 place-items-center rounded-full border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] text-sm font-bold text-[var(--gyeol-text)]"
+            aria-hidden="true"
+          >
+            {glyph}
+          </span>
+        ))}
+      </div>
+    </LightSection>
   );
 }
 
@@ -307,8 +341,8 @@ export async function GangiHomeClient({
 
   return (
     <AppShell header={<SiteHeader />} className="dalbit-market-shell">
-      <HomeAnalyticsBoundary>
-        <MoonlightPage className="home-redesign home-moonlight-flow" size="lg">
+      <HomeAnalyticsBoundary />
+      <MoonlightPage className="home-redesign home-moonlight-flow" size="lg">
           <FusionHero
             title="사주 네 기둥과 16유형 성향이 만나는 곳."
             description="나의 결과 관계의 결을 달빛처럼 천천히 읽어보세요."
@@ -396,11 +430,10 @@ export async function GangiHomeClient({
 
           <TodayLine banner={todayBanner} />
           <ContinueSection isLoggedIn={isLoggedIn} />
-          <DialogueCta />
+          <ZodiacDialogueCta />
           <PricingTeaser />
-          <SafetyNotice />
-        </MoonlightPage>
-      </HomeAnalyticsBoundary>
+        <SafetyNotice />
+      </MoonlightPage>
     </AppShell>
   );
 }

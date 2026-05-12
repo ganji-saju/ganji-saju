@@ -4,6 +4,7 @@
     radial-gradient(circle at 50% -10%, rgba(255, 79, 154, 0.09), transparent 34%),
     linear-gradient(180deg, #ffffff 0%, #fff8fc 52%, #ffffff 100%) !important;
   color: var(--app-ink) !important;
+  min-height: 100dvh;
 }
 
 .app-shell::before,
@@ -34,8 +35,8 @@
   background: rgba(255, 255, 255, 0.97) !important;
   color: var(--app-ink) !important;
   box-shadow: 0 10px 24px rgba(17, 17, 20, 0.07) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .app-top-header-inner,
@@ -171,7 +172,7 @@
 }
 
 .app-mobile-dock {
-  padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+  padding-bottom: max(var(--gyeol-space-3), env(safe-area-inset-bottom)) !important;
 }
 
 .app-mobile-dock-inner {
@@ -321,6 +322,18 @@
 
   .app-shell-with-navigation .app-shell-content {
     padding-bottom: 0 !important;
+  }
+
+  .app-mobile-dock {
+    display: none !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .app-top-header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: var(--gyeol-shadow-xs) !important;
   }
 }
 

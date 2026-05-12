@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-panel';
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
@@ -122,6 +125,12 @@ export function TodayFortuneDetailClient({
   return (
     <div className="gangi-subpage pb-8">
       <GangiPageHeader title="오늘 자세히 보기" backHref={resultHref} />
+      <PageIntro
+        eyebrow="오늘의 결 깊이보기"
+        title="오늘 남은 질문을 조금 더 좁혀봅니다"
+        description="무료 결과에서 이어지는 상세 풀이입니다. 결제·코인 권한 확인 뒤 열람 가능한 내용만 보여드립니다."
+        className="px-4 pt-3 sm:px-0"
+      />
 
       <div className="grid gap-5 px-4 py-6">
         {!sourceSessionId ? (
@@ -181,15 +190,23 @@ export function TodayFortuneDetailClient({
         {result ? <TodayPremiumPanel result={result} /> : null}
 
         {result ? (
-          <div className="grid gap-2 sm:grid-cols-2">
+          <LightSection
+            eyebrow="다음 흐름"
+            title="풀이가 남으면 이어서 물어보세요"
+            description="상세 결과를 바탕으로 12간지 캐릭터에게 오늘의 선택을 더 가볍게 물어볼 수 있습니다."
+            surface="soft"
+          >
+            <div className="grid gap-2 sm:grid-cols-2">
             <Link href={resultHref} className="rounded-full border border-[var(--app-line)] bg-white px-5 py-3 text-center text-sm font-semibold text-[var(--app-ink)]">
               무료 결과로 돌아가기
             </Link>
             <Link href="/dialogue" className="rounded-full bg-[var(--app-ink)] px-5 py-3 text-center text-sm font-semibold text-white">
-              이어서 묻기
+              12간지 캐릭터에게 이어 묻기
             </Link>
           </div>
+          </LightSection>
         ) : null}
+        <SafetyNotice />
       </div>
     </div>
   );

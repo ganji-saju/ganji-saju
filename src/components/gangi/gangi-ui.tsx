@@ -20,18 +20,18 @@ export const GANGI_ZODIAC = [
 export type GangiZodiacKey = (typeof GANGI_ZODIAC)[number]['key'];
 
 export const GANGI_TEACHERS = [
-  { zodiac: 'rat', name: '엠지쥐선생', topic: '성향 놀이', desc: '말투와 관계 방식을 가볍게 봅니다', href: '/guide?teacher=mg-ji', price: '준비 중' },
-  { zodiac: 'ox', name: '오늘소선생', topic: '오늘 루틴', desc: '오늘 할 행동을 생활 조언으로 봅니다', href: '/today-fortune?concern=general', price: '무료' },
-  { zodiac: 'tiger', name: '명리호선생', topic: '깊은 사주', desc: '반복되는 선택과 흐름을 정리합니다', href: '/myeongri', price: '990원~' },
-  { zodiac: 'rabbit', name: '타로토선생', topic: '타로', desc: '지금 마음을 카드 한 장으로 봅니다', href: '/tarot/daily', price: '무료' },
-  { zodiac: 'dragon', name: '사주용선생', topic: '사주 종합', desc: '내 흐름을 생년월일 기준으로 봅니다', href: '/saju/new', price: '550원~' },
-  { zodiac: 'snake', name: '꿈뱀선생', topic: '꿈해몽', desc: '꿈에 남은 장면을 마음 신호로 봅니다', href: '/guide?teacher=dream-baem', price: '준비 중' },
-  { zodiac: 'horse', name: '이동말선생', topic: '이동운', desc: '이직, 이사, 여행 타이밍을 봅니다', href: '/guide?teacher=move-mal', price: '준비 중' },
-  { zodiac: 'sheep', name: '궁합양선생', topic: '궁합', desc: '상대와의 거리감과 속도를 봅니다', href: '/compatibility/input', price: '990원~' },
-  { zodiac: 'monkey', name: '관상원선생', topic: '관상', desc: '인상과 분위기 풀이를 준비 중입니다', href: '/guide?teacher=face-won', price: '준비 중' },
-  { zodiac: 'rooster', name: '재물닭선생', topic: '재물운', desc: '돈이 새는 지점과 습관을 봅니다', href: '/saju/new?focus=money&product=money-pattern', price: '990원~' },
-  { zodiac: 'dog', name: '손금멍선생', topic: '손금', desc: '손바닥 단서 풀이를 준비 중입니다', href: '/guide?teacher=palm-meong', price: '준비 중' },
-  { zodiac: 'pig', name: '복돼지선생', topic: '행운', desc: '출석, 쿠폰, 작은 행운을 준비 중입니다', href: '/guide?teacher=luck-dwaeji', price: '준비 중' },
+  { zodiac: 'rat', name: '자(子)쥐', topic: '오늘의 흐름', desc: '빠른 선택과 기회 포착을 봅니다', href: '/dialogue/rat', price: '대화' },
+  { zodiac: 'ox', name: '축(丑)소', topic: '안정과 루틴', desc: '돈, 안정, 장기 선택을 봅니다', href: '/dialogue/ox', price: '대화' },
+  { zodiac: 'tiger', name: '인(寅)호랑이', topic: '커리어', desc: '도전과 실행력을 봅니다', href: '/dialogue/tiger', price: '대화' },
+  { zodiac: 'rabbit', name: '묘(卯)토끼', topic: '연애와 말투', desc: '관계 회복과 표현을 봅니다', href: '/dialogue/rabbit', price: '대화' },
+  { zodiac: 'dragon', name: '진(辰)용', topic: '큰 흐름', desc: '대운과 올해 방향을 봅니다', href: '/dialogue/dragon', price: '대화' },
+  { zodiac: 'snake', name: '사(巳)뱀', topic: '속마음', desc: '심리와 관계 분석을 봅니다', href: '/dialogue/snake', price: '대화' },
+  { zodiac: 'horse', name: '오(午)말', topic: '연락과 표현', desc: '연락, 표현, 이동을 봅니다', href: '/dialogue/horse', price: '대화' },
+  { zodiac: 'sheep', name: '미(未)양', topic: '가족과 회복', desc: '마음 안정과 가까운 관계를 봅니다', href: '/dialogue/sheep', price: '대화' },
+  { zodiac: 'monkey', name: '신(申)원숭이', topic: '전략', desc: '문제 해결과 협상을 봅니다', href: '/dialogue/monkey', price: '대화' },
+  { zodiac: 'rooster', name: '유(酉)닭', topic: '정리와 계획', desc: '좋은 날과 실행 순서를 봅니다', href: '/dialogue/rooster', price: '대화' },
+  { zodiac: 'dog', name: '술(戌)개', topic: '신뢰', desc: '약속과 장기 관계를 봅니다', href: '/dialogue/dog', price: '대화' },
+  { zodiac: 'pig', name: '해(亥)돼지', topic: '복과 재충전', desc: '여유, 마무리, 작은 복을 봅니다', href: '/dialogue/pig', price: '대화' },
 ] as const;
 
 export function GangiCharacter({

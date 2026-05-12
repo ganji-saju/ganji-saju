@@ -104,7 +104,7 @@ type ProfileConnectionState =
 
 function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): ChatMessage {
   const expert = getDialogueExpertMeta(expertId);
-  const teacherName = expert.teacherName;
+  const characterName = expert.teacherName;
 
   return {
     id: `assistant-intro-${expert.id}`,
@@ -116,8 +116,8 @@ function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): Ch
     expertId: expert.id,
     expertLabel: expert.label,
     text: roomMode
-      ? `안녕하세요, ${teacherName}이에요. 무엇이 궁금하세요?`
-      : `${teacherName}에게 편하게 물어보세요.`,
+      ? `안녕하세요. ${characterName} 캐릭터가 함께 볼게요. 무엇이 궁금하세요?`
+      : `${characterName} 캐릭터에게 편하게 물어보세요.`,
   };
 }
 
@@ -475,10 +475,10 @@ export function DialogueChatPanel({
             ) : null}
             <div className="mt-4 rounded-[1.15rem] border border-[var(--app-pink-line)] bg-white/85 px-4 py-4">
               <div className="flex items-start gap-3">
-                <GangiCharacter zodiac={selectedExpert.id} />
-                <div className="min-w-0 flex-1">
+                  <GangiCharacter zodiac={selectedExpert.id} />
+                  <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold text-[var(--app-pink-strong)]">
-                    선택한 전문 분야
+                    선택한 12간지 캐릭터
                   </div>
                   <div className="mt-1 text-lg font-bold leading-7 text-[var(--app-ink)]">
                     {selectedExpert.teacherName}
@@ -491,7 +491,7 @@ export function DialogueChatPanel({
 
               <details className="mt-3">
                 <summary className="cursor-pointer list-none text-xs font-bold text-[var(--app-pink-strong)]">
-                  전문 분야 바꾸기
+                  12간지 캐릭터 바꾸기
                 </summary>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {DIALOGUE_EXPERTS.map((expert) => (
@@ -626,7 +626,7 @@ export function DialogueChatPanel({
                 ? 'gangi-chat-input'
                 : 'min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60'
             }
-            placeholder={`${selectedExpert.teacherName}에게 물어보기`}
+            placeholder={`${selectedExpert.teacherName} 캐릭터에게 물어보기`}
           />
           <button
             type="submit"

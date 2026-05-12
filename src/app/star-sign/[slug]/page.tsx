@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { ResultShell } from '@/components/moonlight/ResultShell';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import {
   STAR_SIGN_META,
 } from '@/content/moonlight';
@@ -14,7 +14,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug } from '@/lib/profile-personalization';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -59,33 +59,18 @@ export default async function StarSignDetailPage({ params }: Props) {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="sign"
-              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]"
-            >
-              {meta.symbol} {item.label}
-            </Badge>,
-            <Badge
-              key="range"
-              className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-            >
-              {item.dateRange}
-            </Badge>,
-          ]}
+        <PageIntro
+          eyebrow="오늘의 결 · 별자리"
           title={`${item.label}에게 오늘 별빛이 전하는 말`}
           description={item.summary}
         />
 
-        <SectionSurface surface="panel" size="lg" className="text-center">
-            <SectionHeader
-              eyebrow="오늘의 별자리"
-              title={item.label}
-              titleClassName="text-3xl text-[var(--app-sky)]"
-              description={item.todayFocus}
-              descriptionClassName="mx-auto max-w-xl text-[var(--app-copy)]"
-            />
+        <ResultShell
+          title={`${meta.symbol} ${item.label}`}
+          summary={item.todayFocus}
+          keywords={[item.dateRange, '무료 별자리', '오늘의 결']}
+        >
+          <LightSection eyebrow="오늘의 별자리" title={item.label} className="text-center" surface="soft">
             <GangiStarSignIcon
               slug={item.slug}
               symbol={meta.symbol}
@@ -93,38 +78,56 @@ export default async function StarSignDetailPage({ params }: Props) {
               className="mx-auto mt-6"
             />
 
-            <FeatureCard
-              className="mt-6 text-left"
-              surface="soft"
-              eyebrow="행동 제안"
-              description={item.action}
-            />
-        </SectionSurface>
+            <p className="mx-auto mt-6 max-w-2xl text-left text-sm leading-7 text-[var(--gyeol-muted)]">
+              <strong className="mb-1 block text-[var(--gyeol-text)]">행동 제안</strong>
+              {item.action}
+            </p>
+          </LightSection>
 
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
+          <LightSection
             eyebrow="다음으로 이어보기"
             title="별빛 언어 다음에는 더 깊은 기준으로 넘어갈 수 있습니다"
-            titleClassName="text-3xl"
-            actions={
-              <ActionCluster>
-                <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-primary-button">
-                  {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
-                </Link>
-                <Link href="/star-sign" className="gangi-secondary-button">
-                  별자리 목록으로 돌아가기
-                </Link>
-              </ActionCluster>
-            }
-          />
-        </SectionSurface>
+            description="별자리는 오늘을 짧게 보는 입구입니다. 내 사주, 성향사주, 12간지 대화로 필요한 만큼만 이어보세요."
+          >
+            <FlowEntryList
+              items={[
+                {
+                  id: 'saju',
+                  href: readingSlug ? `/saju/${readingSlug}` : '/saju/new',
+                  title: readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기',
+                  description: '별빛 흐름을 내 사주의 큰 결로 이어봅니다.',
+                  meta: '이어보기',
+                },
+                {
+                  id: 'saju-personality',
+                  href: '/saju/personality',
+                  title: '성향사주로 이어보기',
+                  description: '사주 네 기둥과 16유형 성향으로 내 선택 습관을 봅니다.',
+                  meta: '깊이보기',
+                },
+                {
+                  id: 'dialogue',
+                  href: '/dialogue',
+                  title: '12간지 캐릭터에게 이어 묻기',
+                  description: '오늘 남은 질문을 대화방에서 바로 이어갑니다.',
+                  meta: '대화',
+                },
+                {
+                  id: 'star-list',
+                  href: '/star-sign',
+                  title: '별자리 목록으로 돌아가기',
+                  description: '다른 별자리의 흐름도 가볍게 봅니다.',
+                  meta: '목록',
+                },
+              ]}
+            />
+          </LightSection>
 
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
+          <LightSection
             eyebrow="다른 별자리"
             title="다른 별자리도 바로 볼 수 있어요"
-            titleClassName="text-2xl"
-          />
+            surface="soft"
+          >
 
           <div className="gangi-star-sign-grid mt-5">
             {relatedItems.map((entry) => {
@@ -143,7 +146,9 @@ export default async function StarSignDetailPage({ params }: Props) {
               );
             })}
           </div>
-        </SectionSurface>
+          </LightSection>
+          <SafetyNotice />
+        </ResultShell>
       </AppPage>
     </AppShell>
   );

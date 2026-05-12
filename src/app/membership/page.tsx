@@ -78,8 +78,8 @@ export default async function MembershipPage({
 
         <PageIntro
           eyebrow="상품 안내"
-          title="오늘은 가볍게, 필요하면 깊게 봅니다"
-          description="무료 운세를 먼저 보고, 마음에 남는 질문만 소액 풀이·보관형 리포트·대화 멤버십으로 이어가세요."
+          title="무료로 시작하고, 필요한 만큼만 깊게 봅니다"
+          description="무료 운세를 먼저 보고, 마음에 남는 질문만 990원 깊이보기·보관형 리포트·대화 멤버십으로 이어가세요."
           actions={
             <>
               <Link href="/today-fortune?concern=general" className="gangi-primary-button">

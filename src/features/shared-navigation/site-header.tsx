@@ -242,13 +242,14 @@ function NavLinkGroup({
             key={item.label}
             href={item.href}
             data-active={active}
+            aria-current={active ? 'page' : undefined}
             scroll={false}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
           >
             <span aria-hidden="true" style={{ color: meta.accent }}>
               {meta.glyph}
             </span>
-            <span>{getMobileDockLabel(item)}</span>
+            <span>{item.label}</span>
           </Link>
         );
       })}
@@ -287,7 +288,7 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
   );
 }
 
-function MobileChrome({
+function SiteHeaderChrome({
   pathname,
   user,
   credits,
@@ -323,10 +324,10 @@ function MobileChrome({
 
   return (
     <>
-      <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95 backdrop-blur">
+      <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95">
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="app-top-brand min-w-0">
+            <Link href="/" className="app-top-brand min-w-0" aria-label="달빛인생 홈으로 이동">
               <div className="app-brand-lockup">
                 <div className="app-brand-mini-logo">
                   <span>달</span>
@@ -360,13 +361,9 @@ function MobileChrome({
                 <Bell className="h-5 w-5" />
               </Link>
               {user ? (
-                <button
-                  type="button"
-                  onClick={onSignOut}
-                  className="app-top-login inline-flex"
-                >
-                  로그아웃
-                </button>
+                <Link href="/my" className="app-top-login inline-flex">
+                  마이페이지
+                </Link>
               ) : (
                 <Link href={authHref} className="app-top-login inline-flex">
                   로그인
@@ -536,29 +533,6 @@ function MobileChrome({
           ) : null}
         </div>
 
-        <div className="app-top-header-shortcuts hidden border-t border-[var(--app-line)] bg-[var(--app-surface-muted)]">
-          <div className="app-top-category-inner mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-8 py-3">
-            {HEADER_SECONDARY_NAV_ITEMS.map((item) => {
-              const active = matchesPath(item, pathname);
-
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  data-active={active}
-                  className={cn(
-                    'app-top-category-chip shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors',
-                    active
-                      ? 'border-[var(--app-gold)]/40 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
-                      : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)] hover:border-[var(--app-line-strong)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
       </header>
 
       <MobileBottomNav pathname={pathname} />
@@ -739,7 +713,7 @@ export default function SiteHeader() {
 
   return (
     <>
-      <MobileChrome
+      <SiteHeaderChrome
         pathname={pathname}
         user={user}
         credits={credits}

@@ -15,6 +15,7 @@ interface AxisChipGridProps {
   className?: string;
   selectedId?: string;
   onSelect?: (item: AxisChipItem) => void;
+  ariaLabel?: string;
 }
 
 function AxisChipContent({ item }: { item: AxisChipItem }) {
@@ -33,9 +34,15 @@ function AxisChipContent({ item }: { item: AxisChipItem }) {
   );
 }
 
-export function AxisChipGrid({ items, className, selectedId, onSelect }: AxisChipGridProps) {
+export function AxisChipGrid({
+  items,
+  className,
+  selectedId,
+  onSelect,
+  ariaLabel = '16유형 성향 선택',
+}: AxisChipGridProps) {
   return (
-    <div className={cn('grid grid-cols-2 gap-2 sm:grid-cols-3', className)}>
+    <div className={cn('grid grid-cols-2 gap-2 sm:grid-cols-3', className)} aria-label={ariaLabel}>
       {items.map((item) => {
         const selected = selectedId === item.id;
         const itemClassName = cn(

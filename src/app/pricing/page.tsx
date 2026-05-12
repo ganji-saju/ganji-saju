@@ -10,6 +10,8 @@ import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
 import {
   PAYMENT_PACKAGES,
   formatWon,
+  formatPaymentPackagePrice,
+  getMembershipPackage,
 } from '@/lib/payments/catalog';
 import { PERSONALITY_COMPATIBILITY_MINI_PRICE } from '@/lib/payments/personality-compatibility';
 import { SAJU_PERSONALITY_MINI_PRICE } from '@/lib/payments/saju-personality';
@@ -25,6 +27,10 @@ export const metadata: Metadata = {
 
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits' || item.id === 'subscription_30');
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
+const REPRESENTATIVE_MEMBERSHIP_PACKAGE = getMembershipPackage('premium');
+const REPRESENTATIVE_MEMBERSHIP_PRICE = REPRESENTATIVE_MEMBERSHIP_PACKAGE
+  ? formatPaymentPackagePrice(REPRESENTATIVE_MEMBERSHIP_PACKAGE)
+  : '월 9,900원';
 
 export default function PricingPage() {
   return (
@@ -87,7 +93,7 @@ export default function PricingPage() {
               eyebrow="Membership"
               title="대화 멤버십"
               description="풀이를 본 뒤 생활 질문으로 계속 이어 묻고 싶을 때 선택합니다."
-              price="월 구독"
+              price={REPRESENTATIVE_MEMBERSHIP_PRICE}
               href="/membership"
               ctaLabel="비교"
             />

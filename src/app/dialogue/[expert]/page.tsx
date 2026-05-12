@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!expertId) {
     return {
       title: '대화방',
-      description: '달빛인생 12지신 대화방입니다.',
+      description: '달빛인생 12간지 캐릭터 대화방입니다.',
     };
   }
 
@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${meta.teacherName} 대화방`,
-    description: `${meta.label}에 맞춰 궁금한 일을 바로 물어보는 달빛인생 대화방입니다.`,
+    description: `${meta.label} 관점으로 궁금한 일을 바로 물어보는 달빛인생 12간지 대화방입니다.`,
     alternates: { canonical: `/dialogue/${expertId}` },
   };
 }

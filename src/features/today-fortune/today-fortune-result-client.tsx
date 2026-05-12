@@ -2,8 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { ResultShell } from '@/components/moonlight/ResultShell';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-risk-cards';
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
@@ -19,28 +23,29 @@ const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
 
 const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body: string }>> = {
   love_contact: [
-    { label: '궁합으로 이어보기', href: '/compatibility', body: '상대와의 거리와 속도를 더 넓게 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 어떤 말투가 편한지 바로 물어볼 수 있어요.' },
+    { label: '성향궁합으로 이어보기', href: '/compatibility/personality', body: '두 사람의 사주와 성향이 어디서 닮고 어긋나는지 봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '오늘 어떤 말투가 편한지 바로 이어 물어볼 수 있어요.' },
   ],
   money_spend: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '돈이 새는 습관과 선택 패턴을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 결제해도 되는지 짧게 물어볼 수 있어요.' },
+    { label: '성향사주로 이어보기', href: '/saju/personality', body: '돈이 새는 습관과 선택 패턴을 사주×성향으로 이어봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '오늘 지출 전 확인할 기준을 짧게 물어볼 수 있어요.' },
   ],
   work_meeting: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '일과 역할의 큰 흐름을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '미팅에서 꺼낼 말과 줄일 말을 물어볼 수 있어요.' },
+    { label: '성향사주로 이어보기', href: '/saju/personality', body: '일과 역할의 큰 흐름을 내 선택 습관까지 이어서 봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '미팅에서 꺼낼 말과 줄일 말을 물어볼 수 있어요.' },
   ],
   relationship_conflict: [
-    { label: '궁합으로 이어보기', href: '/compatibility', body: '상대와 부딪히는 지점을 같이 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오해를 줄이는 한마디를 바로 물어볼 수 있어요.' },
+    { label: '성향궁합으로 이어보기', href: '/compatibility/personality', body: '상대와 부딪히는 지점을 관계의 결로 같이 봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '오해를 줄이는 한마디를 바로 물어볼 수 있어요.' },
   ],
   energy_health: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '생활 리듬과 회복 패턴을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 무리하지 않는 기준을 물어볼 수 있어요.' },
+    { label: '성향사주로 이어보기', href: '/saju/personality', body: '생활 리듬과 회복 패턴을 자기이해 관점으로 이어봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '오늘 무리하지 않는 기준을 물어볼 수 있어요.' },
   ],
   general: [
     { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 결을 카드 한 장으로 가볍게 봅니다.' },
-    { label: '사주로 더 보기', href: '/saju/new', body: '오늘을 넘어서 내 기본 흐름까지 이어서 봅니다.' },
+    { label: '성향사주로 이어보기', href: '/saju/personality', body: '오늘을 넘어서 내 기본 흐름과 선택 습관까지 이어봅니다.' },
+    { label: '12간지 캐릭터에게 묻기', href: '/dialogue', body: '풀이가 남으면 대화방에서 바로 이어 물어보세요.' },
   ],
 };
 
@@ -97,6 +102,12 @@ export function TodayFortuneResultClient({
   return (
     <div className="gangi-subpage pb-8">
       <GangiPageHeader title="오늘운세 결과" backHref="/today-fortune" />
+      <PageIntro
+        eyebrow="오늘의 결"
+        title="오늘 필요한 한 줄을 먼저 확인해요"
+        description="무료 결과는 짧게 보고, 마음에 남는 부분만 성향사주나 12간지 대화로 이어가면 됩니다."
+        className="px-4 pt-3 sm:px-0"
+      />
 
       <div className="grid gap-6 px-4 py-6">
         {!freeResult ? (
@@ -115,7 +126,11 @@ export function TodayFortuneResultClient({
             </Link>
           </section>
         ) : (
-          <>
+          <ResultShell
+            title={freeResult.oneLine.headline}
+            summary={freeResult.oneLine.body}
+            keywords={[freeResult.concernLabel, '무료 오늘운세', '짧은 결과']}
+          >
             <TodayScoreReveal result={freeResult} />
             <TodayFortuneSummaryCard result={freeResult} />
             <TodayFortuneScoreGrid result={freeResult} />
@@ -139,24 +154,24 @@ export function TodayFortuneResultClient({
               />
             </section>
 
-            <GangiSection
-              eyebrow="더 보고 싶을 때"
+            <LightSection
+              eyebrow="다음 흐름"
               title="궁금한 부분만 이어보세요"
-              description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 이어가면 됩니다."
+              description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 성향사주, 성향궁합, 12간지 대화로 이어가면 됩니다."
+              surface="soft"
             >
-              <div className="grid gap-3">
-                {relatedLinks.map((item) => (
-                  <Link key={item.label} href={item.href} className="gangi-list-link">
-                    <span className="gangi-list-copy">
-                      <strong>{item.label}</strong>
-                      <em>{item.body}</em>
-                    </span>
-                    <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
-                  </Link>
-                ))}
-              </div>
-            </GangiSection>
-          </>
+              <FlowEntryList
+                items={relatedLinks.map((item) => ({
+                  id: item.href + item.label,
+                  href: item.href,
+                  title: item.label,
+                  description: item.body,
+                  meta: '이어보기',
+                }))}
+              />
+            </LightSection>
+            <SafetyNotice />
+          </ResultShell>
         )}
       </div>
     </div>
