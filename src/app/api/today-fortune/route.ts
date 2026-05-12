@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { buildSajuInterpretationGrounding, buildSajuReport } from '@/domain/saju/report';
-import { createClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import { createReading, resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
@@ -56,10 +60,20 @@ export async function POST(req: NextRequest) {
   }
 
   const sajuData = calculateSajuDataV1(parsed.input);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let userId: string | null = null;
+
+  if (hasSupabaseServerEnv) {
+    try {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      userId = user?.id ?? null;
+    } catch {
+      userId = null;
+    }
+  }
+
   const counselorId = normalizeMoonlightCounselor(rawPayload?.counselorId);
 
   let sourceSessionId = toSlug(parsed.input);
@@ -72,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   if (hasSupabaseServiceEnv) {
     try {
-      sourceSessionId = await createReading(parsed.input, user?.id ?? null);
+      sourceSessionId = await createReading(parsed.input, userId);
       const persistedReading = await resolveReading(sourceSessionId);
       if (persistedReading) {
         persistedGrounding = persistedReading.grounding;

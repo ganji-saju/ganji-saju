@@ -97,7 +97,7 @@ const FEEDBACK_OPTIONS: Array<{ rating: FeedbackRating; label: string }> = [
 function LoadingState() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5">
+      <AppPage className="gangi-subpage gangi-responsive-page space-y-5">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
         <GangiIntro
           eyebrow="결과 준비"
@@ -118,7 +118,7 @@ function LoadingState() {
 function MissingInputState() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5">
+      <AppPage className="gangi-subpage gangi-responsive-page space-y-5">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
         <GangiIntro
           eyebrow="결과 준비"
@@ -674,7 +674,7 @@ export function SajuPersonalityResultHandoffClient() {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage gangi-wide-flow space-y-6">
+      <AppPage className="gangi-subpage gangi-responsive-page space-y-6">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
         <PageIntro
           eyebrow="달빛 성향사주 결과"
@@ -683,6 +683,7 @@ export function SajuPersonalityResultHandoffClient() {
         />
 
         <ResultShell
+          className="gangi-responsive-result-panel"
           title={result.headline}
           summary={
             payload

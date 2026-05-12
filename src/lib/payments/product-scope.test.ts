@@ -58,3 +58,27 @@ test('personality compatibility mini redirects back to the result screen after p
     '/compatibility/personality/result?paid=personality_compatibility_mini&scope=personality-compatibility%3Aabc123'
   );
 });
+
+test('saju personality mini uses caller-provided result scope', async () => {
+  const pkg = getPackage('taste_saju_personality_mini');
+  assert.ok(pkg);
+
+  const scope = await resolvePaymentProductScope({
+    pkg,
+    scope: 'saju-personality:def456',
+  });
+
+  assert.equal(scope?.productId, 'saju_personality_mini');
+  assert.equal(scope?.kind, 'saju-personality');
+  assert.equal(scope?.scopeKey, 'saju-personality:def456');
+  assert.equal(scope?.readingKey, null);
+});
+
+test('saju personality mini redirects back to the result screen after purchase', () => {
+  assert.equal(
+    buildPurchasedProductHref('saju_personality_mini', null, {
+      scope: 'saju-personality:def456',
+    }),
+    '/saju/personality/result?paid=saju_personality_mini&scope=saju-personality%3Adef456'
+  );
+});

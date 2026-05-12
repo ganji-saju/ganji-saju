@@ -184,11 +184,13 @@ export function BirthInfoStepper({
   }
 
   return (
-    <section className="app-panel p-6 sm:p-7">
+    <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="app-caption">Birth Info Stepper</div>
-          <h2 className="mt-3 text-2xl text-[var(--app-ivory)]">
+          <div className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--gyeol-muted)]">
+            02 출생 정보
+          </div>
+          <h2 className="mt-3 text-2xl font-bold leading-tight text-[var(--gyeol-text)]">
             생년월일과 출생 정보를 넣어 오늘 흐름을 좁혀보세요
           </h2>
         </div>
@@ -203,7 +205,7 @@ export function BirthInfoStepper({
       </div>
 
       {profileMessage ? (
-        <p className="mt-3 text-sm text-[var(--app-copy-soft)]">{profileMessage}</p>
+        <p className="mt-3 text-sm text-[var(--gyeol-muted)]">{profileMessage}</p>
       ) : null}
 
       <div className="mt-6">
@@ -230,7 +232,7 @@ export function BirthInfoStepper({
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-[var(--app-copy-soft)]">
+        <p className="text-sm leading-6 text-[var(--gyeol-muted)]">
           {hasBirthCore(draft)
             ? '입력이 준비되면 결과 화면으로 이동해 오늘 한 줄을 보여드려요.'
             : '오늘의 고민에 맞춰 무료 결과를 만들려면 기본 출생 정보가 필요합니다.'}
@@ -246,7 +248,7 @@ export function BirthInfoStepper({
       </div>
 
       {errorMessage ? (
-        <div className="mt-4 rounded-[1rem] border border-[var(--app-coral)]/30 bg-[rgba(248,113,113,0.08)] px-4 py-3 text-sm text-[var(--app-ivory)]">
+        <div className="mt-4 rounded-[1rem] border border-[var(--gyeol-danger-line)] bg-[var(--gyeol-danger-soft)] px-4 py-3 text-sm text-[var(--gyeol-text)]">
           {errorMessage}
         </div>
       ) : null}

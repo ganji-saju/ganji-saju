@@ -26,6 +26,45 @@
   }
 }
 
+.gangi-subpage-shell {
+  --gyeol-page-container-max: 70rem;
+  --gyeol-form-panel-max: 32.5rem;
+  --gyeol-result-panel-max: 47.5rem;
+}
+
+.gangi-subpage-shell .app-shell-content {
+  display: block !important;
+  width: 100% !important;
+}
+
+.gangi-subpage-shell .gangi-subpage.gangi-responsive-page,
+.gangi-subpage-shell .app-page.gangi-subpage.gangi-responsive-page {
+  box-sizing: border-box;
+  width: min(calc(100vw - 1.25rem), var(--gyeol-page-container-max)) !important;
+  max-width: min(calc(100vw - 1.25rem), var(--gyeol-page-container-max)) !important;
+  margin-inline: auto !important;
+}
+
+@media (min-width: 768px) {
+  .gangi-subpage-shell .gangi-subpage.gangi-responsive-page,
+  .gangi-subpage-shell .app-page.gangi-subpage.gangi-responsive-page {
+    width: min(calc(100vw - 3rem), var(--gyeol-page-container-max)) !important;
+    max-width: min(calc(100vw - 3rem), var(--gyeol-page-container-max)) !important;
+  }
+}
+
+.gangi-responsive-form-panel {
+  width: 100%;
+  max-width: var(--gyeol-form-panel-max);
+  margin-inline: auto;
+}
+
+.gangi-responsive-result-panel {
+  width: 100%;
+  max-width: var(--gyeol-result-panel-max);
+  margin-inline: auto;
+}
+
 .saju-result-page {
   --result-card-radius: 1.6rem;
 }

@@ -27,7 +27,12 @@ export function StepFlowShell({
   const progress = Math.round((safeCurrent / safeTotal) * 100);
 
   return (
-    <section className={cn('space-y-5', className)}>
+    <section
+      className={cn(
+        'mx-auto w-full max-w-[var(--gyeol-form-panel-max,32.5rem)] space-y-5',
+        className
+      )}
+    >
       <header className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-5">
         <div className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--gyeol-muted)]">
           <span>

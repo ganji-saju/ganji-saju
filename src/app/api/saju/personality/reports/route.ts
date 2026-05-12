@@ -129,9 +129,11 @@ function sanitizeShareCard(value: unknown, reportId?: string) {
 function sanitizeReportJson(
   reportJson: Record<string, unknown>,
   productCode: ReportProductCode,
-  reportId?: string
+  reportId?: string,
+  options: { preservePaidSections?: boolean } = {}
 ): SajuPersonalityReportSnapshot {
   const isPaid = productCode === SAJU_PERSONALITY_MINI_PRODUCT_CODE;
+  const shouldKeepPaidSections = isPaid || options.preservePaidSections === true;
   const {
     facts: _facts,
     birthInput: _birthInput,
@@ -160,7 +162,10 @@ function sanitizeReportJson(
     personalitySummary:
       typeof reportJson.personalitySummary === 'string' ? reportJson.personalitySummary : '',
     lockedSections: Array.isArray(reportJson.lockedSections) ? reportJson.lockedSections : [],
-    paidSections: isPaid && Array.isArray(reportJson.paidSections) ? reportJson.paidSections : [],
+    paidSections:
+      shouldKeepPaidSections && Array.isArray(reportJson.paidSections)
+        ? reportJson.paidSections
+        : [],
     safetyNote: typeof reportJson.safetyNote === 'string' ? reportJson.safetyNote : '',
     shareCard: sanitizeShareCard(reportJson.shareCard, reportId),
     savedAt: typeof reportJson.savedAt === 'string' ? reportJson.savedAt : new Date().toISOString(),
@@ -168,10 +173,7 @@ function sanitizeReportJson(
 }
 
 function mapReport(row: SajuPersonalityReportRow, hasPaidAccess: boolean) {
-  const effectiveProductCode =
-    row.product_code === SAJU_PERSONALITY_MINI_PRODUCT_CODE && hasPaidAccess
-      ? SAJU_PERSONALITY_MINI_PRODUCT_CODE
-      : 'free';
+  const effectiveProductCode = hasPaidAccess ? SAJU_PERSONALITY_MINI_PRODUCT_CODE : 'free';
   const effectiveReportType: ReportType =
     effectiveProductCode === SAJU_PERSONALITY_MINI_PRODUCT_CODE ? 'paid' : 'free';
 
@@ -187,7 +189,9 @@ function mapReport(row: SajuPersonalityReportRow, hasPaidAccess: boolean) {
     reportJson: sanitizeReportJson(row.report_json, effectiveProductCode, row.id),
     productCode: effectiveProductCode,
     paidAmount:
-      effectiveProductCode === SAJU_PERSONALITY_MINI_PRODUCT_CODE ? row.paid_amount : null,
+      effectiveProductCode === SAJU_PERSONALITY_MINI_PRODUCT_CODE
+        ? (row.paid_amount ?? SAJU_PERSONALITY_MINI_PRICE)
+        : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -237,10 +241,7 @@ export async function GET(request: NextRequest) {
   }
 
   const row = data as SajuPersonalityReportRow;
-  const hasPaidAccess =
-    row.product_code === SAJU_PERSONALITY_MINI_PRODUCT_CODE
-      ? await hasPaidReportAccess(user.id, row.scope_key)
-      : false;
+  const hasPaidAccess = await hasPaidReportAccess(user.id, row.scope_key);
 
   return NextResponse.json({ report: mapReport(row, hasPaidAccess) });
 }
@@ -326,7 +327,9 @@ export async function POST(request: NextRequest) {
         saju_facts_json: sajuFactsJson,
         personality_facts_json: personalityFactsJson,
         fusion_facts_json: fusionFactsJson,
-        report_json: sanitizeReportJson(reportJson, productCode),
+        report_json: sanitizeReportJson(reportJson, productCode, undefined, {
+          preservePaidSections: true,
+        }),
         product_code: productCode,
         paid_amount: paidAmount,
       },

@@ -21,7 +21,12 @@ export function ResultShell({
   className,
 }: ResultShellProps) {
   return (
-    <article className={cn('space-y-5', className)}>
+    <article
+      className={cn(
+        'mx-auto w-full max-w-[var(--gyeol-result-panel-max,47.5rem)] space-y-5',
+        className
+      )}
+    >
       <header className="rounded-[1.5rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-5 sm:p-6">
         <h1 className="text-2xl font-bold leading-tight text-[var(--gyeol-text)] sm:text-3xl">
           {title}

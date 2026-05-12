@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Lock } from 'lucide-react';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { COMPATIBILITY_RELATIONSHIPS } from '@/content/moonlight';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '궁합',
@@ -16,136 +15,83 @@ export const metadata: Metadata = {
   alternates: { canonical: '/compatibility' },
 };
 
-const RELATIONSHIP_TONES: Record<string, { type: string; icon: string; badge: string; badgeCls: string }> = {
-  lover: {
-    type: 'lover',
-    icon: '💕',
-    badge: '연인·배우자',
-    badgeCls: 'border-[var(--app-coral)]/25 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
-  },
-  family: {
-    type: 'family',
-    icon: '🌿',
-    badge: '부모·자녀',
-    badgeCls: 'border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]',
-  },
-  friend: {
-    type: 'friend',
-    icon: '🌊',
-    badge: '형제·친구',
-    badgeCls: 'border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]',
-  },
-  partner: {
-    type: 'partner',
-    icon: '✦',
-    badge: '동업·파트너',
-    badgeCls: 'border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]',
-  },
-};
-
 export default function CompatibilityPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
-      <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={
+      <AppPage className="gangi-subpage gangi-responsive-page space-y-6">
+        <PageIntro
+          eyebrow="관계의 결"
+          title="어떤 관계를 풀고 싶은지 먼저 고르세요"
+          description="기본 궁합은 사주 중심으로 관계의 큰 흐름을 보고, 성향궁합은 두 사람의 16유형 성향까지 함께 정리합니다."
+          actions={
             <>
-              <span className="rounded-full border border-[var(--app-jade)]/24 bg-[var(--app-jade)]/10 px-3 py-1 text-xs text-[var(--app-jade)]">
-                관계 풀이 입구
-              </span>
-              <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
-                질문별 관계 선택
-              </span>
+              <Link href="/compatibility/personality" className="gangi-primary-button">
+                성향궁합 시작
+              </Link>
+              <Link href="/compatibility/input?relationship=lover" className="gangi-secondary-button">
+                기본 궁합 시작
+              </Link>
             </>
           }
-          title="관계 풀이를 보기 전에, 어떤 관계를 풀고 싶은지 고르세요"
-          description="연인, 가족, 친구, 동업 중 지금 궁금한 관계를 고르세요."
         />
 
-        <SectionSurface surface="panel">
-          <SectionHeader
-            eyebrow="새 입력 흐름"
-            title="사주와 16유형 성향을 함께 넣는 성향궁합"
-            titleClassName="text-3xl"
-            description="관계 유형, 두 사람의 생년월일, 성향 선택 또는 간단 체크, 현재 질문까지 한 번에 준비합니다."
-            actions={
-              <ActionCluster>
-                <Link href="/compatibility/personality" className="gangi-primary-button">
-                  성향궁합 입력하기
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </ActionCluster>
-            }
+        <FusionStrip
+          prefixLabel="두 사람의 사주 네 기둥"
+          suffixLabel="두 사람의 성향 네 축"
+        />
+
+        <LightSection
+          eyebrow="성향궁합"
+          title="사주와 성향을 함께 보고 싶다면"
+          description="관계 유형, 두 사람의 생년월일, 성향 선택 또는 간단 체크, 현재 질문까지 한 흐름으로 준비합니다."
+          actions={
+            <Link href="/compatibility/personality" className="gangi-primary-button">
+              달빛 성향궁합 보기
+            </Link>
+          }
+          surface="paper"
+        >
+          <p className="text-sm leading-6 text-[var(--gyeol-muted)]">
+            기본 궁합보다 더 구체적으로 왜 끌리고 왜 부딪히는지 보고 싶을 때 사용하세요.
+          </p>
+        </LightSection>
+
+        <LightSection
+          eyebrow="기본 궁합"
+          title="질문이 분명할수록 궁합 풀이도 더 선명해집니다"
+          description="기존 기본 궁합 흐름은 그대로 유지합니다. 지금 궁금한 관계를 골라 입력 화면으로 이어가세요."
+          surface="soft"
+        >
+          <FlowEntryList
+            items={COMPATIBILITY_RELATIONSHIPS.map((item) => ({
+              id: item.slug,
+              href: `/compatibility/input?relationship=${item.slug}`,
+              badge: item.title,
+              title: item.hook,
+              description: '기본 사주 궁합으로 관계의 큰 흐름을 봅니다.',
+              meta: '입력하기',
+            }))}
           />
-        </SectionSurface>
+        </LightSection>
 
-        <SectionSurface surface="panel">
-            <SectionHeader
-              eyebrow="관계 선택"
-              title="질문이 분명할수록 궁합 풀이도 더 선명해집니다"
-              titleClassName="text-3xl"
-            />
+        <LightSection
+          eyebrow="깊이보기"
+          title="무료로 먼저 확인하고 필요한 풀이만 더 열어보세요"
+          description="멤버십과 유료 해금 흐름은 기존 정책을 그대로 사용합니다."
+          actions={
+            <>
+              <Link href="/membership" className="gangi-primary-button">
+                멤버십 보기
+              </Link>
+              <Link href="/pricing" className="gangi-secondary-button">
+                가격 안내
+              </Link>
+            </>
+          }
+          surface="paper"
+        />
 
-            <ProductGrid columns={2} className="mt-6">
-              {COMPATIBILITY_RELATIONSHIPS.map((item) => {
-                const tone = RELATIONSHIP_TONES[item.slug];
-                return (
-                  <FeatureCard
-                    key={item.slug}
-                    surface="soft"
-                    badge={
-                      <span
-                        className={`rounded-full border px-2.5 py-0.5 text-[10px] tracking-[0.14em] ${tone?.badgeCls ?? 'border-[var(--app-line)] text-[var(--app-copy-muted)]'}`}
-                      >
-                        {tone?.badge ?? item.title}
-                      </span>
-                    }
-                    icon={
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] text-2xl">
-                        {tone?.icon ?? item.icon}
-                      </div>
-                    }
-                    title={item.hook}
-                    titleClassName="text-xl"
-                    description={item.title}
-                    footer={
-                      <Link
-                        href={`/compatibility/input?relationship=${item.slug}`}
-                        className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                      >
-                        이 관계로 이어보기
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    }
-                  />
-                );
-              })}
-            </ProductGrid>
-        </SectionSurface>
-
-        <SectionSurface surface="panel">
-          <SectionHeader
-            eyebrow="프리미엄 전용"
-            title="두 사람의 결이 어디서 닮고 어디서 어긋나는지, 풀이 형태로 정리합니다"
-            titleClassName="text-3xl text-[var(--app-gold-text)]"
-            actions={
-              <ActionCluster>
-                <Link
-                  href="/membership"
-                  className="gangi-primary-button"
-                >
-                  <Lock className="h-3.5 w-3.5" /> 멤버십으로 열기
-                </Link>
-                <Link
-                  href="/compatibility/input?relationship=lover"
-                  className="gangi-secondary-button"
-                >
-                  입력 흐름 먼저 보기
-                </Link>
-              </ActionCluster>
-            }
-          />
-        </SectionSurface>
+        <SafetyNotice />
       </AppPage>
     </AppShell>
   );

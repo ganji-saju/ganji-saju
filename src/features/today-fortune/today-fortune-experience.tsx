@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
 import { LightSection } from '@/components/moonlight/LightSection';
 import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SajuStrip } from '@/components/moonlight/SajuStrip';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
@@ -255,7 +256,7 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage gangi-responsive-page pb-8">
       <GangiPageHeader title="오늘운세" />
       <PageIntro
         eyebrow="오늘의 결"
@@ -269,24 +270,34 @@ export function TodayFortuneExperience({
         className="px-4 sm:px-0"
       />
 
-      <section className="px-4">
-        <TodayConcernSelector
-          value={concernId}
-          onChange={(next) => {
-            setConcernId(next);
-            setDraft((current) => ({ ...current, concernId: next }));
-            setFreeResult(null);
-            trackMoonlightEvent('today_concern_selected', {
-              from: 'today-fortune',
-              concern: next,
-            });
-          }}
-          expanded={expanded}
-          onToggleExpanded={() => setExpanded((current) => !current)}
-        />
-      </section>
+      <div className="px-4 sm:px-0">
+        <SajuStrip prefixLabel="오늘" suffixLabel="사주 네 기둥으로 가볍게 보기" />
+      </div>
 
       <div className="mt-6 grid gap-6 px-4">
+        <LightSection
+          eyebrow="01 오늘의 질문"
+          title="먼저 보고 싶은 흐름을 고르세요"
+          description="선택한 고민에 맞춰 무료 오늘운세 결과를 짧게 생성합니다."
+          surface="paper"
+          className="gangi-responsive-result-panel"
+        >
+          <TodayConcernSelector
+            value={concernId}
+            onChange={(next) => {
+              setConcernId(next);
+              setDraft((current) => ({ ...current, concernId: next }));
+              setFreeResult(null);
+              trackMoonlightEvent('today_concern_selected', {
+                from: 'today-fortune',
+                concern: next,
+              });
+            }}
+            expanded={expanded}
+            onToggleExpanded={() => setExpanded((current) => !current)}
+          />
+        </LightSection>
+
         {pendingHitMemo ? (
           <HitMemoWidget
             session={pendingHitMemo}
@@ -294,17 +305,19 @@ export function TodayFortuneExperience({
           />
         ) : null}
 
-        <BirthInfoStepper
-          draft={draft}
-          onChange={updateDraft}
-          onStarted={handleStarted}
-          onSubmit={handleSubmit}
-          loading={loading}
-          errorMessage={errorMessage}
-        />
+        <div className="gangi-responsive-form-panel">
+          <BirthInfoStepper
+            draft={draft}
+            onChange={updateDraft}
+            onStarted={handleStarted}
+            onSubmit={handleSubmit}
+            loading={loading}
+            errorMessage={errorMessage}
+          />
+        </div>
 
         {freeResult ? (
-          <>
+          <div className="gangi-responsive-result-panel space-y-6">
             <TodayScoreReveal result={freeResult} />
             <TodayFortuneSummaryCard result={freeResult} />
             <TodayFortuneScoreGrid result={freeResult} />
@@ -320,13 +333,13 @@ export function TodayFortuneExperience({
               concernId={freeResult.concernId}
             />
 
-            <section className="app-panel p-6">
+            <LightSection surface="paper">
               <FollowUpQuestionChips
                 questions={freeResult.followUpQuestions}
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
               />
-            </section>
+            </LightSection>
 
             <LightSection
               eyebrow="다음 흐름"
@@ -345,7 +358,7 @@ export function TodayFortuneExperience({
               />
             </LightSection>
             <SafetyNotice />
-          </>
+          </div>
         ) : null}
       </div>
     </div>

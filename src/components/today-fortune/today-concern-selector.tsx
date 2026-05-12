@@ -2,9 +2,9 @@
 
 import type { ComponentType } from 'react';
 import { Briefcase, ChevronDown, ChevronUp, Heart, Sparkles, Wallet } from 'lucide-react';
+import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
 import { getTodayConcernEntries } from '@/lib/today-fortune/concerns';
 import type { ConcernId } from '@/lib/today-fortune/types';
-import { cn } from '@/lib/utils';
 
 const CONCERN_ICON: Partial<Record<ConcernId, ComponentType<{ className?: string }>>> = {
   general: Sparkles,
@@ -38,24 +38,20 @@ export function TodayConcernSelector({
 
   return (
     <div className="space-y-4">
-      <div className={cn('today-concern-grid', compact && 'today-concern-grid-compact')}>
+      <div className={compact ? 'grid gap-2' : 'grid gap-2 sm:grid-cols-2'}>
         {items.map((item) => {
           const active = item.id === value;
           const Icon = CONCERN_ICON[item.id] ?? Sparkles;
           return (
-            <button
+            <ChoiceRow
               key={item.id}
-              type="button"
               onClick={() => onChange(item.id)}
-              className="today-concern-card"
-              data-active={active ? 'true' : 'false'}
-            >
-              <span className="today-concern-icon">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <strong>{SIMPLE_LABEL[item.id] ?? item.shortLabel}</strong>
-              <em>지금 한 줄로</em>
-            </button>
+              selected={active}
+              leading={<Icon className="h-5 w-5" aria-hidden="true" />}
+              title={SIMPLE_LABEL[item.id] ?? item.shortLabel}
+              description="오늘 필요한 한 줄로 보기"
+              trailing={active ? '선택됨' : '선택'}
+            />
           );
         })}
       </div>
@@ -64,7 +60,7 @@ export function TodayConcernSelector({
         <button
           type="button"
           onClick={onToggleExpanded}
-          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-xs font-bold text-[var(--app-copy-muted)] transition-colors hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
+          className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-3 py-1.5 text-xs font-bold text-[var(--gyeol-muted)] transition-colors hover:border-[var(--gyeol-moon)]/35 hover:text-[var(--gyeol-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gyeol-moon)] focus-visible:ring-offset-2"
         >
           {expanded ? (
             <>

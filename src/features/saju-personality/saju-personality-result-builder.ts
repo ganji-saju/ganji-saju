@@ -360,7 +360,7 @@ export function buildSajuPersonalityReportSnapshot(input: {
     sajuSummary: input.result.sajuSummary,
     personalitySummary: input.result.personalitySummary,
     lockedSections: input.result.lockedSections,
-    paidSections: input.resultType === 'paid' ? input.result.paidSections : [],
+    paidSections: input.result.paidSections,
     safetyNote: input.result.safetyNote,
     shareCard,
     savedAt: new Date().toISOString(),

@@ -53,3 +53,9 @@ supabase/.temp/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+.env
+.env.local
+node_modules
+.next
+dist
+build

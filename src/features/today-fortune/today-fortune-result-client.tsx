@@ -100,7 +100,7 @@ export function TodayFortuneResultClient({
   }
 
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage gangi-responsive-page pb-8">
       <GangiPageHeader title="오늘운세 결과" backHref="/today-fortune" />
       <PageIntro
         eyebrow="오늘의 결"
@@ -111,20 +111,18 @@ export function TodayFortuneResultClient({
 
       <div className="grid gap-6 px-4 py-6">
         {!freeResult ? (
-          <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(0,0,0,0.06)]">
-            <div className="app-caption">결과를 다시 불러와 주세요</div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-[var(--app-ink)]">
-              무료 결과가 이 브라우저에 남아 있지 않아요
-            </h1>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
-              개인정보가 담긴 결과라 공개 URL로 다시 불러오지 않습니다. 오늘운세에서 한 번 더 눌러주세요.
-            </p>
-            <Link href={`/today-fortune?concern=${concernId}`} className="mt-5 inline-flex">
-              <span className="rounded-full bg-[var(--app-pink)] px-5 py-3 text-sm font-bold text-white">
+          <LightSection
+            eyebrow="결과를 다시 불러와 주세요"
+            title="무료 결과가 이 브라우저에 남아 있지 않아요"
+            description="개인정보가 담긴 결과라 공개 URL로 다시 불러오지 않습니다. 오늘운세에서 한 번 더 눌러주세요."
+            surface="paper"
+            className="gangi-responsive-result-panel text-center"
+            actions={
+              <Link href={`/today-fortune?concern=${concernId}`} className="gangi-primary-button">
                 오늘운세 다시 보기
-              </span>
-            </Link>
-          </section>
+              </Link>
+            }
+          />
         ) : (
           <ResultShell
             title={freeResult.oneLine.headline}
@@ -146,13 +144,13 @@ export function TodayFortuneResultClient({
               concernId={freeResult.concernId}
             />
 
-            <section className="app-panel p-6">
+            <LightSection surface="paper">
               <FollowUpQuestionChips
                 questions={freeResult.followUpQuestions}
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
               />
-            </section>
+            </LightSection>
 
             <LightSection
               eyebrow="다음 흐름"
