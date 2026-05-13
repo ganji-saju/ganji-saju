@@ -1,0 +1,140 @@
+
+> saju-app@0.1.0 build
+> next build
+
+▲ Next.js 16.2.3 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.2s
+  Running TypeScript ...
+  Finished TypeScript in 4.3s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/134) ...
+  Generating static pages using 11 workers (33/134) 
+  Generating static pages using 11 workers (66/134) 
+  Generating static pages using 11 workers (100/134) 
+✓ Generating static pages using 11 workers (134/134) in 330ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /about-engine
+├ ƒ /api/ai
+├ ƒ /api/auth/callback
+├ ƒ /api/auth/confirm-email
+├ ƒ /api/auth/signup
+├ ƒ /api/classics/evidence
+├ ƒ /api/credits/use
+├ ƒ /api/dialogue/safety
+├ ƒ /api/family-profiles
+├ ƒ /api/fortune-calendar
+├ ƒ /api/fortune-calendar/unlock
+├ ƒ /api/geo/birth-location
+├ ƒ /api/interpret
+├ ƒ /api/interpret/lifetime
+├ ƒ /api/interpret/yearly
+├ ƒ /api/notifications/dispatch
+├ ƒ /api/notifications/heartbeat
+├ ƒ /api/notifications/preferences
+├ ƒ /api/notifications/subscribe
+├ ƒ /api/notifications/test
+├ ƒ /api/notifications/unsubscribe
+├ ƒ /api/payments/confirm
+├ ƒ /api/payments/prepare
+├ ƒ /api/profile
+├ ƒ /api/profile/counselor
+├ ƒ /api/readings
+├ ƒ /api/subscription/manage
+├ ƒ /api/today-fortune
+├ ƒ /api/today-fortune/feedback
+├ ƒ /api/today-fortune/unlock
+├ ƒ /api/verification/classics
+├ ƒ /api/verification/lifetime
+├ ƒ /api/verification/profile-linkage
+├ ƒ /api/verification/saju
+├ ƒ /api/verification/today-fortune
+├ ƒ /api/verification/yearly
+├ ○ /auth
+├ ○ /compatibility
+├ ƒ /compatibility/input
+├ ƒ /compatibility/result
+├ ○ /credits
+├ ○ /credits/success
+├ ○ /daewoon
+├ ƒ /dialogue
+├ ƒ /dialogue/[expert]
+├ ○ /dialogue/safe-redirect
+├ ○ /dream-interpretation
+├ ● /dream-interpretation/[slug]
+│ ├ /dream-interpretation/teeth-falling
+│ ├ /dream-interpretation/snake-dream
+│ ├ /dream-interpretation/water-dream
+│ └ [+5 more paths]
+├ ○ /free
+├ ○ /guide
+├ ○ /gunghap
+├ ○ /interpretation
+├ ○ /login
+├ ○ /manifest.webmanifest
+├ ƒ /membership
+├ ƒ /membership/checkout
+├ ƒ /membership/complete
+├ ○ /membership/success
+├ ○ /method
+├ ƒ /method/[slug]
+├ ƒ /my
+├ ƒ /my/billing
+├ ƒ /my/profile
+├ ƒ /my/results
+├ ○ /my/settings
+├ ƒ /myeongri
+├ ○ /myeongri/ten-gods
+├ ƒ /notifications
+├ ○ /notifications/schedule
+├ ○ /notifications/widget
+├ ƒ /pay
+├ ○ /pricing
+├ ○ /privacy
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /saju
+├ ƒ /saju/[slug]
+├ ƒ /saju/[slug]/elements
+├ ƒ /saju/[slug]/nature
+├ ƒ /saju/[slug]/overview
+├ ƒ /saju/[slug]/premium
+├ ƒ /saju/[slug]/premium/print
+├ ƒ /saju/[slug]/today-detail
+├ ○ /saju/new
+├ ○ /saju/new/birth
+├ ○ /saju/new/consent
+├ ○ /saju/new/empathy
+├ ○ /saju/new/nickname
+├ ○ /sample-report
+├ ○ /sitemap.xml
+├ ƒ /star-sign
+├ ƒ /star-sign/[slug]
+├ ○ /taekil
+├ ○ /tarot
+├ ○ /tarot/daily
+├ ƒ /tarot/daily/pick
+├ ƒ /tarot/daily/result
+├ ○ /terms
+├ ○ /today
+├ ƒ /today-fortune
+├ ƒ /today-fortune/detail
+├ ƒ /today-fortune/result
+├ ○ /vault
+├ ƒ /verification
+├ ƒ /zodiac
+└ ƒ /zodiac/[slug]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

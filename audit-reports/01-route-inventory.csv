@@ -1,0 +1,99 @@
+path,file,intent,auth_gate,entitlement_gate,priority,status,notes
+/,src/app/page.tsx,public,none,none,P3,OK,Public landing
+/free,src/app/free/page.tsx,public,none,none,—,OK,
+/pricing,src/app/pricing/page.tsx,public,none,none,P1,VERIFY,Hardcoded prices in metadata description
+/login,src/app/login/page.tsx,public,none,none,—,OK,Open-redirect blocked (verified live)
+/saju/new,src/app/saju/new/page.tsx,public-onboarding,verify,none,P1,VERIFY,Indexing blocked by robots.txt — Lighthouse SEO 66
+/saju/[slug],src/app/saju/[slug]/page.tsx,free-summary,implicit,none,—,VERIFY,resolveReading() handles slug
+/saju/[slug]/today-detail,src/app/saju/[slug]/today-detail/page.tsx,paid-soft-gated,implicit,getSajuTodayDetailEntitlement,—,OK,Lock card if no entitlement
+/saju/[slug]/premium,src/app/saju/[slug]/premium/page.tsx,paid,implicit,getLifetimeReportEntitlement,—,OK,
+/saju/[slug]/premium/print,src/app/saju/[slug]/premium/print/page.tsx,paid,implicit,getLifetimeReportEntitlement,—,OK,
+/saju/[slug]/elements,src/app/saju/[slug]/elements/page.tsx,free-detail,implicit,none,—,VERIFY,
+/saju/[slug]/nature,src/app/saju/[slug]/nature/page.tsx,free-detail,implicit,none,—,VERIFY,
+/saju/[slug]/overview,src/app/saju/[slug]/overview/page.tsx,free-detail,implicit,none,—,VERIFY,
+/dialogue,src/app/dialogue/page.tsx,public-list,none,none,—,OK,
+/dialogue/[expert],src/app/dialogue/[expert]/page.tsx,paid-feature,NONE-PAGE-LEVEL,NONE-PAGE-LEVEL,P2,WARN,Gated only by /api/ai — page renders for everyone
+/compatibility,src/app/compatibility/page.tsx,free-input,none,none,—,OK,
+/compatibility/input,src/app/compatibility/input/page.tsx,auth-required,requireAccount-or-equiv,verify,—,VERIFY,
+/compatibility/result,src/app/compatibility/result/page.tsx,paid,implicit,getTasteProductEntitlement,—,VERIFY,love-question
+/credits,src/app/credits/page.tsx,checkout-prompt,client-only,none,—,OK,Client-side gate; no protected data shown
+/credits/success,src/app/credits/success/page.tsx,post-payment,verify,verify,—,VERIFY,
+/membership,src/app/membership/page.tsx,public,none,none,—,OK,
+/membership/checkout,src/app/membership/checkout/page.tsx,paid,verify,getManagedSubscription,—,OK,
+/membership/complete,src/app/membership/complete/page.tsx,post-payment,verify,verify,—,VERIFY,
+/membership/success,src/app/membership/success/page.tsx,post-payment,verify,verify,—,VERIFY,
+/my,src/app/my/page.tsx,auth-required,requireAccount,none,—,OK,via getAccountDashboardData
+/my/results,src/app/my/results/page.tsx,auth-required,requireAccount,none,—,OK,307→/login (live verified)
+/my/billing,src/app/my/billing/page.tsx,auth-required,requireAccount,none,—,OK,307→/login (live verified)
+/my/profile,src/app/my/profile/page.tsx,auth-required,requireAccount,none,—,OK,via getProfileSettingsData
+/my/settings,src/app/my/settings/page.tsx,static-settings,NONE,none,P2,WARN,Renders for guests too — namespace inconsistency
+/notifications,src/app/notifications/page.tsx,verify,verify,none,—,VERIFY,
+/notifications/schedule,src/app/notifications/schedule/page.tsx,verify,verify,none,—,VERIFY,
+/notifications/widget,src/app/notifications/widget/page.tsx,verify,verify,none,—,VERIFY,
+/today-fortune,src/app/today-fortune/page.tsx,public-input,none,none,—,OK,
+/today-fortune/result,src/app/today-fortune/result/page.tsx,public-result,none,none,—,VERIFY,
+/today-fortune/detail,src/app/today-fortune/detail/page.tsx,paid,verify,verify,—,VERIFY,
+/tarot,src/app/tarot/page.tsx,public,none,none,—,OK,
+/tarot/daily,src/app/tarot/daily/page.tsx,public,none,none,—,OK,
+/tarot/daily/pick,src/app/tarot/daily/pick/page.tsx,public,none,none,—,VERIFY,
+/tarot/daily/result,src/app/tarot/daily/result/page.tsx,public,none,none,—,VERIFY,
+/zodiac,src/app/zodiac/page.tsx,public,none,none,—,OK,
+/zodiac/[slug],src/app/zodiac/[slug]/page.tsx,public,none,none,—,OK,
+/star-sign,src/app/star-sign/page.tsx,public,none,none,—,OK,
+/star-sign/[slug],src/app/star-sign/[slug]/page.tsx,public,none,none,—,OK,
+/dream-interpretation,src/app/dream-interpretation/page.tsx,public,none,none,—,VERIFY,
+/dream-interpretation/[slug],src/app/dream-interpretation/[slug]/page.tsx,public,none,none,—,VERIFY,
+/method,src/app/method/page.tsx,public,none,none,—,VERIFY,
+/method/[slug],src/app/method/[slug]/page.tsx,public,none,none,—,VERIFY,
+/myeongri,src/app/myeongri/page.tsx,public,none,none,—,VERIFY,
+/myeongri/ten-gods,src/app/myeongri/ten-gods/page.tsx,public,none,none,—,VERIFY,
+/daewoon,src/app/daewoon/page.tsx,public,none,none,—,VERIFY,
+/gunghap,src/app/gunghap/page.tsx,public,none,none,—,VERIFY,
+/interpretation,src/app/interpretation/page.tsx,public,none,none,—,VERIFY,
+/taekil,src/app/taekil/page.tsx,public,none,none,—,VERIFY,
+/today,src/app/today/page.tsx,public,none,none,—,VERIFY,
+/sample-report,src/app/sample-report/page.tsx,public,none,none,—,OK,
+/guide,src/app/guide/page.tsx,public,none,none,—,OK,
+/about-engine,src/app/about-engine/page.tsx,public,none,none,—,VERIFY,
+/auth,src/app/auth/page.tsx,oauth-callback,n/a,n/a,—,VERIFY,
+/reset-password,src/app/reset-password/page.tsx,public,none,none,—,VERIFY,
+/pay,src/app/pay/page.tsx,verify-purpose,verify,verify,—,VERIFY,Confirm whether deprecated or active
+/privacy,src/app/privacy/page.tsx,legal,none,none,—,OK,
+/terms,src/app/terms/page.tsx,legal,none,none,—,OK,
+/vault,src/app/vault/page.tsx,redirect-shim,n/a,n/a,—,OK,redirect to /my/results
+/verification,src/app/verification/page.tsx,admin-or-internal,getVerificationAccess,n/a,—,VERIFY,
+/api/payments/prepare,src/app/api/payments/prepare/route.ts,api,auth.getUser,getPackage(catalog SSOT),—,OK,401 if not auth; catalog re-fetch
+/api/payments/confirm,src/app/api/payments/confirm/route.ts,api,auth.getUser,catalog+amount validation,P0,FAIL,addCredits NOT idempotent (P0-1); not transactional (P0-2)
+/api/credits/use,src/app/api/credits/use/route.ts,api,verify,verify,—,VERIFY,
+/api/ai,src/app/api/ai/route.ts,api,auth.getUser line 734,getCredits,—,OK,
+/api/dialogue/safety,src/app/api/dialogue/safety/route.ts,api,NONE,none,P2,WARN,Anonymous unrate-limited POST
+/api/today-fortune,src/app/api/today-fortune/route.ts,api,verify,—,—,VERIFY,
+/api/today-fortune/unlock,src/app/api/today-fortune/unlock/route.ts,api,verify,—,—,VERIFY,
+/api/today-fortune/feedback,src/app/api/today-fortune/feedback/route.ts,api,verify,—,—,VERIFY,
+/api/fortune-calendar,src/app/api/fortune-calendar/route.ts,api,verify,verify,—,VERIFY,
+/api/fortune-calendar/unlock,src/app/api/fortune-calendar/unlock/route.ts,api,verify,verify,—,VERIFY,
+/api/interpret,src/app/api/interpret/route.ts,api,verify,—,—,VERIFY,
+/api/interpret/lifetime,src/app/api/interpret/lifetime/route.ts,api,verify,getLifetimeReportEntitlement,—,VERIFY,
+/api/interpret/yearly,src/app/api/interpret/yearly/route.ts,api,verify,—,—,VERIFY,
+/api/notifications/dispatch,src/app/api/notifications/dispatch/route.ts,api,CRON_SECRET,n/a,—,VERIFY,Vercel cron @ 07:00 UTC daily
+/api/notifications/heartbeat,src/app/api/notifications/heartbeat/route.ts,api,verify,—,—,VERIFY,
+/api/notifications/preferences,src/app/api/notifications/preferences/route.ts,api,verify,—,—,VERIFY,
+/api/notifications/subscribe,src/app/api/notifications/subscribe/route.ts,api,verify,—,—,VERIFY,
+/api/notifications/test,src/app/api/notifications/test/route.ts,api,verify,—,—,VERIFY,
+/api/notifications/unsubscribe,src/app/api/notifications/unsubscribe/route.ts,api,verify,—,—,VERIFY,
+/api/auth/callback,src/app/api/auth/callback/route.ts,api,OAuth-token,n/a,—,VERIFY,Confirm next param validation
+/api/auth/signup,src/app/api/auth/signup/route.ts,api,none(public),n/a,—,VERIFY,Verify rate-limit
+/api/auth/confirm-email,src/app/api/auth/confirm-email/route.ts,api,verify,n/a,—,VERIFY,
+/api/profile,src/app/api/profile/route.ts,api,verify(PII),n/a,—,VERIFY,
+/api/profile/counselor,src/app/api/profile/counselor/route.ts,api,verify,n/a,—,VERIFY,
+/api/family-profiles,src/app/api/family-profiles/route.ts,api,verify,n/a,—,VERIFY,
+/api/readings,src/app/api/readings/route.ts,api,verify,n/a,—,VERIFY,
+/api/subscription/manage,src/app/api/subscription/manage/route.ts,api,verify,getManagedSubscription,—,VERIFY,
+/api/classics/evidence,src/app/api/classics/evidence/route.ts,api,verify,—,—,VERIFY,
+/api/geo/birth-location,src/app/api/geo/birth-location/route.ts,api,verify,—,—,VERIFY,
+/api/verification/classics,src/app/api/verification/classics/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only
+/api/verification/lifetime,src/app/api/verification/lifetime/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only
+/api/verification/profile-linkage,src/app/api/verification/profile-linkage/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only
+/api/verification/saju,src/app/api/verification/saju/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only
+/api/verification/today-fortune,src/app/api/verification/today-fortune/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only
+/api/verification/yearly,src/app/api/verification/yearly/route.ts,api,requireVerificationApiAccess,—,—,VERIFY,Admin-only

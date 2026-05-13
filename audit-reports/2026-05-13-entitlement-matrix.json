@@ -1,0 +1,763 @@
+{
+  "generatedAt": "2026-05-12T23:23:51.472Z",
+  "base": "http://localhost:3100",
+  "premiumReadingId": "d2d157dd-f3f3-4537-bd9a-59c0dcee0c47",
+  "matrix": [
+    {
+      "persona": "guest",
+      "route": "_login",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "login": "guest-skip"
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "home",
+      "url": "/",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43848
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "free",
+      "url": "/free",
+      "status": 200,
+      "finalPath": "/free",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43674
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "pricing",
+      "url": "/pricing",
+      "status": 200,
+      "finalPath": "/pricing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 63529
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "saju-new",
+      "url": "/saju/new",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43798
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "credits",
+      "url": "/credits",
+      "status": 200,
+      "finalPath": "/credits",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39151
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "dialogue",
+      "url": "/dialogue",
+      "status": 200,
+      "finalPath": "/dialogue",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 61051
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "my-results",
+      "url": "/my/results",
+      "status": 200,
+      "finalPath": "/login?next=%2Fmy%2Fresults",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": true,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39677
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "my-billing",
+      "url": "/my/billing",
+      "status": 200,
+      "finalPath": "/login?next=%2Fmy%2Fbilling",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": true,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39677
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "membership-co",
+      "url": "/membership/checkout?product=today-detail",
+      "status": 200,
+      "finalPath": "/membership/checkout?product=today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 46538
+      }
+    },
+    {
+      "persona": "guest",
+      "route": "today-detail",
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "status": 200,
+      "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "signals": {
+        "hasLockCard": true,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 41859
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "_login",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "login": "success"
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "home",
+      "url": "/",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43796
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "free",
+      "url": "/free",
+      "status": 200,
+      "finalPath": "/free",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43618
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "pricing",
+      "url": "/pricing",
+      "status": 200,
+      "finalPath": "/pricing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 63470
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "saju-new",
+      "url": "/saju/new",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43651
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "credits",
+      "url": "/credits",
+      "status": 200,
+      "finalPath": "/credits",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39092
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "dialogue",
+      "url": "/dialogue",
+      "status": 200,
+      "finalPath": "/dialogue",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 60991
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "my-results",
+      "url": "/my/results",
+      "status": 200,
+      "finalPath": "/my/results",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43730
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "my-billing",
+      "url": "/my/billing",
+      "status": 200,
+      "finalPath": "/my/billing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 57942
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "membership-co",
+      "url": "/membership/checkout?product=today-detail",
+      "status": 200,
+      "finalPath": "/membership/checkout?product=today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 46621
+      }
+    },
+    {
+      "persona": "fresh",
+      "route": "today-detail",
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "status": 200,
+      "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "signals": {
+        "hasLockCard": true,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 41906
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "_login",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "login": "success"
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "home",
+      "url": "/",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43798
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "free",
+      "url": "/free",
+      "status": 200,
+      "finalPath": "/free",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43620
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "pricing",
+      "url": "/pricing",
+      "status": 200,
+      "finalPath": "/pricing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 63472
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "saju-new",
+      "url": "/saju/new",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43653
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "credits",
+      "url": "/credits",
+      "status": 200,
+      "finalPath": "/credits",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39094
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "dialogue",
+      "url": "/dialogue",
+      "status": 200,
+      "finalPath": "/dialogue",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 60993
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "my-results",
+      "url": "/my/results",
+      "status": 200,
+      "finalPath": "/my/results",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43732
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "my-billing",
+      "url": "/my/billing",
+      "status": 200,
+      "finalPath": "/my/billing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 57948
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "membership-co",
+      "url": "/membership/checkout?product=today-detail",
+      "status": 200,
+      "finalPath": "/membership/checkout?product=today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 46623
+      }
+    },
+    {
+      "persona": "credit",
+      "route": "today-detail",
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "status": 200,
+      "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "signals": {
+        "hasLockCard": true,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 41908
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "_login",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "login": "success"
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "home",
+      "url": "/",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43796
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "free",
+      "url": "/free",
+      "status": 200,
+      "finalPath": "/free",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43618
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "pricing",
+      "url": "/pricing",
+      "status": 200,
+      "finalPath": "/pricing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 63470
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "saju-new",
+      "url": "/saju/new",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43651
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "credits",
+      "url": "/credits",
+      "status": 200,
+      "finalPath": "/credits",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39092
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "dialogue",
+      "url": "/dialogue",
+      "status": 200,
+      "finalPath": "/dialogue",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 60991
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "my-results",
+      "url": "/my/results",
+      "status": 200,
+      "finalPath": "/my/results",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43730
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "my-billing",
+      "url": "/my/billing",
+      "status": 200,
+      "finalPath": "/my/billing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 58823
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "membership-co",
+      "url": "/membership/checkout?product=today-detail",
+      "status": 200,
+      "finalPath": "/membership/checkout?product=today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 46621
+      }
+    },
+    {
+      "persona": "plus",
+      "route": "today-detail",
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "status": 200,
+      "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "signals": {
+        "hasLockCard": true,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 41906
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "_login",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "login": "success"
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "home",
+      "url": "/",
+      "status": 200,
+      "finalPath": "/",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43798
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "free",
+      "url": "/free",
+      "status": 200,
+      "finalPath": "/free",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43620
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "pricing",
+      "url": "/pricing",
+      "status": 200,
+      "finalPath": "/pricing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 63472
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "saju-new",
+      "url": "/saju/new",
+      "status": 200,
+      "finalPath": "/saju/new",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 43653
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "credits",
+      "url": "/credits",
+      "status": 200,
+      "finalPath": "/credits",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 39094
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "dialogue",
+      "url": "/dialogue",
+      "status": 200,
+      "finalPath": "/dialogue",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 60993
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "my-results",
+      "url": "/my/results",
+      "status": 200,
+      "finalPath": "/my/results",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 44476
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "my-billing",
+      "url": "/my/billing",
+      "status": 200,
+      "finalPath": "/my/billing",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 58834
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "membership-co",
+      "url": "/membership/checkout?product=today-detail",
+      "status": 200,
+      "finalPath": "/membership/checkout?product=today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 46623
+      }
+    },
+    {
+      "persona": "premium",
+      "route": "today-detail",
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "status": 200,
+      "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "signals": {
+        "hasLockCard": false,
+        "hasLoginRedirect": false,
+        "hasMembershipCheckoutLogin": false,
+        "hasErrorOrEmpty": false,
+        "contentBytes": 60180
+      }
+    },
+    {
+      "persona": "_test",
+      "route": "open-redirect",
+      "url": "/login?next=https://attacker.example/",
+      "status": 200,
+      "finalPath": "http://localhost:3100/login?next=https%3A%2F%2Fattacker.example%2F",
+      "signals": {
+        "externalLeaked": false,
+        "finalOrigin": "http://localhost:3100"
+      }
+    }
+  ]
+}
