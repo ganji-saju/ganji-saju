@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GangiCharacter } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { AiChatBillingSummary } from '@/lib/credits/ai-chat-access';
@@ -469,7 +469,7 @@ export function DialogueChatPanel({
             ) : null}
             <div className="mt-4 rounded-[1.15rem] border border-[var(--app-pink-line)] bg-white/85 px-4 py-4">
               <div className="flex items-start gap-3">
-                <GangiCharacter zodiac={selectedExpert.id} />
+                <ZodiacChip kind={selectedExpert.id as ZodiacKey} size="md" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold text-[var(--app-pink-strong)]">
                     선택한 전문 분야
@@ -545,7 +545,11 @@ export function DialogueChatPanel({
               className={`flex ${roomMode && !isUser ? 'items-start gap-3' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
             >
               {roomMode && !isUser ? (
-                <GangiCharacter zodiac={message.expertId ?? selectedExpert.id} size="sm" className="mt-1" />
+                <ZodiacChip
+                  kind={(message.expertId ?? selectedExpert.id) as ZodiacKey}
+                  size="sm"
+                  className="mt-1"
+                />
               ) : null}
               <div
                 className={

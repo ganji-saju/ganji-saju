@@ -1,11 +1,14 @@
+// Redesign 2026-05-13 (Claude Design / screens-b.jsx ScreenDialogue):
+// 대화방 진입 — 12지신 전문가 선택 list. PR6+ 디자인 언어 적용.
+// 라우팅·이벤트 무수정.
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { SafetyNotice } from '@/components/common/safety-notice';
-import { SectionHeader } from '@/components/layout/section-header';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { GangiCharacter, GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
@@ -42,62 +45,85 @@ export default async function DialoguePage({
 
   if (shouldOpenRoom) {
     const nextParams = new URLSearchParams();
-
     if (params.question) nextParams.set('question', params.question);
     if (params.sourceSessionId) nextParams.set('sourceSessionId', params.sourceSessionId);
     if (params.concern) nextParams.set('concern', params.concern);
     if (params.from) nextParams.set('from', params.from);
     if (params.autoStart) nextParams.set('autoStart', params.autoStart);
-
     const query = nextParams.toString();
     redirect(`/dialogue/${selectedExpertId}${query ? `?${query}` : ''}`);
   }
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
-      <AppPage className="gangi-subpage space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="대화방" />
-        <GangiIntro
-          title={
-            <>
+
+        <section className="space-y-5 px-1">
+          {/* §1 Hero */}
+          <div>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              12간지 전문 분야
+            </div>
+            <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               어떤 선생님과
               <br />
               이야기 나눠볼까요?
-            </>
-          }
-          description="분야를 고르고 바로 물어보세요."
-        />
-
-        <section className="gangi-card-panel p-5">
-          <SectionHeader
-            eyebrow="12간지 전문 분야"
-            title="무엇을 물어볼까요?"
-            titleClassName="text-2xl"
-          />
-          <div className="mt-5 flex flex-col gap-2.5">
-            {DIALOGUE_EXPERTS.map((expert) => (
-              <Link
-                key={expert.id}
-                href={`/dialogue/${expert.id}`}
-                className="gangi-list-link"
-                data-active={selectedExpertId === expert.id}
-              >
-                <GangiCharacter zodiac={expert.id} />
-                <span className="gangi-list-copy">
-                  <strong>
-                    {expert.teacherName}
-                  </strong>
-                  <em>{expert.label} · {expert.description}</em>
-                </span>
-                <span className="gangi-list-price">
-                  {selectedExpertId === expert.id ? '선택됨' : '선택'}
-                </span>
-              </Link>
-            ))}
+            </h1>
+            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+              분야를 고르고 바로 물어보세요. 각 선생님이 자신의 결로 답해드립니다.
+            </p>
           </div>
-        </section>
 
-        <section>
+          {/* §2 12지 전문가 list */}
+          <div className="grid gap-2.5">
+            {DIALOGUE_EXPERTS.map((expert) => {
+              const active = selectedExpertId === expert.id;
+              return (
+                <Link
+                  key={expert.id}
+                  href={`/dialogue/${expert.id}`}
+                  className="flex items-center gap-3 rounded-[14px] border bg-white p-3.5 transition"
+                  style={{
+                    borderColor: active ? 'var(--app-pink-line)' : 'var(--app-line)',
+                    background: active ? 'var(--app-pink-soft)' : '#fff',
+                  }}
+                  data-active={active}
+                >
+                  <ZodiacChip kind={expert.id as ZodiacKey} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      {expert.teacherName}
+                    </div>
+                    <div className="mt-0.5 text-[12px] leading-[1.5] text-[var(--app-copy-muted)]">
+                      <span className="font-bold text-[var(--app-pink-strong)]">
+                        {expert.label}
+                      </span>{' '}
+                      · {expert.description}
+                    </div>
+                  </div>
+                  <span
+                    className="shrink-0 rounded-full px-3 py-1 text-[11px] font-extrabold"
+                    style={
+                      active
+                        ? {
+                            background: 'var(--app-pink)',
+                            color: '#fff',
+                          }
+                        : {
+                            border: '1px solid var(--app-line)',
+                            color: 'var(--app-copy-muted)',
+                          }
+                    }
+                  >
+                    {active ? '선택됨' : '선택'}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* §3 안전 안내 */}
           <SafetyNotice variant="crisis" />
         </section>
       </AppPage>
