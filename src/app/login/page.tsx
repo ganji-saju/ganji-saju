@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState, type FormEvent, type ReactNode } from 'rea
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
+import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
@@ -17,7 +18,7 @@ const DAYS = Array.from({ length: 31 }, (_, index) => index + 1);
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
 const MINUTES = Array.from({ length: 12 }, (_, index) => index * 5);
 
-type LoginMode = 'signup' | 'login' | 'recover' | 'reset';
+type LoginMode = 'gateway' | 'signup' | 'login' | 'recover' | 'reset';
 type GenderValue = 'male' | 'female' | '';
 
 type SignupForm = {
@@ -193,7 +194,9 @@ function getInitialLoginMode(value: string | null): LoginMode {
   if (value === 'reset-password') return 'reset';
   if (value === 'recover') return 'recover';
   if (value === 'signup') return 'signup';
-  return 'login';
+  if (value === 'login' || value === 'email') return 'login';
+  // 리디자인 2026-05-13: 기본은 SNS gateway. ?mode=login 으로 이메일 폼 직링크도 유지.
+  return 'gateway';
 }
 
 function buildProfilePayloadFromSignupForm(form: SignupForm) {
@@ -266,14 +269,201 @@ function NativeSelect({
   );
 }
 
-function LoginContent() {
+// 리디자인 2026-05-13 (Claude Design / screens-b.jsx ScreenAuth) — SNS gateway 진입 화면.
+// 라우팅/이벤트는 무수정. 카카오·Google: 기존 signInWithProvider 그대로 호출,
+// Apple: 별도 PR (REDESIGN-PENDING-LINKS.md 기록), 이메일: 같은 페이지 내 mode 전환.
+function GatewayView({
+  disabled,
+  statusMessage,
+  errorMessage,
+  onProvider,
+  onOpenEmailLogin,
+  onOpenSignup,
+}: {
+  disabled: boolean;
+  statusMessage: string;
+  errorMessage: string;
+  onProvider: (provider: 'google' | 'kakao') => void;
+  onOpenEmailLogin: () => void;
+  onOpenSignup: () => void;
+}) {
+  return (
+    <div className="gangi-auth-gateway relative isolate w-full overflow-hidden">
+      {/* Floating zodiac decorations — 시각 전용 (aria 라벨은 ZodiacChip 내부) */}
+      <div className="pointer-events-none absolute -right-5 top-3 opacity-60" aria-hidden="true">
+        <ZodiacChip kind="rabbit" size="xl" />
+      </div>
+      <div className="pointer-events-none absolute -left-3 top-32 opacity-50" aria-hidden="true">
+        <ZodiacChip kind="dragon" size="lg" />
+      </div>
+      <div className="pointer-events-none absolute right-24 top-16 opacity-50" aria-hidden="true">
+        <ZodiacChip kind="snake" size="sm" />
+      </div>
+
+      <div className="relative pt-[180px]">
+        <div
+          className="mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] text-white"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
+            fontFamily: 'var(--font-han)',
+            fontSize: 30,
+            fontWeight: 800,
+            boxShadow: '0 14px 28px rgba(216,27,114,0.32)',
+          }}
+        >
+          干
+        </div>
+        <h1
+          className="text-[28px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]"
+          style={{ fontFamily: 'var(--font-han)' }}
+        >
+          간지사주
+        </h1>
+        <div className="mt-1 text-[13px] font-bold text-[var(--app-pink-strong)]">
+          달빛인생 · 오늘 바로 보는 운세
+        </div>
+
+        <div className="mt-9 flex flex-col gap-2.5">
+          <button
+            type="button"
+            onClick={() => onProvider('kakao')}
+            disabled={disabled}
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] text-[14.5px] font-extrabold disabled:opacity-60"
+            style={{
+              background: '#fee500',
+              color: '#191919',
+              border: '1px solid rgba(0,0,0,0.06)',
+            }}
+          >
+            <span
+              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] text-[13px] font-black"
+              style={{ background: '#191919', color: '#fee500' }}
+            >
+              K
+            </span>
+            카카오로 시작하기
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onProvider('google')}
+            disabled={disabled}
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-white text-[14.5px] font-bold text-[#1f1f1f] disabled:opacity-60"
+            style={{ border: '1.5px solid var(--app-line)' }}
+          >
+            <span
+              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] bg-white text-[13px] font-black"
+              style={{ color: '#4285F4', border: '1px solid rgba(0,0,0,0.08)' }}
+            >
+              G
+            </span>
+            Google로 계속하기
+          </button>
+
+          {/* Apple OAuth: PENDING — 별도 PR에서 구현 예정. 시각만 표시. */}
+          <button
+            type="button"
+            disabled
+            data-redesign-pending="true"
+            aria-label="Apple로 계속하기 (준비 중)"
+            title="준비 중"
+            className="flex h-[52px] cursor-not-allowed items-center justify-center gap-2.5 rounded-[14px] text-[14.5px] font-bold text-white opacity-60"
+            style={{ background: '#000' }}
+          >
+            <svg
+              className="-mt-0.5 h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M16.365 1.43c0 1.14-.42 2.22-1.18 3.02-.76.8-1.97 1.42-3.07 1.34-.13-1.1.42-2.27 1.16-3.02.82-.82 2.13-1.4 3.09-1.34zM20 17.18c-.55 1.26-.82 1.82-1.53 2.93-.99 1.55-2.4 3.49-4.14 3.5-1.55.02-1.95-1.02-4.06-1-2.1.01-2.54 1.02-4.1 1-1.74-.02-3.07-1.78-4.06-3.33C-.42 16.84-.7 11.9 1.05 9.28 2.29 7.4 4.25 6.3 6.1 6.3c1.88 0 3.06 1.04 4.62 1.04 1.51 0 2.43-1.04 4.6-1.04 1.64 0 3.38.9 4.61 2.45-4.05 2.23-3.39 8.05.07 8.43z" />
+            </svg>
+            Apple로 계속하기
+            <span className="text-[10px] font-bold opacity-80">(준비 중)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenEmailLogin}
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-transparent text-[14.5px] font-bold text-[var(--app-ink)]"
+            style={{ border: '1.5px solid var(--app-line)' }}
+          >
+            <span
+              className="grid h-[22px] w-[22px] place-items-center rounded-full text-[11px] font-black"
+              style={{
+                background: 'var(--app-pink-soft)',
+                color: 'var(--app-pink-strong)',
+              }}
+            >
+              @
+            </span>
+            이메일로 로그인
+          </button>
+        </div>
+
+        <div
+          className="mt-[22px] flex items-center gap-2.5 rounded-[14px] px-3.5 py-3.5"
+          style={{
+            background: 'rgba(255,255,255,0.7)',
+            border: '1px solid var(--app-line)',
+          }}
+        >
+          <ZodiacChip kind="rooster" size="sm" />
+          <div className="text-[12px] leading-relaxed text-[var(--app-copy-muted)]">
+            <strong className="text-[var(--app-ink)]">로그인 없이도</strong> 오늘운세·타로는 무료로 볼 수 있어요
+          </div>
+        </div>
+
+        <div className="mt-[18px] text-center text-[11px] leading-relaxed text-[var(--app-copy-soft)]">
+          시작 시{' '}
+          <LegalLinks className="text-[var(--app-pink-strong)]" />
+          에 동의합니다.
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenSignup}
+          className="mt-3 w-full text-center text-[12px] font-medium text-[var(--app-copy-muted)] underline underline-offset-4"
+        >
+          처음 오셨나요? 이메일로 회원가입
+        </button>
+
+        {!hasSupabaseBrowserEnv ? (
+          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+            로컬 환경에서는 Supabase URL과 공개 키를 설정해야 회원가입과 로그인을 사용할 수 있습니다.
+          </p>
+        ) : null}
+
+        {statusMessage ? (
+          <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+            {statusMessage}
+          </p>
+        ) : null}
+
+        {errorMessage ? (
+          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function LoginContent({
+  mode,
+  setMode,
+}: {
+  mode: LoginMode;
+  setMode: (next: LoginMode) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
   const callbackError = searchParams.get('error');
   const callbackProvider = searchParams.get('provider');
   const callbackReason = searchParams.get('reason');
-  const [mode, setMode] = useState<LoginMode>(() => getInitialLoginMode(searchParams.get('mode')));
   const [signupForm, setSignupForm] = useState<SignupForm>(DEFAULT_SIGNUP_FORM);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [recoveryEmail, setRecoveryEmail] = useState('');
@@ -566,6 +756,28 @@ function LoginContent() {
   }
 
   const disabled = !hasSupabaseBrowserEnv;
+
+  if (mode === 'gateway') {
+    return (
+      <GatewayView
+        disabled={disabled}
+        statusMessage={statusMessage}
+        errorMessage={errorMessage}
+        onProvider={signInWithProvider}
+        onOpenEmailLogin={() => {
+          setMode('login');
+          setErrorMessage('');
+          setStatusMessage('');
+        }}
+        onOpenSignup={() => {
+          setMode('signup');
+          setErrorMessage('');
+          setStatusMessage('');
+        }}
+      />
+    );
+  }
+
   const modeCopy = {
     login: {
       eyebrow: '로그인',
@@ -605,7 +817,19 @@ function LoginContent() {
         </p>
       </div>
 
-      {mode !== 'login' ? (
+      {mode === 'login' ? (
+        <button
+          type="button"
+          onClick={() => {
+            setMode('gateway');
+            setErrorMessage('');
+            setStatusMessage('');
+          }}
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+        >
+          ← SNS 로그인으로 돌아가기
+        </button>
+      ) : (
         <button
           type="button"
           onClick={() => {
@@ -617,7 +841,7 @@ function LoginContent() {
         >
           로그인 화면으로 돌아가기
         </button>
-      ) : null}
+      )}
 
       {mode === 'signup' ? (
         <form className="mt-6 space-y-5 text-left" onSubmit={submitSignup}>
@@ -1054,23 +1278,62 @@ function LoginContent() {
   );
 }
 
+function LoginScaffold() {
+  const searchParams = useSearchParams();
+  const [mode, setMode] = useState<LoginMode>(() =>
+    getInitialLoginMode(searchParams.get('mode'))
+  );
+  const isGateway = mode === 'gateway';
+
+  // 리디자인 2026-05-13: gateway 모드는 자체 그라데이션 + 干 hero 사용.
+  // 카드 모드(login/signup/recover/reset)는 기존 달 lockup + card 보존.
+  return (
+    <AppPage
+      className={`gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)] ${
+        isGateway ? 'gangi-auth-gateway-page' : ''
+      }`}
+    >
+      {isGateway ? (
+        <div
+          className="mx-auto flex w-full max-w-[420px] flex-col items-stretch px-6 py-10"
+          style={{
+            background:
+              'linear-gradient(180deg, #fff 0%, var(--app-pink-soft) 100%)',
+            borderRadius: 28,
+          }}
+        >
+          <LoginContent mode={mode} setMode={setMode} />
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+              달
+            </div>
+            <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+            <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
+          </div>
+          <div className="w-full">
+            <LoginContent mode={mode} setMode={setMode} />
+          </div>
+        </>
+      )}
+    </AppPage>
+  );
+}
+
 export default function LoginPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
-      <AppPage className="gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)]">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
-            달
+      <Suspense
+        fallback={
+          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center text-[var(--app-copy-muted)]">
+            로딩중...
           </div>
-          <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
-          <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
-        </div>
-        <div className="w-full">
-          <Suspense fallback={<div className="text-[var(--app-copy-muted)]">로딩중...</div>}>
-            <LoginContent />
-          </Suspense>
-        </div>
-      </AppPage>
+        }
+      >
+        <LoginScaffold />
+      </Suspense>
     </AppShell>
   );
 }

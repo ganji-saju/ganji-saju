@@ -43,6 +43,20 @@ PR3 이후 페이지별로 작업 진행 시, 매핑 안 되는 버튼이 발견
 
 ## PR3 이후 (페이지별)
 
-<!-- PR3 — 로그인 페이지 (작성 예정) -->
+### PR3 — 로그인 페이지 (`/login`) — 보류 1건
+
+#### Apple OAuth 버튼
+- **버튼 라벨**: "Apple로 계속하기 (준비 중)"
+- **위치**: [src/app/login/page.tsx](../src/app/login/page.tsx) — `GatewayView` 컴포넌트 내부 (mockup `screens-b.jsx` ScreenAuth 3번째 SNS 버튼)
+- **mockup 출처**: `screens-b.jsx` 458행, gateway 진입 화면의 검은색 Apple 버튼
+- **현재 처리**: `<button disabled>` + `data-redesign-pending="true"` + `title="준비 중"` + `aria-label="Apple로 계속하기 (준비 중)"` + opacity 60%. 클릭 핸들러 없음.
+- **추정 라우트**: Supabase OAuth provider 추가 필요 (`signInWithOAuth({ provider: 'apple', ... })`). 별도 PR.
+- **선행 작업**:
+  1. Apple Developer Program 가입 (유료, $99/년) 및 Service ID 발급
+  2. Apple Sign In Key (`.p8`) 생성 + Team ID / Key ID 수집
+  3. Supabase Dashboard → Authentication → Providers → Apple 활성화 + 위 자격증명 입력
+  4. `signInWithProvider` 함수에 `'apple'` 케이스 추가 (현재는 `'google' | 'kakao'` 만 허용)
+- **상태**: 🟡 보류 (별도 PR — 인프라 작업 선행 필요)
+
 <!-- PR4 — 오늘운세 (작성 예정) -->
 <!-- … -->
