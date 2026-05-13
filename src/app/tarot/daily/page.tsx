@@ -7,13 +7,17 @@ import {
 import { TAROT_QUESTION_OPTIONS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '타로';
+const PAGE_DESC = '질문을 고르고 카드 한 장을 뽑아 오늘 마음의 흐름을 바로 확인하세요.';
 
 export const metadata: Metadata = {
-  title: '타로',
-  description: '질문을 고르고 카드 한 장을 뽑아 오늘 마음의 흐름을 바로 확인하세요.',
-  alternates: {
-    canonical: '/tarot/daily',
-  },
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: '/tarot/daily' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/tarot/daily' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default async function DailyTarotPage() {

@@ -3,11 +3,17 @@ import { redirect } from 'next/navigation';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { TodayFortuneExperience } from '@/features/today-fortune/today-fortune-experience';
 import { AppShell } from '@/shared/layout/app-shell';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '오늘의 운세';
+const PAGE_DESC = '오늘 연락, 돈, 미팅, 관계, 컨디션 가운데 가장 걸리는 고민을 먼저 고르고 무료 결과를 바로 확인하세요.';
 
 export const metadata: Metadata = {
-  title: '오늘의 운세',
-  description: '오늘 연락, 돈, 미팅, 관계, 컨디션 가운데 가장 걸리는 고민을 먼저 고르고 무료 결과를 바로 확인하세요.',
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
   alternates: { canonical: '/today-fortune' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/today-fortune' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default async function TodayFortunePage({

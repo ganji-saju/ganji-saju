@@ -4,10 +4,21 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
-import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+  SITE_NAME,
+  getSiteUrl,
+} from "@/lib/site";
 
+// P1-7 fix (audit 2026-05-13): 코드베이스 grep 결과 font-weight 800/900 사용 0건이라
+// 6 weight → 4 weight 로 축소 (Korean glyph subset 약 33% download 절감, 모바일 LCP 개선).
+// 잔여 weight 변수(--app-type-body: 450, --app-type-button: 650)는 브라우저가
+// 인접 weight(400/700) 로 자동 보간해 시각 영향 거의 없음.
 const brandSans = Noto_Sans_KR({
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
   preload: false,
   variable: "--font-dalbit-sans",
@@ -43,6 +54,9 @@ export const metadata: Metadata = {
     "운세",
     "명리학",
   ],
+  // P1-4 fix (audit 2026-05-13): default OG/Twitter 카드에 images 명시.
+  // 페이지별 openGraph 가 명시되지 않은 경우의 fallback. 페이지의 openGraph 는
+  // layout 의 openGraph 를 replace 하므로, 각 핵심 페이지는 buildOpenGraph() 를 사용한다.
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -50,11 +64,20 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
     url: "/",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: DEFAULT_OG_IMAGE_WIDTH,
+        height: DEFAULT_OG_IMAGE_HEIGHT,
+        alt: SITE_NAME,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   verification: {
     google: "oi2g6kU6Sh-Ko3-4dJFPDknRw1f-SwaSLzOUa0Y43ng",

@@ -16,13 +16,17 @@ import {
   formatWon,
 } from '@/lib/payments/catalog';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '가격 한눈보기';
+const PAGE_DESC = '달빛인생의 무료 운세, 550원/990원 소액 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.';
 
 export const metadata: Metadata = {
-  title: '가격 한눈보기',
-  description: '달빛인생의 무료 운세, 550원/990원 소액 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
-  alternates: {
-    canonical: '/pricing',
-  },
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: '/pricing' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/pricing' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits' || item.id === 'subscription_30');

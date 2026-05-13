@@ -12,14 +12,17 @@ import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 import { GANGI_ZODIAC, GangiCharacter } from '@/components/gangi/gangi-ui';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '내 띠 운세';
+const PAGE_DESC = '생년월일과 입춘 기준으로 내 띠를 먼저 확인하고 오늘의 흐름을 가볍게 살펴보세요.';
 
 export const metadata: Metadata = {
-  title: '내 띠 운세',
-  description:
-    '생년월일과 입춘 기준으로 내 띠를 먼저 확인하고 오늘의 흐름을 가볍게 살펴보세요.',
-  alternates: {
-    canonical: '/zodiac',
-  },
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: '/zodiac' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/zodiac' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default async function ZodiacPage() {

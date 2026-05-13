@@ -3,11 +3,17 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppShell } from '@/shared/layout/app-shell';
 import { GangiIntro, GangiListLink, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { GANGI_FREE_HUB_ITEMS } from '@/content/gangi-market';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '무료운세';
+const PAGE_DESC = '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.';
 
 export const metadata: Metadata = {
-  title: '무료운세',
-  description: '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.',
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
   alternates: { canonical: '/free' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/free' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default function FreeFortunePage() {
