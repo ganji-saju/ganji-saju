@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { ActionCluster } from '@/components/layout/action-cluster';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
@@ -1066,8 +1065,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
         <section className="grid gap-4 lg:gap-5">
           <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">
+            {/* Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenSajuIntake): 3-bar step indicator */}
             <div className="mb-4 flex items-center justify-between gap-3 sm:mb-6">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <div
+                className="flex min-w-0 flex-1 items-center gap-1.5"
+                role="list"
+                aria-label="진행 단계"
+              >
                 {steps.map((item, index) => (
                   <button
                     key={item.id}
@@ -1079,14 +1083,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                       }
                     }}
                     className={cn(
-                      'h-2.5 rounded-full transition-all',
-                      index === activeIndex
-                        ? 'w-10 bg-[var(--app-pink)]'
-                        : index < activeIndex
-                          ? 'w-5 bg-[var(--app-pink)]/48'
-                          : 'w-5 bg-[var(--app-line)]'
+                      'h-1 flex-1 rounded-full transition-all',
+                      index <= activeIndex
+                        ? 'bg-[var(--app-pink)]'
+                        : 'bg-[var(--app-line)]'
                     )}
                     aria-label={`${index + 1}단계 ${item.eyebrow}`}
+                    aria-current={index === activeIndex ? 'step' : undefined}
                   />
                 ))}
               </div>
@@ -1107,7 +1110,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             >
               <div key={activeStep.id} className="saju-intake-active-slide">
                 <SectionHeader
-                  eyebrow={activeStep.eyebrow}
+                  eyebrow={`STEP ${activeIndex + 1} / ${steps.length} · ${activeStep.eyebrow}`}
                   title={activeStep.title}
                   titleClassName="text-2xl sm:text-3xl"
                   description={activeStep.description}
@@ -1184,27 +1187,35 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               </div>
             ) : null}
 
-            <ActionCluster className="mt-5 sm:mt-8">
-              <Button
-                type="button"
-                onClick={goPrev}
-                disabled={activeIndex === 0 || isSubmitting}
-                variant="secondary"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                이전
-              </Button>
+            {/* Redesign 2026-05-13 (Claude Design / screens-a.jsx): full-width pink CTA + secondary 이전 + footer note */}
+            <div className="mt-5 flex flex-col gap-2.5 sm:mt-8">
               <Button
                 type="button"
                 onClick={goNext}
                 disabled={isSubmitting}
                 size="lg"
+                className="h-12 w-full rounded-[14px] text-[15px] font-extrabold"
               >
                 {nextLabel}
                 {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
               </Button>
-            </ActionCluster>
+              {activeIndex > 0 ? (
+                <Button
+                  type="button"
+                  onClick={goPrev}
+                  disabled={isSubmitting}
+                  variant="ghost"
+                  size="sm"
+                  className="mx-auto h-9 px-4 text-[12.5px] font-medium text-[var(--app-copy-muted)] hover:text-[var(--app-pink-strong)]"
+                >
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                  이전 단계로
+                </Button>
+              ) : null}
+              <p className="text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+                결과는 자동으로 보관함에 저장돼요
+              </p>
+            </div>
           </SectionSurface>
 
         </section>
