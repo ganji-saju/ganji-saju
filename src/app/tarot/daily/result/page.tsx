@@ -1,3 +1,6 @@
+// Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenTarot §3):
+// 카드 + 메타 side-by-side hero · 조언 카드 · 풀이 stack · 액션 row.
+// 라우팅·데이터·이벤트 무수정.
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Bookmark, RotateCcw } from 'lucide-react';
@@ -41,54 +44,110 @@ export default async function TarotResultPage({ searchParams }: Props) {
     orientation,
   });
   const pickHref = `/tarot/daily/pick?question=${encodeURIComponent(currentQuestion)}`;
+  const sajuHref = readingSlug ? `/saju/${readingSlug}` : '/saju/new';
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage gangi-tarot-result-page space-y-5">
-        <GangiPageHeader title="타로 한 장" backHref={pickHref} />
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
+        <GangiPageHeader title="오늘의 타로" backHref={pickHref} />
 
-        <section className="gangi-tarot-draw-result">
-          <TarotCardArtwork
-            cardId={reading.card.name_short}
-            shortName={reading.shortName}
-            displayName={reading.displayName}
-            cardMarker={reading.cardMarker}
-            arcanaLabel={reading.arcanaLabel}
-            className="mx-auto gangi-tarot-result-art"
-            priority
-          />
-          <p className="gangi-sub-eyebrow">뽑힌 카드</p>
-          <h1>{reading.displayName}</h1>
-          <span>{reading.arcanaLabel}</span>
-        </section>
-
-        <section className="gangi-tarot-advice-card">
-          <p>오늘의 조언</p>
-          <h2>{reading.answer}</h2>
-          <span>{reading.action}</span>
-        </section>
-
-        <section className="gangi-tarot-reading-stack" aria-label="타로 풀이">
-          <article>
-            <strong>마음에 둘 말</strong>
-            <p>{reading.guidance}</p>
+        <section className="space-y-5 px-1">
+          {/* §1 Drawn card + 메타 — mockup §3 side-by-side */}
+          <article className="rounded-[18px] border border-[var(--app-line)] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[var(--app-ink)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.04em] text-white">
+                DRAWN
+              </span>
+              <span className="text-[12px] text-[var(--app-copy-soft)]">
+                방금 뽑은 카드
+              </span>
+            </div>
+            <div className="mt-3.5 flex gap-3.5">
+              <div className="shrink-0">
+                <TarotCardArtwork
+                  cardId={reading.card.name_short}
+                  shortName={reading.shortName}
+                  displayName={reading.displayName}
+                  cardMarker={reading.cardMarker}
+                  arcanaLabel={reading.arcanaLabel}
+                  className="h-[132px] w-[92px]"
+                  priority
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  {reading.arcanaLabel}
+                </div>
+                <h1 className="mt-0.5 text-[20px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+                  {reading.displayName}
+                </h1>
+                <div className="mt-1 text-[12.5px] text-[var(--app-copy-soft)]">
+                  {reading.shortName}
+                </div>
+                <p className="mt-2.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]">
+                  {reading.answer}
+                </p>
+              </div>
+            </div>
           </article>
-          <article>
-            <strong>사주와 이어보면</strong>
-            <p>{reading.sajuBlend}</p>
-          </article>
-        </section>
 
-        <div className="gangi-tarot-result-actions">
-          <Link href={pickHref} className="gangi-secondary-button">
-            <RotateCcw className="h-5 w-5" />
-            다시 뽑기
-          </Link>
-          <Link href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'} className="gangi-primary-button">
-            <Bookmark className="h-5 w-5" />
-            사주로 이어보기
-          </Link>
-        </div>
+          {/* §2 오늘의 조언 */}
+          <article
+            className="rounded-[18px] border p-5"
+            style={{
+              background: 'var(--app-pink-soft)',
+              borderColor: 'var(--app-pink-line)',
+            }}
+          >
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              오늘의 조언
+            </div>
+            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+              {reading.answer}
+            </h2>
+            <p className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+              {reading.action}
+            </p>
+          </article>
+
+          {/* §3 풀이 stack */}
+          <section className="space-y-2.5">
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                마음에 둘 말
+              </div>
+              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+                {reading.guidance}
+              </p>
+            </article>
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                사주와 이어보면
+              </div>
+              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+                {reading.sajuBlend}
+              </p>
+            </article>
+          </section>
+
+          {/* §4 액션 — 다시 뽑기 + 사주로 이어보기 */}
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href={pickHref}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-4 py-3 text-[13px] font-bold text-[var(--app-copy-muted)]"
+            >
+              <RotateCcw className="h-4 w-4" />
+              다시 뽑기
+            </Link>
+            <Link
+              href={sajuHref}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            >
+              <Bookmark className="h-4 w-4" />
+              사주로 이어보기
+            </Link>
+          </div>
+        </section>
       </AppPage>
     </AppShell>
   );
