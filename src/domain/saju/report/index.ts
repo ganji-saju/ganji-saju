@@ -3,8 +3,6 @@ export * from './grounding-types';
 export * from './personalization-context';
 export * from './build-grounding';
 export * from './build-report';
-export * from './build-report-scores';
-export * from './build-report-copy';
 export * from './yearly-types';
 export * from './build-yearly-report';
 export * from './lifetime-types';

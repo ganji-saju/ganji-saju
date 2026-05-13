@@ -5,7 +5,6 @@ import {
   recordFortuneFeedback,
   type FortuneFeedbackAccuracyLabel,
 } from '@/lib/fortune-feedback';
-import { readString } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
 
 const VALID_ACCURACY = new Set<FortuneFeedbackAccuracyLabel>([
@@ -13,6 +12,11 @@ const VALID_ACCURACY = new Set<FortuneFeedbackAccuracyLabel>([
   'partial',
   'miss',
 ]);
+
+function readString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
 
 export async function POST(req: NextRequest) {
   const payload = (await req.json().catch(() => null)) as Record<string, unknown> | null;

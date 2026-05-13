@@ -7,9 +7,12 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import { upsertProfile, type UserProfile } from '@/lib/profile';
-import { readStringValue } from '@/lib/api-utils';
 
 type SignupGender = 'male' | 'female';
+
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
 
 function parseIntInRange(value: unknown, min: number, max: number) {
   const parsed = Number(value);
@@ -23,9 +26,9 @@ function parseSignupPayload(payload: unknown) {
   }
 
   const data = payload as Record<string, unknown>;
-  const email = readStringValue(data.email).toLowerCase();
-  const password = readStringValue(data.password);
-  const displayName = readStringValue(data.displayName);
+  const email = readString(data.email).toLowerCase();
+  const password = readString(data.password);
+  const displayName = readString(data.displayName);
   const calendarType: UnifiedCalendarType = data.calendarType === 'lunar' ? 'lunar' : 'solar';
   const timeRule: UnifiedTimeRule =
     data.timeRule === 'trueSolarTime' ||
@@ -40,7 +43,7 @@ function parseSignupPayload(payload: unknown) {
   const unknownBirthTime = data.unknownBirthTime === true;
   const birthHour = unknownBirthTime ? null : parseIntInRange(data.birthHour, 0, 23);
   const birthMinute = unknownBirthTime ? null : parseIntInRange(data.birthMinute, 0, 59);
-  const birthLocation = getBirthLocationPreset(readStringValue(data.birthLocationCode));
+  const birthLocation = getBirthLocationPreset(readString(data.birthLocationCode));
 
   if (!email.includes('@')) {
     return { ok: false as const, error: '이메일 주소를 확인해 주세요.' };
@@ -79,7 +82,7 @@ function parseSignupPayload(payload: unknown) {
     birthDay,
     birthHour,
     birthMinute,
-    birthLocationCode: birthLocation.code ?? readStringValue(data.birthLocationCode),
+    birthLocationCode: birthLocation.code ?? readString(data.birthLocationCode),
     birthLocationLabel: birthLocation.label,
     birthLatitude: birthLocation.latitude,
     birthLongitude: birthLocation.longitude,

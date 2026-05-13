@@ -1,16 +1,4 @@
 import type { PlanSlug } from '@/content/moonlight';
-import {
-  PERSONALITY_COMPATIBILITY_MINI_NAME,
-  PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
-  PERSONALITY_COMPATIBILITY_MINI_PRICE,
-  PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
-} from '@/lib/payments/personality-compatibility';
-import {
-  SAJU_PERSONALITY_MINI_NAME,
-  SAJU_PERSONALITY_MINI_PACKAGE_ID,
-  SAJU_PERSONALITY_MINI_PRICE,
-  SAJU_PERSONALITY_MINI_PRODUCT_CODE,
-} from '@/lib/payments/saju-personality';
 
 export type PaymentPackageKind = 'credits' | 'subscription' | 'lifetime_report' | 'taste_product';
 export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
@@ -20,9 +8,7 @@ export type TasteProductId =
   | 'money-pattern'
   | 'work-flow'
   | 'monthly-calendar'
-  | 'year-core'
-  | typeof PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE
-  | typeof SAJU_PERSONALITY_MINI_PRODUCT_CODE;
+  | 'year-core';
 
 export interface PaymentPackage {
   id: string;
@@ -34,7 +20,6 @@ export interface PaymentPackage {
   subscriptionPlan?: SubscriptionPlan;
   tasteProductId?: TasteProductId;
   requiresSlug?: boolean;
-  requiresScope?: boolean;
 }
 
 export const PAYMENT_PACKAGES = [
@@ -126,24 +111,6 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'year-core',
     requiresSlug: true,
   },
-  {
-    id: PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
-    name: PERSONALITY_COMPATIBILITY_MINI_NAME,
-    credits: 0,
-    price: PERSONALITY_COMPATIBILITY_MINI_PRICE,
-    kind: 'taste_product',
-    tasteProductId: PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE,
-    requiresScope: true,
-  },
-  {
-    id: SAJU_PERSONALITY_MINI_PACKAGE_ID,
-    name: SAJU_PERSONALITY_MINI_NAME,
-    credits: 0,
-    price: SAJU_PERSONALITY_MINI_PRICE,
-    kind: 'taste_product',
-    tasteProductId: SAJU_PERSONALITY_MINI_PRODUCT_CODE,
-    requiresScope: true,
-  },
 ] as const satisfies readonly PaymentPackage[];
 
 export type PackageId = (typeof PAYMENT_PACKAGES)[number]['id'];
@@ -161,8 +128,6 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'work-flow': 'taste_work_flow',
   'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
-  [PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE]: PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
-  [SAJU_PERSONALITY_MINI_PRODUCT_CODE]: SAJU_PERSONALITY_MINI_PACKAGE_ID,
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -172,9 +137,7 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'money-pattern' ||
     value === 'work-flow' ||
     value === 'monthly-calendar' ||
-    value === 'year-core' ||
-    value === PERSONALITY_COMPATIBILITY_MINI_PRODUCT_CODE ||
-    value === SAJU_PERSONALITY_MINI_PRODUCT_CODE
+    value === 'year-core'
   );
 }
 

@@ -3,14 +3,6 @@ import {
   type PaymentPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
-import {
-  buildPersonalityCompatibilityResultHref,
-  isPersonalityCompatibilityMiniProductId,
-} from '@/lib/payments/personality-compatibility';
-import {
-  buildSajuPersonalityResultHref,
-  isSajuPersonalityMiniProductId,
-} from '@/lib/payments/saju-personality';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 
@@ -22,9 +14,7 @@ export type PaymentProductScopeKind =
   | 'today'
   | 'calendar-month'
   | 'year'
-  | 'lifetime-reading'
-  | 'personality-compatibility'
-  | 'saju-personality';
+  | 'lifetime-reading';
 
 export interface PaymentProductScope {
   productId: PaidProductId;
@@ -145,32 +135,6 @@ export async function resolvePaymentProductScope({
     };
   }
 
-  if (isPersonalityCompatibilityMiniProductId(productId)) {
-    return {
-      productId,
-      scopeKey: scope?.trim() || null,
-      kind: 'personality-compatibility',
-      reading: null,
-      readingKey: null,
-      slug: null,
-      targetYear: null,
-      targetMonth: null,
-    };
-  }
-
-  if (isSajuPersonalityMiniProductId(productId)) {
-    return {
-      productId,
-      scopeKey: scope?.trim() || null,
-      kind: 'saju-personality',
-      reading: null,
-      readingKey: null,
-      slug: null,
-      targetYear: null,
-      targetMonth: null,
-    };
-  }
-
   const readingIdentity = await resolveReadingIdentity(slug);
   if (!readingIdentity.slug || !readingIdentity.readingKey) {
     return {
@@ -276,12 +240,6 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
-  if (isPersonalityCompatibilityMiniProductId(productId)) {
-    return buildPersonalityCompatibilityResultHref(options.scope);
-  }
-  if (isSajuPersonalityMiniProductId(productId)) {
-    return buildSajuPersonalityResultHref(options.scope);
-  }
   if (productId === 'money-pattern') return '/saju/new?topic=wealth';
   if (productId === 'work-flow') return '/saju/new?topic=career';
 

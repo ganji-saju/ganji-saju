@@ -4,7 +4,6 @@ import {
   getLuckyElementsFromSajuData,
   getPersonalityFromSajuData,
 } from '@/lib/saju/elements';
-import { getCurrentKoreaYear } from '@/lib/api-utils';
 import type { BirthInput, Element } from '@/lib/saju/types';
 import { buildSajuReport } from './build-report';
 import { buildYearlyReport } from './build-yearly-report';
@@ -208,6 +207,16 @@ function buildMajorLuckReading(
       ? `${task} 지금은 이 흐름이 현재 선택과 관계 조정에 직접 작동하므로, 당장 결론보다 순서와 이유를 먼저 확인하는 편이 좋습니다.`
       : task,
   };
+}
+
+function getCurrentKoreaYear() {
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+  }).format(new Date());
+  const parsed = Number.parseInt(formatted, 10);
+
+  return Number.isInteger(parsed) ? parsed : new Date().getFullYear();
 }
 
 function buildKeywords(input: {

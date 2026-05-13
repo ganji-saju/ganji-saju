@@ -3,7 +3,6 @@ import {
   normalizeMoonlightCounselor,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
-import { getCurrentKoreaYear, parseTargetYear, readString } from '@/lib/api-utils';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
@@ -18,6 +17,34 @@ interface InterpretLifetimeRequest {
   targetYear?: number;
   regenerate?: boolean;
   counselorId?: MoonlightCounselorId;
+}
+
+function readString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function getCurrentKoreaYear() {
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+  }).format(new Date());
+  const parsed = Number.parseInt(formatted, 10);
+
+  return Number.isInteger(parsed) ? parsed : new Date().getFullYear();
+}
+
+function parseTargetYear(value: unknown) {
+  const year =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number.parseInt(value, 10)
+        : getCurrentKoreaYear();
+
+  return Number.isInteger(year) && year >= 1900 && year <= 2100
+    ? year
+    : getCurrentKoreaYear();
 }
 
 function parseInterpretLifetimeRequest(payload: unknown): InterpretLifetimeRequest | null {

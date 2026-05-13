@@ -1,13 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
-import { LightSection } from '@/components/moonlight/LightSection';
-import { PageIntro } from '@/components/moonlight/PageIntro';
-import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
+import { SafetyNotice } from '@/components/common/safety-notice';
+import { SectionHeader } from '@/components/layout/section-header';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiCharacter, GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import {
   DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
@@ -19,19 +17,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/dialogue' },
 };
 
-const RECOMMENDED_EXPERT_IDS = ['dragon', 'rat', 'sheep', 'ox'] as const;
-
-function buildExpertItem(expert: (typeof DIALOGUE_EXPERTS)[number]) {
-  return {
-    id: expert.id,
-    title: expert.teacherName,
-    description: `${expert.label} · ${expert.description}`,
-    href: `/dialogue/${expert.id}`,
-    badge: expert.topic,
-    meta: '선택',
-  };
-}
-
 export default async function DialoguePage({
   searchParams,
 }: {
@@ -42,8 +27,6 @@ export default async function DialoguePage({
     from?: string;
     autoStart?: string;
     expert?: string;
-    sajuPersonalityReportId?: string;
-    lifeArea?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -54,8 +37,7 @@ export default async function DialoguePage({
       params.sourceSessionId ||
       params.concern ||
       params.from ||
-      params.autoStart ||
-      params.sajuPersonalityReportId
+      params.autoStart
   );
 
   if (shouldOpenRoom) {
@@ -66,10 +48,6 @@ export default async function DialoguePage({
     if (params.concern) nextParams.set('concern', params.concern);
     if (params.from) nextParams.set('from', params.from);
     if (params.autoStart) nextParams.set('autoStart', params.autoStart);
-    if (params.sajuPersonalityReportId) {
-      nextParams.set('sajuPersonalityReportId', params.sajuPersonalityReportId);
-    }
-    if (params.lifeArea) nextParams.set('lifeArea', params.lifeArea);
 
     const query = nextParams.toString();
     redirect(`/dialogue/${selectedExpertId}${query ? `?${query}` : ''}`);
@@ -79,56 +57,49 @@ export default async function DialoguePage({
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       <AppPage className="gangi-subpage space-y-6">
         <GangiPageHeader title="대화방" />
-        <PageIntro
-          eyebrow="AI Dialogue"
-          title="풀이를 보고 더 묻고 싶을 때"
-          description="추천 선생님을 먼저 고르고, 필요하면 전체 분야에서 더 좁혀 물어보세요."
-          actions={
-            <Link href="/saju/personality" className="gangi-primary-button">
-              성향사주 보고 묻기
-            </Link>
+        <GangiIntro
+          title={
+            <>
+              어떤 선생님과
+              <br />
+              이야기 나눠볼까요?
+            </>
           }
+          description="분야를 고르고 바로 물어보세요."
         />
 
-        <LightSection
-          eyebrow="추천 선생님"
-          title="자주 이어지는 질문 4가지"
-          description="사주, 성향, 관계, 오늘 흐름을 먼저 열어둡니다."
-          surface="soft"
-        >
-          <FlowEntryList
-            items={DIALOGUE_EXPERTS.filter((expert) =>
-              RECOMMENDED_EXPERT_IDS.includes(expert.id as (typeof RECOMMENDED_EXPERT_IDS)[number])
-            ).map((expert) => ({
-              ...buildExpertItem(expert),
-              meta: selectedExpertId === expert.id ? '선택됨' : '시작',
-            }))}
+        <section className="gangi-card-panel p-5">
+          <SectionHeader
+            eyebrow="12간지 전문 분야"
+            title="무엇을 물어볼까요?"
+            titleClassName="text-2xl"
           />
-        </LightSection>
+          <div className="mt-5 flex flex-col gap-2.5">
+            {DIALOGUE_EXPERTS.map((expert) => (
+              <Link
+                key={expert.id}
+                href={`/dialogue/${expert.id}`}
+                className="gangi-list-link"
+                data-active={selectedExpertId === expert.id}
+              >
+                <GangiCharacter zodiac={expert.id} />
+                <span className="gangi-list-copy">
+                  <strong>
+                    {expert.teacherName}
+                  </strong>
+                  <em>{expert.label} · {expert.description}</em>
+                </span>
+                <span className="gangi-list-price">
+                  {selectedExpertId === expert.id ? '선택됨' : '선택'}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-        <LightSection
-          eyebrow="전체 선생님"
-          title="더 좁혀서 묻기"
-          description="필요할 때만 펼쳐보는 compact list입니다."
-        >
-          <details>
-            <summary className="cursor-pointer rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-3 text-sm font-bold text-[var(--gyeol-text)]">
-              12간지 전체 분야 보기
-            </summary>
-            <FlowEntryList
-              className="mt-3"
-              items={DIALOGUE_EXPERTS.map((expert) => ({
-                ...buildExpertItem(expert),
-                meta: selectedExpertId === expert.id ? '선택됨' : '열기',
-              }))}
-            />
-          </details>
-        </LightSection>
-
-        <SafetyNotice>
-          대화방은 사주와 성향 콘텐츠를 바탕으로 생각을 정리하는 참고용 상담입니다. 위기상황,
-          의료·법률·투자 판단은 전문 도움을 우선해 주세요.
-        </SafetyNotice>
+        <section>
+          <SafetyNotice variant="crisis" />
+        </section>
       </AppPage>
     </AppShell>
   );

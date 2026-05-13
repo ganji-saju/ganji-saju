@@ -14,7 +14,6 @@ import {
   resolveMoonlightCounselor,
   type MoonlightCounselorId,
 } from '@/lib/counselors';
-import { readString } from '@/lib/api-utils';
 import { getUserProfileById } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
@@ -54,6 +53,11 @@ interface CachedInterpretationRow {
   fallback_reason: AiFallbackReason | null;
   error_message: string | null;
   updated_at: string;
+}
+
+function readString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function parseInterpretRequest(payload: unknown): InterpretRequest | null {

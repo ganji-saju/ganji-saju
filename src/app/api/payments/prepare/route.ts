@@ -13,7 +13,11 @@ import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
-import { readString } from '@/lib/api-utils';
+
+function readString(data: Record<string, unknown>, key: string) {
+  const value = data[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
 
 function buildCheckoutPath(input: {
   packageId: string;
@@ -55,13 +59,6 @@ export async function POST(req: NextRequest) {
   if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {
     return NextResponse.json(
       { error: '이 상품은 먼저 풀이 결과를 만든 뒤 결제할 수 있습니다.' },
-      { status: 400 }
-    );
-  }
-
-  if (pkg.requiresScope && !scope) {
-    return NextResponse.json(
-      { error: '이 상품은 먼저 결과를 만든 뒤 결제할 수 있습니다.' },
       { status: 400 }
     );
   }

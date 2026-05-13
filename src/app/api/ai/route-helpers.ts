@@ -11,32 +11,22 @@ import {
 } from '@/lib/dialogue-experts';
 import { detectSafeRedirect } from '@/domain/safety/safe-redirect';
 import type { FocusTopic } from '@/domain/saju/report/types';
-import { getCurrentKoreaYear, readString } from '@/lib/api-utils';
 import { createAiChatBillingSummary } from '@/lib/credits/ai-chat-access';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { isOpenAIConfigured } from '@/server/ai/openai-text';
 
 type AiMode = 'dialogue' | 'saju-report';
 
-export interface DialogueAiRequest {
+interface DialogueAiRequest {
   mode: 'dialogue';
   message: string;
   expertId?: DialogueExpertId;
   sourceSessionId?: string;
   concernId?: string;
   from?: string;
-  sajuPersonalityReportId?: string;
-  sajuPersonalityLifeArea?: string;
 }
 
-export interface DialogueSajuPersonalityPromptContext {
-  lifeArea: string;
-  scoreSummary: string;
-  fusionSummary: string;
-  unlocked: boolean;
-}
-
-export interface SajuReportAiRequest {
+interface SajuReportAiRequest {
   mode: 'saju-report';
   readingId: string;
   topic?: string;
@@ -89,6 +79,21 @@ export interface DialogueProfileGrounding {
   };
 }
 
+function readString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function getCurrentKoreaYear() {
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+  }).format(new Date());
+  const parsed = Number.parseInt(formatted, 10);
+
+  return Number.isInteger(parsed) ? parsed : new Date().getFullYear();
+}
+
 export function parseAiRequest(payload: unknown): ParsedAiRequest | null {
   if (!payload || typeof payload !== 'object') return null;
 
@@ -106,8 +111,6 @@ export function parseAiRequest(payload: unknown): ParsedAiRequest | null {
           sourceSessionId: readString(data, 'sourceSessionId') || undefined,
           concernId: readString(data, 'concernId') || undefined,
           from: readString(data, 'from') || undefined,
-          sajuPersonalityReportId: readString(data, 'sajuPersonalityReportId') || undefined,
-          sajuPersonalityLifeArea: readString(data, 'sajuPersonalityLifeArea') || undefined,
         }
       : null;
   }
@@ -259,21 +262,11 @@ function formatDialogueProfileBrief(profileGrounding: DialogueProfileGrounding) 
     .join('\n');
 }
 
-function formatSajuPersonalityContext(context: DialogueSajuPersonalityPromptContext) {
-  return [
-    `관심영역: ${context.lifeArea}`,
-    `점수 요약: ${context.scoreSummary}`,
-    `결합 해석 요약: ${context.fusionSummary}`,
-    `깊이보기 열림 여부: ${context.unlocked ? '열림' : '무료 요약만 열림'}`,
-  ].join('\n');
-}
-
 export function createDialoguePrompt(
   message: string,
   profileGrounding?: DialogueProfileGrounding | null,
   expertId: DialogueExpertId = resolveDialogueExpertId(inferDialogueExpertIdFromMessage(message)),
-  recentFeedbackSummary?: string | null,
-  sajuPersonalityContext?: DialogueSajuPersonalityPromptContext | null
+  recentFeedbackSummary?: string | null
 ) {
   const expert = getDialogueExpertMeta(expertId);
   const expertRagOverlay = getDialogueExpertRagOverlay(expertId);
@@ -313,9 +306,6 @@ export function createDialoguePrompt(
       recentFeedbackSummary
         ? `\n[최근 리포트 반응 요약]\n${recentFeedbackSummary}`
         : null,
-      sajuPersonalityContext
-        ? `\n[성향사주 결과 요약]\n${formatSajuPersonalityContext(sajuPersonalityContext)}`
-        : null,
       '',
       '[답변 방식]',
       '질문에 대한 결론을 첫 문단에서 먼저 말합니다.',
@@ -324,26 +314,5 @@ export function createDialoguePrompt(
     ]
       .filter(Boolean)
       .join('\n'),
-    input: [
-      [
-        '선택된 12지신 전문 오버레이 RAG:',
-        `첫 문단 관점: ${expertRagOverlay.visibleOpening}`,
-        `질문을 볼 렌즈: ${expertRagOverlay.primaryLens.join(' / ')}`,
-        `피드백 방향: ${expertRagOverlay.actionPattern.join(' / ')}`,
-        `피해야 할 답변: ${expertRagOverlay.avoid.join(' / ')}`,
-      ].join('\n'),
-      profileGrounding
-        ? `대화용 개인화 소재:\n${formatDialogueProfileBrief(profileGrounding)}`
-        : '대화용 개인화 소재 없음. 저장 프로필이 비어 있으면 필요한 출생 정보를 짧게 요청합니다.',
-      recentFeedbackSummary
-        ? `최근 사용자 피드백 요약:\n${recentFeedbackSummary}`
-        : null,
-      sajuPersonalityContext
-        ? `성향사주 결과 요약:\n${formatSajuPersonalityContext(sajuPersonalityContext)}`
-        : null,
-      `사용자 질문:\n${message}`,
-    ]
-      .filter(Boolean)
-      .join('\n\n'),
   };
 }

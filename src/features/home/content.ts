@@ -1,4 +1,4 @@
-import type { FocusTopic } from '@/domain/saju/report';
+import type { FocusTopic } from '@/lib/saju/report';
 
 export const HOUR_OPTIONS = [
   { label: '모름', value: '' },

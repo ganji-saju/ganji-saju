@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
 import { GangiCharacter } from '@/components/gangi/gangi-ui';
-import { LightSection } from '@/components/moonlight/LightSection';
 import { DIALOGUE_PRESETS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
@@ -22,41 +21,7 @@ interface Props {
     concern?: string;
     from?: string;
     autoStart?: string;
-    sajuPersonalityReportId?: string;
-    lifeArea?: string;
   }>;
-}
-
-function getContextNotice(query: Awaited<Props['searchParams']>) {
-  if (query.sajuPersonalityReportId) {
-    return {
-      title: '성향사주 결과에서 이어왔어요',
-      description: '리포트 ID와 관심영역만 대화 맥락으로 넘기고, 생년월일시 원문은 상단에 표시하지 않습니다.',
-    };
-  }
-
-  if (query.sourceSessionId && query.from === 'personality-compatibility-result') {
-    return {
-      title: '성향궁합 결과에서 이어왔어요',
-      description: '결과 범위와 질문 흐름만 이어서 보고, 상대 개인정보는 이 안내 영역에 노출하지 않습니다.',
-    };
-  }
-
-  if (query.sourceSessionId && query.from === 'today-fortune') {
-    return {
-      title: '오늘운세 결과에서 이어왔어요',
-      description: '오늘운세 세션 기준으로 이어 묻습니다. 입력한 생년월일시는 안내 영역에 표시하지 않습니다.',
-    };
-  }
-
-  if (query.question || query.from || query.sourceSessionId) {
-    return {
-      title: '이전 화면의 질문 맥락을 이어왔어요',
-      description: '질문 원문은 대화 입력에만 전달하고, 상단 안내에는 민감한 내용을 표시하지 않습니다.',
-    };
-  }
-
-  return null;
 }
 
 export function generateStaticParams() {
@@ -90,7 +55,6 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
   if (!expertId) notFound();
 
   const meta = getDialogueExpertMeta(expertId);
-  const contextNotice = getContextNotice(query);
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell gangi-chat-room-shell pb-24 md:pb-10">
@@ -112,16 +76,6 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           <span aria-hidden="true" />
         </header>
 
-        {contextNotice ? (
-          <LightSection
-            eyebrow="이어 묻기"
-            title={contextNotice.title}
-            description={contextNotice.description}
-            surface="soft"
-            className="mb-4"
-          />
-        ) : null}
-
         <DialogueChatPanel
           presets={DIALOGUE_PRESETS.map((p) => ({
             category: p.category,
@@ -131,8 +85,6 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           sourceSessionId={query.sourceSessionId}
           concernId={query.concern}
           entrySource={query.from}
-          sajuPersonalityReportId={query.sajuPersonalityReportId}
-          sajuPersonalityLifeArea={query.lifeArea}
           autoStart={query.autoStart === '1'}
           initialExpertId={expertId}
           roomMode

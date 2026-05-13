@@ -15,7 +15,6 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import LegalLinks from '@/components/legal-links';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
-import { buildTossOrderId } from '@/lib/payments/order-id';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
@@ -81,11 +80,7 @@ function CreditsPageContent() {
     try {
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = buildTossOrderId({
-        prefix: 'credits',
-        packageId: pkg.id,
-        paymentMethod,
-      });
+      const orderId = `order_${pkg.id}_${paymentMethod.toLowerCase()}_${Date.now()}`;
       const successParams = new URLSearchParams({
         packageId: pkg.id,
         from: entrySource,

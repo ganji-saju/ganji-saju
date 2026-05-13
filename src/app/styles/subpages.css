@@ -895,29 +895,34 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border-radius: var(--gyeol-radius-pill);
+  border-radius: 9999px;
   padding: 0.75rem 1rem;
-  font-size: var(--gyeol-font-size-sm);
+  font-size: 0.9rem;
   font-weight: var(--app-type-button);
   line-height: 1.1;
   transition:
-    box-shadow var(--gyeol-duration-fast) var(--gyeol-ease-standard),
-    border-color var(--gyeol-duration-fast) var(--gyeol-ease-standard),
-    background-color var(--gyeol-duration-fast) var(--gyeol-ease-standard);
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .gangi-primary-button {
   border: 1px solid var(--app-pink);
   background: var(--app-pink);
   color: #ffffff;
-  box-shadow: var(--gyeol-shadow-md);
+  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.2);
 }
 
 .gangi-secondary-button {
-  border: 1px solid var(--gyeol-color-line);
+  border: 1px solid var(--app-line);
   background: #ffffff;
-  color: var(--gyeol-color-text);
-  box-shadow: var(--gyeol-shadow-xs);
+  color: var(--app-ink);
+}
+
+.gangi-primary-button:hover,
+.gangi-secondary-button:hover {
+  transform: translateY(-1px);
 }
 
 .gangi-tarot-picker .gangi-sub-eyebrow,
@@ -1524,9 +1529,11 @@
    color system, and interpretation/RAG content remain untouched. */
 .gangi-subpage-shell {
   --gangi-subpage-max: 30rem;
-  --gangi-subpage-card-radius: var(--gyeol-radius-lg);
-  --gangi-subpage-card-shadow: var(--gyeol-shadow-sm);
-  --gangi-subpage-card-shadow-hover: var(--gyeol-shadow-md);
+  --gangi-subpage-card-radius: 1.45rem;
+  --gangi-subpage-card-shadow: 0 1px 0 rgba(17, 17, 20, 0.04),
+    0 18px 46px -30px rgba(17, 17, 20, 0.36);
+  --gangi-subpage-card-shadow-hover: 0 1px 0 rgba(17, 17, 20, 0.04),
+    0 22px 52px -30px rgba(216, 27, 114, 0.34);
 }
 
 .gangi-subpage-shell .app-shell-content {

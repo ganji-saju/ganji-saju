@@ -140,17 +140,6 @@
     font-size: 0.8rem !important;
   }
 
-  .app-top-header-main .app-top-credit-chip {
-    min-height: 2.35rem !important;
-    padding-inline: 0.62rem !important;
-    font-size: 0.75rem !important;
-  }
-
-  .app-top-header-main .app-top-credit-chip svg {
-    height: 0.86rem !important;
-    width: 0.86rem !important;
-  }
-
   .app-top-header-main .app-top-notification-button {
     position: static !important;
     right: auto !important;

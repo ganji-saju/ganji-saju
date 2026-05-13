@@ -105,35 +105,3 @@ test('scoped taste product confirmation requires a connected result slug', () =>
     error: '이 상품 결제에는 연결할 결과 식별자가 필요합니다.',
   });
 });
-
-test('personality compatibility mini confirmation requires a result scope', () => {
-  const result = validatePaymentConfirmationPayload({
-    paymentKey: 'pay_123',
-    orderId: 'order_123',
-    amount: 990,
-    packageId: 'taste_personality_compatibility_mini',
-  });
-
-  assert.deepEqual(result, {
-    ok: false,
-    error: '이 상품 결제에는 연결할 결과 범위가 필요합니다.',
-  });
-});
-
-test('personality compatibility mini confirmation accepts a scoped result', () => {
-  const result = validatePaymentConfirmationPayload({
-    paymentKey: 'pay_123',
-    orderId: 'order_123',
-    amount: 990,
-    packageId: 'taste_personality_compatibility_mini',
-    scope: 'personality-compatibility:abc123',
-  });
-
-  assert.equal(result.ok, true);
-  if (!result.ok) return;
-
-  assert.equal(result.input.pkg.kind, 'taste_product');
-  assert.equal(result.input.pkg.tasteProductId, 'personality_compatibility_mini');
-  assert.equal(result.input.slug, null);
-  assert.equal(result.input.scope, 'personality-compatibility:abc123');
-});

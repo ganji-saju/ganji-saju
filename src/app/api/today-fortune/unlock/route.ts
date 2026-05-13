@@ -14,9 +14,13 @@ import {
   buildTodayDetailScopeKey,
   getTasteProductEntitlement,
 } from '@/lib/product-entitlements';
-import { readString } from '@/lib/api-utils';
 
 export const runtime = 'nodejs';
+
+function readString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
 
 export async function POST(req: NextRequest) {
   const payload = (await req.json().catch(() => null)) as Record<string, unknown> | null;

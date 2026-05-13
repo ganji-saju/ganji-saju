@@ -1,13 +1,29 @@
 import Link from 'next/link';
-import { FlowEntryList, type FlowEntryItem } from '@/components/moonlight/FlowEntryList';
-import { LightSection } from '@/components/moonlight/LightSection';
-import { PageIntro } from '@/components/moonlight/PageIntro';
+import {
+  GangiCharacter,
+  GangiIntro,
+  GangiMiniCard,
+  type GangiZodiacKey,
+} from '@/components/gangi/gangi-ui';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
 } from '@/lib/subscription';
+
+function formatBirthLabel(reading: {
+  birthYear: number;
+  birthMonth: number;
+  birthDay: number;
+  birthHour: number | null;
+  gender: 'male' | 'female' | null;
+}) {
+  const hourLabel = reading.birthHour === null ? '시간 미입력' : `${reading.birthHour}시`;
+  const genderLabel =
+    reading.gender === 'male' ? '남성' : reading.gender === 'female' ? '여성' : '성별 미선택';
+  return `${reading.birthYear}.${reading.birthMonth}.${reading.birthDay} · ${hourLabel} · ${genderLabel}`;
+}
 
 function formatRenewalLabel(value: string | null) {
   if (!value) return '갱신일 미정';
@@ -19,21 +35,15 @@ function formatRenewalLabel(value: string | null) {
   }).format(new Date(value));
 }
 
-function formatSavedDate(value: string) {
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(value));
-}
-
-function getPurchasedReportBadge(productId: string) {
-  if (productId === 'saju_personality_mini') return '성향사주';
-  if (productId === 'personality_compatibility_mini') return '성향궁합';
-  if (productId === 'love-question') return '궁합';
-  if (productId === 'today-detail') return '오늘';
-  return '사주';
-}
+const MENU_ZODIAC: Record<string, GangiZodiacKey> = {
+  '내 사주 원국': 'dragon',
+  '저장한 해석': 'pig',
+  '가족 사주': 'sheep',
+  '프리미엄 플랜': 'rooster',
+  '알림 센터': 'rabbit',
+  '설정': 'ox',
+  '문의': 'rat',
+};
 
 export default async function MyPage() {
   const dashboard = await getAccountDashboardData('/my', {
@@ -42,6 +52,7 @@ export default async function MyPage() {
   });
 
   const mostRecentReading = dashboard.recentReadings[0];
+  const displayName = dashboard.user.email?.split('@')[0] ?? '회원';
   const planTitle = dashboard.subscription
     ? getSubscriptionPlanLabel(dashboard.subscription.plan)
     : '무료 이용 중';
@@ -50,107 +61,104 @@ export default async function MyPage() {
         dashboard.subscription.renewsAt
       )}`
     : '아직 가입한 멤버십이 없습니다';
-  const reportRows: Array<FlowEntryItem & { createdAt: string }> = [
-    ...dashboard.purchasedResults.map((report) => ({
-      id: `purchased-${report.id}`,
-      title: report.title,
-      description: report.summary ?? `${formatSavedDate(report.createdAt)}에 열어본 리포트`,
-      href: report.href === '/my/results' ? '/my' : report.href,
-      badge: getPurchasedReportBadge(report.productId),
-      meta: '다시 보기',
-      createdAt: report.createdAt,
-    })),
-    ...dashboard.recentReadings.map((reading) => ({
-      id: `reading-${reading.id}`,
-      title: reading.dayPillarLabel ? `${reading.dayPillarLabel} 사주 풀이` : '저장한 사주 풀이',
-      description: `${formatSavedDate(reading.createdAt)} 저장 · 생년월일시는 목록에 표시하지 않습니다`,
-      href: `/saju/${reading.id}`,
-      badge: '사주',
-      meta: '열기',
-      createdAt: reading.createdAt,
-    })),
-  ]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, 8);
-  const reportItems: FlowEntryItem[] = reportRows.map(({ createdAt: _createdAt, ...item }) => item);
 
   return (
     <div className="space-y-5">
-      <PageIntro
+      <GangiIntro
         eyebrow="MY"
-        title="내 풀이와 결제, 여기서 이어봐요"
-        description="보관함은 최근 리포트를 다시 여는 곳입니다. 목록에는 생년월일시와 성별을 직접 노출하지 않습니다."
-        actions={
+        title={
           <>
-            <Link href="#recent-reports" className="gangi-primary-button">
-              최근 리포트 보기
+            내 운세와 결제,
+            <br />
+            여기서 이어봐요
+          </>
+        }
+        description="저장한 풀이, 남은 코인, 플랜 상태를 한 화면에서 확인합니다."
+      />
+
+      <section className="px-4 sm:px-0">
+        <div className="gangi-pink-panel p-4">
+          <div className="flex items-center gap-4">
+            <GangiCharacter zodiac="dragon" size="lg" />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-[var(--app-pink-strong)]">{displayName}</p>
+              <h2 className="mt-1 text-xl font-bold leading-7 text-[var(--app-ink)]">
+                {mostRecentReading ? '최근 풀이를 바로 이어볼 수 있어요' : '첫 풀이를 저장해 보세요'}
+              </h2>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--app-copy-muted)]">
+                {mostRecentReading
+                  ? formatBirthLabel(mostRecentReading)
+                  : '사주를 한 번 보면 MY에 다시 열 수 있게 정리됩니다.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <GangiMiniCard
+              label="저장"
+              title={`${dashboard.readingCount}개`}
+              desc="다시 보기"
+            />
+            <GangiMiniCard
+              label="코인"
+              title={`${dashboard.credits.total}개`}
+              desc={`기본 ${dashboard.credits.balance} · 멤버십 ${dashboard.credits.subscriptionBalance}`}
+            />
+            <GangiMiniCard label="플랜" title={planTitle} desc={planSummary} />
+          </div>
+
+          <div className="mt-4 grid gap-2">
+            <Link href="/my/results" className="gangi-primary-button">
+              저장한 풀이 보기
             </Link>
             <Link href="/my/profile" className="gangi-secondary-button">
               내 정보 관리
             </Link>
-          </>
-        }
-      />
-
-      <LightSection
-        eyebrow="요약"
-        title={mostRecentReading ? '최근 풀이를 바로 이어볼 수 있어요' : '첫 풀이를 저장해 보세요'}
-        description="개인 입력값 대신 저장 개수, 코인, 플랜 상태만 요약합니다."
-        surface="soft"
-      >
-        <div className="grid gap-2 sm:grid-cols-3">
-          <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-4">
-            <p className="text-xs font-bold text-[var(--gyeol-muted)]">보관</p>
-            <strong className="mt-1 block text-xl text-[var(--gyeol-text)]">
-              {dashboard.readingCount + dashboard.purchasedResults.length}개
-            </strong>
-            <span className="text-xs leading-5 text-[var(--gyeol-muted)]">저장/구매 리포트</span>
-          </div>
-          <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-4">
-            <p className="text-xs font-bold text-[var(--gyeol-muted)]">코인</p>
-            <strong className="mt-1 block text-xl text-[var(--gyeol-text)]">
-              {dashboard.credits.total}개
-            </strong>
-            <span className="text-xs leading-5 text-[var(--gyeol-muted)]">
-              기본 {dashboard.credits.balance} · 멤버십 {dashboard.credits.subscriptionBalance}
-            </span>
-          </div>
-          <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-4">
-            <p className="text-xs font-bold text-[var(--gyeol-muted)]">플랜</p>
-            <strong className="mt-1 block text-xl text-[var(--gyeol-text)]">{planTitle}</strong>
-            <span className="text-xs leading-5 text-[var(--gyeol-muted)]">{planSummary}</span>
           </div>
         </div>
-      </LightSection>
+      </section>
 
-      <LightSection eyebrow="바로가기" title="관리 메뉴">
-        <FlowEntryList
-          items={MY_MENU_BLUEPRINT.map((item) => ({
-            id: item.title,
-            title: item.title,
-            description: item.description,
-            href: item.href === '/my/results' ? '#recent-reports' : item.href,
-            meta: '이동',
-          }))}
-        />
-      </LightSection>
+      <section className="px-4 sm:px-0">
+        <div className="gangi-card-panel p-4">
+          <p className="gangi-sub-eyebrow mb-3">바로가기</p>
+          <div className="grid gap-2">
+            {MY_MENU_BLUEPRINT.map((item) => (
+              <Link key={item.title} href={item.href} className="gangi-vault-link">
+                <GangiCharacter zodiac={MENU_ZODIAC[item.title] ?? 'pig'} size="sm" />
+                <span>
+                  <strong>{item.title}</strong>
+                  <em>{item.description}</em>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <LightSection
-        eyebrow="보관함"
-        title="최근 리포트"
-        description="성향사주, 성향궁합, 사주, 궁합을 배지로 구분합니다."
-        className="pb-5"
-      >
-        <div id="recent-reports">
-          {reportItems.length > 0 ? (
-            <FlowEntryList items={reportItems} />
-          ) : (
-            <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4 text-sm leading-6 text-[var(--gyeol-muted)]">
-              아직 저장된 풀이가 없습니다. 사주나 성향사주를 본 뒤 MY에서 다시 확인할 수 있습니다.
+      <section className="px-4 pb-8 sm:px-0">
+        <div className="gangi-card-panel p-4">
+          <p className="gangi-sub-eyebrow mb-3">최근 저장한 풀이</p>
+          {dashboard.recentReadings.length > 0 ? (
+            <div className="grid gap-2">
+              {dashboard.recentReadings.map((reading) => (
+                <Link key={reading.id} href={`/saju/${reading.id}`} className="gangi-vault-link">
+                  <GangiCharacter zodiac="dragon" size="sm" />
+                  <span>
+                    <strong>{formatBirthLabel(reading)}</strong>
+                    <em>{reading.dayPillarLabel ? `${reading.dayPillarLabel} · 다시 보기` : '다시 보기'}</em>
+                  </span>
+                </Link>
+              ))}
             </div>
+          ) : (
+            <GangiMiniCard
+              label="아직 없음"
+              title="저장된 풀이가 없습니다"
+              desc="사주를 본 뒤 MY에서 다시 확인할 수 있습니다."
+            />
           )}
         </div>
-      </LightSection>
+      </section>
     </div>
   );
 }
