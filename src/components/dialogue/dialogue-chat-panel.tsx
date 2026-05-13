@@ -75,6 +75,8 @@ interface DialogueChatPanelProps {
   sourceSessionId?: string;
   concernId?: string;
   entrySource?: string;
+  sajuPersonalityReportId?: string;
+  sajuPersonalityLifeArea?: string;
   autoStart?: boolean;
   initialExpertId?: DialogueExpertId;
   roomMode?: boolean;
@@ -254,6 +256,8 @@ export function DialogueChatPanel({
   sourceSessionId,
   concernId,
   entrySource,
+  sajuPersonalityReportId,
+  sajuPersonalityLifeArea,
   autoStart = false,
   initialExpertId = 'dragon',
   roomMode = false,
@@ -379,6 +383,8 @@ export function DialogueChatPanel({
           sourceSessionId,
           concernId,
           from: entrySource,
+          sajuPersonalityReportId,
+          sajuPersonalityLifeArea,
         }),
       });
       const payload = (await response.json()) as DialogueAiResponse;

@@ -134,12 +134,17 @@ export interface DalbitTeacherCard {
 export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
   { label: '홈', href: '/' },
   {
-    label: '사주추가',
+    label: '내 풀이',
     href: '/saju/new',
-    matchPrefixes: ['/saju'],
+    matchPrefixes: ['/saju', '/daewoon', '/myeongri'],
   },
   {
-    label: '무료운세',
+    label: '관계',
+    href: '/compatibility',
+    matchPrefixes: ['/compatibility'],
+  },
+  {
+    label: '오늘',
     href: '/free',
     matchPrefixes: [
       '/free',
@@ -150,17 +155,21 @@ export const PRIMARY_TABS: readonly MoonlightNavItem[] = [
       '/interpretation',
     ],
   },
-  { label: '대화방', href: '/dialogue', matchPrefixes: ['/dialogue', '/compatibility'] },
-  { label: '보관함', href: '/my/results', matchPrefixes: ['/my', '/membership', '/credits'] },
+  { label: '대화', href: '/dialogue', matchPrefixes: ['/dialogue'] },
 ] as const;
 
 export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
-  { label: '오늘운', href: '/today-fortune', matchPrefixes: ['/today-fortune'], tone: 'acquisition' },
+  { label: '성향사주', href: '/saju/personality', matchPrefixes: ['/saju/personality'], tone: 'service' },
+  {
+    label: '성향궁합',
+    href: '/compatibility/personality',
+    matchPrefixes: ['/compatibility/personality'],
+    tone: 'service',
+  },
+  { label: '오늘운세', href: '/today-fortune', matchPrefixes: ['/today-fortune'], tone: 'acquisition' },
   { label: '타로', href: '/tarot/daily', matchPrefixes: ['/tarot'], tone: 'acquisition' },
-  { label: '사주', href: '/saju/new', matchPrefixes: ['/saju'], tone: 'service' },
-  { label: '궁합', href: '/compatibility', matchPrefixes: ['/compatibility'], tone: 'service' },
-  { label: '띠운세', href: '/zodiac', matchPrefixes: ['/zodiac'], tone: 'service' },
-  { label: '별자리', href: '/star-sign', matchPrefixes: ['/star-sign'], tone: 'service' },
+  { label: '보관함', href: '/my', matchPrefixes: ['/my'], tone: 'service' },
+  { label: '가격', href: '/pricing', matchPrefixes: ['/pricing', '/membership', '/credits'], tone: 'service' },
 ] as const;
 
 export const HOME_DAILY_LINES = [

@@ -106,14 +106,14 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null ? value as Record<string, unknown> : null;
 }
 
-function readString(record: Record<string, unknown>, key: string) {
+function readRecordString(record: Record<string, unknown>, key: string) {
   const value = record[key];
   if (value === undefined || value === null) return '';
   return String(value).trim();
 }
 
 function readNumber(record: Record<string, unknown>, key: string) {
-  const value = Number(readString(record, key));
+  const value = Number(readRecordString(record, key));
   return Number.isFinite(value) ? value : null;
 }
 
@@ -158,11 +158,11 @@ function normalizeKasiItem(item: Record<string, unknown>): KasiLunCalInfo {
     lunYear,
     lunMonth,
     lunDay,
-    lunLeapmonth: readString(item, 'lunLeapmonth') || '평',
-    lunSecha: readString(item, 'lunSecha') || null,
-    lunWolgeon: readString(item, 'lunWolgeon') || null,
-    lunIljin: readString(item, 'lunIljin') || null,
-    solWeek: readString(item, 'solWeek') || null,
+    lunLeapmonth: readRecordString(item, 'lunLeapmonth') || '평',
+    lunSecha: readRecordString(item, 'lunSecha') || null,
+    lunWolgeon: readRecordString(item, 'lunWolgeon') || null,
+    lunIljin: readRecordString(item, 'lunIljin') || null,
+    solWeek: readRecordString(item, 'solWeek') || null,
     solJd: readNumber(item, 'solJd'),
   };
 }
@@ -171,10 +171,10 @@ function parseKasiJson(payload: unknown): KasiLunCalInfo {
   const root = asRecord(payload);
   const response = asRecord(root?.response);
   const header = asRecord(response?.header);
-  const resultCode = header ? readString(header, 'resultCode') : '';
+  const resultCode = header ? readRecordString(header, 'resultCode') : '';
 
   if (resultCode && resultCode !== '00') {
-    throw new Error(`KASI 음양력 API 오류: ${resultCode} ${readString(header ?? {}, 'resultMsg')}`);
+    throw new Error(`KASI 음양력 API 오류: ${resultCode} ${readRecordString(header ?? {}, 'resultMsg')}`);
   }
 
   const body = asRecord(response?.body);

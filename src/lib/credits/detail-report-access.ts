@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server';
+import { readString } from '@/lib/api-utils';
 import {
   deductCredits,
   getCredits,
@@ -31,11 +32,6 @@ export interface DetailReportUnlockResult {
   remaining: number;
   reused: boolean;
   error?: string;
-}
-
-function readString(payload: Record<string, unknown>, key: string) {
-  const value = payload[key];
-  return typeof value === 'string' ? value.trim() : '';
 }
 
 export function validateCreditUsePayload(payload: unknown): CreditUsePayloadValidation {

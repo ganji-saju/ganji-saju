@@ -1,6 +1,10 @@
 ﻿import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { AxisMeter } from '@/components/moonlight/AxisMeter';
+import { ResultShell } from '@/components/moonlight/ResultShell';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
+import { SajuStrip } from '@/components/moonlight/SajuStrip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
@@ -301,11 +305,26 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <SajuResultViewTracker slug={slug} />
 
-        <div className="space-y-5 sm:space-y-6">
         <GangiPageHeader title="사주" backHref="/saju/new" />
         <SajuScreenNav slug={slug} current="result" />
 
-        <section className="space-y-4">
+        <ResultShell
+          title={easyResultCopy(punchReading.verdict, 1)}
+          summary={`${todayLabel} · ${report.focusBadge} 중심으로 오늘의 흐름을 정리했습니다.`}
+          keywords={punchReading.personalPoints.length > 0 ? punchReading.personalPoints : [report.focusBadge]}
+          scoreSummary={
+            overallScore !== null ? (
+              <AxisMeter
+                label="오늘 점수"
+                value={overallScore}
+                description={`상태 ${getScoreStatus(overallScore)} · ${focusScore?.label ?? report.focusBadge}`}
+              />
+            ) : undefined
+          }
+        >
+          <SajuStrip />
+
+          <section className="space-y-4">
           <article className="gangi-result-pillars relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(255,211,76,0.28),transparent_18%),radial-gradient(circle_at_52%_8%,rgba(255,211,76,0.26),transparent_4%)]" />
             <div className="relative">
@@ -336,9 +355,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           <article className="gangi-result-summary-card rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
             <div className="gangi-result-date">{todayLabel}</div>
             <div className="text-sm font-medium text-[var(--app-pink-strong)]">한 줄 요약</div>
-            <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
+            <p className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
               {easyResultCopy(punchReading.verdict, 1)}
-            </h1>
+            </p>
             {punchReading.personalPoints.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
                 {punchReading.personalPoints.map((point) => (
@@ -455,8 +474,13 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               {todayDetailEntitlement ? '구매한 풀이 열기' : '풀이 열기'}
             </TrackedLink>
           </article>
-        </section>
-        </div>
+          </section>
+
+          <SafetyNotice>
+            사주 결과는 오늘의 흐름을 이해하기 위한 참고용 풀이입니다. 건강, 법률, 투자, 위기상황
+            판단은 전문 기준과 즉각적인 도움을 우선해 주세요.
+          </SafetyNotice>
+        </ResultShell>
       </AppPage>
     </AppShell>
   );

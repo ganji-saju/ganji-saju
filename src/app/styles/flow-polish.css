@@ -88,11 +88,11 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.38rem;
-  border: 1px solid var(--app-line);
-  border-radius: 9999px;
+  border: 1px solid var(--gyeol-color-line);
+  border-radius: var(--gyeol-radius-pill);
   background: #ffffff;
   padding: 0.35rem;
-  box-shadow: 0 10px 26px -24px rgba(17, 17, 20, 0.32);
+  box-shadow: var(--gyeol-shadow-xs);
 }
 
 .gangi-result-flow-strip span {
@@ -100,8 +100,8 @@
   min-height: 2.15rem;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
-  color: var(--app-copy-muted);
+  border-radius: var(--gyeol-radius-pill);
+  color: var(--gyeol-color-muted);
   font-size: 0.76rem;
   font-weight: 650;
   letter-spacing: 0;
@@ -140,13 +140,13 @@
   min-height: 3.15rem;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
+  border-radius: var(--gyeol-radius-pill);
   background: var(--app-pink);
   padding: 0.85rem 1.45rem;
   color: #ffffff;
   font-size: 0.92rem;
   font-weight: 740;
-  box-shadow: 0 14px 32px -20px rgba(216, 27, 114, 0.72);
+  box-shadow: var(--gyeol-shadow-md);
 }
 
 .gangi-today-detail-lock-card,

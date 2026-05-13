@@ -13,12 +13,13 @@ import {
   getSiteUrl,
 } from "@/lib/site";
 
-// P1-7 fix (audit 2026-05-13): 코드베이스 grep 결과 font-weight 800/900 사용 0건이라
-// 6 weight → 4 weight 로 축소 (Korean glyph subset 약 33% download 절감, 모바일 LCP 개선).
+// P1-7 fix (audit 2026-05-13): 코드베이스 grep 결과 font-weight 900 사용 0건이라
+// 6 weight → 5 weight 로 축소 (Korean glyph subset download 절감, 모바일 LCP 개선).
+// 800 은 main 의 redesign 후속에서 일부 hero 카피가 사용 — 보존.
 // 잔여 weight 변수(--app-type-body: 450, --app-type-button: 650)는 브라우저가
 // 인접 weight(400/700) 로 자동 보간해 시각 영향 거의 없음.
 const brandSans = Noto_Sans_KR({
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   preload: false,
   variable: "--font-dalbit-sans",

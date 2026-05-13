@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import {
-  GangiIntro,
-  GangiPageHeader,
-} from '@/components/gangi/gangi-ui';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TAROT_QUESTION_OPTIONS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -26,45 +27,36 @@ export default async function DailyTarotPage() {
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="타로 한 장" backHref="/free" />
 
-        <GangiIntro
+        <PageIntro
           eyebrow="무료 타로"
-          title={
-            <>
-              오늘 마음에
-              <br />
-              한 장만 뽑아볼까요?
-            </>
-          }
+          title="오늘 마음에 한 장만 뽑아볼까요?"
           description="궁금한 한 가지를 고르고 바로 뽑으세요."
-        >
-          <div className="gangi-card-stack" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((index) => (
-              <span key={index} className="gangi-tarot-card" />
-            ))}
-          </div>
-          <div className="mt-5 flex justify-center">
+          actions={
             <Link href="/tarot/daily/pick" className="gangi-primary-button max-w-xs">
               카드 뽑으러 가기
             </Link>
-          </div>
-        </GangiIntro>
+          }
+        />
 
-        <section className="gangi-topic-grid" aria-label="타로 질문 선택">
-          {TAROT_QUESTION_OPTIONS.slice(0, 6).map((question) => (
-            <Link
-              key={question.label}
-              href={{ pathname: '/tarot/daily/pick', query: { question: question.label } }}
-              className="gangi-topic-card"
-            >
-              <span className="gangi-topic-icon">{question.emoji}</span>
-              <h2>{question.label}</h2>
-              <p>{question.description}</p>
-            </Link>
-          ))}
-        </section>
+        <LightSection
+          eyebrow="질문 선택"
+          title="오늘 마음의 결을 하나만 고르기"
+          description="모바일에서 빠르게 고를 수 있도록 리스트 중심으로 정리했습니다."
+          surface="soft"
+        >
+          <FlowEntryList
+            items={TAROT_QUESTION_OPTIONS.slice(0, 6).map((question) => ({
+              id: question.label,
+              href: `/tarot/daily/pick?question=${encodeURIComponent(question.label)}`,
+              title: question.label,
+              description: question.description,
+              badge: question.emoji,
+              meta: '뽑기',
+            }))}
+          />
+        </LightSection>
 
-        <section className="gangi-card-panel mx-4 p-4">
-          <p className="gangi-sub-eyebrow mb-3">직접 질문 쓰기</p>
+        <LightSection eyebrow="직접 질문" title="내 말로 적어보기">
           <form action="/tarot/daily/pick" className="grid gap-3">
             <textarea
               name="question"
@@ -76,7 +68,9 @@ export default async function DailyTarotPage() {
               이 질문으로 카드 뽑기
             </button>
           </form>
-        </section>
+        </LightSection>
+
+        <SafetyNotice />
       </AppPage>
     </AppShell>
   );

@@ -9,8 +9,17 @@ import {
   getTossPaymentMethodOption,
   type TossPaymentMethodCode,
 } from '@/lib/payments/methods';
+import { buildTossOrderId } from '@/lib/payments/order-id';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { savePendingLifetimeReportSlug } from '@/lib/payments/lifetime-report';
+import {
+  PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID,
+  buildPersonalityCompatibilityPaymentFailedHref,
+} from '@/lib/payments/personality-compatibility';
+import {
+  SAJU_PERSONALITY_MINI_PACKAGE_ID,
+  buildSajuPersonalityPaymentFailedHref,
+} from '@/lib/payments/saju-personality';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
 interface Props {
@@ -82,6 +91,16 @@ export default function TossMembershipCheckout({
       return;
     }
 
+    if (packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID && !scope) {
+      setErrorMessage('이 상품은 먼저 성향궁합 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
+      return;
+    }
+
+    if (packageId === SAJU_PERSONALITY_MINI_PACKAGE_ID && !scope) {
+      setErrorMessage('이 상품은 먼저 성향사주 결과를 만든 뒤 해당 화면에서 결제할 수 있습니다.');
+      return;
+    }
+
     if (!isLoggedIn) {
       location.href = `/login?next=${encodeURIComponent(checkoutPath)}`;
       return;
@@ -129,7 +148,11 @@ export default function TossMembershipCheckout({
 
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = `membership_${packageId}_${paymentMethod.toLowerCase()}_${Date.now()}`;
+      const orderId = buildTossOrderId({
+        prefix: 'membership',
+        packageId,
+        paymentMethod,
+      });
       const successParams = new URLSearchParams({
         packageId,
         plan,
@@ -174,7 +197,12 @@ export default function TossMembershipCheckout({
         orderId,
         orderName,
         successUrl: `${location.origin}/membership/success?${successParams.toString()}`,
-        failUrl: `${location.origin}/membership/checkout?${failParams.toString()}`,
+        failUrl:
+          packageId === PERSONALITY_COMPATIBILITY_MINI_PACKAGE_ID
+            ? `${location.origin}${buildPersonalityCompatibilityPaymentFailedHref(scope)}`
+            : packageId === SAJU_PERSONALITY_MINI_PACKAGE_ID
+              ? `${location.origin}${buildSajuPersonalityPaymentFailedHref(scope)}`
+            : `${location.origin}/membership/checkout?${failParams.toString()}`,
       } as const;
 
       if (paymentMethod === 'CARD') {

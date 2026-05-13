@@ -63,6 +63,23 @@ export default function CompatibilityPage() {
         />
 
         <SectionSurface surface="panel">
+          <SectionHeader
+            eyebrow="새 입력 흐름"
+            title="사주와 16유형 성향을 함께 넣는 성향궁합"
+            titleClassName="text-3xl"
+            description="관계 유형, 두 사람의 생년월일, 성향 선택 또는 간단 체크, 현재 질문까지 한 번에 준비합니다."
+            actions={
+              <ActionCluster>
+                <Link href="/compatibility/personality" className="gangi-primary-button">
+                  성향궁합 입력하기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </ActionCluster>
+            }
+          />
+        </SectionSurface>
+
+        <SectionSurface surface="panel">
             <SectionHeader
               eyebrow="관계 선택"
               title="질문이 분명할수록 궁합 풀이도 더 선명해집니다"

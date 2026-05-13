@@ -47,26 +47,8 @@ export interface FamilyProfile extends BirthProfileFields {
 
 export type FamilyProfileInput = Omit<FamilyProfile, 'id' | 'createdAt'>;
 
-const PROFILE_SELECT =
-  'display_name, birth_year, birth_month, birth_day, birth_hour, gender, note';
-const PROFILE_SELECT_WITH_MINUTE =
-  'display_name, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note';
-const PROFILE_SELECT_WITH_LOCATION =
-  'display_name, birth_year, birth_month, birth_day, birth_hour, gender, note, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode';
-const PROFILE_SELECT_FULL =
-  'display_name, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode';
-const PROFILE_SELECT_WITH_BIRTH_RULES =
-  'display_name, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode, birth_calendar_type, birth_time_rule';
 const PROFILE_SELECT_WITH_COUNSELOR =
   'display_name, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode, birth_calendar_type, birth_time_rule, preferred_counselor';
-const FAMILY_PROFILE_SELECT =
-  'id, label, relationship, birth_year, birth_month, birth_day, birth_hour, gender, note, created_at';
-const FAMILY_PROFILE_SELECT_WITH_MINUTE =
-  'id, label, relationship, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, created_at';
-const FAMILY_PROFILE_SELECT_WITH_LOCATION =
-  'id, label, relationship, birth_year, birth_month, birth_day, birth_hour, gender, note, created_at, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode';
-const FAMILY_PROFILE_SELECT_FULL =
-  'id, label, relationship, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, created_at, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode';
 const FAMILY_PROFILE_SELECT_WITH_BIRTH_RULES =
   'id, label, relationship, birth_year, birth_month, birth_day, birth_hour, birth_minute, gender, note, created_at, birth_location_code, birth_location_label, birth_latitude, birth_longitude, solar_time_mode, birth_calendar_type, birth_time_rule';
 const BIRTH_MINUTE_MIGRATION_ERROR =
@@ -294,32 +276,6 @@ async function writeProfilePayloadWithFallback<
   return response;
 }
 
-async function loadWithProfileSelectFallback<T>(
-  loader: (columns: string) => PromiseLike<{ data: T | null; error: unknown }>,
-  selectCandidates: string[]
-) {
-  let lastResponse: { data: T | null; error: unknown } | null = null;
-
-  for (const columns of selectCandidates) {
-    const response = await loader(columns);
-    lastResponse = response;
-
-    if (
-      response.error &&
-      (isMissingBirthMinuteColumnError(response.error) ||
-        isMissingBirthLocationColumnError(response.error) ||
-        isMissingBirthRuleColumnError(response.error) ||
-        isMissingPreferredCounselorColumnError(response.error))
-    ) {
-      continue;
-    }
-
-    return response;
-  }
-
-  return lastResponse!;
-}
-
 function getErrorMessage(error: unknown) {
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message ?? '알 수 없는 오류가 발생했습니다.');
@@ -523,36 +479,17 @@ export async function getProfileSettingsData(redirectPath: string) {
 
   const { supabase, user } = await requireAccount(redirectPath);
 
-  const loadProfile = (columns: string) =>
-    supabase
-      .from('profiles')
-      .select(columns)
-      .eq('user_id', user.id)
-      .maybeSingle();
+  const profileResponse = await supabase
+    .from('profiles')
+    .select(PROFILE_SELECT_WITH_COUNSELOR)
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  const loadFamilyProfiles = (columns: string) =>
-    supabase
-      .from('family_profiles')
-      .select(columns)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-  const profileResponse = await loadWithProfileSelectFallback(loadProfile, [
-    PROFILE_SELECT_WITH_COUNSELOR,
-    PROFILE_SELECT_WITH_BIRTH_RULES,
-    PROFILE_SELECT_FULL,
-    PROFILE_SELECT_WITH_LOCATION,
-    PROFILE_SELECT_WITH_MINUTE,
-    PROFILE_SELECT,
-  ]);
-
-  const familyResponse = await loadWithProfileSelectFallback(loadFamilyProfiles, [
-    FAMILY_PROFILE_SELECT_WITH_BIRTH_RULES,
-    FAMILY_PROFILE_SELECT_FULL,
-    FAMILY_PROFILE_SELECT_WITH_LOCATION,
-    FAMILY_PROFILE_SELECT_WITH_MINUTE,
-    FAMILY_PROFILE_SELECT,
-  ]);
+  const familyResponse = await supabase
+    .from('family_profiles')
+    .select(FAMILY_PROFILE_SELECT_WITH_BIRTH_RULES)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
   if (profileResponse.error) {
     throw new Error(getErrorMessage(profileResponse.error));
@@ -587,21 +524,11 @@ export async function getUserProfileById(userId: string): Promise<UserProfile> {
   }
 
   const service = await createServiceClient();
-  const loadProfile = (columns: string) =>
-    service
-      .from('profiles')
-      .select(columns)
-      .eq('user_id', userId)
-      .maybeSingle();
-
-  const profileResponse = await loadWithProfileSelectFallback(loadProfile, [
-    PROFILE_SELECT_WITH_COUNSELOR,
-    PROFILE_SELECT_WITH_BIRTH_RULES,
-    PROFILE_SELECT_FULL,
-    PROFILE_SELECT_WITH_LOCATION,
-    PROFILE_SELECT_WITH_MINUTE,
-    PROFILE_SELECT,
-  ]);
+  const profileResponse = await service
+    .from('profiles')
+    .select(PROFILE_SELECT_WITH_COUNSELOR)
+    .eq('user_id', userId)
+    .maybeSingle();
 
   if (profileResponse.error) {
     throw new Error(getErrorMessage(profileResponse.error));
