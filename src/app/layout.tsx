@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Noto_Sans_KR } from "next/font/google";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -11,6 +11,15 @@ const brandSans = Noto_Sans_KR({
   display: "swap",
   preload: false,
   variable: "--font-dalbit-sans",
+});
+
+// Redesign 2026-05-13 (Claude Design): 한자 인장(干, 子-亥) 표기용 serif.
+// 라틴 + 한자 글리프만 필요하므로 weight 두 종(700·800)만 로드해 다운로드 비용 최소화.
+const brandSerif = Noto_Serif_KR({
+  weight: ["700", "800"],
+  display: "swap",
+  preload: false,
+  variable: "--font-dalbit-serif",
 });
 
 const layoutModeScript = `
@@ -69,7 +78,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${brandSans.variable} h-full antialiased`}
+      className={`${brandSans.variable} ${brandSerif.variable} h-full antialiased`}
       data-app-layout="vertical"
       data-reading-comfort="standard"
       suppressHydrationWarning
