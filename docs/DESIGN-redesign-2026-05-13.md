@@ -15,11 +15,14 @@
 >   - 2단계: `src/components/gangi/zodiac-chip.tsx` 신설
 >   - 3단계: `site-header.tsx` 한자(干) 인장 brand lockup
 >   - 4단계: `site-footer.tsx` 다크 풀 푸터 (모바일 accordion 포함)
-> - 🟡 **PR2** (`redesign/claude-design-pr2-home-2026-05-13`, 진행 중): 홈 페이지
+> - ✅ **PR2** (`redesign/claude-design-pr2-home-2026-05-13`, 머지됨): 홈 페이지
 >   - mockup `screens-a.jsx` 의 5 섹션 (배너 / 무료 quick / 카테고리 탭 / 서비스 그리드 / Bottom CTA) 적용
 >   - `gangi-market.tsx` 4 컴포넌트 + `GangiHomeBottomCta` 신설
->   - 데이터·라우팅·이벤트 무수정
-> - ⏳ PR3 이후: 로그인 / 오늘운세 / 사주 입력 / 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
+> - 🟡 **PR3** (`redesign/claude-design-pr3-login-2026-05-13`, 진행 중): 로그인 페이지
+>   - mockup `screens-b.jsx` `ScreenAuth` 적용 — `'gateway'` LoginMode 추가, 4 SNS 버튼 (카카오·Google·Apple·이메일) + 무료 안내 카드
+>   - Apple OAuth 는 별도 PR (REDESIGN-PENDING-LINKS.md 기록 — 인프라 선행)
+>   - 기존 카드 모드(login/signup/recover/reset) + 모든 핸들러 그대로 보존
+> - ⏳ PR4 이후: 오늘운세 / 사주 입력 / 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
 >
 > **매핑 안 되는 버튼/링크**는 [`docs/REDESIGN-PENDING-LINKS.md`](./REDESIGN-PENDING-LINKS.md) 에 누적 — disabled 상태로 표시하고 추후 라우트 연결.
 
