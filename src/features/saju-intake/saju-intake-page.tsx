@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { ProductGrid } from '@/components/layout/product-grid';
+import LegalLinks from '@/components/legal-links';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Button } from '@/components/ui/button';
@@ -143,12 +144,8 @@ const BASE_STEPS: Array<{
   },
 ];
 
-const CONSENT_STEP = {
-  id: 'consent' as const,
-  eyebrow: '동의',
-  title: '동의하고 시작하기',
-  description: '한 번 동의하면 다음 입력부터는 다시 표시하지 않습니다.',
-};
+// Redesign 2026-05-13: 별도 동의 단계 제거 — 마지막 단계 CTA 하단 disclosure 로 implicit consent.
+// CONSENT_STEP 정의 제거됨.
 
 const ENTRY_FOCUS_TOPIC_BY_SLUG = {
   love: 'love',
@@ -387,9 +384,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const hasTrackedBirthStartRef = useRef(false);
   const hasAutoAppliedProfileRef = useRef(false);
 
+  // Redesign 2026-05-13: mockup 은 별도 동의 단계 없이 단일 흐름. 필수 동의는 마지막 단계 제출 시
+  // implicit 동의 + CTA 하단 disclosure text 로 처리. CONSENT_STEP 은 제거.
   const steps = useMemo(
-    () => (consentAccepted ? [PROFILE_STEP, ...BASE_STEPS] : [PROFILE_STEP, ...BASE_STEPS, CONSENT_STEP]),
-    [consentAccepted]
+    () => [PROFILE_STEP, ...BASE_STEPS],
+    []
   );
   const activeStep = steps[activeIndex] ?? steps[0];
   const recentGuestDetail = recentGuestDraft ? formatRecentGuestDetail(recentGuestDraft) : '';
@@ -397,7 +396,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     QUESTION_ENTRY_POINTS.find((entry) => entry.slug === selectedEntrySlug) ?? QUESTION_ENTRY_POINTS[0];
   const birthStepIndex = Math.max(1, steps.findIndex((item) => item.id === 'birth'));
   const locationStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'location'));
-  const consentStepIndex = steps.findIndex((item) => item.id === 'consent');
+  // consent step 폐지 후 — locationStepIndex 가 항상 마지막 단계.
+  const consentStepIndex = locationStepIndex;
 
   useEffect(() => {
     const draft = loadOnboardingDraft();
@@ -694,22 +694,23 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     return true;
   }
 
-  function validateConsentStep() {
-    const requiredConsentMissing = ONBOARDING_CONSENTS.some(
-      (item) => item.required && !form.consents[item.title]
-    );
-
-    if (requiredConsentMissing) {
-      setErrorMessage('필수 동의 항목을 확인해 주세요.');
-      return false;
-    }
-
-    setErrorMessage('');
-    return true;
-  }
+  // validateConsentStep 제거됨 — Redesign 2026-05-13: 별도 consent step 폐지.
 
   async function submit() {
-    if (!consentAccepted && !validateConsentStep()) return;
+    // Redesign 2026-05-13: 필수 동의는 CTA 하단 disclosure 로 명시되어 있으므로 클릭=동의로 처리.
+    // 폼 state 의 consents 도 일괄 true 로 채워 저장 시 동기화.
+    if (!consentAccepted) {
+      setForm((current) => ({
+        ...current,
+        consents: ONBOARDING_CONSENTS.reduce(
+          (acc, item) => {
+            acc[item.title] = item.required ? true : current.consents[item.title] ?? false;
+            return acc;
+          },
+          { ...current.consents } as Record<string, boolean>
+        ),
+      }));
+    }
 
     const parsed = resolveUnifiedBirthInput(buildUnifiedBirthDraft(form), {
       requireGender: true,
@@ -815,12 +816,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     if (activeStep.id === 'birth' && !validateBirthStep()) return;
     if (activeStep.id === 'location' && !validateLocationStep()) return;
 
-    if (activeStep.id === 'location' && consentAccepted) {
-      void submit();
-      return;
-    }
-
-    if (activeStep.id === 'consent') {
+    // Redesign 2026-05-13: 마지막 단계 location 에서 항상 제출. consent step 제거됨.
+    if (activeStep.id === 'location') {
       void submit();
       return;
     }
@@ -1026,22 +1023,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     );
   }
 
+  // Redesign 2026-05-13: location 단계가 제출 단계. consent step 별도 라벨 제거.
   const nextLabel =
     activeStep.id === 'profile'
       ? '바로 입력 시작'
       : activeStep.id === 'birth'
         ? '시간·출생지 입력'
-      : activeStep.id === 'location' && consentAccepted
-      ? isSubmitting
-        ? '결과 준비 중...'
-        : '사주풀이 열기'
-      : activeStep.id === 'location'
-        ? '마지막 동의 확인'
-      : activeStep.id === 'consent'
-        ? isSubmitting
-          ? '결과 준비 중...'
-          : '동의하고 사주풀이 열기'
-        : '다음 화면';
+        : activeStep.id === 'location'
+          ? isSubmitting
+            ? '결과 준비 중...'
+            : '사주풀이 시작'
+          : '다음 화면';
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       {isSubmitting ? (
@@ -1119,48 +1111,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
                 {activeStep.id === 'profile' ? (
                   renderProfileStep()
-                ) : activeStep.id === 'consent' ? (
-                  <div className="mt-4 space-y-2.5 sm:mt-6 sm:space-y-3">
-                    {ONBOARDING_CONSENTS.map((consent) => (
-                      <label
-                        key={consent.title}
-                        className="flex items-start gap-3 rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3.5 py-3 sm:rounded-[1.25rem] sm:px-4 sm:py-4"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.consents[consent.title]}
-                          onChange={(event) =>
-                            setForm((current) => ({
-                              ...current,
-                              consents: {
-                                ...current.consents,
-                                [consent.title]: event.target.checked,
-                              },
-                            }))
-                          }
-                          className="mt-1 h-4 w-4 rounded border-[var(--app-line)] bg-transparent accent-[var(--app-pink)]"
-                        />
-                        <span className="min-w-0">
-                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--app-ink)]">
-                            {consent.title}
-                            <span
-                              className={cn(
-                                'rounded-full border px-2 py-0.5 text-[10px]',
-                                consent.required
-                                  ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
-                                  : 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]'
-                              )}
-                            >
-                              {consent.required ? '필수' : '선택'}
-                            </span>
-                          </span>
-                          <span className="mt-1.5 block text-xs leading-5 text-[var(--app-copy-muted)] sm:mt-2 sm:leading-6">
-                            {consent.detail}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
                 ) : (
                   <div className="mt-4 sm:mt-6">
                     <UnifiedBirthInfoFields
@@ -1215,6 +1165,12 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               <p className="text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
                 결과는 자동으로 보관함에 저장돼요
               </p>
+              {activeStep.id === 'location' && !consentAccepted ? (
+                <p className="mt-1 text-center text-[10.5px] leading-relaxed text-[var(--app-copy-soft)]">
+                  시작 시 <LegalLinks className="text-[var(--app-pink-strong)]" />
+                  과 AI 모델 전송에 동의합니다.
+                </p>
+              ) : null}
             </div>
           </SectionSurface>
 
