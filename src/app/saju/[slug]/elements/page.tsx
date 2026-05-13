@@ -1,21 +1,18 @@
+// Redesign 2026-05-13: 사주 sub-tab '오행' 페이지 — PR6~PR9 와 같은 디자인 언어.
+// pink-soft hero + donut conic-gradient + 분포 list + 습관 2x2 + ink-dark CTA.
+// 데이터·라우팅 무수정. FiveElementOrbitChart 는 PR7 deep 의 donut 패턴으로 대체.
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowRight } from 'lucide-react';
-import {
-  GangiActionRow,
-  GangiIntro,
-  GangiMiniCard,
-  GangiPageHeader,
-  GangiSection,
-} from '@/components/gangi/gangi-ui';
-import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
+import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -23,6 +20,20 @@ interface Props {
 }
 
 const ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
+
+const ELEMENT_HAN: Record<Element, string> = {
+  목: '木', 화: '火', 토: '土', 금: '金', 수: '水',
+};
+
+const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
+  子: 'rat', 丑: 'ox', 寅: 'tiger', 卯: 'rabbit', 辰: 'dragon', 巳: 'snake',
+  午: 'horse', 未: 'sheep', 申: 'monkey', 酉: 'rooster', 戌: 'dog', 亥: 'pig',
+};
+
+const ZODIAC_KOR: Record<ZodiacKey, string> = {
+  rat: '쥐띠', ox: '소띠', tiger: '범띠', rabbit: '토끼띠', dragon: '용띠', snake: '뱀띠',
+  horse: '말띠', sheep: '양띠', monkey: '원숭이띠', rooster: '닭띠', dog: '개띠', pig: '돼지띠',
+};
 
 const ELEMENT_SUPPORT_GUIDE: Record<
   Element,
@@ -67,115 +78,258 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function getYearZodiac(data: SajuDataV1): ZodiacKey {
+  const branch = data.pillars.year.branch;
+  return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
+}
+
+function buildDonutGradient(data: SajuDataV1): string {
+  const byElement = data.fiveElements.byElement;
+  const ordered = ELEMENT_ORDER.map((el) => ({
+    el,
+    pct: byElement[el]?.percentage ?? 0,
+    color: ELEMENT_INFO[el].color,
+  })).sort((a, b) => b.pct - a.pct);
+
+  let acc = 0;
+  const stops = ordered
+    .filter((item) => item.pct > 0)
+    .map((item) => {
+      const start = acc * 3.6;
+      acc += item.pct;
+      const end = acc * 3.6;
+      return `${item.color} ${start}deg ${end}deg`;
+    });
+
+  if (stops.length === 0) return 'var(--app-line)';
+  return `conic-gradient(${stops.join(', ')})`;
+}
+
 export default async function SajuElementsPage({ params }: Props) {
   const { slug } = await params;
   const reading = await resolveReading(slug);
-
   if (!reading) notFound();
 
   const { input, sajuData } = reading;
   const dominant = sajuData.fiveElements.dominant;
   const weakest = sajuData.fiveElements.weakest;
+  const dominantPercent = Math.round(
+    sajuData.fiveElements.byElement[dominant]?.percentage ?? 0
+  );
+  const dominantColor = ELEMENT_INFO[dominant].color;
+  const donutGradient = buildDonutGradient(sajuData);
   const supportGuide = ELEMENT_SUPPORT_GUIDE[weakest];
+  const yearZodiac = getYearZodiac(sajuData);
+  const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
+  const dayMasterPillar = `${sajuData.pillars.day.ganzi}일주`;
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
-      <AppPage className="gangi-subpage saju-readable-page space-y-5 pb-24">
-        <GangiPageHeader title="기운 균형" backHref={`/saju/${slug}/nature`} />
-        <SajuScreenNav slug={slug} current="elements" />
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
+        <div className="space-y-5 sm:space-y-6">
+          <GangiPageHeader title="오행" backHref={`/saju/${slug}`} />
+          <SajuScreenNav slug={slug} current="elements" />
 
-        <GangiIntro
-          eyebrow="오행 균형"
-          title={`${ELEMENT_INFO[dominant].name}이 강하고, ${ELEMENT_INFO[weakest].name}을 채우면 편해요`}
-          description={
-            <>
-              복잡한 점수보다 생활에서 어떤 균형을 잡으면 좋은지 먼저 보여드립니다.
-              <br />
-              <span>{formatBirthSummary(input)}</span>
-            </>
-          }
-        />
+          <section className="space-y-5 px-1">
+            {/* §1 Hero */}
+            <article
+              className="rounded-[18px] border border-[var(--app-line)] p-5"
+              style={{ background: 'var(--app-pink-soft)' }}
+            >
+              <div className="flex items-center gap-3">
+                <ZodiacChip kind={yearZodiac} size="lg" />
+                <div>
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    {dayMasterPillar} · {yearZodiacLabel}
+                  </div>
+                  <h1 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                    {ELEMENT_INFO[dominant].name}이 강하고,
+                    <br />
+                    {ELEMENT_INFO[weakest].name}을 채우면 편해요
+                  </h1>
+                  <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+                    {formatBirthSummary(input)}
+                  </div>
+                </div>
+              </div>
+            </article>
 
-        <GangiSection
-          eyebrow="내 기운의 모양"
-          title="다섯 기운을 한눈에 봅니다"
-          description={`${ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고, ${ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있습니다.`}
-        >
-          <FiveElementOrbitChart
-            byElement={sajuData.fiveElements.byElement}
-            dominant={dominant}
-            weakest={weakest}
-          />
-        </GangiSection>
-
-        <GangiSection
-          eyebrow="균형 메모"
-          title="이렇게 채우면 편해집니다"
-          description={supportGuide.support}
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <GangiMiniCard
-              label="강한 쪽"
-              title={ELEMENT_INFO[dominant].name}
-              desc={`${ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.`}
-            />
-            <GangiMiniCard
-              label="채울 쪽"
-              title={supportGuide.label}
-              desc={`${ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.`}
-            />
-            {supportGuide.habits.slice(0, 2).map((habit, index) => (
-              <GangiMiniCard
-                key={habit}
-                label={`작은 습관 ${index + 1}`}
-                title={habit}
-              />
-            ))}
-          </div>
-        </GangiSection>
-
-        <GangiSection
-          eyebrow="기운별 보기"
-          title="각 기운은 이렇게 분포되어 있어요"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            {ELEMENT_ORDER.map((element) => {
-              const value = sajuData.fiveElements.byElement[element];
-              const isDominant = dominant === element;
-              const isWeakest = weakest === element;
-
-              return (
-                <div
-                  key={element}
-                  className="gangi-mini-card"
+            {/* §2 오행 donut + 분포 */}
+            <section>
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    五行 · 오행 균형
+                  </div>
+                  <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                    다섯 기운을 한눈에
+                  </h2>
+                </div>
+                <span
+                  className="rounded-full border px-3 py-1 text-[11px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{
-                    borderColor: isDominant || isWeakest ? `${ELEMENT_INFO[element].color}55` : undefined,
+                    background: 'var(--app-pink-soft)',
+                    borderColor: 'var(--app-pink-line)',
                   }}
                 >
-                  <span>{isDominant ? '강한 쪽' : isWeakest ? '채울 쪽' : '분포'}</span>
-                  <strong>{ELEMENT_INFO[element].name} {Math.round(value.percentage)}%</strong>
-                  <p>{ELEMENT_INFO[element].traits.slice(0, 2).join(' · ')}</p>
+                  {dominant}왕
+                </span>
+              </div>
+              <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative grid h-[124px] w-[124px] shrink-0 place-items-center rounded-full"
+                    style={{ background: donutGradient }}
+                  >
+                    <div
+                      className="absolute inset-3 grid place-items-center rounded-full bg-white"
+                      aria-hidden="true"
+                    >
+                      <div className="text-center">
+                        <div
+                          className="text-[26px] font-bold leading-none"
+                          style={{
+                            fontFamily: 'var(--font-han)',
+                            color: dominantColor,
+                          }}
+                        >
+                          {ELEMENT_HAN[dominant]}
+                        </div>
+                        <div className="text-[10px] text-[var(--app-copy-soft)]">
+                          {dominantPercent}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ul className="grid flex-1 gap-1.5" aria-label="오행 분포">
+                    {ELEMENT_ORDER.map((el) => {
+                      const pct = Math.round(sajuData.fiveElements.byElement[el]?.percentage ?? 0);
+                      return (
+                        <li key={el} className="flex items-center gap-2">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ background: ELEMENT_INFO[el].color }}
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="flex-1 text-[12px] font-bold text-[var(--app-copy)]"
+                            style={{ fontFamily: 'var(--font-han)' }}
+                          >
+                            {el}({ELEMENT_HAN[el]})
+                          </span>
+                          <span className="text-[12px] font-extrabold text-[var(--app-ink)]">
+                            {pct}%
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
-              );
-            })}
-          </div>
-        </GangiSection>
+                <p
+                  className="mt-3.5 rounded-[10px] px-3 py-2.5 text-[12.5px] leading-[1.55] text-[var(--app-pink-strong)]"
+                  style={{ background: 'var(--app-pink-soft)' }}
+                >
+                  <strong>해석</strong> · {ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고,{' '}
+                  {ELEMENT_INFO[weakest].name} 쪽은 상대적으로 비어 있어요. 채울 쪽을 의식하면
+                  강한 쪽도 더 또렷이 살아납니다.
+                </p>
+              </article>
+            </section>
 
-        <GangiSection
-          tone="pink"
-          eyebrow="다음"
-          title="더 깊게 보고 싶다면"
-          description="성향, 올해 흐름, 돈·일·관계 조언을 한 번에 이어서 봅니다."
-        >
-          <GangiActionRow>
-            <Link href={`/saju/${slug}/premium`} className="gangi-primary-button">
-              깊은 사주풀이 보기 <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href={`/saju/${slug}/nature`} className="gangi-secondary-button">
-              성향으로 돌아가기
-            </Link>
-          </GangiActionRow>
-        </GangiSection>
+            {/* §3 균형 메모 */}
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                균형 메모
+              </div>
+              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                이렇게 채우면 편해집니다
+              </h2>
+              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+                {supportGuide.support}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <article
+                  className="rounded-[14px] border p-3.5"
+                  style={{
+                    background: 'var(--app-pink-soft)',
+                    borderColor: 'var(--app-pink-line)',
+                  }}
+                >
+                  <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">강한 쪽</div>
+                  <div
+                    className="mt-1 text-[15px] font-extrabold tracking-tight"
+                    style={{ color: dominantColor }}
+                  >
+                    {ELEMENT_INFO[dominant].name}
+                  </div>
+                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                    {ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.
+                  </p>
+                </article>
+                <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
+                  <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">채울 쪽</div>
+                  <div
+                    className="mt-1 text-[15px] font-extrabold tracking-tight"
+                    style={{ color: ELEMENT_INFO[weakest].color }}
+                  >
+                    {supportGuide.label}
+                  </div>
+                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                    {ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.
+                  </p>
+                </article>
+                {supportGuide.habits.slice(0, 2).map((habit, index) => (
+                  <article
+                    key={habit}
+                    className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                  >
+                    <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                      작은 습관 {index + 1}
+                    </div>
+                    <p className="mt-1.5 text-[13px] font-bold leading-[1.5] text-[var(--app-ink)]">
+                      {habit}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* §4 ink-dark CTA */}
+            <article
+              className="rounded-[18px] p-5 text-white"
+              style={{
+                background: 'var(--app-ink)',
+                boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              }}
+            >
+              <div
+                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink)' }}
+              >
+                더 자세히
+              </div>
+              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+                십성과 대운까지
+                <br />
+                깊은 풀이로 이어보세요
+              </h2>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/deep`}
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                >
+                  깊은 풀이 보기 →
+                </Link>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/nature`}
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                >
+                  성향으로 돌아가기
+                </Link>
+              </div>
+            </article>
+          </section>
+        </div>
       </AppPage>
     </AppShell>
   );
