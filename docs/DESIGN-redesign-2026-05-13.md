@@ -26,10 +26,13 @@
 >   - 추가 무료 콘텐츠는 하단 `<details>` 로 보존
 > - ✅ **PR5** (`redesign/claude-design-pr5-saju-intake-2026-05-13`, 머지됨): 사주 입력
 >   - mockup `screens-a.jsx` `ScreenSajuIntake` 완전 재구성 — 3-bar step, STEP N/M, full-width CTA, birth step inline mockup-style 폼 (이름·생일 입력·시각 ZodiacChip card·성별), 동의 단계 제거 (implicit consent + disclosure)
-> - 🟡 **PR6** (`redesign/claude-design-pr6-saju-result-2026-05-13`, 진행 중): 사주 결과
->   - mockup `screens-a.jsx` `ScreenSajuResult` 5 섹션 적용 — Hero summary / 사주팔자 4-card grid / 분야별 흐름 score+bar / 작은 풀이 3-link / ink-dark CTA
->   - 추가 콘텐츠(왜·조심·할일 / 오행 / 2x2 mini cards)는 하단 `<details>` 보존
-> - ⏳ PR7 이후: 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
+> - ✅ **PR6** (`redesign/claude-design-pr6-saju-result-2026-05-13`, 머지됨): 사주 결과
+>   - mockup `screens-a.jsx` `ScreenSajuResult` 5 섹션 적용
+> - 🟡 **PR7** (`redesign/claude-design-pr7-saju-deep-2026-05-13`, 진행 중): 깊은 풀이
+>   - 신규 라우트 `/saju/[slug]/deep` 신설 — mockup `screens-c.jsx` `ScreenSajuDeep` 6 섹션 (Hero / 사주팔자 detail / 오행 donut / 십성 / 대운 timeline / 평생리포트 upsell)
+>   - `SajuScreenNav` 에 "깊은" 탭 추가
+>   - 기존 `/overview`·`/nature`·`/elements`·`/premium` 페이지 보존
+> - ⏳ PR8 이후: 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
 >
 > **매핑 안 되는 버튼/링크**는 [`docs/REDESIGN-PENDING-LINKS.md`](./REDESIGN-PENDING-LINKS.md) 에 누적 — disabled 상태로 표시하고 추후 라우트 연결.
 
