@@ -1,18 +1,25 @@
+// PR2 redesign (Claude Design / 가이드 §6): 홈 페이지 4 컴포넌트 + Bottom CTA.
+// 데이터 (GANGI_HOME_CARDS / GANGI_FREE_ACTIONS / GANGI_HOME_CATEGORIES) 와
+// 라우팅 / onTrack 이벤트 / 캐러셀 동작 일절 무수정.
+// 시각(마크업 + 스타일) 만 mockup screens-a.jsx 의 모양으로 정렬한다.
+
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { GangiCharacter } from '@/components/gangi/gangi-ui';
+import { ArrowRight } from 'lucide-react';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import type {
   GangiHomeBanner,
   GangiHomeCategoryKey,
   GangiServiceCard,
 } from '@/content/gangi-market';
 import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
+import { cn } from '@/lib/utils';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
 
+// ─── 1) Season banner (캐러셀 동작 유지, 시각만 새 디자인) ────────────────────
 export function GangiSeasonBanner({
   banners = GANGI_HOME_BANNERS,
   onTrack,
@@ -81,10 +88,11 @@ export function GangiSeasonBanner({
   }, [safeBanners.length]);
 
   return (
-    <section className="gangi-season-carousel" aria-label="추천 운세 배너">
+    <section className="px-4 pt-3" aria-label="추천 운세 배너">
       <div
         ref={viewportRef}
-        className="gangi-banner-viewport"
+        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none"
+        style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
         onScroll={handleScroll}
         onPointerDown={(event) => {
           if (event.pointerType !== 'mouse' || event.button !== 0) return;
@@ -124,102 +132,196 @@ export function GangiSeasonBanner({
           dragRef.current.pointerId = null;
         }}
       >
-        <div className="gangi-banner-track">
-          {safeBanners.map((banner) => (
-            <article
-              key={banner.id}
-              className="gangi-season-banner"
-              data-tone={banner.tone}
-              onPointerMove={(event) => {
-                if (event.pointerType !== 'mouse') return;
-                const box = event.currentTarget.getBoundingClientRect();
-                const x = (event.clientX - box.left) / box.width - 0.5;
-                const y = (event.clientY - box.top) / box.height - 0.5;
-                event.currentTarget.style.setProperty('--banner-shift-x', String(x * 10) + 'px');
-                event.currentTarget.style.setProperty('--banner-shift-y', String(y * 8) + 'px');
-                event.currentTarget.style.setProperty('--banner-visual-x', String(x * -4.5) + 'px');
-                event.currentTarget.style.setProperty('--banner-visual-y', String(y * -3) + 'px');
-                event.currentTarget.style.setProperty('--banner-tilt', String(x * 1.8) + 'deg');
-              }}
-              onPointerLeave={(event) => {
-                event.currentTarget.style.setProperty('--banner-shift-x', '0px');
-                event.currentTarget.style.setProperty('--banner-shift-y', '0px');
-                event.currentTarget.style.setProperty('--banner-visual-x', '0px');
-                event.currentTarget.style.setProperty('--banner-visual-y', '0px');
-                event.currentTarget.style.setProperty('--banner-tilt', '0deg');
+        {safeBanners.map((banner) => (
+          <Link
+            key={banner.id}
+            href={banner.href}
+            className="relative block w-full shrink-0 snap-start overflow-hidden rounded-[22px] p-5 text-white no-underline"
+            style={{
+              background:
+                banner.tone === 'soft'
+                  ? 'var(--app-pink-soft)'
+                  : banner.tone === 'night'
+                  ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
+                  : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
+              color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
+              minHeight: 160,
+            }}
+            onClick={() =>
+              onTrack?.({
+                from: 'home_banner',
+                banner: banner.id,
+                menu: banner.cta,
+              })
+            }
+          >
+            {/* 한자 배경 (운/緣 등) */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-3 -right-3 select-none"
+              style={{
+                fontFamily: 'var(--font-han)',
+                fontSize: 140,
+                fontWeight: 700,
+                lineHeight: 1,
+                opacity: 0.08,
+                color: banner.tone === 'soft' ? 'var(--app-pink-strong)' : '#fff',
               }}
             >
-              <div className="gangi-season-glow" />
-              <div className="gangi-banner-copy">
-                <p className="gangi-banner-kicker">{banner.kicker}</p>
-                <h1>{banner.title}</h1>
-                <p className="gangi-banner-desc">{banner.description}</p>
-                <Link
-                  href={banner.href}
-                  className="gangi-banner-button"
-                  onClick={() =>
-                    onTrack?.({
-                      from: 'home_banner',
-                      banner: banner.id,
-                      menu: banner.cta,
-                    })
-                  }
-                >
-                  {banner.cta}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-              <div className="gangi-banner-visual" aria-hidden="true">
-                {banner.zodiac ? (
-                  <GangiCharacter zodiac={banner.zodiac} size="lg" />
-                ) : (
-                  <span className="gangi-banner-moon" />
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-      <div className="gangi-banner-dots" aria-label="배너 선택">
-        {safeBanners.map((banner, index) => (
-          <button
-            key={banner.id}
-            type="button"
-            aria-label={String(index + 1) + '번째 배너 보기'}
-            aria-current={activeIndex === index ? 'true' : undefined}
-            onClick={() => goToBanner(index)}
-          />
+              運
+            </span>
+
+            <div className="relative">
+              <p
+                className="m-0"
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 800,
+                  letterSpacing: '0.06em',
+                  opacity: 0.85,
+                }}
+              >
+                {banner.kicker}
+              </p>
+              <h2
+                className="m-0 mt-1.5"
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.35,
+                }}
+              >
+                {banner.title}
+              </h2>
+              <p
+                className="m-0 mt-3"
+                style={{
+                  fontSize: 12.5,
+                  opacity: 0.9,
+                  lineHeight: 1.5,
+                }}
+              >
+                {banner.description}
+              </p>
+              <span
+                className="mt-3 inline-flex items-center gap-1 rounded-full"
+                style={{
+                  background:
+                    banner.tone === 'soft'
+                      ? 'var(--app-pink-strong)'
+                      : 'rgba(255,255,255,0.22)',
+                  color: '#fff',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  padding: '7px 12px',
+                }}
+              >
+                {banner.cta}
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </span>
+            </div>
+          </Link>
         ))}
       </div>
+
+      {/* dots */}
+      {safeBanners.length > 1 ? (
+        <div className="mt-3 flex justify-center gap-1.5" aria-label="배너 선택">
+          {safeBanners.map((banner, index) => (
+            <button
+              key={banner.id}
+              type="button"
+              aria-label={String(index + 1) + '번째 배너 보기'}
+              aria-current={activeIndex === index ? 'true' : undefined}
+              onClick={() => goToBanner(index)}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: activeIndex === index ? 16 : 6,
+                background:
+                  activeIndex === index
+                    ? 'var(--app-pink-strong)'
+                    : 'var(--app-line-strong)',
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
 
+// ─── 2) Free quick action (2x1 grid) ─────────────────────────────────────────
 export function GangiQuickActionCard({
   href,
-  mark,
+  mark, // 'sun' (오늘운세) | 'card' (타로) — 기존 데이터 보존
+  zodiac, // 'rooster' / 'rabbit' 등 — GANGI_FREE_ACTIONS 에 이미 있음
   label,
   title,
   desc,
   onTrack,
 }: {
   href: string;
-  mark: 'sun' | 'card';
+  mark?: 'sun' | 'card';
+  zodiac?: ZodiacKey;
   label: string;
   title: string;
-  desc: string;
+  desc?: string;
   onTrack?: () => void;
 }) {
+  // mark → zodiac fallback (구버전 호출자 호환)
+  const zodiacKind: ZodiacKey =
+    zodiac ?? (mark === 'sun' ? 'rooster' : mark === 'card' ? 'rabbit' : 'rooster');
+
   return (
-    <Link href={href} className="gangi-free-action" onClick={onTrack}>
-      <span className={mark === 'sun' ? 'gangi-sun-mark' : 'gangi-card-mark'} />
-      <span className="gangi-free-label">{label}</span>
-      <strong>{title}</strong>
-      <em>{desc}</em>
+    <Link
+      href={href}
+      onClick={onTrack}
+      className="flex items-center gap-2.5 rounded-[18px] border bg-white p-3 no-underline"
+      style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
+    >
+      <ZodiacChip kind={zodiacKind} size="sm" />
+      <div className="min-w-0 flex-1">
+        <span
+          className="inline-flex items-center rounded-[6px] px-1.5"
+          style={{
+            background: 'var(--app-ink)',
+            color: '#fff',
+            fontSize: 9.5,
+            fontWeight: 800,
+            letterSpacing: '0.02em',
+            height: 18,
+          }}
+        >
+          {label || 'FREE'}
+        </span>
+        <div
+          className="mt-1 truncate"
+          style={{
+            fontSize: 13.5,
+            fontWeight: 800,
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {title}
+        </div>
+        {desc ? (
+          <div
+            className="mt-0.5 truncate"
+            style={{
+              fontSize: 11.5,
+              color: 'var(--app-copy-muted)',
+            }}
+          >
+            {desc}
+          </div>
+        ) : null}
+      </div>
     </Link>
   );
 }
 
+// ─── 3) Category tabs (horizontal chips) ─────────────────────────────────────
 export function GangiCategoryTabs({
   active,
   onChange,
@@ -228,21 +330,39 @@ export function GangiCategoryTabs({
   onChange: (category: GangiHomeCategoryKey) => void;
 }) {
   return (
-    <nav className="gangi-category-tabs" aria-label="운세 카테고리">
-      {GANGI_HOME_CATEGORIES.map((category) => (
-        <button
-          key={category.key}
-          type="button"
-          data-active={active === category.key ? 'true' : 'false'}
-          onClick={() => onChange(category.key)}
-        >
-          {category.label}
-        </button>
-      ))}
+    <nav
+      className="flex gap-1.5 overflow-x-auto px-4 pt-4 pb-1"
+      aria-label="운세 카테고리"
+      style={{ scrollbarWidth: 'none' }}
+    >
+      {GANGI_HOME_CATEGORIES.map((category) => {
+        const isActive = active === category.key;
+        return (
+          <button
+            key={category.key}
+            type="button"
+            data-active={isActive ? 'true' : 'false'}
+            onClick={() => onChange(category.key)}
+            className={cn(
+              'inline-flex shrink-0 items-center rounded-[999px] border px-3 text-[12.5px] font-semibold transition-colors',
+              'whitespace-nowrap'
+            )}
+            style={{
+              height: 30,
+              background: isActive ? 'var(--app-ink)' : 'var(--app-surface-muted)',
+              borderColor: isActive ? 'var(--app-ink)' : 'var(--app-line)',
+              color: isActive ? '#fff' : 'var(--app-copy)',
+            }}
+          >
+            {category.label}
+          </button>
+        );
+      })}
     </nav>
   );
 }
 
+// ─── 4) Service card (grid 2-col) ────────────────────────────────────────────
 export function GangiServiceCardLink({
   card,
   onTrack,
@@ -250,27 +370,135 @@ export function GangiServiceCardLink({
   card: GangiServiceCard;
   onTrack?: (card: GangiServiceCard) => void;
 }) {
+  const isFree = card.price === '무료' || card.price === '무료 시작';
+  const isComingSoon = card.price === '준비 중';
+
   return (
     <Link
       href={card.href}
-      className="gangi-service-card"
-      data-free={card.price === '무료' ? 'true' : 'false'}
       onClick={() => onTrack?.(card)}
+      data-free={isFree ? 'true' : 'false'}
+      className="relative flex flex-col gap-2.5 rounded-[18px] border bg-white p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
+      style={{
+        borderColor: 'var(--app-line)',
+        color: 'var(--app-ink)',
+        minHeight: 158,
+      }}
     >
+      {/* 태그 (HOT / 추천) */}
       {card.tag ? (
-        <span className="gangi-card-tag" data-hot={card.tag === 'HOT'}>
+        <span
+          className="absolute right-2.5 top-2.5 inline-flex items-center rounded-[6px] px-1.5"
+          style={{
+            background:
+              card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
+            color: '#fff',
+            fontSize: 9.5,
+            fontWeight: 800,
+            letterSpacing: '0.02em',
+            height: 18,
+          }}
+        >
           {card.tag}
         </span>
       ) : null}
-      <GangiCharacter zodiac={card.zodiac} />
-      <div className="gangi-card-body">
-        <h2>{card.title}</h2>
-        <p>{card.desc}</p>
-        <span>
-          {card.price === '무료' ? '무료로 보기' : card.price}
-          <Sparkles className="h-3.5 w-3.5" />
+
+      <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+
+      <div className="min-w-0">
+        <h2
+          className="m-0"
+          style={{
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
+            color: 'var(--app-ink)',
+          }}
+        >
+          {card.title}
+        </h2>
+        <p
+          className="m-0 mt-1"
+          style={{
+            fontSize: 12,
+            color: 'var(--app-copy-muted)',
+            lineHeight: 1.45,
+          }}
+        >
+          {card.desc}
+        </p>
+      </div>
+
+      <div
+        className="mt-auto inline-flex items-center gap-1"
+        style={{
+          fontSize: 13,
+          fontWeight: 800,
+          color: isFree
+            ? 'var(--app-ink)'
+            : isComingSoon
+            ? 'var(--app-copy-muted)'
+            : 'var(--app-pink-strong)',
+        }}
+      >
+        {card.price}
+        <span className="ml-auto" style={{ color: 'var(--app-copy-muted)' }}>
+          →
         </span>
       </div>
     </Link>
+  );
+}
+
+// ─── 5) Bottom CTA — 사주 시작 (mockup 5번 섹션, 신규) ──────────────────────
+export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
+  return (
+    <section className="px-4 pt-4 pb-3" aria-label="사주 시작 CTA">
+      <Link
+        href="/saju/new"
+        onClick={onTrack}
+        className="flex items-center gap-3.5 rounded-[20px] p-4 no-underline"
+        style={{ background: 'var(--app-ink)', color: '#fff' }}
+      >
+        <ZodiacChip kind="dragon" size="lg" />
+        <div className="min-w-0 flex-1">
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: 'var(--app-pink)',
+              letterSpacing: '0.04em',
+            }}
+          >
+            NEW USER
+          </div>
+          <div
+            className="mt-1"
+            style={{
+              fontSize: 16,
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.35,
+            }}
+          >
+            생년월일만 알면
+            <br />
+            3초 안에 시작
+          </div>
+        </div>
+        <span
+          className="shrink-0 inline-flex items-center rounded-full"
+          style={{
+            background: 'var(--app-pink)',
+            color: '#fff',
+            fontSize: 11,
+            fontWeight: 800,
+            padding: '7px 11px',
+          }}
+        >
+          시작 →
+        </span>
+      </Link>
+    </section>
   );
 }

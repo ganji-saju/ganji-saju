@@ -8,13 +8,18 @@
 > 실제 Next.js 프로젝트(`ganji-saju/`)에 단계별로 옮기는 방법입니다.
 > 모든 라우팅(`href`)·서버 로직은 **건드리지 않고** 디자인 토큰과 컴포넌트만 교체합니다.
 >
-> **진행 현황** (PR `redesign/claude-design-2026-05-13` 기준):
-> - ✅ 1단계: tokens.css 십이간지 액센트 + 라운드 + 한자 폰트 토큰 추가
-> - ✅ 1단계: `layout.tsx` 에 Noto Serif KR 로드 (`--font-dalbit-serif` 변수)
-> - ✅ 2단계: `src/components/gangi/zodiac-chip.tsx` 신설
-> - ✅ 3단계: `site-header.tsx` brand lockup 한자(干) 인장 + "달빛인생 · 간지사주" 로 교체
-> - ✅ 4단계: `site-footer.tsx` 다크 풀 푸터 (5 column) 로 교체
-> - 🟡 5단계: 페이지별 적용 — 별도 PR (PR2 홈, PR3 로그인, …)
+> **진행 현황**:
+> - ✅ **PR1** (`redesign/claude-design-2026-05-13`, 머지됨): foundation
+>   - 1단계: tokens.css 십이간지 액센트 + 라운드 + 한자 폰트 토큰
+>   - 1단계: `layout.tsx` Noto Serif KR (`--font-dalbit-serif`)
+>   - 2단계: `src/components/gangi/zodiac-chip.tsx` 신설
+>   - 3단계: `site-header.tsx` 한자(干) 인장 brand lockup
+>   - 4단계: `site-footer.tsx` 다크 풀 푸터 (모바일 accordion 포함)
+> - 🟡 **PR2** (`redesign/claude-design-pr2-home-2026-05-13`, 진행 중): 홈 페이지
+>   - mockup `screens-a.jsx` 의 5 섹션 (배너 / 무료 quick / 카테고리 탭 / 서비스 그리드 / Bottom CTA) 적용
+>   - `gangi-market.tsx` 4 컴포넌트 + `GangiHomeBottomCta` 신설
+>   - 데이터·라우팅·이벤트 무수정
+> - ⏳ PR3 이후: 로그인 / 오늘운세 / 사주 입력 / 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
 >
 > **매핑 안 되는 버튼/링크**는 [`docs/REDESIGN-PENDING-LINKS.md`](./REDESIGN-PENDING-LINKS.md) 에 누적 — disabled 상태로 표시하고 추후 라우트 연결.
 

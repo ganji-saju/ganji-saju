@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   GangiCategoryTabs,
+  GangiHomeBottomCta,
   GangiQuickActionCard,
   GangiSeasonBanner,
   GangiServiceCardLink,
@@ -40,12 +41,16 @@ export function GangiHomeClient({
           onTrack={(payload) => trackMoonlightEvent('home_service_menu_click', payload)}
         />
 
-        <section className="gangi-free-actions" aria-label="무료 빠른 운세">
+        <section
+          className="grid grid-cols-2 gap-2.5 px-4 pt-3.5"
+          aria-label="무료 빠른 운세"
+        >
           {GANGI_FREE_ACTIONS.map((action) => (
             <GangiQuickActionCard
               key={action.id}
               href={action.href}
               mark={action.mark}
+              zodiac={action.zodiac}
               label={action.label}
               title={action.title}
               desc={action.desc}
@@ -70,7 +75,10 @@ export function GangiHomeClient({
           }}
         />
 
-        <section className="gangi-service-grid" aria-label="달빛인생 운세 상품">
+        <section
+          className="grid grid-cols-2 gap-3 px-4 pt-3"
+          aria-label="달빛인생 운세 상품"
+        >
           {visibleCards.map((card) => (
             <GangiServiceCardLink
               key={card.id}
@@ -86,6 +94,15 @@ export function GangiHomeClient({
           ))}
         </section>
 
+        {/* PR2 redesign: mockup screens-a.jsx 5번 섹션 (Bottom CTA) */}
+        <GangiHomeBottomCta
+          onTrack={() =>
+            trackMoonlightEvent('home_service_menu_click', {
+              from: 'home_bottom_cta',
+              menu: '사주 시작',
+            })
+          }
+        />
       </div>
     </AppShell>
   );
