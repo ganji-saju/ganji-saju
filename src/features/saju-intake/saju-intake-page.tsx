@@ -9,6 +9,7 @@ import LegalLinks from '@/components/legal-links';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Button } from '@/components/ui/button';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   UnifiedBirthInfoFields,
   type BirthLocationSearchResultLike,
@@ -222,6 +223,29 @@ function buildUnifiedBirthDraft(form: SajuOnboardingDraft): UnifiedBirthEntryDra
     birthLatitude: form.birthLatitude,
     birthLongitude: form.birthLongitude,
   };
+}
+
+// Redesign 2026-05-13: mockup screens-a.jsx 의 시간 ZodiacChip card 용 — hour → 12지(地支) 매핑.
+const HOUR_BRANCHES: ReadonlyArray<{ zodiac: ZodiacKey; label: string; range: string; hours: readonly number[] }> = [
+  { zodiac: 'rat',     label: '자시', range: '23:00 — 01:00', hours: [23, 0] },
+  { zodiac: 'ox',      label: '축시', range: '01:00 — 03:00', hours: [1, 2] },
+  { zodiac: 'tiger',   label: '인시', range: '03:00 — 05:00', hours: [3, 4] },
+  { zodiac: 'rabbit',  label: '묘시', range: '05:00 — 07:00', hours: [5, 6] },
+  { zodiac: 'dragon',  label: '진시', range: '07:00 — 09:00', hours: [7, 8] },
+  { zodiac: 'snake',   label: '사시', range: '09:00 — 11:00', hours: [9, 10] },
+  { zodiac: 'horse',   label: '오시', range: '11:00 — 13:00', hours: [11, 12] },
+  { zodiac: 'sheep',   label: '미시', range: '13:00 — 15:00', hours: [13, 14] },
+  { zodiac: 'monkey',  label: '신시', range: '15:00 — 17:00', hours: [15, 16] },
+  { zodiac: 'rooster', label: '유시', range: '17:00 — 19:00', hours: [17, 18] },
+  { zodiac: 'dog',     label: '술시', range: '19:00 — 21:00', hours: [19, 20] },
+  { zodiac: 'pig',     label: '해시', range: '21:00 — 23:00', hours: [21, 22] },
+] as const;
+
+function getHourBranch(hourStr: string) {
+  if (!hourStr) return null;
+  const hour = Number.parseInt(hourStr, 10);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
+  return HOUR_BRANCHES.find((b) => b.hours.includes(hour)) ?? null;
 }
 
 function applyUnifiedBirthPatch(
@@ -856,6 +880,245 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     });
   }
 
+  // Redesign 2026-05-13: mockup screens-a.jsx ScreenSajuIntake 시각 그대로.
+  // 이름(별칭) + 생년월일 inputs + 양력/음력 chips + 시각 ZodiacChip card + 성별 buttons.
+  function renderBirthStep() {
+    const hourBranch = getHourBranch(form.hour);
+    const isHourUnknown = form.hour === '';
+
+    const inputCls =
+      'h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
+
+    return (
+      <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-5">
+        <div>
+          <label
+            htmlFor="saju-nickname"
+            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+          >
+            이름 (별칭)
+          </label>
+          <input
+            id="saju-nickname"
+            type="text"
+            value={form.nickname}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, nickname: event.target.value }))
+            }
+            placeholder="달빛이"
+            autoComplete="name"
+            className={cn('mt-1.5', inputCls)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            생년월일
+          </label>
+          <div className="mt-1.5 grid grid-cols-[1.2fr_1fr_1fr] gap-2">
+            <input
+              value={form.year}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: event.target.value,
+                    month: current.month,
+                    day: current.day,
+                  })
+                )
+              }
+              placeholder="1995"
+              inputMode="numeric"
+              maxLength={4}
+              aria-label="출생 연도"
+              className={cn('text-center', inputCls)}
+            />
+            <input
+              value={form.month}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: current.year,
+                    month: event.target.value,
+                    day: current.day,
+                  })
+                )
+              }
+              placeholder="08"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label="출생 월"
+              className={cn('text-center', inputCls)}
+            />
+            <input
+              value={form.day}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: current.year,
+                    month: current.month,
+                    day: event.target.value,
+                  })
+                )
+              }
+              placeholder="14"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label="출생 일"
+              className={cn('text-center', inputCls)}
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {[
+              { v: 'solar', l: '양력' },
+              { v: 'lunar', l: '음력' },
+            ].map((opt) => {
+              const active = form.calendarType === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() =>
+                    setForm((current) =>
+                      applyUnifiedBirthPatch(current, {
+                        calendarType: opt.v as 'solar' | 'lunar',
+                      })
+                    )
+                  }
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-[12px] font-bold transition',
+                    active
+                      ? 'border-transparent bg-[var(--app-pink)] text-white'
+                      : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
+                  )}
+                >
+                  {opt.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            태어난 시각
+          </label>
+          <div
+            className="relative mt-1.5 flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] p-3.5"
+            style={{ background: 'var(--app-pink-soft)' }}
+          >
+            {hourBranch ? (
+              <>
+                <ZodiacChip kind={hourBranch.zodiac} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-bold text-[var(--app-ink)]">
+                    {Number.parseInt(form.hour, 10)}시 ({hourBranch.label})
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                    {hourBranch.range}
+                  </div>
+                </div>
+                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                  변경
+                </span>
+              </>
+            ) : (
+              <>
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[18px] font-bold text-[var(--app-copy-muted)]"
+                  aria-hidden="true"
+                >
+                  ?
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-bold text-[var(--app-ink)]">시간 모름</div>
+                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                    탭하여 출생 시간을 선택하세요
+                  </div>
+                </div>
+                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                  변경
+                </span>
+              </>
+            )}
+            <select
+              value={form.hour}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    hour: event.target.value,
+                    unknownBirthTime: event.target.value === '',
+                  })
+                )
+              }
+              aria-label="태어난 시간 선택"
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              <option value="">시간 모름</option>
+              {Array.from({ length: 24 }, (_, h) => h).map((h) => (
+                <option key={h} value={String(h)}>
+                  {String(h).padStart(2, '0')}시
+                </option>
+              ))}
+            </select>
+          </div>
+          <label className="mt-2.5 flex items-center gap-2 text-[13px] text-[var(--app-copy-muted)]">
+            <input
+              type="checkbox"
+              checked={isHourUnknown}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    unknownBirthTime: event.target.checked,
+                    hour: event.target.checked ? '' : current.hour,
+                    minute: event.target.checked ? '' : current.minute,
+                  })
+                )
+              }
+              className="h-4 w-4 rounded border-[var(--app-line)] accent-[var(--app-pink)]"
+            />
+            태어난 시간을 정확히 모르겠어요
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            성별
+          </label>
+          <div className="mt-1.5 grid grid-cols-2 gap-2">
+            {[
+              { v: 'female', l: '여성' },
+              { v: 'male', l: '남성' },
+            ].map((opt) => {
+              const active = form.gender === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() =>
+                    setForm((current) =>
+                      applyUnifiedBirthPatch(current, {
+                        gender: opt.v as 'female' | 'male',
+                      })
+                    )
+                  }
+                  className={cn(
+                    'h-12 rounded-[14px] border text-[14.5px] font-bold transition',
+                    active
+                      ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
+                      : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
+                  )}
+                >
+                  {opt.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   function renderProfileStep() {
     return (
       <div className="mt-4 space-y-3">
@@ -1111,6 +1374,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
                 {activeStep.id === 'profile' ? (
                   renderProfileStep()
+                ) : activeStep.id === 'birth' ? (
+                  renderBirthStep()
                 ) : (
                   <div className="mt-4 sm:mt-6">
                     <UnifiedBirthInfoFields
@@ -1119,6 +1384,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                       onStarted={() => markBirthStarted('manual')}
                       dateInputVariant="select"
                       visibleSections={activeStep.sections}
+                      hideTimePicker
                       locationLoading={locationSearchStatus === 'loading'}
                       locationMessage={locationSearchMessage}
                       locationResults={locationSearchResults}
