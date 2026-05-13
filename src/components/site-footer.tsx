@@ -98,15 +98,18 @@ export default function SiteFooter() {
       className="site-footer-redesign mt-auto"
       aria-label="회사 및 서비스 안내"
       style={{
-        background: '#0a0a0c',
+        // 사용자 피드백 (2026-05-13): 기존 #0a0a0c 가 밝아 보임 → 더 어둡게 토큰 활용.
+        // --app-ink-strong (#050507) 은 tokens.css 에 이미 정의된 토큰.
+        background: 'var(--app-ink-strong)',
         color: 'rgba(255,255,255,0.72)',
-        padding: '56px 24px 32px',
+        padding: '48px 24px 28px',
         fontSize: 13,
         lineHeight: 1.7,
       }}
     >
       <div className="mx-auto" style={{ maxWidth: 1180 }}>
-        <div className="grid gap-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+        {/* 사용자 피드백 (2026-05-13): column gap 36px → 24/28px 로 축소 */}
+        <div className="grid gap-6 lg:gap-7 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
           {/* 브랜드 lockup */}
           <div>
             <div className="mb-4 flex items-center gap-3">
@@ -225,7 +228,7 @@ export default function SiteFooter() {
 
         {/* 회사 정보 — 법적 고지 */}
         <dl
-          className="mt-9 grid gap-x-6 gap-y-2 pt-6 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-6 grid gap-x-6 gap-y-2 pt-5 sm:grid-cols-2 lg:grid-cols-3"
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
             fontSize: 12,
