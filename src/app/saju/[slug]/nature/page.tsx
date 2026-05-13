@@ -1,25 +1,33 @@
+// Redesign 2026-05-13: 사주 sub-tab '성향' 페이지 — PR6~PR8 와 같은 디자인 언어.
+// pink-soft hero + 일주 ZodiacChip + 핵심 chip + 2x2 생활 힌트 + ink-dark CTA.
+// 데이터·라우팅 무수정.
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ArrowRight } from 'lucide-react';
-import {
-  GangiActionRow,
-  GangiIntro,
-  GangiMiniCard,
-  GangiPageHeader,
-  GangiSection,
-} from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
+import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
+
+const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
+  子: 'rat', 丑: 'ox', 寅: 'tiger', 卯: 'rabbit', 辰: 'dragon', 巳: 'snake',
+  午: 'horse', 未: 'sheep', 申: 'monkey', 酉: 'rooster', 戌: 'dog', 亥: 'pig',
+};
+
+const ZODIAC_KOR: Record<ZodiacKey, string> = {
+  rat: '쥐띠', ox: '소띠', tiger: '범띠', rabbit: '토끼띠', dragon: '용띠', snake: '뱀띠',
+  horse: '말띠', sheep: '양띠', monkey: '원숭이띠', rooster: '닭띠', dog: '개띠', pig: '돼지띠',
+};
 
 const NATURE_GUIDE: Record<
   Element,
@@ -70,10 +78,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function getYearZodiac(data: SajuDataV1): ZodiacKey {
+  const branch = data.pillars.year.branch;
+  return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
+}
+
 export default async function SajuNaturePage({ params }: Props) {
   const { slug } = await params;
   const reading = await resolveReading(slug);
-
   if (!reading) notFound();
 
   const { input, sajuData } = reading;
@@ -85,70 +97,148 @@ export default async function SajuNaturePage({ params }: Props) {
   const guide = NATURE_GUIDE[element];
   const traits = ELEMENT_INFO[element].traits.slice(0, 3);
   const seasonHints = ELEMENT_INFO[element].keywords.slice(0, 3).join(' · ');
+  const elementColor = ELEMENT_INFO[element].color;
+  const yearZodiac = getYearZodiac(sajuData);
+  const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
+  const dayMasterPillar = `${sajuData.pillars.day.ganzi}일주`;
+
+  const cards: Array<{ label: string; title: string; desc: string }> = [
+    { label: '사람 앞에서는', title: '힘이 붙는 장면', desc: guide.social },
+    { label: '흔들릴 때', title: '먼저 거칠어질 수 있어요', desc: guide.caution },
+    { label: '균형 메모', title: '장점을 오래 쓰는 법', desc: guide.support },
+    {
+      label: '잘 맞는 분위기',
+      title: ELEMENT_INFO[element].name,
+      desc: seasonHints,
+    },
+  ];
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell">
-      <AppPage className="gangi-subpage saju-readable-page space-y-5 pb-24">
-        <GangiPageHeader title="성향" backHref={`/saju/${slug}/overview`} />
-        <SajuScreenNav slug={slug} current="nature" />
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
+        <div className="space-y-5 sm:space-y-6">
+          <GangiPageHeader title="성향" backHref={`/saju/${slug}`} />
+          <SajuScreenNav slug={slug} current="nature" />
 
-        <GangiIntro
-          eyebrow="타고난 성향"
-          title={`${metaphor}처럼 드러나는 나`}
-          description={
-            <>
-              장점이 살아나는 장면과 조심할 점만 짧게 봅니다.
-              <br />
-              <span>{formatBirthSummary(input)}</span>
-            </>
-          }
-        />
+          <section className="space-y-5 px-1">
+            {/* §1 Hero */}
+            <article
+              className="rounded-[18px] border border-[var(--app-line)] p-5"
+              style={{ background: 'var(--app-pink-soft)' }}
+            >
+              <div className="flex items-center gap-3">
+                <ZodiacChip kind={yearZodiac} size="lg" />
+                <div>
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    {dayMasterPillar} · {yearZodiacLabel}
+                  </div>
+                  <h1 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                    {metaphor}처럼 드러나는 나
+                  </h1>
+                  <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+                    {formatBirthSummary(input)}
+                  </div>
+                </div>
+              </div>
+            </article>
 
-        <GangiSection
-          eyebrow="핵심"
-          title="내 장점이 살아나는 장면"
-          description={guide.strength}
-        >
-          <div className="flex flex-wrap gap-2">
-            {traits.map((trait) => (
-              <span
-                key={trait}
-                className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink-strong)]"
+            {/* §2 핵심 장점 */}
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                핵심
+              </div>
+              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                내 장점이 살아나는 장면
+              </h2>
+              <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+                <div className="flex flex-wrap gap-1.5">
+                  {traits.map((trait) => (
+                    <span
+                      key={trait}
+                      className="rounded-full px-3 py-1 text-[12px] font-extrabold text-white"
+                      style={{ background: elementColor }}
+                    >
+                      {trait}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-3.5 text-[14px] leading-[1.65] text-[var(--app-copy)]">
+                  {guide.strength}
+                </p>
+                <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  {description}
+                </p>
+              </article>
+            </section>
+
+            {/* §3 생활 힌트 — 2x2 */}
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                생활 힌트
+              </div>
+              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                이렇게 쓰면 더 편해요
+              </h2>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                {cards.map((card) => (
+                  <article
+                    key={card.label}
+                    className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                  >
+                    <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                      {card.label}
+                    </div>
+                    <div className="mt-1 text-[13.5px] font-extrabold leading-snug text-[var(--app-ink)]">
+                      {card.title}
+                    </div>
+                    <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                      {card.desc}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* §4 다음 단계 CTA */}
+            <article
+              className="rounded-[18px] p-5 text-white"
+              style={{
+                background: 'var(--app-ink)',
+                boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              }}
+            >
+              <div
+                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink)' }}
               >
-                {trait}
-              </span>
-            ))}
-          </div>
-          <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">{description}</p>
-        </GangiSection>
-
-        <GangiSection
-          eyebrow="생활 힌트"
-          title="이렇게 쓰면 더 편해요"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <GangiMiniCard label="사람 앞에서는" title="힘이 붙는 장면" desc={guide.social} />
-            <GangiMiniCard label="흔들릴 때" title="먼저 거칠어질 수 있어요" desc={guide.caution} />
-            <GangiMiniCard label="균형 메모" title="장점을 오래 쓰는 법" desc={guide.support} />
-            <GangiMiniCard label="잘 맞는 분위기" title={ELEMENT_INFO[element].name} desc={seasonHints} />
-          </div>
-        </GangiSection>
-
-        <GangiSection
-          tone="pink"
-          eyebrow="다음"
-          title="기운 균형도 이어서 볼 수 있어요"
-          description="강한 쪽과 채우면 편한 쪽을 원형으로 확인합니다."
-        >
-          <GangiActionRow>
-            <Link href={`/saju/${slug}/elements`} className="gangi-primary-button">
-              기운 균형 보기 <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href={`/saju/${slug}/overview`} className="gangi-secondary-button">
-              내 사주로 돌아가기
-            </Link>
-          </GangiActionRow>
-        </GangiSection>
+                다음
+              </div>
+              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+                기운 균형도 이어서 봐주세요
+              </h2>
+              <p
+                className="mt-2 text-[12.5px] leading-[1.55]"
+                style={{ opacity: 0.7 }}
+              >
+                강한 쪽과 채울 쪽을 원형 그래프로 한눈에 확인할 수 있어요.
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/elements`}
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                >
+                  기운 균형 보기 →
+                </Link>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}`}
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                >
+                  사주 총평으로
+                </Link>
+              </div>
+            </article>
+          </section>
+        </div>
       </AppPage>
     </AppShell>
   );
