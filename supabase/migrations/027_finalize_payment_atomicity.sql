@@ -8,7 +8,7 @@
 -- 위 5단계가 같은 트랜잭션 안에서 실행되므로 중간 실패 시 전체 ROLLBACK 된다.
 --
 -- 멱등성: 동일 paymentKey 로 두 번 호출되면 always already_finalized=true 반환,
--- 추가 INSERT 0건. 021 의 add_credits 멱등성 위에 finalize 수준의 가드를 한 번 더 둔다.
+-- 추가 INSERT 0건. 026 의 add_credits 멱등성 위에 finalize 수준의 가드를 한 번 더 둔다.
 --
 -- 모든 비즈니스 로직(스코프 키, 스냅샷 JSON 구성, reading_id 매핑 등)은 호출 측 TS
 -- 에서 사전 계산해 단일 JSONB 로 전달한다. 본 함수는 atomic 한 INSERT/UPDATE 만 담당.

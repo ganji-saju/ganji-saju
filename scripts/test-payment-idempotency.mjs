@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Regression test for P0-1 (audit 2026-05-13):
 // Ensures /api/payments/confirm cannot double-credit a user when the same
-// paymentKey is replayed. Tests both the SQL-level (migration 021) and the
+// paymentKey is replayed. Tests both the SQL-level (migration 026) and the
 // caller-level (src/lib/credits/deduct.ts) idempotency layers.
 //
 // Usage:
@@ -208,7 +208,7 @@ try {
 }
 
 // ============================================================================
-// Phase 2 — finalize_payment(JSONB) atomicity (P0-2 fix, migration 022)
+// Phase 2 — finalize_payment(JSONB) atomicity (P0-2 fix, migration 027)
 // ============================================================================
 
 async function callFinalize(input) {

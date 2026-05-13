@@ -145,7 +145,7 @@ export async function addCredits(
 ): Promise<void> {
   const supabase = await createServiceClient();
 
-  // P0-1 fix (audit 2026-05-13): defense-in-depth. The add_credits RPC (migration 021)
+  // P0-1 fix (audit 2026-05-13): defense-in-depth. The add_credits RPC (migration 026)
   // already enforces paymentKey idempotency; this caller-side check keeps confirm safe
   // even if the migration is rolled back, and avoids a redundant RPC round-trip on retry.
   const paymentKey =
