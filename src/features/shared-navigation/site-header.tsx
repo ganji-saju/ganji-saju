@@ -453,19 +453,28 @@ function MobileChrome({
       <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95 backdrop-blur">
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="app-top-brand min-w-0">
-              <div className="app-brand-lockup">
-                <div className="app-brand-mini-logo">
-                  <span>달</span>
-                  <strong>빛</strong>
+            <Link href="/" className="app-top-brand min-w-0 flex items-center gap-2.5">
+              {/* Redesign 2026-05-13 (Claude Design / 가이드 §3): 한자(干) 인장 마크 */}
+              <span
+                aria-hidden="true"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-white"
+                style={{
+                  background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
+                  fontFamily: 'var(--font-han)',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  letterSpacing: '-0.02em',
+                  boxShadow: '0 4px 12px rgba(216,27,114,0.28)',
+                }}
+              >
+                干
+              </span>
+              <div className="leading-tight min-w-0">
+                <div className="text-[11px] font-semibold text-[var(--app-pink-strong)] truncate">
+                  달빛인생 · {contextDescription}
                 </div>
-                <div className="min-w-0">
-                  <div className="app-top-brand-title truncate">
-                    달빛인생
-                  </div>
-                  <div className="app-top-context-note truncate">
-                    {contextDescription}
-                  </div>
+                <div className="text-[17px] font-extrabold tracking-tight text-[var(--app-ink)] truncate">
+                  간지사주
                 </div>
               </div>
             </Link>
