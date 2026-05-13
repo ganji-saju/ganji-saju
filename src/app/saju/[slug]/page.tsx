@@ -1,6 +1,8 @@
 ﻿import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
@@ -292,166 +294,364 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const focusScore = report.scores.find((score) => score.key === report.focusScoreKey);
   const todayLabel = formatTodayLabel();
 
+  // Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenSajuResult):
+  // 5 핵심 섹션 — Summary / Pillars / Scores / Small picks / Next-step CTA. 데이터·라우팅 무수정.
+  const summaryChips = punchReading.personalPoints.slice(0, 3);
+  const mainScores = (['overall', 'love', 'wealth', 'career'] as const)
+    .map((key) => report.scores.find((s) => s.key === key))
+    .filter((s): s is ReportScore => Boolean(s));
+
+  const SMALL_PICKS: Array<{
+    label: string;
+    price: string;
+    href: string;
+    desc: string;
+    eventProduct: string;
+  }> = [
+    {
+      label: '오늘 자세히 보기',
+      price: '550원',
+      desc: '지금 흐름과 조심해야 할 시간대',
+      href: todayDetailHref,
+      eventProduct: 'today-detail',
+    },
+    {
+      label: '깊은 사주 풀이',
+      price: '3,900원',
+      desc: '성격·일·관계·재물의 큰 흐름 한 번에',
+      href: `/saju/${encodeURIComponent(slug)}/premium`,
+      eventProduct: 'saju-premium',
+    },
+    {
+      label: '오행 균형 보기',
+      price: '무료',
+      desc: '나의 다섯 기운 분포와 보완점',
+      href: `/saju/${encodeURIComponent(slug)}/elements`,
+      eventProduct: 'elements',
+    },
+  ];
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <SajuResultViewTracker slug={slug} />
 
         <div className="space-y-5 sm:space-y-6">
-        <GangiPageHeader title="사주" backHref="/saju/new" />
-        <SajuScreenNav slug={slug} current="result" />
+          <GangiPageHeader title={`${input.year ? '' : ''}달빛이님 사주`} backHref="/saju/new" />
+          <SajuScreenNav slug={slug} current="result" />
 
-        <section className="space-y-4">
-          <article className="gangi-result-pillars relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(255,211,76,0.28),transparent_18%),radial-gradient(circle_at_52%_8%,rgba(255,211,76,0.26),transparent_4%)]" />
-            <div className="relative">
-              <div className="text-sm font-semibold text-[#ffd24d]">{report.focusBadge} · 사주팔자</div>
-              <div className="mt-4 grid grid-cols-4 gap-2">
+          <section className="space-y-4 px-1">
+            {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips */}
+            <article
+              className="rounded-[18px] border border-[var(--app-line)] p-5"
+              style={{ background: 'var(--app-pink-soft)' }}
+            >
+              <div className="flex items-center gap-2.5">
+                <ZodiacChip kind="dragon" size="sm" />
+                <div className="text-[12px] font-extrabold text-[var(--app-pink-strong)]">
+                  한 줄 요약
+                </div>
+              </div>
+              <h1 className="mt-3 text-[21px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                {easyResultCopy(punchReading.verdict, 1)}
+              </h1>
+              {summaryChips.length > 0 ? (
+                <div className="mt-3.5 flex flex-wrap gap-1.5">
+                  {summaryChips.map((point) => (
+                    <span
+                      key={point}
+                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1 text-[12px] font-bold text-[var(--app-pink-strong)]"
+                    >
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <p className="mt-3 text-[11.5px] leading-5 text-[var(--app-copy-muted)]">
+                {formatBirthSummary(input)}
+              </p>
+            </article>
+
+            {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
+            <section>
+              <div className="mb-2.5 flex items-end justify-between">
+                <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">사주팔자(四柱)</h2>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/overview`}
+                  className="text-[12px] font-bold text-[var(--app-pink-strong)]"
+                >
+                  도식 보기 →
+                </Link>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
                 {pillars.map((item) => {
                   const pillar = item.pillar;
+                  const stemColor = pillar?.stemElement
+                    ? ELEMENT_INFO[pillar.stemElement].color
+                    : 'var(--app-ink)';
                   return (
-                    <div
+                    <article
                       key={item.label}
-                      className="rounded-[1.1rem] border border-white/14 bg-white/7 px-2 py-3 text-center"
+                      className="rounded-[14px] border border-[var(--app-line)] bg-white px-2.5 py-3 text-center"
                     >
-                      <div className="text-xs font-semibold text-white/55">{item.label}주</div>
-                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
+                      <div className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                        {item.label}주
+                      </div>
+                      <div
+                        className="mt-1.5 text-[24px] font-bold leading-none tracking-wider"
+                        style={{
+                          fontFamily: 'var(--font-han)',
+                          color: stemColor,
+                        }}
+                      >
                         {pillar?.stem ?? '-'}
+                        {pillar?.branch ?? ''}
                       </div>
-                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
-                        {pillar?.branch ?? '-'}
-                      </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>
-              <p className="mt-4 text-xs leading-5 text-white/58">{formatBirthSummary(input)}</p>
-            </div>
-          </article>
+              <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy-soft)]">
+                {report.focusBadge} 시점
+              </p>
+            </section>
 
-          <article className="gangi-result-summary-card rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
-            <div className="gangi-result-date">{todayLabel}</div>
-            <div className="text-sm font-medium text-[var(--app-pink-strong)]">한 줄 요약</div>
-            <h1 className="mt-3 text-[1.42rem] font-medium leading-[1.5] tracking-[-0.01em] text-[var(--app-ink)] sm:text-[1.7rem]">
-              {easyResultCopy(punchReading.verdict, 1)}
-            </h1>
-            {punchReading.personalPoints.length > 0 ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {punchReading.personalPoints.map((point) => (
-                  <span
-                    key={point}
-                    className="rounded-full border border-[var(--app-pink-line)] bg-white/70 px-3 py-1.5 text-xs font-medium text-[var(--app-pink-strong)]"
+            {/* §3 분야별 흐름 — 점수+막대 (overall/love/wealth/career) */}
+            <section>
+              <h2 className="mb-3 text-[16px] font-extrabold text-[var(--app-ink)]">
+                오늘의 분야별 흐름
+              </h2>
+              <div className="grid gap-2.5">
+                {mainScores.map((score) => {
+                  const color =
+                    score.key === 'overall'
+                      ? 'var(--app-pink-strong)'
+                      : score.key === 'love'
+                        ? 'var(--app-coral)'
+                        : score.key === 'wealth'
+                          ? 'var(--app-amber)'
+                          : 'var(--app-jade)';
+                  const value = Math.max(0, Math.min(100, Math.round(score.score)));
+                  return (
+                    <article
+                      key={score.key}
+                      className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[14px] font-bold text-[var(--app-ink)]">
+                          {score.label}
+                        </span>
+                        <span
+                          className="text-[18px] font-extrabold tracking-tighter"
+                          style={{ color }}
+                        >
+                          {value}
+                        </span>
+                      </div>
+                      <div
+                        className="relative mt-2 h-1.5 overflow-hidden rounded-full"
+                        style={{ background: 'var(--app-line)' }}
+                      >
+                        <span
+                          className="absolute inset-y-0 left-0 rounded-full"
+                          style={{ width: `${value}%`, background: color }}
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy-soft)]">
+                오늘 점수 {overallScore ?? '--'}{overallScore !== null ? '점' : ''} ·{' '}
+                {getScoreStatus(overallScore)} ·{' '}
+                {focusScore?.label ?? report.focusBadge}
+              </p>
+            </section>
+
+            {/* §4 더 보고 싶은 질문 — 가격 pill + 제목 + 한 줄 */}
+            <section>
+              <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                작은 풀이
+              </div>
+              <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">
+                더 보고 싶은 질문
+              </h2>
+              <div className="mt-3 grid gap-2.5">
+                {SMALL_PICKS.map((pick) => (
+                  <TrackedLink
+                    key={pick.eventProduct}
+                    href={pick.href}
+                    eventName="report_deep_report_click"
+                    eventParams={{
+                      slug,
+                      product: pick.eventProduct,
+                      from: 'result_small_picks',
+                    }}
+                    className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
-                    {point}
-                  </span>
+                    <div
+                      className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                      style={{
+                        background: 'var(--app-pink-soft)',
+                        border: '1px solid var(--app-pink-line)',
+                      }}
+                    >
+                      {pick.price}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                        {pick.label}
+                      </div>
+                      <div className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
+                        {pick.desc}
+                      </div>
+                    </div>
+                    <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+                      ›
+                    </span>
+                  </TrackedLink>
                 ))}
               </div>
-            ) : null}
-          </article>
+            </section>
 
-          <article className="gangi-result-score-strip" aria-label="오늘 점수와 키워드">
-            <div>
-              <span>오늘 점수</span>
-              <strong>{overallScore ?? '--'}{overallScore !== null ? <em>점</em> : null}</strong>
-            </div>
-            <div>
-              <span>상태</span>
-              <strong>{getScoreStatus(overallScore)}</strong>
-            </div>
-            <div>
-              <span>키워드</span>
-              <strong>{focusScore?.label ?? report.focusBadge}</strong>
-            </div>
-          </article>
-
-          <div className="gangi-result-quick-grid">
-            {[
-              { label: '왜', value: punchReading.why },
-              { label: '조심', value: punchReading.caution },
-              { label: '오늘 할 일', value: punchReading.action },
-            ].map((item) => (
-              <article
-                key={item.label}
-                className="rounded-[1.1rem] border border-[var(--app-line)] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
-              >
-                <div className="text-xs font-semibold text-[var(--app-pink-strong)]">{item.label}</div>
-                <p className="mt-1 text-[0.95rem] font-medium leading-6 text-[var(--app-ink)]">
-                  {easyResultCopy(item.value, 1)}
-                </p>
-              </article>
-            ))}
-          </div>
-
-          <article className="gangi-result-elements-card rounded-[1.35rem] border border-[var(--app-line)] bg-white p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)]">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-[var(--app-ink)]">오행 균형</h2>
-              {getSupportElement(report) ? (
-                <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-medium text-[var(--app-pink-strong)]">
-                  오늘 힌트 {ELEMENT_PUBLIC_LABELS[getSupportElement(report)!]}
-                </span>
-              ) : null}
-            </div>
-            <div className="mt-5 grid grid-cols-5 gap-3">
-              {COMPACT_ELEMENT_ORDER.map((element) => {
-                const value = sajuData.fiveElements.byElement[element].percentage;
-                const height = `${Math.max(18, Math.min(100, Math.round(value)))}%`;
-                return (
-                  <div key={element} className="flex flex-col items-center gap-2">
-                    <div className="flex h-20 w-full items-end overflow-hidden rounded-xl bg-[var(--app-surface-muted)]">
-                      <div
-                        className="w-full rounded-xl"
-                        style={{ height, backgroundColor: ELEMENT_INFO[element].color }}
-                      />
-                    </div>
-                    <span className="text-sm font-semibold text-[var(--app-ink)]">{element}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </article>
-
-          <div className="grid grid-cols-2 gap-3">
-            {compactResultCards.map((item) => (
-              <article
-                key={item.label}
-                className="gangi-result-mini-card rounded-[1.2rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
-              >
-                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-copy)]">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                  {item.label}
-                </div>
-                <p className="mt-3 text-lg font-semibold leading-7 text-[var(--app-ink)]">{item.value}</p>
-              </article>
-            ))}
-          </div>
-
-          <div className="gangi-result-flow-strip" aria-label="풀이 흐름">
-            <span data-active="true">총평</span>
-            <span>상세</span>
-            <span>명식</span>
-          </div>
-
-          <article className="gangi-result-next-step rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
-            <p className="text-sm font-semibold text-white/72">더 깊게 보고 싶다면</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">오늘 자세히 보기 · 550원</h2>
-            <p className="mt-2 text-sm leading-6 text-white/68">
-              시간별로 무엇을 하면 좋을지만 짧게 정리해드려요.
-            </p>
-            <TrackedLink
-              href={todayDetailHref}
-              eventName="report_deep_report_click"
-              eventParams={{
-                slug,
-                product: 'today-detail',
-                from: 'result_compact_card',
-                purchased: Boolean(todayDetailEntitlement),
+            {/* §5 Next-step CTA — ink-dark "선생님과 대화하기" */}
+            <article
+              className="rounded-[18px] p-5 text-white"
+              style={{
+                background: 'var(--app-ink)',
+                boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
               }}
-              className="mt-5 inline-flex rounded-full bg-[var(--app-pink)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(236,72,153,0.28)]"
             >
-              {todayDetailEntitlement ? '구매한 풀이 열기' : '풀이 열기'}
-            </TrackedLink>
-          </article>
-        </section>
+              <div
+                className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink)' }}
+              >
+                다음 단계
+              </div>
+              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+                깊은 풀이와 대화로
+                <br />
+                이어가 보세요
+              </h2>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <TrackedLink
+                  href="/dialogue"
+                  eventName="report_deep_report_click"
+                  eventParams={{
+                    slug,
+                    product: 'dialogue',
+                    from: 'result_next_step',
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                >
+                  선생님과 대화하기 →
+                </TrackedLink>
+                <TrackedLink
+                  href={todayDetailHref}
+                  eventName="report_deep_report_click"
+                  eventParams={{
+                    slug,
+                    product: 'today-detail',
+                    from: 'result_next_step',
+                    purchased: Boolean(todayDetailEntitlement),
+                  }}
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                >
+                  {todayDetailEntitlement ? '구매한 풀이 열기' : '오늘 자세히 · 550원'}
+                </TrackedLink>
+              </div>
+            </article>
+
+            {/* 하단 — 추가 풀이 (기존 가치 보존, 접힘 기본). PR4 패턴 동일. */}
+            <details className="group rounded-[18px] border border-[var(--app-line)] bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[14px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
+                <span>더 깊이 들여다보기</span>
+                <span
+                  aria-hidden="true"
+                  className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+                >
+                  ▾
+                </span>
+              </summary>
+              <div className="grid gap-4 border-t border-[var(--app-line)] px-4 py-5">
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { label: '왜', value: punchReading.why },
+                    { label: '조심', value: punchReading.caution },
+                    { label: '오늘 할 일', value: punchReading.action },
+                  ].map((item) => (
+                    <article
+                      key={item.label}
+                      className="rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-3"
+                    >
+                      <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                        {item.label}
+                      </div>
+                      <p className="mt-1 text-[12.5px] font-medium leading-5 text-[var(--app-ink)]">
+                        {easyResultCopy(item.value, 1)}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+
+                <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[14px] font-extrabold text-[var(--app-ink)]">오행 균형</h3>
+                    {getSupportElement(report) ? (
+                      <span
+                        className="rounded-full px-3 py-1 text-[11px] font-bold text-[var(--app-pink-strong)]"
+                        style={{ background: 'var(--app-pink-soft)' }}
+                      >
+                        오늘 힌트 {ELEMENT_PUBLIC_LABELS[getSupportElement(report)!]}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="mt-4 grid grid-cols-5 gap-2.5">
+                    {COMPACT_ELEMENT_ORDER.map((element) => {
+                      const value = sajuData.fiveElements.byElement[element].percentage;
+                      const height = `${Math.max(18, Math.min(100, Math.round(value)))}%`;
+                      return (
+                        <div key={element} className="flex flex-col items-center gap-1.5">
+                          <div
+                            className="flex h-16 w-full items-end overflow-hidden rounded-[10px]"
+                            style={{ background: 'var(--app-line)' }}
+                          >
+                            <div
+                              className="w-full rounded-[10px]"
+                              style={{ height, backgroundColor: ELEMENT_INFO[element].color }}
+                            />
+                          </div>
+                          <span className="text-[12px] font-bold text-[var(--app-ink)]">
+                            {element}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </article>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {compactResultCards.map((item) => (
+                    <article
+                      key={item.label}
+                      className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                    >
+                      <div className="flex items-center gap-2 text-[12.5px] font-bold text-[var(--app-copy)]">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        {item.label}
+                      </div>
+                      <p className="mt-2 text-[14px] font-semibold leading-6 text-[var(--app-ink)]">
+                        {item.value}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </details>
+          </section>
         </div>
       </AppPage>
     </AppShell>
