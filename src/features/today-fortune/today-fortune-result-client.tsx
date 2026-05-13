@@ -96,9 +96,11 @@ export function TodayFortuneResultClient({
 
   return (
     <div className="gangi-subpage pb-8">
-      <GangiPageHeader title="오늘운세 결과" backHref="/today-fortune" />
+      <GangiPageHeader title="오늘의 운세" backHref="/today-fortune" />
 
-      <div className="grid gap-6 px-4 py-6">
+      {/* Redesign 2026-05-13: mockup screens-a.jsx ScreenToday 의 4 핵심 섹션을 상단에 배치하고,
+          기존 추가 무료 콘텐츠(기회/주의 / 사주 단서 / 후속 질문 / 관련 링크)는 하단 details 로 접어 보존. */}
+      <div className="grid gap-4 px-4 py-5">
         {!freeResult ? (
           <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(0,0,0,0.06)]">
             <div className="app-caption">결과를 다시 불러와 주세요</div>
@@ -116,12 +118,16 @@ export function TodayFortuneResultClient({
           </section>
         ) : (
           <>
-            <TodayScoreReveal result={freeResult} />
+            {/* mockup §1 — date eyebrow + 총운 헤드라인 */}
             <TodayFortuneSummaryCard result={freeResult} />
-            <TodayFortuneScoreGrid result={freeResult} />
-            <OpportunityRiskCards result={freeResult} />
-            <SajuReasonSnippet result={freeResult} />
 
+            {/* mockup §2 — 핑크 banner 큰 점수 */}
+            <TodayScoreReveal result={freeResult} />
+
+            {/* mockup §3 — 4-card 점수 grid */}
+            <TodayFortuneScoreGrid result={freeResult} />
+
+            {/* mockup §4 — 550원 자세히 보기 unlock */}
             <PremiumLockCard
               copy={freeResult.nextAction.copy}
               coinCost={freeResult.nextAction.coinCost}
@@ -131,31 +137,48 @@ export function TodayFortuneResultClient({
               concernId={freeResult.concernId}
             />
 
-            <section className="app-panel p-6">
-              <FollowUpQuestionChips
-                questions={freeResult.followUpQuestions}
-                sourceSessionId={freeResult.sourceSessionId}
-                concernId={freeResult.concernId}
-              />
-            </section>
+            {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}
+            <details className="group rounded-[20px] border border-[var(--app-line)] bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[14px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
+                <span>더 깊이 들여다보기</span>
+                <span
+                  aria-hidden="true"
+                  className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+                >
+                  ▾
+                </span>
+              </summary>
+              <div className="grid gap-4 border-t border-[var(--app-line)] px-4 py-5">
+                <OpportunityRiskCards result={freeResult} />
+                <SajuReasonSnippet result={freeResult} />
 
-            <GangiSection
-              eyebrow="더 보고 싶을 때"
-              title="궁금한 부분만 이어보세요"
-              description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 이어가면 됩니다."
-            >
-              <div className="grid gap-3">
-                {relatedLinks.map((item) => (
-                  <Link key={item.label} href={item.href} className="gangi-list-link">
-                    <span className="gangi-list-copy">
-                      <strong>{item.label}</strong>
-                      <em>{item.body}</em>
-                    </span>
-                    <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
-                  </Link>
-                ))}
+                <section className="app-panel p-5">
+                  <FollowUpQuestionChips
+                    questions={freeResult.followUpQuestions}
+                    sourceSessionId={freeResult.sourceSessionId}
+                    concernId={freeResult.concernId}
+                  />
+                </section>
+
+                <GangiSection
+                  eyebrow="더 보고 싶을 때"
+                  title="궁금한 부분만 이어보세요"
+                  description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 이어가면 됩니다."
+                >
+                  <div className="grid gap-3">
+                    {relatedLinks.map((item) => (
+                      <Link key={item.label} href={item.href} className="gangi-list-link">
+                        <span className="gangi-list-copy">
+                          <strong>{item.label}</strong>
+                          <em>{item.body}</em>
+                        </span>
+                        <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
+                      </Link>
+                    ))}
+                  </div>
+                </GangiSection>
               </div>
-            </GangiSection>
+            </details>
           </>
         )}
       </div>
