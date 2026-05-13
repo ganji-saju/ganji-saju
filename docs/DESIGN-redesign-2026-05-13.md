@@ -24,10 +24,12 @@
 > - ✅ **PR4** (`redesign/claude-design-pr4-today-2026-05-13`, 머지됨): 오늘운세 결과
 >   - mockup `screens-a.jsx` `ScreenToday` 적용 — 4 컴포넌트 (Summary / ScoreReveal / ScoreGrid / PremiumLock) 시각 재설계
 >   - 추가 무료 콘텐츠는 하단 `<details>` 로 보존
-> - 🟡 **PR5** (`redesign/claude-design-pr5-saju-intake-2026-05-13`, 진행 중): 사주 입력
->   - mockup `screens-a.jsx` `ScreenSajuIntake` 시각 요소만 적용 — 3-bar step indicator, STEP N/M eyebrow, full-width pink CTA + footer note
->   - 4단계 swipe flow / 모든 검증 로직 / `UnifiedBirthInfoFields` 내부 구조 무수정
-> - ⏳ PR6 이후: 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
+> - ✅ **PR5** (`redesign/claude-design-pr5-saju-intake-2026-05-13`, 머지됨): 사주 입력
+>   - mockup `screens-a.jsx` `ScreenSajuIntake` 완전 재구성 — 3-bar step, STEP N/M, full-width CTA, birth step inline mockup-style 폼 (이름·생일 입력·시각 ZodiacChip card·성별), 동의 단계 제거 (implicit consent + disclosure)
+> - 🟡 **PR6** (`redesign/claude-design-pr6-saju-result-2026-05-13`, 진행 중): 사주 결과
+>   - mockup `screens-a.jsx` `ScreenSajuResult` 5 섹션 적용 — Hero summary / 사주팔자 4-card grid / 분야별 흐름 score+bar / 작은 풀이 3-link / ink-dark CTA
+>   - 추가 콘텐츠(왜·조심·할일 / 오행 / 2x2 mini cards)는 하단 `<details>` 보존
+> - ⏳ PR7 이후: 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
 >
 > **매핑 안 되는 버튼/링크**는 [`docs/REDESIGN-PENDING-LINKS.md`](./REDESIGN-PENDING-LINKS.md) 에 누적 — disabled 상태로 표시하고 추후 라우트 연결.
 
