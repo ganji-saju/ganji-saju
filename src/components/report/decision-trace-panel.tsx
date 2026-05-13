@@ -78,7 +78,7 @@ const CONFIDENCE_META: Record<
   },
   disputed: {
     label: '참고 관점',
-    className: 'border-[var(--app-coral)]/24 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]',
+    className: 'border-[var(--app-coral)]/24 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
   },
   reference: {
     label: '보조 단서',

@@ -11,10 +11,6 @@ import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
 import { buildSajuTodayDetailCheckoutHref } from '@/lib/saju/today-detail-links';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { formatPriceLabel } from '@/lib/payments/catalog';
-
-// P1-2 fix (audit 2026-05-13): "550원" 하드코딩 3곳 → catalog SSOT
-const TODAY_DETAIL_PRICE = formatPriceLabel('taste_today_detail');
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -160,7 +156,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
           <section className="gangi-today-detail-lock-card">
             <div className="gangi-detail-kicker">구매 후 열람</div>
             <h1>
-              이 풀이는 {TODAY_DETAIL_PRICE} 결제 후 열립니다
+              이 풀이는 550원 결제 후 열립니다
             </h1>
             <p>
               이미 결제했다면 같은 계정으로 로그인한 뒤 다시 열어주세요.
@@ -169,7 +165,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
               href={checkoutHref}
               className="gangi-detail-primary-link"
             >
-              {TODAY_DETAIL_PRICE} 결제하고 열기
+              550원 결제하고 열기
             </Link>
           </section>
         </AppPage>
@@ -200,7 +196,7 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
             <h1>오늘 바로 쓸 말과 행동만 정리했어요</h1>
             <p>긴 풀이 대신 지금 필요한 핵심, 조심할 점, 해볼 일을 카드로 나눠 보여드립니다.</p>
           </div>
-          <span>{TODAY_DETAIL_PRICE} 풀이</span>
+          <span>550원 풀이</span>
         </section>
 
         <section className="gangi-today-detail-stack" aria-label="오늘 상세 풀이">

@@ -7,17 +7,11 @@ import { PageIntro } from '@/components/moonlight/PageIntro';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { GANGI_FREE_HUB_ITEMS } from '@/content/gangi-market';
-import { buildOpenGraph, buildTwitter } from '@/lib/site';
-
-const PAGE_TITLE = '무료운세';
-const PAGE_DESC = '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.';
 
 export const metadata: Metadata = {
-  title: PAGE_TITLE,
-  description: PAGE_DESC,
+  title: '무료운세',
+  description: '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 달빛인생 무료운세 허브입니다.',
   alternates: { canonical: '/free' },
-  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/free' }),
-  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default function FreeFortunePage() {

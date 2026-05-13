@@ -31,7 +31,7 @@ export const MOONLIGHT_COUNSELORS: Record<MoonlightCounselorId, MoonlightCounsel
     description:
       '감정선을 놓치지 않되 판단은 흐리지 않는 말투입니다. 관계, 속마음, 타이밍 해석에서 특히 자연스럽게 읽힙니다.',
     signature: '부드럽지만 단정하게, 흐름의 속뜻을 먼저 읽어드립니다.',
-    accentClassName: 'text-[var(--app-plum-text)]',
+    accentClassName: 'text-[var(--app-plum)]',
     borderClassName: 'border-[var(--app-plum)]/35',
     surfaceClassName: 'bg-[rgba(166,124,181,0.12)]',
   },

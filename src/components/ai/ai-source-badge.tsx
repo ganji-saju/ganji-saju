@@ -19,11 +19,11 @@ const BADGE_COPY: Record<AiSourceBadgeState, { label: string; className: string 
   },
   safe_redirect: {
     label: '안전 안내',
-    className: 'border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]',
+    className: 'border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
   },
   error: {
     label: '확인 필요',
-    className: 'border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]',
+    className: 'border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
   },
 };
 

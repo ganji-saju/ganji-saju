@@ -47,16 +47,3 @@ supabase/.temp/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
-
-# Claude Code MCP config (per-developer; do not commit shared)
-/.mcp.json
-
-# Playwright test outputs
-/test-results/
-
-# Audit artifacts — keep canonical markdown + JSON, exclude heavy binaries / legacy
-/audit-reports/screenshots/
-/audit-reports/lighthouse/*.html
-/audit-reports/lighthouse/*.json
-/audit-reports/_legacy/
-/audit-reports/playwright/html-report/

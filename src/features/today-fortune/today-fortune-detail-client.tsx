@@ -153,7 +153,7 @@ export function TodayFortuneDetailClient({
 
         {error ? (
           <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(0,0,0,0.06)]">
-            <div className="app-caption text-[var(--app-coral-text)]">열람 실패</div>
+            <div className="app-caption text-[var(--app-coral)]">열람 실패</div>
             <h1 className="mt-3 text-2xl font-semibold leading-9 text-[var(--app-ink)]">
               바로 열지 못했습니다
             </h1>

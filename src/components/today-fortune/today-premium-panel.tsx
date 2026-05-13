@@ -1,8 +1,4 @@
 import type { TodayFortunePremiumResult } from '@/lib/today-fortune/types';
-import { formatPriceLabel } from '@/lib/payments/catalog';
-
-// P1-2 fix (audit 2026-05-13): "550원 풀이" 하드코딩 → catalog SSOT
-const TODAY_DETAIL_PRICE = formatPriceLabel('taste_today_detail');
 
 function trimEasySentence(value: string) {
   const cleaned = value
@@ -45,11 +41,11 @@ export function TodayPremiumPanel({
     <section className="space-y-5 rounded-[1.8rem] border border-[var(--app-pink-line)] bg-white p-6 shadow-[0_18px_46px_rgba(236,72,153,0.10)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="app-caption text-[var(--app-pink-text)]">오늘 자세히 보기</div>
+          <div className="app-caption text-[var(--app-pink)]">오늘 자세히 보기</div>
           <h3 className="mt-3 text-2xl font-semibold leading-8 text-[var(--app-ink)]">오늘은 이렇게 움직이면 좋아요</h3>
         </div>
-        <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink-text)]">
-          {TODAY_DETAIL_PRICE} 풀이
+        <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-semibold text-[var(--app-pink)]">
+          550원 풀이
         </span>
       </div>
 
@@ -68,11 +64,11 @@ export function TodayPremiumPanel({
         </article>
 
         <article className="rounded-[1.35rem] border border-rose-200 bg-rose-50 p-4 sm:p-5">
-          <div className="text-sm font-semibold text-[var(--app-coral-text)]">조심할 시간</div>
+          <div className="text-sm font-semibold text-[var(--app-coral)]">조심할 시간</div>
           <div className="mt-4 space-y-3">
             {cautionWindows.map((item) => (
               <div key={`${item.range}-${item.title}`} className="rounded-[1rem] border border-rose-200 bg-white p-4">
-                <div className="text-xs font-semibold text-[var(--app-coral-text)]">{item.range}</div>
+                <div className="text-xs font-semibold text-[var(--app-coral)]">{item.range}</div>
                 <div className="mt-2 break-keep text-base font-semibold leading-6 text-[var(--app-ink)]">{trimEasySentence(item.title)}</div>
                 <p className="mt-2 break-keep text-sm leading-6 text-[var(--app-copy)]">{trimEasySentence(item.body)}</p>
               </div>

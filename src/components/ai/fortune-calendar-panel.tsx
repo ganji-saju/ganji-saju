@@ -15,10 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneCalendarMonthReport, FortuneCalendarTone } from '@/domain/saju/report';
-import { formatPriceLabel } from '@/lib/payments/catalog';
-
-// P1-2 fix (audit 2026-05-13): "1,900원으로 열기" 하드코딩 → catalog SSOT
-const MONTHLY_CALENDAR_PRICE = formatPriceLabel('taste_monthly_calendar');
 
 interface Props {
   slug: string;
@@ -701,7 +697,7 @@ export default function FortuneCalendarPanel({
                     href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
                     className="gangi-secondary-button"
                   >
-                    {MONTHLY_CALENDAR_PRICE}으로 열기
+                    1,900원으로 열기
                   </Link>
                   <Link
                     href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}

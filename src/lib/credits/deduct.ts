@@ -145,28 +145,6 @@ export async function addCredits(
 ): Promise<void> {
   const supabase = await createServiceClient();
 
-  // P0-1 fix (audit 2026-05-13): defense-in-depth. The add_credits RPC (migration 026)
-  // already enforces paymentKey idempotency; this caller-side check keeps confirm safe
-  // even if the migration is rolled back, and avoids a redundant RPC round-trip on retry.
-  const paymentKey =
-    typeof metadata.paymentKey === 'string' && metadata.paymentKey.length > 0
-      ? metadata.paymentKey
-      : null;
-
-  if (paymentKey) {
-    const { data: existing } = await supabase
-      .from('credit_transactions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('type', type)
-      .contains('metadata', { paymentKey })
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      return;
-    }
-  }
-
   await supabase.rpc('add_credits', {
     p_user_id: userId,
     p_amount: amount,

@@ -1558,19 +1558,19 @@ export function toneClasses(tone: MoonlightTone) {
       };
     case 'plum':
       return {
-        text: 'text-[var(--app-plum-text)]',
+        text: 'text-[var(--app-plum)]',
         border: 'border-[var(--app-plum)]/28',
         bg: 'bg-[var(--app-plum)]/10',
       };
     case 'sky':
       return {
-        text: 'text-[var(--app-sky-text)]',
+        text: 'text-[var(--app-sky)]',
         border: 'border-[var(--app-sky)]/28',
         bg: 'bg-[var(--app-sky)]/10',
       };
     case 'coral':
       return {
-        text: 'text-[var(--app-coral-text)]',
+        text: 'text-[var(--app-coral)]',
         border: 'border-[var(--app-coral)]/28',
         bg: 'bg-[var(--app-coral)]/10',
       };

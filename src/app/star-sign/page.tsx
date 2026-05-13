@@ -45,7 +45,7 @@ export default async function StarSignPage() {
           badges={[
             <Badge
               key="star-sign"
-              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky-text)]"
+              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]"
             >
               별자리
             </Badge>,
@@ -90,7 +90,7 @@ export default async function StarSignPage() {
             <SectionHeader
               eyebrow={hasPersonalizedProfile ? 'MY 프로필 기준 별자리' : '오늘의 별자리'}
               title={hasPersonalizedProfile ? `선생님은 ${featured.label}` : featured.label}
-              titleClassName="text-3xl text-[var(--app-sky-text)]"
+              titleClassName="text-3xl text-[var(--app-sky)]"
               description={featured.dateRange}
               descriptionClassName="mx-auto text-[var(--app-copy-muted)]"
             />

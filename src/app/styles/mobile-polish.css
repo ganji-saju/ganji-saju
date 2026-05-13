@@ -227,7 +227,7 @@
   place-items: center;
   border-radius: 1rem;
   background: var(--app-pink-soft);
-  color: var(--app-pink-text);
+  color: var(--app-pink);
 }
 
 .today-concern-card:nth-child(3) .today-concern-icon {

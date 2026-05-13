@@ -21,10 +21,6 @@ import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
-import { formatPriceLabel } from '@/lib/payments/catalog';
-
-// P1-2 fix (audit 2026-05-13): "49,000원" 하드코딩 → catalog SSOT
-const LIFETIME_REPORT_PRICE = formatPriceLabel('lifetime_report');
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -444,7 +440,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </div>
 
             <div className="mt-6 rounded-[1.2rem] border border-[var(--app-gold)]/18 bg-[rgba(255,255,255,0.02)] px-5 py-5 text-center">
-              <div className=" text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · {LIFETIME_REPORT_PRICE}</div>
+              <div className=" text-2xl text-[var(--app-gold-text)]">깊은 사주풀이 · 49,000원</div>
               <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                 오늘 바로 7개 섹션 본문과 PDF 저장, MY 보관함 재열람, 이후 업데이트 반영이 함께 열립니다.
               </p>

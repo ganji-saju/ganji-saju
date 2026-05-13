@@ -27,7 +27,7 @@ export default function SafeRedirectPage() {
           badges={[
             <Badge
               key="safe"
-              className="border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]"
+              className="border-[var(--app-coral)]/32 bg-[var(--app-coral)]/10 text-[var(--app-coral)]"
             >
               SAFE_REDIRECT
             </Badge>,

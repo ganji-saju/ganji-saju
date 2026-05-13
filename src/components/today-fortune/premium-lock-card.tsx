@@ -4,10 +4,6 @@ import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { formatPriceLabel } from '@/lib/payments/catalog';
-
-// P1-2 fix (audit 2026-05-13): "550원" 하드코딩 → catalog SSOT lookup
-const TODAY_DETAIL_PRICE = formatPriceLabel('taste_today_detail');
 
 interface PremiumLockCardProps {
   copy: string;
@@ -38,7 +34,7 @@ export function PremiumLockCard({
             <h3 className="mt-3 text-xl font-bold tracking-tight text-[var(--app-ink)]">오늘 자세히 보기</h3>
           </div>
           <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-xs font-bold text-[var(--app-pink-strong)]">
-            {TODAY_DETAIL_PRICE} 또는 {coinCost}코인
+            550원 또는 {coinCost}코인
           </span>
         </div>
         <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">{copy}</p>
@@ -86,7 +82,7 @@ export function PremiumLockCard({
                 size="lg"
                 className="min-h-[3.25rem] w-full rounded-full border-[var(--app-pink-line)] bg-white text-sm font-medium text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
               >
-                {TODAY_DETAIL_PRICE} 바로 열기
+                550원 바로 열기
               </Button>
             </Link>
             <Link href="/credits?from=today-fortune" className="min-w-0">
@@ -102,7 +98,7 @@ export function PremiumLockCard({
           </div>
         </div>
         {errorMessage ? (
-          <p className="mt-4 text-sm text-[var(--app-coral-text)]">{errorMessage}</p>
+          <p className="mt-4 text-sm text-[var(--app-coral)]">{errorMessage}</p>
         ) : null}
       </div>
     </section>

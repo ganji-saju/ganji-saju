@@ -111,7 +111,7 @@ function StoryList({
     tone === 'jade'
       ? 'border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 text-[var(--app-jade)]'
       : tone === 'coral'
-        ? 'border-[var(--app-coral)]/25 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]'
+        ? 'border-[var(--app-coral)]/25 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
         : 'border-[var(--app-gold)]/22 bg-[var(--app-gold)]/8 text-[var(--app-gold-text)]';
 
   const visibleItems = items.filter(Boolean).slice(0, max);
@@ -159,7 +159,7 @@ function StoryReadablePanel({
     tone === 'jade'
       ? 'text-[var(--app-jade)]'
       : tone === 'coral'
-        ? 'text-[var(--app-coral-text)]'
+        ? 'text-[var(--app-coral)]'
         : 'text-[var(--app-gold-text)]';
 
   return (
@@ -188,7 +188,7 @@ function StoryInlineFact({
     tone === 'jade'
       ? 'border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 text-[var(--app-jade)]'
       : tone === 'coral'
-        ? 'border-[var(--app-coral)]/20 bg-[var(--app-coral)]/8 text-[var(--app-coral-text)]'
+        ? 'border-[var(--app-coral)]/20 bg-[var(--app-coral)]/8 text-[var(--app-coral)]'
         : 'border-[var(--app-gold)]/20 bg-[var(--app-gold)]/8 text-[var(--app-gold-text)]';
 
   return (
@@ -241,7 +241,7 @@ function StoryActionCard({
     tone === 'jade'
       ? 'text-[var(--app-jade)]'
       : tone === 'coral'
-        ? 'text-[var(--app-coral-text)]'
+        ? 'text-[var(--app-coral)]'
         : 'text-[var(--app-gold-text)]';
 
   return (
@@ -282,7 +282,7 @@ function FieldStoryCard({
     tone === 'jade'
       ? 'text-[var(--app-jade)]'
       : tone === 'coral'
-        ? 'text-[var(--app-coral-text)]'
+        ? 'text-[var(--app-coral)]'
         : 'text-[var(--app-gold-text)]';
 
   return (
@@ -441,7 +441,7 @@ export function MobileSajuResultStory({
               <StoryList items={luckyDates} tone="jade" max={2} />
             </div>
             <div>
-              <div className="mb-1 text-[10px] font-semibold text-[var(--app-coral-text)]">주의 날짜</div>
+              <div className="mb-1 text-[10px] font-semibold text-[var(--app-coral)]">주의 날짜</div>
               <StoryList items={cautionDates} tone="coral" max={2} />
             </div>
           </div>

@@ -36,7 +36,7 @@ function SummaryList({
         <BulletList
           items={items}
           className="text-sm text-[var(--app-copy)]"
-          markerClassName={tone === 'caution' ? 'text-[var(--app-coral-text)]' : undefined}
+          markerClassName={tone === 'caution' ? 'text-[var(--app-coral)]' : undefined}
         />
       }
     />

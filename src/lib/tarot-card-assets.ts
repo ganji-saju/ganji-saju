@@ -29,7 +29,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
     family: 'cups',
     label: 'Cups',
     marker: '💧',
-    accentClassName: 'text-[var(--app-sky-text)]',
+    accentClassName: 'text-[var(--app-sky)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(108,173,205,0.24),transparent_36%),linear-gradient(160deg,rgba(42,79,116,0.98),rgba(12,24,45,0.98))]',
     borderClassName: 'border-[var(--app-sky)]/55',
@@ -59,7 +59,7 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
     family: 'wands',
     label: 'Wands',
     marker: '🔥',
-    accentClassName: 'text-[var(--app-coral-text)]',
+    accentClassName: 'text-[var(--app-coral)]',
     backgroundClassName:
       'bg-[radial-gradient(circle_at_50%_18%,rgba(211,129,103,0.24),transparent_36%),linear-gradient(160deg,rgba(116,62,58,0.98),rgba(34,19,31,0.98))]',
     borderClassName: 'border-[var(--app-coral)]/55',
