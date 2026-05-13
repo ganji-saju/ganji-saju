@@ -46,7 +46,7 @@ interface PaidReadingSnapshotRow {
   created_at: string;
 }
 
-function toKoreaDate(value: string | null | undefined) {
+export function toKoreaDate(value: string | null | undefined) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
@@ -100,7 +100,7 @@ export function getPaidProductTitle(productId: PaidProductId) {
   }
 }
 
-function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord | null) {
+export function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord | null) {
   const date = toKoreaDate(reading?.sajuData.metadata.calculatedAt);
 
   if (productId === 'today-detail' && date) {
@@ -116,7 +116,7 @@ function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord |
     : '결제 시점의 풀이 정보를 보관합니다.';
 }
 
-function buildSnapshotJson(productId: PaidProductId, scope: PaymentProductScope | null) {
+export function buildSnapshotJson(productId: PaidProductId, scope: PaymentProductScope | null) {
   const reading = scope?.reading ?? null;
 
   return {
