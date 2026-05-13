@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${item.title} | 달빛인생`,
       description: item.description,
-      url: `https://ganji-saju.vercel.app/method/${item.slug}`,
+      url: `https://www.ganjisaju.kr/method/${item.slug}`,
       siteName: '달빛인생',
       locale: 'ko_KR',
       type: 'article',
@@ -107,8 +107,8 @@ export default async function MethodDetailPage({ params }: Props) {
     description: item.description,
     inLanguage: 'ko-KR',
     isAccessibleForFree: true,
-    mainEntityOfPage: `https://ganji-saju.vercel.app/method/${item.slug}`,
-    url: `https://ganji-saju.vercel.app/method/${item.slug}`,
+    mainEntityOfPage: `https://www.ganjisaju.kr/method/${item.slug}`,
+    url: `https://www.ganjisaju.kr/method/${item.slug}`,
     articleSection: item.eyebrow,
     keywords: item.keywords,
     author: {
@@ -118,7 +118,7 @@ export default async function MethodDetailPage({ params }: Props) {
     publisher: {
       '@type': 'Organization',
       name: '달빛인생',
-      url: 'https://ganji-saju.vercel.app',
+      url: 'https://www.ganjisaju.kr',
     },
     about: item.keywords.map((keyword) => ({
       '@type': 'Thing',

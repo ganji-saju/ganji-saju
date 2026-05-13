@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: '달빛인생 풀이 안내',
     description:
       '어려운 말보다 사용자가 바로 이해할 수 있는 풀이를 먼저 보여주는 달빛인생의 안내입니다.',
-    url: 'https://ganji-saju.vercel.app/about-engine',
+    url: 'https://www.ganjisaju.kr/about-engine',
     siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'article',

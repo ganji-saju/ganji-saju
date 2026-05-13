@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = 'https://www.ganjisaju.kr';
 
 function shouldForwardAuthCallback(req: NextRequest) {
   if (req.nextUrl.pathname !== '/') return false;

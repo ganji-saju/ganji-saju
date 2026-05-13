@@ -3,7 +3,7 @@ export const DEFAULT_DESCRIPTION =
   '오늘의 운세와 타로부터 사주, 궁합, 띠운세까지 가볍게 확인하는 모바일 운세 서비스 달빛인생입니다.';
 export const DEFAULT_OG_IMAGE = '/og-image.png';
 
-const FALLBACK_SITE_URL = 'https://ganji-saju.vercel.app';
+const FALLBACK_SITE_URL = 'https://www.ganjisaju.kr';
 
 function isVercelAutoDomain(url: URL) {
   return url.hostname.endsWith('.vercel.app') && url.origin !== FALLBACK_SITE_URL;

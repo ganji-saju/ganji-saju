@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: '달빛인생 풀이 도움말',
     description:
       '결과가 다르게 보일 때 확인하면 좋은 출생 시간, 출생지, 풀이 흐름 도움말을 모았습니다.',
-    url: 'https://ganji-saju.vercel.app/method',
+    url: 'https://www.ganjisaju.kr/method',
     siteName: '달빛인생',
     locale: 'ko_KR',
     type: 'website',

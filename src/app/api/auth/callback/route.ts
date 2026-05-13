@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = 'https://www.ganjisaju.kr';
 
 function getSafeNext(value: string | null) {
   if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';

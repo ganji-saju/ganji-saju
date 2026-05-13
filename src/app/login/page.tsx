@@ -7,7 +7,7 @@ import LegalLinks from '@/components/legal-links';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
-const CANONICAL_SITE_ORIGIN = 'https://ganji-saju.vercel.app';
+const CANONICAL_SITE_ORIGIN = 'https://www.ganjisaju.kr';
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_YEAR - index);
 const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
