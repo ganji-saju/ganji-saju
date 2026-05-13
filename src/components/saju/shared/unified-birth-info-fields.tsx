@@ -42,6 +42,8 @@ interface UnifiedBirthInfoFieldsProps {
   idPrefix?: string;
   dateInputVariant?: 'input' | 'select';
   visibleSections?: readonly UnifiedBirthInfoSection[];
+  /** location-time 섹션에서 시간 picker 만 숨기고 location picker 만 보이게. PR5 사주입력 redesign 용. */
+  hideTimePicker?: boolean;
   locationLoading: boolean;
   locationMessage: string;
   locationResults: BirthLocationSearchResultLike[];
@@ -79,6 +81,7 @@ export function UnifiedBirthInfoFields({
   idPrefix = 'unified',
   dateInputVariant = 'select',
   visibleSections,
+  hideTimePicker = false,
   locationLoading,
   locationMessage,
   locationResults,
@@ -293,6 +296,7 @@ export function UnifiedBirthInfoFields({
 
       {showLocationTime ? (
         <div className="space-y-4">
+          {hideTimePicker ? null : (
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="gangi-birth-field">
               <Label htmlFor={fieldId('birth-hour')} className="gangi-birth-label">
@@ -354,6 +358,7 @@ export function UnifiedBirthInfoFields({
               태어난 시간을 잘 모르겠어요
             </label>
           </div>
+          )}
 
           <div className="gangi-birth-field">
             <Label htmlFor={fieldId('birth-location')} className="gangi-birth-label">
@@ -428,33 +433,35 @@ export function UnifiedBirthInfoFields({
             </div>
           ) : null}
 
-          <div className="gangi-birth-field">
-            <Label htmlFor={fieldId('time-rule')} className="gangi-birth-label">
-              시간 기준
-            </Label>
-            <select
-              id={fieldId('time-rule')}
-              name="moonlight-time-rule"
-              value={draft.timeRule}
-              onChange={(event) => {
-                trigger(onStarted);
-                onChange({ timeRule: event.target.value as UnifiedTimeRule });
-              }}
-              disabled={timeRuleDisabled}
-              className="gangi-form-control gangi-birth-input px-3 text-sm disabled:opacity-60"
-            >
-              {TIME_RULE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs leading-6 text-[var(--app-copy-soft)]">
-              {draft.timeRule === 'trueSolarTime'
-                ? '진태양시는 출생지 경도 정보가 있어야 실제로 반영됩니다.'
-                : '태어난 시간이 없으면 시주 중심 해석을 줄이고 일간·월령·현재 운 중심으로 읽습니다.'}
-            </p>
-          </div>
+          {hideTimePicker ? null : (
+            <div className="gangi-birth-field">
+              <Label htmlFor={fieldId('time-rule')} className="gangi-birth-label">
+                시간 기준
+              </Label>
+              <select
+                id={fieldId('time-rule')}
+                name="moonlight-time-rule"
+                value={draft.timeRule}
+                onChange={(event) => {
+                  trigger(onStarted);
+                  onChange({ timeRule: event.target.value as UnifiedTimeRule });
+                }}
+                disabled={timeRuleDisabled}
+                className="gangi-form-control gangi-birth-input px-3 text-sm disabled:opacity-60"
+              >
+                {TIME_RULE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs leading-6 text-[var(--app-copy-soft)]">
+                {draft.timeRule === 'trueSolarTime'
+                  ? '진태양시는 출생지 경도 정보가 있어야 실제로 반영됩니다.'
+                  : '태어난 시간이 없으면 시주 중심 해석을 줄이고 일간·월령·현재 운 중심으로 읽습니다.'}
+              </p>
+            </div>
+          )}
         </div>
       ) : null}
     </div>

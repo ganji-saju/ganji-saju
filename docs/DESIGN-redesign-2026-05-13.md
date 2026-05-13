@@ -21,11 +21,13 @@
 > - ✅ **PR3** (`redesign/claude-design-pr3-login-2026-05-13`, 머지됨): 로그인 페이지
 >   - mockup `screens-b.jsx` `ScreenAuth` 적용 — `'gateway'` LoginMode 추가, 4 SNS 버튼
 >   - Apple OAuth 는 별도 PR (PENDING-LINKS 기록)
-> - 🟡 **PR4** (`redesign/claude-design-pr4-today-2026-05-13`, 진행 중): 오늘운세 결과
+> - ✅ **PR4** (`redesign/claude-design-pr4-today-2026-05-13`, 머지됨): 오늘운세 결과
 >   - mockup `screens-a.jsx` `ScreenToday` 적용 — 4 컴포넌트 (Summary / ScoreReveal / ScoreGrid / PremiumLock) 시각 재설계
->   - 추가 무료 콘텐츠 (OpportunityRisk / SajuReason / FollowUp / 관련 링크) 는 하단 `<details>` 로 보존
->   - 모든 데이터·이벤트 (`trackMoonlightEvent`, `buildTodayDetailHref`, `/membership/checkout`, `/credits`) 무수정
-> - ⏳ PR5 이후: 사주 입력 / 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
+>   - 추가 무료 콘텐츠는 하단 `<details>` 로 보존
+> - 🟡 **PR5** (`redesign/claude-design-pr5-saju-intake-2026-05-13`, 진행 중): 사주 입력
+>   - mockup `screens-a.jsx` `ScreenSajuIntake` 시각 요소만 적용 — 3-bar step indicator, STEP N/M eyebrow, full-width pink CTA + footer note
+>   - 4단계 swipe flow / 모든 검증 로직 / `UnifiedBirthInfoFields` 내부 구조 무수정
+> - ⏳ PR6 이후: 사주 결과 / 깊은 풀이 / 타로 / 궁합 / 대화방 / MY / 멤버십 / 결제
 >
 > **매핑 안 되는 버튼/링크**는 [`docs/REDESIGN-PENDING-LINKS.md`](./REDESIGN-PENDING-LINKS.md) 에 누적 — disabled 상태로 표시하고 추후 라우트 연결.
 

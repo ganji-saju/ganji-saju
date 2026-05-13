@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { ActionCluster } from '@/components/layout/action-cluster';
 import { ProductGrid } from '@/components/layout/product-grid';
+import LegalLinks from '@/components/legal-links';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Button } from '@/components/ui/button';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   UnifiedBirthInfoFields,
   type BirthLocationSearchResultLike,
@@ -144,12 +145,8 @@ const BASE_STEPS: Array<{
   },
 ];
 
-const CONSENT_STEP = {
-  id: 'consent' as const,
-  eyebrow: '동의',
-  title: '동의하고 시작하기',
-  description: '한 번 동의하면 다음 입력부터는 다시 표시하지 않습니다.',
-};
+// Redesign 2026-05-13: 별도 동의 단계 제거 — 마지막 단계 CTA 하단 disclosure 로 implicit consent.
+// CONSENT_STEP 정의 제거됨.
 
 const ENTRY_FOCUS_TOPIC_BY_SLUG = {
   love: 'love',
@@ -226,6 +223,29 @@ function buildUnifiedBirthDraft(form: SajuOnboardingDraft): UnifiedBirthEntryDra
     birthLatitude: form.birthLatitude,
     birthLongitude: form.birthLongitude,
   };
+}
+
+// Redesign 2026-05-13: mockup screens-a.jsx 의 시간 ZodiacChip card 용 — hour → 12지(地支) 매핑.
+const HOUR_BRANCHES: ReadonlyArray<{ zodiac: ZodiacKey; label: string; range: string; hours: readonly number[] }> = [
+  { zodiac: 'rat',     label: '자시', range: '23:00 — 01:00', hours: [23, 0] },
+  { zodiac: 'ox',      label: '축시', range: '01:00 — 03:00', hours: [1, 2] },
+  { zodiac: 'tiger',   label: '인시', range: '03:00 — 05:00', hours: [3, 4] },
+  { zodiac: 'rabbit',  label: '묘시', range: '05:00 — 07:00', hours: [5, 6] },
+  { zodiac: 'dragon',  label: '진시', range: '07:00 — 09:00', hours: [7, 8] },
+  { zodiac: 'snake',   label: '사시', range: '09:00 — 11:00', hours: [9, 10] },
+  { zodiac: 'horse',   label: '오시', range: '11:00 — 13:00', hours: [11, 12] },
+  { zodiac: 'sheep',   label: '미시', range: '13:00 — 15:00', hours: [13, 14] },
+  { zodiac: 'monkey',  label: '신시', range: '15:00 — 17:00', hours: [15, 16] },
+  { zodiac: 'rooster', label: '유시', range: '17:00 — 19:00', hours: [17, 18] },
+  { zodiac: 'dog',     label: '술시', range: '19:00 — 21:00', hours: [19, 20] },
+  { zodiac: 'pig',     label: '해시', range: '21:00 — 23:00', hours: [21, 22] },
+] as const;
+
+function getHourBranch(hourStr: string) {
+  if (!hourStr) return null;
+  const hour = Number.parseInt(hourStr, 10);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
+  return HOUR_BRANCHES.find((b) => b.hours.includes(hour)) ?? null;
 }
 
 function applyUnifiedBirthPatch(
@@ -388,9 +408,11 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const hasTrackedBirthStartRef = useRef(false);
   const hasAutoAppliedProfileRef = useRef(false);
 
+  // Redesign 2026-05-13: mockup 은 별도 동의 단계 없이 단일 흐름. 필수 동의는 마지막 단계 제출 시
+  // implicit 동의 + CTA 하단 disclosure text 로 처리. CONSENT_STEP 은 제거.
   const steps = useMemo(
-    () => (consentAccepted ? [PROFILE_STEP, ...BASE_STEPS] : [PROFILE_STEP, ...BASE_STEPS, CONSENT_STEP]),
-    [consentAccepted]
+    () => [PROFILE_STEP, ...BASE_STEPS],
+    []
   );
   const activeStep = steps[activeIndex] ?? steps[0];
   const recentGuestDetail = recentGuestDraft ? formatRecentGuestDetail(recentGuestDraft) : '';
@@ -398,7 +420,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     QUESTION_ENTRY_POINTS.find((entry) => entry.slug === selectedEntrySlug) ?? QUESTION_ENTRY_POINTS[0];
   const birthStepIndex = Math.max(1, steps.findIndex((item) => item.id === 'birth'));
   const locationStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'location'));
-  const consentStepIndex = steps.findIndex((item) => item.id === 'consent');
+  // consent step 폐지 후 — locationStepIndex 가 항상 마지막 단계.
+  const consentStepIndex = locationStepIndex;
 
   useEffect(() => {
     const draft = loadOnboardingDraft();
@@ -695,22 +718,23 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     return true;
   }
 
-  function validateConsentStep() {
-    const requiredConsentMissing = ONBOARDING_CONSENTS.some(
-      (item) => item.required && !form.consents[item.title]
-    );
-
-    if (requiredConsentMissing) {
-      setErrorMessage('필수 동의 항목을 확인해 주세요.');
-      return false;
-    }
-
-    setErrorMessage('');
-    return true;
-  }
+  // validateConsentStep 제거됨 — Redesign 2026-05-13: 별도 consent step 폐지.
 
   async function submit() {
-    if (!consentAccepted && !validateConsentStep()) return;
+    // Redesign 2026-05-13: 필수 동의는 CTA 하단 disclosure 로 명시되어 있으므로 클릭=동의로 처리.
+    // 폼 state 의 consents 도 일괄 true 로 채워 저장 시 동기화.
+    if (!consentAccepted) {
+      setForm((current) => ({
+        ...current,
+        consents: ONBOARDING_CONSENTS.reduce(
+          (acc, item) => {
+            acc[item.title] = item.required ? true : current.consents[item.title] ?? false;
+            return acc;
+          },
+          { ...current.consents } as Record<string, boolean>
+        ),
+      }));
+    }
 
     const parsed = resolveUnifiedBirthInput(buildUnifiedBirthDraft(form), {
       requireGender: true,
@@ -816,12 +840,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     if (activeStep.id === 'birth' && !validateBirthStep()) return;
     if (activeStep.id === 'location' && !validateLocationStep()) return;
 
-    if (activeStep.id === 'location' && consentAccepted) {
-      void submit();
-      return;
-    }
-
-    if (activeStep.id === 'consent') {
+    // Redesign 2026-05-13: 마지막 단계 location 에서 항상 제출. consent step 제거됨.
+    if (activeStep.id === 'location') {
       void submit();
       return;
     }
@@ -858,6 +878,245 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       focusTopic,
       layout: 'swipe',
     });
+  }
+
+  // Redesign 2026-05-13: mockup screens-a.jsx ScreenSajuIntake 시각 그대로.
+  // 이름(별칭) + 생년월일 inputs + 양력/음력 chips + 시각 ZodiacChip card + 성별 buttons.
+  function renderBirthStep() {
+    const hourBranch = getHourBranch(form.hour);
+    const isHourUnknown = form.hour === '';
+
+    const inputCls =
+      'h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
+
+    return (
+      <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-5">
+        <div>
+          <label
+            htmlFor="saju-nickname"
+            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+          >
+            이름 (별칭)
+          </label>
+          <input
+            id="saju-nickname"
+            type="text"
+            value={form.nickname}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, nickname: event.target.value }))
+            }
+            placeholder="달빛이"
+            autoComplete="name"
+            className={cn('mt-1.5', inputCls)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            생년월일
+          </label>
+          <div className="mt-1.5 grid grid-cols-[1.2fr_1fr_1fr] gap-2">
+            <input
+              value={form.year}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: event.target.value,
+                    month: current.month,
+                    day: current.day,
+                  })
+                )
+              }
+              placeholder="1995"
+              inputMode="numeric"
+              maxLength={4}
+              aria-label="출생 연도"
+              className={cn('text-center', inputCls)}
+            />
+            <input
+              value={form.month}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: current.year,
+                    month: event.target.value,
+                    day: current.day,
+                  })
+                )
+              }
+              placeholder="08"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label="출생 월"
+              className={cn('text-center', inputCls)}
+            />
+            <input
+              value={form.day}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    year: current.year,
+                    month: current.month,
+                    day: event.target.value,
+                  })
+                )
+              }
+              placeholder="14"
+              inputMode="numeric"
+              maxLength={2}
+              aria-label="출생 일"
+              className={cn('text-center', inputCls)}
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {[
+              { v: 'solar', l: '양력' },
+              { v: 'lunar', l: '음력' },
+            ].map((opt) => {
+              const active = form.calendarType === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() =>
+                    setForm((current) =>
+                      applyUnifiedBirthPatch(current, {
+                        calendarType: opt.v as 'solar' | 'lunar',
+                      })
+                    )
+                  }
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-[12px] font-bold transition',
+                    active
+                      ? 'border-transparent bg-[var(--app-pink)] text-white'
+                      : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
+                  )}
+                >
+                  {opt.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            태어난 시각
+          </label>
+          <div
+            className="relative mt-1.5 flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] p-3.5"
+            style={{ background: 'var(--app-pink-soft)' }}
+          >
+            {hourBranch ? (
+              <>
+                <ZodiacChip kind={hourBranch.zodiac} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-bold text-[var(--app-ink)]">
+                    {Number.parseInt(form.hour, 10)}시 ({hourBranch.label})
+                  </div>
+                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                    {hourBranch.range}
+                  </div>
+                </div>
+                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                  변경
+                </span>
+              </>
+            ) : (
+              <>
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[18px] font-bold text-[var(--app-copy-muted)]"
+                  aria-hidden="true"
+                >
+                  ?
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[14px] font-bold text-[var(--app-ink)]">시간 모름</div>
+                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                    탭하여 출생 시간을 선택하세요
+                  </div>
+                </div>
+                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                  변경
+                </span>
+              </>
+            )}
+            <select
+              value={form.hour}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    hour: event.target.value,
+                    unknownBirthTime: event.target.value === '',
+                  })
+                )
+              }
+              aria-label="태어난 시간 선택"
+              className="absolute inset-0 cursor-pointer opacity-0"
+            >
+              <option value="">시간 모름</option>
+              {Array.from({ length: 24 }, (_, h) => h).map((h) => (
+                <option key={h} value={String(h)}>
+                  {String(h).padStart(2, '0')}시
+                </option>
+              ))}
+            </select>
+          </div>
+          <label className="mt-2.5 flex items-center gap-2 text-[13px] text-[var(--app-copy-muted)]">
+            <input
+              type="checkbox"
+              checked={isHourUnknown}
+              onChange={(event) =>
+                setForm((current) =>
+                  applyUnifiedBirthPatch(current, {
+                    unknownBirthTime: event.target.checked,
+                    hour: event.target.checked ? '' : current.hour,
+                    minute: event.target.checked ? '' : current.minute,
+                  })
+                )
+              }
+              className="h-4 w-4 rounded border-[var(--app-line)] accent-[var(--app-pink)]"
+            />
+            태어난 시간을 정확히 모르겠어요
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+            성별
+          </label>
+          <div className="mt-1.5 grid grid-cols-2 gap-2">
+            {[
+              { v: 'female', l: '여성' },
+              { v: 'male', l: '남성' },
+            ].map((opt) => {
+              const active = form.gender === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() =>
+                    setForm((current) =>
+                      applyUnifiedBirthPatch(current, {
+                        gender: opt.v as 'female' | 'male',
+                      })
+                    )
+                  }
+                  className={cn(
+                    'h-12 rounded-[14px] border text-[14.5px] font-bold transition',
+                    active
+                      ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
+                      : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
+                  )}
+                >
+                  {opt.l}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   function renderProfileStep() {
@@ -1027,22 +1286,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     );
   }
 
+  // Redesign 2026-05-13: location 단계가 제출 단계. consent step 별도 라벨 제거.
   const nextLabel =
     activeStep.id === 'profile'
       ? '바로 입력 시작'
       : activeStep.id === 'birth'
         ? '시간·출생지 입력'
-      : activeStep.id === 'location' && consentAccepted
-      ? isSubmitting
-        ? '결과 준비 중...'
-        : '사주풀이 열기'
-      : activeStep.id === 'location'
-        ? '마지막 동의 확인'
-      : activeStep.id === 'consent'
-        ? isSubmitting
-          ? '결과 준비 중...'
-          : '동의하고 사주풀이 열기'
-        : '다음 화면';
+        : activeStep.id === 'location'
+          ? isSubmitting
+            ? '결과 준비 중...'
+            : '사주풀이 시작'
+          : '다음 화면';
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       {isSubmitting ? (
@@ -1066,8 +1320,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
         <section className="grid gap-4 lg:gap-5">
           <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">
+            {/* Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenSajuIntake): 3-bar step indicator */}
             <div className="mb-4 flex items-center justify-between gap-3 sm:mb-6">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <div
+                className="flex min-w-0 flex-1 items-center gap-1.5"
+                role="list"
+                aria-label="진행 단계"
+              >
                 {steps.map((item, index) => (
                   <button
                     key={item.id}
@@ -1079,14 +1338,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                       }
                     }}
                     className={cn(
-                      'h-2.5 rounded-full transition-all',
-                      index === activeIndex
-                        ? 'w-10 bg-[var(--app-pink)]'
-                        : index < activeIndex
-                          ? 'w-5 bg-[var(--app-pink)]/48'
-                          : 'w-5 bg-[var(--app-line)]'
+                      'h-1 flex-1 rounded-full transition-all',
+                      index <= activeIndex
+                        ? 'bg-[var(--app-pink)]'
+                        : 'bg-[var(--app-line)]'
                     )}
                     aria-label={`${index + 1}단계 ${item.eyebrow}`}
+                    aria-current={index === activeIndex ? 'step' : undefined}
                   />
                 ))}
               </div>
@@ -1107,7 +1365,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             >
               <div key={activeStep.id} className="saju-intake-active-slide">
                 <SectionHeader
-                  eyebrow={activeStep.eyebrow}
+                  eyebrow={`STEP ${activeIndex + 1} / ${steps.length} · ${activeStep.eyebrow}`}
                   title={activeStep.title}
                   titleClassName="text-2xl sm:text-3xl"
                   description={activeStep.description}
@@ -1116,48 +1374,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
                 {activeStep.id === 'profile' ? (
                   renderProfileStep()
-                ) : activeStep.id === 'consent' ? (
-                  <div className="mt-4 space-y-2.5 sm:mt-6 sm:space-y-3">
-                    {ONBOARDING_CONSENTS.map((consent) => (
-                      <label
-                        key={consent.title}
-                        className="flex items-start gap-3 rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3.5 py-3 sm:rounded-[1.25rem] sm:px-4 sm:py-4"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.consents[consent.title]}
-                          onChange={(event) =>
-                            setForm((current) => ({
-                              ...current,
-                              consents: {
-                                ...current.consents,
-                                [consent.title]: event.target.checked,
-                              },
-                            }))
-                          }
-                          className="mt-1 h-4 w-4 rounded border-[var(--app-line)] bg-transparent accent-[var(--app-pink)]"
-                        />
-                        <span className="min-w-0">
-                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--app-ink)]">
-                            {consent.title}
-                            <span
-                              className={cn(
-                                'rounded-full border px-2 py-0.5 text-[10px]',
-                                consent.required
-                                  ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
-                                  : 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]'
-                              )}
-                            >
-                              {consent.required ? '필수' : '선택'}
-                            </span>
-                          </span>
-                          <span className="mt-1.5 block text-xs leading-5 text-[var(--app-copy-muted)] sm:mt-2 sm:leading-6">
-                            {consent.detail}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                ) : activeStep.id === 'birth' ? (
+                  renderBirthStep()
                 ) : (
                   <div className="mt-4 sm:mt-6">
                     <UnifiedBirthInfoFields
@@ -1166,6 +1384,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                       onStarted={() => markBirthStarted('manual')}
                       dateInputVariant="select"
                       visibleSections={activeStep.sections}
+                      hideTimePicker
                       locationLoading={locationSearchStatus === 'loading'}
                       locationMessage={locationSearchMessage}
                       locationResults={locationSearchResults}
@@ -1184,27 +1403,41 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               </div>
             ) : null}
 
-            <ActionCluster className="mt-5 sm:mt-8">
-              <Button
-                type="button"
-                onClick={goPrev}
-                disabled={activeIndex === 0 || isSubmitting}
-                variant="secondary"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                이전
-              </Button>
+            {/* Redesign 2026-05-13 (Claude Design / screens-a.jsx): full-width pink CTA + secondary 이전 + footer note */}
+            <div className="mt-5 flex flex-col gap-2.5 sm:mt-8">
               <Button
                 type="button"
                 onClick={goNext}
                 disabled={isSubmitting}
                 size="lg"
+                className="h-12 w-full rounded-[14px] text-[15px] font-extrabold"
               >
                 {nextLabel}
                 {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
               </Button>
-            </ActionCluster>
+              {activeIndex > 0 ? (
+                <Button
+                  type="button"
+                  onClick={goPrev}
+                  disabled={isSubmitting}
+                  variant="ghost"
+                  size="sm"
+                  className="mx-auto h-9 px-4 text-[12.5px] font-medium text-[var(--app-copy-muted)] hover:text-[var(--app-pink-strong)]"
+                >
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                  이전 단계로
+                </Button>
+              ) : null}
+              <p className="text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+                결과는 자동으로 보관함에 저장돼요
+              </p>
+              {activeStep.id === 'location' && !consentAccepted ? (
+                <p className="mt-1 text-center text-[10.5px] leading-relaxed text-[var(--app-copy-soft)]">
+                  시작 시 <LegalLinks className="text-[var(--app-pink-strong)]" />
+                  과 AI 모델 전송에 동의합니다.
+                </p>
+              ) : null}
+            </div>
           </SectionSurface>
 
         </section>
