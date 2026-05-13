@@ -1,25 +1,10 @@
+// Redesign 2026-05-13 (Claude Design / screens-a.jsx §4 ScreenToday — Big card):
+// 핑크 banner + 86px 원형 점수 + 시그널 eyebrow + headline + body.
+// 점수 카운트업 애니메이션은 보존, float pieces 는 제거.
 'use client';
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import type { TodayFortuneFreeResult, TodayScoreItem } from '@/lib/today-fortune/types';
-
-const SCORE_TONES: Record<TodayScoreItem['key'], string> = {
-  overall: 'gold',
-  love: 'pink',
-  wealth: 'green',
-  career: 'blue',
-  relationship: 'coral',
-  condition: 'violet',
-};
-
-const FLOAT_POSITIONS = [
-  { x: '-92px', y: '-48px', rotate: '-5deg' },
-  { x: '94px', y: '-42px', rotate: '4deg' },
-  { x: '-112px', y: '34px', rotate: '6deg' },
-  { x: '112px', y: '38px', rotate: '-6deg' },
-  { x: '-42px', y: '78px', rotate: '-3deg' },
-  { x: '44px', y: '82px', rotate: '5deg' },
-] as const;
+import { useEffect, useMemo, useState } from 'react';
+import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 function clampScore(score: number) {
   if (!Number.isFinite(score)) return 70;
@@ -36,30 +21,15 @@ function getOverallScore(result: TodayFortuneFreeResult) {
 }
 
 function getScoreMessage(score: number) {
-  if (score >= 82) return '흐름이 가볍게 열리는 날';
-  if (score >= 68) return '균형을 잡으면 좋아지는 날';
-  if (score >= 54) return '천천히 확인하면 풀리는 날';
-  return '무리보다 정리가 필요한 날';
+  if (score >= 82) return '부드럽게 올라오는\n흐름의 날';
+  if (score >= 68) return '균형을 잡으면\n좋아지는 날';
+  if (score >= 54) return '천천히 확인하면\n풀리는 날';
+  return '무리보다 정리가\n필요한 날';
 }
 
 export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult }) {
   const targetScore = useMemo(() => getOverallScore(result), [result]);
   const [visibleScore, setVisibleScore] = useState(0);
-
-  const pieces = useMemo(
-    () =>
-      result.scores.slice(0, 6).map((score, index) => ({
-        ...score,
-        tone: SCORE_TONES[score.key] ?? 'pink',
-        delay: `${index * 110}ms`,
-        x: `${index % 2 === 0 ? -1 : 1}${36 + index * 9}px`,
-        y: `${index < 3 ? 1 : -1}${18 + index * 5}px`,
-        floatX: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].x,
-        floatY: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].y,
-        rotate: FLOAT_POSITIONS[index % FLOAT_POSITIONS.length].rotate,
-      })),
-    [result.scores]
-  );
 
   useEffect(() => {
     let frame = 0;
@@ -82,38 +52,57 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
     return () => window.cancelAnimationFrame(raf);
   }, [targetScore]);
 
+  const signalLines = getScoreMessage(targetScore).split('\n');
+
   return (
-    <section className="today-score-reveal" aria-label="오늘운세 점수">
-      <div className="today-score-reveal-copy">
-        <span>오늘의 운세 점수</span>
-        <h1>{getScoreMessage(targetScore)}</h1>
-        <p>{result.oneLine.body}</p>
-      </div>
+    <section
+      aria-label="오늘운세 점수"
+      className="relative overflow-hidden rounded-[22px] text-white"
+      style={{
+        background:
+          'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
+        boxShadow: '0 18px 40px rgba(216,27,114,0.28)',
+        padding: 22,
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-25"
+        style={{ background: 'rgba(255,255,255,0.35)' }}
+      />
 
-      <div className="today-score-stage" aria-live="polite">
-        {pieces.map((piece) => (
-          <span
-            key={piece.key}
-            className="today-score-piece"
-            data-tone={piece.tone}
-            style={{
-              '--score-piece-delay': piece.delay,
-              '--score-piece-x': piece.x,
-              '--score-piece-y': piece.y,
-              '--score-piece-float-x': piece.floatX,
-              '--score-piece-float-y': piece.floatY,
-              '--score-piece-rotate': piece.rotate,
-            } as CSSProperties}
+      <div className="relative flex items-center gap-3.5">
+        <div
+          className="grid h-[86px] w-[86px] place-items-center rounded-full text-[36px] font-extrabold tracking-tighter"
+          style={{ border: '3px solid rgba(255,255,255,0.4)' }}
+          aria-live="polite"
+        >
+          {visibleScore}
+        </div>
+        <div>
+          <div
+            className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+            style={{ opacity: 0.85 }}
           >
-            <span className="today-score-piece-float">{piece.label}</span>
-          </span>
-        ))}
-
-        <div className="today-score-orb">
-          <span className="today-score-number">{visibleScore}</span>
-          <span className="today-score-unit">점</span>
+            오늘의 시그널
+          </div>
+          <div className="mt-1 text-[16px] font-extrabold leading-snug">
+            {signalLines.map((line, idx) => (
+              <span key={idx}>
+                {line}
+                {idx < signalLines.length - 1 ? <br /> : null}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
+
+      <p
+        className="relative mt-4 text-[13.5px] leading-relaxed"
+        style={{ opacity: 0.94 }}
+      >
+        {result.oneLine.body}
+      </p>
     </section>
   );
 }
