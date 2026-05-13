@@ -1375,7 +1375,7 @@
   }
 
   .gangi-form-control:focus-visible {
-    border-color: var(--app-pink);
+    border-color: var(--app-pink-text);
     background: #ffffff;
     box-shadow:
       0 0 0 3px rgba(255, 79, 154, 0.13),
@@ -1573,7 +1573,7 @@
   }
 
   .gangi-payment-row[data-selected="true"] {
-    border-color: var(--app-pink);
+    border-color: var(--app-pink-text);
     background: var(--app-pink-soft);
   }
 
@@ -2095,15 +2095,15 @@
   }
 
   .today-score-piece[data-tone="blue"] .today-score-piece-float {
-    color: var(--app-sky);
+    color: var(--app-sky-text);
   }
 
   .today-score-piece[data-tone="coral"] .today-score-piece-float {
-    color: var(--app-coral);
+    color: var(--app-coral-text);
   }
 
   .today-score-piece[data-tone="violet"] .today-score-piece-float {
-    color: var(--app-plum);
+    color: var(--app-plum-text);
   }
 
   @media (min-width: 768px) {

@@ -61,7 +61,7 @@
   position: absolute;
   inset: -0.7rem;
   border: 2px solid rgba(255, 79, 154, 0.16);
-  border-left-color: var(--app-pink);
+  border-left-color: var(--app-pink-text);
   border-radius: 9999px;
   animation: gangi-spin-slow 1.8s linear infinite;
 }
@@ -267,7 +267,7 @@
 
 .gangi-tarot-result-art {
   width: min(13.2rem, 64vw) !important;
-  border-color: var(--app-pink) !important;
+  border-color: var(--app-pink-text) !important;
   box-shadow: 0 18px 54px rgba(216, 27, 114, 0.22) !important;
 }
 
@@ -601,7 +601,7 @@
 }
 
 .gangi-list-link[data-active="true"] {
-  border-color: var(--app-pink);
+  border-color: var(--app-pink-text);
   background: linear-gradient(135deg, #fff0f7, #ffffff);
   box-shadow: 0 12px 28px rgba(216, 27, 114, 0.12);
 }
@@ -712,7 +712,7 @@
   bottom: 0.65rem;
   left: 0;
   right: 0;
-  color: var(--app-pink);
+  color: var(--app-pink-text);
   font-family: var(--font-body);
   font-size: 0.64rem;
   letter-spacing: 0.16em;
@@ -1304,7 +1304,7 @@
 }
 
 .gangi-expert-chip[data-active="true"] {
-  border-color: var(--app-pink);
+  border-color: var(--app-pink-text);
   background: var(--app-pink-soft);
   box-shadow: 0 10px 24px rgba(216, 27, 114, 0.12);
 }
