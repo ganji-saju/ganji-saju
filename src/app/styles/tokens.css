@@ -100,6 +100,16 @@
   --app-coral: #ff6b6b;
   --app-plum: #c04de0;
   --app-sky: #368ee8;
+  /* Redesign 2026-05-13 (Claude Design): 십이간지 액센트 보강 + 라운드/폰트 통일.
+     기존 토큰은 절대 수정하지 않음 — 신규만 add-only. */
+  --app-amber: #d99020;
+  --app-indigo: #5b58d6;
+  /* Radius 통일 (가이드 1단계) */
+  --app-r-card: 18px;
+  --app-r-btn: 14px;
+  --app-r-chip: 999px;
+  /* 한자 인장용 serif 폰트 (layout.tsx 에서 Noto Serif KR 로드) */
+  --font-han: var(--font-dalbit-serif), "Noto Serif KR", "Source Han Serif K", serif;
   --app-ivory: #111114;
   --app-copy: rgba(17, 17, 20, 0.76);
   --app-copy-muted: rgba(53, 54, 60, 0.7);
