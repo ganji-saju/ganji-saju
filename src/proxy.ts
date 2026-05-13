@@ -34,6 +34,11 @@ function buildAuthCallbackUrl(req: NextRequest) {
 function shouldRedirectToCanonicalHost(req: NextRequest) {
   if (process.env.NODE_ENV !== 'production') return false;
 
+  // Vercel preview/development 배포는 canonical redirect 대상에서 제외한다.
+  // (PR preview URL 이 운영 도메인으로 튕기면 디자인 리뷰가 불가능)
+  // VERCEL_ENV 는 production / preview / development 중 하나.
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return false;
+
   const host = req.nextUrl.hostname;
   if (host === CANONICAL_SITE_HOST) return false;
   if (host === 'localhost' || host === '127.0.0.1') return false;
