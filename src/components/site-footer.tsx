@@ -1,8 +1,14 @@
 // Redesign 2026-05-13 (Claude Design / 가이드 §4): 다크 풀 푸터.
 // 모든 라우팅(`href`) 은 사이트 기존 라우트만 사용 — 신규 URL 0건.
 // 회사 정보(사업자번호 / 주소 / 대표자) 및 면책 문구는 법적 고지 — 절대 수정 X.
+// 모바일은 4 column nav 를 accordion (옵션 D) 으로 collapse 가능.
 
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CompanyItem {
   label: string;
@@ -84,6 +90,9 @@ function NavLink({ label, href }: { label: string; href: string }) {
 }
 
 export default function SiteFooter() {
+  // 모바일 accordion: 한 번에 한 column 만 열림. 기본은 모두 닫힘 (사용자 의도: 짧게)
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
   return (
     <footer
       className="site-footer-redesign mt-auto"
@@ -144,28 +153,74 @@ export default function SiteFooter() {
             </p>
           </div>
 
-          {/* 4 column nav */}
-          {FOOTER_NAV.map((col) => (
-            <div key={col.title}>
-              <h4
-                style={{
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: '#fff',
-                  margin: '0 0 14px',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {col.title}
-              </h4>
-              <nav aria-label={col.title}>
-                {col.items.map(([label, href]) => (
-                  <NavLink key={label} label={label} href={href} />
-                ))}
-              </nav>
-            </div>
-          ))}
+          {/* 4 column nav — desktop: 항상 펼침 / mobile: accordion */}
+          {FOOTER_NAV.map((col) => {
+            const isOpen = openSection === col.title;
+            return (
+              <div key={col.title} className="border-b border-white/8 sm:border-b-0">
+                {/* Mobile: 클릭 가능한 헤더 (accordion trigger) */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenSection((prev) => (prev === col.title ? null : col.title))
+                  }
+                  aria-expanded={isOpen}
+                  aria-controls={`footer-nav-${col.title}`}
+                  className="flex w-full items-center justify-between py-3 text-left sm:hidden"
+                >
+                  <h4
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: '#fff',
+                      margin: 0,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {col.title}
+                  </h4>
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 transition-transform',
+                      isOpen && 'rotate-180'
+                    )}
+                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {/* Desktop: 정적 헤더 */}
+                <h4
+                  className="hidden sm:block"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: '#fff',
+                    margin: '0 0 14px',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {col.title}
+                </h4>
+
+                {/* nav 컨텐츠 — desktop 항상 보임 / mobile 은 isOpen 시만 */}
+                <nav
+                  id={`footer-nav-${col.title}`}
+                  aria-label={col.title}
+                  className={cn(
+                    'sm:block',
+                    isOpen ? 'block pb-3' : 'hidden'
+                  )}
+                >
+                  {col.items.map(([label, href]) => (
+                    <NavLink key={label} label={label} href={href} />
+                  ))}
+                </nav>
+              </div>
+            );
+          })}
         </div>
 
         {/* 회사 정보 — 법적 고지 */}
