@@ -842,7 +842,8 @@
 }
 
 .site-footer-company dt {
-  color: rgba(17, 17, 20, 0.42);
+  /* P1-6 fix (audit 2026-05-13 follow-up): 0.42 alpha → 0.62 — 2.77:1 was below AA */
+  color: rgba(17, 17, 20, 0.62);
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.35;
@@ -868,7 +869,8 @@
   margin-top: 1rem;
   border-left: 2px solid color-mix(in srgb, var(--app-pink) 36%, var(--app-line));
   padding-left: 0.75rem;
-  color: rgba(17, 17, 20, 0.5);
+  /* P1-6 fix (audit 2026-05-13 follow-up): 0.5 alpha → 0.62 — 3.53:1 was below AA */
+  color: rgba(17, 17, 20, 0.62);
   font-size: 0.72rem;
   line-height: 1.75;
   word-break: keep-all;
@@ -879,7 +881,8 @@
   flex-wrap: wrap;
   gap: 0.35rem 0.8rem;
   margin-top: 1.1rem;
-  color: rgba(17, 17, 20, 0.42);
+  /* P1-6 fix (audit 2026-05-13 follow-up): 0.42 alpha → 0.62 — 2.77:1 was below AA */
+  color: rgba(17, 17, 20, 0.62);
   font-size: 0.68rem;
   font-weight: 620;
   line-height: 1.6;

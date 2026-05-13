@@ -653,7 +653,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       })}
 
       <section className="rounded-[28px] border border-[var(--app-plum)]/30 bg-[rgba(127,92,176,0.12)] p-6 sm:p-7">
-        <div className="app-caption text-[var(--app-plum)]">부록: 올해 요약</div>
+        <div className="app-caption text-[var(--app-plum-text)]">부록: 올해 요약</div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Badge className="border-[var(--app-plum)]/30 bg-[rgba(127,92,176,0.14)] text-[var(--app-copy)]">
             {report.yearlyAppendix.yearLabel}

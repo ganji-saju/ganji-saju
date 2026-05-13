@@ -211,3 +211,35 @@ export function formatPaymentPackagePrice(pkg: PaymentPackage) {
   const price = formatWon(pkg.price);
   return pkg.kind === 'subscription' && pkg.planSlug ? `월 ${price}` : price;
 }
+
+// P1-2 fix (audit 2026-05-13): UI 하드코딩 가격(13+ 곳)을 카탈로그 SSOT 로 통일.
+// 9가지 표기 패턴(`550원`, `550원~`, `550원 풀이`, `오늘 자세히 보기 · 550원`, ...) 을
+// 단일 헬퍼로 처리해 카탈로그 가격 변경 시 자동 동기화한다.
+export type PriceLabelStyle =
+  | 'simple'        // "550원"
+  | 'from'          // "550원~"
+  | 'at-least'      // "550원 이상"
+  | 'monthly'       // "월 4,900원"
+  | 'with-suffix';  // "550원 풀이" — caller appends suffix
+
+export function formatPriceLabel(
+  pkgOrId: PaymentPackage | string,
+  style: PriceLabelStyle = 'simple'
+): string {
+  const pkg = typeof pkgOrId === 'string' ? getPackage(pkgOrId) : pkgOrId;
+  if (!pkg) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[formatPriceLabel] unknown package: ${String(pkgOrId)}`);
+    }
+    return '';
+  }
+  const won = formatWon(pkg.price);
+  switch (style) {
+    case 'from':       return `${won}~`;
+    case 'at-least':   return `${won} 이상`;
+    case 'monthly':    return `월 ${won}`;
+    case 'with-suffix':
+    case 'simple':
+    default:           return won;
+  }
+}

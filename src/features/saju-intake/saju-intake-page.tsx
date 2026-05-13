@@ -1144,7 +1144,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                               className={cn(
                                 'rounded-full border px-2 py-0.5 text-[10px]',
                                 consent.required
-                                  ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
+                                  ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]'
                                   : 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]'
                               )}
                             >

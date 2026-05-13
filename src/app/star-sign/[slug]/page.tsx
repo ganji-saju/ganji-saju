@@ -63,7 +63,7 @@ export default async function StarSignDetailPage({ params }: Props) {
           badges={[
             <Badge
               key="sign"
-              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]"
+              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky-text)]"
             >
               {meta.symbol} {item.label}
             </Badge>,
@@ -82,7 +82,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             <SectionHeader
               eyebrow="오늘의 별자리"
               title={item.label}
-              titleClassName="text-3xl text-[var(--app-sky)]"
+              titleClassName="text-3xl text-[var(--app-sky-text)]"
               description={item.todayFocus}
               descriptionClassName="mx-auto max-w-xl text-[var(--app-copy)]"
             />

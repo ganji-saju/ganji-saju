@@ -12,6 +12,7 @@ import {
   getMembershipPackage,
 } from '@/lib/payments/catalog';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
 
 const LIFETIME_REPORT_PACKAGE = getMembershipPackage('lifetime');
 const LIFETIME_REPORT_PRICE = LIFETIME_REPORT_PACKAGE
@@ -55,12 +56,15 @@ const COLLECTIBLE_REPORTS = [
 
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
 
+const PAGE_TITLE = '멤버십';
+const PAGE_DESC = '달빛인생의 소액 풀이, 보관형 리포트, 대화 멤버십을 한 화면에서 비교하세요.';
+
 export const metadata: Metadata = {
-  title: '멤버십',
-  description: '달빛인생의 소액 풀이, 보관형 리포트, 대화 멤버십을 한 화면에서 비교하세요.',
-  alternates: {
-    canonical: '/membership',
-  },
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
+  alternates: { canonical: '/membership' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/membership' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 export default async function MembershipPage({

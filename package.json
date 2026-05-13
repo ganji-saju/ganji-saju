@@ -18,6 +18,7 @@
     "validate:classics": "node scripts/validate-classics-corpus.mjs",
     "start": "next start",
     "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
+    "test:payment-idempotency": "node scripts/test-payment-idempotency.mjs",
     "preflight": "node scripts/preflight-check.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "verify:imports": "node scripts/verify-imports.mjs"

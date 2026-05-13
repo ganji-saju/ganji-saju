@@ -2,10 +2,10 @@ import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 const TONES: Record<string, string> = {
   overall: 'border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]',
-  love: 'border-[var(--app-plum)]/24 bg-[var(--app-plum)]/10 text-[var(--app-plum)]',
+  love: 'border-[var(--app-plum)]/24 bg-[var(--app-plum)]/10 text-[var(--app-plum-text)]',
   wealth: 'border-[var(--app-jade)]/24 bg-[var(--app-jade)]/10 text-[var(--app-jade)]',
-  career: 'border-[var(--app-sky)]/24 bg-[var(--app-sky)]/10 text-[var(--app-sky)]',
-  relationship: 'border-[var(--app-coral)]/24 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
+  career: 'border-[var(--app-sky)]/24 bg-[var(--app-sky)]/10 text-[var(--app-sky-text)]',
+  relationship: 'border-[var(--app-coral)]/24 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]',
   condition: 'border-[var(--app-gold)]/20 bg-[rgba(255,255,255,0.03)] text-[var(--app-copy)]',
 };
 

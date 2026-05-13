@@ -21,7 +21,7 @@ const RELATIONSHIP_TONES: Record<string, { type: string; icon: string; badge: st
     type: 'lover',
     icon: '💕',
     badge: '연인·배우자',
-    badgeCls: 'border-[var(--app-coral)]/25 bg-[var(--app-coral)]/10 text-[var(--app-coral)]',
+    badgeCls: 'border-[var(--app-coral)]/25 bg-[var(--app-coral)]/10 text-[var(--app-coral-text)]',
   },
   family: {
     type: 'family',
@@ -33,7 +33,7 @@ const RELATIONSHIP_TONES: Record<string, { type: string; icon: string; badge: st
     type: 'friend',
     icon: '🌊',
     badge: '형제·친구',
-    badgeCls: 'border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]',
+    badgeCls: 'border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky-text)]',
   },
   partner: {
     type: 'partner',

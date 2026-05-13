@@ -100,7 +100,11 @@
   --app-line: rgba(17, 17, 20, 0.08);
   --app-line-strong: rgba(17, 17, 20, 0.16);
   --app-pink: #ff4f9a;
-  --app-pink-strong: #d81b72;
+  /* P1-6 fix (audit 2026-05-13 follow-up): #d81b72 → #c11868. 흰 배경 4.62:1,
+     pink-soft 배경 4.41:1 (AA borderline) 이던 strong 토큰을 darker shade 로 보정해
+     모든 `text-[--app-pink-strong]` on `bg-[--app-pink-soft]` 배지 패턴이 자동으로
+     AA 통과 (5.76:1 on white, 5.23:1 on pink-soft). 시각 변화는 ~6% darker. */
+  --app-pink-strong: #c11868;
   --app-pink-soft: #fff0f7;
   --app-pink-soft-strong: #a41258;
   --app-pink-line: rgba(255, 79, 154, 0.26);
@@ -112,6 +116,13 @@
   --app-coral: #ff6b6b;
   --app-plum: #c04de0;
   --app-sky: #368ee8;
+  /* P1-6 fix (audit 2026-05-13): AA-safe text-only aliases. 본 토큰은 흰/소프트 배경
+     위 본문 텍스트용으로만 사용해 WCAG 1.4.3 (4.5:1) 을 충족. 배경·테두리·그라디언트는
+     기존 토큰(--app-pink/coral/plum/sky) 그대로 유지해 브랜드 톤을 보존한다. */
+  --app-pink-text: var(--app-pink-strong); /* #d81b72 — 4.62:1 on white */
+  --app-coral-text: #c4423a;                /* 4.78:1 on white — AA pass */
+  --app-plum-text: #9636af;                 /* 4.75:1 on white — AA pass */
+  --app-sky-text: #1e6cbb;                  /* 5.04:1 on white — AA pass */
   --app-ivory: #111114;
   --app-copy: rgba(17, 17, 20, 0.76);
   --app-copy-muted: rgba(53, 54, 60, 0.7);

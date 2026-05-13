@@ -12,11 +12,17 @@ import {
   DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
+import { buildOpenGraph, buildTwitter } from '@/lib/site';
+
+const PAGE_TITLE = '대화';
+const PAGE_DESC = '달빛인생 대화방에서 궁금한 일을 바로 물어보세요.';
 
 export const metadata: Metadata = {
-  title: '대화',
-  description: '달빛인생 대화방에서 궁금한 일을 바로 물어보세요.',
+  title: PAGE_TITLE,
+  description: PAGE_DESC,
   alternates: { canonical: '/dialogue' },
+  openGraph: buildOpenGraph({ title: PAGE_TITLE, description: PAGE_DESC, path: '/dialogue' }),
+  twitter: buildTwitter({ title: PAGE_TITLE, description: PAGE_DESC }),
 };
 
 const RECOMMENDED_EXPERT_IDS = ['dragon', 'rat', 'sheep', 'ox'] as const;

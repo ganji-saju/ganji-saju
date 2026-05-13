@@ -21,6 +21,10 @@ import { resolveReading } from '@/lib/saju/readings';
 import { buildPunchReading, buildSajuReport } from '@/domain/saju/report';
 import type { ReportScore, SajuReport } from '@/domain/saju/report';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { formatPriceLabel } from '@/lib/payments/catalog';
+
+// P1-2 fix (audit 2026-05-13): "오늘 자세히 보기 · 550원" 하드코딩 → catalog SSOT
+const TODAY_DETAIL_PRICE = formatPriceLabel('taste_today_detail');
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -452,7 +456,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
           <article className="gangi-result-next-step rounded-[1.55rem] bg-[var(--app-ink)] p-5 text-white shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
             <p className="text-sm font-semibold text-white/72">더 깊게 보고 싶다면</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">오늘 자세히 보기 · 550원</h2>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">오늘 자세히 보기 · {TODAY_DETAIL_PRICE}</h2>
             <p className="mt-2 text-sm leading-6 text-white/68">
               시간별로 무엇을 하면 좋을지만 짧게 정리해드려요.
             </p>

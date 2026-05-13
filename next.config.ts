@@ -13,7 +13,42 @@ function firstNonEmptyEnv(...keys: string[]) {
   return undefined;
 }
 
+// P1-1 fix (audit 2026-05-13): security response headers. HSTS is already applied
+// by Vercel; the headers below close the remaining gaps observed during the audit:
+// CSP / X-Frame-Options / Referrer-Policy / X-Content-Type-Options / Permissions-Policy.
+// `js.tosspayments.com` and `*.supabase.co` are whitelisted because the payment
+// widget and Supabase client must load from those origins.
+const SECURITY_HEADERS = [
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.tosspayments.com https://*.tosspayments.com https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://*.tosspayments.com https://va.vercel-scripts.com https://vitals.vercel-insights.com https://*.openai.com",
+      "img-src 'self' data: blob: https:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "frame-src 'self' https://*.tosspayments.com",
+      "media-src 'self' https:",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+      "upgrade-insecure-requests",
+    ].join('; '),
+  },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  },
+];
+
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   async redirects() {
     return [
       { source: '/about-engine', destination: '/interpretation', permanent: true },
@@ -49,6 +84,14 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     root: projectRoot,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: SECURITY_HEADERS,
+      },
+    ];
   },
 };
 

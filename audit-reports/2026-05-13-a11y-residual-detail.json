@@ -1,0 +1,184 @@
+[
+  {
+    "url": "/today-fortune",
+    "nodeCount": 11,
+    "nodes": [
+      {
+        "target": [
+          ".hover\\:bg-\\[var\\(--app-pink-soft\\)\\][href$=\"free\"][data-active=\"true\"] > span:nth-child(2)"
+        ],
+        "html": "<span>무료운세</span>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.41 (foreground color: #d81b72, background color: #fff0f7, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#d81b72",
+          "bgColor": "#fff0f7",
+          "contrastRatio": 4.41,
+          "fontSize": "10.5pt (14px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".app-top-credit-chip"
+        ],
+        "html": "<a class=\"app-top-credit-chip hidden md:inline-flex\" aria-label=\"보유 코인 코인\" href=\"/credits\">",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.41 (foreground color: #d81b72, background color: #fff0f7, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#d81b72",
+          "bgColor": "#fff0f7",
+          "contrastRatio": 4.41,
+          "fontSize": "9.0pt (12px)",
+          "fontWeight": "bold",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-company-item:nth-child(1) > dt"
+        ],
+        "html": "<dt>회사명</dt>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-company-item:nth-child(2) > dt"
+        ],
+        "html": "<dt>대표자</dt>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-company-item:nth-child(3) > dt"
+        ],
+        "html": "<dt>사업자등록번호</dt>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-company-item:nth-child(4) > dt"
+        ],
+        "html": "<dt>주소</dt>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-company-item:nth-child(5) > dt"
+        ],
+        "html": "<dt>연락처</dt>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-notice > p:nth-child(1)"
+        ],
+        "html": "<p>결제, 환불, 보관함, 계정 관련 문의는 위 연락처로 접수해 주세요. 유료 풀이와 코인 이용 내역은 로그인 계정 기준으로 확인됩니다.</p>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #88888a, background color: #ffffff, font size: 8.6pt (11.52px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#88888a",
+          "bgColor": "#ffffff",
+          "contrastRatio": 3.53,
+          "fontSize": "8.6pt (11.52px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-notice > p:nth-child(2)"
+        ],
+        "html": "<p>달빛인생의 사주·타로·띠운세 콘텐츠는 삶의 흐름을 참고하기 위한 운세 콘텐츠입니다. 의료, 법률, 투자, 위기상황 판단은 전문 기준과 즉각적인 도움을 우선해 주세요.</p>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #88888a, background color: #ffffff, font size: 8.6pt (11.52px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#88888a",
+          "bgColor": "#ffffff",
+          "contrastRatio": 3.53,
+          "fontSize": "8.6pt (11.52px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-bottom > span:nth-child(1)"
+        ],
+        "html": "<span>© 2026 푸꼬컴퍼니. All rights reserved.</span>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      },
+      {
+        "target": [
+          ".site-footer-bottom > span:nth-child(2)"
+        ],
+        "html": "<span>서비스명 달빛인생</span>",
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 2.77 (foreground color: #9b9b9c, background color: #ffffff, font size: 8.2pt (10.88px), font weight: normal). Expected contrast ratio of 4.5:1",
+        "data": {
+          "fgColor": "#9b9b9c",
+          "bgColor": "#ffffff",
+          "contrastRatio": 2.77,
+          "fontSize": "8.2pt (10.88px)",
+          "fontWeight": "normal",
+          "messageKey": null,
+          "expectedContrastRatio": "4.5:1"
+        }
+      }
+    ]
+  }
+]

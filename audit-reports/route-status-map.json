@@ -1,0 +1,492 @@
+{
+  "auditDate": "2026-05-13",
+  "base": "http://localhost:3100",
+  "premiumReadingId": "d2d157dd-f3f3-4537-bd9a-59c0dcee0c47",
+  "personas": {
+    "guest": {
+      "authenticated": false
+    },
+    "fresh": {
+      "authenticated": true,
+      "balance": 3,
+      "subscription_balance": 0,
+      "subscription": null,
+      "entitlements": []
+    },
+    "credit": {
+      "authenticated": true,
+      "balance": 10,
+      "subscription_balance": 0,
+      "subscription": null,
+      "entitlements": []
+    },
+    "plus": {
+      "authenticated": true,
+      "balance": 3,
+      "subscription_balance": 2,
+      "subscription": {
+        "plan": "plus_monthly",
+        "status": "active"
+      },
+      "entitlements": []
+    },
+    "premium": {
+      "authenticated": true,
+      "balance": 3,
+      "subscription_balance": 10,
+      "subscription": {
+        "plan": "premium_monthly",
+        "status": "active"
+      },
+      "entitlements": [
+        {
+          "product_id": "today-detail",
+          "scope_key": "today:d2d157dd-f3f3-4537-bd9a-59c0dcee0c47"
+        }
+      ]
+    }
+  },
+  "loginResults": {
+    "guest": {
+      "login": "guest-skip"
+    },
+    "fresh": {
+      "login": "success"
+    },
+    "credit": {
+      "login": "success"
+    },
+    "plus": {
+      "login": "success"
+    },
+    "premium": {
+      "login": "success"
+    }
+  },
+  "openRedirect": {
+    "input": "/login?next=https://attacker.example/",
+    "finalOrigin": "http://localhost:3100",
+    "externalLeaked": false,
+    "verdict": "PASS — external URL blocked"
+  },
+  "routeStatusMap": {
+    "home": {
+      "url": "/",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43848
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43796
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43798
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43796
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43798
+        }
+      }
+    },
+    "free": {
+      "url": "/free",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/free",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43674
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/free",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43618
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/free",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43620
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/free",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43618
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/free",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43620
+        }
+      }
+    },
+    "pricing": {
+      "url": "/pricing",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/pricing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 63529
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/pricing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 63470
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/pricing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 63472
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/pricing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 63470
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/pricing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 63472
+        }
+      }
+    },
+    "saju-new": {
+      "url": "/saju/new",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/saju/new",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43798
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/saju/new",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43651
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/saju/new",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43653
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/saju/new",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43651
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/saju/new",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43653
+        }
+      }
+    },
+    "credits": {
+      "url": "/credits",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/credits",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 39151
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/credits",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 39092
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/credits",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 39094
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/credits",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 39092
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/credits",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 39094
+        }
+      }
+    },
+    "dialogue": {
+      "url": "/dialogue",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/dialogue",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 61051
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/dialogue",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 60991
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/dialogue",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 60993
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/dialogue",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 60991
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/dialogue",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 60993
+        }
+      }
+    },
+    "my-results": {
+      "url": "/my/results",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/login?next=%2Fmy%2Fresults",
+          "hasLockCard": false,
+          "hasLoginRedirect": true,
+          "contentBytes": 39677
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/my/results",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43730
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/my/results",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43732
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/my/results",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 43730
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/my/results",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 44476
+        }
+      }
+    },
+    "my-billing": {
+      "url": "/my/billing",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/login?next=%2Fmy%2Fbilling",
+          "hasLockCard": false,
+          "hasLoginRedirect": true,
+          "contentBytes": 39677
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/my/billing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 57942
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/my/billing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 57948
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/my/billing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 58823
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/my/billing",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 58834
+        }
+      }
+    },
+    "membership-co": {
+      "url": "/membership/checkout?product=today-detail",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/membership/checkout?product=today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 46538
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/membership/checkout?product=today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 46621
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/membership/checkout?product=today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 46623
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/membership/checkout?product=today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 46621
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/membership/checkout?product=today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 46623
+        }
+      }
+    },
+    "today-detail": {
+      "url": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+      "byPersona": {
+        "guest": {
+          "status": 200,
+          "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+          "hasLockCard": true,
+          "hasLoginRedirect": false,
+          "contentBytes": 41859
+        },
+        "fresh": {
+          "status": 200,
+          "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+          "hasLockCard": true,
+          "hasLoginRedirect": false,
+          "contentBytes": 41906
+        },
+        "credit": {
+          "status": 200,
+          "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+          "hasLockCard": true,
+          "hasLoginRedirect": false,
+          "contentBytes": 41908
+        },
+        "plus": {
+          "status": 200,
+          "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+          "hasLockCard": true,
+          "hasLoginRedirect": false,
+          "contentBytes": 41906
+        },
+        "premium": {
+          "status": 200,
+          "finalPath": "/saju/d2d157dd-f3f3-4537-bd9a-59c0dcee0c47/today-detail",
+          "hasLockCard": false,
+          "hasLoginRedirect": false,
+          "contentBytes": 60180
+        }
+      }
+    }
+  },
+  "expectedVsActual": {
+    "home": "All personas 200 (public) — actual: ✅",
+    "free": "All personas 200 — actual: ✅",
+    "pricing": "All personas 200 — actual: ✅",
+    "saju-new": "All personas 200 — actual: ✅",
+    "credits": "All personas 200 — actual: ✅",
+    "dialogue": "All personas 200 (P2: page-level gate missing) — actual: ✅",
+    "my-results": "Guest → /login, others 200 — actual: ✅",
+    "my-billing": "Guest → /login, others 200 — actual: ✅",
+    "membership-co": "All 200 (paywall in checkout flow) — actual: ✅",
+    "today-detail": "Guest/Fresh/Credit/Plus → LOCK, Premium → full content — actual: ✅ (Premium 60KB vs others 41KB)"
+  },
+  "apiGateVerdicts": {
+    "/api/payments/prepare (credit_3, authed)": "200 ok",
+    "/api/payments/confirm (fake paymentKey)": "400 — Toss rejected, addCredits not called",
+    "/api/payments/confirm (tampered amount=1, packageId=credit_3)": "400 — catalog SSOT verified",
+    "/api/payments/confirm (no auth cookie)": "401 — auth gate works"
+  }
+}
