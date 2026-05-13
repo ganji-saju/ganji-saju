@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { UnifiedBirthInfoFields, type BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
+import type { BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
+import { CompactBirthFields } from '@/components/saju/shared/compact-birth-fields';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import type { TodayFortuneBirthPayload } from '@/lib/today-fortune/types';
 import type { UnifiedCalendarType, UnifiedTimeRule } from '@/lib/saju/unified-birth-entry';
@@ -184,38 +185,46 @@ export function BirthInfoStepper({
   }
 
   return (
-    <section className="app-panel p-6 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="app-caption">Birth Info Stepper</div>
-          <h2 className="mt-3 text-2xl text-[var(--app-ivory)]">
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            출생 정보
+          </div>
+          <h2 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
             생년월일과 출생 정보를 넣어 오늘 흐름을 좁혀보세요
           </h2>
         </div>
-        <Button
+        <button
           type="button"
           onClick={handleLoadProfile}
           disabled={profileLoading}
-          variant="outline"
+          className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] transition disabled:opacity-60"
         >
           {profileLoading ? '불러오는 중...' : 'MY 프로필 불러오기'}
-        </Button>
+        </button>
       </div>
 
       {profileMessage ? (
-        <p className="mt-3 text-sm text-[var(--app-copy-soft)]">{profileMessage}</p>
+        <p className="mt-3 text-[12px] leading-relaxed text-[var(--app-copy-soft)]">
+          {profileMessage}
+        </p>
       ) : null}
 
-      <div className="mt-6">
-        <UnifiedBirthInfoFields
+      <div className="mt-4">
+        <CompactBirthFields
           draft={draft}
           onChange={onChange}
           onStarted={onStarted}
+          showDate
+          showTime
+          showGender
+          showLocation
           locationLoading={locationLoading}
           locationMessage={locationMessage}
           locationResults={locationResults}
           onLocationSearch={handleLocationSearch}
-          onPresetSelect={applyPresetLocation}
+          onLocationPresetSelect={applyPresetLocation}
           onLocationResultSelect={(item) => {
             onChange({
               birthLocationCode: 'custom',
@@ -229,24 +238,24 @@ export function BirthInfoStepper({
         />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-[var(--app-copy-soft)]">
-          {hasBirthCore(draft)
-            ? '입력이 준비되면 결과 화면으로 이동해 오늘 한 줄을 보여드려요.'
-            : '오늘의 고민에 맞춰 무료 결과를 만들려면 기본 출생 정보가 필요합니다.'}
-        </p>
-        <Button
-          type="button"
-          onClick={onSubmit}
-          disabled={loading}
-          size="lg"
-        >
-          {loading ? '무료 결과 만드는 중...' : '무료 결과 보기'}
-        </Button>
-      </div>
+      <p className="mt-4 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
+        {hasBirthCore(draft)
+          ? '입력이 준비되면 결과 화면으로 이동해 오늘 한 줄을 보여드려요.'
+          : '오늘의 고민에 맞춰 무료 결과를 만들려면 기본 출생 정보가 필요합니다.'}
+      </p>
+
+      <Button
+        type="button"
+        onClick={onSubmit}
+        disabled={loading}
+        size="lg"
+        className="mt-3 h-12 w-full rounded-[14px] text-[15px] font-extrabold"
+      >
+        {loading ? '무료 결과 만드는 중...' : '무료 결과 보기'}
+      </Button>
 
       {errorMessage ? (
-        <div className="mt-4 rounded-[1rem] border border-[var(--app-coral)]/30 bg-[rgba(248,113,113,0.08)] px-4 py-3 text-sm text-[var(--app-ivory)]">
+        <div className="mt-3 rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
           {errorMessage}
         </div>
       ) : null}
