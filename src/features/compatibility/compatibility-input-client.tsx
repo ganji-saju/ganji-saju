@@ -8,10 +8,8 @@ import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  UnifiedBirthInfoFields,
-  type BirthLocationSearchResultLike,
-} from '@/components/saju/shared/unified-birth-info-fields';
+import { CompactBirthFields } from '@/components/saju/shared/compact-birth-fields';
+import { type BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
 import { COMPATIBILITY_RELATIONSHIPS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
@@ -641,16 +639,18 @@ export function CompatibilityInputClient({
                   placeholder="예: 나, 민지"
                 />
               </div>
-              <UnifiedBirthInfoFields
-                idPrefix="compatibility-self"
+              <CompactBirthFields
                 draft={selfDraft}
                 onChange={(patch) => updateDraft('self', patch)}
-                dateInputVariant="select"
+                showDate
+                showTime
+                showGender
+                showLocation
                 locationLoading={locationStates.self.status === 'loading'}
                 locationMessage={locationStates.self.message}
                 locationResults={locationStates.self.results}
                 onLocationSearch={() => void searchBirthLocationCoordinates('self')}
-                onPresetSelect={(code) => updateBirthLocation('self', code)}
+                onLocationPresetSelect={(code) => updateBirthLocation('self', code)}
                 onLocationResultSelect={(result) => applyBirthLocationSearchResult('self', result)}
               />
             </section>
@@ -676,16 +676,18 @@ export function CompatibilityInputClient({
                   placeholder="예: 배우자, 엄마, 동업자"
                 />
               </div>
-              <UnifiedBirthInfoFields
-                idPrefix="compatibility-partner"
+              <CompactBirthFields
                 draft={partnerDraft}
                 onChange={(patch) => updateDraft('partner', patch)}
-                dateInputVariant="select"
+                showDate
+                showTime
+                showGender
+                showLocation
                 locationLoading={locationStates.partner.status === 'loading'}
                 locationMessage={locationStates.partner.message}
                 locationResults={locationStates.partner.results}
                 onLocationSearch={() => void searchBirthLocationCoordinates('partner')}
-                onPresetSelect={(code) => updateBirthLocation('partner', code)}
+                onLocationPresetSelect={(code) => updateBirthLocation('partner', code)}
                 onLocationResultSelect={(result) => applyBirthLocationSearchResult('partner', result)}
               />
             </section>

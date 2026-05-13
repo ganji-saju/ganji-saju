@@ -5,10 +5,8 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  UnifiedBirthInfoFields,
-  type BirthLocationSearchResultLike,
-} from '@/components/saju/shared/unified-birth-info-fields';
+import { CompactBirthFields } from '@/components/saju/shared/compact-birth-fields';
+import { type BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import type { FamilyProfile, UserProfile } from '@/lib/profile';
 import type { UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
@@ -197,12 +195,10 @@ function ManagedBirthFields({
   draft,
   onChange,
   helperText,
-  dateInputVariant,
 }: {
   draft: UnifiedBirthEntryDraft;
   onChange: (patch: Partial<UnifiedBirthEntryDraft>) => void;
   helperText: string;
-  dateInputVariant?: 'input' | 'select';
 }) {
   const [locationStatus, setLocationStatus] = useState<LocationSearchStatus>('idle');
   const [locationMessage, setLocationMessage] = useState('');
@@ -262,15 +258,18 @@ function ManagedBirthFields({
 
   return (
     <div className="space-y-4">
-      <UnifiedBirthInfoFields
+      <CompactBirthFields
         draft={draft}
         onChange={onChange}
-        dateInputVariant={dateInputVariant}
+        showDate
+        showTime
+        showGender
+        showLocation
         locationLoading={locationStatus === 'loading'}
         locationMessage={locationMessage}
         locationResults={locationResults}
         onLocationSearch={handleLocationSearch}
-        onPresetSelect={applyPresetLocation}
+        onLocationPresetSelect={applyPresetLocation}
         onLocationResultSelect={(item) => {
           onChange({
             birthLocationCode: 'custom',
@@ -283,7 +282,7 @@ function ManagedBirthFields({
           setLocationMessage(`출생지로 ${item.displayName}를 적용했습니다.`);
         }}
       />
-      <div className="rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-sm leading-7 text-[var(--app-copy-muted)]">
+      <div className="rounded-[12px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-3.5 py-3 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
         {helperText}
       </div>
     </div>
@@ -457,7 +456,6 @@ export default function ProfileManager({
               draft={profileForm}
               onChange={(patch) => setProfileForm((current) => ({ ...current, ...patch }))}
               helperText="시간을 모르셔도 저장할 수 있고, 양력·음력 구분과 출생지는 그대로 보관됩니다. 진태양시를 쓰고 싶으면 출생지를 함께 넣어 두는 편이 좋습니다."
-              dateInputVariant="select"
             />
 
             <div>
@@ -620,7 +618,6 @@ export default function ProfileManager({
             <ManagedBirthFields
               draft={familyForm}
               onChange={(patch) => setFamilyForm((current) => ({ ...current, ...patch }))}
-              dateInputVariant="select"
               helperText="가족 프로필도 오늘운세와 사주 시작하기와 같은 입력 규칙으로 저장됩니다. 음력 생일만 기억하는 경우에도 그대로 남겨둘 수 있습니다."
             />
 
