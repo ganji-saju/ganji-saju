@@ -1,6 +1,16 @@
+// Redesign 2026-05-13 (Claude Design / 가이드 §4): 다크 풀 푸터.
+// 모든 라우팅(`href`) 은 사이트 기존 라우트만 사용 — 신규 URL 0건.
+// 회사 정보(사업자번호 / 주소 / 대표자) 및 면책 문구는 법적 고지 — 절대 수정 X.
+
 import Link from 'next/link';
 
-const companyItems = [
+interface CompanyItem {
+  label: string;
+  value: string;
+  href?: string;
+}
+
+const COMPANY_ITEMS: CompanyItem[] = [
   { label: '회사명', value: '푸꼬컴퍼니' },
   { label: '대표자', value: '김재호' },
   { label: '사업자등록번호', value: '215-27-64715' },
@@ -8,51 +18,219 @@ const companyItems = [
   { label: '연락처', value: '010-8123-9184', href: 'tel:010-8123-9184' },
 ];
 
+const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string]> }[] = [
+  {
+    title: '운세',
+    items: [
+      ['오늘의 운세', '/today-fortune'],
+      ['타로 한 장', '/tarot/daily'],
+      ['띠운세', '/zodiac'],
+      ['별자리', '/star-sign'],
+      ['꿈해몽', '/dream-interpretation'],
+    ],
+  },
+  {
+    title: '사주',
+    items: [
+      ['내 사주 풀이', '/saju/new'],
+      ['궁합', '/compatibility/input'],
+      ['올해 흐름', '/daewoon'],
+      ['좋은 날 택일', '/taekil'],
+      ['대화 상담', '/dialogue'],
+    ],
+  },
+  {
+    title: '계정',
+    items: [
+      ['로그인', '/login'],
+      ['MY', '/my'],
+      ['보관함', '/my/results'],
+      ['결제내역', '/my/billing'],
+      ['멤버십', '/membership'],
+    ],
+  },
+  {
+    title: '고객센터',
+    items: [
+      ['☎ 010-8123-9184', 'tel:010-8123-9184'],
+      ['알림 설정', '/notifications'],
+      ['이용약관', '/terms'],
+      ['개인정보처리방침', '/privacy'],
+      ['가격 안내', '/pricing'],
+    ],
+  },
+];
+
+const LINK_STYLE: React.CSSProperties = {
+  color: 'rgba(255,255,255,0.62)',
+  textDecoration: 'none',
+  display: 'block',
+  padding: '4px 0',
+};
+
+function NavLink({ label, href }: { label: string; href: string }) {
+  if (href.startsWith('tel:') || href.startsWith('mailto:')) {
+    return (
+      <a href={href} style={LINK_STYLE}>
+        {label}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} style={LINK_STYLE}>
+      {label}
+    </Link>
+  );
+}
+
 export default function SiteFooter() {
   return (
-    <footer className="site-footer" aria-label="회사 및 서비스 안내">
-      <div className="site-footer-inner">
-        <div className="site-footer-main">
+    <footer
+      className="site-footer-redesign mt-auto"
+      aria-label="회사 및 서비스 안내"
+      style={{
+        background: '#0a0a0c',
+        color: 'rgba(255,255,255,0.72)',
+        padding: '56px 24px 32px',
+        fontSize: 13,
+        lineHeight: 1.7,
+      }}
+    >
+      <div className="mx-auto" style={{ maxWidth: 1180 }}>
+        <div className="grid gap-9 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+          {/* 브랜드 lockup */}
           <div>
-            <div className="site-footer-brand">달빛인생</div>
-            <p className="site-footer-copy">
+            <div className="mb-4 flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="grid h-9 w-9 place-items-center rounded-[10px] text-white"
+                style={{
+                  background:
+                    'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
+                  fontFamily: 'var(--font-han)',
+                  fontWeight: 700,
+                  fontSize: 20,
+                  letterSpacing: '-0.02em',
+                  boxShadow: '0 4px 12px rgba(216,27,114,0.32)',
+                }}
+              >
+                干
+              </span>
+              <div className="leading-tight">
+                <div
+                  style={{
+                    color: 'var(--app-pink)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  달빛인생
+                </div>
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    letterSpacing: '-0.03em',
+                    color: '#fff',
+                  }}
+                >
+                  간지사주
+                </div>
+              </div>
+            </div>
+            <p style={{ maxWidth: 280, color: 'rgba(255,255,255,0.62)' }}>
               오늘운세, 사주, 타로, 궁합을 쉽고 빠르게 보는 운세 서비스입니다.
             </p>
           </div>
 
-          <nav className="site-footer-links" aria-label="푸터 링크">
-            <Link href="/terms">이용약관</Link>
-            <Link href="/privacy">개인정보처리방침</Link>
-            <Link href="/pricing">가격 안내</Link>
-            <Link href="/notifications">알림 설정</Link>
-          </nav>
+          {/* 4 column nav */}
+          {FOOTER_NAV.map((col) => (
+            <div key={col.title}>
+              <h4
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: '#fff',
+                  margin: '0 0 14px',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {col.title}
+              </h4>
+              <nav aria-label={col.title}>
+                {col.items.map(([label, href]) => (
+                  <NavLink key={label} label={label} href={href} />
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
 
-        <dl className="site-footer-company">
-          {companyItems.map((item) => (
-            <div key={item.label} className="site-footer-company-item">
-              <dt>{item.label}</dt>
-              <dd>
-                {item.href ? <a href={item.href}>{item.value}</a> : item.value}
+        {/* 회사 정보 — 법적 고지 */}
+        <dl
+          className="mt-9 grid gap-x-6 gap-y-2 pt-6 sm:grid-cols-2 lg:grid-cols-3"
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            fontSize: 12,
+          }}
+        >
+          {COMPANY_ITEMS.map((item) => (
+            <div key={item.label} className="flex gap-2">
+              <dt
+                style={{
+                  color: 'rgba(255,255,255,0.46)',
+                  minWidth: 92,
+                  fontWeight: 600,
+                }}
+              >
+                {item.label}
+              </dt>
+              <dd className="m-0" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                  >
+                    {item.value}
+                  </a>
+                ) : (
+                  item.value
+                )}
               </dd>
             </div>
           ))}
         </dl>
 
-        <div className="site-footer-notice">
-          <p>
-            결제, 환불, 보관함, 계정 관련 문의는 위 연락처로 접수해 주세요. 유료 풀이와 코인 이용
-            내역은 로그인 계정 기준으로 확인됩니다.
+        {/* 면책 */}
+        <div
+          className="mt-6 grid gap-2 pt-6"
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.46)',
+            fontSize: 11.5,
+            lineHeight: 1.7,
+          }}
+        >
+          <p className="m-0">
+            결제, 환불, 보관함, 계정 관련 문의는 위 연락처로 접수해 주세요. 유료
+            풀이와 코인 이용 내역은 로그인 계정 기준으로 확인됩니다.
           </p>
-          <p>
-            달빛인생의 사주·타로·띠운세 콘텐츠는 삶의 흐름을 참고하기 위한 운세 콘텐츠입니다.
-            의료, 법률, 투자, 위기상황 판단은 전문 기준과 즉각적인 도움을 우선해 주세요.
+          <p className="m-0">
+            달빛인생의 사주·타로·띠운세 콘텐츠는 삶의 흐름을 참고하기 위한 운세
+            콘텐츠입니다. 의료, 법률, 투자, 위기상황 판단은 전문 기준과 즉각적인
+            도움을 우선해 주세요.
           </p>
         </div>
 
-        <div className="site-footer-bottom">
+        {/* Bottom */}
+        <div
+          className="mt-6 flex flex-wrap items-center justify-between gap-2"
+          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 11.5 }}
+        >
           <span>© 2026 푸꼬컴퍼니. All rights reserved.</span>
-          <span>서비스명 달빛인생</span>
+          <span>서비스명 달빛인생 · 간지사주</span>
         </div>
       </div>
     </footer>
