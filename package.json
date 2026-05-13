@@ -20,7 +20,8 @@
     "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
     "preflight": "node scripts/preflight-check.mjs",
     "smoke": "node scripts/smoke-test.mjs",
-    "verify:imports": "node scripts/verify-imports.mjs"
+    "verify:imports": "node scripts/verify-imports.mjs",
+    "visual:qa": "node scripts/visual-screenshot.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

@@ -1,18 +1,13 @@
 import Link from 'next/link';
 import SubscriptionManager from '@/components/my/subscription-manager';
-import { Badge } from '@/components/ui/badge';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
+import { FlowEntryList } from '@/components/moonlight/FlowEntryList';
+import { LightSection } from '@/components/moonlight/LightSection';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { getAccountDashboardData } from '@/lib/account';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
 } from '@/lib/subscription';
-import { PageHero } from '@/shared/layout/app-shell';
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -118,156 +113,163 @@ export default async function MyBillingPage() {
     : '미가입';
 
   return (
-    <div className="space-y-6">
-      <PageHero
-        badges={[
-          <Badge
-            key="billing"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-          >
-            결제와 이용
-          </Badge>,
-          <Badge
-            key="status"
-            className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-          >
-            코인 · 멤버십 · 환불 안내
-          </Badge>,
-        ]}
+    <div className="space-y-5">
+      <PageIntro
+        eyebrow="결제와 이용"
         title="결제와 이용 상태를 한눈에 살펴보세요"
         description="지금 남은 코인, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다. 필요한 정보만 같은 문법으로 차분히 읽을 수 있게 정리했습니다."
+        actions={
+          <>
+            <Link href="/membership" className="gangi-primary-button">
+              멤버십 보기
+            </Link>
+            <Link href="/credits" className="gangi-secondary-button">
+              코인 충전
+            </Link>
+          </>
+        }
       />
 
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="남은 잔액"
-          title="코인과 멤버십 코인을 함께 관리합니다"
-          titleClassName="text-3xl"
-        />
-        <ProductGrid columns={3} className="mt-6">
-          <FeatureCard surface="soft" eyebrow="전체 코인" title={dashboard.credits.total} />
-          <FeatureCard surface="soft" eyebrow="일반 코인" title={dashboard.credits.balance} />
-          <FeatureCard surface="soft" eyebrow="월간 플랜 코인" title={dashboard.credits.subscriptionBalance} />
-        </ProductGrid>
-      </SectionSurface>
+      <LightSection
+        eyebrow="남은 잔액"
+        title="코인과 멤버십 코인을 함께 관리합니다"
+        description="결제 상세 정보 대신 이용에 필요한 잔액만 요약합니다."
+        surface="soft"
+      >
+        <div className="grid gap-2 sm:grid-cols-3">
+          {[
+            ['전체 코인', dashboard.credits.total],
+            ['일반 코인', dashboard.credits.balance],
+            ['월간 플랜 코인', dashboard.credits.subscriptionBalance],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-4"
+            >
+              <p className="text-xs font-bold text-[var(--gyeol-muted)]">{label}</p>
+              <strong className="mt-1 block text-xl text-[var(--gyeol-text)]">{value}</strong>
+            </div>
+          ))}
+        </div>
+      </LightSection>
 
-      <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="멤버십 상태"
-            title={subscriptionStatusLabel}
-            titleClassName="text-3xl"
-            description={getSubscriptionNotice(dashboard.subscription)}
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
+      <section className="grid gap-5 lg:grid-cols-[1.02fr_0.98fr]">
+        <LightSection
+          eyebrow="멤버십 상태"
+          title={subscriptionStatusLabel}
+          description={getSubscriptionNotice(dashboard.subscription)}
+        >
 
           {dashboard.subscription ? (
-            <ProductGrid columns={2} className="mt-6">
-              <FeatureCard
-                surface="soft"
-                eyebrow="플랜"
-                title={getSubscriptionPlanLabel(dashboard.subscription.plan)}
-              />
-              <FeatureCard
-                surface="soft"
-                eyebrow="다음 결제일"
-                title={
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                ['플랜', getSubscriptionPlanLabel(dashboard.subscription.plan)],
+                [
+                  '다음 결제일',
                   dashboard.subscription.renewsAt
                     ? formatDate(dashboard.subscription.renewsAt)
-                    : '미정'
-                }
-              />
-            </ProductGrid>
+                    : '미정',
+                ],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4"
+                >
+                  <p className="text-xs font-bold text-[var(--gyeol-muted)]">{label}</p>
+                  <strong className="mt-1 block text-base text-[var(--gyeol-text)]">{value}</strong>
+                </div>
+              ))}
+            </div>
           ) : (
-            <FeatureCard className="mt-6" surface="soft" eyebrow="현재 상태" description={getSubscriptionNotice(null)} />
+            <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-3 text-sm leading-6 text-[var(--gyeol-muted)]">
+              {getSubscriptionNotice(null)}
+            </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-5">
             <SubscriptionManager subscription={dashboard.subscription} />
           </div>
-        </SectionSurface>
+        </LightSection>
 
-        <SupportRail
-          surface="panel"
+        <LightSection
           eyebrow="정책 안내"
           title="결제와 환불은 이 기준으로 움직입니다"
           description="복잡한 정책을 길게 늘어놓기보다, 실제로 확인할 가능성이 높은 기준만 짧게 남겨두었습니다."
         >
-          <BulletList
-            items={[
+          <ul className="grid gap-2 text-sm leading-6 text-[var(--gyeol-muted)]">
+            {[
               '정기 이용 상품은 가격과 갱신 시점, 열리는 혜택을 같은 화면에서 다시 확인하실 수 있습니다.',
               '해지 예약을 하셔도 이번 이용 기간이 끝날 때까지 혜택은 그대로 유지됩니다.',
               '디지털 해석은 열람 여부에 따라 환불 기준이 달라질 수 있어, 결제 전 안내를 먼저 보여드립니다.',
               '궁금한 점이 생기면 멤버십 페이지와 코인 센터에서 바로 이어서 살펴보실 수 있습니다.',
+            ].map((item) => (
+              <li key={item} className="rounded-[0.9rem] bg-[var(--gyeol-surface)] px-3 py-2">
+                {item}
+              </li>
+            ))}
+          </ul>
+          <FlowEntryList
+            className="mt-4"
+            items={[
+              {
+                id: 'membership',
+                title: '멤버십 페이지',
+                description: '구성과 이용 혜택을 다시 확인합니다.',
+                href: '/membership',
+                meta: '보기',
+              },
+              {
+                id: 'credits',
+                title: '코인 센터',
+                description: '코인 충전과 재시작 흐름으로 이동합니다.',
+                href: '/credits',
+                meta: '충전',
+              },
             ]}
           />
-          <FeatureCard
-            className="mt-5"
-            surface="soft"
-            eyebrow="바로 가기"
-            description={
-              <>
-                멤버십 구성과 이용 혜택은{' '}
-                <Link
-                  href="/membership"
-                  className="text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                >
-                  멤버십 페이지
-                </Link>
-                에서, 코인 충전과 재시작은{' '}
-                <Link
-                  href="/credits"
-                  className="text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                >
-                  코인 센터
-                </Link>
-                에서 바로 이어집니다.
-              </>
-            }
-          />
-        </SupportRail>
+        </LightSection>
       </section>
 
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="최근 결제 및 코인 이력"
-          title={`최근 ${dashboard.recentTransactions.length}건`}
-          titleClassName="text-3xl"
-        />
-        <ProductGrid columns={2} className="mt-6">
+      <LightSection
+        eyebrow="최근 결제 및 코인 이력"
+        title={`최근 ${dashboard.recentTransactions.length}건`}
+        description="금액과 결제 상세값 대신 이용 내역과 코인 증감을 중심으로 표시합니다."
+      >
+        <div className="grid gap-2">
           {dashboard.recentTransactions.length > 0 ? (
             dashboard.recentTransactions.map((transaction) => (
-              <FeatureCard
+              <div
                 key={transaction.id}
-                surface="soft"
-                eyebrow={formatDate(transaction.createdAt)}
-                title={getTransactionLabel(transaction)}
-                description={
-                  <>
-                    <span className="block text-[var(--app-copy-muted)]">
-                      {getTransactionFeatureLabel(transaction)}
-                    </span>
-                    <span
-                      className={`mt-2 block font-semibold ${
-                        transaction.amount >= 0 ? 'text-emerald-200' : 'text-rose-200'
-                      }`}
-                    >
-                      {transaction.amount >= 0 ? '+' : ''}
-                      {transaction.amount} 코인
-                    </span>
-                  </>
-                }
-              />
+                className="flex min-h-16 items-center justify-between gap-3 rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-4 py-3"
+              >
+                <span className="min-w-0">
+                  <span className="text-xs font-bold text-[var(--gyeol-muted)]">
+                    {formatDate(transaction.createdAt)}
+                  </span>
+                  <strong className="mt-1 block text-base text-[var(--gyeol-text)]">
+                    {getTransactionLabel(transaction)}
+                  </strong>
+                  <span className="mt-1 block text-sm text-[var(--gyeol-muted)]">
+                    {getTransactionFeatureLabel(transaction)}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 text-sm font-bold ${
+                    transaction.amount >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                  }`}
+                >
+                  {transaction.amount >= 0 ? '+' : ''}
+                  {transaction.amount} 코인
+                </span>
+              </div>
             ))
           ) : (
-            <FeatureCard
-              surface="soft"
-              eyebrow="아직 기록 없음"
-              description="표시할 결제 또는 코인 사용 이력이 아직 없습니다."
-            />
+            <div className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4 text-sm leading-6 text-[var(--gyeol-muted)]">
+              표시할 결제 또는 코인 사용 이력이 아직 없습니다.
+            </div>
           )}
-        </ProductGrid>
-      </SectionSurface>
+        </div>
+      </LightSection>
     </div>
   );
 }

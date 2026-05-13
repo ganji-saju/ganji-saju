@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { AppPage as MoonlightAppPage } from '@/components/moonlight/AppPage';
+import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { SajuStrip } from '@/components/moonlight/SajuStrip';
+import { StepFlowShell } from '@/components/moonlight/StepFlowShell';
+import { StickyActionBar } from '@/components/moonlight/StickyActionBar';
 import { Button } from '@/components/ui/button';
 import {
   UnifiedBirthInfoFields,
@@ -37,8 +39,8 @@ import {
 } from './onboarding-storage';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { GangiIntro, GangiLoadingOverlay, GangiPageHeader } from '@/components/gangi/gangi-ui';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { GangiLoadingOverlay } from '@/components/gangi/gangi-ui';
+import { AppShell } from '@/shared/layout/app-shell';
 
 export type OnboardingStep = 'empathy' | 'birth' | 'nickname' | 'consent';
 type SwipeStepId = 'profile' | 'birth' | 'location' | 'consent';
@@ -863,61 +865,54 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   function renderProfileStep() {
     return (
       <div className="mt-4 space-y-3">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2">
           {QUESTION_ENTRY_POINTS.map((entry) => {
             const isSelected = selectedEntrySlug === entry.slug;
 
             return (
-              <button
+              <ChoiceRow
                 key={entry.slug}
-                type="button"
                 onClick={() => selectEntryTopic(entry)}
-                data-selected={isSelected ? 'true' : 'false'}
-                className={cn(
-                  'group rounded-full border px-3 py-2 text-center text-sm font-semibold transition-colors sm:px-4 sm:py-2.5',
-                  isSelected
-                    ? 'border-[var(--app-pink)]/42 bg-[var(--app-pink)]/10'
-                    : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] hover:border-[var(--app-pink)]/30 hover:bg-[var(--app-pink)]/8'
-                )}
-              >
-                <span className={isSelected ? 'text-[var(--app-ink)]' : 'text-[var(--app-copy)]'}>
-                  {entry.label}
-                </span>
-              </button>
+                selected={isSelected}
+                leading={entry.label.slice(0, 1)}
+                title={entry.label}
+                description={entry.question}
+                trailing={isSelected ? '선택됨' : undefined}
+              />
             );
           })}
         </div>
 
-        <div className="rounded-[1.05rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-3">
+        <div className="rounded-[1.15rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--app-ink)]">
+              <div className="text-sm font-semibold text-[var(--gyeol-text)]">
                 {selectedEntryPoint.question}
               </div>
-              <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy)]">
+              <p className="mt-1.5 text-sm leading-6 text-[var(--gyeol-muted)]">
                 {selectedEntryPoint.reportAnswer}
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
+            <span className="shrink-0 rounded-full border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-2.5 py-1 text-[11px] font-semibold text-[var(--gyeol-moon)]">
               선택됨
             </span>
           </div>
         </div>
 
         {recentGuestDraft ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
+          <div className="rounded-[1.15rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-4 py-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
-                <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy-muted)]">
+                <div className="text-sm font-semibold text-[var(--gyeol-text)]">최근 입력한 정보가 있어요</div>
+                <p className="mt-1.5 text-sm leading-6 text-[var(--gyeol-muted)]">
                   로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
                 </p>
               </div>
-              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
+              <span className="rounded-full border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-2.5 py-1 text-[11px] font-semibold text-[var(--gyeol-moon)]">
                 로컬 저장
               </span>
             </div>
-            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-xs leading-6 text-[var(--app-copy)]">
+            <div className="mt-3 rounded-[0.9rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-3 py-2.5 text-xs leading-6 text-[var(--gyeol-muted)]">
               {recentGuestDetail}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -937,15 +932,15 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadStatus === 'loading' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-sm text-[var(--app-copy-muted)]">
+          <div className="rounded-[1.1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4 text-sm text-[var(--gyeol-muted)]">
             저장된 내 정보와 등록한 사람을 확인하고 있습니다.
           </div>
         ) : null}
 
         {profileLoadStatus === 'anonymous' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+          <div className="rounded-[1.1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4">
+            <div className="text-sm font-medium text-[var(--gyeol-text)]">비로그인으로도 바로 볼 수 있습니다</div>
+            <p className="mt-2 text-sm leading-6 text-[var(--gyeol-muted)]">
               {recentGuestDraft
                 ? '지금은 새 정보를 직접 입력하거나, 이 기기에 남아 있는 최근 정보를 불러올 수 있습니다.'
                 : '저장은 나중에 해도 됩니다. 먼저 사주풀이를 열어보세요.'}
@@ -969,9 +964,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadStatus === 'empty' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+          <div className="rounded-[1.1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-4">
+            <div className="text-sm font-medium text-[var(--gyeol-text)]">아직 저장된 정보가 없습니다</div>
+            <p className="mt-2 text-sm leading-6 text-[var(--gyeol-muted)]">
               이번에 입력한 정보는 다음부터 바로 불러올 수 있게 저장됩니다.
             </p>
           </div>
@@ -985,35 +980,29 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
         {profileLoadStatus === 'ready' ? (
           <div className="max-h-[min(42vh,22rem)] overflow-y-auto pr-1">
-            <ProductGrid columns={2}>
+            <div className="grid gap-2">
               {savedProfileOptions.map((profile) => (
-                <button
+                <ChoiceRow
                   key={profile.id}
-                  type="button"
                   onClick={() => applySavedProfile(profile)}
-                  className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-pink)]/38 hover:bg-[var(--app-pink)]/8"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 text-sm font-medium text-[var(--app-ink)]">{profile.label}</div>
-                    <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[10px] text-[var(--app-pink-strong)]">
-                      선택
-                    </span>
-                  </div>
-                  <div className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">{profile.detail}</div>
-                </button>
+                  leading={profile.source === 'self' ? '나' : '家'}
+                  title={profile.label}
+                  description={profile.detail}
+                  trailing="불러오기"
+                />
               ))}
-            </ProductGrid>
+            </div>
           </div>
         ) : null}
 
         {profileLoadMessage && profileLoadStatus !== 'error' ? (
-          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-xs leading-5 text-[var(--app-pink-strong)]">
+          <p className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-3 py-2 text-xs leading-5 text-[var(--gyeol-moon)]">
             {profileLoadMessage}
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-          <span className="text-sm leading-6 text-[var(--app-copy-muted)]">새 생년월일로 보려면 직접 입력하세요.</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-4 py-3">
+          <span className="text-sm leading-6 text-[var(--gyeol-muted)]">새 생년월일로 보려면 직접 입력하세요.</span>
           <Button
             type="button"
             onClick={() => setActiveIndex(birthStepIndex)}
@@ -1044,171 +1033,131 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           : '동의하고 사주풀이 열기'
         : '다음 화면';
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-28 md:pb-12">
       {isSubmitting ? (
         <GangiLoadingOverlay
           title="사주풀이를 준비하고 있어요"
           description="입력한 정보로 오늘 볼 흐름을 정리하는 중입니다."
         />
       ) : null}
-      <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
-        <GangiPageHeader title="사주 입력" />
-        <GangiIntro
-          title={
-            <>
-              사주를 보려면
-              <br />
-              이 정도면 충분해요
-            </>
-          }
-          description="생년월일, 성별, 태어난 시간만 먼저 알려주세요."
+      <MoonlightAppPage className="gangi-subpage saju-intake-page" size="md">
+        <PageIntro
+          eyebrow="내 풀이"
+          title="사주로 보는 타고난 결"
+          description="생년월일시와 궁금한 주제만 차례로 입력하면 오늘 볼 흐름을 정리합니다."
         />
+        <SajuStrip suffixLabel="생년월일시" />
 
-        <section className="grid gap-4 lg:gap-5">
-          <SectionSurface surface="panel" size="lg" className="saju-intake-main-card overflow-hidden">
-            <div className="mb-4 flex items-center justify-between gap-3 sm:mb-6">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                {steps.map((item, index) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      if (index <= activeIndex) {
-                        setActiveIndex(index);
-                        setErrorMessage('');
-                      }
-                    }}
-                    className={cn(
-                      'h-2.5 rounded-full transition-all',
-                      index === activeIndex
-                        ? 'w-10 bg-[var(--app-pink)]'
-                        : index < activeIndex
-                          ? 'w-5 bg-[var(--app-pink)]/48'
-                          : 'w-5 bg-[var(--app-line)]'
-                    )}
-                    aria-label={`${index + 1}단계 ${item.eyebrow}`}
-                  />
-                ))}
-              </div>
-              {consentAccepted ? (
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-3 py-1 text-xs text-[var(--app-jade)]">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  동의 저장됨
-                </span>
-              ) : null}
-            </div>
-
-            <div
-              className="overflow-hidden"
-              onTouchStart={(event) => {
-                touchStartXRef.current = event.touches[0]?.clientX ?? null;
-              }}
-              onTouchEnd={handleTouchEnd}
-            >
-              <div key={activeStep.id} className="saju-intake-active-slide">
-                <SectionHeader
-                  eyebrow={activeStep.eyebrow}
-                  title={activeStep.title}
-                  titleClassName="text-2xl sm:text-3xl"
-                  description={activeStep.description}
-                  descriptionClassName="max-w-3xl text-sm text-[var(--app-copy)] sm:text-base"
-                />
-
-                {activeStep.id === 'profile' ? (
-                  renderProfileStep()
-                ) : activeStep.id === 'consent' ? (
-                  <div className="mt-4 space-y-2.5 sm:mt-6 sm:space-y-3">
-                    {ONBOARDING_CONSENTS.map((consent) => (
-                      <label
-                        key={consent.title}
-                        className="flex items-start gap-3 rounded-[1.05rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3.5 py-3 sm:rounded-[1.25rem] sm:px-4 sm:py-4"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={form.consents[consent.title]}
-                          onChange={(event) =>
-                            setForm((current) => ({
-                              ...current,
-                              consents: {
-                                ...current.consents,
-                                [consent.title]: event.target.checked,
-                              },
-                            }))
-                          }
-                          className="mt-1 h-4 w-4 rounded border-[var(--app-line)] bg-transparent accent-[var(--app-pink)]"
-                        />
-                        <span className="min-w-0">
-                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--app-ink)]">
-                            {consent.title}
-                            <span
-                              className={cn(
-                                'rounded-full border px-2 py-0.5 text-[10px]',
-                                consent.required
-                                  ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
-                                  : 'border-[var(--app-pink)]/28 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]'
-                              )}
-                            >
-                              {consent.required ? '필수' : '선택'}
-                            </span>
-                          </span>
-                          <span className="mt-1.5 block text-xs leading-5 text-[var(--app-copy-muted)] sm:mt-2 sm:leading-6">
-                            {consent.detail}
+        <StepFlowShell
+          currentStep={activeIndex + 1}
+          totalSteps={steps.length}
+          title={activeStep.title}
+          description={activeStep.description}
+        >
+          {consentAccepted ? (
+            <p className="rounded-[1rem] border border-[var(--app-jade)]/22 bg-[var(--app-jade)]/10 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
+              동의가 저장되어 마지막 단계는 건너뛰고 바로 결과로 이어집니다.
+            </p>
+          ) : null}
+          <div
+            className="overflow-hidden"
+            onTouchStart={(event) => {
+              touchStartXRef.current = event.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div key={activeStep.id} className="saju-intake-active-slide">
+              {activeStep.id === 'profile' ? (
+                renderProfileStep()
+              ) : activeStep.id === 'consent' ? (
+                <div className="space-y-2.5 sm:space-y-3">
+                  {ONBOARDING_CONSENTS.map((consent) => (
+                    <label
+                      key={consent.title}
+                      className="flex items-start gap-3 rounded-[1.05rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-3.5 py-3 sm:rounded-[1.25rem] sm:px-4 sm:py-4"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.consents[consent.title]}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            consents: {
+                              ...current.consents,
+                              [consent.title]: event.target.checked,
+                            },
+                          }))
+                        }
+                        className="mt-1 h-4 w-4 rounded border-[var(--gyeol-line)] bg-transparent accent-[var(--gyeol-moon)]"
+                      />
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-2 text-sm font-medium text-[var(--gyeol-text)]">
+                          {consent.title}
+                          <span
+                            className={cn(
+                              'rounded-full border px-2 py-0.5 text-[10px]',
+                              consent.required
+                                ? 'border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 text-[var(--app-coral)]'
+                                : 'border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] text-[var(--gyeol-moon)]'
+                            )}
+                          >
+                            {consent.required ? '필수' : '선택'}
                           </span>
                         </span>
-                      </label>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="mt-4 sm:mt-6">
-                    <UnifiedBirthInfoFields
-                      draft={buildUnifiedBirthDraft(form)}
-                      onChange={(patch) => setForm((current) => applyUnifiedBirthPatch(current, patch))}
-                      onStarted={() => markBirthStarted('manual')}
-                      dateInputVariant="select"
-                      visibleSections={activeStep.sections}
-                      locationLoading={locationSearchStatus === 'loading'}
-                      locationMessage={locationSearchMessage}
-                      locationResults={locationSearchResults}
-                      onLocationSearch={searchBirthLocationCoordinates}
-                      onPresetSelect={updateBirthLocation}
-                      onLocationResultSelect={applyBirthLocationSearchResult}
-                    />
-                  </div>
-                )}
-              </div>
+                        <span className="mt-1.5 block text-xs leading-5 text-[var(--gyeol-muted)] sm:mt-2 sm:leading-6">
+                          {consent.detail}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <UnifiedBirthInfoFields
+                  draft={buildUnifiedBirthDraft(form)}
+                  onChange={(patch) => setForm((current) => applyUnifiedBirthPatch(current, patch))}
+                  onStarted={() => markBirthStarted('manual')}
+                  dateInputVariant="select"
+                  visibleSections={activeStep.sections}
+                  locationLoading={locationSearchStatus === 'loading'}
+                  locationMessage={locationSearchMessage}
+                  locationResults={locationSearchResults}
+                  onLocationSearch={searchBirthLocationCoordinates}
+                  onPresetSelect={updateBirthLocation}
+                  onLocationResultSelect={applyBirthLocationSearchResult}
+                />
+              )}
             </div>
+          </div>
 
-            {errorMessage ? (
-              <div className="mt-6 rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
-                {errorMessage}
-              </div>
-            ) : null}
+          {errorMessage ? (
+            <div className="rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
+              {errorMessage}
+            </div>
+          ) : null}
+        </StepFlowShell>
 
-            <ActionCluster className="mt-5 sm:mt-8">
-              <Button
-                type="button"
-                onClick={goPrev}
-                disabled={activeIndex === 0 || isSubmitting}
-                variant="secondary"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                이전
-              </Button>
-              <Button
-                type="button"
-                onClick={goNext}
-                disabled={isSubmitting}
-                size="lg"
-              >
-                {nextLabel}
-                {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
-              </Button>
-            </ActionCluster>
-          </SectionSurface>
-
-        </section>
-      </AppPage>
+        <StickyActionBar note="현재 단계만 보여주고, 입력값은 결과 생성 전까지 이 브라우저에 임시 저장됩니다.">
+          <Button
+            type="button"
+            onClick={goPrev}
+            disabled={activeIndex === 0 || isSubmitting}
+            variant="secondary"
+            size="lg"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            이전
+          </Button>
+          <Button
+            type="button"
+            onClick={goNext}
+            disabled={isSubmitting}
+            size="lg"
+          >
+            {nextLabel}
+            {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
+          </Button>
+        </StickyActionBar>
+      </MoonlightAppPage>
     </AppShell>
   );
 }

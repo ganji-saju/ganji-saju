@@ -33,6 +33,7 @@ function buildAuthCallbackUrl(req: NextRequest) {
 
 function shouldRedirectToCanonicalHost(req: NextRequest) {
   if (process.env.NODE_ENV !== 'production') return false;
+  if (process.env.VERCEL_ENV === 'preview') return false;
 
   const host = req.nextUrl.hostname;
   if (host === CANONICAL_SITE_HOST) return false;

@@ -30,12 +30,12 @@ export function AppShell({ children, header, dock, footer, className }: AppShell
     footer === false || footer === null ? null : footer ?? <SiteFooter />;
 
   return (
-    <main className={cn('app-shell', headerNode && 'app-shell-with-navigation', className)}>
+    <div className={cn('app-shell', headerNode && 'app-shell-with-navigation', className)}>
       {headerNode}
-      <div className="app-shell-content">{children}</div>
+      <main className="app-shell-content">{children}</main>
       {footerNode}
       {dock}
-    </main>
+    </div>
   );
 }
 

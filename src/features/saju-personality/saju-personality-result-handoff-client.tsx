@@ -20,6 +20,7 @@ import {
 } from '@/components/gangi/gangi-ui';
 import { AxisMeter } from '@/components/moonlight/AxisMeter';
 import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { ResultShell } from '@/components/moonlight/ResultShell';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { buttonVariants } from '@/components/ui/button';
@@ -722,6 +723,11 @@ export function SajuPersonalityResultHandoffClient() {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
         <GangiPageHeader title="성향사주 결과" backHref="/saju/personality" />
+        <PageIntro
+          eyebrow="달빛 성향사주 결과"
+          title="나의 결과 선택 습관을 함께 봅니다"
+          description="무료 요약은 짧게, 깊이보기는 반복 패턴과 오늘의 실행 문장까지 이어지는 구조로 정리했습니다."
+        />
 
         <ResultShell
           title={result.headline}

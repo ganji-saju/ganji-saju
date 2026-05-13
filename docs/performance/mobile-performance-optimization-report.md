@@ -1,159 +1,128 @@
-# Mobile Performance Optimization Report
+# 모바일 성능 최적화 보고서
 
 작성일: 2026-05-12
 
-## Executive Summary
+## 1. 성능 병목 후보
 
-구형 모바일 기기에서 홈과 주요 입력 페이지의 초기 렌더링 부담을 줄이기 위해 전역 레이아웃, 공통 헤더, 홈/입력 페이지 client boundary, third-party script, 이미지/폰트/의존성을 점검했다.
+구형 모바일 기기에서 체감 성능을 떨어뜨릴 수 있는 후보를 홈, 입력 페이지, 대화방 중심으로 점검했다.
 
-이번 단계에서는 기능 로직, 결제, DB, 사주/성향 계산 로직을 건드리지 않고 아래의 안전한 최적화만 적용했다.
+- 홈은 `src/app/page.tsx`에서 App Router 기반으로 렌더링되며, 화면 구성은 `src/features/home/gangi-home-client.tsx`가 담당한다.
+- `GangiHomeClient`는 이름과 달리 Server Component 형태로 동작하지만, 기존 analytics wrapper가 children 전체를 감싸면 홈 DOM 전체가 client boundary처럼 다뤄질 여지가 있었다.
+- 성향사주와 성향궁합 입력 페이지는 active step 중심으로 이미 정리되어 있어 전체 긴 폼을 한 번에 렌더링하지 않는다.
+- 성향사주/성향궁합의 16유형 선택지는 렌더마다 같은 배열을 다시 만들고 있었다.
+- 성향궁합 입력 페이지는 첫 관계유형 선택 단계에서도 저장 프로필 API를 즉시 호출하고 있었다.
+- 12간지 대화방은 glyph/emoji/text 중심이라 12개 대형 이미지를 첫 화면에서 동시에 로드하지 않는다.
+- `framer-motion`, `lottie`, `chart.js`, `recharts`, `swiper`, `gsap` 같은 무거운 animation/chart/carousel dependency는 확인되지 않았다.
+- `lucide-react`는 named import 중심으로 사용되며, 전체 icon library import 패턴은 확인되지 않았다.
+- `@vercel/analytics`와 `@vercel/speed-insights`는 `src/app/layout.tsx`에 전역 배치되어 있다.
 
-- Noto Sans KR 로드 weight를 `400/500/600/700/800/900`에서 `400/500/600/700/800`으로 축소했다.
-- 공통 `SiteHeader`에서 현재 렌더링되지 않는 desktop sidebar 관련 dead component와 사용하지 않는 `LayoutModeControl` import를 제거했다.
-- 로그인 사용자의 notification heartbeat를 hydration 직후 즉시 실행하지 않고 `requestIdleCallback` 또는 timeout fallback으로 지연했다.
-- 홈과 성향사주/성향궁합 입력 페이지가 이미 Server Component 또는 active step 중심 구조로 정리되어 있음을 확인했다.
+## 2. 수정한 파일
 
-## Initial Checks
-
-### package.json Dependency
-
-- Framework: Next.js `16.2.3`, React `19.2.4`, TypeScript `5`.
-- App Router 기반이며 `src/app` 아래에 route가 구성되어 있다.
-- Analytics: `@vercel/analytics`, `@vercel/speed-insights`.
-- Payment: Toss SDK는 결제/충전 route와 checkout component에서만 사용된다.
-- Icon: `lucide-react`를 사용하며 대부분 named import 형태다.
-- Animation: `framer-motion`, `lottie`, `recharts`, `chart.js`, `d3`, `gsap`, `swiper` dependency는 없다.
-- CSS animation helper로 `tw-animate-css`가 `src/app/globals.css`에서 import된다.
-
-### Next.js App Router
-
-- 루트 layout: `src/app/layout.tsx`.
-- 홈 route는 `/`이고, `src/features/home/gangi-home-client.tsx`가 화면을 구성한다.
-- 주요 입력 route:
-  - `/saju/personality`
-  - `/compatibility/personality`
-
-### Client Component Inventory
-
-`src/app`, `src/components`, `src/features` 기준 `"use client"` 파일은 56개다. 이번 작업에서 주요 병목 후보로 본 파일은 아래와 같다.
-
-- `src/features/shared-navigation/site-header.tsx`
+- `src/app/layout.tsx`
 - `src/features/home/home-analytics-boundary.tsx`
+- `src/features/home/gangi-home-client.tsx`
 - `src/features/saju-personality/saju-personality-input-client.tsx`
 - `src/features/compatibility/personality-compatibility-input-client.tsx`
-- `src/components/saju/shared/unified-birth-info-fields.tsx`
-- `src/components/dialogue/dialogue-chat-panel.tsx`
-- `src/app/credits/page.tsx`
-- `src/components/membership/toss-membership-checkout.tsx`
+- `docs/performance/mobile-performance-optimization-report.md`
 
-## Applied Optimizations
+## 3. 줄인 Client Component / Hydration 부담
 
-### 1. Font Weight Reduction
+### Home Analytics Boundary
 
-수정 파일: `src/app/layout.tsx`
+`HomeAnalyticsBoundary`를 children wrapper 방식에서 `null`을 반환하는 작은 observer island로 변경했다.
 
-Noto Sans KR에서 거의 쓰이지 않는 `900` weight 요청을 제거했다. `font-black` 또는 900에 가까운 스타일은 브라우저 합성/근접 weight로 표시될 수 있지만, 모바일 초기 폰트 요청과 캐시 부담을 줄이는 효과가 있다.
-
-```ts
-weight: ["400", "500", "600", "700", "800"]
-```
-
-### 2. SiteHeader Client Bundle Reduction
-
-수정 파일: `src/features/shared-navigation/site-header.tsx`
-
-현재 `SiteHeader`는 `MobileChrome`만 반환하고 있었고, 내부에 더 이상 렌더링되지 않는 `DesktopSidebar`, `DesktopNavLink`, `DesktopNavChip` 구현이 남아 있었다. 해당 dead component와 `LayoutModeControl` import를 제거해 client module parse/compile 대상과 icon/import 참조를 줄였다.
+변경 전에는 홈 콘텐츠 전체가 analytics boundary 아래에 들어갔고, 클릭 추적을 위해 wrapper element가 추가됐다. 변경 후에는 `document` click listener만 등록하고, `[data-analytics-event]`가 있는 element를 찾아 기존 analytics payload를 전송한다.
 
 유지한 동작:
 
-- 기존 route href 유지.
-- 모바일 하단 nav 유지.
-- 상단 nav 유지.
-- 로그인/로그아웃 동작 유지.
-- 코인 표시/캐시 동작 유지.
-- 읽기 크기 control 유지.
+- `home_viewed` 이벤트 전송
+- `data-analytics-event`, `data-analytics-section`, `data-analytics-target`, `data-feature-id`, `data-service-id` 기반 클릭 추적
+- PII 없는 payload 구조
 
-### 3. Notification Heartbeat Idle Scheduling
+개선 효과:
 
-수정 파일: `src/features/shared-navigation/site-header.tsx`
+- 홈 전체 DOM을 client wrapper로 감싸지 않는다.
+- wrapper div 추가를 제거한다.
+- analytics 추적은 작은 client island 하나로 제한한다.
 
-로그인 사용자가 헤더를 hydration할 때 notification heartbeat fetch가 바로 실행되던 흐름을 idle 시점으로 미뤘다.
+### Home Route
 
-- 지원 브라우저: `requestIdleCallback(..., { timeout: 2500 })`.
-- 미지원 브라우저: `setTimeout(..., 1200)` fallback.
-- unmount 이후 실행을 막기 위해 `isActive` 확인을 유지했다.
+`src/features/home/gangi-home-client.tsx`에서 `HomeAnalyticsBoundary`를 페이지 children 밖에 독립적으로 렌더링하도록 조정했다. 홈 route 자체는 기존 route를 유지하고, 기능 링크와 결제/DB/계산 로직은 변경하지 않았다.
 
-## Existing Optimizations Confirmed
+## 4. 이미지 최적화 내용
 
-### Home
+- 홈 hero와 12간지 CTA는 이미지 asset을 추가하지 않고 CSS/text/glyph 중심으로 유지했다.
+- 대화방의 12간지 캐릭터는 현재 glyph/emoji fallback 중심으로 렌더링되며, 12개 대형 이미지를 첫 화면에서 동시에 로드하지 않는다.
+- 이번 작업에서는 새 이미지 asset, GIF, Lottie를 추가하지 않았다.
+- 향후 캐릭터 이미지가 들어가더라도 compact list는 glyph/text 우선, 상세 영역에서만 lazy load하는 정책을 유지해야 한다.
 
-홈 화면은 `src/features/home/gangi-home-client.tsx`가 이름과 달리 Server Component 형태로 구성되어 있고, analytics는 `HomeAnalyticsBoundary` client island로 분리되어 있다. 홈 above-the-fold에는 큰 이미지나 hero video가 직접 사용되지 않는다.
+## 5. Script 최적화 내용
 
-### Saju Personality Input
+- 새 third-party script를 추가하지 않았다.
+- Vercel Analytics와 Speed Insights는 기존 전역 배치를 유지했다.
+- Toss 결제 SDK, Supabase, OpenAI, 결제/권한 로직은 수정하지 않았다.
+- 성향궁합 저장 프로필 fetch를 첫 진입 즉시 실행하지 않고, 사용자가 첫 관계유형 단계에서 다음 단계로 넘어간 뒤 한 번만 시작하도록 지연했다.
 
-`src/features/saju-personality/saju-personality-input-client.tsx`는 `StepFlowShell`, `ChoiceRow`, `AxisChipGrid`, `StickyActionBar`를 사용하며 active step 중심으로 입력 UI를 구성하고 있다.
+## 6. Icon / Import 최적화 내용
 
-### Personality Compatibility Input
+- icon library 전체 import 패턴은 발견되지 않았다.
+- `lucide-react`는 named import 형태를 유지했다.
+- 성향사주/성향궁합 16유형 chip item 배열을 component render 내부에서 매번 생성하지 않고 module scope 상수로 hoist했다.
 
-`src/features/compatibility/personality-compatibility-input-client.tsx`도 active step 중심 구조를 사용한다. 긴 폼 전체를 한 번에 노출하는 구조는 줄어든 상태다.
+## 7. Font 최적화 내용
 
-## Script / Third-Party Review
+`src/app/layout.tsx`에서 `Noto Sans KR` 로드 weight를 `400`, `500`, `700` 중심으로 축소했다.
 
-- `@vercel/analytics/next`와 `@vercel/speed-insights/next`는 `src/app/layout.tsx`에 전역으로 위치한다.
-- Vercel Analytics와 Speed Insights는 내부적으로 defer script를 주입하므로 immediate blocking script는 아니다.
-- Toss SDK는 `/credits`, membership checkout 등 결제 route에서만 load되는 구조다.
-- global GTM, PostHog, Amplitude, custom gtag script는 확인되지 않았다.
-- production env는 수정하지 않았다.
+기대 효과:
 
-## Image / Above-The-Fold Review
+- 폰트 요청 후보 감소
+- 모바일 초기 렌더링과 캐시 부담 감소
 
-홈 above-the-fold에는 `next/image` 기반 무거운 hero image가 현재 직접 렌더링되지 않는다.
+주의:
 
-확인된 이미지 사용처:
+- 기존 UI에 `font-semibold`, `font-extrabold`가 남아 있는 경우 브라우저가 근접 weight 또는 합성 weight로 표시할 수 있다.
+- 시각 QA에서 강조 weight가 부족해 보이면 일부 컴포넌트만 별도 조정이 필요하다.
 
-- `src/components/tarot/tarot-card-artwork.tsx`
-- `src/app/tarot/daily/pick/tarot-card-picker.tsx`
-- `src/components/counselor/counselor-selector.tsx`
-- `src/components/home/moonlight-hero-video.tsx`
+## 8. Active Step / DOM Size 점검
 
-`moonlight-hero-video`는 현재 홈 주요 route에서 직접 사용되지 않는 것으로 확인했다.
+### 성향사주 입력
 
-## Bundle Analyzer
+- route: `/saju/personality`
+- active step 중심으로 렌더링된다.
+- 16유형 선택지는 `PERSONALITY_TYPE_ITEMS` module 상수로 이동했다.
+- 성향 체크 질문은 check mode에서만 표시된다.
 
-현재 `package.json`과 `next.config.ts`에는 `@next/bundle-analyzer` 설정이 없다. `ANALYZE=true npm run build`는 빌드 자체는 수행하지만 별도 분석 리포트를 생성하지 않는다.
+### 성향궁합 입력
 
-확인 결과:
+- route: `/compatibility/personality`
+- active step 중심으로 렌더링된다.
+- 내 정보와 상대 정보가 한 화면에 모두 길게 펼쳐지는 구조는 아니다.
+- 16유형 선택지는 `PERSONALITY_TYPE_ITEMS` module 상수로 이동했다.
+- 저장 프로필 API 호출은 관계유형 단계 이후 한 번만 실행되도록 지연했다.
 
-- 첫 실행은 sandbox 네트워크 제한으로 Google Fonts fetch가 실패했다.
-- 네트워크 허용 후 `ANALYZE=true npm run build`는 통과했다.
-- `.next` 하위에 bundle analyzer 전용 산출물은 생성되지 않았다.
-- `.next/static` 크기 확인값: 약 `10M`, 파일 `193`개.
+## 9. Bundle 분석 가능 여부
 
-추가 제안:
+- `package.json`과 `next.config.ts` 기준 `@next/bundle-analyzer` 설정은 확인되지 않았다.
+- 새 dependency 추가 금지 조건에 따라 analyzer dependency는 추가하지 않았다.
+- `ANALYZE=true npm run build`는 실행 가능하지만, 현재 설정에서는 별도 bundle analyzer 리포트를 생성하지 않는다.
 
-- 다음 단계에서 lightweight analyzer 도입이 필요하면 `@next/bundle-analyzer`를 devDependency로 추가하는 별도 작업으로 분리한다.
-- 이번 작업에서는 새 dependency 추가 금지 조건에 따라 analyzer dependency를 추가하지 않았다.
+## 10. 남은 리스크
 
-## RUM / Web Vitals Plan
+- `SiteHeader`는 여전히 전역 client component이며 auth, credit, notification 상태를 포함한다. 더 큰 축소는 server shell + auth/credit island 분리 작업이 필요하다.
+- `UnifiedBirthInfoFields`는 여러 입력 필드와 위치 관련 UI를 포함하므로 입력 페이지 hydration 비용이 남아 있다.
+- 대화방의 chat panel은 입력/스크롤/대화 저장 등 상호작용이 많아 route 단위 client JS가 클 수 있다.
+- `tw-animate-css` 전역 import와 일부 shadow/transition 스타일은 구형 기기에서 paint 비용을 만들 수 있다.
+- 실제 LCP/INP/CLS는 로컬 build만으로 확정할 수 없고, preview 또는 production의 실제 모바일 기기 측정이 필요하다.
 
-구형 모바일 성능은 로컬 빌드만으로는 판단이 어렵기 때문에 production 또는 preview에서 실제 사용자 환경 기반 RUM이 필요하다.
+## 11. 추가 권장 작업
 
-권장 방향:
+1. Vercel Preview에서 `/`, `/saju/personality`, `/compatibility/personality`, `/dialogue`를 실제 iOS Safari와 Android Chrome으로 측정한다.
+2. `SiteHeader`를 Server Component shell과 작은 auth/credit client island로 분리할지 별도 작업으로 검토한다.
+3. `UnifiedBirthInfoFields`의 위치 검색 UI를 interaction 이후 lazy render할 수 있는지 검토한다.
+4. `useReportWebVitals` 또는 Vercel Web Analytics 기반으로 route group별 LCP/INP/CLS를 수집한다.
+5. bundle 분석이 필요하면 `@next/bundle-analyzer` devDependency 추가를 별도 승인 후 진행한다.
 
-- `useReportWebVitals` 또는 Next/Vercel Web Vitals 기반으로 `LCP`, `INP`, `CLS`, `TTFB`, `FCP`를 route별로 수집한다.
-- payload에는 route group, device class, connection type 정도만 포함한다.
-- 이름, 생년월일, 성별, 성향 체크 답변, 질문 원문, 결제 상세 정보는 전송하지 않는다.
-- `/`, `/saju/personality`, `/compatibility/personality`, `/today-fortune`, `/dialogue`를 우선 측정 route로 둔다.
-
-## Remaining Risks
-
-- `SiteHeader` 자체는 여전히 auth/session/credit state를 포함한 전역 client boundary다. 더 크게 줄이려면 server header + 작은 auth island로 분리하는 별도 리팩터가 필요하다.
-- `UnifiedBirthInfoFields`는 위치 검색과 복수 입력 field를 포함해 주요 입력 페이지의 hydration 비용이 남아 있다.
-- `dialogue-chat-panel`, AI 리포트 패널, tarot picker는 route별로 더 무거운 client component일 가능성이 있다.
-- 전역 `tw-animate-css` import와 일부 큰 shadow/backdrop blur 스타일은 구형 기기에서 paint 비용을 만들 수 있다.
-- `next/font/google`은 빌드 시 Google Fonts fetch가 필요하다. CI/로컬 네트워크 제한이 있으면 빌드 실패 가능성이 있다.
-
-## Validation Result
+## 12. 검수 결과
 
 | 항목 | 결과 |
 |---|---|
@@ -161,11 +130,4 @@ weight: ["400", "500", "600", "700", "800"]
 | `npm run typecheck` | 통과 |
 | `npm run build` | 통과 |
 | `git diff --check` | 통과 |
-| `ANALYZE=true npm run build` | 네트워크 허용 후 통과, analyzer 리포트는 미생성 |
-
-## Next Step
-
-1. Preview/production에서 실제 모바일 기기 기준 `/`, `/saju/personality`, `/compatibility/personality`를 Lighthouse 또는 WebPageTest로 측정한다.
-2. `SiteHeader`를 server shell + auth/credit client island로 더 분리할지 결정한다.
-3. `UnifiedBirthInfoFields`의 위치 검색 UI를 interaction 이후 lazy render할 수 있는지 검토한다.
-4. RUM 수집을 별도 작업으로 구현해 route별 Mobile LCP/INP/CLS를 추적한다.
+| `ANALYZE=true npm run build` | 최종 통과. 단, 첫 병렬 실행은 Next build lock으로 실패했고, sandbox 실행은 Google Fonts 네트워크 제한으로 실패해 네트워크 허용 후 재실행했다. 별도 analyzer 리포트는 현재 설정상 생성되지 않는다. |

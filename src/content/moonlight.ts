@@ -333,13 +333,13 @@ const DALBIT_TEACHER_GUIDE_HREF = '/guide?teacher=';
 export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   {
     slug: 'mg-ji',
-    teacherName: '엠지쥐선생',
+    teacherName: '자(子)쥐',
     animal: '쥐',
     zodiac: '🐭',
     zodiacOrder: 1,
-    serviceTitle: 'MBTI',
-    shortLabel: '성향 놀이',
-    role: '가벼운 성향 테스트와 운세를 연결하는 확장 메뉴입니다.',
+    serviceTitle: '16유형 성향',
+    shortLabel: '오늘의 흐름',
+    role: '가벼운 성향 체크와 오늘의 빠른 선택을 연결하는 확장 메뉴입니다.',
     question: '나는 어떤 말투와 관계 방식에 가까울까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}mg-ji`,
     productPosition: '무료 성향 테스트와 소액 궁금증 상품으로 확장 예정입니다.',
@@ -347,7 +347,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'today-so',
-    teacherName: '오늘소선생',
+    teacherName: '축(丑)소',
     animal: '소',
     zodiac: '🐮',
     zodiacOrder: 2,
@@ -361,7 +361,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'myeongri-ho',
-    teacherName: '명리호선생',
+    teacherName: '인(寅)호랑이',
     animal: '호랑이',
     zodiac: '🐯',
     zodiacOrder: 3,
@@ -375,7 +375,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'tarot-to',
-    teacherName: '타로토선생',
+    teacherName: '묘(卯)토끼',
     animal: '토끼',
     zodiac: '🐰',
     zodiacOrder: 4,
@@ -389,7 +389,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'saju-yong',
-    teacherName: '사주용선생',
+    teacherName: '진(辰)용',
     animal: '용',
     zodiac: '🐲',
     zodiacOrder: 5,
@@ -403,7 +403,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'dream-baem',
-    teacherName: '꿈뱀선생',
+    teacherName: '사(巳)뱀',
     animal: '뱀',
     zodiac: '🐍',
     zodiacOrder: 6,
@@ -417,7 +417,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'move-mal',
-    teacherName: '이동말선생',
+    teacherName: '오(午)말',
     animal: '말',
     zodiac: '🐴',
     zodiacOrder: 7,
@@ -431,7 +431,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'compat-yang',
-    teacherName: '궁합양선생',
+    teacherName: '미(未)양',
     animal: '양',
     zodiac: '🐑',
     zodiacOrder: 8,
@@ -445,7 +445,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'face-won',
-    teacherName: '관상원선생',
+    teacherName: '신(申)원숭이',
     animal: '원숭이',
     zodiac: '🐵',
     zodiacOrder: 9,
@@ -459,7 +459,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'wealth-dak',
-    teacherName: '재물닭선생',
+    teacherName: '유(酉)닭',
     animal: '닭',
     zodiac: '🐔',
     zodiacOrder: 10,
@@ -473,7 +473,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'palm-meong',
-    teacherName: '손금멍선생',
+    teacherName: '술(戌)개',
     animal: '개',
     zodiac: '🐶',
     zodiacOrder: 11,
@@ -487,7 +487,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   },
   {
     slug: 'luck-dwaeji',
-    teacherName: '복돼지선생',
+    teacherName: '해(亥)돼지',
     animal: '돼지',
     zodiac: '🐷',
     zodiacOrder: 12,
@@ -938,12 +938,12 @@ export const MY_MENU_BLUEPRINT = [
   {
     title: '내 사주 원국',
     description: '언제든 다시 살펴보기',
-    href: '/my/results',
+    href: '/my#recent-reports',
   },
   {
     title: '저장한 해석',
     description: '마음에 드셨던 이야기들',
-    href: '/my/results',
+    href: '/my#recent-reports',
   },
   {
     title: '가족 사주',

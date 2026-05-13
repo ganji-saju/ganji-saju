@@ -1,11 +1,14 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
+import { AppPage as MoonlightAppPage } from '@/components/moonlight/AppPage';
+import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
+import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { PageIntro } from '@/components/moonlight/PageIntro';
+import { StepFlowShell } from '@/components/moonlight/StepFlowShell';
+import { StickyActionBar } from '@/components/moonlight/StickyActionBar';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,10 +23,10 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
-import { GangiActionRow, GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AppShell } from '@/shared/layout/app-shell';
 
 type PersonKey = 'self' | 'partner';
+type CompatibilityInputStep = 'relationship' | 'self' | 'partner' | 'result';
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
 type LocationSearchStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 
@@ -81,6 +84,33 @@ interface LocationState {
   message: string;
   results: BirthLocationSearchResultLike[];
 }
+
+const COMPATIBILITY_INPUT_STEPS: Array<{
+  key: CompatibilityInputStep;
+  title: string;
+  description: string;
+}> = [
+  {
+    key: 'relationship',
+    title: '관계 유형을 골라 주세요',
+    description: '관계에 따라 두 사람의 사주를 읽는 렌즈가 달라집니다.',
+  },
+  {
+    key: 'self',
+    title: '내 정보를 확인해 주세요',
+    description: '저장된 내 정보를 불러오거나 생년월일시를 새로 입력합니다.',
+  },
+  {
+    key: 'partner',
+    title: '상대 정보를 확인해 주세요',
+    description: '상대의 생년월일시를 같은 방식으로 입력합니다.',
+  },
+  {
+    key: 'result',
+    title: '궁합 결과를 볼 준비가 됐어요',
+    description: '입력한 내용을 확인하고 기본 궁합 결과로 이동합니다.',
+  },
+];
 
 function createInitialDraft(): UnifiedBirthEntryDraft {
   return {
@@ -222,10 +252,12 @@ function applyUnifiedBirthPatch(
 }
 
 function SavedProfileQuickFill({
+  target,
   profiles,
   status,
   onApply,
 }: {
+  target?: PersonKey;
   profiles: SavedBirthProfile[];
   status: ProfileLoadStatus;
   onApply: (target: PersonKey, profile: SavedBirthProfile) => void;
@@ -240,50 +272,55 @@ function SavedProfileQuickFill({
 
   if (profiles.length === 0) return null;
 
+  const groups = target
+    ? [
+        {
+          key: target,
+          label: target === 'self' ? '내 정보에 넣기' : '상대 정보에 넣기',
+          tone: target === 'self' ? 'gold' : 'jade',
+        },
+      ]
+    : [
+        { key: 'self' as const, label: '내 정보에 넣기', tone: 'gold' },
+        { key: 'partner' as const, label: '상대 정보에 넣기', tone: 'jade' },
+      ];
+
   return (
-    <div className="mt-5 rounded-[1.35rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 p-4 sm:p-5">
+    <div className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="app-caption text-[var(--app-pink-strong)]">빠른 채우기</div>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ink)]">
-            저장한 이름을 눌러 바로 넣을 수 있습니다
+          <div className="app-caption text-[var(--gyeol-moon)]">빠른 채우기</div>
+          <h3 className="mt-1 text-lg font-semibold text-[var(--gyeol-text)]">
+            저장한 사람을 불러올 수 있습니다
           </h3>
         </div>
-        <p className="text-xs leading-5 text-[var(--app-copy-soft)]">
-          자세한 정보 카드는 아래에 그대로 남겨두었습니다.
+        <p className="text-xs leading-5 text-[var(--gyeol-muted)]">
+          생년월일시는 입력칸에만 적용됩니다.
         </p>
       </div>
 
       <div className="mt-4 grid gap-4">
-        {([
-          { key: 'self' as const, label: '내 정보에 넣기', tone: 'gold' },
-          { key: 'partner' as const, label: '상대 정보에 넣기', tone: 'jade' },
-        ]).map((group) => (
+        {groups.map((group) => (
           <div key={group.key}>
             <div
               className={
                 group.tone === 'jade'
                   ? 'mb-2 text-xs font-semibold text-[var(--app-jade)]'
-                  : 'mb-2 text-xs font-semibold text-[var(--app-pink-strong)]'
+                  : 'mb-2 text-xs font-semibold text-[var(--gyeol-moon)]'
               }
             >
               {group.label}
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="grid gap-2">
               {profiles.map((profile) => (
-                <button
+                <ChoiceRow
                   key={`${group.key}-${profile.id}`}
-                  type="button"
                   onClick={() => onApply(group.key, profile)}
-                  title={profile.detail}
-                  className={
-                    group.tone === 'jade'
-                      ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-sm font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
-                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-sm font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
-                  }
-                >
-                  {profile.nickname}
-                </button>
+                  leading={profile.source === 'self' ? '나' : '家'}
+                  title={profile.nickname}
+                  description={profile.detail}
+                  trailing="불러오기"
+                />
               ))}
             </div>
           </div>
@@ -328,11 +365,14 @@ export function CompatibilityInputClient({
   const [profileLoadStatus, setProfileLoadStatus] = useState<ProfileLoadStatus>('idle');
   const [profileLoadMessage, setProfileLoadMessage] = useState('');
   const [savedProfiles, setSavedProfiles] = useState<SavedBirthProfile[]>([]);
+  const [activeStep, setActiveStep] = useState<CompatibilityInputStep>('relationship');
   const [locationStates, setLocationStates] = useState<Record<PersonKey, LocationState>>({
     self: createLocationState(),
     partner: createLocationState(),
   });
   const [errorMessage, setErrorMessage] = useState('');
+  const activeStepIndex = COMPATIBILITY_INPUT_STEPS.findIndex((step) => step.key === activeStep);
+  const currentStep = COMPATIBILITY_INPUT_STEPS[activeStepIndex] ?? COMPATIBILITY_INPUT_STEPS[0];
   const selected =
     COMPATIBILITY_RELATIONSHIPS.find((item) => item.slug === relationship) ??
     COMPATIBILITY_RELATIONSHIPS[0];
@@ -517,6 +557,37 @@ export function CompatibilityInputClient({
     setProfileLoadMessage(`${profile.label} 정보를 상대 정보 입력칸에 불러왔습니다.`);
   }
 
+  function validateBirthStep(target: PersonKey) {
+    const draft = target === 'self' ? selfDraft : partnerDraft;
+    const parsed = resolveUnifiedBirthInput(draft, { requireGender: false });
+
+    if (!parsed.ok) {
+      setErrorMessage(`${target === 'self' ? '내 정보' : '상대 정보'}: ${parsed.error}`);
+      return false;
+    }
+
+    setErrorMessage('');
+    return true;
+  }
+
+  function goToPreviousStep() {
+    const previousStep = COMPATIBILITY_INPUT_STEPS[Math.max(0, activeStepIndex - 1)];
+    setErrorMessage('');
+    setActiveStep(previousStep.key);
+  }
+
+  function goToNextStep() {
+    if (activeStep === 'self' && !validateBirthStep('self')) return;
+    if (activeStep === 'partner' && !validateBirthStep('partner')) return;
+
+    const nextStep =
+      COMPATIBILITY_INPUT_STEPS[
+        Math.min(COMPATIBILITY_INPUT_STEPS.length - 1, activeStepIndex + 1)
+      ];
+    setErrorMessage('');
+    setActiveStep(nextStep.key);
+  }
+
   function submitManualCompatibility() {
     const selfParsed = resolveUnifiedBirthInput(selfDraft, { requireGender: false });
     if (!selfParsed.ok) {
@@ -550,167 +621,192 @@ export function CompatibilityInputClient({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
-        <GangiPageHeader title="궁합 입력" backHref="/compatibility" />
-        <GangiIntro
-          eyebrow="궁합"
-          title={
-            <>
-              내 정보와 상대 정보를
-              <br />
-              함께 넣어 바로 봅니다
-            </>
-          }
-          description="두 사람 정보를 넣고 바로 확인하세요."
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-28 md:pb-12">
+      <MoonlightAppPage className="gangi-subpage space-y-5" size="md">
+        <PageIntro
+          eyebrow="관계"
+          title="사주와 관계의 결을 봅니다"
+          description="내 정보와 상대 정보를 한 단계씩 입력해 왜 끌리고 어디서 부딪히는지 살펴봅니다."
         />
+        <FusionStrip prefixLabel="두 사람 사주" suffixLabel="관계의 결" />
         {hasLoveQuestionPurchase ? (
           <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
             연애 질문 1회 상품이 구매되어 있습니다. 이 화면에서는 추가 결제 없이 두 사람 정보를 넣고 결과로 이어가시면 됩니다.
           </div>
         ) : null}
 
-        <GangiSection
-          eyebrow="관계 렌즈"
-          title={selected.title + ' 궁합으로 봅니다'}
-          tone="pink"
+        <StepFlowShell
+          currentStep={activeStepIndex + 1}
+          totalSteps={COMPATIBILITY_INPUT_STEPS.length}
+          title={currentStep.title}
+          description={currentStep.description}
         >
-          <div className="gangi-topic-grid !px-0 !pb-0 !pt-0">
-            {COMPATIBILITY_RELATIONSHIPS.map((item) => (
-              <button
-                key={item.slug}
-                type="button"
-                onClick={() => selectRelationship(item.slug)}
-                className="gangi-topic-card"
-                data-active={item.slug === selected.slug ? 'true' : undefined}
-              >
-                <span className="gangi-topic-icon">{item.icon}</span>
-                <h2>{item.title}</h2>
-                <p>{item.hook}</p>
-              </button>
-            ))}
-          </div>
-          <GangiActionRow>
-            <button type="button" onClick={submitManualCompatibility} className="gangi-primary-button">
-              이 정보로 궁합 보기
-            </button>
-            <Link href="/compatibility" className="gangi-secondary-button">
-              궁합 허브로
-            </Link>
-          </GangiActionRow>
-        </GangiSection>
-
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="직접 입력"
-            title="내 정보와 상대 정보를 함께 입력해 주세요"
-            titleClassName="text-3xl"
-          />
-
-          <SavedProfileQuickFill
-            profiles={sortedSavedProfiles}
-            status={profileLoadStatus}
-            onApply={applySavedProfile}
-          />
-
-          {profileLoadMessage && profileLoadStatus !== 'error' ? (
-            <div className="mt-4 rounded-2xl border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
-              {profileLoadMessage}
+          {activeStep === 'relationship' ? (
+            <div className="grid gap-2">
+              {COMPATIBILITY_RELATIONSHIPS.map((item) => (
+                <ChoiceRow
+                  key={item.slug}
+                  onClick={() => selectRelationship(item.slug)}
+                  selected={item.slug === selected.slug}
+                  leading={item.icon}
+                  title={item.title}
+                  description={item.hook}
+                  trailing={item.slug === selected.slug ? '선택됨' : undefined}
+                />
+              ))}
             </div>
           ) : null}
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
-            <section className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <div className="app-caption text-[var(--app-pink-strong)]">나</div>
-                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
-                    내 정보
-                  </h2>
-                </div>
-                <div className="text-xs leading-6 text-[var(--app-copy-soft)]">{selfSummary}</div>
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="compatibility-self-name" className="mb-2 block text-sm text-[var(--app-copy)]">
-                  호칭
-                </Label>
-                <Input
-                  id="compatibility-self-name"
-                  value={selfName}
-                  onChange={(event) => setSelfName(event.target.value)}
-                  placeholder="예: 나, 민지"
-                />
-              </div>
-              <UnifiedBirthInfoFields
-                idPrefix="compatibility-self"
-                draft={selfDraft}
-                onChange={(patch) => updateDraft('self', patch)}
-                dateInputVariant="select"
-                locationLoading={locationStates.self.status === 'loading'}
-                locationMessage={locationStates.self.message}
-                locationResults={locationStates.self.results}
-                onLocationSearch={() => void searchBirthLocationCoordinates('self')}
-                onPresetSelect={(code) => updateBirthLocation('self', code)}
-                onLocationResultSelect={(result) => applyBirthLocationSearchResult('self', result)}
+          {activeStep === 'self' ? (
+            <div className="space-y-4">
+              <SavedProfileQuickFill
+                target="self"
+                profiles={sortedSavedProfiles}
+                status={profileLoadStatus}
+                onApply={applySavedProfile}
               />
-            </section>
 
-            <section className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <div className="app-caption text-[var(--app-jade)]">상대</div>
-                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
-                    상대 정보
-                  </h2>
+              {profileLoadMessage && profileLoadStatus !== 'error' ? (
+                <div className="rounded-2xl border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
+                  {profileLoadMessage}
                 </div>
-                <div className="text-xs leading-6 text-[var(--app-copy-soft)]">{partnerSummary}</div>
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="compatibility-partner-name" className="mb-2 block text-sm text-[var(--app-copy)]">
-                  상대 호칭
-                </Label>
-                <Input
-                  id="compatibility-partner-name"
-                  value={partnerName}
-                  onChange={(event) => setPartnerName(event.target.value)}
-                  placeholder="예: 배우자, 엄마, 동업자"
-                />
-              </div>
-              <UnifiedBirthInfoFields
-                idPrefix="compatibility-partner"
-                draft={partnerDraft}
-                onChange={(patch) => updateDraft('partner', patch)}
-                dateInputVariant="select"
-                locationLoading={locationStates.partner.status === 'loading'}
-                locationMessage={locationStates.partner.message}
-                locationResults={locationStates.partner.results}
-                onLocationSearch={() => void searchBirthLocationCoordinates('partner')}
-                onPresetSelect={(code) => updateBirthLocation('partner', code)}
-                onLocationResultSelect={(result) => applyBirthLocationSearchResult('partner', result)}
-              />
-            </section>
-          </div>
+              ) : null}
 
-          {errorMessage ? (
-            <div className="mt-5 rounded-[1rem] border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
-              {errorMessage}
+              <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <div className="app-caption text-[var(--app-pink-strong)]">나</div>
+                    <h2 className="mt-2 text-xl font-bold text-[var(--app-ink)]">내 정보</h2>
+                  </div>
+                  <div className="max-w-sm text-left text-xs leading-6 text-[var(--app-copy-soft)] sm:text-right">
+                    {selfSummary}
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <Label htmlFor="compatibility-self-name" className="mb-2 block text-sm text-[var(--app-copy)]">
+                    호칭
+                  </Label>
+                  <Input
+                    id="compatibility-self-name"
+                    value={selfName}
+                    onChange={(event) => setSelfName(event.target.value)}
+                    placeholder="예: 나, 민지"
+                  />
+                </div>
+                <UnifiedBirthInfoFields
+                  idPrefix="compatibility-self"
+                  draft={selfDraft}
+                  onChange={(patch) => updateDraft('self', patch)}
+                  dateInputVariant="select"
+                  locationLoading={locationStates.self.status === 'loading'}
+                  locationMessage={locationStates.self.message}
+                  locationResults={locationStates.self.results}
+                  onLocationSearch={() => void searchBirthLocationCoordinates('self')}
+                  onPresetSelect={(code) => updateBirthLocation('self', code)}
+                  onLocationResultSelect={(result) => applyBirthLocationSearchResult('self', result)}
+                />
+              </section>
             </div>
           ) : null}
 
-          <ActionCluster className="mt-6">
-            <button
-              type="button"
-              onClick={submitManualCompatibility}
-              className="gangi-primary-button"
-            >
-              이 정보로 궁합 보기
-            </button>
-            <span className="text-sm leading-7 text-[var(--app-copy-soft)]">
-              비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
-            </span>
-          </ActionCluster>
-        </SectionSurface>
-      </AppPage>
+          {activeStep === 'partner' ? (
+            <div className="space-y-4">
+              <SavedProfileQuickFill
+                target="partner"
+                profiles={sortedSavedProfiles}
+                status={profileLoadStatus}
+                onApply={applySavedProfile}
+              />
+
+              {profileLoadMessage && profileLoadStatus !== 'error' ? (
+                <div className="rounded-2xl border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
+                  {profileLoadMessage}
+                </div>
+              ) : null}
+
+              <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <div className="app-caption text-[var(--app-jade)]">상대</div>
+                    <h2 className="mt-2 text-xl font-bold text-[var(--app-ink)]">상대 정보</h2>
+                  </div>
+                  <div className="max-w-sm text-left text-xs leading-6 text-[var(--app-copy-soft)] sm:text-right">
+                    {partnerSummary}
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <Label htmlFor="compatibility-partner-name" className="mb-2 block text-sm text-[var(--app-copy)]">
+                    상대 호칭
+                  </Label>
+                  <Input
+                    id="compatibility-partner-name"
+                    value={partnerName}
+                    onChange={(event) => setPartnerName(event.target.value)}
+                    placeholder="예: 배우자, 엄마, 동업자"
+                  />
+                </div>
+                <UnifiedBirthInfoFields
+                  idPrefix="compatibility-partner"
+                  draft={partnerDraft}
+                  onChange={(patch) => updateDraft('partner', patch)}
+                  dateInputVariant="select"
+                  locationLoading={locationStates.partner.status === 'loading'}
+                  locationMessage={locationStates.partner.message}
+                  locationResults={locationStates.partner.results}
+                  onLocationSearch={() => void searchBirthLocationCoordinates('partner')}
+                  onPresetSelect={(code) => updateBirthLocation('partner', code)}
+                  onLocationResultSelect={(result) => applyBirthLocationSearchResult('partner', result)}
+                />
+              </section>
+            </div>
+          ) : null}
+
+          {activeStep === 'result' ? (
+            <div className="space-y-3 rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 text-sm leading-6 text-[var(--gyeol-muted)]">
+              <p>
+                <strong className="text-[var(--gyeol-text)]">관계 유형</strong>
+                <br />
+                {selected.title}
+              </p>
+              <p>
+                <strong className="text-[var(--gyeol-text)]">내 정보</strong>
+                <br />
+                {selfName.trim() || '나'} · {selfSummary}
+              </p>
+              <p>
+                <strong className="text-[var(--gyeol-text)]">상대 정보</strong>
+                <br />
+                {partnerName.trim() || '상대'} · {partnerSummary}
+              </p>
+              <p className="rounded-[1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] px-4 py-3 text-xs leading-5 text-[var(--gyeol-muted)]">
+                비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
+              </p>
+            </div>
+          ) : null}
+        </StepFlowShell>
+
+        {errorMessage ? (
+          <div className="rounded-[1rem] border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        <StickyActionBar note="두 사람 생년월일시는 궁합 결과 생성 전까지 이 브라우저에만 임시 보관됩니다.">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={activeStepIndex === 0 ? () => router.push('/compatibility') : goToPreviousStep}
+          >
+            {activeStepIndex === 0 ? '궁합 허브로' : '이전'}
+          </Button>
+          <Button
+            type="button"
+            onClick={activeStep === 'result' ? submitManualCompatibility : goToNextStep}
+          >
+            {activeStep === 'result' ? '궁합 결과 보기' : '다음'}
+          </Button>
+        </StickyActionBar>
+      </MoonlightAppPage>
     </AppShell>
   );
 }

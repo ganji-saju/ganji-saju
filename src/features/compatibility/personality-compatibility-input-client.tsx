@@ -16,6 +16,7 @@ import { AppPage as MoonlightAppPage } from '@/components/moonlight/AppPage';
 import { AxisChipGrid } from '@/components/moonlight/AxisChipGrid';
 import { ChoiceRow } from '@/components/moonlight/ChoiceRow';
 import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import { StepFlowShell } from '@/components/moonlight/StepFlowShell';
 import { StickyActionBar } from '@/components/moonlight/StickyActionBar';
@@ -206,6 +207,16 @@ const PERSONALITY_COMPATIBILITY_STEPS: Array<{
     description: '입력한 내용을 확인하고 성향궁합 무료 결과로 이동합니다.',
   },
 ];
+
+const PERSONALITY_TYPE_ITEMS = PERSONALITY_TYPE_CODES.map((code) => {
+  const profile = getPersonalityTypeProfile(code);
+
+  return {
+    id: code,
+    label: code,
+    value: profile.title,
+  };
+});
 
 function createInitialDraft(): UnifiedBirthEntryDraft {
   return {
@@ -480,15 +491,6 @@ function PersonalityInputPanel({
     state.mode === 'check' && checkResult.answeredCount > 0
       ? getPersonalityTypeProfile(checkResult.typeCode)
       : null;
-  const typeItems = PERSONALITY_TYPE_CODES.map((code) => {
-    const profile = getPersonalityTypeProfile(code);
-
-    return {
-      id: code,
-      label: code,
-      value: profile.title,
-    };
-  });
 
   return (
     <section className="rounded-[1.35rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] p-4 sm:p-5">
@@ -519,7 +521,7 @@ function PersonalityInputPanel({
       {state.mode === 'direct' ? (
         <div className="mt-5">
           <AxisChipGrid
-            items={typeItems}
+            items={PERSONALITY_TYPE_ITEMS}
             selectedId={state.typeCode}
             onSelect={(item) => onChange({ typeCode: item.id as PersonalityTypeCode })}
           />
@@ -574,6 +576,7 @@ export function PersonalityCompatibilityInputClient() {
   const router = useRouter();
   const trackedProfileCompletionRef = useRef<Set<PersonKey>>(new Set());
   const trackedCheckCompletionRef = useRef<Set<PersonKey>>(new Set());
+  const profileLoadStartedRef = useRef(false);
   const [relationshipType, setRelationshipType] = useState<CompatibilityRelationshipType>('dating');
   const [selfName, setSelfName] = useState('나');
   const [partnerName, setPartnerName] = useState('상대');
@@ -618,6 +621,9 @@ export function PersonalityCompatibilityInputClient() {
   }, []);
 
   useEffect(() => {
+    if (activeStep === 'relationship' || profileLoadStartedRef.current) return;
+
+    profileLoadStartedRef.current = true;
     let cancelled = false;
 
     async function loadSavedProfiles() {
@@ -663,7 +669,7 @@ export function PersonalityCompatibilityInputClient() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeStep]);
 
   function selectRelationshipType(nextRelationshipType: CompatibilityRelationshipType) {
     setRelationshipType(nextRelationshipType);
@@ -945,6 +951,11 @@ export function PersonalityCompatibilityInputClient() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <MoonlightAppPage className="gangi-subpage space-y-5" size="md">
+        <PageIntro
+          eyebrow="달빛 성향궁합"
+          title="사주와 성향으로 관계의 결을 봅니다"
+          description="두 사람의 사주 네 기둥과 두 사람의 성향 네 축을 함께 보며, 왜 끌리고 왜 부딪히는지 조율 포인트를 정리합니다."
+        />
         <FusionStrip prefixLabel="사주 궁합" suffixLabel="성향 궁합" />
         <StepFlowShell
           currentStep={activeStepIndex + 1}

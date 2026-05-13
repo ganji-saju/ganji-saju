@@ -12,6 +12,12 @@
 
 # testing
 /coverage
+/artifacts/screenshots/
+/artifacts/visual-qa/
+
+# local database backup artifacts
+/backup-before-*.sql
+/supabase/data_table_backup/
 
 # next.js
 /.next/

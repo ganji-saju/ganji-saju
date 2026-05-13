@@ -20,6 +20,7 @@ import {
 } from '@/components/gangi/gangi-ui';
 import { AxisMeter } from '@/components/moonlight/AxisMeter';
 import { FusionStrip } from '@/components/moonlight/FusionStrip';
+import { PageIntro } from '@/components/moonlight/PageIntro';
 import { ResultShell } from '@/components/moonlight/ResultShell';
 import { SafetyNotice } from '@/components/moonlight/SafetyNotice';
 import type { CompatibilityRelationshipType } from '@/domain/compatibility-personality';
@@ -828,6 +829,11 @@ export function PersonalityCompatibilityResultClient() {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="성향궁합 결과" backHref="/compatibility/personality" />
+        <PageIntro
+          eyebrow="달빛 성향궁합 결과"
+          title="왜 끌리고 왜 부딪히는지 관계의 결을 봅니다"
+          description="무료 결과는 5축 요약을 보여주고, 깊이보기는 반복 갈등과 회복 대화 전략으로 이어집니다."
+        />
         <ResultShell
           title={result.headline}
           summary={introDescription}
@@ -926,7 +932,7 @@ export function PersonalityCompatibilityResultClient() {
                   className="gangi-secondary-button"
                 >
                   <MessageCircleQuestion className="h-4 w-4" />
-                  AI에게 이어서 물어보기
+                  12간지 캐릭터에게 이어 묻기
                 </button>
               </GangiActionRow>
               {ctaMessage ? (

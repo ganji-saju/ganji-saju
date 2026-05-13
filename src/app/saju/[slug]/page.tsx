@@ -321,32 +321,31 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           <SajuStrip />
 
           <section className="space-y-4">
-          <article className="gangi-result-pillars relative overflow-hidden rounded-[1.8rem] bg-[#28243b] p-5 text-white shadow-[0_18px_46px_rgba(40,36,59,0.18)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_16%,rgba(255,211,76,0.28),transparent_18%),radial-gradient(circle_at_52%_8%,rgba(255,211,76,0.26),transparent_4%)]" />
-            <div className="relative">
-              <div className="text-sm font-semibold text-[#ffd24d]">{report.focusBadge} · 사주팔자</div>
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {pillars.map((item) => {
-                  const pillar = item.pillar;
-                  return (
-                    <div
-                      key={item.label}
-                      className="rounded-[1.1rem] border border-white/14 bg-white/7 px-2 py-3 text-center"
-                    >
-                      <div className="text-xs font-semibold text-white/55">{item.label}주</div>
-                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
-                        {pillar?.stem ?? '-'}
+            <article className="gangi-result-pillars rounded-[1.45rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-paper)] p-5 text-[var(--gyeol-text)]">
+              <div>
+                <div className="text-sm font-semibold text-[var(--gyeol-moon)]">{report.focusBadge} · 사주 네 기둥</div>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {pillars.map((item) => {
+                    const pillar = item.pillar;
+                    return (
+                      <div
+                        key={item.label}
+                        className="rounded-[1.1rem] border border-[var(--gyeol-line)] bg-[var(--gyeol-surface)] px-2 py-3 text-center"
+                      >
+                        <div className="text-xs font-semibold text-[var(--gyeol-muted)]">{item.label}주</div>
+                        <div className="mt-3 text-3xl font-light leading-none text-[var(--gyeol-text)] sm:text-4xl">
+                          {pillar?.stem ?? '-'}
+                        </div>
+                        <div className="mt-3 text-3xl font-light leading-none text-[var(--gyeol-text)] sm:text-4xl">
+                          {pillar?.branch ?? '-'}
+                        </div>
                       </div>
-                      <div className="mt-3 text-3xl font-light leading-none text-white sm:text-4xl">
-                        {pillar?.branch ?? '-'}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                <p className="mt-4 text-xs leading-5 text-[var(--gyeol-muted)]">{formatBirthSummary(input)}</p>
               </div>
-              <p className="mt-4 text-xs leading-5 text-white/58">{formatBirthSummary(input)}</p>
-            </div>
-          </article>
+            </article>
 
           <article className="gangi-result-summary-card rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] p-5 shadow-[0_14px_38px_rgba(236,72,153,0.10)]">
             <div className="gangi-result-date">{todayLabel}</div>
