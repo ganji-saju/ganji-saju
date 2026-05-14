@@ -262,7 +262,7 @@ function NativeSelect({
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
-      className={`h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-3 text-sm font-semibold text-[var(--app-ink)] outline-none transition focus:border-[var(--app-pink)] ${className}`}
+      className={`motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-3 text-sm font-semibold text-[var(--app-ink)] outline-none focus:border-[var(--app-pink)] ${className}`}
     >
       {children}
     </select>
@@ -835,7 +835,7 @@ function LoginContent({
                   placeholder="예: 지윤"
                   value={signupForm.displayName}
                   onChange={(event) => updateSignupForm('displayName', event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -848,7 +848,7 @@ function LoginContent({
                   placeholder="name@example.com"
                   value={signupForm.email}
                   onChange={(event) => updateSignupForm('email', event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -860,7 +860,7 @@ function LoginContent({
                   placeholder="8자 이상"
                   value={signupForm.password}
                   onChange={(event) => updateSignupForm('password', event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -872,7 +872,7 @@ function LoginContent({
                   placeholder="한 번 더 입력"
                   value={signupForm.confirmPassword}
                   onChange={(event) => updateSignupForm('confirmPassword', event.target.value)}
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>
@@ -1048,7 +1048,7 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, email: event.target.value }))
               }
-              className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <div className="space-y-2">
@@ -1062,7 +1062,7 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, password: event.target.value }))
               }
-              className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <Button
@@ -1115,7 +1115,7 @@ function LoginContent({
                 placeholder="name@example.com"
                 value={recoveryEmail}
                 onChange={(event) => setRecoveryEmail(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             </div>
           </section>
@@ -1162,7 +1162,7 @@ function LoginContent({
                       password: event.target.value,
                     }))
                   }
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -1179,7 +1179,7 @@ function LoginContent({
                       confirmPassword: event.target.value,
                     }))
                   }
-                  className="h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>

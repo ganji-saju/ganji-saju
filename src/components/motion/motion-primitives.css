@@ -808,3 +808,80 @@
     transform: translate(-50%, -50%) !important;
   }
 }
+
+/* =============================================================
+   59 · m-hanja · production wire — 한자 글자 entry morph
+   2026-05-15 PR-G1: ZodiacChip 한자에 mount 시 1회 등장 효과.
+   scale + slight rotate fade-in 으로 글자가 살짝 흐르듯 등장.
+   ============================================================= */
+.motion-hanja-entry {
+  display: inline-block;
+  transform-origin: center;
+  animation: motion-hanja-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes motion-hanja-in {
+  0% { opacity: 0; transform: scale(0.72) rotate(-4deg); filter: blur(0.5px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-hanja-entry {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* =============================================================
+   61 · m-input · production wire — 인풋 focus 강조 + 부드러운 transition
+   2026-05-15 PR-G2: birth-info / login input 에 적용. 기존 단순
+   border 색 변경 → box-shadow ring + 미세 lift 로 강조.
+   focus-visible 만 적용해 키보드/터치 양쪽 자연스럽게.
+   ============================================================= */
+.motion-input-effect {
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s ease,
+    background-color 0.22s ease;
+  will-change: box-shadow, transform;
+}
+.motion-input-effect:focus,
+.motion-input-effect:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(216, 27, 114, 0.12),
+    0 6px 18px -8px rgba(216, 27, 114, 0.28);
+  transform: translateY(-1px);
+}
+/* valid 상태 — caller 가 data-valid="true" 부여 시 jade tint */
+.motion-input-effect[data-valid="true"] {
+  border-color: var(--app-jade);
+}
+.motion-input-effect[data-valid="true"]:focus,
+.motion-input-effect[data-valid="true"]:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(45, 135, 88, 0.14),
+    0 6px 18px -8px rgba(45, 135, 88, 0.24);
+}
+/* error 상태 */
+.motion-input-effect[data-invalid="true"] {
+  border-color: var(--app-coral);
+}
+.motion-input-effect[data-invalid="true"]:focus,
+.motion-input-effect[data-invalid="true"]:focus-visible {
+  box-shadow:
+    0 0 0 4px rgba(198, 69, 69, 0.16),
+    0 6px 18px -8px rgba(198, 69, 69, 0.28);
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-input-effect {
+    transition: border-color 0.22s ease;
+    transform: none !important;
+  }
+  .motion-input-effect:focus,
+  .motion-input-effect:focus-visible {
+    transform: none !important;
+    box-shadow: 0 0 0 3px rgba(216, 27, 114, 0.16);
+  }
+}
