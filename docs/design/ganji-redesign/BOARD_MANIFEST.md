@@ -16,11 +16,11 @@
 | 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
-| 확장 (extras) | 10 | 9 | 0 | 1 | 0 | 0 |
+| 확장 (extras) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
-| 시스템 (banners/error) | 5 | 3 | 0 | 2 | 0 | 0 |
+| 시스템 (banners/error) | 5 | 4 | 0 | 1 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
-| **합계** | **66** | **56** | **0** | **6** | **4** | **0** |
+| **합계** | **66** | **58** | **0** | **4** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
 > 모션 **13/13 production 화면 마운트 완료** (2026-05-15 PR-G4 로 m-page 마지막 연결). `GALLERY_ONLY` 0건.
@@ -135,9 +135,9 @@
 |---|---|---|---|---|---|
 | `banners` | 24 · 배너 시스템 (7 종) | `screens-h.jsx:6` | IMPLEMENTED | `src/components/gangi/gangi-banner.tsx` (7 variants) + showcase `/admin/design/banners` | hero/soft/cosmic/inline/sticky/success/warning |
 | `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | IMPLEMENTED | `src/app/not-found.tsx` (404), `src/app/error.tsx` (client 5xx), `src/app/global-error.tsx` (root) | PR #68/이번 PR |
-| `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | `src/app/onboarding/page.tsx` 신설 — 4 슬라이드 visual shell + 한자 아이콘(生·今·話·始) + "사주 입력하고 시작" CTA. first-visit cookie 자동 노출 로직은 후속 (2026-05-15 PR-H) | `/onboarding` |
+| `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | **IMPLEMENTED** | `src/app/onboarding/page.tsx` + `actions.ts` server action — 4 슬라이드 한자 아이콘 + first-visit cookie 자동 redirect (홈 `cookies()` 체크 후 `/onboarding` 으로). cookie set 후 `/saju/new` 또는 `/` (2026-05-15 PR-H+PR-L) | `/onboarding` |
 | `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | **IMPLEMENTED** | `PushPermissionPrompt` (신규 client wrapper, `src/components/notifications/push-permission-prompt.tsx`) 가 `today-fortune-result-client.tsx` 진입 후 20초 dwell + Notification.permission === 'default' + 7일 cooldown 충족 시 `PushPermissionModal` 자동 prompt. localStorage `moonlight:push-modal:dismissed-at` (2026-05-15 PR-G3) | — |
-| `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | `src/components/notifications/terms-consent-modal.tsx` 신규 — 풀스크린 모달 컴포넌트 visual shell. items prop 으로 약관 항목 주입. 현재 disabled (체크/confirm 비활성, "준비 중" badge). m-modal motion 자동 적용. GDPR/14세 미만 등 강한 동의 시점에 caller 가 mount (2026-05-15 PR-H) | — |
+| `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | **IMPLEMENTED** | `src/components/notifications/terms-consent-modal.tsx` — production-ready 체크 state + 전체 동의 row + 필수 검증 + onConfirm callback (consents Record 반환). QA showcase `/admin/design/terms-modal`. m-modal motion 자동. GDPR/14세 미만 등 강한 동의 시점에 caller 가 mount (2026-05-15 PR-M) | — |
 
 ### desktop · 반응형 (1)
 
