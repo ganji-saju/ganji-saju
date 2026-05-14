@@ -5,6 +5,8 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+// 2026-05-15 PR-K: 예약 결과 transient feedback 을 sonner 토스트로 마이그레이션.
+import { toast } from 'sonner';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -150,12 +152,10 @@ export default function AppointmentPage() {
   }
 
   const canSubmit = selectedDay !== null && selectedTime !== '';
-  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleSubmit() {
     if (!canSubmit || selectedDay === null) return;
     setSubmitting(true);
-    setErrorMessage('');
 
     const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
@@ -182,13 +182,15 @@ export default function AppointmentPage() {
         | null;
 
       if (!response.ok) {
-        setErrorMessage(data?.error || '예약을 처리하지 못했습니다.');
+        // 2026-05-15 PR-K: 자체 inline error 마크업 제거 — sonner 토스트로 통일.
+        toast.error(data?.error || '예약을 처리하지 못했습니다.');
         return;
       }
 
       setConfirmed(true);
+      toast.success('상담 예약이 접수됐어요.');
     } catch {
-      setErrorMessage('네트워크 오류로 예약을 보내지 못했습니다.');
+      toast.error('네트워크 오류로 예약을 보내지 못했습니다.');
     } finally {
       setSubmitting(false);
     }
@@ -490,11 +492,7 @@ export default function AppointmentPage() {
               />
             </section>
 
-            {errorMessage ? (
-              <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
-                {errorMessage}
-              </p>
-            ) : null}
+            {/* 2026-05-15 PR-K: 자체 inline error 카드 제거 — 전역 sonner 토스트가 상단 표시 */}
 
             {/* Sticky CTA */}
             <div
