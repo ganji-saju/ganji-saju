@@ -1034,3 +1034,34 @@
     transform: none !important;
   }
 }
+
+/* =============================================================
+   55 · m-page · production wire — Next.js template.tsx 페이지 전환
+   2026-05-15 PR-G4: app/template.tsx 가 모든 라우트 mount 시마다
+   children 을 fade-in + 미세 lift 로 감쌈. Next.js App Router 의
+   template 은 layout 과 달리 navigation 마다 새로 mount 되므로
+   route 전환 효과로 자연스럽게 동작.
+   ============================================================= */
+@keyframes motion-page-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.motion-page-transition-children {
+  animation: motion-page-fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* 자식이 자기 layout 결정하도록 wrapper 자체는 layout-neutral */
+  display: contents;
+}
+/* contents 는 animation 을 무시하므로 wrapper 를 inline div 로 두되 stack 영향 X.
+   대신 한 단계 더 감싸는 inner div 가 animation 담당. */
+.motion-page-transition-frame {
+  animation: motion-page-fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-page-transition-children,
+  .motion-page-transition-frame {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
