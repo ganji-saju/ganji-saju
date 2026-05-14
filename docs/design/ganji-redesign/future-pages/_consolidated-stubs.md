@@ -25,11 +25,19 @@
 - **추후 실 구현**: 결과 페이지 / 깊은 풀이 / 캘린더에 2 컬럼 grid 분기 추가.
 - **작업량**: M (페이지별 6~8개 분기 추가).
 
-## 4. `banners` — 배너 시스템 (7 종)
+## 4. `banners` — 배너 시스템 (7 종) ✅ IMPLEMENTED
 
-- **상태**: SHELL. 페이지별로 inline pink-soft hero 가 사실상 동일 패턴. 통합 `<GangiBanner kind="...">` 컴포넌트 미구현.
-- **추후 실 구현**: `src/components/gangi/gangi-banner.tsx` + 7 variants (info/success/warning/error/promo/event/ad).
-- **작업량**: S (반나절).
+- **상태**: 완료.
+- **구현**: `src/components/gangi/gangi-banner.tsx` — `<GangiBanner kind="...">` 7 variants:
+  - `hero` (pink solid gradient + 한자 deco)
+  - `soft` (pink-soft + leading 슬롯)
+  - `cosmic` (ink + 별 패턴)
+  - `inline` (가격 칩)
+  - `sticky` (하단 고정)
+  - `success` (jade)
+  - `warning` (coral)
+- **showcase**: `/admin/design/banners` 에서 7 variant 한눈에 확인.
+- **남은 작업**: 기존 inline pink-soft hero 사용처(20+ 페이지)를 점진적으로 GangiBanner 로 마이그레이션 — 후속 PR 에서 화면별 진행.
 
 ## 5. `errors` — 에러 (404/500/네트워크) ✅ IMPLEMENTED
 
