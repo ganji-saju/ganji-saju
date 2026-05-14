@@ -1,9 +1,10 @@
 // Redesign 2026-05-13 (Claude Design / screens-g.jsx ScreenAccountDelete):
 // 신규 /my/settings/delete-account — 3-step 회원탈퇴 흐름.
-// 실제 탈퇴 API 가 아직 없어 마지막 단계는 고객센터 안내로 stub 처리.
+// 2026-05-14: /api/account/delete 연동 — 실제 탈퇴 완료 후 /login 으로 이동한다.
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -31,6 +32,7 @@ const LOSS_ITEMS: Array<{ icon: string; label: string; description: string }> = 
 ];
 
 export default function AccountDeletePage() {
+  const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [reason, setReason] = useState<string>('not-use');
   const [otherReason, setOtherReason] = useState('');
@@ -47,13 +49,30 @@ export default function AccountDeletePage() {
     setIsSubmitting(true);
     setErrorMessage('');
 
-    // NOTE: 실제 탈퇴 API 미구현. 고객센터 안내로 안내합니다.
-    // 추후 /api/account/delete 가 추가되면 여기서 호출.
     try {
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason,
+          otherReason: reason === 'other' ? otherReason.trim() : undefined,
+          confirm,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        setErrorMessage(
+          data?.error || '요청 처리에 문제가 있었습니다. 잠시 후 다시 시도해 주세요.'
+        );
+        return;
+      }
+
       setStep('done');
+      // 세션이 만료된 상태이므로 라우터를 새로고침해 보호 페이지 캐시를 비운다.
+      router.refresh();
     } catch {
-      setErrorMessage('요청 처리에 문제가 있었습니다. 잠시 후 다시 시도해 주세요.');
+      setErrorMessage('네트워크 오류로 요청을 전송하지 못했습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,24 +103,25 @@ export default function AccountDeletePage() {
                 ✓
               </div>
               <h1 className="mt-4 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
-                탈퇴 요청이 접수되었습니다
+                탈퇴가 완료되었습니다
               </h1>
               <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
-                고객센터에서 본인 확인 후 처리해드립니다. 영업일 기준 1-2일 이내 메일로 안내됩니다.
+                그동안 달빛인생을 이용해주셔서 감사합니다.<br />
+                결제 내역은 전자상거래법에 따라 5년간 안전하게 보관됩니다.
               </p>
-              <a
-                href="tel:010-8123-9184"
+              <Link
+                href="/login"
                 className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
-                ☎ 고객센터로 문의
-              </a>
+                로그인 화면으로
+              </Link>
             </article>
 
             <Link
-              href="/my"
+              href="/"
               className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13.5px] font-bold text-[var(--app-copy-muted)]"
             >
-              ← MY 홈으로 돌아가기
+              ← 메인으로 돌아가기
             </Link>
           </section>
         ) : (
