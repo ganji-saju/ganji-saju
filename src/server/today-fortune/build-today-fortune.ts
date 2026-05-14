@@ -826,6 +826,98 @@ function resolveTimeZoneOffset(baseDate: Date, timeZone: string) {
   }
 }
 
+// 2026-05-15: 오늘 일진(일주/월주/연주) 스냅샷. 결과의 시드·점수·dateKey 가
+// 매일 다르게 흐르도록 calculatedAt + timezone 으로 오늘 ganzi 를 뽑아온다.
+interface TodayPillarSnapshot {
+  ganzi: string;
+  stem: string;
+  branch: string;
+  stemElement: Element | null;
+  branchElement: Element | null;
+  yearGanzi: string;
+  monthGanzi: string;
+  dateKey: string;
+}
+
+const TODAY_STEM_ELEMENTS: Record<string, Element> = {
+  '甲': '목', '乙': '목',
+  '丙': '화', '丁': '화',
+  '戊': '토', '己': '토',
+  '庚': '금', '辛': '금',
+  '壬': '수', '癸': '수',
+};
+
+const TODAY_BRANCH_ELEMENTS: Record<string, Element> = {
+  '子': '수', '丑': '토', '寅': '목', '卯': '목',
+  '辰': '토', '巳': '화', '午': '화', '未': '토',
+  '申': '금', '酉': '금', '戌': '토', '亥': '수',
+};
+
+function getTodayPillarSnapshot(sajuData: SajuDataV1): TodayPillarSnapshot {
+  const calculatedAt = sajuData.metadata?.calculatedAt ?? new Date().toISOString();
+  const timezone = sajuData.input?.timezone ?? 'Asia/Seoul';
+  const local = getLocalDateTimeSnapshot(calculatedAt, timezone);
+  try {
+    const solar = Solar.fromYmdHms(local.year, local.month, local.day, 0, 0, 0);
+    const eightChar = solar.getLunar().getEightChar();
+    const dayGanzi = eightChar.getDay();
+    const stem = dayGanzi.charAt(0) ?? '';
+    const branch = dayGanzi.charAt(1) ?? '';
+    return {
+      ganzi: dayGanzi,
+      stem,
+      branch,
+      stemElement: TODAY_STEM_ELEMENTS[stem] ?? null,
+      branchElement: TODAY_BRANCH_ELEMENTS[branch] ?? null,
+      yearGanzi: eightChar.getYear(),
+      monthGanzi: eightChar.getMonth(),
+      dateKey: `${local.year}-${pad2(local.month)}-${pad2(local.day)}`,
+    };
+  } catch {
+    return {
+      ganzi: '',
+      stem: '',
+      branch: '',
+      stemElement: null,
+      branchElement: null,
+      yearGanzi: '',
+      monthGanzi: '',
+      dateKey: `${local.year}-${pad2(local.month)}-${pad2(local.day)}`,
+    };
+  }
+}
+
+// 오늘 일주 천간/지지 오행 vs 나의 일간 오행 관계로 점수 ±delta 산출.
+// - 같음(비겁/인성 일부): +6
+// - 인성(today 가 나를 生): +5
+// - 식상(나 → today 생, 설기): -1
+// - 관살(today → 나 극): -6
+// - 재성(나 → today 극, 소모): -2
+// 천간 / 지지 각각 평가 후 (stem*0.6 + branch*0.4) 가중합.
+function calculateTodayElementDelta(
+  myDayMasterElement: Element,
+  todayElement: Element | null
+): number {
+  if (!todayElement) return 0;
+  if (todayElement === myDayMasterElement) return 6;
+  if (GENERATOR_OF_MAP[myDayMasterElement] === todayElement) return 5;
+  if (GENERATED_BY_MAP[myDayMasterElement] === todayElement) return -1;
+  if (CONTROLLER_OF_MAP[myDayMasterElement] === todayElement) return -6;
+  if (CONTROLLER_OF_MAP[todayElement] === myDayMasterElement) return -2;
+  return 0;
+}
+
+function buildDailyDelta(
+  todayPillar: TodayPillarSnapshot,
+  sajuData: SajuDataV1
+): number {
+  const myEl = sajuData.dayMaster?.element ?? null;
+  if (!myEl) return 0;
+  const stemDelta = calculateTodayElementDelta(myEl, todayPillar.stemElement);
+  const branchDelta = calculateTodayElementDelta(myEl, todayPillar.branchElement);
+  return Math.round(stemDelta * 0.6 + branchDelta * 0.4);
+}
+
 function sortBranchKey(left: Branch, right: Branch) {
   return [left, right]
     .sort((a, b) => BRANCH_ORDER.indexOf(a) - BRANCH_ORDER.indexOf(b))
@@ -998,7 +1090,8 @@ function getPrimarySupportElement(sajuData: SajuDataV1) {
 function buildSignatureSeed(
   input: BirthInput,
   sajuData: SajuDataV1,
-  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>
+  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>,
+  todayPillar: TodayPillarSnapshot
 ) {
   const locationSeed = input.birthLocation
     ? Math.round(Math.abs(input.birthLocation.latitude * 10) + Math.abs(input.birthLocation.longitude * 10))
@@ -1015,6 +1108,14 @@ function buildSignatureSeed(
         : options.timeRule === 'nightZi'
           ? 11
           : 0;
+  // 2026-05-15: 매일 다른 카피가 뽑히도록 오늘 일진(일주/월주) ganzi 와 dateKey 를 시드에 mixin.
+  // 가중치 31 을 곱해 base 시드 대비 충분히 분포가 흔들리도록 함.
+  const todayGanziSeed = Array.from(`${todayPillar.ganzi}${todayPillar.monthGanzi}`)
+    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const dateKeySeed = Array.from(todayPillar.dateKey).reduce(
+    (sum, char) => sum + char.charCodeAt(0),
+    0
+  );
 
   return (
     input.year * 3 +
@@ -1025,7 +1126,9 @@ function buildSignatureSeed(
     locationSeed +
     ganziSeed +
     calendarSeed +
-    timeRuleSeed
+    timeRuleSeed +
+    todayGanziSeed * 31 +
+    dateKeySeed * 7
   );
 }
 
@@ -1060,14 +1163,15 @@ function buildLocationCue(input: BirthInput) {
 function buildPublicTodayProfile(
   input: BirthInput,
   sajuData: SajuDataV1,
-  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>
+  options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>,
+  todayPillar: TodayPillarSnapshot
 ): PublicTodayProfile {
   const dominantElement = sajuData.fiveElements.dominant;
   const weakestElement = sajuData.fiveElements.weakest;
   const supportElement = getPrimarySupportElement(sajuData) ?? weakestElement;
   const tenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
   const roleTone = tenGod ? TEN_GOD_PUBLIC_TONES[tenGod] : null;
-  const signatureSeed = buildSignatureSeed(input, sajuData, options);
+  const signatureSeed = buildSignatureSeed(input, sajuData, options, todayPillar);
   const dayLabel = PUBLIC_ELEMENT_LABELS[sajuData.dayMaster.element];
   const supportCopy = PUBLIC_ELEMENT_COPY[supportElement];
   const dominantCopy = PUBLIC_ELEMENT_COPY[dominantElement];
@@ -1847,7 +1951,9 @@ function toTodayScores(
   careerReport: SajuReport,
   relationshipReport: SajuReport,
   conditionScore: number,
-  profile: PublicTodayProfile
+  profile: PublicTodayProfile,
+  // 2026-05-15: 오늘 일진 vs 일간 오행 관계로 ±delta 적용해 매일 점수가 흐르게 함.
+  dailyDelta: number = 0
 ): TodayScoreItem[] {
   const baseScores: TodayScoreItem[] = [
     getScore(todayReport, 'overall'),
@@ -1857,12 +1963,15 @@ function toTodayScores(
     getScore(relationshipReport, 'relationship'),
   ]
     .filter((score): score is ReportScore => Boolean(score))
-    .map((score) => ({
-      key: score.key as TodayScoreItem['key'],
-      label: SCORE_LABELS[score.key],
-      score: score.score,
-      summary: buildAxisScoreSummary(score.key as TodayScoreItem['key'], score.score, profile),
-    }));
+    .map((score) => {
+      const adjusted = clampScore(score.score + dailyDelta);
+      return {
+        key: score.key as TodayScoreItem['key'],
+        label: SCORE_LABELS[score.key],
+        score: adjusted,
+        summary: buildAxisScoreSummary(score.key as TodayScoreItem['key'], adjusted, profile),
+      };
+    });
 
   baseScores.push({
     key: 'condition',
@@ -2029,8 +2138,13 @@ export function buildTodayFortuneFreeResult(
   const wealthReport = buildSajuReport(input, sajuData, 'wealth');
   const careerReport = buildSajuReport(input, sajuData, 'career');
   const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
-  const profile = buildPublicTodayProfile(input, sajuData, options);
-  const conditionScore = buildConditionScore(todayReport, loveReport, wealthReport, sajuData);
+  // 2026-05-15: 매일 다른 결과를 위해 오늘 일진 스냅샷 + element delta 적용.
+  const todayPillar = getTodayPillarSnapshot(sajuData);
+  const dailyDelta = buildDailyDelta(todayPillar, sajuData);
+  const profile = buildPublicTodayProfile(input, sajuData, options, todayPillar);
+  const conditionScore = clampScore(
+    buildConditionScore(todayReport, loveReport, wealthReport, sajuData) + dailyDelta
+  );
   const scores = toTodayScores(
     todayReport,
     loveReport,
@@ -2038,7 +2152,8 @@ export function buildTodayFortuneFreeResult(
     careerReport,
     relationshipReport,
     conditionScore,
-    profile
+    profile,
+    dailyDelta
   );
   const reasonBody = buildPublicReasonBody(profile, Boolean(input.unknownTime));
   const groundingSummary = buildPublicGroundingSummary(profile, options.kasiComparison);
@@ -2048,6 +2163,8 @@ export function buildTodayFortuneFreeResult(
 
   return {
     sourceSessionId: options.sourceSessionId,
+    // 2026-05-15: 클라이언트 sessionStorage 키에 사용 — 어제 캐시가 오늘 화면을 가리지 않게 분리.
+    dateKey: todayPillar.dateKey,
     concernId: options.concernId,
     concernLabel: concern.label,
     concernHanja: concern.hanja,

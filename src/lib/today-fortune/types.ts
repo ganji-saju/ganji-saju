@@ -35,6 +35,8 @@ export interface TodayScoreItem {
 
 export interface TodayFortuneFreeResult {
   sourceSessionId: string;
+  /** YYYY-MM-DD (timezone-local). 2026-05-15: 일자별 캐시 분리 + 매일 다른 결과 보장용. */
+  dateKey: string;
   concernId: ConcernId;
   concernLabel: string;
   concernHanja: string;

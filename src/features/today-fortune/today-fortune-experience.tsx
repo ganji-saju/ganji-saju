@@ -84,6 +84,12 @@ interface TodayFortuneApiResponse {
 
 const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
 
+// 2026-05-15: 일자별 캐시 분리 — 어제 결과가 오늘 화면에 그대로 보이지 않도록
+// sourceSessionId 만 키로 쓰던 sessionStorage 에 dateKey 를 함께 붙인다.
+function buildResultStorageKey(sourceSessionId: string, dateKey: string) {
+  return `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:${dateKey}`;
+}
+
 export function TodayFortuneExperience({
   initialConcernId,
 }: {
@@ -165,7 +171,7 @@ export function TodayFortuneExperience({
       try {
         window.localStorage.setItem('moonlight:fortune-session:last', data.result.sourceSessionId);
         window.sessionStorage.setItem(
-          `${TODAY_RESULT_STORAGE_PREFIX}${data.result.sourceSessionId}`,
+          buildResultStorageKey(data.result.sourceSessionId, data.result.dateKey),
           JSON.stringify(data.result)
         );
       } catch {
