@@ -5,6 +5,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
+import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
@@ -652,6 +653,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </div>
             </details>
           </section>
+
+          {/* 2026-05-14: saju-data/v2 modern interpretation 패널 — sajuData(v1) 가
+              자동 업그레이드되어 executiveSummary + 4 evidence blocks + verification
+              status 가 표시된다. failPolicy='warn-only' 라서 검증 실패 시 경고만 표시. */}
+          <SajuV2InsightPanel data={sajuData} failPolicy="warn-only" />
         </div>
       </AppPage>
     </AppShell>
