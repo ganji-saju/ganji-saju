@@ -2,7 +2,8 @@
 // Web Share API 우선, 미지원 시 클립보드 fallback. 카카오 SDK 가 있으면 카톡 send 시도.
 'use client';
 
-import { useState } from 'react';
+// 2026-05-15 handoff PR-J: 자체 setTimeout 토스트 → sonner 전역 토스트 인프라로 마이그레이션.
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface ShareActionsProps {
@@ -66,18 +67,20 @@ async function triggerWebShare({
 }
 
 export function ShareActions({ text, url, className }: ShareActionsProps) {
-  const [toast, setToast] = useState<string | null>(null);
-
-  function showToast(message: string) {
-    setToast(message);
-    setTimeout(() => setToast(null), 1800);
+  // 2026-05-15: 자체 setTimeout 토스트 제거 — sonner `toast.success / toast.error` 사용.
+  function notifySuccess(message: string) {
+    toast.success(message);
+  }
+  function notifyError(message: string) {
+    toast.error(message);
   }
 
   async function handle(channel: ChannelKey) {
     const shareText = `${text}\n${url}`;
     if (channel === 'copy') {
       const ok = await copyToClipboard(shareText);
-      showToast(ok ? '링크를 복사했어요' : '복사가 안 됐어요. 길게 눌러 복사해 주세요.');
+      if (ok) notifySuccess('링크를 복사했어요');
+      else notifyError('복사가 안 됐어요. 길게 눌러 복사해 주세요.');
       return;
     }
 
@@ -98,11 +101,11 @@ export function ShareActions({ text, url, className }: ShareActionsProps) {
       const ok = await triggerWebShare({ text, url });
       if (!ok) {
         const copied = await copyToClipboard(shareText);
-        showToast(
-          copied
-            ? '인스타 앱은 자동 공유가 막혀 있어요. 링크가 복사됐어요!'
-            : '인스타 공유는 직접 붙여넣기로 진행해 주세요.'
-        );
+        if (copied) {
+          notifySuccess('인스타 앱은 자동 공유가 막혀 있어요. 링크가 복사됐어요!');
+        } else {
+          notifyError('인스타 공유는 직접 붙여넣기로 진행해 주세요.');
+        }
       }
       return;
     }
@@ -111,11 +114,11 @@ export function ShareActions({ text, url, className }: ShareActionsProps) {
       const ok = await triggerWebShare({ text, url });
       if (!ok) {
         const copied = await copyToClipboard(shareText);
-        showToast(
-          copied
-            ? '카톡에 붙여넣으세요. 링크가 복사됐어요!'
-            : '카톡 공유 준비가 안 됐어요. 잠시 후 다시 시도해 주세요.'
-        );
+        if (copied) {
+          notifySuccess('카톡에 붙여넣으세요. 링크가 복사됐어요!');
+        } else {
+          notifyError('카톡 공유 준비가 안 됐어요. 잠시 후 다시 시도해 주세요.');
+        }
       }
       return;
     }
@@ -144,19 +147,7 @@ export function ShareActions({ text, url, className }: ShareActionsProps) {
           </button>
         ))}
       </div>
-      {toast ? (
-        <p
-          className="mt-3 rounded-[10px] px-3 py-2 text-center text-[12px] font-bold"
-          style={{
-            background: 'var(--app-pink-soft)',
-            color: 'var(--app-pink-strong)',
-            border: '1px solid var(--app-pink-line)',
-          }}
-          role="status"
-        >
-          {toast}
-        </p>
-      ) : null}
+      {/* 2026-05-15 PR-J: 인라인 토스트 제거 — 전역 sonner `<AppToaster>` 가 상단 중앙에 표시. */}
     </div>
   );
 }

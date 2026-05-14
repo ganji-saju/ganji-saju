@@ -5,6 +5,9 @@ import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
+// 2026-05-15 handoff PR-J: 57 m-toast — 전역 토스트 인프라.
+import { AppToaster } from "@/components/notifications/app-toaster";
+import "@/components/motion/motion-primitives.css";
 
 const brandSans = Noto_Sans_KR({
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -87,6 +90,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
         <SupabaseRecoveryRedirect />
         {children}
+        <AppToaster />
         <Analytics />
         <SpeedInsights />
       </body>
