@@ -1,16 +1,11 @@
+// Redesign 2026-05-13 (Claude Design / screens-f.jsx ScreenPaymentResult):
+// 결제 콜백 — loading/success/error 3 state. mockup 96px pink circle hero.
+// 결제 승인·라우팅·트래킹 무수정.
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   clearPendingLifetimeReportSlug,
@@ -18,15 +13,9 @@ import {
 } from '@/lib/payments/lifetime-report';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
-
-const SUCCESS_FLOW_POINTS = [
-  'Toss 승인 뒤 서버에서 이용권을 다시 확인하고, 바로 열 수 있는 화면으로 연결합니다.',
-  '보관형 리포트 상품이면 연결된 결과 화면으로, 멤버십이면 완료 안내 화면으로 부드럽게 이어집니다.',
-  '결제 확인이 오래 걸리지 않도록 이 단계는 짧고 분명하게 유지합니다.',
-] as const;
 
 function buildCompleteHref(plan: string, slug: string | null) {
   const params = new URLSearchParams({ plan, payment: 'confirmed' });
@@ -36,7 +25,6 @@ function buildCompleteHref(plan: string, slug: string | null) {
 
 function buildPremiumResultHref(plan: string, slug: string | null) {
   if (!slug || (plan !== 'premium' && plan !== 'lifetime')) return null;
-
   const params = new URLSearchParams({ payment: 'confirmed', plan });
   return `/saju/${encodeURIComponent(slug)}/premium?${params.toString()}`;
 }
@@ -51,110 +39,115 @@ function buildTasteProductHref(
     if (slug && entrySource?.startsWith('saju')) {
       return `${buildSajuTodayDetailHref(slug)}?paid=today-detail`;
     }
-
     const params = new URLSearchParams({ paid: product, concern: scope || 'general' });
     if (slug) params.set('sourceSessionId', slug);
     return `/today-fortune/detail?${params.toString()}`;
   }
-
   if (product === 'love-question') {
     return '/compatibility/input?relationship=lover&paid=love-question';
   }
-
   if (slug && product === 'monthly-calendar') {
     return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#fortune-calendar`;
   }
-
   if (slug && product === 'year-core') {
     return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#yearly-report`;
   }
-
   return null;
+}
+
+function CenteredCard({
+  iconBg,
+  iconText,
+  iconChar,
+  title,
+  description,
+  children,
+}: {
+  iconBg: string;
+  iconText: string;
+  iconChar: string;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-5 px-4 pt-8 text-center">
+      <div
+        className="mx-auto grid h-24 w-24 place-items-center rounded-full"
+        style={{
+          background: iconBg,
+          boxShadow: '0 16px 40px rgba(216,27,114,0.32)',
+        }}
+        aria-hidden="true"
+      >
+        <span className="text-[48px] font-extrabold leading-none" style={{ color: iconText }}>
+          {iconChar}
+        </span>
+      </div>
+      <div>
+        <h1 className="text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+          {title}
+        </h1>
+        <p className="mt-2 px-4 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+          {description}
+        </p>
+      </div>
+      {children}
+    </section>
+  );
 }
 
 function LoadingState() {
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="loading"
-            className="border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]"
-          >
-            결제 확인 중
-          </Badge>,
-        ]}
-        title="결제와 이용권 반영을 확인하고 있습니다"
-        description="결제 승인과 이용권 연결을 함께 처리하는 단계입니다. 잠시만 기다려 주세요."
-      />
-      <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="지금 진행 중인 일"
-            title="결제 확인은 짧고 분명하게 진행합니다"
-            titleClassName="text-3xl"
-            description="결제창이 닫힌 뒤, 이 화면에서는 승인 결과와 이용권 반영만 확인하고 다음 화면으로 바로 이어집니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-          <FeatureCard
-            className="mt-6"
-            surface="soft"
-            eyebrow="현재 상태"
-            description="Toss 결제를 확인하고 있습니다. 잠시 뒤 자동으로 다음 단계로 이어집니다."
-          />
-        </SectionSurface>
-        <SupportRail
-          surface="panel"
-          eyebrow="진행 방식"
-          title="이 단계가 하는 일"
-          description="확인 화면에서 오래 머무르지 않도록, 필요한 검증만 하고 바로 이어지게 설계했습니다."
-        >
-          <BulletList items={SUCCESS_FLOW_POINTS} />
-        </SupportRail>
-      </section>
-    </>
+    <CenteredCard
+      iconBg="linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))"
+      iconText="#fff"
+      iconChar="…"
+      title="결제 확인 중"
+      description={`결제 승인과 이용권 반영을 확인하고 있어요.\n잠시만 기다려 주세요.`}
+    />
   );
 }
 
 function ErrorState({ errorMessage }: { errorMessage: string }) {
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="error"
-            className="border-rose-400/25 bg-rose-400/10 text-rose-100"
-          >
-            결제 확인 실패
-          </Badge>,
-        ]}
-        title="이용권 반영을 끝내지 못했습니다"
-        description="결제는 진행되었지만, 이용권 연결 확인에서 문제가 생겼습니다. 다시 확인할 수 있는 경로를 남겨두었습니다."
-      />
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="다시 확인"
-          title="지금 바로 확인해 보실 수 있는 것"
-          titleClassName="text-3xl"
-          description={errorMessage}
-          descriptionClassName="max-w-3xl text-rose-100"
-          actions={
-            <ActionCluster>
-              <Link href="/membership">
-                <Button>
-                  멤버십으로 돌아가기
-                </Button>
-              </Link>
-              <Link href="/my/billing">
-                <Button variant="outline">
-                  결제 상태 확인
-                </Button>
-              </Link>
-            </ActionCluster>
-          }
-        />
-      </SectionSurface>
-    </>
+    <CenteredCard
+      iconBg="#fff"
+      iconText="var(--app-coral)"
+      iconChar="!"
+      title="결제 확인에 실패했어요"
+      description="결제는 진행되었지만 이용권 연결을 확인하지 못했습니다. 잠시 후 다시 시도하거나 결제 상태에서 확인해 주세요."
+    >
+      <article
+        className="mx-auto max-w-md rounded-[14px] border bg-white p-4 text-left"
+        style={{ borderColor: 'var(--app-coral)' }}
+      >
+        <div
+          className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+          style={{ color: 'var(--app-coral)' }}
+        >
+          오류 안내
+        </div>
+        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+          {errorMessage}
+        </p>
+      </article>
+
+      <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
+        <Link
+          href="/membership"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+        >
+          멤버십으로 돌아가기
+        </Link>
+        <Link
+          href="/my/billing"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+        >
+          결제 상태 확인
+        </Link>
+      </div>
+    </CenteredCard>
   );
 }
 
@@ -170,66 +163,32 @@ function SuccessState({
   const isPremiumResult = Boolean(buildPremiumResultHref(confirmedPlan, resolvedSlug));
 
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="success"
-            className="border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 text-[var(--app-pink-strong)]"
-          >
-            결제 완료
-          </Badge>,
-        ]}
-        title={isPremiumResult ? '결과 화면으로 이어질 준비를 마쳤습니다' : '이용권이 반영되었습니다'}
-        description={
-          isPremiumResult
-            ? '결제 확인이 끝났습니다. 연결된 결과 화면으로 바로 이동하거나, 완료 안내에서 다음 흐름을 이어가실 수 있습니다.'
-            : '결제 확인이 끝났습니다. 다음 화면에서 바로 열어보실 항목을 선택하실 수 있습니다.'
-        }
-      />
-
-      <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="반영 완료"
-            title="결제 뒤 흐름을 바로 이어갑니다"
-            titleClassName="text-3xl text-[var(--app-pink-strong)]"
-            description="확인 단계가 끝났으니, 이제 같은 흐름 위에서 리포트나 멤버십 화면으로 자연스럽게 이어집니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-          <FeatureCard
-            className="mt-6"
-            surface="soft"
-            eyebrow="지금 상태"
-            description={
-              isPremiumResult
-                ? '연결된 결과 화면으로 바로 이동할 수 있습니다. 리포트와 대화, 보관함 흐름도 같은 화면에서 이어집니다.'
-                : '완료 안내 화면에서 오늘 바로 열어보실 항목을 고르실 수 있습니다.'
-            }
-          />
-        </SectionSurface>
-
-        <SupportRail
-          surface="panel"
-          eyebrow="다음 단계"
-          title="버튼은 두 가지만 남겨 두었습니다"
-          description="이 화면은 짧게 끝나는 단계라, 주 행동과 보조 행동만 남겨 다시 선택지가 과밀해지지 않게 했습니다."
+    <CenteredCard
+      iconBg="linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))"
+      iconText="#fff"
+      iconChar="✓"
+      title="결제가 완료됐어요"
+      description={
+        isPremiumResult
+          ? '깊은 풀이가 준비됐어요. 지금 바로 확인해보세요.'
+          : '이용권이 반영됐어요. 다음 흐름을 골라 이어가세요.'
+      }
+    >
+      <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
+        <Link
+          href={completeHref}
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
-          <ActionCluster>
-            <Link href={completeHref}>
-              <Button size="lg">
-                다음으로 이동
-              </Button>
-            </Link>
-            <Link href="/membership">
-              <Button variant="outline" size="lg">
-                멤버십 보기
-              </Button>
-            </Link>
-          </ActionCluster>
-        </SupportRail>
-      </section>
-    </>
+          다음으로 이동 →
+        </Link>
+        <Link
+          href="/membership"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+        >
+          멤버십 보기
+        </Link>
+      </div>
+    </CenteredCard>
   );
 }
 
@@ -333,14 +292,8 @@ function SuccessContent() {
       });
   }, [searchParams, querySlug]);
 
-  if (status === 'loading') {
-    return <LoadingState />;
-  }
-
-  if (status === 'error') {
-    return <ErrorState errorMessage={errorMessage} />;
-  }
-
+  if (status === 'loading') return <LoadingState />;
+  if (status === 'error') return <ErrorState errorMessage={errorMessage} />;
   return (
     <SuccessState
       completeHref={completeHref}
@@ -352,15 +305,9 @@ function SuccessContent() {
 
 export default function MembershipSuccessPage() {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <Suspense
-          fallback={
-            <SectionSurface surface="panel" size="lg" className="text-center text-[var(--app-copy)]">
-              결제 확인 중...
-            </SectionSurface>
-          }
-        >
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page">
+        <Suspense fallback={<LoadingState />}>
           <SuccessContent />
         </Suspense>
       </AppPage>
