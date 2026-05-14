@@ -717,3 +717,94 @@
     animation: none !important;
   }
 }
+
+/* =============================================================
+   62 · m-chart · production wire — ChartDrawReveal wrapper
+   2026-05-15 PR-F: FiveElementOrbitChart 가 server component 라
+   외부 client wrapper(`<ChartDrawReveal>`) 가 data-revealed 토글.
+   초기 상태(SSR + revealed=false) 에서 차트 내부 SVG polygon /
+   node 가 fade·scale 로 숨어 있다가 viewport 진입 시 등장.
+   ============================================================= */
+.chart-draw-reveal {
+  /* layout neutral — display 변경 없이 자식이 자기 layout 유지. */
+  contain: layout style;
+}
+
+/* SVG data polygon: stroke-dasharray draw-in 효과 */
+.chart-draw-reveal[data-revealed="false"] .app-element-orbit-data {
+  opacity: 0;
+  transform: scale(0.85);
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: none;
+}
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-data {
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: center;
+  transform-box: fill-box;
+  transition:
+    opacity 0.55s ease-out 0.45s,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.4s;
+}
+
+/* SVG spokes: stagger fade-in */
+.chart-draw-reveal[data-revealed="false"] .app-element-orbit-spoke {
+  opacity: 0;
+}
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-spoke {
+  opacity: 1;
+  transition: opacity 0.45s ease-out 0.15s;
+}
+
+/* SVG rings: gentle fade-in */
+.chart-draw-reveal[data-revealed="false"] .app-element-orbit-ring {
+  opacity: 0;
+}
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-ring {
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
+}
+
+/* DOM nodes (오행 5개): stagger pop-in. 각 node 가 layout 순서대로 등장. */
+.chart-draw-reveal[data-revealed="false"] .app-element-orbit-node {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.55);
+}
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    opacity 0.45s ease-out,
+    transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+/* stagger delay per layout order (목→화→토→금→수) */
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node:nth-of-type(1) { transition-delay: 0.6s; }
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node:nth-of-type(2) { transition-delay: 0.72s; }
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node:nth-of-type(3) { transition-delay: 0.84s; }
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node:nth-of-type(4) { transition-delay: 0.96s; }
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-node:nth-of-type(5) { transition-delay: 1.08s; }
+
+/* core 중심 글자 */
+.chart-draw-reveal[data-revealed="false"] .app-element-orbit-core {
+  opacity: 0;
+}
+.chart-draw-reveal[data-revealed="true"] .app-element-orbit-core {
+  opacity: 1;
+  transition: opacity 0.55s ease-out 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-draw-reveal .app-element-orbit-data,
+  .chart-draw-reveal .app-element-orbit-spoke,
+  .chart-draw-reveal .app-element-orbit-ring,
+  .chart-draw-reveal .app-element-orbit-node,
+  .chart-draw-reveal .app-element-orbit-core {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .chart-draw-reveal[data-revealed="true"] .app-element-orbit-node {
+    transform: translate(-50%, -50%) !important;
+  }
+}

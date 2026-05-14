@@ -15,6 +15,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { TRUST_SIGNALS } from '@/content/moonlight';
 import FiveElementOrbitChart from '@/components/saju/five-element-orbit-chart';
+// 2026-05-15 handoff PR-F: 62 m-chart — 차트 viewport 진입 시 draw-in.
+import { ChartDrawReveal } from '@/components/motion/chart-draw-reveal';
+import '@/components/motion/motion-primitives.css';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Element } from '@/lib/saju/types';
@@ -512,11 +515,14 @@ export function MobileSajuResultStory({
       render: () => (
         <StoryBody className="content-start">
           <div className="saju-mobile-story-orbit">
-            <FiveElementOrbitChart
-              byElement={fiveElementsByElement}
-              dominant={dominantElement}
-              weakest={weakestElement}
-            />
+            {/* 2026-05-15 handoff 62 m-chart — viewport 진입 시 SVG polygon + nodes draw-in */}
+            <ChartDrawReveal threshold={0.25}>
+              <FiveElementOrbitChart
+                byElement={fiveElementsByElement}
+                dominant={dominantElement}
+                weakest={weakestElement}
+              />
+            </ChartDrawReveal>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <StoryActionCard

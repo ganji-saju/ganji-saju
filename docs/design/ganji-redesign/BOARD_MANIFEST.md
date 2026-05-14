@@ -12,7 +12,7 @@
 |---|--:|--:|--:|--:|--:|--:|
 | 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 컴포넌트 라이브러리 | 4 | 0 | 0 | 0 | 4 | 0 |
-| 모션 보드 (motion) | 13 | 5 | 8 | 0 | 0 | 0 |
+| 모션 보드 (motion) | 13 | 6 | 7 | 0 | 0 | 0 |
 | 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
@@ -20,10 +20,10 @@
 | 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
 | 시스템 (banners/error) | 5 | 2 | 0 | 3 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
-| **합계** | **66** | **47** | **8** | **7** | **4** | **0** |
+| **합계** | **66** | **48** | **7** | **7** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
-> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-palshja(63) 5건은 production 화면에 마운트 완료. 나머지 8건은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 m-modal·m-toast·m-hanja·m-input·m-chart·m-spinners·m-page·m-push 를 production 화면에 차례로 연결 예정.
+> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-chart(62) / m-palshja(63) 6건은 production 화면에 마운트 완료. 나머지 7건은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 m-modal·m-toast·m-hanja·m-input·m-spinners·m-page·m-push 를 production 화면에 차례로 연결 예정.
 > 시스템 보드 5종(banners/errors/onboarding/push/terms) 은 실제 화면 곳곳에서 부분 적용 + design-stubs gallery 로 보존.
 
 ## 섹션별 보드
@@ -61,7 +61,7 @@
 | `m-hanja` | 59 · 한자 변환 | `screens-m.jsx:435` | GALLERY_ONLY | `ZodiacChip` / 사주팔자 한자에 morph 적용 안 됨 — 후속 PR | `/admin/design/motion#m-hanja` |
 | `m-spinners` | 60 · 로딩 스피너 6종 | `screens-n.jsx:6` | GALLERY_ONLY | inline `<Loader2>` / `animate-spin` 사용 0건 — 후속 PR | `/admin/design/motion#m-spinners` |
 | `m-input` | 61 · 인풋 포커스/검증 | `screens-n.jsx:151` | GALLERY_ONLY | birth info / login input 표준 focus ring 만 — 후속 PR | `/admin/design/motion#m-input` |
-| `m-chart` | 62 · 차트 그리기 | `screens-n.jsx:329` | GALLERY_ONLY | `FiveElementOrbitChart` 정적 — IntersectionObserver mount 미진 후속 PR | `/admin/design/motion#m-chart` |
+| `m-chart` | 62 · 차트 그리기 | `screens-n.jsx:329` | **IMPLEMENTED** | `ChartDrawReveal` (client wrapper, IntersectionObserver threshold 0.25) 가 `FiveElementOrbitChart` 를 감싸 viewport 진입 시 SVG polygon + 5 오행 노드 stagger draw-in (`mobile-saju-result-story.tsx:515`, 2026-05-15 PR-F) | `/admin/design/motion#m-chart` |
 | `m-palshja` | 63 · 사주팔자 셔플 | `screens-n.jsx:485` | **IMPLEMENTED** | `GangiLoadingOverlay` 내부에 `MotionPalshjaShuffle` nested mount (2026-05-15) | `/admin/design/motion#m-palshja` |
 
 ### mobile-core · 핵심 화면 (10)
