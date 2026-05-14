@@ -5,6 +5,8 @@
 
 import { useEffect, useState } from 'react';
 import { Bell, Clock, MoonStar, Sparkles, X } from 'lucide-react';
+// 2026-05-15 handoff PR-G3: m-modal + m-push motion 효과.
+import '@/components/motion/motion-primitives.css';
 
 const NOTIFICATION_BENEFITS = [
   {
@@ -139,17 +141,17 @@ export function PushPermissionModal({
       aria-labelledby="push-modal-title"
       className="fixed inset-0 z-50 flex items-end justify-center px-3 sm:items-center"
     >
-      {/* §dim */}
+      {/* §dim — 2026-05-15 handoff 56 m-modal: backdrop fade-in */}
       <button
         type="button"
         aria-label="모달 닫기"
         onClick={onClose}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="motion-modal-dim absolute inset-0 bg-black/40 backdrop-blur-sm"
       />
 
-      {/* §sheet */}
+      {/* §sheet — 2026-05-15 handoff 56 m-modal: 모바일 슬라이드-up / 데스크탑 scale-up */}
       <article
-        className="relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6"
+        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         <button
@@ -164,7 +166,7 @@ export function PushPermissionModal({
 
         <div className="flex items-start gap-3">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-white"
+            className="motion-push-bell grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-white"
             style={{
               background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
               boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
@@ -202,7 +204,8 @@ export function PushPermissionModal({
             return (
               <li
                 key={benefit.title}
-                className="flex items-start gap-3 rounded-[12px] border bg-white p-3"
+                // 2026-05-15 handoff 58 m-push: benefit card stagger entry
+                className="motion-push-card flex items-start gap-3 rounded-[12px] border bg-white p-3"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 <span
