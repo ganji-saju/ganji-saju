@@ -465,8 +465,9 @@ export default function NotificationCenterPage({
   // 2 탭 (받은 알림 feed / 알림 설정 set). PR6+ 디자인 언어 일관.
   const [tab, setTab] = useState<'feed' | 'set'>('feed');
 
-  // §feed 합성 데이터 — 실제 feed API 가 아직 없어 latestReading + 슬롯 스케줄 기반.
-  const feedToday: Array<{
+  // §feed — notification_delivery_logs 기반 실데이터. snapshot.feed 가 server-side 에서 채워짐.
+  type FeedItem = {
+    id?: string;
     title: string;
     desc: string;
     time: string;
@@ -474,8 +475,59 @@ export default function NotificationCenterPage({
     icon?: string;
     isNew?: boolean;
     href?: string;
-  }> = [];
-  if (snapshot.latestReading) {
+  };
+
+  function formatLogTime(iso: string, todayStart: number, yesterdayStart: number) {
+    const date = new Date(iso);
+    const ms = date.getTime();
+    if (ms >= todayStart || ms >= yesterdayStart) {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const period = hours < 12 ? '오전' : '오후';
+      const displayHour = hours % 12 === 0 ? 12 : hours % 12;
+      return `${period} ${displayHour}:${minutes.toString().padStart(2, '0')}`;
+    }
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
+
+  function slotToZodiac(slotKey: string): ZodiacKey | undefined {
+    if (slotKey.startsWith('today-fortune')) return 'rooster';
+    if (slotKey.startsWith('today-tarot')) return 'rabbit';
+    if (slotKey.startsWith('today-zodiac')) return 'horse';
+    if (slotKey.startsWith('dialogue')) return 'snake';
+    if (slotKey.startsWith('weekly') || slotKey.startsWith('monthly')) return 'tiger';
+    if (slotKey.startsWith('seasonal')) return 'dragon';
+    if (slotKey.startsWith('birthday') || slotKey.startsWith('returning')) return 'rat';
+    return undefined;
+  }
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+  const weekStart = todayStart - 7 * 24 * 60 * 60 * 1000;
+
+  const feedToday: FeedItem[] = [];
+  const feedYesterday: FeedItem[] = [];
+  const feedWeek: FeedItem[] = [];
+
+  for (const log of snapshot.feed ?? []) {
+    const ms = new Date(log.createdAt).getTime();
+    const item: FeedItem = {
+      id: log.id,
+      title: log.title,
+      desc: log.body,
+      time: formatLogTime(log.createdAt, todayStart, yesterdayStart),
+      zodiac: slotToZodiac(log.slotKey),
+      href: log.href,
+      isNew: ms >= todayStart,
+    };
+    if (ms >= todayStart) feedToday.push(item);
+    else if (ms >= yesterdayStart) feedYesterday.push(item);
+    else if (ms >= weekStart) feedWeek.push(item);
+  }
+
+  // 첫 사용 — 발송 로그가 없으면 latestReading 으로 placeholder 한 줄.
+  if (snapshot.feed && snapshot.feed.length === 0 && snapshot.latestReading) {
     feedToday.push({
       title: '오늘운세가 도착했어요',
       desc: snapshot.latestReading.dailyLine,
@@ -485,43 +537,8 @@ export default function NotificationCenterPage({
       href: '/today-fortune',
     });
   }
-  feedToday.push({
-    title: '달빛선생 답변이 도착',
-    desc: '"이번 주 수요일 오전이 가장 가벼워요"',
-    time: '오후 2:18',
-    zodiac: 'snake',
-    isNew: true,
-    href: '/dialogue',
-  });
 
-  const feedYesterday: typeof feedToday = [
-    {
-      title: '연애 마음 확인 결과',
-      desc: '저장된 풀이를 다시 확인해보세요',
-      time: '오후 9:42',
-      zodiac: 'rabbit',
-      href: '/my/results',
-    },
-    {
-      title: '5월 흐름 리포트',
-      desc: '월간 흐름 카드가 업데이트됨',
-      time: '오후 5:30',
-      zodiac: 'horse',
-      href: '/my/results',
-    },
-  ];
-
-  const feedWeek: typeof feedToday = [
-    {
-      title: '코인 환영 보너스',
-      desc: '회원가입 축하 보너스',
-      time: '5/8',
-      icon: '◆',
-      href: '/credits',
-    },
-  ];
-
-  function FeedRow({ item }: { item: (typeof feedToday)[number] }) {
+  function FeedRow({ item }: { item: FeedItem }) {
     return (
       <Link
         href={item.href ?? '/notifications'}
