@@ -97,9 +97,18 @@ export function getTodayConcern(concernId: ConcernId) {
 }
 
 export function getTodayConcernEntries(expanded: boolean) {
+  // 2026-05-14: 더 보기 / 접기 토글 시 기존 4개 카드가 자리를 바꾸지 않도록
+  // primary 순서를 유지하고 expanded 모드에서는 뒤에 추가 항목만 append.
+  // (이전 구현은 expanded=true 시 TODAY_CONCERNS 원본 배열을 반환했는데
+  //  원본 순서가 primary 와 달라서 general 이 1번→6번으로 이동하는 등
+  //  모든 카드 위치가 바뀌는 문제가 있었다.)
   const primaryIds: ConcernId[] = ['general', 'love_contact', 'money_spend', 'work_meeting'];
   const primary = primaryIds.map((id) => TODAY_CONCERN_MAP[id]);
-  return expanded ? TODAY_CONCERNS : primary;
+  if (!expanded) return primary;
+
+  const primarySet = new Set<ConcernId>(primaryIds);
+  const additional = TODAY_CONCERNS.filter((concern) => !primarySet.has(concern.id));
+  return [...primary, ...additional];
 }
 
 export function normalizeConcernId(value: unknown): ConcernId {
