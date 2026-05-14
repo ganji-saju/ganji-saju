@@ -4,7 +4,7 @@
 // caller 가 explicit consent 필요한 시점(예: 외국인 가입, 14세 미만 보호자 동의) 에 mount.
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import '@/components/motion/motion-primitives.css';
 
@@ -38,6 +38,23 @@ export function TermsConsentModal({
   title = '약관에 동의해 주세요',
   confirmLabel = '동의하고 계속',
 }: TermsConsentModalProps) {
+  // 2026-05-15 PR-M: SHELL 단계 disabled 체크 → 실제 state 관리.
+  // items 가 바뀌면 state 리셋. 한 모달에서 다른 items 를 노출할 일은 거의 없으나 안전.
+  const [consents, setConsents] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const item of items) initial[item.id] = false;
+    return initial;
+  });
+
+  // open 이 true 가 될 때 항상 초기화 (재오픈 시 이전 체크 상태가 남지 않도록).
+  useEffect(() => {
+    if (open) {
+      const reset: Record<string, boolean> = {};
+      for (const item of items) reset[item.id] = false;
+      setConsents(reset);
+    }
+  }, [open, items]);
+
   // ESC 닫기
   useEffect(() => {
     if (!open) return;
@@ -58,13 +75,29 @@ export function TermsConsentModal({
     };
   }, [open]);
 
+  // 필수 항목 모두 체크되었는지 + 전체 체크 여부 derive.
+  const allChecked = useMemo(() => items.every((item) => consents[item.id]), [items, consents]);
+  const requiredItems = useMemo(() => items.filter((item) => item.required), [items]);
+  const requiredAllChecked = useMemo(
+    () => requiredItems.every((item) => consents[item.id]),
+    [requiredItems, consents]
+  );
+
+  function toggleAll(next: boolean) {
+    const update: Record<string, boolean> = {};
+    for (const item of items) update[item.id] = next;
+    setConsents(update);
+  }
+
+  function toggleOne(id: string, next: boolean) {
+    setConsents((prev) => ({ ...prev, [id]: next }));
+  }
+
   if (!open) return null;
 
-  // SHELL 단계 — 실제 체크 state 와 onConfirm 분기는 후속 PR. 현재는 disabled 시연.
   function handleConfirmClick() {
-    const consents: Record<string, boolean> = {};
-    for (const item of items) consents[item.id] = true;
-    onConfirm(consents);
+    if (!requiredAllChecked) return;
+    onConfirm({ ...consents });
   }
 
   return (
@@ -96,7 +129,7 @@ export function TermsConsentModal({
         </button>
 
         <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-          약관 동의 (준비 중)
+          약관 동의
         </div>
         <h2
           id="terms-modal-title"
@@ -112,38 +145,60 @@ export function TermsConsentModal({
           서비스 이용을 위해 다음 약관 동의가 필요합니다. 필수 항목은 모두 동의해야 진행할 수 있어요.
         </p>
 
-        <ul className="mt-4 grid gap-2">
+        {/* 2026-05-15 PR-M: 전체 동의 row — 한국 사주 사이트 표준 패턴. */}
+        <label
+          className="mt-4 flex cursor-pointer items-center justify-between gap-2 rounded-[12px] border p-3"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+            모든 약관에 동의합니다
+          </span>
+          <input
+            type="checkbox"
+            checked={allChecked}
+            onChange={(event) => toggleAll(event.target.checked)}
+            className="h-5 w-5 cursor-pointer accent-[var(--app-pink)]"
+          />
+        </label>
+
+        <ul className="mt-2 grid gap-2">
           {items.map((item) => (
             <li
               key={item.id}
               className="flex items-center justify-between gap-2 rounded-[12px] border bg-white p-3"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="min-w-0 flex-1">
-                <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
-                  {item.label}
-                  {item.required ? (
-                    <span className="ml-1 text-[var(--app-pink-strong)]">*</span>
-                  ) : null}
+              <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={Boolean(consents[item.id])}
+                  onChange={(event) => toggleOne(item.id, event.target.checked)}
+                  className="h-5 w-5 cursor-pointer accent-[var(--app-pink)]"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                    {item.label}
+                    {item.required ? (
+                      <span className="ml-1 text-[var(--app-pink-strong)]">*</span>
+                    ) : (
+                      <span className="ml-1 text-[11px] font-bold text-[var(--app-copy-soft)]">(선택)</span>
+                    )}
+                  </div>
                 </div>
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-0.5 inline-block text-[11.5px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
-                  >
-                    전체 보기
-                  </a>
-                ) : null}
-              </div>
-              {/* SHELL 단계: 체크박스 disabled — caller 가 실 동의 흐름을 붙이는 후속 PR 에서 활성화. */}
-              <input
-                type="checkbox"
-                disabled
-                aria-disabled="true"
-                className="h-5 w-5 cursor-not-allowed accent-[var(--app-pink)] opacity-60"
-              />
+              </label>
+              {item.href ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-[11.5px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
+                >
+                  전체 보기
+                </a>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -152,11 +207,11 @@ export function TermsConsentModal({
           <button
             type="button"
             onClick={handleConfirmClick}
-            disabled
-            aria-disabled="true"
-            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-copy-soft)] px-5 text-[14.5px] font-extrabold text-white opacity-60"
+            disabled={!requiredAllChecked}
+            aria-disabled={!requiredAllChecked}
+            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:bg-[var(--app-copy-soft)] disabled:opacity-60 disabled:shadow-none"
           >
-            {confirmLabel} (준비 중)
+            {confirmLabel}
           </button>
           <button
             type="button"
