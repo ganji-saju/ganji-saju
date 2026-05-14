@@ -6,22 +6,24 @@
 
 ## 요약
 
-| 카테고리 | 총 | IMPLEMENTED / QA_PASS | SHELL | REFERENCE_ONLY | TODO |
-|---|--:|--:|--:|--:|--:|
-| 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 |
-| 컴포넌트 라이브러리 | 4 | 0 | 0 | 4 | 0 |
-| 모션 보드 (motion) | 13 | 13 | 0 | 0 | 0 |
-| 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 |
-| 모바일 관계 & 상담 | 13 | 12 | 1 | 0 | 0 |
-| 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 |
-| 확장 (extras) | 10 | 9 | 1 | 0 | 0 |
-| 다국어 & 디바이스 | 2 | 0 | 2 | 0 | 0 |
-| 시스템 (banners/error) | 5 | 3 | 2 | 0 | 0 |
-| 데스크탑 | 1 | 1 | 0 | 0 | 0 |
-| **합계** | **66** | **56** | **6** | **4** | **0** |
+> **2026-05-15 정정**: 이전 status 는 `/admin/design/motion` gallery import 만 있어도 IMPLEMENTED 로 분류했는데, audit 결과(`audit-reports/2026-05-15-handoff-implementation-audit.md`) 에서 production 라우트 import 0건임이 밝혀짐. 이번 PR 에서 m-loading / m-coin / m-palshja 3건은 실제 production 화면(결제 success, 풀이 overlay) 에 연결 완료. 나머지 10건은 `GALLERY_ONLY` 로 정확히 강등. push-modal 도 production mount 0 라 SHELL 로 강등.
+
+| 카테고리 | 총 | IMPLEMENTED / QA_PASS | GALLERY_ONLY | SHELL | REFERENCE_ONLY | TODO |
+|---|--:|--:|--:|--:|--:|--:|
+| 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 | 0 |
+| 컴포넌트 라이브러리 | 4 | 0 | 0 | 0 | 4 | 0 |
+| 모션 보드 (motion) | 13 | 3 | 10 | 0 | 0 | 0 |
+| 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
+| 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
+| 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
+| 확장 (extras) | 10 | 9 | 0 | 1 | 0 | 0 |
+| 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
+| 시스템 (banners/error) | 5 | 2 | 0 | 3 | 0 | 0 |
+| 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
+| **합계** | **66** | **45** | **10** | **7** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
-> 모션 13종은 `/admin/design/motion` gallery 에 모두 구현됨 (이번 PR).
+> 모션 13종 중 m-loading(51) / m-coin(54) / m-palshja(63) 는 production loading state 에 마운트 완료. 나머지 10건은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 m-reveal·m-tarot·m-modal·m-toast·m-hanja·m-input·m-chart·m-spinners·m-page·m-push 를 production 화면에 차례로 연결 예정.
 > 시스템 보드 5종(banners/errors/onboarding/push/terms) 은 실제 화면 곳곳에서 부분 적용 + design-stubs gallery 로 보존.
 
 ## 섹션별 보드
@@ -48,19 +50,19 @@
 
 | ID | Label | Source | 상태 | Production trigger | Gallery 위치 |
 |---|---|---|---|---|---|
-| `m-loading` | 51 · 사주 분석 로딩 | `screens-l.jsx:9` | IMPLEMENTED | `GangiLoadingOverlay` (사주 시작하기, today-detail unlock) | `/admin/design/motion#m-loading` |
-| `m-reveal` | 52 · 결과 카드 등장 | `screens-l.jsx:154` | IMPLEMENTED | 사주 결과/오늘운세 결과 페이지 진입 | `/admin/design/motion#m-reveal` |
-| `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | IMPLEMENTED | 타로 카드 선택 → 결과 페이지 | `/admin/design/motion#m-tarot` |
-| `m-coin` | 54 · 코인 충전 성공 | `screens-l.jsx:447` | IMPLEMENTED | `/credits/success` | `/admin/design/motion#m-coin` |
-| `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | IMPLEMENTED | router push 시 prefetch overlay | `/admin/design/motion#m-page` |
-| `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | IMPLEMENTED | `<details>` 패널 등장, drawer 오픈 | `/admin/design/motion#m-modal` |
-| `m-toast` | 57 · 토스트 시퀀스 | `screens-m.jsx:225` | IMPLEMENTED | 결제/저장 알림 토스트 (gallery 데모) | `/admin/design/motion#m-toast` |
-| `m-push` | 58 · 푸시 알림 도착 | `screens-m.jsx:310` | IMPLEMENTED | push 권한 + 수신 데모 | `/admin/design/motion#m-push` |
-| `m-hanja` | 59 · 한자 변환 | `screens-m.jsx:435` | IMPLEMENTED | 한자 morph (zodiac chip / 사주팔자) | `/admin/design/motion#m-hanja` |
-| `m-spinners` | 60 · 로딩 스피너 6종 | `screens-n.jsx:6` | IMPLEMENTED | inline loading 곳곳 | `/admin/design/motion#m-spinners` |
-| `m-input` | 61 · 인풋 포커스/검증 | `screens-n.jsx:151` | IMPLEMENTED | birth info input, login | `/admin/design/motion#m-input` |
-| `m-chart` | 62 · 차트 그리기 | `screens-n.jsx:329` | IMPLEMENTED | 오행 균형 카드, fortune calendar tone bar | `/admin/design/motion#m-chart` |
-| `m-palshja` | 63 · 사주팔자 셔플 | `screens-n.jsx:485` | IMPLEMENTED | 사주 분석 loading 안 8글자 슬롯 | `/admin/design/motion#m-palshja` |
+| `m-loading` | 51 · 사주 분석 로딩 | `screens-l.jsx:9` | **IMPLEMENTED** | `GangiLoadingOverlay` (사주 시작하기, today-detail unlock) + `/credits/success` LoadingState + `/membership/success` LoadingState 에 `MotionSajuLoading` 직접 mount (2026-05-15) | `/admin/design/motion#m-loading` |
+| `m-reveal` | 52 · 결과 카드 등장 | `screens-l.jsx:154` | GALLERY_ONLY | children prop 추가하여 production-ready 상태이지만 결과 페이지 mount 미진 — 후속 PR 예정 | `/admin/design/motion#m-reveal` |
+| `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | GALLERY_ONLY | 타로 카드 선택 흐름 미연결 — 후속 PR | `/admin/design/motion#m-tarot` |
+| `m-coin` | 54 · 코인 충전 성공 | `screens-l.jsx:447` | **IMPLEMENTED** | `/credits/success` SuccessState + `/membership/success` SuccessState 에 `MotionCoinSuccess` mount (2026-05-15) | `/admin/design/motion#m-coin` |
+| `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | GALLERY_ONLY | `app/template.tsx` 미생성. router push prefetch overlay 미마운트 | `/admin/design/motion#m-page` |
+| `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | GALLERY_ONLY | 어떤 모달/drawer 도 motion mount 안 함 — 후속 PR | `/admin/design/motion#m-modal` |
+| `m-toast` | 57 · 토스트 시퀀스 | `screens-m.jsx:225` | GALLERY_ONLY | sonner / react-hot-toast / `<Toaster>` 등 토스트 인프라 자체 부재 — 후속 PR | `/admin/design/motion#m-toast` |
+| `m-push` | 58 · 푸시 알림 도착 | `screens-m.jsx:310` | GALLERY_ONLY | `PushPermissionModal` production mount 없음 — push-modal 보드 자체 SHELL | `/admin/design/motion#m-push` |
+| `m-hanja` | 59 · 한자 변환 | `screens-m.jsx:435` | GALLERY_ONLY | `ZodiacChip` / 사주팔자 한자에 morph 적용 안 됨 — 후속 PR | `/admin/design/motion#m-hanja` |
+| `m-spinners` | 60 · 로딩 스피너 6종 | `screens-n.jsx:6` | GALLERY_ONLY | inline `<Loader2>` / `animate-spin` 사용 0건 — 후속 PR | `/admin/design/motion#m-spinners` |
+| `m-input` | 61 · 인풋 포커스/검증 | `screens-n.jsx:151` | GALLERY_ONLY | birth info / login input 표준 focus ring 만 — 후속 PR | `/admin/design/motion#m-input` |
+| `m-chart` | 62 · 차트 그리기 | `screens-n.jsx:329` | GALLERY_ONLY | `FiveElementOrbitChart` 정적 — IntersectionObserver mount 미진 후속 PR | `/admin/design/motion#m-chart` |
+| `m-palshja` | 63 · 사주팔자 셔플 | `screens-n.jsx:485` | **IMPLEMENTED** | `GangiLoadingOverlay` 내부에 `MotionPalshjaShuffle` nested mount (2026-05-15) | `/admin/design/motion#m-palshja` |
 
 ### mobile-core · 핵심 화면 (10)
 
@@ -134,7 +136,7 @@
 | `banners` | 24 · 배너 시스템 (7 종) | `screens-h.jsx:6` | IMPLEMENTED | `src/components/gangi/gangi-banner.tsx` (7 variants) + showcase `/admin/design/banners` | hero/soft/cosmic/inline/sticky/success/warning |
 | `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | IMPLEMENTED | `src/app/not-found.tsx` (404), `src/app/error.tsx` (client 5xx), `src/app/global-error.tsx` (root) | PR #68/이번 PR |
 | `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | login → empathy → birth 흐름이 사실상 onboarding. 별도 onboarding 화면 미구현 | |
-| `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | IMPLEMENTED | `src/components/notifications/push-permission-modal.tsx` + showcase `/admin/design/push-modal` | 이번 PR · 가치 제안 3종 + requestPermission → subscribe 풀 흐름 |
+| `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | SHELL | 컴포넌트 + showcase 존재하나 production 라우트에서 mount 0건 (audit 2026-05-15 검증). 후속 PR 에서 가입 7일차 자동 노출 라우트에 mount 예정 | `src/components/notifications/push-permission-modal.tsx` |
 | `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | 회원가입 흐름 내 implicit consent. 별도 modal 미구현 | |
 
 ### desktop · 반응형 (1)

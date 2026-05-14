@@ -3,6 +3,9 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+// 2026-05-15 handoff P0: 54 m-coin (코인 충전 성공) + 51 m-loading (로딩 단계) 연결.
+import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { BulletList } from '@/components/layout/bullet-list';
 import { FeatureCard } from '@/components/layout/feature-card';
@@ -61,6 +64,14 @@ function LoadingState() {
             eyebrow="현재 상태"
             description="결제 정보와 코인 반영을 확인하고 있습니다. 잠시 뒤 자동으로 다음 상태가 열립니다."
           />
+          {/* 2026-05-15 handoff 51 m-loading — Phase 3 "결제 spinner 위치 motion 교체" 요건. */}
+          <div className="mt-6 flex justify-center">
+            <MotionSajuLoading
+              active
+              labels={['결제 확인', '코인 반영', '확인 완료']}
+              moonGlyph="貨"
+            />
+          </div>
         </SectionSurface>
 
         <SupportRail
@@ -134,6 +145,11 @@ function SuccessState({ coins }: { coins: number }) {
         title="필요할 때 여는 해석을 위한 코인이 준비되었습니다"
         description="코인 충전이 끝났습니다. 지금 바로 다시 열어보실 흐름과, 자주 쓰실 때의 다음 선택지를 함께 정리해 두었습니다."
       />
+
+      {/* 2026-05-15 handoff 54 m-coin — 결제 성공 직후 입자 + ✓ 카드. Phase 4 명시 요건. */}
+      <div className="my-4 flex justify-center">
+        <MotionCoinSuccess active title="충전 완료" sub={`+ ${coins} 코인`} />
+      </div>
 
       <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
         <SectionSurface surface="panel" size="lg">
