@@ -9,7 +9,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/credits', '/today-fortune', '/tarot/daily', '/zodiac', '/zodiac/', '/star-sign', '/star-sign/', '/dream-interpretation', '/dream-interpretation/'],
-        disallow: ['/api/', '/login', '/credits/success', '/saju/', '/my', '/admin'],
+        // 2026-05-15 PR-H: SHELL 라우트(lock-screen, onboarding) 도 노출 제외 (준비 중).
+        disallow: ['/api/', '/login', '/credits/success', '/saju/', '/my', '/admin', '/lock-screen', '/onboarding'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
