@@ -49,33 +49,33 @@ const TONE_META: Record<
   decision: {
     label: '결정일',
     description: '계약, 신청, 발표처럼 방향을 정하기 좋은 날',
-    cellClassName: 'border-[var(--app-gold)]/55 bg-[rgba(210,176,114,0.22)] text-[var(--app-gold-text)] shadow-[0_0_18px_rgba(210,176,114,0.14)]',
-    badgeClassName: 'border-[var(--app-gold)]/35 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]',
-    railClassName: 'bg-[var(--app-gold)]',
+    cellClassName: 'border-[var(--app-pink)]/55 bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)] shadow-[0_4px_12px_rgba(216,27,114,0.18)]',
+    badgeClassName: 'border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]',
+    railClassName: 'bg-[var(--app-pink)]',
     icon: Target,
   },
   good: {
     label: '좋은 날',
     description: '연락하고, 정리하고, 가볍게 진행해도 좋은 날',
-    cellClassName: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-    badgeClassName: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    railClassName: 'bg-emerald-500',
+    cellClassName: 'border-[rgba(45,135,88,0.28)] bg-[#e8f5ee] text-[var(--app-jade)]',
+    badgeClassName: 'border-[rgba(45,135,88,0.28)] bg-[#e8f5ee] text-[var(--app-jade)]',
+    railClassName: 'bg-[var(--app-jade)]',
     icon: CheckCircle2,
   },
   average: {
     label: '보통 날',
     description: '큰 결정보다 루틴과 확인을 쌓기 좋은 날',
-    cellClassName: 'border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] text-[var(--app-copy)]',
-    badgeClassName: 'border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] text-[var(--app-copy-soft)]',
+    cellClassName: 'border-[var(--app-line)] bg-white text-[var(--app-copy)]',
+    badgeClassName: 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]',
     railClassName: 'bg-[var(--app-line)]',
     icon: CircleDot,
   },
   caution: {
     label: '주의 날',
     description: '돈, 말, 확답은 한 번 더 확인하는 날',
-    cellClassName: 'border-rose-200 bg-rose-50 text-rose-900',
-    badgeClassName: 'border-rose-200 bg-rose-50 text-rose-800',
-    railClassName: 'bg-rose-500',
+    cellClassName: 'border-[rgba(198,69,69,0.28)] bg-[#fdecec] text-[var(--app-coral)]',
+    badgeClassName: 'border-[rgba(198,69,69,0.28)] bg-[#fdecec] text-[var(--app-coral)]',
+    railClassName: 'bg-[var(--app-coral)]',
     icon: AlertTriangle,
   },
 };
@@ -133,11 +133,15 @@ function MonthChip({
     <button
       type="button"
       onClick={onClick}
-      className={
-        active
-          ? 'rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/12 px-3 py-1.5 text-xs font-semibold text-[var(--app-gold-text)]'
-          : 'rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1.5 text-xs text-[var(--app-copy)] transition-colors hover:bg-[rgba(255,255,255,0.06)]'
-      }
+      className="inline-flex h-8 items-center justify-center rounded-full px-3 text-[12px] font-extrabold transition-all"
+      style={{
+        background: active ? 'var(--app-pink)' : '#fff',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: active ? 'var(--app-pink)' : 'var(--app-line)',
+        color: active ? '#fff' : 'var(--app-copy-muted)',
+        boxShadow: active ? '0 6px 14px rgba(216,27,114,0.28)' : undefined,
+      }}
     >
       {month}월
     </button>
@@ -198,27 +202,35 @@ function ToneSummaryCard({
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] p-4">
-      <div className="flex items-start gap-3">
-        <div className={`flex size-10 shrink-0 items-center justify-center rounded-full ${meta.badgeClassName}`}>
-          <Icon className="size-4" aria-hidden="true" />
+    <div
+      className="rounded-[14px] border bg-white p-3.5"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div className="flex items-center gap-2.5">
+        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border ${meta.badgeClassName}`}>
+          <Icon className="h-[14px] w-[14px]" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">{meta.label}</div>
-            <div className="text-lg font-semibold text-[var(--app-gold-text)]">{count}일</div>
+            <div className="text-[12.5px] font-extrabold text-[var(--app-ink)]">{meta.label}</div>
+            <div className="text-[15px] font-extrabold text-[var(--app-pink-strong)]">{count}일</div>
           </div>
-          <p className="mt-2 text-xs leading-5 text-[var(--app-copy-muted)]">{meta.description}</p>
+          <p
+            className="mt-1 text-[11px] leading-[1.55] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {meta.description}
+          </p>
         </div>
       </div>
       {entries.length ? (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {entries.map((entry) => (
             <button
               key={`${tone}-${entry.isoDate}`}
               type="button"
               onClick={() => onSelect(entry.day)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-transform active:scale-95 ${meta.badgeClassName}`}
+              className={`rounded-full border px-2.5 py-1 text-[11.5px] font-extrabold transition-transform active:scale-95 ${meta.badgeClassName}`}
             >
               {formatCompactDay(entry)}
             </button>
@@ -239,17 +251,27 @@ function CalendarMonthMap({
   const total = Math.max(1, report.totalDays);
 
   return (
-    <div className="rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] p-4">
-      <div className="flex items-center justify-between gap-3">
+    <div
+      className="rounded-[16px] border bg-white p-4"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="app-caption text-[var(--app-gold-soft)]">월간 지도</div>
-          <div className="mt-2 text-sm font-semibold text-[var(--app-ivory)]">먼저 볼 날을 색으로 나눴습니다</div>
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            월간 지도
+          </div>
+          <div className="mt-1 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+            먼저 볼 날을 색으로 나눴습니다
+          </div>
         </div>
-        <CalendarDays className="size-5 text-[var(--app-gold-soft)]" aria-hidden="true" />
+        <CalendarDays className="h-4 w-4 text-[var(--app-pink-strong)]" aria-hidden="true" />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)]">
-        <div className="flex h-3">
+      <div
+        className="mt-3 overflow-hidden rounded-full border"
+        style={{ borderColor: 'var(--app-line)', background: 'rgba(0,0,0,0.04)' }}
+      >
+        <div className="flex h-2.5">
           {(['decision', 'good', 'average', 'caution'] as FortuneCalendarTone[]).map((tone) => (
             <div
               key={tone}
@@ -262,7 +284,7 @@ function CalendarMonthMap({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {(['decision', 'good', 'caution', 'average'] as FortuneCalendarTone[]).map((tone) => (
           <ToneSummaryCard
             key={tone}
@@ -282,25 +304,49 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-[22px] border border-[var(--app-gold)]/20 bg-[linear-gradient(135deg,rgba(210,176,114,0.12),rgba(255,255,255,0.025))] p-4">
-      <div className="flex items-start gap-3">
-        <div className={`flex size-11 shrink-0 items-center justify-center rounded-full ${meta.badgeClassName}`}>
-          <Icon className="size-5" aria-hidden="true" />
+    <div
+      className="rounded-[16px] border p-4"
+      style={{
+        background: 'linear-gradient(135deg, var(--app-pink-soft), #fff)',
+        borderColor: 'var(--app-pink-line)',
+      }}
+    >
+      <div className="flex items-center gap-2.5">
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${meta.badgeClassName}`}>
+          <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
         </div>
-        <div>
-          <div className="app-caption text-[var(--app-gold-soft)]">선택한 날</div>
-          <h3 className="mt-2 text-xl font-semibold text-[var(--app-ivory)]">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            선택한 날
+          </div>
+          <h3
+            className="mt-0.5 text-[16px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
             {formatDayLabel(entry)} · {meta.label}
           </h3>
-          <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{entry.summary}</p>
         </div>
       </div>
-      <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-4 py-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-gold-text)]">
-          <Clock3 className="size-4" aria-hidden="true" />
+      <p
+        className="mt-3 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        {entry.summary}
+      </p>
+      <div
+        className="mt-3 rounded-[14px] border bg-white p-3.5"
+        style={{ borderColor: 'var(--app-pink-line)' }}
+      >
+        <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
           오늘 할 일
         </div>
-        <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{entry.actionHint}</p>
+        <p
+          className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {entry.actionHint}
+        </p>
       </div>
     </div>
   );
@@ -318,16 +364,32 @@ function CalendarHintGroup({
   if (entries.length === 0) return null;
 
   return (
-    <div className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="app-caption text-[var(--app-gold-soft)]">{title}</div>
-        <Badge className={TONE_META[tone].badgeClassName}>{TONE_META[tone].label}</Badge>
+    <div
+      className="rounded-[14px] border bg-white p-4"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          {title}
+        </div>
+        <span className={`rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold ${TONE_META[tone].badgeClassName}`}>
+          {TONE_META[tone].label}
+        </span>
       </div>
-      <div className="mt-3 grid gap-3">
+      <div className="mt-2.5 grid gap-2">
         {entries.map((entry) => (
-          <div key={`${title}-${entry.isoDate}`} className="rounded-[14px] bg-[rgba(255,255,255,0.03)] px-3 py-3">
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">{formatDayLabel(entry)}</div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{entry.actionHint}</p>
+          <div
+            key={`${title}-${entry.isoDate}`}
+            className="rounded-[12px] border bg-white px-3 py-2.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[12.5px] font-extrabold text-[var(--app-ink)]">{formatDayLabel(entry)}</div>
+            <p
+              className="mt-1.5 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              {entry.actionHint}
+            </p>
           </div>
         ))}
       </div>
@@ -479,79 +541,188 @@ export default function FortuneCalendarPanel({
   }
 
   return (
-    <section id="fortune-calendar" className="gangi-report-panel p-6 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="app-caption">Fortune Calendar</div>
-          <h2 className="mt-4 text-3xl text-[var(--app-ivory)]">
-            달별로 한눈에 보는 결정일과 주의 날
-          </h2>
+    <section id="fortune-calendar" className="space-y-4">
+      {/* §Hero — indigo tone (월별) + 月 한자 인장 + 권한 배지 */}
+      <section
+        className="relative overflow-hidden rounded-[20px] border p-5"
+        style={{
+          background: 'linear-gradient(180deg, #eef0fb 0%, #fff 100%)',
+          borderColor: 'rgba(74,92,184,0.22)',
+          boxShadow: '0 22px 50px -28px rgba(74,92,184,0.22)',
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(74,92,184,0.18), transparent 70%)' }}
+        />
+        <div className="relative flex items-start gap-3">
+          <span
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+            style={{
+              background: 'linear-gradient(135deg, #6b7bd1, #4a5cb8)',
+              boxShadow: '0 10px 22px rgba(74,92,184,0.32)',
+              fontFamily: 'var(--font-han)',
+            }}
+            aria-hidden="true"
+          >
+            月
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="rounded-full px-2.5 py-0.5 text-[10px] font-extrabold text-white"
+                style={{
+                  background: hasLifetimeAccess ? 'var(--app-pink)' : '#4a5cb8',
+                  boxShadow: hasLifetimeAccess
+                    ? '0 4px 10px rgba(216,27,114,0.28)'
+                    : '0 4px 10px rgba(74,92,184,0.28)',
+                }}
+              >
+                {hasLifetimeAccess ? '✓ 소장권' : '월 단위 2코인'}
+              </span>
+              {data?.access === 'month_unlock' ? (
+                <span className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
+                  ✓ 해제된 달
+                </span>
+              ) : null}
+              {data?.access === 'product_unlock' ? (
+                <span className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
+                  ✓ 구매한 달
+                </span>
+              ) : null}
+            </div>
+            <div
+              className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+              style={{ color: '#4a5cb8' }}
+            >
+              Fortune Calendar
+            </div>
+            <h2
+              className="mt-0.5 text-[20px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              달별로 한눈에 보는
+              <br />
+              결정일과 주의 날
+            </h2>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge className={hasLifetimeAccess ? TONE_META.decision.badgeClassName : TONE_META.average.badgeClassName}>
-            {hasLifetimeAccess ? '소장권 열람' : '월 단위 2코인'}
-          </Badge>
-          {data?.access === 'month_unlock' ? (
-            <Badge className={TONE_META.good.badgeClassName}>해제된 달</Badge>
-          ) : null}
-          {data?.access === 'product_unlock' ? (
-            <Badge className={TONE_META.good.badgeClassName}>구매한 달</Badge>
-          ) : null}
+
+        {/* 12개월 chip */}
+        <div className="relative mt-4 flex flex-wrap gap-1.5">
+          {Array.from({ length: 12 }, (_, index) => index + 1).map((month) => (
+            <MonthChip
+              key={month}
+              month={month}
+              active={month === selectedMonth}
+              onClick={() => setSelectedMonth(month)}
+            />
+          ))}
         </div>
-      </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {Array.from({ length: 12 }, (_, index) => index + 1).map((month) => (
-          <MonthChip
-            key={month}
-            month={month}
-            active={month === selectedMonth}
-            onClick={() => setSelectedMonth(month)}
-          />
-        ))}
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        {(['decision', 'good', 'average', 'caution'] as FortuneCalendarTone[]).map((tone) => (
-          <Badge key={tone} className={TONE_META[tone].badgeClassName}>
-            {TONE_META[tone].label}
-          </Badge>
-        ))}
-      </div>
+        {/* tone legend */}
+        <div className="relative mt-3 flex flex-wrap gap-1.5">
+          {(['decision', 'good', 'average', 'caution'] as FortuneCalendarTone[]).map((tone) => (
+            <span
+              key={tone}
+              className={`rounded-full border px-2.5 py-1 text-[10.5px] font-extrabold ${TONE_META[tone].badgeClassName}`}
+            >
+              {TONE_META[tone].label}
+            </span>
+          ))}
+        </div>
+      </section>
 
       {state === 'loading' ? (
-        <div className="mt-6 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="h-[360px] animate-pulse rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)]" />
-          <div className="h-[360px] animate-pulse rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)]" />
-        </div>
+        <section
+          className="rounded-[20px] border p-6"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <div className="text-center">
+            <div
+              className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[22px] font-extrabold"
+              style={{
+                background: '#fff',
+                color: 'var(--app-pink-strong)',
+                border: '1px solid var(--app-pink-line)',
+                fontFamily: 'var(--font-han)',
+                animation: 'gangi-float-y 3.6s ease-in-out infinite',
+              }}
+              aria-hidden="true"
+            >
+              月
+            </div>
+            <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              월별 캘린더 정리 중
+            </div>
+            <h2 className="mt-1.5 text-[19px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+              {selectedMonth}월의 결정일·주의 날을 정리하고 있어요
+            </h2>
+          </div>
+        </section>
       ) : state === 'error' ? (
-        <div className="mt-6 rounded-[22px] border border-rose-400/20 bg-rose-400/10 px-5 py-5 text-sm text-rose-100">
-          {error}
-        </div>
+        <section
+          className="rounded-[20px] border p-5"
+          style={{
+            background: '#fdecec',
+            borderColor: 'rgba(198,69,69,0.22)',
+          }}
+        >
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+            불러오기 실패
+          </div>
+          <p
+            className="mt-1.5 text-[13.5px] leading-[1.7] text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {error}
+          </p>
+        </section>
       ) : (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)]">
-          <article className="rounded-[26px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="app-caption">{data?.monthLabel ?? `${targetYear}년 ${selectedMonth}월`}</div>
-                <div className="mt-2 text-lg font-semibold text-[var(--app-ivory)]">
-                  {data?.report?.summary.headline ?? '이 달의 흐름을 해제하면 날별 결을 바로 읽을 수 있습니다.'}
+        <>
+          {/* §Month headline + 캘린더 grid */}
+          <section
+            className="rounded-[20px] border bg-white p-5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  {data?.monthLabel ?? `${targetYear}년 ${selectedMonth}월`}
                 </div>
+                <p
+                  className="mt-1 text-[15px] font-extrabold leading-[1.55] text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {data?.report?.summary.headline ?? '이 달의 흐름을 해제하면 날별 결을 바로 읽을 수 있습니다.'}
+                </p>
               </div>
               {remaining !== null ? (
-                <div className="text-xs text-[var(--app-copy-soft)]">잔여 코인 {remaining}개</div>
+                <div className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]" style={{ borderColor: 'var(--app-line)' }}>
+                  잔여 코인 {remaining}
+                </div>
               ) : null}
             </div>
 
             {data?.report ? (
-              <div className="mt-5">
+              <div className="mt-4">
                 <CalendarMonthMap report={data.report} onSelectDay={setSelectedDay} />
               </div>
             ) : null}
 
-            <div className="mt-5 grid grid-cols-7 gap-2">
-              {WEEKDAY_LABELS.map((label) => (
-                <div key={label} className="text-center text-xs font-semibold text-[var(--app-copy-soft)]">
+            <div className="mt-4 grid grid-cols-7 gap-1.5">
+              {WEEKDAY_LABELS.map((label, index) => (
+                <div
+                  key={label}
+                  className="text-center text-[11px] font-extrabold"
+                  style={{
+                    color: index === 0 ? 'var(--app-coral)' : index === 6 ? '#4a5cb8' : 'var(--app-copy-soft)',
+                  }}
+                >
                   {label}
                 </div>
               ))}
@@ -562,7 +733,8 @@ export default function FortuneCalendarPanel({
                     return (
                       <div
                         key={`empty-${weekIndex}-${cellIndex}`}
-                        className="aspect-square rounded-[18px] border border-dashed border-[var(--app-line)]/60 bg-[rgba(255,255,255,0.015)]"
+                        className="aspect-square rounded-[12px] border border-dashed bg-white"
+                        style={{ borderColor: 'rgba(0,0,0,0.06)' }}
                       />
                     );
                   }
@@ -573,11 +745,13 @@ export default function FortuneCalendarPanel({
                   const isSelected = data?.report && isFortuneCalendarEntry(cell) && cell.day === selectedDay;
                   const content = (
                     <>
-                      <div className="text-sm font-semibold">{cell.day}</div>
+                      <div className="text-[13.5px] font-extrabold leading-none">{cell.day}</div>
                       {data?.report && isFortuneCalendarEntry(cell) ? (
-                        <div className="mt-2 text-[10px] leading-4 opacity-90">{TONE_META[cell.tone].label}</div>
+                        <div className="mt-1.5 text-[9px] font-extrabold leading-none opacity-85">
+                          {TONE_META[cell.tone].label}
+                        </div>
                       ) : (
-                        <div className="mt-2 text-[10px] leading-4 opacity-60">잠금</div>
+                        <div className="mt-1.5 text-[9px] font-extrabold leading-none opacity-50">잠금</div>
                       )}
                     </>
                   );
@@ -588,9 +762,17 @@ export default function FortuneCalendarPanel({
                         key={`${selectedMonth}-${cell.day}-${weekIndex}-${cellIndex}`}
                         type="button"
                         onClick={() => setSelectedDay(cell.day)}
-                        className={`relative aspect-square overflow-hidden rounded-[18px] border px-2 py-2 text-left transition-transform active:scale-95 ${TONE_META[tone].cellClassName} ${
-                          isSelected ? 'ring-2 ring-[var(--app-gold)]/60 ring-offset-2 ring-offset-[var(--app-bg)]' : ''
-                        }`}
+                        className={`relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[12px] border px-1 py-1 transition-all active:scale-95 ${TONE_META[tone].cellClassName}`}
+                        style={
+                          isSelected
+                            ? {
+                                outline: '2px solid var(--app-pink)',
+                                outlineOffset: 2,
+                                transform: 'translateY(-1px)',
+                                boxShadow: '0 8px 18px rgba(216,27,114,0.22)',
+                              }
+                            : undefined
+                        }
                         aria-label={`${cell.day}일 ${TONE_META[cell.tone].label} 보기`}
                       >
                         {content}
@@ -601,7 +783,7 @@ export default function FortuneCalendarPanel({
                   return (
                     <div
                       key={`${selectedMonth}-${cell.day}-${weekIndex}-${cellIndex}`}
-                      className={`relative aspect-square overflow-hidden rounded-[18px] border px-2 py-2 ${TONE_META[tone].cellClassName}`}
+                      className={`flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[12px] border px-1 py-1 ${TONE_META[tone].cellClassName}`}
                     >
                       {content}
                     </div>
@@ -609,38 +791,59 @@ export default function FortuneCalendarPanel({
                 })
               )}
             </div>
-          </article>
+          </section>
 
-          <article className="rounded-[26px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] p-5">
+          {/* §Day focus + summary */}
+          <section
+            className="rounded-[20px] border bg-white p-5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
             {data?.report ? (
               <>
-                <div className="app-caption">월간 판단</div>
-                <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{data.report.summary.summary}</p>
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  월간 판단
+                </div>
+                <p
+                  className="mt-2 text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {data.report.summary.summary}
+                </p>
 
                 {focusEntry ? (
-                  <div className="mt-5">
+                  <div className="mt-4">
                     <DayFocusPanel entry={focusEntry} />
                   </div>
                 ) : null}
 
-                <div className="mt-5 grid gap-3">
-                  <div className="yearly-tone-good rounded-[18px] border px-4 py-4">
-                    <div className="app-caption">이번 달 먼저 움직일 날</div>
-                    <p className="mt-3 text-sm leading-7">
+                <div className="mt-4 grid gap-2">
+                  <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
+                    <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+                      이번 달 먼저 움직일 날
+                    </div>
+                    <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
                       {data.report.summary.decisionDays.join(' · ')}
                     </p>
                   </div>
-                  <div className="yearly-tone-caution rounded-[18px] border px-4 py-4">
-                    <div className="app-caption">확답을 늦추면 좋은 날</div>
-                    <p className="mt-3 text-sm leading-7">{data.report.summary.cautionDays.join(' · ')}</p>
+                  <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
+                    <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+                      확답을 늦추면 좋은 날
+                    </div>
+                    <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+                      {data.report.summary.cautionDays.join(' · ')}
+                    </p>
                   </div>
                 </div>
 
-                <details className="mt-5 rounded-[22px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
-                  <summary className="cursor-pointer text-sm font-semibold text-[var(--app-gold-text)]">
-                    날짜별 행동 힌트 더 보기
+                <details
+                  className="group mt-4 rounded-[14px] border bg-white p-3.5"
+                  style={{ borderColor: 'var(--app-line)' }}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]">
+                    <span>날짜별 행동 힌트 더 보기</span>
+                    <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
                   </summary>
-                  <div className="mt-4 grid gap-3">
+                  <div className="mt-3 grid gap-2">
                     <CalendarHintGroup
                       title="먼저 잡아볼 날"
                       tone="decision"
@@ -661,55 +864,81 @@ export default function FortuneCalendarPanel({
               </>
             ) : (
               <>
-                <div className="app-caption">잠금 안내</div>
-                <h3 className="mt-3 text-2xl text-[var(--app-gold-text)]">
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  잠금 안내
+                </div>
+                <h3
+                  className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
                   {selectedMonth}월 흐름을 열면 좋은 날과 주의 날이 바로 갈립니다
                 </h3>
-                <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-                  이 달의 캘린더를 열면 결정일, 좋은 날, 보통 날, 주의 날이 색으로 정리되고, 각 날짜에 무엇을 바로 해도 되는지와 무엇을 늦춰야 하는지 바로 읽을 수 있습니다.
+                <p
+                  className="mt-2 text-[13px] leading-[1.78] text-[var(--app-copy)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  이 달의 캘린더를 열면 결정일·좋은 날·보통 날·주의 날이 색으로 정리되고, 각 날짜에 무엇을 바로 해도 되는지와 무엇을 늦춰야 하는지 바로 읽을 수 있습니다.
                 </p>
-                <div className="mt-5 rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
-                  <div className="app-caption text-[var(--app-gold-soft)]">열리면 보이는 것</div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div
+                  className="mt-4 rounded-[14px] border bg-white p-4"
+                  style={{ borderColor: 'var(--app-pink-line)' }}
+                >
+                  <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                    열리면 보이는 것
+                  </div>
+                  <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
                     {(['decision', 'good', 'caution', 'average'] as FortuneCalendarTone[]).map((tone) => {
                       const meta = TONE_META[tone];
                       const Icon = meta.icon;
                       return (
-                        <div key={tone} className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] px-3 py-3">
-                          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--app-ivory)]">
-                            <Icon className="size-4 text-[var(--app-gold-soft)]" aria-hidden="true" />
+                        <div
+                          key={tone}
+                          className={`rounded-[12px] border px-3 py-2.5 ${meta.badgeClassName}`}
+                        >
+                          <div className="flex items-center gap-1.5 text-[12.5px] font-extrabold">
+                            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                             {meta.label}
                           </div>
-                          <p className="mt-2 text-xs leading-5 text-[var(--app-copy-muted)]">{meta.description}</p>
+                          <p
+                            className="mt-1.5 text-[11.5px] leading-[1.6]"
+                            style={{ wordBreak: 'keep-all' }}
+                          >
+                            {meta.description}
+                          </p>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-4 grid gap-2">
                   <Button
                     onClick={() => void handleUnlock()}
                     disabled={unlocking}
+                    className="h-12 rounded-full text-[14px] font-extrabold"
                   >
                     {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
                   </Button>
-                  <Link
-                    href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
-                    className="gangi-secondary-button"
-                  >
-                    1,900원으로 열기
-                  </Link>
-                  <Link
-                    href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
-                    className="gangi-secondary-button"
-                  >
-                    코인팩 보기
-                  </Link>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
+                      className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-pink-strong)]"
+                      style={{ borderColor: 'var(--app-pink-line)' }}
+                    >
+                      1,900원으로 열기
+                    </Link>
+                    <Link
+                      href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
+                      className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+                      style={{ borderColor: 'var(--app-line)' }}
+                    >
+                      코인팩 보기
+                    </Link>
+                  </div>
                 </div>
               </>
             )}
-          </article>
-        </div>
+          </section>
+        </>
       )}
     </section>
   );

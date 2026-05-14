@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ReportPrintActions } from '@/components/report/report-print-actions';
-import { Badge } from '@/components/ui/badge';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import type { SajuLifetimeAiSectionKey } from '@/server/ai/saju-lifetime-interpretation';
 import { buildFallbackLifetimeInterpretation } from '@/server/ai/saju-lifetime-interpretation';
@@ -212,35 +211,84 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   if (!hasAccess) {
     return (
       <AppShell>
-        <AppPage className="space-y-6 py-8">
-          <section className="gangi-report-panel p-7 sm:p-8">
-            <Badge className="border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
-              PDF 저장 권한 필요
-            </Badge>
-            <h1 className="mt-5 text-4xl text-[var(--app-ivory)] sm:text-5xl">
-              깊은 사주풀이 PDF는 소장권에서 열립니다
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--app-copy)]">
-              PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 사주로 다시 들어와도
-              이 화면에서 PDF 저장을 이어갈 수 있습니다.
-            </p>
+        <AppPage className="gangi-subpage saju-result-page space-y-5 py-6">
+          <section
+            className="relative overflow-hidden rounded-[20px] border p-6"
+            style={{
+              background: 'linear-gradient(180deg, var(--app-pink-soft) 0%, #fff 100%)',
+              borderColor: 'var(--app-pink-line)',
+              boxShadow: '0 22px 50px -28px rgba(216,27,114,0.22)',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
+              style={{ background: 'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)' }}
+            />
+
+            <div className="relative flex items-start gap-3">
+              <span
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+                style={{
+                  background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
+                  boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
+                  fontFamily: 'var(--font-han)',
+                }}
+                aria-hidden="true"
+              >
+                干
+              </span>
+              <div className="min-w-0 flex-1">
+                <span
+                  className="rounded-full border bg-white px-2.5 py-0.5 text-[10.5px] font-extrabold text-[var(--app-pink-strong)]"
+                  style={{ borderColor: 'var(--app-pink-line)' }}
+                >
+                  🔒 PDF 저장 권한 필요
+                </span>
+                <h1
+                  className="mt-2 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  깊은 사주풀이 PDF는
+                  <br />
+                  소장권에서 열립니다
+                </h1>
+                <p
+                  className="mt-2.5 text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 사주로 다시 들어와도
+                  이 화면에서 PDF 저장을 이어갈 수 있어요.
+                </p>
+              </div>
+            </div>
+
             {!isOwner ? (
-              <p className="mt-3 text-sm leading-7 text-rose-100">
+              <div
+                className="relative mt-4 rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.7]"
+                style={{
+                  background: '#fdecec',
+                  borderColor: 'rgba(198,69,69,0.22)',
+                  color: 'var(--app-ink)',
+                }}
+              >
                 본인의 사주 결과가 아니면 PDF 저장 화면을 열 수 없습니다.
-              </p>
+              </div>
             ) : null}
-            <div className="mt-6 flex flex-wrap gap-3">
+
+            <div className="relative mt-5 grid gap-2">
               <Link
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
-                className="gangi-primary-button"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
-                깊은 사주풀이 열기
+                깊은 사주풀이 열기 →
               </Link>
               <Link
                 href={backHref}
-                className="gangi-secondary-button"
+                className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+                style={{ borderColor: 'var(--app-line)' }}
               >
-                풀이 화면으로 돌아가기
+                ← 풀이 화면으로 돌아가기
               </Link>
             </div>
           </section>
