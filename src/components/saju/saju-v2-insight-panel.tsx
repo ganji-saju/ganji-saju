@@ -59,6 +59,12 @@ const BLOCK_TONE: Record<
     border: 'rgba(45,135,88,0.22)',
     eyebrow: '다섯 기운',
   },
+  pattern: {
+    accent: 'var(--app-plum)',
+    soft: '#f3eefb',
+    border: 'rgba(127,92,176,0.22)',
+    eyebrow: '반복 역할',
+  },
   yongsin: {
     accent: '#b87a14',
     soft: '#fdf6e7',
