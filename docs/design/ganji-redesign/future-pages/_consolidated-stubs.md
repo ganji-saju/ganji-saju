@@ -57,11 +57,18 @@
   - 4 슬라이드 carousel + skip CTA.
 - **작업량**: M (cookie / redirect / carousel + 카피).
 
-## 7. `push-modal` — 푸시 알림 권한 모달
+## 7. `push-modal` — 푸시 알림 권한 모달 ✅ IMPLEMENTED
 
-- **상태**: SHELL. notifications 페이지에 inline 권한 요청만 존재. 풀스크린 모달 + 가치 안내 미구현.
-- **추후 실 구현**: 가입 후 7일 째 자동 노출 modal + Notification.requestPermission().
-- **작업량**: S.
+- **상태**: 완료.
+- **구현**: `src/components/notifications/push-permission-modal.tsx` —
+  `<PushPermissionModal open onClose onSubscribed onDenied webPushPublicKey>`.
+  - 가치 제안 3종 (MoonStar / Clock / Sparkles) → 알림 허용 / 다음에 받기 CTA.
+  - 흐름: `Notification.requestPermission` → `serviceWorker.register('/push-sw.js')` →
+    `pushManager.subscribe` → POST `/api/notifications/subscribe`.
+  - ESC 닫기 + body scroll lock + 모바일 sheet / sm:centered.
+  - `onDenied` reason: `'permission-denied' | 'subscribe-failed' | 'unavailable'`.
+- **showcase**: `/admin/design/push-modal` — 모달 열기 버튼 + 마지막 이벤트 표시.
+- **남은 작업**: caller 트리거 정책(가입 7일차 자동 노출 등)은 별도 PR.
 
 ## 8. `terms-modal` — 약관 동의 풀스크린 모달
 
