@@ -2,6 +2,7 @@ import type {
   Element,
   Branch,
   Stem,
+  UserSituation,
 } from '@/lib/saju/types';
 import type {
   SajuDataV1,
@@ -45,6 +46,8 @@ export interface SajuPersonalizationContext {
     현재대운: string | null;
     진행년수: number | null;
   };
+  /** 2026-05-15 PR 1: 사용자가 입력한 현재 상황(연애/직업/고민). 풀이 본문에 호명되도록 promptFacts 끝에 phrase 로 주입. */
+  userSituation: UserSituation | null;
   promptFacts: string[];
 }
 
@@ -187,7 +190,56 @@ function compactStrings(parts: Array<string | null | undefined>) {
   return parts.filter((part): part is string => Boolean(part?.trim()));
 }
 
-export function buildSajuPersonalizationContext(data: SajuDataV1): SajuPersonalizationContext {
+// 2026-05-15 PR 1 — UserSituation 의 enum 값을 풀이 본문에 호명할 수 있는 한국어 phrase 로 변환.
+const RELATIONSHIP_LABELS: Record<NonNullable<UserSituation['relationshipStatus']>, string> = {
+  single: '솔로',
+  dating: '연애 중',
+  married: '기혼',
+  separated: '이별 후 정리 중',
+};
+const OCCUPATION_LABELS: Record<NonNullable<UserSituation['occupation']>, string> = {
+  employee: '직장인',
+  'self-employed': '자영업/프리랜서',
+  student: '학생',
+  homemaker: '가정 살림',
+  'job-seeking': '구직 중',
+  other: '기타 활동',
+};
+const CONCERN_LABELS: Record<NonNullable<UserSituation['currentConcern']>, string> = {
+  business: '새로운 사업/이직',
+  romance: '결혼/연애',
+  family: '자녀/가족',
+  health: '건강/멘탈',
+  wealth: '재물/투자',
+  other: '본인 직접 입력',
+};
+
+function buildUserSituationFacts(userSituation: UserSituation | null | undefined): string[] {
+  if (!userSituation) return [];
+  const facts: string[] = [];
+  const status = userSituation.relationshipStatus;
+  const occupation = userSituation.occupation;
+  const concern = userSituation.currentConcern;
+  const note = userSituation.concernNote?.trim();
+  if (status) {
+    facts.push(`현재 관계: ${RELATIONSHIP_LABELS[status]}`);
+  }
+  if (occupation) {
+    facts.push(`현재 일: ${OCCUPATION_LABELS[occupation]}`);
+  }
+  if (concern) {
+    const label = CONCERN_LABELS[concern];
+    facts.push(note && concern === 'other' ? `요즘 고민: ${note.slice(0, 80)}` : `요즘 고민: ${label}`);
+  } else if (note) {
+    facts.push(`요즘 고민: ${note.slice(0, 80)}`);
+  }
+  return facts;
+}
+
+export function buildSajuPersonalizationContext(
+  data: SajuDataV1,
+  userSituation: UserSituation | null = null
+): SajuPersonalizationContext {
   const dayGanziCode = buildDayGanziCode(data.pillars.day.stem, data.pillars.day.branch);
   const sixtyGapja = sixtyGapjaProfiles[dayGanziCode] ?? null;
   const fiveElementRatio = buildFiveElementRatio(data);
@@ -217,6 +269,7 @@ export function buildSajuPersonalizationContext(data: SajuDataV1): SajuPersonali
       현재대운: currentMajorLuck,
       진행년수: getMajorLuckProgressYears(data),
     },
+    userSituation: userSituation ?? null,
     promptFacts: compactStrings([
       `일주코드: ${dayGanziCode}${sixtyGapja ? ` · ${sixtyGapja.title}` : ''}`,
       `오행비율: ${ELEMENTS.map((element) => `${element} ${fiveElementRatio[element]}%`).join(', ')}`,
@@ -230,6 +283,9 @@ export function buildSajuPersonalizationContext(data: SajuDataV1): SajuPersonali
       currentMajorLuck ? `대운현황: ${currentMajorLuck}` : null,
       sixtyGapja?.core,
       sixtyGapja?.actionCue,
+      // 2026-05-15 PR 1: 사용자 입력 현재 상황을 promptFacts 끝에 phrase 로 주입.
+      // LLM prompt + 룰 베이스 어디서든 호명 가능.
+      ...buildUserSituationFacts(userSituation),
     ]),
   };
 }
