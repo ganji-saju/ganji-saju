@@ -12,7 +12,7 @@
 |---|--:|--:|--:|--:|--:|--:|
 | 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 컴포넌트 라이브러리 | 4 | 0 | 0 | 0 | 4 | 0 |
-| 모션 보드 (motion) | 13 | 4 | 9 | 0 | 0 | 0 |
+| 모션 보드 (motion) | 13 | 5 | 8 | 0 | 0 | 0 |
 | 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
@@ -20,10 +20,10 @@
 | 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
 | 시스템 (banners/error) | 5 | 2 | 0 | 3 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
-| **합계** | **66** | **46** | **9** | **7** | **4** | **0** |
+| **합계** | **66** | **47** | **8** | **7** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
-> 모션 13종 중 m-loading(51) / m-reveal(52) / m-coin(54) / m-palshja(63) 4건은 production 화면에 마운트 완료. 나머지 9건은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 m-tarot·m-modal·m-toast·m-hanja·m-input·m-chart·m-spinners·m-page·m-push 를 production 화면에 차례로 연결 예정.
+> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-palshja(63) 5건은 production 화면에 마운트 완료. 나머지 8건은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 m-modal·m-toast·m-hanja·m-input·m-chart·m-spinners·m-page·m-push 를 production 화면에 차례로 연결 예정.
 > 시스템 보드 5종(banners/errors/onboarding/push/terms) 은 실제 화면 곳곳에서 부분 적용 + design-stubs gallery 로 보존.
 
 ## 섹션별 보드
@@ -52,7 +52,7 @@
 |---|---|---|---|---|---|
 | `m-loading` | 51 · 사주 분석 로딩 | `screens-l.jsx:9` | **IMPLEMENTED** | `GangiLoadingOverlay` (사주 시작하기, today-detail unlock) + `/credits/success` LoadingState + `/membership/success` LoadingState 에 `MotionSajuLoading` 직접 mount (2026-05-15) | `/admin/design/motion#m-loading` |
 | `m-reveal` | 52 · 결과 카드 등장 | `screens-l.jsx:154` | **IMPLEMENTED** | `app/saju/[slug]/page.tsx` §1~§5 결과 카드 7개 + `today-fortune-result-client.tsx` §1~§4 카드 4개 stagger reveal (2026-05-15 PR-C) | `/admin/design/motion#m-reveal` |
-| `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | GALLERY_ONLY | 타로 카드 선택 흐름 미연결 — 후속 PR | `/admin/design/motion#m-tarot` |
+| `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | **IMPLEMENTED** | `app/tarot/daily/result/page.tsx` 진입 시 `TarotCardFlipReveal` (client wrapper) 가 600ms delay 후 카드 뒷면 → TarotCardArtwork 3D flip (2026-05-15 PR-E) | `/admin/design/motion#m-tarot` |
 | `m-coin` | 54 · 코인 충전 성공 | `screens-l.jsx:447` | **IMPLEMENTED** | `/credits/success` SuccessState + `/membership/success` SuccessState 에 `MotionCoinSuccess` mount (2026-05-15) | `/admin/design/motion#m-coin` |
 | `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | GALLERY_ONLY | `app/template.tsx` 미생성. router push prefetch overlay 미마운트 | `/admin/design/motion#m-page` |
 | `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | GALLERY_ONLY | 어떤 모달/drawer 도 motion mount 안 함 — 후속 PR | `/admin/design/motion#m-modal` |

@@ -6,6 +6,9 @@ import type { Metadata } from 'next';
 import { Bookmark, RotateCcw } from 'lucide-react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TarotCardArtwork } from '@/components/tarot/tarot-card-artwork';
+// 2026-05-15 handoff PR-E: 53 m-tarot — 결과 페이지 진입 시 카드 flip reveal.
+import { TarotCardFlipReveal } from '@/components/tarot/tarot-card-flip-reveal';
+import '@/components/motion/motion-primitives.css';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug } from '@/lib/profile-personalization';
@@ -63,16 +66,19 @@ export default async function TarotResultPage({ searchParams }: Props) {
               </span>
             </div>
             <div className="mt-3.5 flex gap-3.5">
-              <div className="shrink-0">
-                <TarotCardArtwork
-                  cardId={reading.card.name_short}
-                  shortName={reading.shortName}
-                  displayName={reading.displayName}
-                  cardMarker={reading.cardMarker}
-                  arcanaLabel={reading.arcanaLabel}
-                  className="h-[132px] w-[92px]"
-                  priority
-                />
+              <div className="shrink-0" style={{ width: 92, height: 132 }}>
+                {/* 2026-05-15 handoff 53 m-tarot — 결과 페이지 진입 시 카드 뒷면 → 앞면 3D flip */}
+                <TarotCardFlipReveal delayMs={600}>
+                  <TarotCardArtwork
+                    cardId={reading.card.name_short}
+                    shortName={reading.shortName}
+                    displayName={reading.displayName}
+                    cardMarker={reading.cardMarker}
+                    arcanaLabel={reading.arcanaLabel}
+                    className="h-[132px] w-[92px]"
+                    priority
+                  />
+                </TarotCardFlipReveal>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">

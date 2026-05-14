@@ -139,24 +139,60 @@ export function MotionResultReveal({
 // ============================================================================
 // 53 · m-tarot — 타로 카드 3D flip
 // ============================================================================
-export function MotionTarotFlip({ active = true }: { active?: boolean }) {
+// 2026-05-15 PR-E: production 연결을 위해 children prop 추가.
+// caller 가 카드 앞면(실제 타로 카드 이미지/카피) 을 children 으로 주입, back/delay 도 props.
+// children 미주입 시 gallery 데모 fallback.
+export function MotionTarotFlip({
+  active = true,
+  children,
+  back = '月',
+  delayMs = 600,
+  ariaLabel = '타로 카드 뒤집기',
+}: {
+  active?: boolean;
+  /** 카드 앞면 컨텐츠 (production). 없으면 gallery 데모. */
+  children?: ReactNode;
+  /** 카드 뒷면 표시 (한자/이모지/이미지). 기본 月. */
+  back?: ReactNode;
+  /** 자동 flip 까지 대기 시간 (ms). */
+  delayMs?: number;
+  ariaLabel?: string;
+}) {
   const reduced = useReducedMotion();
   const [flipped, setFlipped] = useState(false);
   useEffect(() => {
     if (!active) return setFlipped(false);
     if (reduced) return setFlipped(true);
-    const timer = setTimeout(() => setFlipped(true), 800);
+    const timer = setTimeout(() => setFlipped(true), delayMs);
     return () => clearTimeout(timer);
-  }, [active, reduced]);
+  }, [active, reduced, delayMs]);
+
+  if (children !== undefined) {
+    // children 모드 — caller layout 보존 + flip 효과만 입힘.
+    return (
+      <div
+        className="motion-tarot-flip motion-tarot-flip-children"
+        data-flipped={flipped}
+        aria-live="polite"
+      >
+        <div className="motion-tarot-card motion-tarot-back" aria-hidden="true">
+          {back}
+        </div>
+        <div className="motion-tarot-card motion-tarot-front">{children}</div>
+      </div>
+    );
+  }
+
+  // Gallery fallback.
   return (
     <button
       type="button"
       onClick={() => setFlipped((v) => !v)}
       className="motion-tarot-flip"
       data-flipped={flipped}
-      aria-label="타로 카드 뒤집기"
+      aria-label={ariaLabel}
     >
-      <span className="motion-tarot-card motion-tarot-back" aria-hidden="true">月</span>
+      <span className="motion-tarot-card motion-tarot-back" aria-hidden="true">{back}</span>
       <span className="motion-tarot-card motion-tarot-front" aria-hidden="true">VII · The Chariot</span>
     </button>
   );
