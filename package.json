@@ -9,6 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "test": "node scripts/run-unit-tests.mjs",
+    "test:spec": "vitest run --passWithNoTests",
+    "test:spec:watch": "vitest --passWithNoTests",
     "typecheck": "tsc --noEmit --pretty false --incremental false -p tsconfig.json",
     "validate:kasi": "node scripts/validate-kasi-calendar.mjs",
     "ingest:classics": "node scripts/ingest-classics.mjs",
@@ -45,7 +47,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
+    "@vitest/coverage-v8": "^4.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.6"
   }
 }
