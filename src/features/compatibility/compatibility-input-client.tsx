@@ -1,11 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CompactBirthFields } from '@/components/saju/shared/compact-birth-fields';
@@ -18,7 +14,7 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
-import { GangiActionRow, GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 type PersonKey = 'self' | 'partner';
@@ -548,170 +544,328 @@ export function CompatibilityInputClient({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-6">
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-32 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="궁합 입력" backHref="/compatibility" />
-        <GangiIntro
-          eyebrow="궁합"
-          title={
-            <>
-              내 정보와 상대 정보를
-              <br />
-              함께 넣어 바로 봅니다
-            </>
-          }
-          description="두 사람 정보를 넣고 바로 확인하세요."
-        />
+
+        {/* §Hero — pink-soft + 1줄 안내 */}
+        <article
+          className="rounded-[18px] border p-5"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            궁합 보기
+          </div>
+          <h1
+            className="mt-1.5 text-[22px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            두 사람의 흐름을
+            <br />
+            함께 봅니다
+          </h1>
+          <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+            관계를 고르고, 두 사람의 정보를 넣으면 바로 결과로 이어집니다.
+          </p>
+        </article>
+
         {hasLoveQuestionPurchase ? (
-          <div className="rounded-[1.2rem] border border-emerald-400/25 bg-emerald-400/10 px-4 py-3 text-sm leading-6 text-emerald-700">
-            연애 질문 1회 상품이 구매되어 있습니다. 이 화면에서는 추가 결제 없이 두 사람 정보를 넣고 결과로 이어가시면 됩니다.
+          <div
+            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.6]"
+            style={{
+              background: '#e8f5ee',
+              borderColor: 'rgba(45,135,88,0.18)',
+              color: '#1f6a44',
+            }}
+          >
+            ✓ 연애 질문 1회 상품이 결제돼 있어요. 추가 결제 없이 결과로 이어집니다.
           </div>
         ) : null}
 
-        <GangiSection
-          eyebrow="관계 렌즈"
-          title={selected.title + ' 궁합으로 봅니다'}
-          tone="pink"
+        {/* §관계 선택 — 2x2 grid, 명확한 active 표시 */}
+        <section>
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            1단계 · 관계 선택
+          </div>
+          <h2 className="mt-1 text-[16.5px] font-extrabold leading-snug text-[var(--app-ink)]">
+            어떤 사이의 궁합인가요?
+          </h2>
+
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
+            {COMPATIBILITY_RELATIONSHIPS.map((item) => {
+              const active = item.slug === selected.slug;
+              return (
+                <button
+                  key={item.slug}
+                  type="button"
+                  onClick={() => selectRelationship(item.slug)}
+                  aria-pressed={active}
+                  className="relative flex flex-col items-start gap-2.5 rounded-[16px] border p-3.5 text-left transition-all"
+                  style={{
+                    background: active ? 'var(--app-pink-soft)' : '#fff',
+                    borderColor: active ? 'var(--app-pink)' : 'var(--app-line)',
+                    borderWidth: active ? 2 : 1,
+                    padding: active ? 'calc(0.875rem - 1px)' : '0.875rem',
+                    boxShadow: active
+                      ? '0 12px 26px rgba(216,27,114,0.18), 0 2px 6px rgba(216,27,114,0.10)'
+                      : '0 1px 0 rgba(17,17,20,0.03)',
+                    transform: active ? 'translateY(-1px)' : 'translateY(0)',
+                  }}
+                >
+                  {active ? (
+                    <span
+                      className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full text-white"
+                      style={{
+                        background: 'var(--app-pink)',
+                        boxShadow: '0 4px 10px rgba(216,27,114,0.35)',
+                        border: '2px solid #fff',
+                      }}
+                      aria-hidden="true"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </span>
+                  ) : null}
+
+                  <span
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[18px]"
+                    style={{
+                      background: active ? 'var(--app-pink)' : 'rgba(0,0,0,0.04)',
+                      filter: active ? undefined : 'grayscale(0.05)',
+                      boxShadow: active ? '0 6px 14px rgba(216,27,114,0.28)' : undefined,
+                    }}
+                    aria-hidden="true"
+                  >
+                    {item.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <div
+                      className="text-[14px] font-extrabold tracking-tight"
+                      style={{
+                        color: active ? 'var(--app-pink-strong)' : 'var(--app-ink)',
+                      }}
+                    >
+                      {item.title}
+                    </div>
+                    <div className="mt-0.5 text-[11.5px] leading-[1.5] text-[var(--app-copy-muted)]">
+                      {item.hook}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* §저장된 프로필 quick fill (로그인 사용자만) */}
+        <SavedProfileQuickFill
+          profiles={sortedSavedProfiles}
+          status={profileLoadStatus}
+          onApply={applySavedProfile}
+        />
+
+        {profileLoadMessage && profileLoadStatus !== 'error' ? (
+          <div
+            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.6]"
+            style={{
+              background: '#e8f5ee',
+              borderColor: 'rgba(45,135,88,0.18)',
+              color: '#1f6a44',
+            }}
+          >
+            {profileLoadMessage}
+          </div>
+        ) : null}
+
+        {/* §내 정보 — pink tone */}
+        <section
+          className="rounded-[18px] border p-4 sm:p-5"
+          style={{
+            background: '#fff',
+            borderColor: 'var(--app-pink-line)',
+          }}
         >
-          <div className="gangi-topic-grid !px-0 !pb-0 !pt-0">
-            {COMPATIBILITY_RELATIONSHIPS.map((item) => (
-              <button
-                key={item.slug}
-                type="button"
-                onClick={() => selectRelationship(item.slug)}
-                className="gangi-topic-card"
-                data-active={item.slug === selected.slug ? 'true' : undefined}
+          <div className="flex items-center gap-2">
+            <span
+              className="grid h-8 w-8 place-items-center rounded-full text-[13px] font-extrabold text-white"
+              style={{ background: 'var(--app-pink)' }}
+              aria-hidden="true"
+            >
+              나
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                2단계
+              </div>
+              <div className="text-[15.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                내 정보 입력
+              </div>
+            </div>
+          </div>
+          <p className="mt-1.5 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]">
+            생년월일 · 태어난 시간 · 성별 · 출생지를 넣으면 사주가 만들어집니다.
+          </p>
+          {selfSummary ? (
+            <div
+              className="mt-2 rounded-[10px] px-3 py-2 text-[11.5px] font-bold"
+              style={{
+                background: 'var(--app-pink-soft)',
+                color: 'var(--app-pink-strong)',
+              }}
+            >
+              📝 {selfSummary}
+            </div>
+          ) : null}
+
+          <div className="mt-4 space-y-3">
+            <div>
+              <Label
+                htmlFor="compatibility-self-name"
+                className="mb-1.5 block text-[12.5px] font-extrabold text-[var(--app-ink)]"
               >
-                <span className="gangi-topic-icon">{item.icon}</span>
-                <h2>{item.title}</h2>
-                <p>{item.hook}</p>
-              </button>
-            ))}
+                내 호칭{' '}
+                <span className="font-bold text-[var(--app-copy-soft)]">(선택)</span>
+              </Label>
+              <Input
+                id="compatibility-self-name"
+                value={selfName}
+                onChange={(event) => setSelfName(event.target.value)}
+                placeholder="예: 나, 민지"
+                className="h-12 rounded-[12px] text-[14px]"
+              />
+            </div>
+
+            <CompactBirthFields
+              draft={selfDraft}
+              onChange={(patch) => updateDraft('self', patch)}
+              showDate
+              showTime
+              showGender
+              showLocation
+              locationLoading={locationStates.self.status === 'loading'}
+              locationMessage={locationStates.self.message}
+              locationResults={locationStates.self.results}
+              onLocationSearch={() => void searchBirthLocationCoordinates('self')}
+              onLocationPresetSelect={(code) => updateBirthLocation('self', code)}
+              onLocationResultSelect={(result) => applyBirthLocationSearchResult('self', result)}
+            />
           </div>
-          <GangiActionRow>
-            <button type="button" onClick={submitManualCompatibility} className="gangi-primary-button">
-              이 정보로 궁합 보기
-            </button>
-            <Link href="/compatibility" className="gangi-secondary-button">
-              궁합 허브로
-            </Link>
-          </GangiActionRow>
-        </GangiSection>
+        </section>
 
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="직접 입력"
-            title="내 정보와 상대 정보를 함께 입력해 주세요"
-            titleClassName="text-3xl"
-          />
-
-          <SavedProfileQuickFill
-            profiles={sortedSavedProfiles}
-            status={profileLoadStatus}
-            onApply={applySavedProfile}
-          />
-
-          {profileLoadMessage && profileLoadStatus !== 'error' ? (
-            <div className="mt-4 rounded-2xl border border-[var(--app-jade)]/20 bg-[var(--app-jade)]/8 px-4 py-3 text-sm leading-6 text-[var(--app-copy)]">
-              {profileLoadMessage}
+        {/* §상대 정보 — jade tone */}
+        <section
+          className="rounded-[18px] border p-4 sm:p-5"
+          style={{
+            background: '#fff',
+            borderColor: 'rgba(45,135,88,0.22)',
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className="grid h-8 w-8 place-items-center rounded-full text-[13px] font-extrabold text-white"
+              style={{ background: 'var(--app-jade)' }}
+              aria-hidden="true"
+            >
+              상대
+            </span>
+            <div className="min-w-0 flex-1">
+              <div
+                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-jade)' }}
+              >
+                3단계
+              </div>
+              <div className="text-[15.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                상대 정보 입력
+              </div>
+            </div>
+          </div>
+          <p className="mt-1.5 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]">
+            상대분의 생년월일 · 태어난 시간 · 성별을 알면 더 정확해집니다.
+          </p>
+          {partnerSummary ? (
+            <div
+              className="mt-2 rounded-[10px] px-3 py-2 text-[11.5px] font-bold"
+              style={{
+                background: '#e8f5ee',
+                color: '#1f6a44',
+              }}
+            >
+              📝 {partnerSummary}
             </div>
           ) : null}
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
-            <section className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <div className="app-caption text-[var(--app-pink-strong)]">나</div>
-                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
-                    내 정보
-                  </h2>
-                </div>
-                <div className="text-xs leading-6 text-[var(--app-copy-soft)]">{selfSummary}</div>
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="compatibility-self-name" className="mb-2 block text-sm text-[var(--app-copy)]">
-                  호칭
-                </Label>
-                <Input
-                  id="compatibility-self-name"
-                  value={selfName}
-                  onChange={(event) => setSelfName(event.target.value)}
-                  placeholder="예: 나, 민지"
-                />
-              </div>
-              <CompactBirthFields
-                draft={selfDraft}
-                onChange={(patch) => updateDraft('self', patch)}
-                showDate
-                showTime
-                showGender
-                showLocation
-                locationLoading={locationStates.self.status === 'loading'}
-                locationMessage={locationStates.self.message}
-                locationResults={locationStates.self.results}
-                onLocationSearch={() => void searchBirthLocationCoordinates('self')}
-                onLocationPresetSelect={(code) => updateBirthLocation('self', code)}
-                onLocationResultSelect={(result) => applyBirthLocationSearchResult('self', result)}
+          <div className="mt-4 space-y-3">
+            <div>
+              <Label
+                htmlFor="compatibility-partner-name"
+                className="mb-1.5 block text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              >
+                상대 호칭{' '}
+                <span className="font-bold text-[var(--app-copy-soft)]">(선택)</span>
+              </Label>
+              <Input
+                id="compatibility-partner-name"
+                value={partnerName}
+                onChange={(event) => setPartnerName(event.target.value)}
+                placeholder="예: 배우자, 엄마, 동업자"
+                className="h-12 rounded-[12px] text-[14px]"
               />
-            </section>
-
-            <section className="rounded-[1.35rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <div className="app-caption text-[var(--app-jade)]">상대</div>
-                  <h2 className="mt-2 text-2xl text-[var(--app-ink)]">
-                    상대 정보
-                  </h2>
-                </div>
-                <div className="text-xs leading-6 text-[var(--app-copy-soft)]">{partnerSummary}</div>
-              </div>
-              <div className="mb-5">
-                <Label htmlFor="compatibility-partner-name" className="mb-2 block text-sm text-[var(--app-copy)]">
-                  상대 호칭
-                </Label>
-                <Input
-                  id="compatibility-partner-name"
-                  value={partnerName}
-                  onChange={(event) => setPartnerName(event.target.value)}
-                  placeholder="예: 배우자, 엄마, 동업자"
-                />
-              </div>
-              <CompactBirthFields
-                draft={partnerDraft}
-                onChange={(patch) => updateDraft('partner', patch)}
-                showDate
-                showTime
-                showGender
-                showLocation
-                locationLoading={locationStates.partner.status === 'loading'}
-                locationMessage={locationStates.partner.message}
-                locationResults={locationStates.partner.results}
-                onLocationSearch={() => void searchBirthLocationCoordinates('partner')}
-                onLocationPresetSelect={(code) => updateBirthLocation('partner', code)}
-                onLocationResultSelect={(result) => applyBirthLocationSearchResult('partner', result)}
-              />
-            </section>
-          </div>
-
-          {errorMessage ? (
-            <div className="mt-5 rounded-[1rem] border border-[var(--app-coral)]/24 bg-[var(--app-coral)]/8 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
-              {errorMessage}
             </div>
-          ) : null}
 
-          <ActionCluster className="mt-6">
+            <CompactBirthFields
+              draft={partnerDraft}
+              onChange={(patch) => updateDraft('partner', patch)}
+              showDate
+              showTime
+              showGender
+              showLocation
+              locationLoading={locationStates.partner.status === 'loading'}
+              locationMessage={locationStates.partner.message}
+              locationResults={locationStates.partner.results}
+              onLocationSearch={() => void searchBirthLocationCoordinates('partner')}
+              onLocationPresetSelect={(code) => updateBirthLocation('partner', code)}
+              onLocationResultSelect={(result) => applyBirthLocationSearchResult('partner', result)}
+            />
+          </div>
+        </section>
+
+        {errorMessage ? (
+          <div
+            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.65]"
+            style={{
+              background: '#fdecec',
+              borderColor: 'rgba(198,69,69,0.22)',
+              color: 'var(--app-ink)',
+            }}
+          >
+            {errorMessage}
+          </div>
+        ) : null}
+
+        {/* §Sticky CTA */}
+        <div
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-0"
+          style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
+        >
+          <div className="mx-auto max-w-md space-y-2">
             <button
               type="button"
               onClick={submitManualCompatibility}
-              className="gangi-primary-button"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              style={{ background: 'var(--app-pink)' }}
             >
-              이 정보로 궁합 보기
+              이 정보로 궁합 보기 →
             </button>
-            <span className="text-sm leading-7 text-[var(--app-copy-soft)]">
+            <p className="text-center text-[10.5px] leading-[1.55] text-[var(--app-copy-soft)]">
               비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
-            </span>
-          </ActionCluster>
-        </SectionSurface>
+            </p>
+          </div>
+        </div>
       </AppPage>
     </AppShell>
   );
