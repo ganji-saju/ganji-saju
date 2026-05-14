@@ -229,6 +229,9 @@ export function GangiPurchaseSummary({
   );
 }
 
+// 2026-05-14: 사주풀이 로딩 오버레이.
+// PR6+ 디자인 언어: pink-soft hero + 한자 月(달빛) 배지 + 진행 단계 bullets.
+// 진행 단계는 시각적 안내일 뿐 실제 비동기 진행과 동기화되지는 않는다 (UX 안정감 목적).
 export function GangiLoadingOverlay({
   title = '풀이를 준비하고 있어요',
   description = '생년월일과 오늘 흐름을 맞춰보는 중입니다.',
@@ -238,15 +241,37 @@ export function GangiLoadingOverlay({
 }) {
   return (
     <div className="gangi-loading-overlay" role="status" aria-live="polite">
-      <div className="gangi-loading-card">
-        <div className="gangi-loading-moon" aria-hidden="true">
-          <span />
-          <i />
+      <div className="gangi-loading-card-v2">
+        {/* 月 배지 — han 폰트 + 회전 링 */}
+        <div className="gangi-loading-han-badge" aria-hidden="true">
+          <span className="gangi-loading-han-glyph">月</span>
+          <span className="gangi-loading-han-ring" />
         </div>
-        <div className="gangi-loading-copy">
+
+        {/* Copy */}
+        <div className="gangi-loading-copy-v2">
+          <div className="gangi-loading-eyebrow">잠시만요</div>
           <p>{title}</p>
           <span>{description}</span>
         </div>
+
+        {/* 진행 단계 bullets */}
+        <ul className="gangi-loading-steps" aria-hidden="true">
+          <li className="gangi-loading-step is-active">
+            <span className="gangi-loading-step-dot" />
+            <span className="gangi-loading-step-label">사주 4기둥 정리</span>
+          </li>
+          <li className="gangi-loading-step is-active">
+            <span className="gangi-loading-step-dot" />
+            <span className="gangi-loading-step-label">오행 흐름 분석</span>
+          </li>
+          <li className="gangi-loading-step">
+            <span className="gangi-loading-step-dot" />
+            <span className="gangi-loading-step-label">오늘 운 매칭</span>
+          </li>
+        </ul>
+
+        {/* shimmer bars */}
         <div className="gangi-loading-lines" aria-hidden="true">
           <span />
           <span />
