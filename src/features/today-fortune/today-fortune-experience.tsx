@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { GangiIntro, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
@@ -240,18 +240,9 @@ export function TodayFortuneExperience({
   return (
     <div className="gangi-subpage pb-8">
       <GangiPageHeader title="오늘운세" />
-      <GangiIntro
-        title={
-          <>
-            오늘 어떤 부분이
-            <br />
-            가장 궁금해요?
-          </>
-        }
-        description="한 가지를 골라야 더 또렷이 보여드려요."
-      />
 
-      <section className="px-4">
+      {/* 2026-05-14: intro 는 TodayConcernSelector 가 pink-soft hero 로 자체 렌더. */}
+      <section className="px-4 pt-1">
         <TodayConcernSelector
           value={concernId}
           onChange={(next) => {
