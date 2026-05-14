@@ -2,15 +2,15 @@
 // 4 슬라이드 carousel + skip CTA visual stub. first-visit cookie / redirect 흐름은
 // 후속 PR (실 기능). 현재는 layout + mock data + "준비 중" badge.
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
+// 2026-05-15 PR-L: 첫 방문자 cookie set + redirect server actions.
+import { finishOnboardingAndStart, skipOnboarding } from './actions';
 
 export const metadata: Metadata = {
-  title: '온보딩 (준비 중)',
-  description: '간지사주 시작 가이드 — 4개 슬라이드로 핵심 기능을 안내합니다.',
-  robots: { index: false, follow: false },
+  title: '간지사주 시작 가이드',
+  description: '간지사주 첫 사용자를 위한 4 슬라이드 가이드 — 사주 입력 / 오늘 흐름 / 깊은 풀이 / 대화로 더 묻기.',
   alternates: { canonical: '/onboarding' },
 };
 
@@ -54,16 +54,8 @@ export default function OnboardingShellPage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="flex items-center gap-2">
-            <span
-              className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-white"
-              style={{ background: 'var(--app-amber)' }}
-            >
-              준비 중
-            </span>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-              4 슬라이드 가이드
-            </div>
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            4 슬라이드 가이드
           </div>
           <h1
             className="mt-2 text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
@@ -75,7 +67,7 @@ export default function OnboardingShellPage() {
             className="mt-2 text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            아직 자동 노출 흐름은 준비 중입니다. 현재는 시안만 살펴볼 수 있어요.
+            아래 4가지를 빠르게 확인하시고, 바로 사주 입력으로 넘어가실 수 있어요.
           </p>
         </article>
 
@@ -123,19 +115,24 @@ export default function OnboardingShellPage() {
         </section>
 
         <div className="grid gap-2">
-          <Link
-            href="/saju/new"
-            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-          >
-            사주 입력하고 시작하기
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-bold text-[var(--app-copy-muted)]"
-            style={{ borderColor: 'var(--app-line)' }}
-          >
-            나중에
-          </Link>
+          {/* 2026-05-15 PR-L: server action 으로 cookie set + redirect (Link 직접 사용 X) */}
+          <form action={finishOnboardingAndStart}>
+            <button
+              type="submit"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            >
+              사주 입력하고 시작하기
+            </button>
+          </form>
+          <form action={skipOnboarding}>
+            <button
+              type="submit"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full border bg-white px-5 text-[13px] font-bold text-[var(--app-copy-muted)]"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              나중에
+            </button>
+          </form>
         </div>
       </AppPage>
     </AppShell>
