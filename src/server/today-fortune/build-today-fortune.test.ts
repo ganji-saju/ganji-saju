@@ -342,6 +342,40 @@ test('today fortune time windows vary their body copy across different ranges', 
   assert.notEqual(result.cautionWindows[0]?.body, result.cautionWindows[1]?.body);
 });
 
+test('today fortune free result changes across different calendar dates (daily seed regression)', () => {
+  // 2026-05-15: 같은 사용자 + 같은 concern 인데 며칠째 동일 점수/카피가 나오던 버그 회귀 방지.
+  // calculatedAt 만 바꿔도 시드(signatureSeed)와 점수(dailyDelta)가 흔들려 결과가 달라져야 한다.
+  const input = createSampleInput();
+  const dataMonday = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
+  const dataFriday = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
+
+  const mondayResult = buildTodayFortuneFreeResult(input, dataMonday, {
+    concernId: 'general',
+    sourceSessionId: 'daily-seed-mon',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+  const fridayResult = buildTodayFortuneFreeResult(input, dataFriday, {
+    concernId: 'general',
+    sourceSessionId: 'daily-seed-fri',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+
+  assert.equal(mondayResult.dateKey, '2026-05-11');
+  assert.equal(fridayResult.dateKey, '2026-05-15');
+  // 두 결과 중 하나는 반드시 달라야 한다 (headline 후보 3종 / score delta 합쳐 동률 확률 매우 낮음).
+  const sameHeadline = mondayResult.oneLine.headline === fridayResult.oneLine.headline;
+  const sameScores =
+    JSON.stringify(mondayResult.scores.map((s) => s.score)) ===
+    JSON.stringify(fridayResult.scores.map((s) => s.score));
+  const sameReason = mondayResult.reasonSnippet.body === fridayResult.reasonSnippet.body;
+  assert.ok(
+    !sameHeadline || !sameScores || !sameReason,
+    `오늘운세가 다른 날짜에 완전히 동일하게 나오면 안 됩니다. headline=${sameHeadline}, scores=${sameScores}, reason=${sameReason}`
+  );
+});
+
 test('today fortune opportunity and risk copy stays concise and grounded', () => {
   const input = createSampleInput();
   const sajuData = calculateSajuDataV1(input);

@@ -17,6 +17,37 @@ import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/type
 
 const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
 
+// 2026-05-15: 어제 캐시가 오늘 화면을 가리지 않도록 sessionStorage 키에 dateKey 가 붙는다.
+// 결과 페이지는 URL 의 sourceSessionId 만 알고 dateKey 는 모르므로, prefix 매칭 후
+// dateKey 가 가장 최신인 항목 1건을 선택. (sessionStorage 라 어차피 하루 단위로 비워짐)
+function findLatestStoredResult(
+  sourceSessionId: string
+): TodayFortuneFreeResult | null {
+  try {
+    const exactPrefix = `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:`;
+    let latest: { dateKey: string; payload: TodayFortuneFreeResult } | null = null;
+    for (let i = 0; i < window.sessionStorage.length; i += 1) {
+      const key = window.sessionStorage.key(i);
+      if (!key || !key.startsWith(exactPrefix)) continue;
+      const raw = window.sessionStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const parsed = JSON.parse(raw) as TodayFortuneFreeResult;
+        if (parsed.sourceSessionId !== sourceSessionId) continue;
+        const dk = parsed.dateKey ?? '';
+        if (!latest || dk > latest.dateKey) {
+          latest = { dateKey: dk, payload: parsed };
+        }
+      } catch {
+        // skip malformed entries
+      }
+    }
+    return latest?.payload ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body: string }>> = {
   love_contact: [
     { label: '궁합으로 이어보기', href: '/compatibility', body: '상대와의 거리와 속도를 더 넓게 봅니다.' },
@@ -47,14 +78,23 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
 function readStoredResult(sourceSessionId: string | undefined) {
   if (!sourceSessionId) return null;
 
+  // 1) Try date-suffixed key first (new path; today's writer always uses this).
+  const latest = findLatestStoredResult(sourceSessionId);
+  if (latest) return latest;
+
+  // 2) Backward compatibility — pre-2026-05-15 builds wrote a date-less key.
+  //    If found, treat as stale and don't surface it (would replay yesterday's copy).
   try {
-    const raw = window.sessionStorage.getItem(`${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}`);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as TodayFortuneFreeResult;
-    return parsed.sourceSessionId === sourceSessionId ? parsed : null;
+    const legacyRaw = window.sessionStorage.getItem(
+      `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}`
+    );
+    if (legacyRaw) {
+      window.sessionStorage.removeItem(`${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}`);
+    }
   } catch {
-    return null;
+    // ignore
   }
+  return null;
 }
 
 function buildTodayDetailHref(result: TodayFortuneFreeResult) {
