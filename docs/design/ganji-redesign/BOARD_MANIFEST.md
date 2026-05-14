@@ -12,7 +12,7 @@
 |---|--:|--:|--:|--:|--:|--:|
 | 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 컴포넌트 라이브러리 | 4 | 0 | 0 | 0 | 4 | 0 |
-| 모션 보드 (motion) | 13 | 12 | 1 | 0 | 0 | 0 |
+| 모션 보드 (motion) | 13 | 13 | 0 | 0 | 0 | 0 |
 | 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
@@ -20,10 +20,10 @@
 | 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
 | 시스템 (banners/error) | 5 | 3 | 0 | 2 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
-| **합계** | **66** | **55** | **1** | **6** | **4** | **0** |
+| **합계** | **66** | **56** | **0** | **6** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
-> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-modal(56) / m-toast(57) / m-push(58) / m-hanja(59) / m-spinners(60) / m-input(61) / m-chart(62) / m-palshja(63) **12건**은 production 화면에 마운트 완료. 마지막 1건(m-page)만 `GALLERY_ONLY` 로 남음 — `app/template.tsx` 신설 후속 PR 에서 연결 예정.
+> 모션 **13/13 production 화면 마운트 완료** (2026-05-15 PR-G4 로 m-page 마지막 연결). `GALLERY_ONLY` 0건.
 > 시스템 보드 5종(banners/errors/onboarding/push/terms) 은 실제 화면 곳곳에서 부분 적용 + design-stubs gallery 로 보존.
 
 ## 섹션별 보드
@@ -54,7 +54,7 @@
 | `m-reveal` | 52 · 결과 카드 등장 | `screens-l.jsx:154` | **IMPLEMENTED** | `app/saju/[slug]/page.tsx` §1~§5 결과 카드 7개 + `today-fortune-result-client.tsx` §1~§4 카드 4개 stagger reveal (2026-05-15 PR-C) | `/admin/design/motion#m-reveal` |
 | `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | **IMPLEMENTED** | `app/tarot/daily/result/page.tsx` 진입 시 `TarotCardFlipReveal` (client wrapper) 가 600ms delay 후 카드 뒷면 → TarotCardArtwork 3D flip (2026-05-15 PR-E) | `/admin/design/motion#m-tarot` |
 | `m-coin` | 54 · 코인 충전 성공 | `screens-l.jsx:447` | **IMPLEMENTED** | `/credits/success` SuccessState + `/membership/success` SuccessState 에 `MotionCoinSuccess` mount (2026-05-15) | `/admin/design/motion#m-coin` |
-| `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | GALLERY_ONLY | `app/template.tsx` 미생성. router push prefetch overlay 미마운트 | `/admin/design/motion#m-page` |
+| `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | **IMPLEMENTED** | `app/template.tsx` 신설 — Next.js App Router template 의 navigation 단위 re-mount lifecycle 을 활용. children 을 `motion-page-transition-frame` div 로 감싸 fade-in + translateY 8→0 적용. 모든 route 전환에 자동 동작 (2026-05-15 PR-G4) | `/admin/design/motion#m-page` |
 | `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | **IMPLEMENTED** | `PushPermissionModal` 의 dim(`motion-modal-dim` fade) + sheet(`motion-modal-sheet` 모바일 슬라이드-up / 데스크탑 scale-up) 적용. cubic-bezier(0.22, 1, 0.36, 1) 통일 (2026-05-15 PR-G3) | `/admin/design/motion#m-modal` |
 | `m-toast` | 57 · 토스트 시퀀스 | `screens-m.jsx:225` | **IMPLEMENTED** | `sonner@^2.0.7` 도입 + `<AppToaster>` (`src/components/notifications/app-toaster.tsx`) 가 `app/layout.tsx` 전역 마운트. 디자인 토큰 매칭(라운드/핑크 강조/jade success/coral error). `ShareActions` 가 첫 production migration 사례 (2026-05-15 PR-J) | `/admin/design/motion#m-toast` |
 | `m-push` | 58 · 푸시 알림 도착 | `screens-m.jsx:310` | **IMPLEMENTED** | `PushPermissionModal` 의 Bell 아이콘 spring bounce(`motion-push-bell`) + 3 benefit 카드 stagger(`motion-push-card` 0.35/0.45/0.55s) (2026-05-15 PR-G3) | `/admin/design/motion#m-push` |
