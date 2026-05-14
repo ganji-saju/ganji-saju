@@ -1,0 +1,637 @@
+/* 2026-05-14: 모션 13종 CSS.
+   - 모든 keyframes 가 prefers-reduced-motion 시 disable 되도록 작성.
+   - 컴포넌트 측에서 reduced 일 때 animation-delay 0 + JS 로 최종 상태로 즉시 점프.
+   - 디자인 토큰 의존성: --app-pink, --app-pink-soft, --app-pink-line, --app-ink,
+     --app-line, --app-jade, --app-coral, --app-amber, --app-sky, --app-indigo.
+*/
+
+/* =============================================================
+   51 · 사주 분석 로딩
+   ============================================================= */
+.motion-saju-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: var(--app-pink-soft);
+  border: 1px solid var(--app-pink-line);
+}
+.motion-saju-moon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--app-pink-strong);
+  font-family: var(--font-han);
+  font-size: 1.5rem;
+  font-weight: 800;
+  border: 1px solid var(--app-pink-line);
+  animation: motion-float-y 3.6s ease-in-out infinite;
+}
+.motion-saju-steps {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.motion-saju-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--app-pink-line);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--app-ink);
+  opacity: 0;
+  animation: motion-step-in 0.5s ease-out forwards;
+}
+.motion-saju-step.is-static {
+  opacity: 1;
+  animation: none;
+}
+.motion-saju-step-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--app-pink);
+}
+
+@keyframes motion-float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes motion-step-in {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================================
+   52 · 결과 카드 등장 (stagger)
+   ============================================================= */
+.motion-result-reveal {
+  display: grid;
+  gap: 0.5rem;
+}
+.motion-card {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--app-line);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--app-ink);
+  opacity: 0;
+  transform: translateY(8px);
+}
+.motion-result-reveal[data-active="true"] .motion-card {
+  animation: motion-card-in 0.6s ease-out forwards;
+}
+.motion-result-reveal[data-active="false"] .motion-card {
+  opacity: 1;
+  transform: none;
+}
+.motion-card-hero {
+  background: var(--app-pink-soft);
+  border-color: var(--app-pink-line);
+  color: var(--app-pink-strong);
+  font-size: 15px;
+}
+@keyframes motion-card-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================================
+   53 · 타로 카드 플립
+   ============================================================= */
+.motion-tarot-flip {
+  position: relative;
+  width: 140px;
+  height: 200px;
+  perspective: 800px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.motion-tarot-card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  font-family: var(--font-han);
+  font-size: 1.6rem;
+  font-weight: 800;
+  backface-visibility: hidden;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 18px 38px -18px rgba(17,17,20,0.32);
+}
+.motion-tarot-back {
+  background: linear-gradient(135deg, var(--app-ink) 0%, #2d2330 100%);
+  color: var(--app-pink-soft);
+}
+.motion-tarot-front {
+  background: var(--app-pink-soft);
+  border: 1px solid var(--app-pink-line);
+  color: var(--app-pink-strong);
+  transform: rotateY(180deg);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+.motion-tarot-flip[data-flipped="true"] .motion-tarot-back {
+  transform: rotateY(-180deg);
+}
+.motion-tarot-flip[data-flipped="true"] .motion-tarot-front {
+  transform: rotateY(0deg);
+}
+
+/* =============================================================
+   54 · 코인 충전 성공 (particles + card pop)
+   ============================================================= */
+.motion-coin-success {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 200px;
+}
+.motion-coin-card {
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid var(--app-pink-line);
+  box-shadow: 0 18px 44px -18px rgba(216,27,114,0.3);
+  text-align: center;
+  transform: scale(0.92);
+  opacity: 0;
+  animation: motion-coin-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.motion-coin-success[data-active="false"] .motion-coin-card {
+  opacity: 1;
+  transform: scale(1);
+  animation: none;
+}
+.motion-coin-check {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--app-pink);
+  color: #fff;
+  font-weight: 800;
+}
+.motion-coin-title { font-weight: 800; color: var(--app-ink); }
+.motion-coin-sub { font-size: 12px; color: var(--app-pink-strong); font-weight: 700; }
+.motion-coin-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--app-pink);
+  opacity: 0;
+  animation: motion-coin-burst 1.4s ease-out forwards;
+}
+@keyframes motion-coin-pop {
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes motion-coin-burst {
+  0% { transform: scale(0.5); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: scale(1.2) translate(0, -20px); opacity: 0; }
+}
+
+/* =============================================================
+   55 · 페이지 전환 (slide + fade)
+   ============================================================= */
+.motion-page-transition {
+  position: relative;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  background: #fff;
+}
+.motion-page {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--app-ink);
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s;
+}
+.motion-page-prev { background: var(--app-pink-soft); transform: translateX(0); }
+.motion-page-next { background: #fff; transform: translateX(100%); }
+.motion-page-transition[data-step="1"] .motion-page-prev { transform: translateX(-100%); opacity: 0; }
+.motion-page-transition[data-step="1"] .motion-page-next { transform: translateX(0); }
+.motion-page-transition[data-reduced="true"] .motion-page { transition: none; }
+
+/* =============================================================
+   56 · 모달 등장
+   ============================================================= */
+.motion-modal-stage {
+  position: relative;
+  height: 280px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--app-line);
+  background: #fafafa;
+}
+.motion-modal-page {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--app-copy-muted, #71717a);
+  font-size: 13px;
+}
+.motion-modal-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  animation: motion-fade-in 0.25s ease forwards;
+}
+.motion-modal-stage[data-reduced="true"] .motion-modal-dim { animation: none; }
+.motion-modal-sheet {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0;
+  padding: 1.25rem;
+  border-radius: 16px 16px 0 0;
+  background: #fff;
+  box-shadow: 0 -18px 44px -18px rgba(17,17,20,0.32);
+  transform: translateY(100%);
+  animation: motion-sheet-up 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.motion-modal-stage[data-reduced="true"] .motion-modal-sheet {
+  animation: none;
+  transform: translateY(0);
+}
+.motion-modal-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.12);
+  margin: 0 auto 0.5rem;
+}
+.motion-modal-title { font-weight: 800; color: var(--app-ink); }
+.motion-modal-close {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--app-line);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+@keyframes motion-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes motion-sheet-up { to { transform: translateY(0); } }
+
+/* =============================================================
+   57 · 토스트 스택
+   ============================================================= */
+.motion-toast-stack {
+  display: grid;
+  gap: 0.4rem;
+  min-height: 120px;
+}
+.motion-toast {
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  background: var(--app-ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  width: max-content;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: motion-toast-in 0.35s ease forwards;
+}
+.motion-toast-stack[data-reduced="true"] .motion-toast {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+@keyframes motion-toast-in { to { opacity: 1; transform: translateY(0); } }
+
+/* =============================================================
+   58 · 푸시 알림 도착
+   ============================================================= */
+.motion-push-stage {
+  position: relative;
+  height: 220px;
+  border-radius: 16px;
+  border: 1px solid var(--app-line);
+  background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(20,20,28,0.95));
+  overflow: hidden;
+  padding: 0.75rem;
+}
+.motion-push-statusbar {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.motion-push-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.95);
+  color: var(--app-ink);
+  transform: translateY(-100%);
+  animation: motion-push-slide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.motion-push-stage[data-reduced="true"] .motion-push-card {
+  animation: none;
+  transform: translateY(0);
+}
+.motion-push-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  background: var(--app-pink-soft);
+  color: var(--app-pink-strong);
+  font-family: var(--font-han);
+  font-weight: 800;
+}
+.motion-push-body { font-size: 12px; line-height: 1.4; }
+.motion-push-body strong { display: block; font-weight: 800; }
+.motion-push-body span { color: rgba(0,0,0,0.55); }
+@keyframes motion-push-slide { to { transform: translateY(0); } }
+
+/* =============================================================
+   59 · 한자 변환
+   ============================================================= */
+.motion-hanja-morph {
+  display: grid;
+  place-items: center;
+  height: 140px;
+  background: var(--app-pink-soft);
+  border: 1px solid var(--app-pink-line);
+  border-radius: 16px;
+}
+.motion-hanja-glyph {
+  font-family: var(--font-han);
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--app-pink-strong);
+  animation: motion-hanja-cross 1.5s ease-in-out infinite;
+}
+@keyframes motion-hanja-cross {
+  0% { opacity: 0; transform: scale(0.85) rotateY(-30deg); }
+  50% { opacity: 1; transform: scale(1) rotateY(0deg); }
+  100% { opacity: 0; transform: scale(0.85) rotateY(30deg); }
+}
+
+/* =============================================================
+   60 · 6종 스피너
+   ============================================================= */
+.motion-spinners-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+.motion-spinner {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+}
+.motion-spinner-ring {
+  border-radius: 999px;
+  border: 3px solid var(--app-pink-line);
+  border-top-color: var(--app-pink);
+  animation: motion-spin 0.9s linear infinite;
+}
+.motion-spinner-dots { display: flex; gap: 4px; align-items: center; justify-content: center; }
+.motion-spinner-dots span {
+  width: 8px; height: 8px; border-radius: 999px; background: var(--app-pink);
+  animation: motion-dots 1s ease-in-out infinite;
+}
+.motion-spinner-dots span:nth-child(2) { animation-delay: 0.15s; }
+.motion-spinner-dots span:nth-child(3) { animation-delay: 0.3s; }
+.motion-spinner-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--app-pink-soft);
+  position: relative;
+  overflow: hidden;
+  margin-top: 18px;
+}
+.motion-spinner-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--app-pink);
+  border-radius: 999px;
+  animation: motion-bar 1.2s ease-in-out infinite;
+}
+.motion-spinner-pulse {
+  border-radius: 999px;
+  background: var(--app-pink);
+  animation: motion-pulse 1.2s ease-in-out infinite;
+}
+.motion-spinner-orbit {
+  border-radius: 999px;
+  border: 2px solid var(--app-pink-line);
+  position: relative;
+  animation: motion-spin 2.4s linear infinite;
+}
+.motion-spinner-orbit::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--app-pink);
+  transform: translateX(-50%);
+}
+.motion-spinner-pinwheel { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; animation: motion-spin 1.2s linear infinite; }
+.motion-spinner-pinwheel span { background: var(--app-pink); border-radius: 4px; }
+.motion-spinners-grid[data-reduced="true"] .motion-spinner,
+.motion-spinners-grid[data-reduced="true"] .motion-spinner *,
+.motion-spinners-grid[data-reduced="true"] .motion-spinner::before,
+.motion-spinners-grid[data-reduced="true"] .motion-spinner::after {
+  animation: none !important;
+}
+@keyframes motion-spin { to { transform: rotate(360deg); } }
+@keyframes motion-dots { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes motion-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+@keyframes motion-pulse { 0%, 100% { transform: scale(0.85); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
+
+/* =============================================================
+   61 · 인풋 포커스/검증
+   ============================================================= */
+.motion-input-focus {
+  display: grid;
+  gap: 0.4rem;
+}
+.motion-input-label { font-size: 11px; font-weight: 800; color: var(--app-ink); }
+.motion-input-field {
+  height: 44px;
+  padding: 0 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--app-line);
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.motion-input-field[data-touched="true"]:not([data-valid="true"]) {
+  border-color: var(--app-coral);
+  box-shadow: 0 0 0 3px rgba(255,107,107,0.18);
+}
+.motion-input-field[data-valid="true"] {
+  border-color: var(--app-jade);
+  box-shadow: 0 0 0 3px rgba(15,159,122,0.18);
+}
+.motion-input-focus[data-reduced="true"] .motion-input-field { transition: none; }
+.motion-input-strength {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  height: 4px;
+}
+.motion-input-strength::before,
+.motion-input-strength::after,
+.motion-input-strength {
+  /* placeholder for actual bars; render with bg */
+}
+.motion-input-strength[data-level="0"]::before,
+.motion-input-strength[data-level="0"]::after { background: var(--app-line); }
+.motion-input-strength {
+  position: relative;
+}
+.motion-input-strength::before {
+  content: '';
+  background: var(--app-line);
+  border-radius: 999px;
+}
+.motion-input-strength::after {
+  content: '';
+  background: var(--app-line);
+  border-radius: 999px;
+}
+.motion-input-strength[data-level="1"]::before { background: var(--app-coral); }
+.motion-input-strength[data-level="2"]::before,
+.motion-input-strength[data-level="2"]::after { background: var(--app-amber); }
+.motion-input-strength[data-level="3"]::before,
+.motion-input-strength[data-level="3"]::after { background: var(--app-jade); }
+.motion-input-feedback { font-size: 11px; font-weight: 700; color: var(--app-coral); }
+.motion-input-feedback[data-valid="true"] { color: var(--app-jade); }
+
+/* =============================================================
+   62 · 차트 그리기
+   ============================================================= */
+.motion-chart-draw {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+.motion-chart-row {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--app-ink);
+}
+.motion-chart-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--app-pink);
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: motion-chart-draw-bar 0.9s ease-out forwards;
+}
+.motion-chart-draw[data-active="false"] .motion-chart-bar,
+.motion-chart-draw[data-reduced="true"] .motion-chart-bar {
+  transform: scaleX(1);
+  animation: none;
+}
+.motion-chart-value { text-align: right; }
+@keyframes motion-chart-draw-bar { to { transform: scaleX(1); } }
+
+/* =============================================================
+   63 · 사주팔자 셔플 (8 슬롯)
+   ============================================================= */
+.motion-palshja {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: var(--app-pink-soft);
+  border: 1px solid var(--app-pink-line);
+}
+.motion-palshja-slot {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: #fff;
+  font-family: var(--font-han);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--app-ink);
+  border: 1px solid var(--app-pink-line);
+  transition: transform 0.2s ease;
+}
+.motion-palshja-slot[data-settled="true"] {
+  color: var(--app-pink-strong);
+  box-shadow: 0 8px 18px -10px rgba(216,27,114,0.32);
+}
+
+/* =============================================================
+   prefers-reduced-motion: 모든 keyframes off
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .motion-saju-moon,
+  .motion-saju-step,
+  .motion-card,
+  .motion-coin-card,
+  .motion-coin-particle,
+  .motion-tarot-card,
+  .motion-page,
+  .motion-modal-dim,
+  .motion-modal-sheet,
+  .motion-toast,
+  .motion-push-card,
+  .motion-hanja-glyph,
+  .motion-chart-bar {
+    animation: none !important;
+    transition: none !important;
+  }
+  .motion-spinner-ring,
+  .motion-spinner-dots span,
+  .motion-spinner-bar::before,
+  .motion-spinner-pulse,
+  .motion-spinner-orbit,
+  .motion-spinner-pinwheel {
+    animation: none !important;
+  }
+}
