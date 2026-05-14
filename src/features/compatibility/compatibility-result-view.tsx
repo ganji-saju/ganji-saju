@@ -349,8 +349,10 @@ export function CompatibilityResultView({
             ))}
           </ul>
           <div className="mt-4 grid gap-2">
+            {/* 2026-05-14 fix: 기존 plan=premium (9,900원 멤버십) 로 잘못 연결되던 것을
+                love-question (990원 소액 상품) checkout 으로 바로잡는다. */}
             <Link
-              href="/membership/checkout?plan=premium"
+              href="/membership/checkout?product=love-question&from=compatibility-result"
               className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
             >
               990원 · 깊은 궁합 풀이 보기 →
