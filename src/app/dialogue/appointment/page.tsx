@@ -1,6 +1,6 @@
 // Redesign 2026-05-13 (Claude Design / screens-f.jsx ScreenAppointment):
 // 신규 /dialogue/appointment — 1:1 상담 예약. 선생님 + 주제 + 달력 + 시간 + 메모 + 확정 CTA.
-// 실제 예약 API 가 없어 확정 시 안내 + /dialogue 로 이동 (placeholder).
+// 2026-05-14: /api/appointments 연동 — 실제로 DB 에 예약을 저장한다.
 'use client';
 
 import Link from 'next/link';
@@ -150,14 +150,48 @@ export default function AppointmentPage() {
   }
 
   const canSubmit = selectedDay !== null && selectedTime !== '';
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (!canSubmit || selectedDay === null) return;
     setSubmitting(true);
-    // NOTE: 실제 예약 API 미구현. 확인 후 안내만 표시.
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setSubmitting(false);
-    setConfirmed(true);
+    setErrorMessage('');
+
+    const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teacherKey: DEFAULT_TEACHER.zodiac,
+          topic,
+          date,
+          time: selectedTime,
+          note,
+        }),
+      });
+
+      if (response.status === 401) {
+        window.location.href = `/login?next=${encodeURIComponent('/dialogue/appointment')}`;
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+
+      if (!response.ok) {
+        setErrorMessage(data?.error || '예약을 처리하지 못했습니다.');
+        return;
+      }
+
+      setConfirmed(true);
+    } catch {
+      setErrorMessage('네트워크 오류로 예약을 보내지 못했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -455,6 +489,12 @@ export default function AppointmentPage() {
                 className="mt-1.5 min-h-[80px] w-full resize-none rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[13px] leading-[1.55] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             </section>
+
+            {errorMessage ? (
+              <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
+                {errorMessage}
+              </p>
+            ) : null}
 
             {/* Sticky CTA */}
             <div
