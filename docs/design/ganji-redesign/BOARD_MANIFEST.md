@@ -16,9 +16,9 @@
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 |
 | 확장 (extras) | 10 | 9 | 1 | 0 | 0 |
 | 다국어 & 디바이스 | 2 | 0 | 2 | 0 | 0 |
-| 시스템 (banners/error) | 5 | 0 | 5 | 0 | 0 |
+| 시스템 (banners/error) | 5 | 1 | 4 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 |
-| **합계** | **66** | **53** | **9** | **4** | **0** |
+| **합계** | **66** | **54** | **8** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
 > 모션 13종은 `/admin/design/motion` gallery 에 모두 구현됨 (이번 PR).
@@ -132,7 +132,7 @@
 | ID | Label | Source | 상태 | 위치 | 비고 |
 |---|---|---|---|---|---|
 | `banners` | 24 · 배너 시스템 (7 종) | `screens-h.jsx:6` | SHELL | `docs/design/ganji-redesign/future-pages/banner-system.md` | 사용처별 inline 적용. 통합 banner system 미구현 |
-| `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | SHELL | `src/app/not-found.tsx` 부재. shell route TODO | |
+| `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | IMPLEMENTED | `src/app/not-found.tsx` (404), `src/app/error.tsx` (client 5xx), `src/app/global-error.tsx` (root) | PR #68/이번 PR |
 | `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | login → empathy → birth 흐름이 사실상 onboarding. 별도 onboarding 화면 미구현 | |
 | `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | SHELL | notifications 페이지 내 inline 권한 요청. 별도 modal 미구현 | |
 | `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | 회원가입 흐름 내 implicit consent. 별도 modal 미구현 | |
