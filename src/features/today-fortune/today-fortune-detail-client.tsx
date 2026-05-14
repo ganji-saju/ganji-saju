@@ -8,7 +8,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, MessageCircleMore } from 'lucide-react';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiLoadingOverlay, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-panel';
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
@@ -127,6 +127,15 @@ export function TodayFortuneDetailClient({
 
   return (
     <div className="gangi-subpage saju-result-page pb-8">
+      {/* §전체 로딩 — 다른 페이지와 동일한 GangiLoadingOverlay 사용.
+          unlock API 응답 → setResult 가 완료될 때까지 풀스크린 유지. */}
+      {loading ? (
+        <GangiLoadingOverlay
+          title="오늘 자세히 보기를 여는 중"
+          description="결제·코인 사용 이력을 확인하고 풀이를 정리하는 중입니다."
+        />
+      ) : null}
+
       <GangiPageHeader title="오늘 자세히 보기" backHref={resultHref} />
 
       <div className="space-y-4 px-1 py-4">
@@ -159,41 +168,6 @@ export function TodayFortuneDetailClient({
             >
               오늘운세 보러가기 →
             </Link>
-          </article>
-        ) : null}
-
-        {/* §로딩 — pink-soft + shimmer */}
-        {loading ? (
-          <article
-            className="rounded-[18px] border p-6 text-center"
-            style={{
-              background: 'var(--app-pink-soft)',
-              borderColor: 'var(--app-pink-line)',
-            }}
-          >
-            <div
-              className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[22px] font-extrabold"
-              style={{
-                background: '#fff',
-                color: 'var(--app-pink-strong)',
-                border: '1px solid var(--app-pink-line)',
-                fontFamily: 'var(--font-han)',
-              }}
-              aria-hidden="true"
-            >
-              月
-            </div>
-            <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              열람 준비 중
-            </div>
-            <h1 className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
-              오늘 자세히 보기를
-              <br />
-              여는 중입니다
-            </h1>
-            <p className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]">
-              결제 또는 코인 사용 이력을 확인한 뒤 보여드릴게요.
-            </p>
           </article>
         ) : null}
 
