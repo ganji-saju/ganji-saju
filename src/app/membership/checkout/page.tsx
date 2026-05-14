@@ -186,10 +186,22 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           selectedProduct,
           paymentScope?.scopeKey ?? null
         );
-        const coinUnlockedTodayDetail =
-          selectedProduct === 'today-detail' && paymentScope?.slug
-            ? await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)
-            : false;
+        // 2026-05-14: today-detail 은 slug / readingKey / 코인 unlock 3 가지
+        //   경로 모두 검사해 중복 결제 방지를 강화한다. paymentScope.slug 는
+        //   사주가 다시 만들어진 경우 다른 값이 될 수 있어 readingKey 도 함께 본다.
+        let coinUnlockedTodayDetail = false;
+        if (selectedProduct === 'today-detail' && paymentScope?.slug) {
+          coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
+            user.id,
+            paymentScope.slug
+          );
+          if (!coinUnlockedTodayDetail && paymentScope.readingKey && paymentScope.readingKey !== paymentScope.slug) {
+            coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
+              user.id,
+              paymentScope.readingKey
+            );
+          }
+        }
         if (entitlement || coinUnlockedTodayDetail) {
           alreadyPurchasedHref = buildPurchasedProductHref(selectedProduct, slug, {
             from,
