@@ -20,8 +20,141 @@
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* 2026-05-14 redesign — pink-soft hero card */
+.gangi-loading-card-v2 {
+  width: min(100%, 22rem);
+  border: 1px solid var(--app-pink-line);
+  border-radius: 1.55rem;
+  background:
+    radial-gradient(circle at 20% -10%, rgba(255, 79, 154, 0.16), transparent 55%),
+    linear-gradient(180deg, #ffffff 0%, var(--app-pink-soft) 100%);
+  padding: 1.7rem 1.5rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 24px 60px -28px rgba(216, 27, 114, 0.36);
+}
+
+.gangi-loading-han-badge {
+  position: relative;
+  display: grid;
+  width: 5.4rem;
+  height: 5.4rem;
+  margin: 0 auto 0.9rem;
+  place-items: center;
+}
+
+.gangi-loading-han-glyph {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: linear-gradient(160deg, #ffffff 0%, var(--app-pink-soft) 100%);
+  border: 1px solid var(--app-pink-line);
+  box-shadow: 0 14px 28px rgba(216, 27, 114, 0.16);
+  font-family: var(--font-han);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--app-pink-strong);
+  letter-spacing: -0.02em;
+  animation: gangi-float-y 3.6s ease-in-out infinite;
+}
+
+.gangi-loading-han-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 79, 154, 0.16);
+  border-left-color: var(--app-pink);
+  border-top-color: var(--app-pink);
+  border-radius: 9999px;
+  animation: gangi-spin-slow 1.4s linear infinite;
+}
+
+.gangi-loading-copy-v2 {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.gangi-loading-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--app-pink-strong);
+}
+
+.gangi-loading-copy-v2 p {
+  margin: 0.15rem 0 0;
+  color: var(--app-ink);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+}
+
+.gangi-loading-copy-v2 span {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--app-copy-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.gangi-loading-steps {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gangi-loading-step {
+  display: grid;
+  grid-template-columns: 0.85rem 1fr;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--app-copy-soft);
+  padding-inline: 0.4rem;
+}
+
+.gangi-loading-step.is-active {
+  color: var(--app-ink);
+}
+
+.gangi-loading-step-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--app-line);
+  box-shadow: inset 0 0 0 0 transparent;
+}
+
+.gangi-loading-step.is-active .gangi-loading-step-dot {
+  background: var(--app-pink);
+  animation: gangi-pulse-dot 1.4s ease-in-out infinite;
+}
+
+.gangi-loading-step-label {
+  text-align: left;
+}
+
+@keyframes gangi-pulse-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 79, 154, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 0.4rem rgba(255, 79, 154, 0);
+  }
 }
 
 .gangi-loading-card {

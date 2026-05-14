@@ -752,6 +752,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
     setIsSubmitting(true);
     setErrorMessage('');
+    let didNavigate = false;
 
     try {
       const response = await fetch('/api/readings', {
@@ -810,7 +811,19 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         }).catch(() => undefined);
       }
 
-      router.push(buildPostSubmitHref(data.id, form.focusTopic, pendingProduct, pendingPlan));
+      // 2026-05-14: 결과 페이지가 prefetch 되도록 router.prefetch 호출 후 push.
+      // didNavigate flag 로 finally 에서 isSubmitting 을 false 로 되돌리지 않도록 한다.
+      // → 페이지 전환 완료(destination 마운트)까지 오버레이가 유지된다.
+      const nextHref = buildPostSubmitHref(
+        data.id,
+        form.focusTopic,
+        pendingProduct,
+        pendingPlan
+      );
+      router.prefetch(nextHref);
+      router.push(nextHref);
+      didNavigate = true;
+      return;
     } catch {
       const fallbackId = toSlug(readingInput);
       if (!consentAccepted) {
@@ -830,9 +843,22 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         saveRecentGuestInput(form);
       }
       clearOnboardingDraft();
-      router.push(buildPostSubmitHref(fallbackId, form.focusTopic, pendingProduct, pendingPlan));
+      const fallbackHref = buildPostSubmitHref(
+        fallbackId,
+        form.focusTopic,
+        pendingProduct,
+        pendingPlan
+      );
+      router.prefetch(fallbackHref);
+      router.push(fallbackHref);
+      didNavigate = true;
+      return;
     } finally {
-      setIsSubmitting(false);
+      // 정상/폴백 push 모두 didNavigate=true → 오버레이 유지.
+      // validation/api 오류로 setErrorMessage 후 return 한 경우에만 false 로 복귀.
+      if (!didNavigate) {
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -1301,8 +1327,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       {isSubmitting ? (
         <GangiLoadingOverlay
-          title="사주풀이를 준비하고 있어요"
-          description="입력한 정보로 오늘 볼 흐름을 정리하는 중입니다."
+          title="사주를 풀어드리고 있어요"
+          description="네 기둥(年月日時)을 정리하고 오늘 흐름과 맞춰보는 중입니다."
         />
       ) : null}
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">
