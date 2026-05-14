@@ -1,9 +1,12 @@
+// Redesign 2026-05-13 (Claude Design / screens-d.jsx ScreenVaultDetail):
+// 보관함 카드 — ZodiacChip(md) + 날짜·태그·제목·요약 + quick actions
+// (즐겨찾기 / 공유 / 다시 보기). 데이터·라우팅·삭제 API 무수정.
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GangiCharacter, type GangiZodiacKey } from '@/components/gangi/gangi-ui';
+import { useState } from 'react';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import type { AccountPurchasedResult, AccountReading } from '@/lib/account';
 
 interface SavedReadingsListProps {
@@ -19,19 +22,16 @@ interface DeleteReadingResponse {
   error?: string;
 }
 
-function formatCreatedAt(value: string) {
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
-}
-
 function formatShortCreatedAt(value: string) {
   const date = new Date(value);
   return `${date.getMonth() + 1}.${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function formatTimeOfDay(value: string) {
+  const date = new Date(value);
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
 }
 
 function formatBirthLabel(reading: AccountReading) {
@@ -46,7 +46,7 @@ function formatBirthLabel(reading: AccountReading) {
   return `${reading.birthYear}.${reading.birthMonth}.${reading.birthDay} · ${hourLabel} · ${genderLabel}`;
 }
 
-const ZODIAC_BY_YEAR_MOD: GangiZodiacKey[] = [
+const ZODIAC_BY_YEAR_MOD: ZodiacKey[] = [
   'monkey',
   'rooster',
   'dog',
@@ -61,8 +61,38 @@ const ZODIAC_BY_YEAR_MOD: GangiZodiacKey[] = [
   'sheep',
 ];
 
-function getDisplayZodiac(reading: AccountReading): GangiZodiacKey {
+function getDisplayZodiac(reading: AccountReading): ZodiacKey {
   return ZODIAC_BY_YEAR_MOD[((reading.birthYear % 12) + 12) % 12] ?? 'rooster';
+}
+
+type VaultTag = 'NEW' | 'PAID' | 'VIP' | null;
+
+function getTagForReading(_reading: AccountReading): VaultTag {
+  // 데이터에 tag 구분이 없어 일단 null. 추후 purchased 여부에 따라 PAID/VIP 매핑 가능.
+  return null;
+}
+
+function getTagForPurchased(item: AccountPurchasedResult): VaultTag {
+  if (item.title?.includes('VIP') || item.title?.includes('평생')) return 'VIP';
+  return 'PAID';
+}
+
+function TagBadge({ tag }: { tag: VaultTag }) {
+  if (!tag) return null;
+  const style =
+    tag === 'VIP'
+      ? { background: 'var(--app-ink)', color: '#fff' }
+      : tag === 'NEW'
+        ? { background: 'var(--app-pink)', color: '#fff' }
+        : { background: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' };
+  return (
+    <span
+      className="rounded-[4px] px-1.5 py-0.5 text-[9.5px] font-extrabold tracking-[0.04em]"
+      style={style}
+    >
+      {tag}
+    </span>
+  );
 }
 
 export default function SavedReadingsList({
@@ -76,16 +106,11 @@ export default function SavedReadingsList({
   const [count, setCount] = useState(totalCount);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const totalVisibleCount = count + purchasedResults.length;
-  const visibleRangeLabel =
-    items.length > 0
-      ? `${visibleStartIndex}~${visibleStartIndex + items.length - 1}번째`
-      : purchasedResults.length > 0
-        ? `결제 풀이 ${purchasedResults.length}개`
-      : '현재 페이지 비어 있음';
 
   async function deleteReading(id: string) {
-    const confirmed = window.confirm('이 결과를 보관함에서 삭제할까요? 삭제 후에는 복구할 수 없습니다.');
+    const confirmed = window.confirm(
+      '이 결과를 보관함에서 삭제할까요? 삭제 후에는 복구할 수 없습니다.'
+    );
     if (!confirmed) return;
 
     setDeletingId(id);
@@ -108,7 +133,7 @@ export default function SavedReadingsList({
       setCount((current) =>
         typeof data?.readingCount === 'number' ? data.readingCount : Math.max(0, current - 1)
       );
-      setMessage('결과보관함에서 삭제했습니다. 서버 기준 저장 개수도 함께 갱신했습니다.');
+      setMessage('보관함에서 삭제했습니다.');
       router.refresh();
     } catch {
       setMessage('삭제 중 네트워크 오류가 발생했습니다.');
@@ -117,68 +142,153 @@ export default function SavedReadingsList({
     }
   }
 
+  const totalVisibleCount = count + purchasedResults.length;
+  const visibleRangeLabel =
+    items.length > 0
+      ? `${visibleStartIndex}~${visibleStartIndex + items.length - 1}번째`
+      : purchasedResults.length > 0
+        ? `결제 풀이 ${purchasedResults.length}개`
+        : '현재 페이지 비어 있음';
+
+  const isEmpty = items.length === 0 && purchasedResults.length === 0;
+
   return (
-    <div className="space-y-4">
-      <div className="gangi-vault-summary">
-        <span>전체 {totalVisibleCount}개</span>
-        <strong>{visibleRangeLabel}</strong>
+    <div className="space-y-3.5">
+      <div className="flex items-center justify-between rounded-[12px] bg-[var(--app-pink-soft)]/40 px-3.5 py-2.5 text-[12px]">
+        <span className="font-bold text-[var(--app-copy-soft)]">
+          전체 {totalVisibleCount}개
+        </span>
+        <span className="text-[11.5px] text-[var(--app-copy-muted)]">{visibleRangeLabel}</span>
       </div>
 
       {message ? (
-        <div className="rounded-[1.35rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3 text-sm font-bold text-[var(--app-pink-strong)]">
+        <div
+          className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] font-bold"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+            color: 'var(--app-pink-strong)',
+          }}
+        >
           {message}
         </div>
       ) : null}
 
-      {items.length === 0 && purchasedResults.length === 0 ? (
-        <div className="rounded-[1.6rem] border border-dashed border-[var(--app-line)] bg-white p-7 text-sm leading-7 text-[var(--app-copy-muted)]">
-          {count > 0
-            ? '현재 페이지의 결과를 모두 삭제했습니다.'
-            : '아직 저장된 풀이가 없습니다.'}
-        </div>
+      {isEmpty ? (
+        <article className="rounded-[16px] border border-dashed border-[var(--app-line)] bg-white p-7 text-center">
+          <div className="mx-auto inline-flex">
+            <ZodiacChip kind="snake" size="lg" />
+          </div>
+          <div className="mt-3 text-[14px] font-extrabold text-[var(--app-ink)]">
+            아직 저장된 풀이가 없어요
+          </div>
+          <p className="mt-1 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+            {count > 0
+              ? '현재 페이지의 결과를 모두 삭제했습니다.'
+              : '사주를 본 뒤 보관함에서 다시 확인할 수 있습니다.'}
+          </p>
+        </article>
       ) : (
-        <div className="gangi-vault-list">
-          {purchasedResults.map((item) => (
-            <article key={item.id} className="gangi-vault-item">
-              <Link href={item.href} className="gangi-vault-link">
-                <GangiCharacter zodiac="rabbit" />
-                <span className="gangi-vault-copy">
-                  <em>결제 풀이 · {item.occurredOn ?? formatShortCreatedAt(item.createdAt)}</em>
-                  <strong>{item.title}</strong>
-                  <small>{item.summary ?? '구매 당시 풀이를 다시 엽니다.'}</small>
-                </span>
-                <span className="gangi-vault-arrow" aria-hidden="true">›</span>
-              </Link>
-            </article>
-          ))}
-
-          {items.map((reading) => (
-            <article key={reading.id} className="gangi-vault-item">
-              <Link
-                href={`/saju/${reading.id}`}
-                className="gangi-vault-link"
+        <div className="grid gap-3">
+          {purchasedResults.map((item) => {
+            const tag = getTagForPurchased(item);
+            return (
+              <article
+                key={item.id}
+                className="overflow-hidden rounded-[16px] border border-[var(--app-line)] bg-white"
               >
-                <GangiCharacter zodiac={getDisplayZodiac(reading)} />
-                <span className="gangi-vault-copy">
-                  <em>사주 · {formatShortCreatedAt(reading.createdAt)}</em>
-                  <strong>{reading.birthMonth}월 {reading.birthDay}일 풀이</strong>
-                  <small>{formatBirthLabel(reading)}</small>
-                </span>
-                <span className="gangi-vault-arrow" aria-hidden="true">›</span>
-              </Link>
+                <Link href={item.href} className="flex items-start gap-3 p-3.5">
+                  <ZodiacChip kind="rabbit" size="md" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                      <span>{item.occurredOn ?? formatShortCreatedAt(item.createdAt)}</span>
+                      <span>·</span>
+                      <span>{formatTimeOfDay(item.createdAt)}</span>
+                      <TagBadge tag={tag} />
+                    </div>
+                    <div className="mt-1 text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      {item.title}
+                    </div>
+                    <p className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
+                      {item.summary ?? '구매 당시 풀이를 다시 엽니다.'}
+                    </p>
+                  </div>
+                </Link>
+                <div className="grid grid-cols-3 gap-1 border-t border-[var(--app-line)] p-1.5">
+                  <button
+                    type="button"
+                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                  >
+                    ♡ 즐겨찾기
+                  </button>
+                  <button
+                    type="button"
+                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                  >
+                    ↗ 공유
+                  </button>
+                  <Link
+                    href={item.href}
+                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                    style={{ background: 'var(--app-pink-soft)' }}
+                  >
+                    다시 보기 →
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
 
-              <div className="gangi-vault-actions">
-                <button
-                  type="button"
-                  disabled={deletingId === reading.id}
-                  onClick={() => deleteReading(reading.id)}
-                  className="gangi-vault-delete"
-                >
-                  {deletingId === reading.id ? '삭제 중...' : '삭제'}
-                </button>
-              </div>
-            </article>
-          ))}
+          {items.map((reading) => {
+            const tag = getTagForReading(reading);
+            return (
+              <article
+                key={reading.id}
+                className="overflow-hidden rounded-[16px] border border-[var(--app-line)] bg-white"
+              >
+                <Link href={`/saju/${reading.id}`} className="flex items-start gap-3 p-3.5">
+                  <ZodiacChip kind={getDisplayZodiac(reading)} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                      <span>{formatShortCreatedAt(reading.createdAt)}</span>
+                      <span>·</span>
+                      <span>{formatTimeOfDay(reading.createdAt)}</span>
+                      <TagBadge tag={tag} />
+                    </div>
+                    <div className="mt-1 text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      {reading.birthMonth}월 {reading.birthDay}일 풀이
+                    </div>
+                    <p className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
+                      {formatBirthLabel(reading)}
+                    </p>
+                  </div>
+                </Link>
+                <div className="grid grid-cols-3 gap-1 border-t border-[var(--app-line)] p-1.5">
+                  <button
+                    type="button"
+                    onClick={() => deleteReading(reading.id)}
+                    disabled={deletingId === reading.id}
+                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-coral)]/10 disabled:opacity-60"
+                  >
+                    {deletingId === reading.id ? '삭제 중...' : '🗑 삭제'}
+                  </button>
+                  <Link
+                    href={`/saju/${reading.id}/share`}
+                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                  >
+                    ↗ 공유
+                  </Link>
+                  <Link
+                    href={`/saju/${reading.id}`}
+                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                    style={{ background: 'var(--app-pink-soft)' }}
+                  >
+                    다시 보기 →
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
