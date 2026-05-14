@@ -1,135 +1,33 @@
 // Redesign 2026-05-13 (Claude Design / screens-e.jsx ScreenSearch):
-// 신규 /search — 빈 입력 (최근 검색 + 실시간 인기 + 추천 카테고리) /
-// 결과 (운세 메뉴 + 관련 풀이 + 하이라이트) / 결과 없음 (96px ? + 추천 칩 + CTA).
-// 실제 검색 API 가 없어 정적 매칭으로 구성.
+// /search — 빈 입력 (최근 검색 + 실시간 인기 + 추천 카테고리) /
+// 결과 (운세 메뉴 + 관련 풀이 + 꿈해몽 + 띠/별자리) / 결과 없음 (96px ? + 추천 칩 + CTA).
+// 2026-05-14: /api/search 연동 — search-index.ts 가 단일 출처.
 'use client';
 
 import Link from 'next/link';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
+type SearchCategory = '운세 메뉴' | '관련 풀이' | '꿈해몽' | '띠/별자리';
+
 interface SearchHit {
-  category: '운세 메뉴' | '관련 풀이';
+  category: SearchCategory;
   title: string;
   description: string;
   href: string;
-  zodiac?: ZodiacKey;
+  zodiacKey?: string;
   keywords: string[];
 }
 
-const STATIC_HITS: SearchHit[] = [
-  {
-    category: '운세 메뉴',
-    title: '연애 마음 확인',
-    description: '990원 · 작은 풀이',
-    href: '/saju/new?product=love-question',
-    zodiac: 'rabbit',
-    keywords: ['연애', '사랑', '관계', '마음'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '궁합 보기',
-    description: '두 사람의 흐름 · 76점부터',
-    href: '/compatibility/input',
-    zodiac: 'sheep',
-    keywords: ['궁합', '연애', '커플', '결혼'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '재회 타로',
-    description: '관계가 다시 움직일 여지를 확인',
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
-    keywords: ['연애', '재회', '타로', '관계'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '오늘운세',
-    description: '오늘 한 줄과 조심할 것',
-    href: '/today-fortune',
-    zodiac: 'rooster',
-    keywords: ['오늘', '오늘운세', '데일리'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '돈이 새는 패턴',
-    description: '990원 · 재물 흐름의 약한 지점',
-    href: '/saju/new?product=money-pattern',
-    zodiac: 'tiger',
-    keywords: ['재물', '돈', '재테크', '소비'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '일/직장 흐름',
-    description: '990원 · 오늘의 말, 역할, 타이밍',
-    href: '/saju/new?product=work-flow',
-    zodiac: 'dragon',
-    keywords: ['직장', '이직', '일', '업무'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '내 사주 풀이',
-    description: '깊은 사주풀이 + PDF · 49,000원',
-    href: '/saju/new',
-    zodiac: 'dragon',
-    keywords: ['사주', '명리', '갑신일주', '운명'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '띠운세',
-    description: '12 띠별 오늘 한 줄',
-    href: '/zodiac',
-    zodiac: 'rooster',
-    keywords: ['띠', '띠운세', '12간지'],
-  },
-  {
-    category: '운세 메뉴',
-    title: '별자리',
-    description: '12 별자리 오늘 흐름',
-    href: '/star-sign',
-    zodiac: 'rabbit',
-    keywords: ['별자리', '12궁', '점성술'],
-  },
-  {
-    category: '관련 풀이',
-    title: '연애운이 좋은 시기 알아보는 법',
-    description: '명리 기본',
-    href: '/saju/new',
-    keywords: ['연애', '시기', '명리'],
-  },
-  {
-    category: '관련 풀이',
-    title: '갑신일주의 연애 스타일',
-    description: '일주별 풀이',
-    href: '/saju/new',
-    keywords: ['갑신일주', '연애', '일주'],
-  },
-  {
-    category: '관련 풀이',
-    title: '궁합 점수가 낮을 때 보는 포인트',
-    description: '궁합 가이드',
-    href: '/compatibility/input',
-    keywords: ['궁합', '점수', '관계'],
-  },
-  {
-    category: '관련 풀이',
-    title: '오늘 흐름이 가벼운 시간대 찾기',
-    description: '데일리 가이드',
-    href: '/today-fortune',
-    keywords: ['오늘', '시간', '데일리'],
-  },
-];
-
-const TRENDING_NOW: Array<{ rank: number; keyword: string; up: boolean }> = [
-  { rank: 1, keyword: '2026 신년운세', up: true },
-  { rank: 2, keyword: '갑신일주 운명', up: true },
-  { rank: 3, keyword: '재물운 좋은 날', up: false },
-  { rank: 4, keyword: '궁합 보는 법', up: true },
-  { rank: 5, keyword: '이직 타이밍', up: false },
-];
+interface SearchApiResponse {
+  query: string;
+  total: number;
+  hits: SearchHit[];
+  trending: Array<{ rank: number; keyword: string; up: boolean }>;
+}
 
 const RECOMMENDED: Array<{ label: string; zodiac: ZodiacKey; href: string }> = [
   { label: '오늘운세', zodiac: 'rooster', href: '/today-fortune' },
@@ -162,14 +60,21 @@ function highlight(text: string, q: string) {
   );
 }
 
-function searchHits(query: string): SearchHit[] {
-  if (!query.trim()) return [];
-  const q = query.trim().toLowerCase();
-  return STATIC_HITS.filter((hit) => {
-    if (hit.title.toLowerCase().includes(q)) return true;
-    if (hit.description.toLowerCase().includes(q)) return true;
-    return hit.keywords.some((k) => k.toLowerCase().includes(q));
-  });
+function isZodiacKey(value: string | undefined): value is ZodiacKey {
+  return (
+    value === 'rat' ||
+    value === 'ox' ||
+    value === 'tiger' ||
+    value === 'rabbit' ||
+    value === 'dragon' ||
+    value === 'snake' ||
+    value === 'horse' ||
+    value === 'sheep' ||
+    value === 'monkey' ||
+    value === 'rooster' ||
+    value === 'dog' ||
+    value === 'pig'
+  );
 }
 
 function SearchContent() {
@@ -177,11 +82,42 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const initialQ = searchParams.get('q') ?? '';
   const [query, setQuery] = useState(initialQ);
+  const [data, setData] = useState<SearchApiResponse | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const hits = useMemo(() => searchHits(query), [query]);
+  useEffect(() => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const timeout = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((json: SearchApiResponse | null) => {
+          if (json) setData(json);
+        })
+        .catch((error: unknown) => {
+          if ((error as { name?: string } | null)?.name !== 'AbortError') {
+            // ignore
+          }
+        });
+    }, 180);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [query]);
+
+  const hits = data?.hits ?? [];
   const menuHits = hits.filter((h) => h.category === '운세 메뉴');
   const articleHits = hits.filter((h) => h.category === '관련 풀이');
-  const totalCount = hits.length;
+  const dreamHits = hits.filter((h) => h.category === '꿈해몽');
+  const zodiacHits = hits.filter((h) => h.category === '띠/별자리');
+  const totalCount = data?.total ?? 0;
+  const trending = data?.trending ?? [];
 
   const mode: 'empty-input' | 'empty-results' | 'results' = query.trim()
     ? totalCount === 0
@@ -196,6 +132,39 @@ function SearchContent() {
     router.replace(`/search${params.toString() ? `?${params.toString()}` : ''}`, {
       scroll: false,
     });
+  }
+
+  function renderHitGroup(label: string, group: SearchHit[]) {
+    if (group.length === 0) return null;
+    return (
+      <section key={label}>
+        <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">{label}</h2>
+        <div className="mt-2.5 grid gap-2">
+          {group.map((hit) => (
+            <Link
+              key={`${hit.category}-${hit.title}`}
+              href={hit.href}
+              className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
+            >
+              {isZodiacKey(hit.zodiacKey) ? (
+                <ZodiacChip kind={hit.zodiacKey} size="sm" />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  {highlight(hit.title, query)}
+                </div>
+                <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  {hit.description}
+                </div>
+              </div>
+              <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+                ›
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -246,56 +215,10 @@ function SearchContent() {
                 <span className="text-[var(--app-pink-strong)]">&ldquo;{query}&rdquo;</span>{' '}
                 검색 결과 {totalCount}건
               </div>
-
-              {menuHits.length > 0 ? (
-                <section>
-                  <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">운세 메뉴</h2>
-                  <div className="mt-2.5 grid gap-2">
-                    {menuHits.map((hit) => (
-                      <Link
-                        key={hit.title}
-                        href={hit.href}
-                        className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
-                      >
-                        {hit.zodiac ? <ZodiacChip kind={hit.zodiac} size="sm" /> : null}
-                        <div className="min-w-0 flex-1">
-                          <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
-                            {highlight(hit.title, query)}
-                          </div>
-                          <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
-                            {hit.description}
-                          </div>
-                        </div>
-                        <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
-                          ›
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-
-              {articleHits.length > 0 ? (
-                <section>
-                  <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">관련 풀이</h2>
-                  <div className="mt-2.5 grid gap-2">
-                    {articleHits.map((hit) => (
-                      <Link
-                        key={hit.title}
-                        href={hit.href}
-                        className="block rounded-[14px] border border-[var(--app-line)] bg-white p-3"
-                      >
-                        <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
-                          {highlight(hit.title, query)}
-                        </div>
-                        <div className="mt-1 text-[11px] text-[var(--app-copy-soft)]">
-                          {hit.description}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
+              {renderHitGroup('운세 메뉴', menuHits)}
+              {renderHitGroup('관련 풀이', articleHits)}
+              {renderHitGroup('꿈해몽', dreamHits)}
+              {renderHitGroup('띠/별자리', zodiacHits)}
             </>
           ) : null}
 
@@ -327,14 +250,14 @@ function SearchContent() {
                   실시간 인기 검색
                 </div>
                 <article className="mt-2.5 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
-                  {TRENDING_NOW.map((item, index) => (
+                  {trending.map((item, index) => (
                     <button
                       key={item.rank}
                       type="button"
                       onClick={() => applyQuery(item.keyword)}
                       className={
                         'flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--app-pink-soft)]' +
-                        (index < TRENDING_NOW.length - 1
+                        (index < trending.length - 1
                           ? ' border-b border-[var(--app-line)]'
                           : '')
                       }
