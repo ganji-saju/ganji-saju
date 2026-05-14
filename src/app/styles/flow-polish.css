@@ -771,3 +771,77 @@
     display: none;
   }
 }
+
+
+/* ============================================================
+   2026-05-14 — /saju/[slug]/premium 깊은 풀이 화면 readability 강화.
+   AI 패널 (LifetimeReportPanel / YearlyReportPanel / FortuneCalendarPanel)
+   내부의 dark-theme 시절 잔재 (rgba(255,255,255,0.03/0.04/0.06) 반투명 흰
+   배경) 가 새 흰 사이트 배경에서 거의 안 보이는 문제 해결.
+   ============================================================ */
+
+/* AI 패널 외곽 — pink-soft 그라데이션 + 더 부드러운 그림자 */
+.premium-ai-panel > .gangi-report-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #fff7fb 100%) !important;
+  border: 1px solid var(--app-pink-line) !important;
+  box-shadow: 0 22px 50px -28px rgba(216, 27, 114, 0.20) !important;
+  border-radius: 22px !important;
+}
+
+/* 안쪽 카드(흐릿한 반투명 흰)들 — 또렷한 흰색 + 핑크 라인 */
+.premium-ai-panel .gangi-report-panel [class*="bg-[rgba(255,255"],
+.premium-ai-panel .gangi-report-panel [class*="bg-[rgba(255\,255"] {
+  background-color: #ffffff !important;
+  border-color: var(--app-line) !important;
+  box-shadow: 0 1px 0 rgba(17, 17, 20, 0.03) !important;
+}
+
+/* 본문 readability 강화 */
+.premium-ai-panel .gangi-report-panel p,
+.premium-ai-panel .gangi-report-panel li {
+  line-height: 1.78 !important;
+  word-break: keep-all !important;
+  line-break: strict !important;
+}
+
+.premium-ai-panel .gangi-report-panel p {
+  font-size: 14px !important;
+  color: var(--app-copy) !important;
+}
+
+.premium-ai-panel .gangi-report-panel li {
+  font-size: 13.5px !important;
+}
+
+/* h2/h3 강조 — 24/20px + 굵게 */
+.premium-ai-panel .gangi-report-panel h2 {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.premium-ai-panel .gangi-report-panel h3,
+.premium-ai-panel .gangi-report-panel h4 {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.45 !important;
+}
+
+/* app-caption 강조 */
+.premium-ai-panel .gangi-report-panel .app-caption {
+  color: var(--app-pink-strong) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* 둥근 인접 카드 더 부드럽게 */
+.premium-ai-panel .gangi-report-panel article {
+  border-radius: 16px !important;
+}
+
+/* Badge 안 readability */
+.premium-ai-panel .gangi-report-panel [class*="badge"] {
+  font-weight: 700 !important;
+}
+

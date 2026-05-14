@@ -1,7 +1,12 @@
-// Redesign 2026-05-13: 사주 sub-tab '상세(premium)' 페이지 — PR6~PR10 디자인 언어로 통일.
-// pink-soft hero + ZodiacChip + 깔끔한 챕터 intro + ink-dark upsell CTA.
-// 결제·구독·entitlement 로직 / AI 패널 (LifetimeReportPanel/YearlyReportPanel/FortuneCalendarPanel)
-// / 라우팅·트래킹 모두 무수정.
+// Redesign 2026-05-14: 깊은 풀이 화면 ‘돋보이게’ 리디자인.
+// (이전 2026-05-13: pink-soft hero + ZodiacChip + 챕터 intro 의 골격은 유지)
+// 추가/강화:
+//   · 명찰 hero: 결제 권한 라벨(평생/올해/멤버십)을 명확한 ✓ 배지로.
+//   · 풀이 chapter intro 가 평이한 텍스트 → "큰 흐름/올해/월별" 토큰 컬러
+//     hero 카드(jade/amber/indigo) + 번호 배지 + 한 줄 강조 카피.
+//   · AI 패널(LifetimeReportPanel/YearlyReportPanel/FortuneCalendarPanel)을
+//     <div className="premium-ai-panel"> 로 감싸 readability CSS 적용.
+//   · 결제·구독·entitlement 로직 / AI 패널 내부 / 라우팅·트래킹 모두 무수정.
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -91,40 +96,132 @@ type PremiumReadingStep = {
   note: string;
 };
 
-// Redesign helper — PR6~PR10 컴팩트 챕터 헤더.
+// Redesign 2026-05-14 — 평이한 챕터 텍스트 대신 토큰 컬러 hero 카드.
+// number/jade/amber/indigo/pink 의 시각적 강조로 "비싼 풀이임" 을 즉시 인지.
+const CHAPTER_TONES = {
+  jade: {
+    bg: '#e8f5ee',
+    accent: 'var(--app-jade)',
+    border: 'rgba(45,135,88,0.22)',
+    shadow: '0 18px 44px -28px rgba(45,135,88,0.42)',
+  },
+  amber: {
+    bg: '#fdf6e7',
+    accent: '#b87a14',
+    border: 'rgba(184,122,20,0.24)',
+    shadow: '0 18px 44px -28px rgba(184,122,20,0.42)',
+  },
+  indigo: {
+    bg: '#eef0fb',
+    accent: '#4a5cb8',
+    border: 'rgba(74,92,184,0.24)',
+    shadow: '0 18px 44px -28px rgba(74,92,184,0.42)',
+  },
+  pink: {
+    bg: 'var(--app-pink-soft)',
+    accent: 'var(--app-pink-strong)',
+    border: 'var(--app-pink-line)',
+    shadow: '0 18px 44px -28px rgba(216,27,114,0.42)',
+  },
+} as const;
+
 function ChapterIntro({
+  number,
+  tone = 'pink',
   eyebrow,
   title,
   description,
+  highlight,
   aside,
 }: {
+  number?: number;
+  tone?: keyof typeof CHAPTER_TONES;
   eyebrow: string;
   title: string;
   description: string;
+  highlight?: string;
   aside?: string;
 }) {
+  const palette = CHAPTER_TONES[tone];
   return (
     <section className="px-1">
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-        {eyebrow}
-      </div>
-      <h2 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)] sm:text-[20px]">
-        {title}
-      </h2>
-      <p className="mt-2 max-w-3xl text-[13px] leading-[1.7] text-[var(--app-copy-muted)]">
-        {description}
-      </p>
-      {aside ? (
-        <p
-          className="mt-3 inline-block rounded-full border px-3 py-1 text-[11px] font-bold text-[var(--app-pink-strong)]"
+      <article
+        className="relative overflow-hidden rounded-[20px] border p-5"
+        style={{
+          background: palette.bg,
+          borderColor: palette.border,
+          boxShadow: palette.shadow,
+        }}
+      >
+        {/* deco half-circle */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full opacity-50"
           style={{
-            background: 'var(--app-pink-soft)',
-            borderColor: 'var(--app-pink-line)',
+            background: `radial-gradient(circle, ${palette.accent}28, transparent 70%)`,
           }}
-        >
-          {aside}
-        </p>
-      ) : null}
+        />
+
+        <div className="relative flex items-start gap-3">
+          {number ? (
+            <span
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-[18px] font-extrabold text-white"
+              style={{
+                background: palette.accent,
+                boxShadow: `0 8px 18px ${palette.accent}40`,
+                fontFamily: 'var(--font-han)',
+              }}
+              aria-hidden="true"
+            >
+              {number}
+            </span>
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <div
+              className="text-[11px] font-extrabold uppercase tracking-[0.06em]"
+              style={{ color: palette.accent }}
+            >
+              {eyebrow}
+            </div>
+            <h2
+              className="mt-1 text-[20px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)] sm:text-[22px]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              {title}
+            </h2>
+            <p
+              className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              {description}
+            </p>
+            {highlight ? (
+              <p
+                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[11.5px] font-extrabold"
+                style={{
+                  background: '#fff',
+                  borderColor: palette.border,
+                  color: palette.accent,
+                }}
+              >
+                ✦ {highlight}
+              </p>
+            ) : null}
+            {aside ? (
+              <p
+                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[11px] font-extrabold"
+                style={{
+                  background: 'var(--app-pink-soft)',
+                  borderColor: 'var(--app-pink-line)',
+                  color: 'var(--app-pink-strong)',
+                }}
+              >
+                {aside}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </article>
     </section>
   );
 }
@@ -323,34 +420,81 @@ export default async function SajuPremiumPage({ params }: Props) {
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
           <SajuScreenNav slug={slug} current="premium" />
 
-          {/* §1 Hero — PR6~PR10 패턴 */}
+          {/* §1 Hero — 2026-05-14 강화: 결제 권한이 있으면 ✓ 배지 + 부각 그라데이션. */}
           <article
-            className="rounded-[18px] border border-[var(--app-line)] p-5"
-            style={{ background: 'var(--app-pink-soft)' }}
+            className="relative overflow-hidden rounded-[20px] border p-5"
+            style={{
+              background:
+                hasLifetimeAccess || yearlyAccessLabel
+                  ? 'linear-gradient(135deg, var(--app-pink-soft) 0%, #fff 60%, var(--app-pink-soft) 100%)'
+                  : 'var(--app-pink-soft)',
+              borderColor: 'var(--app-pink-line)',
+              boxShadow: '0 20px 48px -28px rgba(216,27,114,0.32)',
+            }}
           >
-            <div className="flex items-center gap-3">
+            {/* deco ring */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)',
+              }}
+            />
+
+            <div className="relative flex items-start gap-3">
               <ZodiacChip kind={yearZodiac} size="lg" />
-              <div className="min-w-0">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  {dayMasterPillar} · {yearZodiacLabel} · {heroLabel}
+              <div className="min-w-0 flex-1">
+                {/* 결제 권한 ✓ 배지 (paid 일 때만) */}
+                {hasLifetimeAccess || yearlyAccessLabel ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold text-white"
+                    style={{
+                      background: 'var(--app-pink)',
+                      boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {hasLifetimeAccess ? '평생 소장' : yearlyAccessLabel}
+                  </span>
+                ) : null}
+                <div className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  {dayMasterPillar} · {yearZodiacLabel}
                 </div>
-                <h1 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                <h1
+                  className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
                   {heroTitle}
                 </h1>
-                <p className="mt-1.5 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                <p
+                  className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
                   {heroDescription}
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-1.5">
-              {readingSteps.map((step) => (
+            {/* 읽을 챕터 chips — 더 큰 hit area + 활성 강조 */}
+            <div className="relative mt-4 grid grid-cols-3 gap-1.5">
+              {readingSteps.map((step, index) => (
                 <Link
                   key={step.href}
                   href={step.href}
-                  className="rounded-full border border-[var(--app-line)] bg-white px-2 py-2 text-center text-[12px] font-bold text-[var(--app-copy-muted)] transition-colors hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
+                  className="flex flex-col items-center justify-center gap-0.5 rounded-[12px] border bg-white px-2 py-2.5 text-center transition-colors hover:border-[var(--app-pink-line)]"
+                  style={{ borderColor: 'var(--app-line)' }}
                 >
-                  {step.label} 보기
+                  <span
+                    className="text-[10px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]"
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                    {step.label}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -360,9 +504,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                 href={`/saju/${slug}/premium/print`}
                 eventName="report_pdf_click"
                 eventParams={{ slug, from: 'premium_hero', status: 'available' }}
-                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="relative mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
-                PDF로 저장하기
+                📄 PDF로 저장하기
               </TrackedLink>
             ) : null}
           </article>
@@ -370,38 +514,50 @@ export default async function SajuPremiumPage({ params }: Props) {
           {hasLifetimeAccess ? (
             <>
               <ChapterIntro
-                eyebrow="1장"
-                title="내 성향과 큰 흐름"
-                description="타고난 성향, 관계, 일의 흐름을 먼저 봅니다."
+                number={1}
+                tone="jade"
+                eyebrow="1장 · 큰 흐름"
+                title="10년 단위 대운으로 인생의 결을 봅니다"
+                description="타고난 성향과 관계·일의 패턴을 먼저 정리하고, 그 위에 10년씩 흐르는 큰 운(대운)을 차례로 짚어드립니다. 평생 한 번 정리해 두면 매년 흐름을 가벼운 마음으로 읽게 됩니다."
+                highlight="평생 활용 · 다시 볼 수 있게 보관"
               />
-              <div id="premium-lifetime" className="scroll-mt-28">
+              <div id="premium-lifetime" className="premium-ai-panel scroll-mt-28">
                 <LifetimeReportPanel slug={slug} targetYear={targetYear} />
               </div>
               <ChapterIntro
-                eyebrow="2장"
-                title={`${targetYear}년에 무엇을 조절할지 봅니다`}
-                description="올해의 일, 돈, 관계, 생활 리듬을 짧게 나눠 봅니다."
+                number={2}
+                tone="amber"
+                eyebrow={`2장 · ${targetYear} 올해 흐름`}
+                title={`${targetYear}년에 어떤 선택이 가벼울지 봅니다`}
+                description="올해의 큰 주제와 분야별(일·돈·관계·생활) 선택 힌트를 정리합니다. 무엇을 먼저 할지, 무엇을 미뤄도 좋을지 한 줄로 정리해 드립니다."
+                highlight="올해의 결정 타이밍"
               />
-              <div id="premium-yearly" className="scroll-mt-28">
+              <div id="premium-yearly" className="premium-ai-panel scroll-mt-28">
                 <YearlyReportPanel slug={slug} targetYear={targetYear} />
               </div>
               <ChapterIntro
-                eyebrow="3장"
-                title="월별 흐름"
-                description="좋은 달, 확인할 달, 차분히 정리할 달을 다시 봅니다."
+                number={3}
+                tone="indigo"
+                eyebrow="3장 · 월별 흐름"
+                title="12개월을 좋은 달 · 확인할 달 · 정리할 달로 나눕니다"
+                description="월별로 어떤 흐름이 들어오는지 한 줄씩 봅니다. 큰일을 잡기 좋은 달, 잠시 쉬는 달, 정리만 하는 달을 골라 일정을 가볍게 잡으세요."
+                highlight="월별 타이밍 캘린더"
               />
-              <div id="premium-calendar" className="scroll-mt-28">
+              <div id="premium-calendar" className="premium-ai-panel scroll-mt-28">
                 <FortuneCalendarPanel slug={slug} targetYear={targetYear} hasLifetimeAccess />
               </div>
             </>
           ) : yearlyAccessLabel ? (
             <>
               <ChapterIntro
-                eyebrow="1장"
-                title="올해 흐름부터 봅니다"
-                description="올해의 주제와 월별 타이밍을 먼저 확인합니다."
+                number={1}
+                tone="amber"
+                eyebrow={`1장 · ${targetYear} 올해 흐름`}
+                title={`${targetYear}년 어떤 결정이 가벼울지 먼저 봅니다`}
+                description="올해의 큰 주제와 월별 타이밍을 한자리에서 봅니다. 분야별(일·돈·관계·생활)로 무엇을 먼저 할지 결정에 도움이 되는 한 줄을 정리해 드립니다."
+                highlight="올해 핵심 + 월별 흐름"
               />
-              <div id="premium-yearly" className="scroll-mt-28">
+              <div id="premium-yearly" className="premium-ai-panel scroll-mt-28">
                 <YearlyReportPanel slug={slug} targetYear={targetYear} />
               </div>
               <SmallQuestionProducts encodedSlug={encodedSlug} targetYear={targetYear} />
@@ -540,11 +696,12 @@ export default async function SajuPremiumPage({ params }: Props) {
               </article>
 
               <ChapterIntro
-                eyebrow="달별 흐름"
+                tone="indigo"
+                eyebrow="월별 흐름 미리보기"
                 title="월별 흐름도 함께 볼 수 있어요"
-                description="좋은 달, 확인할 달, 차분히 정리할 달을 나눠 봅니다."
+                description="좋은 달, 확인할 달, 차분히 정리할 달을 나눠 봅니다. 결제 후 잠긴 달이 모두 열립니다."
               />
-              <div id="premium-calendar" className="scroll-mt-28">
+              <div id="premium-calendar" className="premium-ai-panel scroll-mt-28">
                 <FortuneCalendarPanel
                   slug={slug}
                   targetYear={targetYear}
