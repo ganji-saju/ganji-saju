@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/credits', '/today-fortune', '/tarot/daily', '/zodiac', '/zodiac/', '/star-sign', '/star-sign/', '/dream-interpretation', '/dream-interpretation/'],
-        disallow: ['/api/', '/login', '/credits/success', '/saju/', '/my'],
+        disallow: ['/api/', '/login', '/credits/success', '/saju/', '/my', '/admin'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
