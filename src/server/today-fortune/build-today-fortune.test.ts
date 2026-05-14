@@ -376,6 +376,36 @@ test('today fortune free result changes across different calendar dates (daily s
   );
 });
 
+test('today fortune premium changes across different calendar dates (daily premium regression)', () => {
+  // 2026-05-15: 코인/550원 결제 후 자세히 보기 화면도 매일 다르게 흐르도록 — 회귀 가드.
+  // 같은 사용자라도 sajuData.metadata.calculatedAt 만 바꿔도 추천/회피/윈도우/시나리오 중
+  // 적어도 한 곳에서 visible 차이가 있어야 함.
+  const input = createSampleInput();
+  const dataA = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
+  const dataB = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
+
+  const premA = buildTodayFortunePremiumResult(input, dataA, 'general');
+  const premB = buildTodayFortunePremiumResult(input, dataB, 'general');
+
+  assert.equal(premA.dateKey, '2026-05-11');
+  assert.equal(premB.dateKey, '2026-05-15');
+
+  const sameRecommend =
+    JSON.stringify(premA.recommendedActions) === JSON.stringify(premB.recommendedActions);
+  const sameAvoid = JSON.stringify(premA.avoidActions) === JSON.stringify(premB.avoidActions);
+  const sameFav =
+    JSON.stringify(premA.favorableWindows.map((w) => w.range)) ===
+    JSON.stringify(premB.favorableWindows.map((w) => w.range));
+  const sameScenario =
+    JSON.stringify(premA.scenarios.map((s) => `${s.better}|${s.watch}`)) ===
+    JSON.stringify(premB.scenarios.map((s) => `${s.better}|${s.watch}`));
+
+  assert.ok(
+    !sameRecommend || !sameAvoid || !sameFav || !sameScenario,
+    `자세히 보기가 다른 날짜에 완전히 동일하면 안 됩니다. recommend=${sameRecommend}, avoid=${sameAvoid}, windows=${sameFav}, scenarios=${sameScenario}`
+  );
+});
+
 test('today fortune free body changes across different calendar dates (daily body variants)', () => {
   // 2026-05-15: 본문(oneLine.body) 이 며칠째 같은 문장으로 나오던 회귀 방지.
   // headline·점수 외에 본문 자체도 일진 시그널 + concernLine variant 로 매일 흐트러져야 한다.

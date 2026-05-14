@@ -99,6 +99,8 @@ export interface TodayScenarioComparison {
 export interface TodayFortunePremiumResult {
   productCode: 'TODAY_DEEP_READING';
   coinCost: 1;
+  /** YYYY-MM-DD (timezone-local). 2026-05-15: 매일 다른 자세히-보기 결과를 보장하기 위해 추가. */
+  dateKey: string;
   groundingSummary: TodayFortuneFreeResult['groundingSummary'];
   favorableWindows: TodayTimeWindow[];
   cautionWindows: TodayTimeWindow[];

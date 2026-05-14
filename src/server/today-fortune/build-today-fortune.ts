@@ -1891,10 +1891,28 @@ function selectTimeBlockEvidenceCard(
   })[0];
 }
 
+// 2026-05-15: premium 결과(시간 윈도우/액션/시나리오)도 매일 다르게 흐르게 하기 위한
+// daily context. free 빌더와 공유.
+interface DailyContext {
+  todayPillar: TodayPillarSnapshot;
+  signatureSeed: number;
+  dailyDelta: number;
+  flowSignal: string;
+}
+
+function getDailyBlockBias(startHour: number, ctx?: DailyContext | null): number {
+  if (!ctx) return 0;
+  // 0~10 사이의 진폭, 평균 ~5 가 빠진 -5~+5 정도 변동.
+  // 같은 사용자라도 dateKeySeed + startHour 조합으로 매일 블록별 순위가 바뀌도록.
+  const bias = ((ctx.signatureSeed + startHour * 13) % 11) - 5;
+  return bias;
+}
+
 function buildTimeBlockEvaluations(
   concernId: ConcernId,
   report: SajuReport,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1,
+  dailyContext?: DailyContext | null
 ) {
   const baseScore = getTimeBlockBaseScore(report);
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
@@ -1910,7 +1928,10 @@ function buildTimeBlockEvaluations(
       timePillar.branchElement
     );
     const relationImpact = getTimeBlockRelationImpact(timePillar.branch, sajuData);
-    const score = clampScore(baseScore + elementImpact.delta + relationImpact.totalDelta);
+    const dailyBias = getDailyBlockBias(block.startHour, dailyContext);
+    const score = clampScore(
+      baseScore + elementImpact.delta + relationImpact.totalDelta + dailyBias
+    );
     const evidenceCard = selectTimeBlockEvidenceCard(
       report,
       score >= baseScore ? 'favorable' : 'caution',
@@ -2045,7 +2066,9 @@ function buildTimeWindowTitle(item: TodayTimeBlockEvaluation, type: 'favorable' 
 function buildTimeWindowBody(
   concernId: ConcernId,
   item: TodayTimeBlockEvaluation,
-  type: 'favorable' | 'caution'
+  type: 'favorable' | 'caution',
+  dailyContext?: DailyContext | null,
+  windowIndex: number = 0
 ) {
   const branchCopy = TIME_BRANCH_WINDOW_COPY[item.branch];
   const concernCopy = CONCERN_EASY_TIME_COPY[concernId];
@@ -2062,9 +2085,15 @@ function buildTimeWindowBody(
   const hintBody = item.hint
     ? `먼저 할 일은 "${limitEasyTimeSentences(item.hint, 1)}"입니다.`
     : null;
+  // 2026-05-15: 첫 번째 윈도우(가장 점수 높/낮은 블록) 본문에만 일진 마커 한 줄 추가.
+  // 매일 일진이 바뀌면 이 줄이 통째로 다른 ganzi 로 교체됨.
+  const dailyMarker =
+    dailyContext && windowIndex === 0 && dailyContext.todayPillar.ganzi
+      ? `오늘 일진 ${dailyContext.todayPillar.ganzi} 흐름 기준으로 본 시간대입니다.`
+      : null;
 
   return limitEasyTimeSentences(
-    joinUniqueSentences([branchBody, concernBody, hintBody, scoreBody]),
+    joinUniqueSentences([branchBody, concernBody, hintBody, scoreBody, dailyMarker]),
     3
   );
 }
@@ -2112,22 +2141,27 @@ function buildTimeWindows(
   concernId: ConcernId,
   report: SajuReport,
   sajuData: SajuDataV1,
-  type: 'favorable' | 'caution'
+  type: 'favorable' | 'caution',
+  dailyContext?: DailyContext | null
 ): TodayTimeWindow[] {
-  const evaluations = pickTimeBlockWindows(buildTimeBlockEvaluations(concernId, report, sajuData), type);
+  const evaluations = pickTimeBlockWindows(
+    buildTimeBlockEvaluations(concernId, report, sajuData, dailyContext),
+    type
+  );
 
-  return evaluations.map((item) => ({
+  return evaluations.map((item, index) => ({
     range: item.range,
     mood: type,
     title: buildTimeWindowTitle(item, type),
-    body: buildTimeWindowBody(concernId, item, type),
+    body: buildTimeWindowBody(concernId, item, type, dailyContext, index),
   }));
 }
 
 function buildScenarioComparison(
   concernId: ConcernId,
   report: SajuReport,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1,
+  dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
   const evidenceSnippet = getTodayEvidenceSnippet(report);
@@ -2140,11 +2174,13 @@ function buildScenarioComparison(
   const luckFact = getLuckFactLine(sajuData);
   const primaryAction = compactActionDescription(report.primaryAction.description, evidenceSnippet);
   const cautionAction = compactActionDescription(report.cautionAction.description, evidenceSnippet);
+  const flowSignal = dailyContext?.flowSignal ?? null;
 
   return [
     {
       title: concernCopy.actNowTitle,
       better: joinUniqueSentences([
+        flowSignal,
         evidenceSnippet,
         primaryAction,
         leadHint ? `특히 "${leadHint}"부터 잡고 들어가면 흐름을 덜 놓칩니다.` : null,
@@ -2164,6 +2200,7 @@ function buildScenarioComparison(
         concernCopy.waitTail,
       ]),
       watch: joinUniqueSentences([
+        flowSignal,
         secondaryCautionHint
           ? `${withKoreanParticle(`"${secondaryCautionHint}"`, '을', '를')} 미루기만 하면 같은 빈틈이 뒤에서 다시 커질 수 있습니다.`
           : null,
@@ -2196,10 +2233,100 @@ function buildEvidenceLines(
   return lines;
 }
 
+// 2026-05-15: 동일 사용자가 같은 자세히 보기에서 매일 같은 추천/회피를 보지 않도록
+// daily lead 카피 후보들. 일진 element 관계로 카테고리 6종으로 매핑.
+type DailyRelationKind = 'same' | 'support' | 'leak' | 'control' | 'spend' | 'neutral';
+
+function getDailyRelationKind(
+  myEl: Element | null | undefined,
+  todayEl: Element | null
+): DailyRelationKind {
+  if (!myEl || !todayEl) return 'neutral';
+  if (myEl === todayEl) return 'same';
+  if (GENERATOR_OF_MAP[myEl] === todayEl) return 'support';
+  if (GENERATED_BY_MAP[myEl] === todayEl) return 'leak';
+  if (CONTROLLER_OF_MAP[myEl] === todayEl) return 'control';
+  if (CONTROLLER_OF_MAP[todayEl] === myEl) return 'spend';
+  return 'neutral';
+}
+
+const DAILY_LEAD_VARIANTS: Record<DailyRelationKind, string[]> = {
+  same: [
+    '오늘은 내 결을 그대로 따라가는 일에서 가장 매끈한 성과가 나옵니다.',
+    '오늘은 내 페이스가 살아나는 흐름이라 미뤄둔 본업을 잡아도 좋아요.',
+  ],
+  support: [
+    '오늘은 받쳐주는 흐름이 들어오는 날이라 회복 · 학습 · 정리에 손이 잘 갑니다.',
+    '오늘은 도움을 받기 좋은 결이라 누군가에게 작게 요청해도 자연스럽습니다.',
+  ],
+  leak: [
+    '오늘은 표현이 잘 풀리는 결이지만 에너지 소모도 큰 편이라, 하루 종일 쏟지 마세요.',
+    '오늘은 의견을 꺼내기 좋은 흐름이라 짧고 명확한 한 줄을 미리 적어두세요.',
+  ],
+  control: [
+    '오늘은 누르는 결이 들어오는 날이라 결정은 한 박자 늦추고 확인 한 번을 더 두세요.',
+    '오늘은 무게가 실리는 흐름이라 큰 약속은 다음 날로 미루는 편이 안전합니다.',
+  ],
+  spend: [
+    '오늘은 정돈해야 하는 결이라 작은 실행과 마무리에 손이 많이 갑니다.',
+    '오늘은 끝내야 할 일을 먼저 짚고 시작하면 흐름이 가벼워져요.',
+  ],
+  neutral: [
+    '오늘은 평이한 결이라 큰 결단보다 한 일을 끝까지 마무리하는 쪽이 좋습니다.',
+    '오늘은 특별히 튀는 신호가 없는 날이라 평소 루틴을 한 번 더 점검해보세요.',
+  ],
+};
+
+const DAILY_AVOID_VARIANTS: Record<DailyRelationKind, string[]> = {
+  same: [
+    '오늘은 내 페이스에만 갇혀 주변 신호를 놓치지 않도록 한 박자 둘러보세요.',
+    '오늘은 자기 결이 강해 상대 의견을 가볍게 흘리기 쉽습니다.',
+  ],
+  support: [
+    '오늘은 도움을 받기 좋은 만큼 의존이 길어지지 않도록 마무리는 직접 정리하세요.',
+    '오늘은 결정을 미루기 쉬운 흐름이라 마감은 명확히 잡아두세요.',
+  ],
+  leak: [
+    '오늘은 말이 길어지면 의도와 다르게 들릴 수 있으니 한 줄로 줄여보세요.',
+    '오늘은 많이 표현하다 보면 에너지가 빠지기 쉽습니다.',
+  ],
+  control: [
+    '오늘은 마찰이 생기기 쉬운 결이라 즉답보다 한 박자 쉬고 답하세요.',
+    '오늘은 큰 결정은 다음 날로 미루는 편이 안전합니다.',
+  ],
+  spend: [
+    '오늘은 작은 결정도 손이 많이 가는 결이라 일을 늘리지 않는 편이 좋아요.',
+    '오늘은 새로 시작하기보다 마무리에 무게를 두세요.',
+  ],
+  neutral: [
+    '오늘은 무리한 변화보다 평소 흐름을 유지하는 편이 좋습니다.',
+    '오늘은 결정이 흩어지기 쉬우니 우선순위를 한 줄로 적어두세요.',
+  ],
+};
+
+function pickDailyLeadCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1) {
+  if (!dailyContext) return null;
+  const myEl = sajuData.dayMaster?.element ?? null;
+  const todayEl =
+    dailyContext.todayPillar.stemElement ?? dailyContext.todayPillar.branchElement ?? null;
+  const kind = getDailyRelationKind(myEl, todayEl);
+  return pickVariant(DAILY_LEAD_VARIANTS[kind], dailyContext.signatureSeed, 17);
+}
+
+function pickDailyAvoidCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1) {
+  if (!dailyContext) return null;
+  const myEl = sajuData.dayMaster?.element ?? null;
+  const todayEl =
+    dailyContext.todayPillar.stemElement ?? dailyContext.todayPillar.branchElement ?? null;
+  const kind = getDailyRelationKind(myEl, todayEl);
+  return pickVariant(DAILY_AVOID_VARIANTS[kind], dailyContext.signatureSeed, 23);
+}
+
 function buildRecommendedActions(
   concernId: ConcernId,
   focusReport: SajuReport,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1,
+  dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
   const leadHints = getEvidenceActionHints(focusReport, 'lead', 3);
@@ -2208,9 +2335,12 @@ function buildRecommendedActions(
     focusReport.primaryAction.description,
     leadEvidenceSnippet
   );
+  const dailyLead = pickDailyLeadCopy(dailyContext, sajuData);
+  // 2026-05-15: dailyLead 를 primary 뒤·practical hints 앞에 끼워 매일 추천이 흔들리게 함.
   const actions = uniqueStrings(
     [
       primaryAction,
+      dailyLead,
       ...leadHints.map((item) => `${item} 흐름부터 먼저 잡아보세요.`),
       getLuckFactLine(sajuData)
         ? `지금은 ${withKoreanParticle(getLuckFactLine(sajuData), '을', '를')} 같이 보며 ${concernCopy.favorableTail}`
@@ -2227,7 +2357,8 @@ function buildAvoidActions(
   concernId: ConcernId,
   focusReport: SajuReport,
   input: BirthInput,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1,
+  dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
   const cautionHints = getEvidenceActionHints(focusReport, 'caution', 3);
@@ -2236,9 +2367,11 @@ function buildAvoidActions(
     focusReport.cautionAction.description,
     cautionEvidenceSnippet
   );
+  const dailyAvoid = pickDailyAvoidCopy(dailyContext, sajuData);
   const actions = uniqueStrings(
     [
       cautionAction,
+      dailyAvoid,
       ...cautionHints.map((item) => `${withKoreanParticle(item, '을', '를')} 놓친 채 무리하게 진행하지 않는 편이 좋습니다.`),
       input.unknownTime
         ? '태어난 시간이 없으니 세부 타이밍보다 전체 흐름을 먼저 보는 편이 안전합니다.'
@@ -2346,20 +2479,39 @@ export function buildTodayFortunePremiumResult(
       ? todayReport
       : buildSajuReport(input, sajuData, concern.focusTopic);
 
+  // 2026-05-15: free 결과와 동일한 일진/시드 컨텍스트를 자세히 보기에도 주입.
+  // premium 빌더 시그니처는 그대로 두고 내부에서 derive — caller 영향 없음.
+  const todayPillar = getTodayPillarSnapshot(sajuData);
+  const dailyDelta = buildDailyDelta(todayPillar, sajuData);
+  const flowSignal = buildTodayFlowSignal(todayPillar, sajuData);
+  const signatureSeed = buildSignatureSeed(
+    input,
+    sajuData,
+    { calendarType: 'solar', timeRule: 'standard' },
+    todayPillar
+  );
+  const dailyContext: DailyContext = {
+    todayPillar,
+    signatureSeed,
+    dailyDelta,
+    flowSignal,
+  };
+
   return {
     productCode: 'TODAY_DEEP_READING',
     coinCost: 1,
+    dateKey: todayPillar.dateKey,
     groundingSummary: buildTodayGroundingSummary(
       grounding,
       kasiComparison,
       focusReport,
       sajuData
     ),
-    favorableWindows: buildTimeWindows(concernId, focusReport, sajuData, 'favorable'),
-    cautionWindows: buildTimeWindows(concernId, focusReport, sajuData, 'caution'),
-    avoidActions: buildAvoidActions(concernId, focusReport, input, sajuData),
-    recommendedActions: buildRecommendedActions(concernId, focusReport, sajuData),
-    scenarios: buildScenarioComparison(concernId, focusReport, sajuData),
+    favorableWindows: buildTimeWindows(concernId, focusReport, sajuData, 'favorable', dailyContext),
+    cautionWindows: buildTimeWindows(concernId, focusReport, sajuData, 'caution', dailyContext),
+    avoidActions: buildAvoidActions(concernId, focusReport, input, sajuData, dailyContext),
+    recommendedActions: buildRecommendedActions(concernId, focusReport, sajuData, dailyContext),
+    scenarios: buildScenarioComparison(concernId, focusReport, sajuData, dailyContext),
     evidenceLines: buildEvidenceLines(focusReport, todayReport, sajuData, Boolean(input.unknownTime)),
     followUpQuestions: concern.followUpQuestions,
     safetyNote:
