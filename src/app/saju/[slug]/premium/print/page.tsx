@@ -14,7 +14,74 @@ import {
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
+import { ELEMENT_INFO } from '@/lib/saju/elements';
+import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+
+// Redesign 2026-05-13 (Claude Design / screens-d.jsx ScreenPdfPrint + screens-f.jsx ScreenPdfPage2):
+// PDF 인쇄 페이지 시각 통일 — 干 로고 + REPORT NO + 사주팔자 4 pillars + 십성 chart.
+
+const TEN_GOD_DESCRIPTIONS: Record<TenGodCode, string> = {
+  비견: '자존·독립·동등한 동료',
+  겁재: '협업·경쟁자·재물 분담',
+  식신: '표현·먹을복·여유',
+  상관: '재능 표현·기교',
+  편재: '큰 재물·기회·유동성',
+  정재: '안정적인 재물·근면',
+  편관: '도전·경쟁·외부 압력',
+  정관: '책임·명예·체계',
+  편인: '독창적 학습·직관',
+  정인: '배움·도움받음·어머니적 보호',
+};
+
+const TEN_GOD_COLORS: Record<TenGodCode, string> = {
+  비견: '#5b58d6',
+  겁재: '#d99020',
+  식신: '#ff4f9a',
+  상관: '#d81b72',
+  편재: '#d99020',
+  정재: '#0f9f7a',
+  편관: '#ff6b6b',
+  정관: '#0f9f7a',
+  편인: '#c04de0',
+  정인: '#0f9f7a',
+};
+
+const TEN_GOD_HANJA: Record<TenGodCode, string> = {
+  비견: '比肩',
+  겁재: '劫財',
+  식신: '食神',
+  상관: '傷官',
+  편재: '偏財',
+  정재: '正財',
+  편관: '偏官',
+  정관: '正官',
+  편인: '偏印',
+  정인: '正印',
+};
+
+function getTenGodPercentages(data: SajuDataV1) {
+  const byType = data.tenGods?.byType;
+  if (!byType) return [];
+  const total = Object.values(byType).reduce((sum, v) => sum + v, 0);
+  if (total === 0) return [];
+  return Object.entries(byType)
+    .filter(([, count]) => count > 0)
+    .map(([name, count]) => ({
+      name: name as TenGodCode,
+      value: Math.round((count / total) * 100),
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+}
+
+function buildReportNumber(input: SajuDataV1['input']) {
+  const yy = String(new Date().getFullYear()).slice(-2);
+  const mm = String(new Date().getMonth() + 1).padStart(2, '0');
+  const dd = String(new Date().getDate()).padStart(2, '0');
+  const seed = `${input.birth.year}${input.birth.month}${input.birth.day}`.slice(-4);
+  return `GS-${yy}${mm}${dd}-${seed}`;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -185,6 +252,34 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   const targetYear = new Date().getFullYear();
   const report = buildLifetimeReport(reading.input, reading.sajuData, targetYear);
   const interpretation = buildFallbackLifetimeInterpretation(report, 'female');
+  const reportNo = buildReportNumber(reading.sajuData.input);
+  const pillars: Array<{ label: string; stem: string; branch: string; element: string }> = [
+    {
+      label: '시주',
+      stem: reading.sajuData.pillars.hour?.stem ?? '-',
+      branch: reading.sajuData.pillars.hour?.branch ?? '-',
+      element: reading.sajuData.pillars.hour?.stemElement ?? '목',
+    },
+    {
+      label: '일주',
+      stem: reading.sajuData.pillars.day.stem,
+      branch: reading.sajuData.pillars.day.branch,
+      element: reading.sajuData.pillars.day.stemElement,
+    },
+    {
+      label: '월주',
+      stem: reading.sajuData.pillars.month.stem,
+      branch: reading.sajuData.pillars.month.branch,
+      element: reading.sajuData.pillars.month.stemElement,
+    },
+    {
+      label: '연주',
+      stem: reading.sajuData.pillars.year.stem,
+      branch: reading.sajuData.pillars.year.branch,
+      element: reading.sajuData.pillars.year.stemElement,
+    },
+  ];
+  const tenGodList = getTenGodPercentages(reading.sajuData);
 
   return (
     <AppShell>
@@ -192,26 +287,199 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
         <ReportPrintActions slug={slug} backHref={backHref} />
 
         <article className="pdf-print-document">
-          <header className="pdf-print-cover">
-            <div className="pdf-print-brand">달빛인생</div>
-            <p className="pdf-print-kicker">평생 소장 깊은 사주풀이</p>
-            <h1>{report.cover.headline}</h1>
-            <p className="pdf-print-lead">{interpretation.oneLineSummary}</p>
-            <div className="pdf-print-meta">
-              <span>{formatBirthLine(reading.input)}</span>
-              <span>생성일 <CurrentDateLabel /></span>
+          {/* Redesign 2026-05-13: mockup ScreenPdfPrint 헤더 — 干 로고 + REPORT NO + 발행일 */}
+          <header
+            className="pdf-print-cover"
+            style={{
+              borderBottom: '2px solid var(--app-ink)',
+              paddingBottom: 16,
+              marginBottom: 22,
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 16,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: 10,
+                  background:
+                    'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
+                  color: '#fff',
+                  fontFamily: 'var(--font-han)',
+                  fontSize: 20,
+                  fontWeight: 700,
+                }}
+                aria-hidden="true"
+              >
+                干
+              </div>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.025em' }}>
+                  간지사주
+                </div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: 'var(--app-pink-strong)',
+                  }}
+                >
+                  달빛인생 · 사주 리포트
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                textAlign: 'right',
+                fontSize: 10,
+                color: 'var(--app-copy-muted)',
+                lineHeight: 1.6,
+              }}
+            >
+              REPORT NO. <strong style={{ color: 'var(--app-ink)' }}>{reportNo}</strong>
+              <br />
+              발행일 <CurrentDateLabel /> · v1.0
             </div>
           </header>
 
-          <section className="pdf-print-summary">
-            <h2>한 장 요약</h2>
-            <p>{interpretation.opening}</p>
-            <div className="pdf-print-keywords">
+          {/* Subject — cover info */}
+          <section style={{ marginTop: 4, marginBottom: 22 }}>
+            <div className="pdf-print-section-kicker" style={{ fontSize: 10 }}>
+              SUBJECT
+            </div>
+            <h1
+              style={{
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: '-0.03em',
+                margin: '4px 0 0',
+                lineHeight: 1.2,
+              }}
+            >
+              {report.cover.headline}
+            </h1>
+            <p
+              className="pdf-print-lead"
+              style={{ fontSize: 13, color: 'var(--app-copy)', marginTop: 8 }}
+            >
+              {interpretation.oneLineSummary}
+            </p>
+            <div
+              style={{
+                fontSize: 11,
+                color: 'var(--app-copy-muted)',
+                marginTop: 10,
+              }}
+            >
+              {formatBirthLine(reading.input)}
+            </div>
+          </section>
+
+          {/* §1 사주팔자(四柱八字) grid — mockup ScreenPdfPrint */}
+          <section style={{ marginBottom: 22 }}>
+            <div className="pdf-print-section-kicker" style={{ fontSize: 10 }}>
+              四柱八字
+            </div>
+            <h2 style={{ fontSize: 14, fontWeight: 800, marginTop: 2, marginBottom: 10 }}>
+              네 기둥과 여덟 글자
+            </h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 8,
+                border: '1px solid var(--app-line)',
+                borderRadius: 12,
+                padding: 12,
+                background: '#fff',
+              }}
+            >
+              {pillars.map((p) => (
+                <div key={p.label} style={{ textAlign: 'center' }}>
+                  <div
+                    style={{
+                      fontSize: 9.5,
+                      color: 'var(--app-copy-muted)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {p.label}
+                  </div>
+                  <div
+                    style={{
+                      margin: '6px 0 2px',
+                      fontFamily: 'var(--font-han)',
+                      fontSize: 32,
+                      fontWeight: 700,
+                      color: ELEMENT_INFO[p.element as keyof typeof ELEMENT_INFO].color,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {p.stem}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-han)',
+                      fontSize: 32,
+                      fontWeight: 700,
+                      color: ELEMENT_INFO[p.element as keyof typeof ELEMENT_INFO].color,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {p.branch}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* §2 한 줄 요약 pink-soft */}
+          <section
+            className="pdf-print-summary"
+            style={{
+              padding: 14,
+              borderRadius: 10,
+              background: 'var(--app-pink-soft)',
+              border: '1px solid var(--app-pink-line)',
+              marginBottom: 22,
+            }}
+          >
+            <div
+              className="pdf-print-section-kicker"
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: 'var(--app-pink-strong)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              한 줄 요약
+            </div>
+            <h2 style={{ fontSize: 0, height: 0, margin: 0, padding: 0 }} aria-hidden="true">
+              한 줄 요약
+            </h2>
+            <p
+              style={{
+                margin: '8px 0 0',
+                fontSize: 13.5,
+                lineHeight: 1.65,
+                color: 'var(--app-ink)',
+              }}
+            >
+              {interpretation.opening}
+            </p>
+            <div className="pdf-print-keywords" style={{ marginTop: 10 }}>
               {interpretation.keywords.map((keyword) => (
                 <span key={keyword}>{keyword}</span>
               ))}
             </div>
-            <div className="pdf-print-rule">
+            <div className="pdf-print-rule" style={{ marginTop: 10 }}>
               <strong>평생 힌트</strong>
               <p>{interpretation.lifetimeRule}</p>
             </div>
@@ -225,6 +493,130 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               body={interpretation.sections[section.key]}
             />
           ))}
+
+          {/* 십성 (十星) chart — mockup ScreenPdfPage2 */}
+          {tenGodList.length > 0 ? (
+            <section
+              className="pdf-print-section"
+              style={{
+                marginTop: 18,
+                breakInside: 'avoid',
+                pageBreakInside: 'avoid',
+              }}
+            >
+              <div className="pdf-print-section-kicker">十星</div>
+              <h2>나를 둘러싼 열 가지 기운 (상위 5)</h2>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: 'var(--app-copy-muted)',
+                  lineHeight: 1.55,
+                  marginTop: 6,
+                  maxWidth: 460,
+                }}
+              >
+                십성은 일간(나)을 기준으로 다른 글자들과의 관계를 10가지로 분류한 것입니다.
+                나를 둘러싼 기운을 보는 가장 직관적인 방법이에요.
+              </p>
+              <div
+                style={{
+                  marginTop: 14,
+                  border: '1px solid var(--app-line)',
+                  borderRadius: 12,
+                  padding: 16,
+                }}
+              >
+                {tenGodList.map((item, index) => {
+                  const color = TEN_GOD_COLORS[item.name];
+                  const width = Math.max(2, Math.min(100, item.value * 2.5));
+                  return (
+                    <div
+                      key={item.name}
+                      style={{
+                        padding: '12px 0',
+                        borderBottom:
+                          index < tenGodList.length - 1 ? '1px solid var(--app-line)' : 'none',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            background: color,
+                            color: '#fff',
+                            display: 'grid',
+                            placeItems: 'center',
+                            fontFamily: 'var(--font-han)',
+                            fontSize: 18,
+                            fontWeight: 700,
+                            flexShrink: 0,
+                          }}
+                          aria-hidden="true"
+                        >
+                          {TEN_GOD_HANJA[item.name]}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span style={{ fontSize: 13, fontWeight: 800 }}>
+                              {item.name}{' '}
+                              <span
+                                style={{
+                                  color: 'var(--app-copy-muted)',
+                                  fontWeight: 600,
+                                  fontSize: 11,
+                                }}
+                              >
+                                ({TEN_GOD_HANJA[item.name]})
+                              </span>
+                            </span>
+                            <span style={{ fontSize: 14, fontWeight: 800, color }}>
+                              {item.value}%
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              height: 4,
+                              background: 'var(--app-line)',
+                              borderRadius: 999,
+                              marginTop: 6,
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: 'block',
+                                height: '100%',
+                                width: `${width}%`,
+                                background: color,
+                              }}
+                            />
+                          </div>
+                          <p
+                            style={{
+                              margin: '6px 0 0',
+                              fontSize: 10.5,
+                              color: 'var(--app-copy-muted)',
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {TEN_GOD_DESCRIPTIONS[item.name]}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
 
           <section className="pdf-print-section">
             <div className="pdf-print-section-kicker">10</div>
