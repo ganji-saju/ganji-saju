@@ -11,9 +11,65 @@ import {
   isUnifiedBirthEntryDraft,
   resolveUnifiedBirthInput,
 } from '@/lib/saju/unified-birth-entry';
+// 2026-05-15 PR 1: 사용자 현재 상황 입력 (연애/직업/고민).
+import type {
+  ConcernCategory,
+  OccupationCategory,
+  RelationshipStatus,
+  UserSituation,
+} from '@/lib/saju/types';
+
+const VALID_RELATIONSHIP: ReadonlySet<RelationshipStatus> = new Set([
+  'single',
+  'dating',
+  'married',
+  'separated',
+]);
+const VALID_OCCUPATION: ReadonlySet<OccupationCategory> = new Set([
+  'employee',
+  'self-employed',
+  'student',
+  'homemaker',
+  'job-seeking',
+  'other',
+]);
+const VALID_CONCERN: ReadonlySet<ConcernCategory> = new Set([
+  'business',
+  'romance',
+  'family',
+  'health',
+  'wealth',
+  'other',
+]);
+
+function parseUserSituation(payload: unknown): UserSituation | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const raw = (payload as Record<string, unknown>).userSituation;
+  if (!raw || typeof raw !== 'object') return null;
+  const record = raw as Record<string, unknown>;
+  const situation: UserSituation = {};
+  if (typeof record.relationshipStatus === 'string' && VALID_RELATIONSHIP.has(record.relationshipStatus as RelationshipStatus)) {
+    situation.relationshipStatus = record.relationshipStatus as RelationshipStatus;
+  }
+  if (typeof record.occupation === 'string' && VALID_OCCUPATION.has(record.occupation as OccupationCategory)) {
+    situation.occupation = record.occupation as OccupationCategory;
+  }
+  if (typeof record.currentConcern === 'string' && VALID_CONCERN.has(record.currentConcern as ConcernCategory)) {
+    situation.currentConcern = record.currentConcern as ConcernCategory;
+  }
+  if (typeof record.concernNote === 'string') {
+    const note = record.concernNote.trim().slice(0, 80);
+    if (note) situation.concernNote = note;
+  }
+  // 모든 필드가 비어 있으면 null 반환 (DB 에 빈 객체 저장 방지).
+  return situation.relationshipStatus || situation.occupation || situation.currentConcern || situation.concernNote
+    ? situation
+    : null;
+}
 
 export async function POST(req: NextRequest) {
   const payload = await req.json().catch(() => null);
+  const userSituation = parseUserSituation(payload);
   const parsed = isUnifiedBirthEntryDraft(payload)
     ? resolveUnifiedBirthInput(payload)
     : parseBirthInputDraft(payload);
@@ -51,7 +107,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const id = await createReading(parsed.input, user?.id ?? null);
+    const id = await createReading(parsed.input, user?.id ?? null, userSituation);
     return NextResponse.json({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';

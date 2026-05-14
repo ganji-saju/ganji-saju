@@ -207,11 +207,14 @@ function buildEvidenceJson(data: SajuDataV1, report: SajuReport): SajuEvidenceJs
 export function buildSajuInterpretationGrounding(
   input: BirthInput,
   data: SajuDataV1,
-  report: SajuReport
+  report: SajuReport,
+  // 2026-05-15 PR 1: 사용자 입력 현재 상황 (연애/직업/고민) 전달 통로.
+  // grounding 의 personalizationContext 까지 흘러 모든 풀이 화면이 같은 컨텍스트 수혜.
+  userSituation: import('@/lib/saju/types').UserSituation | null = null
 ): SajuInterpretationGrounding {
   return {
     factJson: buildFactJson(input, data),
     evidenceJson: buildEvidenceJson(data, report),
-    personalizationContext: buildSajuPersonalizationContext(data),
+    personalizationContext: buildSajuPersonalizationContext(data, userSituation),
   };
 }

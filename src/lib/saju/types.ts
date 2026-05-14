@@ -45,3 +45,30 @@ export interface BirthInput {
   birthLocation?: BirthLocation | null;
   solarTimeMode?: SolarTimeMode;
 }
+
+// 2026-05-15 PR 1 — 사주아이 벤치마크 reference: 사용자의 "현재 상황" 3개 입력.
+// BirthInput 과 분리 (사주 계산 캐시 키에 영향 X). personalizationContext.promptFacts
+// 에 phrase 로 주입되어 풀이 본문에 자연스럽게 호명되도록.
+export type RelationshipStatus = 'single' | 'dating' | 'married' | 'separated';
+export type OccupationCategory =
+  | 'employee'         // 직장인
+  | 'self-employed'    // 자영업/프리랜서
+  | 'student'          // 학생
+  | 'homemaker'        // 주부
+  | 'job-seeking'      // 구직중
+  | 'other';
+export type ConcernCategory =
+  | 'business'         // 새로운 사업/이직
+  | 'romance'          // 결혼/연애
+  | 'family'           // 자녀/가족
+  | 'health'           // 건강/멘탈
+  | 'wealth'           // 재물/투자
+  | 'other';
+
+export interface UserSituation {
+  relationshipStatus?: RelationshipStatus | null;
+  occupation?: OccupationCategory | null;
+  currentConcern?: ConcernCategory | null;
+  /** 자유 입력 — 'other' 선택 시 caller 가 채움 (max 80자, 안전성 위해 길이 제한 권장). */
+  concernNote?: string | null;
+}

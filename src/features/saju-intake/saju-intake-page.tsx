@@ -33,6 +33,7 @@ import {
   saveOnboardingDraft,
   saveRecentGuestInput,
   shouldAutoSavePersonalProfile,
+  toUserSituation,
   type OnboardingFocusTopic,
   type SajuOnboardingDraft,
 } from './onboarding-storage';
@@ -43,6 +44,46 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export type OnboardingStep = 'empathy' | 'birth' | 'nickname' | 'consent';
 type SwipeStepId = 'profile' | 'birth' | 'location' | 'consent';
+
+// 2026-05-15 PR 1: 현재 상황 3개 chip group helper. selected chip 토글 가능 (재클릭 시 선택 해제).
+function SituationChipGroup<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T | '';
+  onChange: (next: T | '') => void;
+  options: ReadonlyArray<{ value: T; label: string }>;
+}) {
+  return (
+    <div>
+      <div className="text-[12px] font-bold text-[var(--app-copy-muted)]">{label}</div>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {options.map((option) => {
+          const selected = value === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onChange(selected ? '' : option.value)}
+              data-selected={selected}
+              className={cn(
+                'rounded-full border px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                selected
+                  ? 'border-[var(--app-pink)]/45 bg-[var(--app-pink)]/12 text-[var(--app-pink-strong)]'
+                  : 'border-[var(--app-line)] bg-white text-[var(--app-copy)] hover:border-[var(--app-pink)]/30 hover:bg-[var(--app-pink)]/6'
+              )}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
 type LocationSearchStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 
@@ -749,6 +790,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       ...parsed.input,
       name: form.nickname.trim() || undefined,
     };
+    // 2026-05-15 PR 1: 사용자 현재 상황(연애/직업/고민) 을 같이 보내 personalizationContext 에 흐르게 함.
+    const userSituation = toUserSituation(form);
 
     setIsSubmitting(true);
     setErrorMessage('');
@@ -758,7 +801,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       const response = await fetch('/api/readings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(readingInput),
+        body: JSON.stringify({ ...readingInput, userSituation }),
       });
 
       const data = await response.json();
@@ -1188,6 +1231,77 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </span>
           </div>
         </div>
+
+        {/* 2026-05-15 PR 1 — 현재 상황 3개 (연애/직업/고민). 사주아이 벤치마크 reference.
+            접힘 기본, 사용자가 펼치면 입력. 미입력해도 사주 풀이는 정상 동작. */}
+        <details className="group rounded-[1.05rem] border border-[var(--app-line)] bg-white px-4 py-3 open:bg-[var(--app-pink)]/4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-[var(--app-ink)]">
+                더 정확한 풀이를 위해 (선택)
+              </div>
+              <p className="mt-1 text-[12px] leading-5 text-[var(--app-copy-muted)]">
+                연애·직업·고민을 알려주시면 본인 상황에 맞춰 호명되는 풀이가 만들어져요.
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="shrink-0 text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+            >
+              ▾
+            </span>
+          </summary>
+          <div className="mt-3 grid gap-3">
+            <SituationChipGroup
+              label="현재 관계"
+              value={form.relationshipStatus}
+              onChange={(next) => setForm((prev) => ({ ...prev, relationshipStatus: next }))}
+              options={[
+                { value: 'single', label: '솔로' },
+                { value: 'dating', label: '연애 중' },
+                { value: 'married', label: '기혼' },
+                { value: 'separated', label: '이별·정리 중' },
+              ]}
+            />
+            <SituationChipGroup
+              label="현재 하시는 일"
+              value={form.occupation}
+              onChange={(next) => setForm((prev) => ({ ...prev, occupation: next }))}
+              options={[
+                { value: 'employee', label: '직장인' },
+                { value: 'self-employed', label: '자영업·프리랜서' },
+                { value: 'student', label: '학생' },
+                { value: 'homemaker', label: '주부' },
+                { value: 'job-seeking', label: '구직 중' },
+                { value: 'other', label: '기타' },
+              ]}
+            />
+            <SituationChipGroup
+              label="요즘 가장 큰 고민"
+              value={form.currentConcern}
+              onChange={(next) => setForm((prev) => ({ ...prev, currentConcern: next }))}
+              options={[
+                { value: 'business', label: '사업·이직' },
+                { value: 'romance', label: '결혼·연애' },
+                { value: 'family', label: '자녀·가족' },
+                { value: 'health', label: '건강·멘탈' },
+                { value: 'wealth', label: '재물·투자' },
+                { value: 'other', label: '직접 입력' },
+              ]}
+            />
+            {form.currentConcern === 'other' ? (
+              <input
+                type="text"
+                value={form.concernNote}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, concernNote: event.target.value.slice(0, 80) }))
+                }
+                placeholder="짧게 적어주세요 (최대 80자)"
+                className="motion-input-effect h-11 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[13.5px] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              />
+            ) : null}
+          </div>
+        </details>
 
         {recentGuestDraft ? (
           <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">

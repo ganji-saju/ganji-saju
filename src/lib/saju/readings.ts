@@ -37,6 +37,8 @@ interface ReadingRow {
   birth_hour: number | null;
   gender: 'male' | 'female' | null;
   result_json: unknown;
+  // 2026-05-15 PR 1 — 사용자 현재 상황. NULL 허용 (기존 row 호환).
+  situation_json?: import('@/lib/saju/types').UserSituation | null;
 }
 
 type SupabaseReadingsClient = Awaited<ReturnType<typeof createServiceClient>>;
@@ -145,10 +147,13 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
   const sajuData = normalizeToSajuDataV1(input, row.result_json);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
+  // 2026-05-15 PR 1: situation_json 컬럼에서 userSituation 복원. NULL/누락 안전.
+  const userSituation = row.situation_json ?? null;
+  // 기존 persisted grounding 이 있어도 userSituation 이 새로 들어왔으면 재빌드 (promptFacts 갱신).
   const grounding =
-    persisted._grounding?.personalizationContext
+    persisted._grounding?.personalizationContext && !userSituation
       ? persisted._grounding
-      : buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
+      : buildSajuInterpretationGrounding(normalizedInput, sajuData, report, userSituation);
   const rebuiltMetadata = buildPersistedSajuReadingMetadata(
     normalizedInput,
     sajuData,
@@ -179,11 +184,17 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
   };
 }
 
-export async function buildReadingInsertPayload(input: BirthInput, userId: string | null) {
+export async function buildReadingInsertPayload(
+  input: BirthInput,
+  userId: string | null,
+  // 2026-05-15 PR 1: 사용자 현재 상황 — 별도 컬럼 `situation_json` 으로 저장.
+  // BirthInput 캐시 키와 분리해 reading slug 안정성 보장.
+  userSituation: import('@/lib/saju/types').UserSituation | null = null
+) {
   const sajuData = calculateSajuDataV1(input);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
-  const grounding = buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
+  const grounding = buildSajuInterpretationGrounding(normalizedInput, sajuData, report, userSituation);
   const kasiComparison = await buildKasiComparisonSnapshot(normalizedInput);
   const metadata = buildPersistedSajuReadingMetadata(
     normalizedInput,
@@ -202,6 +213,7 @@ export async function buildReadingInsertPayload(input: BirthInput, userId: strin
     birth_hour: input.hour ?? null,
     gender: input.gender ?? null,
     result_json: persistedResultJson,
+    situation_json: userSituation ?? null,
   };
 }
 
@@ -219,10 +231,12 @@ async function getPrivilegedOrSessionClient(userId?: string | null): Promise<Sup
 
 export async function createReading(
   input: BirthInput,
-  userId: string | null
+  userId: string | null,
+  // 2026-05-15 PR 1: 사용자 현재 상황. 옵션 — 없으면 NULL 저장 (기존 흐름 호환).
+  userSituation: import('@/lib/saju/types').UserSituation | null = null
 ): Promise<string> {
   const supabase = await getPrivilegedOrSessionClient(userId);
-  const payload = await buildReadingInsertPayload(input, userId);
+  const payload = await buildReadingInsertPayload(input, userId, userSituation);
 
   const { data, error } = await supabase
     .from('readings')
@@ -278,7 +292,8 @@ export async function getReadingById(id: string): Promise<ReadingRecord | null> 
   const { data, error } = await supabase
     .from('readings')
     .select(
-      'id, user_id, birth_year, birth_month, birth_day, birth_hour, gender, result_json'
+      // 2026-05-15 PR 1: situation_json 컬럼도 함께 가져와 grounding 재빌드에 사용.
+      'id, user_id, birth_year, birth_month, birth_day, birth_hour, gender, result_json, situation_json'
     )
     .eq('id', id)
     .maybeSingle();
