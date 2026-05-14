@@ -18,7 +18,7 @@ import {
   FRIENDLY_ELEMENT_ACTIONS,
   FRIENDLY_ELEMENT_HINT,
   FRIENDLY_ELEMENT_LABEL,
-  FRIENDLY_STRENGTH_LABEL,
+  classifyStrengthBucket,
 } from '@/lib/saju/terminology';
 import {
   normalizeToSajuDataV1,
@@ -503,8 +503,12 @@ function buildModernInterpretation(
   // 2026-05-14: 모든 카피를 요즘말로. 한자 술어는 제거하거나 일상어로 풀어 쓴다.
   const dominant = data.fiveElements.dominant;
   const weakest = data.fiveElements.weakest;
+  // 2026-05-14: 경계 근접 표시 ("신강에 가까운 중화" 등)
+  const strengthBucket = data.strength
+    ? classifyStrengthBucket(data.strength.level, data.strength.score)
+    : null;
   const strengthLabel = data.strength
-    ? `${FRIENDLY_STRENGTH_LABEL[data.strength.level]} (점수 ${data.strength.score})`
+    ? `${strengthBucket} (점수 ${data.strength.score})`
     : '컨디션 균형은 아직 확인 중';
   const yongsinLabel = data.yongsin
     ? `${FRIENDLY_ELEMENT_LABEL[data.yongsin.primary.value as Element] ?? data.yongsin.primary.label}${
@@ -521,12 +525,17 @@ function buildModernInterpretation(
     `풀이 점검 점수는 ${report.score}점 (${formatVerificationStatus(report.status)}).`,
   ].join(' ');
 
+  // 2026-05-14: pattern 이 있으면 격국 블록을 추가. 정관격/편관격 같은 단정형
+  // 표기 대신 "정관격 후보" + 월지 근거 + 동반 십신 구조 형태로 보수화.
   const blocks: SajuInterpretationBlock[] = [
     buildFoundationBlock(data, options.tone),
     buildBalanceBlock(data, options.tone),
-    buildYongsinBlock(data, options.tone),
-    buildLuckBlock(data, options.tone),
   ];
+  if (data.pattern) {
+    blocks.push(buildPatternBlock(data, options.tone));
+  }
+  blocks.push(buildYongsinBlock(data, options.tone));
+  blocks.push(buildLuckBlock(data, options.tone));
 
   return {
     profile: {
@@ -614,6 +623,88 @@ function buildBalanceBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   };
 }
 
+function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpretationBlock {
+  // 2026-05-14: 격국은 "정관격" 식으로 단정하지 않고 "정관격 후보 (관인 구조 동반)"
+  // 같은 보수 표기로. 월지 주기운만으로 단정할 수 없는 한계를 본문에 명시.
+  const pattern = data.pattern!;
+  const monthBranch = data.pillars.month.branch;
+  const monthHiddenStems = BRANCH_HIDDEN_STEMS[monthBranch] ?? [];
+  const monthBranchKeyStem = monthHiddenStems[0] ?? null;
+
+  // 동반 십신 구조 추정 — 정관격에 정인이 있으면 "관인 구조 동반" 같은 텍스트.
+  const accompanyingPhrases: string[] = [];
+  if (data.tenGods) {
+    const counts = data.tenGods.byType;
+    if (pattern.tenGod === '정관' || pattern.tenGod === '편관') {
+      if ((counts['정인'] ?? 0) + (counts['편인'] ?? 0) >= 1) {
+        accompanyingPhrases.push('관인 구조 동반');
+      }
+    }
+    if (pattern.tenGod === '정재' || pattern.tenGod === '편재') {
+      if ((counts['식신'] ?? 0) + (counts['상관'] ?? 0) >= 1) {
+        accompanyingPhrases.push('식상생재 동반');
+      }
+    }
+  }
+
+  const candidateLabel = `${pattern.name} 후보`;
+  const monthRoot = monthBranchKeyStem
+    ? `월지 ${monthBranch}의 ${monthBranchKeyStem}土 기준`.replace(
+        /의 .土/,
+        `의 ${monthBranchKeyStem}${getStemElementHanja(monthBranchKeyStem)} 기준`
+      )
+    : `월지 ${monthBranch} 기준`;
+
+  const summary =
+    accompanyingPhrases.length > 0
+      ? `${candidateLabel}로 보입니다. ${monthRoot}이고 ${accompanyingPhrases.join(' · ')}으로 읽혀요.`
+      : `${candidateLabel}로 보입니다. ${monthRoot}으로 풀이됩니다.`;
+
+  return {
+    id: 'pattern',
+    title: '반복되는 삶의 역할 후보',
+    summary,
+    claims: [
+      {
+        id: 'pattern.candidate',
+        text: `${candidateLabel}: ${monthRoot}.${
+          accompanyingPhrases.length > 0
+            ? ` 동반 구조로 ${accompanyingPhrases.join(', ')}이 함께 보여 보수적으로 "${candidateLabel}"로 표기해요.`
+            : ` 단정 짓기보다 "후보"로 두고 다른 풀이와 함께 읽는 편이 안전해요.`
+        }`,
+        confidence: accompanyingPhrases.length > 0 ? 'medium' : 'low',
+        evidence: [
+          evidence('pattern.name', '격국 후보명', pattern.name),
+          evidence('pattern.category', '격국 분류', pattern.category ?? null),
+          evidence('pattern.tenGod', '대표 십신', pattern.tenGod ?? null),
+          evidence('pillars.month.branch', '월지', monthBranch),
+          ...(monthBranchKeyStem
+            ? [evidence('pillars.month.hiddenStem0', '월지 주기운(지장간 1순위)', monthBranchKeyStem)]
+            : []),
+        ],
+        caveat: '월지 주기운 한 가지로만 격국을 확정하지 않아요. 다른 십신 구조·합충도 함께 봐야 더 정확해져요.',
+      },
+    ],
+    actions: [
+      '격국 표기는 "후보" 로 보고, 동반 구조(관인·식상생재·재관 등)도 함께 살펴주세요.',
+    ],
+    antiClaims: [
+      '격국 후보 하나만으로 직업·결혼·재물을 단정하지 않아요.',
+    ],
+    tags: ['pattern', pattern.name, pattern.tenGod ?? 'unknown'],
+    tone,
+  };
+}
+
+function getStemElementHanja(stem: Stem): '木' | '火' | '土' | '金' | '水' {
+  const elementHanjaByStem: Record<Stem, '木' | '火' | '土' | '金' | '水'> = {
+    甲: '木', 乙: '木', 丙: '火', 丁: '火',
+    戊: '土', 己: '土', 庚: '金', 辛: '金',
+    壬: '水', 癸: '水',
+  };
+  return elementHanjaByStem[stem];
+}
+
 function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpretationBlock {
   const yongsin = data.yongsin;
   if (!yongsin) {
@@ -634,23 +725,108 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   const confidenceLabel = yongsin.confidence
     ? ` (확신도 ${FRIENDLY_CONFIDENCE_LABEL[yongsin.confidence] ?? yongsin.confidence})`
     : '';
+
+  // 2026-05-14: secondary(희신) 에서 dominant 또는 sub-dominant 오행을 마스킹.
+  // engine 이 secondary 에 강세 오행을 넣어 "그 오행을 더 쓰라" 는 잘못된 안내가
+  // 노출되는 것을 차단한다 (예: 壬子 일주에서 水 가 secondary 에 있는 경우).
+  const byElement = data.fiveElements.byElement;
+  const weakestScore = byElement[data.fiveElements.weakest]?.score ?? 0;
+  const dominantElement = data.fiveElements.dominant;
+
+  function isMaskingTarget(element: Element) {
+    if (element === dominantElement) return true;
+    const score = byElement[element]?.score ?? 0;
+    // weakest 보다 1 이상 강한 secondary 는 (이미 충분히 강하니까) 희신으로 노출 X
+    return score >= weakestScore + 1.0;
+  }
+
+  const safeSecondary = (yongsin.secondary ?? [])
+    .filter((symbol) => symbol.value !== primaryElement)
+    .filter((symbol) => !isMaskingTarget(symbol.value as Element));
+  const maskedSecondary = (yongsin.secondary ?? []).filter((symbol) =>
+    isMaskingTarget(symbol.value as Element)
+  );
+
+  // 2026-05-14: kiyshin(주의·조절할 기운)에 dominant 가 빠져 있으면 보강.
+  // 또 마스킹된 secondary (강세인데 secondary 로 들어온 오행) 도 주의로 옮긴다.
+  const kiyshinValues = new Set((yongsin.kiyshin ?? []).map((symbol) => symbol.value));
+  const augmentedKiyshin: SajuSymbolRef[] = [...(yongsin.kiyshin ?? [])];
+  if (!kiyshinValues.has(dominantElement) && dominantElement !== primaryElement) {
+    augmentedKiyshin.push({
+      type: 'element',
+      value: dominantElement,
+      label: `${getElementHanja(dominantElement)} (${dominantElement})`,
+    });
+    kiyshinValues.add(dominantElement);
+  }
+  for (const masked of maskedSecondary) {
+    if (!kiyshinValues.has(masked.value) && masked.value !== primaryElement) {
+      augmentedKiyshin.push(masked);
+      kiyshinValues.add(masked.value);
+    }
+  }
+
+  const secondaryText =
+    safeSecondary.length > 0
+      ? safeSecondary
+          .map((symbol) => FRIENDLY_ELEMENT_LABEL[symbol.value as Element] ?? symbol.label)
+          .join(' · ')
+      : '뚜렷한 희신 후보 없음 (도움이 되는 핵심 기운만 의존)';
+  const kiyshinText =
+    augmentedKiyshin.length > 0
+      ? augmentedKiyshin
+          .map((symbol) => FRIENDLY_ELEMENT_LABEL[symbol.value as Element] ?? symbol.label)
+          .join(' · ')
+      : '특별히 조절할 기운 없음';
+
+  const claims: SajuVerifiedClaim[] = [
+    {
+      id: 'yongsin.primary',
+      text: `${primaryLabel}이 균형을 잘 맞춰주는 1순위 기운으로 잡혔어요. ${FRIENDLY_ELEMENT_HINT[primaryElement] ?? ''}`.trim(),
+      confidence: toClaimConfidence(yongsin.confidence),
+      evidence: [
+        evidence('yongsin.primary', '도움이 되는 1순위 기운', primaryLabel),
+        evidence('yongsin.method', '계산한 방식', yongsin.method),
+        evidence('yongsin.confidence', '풀이 확신도', yongsin.confidence ?? null),
+      ],
+      caveat: '계절 균형·강약 균형 등 후보 계산법이 엇갈리면, 한 가지로 단정해 말하지 않아요.',
+    },
+    {
+      id: 'yongsin.secondary',
+      text: `희신(보조 도움 기운): ${secondaryText}. 1순위 도움 기운(${primaryLabel})을 든든하게 받쳐주는 결이에요.`,
+      confidence: safeSecondary.length > 0 ? 'medium' : 'low',
+      evidence: [
+        evidence('yongsin.secondary', '보조 도움 기운 후보', secondaryText),
+        evidence('fiveElements.dominant', '가장 강한 기운 (희신에서 마스킹)', FRIENDLY_ELEMENT_LABEL[dominantElement]),
+        ...(maskedSecondary.length > 0
+          ? [
+              evidence(
+                'yongsin.secondary.masked',
+                '희신에서 제외한 강세 오행',
+                maskedSecondary.map((s) => s.label).join(', ')
+              ),
+            ]
+          : []),
+      ],
+      caveat: '이미 강한 오행은 더 쓰면 균형이 더 기울 수 있어 희신 후보에서 제외했어요.',
+    },
+    {
+      id: 'yongsin.kiyshin',
+      text: `주의(조절할 기운): ${kiyshinText}. 너무 많이 쓰면 컨디션이 한쪽으로 쏠릴 수 있어요.`,
+      confidence: 'medium',
+      evidence: [
+        evidence('yongsin.kiyshin', '조절할 기운', kiyshinText),
+        evidence('fiveElements.dominant.score', '가장 강한 기운의 점수', byElement[dominantElement]?.score ?? null),
+      ],
+      caveat: '"피해야 한다" 가 아니라 "이미 많이 쓰고 있으니 더 쌓지 않게 조절" 의미예요.',
+    },
+  ];
+
   return {
     id: 'yongsin',
     title: FRIENDLY_BLOCK_LABEL.yongsin,
-    summary: `지금 가장 도움이 되는 핵심 기운은 ${primaryLabel}${confidenceLabel}이에요. 이 기운을 일상에서 작게 자주 써주면 균형이 부드러워져요.`,
-    claims: [
-      {
-        id: 'yongsin.primary',
-        text: `${primaryLabel}이 균형을 잘 맞춰주는 1순위 기운으로 잡혔어요. ${FRIENDLY_ELEMENT_HINT[primaryElement] ?? ''}`.trim(),
-        confidence: toClaimConfidence(yongsin.confidence),
-        evidence: [
-          evidence('yongsin.primary', '도움이 되는 1순위 기운', primaryLabel),
-          evidence('yongsin.method', '계산한 방식', yongsin.method),
-          evidence('yongsin.confidence', '풀이 확신도', yongsin.confidence ?? null),
-        ],
-        caveat: '계절 균형·강약 균형 등 후보 계산법이 엇갈리면, 한 가지로 단정해 말하지 않아요.',
-      },
-    ],
+    summary: `지금 가장 도움이 되는 핵심 기운은 ${primaryLabel}${confidenceLabel}이에요. 희신은 ${secondaryText}, 조절할 기운은 ${kiyshinText} 으로 잡혀요.`,
+    claims,
     actions: ELEMENT_ACTION_MAP[primaryElement] ?? [],
     antiClaims: [
       '도움 기운을 “행운의 부적”처럼 신비화하지 않아요.',
@@ -659,6 +835,10 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
     tags: ['yongsin', yongsin.method, primaryElement],
     tone,
   };
+}
+
+function getElementHanja(element: Element): string {
+  return ELEMENT_HANJA[element];
 }
 
 function buildLuckBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpretationBlock {

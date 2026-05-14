@@ -141,6 +141,59 @@ export const FRIENDLY_STRENGTH_LABEL: Record<'신강' | '중화' | '신약', str
   신약: '에너지가 차분한 편',
 };
 
+/**
+ * 2026-05-14: 경계값 근접 표기.
+ * - 신강 임계 score >= 67, 신약 임계 score <= 43.
+ * - 중화 안에서도 60~66 은 "신강에 가까운 중화", 44~50 은 "신약에 가까운 중화"
+ *   라고 표기해 사용자가 결을 더 정확히 인식할 수 있도록 한다.
+ */
+export const STRENGTH_BOUNDARY = {
+  STRONG_THRESHOLD: 67,
+  WEAK_THRESHOLD: 43,
+  NEAR_STRONG_MIN: 60,
+  NEAR_WEAK_MAX: 50,
+} as const;
+
+export type StrengthBucket =
+  | '신강'
+  | '신강에 가까운 중화'
+  | '중화'
+  | '신약에 가까운 중화'
+  | '신약';
+
+export function classifyStrengthBucket(
+  level: '신강' | '중화' | '신약',
+  score: number
+): StrengthBucket {
+  if (level === '신강') return '신강';
+  if (level === '신약') return '신약';
+  // level === '중화'
+  if (score >= STRENGTH_BOUNDARY.NEAR_STRONG_MIN) return '신강에 가까운 중화';
+  if (score <= STRENGTH_BOUNDARY.NEAR_WEAK_MAX) return '신약에 가까운 중화';
+  return '중화';
+}
+
+export const FRIENDLY_STRENGTH_BUCKET_LABEL: Record<StrengthBucket, string> = {
+  신강: '에너지가 강한 편',
+  '신강에 가까운 중화': '균형이지만 강한 편에 가까움',
+  중화: '균형이 잡힌 편',
+  '신약에 가까운 중화': '균형이지만 차분한 편에 가까움',
+  신약: '에너지가 차분한 편',
+};
+
+/** 화면 노출용 (한자 술어 + 친근 표현 병기). UI 가 두 줄 또는 괄호로 쓸 수 있게. */
+export function formatStrengthDisplay(level: '신강' | '중화' | '신약', score: number) {
+  const bucket = classifyStrengthBucket(level, score);
+  return {
+    bucket,
+    /** 한자 술어 풀어 쓴 형태 — 본문 들어가는 자연어 */
+    label: bucket, // 예: "신강에 가까운 중화"
+    /** 친근 표현 — pill / 배지에 쓰는 짧은 라벨 */
+    friendly: FRIENDLY_STRENGTH_BUCKET_LABEL[bucket],
+    score,
+  };
+}
+
 /** YongsinConfidence("높음"|"중간"|"낮음") → 친절 표현. */
 export const FRIENDLY_CONFIDENCE_LABEL: Record<string, string> = {
   높음: '꽤 확실',
