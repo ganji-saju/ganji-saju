@@ -44,6 +44,13 @@ function buildTasteProductHref(
     return `/today-fortune/detail?${params.toString()}`;
   }
   if (product === 'love-question') {
+    // 2026-05-14: 궁합 결과 페이지에서 결제로 진입한 경우 결과로 돌아가서 깊은 풀이를
+    // 보여준다. 그 외엔 기존대로 입력 화면으로. ManualCompatibilityResultClient 가
+    // sessionStorage 의 payload (selfName/partnerName/birthInput 등) 를 그대로
+    // 다시 읽으므로 입력을 다시 받지 않아도 결과가 복원된다.
+    if (entrySource?.startsWith('compatibility-result')) {
+      return '/compatibility/result?source=manual&paid=love-question';
+    }
     return '/compatibility/input?relationship=lover&paid=love-question';
   }
   if (slug && product === 'monthly-calendar') {
