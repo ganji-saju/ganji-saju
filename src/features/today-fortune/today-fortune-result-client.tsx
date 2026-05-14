@@ -14,6 +14,11 @@ import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortun
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
+// 2026-05-15 handoff PR-G3: 58 m-push + push-modal 보드 production mount.
+// 결과 페이지 진입 후 20초 + 권한 미허용 + cooldown 7일 경과 시 자동 prompt.
+import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt';
+
+const WEB_PUSH_PUBLIC_KEY = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
@@ -140,6 +145,10 @@ export function TodayFortuneResultClient({
   return (
     <div className="gangi-subpage pb-8">
       <GangiPageHeader title="오늘의 운세" backHref="/today-fortune" />
+
+      {/* 2026-05-15 handoff PR-G3: 오늘운세 결과 진입 + 20초 dwell + 권한 미허용 시
+          PushPermissionModal 자동 prompt. 7일 cooldown. */}
+      <PushPermissionPrompt delayMs={20_000} webPushPublicKey={WEB_PUSH_PUBLIC_KEY} />
 
       {/* Redesign 2026-05-13: mockup screens-a.jsx ScreenToday 의 4 핵심 섹션을 상단에 배치하고,
           기존 추가 무료 콘텐츠(기회/주의 / 사주 단서 / 후속 질문 / 관련 링크)는 하단 details 로 접어 보존. */}

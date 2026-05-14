@@ -962,3 +962,75 @@
     opacity: 0.5;
   }
 }
+
+/* =============================================================
+   56 · m-modal · production wire — 모달 등장 (dim fade + sheet 슬라이드-up + content stagger)
+   2026-05-15 PR-G3: PushPermissionModal 등 모달 컴포넌트가 mount 시 부드럽게 등장.
+   .motion-modal-dim → backdrop fade-in
+   .motion-modal-sheet → 모바일 슬라이드-up / 데스크탑 scale-up
+   ============================================================= */
+@keyframes motion-modal-dim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes motion-modal-sheet-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes motion-modal-sheet-scale {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.motion-modal-dim {
+  animation: motion-modal-dim-in 0.32s ease-out both;
+}
+.motion-modal-sheet {
+  animation: motion-modal-sheet-up 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+@media (min-width: 640px) {
+  .motion-modal-sheet {
+    animation: motion-modal-sheet-scale 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-modal-dim,
+  .motion-modal-sheet {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* =============================================================
+   58 · m-push · production wire — 푸시 알림 카드 도착 효과
+   2026-05-15 PR-G3: PushPermissionModal 의 Bell 아이콘 + 가치 제안 카드들이
+   stagger 로 등장. 사용자가 "푸시" 라는 컨셉을 시각적으로 인지하도록.
+   ============================================================= */
+@keyframes motion-push-bell-bounce {
+  0%   { transform: scale(0.7) rotate(-12deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes motion-push-card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.motion-push-bell {
+  animation: motion-push-bell-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+.motion-push-card {
+  opacity: 0;
+  animation: motion-push-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.motion-push-card:nth-of-type(1) { animation-delay: 0.35s; }
+.motion-push-card:nth-of-type(2) { animation-delay: 0.45s; }
+.motion-push-card:nth-of-type(3) { animation-delay: 0.55s; }
+@media (prefers-reduced-motion: reduce) {
+  .motion-push-bell,
+  .motion-push-card {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

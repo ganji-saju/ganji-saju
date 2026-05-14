@@ -12,18 +12,18 @@
 |---|--:|--:|--:|--:|--:|--:|
 | 디자인 시스템 (brand) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 컴포넌트 라이브러리 | 4 | 0 | 0 | 0 | 4 | 0 |
-| 모션 보드 (motion) | 13 | 10 | 3 | 0 | 0 | 0 |
+| 모션 보드 (motion) | 13 | 12 | 1 | 0 | 0 | 0 |
 | 모바일 핵심 (mobile-core) | 10 | 10 | 0 | 0 | 0 | 0 |
 | 모바일 관계 & 상담 | 13 | 12 | 0 | 1 | 0 | 0 |
 | 모바일 깊은 풀이 & 결제 | 6 | 6 | 0 | 0 | 0 | 0 |
 | 확장 (extras) | 10 | 9 | 0 | 1 | 0 | 0 |
 | 다국어 & 디바이스 | 2 | 0 | 0 | 2 | 0 | 0 |
-| 시스템 (banners/error) | 5 | 2 | 0 | 3 | 0 | 0 |
+| 시스템 (banners/error) | 5 | 3 | 0 | 2 | 0 | 0 |
 | 데스크탑 | 1 | 1 | 0 | 0 | 0 | 0 |
-| **합계** | **66** | **52** | **3** | **7** | **4** | **0** |
+| **합계** | **66** | **55** | **1** | **6** | **4** | **0** |
 
 > 컴포넌트 라이브러리 4개는 production 화면이 아닌 디자인 시스템 참조 보드로 `REFERENCE_ONLY` 처리.
-> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-toast(57) / m-hanja(59) / m-spinners(60) / m-input(61) / m-chart(62) / m-palshja(63) **10건**은 production 화면에 마운트 완료. 나머지 3건(m-page · m-modal · m-push) 은 정의 + gallery 만 존재 → `GALLERY_ONLY`. 후속 PR 에서 모달/페이지 전환/푸시 도착을 production 화면에 차례로 연결 예정.
+> 모션 13종 중 m-loading(51) / m-reveal(52) / m-tarot(53) / m-coin(54) / m-modal(56) / m-toast(57) / m-push(58) / m-hanja(59) / m-spinners(60) / m-input(61) / m-chart(62) / m-palshja(63) **12건**은 production 화면에 마운트 완료. 마지막 1건(m-page)만 `GALLERY_ONLY` 로 남음 — `app/template.tsx` 신설 후속 PR 에서 연결 예정.
 > 시스템 보드 5종(banners/errors/onboarding/push/terms) 은 실제 화면 곳곳에서 부분 적용 + design-stubs gallery 로 보존.
 
 ## 섹션별 보드
@@ -55,9 +55,9 @@
 | `m-tarot` | 53 · 타로 카드 플립 | `screens-l.jsx:295` | **IMPLEMENTED** | `app/tarot/daily/result/page.tsx` 진입 시 `TarotCardFlipReveal` (client wrapper) 가 600ms delay 후 카드 뒷면 → TarotCardArtwork 3D flip (2026-05-15 PR-E) | `/admin/design/motion#m-tarot` |
 | `m-coin` | 54 · 코인 충전 성공 | `screens-l.jsx:447` | **IMPLEMENTED** | `/credits/success` SuccessState + `/membership/success` SuccessState 에 `MotionCoinSuccess` mount (2026-05-15) | `/admin/design/motion#m-coin` |
 | `m-page` | 55 · 페이지 전환 | `screens-m.jsx:6` | GALLERY_ONLY | `app/template.tsx` 미생성. router push prefetch overlay 미마운트 | `/admin/design/motion#m-page` |
-| `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | GALLERY_ONLY | 어떤 모달/drawer 도 motion mount 안 함 — 후속 PR | `/admin/design/motion#m-modal` |
+| `m-modal` | 56 · 모달 등장 | `screens-m.jsx:121` | **IMPLEMENTED** | `PushPermissionModal` 의 dim(`motion-modal-dim` fade) + sheet(`motion-modal-sheet` 모바일 슬라이드-up / 데스크탑 scale-up) 적용. cubic-bezier(0.22, 1, 0.36, 1) 통일 (2026-05-15 PR-G3) | `/admin/design/motion#m-modal` |
 | `m-toast` | 57 · 토스트 시퀀스 | `screens-m.jsx:225` | **IMPLEMENTED** | `sonner@^2.0.7` 도입 + `<AppToaster>` (`src/components/notifications/app-toaster.tsx`) 가 `app/layout.tsx` 전역 마운트. 디자인 토큰 매칭(라운드/핑크 강조/jade success/coral error). `ShareActions` 가 첫 production migration 사례 (2026-05-15 PR-J) | `/admin/design/motion#m-toast` |
-| `m-push` | 58 · 푸시 알림 도착 | `screens-m.jsx:310` | GALLERY_ONLY | `PushPermissionModal` production mount 없음 — push-modal 보드 자체 SHELL | `/admin/design/motion#m-push` |
+| `m-push` | 58 · 푸시 알림 도착 | `screens-m.jsx:310` | **IMPLEMENTED** | `PushPermissionModal` 의 Bell 아이콘 spring bounce(`motion-push-bell`) + 3 benefit 카드 stagger(`motion-push-card` 0.35/0.45/0.55s) (2026-05-15 PR-G3) | `/admin/design/motion#m-push` |
 | `m-hanja` | 59 · 한자 변환 | `screens-m.jsx:435` | **IMPLEMENTED** | `ZodiacChip` 한자 글자에 `motion-hanja-entry` 클래스 적용 — mount 시 scale 0.72→1 + slight rotate fade-in 1회 (2026-05-15 PR-G1) | `/admin/design/motion#m-hanja` |
 | `m-spinners` | 60 · 로딩 스피너 6종 | `screens-n.jsx:6` | **IMPLEMENTED** | `.motion-spinner-inline` utility 클래스 신설 (ring 변형 standardize). `PremiumLockCard` 의 "여는 중" loading 상태에 첫 inline mount (2026-05-15 PR-J). 다른 button-loading 케이스는 같은 클래스로 점진 마이그레이션 | `/admin/design/motion#m-spinners` |
 | `m-input` | 61 · 인풋 포커스/검증 | `screens-n.jsx:151` | **IMPLEMENTED** | `compact-birth-fields.tsx` (사주 시작 / 오늘운세 / MY 프로필 / 궁합 입력 공용) + `login/page.tsx` 11개 input 에 `motion-input-effect` 클래스 적용 — focus ring + transform lift + valid/invalid tint (2026-05-15 PR-G2) | `/admin/design/motion#m-input` |
@@ -136,7 +136,7 @@
 | `banners` | 24 · 배너 시스템 (7 종) | `screens-h.jsx:6` | IMPLEMENTED | `src/components/gangi/gangi-banner.tsx` (7 variants) + showcase `/admin/design/banners` | hero/soft/cosmic/inline/sticky/success/warning |
 | `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | IMPLEMENTED | `src/app/not-found.tsx` (404), `src/app/error.tsx` (client 5xx), `src/app/global-error.tsx` (root) | PR #68/이번 PR |
 | `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | login → empathy → birth 흐름이 사실상 onboarding. 별도 onboarding 화면 미구현 | |
-| `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | SHELL | 컴포넌트 + showcase 존재하나 production 라우트에서 mount 0건 (audit 2026-05-15 검증). 후속 PR 에서 가입 7일차 자동 노출 라우트에 mount 예정 | `src/components/notifications/push-permission-modal.tsx` |
+| `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | **IMPLEMENTED** | `PushPermissionPrompt` (신규 client wrapper, `src/components/notifications/push-permission-prompt.tsx`) 가 `today-fortune-result-client.tsx` 진입 후 20초 dwell + Notification.permission === 'default' + 7일 cooldown 충족 시 `PushPermissionModal` 자동 prompt. localStorage `moonlight:push-modal:dismissed-at` (2026-05-15 PR-G3) | — |
 | `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | 회원가입 흐름 내 implicit consent. 별도 modal 미구현 | |
 
 ### desktop · 반응형 (1)
