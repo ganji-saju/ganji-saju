@@ -450,91 +450,132 @@ function MobileChrome({
 
   return (
     <>
-      <header className="app-top-header sticky top-0 z-40 border-b border-[var(--app-line)] bg-white/95 backdrop-blur">
+      <header
+        className="app-top-header sticky top-0 z-40 border-b bg-white/95 backdrop-blur"
+        style={{ borderColor: 'var(--app-line)' }}
+      >
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className="app-top-brand min-w-0 flex items-center gap-2.5">
-              {/* Redesign 2026-05-13 (Claude Design / 가이드 §3): 한자(干) 인장 마크 */}
+            {/* §Brand — 2026-05-14 리디자인: 컨텍스트 설명 제거, 한 줄 lockup */}
+            <Link href="/" className="app-top-brand min-w-0 flex items-center gap-2">
               <span
                 aria-hidden="true"
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-white"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] text-white"
                 style={{
-                  background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
+                  background: 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
                   fontFamily: 'var(--font-han)',
-                  fontWeight: 700,
-                  fontSize: 18,
+                  fontWeight: 800,
+                  fontSize: 19,
                   letterSpacing: '-0.02em',
-                  boxShadow: '0 4px 12px rgba(216,27,114,0.28)',
+                  boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
                 }}
               >
                 干
               </span>
-              <div className="leading-tight min-w-0">
-                <div className="text-[11px] font-semibold text-[var(--app-pink-strong)] truncate">
-                  달빛인생 · {contextDescription}
+              <div className="leading-none min-w-0">
+                <div
+                  className="text-[9.5px] font-extrabold uppercase tracking-[0.08em] text-[var(--app-pink-strong)]"
+                  style={{ marginBottom: 3 }}
+                >
+                  달빛인생
                 </div>
-                <div className="text-[17px] font-extrabold tracking-tight text-[var(--app-ink)] truncate">
+                <div
+                  className="text-[16.5px] font-extrabold tracking-tight text-[var(--app-ink)]"
+                  style={{ fontFamily: 'var(--font-han)' }}
+                >
                   간지사주
                 </div>
               </div>
             </Link>
 
-            <nav className="app-top-primary-nav hidden min-w-0 items-center gap-1 md:flex" aria-label="주요 메뉴">
+            {/* §Desktop primary nav — 라운드 underline 형 */}
+            <nav
+              className="app-top-primary-nav hidden min-w-0 items-center gap-0.5 md:flex"
+              aria-label="주요 메뉴"
+            >
               {PRIMARY_NAV_ITEMS.map((item) => {
                 const active = matchesPath(item, pathname);
-                const meta = getNavMeta(item);
-
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
                     data-active={active}
                     scroll={false}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-[var(--app-copy-muted)] transition-colors hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]"
+                    className="relative inline-flex shrink-0 items-center rounded-[10px] px-3 py-2 text-[13.5px] font-bold transition-colors"
+                    style={{
+                      color: active
+                        ? 'var(--app-pink-strong)'
+                        : 'var(--app-copy-muted)',
+                      background: active ? 'var(--app-pink-soft)' : 'transparent',
+                    }}
                   >
-                    <span className="" style={{ color: meta.accent }}>
-                      {meta.glyph}
-                    </span>
-                    <span>{getMobileDockLabel(item)}</span>
+                    {getMobileDockLabel(item)}
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="app-top-actions flex items-center gap-2">
+            {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼 */}
+            <div className="app-top-actions flex items-center gap-1.5">
+              {/* 코인 chip — desktop only, pink-soft */}
               <Link
                 href="/credits"
-                className="app-top-credit-chip hidden md:inline-flex"
                 aria-label={`보유 코인 ${creditLabel(user, credits)}`}
+                className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-extrabold md:inline-flex"
+                style={{
+                  background: 'var(--app-pink-soft)',
+                  color: 'var(--app-pink-strong)',
+                  border: '1px solid var(--app-pink-line)',
+                }}
               >
-                <CreditCard className="h-3.5 w-3.5" />
+                <span style={{ fontSize: 13 }} aria-hidden="true">✦</span>
                 {creditLabel(user, credits)}
               </Link>
-              <Link href="/notifications" className="app-top-notification-button" aria-label="알림">
-                <Bell className="h-5 w-5" />
+
+              {/* Bell — 36×36 outline circle */}
+              <Link
+                href="/notifications"
+                aria-label="알림"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-white text-[var(--app-ink)] transition-colors hover:bg-[var(--app-pink-soft)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <Bell className="h-[18px] w-[18px]" />
               </Link>
+
+              {/* 로그인/로그아웃 — desktop pill */}
               {user ? (
                 <button
                   type="button"
                   onClick={onSignOut}
-                  className="app-top-login inline-flex"
+                  className="hidden h-9 items-center rounded-full border bg-white px-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)] md:inline-flex"
+                  style={{ borderColor: 'var(--app-line)' }}
                 >
                   로그아웃
                 </button>
               ) : (
-                <Link href={authHref} className="app-top-login inline-flex">
+                <Link
+                  href={authHref}
+                  className="hidden h-9 items-center rounded-full px-3.5 text-[12.5px] font-extrabold text-white md:inline-flex"
+                  style={{
+                    background: 'var(--app-pink)',
+                    boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
+                  }}
+                >
                   로그인
                 </Link>
               )}
+
+              {/* Hamburger — 36×36 outline circle (mobile only) */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((current) => !current)}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-global-menu"
-                className="app-mobile-menu-trigger inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 text-[var(--app-ivory)] transition-colors hover:bg-[var(--app-surface-strong)] md:hidden"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-white text-[var(--app-ink)] transition-colors hover:bg-[var(--app-pink-soft)] md:hidden"
+                style={{ borderColor: 'var(--app-line)' }}
                 aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </div>
