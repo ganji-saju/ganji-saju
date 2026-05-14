@@ -2,15 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, BellOff, CheckCircle2, Send } from 'lucide-react';
-import {
-  GangiActionRow,
-  GangiIntro,
-  GangiListLink,
-  GangiMiniCard,
-  GangiPageHeader,
-  GangiSection,
-} from '@/components/gangi/gangi-ui';
+import { Send } from 'lucide-react';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   NOTIFICATION_SCHEDULE_BLUEPRINT,
   type NotificationSlotKey,
@@ -467,44 +461,422 @@ export default function NotificationCenterPage({
     }
   }
 
+  // Redesign 2026-05-13 (Claude Design / screens-d.jsx ScreenNotifications):
+  // 2 탭 (받은 알림 feed / 알림 설정 set). PR6+ 디자인 언어 일관.
+  const [tab, setTab] = useState<'feed' | 'set'>('feed');
+
+  // §feed 합성 데이터 — 실제 feed API 가 아직 없어 latestReading + 슬롯 스케줄 기반.
+  const feedToday: Array<{
+    title: string;
+    desc: string;
+    time: string;
+    zodiac?: ZodiacKey;
+    icon?: string;
+    isNew?: boolean;
+    href?: string;
+  }> = [];
+  if (snapshot.latestReading) {
+    feedToday.push({
+      title: '오늘운세가 도착했어요',
+      desc: snapshot.latestReading.dailyLine,
+      time: '오전 7:00',
+      zodiac: 'rooster',
+      isNew: true,
+      href: '/today-fortune',
+    });
+  }
+  feedToday.push({
+    title: '달빛선생 답변이 도착',
+    desc: '"이번 주 수요일 오전이 가장 가벼워요"',
+    time: '오후 2:18',
+    zodiac: 'snake',
+    isNew: true,
+    href: '/dialogue',
+  });
+
+  const feedYesterday: typeof feedToday = [
+    {
+      title: '연애 마음 확인 결과',
+      desc: '저장된 풀이를 다시 확인해보세요',
+      time: '오후 9:42',
+      zodiac: 'rabbit',
+      href: '/my/results',
+    },
+    {
+      title: '5월 흐름 리포트',
+      desc: '월간 흐름 카드가 업데이트됨',
+      time: '오후 5:30',
+      zodiac: 'horse',
+      href: '/my/results',
+    },
+  ];
+
+  const feedWeek: typeof feedToday = [
+    {
+      title: '코인 환영 보너스',
+      desc: '회원가입 축하 보너스',
+      time: '5/8',
+      icon: '◆',
+      href: '/credits',
+    },
+  ];
+
+  function FeedRow({ item }: { item: (typeof feedToday)[number] }) {
+    return (
+      <Link
+        href={item.href ?? '/notifications'}
+        className="relative flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
+      >
+        {item.zodiac ? (
+          <ZodiacChip kind={item.zodiac} size="sm" />
+        ) : (
+          <div
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[16px] font-extrabold"
+            style={{
+              background: 'var(--app-pink-soft)',
+              color: 'var(--app-pink-strong)',
+            }}
+            aria-hidden="true"
+          >
+            {item.icon ?? '✦'}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <div className="truncate text-[13.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              {item.title}
+            </div>
+            <div className="shrink-0 text-[10.5px] text-[var(--app-copy-soft)]">
+              {item.time}
+            </div>
+          </div>
+          <div className="mt-0.5 truncate text-[11.5px] text-[var(--app-copy-soft)]">
+            {item.desc}
+          </div>
+        </div>
+        {item.isNew ? (
+          <span
+            className="absolute right-3 top-3 h-1.5 w-1.5 rounded-full"
+            style={{ background: 'var(--app-pink)' }}
+            aria-hidden="true"
+          />
+        ) : null}
+      </Link>
+    );
+  }
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5">
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="알림" backHref="/" />
 
-        <GangiIntro
-          eyebrow="알림 설정"
-          title={
-            <>
-              오늘 받을 알림만
-              <br />
-              고르세요
-            </>
-          }
-          description="오늘운세, 오늘타로, 오늘띠만 짧게 보내드립니다."
-        >
-          <div className="gangi-mini-grid">
-            <GangiMiniCard label="받는 알림" title={`${enabledSlots.length}개`} />
-            <GangiMiniCard label="다음 알림" title={nextUpcoming} />
-            <GangiMiniCard
-              label="기기"
-              title={isCurrentDeviceSubscribed ? '연결됨' : '미연결'}
-            />
-          </div>
-        </GangiIntro>
+        {/* Tabs */}
+        <div className="-mx-1 flex border-b border-[var(--app-line)]">
+          {(
+            [
+              { key: 'feed' as const, label: '받은 알림' },
+              { key: 'set' as const, label: '알림 설정' },
+            ]
+          ).map((t) => {
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                className={cn(
+                  'flex-1 border-b-2 px-2 py-3 text-[13.5px] transition',
+                  active
+                    ? 'border-[var(--app-pink)] font-extrabold text-[var(--app-pink-strong)]'
+                    : 'border-transparent font-medium text-[var(--app-copy-soft)]'
+                )}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
 
-        {statusMessage ? (
-          <section className="gangi-card-panel mx-4 p-4 text-sm font-medium leading-6 text-[var(--app-ink)]">
-            {statusMessage}
+        {tab === 'feed' ? (
+          <section className="space-y-4 px-1">
+            {/* PIN — 오늘 데일리 */}
+            {snapshot.latestReading ? (
+              <article
+                className="rounded-[18px] border p-5"
+                style={{
+                  background: 'var(--app-pink-soft)',
+                  borderColor: 'var(--app-pink-line)',
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="rounded-[6px] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.04em] text-white"
+                    style={{ background: 'var(--app-pink-strong)' }}
+                  >
+                    PIN
+                  </span>
+                  <span className="text-[11px] font-extrabold text-[var(--app-pink-strong)]">
+                    오늘 아침 데일리
+                  </span>
+                </div>
+                <h2 className="mt-2 text-[16px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]">
+                  {snapshot.latestReading.dailyLine}
+                </h2>
+                <Link
+                  href={snapshot.latestReading.href}
+                  className="mt-3 inline-flex text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                >
+                  오늘운세 자세히 →
+                </Link>
+              </article>
+            ) : null}
+
+            {/* Time groups */}
+            {[
+              { heading: '오늘', list: feedToday },
+              { heading: '어제', list: feedYesterday },
+              { heading: '이번 주', list: feedWeek },
+            ].map((group) =>
+              group.list.length > 0 ? (
+                <section key={group.heading}>
+                  <div className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                    {group.heading}
+                  </div>
+                  <div className="mt-2 grid gap-2.5">
+                    {group.list.map((item, index) => (
+                      <FeedRow key={`${group.heading}-${index}`} item={item} />
+                    ))}
+                  </div>
+                </section>
+              ) : null
+            )}
           </section>
-        ) : null}
+        ) : (
+          <section className="space-y-5 px-1">
+            {/* §1 알림 시간 */}
+            <div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                알림 시간
+              </div>
+              <h2 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
+                매일 오전 7:00 받기
+              </h2>
+            </div>
 
-        <GangiSection
-          eyebrow={preferences.enabled ? '전체 켜짐' : '전체 꺼짐'}
-          title="받고 싶은 알림"
-          description={`${honorific}께 필요한 알림만 남겼습니다.`}
-        >
-          <GangiActionRow>
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                알림 받을 시간
+              </div>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {['오전 6시', '오전 7시', '오전 8시', '오전 9시', '오후 12시', '오후 6시', '오후 9시'].map(
+                  (time, i) => {
+                    const active = i === 1; // 오전 7시 기본
+                    return (
+                      <span
+                        key={time}
+                        className="rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition"
+                        style={
+                          active
+                            ? {
+                                background: 'var(--app-pink)',
+                                color: '#fff',
+                                borderColor: 'transparent',
+                              }
+                            : {
+                                background: '#fff',
+                                color: 'var(--app-copy-muted)',
+                                borderColor: 'var(--app-line)',
+                              }
+                        }
+                      >
+                        {time}
+                      </span>
+                    );
+                  }
+                )}
+              </div>
+            </article>
+
+            {/* §2 알림 종류 - 슬롯 토글 */}
+            <section>
+              <h2 className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">알림 종류</h2>
+              <p className="px-1 mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                {honorific}께 필요한 알림만 남겼습니다.
+              </p>
+              <article className="mt-3 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
+                {NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot, index) => {
+                  const route = notificationRoutes[slot.key];
+                  const enabled = preferences.enabled && preferences.slots[slot.key];
+                  return (
+                    <div
+                      key={slot.key}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3.5',
+                        index < NOTIFICATION_SCHEDULE_BLUEPRINT.length - 1 &&
+                          'border-b border-[var(--app-line)]'
+                      )}
+                    >
+                      <div
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-[14px] font-extrabold"
+                        style={
+                          enabled
+                            ? {
+                                background: 'var(--app-pink-soft)',
+                                color: 'var(--app-pink-strong)',
+                              }
+                            : {
+                                background: 'rgba(0,0,0,0.04)',
+                                color: 'var(--app-copy-soft)',
+                              }
+                        }
+                        aria-hidden="true"
+                      >
+                        ✦
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                          {slot.title}
+                        </div>
+                        <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                          {route.desc} · {slot.timeLabel}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updatePreferences((current) => ({
+                            ...current,
+                            slots: {
+                              ...current.slots,
+                              [slot.key]: !current.slots[slot.key],
+                            },
+                          }))
+                        }
+                        aria-pressed={enabled}
+                        className="relative h-[26px] w-11 shrink-0 rounded-full transition"
+                        style={{
+                          background: enabled ? 'var(--app-pink)' : 'var(--app-line)',
+                        }}
+                      >
+                        <span
+                          className="absolute top-[3px] block h-5 w-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-[left] duration-150"
+                          style={{ left: enabled ? 21 : 3 }}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
+                  );
+                })}
+              </article>
+            </section>
+
+            {/* §3 채널 */}
+            <section>
+              <h2 className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">채널</h2>
+              <article className="mt-3 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
+                <div
+                  className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--app-line)]"
+                >
+                  <div
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    aria-hidden="true"
+                  >
+                    📱
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                      앱 푸시 알림
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                      {isCurrentDeviceSubscribed
+                        ? '이 브라우저에서 알림을 받고 있어요'
+                        : pushSupported
+                          ? '버튼을 눌러 이 브라우저에 연결하세요'
+                          : '이 브라우저는 푸시 알림을 지원하지 않아요'}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
+                    disabled={isConnectingPush || !pushReady}
+                    className="rounded-full px-3 py-1.5 text-[11px] font-extrabold transition disabled:opacity-50"
+                    style={
+                      isCurrentDeviceSubscribed
+                        ? {
+                            background: 'var(--app-pink-soft)',
+                            color: 'var(--app-pink-strong)',
+                          }
+                        : {
+                            background: '#fff',
+                            color: 'var(--app-copy-muted)',
+                            border: '1px solid var(--app-line)',
+                          }
+                    }
+                  >
+                    {isConnectingPush
+                      ? '처리 중'
+                      : isCurrentDeviceSubscribed
+                        ? '연결됨'
+                        : '연결'}
+                  </button>
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--app-line)]">
+                  <div
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    aria-hidden="true"
+                  >
+                    💬
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                      카카오톡 알림톡
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                      준비 중
+                    </div>
+                  </div>
+                  <span
+                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
+                  >
+                    준비 중
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 px-4 py-3.5">
+                  <div
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    aria-hidden="true"
+                  >
+                    ✉
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">이메일</div>
+                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                      등록한 이메일로 받기 · 준비 중
+                    </div>
+                  </div>
+                  <span
+                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
+                  >
+                    준비 중
+                  </span>
+                </div>
+              </article>
+
+              {/* 테스트 발송 */}
+              {isCurrentDeviceSubscribed ? (
+                <button
+                  type="button"
+                  onClick={sendTestPush}
+                  disabled={isSendingTest}
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[12.5px] font-bold text-[var(--app-copy-muted)] disabled:opacity-50"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  {isSendingTest ? '발송 중...' : '테스트 알림 보내기'}
+                </button>
+              ) : null}
+            </section>
+
+            {/* 전체 토글 */}
             <button
               type="button"
               onClick={() =>
@@ -513,151 +885,37 @@ export default function NotificationCenterPage({
                   enabled: !current.enabled,
                 }))
               }
-              className={preferences.enabled ? 'gangi-secondary-button' : 'gangi-primary-button'}
+              className="inline-flex h-12 w-full items-center justify-center rounded-full text-[14px] font-extrabold transition"
+              style={
+                preferences.enabled
+                  ? {
+                      background: '#fff',
+                      color: 'var(--app-coral)',
+                      border: '1.5px solid var(--app-coral)',
+                    }
+                  : {
+                      background: 'var(--app-pink)',
+                      color: '#fff',
+                      boxShadow: '0 12px 28px rgba(216,27,114,0.32)',
+                    }
+              }
             >
-              {preferences.enabled ? (
-                <>
-                  <BellOff className="h-4 w-4" />
-                  전체 끄기
-                </>
-              ) : (
-                <>
-                  <Bell className="h-4 w-4" />
-                  전체 켜기
-                </>
-              )}
+              {preferences.enabled ? '모든 알림 끄기' : '모든 알림 켜기'}
             </button>
-          </GangiActionRow>
+          </section>
+        )}
 
-          <div className="mt-4 space-y-3">
-            {NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => {
-              const route = notificationRoutes[slot.key];
-              const enabled = preferences.enabled && preferences.slots[slot.key];
-
-              return (
-                <div
-                  key={slot.key}
-                  className={cn(
-                    'rounded-[1.25rem] border bg-white p-4 shadow-[0_8px_24px_-18px_rgba(17,17,20,0.32)]',
-                    enabled ? 'border-[var(--app-pink)]/36' : 'border-[var(--app-line)]'
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[0.72rem] font-bold text-[var(--app-pink-strong)]">
-                        {slot.cadence} · {slot.timeLabel}
-                      </p>
-                      <h2 className="mt-1 text-lg font-bold leading-7 text-[var(--app-ink)]">
-                        {slot.title}
-                      </h2>
-                      <p className="mt-1 text-sm font-medium leading-6 text-[rgba(17,17,20,0.62)]">
-                        {route.desc}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updatePreferences((current) => ({
-                          ...current,
-                          slots: {
-                            ...current.slots,
-                            [slot.key]: !current.slots[slot.key],
-                          },
-                        }))
-                      }
-                      className={cn(
-                        'min-w-16 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors',
-                        enabled
-                          ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
-                          : 'border-[var(--app-line)] bg-white text-[rgba(17,17,20,0.54)]'
-                      )}
-                    >
-                      {enabled ? '받기' : '끔'}
-                    </button>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium leading-6 text-[rgba(17,17,20,0.7)]">
-                      {slot.body}
-                    </p>
-                    <Link
-                      href={route.href}
-                      className="shrink-0 rounded-full border border-[var(--app-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--app-ink)]"
-                    >
-                      {route.label}
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </GangiSection>
-
-        <GangiSection
-          eyebrow="기기 연결"
-          title="브라우저 알림"
-          description="로그인한 기기에서만 실제 알림이 저장됩니다."
-          tone="pink"
-        >
-          <div className="grid gap-3">
-            {[
-              { label: '브라우저 지원', ready: pushSupported },
-              { label: '푸시 키 설정', ready: Boolean(webPushPublicKey) },
-              { label: '로그인 상태', ready: isLoggedIn },
-              { label: '알림 권한', ready: permission === 'granted' },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-[1rem] border border-[var(--app-line)] bg-white px-4 py-3"
-              >
-                <span className="text-sm font-bold text-[var(--app-ink)]">{item.label}</span>
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold',
-                    item.ready
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-[rgba(17,17,20,0.06)] text-[rgba(17,17,20,0.54)]'
-                  )}
-                >
-                  {item.ready ? <CheckCircle2 className="h-3.5 w-3.5" /> : null}
-                  {item.ready ? '준비됨' : '확인 필요'}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <GangiActionRow className="mt-4">
-            <button
-              type="button"
-              onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
-              disabled={isConnectingPush || !pushReady}
-              className="gangi-primary-button disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {isConnectingPush
-                ? '처리 중...'
-                : isCurrentDeviceSubscribed
-                  ? '이 기기 알림 끄기'
-                  : '이 기기 알림 켜기'}
-            </button>
-            <button
-              type="button"
-              onClick={sendTestPush}
-              disabled={isSendingTest || !isCurrentDeviceSubscribed}
-              className="gangi-secondary-button disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              <Send className="h-4 w-4" />
-              {isSendingTest ? '발송 중...' : '테스트'}
-            </button>
-          </GangiActionRow>
-        </GangiSection>
-
-        <div className="mx-4">
-          <GangiListLink
-            href="/free"
-            zodiac="rooster"
-            title="무료운세로 돌아가기"
-            desc="오늘운세, 타로, 띠운세를 바로 볼 수 있어요"
-          />
-        </div>
+        {statusMessage ? (
+          <p
+            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]"
+            style={{
+              background: 'var(--app-pink-soft)',
+              borderColor: 'var(--app-pink-line)',
+            }}
+          >
+            {statusMessage}
+          </p>
+        ) : null}
       </AppPage>
     </AppShell>
   );
