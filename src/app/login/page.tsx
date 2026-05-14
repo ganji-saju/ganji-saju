@@ -271,7 +271,8 @@ function NativeSelect({
 
 // 리디자인 2026-05-13 (Claude Design / screens-b.jsx ScreenAuth) — SNS gateway 진입 화면.
 // 라우팅/이벤트는 무수정. 카카오·Google: 기존 signInWithProvider 그대로 호출,
-// Apple: 별도 PR (REDESIGN-PENDING-LINKS.md 기록), 이메일: 같은 페이지 내 mode 전환.
+// 이메일: 같은 페이지 내 mode 전환.
+// 2026-05-14: Apple OAuth 제거 — 개발자 등록 미진행으로 표시하지 않는다.
 function GatewayView({
   disabled,
   statusMessage,
@@ -359,28 +360,6 @@ function GatewayView({
               G
             </span>
             Google로 계속하기
-          </button>
-
-          {/* Apple OAuth: PENDING — 별도 PR에서 구현 예정. 시각만 표시. */}
-          <button
-            type="button"
-            disabled
-            data-redesign-pending="true"
-            aria-label="Apple로 계속하기 (준비 중)"
-            title="준비 중"
-            className="flex h-[52px] cursor-not-allowed items-center justify-center gap-2.5 rounded-[14px] text-[14.5px] font-bold text-white opacity-60"
-            style={{ background: '#000' }}
-          >
-            <svg
-              className="-mt-0.5 h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M16.365 1.43c0 1.14-.42 2.22-1.18 3.02-.76.8-1.97 1.42-3.07 1.34-.13-1.1.42-2.27 1.16-3.02.82-.82 2.13-1.4 3.09-1.34zM20 17.18c-.55 1.26-.82 1.82-1.53 2.93-.99 1.55-2.4 3.49-4.14 3.5-1.55.02-1.95-1.02-4.06-1-2.1.01-2.54 1.02-4.1 1-1.74-.02-3.07-1.78-4.06-3.33C-.42 16.84-.7 11.9 1.05 9.28 2.29 7.4 4.25 6.3 6.1 6.3c1.88 0 3.06 1.04 4.62 1.04 1.51 0 2.43-1.04 4.6-1.04 1.64 0 3.38.9 4.61 2.45-4.05 2.23-3.39 8.05.07 8.43z" />
-            </svg>
-            Apple로 계속하기
-            <span className="text-[10px] font-bold opacity-80">(준비 중)</span>
           </button>
 
           <button
