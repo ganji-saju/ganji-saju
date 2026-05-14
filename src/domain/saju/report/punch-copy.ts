@@ -162,16 +162,17 @@ function buildPersonalVerdict(report: SajuReport) {
   const supportElement = getSupportElement(report);
   const focusLabel = report.focusLabel;
 
+  // 2026-05-15: 유보형 ("좋아요") → 단정형/명령형 ("___ 합니다", "___ 하세요") 으로 전환.
   if (strongest && weakest && supportElement) {
-    return `${subjectParticle(ELEMENT_LABELS[strongest[0]])} 앞서고 ${subjectParticle(ELEMENT_LABELS[weakest[0]])} 비기 쉬워, ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 좋아요.`;
+    return `${subjectParticle(ELEMENT_LABELS[strongest[0]])} 앞서고 ${subjectParticle(ELEMENT_LABELS[weakest[0]])} 비기 쉬운 날입니다. ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 시작하세요.`;
   }
 
   if (dayElement && supportElement) {
-    return `${ELEMENT_LABELS[dayElement]} 쪽으로 먼저 반응해서, 오늘은 ${ELEMENT_ACTIONS[supportElement].support}가 좋아요.`;
+    return `${ELEMENT_LABELS[dayElement]} 쪽으로 먼저 반응하는 날입니다. 오늘은 ${ELEMENT_ACTIONS[supportElement].support}부터 잡으세요.`;
   }
 
   if (dayElement) {
-    return `${ELEMENT_LABELS[dayElement]} 기질이 먼저 보여요. 오늘은 한 가지 기준만 잡아도 흐름이 편해집니다.`;
+    return `${ELEMENT_LABELS[dayElement]} 기질이 먼저 드러나는 날입니다. 한 가지 기준만 정하세요.`;
   }
 
   return '';
@@ -201,12 +202,13 @@ function buildPersonalCaution(report: SajuReport) {
   const { weakest } = getElementEdges(ratio);
   const supportElement = getSupportElement(report);
 
+  // 2026-05-15: 유보형 → 단정형 + 명령형.
   return firstNonEmpty(
     [
       weakest
-        ? `${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해질 때는 ${ELEMENT_ACTIONS[weakest[0]].weak}가 중요해요.`
+        ? `${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해지는 날입니다. ${ELEMENT_ACTIONS[weakest[0]].weak}는 반드시 챙기세요.`
         : null,
-      supportElement ? `${objectParticle(ELEMENT_LABELS[supportElement])} 놓치면 같은 고민을 오래 붙잡기 쉽습니다.` : null,
+      supportElement ? `${objectParticle(ELEMENT_LABELS[supportElement])} 놓치면 같은 고민을 오래 붙잡습니다.` : null,
     ],
     ''
   );
@@ -218,7 +220,7 @@ function buildPersonalAction(report: SajuReport) {
   const element = supportElement ?? dayElement;
 
   if (!element) return '';
-  return `오늘 할 일: ${ELEMENT_ACTIONS[element].support}`;
+  return `오늘 핵심: ${ELEMENT_ACTIONS[element].support}.`;
 }
 
 function buildPersonalPoints(report: SajuReport) {
@@ -246,6 +248,7 @@ export function buildPunchReading(report: SajuReport): PunchReading {
   const primaryEvidence = evidenceCards[0];
   const secondaryEvidence = evidenceCards[1];
 
+  // 2026-05-15: 유보형 / generic fallback 어미 제거. 빈 후보가 다 떨어져도 단정형 + 명령형.
   const verdict = firstNonEmpty(
     [
       buildPersonalVerdict(report),
@@ -253,7 +256,7 @@ export function buildPunchReading(report: SajuReport): PunchReading {
       report.headline,
       report.scores.find((score) => score.key === report.focusScoreKey)?.summary,
     ],
-    '오늘은 먼저 확인할 때입니다.'
+    '오늘은 먼저 확인하는 날입니다.'
   );
 
   const why = firstNonEmpty(
@@ -264,7 +267,7 @@ export function buildPunchReading(report: SajuReport): PunchReading {
       report.dayMasterSummary,
       report.summary,
     ],
-    '지금은 판단보다 기준 정리가 먼저 보입니다.'
+    '지금은 판단보다 기준 정리가 먼저입니다.'
   );
 
   const caution = firstNonEmpty(
@@ -275,7 +278,7 @@ export function buildPunchReading(report: SajuReport): PunchReading {
       secondaryEvidence?.plainSummary,
       secondaryEvidence?.body,
     ],
-    '서두르면 같은 문제가 반복될 수 있습니다.'
+    '서두르면 같은 문제가 반복됩니다.'
   );
 
   const action = firstNonEmpty(

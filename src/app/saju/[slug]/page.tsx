@@ -6,6 +6,7 @@ import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
+import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
@@ -276,8 +277,16 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
   if (!reading) notFound();
 
-  const { input, sajuData } = reading;
+  const { input, sajuData, grounding } = reading;
   const report = buildSajuReport(input, sajuData, topic);
+  // 2026-05-15: 5명 부정 피드백 P0 — 일주(60갑자) 캐릭터 + 격국·용신 사실 카드 노출.
+  const personalizationContext = grounding?.personalizationContext ?? null;
+  const sixtyGapjaProfile = personalizationContext?.sixtyGapja ?? null;
+  const dayGanziKorean = personalizationContext?.dayGanziCode ?? '';
+  const dayGanziHanja = personalizationContext?.dayGanziHanja ?? sajuData.pillars.day.ganzi;
+  const patternName = sajuData.pattern?.name ?? null;
+  const yongsinPrimary = sajuData.yongsin?.primary?.label ?? null;
+  const strengthLevel = sajuData.strength?.level ?? null;
 
   const pillars = [
     { label: '년', pillar: sajuData.pillars.year },
@@ -372,6 +381,79 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {formatBirthSummary(input)}
               </p>
             </article>
+
+            {/* §1.5 일주 캐릭터 — 2026-05-15 P0. 한국 사주 사이트 7단 구조의 "일주론".
+                "내 얘기다" 첫 동의가 나오는 자리. grounding.personalizationContext.sixtyGapja 활용. */}
+            <DayPillarCharacterCard
+              profile={sixtyGapjaProfile}
+              dayGanziHanja={dayGanziHanja}
+              dayGanziKorean={dayGanziKorean}
+            />
+
+            {/* §1.7 격국·용신·강약 사실 카드 — 2026-05-15 P0. 명리 용어를 명시적으로
+                노출해 "사주를 본 게 맞다" 는 인과 추적성 제공. */}
+            {(patternName || yongsinPrimary || strengthLevel) ? (
+              <section
+                className="rounded-[18px] border bg-white p-4"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  사주 핵심 키
+                </div>
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: 'var(--app-pink-soft)',
+                      borderColor: 'var(--app-pink-line)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                      격국
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {patternName ?? '미정'}
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: '#fff7e6',
+                      borderColor: 'rgba(212,148,38,0.22)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+                      용신
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {yongsinPrimary ?? '미정'}
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: '#e8f5ee',
+                      borderColor: 'rgba(45,135,88,0.22)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                      강약
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {strengthLevel ?? '미정'}
+                    </div>
+                  </div>
+                </div>
+                <p
+                  className="mt-2.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {patternName && yongsinPrimary
+                    ? `${patternName}에 ${yongsinPrimary}을 보완점으로 잡고 풀이를 구성했습니다.`
+                    : '사주 구조와 보완점을 함께 보며 풀이를 구성했습니다.'}
+                </p>
+              </section>
+            ) : null}
 
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
