@@ -20,6 +20,7 @@ import {
   type SajuVerificationReport,
   type SajuVerifiedClaim,
 } from '@/domain/saju/engine';
+import { FRIENDLY_UI_LABEL } from '@/lib/saju/terminology';
 
 interface Props {
   /** SajuDataV2 가 가장 안전. v1 이 들어오면 자동으로 업그레이드. */
@@ -39,7 +40,9 @@ function isV2(data: SajuDataV1 | SajuDataV2): data is SajuDataV2 {
   );
 }
 
-// block.id 에 따른 톤 컬러 매핑 (v2 의 4개 block id 와 1:1)
+// block.id 에 따른 톤 컬러 매핑 (v2 의 4개 block id 와 1:1). eyebrow 는
+// 2026-05-14 친근 용어로 통일 — "기본 성향/오행/용신/흐름" 같은 한자 술어는
+// 노출하지 않는다.
 const BLOCK_TONE: Record<
   string,
   { accent: string; soft: string; border: string; eyebrow: string }
@@ -48,25 +51,25 @@ const BLOCK_TONE: Record<
     accent: 'var(--app-pink-strong)',
     soft: 'var(--app-pink-soft)',
     border: 'var(--app-pink-line)',
-    eyebrow: '기본',
+    eyebrow: '내 결',
   },
   'five-elements-balance': {
     accent: 'var(--app-jade)',
     soft: '#e8f5ee',
     border: 'rgba(45,135,88,0.22)',
-    eyebrow: '오행',
+    eyebrow: '다섯 기운',
   },
   yongsin: {
     accent: '#b87a14',
     soft: '#fdf6e7',
     border: 'rgba(184,122,20,0.22)',
-    eyebrow: '용신',
+    eyebrow: '도움 기운',
   },
   'luck-flow': {
     accent: '#4a5cb8',
     soft: '#eef0fb',
     border: 'rgba(74,92,184,0.22)',
-    eyebrow: '흐름',
+    eyebrow: '지금 흐름',
   },
 };
 
@@ -74,13 +77,13 @@ const FALLBACK_TONE = {
   accent: 'var(--app-pink-strong)',
   soft: 'var(--app-pink-soft)',
   border: 'var(--app-pink-line)',
-  eyebrow: '풀이',
+  eyebrow: FRIENDLY_UI_LABEL.blockDefaultEyebrow,
 };
 
 const CONFIDENCE_LABEL: Record<SajuClaimConfidence, string> = {
-  high: '높음',
-  medium: '중간',
-  low: '낮음',
+  high: '꽤 확실',
+  medium: '비교적 확실',
+  low: '참고용',
 };
 
 function getTone(blockId: string) {
@@ -90,10 +93,10 @@ function getTone(blockId: string) {
 function VerificationBadge({ report }: { report: SajuVerificationReport }) {
   const label =
     report.status === 'pass'
-      ? '검증 통과'
+      ? FRIENDLY_UI_LABEL.verificationPass
       : report.status === 'pass-with-warnings'
-        ? '검증 — 경고 있음'
-        : '검증 실패';
+        ? FRIENDLY_UI_LABEL.verificationWarning
+        : FRIENDLY_UI_LABEL.verificationFail;
   const palette =
     report.status === 'pass'
       ? { bg: '#e8f5ee', fg: 'var(--app-jade)', border: 'rgba(45,135,88,0.28)' }
@@ -131,7 +134,7 @@ function ClaimRow({
           className="grid h-5 shrink-0 items-center rounded-full border bg-white px-2 text-[9.5px] font-extrabold"
           style={{ borderColor: tone.border, color: tone.accent }}
         >
-          신뢰도 {CONFIDENCE_LABEL[claim.confidence]}
+          {FRIENDLY_UI_LABEL.confidenceLabel} · {CONFIDENCE_LABEL[claim.confidence]}
         </span>
       </div>
       <p
@@ -148,7 +151,7 @@ function ClaimRow({
             wordBreak: 'keep-all',
           }}
         >
-          ⓘ {claim.caveat}
+          ⓘ {FRIENDLY_UI_LABEL.caveatPrefix} — {claim.caveat}
         </p>
       ) : null}
 
@@ -157,7 +160,7 @@ function ClaimRow({
           className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[11px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: tone.border }}
         >
-          <span>근거 보기 · {claim.evidence.length}건</span>
+          <span>{FRIENDLY_UI_LABEL.evidenceCount(claim.evidence.length)}</span>
           <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">
             ▼
           </span>
@@ -239,7 +242,7 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
       {block.actions.length > 0 ? (
         <div className="mt-3">
           <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            다음에 할 일
+            오늘부터 작게 해볼 일
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {block.actions.map((action) => (
@@ -263,7 +266,7 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
       {block.antiClaims.length > 0 ? (
         <div className="mt-3">
           <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-            하지 않는 표현
+            {FRIENDLY_UI_LABEL.antiClaimsTitle}
           </div>
           <ul className="mt-1.5 grid gap-1">
             {block.antiClaims.map((line) => (
@@ -330,7 +333,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
                 className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
-                ✦ 풀이 요약
+                ✦ 한 줄 요약
               </span>
               <VerificationBadge report={verification} />
             </div>
@@ -354,13 +357,13 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           }}
         >
           <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-            ⚠ 데이터 검증 실패
+            ⚠ 풀이 점검에 문제가 있어요
           </div>
           <p
             className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            계산 결과에 {verification.summary.errors}건의 오류가 있어요. 본문을 그대로 신뢰하기보다 데이터 재계산을 권장합니다.
+            풀이를 만드는 과정에서 {verification.summary.errors}건의 문제가 있었어요. 본문을 그대로 믿기보다, 다시 계산하는 편이 안전해요.
           </p>
           {verification.issues.length > 0 ? (
             <details className="group mt-2.5">
@@ -368,7 +371,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
                 className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[11.5px] font-extrabold text-[var(--app-coral)]"
                 style={{ borderColor: 'rgba(198,69,69,0.28)' }}
               >
-                <span>상세 오류 보기 ({verification.issues.length}건)</span>
+                <span>문제 자세히 보기 ({verification.issues.length}건)</span>
                 <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">
                   ▼
                 </span>
@@ -419,7 +422,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
             className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink)' }}
           >
-            다음에 할 일
+            {FRIENDLY_UI_LABEL.nextStepsTitle}
           </div>
           <h3 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
             가장 먼저 시작해보면 좋아요
@@ -456,7 +459,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           style={{ borderColor: 'var(--app-line)' }}
         >
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]">
-            <span>유의사항 ({interpretation.disclaimers.length})</span>
+            <span>{FRIENDLY_UI_LABEL.disclaimers} ({interpretation.disclaimers.length})</span>
             <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">
               ▼
             </span>

@@ -13,6 +13,14 @@
 
 import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
 import {
+  FRIENDLY_BLOCK_LABEL,
+  FRIENDLY_CONFIDENCE_LABEL,
+  FRIENDLY_ELEMENT_ACTIONS,
+  FRIENDLY_ELEMENT_HINT,
+  FRIENDLY_ELEMENT_LABEL,
+  FRIENDLY_STRENGTH_LABEL,
+} from '@/lib/saju/terminology';
+import {
   normalizeToSajuDataV1,
   SAJU_DATA_V1,
   SAJU_RULE_SET_V1,
@@ -167,13 +175,9 @@ const ELEMENT_SEQUENCE: Element[] = ['목', '화', '토', '금', '수'];
 const SCORE_EPSILON = 0.05;
 const VOLATILE_LUCK_TTL_DAYS = 32;
 
-const ELEMENT_ACTION_MAP: Record<Element, string[]> = {
-  목: ['새 프로젝트를 1개만 작게 시작한다', '학습/리서치 시간을 캘린더에 고정한다', '산책·스트레칭으로 루틴의 시작 저항을 낮춘다'],
-  화: ['표현해야 할 메시지를 3문장으로 정리한다', '아침 햇빛·가벼운 유산소로 에너지를 끌어올린다', '작은 성취를 빠르게 공유한다'],
-  토: ['일정·현금흐름·책임 범위를 한 화면에서 관리한다', '반복 업무를 체크리스트화한다', '관계/업무의 경계를 명확히 문서화한다'],
-  금: ['우선순위 기준을 3개 이하로 줄인다', '불필요한 일·관계를 정리하는 시간을 둔다', '검토·편집·품질관리 루틴을 만든다'],
-  수: ['수면과 회복 시간을 선점한다', '결정 전 자료를 모아 리스크를 분리한다', '혼자 사고하는 조용한 블록을 확보한다'],
-};
+// 2026-05-14: 행동 가이드는 src/lib/saju/terminology.ts 의 FRIENDLY_ELEMENT_ACTIONS
+// 단일 소스를 사용한다 (요즘말로 정리된 문장들).
+const ELEMENT_ACTION_MAP = FRIENDLY_ELEMENT_ACTIONS;
 
 const PROHIBITED_INTERPRETATION_PATTERNS = [
   /반드시/g,
@@ -325,24 +329,24 @@ function verifyPillars(
     const expectedHidden = BRANCH_HIDDEN_STEMS[pillar.branch] ?? [];
     const actualHidden = pillar.hiddenStems?.map((hidden) => hidden.stem) ?? [];
     if (!sameArray(expectedHidden, actualHidden)) {
-      pushIssue(issues, 'HIDDEN_STEMS_MISMATCH', 'warning', `${path}.hiddenStems`, '지장간 배열이 기준표와 다릅니다.', expectedHidden, actualHidden, '지장간 기준표를 단일 소스로 분리하고 테스트 케이스를 고정하세요.');
+      pushIssue(issues, 'HIDDEN_STEMS_MISMATCH', 'warning', `${path}.hiddenStems`, '숨은 기운(지장간) 배열이 기준표와 달라요.', expectedHidden, actualHidden, '숨은 기운 기준표를 단일 소스로 분리하고 테스트 케이스를 고정하세요.');
     }
 
     if (key === 'day' && pillar.stemTenGod !== null) {
-      pushIssue(issues, 'DAY_STEM_TENGOD_SHOULD_BE_NULL', 'error', `${path}.stemTenGod`, '일간의 천간 십신은 null이어야 합니다.', null, pillar.stemTenGod);
+      pushIssue(issues, 'DAY_STEM_TENGOD_SHOULD_BE_NULL', 'error', `${path}.stemTenGod`, '내 핵심 기질(일간)의 관계 역할(십신)은 비어 있어야 해요.', null, pillar.stemTenGod);
     }
 
     if (key !== 'day' && pillar.stemTenGod === null) {
-      pushIssue(issues, 'NON_DAY_STEM_TENGOD_MISSING', 'warning', `${path}.stemTenGod`, '년·월·시 천간 십신이 비어 있습니다.');
+      pushIssue(issues, 'NON_DAY_STEM_TENGOD_MISSING', 'warning', `${path}.stemTenGod`, '태어난 해·달·시간의 관계 역할(십신)이 비어 있어요.');
     }
   }
 
   if (dayMaster.stem !== pillars.day?.stem) {
-    pushIssue(issues, 'DAY_MASTER_STEM_MISMATCH', 'error', 'dayMaster.stem', '일간이 일주 천간과 일치하지 않습니다.', pillars.day?.stem, dayMaster.stem);
+    pushIssue(issues, 'DAY_MASTER_STEM_MISMATCH', 'error', 'dayMaster.stem', '내 핵심 기질(일간)이 태어난 날 묶음과 일치하지 않아요.', pillars.day?.stem, dayMaster.stem);
   }
 
   if (dayMaster.element !== pillars.day?.stemElement) {
-    pushIssue(issues, 'DAY_MASTER_ELEMENT_MISMATCH', 'error', 'dayMaster.element', '일간 오행이 일주 천간 오행과 일치하지 않습니다.', pillars.day?.stemElement, dayMaster.element);
+    pushIssue(issues, 'DAY_MASTER_ELEMENT_MISMATCH', 'error', 'dayMaster.element', '내 핵심 기질의 오행이 태어난 날 묶음의 오행과 일치하지 않아요.', pillars.day?.stemElement, dayMaster.element);
   }
 }
 
@@ -406,33 +410,33 @@ function verifyStrength(data: SajuDataV1 | SajuDataV2, issues: SajuValidationIss
 function verifyYongsin(data: SajuDataV1 | SajuDataV2, issues: SajuValidationIssue[]) {
   const yongsin = data.yongsin;
   if (!yongsin) {
-    pushIssue(issues, 'MISSING_YONGSIN', 'warning', 'yongsin', '용신 판정이 없습니다.');
+    pushIssue(issues, 'MISSING_YONGSIN', 'warning', 'yongsin', '도움이 되는 핵심 기운(용신) 풀이가 아직 만들어지지 않았어요.');
     return;
   }
 
   if (!yongsin.candidates?.length) {
-    pushIssue(issues, 'YONGSIN_CANDIDATES_MISSING', 'warning', 'yongsin.candidates', '용신 후보군이 없어 결과 검증이 어렵습니다.');
+    pushIssue(issues, 'YONGSIN_CANDIDATES_MISSING', 'warning', 'yongsin.candidates', '도움 기운 후보가 비어 있어 결과를 검증하기 어려워요.');
   } else {
     const [first] = yongsin.candidates;
     if (first && yongsin.primary.value !== first.primary.value) {
-      pushIssue(issues, 'YONGSIN_PRIMARY_NOT_TOP_CANDIDATE', 'error', 'yongsin.primary', 'primary 용신이 후보 1순위와 다릅니다.', first.primary.value, yongsin.primary.value);
+      pushIssue(issues, 'YONGSIN_PRIMARY_NOT_TOP_CANDIDATE', 'error', 'yongsin.primary', '1순위 도움 기운이 후보 점수 1위와 달라요.', first.primary.value, yongsin.primary.value);
     }
 
     for (let i = 1; i < yongsin.candidates.length; i += 1) {
       if (yongsin.candidates[i - 1].score < yongsin.candidates[i].score) {
-        pushIssue(issues, 'YONGSIN_CANDIDATES_NOT_SORTED', 'warning', 'yongsin.candidates', '용신 후보가 점수 내림차순으로 정렬되어 있지 않습니다.');
+        pushIssue(issues, 'YONGSIN_CANDIDATES_NOT_SORTED', 'warning', 'yongsin.candidates', '도움 기운 후보가 점수 높은 순으로 정렬되어 있지 않아요.');
         break;
       }
     }
   }
 
   if (!yongsin.confidence) {
-    pushIssue(issues, 'YONGSIN_CONFIDENCE_MISSING', 'warning', 'yongsin.confidence', '용신 신뢰도 표시가 없습니다.');
+    pushIssue(issues, 'YONGSIN_CONFIDENCE_MISSING', 'warning', 'yongsin.confidence', '도움 기운 풀이의 확신도 표시가 없어요.');
   }
 
   const cautionValues = new Set((yongsin.kiyshin ?? []).map((symbol) => symbol.value));
   if (cautionValues.has(yongsin.primary.value)) {
-    pushIssue(issues, 'YONGSIN_PRIMARY_OVERLAPS_KIYSHIN', 'error', 'yongsin.kiyshin', '용신과 기신이 같은 값으로 겹칩니다.', yongsin.primary.value, [...cautionValues]);
+    pushIssue(issues, 'YONGSIN_PRIMARY_OVERLAPS_KIYSHIN', 'error', 'yongsin.kiyshin', '도움이 되는 기운(용신)과 조절할 기운(기신)이 같은 값으로 겹쳤어요.', yongsin.primary.value, [...cautionValues]);
   }
 }
 
@@ -448,19 +452,19 @@ function verifyLuckFreshness(data: SajuDataV1 | SajuDataV2, checkedAt: string, i
       'CURRENT_LUCK_STALE',
       'warning',
       'metadata.calculatedAt',
-      `${VOLATILE_LUCK_TTL_DAYS}일 이상 지난 currentLuck입니다. 세운/월운은 재계산 대상입니다.`,
+      `${VOLATILE_LUCK_TTL_DAYS}일이 넘은 흐름 데이터예요. 올해/이번 달 흐름을 다시 계산하는 편이 좋아요.`,
       `within ${VOLATILE_LUCK_TTL_DAYS} days`,
       data.metadata.calculatedAt,
-      '월운/세운은 조회 시점 기준으로 재계산하거나 validUntil을 저장하세요.'
+      '올해·이번 달 흐름은 화면을 열 때마다 새로 계산하거나 유효기간을 함께 저장하세요.'
     );
   }
 
   if (data.input.gender && !data.majorLuck?.length) {
-    pushIssue(issues, 'MAJOR_LUCK_MISSING_WITH_GENDER', 'warning', 'majorLuck', '성별 입력이 있는데 대운 데이터가 없습니다.');
+    pushIssue(issues, 'MAJOR_LUCK_MISSING_WITH_GENDER', 'warning', 'majorLuck', '성별을 입력했는데 긴 흐름(10년 단위) 데이터가 비어 있어요.');
   }
 
   if (!data.input.gender && data.majorLuck?.length) {
-    pushIssue(issues, 'MAJOR_LUCK_EXISTS_WITHOUT_GENDER', 'info', 'majorLuck', '성별 미입력 상태에서 대운이 계산되어 있습니다. 입력 정책을 확인하세요.');
+    pushIssue(issues, 'MAJOR_LUCK_EXISTS_WITHOUT_GENDER', 'info', 'majorLuck', '성별을 입력하지 않았는데 긴 흐름(10년 단위)이 미리 계산되어 있어요. 입력 흐름을 확인하세요.');
   }
 }
 
@@ -496,17 +500,25 @@ function buildModernInterpretation(
   report: SajuVerificationReport,
   options: { now: string; mode: SajuReadingMode; tone: SajuContentTone }
 ): SajuModernInterpretation {
-  const dayMasterLabel = `${data.dayMaster.stem} ${formatElement(data.dayMaster.element)}`;
+  // 2026-05-14: 모든 카피를 요즘말로. 한자 술어는 제거하거나 일상어로 풀어 쓴다.
   const dominant = data.fiveElements.dominant;
   const weakest = data.fiveElements.weakest;
-  const strengthLabel = data.strength ? `${data.strength.level} ${data.strength.score}점` : '강약 미확정';
-  const yongsinLabel = data.yongsin ? `${data.yongsin.primary.label}${data.yongsin.confidence ? ` · 신뢰도 ${data.yongsin.confidence}` : ''}` : '용신 미확정';
+  const strengthLabel = data.strength
+    ? `${FRIENDLY_STRENGTH_LABEL[data.strength.level]} (점수 ${data.strength.score})`
+    : '컨디션 균형은 아직 확인 중';
+  const yongsinLabel = data.yongsin
+    ? `${FRIENDLY_ELEMENT_LABEL[data.yongsin.primary.value as Element] ?? data.yongsin.primary.label}${
+        data.yongsin.confidence
+          ? ` · 확신도 ${FRIENDLY_CONFIDENCE_LABEL[data.yongsin.confidence] ?? data.yongsin.confidence}`
+          : ''
+      }`
+    : '도움 기운은 아직 확인 중';
 
   const executiveSummary = [
-    `일간은 ${dayMasterLabel}입니다.`,
-    `오행은 ${formatElement(dominant)} 우세, ${formatElement(weakest)} 약세로 읽힙니다.`,
-    `강약 판정은 ${strengthLabel}, 용신 후보는 ${yongsinLabel}입니다.`,
-    `검증 점수는 ${report.score}점/${report.status}입니다.`,
+    `내 핵심 기질은 ${formatDayMaster(data)}입니다.`,
+    `다섯 기운 중 ${FRIENDLY_ELEMENT_LABEL[dominant]}이 강하고 ${FRIENDLY_ELEMENT_LABEL[weakest]}이 약한 편이에요.`,
+    `컨디션은 ${strengthLabel}, 도움이 되는 기운은 ${yongsinLabel}으로 읽힙니다.`,
+    `풀이 점검 점수는 ${report.score}점 (${formatVerificationStatus(report.status)}).`,
   ].join(' ');
 
   const blocks: SajuInterpretationBlock[] = [
@@ -527,34 +539,35 @@ function buildModernInterpretation(
     blocks,
     nextBestActions: buildNextBestActions(data),
     disclaimers: [
-      '이 해석은 사주 데이터 기반의 자기이해/코칭 콘텐츠입니다. 건강·투자·법률·의료 판단의 근거로 사용하지 마세요.',
-      '생시 미상, 위치 보정, 자시 적용 방식이 달라지면 시주·대운·일부 해석이 달라질 수 있습니다.',
-      '모든 해석은 확정 예언이 아니라 경향성·리스크·활용 전략으로 표현합니다.',
+      '이 풀이는 자기이해 · 셀프 코칭을 위한 참고 콘텐츠예요. 건강·돈·법·의료에 대한 큰 결정은 전문가와 함께 정해주세요.',
+      '태어난 시간을 모르거나, 출생지·시간대 보정이 달라지면 일부 풀이가 함께 달라질 수 있어요.',
+      '모든 풀이는 정해진 미래가 아니라, 흐름·주의할 점·활용 방법으로만 적어두었습니다.',
     ],
   };
 }
 
 function buildFoundationBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpretationBlock {
-  const metaphor = data.dayMaster.metaphor ?? '일간';
+  const metaphor = data.dayMaster.metaphor ?? '내 핵심 기질';
+  const elementLabel = FRIENDLY_ELEMENT_LABEL[data.dayMaster.element];
   return {
     id: 'foundation',
-    title: '기본 성향',
-    summary: `${data.dayMaster.stem} 일간은 ${metaphor}의 이미지로 설명할 수 있습니다. 다만 성향은 일간만이 아니라 월령·오행 분포·십신 구조를 함께 봐야 합니다.`,
+    title: FRIENDLY_BLOCK_LABEL.foundation,
+    summary: `내 핵심 기질은 ${elementLabel}의 결로 ${metaphor}처럼 풀이됩니다. 다만 기질 하나만 보지 말고, 다섯 기운의 균형 · 컨디션 결 · 관계 역할까지 같이 봐야 더 정확해져요.`,
     claims: [
       {
         id: 'foundation.dayMaster',
-        text: `${data.dayMaster.stem} 일간의 기본 이미지는 ${metaphor}이며, 자기표현 방식의 출발점으로 참고할 수 있습니다.`,
+        text: `내 핵심 기질은 ${elementLabel}의 ${metaphor}로 풀이돼요. 나를 표현하는 첫 출발점으로 가볍게 참고하면 좋아요.`,
         confidence: 'high',
         evidence: [
-          evidence('dayMaster.stem', '일간 천간', data.dayMaster.stem),
-          evidence('dayMaster.element', '일간 오행', data.dayMaster.element),
-          evidence('dayMaster.metaphor', '일간 메타포', metaphor),
+          evidence('dayMaster.stem', '내 핵심 기질', data.dayMaster.stem),
+          evidence('dayMaster.element', '내 기질의 오행', elementLabel),
+          evidence('dayMaster.metaphor', '비유로 풀이하면', metaphor),
         ],
-        caveat: '일간 단독 해석은 과잉 단순화 위험이 있습니다.',
+        caveat: '핵심 기질만 보고 모든 걸 단정하면 너무 좁게 보일 수 있어요.',
       },
     ],
-    actions: ['일간 설명은 첫 화면 요약으로만 쓰고, 상세 화면에서는 월령·강약·용신 근거를 같이 보여줍니다.'],
-    antiClaims: ['일간 하나만으로 직업·결혼·건강 결과를 단정하지 않습니다.'],
+    actions: ['첫 화면에는 핵심 기질만 요약하고, 상세 화면에서 다섯 기운·컨디션·도움 기운 근거를 함께 보여줘요.'],
+    antiClaims: ['핵심 기질 하나만 보고 직업·결혼·건강을 단정 짓지 않아요.'],
     tags: ['dayMaster', 'summary'],
     tone,
   };
@@ -565,35 +578,37 @@ function buildBalanceBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   const weakest = data.fiveElements.weakest;
   const dominantValue = data.fiveElements.byElement[dominant];
   const weakestValue = data.fiveElements.byElement[weakest];
+  const dominantLabel = FRIENDLY_ELEMENT_LABEL[dominant];
+  const weakestLabel = FRIENDLY_ELEMENT_LABEL[weakest];
 
   return {
     id: 'five-elements-balance',
-    title: '오행 밸런스',
-    summary: `${formatElement(dominant)} 점수가 가장 높고 ${formatElement(weakest)} 점수가 가장 낮습니다. UI에서는 count보다 score를 우선 노출하는 편이 더 안전합니다.`,
+    title: FRIENDLY_BLOCK_LABEL.balance,
+    summary: `다섯 기운 중에서 ${dominantLabel}이 가장 강하고 ${weakestLabel}이 가장 약하게 잡혀요. 약한 기운은 “부족함”이라기보다 “일상에서 작게 채워두면 좋은 결”로 봐주세요.`,
     claims: [
       {
         id: 'balance.dominant',
-        text: `${formatElement(dominant)} 기운이 상대적으로 강하게 계산되어, 해당 기운의 장점은 쓰되 과잉 사용은 조절하는 방향이 좋습니다.`,
+        text: `${dominantLabel}이 강한 편이라 ${FRIENDLY_ELEMENT_HINT[dominant]}이 잘 드러나요. 장점은 쓰되, 너무 한쪽으로 치우치지 않게 가끔 균형을 살펴주면 좋아요.`,
         confidence: 'high',
         evidence: [
-          evidence('fiveElements.dominant', '우세 오행', dominant),
-          evidence(`fiveElements.byElement.${dominant}.score`, '우세 오행 점수', dominantValue.score),
-          evidence('fiveElements.totalScore', '오행 총점', data.fiveElements.totalScore),
+          evidence('fiveElements.dominant', '가장 강한 기운', dominantLabel),
+          evidence(`fiveElements.byElement.${dominant}.score`, '강한 기운 점수', dominantValue.score),
+          evidence('fiveElements.totalScore', '다섯 기운 총점', data.fiveElements.totalScore),
         ],
       },
       {
         id: 'balance.weakest',
-        text: `${formatElement(weakest)} 기운은 보완 축으로 읽히며, 생활 루틴에서는 이 기운을 작게 반복하는 방식이 적합합니다.`,
+        text: `${weakestLabel}은 약한 편이에요. ${FRIENDLY_ELEMENT_HINT[weakest]}을 일상에서 작게 반복해두면 균형이 부드러워져요.`,
         confidence: 'medium',
         evidence: [
-          evidence('fiveElements.weakest', '약세 오행', weakest),
-          evidence(`fiveElements.byElement.${weakest}.score`, '약세 오행 점수', weakestValue.score),
+          evidence('fiveElements.weakest', '가장 약한 기운', weakestLabel),
+          evidence(`fiveElements.byElement.${weakest}.score`, '약한 기운 점수', weakestValue.score),
         ],
-        caveat: '동점 후보가 있으면 공동 약세로 표시해야 합니다.',
+        caveat: '점수가 같은 기운이 두 개 이상이면, “공동으로 약한 편”으로 봐주세요.',
       },
     ],
     actions: ELEMENT_ACTION_MAP[weakest],
-    antiClaims: ['부족한 오행이 곧 결핍된 인생이나 질병을 의미한다고 단정하지 않습니다.'],
+    antiClaims: ['약한 기운이 곧 부족한 인생이나 병으로 이어진다고 단정하지 않아요.'],
     tags: ['fiveElements', 'balance', dominant, weakest],
     tone,
   };
@@ -604,36 +619,43 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   if (!yongsin) {
     return {
       id: 'yongsin',
-      title: '용신',
-      summary: '용신 데이터가 없어 해석을 보류합니다.',
+      title: FRIENDLY_BLOCK_LABEL.yongsin,
+      summary: '도움이 되는 핵심 기운을 아직 계산 중이라 풀이를 잠시 미뤄두었어요.',
       claims: [],
-      actions: ['용신 후보군 계산을 먼저 수행합니다.'],
-      antiClaims: ['용신 미계산 상태에서 용신 기반 조언을 생성하지 않습니다.'],
+      actions: ['도움 기운 후보가 정리된 뒤에 다시 풀이를 만들어 드릴게요.'],
+      antiClaims: ['아직 계산이 끝나지 않은 상태에서 단정적인 조언을 만들지 않아요.'],
       tags: ['yongsin', 'pending'],
       tone,
     };
   }
 
   const primaryElement = yongsin.primary.value as Element;
+  const primaryLabel = FRIENDLY_ELEMENT_LABEL[primaryElement] ?? yongsin.primary.label;
+  const confidenceLabel = yongsin.confidence
+    ? ` (확신도 ${FRIENDLY_CONFIDENCE_LABEL[yongsin.confidence] ?? yongsin.confidence})`
+    : '';
   return {
     id: 'yongsin',
-    title: '용신과 활용 전략',
-    summary: `현재 1순위 용신은 ${yongsin.primary.label}이며, 판정 방식은 ${yongsin.method}입니다. 후보 점수와 신뢰도를 함께 보여주는 방식이 사용자 신뢰에 유리합니다.`,
+    title: FRIENDLY_BLOCK_LABEL.yongsin,
+    summary: `지금 가장 도움이 되는 핵심 기운은 ${primaryLabel}${confidenceLabel}이에요. 이 기운을 일상에서 작게 자주 써주면 균형이 부드러워져요.`,
     claims: [
       {
         id: 'yongsin.primary',
-        text: `${yongsin.primary.label}은 현재 명식의 균형을 맞추는 1순위 후보로 계산되었습니다.`,
+        text: `${primaryLabel}이 균형을 잘 맞춰주는 1순위 기운으로 잡혔어요. ${FRIENDLY_ELEMENT_HINT[primaryElement] ?? ''}`.trim(),
         confidence: toClaimConfidence(yongsin.confidence),
         evidence: [
-          evidence('yongsin.primary', '1순위 용신', yongsin.primary.label),
-          evidence('yongsin.method', '판정 방식', yongsin.method),
-          evidence('yongsin.confidence', '판정 신뢰도', yongsin.confidence ?? null),
+          evidence('yongsin.primary', '도움이 되는 1순위 기운', primaryLabel),
+          evidence('yongsin.method', '계산한 방식', yongsin.method),
+          evidence('yongsin.confidence', '풀이 확신도', yongsin.confidence ?? null),
         ],
-        caveat: '조후·억부·오행 보정 후보가 충돌하면 단정형 문장을 피해야 합니다.',
+        caveat: '계절 균형·강약 균형 등 후보 계산법이 엇갈리면, 한 가지로 단정해 말하지 않아요.',
       },
     ],
     actions: ELEMENT_ACTION_MAP[primaryElement] ?? [],
-    antiClaims: ['용신을 행운의 절대 요소로 표현하지 않습니다.', '기신을 피해야 할 사람·직업·질병으로 단정하지 않습니다.'],
+    antiClaims: [
+      '도움 기운을 “행운의 부적”처럼 신비화하지 않아요.',
+      '조절할 기운을 피해야 할 사람·직업·병처럼 단정하지 않아요.',
+    ],
     tags: ['yongsin', yongsin.method, primaryElement],
     tone,
   };
@@ -646,24 +668,24 @@ function buildLuckBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpreta
 
   return {
     id: 'luck-flow',
-    title: '현재 흐름',
+    title: FRIENDLY_BLOCK_LABEL.luck,
     summary: currentMajor
-      ? `현재 대운은 ${currentMajor.ganzi}, 세운은 ${saewoon?.ganzi ?? '미확정'}, 월운은 ${wolwoon?.ganzi ?? '미확정'}입니다.`
-      : `대운은 미확정이며, 세운은 ${saewoon?.ganzi ?? '미확정'}, 월운은 ${wolwoon?.ganzi ?? '미확정'}입니다.`,
+      ? `지금은 ${currentMajor.ganzi} 긴 흐름 위에 올라타 있어요. 올해 흐름은 ${saewoon?.ganzi ?? '확인 중'}, 이번 달은 ${wolwoon?.ganzi ?? '확인 중'}으로 잡혀요.`
+      : `긴 흐름은 아직 확인 중이고, 올해 흐름은 ${saewoon?.ganzi ?? '확인 중'}, 이번 달은 ${wolwoon?.ganzi ?? '확인 중'}으로 잡혀요.`,
     claims: [
       {
         id: 'luck.current',
-        text: '현재운은 조회 시점에 따라 바뀌므로 캐시 데이터보다 실시간 재계산 정책이 중요합니다.',
+        text: '지금 흐르는 운은 화면을 열 때마다 다시 계산하는 편이 더 정확해요. 오래 저장해 두면 흐름이 어긋날 수 있거든요.',
         confidence: 'high',
         evidence: [
-          evidence('metadata.calculatedAt', '계산 시각', data.metadata.calculatedAt),
-          evidence('currentLuck.saewoon.ganzi', '세운 간지', saewoon?.ganzi ?? null),
-          evidence('currentLuck.wolwoon.ganzi', '월운 간지', wolwoon?.ganzi ?? null),
+          evidence('metadata.calculatedAt', '풀이를 만든 시각', data.metadata.calculatedAt),
+          evidence('currentLuck.saewoon.ganzi', '올해 흐름 코드', saewoon?.ganzi ?? null),
+          evidence('currentLuck.wolwoon.ganzi', '이번 달 흐름 코드', wolwoon?.ganzi ?? null),
         ],
       },
     ],
-    actions: ['월운/세운은 결과 캐시와 분리하고, 화면 진입 시 월 단위 TTL을 확인합니다.'],
-    antiClaims: ['세운·월운을 특정 사건 발생 보장으로 표현하지 않습니다.'],
+    actions: ['올해/이번 달 흐름은 다른 풀이와 분리해 저장하고, 화면 진입 시 한 달 안쪽인지 확인해요.'],
+    antiClaims: ['올해 흐름·이번 달 흐름을 “이 일이 꼭 일어난다”는 식으로 단정하지 않아요.'],
     tags: ['luck', 'currentLuck'],
     tone,
   };
@@ -672,8 +694,10 @@ function buildLuckBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpreta
 function buildNextBestActions(data: SajuDataV1) {
   const primary = (data.yongsin?.primary.value ?? data.fiveElements.weakest) as Element;
   const baseActions = ELEMENT_ACTION_MAP[primary] ?? [];
-  const verificationAction = '해석 화면에 “근거 보기”를 추가해 strength.score, yongsin.candidates, fiveElements.score를 펼쳐 보여줍니다.';
-  const freshnessAction = 'currentLuck은 calculatedAt 기준 32일 TTL을 넘으면 재계산합니다.';
+  const verificationAction =
+    '풀이 화면에서 "왜 그렇게 풀이됐는지 보기"를 펼치면 컨디션 점수·도움 기운 후보·다섯 기운 점수를 직접 확인할 수 있어요.';
+  const freshnessAction =
+    '올해/이번 달 흐름은 처음 본 지 한 달이 지나면 자동으로 새로 계산해 보여드려요.';
 
   return [...baseActions.slice(0, 3), verificationAction, freshnessAction];
 }
@@ -734,7 +758,20 @@ function clamp100(value: number) {
 }
 
 function formatElement(element: Element) {
-  return `${ELEMENT_HANJA[element]}(${element})`;
+  // 검증·로그 메시지 전용 (한자 + 일상어 병기).
+  return `${ELEMENT_HANJA[element]}(${FRIENDLY_ELEMENT_LABEL[element]})`;
+}
+
+function formatDayMaster(data: SajuDataV1) {
+  const elementLabel = FRIENDLY_ELEMENT_LABEL[data.dayMaster.element];
+  const metaphor = data.dayMaster.metaphor;
+  return metaphor ? `${elementLabel}의 ${metaphor}` : elementLabel;
+}
+
+function formatVerificationStatus(status: SajuVerificationStatus) {
+  if (status === 'pass') return '문제 없음';
+  if (status === 'pass-with-warnings') return '작은 경고 있음';
+  return '문제 있음 — 다시 계산 권장';
 }
 
 function formatVerificationFailure(report: SajuVerificationReport) {

@@ -1,3 +1,7 @@
+// 2026-05-14: 친근 용어 매핑은 src/lib/saju/terminology.ts 의 단일 소스를
+// import 해 사용한다. 아래 TERM_REPLACEMENTS 는 호환을 위해 추가 패턴만 보존.
+import { FRIENDLY_TERM_MAP } from '@/lib/saju/terminology';
+
 const TECHNICAL_SENTENCE_PATTERNS = [
   /(?:강약|격국|용신|합충|공망|신살|십신|천간|지지|지장간)\s*메모:\s*[^.!?。]+[.!?。]?\s*/gu,
   /전문적으로는\s*[^.!?。]+[.!?。]\s*/gu,
@@ -74,6 +78,12 @@ export function simplifySajuCopy(value: string | null | undefined) {
 
   for (const pattern of SCORE_PATTERNS) {
     text = text.replace(pattern, '');
+  }
+
+  // 2026-05-14: 중앙 글로서리(FRIENDLY_TERM_MAP) 를 먼저 적용해 한자 술어를
+  // 일상어로 치환한 뒤, 기존 TERM_REPLACEMENTS 로 잔여 매핑을 덮어쓴다.
+  for (const [pattern, replacement] of FRIENDLY_TERM_MAP) {
+    text = text.replace(pattern, replacement);
   }
 
   for (const [pattern, replacement] of TERM_REPLACEMENTS) {
