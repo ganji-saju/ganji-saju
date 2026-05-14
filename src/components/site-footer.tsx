@@ -98,9 +98,8 @@ export default function SiteFooter() {
       className="site-footer-redesign mt-auto"
       aria-label="회사 및 서비스 안내"
       style={{
-        // 사용자 피드백 (2026-05-13): 기존 #0a0a0c 가 밝아 보임 → 더 어둡게 토큰 활용.
-        // --app-ink-strong (#050507) 은 tokens.css 에 이미 정의된 토큰.
-        background: 'var(--app-ink-strong)',
+        // 사용자 피드백 (2026-05-14): 완전한 흑색 #000 으로.
+        background: '#000',
         color: 'rgba(255,255,255,0.72)',
         padding: '48px 24px 28px',
         fontSize: 13,
