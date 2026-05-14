@@ -548,29 +548,36 @@ function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDat
   const isHigh = score >= 80;
   const isMid = score >= 70;
   const roleLabel = profile.role?.label ?? `${profile.day.label} 쪽이 먼저 반응하는 편`;
+  // 2026-05-15: 같은 점수대 사용자 거의 동일 문장으로 떨어지던 회귀 수정.
+  // 일주 ganzi + 격국 이름을 cue 로 prepend 해서 "내 사주 풀이" 인 게 보이도록.
+  const dayGanzi = data.pillars.day.ganzi;
+  const patternName = data.pattern?.name ?? null;
+  const cue = patternName
+    ? `${dayGanzi} 일주 · ${patternName}.`
+    : `${dayGanzi} 일주.`;
 
   switch (key) {
     case 'love':
-      if (isHigh) return `연애는 ${stripTopicLead(profile.support.love)} ${roleLabel}이라 먼저 부드럽게 열면 반응이 좋습니다.`;
-      if (isMid) return `연애는 마음 확인보다 ${profile.weakest.label}을 채우는 말투가 더 중요합니다.`;
-      return `연애는 서두르지 말고 ${stripTopicLead(profile.support.love)}.`;
+      if (isHigh) return `${cue} 연애는 ${stripTopicLead(profile.support.love)} ${roleLabel}이라 먼저 부드럽게 여는 날입니다.`;
+      if (isMid) return `${cue} 연애는 마음 확인보다 ${profile.weakest.label}을 채우는 말투가 결정합니다.`;
+      return `${cue} 연애는 서두르지 말고 ${stripTopicLead(profile.support.love)}.`;
     case 'wealth':
-      if (isHigh) return `재물은 ${stripTopicLead(profile.support.wealth)} 손에 남는 돈을 만들기 좋습니다.`;
-      if (isMid) return `재물은 ${profile.dominant.label}보다 ${profile.support.label}을 챙길 때 흐름이 안정됩니다.`;
-      return `재물은 새 결제보다 고정비, 정산, 금액 확인을 먼저 보세요.`;
+      if (isHigh) return `${cue} 재물은 ${stripTopicLead(profile.support.wealth)} 손에 남는 돈을 만드는 날입니다.`;
+      if (isMid) return `${cue} 재물은 ${profile.dominant.label}보다 ${profile.support.label}을 챙길 때 안정됩니다.`;
+      return `${cue} 재물은 새 결제보다 고정비, 정산, 금액 확인을 먼저 보세요.`;
     case 'career':
-      if (isHigh) return `직장은 ${stripTopicLead(profile.support.career)} 성과가 밖으로 보이기 쉽습니다.`;
-      if (isMid) return `직장은 ${profile.role?.strength ?? profile.support.gift}을 일의 순서로 옮기면 안정됩니다.`;
-      return `직장은 넓히기보다 맡은 업무와 보고 순서를 먼저 정리하세요.`;
+      if (isHigh) return `${cue} 직장은 ${stripTopicLead(profile.support.career)} 성과가 밖으로 보이는 날입니다.`;
+      if (isMid) return `${cue} 직장은 ${profile.role?.strength ?? profile.support.gift}을 일의 순서로 옮기세요.`;
+      return `${cue} 직장은 넓히기보다 맡은 업무와 보고 순서를 먼저 정리하세요.`;
     case 'relationship':
-      if (isHigh) return `관계는 ${stripTopicLead(profile.support.relationship)} 먼저 말을 열기 좋습니다.`;
-      if (isMid) return `관계는 말의 순서와 확인을 맞추면 오해가 줄어듭니다.`;
-      return `관계는 바로 결론내기보다 거리와 표현을 천천히 맞추세요.`;
+      if (isHigh) return `${cue} 관계는 ${stripTopicLead(profile.support.relationship)} 먼저 말을 여는 날입니다.`;
+      if (isMid) return `${cue} 관계는 말의 순서와 확인을 맞추는 날입니다.`;
+      return `${cue} 관계는 바로 결론내지 말고 거리와 표현을 천천히 맞추세요.`;
     case 'overall':
     default:
-      if (isHigh) return `${profile.dominant.gift}이 살아 있어 ${profile.support.action}`;
-      if (isMid) return `${roleLabel}이라 ${profile.support.action}`;
-      return `${profile.weakest.label}이 비기 쉬워 오늘은 ${profile.support.action}`;
+      if (isHigh) return `${cue} ${profile.dominant.gift}이 살아 있어 ${profile.support.action}`;
+      if (isMid) return `${cue} ${roleLabel}이라 ${profile.support.action}`;
+      return `${cue} ${profile.weakest.label}이 비기 쉬워 오늘은 ${profile.support.action}`;
   }
 }
 
