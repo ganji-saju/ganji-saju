@@ -63,9 +63,11 @@ export function PremiumLockCard({
           </div>
         </div>
         <span
-          className="shrink-0 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[12px] font-extrabold text-white"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[12px] font-extrabold text-white"
           style={{ boxShadow: '0 8px 20px rgba(216,27,114,0.28)' }}
         >
+          {/* 2026-05-15 handoff 60 m-spinners — inline ring spinner */}
+          {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
           {loading ? '여는 중' : `${coinCost}코인 열기`}
         </span>
       </button>
