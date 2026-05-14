@@ -7,6 +7,8 @@ import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
 import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
+import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
+import { buildSajuNarrative } from '@/domain/saju/report';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
@@ -287,6 +289,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const patternName = sajuData.pattern?.name ?? null;
   const yongsinPrimary = sajuData.yongsin?.primary?.label ?? null;
   const strengthLevel = sajuData.strength?.level ?? null;
+  // 2026-05-15 P2: 일간 + 격국 + 용신 + 대운/세운 + 일주 캐릭터를 한 단락 narrative 로.
+  const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext);
 
   const pillars = [
     { label: '년', pillar: sajuData.pillars.year },
@@ -389,6 +393,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               dayGanziHanja={dayGanziHanja}
               dayGanziKorean={dayGanziKorean}
             />
+
+            {/* §1.6 narrative 카드 — 2026-05-15 P2. 일간 + 격국 + 용신 + 대운/세운을 한 단락
+                narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함. */}
+            <SajuNarrativeCard narrative={sajuNarrative} />
 
             {/* §1.7 격국·용신·강약 사실 카드 — 2026-05-15 P0. 명리 용어를 명시적으로
                 노출해 "사주를 본 게 맞다" 는 인과 추적성 제공. */}
