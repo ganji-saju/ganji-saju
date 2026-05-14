@@ -84,6 +84,31 @@ export default function MySettingsPage() {
           ))}
         </ProductGrid>
       </SectionSurface>
+
+      {/* Redesign 2026-05-13: 회원탈퇴 진입점 (mockup screens-g.jsx ScreenAccountDelete) */}
+      <section className="px-1">
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
+          계정 관리
+        </div>
+        <div className="mt-2 grid gap-2.5">
+          <Link
+            href="/my/settings/delete-account"
+            className="flex items-center justify-between rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+          >
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-extrabold text-[var(--app-coral)]">
+                회원탈퇴
+              </div>
+              <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                탈퇴 절차와 잃게 되는 것들을 미리 확인합니다
+              </div>
+            </div>
+            <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
