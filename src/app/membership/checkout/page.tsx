@@ -1,11 +1,11 @@
+// Redesign 2026-05-13 (Claude Design / screens-c.jsx ScreenCheckout):
+// pink-soft 주문 요약 + 금액 breakdown + 토스 결제 method + 안내 + Toss 위젯.
+// 데이터·라우팅·결제 위젯 무수정.
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
-import {
-  GangiIntro,
-  GangiPageHeader,
-  GangiPurchaseSummary,
-} from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   CHECKOUT_PLAN_GUIDE,
   type PlanSlug,
@@ -50,6 +50,15 @@ const CHECKOUT_FLOW_POINTS = [
   '이미 구매한 풀이는 다시 결제하지 않고 보관함에서 볼 수 있습니다.',
 ] as const;
 
+const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
+  'today-detail': 'snake',
+  'love-question': 'rabbit',
+  'money-pattern': 'monkey',
+  'work-flow': 'tiger',
+  'monthly-calendar': 'rooster',
+  'year-core': 'sheep',
+};
+
 function normalizePlanSlug(value?: string): PlanSlug {
   if (value === 'plus') return 'basic';
   if (value === 'basic' || value === 'premium' || value === 'lifetime') return value;
@@ -69,18 +78,26 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   'today-detail': {
     title: '오늘 자세히 보기',
     price: '550원',
-    reassurance: '오늘 만든 무료 결과에서 걸리는 부분만 조금 더 여는 소액 풀이입니다. 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
+    reassurance:
+      '오늘 만든 무료 결과에서 걸리는 부분만 조금 더 여는 소액 풀이입니다. 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
     nextRange: '오늘 핵심, 조심할 것, 바로 할 행동까지 짧게 열립니다.',
     opens: ['오늘 자세히 보기', '이미 구매한 오늘운 재열람', '대화로 이어 묻기'],
-    notices: ['오늘 자세히 보기는 현재 결과 식별자와 연결됩니다.', '다시 열 때는 구매 여부를 먼저 확인합니다.'],
+    notices: [
+      '오늘 자세히 보기는 현재 결과 식별자와 연결됩니다.',
+      '다시 열 때는 구매 여부를 먼저 확인합니다.',
+    ],
   },
   'love-question': {
     title: '연애 마음 확인',
     price: '990원',
-    reassurance: '상대의 마음, 내 마음, 다시 말 걸 타이밍을 부담 없이 먼저 열 수 있는 소액 풀이입니다.',
+    reassurance:
+      '상대의 마음, 내 마음, 다시 말 걸 타이밍을 부담 없이 먼저 열 수 있는 소액 풀이입니다.',
     nextRange: '상대와의 거리감, 연락 타이밍, 오늘의 말투를 봅니다.',
     opens: ['연애 질문 풀이', '궁합 입력 화면', '대화 연결'],
-    notices: ['로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.', '구매 후에는 checkout에서 중복 결제를 막습니다.'],
+    notices: [
+      '로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.',
+      '구매 후에는 checkout에서 중복 결제를 막습니다.',
+    ],
   },
   'money-pattern': {
     title: '돈이 새는 패턴',
@@ -88,7 +105,10 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     reassurance: '재물운을 크게 말하기보다 오늘부터 줄일 수 있는 지출 습관을 먼저 봅니다.',
     nextRange: '돈이 새는 장면, 조심할 소비, 지킬 행동을 짧게 봅니다.',
     opens: ['재물 질문 풀이', '사주 입력 흐름', '대화 연결'],
-    notices: ['소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.', '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.'],
+    notices: [
+      '소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.',
+      '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
+    ],
   },
   'work-flow': {
     title: '일/직장 흐름',
@@ -96,23 +116,34 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     reassurance: '직장운을 길게 풀기보다 오늘의 말, 역할, 움직일 타이밍을 짧게 봅니다.',
     nextRange: '오늘 일에서 조심할 말, 유리한 태도, 다음 선택을 봅니다.',
     opens: ['일 질문 풀이', '사주 입력 흐름', '대화 연결'],
-    notices: ['소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.', '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.'],
+    notices: [
+      '소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.',
+      '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
+    ],
   },
   'monthly-calendar': {
     title: '월간 달력',
     price: '1,900원',
-    reassurance: '선택한 사주 결과와 월에 붙는 달력형 해금입니다. 이미 연 달은 다시 코인을 쓰지 않습니다.',
+    reassurance:
+      '선택한 사주 결과와 월에 붙는 달력형 해금입니다. 이미 연 달은 다시 코인을 쓰지 않습니다.',
     nextRange: '좋은 날, 확인할 날, 결정일을 달력으로 봅니다.',
     opens: ['선택한 월간 달력', '해당 월 재열람', '긴 사주풀이로 이어보기'],
-    notices: ['월간 달력은 결과와 월 정보가 있어야 연결됩니다.', '보관형 리포트 권한이 있으면 별도 결제 없이 열립니다.'],
+    notices: [
+      '월간 달력은 결과와 월 정보가 있어야 연결됩니다.',
+      '보관형 리포트 권한이 있으면 별도 결제 없이 열립니다.',
+    ],
   },
   'year-core': {
     title: '올해 핵심 3줄',
     price: '3,900원',
-    reassurance: '선택한 사주 결과에 붙는 올해 요약 상품입니다. 결제 뒤 올해 전략 흐름으로 바로 이동합니다.',
+    reassurance:
+      '선택한 사주 결과에 붙는 올해 요약 상품입니다. 결제 뒤 올해 전략 흐름으로 바로 이동합니다.',
     nextRange: '올해 핵심 주제, 주의 패턴, 진행하기 좋은 달을 먼저 봅니다.',
     opens: ['올해 전략 요약', '연간 흐름 보기', '긴 사주풀이로 이어보기'],
-    notices: ['올해 핵심은 특정 사주 결과에 연결됩니다.', '전체 보관형 리포트와는 별도 상품입니다.'],
+    notices: [
+      '올해 핵심은 특정 사주 결과에 연결됩니다.',
+      '전체 보관형 리포트와는 별도 상품입니다.',
+    ],
   },
 };
 
@@ -136,6 +167,9 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const displayPrice = paymentPackage
     ? formatPaymentPackagePrice(paymentPackage)
     : selected.price;
+  const headerZodiac: ZodiacKey = selectedProduct
+    ? TASTE_PRODUCT_ZODIAC[selectedProduct] ?? 'dragon'
+    : 'dragon';
   let alreadyPurchasedHref: string | null = null;
 
   if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
@@ -182,115 +216,264 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage gangi-checkout-page space-y-5">
+      <AppPage className="gangi-subpage saju-result-page space-y-5 pb-32">
         <GangiPageHeader title="결제" backHref="/membership" />
-        <GangiIntro
-          title={
-            <>
-              선택한 풀이를
-              <br />
-              바로 열어볼게요
-            </>
-          }
-          description="금액과 열리는 내용을 확인한 뒤 토스 결제창에서 진행합니다."
-        />
 
-        {selectedProduct ? (
-          <div className="gangi-result-flow-strip gangi-checkout-flow-strip" aria-label="소액 풀이 결제 흐름">
-            <span>무료 요약</span>
-            <span data-active="true">결제</span>
-            <span>상세 보기</span>
-          </div>
-        ) : null}
-
-        <section className="space-y-4 px-4 sm:px-0">
-          <GangiPurchaseSummary
-            title={selected.title}
-            price={displayPrice}
-            description={selected.reassurance}
-            opens={selected.opens}
-          />
-
-          <div className="gangi-checkout-method-card">
-            <span className="gangi-checkout-method-icon" aria-hidden="true">
-              T
-            </span>
-            <div>
-              <strong>토스 결제</strong>
-              <p>결제창에서 카드와 계좌이체 중 편한 방식으로 진행합니다.</p>
+        <section className="space-y-5 px-1">
+          {/* §1 주문 요약 — pink-soft + ZodiacChip + 상품 */}
+          <article
+            className="rounded-[18px] border border-[var(--app-line)] p-5"
+            style={{ background: 'var(--app-pink-soft)' }}
+          >
+            <div className="flex items-center gap-3">
+              <ZodiacChip kind={headerZodiac} size="md" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  {selectedProduct ? '소액 풀이' : `${selectedPlan.toUpperCase()} 멤버십`}
+                </div>
+                <div className="mt-1 text-[15.5px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+                  {selected.title}
+                </div>
+                <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  {selected.reassurance}
+                </p>
+              </div>
             </div>
-            <span className="gangi-checkout-selected-dot" aria-hidden="true" />
-          </div>
+            {selected.opens.length > 0 ? (
+              <ul className="mt-3 grid gap-1.5">
+                {selected.opens.slice(0, 3).map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-center gap-2 text-[12px] leading-[1.55] text-[var(--app-copy)]"
+                  >
+                    <span
+                      className="h-1.5 w-1.5 shrink-0 rounded-full"
+                      style={{ background: 'var(--app-pink)' }}
+                      aria-hidden="true"
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+
+          {/* §2 결제 금액 breakdown */}
+          <section>
+            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 금액</h2>
+            <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
+                <span className="text-[13px] text-[var(--app-copy)]">상품 금액</span>
+                <span className="text-[13.5px] font-bold text-[var(--app-ink)]">
+                  {displayPrice}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-[13px] text-[var(--app-copy)]">할인 / 쿠폰</span>
+                <span className="text-[13.5px] font-bold text-[var(--app-copy-soft)]">
+                  결제창에서 적용
+                </span>
+              </div>
+              <div
+                className="mt-2 flex items-center justify-between pt-3"
+                style={{ borderTop: '1px solid var(--app-ink)' }}
+              >
+                <span className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                  최종 결제 금액
+                </span>
+                <span className="text-[22px] font-extrabold tracking-tight text-[var(--app-pink-strong)]">
+                  {displayPrice}
+                </span>
+              </div>
+            </article>
+          </section>
+
+          {/* §3 결제 수단 안내 — 토스 단일 */}
+          <section>
+            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
+            <article
+              className="mt-3 flex items-center gap-3 rounded-[14px] border-2 p-3.5"
+              style={{
+                borderColor: 'var(--app-pink)',
+                background: 'var(--app-pink-soft)',
+              }}
+            >
+              <div
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[14px] font-black text-white"
+                style={{ background: '#3182f6' }}
+                aria-hidden="true"
+              >
+                T
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                  토스 결제
+                </div>
+                <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  결제창에서 카드 · 계좌이체 · 간편결제 중 선택
+                </p>
+              </div>
+              <span
+                className="grid h-5 w-5 place-items-center rounded-full"
+                style={{ border: '6px solid var(--app-pink)', background: '#fff' }}
+                aria-hidden="true"
+              />
+            </article>
+          </section>
 
           {error === 'payment' ? (
-            <p className="gangi-checkout-alert">
+            <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
               결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다.
             </p>
           ) : null}
 
-          <ul className="gangi-checkout-notes">
-            {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
+          {/* §4 결제 안내 */}
+          <section>
+            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 안내</h2>
+            <ul className="mt-3 grid gap-1.5">
+              {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-2 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                >
+                  <span aria-hidden="true">·</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-        <section className="px-4 sm:px-0">
-          <div className="gangi-checkout-action-card">
-            {paymentPackage?.kind === 'lifetime_report' && !slug ? (
-              <div className="gangi-checkout-empty-state">
-                <strong>먼저 사주 결과가 필요합니다</strong>
-                <p>이 풀이는 특정 사주 결과에 붙습니다. 결과를 만든 뒤 다시 결제하면 바로 연결됩니다.</p>
-                <Link href="/saju/new" className="gangi-primary-button">
-                  사주 결과 먼저 만들기
-                </Link>
+          {/* §5 동의 + 약관 링크 */}
+          <section>
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
+              <div className="flex items-center gap-2 text-[13px] font-extrabold text-[var(--app-ink)]">
+                <span
+                  className="grid h-5 w-5 place-items-center rounded-[6px] text-[12px] font-black text-white"
+                  style={{ background: 'var(--app-pink)' }}
+                  aria-hidden="true"
+                >
+                  ✓
+                </span>
+                주문 내용을 확인하고 결제에 동의합니다
               </div>
-            ) : needsResultFirst && selectedProduct ? (
-              <div className="gangi-checkout-empty-state">
-                <strong>먼저 결과를 만들어 주세요</strong>
-                <p>소액 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.</p>
-                <Link href={`/saju/new?product=${selectedProduct}`} className="gangi-primary-button">
-                  사주 결과 먼저 만들기
-                </Link>
-                <Link href="/membership" className="gangi-secondary-button">
-                  상품 목록으로
-                </Link>
+              <div className="mt-2.5 grid gap-1.5 pl-7">
+                {[
+                  ['전자상거래 결제 동의', '/terms'],
+                  ['개인정보 제3자 제공 동의', '/privacy'],
+                  ['디지털 콘텐츠 환불 정책', '/terms'],
+                ].map(([label, href]) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    className="flex items-center justify-between text-[11.5px] text-[var(--app-copy-soft)]"
+                  >
+                    <span>· {label}</span>
+                    <span>보기 ›</span>
+                  </Link>
+                ))}
               </div>
-            ) : alreadyPurchasedHref ? (
-              <div className="gangi-checkout-empty-state gangi-checkout-empty-state-success">
-                <strong>이미 구매한 풀이입니다</strong>
-                <p>결제창을 다시 열지 않고 바로 열람 화면으로 이동합니다.</p>
-                <Link href={alreadyPurchasedHref} className="gangi-primary-button">
-                  구매한 풀이 열기
-                </Link>
-                <Link href="/my/billing" className="gangi-secondary-button">
-                  결제 상태 확인
-                </Link>
-              </div>
-            ) : paymentPackage ? (
-              <>
-                <p className="gangi-checkout-action-title">결제창 열기</p>
-                <TossMembershipCheckout
-                  packageId={paymentPackage.id}
-                  plan={selectedPlan}
-                  product={selectedProduct ?? undefined}
-                  amount={paymentPackage.price}
-                  orderName={paymentPackage.name}
-                  slug={slug}
-                  scope={scope}
-                  entrySource={from ?? 'membership'}
-                />
-              </>
-            ) : (
-              <div className="gangi-checkout-empty-state">
-                <strong>결제 정보를 찾지 못했습니다</strong>
-                <p>멤버십 화면으로 돌아가 다시 선택해 주세요.</p>
-                <Link href="/membership" className="gangi-primary-button">
-                  상품 다시 선택
-                </Link>
-              </div>
-            )}
-          </div>
+            </article>
+          </section>
+
+          {/* §6 결제 액션 — TossMembershipCheckout 또는 empty-state */}
+          <section>
+            <article className="rounded-[18px] border border-[var(--app-pink-line)] bg-white p-5">
+              {paymentPackage?.kind === 'lifetime_report' && !slug ? (
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                    먼저 사주 결과가 필요합니다
+                  </strong>
+                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    이 풀이는 특정 사주 결과에 붙습니다. 결과를 만든 뒤 다시 결제하면 바로 연결됩니다.
+                  </p>
+                  <Link
+                    href="/saju/new"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                  >
+                    사주 결과 먼저 만들기
+                  </Link>
+                </div>
+              ) : needsResultFirst && selectedProduct ? (
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                    먼저 결과를 만들어 주세요
+                  </strong>
+                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    소액 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
+                  </p>
+                  <Link
+                    href={`/saju/new?product=${selectedProduct}`}
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                  >
+                    사주 결과 먼저 만들기
+                  </Link>
+                  <Link
+                    href="/membership"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                  >
+                    상품 목록으로
+                  </Link>
+                </div>
+              ) : alreadyPurchasedHref ? (
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[15px] font-extrabold text-[var(--app-jade)]">
+                    이미 구매한 풀이입니다
+                  </strong>
+                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    결제창을 다시 열지 않고 바로 열람 화면으로 이동합니다.
+                  </p>
+                  <Link
+                    href={alreadyPurchasedHref}
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                  >
+                    구매한 풀이 열기
+                  </Link>
+                  <Link
+                    href="/my/billing"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                  >
+                    결제 상태 확인
+                  </Link>
+                </div>
+              ) : paymentPackage ? (
+                <>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    결제창 열기
+                  </p>
+                  <h3 className="mt-1 text-[18px] font-extrabold leading-snug text-[var(--app-ink)]">
+                    {displayPrice} 결제하기 →
+                  </h3>
+                  <div className="mt-3">
+                    <TossMembershipCheckout
+                      packageId={paymentPackage.id}
+                      plan={selectedPlan}
+                      product={selectedProduct ?? undefined}
+                      amount={paymentPackage.price}
+                      orderName={paymentPackage.name}
+                      slug={slug}
+                      scope={scope}
+                      entrySource={from ?? 'membership'}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                    결제 정보를 찾지 못했습니다
+                  </strong>
+                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    멤버십 화면으로 돌아가 다시 선택해 주세요.
+                  </p>
+                  <Link
+                    href="/membership"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                  >
+                    상품 다시 선택
+                  </Link>
+                </div>
+              )}
+            </article>
+          </section>
         </section>
       </AppPage>
     </AppShell>
