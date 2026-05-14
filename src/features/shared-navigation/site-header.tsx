@@ -111,19 +111,20 @@ function findActiveItem(items: readonly NavItem[], pathname: string) {
 }
 
 function DockIcon({ label }: { label: string }) {
+  // 2026-05-14: 일관된 5x5 사이즈, center(무료운세) 만 6x6 → CSS 가 흰색 + 글로우 처리.
   switch (label) {
     case '홈':
-      return <MoonStar className="h-4 w-4" />;
+      return <MoonStar className="h-[20px] w-[20px]" strokeWidth={2} />;
     case '사주추가':
-      return <Plus className="h-4 w-4" />;
+      return <Plus className="h-[20px] w-[20px]" strokeWidth={2.4} />;
     case '무료운세':
-      return <Heart className="h-5 w-5" />;
+      return <Sparkles className="h-[22px] w-[22px]" strokeWidth={2} />;
     case '대화방':
-      return <MessageCircleMore className="h-4 w-4" />;
+      return <MessageCircleMore className="h-[20px] w-[20px]" strokeWidth={2} />;
     case '보관함':
-      return <UserRound className="h-4 w-4" />;
+      return <BookOpenText className="h-[20px] w-[20px]" strokeWidth={2} />;
     default:
-      return <BookOpenText className="h-4 w-4" />;
+      return <UserRound className="h-[20px] w-[20px]" strokeWidth={2} />;
   }
 }
 
@@ -756,6 +757,8 @@ function MobileChrome({
         </div>
       </header>
 
+      {/* 2026-05-14: 하단 dock 리디자인 — 중앙 FAB (무료운세) 형광 글로우 +
+          나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터. */}
       <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden" aria-label="주 메뉴">
         <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
           {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
@@ -771,9 +774,19 @@ function MobileChrome({
                 aria-current={active ? 'page' : undefined}
                 className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
               >
+                {/* 활성 indicator dot (center 제외) */}
+                {!isCenter && active ? (
+                  <span className="app-mobile-dock-indicator" aria-hidden="true" />
+                ) : null}
                 <span className="app-mobile-dock-icon">
                   <DockIcon label={item.label} />
                 </span>
+                {/* center FAB 의 sparkle accent */}
+                {isCenter ? (
+                  <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
+                    <Sparkles className="h-2.5 w-2.5" />
+                  </span>
+                ) : null}
                 <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
                   {getMobileDockLabel(item)}
                 </span>
