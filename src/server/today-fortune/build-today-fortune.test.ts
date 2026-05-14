@@ -376,6 +376,41 @@ test('today fortune free result changes across different calendar dates (daily s
   );
 });
 
+test('today fortune free body changes across different calendar dates (daily body variants)', () => {
+  // 2026-05-15: 본문(oneLine.body) 이 며칠째 같은 문장으로 나오던 회귀 방지.
+  // headline·점수 외에 본문 자체도 일진 시그널 + concernLine variant 로 매일 흐트러져야 한다.
+  const input = createSampleInput();
+  const dataA = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
+  const dataB = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
+  const dataC = calculateSajuDataV1(input, { calculatedAt: '2026-05-19T09:00:00+09:00' });
+
+  const bodyA = buildTodayFortuneFreeResult(input, dataA, {
+    concernId: 'general',
+    sourceSessionId: 'daily-body-a',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  }).oneLine.body;
+  const bodyB = buildTodayFortuneFreeResult(input, dataB, {
+    concernId: 'general',
+    sourceSessionId: 'daily-body-b',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  }).oneLine.body;
+  const bodyC = buildTodayFortuneFreeResult(input, dataC, {
+    concernId: 'general',
+    sourceSessionId: 'daily-body-c',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  }).oneLine.body;
+
+  // 3개 본문이 모두 다른 것까지는 보장하지 않지만, 최소 1쌍은 달라야 한다.
+  const uniqueBodies = new Set([bodyA, bodyB, bodyC]);
+  assert.ok(
+    uniqueBodies.size >= 2,
+    `오늘운세 본문이 3일치 모두 동일하면 안 됩니다. bodies=${JSON.stringify(Array.from(uniqueBodies))}`
+  );
+});
+
 test('today fortune opportunity and risk copy stays concise and grounded', () => {
   const input = createSampleInput();
   const sajuData = calculateSajuDataV1(input);

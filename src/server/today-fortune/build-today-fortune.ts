@@ -632,6 +632,14 @@ interface PublicTodayProfile {
   locationCue: string;
   timeRuleCue: string;
   signatureSeed: number;
+  // 2026-05-15: 본문이 출생 정보 기반 고정 문자열만 이어붙던 회귀에 대응.
+  // 오늘 일진(천간·지지) 관계 + dailyDelta 로 매일 다른 시그널 한 줄 제공.
+  todayFlowSignal: string;
+  // 오늘 일진 ganzi 라벨 (예: "辛巳"). 비어 있을 수 있음.
+  todayGanzi: string;
+  // 시드 의존 strength/role 변주 1문장 (매일 흐름 따라 다른 후보).
+  strengthVariant: string;
+  roleBodyVariant: string;
 }
 
 function clampScore(value: number) {
@@ -918,6 +926,82 @@ function buildDailyDelta(
   return Math.round(stemDelta * 0.6 + branchDelta * 0.4);
 }
 
+// 오늘 일진 vs 내 일간 관계를 사람이 읽는 한 줄로 변환.
+// dailyDelta 단순 부호가 아니라 element 종류와 관계 (인성/관살/식상/재성/같음) 별 카피.
+function buildTodayFlowSignal(
+  todayPillar: TodayPillarSnapshot,
+  sajuData: SajuDataV1
+): string {
+  const myEl = sajuData.dayMaster?.element;
+  if (!myEl || (!todayPillar.stemElement && !todayPillar.branchElement)) {
+    return '';
+  }
+
+  function describe(todayEl: Element | null, position: '천간' | '지지'): string | null {
+    if (!todayEl) return null;
+    const myLabel = PUBLIC_ELEMENT_LABELS[myEl];
+    const todayLabel = PUBLIC_ELEMENT_LABELS[todayEl];
+    const ctx = position === '천간' ? '겉으로' : '바탕에서';
+    if (todayEl === myEl) {
+      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel} 결과 같아 자기 페이스를 지키기 좋은 흐름입니다.`;
+    }
+    if (GENERATOR_OF_MAP[myEl] === todayEl) {
+      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel}을 받쳐주듯 들어와 회복과 정리에 도움이 되는 흐름입니다.`;
+    }
+    if (GENERATED_BY_MAP[myEl] === todayEl) {
+      return `오늘은 ${ctx} ${todayLabel} 결로 내 ${myLabel} 에너지를 풀어내는 흐름이라, 표현은 잘 되지만 에너지 소모도 큰 편입니다.`;
+    }
+    if (CONTROLLER_OF_MAP[myEl] === todayEl) {
+      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel}을 누르듯 들어와 결정이 다소 무겁고 마찰이 생길 수 있는 흐름입니다.`;
+    }
+    if (CONTROLLER_OF_MAP[todayEl] === myEl) {
+      return `오늘은 ${ctx} ${todayLabel} 결을 내 ${myLabel}로 정돈해야 하는 흐름이라, 작은 결정과 정리에 손이 많이 갑니다.`;
+    }
+    return null;
+  }
+
+  const sentences = compactStrings([
+    describe(todayPillar.stemElement, '천간'),
+    describe(todayPillar.branchElement, '지지'),
+  ]);
+  return sentences.join(' ');
+}
+
+function pickStrengthVariant(level: string | null | undefined, seed: number): string {
+  const variants: Record<'신강' | '신약' | '중화', string[]> = {
+    신강: [
+      '내가 먼저 끌고 가려는 힘이 강해지는 편입니다.',
+      '주도권을 잡고 움직이는 결이 살아 있어 결정이 빨라지기 쉬워요.',
+      '내 페이스로 끌고 가는 힘이 강해 무리하지 않게 호흡을 길게 가져가는 편이 좋아요.',
+    ],
+    신약: [
+      '주변 분위기와 컨디션에 영향을 받기 쉬운 편입니다.',
+      '주변 흐름과 사람 결에 휘청이기 쉬운 결이라 자기 페이스를 먼저 정해두면 편해져요.',
+      '주변 신호에 민감해질 수 있는 결이라 정보와 일정을 단순화하는 편이 좋아요.',
+    ],
+    중화: [
+      '상황을 보고 맞추는 감각이 살아 있는 편입니다.',
+      '한쪽으로 치우치지 않아 조율과 중재가 잘 되는 결이 살아 있어요.',
+      '균형을 보며 움직이는 결이 살아 있어 작은 분기마다 한 박자 쉬어가면 더 정돈됩니다.',
+    ],
+  };
+  const key = (level === '신강' || level === '신약' || level === '중화') ? level : '중화';
+  return pickVariant(variants[key], seed, 5);
+}
+
+function pickRoleBodyVariant(
+  baseRoleBody: string,
+  dayLabel: string,
+  seed: number
+): string {
+  const extras = [
+    baseRoleBody,
+    `${dayLabel} 감각이 먼저 반응하는 결로 흘러요.`,
+    `${dayLabel} 쪽 결이 첫 신호로 올라오는 흐름이에요.`,
+  ];
+  return pickVariant(extras, seed, 9);
+}
+
 function sortBranchKey(left: Branch, right: Branch) {
   return [left, right]
     .sort((a, b) => BRANCH_ORDER.indexOf(a) - BRANCH_ORDER.indexOf(b))
@@ -1192,6 +1276,8 @@ function buildPublicTodayProfile(
         ? '주변 분위기와 컨디션에 영향을 받기 쉬운 편입니다.'
         : '상황을 보고 맞추는 감각이 살아 있는 편입니다.';
 
+  const baseRoleBody = roleTone?.body ?? `${dayLabel} 쪽 성향이 오늘 선택의 첫 반응으로 올라옵니다.`;
+
   return {
     dayLabel,
     dominantElement,
@@ -1202,7 +1288,7 @@ function buildPublicTodayProfile(
     supportLabel: PUBLIC_ELEMENT_LABELS[supportElement],
     tenGod,
     roleHeadline: roleTone?.headline ?? `${dayLabel} 감각이 먼저 드러나는 날`,
-    roleBody: roleTone?.body ?? `${dayLabel} 쪽 성향이 오늘 선택의 첫 반응으로 올라옵니다.`,
+    roleBody: baseRoleBody,
     roleCaution: roleTone?.caution ?? supportCopy.weakCare,
     strengthBody,
     actionShort: supportCopy.supportShort,
@@ -1220,6 +1306,11 @@ function buildPublicTodayProfile(
     locationCue: buildLocationCue(input),
     timeRuleCue: buildTimeRuleCue(input, options.timeRule),
     signatureSeed,
+    // 2026-05-15: 본문에 매일 다른 흐름을 주입하기 위한 새 필드들.
+    todayFlowSignal: buildTodayFlowSignal(todayPillar, sajuData),
+    todayGanzi: todayPillar.ganzi,
+    strengthVariant: pickStrengthVariant(sajuData.strength?.level, signatureSeed),
+    roleBodyVariant: pickRoleBodyVariant(baseRoleBody, dayLabel, signatureSeed),
   };
 }
 
@@ -1251,33 +1342,67 @@ function buildPublicTodayHeadline(
   }
 }
 
+// 2026-05-15: concern 별 본문 한 줄도 매일 다른 후보가 뽑히도록 3 variant 화.
+const CONCERN_BODY_VARIANTS: Record<ConcernId, string[]> = {
+  love_contact: [
+    '오늘은 마음을 크게 확인하기보다 상대가 답하기 쉬운 한마디가 더 좋습니다.',
+    '오늘은 진심을 길게 풀어내기보다 짧고 가벼운 안부가 거리감을 줄여줍니다.',
+    '오늘은 답을 재촉하기보다 상대의 호흡에 맞춰 한 박자 늦게 표현하는 편이 좋아요.',
+  ],
+  money_spend: [
+    '오늘은 새 결제보다 이미 나갈 돈과 약속된 금액을 먼저 보는 쪽이 낫습니다.',
+    '오늘은 새로운 지출보다 자동결제·정기지출 점검 하나가 더 큰 차이를 만듭니다.',
+    '오늘은 즉흥 구매보다 영수증과 다음 주 일정의 돈 흐름을 한 번 정리해두면 든든해져요.',
+  ],
+  work_meeting: [
+    '오늘은 결론을 빨리 내기보다 역할, 일정, 조건을 짧게 맞추는 편이 좋습니다.',
+    '오늘은 결정 한 방보다 누가 무엇을 언제까지 할지 짧게 적어두는 쪽이 더 멀리 갑니다.',
+    '오늘은 길게 회의하기보다 핵심 1줄 + 다음 액션 1줄 만 합의해도 충분합니다.',
+  ],
+  relationship_conflict: [
+    '오늘은 맞고 틀림을 가르기보다 오해가 커지지 않게 말의 순서를 낮추는 편이 좋습니다.',
+    '오늘은 누가 잘못했는지 따지기보다 어디서 신호가 어긋났는지 한 번 확인해보세요.',
+    '오늘은 즉답보다 한 박자 늦은 답장이 관계를 더 부드럽게 만듭니다.',
+  ],
+  energy_health: [
+    '오늘은 몰아서 버티기보다 쉬는 구간을 먼저 잡아야 오래 갑니다.',
+    '오늘은 일정 사이에 짧은 휴식 한 토막을 끼워 넣으면 컨디션이 무너지지 않아요.',
+    '오늘은 무리한 운동·약속보다 수면·식사·물 한 잔의 기본 리듬을 챙기는 편이 좋아요.',
+  ],
+  general: [
+    '오늘은 큰 결정보다 지금 바로 정리할 수 있는 작은 일 하나가 하루를 바꿉니다.',
+    '오늘은 큰 그림을 다시 그리기보다 책상·일정·메모 중 하나만 정돈해도 흐름이 풀립니다.',
+    '오늘은 새로 시작하는 일보다 미뤄둔 한 가지를 마무리하는 쪽이 더 가볍게 끝나요.',
+  ],
+};
+
+function pickConcernBodyVariant(concernId: ConcernId, seed: number): string {
+  const variants = CONCERN_BODY_VARIANTS[concernId] ?? CONCERN_BODY_VARIANTS.general;
+  return pickVariant(variants, seed, 13);
+}
+
 function buildPublicTodayBody(
   concernId: ConcernId,
   profile: PublicTodayProfile,
   unknownBirthTime: boolean
 ) {
-  const concernLine =
-    concernId === 'love_contact'
-      ? '오늘은 마음을 크게 확인하기보다 상대가 답하기 쉬운 한마디가 더 좋습니다.'
-      : concernId === 'money_spend'
-        ? '오늘은 새 결제보다 이미 나갈 돈과 약속된 금액을 먼저 보는 쪽이 낫습니다.'
-        : concernId === 'work_meeting'
-          ? '오늘은 결론을 빨리 내기보다 역할, 일정, 조건을 짧게 맞추는 편이 좋습니다.'
-          : concernId === 'relationship_conflict'
-            ? '오늘은 맞고 틀림을 가르기보다 오해가 커지지 않게 말의 순서를 낮추는 편이 좋습니다.'
-            : concernId === 'energy_health'
-              ? '오늘은 몰아서 버티기보다 쉬는 구간을 먼저 잡아야 오래 갑니다.'
-              : '오늘은 큰 결정보다 지금 바로 정리할 수 있는 작은 일 하나가 하루를 바꿉니다.';
+  // 2026-05-15: 본문이 출생 정보 기반 고정 문자열만 이어붙던 회귀 수정.
+  // 오늘 일진 시그널 한 줄을 맨 앞에 두고, 시드 의존 변주를 섞어 매일 다르게.
+  const concernLine = pickConcernBodyVariant(concernId, profile.signatureSeed);
+  const flowSignal = profile.todayFlowSignal;
+  const todayDateMarker = profile.todayGanzi ? `오늘 일진 ${profile.todayGanzi}` : null;
 
   return joinUniqueSentences([
-    profile.roleBody,
-    profile.strengthBody,
+    flowSignal || null,
+    profile.roleBodyVariant || profile.roleBody,
+    profile.strengthVariant || profile.strengthBody,
     profile.hourSummary,
     concernLine,
     `${profile.supportLabel} 쪽을 챙기면 좋아요. ${profile.actionBody}.`,
     profile.hourAction,
     profile.cautionBody,
     profile.calendarCue,
+    todayDateMarker ? `${todayDateMarker} 기준으로 본 흐름입니다.` : null,
     unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
   ]);
 }
