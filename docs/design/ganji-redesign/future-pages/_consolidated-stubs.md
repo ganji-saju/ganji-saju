@@ -31,14 +31,15 @@
 - **추후 실 구현**: `src/components/gangi/gangi-banner.tsx` + 7 variants (info/success/warning/error/promo/event/ad).
 - **작업량**: S (반나절).
 
-## 5. `errors` — 에러 (404/500/네트워크)
+## 5. `errors` — 에러 (404/500/네트워크) ✅ IMPLEMENTED
 
-- **상태**: 404 만 IMPLEMENTED (`src/app/not-found.tsx`). 5xx error boundary / 네트워크 끊김 미구현.
-- **추후 실 구현**:
-  - `src/app/error.tsx` (client error boundary)
-  - `src/app/global-error.tsx` (root error boundary)
-  - 공통 `<ErrorScreen kind="404|500|network|forbidden">` 컴포넌트
-- **작업량**: S.
+- **상태**: 완료.
+  - 404: `src/app/not-found.tsx` (PR #68)
+  - client 5xx: `src/app/error.tsx`
+  - root error: `src/app/global-error.tsx`
+- **공통 디자인**: pink-soft(404) / coral-soft(5xx) hero + 干/月 한자 + 재시도 + 홈으로 CTA.
+- **네트워크 끊김**: client error boundary 가 fetch 실패 시 자연스럽게 잡음.
+- **남은 작업**: 공통 `<ErrorScreen kind="...">` 컴포넌트 추출은 후속 (3개 파일이 거의 동일한 디자인).
 
 ## 6. `onboarding` — 온보딩 (4 슬라이드)
 
