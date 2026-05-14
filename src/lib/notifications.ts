@@ -18,6 +18,16 @@ interface NotificationReadingRow {
   result_json: unknown;
 }
 
+export interface NotificationFeedItem {
+  id: string;
+  title: string;
+  body: string;
+  slotKey: string;
+  status: 'queued' | 'sent' | 'failed' | 'dismissed';
+  createdAt: string;
+  href: string;
+}
+
 export interface NotificationSnapshot {
   displayName: string;
   latestReading: {
@@ -32,13 +42,28 @@ export interface NotificationSnapshot {
     luckyColor: string;
     luckyNumber: number;
   } | null;
+  feed: NotificationFeedItem[];
 }
 
 function buildPreviewSnapshot(): NotificationSnapshot {
   return {
     displayName: '선생님',
     latestReading: null,
+    feed: [],
   };
+}
+
+function slotKeyToHref(slotKey: string, fallback = '/notifications') {
+  if (slotKey.startsWith('today-fortune')) return '/today-fortune';
+  if (slotKey.startsWith('today-tarot')) return '/tarot/daily';
+  if (slotKey.startsWith('today-zodiac')) return '/zodiac';
+  if (slotKey.startsWith('weekly')) return '/today-fortune';
+  if (slotKey.startsWith('monthly')) return '/today-fortune';
+  if (slotKey.startsWith('seasonal')) return '/today-fortune';
+  if (slotKey.startsWith('birthday')) return '/my';
+  if (slotKey.startsWith('returning')) return '/my';
+  if (slotKey.startsWith('dialogue')) return '/dialogue';
+  return fallback;
 }
 
 function toInput(row: NotificationReadingRow): BirthInput {
@@ -94,10 +119,30 @@ export async function getNotificationSnapshot(): Promise<NotificationSnapshot> {
   const displayName = profileResponse.data?.display_name?.trim() || '선생님';
   const latest = readingsResponse.data as NotificationReadingRow | null;
 
+  // notification_delivery_logs 에서 최근 50건을 피드로 노출 (queued/dismissed 제외).
+  const { data: logs } = await supabase
+    .from('notification_delivery_logs')
+    .select('id, slot_key, title, body, status, created_at')
+    .eq('user_id', user.id)
+    .in('status', ['sent', 'failed'])
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const feed: NotificationFeedItem[] = (logs ?? []).map((row) => ({
+    id: row.id as string,
+    title: row.title as string,
+    body: row.body as string,
+    slotKey: row.slot_key as string,
+    status: row.status as NotificationFeedItem['status'],
+    createdAt: row.created_at as string,
+    href: slotKeyToHref(row.slot_key as string),
+  }));
+
   if (!latest) {
     return {
       displayName,
       latestReading: null,
+      feed,
     };
   }
 
@@ -124,6 +169,7 @@ export async function getNotificationSnapshot(): Promise<NotificationSnapshot> {
       luckyColor: getLuckyColorLabel(dominant),
       luckyNumber: ((input.month + input.day) % 9) + 1,
     },
+    feed,
   };
 }
 
