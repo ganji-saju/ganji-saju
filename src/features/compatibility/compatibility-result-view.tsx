@@ -311,60 +311,140 @@ export function CompatibilityResultView({
           </div>
         </details>
 
-        {/* §8 990원 깊은 풀이 + 다시 보기 */}
-        <article
-          className="rounded-[18px] p-5 text-white"
-          style={{
-            background: 'var(--app-ink)',
-            boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
-          }}
-        >
-          <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
-            style={{ color: 'var(--app-pink)' }}
-          >
-            더 보고 싶다면
-          </div>
-          <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
-            {premiumExpansion.ctaTitle}
-          </h2>
-          <p
-            className="mt-2 text-[12.5px] leading-[1.55]"
-            style={{ opacity: 0.75 }}
-          >
-            {premiumExpansion.ctaBody}
-          </p>
-          <ul className="mt-3 grid gap-1.5">
-            {premiumExpansion.preview.slice(0, 2).map((item) => (
-              <li
-                key={item.title}
-                className="rounded-[12px] px-3.5 py-2.5 text-[12.5px] leading-[1.55]"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
-              >
-                <strong className="text-white">{item.title}</strong>
-                <span className="block mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                  {item.body}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 grid gap-2">
-            {/* 2026-05-14 fix: 기존 plan=premium (9,900원 멤버십) 로 잘못 연결되던 것을
-                love-question (990원 소액 상품) checkout 으로 바로잡는다. */}
-            <Link
-              href="/membership/checkout?product=love-question&from=compatibility-result"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+        {/* §8 — 구매 여부에 따라 분기.
+            · 미구매: ink-dark CTA + 2개 teaser preview + 990원 결제 버튼.
+            · 구매: pink-soft hero + ✓ 구매 완료 배지 + 3개 풀 콘텐츠. */}
+        {hasLoveQuestionPurchase ? (
+          <>
+            <article
+              className="rounded-[18px] border p-5"
+              style={{
+                background: 'var(--app-pink-soft)',
+                borderColor: 'var(--app-pink-line)',
+              }}
             >
-              990원 · 깊은 궁합 풀이 보기 →
-            </Link>
+              <div className="flex items-center gap-2">
+                <span
+                  className="grid h-6 w-6 place-items-center rounded-full text-white"
+                  style={{
+                    background: 'var(--app-pink)',
+                    boxShadow: '0 4px 10px rgba(216,27,114,0.35)',
+                  }}
+                  aria-hidden="true"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                <div
+                  className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                  style={{ color: 'var(--app-pink-strong)' }}
+                >
+                  구매 완료 · 깊은 풀이
+                </div>
+              </div>
+              <h2
+                className="mt-2 text-[18px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                {premiumExpansion.ctaTitle}
+              </h2>
+              <p className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]">
+                {premiumExpansion.ctaBody}
+              </p>
+            </article>
+
+            <div className="grid gap-2.5">
+              {premiumExpansion.preview.map((item, index) => (
+                <article
+                  key={item.title}
+                  className="rounded-[14px] border bg-white p-4"
+                  style={{ borderColor: 'var(--app-pink-line)' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                      style={{ background: 'var(--app-pink)' }}
+                      aria-hidden="true"
+                    >
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+                        style={{ wordBreak: 'keep-all' }}
+                      >
+                        {item.title}
+                      </div>
+                      <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                        {item.body}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
             <Link
               href={retakeHref}
-              className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[12.5px] font-bold text-white/80"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
             >
               다른 사람과 다시 보기
             </Link>
-          </div>
-        </article>
+          </>
+        ) : (
+          <article
+            className="rounded-[18px] p-5 text-white"
+            style={{
+              background: 'var(--app-ink)',
+              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+            }}
+          >
+            <div
+              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              style={{ color: 'var(--app-pink)' }}
+            >
+              더 보고 싶다면
+            </div>
+            <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+              {premiumExpansion.ctaTitle}
+            </h2>
+            <p
+              className="mt-2 text-[12.5px] leading-[1.55]"
+              style={{ opacity: 0.75 }}
+            >
+              {premiumExpansion.ctaBody}
+            </p>
+            <ul className="mt-3 grid gap-1.5">
+              {premiumExpansion.preview.slice(0, 2).map((item) => (
+                <li
+                  key={item.title}
+                  className="rounded-[12px] px-3.5 py-2.5 text-[12.5px] leading-[1.55]"
+                  style={{ background: 'rgba(255,255,255,0.06)' }}
+                >
+                  <strong className="text-white">{item.title}</strong>
+                  <span className="block mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                    {item.body}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 grid gap-2">
+              <Link
+                href="/membership/checkout?product=love-question&from=compatibility-result"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              >
+                990원 · 깊은 궁합 풀이 보기 →
+              </Link>
+              <Link
+                href={retakeHref}
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[12.5px] font-bold text-white/80"
+              >
+                다른 사람과 다시 보기
+              </Link>
+            </div>
+          </article>
+        )}
       </section>
     </>
   );
