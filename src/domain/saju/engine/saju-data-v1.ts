@@ -354,11 +354,32 @@ export interface SajuStrength {
   rationale: string[];
 }
 
+export interface SajuPatternCandidate {
+  stem: Stem;
+  tenGod: TenGodCode | null;
+  name: string;
+  /** 본기(60) / 중기(30) / 여기(15) + 투출 보너스(+30) + 협력 보너스(+15). */
+  score: number;
+  source: '본기' | '중기' | '여기';
+  /** 천간(연·일·시) 에 같은 stem 이 드러나면 true. */
+  tougchul: boolean;
+  /** 다른 지지 hidden stems 에 같은 stem 이 존재하는 자리 (예: ['年支','日支']). */
+  supportingPillars: string[];
+}
+
 export interface SajuPattern {
   name: string;
   category: PatternCategory | null;
   tenGod: TenGodCode | null;
   rationale: string[];
+  /** 2026-05-15 P1 추가 — 격국 결정 confidence. 본기 + 투출 = 확정, 본기 단독 = 보통, 중기/여기 = 낮음. */
+  confidence: '확정' | '보통' | '낮음';
+  /** 채택된 격국 글자가 천간(연/일/시) 에 투출됐는지. */
+  tougchul: boolean;
+  /** 협력하는 다른 지지 슬롯 라벨. */
+  supportingPillars: string[];
+  /** 본기/중기/여기 후보 multi-rank (score desc). */
+  candidates: SajuPatternCandidate[];
 }
 
 export interface SajuSymbolRef {
@@ -905,28 +926,123 @@ function calculateStrength(
   };
 }
 
+// 2026-05-15 P1 — 격국 알고리즘 강화.
+// 기존: 월지 본기 1순위만 보고 단정.
+// 신규: 본기/중기/여기 각각 평가 + 천간 투출(透出) 보너스 + 협력 지지 보너스로 multi-rank.
+// "본기 + 투출" 격국이 가장 강한 신호. 본기만 채택은 보통, 중기/여기로 떨어지면 낮음.
 function calculatePattern(pillars: SajuPillars, dayMasterStem: Stem): SajuPattern {
-  const principal =
-    pillars.month.hiddenStems[0] ??
-    {
-      stem: pillars.month.stem,
-      element: STEM_ELEMENTS[pillars.month.stem],
-      order: 1,
-      tenGod: getTenGod(dayMasterStem, pillars.month.stem),
+  const PILLAR_LABELS: Record<'year' | 'month' | 'day' | 'hour', { stem: string; branch: string }> = {
+    year: { stem: '年干', branch: '年支' },
+    month: { stem: '月干', branch: '月支' },
+    day: { stem: '日干', branch: '日支' },
+    hour: { stem: '時干', branch: '時支' },
+  };
+  const TOUGCHUL_PILLARS: Array<'year' | 'month' | 'hour'> = ['year', 'month', 'hour']; // 일간은 본인이므로 제외
+  const OTHER_BRANCH_PILLARS: Array<'year' | 'day' | 'hour'> = ['year', 'day', 'hour']; // 월지 제외
+
+  // 1) 월지 본기/중기/여기 hidden stems 수집.
+  const hiddenStems = pillars.month.hiddenStems;
+  const sources: Array<'본기' | '중기' | '여기'> = ['본기', '중기', '여기'];
+  const baseScores: Record<'본기' | '중기' | '여기', number> = {
+    본기: 60,
+    중기: 30,
+    여기: 15,
+  };
+
+  // 2) 각 hidden stem 후보별로 투출/협력 검사 + 점수.
+  const candidates: SajuPatternCandidate[] = hiddenStems
+    .slice(0, 3)
+    .map((hiddenStem, index) => {
+      const source = sources[index] ?? '여기';
+      const stem = hiddenStem.stem;
+      // 투출 검사: 일간 외 천간(연·월·시) 에 같은 stem 이 보이면 투출.
+      const tougchulSlots = TOUGCHUL_PILLARS.filter((slot) => pillars[slot]?.stem === stem);
+      const tougchul = tougchulSlots.length > 0;
+      // 협력 검사: 월지 외 다른 지지 hidden stems 에 같은 stem 이 보이면 협력.
+      const supportingPillars = OTHER_BRANCH_PILLARS.filter((slot) =>
+        pillars[slot]?.hiddenStems?.some((hs) => hs.stem === stem)
+      ).map((slot) => PILLAR_LABELS[slot].branch);
+      // 천간 투출 자리도 같이 라벨화.
+      const tougchulLabels = tougchulSlots.map((slot) => PILLAR_LABELS[slot].stem);
+      const score =
+        baseScores[source] +
+        (tougchul ? 30 : 0) +
+        Math.min(supportingPillars.length, 2) * 15;
+
+      const tenGod = hiddenStem.tenGod ?? getTenGod(dayMasterStem, stem);
+      return {
+        stem,
+        tenGod,
+        name: getPatternName(tenGod),
+        score,
+        source,
+        tougchul,
+        supportingPillars: [...tougchulLabels, ...supportingPillars],
+      } satisfies SajuPatternCandidate;
+    });
+
+  // 3) score desc 정렬 후 1순위 채택.
+  candidates.sort((a, b) => b.score - a.score);
+  const top = candidates[0];
+
+  // 4) hidden stems 가 비어있는 케이스 → 월지 stem 으로 fallback (기존 동작 보존).
+  if (!top) {
+    const fallbackStem = pillars.month.stem;
+    const fallbackTenGod = getTenGod(dayMasterStem, fallbackStem);
+    return {
+      name: getPatternName(fallbackTenGod),
+      category:
+        fallbackTenGod === '비견' || fallbackTenGod === '겁재' ? '특수격' : '정격',
+      tenGod: fallbackTenGod,
+      rationale: [
+        `${pillars.month.branch} 월지의 hidden stems 가 비어 있어 월간(${fallbackStem})을 기준으로 ${fallbackTenGod} 격국으로 잡았습니다.`,
+      ],
+      confidence: '낮음',
+      tougchul: false,
+      supportingPillars: [],
+      candidates: [],
     };
-  const tenGod = principal.tenGod ?? getTenGod(dayMasterStem, principal.stem);
-  const name = getPatternName(tenGod);
+  }
+
+  // 5) confidence: 본기 + 투출 = 확정 / 본기 단독 = 보통 / 중기·여기 = 낮음.
+  const confidence: SajuPattern['confidence'] =
+    top.source === '본기' && top.tougchul
+      ? '확정'
+      : top.source === '본기'
+        ? '보통'
+        : '낮음';
+
   const category: PatternCategory | null =
-    tenGod === '비견' || tenGod === '겁재' ? '특수격' : '정격';
+    top.tenGod === '비견' || top.tenGod === '겁재' ? '특수격' : '정격';
+
+  const rationale: string[] = [
+    `${pillars.month.branch} 월지의 ${top.source}(${top.stem})를 일간(${dayMasterStem}) 기준 십신으로 환산하면 ${top.tenGod} → ${top.name}.`,
+  ];
+  if (top.tougchul) {
+    rationale.push(
+      `${top.stem}이(가) ${top.supportingPillars.filter((p) => /干$/.test(p)).join(' · ')}에 투출되어 격국이 분명하게 드러납니다.`
+    );
+  }
+  if (top.supportingPillars.filter((p) => /支$/.test(p)).length > 0) {
+    rationale.push(
+      `${top.supportingPillars.filter((p) => /支$/.test(p)).join(' · ')}에 같은 ${top.stem} 기운이 협력해 격국을 보강합니다.`
+    );
+  }
+  if (confidence === '낮음' && top.source !== '본기') {
+    rationale.push(
+      `본기보다 ${top.source}가 더 강하게 작동해 ${top.name}로 잡았습니다. 변격 가능성을 함께 봅니다.`
+    );
+  }
 
   return {
-    name,
+    name: top.name,
     category,
-    tenGod,
-    rationale: [
-      `${pillars.month.branch} 월지의 주기운을 ${principal.stem}로 보고, 이를 일간(${dayMasterStem}) 기준 십신으로 환산하면 ${tenGod}에 해당합니다.`,
-      `${principal.stem}${pillars.month.branch} 월령의 성격을 중심으로 ${name} 방향에서 해석을 시작합니다.`,
-    ],
+    tenGod: top.tenGod,
+    rationale,
+    confidence,
+    tougchul: top.tougchul,
+    supportingPillars: top.supportingPillars,
+    candidates,
   };
 }
 

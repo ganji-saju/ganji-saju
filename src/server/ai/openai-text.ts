@@ -49,6 +49,15 @@ function fallbackResult(
   fallbackReason: AiFallbackReason,
   errorMessage: string | null = null
 ): AiTextResult {
+  // 2026-05-15 P1: prod 가 조용히 fallback 으로 떨어지는지 가시화. 5명 부정 피드백 진단에서
+  // OPENAI_API_KEY 미설정 / 빈 응답 / 쿼터 초과시 generic fallback 카피가 노출돼 사용자가
+  // "안 맞는다" 라고 평가했을 가능성. 운영 로그에서 즉시 확인 가능하도록 명시적 warn.
+  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+    const env = process.env.NODE_ENV ?? 'unknown';
+    console.warn(
+      `[ai/openai-text] fallback fired · reason=${fallbackReason} · env=${env}${errorMessage ? ` · err=${errorMessage}` : ''}`
+    );
+  }
   return {
     source: 'fallback',
     text: request.fallbackText,
