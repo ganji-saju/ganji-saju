@@ -11,6 +11,9 @@ import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippe
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
+// 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
+import { MotionResultReveal } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
@@ -158,24 +161,27 @@ export function TodayFortuneResultClient({
           </section>
         ) : (
           <>
-            {/* mockup §1 — date eyebrow + 총운 헤드라인 */}
-            <TodayFortuneSummaryCard result={freeResult} />
+            {/* 2026-05-15 handoff 52 m-reveal — 오늘운세 결과 4 카드 stagger 등장. */}
+            <MotionResultReveal staggerSeconds={0.1}>
+              {/* mockup §1 — date eyebrow + 총운 헤드라인 */}
+              <TodayFortuneSummaryCard result={freeResult} />
 
-            {/* mockup §2 — 핑크 banner 큰 점수 */}
-            <TodayScoreReveal result={freeResult} />
+              {/* mockup §2 — 핑크 banner 큰 점수 */}
+              <TodayScoreReveal result={freeResult} />
 
-            {/* mockup §3 — 4-card 점수 grid */}
-            <TodayFortuneScoreGrid result={freeResult} />
+              {/* mockup §3 — 4-card 점수 grid */}
+              <TodayFortuneScoreGrid result={freeResult} />
 
-            {/* mockup §4 — 550원 자세히 보기 unlock */}
-            <PremiumLockCard
-              copy={freeResult.nextAction.copy}
-              coinCost={freeResult.nextAction.coinCost}
-              onUnlock={handleUnlock}
-              loading={false}
-              sourceSessionId={freeResult.sourceSessionId}
-              concernId={freeResult.concernId}
-            />
+              {/* mockup §4 — 550원 자세히 보기 unlock */}
+              <PremiumLockCard
+                copy={freeResult.nextAction.copy}
+                coinCost={freeResult.nextAction.coinCost}
+                onUnlock={handleUnlock}
+                loading={false}
+                sourceSessionId={freeResult.sourceSessionId}
+                concernId={freeResult.concernId}
+              />
+            </MotionResultReveal>
 
             {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}
             <details className="group rounded-[20px] border border-[var(--app-line)] bg-white">

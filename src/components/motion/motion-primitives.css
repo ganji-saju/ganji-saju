@@ -109,6 +109,31 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* 2026-05-15 PR-C — children 모드: caller layout 유지 + 자식 stagger reveal */
+.motion-result-reveal-children {
+  display: contents; /* layout reset — 부모 grid/flex 가 자식을 직접 배치하도록 */
+}
+.motion-reveal-slot {
+  opacity: 0;
+  transform: translateY(10px);
+  will-change: opacity, transform;
+}
+.motion-result-reveal-children[data-active="true"] > .motion-reveal-slot {
+  animation: motion-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.motion-result-reveal-children[data-active="false"] > .motion-reveal-slot {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal-slot {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 /* =============================================================
    53 · 타로 카드 플립
    ============================================================= */
