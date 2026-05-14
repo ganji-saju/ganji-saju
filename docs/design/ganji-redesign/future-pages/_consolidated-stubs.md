@@ -1,0 +1,61 @@
+# 통합 SHELL 항목 contract (8건)
+
+> 단독 페이지보다는 시스템·요소 라이브러리 성격이라 한 문서로 묶음.
+> 각 항목별로 추후 단독 future doc 으로 분리 가능.
+
+## 1. `lock-screen` — 락스크린 푸시 위젯
+
+- **상태**: SHELL (production OS 락스크린은 PWA 영역).
+- **임시 데모**: `/admin/design/motion#m-push` 에서 시각 재현.
+- **추후 실 구현**: web-push subscription + service-worker push handler + 푸시 페이로드 디자인 토큰 (이미 일부 구현 됨, `src/lib/notification-preferences.ts`).
+- **작업량**: M (PWA manifest + service worker icon + push payload schema 확정).
+
+## 2. `i18n-en` — 영문 (English)
+
+- **상태**: SHELL. 한국어 single-locale 만 노출.
+- **추후 실 구현**:
+  - `next-intl` 도입.
+  - `src/lib/saju/terminology.ts` 의 ko 매핑을 en 으로 mirror.
+  - 사주 풀이 자체는 한자/한국어 결이 강해 en 풀이는 별도 카피라이팅 필요.
+- **작업량**: L (전체 라우트 locale prefix + 카피 번역 1~2주).
+
+## 3. `tablet` — 태블릿 (1024px)
+
+- **상태**: SHELL. 모든 페이지가 mobile-first + responsive `sm/md/lg` 분기 적용. 별도 tablet-only layout 미구현.
+- **추후 실 구현**: 결과 페이지 / 깊은 풀이 / 캘린더에 2 컬럼 grid 분기 추가.
+- **작업량**: M (페이지별 6~8개 분기 추가).
+
+## 4. `banners` — 배너 시스템 (7 종)
+
+- **상태**: SHELL. 페이지별로 inline pink-soft hero 가 사실상 동일 패턴. 통합 `<GangiBanner kind="...">` 컴포넌트 미구현.
+- **추후 실 구현**: `src/components/gangi/gangi-banner.tsx` + 7 variants (info/success/warning/error/promo/event/ad).
+- **작업량**: S (반나절).
+
+## 5. `errors` — 에러 (404/500/네트워크)
+
+- **상태**: 404 만 IMPLEMENTED (`src/app/not-found.tsx`). 5xx error boundary / 네트워크 끊김 미구현.
+- **추후 실 구현**:
+  - `src/app/error.tsx` (client error boundary)
+  - `src/app/global-error.tsx` (root error boundary)
+  - 공통 `<ErrorScreen kind="404|500|network|forbidden">` 컴포넌트
+- **작업량**: S.
+
+## 6. `onboarding` — 온보딩 (4 슬라이드)
+
+- **상태**: SHELL. login → empathy → birth 흐름이 사실상 onboarding. 별도 onboarding 화면 미구현.
+- **추후 실 구현**:
+  - 신규 가입자 first-visit cookie 로 `/onboarding` redirect.
+  - 4 슬라이드 carousel + skip CTA.
+- **작업량**: M (cookie / redirect / carousel + 카피).
+
+## 7. `push-modal` — 푸시 알림 권한 모달
+
+- **상태**: SHELL. notifications 페이지에 inline 권한 요청만 존재. 풀스크린 모달 + 가치 안내 미구현.
+- **추후 실 구현**: 가입 후 7일 째 자동 노출 modal + Notification.requestPermission().
+- **작업량**: S.
+
+## 8. `terms-modal` — 약관 동의 풀스크린 모달
+
+- **상태**: SHELL. 회원가입 흐름 안 implicit consent 사용. 풀스크린 모달 미구현.
+- **추후 실 구현**: GDPR/14세 미만 등 강한 동의가 필요한 시점에만 노출.
+- **작업량**: S.
