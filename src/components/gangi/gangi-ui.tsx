@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+// 2026-05-15 handoff P0: 풀이/결제 로딩 overlay 내부 motion 연결.
+import { MotionPalshjaShuffle, MotionSajuLoading } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 
 export const GANGI_ZODIAC = [
   { key: 'rat', name: '쥐', glyph: '🐭', colors: ['#7e7c8a', '#a8a4b6'] },
@@ -232,17 +235,30 @@ export function GangiPurchaseSummary({
 // 2026-05-14: 사주풀이 로딩 오버레이.
 // PR6+ 디자인 언어: pink-soft hero + 한자 月(달빛) 배지 + 진행 단계 bullets.
 // 진행 단계는 시각적 안내일 뿐 실제 비동기 진행과 동기화되지는 않는다 (UX 안정감 목적).
+// 2026-05-15 handoff P0 복구: handoff Phase 3·4 명시 "spinner 위치를 motion 으로 교체".
+// 13 motion 보드 중 51 m-loading + 63 m-palshja 가 이 overlay 안에 nested mount.
+// useReducedMotion 은 motion primitive 내부에서 자동 처리되어 모션 없는 폴백 보장.
+const LOADING_STEPS_DEFAULT = [
+  '사주 4기둥 정리',
+  '오행 흐름 분석',
+  '오늘 운 매칭',
+  '도움 기운 정리',
+];
+
 export function GangiLoadingOverlay({
   title = '풀이를 준비하고 있어요',
   description = '생년월일과 오늘 흐름을 맞춰보는 중입니다.',
+  steps = LOADING_STEPS_DEFAULT,
 }: {
   title?: string;
   description?: string;
+  /** caller 가 컨텍스트에 맞게 진행 단계 라벨 주입 가능. */
+  steps?: string[];
 }) {
   return (
     <div className="gangi-loading-overlay" role="status" aria-live="polite">
       <div className="gangi-loading-card-v2">
-        {/* 月 배지 — han 폰트 + 회전 링 */}
+        {/* 月 배지 + handoff 51 m-loading 의 회전 링 */}
         <div className="gangi-loading-han-badge" aria-hidden="true">
           <span className="gangi-loading-han-glyph">月</span>
           <span className="gangi-loading-han-ring" />
@@ -255,23 +271,13 @@ export function GangiLoadingOverlay({
           <span>{description}</span>
         </div>
 
-        {/* 진행 단계 bullets */}
-        <ul className="gangi-loading-steps" aria-hidden="true">
-          <li className="gangi-loading-step is-active">
-            <span className="gangi-loading-step-dot" />
-            <span className="gangi-loading-step-label">사주 4기둥 정리</span>
-          </li>
-          <li className="gangi-loading-step is-active">
-            <span className="gangi-loading-step-dot" />
-            <span className="gangi-loading-step-label">오행 흐름 분석</span>
-          </li>
-          <li className="gangi-loading-step">
-            <span className="gangi-loading-step-dot" />
-            <span className="gangi-loading-step-label">오늘 운 매칭</span>
-          </li>
-        </ul>
+        {/* 51 · m-loading — MotionSajuLoading 가 진행 단계 bullets 를 stagger 등장. */}
+        <MotionSajuLoading active labels={steps} moonGlyph="月" />
 
-        {/* shimmer bars */}
+        {/* 63 · m-palshja — 8글자 셔플 슬롯. 사주 4기둥 글자가 살짝 뒤섞이듯 등장. */}
+        <MotionPalshjaShuffle active />
+
+        {/* shimmer bars (handoff 토큰 보존) */}
         <div className="gangi-loading-lines" aria-hidden="true">
           <span />
           <span />

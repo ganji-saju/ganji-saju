@@ -14,6 +14,9 @@ import {
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+// 2026-05-15 handoff P0: 54 m-coin + 51 m-loading 연결.
+import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
 
@@ -112,7 +115,16 @@ function LoadingState() {
       iconChar="…"
       title="결제 확인 중"
       description={`결제 승인과 이용권 반영을 확인하고 있어요.\n잠시만 기다려 주세요.`}
-    />
+    >
+      {/* 2026-05-15 handoff 51 m-loading — Phase 3 결제 spinner motion 교체. */}
+      <div className="mx-auto flex w-full max-w-md justify-center pt-2">
+        <MotionSajuLoading
+          active
+          labels={['결제 승인', '이용권 반영', '확인 완료']}
+          moonGlyph="可"
+        />
+      </div>
+    </CenteredCard>
   );
 }
 
@@ -181,6 +193,15 @@ function SuccessState({
           : '이용권이 반영됐어요. 다음 흐름을 골라 이어가세요.'
       }
     >
+      {/* 2026-05-15 handoff 54 m-coin — 결제 성공 직후 입자 + ✓ 카드. */}
+      <div className="mx-auto flex w-full max-w-md justify-center pb-1">
+        <MotionCoinSuccess
+          active
+          title="결제 완료"
+          sub={isPremiumResult ? '깊은 풀이 열림' : `${confirmedPlan} 이용권 시작`}
+        />
+      </div>
+
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href={completeHref}

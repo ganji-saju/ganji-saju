@@ -25,18 +25,36 @@ export function useReducedMotion() {
 
 // ============================================================================
 // 51 · m-loading — 사주 분석 로딩 (6s 루프, 月 한자 + 팔자 슬롯 등장)
+// 2026-05-15: production 연결을 위해 labels 와 moonGlyph 를 prop 으로 교체.
+// caller (결제 success / 풀이 intake / today-detail) 가 자기 컨텍스트의 라벨 주입.
 // ============================================================================
-export function MotionSajuLoading({ active = true }: { active?: boolean }) {
+const DEFAULT_SAJU_LOADING_LABELS = [
+  '년주 정리',
+  '월주 정리',
+  '일주 정리',
+  '시주 정리',
+  '오행 균형',
+  '도움 기운',
+];
+
+export function MotionSajuLoading({
+  active = true,
+  labels = DEFAULT_SAJU_LOADING_LABELS,
+  moonGlyph = '月',
+}: {
+  active?: boolean;
+  labels?: string[];
+  moonGlyph?: string;
+}) {
   const reduced = useReducedMotion();
-  const labels = ['년주 정리', '월주 정리', '일주 정리', '시주 정리', '오행 균형', '도움 기운'];
 
   return (
     <div className="motion-saju-loading" data-active={active}>
-      <span className="motion-saju-moon" aria-hidden="true">月</span>
+      <span className="motion-saju-moon" aria-hidden="true">{moonGlyph}</span>
       <ul className="motion-saju-steps">
         {labels.map((label, index) => (
           <li
-            key={label}
+            key={`${label}-${index}`}
             style={{ animationDelay: reduced ? '0s' : `${index * 0.8}s` }}
             className={reduced ? 'motion-saju-step is-static' : 'motion-saju-step'}
           >
@@ -51,9 +69,53 @@ export function MotionSajuLoading({ active = true }: { active?: boolean }) {
 
 // ============================================================================
 // 52 · m-reveal — 결과 카드 stagger 등장
+// 2026-05-15: production 연결을 위해 children prop 추가. children 이 있으면 각 자식을
+// 0.15s 간격으로 stagger reveal, 없으면 gallery 용 데모 카드 4개를 보여준다.
 // ============================================================================
-export function MotionResultReveal({ active = true }: { active?: boolean }) {
+import { Children, isValidElement, cloneElement } from 'react';
+import type { ReactNode, ReactElement } from 'react';
+
+export function MotionResultReveal({
+  active = true,
+  children,
+  staggerSeconds = 0.15,
+}: {
+  active?: boolean;
+  /** production 사용 시 카드/섹션 children. 비어 있으면 gallery 데모. */
+  children?: ReactNode;
+  staggerSeconds?: number;
+}) {
   const reduced = useReducedMotion();
+
+  if (children !== undefined) {
+    return (
+      <div className="motion-result-reveal" data-active={active && !reduced}>
+        {Children.map(children, (child, index) => {
+          const delay = reduced ? '0s' : `${index * staggerSeconds}s`;
+          if (!isValidElement(child)) {
+            return (
+              <div key={index} className="motion-reveal-slot" style={{ animationDelay: delay }}>
+                {child}
+              </div>
+            );
+          }
+          // ReactElement: clone with motion-reveal-slot wrapper for stagger.
+          const element = child as ReactElement<{ style?: React.CSSProperties; className?: string; key?: React.Key }>;
+          return (
+            <div
+              key={element.key ?? index}
+              className="motion-reveal-slot"
+              style={{ animationDelay: delay }}
+            >
+              {cloneElement(element)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Gallery fallback — 기존 데모.
   return (
     <div className="motion-result-reveal" data-active={active && !reduced}>
       <div className="motion-card motion-card-hero">총평 95점</div>
@@ -98,8 +160,18 @@ export function MotionTarotFlip({ active = true }: { active?: boolean }) {
 
 // ============================================================================
 // 54 · m-coin — 코인 충전 성공 (입자 + 카드 확정)
+// 2026-05-15: production 연결을 위해 title / sub prop 추가. 결제·코인·멤버십 등
+// success 화면에서 자기 컨텍스트의 라벨 주입 (예: "+ 7 코인", "Plus 멤버십 시작").
 // ============================================================================
-export function MotionCoinSuccess({ active = true }: { active?: boolean }) {
+export function MotionCoinSuccess({
+  active = true,
+  title = '충전 완료',
+  sub = '+ 7 코인',
+}: {
+  active?: boolean;
+  title?: string;
+  sub?: string;
+}) {
   const reduced = useReducedMotion();
   const particles = useMemo(() => Array.from({ length: 12 }, (_, i) => i), []);
 
@@ -107,8 +179,8 @@ export function MotionCoinSuccess({ active = true }: { active?: boolean }) {
     <div className="motion-coin-success" data-active={active && !reduced}>
       <div className="motion-coin-card">
         <div className="motion-coin-check" aria-hidden="true">✓</div>
-        <div className="motion-coin-title">충전 완료</div>
-        <div className="motion-coin-sub">+ 7 코인</div>
+        <div className="motion-coin-title">{title}</div>
+        <div className="motion-coin-sub">{sub}</div>
       </div>
       {!reduced
         ? particles.map((i) => (
