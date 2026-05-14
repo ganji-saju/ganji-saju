@@ -182,7 +182,11 @@ function renderCompactParagraphs(text: string, limit = 2) {
   return splitParagraphs(text)
     .slice(0, limit)
     .map((paragraph, index) => (
-      <p key={`${paragraph.slice(0, 24)}-${index}`} className="text-sm leading-7 text-[var(--app-copy)]">
+      <p
+        key={`${paragraph.slice(0, 24)}-${index}`}
+        className="text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
         {paragraph}
       </p>
     ));
@@ -258,30 +262,30 @@ function MomentumSummaryRow({
   const Icon = meta.icon;
 
   return (
-    <article className={`rounded-[22px] border px-4 py-4 ${meta.panelClassName}`}>
-      <div className="grid gap-3 sm:grid-cols-[auto_minmax(8rem,0.42fr)_minmax(0,1fr)] sm:items-center">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-current/25 bg-black/10">
-          <Icon className="h-5 w-5" aria-hidden="true" />
+    <article className={`rounded-[16px] border px-4 py-3.5 ${meta.panelClassName}`}>
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/40 backdrop-blur-sm">
+          <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
         </span>
-        <div className="min-w-0">
-          <div className="whitespace-nowrap text-sm font-semibold text-[var(--app-ivory)]">{meta.guideLabel}</div>
-          <div className="mt-1 text-xl font-semibold text-[var(--app-gold-text)]">{flows.length}개월</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[12.5px] font-extrabold">{meta.guideLabel}</div>
+          <div className="mt-0.5 text-[15px] font-extrabold">{flows.length}개월</div>
         </div>
-        <div className="flex min-w-0 flex-wrap gap-2">
-          {flows.length ? (
-            flows.map((flow) => (
-              <a
-                key={`${tone}-${flow.month}`}
-                href={`#yearly-month-${flow.month}`}
-                className="inline-flex min-h-8 items-center justify-center rounded-full border border-current/20 bg-black/10 px-3 text-xs font-semibold text-current transition-colors hover:border-[var(--app-gold)]/40 hover:text-[var(--app-gold-text)]"
-              >
-                {flow.month}월
-              </a>
-            ))
-          ) : (
-            <span className="text-sm leading-7 text-[var(--app-copy-muted)]">해당 월 없음</span>
-          )}
-        </div>
+      </div>
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {flows.length ? (
+          flows.map((flow) => (
+            <a
+              key={`${tone}-${flow.month}`}
+              href={`#yearly-month-${flow.month}`}
+              className="inline-flex h-7 items-center rounded-full bg-white/70 px-2.5 text-[11.5px] font-extrabold backdrop-blur-sm transition-colors"
+            >
+              {flow.month}월
+            </a>
+          ))
+        ) : (
+          <span className="text-[12px]">해당 월 없음</span>
+        )}
       </div>
     </article>
   );
@@ -293,76 +297,97 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
   const highlightedCaution = report.cautionPeriods[0];
 
   return (
-    <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(24rem,0.85fr)_minmax(0,1.15fr)]">
-      <article className="rounded-[28px] border border-[var(--app-gold)]/20 bg-[rgba(210,176,114,0.075)] px-5 py-5">
-        <div className="flex items-center gap-2">
-          <MapPinned className="h-5 w-5 text-[var(--app-gold-text)]" aria-hidden="true" />
-          <div className="app-caption text-[var(--app-gold-soft)]">연간 지도</div>
+    <div className="space-y-3">
+      {/* §연간 지도 — momentum 요약 */}
+      <section
+        className="rounded-[20px] border bg-white p-5"
+        style={{ borderColor: 'var(--app-line)' }}
+      >
+        <div className="flex items-center gap-1.5">
+          <MapPinned className="h-4 w-4 text-[var(--app-pink-strong)]" aria-hidden="true" />
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            연간 지도
+          </div>
         </div>
-        <h3 className="mt-3 text-2xl font-semibold leading-8 text-[var(--app-ivory)]">
+        <h3 className="mt-1.5 text-[17px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
           먼저 색으로 봅니다
         </h3>
-        <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+        <p
+          className="mt-1.5 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
           진행하기 좋은 달과 한 번 더 확인할 달만 먼저 나눠 봅니다.
         </p>
-        <div className="mt-5 grid gap-3">
+        <div className="mt-3 grid gap-2">
           <MomentumSummaryRow tone="rise" flows={grouped.rise} />
           <MomentumSummaryRow tone="caution" flows={grouped.caution} />
           <MomentumSummaryRow tone="steady" flows={grouped.steady} />
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {highlightedGood ? (
-            <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
-              <div className="app-caption">가장 쓰기 좋은 구간</div>
-              <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
+            <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+                가장 쓰기 좋은 구간
+              </div>
+              <p className="mt-1.5 text-[12.5px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
                 {highlightedGood.months.map((month) => `${month}월`).join(' · ')} · {highlightedGood.strategy}
               </p>
             </div>
           ) : null}
           {highlightedCaution ? (
-            <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
-              <div className="app-caption">확인이 필요한 구간</div>
-              <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">
+            <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+                확인이 필요한 구간
+              </div>
+              <p className="mt-1.5 text-[12.5px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
                 {highlightedCaution.months.map((month) => `${month}월`).join(' · ')} · {highlightedCaution.strategy}
               </p>
             </div>
           ) : null}
         </div>
-      </article>
+      </section>
 
-      <article className="rounded-[28px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="h-5 w-5 text-[var(--app-gold-text)]" aria-hidden="true" />
-          <div className="app-caption text-[var(--app-gold-soft)]">12개월 흐름 레일</div>
+      {/* §12개월 흐름 레일 — 3×4 컬러 그리드 */}
+      <section
+        className="rounded-[20px] border bg-white p-5"
+        style={{ borderColor: 'var(--app-line)' }}
+      >
+        <div className="flex items-center gap-1.5">
+          <CalendarDays className="h-4 w-4 text-[var(--app-pink-strong)]" aria-hidden="true" />
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            12개월 흐름 레일
+          </div>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-4">
           {report.monthlyFlows.map((flow) => {
             const meta = MOMENTUM_META[flow.momentum];
-
             return (
               <a
                 key={`year-map-${flow.month}`}
                 href={`#yearly-month-${flow.month}`}
-                className={`group rounded-[18px] border px-3 py-3 transition-colors hover:border-[var(--app-gold)]/36 ${meta.dotClassName}`}
+                className={`rounded-[12px] border px-2.5 py-2.5 transition-all hover:-translate-y-0.5 ${meta.dotClassName}`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-base font-semibold">{flow.month}월</span>
-                  <span className="rounded-full border border-current/20 px-2 py-0.5 text-[10px]">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[14px] font-extrabold">{flow.month}월</span>
+                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[9.5px] font-extrabold backdrop-blur-sm">
                     {meta.shortLabel}
                   </span>
                 </div>
-                <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy)]">
+                <p className="mt-1.5 text-[10.5px] leading-[1.45]" style={{ wordBreak: 'keep-all' }}>
                   {getTopAreaLabel(flow)}
                 </p>
               </a>
             );
           })}
         </div>
-        <p className="mt-4 text-sm leading-7 text-[var(--app-copy-muted)]">
-          색이 진한 달부터 확인하고, 나머지는 일정이 생길 때 다시 열어보는 방식이 가장 덜 피곤합니다.
+        <p
+          className="mt-3 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          색이 진한 달부터 확인하세요.
         </p>
-      </article>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -380,58 +405,112 @@ function MonthlyFlowCard({
   return (
     <details
       id={`yearly-month-${flow.month}`}
-      className="scroll-mt-28 rounded-[22px] border border-[var(--app-line)] bg-white px-4 py-4 shadow-[0_12px_28px_rgba(17,17,20,0.06)]"
+      className="scroll-mt-28 rounded-[16px] border bg-white p-3.5"
+      style={{ borderColor: 'var(--app-line)' }}
       open={defaultOpen ? true : undefined}
     >
       <summary className="cursor-pointer list-none">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="app-caption text-[var(--app-pink-strong)]">{flow.month}월</div>
-            <p className="mt-2 text-base font-semibold leading-7 text-[var(--app-ink)]">
+        <div className="flex items-start justify-between gap-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                style={{ background: 'var(--app-pink)' }}
+                aria-hidden="true"
+              >
+                {flow.month}
+              </span>
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                {flow.month}월
+              </div>
+            </div>
+            <p
+              className="mt-2 text-[14px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
               {tightenUiLine(flow.summary, 78)}
             </p>
-            <div className="mt-1 text-xs text-[var(--app-copy-soft)]">{areaLabel}</div>
+            <div className="mt-1 text-[11px] text-[var(--app-copy-soft)]">{areaLabel}</div>
           </div>
-          <Badge className={`${momentumMeta.badgeClassName} gap-1.5`}>
-            <MomentumIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            {momentumMeta.label}
-          </Badge>
+          <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[10.5px] font-extrabold ${momentumMeta.badgeClassName}`}>
+            <MomentumIcon className="h-3 w-3" aria-hidden="true" />
+            {momentumMeta.shortLabel}
+          </span>
         </div>
       </summary>
 
-      <div className="mt-4 grid gap-3">
-        <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
-          <div className="app-caption">이번 달 바로 할 일</div>
-          <p className="mt-2 text-sm leading-7">{tightenUiLine(flow.action, 84)}</p>
+      <div className="mt-3 grid gap-2">
+        <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+            이번 달 바로 할 일
+          </div>
+          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+            {tightenUiLine(flow.action, 84)}
+          </p>
         </div>
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3">
-          <div className="app-caption text-[var(--app-pink-strong)]">먼저 볼 질문</div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(flow.focusQuestion)}</p>
+        <div
+          className="rounded-[14px] border bg-white px-3.5 py-3"
+          style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
+        >
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            먼저 볼 질문
+          </div>
+          <p
+            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {simplifySajuCopy(flow.focusQuestion)}
+          </p>
         </div>
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-3">
-          <div className="app-caption text-[var(--app-pink-strong)]">진행해볼 것</div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(flow.opportunity, 104)}</p>
+        <div
+          className="rounded-[14px] border bg-white px-3.5 py-3"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            진행해볼 것
+          </div>
+          <p
+            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {tightenUiLine(flow.opportunity, 104)}
+          </p>
         </div>
-        <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
-          <div className="app-caption">한 번 더 확인할 것</div>
-          <p className="mt-2 text-sm leading-7">{tightenUiLine(flow.caution, 104)}</p>
+        <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+            한 번 더 확인할 것
+          </div>
+          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+            {tightenUiLine(flow.caution, 104)}
+          </p>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]">
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span
+          className="rounded-full border bg-white px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-copy-muted)]"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
           {flow.monthlyGanji ?? `${flow.month}월`}
-        </Badge>
+        </span>
       </div>
 
       {flow.basis.length > 0 ? (
-        <details className="group mt-4">
-          <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-            이 달 흐름 근거 보기
+        <details className="group mt-3">
+          <summary
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <span>이 달 흐름 근거 보기</span>
+            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
           </summary>
-          <div className="mt-3 grid gap-2">
+          <div className="mt-2 grid gap-1.5">
             {flow.basis.map((item) => (
-              <div key={item} className="rounded-xl bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div
+                key={item}
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
                 {simplifySajuCopy(item)}
               </div>
             ))}
@@ -466,73 +545,126 @@ function CoreAreaCard({
 
   return (
     <details
-      className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5 shadow-[0_12px_28px_rgba(17,17,20,0.06)]"
+      className="rounded-[16px] border bg-white p-4"
+      style={{ borderColor: 'var(--app-pink-line)' }}
       open={defaultOpen ? true : undefined}
     >
       <summary className="cursor-pointer list-none">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
-              <Icon className="h-5 w-5" aria-hidden="true" />
+        <div className="flex items-center justify-between gap-2.5">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white"
+              style={{
+                background: 'var(--app-pink)',
+                boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
+              }}
+              aria-hidden="true"
+            >
+              <Icon className="h-[18px] w-[18px]" />
             </span>
             <div className="min-w-0">
-              <div className="app-caption text-[var(--app-pink-strong)]">{meta.eyebrow}</div>
-              <h3 className="mt-1 text-xl font-semibold text-[var(--app-ink)]">{item.label}</h3>
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                {meta.eyebrow}
+              </div>
+              <h3 className="text-[16px] font-extrabold text-[var(--app-ink)]">{item.label}</h3>
             </div>
           </div>
           {item.scoreLabel ? (
-            <Badge className="shrink-0 border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]">
+            <span
+              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-copy-muted)]"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
               {item.scoreLabel}
-            </Badge>
+            </span>
           ) : null}
         </div>
       </summary>
 
-      <div className="mt-4 grid gap-3">
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3">
-          <div className="app-caption text-[var(--app-pink-strong)]">올해 핵심</div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.summary, 104)}</p>
+      <div className="mt-3 grid gap-2">
+        <div
+          className="rounded-[14px] border p-3.5"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            올해 핵심
+          </div>
+          <p
+            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {tightenUiLine(item.summary, 104)}
+          </p>
         </div>
-        <div className="yearly-tone-good rounded-[18px] border px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
-            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+        <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
+          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+            <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
             {meta.opportunityLabel}
           </div>
-          <p className="mt-2 text-sm leading-7">{tightenUiLine(item.opportunity, 100)}</p>
+          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+            {tightenUiLine(item.opportunity, 100)}
+          </p>
         </div>
-        <div className="yearly-tone-caution rounded-[18px] border px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
-            <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
+        <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
+          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+            <AlertTriangle className="h-3 w-3" aria-hidden="true" />
             {meta.cautionLabel}
           </div>
-          <p className="mt-2 text-sm leading-7">{tightenUiLine(item.caution, 100)}</p>
+          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+            {tightenUiLine(item.caution, 100)}
+          </p>
         </div>
-        <div className="rounded-[18px] border border-[var(--app-line)] bg-white px-4 py-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        <div
+          className="rounded-[14px] border bg-white px-3.5 py-3"
+          style={{ borderColor: 'var(--app-pink-line)' }}
+        >
+          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <ArrowRight className="h-3 w-3" aria-hidden="true" />
             {meta.actionLabel}
           </div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{tightenUiLine(item.action, 88)}</p>
+          <p
+            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {tightenUiLine(item.action, 88)}
+          </p>
         </div>
       </div>
 
-      <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-          풀이 자세히 보기
+      <details className="group mt-3">
+        <summary
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <span>풀이 자세히 보기</span>
+          <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
         </summary>
-        <div className="mt-3 space-y-3 rounded-[18px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
+        <div
+          className="mt-2 space-y-2 rounded-[12px] border p-3.5"
+          style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
+        >
           {renderCompactParagraphs(prose, 2)}
         </div>
       </details>
 
       {item.basis.length > 0 ? (
-        <details className="group mt-4">
-          <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-            올해 흐름 근거 보기
+        <details className="group mt-3">
+          <summary
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <span>올해 흐름 근거 보기</span>
+            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
           </summary>
-          <div className="mt-3 grid gap-2">
+          <div className="mt-2 grid gap-1.5">
             {item.basis.map((line) => (
-              <div key={line} className="rounded-xl bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div
+                key={line}
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
                 {simplifySajuCopy(line)}
               </div>
             ))}
@@ -559,37 +691,76 @@ function SupportAreaCard({
   const Icon = label.startsWith('건강') ? Activity : MapPinned;
 
   return (
-    <article className="rounded-[24px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-5 py-5">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] border border-[var(--app-gold)]/20 bg-[var(--app-gold)]/8 text-[var(--app-gold-text)]">
-          <Icon className="h-5 w-5" aria-hidden="true" />
+    <article
+      className="rounded-[16px] border bg-white p-4"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div className="flex items-center gap-2.5">
+        <span
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white"
+          style={{ background: 'var(--app-pink)' }}
+          aria-hidden="true"
+        >
+          <Icon className="h-[18px] w-[18px]" />
         </span>
-        <div>
-          <div className="app-caption text-[var(--app-gold-soft)]">{eyebrow}</div>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ivory)]">{label}</h3>
+        <div className="min-w-0">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            {eyebrow}
+          </div>
+          <h3 className="text-[15px] font-extrabold text-[var(--app-ink)]">{label}</h3>
         </div>
       </div>
-      <div className="mt-4 space-y-3">
-        <p className="text-sm leading-7 text-[var(--app-copy)]">{limitSajuSentences(section.summary, 2)}</p>
-        <p className="text-sm leading-7 text-[var(--app-copy-muted)]">{limitSajuSentences(section.caution, 2)}</p>
-        <p className="text-sm leading-7 text-[var(--app-copy)]">{limitSajuSentences(section.action, 2)}</p>
+      <div className="mt-3 space-y-2">
+        <p
+          className="text-[13px] leading-[1.78] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {limitSajuSentences(section.summary, 2)}
+        </p>
+        <p
+          className="text-[13px] leading-[1.78] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {limitSajuSentences(section.caution, 2)}
+        </p>
+        <p
+          className="text-[13px] leading-[1.78] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {limitSajuSentences(section.action, 2)}
+        </p>
       </div>
-      <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          풀이 자세히 보기
+      <details className="group mt-3">
+        <summary
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <span>풀이 자세히 보기</span>
+          <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
         </summary>
-        <div className="mt-3 space-y-3 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-4">
+        <div
+          className="mt-2 space-y-2 rounded-[12px] border p-3.5"
+          style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
+        >
           {renderCompactParagraphs(prose, 2)}
         </div>
       </details>
       {basis.length > 0 ? (
-        <details className="group mt-4">
-        <summary className="cursor-pointer list-none rounded-xl border border-[var(--app-line)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-gold)]/25 group-open:text-[var(--app-ivory)]">
-          생활 리듬 근거 보기
-        </summary>
-          <div className="mt-3 grid gap-2">
+        <details className="group mt-3">
+          <summary
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <span>생활 리듬 근거 보기</span>
+            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+          </summary>
+          <div className="mt-2 grid gap-1.5">
             {basis.map((line) => (
-              <div key={line} className="rounded-xl bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div
+                key={line}
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
                 {line}
               </div>
             ))}
@@ -616,19 +787,25 @@ function TimingWindowCard({
   const captionClassName = '';
 
   return (
-    <article className={`rounded-[22px] border px-4 py-4 ${cardClassName}`}>
-      <div className={`app-caption ${captionClassName}`}>{title}</div>
-      <div className="mt-4 grid gap-3">
+    <article className={`rounded-[16px] border px-4 py-3.5 ${cardClassName}`}>
+      <div className={`text-[10.5px] font-extrabold uppercase tracking-[0.06em] ${captionClassName}`}>
+        {title}
+      </div>
+      <div className="mt-3 grid gap-2">
         {windows.map((window) => (
           <div
             key={`${title}-${window.label}-${window.months.join('-')}`}
-            className="rounded-[16px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3"
+            className="rounded-[12px] bg-white/70 px-3.5 py-2.5 backdrop-blur-sm"
           >
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">
+            <div className="text-[13px] font-extrabold">
               {window.months.map((month) => `${month}월`).join(' · ')}
             </div>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{window.reason}</p>
-            <p className="mt-2 text-sm leading-7 text-[var(--app-copy-muted)]">{window.strategy}</p>
+            <p className="mt-1.5 text-[12.5px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+              {window.reason}
+            </p>
+            <p className="mt-1 text-[12px] leading-[1.65]" style={{ wordBreak: 'keep-all', opacity: 0.78 }}>
+              {window.strategy}
+            </p>
           </div>
         ))}
       </div>
@@ -663,26 +840,39 @@ function YearlyMonthlySection({
     : '월별 핵심 문장만 빠르게 확인하고, 필요한 달만 다시 펼쳐보실 수 있게 정리했습니다.';
 
   return (
-    <div className="mt-6">
-      <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-gold-soft)]">
+    <section
+      className="rounded-[20px] border bg-white p-5"
+      style={{ borderColor: 'var(--app-pink-line)' }}
+    >
+      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         월별 핵심 장면
       </div>
-      <h3 className="mt-3 text-xl font-semibold text-[var(--app-ivory)]">{title}</h3>
-      <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">{description}</p>
+      <h3
+        className="mt-1 text-[17px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        {title}
+      </h3>
+      <p
+        className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        {description}
+      </p>
 
       {report ? (
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <TimingWindowCard title="진행하기 좋은 시기" windows={report.goodPeriods} tone="good" />
           <TimingWindowCard title="한 번 더 확인할 시기" windows={report.cautionPeriods} tone="caution" />
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-3 grid gap-2">
         {monthlyFlows.map((flow) => (
           <MonthlyFlowCard key={`${flow.month}-${flow.summary.slice(0, 12)}`} flow={flow} defaultOpen={flow.month === 1} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -699,14 +889,18 @@ function TimingSummaryBlock({
   const Icon = tone === 'good' ? CheckCircle2 : AlertTriangle;
 
   return (
-    <article className={`rounded-[24px] border px-5 py-5 ${toneClassName}`}>
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
-        <Icon className="h-4 w-4" aria-hidden="true" />
+    <article className={`rounded-[16px] border px-4 py-4 ${toneClassName}`}>
+      <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
         {title}
       </div>
-      <div className="mt-4 space-y-3">
+      <div className="mt-3 space-y-2">
         {items.map((item) => (
-          <p key={item} className="text-sm leading-7 text-[var(--app-copy)]">
+          <p
+            key={item}
+            className="text-[13px] leading-[1.7]"
+            style={{ wordBreak: 'keep-all' }}
+          >
             {item}
           </p>
         ))}
@@ -732,19 +926,37 @@ function ChapterNavigation({
   onChange: (chapter: YearlyChapter) => void;
 }) {
   return (
-    <div className="mt-7 flex items-center justify-between gap-3 border-t border-[var(--app-line)] pt-5">
+    <div
+      className="flex items-center justify-between gap-3 rounded-[14px] border bg-white px-3 py-3"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
       {chapter > 1 ? (
-        <Button type="button" variant="outline" onClick={() => onChange((chapter - 1) as YearlyChapter)}>
-          이전 페이지
-        </Button>
+        <button
+          type="button"
+          onClick={() => onChange((chapter - 1) as YearlyChapter)}
+          className="inline-flex h-10 items-center rounded-full border bg-white px-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          ← 이전
+        </button>
       ) : (
         <span />
       )}
-      <div className="text-xs font-semibold text-[var(--app-copy-soft)]">{chapter} / 3</div>
+      <div className="text-[11.5px] font-extrabold text-[var(--app-pink-strong)]">
+        {chapter} / 3
+      </div>
       {chapter < 3 ? (
-        <Button type="button" onClick={() => onChange((chapter + 1) as YearlyChapter)}>
-          다음 페이지
-        </Button>
+        <button
+          type="button"
+          onClick={() => onChange((chapter + 1) as YearlyChapter)}
+          className="inline-flex h-10 items-center rounded-full px-4 text-[12.5px] font-extrabold text-white"
+          style={{
+            background: 'var(--app-pink)',
+            boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
+          }}
+        >
+          다음 →
+        </button>
       ) : (
         <span />
       )}
@@ -762,15 +974,30 @@ function DeepReadingLinks({ slug }: { slug: string }) {
   ];
 
   return (
-    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+    <div className="mt-4 grid gap-2 sm:grid-cols-2">
       {links.map((link) => (
         <Link
           key={link.href}
           href={link.href}
-          className="rounded-[22px] border border-[var(--app-line)] bg-white px-5 py-5 shadow-[0_12px_28px_rgba(17,17,20,0.06)] transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
+          className="rounded-[14px] border bg-white p-4 transition-all hover:-translate-y-0.5"
+          style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-base font-semibold text-[var(--app-ink)]">{link.label}</div>
-          <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{link.body}</p>
+          <div className="flex items-center gap-2">
+            <span
+              className="grid h-7 w-7 place-items-center rounded-full text-white"
+              style={{ background: 'var(--app-pink)' }}
+              aria-hidden="true"
+            >
+              <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+            <div className="text-[14px] font-extrabold text-[var(--app-ink)]">{link.label}</div>
+          </div>
+          <p
+            className="mt-2 text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {link.body}
+          </p>
         </Link>
       ))}
     </div>
@@ -853,38 +1080,91 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
   if (state === 'loading') {
     return (
-      <section className="gangi-report-panel p-6">
-        <div className="app-caption">올해 흐름 정리 중</div>
-        <h2 className=" mt-4 text-3xl text-[var(--app-ivory)]">
-          {targetYear}년 흐름을 정리하고 있습니다
-        </h2>
-        <p className="mt-4 text-sm leading-8 text-[var(--app-copy)]">
-          타고난 사주와 올해·이번 달 흐름을 다시 맞추고, 올해의 선택 포인트를 쉽게 정리하고 있습니다.
-        </p>
-        <div className="mt-6 grid gap-3 lg:grid-cols-3">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div
-              key={`yearly-loading-${index}`}
-              className="h-28 animate-pulse rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)]"
-            />
-          ))}
+      <section
+        className="rounded-[20px] border p-6"
+        style={{
+          background: 'var(--app-pink-soft)',
+          borderColor: 'var(--app-pink-line)',
+        }}
+      >
+        <div className="text-center">
+          <div
+            className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[22px] font-extrabold"
+            style={{
+              background: '#fff',
+              color: 'var(--app-pink-strong)',
+              border: '1px solid var(--app-pink-line)',
+              fontFamily: 'var(--font-han)',
+              animation: 'gangi-float-y 3.6s ease-in-out infinite',
+            }}
+            aria-hidden="true"
+          >
+            年
+          </div>
+          <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            올해 흐름 정리 중
+          </div>
+          <h2 className="mt-1.5 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+            {targetYear}년 흐름을 정리하고 있어요
+          </h2>
+          <p
+            className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            타고난 사주와 올해·이번 달 흐름을 다시 맞추고, 선택 포인트를 정리하고 있어요.
+          </p>
         </div>
+        <ul className="mt-5 grid gap-1.5">
+          {['올해 12개월 흐름 매칭', '분야별(일·돈·연애·관계) 정리', '월별 결정·주의 시기 산출'].map((label, index) => (
+            <li
+              key={label}
+              className="flex items-center gap-2.5 rounded-[12px] border bg-white px-3.5 py-2.5 text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              style={{ borderColor: 'var(--app-pink-line)' }}
+            >
+              <span
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                style={{ background: 'var(--app-pink)' }}
+                aria-hidden="true"
+              >
+                {index + 1}
+              </span>
+              {label}
+            </li>
+          ))}
+        </ul>
       </section>
     );
   }
 
   if (state === 'error' || !data) {
     return (
-      <section className="app-panel space-y-4 border-rose-400/20 p-6">
-        <div className="app-caption text-rose-200/80">올해 흐름 오류</div>
-        <p className="font-medium text-rose-200">{error || '올해 흐름을 불러오지 못했습니다.'}</p>
-        <Button
+      <section
+        className="rounded-[20px] border p-5"
+        style={{
+          background: '#fdecec',
+          borderColor: 'rgba(198,69,69,0.22)',
+        }}
+      >
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+          불러오기 실패
+        </div>
+        <h3 className="mt-1.5 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+          올해 흐름을 열지 못했어요
+        </h3>
+        <p
+          className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {error || '올해 흐름을 불러오지 못했습니다.'}
+        </p>
+        <button
+          type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          variant="outline"
-          className="w-fit border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-ivory)] hover:bg-[var(--app-surface-strong)]"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-full border bg-white px-4 text-[13px] font-extrabold text-[var(--app-ink)]"
+          style={{ borderColor: 'var(--app-line)' }}
         >
           다시 불러오기
-        </Button>
+        </button>
       </section>
     );
   }
@@ -916,83 +1196,207 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
     }, 0);
   }
 
-  return (
-    <section id="yearly-report" className="gangi-report-panel p-6 sm:p-7">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="app-caption">{targetYear} 올해 흐름</div>
-          <h2 className="mt-4 text-3xl text-[var(--app-ink)]">
-            {chapter === 1 ? '올해 흐름을 바로 읽습니다' : chapter === 2 ? '월별 흐름을 봅니다' : '더 깊게 볼 부분을 고릅니다'}
-          </h2>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
-            {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
-          </Badge>
-          <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
-            {data.cached ? '저장됨' : '새로 정리'}
-          </Badge>
-        </div>
-      </div>
+  const chapterLabels: Record<YearlyChapter, { kicker: string; title: string }> = {
+    1: { kicker: '1장', title: '올해 흐름을 바로 읽습니다' },
+    2: { kicker: '2장', title: '월별 흐름을 봅니다' },
+    3: { kicker: '3장', title: '더 깊게 볼 부분을 고릅니다' },
+  };
 
-      <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-[var(--app-copy-soft)]">
-        {updatedAtLabel ? <span>최근 생성: {updatedAtLabel}</span> : null}
-        <Button
-          onClick={() => setReloadToken((value) => value + 1)}
-          variant="outline"
-          size="xs"
-        >
-          다시 생성
-        </Button>
-      </div>
+  return (
+    <section id="yearly-report" className="space-y-4">
+      {/* §Hero — amber tone (올해) + 年 한자 인장 + counselor 배지 */}
+      <section
+        className="relative overflow-hidden rounded-[20px] border p-5"
+        style={{
+          background: 'linear-gradient(180deg, #fdf6e7 0%, #fff 100%)',
+          borderColor: 'rgba(184,122,20,0.22)',
+          boxShadow: '0 22px 50px -28px rgba(184,122,20,0.22)',
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(184,122,20,0.18), transparent 70%)' }}
+        />
+
+        <div className="relative flex items-start gap-3">
+          <span
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+            style={{
+              background: 'linear-gradient(135deg, #d4982e, #b87a14)',
+              boxShadow: '0 10px 22px rgba(184,122,20,0.32)',
+              fontFamily: 'var(--font-han)',
+            }}
+            aria-hidden="true"
+          >
+            年
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold"
+                style={{ borderColor: 'rgba(184,122,20,0.28)', color: '#b87a14' }}
+              >
+                {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
+              </span>
+              <span
+                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-copy-muted)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                {data.cached ? '✓ 저장됨' : '✦ 새로 정리'}
+              </span>
+            </div>
+            <div
+              className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+              style={{ color: '#b87a14' }}
+            >
+              {targetYear} 올해 흐름 · {chapterLabels[chapter].kicker}
+            </div>
+            <h2
+              className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              {chapterLabels[chapter].title}
+            </h2>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[11.5px] text-[var(--app-copy-muted)]">
+          {updatedAtLabel ? <span>최근 생성: {updatedAtLabel}</span> : null}
+          <button
+            type="button"
+            onClick={() => setReloadToken((value) => value + 1)}
+            className="inline-flex h-8 items-center gap-1 rounded-full border bg-white px-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            ↻ 다시 생성
+          </button>
+        </div>
+
+        {/* 챕터 tabs */}
+        <div className="relative mt-4 grid grid-cols-3 gap-1.5">
+          {([1, 2, 3] as YearlyChapter[]).map((index) => {
+            const active = chapter === index;
+            return (
+              <button
+                key={index}
+                type="button"
+                onClick={() => goToChapter(index)}
+                className="rounded-[12px] border px-2 py-2.5 text-center text-[12px] font-extrabold transition-colors"
+                style={{
+                  background: active ? '#b87a14' : '#fff',
+                  borderColor: active ? '#b87a14' : 'rgba(184,122,20,0.22)',
+                  color: active ? '#fff' : '#b87a14',
+                  boxShadow: active ? '0 6px 14px rgba(184,122,20,0.32)' : undefined,
+                }}
+              >
+                {index === 1 ? '연간 한눈' : index === 2 ? '월별 흐름' : '더 깊게'}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {chapter === 1 ? (
         <>
-          <div className="mt-6 rounded-[24px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-5 py-5">
-            <div className="app-caption text-[var(--app-pink-strong)]">올해 한 줄 먼저</div>
-            <p className="mt-4 text-lg font-semibold leading-8 text-[var(--app-ink)]">
+          {/* §올해 한 줄 — pink-soft 가장 큰 강조 */}
+          <article
+            className="rounded-[20px] border p-5"
+            style={{
+              background: 'var(--app-pink-soft)',
+              borderColor: 'var(--app-pink-line)',
+            }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              올해 한 줄 먼저
+            </div>
+            <p
+              className="mt-2 text-[18px] font-extrabold leading-[1.55] tracking-tight text-[var(--app-ink)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
               {interpretation.oneLineSummary}
             </p>
-            <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.opening, 2)}</div>
-          </div>
+            <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.opening, 2)}</div>
+          </article>
 
           <YearlyVisualMap report={data.report} />
 
-          <div className="mt-6">
-            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-pink-strong)]">
+          {/* §핵심 키워드 */}
+          <section
+            className="rounded-[18px] border bg-white p-5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               올해 핵심 키워드
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {interpretation.keywords.map((keyword) => (
-                <Badge
+                <span
                   key={keyword}
-                  className="yearly-keyword-badge h-auto max-w-full whitespace-normal break-keep rounded-full border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-2 text-left text-xs leading-6 text-[var(--app-copy)]"
+                  className="rounded-full border bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-copy)]"
+                  style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
                 >
                   {keyword}
-                </Badge>
+                </span>
               ))}
             </div>
+          </section>
+
+          {/* §상하반기 */}
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <article
+              className="rounded-[18px] border bg-white p-5"
+              style={{ borderColor: 'var(--app-pink-line)' }}
+            >
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                  style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
+                  aria-hidden="true"
+                >
+                  上
+                </span>
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  상반기 먼저 볼 것
+                </div>
+              </div>
+              <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.firstHalf, 3)}</div>
+            </article>
+            <article
+              className="rounded-[18px] border bg-white p-5"
+              style={{ borderColor: 'var(--app-pink-line)' }}
+            >
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                  style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
+                  aria-hidden="true"
+                >
+                  下
+                </span>
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  하반기 먼저 볼 것
+                </div>
+              </div>
+              <div className="mt-3 space-y-2">{renderCompactParagraphs(interpretation.secondHalf, 3)}</div>
+            </article>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
-              <div className="app-caption text-[var(--app-pink-strong)]">상반기 먼저 볼 것</div>
-              <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.firstHalf, 3)}</div>
-            </article>
-            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
-              <div className="app-caption text-[var(--app-pink-strong)]">하반기 먼저 볼 것</div>
-              <div className="mt-4 space-y-3">{renderCompactParagraphs(interpretation.secondHalf, 3)}</div>
-            </article>
-          </div>
-
-          <div className="mt-6">
-            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-pink-strong)]">
+          {/* §4 핵심 분야 */}
+          <section>
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               사람들이 가장 많이 묻는 4가지
             </div>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
-              일, 돈, 연애, 관계에서 먼저 볼 장면만 나눠 정리했습니다.
+            <h3 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
+              일·돈·연애·관계 한눈에
+            </h3>
+            <p
+              className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              각 분야 카드를 펼치면 핵심 / 기회 / 주의 / 행동을 한 줄씩 봅니다.
             </p>
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="mt-3 grid gap-2.5">
               {coreCards.map((item, index) => (
                 <CoreAreaCard
                   key={item.key}
@@ -1002,9 +1406,10 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 />
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {/* §건강/이동 */}
+          <div className="grid gap-2.5 sm:grid-cols-2">
             <SupportAreaCard
               label="건강·생활 리듬"
               eyebrow="리듬 관리"
@@ -1027,14 +1432,23 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         <>
           <YearlyMonthlySection report={data.report} interpretation={interpretation} />
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-2.5 lg:grid-cols-3">
             <TimingSummaryBlock title="좋은 시기 활용법" items={data.interpretation.goodPeriods} tone="good" />
             <TimingSummaryBlock title="조심해야 할 시기" items={data.interpretation.cautionPeriods} tone="caution" />
-            <article className="rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
-              <div className="app-caption text-[var(--app-pink-strong)]">행동 조언</div>
-              <div className="mt-4 space-y-3">
+            <article
+              className="rounded-[18px] border bg-white p-5"
+              style={{ borderColor: 'var(--app-pink-line)' }}
+            >
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                행동 조언
+              </div>
+              <div className="mt-3 space-y-2">
                 {data.interpretation.actionAdvice.map((item) => (
-                  <p key={item} className="text-sm leading-7 text-[var(--app-copy)]">
+                  <p
+                    key={item}
+                    className="text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+                    style={{ wordBreak: 'keep-all' }}
+                  >
                     {item}
                   </p>
                 ))}
@@ -1046,29 +1460,51 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
       {chapter === 3 ? (
         <>
-          <section className="mt-6 rounded-[24px] border border-[var(--app-line)] bg-white px-5 py-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]">
+          <section
+            className="rounded-[20px] border bg-white p-5"
+            style={{ borderColor: 'var(--app-pink-line)' }}
+          >
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="rounded-full px-2.5 py-1 text-[10.5px] font-extrabold text-white"
+                style={{
+                  background: 'var(--app-pink)',
+                  boxShadow: '0 4px 10px rgba(216,27,114,0.28)',
+                }}
+              >
                 프리미엄 이용권
-              </Badge>
-              <Badge className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]">
+              </span>
+              <span
+                className="rounded-full border bg-white px-2.5 py-1 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
                 별도 열림
-              </Badge>
+              </span>
             </div>
-            <h3 className="mt-4 text-2xl font-semibold text-[var(--app-ink)]">
+            <h3
+              className="mt-3 text-[19px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
               더 궁금한 부분은 아래 버튼으로 이어보세요
             </h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+            <p
+              className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
               일주 본질, 오행 균형, 성향 구조는 각각 별도 화면으로 열리게 연결했습니다.
             </p>
             <DeepReadingLinks slug={slug} />
           </section>
 
-          <details className="group mt-6" id="yearly-evidence">
-            <summary className="cursor-pointer list-none rounded-[22px] border border-[var(--app-line)] bg-white px-5 py-4 text-sm font-semibold text-[var(--app-copy)] transition-colors group-open:border-[var(--app-pink-line)] group-open:text-[var(--app-pink-strong)]">
-              계산 정보와 검증 보기
+          <details className="group" id="yearly-evidence">
+            <summary
+              className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[14px] border bg-white px-5 py-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <span>계산 정보와 검증 보기</span>
+              <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
             </summary>
-            <div className="mt-4 grid gap-4">
+            <div className="mt-3 grid gap-3">
               <GroundingKasiSummary
                 grounding={data.grounding}
                 kasiComparison={data.kasiComparison}
