@@ -631,21 +631,12 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   const monthHiddenStems = BRANCH_HIDDEN_STEMS[monthBranch] ?? [];
   const monthBranchKeyStem = monthHiddenStems[0] ?? null;
 
-  // 동반 십신 구조 추정 — 정관격에 정인이 있으면 "관인 구조 동반" 같은 텍스트.
-  const accompanyingPhrases: string[] = [];
-  if (data.tenGods) {
-    const counts = data.tenGods.byType;
-    if (pattern.tenGod === '정관' || pattern.tenGod === '편관') {
-      if ((counts['정인'] ?? 0) + (counts['편인'] ?? 0) >= 1) {
-        accompanyingPhrases.push('관인 구조 동반');
-      }
-    }
-    if (pattern.tenGod === '정재' || pattern.tenGod === '편재') {
-      if ((counts['식신'] ?? 0) + (counts['상관'] ?? 0) >= 1) {
-        accompanyingPhrases.push('식상생재 동반');
-      }
-    }
-  }
+  // 2026-05-14: 동반 십신 구조 — 격국이 어떤 결로 더 풍부해지는지 (또는
+  //   주의해야 하는지) 1~3개 구절로 표시. detectPatternCompanions 가 8가지
+  //   고전 동반 패턴을 평가한다.
+  const accompanyingPhrases = data.tenGods
+    ? detectPatternCompanions(pattern, data.tenGods.byType)
+    : [];
 
   const candidateLabel = `${pattern.name} 후보`;
   const monthRoot = monthBranchKeyStem
@@ -705,6 +696,74 @@ function getStemElementHanja(stem: Stem): '木' | '火' | '土' | '金' | '水' 
   return elementHanjaByStem[stem];
 }
 
+/**
+ * 2026-05-14: 격국 동반 구조 감지. 정관/편관 + 정인/편인 = 관인, 정재/편재 +
+ *   식신/상관 = 식상생재, 정관 + 편관 둘 다 = 관살혼잡, 식신 + 상관 둘 다 =
+ *   식상혼잡, 인성(정인+편인) ≥3 = 인성과다, 비견+겁재 ≥3 = 비겁과다,
+ *   식신 + 정재/편재 (편재 우선) = 식신생재, 편관 + 정인 = 살인상생,
+ *   정재/편재 + 정관 = 재생관.
+ *
+ *   값 자체는 SajuTenGodSummary.byType 의 십신 카운트(소수 가능)를 사용.
+ */
+function detectPatternCompanions(
+  pattern: NonNullable<SajuDataV1['pattern']>,
+  counts: Record<string, number>
+): string[] {
+  const get = (code: string) => counts[code] ?? 0;
+  const phrases: string[] = [];
+
+  const tenGod = pattern.tenGod;
+  const officials = get('정관') + get('편관');
+  const seals = get('정인') + get('편인'); // 인성
+  const resources = get('정재') + get('편재'); // 재성
+  const outputs = get('식신') + get('상관'); // 식상
+  const peers = get('비견') + get('겁재'); // 비겁
+
+  // 관인 — 관성격에 인성이 있을 때
+  if (tenGod === '정관' || tenGod === '편관') {
+    if (seals >= 1) phrases.push('관인 구조 동반');
+  }
+  // 식상생재 — 재성격에 식상이 있을 때
+  if (tenGod === '정재' || tenGod === '편재') {
+    if (outputs >= 1) phrases.push('식상생재 동반');
+  }
+  // 재관 — 재성격에 관성이 있거나 관성격에 재성이 있을 때 (재생관)
+  if ((tenGod === '정재' || tenGod === '편재') && officials >= 1) {
+    phrases.push('재생관 동반');
+  }
+  if ((tenGod === '정관' || tenGod === '편관') && resources >= 1) {
+    phrases.push('재관 구조 동반');
+  }
+  // 식신생재 — 식신격에 재성이 있을 때 (편재 우선)
+  if (tenGod === '식신' && resources >= 1) {
+    phrases.push('식신생재 동반');
+  }
+  // 살인상생 — 편관격에 정인이 있을 때 (편관 + 정인 = 살인상생)
+  if (tenGod === '편관' && get('정인') >= 1) {
+    phrases.push('살인상생 동반');
+  }
+  // 관살혼잡 — 정관 + 편관이 동시에 (둘 다 1 이상)
+  if (get('정관') >= 1 && get('편관') >= 1) {
+    phrases.push('관살혼잡 주의');
+  }
+  // 식상혼잡 — 식신 + 상관 동시에
+  if (get('식신') >= 1 && get('상관') >= 1) {
+    phrases.push('식상혼잡 주의');
+  }
+  // 인성과다 — 인성 합 ≥ 3
+  if (seals >= 3) {
+    phrases.push('인성과다 주의');
+  }
+  // 비겁과다 — 비겁 합 ≥ 3
+  if (peers >= 3) {
+    phrases.push('비겁과다 주의');
+  }
+  // 재다신약 시그널은 strength 별도 영역이라 여기서는 건드리지 않음.
+
+  // 중복 제거 + 최대 3개로 제한 (UI 가독성).
+  return Array.from(new Set(phrases)).slice(0, 3);
+}
+
 function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpretationBlock {
   const yongsin = data.yongsin;
   if (!yongsin) {
@@ -726,18 +785,30 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
     ? ` (확신도 ${FRIENDLY_CONFIDENCE_LABEL[yongsin.confidence] ?? yongsin.confidence})`
     : '';
 
-  // 2026-05-14: secondary(희신) 에서 dominant 또는 sub-dominant 오행을 마스킹.
-  // engine 이 secondary 에 강세 오행을 넣어 "그 오행을 더 쓰라" 는 잘못된 안내가
-  // 노출되는 것을 차단한다 (예: 壬子 일주에서 水 가 secondary 에 있는 경우).
+  // 2026-05-14 (revised): secondary(희신) 에서 강세 오행을 마스킹.
+  //   기존 룰 "score >= weakest + 1.0" 은 fixture(1982-01-29) 기준 경험값이라
+  //   다른 명식에서 over/under-masking 위험이 있었다. 비율 기반으로 재설계:
+  //
+  //   1) dominant 오행 → 무조건 마스킹.
+  //   2) 점수 ≥ 평균(총점/5) 인 오행 → 마스킹 (이미 평균 이상 가지고 있음).
+  //   3) 상위 2위까지의 오행 → 마스킹 (sub-dominant 도 더 키우면 균형 깨짐).
+  //   세 조건 중 하나라도 만족하면 secondary 에서 제외 + kiyshin(주의) 로 이동.
   const byElement = data.fiveElements.byElement;
-  const weakestScore = byElement[data.fiveElements.weakest]?.score ?? 0;
   const dominantElement = data.fiveElements.dominant;
+  const totalScore = data.fiveElements.totalScore;
+  const averageScore = totalScore > 0 ? totalScore / ELEMENT_SEQUENCE.length : 0;
+  // 점수 내림차순 정렬 → 상위 2위(0, 1번째 index) 식별
+  const elementsByScoreDesc = ELEMENT_SEQUENCE
+    .map((el) => ({ element: el, score: byElement[el]?.score ?? 0 }))
+    .sort((a, b) => b.score - a.score);
+  const top2Elements = new Set(elementsByScoreDesc.slice(0, 2).map((entry) => entry.element));
 
   function isMaskingTarget(element: Element) {
     if (element === dominantElement) return true;
     const score = byElement[element]?.score ?? 0;
-    // weakest 보다 1 이상 강한 secondary 는 (이미 충분히 강하니까) 희신으로 노출 X
-    return score >= weakestScore + 1.0;
+    if (averageScore > 0 && score >= averageScore - SCORE_EPSILON) return true;
+    if (top2Elements.has(element)) return true;
+    return false;
   }
 
   const safeSecondary = (yongsin.secondary ?? [])
