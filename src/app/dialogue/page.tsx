@@ -123,7 +123,45 @@ export default async function DialoguePage({
             })}
           </div>
 
-          {/* §3 안전 안내 */}
+          {/* §3 1:1 상담 예약 진입점 (mockup screens-f.jsx ScreenAppointment) */}
+          <Link
+            href="/dialogue/appointment"
+            className="flex items-center gap-3 rounded-[18px] p-5 text-white"
+            style={{
+              background: 'var(--app-ink)',
+              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+            }}
+          >
+            <div
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[20px] font-extrabold"
+              style={{
+                background: 'var(--app-pink)',
+                color: '#fff',
+              }}
+              aria-hidden="true"
+            >
+              📅
+            </div>
+            <div className="min-w-0 flex-1">
+              <div
+                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink)' }}
+              >
+                1:1 예약
+              </div>
+              <div className="mt-1 text-[15px] font-extrabold leading-snug tracking-tight">
+                선생님과 30분 깊은 상담 →
+              </div>
+              <div
+                className="mt-0.5 text-[11.5px]"
+                style={{ opacity: 0.65 }}
+              >
+                날짜와 시간을 골라 1:1 예약을 잡으세요
+              </div>
+            </div>
+          </Link>
+
+          {/* §4 안전 안내 */}
           <SafetyNotice variant="crisis" />
         </section>
       </AppPage>
