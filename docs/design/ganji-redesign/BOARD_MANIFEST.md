@@ -114,7 +114,7 @@
 |---|---|---|---|---|---|
 | `pdf-print` | 17 · PDF 1페이지 (커버) | `screens-d.jsx:6` | IMPLEMENTED | `src/app/saju/[slug]/premium/print/page.tsx` | PR61 |
 | `pdf-page2` | 17-2 · PDF 2페이지 (십성) | `screens-f.jsx:315` | IMPLEMENTED | 동일 print 라우트 (십성 십신 chart) | |
-| `lock-screen` | 18-0 · 락스크린 푸시 위젯 | `screens-f.jsx:440` | SHELL | `/admin/design/motion#m-push` 데모로 대체. 실제 OS 락스크린은 PWA 영역 | |
+| `lock-screen` | 18-0 · 락스크린 푸시 위젯 | `screens-f.jsx:440` | SHELL | `src/app/lock-screen/page.tsx` 신설 — visual shell + 3 mock preview + disabled "위젯 켜기" + 준비 중 badge. robots disallow. 실제 PWA OS 위젯은 후속 (2026-05-15 PR-H) | `/lock-screen` |
 | `notifications` | 18 · 알림 센터 | `screens-d.jsx:253` | IMPLEMENTED | `src/app/notifications/page.tsx` + feed API | PR23/43 |
 | `vault` | 19 · 보관함 상세 | `screens-d.jsx:451` | IMPLEMENTED | `src/app/my/results/page.tsx`, `src/app/vault/page.tsx` | |
 | `zodiac-detail` | 20 · 띠운세 상세 (양) | `screens-e.jsx:467` | IMPLEMENTED | `src/app/zodiac/[slug]/page.tsx` | |
@@ -126,7 +126,7 @@
 
 | ID | Label | Source | 상태 | 위치 | 비고 |
 |---|---|---|---|---|---|
-| `i18n-en` | 22 · 영문 (English) | `screens-g.jsx:668` | SHELL | `docs/design/ganji-redesign/future-pages/i18n-en.md` | 다국어 미구현. next-intl 도입 후속 |
+| `i18n-en` | 22 · 영문 (English) | `screens-g.jsx:668` | SHELL | `docs/design/ganji-redesign/future-pages/i18n-en.md` 신규 작성 (2026-05-15 PR-H — 이전 manifest 가 인용하던 파일 부재 audit 결과 정합성 복구) — next-intl + 영문 카피라이팅 1~2주 작업 안내 | — |
 | `tablet` | 23 · 태블릿 (1024px) | `screens-g.jsx:768` | SHELL | 모든 페이지 sm/md/lg responsive 기본 적용. 별도 tablet-only layout 미구현 | |
 
 ### system · 배너·에러·온보딩·모달 (5)
@@ -135,9 +135,9 @@
 |---|---|---|---|---|---|
 | `banners` | 24 · 배너 시스템 (7 종) | `screens-h.jsx:6` | IMPLEMENTED | `src/components/gangi/gangi-banner.tsx` (7 variants) + showcase `/admin/design/banners` | hero/soft/cosmic/inline/sticky/success/warning |
 | `errors` | 25 · 에러 (404/500/네트워크) | `screens-h.jsx:244` | IMPLEMENTED | `src/app/not-found.tsx` (404), `src/app/error.tsx` (client 5xx), `src/app/global-error.tsx` (root) | PR #68/이번 PR |
-| `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | login → empathy → birth 흐름이 사실상 onboarding. 별도 onboarding 화면 미구현 | |
+| `onboarding` | 26 · 온보딩 (4 슬라이드) | `screens-h.jsx:386` | SHELL | `src/app/onboarding/page.tsx` 신설 — 4 슬라이드 visual shell + 한자 아이콘(生·今·話·始) + "사주 입력하고 시작" CTA. first-visit cookie 자동 노출 로직은 후속 (2026-05-15 PR-H) | `/onboarding` |
 | `push-modal` | 27 · 푸시 알림 권한 모달 | `screens-h.jsx:594` | **IMPLEMENTED** | `PushPermissionPrompt` (신규 client wrapper, `src/components/notifications/push-permission-prompt.tsx`) 가 `today-fortune-result-client.tsx` 진입 후 20초 dwell + Notification.permission === 'default' + 7일 cooldown 충족 시 `PushPermissionModal` 자동 prompt. localStorage `moonlight:push-modal:dismissed-at` (2026-05-15 PR-G3) | — |
-| `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | 회원가입 흐름 내 implicit consent. 별도 modal 미구현 | |
+| `terms-modal` | 28 · 약관 동의 풀스크린 모달 | `screens-h.jsx:723` | SHELL | `src/components/notifications/terms-consent-modal.tsx` 신규 — 풀스크린 모달 컴포넌트 visual shell. items prop 으로 약관 항목 주입. 현재 disabled (체크/confirm 비활성, "준비 중" badge). m-modal motion 자동 적용. GDPR/14세 미만 등 강한 동의 시점에 caller 가 mount (2026-05-15 PR-H) | — |
 
 ### desktop · 반응형 (1)
 
