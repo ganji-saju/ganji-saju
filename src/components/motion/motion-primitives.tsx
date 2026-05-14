@@ -88,8 +88,13 @@ export function MotionResultReveal({
   const reduced = useReducedMotion();
 
   if (children !== undefined) {
+    // 2026-05-15 PR-C: children 모드는 caller 의 기존 layout 을 유지해야 하므로
+    // grid/gap 을 두는 gallery 모드 클래스 대신 layout-neutral wrapper 클래스 사용.
     return (
-      <div className="motion-result-reveal" data-active={active && !reduced}>
+      <div
+        className="motion-result-reveal motion-result-reveal-children"
+        data-active={active && !reduced}
+      >
         {Children.map(children, (child, index) => {
           const delay = reduced ? '0s' : `${index * staggerSeconds}s`;
           if (!isValidElement(child)) {
@@ -99,7 +104,6 @@ export function MotionResultReveal({
               </div>
             );
           }
-          // ReactElement: clone with motion-reveal-slot wrapper for stagger.
           const element = child as ReactElement<{ style?: React.CSSProperties; className?: string; key?: React.Key }>;
           return (
             <div

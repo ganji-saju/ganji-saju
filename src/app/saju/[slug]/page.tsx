@@ -9,6 +9,9 @@ import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
 import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
+// 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
+import { MotionResultReveal } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
@@ -355,6 +358,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           <SajuScreenNav slug={slug} current="result" />
 
           <section className="space-y-4 px-1">
+            {/* 2026-05-15 handoff 52 m-reveal — 결과 카드 7개 stagger 등장.
+                children 의 각 카드를 0.08s 간격으로 stagger reveal. useReducedMotion 자동 폴백. */}
+            <MotionResultReveal staggerSeconds={0.08}>
             {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips */}
             <article
               className="rounded-[18px] border border-[var(--app-line)] p-5"
@@ -652,6 +658,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 </TrackedLink>
               </div>
             </article>
+            {/* 2026-05-15 handoff 52 m-reveal 닫음 — §1 ~ §5 카드만 stagger. 하단 details 는 접힘 기본이라 모션 대상 외. */}
+            </MotionResultReveal>
 
             {/* 하단 — 추가 풀이 (기존 가치 보존, 접힘 기본). PR4 패턴 동일. */}
             <details className="group rounded-[18px] border border-[var(--app-line)] bg-white">
