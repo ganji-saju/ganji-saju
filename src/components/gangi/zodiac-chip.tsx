@@ -7,6 +7,8 @@
 //   <ZodiacChip kind="rabbit" size="sm" className="shrink-0" />
 
 import { cn } from '@/lib/utils';
+// 2026-05-15 handoff PR-G1: 59 m-hanja — ZodiacChip 한자 mount 시 entry morph.
+import '@/components/motion/motion-primitives.css';
 
 export const ZODIAC = {
   rat:     { ko: '쥐',    han: '子', color: 'var(--app-indigo)' },
@@ -67,7 +69,8 @@ export function ZodiacChip({
         letterSpacing: '-0.02em',
       }}
     >
-      {z.han}
+      {/* 2026-05-15 handoff 59 m-hanja — 한자 글자에 mount 시 entry morph 적용. */}
+      <span className="motion-hanja-entry">{z.han}</span>
     </span>
   );
 }

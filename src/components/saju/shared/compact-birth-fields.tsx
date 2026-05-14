@@ -12,6 +12,8 @@ import type {
 import type { BirthLocationSearchResultLike } from '@/components/saju/shared/unified-birth-info-fields';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { cn } from '@/lib/utils';
+// 2026-05-15 handoff PR-G2: 61 m-input — motion-input-effect CSS 로딩.
+import '@/components/motion/motion-primitives.css';
 
 // 시(時) → 12지 + 시진명 + 시간대
 const HOUR_BRANCHES: ReadonlyArray<{
@@ -41,8 +43,10 @@ function getHourBranch(hourStr: string) {
   return HOUR_BRANCHES.find((b) => b.hours.includes(hour)) ?? null;
 }
 
+// 2026-05-15 handoff PR-G2: 61 m-input — input focus 시 ring + lift 모션.
+// motion-input-effect 클래스가 box-shadow + transform 으로 강조.
 const INPUT_CLS =
-  'h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
+  'motion-input-effect h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
 
 export interface CompactBirthFieldsProps {
   draft: UnifiedBirthEntryDraft;
