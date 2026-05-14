@@ -8,6 +8,8 @@ import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-t
 import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
 import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
+// 2026-05-15 P2 후속: 합충·공망·신살 카드 (audit 권고).
+import { SajuRelationsSymbolsCard } from '@/components/saju/saju-relations-symbols-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
@@ -468,6 +470,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 </p>
               </section>
             ) : null}
+
+            {/* §1.8 합충·공망·신살 — 2026-05-15 P2 후속. audit 권고. grounding 있을 때만. */}
+            {grounding ? <SajuRelationsSymbolsCard grounding={grounding} /> : null}
 
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
