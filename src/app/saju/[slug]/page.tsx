@@ -6,6 +6,7 @@ import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
+import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
@@ -385,6 +386,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {formatBirthSummary(input)}
               </p>
             </article>
+
+            {/* §1.55 PR #148 (Part B) — 사용자 입력 상황이 풀이에 반영됐음을 명시.
+                personalizationContext.userSituation 이 있으면 chip 카드,
+                없으면 amber CTA 카드로 "현재 상황 입력하기" 유도. */}
+            <SituationReflectionCard
+              situation={personalizationContext?.userSituation ?? null}
+              fallbackInputHref="/saju/new"
+            />
 
             {/* §1.6 narrative 카드 — 2026-05-15 P2. 일간 + 격국 + 용신 + 대운/세운을 한 단락
                 narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함.
