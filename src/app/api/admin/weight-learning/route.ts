@@ -4,6 +4,7 @@
 // POST /api/admin/weight-learning             — 학습 + DB 저장 (draft)
 // POST /api/admin/weight-learning?activate=ID — 특정 버전 활성화
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { diffWeights, learnSinsalWeights } from '@/lib/admin/weight-learning';
 import { createClient } from '@/lib/supabase/server';
 
@@ -33,11 +34,12 @@ async function fetchFeedbackInWindow(
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await getCurrentAdminCheck(supabase);
+  if (!guard.ok) {
+    return NextResponse.json(
+      { ok: false, error: guard.reason },
+      { status: guard.reason === 'unauthenticated' ? 401 : 403 }
+    );
   }
 
   // 저장된 버전 목록.
@@ -83,11 +85,19 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
+  const guard = await getCurrentAdminCheck(supabase);
+  if (!guard.ok) {
+    return NextResponse.json(
+      { ok: false, error: guard.reason },
+      { status: guard.reason === 'unauthenticated' ? 401 : 403 }
+    );
+  }
+  // created_by 용 user id.
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ ok: false, error: 'unauthenticated' }, { status: 401 });
   }
 
   // 버전 활성화.
