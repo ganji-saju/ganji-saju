@@ -2701,12 +2701,25 @@ export function buildTodayFortuneFreeResult(
     // sourceSessionId 는 createReading() 이 반환한 reading slug. /saju/[slug]/deep 으로 직접 연결.
     sajuSlug: options.sourceSessionId,
     // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
+    // PR #167 — 사주 lucky element 외에 오늘 일진 천간의 element 도 source 로 추가.
+    // 사주 lucky 가 평생 안 변하던 항목 (색·숫자·방향·음식·향·보석·음악·시간·성씨) 이
+    // 일진과 다를 때 두 element 의 항목을 모두 노출 → 매일 일부 변동 + 명리 정확성 유지.
     luckyPackage: (() => {
       const { lucky, unlucky } = deriveLuckyElements(sajuData);
+      const todayStemElement = todayPillar.stem
+        ? (STEM_ELEMENT_MAP[todayPillar.stem as Stem] as
+            | '목'
+            | '화'
+            | '토'
+            | '금'
+            | '수'
+            | undefined) ?? null
+        : null;
       return buildTodayLuckyPackage({
         luckyElement: lucky,
         unluckyElement: unlucky,
         todayBranch: todayPillar.branch ?? null,
+        todayStemElement,
         dateKey: todayPillar.dateKey,
         dayGanzi: sajuData.pillars.day.ganzi,
       });
