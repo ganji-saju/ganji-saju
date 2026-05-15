@@ -1,3 +1,4 @@
+import { Solar } from 'lunar-typescript';
 import {
   calculateSajuDataV1,
   type SajuDataV1,
@@ -11,6 +12,54 @@ import type {
   FortuneCalendarTone,
   FortuneCalendarWeekRow,
 } from './fortune-calendar-types';
+// 2026-05-15 — 결제 후 날짜 클릭 시 같은 풀이만 반복되던 문제 fix.
+// 각 날짜의 실제 일진(日辰) 을 계산해 PR #105 메시지 라이브러리 + #106 신살 탐지 결과를
+// 일별 entry 에 넣어, 사용자가 날짜를 누를 때마다 실제로 다른 콘텐츠를 보게 한다.
+import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
+import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
+import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
+
+// 한자 ganzi → 한글.
+const STEM_KOR: Record<string, string> = {
+  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
+  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
+};
+const BRANCH_KOR: Record<string, string> = {
+  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
+  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
+};
+
+function ganziToKorean(ganzi: string): string {
+  const s = STEM_KOR[ganzi.charAt(0) ?? ''] ?? '';
+  const b = BRANCH_KOR[ganzi.charAt(1) ?? ''] ?? '';
+  return `${s}${b}`;
+}
+
+function computeDayIljin(year: number, month: number, day: number): { ganzi: string; stem: string; branch: string } | null {
+  try {
+    const solar = Solar.fromYmdHms(year, month, day, 12, 0, 0);
+    const dayGanzi = solar.getLunar().getEightChar().getDay();
+    return {
+      ganzi: dayGanzi,
+      stem: dayGanzi.charAt(0) ?? '',
+      branch: dayGanzi.charAt(1) ?? '',
+    };
+  } catch {
+    return null;
+  }
+}
+
+function computeDayGanziIndex(stem: string, branch: string): number {
+  const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  const BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  const si = STEMS.indexOf(stem);
+  const bi = BRANCHES.indexOf(branch);
+  if (si < 0 || bi < 0) return 0;
+  for (let k = 0; k < 6; k += 1) {
+    if ((si + 10 * k) % 12 === bi) return si + 10 * k;
+  }
+  return 0;
+}
 
 interface FortuneCalendarDayDraft {
   isoDate: string;
@@ -19,6 +68,10 @@ interface FortuneCalendarDayDraft {
   score: number;
   summary: string;
   actionHint: string;
+  iljinGanzi?: string;
+  iljinKorean?: string;
+  dayMessages?: string[];
+  dayNotableSinsals?: Array<{ name: string; category: '길신' | '흉신' | '양날의검' }>;
 }
 
 function pad(value: number) {
@@ -129,13 +182,87 @@ function createDayEntryDraft(
       ? `${report.cautionAction.description} ${cautionLabel} 보완을 우선하세요.`
       : `${report.primaryAction.description} ${supportLabels ? `${supportLabels} 기운을 살리는 선택` : '큰 결정보다 작은 실행'}이 좋습니다.`;
 
+  // 2026-05-15 — 그 날의 실제 일진 + 발동 케이스 메시지 + 신살.
+  const isoDate = `${year}-${pad(month)}-${pad(day)}`;
+  const iljin = computeDayIljin(year, month, day);
+  let dayMessages: string[] | undefined;
+  let dayNotableSinsals: Array<{ name: string; category: '길신' | '흉신' | '양날의검' }> | undefined;
+  let perDaySummary = summary;
+  let perDayActionHint = actionHint;
+
+  if (iljin) {
+    try {
+      const elementPercentages = {
+        목: sourceData.fiveElements.byElement['목']?.percentage ?? 0,
+        화: sourceData.fiveElements.byElement['화']?.percentage ?? 0,
+        토: sourceData.fiveElements.byElement['토']?.percentage ?? 0,
+        금: sourceData.fiveElements.byElement['금']?.percentage ?? 0,
+        수: sourceData.fiveElements.byElement['수']?.percentage ?? 0,
+      };
+      const sajuInput = {
+        dayMaster: sourceData.pillars.day.stem as Stem,
+        dayMasterElement: sourceData.dayMaster.element as '목' | '화' | '토' | '금' | '수',
+        yearStem: sourceData.pillars.year.stem as Stem,
+        yearBranch: sourceData.pillars.year.branch as Branch,
+        monthStem: sourceData.pillars.month.stem as Stem,
+        monthBranch: sourceData.pillars.month.branch as Branch,
+        dayBranch: sourceData.pillars.day.branch as Branch,
+        hourStem: (sourceData.pillars.hour?.stem ?? null) as Stem | null,
+        hourBranch: (sourceData.pillars.hour?.branch ?? null) as Branch | null,
+        elementPercentages,
+        strengthLabel: sourceData.strength?.level ?? null,
+        yongsinElement: null,
+        kishinElement: null,
+      };
+
+      const picked = pickIljinMessages(
+        sajuInput,
+        iljin.stem as Stem,
+        iljin.branch as Branch,
+        { name: input.name ?? '선생님' },
+        `${isoDate}::${sourceData.pillars.day.ganzi}`,
+        2
+      );
+      dayMessages = picked.messages;
+      // 일별 summary 를 발동 케이스 1번 메시지로 교체 → 날짜마다 진짜 다른 카피.
+      if (picked.messages.length > 0) {
+        perDaySummary = picked.messages[0]!;
+      }
+      if (picked.messages.length > 1) {
+        perDayActionHint = picked.messages[1]!;
+      }
+
+      // 신살 탐지 (사주 원국 + 일진).
+      const dayGanziIndex = computeDayGanziIndex(
+        sourceData.pillars.day.stem,
+        sourceData.pillars.day.branch
+      );
+      const sinsalHits = detectComprehensiveSinsals(
+        { ...sajuInput, dayGanziIndex },
+        { iljin: { stem: iljin.stem as Stem, branch: iljin.branch as Branch } }
+      );
+      // 일진과 상호작용으로 발동한 것 우선 (positions 에 iljin 포함).
+      const iljinHits = sinsalHits.filter((h) => h.positions.includes('iljin'));
+      dayNotableSinsals = (iljinHits.length > 0 ? iljinHits : sinsalHits.slice(0, 3)).slice(0, 3).map((h) => ({
+        name: h.name,
+        category: h.category,
+      }));
+    } catch {
+      // 일진 계산 실패 시 graceful fallback — 기존 summary/actionHint 그대로.
+    }
+  }
+
   return {
-    isoDate: `${year}-${pad(month)}-${pad(day)}`,
+    isoDate,
     day,
     weekday: new Date(year, month - 1, day).getDay(),
     score: overall,
-    summary,
-    actionHint,
+    summary: perDaySummary,
+    actionHint: perDayActionHint,
+    iljinGanzi: iljin?.ganzi,
+    iljinKorean: iljin ? ganziToKorean(iljin.ganzi) : undefined,
+    dayMessages,
+    dayNotableSinsals,
   };
 }
 
