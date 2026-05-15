@@ -1,5 +1,7 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx §4 ScreenToday):
 // 날짜 eyebrow + 헤드라인 (총운 N점 highlight). 데이터 로직 무수정.
+// 2026-05-16 PR #149 (Part C) — userSituation 있으면 "[직장인 · 사업 고민] 관점에서 오늘" 한 줄 추가.
+import { buildPerspectiveLine } from '@/lib/today-fortune/situation-score-priority';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
@@ -33,6 +35,7 @@ export function TodayFortuneSummaryCard({
 }) {
   const overall = getOverallScore(result);
   const todayLabel = formatToday();
+  const perspective = buildPerspectiveLine(result.userSituation);
 
   return (
     <section className="px-1">
@@ -55,6 +58,15 @@ export function TodayFortuneSummaryCard({
           무료 결과
         </span>
       </div>
+      {/* PR #149 (Part C) — 사용자 상황 있으면 perspective 한 줄 노출. */}
+      {perspective ? (
+        <p
+          className="mt-2 text-[11.5px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          🎯 {perspective} 오늘
+        </p>
+      ) : null}
     </section>
   );
 }

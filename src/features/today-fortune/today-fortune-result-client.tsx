@@ -11,6 +11,7 @@ import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippe
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
+import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 // 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md).
 // 카테고리 카드 stacked 풀이 + 사주 명식 신뢰 카드 + 대운 CTA.
 import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
@@ -189,6 +190,18 @@ export function TodayFortuneResultClient({
             <MotionResultReveal staggerSeconds={0.08}>
               {/* §1 — date eyebrow + 총운 헤드라인 */}
               <TodayFortuneSummaryCard result={freeResult} />
+
+              {/* §1.2 — PR #149 (Part C) — 사용자 상황 chip strip (compact).
+                  미입력이면 silent null, 입력 있으면 "✓ 반영 · 💼 직장인 · ..." 한 줄. */}
+              {freeResult.userSituation ? (
+                <div className="px-1">
+                  <SituationReflectionCard
+                    situation={freeResult.userSituation}
+                    variant="compact"
+                    fallbackInputHref="/saju/new"
+                  />
+                </div>
+              ) : null}
 
               {/* §2 — 핑크 banner 큰 점수 + 등급 이모지 (PR 1: 🌟😊🙂😐😕⚠️) */}
               <TodayScoreReveal result={freeResult} />
