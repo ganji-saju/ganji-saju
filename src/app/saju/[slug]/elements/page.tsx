@@ -309,16 +309,16 @@ export default async function SajuElementsPage({ params }: Props) {
                 더 자세히
               </div>
               <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
-                십성과 대운까지
+                10년 단위 큰 흐름을
                 <br />
-                깊은 풀이로 이어보세요
+                대운 풀이에서 이어보세요
               </h2>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/deep`}
                   className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
-                  깊은 풀이 보기 →
+                  대운 풀이 보기 →
                 </Link>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/nature`}

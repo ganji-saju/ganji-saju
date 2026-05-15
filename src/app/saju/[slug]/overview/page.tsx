@@ -342,12 +342,12 @@ export default async function SajuOverviewPage({ params }: Props) {
                 className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink)' }}
               >
-                깊은 풀이
+                대운 풀이
               </div>
               <h2 className="mt-1.5 text-[19px] font-extrabold leading-snug tracking-tight">
-                내 사주의 큰 흐름을
+                10년 단위 큰 흐름을
                 <br />
-                한 번에 이어보세요
+                시기별 8단으로 풀어보세요
               </h2>
               <ul className="mt-3 grid gap-1.5">
                 {PREMIUM_BENEFITS.map((item) => (
@@ -370,7 +370,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                   href={`/saju/${encodeURIComponent(slug)}/deep`}
                   className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
-                  깊은 풀이 열기 →
+                  대운 풀이 열기 →
                 </Link>
                 <Link
                   href="/membership"
