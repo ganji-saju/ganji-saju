@@ -57,6 +57,7 @@ function slotKeyToHref(slotKey: string, fallback = '/notifications') {
   if (slotKey.startsWith('today-fortune')) return '/today-fortune';
   if (slotKey.startsWith('today-tarot')) return '/tarot/daily';
   if (slotKey.startsWith('today-zodiac')) return '/zodiac';
+  if (slotKey.startsWith('today-star-sign')) return '/star-sign';
   if (slotKey.startsWith('weekly')) return '/today-fortune';
   if (slotKey.startsWith('monthly')) return '/today-fortune';
   if (slotKey.startsWith('seasonal')) return '/today-fortune';
@@ -181,6 +182,8 @@ export function getNotificationSlotSummary(slot: NotificationSlotKey) {
       return '오늘의 타로';
     case 'today-zodiac':
       return '오늘의 띠운세';
+    case 'today-star-sign':
+      return '오늘의 별자리';
     default:
       return '';
   }
