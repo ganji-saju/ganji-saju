@@ -58,14 +58,22 @@ export default async function MyProfilePage() {
         }}
       >
         <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-          내 정보 · 가족 사주
+          가족 사주
         </div>
-        <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
-          한 번 입력하면 모든 풀이에서 같이 써요
+        <h1
+          className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          내 정보와 가족·연인을
+          <br />
+          한 곳에서 관리하세요
         </h1>
-        <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
-          오늘운세 · 사주 시작하기 · 궁합에 자동으로 채워집니다. 가족·연인 정보도 함께 저장해
-          궁합과 가족 리포트에서 바로 이어볼 수 있어요.
+        <p
+          className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          한 번 입력하면 오늘운세 · 사주 · 궁합에 자동으로 채워집니다. 가족·연인 정보를 함께 저장해
+          궁합과 가족 리포트에서 바로 이어보세요.
         </p>
       </article>
 
