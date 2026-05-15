@@ -16,6 +16,8 @@ import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortun
 import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
 import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-card';
 import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
+// 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종 + 로또 번호 오행색 시각화.
+import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -191,6 +193,12 @@ export function TodayFortuneResultClient({
 
               {/* §4 — 한눈에 보기 미니 grid (보조). 기존 2x3 score grid 유지. */}
               <TodayFortuneScoreGrid result={freeResult} />
+
+              {/* §4.5 — 행운 패키지 12종 (PR 2 신설): 색/숫자/방향/시간/음식/향/보석/음악/성씨/띠
+                  + 로또 번호 6개 오행색 원 + 피해야 할 것. 운세톡톡 5종 대비 압도적 차별화. */}
+              {freeResult.luckyPackage ? (
+                <TodayLuckyPackageCard luckyPackage={freeResult.luckyPackage} />
+              ) : null}
 
               {/* §5 — 사주 명식 신뢰 카드 (PR 1 신설): 4기둥 + 오행 분포 + 일주 강약 + 격국.
                   운세톡톡의 "신뢰 장치" 패턴 + 한자/한글 병기. */}
