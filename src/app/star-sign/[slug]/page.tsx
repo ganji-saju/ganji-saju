@@ -481,7 +481,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                 return (
                   <Link
                     key={c.slug}
-                    href={`/star-sign/${c.slug}`}
+                    href={isSelf ? `/star-sign/${c.slug}` : `/star-sign/compat/${typedSlug}/${c.slug}`}
                     className="rounded-[12px] border p-2.5 text-center transition-transform active:scale-95"
                     style={{
                       background: c.tone === 'best' ? style.bg : 'white',
