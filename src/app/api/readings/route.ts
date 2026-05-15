@@ -106,8 +106,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // PR #151 (B2) — payload 에 situation 없으면 profiles.user_situation 을 fallback 으로.
+  // 로그인 사용자가 /my/situation 에 저장해둔 default 가 새 reading 에 자동 반영.
+  let effectiveSituation = userSituation;
+  if (!effectiveSituation && user?.id) {
+    try {
+      const { getUserSituationForUser } = await import('@/lib/profile/user-situation');
+      effectiveSituation = await getUserSituationForUser(supabase, user.id);
+    } catch {
+      // silent — situation 없이도 reading 정상 생성.
+    }
+  }
+
   try {
-    const id = await createReading(parsed.input, user?.id ?? null, userSituation);
+    const id = await createReading(parsed.input, user?.id ?? null, effectiveSituation);
     return NextResponse.json({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';

@@ -46,6 +46,7 @@ const MY_MENU_ICONS: Record<string, { icon: string; tone: 'pink' | 'neutral' }> 
   '내 사주 원국': { icon: '☰', tone: 'neutral' },
   '저장한 해석': { icon: '◐', tone: 'neutral' },
   '가족·다른 사람 정보': { icon: '♥', tone: 'pink' },
+  '내 현재 상황': { icon: '🎯', tone: 'pink' },
   '대화 기록': { icon: '💬', tone: 'pink' },
   '대화 플랜': { icon: '◆', tone: 'neutral' },
   '알림 센터': { icon: '🔔', tone: 'neutral' },

@@ -977,6 +977,12 @@ export const MY_MENU_BLUEPRINT = [
     href: '/my/profile#family',
   },
   {
+    // 2026-05-16 PR #151 — 사용자 default situation 분리 메뉴.
+    title: '내 현재 상황',
+    description: '연애·직업·고민 저장 → 풀이 자동 반영',
+    href: '/my/situation',
+  },
+  {
     // 2026-05-15 — 대화 채팅 기록 진입점 신설.
     title: '대화 기록',
     description: '선생님과 나눈 대화 다시 보기',
