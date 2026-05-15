@@ -395,6 +395,33 @@ function MajorLuckTimeline({
                       ✦ 현재 흐름
                     </span>
                   ) : null}
+                  {/* 2026-05-15 PR 7 응답 2 — 12운성 chip (PR 6 산출 활용) */}
+                  {cycle.twelveStage ? (
+                    <span
+                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      style={{
+                        background: '#eef0f8',
+                        borderColor: 'rgba(82, 102, 162, 0.22)',
+                        color: 'var(--app-indigo)',
+                      }}
+                    >
+                      {cycle.twelveStage}지
+                    </span>
+                  ) : null}
+                  {/* 2026-05-15 PR 7 응답 2 — 원진 chip (사주 원국 자리와 원진 페어 발생 시) */}
+                  {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
+                    <span
+                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      style={{
+                        background: '#fff3d6',
+                        borderColor: 'rgba(212, 148, 38, 0.32)',
+                        color: 'var(--app-amber)',
+                      }}
+                      title={`원진 페어 자리: ${cycle.wonjinWith.join(' · ')}`}
+                    >
+                      원진 · {cycle.wonjinWith[0]}
+                    </span>
+                  ) : null}
                   <span
                     aria-hidden="true"
                     className="ml-auto text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
