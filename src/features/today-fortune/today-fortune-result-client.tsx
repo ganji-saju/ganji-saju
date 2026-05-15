@@ -11,6 +11,11 @@ import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippe
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
+// 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md).
+// 카테고리 카드 stacked 풀이 + 사주 명식 신뢰 카드 + 대운 CTA.
+import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
+import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-card';
+import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -170,18 +175,30 @@ export function TodayFortuneResultClient({
           </section>
         ) : (
           <>
-            {/* 2026-05-15 handoff 52 m-reveal — 오늘운세 결과 4 카드 stagger 등장. */}
-            <MotionResultReveal staggerSeconds={0.1}>
-              {/* mockup §1 — date eyebrow + 총운 헤드라인 */}
+            {/* 2026-05-15 handoff 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
+                PR 1: 운세톡톡 벤치마크 적용으로 §3 카테고리 stacked + §5 사주 명식
+                + §7 대운 CTA 추가. 기존 §1·§2·§4·§6 unlock 은 유지. */}
+            <MotionResultReveal staggerSeconds={0.08}>
+              {/* §1 — date eyebrow + 총운 헤드라인 */}
               <TodayFortuneSummaryCard result={freeResult} />
 
-              {/* mockup §2 — 핑크 banner 큰 점수 */}
+              {/* §2 — 핑크 banner 큰 점수 + 등급 이모지 (PR 1: 🌟😊🙂😐😕⚠️) */}
               <TodayScoreReveal result={freeResult} />
 
-              {/* mockup §3 — 4-card 점수 grid */}
+              {/* §3 — 카테고리별 자세히 (PR 1 신설): 직장/재물/애정/관계/컨디션
+                  블루 헤드라인 + 4~6줄 본문. 운세톡톡 핵심 차용. */}
+              <TodayCategoryReadings result={freeResult} />
+
+              {/* §4 — 한눈에 보기 미니 grid (보조). 기존 2x3 score grid 유지. */}
               <TodayFortuneScoreGrid result={freeResult} />
 
-              {/* mockup §4 — 550원 자세히 보기 unlock */}
+              {/* §5 — 사주 명식 신뢰 카드 (PR 1 신설): 4기둥 + 오행 분포 + 일주 강약 + 격국.
+                  운세톡톡의 "신뢰 장치" 패턴 + 한자/한글 병기. */}
+              {freeResult.sajuChart ? (
+                <TodaySajuChartCard chart={freeResult.sajuChart} />
+              ) : null}
+
+              {/* §6 — 550원 자세히 보기 unlock */}
               <PremiumLockCard
                 copy={freeResult.nextAction.copy}
                 coinCost={freeResult.nextAction.coinCost}
@@ -190,6 +207,9 @@ export function TodayFortuneResultClient({
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
               />
+
+              {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
+              <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
             </MotionResultReveal>
 
             {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}

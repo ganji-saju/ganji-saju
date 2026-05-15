@@ -27,6 +27,17 @@ function getScoreMessage(score: number) {
   return '무리보다 정리가\n필요한 날';
 }
 
+// 2026-05-15 PR 1 — 운세톡톡 벤치마크 (간지사주_무료일진운세_적용방안.md 4-1):
+// 점수를 6 등급으로 매핑해 이모지·라벨을 함께 노출. "0.5초만에 좋은 날인지 인지" 가 목표.
+function getScoreGrade(score: number): { emoji: string; label: string } {
+  if (score >= 90) return { emoji: '🌟', label: '최고의 날' };
+  if (score >= 75) return { emoji: '😊', label: '매우 좋은 날' };
+  if (score >= 60) return { emoji: '🙂', label: '무난한 날' };
+  if (score >= 40) return { emoji: '😐', label: '평범한 날' };
+  if (score >= 25) return { emoji: '😕', label: '신중해야 할 날' };
+  return { emoji: '⚠️', label: '매우 조심해야 할 날' };
+}
+
 export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult }) {
   const targetScore = useMemo(() => getOverallScore(result), [result]);
   const [visibleScore, setVisibleScore] = useState(0);
@@ -53,6 +64,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
   }, [targetScore]);
 
   const signalLines = getScoreMessage(targetScore).split('\n');
+  const grade = getScoreGrade(targetScore);
 
   return (
     <section
@@ -72,12 +84,26 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
       />
 
       <div className="relative flex items-center gap-3.5">
-        <div
-          className="grid h-[86px] w-[86px] place-items-center rounded-full text-[36px] font-extrabold tracking-tighter"
-          style={{ border: '3px solid rgba(255,255,255,0.4)' }}
-          aria-live="polite"
-        >
-          {visibleScore}
+        <div className="relative">
+          <div
+            className="grid h-[86px] w-[86px] place-items-center rounded-full text-[36px] font-extrabold tracking-tighter"
+            style={{ border: '3px solid rgba(255,255,255,0.4)' }}
+            aria-live="polite"
+          >
+            {visibleScore}
+          </div>
+          {/* 2026-05-15 PR 1 — 점수 위 등급 이모지 (운세톡톡 벤치마크 4-1). */}
+          <div
+            className="absolute -right-1 -top-1 grid h-8 w-8 place-items-center rounded-full text-[18px]"
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+            }}
+            aria-hidden="true"
+            title={grade.label}
+          >
+            {grade.emoji}
+          </div>
         </div>
         <div>
           <div
@@ -86,7 +112,15 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
           >
             오늘의 시그널
           </div>
-          <div className="mt-1 text-[16px] font-extrabold leading-snug">
+          {/* 2026-05-15 PR 1 — 등급 라벨 노출 ("무난한 날" / "신중해야 할 날" 등). */}
+          <div
+            className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+            style={{ background: 'rgba(255,255,255,0.22)' }}
+          >
+            <span aria-hidden="true">{grade.emoji}</span>
+            <span>{grade.label}</span>
+          </div>
+          <div className="mt-1.5 text-[16px] font-extrabold leading-snug">
             {signalLines.map((line, idx) => (
               <span key={idx}>
                 {line}
