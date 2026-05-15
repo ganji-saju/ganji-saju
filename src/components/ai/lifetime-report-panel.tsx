@@ -284,7 +284,7 @@ function LifetimeAtAGlance({
         </p>
       </article>
 
-      <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+      <div className="mt-4 grid gap-2.5">
         <LifetimeSummaryCard
           icon={Sparkles}
           eyebrow="타고난 결"
@@ -615,13 +615,13 @@ function LifetimeSectionBody({
     case 'strengthBalance':
       return (
         <>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5">
             <FactCard label="강한 축" body={report.strengthBalance.strongAxis} tone={tone} />
             <FactCard label="약한 축" body={report.strengthBalance.weakAxis} tone={tone} />
             <FactCard label="에너지 소모 방식" body={report.strengthBalance.energyDrain} tone={tone} />
             <FactCard label="회복 방식" body={report.strengthBalance.recovery} tone={tone} />
           </div>
-          <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+          <div className="mt-3 grid gap-1.5">
             {report.strengthBalance.elementHighlights.map((item) => (
               <div
                 key={item}
@@ -662,7 +662,7 @@ function LifetimeSectionBody({
             <FactCard label="보완 방향" body={report.patternAndYongsin.yongsinDirection} tone={tone} />
             <FactCard label="평생 선택 힌트" body={report.patternAndYongsin.choiceRule} tone={tone} />
           </div>
-          <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-3 grid gap-2.5">
             <div
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'rgba(45,135,88,0.18)' }}
@@ -714,7 +714,7 @@ function LifetimeSectionBody({
       );
     case 'relationshipPattern':
       return (
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2.5">
           <FactCard label="거리감" body={report.relationshipPattern.distanceStyle} tone={tone} />
           <FactCard label="감정 표현 방식" body={report.relationshipPattern.expressionStyle} tone={tone} />
           <FactCard label="갈등 지점" body={report.relationshipPattern.conflictTriggers} tone={tone} />
@@ -723,7 +723,7 @@ function LifetimeSectionBody({
       );
     case 'wealthStyle':
       return (
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2.5">
           <FactCard label="돈을 버는 방식" body={report.wealthStyle.earningStyle} tone={tone} />
           <FactCard label="돈을 지키는 방식" body={report.wealthStyle.keepingStyle} tone={tone} />
           <FactCard label="지출 실수 패턴" body={report.wealthStyle.spendingMistakes} tone={tone} />
@@ -732,7 +732,7 @@ function LifetimeSectionBody({
       );
     case 'careerDirection':
       return (
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2.5">
           <FactCard label="잘 맞는 일의 구조" body={report.careerDirection.fitStructure} tone={tone} />
           <FactCard label="버티는 일 vs 빛나는 일" body={report.careerDirection.endureVsShine} tone={tone} />
           <FactCard label="독립 / 조직 적성" body={report.careerDirection.independenceStyle} tone={tone} />
@@ -742,7 +742,7 @@ function LifetimeSectionBody({
     case 'healthRhythm':
       return (
         <>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5">
             <FactCard label="무너질 때 신호" body={report.healthRhythm.warningSignals} tone={tone} />
             <FactCard label="회복 루틴" body={report.healthRhythm.recoveryRoutine} tone={tone} />
           </div>
@@ -764,11 +764,11 @@ function LifetimeSectionBody({
     case 'lifetimeStrategy':
       return (
         <>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5">
             <FactCard label="잘 될 때의 태도" body={report.lifetimeStrategy.useWhenStrong.join(' ')} tone={tone} />
             <FactCard label="흔들릴 때의 방어법" body={report.lifetimeStrategy.defendWhenShaken.join(' ')} tone={tone} />
           </div>
-          <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
+          <div className="mt-3 grid gap-1.5">
             {interpretation.rememberRules.map((item) => (
               <div
                 key={item}
@@ -1194,7 +1194,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <p className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
           {report.yearlyAppendix.oneLineSummary}
         </p>
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-2.5">
           <FactCard label="상반기" body={report.yearlyAppendix.firstHalf} tone="indigo" />
           <FactCard label="하반기" body={report.yearlyAppendix.secondHalf} tone="indigo" />
         </div>

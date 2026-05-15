@@ -323,7 +323,9 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
           <MomentumSummaryRow tone="caution" flows={grouped.caution} />
           <MomentumSummaryRow tone="steady" flows={grouped.steady} />
         </div>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        {/* 2026-05-15 — 긴 strategy 텍스트가 좌우 2열로 들어가면 좁아져 가독성 저하.
+            상하 1열로 stack 해 각 카드가 풀 너비 사용. */}
+        <div className="mt-3 grid gap-2">
           {highlightedGood ? (
             <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
               <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
@@ -878,7 +880,9 @@ function YearlyMonthlySection({
       </p>
 
       {report ? (
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        // 2026-05-15 — 사용자 피드백: "진행하기 좋은 시기 / 한 번 더 확인할 시기 가 2컬럼으로
+        // 나오면 글이 길어서 보기 너무 힘들다." → 1열로 stack 해 각 카드가 풀 너비 사용.
+        <div className="mt-3 grid gap-2">
           <TimingWindowCard title="진행하기 좋은 시기" windows={report.goodPeriods} tone="good" />
           <TimingWindowCard title="한 번 더 확인할 시기" windows={report.cautionPeriods} tone="caution" />
         </div>
@@ -1359,8 +1363,8 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             </div>
           </section>
 
-          {/* §상하반기 */}
-          <div className="grid gap-2.5 sm:grid-cols-2">
+          {/* §상하반기 — 2026-05-15 각 카드에 paragraph 3개씩 들어가 매우 긴 콘텐츠. 1열 stack. */}
+          <div className="grid gap-2.5">
             <article
               className="rounded-[18px] border bg-white p-5"
               style={{ borderColor: 'var(--app-pink-line)' }}
@@ -1425,8 +1429,8 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             </div>
           </section>
 
-          {/* §건강/이동 */}
-          <div className="grid gap-2.5 sm:grid-cols-2">
+          {/* §건강/이동 — 2026-05-15 SupportAreaCard 가 긴 prose+basis 들고 있음. 1열 stack. */}
+          <div className="grid gap-2.5">
             <SupportAreaCard
               label="건강·생활 리듬"
               eyebrow="리듬 관리"
