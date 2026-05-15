@@ -106,11 +106,12 @@ export function buildSajuNarrative(
   if (strengthLevel) {
     chips.push({ label: '강약', value: strengthLevel });
   }
+  // 2026-05-15: chip 도 한자 옆에 한글 병기. "丁酉" → "정유(丁酉)".
   if (majorLuck) {
-    chips.push({ label: '대운', value: majorLuck });
+    chips.push({ label: '대운', value: withKoreanGanzi(majorLuck) });
   }
   if (saewoon) {
-    chips.push({ label: '세운', value: saewoon });
+    chips.push({ label: '세운', value: withKoreanGanzi(saewoon) });
   }
 
   return { headline, body, chips };
@@ -196,6 +197,26 @@ function buildYongsinSentence({
   return `보완은 ${yongsinPrimary}을 통해 일어납니다.`;
 }
 
+// 2026-05-15 cleanup — 한자 ganzi 옆에 한글 발음 병기.
+// "丁酉" → "정유(丁酉)" 형식. 사용자 피드백: 한자 범벅으로 무슨 내용인지 파악 힘듦.
+const STEM_HANJA_TO_KOREAN: Record<string, string> = {
+  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
+  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
+};
+const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
+  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
+  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
+};
+function ganziToKorean(ganzi: string): string {
+  const stem = STEM_HANJA_TO_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
+  const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
+  return `${stem}${branch}`;
+}
+function withKoreanGanzi(ganzi: string): string {
+  const korean = ganziToKorean(ganzi);
+  return korean ? `${korean}(${ganzi})` : ganzi;
+}
+
 function buildLuckSentence({
   majorLuck,
   saewoon,
@@ -206,9 +227,10 @@ function buildLuckSentence({
   wolwoon: string | null;
 }): string | null {
   const parts: string[] = [];
-  if (majorLuck) parts.push(`${majorLuck} 대운`);
-  if (saewoon) parts.push(`${saewoon} 세운`);
-  if (wolwoon) parts.push(`${wolwoon} 월운`);
+  // 2026-05-15: 한자 ganzi 옆에 한글 발음 병기 — "정유(丁酉) 대운".
+  if (majorLuck) parts.push(`${withKoreanGanzi(majorLuck)} 대운`);
+  if (saewoon) parts.push(`${withKoreanGanzi(saewoon)} 세운`);
+  if (wolwoon) parts.push(`${withKoreanGanzi(wolwoon)} 월운`);
   if (parts.length === 0) return null;
   return `지금은 ${parts.join(' · ')}이 함께 작동합니다.`;
 }

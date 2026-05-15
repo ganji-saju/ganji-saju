@@ -109,9 +109,12 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 2026-05-15 PR-C — children 모드: caller layout 유지 + 자식 stagger reveal */
+/* 2026-05-15 PR-C — children 모드: caller layout 유지 + 자식 stagger reveal.
+   2026-05-15 사주 결과 cleanup: `display: contents` 가 부모의 space-y 마진을 막아
+   카드 간격이 0 으로 붙던 버그 fix. grid + gap 으로 명시적 간격 부여. */
 .motion-result-reveal-children {
-  display: contents; /* layout reset — 부모 grid/flex 가 자식을 직접 배치하도록 */
+  display: grid;
+  gap: 1rem;
 }
 .motion-reveal-slot {
   opacity: 0;
