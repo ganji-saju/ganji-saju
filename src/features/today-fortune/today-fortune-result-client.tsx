@@ -20,6 +20,8 @@ import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-ct
 import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
 // 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 내역 + 발동 케이스 메시지.
 import { TodayIljinBreakdownCard } from '@/components/today-fortune/today-iljin-breakdown-card';
+// 2026-05-15 PR 9 — 03 ML 가중치 학습: 사용자 피드백 카드.
+import { TodayFeedbackCard } from '@/components/today-fortune/today-feedback-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -131,6 +133,8 @@ export function TodayFortuneResultClient({
   concern?: string;
 }) {
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
+  // 2026-05-15 PR 9: 피드백 카드 dwell 측정용 — 결과 페이지 mount 시점.
+  const [enterAt] = useState(() => Date.now());
   const concernId = normalizeConcernId(concern);
   const relatedLinks = useMemo(() => RELATED_LINKS[freeResult?.concernId ?? concernId], [concernId, freeResult]);
 
@@ -229,6 +233,10 @@ export function TodayFortuneResultClient({
 
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
               <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
+
+              {/* §8 — ML 피드백 카드 (PR 9 신설): 30초 dwell 후 노출.
+                  사용자 평가 → today_fortune_feedback 테이블 → 추후 가중치 학습. */}
+              <TodayFeedbackCard result={freeResult} enterAt={enterAt} />
             </MotionResultReveal>
 
             {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}
