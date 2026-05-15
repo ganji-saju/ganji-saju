@@ -12,6 +12,11 @@ function clampScore(score: number) {
 }
 
 function getOverallScore(result: TodayFortuneFreeResult) {
+  // 2026-05-15 PR 3 — 운세톡톡 벤치마크: iljinScore.totalScore (8영역 정교 산출) 가 있으면
+  // 그걸 우선 사용. 사용자 hero 의 큰 점수와 breakdown 카드의 합계가 일치하도록.
+  if (result.iljinScore && typeof result.iljinScore.totalScore === 'number') {
+    return clampScore(result.iljinScore.totalScore);
+  }
   const overall = result.scores.find((score) => score.key === 'overall')?.score;
   if (typeof overall === 'number') return clampScore(overall);
 
@@ -27,14 +32,15 @@ function getScoreMessage(score: number) {
   return '무리보다 정리가\n필요한 날';
 }
 
-// 2026-05-15 PR 1 — 운세톡톡 벤치마크 (간지사주_무료일진운세_적용방안.md 4-1):
-// 점수를 6 등급으로 매핑해 이모지·라벨을 함께 노출. "0.5초만에 좋은 날인지 인지" 가 목표.
+// 2026-05-15 PR 1 → PR 3 — 운세톡톡 벤치마크 (일진_점수산출_알고리즘_정교화.md 6-1):
+// 7단계 등급으로 확장 (90+ 🌟 / 80+ ✨ / 70+ 😊 / 60+ 🙂 / 45+ 😐 / 30+ 😕 / ⚠️).
 function getScoreGrade(score: number): { emoji: string; label: string } {
   if (score >= 90) return { emoji: '🌟', label: '최고의 날' };
-  if (score >= 75) return { emoji: '😊', label: '매우 좋은 날' };
+  if (score >= 80) return { emoji: '✨', label: '매우 좋은 날' };
+  if (score >= 70) return { emoji: '😊', label: '좋은 날' };
   if (score >= 60) return { emoji: '🙂', label: '무난한 날' };
-  if (score >= 40) return { emoji: '😐', label: '평범한 날' };
-  if (score >= 25) return { emoji: '😕', label: '신중해야 할 날' };
+  if (score >= 45) return { emoji: '😐', label: '평범한 날' };
+  if (score >= 30) return { emoji: '😕', label: '신중해야 할 날' };
   return { emoji: '⚠️', label: '매우 조심해야 할 날' };
 }
 

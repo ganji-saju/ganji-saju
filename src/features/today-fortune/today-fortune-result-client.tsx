@@ -18,6 +18,8 @@ import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-
 import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종 + 로또 번호 오행색 시각화.
 import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
+// 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 내역 + 발동 케이스 메시지.
+import { TodayIljinBreakdownCard } from '@/components/today-fortune/today-iljin-breakdown-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -186,6 +188,15 @@ export function TodayFortuneResultClient({
 
               {/* §2 — 핑크 banner 큰 점수 + 등급 이모지 (PR 1: 🌟😊🙂😐😕⚠️) */}
               <TodayScoreReveal result={freeResult} />
+
+              {/* §2.5 — 일진 점수 산출 내역 (PR 3 신설): 8영역 +/- 점수 + 발동 케이스 메시지.
+                  운세톡톡 6-2: "총점뿐 아니라 영역별 점수도 보여주면 명리 신뢰도가 올라간다". */}
+              {freeResult.iljinScore ? (
+                <TodayIljinBreakdownCard
+                  iljinScore={freeResult.iljinScore}
+                  iljinMessages={freeResult.iljinMessages ?? null}
+                />
+              ) : null}
 
               {/* §3 — 카테고리별 자세히 (PR 1 신설): 직장/재물/애정/관계/컨디션
                   블루 헤드라인 + 4~6줄 본문. 운세톡톡 핵심 차용. */}

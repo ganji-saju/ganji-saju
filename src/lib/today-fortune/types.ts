@@ -115,6 +115,35 @@ export interface TodayFortuneFreeResult {
   sajuSlug?: string | null;
   /** 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종. */
   luckyPackage?: TodayLuckyPackage | null;
+  /** 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 8영역 breakdown. */
+  iljinScore?: TodayIljinScoreSnapshot | null;
+  /** 2026-05-15 PR 3 — 일진 메시지 라이브러리 발동 케이스 + 변수 치환된 메시지. */
+  iljinMessages?: TodayIljinMessages | null;
+}
+
+// 2026-05-15 PR 3 — 운세톡톡 벤치마크: 점수 산출 8영역 + 7단계 등급.
+export interface TodayIljinScoreSnapshot {
+  totalScore: number;
+  grade: '최고' | '매우 좋음' | '좋음' | '무난' | '보통' | '주의' | '매우 주의';
+  gradeEmoji: string;
+  gradeMessage: string;
+  breakdown: {
+    cheongan: number;
+    jiji: number;
+    ohaeng: number;
+    sinsal: number;
+    balance: number;
+    regulation: number;
+    unsung: number;
+    special: number;
+  };
+}
+
+export interface TodayIljinMessages {
+  /** 발동 케이스 id 목록 (디버깅·확장용). */
+  caseIds: string[];
+  /** 변수 치환된 풀이 문장 (상위 3개). */
+  messages: string[];
 }
 
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크 (간지사주_무료일진운세_적용방안.md 3-5):

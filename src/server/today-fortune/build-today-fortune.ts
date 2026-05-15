@@ -19,6 +19,10 @@ import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
 import { buildTodayLuckyPackage } from '@/lib/today-fortune/lucky-package';
+// 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 + 메시지 라이브러리.
+import { calculateIljinScore, type SajuOriginInput } from '@/lib/today-fortune/iljin-score-engine';
+import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
+import type { Branch as IljinBranch, Stem as IljinStem } from '@/lib/today-fortune/iljin-rules';
 import type {
   ConcernId,
   TodayCalendarType,
@@ -2582,6 +2586,67 @@ export function buildTodayFortuneFreeResult(
         dayGanzi: sajuData.pillars.day.ganzi,
       });
     })(),
+    // 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 8영역 + 메시지 라이브러리.
+    iljinScore: (() => {
+      if (!todayPillar.stem || !todayPillar.branch) return null;
+      const { lucky, unlucky } = deriveLuckyElements(sajuData);
+      const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
+      const r = calculateIljinScore(sajuOrigin, {
+        todayStem: todayPillar.stem as IljinStem,
+        todayBranch: todayPillar.branch as IljinBranch,
+      });
+      return {
+        totalScore: r.totalScore,
+        grade: r.grade,
+        gradeEmoji: r.gradeEmoji,
+        gradeMessage: r.gradeMessage,
+        breakdown: r.breakdown,
+      };
+    })(),
+    iljinMessages: (() => {
+      if (!todayPillar.stem || !todayPillar.branch) return null;
+      const { lucky, unlucky } = deriveLuckyElements(sajuData);
+      const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
+      const picked = pickIljinMessages(
+        sajuOrigin,
+        todayPillar.stem as IljinStem,
+        todayPillar.branch as IljinBranch,
+        { name: input.name ?? '선생님', element: sajuData.fiveElements.weakest },
+        `${todayPillar.dateKey}::${sajuData.pillars.day.ganzi}`,
+        3
+      );
+      return { caseIds: picked.caseIds, messages: picked.messages };
+    })(),
+  };
+}
+
+// 2026-05-15 PR 3 — SajuDataV1 → iljin-score-engine 의 SajuOriginInput 변환.
+function buildSajuOriginForIljin(
+  sajuData: SajuDataV1,
+  yongsinEl: '목' | '화' | '토' | '금' | '수',
+  kishinEl: '목' | '화' | '토' | '금' | '수' | null
+): SajuOriginInput {
+  const byEl = sajuData.fiveElements.byElement;
+  return {
+    dayMaster: sajuData.pillars.day.stem as IljinStem,
+    dayMasterElement: sajuData.dayMaster.element as '목' | '화' | '토' | '금' | '수',
+    yearStem: sajuData.pillars.year.stem as IljinStem,
+    yearBranch: sajuData.pillars.year.branch as IljinBranch,
+    monthStem: sajuData.pillars.month.stem as IljinStem,
+    monthBranch: sajuData.pillars.month.branch as IljinBranch,
+    dayBranch: sajuData.pillars.day.branch as IljinBranch,
+    hourStem: (sajuData.pillars.hour?.stem ?? null) as IljinStem | null,
+    hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
+    elementPercentages: {
+      목: byEl['목']?.percentage ?? 0,
+      화: byEl['화']?.percentage ?? 0,
+      토: byEl['토']?.percentage ?? 0,
+      금: byEl['금']?.percentage ?? 0,
+      수: byEl['수']?.percentage ?? 0,
+    },
+    strengthLabel: sajuData.strength?.level ?? null,
+    yongsinElement: yongsinEl,
+    kishinElement: kishinEl,
   };
 }
 
