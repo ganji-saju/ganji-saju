@@ -693,6 +693,17 @@ function createMonthlyFlow(
   };
 }
 
+// 2026-05-15 PR 5 — Peak/Pitfall 1쌍 마킹. 모든 month 의 peakKind 가 undefined 인
+// 상태에서 시작해 'rise' 첫 달을 'peak', 'caution' 첫 달을 'pitfall' 로 표시.
+// 사주아이 reference: 10년 중 좋은 해/나쁜 해를 한눈에 보이게.
+function markPeakAndPitfall(monthlyFlows: YearlyMonthFlow[]): void {
+  for (const flow of monthlyFlows) flow.peakKind = null;
+  const firstRise = monthlyFlows.find((flow) => flow.momentum === 'rise');
+  if (firstRise) firstRise.peakKind = 'peak';
+  const firstCaution = monthlyFlows.find((flow) => flow.momentum === 'caution');
+  if (firstCaution) firstCaution.peakKind = 'pitfall';
+}
+
 function groupMonthsByMomentum(
   monthlyFlows: YearlyMonthFlow[],
   momentum: YearlyMomentum
@@ -856,6 +867,9 @@ export function buildYearlyReport(
   const monthlyFlows = monthlyEvidence.map((monthly) =>
     createMonthlyFlow(monthly)
   );
+  // 2026-05-15 PR 5 — Peak/Pitfall 마킹. 1년 중 가장 결이 좋은 'rise' 1개 + 가장
+  // 흔들리는 'caution' 1개 선택 (없으면 마킹 X). 동률은 가장 빠른 달 우선.
+  markPeakAndPitfall(monthlyFlows);
   const firstHalf = createHalfFlow(
     'firstHalf',
     monthlyFlows.filter((flow) => flow.month <= 6),

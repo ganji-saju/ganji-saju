@@ -26,6 +26,10 @@ export type YearlyCategoryKey =
 
 export type YearlyMomentum = 'rise' | 'steady' | 'caution';
 
+// 2026-05-15 PR 5 — 사주아이 reference: 12개월 중 가장 결이 좋은 'peak' / 가장 결이
+// 흔들리는 'pitfall' 을 1개씩 마킹해 사용자에게 시각 강조.
+export type YearlyPeakKind = 'peak' | 'pitfall' | null;
+
 export interface YearlyComputationMeta {
   detailLevel: YearlyReportDetailLevel;
   monthlyPrecision: YearlyMonthlyPrecision;
@@ -80,6 +84,8 @@ export interface YearlyMonthFlow {
   action: string;
   relatedAreas: YearlyCategoryKey[];
   basis: string[];
+  /** 2026-05-15 PR 5 — Peak/Pitfall 시각 강조. 1년 중 1 peak + 1 pitfall 까지만. */
+  peakKind?: YearlyPeakKind;
 }
 
 export interface YearlyTimingWindow {

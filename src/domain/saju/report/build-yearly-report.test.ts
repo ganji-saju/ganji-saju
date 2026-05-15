@@ -127,3 +127,38 @@ test('buildYearlyReport actually respects the requested target year', () => {
     'monthly ganji evidence should reflect the requested target year'
   );
 });
+
+test('buildYearlyReport marks Peak / Pitfall on 12 monthly flows (PR 5, 2026-05-15)', () => {
+  // PR 5: 1년 12개월 중 1개의 peak (첫 rise) + 1개의 pitfall (첫 caution) 마킹.
+  // 사주아이 reference 의 Peak/Pitfall 시각 강조용.
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildYearlyReport(birthInput, data, 2026);
+
+  assert.equal(report.monthlyFlows.length, 12);
+
+  const peaks = report.monthlyFlows.filter((flow) => flow.peakKind === 'peak');
+  const pitfalls = report.monthlyFlows.filter((flow) => flow.peakKind === 'pitfall');
+
+  // 1) peak 0 또는 1개 (momentum 'rise' 가 없는 사주는 0).
+  assert.ok(peaks.length <= 1, `peak 는 최대 1개. got=${peaks.length}`);
+  // 2) pitfall 0 또는 1개.
+  assert.ok(pitfalls.length <= 1, `pitfall 은 최대 1개. got=${pitfalls.length}`);
+
+  // 3) peak/pitfall 이 있다면 해당 month 의 momentum 와 일치.
+  for (const peak of peaks) {
+    assert.equal(peak.momentum, 'rise', `peak month 는 momentum=rise 여야 함 (month=${peak.month})`);
+  }
+  for (const pitfall of pitfalls) {
+    assert.equal(
+      pitfall.momentum,
+      'caution',
+      `pitfall month 는 momentum=caution 여야 함 (month=${pitfall.month})`
+    );
+  }
+
+  // 4) 다른 month 는 peakKind === null (undefined 가 아님 — markPeakAndPitfall 이 명시적으로 null 초기화).
+  for (const flow of report.monthlyFlows) {
+    if (flow.peakKind === 'peak' || flow.peakKind === 'pitfall') continue;
+    assert.equal(flow.peakKind, null, `month=${flow.month} 의 peakKind 는 null 이어야 함`);
+  }
+});
