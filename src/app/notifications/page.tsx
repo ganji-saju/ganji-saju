@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import { StarSignDailyDigestCard } from '@/components/star-sign/star-sign-daily-digest-card';
 import NotificationCenterPage from '@/features/notifications/notification-center-page';
 import { getNotificationSnapshot } from '@/lib/notifications';
 
 export const metadata: Metadata = {
   title: '알림',
-  description: '오늘운세, 오늘타로, 오늘띠 알림만 간단히 켜고 끄는 달빛인생 알림 화면입니다.',
+  description: '오늘 별자리 일진과 오늘운세·타로·띠 알림을 한 화면에서 확인하는 달빛인생 알림 센터입니다.',
   alternates: {
     canonical: '/notifications',
   },
@@ -13,5 +14,13 @@ export const metadata: Metadata = {
 export default async function NotificationsPage() {
   const snapshot = await getNotificationSnapshot();
 
-  return <NotificationCenterPage mode="center" snapshot={snapshot} />;
+  // 2026-05-16 PR #133 — 오늘 별자리 일진 카드를 server-render 후 client 페이지에 slot 으로 전달.
+  // StarSignDailyDigestCard 는 computeStarSignDailyDigest() 만 호출하므로 server 에서 안전.
+  return (
+    <NotificationCenterPage
+      mode="center"
+      snapshot={snapshot}
+      headerSlot={<StarSignDailyDigestCard />}
+    />
+  );
 }
