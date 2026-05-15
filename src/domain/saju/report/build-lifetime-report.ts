@@ -422,6 +422,178 @@ function buildPracticalActions(
   ];
 }
 
+// 2026-05-15 PR 3 — 사주아이 reference 10 패턴 챕터명 빌더.
+// 동일 패턴이라도 매번 같은 문장이 나오면 다시 generic 으로 느껴지므로
+// cycle 의 ganzi 코드값을 seed 로 후보 풀에서 1개 선택.
+type ChapterPattern =
+  | 'signal'      // 시그널형 — 대운 시작
+  | 'questionFomo' // 질문+FOMO — concern 호명
+  | 'fomoAd'       // 감탄+FOMO — 전성기
+  | 'hope'         // 희망형 — 진입기/support
+  | 'transform'   // 변환형 — 결실/수익기
+  | 'warning'     // 경고형 — 약점/주의기
+  | 'reverse'    // 반전형 — dominant 과한 cycle
+  | 'crisis'     // 위기형 — relationship 위험
+  | 'empathy'    // 공감형 — 멘탈/내면
+  | 'secret';    // 비밀형 — 개운법 부각
+
+const CHAPTER_PATTERN_TEMPLATES: Record<ChapterPattern, string[]> = {
+  signal: [
+    '내 인생의 대격변, 새로운 10년의 문이 열렸어요',
+    '큰 흐름이 갈리는 분기점, 다음 10년이 결정됩니다',
+    '한 챕터가 닫히고 새 챕터가 열리는 결',
+  ],
+  questionFomo: [
+    '{age} 한가운데, 이 결정에 인생을 걸어도 될까?',
+    '{age}, 지금 안 움직이면 후회할 결의 시기',
+    '{age}에 맞는 다음 한 수, 답을 찾아야 할 때',
+  ],
+  fomoAd: [
+    '역대급 전성기! 올해 안 잡으면 평생 후회해요',
+    '드디어 운이 내 편! 지금이 폭발할 타이밍입니다',
+    '10년 중 가장 빛나는 결, 망설일 시간이 없어요',
+  ],
+  hope: [
+    '터지기 일보 직전! 폭발적인 추진력이 붙는 결',
+    '드디어 받쳐주는 흐름이 들어옵니다, 출발선에 서세요',
+    '회복과 정리가 끝나고 본격 도약이 시작되는 시기',
+  ],
+  transform: [
+    '현실적인 결과물이 쏟아진다! 수익 극대화의 타이밍',
+    '쌓아둔 기반이 돈으로 바뀌는 결실의 10년',
+    '눈에 보이는 성과로 변환되는 시기, 마무리를 챙기세요',
+  ],
+  warning: [
+    '⚠️ 암흑기 주의보! 비바람을 피해 잠시 쉬어가야 할 때',
+    '⚠️ 무리하지 말 것, 이 10년은 보존이 핵심입니다',
+    '⚠️ 큰 결정 보류 신호 — 지금은 흔들리는 결',
+  ],
+  reverse: [
+    '화려한 무대 뒤, 내실을 다져야 텅장을 면해요',
+    '잘 풀릴수록 위험이 커지는 결 — 분산이 핵심',
+    '강한 기운이 더 강해지는 시기, 과속을 경계하세요',
+  ],
+  crisis: [
+    '{relationship}, 가까운 관계의 결이 흔들릴 수 있어요',
+    '{relationship} 분에게 — 표현과 거리감을 새로 잡아야 할 시기',
+    '관계의 온도가 바뀌는 결, 말의 강도를 한 단계 낮추세요',
+  ],
+  empathy: [
+    '완벽주의 때문에 밤잠 설치는 당신에게',
+    '혼자 다 짊어지려 했던 마음에 쉼표가 필요한 시기',
+    '마음의 무게를 한 번 정리하고 가야 할 결',
+  ],
+  secret: [
+    '대박 나는 비책, 이것만 지키면 흐름이 바뀝니다',
+    '잘 풀리는 사람들의 공통 루틴, 이 10년의 핵심',
+    '운명을 내 편으로 만드는 4가지 행동',
+  ],
+};
+
+const RELATIONSHIP_TITLE_HINT: Record<NonNullable<UserSituation['relationshipStatus']>, string> = {
+  single: '솔로 분',
+  dating: '연애 중이신 분',
+  married: '결혼하신 분',
+  separated: '정리 중인 분',
+};
+
+const AGE_TITLE_HINT_BY_DECADE: Record<number, string> = {
+  20: '20대 초반',
+  25: '20대 중후반',
+  30: '30대 초반',
+  35: '30대 중후반',
+  40: '40대 초반',
+  45: '40대 중후반',
+  50: '50대 초반',
+  55: '50대 중후반',
+  60: '60대 초반',
+  65: '60대 중후반',
+  70: '70대 이후',
+};
+
+function hintForAge(startAge: number | null | undefined): string {
+  if (typeof startAge !== 'number') return '인생의 한 마디';
+  const decade = Math.floor(startAge / 5) * 5;
+  return AGE_TITLE_HINT_BY_DECADE[decade] ?? `${decade}대 무렵`;
+}
+
+function pickFromSeed(items: string[], seed: number): string {
+  if (items.length === 0) return '';
+  const index = Math.abs(seed) % items.length;
+  return items[index] ?? items[0];
+}
+
+function ganziSeed(ganzi: string): number {
+  return Array.from(ganzi).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+}
+
+function selectChapterPattern(
+  cycle: SajuMajorLuckCycle,
+  isCurrent: boolean,
+  isFirstCycle: boolean,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  userSituation: UserSituation | null
+): ChapterPattern {
+  const { stem, branch } = getGanziElements(cycle.ganzi);
+  const element = stem ?? branch ?? context.weakest;
+  const isSupport =
+    context.supportElements.includes(element) ||
+    (branch && stem ? context.supportElements.includes(branch) : false);
+  const isDominant = element === context.dominant;
+  const isWeakest = element === context.weakest;
+  const concern = userSituation?.currentConcern ?? null;
+  const status = userSituation?.relationshipStatus ?? null;
+
+  // 1) 시그널형 — 첫 cycle (인생 초입 또는 처음 산출된 대운).
+  if (isFirstCycle) return 'signal';
+
+  // 2) 현재 cycle 우선순위 — Peak vs 경고 vs 반전 vs 위기.
+  if (isCurrent) {
+    if (isSupport && (concern === 'business' || concern === 'wealth')) return 'fomoAd';
+    if (isSupport) return 'hope';
+    if (isDominant) return 'reverse';
+    if (isWeakest) return 'warning';
+    if (status && (concern === 'romance' || concern === 'family')) return 'crisis';
+    return 'questionFomo';
+  }
+
+  // 3) 비현재 cycle — element 결 + 사용자 입력 분기.
+  if (isSupport && (concern === 'wealth' || concern === 'business')) return 'transform';
+  if (isWeakest) return 'warning';
+  if (isDominant) return 'reverse';
+  if (status && (concern === 'romance' || concern === 'family')) return 'crisis';
+  if (concern === 'health') return 'empathy';
+  // 4) phase 가 결정기/표현기 면 변환·희망 톤 우선.
+  if (cycle.notes.join(' ').includes('결실') || cycle.notes.join(' ').includes('수확')) return 'transform';
+  // 5) 사용자 정보 거의 없는 일반 cycle → 비밀형으로 개운법 부각.
+  return 'secret';
+}
+
+function fillTitleTemplate(
+  template: string,
+  cycle: SajuMajorLuckCycle,
+  userSituation: UserSituation | null
+): string {
+  const status = userSituation?.relationshipStatus ?? null;
+  return template
+    .replace('{age}', hintForAge(cycle.startAge))
+    .replace('{relationship}', status ? RELATIONSHIP_TITLE_HINT[status] : '관계 챙기는 분');
+}
+
+function buildChapterTitleText(
+  cycle: SajuMajorLuckCycle,
+  isCurrent: boolean,
+  isFirstCycle: boolean,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  userSituation: UserSituation | null
+): string {
+  const pattern = selectChapterPattern(cycle, isCurrent, isFirstCycle, context, userSituation);
+  const candidates = CHAPTER_PATTERN_TEMPLATES[pattern];
+  const seed = ganziSeed(cycle.ganzi) + (isCurrent ? 7 : 0);
+  const template = pickFromSeed(candidates, seed);
+  return fillTitleTemplate(template, cycle, userSituation);
+}
+
 function buildClosingNoteText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
@@ -458,8 +630,9 @@ function buildMajorLuckCycles(
     ];
   }
 
-  return cycles.slice(0, 10).map((cycle) => {
+  return cycles.slice(0, 10).map((cycle, index) => {
     const isCurrent = currentMajorLuckGanzi === cycle.ganzi;
+    const isFirstCycle = index === 0;
     const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 10년 흐름입니다.';
     const reading = buildMajorLuckReading(cycle, isCurrent, context);
 
@@ -470,9 +643,9 @@ function buildMajorLuckCycles(
       summary: `${note} ${reading.summary}`,
       task: reading.task,
       isCurrent,
-      // 2026-05-15 PR 2 — 8 sub-section. 점진 보강 (PR 3~5 에서 카피·사전·패턴 강화).
+      // 2026-05-15 PR 2 — 8 sub-section. PR 3 에서 chapterTitle 10 패턴 적용.
       hook: buildHookSentence(cycle, isCurrent, context, userSituation),
-      chapterTitle: `${formatLuckRange(cycle)} · ${cycle.ganzi} 대운, 10년의 결을 정리합니다`, // PR 3 에서 10 패턴 적용 예정
+      chapterTitle: buildChapterTitleText(cycle, isCurrent, isFirstCycle, context, userSituation),
       chapterBody: buildChapterBodyText(cycle, reading, context),
       mental: buildMentalText(cycle, context),
       relationship: buildRelationshipText(cycle, context, userSituation),
