@@ -280,6 +280,7 @@ function GatewayView({
   onProvider,
   onOpenEmailLogin,
   onOpenSignup,
+  onOpenRecover,
 }: {
   disabled: boolean;
   statusMessage: string;
@@ -287,6 +288,7 @@ function GatewayView({
   onProvider: (provider: 'google' | 'kakao') => void;
   onOpenEmailLogin: () => void;
   onOpenSignup: () => void;
+  onOpenRecover: () => void;
 }) {
   return (
     <div className="gangi-auth-gateway relative isolate w-full overflow-hidden">
@@ -400,13 +402,26 @@ function GatewayView({
           에 동의합니다.
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenSignup}
-          className="mt-3 w-full text-center text-[12px] font-medium text-[var(--app-copy-muted)] underline underline-offset-4"
-        >
-          처음 오셨나요? 이메일로 회원가입
-        </button>
+        {/* 2026-05-15 — 회원가입/비번찾기 진입점 prominent CTA 로 강화.
+            이전엔 underline 작은 글씨로 사용자가 못 찾음. */}
+        <div className="mt-4 grid gap-2">
+          <button
+            type="button"
+            onClick={onOpenSignup}
+            className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
+            style={{ borderColor: 'var(--app-pink-line)' }}
+          >
+            처음 오셨나요? 이메일로 회원가입 →
+          </button>
+          <button
+            type="button"
+            onClick={onOpenRecover}
+            className="inline-flex h-10 items-center justify-center rounded-full border bg-white px-5 text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            비밀번호를 잊으셨나요?
+          </button>
+        </div>
 
         {!hasSupabaseBrowserEnv ? (
           <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
@@ -750,6 +765,13 @@ function LoginContent({
         }}
         onOpenSignup={() => {
           setMode('signup');
+          setErrorMessage('');
+          setStatusMessage('');
+        }}
+        // 2026-05-15 — 비번찾기 진입점을 gateway 에서 바로 보이게 함.
+        // 이전엔 login 모드 진입 후에만 노출되어 사용자가 못 찾던 회귀.
+        onOpenRecover={() => {
+          setMode('recover');
           setErrorMessage('');
           setStatusMessage('');
         }}
