@@ -1,9 +1,16 @@
 // 2026-05-15 — 설정 페이지를 sub-page 디자인(pink-soft hero + 1열 카드)으로 재작성.
 // 이전엔 PageHero + SectionSurface 같은 옛 marketing 컴포넌트로 사이트와 어긋남.
 // 명시적 섹션: 알림 / 레이아웃 / 읽기 경험 / 가족·다른 사람 정보 / 계정 관리.
+//
+// 2026-05-16 — PR #155/#159 가 PC SiteHeader 의 사이드바를 가린 뒤로
+// ReadingComfort 토글 / 로그아웃 진입점이 PC 에서 사라졌다.
+// 우상단 avatar(메가 메뉴) → /my → /my/settings 경로로 통합하기 위해
+// 본 페이지에 ReadingComfortControl 카드와 LogoutButton 을 합류시킨다.
 import Link from 'next/link';
 import { SETTINGS_BLUEPRINT } from '@/content/moonlight';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
+import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
+import { LogoutButton } from '@/features/account/logout-button';
 
 const QUICK_LINK_TONE = {
   pink: {
@@ -170,6 +177,26 @@ export default function MySettingsPage() {
           <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
             읽기 경험
           </h2>
+          {/* 글자 크기 — 모바일 · PC 공통 토글. SETTINGS_BLUEPRINT 카드(텍스트
+              설명)와 짝을 이루도록 맨 앞에 실제 컨트롤 카드를 둔다. */}
+          <article
+            className="mt-2 rounded-[14px] border bg-white p-4"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+              글자 크기
+            </div>
+            <p
+              className="mt-1 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              읽기 어렵다면 큰글씨로 두 단계만 키워보세요. 본문·버튼·줄간격이
+              한 번에 넓어집니다.
+            </p>
+            <div className="mt-3 max-w-xs">
+              <ReadingComfortControl />
+            </div>
+          </article>
           <div className="mt-2 grid gap-2">
             {SETTINGS_BLUEPRINT.map((item) => (
               <article
@@ -221,31 +248,34 @@ export default function MySettingsPage() {
         </div>
       </section>
 
-      {/* §계정 관리 — 회원탈퇴 (강조 톤) */}
+      {/* §계정 관리 — 로그아웃 (기본 톤) + 회원탈퇴 (강조 톤) */}
       <section>
         <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           계정 관리
         </h2>
-        <Link
-          href="/my/settings/delete-account"
-          className="mt-2 flex items-center justify-between rounded-[14px] border bg-white p-3.5"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <div className="min-w-0">
-            <div className="text-[13.5px] font-extrabold text-[var(--app-coral)]">
-              회원탈퇴
+        <div className="mt-2 grid gap-2">
+          <LogoutButton />
+          <Link
+            href="/my/settings/delete-account"
+            className="flex items-center justify-between rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-extrabold text-[var(--app-coral)]">
+                회원탈퇴
+              </div>
+              <div
+                className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                탈퇴 절차와 잃게 되는 것들을 미리 확인합니다
+              </div>
             </div>
-            <div
-              className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              탈퇴 절차와 잃게 되는 것들을 미리 확인합니다
-            </div>
-          </div>
-          <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
-            ›
-          </span>
-        </Link>
+            <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+        </div>
       </section>
     </div>
   );

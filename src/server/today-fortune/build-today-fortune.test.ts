@@ -458,3 +458,52 @@ test('today fortune opportunity and risk copy stays concise and grounded', () =>
   assert.match(result.opportunity.body, /확인|챙길|끝내|정리|보내|적어/);
   assert.match(result.risk.body, /피|미루|줄이|확인/);
 });
+
+// PR #165/#166 회귀 잠금 — 점수·이름 single source of truth.
+// 운영 검증 핵심 invariant: banner(scores.overall) == breakdown 카드(iljinScore.totalScore).
+// 영역별 점수는 [48,92] UX clamp 적용을 유지하므로 평균이 target 과 ±1 일치하는 것은
+// boundary 에선 약간 어긋날 수 있다 — 사용자 표시면 모순은 없으니 회귀 contract 에 포함하지 않는다.
+test('today fortune unifies scores.overall with iljinScore.totalScore (PR #165)', () => {
+  const input = createSampleInput();
+  const sajuData = calculateSajuDataV1(input);
+  const result = buildTodayFortuneFreeResult(input, sajuData, {
+    concernId: 'general',
+    sourceSessionId: 'unify-scores-source',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+
+  // 시간 입력이 있는 샘플이라 iljinScore 가 계산돼야 한다.
+  assert.ok(result.iljinScore, 'iljinScore 가 시간 입력 케이스에서 null 이면 안 됩니다');
+
+  const overall = result.scores.find((s) => s.key === 'overall');
+  assert.ok(overall, 'overall 점수 카드가 반드시 존재해야 합니다');
+  assert.equal(
+    overall.score,
+    result.iljinScore!.totalScore,
+    'scores.overall 은 iljinScore.totalScore 와 같아야 합니다 (single source of truth)'
+  );
+});
+
+test('today fortune surfaces user-provided name on result.userName (PR #166)', () => {
+  const input = createSampleInput();
+  const named = { ...input, name: '김영민' };
+  const sajuData = calculateSajuDataV1(named);
+  const result = buildTodayFortuneFreeResult(named, sajuData, {
+    concernId: 'general',
+    sourceSessionId: 'username-source',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+
+  assert.equal(result.userName, '김영민');
+
+  const blank = { ...input, name: '   ' };
+  const blankResult = buildTodayFortuneFreeResult(blank, sajuData, {
+    concernId: 'general',
+    sourceSessionId: 'username-blank-source',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+  assert.equal(blankResult.userName, null, '공백만 입력된 이름은 null 로 정규화');
+});

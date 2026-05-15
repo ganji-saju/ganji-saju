@@ -2608,6 +2608,13 @@ export function buildTodayFortuneFreeResult(
   // - overall = totalScore (헤드라인/banner/breakdown 카드 모두 같은 숫자)
   // - 영역별 = totalScore + (영역점수 - 영역평균) — 평균이 totalScore 가 되고 상대 차이 보존
   // - iljinScore 없으면 (시간 미입력 등) 기존 raw scores 유지.
+  //
+  // 2026-05-16: PR #165 의 단일 source 약속이 [48,92] clampScore 때문에
+  // boundary 에서 깨졌다 (engine 은 [5,95], banner clamp 는 [48,92]).
+  // 사례: engine totalScore=45 → banner=48 / breakdown 카드 "= 45점" → 모순.
+  // overall 행은 engine 결과를 그대로 사용해 banner==breakdown 을 보장한다.
+  // 영역별은 가독성 위해 [48,92] 유지 — 영역별 평균은 boundary 에서 target 과
+  // 약간 어긋날 수 있지만 표시면 비교 대상이 없어 사용자 모순 인지가 없다.
   const unifiedScores: TodayScoreItem[] = computedIljinScore
     ? (() => {
         const target = computedIljinScore.totalScore;
@@ -2616,7 +2623,7 @@ export function buildTodayFortuneFreeResult(
         const mean = nonOverall.reduce((sum, s) => sum + s.score, 0) / nonOverall.length;
         return rawScores.map((s) => {
           if (s.key === 'overall') {
-            return { ...s, score: clampScore(target) };
+            return { ...s, score: target };
           }
           const delta = s.score - mean;
           return { ...s, score: clampScore(target + delta) };
