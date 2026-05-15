@@ -950,6 +950,12 @@ export const MY_MENU_BLUEPRINT = [
     href: '/my/profile#family',
   },
   {
+    // 2026-05-15 — 대화 채팅 기록 진입점 신설.
+    title: '대화 기록',
+    description: '선생님과 나눈 대화 다시 보기',
+    href: '/dialogue/history',
+  },
+  {
     title: '대화 플랜',
     description: '이용 기간과 혜택 관리하기',
     href: '/membership',

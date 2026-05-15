@@ -262,6 +262,13 @@ export function DialogueChatPanel({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const autoStartedRef = useRef(false);
+  // 2026-05-15 — 대화 기록 영구 저장용 sessionId. 같은 대화방에서 expert 변경해도 유지.
+  // 로그인 사용자만 서버에 저장 (비로그인은 silent skip — 기존 로컬 흐름 유지).
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`
+  );
   const [expertId, setExpertId] = useState<DialogueExpertId>(
     normalizeDialogueExpertId(initialExpertId) ?? 'dragon'
   );
@@ -368,6 +375,23 @@ export function DialogueChatPanel({
       setInput('');
     });
 
+    // 2026-05-15 — 사용자 메시지 영구 저장 (로그인 시). silent — UI 흐름 방해 X.
+    void fetch('/api/dialogue/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: sessionIdRef.current,
+        expertId,
+        role: 'user',
+        text: trimmedInput,
+        sourceSessionId: sourceSessionId ?? null,
+        concernId: concernId ?? null,
+        entryFrom: entrySource ?? null,
+      }),
+    }).catch(() => {
+      // silent fail — 채팅 흐름 깨지지 않게.
+    });
+
     try {
       const response = await fetch('/api/ai', {
         method: 'POST',
@@ -418,6 +442,23 @@ export function DialogueChatPanel({
         setMessages((current) => [...current, assistantMessage]);
       });
       setStatus('idle');
+
+      // 2026-05-15 — AI 응답 영구 저장 (로그인 시).
+      void fetch('/api/dialogue/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sessionIdRef.current,
+          expertId: assistantMessage.expertId ?? expertId,
+          role: 'assistant',
+          text: assistantMessage.text,
+          source: assistantMessage.source ?? null,
+          model: assistantMessage.model ?? null,
+          sourceSessionId: sourceSessionId ?? null,
+          concernId: concernId ?? null,
+          entryFrom: entrySource ?? null,
+        }),
+      }).catch(() => {});
 
       if (sourceSessionId && entrySource === 'today-fortune') {
         trackMoonlightEvent('dialogue_started_from_result', {
