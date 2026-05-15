@@ -39,8 +39,10 @@ export function TodayFortuneSummaryCard({
       <div className="text-[12px] font-bold tracking-[0.04em] text-[var(--app-copy-muted)]">
         {todayLabel}
       </div>
+      {/* 2026-05-15 — 사용자 이름 (input.name) 을 무시하고 항상 "달빛이님" 으로 출력하던 회귀 fix.
+          빌더가 채워준 result.userName 우선 사용, 없을 때만 "달빛이" fallback. */}
       <h2 className="mt-1.5 text-[26px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
-        달빛이님,
+        {result.userName ?? '달빛이'}님,
         <br />
         <span className="text-[var(--app-pink-strong)]">총운 {overall}점</span>
         으로 시작
