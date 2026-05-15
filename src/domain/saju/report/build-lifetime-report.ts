@@ -306,10 +306,26 @@ function buildHookSentence(
   return `${personalCue}${ageRange}의 ${ganzi} 대운은 ${concernCue}10년 흐름의 결을 새로 잡는 챕터입니다.`;
 }
 
+// 2026-05-15 PR 7 — cycle metadata 인용 helper.
+// 12운성 / 원진 cue 를 카피에 자연스럽게 끼워넣음.
+function buildTwelveStageCue(twelveStage: string | null | undefined): string | null {
+  if (!twelveStage) return null;
+  const entry = (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage];
+  if (!entry) return null;
+  return `이 대운은 ${twelveStage}지(${entry.plainCue})에 해당하는 결입니다.`;
+}
+
+function buildWonjinCue(wonjinWith: string[] | undefined): string | null {
+  if (!wonjinWith || wonjinWith.length === 0) return null;
+  const slots = wonjinWith.join(' · ');
+  return `사주 ${slots} 와 ${glossaryHint('원진')} 페어를 이루어 가까운 자리에서 미세한 마찰이 누적되기 쉬운 결입니다.`;
+}
+
 function buildChapterBodyText(
   cycle: SajuMajorLuckCycle,
   reading: { summary: string },
-  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  twelveStage: string | null = null
 ): string {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const noteJoin = cycle.notes.slice(0, 3).join(' ').trim();
@@ -320,7 +336,9 @@ function buildChapterBodyText(
     branchLabel ? `지지의 ${branchLabel}` : null,
   ]).join(' · ');
   const head = headParts ? `${head_open(cycle)} ${headParts} 결이 함께 작동합니다.` : `${head_open(cycle)} 흐름이 함께 작동합니다.`;
-  return compactStrings([head, noteJoin || null, reading.summary]).join(' ');
+  // 2026-05-15 PR 7 — 12운성 cue prepend (있으면).
+  const stageCue = buildTwelveStageCue(twelveStage);
+  return compactStrings([head, stageCue, noteJoin || null, reading.summary]).join(' ');
 }
 
 function head_open(cycle: SajuMajorLuckCycle): string {
@@ -329,7 +347,8 @@ function head_open(cycle: SajuMajorLuckCycle): string {
 
 function buildMentalText(
   cycle: SajuMajorLuckCycle,
-  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  twelveStage: string | null = null
 ): string {
   const { stem } = getGanziElements(cycle.ganzi);
   const element = stem ?? context.weakest;
@@ -337,36 +356,65 @@ function buildMentalText(
   const isDominant = element === context.dominant;
   const elementLabel = formatElementName(element);
 
+  let base: string;
   if (isSupport) {
-    return `이 대운의 ${elementLabel} 결은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
+    base = `이 대운의 ${elementLabel} 결은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
+  } else if (isDominant) {
+    base = `이미 강한 ${elementLabel} 축이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+  } else {
+    base = `${elementLabel} 결이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
   }
-  if (isDominant) {
-    return `이미 강한 ${elementLabel} 축이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+  // 2026-05-15 PR 7 — 12운성 키워드 부각.
+  const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
+  return compactStrings([base, stageNuance]).join(' ');
+}
+
+function buildMentalStageNuance(stage: string): string | null {
+  switch (stage) {
+    case '제왕':
+      return '심리적으로도 정점의 결이라 자신감이 강해지지만, 과한 자신감은 가까운 사람을 떠나게 합니다.';
+    case '목욕':
+      return '주목 받는 결이라 비교·평가에 마음이 흔들릴 수 있으니 칭찬·비판 둘 다 가볍게 흘려보내세요.';
+    case '쇠':
+    case '병':
+      return '정점 이후의 가라앉음·약해짐이라 무리하지 말고 회복 우선의 마음가짐이 핵심입니다.';
+    case '사':
+    case '묘':
+    case '절':
+      return '한 챕터가 닫히는 결이라 비워내고 다음을 준비하는 마음이 자연스러워집니다.';
+    case '장생':
+    case '관대':
+    case '건록':
+      return '새로 자라나는 결이라 마음의 방향을 한 줄로 정해두면 추진력이 분명해집니다.';
+    default:
+      return null;
   }
-  return `${elementLabel} 결이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
 }
 
 function buildRelationshipText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
-  userSituation: UserSituation | null
+  userSituation: UserSituation | null,
+  wonjinWith: string[] = []
 ): string {
   const status = userSituation?.relationshipStatus;
   const baseLine = `${cycle.ganzi} 대운의 결은 관계의 거리감과 표현 방식을 함께 흔듭니다.`;
 
+  let body: string;
   if (status === 'dating') {
-    return `${baseLine} 연애 중이신 만큼 이 10년에는 상대와의 호흡 차이가 자주 드러납니다. 결론을 빠르게 내기보다 말의 순서와 일정 합의를 또렷이 두면 오해가 길어지지 않아요.`;
+    body = `${baseLine} 연애 중이신 만큼 이 10년에는 상대와의 호흡 차이가 자주 드러납니다. 결론을 빠르게 내기보다 말의 순서와 일정 합의를 또렷이 두면 오해가 길어지지 않아요.`;
+  } else if (status === 'married') {
+    body = `${baseLine} 부부 관계라면 역할 분담과 생활 리듬이 새로 정의되는 시기입니다. 큰 결정은 함께 적어두고 시작하면 흔들림이 작아집니다.`;
+  } else if (status === 'single') {
+    body = `${baseLine} 솔로 상태라면 인연이 들어오는 결이 평소와 달라집니다. 이상형이 바뀔 수 있으니 평소 안 만나던 결의 사람과의 첫 만남을 너무 빠르게 닫지 마세요.`;
+  } else if (status === 'separated') {
+    body = `${baseLine} 정리 중인 관계라면 감정과 사실을 나눠 적어두는 게 가장 큰 보호막입니다. 이 10년은 같은 자리에서 결을 다시 짜는 시간입니다.`;
+  } else {
+    body = `${baseLine} 가까운 사람과의 거리감, 말의 강도, 표현 빈도를 의식적으로 조절하면 관계의 온도가 안정됩니다.`;
   }
-  if (status === 'married') {
-    return `${baseLine} 부부 관계라면 역할 분담과 생활 리듬이 새로 정의되는 시기입니다. 큰 결정은 함께 적어두고 시작하면 흔들림이 작아집니다.`;
-  }
-  if (status === 'single') {
-    return `${baseLine} 솔로 상태라면 인연이 들어오는 결이 평소와 달라집니다. 이상형이 바뀔 수 있으니 평소 안 만나던 결의 사람과의 첫 만남을 너무 빠르게 닫지 마세요.`;
-  }
-  if (status === 'separated') {
-    return `${baseLine} 정리 중인 관계라면 감정과 사실을 나눠 적어두는 게 가장 큰 보호막입니다. 이 10년은 같은 자리에서 결을 다시 짜는 시간입니다.`;
-  }
-  return `${baseLine} 가까운 사람과의 거리감, 말의 강도, 표현 빈도를 의식적으로 조절하면 관계의 온도가 안정됩니다.`;
+  // 2026-05-15 PR 7 — 원진 cue 추가 (있으면).
+  const wonjinCue = buildWonjinCue(wonjinWith);
+  return compactStrings([body, wonjinCue]).join(' ');
 }
 
 function buildWealthCareerText(
@@ -391,7 +439,7 @@ function buildWealthCareerText(
 }
 
 // 2026-05-15 PR 5 — 명리 용어 → 일상어 사전 (glossaryHint) 적용.
-import { glossaryHint } from '@/lib/saju/terminology';
+import { glossaryHint, MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 
 // 2026-05-15 PR 4 — 개운법 reason/what/how 사전식 매핑.
 // 사주아이 reference 개운법 패턴 ("부족한 토의 기운을 보강해야 합니다 / 표현의 부족 /
@@ -749,13 +797,20 @@ function buildChapterTitleText(
 function buildClosingNoteText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
-  isCurrent: boolean
+  isCurrent: boolean,
+  twelveStage: string | null = null
 ): string {
   const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
   const head = isCurrent
     ? `${cycle.ganzi} 대운이 진행 중인 지금, `
     : `${cycle.ganzi} 대운이 다가오면, `;
-  return `${head}절대 무리해서 한 번에 결정하지 마세요. 반드시 ${supportLabel} 결을 생활 루틴에 두고, 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
+  const base = `${head}절대 무리해서 한 번에 결정하지 마세요. 반드시 ${supportLabel} 결을 생활 루틴에 두고, 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
+  // 2026-05-15 PR 7 — 12운성 마지막 한마디 cue.
+  const stageEntry = twelveStage
+    ? (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage]
+    : null;
+  if (!stageEntry) return base;
+  return `${base} 이 10년은 ${twelveStage}지(${stageEntry.plainCue})라는 결로 흘러갑니다.`;
 }
 
 function buildMajorLuckCycles(
@@ -812,15 +867,15 @@ function buildMajorLuckCycles(
       summary: `${note} ${reading.summary}`,
       task: reading.task,
       isCurrent,
-      // 2026-05-15 PR 2 — 8 sub-section. PR 3 에서 chapterTitle 10 패턴 적용.
+      // 2026-05-15 PR 2 — 8 sub-section. PR 3 에서 chapterTitle 10 패턴, PR 7 에서 12운성·원진 인용.
       hook: buildHookSentence(cycle, isCurrent, context, userSituation),
       chapterTitle: buildChapterTitleText(cycle, isCurrent, isFirstCycle, context, userSituation),
-      chapterBody: buildChapterBodyText(cycle, reading, context),
-      mental: buildMentalText(cycle, context),
-      relationship: buildRelationshipText(cycle, context, userSituation),
+      chapterBody: buildChapterBodyText(cycle, reading, context, twelveStage),
+      mental: buildMentalText(cycle, context, twelveStage),
+      relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith),
       wealthCareer: buildWealthCareerText(cycle, context, userSituation),
       practicalActions: buildPracticalActions(cycle, context, primaryTenGod),
-      closingNote: buildClosingNoteText(cycle, context, isCurrent),
+      closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage),
       twelveStage,
       wonjinWith,
     };

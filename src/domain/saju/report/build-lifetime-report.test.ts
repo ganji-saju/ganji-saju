@@ -60,6 +60,35 @@ test('buildLifetimeReport gives major-luck cycles distinct readings by ganzi', (
   );
 });
 
+test('buildLifetimeReport cycle 본문이 12운성·원진 metadata 를 인용한다 (PR 7, 2026-05-15)', () => {
+  // PR 7: chapterBody / mental / relationship / closingNote 가 cycle 의 twelveStage·wonjinWith 를
+  // 자연어로 인용해야 함. cycle 마다 12운성이 반드시 산출되므로 chapterBody/mental/closingNote 에
+  // "지(" 또는 "운성" 같은 cue 가 등장.
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  // 1) 모든 cycle 에 twelveStage 필드 존재.
+  for (const cycle of cycles) {
+    assert.ok(cycle.twelveStage, `${cycle.ganzi}: twelveStage 미산출`);
+  }
+
+  // 2) 최소 1 cycle 의 chapterBody / mental / closingNote 에 12운성 라벨 등장.
+  const bodyJoin = cycles.map((c) => c.chapterBody ?? '').join('\n');
+  const closingJoin = cycles.map((c) => c.closingNote ?? '').join('\n');
+  const has12StageInBody = /(장생|목욕|관대|건록|제왕|쇠|병|사|묘|절|태|양)지\(/.test(bodyJoin);
+  const has12StageInClosing = /(장생|목욕|관대|건록|제왕|쇠|병|사|묘|절|태|양)지\(/.test(closingJoin);
+  assert.ok(
+    has12StageInBody || has12StageInClosing,
+    `chapterBody 또는 closingNote 에 12운성 라벨(N지) 가 인용되어야 함`
+  );
+
+  // 3) wonjinWith 필드 존재 (배열, 비어 있을 수 있음).
+  for (const cycle of cycles) {
+    assert.ok(Array.isArray(cycle.wonjinWith), `${cycle.ganzi}: wonjinWith 배열 아님`);
+  }
+});
+
 test('buildLifetimeReport practicalActions use 사전식 매핑 (PR 4, 2026-05-15)', () => {
   // PR 4: practicalActions 가 generic "관계 거리감 미세 조정" 만 반복하지 않고
   // 부족 오행 + 과다 오행 + 십성 사전 매핑이 cycle 마다 다양하게 노출되어야 함.
