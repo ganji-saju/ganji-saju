@@ -1,10 +1,14 @@
-// 2026-05-16 PR #156 — 모바일 메뉴 시트 (bottom sheet).
-// PR #155 PC 메가 메뉴와 같은 MEGA_NAV 데이터 재사용.
-// SiteHeader 의 기존 모바일 드롭다운 패널을 교체.
+// 2026-05-16 PR #156 (PR #158 update) — 모바일 메뉴 시트.
+// 변경: bottom sheet → top sheet + React Portal (body 직접 mount).
+// 이유: 사용자 보고에서 시트가 footer 아래에 렌더링되는 현상.
+//      부모 컨테이너의 transform/filter/contain 이 position:fixed 를 깨는 케이스.
+//      Portal 로 body 에 직접 마운트하면 부모 영향 0.
+//      또한 사용자가 "정가운데 또는 상단" 을 선호 → top sheet 채택 (햄버거 우상단에서 자연스럽게 펼침).
 'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { MEGA_NAV, type MegaNavItem } from './mega-nav-data';
 import './mobile-nav-sheet.css';
@@ -18,6 +22,11 @@ interface Props {
 
 export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }: Props) {
   const [activeLabel, setActiveLabel] = useState(initialActiveLabel);
+  // PR #158 — Portal mount 가드. SSR/CSR hydration mismatch 방지.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Esc 키로 닫기
   useEffect(() => {
@@ -39,7 +48,7 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const activeGroup = MEGA_NAV.find((g) => g.label === activeLabel) ?? MEGA_NAV[0]!;
   const items: MegaNavItem[] = [
@@ -47,7 +56,9 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
     ...(activeGroup.c2?.items ?? []),
   ];
 
-  return (
+  // PR #158 — createPortal 로 body 에 직접 mount. 부모 컨테이너의 transform/filter
+  // 영향을 받지 않아 position:fixed 가 확실히 동작.
+  return createPortal(
     <>
       <div
         className="mobile-nav-sheet-overlay"
@@ -56,7 +67,7 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
         aria-hidden="true"
       />
       <div className="mobile-nav-sheet" role="dialog" aria-modal="true" aria-label="전체 메뉴">
-        <div className="mobile-nav-sheet-handle" aria-hidden="true" />
+        {/* PR #158 — top sheet 라 handle bar 제거. 닫기는 우측 × 버튼. */}
 
         {/* header */}
         <div className="mobile-nav-sheet-header">
@@ -177,6 +188,7 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
           ) : null}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

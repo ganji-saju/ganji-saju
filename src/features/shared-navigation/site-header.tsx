@@ -513,7 +513,7 @@ function MobileChrome({
   return (
     <>
       <header
-        className="app-top-header sticky top-0 z-40 border-b bg-white/95 backdrop-blur"
+        className="app-top-header sticky top-0 z-40 border-b bg-white/95 backdrop-blur lg:hidden"
         style={{ borderColor: 'var(--app-line)' }}
       >
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
