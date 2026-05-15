@@ -26,6 +26,8 @@ import type { Branch as IljinBranch, Stem as IljinStem } from '@/lib/today-fortu
 // 2026-05-15 PR — 02 신살 spec doc: 종합 신살 탐지 (20종).
 import { applyActiveSinsalWeights } from '@/lib/sinsal-active-weights';
 import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
+// 2026-05-16 PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬.
+import { reorderTodayScoresBySituation } from '@/lib/today-fortune/situation-score-priority';
 import type {
   ConcernId,
   TodayCalendarType,
@@ -2570,7 +2572,7 @@ export function buildTodayFortuneFreeResult(
   const conditionScore = clampScore(
     buildConditionScore(todayReport, loveReport, wealthReport, sajuData) + dailyDelta
   );
-  const scores = toTodayScores(
+  const rawScores = toTodayScores(
     todayReport,
     loveReport,
     wealthReport,
@@ -2580,6 +2582,11 @@ export function buildTodayFortuneFreeResult(
     profile,
     dailyDelta
   );
+  // PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬. overall 은 항상 맨 앞.
+  // grounding.personalizationContext.userSituation 에서 추출.
+  const userSituation =
+    options.grounding?.personalizationContext?.userSituation ?? null;
+  const scores = reorderTodayScoresBySituation(rawScores, userSituation);
   const reasonBody = buildPublicReasonBody(profile, Boolean(input.unknownTime));
   const groundingSummary = buildPublicGroundingSummary(profile, options.kasiComparison);
   const upsell = selectUpsell({ scores }, options.concernId);
@@ -2612,6 +2619,8 @@ export function buildTodayFortuneFreeResult(
       ),
     },
     scores,
+    // PR #149 (Part C) — UI 가 chip strip + perspective 한 줄에 사용.
+    userSituation,
     opportunity: {
       title: opportunity.title,
       body: opportunity.body,

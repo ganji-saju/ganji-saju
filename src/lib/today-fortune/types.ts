@@ -92,6 +92,9 @@ export interface TodayFortuneFreeResult {
     body: string;
   };
   scores: TodayScoreItem[];
+  /** 2026-05-16 PR #149 (Part C) — 사용자 입력 상황. UI 가 chip strip + perspective 한 줄에 사용.
+      grounding.personalizationContext.userSituation 에서 추출. 미입력이면 null. */
+  userSituation: import('@/lib/saju/types').UserSituation | null;
   opportunity: {
     title: string;
     body: string;
