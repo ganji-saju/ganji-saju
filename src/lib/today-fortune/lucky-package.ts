@@ -200,17 +200,60 @@ function numberToElement(n: number): Elem {
 }
 
 interface BuildOptions {
+  /** 사용자 사주의 yongsin 기반 lucky element (평생 동일). */
   luckyElement: Elem;
+  /** 사주 kiyshin 기반 unlucky element. */
   unluckyElement: Elem | null;
+  /** 오늘 일진 지지 — 궁합 띠 / 피해야 할 띠 결정. */
   todayBranch: string | null;
+  /** PR #167 — 오늘 일진 천간의 오행. dailyElement.
+   *  사주 lucky 가 평생 안 변하니 사용자가 "어제와 똑같다" 라고 느낌. 일진 element 를
+   *  추가 source 로 활용해 매일 일부 항목 변동 + 명리 이론 위배 X. */
+  todayStemElement: Elem | null;
   /** YYYY-MM-DD — 매일 다른 로또 번호 보장용. */
   dateKey: string;
   /** 일주 ganzi — date 와 결합해 사용자별 시드. */
   dayGanzi: string | null;
 }
 
+/**
+ * PR #167 — 사주 lucky 와 오늘 일진 element 의 결합 규칙.
+ *
+ * 규칙:
+ * - 사주 lucky === unlucky(기신) 일 일진 → 사주 lucky 만 (일진 무시, 흉신은 행운 source 안 됨)
+ * - 사주 lucky === 일진 → 같은 element 강화 (luckyElement + emphasized)
+ * - 다름 → 두 element 모두 노출 (color/aroma 등 2개씩 → 4개)
+ */
+function deriveHybridElements(
+  luckyElement: Elem,
+  unluckyElement: Elem | null,
+  todayStemElement: Elem | null
+): { secondary: Elem | null; emphasized: boolean } {
+  if (!todayStemElement) return { secondary: null, emphasized: false };
+  if (todayStemElement === unluckyElement) return { secondary: null, emphasized: false };
+  if (todayStemElement === luckyElement) return { secondary: null, emphasized: true };
+  return { secondary: todayStemElement, emphasized: false };
+}
+
+/** 두 element 의 항목 배열을 합집합으로 결합 (중복 제거). */
+function combineByElement<T>(
+  map: Record<Elem, T[]>,
+  primary: Elem,
+  secondary: Elem | null
+): T[] {
+  if (!secondary) return [...map[primary]];
+  const merged = [...map[primary], ...map[secondary]];
+  // 중복 제거 (참조 동등성).
+  const seen = new Set<T>();
+  return merged.filter((item) => {
+    if (seen.has(item)) return false;
+    seen.add(item);
+    return true;
+  });
+}
+
 export function buildTodayLuckyPackage(opts: BuildOptions): TodayLuckyPackage {
-  const { luckyElement, unluckyElement, todayBranch, dateKey, dayGanzi } = opts;
+  const { luckyElement, unluckyElement, todayBranch, todayStemElement, dateKey, dayGanzi } = opts;
 
   // 시드: dateKey + dayGanzi codepoint 합 → 매일·사용자별 다른 시드.
   const seedSource = `${dateKey}::${dayGanzi ?? 'unknown'}`;
@@ -219,20 +262,24 @@ export function buildTodayLuckyPackage(opts: BuildOptions): TodayLuckyPackage {
     seed = (seed * 31 + seedSource.charCodeAt(i)) >>> 0;
   }
 
+  // PR #167 — 일진 element 와의 결합 결정.
+  const { secondary } = deriveHybridElements(luckyElement, unluckyElement, todayStemElement);
+
   return {
     luckyElement,
     unluckyElement,
-    colors: ELEMENT_COLORS_MAIN[luckyElement],
-    numbers: ELEMENT_NUMBERS[luckyElement],
-    directions: ELEMENT_DIRECTIONS[luckyElement],
-    surnameInitials: ELEMENT_SURNAME_INITIALS[luckyElement],
+    // PR #167 — 사주 lucky + 오늘 일진 lucky 결합. 같으면 lucky 만, 다르면 둘 다 표시.
+    colors: combineByElement(ELEMENT_COLORS_MAIN, luckyElement, secondary),
+    numbers: combineByElement(ELEMENT_NUMBERS, luckyElement, secondary),
+    directions: combineByElement(ELEMENT_DIRECTIONS, luckyElement, secondary),
+    surnameInitials: combineByElement(ELEMENT_SURNAME_INITIALS, luckyElement, secondary),
     lottoNumbers: buildLottoNumbers(seed, luckyElement),
-    timeWindows: ELEMENT_TIME_WINDOWS[luckyElement],
-    foods: ELEMENT_FOODS[luckyElement],
-    aromas: ELEMENT_AROMAS[luckyElement],
-    gemstones: ELEMENT_GEMS[luckyElement],
+    timeWindows: combineByElement(ELEMENT_TIME_WINDOWS, luckyElement, secondary),
+    foods: combineByElement(ELEMENT_FOODS, luckyElement, secondary),
+    aromas: combineByElement(ELEMENT_AROMAS, luckyElement, secondary),
+    gemstones: combineByElement(ELEMENT_GEMS, luckyElement, secondary),
     zodiacFriends: getZodiacFriendsFromBranch(todayBranch),
-    musicGenres: ELEMENT_MUSIC[luckyElement],
+    musicGenres: combineByElement(ELEMENT_MUSIC, luckyElement, secondary),
     avoidColors: unluckyElement ? ELEMENT_COLORS_MAIN[unluckyElement] : [],
     avoidDirections: unluckyElement ? ELEMENT_DIRECTIONS[unluckyElement] : [],
     avoidTimeWindows: unluckyElement ? ELEMENT_TIME_WINDOWS[unluckyElement] : [],

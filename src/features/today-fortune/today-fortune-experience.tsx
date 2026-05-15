@@ -83,7 +83,7 @@ interface TodayFortuneApiResponse {
 }
 
 // PR #166 — prefix 버전업. PR #165 점수 통일 / PR #166 이름 주입 이전의 옛 캐시는 자동 무효화.
-const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v2:';
+const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v3:';
 
 // 2026-05-15: 일자별 캐시 분리 — 어제 결과가 오늘 화면에 그대로 보이지 않도록
 // sourceSessionId 만 키로 쓰던 sessionStorage 에 dateKey 를 함께 붙인다.
