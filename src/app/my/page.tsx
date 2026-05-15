@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
+// 2026-05-15 — MY hero 가 email.split('@')[0] 로 사용자 표시했던 회귀 fix.
+// 실제 nickname (profile.displayName) 우선 사용.
+import { getOptionalSignedInProfile } from '@/lib/profile';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
@@ -35,11 +38,12 @@ function formatRenewalLabel(value: string | null) {
 
 // 바로가기 메뉴 - mockup §2 패턴 (정사각 icon + 라벨 + 부제)
 const MY_MENU_ICONS: Record<string, { icon: string; tone: 'pink' | 'neutral' }> = {
+  '내 정보 편집': { icon: '✎', tone: 'pink' },
   '내 사주 원국': { icon: '☰', tone: 'neutral' },
   '저장한 해석': { icon: '◐', tone: 'neutral' },
-  '가족 사주': { icon: '♥', tone: 'pink' },
+  '가족·다른 사람 정보': { icon: '♥', tone: 'pink' },
   '대화 플랜': { icon: '◆', tone: 'neutral' },
-  '알림 센터': { icon: '⚙', tone: 'neutral' },
+  '알림 센터': { icon: '🔔', tone: 'neutral' },
   '설정': { icon: '⚙', tone: 'neutral' },
   '문의': { icon: '?', tone: 'neutral' },
 };
@@ -47,12 +51,20 @@ const MY_MENU_ICONS: Record<string, { icon: string; tone: 'pink' | 'neutral' }> 
 const RECENT_ZODIACS: ZodiacKey[] = ['rooster', 'rabbit', 'sheep', 'dragon'];
 
 export default async function MyPage() {
-  const dashboard = await getAccountDashboardData('/my', {
-    readingLimit: 4,
-    transactionLimit: 4,
-  });
+  const [dashboard, profile] = await Promise.all([
+    getAccountDashboardData('/my', {
+      readingLimit: 4,
+      transactionLimit: 4,
+    }),
+    getOptionalSignedInProfile(),
+  ]);
 
-  const displayName = dashboard.user.email?.split('@')[0] ?? '회원';
+  // 2026-05-15 — profile.displayName (사용자가 입력한 nickname) 우선 사용.
+  // 없으면 이메일 앞부분, 그것도 없으면 "회원" fallback.
+  const displayName =
+    profile?.displayName?.trim() ||
+    dashboard.user.email?.split('@')[0] ||
+    '회원';
   const mostRecentReading = dashboard.recentReadings[0];
   const planTitle = dashboard.subscription
     ? getSubscriptionPlanLabel(dashboard.subscription.plan)

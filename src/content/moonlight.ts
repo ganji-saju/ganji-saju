@@ -925,7 +925,15 @@ export const RETENTION_SCENARIOS: readonly MoonlightRetentionScenario[] = [
   },
 ] as const;
 
+// 2026-05-15 — MY 메뉴 라벨 명확화.
+// "가족 사주" → "가족·다른 사람 정보" (가족 외 사람도 같은 풀에서 관리됨을 명시).
+// "내 정보 편집" 진입점 신설 (프로필 편집은 가족 정보와 분리해 직접 접근 가능하게).
 export const MY_MENU_BLUEPRINT = [
+  {
+    title: '내 정보 편집',
+    description: '이름·생년월일·시간 룰 수정',
+    href: '/my/profile',
+  },
   {
     title: '내 사주 원국',
     description: '언제든 다시 살펴보기',
@@ -937,9 +945,9 @@ export const MY_MENU_BLUEPRINT = [
     href: '/my/results',
   },
   {
-    title: '가족 사주',
-    description: '가까운 분들의 흐름 함께 살펴보기',
-    href: '/my/profile',
+    title: '가족·다른 사람 정보',
+    description: '가족·연인·친구 사주 함께 관리',
+    href: '/my/profile#family',
   },
   {
     title: '대화 플랜',
@@ -953,7 +961,7 @@ export const MY_MENU_BLUEPRINT = [
   },
   {
     title: '설정',
-    description: '알림 · 말투 · 글자 크기',
+    description: '글자 · 말투 · 레이아웃',
     href: '/my/settings',
   },
   {

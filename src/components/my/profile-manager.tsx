@@ -522,10 +522,11 @@ export default function ProfileManager({
         </div>
       </section>
 
-      <section className="app-panel p-6 sm:p-7">
+      {/* 2026-05-15 — /my/settings 의 "가족·다른 사람 정보" 링크에서 #family 해시로 스크롤. */}
+      <section id="family" className="app-panel p-6 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="app-caption">가족 보관함</div>
+            <div className="app-caption">가족·다른 사람 보관함</div>
             <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
               가족, 연인, 친구의 기준 정보도 같은 방식으로 저장합니다
             </h2>
