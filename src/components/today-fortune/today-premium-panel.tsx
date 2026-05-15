@@ -212,6 +212,50 @@ export function TodayPremiumPanel({
         </div>
       </article>
 
+      {/* 2026-05-15 — 사용자 피드백: "이 화면은 어떻게 활용하면 더 좋을까?"
+          → 결제 후 시진별 길흉/행동 가이드/시나리오를 실제로 어떻게 쓰는지 callout 추가. */}
+      <article
+        className="rounded-[16px] border bg-white p-4"
+        style={{ borderColor: 'var(--app-pink-line)' }}
+      >
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          💡 이렇게 활용하세요
+        </div>
+        <ul
+          className="mt-2 grid gap-1.5 text-[12px] leading-[1.65] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          <li className="flex items-start gap-1.5">
+            <span className="mt-0.5 shrink-0 text-[var(--app-jade)]">①</span>
+            <span>
+              <strong>일정 짤 때</strong> — 좋은 시간대에 중요한 일정, 조심할
+              시간대에는 여유 일정으로 배치
+            </span>
+          </li>
+          <li className="flex items-start gap-1.5">
+            <span className="mt-0.5 shrink-0 text-[var(--app-amber)]">②</span>
+            <span>
+              <strong>결정 직전</strong> — "오늘 해볼 것" 으로 추진, "오늘 줄일
+              것" 항목은 다음 날로 연기
+            </span>
+          </li>
+          <li className="flex items-start gap-1.5">
+            <span className="mt-0.5 shrink-0 text-[var(--app-coral)]">③</span>
+            <span>
+              <strong>고민 갈림길에서</strong> — "고민될 때" 시나리오에서 내
+              상황과 가까운 카드 한 줄로 결정
+            </span>
+          </li>
+          <li className="flex items-start gap-1.5">
+            <span className="mt-0.5 shrink-0 text-[var(--app-indigo)]">④</span>
+            <span>
+              <strong>저녁 정리</strong> — 하루 끝에 "더 풀어볼 질문" 으로 내일
+              방향 미리 잡기
+            </span>
+          </li>
+        </ul>
+      </article>
+
       {/* §시간대 — jade + coral */}
       <ToneSection tone="jade" eyebrow="좋은 시간">
         {favorableWindows.map((item) => (
