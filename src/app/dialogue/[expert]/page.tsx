@@ -59,15 +59,18 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell gangi-chat-room-shell pb-24 md:pb-10">
       <AppPage className="gangi-subpage gangi-chat-room-page">
-        {/* Redesign 2026-05-13: mockup screens-b.jsx ScreenDialogue 헤더 */}
+        {/* Redesign 2026-05-13: mockup screens-b.jsx ScreenDialogue 헤더.
+            2026-05-16: `.gangi-sub-header` 3-column grid 와 4-element flex 가 충돌해
+            teacher info 컬럼이 3.25rem 셀로 짜부, "풀이 응답 중" 텍스트가 줄바꿈
+            됐다. 해당 클래스 제거하고 sticky/border 만 Tailwind 로 명시. */}
         <header
-          className="gangi-sub-header gangi-chat-room-top flex items-center gap-3"
-          style={{ padding: '12px 14px', background: '#fff' }}
+          className="gangi-chat-room-top sticky top-0 z-20 flex items-center gap-3 border-b border-[var(--app-line)] bg-white"
+          style={{ padding: '12px 14px' }}
         >
           <Link
             href="/dialogue"
             aria-label="대화방 목록으로"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-white"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-line)] bg-white"
           >
             <ArrowLeft className="h-4 w-4 text-[var(--app-copy)]" />
           </Link>
@@ -76,15 +79,15 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
             <h1 className="truncate text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
               {meta.teacherName}
             </h1>
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] font-bold text-[var(--app-jade)]">
-              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[var(--app-jade)]" />
+            <p className="mt-0.5 flex items-center gap-1 whitespace-nowrap text-[11px] font-bold text-[var(--app-jade)]">
+              <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-jade)]" />
               풀이 응답 중
             </p>
           </div>
           <button
             type="button"
             aria-label="더보기"
-            className="grid h-9 w-9 place-items-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
           >
             ⋯
           </button>

@@ -116,18 +116,22 @@
   font-size: 15px;
 }
 
-/* tabs */
+/* tabs — 2026-05-16: 사용자 보고 (사이즈/위치 불일치). 4 pill 을 동일 너비로 채워
+   행 전체를 균등 분배. flex:1 + min-height 36 로 터치 친화 크기 보장. */
 .mobile-nav-sheet-tabs {
   display: flex;
   gap: 6px;
   padding: 12px 20px 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-nav-sheet-tab {
-  flex-shrink: 0;
-  padding: 8px 16px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
   border-radius: 999px;
   border: 1px solid var(--app-line);
   background: white;
@@ -136,6 +140,8 @@
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
   transition:
     background-color 0.15s ease,
     color 0.15s ease,

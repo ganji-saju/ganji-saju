@@ -385,11 +385,14 @@ export function CompatibilityResultView({
               ))}
             </div>
 
+            {/* 2026-05-16 — 사용자 보고: 버튼이 텍스트 길이만큼만 좁게 그려져
+                좌측에 외롭게 놓였다. w-full + 적절한 가로 padding 으로 위 카드들과
+                동일한 폭으로 확장. text-overflow 발생 시 ellipsis. */}
             <Link
               href={retakeHref}
-              className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 text-[13px] font-bold text-[var(--app-copy-muted)]"
             >
-              다른 사람과 다시 보기
+              <span className="truncate">다른 사람과 다시 보기</span>
             </Link>
           </>
         ) : (
