@@ -89,12 +89,14 @@ export const MEGA_NAV: MegaNavGroup[] = [
   {
     label: '대화',
     c1: {
+      // DALBIT_TEACHERS (src/content/moonlight.ts) 중 status='active' 인 4명.
+      // 사용자가 직접 명명한 12간지 선생 이름을 그대로 사용.
       heading: '선생님과 대화',
       items: [
-        { label: '달빛선생', desc: '종합 명리', href: '/dialogue', zodiac: 'snake', tag: 'TOP' },
-        { label: '범선생 풍운', desc: '직장 · 결단', href: '/dialogue', zodiac: 'tiger' },
-        { label: '토끼선생 별이', desc: '연애 · 관계', href: '/dialogue', zodiac: 'rabbit' },
-        { label: '용선생 갑목', desc: '사업 · 재물', href: '/dialogue', zodiac: 'dragon' },
+        { label: '명리호선생', desc: '조금 더 깊게 — 명리', href: '/myeongri', zodiac: 'tiger', tag: 'TOP' },
+        { label: '타로토선생', desc: '지금 마음 보기 — 타로', href: '/tarot/daily', zodiac: 'rabbit' },
+        { label: '사주용선생', desc: '내 흐름 보기 — 사주', href: '/saju/new', zodiac: 'dragon' },
+        { label: '궁합양선생', desc: '상대와의 결 — 궁합', href: '/compatibility', zodiac: 'sheep' },
       ],
     },
     c2: {
