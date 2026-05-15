@@ -188,9 +188,28 @@ export function WeightTuningDashboard() {
       const payload = await res.json();
       if (payload.ok) {
         fetchVersions();
-      } else {
-        alert(`활성화 실패: ${payload.error ?? 'unknown'}`);
+        return;
       }
+      // PR #153 (D2) — R² 임계값 미달 시 403 + 사용자에게 force 옵션 제안.
+      if (payload.error === 'r_squared_below_threshold') {
+        const forceOk = confirm(
+          `${payload.message}\n\n그래도 강제로 활성화하시겠습니까?\n(모델 품질이 낮을 가능성이 큽니다.)`
+        );
+        if (forceOk) {
+          const forceRes = await fetch(
+            `/api/admin/weight-learning?activate=${id}&force=1`,
+            { method: 'POST' }
+          );
+          const forcePayload = await forceRes.json();
+          if (forcePayload.ok) {
+            fetchVersions();
+          } else {
+            alert(`강제 활성화 실패: ${forcePayload.error ?? 'unknown'}`);
+          }
+        }
+        return;
+      }
+      alert(`활성화 실패: ${payload.error ?? 'unknown'}`);
     } catch {
       alert('네트워크 오류');
     }
@@ -471,6 +490,10 @@ export function WeightTuningDashboard() {
           <div className="mt-2 grid gap-2">
             {versions.map((v) => {
               const isActive = v.status === 'active';
+              // PR #153 (D2) — R² 0.05 미만은 품질 경고.
+              const R2_THRESHOLD = 0.05;
+              const isLowQuality =
+                v.r_squared === null || v.r_squared < R2_THRESHOLD;
               const tone =
                 v.status === 'active'
                   ? { bg: 'rgba(45,135,88,0.08)', color: 'var(--app-jade)', label: '✓ active' }
@@ -481,7 +504,9 @@ export function WeightTuningDashboard() {
                 <article
                   key={v.id}
                   className="rounded-[14px] border bg-white p-3.5"
-                  style={{ borderColor: 'var(--app-line)' }}
+                  style={{
+                    borderColor: isLowQuality && !isActive ? 'rgba(212,148,38,0.32)' : 'var(--app-line)',
+                  }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
@@ -490,8 +515,30 @@ export function WeightTuningDashboard() {
                       </div>
                       <div className="mt-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
                         표본 {v.sample_size.toLocaleString()}건 · MSE {v.mse.toFixed(3)} · R²{' '}
-                        {v.r_squared === null ? '—' : v.r_squared.toFixed(3)} · λ {v.lambda}
+                        <span
+                          className="font-extrabold"
+                          style={{
+                            color: isLowQuality
+                              ? 'var(--app-amber)'
+                              : 'var(--app-jade)',
+                          }}
+                        >
+                          {v.r_squared === null ? '—' : v.r_squared.toFixed(3)}
+                        </span>{' '}
+                        · λ {v.lambda}
                       </div>
+                      {isLowQuality ? (
+                        <div
+                          className="mt-1.5 rounded-[8px] px-2 py-1 text-[10.5px] font-bold"
+                          style={{
+                            background: 'rgba(212,148,38,0.08)',
+                            color: 'var(--app-amber)',
+                            border: '1px solid rgba(212,148,38,0.28)',
+                          }}
+                        >
+                          ⚠ R² &lt; {R2_THRESHOLD} — 모델 설명력 낮음. 활성화 시 품질 경고 발생.
+                        </div>
+                      ) : null}
                       {v.note ? (
                         <div
                           className="mt-1 text-[11px] text-[var(--app-copy-muted)]"

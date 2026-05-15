@@ -103,6 +103,39 @@ export async function POST(req: NextRequest) {
   // 버전 활성화.
   const activateId = req.nextUrl.searchParams.get('activate');
   if (activateId) {
+    // PR #153 (D2) — R² 임계값 0.05 미만이면 promote 차단.
+    // ?force=1 으로 우회 가능 (super_admin 의 의도적 결정 허용).
+    const forceFlag = req.nextUrl.searchParams.get('force') === '1';
+
+    // 0) 대상 버전 메타 조회 — r_squared / sample_size 확인.
+    const { data: target, error: readErr } = await supabase
+      .from('sinsal_weight_versions')
+      .select('r_squared, sample_size, status')
+      .eq('id', activateId)
+      .maybeSingle();
+    if (readErr || !target) {
+      return NextResponse.json(
+        { ok: false, error: readErr?.message ?? 'version not found' },
+        { status: 404 }
+      );
+    }
+    const rSquared = (target as { r_squared: number | null }).r_squared;
+    const sampleSize = (target as { sample_size: number }).sample_size;
+    const R2_THRESHOLD = 0.05;
+    if (!forceFlag && (rSquared === null || rSquared < R2_THRESHOLD)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'r_squared_below_threshold',
+          message: `모델 설명력 R² 가 ${R2_THRESHOLD} 미만입니다 (현재 ${rSquared === null ? 'null' : rSquared.toFixed(3)}). 표본 ${sampleSize}건 — production 적용 차단. ?force=1 로 우회 가능.`,
+          rSquared,
+          threshold: R2_THRESHOLD,
+          sampleSize,
+        },
+        { status: 403 }
+      );
+    }
+
     // 1) 기존 active → archived.
     const { error: archiveErr } = await supabase
       .from('sinsal_weight_versions')
@@ -119,7 +152,13 @@ export async function POST(req: NextRequest) {
     if (activateErr) {
       return NextResponse.json({ ok: false, error: activateErr.message }, { status: 500 });
     }
-    return NextResponse.json({ ok: true, activatedId: activateId });
+    return NextResponse.json({
+      ok: true,
+      activatedId: activateId,
+      rSquared,
+      sampleSize,
+      forced: forceFlag,
+    });
   }
 
   // 학습 + 저장.
