@@ -75,7 +75,8 @@ export function GroundingKasiSummary({
           </span>
         ))}
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+      {/* 2026-05-15 — evidence 라인이 한 문장씩 길게 들어감. 3열로 좁아지면 가독성↓. 1열 stack. */}
+      <div className="mt-4 grid gap-3">
         {evidenceLines.map((line) => (
           <div
             key={line}

@@ -143,7 +143,8 @@ export function DecisionTracePanel({
         </div>
       </summary>
 
-      <div className={cn('mt-4 grid gap-3', compact ? 'lg:grid-cols-1' : 'lg:grid-cols-2')}>
+      {/* 2026-05-15 — decision trace 항목 본문이 김. 1열 stack 으로 가독성 회복. */}
+      <div className="mt-4 grid gap-3">
         {resolvedItems.map((item) => {
           const confidence = CONFIDENCE_META[item.confidence];
 

@@ -1453,7 +1453,9 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         <>
           <YearlyMonthlySection report={data.report} interpretation={interpretation} />
 
-          <div className="grid gap-2.5 lg:grid-cols-3">
+          {/* 2026-05-15 — 사용자 피드백: "좋은 시기 활용법 / 조심해야 할 시기 / 행동 조언"
+              3컬럼으로 좁아 본문이 5~10자씩 끊김. 1열 stack 으로 풀 너비 본문. */}
+          <div className="grid gap-2.5">
             <TimingSummaryBlock title="좋은 시기 활용법" items={data.interpretation.goodPeriods} tone="good" />
             <TimingSummaryBlock title="조심해야 할 시기" items={data.interpretation.cautionPeriods} tone="caution" />
             <article

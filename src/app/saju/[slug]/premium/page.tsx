@@ -719,7 +719,8 @@ export default async function SajuPremiumPage({ params }: Props) {
             <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
               무섭게 단정하지 않고, 다시 볼 수 있게 남깁니다
             </h2>
-            <div className="mt-3 grid gap-2.5 md:grid-cols-2">
+            {/* 2026-05-15 — TRUST_SIGNALS title+body 가 중간 길이 본문. 1열 stack. */}
+            <div className="mt-3 grid gap-2.5">
               {TRUST_SIGNALS.map((signal) => (
                 <article
                   key={signal.title}
