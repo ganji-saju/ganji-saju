@@ -2,8 +2,9 @@ import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 // 2026-05-15 handoff P0: 풀이/결제 로딩 overlay 내부 motion 연결.
-import { MotionPalshjaShuffle, MotionSajuLoading } from '@/components/motion/motion-primitives';
-import '@/components/motion/motion-primitives.css';
+// PR #157 — GangiLoadingOverlay 를 회전 12간지 모션으로 통합.
+// MotionPalshjaShuffle / MotionSajuLoading 더 이상 이 파일에서 사용 X (gallery 등 다른 곳에서 직접 import).
+import { ZodiacWheelLoading } from '@/components/saju/zodiac-wheel-loading';
 
 export const GANGI_ZODIAC = [
   { key: 'rat', name: '쥐', glyph: '🐭', colors: ['#7e7c8a', '#a8a4b6'] },
@@ -232,58 +233,31 @@ export function GangiPurchaseSummary({
   );
 }
 
-// 2026-05-14: 사주풀이 로딩 오버레이.
-// PR6+ 디자인 언어: pink-soft hero + 한자 月(달빛) 배지 + 진행 단계 bullets.
-// 진행 단계는 시각적 안내일 뿐 실제 비동기 진행과 동기화되지는 않는다 (UX 안정감 목적).
-// 2026-05-15 handoff P0 복구: handoff Phase 3·4 명시 "spinner 위치를 motion 으로 교체".
-// 13 motion 보드 중 51 m-loading + 63 m-palshja 가 이 overlay 안에 nested mount.
-// useReducedMotion 은 motion primitive 내부에서 자동 처리되어 모션 없는 폴백 보장.
-const LOADING_STEPS_DEFAULT = [
-  '사주 4기둥 정리',
-  '오행 흐름 분석',
-  '오늘 운 매칭',
-  '도움 기운 정리',
-];
+// 2026-05-16 PR #157 — GangiLoadingOverlay 를 ZodiacWheelLoading 으로 통합.
+// 기존 인터페이스 (title/description/steps) 는 동일하게 유지하여 모든 호출자
+// (/saju/[slug]/loading.tsx, /today-fortune/loading.tsx, /credits/loading.tsx,
+//  today-fortune-detail-client.tsx) 가 자동으로 회전 12간지 모션을 표시.
+//
+// 이전: 月 배지 + bullets + shimmer bars (gangi-loading-overlay)
+// 이후: 회전 12간지 + 진행 단계 fade cycle + 4기둥 dots (zodiac-wheel-overlay)
+//
+// 디자인 통일 + 로딩 화면 sequential 중복 문제 해소.
 
 export function GangiLoadingOverlay({
   title = '풀이를 준비하고 있어요',
   description = '생년월일과 오늘 흐름을 맞춰보는 중입니다.',
-  steps = LOADING_STEPS_DEFAULT,
+  steps,
 }: {
   title?: string;
   description?: string;
-  /** caller 가 컨텍스트에 맞게 진행 단계 라벨 주입 가능. */
+  /** caller 가 컨텍스트에 맞게 진행 단계 라벨 주입 가능 (4개로 정규화됨). */
   steps?: string[];
 }) {
   return (
-    <div className="gangi-loading-overlay" role="status" aria-live="polite">
-      <div className="gangi-loading-card-v2">
-        {/* 月 배지 + handoff 51 m-loading 의 회전 링 */}
-        <div className="gangi-loading-han-badge" aria-hidden="true">
-          <span className="gangi-loading-han-glyph">月</span>
-          <span className="gangi-loading-han-ring" />
-        </div>
-
-        {/* Copy */}
-        <div className="gangi-loading-copy-v2">
-          <div className="gangi-loading-eyebrow">잠시만요</div>
-          <p>{title}</p>
-          <span>{description}</span>
-        </div>
-
-        {/* 51 · m-loading — MotionSajuLoading 가 진행 단계 bullets 를 stagger 등장. */}
-        <MotionSajuLoading active labels={steps} moonGlyph="月" />
-
-        {/* 63 · m-palshja — 8글자 셔플 슬롯. 사주 4기둥 글자가 살짝 뒤섞이듯 등장. */}
-        <MotionPalshjaShuffle active />
-
-        {/* shimmer bars (handoff 토큰 보존) */}
-        <div className="gangi-loading-lines" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-    </div>
+    <ZodiacWheelLoading
+      title={title}
+      description={description}
+      steps={steps}
+    />
   );
 }

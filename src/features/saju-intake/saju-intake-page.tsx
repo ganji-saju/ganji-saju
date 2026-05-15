@@ -842,9 +842,10 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     setIsSubmitting(true);
     setErrorMessage('');
     let didNavigate = false;
-    // PR #154 — 12간지 로딩 모션 최소 노출 시간 가드.
-    // 풀이가 너무 빨리 끝나도 모션을 못 보고 사라지지 않게 (~1 cycle 절반).
-    const MIN_LOADING_MS = 1800;
+    // PR #154 + #157 — 12간지 로딩 모션 최소 노출 시간 가드.
+    // 결과 페이지 loading.tsx 도 동일 모션이라 sequential 로 이어지므로 짧게 (600ms).
+    // 풀이 fetch 가 그 이하로 빨리 끝나면 결과 페이지 loading 에서 추가 모션 시간 확보.
+    const MIN_LOADING_MS = 600;
     const loadingStartedAt = Date.now();
 
     try {
