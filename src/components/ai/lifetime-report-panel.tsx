@@ -963,7 +963,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
                 className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
-                {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
+                {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
                 className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-copy-muted)]"

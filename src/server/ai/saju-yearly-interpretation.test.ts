@@ -149,7 +149,7 @@ test('createYearlyInterpretationPrompt grounds narrative and monthly passes on y
 
   assert.equal(getYearlyInterpretationPromptVersion('male'), 'saju-yearly-interpret-v7-male');
   assert.match(narrativePrompt.instructions, /한 해 흐름을 쉽게 이해하도록 정리하는 생활 조언 에디터/);
-  assert.match(narrativePrompt.instructions, /달빛 남선생/);
+  assert.match(narrativePrompt.instructions, /남선생/);
   assert.match(monthlyPrompt.instructions, /monthlyFlows만 작성/);
   assert.equal(narrativeGrounding.targetYear, 2026);
   assert.equal(

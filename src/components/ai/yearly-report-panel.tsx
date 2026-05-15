@@ -1258,7 +1258,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold"
                 style={{ borderColor: 'rgba(184,122,20,0.28)', color: '#b87a14' }}
               >
-                {data.counselorId === 'male' ? '달빛 남선생' : '달빛 여선생'}
+                {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
                 className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-copy-muted)]"

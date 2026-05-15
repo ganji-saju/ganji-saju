@@ -98,10 +98,10 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '1:1 상담 예약',
-    description: '달빛선생 30분 상담',
+    description: '선생님과 30분 1:1 상담',
     href: '/dialogue/appointment',
-    zodiacKey: 'snake',
-    keywords: ['상담', '예약', '1:1', '대화', '선생님'],
+    zodiacKey: 'tiger',
+    keywords: ['상담', '예약', '1:1', '대화', '선생님', '명리호'],
   },
   // 관련 풀이
   {
