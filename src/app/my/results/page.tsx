@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import SavedReadingsList from '@/components/my/saved-readings-list';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { getAccountDashboardData } from '@/lib/account';
+import { getOptionalSignedInProfile } from '@/lib/profile';
 
 const RESULTS_PAGE_SIZE = 30;
 
@@ -41,11 +43,14 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
   const currentPage = parsePageNumber(params?.page);
   const currentFilter = params?.filter ?? 'all';
   const readingOffset = (currentPage - 1) * RESULTS_PAGE_SIZE;
-  const dashboard = await getAccountDashboardData('/my/results', {
-    readingLimit: RESULTS_PAGE_SIZE,
-    readingOffset,
-    transactionLimit: 1,
-  });
+  const [dashboard, profile] = await Promise.all([
+    getAccountDashboardData('/my/results', {
+      readingLimit: RESULTS_PAGE_SIZE,
+      readingOffset,
+      transactionLimit: 1,
+    }),
+    getOptionalSignedInProfile(),
+  ]);
   const totalPages = Math.max(1, Math.ceil(dashboard.readingCount / RESULTS_PAGE_SIZE));
 
   if (dashboard.readingCount > 0 && currentPage > totalPages) {
@@ -104,6 +109,9 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
           );
         })}
       </nav>
+
+      {/* §2.5 MY 별자리 카드 (compact) — 프로필 birthMonth/Day 자동 매칭 */}
+      <MyStarSignCard profile={profile} variant="compact" />
 
       <SavedReadingsList
         readings={dashboard.recentReadings}

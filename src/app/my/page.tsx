@@ -4,6 +4,7 @@
 // 라우팅·데이터·이벤트 무수정.
 import Link from 'next/link';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
 // 2026-05-15 — MY hero 가 email.split('@')[0] 로 사용자 표시했던 회귀 fix.
@@ -145,6 +146,9 @@ export default async function MyPage() {
           {planSummary}
         </p>
       </article>
+
+      {/* §1.5 MY 별자리 카드 — 프로필 birthMonth/Day 자동 매칭 */}
+      <MyStarSignCard profile={profile} />
 
       {/* §2 바로가기 list */}
       <section>
