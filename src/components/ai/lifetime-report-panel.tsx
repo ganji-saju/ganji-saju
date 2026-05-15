@@ -422,6 +422,33 @@ function MajorLuckTimeline({
                       원진 · {cycle.wonjinWith[0]}
                     </span>
                   ) : null}
+                  {/* 2026-05-15 PR 7 응답 3 — 교운기(交運期) chip. 대운 진입/퇴장 ±1년 사용자. */}
+                  {cycle.transitionPhase === 'entering' ? (
+                    <span
+                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      style={{
+                        background: '#e8f5ee',
+                        borderColor: 'rgba(45, 135, 88, 0.32)',
+                        color: 'var(--app-jade)',
+                      }}
+                      title="교운기 — 대운 진입 ±1년 변동기"
+                    >
+                      ⟳ 교운기 (진입)
+                    </span>
+                  ) : null}
+                  {cycle.transitionPhase === 'leaving' ? (
+                    <span
+                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      style={{
+                        background: '#fdecec',
+                        borderColor: 'rgba(198, 69, 69, 0.32)',
+                        color: 'var(--app-coral)',
+                      }}
+                      title="교운기 — 대운 퇴장 ±1년 변동기"
+                    >
+                      ⟳ 교운기 (퇴장)
+                    </span>
+                  ) : null}
                   <span
                     aria-hidden="true"
                     className="ml-auto text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"

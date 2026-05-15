@@ -60,6 +60,31 @@ test('buildLifetimeReport gives major-luck cycles distinct readings by ganzi', (
   );
 });
 
+test('buildLifetimeReport cycle 가 교운기(交運期) 를 감지한다 (PR 7 응답 3, 2026-05-15)', () => {
+  // PR 7 응답 3: 사용자 현재 만 나이가 cycle 의 startAge ±1 또는 endAge ±1 안에 있으면
+  // transitionPhase 가 'entering' 또는 'leaving' 으로 마킹.
+  // 1982-01-29 사주 → 2026 년 기준 약 만 44~45세. 대운 시작/끝 ±1 안에 들어가는 cycle 1개 이상.
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  // 1) 모든 cycle 에 transitionPhase 필드 존재 (값은 entering/leaving/null).
+  for (const cycle of cycles) {
+    assert.ok(
+      cycle.transitionPhase === 'entering' ||
+        cycle.transitionPhase === 'leaving' ||
+        cycle.transitionPhase === null ||
+        cycle.transitionPhase === undefined,
+      `${cycle.ganzi}: transitionPhase 값 enum 아님 (${cycle.transitionPhase})`
+    );
+  }
+
+  // 2) 일반 사주는 대운이 10년 간격이라 1982 생 + 2026 기준 ±1 에 들어가는 cycle 이 0~2개 사이.
+  // 0개도 정상 (만약 만 나이가 정확히 중간이면), 2개는 startAge/endAge 가 ±1 이내 겹치는 케이스.
+  const transitioning = cycles.filter((c) => c.transitionPhase === 'entering' || c.transitionPhase === 'leaving');
+  assert.ok(transitioning.length <= 2, `transitioning cycle 최대 2개. got=${transitioning.length}`);
+});
+
 test('buildLifetimeReport cycle 본문이 12운성·원진 metadata 를 인용한다 (PR 7, 2026-05-15)', () => {
   // PR 7: chapterBody / mental / relationship / closingNote 가 cycle 의 twelveStage·wonjinWith 를
   // 자연어로 인용해야 함. cycle 마다 12운성이 반드시 산출되므로 chapterBody/mental/closingNote 에

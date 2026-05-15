@@ -798,19 +798,27 @@ function buildClosingNoteText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   isCurrent: boolean,
-  twelveStage: string | null = null
+  twelveStage: string | null = null,
+  transitionPhase: 'entering' | 'leaving' | null = null
 ): string {
   const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
   const head = isCurrent
     ? `${cycle.ganzi} 대운이 진행 중인 지금, `
     : `${cycle.ganzi} 대운이 다가오면, `;
   const base = `${head}절대 무리해서 한 번에 결정하지 마세요. 반드시 ${supportLabel} 결을 생활 루틴에 두고, 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
-  // 2026-05-15 PR 7 — 12운성 마지막 한마디 cue.
+  // 2026-05-15 PR 7 응답 1 — 12운성 마지막 한마디 cue.
   const stageEntry = twelveStage
     ? (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage]
     : null;
-  if (!stageEntry) return base;
-  return `${base} 이 10년은 ${twelveStage}지(${stageEntry.plainCue})라는 결로 흘러갑니다.`;
+  const stagePart = stageEntry ? ` 이 10년은 ${twelveStage}지(${stageEntry.plainCue})라는 결로 흘러갑니다.` : '';
+  // 2026-05-15 PR 7 응답 3 — 교운기 체감 현상 cue. 흐름사주 reference 의 변동 신호.
+  const transitionPart =
+    transitionPhase === 'entering'
+      ? ' 지금은 교운기(交運期) 진입 — 컨디션·인간관계·거주지 같은 큰 환경이 한꺼번에 바뀌는 신호가 생활 안으로 들어옵니다. 큰 결정은 1~2년 뒤로 미루는 편이 안전합니다.'
+      : transitionPhase === 'leaving'
+        ? ' 지금은 교운기(交運期) 퇴장 — 이번 대운이 마무리되는 ±1년이라 몸·마음·일의 결이 새로 정돈되는 시기입니다. 정리 우선, 새 시작은 다음 대운에서.'
+        : '';
+  return `${base}${stagePart}${transitionPart}`;
 }
 
 function buildMajorLuckCycles(
@@ -829,7 +837,9 @@ function buildMajorLuckCycles(
   engineContext: {
     dayMasterStem: Stem;
     natalBranches: Array<{ branch: Branch; slotLabel: string }>;
-  } | null = null
+  } | null = null,
+  // 2026-05-15 PR 7 응답 3: 교운기 판정용 사용자 만 나이 (생년 + 현재 연도).
+  currentAge: number | null = null
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) {
     return [
@@ -859,6 +869,8 @@ function buildMajorLuckCycles(
     const wonjinWith = engineContext && cycleBranch
       ? findWonjinSlots(cycleBranch, engineContext.natalBranches)
       : [];
+    // 2026-05-15 PR 7 응답 3: 교운기(交運期) 판정 — cycle 시작 ±1년 또는 끝 ±1년 사용자.
+    const transitionPhase = detectTransitionPhase(cycle, currentAge);
 
     return {
       ganzi: cycle.ganzi,
@@ -875,11 +887,26 @@ function buildMajorLuckCycles(
       relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith),
       wealthCareer: buildWealthCareerText(cycle, context, userSituation),
       practicalActions: buildPracticalActions(cycle, context, primaryTenGod),
-      closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage),
+      closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage, transitionPhase),
       twelveStage,
       wonjinWith,
+      transitionPhase,
     };
   });
+}
+
+// 2026-05-15 PR 7 응답 3 — 교운기(交運期) 판정.
+// 흐름사주 reference: 대운 바뀌는 1~2년은 몸·마음·환경 변동 큼.
+// - cycle.startAge ± 1 안에 currentAge 있으면 'entering' (진입기)
+// - cycle.endAge ± 1 안에 currentAge 있으면 'leaving' (퇴장기)
+function detectTransitionPhase(
+  cycle: SajuMajorLuckCycle,
+  currentAge: number | null
+): 'entering' | 'leaving' | null {
+  if (currentAge === null || cycle.startAge === null || cycle.endAge === null) return null;
+  if (Math.abs(currentAge - cycle.startAge) <= 1) return 'entering';
+  if (Math.abs(currentAge - cycle.endAge) <= 1) return 'leaving';
+  return null;
 }
 
 // 2026-05-15 PR 6 — 원진(怨嗔) 6 쌍 매트릭스. cycle 지지가 사주 원국 지지와 원진 페어를 이루는 자리 반환.
@@ -963,6 +990,8 @@ export function buildLifetimeReport(
         : []),
     ],
   };
+  // 2026-05-15 PR 7 응답 3: 사용자 만 나이 — 교운기 판정용. 생년 = input.year.
+  const currentAge = Math.max(0, targetYear - input.year + 1);
   const majorLuckCycles = buildMajorLuckCycles(
     sajuData.majorLuck,
     currentMajorLuck?.ganzi ?? null,
@@ -973,7 +1002,8 @@ export function buildLifetimeReport(
     },
     userSituation,
     primaryTenGod,
-    engineContext
+    engineContext,
+    currentAge
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(

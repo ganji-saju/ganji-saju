@@ -146,6 +146,8 @@ export interface LifetimeMajorLuckCycle {
   twelveStage?: string | null;
   /** 2026-05-15 PR 6 — 사주 원국과 cycle 지지 간 원진 관계의 자리. (예: ['日支']) */
   wonjinWith?: string[];
+  /** 2026-05-15 PR 7 응답 3 — 교운기(交運期) 표시. cycle 시작 ±1년 또는 끝 ±1년 사용자. */
+  transitionPhase?: 'entering' | 'leaving' | null;
 }
 
 export interface LifetimeMajorLuckTimelineSection {
