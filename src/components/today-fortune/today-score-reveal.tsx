@@ -11,15 +11,12 @@ function clampScore(score: number) {
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+// PR #165 — single source of truth: scores.overall (이제 build 가 iljinScore.totalScore 로 통일).
+// 모든 점수 노출 컴포넌트가 같은 숫자를 보여줌.
 function getOverallScore(result: TodayFortuneFreeResult) {
-  // 2026-05-15 PR 3 — 운세톡톡 벤치마크: iljinScore.totalScore (8영역 정교 산출) 가 있으면
-  // 그걸 우선 사용. 사용자 hero 의 큰 점수와 breakdown 카드의 합계가 일치하도록.
-  if (result.iljinScore && typeof result.iljinScore.totalScore === 'number') {
-    return clampScore(result.iljinScore.totalScore);
-  }
   const overall = result.scores.find((score) => score.key === 'overall')?.score;
   if (typeof overall === 'number') return clampScore(overall);
-
+  // fallback — overall 키 없을 때만.
   const scores = result.scores.map((item) => item.score).filter(Number.isFinite);
   if (scores.length === 0) return 70;
   return clampScore(scores.reduce((sum, score) => sum + score, 0) / scores.length);
