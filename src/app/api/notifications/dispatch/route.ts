@@ -10,9 +10,12 @@ import {
 } from '@/lib/notification-preferences';
 import { deriveStarSignSlug } from '@/lib/profile-personalization';
 import {
+  chooseVariantFor,
   computeStarSignDailyDigest,
   getStarSignPushBodyFor,
+  type PushVariant,
 } from '@/lib/star-sign/daily-digest';
+import { toKstDateKey } from '@/lib/star-sign/daily-fortune';
 import type { StarSignSlug } from '@/lib/star-sign/sign-content';
 import {
   buildPushPayload,
@@ -93,6 +96,7 @@ async function handleDispatch(
     userId: string;
     slotKey: NotificationSlotKey;
     sent: number;
+    variant?: PushVariant | null;
   }> = [];
 
   for (const recipient of recipients) {
@@ -111,15 +115,18 @@ async function handleDispatch(
       // today-star-sign 은 사용자 생년월일 기반 별자리 운세를 동적으로 본문에 합성.
       // recipient.birthMonth/Day 가 있으면 deriveStarSignSlug → 본인 별자리 점수+highlight,
       // 없으면 일반 TOP sign 후보로 fallback. URL 도 본인 별자리로 link.
+      // PR #136 — variant A/B/C 결정 후 본문 다양화 + delivery_logs 에 기록.
       let bodyText: string;
       let url = '/notifications';
+      let variant: PushVariant | null = null;
       if (slotKey === 'today-star-sign' && starSignDigest) {
         const slug =
           recipient.birthMonth != null && recipient.birthDay != null
             ? (deriveStarSignSlug(recipient.birthMonth, recipient.birthDay) as StarSignSlug)
             : null;
+        variant = chooseVariantFor(recipient.userId, toKstDateKey());
         bodyText = personalizeNotificationBody(
-          getStarSignPushBodyFor(slug, starSignDigest),
+          getStarSignPushBodyFor(slug, starSignDigest, variant),
           recipient.displayName || '선생님'
         );
         url = slug ? `/star-sign/${slug}` : '/star-sign';
@@ -142,6 +149,7 @@ async function handleDispatch(
           userId: recipient.userId,
           slotKey,
           sent: recipient.subscriptions.length,
+          variant,
         });
         continue;
       }
@@ -168,6 +176,7 @@ async function handleDispatch(
               body: payload.body,
               status: 'sent',
               responseStatus: response.statusCode,
+              variant,
             }),
           ]);
         } catch (error) {
@@ -194,6 +203,7 @@ async function handleDispatch(
               body: payload.body,
               status: 'failed',
               responseStatus: statusCode,
+              variant,
             }),
           ]);
         }
@@ -203,6 +213,7 @@ async function handleDispatch(
         userId: recipient.userId,
         slotKey,
         sent,
+        variant,
       });
     }
   }
