@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   GangiCategoryTabs,
   GangiHomeBottomCta,
@@ -20,8 +20,11 @@ import { AppShell } from '@/shared/layout/app-shell';
 
 export function GangiHomeClient({
   initialBanners,
+  myStarSignSlot,
 }: {
   initialBanners: readonly GangiHomeBanner[];
+  /** server-rendered MyStarSignCard (profile 있을 때만 truthy). client 는 그대로 노출. */
+  myStarSignSlot?: ReactNode;
 }) {
   const [activeCategory, setActiveCategory] = useState<GangiHomeCategoryKey>('all');
   const visibleCards = useMemo(() => {
@@ -40,6 +43,13 @@ export function GangiHomeClient({
           banners={initialBanners}
           onTrack={(payload) => trackMoonlightEvent('home_service_menu_click', payload)}
         />
+
+        {/* PR #132 — server 측에서 렌더된 MyStarSignCard slot. profile 없으면 null. */}
+        {myStarSignSlot ? (
+          <section className="px-4 pt-3" aria-label="MY 별자리 오늘 운세">
+            {myStarSignSlot}
+          </section>
+        ) : null}
 
         <section
           className="grid grid-cols-2 gap-2.5 px-4 pt-3.5"
