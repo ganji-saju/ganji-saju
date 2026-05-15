@@ -5,11 +5,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
-import { SajuV2InsightPanel } from '@/components/saju/saju-v2-insight-panel';
-import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
-// 2026-05-15 P2 후속: 합충·공망·신살 카드 (audit 권고).
-import { SajuRelationsSymbolsCard } from '@/components/saju/saju-relations-symbols-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
@@ -286,15 +282,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
   const { input, sajuData, grounding } = reading;
   const report = buildSajuReport(input, sajuData, topic);
-  // 2026-05-15: 5명 부정 피드백 P0 — 일주(60갑자) 캐릭터 + 격국·용신 사실 카드 노출.
+  // 2026-05-15 cleanup — 사실 카드(일주 캐릭터 / 격국·용신·강약 / 합충·공망·신살)는 성향·명식 탭으로 이동.
+  // 총평 narrative 만 남기고, personalizationContext 는 narrative 빌더에 그대로 전달.
   const personalizationContext = grounding?.personalizationContext ?? null;
-  const sixtyGapjaProfile = personalizationContext?.sixtyGapja ?? null;
-  const dayGanziKorean = personalizationContext?.dayGanziCode ?? '';
-  const dayGanziHanja = personalizationContext?.dayGanziHanja ?? sajuData.pillars.day.ganzi;
-  const patternName = sajuData.pattern?.name ?? null;
-  const yongsinPrimary = sajuData.yongsin?.primary?.label ?? null;
-  const strengthLevel = sajuData.strength?.level ?? null;
-  // 2026-05-15 P2: 일간 + 격국 + 용신 + 대운/세운 + 일주 캐릭터를 한 단락 narrative 로.
   const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext);
 
   const pillars = [
@@ -394,85 +384,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </p>
             </article>
 
-            {/* §1.5 일주 캐릭터 — 2026-05-15 P0. 한국 사주 사이트 7단 구조의 "일주론".
-                "내 얘기다" 첫 동의가 나오는 자리. grounding.personalizationContext.sixtyGapja 활용. */}
-            <DayPillarCharacterCard
-              profile={sixtyGapjaProfile}
-              dayGanziHanja={dayGanziHanja}
-              dayGanziKorean={dayGanziKorean}
-            />
-
             {/* §1.6 narrative 카드 — 2026-05-15 P2. 일간 + 격국 + 용신 + 대운/세운을 한 단락
-                narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함. */}
+                narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함.
+                2026-05-15 cleanup: §1.5 일주 캐릭터 → 성향 탭, §1.7 격국·용신·강약 + §1.8 합충·공망·신살 → 명식 탭으로 이전. */}
             <SajuNarrativeCard narrative={sajuNarrative} />
-
-            {/* §1.7 격국·용신·강약 사실 카드 — 2026-05-15 P0. 명리 용어를 명시적으로
-                노출해 "사주를 본 게 맞다" 는 인과 추적성 제공. */}
-            {(patternName || yongsinPrimary || strengthLevel) ? (
-              <section
-                className="rounded-[18px] border bg-white p-4"
-                style={{ borderColor: 'var(--app-line)' }}
-              >
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  사주 핵심 키
-                </div>
-                <div className="mt-2.5 grid grid-cols-3 gap-2">
-                  <div
-                    className="rounded-[12px] border p-3 text-center"
-                    style={{
-                      background: 'var(--app-pink-soft)',
-                      borderColor: 'var(--app-pink-line)',
-                    }}
-                  >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                      격국
-                    </div>
-                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
-                      {patternName ?? '미정'}
-                    </div>
-                  </div>
-                  <div
-                    className="rounded-[12px] border p-3 text-center"
-                    style={{
-                      background: '#fff7e6',
-                      borderColor: 'rgba(212,148,38,0.22)',
-                    }}
-                  >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-amber)]">
-                      용신
-                    </div>
-                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
-                      {yongsinPrimary ?? '미정'}
-                    </div>
-                  </div>
-                  <div
-                    className="rounded-[12px] border p-3 text-center"
-                    style={{
-                      background: '#e8f5ee',
-                      borderColor: 'rgba(45,135,88,0.22)',
-                    }}
-                  >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-                      강약
-                    </div>
-                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
-                      {strengthLevel ?? '미정'}
-                    </div>
-                  </div>
-                </div>
-                <p
-                  className="mt-2.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  {patternName && yongsinPrimary
-                    ? `${patternName}에 ${yongsinPrimary}을 보완점으로 잡고 풀이를 구성했습니다.`
-                    : '사주 구조와 보완점을 함께 보며 풀이를 구성했습니다.'}
-                </p>
-              </section>
-            ) : null}
-
-            {/* §1.8 합충·공망·신살 — 2026-05-15 P2 후속. audit 권고. grounding 있을 때만. */}
-            {grounding ? <SajuRelationsSymbolsCard grounding={grounding} /> : null}
 
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
@@ -686,11 +601,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                <li>· <strong>깊은</strong> 탭 — 대운 timeline + 8단 풀이 + 12운성·원진 cycle metadata</li>
+                <li>· <strong>성향</strong> 탭 — <em>내 타고난 결</em> (일주 캐릭터 풀이)</li>
+                <li>· <strong>오행</strong> 탭 — <em>다섯 기운 균형</em> 차트</li>
+                <li>· <strong>명식</strong> 탭 — <em>반복되는 역할 후보 · 잘 풀리게 도와주는 기운 · 지금 흐르는 기운</em> (격국·용신·강약 + 합충·공망·신살)</li>
+                <li>· <strong>깊은</strong> 탭 — 대운 timeline + 8단 풀이 + 12운성·원진 cycle</li>
                 <li>· <strong>상세</strong> 탭 — 분야별 (연애 / 재물 / 직업 / 관계) 심화</li>
-                <li>· <strong>명식</strong> 탭 — 4기둥 한자 명식 + 강약·격국·용신 사실 카드</li>
-                <li>· <strong>성향</strong> 탭 — 일주 캐릭터 + 십성 분포</li>
-                <li>· <strong>오행</strong> 탭 — 다섯 기운 균형 차트</li>
               </ul>
               <p
                 className="mt-2 text-[11px] leading-[1.55] text-[var(--app-copy-soft)]"

@@ -13,6 +13,9 @@ import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+// 2026-05-15 cleanup — 총평 페이지에서 §1.7 격국·용신·강약 + §1.8 합충·공망·신살 카드를 명식 탭으로 이전.
+// 사용자 피드백 ("사실 카드 5종은 다른 탭에서 보여주면 좋겠다") 반영. 데이터 출처는 동일.
+import { SajuRelationsSymbolsCard } from '@/components/saju/saju-relations-symbols-card';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -95,12 +98,16 @@ export default async function SajuOverviewPage({ params }: Props) {
   const reading = await resolveReading(slug);
   if (!reading) notFound();
 
-  const { input, sajuData } = reading;
+  const { input, sajuData, grounding } = reading;
   const yearZodiac = getYearZodiac(sajuData);
   const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
   const dayMaster = sajuData.pillars.day;
   const dayMasterLabel = `${dayMaster.ganzi}일주`;
   const metaphor = sajuData.dayMaster.metaphor ?? '자연의 상징';
+  // 2026-05-15 cleanup — 총평 §1.7 fact card 를 명식 탭으로 이동.
+  const patternName = sajuData.pattern?.name ?? null;
+  const yongsinPrimary = sajuData.yongsin?.primary?.label ?? null;
+  const strengthLevel = sajuData.strength?.level ?? null;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -206,6 +213,84 @@ export default async function SajuOverviewPage({ params }: Props) {
                 </p>
               </article>
             </section>
+
+            {/* §2.5 격국·용신·강약 사실 카드 — 2026-05-15 cleanup. 총평 §1.7 이전.
+                "반복되는 삶의 역할 / 잘 풀리게 도와주는 기운 / 지금 흐르는 기운" 을
+                명리 용어로 함께 노출. sajuData 동일 출처라 총평 narrative 와 일치. */}
+            {(patternName || yongsinPrimary || strengthLevel) ? (
+              <section
+                className="rounded-[18px] border bg-white p-4"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  사주 핵심 키
+                </div>
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: 'var(--app-pink-soft)',
+                      borderColor: 'var(--app-pink-line)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                      격국
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {patternName ?? '미정'}
+                    </div>
+                    <div className="mt-1 text-[10.5px] leading-[1.45] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
+                      반복되는 역할 후보
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: '#fff7e6',
+                      borderColor: 'rgba(212,148,38,0.22)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+                      용신
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {yongsinPrimary ?? '미정'}
+                    </div>
+                    <div className="mt-1 text-[10.5px] leading-[1.45] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
+                      잘 풀리게 도와주는 기운
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-[12px] border p-3 text-center"
+                    style={{
+                      background: '#e8f5ee',
+                      borderColor: 'rgba(45,135,88,0.22)',
+                    }}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                      강약
+                    </div>
+                    <div className="mt-1 text-[14px] font-extrabold leading-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                      {strengthLevel ?? '미정'}
+                    </div>
+                    <div className="mt-1 text-[10.5px] leading-[1.45] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
+                      지금 흐르는 기운
+                    </div>
+                  </div>
+                </div>
+                <p
+                  className="mt-2.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {patternName && yongsinPrimary
+                    ? `${patternName}에 ${yongsinPrimary}을 보완점으로 잡고 풀이를 구성했습니다.`
+                    : '사주 구조와 보완점을 함께 보며 풀이를 구성했습니다.'}
+                </p>
+              </section>
+            ) : null}
+
+            {/* §2.6 합충·공망·신살 — 2026-05-15 cleanup. 총평 §1.8 이전. */}
+            {grounding ? <SajuRelationsSymbolsCard grounding={grounding} /> : null}
 
             {/* §3 무료 풀이 3종 링크 */}
             <section>

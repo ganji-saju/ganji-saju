@@ -14,6 +14,9 @@ import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+// 2026-05-15 cleanup — 총평 §1.5 일주 캐릭터 카드를 성향 탭으로 이전.
+// "내 타고난 결" sixtyGapja 깊은 풀이는 성향 탭이 더 자연스러움 ("성향 = 타고난 결").
+import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -88,7 +91,11 @@ export default async function SajuNaturePage({ params }: Props) {
   const reading = await resolveReading(slug);
   if (!reading) notFound();
 
-  const { input, sajuData } = reading;
+  const { input, sajuData, grounding } = reading;
+  const personalizationContext = grounding?.personalizationContext ?? null;
+  const sixtyGapjaProfile = personalizationContext?.sixtyGapja ?? null;
+  const dayGanziKorean = personalizationContext?.dayGanziCode ?? '';
+  const dayGanziHanja = personalizationContext?.dayGanziHanja ?? sajuData.pillars.day.ganzi;
   const metaphor = sajuData.dayMaster.metaphor ?? '자연의 상징';
   const description =
     sajuData.dayMaster.description ??
@@ -141,6 +148,14 @@ export default async function SajuNaturePage({ params }: Props) {
                 </div>
               </div>
             </article>
+
+            {/* §1.5 일주 캐릭터 — 2026-05-15 cleanup. 총평 §1.5 이전.
+                "내 타고난 결" 깊은 풀이. grounding.sixtyGapja 가 있을 때만 노출. */}
+            <DayPillarCharacterCard
+              profile={sixtyGapjaProfile}
+              dayGanziHanja={dayGanziHanja}
+              dayGanziKorean={dayGanziKorean}
+            />
 
             {/* §2 핵심 장점 */}
             <section>
