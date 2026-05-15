@@ -10,6 +10,10 @@
     },
     {
       "path": "/api/notifications/dispatch",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/notifications/dispatch",
       "schedule": "0 3 * * *"
     },
     {

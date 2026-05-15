@@ -61,6 +61,11 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
     desc: '내 별자리 오늘 점수와 한 줄',
     label: '별자리 보기',
   },
+  'subscription-expiring': {
+    href: '/membership/checkout?plan=plus&from=expiring',
+    desc: '멤버십 만료 임박 — 지금 연장하기',
+    label: '연장하기',
+  },
 };
 
 function createDefaultPreferences(): NotificationPreferences {
@@ -167,6 +172,8 @@ function computeUpcomingLabel(slot: (typeof NOTIFICATION_SCHEDULE_BLUEPRINT)[num
     next.setHours(8, 0, 0, 0);
   } else if (slot.key === 'today-star-sign') {
     next.setHours(9, 0, 0, 0);
+  } else if (slot.key === 'subscription-expiring') {
+    next.setHours(10, 0, 0, 0);
   } else if (slot.key === 'today-tarot') {
     next.setHours(12, 0, 0, 0);
   } else {
