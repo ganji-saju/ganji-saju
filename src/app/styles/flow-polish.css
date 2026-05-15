@@ -2,17 +2,36 @@
    This file is intentionally scoped to conversion/result subpages.
    It does not change the home screen, palette tokens, RAG, or reading content. */
 
+/* 2026-05-15 — PC 에서 풀 너비로 펼쳐져 grid-cols-2/3 카드가 옆으로 늘어지는 문제 fix.
+   기존 룰은 `.app-page.gangi-subpage` 둘 다 있는 element 만 480px 캡 적용. 그런데
+   일부 결과 페이지 (today-fortune/result, today-fortune/detail) 의 inner client
+   컴포넌트는 `<div className="gangi-subpage">` 만 사용 — 캡 안 걸림 → PC 풀 너비.
+
+   해결: selector 를 `.gangi-subpage` 자체로 확장. 모든 sub-page 가 모바일 너비
+   (480px) 로 가운데 정렬됨. 개별 컴포넌트의 grid-cols-* 는 그대로 두고 (의도된
+   레이아웃) 컨테이너만 캡 → PC 에서도 모바일과 동일한 시각 + 가독성.
+
+   margin: 0 auto 로 가운데 정렬. 모바일 (≤ 480px) 에서는 100vw 그대로. */
+.gangi-subpage-shell .gangi-subpage,
 .gangi-subpage-shell .app-page.gangi-subpage {
   width: min(calc(100vw - 1.25rem), 30rem) !important;
   max-width: min(calc(100vw - 1.25rem), 30rem) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 @media (min-width: 768px) {
+  .gangi-subpage-shell .gangi-subpage,
   .gangi-subpage-shell .app-page.gangi-subpage {
     width: min(calc(100vw - 3rem), 30rem) !important;
     max-width: min(calc(100vw - 3rem), 30rem) !important;
   }
 }
+
+/* AppShell 안에 직접 들어간 client component 가 gangi-subpage 만 가지는 경우도 보호.
+   (예: today-fortune/result, today-fortune/detail) shell 의 app-shell-content 자체에
+   max-width 를 걸기보다 자식 .gangi-subpage 가 책임지는 게 안전 — 다른 페이지 (홈 등) 와
+   분리됨. */
 
 .saju-result-page {
   --result-card-radius: 1.6rem;
