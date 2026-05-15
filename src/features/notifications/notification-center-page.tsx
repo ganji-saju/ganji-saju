@@ -191,9 +191,12 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export default function NotificationCenterPage({
   snapshot,
+  headerSlot,
 }: {
   mode: NotificationPageMode;
   snapshot: NotificationSnapshot;
+  /** 페이지 헤더 아래 (탭 위) 에 노출되는 server-render 슬롯. */
+  headerSlot?: import('react').ReactNode;
 }) {
   const [preferences, setPreferences] = useState<NotificationPreferences>(
     createDefaultPreferences()
@@ -586,6 +589,9 @@ export default function NotificationCenterPage({
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="알림" backHref="/" />
+
+        {/* PR #133 — server-render 헤더 슬롯 (별자리 일진 카드 등). */}
+        {headerSlot}
 
         {/* Tabs */}
         <div className="-mx-1 flex border-b border-[var(--app-line)]">
