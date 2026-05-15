@@ -160,11 +160,15 @@ export function TodayPremiumPanel({
 }: {
   result: TodayFortunePremiumResult;
 }) {
-  const favorableWindows = result.favorableWindows.slice(0, 2);
-  const cautionWindows = result.cautionWindows.slice(0, 1);
-  const recommendedActions = result.recommendedActions.slice(0, 3).map(trimEasySentence);
-  const avoidActions = result.avoidActions.slice(0, 3).map(trimEasySentence);
-  const scenarios = result.scenarios.slice(0, 2);
+  // 2026-05-15 fix — 결제 후 페이지 빈약 회귀. 모든 windows/actions/scenarios 노출
+  // (이전엔 top 2/3 만 slice). 1코인 결제 가치를 실제로 느끼게 함.
+  const favorableWindows = result.favorableWindows;
+  const cautionWindows = result.cautionWindows;
+  const recommendedActions = result.recommendedActions.map(trimEasySentence);
+  const avoidActions = result.avoidActions.map(trimEasySentence);
+  const scenarios = result.scenarios;
+  const followUpQuestions = result.followUpQuestions ?? [];
+  const evidenceLines = result.evidenceLines ?? [];
 
   return (
     <div className="space-y-4">
@@ -185,10 +189,16 @@ export function TodayPremiumPanel({
               className="mt-1.5 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              오늘은 이렇게
+              시간대별 행동 가이드
               <br />
-              움직이면 좋아요
+              + 고민 상황 풀이
             </h2>
+            <p
+              className="mt-2 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              12 시진(時辰) 기준 길흉 + 추천/회피 행동 + 고민될 때 시나리오
+            </p>
           </div>
           <span
             className="shrink-0 rounded-full px-3 py-1.5 text-[11px] font-extrabold text-white"
@@ -283,6 +293,73 @@ export function TodayPremiumPanel({
           ))}
         </div>
       </article>
+
+      {/* §추가 질문 — 결제 전용. 무료에서는 chips 형태로 들어가지만 여기선 카드로 명시 */}
+      {followUpQuestions.length > 0 ? (
+        <article
+          className="rounded-[18px] border bg-white p-4 sm:p-5"
+          style={{ borderColor: 'var(--app-pink-line)' }}
+        >
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            💭 깊이 들어갈 만한 질문
+          </div>
+          <h3
+            className="mt-1 text-[15px] font-extrabold leading-tight text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            오늘 더 풀어볼 만한 질문들
+          </h3>
+          <ul className="mt-3 grid gap-1.5">
+            {followUpQuestions.slice(0, 5).map((q, idx) => (
+              <li
+                key={`${q}-${idx}`}
+                className="rounded-[12px] border px-3 py-2.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
+                style={{
+                  background: 'var(--app-pink-soft)',
+                  borderColor: 'var(--app-pink-line)',
+                  wordBreak: 'keep-all',
+                }}
+              >
+                <span className="mr-1.5 font-extrabold text-[var(--app-pink-strong)]">Q{idx + 1}.</span>
+                {q}
+              </li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
+
+      {/* §사주 근거 — 결제 전용 evidence lines */}
+      {evidenceLines.length > 0 ? (
+        <details
+          className="group rounded-[14px] border bg-white"
+          style={{ borderColor: 'var(--app-line)' }}
+          open
+        >
+          <summary
+            className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          >
+            <span>📋 풀이 근거 ({evidenceLines.length}개)</span>
+            <span
+              className="text-[10px] transition-transform group-open:rotate-180"
+              aria-hidden="true"
+            >
+              ▼
+            </span>
+          </summary>
+          <ul className="grid gap-1.5 border-t border-[var(--app-line)] px-4 py-3.5">
+            {evidenceLines.map((line, idx) => (
+              <li
+                key={`${line}-${idx}`}
+                className="text-[12px] leading-[1.65] text-[var(--app-copy)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                <span className="mr-1 font-extrabold text-[var(--app-pink-strong)]">·</span>
+                {line}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       {/* §풀이 기준 — collapsible */}
       <details

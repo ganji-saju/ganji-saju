@@ -18,6 +18,18 @@ import type {
   TodayFortuneFreeResult,
   TodayFortunePremiumResult,
 } from '@/lib/today-fortune/types';
+// 2026-05-15 fix — 결제 후 페이지가 무료보다 빈약했던 회귀 fix.
+// 무료 페이지의 모든 카드 (#103~#106) + 확장된 프리미엄 콘텐츠를 모두 노출.
+import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
+import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
+import { TodayIljinBreakdownCard } from '@/components/today-fortune/today-iljin-breakdown-card';
+import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
+import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
+import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
+import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-card';
+import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
+import { MotionResultReveal } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 
 interface TodayFortuneUnlockResponse {
   ok?: boolean;
@@ -229,7 +241,47 @@ export function TodayFortuneDetailClient({
           </div>
         ) : null}
 
-        {result ? <TodayPremiumPanel result={result} /> : null}
+        {result ? (
+          <>
+            {/* 2026-05-15 fix — 무료 페이지의 모든 카드를 그대로 노출 (결제 후 빈약 회귀 fix).
+                stagger 모션 안에서 자연스럽게 등장. */}
+            {freeResult ? (
+              <MotionResultReveal staggerSeconds={0.06}>
+                {/* §1 — Summary */}
+                <TodayFortuneSummaryCard result={freeResult} />
+                {/* §2 — 큰 점수 + 7등급 + 등급 이모지 */}
+                <TodayScoreReveal result={freeResult} />
+                {/* §2.5 — 8영역 점수 산출 내역 + 발동 케이스 */}
+                {freeResult.iljinScore ? (
+                  <TodayIljinBreakdownCard
+                    iljinScore={freeResult.iljinScore}
+                    iljinMessages={freeResult.iljinMessages ?? null}
+                  />
+                ) : null}
+                {/* §3 — 카테고리별 블루 헤드라인 stacked */}
+                <TodayCategoryReadings result={freeResult} />
+                {/* §4 — 한눈에 보기 2x3 score grid */}
+                <TodayFortuneScoreGrid result={freeResult} />
+                {/* §4.5 — 행운 패키지 12종 + 로또 6개 오행색 원 */}
+                {freeResult.luckyPackage ? (
+                  <TodayLuckyPackageCard luckyPackage={freeResult.luckyPackage} />
+                ) : null}
+                {/* §5 — 사주 명식 (4기둥 + 오행 + 신살 chip) */}
+                {freeResult.sajuChart ? (
+                  <TodaySajuChartCard chart={freeResult.sajuChart} />
+                ) : null}
+              </MotionResultReveal>
+            ) : null}
+
+            {/* §6 — 결제 전용 프리미엄 패널 (시간대 windows / 시나리오 / 행동) */}
+            <TodayPremiumPanel result={result} />
+
+            {/* §7 — 대운 CTA */}
+            {freeResult ? (
+              <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
+            ) : null}
+          </>
+        ) : null}
 
         {/* §하단 CTA */}
         {result ? (
