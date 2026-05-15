@@ -666,101 +666,40 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* 2026-05-15 handoff 52 m-reveal 닫음 — §1 ~ §5 카드만 stagger. 하단 details 는 접힘 기본이라 모션 대상 외. */}
             </MotionResultReveal>
 
-            {/* 하단 — 추가 풀이 (기존 가치 보존, 접힘 기본). PR4 패턴 동일. */}
-            <details className="group rounded-[18px] border border-[var(--app-line)] bg-white">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[14px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
-                <span>더 깊이 들여다보기</span>
-                <span
-                  aria-hidden="true"
-                  className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
-                >
-                  ▾
-                </span>
-              </summary>
-              <div className="grid gap-4 border-t border-[var(--app-line)] px-4 py-5">
-                <div className="grid grid-cols-3 gap-2.5">
-                  {[
-                    { label: '왜', value: punchReading.why },
-                    { label: '조심', value: punchReading.caution },
-                    { label: '오늘 할 일', value: punchReading.action },
-                  ].map((item) => (
-                    <article
-                      key={item.label}
-                      className="rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-3"
-                    >
-                      <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
-                        {item.label}
-                      </div>
-                      <p className="mt-1 text-[12.5px] font-medium leading-5 text-[var(--app-ink)]">
-                        {easyResultCopy(item.value, 1)}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-
-                <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[14px] font-extrabold text-[var(--app-ink)]">오행 균형</h3>
-                    {getSupportElement(report) ? (
-                      <span
-                        className="rounded-full px-3 py-1 text-[11px] font-bold text-[var(--app-pink-strong)]"
-                        style={{ background: 'var(--app-pink-soft)' }}
-                      >
-                        오늘 힌트 {ELEMENT_PUBLIC_LABELS[getSupportElement(report)!]}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="mt-4 grid grid-cols-5 gap-2.5">
-                    {COMPACT_ELEMENT_ORDER.map((element) => {
-                      const value = sajuData.fiveElements.byElement[element].percentage;
-                      const height = `${Math.max(18, Math.min(100, Math.round(value)))}%`;
-                      return (
-                        <div key={element} className="flex flex-col items-center gap-1.5">
-                          <div
-                            className="flex h-16 w-full items-end overflow-hidden rounded-[10px]"
-                            style={{ background: 'var(--app-line)' }}
-                          >
-                            <div
-                              className="w-full rounded-[10px]"
-                              style={{ height, backgroundColor: ELEMENT_INFO[element].color }}
-                            />
-                          </div>
-                          <span className="text-[12px] font-bold text-[var(--app-ink)]">
-                            {element}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </article>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  {compactResultCards.map((item) => (
-                    <article
-                      key={item.label}
-                      className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
-                    >
-                      <div className="flex items-center gap-2 text-[12.5px] font-bold text-[var(--app-copy)]">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        {item.label}
-                      </div>
-                      <p className="mt-2 text-[14px] font-semibold leading-6 text-[var(--app-ink)]">
-                        {item.value}
-                      </p>
-                    </article>
-                  ))}
-                </div>
+            {/* 2026-05-15 cleanup — 기존 하단 details + SajuV2InsightPanel 제거.
+                위 §1.5 일주 / §1.6 narrative / §1.7 격국·용신 / §1.8 합충·공망 카드와
+                내용이 중복되어 사용자가 오해할 수 있었음. 깊은/상세 풀이는 별도 탭으로 분기 안내. */}
+            <article
+              className="rounded-[18px] border bg-white p-4"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                더 들여다볼 곳
               </div>
-            </details>
+              <h3
+                className="mt-1 text-[15px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                같은 풀이를 다른 시각으로 보고 싶다면
+              </h3>
+              <ul
+                className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                <li>· <strong>깊은</strong> 탭 — 대운 timeline + 8단 풀이 + 12운성·원진 cycle metadata</li>
+                <li>· <strong>상세</strong> 탭 — 분야별 (연애 / 재물 / 직업 / 관계) 심화</li>
+                <li>· <strong>명식</strong> 탭 — 4기둥 한자 명식 + 강약·격국·용신 사실 카드</li>
+                <li>· <strong>성향</strong> 탭 — 일주 캐릭터 + 십성 분포</li>
+                <li>· <strong>오행</strong> 탭 — 다섯 기운 균형 차트</li>
+              </ul>
+              <p
+                className="mt-2 text-[11px] leading-[1.55] text-[var(--app-copy-soft)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                모든 탭은 같은 사주 데이터를 다르게 보여줍니다 — 풀이는 동일합니다.
+              </p>
+            </article>
           </section>
-
-          {/* 2026-05-14: saju-data/v2 modern interpretation 패널 — sajuData(v1) 가
-              자동 업그레이드되어 executiveSummary + 4 evidence blocks + verification
-              status 가 표시된다. failPolicy='warn-only' 라서 검증 실패 시 경고만 표시. */}
-          <SajuV2InsightPanel data={sajuData} failPolicy="warn-only" />
         </div>
       </AppPage>
     </AppShell>
