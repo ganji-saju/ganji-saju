@@ -444,12 +444,20 @@ export default async function StarSignPage() {
             <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
               {STAR_SIGN_BLUEPRINT.cross}
             </p>
-            <Link
-              href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
-            >
-              {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
-            </Link>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Link
+                href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              >
+                {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
+              </Link>
+              <Link
+                href="/star-sign/compat"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+              >
+                12×12 매트릭스
+              </Link>
+            </div>
           </article>
         </section>
 
