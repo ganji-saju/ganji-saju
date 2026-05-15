@@ -11,7 +11,7 @@ import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { hasCoreBirthProfile, toBirthInputFromProfile } from '@/lib/profile';
 import { buildProfileReadingSlug } from '@/lib/profile-personalization';
-import { calculateSaju } from '@/lib/saju/pillars';
+import { cachedCalculateSaju } from '@/lib/saju/calc-cache';
 import {
   STAR_SIGN_CONTENT,
   type StarSignSlug,
@@ -89,7 +89,7 @@ export default async function StarSignCrossPage({ params }: Props) {
         birthMonth: profile.birthMonth!,
         birthDay: profile.birthDay!,
       });
-      const sajuResult = calculateSaju(birthInput);
+      const sajuResult = cachedCalculateSaju(birthInput);
       cross = synthesizeCross(typedSlug, sajuResult.dayMaster);
     } catch {
       cross = null;
