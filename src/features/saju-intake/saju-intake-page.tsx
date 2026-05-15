@@ -451,18 +451,23 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
   // Redesign 2026-05-13: mockup 은 별도 동의 단계 없이 단일 흐름. 필수 동의는 마지막 단계 제출 시
   // implicit 동의 + CTA 하단 disclosure text 로 처리. CONSENT_STEP 은 제거.
+  // 2026-05-15 — 사용자 피드백: "step 1 이 정보 없이 간단해야 하는데 concern picker 가
+  // 첫 화면에 나옴. 어떤 부분이 가장 궁금한지는 step 3 에서 선택하면 더 좋다."
+  // → 순서 재배치: birth (step 1, 간단한 기본 정보) → location (step 2, 시간/지역) →
+  //   profile (step 3, 무엇이 궁금한지 + 현재 상황). 제출은 마지막 단계 profile 에서.
   const steps = useMemo(
-    () => [PROFILE_STEP, ...BASE_STEPS],
+    () => [...BASE_STEPS, PROFILE_STEP],
     []
   );
   const activeStep = steps[activeIndex] ?? steps[0];
   const recentGuestDetail = recentGuestDraft ? formatRecentGuestDetail(recentGuestDraft) : '';
   const selectedEntryPoint =
     QUESTION_ENTRY_POINTS.find((entry) => entry.slug === selectedEntrySlug) ?? QUESTION_ENTRY_POINTS[0];
-  const birthStepIndex = Math.max(1, steps.findIndex((item) => item.id === 'birth'));
+  const birthStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'birth'));
   const locationStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'location'));
-  // consent step 폐지 후 — locationStepIndex 가 항상 마지막 단계.
-  const consentStepIndex = locationStepIndex;
+  const profileStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'profile'));
+  // 2026-05-15 — 최종 제출 단계 = profile. (이전엔 location 이 마지막이었음.)
+  const consentStepIndex = profileStepIndex;
 
   useEffect(() => {
     const draft = loadOnboardingDraft();
@@ -696,7 +701,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ? `${profile.label} 가족 프로필을 불러왔습니다. 결과를 열어도 내 정보는 바뀌지 않습니다.`
         : `${profile.label} 정보를 입력칸에 불러왔습니다.`
     );
-    setActiveIndex(consentAccepted ? locationStepIndex : Math.max(consentStepIndex, locationStepIndex));
+    // 2026-05-15 — 순서 재배치 이후 마지막 = profile (concern picker). 데이터 불러온 후
+    // 사용자가 concern 만 선택하면 제출 가능. consentStepIndex === profileStepIndex.
+    setActiveIndex(profileStepIndex);
   }
 
   function applyRecentGuestInput() {
@@ -712,7 +719,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     }));
     setErrorMessage('');
     setProfileLoadMessage('이 기기에 남아 있던 최근 정보를 입력칸에 불러왔습니다.');
-    setActiveIndex(consentAccepted ? locationStepIndex : Math.max(consentStepIndex, locationStepIndex));
+    // 2026-05-15 — 순서 재배치 이후 마지막 = profile (concern picker). 데이터 불러온 후
+    // 사용자가 concern 만 선택하면 제출 가능. consentStepIndex === profileStepIndex.
+    setActiveIndex(profileStepIndex);
   }
 
   function removeRecentGuestInput() {
@@ -909,8 +918,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     if (activeStep.id === 'birth' && !validateBirthStep()) return;
     if (activeStep.id === 'location' && !validateLocationStep()) return;
 
-    // Redesign 2026-05-13: 마지막 단계 location 에서 항상 제출. consent step 제거됨.
-    if (activeStep.id === 'location') {
+    // 2026-05-15 — 순서 재배치 (birth → location → profile) 이후 마지막 step = profile.
+    // profile (concern picker) 은 선택사항이지만 제출 트리거 단계.
+    if (activeStep.id === 'profile') {
       void submit();
       return;
     }
