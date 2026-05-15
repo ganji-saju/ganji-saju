@@ -74,6 +74,8 @@ export interface TodayFortuneFreeResult {
   sourceSessionId: string;
   /** YYYY-MM-DD (timezone-local). 2026-05-15: 일자별 캐시 분리 + 매일 다른 결과 보장용. */
   dateKey: string;
+  /** 2026-05-15 — 사용자 입력 이름. 없으면 null. UI hero 인사말 ("김영민님,") 노출용. */
+  userName: string | null;
   concernId: ConcernId;
   concernLabel: string;
   concernHanja: string;

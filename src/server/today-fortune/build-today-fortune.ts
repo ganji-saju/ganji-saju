@@ -2586,6 +2586,8 @@ export function buildTodayFortuneFreeResult(
     sourceSessionId: options.sourceSessionId,
     // 2026-05-15: 클라이언트 sessionStorage 키에 사용 — 어제 캐시가 오늘 화면을 가리지 않게 분리.
     dateKey: todayPillar.dateKey,
+    // 2026-05-15: hero 카드가 "달빛이님" 으로 하드코드돼 사용자 이름을 무시하던 회귀 fix.
+    userName: input.name?.trim() || null,
     concernId: options.concernId,
     concernLabel: concern.label,
     concernHanja: concern.hanja,
