@@ -102,13 +102,46 @@ export type LifetimeLuckPhase =
   | '준비기'
   | '전환기';
 
+// 2026-05-15 PR 2 — 사주아이 8단 프레임워크 reference: 대운 cycle 본문 구조 확장.
+// 기존 `summary` / `task` 는 backward-compat 유지. 신규 8개 필드는 모두 optional —
+// 빌더가 채우지 못한 경우(legacy reading / 부분 데이터)에도 UI 가 안전하게 폴백.
+export interface PracticalAction {
+  /** 왜 필요한지 (오행/십성 근거). */
+  reason: string;
+  /** 무엇을 해야 하는지 (방향). */
+  what: string;
+  /** 어떻게 (실생활 행동). */
+  how: string;
+}
+
 export interface LifetimeMajorLuckCycle {
   ganzi: string;
   ageLabel: string;
   phase: LifetimeLuckPhase;
+  /** @deprecated 2026-05-15 PR 2 — chapterBody 로 대체 예정. 호환 위해 유지. */
   summary: string;
+  /** @deprecated 2026-05-15 PR 2 — practicalActions 로 대체 예정. 호환 위해 유지. */
   task: string;
   isCurrent: boolean;
+
+  // 2026-05-15 PR 2 — 사주아이 8단 sub-section. 빌더가 모두 채우는 것이 목표.
+  // 현재는 optional 로 두고 점진 채움 (PR 2 응답 1: 타입만, 응답 2~3: 채움).
+  /** ①  Hook — 사용자 상황 호명. "자영업이신 [이름]님에게 이번 대운은…". */
+  hook?: string;
+  /** ②  Chapter title — 10 패턴 중 1개 (PR 3 에서 카피 패턴 적용 예정). */
+  chapterTitle?: string;
+  /** ③  Chapter body — 상세 해설. 명리 + 일상 비유 병기. 400~600자. */
+  chapterBody?: string;
+  /** ④  Mental — 내면/멘탈. 일간 + 천간 합 + 인성/식상 작용. 400~500자. */
+  mental?: string;
+  /** ⑤  Relationship — 인간관계/로맨스. userSituation.relationshipStatus 분기. 400~500자. */
+  relationship?: string;
+  /** ⑥  Wealth/Career — 돈/커리어. userSituation.occupation 분기. 500~700자. */
+  wealthCareer?: string;
+  /** ⑦  Practical actions — 개운법 4개. "왜 → 무엇을 → 어떻게" 3단 (PR 4 에서 채움). */
+  practicalActions?: PracticalAction[];
+  /** ⑧  Closing note — 마지막 한마디. "절대 X / 반드시 Y / 응원" 3 문장 정도. */
+  closingNote?: string;
 }
 
 export interface LifetimeMajorLuckTimelineSection {

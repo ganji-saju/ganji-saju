@@ -298,7 +298,9 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   }
 
   const targetYear = new Date().getFullYear();
-  const report = buildLifetimeReport(reading.input, reading.sajuData, targetYear);
+  // 2026-05-15 PR 2: userSituation 을 grounding 에서 추출해 대운 cycle 8단 sub-section 에 흘림.
+  const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
+  const report = buildLifetimeReport(reading.input, reading.sajuData, targetYear, userSituation);
   const interpretation = buildFallbackLifetimeInterpretation(report, 'female');
   const reportNo = buildReportNumber(reading.sajuData.input);
   const pillars: Array<{ label: string; stem: string; branch: string; element: string }> = [
