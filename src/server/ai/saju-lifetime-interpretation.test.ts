@@ -82,7 +82,7 @@ test('createLifetimeInterpretationPrompt keeps lifetime report prompt separate f
   assert.equal(getLifetimeInterpretationPromptVersion('male'), 'saju-lifetime-interpret-v1-male');
   assert.match(prompt.instructions, /평생 사주풀이/);
   assert.match(prompt.instructions, /사주 공부 자료가 아니라/);
-  assert.match(prompt.instructions, /달빛 남선생/);
+  assert.match(prompt.instructions, /남선생/);
   assert.equal('factJson' in grounding, true);
   assert.equal('evidenceJson' in grounding, true);
   assert.equal('kasiComparison' in grounding, true);

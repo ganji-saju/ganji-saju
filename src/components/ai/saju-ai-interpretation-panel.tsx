@@ -333,7 +333,7 @@ export function SajuAiInterpretationPanel({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs leading-6 text-[var(--app-copy-soft)]">
-        <span>{result.counselorId === 'male' ? '달빛 남선생 풀이' : '달빛 여선생 풀이'}</span>
+        <span>{result.counselorId === 'male' ? '남선생 풀이' : '여선생 풀이'}</span>
         {result.source === 'openai' ? (
           <span>{result.cached ? '저장된 해석' : '새로 정리'}</span>
         ) : (

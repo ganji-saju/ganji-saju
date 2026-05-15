@@ -21,11 +21,13 @@ interface TeacherInfo {
   online: boolean;
 }
 
+// 2026-05-16 PR #163 — '달빛선생' 임의 호명 정리.
+// DALBIT_TEACHERS 중 '명리호선생' (호랑이, 종합 명리/active TOP) 으로 교체.
 const DEFAULT_TEACHER: TeacherInfo = {
-  name: '달빛선생',
+  name: '명리호선생',
   field: '종합 명리',
   meta: '경력 18년 · ★ 4.9 (312)',
-  zodiac: 'snake',
+  zodiac: 'tiger',
   online: true,
 };
 
