@@ -301,6 +301,13 @@ export interface SajuHiddenStem {
   tenGod: TenGodCode | null;
 }
 
+// 2026-05-15 PR 6 — 12운성(十二運星) — 일간 기준 지지의 생애 주기.
+// 장생/목욕/관대/건록/제왕/쇠/병/사/묘/절/태/양 12 단계.
+// 사주아이 reference: "목욕지에 해당하니 사회적으로 주목받고…" 처럼 적극 활용.
+export type TwelveStage =
+  | '장생' | '목욕' | '관대' | '건록' | '제왕' | '쇠'
+  | '병' | '사' | '묘' | '절' | '태' | '양';
+
 export interface SajuPillar {
   stem: Stem;
   branch: Branch;
@@ -311,6 +318,8 @@ export interface SajuPillar {
   /** 천간 십신. 일주 천간(일간)은 null */
   stemTenGod: TenGodCode | null;
   hiddenStems: SajuHiddenStem[];
+  /** 2026-05-15 PR 6 — 일간 기준 이 지지의 12운성. 미산출 시 null. */
+  twelveStage?: TwelveStage | null;
 }
 
 export interface SajuPillars {
@@ -804,6 +813,43 @@ function enrichPillars(pillars: SajuPillars, dayMasterStem: Stem): SajuPillars {
   };
 }
 
+// 2026-05-15 PR 6 — 12운성(十二運星) 매트릭스.
+// 행: 일간(천간 10개) · 열: 지지(12개) · 셀: 12운성 단계.
+// 표준 명리: 양간(甲丙戊庚壬)은 순행, 음간(乙丁己辛癸)은 역행.
+// 각 일간의 장생지점 → 인오신해유진/유사인해/술/축... 표준 매핑 사용.
+const TWELVE_STAGE_ORDER: TwelveStage[] = [
+  '장생', '목욕', '관대', '건록', '제왕', '쇠',
+  '병', '사', '묘', '절', '태', '양',
+];
+const BRANCH_INDEX: Record<Branch, number> = {
+  '子': 0, '丑': 1, '寅': 2, '卯': 3, '辰': 4, '巳': 5,
+  '午': 6, '未': 7, '申': 8, '酉': 9, '戌': 10, '亥': 11,
+};
+// 각 일간의 장생(starting point)이 위치하는 지지 + 순행/역행.
+const TWELVE_STAGE_START: Record<Stem, { startBranch: Branch; direction: 1 | -1 }> = {
+  '甲': { startBranch: '亥', direction: 1 },  // 양목 — 亥 장생 순행
+  '乙': { startBranch: '午', direction: -1 }, // 음목 — 午 장생 역행
+  '丙': { startBranch: '寅', direction: 1 },  // 양화 — 寅 장생 순행
+  '丁': { startBranch: '酉', direction: -1 }, // 음화 — 酉 장생 역행
+  '戊': { startBranch: '寅', direction: 1 },  // 양토 — 丙과 동행
+  '己': { startBranch: '酉', direction: -1 }, // 음토 — 丁과 동행
+  '庚': { startBranch: '巳', direction: 1 },  // 양금 — 巳 장생 순행
+  '辛': { startBranch: '子', direction: -1 }, // 음금 — 子 장생 역행
+  '壬': { startBranch: '申', direction: 1 },  // 양수 — 申 장생 순행
+  '癸': { startBranch: '卯', direction: -1 }, // 음수 — 卯 장생 역행
+};
+
+// 2026-05-15 PR 6 — 일간 + 지지로 12운성 계산. 다른 모듈(빌더)에서도 활용 가능하도록 export.
+export function getTwelveStage(dayMasterStem: Stem, branch: Branch): TwelveStage {
+  const { startBranch, direction } = TWELVE_STAGE_START[dayMasterStem];
+  const startIndex = BRANCH_INDEX[startBranch];
+  const branchIndex = BRANCH_INDEX[branch];
+  // direction=1: 장생부터 시계방향(子→丑→寅...)
+  // direction=-1: 역방향(子→亥→戌...)
+  const offset = ((branchIndex - startIndex) * direction + 12) % 12;
+  return TWELVE_STAGE_ORDER[offset] ?? '장생';
+}
+
 function enrichPillar(pillar: SajuPillar, dayMasterStem: Stem, isDayMaster: boolean): SajuPillar {
   const hiddenStems = BRANCH_HIDDEN_STEMS[pillar.branch].map((stem, index) => ({
     stem,
@@ -816,6 +862,8 @@ function enrichPillar(pillar: SajuPillar, dayMasterStem: Stem, isDayMaster: bool
     ...pillar,
     stemTenGod: isDayMaster ? null : getTenGod(dayMasterStem, pillar.stem),
     hiddenStems,
+    // 2026-05-15 PR 6 — 일간 기준 이 지지의 12운성.
+    twelveStage: getTwelveStage(dayMasterStem, pillar.branch),
   };
 }
 

@@ -142,6 +142,10 @@ export interface LifetimeMajorLuckCycle {
   practicalActions?: PracticalAction[];
   /** ⑧  Closing note — 마지막 한마디. "절대 X / 반드시 Y / 응원" 3 문장 정도. */
   closingNote?: string;
+  /** 2026-05-15 PR 6 — 해당 cycle 지지의 12운성 (일간 기준). 카피 부각용. */
+  twelveStage?: string | null;
+  /** 2026-05-15 PR 6 — 사주 원국과 cycle 지지 간 원진 관계의 자리. (예: ['日支']) */
+  wonjinWith?: string[];
 }
 
 export interface LifetimeMajorLuckTimelineSection {

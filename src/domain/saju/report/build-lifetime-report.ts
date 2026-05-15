@@ -4,7 +4,9 @@ import {
   getLuckyElementsFromSajuData,
   getPersonalityFromSajuData,
 } from '@/lib/saju/elements';
-import type { BirthInput, Element } from '@/lib/saju/types';
+import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
+// 2026-05-15 PR 6: 12운성 helper.
+import { getTwelveStage } from '@/domain/saju/engine/saju-data-v1';
 import { buildSajuReport } from './build-report';
 import { buildYearlyReport } from './build-yearly-report';
 import type {
@@ -767,7 +769,12 @@ function buildMajorLuckCycles(
   // 2026-05-15 PR 2: 사용자 현재 상황 — 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.
   userSituation: UserSituation | null = null,
   // 2026-05-15 PR 4: 사주 원국의 dominant tenGod — practicalActions 의 4번째 사전 매핑에 사용.
-  primaryTenGod: TenGodCode | null = null
+  primaryTenGod: TenGodCode | null = null,
+  // 2026-05-15 PR 6: 12운성 / 원진 metadata 부착 — 일간 + 사주 지지 4개 전달.
+  engineContext: {
+    dayMasterStem: Stem;
+    natalBranches: Array<{ branch: Branch; slotLabel: string }>;
+  } | null = null
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) {
     return [
@@ -788,6 +795,16 @@ function buildMajorLuckCycles(
     const note = cycle.notes.slice(0, 2).join(' ') || '이 시기의 10년 흐름입니다.';
     const reading = buildMajorLuckReading(cycle, isCurrent, context);
 
+    // 2026-05-15 PR 6: 12운성 + 원진 metadata 계산. engineContext 가 없으면 null.
+    const cycleBranch = Array.from(cycle.ganzi)[1] as Branch | undefined;
+    const twelveStage =
+      engineContext && cycleBranch
+        ? getTwelveStage(engineContext.dayMasterStem, cycleBranch)
+        : null;
+    const wonjinWith = engineContext && cycleBranch
+      ? findWonjinSlots(cycleBranch, engineContext.natalBranches)
+      : [];
+
     return {
       ganzi: cycle.ganzi,
       ageLabel: formatLuckRange(cycle),
@@ -804,8 +821,29 @@ function buildMajorLuckCycles(
       wealthCareer: buildWealthCareerText(cycle, context, userSituation),
       practicalActions: buildPracticalActions(cycle, context, primaryTenGod),
       closingNote: buildClosingNoteText(cycle, context, isCurrent),
+      twelveStage,
+      wonjinWith,
     };
   });
+}
+
+// 2026-05-15 PR 6 — 원진(怨嗔) 6 쌍 매트릭스. cycle 지지가 사주 원국 지지와 원진 페어를 이루는 자리 반환.
+const WONJIN_PAIRS = new Map<Branch, Branch>([
+  ['子', '未'], ['未', '子'],
+  ['丑', '午'], ['午', '丑'],
+  ['寅', '酉'], ['酉', '寅'],
+  ['卯', '申'], ['申', '卯'],
+  ['辰', '亥'], ['亥', '辰'],
+  ['巳', '戌'], ['戌', '巳'],
+]);
+
+function findWonjinSlots(
+  cycleBranch: Branch,
+  natalBranches: Array<{ branch: Branch; slotLabel: string }>
+): string[] {
+  const partner = WONJIN_PAIRS.get(cycleBranch);
+  if (!partner) return [];
+  return natalBranches.filter((entry) => entry.branch === partner).map((entry) => entry.slotLabel);
 }
 
 export function buildLifetimeReport(
@@ -858,6 +896,18 @@ export function buildLifetimeReport(
   // 2026-05-15 PR 4: 사주 원국의 dominant tenGod 추출 — practicalActions 사전 매핑에 사용.
   // pattern 의 tenGod 우선, fallback 으로 tenGods.dominant.
   const primaryTenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
+  // 2026-05-15 PR 6: 12운성 + 원진 metadata 부착용 engineContext.
+  const engineContext = {
+    dayMasterStem: sajuData.dayMaster.stem,
+    natalBranches: [
+      { branch: sajuData.pillars.year.branch, slotLabel: '연지' },
+      { branch: sajuData.pillars.month.branch, slotLabel: '월지' },
+      { branch: sajuData.pillars.day.branch, slotLabel: '일지' },
+      ...(sajuData.pillars.hour
+        ? [{ branch: sajuData.pillars.hour.branch, slotLabel: '시지' }]
+        : []),
+    ],
+  };
   const majorLuckCycles = buildMajorLuckCycles(
     sajuData.majorLuck,
     currentMajorLuck?.ganzi ?? null,
@@ -867,7 +917,8 @@ export function buildLifetimeReport(
       weakest: sajuData.fiveElements.weakest,
     },
     userSituation,
-    primaryTenGod
+    primaryTenGod,
+    engineContext
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(
