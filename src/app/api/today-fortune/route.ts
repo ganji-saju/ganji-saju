@@ -62,6 +62,32 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   const counselorId = normalizeMoonlightCounselor(rawPayload?.counselorId);
 
+  // PR #166 — 사용자 이름 누락 fix. 로그인 사용자는 profile.display_name 자동 주입.
+  // TodayFortuneBirthPayload 에 name 필드가 없어서 input.name = undefined 였고,
+  // result.userName 이 null 이 되어 hero 에서 "달빛이님" fallback 으로 표시되던 버그.
+  let resolvedDisplayName: string | undefined;
+  if (user?.id) {
+    try {
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      const name = (profileRow as { display_name?: string | null } | null)?.display_name?.trim();
+      if (name) resolvedDisplayName = name;
+    } catch {
+      // silent — 이름 없어도 풀이는 정상 동작.
+    }
+  }
+  // 클라이언트가 직접 보낸 name 도 지원 (비로그인 사용자가 닉네임 입력하는 경우 대비).
+  if (!resolvedDisplayName && typeof rawPayload?.name === 'string') {
+    const clientName = rawPayload.name.trim();
+    if (clientName) resolvedDisplayName = clientName;
+  }
+  const enrichedInput = resolvedDisplayName
+    ? { ...parsed.input, name: resolvedDisplayName }
+    : parsed.input;
+
   let sourceSessionId = toSlug(parsed.input);
   let persistedGrounding = buildSajuInterpretationGrounding(
     parsed.input,
@@ -83,7 +109,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const result = buildTodayFortuneFreeResult(parsed.input, sajuData, {
+  const result = buildTodayFortuneFreeResult(enrichedInput, sajuData, {
     concernId: payload.concernId,
     sourceSessionId,
     calendarType: payload.calendarType,
