@@ -1,113 +1,251 @@
+// 2026-05-15 — 설정 페이지를 sub-page 디자인(pink-soft hero + 1열 카드)으로 재작성.
+// 이전엔 PageHero + SectionSurface 같은 옛 marketing 컴포넌트로 사이트와 어긋남.
+// 명시적 섹션: 알림 / 레이아웃 / 읽기 경험 / 가족·다른 사람 정보 / 계정 관리.
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import {
-  SETTINGS_BLUEPRINT,
-} from '@/content/moonlight';
+import { SETTINGS_BLUEPRINT } from '@/content/moonlight';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
-import { PageHero } from '@/shared/layout/app-shell';
+
+const QUICK_LINK_TONE = {
+  pink: {
+    background: 'var(--app-pink-soft)',
+    border: 'var(--app-pink-line)',
+    icon: 'var(--app-pink-strong)',
+    label: 'var(--app-pink-strong)',
+  },
+  jade: {
+    background: '#e8f5ee',
+    border: 'rgba(45,135,88,0.22)',
+    icon: 'var(--app-jade)',
+    label: 'var(--app-jade)',
+  },
+  indigo: {
+    background: '#eef0fb',
+    border: 'rgba(74,92,184,0.22)',
+    icon: '#4a5cb8',
+    label: '#4a5cb8',
+  },
+  amber: {
+    background: '#fff7e6',
+    border: 'rgba(212,148,38,0.28)',
+    icon: 'var(--app-amber)',
+    label: 'var(--app-amber)',
+  },
+} as const;
+
+interface QuickLinkProps {
+  icon: string;
+  label: string;
+  desc: string;
+  href: string;
+  tone: keyof typeof QUICK_LINK_TONE;
+}
+
+function QuickLink({ icon, label, desc, href, tone }: QuickLinkProps) {
+  const palette = QUICK_LINK_TONE[tone];
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-[14px] border bg-white p-3.5"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[18px]"
+        style={{
+          background: palette.background,
+          border: `1px solid ${palette.border}`,
+          color: palette.icon,
+        }}
+        aria-hidden="true"
+      >
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[14px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+          {label}
+        </div>
+        <div
+          className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {desc}
+        </div>
+      </div>
+      <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+        ›
+      </span>
+    </Link>
+  );
+}
 
 export default function MySettingsPage() {
   return (
-    <div className="space-y-6">
-      <PageHero
-        badges={[
-          <Badge
-            key="settings"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-          >
-            설정
-          </Badge>,
-          <Badge
-            key="reading"
-            className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-          >
-            시니어 친화 읽기와 알림 옵션
-          </Badge>,
-        ]}
-        title="글자, 말투, 알림을 선생님께 맞게 조정하세요"
-        description="설정은 단순한 옵션 모음이 아니라 매일 다시 들어오게 만드는 사용감의 핵심입니다. 읽기 부담을 줄이고, 알림 시간과 표현 톤을 본인에게 맞게 맞출 수 있어야 합니다."
-      />
-
-      <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="알림과 위젯"
-            title="실제 알림 제어는 알림 센터에서 이어집니다"
-            titleClassName="text-3xl"
-            description="시간대 토글, 알림 스타일, 홈 위젯 크기, 미접속 리마인더 주기를 실제 상태로 저장해 둡니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy-muted)]"
-          />
-
-          <FeatureCard
-            className="mt-6"
-            surface="soft"
-            eyebrow="알림 센터"
-            description="푸시 · 위젯 · 재방문 리마인더를 한곳에서 조정할 수 있습니다."
-            footer={
-              <Link
-                href="/notifications"
-                className="inline-flex items-center gap-2 text-sm text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-              >
-                알림 센터 열기
-              </Link>
-            }
-          />
-        </SectionSurface>
-
-        <SupportRail
-          surface="panel"
-          eyebrow="레이아웃 보기"
-          title="PC 보기 방식을 선생님께 맞게 바꿉니다"
-          description="모바일은 하단 독 중심의 안정적인 보기로 고정하고, PC에서만 세로형 좌측 사이드바와 가로형 상단 네비를 선택할 수 있습니다."
+    <div className="space-y-5 px-1">
+      {/* §Hero — pink-soft */}
+      <article
+        className="rounded-[18px] border p-5"
+        style={{
+          background: 'var(--app-pink-soft)',
+          borderColor: 'var(--app-pink-line)',
+        }}
+      >
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          설정
+        </div>
+        <h1
+          className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+          style={{ wordBreak: 'keep-all' }}
         >
-          <LayoutModeControl />
-        </SupportRail>
+          알림 · 글자 · 레이아웃을
+          <br />
+          편한 대로 맞춰주세요
+        </h1>
+        <p
+          className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          자주 읽기 어렵다면 글자 크기를, 시간대가 안 맞으면 알림 시간을 바꿔보세요.
+        </p>
+      </article>
+
+      {/* §정보 관리 — 가족·다른 사람 정보 / 내 정보 편집 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          정보 관리
+        </h2>
+        <div className="mt-2 grid gap-2">
+          <QuickLink
+            icon="✎"
+            label="내 정보 편집"
+            desc="이름·생년월일·시간 룰을 수정합니다"
+            href="/my/profile"
+            tone="pink"
+          />
+          <QuickLink
+            icon="♥"
+            label="가족·다른 사람 정보"
+            desc="궁합·가족 리포트에 함께 쓰일 사람들을 등록·관리합니다"
+            href="/my/profile#family"
+            tone="pink"
+          />
+        </div>
       </section>
 
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="읽기 경험"
-          title="자주 건드리는 설정은 같은 카드 밀도로 정리합니다"
-          titleClassName="text-3xl"
-          description="설정 화면도 기능이 많아 보이기보다, 무엇을 바꾸면 왜 달라지는지 짧게 읽히는 쪽이 더 중요합니다."
-          descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-        />
-
-        <ProductGrid columns={2} className="mt-6">
-          {SETTINGS_BLUEPRINT.map((item) => (
-            <FeatureCard key={item.title} surface="soft" eyebrow={item.title} title={item.options} description={item.reason} />
-          ))}
-        </ProductGrid>
-      </SectionSurface>
-
-      {/* Redesign 2026-05-13: 회원탈퇴 진입점 (mockup screens-g.jsx ScreenAccountDelete) */}
-      <section className="px-1">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
-          계정 관리
+      {/* §알림 / 위젯 / 레이아웃 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          알림 · 화면
+        </h2>
+        <div className="mt-2 grid gap-2">
+          <QuickLink
+            icon="🔔"
+            label="알림 센터"
+            desc="푸시·위젯·재방문 리마인더 시간 조정"
+            href="/notifications"
+            tone="indigo"
+          />
         </div>
-        <div className="mt-2 grid gap-2.5">
-          <Link
-            href="/my/settings/delete-account"
-            className="flex items-center justify-between rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+        {/* PC 레이아웃 옵션은 LayoutModeControl 컴포넌트 그대로 */}
+        <article
+          className="mt-2 rounded-[14px] border bg-white p-4"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            PC 레이아웃 보기
+          </div>
+          <p
+            className="mt-1 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
           >
-            <div className="min-w-0">
-              <div className="text-[13.5px] font-extrabold text-[var(--app-coral)]">
-                회원탈퇴
-              </div>
-              <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
-                탈퇴 절차와 잃게 되는 것들을 미리 확인합니다
-              </div>
-            </div>
-            <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
-              ›
-            </span>
-          </Link>
+            모바일은 자동으로 모바일 보기. PC 에서만 사이드바·상단 네비를 고를 수 있습니다.
+          </p>
+          <div className="mt-3">
+            <LayoutModeControl />
+          </div>
+        </article>
+      </section>
+
+      {/* §읽기 경험 — 글자 / 말투 / 톤 */}
+      {SETTINGS_BLUEPRINT && SETTINGS_BLUEPRINT.length > 0 ? (
+        <section>
+          <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            읽기 경험
+          </h2>
+          <div className="mt-2 grid gap-2">
+            {SETTINGS_BLUEPRINT.map((item) => (
+              <article
+                key={item.title}
+                className="rounded-[14px] border bg-white p-3.5"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  {item.title}
+                </div>
+                <div
+                  className="mt-1 text-[13.5px] font-extrabold text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {item.options}
+                </div>
+                <p
+                  className="mt-1.5 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {item.reason}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* §고객센터 — 자주하는 질문 / 1:1 문의 (08-4 신규 진입점, 페이지는 후속 PR) */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          고객센터
+        </h2>
+        <div className="mt-2 grid gap-2">
+          <QuickLink
+            icon="📚"
+            label="자주하는 질문 (FAQ)"
+            desc="결제·구독·결과·환불 자주 묻는 질문"
+            href="/support/faq"
+            tone="jade"
+          />
+          <QuickLink
+            icon="💬"
+            label="1:1 문의"
+            desc="개별 질문이 있다면 직접 보내주세요"
+            href="/support/contact"
+            tone="jade"
+          />
         </div>
+      </section>
+
+      {/* §계정 관리 — 회원탈퇴 (강조 톤) */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          계정 관리
+        </h2>
+        <Link
+          href="/my/settings/delete-account"
+          className="mt-2 flex items-center justify-between rounded-[14px] border bg-white p-3.5"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <div className="min-w-0">
+            <div className="text-[13.5px] font-extrabold text-[var(--app-coral)]">
+              회원탈퇴
+            </div>
+            <div
+              className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]"
+              style={{ wordBreak: 'keep-all' }}
+            >
+              탈퇴 절차와 잃게 되는 것들을 미리 확인합니다
+            </div>
+          </div>
+          <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+            ›
+          </span>
+        </Link>
       </section>
     </div>
   );
