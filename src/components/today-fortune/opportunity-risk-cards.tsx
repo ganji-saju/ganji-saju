@@ -5,8 +5,9 @@ export function OpportunityRiskCards({
 }: {
   result: TodayFortuneFreeResult;
 }) {
+  // 2026-05-15 — opportunity/risk body 가 긴 문장. 2열로 나누면 좁아 가독성↓. 1열 stack.
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
+    <section className="grid gap-4">
       <article className="rounded-[1.45rem] border border-emerald-200 bg-emerald-50/70 p-5">
         <div className="app-caption text-emerald-700">오늘 해볼 일</div>
         <h3 className="mt-3 text-xl font-bold tracking-tight text-[var(--app-ink)]">{result.opportunity.title}</h3>
