@@ -22,8 +22,8 @@ import {
   isEligibleForComeback,
 } from '@/lib/comeback-reminder';
 import { getSubscriptionPlanLabel } from '@/lib/subscription';
+import { chooseVariantWithExploration } from '@/lib/star-sign/ab-winner';
 import {
-  chooseVariantFor,
   computeStarSignDailyDigest,
   getStarSignPushBodyFor,
   type PushVariant,
@@ -183,7 +183,9 @@ async function handleDispatch(
           recipient.birthMonth != null && recipient.birthDay != null
             ? (deriveStarSignSlug(recipient.birthMonth, recipient.birthDay) as StarSignSlug)
             : null;
-        variant = chooseVariantFor(recipient.userId, toKstDateKey());
+        // PR #145 — ε-greedy A/B winner exploitation (90%) + exploration (10%).
+        const choice = chooseVariantWithExploration(recipient.userId, toKstDateKey());
+        variant = choice.variant;
         bodyText = personalizeNotificationBody(
           getStarSignPushBodyFor(slug, starSignDigest, variant),
           recipient.displayName || '선생님'
