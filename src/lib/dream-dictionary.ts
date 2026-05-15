@@ -122,6 +122,257 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['눈물', '슬픔', '이별', '병원'],
   },
+  // 2026-05-15 — 사전 11 → 36 단어 확장. 사용자 검색 적중률 회복.
+  임신: {
+    keyword: '임신', hanja: '孕', category: 'person',
+    summary: '임신 꿈은 새로운 시작·잠재 가능성의 상징. 실제 임신과 무관하게 새 프로젝트·재물·기회의 잉태를 의미합니다.',
+    situations: [
+      { label: '내가 임신하면', meaning: '큰 일의 시작·태교 같은 준비 기간' },
+      { label: '남이 임신하면', meaning: '주변에 좋은 소식·도움이 찾아옴' },
+      { label: '쌍둥이 임신이면', meaning: '여러 기회·이중 결실' },
+    ],
+    related: ['아기', '태아', '출산', '결혼'],
+  },
+  아기: {
+    keyword: '아기', hanja: '兒', category: 'person',
+    summary: '아기 꿈은 새로운 시작·순수·돌봄을 상징합니다. 안고 있으면 길조, 우는 모습이면 책임감 부담 신호.',
+    situations: [
+      { label: '아기를 안으면', meaning: '재물·기회·새 시작' },
+      { label: '아기가 울면', meaning: '책임감·근심의 신호' },
+      { label: '아기에게 먹이면', meaning: '풍요·돌봄의 기쁨' },
+    ],
+    related: ['임신', '엄마', '아빠', '가족'],
+  },
+  결혼: {
+    keyword: '결혼', hanja: '婚', category: 'action',
+    summary: '결혼 꿈은 큰 약속·관계의 변화를 상징. 실제 결혼과 무관하게 새 계약·동업·인생 전환을 뜻합니다.',
+    situations: [
+      { label: '내 결혼식이면', meaning: '큰 결정·전환의 시기' },
+      { label: '낯선 사람과 결혼하면', meaning: '예상치 못한 인연·기회' },
+      { label: '결혼식이 미뤄지면', meaning: '계획 재검토 필요' },
+    ],
+    related: ['약혼', '예식', '연인', '드레스'],
+  },
+  자동차: {
+    keyword: '자동차', hanja: '車', category: 'object',
+    summary: '자동차 꿈은 인생의 방향·진행·통제를 상징합니다. 운전 상태가 곧 지금 내 삶의 컨디션입니다.',
+    situations: [
+      { label: '내가 운전하면', meaning: '주도권·자율적 진행' },
+      { label: '사고가 나면', meaning: '계획 차질·건강 주의' },
+      { label: '새 차를 사면', meaning: '새 시작·재물 확장' },
+      { label: '차가 고장 나면', meaning: '진행 정체·회복 필요' },
+    ],
+    related: ['도로', '여행', '사고', '바퀴'],
+  },
+  비행기: {
+    keyword: '비행기', hanja: '機', category: 'object',
+    summary: '비행기 꿈은 도약·새 환경·해외 운을 상징. 이륙은 시작, 착륙은 정착, 추락은 큰 변화의 신호.',
+    situations: [
+      { label: '비행기를 타면', meaning: '큰 도약·해외 기회' },
+      { label: '비행기 추락이면', meaning: '큰 변화·정리의 시기' },
+      { label: '공항이 보이면', meaning: '여행·이주·전환점' },
+    ],
+    related: ['공항', '여행', '하늘', '구름'],
+  },
+  학교: {
+    keyword: '학교', hanja: '校', category: 'object',
+    summary: '학교 꿈은 배움·평가·인간관계의 상징입니다. 현재 진행 중인 일의 학습 곡선과 연결됩니다.',
+    situations: [
+      { label: '학교에 가면', meaning: '새 배움·자기 점검 시기' },
+      { label: '시험 보러 가면', meaning: '평가 임박·준비 필요' },
+      { label: '친구와 만나면', meaning: '오래된 인연·추억 정리' },
+    ],
+    related: ['시험', '책', '선생님', '친구'],
+  },
+  집: {
+    keyword: '집', hanja: '家', category: 'object',
+    summary: '집 꿈은 안식·정체성·재물의 상징. 새 집을 보면 재물 확장, 무너지는 집이면 정리·재건의 시기.',
+    situations: [
+      { label: '새 집으로 이사하면', meaning: '큰 전환·재물 확장' },
+      { label: '집이 무너지면', meaning: '오래된 것의 정리·재건' },
+      { label: '집 안이 환하면', meaning: '가정 평안·재물 안정' },
+    ],
+    related: ['이사', '문', '방', '거실'],
+  },
+  비: {
+    keyword: '비', hanja: '雨', category: 'nature',
+    summary: '비 꿈은 축복·정화·재물을 상징하지만, 폭우면 감정 격동·곤란의 신호이기도 합니다.',
+    situations: [
+      { label: '부슬비를 맞으면', meaning: '잔잔한 재물·평온' },
+      { label: '폭우가 쏟아지면', meaning: '감정 격동·곤란 주의' },
+      { label: '우산을 쓰면', meaning: '도움·보호받음' },
+    ],
+    related: ['우산', '눈', '하늘', '천둥'],
+  },
+  바람: {
+    keyword: '바람', hanja: '風', category: 'nature',
+    summary: '바람 꿈은 변화·이동·소식의 상징. 산들바람은 좋은 소식, 강풍은 큰 변화의 예고.',
+    situations: [
+      { label: '시원한 바람이면', meaning: '좋은 소식·기분 전환' },
+      { label: '강풍이 불면', meaning: '큰 변화·일정 변동' },
+    ],
+    related: ['하늘', '구름', '폭풍', '여행'],
+  },
+  새: {
+    keyword: '새', hanja: '鳥', category: 'animal',
+    summary: '새 꿈은 자유·소식·메신저의 상징입니다. 색·크기·행동에 따라 의미가 갈립니다.',
+    situations: [
+      { label: '새가 날아오면', meaning: '좋은 소식·기회' },
+      { label: '새를 잡으면', meaning: '욕망 성취·재물' },
+      { label: '죽은 새를 보면', meaning: '소식 단절·실망' },
+    ],
+    related: ['독수리', '비둘기', '닭', '까치', '봉황'],
+  },
+  개: {
+    keyword: '개', hanja: '犬', category: 'animal',
+    summary: '개 꿈은 충성·우정·보호의 상징. 친근하면 인덕, 사납게 짖거나 물면 갈등·구설 주의.',
+    situations: [
+      { label: '개가 꼬리치면', meaning: '인덕·도움·우정' },
+      { label: '개에게 물리면', meaning: '구설·작은 갈등' },
+      { label: '강아지를 키우면', meaning: '새 인연·돌봄' },
+    ],
+    related: ['고양이', '동물', '주인', '집'],
+  },
+  고양이: {
+    keyword: '고양이', hanja: '猫', category: 'animal',
+    summary: '고양이 꿈은 이성·매력·은밀한 변화의 상징. 안기면 좋은 인연, 사납게 굴면 시기·질투 조심.',
+    situations: [
+      { label: '고양이가 안기면', meaning: '좋은 인연·이성운' },
+      { label: '고양이에게 할퀴이면', meaning: '시기·질투·작은 마찰' },
+      { label: '새끼고양이를 키우면', meaning: '돌봄·새 시작' },
+    ],
+    related: ['개', '동물', '이성'],
+  },
+  꽃: {
+    keyword: '꽃', hanja: '花', category: 'nature',
+    summary: '꽃 꿈은 사랑·결실·아름다움의 상징. 활짝 핀 꽃은 길조, 시들면 끝맺음·정리.',
+    situations: [
+      { label: '활짝 핀 꽃을 보면', meaning: '사랑·결실·기쁜 소식' },
+      { label: '꽃을 받으면', meaning: '좋은 인연·관계 발전' },
+      { label: '꽃이 시들면', meaning: '한 흐름의 마무리' },
+    ],
+    related: ['장미', '벚꽃', '국화', '식물'],
+  },
+  거울: {
+    keyword: '거울', hanja: '鏡', category: 'object',
+    summary: '거울 꿈은 자기 인식·진실·반영의 상징. 깨진 거울이면 자기 점검 필요, 맑은 거울이면 직관 명료.',
+    situations: [
+      { label: '맑은 거울에 비치면', meaning: '직관·자기 이해 깊어짐' },
+      { label: '거울이 깨지면', meaning: '자기 비판·관계 재고' },
+      { label: '얼굴이 달라 보이면', meaning: '큰 내적 변화의 신호' },
+    ],
+    related: ['얼굴', '눈', '머리카락'],
+  },
+  옷: {
+    keyword: '옷', hanja: '衣', category: 'object',
+    summary: '옷 꿈은 사회적 역할·자기 표현·체면의 상징. 새 옷은 새 역할·기회, 더러운 옷은 평판 주의.',
+    situations: [
+      { label: '새 옷을 입으면', meaning: '새 역할·승진·기회' },
+      { label: '옷이 더러우면', meaning: '평판·구설 주의' },
+      { label: '옷을 잃으면', meaning: '체면 손상 우려' },
+    ],
+    related: ['신발', '드레스', '양복', '거울'],
+  },
+  화재: {
+    keyword: '화재', hanja: '災', category: 'nature',
+    summary: '화재 꿈은 불 꿈의 한 갈래로 큰 변화·재물 확장의 상징. 다만 무서운 불이면 손실 주의.',
+    situations: [
+      { label: '집이 다 타면', meaning: '큰 재물·전환의 시기' },
+      { label: '불을 끄면', meaning: '걱정 해소' },
+      { label: '연기만 나면', meaning: '소문·이야기 주의' },
+    ],
+    related: ['불', '연기', '집', '소방차'],
+  },
+  도둑: {
+    keyword: '도둑', hanja: '盗', category: 'person',
+    summary: '도둑 꿈은 손실·잃음의 표면적 의미와 달리 실제로는 들어올 재물의 길조로 자주 풀이됩니다.',
+    situations: [
+      { label: '도둑이 들면', meaning: '재물 들어옴·복권운' },
+      { label: '도둑을 잡으면', meaning: '근심 해소·승리' },
+      { label: '도둑을 놓치면', meaning: '기회 일부 놓침' },
+    ],
+    related: ['돈', '지갑', '경찰'],
+  },
+  여행: {
+    keyword: '여행', hanja: '旅', category: 'action',
+    summary: '여행 꿈은 인생의 전환·새 경험·도전을 상징합니다. 즐거운 여행은 길조, 길을 잃으면 방향 재설정 필요.',
+    situations: [
+      { label: '즐거운 여행이면', meaning: '새 도전·확장의 시기' },
+      { label: '길을 잃으면', meaning: '방향 재설정·고민 필요' },
+      { label: '집으로 돌아오면', meaning: '안정·정착의 시기' },
+    ],
+    related: ['공항', '자동차', '기차', '비행기'],
+  },
+  병원: {
+    keyword: '병원', hanja: '院', category: 'object',
+    summary: '병원 꿈은 회복·치유·돌봄의 상징. 본인이 환자면 자기 점검 필요, 의사면 도와줄 입장의 신호.',
+    situations: [
+      { label: '병원에 입원하면', meaning: '휴식·자기 돌봄 필요' },
+      { label: '의사가 되면', meaning: '주변을 도울 자리' },
+      { label: '문병을 가면', meaning: '관계 회복·인덕' },
+    ],
+    related: ['의사', '약', '주사', '죽음'],
+  },
+  싸움: {
+    keyword: '싸움', hanja: '爭', category: 'action',
+    summary: '싸움 꿈은 내적 갈등·해소되지 않은 감정의 표출. 이기면 응어리 풀림, 지면 양보·인정의 시간.',
+    situations: [
+      { label: '싸움에서 이기면', meaning: '갈등 해결·승리' },
+      { label: '싸움에서 지면', meaning: '양보·자기 이해 필요' },
+      { label: '말다툼만 하면', meaning: '오해 풀 기회' },
+    ],
+    related: ['전쟁', '복수', '화'],
+  },
+  음식: {
+    keyword: '음식', hanja: '食', category: 'food',
+    summary: '음식 꿈은 풍요·식복·건강의 상징. 맛있게 먹으면 길조, 음식이 상했으면 건강·재물 주의.',
+    situations: [
+      { label: '맛있게 먹으면', meaning: '식복·풍요·기쁜 일' },
+      { label: '음식이 상했으면', meaning: '건강·재물 주의' },
+      { label: '잔치에 참석하면', meaning: '인덕·축하받을 일' },
+    ],
+    related: ['밥', '국', '잔치', '식당'],
+  },
+  알: {
+    keyword: '알', hanja: '卵', category: 'food',
+    summary: '알 꿈은 잠재된 가능성·태아·재물의 잉태를 상징. 깨지면 큰 변화, 부화하면 결실의 시기.',
+    situations: [
+      { label: '알을 보면', meaning: '잠재 가능성·새 시작' },
+      { label: '알이 부화하면', meaning: '결실·새 기회' },
+      { label: '깨진 알이면', meaning: '큰 변화·정리' },
+    ],
+    related: ['닭', '뱀', '병아리'],
+  },
+  바다: {
+    keyword: '바다', hanja: '海', category: 'nature',
+    summary: '바다 꿈은 큰 변화·무한한 가능성·감정의 깊이를 상징. 잔잔하면 마음 안정, 거칠면 감정 격동.',
+    situations: [
+      { label: '잔잔한 바다면', meaning: '마음 안정·평온' },
+      { label: '파도가 거칠면', meaning: '감정 격동·시련 임박' },
+      { label: '바다에서 헤엄치면', meaning: '큰 도전·확장' },
+    ],
+    related: ['물', '파도', '배', '섬'],
+  },
+  눈오는: {
+    keyword: '눈오는', hanja: '雪', category: 'nature',
+    summary: '눈 오는 꿈은 깨끗한 시작·정화·새로운 흐름의 상징. 첫눈은 새 인연, 폭설은 정체·고립.',
+    situations: [
+      { label: '함박눈이 내리면', meaning: '맑은 시작·기쁜 소식' },
+      { label: '눈사람을 만들면', meaning: '소박한 즐거움·동심' },
+      { label: '눈이 녹으면', meaning: '얼었던 일이 풀림' },
+    ],
+    related: ['겨울', '얼음', '비'],
+  },
+  용: {
+    keyword: '용', hanja: '龍', category: 'animal',
+    summary: '용 꿈은 최고의 길조 — 출세·재물·명예·임신의 강한 신호. 용을 타거나 본 꿈은 인생 전환의 큰 시점.',
+    situations: [
+      { label: '용을 타면', meaning: '큰 출세·승진·명예' },
+      { label: '용이 승천하면', meaning: '인생 큰 도약' },
+      { label: '용을 만나면', meaning: '귀인·강한 인덕' },
+    ],
+    related: ['뱀', '봉황', '구름', '하늘'],
+  },
 };
 
 export const DREAM_CATEGORY_LABEL: Record<DreamMeaning['category'], string> = {
