@@ -85,7 +85,10 @@ export async function generateLifetimeInterpretation(
     storedCounselor
   );
   const promptVersion = getLifetimeInterpretationPromptVersion(counselorId);
-  const report = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear);
+  // 2026-05-15 PR 2: 사용자 현재 상황을 grounding 의 personalizationContext 에서 추출해
+  // buildLifetimeReport 로 흘려, 대운 cycle 8단의 hook/relationship/wealthCareer 분기에 사용.
+  const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
+  const report = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
   const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
   const model = getOpenAIInterpretationModel();
   const recentFeedbackSummary = reading.userId

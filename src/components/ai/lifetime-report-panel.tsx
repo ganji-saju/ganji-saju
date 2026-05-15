@@ -330,6 +330,8 @@ function LifetimeAtAGlance({
   );
 }
 
+// 2026-05-15 PR 2 응답 2 — 8단 sub-section ExpandableCard 재설계.
+// 현재 cycle 은 default expanded, 나머지는 접힘. summary/task fallback 유지 (회귀 보호).
 function MajorLuckTimeline({
   report,
 }: {
@@ -357,65 +359,181 @@ function MajorLuckTimeline({
                 boxShadow: cycle.isCurrent ? '0 4px 12px rgba(216,27,114,0.35)' : undefined,
               }}
             >
-              {cycle.isCurrent ? (
-                <span className="h-2 w-2 rounded-full bg-white" />
-              ) : null}
+              {cycle.isCurrent ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
             </span>
-            <article
-              className="rounded-[14px] border bg-white p-4"
+            <details
+              open={cycle.isCurrent}
+              className="group rounded-[14px] border bg-white"
               style={{
                 borderColor: cycle.isCurrent ? palette.accent : 'var(--app-line)',
                 background: cycle.isCurrent ? palette.soft : '#fff',
                 boxShadow: cycle.isCurrent ? '0 14px 28px -16px rgba(216,27,114,0.22)' : undefined,
               }}
             >
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span
-                  className="rounded-full border bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]"
-                  style={{ borderColor: 'var(--app-line)' }}
-                >
-                  {cycle.ageLabel}
-                </span>
-                <span
-                  className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
-                  style={{ background: palette.accent }}
-                >
-                  {cycle.phase}
-                </span>
-                {cycle.isCurrent ? (
+              <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span
+                    className="rounded-full border bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]"
+                    style={{ borderColor: 'var(--app-line)' }}
+                  >
+                    {cycle.ageLabel}
+                  </span>
                   <span
                     className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
-                    style={{
-                      background: 'var(--app-ink)',
-                      boxShadow: '0 4px 10px rgba(15,23,42,0.22)',
-                    }}
+                    style={{ background: palette.accent }}
                   >
-                    ✦ 현재 흐름
+                    {cycle.phase}
                   </span>
+                  {cycle.isCurrent ? (
+                    <span
+                      className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
+                      style={{
+                        background: 'var(--app-ink)',
+                        boxShadow: '0 4px 10px rgba(15,23,42,0.22)',
+                      }}
+                    >
+                      ✦ 현재 흐름
+                    </span>
+                  ) : null}
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+                  >
+                    ▾
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <h4
+                    className="text-[18px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                    style={{ fontFamily: 'var(--font-han)' }}
+                  >
+                    {cycle.ganzi}
+                  </h4>
+                  {cycle.chapterTitle ? (
+                    <span
+                      className="text-[12.5px] font-bold leading-[1.45] text-[var(--app-pink-strong)]"
+                      style={{ wordBreak: 'keep-all' }}
+                    >
+                      {cycle.chapterTitle}
+                    </span>
+                  ) : null}
+                </div>
+                {cycle.hook ? (
+                  <p
+                    className="text-[13.5px] leading-[1.65] text-[var(--app-copy)]"
+                    style={{ wordBreak: 'keep-all' }}
+                  >
+                    {cycle.hook}
+                  </p>
+                ) : (
+                  <p
+                    className="text-[13.5px] leading-[1.65] text-[var(--app-copy)]"
+                    style={{ wordBreak: 'keep-all' }}
+                  >
+                    {cycle.summary}
+                  </p>
+                )}
+              </summary>
+
+              <div
+                className="grid gap-3 border-t px-4 py-4"
+                style={{ borderColor: cycle.isCurrent ? palette.accent : 'var(--app-line)' }}
+              >
+                {cycle.chapterBody ? (
+                  <CycleSection label="이 10년 흐름" body={cycle.chapterBody} />
+                ) : null}
+                {cycle.mental ? <CycleSection label="내면·멘탈 🧠" body={cycle.mental} /> : null}
+                {cycle.relationship ? (
+                  <CycleSection label="관계·로맨스 💞" body={cycle.relationship} />
+                ) : null}
+                {cycle.wealthCareer ? (
+                  <CycleSection label="돈·커리어 💰" body={cycle.wealthCareer} />
+                ) : null}
+                {cycle.practicalActions && cycle.practicalActions.length > 0 ? (
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                      개운법 🧭
+                    </div>
+                    <ol className="mt-2 grid gap-2">
+                      {cycle.practicalActions.map((action, index) => (
+                        <li
+                          key={`${cycle.ganzi}-action-${index}`}
+                          className="rounded-[12px] border bg-white p-3"
+                          style={{ borderColor: 'var(--app-pink-line)' }}
+                        >
+                          <div className="text-[11.5px] font-bold text-[var(--app-pink-strong)]">
+                            {index + 1}. {action.what}
+                          </div>
+                          <p
+                            className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+                            style={{ wordBreak: 'keep-all' }}
+                          >
+                            <span className="font-bold text-[var(--app-copy-muted)]">왜 ›</span> {action.reason}
+                          </p>
+                          <p
+                            className="mt-0.5 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+                            style={{ wordBreak: 'keep-all' }}
+                          >
+                            <span className="font-bold text-[var(--app-copy-muted)]">어떻게 ›</span> {action.how}
+                          </p>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+                {cycle.closingNote ? (
+                  <CycleSection
+                    label="마지막 한마디 ✨"
+                    body={cycle.closingNote}
+                    tone="emphasis"
+                  />
+                ) : null}
+                {/* fallback — 8 sub-section 미산출 시 기존 summary/task 노출 */}
+                {!cycle.chapterBody && !cycle.mental ? (
+                  <CycleSection label="흐름 요약" body={cycle.summary} />
+                ) : null}
+                {!cycle.practicalActions || cycle.practicalActions.length === 0 ? (
+                  cycle.task ? <CycleSection label="해야 할 일" body={cycle.task} /> : null
                 ) : null}
               </div>
-              <h4
-                className="mt-2 text-[18px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
-                style={{ fontFamily: 'var(--font-han)' }}
-              >
-                {cycle.ganzi}
-              </h4>
-              <p
-                className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]"
-                style={{ wordBreak: 'keep-all' }}
-              >
-                {cycle.summary}
-              </p>
-              <p
-                className="mt-1.5 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
-                style={{ wordBreak: 'keep-all' }}
-              >
-                {cycle.task}
-              </p>
-            </article>
+            </details>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function CycleSection({
+  label,
+  body,
+  tone = 'default',
+}: {
+  label: string;
+  body: string;
+  tone?: 'default' | 'emphasis';
+}) {
+  return (
+    <div
+      className="rounded-[10px] px-3 py-2"
+      style={
+        tone === 'emphasis'
+          ? {
+              background: 'var(--app-pink-soft)',
+              border: '1px solid var(--app-pink-line)',
+            }
+          : undefined
+      }
+    >
+      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        {label}
+      </div>
+      <p
+        className="mt-1 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        {body}
+      </p>
     </div>
   );
 }

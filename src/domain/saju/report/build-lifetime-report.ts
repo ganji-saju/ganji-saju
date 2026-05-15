@@ -253,6 +253,187 @@ function buildKeywords(input: {
   ];
 }
 
+// 2026-05-15 PR 2 — 8단 sub-section 빌더 helpers.
+// 사주아이 reference: hook(상황 호명) → chapterBody(상세) → mental(내면) → relationship(관계)
+// → wealthCareer(돈/일) → practicalActions(개운법 4건) → closingNote(마지막).
+// 현 단계는 룰 기반 텍스트 — PR 3 (카피 패턴) / PR 4 (개운법 3단) / PR 5 (사전) 에서 보강.
+
+import type { UserSituation } from '@/lib/saju/types';
+import type { PracticalAction } from './lifetime-types';
+
+const RELATIONSHIP_LABEL: Record<NonNullable<UserSituation['relationshipStatus']>, string> = {
+  single: '솔로',
+  dating: '연애 중',
+  married: '기혼',
+  separated: '이별 정리 중',
+};
+const OCCUPATION_LABEL: Record<NonNullable<UserSituation['occupation']>, string> = {
+  employee: '직장 다니시는',
+  'self-employed': '자영업·프리랜서이신',
+  student: '학생이신',
+  homemaker: '가정 살림 중심으로 지내시는',
+  'job-seeking': '구직 중이신',
+  other: '활동 중이신',
+};
+const CONCERN_LABEL: Record<NonNullable<UserSituation['currentConcern']>, string> = {
+  business: '사업·이직 고민',
+  romance: '결혼·연애 고민',
+  family: '자녀·가족 고민',
+  health: '건강·멘탈 고민',
+  wealth: '재물·투자 고민',
+  other: '지금 마음에 머무는 고민',
+};
+
+function buildHookSentence(
+  cycle: SajuMajorLuckCycle,
+  isCurrent: boolean,
+  context: { dominant: Element; weakest: Element },
+  userSituation: UserSituation | null
+): string {
+  const ageRange = formatLuckRange(cycle);
+  const ganzi = cycle.ganzi;
+  const occ = userSituation?.occupation ? OCCUPATION_LABEL[userSituation.occupation] : null;
+  const concern = userSituation?.currentConcern ? CONCERN_LABEL[userSituation.currentConcern] : null;
+  const note = userSituation?.concernNote?.trim().slice(0, 60);
+  const personalCue = occ ? `${occ} 분에게 ` : '';
+  const concernCue = note ? `'${note}' 같은 ` : concern ? `${concern} 한 가운데 ` : '';
+
+  if (isCurrent) {
+    return `${personalCue}지금 진행 중인 ${ganzi} 대운(${ageRange})은 ${concernCue}일상의 무게와 직접 부딪는 10년입니다.`;
+  }
+  return `${personalCue}${ageRange}의 ${ganzi} 대운은 ${concernCue}10년 흐름의 결을 새로 잡는 챕터입니다.`;
+}
+
+function buildChapterBodyText(
+  cycle: SajuMajorLuckCycle,
+  reading: { summary: string },
+  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+): string {
+  const { stem, branch } = getGanziElements(cycle.ganzi);
+  const noteJoin = cycle.notes.slice(0, 3).join(' ').trim();
+  const stemLabel = stem ? formatElementName(stem) : '';
+  const branchLabel = branch ? formatElementName(branch) : '';
+  const headParts = compactStrings([
+    stemLabel ? `천간의 ${stemLabel}` : null,
+    branchLabel ? `지지의 ${branchLabel}` : null,
+  ]).join(' · ');
+  const head = headParts ? `${head_open(cycle)} ${headParts} 결이 함께 작동합니다.` : `${head_open(cycle)} 흐름이 함께 작동합니다.`;
+  return compactStrings([head, noteJoin || null, reading.summary]).join(' ');
+}
+
+function head_open(cycle: SajuMajorLuckCycle): string {
+  return `${cycle.ganzi} 대운에는`;
+}
+
+function buildMentalText(
+  cycle: SajuMajorLuckCycle,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+): string {
+  const { stem } = getGanziElements(cycle.ganzi);
+  const element = stem ?? context.weakest;
+  const isSupport = context.supportElements.includes(element);
+  const isDominant = element === context.dominant;
+  const elementLabel = formatElementName(element);
+
+  if (isSupport) {
+    return `이 대운의 ${elementLabel} 결은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
+  }
+  if (isDominant) {
+    return `이미 강한 ${elementLabel} 축이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+  }
+  return `${elementLabel} 결이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
+}
+
+function buildRelationshipText(
+  cycle: SajuMajorLuckCycle,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  userSituation: UserSituation | null
+): string {
+  const status = userSituation?.relationshipStatus;
+  const baseLine = `${cycle.ganzi} 대운의 결은 관계의 거리감과 표현 방식을 함께 흔듭니다.`;
+
+  if (status === 'dating') {
+    return `${baseLine} 연애 중이신 만큼 이 10년에는 상대와의 호흡 차이가 자주 드러납니다. 결론을 빠르게 내기보다 말의 순서와 일정 합의를 또렷이 두면 오해가 길어지지 않아요.`;
+  }
+  if (status === 'married') {
+    return `${baseLine} 부부 관계라면 역할 분담과 생활 리듬이 새로 정의되는 시기입니다. 큰 결정은 함께 적어두고 시작하면 흔들림이 작아집니다.`;
+  }
+  if (status === 'single') {
+    return `${baseLine} 솔로 상태라면 인연이 들어오는 결이 평소와 달라집니다. 이상형이 바뀔 수 있으니 평소 안 만나던 결의 사람과의 첫 만남을 너무 빠르게 닫지 마세요.`;
+  }
+  if (status === 'separated') {
+    return `${baseLine} 정리 중인 관계라면 감정과 사실을 나눠 적어두는 게 가장 큰 보호막입니다. 이 10년은 같은 자리에서 결을 다시 짜는 시간입니다.`;
+  }
+  return `${baseLine} 가까운 사람과의 거리감, 말의 강도, 표현 빈도를 의식적으로 조절하면 관계의 온도가 안정됩니다.`;
+}
+
+function buildWealthCareerText(
+  cycle: SajuMajorLuckCycle,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  userSituation: UserSituation | null
+): string {
+  const occupation = userSituation?.occupation;
+  const concern = userSituation?.currentConcern;
+  const base = `${cycle.ganzi} 대운은 돈과 일의 결을 함께 재편합니다.`;
+
+  if (occupation === 'self-employed' || concern === 'business') {
+    return `${base} 자영업·프리랜서·새 사업 영역에서 흐름이 크게 흔들리는 시기입니다. 매출보다 단가·고정비·정산 주기를 먼저 점검하세요. 확장 전에 손익 구조를 한 줄로 정리할 수 있는지가 분기점입니다.`;
+  }
+  if (occupation === 'employee') {
+    return `${base} 직장에서는 역할·평가·이직 타이밍이 평소보다 명확히 갈리는 10년입니다. 본인의 강점을 한 줄로 적어두고, 그 한 줄로 평가 받을 수 있는 기회를 가급적 잡으세요.`;
+  }
+  if (occupation === 'job-seeking' || concern === 'wealth') {
+    return `${base} 수입원의 구조가 한 번에 정해질 수 있는 시기입니다. 큰 결정은 비교 후보 3개를 적어두고 들어가야 후회가 적어요. 무리한 투자보다 안정 현금 흐름이 우선입니다.`;
+  }
+  return `${base} 일에서는 새로 시작하는 일과 마무리할 일을 의식적으로 나누세요. 한쪽으로만 치우치면 10년 끝에 같은 자리에서 다시 시작하기 쉽습니다.`;
+}
+
+function buildPracticalActions(
+  cycle: SajuMajorLuckCycle,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+): PracticalAction[] {
+  const { stem, branch } = getGanziElements(cycle.ganzi);
+  const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
+  const dominantLabel = formatElementName(context.dominant);
+  const weakestLabel = formatElementName(context.weakest);
+  const cycleLabel = formatElementName(stem ?? branch ?? context.weakest);
+
+  return [
+    {
+      reason: `대운의 ${cycleLabel} 결이 들어오는 시기`,
+      what: `${supportLabel} 축을 생활 안에서 챙기기`,
+      how: `매일 같은 시간에 짧게 산책·정리 루틴 하나만 고정. 10년 단위 흐름에서는 작은 반복이 큰 차이를 만듭니다.`,
+    },
+    {
+      reason: `강한 ${dominantLabel} 축이 더 커지는 패턴`,
+      what: '한 박자 멈추고 점검하는 습관',
+      how: '큰 결정 직전 1주일은 결정 미루기. 결정 사유를 한 줄로 적어두고 한 번 더 비교한 뒤 진행.',
+    },
+    {
+      reason: `약한 ${weakestLabel} 축이 빈 자리`,
+      what: '약한 축을 보완하는 환경/사람 선택',
+      how: '평소 안 만나던 결의 사람·환경에 의식적으로 한 달에 1번씩 노출. 새 정보 채널 1개 고정 구독.',
+    },
+    {
+      reason: '대운 cycle 안의 합·충 신호',
+      what: '관계 거리감 미세 조정',
+      how: '가까운 사람과의 약속을 한 줄로 적어두기. 정기 약속(주 1회)을 한 자리에만 두고 나머지는 가볍게 두기.',
+    },
+  ];
+}
+
+function buildClosingNoteText(
+  cycle: SajuMajorLuckCycle,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  isCurrent: boolean
+): string {
+  const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
+  const head = isCurrent
+    ? `${cycle.ganzi} 대운이 진행 중인 지금, `
+    : `${cycle.ganzi} 대운이 다가오면, `;
+  return `${head}절대 무리해서 한 번에 결정하지 마세요. 반드시 ${supportLabel} 결을 생활 루틴에 두고, 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
+}
+
 function buildMajorLuckCycles(
   cycles: SajuMajorLuckCycle[] | null | undefined,
   currentMajorLuckGanzi: string | null,
@@ -260,7 +441,9 @@ function buildMajorLuckCycles(
     supportElements: Element[];
     dominant: Element;
     weakest: Element;
-  }
+  },
+  // 2026-05-15 PR 2: 사용자 현재 상황 — 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.
+  userSituation: UserSituation | null = null
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) {
     return [
@@ -287,6 +470,15 @@ function buildMajorLuckCycles(
       summary: `${note} ${reading.summary}`,
       task: reading.task,
       isCurrent,
+      // 2026-05-15 PR 2 — 8 sub-section. 점진 보강 (PR 3~5 에서 카피·사전·패턴 강화).
+      hook: buildHookSentence(cycle, isCurrent, context, userSituation),
+      chapterTitle: `${formatLuckRange(cycle)} · ${cycle.ganzi} 대운, 10년의 결을 정리합니다`, // PR 3 에서 10 패턴 적용 예정
+      chapterBody: buildChapterBodyText(cycle, reading, context),
+      mental: buildMentalText(cycle, context),
+      relationship: buildRelationshipText(cycle, context, userSituation),
+      wealthCareer: buildWealthCareerText(cycle, context, userSituation),
+      practicalActions: buildPracticalActions(cycle, context),
+      closingNote: buildClosingNoteText(cycle, context, isCurrent),
     };
   });
 }
@@ -294,7 +486,10 @@ function buildMajorLuckCycles(
 export function buildLifetimeReport(
   input: BirthInput,
   sajuData: SajuDataV1,
-  targetYear = getCurrentKoreaYear()
+  targetYear = getCurrentKoreaYear(),
+  // 2026-05-15 PR 2: 사용자 현재 상황 (PR 1 으로 personalizationContext 에 흐름 확보됨).
+  // 대운 cycle 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.
+  userSituation: UserSituation | null = null
 ): SajuLifetimeReport {
   const todayReport = buildSajuReport(input, sajuData, 'today');
   const loveReport = buildSajuReport(input, sajuData, 'love');
@@ -342,7 +537,8 @@ export function buildLifetimeReport(
       supportElements: supportElementKeys,
       dominant: sajuData.fiveElements.dominant,
       weakest: sajuData.fiveElements.weakest,
-    }
+    },
+    userSituation
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(
