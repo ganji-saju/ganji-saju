@@ -17,6 +17,17 @@
   .mega-nav-root {
     display: block;
   }
+
+  /* PR #158 (fix) — Tailwind 의 lg:hidden specificity 가 충분치 않은 경우 대비.
+     SiteHeader 의 모바일 헤더 + 사이드바를 PC 에서 명시적으로 숨김.
+     메가 메뉴가 PC nav 의 단일 소스. */
+  .app-top-header,
+  .app-desktop-sidebar,
+  .app-mobile-nav,
+  .app-bottom-nav,
+  .app-bottom-dock {
+    display: none !important;
+  }
 }
 
 .mega-nav-header {
