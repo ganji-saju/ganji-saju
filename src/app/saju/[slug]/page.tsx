@@ -286,7 +286,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   // 2026-05-15 cleanup — 사실 카드(일주 캐릭터 / 격국·용신·강약 / 합충·공망·신살)는 성향·명식 탭으로 이동.
   // 총평 narrative 만 남기고, personalizationContext 는 narrative 빌더에 그대로 전달.
   const personalizationContext = grounding?.personalizationContext ?? null;
-  const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext);
+  // PR #150 (B1) — userName 전달하면 narrative 가 "[직장인이신 김영민님, ]" prefix + closing 호명.
+  const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext, {
+    userName: input.name?.trim() || null,
+  });
 
   const pillars = [
     { label: '년', pillar: sajuData.pillars.year },
