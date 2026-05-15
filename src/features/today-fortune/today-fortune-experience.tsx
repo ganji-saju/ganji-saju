@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiLoadingOverlay, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
@@ -149,6 +149,11 @@ export function TodayFortuneExperience({
   async function handleSubmit() {
     setLoading(true);
     setErrorMessage(null);
+    // PR #162 — 12간지 모션 최소 노출 시간 가드 (intake 와 동일 패턴).
+    // 결과 페이지의 loading.tsx 가 같은 모션을 이어받으므로 짧게.
+    const MIN_LOADING_MS = 600;
+    const loadingStartedAt = Date.now();
+    let didNavigate = false;
 
     try {
       const response = await fetch('/api/today-fortune', {
@@ -167,7 +172,9 @@ export function TodayFortuneExperience({
         return;
       }
 
-      setFreeResult(data.result);
+      // PR #162 — setFreeResult 제거. 이전 코드는 router.push 직전에 freeResult 를
+      // state 에 set 해서 현재 페이지에 inline 카드들이 잠깐 노출됐다 사라지는 어색한
+      // 흐름이 있었음. 이제 sessionStorage 만 저장 → 결과 페이지가 읽어서 표시.
       try {
         window.localStorage.setItem('moonlight:fortune-session:last', data.result.sourceSessionId);
         window.sessionStorage.setItem(
@@ -186,13 +193,24 @@ export function TodayFortuneExperience({
         concern: data.result.concernId,
         sourceSessionId: data.result.sourceSessionId,
       });
-      router.push(
-        `/today-fortune/result?sourceSessionId=${encodeURIComponent(data.result.sourceSessionId)}&concern=${encodeURIComponent(data.result.concernId)}`
-      );
+
+      const nextHref = `/today-fortune/result?sourceSessionId=${encodeURIComponent(data.result.sourceSessionId)}&concern=${encodeURIComponent(data.result.concernId)}`;
+      router.prefetch(nextHref);
+
+      // 모션 최소 노출 시간 보장.
+      const elapsed = Date.now() - loadingStartedAt;
+      if (elapsed < MIN_LOADING_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
+      }
+      router.push(nextHref);
+      didNavigate = true;
     } catch {
       setErrorMessage('무료 결과를 만드는 중 네트워크 오류가 있었습니다.');
     } finally {
-      setLoading(false);
+      // 페이지 전환 완료까지 overlay 유지 (intake 와 동일 패턴 — didNavigate 가드).
+      if (!didNavigate) {
+        setLoading(false);
+      }
     }
   }
 
@@ -245,6 +263,14 @@ export function TodayFortuneExperience({
 
   return (
     <div className="gangi-subpage pb-8">
+      {/* PR #162 — 무료 결과 생성 중 12간지 로딩 모션. 결과 페이지 loading.tsx 와
+          동일 디자인이라 router.push 후에도 자연스럽게 이어짐. */}
+      {loading ? (
+        <GangiLoadingOverlay
+          title="오늘 운세를 풀어드리고 있어요"
+          description="네 기둥과 오늘 흐름을 맞춰보는 중입니다."
+        />
+      ) : null}
       <GangiPageHeader title="오늘운세" />
 
       {/* 2026-05-14: intro 는 TodayConcernSelector 가 pink-soft hero 로 자체 렌더. */}
