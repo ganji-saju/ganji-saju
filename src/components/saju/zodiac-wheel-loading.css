@@ -1,0 +1,328 @@
+/* 2026-05-16 PR #154 — 12간지 회전 로딩 모션.
+ * 첨부된 After Effects 6초 시퀀스의 핵심 시각 요소 (회전하는 12간지) 를 우리 디자인
+ * 시스템 토큰 + CSS 만으로 재현.
+ *
+ * 구조:
+ * - 외곽 원: 12개 한자 (子丑寅卯辰巳午未申酉戌亥) 가 30° 간격으로 배치
+ * - 외곽 원 자체가 시계방향으로 천천히 회전 (한 바퀴 16s)
+ * - 한자들은 반시계로 자기보정 회전 (글자가 거꾸로 안 보이게)
+ * - 중앙: 진행 단계 텍스트 fade-in/out 사이클 (1.5s 씩 4 단계)
+ * - 안쪽 광원 ring 이 외곽 보다 빠르게 (8s) 반대방향 회전
+ * - 점 4개 (사주 4기둥 상징) 가 좌우로 호흡
+ *
+ * 무한 loop. 작업 완료 시 호출자가 컴포넌트 unmount → fade-out 으로 사라짐.
+ * 최소 노출 시간(1.8s) 가드는 호출자(saju-intake-page) 측에서 처리.
+ */
+
+.zodiac-wheel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: zw-overlay-in 0.32s ease-out;
+}
+
+@keyframes zw-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.zodiac-wheel-card {
+  display: grid;
+  place-items: center;
+  gap: 1.5rem;
+  padding: 2rem 1.75rem 1.75rem;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #1a0a2e 0%, #2e1156 55%, #45178a 100%);
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  width: min(86vw, 360px);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 별 입자 배경 */
+.zodiac-wheel-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 22%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 18%, #fff 0.5px, transparent 1px),
+    radial-gradient(circle at 88% 62%, #fff 1px, transparent 1.5px),
+    radial-gradient(circle at 32% 76%, #fff 0.5px, transparent 1px),
+    radial-gradient(circle at 60% 84%, #fff 0.5px, transparent 1px),
+    radial-gradient(circle at 12% 88%, #fff 1px, transparent 1.5px);
+  animation: zw-stars 6s ease-in-out infinite;
+}
+
+@keyframes zw-stars {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* eyebrow */
+.zodiac-wheel-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  position: relative;
+  z-index: 2;
+}
+
+/* 휠 박스 */
+.zodiac-wheel-stage {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  z-index: 2;
+}
+
+/* 외곽 회전 컨테이너 */
+.zodiac-wheel-ring-outer {
+  position: absolute;
+  inset: 0;
+  animation: zw-rotate-cw 16s linear infinite;
+}
+
+@keyframes zw-rotate-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 12간지 각 글자 (transform 으로 위치) */
+.zodiac-wheel-char {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
+  /* 자기보정 — 컨테이너가 회전해도 글자는 똑바로 */
+  animation: zw-char-counter 16s linear infinite;
+}
+
+@keyframes zw-char-counter {
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+/* 안쪽 광원 ring — 반대방향, 더 빠르게 */
+.zodiac-wheel-ring-inner {
+  position: absolute;
+  inset: 28px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-top-color: rgba(236, 72, 153, 0.85);
+  border-right-color: rgba(236, 72, 153, 0.35);
+  animation: zw-rotate-ccw 6s linear infinite;
+  box-shadow:
+    0 0 24px rgba(236, 72, 153, 0.25),
+    inset 0 0 16px rgba(236, 72, 153, 0.12);
+}
+
+@keyframes zw-rotate-ccw {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* 중앙 코어 */
+.zodiac-wheel-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88px;
+  height: 88px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(236, 72, 153, 0.18) 45%,
+    transparent 75%
+  );
+  display: grid;
+  place-items: center;
+  animation: zw-core-pulse 3s ease-in-out infinite;
+}
+
+@keyframes zw-core-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 1;
+  }
+}
+
+.zodiac-wheel-core-glyph {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 0 12px rgba(236, 72, 153, 0.8);
+}
+
+/* 진행 단계 텍스트 사이클 (절대 위치 stack) */
+.zodiac-wheel-step-stack {
+  position: relative;
+  z-index: 2;
+  min-height: 44px;
+  text-align: center;
+  width: 100%;
+}
+
+.zodiac-wheel-step {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  opacity: 0;
+  animation: zw-step-fade 6s ease-in-out infinite;
+}
+
+/* 4 단계 — 각 1.5초씩 (6초 사이클) */
+.zodiac-wheel-step:nth-child(1) {
+  animation-delay: 0s;
+}
+.zodiac-wheel-step:nth-child(2) {
+  animation-delay: 1.5s;
+}
+.zodiac-wheel-step:nth-child(3) {
+  animation-delay: 3s;
+}
+.zodiac-wheel-step:nth-child(4) {
+  animation-delay: 4.5s;
+}
+
+@keyframes zw-step-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  6%,
+  22% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  28% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 사주 4기둥 dots */
+.zodiac-wheel-dots {
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+.zodiac-wheel-dots > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--app-pink, #ec4899);
+  opacity: 0.45;
+  animation: zw-dot-breathe 1.4s ease-in-out infinite;
+}
+
+.zodiac-wheel-dots > span:nth-child(1) {
+  animation-delay: 0s;
+}
+.zodiac-wheel-dots > span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.zodiac-wheel-dots > span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+.zodiac-wheel-dots > span:nth-child(4) {
+  animation-delay: 0.54s;
+}
+
+@keyframes zw-dot-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+    box-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
+  }
+}
+
+/* title + desc */
+.zodiac-wheel-copy {
+  text-align: center;
+  z-index: 2;
+}
+
+.zodiac-wheel-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: white;
+  margin: 0;
+}
+
+.zodiac-wheel-desc {
+  margin: 0.5rem 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  opacity: 0.75;
+  word-break: keep-all;
+}
+
+/* reduced motion 폴백 */
+@media (prefers-reduced-motion: reduce) {
+  .zodiac-wheel-ring-outer,
+  .zodiac-wheel-char,
+  .zodiac-wheel-ring-inner,
+  .zodiac-wheel-core,
+  .zodiac-wheel-step,
+  .zodiac-wheel-dots > span,
+  .zodiac-wheel-card::before {
+    animation: none !important;
+  }
+  .zodiac-wheel-step:nth-child(1) {
+    opacity: 1;
+  }
+}
