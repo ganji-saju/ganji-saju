@@ -123,12 +123,13 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
   },
   {
-    // 2026-05-15 — 메뉴에서 누락됐던 꿈해몽 추가. /dream-interpretation 페이지 이미 구현.
+    // 2026-05-15 — 꿈해몽 메뉴. 2026-05-15(2) — /dream-interpretation 은 옛 디자인 +
+    // 검색 미작동이라 사용자가 "검색이 안 된다" 고 느낌. 검색 작동 페이지 /dream 으로 변경.
     id: 'dream',
     title: '꿈해몽',
     desc: '꿈으로 보는 길흉',
     price: '무료',
-    href: '/dream-interpretation',
+    href: '/dream',
     zodiac: 'dragon',
     category: 'fortune',
   },
@@ -193,8 +194,8 @@ export const GANGI_FREE_HUB_ITEMS = [
     desc: '내 띠 기준 오늘 흐름',
   },
   {
-    // 2026-05-15 — 무료 hub 에도 꿈해몽 노출.
-    href: '/dream-interpretation',
+    // 2026-05-15 — 무료 hub 에서 검색 작동하는 /dream 으로.
+    href: '/dream',
     zodiac: 'dragon',
     title: '꿈해몽',
     desc: '꿈으로 보는 길흉',
