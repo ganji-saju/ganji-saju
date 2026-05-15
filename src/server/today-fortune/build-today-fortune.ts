@@ -24,6 +24,7 @@ import { calculateIljinScore, type SajuOriginInput } from '@/lib/today-fortune/i
 import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
 import type { Branch as IljinBranch, Stem as IljinStem } from '@/lib/today-fortune/iljin-rules';
 // 2026-05-15 PR — 02 신살 spec doc: 종합 신살 탐지 (20종).
+import { applyActiveSinsalWeights } from '@/lib/sinsal-active-weights';
 import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
 import type {
   ConcernId,
@@ -2520,7 +2521,7 @@ function buildSajuChartSnapshot(
         const iljinInput = todayStem && todayBranch
           ? { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch }
           : undefined;
-        const hits = detectComprehensiveSinsals(
+        const rawHits = detectComprehensiveSinsals(
           {
             dayMaster: sajuData.pillars.day.stem as IljinStem,
             yearBranch: sajuData.pillars.year.branch as IljinBranch,
@@ -2534,6 +2535,9 @@ function buildSajuChartSnapshot(
             currentYearBranch: currentYearBranch as IljinBranch | undefined,
           }
         );
+        // PR #140 — active sinsal_weight_version 이 있으면 scoreHint override.
+        // cache 가 비어있으면 background refresh + 이번 요청은 hardcoded 그대로.
+        const hits = applyActiveSinsalWeights(rawHits);
         return hits.map((h) => ({
           name: h.name,
           category: h.category,
