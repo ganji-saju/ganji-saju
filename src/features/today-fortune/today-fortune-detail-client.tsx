@@ -82,6 +82,10 @@ export function TodayFortuneDetailClient({
     async function openDetail() {
       setLoading(true);
       setError(null);
+      // PR #164 — 12간지 로딩 모션 최소 노출 시간 가드.
+      // unlock 이 너무 빨라도 모션이 한 번은 보이게.
+      const MIN_LOADING_MS = 600;
+      const loadingStartedAt = Date.now();
 
       try {
         const response = await fetch('/api/today-fortune/unlock', {
@@ -95,6 +99,12 @@ export function TodayFortuneDetailClient({
         });
         const data = (await response.json().catch(() => null)) as TodayFortuneUnlockResponse | null;
 
+        if (cancelled) return;
+        // 최소 노출 시간 보장 — fetch 가 빨라도 모션 한 번 보임.
+        const elapsed = Date.now() - loadingStartedAt;
+        if (elapsed < MIN_LOADING_MS) {
+          await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
+        }
         if (cancelled) return;
 
         if (response.status === 401) {
