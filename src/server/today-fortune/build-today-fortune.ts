@@ -2582,11 +2582,53 @@ export function buildTodayFortuneFreeResult(
     profile,
     dailyDelta
   );
+
+  // PR #165 — iljinScore 를 scores 정규화 전에 미리 계산.
+  // 사용자 보고: 총운 점수 ≠ 점수 산출내역 점수 ≠ 영역별 점수 → 신뢰도 폭격.
+  // 해결: iljinScore.totalScore 를 single source of truth 로,
+  //       scores.overall 을 totalScore 로 덮어쓰고 영역별은 평균이 totalScore 가 되도록 정규화.
+  const computedIljinScore = (() => {
+    if (!todayPillar.stem || !todayPillar.branch) return null;
+    const { lucky, unlucky } = deriveLuckyElements(sajuData);
+    const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
+    const r = calculateIljinScore(sajuOrigin, {
+      todayStem: todayPillar.stem as IljinStem,
+      todayBranch: todayPillar.branch as IljinBranch,
+    });
+    return {
+      totalScore: r.totalScore,
+      grade: r.grade,
+      gradeEmoji: r.gradeEmoji,
+      gradeMessage: r.gradeMessage,
+      breakdown: r.breakdown,
+    };
+  })();
+
+  // scores 의 overall + 영역별을 iljinScore.totalScore 기준으로 정규화.
+  // - overall = totalScore (헤드라인/banner/breakdown 카드 모두 같은 숫자)
+  // - 영역별 = totalScore + (영역점수 - 영역평균) — 평균이 totalScore 가 되고 상대 차이 보존
+  // - iljinScore 없으면 (시간 미입력 등) 기존 raw scores 유지.
+  const unifiedScores: TodayScoreItem[] = computedIljinScore
+    ? (() => {
+        const target = computedIljinScore.totalScore;
+        const nonOverall = rawScores.filter((s) => s.key !== 'overall');
+        if (nonOverall.length === 0) return rawScores;
+        const mean = nonOverall.reduce((sum, s) => sum + s.score, 0) / nonOverall.length;
+        return rawScores.map((s) => {
+          if (s.key === 'overall') {
+            return { ...s, score: clampScore(target) };
+          }
+          const delta = s.score - mean;
+          return { ...s, score: clampScore(target + delta) };
+        });
+      })()
+    : rawScores;
+
   // PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬. overall 은 항상 맨 앞.
   // grounding.personalizationContext.userSituation 에서 추출.
   const userSituation =
     options.grounding?.personalizationContext?.userSituation ?? null;
-  const scores = reorderTodayScoresBySituation(rawScores, userSituation);
+  const scores = reorderTodayScoresBySituation(unifiedScores, userSituation);
   const reasonBody = buildPublicReasonBody(profile, Boolean(input.unknownTime));
   const groundingSummary = buildPublicGroundingSummary(profile, options.kasiComparison);
   const upsell = selectUpsell({ scores }, options.concernId);
@@ -2670,22 +2712,8 @@ export function buildTodayFortuneFreeResult(
       });
     })(),
     // 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 8영역 + 메시지 라이브러리.
-    iljinScore: (() => {
-      if (!todayPillar.stem || !todayPillar.branch) return null;
-      const { lucky, unlucky } = deriveLuckyElements(sajuData);
-      const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
-      const r = calculateIljinScore(sajuOrigin, {
-        todayStem: todayPillar.stem as IljinStem,
-        todayBranch: todayPillar.branch as IljinBranch,
-      });
-      return {
-        totalScore: r.totalScore,
-        grade: r.grade,
-        gradeEmoji: r.gradeEmoji,
-        gradeMessage: r.gradeMessage,
-        breakdown: r.breakdown,
-      };
-    })(),
+    // PR #165 — 위에서 미리 계산한 computedIljinScore 재사용 (중복 계산 제거 + 정규화 일치).
+    iljinScore: computedIljinScore,
     iljinMessages: (() => {
       if (!todayPillar.stem || !todayPillar.branch) return null;
       const { lucky, unlucky } = deriveLuckyElements(sajuData);
