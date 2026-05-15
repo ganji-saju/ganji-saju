@@ -1,4 +1,4 @@
-import type { SajuDataV1, SajuMajorLuckCycle } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV1, SajuMajorLuckCycle, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 import {
   ELEMENT_INFO,
   getLuckyElementsFromSajuData,
@@ -388,36 +388,182 @@ function buildWealthCareerText(
   return `${base} 일에서는 새로 시작하는 일과 마무리할 일을 의식적으로 나누세요. 한쪽으로만 치우치면 10년 끝에 같은 자리에서 다시 시작하기 쉽습니다.`;
 }
 
+// 2026-05-15 PR 4 — 개운법 reason/what/how 사전식 매핑.
+// 사주아이 reference 개운법 패턴 ("부족한 토의 기운을 보강해야 합니다 / 표현의 부족 /
+// 마케팅을 시스템화") 처럼 명리 키를 일상 행동으로 번역.
+
+// (1) 부족 오행 사전 — weakest element 기반.
+const SHORTAGE_ACTION_DICT: Record<Element, PracticalAction> = {
+  목: {
+    reason: '木 기운이 약해 새 시작·성장의 결이 흐려지는 패턴',
+    what: '새 일·공부 한 가지를 작게 시작해 성장 결을 채우기',
+    how: '매주 새 책 1장씩 + 안 만나본 결의 사람 1명. 시작을 미루지 않는 것이 핵심.',
+  },
+  화: {
+    reason: '火 기운이 약해 표현·노출·인정의 결이 부족한 패턴',
+    what: '마음과 결과를 짧게라도 먼저 표현하기',
+    how: '주 1회 짧은 발표·SNS 한 줄·동료에게 안부 메시지. "혼자만의 깊이"를 풀어내는 통로 1개 고정.',
+  },
+  토: {
+    reason: '土 기운이 약해 생활 기반·리듬이 흔들리는 패턴',
+    what: '고정비 / 일정 / 약속을 정돈해 기반 다지기',
+    how: '매일 같은 시간 기상 + 매주 가계부·일정표 1줄 점검. 흩어진 일을 한 곳에 모아 정리.',
+  },
+  금: {
+    reason: '金 기운이 약해 기준·결단·마무리가 모호한 패턴',
+    what: '우선순위와 거절의 기준 명확히 세우기',
+    how: '주간 회고 노트에 "할 일 3 / 안 할 일 3" 적기. 애매한 약속은 처음부터 자르기.',
+  },
+  수: {
+    reason: '水 기운이 약해 정보·휴식·생각 정리가 부족한 패턴',
+    what: '잠·자료·이동 계획으로 흐름을 정돈',
+    how: '주 1회 "정보의 날" 고정 + 7시간 수면 + 결정 직전 30분 산책. 충분히 비워두고 결정.',
+  },
+};
+
+// (2) 과다 오행 사전 — dominant element 기반.
+const EXCESS_ACTION_DICT: Record<Element, PracticalAction> = {
+  목: {
+    reason: '木 기운이 과해 새 일을 너무 많이 벌리는 패턴',
+    what: '시작한 일 중 한 가지를 끝까지 마무리',
+    how: '주말은 새 일 X. 미뤄둔 일 한 가지만 잡고 끝까지. 끝낸 후 시작.',
+  },
+  화: {
+    reason: '火 기운이 과해 감정·속도가 결정보다 앞서는 패턴',
+    what: '결정 전 한 박자 호흡',
+    how: '큰 메시지·결제·약속은 1시간 묵힌 뒤 다시 읽고 보내기. 즉답 X.',
+  },
+  토: {
+    reason: '土 기운이 과해 고집·무게가 변화 결을 막는 패턴',
+    what: '한 가지 새 환경을 의식적으로 받아들이기',
+    how: '월 1회 새 동선·새 식당·새 사람 1명. "원래 이렇게 해왔어요" 라는 말 줄이기.',
+  },
+  금: {
+    reason: '金 기운이 과해 차갑게 잘라내는 말·결정이 관계의 온도를 떨어뜨리는 패턴',
+    what: '결단 옆에 관계 온도 한 줄 더하기',
+    how: '주 1회 감사·안부 메시지. 거절 시 "안 됩니다" 대신 "이번엔 어렵고 다음엔" 변환.',
+  },
+  수: {
+    reason: '水 기운이 과해 생각이 길어 실행이 늦는 패턴',
+    what: '정보 수집 마감 시간 설정',
+    how: '결정 전 정보 수집은 30분 안에 마감. 그 후엔 부족해도 행동 1번 → 보완.',
+  },
+};
+
+// (3) 십성 사전 — TenGodCode 별 reason/what/how 매핑. 사주아이 reference 강하게 활용.
+const TEN_GOD_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
+  비견: {
+    reason: '비견 — 동등한 결의 사람과 부딪치고 협업/경쟁이 동시에 늘어남',
+    what: '역할 경계를 분명히 그어두기',
+    how: '공동 프로젝트는 계약서·역할표 1장 먼저. "친하니까" 로 시작하지 말 것.',
+  },
+  겁재: {
+    reason: '겁재 — 가까운 사람과 돈·기회를 나누다 갈등이 생기기 쉬움',
+    what: '금전 거리를 미리 두기',
+    how: '친한 사이도 차용증·할부 기록. 큰 지출은 가족·친구와 분리.',
+  },
+  식신: {
+    reason: '식신 — 표현과 결과물을 만들어내는 힘이 살아 있음',
+    what: '한 작업물을 끝까지 완성해 공개',
+    how: '월 1개 결과물 공개(글·영상·작품). 완벽함보다 출시 빈도 우선.',
+  },
+  상관: {
+    reason: '상관 — 재능과 답답함 사이에서 표현이 갇히기 쉬움',
+    what: '프레임 밖에서 시도하기',
+    how: '허락 구하지 말고 일단 시도 1건. 실패 시 회수 비용 적은 영역부터.',
+  },
+  편재: {
+    reason: '편재 — 기회와 사람을 넓게 보는 결이라 흩어지기 쉬움',
+    what: '기회 1개로 좁히기',
+    how: '확장 전 3개월 손익 점검. 매출보다 단가·고정비 우선 정리.',
+  },
+  정재: {
+    reason: '정재 — 안정적으로 축적하는 결이지만 한 번 잘못 분산되면 회복이 느림',
+    what: '구조 점검 + 분산 정리',
+    how: '월말 자동이체·반복 결제 점검. 1년 1회 자산 구조 재배치.',
+  },
+  편관: {
+    reason: '편관 — 압박과 책임이 추진력으로 작용하지만 과부하 위험',
+    what: '거절의 기준 세우기',
+    how: '주 1회 일정 비우기 + 거절 멘트 3가지 미리 적어두기.',
+  },
+  정관: {
+    reason: '정관 — 자리·명예·기준을 중시하는 결이라 스스로 무거워지기 쉬움',
+    what: '역할 분담 + 위임 1건',
+    how: '한 달에 위임 가능한 일 1건 찾기. 책임지지 않는 일도 의식적으로 늘리기.',
+  },
+  편인: {
+    reason: '편인 — 직관과 깊이가 살아나지만 외부 연결이 끊기기 쉬움',
+    what: '주 1회 자료 정리 + 1명 외부 연결',
+    how: '주간 메모를 한 페이지에 정리하고 외부 1명과 짧게 공유.',
+  },
+  정인: {
+    reason: '정인 — 후원·배움의 결이 살아 있어 베풂이 곧 자기 보강',
+    what: '도움 받기 + 베풀기 동시',
+    how: '월 1회 멘토·스승 만남 + 후배 1명에게 짧은 도움.',
+  },
+};
+
+// (4) cycle element vs 사주 구조 — 보완 축/과다 축/약점 축 분기.
+function buildCycleElementAction(
+  cycleElement: Element,
+  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+): PracticalAction {
+  const cycleLabel = formatElementName(cycleElement);
+  const isSupport = context.supportElements.includes(cycleElement);
+  const isDominant = cycleElement === context.dominant;
+  const isWeakest = cycleElement === context.weakest;
+
+  if (isSupport) {
+    return {
+      reason: `대운에 ${cycleLabel} 결이 들어와 평소 부족한 축을 채워주는 시기`,
+      what: `${cycleLabel} 결을 생활 루틴으로 받아들이기`,
+      how: `매일 5분이라도 ${cycleLabel} 결의 행동(목=시작/화=표현/토=정리/금=결단/수=학습) 한 가지 고정.`,
+    };
+  }
+  if (isDominant) {
+    return {
+      reason: `이미 강한 ${cycleLabel} 축이 더 커지는 결`,
+      what: '과속을 의식적으로 줄이기',
+      how: '큰 결정 전 1주일 보류. 결정 사유 한 줄 적고 한 번 더 비교 후 진행.',
+    };
+  }
+  if (isWeakest) {
+    return {
+      reason: `약한 ${cycleLabel} 축이 표면으로 드러나는 결`,
+      what: '주변 받침대(사람·시스템) 미리 만들기',
+      how: '새 정보 채널 1개 + 도움 줄 사람 1명 미리 등록. 혼자 버티지 않기.',
+    };
+  }
+  return {
+    reason: `${cycleLabel} 결이 일상의 결정 방식을 흔드는 시기`,
+    what: '익숙한 패턴 옆에 새 결 1개 두기',
+    how: '월 1회 안 해본 행동 한 가지(이동/대화/취미). 변화 결을 작게라도 받아들이기.',
+  };
+}
+
 function buildPracticalActions(
   cycle: SajuMajorLuckCycle,
-  context: { supportElements: Element[]; dominant: Element; weakest: Element }
+  context: { supportElements: Element[]; dominant: Element; weakest: Element },
+  // 2026-05-15 PR 4: 사주 원국의 dominant/weakest tenGod 도 받아 사전 매핑.
+  primaryTenGod: TenGodCode | null = null
 ): PracticalAction[] {
   const { stem, branch } = getGanziElements(cycle.ganzi);
-  const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
-  const dominantLabel = formatElementName(context.dominant);
-  const weakestLabel = formatElementName(context.weakest);
-  const cycleLabel = formatElementName(stem ?? branch ?? context.weakest);
+  const cycleElement = stem ?? branch ?? context.weakest;
+
+  const cycleAction = buildCycleElementAction(cycleElement, context);
+  const shortageAction = SHORTAGE_ACTION_DICT[context.weakest] ?? SHORTAGE_ACTION_DICT['토'];
+  const excessAction = EXCESS_ACTION_DICT[context.dominant] ?? EXCESS_ACTION_DICT['목'];
+  const tenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
 
   return [
-    {
-      reason: `대운의 ${cycleLabel} 결이 들어오는 시기`,
-      what: `${supportLabel} 축을 생활 안에서 챙기기`,
-      how: `매일 같은 시간에 짧게 산책·정리 루틴 하나만 고정. 10년 단위 흐름에서는 작은 반복이 큰 차이를 만듭니다.`,
-    },
-    {
-      reason: `강한 ${dominantLabel} 축이 더 커지는 패턴`,
-      what: '한 박자 멈추고 점검하는 습관',
-      how: '큰 결정 직전 1주일은 결정 미루기. 결정 사유를 한 줄로 적어두고 한 번 더 비교한 뒤 진행.',
-    },
-    {
-      reason: `약한 ${weakestLabel} 축이 빈 자리`,
-      what: '약한 축을 보완하는 환경/사람 선택',
-      how: '평소 안 만나던 결의 사람·환경에 의식적으로 한 달에 1번씩 노출. 새 정보 채널 1개 고정 구독.',
-    },
-    {
+    cycleAction,
+    shortageAction,
+    excessAction,
+    tenGodAction ?? {
       reason: '대운 cycle 안의 합·충 신호',
       what: '관계 거리감 미세 조정',
-      how: '가까운 사람과의 약속을 한 줄로 적어두기. 정기 약속(주 1회)을 한 자리에만 두고 나머지는 가볍게 두기.',
+      how: '가까운 사람과의 약속을 한 줄로 적어두기. 정기 약속은 한 자리에만 고정.',
     },
   ];
 }
@@ -615,7 +761,9 @@ function buildMajorLuckCycles(
     weakest: Element;
   },
   // 2026-05-15 PR 2: 사용자 현재 상황 — 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.
-  userSituation: UserSituation | null = null
+  userSituation: UserSituation | null = null,
+  // 2026-05-15 PR 4: 사주 원국의 dominant tenGod — practicalActions 의 4번째 사전 매핑에 사용.
+  primaryTenGod: TenGodCode | null = null
 ): LifetimeMajorLuckCycleRow[] {
   if (!cycles || cycles.length === 0) {
     return [
@@ -650,7 +798,7 @@ function buildMajorLuckCycles(
       mental: buildMentalText(cycle, context),
       relationship: buildRelationshipText(cycle, context, userSituation),
       wealthCareer: buildWealthCareerText(cycle, context, userSituation),
-      practicalActions: buildPracticalActions(cycle, context),
+      practicalActions: buildPracticalActions(cycle, context, primaryTenGod),
       closingNote: buildClosingNoteText(cycle, context, isCurrent),
     };
   });
@@ -703,6 +851,9 @@ export function buildLifetimeReport(
   const todayTimeline = todayReport.timeline.find((item) => item.label === '오늘') ?? null;
   const monthTimeline = todayReport.timeline.find((item) => item.label === '이번 달') ?? null;
   const majorTimeline = todayReport.timeline.find((item) => item.label === '대운 흐름') ?? null;
+  // 2026-05-15 PR 4: 사주 원국의 dominant tenGod 추출 — practicalActions 사전 매핑에 사용.
+  // pattern 의 tenGod 우선, fallback 으로 tenGods.dominant.
+  const primaryTenGod = sajuData.pattern?.tenGod ?? sajuData.tenGods?.dominant ?? null;
   const majorLuckCycles = buildMajorLuckCycles(
     sajuData.majorLuck,
     currentMajorLuck?.ganzi ?? null,
@@ -711,7 +862,8 @@ export function buildLifetimeReport(
       dominant: sajuData.fiveElements.dominant,
       weakest: sajuData.fiveElements.weakest,
     },
-    userSituation
+    userSituation,
+    primaryTenGod
   );
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(

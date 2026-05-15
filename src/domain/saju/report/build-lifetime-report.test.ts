@@ -60,6 +60,38 @@ test('buildLifetimeReport gives major-luck cycles distinct readings by ganzi', (
   );
 });
 
+test('buildLifetimeReport practicalActions use 사전식 매핑 (PR 4, 2026-05-15)', () => {
+  // PR 4: practicalActions 가 generic "관계 거리감 미세 조정" 만 반복하지 않고
+  // 부족 오행 + 과다 오행 + 십성 사전 매핑이 cycle 마다 다양하게 노출되어야 함.
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  // 1) 모든 cycle 이 4개의 PracticalAction 보유.
+  for (const cycle of cycles) {
+    assert.ok(cycle.practicalActions && cycle.practicalActions.length === 4, `${cycle.ganzi}: 4건이 아님`);
+    for (const action of cycle.practicalActions ?? []) {
+      assert.ok(action.reason.length > 0);
+      assert.ok(action.what.length > 0);
+      assert.ok(action.how.length > 0);
+    }
+  }
+
+  // 2) 사전 매핑 marker (오행/십성 단어) 가 reason 에 등장.
+  const allReasons = cycles
+    .flatMap((c) => c.practicalActions ?? [])
+    .map((a) => a.reason)
+    .join('\n');
+  const elementMarker = /[木火土金水]\s*기운/.test(allReasons);
+  const tenGodMarker = /(비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/.test(allReasons);
+  assert.ok(elementMarker, `오행 사전 매핑 marker 가 reason 에 등장해야 함: ${allReasons.slice(0, 400)}`);
+  assert.ok(tenGodMarker, `십성 사전 매핑 marker 가 reason 에 등장해야 함: ${allReasons.slice(0, 400)}`);
+
+  // 3) how 가 generic placeholder("관계 거리감 미세 조정") 만 반복되지 않음 — 다양성.
+  const howSet = new Set(cycles.flatMap((c) => c.practicalActions ?? []).map((a) => a.how));
+  assert.ok(howSet.size >= 4, `how 카피 다양성: 최소 4개 unique (size=${howSet.size})`);
+});
+
 test('buildLifetimeReport chapterTitle uses 10 카피 패턴 (PR 3, 2026-05-15)', () => {
   // PR 3: chapterTitle 이 이전의 generic placeholder ("…10년의 결을 정리합니다") 가
   // 아니라 10 패턴 중 1개로 선택되어야 함.
