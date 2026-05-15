@@ -35,7 +35,8 @@ import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
-const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:';
+// PR #166 — prefix 버전업. 옛 캐시 (점수 미통일 / 이름 누락) 자동 무효화.
+const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v2:';
 
 // 2026-05-15: 어제 캐시가 오늘 화면을 가리지 않도록 sessionStorage 키에 dateKey 가 붙는다.
 // 결과 페이지는 URL 의 sourceSessionId 만 알고 dateKey 는 모르므로, prefix 매칭 후
