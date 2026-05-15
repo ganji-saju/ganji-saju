@@ -337,7 +337,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '나는 어떤 말투와 관계 방식에 가까울까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}mg-ji`,
     productPosition: '무료 성향 테스트와 소액 궁금증 상품으로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'today-so',
@@ -351,7 +351,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '오늘 하루를 편하게 넘기려면 무엇부터 하면 좋을까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}today-so`,
     productPosition: '출석, 루틴, 무료 오늘 조언, 리워드 흐름으로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'myeongri-ho',
@@ -407,7 +407,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '어젯밤 꿈은 지금 마음의 어떤 신호일까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}dream-baem`,
     productPosition: '무료 꿈 키워드 해석과 990원 자세히 보기로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'move-mal',
@@ -421,7 +421,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '지금 움직여도 괜찮을까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}move-mal`,
     productPosition: '이직, 이사, 여행, 방향 질문형 990원 상품으로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'compat-yang',
@@ -449,7 +449,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '내 인상은 어떤 분위기로 전해질까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}face-won`,
     productPosition: '사진/자가진단 기반 무료 입구와 소액 풀이로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'wealth-dak',
@@ -463,7 +463,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '돈이 새는 지점은 어디일까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}wealth-dak`,
     productPosition: '재물 질문, 소비 패턴, 월간 돈 흐름 상품으로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'palm-meong',
@@ -477,7 +477,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '내 손에는 어떤 생활 단서가 보일까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}palm-meong`,
     productPosition: '사진 입력형 무료 맛보기와 990원 자세히 보기로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
   {
     slug: 'luck-dwaeji',
@@ -491,7 +491,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     question: '오늘 받을 수 있는 작은 행운은 무엇일까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}luck-dwaeji`,
     productPosition: '출석 리워드, 무료 행운 카드, 쿠폰 안내로 확장 예정입니다.',
-    status: 'coming-soon',
+    status: 'active',
   },
 ] as const;
 
