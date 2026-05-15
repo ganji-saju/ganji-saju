@@ -1,6 +1,7 @@
 // 2026-05-15 — 신살 룰 검증 통계 API (admin).
 // GET /api/admin/sinsal-validation?days=180 — 지난 N일 피드백으로 신살별 t-test.
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { analyzeSinsalEffects, summarizeDataset } from '@/lib/admin/sinsal-validation';
 import { createClient } from '@/lib/supabase/server';
 
@@ -9,14 +10,14 @@ export async function GET(req: NextRequest) {
   const days = Math.max(7, Math.min(730, parseInt(daysParam ?? '180', 10)));
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  // PR #141 — admin 화이트리스트 가드.
+  const guard = await getCurrentAdminCheck(supabase);
+  if (!guard.ok) {
+    return NextResponse.json(
+      { ok: false, error: guard.reason },
+      { status: guard.reason === 'unauthenticated' ? 401 : 403 }
+    );
   }
-
-  // 향후: admin role 체크 추가. 현재는 noindex 페이지 + 로그인만 검증.
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);

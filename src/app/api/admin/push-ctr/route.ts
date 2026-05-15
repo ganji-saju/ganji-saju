@@ -1,6 +1,7 @@
 // 2026-05-16 PR #137 — 별자리 push 의 variant 별 CTR 집계.
 // GET /api/admin/push-ctr?days=30 → { slot, variant, sent, clicked, ctr }
 import { NextRequest, NextResponse } from 'next/server';
+import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
@@ -8,11 +9,12 @@ export async function GET(req: NextRequest) {
   const days = Math.max(1, Math.min(180, parseInt(daysParam ?? '30', 10)));
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await getCurrentAdminCheck(supabase);
+  if (!guard.ok) {
+    return NextResponse.json(
+      { ok: false, error: guard.reason },
+      { status: guard.reason === 'unauthenticated' ? 401 : 403 }
+    );
   }
 
   const cutoff = new Date();
