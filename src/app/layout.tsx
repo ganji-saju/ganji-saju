@@ -11,8 +11,15 @@ import { AppToaster } from "@/components/notifications/app-toaster";
 import { NotificationClickTracker } from "@/components/notifications/notification-click-tracker";
 import "@/components/motion/motion-primitives.css";
 
+// 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
+// 를 모두 로드해 한국어 폰트 페이로드가 컸다. 코드베이스 실측:
+//   font-extrabold(800) 1022 · font-bold(700) 317 · font-semibold(600) 173 ·
+//   font-medium(500) 71 · font-black(900) 9 · font-normal(400) 4 · font-light(300) 3
+// → 400/500/700/800 4 weight 만 로드. 600/900/300 은 브라우저가 가장 가까운
+// 인접 weight 로 렌더 (semibold→700, black→800, light→400) — 한국어 글리프
+// 인지 차이 미미. 1022+71+317+4=1414/1602 (88%) 정확 매칭.
 const brandSans = Noto_Sans_KR({
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "700", "800"],
   display: "swap",
   preload: false,
   variable: "--font-dalbit-sans",
