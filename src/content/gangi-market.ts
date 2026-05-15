@@ -116,9 +116,20 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'taekil',
     title: '좋은 날',
     desc: '중요한 날 확인',
-    price: '준비 중',
+    // 2026-05-15 — PR #111 로 fortune-calendar (1,900원 또는 2코인) 구현 완료. "준비 중" 표기 회귀 수정.
+    price: '1,900원',
     href: '/taekil',
     zodiac: 'ox',
+    category: 'fortune',
+  },
+  {
+    // 2026-05-15 — 메뉴에서 누락됐던 꿈해몽 추가. /dream-interpretation 페이지 이미 구현.
+    id: 'dream',
+    title: '꿈해몽',
+    desc: '꿈으로 보는 길흉',
+    price: '무료',
+    href: '/dream-interpretation',
+    zodiac: 'dragon',
     category: 'fortune',
   },
   {
@@ -180,5 +191,12 @@ export const GANGI_FREE_HUB_ITEMS = [
     zodiac: 'horse',
     title: '띠운세',
     desc: '내 띠 기준 오늘 흐름',
+  },
+  {
+    // 2026-05-15 — 무료 hub 에도 꿈해몽 노출.
+    href: '/dream-interpretation',
+    zodiac: 'dragon',
+    title: '꿈해몽',
+    desc: '꿈으로 보는 길흉',
   },
 ] as const;

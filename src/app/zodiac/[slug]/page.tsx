@@ -2,7 +2,7 @@
 // 띠 상세 — gradient hero + 한자 워터마크 + ZodiacChip + period tabs + 점수 + 키워드 + 분야별 + 다른 띠.
 // 데이터(ZODIAC_FORTUNES / personalization)·라우팅 무수정.
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
@@ -15,6 +15,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ period?: string }>;
 }
 
 // /zodiac/[slug] uses 'goat' for 양띠; ZodiacChip uses 'sheep'
@@ -60,18 +61,56 @@ const ZODIAC_ORDER: Array<{ slug: string; label: string; key: ZodiacKey }> = [
   { slug: 'pig', label: '돼지띠', key: 'pig' },
 ];
 
-// 띠별 합성 점수 — slug seed 기반 결정적 값 (날짜별 약간 변화)
-function getDailyScores(slug: string) {
+// 2026-05-15 — 기간 (today/week/month/year) 별로 다른 시드 → 진짜 다른 점수 노출.
+// 기존엔 'today' 만 작동, 나머지 탭은 클릭 자체 안 됐던 회귀 fix.
+type ZodiacPeriod = 'today' | 'week' | 'month' | 'year';
+
+function periodSeed(period: ZodiacPeriod): number {
+  const now = new Date();
+  switch (period) {
+    case 'today':
+      return now.getDate();
+    case 'week': {
+      // ISO 주차.
+      const start = new Date(now.getFullYear(), 0, 1);
+      const diff = (now.getTime() - start.getTime()) / 86400000;
+      return Math.floor(diff / 7);
+    }
+    case 'month':
+      return now.getMonth() + 1;
+    case 'year':
+      return now.getFullYear() % 100;
+    default:
+      return now.getDate();
+  }
+}
+
+function getDailyScores(slug: string, period: ZodiacPeriod = 'today') {
   const seed = slug.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  const day = new Date().getDate();
-  const base = (seed + day) % 20;
+  const periodValue = periodSeed(period);
+  // 기간별 가중치 다르게 — 매주/매월/매해 다른 점수 보장.
+  const periodWeight = period === 'today' ? 1 : period === 'week' ? 11 : period === 'month' ? 23 : 37;
+  const base = (seed + periodValue * periodWeight) % 20;
   return {
-    overall: 60 + ((seed * 7 + day * 3) % 35),
-    love: 60 + ((seed * 11 + day * 5) % 35),
-    wealth: 60 + ((seed * 13 + day * 7) % 35),
-    health: 60 + ((seed * 17 + day) % 35),
+    overall: 60 + ((seed * 7 + periodValue * periodWeight * 3) % 35),
+    love: 60 + ((seed * 11 + periodValue * periodWeight * 5) % 35),
+    wealth: 60 + ((seed * 13 + periodValue * periodWeight * 7) % 35),
+    health: 60 + ((seed * 17 + periodValue * periodWeight) % 35),
     seed: base,
   };
+}
+
+const PERIOD_LABEL: Record<ZodiacPeriod, string> = {
+  today: '오늘 한 줄',
+  week: '이번 주 흐름',
+  month: '이번 달 흐름',
+  year: '올해 흐름',
+};
+
+const VALID_PERIODS: ZodiacPeriod[] = ['today', 'week', 'month', 'year'];
+
+function normalizePeriod(value: string | undefined): ZodiacPeriod {
+  return VALID_PERIODS.includes(value as ZodiacPeriod) ? (value as ZodiacPeriod) : 'today';
 }
 
 const LUCKY_COLOR_TABLE: Array<{ name: string; hex: string }> = [
@@ -113,8 +152,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ZodiacDetailPage({ params }: Props) {
+export default async function ZodiacDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { period: rawPeriod } = await searchParams;
+  const period = normalizePeriod(rawPeriod);
   const item = getZodiac(slug);
   if (!item) notFound();
 
@@ -124,16 +165,17 @@ export default async function ZodiacDetailPage({ params }: Props) {
   const personalizedItem =
     personalizedSlug ? ZODIAC_FORTUNES.find((entry) => entry.slug === personalizedSlug) ?? null : null;
 
-  if (personalizedItem && personalizedItem.slug !== item.slug) {
-    redirect(`/zodiac/${personalizedItem.slug}`);
-  }
+  // 2026-05-15 — 사용자 프로필 띠로 강제 redirect 되던 회귀 fix.
+  // 닭띠 프로필 사용자가 용띠 클릭해도 닭띠로 튕겨 가서 "다른 띠가 작동 안 함" 으로
+  // 느낌. 사용자가 명시적으로 특정 띠 URL 을 열었으면 그 띠 페이지를 그대로 보여줌.
+  // 내 띠와 일치하는지 여부는 isPersonalizedMatch 로만 표시.
 
   const isPersonalizedMatch = personalizedSlug === item.slug;
   const meta = ZODIAC_META[item.slug as keyof typeof ZODIAC_META];
   const zodiacKey = SLUG_TO_ZODIAC[item.slug] ?? 'dragon';
   const hanja = ZODIAC_HANJA[item.slug] ?? '辰';
   const gradient = ZODIAC_GRADIENT[item.slug] ?? ZODIAC_GRADIENT.dragon;
-  const scores = getDailyScores(item.slug);
+  const scores = getDailyScores(item.slug, period);
   const luckyColor = LUCKY_COLOR_TABLE[scores.seed % LUCKY_COLOR_TABLE.length];
   const luckyDirection = LUCKY_DIRECTIONS[scores.seed % LUCKY_DIRECTIONS.length];
   const luckyTime = LUCKY_TIMES[scores.seed % LUCKY_TIMES.length];
@@ -199,7 +241,7 @@ export default async function ZodiacDetailPage({ params }: Props) {
                 className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ opacity: 0.85 }}
               >
-                오늘 한 줄
+                {PERIOD_LABEL[period]}
               </div>
               <p className="mt-1 text-[14px] font-bold leading-[1.55]">{item.summary}</p>
             </div>
@@ -214,34 +256,38 @@ export default async function ZodiacDetailPage({ params }: Props) {
             ) : null}
           </article>
 
-          {/* §2 Period tabs (오늘만 활성, 나머지는 안내) */}
+          {/* §2 Period tabs — 2026-05-15: 4개 기간 모두 클릭 가능. searchParam 기반 활성. */}
           <div className="flex gap-1.5">
-            {[
-              { key: 'today', label: '오늘', active: true },
-              { key: 'week', label: '이번 주', active: false },
-              { key: 'month', label: '이번 달', active: false },
-              { key: 'year', label: '올해', active: false },
-            ].map((p) => (
-              <div
-                key={p.key}
-                className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold"
-                style={
-                  p.active
-                    ? {
-                        background: 'var(--app-pink)',
-                        color: '#fff',
-                        borderColor: 'var(--app-pink)',
-                      }
-                    : {
-                        background: '#fff',
-                        color: 'var(--app-copy-muted)',
-                        borderColor: 'var(--app-line)',
-                      }
-                }
-              >
-                {p.label}
-              </div>
-            ))}
+            {([
+              { key: 'today', label: '오늘' },
+              { key: 'week', label: '이번 주' },
+              { key: 'month', label: '이번 달' },
+              { key: 'year', label: '올해' },
+            ] as Array<{ key: ZodiacPeriod; label: string }>).map((p) => {
+              const isActive = p.key === period;
+              return (
+                <Link
+                  key={p.key}
+                  href={p.key === 'today' ? `/zodiac/${item.slug}` : `/zodiac/${item.slug}?period=${p.key}`}
+                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
+                  style={
+                    isActive
+                      ? {
+                          background: 'var(--app-pink)',
+                          color: '#fff',
+                          borderColor: 'var(--app-pink)',
+                        }
+                      : {
+                          background: '#fff',
+                          color: 'var(--app-copy-muted)',
+                          borderColor: 'var(--app-line)',
+                        }
+                  }
+                >
+                  {p.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* §3 점수 4-card grid */}
