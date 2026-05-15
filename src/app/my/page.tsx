@@ -5,11 +5,14 @@
 import Link from 'next/link';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
+import { MyFavoriteSignsStrip } from '@/components/star-sign/my-favorite-signs-strip';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
 // 2026-05-15 — MY hero 가 email.split('@')[0] 로 사용자 표시했던 회귀 fix.
 // 실제 nickname (profile.displayName) 우선 사용.
 import { getOptionalSignedInProfile } from '@/lib/profile';
+import { listFavoriteStarSigns } from '@/lib/star-sign/favorites';
+import { createClient } from '@/lib/supabase/server';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
@@ -60,6 +63,15 @@ export default async function MyPage() {
     }),
     getOptionalSignedInProfile(),
   ]);
+
+  // PR #138 — 즐겨찾는 별자리 strip 노출.
+  const supabaseFav = await createClient();
+  const {
+    data: { user: favUser },
+  } = await supabaseFav.auth.getUser();
+  const favorites = favUser
+    ? await listFavoriteStarSigns(supabaseFav, favUser.id)
+    : [];
 
   // 2026-05-15 — profile.displayName (사용자가 입력한 nickname) 우선 사용.
   // 없으면 이메일 앞부분, 그것도 없으면 "회원" fallback.
@@ -149,6 +161,9 @@ export default async function MyPage() {
 
       {/* §1.5 MY 별자리 카드 — 프로필 birthMonth/Day 자동 매칭 */}
       <MyStarSignCard profile={profile} />
+
+      {/* §1.6 즐겨찾는 별자리 strip (PR #138) — favorites 비어있으면 silent null */}
+      <MyFavoriteSignsStrip favorites={favorites} />
 
       {/* §2 바로가기 list */}
       <section>

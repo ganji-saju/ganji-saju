@@ -6,11 +6,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { FavoriteStarSignButton } from '@/components/star-sign/favorite-star-sign-button';
 import { STAR_SIGN_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug } from '@/lib/profile-personalization';
+import { listFavoriteStarSigns } from '@/lib/star-sign/favorites';
+import { createClient } from '@/lib/supabase/server';
 import {
   getDailyFortune,
   toKstDateKey,
@@ -111,6 +114,17 @@ export default async function StarSignDetailPage({ params }: Props) {
   const typedSlug = item.slug as StarSignSlug;
   const profile = await getOptionalSignedInProfile();
   const readingSlug = buildProfileReadingSlug(profile);
+
+  // PR #138 — favorites 초기 상태 (server-side fetch, 비로그인은 anonymous mode).
+  const supabaseForFavs = await createClient();
+  const {
+    data: { user: favUser },
+  } = await supabaseForFavs.auth.getUser();
+  const initialFavorites = favUser
+    ? await listFavoriteStarSigns(supabaseForFavs, favUser.id)
+    : [];
+  const isFavorited = initialFavorites.includes(typedSlug);
+
   const meta = STAR_SIGN_META[item.slug as keyof typeof STAR_SIGN_META];
   const content = STAR_SIGN_CONTENT[typedSlug];
   const fortune = getDailyFortune(typedSlug, toKstDateKey());
@@ -206,6 +220,15 @@ export default async function StarSignDetailPage({ params }: Props) {
               </div>
             </div>
           </article>
+
+          {/* §1.5 즐겨찾기 토글 (PR #138) */}
+          <div className="flex justify-end px-1">
+            <FavoriteStarSignButton
+              slug={typedSlug}
+              initialFavorited={isFavorited}
+              isAnonymous={!favUser}
+            />
+          </div>
 
           {/* §2 오늘 종합 운세 — 6 영역 점수 */}
           <article
