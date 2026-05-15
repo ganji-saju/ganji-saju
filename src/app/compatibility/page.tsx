@@ -5,8 +5,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 import { COMPATIBILITY_RELATIONSHIPS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { getUserSituationForUser } from '@/lib/profile/user-situation';
+import { createClient } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -55,7 +58,15 @@ const RELATIONSHIP_TONES: Record<
   },
 };
 
-export default function CompatibilityPage() {
+export default async function CompatibilityPage() {
+  // PR #152 (B4) — 로그인 사용자가 /my/situation 에 저장한 default 상황을
+  // 궁합 페이지에도 chip 으로 노출. 미로그인/미입력 → silent (compact variant 가 null 처리).
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const situation = user ? await getUserSituationForUser(supabase, user.id) : null;
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
@@ -89,6 +100,16 @@ export default function CompatibilityPage() {
               주세요. 질문이 분명할수록 풀이도 더 또렷합니다.
             </p>
           </article>
+
+          {/* §1.5 PR #152 (B4) — 로그인 + situation 저장된 사용자에게 chip strip.
+              궁합 풀이에도 본인 상황이 반영됨을 명시. compact variant 가 미입력 시 silent null. */}
+          {situation ? (
+            <SituationReflectionCard
+              situation={situation}
+              variant="compact"
+              fallbackInputHref="/my/situation"
+            />
+          ) : null}
 
           {/* §2 관계 선택 — 1열 stacked 카드 (긴 hook 텍스트라 1열이 가독성 ↑) */}
           <section>
