@@ -91,6 +91,69 @@ function Sparkline({
   );
 }
 
+/**
+ * 만족도 분포(맞춤/부분/빗나감)를 단일 stacked horizontal bar 로 시각화.
+ * 2026-05-16 PR E1+E4: 이전엔 3 컬럼 grid 의 단순 수치였음 — 비율이 한눈에 안 들어옴.
+ * 1개의 가로 bar 가 (jade/amber/coral) 3 색으로 분절 + 각 segment 안에 퍼센트 inline 표시.
+ */
+function StackedRateBar({
+  correctRate,
+  partialRate,
+  missRate,
+}: {
+  correctRate: number;
+  partialRate: number;
+  missRate: number;
+}) {
+  const total = correctRate + partialRate + missRate;
+  // 데이터가 비어있을 때 (sample=0) 0%/0%/0% — 표시할 게 없으니 placeholder bar.
+  if (total === 0) {
+    return (
+      <div
+        className="mt-2.5 grid h-7 place-items-center rounded-[10px] border text-[10.5px] text-[var(--app-copy-soft)]"
+        style={{ borderColor: 'var(--app-line)', background: 'rgba(0,0,0,0.025)' }}
+      >
+        표본 없음
+      </div>
+    );
+  }
+  const SEGMENTS = [
+    { key: 'correct', label: '맞춤', value: correctRate, color: 'var(--app-jade)', textOn: '#fff' },
+    { key: 'partial', label: '부분', value: partialRate, color: 'var(--app-amber)', textOn: '#1f1d1c' },
+    { key: 'miss', label: '빗나감', value: missRate, color: 'var(--app-coral)', textOn: '#fff' },
+  ] as const;
+  return (
+    <div
+      className="mt-2.5 flex h-7 overflow-hidden rounded-[10px] border"
+      style={{ borderColor: 'var(--app-line)' }}
+      role="img"
+      aria-label={`만족도 분포 — 맞춤 ${formatPct(correctRate)}, 부분 ${formatPct(partialRate)}, 빗나감 ${formatPct(missRate)}`}
+    >
+      {SEGMENTS.map((seg) => {
+        const pct = (seg.value / total) * 100;
+        if (pct <= 0) return null;
+        // segment 안에 텍스트를 넣되, 너무 좁으면(< 12%) 숨겨서 시각 노이즈 방지.
+        const showText = pct >= 12;
+        return (
+          <div
+            key={seg.key}
+            className="flex h-full items-center justify-center text-[10.5px] font-extrabold tabular-nums"
+            style={{
+              width: `${pct}%`,
+              background: seg.color,
+              color: seg.textOn,
+              transition: 'width 200ms ease',
+            }}
+            title={`${seg.label} ${formatPct(seg.value)}`}
+          >
+            {showText ? formatPct(seg.value) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const AREA_LABEL: Record<keyof OperationsSnapshot['satisfaction']['areaAverages'], string> = {
   wealth: '💰 재물',
   love: '💖 애정',
@@ -340,34 +403,38 @@ export function OperationsDashboard() {
                 </div>
               </div>
             </div>
-            <div className="mt-2.5 grid grid-cols-3 gap-2">
-              <div
-                className="rounded-[10px] border bg-white px-2 py-2 text-center"
-                style={{ borderColor: 'rgba(45,135,88,0.2)' }}
-              >
-                <div className="text-[10px] font-bold text-[var(--app-jade)]">맞춤 ✓</div>
-                <div className="mt-0.5 text-[13px] font-extrabold tabular-nums text-[var(--app-ink)]">
-                  {formatPct(snap.satisfaction.correctRate)}
-                </div>
-              </div>
-              <div
-                className="rounded-[10px] border bg-white px-2 py-2 text-center"
-                style={{ borderColor: 'var(--app-line)' }}
-              >
-                <div className="text-[10px] font-bold text-[var(--app-copy-soft)]">부분 △</div>
-                <div className="mt-0.5 text-[13px] font-extrabold tabular-nums text-[var(--app-ink)]">
-                  {formatPct(snap.satisfaction.partialRate)}
-                </div>
-              </div>
-              <div
-                className="rounded-[10px] border bg-white px-2 py-2 text-center"
-                style={{ borderColor: 'rgba(220,79,79,0.22)' }}
-              >
-                <div className="text-[10px] font-bold text-[var(--app-coral)]">빗나감 ✗</div>
-                <div className="mt-0.5 text-[13px] font-extrabold tabular-nums text-[var(--app-ink)]">
-                  {formatPct(snap.satisfaction.missRate)}
-                </div>
-              </div>
+            {/* 2026-05-16 E4 — 3 cell grid → stacked horizontal bar.
+                각 segment 자체가 비율 폭을 그대로 가져 한 줄에서 분포 직관 파악. */}
+            <StackedRateBar
+              correctRate={snap.satisfaction.correctRate}
+              partialRate={snap.satisfaction.partialRate}
+              missRate={snap.satisfaction.missRate}
+            />
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
+              <span className="inline-flex items-center gap-1">
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: 'var(--app-jade)' }}
+                  aria-hidden="true"
+                />
+                <span>맞춤 ✓ {formatPct(snap.satisfaction.correctRate)}</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: 'var(--app-amber)' }}
+                  aria-hidden="true"
+                />
+                <span>부분 △ {formatPct(snap.satisfaction.partialRate)}</span>
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: 'var(--app-coral)' }}
+                  aria-hidden="true"
+                />
+                <span>빗나감 ✗ {formatPct(snap.satisfaction.missRate)}</span>
+              </span>
             </div>
 
             {/* 영역별 별점 평균 */}
