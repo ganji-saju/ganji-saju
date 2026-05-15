@@ -113,6 +113,42 @@ export interface TodayFortuneFreeResult {
   /** 2026-05-15 PR 1 — 깊은 풀이 / 대운 풀이 CTA 용 사주 slug.
    *  result 만든 사용자가 이미 /saju 에 사주 reading 을 등록했으면 deep 탭으로 연결. */
   sajuSlug?: string | null;
+  /** 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종. */
+  luckyPackage?: TodayLuckyPackage | null;
+}
+
+// 2026-05-15 PR 2 — 운세톡톡 벤치마크 (간지사주_무료일진운세_적용방안.md 3-5):
+// "운세톡톡 기본 5종(색·숫자·방향·성씨·로또) + 간지사주 차별화 7종(시간·음식·향·보석·동물·음악·피해야할것) = 12종+".
+// 용신/희신 오행 → 행운 항목, 기신/오늘 일진 충 → 피해야 할 항목.
+export interface TodayLuckyNumberCircle {
+  number: number;
+  element: '목' | '화' | '토' | '금' | '수';
+  color: string;
+}
+
+export interface TodayLuckyPackage {
+  /** 행운 오행 (용신 또는 fallback 최약 오행). UI 헤더 노출용. */
+  luckyElement: '목' | '화' | '토' | '금' | '수';
+  /** 기신 오행 (피해야 할 행운). UI 피해야 할 것 묶음에 사용. */
+  unluckyElement: '목' | '화' | '토' | '금' | '수' | null;
+  // 운세톡톡 기본 5종
+  colors: string[];
+  numbers: number[];
+  directions: string[];
+  surnameInitials: string[];
+  lottoNumbers: TodayLuckyNumberCircle[];
+  // 간지사주 차별화 7종
+  timeWindows: string[];
+  foods: string[];
+  aromas: string[];
+  gemstones: string[];
+  zodiacFriends: string[];
+  musicGenres: string[];
+  // 피해야 할 것 (negative lucky)
+  avoidColors: string[];
+  avoidDirections: string[];
+  avoidTimeWindows: string[];
+  avoidZodiacs: string[];
 }
 
 export interface TodayTimeWindow {

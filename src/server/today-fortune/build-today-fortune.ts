@@ -17,6 +17,8 @@ import type { MoonlightCounselorId } from '@/lib/counselors';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
+// 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
+import { buildTodayLuckyPackage } from '@/lib/today-fortune/lucky-package';
 import type {
   ConcernId,
   TodayCalendarType,
@@ -2386,6 +2388,50 @@ function buildAvoidActions(
   return actions;
 }
 
+// 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지용 lucky/unlucky 오행 추출.
+// yongsin.primary 가 type='element' 면 value 직사용, type='stem'/'branch' 면 매핑.
+// 없으면 사주 최약 오행을 lucky 로, 최강 오행을 unlucky 로 fallback.
+function deriveLuckyElements(
+  sajuData: SajuDataV1
+): { lucky: '목' | '화' | '토' | '금' | '수'; unlucky: '목' | '화' | '토' | '금' | '수' | null } {
+  type Elem = '목' | '화' | '토' | '금' | '수';
+  const yongsin = sajuData.yongsin;
+  let lucky: Elem | null = null;
+  let unlucky: Elem | null = null;
+
+  function symbolToElement(ref: { type: string; value: string } | undefined | null): Elem | null {
+    if (!ref) return null;
+    if (ref.type === 'element') {
+      if (['목', '화', '토', '금', '수'].includes(ref.value)) return ref.value as Elem;
+    }
+    if (ref.type === 'stem') {
+      return STEM_ELEMENT_MAP[ref.value as Stem] as Elem | undefined ?? null;
+    }
+    if (ref.type === 'branch') {
+      return BRANCH_ELEMENT_MAP[ref.value as Branch] as Elem | undefined ?? null;
+    }
+    return null;
+  }
+
+  if (yongsin) {
+    lucky = symbolToElement(yongsin.primary);
+    // kiyshin (기신) 의 첫 항목을 unlucky 로.
+    const firstKi = yongsin.kiyshin?.[0];
+    unlucky = symbolToElement(firstKi);
+  }
+
+  if (!lucky) {
+    lucky = sajuData.fiveElements.weakest as Elem;
+  }
+  if (!unlucky) {
+    const dominantEl = sajuData.fiveElements.dominant as Elem;
+    // lucky 와 같으면 unlucky 폴백 비움.
+    unlucky = dominantEl === lucky ? null : dominantEl;
+  }
+
+  return { lucky, unlucky };
+}
+
 // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드용 스냅샷 빌더.
 // 5개 오행을 dominant/weakest 표시와 함께 정렬해, UI 가 바로 막대바 렌더링.
 function buildSajuChartSnapshot(
@@ -2525,6 +2571,17 @@ export function buildTodayFortuneFreeResult(
     sajuChart: buildSajuChartSnapshot(sajuData, todayPillar.ganzi ?? null),
     // sourceSessionId 는 createReading() 이 반환한 reading slug. /saju/[slug]/deep 으로 직접 연결.
     sajuSlug: options.sourceSessionId,
+    // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
+    luckyPackage: (() => {
+      const { lucky, unlucky } = deriveLuckyElements(sajuData);
+      return buildTodayLuckyPackage({
+        luckyElement: lucky,
+        unluckyElement: unlucky,
+        todayBranch: todayPillar.branch ?? null,
+        dateKey: todayPillar.dateKey,
+        dayGanzi: sajuData.pillars.day.ganzi,
+      });
+    })(),
   };
 }
 
