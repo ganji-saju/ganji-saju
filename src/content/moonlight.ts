@@ -72,7 +72,8 @@ export interface MoonlightToneOption {
 export type NotificationSlotKey =
   | 'today-fortune'
   | 'today-tarot'
-  | 'today-zodiac';
+  | 'today-zodiac'
+  | 'today-star-sign';
 
 export interface MoonlightNotificationSlot {
   key: NotificationSlotKey;
@@ -876,6 +877,14 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
     title: '오늘의 띠운세',
     body: '내 띠 기준 오늘 흐름을 가볍게 확인해 보세요.',
     timeLabel: '오후 8시',
+    cadence: '매일',
+    tone: 'plum',
+  },
+  {
+    key: 'today-star-sign',
+    title: '오늘의 별자리',
+    body: '서양 별자리 오늘 운세 — 내 별자리의 한 줄과 점수를 확인해 보세요.',
+    timeLabel: '아침 9시',
     cadence: '매일',
     tone: 'plum',
   },

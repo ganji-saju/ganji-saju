@@ -56,6 +56,11 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
     desc: '내 띠 기준 오늘 흐름',
     label: '띠운세 보기',
   },
+  'today-star-sign': {
+    href: '/star-sign',
+    desc: '내 별자리 오늘 점수와 한 줄',
+    label: '별자리 보기',
+  },
 };
 
 function createDefaultPreferences(): NotificationPreferences {
@@ -160,6 +165,8 @@ function computeUpcomingLabel(slot: (typeof NOTIFICATION_SCHEDULE_BLUEPRINT)[num
 
   if (slot.key === 'today-fortune') {
     next.setHours(8, 0, 0, 0);
+  } else if (slot.key === 'today-star-sign') {
+    next.setHours(9, 0, 0, 0);
   } else if (slot.key === 'today-tarot') {
     next.setHours(12, 0, 0, 0);
   } else {

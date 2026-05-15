@@ -12,6 +12,7 @@ const SLOT_HREF_MAP: Array<[prefix: string, href: string]> = [
   ['today-fortune', '/today-fortune'],
   ['today-tarot', '/tarot/daily'],
   ['today-zodiac', '/zodiac'],
+  ['today-star-sign', '/star-sign'],
   ['weekly', '/today-fortune'],
   ['monthly', '/today-fortune'],
   ['seasonal', '/today-fortune'],
