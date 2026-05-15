@@ -423,6 +423,23 @@ function MonthlyFlowCard({
               <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 {flow.month}월
               </div>
+              {/* 2026-05-15 PR 7 응답 2 — Peak/Pitfall 시각 강조 (PR 5 데이터 활용) */}
+              {flow.peakKind === 'peak' ? (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
+                  style={{ background: 'var(--app-pink-strong)' }}
+                >
+                  🚨 PEAK
+                </span>
+              ) : null}
+              {flow.peakKind === 'pitfall' ? (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold"
+                  style={{ background: '#fff3d6', color: 'var(--app-amber)', border: '1px solid var(--app-amber)' }}
+                >
+                  ⚠️ PITFALL
+                </span>
+              ) : null}
             </div>
             <p
               className="mt-2 text-[14px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
