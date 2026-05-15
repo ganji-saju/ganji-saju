@@ -390,6 +390,8 @@ export async function createNotificationDeliveryLog(input: {
   body: string;
   status: 'queued' | 'sent' | 'failed' | 'dismissed';
   responseStatus?: number;
+  /** PR #136 — A/B 본문 variant ('A'|'B'|'C'), 별자리 슬롯에서만 채움. */
+  variant?: 'A' | 'B' | 'C' | null;
 }) {
   const service = await createServiceClient();
   const { error } = await service.from('notification_delivery_logs').insert({
@@ -400,6 +402,7 @@ export async function createNotificationDeliveryLog(input: {
     body: input.body,
     status: input.status,
     response_status: input.responseStatus ?? null,
+    variant: input.variant ?? null,
   });
 
   if (error) {

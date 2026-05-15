@@ -127,18 +127,53 @@ export function computeStarSignDailyDigest(dateKey: string = toKstDateKey()): St
   };
 }
 
-/** 사용자 별자리 기준 push body 한 줄 (없으면 일반 후보). */
+export type PushVariant = 'A' | 'B' | 'C';
+
+/** user_id + date 시드로 variant 결정 — 같은 날 같은 사용자는 항상 같은 variant. */
+export function chooseVariantFor(userId: string, dateKey: string): PushVariant {
+  let h = 2166136261;
+  const input = `${userId}|${dateKey}`;
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  const variants: PushVariant[] = ['A', 'B', 'C'];
+  return variants[h % 3]!;
+}
+
+/**
+ * 사용자 별자리 기준 push body 한 줄.
+ * - slug 있으면 본인 운세를 variant 별로 변형:
+ *   - A: 점수+highlight (기본)
+ *   - B: boost (오늘의 부스터 한 줄)
+ *   - C: 럭키 (오늘의 럭키 컬러+숫자+방위)
+ * - slug 없으면 digest.notificationCandidates 의 variant 인덱스 후보 사용.
+ */
 export function getStarSignPushBodyFor(
   slug: StarSignSlug | null,
-  digest: StarSignDailyDigest = computeStarSignDailyDigest()
+  digest: StarSignDailyDigest = computeStarSignDailyDigest(),
+  variant: PushVariant = 'A'
 ): string {
-  if (!slug) return digest.notificationCandidates[0]!;
-  const mine = [...digest.topThree, digest.caution].find((d) => d.slug === slug);
-  if (mine) {
-    return `${mine.label} 오늘 ${mine.overall}점 — ${mine.highlight}`;
+  if (!slug) {
+    const idx = variant === 'A' ? 0 : variant === 'B' ? 1 : 2;
+    return digest.notificationCandidates[idx] ?? digest.notificationCandidates[0]!;
   }
-  // top 3 도 caution 도 아니면 정상 운세 — daily-fortune 에서 가져온 본인 데이터.
-  const fortune = getDailyFortune(slug, digest.dateKey);
+
   const item = STAR_SIGN_FORTUNES.find((s) => s.slug === slug);
-  return `${item?.label ?? '내 별자리'} 오늘 ${fortune.scores.overall}점 — ${fortune.highlight}`;
+  const label = item?.label ?? '내 별자리';
+
+  // top 3 / caution 안에 있으면 그 데이터 우선 사용 — variant A 만 점수 강조.
+  const mine = [...digest.topThree, digest.caution].find((d) => d.slug === slug);
+  const fortune = getDailyFortune(slug, digest.dateKey);
+
+  if (variant === 'A') {
+    if (mine) return `${mine.label} 오늘 ${mine.overall}점 — ${mine.highlight}`;
+    return `${label} 오늘 ${fortune.scores.overall}점 — ${fortune.highlight}`;
+  }
+  if (variant === 'B') {
+    return `${label} 오늘의 부스터 — ${fortune.boost}`;
+  }
+  // C: 럭키.
+  const lucky = fortune.luckyOfDay;
+  return `${label} 오늘의 럭키 · ${lucky.color.name} · 숫자 ${lucky.number} · ${lucky.direction}`;
 }
