@@ -24,6 +24,13 @@ import {
   sendWebPushNotification,
 } from '@/lib/web-push';
 
+// PR #137 — URL 에 ?notif=<logId> 첨부. 이미 query string 있으면 & 로 이어붙임.
+// 외부 절대 URL 인 경우도 지원 (URL 생성자 사용 X — 상대 경로 그대로 유지).
+function appendNotifId(url: string, logId: string): string {
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}notif=${encodeURIComponent(logId)}`;
+}
+
 // 2026-05-16 PR #135 — KST 기준 시각으로 슬롯 매칭.
 // Vercel 서버가 UTC 라도 cron 트리거가 어느 시각에 오든 KST 기준으로 정확히 분기.
 function getKstHour(now: Date): number {
@@ -137,13 +144,6 @@ async function handleDispatch(
         );
       }
 
-      const payload = buildPushPayload({
-        slotKey,
-        title: blueprint.title,
-        body: bodyText,
-        url,
-      });
-
       if (body?.dryRun) {
         results.push({
           userId: recipient.userId,
@@ -157,6 +157,17 @@ async function handleDispatch(
       let sent = 0;
 
       for (const subscription of recipient.subscriptions) {
+        // PR #137 — server-side UUID 생성 후 URL 에 ?notif= 로 첨부.
+        // 클라이언트가 진입 시 NotificationClickTracker 가 이 id 를 ack 로 POST.
+        const logId = crypto.randomUUID();
+        const urlWithNotif = appendNotifId(url, logId);
+        const payload = buildPushPayload({
+          slotKey,
+          title: blueprint.title,
+          body: bodyText,
+          url: urlWithNotif,
+        });
+
         try {
           const response = await sendWebPushNotification(subscription, payload);
           sent += 1;
@@ -169,6 +180,7 @@ async function handleDispatch(
               statusCode: response.statusCode,
             }),
             createNotificationDeliveryLog({
+              id: logId,
               userId: recipient.userId,
               subscriptionId: subscription.id,
               slotKey,
@@ -196,6 +208,7 @@ async function handleDispatch(
               failureReason,
             }),
             createNotificationDeliveryLog({
+              id: logId,
               userId: recipient.userId,
               subscriptionId: subscription.id,
               slotKey,

@@ -383,6 +383,8 @@ export async function markPushDeliveryResult(input: {
 }
 
 export async function createNotificationDeliveryLog(input: {
+  /** PR #137 — 호출자가 server-side 에서 미리 UUID 생성해 전달 (URL ?notif= 에 사용). */
+  id?: string;
   userId: string;
   subscriptionId: string;
   slotKey: NotificationSlotKey;
@@ -392,9 +394,9 @@ export async function createNotificationDeliveryLog(input: {
   responseStatus?: number;
   /** PR #136 — A/B 본문 variant ('A'|'B'|'C'), 별자리 슬롯에서만 채움. */
   variant?: 'A' | 'B' | 'C' | null;
-}) {
+}): Promise<string | null> {
   const service = await createServiceClient();
-  const { error } = await service.from('notification_delivery_logs').insert({
+  const insertRow: Record<string, unknown> = {
     user_id: input.userId,
     subscription_id: input.subscriptionId,
     slot_key: input.slotKey,
@@ -403,9 +405,38 @@ export async function createNotificationDeliveryLog(input: {
     status: input.status,
     response_status: input.responseStatus ?? null,
     variant: input.variant ?? null,
-  });
+  };
+  if (input.id) insertRow.id = input.id;
+
+  const { data, error } = await service
+    .from('notification_delivery_logs')
+    .insert(insertRow)
+    .select('id')
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
+  return (data?.id as string | undefined) ?? null;
+}
+
+/** PR #137 — 사용자 클릭 시각 기록. */
+export async function markNotificationClick(input: {
+  logId: string;
+  userId: string;
+}) {
+  const service = await createServiceClient();
+  const { error, data } = await service
+    .from('notification_delivery_logs')
+    .update({ clicked_at: new Date().toISOString() })
+    .eq('id', input.logId)
+    .eq('user_id', input.userId)
+    .is('clicked_at', null) // 이미 기록된 클릭은 덮어쓰지 않음 (멱등).
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return { updated: Boolean(data) };
 }
