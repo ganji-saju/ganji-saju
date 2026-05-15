@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { GangiHomeClient } from '@/features/home/gangi-home-client';
+import { getOptionalSignedInProfile } from '@/lib/profile';
 import { getHomeBanners } from '@/server/home/home-banners';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +19,19 @@ export default async function HomePage() {
     redirect('/onboarding');
   }
 
-  const banners = await getHomeBanners();
+  // 2026-05-16 PR #132 — 프로필 있으면 MY 별자리 카드를 home 에 server-render 하여
+  // GangiHomeClient (client) 에 slot 으로 전달. (profile 자체를 client 로 보내면
+  // profile-personalization.ts → profile.ts → supabase/server.ts 트리거됨.)
+  const [banners, profile] = await Promise.all([
+    getHomeBanners(),
+    getOptionalSignedInProfile(),
+  ]);
+  const myStarSignSlot = profile ? <MyStarSignCard profile={profile} /> : null;
 
-  return <GangiHomeClient initialBanners={banners} />;
+  return (
+    <GangiHomeClient
+      initialBanners={banners}
+      myStarSignSlot={myStarSignSlot}
+    />
+  );
 }
