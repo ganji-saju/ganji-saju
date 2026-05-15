@@ -14,6 +14,8 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
+// 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
+import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { buildLifetimeReport } from '@/domain/saju/report';
@@ -374,7 +376,10 @@ export default async function SajuDeepPage({ params }: Props) {
               )}
             </article>
 
-            {/* §2 대운 timeline strip — 한눈에 보는 모든 대운 */}
+            {/* §2 대운 timeline strip — 한눈에 보는 모든 대운.
+                2026-05-16 — 현재 cycle 이 화면 오른쪽 끝에 있던 회귀.
+                DaewoonTimelineStrip 으로 client 측에서 mount 시 active 카드
+                중앙 정렬 scrollBy 처리. */}
             {cycles.length > 0 ? (
               <section>
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
@@ -383,55 +388,7 @@ export default async function SajuDeepPage({ params }: Props) {
                 <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
                   내 인생의 10년 단위 챕터
                 </h2>
-                <div
-                  className="mt-3 flex gap-2 overflow-x-auto pb-2"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
-                  {cycles.map((cycle) => (
-                    <article
-                      key={`${cycle.ganzi}-${cycle.ageLabel}`}
-                      className={
-                        cycle.isCurrent
-                          ? 'shrink-0 rounded-[12px] px-3 py-2.5 text-center text-white'
-                          : 'shrink-0 rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-2.5 text-center text-[var(--app-ink)]'
-                      }
-                      style={
-                        cycle.isCurrent
-                          ? {
-                              width: 82,
-                              background: 'var(--app-pink)',
-                              boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
-                            }
-                          : { width: 82 }
-                      }
-                    >
-                      <div
-                        className="text-[10.5px] font-bold"
-                        style={{ opacity: cycle.isCurrent ? 0.85 : 0.55 }}
-                      >
-                        {cycle.ageLabel}
-                      </div>
-                      <div
-                        className="mt-1 text-[16px] font-bold leading-none"
-                        style={{ fontFamily: 'var(--font-han)' }}
-                      >
-                        {cycle.ganzi}
-                      </div>
-                      <div
-                        className="mt-1 text-[10px] font-bold"
-                        style={{ opacity: cycle.isCurrent ? 0.95 : 0.7 }}
-                      >
-                        {ganziToKorean(cycle.ganzi)}
-                      </div>
-                      <div
-                        className="mt-1 text-[9.5px] font-extrabold uppercase tracking-[0.04em]"
-                        style={{ opacity: cycle.isCurrent ? 0.95 : 0.55 }}
-                      >
-                        {cycle.phase}
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                <DaewoonTimelineStrip cycles={cycles} />
               </section>
             ) : null}
 
