@@ -7,6 +7,8 @@ import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redire
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 // 2026-05-15 handoff PR-J: 57 m-toast — 전역 토스트 인프라.
 import { AppToaster } from "@/components/notifications/app-toaster";
+// 2026-05-16 PR #137 — push 알림 클릭 ack 자동 전송.
+import { NotificationClickTracker } from "@/components/notifications/notification-click-tracker";
 import "@/components/motion/motion-primitives.css";
 
 const brandSans = Noto_Sans_KR({
@@ -89,6 +91,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
         <SupabaseRecoveryRedirect />
+        <NotificationClickTracker />
         {children}
         <AppToaster />
         <Analytics />
