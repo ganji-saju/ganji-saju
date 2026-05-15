@@ -39,7 +39,8 @@ import {
 } from './onboarding-storage';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { GangiIntro, GangiLoadingOverlay, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacWheelLoading } from '@/components/saju/zodiac-wheel-loading';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export type OnboardingStep = 'empathy' | 'birth' | 'nickname' | 'consent';
@@ -841,6 +842,10 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     setIsSubmitting(true);
     setErrorMessage('');
     let didNavigate = false;
+    // PR #154 — 12간지 로딩 모션 최소 노출 시간 가드.
+    // 풀이가 너무 빨리 끝나도 모션을 못 보고 사라지지 않게 (~1 cycle 절반).
+    const MIN_LOADING_MS = 1800;
+    const loadingStartedAt = Date.now();
 
     try {
       const response = await fetch('/api/readings', {
@@ -909,6 +914,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         pendingPlan
       );
       router.prefetch(nextHref);
+      // PR #154 — 모션 최소 노출 시간 보장.
+      {
+        const elapsed = Date.now() - loadingStartedAt;
+        if (elapsed < MIN_LOADING_MS) {
+          await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
+        }
+      }
       router.push(nextHref);
       didNavigate = true;
       return;
@@ -938,6 +950,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         pendingPlan
       );
       router.prefetch(fallbackHref);
+      // PR #154 — 모션 최소 노출 시간 보장 (실패 경로도 동일).
+      {
+        const elapsed = Date.now() - loadingStartedAt;
+        if (elapsed < MIN_LOADING_MS) {
+          await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
+        }
+      }
       router.push(fallbackHref);
       didNavigate = true;
       return;
@@ -1561,7 +1580,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       {isSubmitting ? (
-        <GangiLoadingOverlay
+        <ZodiacWheelLoading
           title="사주를 풀어드리고 있어요"
           description="네 기둥(年月日時)을 정리하고 오늘 흐름과 맞춰보는 중입니다."
         />
