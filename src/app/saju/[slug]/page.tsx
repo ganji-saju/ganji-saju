@@ -604,7 +604,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <li>· <strong>성향</strong> 탭 — <em>내 타고난 결</em> (일주 캐릭터 풀이)</li>
                 <li>· <strong>오행</strong> 탭 — <em>다섯 기운 균형</em> 차트</li>
                 <li>· <strong>명식</strong> 탭 — <em>반복되는 역할 후보 · 잘 풀리게 도와주는 기운 · 지금 흐르는 기운</em> (격국·용신·강약 + 합충·공망·신살)</li>
-                <li>· <strong>깊은</strong> 탭 — 대운 timeline + 8단 풀이 + 12운성·원진 cycle</li>
+                <li>· <strong>대운</strong> 탭 — 10년 단위 큰 흐름 + 시기별 8단 풀이 (12운성·원진·교운기)</li>
                 <li>· <strong>상세</strong> 탭 — 분야별 (연애 / 재물 / 직업 / 관계) 심화</li>
               </ul>
               <p
