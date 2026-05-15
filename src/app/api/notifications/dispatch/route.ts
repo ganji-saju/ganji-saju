@@ -16,6 +16,11 @@ import {
   listExpiringSubscribers,
   type ExpiringRecipient,
 } from '@/lib/subscription-expiring';
+import {
+  buildComebackPushBody,
+  hasRecentComebackSent,
+  isEligibleForComeback,
+} from '@/lib/comeback-reminder';
 import { getSubscriptionPlanLabel } from '@/lib/subscription';
 import {
   chooseVariantFor,
@@ -59,6 +64,7 @@ function resolveDueSlotKeys(now: Date) {
   if (hour === 9) due.add('today-star-sign');
   if (hour === 10) due.add('subscription-expiring');
   if (hour === 12) due.add('today-tarot');
+  if (hour === 19) due.add('comeback-reminder');
   if (hour === 20) due.add('today-zodiac');
 
   return [...due];
@@ -145,6 +151,25 @@ async function handleDispatch(
         }
       }
 
+      // PR #144 — comeback-reminder 슬롯은 미접속 N일 이상 사용자만.
+      // inactivityReminderDays 가 user 별 설정 (3/5/7).
+      let comebackCandidate: { daysIdle: number } | null = null;
+      if (slotKey === 'comeback-reminder') {
+        comebackCandidate = isEligibleForComeback({
+          lastSeenAt: recipient.preferences.lastSeenAt,
+          inactivityReminderDays: recipient.preferences.inactivityReminderDays,
+        });
+        if (!comebackCandidate) continue;
+        // 최근 cooldown(N/2일) 내 동일 슬롯 sent 있으면 skip.
+        const svc = await createServiceClient();
+        const recent = await hasRecentComebackSent(
+          svc,
+          recipient.userId,
+          recipient.preferences.inactivityReminderDays
+        );
+        if (recent) continue;
+      }
+
       // today-star-sign 은 사용자 생년월일 기반 별자리 운세를 동적으로 본문에 합성.
       // recipient.birthMonth/Day 가 있으면 deriveStarSignSlug → 본인 별자리 점수+highlight,
       // 없으면 일반 TOP sign 후보로 fallback. URL 도 본인 별자리로 link.
@@ -164,6 +189,14 @@ async function handleDispatch(
           recipient.displayName || '선생님'
         );
         url = slug ? `/star-sign/${slug}` : '/star-sign';
+      } else if (slotKey === 'comeback-reminder' && comebackCandidate) {
+        const built = buildComebackPushBody(comebackCandidate);
+        titleText = built.title;
+        bodyText = personalizeNotificationBody(
+          built.body,
+          recipient.displayName || '선생님'
+        );
+        url = built.url;
       } else if (slotKey === 'subscription-expiring' && expiringMap) {
         const exp = expiringMap.get(recipient.userId)!;
         // 중복 발송 방지 — 같은 사용자에게 오늘 이미 같은 슬롯 send 됐으면 skip.

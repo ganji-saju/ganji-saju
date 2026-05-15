@@ -59,6 +59,7 @@ function slotKeyToHref(slotKey: string, fallback = '/notifications') {
   if (slotKey.startsWith('today-zodiac')) return '/zodiac';
   if (slotKey.startsWith('today-star-sign')) return '/star-sign';
   if (slotKey.startsWith('subscription-expiring')) return '/membership/checkout?plan=plus&from=expiring';
+  if (slotKey.startsWith('comeback-reminder')) return '/star-sign';
   if (slotKey.startsWith('weekly')) return '/today-fortune';
   if (slotKey.startsWith('monthly')) return '/today-fortune';
   if (slotKey.startsWith('seasonal')) return '/today-fortune';
@@ -187,6 +188,8 @@ export function getNotificationSlotSummary(slot: NotificationSlotKey) {
       return '오늘의 별자리';
     case 'subscription-expiring':
       return '멤버십 만료 임박';
+    case 'comeback-reminder':
+      return '오랜만이에요';
     default:
       return '';
   }
