@@ -23,6 +23,7 @@ import type {
   TodayFortuneBirthPayload,
   TodayFortuneFreeResult,
   TodayFortunePremiumResult,
+  TodaySajuChartSnapshot,
   TodayScoreItem,
   TodayTimeRule,
   TodayTimeWindow,
@@ -2385,6 +2386,64 @@ function buildAvoidActions(
   return actions;
 }
 
+// 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드용 스냅샷 빌더.
+// 5개 오행을 dominant/weakest 표시와 함께 정렬해, UI 가 바로 막대바 렌더링.
+function buildSajuChartSnapshot(
+  sajuData: SajuDataV1,
+  todayGanzi: string | null
+): TodaySajuChartSnapshot {
+  const dayMasterElement = sajuData.dayMaster.element as '목' | '화' | '토' | '금' | '수';
+  const dominantElement = sajuData.fiveElements.dominant;
+  const weakestElement = sajuData.fiveElements.weakest;
+  const elementOrder: Array<'목' | '화' | '토' | '금' | '수'> = ['목', '화', '토', '금', '수'];
+
+  const fiveElements = elementOrder.map((el) => {
+    const value = sajuData.fiveElements.byElement[el];
+    return {
+      element: el,
+      count: value?.count ?? 0,
+      percentage: Math.round(value?.percentage ?? 0),
+      isDominant: el === dominantElement,
+      isWeakest: el === weakestElement,
+    };
+  });
+
+  return {
+    pillars: {
+      year: {
+        stem: sajuData.pillars.year.stem,
+        branch: sajuData.pillars.year.branch,
+        ganzi: sajuData.pillars.year.ganzi,
+      },
+      month: {
+        stem: sajuData.pillars.month.stem,
+        branch: sajuData.pillars.month.branch,
+        ganzi: sajuData.pillars.month.ganzi,
+      },
+      day: {
+        stem: sajuData.pillars.day.stem,
+        branch: sajuData.pillars.day.branch,
+        ganzi: sajuData.pillars.day.ganzi,
+      },
+      hour: sajuData.pillars.hour
+        ? {
+            stem: sajuData.pillars.hour.stem,
+            branch: sajuData.pillars.hour.branch,
+            ganzi: sajuData.pillars.hour.ganzi,
+          }
+        : null,
+    },
+    dayMaster: {
+      stem: sajuData.pillars.day.stem,
+      element: dayMasterElement,
+    },
+    fiveElements,
+    strengthLabel: sajuData.strength?.level ?? null,
+    patternName: sajuData.pattern?.name ?? null,
+    todayGanzi,
+  };
+}
+
 export function buildTodayFortuneFreeResult(
   input: BirthInput,
   sajuData: SajuDataV1,
@@ -2462,6 +2521,10 @@ export function buildTodayFortuneFreeResult(
       coinCost: 1,
     },
     followUpQuestions: concern.followUpQuestions,
+    // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드 + 대운 CTA 데이터.
+    sajuChart: buildSajuChartSnapshot(sajuData, todayPillar.ganzi ?? null),
+    // sourceSessionId 는 createReading() 이 반환한 reading slug. /saju/[slug]/deep 으로 직접 연결.
+    sajuSlug: options.sourceSessionId,
   };
 }
 

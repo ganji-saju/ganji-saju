@@ -33,6 +33,33 @@ export interface TodayScoreItem {
   summary: string;
 }
 
+// 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md 5-6쪽).
+// 사주 명식 신뢰 카드 + 오행 분포 + 일주 강약 노출용 스냅샷.
+// 빌더에서 한 번 만들어 result 페이로드에 실어 보낸다 (raw SajuDataV1 직접 노출 회피).
+export interface TodaySajuChartSnapshot {
+  pillars: {
+    year: { stem: string; branch: string; ganzi: string };
+    month: { stem: string; branch: string; ganzi: string };
+    day: { stem: string; branch: string; ganzi: string };
+    hour: { stem: string; branch: string; ganzi: string } | null;
+  };
+  dayMaster: {
+    stem: string;
+    element: '목' | '화' | '토' | '금' | '수';
+  };
+  fiveElements: Array<{
+    element: '목' | '화' | '토' | '금' | '수';
+    count: number;
+    percentage: number;
+    isDominant: boolean;
+    isWeakest: boolean;
+  }>;
+  strengthLabel: string | null;
+  patternName: string | null;
+  /** 오늘 일진 (날짜의 ganzi). "丁酉" 같은 한자 2자. */
+  todayGanzi: string | null;
+}
+
 export interface TodayFortuneFreeResult {
   sourceSessionId: string;
   /** YYYY-MM-DD (timezone-local). 2026-05-15: 일자별 캐시 분리 + 매일 다른 결과 보장용. */
@@ -81,6 +108,11 @@ export interface TodayFortuneFreeResult {
     coinCost: 1;
   };
   followUpQuestions: string[];
+  /** 2026-05-15 PR 1 — 사주 명식 신뢰 카드용 스냅샷. 미산정 시 null. */
+  sajuChart?: TodaySajuChartSnapshot | null;
+  /** 2026-05-15 PR 1 — 깊은 풀이 / 대운 풀이 CTA 용 사주 slug.
+   *  result 만든 사용자가 이미 /saju 에 사주 reading 을 등록했으면 deep 탭으로 연결. */
+  sajuSlug?: string | null;
 }
 
 export interface TodayTimeWindow {
