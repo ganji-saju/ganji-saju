@@ -629,16 +629,16 @@ export default async function StarSignDetailPage({ params }: Props) {
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
-                href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
+                href={`/star-sign/${item.slug}/cross`}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
-                {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
+                별자리 × 사주 크로스 보기 →
               </Link>
               <Link
-                href="/star-sign"
+                href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
                 className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
               >
-                별자리 목록으로
+                {readingSlug ? '내 사주 풀이' : '사주 입력'}
               </Link>
             </div>
           </article>
