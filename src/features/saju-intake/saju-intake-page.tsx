@@ -48,19 +48,24 @@ type SwipeStepId = 'profile' | 'birth' | 'location' | 'consent';
 // 2026-05-15 PR 1: 현재 상황 3개 chip group helper. selected chip 토글 가능 (재클릭 시 선택 해제).
 function SituationChipGroup<T extends string>({
   label,
+  icon,
   value,
   onChange,
   options,
 }: {
   label: string;
+  icon?: string;
   value: T | '';
   onChange: (next: T | '') => void;
-  options: ReadonlyArray<{ value: T; label: string }>;
+  options: ReadonlyArray<{ value: T; label: string; emoji?: string }>;
 }) {
   return (
     <div>
-      <div className="text-[12px] font-bold text-[var(--app-copy-muted)]">{label}</div>
-      <div className="mt-1.5 flex flex-wrap gap-1.5">
+      <div className="flex items-center gap-1.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]">
+        {icon ? <span aria-hidden="true">{icon}</span> : null}
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
         {options.map((option) => {
           const selected = value === option.value;
           return (
@@ -70,12 +75,17 @@ function SituationChipGroup<T extends string>({
               onClick={() => onChange(selected ? '' : option.value)}
               data-selected={selected}
               className={cn(
-                'rounded-full border px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                'rounded-full border px-3.5 py-1.5 text-[12.5px] font-bold transition-all active:scale-95',
                 selected
-                  ? 'border-[var(--app-pink)]/45 bg-[var(--app-pink)]/12 text-[var(--app-pink-strong)]'
-                  : 'border-[var(--app-line)] bg-white text-[var(--app-copy)] hover:border-[var(--app-pink)]/30 hover:bg-[var(--app-pink)]/6'
+                  ? 'border-[var(--app-pink-strong)] bg-[var(--app-pink-strong)] text-white shadow-[0_4px_12px_rgba(236,72,153,0.25)]'
+                  : 'border-[var(--app-line)] bg-white text-[var(--app-copy)] hover:border-[var(--app-pink)]/40 hover:bg-[var(--app-pink-soft)]'
               )}
             >
+              {option.emoji ? (
+                <span aria-hidden="true" className="mr-1">
+                  {option.emoji}
+                </span>
+              ) : null}
               {option.label}
             </button>
           );
@@ -84,6 +94,32 @@ function SituationChipGroup<T extends string>({
     </div>
   );
 }
+
+// PR #147 — 사용자 입력값 → 사람이 읽는 라벨 매핑. preview chip 에서 사용.
+const RELATIONSHIP_PREVIEW: Record<string, { label: string; emoji: string }> = {
+  single: { label: '솔로', emoji: '💛' },
+  dating: { label: '연애 중', emoji: '💑' },
+  married: { label: '기혼', emoji: '💍' },
+  separated: { label: '이별·정리 중', emoji: '🍂' },
+};
+
+const OCCUPATION_PREVIEW: Record<string, { label: string; emoji: string }> = {
+  employee: { label: '직장인', emoji: '💼' },
+  'self-employed': { label: '자영업·프리랜서', emoji: '🛠' },
+  student: { label: '학생', emoji: '📚' },
+  homemaker: { label: '주부', emoji: '🏠' },
+  'job-seeking': { label: '구직 중', emoji: '🔎' },
+  other: { label: '기타', emoji: '✨' },
+};
+
+const CONCERN_PREVIEW: Record<string, { label: string; emoji: string }> = {
+  business: { label: '사업·이직', emoji: '🚀' },
+  romance: { label: '결혼·연애', emoji: '💞' },
+  family: { label: '자녀·가족', emoji: '👨‍👩‍👧' },
+  health: { label: '건강·멘탈', emoji: '🩺' },
+  wealth: { label: '재물·투자', emoji: '💰' },
+  other: { label: '직접 입력', emoji: '✍️' },
+};
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
 type LocationSearchStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
 
@@ -1242,61 +1278,136 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           </div>
         </div>
 
-        {/* 2026-05-15 PR 1 — 현재 상황 3개 (연애/직업/고민). 사주아이 벤치마크 reference.
-            접힘 기본, 사용자가 펼치면 입력. 미입력해도 사주 풀이는 정상 동작. */}
-        <details className="group rounded-[1.05rem] border border-[var(--app-line)] bg-white px-4 py-3 open:bg-[var(--app-pink)]/4">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        {/* 2026-05-16 PR #147 — 현재 상황 입력 hero 카드 (항상 펼침).
+            기존: <details> 접힘 → 사용자가 지나치고 입력률 낮음.
+            변경: pink-soft gradient hero + 가치 명시 ("정확도 ↑") + live preview chip strip. */}
+        <section
+          className="rounded-[1.05rem] border p-4"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <div className="flex items-baseline justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--app-ink)]">
-                더 정확한 풀이를 위해 (선택)
+              <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <span aria-hidden="true">🎯</span>
+                <span>맞춤 풀이를 위해</span>
               </div>
-              <p className="mt-1 text-[12px] leading-5 text-[var(--app-copy-muted)]">
-                연애·직업·고민을 알려주시면 본인 상황에 맞춰 호명되는 풀이가 만들어져요.
-              </p>
+              <h3 className="mt-1 text-[15px] font-extrabold leading-snug text-[var(--app-ink)]">
+                지금 내 상황을 알려주세요
+              </h3>
             </div>
             <span
-              aria-hidden="true"
-              className="shrink-0 text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[10px] font-extrabold text-[var(--app-pink-strong)]"
+              style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              ▾
+              정확도 ↑
             </span>
-          </summary>
-          <div className="mt-3 grid gap-3">
+          </div>
+          <p
+            className="mt-1.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            연애·직업·고민을 골라주시면, 사주 풀이와 오늘의 운세가{' '}
+            <strong className="text-[var(--app-pink-strong)]">본인 상황에 맞춘 호명</strong>으로
+            바뀝니다. 미입력해도 일반 풀이는 제공돼요.
+          </p>
+
+          {/* live preview chip strip — 입력한 값들이 어떻게 풀이에 반영될지 즉시 보여줌 */}
+          {(() => {
+            const previewItems: Array<{ key: string; emoji: string; label: string }> = [];
+            const rel = RELATIONSHIP_PREVIEW[form.relationshipStatus];
+            const occ = OCCUPATION_PREVIEW[form.occupation];
+            const con = CONCERN_PREVIEW[form.currentConcern];
+            if (rel) previewItems.push({ key: 'rel', emoji: rel.emoji, label: rel.label });
+            if (occ) previewItems.push({ key: 'occ', emoji: occ.emoji, label: occ.label });
+            if (con) {
+              const concernLabel =
+                form.currentConcern === 'other' && form.concernNote.trim()
+                  ? form.concernNote.trim().slice(0, 18)
+                  : con.label;
+              previewItems.push({ key: 'con', emoji: con.emoji, label: concernLabel });
+            }
+            if (previewItems.length === 0) {
+              return (
+                <div
+                  className="mt-3 rounded-[10px] border-2 border-dashed bg-white/60 px-3 py-2.5 text-center text-[11px] text-[var(--app-copy-muted)]"
+                  style={{ borderColor: 'var(--app-pink-line)' }}
+                >
+                  ↓ 아래에서 골라주시면 여기 미리보기가 나타나요
+                </div>
+              );
+            }
+            return (
+              <div
+                className="mt-3 rounded-[12px] border bg-white px-3 py-2.5"
+                style={{ borderColor: 'var(--app-pink-line)' }}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  ✓ 이 풀이에 반영될 정보
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {previewItems.map((item) => (
+                    <span
+                      key={item.key}
+                      className="inline-flex items-center gap-1 rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] border"
+                      style={{ borderColor: 'var(--app-pink-line)' }}
+                    >
+                      <span aria-hidden="true">{item.emoji}</span>
+                      <span>{item.label}</span>
+                    </span>
+                  ))}
+                </div>
+                <p
+                  className="mt-1.5 text-[10.5px] leading-[1.4] text-[var(--app-copy-muted)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  사주 결과의 hero 영역과 본문, 오늘의 운세 영역별 점수에 자동 반영돼요.
+                </p>
+              </div>
+            );
+          })()}
+
+          <div className="mt-4 grid gap-3.5 rounded-[12px] bg-white px-3.5 py-3.5">
             <SituationChipGroup
               label="현재 관계"
+              icon="💑"
               value={form.relationshipStatus}
               onChange={(next) => setForm((prev) => ({ ...prev, relationshipStatus: next }))}
               options={[
-                { value: 'single', label: '솔로' },
-                { value: 'dating', label: '연애 중' },
-                { value: 'married', label: '기혼' },
-                { value: 'separated', label: '이별·정리 중' },
+                { value: 'single', label: '솔로', emoji: '💛' },
+                { value: 'dating', label: '연애 중', emoji: '💑' },
+                { value: 'married', label: '기혼', emoji: '💍' },
+                { value: 'separated', label: '이별·정리 중', emoji: '🍂' },
               ]}
             />
             <SituationChipGroup
               label="현재 하시는 일"
+              icon="💼"
               value={form.occupation}
               onChange={(next) => setForm((prev) => ({ ...prev, occupation: next }))}
               options={[
-                { value: 'employee', label: '직장인' },
-                { value: 'self-employed', label: '자영업·프리랜서' },
-                { value: 'student', label: '학생' },
-                { value: 'homemaker', label: '주부' },
-                { value: 'job-seeking', label: '구직 중' },
-                { value: 'other', label: '기타' },
+                { value: 'employee', label: '직장인', emoji: '💼' },
+                { value: 'self-employed', label: '자영업·프리랜서', emoji: '🛠' },
+                { value: 'student', label: '학생', emoji: '📚' },
+                { value: 'homemaker', label: '주부', emoji: '🏠' },
+                { value: 'job-seeking', label: '구직 중', emoji: '🔎' },
+                { value: 'other', label: '기타', emoji: '✨' },
               ]}
             />
             <SituationChipGroup
               label="요즘 가장 큰 고민"
+              icon="💭"
               value={form.currentConcern}
               onChange={(next) => setForm((prev) => ({ ...prev, currentConcern: next }))}
               options={[
-                { value: 'business', label: '사업·이직' },
-                { value: 'romance', label: '결혼·연애' },
-                { value: 'family', label: '자녀·가족' },
-                { value: 'health', label: '건강·멘탈' },
-                { value: 'wealth', label: '재물·투자' },
-                { value: 'other', label: '직접 입력' },
+                { value: 'business', label: '사업·이직', emoji: '🚀' },
+                { value: 'romance', label: '결혼·연애', emoji: '💞' },
+                { value: 'family', label: '자녀·가족', emoji: '👨‍👩‍👧' },
+                { value: 'health', label: '건강·멘탈', emoji: '🩺' },
+                { value: 'wealth', label: '재물·투자', emoji: '💰' },
+                { value: 'other', label: '직접 입력', emoji: '✍️' },
               ]}
             />
             {form.currentConcern === 'other' ? (
@@ -1306,12 +1417,12 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, concernNote: event.target.value.slice(0, 80) }))
                 }
-                placeholder="짧게 적어주세요 (최대 80자)"
+                placeholder="고민을 짧게 적어주세요 (최대 80자)"
                 className="motion-input-effect h-11 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[13.5px] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             ) : null}
           </div>
-        </details>
+        </section>
 
         {recentGuestDraft ? (
           <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
