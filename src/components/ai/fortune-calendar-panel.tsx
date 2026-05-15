@@ -325,8 +325,43 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
           >
             {formatDayLabel(entry)} · {meta.label}
           </h3>
+          {/* 2026-05-15 — 그 날의 일진 ganzi 노출 (한자 + 한글 병기). 매일 다름. */}
+          {entry.iljinGanzi ? (
+            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-ink)]" style={{ border: '1px solid var(--app-pink-line)' }}>
+              <span>일진</span>
+              <span style={{ fontFamily: 'var(--font-han)' }}>
+                {entry.iljinKorean ? `${entry.iljinKorean}(${entry.iljinGanzi})` : entry.iljinGanzi}
+              </span>
+              <span className="text-[10px] font-bold text-[var(--app-pink-strong)]">·</span>
+              <span className="text-[10.5px] tabular-nums">{entry.score}점</span>
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {/* 2026-05-15 — 발동 신살 chip. 날짜마다 다른 셋. */}
+      {entry.dayNotableSinsals && entry.dayNotableSinsals.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {entry.dayNotableSinsals.map((s, idx) => {
+            const tone =
+              s.category === '길신'
+                ? { bg: 'rgba(45,135,88,0.10)', border: 'rgba(45,135,88,0.32)', color: 'var(--app-jade)' }
+                : s.category === '흉신'
+                  ? { bg: 'rgba(220,79,79,0.08)', border: 'rgba(220,79,79,0.28)', color: 'var(--app-coral)' }
+                  : { bg: '#fff7e6', border: 'rgba(212,148,38,0.28)', color: 'var(--app-amber)' };
+            return (
+              <span
+                key={`${s.name}-${idx}`}
+                className="rounded-full border px-2 py-0.5 text-[10.5px] font-bold"
+                style={{ background: tone.bg, borderColor: tone.border, color: tone.color }}
+              >
+                {s.name}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+
       <p
         className="mt-3 text-[13px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
@@ -348,6 +383,24 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
           {entry.actionHint}
         </p>
       </div>
+
+      {/* 2026-05-15 — 일진 발동 케이스 메시지 추가 (운세톡톡 라이브러리). */}
+      {entry.dayMessages && entry.dayMessages.length > 2 ? (
+        <div className="mt-3 grid gap-1.5">
+          {entry.dayMessages.slice(2).map((msg, idx) => (
+            <p
+              key={idx}
+              className="rounded-[12px] border bg-white px-3 py-2 text-[12px] leading-[1.65] text-[var(--app-copy)]"
+              style={{
+                borderColor: 'var(--app-line)',
+                wordBreak: 'keep-all',
+              }}
+            >
+              {msg}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
