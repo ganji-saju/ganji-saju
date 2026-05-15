@@ -3,12 +3,20 @@ import {
   NOTIFICATION_SCHEDULE_BLUEPRINT,
   type NotificationSlotKey,
 } from '@/content/moonlight';
+import { createServiceClient } from '@/lib/supabase/server';
 import {
   createNotificationDeliveryLog,
   listNotificationRecipients,
   markPushDeliveryResult,
 } from '@/lib/notification-preferences';
 import { deriveStarSignSlug } from '@/lib/profile-personalization';
+import {
+  buildExpiringPushBody,
+  hasAlreadySentToday,
+  listExpiringSubscribers,
+  type ExpiringRecipient,
+} from '@/lib/subscription-expiring';
+import { getSubscriptionPlanLabel } from '@/lib/subscription';
 import {
   chooseVariantFor,
   computeStarSignDailyDigest,
@@ -49,6 +57,7 @@ function resolveDueSlotKeys(now: Date) {
 
   if (hour === 8) due.add('today-fortune');
   if (hour === 9) due.add('today-star-sign');
+  if (hour === 10) due.add('subscription-expiring');
   if (hour === 12) due.add('today-tarot');
   if (hour === 20) due.add('today-zodiac');
 
@@ -99,6 +108,15 @@ async function handleDispatch(
     ? computeStarSignDailyDigest()
     : null;
 
+  // PR #143 — subscription-expiring 슬롯이 due 일 때 만료 임박 구독자 목록 미리 추출.
+  // user_id 별 stage map 으로 dispatch loop 에서 빠르게 조회.
+  let expiringMap: Map<string, ExpiringRecipient> | null = null;
+  if (dueSlots.includes('subscription-expiring')) {
+    const service = await createServiceClient();
+    const expiring = await listExpiringSubscribers(service);
+    expiringMap = new Map(expiring.map((e) => [e.userId, e]));
+  }
+
   const results: Array<{
     userId: string;
     slotKey: NotificationSlotKey;
@@ -119,6 +137,14 @@ async function handleDispatch(
     for (const slotKey of activeSlots) {
       const blueprint = getSlotBlueprint(slotKey);
 
+      // PR #143 — subscription-expiring 슬롯은 만료 임박 구독자만 대상.
+      // 그 외 사용자는 skip (전체 발송 X).
+      if (slotKey === 'subscription-expiring') {
+        if (!expiringMap || !expiringMap.has(recipient.userId)) {
+          continue;
+        }
+      }
+
       // today-star-sign 은 사용자 생년월일 기반 별자리 운세를 동적으로 본문에 합성.
       // recipient.birthMonth/Day 가 있으면 deriveStarSignSlug → 본인 별자리 점수+highlight,
       // 없으면 일반 TOP sign 후보로 fallback. URL 도 본인 별자리로 link.
@@ -126,6 +152,7 @@ async function handleDispatch(
       let bodyText: string;
       let url = '/notifications';
       let variant: PushVariant | null = null;
+      let titleText: string = blueprint.title;
       if (slotKey === 'today-star-sign' && starSignDigest) {
         const slug =
           recipient.birthMonth != null && recipient.birthDay != null
@@ -137,6 +164,24 @@ async function handleDispatch(
           recipient.displayName || '선생님'
         );
         url = slug ? `/star-sign/${slug}` : '/star-sign';
+      } else if (slotKey === 'subscription-expiring' && expiringMap) {
+        const exp = expiringMap.get(recipient.userId)!;
+        // 중복 발송 방지 — 같은 사용자에게 오늘 이미 같은 슬롯 send 됐으면 skip.
+        // (dispatch 가 hour 매칭으로 1회만 trigger 되지만, 수동 dryRun 후 실발송 같은 시나리오 대비.)
+        const service = await createServiceClient();
+        if (await hasAlreadySentToday(service, recipient.userId, 'subscription-expiring')) {
+          continue;
+        }
+        const built = buildExpiringPushBody({
+          stage: exp.stage,
+          planLabel: getSubscriptionPlanLabel(exp.plan),
+        });
+        titleText = built.title;
+        bodyText = personalizeNotificationBody(
+          built.body,
+          recipient.displayName || '선생님'
+        );
+        url = built.url;
       } else {
         bodyText = personalizeNotificationBody(
           blueprint.body,
@@ -163,7 +208,7 @@ async function handleDispatch(
         const urlWithNotif = appendNotifId(url, logId);
         const payload = buildPushPayload({
           slotKey,
-          title: blueprint.title,
+          title: titleText,
           body: bodyText,
           url: urlWithNotif,
         });

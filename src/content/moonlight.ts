@@ -73,7 +73,8 @@ export type NotificationSlotKey =
   | 'today-fortune'
   | 'today-tarot'
   | 'today-zodiac'
-  | 'today-star-sign';
+  | 'today-star-sign'
+  | 'subscription-expiring';
 
 export interface MoonlightNotificationSlot {
   key: NotificationSlotKey;
@@ -887,6 +888,14 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
     timeLabel: '아침 9시',
     cadence: '매일',
     tone: 'plum',
+  },
+  {
+    key: 'subscription-expiring',
+    title: '멤버십 만료 임박',
+    body: '곧 멤버십이 만료됩니다. 지금 연장하시면 끊김 없이 이어 사용하실 수 있어요.',
+    timeLabel: '오전 10시',
+    cadence: 'D-7 / D-3 / D-day',
+    tone: 'coral',
   },
 ] as const;
 
