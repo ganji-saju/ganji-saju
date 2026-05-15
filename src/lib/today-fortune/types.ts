@@ -58,6 +58,16 @@ export interface TodaySajuChartSnapshot {
   patternName: string | null;
   /** 오늘 일진 (날짜의 ganzi). "丁酉" 같은 한자 2자. */
   todayGanzi: string | null;
+  /** 2026-05-15 PR — 종합 신살 탐지 결과 (사주 원국 + 일진). UI chip 노출용. */
+  detectedSinsals?: TodayDetectedSinsal[];
+}
+
+export interface TodayDetectedSinsal {
+  name: string;
+  category: '길신' | '흉신' | '양날의검';
+  positions: Array<'year' | 'month' | 'day' | 'hour' | 'iljin'>;
+  scoreHint: number;
+  hint: string;
 }
 
 export interface TodayFortuneFreeResult {

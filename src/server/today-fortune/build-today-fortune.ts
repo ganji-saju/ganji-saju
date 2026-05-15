@@ -23,6 +23,8 @@ import { buildTodayLuckyPackage } from '@/lib/today-fortune/lucky-package';
 import { calculateIljinScore, type SajuOriginInput } from '@/lib/today-fortune/iljin-score-engine';
 import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
 import type { Branch as IljinBranch, Stem as IljinStem } from '@/lib/today-fortune/iljin-rules';
+// 2026-05-15 PR — 02 신살 spec doc: 종합 신살 탐지 (20종).
+import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
 import type {
   ConcernId,
   TodayCalendarType,
@@ -2438,9 +2440,27 @@ function deriveLuckyElements(
 
 // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드용 스냅샷 빌더.
 // 5개 오행을 dominant/weakest 표시와 함께 정렬해, UI 가 바로 막대바 렌더링.
+// 2026-05-15 PR — 일주 ganzi → 60갑자 인덱스 (0~59). 공망 계산에 사용.
+// 천간 i (0~9) 와 지지 j (0~11) 가 갑자 인덱스 k 일 때, k % 10 = i / k % 12 = j 를 만족.
+function computeDayGanziIndex(dayStem: string, dayBranch: string): number {
+  const STEM_ORDER = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+  const BRANCH_ORDER_LOCAL = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  const stemIdx = STEM_ORDER.indexOf(dayStem);
+  const branchIdx = BRANCH_ORDER_LOCAL.indexOf(dayBranch);
+  if (stemIdx < 0 || branchIdx < 0) return 0;
+  // 가능한 6 가지 k 중 (stemIdx + 10k) % 12 = branchIdx 만족하는 k 찾기.
+  for (let k = 0; k < 6; k += 1) {
+    if ((stemIdx + 10 * k) % 12 === branchIdx) return stemIdx + 10 * k;
+  }
+  return 0;
+}
+
 function buildSajuChartSnapshot(
   sajuData: SajuDataV1,
-  todayGanzi: string | null
+  todayGanzi: string | null,
+  todayStem: string | null,
+  todayBranch: string | null,
+  currentYearBranch: string | null
 ): TodaySajuChartSnapshot {
   const dayMasterElement = sajuData.dayMaster.element as '목' | '화' | '토' | '금' | '수';
   const dominantElement = sajuData.fiveElements.dominant;
@@ -2491,6 +2511,40 @@ function buildSajuChartSnapshot(
     strengthLabel: sajuData.strength?.level ?? null,
     patternName: sajuData.pattern?.name ?? null,
     todayGanzi,
+    detectedSinsals: (() => {
+      try {
+        const dayGanziIndex = computeDayGanziIndex(
+          sajuData.pillars.day.stem,
+          sajuData.pillars.day.branch
+        );
+        const iljinInput = todayStem && todayBranch
+          ? { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch }
+          : undefined;
+        const hits = detectComprehensiveSinsals(
+          {
+            dayMaster: sajuData.pillars.day.stem as IljinStem,
+            yearBranch: sajuData.pillars.year.branch as IljinBranch,
+            monthBranch: sajuData.pillars.month.branch as IljinBranch,
+            dayBranch: sajuData.pillars.day.branch as IljinBranch,
+            hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
+            dayGanziIndex,
+          },
+          {
+            iljin: iljinInput,
+            currentYearBranch: currentYearBranch as IljinBranch | undefined,
+          }
+        );
+        return hits.map((h) => ({
+          name: h.name,
+          category: h.category,
+          positions: h.positions,
+          scoreHint: h.scoreHint,
+          hint: h.hint,
+        }));
+      } catch {
+        return [];
+      }
+    })(),
   };
 }
 
@@ -2572,7 +2626,21 @@ export function buildTodayFortuneFreeResult(
     },
     followUpQuestions: concern.followUpQuestions,
     // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드 + 대운 CTA 데이터.
-    sajuChart: buildSajuChartSnapshot(sajuData, todayPillar.ganzi ?? null),
+    sajuChart: buildSajuChartSnapshot(
+      sajuData,
+      todayPillar.ganzi ?? null,
+      todayPillar.stem ?? null,
+      todayPillar.branch ?? null,
+      // 올해 연지 — 삼재 탐지용. todayPillar.monthGanzi 가 있다면 그 천간/지지로 추론 가능.
+      // 실제 연지는 sajuData.currentLuck?.saewoon?.branch 가 있으면 사용. 없으면 null.
+      (() => {
+        const saewoonGanzi = sajuData.currentLuck?.saewoon?.ganzi ?? null;
+        if (saewoonGanzi && saewoonGanzi.length === 2) {
+          return saewoonGanzi.charAt(1);
+        }
+        return null;
+      })()
+    ),
     // sourceSessionId 는 createReading() 이 반환한 reading slug. /saju/[slug]/deep 으로 직접 연결.
     sajuSlug: options.sourceSessionId,
     // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.

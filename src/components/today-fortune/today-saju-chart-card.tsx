@@ -184,6 +184,53 @@ export function TodaySajuChartCard({ chart }: Props) {
         </ul>
       </div>
 
+      {/* 2026-05-15 PR — 종합 신살 chip (길신·흉신·양날의검). 발동 위치도 함께 노출. */}
+      {chart.detectedSinsals && chart.detectedSinsals.length > 0 ? (
+        <div className="mt-4">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            발동한 신살
+          </div>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {chart.detectedSinsals.slice(0, 8).map((s, idx) => {
+              const tone =
+                s.category === '길신'
+                  ? { bg: 'rgba(45,135,88,0.10)', border: 'rgba(45,135,88,0.32)', color: 'var(--app-jade)' }
+                  : s.category === '흉신'
+                    ? { bg: 'rgba(220,79,79,0.08)', border: 'rgba(220,79,79,0.28)', color: 'var(--app-coral)' }
+                    : { bg: '#fff7e6', border: 'rgba(212,148,38,0.28)', color: 'var(--app-amber)' };
+              return (
+                <span
+                  key={`${s.name}-${idx}`}
+                  className="rounded-full border px-2 py-0.5 text-[11px] font-bold"
+                  style={{ background: tone.bg, borderColor: tone.border, color: tone.color }}
+                  title={s.hint}
+                >
+                  {s.name}
+                  {s.positions.length > 0 ? (
+                    <span className="ml-1 opacity-70">
+                      ·{' '}
+                      {s.positions
+                        .map((p) =>
+                          p === 'iljin'
+                            ? '일진'
+                            : p === 'year'
+                              ? '연'
+                              : p === 'month'
+                                ? '월'
+                                : p === 'day'
+                                  ? '일'
+                                  : '시'
+                        )
+                        .join('/')}
+                    </span>
+                  ) : null}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       {/* 일주 강약 + 격국 */}
       {(chart.strengthLabel || chart.patternName) ? (
         <div className="mt-3.5 grid grid-cols-2 gap-2">
