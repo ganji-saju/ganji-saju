@@ -9,6 +9,12 @@
 
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuPersonalizationContext } from './personalization-context';
+// PR #150 (B1) — situation 호명 helper.
+import {
+  buildHonorificPrefix,
+  buildSituationActionLine,
+  buildSituationClosing,
+} from './situation-honor';
 
 export interface SajuNarrativeChip {
   label: string;
@@ -16,12 +22,18 @@ export interface SajuNarrativeChip {
 }
 
 export interface SajuNarrative {
-  /** 헤드라인 1줄 — 일주 + 격국 + 핵심 결. 단정형. */
+  /** 헤드라인 1줄 — 일주 + 격국 + 핵심 결. 단정형. PR #150 — userName + situation 있으면 prefix 추가. */
   headline: string;
-  /** 본문 3~4문장 — 일간 → 격국 → 용신 → 대운/세운 → 오늘 행동 흐름. */
+  /** 본문 3~4문장 — 일간 → 격국 → 용신 → 대운/세운 → 오늘 행동 흐름. PR #150 — situation 있으면 closing 추가. */
   body: string;
   /** 근거 칩 — 일주 · 격국 · 용신 · 대운 등 명리 라벨. */
   chips: SajuNarrativeChip[];
+}
+
+/** PR #150 — buildSajuNarrative 의 optional 입력 옵션. 기존 caller 무영향. */
+export interface SajuNarrativeOptions {
+  /** 사용자 이름 (input.name). 호명에 사용. */
+  userName?: string | null;
 }
 
 function joinSentences(parts: Array<string | null | undefined>): string {
@@ -33,7 +45,8 @@ function joinSentences(parts: Array<string | null | undefined>): string {
 
 export function buildSajuNarrative(
   data: SajuDataV1,
-  personalizationContext: SajuPersonalizationContext | null
+  personalizationContext: SajuPersonalizationContext | null,
+  options: SajuNarrativeOptions = {}
 ): SajuNarrative {
   const sixtyGapja = personalizationContext?.sixtyGapja ?? null;
   const dayPillar = data.pillars.day;
@@ -51,12 +64,19 @@ export function buildSajuNarrative(
   const wolwoon = data.currentLuck?.wolwoon?.ganzi ?? null;
 
   // ── 1. headline — 일주 + 격국 + 핵심 결.
-  const headline = buildHeadline({
+  // PR #150 — userSituation 있으면 "[직장인이신 김영민님, ]" prefix 부착.
+  const userSituation = personalizationContext?.userSituation ?? null;
+  const honorificPrefix = buildHonorificPrefix({
+    situation: userSituation,
+    userName: options.userName ?? null,
+  });
+  const baseHeadline = buildHeadline({
     sixtyGapjaTitle: sixtyGapja?.title ?? null,
     dayGanzi,
     dayKorean,
     patternName,
   });
+  const headline = honorificPrefix ? `${honorificPrefix}${baseHeadline}` : baseHeadline;
 
   // ── 2. body — 일간 → 격국 → 용신/강약 → 대운/세운 → 핵심 행동 흐름.
   const sentenceDay = buildDaySentence({
@@ -84,12 +104,23 @@ export function buildSajuNarrative(
     actionCue: sixtyGapja?.actionCue ?? null,
     yongsinPrimary,
   });
+  // PR #150 — situation 있으면 본문 끝에 action 한 줄 + 메타 closing 추가.
+  const situationAction = buildSituationActionLine({
+    situation: userSituation,
+    yongsinPrimary,
+  });
+  const situationClosing = buildSituationClosing({
+    situation: userSituation,
+    userName: options.userName ?? null,
+  });
   const body = joinSentences([
     sentenceDay,
     sentencePattern,
     sentenceYongsin,
     sentenceLuck,
     sentenceAction,
+    situationAction,
+    situationClosing,
   ]);
 
   // ── 3. chips — 근거 라벨.
