@@ -214,6 +214,10 @@ const BRANCH_SIX_HARMONIES = new Map<string, string>(
 const BRANCH_CLASHES = new Set<string>(['子-午', '丑-未', '寅-申', '卯-酉', '辰-戌', '巳-亥']);
 const BRANCH_HARMS = new Set<string>(['子-未', '丑-午', '寅-巳', '卯-辰', '申-亥', '酉-戌']);
 const BRANCH_BREAKS = new Set<string>(['子-酉', '卯-午', '辰-丑', '未-戌', '寅-亥', '巳-申']);
+// 2026-05-15 PR 6 — 원진(怨嗔) 6 쌍 신규 산출. 사주아이가 적극 활용하는 명리 신호.
+// 자미(子-未) / 축오(丑-午) / 인유(寅-酉) / 묘신(卯-申) / 진해(辰-亥) / 사술(巳-戌).
+// sortBranchKey 정렬 결과 기준 (BRANCH_ORDER alphabetical).
+const BRANCH_WONJIN = new Set<string>(['子-未', '丑-午', '寅-酉', '卯-申', '辰-亥', '巳-戌']);
 const BRANCH_PUNISHMENTS = new Set<string>([
   '寅-巳',
   '巳-申',
@@ -646,6 +650,17 @@ function buildRelations(
           source,
           target,
           detail: '겉으로는 약해 보여도 피로를 남기기 쉬운 해 관계',
+        });
+      }
+
+      // 2026-05-15 PR 6 — 원진(怨嗔) 산출. 이유 없는 서운함·날카로운 말싸움이 생기기 쉬운 결.
+      if (BRANCH_WONJIN.has(branchKey)) {
+        relations.push({
+          category: 'pair',
+          label: '원진',
+          source,
+          target,
+          detail: '이유 없는 서운함·날카로운 말싸움이 누적되기 쉬운 원진 관계',
         });
       }
 
