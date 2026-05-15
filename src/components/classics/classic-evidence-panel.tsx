@@ -120,8 +120,9 @@ export async function ClassicEvidencePanel({
           </span>
         </summary>
 
+        {/* 2026-05-15 — 고전 인용문 + 풀이 본문이 김. 1열 stack 으로 가독성 회복. */}
         {evidence.items.length > 0 ? (
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="mt-5 grid gap-4">
             {evidence.items.map((item) => (
               <ClassicEvidenceCard key={item.passage.id} item={item} />
             ))}

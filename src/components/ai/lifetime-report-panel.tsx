@@ -606,7 +606,7 @@ function LifetimeSectionBody({
   switch (sectionKey) {
     case 'coreIdentity':
       return (
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+        <div className="mt-4 grid gap-2.5">
           <FactCard label="반응 방식" body={report.coreIdentity.reactionStyle} tone={tone} />
           <FactCard label="강점 환경" body={report.coreIdentity.bestEnvironment} tone={tone} />
           <FactCard label="무너지기 쉬운 패턴" body={report.coreIdentity.weakPattern} tone={tone} />
@@ -657,7 +657,7 @@ function LifetimeSectionBody({
     case 'patternAndYongsin':
       return (
         <>
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
+          <div className="mt-4 grid gap-2.5">
             <FactCard label="삶의 역할" body={report.patternAndYongsin.patternRole} tone={tone} />
             <FactCard label="보완 방향" body={report.patternAndYongsin.yongsinDirection} tone={tone} />
             <FactCard label="평생 선택 힌트" body={report.patternAndYongsin.choiceRule} tone={tone} />
@@ -1198,7 +1198,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           <FactCard label="상반기" body={report.yearlyAppendix.firstHalf} tone="indigo" />
           <FactCard label="하반기" body={report.yearlyAppendix.secondHalf} tone="indigo" />
         </div>
-        <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
+        <div className="mt-3 grid gap-2.5">
           <FactCard label="잘 풀리는 시기" body={report.yearlyAppendix.goodPeriods.join(' ')} tone="jade" />
           <FactCard label="조심할 시기" body={report.yearlyAppendix.cautionPeriods.join(' ')} tone="coral" />
           <FactCard label="행동 조언" body={report.yearlyAppendix.actionAdvice.join(' ')} tone="amber" />

@@ -249,7 +249,8 @@ export function SajuAiInterpretationPanel({
         <AiSourceBadge state={badgeState} />
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      {/* 2026-05-15 — insight 문단이 긴 풀이라 2열로 좁아지면 가독성↓. 1열 stack. */}
+      <div className="mt-5 grid gap-3">
         {interpretation.insights.map((insight, index) => (
           <div
             key={`${index}-${insight}`}
@@ -271,7 +272,8 @@ export function SajuAiInterpretationPanel({
         <p className="mt-2 text-sm leading-7 text-[var(--app-copy-soft)]">
           풀이 내용은 유지하고, 설명하는 온도만 다르게 정리합니다.
         </p>
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        {/* 2026-05-15 — 말투 비교 counselor 카드는 긴 풀이라 2열로 좁아지면 가독성↓. 1열 stack. */}
+        <div className="mt-4 grid gap-4">
           {comparisonOrder.map((compareCounselorId) => {
             const compareState =
               comparison[compareCounselorId] ??

@@ -40,7 +40,8 @@ export function SajuFactEvidencePanel({
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      {/* 2026-05-15 — 사실 증거 카드 본문이 김. 1열 stack 으로 가독성 회복. */}
+      <div className="mt-6 grid gap-4">
         <article className="gangi-evidence-card p-5">
           <div className="app-caption">내 사주의 기본 정보</div>
           <div className="mt-3 text-xl font-semibold leading-8 text-[var(--app-ink)]">

@@ -255,7 +255,8 @@ function DetailTopicReport({
           ) : null}
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-2">
+        {/* 2026-05-15 — 콘텐츠 block 본문이 김. 1열 stack 으로 가독성 회복. */}
+        <div className="grid gap-3">
           {content.blocks.map((block, index) => (
             <section
               key={`${topic}-${block.title}-${index}`}
@@ -558,7 +559,8 @@ export default function DetailUnlock({
           기본 풀이를 본 뒤, 돈·연애·일·생활 중 더 궁금한 부분만 열어보세요.
         </p>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {/* 2026-05-15 — 안내 문장 자체가 한 줄로 길어 2열로 좁히면 어색. 1열 stack. */}
+        <div className="mt-5 grid gap-3">
           {[
             '한 번 연 같은 결과는 다시 코인이 차감되지 않습니다.',
             '깊은 사주풀이를 샀다면 여기 내용도 포함됩니다.',
