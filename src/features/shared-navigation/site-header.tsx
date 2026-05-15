@@ -305,8 +305,9 @@ function DesktopSidebar({
 }) {
   const displayName = user?.email?.split('@')[0] ?? '방문자';
 
+  // PR #155 — PC 사이드바는 메가 메뉴로 대체. lg+ 에서 안 보이도록 'hidden' 만 적용.
   return (
-    <aside className="app-desktop-sidebar hidden flex-col overflow-hidden lg:flex">
+    <aside className="app-desktop-sidebar hidden flex-col overflow-hidden">
 
       <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
         <Link href="/" className="group block">

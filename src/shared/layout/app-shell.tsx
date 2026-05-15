@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import SiteFooter from '@/components/site-footer';
+import { MegaNavBar } from '@/features/shared-navigation/mega-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,9 @@ export function AppShell({ children, header, dock, footer, className }: AppShell
 
   return (
     <main className={cn('app-shell', headerNode && 'app-shell-with-navigation', className)}>
+      {/* PR #155 — PC 메가 메뉴 (lg+ 에서만 표시, CSS 로 제어).
+          mobile/tablet 은 기존 SiteHeader 가 그대로 노출. */}
+      <MegaNavBar />
       {headerNode}
       <div className="app-shell-content">{children}</div>
       {footerNode}
