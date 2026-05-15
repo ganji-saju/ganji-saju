@@ -5,6 +5,11 @@
 // 데이터 출처: 같은 result.scores. summary 를 블루 헤드라인으로, 추가 body 라인은
 // concern/score 의 조합으로 룰 기반 생성. 운세톡톡 벤치마크처럼 4~6줄 분량.
 import type { TodayFortuneFreeResult, TodayScoreItem } from '@/lib/today-fortune/types';
+// 2026-05-15 PR 7 — 04 카테고리 1,200문장 라이브러리 적용. 점수 등급 분기 + 시드 라운드-로빈.
+import {
+  pickCategoryMessage,
+  type CategoryKey,
+} from '@/lib/today-fortune/category-message-library';
 
 interface CategoryMeta {
   icon: string;
@@ -110,6 +115,15 @@ function selectBodyHint(meta: CategoryMeta, score: number): string {
   return meta.bodyHints.low;
 }
 
+// 2026-05-15 PR 7 — score key → 라이브러리 카테고리 매핑.
+const SCORE_KEY_TO_CATEGORY: Partial<Record<TodayScoreItem['key'], CategoryKey>> = {
+  wealth: 'wealth',
+  love: 'love',
+  career: 'career',
+  relationship: 'relationship',
+  condition: 'health',
+};
+
 // 운세톡톡 4-1 패턴: 점수에 따라 결론 어조 (현상/안내/경고) 를 톤 조정.
 function buildBlueHeadline(score: number, summary: string): string {
   // summary 가 이미 한 줄 결론이라면 그대로. 짧으면 점수 등급에 맞춰 prefix 보강.
@@ -145,7 +159,17 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
           const meta = CATEGORY_META[score.key];
           if (!meta) return null;
           const headline = buildBlueHeadline(value, score.summary);
-          const body = selectBodyHint(meta, value);
+          // 2026-05-15 PR 7: 카테고리 라이브러리에서 등급별 메시지 선택 (시드 = dateKey + score key).
+          // 라이브러리 매핑 없으면 기존 룰 기반 fallback.
+          const libraryCategory = SCORE_KEY_TO_CATEGORY[score.key];
+          const body = libraryCategory
+            ? pickCategoryMessage(
+                libraryCategory,
+                value,
+                { name: undefined },
+                `${result.dateKey}::${score.key}`
+              ) || selectBodyHint(meta, value)
+            : selectBodyHint(meta, value);
           return (
             <article
               key={score.key}
