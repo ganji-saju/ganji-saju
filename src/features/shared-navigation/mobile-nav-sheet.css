@@ -1,12 +1,13 @@
-/* 2026-05-16 PR #156 — 모바일 메뉴 시트 스타일.
- * bottom sheet (slide up from bottom) + 반투명 overlay.
+/* 2026-05-16 PR #156 (PR #158 update) — 모바일 메뉴 시트.
+ * 변경: bottom sheet → top sheet (햄버거 우상단에서 자연스럽게 슬라이드 다운).
  * lg(1024px) 미만에서 노출 (PC 는 메가 메뉴 PR #155).
+ * z-index 9999 — body 직접 mount 라 부모 stacking context 영향 없지만 안전하게 최상위.
  */
 
 .mobile-nav-sheet-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 9998;
   background: rgba(15, 23, 42, 0.5);
   animation: mns-overlay-in 0.22s ease-out;
 }
@@ -24,22 +25,22 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 61;
+  top: 0;
+  z-index: 9999;
   background: #fff;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  box-shadow: 0 -16px 36px rgba(17, 17, 20, 0.18);
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-shadow: 0 16px 36px rgba(17, 17, 20, 0.18);
   max-height: 88vh;
   display: flex;
   flex-direction: column;
   animation: mns-sheet-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  padding-bottom: env(safe-area-inset-bottom, 8px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 @keyframes mns-sheet-in {
   from {
-    transform: translateY(100%);
+    transform: translateY(-100%);
   }
   to {
     transform: translateY(0);
@@ -55,6 +56,7 @@
 }
 
 .mobile-nav-sheet-handle {
+  /* PR #158 — top sheet 라 handle 은 하단으로 (드래그 다운 hint). 우선 visual 유지. */
   width: 40px;
   height: 4px;
   border-radius: 4px;
