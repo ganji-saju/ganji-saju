@@ -22,6 +22,9 @@ import { buttonVariants } from '@/components/ui/button';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+// PR #156 — 모바일 메뉴 시트.
+import { MobileNavSheet } from './mobile-nav-sheet';
+import { resolveActiveGroup } from './mega-nav-data';
 import { cn } from '@/lib/utils';
 import {
   HEADER_SECONDARY_NAV_ITEMS,
@@ -663,7 +666,9 @@ function MobileChrome({
             </div>
           </div>
 
-          {mobileMenuOpen ? (
+          {/* PR #156 — 기존 inline 드롭다운 패널 → MobileNavSheet (bottom sheet) 로 교체.
+              아래 블록은 false 처리하여 dead-code 비활성. 시트 렌더는 SiteHeader return 뒤쪽에서. */}
+          {false && mobileMenuOpen ? (
             <div
               id="mobile-global-menu"
               className="app-mobile-menu-panel mt-4 rounded-[1.4rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_18px_48px_rgba(17,17,20,0.12)]"
@@ -892,6 +897,13 @@ function MobileChrome({
           })}
         </div>
       </nav>
+
+      {/* PR #156 — 모바일 메뉴 시트 (bottom sheet). 햄버거 토글에 mobileMenuOpen 연결. */}
+      <MobileNavSheet
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        initialActiveLabel={resolveActiveGroup(pathname)}
+      />
     </>
   );
 }
