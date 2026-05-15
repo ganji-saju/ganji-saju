@@ -74,7 +74,8 @@ export type NotificationSlotKey =
   | 'today-tarot'
   | 'today-zodiac'
   | 'today-star-sign'
-  | 'subscription-expiring';
+  | 'subscription-expiring'
+  | 'comeback-reminder';
 
 export interface MoonlightNotificationSlot {
   key: NotificationSlotKey;
@@ -896,6 +897,14 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
     timeLabel: '오전 10시',
     cadence: 'D-7 / D-3 / D-day',
     tone: 'coral',
+  },
+  {
+    key: 'comeback-reminder',
+    title: '오랜만이에요',
+    body: '오늘 운세 한 줄과 새로운 흐름을 가볍게 확인해 보세요.',
+    timeLabel: '저녁 7시',
+    cadence: '미접속 N일 (사용자 설정)',
+    tone: 'plum',
   },
 ] as const;
 

@@ -66,6 +66,11 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
     desc: '멤버십 만료 임박 — 지금 연장하기',
     label: '연장하기',
   },
+  'comeback-reminder': {
+    href: '/star-sign',
+    desc: '오랜만에 들어오시면 오늘 흐름 한 줄로',
+    label: '돌아보기',
+  },
 };
 
 function createDefaultPreferences(): NotificationPreferences {
@@ -176,6 +181,8 @@ function computeUpcomingLabel(slot: (typeof NOTIFICATION_SCHEDULE_BLUEPRINT)[num
     next.setHours(10, 0, 0, 0);
   } else if (slot.key === 'today-tarot') {
     next.setHours(12, 0, 0, 0);
+  } else if (slot.key === 'comeback-reminder') {
+    next.setHours(19, 0, 0, 0);
   } else {
     next.setHours(20, 0, 0, 0);
   }
