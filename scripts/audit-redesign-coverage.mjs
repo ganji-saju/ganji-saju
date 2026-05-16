@@ -57,7 +57,11 @@ function collectEntryPages(dir, results = []) {
 // 구스타일 named CSS class 패턴.
 // `gangi-today-detail-*`, `gangi-paid-detail-*` 등 — 신스타일은 inline + utility.
 // `gangi-page-header`, `gangi-loading-overlay` 같은 공통 wrapper 는 의도된 사용 — 제외.
-const LEGACY_CLASS_PATTERN = /\bgangi-(today-detail|paid-detail|detail-kicker|detail-chip|result-flow|today-detail-)[a-zA-Z0-9_-]*/g;
+//
+// 마지막 char 가 word char (\w) 강제 — 주석 안의 `gangi-today-detail-*` 같은
+// reference (trailing `-` 또는 `*`) 는 false positive 차단.
+const LEGACY_CLASS_PATTERN =
+  /\bgangi-(?:today-detail|paid-detail|detail-chip|result-flow)-[a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]\b|\bgangi-detail-kicker\b/g;
 
 const REDESIGN_MARKER = /\/\/\s*Redesign\s+2026-0[1-9]/;
 
