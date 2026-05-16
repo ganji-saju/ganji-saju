@@ -13,7 +13,10 @@ import {
   getMembershipPackage,
   isTasteProductId,
 } from '@/lib/payments/catalog';
-import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
+import {
+  hasDetailReportAccess,
+  hasTodayFortunePremiumAccess,
+} from '@/lib/credits/detail-report-access';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription } from '@/lib/subscription';
@@ -21,6 +24,7 @@ import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
+import { resolveTodayDetailCoinUnlock } from './route-helpers';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -115,16 +119,15 @@ export async function GET(req: NextRequest) {
   );
 
   // today-detail 은 coin unlock 경로도 함께 확인 (checkout 페이지와 동일).
+  // 두 kind 모두 fallback — today_fortune_premium_access (PR #178 신규 키) +
+  //   detail_report_access (credits/use route 가 실제 저장하는 레거시 키, A6 회귀 fix).
   let coinUnlocked = false;
-  if (productId === 'today-detail' && paymentScope?.slug) {
-    coinUnlocked = await hasTodayFortunePremiumAccess(user.id, paymentScope.slug);
-    if (
-      !coinUnlocked &&
-      paymentScope.readingKey &&
-      paymentScope.readingKey !== paymentScope.slug
-    ) {
-      coinUnlocked = await hasTodayFortunePremiumAccess(user.id, paymentScope.readingKey);
-    }
+  if (productId === 'today-detail') {
+    coinUnlocked = await resolveTodayDetailCoinUnlock(
+      user.id,
+      { slug: paymentScope?.slug ?? null, readingKey: paymentScope?.readingKey ?? null },
+      { hasTodayFortunePremiumAccess, hasDetailReportAccess },
+    );
   }
 
   const has = Boolean(entitlement) || coinUnlocked;
