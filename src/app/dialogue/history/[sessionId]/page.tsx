@@ -48,6 +48,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             <div className="text-[32px]">🔒</div>
+            {/* audit-mockup: intentional — `if (!user)` 비로그인 분기 안의 fallback. */}
             <p className="mt-2 text-[13px] text-[var(--app-copy-muted)]">로그인 후 다시 시도해주세요.</p>
             <Link
               href={`/login?next=%2Fdialogue%2Fhistory%2F${sessionId}`}

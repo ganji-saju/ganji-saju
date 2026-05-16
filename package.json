@@ -24,6 +24,8 @@
     "audit:dead-anchors:strict": "node scripts/audit-dead-anchors.mjs --strict",
     "audit:lucky-hybrid": "node scripts/audit-lucky-hybrid.mjs",
     "audit:lucky-hybrid:strict": "node scripts/audit-lucky-hybrid.mjs --strict",
+    "audit:mockup-placeholders": "node scripts/audit-mockup-placeholders.mjs",
+    "audit:mockup-placeholders:strict": "node scripts/audit-mockup-placeholders.mjs --strict",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
