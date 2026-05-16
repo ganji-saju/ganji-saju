@@ -19,7 +19,9 @@
     "validate:classics": "node scripts/validate-classics-corpus.mjs",
     "start": "next start",
     "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
-    "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs"
+    "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs",
+    "audit:dead-anchors": "node scripts/audit-dead-anchors.mjs",
+    "audit:dead-anchors:strict": "node scripts/audit-dead-anchors.mjs --strict"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

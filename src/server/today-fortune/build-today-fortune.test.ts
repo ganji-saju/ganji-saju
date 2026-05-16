@@ -11,6 +11,8 @@ import {
   buildTodayFortuneFreeResult,
   buildTodayFortunePremiumResult,
 } from './build-today-fortune';
+// 2026-05-16 PR #183 — 사주 페이지 ↔ 오늘 운세 페이지 6 영역 score 일치 invariant.
+import { computeSajuAreaScores } from '@/lib/today-fortune/compute-saju-area-scores';
 import type {
   TodayCalendarType,
   TodayTimeRule,
@@ -507,3 +509,40 @@ test('today fortune surfaces user-provided name on result.userName (PR #166)', (
   });
   assert.equal(blankResult.userName, null, '공백만 입력된 이름은 null 로 정규화');
 });
+
+// 2026-05-16 PR #183 — 사주 메인/상세 페이지의 computeSajuAreaScores 결과가
+// 오늘 운세 페이지의 buildTodayFortuneFreeResult.scores 와 6 영역 모두 정확 일치.
+//
+// 사용자 보고 (#179-#181): "총운 직장운 재물운 연애운 관계운 컨디션 6 항목이
+// 3 페이지에서 모두 같은 값". 이 invariant 가 깨지면 사용자 신뢰 폭격.
+test('saju area scores match today-fortune free result scores 1:1 (PR #181 invariant)', () => {
+  const input = createSampleInput();
+  const sajuData = calculateSajuDataV1(input);
+  const todayResult = buildTodayFortuneFreeResult(input, sajuData, {
+    concernId: 'general',
+    sourceSessionId: 'area-invariant-check',
+    calendarType: 'solar',
+    timeRule: 'standard',
+  });
+  const sajuAreaScores = computeSajuAreaScores(input, sajuData);
+
+  assert.equal(
+    sajuAreaScores.length,
+    6,
+    '사주 페이지 area scores 는 6 영역 (overall/career/wealth/love/relationship/condition)'
+  );
+
+  for (const sajuArea of sajuAreaScores) {
+    const matchingToday = todayResult.scores.find((s) => s.key === sajuArea.key);
+    assert.ok(
+      matchingToday,
+      `today-fortune scores 에 '${sajuArea.key}' 키가 있어야 합니다 (사주 페이지와 항목 일치)`
+    );
+    assert.equal(
+      sajuArea.score,
+      matchingToday.score,
+      `${sajuArea.key}: 사주 페이지=${sajuArea.score}, 오늘 운세=${matchingToday.score} — 두 페이지 점수 정확 일치 필수`
+    );
+  }
+});
+

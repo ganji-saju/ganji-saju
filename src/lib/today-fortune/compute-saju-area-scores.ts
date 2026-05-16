@@ -86,12 +86,16 @@ export function computeSajuAreaScores(
     buildConditionScore(todayReport, loveReport, wealthReport, sajuData) + dailyDelta
   );
 
+  // 2026-05-16 PR #183 — 운세 페이지 (toTodayScores) 와 동일하게 5 영역 score 에도
+  //   +dailyDelta 적용 후 clampScore. 이 단계 누락 시 unify 후에도 영역별 상대 차이가
+  //   운세 페이지와 어긋남 (invariant test 실패).
+  const adjust = (score: number) => clampScore(score + dailyDelta);
   const rawScores: SajuAreaScore[] = [
-    { key: 'overall', score: todayReport.scores.find((s) => s.key === 'overall')?.score ?? 0 },
-    { key: 'career', score: careerReport.scores.find((s) => s.key === 'career')?.score ?? 0 },
-    { key: 'wealth', score: wealthReport.scores.find((s) => s.key === 'wealth')?.score ?? 0 },
-    { key: 'love', score: loveReport.scores.find((s) => s.key === 'love')?.score ?? 0 },
-    { key: 'relationship', score: relationshipReport.scores.find((s) => s.key === 'relationship')?.score ?? 0 },
+    { key: 'overall', score: adjust(todayReport.scores.find((s) => s.key === 'overall')?.score ?? 0) },
+    { key: 'career', score: adjust(careerReport.scores.find((s) => s.key === 'career')?.score ?? 0) },
+    { key: 'wealth', score: adjust(wealthReport.scores.find((s) => s.key === 'wealth')?.score ?? 0) },
+    { key: 'love', score: adjust(loveReport.scores.find((s) => s.key === 'love')?.score ?? 0) },
+    { key: 'relationship', score: adjust(relationshipReport.scores.find((s) => s.key === 'relationship')?.score ?? 0) },
     { key: 'condition', score: conditionRaw },
   ];
 
