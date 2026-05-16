@@ -1,5 +1,6 @@
 // 2026-05-16 PR #184 — Phase 2A: Playwright smoke E2E.
 // 2026-05-16 Phase 2B — 인증 fixture 추가 (auth project + storage state 재사용).
+// 2026-05-16 Phase 2C — payment-blocks 시나리오 (활성 entitlement seed/cleanup).
 //
 // 사용자 메타 피드백 후속 자동화. dead anchor 와 score invariant 만 잡지 못하는
 // UI 회귀 (페이지 진입 자체 깨짐 / 핵심 요소 미노출 / console error 등) 를
@@ -44,7 +45,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: ['**/saju.spec.ts', '**/auth.setup.ts'],
+      testIgnore: ['**/saju.spec.ts', '**/auth.setup.ts', '**/payment-blocks.spec.ts'],
     },
     // 인증 setup — credentials 있으면 로그인 + storage state 저장. saju spec 의존성.
     {
@@ -63,6 +64,17 @@ export default defineConfig({
       },
       dependencies: ['auth-setup'],
       testMatch: /saju\.spec\.ts/,
+    },
+    // Phase 2C 활성 entitlement 사용자 결제 차단 spec.
+    // service_role + test user 양쪽 필요. 미설정 시 beforeEach 가 skip 처리.
+    {
+      name: 'chromium-payment-blocks',
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(HAS_TEST_USER ? { storageState: AUTH_STORAGE_PATH } : {}),
+      },
+      dependencies: ['auth-setup'],
+      testMatch: /payment-blocks\.spec\.ts/,
     },
   ],
   // PLAYWRIGHT_BASE_URL 환경변수가 없으면 로컬 next dev 자동 실행.

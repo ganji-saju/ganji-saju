@@ -26,6 +26,9 @@ jobs:
       E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
       E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
       E2E_TEST_READING_SLUG: ${{ secrets.E2E_TEST_READING_SLUG }}
+      # Phase 2C — payment-blocks spec 이 entitlement seed/cleanup 위해 사용.
+      # dev/staging project 의 service_role 만 허용. production 절대 금지.
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
     steps:
       - name: Checkout
