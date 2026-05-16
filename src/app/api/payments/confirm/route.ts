@@ -16,6 +16,8 @@ import {
 import { upsertPaidReadingSnapshot } from '@/lib/payments/paid-reading-snapshots';
 import { ensureReadingOwnedByUser } from '@/lib/saju/readings';
 import { activateMembershipSubscription } from '@/lib/subscription';
+// 2026-05-16 PR (B1) — 결제 funnel 단계 기록.
+import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 
 async function attachOwnedReading(
   paymentScope: PaymentProductScope | null,
@@ -44,12 +46,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
+  // B1 funnel — confirm 진입.
+  await logPaymentFunnelEvent(supabase, {
+    stage: 'confirm_attempt',
+    userId: user.id,
+    packageId: pkg.id,
+    amount: parsedAmount,
+    orderId,
+  });
+
   // 토스페이먼츠 결제 승인
   const payment = await confirmPayment(paymentKey, orderId, parsedAmount).catch(err => {
     return NextResponse.json({ error: err.message }, { status: 400 });
   });
 
-  if (payment instanceof NextResponse) return payment;
+  if (payment instanceof NextResponse) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'toss_confirm_error',
+    });
+    return payment;
+  }
 
   let totalCredits: number | null = null;
   const paymentScope = await attachOwnedReading(
@@ -108,6 +129,16 @@ export async function POST(req: NextRequest) {
       sourceSlug: slug,
     });
   }
+
+  // B1 funnel — confirm 성공.
+  await logPaymentFunnelEvent(supabase, {
+    stage: 'confirm_success',
+    userId: user.id,
+    packageId: pkg.id,
+    amount: parsedAmount,
+    orderId,
+    metadata: { credits: pkg.credits, kind: pkg.kind },
+  });
 
   return NextResponse.json({
     success: true,

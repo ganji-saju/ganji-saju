@@ -103,27 +103,30 @@
   color: inherit;
 }
 
+/* 2026-05-16 — chip 의 hover/active 시 font-weight 700→800 변동으로 텍스트 폭이
+   살짝 늘어나 layout shift 가 발생했다 (사용자 보고: "대화 버튼 사이즈").
+   font-weight 800 으로 고정 + 인접 chip 도 동일 폭 유지. */
 .mega-nav-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  min-width: 4.4rem;
   padding: 10px 18px;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--app-ink);
   background: transparent;
   transition:
     background-color 0.15s ease,
-    color 0.15s ease,
-    font-weight 0.15s ease;
+    color 0.15s ease;
 }
 
 .mega-nav-chip[data-active='true'],
 .mega-nav-chip[data-hover='true'] {
   background: var(--app-pink-soft);
   color: var(--app-pink-strong);
-  font-weight: 800;
 }
 
 .mega-nav-caret {

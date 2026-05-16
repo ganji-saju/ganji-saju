@@ -13,6 +13,8 @@ import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
+// 2026-05-16 PR (B1) — funnel 단계 기록. admin/payment-funnel 대시보드 데이터 source.
+import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -68,8 +70,23 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // B1 funnel — 모든 prepare 호출의 진입 시점을 기록.
+  await logPaymentFunnelEvent(supabase, {
+    stage: 'prepare_attempt',
+    userId: user?.id ?? null,
+    packageId,
+    amount: pkg.price ?? null,
+    metadata: { product, plan, slug, scope, from },
+  });
+
   const checkoutPath = buildCheckoutPath({ packageId, product, plan, slug, scope, from });
   if (!user) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'prepare_blocked',
+      userId: null,
+      packageId,
+      reason: 'unauthenticated',
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -83,6 +100,12 @@ export async function POST(req: NextRequest) {
   if (isSubscriptionPackage(pkg)) {
     const subscription = await getManagedSubscription(user.id);
     if (subscription?.status === 'active' && subscription.plan === pkg.subscriptionPlan) {
+      await logPaymentFunnelEvent(supabase, {
+        stage: 'prepare_blocked',
+        userId: user.id,
+        packageId,
+        reason: 'active_subscription',
+      });
       return NextResponse.json({
         ok: true,
         authenticated: true,
@@ -118,6 +141,12 @@ export async function POST(req: NextRequest) {
       : false;
 
   if (entitlement || coinUnlockedTodayDetail) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'prepare_blocked',
+      userId: user.id,
+      packageId,
+      reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
+    });
     return NextResponse.json({
       ok: true,
       authenticated: true,
@@ -127,6 +156,14 @@ export async function POST(req: NextRequest) {
       reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
     });
   }
+
+  await logPaymentFunnelEvent(supabase, {
+    stage: 'prepare_ready',
+    userId: user.id,
+    packageId,
+    amount: pkg.price ?? null,
+    metadata: { scopeKey: paymentScope.scopeKey },
+  });
 
   return NextResponse.json({
     ok: true,
