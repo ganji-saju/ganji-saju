@@ -14,6 +14,13 @@ import {
   FOCUS_TOPIC_META,
 } from './build-report';
 import type { FocusTopic, ReportScore, SajuReport } from './types';
+// 2026-05-16 PR #180 — yearly-report 도 사주 메인/오늘 운세 페이지와 점수 일치 보장.
+//   사용자 보고: /saju/[slug]/premium (사주 6 탭 "상세") 의 영역별 카드 점수가
+//   77/76/75/76 (clampScore 48~92) 으로 노출돼 사주 메인(45/44/45/46) /
+//   오늘 운세(46/47/48/47) 와 다른 점수 노출. PR #179 의 single source 통일이
+//   yearly-report 시스템엔 적용 안 됐던 회귀 차단.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import type {
   SajuYearlyReport,
   YearlyActionGuide,
@@ -855,7 +862,20 @@ export function buildYearlyReport(
     calculatedAt: referenceDate,
     engineVersion: 'legacy-typescript-v1-yearly-foundation',
   });
-  const reports = getReportMap(input, targetData);
+  const rawReports = getReportMap(input, targetData);
+  // 2026-05-16 PR #180 — 5개 report 의 scores 를 iljinScore.totalScore 기준으로 통일.
+  //   computeSajuIljinScore 는 원본 사주(data) 의 오늘 일진을 사용 — yearly target 과 별개.
+  //   targetData 의 시점이 yearly 라도, 사용자가 보는 화면 점수는 "오늘 기준" 으로 일치.
+  const yearlyIljinResult = computeSajuIljinScore(data);
+  const reports = yearlyIljinResult
+    ? {
+        today: { ...rawReports.today, scores: unifyScoresWithIljinScore(rawReports.today.scores, yearlyIljinResult.totalScore) },
+        love: { ...rawReports.love, scores: unifyScoresWithIljinScore(rawReports.love.scores, yearlyIljinResult.totalScore) },
+        wealth: { ...rawReports.wealth, scores: unifyScoresWithIljinScore(rawReports.wealth.scores, yearlyIljinResult.totalScore) },
+        career: { ...rawReports.career, scores: unifyScoresWithIljinScore(rawReports.career.scores, yearlyIljinResult.totalScore) },
+        relationship: { ...rawReports.relationship, scores: unifyScoresWithIljinScore(rawReports.relationship.scores, yearlyIljinResult.totalScore) },
+      }
+    : rawReports;
   const annualContext = createYearlyContext(targetYear, targetData);
   const referenceReports = Object.fromEntries(
     YEARLY_REFERENCE_TOPICS.map((topic) => [topic, createReferenceReport(topic, reports[topic])])
