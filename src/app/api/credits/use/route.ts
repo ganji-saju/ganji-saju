@@ -25,6 +25,9 @@ import {
   simplifySajuCopyList,
 } from '@/lib/saju/public-copy';
 import { buildSajuReport, type ReportEvidenceKey } from '@/domain/saju/report';
+// 2026-05-16 PR #180 — 코인 결제 후 detail 풀이 텍스트도 single source 일치.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 
 type DetailBlockTone = 'core' | 'basis' | 'action' | 'caution' | 'flow' | 'safety';
 
@@ -162,11 +165,18 @@ function buildDetailReportContent(
 ) {
   const saju = reading.sajuData;
   const lucky = getLuckyElementsFromSajuData(saju);
-  const todayReport = buildSajuReport(reading.input, saju, 'today');
-  const wealthReport = buildSajuReport(reading.input, saju, 'wealth');
-  const loveReport = buildSajuReport(reading.input, saju, 'love');
-  const careerReport = buildSajuReport(reading.input, saju, 'career');
-  const relationshipReport = buildSajuReport(reading.input, saju, 'relationship');
+  // 2026-05-16 PR #180 — 5개 report 의 scores 를 iljinScore.totalScore 기준으로 통일.
+  //   detail 풀이 본문에 "재물운 ${score}점" 등으로 노출되므로 사주 메인/오늘 운세와 일치 필수.
+  const creditsIljinResult = computeSajuIljinScore(saju);
+  const unifyReport = (r: ReturnType<typeof buildSajuReport>) =>
+    creditsIljinResult
+      ? { ...r, scores: unifyScoresWithIljinScore(r.scores, creditsIljinResult.totalScore) }
+      : r;
+  const todayReport = unifyReport(buildSajuReport(reading.input, saju, 'today'));
+  const wealthReport = unifyReport(buildSajuReport(reading.input, saju, 'wealth'));
+  const loveReport = unifyReport(buildSajuReport(reading.input, saju, 'love'));
+  const careerReport = unifyReport(buildSajuReport(reading.input, saju, 'career'));
+  const relationshipReport = unifyReport(buildSajuReport(reading.input, saju, 'relationship'));
   const dominant = ELEMENT_INFO[saju.fiveElements.dominant];
   const weakest = ELEMENT_INFO[saju.fiveElements.weakest];
   const personality = getPersonalityFromSajuData(saju);
