@@ -5,7 +5,11 @@ import { toSlug } from '@/lib/saju/pillars';
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfileById } from '@/lib/profile';
 import { resolveMoonlightCounselor } from '@/lib/counselors';
-import { unlockTodayFortunePremium } from '@/lib/credits/detail-report-access';
+import {
+  hasDetailReportAccess,
+  hasTodayFortunePremiumAccess,
+  unlockTodayFortunePremium,
+} from '@/lib/credits/detail-report-access';
 import {
   buildTodayFortuneFreeResult,
   buildTodayFortunePremiumResult,
@@ -15,6 +19,7 @@ import {
   buildTodayDetailScopeKey,
   getTasteProductEntitlement,
 } from '@/lib/product-entitlements';
+import { resolveTodayFortuneUnlockAccess } from './route-helpers';
 
 export const runtime = 'nodejs';
 
@@ -52,14 +57,31 @@ export async function POST(req: NextRequest) {
   const concernId = normalizeConcernId(payload?.concernId);
   const profile = await getUserProfileById(user.id);
   const counselorId = resolveMoonlightCounselor(payload?.counselorId, profile.preferredCounselor);
-  const todayDetailEntitlement = await getTasteProductEntitlement(
+
+  // 2026-05-17 새로고침 회귀 fix — 자동 POST /api/today-fortune/unlock 이 mount
+  //   마다 호출되는데 기존 idempotency 가 `today_fortune_premium_access` (sourceSessionId)
+  //   만 봤음. 같은 reading 의 1코인 결제로 저장된 `detail_report_access` (readingKey)
+  //   row 가 있어도 매치 안 돼 새로고침마다 deduct. PR #192 (entitlement API 같은 패턴)
+  //   와 동일 fallback — 3 path 어느 한쪽이라도 access 있으면 deduct skip.
+  const readingKey = toSlug(reading.input);
+  const accessSource = await resolveTodayFortuneUnlockAccess(
     user.id,
-    'today-detail',
-    buildTodayDetailScopeKey(sourceSessionId)
+    {
+      sourceSessionId,
+      readingKey,
+      scopeKey: buildTodayDetailScopeKey(sourceSessionId),
+    },
+    {
+      getTodayDetailEntitlement: (userId, scopeKey) =>
+        getTasteProductEntitlement(userId, 'today-detail', scopeKey),
+      hasTodayFortunePremiumAccess,
+      hasDetailReportAccess,
+    },
   );
-  const access = todayDetailEntitlement
+
+  const access = accessSource
     ? { success: true, remaining: null, reused: true }
-    : await unlockTodayFortunePremium(user.id, toSlug(reading.input), sourceSessionId);
+    : await unlockTodayFortunePremium(user.id, readingKey, sourceSessionId);
 
   if (!access.success) {
     return NextResponse.json({ error: '코인이 부족합니다.', remaining: access.remaining }, { status: 402 });
@@ -93,7 +115,12 @@ export async function POST(req: NextRequest) {
     freeResult,
     result,
     remaining: access.remaining,
-    access: todayDetailEntitlement ? 'purchased' : access.reused ? 'reused' : 'charged',
+    access:
+      accessSource === 'taste-product'
+        ? 'purchased'
+        : accessSource || access.reused
+          ? 'reused'
+          : 'charged',
     counselorId,
   });
 }
