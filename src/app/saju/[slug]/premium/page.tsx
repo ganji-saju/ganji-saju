@@ -235,8 +235,10 @@ function SmallQuestionProducts({
   encodedSlug: string;
   targetYear: number;
 }) {
+  // 2026-05-16 PR #182 — hero card 의 "달력" 버튼 anchor 타깃.
+  //   이전엔 #yearly-chapter-2 라는 미존재 id 였음 (사용자 보고: 버튼 클릭 안 됨).
   return (
-    <section className="px-1">
+    <section id="premium-monthly" className="scroll-mt-28 px-1">
       <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
         작은 질문
       </div>
@@ -369,7 +371,9 @@ export default async function SajuPremiumPage({ params }: Props) {
             label: '올해',
             title: `${targetYear} 올해 흐름`,
             description: '열려 있는 올해 흐름을 확인합니다.',
-            href: '#yearly-chapter-1',
+            // 2026-05-16 PR #182 — 미존재 #yearly-chapter-1 fix.
+            //   yearly 분기의 YearlyReportPanel 컨테이너 id 와 매핑.
+            href: '#premium-yearly',
             status: '열림',
             note: '올해의 큰 주제부터 봅니다.',
           },
@@ -377,7 +381,9 @@ export default async function SajuPremiumPage({ params }: Props) {
             label: '달력',
             title: '달별 흐름',
             description: '월간 타이밍과 해금한 달을 다시 확인합니다.',
-            href: '#yearly-chapter-2',
+            // 2026-05-16 PR #182 — 미존재 #yearly-chapter-2 fix.
+            //   yearly 분기 하단 SmallQuestionProducts 의 monthly-calendar 상품으로 이동.
+            href: '#premium-monthly',
             status: '연결',
             note: '해금한 월은 다시 차감 없이 확인합니다.',
           },
@@ -385,7 +391,9 @@ export default async function SajuPremiumPage({ params }: Props) {
             label: '확장',
             title: '자세한 사주풀이',
             description: '타고난 성향과 큰 흐름을 더 자세히 봅니다.',
-            href: '#yearly-chapter-3',
+            // 2026-05-16 PR #182 — 미존재 #yearly-chapter-3 fix.
+            //   yearly 분기에는 lifetime 콘텐츠 없음 → 업셀 결제 페이지로.
+            href: `/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-extend`,
             status: '선택',
             note: '올해 운의 바탕을 따로 보관합니다.',
           },
