@@ -26,6 +26,9 @@ jobs:
       E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
       E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
       E2E_TEST_READING_SLUG: ${{ secrets.E2E_TEST_READING_SLUG }}
+      # Phase 2C — payment-blocks spec 이 entitlement seed/cleanup 위해 사용.
+      # dev/staging project 의 service_role 만 허용. production 절대 금지.
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
     steps:
       - name: Checkout
@@ -34,7 +37,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 22 — Supabase admin client 의 @supabase/supabase-js@^2.103.1 이
+          # Node 20 에선 native WebSocket 부재로 실패 ("Node.js 20 detected without
+          # native WebSocket support"). Node 22+ 에서 native 지원으로 해결.
+          # ci.yml 은 build 검증용이라 Vercel 호환 (20.x) 유지.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
