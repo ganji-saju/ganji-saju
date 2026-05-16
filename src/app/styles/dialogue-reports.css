@@ -21,8 +21,10 @@
 }
 
 .gangi-chat-room-top {
-  height: 4.45rem;
-  grid-template-columns: 3.25rem 1fr 3.25rem;
+  /* 2026-05-16 — 3-column grid template 이 4 element flex 와 충돌해 teacher info
+     column 이 좁아지고 status 텍스트가 줄바꿈됐다. flex 레이아웃 사용 시
+     grid-template-columns 가 적용되지 않도록 unset. */
+  grid-template-columns: unset;
   border-bottom-color: rgba(17, 17, 20, 0.08);
   box-shadow: 0 1px 0 rgba(17, 17, 20, 0.03);
 }
