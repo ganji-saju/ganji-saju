@@ -64,7 +64,9 @@ test('day master summary is separated from topic highlight cards', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'love');
 
-  assert.match(report.dayMasterSummary, /타고난 기질/);
+  // 2026-05-16 — PR 47e533a 에서 "타고난 기질" → "내 핵심 기질" 로 친근화됐는데
+  //   테스트가 이전 라벨로 남아 CI 가 계속 실패하던 회귀. 현재 라벨에 맞춰 보정.
+  assert.match(report.dayMasterSummary, /핵심 기질/);
   assert.ok(report.summary.includes(report.dayMasterSummary));
   assert.ok(report.summaryHighlights.every((summary) => !summary.startsWith(report.dayMasterSummary)));
 });
