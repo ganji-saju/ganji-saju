@@ -21,7 +21,11 @@
     "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
     "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs",
     "audit:dead-anchors": "node scripts/audit-dead-anchors.mjs",
-    "audit:dead-anchors:strict": "node scripts/audit-dead-anchors.mjs --strict"
+    "audit:dead-anchors:strict": "node scripts/audit-dead-anchors.mjs --strict",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:ui": "playwright test --ui",
+    "e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -46,6 +50,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

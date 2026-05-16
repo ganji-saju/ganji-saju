@@ -47,3 +47,9 @@ supabase/.temp/
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# playwright e2e
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
