@@ -1,7 +1,11 @@
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { Element, Stem, SajuResult } from './types';
 
-// 다섯 기운의 쉬운 표시 이름과 속성
+// 다섯 기운의 쉬운 표시 이름과 속성.
+// 2026-05-16 — 기존 "성장 기운 / 표현 기운 / 안정 기운 / 정리 기운 / 생각 기운" 은
+//   원래 한자 의미를 한 단어로 풀어쓴 라벨이라 풀이 본문과 연결이 잘 안 된다는 피드백.
+//   사용자가 한 번 읽고 무엇을 보강해야 하는지 그림이 그려지도록 두 단어로 자연스럽게 교체.
+//   (목: 시작·추진 / 화: 열정·표현 / 토: 안정·중심 / 금: 결단·마무리 / 수: 지혜·유연)
 export const ELEMENT_INFO: Record<Element, {
   name: string;
   color: string;
@@ -9,34 +13,34 @@ export const ELEMENT_INFO: Record<Element, {
   keywords: string[];
 }> = {
   목: {
-    name: '성장 기운',
+    name: '시작과 추진',
     color: '#4CAF50',
     traits: ['성장', '발전', '창의성', '인자함'],
-    keywords: ['성장', '시작', '아이디어', '관계 확장', '봄'],
+    keywords: ['새 시작', '추진력', '도전', '관계 확장', '봄'],
   },
   화: {
-    name: '표현 기운',
+    name: '열정과 표현',
     color: '#F44336',
     traits: ['열정', '예의', '표현력', '통찰력'],
-    keywords: ['표현', '열정', '주목', '결정', '여름'],
+    keywords: ['열정', '활기', '표현', '결정', '여름'],
   },
   토: {
-    name: '안정 기운',
+    name: '안정과 중심',
     color: '#FF9800',
     traits: ['신뢰', '안정', '중재력', '포용력'],
-    keywords: ['안정', '정리', '중재', '신뢰', '기반'],
+    keywords: ['안정감', '중심', '신뢰', '균형', '기반'],
   },
   금: {
-    name: '정리 기운',
+    name: '결단과 마무리',
     color: '#9E9E9E',
     traits: ['결단력', '의리', '정의감', '추진력'],
-    keywords: ['정리', '판단', '마무리', '원칙', '가을'],
+    keywords: ['결단력', '마무리', '판단', '원칙', '가을'],
   },
   수: {
-    name: '생각 기운',
+    name: '지혜와 유연',
     color: '#2196F3',
     traits: ['지혜', '유연성', '직관력', '깊이'],
-    keywords: ['생각', '휴식', '유연함', '감정', '겨울'],
+    keywords: ['지혜', '유연함', '깊이', '회복', '겨울'],
   },
 };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
@@ -9,7 +10,6 @@ import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-ris
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
 import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippet';
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
-import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
 import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 // 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md).
@@ -134,6 +134,7 @@ export function TodayFortuneResultClient({
   sourceSessionId?: string;
   concern?: string;
 }) {
+  const router = useRouter();
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
   // 2026-05-15 PR 9: 피드백 카드 dwell 측정용 — 결과 페이지 mount 시점.
   const [enterAt] = useState(() => Date.now());
@@ -154,7 +155,11 @@ export function TodayFortuneResultClient({
 
   function handleUnlock() {
     if (!freeResult) return;
-    window.location.href = buildTodayDetailHref(freeResult);
+    // 2026-05-16 fix — window.location.href 는 풀-페이지 리로드라
+    //   페이지 전환 직전에 브라우저 default 동작(focus 이동/스크롤)이 노출되며
+    //   "화면이 푸터로 점프했다가 페이지 전환" 회귀를 만들었음.
+    //   router.push 로 soft navigation 사용해 매끄럽게 전환.
+    router.push(buildTodayDetailHref(freeResult));
   }
 
   return (
@@ -217,11 +222,10 @@ export function TodayFortuneResultClient({
               ) : null}
 
               {/* §3 — 카테고리별 자세히 (PR 1 신설): 직장/재물/애정/관계/컨디션
-                  블루 헤드라인 + 4~6줄 본문. 운세톡톡 핵심 차용. */}
+                  블루 헤드라인 + 4~6줄 본문. 운세톡톡 핵심 차용.
+                  2026-05-16 — §4 한눈에 보기 2x3 grid 는 §3 와 같은 영역 점수를
+                    중복 노출해 사용자 혼란 유발. 제거. */}
               <TodayCategoryReadings result={freeResult} />
-
-              {/* §4 — 한눈에 보기 미니 grid (보조). 기존 2x3 score grid 유지. */}
-              <TodayFortuneScoreGrid result={freeResult} />
 
               {/* §4.5 — 행운 패키지 12종 (PR 2 신설): 색/숫자/방향/시간/음식/향/보석/음악/성씨/띠
                   + 로또 번호 6개 오행색 원 + 피해야 할 것. 운세톡톡 5종 대비 압도적 차별화. */}

@@ -47,8 +47,10 @@ export function FollowUpQuestionChips({
                 sourceSessionId,
                 question,
               });
+              // 2026-05-16 — autoStart=1 제거. 사용자가 직접 전송 버튼을 누르도록 함.
+              // (사용자 컨트롤 유지 — 클릭 즉시 발송되는 게 부담스럽다는 피드백 반영.)
               router.push(
-                `/dialogue?question=${encodeURIComponent(question)}&sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(concernId)}&from=today-fortune&autoStart=1`
+                `/dialogue?question=${encodeURIComponent(question)}&sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(concernId)}&from=today-fortune`
               );
             }}
             className="w-full rounded-[1rem] border border-[rgba(216,27,114,0.16)] bg-white px-4 py-3.5 text-left text-[0.95rem] font-normal leading-6 text-[var(--app-ink)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-pink)] hover:bg-[var(--app-pink-soft)]"

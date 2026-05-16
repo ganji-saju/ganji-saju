@@ -24,7 +24,6 @@ import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortun
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayIljinBreakdownCard } from '@/components/today-fortune/today-iljin-breakdown-card';
 import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
-import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
 import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-card';
 import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
@@ -70,6 +69,11 @@ export function TodayFortuneDetailClient({
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const attemptedRef = useRef(false);
+  // 2026-05-16 fix — unlock 후 페이지 상단으로 튀는 회귀.
+  // 사용자가 "1코인 열기" 누르면 detail 페이지로 이동 → 항상 최상단부터 렌더 →
+  // 실제 결제한 컨텐츠(프리미엄 패널)는 화면 밖에 있음.
+  // 해결: 로드 완료 후 premiumRef 위치로 부드럽게 스크롤.
+  const premiumRef = useRef<HTMLDivElement | null>(null);
   const concernId: ConcernId = normalizeConcernId(concern);
 
   useEffect(() => {
@@ -142,6 +146,20 @@ export function TodayFortuneDetailClient({
       cancelled = true;
     };
   }, [concernId, counselorId, paidProduct, sourceSessionId]);
+
+  // 2026-05-16 — 로드 완료 + DOM 안정화 후 프리미엄 패널 위치로 스크롤.
+  // unlock 직후 사용자가 "방금 산 컨텐츠" 를 바로 볼 수 있도록 보장.
+  useEffect(() => {
+    if (loading || !result) return;
+    // stagger 모션이 끝나기 전에 스크롤하면 헛스크롤 — 다음 두 프레임 + 한 박자.
+    const timeout = window.setTimeout(() => {
+      premiumRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 220);
+    return () => window.clearTimeout(timeout);
+  }, [loading, result]);
 
   const resultHref = sourceSessionId
     ? `/today-fortune/result?sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(freeResult?.concernId ?? concernId)}`
@@ -269,9 +287,9 @@ export function TodayFortuneDetailClient({
                   />
                 ) : null}
                 {/* §3 — 카테고리별 블루 헤드라인 stacked */}
+                {/* 2026-05-16 — §4 한눈에 보기 2x3 grid 는 §3 와 같은 영역 점수를
+                    중복 노출해 사용자 혼란 유발. 제거. */}
                 <TodayCategoryReadings result={freeResult} />
-                {/* §4 — 한눈에 보기 2x3 score grid */}
-                <TodayFortuneScoreGrid result={freeResult} />
                 {/* §4.5 — 행운 패키지 12종 + 로또 6개 오행색 원 */}
                 {freeResult.luckyPackage ? (
                   <TodayLuckyPackageCard luckyPackage={freeResult.luckyPackage} />
@@ -283,8 +301,16 @@ export function TodayFortuneDetailClient({
               </MotionResultReveal>
             ) : null}
 
-            {/* §6 — 결제 전용 프리미엄 패널 (시간대 windows / 시나리오 / 행동) */}
-            <TodayPremiumPanel result={result} />
+            {/* §6 — 결제 전용 프리미엄 패널 (시간대 windows / 시나리오 / 행동)
+                2026-05-16 — unlock 직후 자동 스크롤 anchor.
+                  Q1/Q2/Q3 클릭으로 대화방 prefill 흐름 위해 sourceSessionId/concernId 전달. */}
+            <div ref={premiumRef} className="scroll-mt-4">
+              <TodayPremiumPanel
+                result={result}
+                sourceSessionId={freeResult?.sourceSessionId ?? sourceSessionId}
+                concernId={freeResult?.concernId ?? concernId}
+              />
+            </div>
 
             {/* §7 — 대운 CTA */}
             {freeResult ? (
