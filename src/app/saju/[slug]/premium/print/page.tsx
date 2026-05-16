@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ReportPrintActions } from '@/components/report/report-print-actions';
+import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import type { SajuLifetimeAiSectionKey } from '@/server/ai/saju-lifetime-interpretation';
 import { buildFallbackLifetimeInterpretation } from '@/server/ai/saju-lifetime-interpretation';
@@ -211,6 +212,14 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   if (!hasAccess) {
     return (
       <AppShell>
+        {/* 2026-05-16 A7 — 다른 탭에서 lifetime 결제 후 본 페이지로 돌아오면
+            focus 시 entitlement 재확인 → 권한 획득 감지 시 router.refresh()
+            로 PDF 전체 화면으로 자동 전환. */}
+        <EntitlementRefresher
+          productId="lifetime-report"
+          slug={slug}
+          initialHasEntitlement={false}
+        />
         <AppPage className="gangi-subpage saju-result-page space-y-5 py-6">
           <section
             className="relative overflow-hidden rounded-[20px] border p-6"
@@ -333,6 +342,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
   return (
     <AppShell>
+      {/* 2026-05-16 A7 — lifetime 환불/만료 등으로 권한 잃은 경우 focus 시 감지 →
+          router.refresh() 로 gated view 로 자동 전환. */}
+      <EntitlementRefresher
+        productId="lifetime-report"
+        slug={slug}
+        initialHasEntitlement
+      />
       <AppPage className="pdf-print-page space-y-6 py-6">
         <ReportPrintActions slug={slug} backHref={backHref} />
 

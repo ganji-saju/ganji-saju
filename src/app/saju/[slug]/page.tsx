@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
+import { TodayDetailResultCta } from '@/components/saju/today-detail-result-cta';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
 import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
@@ -540,19 +541,23 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 >
                   선생님과 대화하기 →
                 </TrackedLink>
-                <TrackedLink
-                  href={todayDetailHref}
-                  eventName="report_deep_report_click"
-                  eventParams={{
-                    slug,
-                    product: 'today-detail',
-                    from: 'result_next_step',
-                    purchased: Boolean(todayDetailEntitlement),
+                {/* 2026-05-16 A7 — TodayDetailResultCta 클라이언트 wrapper.
+                    서버 todayDetailEntitlement 를 initialEntitlement 로 전달 →
+                    focus 시 자동 재요청 (다른 탭 결제 후 실시간 반영). */}
+                <TodayDetailResultCta
+                  slug={slug}
+                  initialEntitlement={{
+                    hasEntitlement: Boolean(todayDetailEntitlement),
+                    openHref: todayDetailEntitlement
+                      ? buildSajuTodayDetailHref(slug)
+                      : null,
+                    reason: todayDetailEntitlement ? 'product-purchased' : null,
                   }}
+                  unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
+                  unpaidLabel="오늘 자세히 · 550원"
+                  ownedLabel="구매한 풀이 열기"
                   className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
-                >
-                  {todayDetailEntitlement ? '구매한 풀이 열기' : '오늘 자세히 · 550원'}
-                </TrackedLink>
+                />
               </div>
             </article>
             {/* 2026-05-15 handoff 52 m-reveal 닫음 — §1 ~ §5 카드만 stagger. 하단 details 는 접힘 기본이라 모션 대상 외. */}

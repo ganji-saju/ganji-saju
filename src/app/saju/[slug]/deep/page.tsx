@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
-import { TrackedLink } from '@/components/common/tracked-link';
+import { LifetimeDeepCta } from '@/components/saju/lifetime-deep-cta';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 // 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
 import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
@@ -483,28 +483,20 @@ export default async function SajuDeepPage({ params }: Props) {
                 >
                   69,000원
                 </div>
-                {/* 2026-05-16 — 이미 구매한 사용자는 결제 CTA 대신 풀이 보기로. */}
-                {hasLifetimeAccess ? (
-                  <Link
-                    href={`/saju/${encodeURIComponent(slug)}/premium`}
-                    className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-jade)] px-5 py-2.5 text-[13px] font-extrabold text-white"
-                  >
-                    ✓ 구매한 풀이 보기
-                  </Link>
-                ) : (
-                  <TrackedLink
-                    href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=saju-deep`}
-                    eventName="report_deep_report_click"
-                    eventParams={{
-                      slug,
-                      product: 'lifetime-report',
-                      from: 'saju_deep_premium_cta',
-                    }}
-                    className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-                  >
-                    결제하기 →
-                  </TrackedLink>
-                )}
+                {/* 2026-05-16 A7 — LifetimeDeepCta 클라이언트 wrapper 로 통일.
+                    서버에서 hasLifetimeAccess 계산 → initialEntitlement 로 전달 →
+                    client hook 이 focus 시 자동 재요청 (다른 탭 결제 후 실시간 반영). */}
+                <LifetimeDeepCta
+                  slug={slug}
+                  initialEntitlement={{
+                    hasEntitlement: hasLifetimeAccess,
+                    openHref: hasLifetimeAccess
+                      ? `/saju/${encodeURIComponent(slug)}/premium`
+                      : null,
+                    reason: hasLifetimeAccess ? 'lifetime-purchased' : null,
+                  }}
+                />
+
               </div>
             </article>
 
