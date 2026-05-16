@@ -8,8 +8,12 @@ import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { buildSajuReport, buildPunchReading } from '@/domain/saju/report';
+import type { SajuReport } from '@/domain/saju/report';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+// 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 
@@ -50,7 +54,12 @@ export default async function SajuSharePage({ params }: Props) {
   if (!reading) notFound();
 
   const { input, sajuData } = reading;
-  const report = buildSajuReport(input, sajuData);
+  const rawReport = buildSajuReport(input, sajuData);
+  // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
+  const iljinResult = computeSajuIljinScore(sajuData);
+  const report: SajuReport = iljinResult
+    ? { ...rawReport, scores: unifyScoresWithIljinScore(rawReport.scores, iljinResult.totalScore) }
+    : rawReport;
   const punch = buildPunchReading(report);
   const yearZodiac = getYearZodiac(sajuData);
   const zodiacLabel = ZODIAC_KOR[yearZodiac];
