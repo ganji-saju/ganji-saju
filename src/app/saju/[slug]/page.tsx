@@ -24,6 +24,10 @@ import type { Element } from '@/lib/saju/types';
 import { resolveReading } from '@/lib/saju/readings';
 import { buildPunchReading, buildSajuReport } from '@/domain/saju/report';
 import type { ReportScore, SajuReport } from '@/domain/saju/report';
+// 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화.
+//   buildSajuReport 의 자체 clampScore(48~92) 산식 대신 iljinScore.totalScore 기반으로 덮어쓴다.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -282,7 +286,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   if (!reading) notFound();
 
   const { input, sajuData, grounding } = reading;
-  const report = buildSajuReport(input, sajuData, topic);
+  const rawReport = buildSajuReport(input, sajuData, topic);
+  // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
+  //   iljinScore 산출 가능하면 (시 입력 등) overall+영역별을 iljinScore.totalScore 기준으로 통일.
+  //   불가능하면 raw scores 유지 (안전 fallback).
+  const iljinResult = computeSajuIljinScore(sajuData);
+  const report: SajuReport = iljinResult
+    ? { ...rawReport, scores: unifyScoresWithIljinScore(rawReport.scores, iljinResult.totalScore) }
+    : rawReport;
   // 2026-05-15 cleanup — 사실 카드(일주 캐릭터 / 격국·용신·강약 / 합충·공망·신살)는 성향·명식 탭으로 이동.
   // 총평 narrative 만 남기고, personalizationContext 는 narrative 빌더에 그대로 전달.
   const personalizationContext = grounding?.personalizationContext ?? null;

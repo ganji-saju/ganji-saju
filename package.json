@@ -18,7 +18,8 @@
     "seed:classics-summaries": "node scripts/seed-classic-korean-summaries.mjs",
     "validate:classics": "node scripts/validate-classics-corpus.mjs",
     "start": "next start",
-    "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs"
+    "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
+    "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

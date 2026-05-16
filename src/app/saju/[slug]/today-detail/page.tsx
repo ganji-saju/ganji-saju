@@ -5,6 +5,9 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { SafetyNotice } from '@/components/common/safety-notice';
 import { buildPunchReading, buildSajuReport } from '@/domain/saju/report';
 import type { PunchReading, ReportScore, SajuReport } from '@/domain/saju/report';
+// 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
@@ -174,7 +177,12 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
   }
 
   const { input, sajuData } = reading;
-  const report = buildSajuReport(input, sajuData, topic);
+  const rawReport = buildSajuReport(input, sajuData, topic);
+  // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
+  const iljinResult = computeSajuIljinScore(sajuData);
+  const report: SajuReport = iljinResult
+    ? { ...rawReport, scores: unifyScoresWithIljinScore(rawReport.scores, iljinResult.totalScore) }
+    : rawReport;
   const punchReading = buildPunchReading(report);
   const isTimeUnknown = input.unknownTime === true || input.hour === undefined;
   const scoreCards = buildScoreCards(report);
