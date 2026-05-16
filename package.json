@@ -22,6 +22,8 @@
     "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs",
     "audit:dead-anchors": "node scripts/audit-dead-anchors.mjs",
     "audit:dead-anchors:strict": "node scripts/audit-dead-anchors.mjs --strict",
+    "audit:lucky-hybrid": "node scripts/audit-lucky-hybrid.mjs",
+    "audit:lucky-hybrid:strict": "node scripts/audit-lucky-hybrid.mjs --strict",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",

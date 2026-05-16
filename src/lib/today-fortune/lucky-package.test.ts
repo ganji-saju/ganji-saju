@@ -77,3 +77,67 @@ test('buildTodayLuckyPackage - 궁합 띠는 오늘 일진 지지 기반', () =>
   const labels = p.zodiacFriends.join(',');
   assert.ok(labels.includes('범') || labels.includes('개'));
 });
+
+// 2026-05-17 A4 — 전수 매트릭스 invariant test.
+// scripts/audit-lucky-hybrid.mjs 와 동일 룰 (deriveHybridElements) 을 실 함수로
+// 검증. 5 lucky × 4 unlucky × 6 stem = 120 케이스. 분기/카드ality 위배 즉시 fail.
+const HYBRID_ELEMENTS = ['목', '화', '토', '금', '수'] as const;
+type HybridElem = (typeof HYBRID_ELEMENTS)[number];
+
+test('buildTodayLuckyPackage - 전수 hybrid 매트릭스 (PR #167 룰 lock-in)', () => {
+  let cases = 0;
+  for (const lucky of HYBRID_ELEMENTS) {
+    for (const unlucky of HYBRID_ELEMENTS) {
+      if (lucky === unlucky) continue;
+      for (const stem of [...HYBRID_ELEMENTS, null] as Array<HybridElem | null>) {
+        const p = buildTodayLuckyPackage({
+          ...baseOpts,
+          luckyElement: lucky,
+          unluckyElement: unlucky,
+          todayStemElement: stem,
+        });
+
+        // invariant 1: stem === null → single (luckyElement 만 = 2개)
+        if (stem === null) {
+          assert.equal(
+            p.colors.length,
+            2,
+            `lucky=${lucky} unlucky=${unlucky} stem=null colors.length 2 기대 (실제 ${p.colors.length})`
+          );
+        }
+        // invariant 2: stem === unlucky (기신) → ignored, single (2개)
+        if (stem === unlucky) {
+          assert.equal(
+            p.colors.length,
+            2,
+            `lucky=${lucky} unlucky=${unlucky} stem=unlucky(${stem}) → 기신 무시 + 2개 기대 (실제 ${p.colors.length})`
+          );
+        }
+        // invariant 3: stem === lucky → emphasized, single (2개, 같은 element 중복 제거)
+        if (stem === lucky) {
+          assert.equal(
+            p.colors.length,
+            2,
+            `lucky=${lucky} unlucky=${unlucky} stem=lucky(${stem}) → 강화 + 2개 기대 (실제 ${p.colors.length})`
+          );
+        }
+        // invariant 4: stem !== null && !== lucky && !== unlucky → union (4개, 두 element 합집합)
+        if (stem !== null && stem !== lucky && stem !== unlucky) {
+          assert.equal(
+            p.colors.length,
+            4,
+            `lucky=${lucky} unlucky=${unlucky} stem=${stem} (합집합) → 4개 기대 (실제 ${p.colors.length})`
+          );
+          assert.equal(
+            p.numbers.length,
+            4,
+            `lucky=${lucky} unlucky=${unlucky} stem=${stem} (합집합) numbers 4개 기대 (실제 ${p.numbers.length})`
+          );
+        }
+        cases += 1;
+      }
+    }
+  }
+  // 5 × 4 × 6 = 120 케이스 모두 검증됐는지 확인 (test loop 자체 회귀 차단).
+  assert.equal(cases, 120, `전수 케이스 120 기대 (실제 ${cases})`);
+});
