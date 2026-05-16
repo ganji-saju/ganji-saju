@@ -1408,10 +1408,9 @@
   opacity: 0.55;
 }
 
-.gangi-vault-page + .app-subnav,
-.gangi-subpage:has(.gangi-vault-page) .app-subnav {
-  display: none;
-}
+/* 2026-05-16 — 결과보관함 페이지에서도 MY 탭 메뉴(앱 subnav) 가 일관되게
+   보이도록 display:none 규칙을 제거. 이전엔 결과보관함 hero 중복을 피하려고
+   숨겼지만, /my/settings 등 다른 자매 라우트와 nav 가 어긋났다는 보고. */
 
 .gangi-expert-chip {
   display: flex;

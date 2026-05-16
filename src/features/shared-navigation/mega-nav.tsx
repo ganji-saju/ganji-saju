@@ -14,6 +14,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+import { HeaderLogoutButton } from '@/features/account/header-logout-button';
 import { MEGA_NAV, resolveActiveGroup, type MegaNavGroup, type MegaNavItem } from './mega-nav-data';
 import './mega-nav.css';
 
@@ -216,6 +217,10 @@ export function MegaNavBar() {
               <Link href="/my" className="mega-nav-avatar-link" aria-label="내 정보">
                 👤
               </Link>
+              {/* 2026-05-16 — 사용자 보고: 상단 헤더에 로그아웃 진입점 부재.
+                  avatar 옆에 아이콘-only 로그아웃 버튼 추가. /my/settings 의
+                  풀폭 카드와 중복되지만 빠른 진입을 위한 의도된 중복. */}
+              <HeaderLogoutButton className="mega-nav-icon-btn" />
             </>
           ) : (
             <Link href="/login" className="mega-nav-login">

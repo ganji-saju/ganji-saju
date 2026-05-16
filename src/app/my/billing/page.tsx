@@ -1,18 +1,16 @@
+// 2026-05-16 — /my/billing 결제관리 페이지 재구성.
+// 이전엔 PageHero + SectionSurface + FeatureCard + ProductGrid + SupportRail 같은
+// 옛 marketing 컴포넌트로 빌드돼 /my/settings 등 자매 라우트와 시각 어긋남.
+// `/my/settings` 와 동일한 compact pink-soft hero + 둥근 흰 카드 패턴으로 통일.
+//
+// 라우팅 / 데이터 흐름은 무수정 — getAccountDashboardData + SubscriptionManager 그대로.
 import Link from 'next/link';
 import SubscriptionManager from '@/components/my/subscription-manager';
-import { Badge } from '@/components/ui/badge';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
 import { getAccountDashboardData } from '@/lib/account';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
 } from '@/lib/subscription';
-import { PageHero } from '@/shared/layout/app-shell';
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('ko-KR', {
@@ -118,156 +116,249 @@ export default async function MyBillingPage() {
     : '미가입';
 
   return (
-    <div className="space-y-6">
-      <PageHero
-        badges={[
-          <Badge
-            key="billing"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-          >
-            결제와 이용
-          </Badge>,
-          <Badge
-            key="status"
-            className="border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]"
-          >
-            코인 · 멤버십 · 환불 안내
-          </Badge>,
-        ]}
-        title="결제와 이용 상태를 한눈에 살펴보세요"
-        description="지금 남은 코인, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다. 필요한 정보만 같은 문법으로 차분히 읽을 수 있게 정리했습니다."
-      />
-
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="남은 잔액"
-          title="코인과 멤버십 코인을 함께 관리합니다"
-          titleClassName="text-3xl"
-        />
-        <ProductGrid columns={3} className="mt-6">
-          <FeatureCard surface="soft" eyebrow="전체 코인" title={dashboard.credits.total} />
-          <FeatureCard surface="soft" eyebrow="일반 코인" title={dashboard.credits.balance} />
-          <FeatureCard surface="soft" eyebrow="월간 플랜 코인" title={dashboard.credits.subscriptionBalance} />
-        </ProductGrid>
-      </SectionSurface>
-
-      <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="멤버십 상태"
-            title={subscriptionStatusLabel}
-            titleClassName="text-3xl"
-            description={getSubscriptionNotice(dashboard.subscription)}
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-
-          {dashboard.subscription ? (
-            <ProductGrid columns={2} className="mt-6">
-              <FeatureCard
-                surface="soft"
-                eyebrow="플랜"
-                title={getSubscriptionPlanLabel(dashboard.subscription.plan)}
-              />
-              <FeatureCard
-                surface="soft"
-                eyebrow="다음 결제일"
-                title={
-                  dashboard.subscription.renewsAt
-                    ? formatDate(dashboard.subscription.renewsAt)
-                    : '미정'
-                }
-              />
-            </ProductGrid>
-          ) : (
-            <FeatureCard className="mt-6" surface="soft" eyebrow="현재 상태" description={getSubscriptionNotice(null)} />
-          )}
-
-          <div className="mt-6">
-            <SubscriptionManager subscription={dashboard.subscription} />
-          </div>
-        </SectionSurface>
-
-        <SupportRail
-          surface="panel"
-          eyebrow="정책 안내"
-          title="결제와 환불은 이 기준으로 움직입니다"
-          description="복잡한 정책을 길게 늘어놓기보다, 실제로 확인할 가능성이 높은 기준만 짧게 남겨두었습니다."
+    <div className="space-y-5 px-1">
+      {/* §Hero — pink-soft, compact (settings 와 동일 패턴) */}
+      <article
+        className="rounded-[18px] border p-5"
+        style={{
+          background: 'var(--app-pink-soft)',
+          borderColor: 'var(--app-pink-line)',
+        }}
+      >
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          결제 관리
+        </div>
+        <h1
+          className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+          style={{ wordBreak: 'keep-all' }}
         >
-          <BulletList
-            items={[
-              '정기 이용 상품은 가격과 갱신 시점, 열리는 혜택을 같은 화면에서 다시 확인하실 수 있습니다.',
-              '해지 예약을 하셔도 이번 이용 기간이 끝날 때까지 혜택은 그대로 유지됩니다.',
-              '디지털 해석은 열람 여부에 따라 환불 기준이 달라질 수 있어, 결제 전 안내를 먼저 보여드립니다.',
-              '궁금한 점이 생기면 멤버십 페이지와 코인 센터에서 바로 이어서 살펴보실 수 있습니다.',
-            ]}
-          />
-          <FeatureCard
-            className="mt-5"
-            surface="soft"
-            eyebrow="바로 가기"
-            description={
-              <>
-                멤버십 구성과 이용 혜택은{' '}
-                <Link
-                  href="/membership"
-                  className="text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                >
-                  멤버십 페이지
-                </Link>
-                에서, 코인 충전과 재시작은{' '}
-                <Link
-                  href="/credits"
-                  className="text-[var(--app-gold-soft)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-                >
-                  코인 센터
-                </Link>
-                에서 바로 이어집니다.
-              </>
-            }
-          />
-        </SupportRail>
+          코인 · 멤버십 · 이용 내역을
+          <br />
+          한 화면에서 살펴보세요
+        </h1>
+        <p
+          className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          지금 남은 코인, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다.
+        </p>
+      </article>
+
+      {/* §남은 잔액 — 3 칸 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          남은 잔액
+        </h2>
+        <div className="mt-2 grid grid-cols-3 gap-2.5">
+          <article
+            className="rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+              전체 코인
+            </div>
+            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
+              {dashboard.credits.total}
+            </div>
+          </article>
+          <article
+            className="rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+              일반 코인
+            </div>
+            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+              {dashboard.credits.balance}
+            </div>
+          </article>
+          <article
+            className="rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+              월간 플랜
+            </div>
+            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+              {dashboard.credits.subscriptionBalance}
+            </div>
+          </article>
+        </div>
       </section>
 
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="최근 결제 및 코인 이력"
-          title={`최근 ${dashboard.recentTransactions.length}건`}
-          titleClassName="text-3xl"
-        />
-        <ProductGrid columns={2} className="mt-6">
+      {/* §멤버십 상태 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          멤버십 상태
+        </h2>
+        <article
+          className="mt-2 rounded-[14px] border bg-white p-4"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <div className="flex items-baseline justify-between gap-2">
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+              상태
+            </div>
+            <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
+              {subscriptionStatusLabel}
+            </div>
+          </div>
+          {dashboard.subscription ? (
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3" style={{ borderColor: 'var(--app-line)' }}>
+              <div>
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                  플랜
+                </div>
+                <div className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  {getSubscriptionPlanLabel(dashboard.subscription.plan)}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                  다음 결제일
+                </div>
+                <div className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  {dashboard.subscription.renewsAt
+                    ? formatDate(dashboard.subscription.renewsAt)
+                    : '미정'}
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <p
+            className="mt-3 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            {getSubscriptionNotice(dashboard.subscription)}
+          </p>
+          <div className="mt-3">
+            <SubscriptionManager subscription={dashboard.subscription} />
+          </div>
+        </article>
+      </section>
+
+      {/* §바로가기 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          바로가기
+        </h2>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Link
+            href="/credits"
+            className="flex items-center justify-between rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                코인 센터
+              </div>
+              <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                충전 · 재시작
+              </div>
+            </div>
+            <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+          <Link
+            href="/membership"
+            className="flex items-center justify-between rounded-[14px] border bg-white p-3.5"
+            style={{ borderColor: 'var(--app-line)' }}
+          >
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                멤버십
+              </div>
+              <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                플랜 · 혜택 안내
+              </div>
+            </div>
+            <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      {/* §최근 이용 이력 */}
+      <section>
+        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          최근 결제 · 이용 이력
+        </h2>
+        <div className="mt-2 grid gap-2">
           {dashboard.recentTransactions.length > 0 ? (
-            dashboard.recentTransactions.map((transaction) => (
-              <FeatureCard
-                key={transaction.id}
-                surface="soft"
-                eyebrow={formatDate(transaction.createdAt)}
-                title={getTransactionLabel(transaction)}
-                description={
-                  <>
-                    <span className="block text-[var(--app-copy-muted)]">
-                      {getTransactionFeatureLabel(transaction)}
-                    </span>
-                    <span
-                      className={`mt-2 block font-semibold ${
-                        transaction.amount >= 0 ? 'text-emerald-200' : 'text-rose-200'
-                      }`}
+            dashboard.recentTransactions.map((transaction) => {
+              const positive = transaction.amount >= 0;
+              return (
+                <article
+                  key={transaction.id}
+                  className="rounded-[14px] border bg-white p-3.5"
+                  style={{ borderColor: 'var(--app-line)' }}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-[11px] text-[var(--app-copy-soft)]">
+                        {formatDate(transaction.createdAt)}
+                      </div>
+                      <div
+                        className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]"
+                        style={{ wordBreak: 'keep-all' }}
+                      >
+                        {getTransactionLabel(transaction)}
+                      </div>
+                      <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+                        {getTransactionFeatureLabel(transaction)}
+                      </div>
+                    </div>
+                    <div
+                      className="shrink-0 text-[14px] font-extrabold tabular-nums"
+                      style={{
+                        color: positive ? 'var(--app-jade)' : 'var(--app-coral)',
+                      }}
                     >
-                      {transaction.amount >= 0 ? '+' : ''}
-                      {transaction.amount} 코인
-                    </span>
-                  </>
-                }
-              />
-            ))
+                      {positive ? '+' : ''}
+                      {transaction.amount}
+                    </div>
+                  </div>
+                </article>
+              );
+            })
           ) : (
-            <FeatureCard
-              surface="soft"
-              eyebrow="아직 기록 없음"
-              description="표시할 결제 또는 코인 사용 이력이 아직 없습니다."
-            />
+            <article
+              className="rounded-[14px] border bg-white p-4"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                아직 기록 없음
+              </div>
+              <p
+                className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                표시할 결제 또는 코인 사용 이력이 아직 없습니다.
+              </p>
+            </article>
           )}
-        </ProductGrid>
-      </SectionSurface>
+        </div>
+      </section>
+
+      {/* §정책 안내 (compact) */}
+      <article
+        className="rounded-[14px] border bg-white p-4"
+        style={{ borderColor: 'var(--app-line)' }}
+      >
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          📚 결제·환불 기준
+        </div>
+        <ul
+          className="mt-1.5 grid gap-1 text-[11.5px] leading-[1.65] text-[var(--app-copy)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          <li>• 정기 이용 상품은 가격과 갱신 시점, 열리는 혜택을 같은 화면에서 다시 확인하실 수 있습니다.</li>
+          <li>• 해지 예약을 하셔도 이번 이용 기간이 끝날 때까지 혜택은 그대로 유지됩니다.</li>
+          <li>• 디지털 해석은 열람 여부에 따라 환불 기준이 달라질 수 있어, 결제 전 안내를 먼저 보여드립니다.</li>
+        </ul>
+      </article>
     </div>
   );
 }
