@@ -6,6 +6,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
+import { toast } from 'sonner';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import {
   DEFAULT_TOSS_PAYMENT_METHOD,
@@ -123,6 +124,17 @@ function CreditsPageContent() {
     } catch (error) {
       console.error(error);
       setErrorMessage('결제창을 여는 중 문제가 생겼습니다. 잠시 뒤 다시 시도해 주세요.');
+      // A8: 결제창 실패 사유 무관하게 가장 흔한 원인(이미 결제한 상품) 안내.
+      // 메시지 초안: docs/payment-duplicate-block-verification.md §5
+      toast.error('결제에 실패했습니다. 이미 결제하신 상품인지 확인해주세요.', {
+        duration: 6000,
+        action: {
+          label: '내 결제 내역',
+          onClick: () => {
+            location.href = '/my/billing';
+          },
+        },
+      });
     } finally {
       setLoading(null);
     }
