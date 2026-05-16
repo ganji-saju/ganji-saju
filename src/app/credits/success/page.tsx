@@ -1,199 +1,159 @@
+// Redesign 2026-05-17 (Claude Design / screens-f.jsx ScreenPaymentResult):
+// 코인 충전 결제 콜백 — loading/success/error 3 state. mockup 96px pink circle hero.
+// membership/success 와 동일 디자인 토큰 (CenteredCard 패턴) — 신규 BOARD_MANIFEST 항목.
+// 결제 승인·라우팅·트래킹 무수정.
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-// 2026-05-15 handoff P0: 54 m-coin (코인 충전 성공) + 51 m-loading (로딩 단계) 연결.
-import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
-import '@/components/motion/motion-primitives.css';
-import { ActionCluster } from '@/components/layout/action-cluster';
-import { BulletList } from '@/components/layout/bullet-list';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { SupportRail } from '@/components/layout/support-rail';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
+// 2026-05-15 handoff P0: 54 m-coin (코인 충전 성공) + 51 m-loading 연결.
+import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
+import '@/components/motion/motion-primitives.css';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
 
-const CREDIT_USE_CASES = [
-  '오늘 더 깊게 보고 싶은 한 주제를 바로 열 수 있습니다.',
-  '연애·재물·직장처럼 관심 있는 장면만 선택해서 이어볼 수 있습니다.',
-  '코인 상태는 MY와 결제 관리 화면에서 다시 확인하실 수 있습니다.',
-] as const;
-
-const CONFIRMATION_FLOW = [
-  'Toss 결제를 확인한 뒤 서버에서 충전 코인을 반영합니다.',
-  '확인이 끝나면 다시 충전하거나, 열린 해석 흐름으로 조용히 돌아가실 수 있습니다.',
-  '확인 단계는 길지 않게 유지하고, 필요한 다음 행동만 남겨 둡니다.',
-] as const;
+function CenteredCard({
+  iconBg,
+  iconText,
+  iconChar,
+  title,
+  description,
+  children,
+}: {
+  iconBg: string;
+  iconText: string;
+  iconChar: string;
+  title: string;
+  description: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-5 px-4 pt-8 text-center">
+      <div
+        className="mx-auto grid h-24 w-24 place-items-center rounded-full"
+        style={{
+          background: iconBg,
+          boxShadow: '0 16px 40px rgba(216,27,114,0.32)',
+        }}
+        aria-hidden="true"
+      >
+        <span className="text-[48px] font-extrabold leading-none" style={{ color: iconText }}>
+          {iconChar}
+        </span>
+      </div>
+      <div>
+        <h1 className="text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+          {title}
+        </h1>
+        <p className="mt-2 whitespace-pre-line px-4 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+          {description}
+        </p>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function LoadingState() {
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="loading"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-          >
-            결제 확인 중
-          </Badge>,
-        ]}
-        title="코인 충전과 반영 상태를 확인하고 있습니다"
-        description="결제 승인과 코인 반영을 함께 처리하는 단계입니다. 잠시만 기다려 주세요."
-      />
-
-      <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="확인 중"
-            title="승인과 충전 반영을 짧게 확인합니다"
-            titleClassName="text-3xl text-[var(--app-gold-text)]"
-            description="이 단계는 오래 머무는 화면이 아니라, 결제와 코인 상태를 확인한 뒤 다음 흐름으로 자연스럽게 넘겨드리는 짧은 관문입니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-          <FeatureCard
-            className="mt-6"
-            surface="soft"
-            eyebrow="현재 상태"
-            description="결제 정보와 코인 반영을 확인하고 있습니다. 잠시 뒤 자동으로 다음 상태가 열립니다."
-          />
-          {/* 2026-05-15 handoff 51 m-loading — Phase 3 "결제 spinner 위치 motion 교체" 요건. */}
-          <div className="mt-6 flex justify-center">
-            <MotionSajuLoading
-              active
-              labels={['결제 확인', '코인 반영', '확인 완료']}
-              moonGlyph="貨"
-            />
-          </div>
-        </SectionSurface>
-
-        <SupportRail
-          surface="panel"
-          eyebrow="진행 방식"
-          title="무엇을 확인하는 단계인가요?"
-          description="결제 승인과 코인 반영만 확인하고, 나머지 선택은 완료 후 화면에서 차분하게 이어지도록 구성했습니다."
-        >
-          <BulletList items={CONFIRMATION_FLOW} />
-        </SupportRail>
-      </section>
-    </>
+    <CenteredCard
+      iconBg="linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))"
+      iconText="#fff"
+      iconChar="…"
+      title="결제 확인 중"
+      description={`결제 승인과 코인 반영을 확인하고 있어요.\n잠시만 기다려 주세요.`}
+    >
+      {/* 2026-05-15 handoff 51 m-loading — Phase 3 결제 spinner motion 교체. */}
+      <div className="mx-auto flex w-full max-w-md justify-center pt-2">
+        <MotionSajuLoading
+          active
+          labels={['결제 승인', '코인 반영', '확인 완료']}
+          moonGlyph="貨"
+        />
+      </div>
+    </CenteredCard>
   );
 }
 
 function ErrorState({ errorMessage }: { errorMessage: string }) {
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="error"
-            className="border-rose-400/25 bg-rose-400/10 text-rose-100"
-          >
-            결제 확인 실패
-          </Badge>,
-        ]}
-        title="코인 반영을 끝내지 못했습니다"
-        description="결제는 진행되었지만, 충전 확인 과정에서 문제가 생겼습니다. 다시 확인할 수 있는 경로를 남겨 두었습니다."
-      />
+    <CenteredCard
+      iconBg="#fff"
+      iconText="var(--app-coral)"
+      iconChar="!"
+      title="결제 확인에 실패했어요"
+      description="결제는 진행되었지만 코인 충전을 확인하지 못했습니다. 잠시 후 다시 시도하거나 결제 상태에서 확인해 주세요."
+    >
+      <article
+        className="mx-auto max-w-md rounded-[14px] border bg-white p-4 text-left"
+        style={{ borderColor: 'var(--app-coral)' }}
+      >
+        <div
+          className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+          style={{ color: 'var(--app-coral)' }}
+        >
+          오류 안내
+        </div>
+        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+          {errorMessage}
+        </p>
+      </article>
 
-      <SectionSurface surface="panel" size="lg">
-        <SectionHeader
-          eyebrow="다시 확인"
-          title="지금 바로 이어가실 수 있는 두 가지"
-          titleClassName="text-3xl"
-          description={errorMessage}
-          descriptionClassName="max-w-3xl text-rose-100"
-          actions={
-            <ActionCluster>
-              <Link href="/credits">
-                <Button>
-                  코인 센터로 돌아가기
-                </Button>
-              </Link>
-              <Link href="/my/billing">
-                <Button variant="outline">
-                  결제 상태 확인
-                </Button>
-              </Link>
-            </ActionCluster>
-          }
-        />
-      </SectionSurface>
-    </>
+      <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
+        <Link
+          href="/credits"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+        >
+          코인 충전으로 돌아가기
+        </Link>
+        <Link
+          href="/my/billing"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+        >
+          결제 상태 확인
+        </Link>
+      </div>
+    </CenteredCard>
   );
 }
 
 function SuccessState({ coins }: { coins: number }) {
   return (
-    <>
-      <PageHero
-        badges={[
-          <Badge
-            key="success"
-            className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]"
-          >
-            충전 완료
-          </Badge>,
-        ]}
-        title="필요할 때 여는 해석을 위한 코인이 준비되었습니다"
-        description="코인 충전이 끝났습니다. 지금 바로 다시 열어보실 흐름과, 자주 쓰실 때의 다음 선택지를 함께 정리해 두었습니다."
-      />
-
-      {/* 2026-05-15 handoff 54 m-coin — 결제 성공 직후 입자 + ✓ 카드. Phase 4 명시 요건. */}
-      <div className="my-4 flex justify-center">
-        <MotionCoinSuccess active title="충전 완료" sub={`+ ${coins} 코인`} />
+    <CenteredCard
+      iconBg="linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))"
+      iconText="#fff"
+      iconChar="✓"
+      title="코인이 충전됐어요"
+      description={`필요할 때 여는 해석을 위한 코인이 준비됐어요.\n바로 이어보거나 결제 내역에서 확인할 수 있어요.`}
+    >
+      {/* 2026-05-15 handoff 54 m-coin — 결제 성공 직후 입자 + ✓ 카드. */}
+      <div className="mx-auto flex w-full max-w-md justify-center pb-1">
+        <MotionCoinSuccess
+          active
+          title="충전 완료"
+          sub={`+ ${coins} 코인`}
+        />
       </div>
 
-      <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
-        <SectionSurface surface="panel" size="lg">
-          <SectionHeader
-            eyebrow="충전 결과"
-            title={`${coins}코인이 반영되었습니다`}
-            titleClassName="text-3xl text-[var(--app-gold-text)]"
-            description="이제 무료 탐색 뒤 더 보고 싶은 주제를 조용히 열거나, MY와 결제 관리 화면에서 상태를 다시 확인하실 수 있습니다."
-            descriptionClassName="max-w-3xl text-[var(--app-copy)]"
-          />
-
-          <ProductGrid columns={3} className="mt-6">
-            {CREDIT_USE_CASES.map((item, index) => (
-              <FeatureCard
-                key={item}
-                surface="soft"
-                eyebrow={String(index + 1).padStart(2, '0')}
-                description={item}
-              />
-            ))}
-          </ProductGrid>
-        </SectionSurface>
-
-        <SupportRail
-          surface="panel"
-          eyebrow="다음으로 이동"
-          title="버튼은 두 가지만 남겨 두었습니다"
-          description="코인 충전 완료 화면에서는 다시 충전하거나, 결제 상태와 보관 흐름을 확인하는 두 방향만 남겨 과밀해지지 않도록 했습니다."
+      <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
+        <Link
+          href="/today-fortune"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
-          <ActionCluster>
-            <Link href="/credits">
-              <Button size="lg">
-                코인 더 살펴보기
-              </Button>
-            </Link>
-            <Link href="/my/billing">
-              <Button variant="outline" size="lg">
-                결제와 보관 상태 보기
-              </Button>
-            </Link>
-          </ActionCluster>
-        </SupportRail>
-      </section>
-    </>
+          오늘 운세 보러 가기 →
+        </Link>
+        <Link
+          href="/my/billing"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+        >
+          결제 내역 보기
+        </Link>
+      </div>
+    </CenteredCard>
   );
 }
 
@@ -262,28 +222,16 @@ function SuccessContent() {
       });
   }, [searchParams]);
 
-  if (status === 'loading') {
-    return <LoadingState />;
-  }
-
-  if (status === 'error') {
-    return <ErrorState errorMessage={errorMessage} />;
-  }
-
+  if (status === 'loading') return <LoadingState />;
+  if (status === 'error') return <ErrorState errorMessage={errorMessage} />;
   return <SuccessState coins={coins} />;
 }
 
 export default function CreditsSuccessPage() {
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <Suspense
-          fallback={
-            <SectionSurface surface="panel" size="lg" className="text-center text-[var(--app-copy)]">
-              결제 확인 화면을 불러오는 중입니다.
-            </SectionSurface>
-          }
-        >
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page">
+        <Suspense fallback={<LoadingState />}>
           <SuccessContent />
         </Suspense>
       </AppPage>
