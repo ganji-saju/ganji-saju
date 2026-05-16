@@ -18,6 +18,7 @@ import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
 import YearlyReportPanel from '@/components/ai/yearly-report-panel';
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (사주 메인/오늘 운세와 동일).
 import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
+import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
 import {
   REPORT_SAMPLE_HREF,
   SAJU_PREMIUM_SECTIONS,
@@ -433,6 +434,15 @@ export default async function SajuPremiumPage({ params }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <div className="space-y-5 sm:space-y-6">
+          {/* 2026-05-16 A7 — 다른 탭/창에서 결제 완료 후 본 페이지로 돌아오면
+              focus 이벤트 → /api/payments/entitlement 재요청 → server SSR 결과와
+              다르면 router.refresh() 로 페이지 전체 재렌더 (hero / sections / CTAs
+              일괄 갱신). 페이지 자체는 server component 로 유지하면서 실시간 반영. */}
+          <EntitlementRefresher
+            productId="lifetime-report"
+            slug={slug}
+            initialHasEntitlement={hasLifetimeAccess}
+          />
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
           <SajuScreenNav slug={slug} current="premium" />
 
