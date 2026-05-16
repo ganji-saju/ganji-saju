@@ -7,6 +7,9 @@ import {
   createClient,
   hasSupabaseServerEnv,
 } from '@/lib/supabase/server';
+// 2026-05-16 — 만료 알림이 활성 멤버십 사용자에게 재결제 link 로 노출되는 것을 막기 위해
+//   subscription 상태에 따라 href 를 동적으로 분기.
+import { getManagedSubscription } from '@/lib/subscription';
 
 const SLOT_HREF_MAP: Array<[prefix: string, href: string]> = [
   ['today-fortune', '/today-fortune'],
@@ -23,7 +26,12 @@ const SLOT_HREF_MAP: Array<[prefix: string, href: string]> = [
   ['dialogue', '/dialogue'],
 ];
 
-function slotKeyToHref(slotKey: string) {
+function slotKeyToHref(slotKey: string, hasActiveSubscription: boolean) {
+  // 2026-05-16 — 활성 멤버십이 있는 사용자의 subscription-expiring 알림은
+  //   재결제 link 대신 /my/billing 으로. 사용자가 이미 갱신했을 가능성이 높음.
+  if (slotKey.startsWith('subscription-expiring') && hasActiveSubscription) {
+    return '/my/billing';
+  }
   for (const [prefix, href] of SLOT_HREF_MAP) {
     if (slotKey.startsWith(prefix)) return href;
   }
@@ -43,6 +51,12 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
+
+  // 2026-05-16 — subscription-expiring 알림이 활성 멤버 사용자에게 재결제 link 로 노출되지
+  //   않도록 한 번만 구독 상태 확인.
+  const subscription = await getManagedSubscription(user.id).catch(() => null);
+  const hasActiveSubscription =
+    Boolean(subscription) && subscription?.status === 'active';
 
   const { data, error } = await supabase
     .from('notification_delivery_logs')
@@ -66,7 +80,7 @@ export async function GET() {
     slotKey: row.slot_key as string,
     status: row.status as 'sent' | 'failed',
     createdAt: row.created_at as string,
-    href: slotKeyToHref(row.slot_key as string),
+    href: slotKeyToHref(row.slot_key as string, hasActiveSubscription),
   }));
 
   return NextResponse.json({ items });

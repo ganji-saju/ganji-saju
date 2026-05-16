@@ -15,6 +15,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneCalendarMonthReport, FortuneCalendarTone } from '@/domain/saju/report';
+// 2026-05-16 — 같은 slug+년월에 대해 이미 monthly-calendar 구매한 사용자가
+//   다시 결제 link 를 보지 않도록 entitlement 확인.
+import { useProductEntitlement } from '@/lib/payments/use-product-entitlement';
 
 interface Props {
   slug: string;
@@ -459,6 +462,15 @@ export default function FortuneCalendarPanel({
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
   const [data, setData] = useState<FortuneCalendarResponse | null>(null);
+  // 2026-05-16 — 선택된 (slug, year-month) 의 monthly-calendar entitlement 조회.
+  //   "1,900원으로 열기" link 를 중복 결제하지 않도록 미리 차단.
+  const monthScope = `${targetYear}-${String(selectedMonth).padStart(2, '0')}`;
+  const { hasEntitlement: hasMonthEntitlement, openHref: monthOpenHref } = useProductEntitlement({
+    productId: 'monthly-calendar',
+    slug,
+    scope: monthScope,
+    enabled: Boolean(slug),
+  });
   const [unlocking, setUnlocking] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -964,29 +976,42 @@ export default function FortuneCalendarPanel({
                   </div>
                 </div>
                 <div className="mt-4 grid gap-2">
-                  <Button
-                    onClick={() => void handleUnlock()}
-                    disabled={unlocking}
-                    className="h-12 rounded-full text-[14px] font-extrabold"
-                  >
-                    {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
-                  </Button>
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* 2026-05-16 — 이미 구매한 월이면 "이미 구매" 안내 + 즉시 열람.
+                      미구매면 기존 unlock + 결제 CTA 그대로 노출. */}
+                  {hasMonthEntitlement ? (
                     <Link
-                      href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
-                      className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-pink-strong)]"
-                      style={{ borderColor: 'var(--app-pink-line)' }}
+                      href={monthOpenHref ?? `/saju/${encodeURIComponent(slug)}/premium#fortune-calendar`}
+                      className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-jade)] text-[14px] font-extrabold text-white"
                     >
-                      1,900원으로 열기
+                      ✓ 이미 구매한 {selectedMonth}월 캘린더 열기
                     </Link>
-                    <Link
-                      href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
-                      className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
-                      style={{ borderColor: 'var(--app-line)' }}
-                    >
-                      코인팩 보기
-                    </Link>
-                  </div>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => void handleUnlock()}
+                        disabled={unlocking}
+                        className="h-12 rounded-full text-[14px] font-extrabold"
+                      >
+                        {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
+                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link
+                          href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
+                          className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-pink-strong)]"
+                          style={{ borderColor: 'var(--app-pink-line)' }}
+                        >
+                          1,900원으로 열기
+                        </Link>
+                        <Link
+                          href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
+                          className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+                          style={{ borderColor: 'var(--app-line)' }}
+                        >
+                          코인팩 보기
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             )}

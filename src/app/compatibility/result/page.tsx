@@ -96,10 +96,16 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
   const { relationship, familyId, source, paid } = await searchParams;
 
   if (source === 'manual') {
+    // 2026-05-16 — manual 분기도 URL paid 만 의존하지 않고 server 측 entitlement 도 확인.
+    //   이미 love-question 구매한 사용자가 manual 결과 화면에서 다시 결제 link 보지 않게.
+    const manualData = await getProfileSettingsData(`/compatibility/result?source=manual${relationship ? `&relationship=${relationship}` : ''}`).catch(() => null);
+    const manualLoveEntitlement = manualData?.user.id
+      ? Boolean(await getTasteProductEntitlement(manualData.user.id, 'love-question'))
+      : false;
     return (
       <ManualCompatibilityResultClient
         relationship={relationship}
-        hasLoveQuestionPurchase={paid === 'love-question'}
+        hasLoveQuestionPurchase={paid === 'love-question' || manualLoveEntitlement}
       />
     );
   }
