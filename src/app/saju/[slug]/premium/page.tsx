@@ -16,6 +16,8 @@ import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import FortuneCalendarPanel from '@/components/ai/fortune-calendar-panel';
 import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
 import YearlyReportPanel from '@/components/ai/yearly-report-panel';
+// 2026-05-16 PR #181 — 6 영역 카드 통일 (사주 메인/오늘 운세와 동일).
+import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 import {
   REPORT_SAMPLE_HREF,
   SAJU_PREMIUM_SECTIONS,
@@ -425,6 +427,10 @@ export default async function SajuPremiumPage({ params }: Props) {
         <div className="space-y-5 sm:space-y-6">
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
           <SajuScreenNav slug={slug} current="premium" />
+
+          {/* PR #181 — 6 영역 통일 카드 (총운/직장·사업운/재물운/애정·연애운/인간관계운/컨디션·건강운).
+             사주 메인 + 오늘 운세 페이지와 동일 score 노출. */}
+          <SajuAreaCardsSection input={reading.input} sajuData={sajuData} />
 
           {/* §1 Hero — 2026-05-14 강화: 결제 권한이 있으면 ✓ 배지 + 부각 그라데이션. */}
           <article

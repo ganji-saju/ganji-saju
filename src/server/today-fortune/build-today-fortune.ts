@@ -929,7 +929,7 @@ function calculateTodayElementDelta(
   return 0;
 }
 
-function buildDailyDelta(
+export function buildDailyDelta(
   todayPillar: TodayPillarSnapshot,
   sajuData: SajuDataV1
 ): number {
@@ -1081,7 +1081,7 @@ function getScore(report: SajuReport, key: ReportScore['key']) {
   return report.scores.find((item) => item.key === key);
 }
 
-function buildConditionScore(
+export function buildConditionScore(
   todayReport: SajuReport,
   loveReport: SajuReport,
   wealthReport: SajuReport,
