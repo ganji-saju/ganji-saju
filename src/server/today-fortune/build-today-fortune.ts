@@ -28,6 +28,8 @@ import { applyActiveSinsalWeights } from '@/lib/sinsal-active-weights';
 import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
 // 2026-05-16 PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬.
 import { reorderTodayScoresBySituation } from '@/lib/today-fortune/situation-score-priority';
+// 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화 helper.
+import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import type {
   ConcernId,
   TodayCalendarType,
@@ -873,7 +875,7 @@ const TODAY_BRANCH_ELEMENTS: Record<string, Element> = {
   '申': '금', '酉': '금', '戌': '토', '亥': '수',
 };
 
-function getTodayPillarSnapshot(sajuData: SajuDataV1): TodayPillarSnapshot {
+export function getTodayPillarSnapshot(sajuData: SajuDataV1): TodayPillarSnapshot {
   const calculatedAt = sajuData.metadata?.calculatedAt ?? new Date().toISOString();
   const timezone = sajuData.input?.timezone ?? 'Asia/Seoul';
   const local = getLocalDateTimeSnapshot(calculatedAt, timezone);
@@ -2400,7 +2402,7 @@ function buildAvoidActions(
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지용 lucky/unlucky 오행 추출.
 // yongsin.primary 가 type='element' 면 value 직사용, type='stem'/'branch' 면 매핑.
 // 없으면 사주 최약 오행을 lucky 로, 최강 오행을 unlucky 로 fallback.
-function deriveLuckyElements(
+export function deriveLuckyElements(
   sajuData: SajuDataV1
 ): { lucky: '목' | '화' | '토' | '금' | '수'; unlucky: '목' | '화' | '토' | '금' | '수' | null } {
   type Elem = '목' | '화' | '토' | '금' | '수';
@@ -2584,51 +2586,23 @@ export function buildTodayFortuneFreeResult(
   );
 
   // PR #165 — iljinScore 를 scores 정규화 전에 미리 계산.
-  // 사용자 보고: 총운 점수 ≠ 점수 산출내역 점수 ≠ 영역별 점수 → 신뢰도 폭격.
-  // 해결: iljinScore.totalScore 를 single source of truth 로,
-  //       scores.overall 을 totalScore 로 덮어쓰고 영역별은 평균이 totalScore 가 되도록 정규화.
-  const computedIljinScore = (() => {
-    if (!todayPillar.stem || !todayPillar.branch) return null;
-    const { lucky, unlucky } = deriveLuckyElements(sajuData);
-    const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
-    const r = calculateIljinScore(sajuOrigin, {
-      todayStem: todayPillar.stem as IljinStem,
-      todayBranch: todayPillar.branch as IljinBranch,
-    });
-    return {
-      totalScore: r.totalScore,
-      grade: r.grade,
-      gradeEmoji: r.gradeEmoji,
-      gradeMessage: r.gradeMessage,
-      breakdown: r.breakdown,
-    };
-  })();
+  // 2026-05-16 PR #179 — inline 로직을 computeSajuIljinScore + unifyScoresWithIljinScore helper 로 추출.
+  //   사주 페이지(서버 컴포넌트)에서도 동일 helper 호출해 두 페이지 점수 일치 보장.
+  const iljinScoreResult = computeSajuIljinScore(sajuData);
+  const computedIljinScore = iljinScoreResult
+    ? {
+        totalScore: iljinScoreResult.totalScore,
+        grade: iljinScoreResult.grade,
+        gradeEmoji: iljinScoreResult.gradeEmoji,
+        gradeMessage: iljinScoreResult.gradeMessage,
+        breakdown: iljinScoreResult.breakdown,
+      }
+    : null;
 
   // scores 의 overall + 영역별을 iljinScore.totalScore 기준으로 정규화.
-  // - overall = totalScore (헤드라인/banner/breakdown 카드 모두 같은 숫자)
-  // - 영역별 = totalScore + (영역점수 - 영역평균) — 평균이 totalScore 가 되고 상대 차이 보존
-  // - iljinScore 없으면 (시간 미입력 등) 기존 raw scores 유지.
-  //
-  // 2026-05-16: PR #165 의 단일 source 약속이 [48,92] clampScore 때문에
-  // boundary 에서 깨졌다 (engine 은 [5,95], banner clamp 는 [48,92]).
-  // 사례: engine totalScore=45 → banner=48 / breakdown 카드 "= 45점" → 모순.
-  // overall 행은 engine 결과를 그대로 사용해 banner==breakdown 을 보장한다.
-  // 영역별은 가독성 위해 [48,92] 유지 — 영역별 평균은 boundary 에서 target 과
-  // 약간 어긋날 수 있지만 표시면 비교 대상이 없어 사용자 모순 인지가 없다.
+  // iljinScore 없으면 (시간 미입력 등) 기존 raw scores 유지.
   const unifiedScores: TodayScoreItem[] = computedIljinScore
-    ? (() => {
-        const target = computedIljinScore.totalScore;
-        const nonOverall = rawScores.filter((s) => s.key !== 'overall');
-        if (nonOverall.length === 0) return rawScores;
-        const mean = nonOverall.reduce((sum, s) => sum + s.score, 0) / nonOverall.length;
-        return rawScores.map((s) => {
-          if (s.key === 'overall') {
-            return { ...s, score: target };
-          }
-          const delta = s.score - mean;
-          return { ...s, score: clampScore(target + delta) };
-        });
-      })()
+    ? unifyScoresWithIljinScore(rawScores, computedIljinScore.totalScore)
     : rawScores;
 
   // PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬. overall 은 항상 맨 앞.
@@ -2752,7 +2726,7 @@ export function buildTodayFortuneFreeResult(
 }
 
 // 2026-05-15 PR 3 — SajuDataV1 → iljin-score-engine 의 SajuOriginInput 변환.
-function buildSajuOriginForIljin(
+export function buildSajuOriginForIljin(
   sajuData: SajuDataV1,
   yongsinEl: '목' | '화' | '토' | '금' | '수',
   kishinEl: '목' | '화' | '토' | '금' | '수' | null
@@ -2779,6 +2753,20 @@ function buildSajuOriginForIljin(
     yongsinElement: yongsinEl,
     kishinElement: kishinEl,
   };
+}
+
+// 2026-05-16 PR #179 — 사주 페이지에서 동일한 iljinScore 통일 절차를 재사용하기 위한 wrapper.
+// getTodayPillarSnapshot + deriveLuckyElements + buildSajuOriginForIljin + calculateIljinScore
+// 4단계를 묶어 하나의 호출로. 시 미입력 등 todayPillar 부족 시 null 반환.
+export function computeSajuIljinScore(sajuData: SajuDataV1) {
+  const todayPillar = getTodayPillarSnapshot(sajuData);
+  if (!todayPillar.stem || !todayPillar.branch) return null;
+  const { lucky, unlucky } = deriveLuckyElements(sajuData);
+  const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
+  return calculateIljinScore(sajuOrigin, {
+    todayStem: todayPillar.stem as IljinStem,
+    todayBranch: todayPillar.branch as IljinBranch,
+  });
 }
 
 export function buildTodayFortunePremiumResult(

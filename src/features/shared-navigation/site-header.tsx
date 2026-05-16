@@ -8,7 +8,6 @@ import {
   Bell,
   BookOpenText,
   CreditCard,
-  Heart,
   Menu,
   LogOut,
   MessageCircleMore,
@@ -18,7 +17,6 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
@@ -65,8 +63,6 @@ const NAV_META: Record<string, { glyph: string; accent: string; description: str
   안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
-const MOBILE_SHORTCUT_LABEL_ORDER = ['오늘운', '타로', '사주', '궁합', '띠운세', '별자리'] as const;
-const MOBILE_FEATURE_LABELS = new Set(['오늘운', '타로', '사주', '궁합']);
 const MOBILE_DOCK_LABELS: Record<string, string> = {
   홈: '홈',
   사주추가: '사주추가',
@@ -96,15 +92,6 @@ function getNavMeta(item: NavItem) {
 
 function getMobileDockLabel(item: NavItem) {
   return MOBILE_DOCK_LABELS[item.label] ?? item.label;
-}
-
-function orderMobileShortcutItems(items: readonly NavItem[]) {
-  return [
-    ...MOBILE_SHORTCUT_LABEL_ORDER.map((label) => items.find((item) => item.label === label)).filter(
-      (item): item is NavItem => Boolean(item)
-    ),
-    ...items.filter((item) => !MOBILE_SHORTCUT_LABEL_ORDER.includes(item.label as never)),
-  ];
 }
 
 function findActiveItem(items: readonly NavItem[], pathname: string) {
@@ -224,9 +211,11 @@ function DesktopNavLink({
   const meta = getNavMeta(item);
 
   return (
+    // 2026-05-16 — `scroll={false}` 는 새 페이지 진입 시 이전 스크롤 위치를 유지함.
+    //   짧은 페이지로 이동할 때 "푸터로 화면이 점프했다가 전환" 회귀를 만들어 제거.
+    //   nav 클릭 시 기본 동작(새 페이지 상단으로 이동) 이 자연스러움.
     <Link
       href={item.href}
-      scroll={false}
       onClick={(event) => {
         if (active) event.preventDefault();
       }}
@@ -273,9 +262,9 @@ function DesktopNavChip({ item, pathname }: { item: NavItem; pathname: string })
   const meta = getNavMeta(item);
 
   return (
+    // 2026-05-16 — scroll={false} 제거 (push 스크롤 점프 회귀 fix).
     <Link
       href={item.href}
-      scroll={false}
       onClick={(event) => {
         if (active) event.preventDefault();
       }}
@@ -358,7 +347,6 @@ function DesktopSidebar({
             ) : (
               <Link
                 href={authHref}
-                scroll={false}
                 className="gangi-primary-button w-full"
               >
                 로그인
@@ -368,7 +356,6 @@ function DesktopSidebar({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/credits"
-                scroll={false}
                 className="gangi-secondary-button"
               >
                 <CreditCard className="h-3.5 w-3.5" />
@@ -376,7 +363,6 @@ function DesktopSidebar({
               </Link>
               <Link
                 href="/membership"
-                scroll={false}
                 className="gangi-secondary-button"
               >
                 <Sparkles className="h-3.5 w-3.5" />
@@ -417,68 +403,6 @@ function DesktopSidebar({
   );
 }
 
-// 2026-05-14: 햄버거 drawer 의 메뉴 그룹 헬퍼. 제목 + 항목 list rows.
-function MenuGroup({
-  title,
-  items,
-  pathname,
-  onItemClick,
-}: {
-  title: string;
-  items: ReadonlyArray<{ label: string; href: string; desc: string }>;
-  pathname: string;
-  onItemClick: () => void;
-}) {
-  return (
-    <div className="mt-4">
-      <div className="app-mobile-menu-group-title">{title}</div>
-      <div className="mt-2 grid gap-1">
-        {items.map((item) => {
-          const active =
-            pathname === item.href ||
-            (item.href !== '/' && pathname.startsWith(`${item.href}/`));
-          return (
-            <Link
-              key={item.href + item.label}
-              href={item.href}
-              onClick={onItemClick}
-              className="flex items-center gap-3 rounded-[12px] border px-3 py-2.5 transition-colors"
-              style={{
-                borderColor: active ? 'var(--app-pink-line)' : 'transparent',
-                background: active ? 'var(--app-pink-soft)' : 'transparent',
-              }}
-            >
-              <span
-                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold"
-                style={{
-                  background: active ? 'var(--app-pink)' : 'rgba(0,0,0,0.04)',
-                  color: active ? '#fff' : 'var(--app-copy-muted)',
-                }}
-                aria-hidden="true"
-              >
-                ›
-              </span>
-              <span className="min-w-0 flex-1">
-                <span
-                  className="block truncate text-[13.5px] font-extrabold"
-                  style={{
-                    color: active ? 'var(--app-pink-strong)' : 'var(--app-ink)',
-                  }}
-                >
-                  {item.label}
-                </span>
-                <span className="block truncate text-[11px] text-[var(--app-copy-soft)]">
-                  {item.desc}
-                </span>
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function MobileChrome({
   pathname,
   user,
@@ -493,18 +417,6 @@ function MobileChrome({
   onSignOut: () => Promise<void>;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const activePrimaryItem = findActiveItem(PRIMARY_NAV_ITEMS, pathname);
-  const activeShortcutItem = findActiveItem(HEADER_SECONDARY_NAV_ITEMS, pathname);
-  const orderedShortcutItems = orderMobileShortcutItems(HEADER_SECONDARY_NAV_ITEMS);
-  const featureShortcutItems = orderedShortcutItems.filter((item) =>
-    MOBILE_FEATURE_LABELS.has(item.label)
-  );
-  const activePrimaryMeta = activePrimaryItem ? getNavMeta(activePrimaryItem) : null;
-  const activeShortcutMeta = activeShortcutItem ? getNavMeta(activeShortcutItem) : null;
-  const contextDescription =
-    activeShortcutMeta?.description ??
-    activePrimaryMeta?.description ??
-    '오늘의 운세와 타로';
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -562,7 +474,6 @@ function MobileChrome({
                     key={item.label}
                     href={item.href}
                     data-active={active}
-                    scroll={false}
                     className="relative inline-flex shrink-0 items-center rounded-[10px] px-3 py-2 text-[13.5px] font-bold transition-colors"
                     style={{
                       color: active
@@ -666,172 +577,6 @@ function MobileChrome({
             </div>
           </div>
 
-          {/* PR #156 — 기존 inline 드롭다운 패널 → MobileNavSheet (bottom sheet) 로 교체.
-              아래 블록은 false 처리하여 dead-code 비활성. 시트 렌더는 SiteHeader return 뒤쪽에서. */}
-          {false && mobileMenuOpen ? (
-            <div
-              id="mobile-global-menu"
-              className="app-mobile-menu-panel mt-4 rounded-[1.4rem] border border-[var(--app-line)] bg-white p-4 shadow-[0_18px_48px_rgba(17,17,20,0.12)]"
-            >
-              <div className="app-mobile-menu-head">
-                <div className="min-w-0">
-                  <div className="app-mobile-menu-eyebrow">전체 메뉴</div>
-                  <div className="app-mobile-menu-title">지금 볼 운세를 고르세요</div>
-                  <div className="app-mobile-menu-subtitle">자주 쓰는 메뉴만 먼저 보여드려요.</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="app-mobile-menu-close"
-                  aria-label="메뉴 닫기"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* 2026-05-14: 전체 메뉴를 5개 섹션으로 정리.
-                  자주 쓰는 4개 chip + 운세 / 사주풀이 / 관계상담 / 내 계정 / 안내. */}
-
-              {/* §자주 쓰는 (4 chip) */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {featureShortcutItems.map((item) => {
-                  const active = matchesPath(item, pathname);
-                  const meta = getNavMeta(item);
-
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        'app-mobile-feature-card',
-                        active && 'app-mobile-feature-card-active'
-                      )}
-                    >
-                      <span
-                        className="app-mobile-feature-glyph"
-                        style={{ backgroundColor: meta.accent }}
-                      >
-                        {meta.glyph}
-                      </span>
-                      <span className="app-mobile-feature-copy">
-                        <strong>{item.label}</strong>
-                        <em>{meta.description}</em>
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* §운세 — 무료/일상 운세 모음 */}
-              <MenuGroup
-                title="운세"
-                items={[
-                  { label: '오늘운세', href: '/today-fortune', desc: '오늘 한 줄' },
-                  { label: '무료 운세 모음', href: '/free', desc: '오늘운/타로/띠' },
-                  { label: '타로 한 장', href: '/tarot/daily', desc: '카드 한 장' },
-                  { label: '띠운세', href: '/zodiac', desc: '12 띠별 흐름' },
-                  { label: '별자리', href: '/star-sign', desc: '12 별자리' },
-                  { label: '꿈해몽', href: '/dream', desc: '꿈 단어 사전' },
-                  { label: '검색', href: '/search', desc: '메뉴·풀이 통합 검색' },
-                ]}
-                pathname={pathname}
-                onItemClick={() => setMobileMenuOpen(false)}
-              />
-
-              {/* §사주풀이 */}
-              <MenuGroup
-                title="사주 풀이"
-                items={[
-                  { label: '사주 시작하기', href: '/saju/new', desc: '생년월일 입력' },
-                  { label: '깊은 풀이 (49,000원)', href: '/saju', desc: '내 사주 종합 분석' },
-                  { label: '명리 입문', href: '/myeongri', desc: '사주 기초 개념' },
-                  { label: '십신·십성', href: '/myeongri/ten-gods', desc: '관계 신살 풀이' },
-                  { label: '대운 흐름', href: '/daewoon', desc: '10년 큰 흐름' },
-                  { label: '좋은 날 택일', href: '/taekil', desc: '중요한 일 잡기' },
-                  { label: '풀이 방식', href: '/method', desc: '엔진 작동 원리' },
-                  { label: '샘플 리포트', href: '/sample-report', desc: '미리보기' },
-                ]}
-                pathname={pathname}
-                onItemClick={() => setMobileMenuOpen(false)}
-              />
-
-              {/* §관계·상담 */}
-              <MenuGroup
-                title="관계·상담"
-                items={[
-                  { label: '궁합 보기', href: '/compatibility', desc: '두 사람 흐름' },
-                  { label: '대화방', href: '/dialogue', desc: '12간지 선생님' },
-                  { label: '1:1 상담 예약', href: '/dialogue/appointment', desc: '30분 깊은 상담' },
-                ]}
-                pathname={pathname}
-                onItemClick={() => setMobileMenuOpen(false)}
-              />
-
-              {/* §내 계정 */}
-              <MenuGroup
-                title="내 계정"
-                items={[
-                  { label: 'MY 홈', href: '/my', desc: '코인·보관·멤버십' },
-                  { label: '가족 사주', href: '/my/profile', desc: '내·가족 정보' },
-                  { label: '저장한 풀이', href: '/my/results', desc: '보관함' },
-                  { label: '결제 내역', href: '/my/billing', desc: '구매 기록' },
-                  { label: '멤버십', href: '/membership', desc: '월 4,900원~' },
-                  { label: '가격 안내', href: '/pricing', desc: '전체 상품' },
-                  { label: '코인 충전', href: '/credits', desc: '코인 잔액·구매' },
-                  { label: '알림 센터', href: '/notifications', desc: '푸시·위젯' },
-                  { label: '설정', href: '/my/settings', desc: '계정 관리' },
-                ]}
-                pathname={pathname}
-                onItemClick={() => setMobileMenuOpen(false)}
-              />
-
-              {/* §안내 */}
-              <MenuGroup
-                title="안내"
-                items={[
-                  { label: '이용 가이드', href: '/guide', desc: '서비스 안내' },
-                  { label: '엔진 소개', href: '/about-engine', desc: '간지사주 알고리즘' },
-                  { label: '이용약관', href: '/terms', desc: '서비스 약관' },
-                  { label: '개인정보처리방침', href: '/privacy', desc: '데이터 처리' },
-                ]}
-                pathname={pathname}
-                onItemClick={() => setMobileMenuOpen(false)}
-              />
-
-              <div className="mt-4">
-                <div className="app-mobile-menu-group-title mb-2">읽기 크기</div>
-                <ReadingComfortControl />
-              </div>
-
-              <div className="mt-4">
-                {user ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      void onSignOut();
-                    }}
-                    className="app-mobile-menu-auth"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>로그아웃</span>
-                  </button>
-                ) : (
-                  <Link
-                    href={authHref}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      buttonVariants({ variant: 'outline', size: 'sm' }),
-                      'app-mobile-menu-auth justify-center border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-ivory)] hover:bg-[var(--app-surface)] hover:text-[var(--app-ivory)]'
-                    )}
-                  >
-                    로그인
-                  </Link>
-                )}
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div className="app-top-header-shortcuts hidden border-t border-[var(--app-line)] bg-[var(--app-surface-muted)]">

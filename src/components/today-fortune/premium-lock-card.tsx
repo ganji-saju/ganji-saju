@@ -8,6 +8,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { trackMoonlightEvent } from '@/lib/analytics';
+// 2026-05-16 — today-detail 결제 중복 시도 차단을 위해 entitlement 확인 후
+//   결제 button 또는 "이미 구매" UI 분기.
+import { useProductEntitlement } from '@/lib/payments/use-product-entitlement';
 
 interface PremiumLockCardProps {
   copy: string;
@@ -28,6 +31,15 @@ export function PremiumLockCard({
   concernId,
   errorMessage,
 }: PremiumLockCardProps) {
+  // 2026-05-16 — 이 사용자가 같은 sourceSessionId 의 today-detail 을 이미 결제/언락
+  //   했다면 결제 button 대신 "이미 구매" UI 노출. 미인증/네트워크 실패 시는 기존 흐름.
+  const { hasEntitlement, openHref } = useProductEntitlement({
+    productId: 'today-detail',
+    slug: sourceSessionId,
+    scope: concernId,
+    enabled: Boolean(sourceSessionId),
+  });
+
   function handleUnlockClick() {
     trackMoonlightEvent('unlock_clicked', {
       from: 'today-fortune',
@@ -36,6 +48,39 @@ export function PremiumLockCard({
       productCode: 'TODAY_DETAIL_VIEW',
     });
     onUnlock();
+  }
+
+  // 이미 구매한 today-detail 인 경우 — 결제 button 대신 열람 link.
+  if (hasEntitlement && openHref) {
+    return (
+      <section
+        className="relative overflow-hidden rounded-[20px] border bg-white p-4"
+        style={{ borderColor: 'rgba(45,135,88,0.22)', boxShadow: '0 14px 36px rgba(45,135,88,0.08)' }}
+      >
+        <Link
+          href={openHref}
+          className="flex w-full items-center gap-3.5 text-left"
+        >
+          <ZodiacChip kind="snake" size="md" className="shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-extrabold tracking-[0.04em] text-[var(--app-jade)]">
+              ✓ 이미 구매한 풀이
+            </div>
+            <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              오늘 자세히 보기
+            </div>
+            <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+              결제 없이 바로 열람합니다
+            </div>
+          </div>
+          <span
+            className="shrink-0 inline-flex items-center rounded-full bg-[var(--app-jade)] px-3 py-2 text-[12px] font-extrabold text-white"
+          >
+            바로 열기 →
+          </span>
+        </Link>
+      </section>
+    );
   }
 
   return (

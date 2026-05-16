@@ -26,6 +26,9 @@ import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
+// 2026-05-16 — 멤버십 구독 중복 결제 차단을 위해 현재 활성 구독 조회.
+import { getManagedSubscription } from '@/lib/subscription';
+import { isSubscriptionPackage } from '@/lib/payments/catalog';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -171,6 +174,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     ? TASTE_PRODUCT_ZODIAC[selectedProduct] ?? 'dragon'
     : 'dragon';
   let alreadyPurchasedHref: string | null = null;
+  // 2026-05-16 — 이미 활성 중인 멤버십 구독을 다시 결제하면 토스 결제창에서
+  //   "no healthy upstream" 류 회귀가 발생하는 사용자 보고. checkout 단계에서
+  //   현재 활성 멤버십 plan 을 미리 확인해 중복 결제 시도 자체를 차단한다.
+  let activeMembershipPlan: string | null = null;
 
   if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
@@ -219,6 +226,14 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             from,
             scope,
           });
+        }
+      } else if (isSubscriptionPackage(paymentPackage)) {
+        // 멤버십(라이트/프리미엄) 활성 구독 보유 시 중복 결제 차단.
+        // - 같은 플랜 활성 → "이미 이용 중" 안내
+        // - 다른 플랜 활성 → 상향/하향 안내 (현재는 동일 처리, 추후 plan change 흐름 도입 시 분기 가능)
+        const subscription = await getManagedSubscription(user.id);
+        if (subscription && subscription.status === 'active' && subscription.plan === paymentPackage.subscriptionPlan) {
+          activeMembershipPlan = subscription.plan;
         }
       }
     }
@@ -445,6 +460,29 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
                   >
                     결제 상태 확인
+                  </Link>
+                </div>
+              ) : activeMembershipPlan ? (
+                // 2026-05-16 — 활성 멤버십 상태에서 같은 plan 결제 시도 차단.
+                <div className="grid gap-3 text-center">
+                  <strong className="text-[15px] font-extrabold text-[var(--app-jade)]">
+                    이미 이용 중인 멤버십입니다
+                  </strong>
+                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    중복 결제를 막기 위해 결제창을 열지 않습니다. 결제 상태와 다음
+                    갱신일은 결제 내역에서 확인해 주세요.
+                  </p>
+                  <Link
+                    href="/my/billing"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                  >
+                    결제 내역 보기
+                  </Link>
+                  <Link
+                    href="/membership"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                  >
+                    멤버십 화면으로
                   </Link>
                 </div>
               ) : paymentPackage ? (

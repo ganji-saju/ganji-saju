@@ -283,6 +283,9 @@ export default async function SajuPremiumPage({ params }: Props) {
   const targetYear = new Date().getFullYear();
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
+  // 2026-05-16 — 활성 멤버십 plan 을 추적해 plan=premium 결제 CTA 가 중복 결제로
+  //   이어지지 않도록 분기. checkout 단계에서도 차단되지만 진입 button 에서도 안내.
+  let activeMembershipPlan: string | null = null;
 
   if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
@@ -308,6 +311,9 @@ export default async function SajuPremiumPage({ params }: Props) {
         yearlyAccessLabel = subscription.plan === 'premium_monthly' ? 'Premium 이용권' : '라이트 이용권';
       } else if (yearCoreEntitlement) {
         yearlyAccessLabel = '올해 핵심 구매';
+      }
+      if (subscription && subscription.status === 'active') {
+        activeMembershipPlan = subscription.plan;
       }
     }
   }
@@ -679,12 +685,22 @@ export default async function SajuPremiumPage({ params }: Props) {
                     풀이 열기 →
                   </Link>
                   <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
-                      className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
-                    >
-                      멤버십으로 먼저
-                    </Link>
+                    {/* 2026-05-16 — 활성 프리미엄 멤버십이면 결제 link 대신 결제내역 link. */}
+                    {activeMembershipPlan === 'premium_monthly' ? (
+                      <Link
+                        href="/my/billing"
+                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                      >
+                        ✓ 멤버십 이용 중
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
+                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                      >
+                        멤버십으로 먼저
+                      </Link>
+                    )}
                     <Link
                       href={REPORT_SAMPLE_HREF}
                       className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"

@@ -4,8 +4,11 @@
 // 변경: pink-soft hero + 토큰 컬러(jade/coral/amber/indigo)별 섹션 +
 //       18-21px 제목 / 14px 본문 / 1.7 line-height 가독성 강화.
 import type { TodayFortunePremiumResult } from '@/lib/today-fortune/types';
+import { TodayPremiumQuestionChips } from './today-premium-question-chips';
 
 function trimEasySentence(value: string) {
+  // 2026-05-16 — "흐름→분위기", "기준→생각할 점" 치환이 오히려 사주 풀이 본문에서
+  //   의미를 흐리게 만든다는 피드백. "흐름/기준" 은 한국어로도 충분히 자연스러우므로 보존.
   const cleaned = value
     .replace(/시간대별/g, '')
     .replace(/선택 시나리오/g, '고민되는 상황')
@@ -13,8 +16,6 @@ function trimEasySentence(value: string) {
     .replace(/유리/g, '좋은')
     .replace(/주의/g, '조심')
     .replace(/권장/g, '추천')
-    .replace(/흐름/g, '분위기')
-    .replace(/기준/g, '생각할 점')
     .replace(/밀어붙이/g, '무리하게 진행하')
     .replace(/밀기보다/g, '무리하기보다')
     .replace(/밀어도 되는/g, '진행하기 좋은')
@@ -157,8 +158,12 @@ function ActionRow({
 
 export function TodayPremiumPanel({
   result,
+  sourceSessionId,
+  concernId,
 }: {
   result: TodayFortunePremiumResult;
+  sourceSessionId?: string;
+  concernId?: string;
 }) {
   // 2026-05-15 fix — 결제 후 페이지 빈약 회귀. 모든 windows/actions/scenarios 노출
   // (이전엔 top 2/3 만 slice). 1코인 결제 가치를 실제로 느끼게 함.
@@ -338,38 +343,14 @@ export function TodayPremiumPanel({
         </div>
       </article>
 
-      {/* §추가 질문 — 결제 전용. 무료에서는 chips 형태로 들어가지만 여기선 카드로 명시 */}
-      {followUpQuestions.length > 0 ? (
-        <article
-          className="rounded-[18px] border bg-white p-4 sm:p-5"
-          style={{ borderColor: 'var(--app-pink-line)' }}
-        >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            💭 깊이 들어갈 만한 질문
-          </div>
-          <h3
-            className="mt-1 text-[15px] font-extrabold leading-tight text-[var(--app-ink)]"
-            style={{ wordBreak: 'keep-all' }}
-          >
-            오늘 더 풀어볼 만한 질문들
-          </h3>
-          <ul className="mt-3 grid gap-1.5">
-            {followUpQuestions.slice(0, 5).map((q, idx) => (
-              <li
-                key={`${q}-${idx}`}
-                className="rounded-[12px] border px-3 py-2.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
-                style={{
-                  background: 'var(--app-pink-soft)',
-                  borderColor: 'var(--app-pink-line)',
-                  wordBreak: 'keep-all',
-                }}
-              >
-                <span className="mr-1.5 font-extrabold text-[var(--app-pink-strong)]">Q{idx + 1}.</span>
-                {q}
-              </li>
-            ))}
-          </ul>
-        </article>
+      {/* §추가 질문 — 결제 전용. 2026-05-16 — 정적 <li> → 클릭 가능한 client component.
+          누르면 /dialogue 로 이동하면서 입력창에 질문 prefill (autoStart 없음, 사용자가 전송 누름). */}
+      {followUpQuestions.length > 0 && sourceSessionId && concernId ? (
+        <TodayPremiumQuestionChips
+          questions={followUpQuestions}
+          sourceSessionId={sourceSessionId}
+          concernId={concernId}
+        />
       ) : null}
 
       {/* §사주 근거 — 결제 전용 evidence lines */}

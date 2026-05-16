@@ -529,13 +529,15 @@
   }
 }
 
-/* Saju result adaptation: UMG-style structure, Dalbit Life visual language. */
+/* Saju result adaptation: UMG-style structure, Dalbit Life visual language.
+   2026-05-16 — 5열 grid 가 6개 탭(총평·대운·상세·명식·성향·오행) 을 강제 줄바꿈
+   시켰다. 6열로 변경. font-size/padding 도 슬림화해 좁은 화면에서도 한 줄 유지. */
 .gangi-subpage-shell .gangi-saju-subtabs {
   position: sticky;
   top: var(--app-header-height, 4.5rem);
   z-index: 8;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0;
   margin-inline: 0;
   border: 0;
@@ -550,9 +552,9 @@
 .gangi-subpage-shell .gangi-saju-subtab {
   min-height: 3rem;
   border-radius: 0;
-  padding: 0.65rem 0.35rem;
+  padding: 0.65rem 0.2rem;
   color: rgba(17, 17, 20, 0.46);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 650;
 }
 
