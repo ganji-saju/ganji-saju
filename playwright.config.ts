@@ -1,11 +1,14 @@
 // 2026-05-16 PR #184 — Phase 2A: Playwright smoke E2E.
+// 2026-05-16 Phase 2B — 인증 fixture 추가 (auth project + storage state 재사용).
 //
 // 사용자 메타 피드백 후속 자동화. dead anchor 와 score invariant 만 잡지 못하는
 // UI 회귀 (페이지 진입 자체 깨짐 / 핵심 요소 미노출 / console error 등) 를
 // 매 PR 자동 검출.
 //
 // Phase 2A 는 인증 필요 없는 페이지만 검증 (홈, /pricing, /membership 등).
-// 사주 페이지는 Supabase 인증 + reading slug 필요 → 별도 fixture 작업 (Phase 2B).
+// Phase 2B 는 사주 페이지 등 인증 필요 페이지 검증. 처음 한 번 로그인해서
+// storage state 를 e2e/.auth/test-user.json 에 저장한 뒤 saju.spec.ts 들이
+// 동일 state 를 재사용 (Playwright 권장 패턴, https://playwright.dev/docs/auth).
 //
 // 로컬: npm run e2e
 // CI: Vercel preview URL 또는 next dev webServer
@@ -13,6 +16,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.PORT ?? 3000);
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
+
+// 인증 fixture 가 활성화될 때만 saju spec 실행. credentials 미주입 환경 (CI 등) 은
+// auth project 가 skip 처리 → saju spec 도 자동 skip. 회귀 없음.
+const AUTH_STORAGE_PATH = 'e2e/.auth/test-user.json';
+// E2E_TEST_USER_EMAIL 가 있을 때만 storageState 사용. 미설정 시 saju spec 자체
+// 가 beforeEach 에서 skip 하므로 storageState 가 로드되지 않아도 안전.
+const HAS_TEST_USER = Boolean(process.env.E2E_TEST_USER_EMAIL && process.env.E2E_TEST_USER_PASSWORD);
 
 export default defineConfig({
   testDir: './e2e',
@@ -30,9 +40,29 @@ export default defineConfig({
     video: 'off',
   },
   projects: [
+    // 인증 필요 없는 smoke (Phase 2A). 항상 실행.
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: ['**/saju.spec.ts', '**/auth.setup.ts'],
+    },
+    // 인증 setup — credentials 있으면 로그인 + storage state 저장. saju spec 의존성.
+    {
+      name: 'auth-setup',
+      testMatch: /auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Phase 2B 사주 페이지 등 인증 필요 spec.
+    {
+      name: 'chromium-auth',
+      use: {
+        ...devices['Desktop Chrome'],
+        // credentials 있을 때만 storageState 사용. 미설정 시 saju spec 의
+        // beforeEach 에서 자동 skip 되므로 storageState 가 없어도 무해.
+        ...(HAS_TEST_USER ? { storageState: AUTH_STORAGE_PATH } : {}),
+      },
+      dependencies: ['auth-setup'],
+      testMatch: /saju\.spec\.ts/,
     },
   ],
   // PLAYWRIGHT_BASE_URL 환경변수가 없으면 로컬 next dev 자동 실행.
