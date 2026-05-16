@@ -15,6 +15,13 @@ import {
   PAYMENT_PACKAGES,
   formatWon,
 } from '@/lib/payments/catalog';
+// 2026-05-16 — 활성 멤버십 plan 을 표시해 중복 결제 진입 차단.
+import { getManagedSubscription } from '@/lib/subscription';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -33,7 +40,21 @@ function getProductTeacher(index: number) {
   return FALLBACK_TEACHERS[index % FALLBACK_TEACHERS.length] ?? GANGI_TEACHERS[0];
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  // 2026-05-16 — 활성 멤버십 plan 조회. plan 카드에 "이용 중" + 결제 링크 비활성.
+  let activeMembershipPlan: string | null = null;
+  if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const subscription = await getManagedSubscription(user.id);
+      if (subscription && subscription.status === 'active') {
+        activeMembershipPlan = subscription.plan;
+      }
+    }
+  }
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
@@ -104,16 +125,40 @@ export default function PricingPage() {
                     <GangiMiniCard key={item} label={String(index + 1).padStart(2, '0')} desc={item} />
                   ))}
                 </div>
-                <Link
-                  href={
+                {(() => {
+                  // 2026-05-16 — 활성 멤버십 plan 이면 결제 link 대신 결제내역 link.
+                  const subscriptionPlanId =
                     plan.slug === 'premium'
-                      ? '/membership/checkout?plan=premium&from=pricing'
-                      : '/membership/checkout?plan=basic&from=pricing'
+                      ? 'premium_monthly'
+                      : plan.slug === 'basic'
+                        ? 'plus_monthly'
+                        : null;
+                  const isActive =
+                    subscriptionPlanId !== null &&
+                    activeMembershipPlan === subscriptionPlanId;
+                  if (isActive) {
+                    return (
+                      <Link
+                        href="/my/billing"
+                        className={plan.slug === 'premium' ? 'gangi-primary-button mt-4' : 'gangi-secondary-button mt-4'}
+                      >
+                        ✓ 이용 중 · 결제 내역
+                      </Link>
+                    );
                   }
-                  className={plan.slug === 'premium' ? 'gangi-primary-button mt-4' : 'gangi-secondary-button mt-4'}
-                >
-                  {plan.slug === 'premium' ? '프리미엄 보기' : '라이트 보기'}
-                </Link>
+                  return (
+                    <Link
+                      href={
+                        plan.slug === 'premium'
+                          ? '/membership/checkout?plan=premium&from=pricing'
+                          : '/membership/checkout?plan=basic&from=pricing'
+                      }
+                      className={plan.slug === 'premium' ? 'gangi-primary-button mt-4' : 'gangi-secondary-button mt-4'}
+                    >
+                      {plan.slug === 'premium' ? '프리미엄 보기' : '라이트 보기'}
+                    </Link>
+                  );
+                })()}
               </article>
             ))}
           </div>
