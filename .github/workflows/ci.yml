@@ -41,6 +41,9 @@ jobs:
       - name: Audit dead anchors (PR #183 회귀 차단)
         run: npm run audit:dead-anchors:strict
 
+      - name: Audit mockup placeholders (PR #194 회귀 차단 — credits 잔액 binding 누락 류)
+        run: npm run audit:mockup-placeholders:strict
+
       - name: Validate KASI calendar samples
         if: ${{ env.KASI_SERVICE_KEY != '' }}
         run: npm run validate:kasi
