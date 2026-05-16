@@ -32,10 +32,14 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        # --legacy-peer-deps: @tosspayments/payment-widget-sdk peer (typescript 4.x) vs package.json (typescript ^5) 충돌 우회
+        run: npm ci --legacy-peer-deps
 
       - name: Run unit tests
         run: npm test
+
+      - name: Audit dead anchors (PR #183 회귀 차단)
+        run: npm run audit:dead-anchors:strict
 
       - name: Validate KASI calendar samples
         if: ${{ env.KASI_SERVICE_KEY != '' }}
