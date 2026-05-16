@@ -224,9 +224,11 @@ function DesktopNavLink({
   const meta = getNavMeta(item);
 
   return (
+    // 2026-05-16 — `scroll={false}` 는 새 페이지 진입 시 이전 스크롤 위치를 유지함.
+    //   짧은 페이지로 이동할 때 "푸터로 화면이 점프했다가 전환" 회귀를 만들어 제거.
+    //   nav 클릭 시 기본 동작(새 페이지 상단으로 이동) 이 자연스러움.
     <Link
       href={item.href}
-      scroll={false}
       onClick={(event) => {
         if (active) event.preventDefault();
       }}
@@ -273,9 +275,9 @@ function DesktopNavChip({ item, pathname }: { item: NavItem; pathname: string })
   const meta = getNavMeta(item);
 
   return (
+    // 2026-05-16 — scroll={false} 제거 (push 스크롤 점프 회귀 fix).
     <Link
       href={item.href}
-      scroll={false}
       onClick={(event) => {
         if (active) event.preventDefault();
       }}
@@ -358,7 +360,6 @@ function DesktopSidebar({
             ) : (
               <Link
                 href={authHref}
-                scroll={false}
                 className="gangi-primary-button w-full"
               >
                 로그인
@@ -368,7 +369,6 @@ function DesktopSidebar({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/credits"
-                scroll={false}
                 className="gangi-secondary-button"
               >
                 <CreditCard className="h-3.5 w-3.5" />
@@ -376,7 +376,6 @@ function DesktopSidebar({
               </Link>
               <Link
                 href="/membership"
-                scroll={false}
                 className="gangi-secondary-button"
               >
                 <Sparkles className="h-3.5 w-3.5" />
@@ -562,7 +561,6 @@ function MobileChrome({
                     key={item.label}
                     href={item.href}
                     data-active={active}
-                    scroll={false}
                     className="relative inline-flex shrink-0 items-center rounded-[10px] px-3 py-2 text-[13.5px] font-bold transition-colors"
                     style={{
                       color: active

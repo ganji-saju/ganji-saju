@@ -508,11 +508,21 @@ function MajorLuckTimeline({
                     <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                       개운법 🧭
                     </div>
-                    <ol className="mt-2 grid gap-2">
+                    {/* 2026-05-16 — 사용자 보고: 박스 안에 박스가 들어 보임.
+                        개별 항목을 카드 형식 (rounded + border + bg-white) 에서
+                        구분선만 있는 list 형식으로 변경. 부모 details 카드와
+                        시각 layering 충돌 제거. */}
+                    <ol
+                      className="mt-2 divide-y rounded-[12px] border"
+                      style={{
+                        borderColor: 'var(--app-pink-line)',
+                        background: 'rgba(255,255,255,0.5)',
+                      }}
+                    >
                       {cycle.practicalActions.map((action, index) => (
                         <li
                           key={`${cycle.ganzi}-action-${index}`}
-                          className="rounded-[12px] border bg-white p-3"
+                          className="px-3 py-2.5"
                           style={{ borderColor: 'var(--app-pink-line)' }}
                         >
                           <div className="text-[11.5px] font-bold text-[var(--app-pink-strong)]">
@@ -520,13 +530,13 @@ function MajorLuckTimeline({
                           </div>
                           <p
                             className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
-                            style={{ wordBreak: 'keep-all' }}
+                            style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
                           >
                             <span className="font-bold text-[var(--app-copy-muted)]">왜 ›</span> {action.reason}
                           </p>
                           <p
                             className="mt-0.5 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
-                            style={{ wordBreak: 'keep-all' }}
+                            style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
                           >
                             <span className="font-bold text-[var(--app-copy-muted)]">어떻게 ›</span> {action.how}
                           </p>

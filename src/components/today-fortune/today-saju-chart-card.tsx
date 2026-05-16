@@ -128,25 +128,45 @@ export function TodaySajuChartCard({ chart }: Props) {
         })}
       </div>
 
-      {/* 오행 분포 막대 — 부족(⚠)·과다 표시 */}
+      {/* 오행 분포 — 5개를 한 줄(5열) compact grid 로. 게이지는 짧게.
+          2026-05-16 — 기존 한 행에 한 오행씩 5행 → 카드 길이만 늘리고 비교가 어려워
+          한 줄 5열 미니 게이지로 통일. 부족/과다 표시는 칩 대신 점/외곽선으로 컴팩트하게. */}
       <div className="mt-4">
         <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           오행 분포
         </div>
-        <ul className="mt-1.5 grid gap-1.5">
+        <ul className="mt-1.5 grid grid-cols-5 gap-1.5">
           {chart.fiveElements.map((el) => {
             const color = ELEMENT_COLOR[el.element];
             const pct = Math.max(2, el.percentage);
+            const lacking = el.count === 0;
+            const excess = el.isDominant && el.percentage >= 40;
             return (
-              <li key={el.element} className="flex items-center gap-2">
+              <li
+                key={el.element}
+                className="flex flex-col items-center rounded-[10px] px-1 py-1.5"
+                style={{
+                  background: lacking
+                    ? 'rgba(220,79,79,0.06)'
+                    : excess
+                      ? '#fff7e6'
+                      : 'transparent',
+                  border: lacking
+                    ? '1px solid rgba(220,79,79,0.22)'
+                    : excess
+                      ? '1px solid rgba(212,148,38,0.28)'
+                      : '1px solid transparent',
+                }}
+                title={lacking ? '부족한 오행' : excess ? '과다 오행' : undefined}
+              >
                 <span
-                  className="w-8 shrink-0 text-[12px] font-extrabold"
+                  className="text-[11px] font-extrabold leading-none"
                   style={{ fontFamily: 'var(--font-han)', color }}
                 >
                   {el.element}({ELEMENT_HAN[el.element]})
                 </span>
                 <div
-                  className="relative h-2 flex-1 overflow-hidden rounded-full"
+                  className="relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full"
                   style={{ background: 'var(--app-line)' }}
                 >
                   <span
@@ -154,26 +174,20 @@ export function TodaySajuChartCard({ chart }: Props) {
                     style={{ width: `${pct}%`, background: color }}
                   />
                 </div>
-                <span className="w-8 shrink-0 text-right text-[11.5px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <span className="mt-1 text-[10.5px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
                   {el.percentage}
                 </span>
-                {el.count === 0 ? (
+                {lacking ? (
                   <span
-                    className="shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-extrabold text-white"
-                    style={{ background: 'var(--app-coral)' }}
-                    title="부족한 오행"
+                    className="mt-1 text-[8.5px] font-extrabold leading-none"
+                    style={{ color: 'var(--app-coral)' }}
                   >
                     부족
                   </span>
-                ) : el.isDominant && el.percentage >= 40 ? (
+                ) : excess ? (
                   <span
-                    className="shrink-0 rounded-full border px-1.5 py-0.5 text-[9.5px] font-extrabold"
-                    style={{
-                      borderColor: 'rgba(212,148,38,0.32)',
-                      color: 'var(--app-amber)',
-                      background: '#fff7e6',
-                    }}
-                    title="과다 오행"
+                    className="mt-1 text-[8.5px] font-extrabold leading-none"
+                    style={{ color: 'var(--app-amber)' }}
                   >
                     과다
                   </span>

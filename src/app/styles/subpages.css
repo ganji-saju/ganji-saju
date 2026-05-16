@@ -13,6 +13,18 @@
   line-break: strict;
 }
 
+/* 2026-05-16 — 사용자 보고: 사주 페이지에서 텍스트가 박스를 넘어 노출.
+   Korean text(keep-all) 가 한 단어로 인식되는 hangul cluster + tight 카드폭
+   조합에서 발생. 모든 sub-page 본문 텍스트에 overflow-wrap: anywhere 안전망. */
+.gangi-subpage :where(p, li, h1, h2, h3, h4, h5, h6, dt, dd, span) {
+  overflow-wrap: anywhere;
+}
+
+/* 단, "한자/숫자/짧은 라벨" 박스들은 nowrap 유지가 의도이므로 화이트리스트 제외. */
+.gangi-subpage :where(.zodiac-chip, .gangi-saju-subtab, [data-keep-nowrap='true']) {
+  overflow-wrap: normal;
+}
+
 .gangi-loading-overlay {
   position: fixed;
   inset: 0;
@@ -1442,34 +1454,31 @@
   box-shadow: 0 10px 24px rgba(216, 27, 114, 0.12);
 }
 
+/* 2026-05-16 — 사용자 보고: 6개 탭(총평·대운·상세·명식·성향·오행) 이 옆으로 밀려
+   한 줄에 안 들어오던 회귀. flex:1 균등 분배 + padding/gap 슬림화 + overflow 제거. */
 .gangi-saju-subtabs {
   display: flex;
-  gap: 0.35rem;
-  overflow-x: auto;
+  gap: 0.2rem;
   margin-inline: 1rem;
-  padding: 0.35rem;
+  padding: 0.3rem;
   border: 1px solid var(--app-line);
   border-radius: 1.25rem;
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(17, 17, 20, 0.045);
-  scrollbar-width: none;
-}
-
-.gangi-saju-subtabs::-webkit-scrollbar {
-  display: none;
 }
 
 .gangi-saju-subtab {
   position: relative;
   display: inline-flex;
-  min-height: 2.25rem;
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 2.15rem;
   align-items: center;
   justify-content: center;
-  border-radius: 0.95rem;
-  padding: 0.55rem 0.85rem;
+  border-radius: 0.85rem;
+  padding: 0.45rem 0.3rem;
   color: rgba(17, 17, 20, 0.58);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0;

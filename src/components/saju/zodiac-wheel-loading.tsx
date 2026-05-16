@@ -1,9 +1,16 @@
 // 2026-05-16 PR #154 — 회전하는 12간지 사주 로딩 모션.
 // 첨부 AE 6초 시퀀스의 디자인 본질 (회전 12간지) 을 CSS+SVG 만으로 재현.
 // 작업 완료 시 호출자가 unmount → fade-out. 최소 노출 시간 가드는 호출자 측.
+//
+// 2026-05-16 — 사용자 보고: 로딩 화면이 화면 정중앙이 아닌 엉뚱한 위치에서 떠
+// 보이지 않는 회귀. 원인: 부모 `.app-shell-content` 의 `animation: app-fade-up`
+// keyframe 이 `transform: translateY()` 를 사용해 `position: fixed` containing
+// block 을 생성. fixed 가 viewport 가 아닌 부모 박스 기준 위치됨.
+// 해결: createPortal 로 document.body 에 직접 mount — ancestor transform 영향 0.
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './zodiac-wheel-loading.css';
 
 // 12 지지 한자 (子丑寅卯辰巳午未申酉戌亥) 와 30° 간격 배치.
@@ -40,6 +47,12 @@ export function ZodiacWheelLoading({
     return filled;
   }, [steps]);
 
+  // SSR 시 document 가 없으므로 mount 후에만 portal 생성.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // 12 지지 글자 위치 — 반지름 88px, 12 슬롯 30°씩.
   // 12시 방향 (-90°) 부터 시계방향.
   const RADIUS = 88;
@@ -51,7 +64,9 @@ export function ZodiacWheelLoading({
     return { ch, x, y };
   });
 
-  return (
+  if (!mounted) return null;
+
+  const overlay = (
     <div className="zodiac-wheel-overlay" role="status" aria-live="polite">
       <div className="zodiac-wheel-card">
         <div className="zodiac-wheel-eyebrow">잠시만요</div>
@@ -105,4 +120,6 @@ export function ZodiacWheelLoading({
       </div>
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }
