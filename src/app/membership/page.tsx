@@ -12,6 +12,13 @@ import {
   formatPaymentPackagePrice,
   getMembershipPackage,
 } from '@/lib/payments/catalog';
+// 2026-05-16 — 활성 멤버십을 표시하기 위해 구독 + 인증 조회 추가.
+import { getManagedSubscription } from '@/lib/subscription';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 const LIFETIME_REPORT_PACKAGE = getMembershipPackage('lifetime');
@@ -85,6 +92,26 @@ export default async function MembershipPage({
   // mockup 가격 hero — 가장 강조할 가격은 premium plan
   const featuredPlan = DIALOGUE_PLANS.find((p) => p.slug === 'premium') ?? DIALOGUE_PLANS[0];
 
+  // 2026-05-16 — 활성 멤버십 plan 조회. plan 카드에 "이용 중" 배지 표시 + 결제 링크 비활성.
+  let activeMembershipPlan: string | null = null;
+  if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const subscription = await getManagedSubscription(user.id);
+      if (subscription && subscription.status === 'active') {
+        activeMembershipPlan = subscription.plan;
+      }
+    }
+  }
+  // plan slug ('basic'/'premium') → subscriptionPlan ('plus_monthly'/'premium_monthly') 매핑.
+  const planSlugToSubscription = {
+    basic: 'plus_monthly',
+    premium: 'premium_monthly',
+  } as const;
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
@@ -106,37 +133,48 @@ export default async function MembershipPage({
             </p>
           </div>
 
-          {/* §2 Plan 2-col 카드 (basic / premium) */}
+          {/* §2 Plan 2-col 카드 (basic / premium).
+              2026-05-16 — 활성 멤버십이면 "이용 중" 배지 + 결제 링크 비활성. */}
           <section>
             <div className="grid grid-cols-2 gap-2">
               {DIALOGUE_PLANS.map((plan) => {
                 const isPremium = plan.slug === 'premium';
-                return (
-                  <Link
-                    key={plan.slug}
-                    href={`/membership/checkout?plan=${plan.slug}&from=membership`}
-                    className="block rounded-[16px] p-3.5 transition"
-                    style={
-                      isPremium
-                        ? {
-                            background: 'var(--app-pink-soft)',
-                            border: '2px solid var(--app-pink)',
-                          }
-                        : {
-                            background: '#fff',
-                            border: '1px solid var(--app-line)',
-                          }
+                const subscriptionPlanId =
+                  plan.slug === 'basic' || plan.slug === 'premium'
+                    ? planSlugToSubscription[plan.slug]
+                    : null;
+                const isActive =
+                  subscriptionPlanId !== null && activeMembershipPlan === subscriptionPlanId;
+                const cardStyle = isPremium
+                  ? {
+                      background: 'var(--app-pink-soft)',
+                      border: '2px solid var(--app-pink)',
                     }
-                  >
-                    <div
-                      className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
-                      style={{
-                        color: isPremium
-                          ? 'var(--app-pink-strong)'
-                          : 'var(--app-copy-soft)',
-                      }}
-                    >
-                      {plan.badge}
+                  : {
+                      background: '#fff',
+                      border: '1px solid var(--app-line)',
+                    };
+                const cardInner = (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
+                        style={{
+                          color: isPremium
+                            ? 'var(--app-pink-strong)'
+                            : 'var(--app-copy-soft)',
+                        }}
+                      >
+                        {plan.badge}
+                      </div>
+                      {isActive ? (
+                        <span
+                          className="rounded-full px-1.5 py-0.5 text-[9.5px] font-extrabold text-white"
+                          style={{ background: 'var(--app-jade)' }}
+                        >
+                          이용 중
+                        </span>
+                      ) : null}
                     </div>
                     <div className="mt-1.5 text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {plan.price}
@@ -144,6 +182,29 @@ export default async function MembershipPage({
                     <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
                       {plan.title}
                     </div>
+                  </>
+                );
+                if (isActive) {
+                  // 활성 멤버십은 결제 link 대신 결제내역 link 로.
+                  return (
+                    <Link
+                      key={plan.slug}
+                      href="/my/billing"
+                      className="block rounded-[16px] p-3.5 transition"
+                      style={cardStyle}
+                    >
+                      {cardInner}
+                    </Link>
+                  );
+                }
+                return (
+                  <Link
+                    key={plan.slug}
+                    href={`/membership/checkout?plan=${plan.slug}&from=membership`}
+                    className="block rounded-[16px] p-3.5 transition"
+                    style={cardStyle}
+                  >
+                    {cardInner}
                   </Link>
                 );
               })}

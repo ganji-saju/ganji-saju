@@ -22,6 +22,15 @@ import { buildLifetimeReport } from '@/domain/saju/report';
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+// 2026-05-16 — lifetime 결제 CTA 가 이미 구매한 사용자에게도 결제 button 으로 보여
+//   중복 결제 진입을 유도하던 회귀. entitlement 확인 후 CTA 분기.
+import { toSlug } from '@/lib/saju/pillars';
+import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
+import {
+  createClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -312,6 +321,19 @@ export default async function SajuDeepPage({ params }: Props) {
   if (!reading) notFound();
 
   const { input, sajuData } = reading;
+  // 2026-05-16 — lifetime 결제 CTA 분기를 위한 entitlement 조회.
+  const readingKey = toSlug(input);
+  let hasLifetimeAccess = false;
+  if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const entitlement = await getLifetimeReportEntitlement(user.id, readingKey, [slug]);
+      if (entitlement) hasLifetimeAccess = true;
+    }
+  }
   // 2026-05-15 cleanup — 깊은 탭의 진짜 깊은 콘텐츠 = 대운 cycle 8단 풀이. 룰 기반으로
   // hook/body/mental/relationship/wealthCareer/practicalActions/closingNote 가 모두 채워진다.
   const lifetime = buildLifetimeReport(input, sajuData);
@@ -461,18 +483,28 @@ export default async function SajuDeepPage({ params }: Props) {
                 >
                   69,000원
                 </div>
-                <TrackedLink
-                  href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=saju-deep`}
-                  eventName="report_deep_report_click"
-                  eventParams={{
-                    slug,
-                    product: 'lifetime-report',
-                    from: 'saju_deep_premium_cta',
-                  }}
-                  className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-                >
-                  결제하기 →
-                </TrackedLink>
+                {/* 2026-05-16 — 이미 구매한 사용자는 결제 CTA 대신 풀이 보기로. */}
+                {hasLifetimeAccess ? (
+                  <Link
+                    href={`/saju/${encodeURIComponent(slug)}/premium`}
+                    className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-jade)] px-5 py-2.5 text-[13px] font-extrabold text-white"
+                  >
+                    ✓ 구매한 풀이 보기
+                  </Link>
+                ) : (
+                  <TrackedLink
+                    href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=saju-deep`}
+                    eventName="report_deep_report_click"
+                    eventParams={{
+                      slug,
+                      product: 'lifetime-report',
+                      from: 'saju_deep_premium_cta',
+                    }}
+                    className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                  >
+                    결제하기 →
+                  </TrackedLink>
+                )}
               </div>
             </article>
 
