@@ -45,6 +45,11 @@ function CreditsPageContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  // 2026-05-17 — ink-dark "현재 보유" 카드의 잔액 binding. redesign 시 placeholder
+  //   ("✦ —" / "로그인 후 잔액과 충전 내역이 표시됩니다") 가 hardcoded 로 남아
+  //   로그인한 사용자에게도 "로그인하세요" 안내가 노출되던 회귀 fix.
+  //   SiteHeader / mega-nav 와 동일한 user_credits 직접 조회 패턴 + event listen.
+  const [credits, setCredits] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(DEFAULT_TOSS_PAYMENT_METHOD);
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
@@ -61,7 +66,39 @@ function CreditsPageContent() {
       return;
     }
     const supabase = createClient();
-    void getCurrentBrowserUser(supabase).then((user) => setIsLoggedIn(Boolean(user)));
+    let cancelled = false;
+
+    void (async () => {
+      const user = await getCurrentBrowserUser(supabase);
+      if (cancelled) return;
+      setIsLoggedIn(Boolean(user));
+      if (!user) {
+        setCredits(null);
+        return;
+      }
+      const { data } = await supabase
+        .from('user_credits')
+        .select('balance, subscription_balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setCredits((data?.balance ?? 0) + (data?.subscription_balance ?? 0));
+    })();
+
+    // 결제 완료 / 코인 소진 시 SiteHeader 가 dispatch 하는 event 를 listen — 즉시 갱신.
+    const syncFromEvent = (event: Event) => {
+      const detail = (event as CustomEvent<{ credits?: number; remaining?: number }>).detail;
+      const next = typeof detail?.credits === 'number' ? detail.credits : detail?.remaining;
+      if (typeof next === 'number') {
+        setCredits(next);
+      }
+    };
+    window.addEventListener('moonlight:credits-updated', syncFromEvent);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('moonlight:credits-updated', syncFromEvent);
+    };
   }, []);
 
   const selectedPackage = useMemo(
@@ -167,7 +204,11 @@ function CreditsPageContent() {
                 className="text-[36px] font-extrabold tracking-tighter"
                 style={{ color: 'var(--app-pink)' }}
               >
-                ✦ —
+                {isLoggedIn === false
+                  ? '✦ —'
+                  : credits === null
+                    ? '✦ …'
+                    : `✦ ${credits.toLocaleString()}`}
               </div>
               <span className="pb-1.5 text-[14px] font-bold" style={{ opacity: 0.6 }}>
                 코인
@@ -177,7 +218,11 @@ function CreditsPageContent() {
               className="mt-2 text-[11.5px]"
               style={{ opacity: 0.6 }}
             >
-              로그인 후 잔액과 충전 내역이 표시됩니다
+              {isLoggedIn === false
+                ? '로그인 후 잔액과 충전 내역이 표시됩니다'
+                : credits === null
+                  ? '잔액 확인 중…'
+                  : '결제 즉시 잔액에 반영됩니다'}
             </p>
           </article>
 
