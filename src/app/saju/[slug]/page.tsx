@@ -28,6 +28,9 @@ import type { ReportScore, SajuReport } from '@/domain/saju/report';
 //   buildSajuReport 의 자체 clampScore(48~92) 산식 대신 iljinScore.totalScore 기반으로 덮어쓴다.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
+// 2026-05-16 PR #181 — 6 영역 카드 통일 (총운/직장/재물/연애/관계/컨디션).
+//   사주 메인/상세 + 운세 페이지에서 공유하는 SajuAreaCardsSection 사용.
+import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -321,9 +324,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   // Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenSajuResult):
   // 5 핵심 섹션 — Summary / Pillars / Scores / Small picks / Next-step CTA. 데이터·라우팅 무수정.
   const summaryChips = punchReading.personalPoints.slice(0, 3);
-  const mainScores = (['overall', 'love', 'wealth', 'career'] as const)
-    .map((key) => report.scores.find((s) => s.key === key))
-    .filter((s): s is ReportScore => Boolean(s));
 
   const SMALL_PICKS: Array<{
     label: string;
@@ -458,57 +458,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </p>
             </section>
 
-            {/* §3 분야별 흐름 — 점수+막대 (overall/love/wealth/career) */}
-            <section>
-              <h2 className="mb-3 text-[16px] font-extrabold text-[var(--app-ink)]">
-                오늘의 분야별 흐름
-              </h2>
-              <div className="grid gap-2.5">
-                {mainScores.map((score) => {
-                  const color =
-                    score.key === 'overall'
-                      ? 'var(--app-pink-strong)'
-                      : score.key === 'love'
-                        ? 'var(--app-coral)'
-                        : score.key === 'wealth'
-                          ? 'var(--app-amber)'
-                          : 'var(--app-jade)';
-                  const value = Math.max(0, Math.min(100, Math.round(score.score)));
-                  return (
-                    <article
-                      key={score.key}
-                      className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[14px] font-bold text-[var(--app-ink)]">
-                          {score.label}
-                        </span>
-                        <span
-                          className="text-[18px] font-extrabold tracking-tighter"
-                          style={{ color }}
-                        >
-                          {value}
-                        </span>
-                      </div>
-                      <div
-                        className="relative mt-2 h-1.5 overflow-hidden rounded-full"
-                        style={{ background: 'var(--app-line)' }}
-                      >
-                        <span
-                          className="absolute inset-y-0 left-0 rounded-full"
-                          style={{ width: `${value}%`, background: color }}
-                        />
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-              <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy-soft)]">
-                오늘 점수 {overallScore ?? '--'}{overallScore !== null ? '점' : ''} ·{' '}
-                {getScoreStatus(overallScore)} ·{' '}
-                {focusScore?.label ?? report.focusBadge}
-              </p>
-            </section>
+            {/* §3 분야별 흐름 — 6 영역 통일 카드 (PR #181, 공유 컴포넌트). */}
+            <SajuAreaCardsSection input={input} sajuData={sajuData} />
+
 
             {/* §4 더 보고 싶은 질문 — 가격 pill + 제목 + 한 줄 */}
             <section>

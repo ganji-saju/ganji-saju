@@ -26,7 +26,7 @@ interface CategoryMeta {
 const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
   overall: {
     icon: '🌅',
-    label: '오늘의 운세 총론',
+    label: '총운',
     accent: 'var(--app-pink-strong)',
     bodyHints: {
       high:
@@ -136,8 +136,9 @@ function buildBlueHeadline(score: number, summary: string): string {
 }
 
 export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResult }) {
-  // 운세톡톡 벤치마크: 총론(overall) 은 banner 에서 이미 큰 카드로 보여줬으므로 여기선 제외.
-  const items = result.scores.filter((score) => score.key !== 'overall');
+  // 2026-05-16 PR #181 — 사용자 요구 6 영역 통일 (총운 포함). 사주 메인/상세 페이지와 항목 일치.
+  //   이전엔 overall 을 banner 가 노출한다고 제외했지만, 항목 일치가 더 중요 (사용자 신뢰).
+  const items = result.scores;
 
   return (
     <section aria-label="카테고리별 오늘운세">
