@@ -51,6 +51,9 @@ interface TodayFortuneBuildOptions {
   counselorId?: MoonlightCounselorId | null;
   grounding?: SajuInterpretationGrounding | null;
   kasiComparison?: KasiSingleInputComparison | null;
+  // 2026-05-18: 테스트 전용 — fixed Date 주입으로 다른 "오늘" 시뮬레이션.
+  // production 호출자는 미사용 → getTodayPillarSnapshot 이 new Date() default.
+  now?: Date;
 }
 
 const SCORE_LABELS: Record<TodayScoreItem['key'], string> = {
@@ -875,8 +878,21 @@ const TODAY_BRANCH_ELEMENTS: Record<string, Element> = {
   '申': '금', '酉': '금', '戌': '토', '亥': '수',
 };
 
-export function getTodayPillarSnapshot(sajuData: SajuDataV1): TodayPillarSnapshot {
-  const calculatedAt = sajuData.metadata?.calculatedAt ?? new Date().toISOString();
+export function getTodayPillarSnapshot(
+  sajuData: SajuDataV1,
+  options?: { now?: Date }
+): TodayPillarSnapshot {
+  // 2026-05-18 root cause fix (E2E saju.spec.ts:157 회귀):
+  //   기존: `sajuData.metadata?.calculatedAt ?? new Date().toISOString()`
+  //   문제: stored reading (saju 페이지) 의 calculatedAt = reading 생성 시점 (과거).
+  //         fresh sajuData (today-fortune API) 의 calculatedAt = 지금.
+  //         두 페이지가 다른 "오늘 ganzi" → 점수 불일치 (KST 자정 후 매일 fail).
+  //   의도 (코멘트): "매일 다르게 흐르도록 오늘 ganzi". calculatedAt 이 아닌 실제 오늘이 기준.
+  //   대운/세운/월운 산출은 별도 함수에서 sajuData.metadata.calculatedAt 을 그대로 사용 — 영향 없음.
+  //
+  //   options.now 는 테스트 전용: 다른 "오늘" 시뮬레이션 시 fixed Date 주입.
+  //   production 호출자는 now 없이 호출 → 항상 실제 오늘.
+  const calculatedAt = (options?.now ?? new Date()).toISOString();
   const timezone = sajuData.input?.timezone ?? 'Asia/Seoul';
   const local = getLocalDateTimeSnapshot(calculatedAt, timezone);
   try {
@@ -2568,7 +2584,8 @@ export function buildTodayFortuneFreeResult(
   const careerReport = buildSajuReport(input, sajuData, 'career');
   const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
   // 2026-05-15: 매일 다른 결과를 위해 오늘 일진 스냅샷 + element delta 적용.
-  const todayPillar = getTodayPillarSnapshot(sajuData);
+  // 2026-05-18: options.now 가 있으면 fixed Date 사용 (테스트 전용) — 없으면 new Date() (production).
+  const todayPillar = getTodayPillarSnapshot(sajuData, { now: options.now });
   const dailyDelta = buildDailyDelta(todayPillar, sajuData);
   const profile = buildPublicTodayProfile(input, sajuData, options, todayPillar);
   const conditionScore = clampScore(
@@ -2588,7 +2605,8 @@ export function buildTodayFortuneFreeResult(
   // PR #165 — iljinScore 를 scores 정규화 전에 미리 계산.
   // 2026-05-16 PR #179 — inline 로직을 computeSajuIljinScore + unifyScoresWithIljinScore helper 로 추출.
   //   사주 페이지(서버 컴포넌트)에서도 동일 helper 호출해 두 페이지 점수 일치 보장.
-  const iljinScoreResult = computeSajuIljinScore(sajuData);
+  // 2026-05-18 — options.now 전달 (테스트 전용 fixed Date).
+  const iljinScoreResult = computeSajuIljinScore(sajuData, { now: options.now });
   const computedIljinScore = iljinScoreResult
     ? {
         totalScore: iljinScoreResult.totalScore,
@@ -2758,8 +2776,11 @@ export function buildSajuOriginForIljin(
 // 2026-05-16 PR #179 — 사주 페이지에서 동일한 iljinScore 통일 절차를 재사용하기 위한 wrapper.
 // getTodayPillarSnapshot + deriveLuckyElements + buildSajuOriginForIljin + calculateIljinScore
 // 4단계를 묶어 하나의 호출로. 시 미입력 등 todayPillar 부족 시 null 반환.
-export function computeSajuIljinScore(sajuData: SajuDataV1) {
-  const todayPillar = getTodayPillarSnapshot(sajuData);
+export function computeSajuIljinScore(
+  sajuData: SajuDataV1,
+  options?: { now?: Date }
+) {
+  const todayPillar = getTodayPillarSnapshot(sajuData, options);
   if (!todayPillar.stem || !todayPillar.branch) return null;
   const { lucky, unlucky } = deriveLuckyElements(sajuData);
   const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
@@ -2774,7 +2795,9 @@ export function buildTodayFortunePremiumResult(
   sajuData: SajuDataV1,
   concernId: ConcernId,
   grounding?: SajuInterpretationGrounding | null,
-  kasiComparison?: KasiSingleInputComparison | null
+  kasiComparison?: KasiSingleInputComparison | null,
+  // 2026-05-18: 테스트 전용 — fixed Date 주입으로 다른 "오늘" 시뮬레이션.
+  options?: { now?: Date }
 ): TodayFortunePremiumResult {
   const concern = getTodayConcern(concernId);
   const todayReport = buildSajuReport(input, sajuData, 'today');
@@ -2785,7 +2808,8 @@ export function buildTodayFortunePremiumResult(
 
   // 2026-05-15: free 결과와 동일한 일진/시드 컨텍스트를 자세히 보기에도 주입.
   // premium 빌더 시그니처는 그대로 두고 내부에서 derive — caller 영향 없음.
-  const todayPillar = getTodayPillarSnapshot(sajuData);
+  // 2026-05-18: options.now 전달 (테스트 전용 fixed Date).
+  const todayPillar = getTodayPillarSnapshot(sajuData, options);
   const dailyDelta = buildDailyDelta(todayPillar, sajuData);
   const flowSignal = buildTodayFlowSignal(todayPillar, sajuData);
   const signatureSeed = buildSignatureSeed(
