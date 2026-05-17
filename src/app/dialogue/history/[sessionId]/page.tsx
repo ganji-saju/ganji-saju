@@ -1,4 +1,4 @@
-// 2026-05-15 — 특정 대화 세션의 전체 메시지 보기.
+// Redesign 2026-05-15 — 특정 대화 세션의 전체 메시지 보기.
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
