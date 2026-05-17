@@ -1,3 +1,5 @@
+// Redesign 2026-05-17 — design token + inline + Tailwind utility (이미 적용 상태).
+// 대운 hub: 사주 입력 안내 + 대운 예시. sibling /saju/[slug]/deep (PR #204) 와 시각 통일.
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
