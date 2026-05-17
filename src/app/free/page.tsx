@@ -1,3 +1,7 @@
+// Redesign 2026-05-17 — design system component (GangiIntro / GangiListLink / GangiPageHeader)
+// 기반 무료운세 허브. UI 는 components/gangi/gangi-ui.tsx 의 design system 안에 있고,
+// page 자체는 data-driven mapping (GANGI_FREE_HUB_ITEMS). 별도 inline style 없이 시스템
+// component 의 일관 시각 사용 — sibling /free 흐름 (사주 / 타로 / 띠) 들과 통일.
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppShell } from '@/shared/layout/app-shell';
