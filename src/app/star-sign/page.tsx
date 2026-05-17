@@ -24,7 +24,7 @@ import {
   type SignQuality,
   type StarSignSlug,
 } from '@/lib/star-sign/sign-content';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '별자리',
@@ -81,24 +81,43 @@ export default async function StarSignPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="star-sign"
-              className="border-[var(--app-sky)]/25 bg-[var(--app-sky)]/10 text-[var(--app-sky)]"
+        {/* 2026-05-17 PR — PageHero → inline + design token (sibling redesign 패턴). */}
+        <section className="px-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              style={{
+                border: '1px solid var(--app-sky)',
+                background: 'rgba(56, 189, 248, 0.1)',
+                color: 'var(--app-sky)',
+              }}
             >
               별자리
-            </Badge>,
-            <Badge
-              key="today"
-              className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]"
+            </span>
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              style={{
+                border: '1px solid var(--app-pink-line)',
+                background: 'var(--app-pink-soft)',
+                color: 'var(--app-pink-strong)',
+              }}
             >
               {dateKey} 기준
-            </Badge>,
-          ]}
-          title={hasPersonalizedProfile ? `선생님은 ${featured.item.label}` : '오늘 12 별자리 운세'}
-          description="원소·점수·하이라이트를 한눈에 비교하고 내 별자리 상세 흐름을 확인하세요."
-        />
+            </span>
+          </div>
+          <h1
+            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+          >
+            {hasPersonalizedProfile ? `선생님은 ${featured.item.label}` : '오늘 12 별자리 운세'}
+          </h1>
+          <p
+            className="mt-2 text-[14px] leading-[1.7]"
+            style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+          >
+            원소·점수·하이라이트를 한눈에 비교하고 내 별자리 상세 흐름을 확인하세요.
+          </p>
+        </section>
 
         {/* §1 개인 추천 또는 featured */}
         <section className="px-1">
