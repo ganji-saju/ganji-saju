@@ -18,6 +18,10 @@
  *   - Rule 2 (WARNING): page.tsx / layout.tsx 에 `// Redesign 2026-05-` 주석 없음.
  *     redesign 마커가 없다 = 신스타일로 옮겨졌다는 흔적 없음 (단, 작은 stub 페이지
  *     또는 admin 페이지는 의도된 케이스 — inline marker 로 mute).
+ *   - Rule 3 (CRITICAL, 2026-05-17 보강): legacy layout component (PageHero /
+ *     SectionSurface / SectionHeader / FeatureCard / ProductGrid / ActionCluster /
+ *     BulletList / SupportRail) JSX 사용. PR #193 / #206 / #207 redesign 시 inline
+ *     + design token 패턴으로 교체한 component — 신규 회귀 즉시 차단.
  *
  * Inline ignore — 의도된 케이스 (admin / stub / 신규 redesign-X 페이지) mute:
  *   - 같은 라인 또는 직전 라인에 `// audit-redesign: skip`
@@ -124,6 +128,23 @@ function collectEntryPages(dir, results = []) {
 const LEGACY_CLASS_PATTERN =
   /\bgangi-(?:today-detail|paid-detail|detail-chip|result-flow)-[a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]\b|\bgangi-detail-kicker\b/g;
 
+// 2026-05-17 Rule 3 — legacy layout component JSX 사용 (PR #193 / #206 / #207 패턴).
+// `<PageHero ...>` 같은 JSX open tag — type annotation 등 false positive 차단.
+const LEGACY_LAYOUT_COMPONENTS = [
+  'PageHero',
+  'SectionSurface',
+  'SectionHeader',
+  'FeatureCard',
+  'ProductGrid',
+  'ActionCluster',
+  'BulletList',
+  'SupportRail',
+];
+const LEGACY_LAYOUT_PATTERN = new RegExp(
+  `<(${LEGACY_LAYOUT_COMPONENTS.join('|')})(?=[\\s/>])`,
+  'g',
+);
+
 const REDESIGN_MARKER = /\/\/\s*Redesign\s+2026-0[1-9]/;
 
 function shouldIgnoreFile(content) {
@@ -163,6 +184,26 @@ function auditFile(file, content) {
       rule: 'legacy-css-class',
       lineNumber,
       detail: className,
+    });
+  }
+
+  // Rule 3 (CRITICAL): legacy layout component JSX 사용.
+  LEGACY_LAYOUT_PATTERN.lastIndex = 0;
+  const seenLayout = new Set();
+  for (const match of content.matchAll(LEGACY_LAYOUT_PATTERN)) {
+    const lineNumber = content.slice(0, match.index).split('\n').length;
+    const lineIndex = lineNumber - 1;
+    if (shouldIgnoreLine(lines, lineIndex)) continue;
+    const componentName = match[1];
+    const dedupeKey = `${componentName}:${lineNumber}`;
+    if (seenLayout.has(dedupeKey)) continue;
+    seenLayout.add(dedupeKey);
+    findings.push({
+      file: relPath,
+      severity: 'CRITICAL',
+      rule: 'legacy-layout-component',
+      lineNumber,
+      detail: `<${componentName}> JSX 사용 — inline + design token 패턴으로 교체 필요`,
     });
   }
 
