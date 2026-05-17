@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/server';
 import { getUserProfileById } from '@/lib/profile';
 import { resolveMoonlightCounselor } from '@/lib/counselors';
 import {
+  getKoreaAccessDay,
   hasDetailReportAccess,
+  hasTodayFortuneDailyAccess,
   hasTodayFortunePremiumAccess,
   unlockTodayFortunePremium,
 } from '@/lib/credits/detail-report-access';
@@ -64,18 +66,21 @@ export async function POST(req: NextRequest) {
   //   row 가 있어도 매치 안 돼 새로고침마다 deduct. PR #192 (entitlement API 같은 패턴)
   //   와 동일 fallback — 3 path 어느 한쪽이라도 access 있으면 deduct skip.
   const readingKey = toSlug(reading.input);
+  const todayKey = getKoreaAccessDay();
   const accessSource = await resolveTodayFortuneUnlockAccess(
     user.id,
     {
       sourceSessionId,
       readingKey,
       scopeKey: buildTodayDetailScopeKey(sourceSessionId),
+      todayKey,
     },
     {
       getTodayDetailEntitlement: (userId, scopeKey) =>
         getTasteProductEntitlement(userId, 'today-detail', scopeKey),
       hasTodayFortunePremiumAccess,
       hasDetailReportAccess,
+      hasTodayFortuneDailyAccess,
     },
   );
 

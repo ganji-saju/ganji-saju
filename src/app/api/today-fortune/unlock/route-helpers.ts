@@ -16,6 +16,8 @@ export interface TodayFortuneUnlockScope {
   sourceSessionId: string;
   readingKey: string;
   scopeKey: string;
+  // 2026-05-17 — KST 'YYYY-MM-DD'. 같은 날 broadest fallback 용.
+  todayKey: string;
 }
 
 export interface TodayFortuneUnlockDeps {
@@ -23,12 +25,15 @@ export interface TodayFortuneUnlockDeps {
   getTodayDetailEntitlement: (userId: string, scopeKey: string) => Promise<unknown>;
   hasTodayFortunePremiumAccess: (userId: string, sourceSessionId: string) => Promise<boolean>;
   hasDetailReportAccess: (userId: string, readingKey: string) => Promise<boolean>;
+  // 2026-05-17 — broadest fallback (사용자 명시 요구: "같은 날 두 번 결제 차단").
+  hasTodayFortuneDailyAccess: (userId: string, dateKey: string) => Promise<boolean>;
 }
 
 export type TodayFortuneAccessSource =
   | 'taste-product'
   | 'coin-session'
   | 'coin-reading'
+  | 'coin-daily'
   | null;
 
 export async function resolveTodayFortuneUnlockAccess(
@@ -49,6 +54,13 @@ export async function resolveTodayFortuneUnlockAccess(
   //    같은 reading 의 today-fortune / saju-detail 어느 쪽에서 결제했어도 동일 access.
   if (await deps.hasDetailReportAccess(userId, scope.readingKey)) {
     return 'coin-reading';
+  }
+
+  // 4) coin unlock by KST 일자 (broadest fallback — 사용자 명시 요구).
+  //    sourceSessionId / readingKey 가 어떤 이유로 매치 못 잡아도 같은 user 가
+  //    같은 날 detail_report 1코인 결제를 했다면 reused — 같은 날 두 번 차감 차단.
+  if (await deps.hasTodayFortuneDailyAccess(userId, scope.todayKey)) {
+    return 'coin-daily';
   }
 
   return null;
