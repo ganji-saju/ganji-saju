@@ -28,6 +28,8 @@
     "audit:mockup-placeholders:strict": "node scripts/audit-mockup-placeholders.mjs --strict",
     "audit:redesign-coverage": "node scripts/audit-redesign-coverage.mjs",
     "audit:redesign-coverage:strict": "node scripts/audit-redesign-coverage.mjs --strict",
+    "audit:payment-idempotency": "node scripts/audit-payment-idempotency.mjs",
+    "audit:payment-idempotency:strict": "node scripts/audit-payment-idempotency.mjs --strict",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
