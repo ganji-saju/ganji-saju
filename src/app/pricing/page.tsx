@@ -1,3 +1,6 @@
+// Redesign 2026-05-17 — design system component (GangiIntro / GangiListLink / GangiMiniCard /
+// GangiPageHeader / GangiSection / GangiActionRow) 기반 가격 비교 페이지. design system
+// component 안에 시각 일관성 있는 token 적용 — sibling /credits / /membership 페이지와 통일.
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
