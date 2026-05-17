@@ -1,15 +1,12 @@
+// Redesign 2026-05-17 — PageHero / SectionSurface / SectionHeader / FeatureCard /
+// ProductGrid → inline + design token + Tailwind utility (PR #193 / #198 / #206 / #207 / #211).
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
-import { SectionHeader } from '@/components/layout/section-header';
-import { SectionSurface } from '@/components/layout/section-surface';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
-import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -42,6 +39,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+const PANEL_STYLE = {
+  border: '1px solid rgba(17, 17, 20, 0.08)',
+  borderRadius: '1.25rem',
+  background: '#ffffff',
+  padding: '1.4rem 1.15rem',
+  boxShadow: '0 16px 38px -28px rgba(17, 17, 20, 0.32)',
+} as const;
+
+const SOFT_FEATURE_STYLE = {
+  border: '1px solid var(--app-pink-line)',
+  borderRadius: '0.95rem',
+  background: 'var(--app-pink-soft)',
+  padding: '0.95rem',
+} as const;
+
+const KICKER_STYLE = {
+  color: 'var(--app-pink-strong)',
+  fontSize: '0.76rem',
+  fontWeight: 760,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+} as const;
+
 export default async function DreamInterpretationDetailPage({ params }: Props) {
   const { slug } = await params;
   const item = getDreamEntry(slug);
@@ -53,78 +73,151 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
   const relatedItems = DREAM_ENTRIES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
 
   return (
-    <AppShell header={<SiteHeader />} className="pb-24 md:pb-12">
-      <AppPage className="space-y-6">
-        <PageHero
-          badges={[
-            <Badge
-              key="detail"
-              className="border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]"
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage space-y-5 sm:space-y-6">
+        <GangiPageHeader title="꿈해몽" backHref="/dream-interpretation" />
+
+        {/* Hero — badge + title + description */}
+        <section className="px-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              style={{
+                border: '1px solid var(--app-pink-line)',
+                background: 'var(--app-pink-soft)',
+                color: 'var(--app-pink-strong)',
+              }}
             >
               꿈해몽
-            </Badge>,
-            <Badge key="free" className="border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]">
+            </span>
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              style={{
+                border: '1px solid var(--app-line)',
+                background: '#ffffff',
+                color: 'var(--app-copy-muted)',
+              }}
+            >
               무료 풀이
-            </Badge>,
-          ]}
-          title={item.title}
-          description={item.summary}
-        />
+            </span>
+          </div>
+          <h1
+            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+          >
+            {item.title}
+          </h1>
+          <p
+            className="mt-2 text-[14px] leading-[1.7]"
+            style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+          >
+            {item.summary}
+          </p>
+        </section>
 
-        <ProductGrid columns={2}>
-          <FeatureCard
-            surface="soft"
-            eyebrow="보통 이렇게 봅니다"
-            description={item.meaning}
-          />
-          <FeatureCard
-            surface="soft"
-            eyebrow="오늘 해볼 행동"
-            description={item.action}
-          />
-        </ProductGrid>
+        {/* §풀이 + 행동 — 2 card */}
+        <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
+          <article style={SOFT_FEATURE_STYLE}>
+            <div
+              className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+              style={{ color: 'var(--app-pink-strong)' }}
+            >
+              보통 이렇게 봅니다
+            </div>
+            <p
+              className="mt-1.5 text-[13px] leading-[1.7]"
+              style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+            >
+              {item.meaning}
+            </p>
+          </article>
+          <article style={SOFT_FEATURE_STYLE}>
+            <div
+              className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+              style={{ color: 'var(--app-pink-strong)' }}
+            >
+              오늘 해볼 행동
+            </div>
+            <p
+              className="mt-1.5 text-[13px] leading-[1.7]"
+              style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+            >
+              {item.action}
+            </p>
+          </article>
+        </div>
 
-        <SectionSurface size="lg">
-          <SectionHeader
-            eyebrow="다음으로"
-            title="마음에 남는 질문을 더 이어보세요"
-          />
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/tarot/daily">
-              <Button className="px-6">
-                오늘의 타로 보기
-              </Button>
+        {/* §다음으로 — CTA 2 button */}
+        <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+          <div style={KICKER_STYLE}>다음으로</div>
+          <h2
+            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+          >
+            마음에 남는 질문을 더 이어보세요
+          </h2>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Link
+              href="/tarot/daily"
+              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
+              style={{
+                background: 'var(--app-pink)',
+                boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
+              }}
+            >
+              오늘의 타로 보기
             </Link>
-            <Link href="/dream-interpretation">
-              <Button variant="outline">
-                꿈해몽 목록으로 돌아가기
-              </Button>
+            <Link
+              href="/dream-interpretation"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
+              style={{
+                border: '1px solid var(--app-line)',
+                color: 'var(--app-ink)',
+                boxShadow: '0 12px 28px -24px rgba(17, 17, 20, 0.32)',
+              }}
+            >
+              꿈해몽 목록으로
             </Link>
           </div>
-        </SectionSurface>
+        </article>
 
-        <section>
-          <SectionHeader
-            eyebrow="다른 꿈도 보기"
-            title="비슷한 꿈해몽"
-          />
-          <ProductGrid columns={3} className="mt-5">
+        {/* §다른 꿈도 보기 — related */}
+        <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+          <div style={KICKER_STYLE}>다른 꿈도 보기</div>
+          <h2
+            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+          >
+            비슷한 꿈해몽
+          </h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {relatedItems.map((entry) => (
               <Link
                 key={entry.slug}
                 href={`/dream-interpretation/${entry.slug}`}
-                className="group"
+                className="block rounded-[0.95rem] transition"
+                style={{
+                  border: '1px solid var(--app-line)',
+                  background: '#ffffff',
+                  padding: '0.95rem',
+                }}
               >
-                <FeatureCard
-                  surface="soft"
-                  className="h-full transition group-hover:-translate-y-0.5 group-hover:border-[var(--app-pink-line)]"
-                  title={entry.title}
-                  description={entry.summary}
-                />
+                <h3
+                  className="text-[14px] font-extrabold leading-snug tracking-tight"
+                  style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+                >
+                  {entry.title}
+                </h3>
+                <p
+                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+                >
+                  {entry.summary}
+                </p>
               </Link>
             ))}
-          </ProductGrid>
-        </section>
+          </div>
+        </article>
       </AppPage>
     </AppShell>
   );
