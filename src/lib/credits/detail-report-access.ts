@@ -147,6 +147,24 @@ export async function hasTodayFortunePremiumAccess(
   });
 }
 
+// 2026-05-17 정확한 fix — PR #199 의 supabase MCP evidence 가 확정한 root cause:
+//   production row 가 모두 kind=today_fortune_premium_access + readingKey 보유.
+//   PR #196 의 coin-reading path 가 잘못된 kind (detail_report_access) 만 조회 →
+//   같은 reading 의 새 sourceSessionId 진입에서 매번 매치 실패 → deduct.
+//
+// 올바른 매치: kind=today_fortune_premium_access + readingKey (sourceSessionId 무관).
+// JSONB `@>` 가 metadata `{kind, sourceSessionId, readingKey, ...}` 에 `{kind, readingKey}`
+// 포함 매치 — sourceSessionId 가 매번 새로 생성되어도 readingKey 일치하면 reused.
+export async function hasTodayFortunePremiumAccessByReading(
+  userId: string,
+  readingKey: string
+) {
+  return hasFeatureAccess(userId, 'detail_report', {
+    kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND,
+    readingKey,
+  });
+}
+
 // 2026-05-17 사용자 명시 요구 — "같은 날 두 번 결제 차단".
 // PR #196 의 sourceSessionId / readingKey 기반 fallback 이 어떤 이유로 매치 못
 // 잡는 케이스 (RPC race / metadata 미스매치 / 새 reading 등) 대비 broadest
