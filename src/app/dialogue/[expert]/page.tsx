@@ -1,3 +1,6 @@
+// Redesign 2026-05-17 — expert 별 대화 채팅 페이지. UI 는 DialogueChatPanel
+// client component 안에 있고 server page 는 expert resolve + entitlement + 채팅
+// panel mount. design token (var(--app-*)) 사용, sibling /dialogue/history 와 통일.
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
