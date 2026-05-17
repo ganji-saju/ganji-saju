@@ -102,3 +102,39 @@
 - Next.js 16 에서 `middleware → proxy` 리네임 적용됨 (`src/proxy.ts`). 외부 lint/audit 도구가 legacy `middleware.ts` 만 검사한다면 누락 위험
 - `src/app/(public)/legal/` 디렉터리 = `.gitkeep` 만. 향후 정책 페이지 신설 위치 후보
 - `src/proxy.ts:82` 의 `/dashboard` 가드 = 라우트 인벤토리에 없음 → dead code 가능 (P2 확인)
+
+---
+
+## 10. 사용자 명세 ↔ 실제 코드 매핑 (Phase 0 추가)
+
+사용자 directive 의 핵심 라우트 17개 검증. 상세는 [`incomplete-ui-inventory.md`](incomplete-ui-inventory.md) §4 참고.
+
+| 사용자 명세 | 실제 코드 | 상태 |
+|---|---|---|
+| `/` | `src/app/page.tsx` | ✅ |
+| `/onboarding` | `src/app/onboarding/page.tsx` | ✅ |
+| `/pricing` | `src/app/pricing/page.tsx` | ✅ |
+| `/membership/checkout` | `src/app/membership/checkout/page.tsx` | ✅ |
+| **`/coins`** | ❌ → `/credits` | 🔴 명세 불일치 |
+| `/today-fortune` | `src/app/today-fortune/page.tsx` | ✅ |
+| `/saju/new` | `src/app/saju/new/page.tsx` | ✅ |
+| `/dialogue` | `src/app/dialogue/page.tsx` | ✅ |
+| `/dialogue/appointment` | `src/app/dialogue/appointment/page.tsx` | 🔴 P0 |
+| `/zodiac` | `src/app/zodiac/page.tsx` | ✅ |
+| `/zodiac/[sign]` | `src/app/zodiac/[slug]/page.tsx` | 🟡 param 명 다름 |
+| **`/horoscope`** | ❌ → `/star-sign` | 🔴 명세 불일치 |
+| **`/horoscope/[sign]`** | ❌ → `/star-sign/[slug]` | 🔴 명세 불일치 |
+| `/dream-interpretation` | ❌ (인덱스 없음, `/dream` 진입만) | 🟡 |
+| `/dream-interpretation/[slug]` | `src/app/dream-interpretation/[slug]/page.tsx` | ✅ |
+| `/login` | `src/app/login/page.tsx` | 🔴 동의 부재 |
+| `/terms` | `src/app/terms/page.tsx` | 🔴 개정일·버전 |
+| `/privacy` | `src/app/privacy/page.tsx` | 🔴 법정 필수 |
+
+### 10.1 결정 필요 사항 (Phase 2 / Phase 10 처리)
+
+| 명세 라우트 | 권장 옵션 |
+|---|---|
+| `/coins` ↔ `/credits` | B) `/coins` → `/credits` 301 alias (코드 리네임 비용 vs SEO 가치 평가 후) |
+| `/horoscope` ↔ `/star-sign` | B) `/horoscope` → `/star-sign` 301 alias (영문 SEO 키워드 유입 위해 권장) |
+| `/zodiac/[sign]` ↔ `/zodiac/[slug]` | C) param 명만 다름 — 변경 불요 (코드 동작 동일) |
+| `/dream-interpretation` 인덱스 | A) 신설 (꿈해몽 카테고리 hub) — Phase 10 SEO 확장과 같이 처리 |

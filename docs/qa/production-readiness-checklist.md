@@ -54,6 +54,18 @@
 - [ ] env validator (`src/lib/env-guard.ts`) production 빌드 시 필수 secret 누락 차단 (Phase 5+9)
 - [ ] migration 016 `lifetime-report` CHECK 제약 확인 + 누락 시 갱신 migration (Phase 6)
 
+### 미완성 UI 정리 (Phase 4-B, [incomplete-ui-inventory.md](../audit/incomplete-ui-inventory.md))
+- [ ] `/membership/page.tsx` 3개 "준비 중" 카드 → hidden 또는 가격 확정
+- [ ] `/lock-screen` → `notFound()` 또는 라우트 제거
+- [ ] `/search` → noindex + 헤더 검색 진입점 hidden (또는 검색 완성)
+- [ ] `gangi-ui.tsx` 상담사 "준비 중" 카드 → hidden
+- [ ] `/help` "1:1 문의 준비 중" 배지 → contact-form 정식화 또는 카피 통일
+
+### 사용자 명세 라우트 매핑 (Phase 2 또는 10)
+- [ ] `/coins` → `/credits` 301 alias 결정 + 적용
+- [ ] `/horoscope` → `/star-sign` 301 alias 결정 + 적용
+- [ ] `/dream-interpretation` 인덱스 페이지 신설 결정
+
 ---
 
 ## 🟡 P1 (배포 후 즉시 후속 — 1~2 주 내)

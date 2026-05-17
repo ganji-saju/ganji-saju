@@ -116,19 +116,29 @@ const LEGACY_SITE_HOSTS = new Set([
 
 ---
 
-## Phase 4 — 가짜 평점 제거 (긴급)
+## Phase 4 — 가짜 평점 제거 + 미완성 UI 정리 (긴급)
 
-### 목표
-표시광고법 위반 소지 즉시 제거. 운영자 입력 받은 AI 페르소나 표기 가이드 적용.
+### PR 분해
+- **4-A**: 가짜 평점 제거 (표시광고법 즉시 대응)
+- **4-B**: 사용자 직접 노출 "준비 중" UI 정리 ([`incomplete-ui-inventory.md`](../../audit/incomplete-ui-inventory.md) §1)
 
-### 영향 파일
+### 4-A 영향 파일
 - Modify: `src/app/dialogue/appointment/page.tsx:29` — `meta: '경력 18년 · ★ 4.9 (312)'` 제거
 - Modify: 동일 라인의 DEFAULT_TEACHER metadata 를 "AI 페르소나" 안내 카피로 대체
 - Modify: `src/content/moonlight.ts` `DALBIT_TEACHERS` 12종 — 사용자에게 AI 임을 명시할 카피 추가 필요한지 검토
 - 운영자 입력: AI 페르소나 표기 가이드 ([`legal-required-fields.md`](../../legal-required-fields.md) §1.2)
 
+### 4-B 영향 파일 (선택 — 별도 PR 가능)
+- Modify: `src/app/membership/page.tsx:48,56,64` — 3개 "준비 중" 카드 hidden 또는 가격 확정 후 카드 활성
+- Modify: `src/app/lock-screen/page.tsx` — `notFound()` 처리 또는 라우트 자체 제거
+- Modify: `src/app/search/page.tsx` + 헤더 진입점 — 검색 기능 hidden (메인 헤더에서 검색 아이콘 제거 또는 코밍순 안내)
+- Modify: `src/components/gangi/gangi-ui.tsx` — `DALBIT_TEACHERS` 의 "준비 중" 가격 항목 필터링 강화 (`gangi-market.tsx:374` 의 `isComingSoon` 활용)
+- Modify: `src/features/notifications/notification-center-page.tsx:879~904` — 4건 "준비 중" 알림 옵션 hidden 또는 카피 통일
+- Modify: `src/app/help/page.tsx:54` — "✦ 준비 중" 1:1 문의 배지 처리
+
 ### 위험
 - 사용자가 평점/경력 보고 결제하던 흐름이 있다면 일시적 전환율 하락 가능. 그러나 법적 리스크가 압도
+- 4-B 카드 hidden 시 카탈로그 노출 감소 — 정확한 가격 확정이 우선이면 4-B 머지 시점 조정 가능
 
 ### Phase 5 와 합칠 수 있으나, 법적 리스크 = 즉시 별도 PR 권장
 

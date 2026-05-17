@@ -236,6 +236,11 @@
 13. **코인 유효기간 FAQ "1년" vs 구현 영구** (정책-구현 불일치)
 14. **vitest *.spec.ts CI 미실행** (payment-duplicate-audit 포함)
 15. **env validator 부재** — 필수 secret 누락 시 빌드 차단 없음
+16. **`/membership/page.tsx` 3개 멤버십 카드 가격 = "준비 중"** — 결제 전환 차단 ([incomplete-ui-inventory §1.1](incomplete-ui-inventory.md#11))
+17. **`/lock-screen` 페이지 전체 SHELL** — mock data + "준비 중" badge + disabled CTA ([§1.2](incomplete-ui-inventory.md#12))
+18. **`/search` 검색 미완성** — "검색 준비 중입니다" 노출 ([§1.3](incomplete-ui-inventory.md#13))
+19. **상담사 7+ 명 가격 "준비 중"** — gangi-ui 노출 ([§1.4](incomplete-ui-inventory.md#14))
+20. **사용자 명세 라우트 불일치** — `/coins`, `/horoscope` 미존재 (실제: `/credits`, `/star-sign`) ([§4](incomplete-ui-inventory.md#4))
 
 ### 🟡 P1
 1. legacy host 오타 (`ganji-saju-ganji-saju-vercel.app`)
@@ -278,7 +283,7 @@
 
 ## 8. 후속 작업 — Phase 2~N
 
-본 audit 의 P0/P1 해결은 [`../superpowers/plans/2026-05-17-production-hardening.md`](../superpowers/plans/2026-05-17-production-hardening.md) 의 단계별 plan 으로 실행한다.
+본 audit 의 P0/P1 해결은 [`../superpowers/plans/2026-05-17-production-hardening.md`](../superpowers/plans/2026-05-17-production-hardening.md) 의 단계별 plan 으로 실행한다. 추가로 [`incomplete-ui-inventory.md`](incomplete-ui-inventory.md) §1 의 사용자 직접 노출 P0 (`/membership` 가격 / `/lock-screen` / `/search` / 상담사 카드) 는 Phase 4-B 후보로 동시 처리 권장.
 
 | Phase | 주제 | 예상 PR |
 |---|---|---|
