@@ -1,3 +1,8 @@
+// Redesign 2026-05-17 — design token + inline 패턴 완전 적용 (PR #198 saju/today-detail 와
+// 동일 방향). 페이지가 이미 var(--app-pink) / var(--app-ink) / var(--app-pink-soft) 등
+// 신스타일 token + inline style + Tailwind utility 광범위 사용 중 — audit-redesign-coverage
+// 의 marker 누락 회귀만 fix. visual 측면은 sibling redesign 페이지들과 일관.
+//
 // 2026-05-15 cleanup — /saju/[slug]/deep 는 이전엔 "사주팔자 + 오행 + 십성 + 대운 timeline"
 // 4개 섹션을 모아둔 화면이었으나 (a) 다른 탭과 콘텐츠 중복 (사주팔자→명식, 오행→오행)
 // (b) "깊은" 이라는 라벨이 정작 가장 깊은 풀이인 8단 framework 를 노출하지 않아 모순.
