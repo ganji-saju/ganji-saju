@@ -25,7 +25,14 @@ export interface TodayFortuneUnlockDeps {
   getTodayDetailEntitlement: (userId: string, scopeKey: string) => Promise<unknown>;
   hasTodayFortunePremiumAccess: (userId: string, sourceSessionId: string) => Promise<boolean>;
   hasDetailReportAccess: (userId: string, readingKey: string) => Promise<boolean>;
-  // 2026-05-17 — broadest fallback (사용자 명시 요구: "같은 날 두 번 결제 차단").
+  // 2026-05-17 PR #200 — 올바른 kind 로 readingKey 매치 (today_fortune_premium_access).
+  // PR #196 evidence 가 확정: production row 모두 today_fortune_premium_access kind →
+  // detail_report_access kind 만 조회하던 hasDetailReportAccess 가 매번 false 반환.
+  hasTodayFortunePremiumAccessByReading: (
+    userId: string,
+    readingKey: string,
+  ) => Promise<boolean>;
+  // 2026-05-17 PR #199 — broadest fallback (사용자 명시 요구: "같은 날 두 번 결제 차단").
   hasTodayFortuneDailyAccess: (userId: string, dateKey: string) => Promise<boolean>;
 }
 
@@ -50,8 +57,13 @@ export async function resolveTodayFortuneUnlockAccess(
     return 'coin-session';
   }
 
-  // 3) coin unlock by readingKey — credits/use route 가 저장하는 detail_report_access kind.
-  //    같은 reading 의 today-fortune / saju-detail 어느 쪽에서 결제했어도 동일 access.
+  // 3) coin unlock by readingKey — 두 kind 모두 시도 (PR #200 정확한 fix):
+  //    a) today_fortune_premium_access kind (production row 의 실제 kind, evidence 기반)
+  //    b) detail_report_access kind (credits/use route 가 저장 — saju-detail 경로)
+  //    같은 reading 의 어느 entry 에서 결제했어도 동일 access.
+  if (await deps.hasTodayFortunePremiumAccessByReading(userId, scope.readingKey)) {
+    return 'coin-reading';
+  }
   if (await deps.hasDetailReportAccess(userId, scope.readingKey)) {
     return 'coin-reading';
   }

@@ -14,6 +14,7 @@ const allFalseDeps = {
   getTodayDetailEntitlement: async () => null,
   hasTodayFortunePremiumAccess: async () => false,
   hasDetailReportAccess: async () => false,
+  hasTodayFortunePremiumAccessByReading: async () => false,
   hasTodayFortuneDailyAccess: async () => false,
 };
 
@@ -41,13 +42,27 @@ test('returns "coin-session" when only today_fortune_premium_access row by sourc
   assert.equal(result, 'coin-session');
 });
 
-test('returns "coin-reading" when only detail_report_access row by readingKey exists', async () => {
+test('returns "coin-reading" when only detail_report_access row by readingKey exists (saju-detail 경로)', async () => {
   const result = await resolveTodayFortuneUnlockAccess(
     'user-1',
     baseScope,
     {
       ...allFalseDeps,
       hasDetailReportAccess: async (_u, k) => k === 'reading-key-abc',
+    },
+  );
+  assert.equal(result, 'coin-reading');
+});
+
+test('returns "coin-reading" when only today_fortune_premium_access row by readingKey exists (PR #200 정확한 fix — evidence)', async () => {
+  // production row 의 실제 kind. PR #196 fallback (hasDetailReportAccess) 가
+  // 잘못된 kind 만 조회해서 매번 false 였던 회귀의 정확한 fix.
+  const result = await resolveTodayFortuneUnlockAccess(
+    'user-1',
+    baseScope,
+    {
+      ...allFalseDeps,
+      hasTodayFortunePremiumAccessByReading: async (_u, k) => k === 'reading-key-abc',
     },
   );
   assert.equal(result, 'coin-reading');
@@ -81,6 +96,10 @@ test('short-circuits — entitlement 매치 시 coin/daily 조회 skip', async (
         coinCalls += 1;
         return true;
       },
+      hasTodayFortunePremiumAccessByReading: async () => {
+        coinCalls += 1;
+        return true;
+      },
       hasDetailReportAccess: async () => {
         coinCalls += 1;
         return true;
@@ -107,6 +126,10 @@ test('short-circuits — coin-session 매치 시 coin-reading / coin-daily 조�
         downstreamCalls += 1;
         return true;
       },
+      hasTodayFortunePremiumAccessByReading: async () => {
+        downstreamCalls += 1;
+        return true;
+      },
       hasTodayFortuneDailyAccess: async () => {
         downstreamCalls += 1;
         return true;
@@ -117,21 +140,25 @@ test('short-circuits — coin-session 매치 시 coin-reading / coin-daily 조�
   assert.equal(downstreamCalls, 0, 'coin-session 매치 후 reading/daily 조회는 호출되지 않아야 함');
 });
 
-test('short-circuits — coin-reading 매치 시 coin-daily 조회 skip', async () => {
-  let dailyCalls = 0;
+test('short-circuits — coin-reading (today_fortune_premium_access by readingKey) 매치 시 detail_report_access / daily 조회 skip', async () => {
+  let downstreamCalls = 0;
   const result = await resolveTodayFortuneUnlockAccess(
     'user-1',
     baseScope,
     {
       getTodayDetailEntitlement: async () => null,
       hasTodayFortunePremiumAccess: async () => false,
-      hasDetailReportAccess: async () => true,
+      hasTodayFortunePremiumAccessByReading: async () => true,
+      hasDetailReportAccess: async () => {
+        downstreamCalls += 1;
+        return true;
+      },
       hasTodayFortuneDailyAccess: async () => {
-        dailyCalls += 1;
+        downstreamCalls += 1;
         return true;
       },
     },
   );
   assert.equal(result, 'coin-reading');
-  assert.equal(dailyCalls, 0, 'coin-reading 매치 후 daily 조회는 호출되지 않아야 함');
+  assert.equal(downstreamCalls, 0, 'coin-reading 매치 후 detail_report_access / daily 조회는 호출되지 않아야 함');
 });

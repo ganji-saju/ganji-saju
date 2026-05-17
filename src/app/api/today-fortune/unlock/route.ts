@@ -10,6 +10,7 @@ import {
   hasDetailReportAccess,
   hasTodayFortuneDailyAccess,
   hasTodayFortunePremiumAccess,
+  hasTodayFortunePremiumAccessByReading,
   unlockTodayFortunePremium,
 } from '@/lib/credits/detail-report-access';
 import {
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
       getTodayDetailEntitlement: (userId, scopeKey) =>
         getTasteProductEntitlement(userId, 'today-detail', scopeKey),
       hasTodayFortunePremiumAccess,
+      hasTodayFortunePremiumAccessByReading,
       hasDetailReportAccess,
       hasTodayFortuneDailyAccess,
     },
