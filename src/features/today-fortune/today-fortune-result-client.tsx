@@ -33,6 +33,7 @@ import { PushPermissionPrompt } from '@/components/notifications/push-permission
 const WEB_PUSH_PUBLIC_KEY = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? '';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
+import { markPendingUnlock } from '@/lib/today-fortune/unlock-marker';
 import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 // PR #166 — prefix 버전업. 옛 캐시 (점수 미통일 / 이름 누락) 자동 무효화.
@@ -155,6 +156,8 @@ export function TodayFortuneResultClient({
 
   function handleUnlock() {
     if (!freeResult) return;
+    // 2026-05-17 PR #201 — detail page 가 자동 POST 트리거할 수 있게 sessionStorage marker.
+    markPendingUnlock(freeResult.sourceSessionId);
     // 2026-05-16 fix — window.location.href 는 풀-페이지 리로드라
     //   페이지 전환 직전에 브라우저 default 동작(focus 이동/스크롤)이 노출되며
     //   "화면이 푸터로 점프했다가 페이지 전환" 회귀를 만들었음.

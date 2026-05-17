@@ -31,6 +31,98 @@ function readString(payload: Record<string, unknown>, key: string) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+// 2026-05-17 PR #201 — 자동 POST → 사용자 액션 UX 리팩토링.
+//   detail page 새로고침 시 deduct trigger 안 함 (defense in depth — PR #199/#200
+//   server-side idempotency 가 backstop 이지만 client 도 의도 명확히).
+//   GET 은 read-only: entitlement check + content 반환, no deduct.
+//   POST 는 기존 동작 (4-tier idempotency 후 first-time 차감).
+export async function GET(req: NextRequest) {
+  const sourceSessionId = req.nextUrl.searchParams.get('sourceSessionId')?.trim() ?? '';
+
+  if (!sourceSessionId) {
+    return NextResponse.json({ error: '열어볼 오늘 결과가 필요합니다.' }, { status: 400 });
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+  }
+
+  const reading = await resolveReading(sourceSessionId);
+  if (!reading) {
+    return NextResponse.json({ error: '오늘 결과를 다시 불러오지 못했습니다.' }, { status: 404 });
+  }
+
+  if (reading.userId && reading.userId !== user.id) {
+    return NextResponse.json({ error: '본인의 결과만 열 수 있습니다.' }, { status: 403 });
+  }
+
+  const concernId = normalizeConcernId(req.nextUrl.searchParams.get('concernId'));
+  const profile = await getUserProfileById(user.id);
+  const counselorId = resolveMoonlightCounselor(
+    req.nextUrl.searchParams.get('counselorId'),
+    profile.preferredCounselor,
+  );
+
+  const readingKey = toSlug(reading.input);
+  const todayKey = getKoreaAccessDay();
+  const accessSource = await resolveTodayFortuneUnlockAccess(
+    user.id,
+    {
+      sourceSessionId,
+      readingKey,
+      scopeKey: buildTodayDetailScopeKey(sourceSessionId),
+      todayKey,
+    },
+    {
+      getTodayDetailEntitlement: (userId, scopeKey) =>
+        getTasteProductEntitlement(userId, 'today-detail', scopeKey),
+      hasTodayFortunePremiumAccess,
+      hasTodayFortunePremiumAccessByReading,
+      hasDetailReportAccess,
+      hasTodayFortuneDailyAccess,
+    },
+  );
+
+  if (!accessSource) {
+    // 아직 결제 안 됨 — content 안 줌. client 가 결제 흐름으로 redirect.
+    return NextResponse.json({ ok: true, hasAccess: false, accessSource: null });
+  }
+
+  // entitlement 있음 — content 반환 (no deduct).
+  const todaySajuData = calculateSajuDataV1(reading.input);
+  const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
+    concernId,
+    sourceSessionId,
+    calendarType: 'solar',
+    timeRule: 'standard',
+    counselorId,
+    grounding: reading.grounding,
+    kasiComparison: reading.kasiComparison,
+  });
+  const result = buildTodayFortunePremiumResult(
+    reading.input,
+    todaySajuData,
+    concernId,
+    reading.grounding,
+    reading.kasiComparison,
+  );
+
+  return NextResponse.json({
+    ok: true,
+    hasAccess: true,
+    accessSource,
+    freeResult,
+    result,
+    access: accessSource === 'taste-product' ? 'purchased' : 'reused',
+    counselorId,
+  });
+}
+
 export async function POST(req: NextRequest) {
   const payload = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   const sourceSessionId = payload ? readString(payload, 'sourceSessionId') : '';

@@ -13,6 +13,7 @@ import { TodayPremiumPanel } from '@/components/today-fortune/today-premium-pane
 import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
+import { consumePendingUnlock } from '@/lib/today-fortune/unlock-marker';
 import type {
   ConcernId,
   TodayFortuneFreeResult,
@@ -37,7 +38,13 @@ interface TodayFortuneUnlockResponse {
   error?: string;
   remaining?: number;
   access?: 'charged' | 'reused' | 'purchased';
+  hasAccess?: boolean;
 }
+
+// 2026-05-17 PR #201 — 자동 POST → 사용자 액션 UX 리팩토링.
+//   sessionStorage marker (`unlock-marker.ts`) 가 결제 trigger 의도 표시.
+//   detail page mount → consumePendingUnlock 으로 marker 확인 + 자동 clear.
+//   marker 있음 → POST (deduct). 없음 → GET (read-only).
 
 function getAccessNotice(access: TodayFortuneUnlockResponse['access']) {
   switch (access) {
@@ -91,16 +98,30 @@ export function TodayFortuneDetailClient({
       const MIN_LOADING_MS = 600;
       const loadingStartedAt = Date.now();
 
+      // 2026-05-17 PR #201 — sessionStorage marker 보고 POST vs GET 분기.
+      //   marker 있음 (무료 페이지의 handleUnlock 이 방금 set) → POST (deduct trigger 의도)
+      //   marker 없음 (새로고침 / 직접 URL) → GET (read-only). entitlement false 면 무료 페이지 redirect.
+      const isFirstTimeUnlock = consumePendingUnlock(activeSourceSessionId);
+
       try {
-        const response = await fetch('/api/today-fortune/unlock', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sourceSessionId: activeSourceSessionId,
-            concernId,
-            counselorId,
-          }),
-        });
+        const response = isFirstTimeUnlock
+          ? await fetch('/api/today-fortune/unlock', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sourceSessionId: activeSourceSessionId,
+                concernId,
+                counselorId,
+              }),
+            })
+          : await fetch(
+              `/api/today-fortune/unlock?${new URLSearchParams({
+                sourceSessionId: activeSourceSessionId,
+                concernId,
+                counselorId: counselorId ?? '',
+              }).toString()}`,
+              { cache: 'no-store' },
+            );
         const data = (await response.json().catch(() => null)) as TodayFortuneUnlockResponse | null;
 
         if (cancelled) return;
@@ -114,6 +135,13 @@ export function TodayFortuneDetailClient({
         if (response.status === 401) {
           const next = `/today-fortune/detail?sourceSessionId=${encodeURIComponent(activeSourceSessionId)}&concern=${encodeURIComponent(concernId)}${paidProduct ? `&paid=${encodeURIComponent(paidProduct)}` : ''}`;
           window.location.href = `/login?next=${encodeURIComponent(next)}`;
+          return;
+        }
+
+        // GET 응답에서 hasAccess: false → 결제 안 함. 무료 페이지로 redirect.
+        if (!isFirstTimeUnlock && data?.ok && data.hasAccess === false) {
+          const next = `/today-fortune/result?sourceSessionId=${encodeURIComponent(activeSourceSessionId)}&concern=${encodeURIComponent(concernId)}`;
+          window.location.replace(next);
           return;
         }
 
