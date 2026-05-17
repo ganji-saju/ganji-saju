@@ -339,7 +339,7 @@ export function MotionPushArrive({ active = true }: { active?: boolean }) {
   }, [active]);
   return (
     <div className="motion-push-stage" data-arrived={arrived} data-reduced={reduced}>
-      <div className="motion-push-statusbar">9:41 · 달빛인생</div>
+      <div className="motion-push-statusbar">9:41 · 간지사주</div>
       {arrived ? (
         <div className="motion-push-card">
           <div className="motion-push-icon" aria-hidden="true">月</div>

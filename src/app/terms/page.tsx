@@ -7,7 +7,7 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 export const metadata: Metadata = {
   title: '이용약관',
   description:
-    '달빛인생 이용 조건, 코인 정책, 결제 및 책임 제한에 대한 안내입니다.',
+    '간지사주 이용 조건, 코인 정책, 결제 및 책임 제한에 대한 안내입니다.',
   alternates: {
     canonical: '/terms',
   },
@@ -17,7 +17,7 @@ const sections = [
   {
     title: '1. 서비스 개요',
     body: [
-      '달빛인생은 사용자가 입력한 생년월일시를 바탕으로 사주 분석 결과와 부가 콘텐츠를 제공하는 웹 서비스입니다.',
+      '간지사주은 사용자가 입력한 생년월일시를 바탕으로 사주 분석 결과와 부가 콘텐츠를 제공하는 웹 서비스입니다.',
       '서비스는 무료 기능과 코인 기반 유료 기능으로 구성되며, 운영상 필요에 따라 기능과 가격 정책은 변경될 수 있습니다.',
     ],
   },
@@ -69,7 +69,7 @@ export default function TermsPage() {
             </Badge>
           }
           title="이용약관"
-          description="달빛인생 이용과 코인 결제, 계정 사용, 책임 제한에 관한 기본 조건을 안내합니다."
+          description="간지사주 이용과 코인 결제, 계정 사용, 책임 제한에 관한 기본 조건을 안내합니다."
         />
 
         <div className="space-y-5">

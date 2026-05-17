@@ -29,7 +29,7 @@ interface Props {
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '타로 결과',
-    description: '카드 의미와 사주 연결 해석을 함께 보여주는 달빛인생의 타로 결과 화면입니다.',
+    description: '카드 의미와 사주 연결 해석을 함께 보여주는 간지사주의 타로 결과 화면입니다.',
     alternates: {
       canonical: '/tarot/daily/result',
     },

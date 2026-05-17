@@ -7,7 +7,7 @@ import { AppPage, AppShell, PageHero } from '@/shared/layout/app-shell';
 export const metadata: Metadata = {
   title: '개인정보처리방침',
   description:
-    '달빛인생에서 수집하는 개인정보 항목, 이용 목적, 보관 및 보호 정책을 안내합니다.',
+    '간지사주에서 수집하는 개인정보 항목, 이용 목적, 보관 및 보호 정책을 안내합니다.',
   alternates: {
     canonical: '/privacy',
   },
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
             </Badge>
           }
           title="개인정보처리방침"
-          description="달빛인생이 어떤 정보를 수집하고, 어떤 기준으로 보관·이용하는지 안내합니다."
+          description="간지사주이 어떤 정보를 수집하고, 어떤 기준으로 보관·이용하는지 안내합니다."
         />
 
         <div className="space-y-5">

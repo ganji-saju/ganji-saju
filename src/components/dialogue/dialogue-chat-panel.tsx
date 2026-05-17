@@ -624,7 +624,7 @@ export function DialogueChatPanel({
         {status === 'loading' ? (
           <div className="flex justify-start">
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
-              <span>달빛인생이 답변을 정리하고 있습니다</span>
+              <span>간지사주이 답변을 정리하고 있습니다</span>
               <span className="ml-2 inline-flex gap-1 align-middle">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/70" />
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/55 [animation-delay:120ms]" />

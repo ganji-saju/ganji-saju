@@ -29,7 +29,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '가격 한눈보기',
-  description: '달빛인생의 무료 운세, 550원/990원 소액 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
+  description: '간지사주의 무료 운세, 550원/990원 소액 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
   alternates: {
     canonical: '/pricing',
   },

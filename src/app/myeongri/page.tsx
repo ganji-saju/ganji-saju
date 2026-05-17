@@ -11,7 +11,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '명리',
-  description: '타고난 기질, 다섯 기운, 반복되는 관계 패턴을 쉬운 말로 확인하는 달빛인생 명리 화면입니다.',
+  description: '타고난 기질, 다섯 기운, 반복되는 관계 패턴을 쉬운 말로 확인하는 간지사주 명리 화면입니다.',
   alternates: {
     canonical: '/myeongri',
   },

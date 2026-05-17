@@ -606,7 +606,7 @@ export function MobileSajuResultStory({
               href="/dialogue"
               className="gangi-secondary-button"
             >
-              달빛인생에 이어서 묻기
+              간지사주에 이어서 묻기
             </Link>
           </div>
         </StoryBody>

@@ -1,10 +1,16 @@
 import type { MetadataRoute } from 'next';
 import { DREAM_ENTRIES, STAR_SIGN_FORTUNES, ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { ENGINE_METHOD_ENTRIES } from '@/lib/engine-method-pages';
-import { getSiteUrl } from '@/lib/site';
+import { CANONICAL_SITE_URL } from '@/lib/site';
 
+/**
+ * Phase 1 (2026-05-18): sitemap URL 은 항상 canonical 도메인 (`https://ganjisaju.kr`).
+ * env (NEXT_PUBLIC_SITE_URL) 잘못 설정돼도 sitemap 은 정합 유지.
+ *
+ * lastmod 동결 (빌드 시점) 은 Phase 10 (SEO 확장) 에서 KST 동적화 예정.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = getSiteUrl();
+  const siteUrl = CANONICAL_SITE_URL;
   const now = new Date();
 
   return [

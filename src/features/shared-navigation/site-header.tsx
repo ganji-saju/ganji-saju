@@ -86,7 +86,7 @@ function getNavMeta(item: NavItem) {
   return NAV_META[item.label] ?? {
     glyph: item.label.slice(0, 1),
     accent: 'var(--app-pink)',
-    description: '달빛인생',
+    description: '간지사주',
   };
 }
 
@@ -310,7 +310,7 @@ function DesktopSidebar({
             <div className="app-moon-orb h-10 w-10" />
             <div>
               <div className=" text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
-                달빛인생
+                간지사주
               </div>
               <div className="text-xs text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
             </div>
@@ -451,7 +451,7 @@ function MobileChrome({
                   className="text-[9.5px] font-extrabold uppercase tracking-[0.08em] text-[var(--app-pink-strong)]"
                   style={{ marginBottom: 3 }}
                 >
-                  달빛인생
+                  간지사주
                 </div>
                 <div
                   className="text-[16.5px] font-extrabold tracking-tight text-[var(--app-ink)]"

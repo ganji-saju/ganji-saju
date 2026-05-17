@@ -255,7 +255,7 @@ export const REPORT_PREVIEW_VALUE_POINTS = [
   },
   {
     title: '대화 연결',
-    body: '풀이를 읽은 뒤 같은 흐름 위에서 달빛인생에게 이어서 질문할 수 있습니다.',
+    body: '풀이를 읽은 뒤 같은 흐름 위에서 간지사주에게 이어서 질문할 수 있습니다.',
   },
 ] as const;
 

@@ -10,7 +10,7 @@ import { OperationsDashboard } from './operations-dashboard';
 
 export const metadata: Metadata = {
   title: '운영 모니터링',
-  description: '간지사주·달빛인생 핵심 운영 지표 — DAU·결제·만족도·구독 활성',
+  description: '간지사주 핵심 운영 지표 — DAU·결제·만족도·구독 활성',
   robots: { index: false, follow: false },
 };
 

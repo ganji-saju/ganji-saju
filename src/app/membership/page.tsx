@@ -75,7 +75,7 @@ const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime')
 
 export const metadata: Metadata = {
   title: '멤버십',
-  description: '달빛인생의 소액 풀이, 보관형 리포트, 대화 멤버십을 한 화면에서 비교하세요.',
+  description: '간지사주의 소액 풀이, 보관형 리포트, 대화 멤버십을 한 화면에서 비교하세요.',
   alternates: {
     canonical: '/membership',
   },

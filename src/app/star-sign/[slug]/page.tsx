@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!item) return { title: '별자리' };
   return {
     title: `${item.label} 운세`,
-    description: `${item.label} 오늘의 운세 · 성격 · 연애 · 직업 · 12궁 호환 매트릭스를 한눈에 — 달빛인생 별자리 상세.`,
+    description: `${item.label} 오늘의 운세 · 성격 · 연애 · 직업 · 12궁 호환 매트릭스를 한눈에 — 간지사주 별자리 상세.`,
     alternates: { canonical: `/star-sign/${item.slug}` },
   };
 }
