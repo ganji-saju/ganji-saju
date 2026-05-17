@@ -69,10 +69,14 @@ const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value
  *
  * 이 결과의 각 score 는 운세 페이지의 동일 영역 score 와 1:1 일치.
  * iljinScore 계산 불가 (시 미입력 등) 시 raw scores 반환 (safe fallback).
+ *
+ * 2026-05-18: options.now 는 테스트 전용 — fixed Date 주입으로 다른 "오늘" 시뮬레이션.
+ * production 호출자 (SajuAreaCardsSection) 는 미사용 → 항상 실제 오늘.
  */
 export function computeSajuAreaScores(
   input: BirthInput,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1,
+  options?: { now?: Date }
 ): SajuAreaScore[] {
   const todayReport = buildSajuReport(input, sajuData, 'today');
   const loveReport = buildSajuReport(input, sajuData, 'love');
@@ -80,7 +84,7 @@ export function computeSajuAreaScores(
   const careerReport = buildSajuReport(input, sajuData, 'career');
   const relationshipReport = buildSajuReport(input, sajuData, 'relationship');
 
-  const todayPillar = getTodayPillarSnapshot(sajuData);
+  const todayPillar = getTodayPillarSnapshot(sajuData, options);
   const dailyDelta = buildDailyDelta(todayPillar, sajuData);
   const conditionRaw = clampScore(
     buildConditionScore(todayReport, loveReport, wealthReport, sajuData) + dailyDelta
@@ -99,7 +103,7 @@ export function computeSajuAreaScores(
     { key: 'condition', score: conditionRaw },
   ];
 
-  const iljinResult = computeSajuIljinScore(sajuData);
+  const iljinResult = computeSajuIljinScore(sajuData, options);
   if (!iljinResult) return rawScores;
 
   return unifyScoresWithIljinScore(rawScores, iljinResult.totalScore);

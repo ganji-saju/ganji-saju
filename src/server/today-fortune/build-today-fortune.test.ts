@@ -346,22 +346,24 @@ test('today fortune time windows vary their body copy across different ranges', 
 
 test('today fortune free result changes across different calendar dates (daily seed regression)', () => {
   // 2026-05-15: 같은 사용자 + 같은 concern 인데 며칠째 동일 점수/카피가 나오던 버그 회귀 방지.
-  // calculatedAt 만 바꿔도 시드(signatureSeed)와 점수(dailyDelta)가 흔들려 결과가 달라져야 한다.
+  // 2026-05-18: getTodayPillarSnapshot 가 stored calculatedAt 이 아닌 실제 "오늘" 을 사용하므로
+  //   다른 날 시뮬레이션은 options.now 로 fixed Date 주입 (테스트 전용).
   const input = createSampleInput();
-  const dataMonday = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
-  const dataFriday = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
+  const sajuData = calculateSajuDataV1(input);
 
-  const mondayResult = buildTodayFortuneFreeResult(input, dataMonday, {
+  const mondayResult = buildTodayFortuneFreeResult(input, sajuData, {
     concernId: 'general',
     sourceSessionId: 'daily-seed-mon',
     calendarType: 'solar',
     timeRule: 'standard',
+    now: new Date('2026-05-11T00:00:00+09:00'),
   });
-  const fridayResult = buildTodayFortuneFreeResult(input, dataFriday, {
+  const fridayResult = buildTodayFortuneFreeResult(input, sajuData, {
     concernId: 'general',
     sourceSessionId: 'daily-seed-fri',
     calendarType: 'solar',
     timeRule: 'standard',
+    now: new Date('2026-05-15T00:00:00+09:00'),
   });
 
   assert.equal(mondayResult.dateKey, '2026-05-11');
@@ -380,14 +382,16 @@ test('today fortune free result changes across different calendar dates (daily s
 
 test('today fortune premium changes across different calendar dates (daily premium regression)', () => {
   // 2026-05-15: 코인/550원 결제 후 자세히 보기 화면도 매일 다르게 흐르도록 — 회귀 가드.
-  // 같은 사용자라도 sajuData.metadata.calculatedAt 만 바꿔도 추천/회피/윈도우/시나리오 중
-  // 적어도 한 곳에서 visible 차이가 있어야 함.
+  // 2026-05-18: getTodayPillarSnapshot 가 실제 "오늘" 사용 → options.now 로 fixed Date 주입.
   const input = createSampleInput();
-  const dataA = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
-  const dataB = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
+  const sajuData = calculateSajuDataV1(input);
 
-  const premA = buildTodayFortunePremiumResult(input, dataA, 'general');
-  const premB = buildTodayFortunePremiumResult(input, dataB, 'general');
+  const premA = buildTodayFortunePremiumResult(input, sajuData, 'general', null, null, {
+    now: new Date('2026-05-11T00:00:00+09:00'),
+  });
+  const premB = buildTodayFortunePremiumResult(input, sajuData, 'general', null, null, {
+    now: new Date('2026-05-15T00:00:00+09:00'),
+  });
 
   assert.equal(premA.dateKey, '2026-05-11');
   assert.equal(premB.dateKey, '2026-05-15');
@@ -410,29 +414,30 @@ test('today fortune premium changes across different calendar dates (daily premi
 
 test('today fortune free body changes across different calendar dates (daily body variants)', () => {
   // 2026-05-15: 본문(oneLine.body) 이 며칠째 같은 문장으로 나오던 회귀 방지.
-  // headline·점수 외에 본문 자체도 일진 시그널 + concernLine variant 로 매일 흐트러져야 한다.
+  // 2026-05-18: getTodayPillarSnapshot 가 실제 "오늘" 사용 → options.now 로 fixed Date 주입.
   const input = createSampleInput();
-  const dataA = calculateSajuDataV1(input, { calculatedAt: '2026-05-11T09:00:00+09:00' });
-  const dataB = calculateSajuDataV1(input, { calculatedAt: '2026-05-15T09:00:00+09:00' });
-  const dataC = calculateSajuDataV1(input, { calculatedAt: '2026-05-19T09:00:00+09:00' });
+  const sajuData = calculateSajuDataV1(input);
 
-  const bodyA = buildTodayFortuneFreeResult(input, dataA, {
+  const bodyA = buildTodayFortuneFreeResult(input, sajuData, {
     concernId: 'general',
     sourceSessionId: 'daily-body-a',
     calendarType: 'solar',
     timeRule: 'standard',
+    now: new Date('2026-05-11T00:00:00+09:00'),
   }).oneLine.body;
-  const bodyB = buildTodayFortuneFreeResult(input, dataB, {
+  const bodyB = buildTodayFortuneFreeResult(input, sajuData, {
     concernId: 'general',
     sourceSessionId: 'daily-body-b',
     calendarType: 'solar',
     timeRule: 'standard',
+    now: new Date('2026-05-15T00:00:00+09:00'),
   }).oneLine.body;
-  const bodyC = buildTodayFortuneFreeResult(input, dataC, {
+  const bodyC = buildTodayFortuneFreeResult(input, sajuData, {
     concernId: 'general',
     sourceSessionId: 'daily-body-c',
     calendarType: 'solar',
     timeRule: 'standard',
+    now: new Date('2026-05-19T00:00:00+09:00'),
   }).oneLine.body;
 
   // 3개 본문이 모두 다른 것까지는 보장하지 않지만, 최소 1쌍은 달라야 한다.
@@ -542,6 +547,46 @@ test('saju area scores match today-fortune free result scores 1:1 (PR #181 invar
       sajuArea.score,
       matchingToday.score,
       `${sajuArea.key}: 사주 페이지=${sajuArea.score}, 오늘 운세=${matchingToday.score} — 두 페이지 점수 정확 일치 필수`
+    );
+  }
+});
+
+// 2026-05-18 — root cause regression test: stored sajuData (saju 페이지) vs fresh
+// sajuData (today-fortune POST API) 의 metadata.calculatedAt 차이로 두 페이지의
+// "오늘 점수" 가 갈라지는 것을 차단.
+//
+// 배경 (E2E saju.spec.ts:157 가 KST 자정 후 fail 한 이유):
+//   - 사용자가 reading 을 생성하면 sajuData.metadata.calculatedAt = 그 시점 timestamp 로
+//     저장된다. 다음날 KST 자정을 넘기면 stored calculatedAt 의 KST 일자 != 오늘 KST 일자.
+//   - getTodayPillarSnapshot 이 calculatedAt 을 "오늘" 로 사용하면 stored sajuData (saju
+//     페이지) 와 fresh sajuData (today-fortune API) 가 다른 todayPillar → 점수 불일치.
+//   - 의도 (코멘트): "매일 다르게 흐르도록 ... 오늘 ganzi" — calculatedAt 이 아닌
+//     실제 오늘이 기준이어야 함.
+test('computeSajuAreaScores 는 stored sajuData 와 fresh sajuData 에 대해 동일 today 점수 (KST 자정 후 회귀 차단)', () => {
+  const input = createSampleInput();
+
+  // fresh sajuData — 방금 만든 것 (today-fortune API 패턴)
+  const freshSajuData = calculateSajuDataV1(input);
+
+  // stored sajuData — saved reading 시뮬레이션 (saju 페이지 패턴). calculatedAt 을 과거로.
+  const storedSajuData = calculateSajuDataV1(input);
+  storedSajuData.metadata = {
+    ...storedSajuData.metadata,
+    calculatedAt: '2025-01-15T00:00:00.000Z', // 1년+ 전 임의 시점
+  };
+
+  const freshScores = computeSajuAreaScores(input, freshSajuData);
+  const storedScores = computeSajuAreaScores(input, storedSajuData);
+
+  for (const fresh of freshScores) {
+    const stored = storedScores.find((s) => s.key === fresh.key);
+    assert.ok(stored, `stored scores 에 ${fresh.key} 존재 필수`);
+    assert.equal(
+      fresh.score,
+      stored.score,
+      `${fresh.key}: stored sajuData=${stored.score} (calculatedAt=2025-01-15) vs fresh sajuData=${fresh.score} ` +
+        `— 두 sajuData 의 calculatedAt 이 달라도 동일 "오늘" 으로 계산되어야 합니다. ` +
+        `(E2E saju.spec.ts:157 root cause regression)`
     );
   }
 });
