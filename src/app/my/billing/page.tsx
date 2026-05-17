@@ -1,4 +1,4 @@
-// 2026-05-16 — /my/billing 결제관리 페이지 재구성.
+// Redesign 2026-05-16 — /my/billing 결제관리 페이지 재구성.
 // 이전엔 PageHero + SectionSurface + FeatureCard + ProductGrid + SupportRail 같은
 // 옛 marketing 컴포넌트로 빌드돼 /my/settings 등 자매 라우트와 시각 어긋남.
 // `/my/settings` 와 동일한 compact pink-soft hero + 둥근 흰 카드 패턴으로 통일.

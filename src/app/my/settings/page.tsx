@@ -1,4 +1,4 @@
-// 2026-05-15 — 설정 페이지를 sub-page 디자인(pink-soft hero + 1열 카드)으로 재작성.
+// Redesign 2026-05-15 — 설정 페이지를 sub-page 디자인(pink-soft hero + 1열 카드)으로 재작성.
 // 이전엔 PageHero + SectionSurface 같은 옛 marketing 컴포넌트로 사이트와 어긋남.
 // 명시적 섹션: 알림 / 레이아웃 / 읽기 경험 / 가족·다른 사람 정보 / 계정 관리.
 //
