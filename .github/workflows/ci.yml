@@ -44,6 +44,9 @@ jobs:
       - name: Audit mockup placeholders (PR #194 회귀 차단 — credits 잔액 binding 누락 류)
         run: npm run audit:mockup-placeholders:strict
 
+      - name: Audit redesign coverage (PR #198/#206/#207 류 — 구스타일 named CSS class 회귀 차단)
+        run: npm run audit:redesign-coverage:strict
+
       - name: Validate KASI calendar samples
         if: ${{ env.KASI_SERVICE_KEY != '' }}
         run: npm run validate:kasi
