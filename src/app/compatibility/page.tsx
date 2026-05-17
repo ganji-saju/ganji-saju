@@ -1,4 +1,4 @@
-// 2026-05-15 — 궁합 entry 페이지 (관계 선택) 디자인 통일.
+// Redesign 2026-05-15 — 궁합 entry 페이지 (관계 선택) 디자인 통일.
 // 이전엔 PageHero + SectionSurface + ProductGrid + FeatureCard (옛 marketing 컴포넌트).
 // 사주 결과·오늘운세 등 다른 sub-page 와 어긋남.
 // 새 디자인: pink-soft hero + 1열 stacked 관계 카드 + ink-dark CTA.

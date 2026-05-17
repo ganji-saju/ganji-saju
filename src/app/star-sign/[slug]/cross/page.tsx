@@ -1,4 +1,4 @@
-// 2026-05-15 — 별자리 × 사주 크로스 페이지.
+// Redesign 2026-05-15 — 별자리 × 사주 크로스 페이지.
 // /star-sign/[slug]/cross — 사용자 프로필이 있으면 일간 계산해 합성 인사이트 표시.
 // 없으면 sign element ↔ 동양 오행 매핑 hint 만 노출 + 사주 입력 CTA.
 import Link from 'next/link';
