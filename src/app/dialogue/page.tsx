@@ -16,7 +16,7 @@ import {
 
 export const metadata: Metadata = {
   title: '대화',
-  description: '달빛인생 대화방에서 궁금한 일을 바로 물어보세요.',
+  description: '간지사주 대화방에서 궁금한 일을 바로 물어보세요.',
   alternates: { canonical: '/dialogue' },
 };
 

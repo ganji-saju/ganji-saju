@@ -396,7 +396,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
                     color: 'var(--app-pink-strong)',
                   }}
                 >
-                  달빛인생 · 사주 리포트
+                  간지사주 · 사주 리포트
                 </div>
               </div>
             </div>
@@ -727,7 +727,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
           </section>
 
           <footer className="pdf-print-footer">
-            달빛인생의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은
+            간지사주의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은
             전문가의 도움을 우선해 주세요.
           </footer>
         </article>

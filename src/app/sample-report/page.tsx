@@ -27,7 +27,7 @@ import {
 export const metadata: Metadata = {
   title: '샘플 리포트',
   description:
-    '달빛인생의 사주풀이가 어떤 결과 화면으로 이어지는지 결제 전에 먼저 확인해보세요.',
+    '간지사주의 사주풀이가 어떤 결과 화면으로 이어지는지 결제 전에 먼저 확인해보세요.',
   alternates: {
     canonical: '/sample-report',
   },

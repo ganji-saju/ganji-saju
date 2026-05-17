@@ -102,7 +102,7 @@ async function buildDailyCopy(dateKey: string) {
   const fallback = buildFallbackDailyCopy(dateKey);
   const result = await generateAiText({
     instructions: [
-      '달빛인생 홈 메인 배너에 들어갈 오늘의 운세 한 줄을 씁니다.',
+      '간지사주 홈 메인 배너에 들어갈 오늘의 운세 한 줄을 씁니다.',
       '사용자는 모바일에서 빠르게 운세를 눌러보는 일반 사용자입니다.',
       '어려운 명리 용어, 공포 표현, AI 메타 설명, 과장된 적중률 표현을 쓰지 않습니다.',
       'JSON만 출력합니다. 키는 title, description 두 개만 씁니다.',
@@ -111,7 +111,7 @@ async function buildDailyCopy(dateKey: string) {
     ].join('\n'),
     input: JSON.stringify({
       date: getKoreanDateLabel(dateKey),
-      service: '달빛인생',
+      service: '간지사주',
       tone: '짧고 따뜻한 모바일 운세',
     }),
     fallbackText: JSON.stringify(fallback),

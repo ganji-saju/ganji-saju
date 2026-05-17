@@ -18,7 +18,7 @@ interface Props {
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '타로 카드 뽑기',
-    description: '질문을 품고 카드를 선택하는 달빛인생의 타로 카드 뽑기 화면입니다.',
+    description: '질문을 품고 카드를 선택하는 간지사주의 타로 카드 뽑기 화면입니다.',
     alternates: {
       canonical: '/tarot/daily/pick',
     },

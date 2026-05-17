@@ -136,7 +136,7 @@ export default function SiteFooter() {
                     letterSpacing: '0.04em',
                   }}
                 >
-                  달빛인생
+                  간지사주
                 </div>
                 <div
                   style={{
@@ -275,7 +275,7 @@ export default function SiteFooter() {
             풀이와 코인 이용 내역은 로그인 계정 기준으로 확인됩니다.
           </p>
           <p className="m-0">
-            달빛인생의 사주·타로·띠운세 콘텐츠는 삶의 흐름을 참고하기 위한 운세
+            간지사주의 사주·타로·띠운세 콘텐츠는 삶의 흐름을 참고하기 위한 운세
             콘텐츠입니다. 의료, 법률, 투자, 위기상황 판단은 전문 기준과 즉각적인
             도움을 우선해 주세요.
           </p>
@@ -287,7 +287,7 @@ export default function SiteFooter() {
           style={{ color: 'rgba(255,255,255,0.42)', fontSize: 11.5 }}
         >
           <span>© 2026 푸꼬컴퍼니. All rights reserved.</span>
-          <span>서비스명 달빛인생 · 간지사주</span>
+          <span>서비스명 간지사주 · 간지사주</span>
         </div>
       </div>
     </footer>

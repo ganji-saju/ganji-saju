@@ -324,7 +324,7 @@ function GatewayView({
           간지사주
         </h1>
         <div className="mt-1 text-[13px] font-bold text-[var(--app-pink-strong)]">
-          달빛인생 · 오늘 바로 보는 운세
+          간지사주 · 오늘 바로 보는 운세
         </div>
 
         <div className="mt-9 flex flex-col gap-2.5">
@@ -793,7 +793,7 @@ function LoginContent({
     recover: {
       eyebrow: '아이디 · 비밀번호 찾기',
       title: '이메일로 확인하기',
-      description: '달빛인생 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일로 재설정 링크를 보내드립니다.',
+      description: '간지사주 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일로 재설정 링크를 보내드립니다.',
     },
     reset: {
       eyebrow: '비밀번호 재설정',
@@ -1125,7 +1125,7 @@ function LoginContent({
               이메일로 아이디 확인/비밀번호 재설정
             </div>
             <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
-              달빛인생의 로그인 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일을 입력하면 확인 링크와 새 비밀번호 설정 링크를 보내드립니다.
+              간지사주의 로그인 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일을 입력하면 확인 링크와 새 비밀번호 설정 링크를 보내드립니다.
             </p>
             <div className="mt-4 space-y-2">
               <FieldLabel htmlFor="recovery-email">가입 이메일</FieldLabel>
@@ -1311,7 +1311,7 @@ function LoginScaffold() {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
               달
             </div>
-            <div className=" text-lg font-semibold text-[var(--app-ink)]">달빛인생</div>
+            <div className=" text-lg font-semibold text-[var(--app-ink)]">간지사주</div>
             <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
           </div>
           <div className="w-full">

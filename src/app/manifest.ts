@@ -1,10 +1,11 @@
 import type { MetadataRoute } from 'next';
+import { DEFAULT_DESCRIPTION, SITE_NAME } from '@/lib/site';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: '달빛인생',
-    short_name: '달빛인생',
-    description: '오늘의 운세와 타로부터 사주, 궁합, 띠운세까지 가볍게 확인하는 달빛인생',
+    name: SITE_NAME,
+    short_name: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

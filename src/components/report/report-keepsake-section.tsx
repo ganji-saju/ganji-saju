@@ -32,7 +32,7 @@ type ReportKeepsakeSectionProps = {
 
 const DEFAULT_TITLE = '한 번 보고 사라지지 않도록 보관합니다';
 const DEFAULT_DESCRIPTION =
-  '내 사주의 핵심, 올해 흐름, 중요한 선택 힌트는 시간이 지나도 다시 확인할 수 있어야 합니다. 달빛인생 리포트는 PDF와 MY 보관함, 대화 상담으로 이어집니다.';
+  '내 사주의 핵심, 올해 흐름, 중요한 선택 힌트는 시간이 지나도 다시 확인할 수 있어야 합니다. 간지사주 리포트는 PDF와 MY 보관함, 대화 상담으로 이어집니다.';
 
 function actionClassName(variant: ReportKeepsakeAction['variant']) {
   switch (variant) {
@@ -76,7 +76,7 @@ export function ReportKeepsakeSection({
     },
     {
       title: '대화 연결',
-      body: '이미 본 풀이를 바탕으로 달빛인생에게 이어서 질문할 수 있습니다.',
+      body: '이미 본 풀이를 바탕으로 간지사주에게 이어서 질문할 수 있습니다.',
       href: dialogueHref,
       ctaLabel: '대화 이어보기',
       icon: MessageCircleMore,

@@ -139,7 +139,7 @@ export default async function SajuSharePage({ params }: Props) {
                 간지사주
               </div>
               <span className="ml-auto text-[10px] font-extrabold text-[var(--app-pink-strong)]">
-                달빛인생
+                간지사주
               </span>
             </div>
 

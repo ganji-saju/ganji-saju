@@ -33,7 +33,7 @@ export default function SafeRedirectPage() {
             </Badge>,
           ]}
           title="위기 상황에서는 사주 해석보다 먼저 안전으로 연결합니다"
-          description="위기·의료·법률·투자처럼 고위험 판단이 걸린 순간에는, 달빛인생이 공감의 말과 함께 즉시 전문 자원으로 연결하는 전용 상태입니다."
+          description="위기·의료·법률·투자처럼 고위험 판단이 걸린 순간에는, 간지사주이 공감의 말과 함께 즉시 전문 자원으로 연결하는 전용 상태입니다."
         />
 
         <section className="grid gap-6 lg:grid-cols-[0.96fr_1.04fr]">
@@ -57,7 +57,7 @@ export default function SafeRedirectPage() {
 
               <FeatureCard
                 surface="soft"
-                eyebrow="달빛인생의 응답"
+                eyebrow="간지사주의 응답"
                 description={
                   <>
                     지금 많이 힘드시군요. 그 마음을 혼자 짊어지지 않으셨으면 합니다.

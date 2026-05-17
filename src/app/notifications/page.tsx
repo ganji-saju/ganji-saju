@@ -5,7 +5,7 @@ import { getNotificationSnapshot } from '@/lib/notifications';
 
 export const metadata: Metadata = {
   title: '알림',
-  description: '오늘 별자리 일진과 오늘운세·타로·띠 알림을 한 화면에서 확인하는 달빛인생 알림 센터입니다.',
+  description: '오늘 별자리 일진과 오늘운세·타로·띠 알림을 한 화면에서 확인하는 간지사주 알림 센터입니다.',
   alternates: {
     canonical: '/notifications',
   },

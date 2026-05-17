@@ -87,7 +87,7 @@ export function GangiHomeClient({
 
         <section
           className="grid grid-cols-2 gap-3 px-4 pt-3"
-          aria-label="달빛인생 운세 상품"
+          aria-label="간지사주 운세 상품"
         >
           {visibleCards.map((card) => (
             <GangiServiceCardLink

@@ -147,7 +147,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!item) return { title: '내 띠 운세' };
   return {
     title: `${item.label} 운세`,
-    description: `${item.label}의 오늘 포인트와 가볍게 실천할 행동을 확인하는 달빛인생 띠운세입니다.`,
+    description: `${item.label}의 오늘 포인트와 가볍게 실천할 행동을 확인하는 간지사주 띠운세입니다.`,
     alternates: { canonical: `/zodiac/${item.slug}` },
   };
 }

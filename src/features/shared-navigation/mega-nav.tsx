@@ -178,7 +178,7 @@ export function MegaNavBar() {
           <span className="mega-nav-logo-mark">干</span>
           <span className="mega-nav-logo-text">
             <span className="mega-nav-logo-name">간지사주</span>
-            <span className="mega-nav-logo-tag">달빛인생 · 오늘 바로 보는 운세</span>
+            <span className="mega-nav-logo-tag">간지사주 · 오늘 바로 보는 운세</span>
           </span>
         </Link>
 
