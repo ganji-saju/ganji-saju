@@ -31,6 +31,8 @@
     "audit:payment-idempotency": "node scripts/audit-payment-idempotency.mjs",
     "audit:payment-idempotency:strict": "node scripts/audit-payment-idempotency.mjs --strict",
     "audit:business-activity": "node scripts/audit-business-activity.mjs",
+    "audit:ai-chat-idempotency": "node scripts/audit-ai-chat-idempotency.mjs",
+    "audit:ai-chat-idempotency:strict": "node scripts/audit-ai-chat-idempotency.mjs --strict",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
