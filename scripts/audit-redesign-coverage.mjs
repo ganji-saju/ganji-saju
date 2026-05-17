@@ -72,6 +72,31 @@ function isSkippedPath(relPath) {
   return SKIP_PATTERNS.some((pattern) => pattern.test(relPath));
 }
 
+// Content-based wrapper detection — UI 거의 없는 thin wrapper / redirect-only 자동 skip.
+// 사주 메인 / today-fortune / 홈 등의 entry page 가 실제 UI 는 별도 client component 에
+// 위임하는 경우 page.tsx 자체는 redesign 무관 — false positive.
+function isWrapperContent(content) {
+  // Pattern 1: redirect-only — `redirect()` from next/navigation 가 main body.
+  if (
+    /from\s+['"]next\/navigation['"][^;]*\bredirect\b/.test(content) &&
+    /\bredirect\(/.test(content)
+  ) {
+    return true;
+  }
+  // Pattern 2: thin wrapper — 짧은 file + JSX component 1-2개만 (page.tsx 가 client 컴포넌트
+  // 1개를 AppShell 안에 import 하는 패턴). 50줄 미만 + 사용자가 보는 큰 UI 구조 없음.
+  const lineCount = content.split('\n').filter((l) => l.trim().length > 0).length;
+  if (lineCount <= 40) {
+    const jsxComponents = content.match(/<[A-Z][a-zA-Z][a-zA-Z0-9]*\b/g) || [];
+    // AppShell / AppPage 같은 wrapper 제외하고 사용자 UI 의미하는 component 가 ≤ 2개.
+    const semanticComponents = jsxComponents.filter(
+      (m) => !/^<(AppShell|AppPage|SiteHeader|Suspense|GangiPageHeader)\b/.test(m),
+    );
+    if (semanticComponents.length <= 2) return true;
+  }
+  return false;
+}
+
 // Next.js entry 파일만 (page.tsx). layout.tsx 는 대부분 wrapper 라 제외.
 function collectEntryPages(dir, results = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -118,6 +143,7 @@ function auditFile(file, content) {
   const relPath = path.relative(projectRoot, file);
 
   if (shouldIgnoreFile(content)) return findings;
+  if (isWrapperContent(content)) return findings;
 
   // Rule 1 (CRITICAL): 구스타일 named CSS class.
   const lines = content.split('\n');
