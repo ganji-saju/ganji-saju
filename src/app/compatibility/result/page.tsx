@@ -1,3 +1,6 @@
+// Redesign 2026-05-17 — server wrapper. UI 는 CompatibilityResultView /
+// ManualCompatibilityResultClient 안에 있고 이 page 는 entitlement check + profile
+// resolve + view 렌더만 (사실상 thin wrapper).
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiIntro, GangiMiniCard, GangiPageHeader } from '@/components/gangi/gangi-ui';

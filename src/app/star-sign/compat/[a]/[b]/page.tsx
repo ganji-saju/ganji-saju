@@ -1,4 +1,4 @@
-// 2026-05-15 — 별자리 두 개 궁합 상세.
+// Redesign 2026-05-15 — 별자리 두 개 궁합 상세.
 // /star-sign/compat/[a]/[b] — 6 영역 점수 + 강점/긴장 + 데이트/갈등 팁.
 import Link from 'next/link';
 import { notFound } from 'next/navigation';

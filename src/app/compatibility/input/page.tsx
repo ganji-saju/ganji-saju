@@ -1,3 +1,6 @@
+// Redesign 2026-05-17 — server wrapper. UI 는 CompatibilityInputClient 안에 있고
+// 이 page 는 entitlement check + relationship resolve + client component mount 만.
+// audit-redesign-coverage 의 wrapper detection 이 잡지 못한 thin server wrapper.
 import type { Metadata } from 'next';
 import { COMPATIBILITY_RELATIONSHIPS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import { CompatibilityInputClient } from '@/features/compatibility/compatibility-input-client';
