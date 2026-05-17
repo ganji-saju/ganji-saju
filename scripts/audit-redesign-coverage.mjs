@@ -38,6 +38,40 @@ const INLINE_IGNORE_MARKER = 'audit-redesign: skip';
 // 운영용 / API / 디자인 무관 디렉토리는 audit 제외.
 const EXCLUDED_DIRS = new Set(['admin', 'api', 'verification']);
 
+// 카테고리별 skip path patterns — redesign 영향 없는 entry (auth / legal / utility / onboarding).
+// 명시적 카테고리화로 audit baseline 의 noise 제거.
+const SKIP_PATTERNS = [
+  // auth flow — 별도 redesign track (form 단순)
+  /\/auth\/page\.tsx$/,
+  /\/login\/page\.tsx$/,
+  /\/signup\/page\.tsx$/,
+  /\/forgot-password\/page\.tsx$/,
+  /\/reset-password\/page\.tsx$/,
+  // legal text pages — text-only, redesign 무관
+  /\/privacy\/page\.tsx$/,
+  /\/terms\/page\.tsx$/,
+  // utility / redirect / lock — UI 거의 없음
+  /\/safe-redirect\/page\.tsx$/,
+  /\/lock-screen\/page\.tsx$/,
+  /\/about-engine\/page\.tsx$/,
+  // info / help / FAQ
+  /\/help\/page\.tsx$/,
+  /\/guide\/page\.tsx$/,
+  /\/support\/faq\/page\.tsx$/,
+  /\/support\/contact\/page\.tsx$/,
+  // onboarding step pages (linear flow — 별도 redesign track)
+  /\/onboarding\/page\.tsx$/,
+  /\/saju\/new\/consent\/page\.tsx$/,
+  /\/saju\/new\/empathy\/page\.tsx$/,
+  /\/saju\/new\/nickname\/page\.tsx$/,
+  // notification utility (mini widget — embedded view)
+  /\/notifications\/widget\/page\.tsx$/,
+];
+
+function isSkippedPath(relPath) {
+  return SKIP_PATTERNS.some((pattern) => pattern.test(relPath));
+}
+
 // Next.js entry 파일만 (page.tsx). layout.tsx 는 대부분 wrapper 라 제외.
 function collectEntryPages(dir, results = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -48,6 +82,8 @@ function collectEntryPages(dir, results = []) {
       if (EXCLUDED_DIRS.has(entry.name)) continue;
       collectEntryPages(full, results);
     } else if (entry.name === 'page.tsx') {
+      const relPath = path.relative(projectRoot, full);
+      if (isSkippedPath(relPath)) continue;
       results.push(full);
     }
   }
