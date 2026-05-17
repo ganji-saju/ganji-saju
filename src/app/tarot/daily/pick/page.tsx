@@ -1,3 +1,6 @@
+// Redesign 2026-05-17 — design system component (GangiIntro / GangiPageHeader) 기반
+// 타로 카드 픽 페이지. UI 가 design system component 안에 있어 시각 일관 — sibling
+// /tarot/daily / /tarot 와 통일.
 import type { Metadata } from 'next';
 import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
