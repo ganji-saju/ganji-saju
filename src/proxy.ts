@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CANONICAL_SITE_URL } from '@/lib/site';
+import { CANONICAL_SITE_URL, shouldRedirectHost } from '@/lib/site';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
-const CANONICAL_SITE_HOST = new URL(CANONICAL_SITE_ORIGIN).hostname;
 const supabaseProxyUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseProxyKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
@@ -39,15 +38,10 @@ function shouldRedirectToCanonicalHost(req: NextRequest) {
   // VERCEL_ENV 는 production / preview / development 중 하나.
   if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return false;
 
-  const host = req.nextUrl.hostname;
-  if (host === CANONICAL_SITE_HOST) return false;
-  if (host === 'localhost' || host === '127.0.0.1') return false;
-
-  return (
-    host.endsWith('.vercel.app') ||
-    host === 'ganjisaju.kr' ||
-    host === 'www.ganjisaju.kr'
-  );
+  // 2026-05-18 hotfix: hardcoded host list 대신 src/lib/site.ts 의 shouldRedirectHost 사용 —
+  // LEGACY_SITE_HOSTS (간지사주.kr punycode / apex / Vercel auto 등) 와 단일 source of truth.
+  // 기존 hardcoded 가 punycode 누락 → 간지사주.kr 진입 시 canonical 정규화 안 되던 회귀 fix.
+  return shouldRedirectHost(req.nextUrl.hostname);
 }
 
 function buildCanonicalUrl(req: NextRequest) {
