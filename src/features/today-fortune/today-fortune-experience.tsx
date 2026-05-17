@@ -25,6 +25,7 @@ import {
   rememberHitMemoSession,
   type StoredHitMemoSession,
 } from '@/lib/today-fortune/hit-memo';
+import { markPendingUnlock } from '@/lib/today-fortune/unlock-marker';
 import type {
   ConcernId,
   TodayFortuneBirthPayload,
@@ -217,6 +218,10 @@ export function TodayFortuneExperience({
 
   function handleUnlock() {
     if (!freeResult) return;
+
+    // 2026-05-17 PR #201 — detail page 가 자동 POST 트리거할 수 있게 sessionStorage marker.
+    //   detail page 의 consumePendingUnlock 이 marker 보고 POST (deduct). 없으면 GET (read-only).
+    markPendingUnlock(freeResult.sourceSessionId);
 
     const params = new URLSearchParams({
       sourceSessionId: freeResult.sourceSessionId,
