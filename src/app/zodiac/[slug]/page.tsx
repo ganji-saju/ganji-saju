@@ -12,6 +12,7 @@ import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { getKstParts, getKstStartOfDay } from '@/shared/utils/kst';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -63,25 +64,30 @@ const ZODIAC_ORDER: Array<{ slug: string; label: string; key: ZodiacKey }> = [
 
 // 2026-05-15 — 기간 (today/week/month/year) 별로 다른 시드 → 진짜 다른 점수 노출.
 // 기존엔 'today' 만 작동, 나머지 탭은 클릭 자체 안 됐던 회귀 fix.
+// 2026-05-18 — Phase 2: raw new Date().getDate() (UTC) → getKstParts() (KST) 교체.
+//   기존 코드는 Vercel UTC 기준이라 KST 00:00 ~ 09:00 사이에 어제 점수 노출 (audit P0 #3).
 type ZodiacPeriod = 'today' | 'week' | 'month' | 'year';
 
 function periodSeed(period: ZodiacPeriod): number {
-  const now = new Date();
+  const parts = getKstParts();
   switch (period) {
     case 'today':
-      return now.getDate();
+      return parts.day;
     case 'week': {
-      // ISO 주차.
-      const start = new Date(now.getFullYear(), 0, 1);
-      const diff = (now.getTime() - start.getTime()) / 86400000;
-      return Math.floor(diff / 7);
+      // KST 1월 1일부터의 주차.
+      const yearStart = getKstStartOfDay(new Date(Date.UTC(parts.year, 0, 1)));
+      const todayStart = getKstStartOfDay();
+      const daysFromYearStart = Math.floor(
+        (todayStart.getTime() - yearStart.getTime()) / 86_400_000
+      );
+      return Math.floor(daysFromYearStart / 7);
     }
     case 'month':
-      return now.getMonth() + 1;
+      return parts.month;
     case 'year':
-      return now.getFullYear() % 100;
+      return parts.year % 100;
     default:
-      return now.getDate();
+      return parts.day;
   }
 }
 

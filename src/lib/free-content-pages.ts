@@ -1,3 +1,5 @@
+import { getKstParts } from '@/shared/utils/kst';
+
 export interface TopicBlock {
   title: string;
   body: string;
@@ -48,8 +50,10 @@ const DAILY_SUMMARIES = [
 const DAILY_COLORS = ['네이비', '아이보리', '골드', '인디고', '실버'];
 const DAILY_SIGNS = ['연애운', '재물운', '직장운', '관계운', '오늘의 한 줄'];
 
+// 2026-05-18 Phase 2: raw new Date().getDate() (UTC) → getKstParts().day (KST).
+//   기존 코드는 Vercel UTC 기준이라 KST 00:00 ~ 09:00 사이에 어제 seed 노출 (audit P0 #4).
 export function buildTodayFortune() {
-  const seed = new Date().getDate();
+  const seed = getKstParts().day;
   const index = seed % DAILY_HEADLINES.length;
 
   return {
