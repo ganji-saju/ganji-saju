@@ -26,6 +26,9 @@ const LIFETIME_REPORT_PRICE = LIFETIME_REPORT_PACKAGE
   ? formatPaymentPackagePrice(LIFETIME_REPORT_PACKAGE)
   : '49,000원';
 
+// 2026-05-18 Phase 5-B: comingSoon 카드는 결제 CTA 영역에서 숨김.
+//   사용자 directive: "준비 중" 가격 표시 금지 + 결제 CTA 에서는 숨긴다.
+//   운영자가 가격 확정 + 활성화 시 comingSoon=false 로 바꾸면 즉시 노출.
 const COLLECTIBLE_REPORTS: ReadonlyArray<{
   slug: string;
   title: string;
@@ -33,6 +36,7 @@ const COLLECTIBLE_REPORTS: ReadonlyArray<{
   summary: string;
   href: string;
   zodiac: ZodiacKey;
+  comingSoon?: boolean;
 }> = [
   {
     slug: 'life-standard',
@@ -45,28 +49,34 @@ const COLLECTIBLE_REPORTS: ReadonlyArray<{
   {
     slug: 'yearly-2026',
     title: '올해 흐름 리포트',
-    price: '준비 중',
+    price: '',
     summary: '진행하기 좋은 달, 확인할 달, 쉬어갈 달을 먼저 봅니다.',
     href: '/saju/new?focus=year',
     zodiac: 'tiger',
+    comingSoon: true,
   },
   {
     slug: 'relationship-standard',
     title: '궁합 보관 리포트',
-    price: '준비 중',
+    price: '',
     summary: '두 사람의 속도, 거리감, 반복되는 갈등을 정리합니다.',
     href: '/compatibility/input?product=relationship-standard',
     zodiac: 'sheep',
+    comingSoon: true,
   },
   {
     slug: 'family-report',
     title: '가족 흐름 리포트',
-    price: '준비 중',
+    price: '',
     summary: '가족 안에서 반복되는 역할과 부딪힘을 함께 봅니다.',
     href: '/membership?focus=family-report',
     zodiac: 'pig',
+    comingSoon: true,
   },
 ];
+
+// 결제 가능한 카드만 노출 — 출시 예정은 hidden (가격 확정 + comingSoon=false 시 자동 표시).
+const ACTIVE_COLLECTIBLE_REPORTS = COLLECTIBLE_REPORTS.filter((r) => !r.comingSoon);
 
 const TASTE_ZODIACS: ZodiacKey[] = ['rooster', 'rabbit', 'snake', 'dragon', 'monkey', 'tiger'];
 
@@ -309,7 +319,7 @@ export default async function MembershipPage({
               오래 다시 볼 내용은 리포트로
             </h2>
             <div className="mt-3 grid gap-2.5">
-              {COLLECTIBLE_REPORTS.map((report) => (
+              {ACTIVE_COLLECTIBLE_REPORTS.map((report) => (
                 <Link
                   key={report.slug}
                   href={report.href}

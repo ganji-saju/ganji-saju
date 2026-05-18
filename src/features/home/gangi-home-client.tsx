@@ -28,8 +28,12 @@ export function GangiHomeClient({
 }) {
   const [activeCategory, setActiveCategory] = useState<GangiHomeCategoryKey>('all');
   const visibleCards = useMemo(() => {
-    if (activeCategory === 'all') return GANGI_HOME_CARDS;
-    return GANGI_HOME_CARDS.filter((card) => card.category === activeCategory);
+    // 2026-05-18 Phase 5-B: "준비 중" 가격 카드 hidden — 결제 CTA 영역에서 미완성 표기 0건.
+    //   GANGI_HOME_CARDS 는 home grid 의 활성 메뉴여서 출시 예정 카드는 표시 안 함.
+    //   운영자가 가격 확정 + comingSoon 제거 시 자동 노출.
+    const activeCards = GANGI_HOME_CARDS.filter((card) => card.price !== '준비 중');
+    if (activeCategory === 'all') return activeCards;
+    return activeCards.filter((card) => card.category === activeCategory);
   }, [activeCategory]);
 
   useEffect(() => {

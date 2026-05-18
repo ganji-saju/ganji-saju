@@ -74,7 +74,7 @@ export function LegalTabsClient({ kinds, labels, initialTab, initialActive }: Pr
               <span>{SHORT_LABELS[kind]}</span>
               {!hasContent && (
                 <span
-                  aria-label="본문 준비 중"
+                  aria-label="본문 출시 예정"
                   className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--app-copy-muted)] align-middle"
                 />
               )}

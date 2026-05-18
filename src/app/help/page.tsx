@@ -47,16 +47,9 @@ export default function HelpCenterShellPage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="flex items-center gap-1.5">
-            <span
-              className="rounded-full border bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-pink-strong)]"
-              style={{ borderColor: 'var(--app-pink-line)' }}
-            >
-              ✦ 준비 중
-            </span>
-          </div>
+          {/* 2026-05-18 Phase 5-B: "✦ 준비 중" 배지 제거 — h1 + 본문 카피가 이미 명확. */}
           <h1
-            className="mt-2 text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+            className="text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             지금은 카카오/전화로 받아드려요

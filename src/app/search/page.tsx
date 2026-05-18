@@ -10,6 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { LoadingState } from '@/components/state/loading-state';
 
 type SearchCategory = '운세 메뉴' | '관련 풀이' | '꿈해몽' | '띠/별자리';
 
@@ -379,8 +380,13 @@ export default function SearchPage() {
     <Suspense
       fallback={
         <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-          <AppPage className="gangi-subpage saju-result-page text-center">
-            <p className="py-8 text-[12.5px] text-[var(--app-copy-muted)]">검색 준비 중입니다.</p>
+          <AppPage className="gangi-subpage saju-result-page">
+            {/* 2026-05-18 Phase 5-B: "검색 준비 중입니다" 단순 문구 → LoadingState 표준화 */}
+            <LoadingState
+              label="검색 인덱스 불러오는 중"
+              description="잠시 후 결과를 표시합니다."
+              size="lg"
+            />
           </AppPage>
         </AppShell>
       }
