@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { TaekilDayResult, TaekilPurpose } from '@/lib/taekil/find-good-days';
 import { TAEKIL_PURPOSES } from '@/lib/taekil/find-good-days';
+// 2026-05-18 Phase 5-E: 결과 없음 시 표준 EmptyState + 4 CTA (사용자 directive).
+import { EmptyState } from '@/components/state/empty-state';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -260,12 +262,48 @@ export function TaekilClient() {
           </div>
         </section>
       ) : (
-        <article
-          className="rounded-[16px] border bg-white p-5 text-center"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <p className="text-[13px] text-[var(--app-copy-muted)]">결과가 없습니다</p>
-        </article>
+        // 2026-05-18 Phase 5-E: "결과가 없습니다" 단순 문구 → EmptyState + 4 CTA.
+        //   사용자 directive: 다시 선택 / 생년월일 확인 / 추천 날짜 / 유료 상세 풀이 + 명확 설명.
+        <EmptyState
+          title="현재 조건에 맞는 좋은 날을 찾지 못했습니다"
+          description={`선택하신 목적(${TAEKIL_PURPOSES.find((p) => p.key === purpose)?.label ?? ''})과 사주 원국, 향후 60일 일진을 비교한 결과 추천 가능한 길일이 없습니다. 다른 목적을 선택하시거나 사주 정보를 확인해 주세요.`}
+          icon="🗓️"
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = TAEKIL_PURPOSES.find((p) => p.key !== purpose);
+                  if (next) setPurpose(next.key);
+                }}
+                className="rounded-[10px] bg-[var(--app-pink-strong)] px-3 py-2 text-[12.5px] font-bold text-white"
+              >
+                다른 목적으로 다시 찾기
+              </button>
+              <Link
+                href="/my/profile"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-copy)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                생년월일 확인
+              </Link>
+              <Link
+                href="/saju/new?focus=year"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-copy)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                추천 날짜 생성
+              </Link>
+              <Link
+                href="/membership"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-pink-strong)]"
+                style={{ borderColor: 'var(--app-pink-line)' }}
+              >
+                유료 상세 풀이
+              </Link>
+            </>
+          }
+        />
       )}
 
       {/* §안내 */}
