@@ -63,10 +63,14 @@ export function TodayFortuneDetailClient({
   sourceSessionId,
   concern,
   paidProduct,
+  // 2026-05-18 — /saju/[slug]/today-detail 진입 시에는 사주 페이지로 돌아가도록 override.
+  // 미지정 시 today-fortune 무료 결과 경로로 기본 동작.
+  backHref: backHrefOverride,
 }: {
   sourceSessionId?: string;
   concern?: string;
   paidProduct?: string;
+  backHref?: string;
 }) {
   const { counselorId } = usePreferredCounselor();
   const [loading, setLoading] = useState(Boolean(sourceSessionId));
@@ -189,9 +193,10 @@ export function TodayFortuneDetailClient({
     return () => window.clearTimeout(timeout);
   }, [loading, result]);
 
-  const resultHref = sourceSessionId
+  const defaultResultHref = sourceSessionId
     ? `/today-fortune/result?sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(freeResult?.concernId ?? concernId)}`
     : `/today-fortune?concern=${encodeURIComponent(concernId)}`;
+  const resultHref = backHrefOverride ?? defaultResultHref;
 
   return (
     <div className="gangi-subpage saju-result-page pb-8">
