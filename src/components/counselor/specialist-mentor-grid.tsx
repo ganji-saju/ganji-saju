@@ -1,15 +1,50 @@
+// 2026-05-19 Phase 7c — 상담사 카드에 'AI 풀이 vs 사람 상담' 구분 배지 추가.
+//   현재 4분은 모두 AI 사주 리포트 진입점이라 'AI 풀이' 배지로 표시.
+//   사람 1:1 상담사 예약은 출시 예정 — footer 에 별도 안내 + 환불 정책 link.
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { FeatureCard } from '@/components/layout/feature-card';
 import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
-import { SPECIALIST_MENTORS } from '@/content/specialist-mentors';
+import {
+  SPECIALIST_MENTORS,
+  type SpecialistMentorMode,
+} from '@/content/specialist-mentors';
 
 interface SpecialistMentorGridProps {
   title?: string;
   description?: string;
   className?: string;
   showHeader?: boolean;
+}
+
+function ModeBadge({ mode }: { mode: SpecialistMentorMode }) {
+  if (mode === 'ai-report') {
+    return (
+      <span
+        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+        style={{
+          background: 'var(--app-pink-soft)',
+          borderColor: 'var(--app-pink-line)',
+          color: 'var(--app-pink-strong)',
+        }}
+      >
+        AI 풀이
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+      style={{
+        background: 'rgba(17, 17, 20, 0.06)',
+        borderColor: 'rgba(17, 17, 20, 0.18)',
+        color: 'var(--app-copy)',
+      }}
+    >
+      사람 상담 · 출시 예정
+    </span>
+  );
 }
 
 export function SpecialistMentorGrid({
@@ -35,8 +70,9 @@ export function SpecialistMentorGrid({
             key={mentor.slug}
             surface="soft"
             eyebrow={
-              <span className=" text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
-                {mentor.hanja}
+              <span className="flex items-center gap-2 text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
+                <span>{mentor.hanja}</span>
+                <ModeBadge mode={mentor.mode} />
               </span>
             }
             title={mentor.title}
@@ -68,10 +104,37 @@ export function SpecialistMentorGrid({
         ))}
       </ProductGrid>
 
-      <p className="mt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
-        대화 persona는 순차적으로 확장할 예정이며, 지금은 각 전문 선생이 먼저 잘 맞는 리포트와
-        풀이 흐름으로 안내합니다.
-      </p>
+      {/* Phase 7c — AI/사람 구분 명시 + 환불·취소 정책 link */}
+      <div className="mt-5 rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[12.5px] leading-[1.7] text-[var(--app-copy)]">
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          상담 안내
+        </div>
+        <ul className="mt-2 grid gap-1.5">
+          <li>
+            <span className="font-extrabold text-[var(--app-ink)]">AI 풀이:</span> 위 전문 선생은
+            모두 사주 데이터 기반 AI 리포트로 진입합니다. 1:1 사람 상담사가 아닙니다.
+          </li>
+          <li>
+            <span className="font-extrabold text-[var(--app-ink)]">사람 상담사 예약:</span>{' '}
+            화상·전화·대면 상담은 출시 예정입니다. 정식 오픈 시 가격·시간·예약 방식을 별도로
+            안내드립니다.
+          </li>
+        </ul>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href="/refund-policy"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            환불 / 취소 정책
+          </Link>
+          <Link
+            href="/appointment-policy"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            예약 상담 정책 (예정)
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
