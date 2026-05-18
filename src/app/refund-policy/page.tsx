@@ -1,4 +1,5 @@
 // Phase 3-B (2026-05-18): 환불·청약철회 정책. DB policy_versions.kind='refund' 우선.
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-page-shell';
 

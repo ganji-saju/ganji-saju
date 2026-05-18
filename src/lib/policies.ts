@@ -84,6 +84,9 @@ function rowToPolicy(row: PolicyRow): PolicyVersion {
 export async function getCurrentPolicyVersion(
   kind: PolicyKind
 ): Promise<PolicyVersion | null> {
+  // CI 빌드 / preview 빌드에서 Supabase env 없을 때 graceful null (PolicyNotReady 노출).
+  // production runtime 에는 env 가 있어 정상 fetch.
+  if (!hasSupabaseServiceEnv()) return null;
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date());
   const supabase = await createServiceClient();
   const { data, error } = await supabase
@@ -99,8 +102,15 @@ export async function getCurrentPolicyVersion(
   return rowToPolicy(data as PolicyRow);
 }
 
+function hasSupabaseServiceEnv(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
+
 /** 종류별 모든 버전 이력 (admin 페이지 + /policies/[kind]/history 용). */
 export async function listPolicyVersions(kind: PolicyKind): Promise<PolicyVersion[]> {
+  if (!hasSupabaseServiceEnv()) return [];
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from('policy_versions')
@@ -116,6 +126,7 @@ export async function listPolicyVersions(kind: PolicyKind): Promise<PolicyVersio
 export async function getAllActivePolicyVersions(): Promise<
   Partial<Record<PolicyKind, PolicyVersion>>
 > {
+  if (!hasSupabaseServiceEnv()) return {};
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date());
   const supabase = await createServiceClient();
   const { data, error } = await supabase

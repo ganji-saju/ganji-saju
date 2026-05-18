@@ -1,4 +1,5 @@
 // Phase 3-B (2026-05-18): 사업자·통신판매 통합 고지. DB policy_versions.kind='commerce-disclosure' 우선.
+export const dynamic = 'force-dynamic';
 // 본 페이지는 사업자 정보 (BUSINESS_INFO) + 정책 본문 결합 — 운영자가 admin 에서 본문 입력 시 사업자 정보 위에 정책 본문 노출.
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';

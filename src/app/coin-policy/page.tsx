@@ -1,4 +1,5 @@
 // Phase 3-B (2026-05-18): 코인 정책. DB policy_versions.kind='coin' 우선.
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-page-shell';
 

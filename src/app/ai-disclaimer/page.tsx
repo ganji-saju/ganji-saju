@@ -1,4 +1,5 @@
 // Phase 3-B (2026-05-18): AI 상담·운세 콘텐츠 한계 고지. DB policy_versions.kind='ai-disclaimer' 우선.
+export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next';
 import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-page-shell';
 
