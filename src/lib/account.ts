@@ -42,6 +42,8 @@ export interface AccountPurchasedResult {
   title: string;
   summary: string | null;
   productId: string;
+  // 2026-05-18 Phase 7b — 후기 작성 시 entitlement scope 매칭에 필요.
+  scopeKey: string;
   href: string;
   createdAt: string;
   occurredOn: string | null;
@@ -243,6 +245,7 @@ export async function getAccountDashboardData(
       title: snapshot.title,
       summary: snapshot.summary,
       productId: snapshot.productId,
+      scopeKey: snapshot.scopeKey,
       href: buildPurchasedResultHref(snapshot),
       createdAt: snapshot.createdAt,
       occurredOn: snapshot.occurredOn,

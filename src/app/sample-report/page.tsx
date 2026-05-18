@@ -9,6 +9,7 @@ import { SafetyNotice } from '@/components/common/safety-notice';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { SpecialistMentorGrid } from '@/components/counselor/specialist-mentor-grid';
 import { ReportKeepsakeSection } from '@/components/report/report-keepsake-section';
+import { ReviewList } from '@/components/review/review-list';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -352,6 +353,14 @@ export default function SampleReportPage() {
         </article>
 
         <ReportKeepsakeSection />
+
+        {/* §구매자 후기 — Phase 7b. 승인된 lifetime-report 후기만 노출, 0건이면 empty state. */}
+        <ReviewList
+          productId="lifetime-report"
+          title="실제 구매자의 후기"
+          emptyTitle="첫 후기를 받고 있어요"
+          emptyDescription="구매하신 분들의 솔직한 이야기를 받고 있어요. 첫 후기가 등록되면 이 자리에 표시됩니다."
+        />
 
         {/* §맛보기에서 풀이까지 */}
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
