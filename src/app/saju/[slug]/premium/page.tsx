@@ -81,9 +81,6 @@ function getTasteProductHref(productSlug: string, encodedSlug: string, targetYea
   if (productSlug === 'year-core') {
     return `/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium`;
   }
-  if (productSlug === 'love-question') {
-    return '/membership/checkout?product=love-question&from=saju-premium';
-  }
   if (productSlug === 'money-pattern' || productSlug === 'work-flow') {
     return `/membership/checkout?product=${productSlug}&slug=${encodedSlug}&from=saju-premium`;
   }
@@ -250,7 +247,7 @@ function SmallQuestionProducts({
         궁금한 것 하나만 먼저 봐도 좋아요
       </h2>
       <div className="mt-3 grid grid-cols-2 gap-2.5">
-        {TASTE_PRODUCTS.map((product) => (
+        {TASTE_PRODUCTS.filter((product) => !product.compatibilityOnly).map((product) => (
           <Link
             key={product.slug}
             href={getTasteProductHref(product.slug, encodedSlug, targetYear)}

@@ -372,7 +372,7 @@ export default function SampleReportPage() {
             처음부터 큰 리포트가 부담스러우면 작은 풀이로 먼저 확인합니다
           </h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {TASTE_PRODUCTS.map((product) => (
+            {TASTE_PRODUCTS.filter((product) => !product.compatibilityOnly).map((product) => (
               <div key={product.slug} style={SOFT_FEATURE_STYLE}>
                 <div
                   className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
