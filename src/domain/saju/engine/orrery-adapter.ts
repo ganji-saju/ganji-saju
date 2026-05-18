@@ -887,7 +887,7 @@ function getBranchPrimaryTenGod(dayMasterStem: Stem, branch: Branch): TenGodCode
   return getTenGodHangul(dayMasterStem, BRANCH_MAIN_STEM[branch]);
 }
 
-function getTenGodHangul(dayMasterStem: Stem, targetStem: Stem): TenGodCode {
+export function getTenGodHangul(dayMasterStem: Stem, targetStem: Stem): TenGodCode {
   const masterElement = STEM_ELEMENT_INDEX[dayMasterStem];
   const targetElement = STEM_ELEMENT_INDEX[targetStem];
   const samePolarity = STEM_POLARITY[dayMasterStem] === STEM_POLARITY[targetStem];
