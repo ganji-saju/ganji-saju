@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { BUSINESS_INFO } from '@/lib/business-info';
 
 export const metadata: Metadata = {
   title: '고객센터',
@@ -120,19 +121,47 @@ export default function HelpCenterShellPage() {
           </div>
         </section>
 
-        {/* §회사 정보 */}
-        <article
-          className="rounded-[14px] border bg-white p-4 text-[11.5px] leading-[1.7] text-[var(--app-copy-muted)]"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            회사 정보
-          </div>
-          <div className="mt-1.5">푸꼬컴퍼니 · 대표 김재호</div>
-          <div>사업자등록번호 215-27-64715</div>
-          <div>서울특별시 중랑구 동일로 909, 3층 301호 일부호(묵동)</div>
-        </article>
+        {/* §회사 정보 — 2026-05-18 Phase 3-A: BUSINESS_INFO env 기반 (푸터와 single source) */}
+        <BusinessInfoCard />
       </AppPage>
     </AppShell>
+  );
+}
+
+function BusinessInfoCard() {
+  const lines: string[] = [];
+  if (BUSINESS_INFO.companyName || BUSINESS_INFO.ceoName) {
+    const parts: string[] = [];
+    if (BUSINESS_INFO.companyName) parts.push(BUSINESS_INFO.companyName);
+    if (BUSINESS_INFO.ceoName) parts.push(`대표 ${BUSINESS_INFO.ceoName}`);
+    lines.push(parts.join(' · '));
+  }
+  if (BUSINESS_INFO.businessRegistrationNumber) {
+    lines.push(`사업자등록번호 ${BUSINESS_INFO.businessRegistrationNumber}`);
+  }
+  if (BUSINESS_INFO.mailOrderRegistrationNumber) {
+    lines.push(`통신판매업 ${BUSINESS_INFO.mailOrderRegistrationNumber}`);
+  }
+  if (BUSINESS_INFO.address) lines.push(BUSINESS_INFO.address);
+  if (BUSINESS_INFO.phone) lines.push(`고객센터 ${BUSINESS_INFO.phone}`);
+  if (BUSINESS_INFO.email) lines.push(BUSINESS_INFO.email);
+  if (BUSINESS_INFO.csHours) lines.push(`운영시간 ${BUSINESS_INFO.csHours}`);
+
+  if (lines.length === 0) return null;
+
+  return (
+    <article
+      className="rounded-[14px] border bg-white p-4 text-[11.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+      style={{ borderColor: 'var(--app-line)' }}
+    >
+      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        회사 정보
+      </div>
+      {lines.map((line, i) => (
+        <div key={i} className={i === 0 ? 'mt-1.5' : ''}>
+          {line}
+        </div>
+      ))}
+    </article>
   );
 }
