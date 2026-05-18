@@ -33,11 +33,13 @@ const REQUIRED_PRODUCTION_KEYS = [
   ['NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL', '개인정보보호책임자 이메일'],
 ] as const;
 
-function isProduction(): boolean {
-  // Vercel preview / development 빌드는 본 가드 비활성 (개발 방해 X).
-  if (process.env.NODE_ENV !== 'production') return false;
-  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return false;
-  return true;
+function isProductionDeploy(): boolean {
+  // Vercel **production deploy** 만 가드 활성. 즉 실제 사용자가 보는 배포만 검증.
+  //   - 로컬 npm run build: VERCEL_ENV undefined → 비활성 (개발 방해 X)
+  //   - CI build (GitHub Actions): VERCEL_ENV undefined → 비활성 (CI 차단 X)
+  //   - Vercel preview: VERCEL_ENV='preview' → 비활성 (PR preview 차단 X)
+  //   - Vercel production: VERCEL_ENV='production' → 활성 (사이트 노출 차단)
+  return process.env.VERCEL_ENV === 'production';
 }
 
 function getEnv(key: string): string {
@@ -50,7 +52,7 @@ function getEnv(key: string): string {
  * import 시점 (build / SSR boot) 에 자동 실행 — 누락 시 즉시 차단.
  */
 export function assertProductionBusinessEnv(): void {
-  if (!isProduction()) return;
+  if (!isProductionDeploy()) return;
   const missing = REQUIRED_PRODUCTION_KEYS.filter(([key]) => !getEnv(key));
   if (missing.length === 0) return;
 

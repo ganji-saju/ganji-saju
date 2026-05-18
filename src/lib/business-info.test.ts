@@ -62,23 +62,20 @@ test('BUSINESS_INFO 11 필드 모두 export — typed 객체', () => {
   assert.ok('businessInfoVerificationUrl' in BUSINESS_INFO);
 });
 
-test('assertProductionBusinessEnv — dev / preview 환경에서는 throw 안 함', () => {
+test('assertProductionBusinessEnv — VERCEL_ENV 미설정 시 throw 안 함 (로컬/CI build)', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
     delete process.env.VERCEL_ENV;
     for (const key of REQUIRED_KEYS) delete process.env[key];
-    // 빈 env 상태에서도 dev 면 throw 안 함
     assertProductionBusinessEnv(); // no throw
   } finally {
     restoreEnv(snap);
   }
 });
 
-test('assertProductionBusinessEnv — VERCEL_ENV=preview 일 때 throw 안 함', () => {
+test('assertProductionBusinessEnv — VERCEL_ENV=preview 일 때 throw 안 함 (PR preview)', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
     process.env.VERCEL_ENV = 'preview';
     for (const key of REQUIRED_KEYS) delete process.env[key];
     assertProductionBusinessEnv(); // no throw
@@ -87,10 +84,20 @@ test('assertProductionBusinessEnv — VERCEL_ENV=preview 일 때 throw 안 함',
   }
 });
 
-test('assertProductionBusinessEnv — production + 필수 env 누락 시 throw', () => {
+test('assertProductionBusinessEnv — VERCEL_ENV=development 일 때 throw 안 함', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+    process.env.VERCEL_ENV = 'development';
+    for (const key of REQUIRED_KEYS) delete process.env[key];
+    assertProductionBusinessEnv(); // no throw
+  } finally {
+    restoreEnv(snap);
+  }
+});
+
+test('assertProductionBusinessEnv — VERCEL_ENV=production + 필수 env 누락 → throw', () => {
+  const snap = snapshotEnv();
+  try {
     process.env.VERCEL_ENV = 'production';
     for (const key of REQUIRED_KEYS) delete process.env[key];
     assert.throws(() => assertProductionBusinessEnv(), /production 빌드 차단/);
@@ -99,10 +106,9 @@ test('assertProductionBusinessEnv — production + 필수 env 누락 시 throw',
   }
 });
 
-test('assertProductionBusinessEnv — production + 일부만 누락 시 throw 메시지에 누락 키 포함', () => {
+test('assertProductionBusinessEnv — VERCEL_ENV=production + 일부 누락 시 throw 메시지에 누락 키 포함', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
     process.env.VERCEL_ENV = 'production';
     setEnvAll('value');
     delete process.env.NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER;
@@ -115,10 +121,9 @@ test('assertProductionBusinessEnv — production + 일부만 누락 시 throw �
   }
 });
 
-test('assertProductionBusinessEnv — production + 모든 env 채움 → 통과', () => {
+test('assertProductionBusinessEnv — VERCEL_ENV=production + 모든 env 채움 → 통과', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
     process.env.VERCEL_ENV = 'production';
     setEnvAll('value');
     assertProductionBusinessEnv(); // no throw
@@ -130,7 +135,6 @@ test('assertProductionBusinessEnv — production + 모든 env 채움 → 통과'
 test('assertProductionBusinessEnv — env 값이 공백만이면 누락으로 판정', () => {
   const snap = snapshotEnv();
   try {
-    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
     process.env.VERCEL_ENV = 'production';
     setEnvAll('value');
     process.env.NEXT_PUBLIC_CEO_NAME = '   '; // 공백
