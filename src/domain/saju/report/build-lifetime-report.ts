@@ -7,6 +7,8 @@ import {
 import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
 // 2026-05-15 PR 6: 12운성 helper.
 import { getTwelveStage } from '@/domain/saju/engine/saju-data-v1';
+// 2026-05-19 PR-A Task 3: cycle 천간 → 일간 대비 십성 추출 helper. PR-B 본문 분기 input.
+import { getCycleSipsin } from '@/lib/saju/cycle-sipsin';
 import { buildSajuReport } from './build-report';
 import { buildYearlyReport } from './build-yearly-report';
 import type {
@@ -325,7 +327,9 @@ function buildChapterBodyText(
   cycle: SajuMajorLuckCycle,
   reading: { summary: string },
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
-  twelveStage: string | null = null
+  twelveStage: string | null = null,
+  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  cycleSipsin: TenGodCode | null = null
 ): string {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const noteJoin = cycle.notes.slice(0, 3).join(' ').trim();
@@ -348,7 +352,9 @@ function head_open(cycle: SajuMajorLuckCycle): string {
 function buildMentalText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
-  twelveStage: string | null = null
+  twelveStage: string | null = null,
+  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  cycleSipsin: TenGodCode | null = null
 ): string {
   const { stem } = getGanziElements(cycle.ganzi);
   const element = stem ?? context.weakest;
@@ -395,7 +401,9 @@ function buildRelationshipText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   userSituation: UserSituation | null,
-  wonjinWith: string[] = []
+  wonjinWith: string[] = [],
+  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  cycleSipsin: TenGodCode | null = null
 ): string {
   const status = userSituation?.relationshipStatus;
   const baseLine = `${cycle.ganzi} 대운의 결은 관계의 거리감과 표현 방식을 함께 흔듭니다.`;
@@ -420,7 +428,9 @@ function buildRelationshipText(
 function buildWealthCareerText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
-  userSituation: UserSituation | null
+  userSituation: UserSituation | null,
+  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  cycleSipsin: TenGodCode | null = null
 ): string {
   const occupation = userSituation?.occupation;
   const concern = userSituation?.currentConcern;
@@ -600,7 +610,9 @@ function buildPracticalActions(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   // 2026-05-15 PR 4: 사주 원국의 dominant/weakest tenGod 도 받아 사전 매핑.
-  primaryTenGod: TenGodCode | null = null
+  primaryTenGod: TenGodCode | null = null,
+  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  cycleSipsin: TenGodCode | null = null
 ): PracticalAction[] {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const cycleElement = stem ?? branch ?? context.weakest;
@@ -871,6 +883,10 @@ function buildMajorLuckCycles(
       : [];
     // 2026-05-15 PR 7 응답 3: 교운기(交運期) 판정 — cycle 시작 ±1년 또는 끝 ±1년 사용자.
     const transitionPhase = detectTransitionPhase(cycle, currentAge);
+    // 2026-05-19 PR-A Task 3: cycle 천간 → 일간 대비 십성 (TenGodCode). PR-B 본문 분기 input.
+    const cycleSipsin = engineContext?.dayMasterStem
+      ? getCycleSipsin(engineContext.dayMasterStem, cycle.ganzi)
+      : null;
 
     return {
       ganzi: cycle.ganzi,
@@ -882,11 +898,11 @@ function buildMajorLuckCycles(
       // 2026-05-15 PR 2 — 8 sub-section. PR 3 에서 chapterTitle 10 패턴, PR 7 에서 12운성·원진 인용.
       hook: buildHookSentence(cycle, isCurrent, context, userSituation),
       chapterTitle: buildChapterTitleText(cycle, isCurrent, isFirstCycle, context, userSituation),
-      chapterBody: buildChapterBodyText(cycle, reading, context, twelveStage),
-      mental: buildMentalText(cycle, context, twelveStage),
-      relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith),
-      wealthCareer: buildWealthCareerText(cycle, context, userSituation),
-      practicalActions: buildPracticalActions(cycle, context, primaryTenGod),
+      chapterBody: buildChapterBodyText(cycle, reading, context, twelveStage, cycleSipsin),
+      mental: buildMentalText(cycle, context, twelveStage, cycleSipsin),
+      relationship: buildRelationshipText(cycle, context, userSituation, wonjinWith, cycleSipsin),
+      wealthCareer: buildWealthCareerText(cycle, context, userSituation, cycleSipsin),
+      practicalActions: buildPracticalActions(cycle, context, primaryTenGod, cycleSipsin),
       closingNote: buildClosingNoteText(cycle, context, isCurrent, twelveStage, transitionPhase),
       twelveStage,
       wonjinWith,
