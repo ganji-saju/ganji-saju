@@ -29,7 +29,10 @@ import {
 import { toSlug } from '@/lib/saju/pillars';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import {
+  getTasteProductEntitlement,
+  hasAnyMonthlyCalendarForReading,
+} from '@/lib/product-entitlements';
 import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
@@ -288,6 +291,9 @@ export default async function SajuPremiumPage({ params }: Props) {
   const targetYear = new Date().getFullYear();
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
+  // 2026-05-18 — 1,900원 monthly-calendar 단독 구매자도 상세 화면(캘린더 + 잠금 1·2 preview)
+  //   로 진입하도록 추가. lifetime / yearly 보다 우선순위 낮음.
+  let monthlyAccessLabel: string | null = null;
   // 2026-05-16 — 활성 멤버십 plan 을 추적해 plan=premium 결제 CTA 가 중복 결제로
   //   이어지지 않도록 분기. checkout 단계에서도 차단되지만 진입 button 에서도 안내.
   let activeMembershipPlan: string | null = null;
@@ -299,7 +305,7 @@ export default async function SajuPremiumPage({ params }: Props) {
     } = await supabase.auth.getUser();
 
     if (user) {
-      const [entitlement, subscription, yearCoreEntitlement] = await Promise.all([
+      const [entitlement, subscription, yearCoreEntitlement, hasMonthlyCalendar] = await Promise.all([
         getLifetimeReportEntitlement(user.id, readingKey, [slug]),
         getManagedSubscription(user.id),
         getTasteProductEntitlement(
@@ -307,6 +313,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           'year-core',
           buildYearCoreScopeKey(readingKey, targetYear)
         ),
+        hasAnyMonthlyCalendarForReading(user.id, readingKey),
       ]);
 
       if (entitlement) {
@@ -316,6 +323,8 @@ export default async function SajuPremiumPage({ params }: Props) {
         yearlyAccessLabel = subscription.plan === 'premium_monthly' ? 'Premium 이용권' : '라이트 이용권';
       } else if (yearCoreEntitlement) {
         yearlyAccessLabel = '올해 핵심 구매';
+      } else if (hasMonthlyCalendar) {
+        monthlyAccessLabel = '월간 달력 구매';
       }
       if (subscription && subscription.status === 'active') {
         activeMembershipPlan = subscription.plan;
@@ -327,17 +336,23 @@ export default async function SajuPremiumPage({ params }: Props) {
     ? '깊은 풀이 · 열림'
     : yearlyAccessLabel
       ? `${targetYear} 올해 흐름 · 열림`
-      : '깊은 풀이 · 안내';
+      : monthlyAccessLabel
+        ? '월별 흐름 · 열림'
+        : '깊은 풀이 · 안내';
   const heroTitle = hasLifetimeAccess
     ? '내 사주를 자세히 봅니다'
     : yearlyAccessLabel
       ? `${targetYear} 올해 흐름`
-      : '깊은 풀이로 이어보기';
+      : monthlyAccessLabel
+        ? '이번 달 흐름부터 봅니다'
+        : '깊은 풀이로 이어보기';
   const heroDescription = hasLifetimeAccess
     ? '타고난 성향, 올해 흐름, 월별 타이밍을 차례로 봅니다.'
     : yearlyAccessLabel
       ? '올해의 큰 주제와 월별 타이밍을 먼저 확인합니다.'
-      : '열리는 내용을 짧게 확인하고 필요한 풀이만 고릅니다.';
+      : monthlyAccessLabel
+        ? '월별 타이밍부터 보고, 큰 흐름과 올해 흐름은 잠금 미리보기로 둘러봅니다.'
+        : '열리는 내용을 짧게 확인하고 필요한 풀이만 고릅니다.';
 
   const readingSteps: PremiumReadingStep[] = hasLifetimeAccess
     ? [
@@ -366,7 +381,34 @@ export default async function SajuPremiumPage({ params }: Props) {
           note: '실행 날짜를 고르는 부록입니다.',
         },
       ]
-    : yearlyAccessLabel
+    : monthlyAccessLabel
+      ? [
+          {
+            label: '달별',
+            title: '월별 흐름',
+            description: '해금한 달과 다음 달 타이밍을 봅니다.',
+            href: '#premium-calendar',
+            status: '열림',
+            note: '먼저 보는 장입니다.',
+          },
+          {
+            label: '큰 흐름',
+            title: '자세한 사주풀이 (잠금)',
+            description: '결제 후 큰 흐름이 함께 열립니다.',
+            href: '#premium-locked-lifetime',
+            status: '잠금',
+            note: '미리보기로 구성을 봅니다.',
+          },
+          {
+            label: '올해',
+            title: `${targetYear} 올해 흐름 (잠금)`,
+            description: '올해의 큰 주제는 결제 후 열립니다.',
+            href: '#premium-locked-yearly',
+            status: '잠금',
+            note: '미리보기로 구성을 봅니다.',
+          },
+        ]
+      : yearlyAccessLabel
       ? [
           {
             label: '올해',
@@ -455,7 +497,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             className="relative overflow-hidden rounded-[20px] border p-5"
             style={{
               background:
-                hasLifetimeAccess || yearlyAccessLabel
+                hasLifetimeAccess || yearlyAccessLabel || monthlyAccessLabel
                   ? 'linear-gradient(135deg, var(--app-pink-soft) 0%, #fff 60%, var(--app-pink-soft) 100%)'
                   : 'var(--app-pink-soft)',
               borderColor: 'var(--app-pink-line)',
@@ -476,7 +518,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <ZodiacChip kind={yearZodiac} size="lg" />
               <div className="min-w-0 flex-1">
                 {/* 결제 권한 ✓ 배지 (paid 일 때만) */}
-                {hasLifetimeAccess || yearlyAccessLabel ? (
+                {hasLifetimeAccess || yearlyAccessLabel || monthlyAccessLabel ? (
                   <span
                     className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold text-white"
                     style={{
@@ -487,7 +529,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    {hasLifetimeAccess ? '평생 소장' : yearlyAccessLabel}
+                    {hasLifetimeAccess ? '평생 소장' : yearlyAccessLabel ?? monthlyAccessLabel}
                   </span>
                 ) : null}
                 <div className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
@@ -591,6 +633,135 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <YearlyReportPanel slug={slug} targetYear={targetYear} />
               </div>
               <SmallQuestionProducts encodedSlug={encodedSlug} targetYear={targetYear} />
+            </>
+          ) : monthlyAccessLabel ? (
+            <>
+              {/* 2026-05-18 Branch D — 월간달력(1,900원) 단독 구매자: 캘린더 우선 + 1·2장 잠금 미리보기. */}
+              <ChapterIntro
+                tone="indigo"
+                eyebrow="월별 흐름"
+                title="해금한 달의 흐름부터 봅니다"
+                description="달별 좋은 흐름·확인할 흐름·정리할 흐름을 살펴봅니다. 결제하지 않은 달은 1,900원으로 하나씩 열거나, 49,000원 풀팩으로 한꺼번에 보실 수 있어요."
+                highlight="월별 타이밍 캘린더"
+              />
+              <div id="premium-calendar" className="premium-ai-panel scroll-mt-28">
+                <FortuneCalendarPanel
+                  slug={slug}
+                  targetYear={targetYear}
+                  hasLifetimeAccess={false}
+                />
+              </div>
+
+              <ChapterIntro
+                number={1}
+                tone="jade"
+                eyebrow="1장 · 큰 흐름 (잠금)"
+                title="10년 단위 대운으로 인생의 결을 봅니다"
+                description="타고난 성향과 관계·일의 패턴을 정리한 뒤, 10년씩 흐르는 큰 운을 차례로 짚어드립니다. 결제 후 본문이 열립니다."
+                aside="49,000원 풀팩에 포함"
+              />
+              <section id="premium-locked-lifetime" className="scroll-mt-28 px-1">
+                <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
+                  <div className="select-none blur-[5px] opacity-65">
+                    <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                      자세한 풀이에서는 타고난 성향, 관계 패턴, 일·돈의 결을 정리한 뒤
+                      10년 단위로 흐르는 큰 운을 차례로 보여드립니다. 평생 한 번 정리해
+                      두면 매년 흐름을 가볍게 읽게 됩니다.
+                    </p>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span
+                      className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
+                      style={{ background: 'rgba(17,17,20,0.78)' }}
+                    >
+                      🔒 49,000원 결제 후 열림
+                    </span>
+                  </div>
+                </article>
+              </section>
+
+              <ChapterIntro
+                number={2}
+                tone="amber"
+                eyebrow={`2장 · ${targetYear} 올해 흐름 (잠금)`}
+                title={`${targetYear}년 어떤 선택이 가벼울지 먼저 봅니다`}
+                description="올해의 큰 주제와 분야별(일·돈·관계·생활) 선택 힌트를 정리합니다. 결제 후 본문이 열립니다."
+                aside="3,900원 단독 또는 49,000원 풀팩"
+              />
+              <section id="premium-locked-yearly" className="scroll-mt-28 px-1">
+                <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
+                  <div className="select-none blur-[5px] opacity-65">
+                    <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                      올해의 큰 주제와 월별 타이밍을 한자리에서 봅니다. 분야별로 무엇을
+                      먼저 할지, 무엇을 미뤄도 좋을지 결정에 도움이 되는 한 줄을
+                      정리해 드립니다.
+                    </p>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span
+                      className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
+                      style={{ background: 'rgba(17,17,20,0.78)' }}
+                    >
+                      🔒 결제 후 열림
+                    </span>
+                  </div>
+                </article>
+              </section>
+
+              <article
+                className="rounded-[18px] p-5 text-white"
+                style={{
+                  background: 'var(--app-ink)',
+                  boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
+                    style={{ background: 'var(--app-pink)' }}
+                  >
+                    VIP
+                  </span>
+                  <span
+                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    style={{ opacity: 0.7 }}
+                  >
+                    PREMIUM
+                  </span>
+                </div>
+                <h2 className="mt-2 text-[19px] font-extrabold leading-snug tracking-tight">
+                  큰 흐름 + 올해 흐름까지
+                  <br />
+                  한 번에 열기
+                </h2>
+                <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ color: 'rgba(255,255,255,0.78)' }}>
+                  월별 흐름은 이미 열려 있어요. 49,000원 풀팩으로 큰 흐름과 올해 흐름이
+                  바로 함께 열립니다.
+                </p>
+                <div className="mt-4 flex items-end gap-2.5">
+                  <div className="text-[23px] font-extrabold tracking-tight">49,000원</div>
+                  <div
+                    className="mb-1.5 text-[11px] line-through"
+                    style={{ opacity: 0.5 }}
+                  >
+                    69,000원
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  <Link
+                    href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-monthly`}
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  >
+                    1·2장 함께 열기 →
+                  </Link>
+                  <Link
+                    href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
+                    className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                  >
+                    올해 흐름만 3,900원
+                  </Link>
+                </div>
+              </article>
             </>
           ) : (
             <>
