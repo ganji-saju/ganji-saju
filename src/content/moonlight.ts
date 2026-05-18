@@ -117,6 +117,10 @@ export interface MoonlightTasteProduct {
   href: string;
   status: string;
   teacherSlug: DalbitTeacherSlug;
+  // 2026-05-19 — true 면 사주 컨텍스트(/saju/[slug]/premium · /sample-report) 의 cross-sell
+  //   에서 제외. 사용자가 사주를 보다가 두 사람 입력 화면으로 튕기는 것 방지.
+  //   love-question 처럼 궁합 흐름 전용 상품에 사용.
+  compatibilityOnly?: boolean;
 }
 
 export interface DalbitTeacherCard {
@@ -279,6 +283,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
     href: '/membership/checkout?product=love-question&from=taste-product',
     status: '연애 질문으로 연결',
     teacherSlug: 'compat-yang',
+    compatibilityOnly: true,
   },
   {
     slug: 'money-pattern',
