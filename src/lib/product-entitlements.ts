@@ -170,6 +170,50 @@ export async function getTasteProductEntitlement(
   return getLegacyTasteProductEntitlement(userId, productId, scopeKey);
 }
 
+// reading 단위로 monthly-calendar 결제가 한 번이라도 있었는지 — 어떤 (year,month) 든 무관.
+// premium/page.tsx 의 분기에서 "1,900원 단독 구매자도 상세 화면" 처리를 위해 사용한다.
+export async function hasAnyMonthlyCalendarForReading(
+  userId: string | null | undefined,
+  readingKey: string | null | undefined
+): Promise<boolean> {
+  if (!userId || !readingKey || !hasSupabaseServiceEnv) return false;
+
+  const scopePrefix = `calendar:${readingKey}:`;
+  const service = await createServiceClient();
+
+  // 1) product_entitlements: scope_key LIKE 'calendar:{readingKey}:%'
+  const { data: productRows } = await service
+    .from('product_entitlements')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('product_id', 'monthly-calendar')
+    .like('scope_key', `${scopePrefix}%`)
+    .limit(1);
+  if (productRows && productRows.length > 0) return true;
+
+  // 2) credit_transactions legacy: feature='taste_product' + metadata.productId='monthly-calendar'
+  //    + metadata.scopeKey 가 scopePrefix 로 시작.
+  const { data: legacyRows } = await service
+    .from('credit_transactions')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('type', 'purchase')
+    .eq('feature', 'taste_product')
+    .order('created_at', { ascending: false });
+
+  if (legacyRows && legacyRows.length > 0) {
+    for (const row of legacyRows as { metadata: Record<string, unknown> | null }[]) {
+      const meta = row.metadata ?? {};
+      const scopeKey = typeof meta.scopeKey === 'string' ? meta.scopeKey : '';
+      if (meta.kind === 'taste_product' && meta.productId === 'monthly-calendar' && scopeKey.startsWith(scopePrefix)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 async function recordLegacyTasteProductTransaction(
   userId: string,
   productId: TasteProductId,
