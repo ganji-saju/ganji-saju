@@ -17,6 +17,9 @@ import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-p
 import SiteHeader from '@/features/shared-navigation/site-header';
 import LegalLinks from '@/components/legal-links';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+// 2026-05-18 Phase 5-D: 정책/CS 링크. (잔액 영역은 ink-dark 배경이라 ErrorState 표준 카드 대신 inline retry button 사용.)
+import Link from 'next/link';
+import { BUSINESS_INFO } from '@/lib/business-info';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -50,6 +53,9 @@ function CreditsPageContent() {
   //   로그인한 사용자에게도 "로그인하세요" 안내가 노출되던 회귀 fix.
   //   SiteHeader / mega-nav 와 동일한 user_credits 직접 조회 패턴 + event listen.
   const [credits, setCredits] = useState<number | null>(null);
+  // 2026-05-18 Phase 5-D: 잔액 fetch 실패 상태 + retry trigger.
+  const [creditsFetchError, setCreditsFetchError] = useState(false);
+  const [creditsFetchVersion, setCreditsFetchVersion] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(DEFAULT_TOSS_PAYMENT_METHOD);
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
@@ -67,22 +73,31 @@ function CreditsPageContent() {
     }
     const supabase = createClient();
     let cancelled = false;
+    setCreditsFetchError(false);
 
     void (async () => {
-      const user = await getCurrentBrowserUser(supabase);
-      if (cancelled) return;
-      setIsLoggedIn(Boolean(user));
-      if (!user) {
-        setCredits(null);
-        return;
+      try {
+        const user = await getCurrentBrowserUser(supabase);
+        if (cancelled) return;
+        setIsLoggedIn(Boolean(user));
+        if (!user) {
+          setCredits(null);
+          return;
+        }
+        const { data, error } = await supabase
+          .from('user_credits')
+          .select('balance, subscription_balance')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (cancelled) return;
+        if (error) {
+          setCreditsFetchError(true);
+          return;
+        }
+        setCredits((data?.balance ?? 0) + (data?.subscription_balance ?? 0));
+      } catch {
+        if (!cancelled) setCreditsFetchError(true);
       }
-      const { data } = await supabase
-        .from('user_credits')
-        .select('balance, subscription_balance')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      setCredits((data?.balance ?? 0) + (data?.subscription_balance ?? 0));
     })();
 
     // 결제 완료 / 코인 소진 시 SiteHeader 가 dispatch 하는 event 를 listen — 즉시 갱신.
@@ -99,7 +114,7 @@ function CreditsPageContent() {
       cancelled = true;
       window.removeEventListener('moonlight:credits-updated', syncFromEvent);
     };
-  }, []);
+  }, [creditsFetchVersion]);
 
   const selectedPackage = useMemo(
     () => PACKAGES.find((p) => p.id === selectedPackageId) ?? PACKAGES[0],
@@ -199,31 +214,62 @@ function CreditsPageContent() {
             >
               현재 보유
             </div>
-            <div className="mt-1.5 flex items-end gap-2">
-              <div
-                className="text-[36px] font-extrabold tracking-tighter"
-                style={{ color: 'var(--app-pink)' }}
-              >
-                {isLoggedIn === false
-                  ? '✦ —'
-                  : credits === null
-                    ? '✦ …'
-                    : `✦ ${credits.toLocaleString()}`}
+            {/* 2026-05-18 Phase 5-D: 잔액 skeleton + 에러 시 RetryButton.
+                기존 "✦ …" / "잔액 확인 중…" 단순 텍스트 → 명확한 상태 분리. */}
+            {creditsFetchError ? (
+              <div className="mt-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreditsFetchError(false);
+                    setCredits(null);
+                    setCreditsFetchVersion((v) => v + 1);
+                  }}
+                  className="rounded-[10px] bg-white/15 px-3 py-2 text-[12.5px] font-bold text-white"
+                >
+                  잔액 확인 다시 시도
+                </button>
+                <p className="mt-2 text-[11.5px]" style={{ opacity: 0.7 }}>
+                  잔액을 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.
+                </p>
               </div>
-              <span className="pb-1.5 text-[14px] font-bold" style={{ opacity: 0.6 }}>
-                코인
-              </span>
-            </div>
-            <p
-              className="mt-2 text-[11.5px]"
-              style={{ opacity: 0.6 }}
-            >
-              {isLoggedIn === false
-                ? '로그인 후 잔액과 충전 내역이 표시됩니다'
-                : credits === null
-                  ? '잔액 확인 중…'
-                  : '결제 즉시 잔액에 반영됩니다'}
-            </p>
+            ) : (
+              <>
+                <div className="mt-1.5 flex items-end gap-2">
+                  {isLoggedIn === false ? (
+                    <div
+                      className="text-[36px] font-extrabold tracking-tighter"
+                      style={{ color: 'var(--app-pink)' }}
+                    >
+                      {/* audit-mockup: intentional — 비로그인 사용자에게 dash 표시 (의도된 UX) */}
+                      ✦ —
+                    </div>
+                  ) : credits === null ? (
+                    <div
+                      aria-label="잔액 불러오는 중"
+                      className="h-[36px] w-32 animate-pulse rounded bg-white/15"
+                    />
+                  ) : (
+                    <div
+                      className="text-[36px] font-extrabold tracking-tighter"
+                      style={{ color: 'var(--app-pink)' }}
+                    >
+                      ✦ {credits.toLocaleString()}
+                    </div>
+                  )}
+                  <span className="pb-1.5 text-[14px] font-bold" style={{ opacity: 0.6 }}>
+                    코인
+                  </span>
+                </div>
+                <p className="mt-2 text-[11.5px]" style={{ opacity: 0.6 }}>
+                  {isLoggedIn === false
+                    ? '로그인 후 잔액과 충전 내역이 표시됩니다'
+                    : credits === null
+                      ? '잔액을 불러오는 중입니다'
+                      : '결제 즉시 잔액에 반영됩니다'}
+                </p>
+              </>
+            )}
           </article>
 
           {/* §2 사용 안내 */}
@@ -363,6 +409,27 @@ function CreditsPageContent() {
             토스페이먼츠 카드 결제 · 계좌이체 · 진행 시{' '}
             <LegalLinks className="text-[var(--app-pink-strong)]" /> 동의
           </p>
+        </section>
+
+        {/* §4-b 정책 + CS 링크 (Phase 5-D 사용자 directive) — 결제 sticky CTA 위 */}
+        <section
+          className="flex flex-wrap gap-x-3 gap-y-1 text-[11.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          aria-label="코인 정책 및 고객센터"
+        >
+          <Link href="/coin-policy" className="underline">
+            코인 정책
+          </Link>
+          <Link href="/refund-policy" className="underline">
+            환불·청약철회
+          </Link>
+          <Link href="/help" className="underline">
+            고객센터
+          </Link>
+          {BUSINESS_INFO.email ? (
+            <a href={`mailto:${BUSINESS_INFO.email}`} className="underline">
+              {BUSINESS_INFO.email}
+            </a>
+          ) : null}
         </section>
 
         {/* §5 Sticky bottom CTA */}
