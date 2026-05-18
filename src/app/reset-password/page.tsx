@@ -344,9 +344,17 @@ export default function ResetPasswordPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
       <AppPage className="gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center gap-4 py-6 text-[var(--app-ink)]">
+        {/* 2026-05-18 Phase 5-C: "로딩중..." → 표준 skeleton. */}
         <Suspense
           fallback={
-            <div className="text-[12.5px] text-[var(--app-copy-muted)]">로딩중...</div>
+            <div role="status" aria-live="polite" className="w-full max-w-md space-y-3">
+              <div className="mx-auto h-5 w-32 animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+              <div className="space-y-2">
+                <div className="h-11 w-full animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+                <div className="h-11 w-full animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+              </div>
+              <span className="sr-only">비밀번호 재설정 화면을 불러오는 중입니다.</span>
+            </div>
           }
         >
           <ResetPasswordContent />
