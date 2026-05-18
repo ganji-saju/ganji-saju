@@ -1,3 +1,8 @@
+// 2026-05-19 Phase 7c — 상담사 카드에 'AI 풀이 vs 사람 상담' 명확 구분.
+//   mode: 'ai-report' = AI 가 작성한 사주 리포트 진입점 (현재 라이브)
+//   mode: 'human-planned' = 1:1 사람 상담사 예약 (출시 예정, 아직 라이브 X)
+export type SpecialistMentorMode = 'ai-report' | 'human-planned';
+
 export interface SpecialistMentorCardData {
   slug: string;
   hanja: string;
@@ -7,6 +12,7 @@ export interface SpecialistMentorCardData {
   href: string;
   statusLabel: string;
   ctaLabel: string;
+  mode: SpecialistMentorMode;
 }
 
 export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
@@ -19,6 +25,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     href: '/saju/new',
     statusLabel: '리포트에서 먼저 보기',
     ctaLabel: '풀이 시작하기',
+    mode: 'ai-report',
   },
   {
     slug: 'sewoon',
@@ -29,6 +36,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     href: '/saju/new?product=yearly-2026',
     statusLabel: '리포트에서 먼저 보기',
     ctaLabel: '연간 전략서 시작하기',
+    mode: 'ai-report',
   },
   {
     slug: 'inyeon',
@@ -39,6 +47,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     href: '/compatibility?product=relationship-standard',
     statusLabel: '리포트에서 먼저 보기',
     ctaLabel: '궁합 풀이 보기',
+    mode: 'ai-report',
   },
   {
     slug: 'gamun',
@@ -47,7 +56,8 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     specialty: '가족·자녀·부모',
     description: '가족 구성원의 기질과 충돌 지점을 함께 정리합니다.',
     href: '/saju/new?product=family-report',
-    statusLabel: '준비 중',
+    statusLabel: '출시 예정',
     ctaLabel: '가족 리포트 흐름 보기',
+    mode: 'ai-report',
   },
 ] as const;
