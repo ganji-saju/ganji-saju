@@ -1275,6 +1275,14 @@ function LoginContent({
       <p className="pt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
         회원가입 또는 로그인 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
       </p>
+      {/* 2026-05-18 Phase 5-C: 고객센터 링크 (사용자 directive 필수) */}
+      <p className="text-[11.5px] leading-6 text-[var(--app-copy-muted)]">
+        로그인 문제 또는 계정 안내가 필요하시면{' '}
+        <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
+          고객센터
+        </a>
+        로 문의해 주세요.
+      </p>
     </div>
   );
 }
@@ -1326,15 +1334,47 @@ function LoginScaffold() {
 export default function LoginPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
-      <Suspense
-        fallback={
-          <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center text-[var(--app-copy-muted)]">
-            로딩중...
-          </div>
-        }
-      >
+      {/* 2026-05-18 Phase 5-C: "로딩중..." 단순 fallback → 표준 LoadingState + 인증 버튼 skeleton.
+          사용자 directive: 비로그인 공개 렌더에서 "로딩중..."만 보이지 않도록. */}
+      <Suspense fallback={<LoginPageFallback />}>
         <LoginScaffold />
       </Suspense>
     </AppShell>
+  );
+}
+
+function LoginPageFallback() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md flex-col justify-center gap-5 px-5 py-8"
+    >
+      {/* 로고 자리 */}
+      <div className="mx-auto h-12 w-12 rounded-full bg-[var(--app-line)]" aria-hidden="true" />
+      <div className="space-y-2 text-center">
+        <div className="mx-auto h-5 w-32 animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+        <div className="mx-auto h-3 w-48 animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+      </div>
+      {/* 카카오 / Google 버튼 skeleton (disabled) */}
+      <div className="space-y-2">
+        <button
+          type="button"
+          disabled
+          className="h-11 w-full rounded-[12px] bg-[var(--app-line)] text-[13px] font-bold text-[var(--app-copy-muted)] opacity-70"
+        >
+          로그인 화면 준비 중
+        </button>
+        <button
+          type="button"
+          disabled
+          className="h-11 w-full rounded-[12px] border bg-white text-[13px] font-bold text-[var(--app-copy-muted)] opacity-70"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          로그인 화면 준비 중
+        </button>
+      </div>
+      <span className="sr-only">로그인 화면을 불러오는 중입니다.</span>
+    </div>
   );
 }
