@@ -5,9 +5,19 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { ReviewWriteDialog } from '@/components/review/review-write-dialog';
 import type { AccountPurchasedResult, AccountReading } from '@/lib/account';
+import type { Review, ReviewModerationStatus } from '@/lib/reviews/types';
+
+interface ReviewKey {
+  productId: string;
+  scopeKey: string;
+}
+function reviewKey(item: ReviewKey) {
+  return `${item.productId}__${item.scopeKey}`;
+}
 
 interface SavedReadingsListProps {
   readings: AccountReading[];
@@ -95,6 +105,12 @@ function TagBadge({ tag }: { tag: VaultTag }) {
   );
 }
 
+function statusLabel(status: ReviewModerationStatus): string {
+  if (status === 'approved') return '공개됨';
+  if (status === 'pending') return '심사 중';
+  return '비공개';
+}
+
 export default function SavedReadingsList({
   readings,
   purchasedResults = [],
@@ -106,6 +122,41 @@ export default function SavedReadingsList({
   const [count, setCount] = useState(totalCount);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+
+  // 2026-05-18 Phase 7b — 본인 후기 map (productId+scopeKey → Review).
+  const [reviewByKey, setReviewByKey] = useState<Record<string, Review>>({});
+  const [reviewDialog, setReviewDialog] = useState<
+    | {
+        productId: string;
+        scopeKey: string;
+        productTitle: string;
+        existing: Review | null;
+      }
+    | null
+  >(null);
+
+  useEffect(() => {
+    if (purchasedResults.length === 0) return;
+    let cancelled = false;
+    fetch('/api/reviews/mine', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.ok && Array.isArray(data.reviews)) {
+          const map: Record<string, Review> = {};
+          for (const review of data.reviews as Review[]) {
+            map[reviewKey({ productId: review.productId, scopeKey: review.scopeKey })] = review;
+          }
+          setReviewByKey(map);
+        }
+      })
+      .catch(() => {
+        /* 실패해도 페이지는 정상 동작 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [purchasedResults.length]);
 
   async function deleteReading(id: string) {
     const confirmed = window.confirm(
@@ -192,6 +243,9 @@ export default function SavedReadingsList({
         <div className="grid gap-3">
           {purchasedResults.map((item) => {
             const tag = getTagForPurchased(item);
+            const existingReview =
+              reviewByKey[reviewKey({ productId: item.productId, scopeKey: item.scopeKey })] ??
+              null;
             return (
               <article
                 key={item.id}
@@ -217,9 +271,19 @@ export default function SavedReadingsList({
                 <div className="grid grid-cols-3 gap-1 border-t border-[var(--app-line)] p-1.5">
                   <button
                     type="button"
+                    onClick={() =>
+                      setReviewDialog({
+                        productId: item.productId,
+                        scopeKey: item.scopeKey,
+                        productTitle: item.title,
+                        existing: existingReview,
+                      })
+                    }
                     className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
                   >
-                    ♡ 즐겨찾기
+                    {existingReview
+                      ? `✎ 후기 · ${statusLabel(existingReview.moderationStatus)}`
+                      : '✎ 후기 작성'}
                   </button>
                   <button
                     type="button"
@@ -291,6 +355,26 @@ export default function SavedReadingsList({
           })}
         </div>
       )}
+
+      <ReviewWriteDialog
+        open={reviewDialog !== null}
+        productId={reviewDialog?.productId ?? ''}
+        scopeKey={reviewDialog?.scopeKey ?? 'global'}
+        productTitle={reviewDialog?.productTitle ?? ''}
+        existing={reviewDialog?.existing ?? null}
+        onClose={() => setReviewDialog(null)}
+        onSuccess={(review) => {
+          setReviewByKey((prev) => ({
+            ...prev,
+            [reviewKey({ productId: review.productId, scopeKey: review.scopeKey })]: review,
+          }));
+          setMessage(
+            review.moderationStatus === 'approved'
+              ? '후기가 공개되었습니다.'
+              : '후기가 등록되었습니다. 검수 후 공개됩니다.'
+          );
+        }}
+      />
     </div>
   );
 }
