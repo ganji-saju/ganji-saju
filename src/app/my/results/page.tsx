@@ -140,6 +140,56 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
           ) : null}
         </div>
       ) : null}
+
+      {/* Phase 7d — 보관함 안내: 환불 정책 / 계정 삭제 / 고객센터 link. */}
+      <section
+        className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+        aria-label="보관함 안내"
+      >
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          보관함 안내
+        </div>
+        <ul className="mt-2 grid gap-1.5">
+          <li>
+            <span className="font-extrabold text-[var(--app-ink)]">환불 가능 여부:</span> 결제일·
+            상품·열람 여부에 따라 다릅니다. 자세한 기준은 환불 정책에서 확인해 주세요.
+          </li>
+          <li>
+            <span className="font-extrabold text-[var(--app-ink)]">환불 요청:</span> 고객센터
+            문의로 접수합니다. 결제 정보 + 사유를 함께 알려주시면 빠르게 안내드립니다.
+          </li>
+          <li>
+            <span className="font-extrabold text-[var(--app-ink)]">개인정보·계정 삭제:</span>{' '}
+            마이페이지 설정에서 계정 탈퇴를 선택하시면 보관된 풀이와 결제 이력도 함께 삭제됩니다.
+          </li>
+        </ul>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            href="/refund-policy"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            환불 정책 자세히
+          </Link>
+          <Link
+            href="/support/contact"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            환불 요청 (고객센터)
+          </Link>
+          <Link
+            href="/my/settings/delete-account"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            계정·개인정보 삭제
+          </Link>
+          <Link
+            href="/support/faq"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+          >
+            자주 묻는 질문
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
