@@ -35,8 +35,16 @@ export default function robots(): MetadataRoute.Robots {
           '/guide',
           '/about-engine',
           '/method',
+          // 정책 페이지 9종 (Phase 3-B) — robots metadata 가 페이지별로 동적 noindex 처리 (본문 없으면)
           '/terms',
           '/privacy',
+          '/refund-policy',
+          '/digital-content-policy',
+          '/subscription-policy',
+          '/coin-policy',
+          '/appointment-policy',
+          '/ai-disclaimer',
+          '/commerce-disclosure',
         ],
         disallow: [
           // 백엔드
