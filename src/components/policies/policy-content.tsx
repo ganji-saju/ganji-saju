@@ -9,7 +9,7 @@
  * plaintext: 단순 줄바꿈만.
  */
 
-import { POLICY_LABELS, type PolicyContentFormat, type PolicyVersion } from '@/lib/policies';
+import { POLICY_LABELS, type PolicyContentFormat, type PolicyVersion } from '@/shared/policies/types';
 import { formatKoreanDate } from '@/shared/utils/kst';
 
 interface PolicyContentProps {

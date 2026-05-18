@@ -90,17 +90,10 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
     ],
   },
   {
+    // 2026-05-18: 9 정책 줄줄이 → 통합 hub (/legal) 한 줄.
     title: '정책',
     items: [
-      ['이용약관', '/terms'],
-      ['개인정보처리방침', '/privacy'],
-      ['환불·청약철회', '/refund-policy'],
-      ['구독 정책', '/subscription-policy'],
-      ['코인 정책', '/coin-policy'],
-      ['디지털 콘텐츠', '/digital-content-policy'],
-      ['예약상담 정책', '/appointment-policy'],
-      ['AI 콘텐츠 한계', '/ai-disclaimer'],
-      ['사업자 통합 고지', '/commerce-disclosure'],
+      ['정책 모아보기', '/legal'],
       ['가격 안내', '/pricing'],
     ],
   },
@@ -151,8 +144,11 @@ export default function SiteFooter() {
       className="site-footer-redesign mt-auto"
       aria-label="회사 및 서비스 안내"
       style={{
-        // 사용자 피드백 (2026-05-14): 완전한 흑색 #000 으로.
-        background: '#000',
+        // 사용자 피드백 (2026-05-14, 2026-05-18 재요청): 완전한 흑색 #000000.
+        // shorthand + longhand 모두 명시 + globals.css 의 !important override 로 강제.
+        background: '#000000',
+        backgroundColor: '#000000',
+        backgroundImage: 'none',
         color: 'rgba(255,255,255,0.72)',
         padding: '48px 24px 28px',
         fontSize: 13,

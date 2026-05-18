@@ -12,3 +12,11 @@
 @import "./styles/mobile-polish.css";
 @import "./styles/dialogue-reports.css";
 @import "./styles/flow-polish.css";
+
+/* 2026-05-18: 푸터 배경 완전 흑색 강제 — 사용자 여러 번 요청.
+   inline style 의 #000000 + 본 !important override 이중 강제. */
+footer.site-footer-redesign {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  background-image: none !important;
+}

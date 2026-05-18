@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { BUSINESS_INFO } from '@/lib/business-info';
-import { POLICY_LABELS, type PolicyKind } from '@/lib/policies';
+import { POLICY_LABELS, type PolicyKind } from '@/shared/policies/types';
 
 interface PolicyNotReadyProps {
   kind: PolicyKind;
