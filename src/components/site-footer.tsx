@@ -2,6 +2,10 @@
 // 모든 라우팅(`href`) 은 사이트 기존 라우트만 사용 — 신규 URL 0건.
 // 회사 정보(사업자번호 / 주소 / 대표자) 및 면책 문구는 법적 고지 — 절대 수정 X.
 // 모바일은 4 column nav 를 accordion (옵션 D) 으로 collapse 가능.
+//
+// 2026-05-18 Phase 3-A: hardcoded 사업자 정보 → BUSINESS_INFO env 기반.
+//   통신판매업 신고번호 + CS 이메일/운영시간 + 개인정보보호책임자 신규 노출.
+//   production 빌드 시 누락 env 검출 → throw (src/lib/business-info.ts 가드).
 
 'use client';
 
@@ -9,6 +13,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BUSINESS_INFO } from '@/lib/business-info';
 
 interface CompanyItem {
   label: string;
@@ -16,13 +21,42 @@ interface CompanyItem {
   href?: string;
 }
 
-const COMPANY_ITEMS: CompanyItem[] = [
-  { label: '회사명', value: '푸꼬컴퍼니' },
-  { label: '대표자', value: '김재호' },
-  { label: '사업자등록번호', value: '215-27-64715' },
-  { label: '주소', value: '서울특별시 중랑구 동일로 909, 3층 301호 일부호(묵동)' },
-  { label: '연락처', value: '010-8123-9184', href: 'tel:010-8123-9184' },
-];
+function buildCompanyItems(): CompanyItem[] {
+  const items: CompanyItem[] = [
+    { label: '회사명', value: BUSINESS_INFO.companyName },
+    { label: '대표자', value: BUSINESS_INFO.ceoName },
+    { label: '사업자등록번호', value: BUSINESS_INFO.businessRegistrationNumber },
+    { label: '통신판매업', value: BUSINESS_INFO.mailOrderRegistrationNumber },
+    { label: '주소', value: BUSINESS_INFO.address },
+    {
+      label: '고객센터',
+      value: BUSINESS_INFO.phone,
+      href: BUSINESS_INFO.phone ? `tel:${BUSINESS_INFO.phone}` : undefined,
+    },
+    {
+      label: '이메일',
+      value: BUSINESS_INFO.email,
+      href: BUSINESS_INFO.email ? `mailto:${BUSINESS_INFO.email}` : undefined,
+    },
+    { label: '운영시간', value: BUSINESS_INFO.csHours },
+    {
+      label: '개인정보보호책임자',
+      value: BUSINESS_INFO.privacyOfficerName
+        ? `${BUSINESS_INFO.privacyOfficerName}${
+            BUSINESS_INFO.privacyOfficerEmail ? ` (${BUSINESS_INFO.privacyOfficerEmail})` : ''
+          }`
+        : '',
+    },
+  ];
+  if (BUSINESS_INFO.businessInfoVerificationUrl) {
+    items.push({
+      label: '사업자정보',
+      value: '공시 확인',
+      href: BUSINESS_INFO.businessInfoVerificationUrl,
+    });
+  }
+  return items.filter((item) => item.value);
+}
 
 const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string]> }[] = [
   {
@@ -58,7 +92,6 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
   {
     title: '고객센터',
     items: [
-      ['☎ 010-8123-9184', 'tel:010-8123-9184'],
       ['알림 설정', '/notifications'],
       ['이용약관', '/terms'],
       ['개인정보처리방침', '/privacy'],
@@ -66,6 +99,12 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
     ],
   },
 ];
+
+function buildContactNavItem(): readonly [string, string] | null {
+  if (BUSINESS_INFO.phone) return [`☎ ${BUSINESS_INFO.phone}`, `tel:${BUSINESS_INFO.phone}`];
+  if (BUSINESS_INFO.email) return [`✉ ${BUSINESS_INFO.email}`, `mailto:${BUSINESS_INFO.email}`];
+  return null;
+}
 
 const LINK_STYLE: React.CSSProperties = {
   color: 'rgba(255,255,255,0.62)',
@@ -92,6 +131,14 @@ function NavLink({ label, href }: { label: string; href: string }) {
 export default function SiteFooter() {
   // 모바일 accordion: 한 번에 한 column 만 열림. 기본은 모두 닫힘 (사용자 의도: 짧게)
   const [openSection, setOpenSection] = useState<string | null>(null);
+
+  const companyItems = buildCompanyItems();
+  const contactNavItem = buildContactNavItem();
+  const navWithContact = FOOTER_NAV.map((col) =>
+    col.title === '고객센터' && contactNavItem
+      ? { ...col, items: [contactNavItem, ...col.items] as ReadonlyArray<readonly [string, string]> }
+      : col
+  );
 
   return (
     <footer
@@ -156,7 +203,7 @@ export default function SiteFooter() {
           </div>
 
           {/* 4 column nav — desktop: 항상 펼침 / mobile: accordion */}
-          {FOOTER_NAV.map((col) => {
+          {navWithContact.map((col) => {
             const isOpen = openSection === col.title;
             return (
               <div key={col.title} className="border-b border-white/8 sm:border-b-0">
@@ -233,7 +280,7 @@ export default function SiteFooter() {
             fontSize: 12,
           }}
         >
-          {COMPANY_ITEMS.map((item) => (
+          {companyItems.map((item) => (
             <div key={item.label} className="flex gap-2">
               <dt
                 style={{
@@ -286,8 +333,10 @@ export default function SiteFooter() {
           className="mt-6 flex flex-wrap items-center justify-between gap-2"
           style={{ color: 'rgba(255,255,255,0.42)', fontSize: 11.5 }}
         >
-          <span>© 2026 푸꼬컴퍼니. All rights reserved.</span>
-          <span>서비스명 간지사주 · 간지사주</span>
+          <span>
+            © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
+          </span>
+          <span>서비스명 간지사주</span>
         </div>
       </div>
     </footer>

@@ -110,6 +110,22 @@ POLICY_REFUND_EFFECTIVE_DATE=
 
 ---
 
+## 4-A. Phase 3-A 진행 상태 (2026-05-18)
+
+✅ **env 키 신설 완료** — `src/lib/business-info.ts` + `src/lib/business-info.test.ts` + `.env.example` 갱신.
+
+production 빌드 가드 활성:
+- 필수 env 누락 시 `[business-info] production 빌드 차단` throw
+- dev / Vercel preview 는 가드 비활성 (개발 방해 X)
+
+운영자 다음 작업:
+1. Vercel 대시보드 → Settings → Environment Variables → Production scope 에 NEXT_PUBLIC_* 11개 입력
+2. 입력 후 production redeploy → 가드 통과 → 푸터/`/help` 에 실제값 노출
+
+`.env.example` placeholder 는 빈 값 — Phase 3-A PR 머지 이전에 운영자 입력값 확정 시 PR 내 .env.example placeholder 부분에 실제값 commit (NEXT_PUBLIC_* 는 공개 정보).
+
+---
+
 ## 5. 입력 체크리스트 (운영자용)
 
 `- [ ]` 체크 후 `- [x]` 로 변경:
