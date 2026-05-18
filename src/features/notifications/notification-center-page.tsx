@@ -871,18 +871,19 @@ export default function NotificationCenterPage({
                   >
                     💬
                   </div>
+                  {/* 2026-05-18 Phase 5-B: "준비 중" → "출시 예정" 명확화 — 사용자 directive 부합 */}
                   <div className="min-w-0 flex-1">
                     <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
                       카카오톡 알림톡
                     </div>
                     <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
-                      준비 중
+                      출시 예정
                     </div>
                   </div>
                   <span
                     className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
                   >
-                    준비 중
+                    출시 예정
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3.5">
@@ -895,13 +896,13 @@ export default function NotificationCenterPage({
                   <div className="min-w-0 flex-1">
                     <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">이메일</div>
                     <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
-                      등록한 이메일로 받기 · 준비 중
+                      등록한 이메일로 받기 · 출시 예정
                     </div>
                   </div>
                   <span
                     className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
                   >
-                    준비 중
+                    출시 예정
                   </span>
                 </div>
               </article>

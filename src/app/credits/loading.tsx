@@ -8,7 +8,7 @@ export default function CreditsLoading() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="코인 정보 준비 중" />
+        <GangiPageHeader title="코인 정보를 불러오는 중" />
         <GangiLoadingOverlay
           title="결제 정보를 불러오고 있어요"
           description="코인 잔액과 패키지를 확인하는 중입니다."

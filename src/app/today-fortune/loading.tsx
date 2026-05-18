@@ -8,7 +8,7 @@ export default function TodayFortuneLoading() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="오늘운세 준비 중" />
+        <GangiPageHeader title="오늘 흐름을 불러오는 중" />
         <GangiLoadingOverlay
           title="오늘 흐름을 준비하고 있어요"
           description="고민과 사주를 맞춰보는 중입니다."
