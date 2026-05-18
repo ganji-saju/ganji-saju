@@ -47,7 +47,8 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     specialty: '가족·자녀·부모',
     description: '가족 구성원의 기질과 충돌 지점을 함께 정리합니다.',
     href: '/saju/new?product=family-report',
-    statusLabel: '준비 중',
+    // 2026-05-18 Phase 5-F: '준비 중' → '출시 예정' (FORBIDDEN_PHRASES 회피)
+    statusLabel: '출시 예정',
     ctaLabel: '가족 리포트 흐름 보기',
   },
 ] as const;
