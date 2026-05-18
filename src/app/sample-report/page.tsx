@@ -388,6 +388,121 @@ export default function SampleReportPage() {
           </div>
         </article>
 
+        {/* §리포트 제작 기준 — Phase 7a. AI 사용/사람 검수/생성 시간/분량 정직 고지. */}
+        <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+          <div style={KICKER_STYLE}>리포트 제작 기준</div>
+          <h2
+            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+          >
+            결제 전에 알아두실 점을 정직하게 안내드립니다
+          </h2>
+          <p
+            className="mt-2 text-[12.5px] leading-[1.65]"
+            style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+          >
+            과장 없이 실제 제공되는 형태를 그대로 표시합니다.
+          </p>
+          <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div style={SOFT_FEATURE_STYLE}>
+              <dt
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                생성 소요 시간
+              </dt>
+              <dd
+                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+              >
+                결제 후 약 1~2분 내 자동 생성
+              </dd>
+              <p
+                className="mt-1.5 text-[12px] leading-[1.6]"
+                style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+              >
+                트래픽 상황에 따라 다소 지연될 수 있으며, 화면을 닫아도 마이페이지 보관함에서 다시 확인하실 수 있습니다.
+              </p>
+            </div>
+            <div style={SOFT_FEATURE_STYLE}>
+              <dt
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                본문 분량
+              </dt>
+              <dd
+                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+              >
+                14개 섹션 / 평균 A4 5~7페이지
+              </dd>
+              <p
+                className="mt-1.5 text-[12px] leading-[1.6]"
+                style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+              >
+                목차 14개 섹션을 모두 채운 보관용 리포트로, 사주에 따라 페이지 수가 일부 변동될 수 있습니다.
+              </p>
+            </div>
+            <div style={SOFT_FEATURE_STYLE}>
+              <dt
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                AI 사용 여부
+              </dt>
+              <dd
+                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+              >
+                사주 데이터 기반 AI 모델이 본문 작성
+              </dd>
+              <p
+                className="mt-1.5 text-[12px] leading-[1.6]"
+                style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+              >
+                계산된 사주 구조와 고전 규칙을 입력으로, 대규모 언어 모델이 본문을 생성합니다. 모델·프롬프트는 시기에 따라 갱신될 수 있습니다.
+              </p>
+            </div>
+            <div style={SOFT_FEATURE_STYLE}>
+              <dt
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                사람 검수 여부
+              </dt>
+              <dd
+                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
+              >
+                현재 별도 사람 검수 단계 없음
+              </dd>
+              <p
+                className="mt-1.5 text-[12px] leading-[1.6]"
+                style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
+              >
+                자동 생성된 본문이 곧바로 제공됩니다. 부적절한 표현·왜곡된 해석은 고객센터로 신고 주시면 빠르게 조치합니다.
+              </p>
+            </div>
+          </dl>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Link
+              href="/refund-policy"
+              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[12.5px] font-extrabold"
+              style={SECONDARY_BUTTON_STYLE}
+            >
+              환불 기준 자세히
+            </Link>
+            <Link
+              href="/support/faq"
+              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[12.5px] font-extrabold"
+              style={SECONDARY_BUTTON_STYLE}
+            >
+              자주 묻는 질문
+            </Link>
+          </div>
+        </article>
+
         {/* §다음 단계 — ink-dark hero (PR #198 패턴 같은 진한 결제 유도 카드) */}
         <article
           className="mx-[0.25rem] text-white"
