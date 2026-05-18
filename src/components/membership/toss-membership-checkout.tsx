@@ -13,6 +13,10 @@ import {
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { savePendingLifetimeReportSlug } from '@/lib/payments/lifetime-report';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+// 2026-05-18 Phase 3-C-1: 결제 전 동의 체크박스 + prepare API 검증.
+import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-checkboxes';
+import { getPackage } from '@/lib/payments/catalog';
+import type { PolicyKind } from '@/shared/policies/types';
 
 interface Props {
   packageId: string;
@@ -50,6 +54,11 @@ export default function TossMembershipCheckout({
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(
     DEFAULT_TOSS_PAYMENT_METHOD
   );
+  // Phase 3-C-1: 동의 체크 상태. valid 시만 결제 버튼 활성.
+  const [consentValid, setConsentValid] = useState(false);
+  const [acceptedKinds, setAcceptedKinds] = useState<PolicyKind[]>([]);
+
+  const pkg = useMemo(() => getPackage(packageId), [packageId]);
 
   const checkoutPath = useMemo(() => {
     const params = new URLSearchParams(product ? { product } : { plan });
@@ -107,6 +116,8 @@ export default function TossMembershipCheckout({
           slug,
           scope,
           from: entrySource,
+          // Phase 3-C-1: 결제 전 동의 정책 종류. prepare API 가 활성 PolicyVersion 으로 변환 후 DB insert.
+          acceptedKinds,
         }),
       });
       const prepare = (await prepareResponse
@@ -223,15 +234,27 @@ export default function TossMembershipCheckout({
   return (
     <div className="space-y-3">
       <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+      {/* Phase 3-C-1: 결제 전 동의 — 필수 동의 모두 체크해야 결제 버튼 활성 */}
+      {pkg && (
+        <PaymentConsentCheckboxes
+          pkg={pkg}
+          onValidChange={(valid, kinds) => {
+            setConsentValid(valid);
+            setAcceptedKinds(kinds);
+          }}
+        />
+      )}
       <Button
         type="button"
         onClick={handlePayment}
-        disabled={isLoading || isLoggedIn === null}
+        disabled={isLoading || isLoggedIn === null || !consentValid}
         className="w-full"
       >
         {isLoading
           ? '결제창 여는 중...'
-          : `${amount.toLocaleString()}원 ${selectedMethod.shortLabel}로 결제하기`}
+          : !consentValid
+            ? '결제 전 동의가 필요합니다'
+            : `${amount.toLocaleString()}원 ${selectedMethod.shortLabel}로 결제하기`}
       </Button>
       {errorMessage ? (
         <p className="text-center text-xs leading-6 text-rose-600">{errorMessage}</p>
