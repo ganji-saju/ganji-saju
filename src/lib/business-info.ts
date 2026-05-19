@@ -42,18 +42,32 @@ function isProductionDeploy(): boolean {
   return process.env.VERCEL_ENV === 'production';
 }
 
-function getEnv(key: string): string {
-  const raw = process.env[key];
-  return typeof raw === 'string' ? raw.trim() : '';
+/**
+ * 2026-05-20 — Hydration mismatch fix + 테스트 호환:
+ *   BUSINESS_INFO export 는 정적 접근 (process.env.NEXT_PUBLIC_X) — Webpack/
+ *   Turbopack 이 client 번들에 inline 하여 SSR/CSR 일관성 보장 (이전엔 동적
+ *   접근 process.env[key] 로 client 에서 undefined 됨 → SiteFooter dl
+ *   hydration mismatch).
+ *   assertProductionBusinessEnv 는 production server 전용 가드라 client inline
+ *   불필요 + 테스트가 runtime 에 process.env 변경하는 시나리오 (e.g.
+ *   business-info.test.ts:125) 지원 위해 동적 접근 유지.
+ */
+function readEnv(value: string | undefined): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 /**
  * production 환경에서 필수 env 가 누락된 경우 throw.
  * import 시점 (build / SSR boot) 에 자동 실행 — 누락 시 즉시 차단.
+ *
+ * 동적 접근 유지 이유:
+ *   - assertProductionBusinessEnv 는 server-only (isProductionDeploy 가드).
+ *   - 테스트 (business-info.test.ts) 가 runtime 에 process.env 변경 후 호출.
+ *   - module-cached BUSINESS_INFO 가 아닌 현재 시점 env 를 봐야 함.
  */
 export function assertProductionBusinessEnv(): void {
   if (!isProductionDeploy()) return;
-  const missing = REQUIRED_PRODUCTION_KEYS.filter(([key]) => !getEnv(key));
+  const missing = REQUIRED_PRODUCTION_KEYS.filter(([key]) => !readEnv(process.env[key]));
   if (missing.length === 0) return;
 
   const lines = missing.map(([key, label]) => `  - ${key} (${label})`);
@@ -76,22 +90,25 @@ assertProductionBusinessEnv();
  *
  * production: 모든 required 값이 채워짐 (가드 통과).
  * dev / preview: 비어 있을 수 있음 — UI 는 빈 문자열 표기 (placeholder 절대 금지 = 사용자 directive).
+ *
+ * 2026-05-20 fix: process.env.NEXT_PUBLIC_* 정적 접근 — client 번들에 inline 보장.
+ *   (이전 getEnv(key) 동적 접근은 webpack/turbopack inline 미지원 → CSR undefined)
  */
 export const BUSINESS_INFO = {
-  companyName: getEnv('NEXT_PUBLIC_COMPANY_NAME'),
-  ceoName: getEnv('NEXT_PUBLIC_CEO_NAME'),
-  businessRegistrationNumber: getEnv('NEXT_PUBLIC_BUSINESS_REGISTRATION_NUMBER'),
-  mailOrderRegistrationNumber: getEnv('NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER'),
-  address: getEnv('NEXT_PUBLIC_BUSINESS_ADDRESS'),
-  phone: getEnv('NEXT_PUBLIC_CS_PHONE'),
-  email: getEnv('NEXT_PUBLIC_CS_EMAIL'),
-  csHours: getEnv('NEXT_PUBLIC_CS_HOURS'),
-  privacyOfficerName: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_NAME'),
-  privacyOfficerEmail: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL'),
+  companyName: readEnv(process.env.NEXT_PUBLIC_COMPANY_NAME),
+  ceoName: readEnv(process.env.NEXT_PUBLIC_CEO_NAME),
+  businessRegistrationNumber: readEnv(process.env.NEXT_PUBLIC_BUSINESS_REGISTRATION_NUMBER),
+  mailOrderRegistrationNumber: readEnv(process.env.NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER),
+  address: readEnv(process.env.NEXT_PUBLIC_BUSINESS_ADDRESS),
+  phone: readEnv(process.env.NEXT_PUBLIC_CS_PHONE),
+  email: readEnv(process.env.NEXT_PUBLIC_CS_EMAIL),
+  csHours: readEnv(process.env.NEXT_PUBLIC_CS_HOURS),
+  privacyOfficerName: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_NAME),
+  privacyOfficerEmail: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL),
   // 선택값: 비어 있으면 phone fallback 으로 사용 (UI 처리).
-  privacyOfficerPhone: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_PHONE'),
+  privacyOfficerPhone: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_PHONE),
   // 선택값: 사업자정보 공시 URL (없으면 푸터에 링크 미표시).
-  businessInfoVerificationUrl: getEnv('NEXT_PUBLIC_BUSINESS_INFO_VERIFICATION_URL'),
+  businessInfoVerificationUrl: readEnv(process.env.NEXT_PUBLIC_BUSINESS_INFO_VERIFICATION_URL),
 } as const;
 
 export type BusinessInfo = typeof BUSINESS_INFO;
