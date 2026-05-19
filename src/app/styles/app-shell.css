@@ -242,9 +242,11 @@
   color: currentColor !important;
 }
 
-/* §Center FAB — 무료운세 */
+/* §Center FAB — 무료운세 (2026-05-20: 핑크 → 보랏빛 그라데이션, 부채꼴 메뉴 토글). */
 .app-mobile-dock-link[data-center="true"] {
   transform: translateY(-1.35rem);
+  background: transparent !important;
+  border: 0 !important;
 }
 
 .app-mobile-dock-link[data-center="true"]:active {
@@ -257,22 +259,34 @@
   width: 3.85rem !important;
   border: 4px solid #ffffff;
   border-radius: 9999px;
+  /* 2026-05-20 — 사용자 보고 "핑크 그레이 컬러가 전체 분위기랑 안어울림".
+     pink + plum + indigo 의 mystical purple 그라데이션으로 변경.
+     별빛 느낌의 mystical 톤이라 운세 컨셉에 더 잘 어울림. */
   background:
     radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.55), transparent 32%),
-    linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%) !important;
+    linear-gradient(135deg, var(--app-pink-strong) 0%, var(--app-plum, #6d2a72) 55%, var(--app-indigo, #2a2470) 100%) !important;
   color: #ffffff !important;
   box-shadow:
-    0 0 0 3px rgba(255, 79, 154, 0.10),
-    0 14px 28px rgba(216, 27, 114, 0.42),
-    0 4px 10px rgba(216, 27, 114, 0.28) !important;
+    0 0 0 3px rgba(180, 90, 200, 0.16),
+    0 14px 28px rgba(80, 30, 140, 0.42),
+    0 4px 10px rgba(216, 27, 114, 0.22) !important;
   animation: app-dock-center-pulse 3.6s ease-in-out infinite;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-mobile-dock-link[data-center="true"][data-fan-open="true"] .app-mobile-dock-icon {
+  /* 열린 상태: FAB 살짝 회전 + 인디고 톤 강조 */
+  transform: rotate(180deg);
+  background:
+    radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.55), transparent 32%),
+    linear-gradient(135deg, var(--app-indigo, #2a2470) 0%, var(--app-plum, #6d2a72) 55%, var(--app-pink-strong) 100%) !important;
 }
 
 .app-mobile-dock-link[data-center="true"][data-active="true"] .app-mobile-dock-icon {
   box-shadow:
-    0 0 0 5px rgba(255, 79, 154, 0.16),
-    0 14px 28px rgba(216, 27, 114, 0.48),
-    0 4px 12px rgba(216, 27, 114, 0.36) !important;
+    0 0 0 5px rgba(180, 90, 200, 0.20),
+    0 14px 28px rgba(80, 30, 140, 0.50),
+    0 4px 12px rgba(216, 27, 114, 0.32) !important;
 }
 
 /* 우측 상단 sparkle accent */
@@ -330,14 +344,24 @@
 }
 
 /* 2026-05-20 — 모바일 dock 보강:
-   1) 본문 콘텐츠가 dock 뒤로 가려지지 않도록 body padding-bottom 확보
-   2) dock z-index 명시 (footer/floating 요소와 stacking 안정화)
-   3) active 시 indicator dot 살짝 강조 */
+   1) dock z-index 명시 (footer/floating 요소와 stacking 안정화)
+   2) active 시 indicator dot 살짝 강조
+   3) (수정) body padding-bottom 제거 — white body padding 이 검정 footer 아래
+      흰색 빈 공간으로 보이는 사용자 보고 차단. 대신 footer 자체에 모바일
+      padding-bottom 적용 (footer 검정 배경이 dock 까지 덮음). */
 @media (max-width: 767px) {
-  body {
-    /* dock 약 5.2rem + safe-area 만큼 콘텐츠 하단 여백.
-       fixed dock 뒤로 footer/콘텐츠가 가려지는 현상 차단. */
-    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
+  footer.site-footer-redesign {
+    /* dock 약 5.2rem + safe-area 만큼 footer 내부 padding 추가.
+       footer 검정 (#000000) 배경이 dock 위치까지 연장 → footer ↔ dock 사이
+       흰 공간 차단. footer 콘텐츠는 dock 에 안 가려진다. */
+    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* 2026-05-20 — main.app-shell 의 padding-bottom (dock-clearance) 제거.
+     이전엔 main 자체에 dock 만큼 padding 을 줘서 footer 아래에 흰색 공간이
+     생기던 사용자 보고. footer 가 이미 dock 까지 덮으므로 main padding 불필요. */
+  .app-shell.app-shell-with-navigation {
+    padding-bottom: 0 !important;
   }
 }
 
@@ -354,13 +378,102 @@
   box-shadow: 0 0 0 0.22rem rgba(255, 79, 154, 0.22);
 }
 
+/* 2026-05-20 — 부채꼴 FAB 메뉴 (무료운세 클릭 시 펼침).
+   FAB 위치 기준 절대 좌표 (left 50%, bottom dock-fab-top).
+   각 항목은 inline style transform 으로 부채꼴 배치. */
+.app-fan-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 38;
+  background: rgba(17, 17, 20, 0.42);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: app-fan-overlay-in 0.18s ease-out;
+}
+
+.app-fan-menu {
+  position: fixed;
+  /* FAB center 위치 (모바일 dock 의 가운데, dock top 위로 약 1rem) */
+  left: 50%;
+  bottom: calc(2.2rem + env(safe-area-inset-bottom, 0px));
+  width: 0;
+  height: 0;
+  z-index: 41;
+  pointer-events: none;
+}
+
+.app-fan-menu-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.6), transparent 40%),
+    linear-gradient(135deg, #ffffff 0%, #fafafd 100%);
+  border: 1px solid rgba(255, 79, 154, 0.18);
+  color: var(--app-pink-strong);
+  text-decoration: none;
+  box-shadow:
+    0 12px 24px -10px rgba(80, 30, 140, 0.32),
+    0 4px 10px -4px rgba(216, 27, 114, 0.18);
+  pointer-events: auto;
+  text-align: center;
+  animation: app-fan-item-in 0.32s cubic-bezier(0.18, 0.89, 0.32, 1.18) both;
+}
+
+.app-fan-menu-icon {
+  display: block;
+  font-family: var(--font-han, var(--font-dalbit-serif));
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--app-pink-strong);
+}
+
+.app-fan-menu-label {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--app-ink, #111114);
+}
+
+.app-fan-menu-item:nth-child(1) { animation-delay: 0.02s; }
+.app-fan-menu-item:nth-child(2) { animation-delay: 0.05s; }
+.app-fan-menu-item:nth-child(3) { animation-delay: 0.08s; }
+.app-fan-menu-item:nth-child(4) { animation-delay: 0.11s; }
+.app-fan-menu-item:nth-child(5) { animation-delay: 0.14s; }
+
+@keyframes app-fan-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes app-fan-item-in {
+  from {
+    opacity: 0;
+    /* 0,0 위치 (FAB 중앙) 에서 펼침 — inline transform 적용 전 시작점 */
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    /* inline transform (translate calc) 이 도착점 */
+  }
+}
+
 /* 2026-05-20 — Scroll-to-top floating button (모든 페이지 우하단).
-   data-visible 으로 fade in/out. 모바일에선 dock 위에 위치. */
+   data-visible 으로 fade in/out. 모바일에선 dock 위에 위치.
+   2026-05-20 (재조정): 사용자 보고 — dock 에 너무 붙어 보인다. bottom 5.6 → 8rem
+   으로 dock 위로 충분한 여유. dock label 위에 위치하도록 조정. */
 .app-scroll-to-top {
   position: fixed;
   right: 1rem;
-  /* 모바일 기준: dock (약 5.2rem) 위로 여유 1.2rem */
-  bottom: calc(5.6rem + env(safe-area-inset-bottom, 0px));
+  bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
   z-index: 45;
   display: grid;
   place-items: center;
