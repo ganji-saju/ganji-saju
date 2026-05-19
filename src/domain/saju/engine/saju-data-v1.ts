@@ -9,6 +9,7 @@ import type {
   SolarTimeMode,
   YinYang,
 } from '@/lib/saju/types';
+import type { SajuDataV2 } from './saju-data-v2-upgrade';
 import { Solar } from 'lunar-typescript';
 import { calculateSaju } from '@/lib/saju/pillars';
 import {
@@ -569,7 +570,7 @@ export function normalizeToSajuDataV1(
   return calculateSajuDataV1(input, options);
 }
 
-export function deriveLegacySajuResult(data: SajuDataV1): LegacySajuResult {
+export function deriveLegacySajuResult(data: SajuDataV1 | SajuDataV2): LegacySajuResult {
   const elements = Object.fromEntries(
     (Object.entries(data.fiveElements.byElement) as [Element, SajuFiveElementValue][]).map(
       ([element, value]) => [element, value.count]
