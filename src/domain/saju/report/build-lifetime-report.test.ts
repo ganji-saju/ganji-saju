@@ -187,3 +187,44 @@ test('buildLifetimeReport chapterTitle uses 10 카피 패턴 (PR 3, 2026-05-15)'
     `최소 2개 이상의 패턴 marker 가 등장해야 함 (matched=${matchedPatterns}): ${titles.join(' / ')}`
   );
 });
+
+// 2026-05-19 PR-B Task 4-7: cycle 십성 기반 본문 재작성 invariants.
+// 9 (실제 fixture 는 10) cycle 이 십성 distinct 만큼 본문도 distinct 해야 함.
+test('buildLifetimeReport 의 cycle 들이 relationship 첫 문장에서 서로 distinct baseLine 을 갖는다 (PR-B Task 4)', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  const relationshipFirsts = cycles.map((c) => (c.relationship ?? '').split('.')[0]);
+  const uniqueBaselines = new Set(relationshipFirsts);
+  assert.ok(
+    uniqueBaselines.size >= 6,
+    `relationship 첫 문장 distinct ≥ 6 (actual=${uniqueBaselines.size}): ${[...uniqueBaselines].slice(0, 5).join(' / ')}`
+  );
+});
+
+test('buildLifetimeReport 의 cycle 들이 wealthCareer 첫 문장에서 distinct base 를 갖는다 (PR-B Task 5)', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  const wealthFirsts = cycles.map((c) => (c.wealthCareer ?? '').split('.')[0]);
+  const uniqueBases = new Set(wealthFirsts);
+  assert.ok(
+    uniqueBases.size >= 6,
+    `wealthCareer 첫 문장 distinct ≥ 6 (actual=${uniqueBases.size}): ${[...uniqueBases].slice(0, 5).join(' / ')}`
+  );
+});
+
+test('buildLifetimeReport 의 cycle 별 practicalActions[1].what 가 distinct 하다 (PR-B Task 7)', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+
+  const secondActions = cycles.map((c) => c.practicalActions?.[1]?.what ?? '');
+  const unique = new Set(secondActions);
+  assert.ok(
+    unique.size >= 5,
+    `practicalActions[1].what distinct ≥ 5 (actual=${unique.size}): ${[...unique].join(' / ')}`
+  );
+});
