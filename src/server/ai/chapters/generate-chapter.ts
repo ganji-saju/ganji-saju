@@ -103,7 +103,23 @@ export async function generateChapter(
   let lastFailures: ChapterValidationFailure[] = [];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const body = await client.generate(systemPrompt, userMessage);
+    let body = '';
+    try {
+      body = await client.generate(systemPrompt, userMessage);
+    } catch (error) {
+      // 2026-05-19 (다) 3차: LLM 호출 자체 실패 (API down / 인증 / 타임아웃) 시
+      //   throw 를 retry/fallback 흐름으로 흡수. validation failure 로 기록.
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      lastFailures = [
+        {
+          rule: 'hanja', // placeholder rule — 실제는 client-level error.
+          detail: `LLM 호출 실패: ${errorMessage}`,
+        },
+      ];
+      continue;
+    }
+
     const validation = validateChapterBody(body, {
       chapterId: input.chapterId,
       allChapters: options.crossChapterContext?.allChapters,
