@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveReading } from '@/lib/saju/readings';
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { buildFreshTodaySajuData } from '@/server/today-fortune/fresh-saju-data';
 import { toSlug } from '@/lib/saju/pillars';
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfileById } from '@/lib/profile';
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
   }
 
   // entitlement 있음 — content 반환 (no deduct).
-  const todaySajuData = calculateSajuDataV1(reading.input);
+  const todaySajuData = buildFreshTodaySajuData(reading.input);
   const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
     concernId,
     sourceSessionId,
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
   // 재계산. 저장된 reading.sajuData 는 가입/최초 풀이 시점의 calculatedAt 을 들고 있어
   // 매일 같은 일진/시드를 만들어버렸음. grounding·kasiComparison 은 출생 정보 기반이라
   // 재사용해도 무방.
-  const todaySajuData = calculateSajuDataV1(reading.input);
+  const todaySajuData = buildFreshTodaySajuData(reading.input);
 
   const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
     concernId,
