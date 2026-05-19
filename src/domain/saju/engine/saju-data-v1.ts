@@ -556,6 +556,8 @@ export function normalizeToSajuDataV1(
   options?: {
     timezone?: string;
     location?: string | null;
+    calculatedAt?: string;
+    engineVersion?: string;
   }
 ): SajuDataV1 {
   if (isSajuDataV1(value)) {

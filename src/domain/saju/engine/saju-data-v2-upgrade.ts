@@ -115,6 +115,11 @@ export interface SajuLoadOptions {
   strict?: boolean;
   timezone?: string;
   location?: string | null;
+  /**
+   * V1 baseline metadata.engineVersion 라벨 (debug 용).
+   * 2026-05-20 — V2-4 internal builder (multi-year cycle) 가 trace 라벨 보존 위해 사용.
+   */
+  engineVersion?: string;
 }
 
 export interface SajuDataV2 extends Omit<SajuDataV1, 'schemaVersion' | 'metadata'> {
@@ -213,9 +218,14 @@ export function loadSajuDataV2(
     }
   }
 
+  // 2026-05-20 — V2-4 internal builder: multi-year cycle 의 referenceDate 가
+  //   세운/월운 ganzi 계산 시 사용되도록 V1 fallback path 에 now (calculatedAt)
+  //   + engineVersion (trace 라벨) 전달.
   const v1 = normalizeToSajuDataV1(input, storedValue, {
     timezone: options.timezone,
     location: options.location,
+    calculatedAt: now,
+    engineVersion: options.engineVersion,
   });
 
   return upgradeSajuDataV1ToV2(v1, options);
