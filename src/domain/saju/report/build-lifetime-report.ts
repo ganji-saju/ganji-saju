@@ -349,11 +349,24 @@ function head_open(cycle: SajuMajorLuckCycle): string {
   return `${cycle.ganzi} 대운에는`;
 }
 
+// 2026-05-19 PR-B Task 6: 십성별 mental nuance — buildMentalText 에 한 줄 추가.
+// 기존 오행 3 분기 + 12운성 cue 위에 cycle 별 한 줄 nuance 누적.
+const MENTAL_NUANCE_BY_SIPSIN: Partial<Record<TenGodCode, string>> = {
+  비견: '자기 주관이 강해져, 가까운 사람의 조언도 다시 한 번 본인 색으로 다시 정리하게 돼요.',
+  겁재: '경쟁심·승부욕이 자주 올라옵니다. 본인이 갖고 싶은 게 무엇인지 잠시 적어두면 충동이 가라앉아요.',
+  식신: '여유와 즐거움이 자연스럽게 늘어나는 결이에요. 다만 일도 같이 풀어주면 균형이 잡힙니다.',
+  상관: '재능·표현이 강해지는 만큼, 비판하고 싶은 신호도 자주 올라와요. 말하기 전 한 박자만 두면 오해가 줄어듭니다.',
+  편관: '내적 압박과 책임감이 크게 들어옵니다. 운동·산책 같은 신체 회복 루틴이 멘탈의 가장 큰 안전판이에요.',
+  정관: '책임감과 자존감이 함께 커지지만, 본인에게 너무 엄격해지기 쉬워요. 작은 성공을 의식적으로 기록하세요.',
+  편인: '혼자 파고드는 시간이 늘어요. 외부 의견 한 줄만 정기적으로 들이면 시야가 좁아지지 않습니다.',
+  정인: '누군가의 돌봄·배움이 들어오는 결이라, 마음이 안정되는 시기예요. 자기계발에 투자하기 좋습니다.',
+};
+
 function buildMentalText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   twelveStage: string | null = null,
-  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  // 2026-05-19 PR-B Task 6: cycle 십성 nuance 한 줄 추가.
   cycleSipsin: TenGodCode | null = null
 ): string {
   const { stem } = getGanziElements(cycle.ganzi);
@@ -372,7 +385,9 @@ function buildMentalText(
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
   const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
-  return compactStrings([base, stageNuance]).join(' ');
+  // 2026-05-19 PR-B Task 6 — cycle 십성 nuance.
+  const sipsinNuance = cycleSipsin ? MENTAL_NUANCE_BY_SIPSIN[cycleSipsin] ?? null : null;
+  return compactStrings([base, stageNuance, sipsinNuance]).join(' ');
 }
 
 function buildMentalStageNuance(stage: string): string | null {
@@ -397,55 +412,96 @@ function buildMentalStageNuance(stage: string): string | null {
   }
 }
 
+// 2026-05-19 PR-B Task 4: 십성별 관계 baseLine 사전 — buildRelationshipText 분기 input.
+// 사용자 상황 (relationshipStatus 4분기) 와 곱해 9 cycle distinct text 구현.
+const RELATIONSHIP_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
+  비견: '이 10년은 비슷한 결의 동료·라이벌이 자주 등장해, 가까운 관계에서 비교와 자존심 신호가 늘어납니다.',
+  겁재: '이 10년은 가까운 사람과 돈·기회를 나누는 일이 많아져, 작은 약속도 글로 적어두는 게 안전한 시기입니다.',
+  식신: '이 10년은 표현과 즐거움이 늘어나는 결이라, 가까운 사람과 함께 만들어가는 활동 (음식·취미·결과물) 이 관계를 단단하게 합니다.',
+  상관: '이 10년은 본인의 표현이 강해지는 시기라, 좋은 의도로 한 말도 날카롭게 전해지기 쉬워요. 한 박자 늦춰 전달하면 오해가 줄어듭니다.',
+  편재: '이 10년은 넓은 사람·기회가 들어오는 결이라, 새 만남이 빈번해집니다. 다만 깊이 있게 남기고 싶은 인연은 따로 의식적으로 챙겨야 흩어지지 않아요.',
+  정재: '이 10년은 안정적인 인연·약속이 단단해지는 시기예요. 한 번 정한 관계 구조를 오래 끌고 가는 힘이 강해집니다.',
+  편관: '이 10년은 압박과 책임이 늘어나는 결이라, 가까운 사람에게 화살이 가기 쉬워요. 일과 관계의 스트레스를 분리하는 루틴 (퇴근 후 30분 산책 등) 이 보호막이 됩니다.',
+  정관: '이 10년은 자리·역할·인정의 결이 강해져, 가까운 사람과의 관계에서도 역할 기대가 또렷해집니다. 책임감을 나눠 적어두면 무거움이 분산돼요.',
+  편인: '이 10년은 혼자만의 시간·공부가 늘어나는 결이라, 가까운 사람이 본인의 깊이를 이해 못 한다고 느낄 수 있어요. 의도적으로 짧은 공유를 자주 하면 거리감이 좁혀집니다.',
+  정인: '이 10년은 돌봄·후원·배움의 인연이 늘어나는 결이에요. 누군가에게 받기도 하고, 누군가를 챙기게도 됩니다. 멘토·선배 키워드가 관계를 관통합니다.',
+};
+
+const RELATIONSHIP_BASELINE_DEFAULT =
+  '이 10년은 가까운 사람과의 거리감과 표현 방식을 함께 흔듭니다.';
+
 function buildRelationshipText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   userSituation: UserSituation | null,
   wonjinWith: string[] = [],
-  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  // 2026-05-19 PR-B Task 4: cycle 십성 기반 baseLine 분기.
   cycleSipsin: TenGodCode | null = null
 ): string {
   const status = userSituation?.relationshipStatus;
-  const baseLine = `${cycle.ganzi} 대운의 결은 관계의 거리감과 표현 방식을 함께 흔듭니다.`;
+  const baseLine = cycleSipsin
+    ? RELATIONSHIP_BASELINE_BY_SIPSIN[cycleSipsin]
+    : RELATIONSHIP_BASELINE_DEFAULT;
 
-  let body: string;
+  let statusBody: string;
   if (status === 'dating') {
-    body = `${baseLine} 연애 중이신 만큼 이 10년에는 상대와의 호흡 차이가 자주 드러납니다. 결론을 빠르게 내기보다 말의 순서와 일정 합의를 또렷이 두면 오해가 길어지지 않아요.`;
+    statusBody = '연애 중이신 만큼 상대와의 호흡 차이가 더 또렷이 드러나요. 결론을 빠르게 내기보다 말의 순서를 한 번 짚어주면 오해가 길어지지 않습니다.';
   } else if (status === 'married') {
-    body = `${baseLine} 부부 관계라면 역할 분담과 생활 리듬이 새로 정의되는 시기입니다. 큰 결정은 함께 적어두고 시작하면 흔들림이 작아집니다.`;
+    statusBody = '부부 관계라면 역할 분담과 생활 리듬이 새로 정의될 수 있어요. 큰 결정은 함께 적어두고 시작하면 흔들림이 작아집니다.';
   } else if (status === 'single') {
-    body = `${baseLine} 솔로 상태라면 인연이 들어오는 결이 평소와 달라집니다. 이상형이 바뀔 수 있으니 평소 안 만나던 결의 사람과의 첫 만남을 너무 빠르게 닫지 마세요.`;
+    statusBody = '솔로 상태라면 인연이 들어오는 결이 평소와 달라집니다. 안 만나본 결의 사람과의 첫 만남을 너무 빠르게 닫지 마세요.';
   } else if (status === 'separated') {
-    body = `${baseLine} 정리 중인 관계라면 감정과 사실을 나눠 적어두는 게 가장 큰 보호막입니다. 이 10년은 같은 자리에서 결을 다시 짜는 시간입니다.`;
+    statusBody = '정리 중인 관계라면 감정과 사실을 나눠 적어두는 게 가장 큰 보호막입니다.';
   } else {
-    body = `${baseLine} 가까운 사람과의 거리감, 말의 강도, 표현 빈도를 의식적으로 조절하면 관계의 온도가 안정됩니다.`;
+    statusBody = '';
   }
+
   // 2026-05-15 PR 7 — 원진 cue 추가 (있으면).
   const wonjinCue = buildWonjinCue(wonjinWith);
-  return compactStrings([body, wonjinCue]).join(' ');
+  return compactStrings([baseLine, statusBody || null, wonjinCue]).join(' ');
 }
+
+// 2026-05-19 PR-B Task 5: 십성별 돈/일 base 사전 — buildWealthCareerText 분기 input.
+// occupation / concern 분기와 곱해 9 cycle distinct text 구현.
+const WEALTH_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
+  비견: '이 10년은 비슷한 분야의 경쟁자·동료가 많아지는 결이에요. 협업과 경쟁이 동시에 들어와, 본인 색을 또렷이 보여주는 게 차별화 포인트입니다.',
+  겁재: '이 10년은 가까운 사람과의 동업·자금 거래에서 의외의 손실이 생기기 쉬운 결이에요. 큰 결정 전에 계약서 한 줄을 추가하는 게 가장 큰 보호막입니다.',
+  식신: '이 10년은 꾸준히 만들어내는 결과물이 수익으로 이어지는 결이에요. 새 시도보다는 반복할 수 있는 콘텐츠·서비스를 다듬는 게 우선입니다.',
+  상관: '이 10년은 본인의 재능·표현이 큰 무기가 되는 결이에요. 다만 기존 틀을 깨는 시도가 자주 들어오므로, 안전망 (적금·고정 수입) 을 따로 두고 도전하세요.',
+  편재: '이 10년은 큰 흐름의 돈·기회가 드나드는 결이에요. 들어오는 만큼 흩어지기도 쉬워, 받자마자 일부 보관·분산하는 룰이 필요합니다.',
+  정재: '이 10년은 안정적인 소득과 자산 축적이 강해지는 결이에요. 새 투자보다는 기존 자산 구조 (적금·연금·저축성 보험) 점검이 효율적입니다.',
+  편관: '이 10년은 책임·압박이 큰 자리·프로젝트가 들어오는 결이에요. 보상도 크지만 번아웃 신호도 같이 올 수 있어, 일 외 회복 루틴을 의식적으로 짜야 합니다.',
+  정관: '이 10년은 자리·직책·인정의 결이 강해져, 안정된 직장이나 책임 있는 역할이 본인 색에 맞게 들어옵니다. 평가를 받을 수 있는 기회를 적극 잡으세요.',
+  편인: '이 10년은 남다른 시각·전문성이 돈으로 연결되는 결이에요. 메인 직무 외 부업·강의·콘텐츠 같은 사이드 수입원이 자연스럽게 생깁니다.',
+  정인: '이 10년은 누군가에게 배우고 후원을 받는 결이 강해, 학위·자격증·강의 같은 인풋이 수익으로 이어지는 구조가 형성됩니다.',
+};
+
+const WEALTH_BASELINE_DEFAULT =
+  '이 10년은 돈과 일의 결을 함께 재편합니다.';
 
 function buildWealthCareerText(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   userSituation: UserSituation | null,
-  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  // 2026-05-19 PR-B Task 5: cycle 십성 기반 base 분기.
   cycleSipsin: TenGodCode | null = null
 ): string {
   const occupation = userSituation?.occupation;
   const concern = userSituation?.currentConcern;
-  const base = `${cycle.ganzi} 대운은 돈과 일의 결을 함께 재편합니다.`;
+  const base = cycleSipsin
+    ? WEALTH_BASELINE_BY_SIPSIN[cycleSipsin]
+    : WEALTH_BASELINE_DEFAULT;
 
   if (occupation === 'self-employed' || concern === 'business') {
-    return `${base} 자영업·프리랜서·새 사업 영역에서 흐름이 크게 흔들리는 시기입니다. 매출보다 단가·고정비·정산 주기를 먼저 점검하세요. 확장 전에 손익 구조를 한 줄로 정리할 수 있는지가 분기점입니다.`;
+    return `${base} 자영업·프리랜서·새 사업 영역에서 흐름이 크게 흔들리는 시기입니다. 매출보다 단가·고정비·정산 주기를 먼저 점검하세요.`;
   }
   if (occupation === 'employee') {
-    return `${base} 직장에서는 역할·평가·이직 타이밍이 평소보다 명확히 갈리는 10년입니다. 본인의 강점을 한 줄로 적어두고, 그 한 줄로 평가 받을 수 있는 기회를 가급적 잡으세요.`;
+    return `${base} 직장에서는 역할·평가·이직 타이밍이 평소보다 명확히 갈리는 10년이에요.`;
   }
   if (occupation === 'job-seeking' || concern === 'wealth') {
-    return `${base} 수입원의 구조가 한 번에 정해질 수 있는 시기입니다. 큰 결정은 비교 후보 3개를 적어두고 들어가야 후회가 적어요. 무리한 투자보다 안정 현금 흐름이 우선입니다.`;
+    return `${base} 수입원의 구조가 한 번에 정해질 수 있는 시기예요. 큰 결정은 비교 후보 3개를 적어두고 들어가야 후회가 적습니다.`;
   }
-  return `${base} 일에서는 새로 시작하는 일과 마무리할 일을 의식적으로 나누세요. 한쪽으로만 치우치면 10년 끝에 같은 자리에서 다시 시작하기 쉽습니다.`;
+  return base;
 }
 
 // 2026-05-15 PR 5 — 명리 용어 → 일상어 사전 (glossaryHint) 적용.
@@ -606,31 +662,86 @@ function buildCycleElementAction(
   };
 }
 
+// 2026-05-19 PR-B Task 7: cycle 십성 기반 PracticalAction 사전.
+// buildPracticalActions 의 4 슬롯 중 2 번째 슬롯에 매핑되어 9 cycle distinct 강화.
+const CYCLE_SIPSIN_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
+  비견: {
+    reason: '이 10년에 비슷한 결의 동료·라이벌이 많아지는 패턴',
+    what: '본인만의 색·전문성을 한 줄로 정리해 두기',
+    how: '월 1회 "내가 잘하는 것 3가지" 갱신. 비교 대신 차별점에 집중.',
+  },
+  겁재: {
+    reason: '가까운 사람과의 자금·기회 갈등 신호 cycle',
+    what: '금전·동업 결정은 글로 남기고 시작',
+    how: '구두 약속 → 메모 → 계약서 3단계. 친한 사이일수록 더 또렷이.',
+  },
+  식신: {
+    reason: '꾸준한 표현·결과물이 수익으로 이어지는 cycle',
+    what: '반복할 수 있는 콘텐츠·서비스 1개 정착',
+    how: '주 1회 같은 형식으로 출력. 새 시도보다 반복을 우선.',
+  },
+  상관: {
+    reason: '재능과 비판이 동시에 강해지는 cycle',
+    what: '말하기 전 한 박자, 한 줄 메모하기',
+    how: '주요 회의·중요한 대화 직전 30초 침묵 + 핵심 한 줄 적기.',
+  },
+  편재: {
+    reason: '큰 돈·기회가 드나드는 cycle (흩어지기 쉬움)',
+    what: '들어온 돈의 30% 즉시 분리 보관',
+    how: '수입 → 메인 계좌 → 자동이체로 분리 계좌. "안 보는 게" 보호.',
+  },
+  정재: {
+    reason: '안정 자산 축적이 강해지는 cycle',
+    what: '기존 자산 구조 (적금·연금) 정기 점검',
+    how: '분기 1회 자산 1줄 정리. 새 투자보다 기존 점검 우선.',
+  },
+  편관: {
+    reason: '책임·압박이 큰 자리가 들어오는 cycle (번아웃 주의)',
+    what: '일 외 회복 루틴 1개 고정',
+    how: '주 3회 30분 운동·산책. 일·관계와 분리된 회복 통로 필수.',
+  },
+  정관: {
+    reason: '자리·인정의 결이 강해지는 cycle',
+    what: '평가받을 수 있는 기회 적극 잡기',
+    how: '본인 강점 한 줄 → 그 한 줄로 평가받는 자리 (발표·제안·면담) 분기 1회 이상.',
+  },
+  편인: {
+    reason: '남다른 시각·깊이가 돈이 되는 cycle',
+    what: '메인 직무 외 사이드 수입원 1개 시도',
+    how: '월 1회 부업·강의·콘텐츠 시도. 시작 비용 5만 원 이내로 작게.',
+  },
+  정인: {
+    reason: '배움·후원의 인연이 강해지는 cycle',
+    what: '학습·자격증 1개 등록',
+    how: '월 1만 원 이내 강의·책·온라인 강좌. 누적이 1년 후 큰 자산.',
+  },
+};
+
 function buildPracticalActions(
   cycle: SajuMajorLuckCycle,
   context: { supportElements: Element[]; dominant: Element; weakest: Element },
   // 2026-05-15 PR 4: 사주 원국의 dominant/weakest tenGod 도 받아 사전 매핑.
   primaryTenGod: TenGodCode | null = null,
-  // 2026-05-19 PR-A Task 3: cycle 십성 — PR-B 본문 분기 input (signature only).
+  // 2026-05-19 PR-B Task 7: cycle 십성 기반 action 분기.
   cycleSipsin: TenGodCode | null = null
 ): PracticalAction[] {
   const { stem, branch } = getGanziElements(cycle.ganzi);
   const cycleElement = stem ?? branch ?? context.weakest;
 
   const cycleAction = buildCycleElementAction(cycleElement, context);
+  const cycleSipsinAction = cycleSipsin ? CYCLE_SIPSIN_ACTION_DICT[cycleSipsin] : null;
   const shortageAction = SHORTAGE_ACTION_DICT[context.weakest] ?? SHORTAGE_ACTION_DICT['토'];
+  const sajuTenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
   const excessAction = EXCESS_ACTION_DICT[context.dominant] ?? EXCESS_ACTION_DICT['목'];
-  const tenGodAction = primaryTenGod ? TEN_GOD_ACTION_DICT[primaryTenGod] : null;
 
+  // 2026-05-19 PR-B Task 7 — 4 슬롯 재조정:
+  //   [cycle 오행 action, cycle 십성 action, 사주 weakest, 사주 십성 (or excess fallback)]
+  //   cycle 기반 2 슬롯 + 사주 원국 기반 2 슬롯 — 9 cycle distinct 강화.
   return [
     cycleAction,
+    cycleSipsinAction ?? shortageAction,
     shortageAction,
-    excessAction,
-    tenGodAction ?? {
-      reason: '대운 cycle 안의 합·충 신호',
-      what: '관계 거리감 미세 조정',
-      how: '가까운 사람과의 약속을 한 줄로 적어두기. 정기 약속은 한 자리에만 고정.',
-    },
+    sajuTenGodAction ?? excessAction,
   ];
 }
 
