@@ -1,4 +1,4 @@
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine';
 import type { UserProfile } from '@/lib/profile';
 import { hasCoreBirthProfile, toBirthInputFromProfile } from '@/lib/profile';
 import { toSlug } from '@/lib/saju/pillars';
@@ -57,7 +57,7 @@ export function deriveZodiacSlug(year: number) {
 }
 
 export function deriveZodiacSlugFromBirthInput(input: BirthInput) {
-  const data = calculateSajuDataV1(input);
+  const data = loadSajuDataV2(input, null);
   return BRANCH_TO_ZODIAC[data.pillars.year.branch] ?? deriveZodiacSlug(input.year);
 }
 
