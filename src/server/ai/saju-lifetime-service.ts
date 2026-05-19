@@ -7,8 +7,29 @@ import {
 } from '@/lib/counselors';
 import { getUserProfileById } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
-import { isReadingId, resolveReading, type ReadingRecord } from '@/lib/saju/readings';
+import {
+  isReadingId,
+  resolveReading,
+  updateReadingChapters,
+  type ReadingRecord,
+} from '@/lib/saju/readings';
 import { buildSajuReportRuntimeMetadata, type SajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
+// V2-5 PR I: 챕터 1 (타고난 성향) LLM enhancement 통합.
+//   audit-reports/2026-05-19-v2-5-llm-integration-design.md 의 PR I 구현.
+import { enhanceLifetimeChapter1WithLLM } from './chapters/enhance-lifetime-chapter1';
+import { buildChapter1Input } from './chapters/build-chapter1-input';
+import { OpenAIChapterClient } from './chapters/openai-chapter-client';
+import {
+  buildChapterCacheKey,
+  isChapterCacheFresh,
+  isChapterLLMEnabled,
+} from './chapters/chapter-cache';
+import { logChapterRun } from './chapters/chapter-telemetry';
+import {
+  PERSISTED_CHAPTER_ENVELOPE_V1,
+  type PersistedChapterEntry,
+  type PersistedChapterEnvelope,
+} from './chapters/chapter-storage-types';
 import {
   buildFallbackLifetimeInterpretation,
   createLifetimeInterpretationPrompt,
@@ -88,9 +109,19 @@ export async function generateLifetimeInterpretation(
   // 2026-05-15 PR 2: 사용자 현재 상황을 grounding 의 personalizationContext 에서 추출해
   // buildLifetimeReport 로 흘려, 대운 cycle 8단의 hook/relationship/wealthCareer 분기에 사용.
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
-  const report = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
-  const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
+  const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
   const model = getOpenAIInterpretationModel();
+  // V2-5 PR I: 챕터 1 (코어 정체성) LLM enhance — env flag 활성 시.
+  //   cache hit 이면 DB envelope 의 body 사용. miss 면 OpenAI 호출 + envelope upsert.
+  //   비활성 / 실패 시 deterministic baseReport 그대로 (회귀 0 보장).
+  const report = await applyChapter1LLMEnhancement(
+    reading,
+    baseReport,
+    userSituation,
+    model,
+    promptVersion
+  );
+  const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
   const recentFeedbackSummary = reading.userId
     ? await getRecentFortuneFeedbackSummary(reading.userId)
     : null;
@@ -155,4 +186,114 @@ export async function generateLifetimeInterpretation(
       },
     ],
   };
+}
+
+/**
+ * V2-5 PR I: 챕터 1 (코어 정체성) LLM enhancement.
+ *
+ * env OPENAI_INTERPRET_CHAPTERS=1 + OPENAI_INTERPRET_CHAPTER_IDS 에 1 포함 시 활성.
+ * 캐시 hit (DB envelope `_chapters[1]` 가 같은 cacheKey + 30일 이내 + LLM 성공) 이면
+ * 그 body 로 coreIdentity.summary 교체. 캐시 miss 면 OpenAI 호출 후 envelope upsert.
+ * LLM 자체 실패 / env 비활성 시 deterministic baseReport 그대로 반환 (회귀 0 보장).
+ */
+async function applyChapter1LLMEnhancement(
+  reading: ReadingRecord,
+  baseReport: ReturnType<typeof buildLifetimeReport>,
+  userSituation: Parameters<typeof buildLifetimeReport>[3],
+  model: string,
+  promptVersion: string
+): Promise<ReturnType<typeof buildLifetimeReport>> {
+  if (!isChapterLLMEnabled(1)) return baseReport;
+
+  const chapter1Input = buildChapter1Input(reading.sajuData, userSituation ?? null, {
+    name: reading.input.name ?? null,
+    age: null,
+  });
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1);
+  const cached = reading.chaptersEnvelope?.chapters?.[1];
+  const stageStartedAt = Date.now();
+
+  // Cache hit — DB envelope 의 body 사용.
+  if (
+    cached &&
+    cached.cacheKey === cacheKey &&
+    cached.source === 'llm' &&
+    isChapterCacheFresh(cached.generatedAt)
+  ) {
+    logChapterRun({
+      chapterId: 1,
+      source: 'cache',
+      durationMs: Date.now() - stageStartedAt,
+      retries: cached.retries,
+      cacheKey,
+      validationFailures: cached.validationFailures ?? [],
+    });
+    return {
+      ...baseReport,
+      coreIdentity: { ...baseReport.coreIdentity, summary: cached.body },
+    };
+  }
+
+  // Cache miss — OpenAI 호출.
+  try {
+    const client = new OpenAIChapterClient({ model });
+    const enhanced = await enhanceLifetimeChapter1WithLLM(
+      baseReport.coreIdentity,
+      chapter1Input,
+      client
+    );
+
+    if (enhanced.source === 'llm' && isReadingId(reading.id)) {
+      const entry: PersistedChapterEntry = {
+        chapterId: 1,
+        body: enhanced.coreIdentity.summary,
+        source: 'llm',
+        retries: enhanced.retries as 0 | 1 | 2,
+        cacheKey,
+        generatedAt: new Date().toISOString(),
+        validationFailures: [],
+      };
+      const envelope: PersistedChapterEnvelope = {
+        schemaVersion: PERSISTED_CHAPTER_ENVELOPE_V1,
+        generatedAt: entry.generatedAt,
+        promptVersion,
+        model,
+        chapters: {
+          ...(reading.chaptersEnvelope?.chapters ?? {}),
+          1: entry,
+        },
+      };
+      try {
+        await updateReadingChapters(reading.id, envelope);
+      } catch (writeError) {
+        // envelope upsert 실패는 in-memory 결과 사용 + 다음 호출 시 재시도. silent.
+        console.error('updateReadingChapters failed', writeError);
+      }
+    }
+
+    logChapterRun({
+      chapterId: 1,
+      source: enhanced.source,
+      durationMs: Date.now() - stageStartedAt,
+      retries: enhanced.retries,
+      cacheKey,
+      validationFailures: [],
+    });
+    return {
+      ...baseReport,
+      coreIdentity: enhanced.coreIdentity,
+    };
+  } catch (error) {
+    // LLM 호출 자체 실패 (timeout, network 등) → deterministic baseReport.
+    logChapterRun({
+      chapterId: 1,
+      source: 'fallback',
+      durationMs: Date.now() - stageStartedAt,
+      retries: 0,
+      cacheKey,
+      validationFailures: [],
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    return baseReport;
+  }
 }

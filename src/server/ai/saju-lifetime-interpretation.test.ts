@@ -41,6 +41,7 @@ function createReadingRecord(): ReadingRecord {
     grounding,
     kasiComparison: null,
     metadata: buildPersistedSajuReadingMetadata(birthInput, sajuData, grounding, null),
+    chaptersEnvelope: null,
   };
 }
 
