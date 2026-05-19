@@ -8,9 +8,12 @@ import type { BirthInput, SajuResult as LegacySajuResult } from './types';
 import {
   calculateSajuDataV1,
   deriveLegacySajuResult,
-  normalizeToSajuDataV1,
   type SajuDataV1,
 } from '@/domain/saju/engine/saju-data-v1';
+import {
+  loadSajuDataV2,
+  type SajuDataV2,
+} from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   buildSajuInterpretationGrounding,
   buildSajuReport,
@@ -53,7 +56,7 @@ export interface ReadingRecord {
   id: string;
   userId: string | null;
   input: BirthInput;
-  sajuData: SajuDataV1;
+  sajuData: SajuDataV1 | SajuDataV2;
   result: LegacySajuResult;
   grounding: SajuInterpretationGrounding;
   kasiComparison: KasiSingleInputComparison | null;
@@ -102,7 +105,7 @@ async function buildKasiComparisonSnapshot(input: BirthInput) {
 
 function deriveBirthInputFromSajuData(
   fallback: BirthInput,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ): BirthInput {
   return {
     name: fallback.name,
@@ -144,7 +147,10 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
     hour: row.birth_hour ?? undefined,
     gender: row.gender ?? undefined,
   };
-  const sajuData = normalizeToSajuDataV1(input, row.result_json);
+  // V2-3 (a) 정책: DB row 의 V1 envelope 를 in-memory V2 로 업그레이드. row 가 이미 V2
+  // schemaVersion 이면 loadSajuDataV2 가 검증 후 그대로 사용. V1 또는 legacy 형태면
+  // upgradeSajuDataV1ToV2 자동 호출. DB 저장 envelope 는 V1 그대로 유지 (저장 크기 보존).
+  const sajuData = loadSajuDataV2(input, row.result_json);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
   // 2026-05-15 PR 1: situation_json 컬럼에서 userSituation 복원. NULL/누락 안전.
@@ -346,7 +352,8 @@ export async function resolveReading(
   const input = fromSlug(identifier);
   if (!input) return null;
 
-  const sajuData = calculateSajuDataV1(input);
+  // V2-3 (a) 정책: guest slug resolve 도 in-memory V2 로 통일. 저장 없음.
+  const sajuData = loadSajuDataV2(input, null);
   const normalizedInput = deriveBirthInputFromSajuData(input, sajuData);
   const report = buildSajuReport(normalizedInput, sajuData, 'today');
   const grounding = buildSajuInterpretationGrounding(normalizedInput, sajuData, report);
