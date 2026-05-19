@@ -27,6 +27,7 @@ import {
   buildPersistedSajuReadingMetadata,
   type SajuPersistedReadingMetadata,
 } from '@/lib/saju/report-metadata';
+import type { PersistedChapterEnvelope } from '@/server/ai/chapters/chapter-storage-types';
 
 const READING_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -50,6 +51,8 @@ export interface PersistedReadingEnvelope {
   _grounding?: SajuInterpretationGrounding;
   _kasiComparison?: KasiSingleInputComparison | null;
   _metadata?: SajuPersistedReadingMetadata;
+  /** V2-5 PR I: 챕터별 LLM 결과 캐시 (envelope V1 정책 — 별도 field 로 저장). */
+  _chapters?: PersistedChapterEnvelope;
 }
 
 export interface ReadingRecord {
@@ -61,6 +64,8 @@ export interface ReadingRecord {
   grounding: SajuInterpretationGrounding;
   kasiComparison: KasiSingleInputComparison | null;
   metadata: SajuPersistedReadingMetadata;
+  /** V2-5 PR I: envelope 의 _chapters 캐시 — null 이면 LLM 호출 시 신규 생성. */
+  chaptersEnvelope: PersistedChapterEnvelope | null;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -75,6 +80,7 @@ export function extractPersistedReadingEnvelope(value: unknown): PersistedReadin
     _grounding: record._grounding as SajuInterpretationGrounding | undefined,
     _kasiComparison: (record._kasiComparison as KasiSingleInputComparison | null | undefined) ?? null,
     _metadata: record._metadata as SajuPersistedReadingMetadata | undefined,
+    _chapters: record._chapters as PersistedChapterEnvelope | undefined,
   };
 }
 
@@ -187,6 +193,7 @@ function mapReadingRow(row: ReadingRow): ReadingRecord {
     grounding,
     kasiComparison: persisted._kasiComparison ?? null,
     metadata,
+    chaptersEnvelope: persisted._chapters ?? null,
   };
 }
 
@@ -367,5 +374,53 @@ export async function resolveReading(
     grounding,
     kasiComparison: null,
     metadata: buildPersistedSajuReadingMetadata(normalizedInput, sajuData, grounding, null),
+    // V2-5 PR I: guest slug 은 DB 저장 안 함 → chapters 캐시 없음.
+    chaptersEnvelope: null,
   };
+}
+
+/**
+ * V2-5 PR I: reading 의 result_json envelope `_chapters` field 를 upsert.
+ * 기존 row 의 다른 envelope field (_grounding, _metadata 등) 와 sajuData 본체는 보존.
+ *
+ * 호출 시점: saju-lifetime-service 가 챕터 LLM 호출 성공 시 (cache miss). DB
+ * round-trip 2회 (select 1 + update 1) — LLM 호출 횟수 대비 매우 적음.
+ *
+ * guest slug 또는 잘못된 readingId 면 silent skip (storage 없는 reading).
+ */
+export async function updateReadingChapters(
+  readingId: string,
+  chapterEnvelope: PersistedChapterEnvelope
+): Promise<void> {
+  if (!isReadingId(readingId)) return;
+
+  const supabase = await getPrivilegedOrSessionClient('authenticated-write');
+
+  const { data, error: fetchError } = await supabase
+    .from('readings')
+    .select('result_json')
+    .eq('id', readingId)
+    .maybeSingle();
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+  if (!data?.result_json || typeof data.result_json !== 'object') {
+    // reading 이 없거나 result_json 형태가 깨졌으면 silent skip — 다음 reading 조회 시 재시도.
+    return;
+  }
+
+  const merged = {
+    ...(data.result_json as Record<string, unknown>),
+    _chapters: chapterEnvelope,
+  };
+
+  const { error: updateError } = await supabase
+    .from('readings')
+    .update({ result_json: merged })
+    .eq('id', readingId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
 }
