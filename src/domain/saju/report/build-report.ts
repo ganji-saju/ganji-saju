@@ -5,6 +5,7 @@
   TenGodCode,
   YongsinConfidence,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { OrreryRelation } from '@/domain/saju/engine/orrery-adapter';
 import {
   ELEMENT_INFO,
@@ -393,7 +394,7 @@ function withParticle(value: string, consonantParticle: string, vowelParticle: s
   return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
 }
 
-function getElementEntries(data: SajuDataV1) {
+function getElementEntries(data: SajuDataV1 | SajuDataV2) {
   return (Object.entries(data.fiveElements.byElement) as [Element, SajuDataV1['fiveElements']['byElement'][Element]][])
     .map(([element, value]) => [element, value.count] as [Element, number])
     .sort((a, b) => b[1] - a[1]);
@@ -410,7 +411,7 @@ function getElementTone(element: Element) {
   };
 }
 
-function getOrreryExtension(data: SajuDataV1) {
+function getOrreryExtension(data: SajuDataV1 | SajuDataV2) {
   return data.extensions?.orrery ?? null;
 }
 
@@ -418,7 +419,7 @@ function hasIndexedSpecialSal(value: number[] | null | undefined) {
   return Boolean(value && value.length > 0);
 }
 
-function getSpecialSalGroups(data: SajuDataV1) {
+function getSpecialSalGroups(data: SajuDataV1 | SajuDataV2) {
   const specialSals = getOrreryExtension(data)?.specialSals;
   const supportive: string[] = [];
   const cautionary: string[] = [];
@@ -439,7 +440,7 @@ function getSpecialSalGroups(data: SajuDataV1) {
   return { supportive, cautionary };
 }
 
-function buildFiveElementRatio(data: SajuDataV1): ReportEvidenceComputed['fiveElementRatio'] {
+function buildFiveElementRatio(data: SajuDataV1 | SajuDataV2): ReportEvidenceComputed['fiveElementRatio'] {
   return (Object.keys(data.fiveElements.byElement) as Element[]).reduce<
     NonNullable<ReportEvidenceComputed['fiveElementRatio']>
   >((accumulator, element) => {
@@ -448,7 +449,7 @@ function buildFiveElementRatio(data: SajuDataV1): ReportEvidenceComputed['fiveEl
   }, {});
 }
 
-function buildBaseComputed(data: SajuDataV1): ReportEvidenceComputed {
+function buildBaseComputed(data: SajuDataV1 | SajuDataV2): ReportEvidenceComputed {
   return {
     dayMaster: data.dayMaster.stem,
     dayMasterElement: data.dayMaster.element,
@@ -499,24 +500,24 @@ function describeCurrentLuckHighlight(currentLuck: SajuDataV1['currentLuck']) {
   return '';
 }
 
-function getDayMasterSummary(data: SajuDataV1) {
+function getDayMasterSummary(data: SajuDataV1 | SajuDataV2) {
   return data.dayMaster.metaphor
     ? `${data.dayMaster.stem} 일간은 ${data.dayMaster.metaphor}의 결을 지녀 ${data.dayMaster.description ?? getPersonalityFromSajuData(data)}`
     : getPersonalityFromSajuData(data);
 }
 
-function getSupportElementLabels(data: SajuDataV1) {
+function getSupportElementLabels(data: SajuDataV1 | SajuDataV2) {
   return getLuckyElementsFromSajuData(data)
     .map((element) => getPublicElementCue(element))
     .join(' · ');
 }
 
-function getPublicTenGodTone(data: SajuDataV1) {
+function getPublicTenGodTone(data: SajuDataV1 | SajuDataV2) {
   const code = data.pattern?.tenGod ?? data.tenGods?.dominant;
   return code ? PUBLIC_TEN_GOD_TONES[code] : null;
 }
 
-function getReportProfile(data: SajuDataV1) {
+function getReportProfile(data: SajuDataV1 | SajuDataV2) {
   const supportElement = getLuckyElementsFromSajuData(data)[0] ?? data.fiveElements.weakest;
   const dominantElement = data.fiveElements.dominant;
   const weakestElement = data.fiveElements.weakest;
@@ -543,7 +544,7 @@ function stripTopicLead(value: string) {
     .trim();
 }
 
-function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDataV1) {
+function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDataV1 | SajuDataV2) {
   const profile = getReportProfile(data);
   const isHigh = score >= 80;
   const isMid = score >= 70;
@@ -582,7 +583,7 @@ function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDat
 }
 
 function buildSummaryHighlights(
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   topic: FocusTopic,
   _scoreMap: Record<ReportScore['key'], number>,
   dominant: string,
@@ -633,7 +634,7 @@ function buildSummaryHighlights(
   }
 }
 
-function buildStrengthEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildStrengthEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const strength = data.strength;
   const computed = buildBaseComputed(data);
   const key = 'strength';
@@ -671,7 +672,7 @@ function buildStrengthEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
   };
 }
 
-function buildPatternEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const pattern = data.pattern;
   const computed = buildBaseComputed(data);
   const key = 'pattern';
@@ -713,7 +714,7 @@ function buildPatternEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
   };
 }
 
-function buildYongsinEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const yongsin = data.yongsin;
   const computed = buildBaseComputed(data);
   const key = 'yongsin';
@@ -786,7 +787,7 @@ function formatRelationEvidenceLine(relation: OrreryRelation) {
   return `${pair}: ${relation.label}${relation.detail ? ` · ${relation.detail}` : ''}`;
 }
 
-function buildRelationEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildRelationEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const key = 'relations';
   const relations = getOrreryExtension(data)?.relations ?? [];
   const tension = relations.find((relation) =>
@@ -843,7 +844,7 @@ function formatPillarSlot(slot: string) {
   }
 }
 
-function buildGongmangEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const key = 'gongmang';
   const gongmang = getOrreryExtension(data)?.gongmang;
   const branches = gongmang?.branches?.join('·') ?? '';
@@ -876,7 +877,7 @@ function buildGongmangEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
   };
 }
 
-function buildSpecialSalsEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
+function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard {
   const key = 'specialSals';
   const { supportive, cautionary } = getSpecialSalGroups(data);
   const names = [...supportive, ...cautionary];
@@ -910,7 +911,7 @@ function buildSpecialSalsEvidenceCard(data: SajuDataV1): ReportEvidenceCard {
   };
 }
 
-function buildEvidenceCards(data: SajuDataV1): ReportEvidenceCard[] {
+function buildEvidenceCards(data: SajuDataV1 | SajuDataV2): ReportEvidenceCard[] {
   return [
     buildStrengthEvidenceCard(data),
     buildPatternEvidenceCard(data),
@@ -926,7 +927,7 @@ function describeTenGodNarrative(tenGods: SajuDataV1['tenGods']) {
   return TEN_GOD_INTERPRETATION[tenGods.dominant];
 }
 
-function formatElementDistribution(data: SajuDataV1) {
+function formatElementDistribution(data: SajuDataV1 | SajuDataV2) {
   const dominant = data.fiveElements.byElement[data.fiveElements.dominant];
   const weakest = data.fiveElements.byElement[data.fiveElements.weakest];
   const dominantLabel = getPublicElementCue(data.fiveElements.dominant);
@@ -955,7 +956,7 @@ function formatPublicSymbolList(symbols: SajuSymbolRef[]) {
   ].join(' · ');
 }
 
-function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
+function buildScores(input: BirthInput, data: SajuDataV1 | SajuDataV2): ReportScore[] {
   const entries = getElementEntries(data);
   const strongest = entries[0]?.[1] ?? 0;
   const weakest = entries.at(-1)?.[1] ?? 0;
@@ -1006,7 +1007,7 @@ function buildScores(input: BirthInput, data: SajuDataV1): ReportScore[] {
 function getHeadline(
   topic: FocusTopic,
   scoreMap: Record<ReportScore['key'], number>,
-  data: SajuDataV1
+  data: SajuDataV1 | SajuDataV2
 ) {
   const dominantCue = getPublicElementCue(data.fiveElements.dominant);
   const weakestCue = getPublicElementCue(data.fiveElements.weakest);
@@ -1040,7 +1041,7 @@ function getHeadline(
 }
 
 function buildTopicActions(
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   topic: FocusTopic,
   supportElements: Element[],
   scoreMap: Record<ReportScore['key'], number>,
@@ -1212,7 +1213,7 @@ function buildQuestionFocusInsight(
   }
 }
 
-function buildInsights(data: SajuDataV1, topic: FocusTopic, evidenceCards: ReportEvidenceCard[]): ReportInsight[] {
+function buildInsights(data: SajuDataV1 | SajuDataV2, topic: FocusTopic, evidenceCards: ReportEvidenceCard[]): ReportInsight[] {
   const supportElements = getLuckyElementsFromSajuData(data);
   const supportLabels = supportElements.map((element) => getPublicElementCue(element)).join(' · ');
   const dominant = getPublicElementCue(data.fiveElements.dominant);
@@ -1283,7 +1284,7 @@ function describeTopicLuckFocus(topic: FocusTopic) {
   }
 }
 
-function buildMonthlyLuckReading(data: SajuDataV1, topic: FocusTopic) {
+function buildMonthlyLuckReading(data: SajuDataV1 | SajuDataV2, topic: FocusTopic) {
   const wolwoon = data.currentLuck?.wolwoon;
   const monthlyElements = getGanziElements(wolwoon?.ganzi);
   const supportElements = getLuckyElementsFromSajuData(data);
@@ -1308,7 +1309,7 @@ function buildMonthlyLuckReading(data: SajuDataV1, topic: FocusTopic) {
   };
 }
 
-function buildMajorLuckReading(data: SajuDataV1, topic: FocusTopic) {
+function buildMajorLuckReading(data: SajuDataV1 | SajuDataV2, topic: FocusTopic) {
   const currentMajor = data.currentLuck?.currentMajorLuck;
   const cautionTone = getElementTone(data.fiveElements.weakest);
 
@@ -1352,7 +1353,7 @@ function buildMajorLuckReading(data: SajuDataV1, topic: FocusTopic) {
   };
 }
 
-function buildTimeline(data: SajuDataV1, topic: FocusTopic): ReportTimelineItem[] {
+function buildTimeline(data: SajuDataV1 | SajuDataV2, topic: FocusTopic): ReportTimelineItem[] {
   const bestTone = getElementTone(
     getLuckyElementsFromSajuData(data)[0] ?? data.fiveElements.dominant
   );
@@ -1397,7 +1398,7 @@ function formatDateChip(month: number, day: number) {
   return `${month}월 ${day}일`;
 }
 
-function buildDates(input: BirthInput, data: SajuDataV1) {
+function buildDates(input: BirthInput, data: SajuDataV1 | SajuDataV2) {
   const entries = getElementEntries(data);
   const strongest = entries[0]?.[1] ?? 0;
   const weakest = entries.at(-1)?.[1] ?? 0;
@@ -1518,7 +1519,7 @@ export function normalizeFocusTopic(value?: string): FocusTopic {
 
 export function buildSajuReport(
   input: BirthInput,
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   topicValue?: string
 ): SajuReport {
   const focusTopic = normalizeFocusTopic(topicValue);

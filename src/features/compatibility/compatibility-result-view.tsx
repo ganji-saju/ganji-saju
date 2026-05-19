@@ -11,6 +11,7 @@ import {
 } from '@/content/moonlight';
 import type { CompatibilityInterpretation } from '@/lib/compatibility';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 
 interface CompatibilityResultViewProps {
   selected: CompatibilityRelationship;
@@ -33,11 +34,11 @@ const ZODIAC_KOR: Record<ZodiacKey, string> = {
   horse: '말띠', sheep: '양띠', monkey: '원숭이띠', rooster: '닭띠', dog: '개띠', pig: '돼지띠',
 };
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   return BRANCH_TO_ZODIAC[data.pillars.year.branch] ?? 'dragon';
 }
 
-function getBirthYear(data: SajuDataV1): number {
+function getBirthYear(data: SajuDataV1 | SajuDataV2): number {
   return data.input.birth.year;
 }
 

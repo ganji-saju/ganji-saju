@@ -1,4 +1,5 @@
 import type { SajuDataV1, SajuYongsinCandidate } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput } from '@/lib/saju/types';
 import type { SajuReport } from './types';
 import type {
@@ -66,7 +67,7 @@ function mapEvidenceCard(card: SajuReport['evidenceCards'][number]): SajuEvidenc
   };
 }
 
-function buildFactJson(input: BirthInput, data: SajuDataV1): SajuFactJson {
+function buildFactJson(input: BirthInput, data: SajuDataV1 | SajuDataV2): SajuFactJson {
   return {
     schemaVersion: SAJU_FACT_JSON_V1,
     sajuDataVersion: data.schemaVersion,
@@ -146,7 +147,7 @@ function buildFactJson(input: BirthInput, data: SajuDataV1): SajuFactJson {
   };
 }
 
-function buildEvidenceJson(data: SajuDataV1, report: SajuReport): SajuEvidenceJson {
+function buildEvidenceJson(data: SajuDataV1 | SajuDataV2, report: SajuReport): SajuEvidenceJson {
   return {
     schemaVersion: SAJU_EVIDENCE_JSON_V1,
     primaryConcept: getPrimaryConcept(report),
@@ -206,7 +207,7 @@ function buildEvidenceJson(data: SajuDataV1, report: SajuReport): SajuEvidenceJs
 
 export function buildSajuInterpretationGrounding(
   input: BirthInput,
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   report: SajuReport,
   // 2026-05-15 PR 1: 사용자 입력 현재 상황 (연애/직업/고민) 전달 통로.
   // grounding 의 personalizationContext 까지 흘러 모든 풀이 화면이 같은 컨텍스트 수혜.

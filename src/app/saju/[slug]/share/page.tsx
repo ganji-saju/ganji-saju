@@ -11,6 +11,7 @@ import { buildSajuReport, buildPunchReading } from '@/domain/saju/report';
 import type { SajuReport } from '@/domain/saju/report';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 // 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
@@ -31,7 +32,7 @@ const ZODIAC_KOR: Record<ZodiacKey, string> = {
   horse: '말띠', sheep: '양띠', monkey: '원숭이띠', rooster: '닭띠', dog: '개띠', pig: '돼지띠',
 };
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   return BRANCH_TO_ZODIAC[data.pillars.year.branch] ?? 'dragon';
 }
 

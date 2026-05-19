@@ -10,6 +10,7 @@ import type {
   StrengthLevel,
   TenGodCode,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import sixtyGapjaCore from '@/data/saju/sixty-gapja-core.json';
 
 export const SAJU_PERSONALIZATION_CONTEXT_V1 = 'saju-personalization/v1' as const;
@@ -128,7 +129,7 @@ function buildDayGanziCode(stem: Stem, branch: Branch) {
   return `${STEM_TO_KOREAN[stem]}${BRANCH_TO_KOREAN[branch]}`;
 }
 
-function buildFiveElementRatio(data: SajuDataV1): Record<Element, number> {
+function buildFiveElementRatio(data: SajuDataV1 | SajuDataV2): Record<Element, number> {
   return Object.fromEntries(
     ELEMENTS.map((element) => [
       element,
@@ -137,7 +138,7 @@ function buildFiveElementRatio(data: SajuDataV1): Record<Element, number> {
   ) as Record<Element, number>;
 }
 
-function buildTenGodDistribution(data: SajuDataV1): Record<TenGodGroup, number> {
+function buildTenGodDistribution(data: SajuDataV1 | SajuDataV2): Record<TenGodGroup, number> {
   const distribution = Object.fromEntries(
     TEN_GOD_GROUP_ORDER.map((group) => [group, 0])
   ) as Record<TenGodGroup, number>;
@@ -153,7 +154,7 @@ function buildTenGodDistribution(data: SajuDataV1): Record<TenGodGroup, number> 
   ) as Record<TenGodGroup, number>;
 }
 
-function hasMonthSeasonSupport(data: SajuDataV1) {
+function hasMonthSeasonSupport(data: SajuDataV1 | SajuDataV2) {
   const monthSeasonElement = MONTH_BRANCH_SEASON_ELEMENT[data.pillars.month.branch];
   const dayMasterElement = data.dayMaster.element;
 
@@ -170,12 +171,12 @@ function toElementValue(symbol: SajuSymbolRef | null | undefined): Element | nul
   return matched ?? null;
 }
 
-function getCurrentMajorLuckLabel(data: SajuDataV1) {
+function getCurrentMajorLuckLabel(data: SajuDataV1 | SajuDataV2) {
   const ganzi = data.currentLuck?.currentMajorLuck?.ganzi ?? null;
   return ganzi ? `${ganzi}대운` : null;
 }
 
-function getMajorLuckProgressYears(data: SajuDataV1) {
+function getMajorLuckProgressYears(data: SajuDataV1 | SajuDataV2) {
   const currentMajorLuck = data.currentLuck?.currentMajorLuck;
   const startAge = currentMajorLuck?.startAge;
   const birthYear = data.input.birth.year;
@@ -237,7 +238,7 @@ function buildUserSituationFacts(userSituation: UserSituation | null | undefined
 }
 
 export function buildSajuPersonalizationContext(
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   userSituation: UserSituation | null = null
 ): SajuPersonalizationContext {
   const dayGanziCode = buildDayGanziCode(data.pillars.day.stem, data.pillars.day.branch);

@@ -2,6 +2,7 @@ import {
   normalizeToSajuDataV1,
   type SajuDataV1,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuReport } from '@/domain/saju/report/build-report';
 import { COMPATIBILITY_RESULT_LABELS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import { CONTROLS, ELEMENT_INFO, GENERATES, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
@@ -123,8 +124,8 @@ export interface CompatibilityInterpretation {
   label: string;
   score: number;
   scoreLabel: string;
-  selfData: SajuDataV1;
-  partnerData: SajuDataV1;
+  selfData: SajuDataV1 | SajuDataV2;
+  partnerData: SajuDataV1 | SajuDataV2;
   headline: string;
   summary: string;
   supportiveSummary: string;
@@ -279,7 +280,7 @@ function formatElementLabel(element: Element) {
   return ELEMENT_INFO[element].name;
 }
 
-function summarizeElementInteraction(selfData: SajuDataV1, partnerData: SajuDataV1) {
+function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerData: SajuDataV1 | SajuDataV2) {
   const selfElement = selfData.dayMaster.element;
   const partnerElement = partnerData.dayMaster.element;
 
@@ -433,7 +434,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   };
 }
 
-function summarizeElementBalance(selfData: SajuDataV1, partnerData: SajuDataV1) {
+function summarizeElementBalance(selfData: SajuDataV1 | SajuDataV2, partnerData: SajuDataV1 | SajuDataV2) {
   const selfLucky = getLuckyElementsFromSajuData(selfData);
   const partnerLucky = getLuckyElementsFromSajuData(partnerData);
   const sharedLucky = selfLucky.filter((element) => partnerLucky.includes(element));
@@ -473,9 +474,9 @@ function summarizeElementBalance(selfData: SajuDataV1, partnerData: SajuDataV1) 
 function inferCurrentFlowSummary(
   relationship: CompatibilityRelationshipSlug,
   selfInput: BirthInput,
-  selfData: SajuDataV1,
+  selfData: SajuDataV1 | SajuDataV2,
   partnerInput: BirthInput,
-  partnerData: SajuDataV1
+  partnerData: SajuDataV1 | SajuDataV2
 ) {
   const selfReport = buildSajuReport(selfInput, selfData, 'relationship');
   const partnerReport = buildSajuReport(partnerInput, partnerData, 'relationship');
@@ -671,10 +672,10 @@ function buildConflictCard(
 function buildCommunicationCard(
   relationship: CompatibilityRelationshipSlug,
   self: CompatibilityPerson,
-  selfData: SajuDataV1,
+  selfData: SajuDataV1 | SajuDataV2,
   selfConnectionReport: ReturnType<typeof buildSajuReport>,
   partner: CompatibilityPerson,
-  partnerData: SajuDataV1,
+  partnerData: SajuDataV1 | SajuDataV2,
   partnerConnectionReport: ReturnType<typeof buildSajuReport>
 ): CompatibilityPracticalCard {
   const selfStyle = COMMUNICATION_STYLES[selfData.dayMaster.element];
@@ -713,10 +714,10 @@ function buildCommunicationCard(
 function buildMoneyCard(
   relationship: CompatibilityRelationshipSlug,
   self: CompatibilityPerson,
-  selfData: SajuDataV1,
+  selfData: SajuDataV1 | SajuDataV2,
   selfWealthReport: ReturnType<typeof buildSajuReport>,
   partner: CompatibilityPerson,
-  partnerData: SajuDataV1,
+  partnerData: SajuDataV1 | SajuDataV2,
   partnerWealthReport: ReturnType<typeof buildSajuReport>
 ): CompatibilityPracticalCard {
   const selfStyle = MONEY_STYLES[selfData.fiveElements.dominant];
@@ -748,9 +749,9 @@ function buildMoneyCard(
 function buildDistanceCard(
   relationship: CompatibilityRelationshipSlug,
   self: CompatibilityPerson,
-  selfData: SajuDataV1,
+  selfData: SajuDataV1 | SajuDataV2,
   partner: CompatibilityPerson,
-  partnerData: SajuDataV1,
+  partnerData: SajuDataV1 | SajuDataV2,
   branchInteraction: ReturnType<typeof summarizeBranchInteraction>
 ): CompatibilityPracticalCard {
   const selfStyle = DISTANCE_STYLES[selfData.dayMaster.element];

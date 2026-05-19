@@ -9,6 +9,7 @@
 
 import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuReport } from '@/domain/saju/report';
 import {
   buildConditionScore,
@@ -75,7 +76,7 @@ const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value
  */
 export function computeSajuAreaScores(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options?: { now?: Date }
 ): SajuAreaScore[] {
   const todayReport = buildSajuReport(input, sajuData, 'today');

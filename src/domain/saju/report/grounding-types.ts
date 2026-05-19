@@ -10,6 +10,7 @@ import type {
   SajuTenGodSummary,
   SajuYongsin,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataVersionV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput } from '@/lib/saju/types';
 import type {
   ReportEvidenceCard,
@@ -24,7 +25,7 @@ export const SAJU_EVIDENCE_JSON_V1 = 'saju-evidence/v1' as const;
 
 export interface SajuFactJson {
   schemaVersion: typeof SAJU_FACT_JSON_V1;
-  sajuDataVersion: SajuDataVersion;
+  sajuDataVersion: SajuDataVersion | SajuDataVersionV2;
   birthInput: {
     year: number;
     month: number;

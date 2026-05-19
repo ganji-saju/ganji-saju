@@ -13,6 +13,7 @@ import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 // 2026-05-15 cleanup — 총평 페이지에서 §1.7 격국·용신·강약 + §1.8 합충·공망·신살 카드를 명식 탭으로 이전.
 // 사용자 피드백 ("사실 카드 5종은 다른 탭에서 보여주면 좋겠다") 반영. 데이터 출처는 동일.
 import { SajuRelationsSymbolsCard } from '@/components/saju/saju-relations-symbols-card';
@@ -88,7 +89,7 @@ const PREMIUM_BENEFITS = [
   '오늘부터 할 실천 카드',
 ] as const;
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   const branch = data.pillars.year.branch;
   return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
 }

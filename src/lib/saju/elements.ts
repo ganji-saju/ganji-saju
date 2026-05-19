@@ -1,4 +1,5 @@
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { Element, Stem, SajuResult } from './types';
 
 // 다섯 기운의 쉬운 표시 이름과 속성.
@@ -88,7 +89,7 @@ export function getPersonality(result: SajuResult): string {
   return getPersonalityByStem(result.dayMaster);
 }
 
-export function getPersonalityFromSajuData(data: SajuDataV1): string {
+export function getPersonalityFromSajuData(data: SajuDataV1 | SajuDataV2): string {
   return data.dayMaster.description ?? getPersonalityByStem(data.dayMaster.stem);
 }
 
@@ -112,14 +113,14 @@ export function getLuckyElements(result: SajuResult): Element[] {
 }
 
 export function getElementCountsFromSajuData(
-  data: SajuDataV1
+  data: SajuDataV1 | SajuDataV2
 ): Record<Element, number> {
   return Object.fromEntries(
     ELEMENTS.map((element) => [element, data.fiveElements.byElement[element].count])
   ) as Record<Element, number>;
 }
 
-export function getLuckyElementsFromSajuData(data: SajuDataV1): Element[] {
+export function getLuckyElementsFromSajuData(data: SajuDataV1 | SajuDataV2): Element[] {
   if (data.yongsin) {
     const fromYongsin = [data.yongsin.primary, ...data.yongsin.secondary]
       .flatMap((symbol) =>

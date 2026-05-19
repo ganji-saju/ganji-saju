@@ -26,6 +26,7 @@ import { resolveReading } from '@/lib/saju/readings';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 // 2026-05-16 — lifetime 결제 CTA 가 이미 구매한 사용자에게도 결제 button 으로 보여
 //   중복 결제 진입을 유도하던 회귀. entitlement 확인 후 CTA 분기.
@@ -79,11 +80,11 @@ function withKoreanGanzi(ganzi: string): string {
   return korean ? `${korean}(${ganzi})` : ganzi;
 }
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   return BRANCH_TO_ZODIAC[data.pillars.year.branch] ?? 'dragon';
 }
 
-function getCurrentAge(data: SajuDataV1): number {
+function getCurrentAge(data: SajuDataV1 | SajuDataV2): number {
   const now = new Date();
   const birthYear = data.input.birth.year;
   const birthMonth = data.input.birth.month;
@@ -94,7 +95,7 @@ function getCurrentAge(data: SajuDataV1): number {
   return now.getFullYear() - birthYear - (beforeBirthday ? 1 : 0);
 }
 
-function formatBirthMeta(data: SajuDataV1): string {
+function formatBirthMeta(data: SajuDataV1 | SajuDataV2): string {
   const { year, month, day, hour } = data.input.birth;
   const cal = data.input.calendar === 'solar' ? '양력' : '음력';
   const hourLabel = hour !== null ? ` · ${hour}시` : '';

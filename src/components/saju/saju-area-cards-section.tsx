@@ -6,6 +6,7 @@
 // score 산식: computeSajuAreaScores (운세 페이지와 1:1 일치 + 6 영역 통일).
 import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   computeSajuAreaScores,
   UNIFIED_AREA_LABELS,
@@ -22,7 +23,7 @@ function getScoreStatus(score: number) {
 
 interface Props {
   input: BirthInput;
-  sajuData: SajuDataV1;
+  sajuData: SajuDataV1 | SajuDataV2;
   heading?: string;
 }
 

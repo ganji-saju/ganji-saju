@@ -43,6 +43,7 @@ import {
 } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -59,7 +60,7 @@ const ZODIAC_KOR: Record<ZodiacKey, string> = {
   horse: '말띠', sheep: '양띠', monkey: '원숭이띠', rooster: '닭띠', dog: '개띠', pig: '돼지띠',
 };
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   const branch = data.pillars.year.branch;
   return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
 }

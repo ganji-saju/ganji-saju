@@ -8,6 +8,7 @@
 // 후기 정확도 평가가 높음 (점신·포스텔러 류). 우리는 이 narrative 자리가 비어 있었음.
 
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { SajuPersonalizationContext } from './personalization-context';
 // PR #150 (B1) — situation 호명 helper.
 import {
@@ -44,7 +45,7 @@ function joinSentences(parts: Array<string | null | undefined>): string {
 }
 
 export function buildSajuNarrative(
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   personalizationContext: SajuPersonalizationContext | null,
   options: SajuNarrativeOptions = {}
 ): SajuNarrative {

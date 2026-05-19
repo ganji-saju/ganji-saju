@@ -4,6 +4,7 @@ import type {
   SajuPillar,
   StrengthLevel,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuPersonalizationContext } from '@/domain/saju/report/personalization-context';
 import type { BirthInput, Element } from '@/lib/saju/types';
 
@@ -155,7 +156,7 @@ function normalizeNumericRecord(record: Record<string, unknown>): Record<string,
 
 export function buildInterpretSajuDataSnapshot(
   input: BirthInput,
-  data: SajuDataV1
+  data: SajuDataV1 | SajuDataV2
 ): InterpretSajuDataSnapshot {
   const context = buildSajuPersonalizationContext(data);
   const yearly = data.currentLuck?.saewoon ? splitGanzi(data.currentLuck.saewoon.ganzi) : null;
@@ -181,13 +182,13 @@ export function buildInterpretSajuDataSnapshot(
   };
 }
 
-export function buildSajuDataCacheHash(input: BirthInput, data: SajuDataV1) {
+export function buildSajuDataCacheHash(input: BirthInput, data: SajuDataV1 | SajuDataV2) {
   const snapshot = buildInterpretSajuDataSnapshot(input, data);
 
   return `saju_${stableHash(stableStringify(snapshot))}`;
 }
 
-export function buildReadingIdentityHash(input: BirthInput, data: SajuDataV1, userId?: string | null) {
+export function buildReadingIdentityHash(input: BirthInput, data: SajuDataV1 | SajuDataV2, userId?: string | null) {
   return `reading_${stableHash(
     stableStringify({
       userId: userId ?? 'anonymous',
