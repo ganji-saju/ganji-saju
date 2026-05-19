@@ -9,6 +9,8 @@ import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
 import { getTwelveStage } from '@/domain/saju/engine/saju-data-v1';
 // 2026-05-19 PR-A Task 3: cycle 천간 → 일간 대비 십성 추출 helper. PR-B 본문 분기 input.
 import { getCycleSipsin } from '@/lib/saju/cycle-sipsin';
+// 2026-05-19 P0d: 본문 한자 ganzi (丙申) → 한글 (병신) 변환.
+import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { buildSajuReport } from './build-report';
 import { buildYearlyReport } from './build-yearly-report';
 import type {
@@ -346,7 +348,7 @@ function buildChapterBodyText(
 }
 
 function head_open(cycle: SajuMajorLuckCycle): string {
-  return `${cycle.ganzi} 대운에는`;
+  return `${toKoreanGanzi(cycle.ganzi)} 대운에는`;
 }
 
 // 2026-05-19 PR-B Task 6: 십성별 mental nuance — buildMentalText 에 한 줄 추가.
@@ -512,29 +514,30 @@ import { glossaryHint, MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 // 마케팅을 시스템화") 처럼 명리 키를 일상 행동으로 번역.
 
 // (1) 부족 오행 사전 — weakest element 기반.
+// 2026-05-19 P0d: 한자 오행 (木火土金水) → 한글 자연 단어 (새싹/햇살/흙/쇠/물).
 const SHORTAGE_ACTION_DICT: Record<Element, PracticalAction> = {
   목: {
-    reason: '木 기운이 약해 새 시작·성장의 결이 흐려지는 패턴',
+    reason: '새싹 기운이 약해 새 시작·성장의 결이 흐려지는 패턴',
     what: '새 일·공부 한 가지를 작게 시작해 성장 결을 채우기',
     how: '매주 새 책 1장씩 + 안 만나본 결의 사람 1명. 시작을 미루지 않는 것이 핵심.',
   },
   화: {
-    reason: '火 기운이 약해 표현·노출·인정의 결이 부족한 패턴',
+    reason: '햇살 기운이 약해 표현·노출·인정의 결이 부족한 패턴',
     what: '마음과 결과를 짧게라도 먼저 표현하기',
     how: '주 1회 짧은 발표·SNS 한 줄·동료에게 안부 메시지. "혼자만의 깊이"를 풀어내는 통로 1개 고정.',
   },
   토: {
-    reason: '土 기운이 약해 생활 기반·리듬이 흔들리는 패턴',
+    reason: '흙 기운이 약해 생활 기반·리듬이 흔들리는 패턴',
     what: '고정비 / 일정 / 약속을 정돈해 기반 다지기',
     how: '매일 같은 시간 기상 + 매주 가계부·일정표 1줄 점검. 흩어진 일을 한 곳에 모아 정리.',
   },
   금: {
-    reason: '金 기운이 약해 기준·결단·마무리가 모호한 패턴',
+    reason: '쇠 기운이 약해 기준·결단·마무리가 모호한 패턴',
     what: '우선순위와 거절의 기준 명확히 세우기',
     how: '주간 회고 노트에 "할 일 3 / 안 할 일 3" 적기. 애매한 약속은 처음부터 자르기.',
   },
   수: {
-    reason: '水 기운이 약해 정보·휴식·생각 정리가 부족한 패턴',
+    reason: '물 기운이 약해 정보·휴식·생각 정리가 부족한 패턴',
     what: '잠·자료·이동 계획으로 흐름을 정돈',
     how: '주 1회 "정보의 날" 고정 + 7시간 수면 + 결정 직전 30분 산책. 충분히 비워두고 결정.',
   },
@@ -543,27 +546,27 @@ const SHORTAGE_ACTION_DICT: Record<Element, PracticalAction> = {
 // (2) 과다 오행 사전 — dominant element 기반.
 const EXCESS_ACTION_DICT: Record<Element, PracticalAction> = {
   목: {
-    reason: '木 기운이 과해 새 일을 너무 많이 벌리는 패턴',
+    reason: '새싹 기운이 과해 새 일을 너무 많이 벌리는 패턴',
     what: '시작한 일 중 한 가지를 끝까지 마무리',
     how: '주말은 새 일 X. 미뤄둔 일 한 가지만 잡고 끝까지. 끝낸 후 시작.',
   },
   화: {
-    reason: '火 기운이 과해 감정·속도가 결정보다 앞서는 패턴',
+    reason: '햇살 기운이 과해 감정·속도가 결정보다 앞서는 패턴',
     what: '결정 전 한 박자 호흡',
     how: '큰 메시지·결제·약속은 1시간 묵힌 뒤 다시 읽고 보내기. 즉답 X.',
   },
   토: {
-    reason: '土 기운이 과해 고집·무게가 변화 결을 막는 패턴',
+    reason: '흙 기운이 과해 고집·무게가 변화 결을 막는 패턴',
     what: '한 가지 새 환경을 의식적으로 받아들이기',
     how: '월 1회 새 동선·새 식당·새 사람 1명. "원래 이렇게 해왔어요" 라는 말 줄이기.',
   },
   금: {
-    reason: '金 기운이 과해 차갑게 잘라내는 말·결정이 관계의 온도를 떨어뜨리는 패턴',
+    reason: '쇠 기운이 과해 차갑게 잘라내는 말·결정이 관계의 온도를 떨어뜨리는 패턴',
     what: '결단 옆에 관계 온도 한 줄 더하기',
     how: '주 1회 감사·안부 메시지. 거절 시 "안 됩니다" 대신 "이번엔 어렵고 다음엔" 변환.',
   },
   수: {
-    reason: '水 기운이 과해 생각이 길어 실행이 늦는 패턴',
+    reason: '물 기운이 과해 생각이 길어 실행이 늦는 패턴',
     what: '정보 수집 마감 시간 설정',
     how: '결정 전 정보 수집은 30분 안에 마감. 그 후엔 부족해도 행동 1번 → 보완.',
   },
@@ -926,9 +929,10 @@ function buildClosingNoteText(
 ): string {
   const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
   const head = isCurrent
-    ? `${cycle.ganzi} 대운이 진행 중인 지금, `
-    : `${cycle.ganzi} 대운이 다가오면, `;
-  const base = `${head}절대 무리해서 한 번에 결정하지 마세요. 반드시 ${supportLabel} 결을 생활 루틴에 두고, 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
+    ? `${toKoreanGanzi(cycle.ganzi)} 대운이 진행 중인 지금, `
+    : `${toKoreanGanzi(cycle.ganzi)} 대운이 다가오면, `;
+  // 2026-05-19 P0d: 안심하고 보기 정책 — '절대' / '반드시' 같은 단정·강요 표현 제거.
+  const base = `${head}한꺼번에 결정하지 않는 편이 좋습니다. ${supportLabel} 결을 생활 루틴에 두고 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
   // 2026-05-15 PR 7 응답 1 — 12운성 마지막 한마디 cue.
   const stageEntry = twelveStage
     ? (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage]
