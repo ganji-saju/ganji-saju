@@ -42,9 +42,16 @@ function isProductionDeploy(): boolean {
   return process.env.VERCEL_ENV === 'production';
 }
 
-function getEnv(key: string): string {
-  const raw = process.env[key];
-  return typeof raw === 'string' ? raw.trim() : '';
+/**
+ * 2026-05-20 — Hydration mismatch fix:
+ *   기존 getEnv(key: string) 는 process.env[key] 동적 접근 사용 →
+ *   Webpack/Turbopack 의 NEXT_PUBLIC_* inline 이 정적 접근 (process.env.X) 만
+ *   지원하므로 client 번들에서는 undefined 가 됐다.
+ *   server: 실제 env 값 / client: undefined → SSR ↔ CSR HTML 불일치 (SiteFooter dl).
+ *   해결: 각 키를 정적으로 직접 접근 — 빌드 타임에 client 번들에 inline 보장.
+ */
+function readEnv(value: string | undefined): string {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 /**
@@ -53,7 +60,11 @@ function getEnv(key: string): string {
  */
 export function assertProductionBusinessEnv(): void {
   if (!isProductionDeploy()) return;
-  const missing = REQUIRED_PRODUCTION_KEYS.filter(([key]) => !getEnv(key));
+  // server 전용 검증 — 정적 객체 BUSINESS_INFO 의 값 직접 확인.
+  const missing = REQUIRED_PRODUCTION_KEYS.filter(([key]) => {
+    const value = BUSINESS_INFO[ENV_KEY_TO_FIELD[key]];
+    return !value;
+  });
   if (missing.length === 0) return;
 
   const lines = missing.map(([key, label]) => `  - ${key} (${label})`);
@@ -68,31 +79,48 @@ export function assertProductionBusinessEnv(): void {
   );
 }
 
-// import 시점 자동 검증 — production build / SSR boot 단계에서 누락 검출.
-assertProductionBusinessEnv();
-
 /**
  * typed 사업자 정보 export.
  *
  * production: 모든 required 값이 채워짐 (가드 통과).
  * dev / preview: 비어 있을 수 있음 — UI 는 빈 문자열 표기 (placeholder 절대 금지 = 사용자 directive).
+ *
+ * 2026-05-20 fix: process.env.NEXT_PUBLIC_* 정적 접근으로 client 번들에 inline 보장.
  */
 export const BUSINESS_INFO = {
-  companyName: getEnv('NEXT_PUBLIC_COMPANY_NAME'),
-  ceoName: getEnv('NEXT_PUBLIC_CEO_NAME'),
-  businessRegistrationNumber: getEnv('NEXT_PUBLIC_BUSINESS_REGISTRATION_NUMBER'),
-  mailOrderRegistrationNumber: getEnv('NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER'),
-  address: getEnv('NEXT_PUBLIC_BUSINESS_ADDRESS'),
-  phone: getEnv('NEXT_PUBLIC_CS_PHONE'),
-  email: getEnv('NEXT_PUBLIC_CS_EMAIL'),
-  csHours: getEnv('NEXT_PUBLIC_CS_HOURS'),
-  privacyOfficerName: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_NAME'),
-  privacyOfficerEmail: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL'),
+  companyName: readEnv(process.env.NEXT_PUBLIC_COMPANY_NAME),
+  ceoName: readEnv(process.env.NEXT_PUBLIC_CEO_NAME),
+  businessRegistrationNumber: readEnv(process.env.NEXT_PUBLIC_BUSINESS_REGISTRATION_NUMBER),
+  mailOrderRegistrationNumber: readEnv(process.env.NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER),
+  address: readEnv(process.env.NEXT_PUBLIC_BUSINESS_ADDRESS),
+  phone: readEnv(process.env.NEXT_PUBLIC_CS_PHONE),
+  email: readEnv(process.env.NEXT_PUBLIC_CS_EMAIL),
+  csHours: readEnv(process.env.NEXT_PUBLIC_CS_HOURS),
+  privacyOfficerName: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_NAME),
+  privacyOfficerEmail: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL),
   // 선택값: 비어 있으면 phone fallback 으로 사용 (UI 처리).
-  privacyOfficerPhone: getEnv('NEXT_PUBLIC_PRIVACY_OFFICER_PHONE'),
+  privacyOfficerPhone: readEnv(process.env.NEXT_PUBLIC_PRIVACY_OFFICER_PHONE),
   // 선택값: 사업자정보 공시 URL (없으면 푸터에 링크 미표시).
-  businessInfoVerificationUrl: getEnv('NEXT_PUBLIC_BUSINESS_INFO_VERIFICATION_URL'),
+  businessInfoVerificationUrl: readEnv(process.env.NEXT_PUBLIC_BUSINESS_INFO_VERIFICATION_URL),
 } as const;
+
+/** assertProductionBusinessEnv 가 REQUIRED_PRODUCTION_KEYS 의 env key 를 BUSINESS_INFO field 로 매핑. */
+const ENV_KEY_TO_FIELD = {
+  NEXT_PUBLIC_COMPANY_NAME: 'companyName',
+  NEXT_PUBLIC_CEO_NAME: 'ceoName',
+  NEXT_PUBLIC_BUSINESS_REGISTRATION_NUMBER: 'businessRegistrationNumber',
+  NEXT_PUBLIC_MAIL_ORDER_REGISTRATION_NUMBER: 'mailOrderRegistrationNumber',
+  NEXT_PUBLIC_BUSINESS_ADDRESS: 'address',
+  NEXT_PUBLIC_CS_PHONE: 'phone',
+  NEXT_PUBLIC_CS_EMAIL: 'email',
+  NEXT_PUBLIC_CS_HOURS: 'csHours',
+  NEXT_PUBLIC_PRIVACY_OFFICER_NAME: 'privacyOfficerName',
+  NEXT_PUBLIC_PRIVACY_OFFICER_EMAIL: 'privacyOfficerEmail',
+} as const satisfies Record<string, keyof typeof BUSINESS_INFO>;
+
+// import 시점 자동 검증 — production build / SSR boot 단계에서 누락 검출.
+//   BUSINESS_INFO 정의 이후 호출 (위 객체 / 매핑 표 의존성).
+assertProductionBusinessEnv();
 
 export type BusinessInfo = typeof BUSINESS_INFO;
 

@@ -95,8 +95,14 @@ export default function RootLayout({
       data-reading-comfort="standard"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      {/* 2026-05-20 — React 19/Next 16: <body> 안의 <script> 는 client 컴포넌트
+          렌더 시 실행되지 않고 경고 ("Encountered a script tag while rendering
+          React component") 발생. layout mode FOUC 차단용 inline script 는
+          render-blocking 으로 <head> 에 두어야 한다. */}
+      <head>
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
+      </head>
+      <body className="min-h-full flex flex-col">
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
         {children}
