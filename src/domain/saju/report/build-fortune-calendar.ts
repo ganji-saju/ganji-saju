@@ -3,6 +3,7 @@ import {
   calculateSajuDataV1,
   type SajuDataV1,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuReport } from './build-report';
 import { ELEMENT_INFO, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
 import type { BirthInput } from '@/lib/saju/types';
@@ -155,7 +156,7 @@ function pickDateLabels(
 
 function createDayEntryDraft(
   input: BirthInput,
-  sourceData: SajuDataV1,
+  sourceData: SajuDataV1 | SajuDataV2,
   year: number,
   month: number,
   day: number
@@ -333,7 +334,7 @@ function buildWeeks(days: FortuneCalendarDayEntry[]): FortuneCalendarWeekRow[] {
 
 export function buildFortuneCalendarMonth(
   input: BirthInput,
-  sourceData: SajuDataV1,
+  sourceData: SajuDataV1 | SajuDataV2,
   year: number,
   month: number
 ): FortuneCalendarMonthReport {

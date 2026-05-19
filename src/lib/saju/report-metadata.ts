@@ -5,6 +5,7 @@ import type {
   SajuPendingSection,
   SajuComputationSource,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   buildReadingIdentityHash,
   buildSajuDataCacheHash,
@@ -111,7 +112,7 @@ function normalizeComputation(metadata: SajuComputationMetadata) {
 
 export function buildPersistedSajuReadingMetadata(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   grounding: SajuInterpretationGrounding,
   kasiComparison: KasiSingleInputComparison | null,
   options: {

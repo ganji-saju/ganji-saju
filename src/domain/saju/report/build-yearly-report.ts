@@ -3,6 +3,7 @@ import {
   calculateSajuDataV1,
   type SajuDataV1,
 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   ELEMENT_INFO,
   getLuckyElementsFromSajuData,
@@ -220,7 +221,7 @@ const YEARLY_CATEGORY_LABEL: Record<YearlyCategoryKey, string> = {
 interface MonthlyEvidenceBundle {
   month: number;
   referenceDate: string;
-  data: SajuDataV1;
+  data: SajuDataV1 | SajuDataV2;
   context: YearlyFlowContext;
   reports: ReturnType<typeof getReportMap>;
   categories: Record<YearlyCategoryKey, YearlyCategorySection>;
@@ -303,7 +304,7 @@ function toYearlyReferenceDate(targetYear: number, month = 6) {
   return `${targetYear}-${String(month).padStart(2, '0')}-15T12:00:00.000Z`;
 }
 
-function getYearGanji(targetYear: number, targetData: SajuDataV1) {
+function getYearGanji(targetYear: number, targetData: SajuDataV1 | SajuDataV2) {
   return (
     targetData.currentLuck?.saewoon?.ganzi ??
     Solar.fromYmd(targetYear, 6, 15).getLunar().getYearInGanZhi()
@@ -335,7 +336,7 @@ function createReferenceReport(
   };
 }
 
-function getReportMap(input: BirthInput, targetData: SajuDataV1) {
+function getReportMap(input: BirthInput, targetData: SajuDataV1 | SajuDataV2) {
   const today = buildSajuReport(input, targetData, 'today');
   const love = buildSajuReport(input, targetData, 'love');
   const wealth = buildSajuReport(input, targetData, 'wealth');
@@ -347,7 +348,7 @@ function getReportMap(input: BirthInput, targetData: SajuDataV1) {
 
 function buildMonthlyEvidence(
   input: BirthInput,
-  sourceData: SajuDataV1,
+  sourceData: SajuDataV1 | SajuDataV2,
   targetYear: number,
   month: number
 ): MonthlyEvidenceBundle {
@@ -374,7 +375,7 @@ function buildMonthlyEvidence(
 
 function createYearlyContext(
   targetYear: number,
-  targetData: SajuDataV1
+  targetData: SajuDataV1 | SajuDataV2
 ): YearlyFlowContext {
   const supportElements = getLuckyElementsFromSajuData(targetData);
   const cautionElements = [targetData.fiveElements.weakest];
@@ -409,7 +410,7 @@ function createComputationMeta(
 
 function createYearlyKeywords(
   context: YearlyFlowContext,
-  targetData: SajuDataV1
+  targetData: SajuDataV1 | SajuDataV2
 ): YearlyKeyword[] {
   const dominant = getElementShortLabel(targetData.fiveElements.dominant);
   const weakest = getElementShortLabel(targetData.fiveElements.weakest);
@@ -440,7 +441,7 @@ function createYearlyKeywords(
 function createOverview(
   context: YearlyFlowContext,
   reports: ReturnType<typeof getReportMap>,
-  targetData: SajuDataV1
+  targetData: SajuDataV1 | SajuDataV2
 ) {
   const personality = getPersonalityFromSajuData(targetData);
   const support = formatElementList(context.supportElements);
@@ -527,7 +528,7 @@ function createCategorySectionFromReport(
 
 function createHealthSection(
   reports: ReturnType<typeof getReportMap>,
-  targetData: SajuDataV1,
+  targetData: SajuDataV1 | SajuDataV2,
   context: YearlyFlowContext
 ): YearlyCategorySection {
   const dominant = getElementShortLabel(targetData.fiveElements.dominant);
@@ -586,7 +587,7 @@ function createMoveSection(
 
 function createCategorySections(
   reports: ReturnType<typeof getReportMap>,
-  targetData: SajuDataV1,
+  targetData: SajuDataV1 | SajuDataV2,
   context: YearlyFlowContext
 ): Record<YearlyCategoryKey, YearlyCategorySection> {
   return {
@@ -854,7 +855,7 @@ function createOneLineSummary(
 
 export function buildYearlyReport(
   input: BirthInput,
-  data: SajuDataV1,
+  data: SajuDataV1 | SajuDataV2,
   targetYear: number
 ): SajuYearlyReport {
   const timezone = data.input.timezone || input.birthLocation?.timezone || 'Asia/Seoul';

@@ -13,6 +13,7 @@ import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 // 2026-05-15 cleanup — 총평 §1.5 일주 캐릭터 카드를 성향 탭으로 이전.
 // "내 타고난 결" sixtyGapja 깊은 풀이는 성향 탭이 더 자연스러움 ("성향 = 타고난 결").
@@ -81,7 +82,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   const branch = data.pillars.year.branch;
   return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
 }

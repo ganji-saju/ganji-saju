@@ -1,4 +1,5 @@
 import type { SajuDataV1, SajuMajorLuckCycle, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   ELEMENT_INFO,
   getLuckyElementsFromSajuData,
@@ -1070,7 +1071,7 @@ function findWonjinSlots(
 
 export function buildLifetimeReport(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   targetYear = getCurrentKoreaYear(),
   // 2026-05-15 PR 2: 사용자 현재 상황 (PR 1 으로 personalizationContext 에 흐름 확보됨).
   // 대운 cycle 8단 sub-section 의 hook/relationship/wealthCareer 분기에 사용.

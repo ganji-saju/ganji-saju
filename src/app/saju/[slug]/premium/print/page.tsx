@@ -16,6 +16,7 @@ import {
 } from '@/lib/supabase/server';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 // Redesign 2026-05-13 (Claude Design / screens-d.jsx ScreenPdfPrint + screens-f.jsx ScreenPdfPage2):
@@ -60,7 +61,7 @@ const TEN_GOD_HANJA: Record<TenGodCode, string> = {
   정인: '正印',
 };
 
-function getTenGodPercentages(data: SajuDataV1) {
+function getTenGodPercentages(data: SajuDataV1 | SajuDataV2) {
   const byType = data.tenGods?.byType;
   if (!byType) return [];
   const total = Object.values(byType).reduce((sum, v) => sum + v, 0);

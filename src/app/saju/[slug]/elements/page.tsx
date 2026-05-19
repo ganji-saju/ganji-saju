@@ -13,6 +13,7 @@ import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
 import type { Element } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -79,12 +80,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-function getYearZodiac(data: SajuDataV1): ZodiacKey {
+function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   const branch = data.pillars.year.branch;
   return BRANCH_TO_ZODIAC[branch] ?? 'dragon';
 }
 
-function buildDonutGradient(data: SajuDataV1): string {
+function buildDonutGradient(data: SajuDataV1 | SajuDataV2): string {
   const byElement = data.fiveElements.byElement;
   const ordered = ELEMENT_ORDER.map((el) => ({
     el,

@@ -13,6 +13,7 @@ import {
 } from '@/domain/saju/report/interpretation-rule-table';
 import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-calendar';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { MoonlightCounselorId } from '@/lib/counselors';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import { selectUpsell } from '@/lib/upsell';
@@ -879,7 +880,7 @@ const TODAY_BRANCH_ELEMENTS: Record<string, Element> = {
 };
 
 export function getTodayPillarSnapshot(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options?: { now?: Date }
 ): TodayPillarSnapshot {
   // 2026-05-18 root cause fix (E2E saju.spec.ts:157 회귀):
@@ -947,7 +948,7 @@ function calculateTodayElementDelta(
 
 export function buildDailyDelta(
   todayPillar: TodayPillarSnapshot,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ): number {
   const myEl = sajuData.dayMaster?.element ?? null;
   if (!myEl) return 0;
@@ -960,7 +961,7 @@ export function buildDailyDelta(
 // dailyDelta 단순 부호가 아니라 element 종류와 관계 (인성/관살/식상/재성/같음) 별 카피.
 function buildTodayFlowSignal(
   todayPillar: TodayPillarSnapshot,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ): string {
   const myEl = sajuData.dayMaster?.element;
   if (!myEl || (!todayPillar.stemElement && !todayPillar.branchElement)) {
@@ -1101,7 +1102,7 @@ export function buildConditionScore(
   todayReport: SajuReport,
   loveReport: SajuReport,
   wealthReport: SajuReport,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ) {
   const overall = getScore(todayReport, 'overall')?.score ?? 70;
   const love = getScore(loveReport, 'love')?.score ?? overall;
@@ -1149,7 +1150,7 @@ function buildTodayGroundingSummary(
   grounding: SajuInterpretationGrounding | null | undefined,
   kasiComparison: KasiSingleInputComparison | null | undefined,
   focusReport: SajuReport,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ) {
   const evidenceCards =
     focusReport.focusTopic === 'today'
@@ -1197,13 +1198,13 @@ function normalizeElement(value: string | null | undefined): Element | null {
   return matched ?? null;
 }
 
-function getPrimarySupportElement(sajuData: SajuDataV1) {
+function getPrimarySupportElement(sajuData: SajuDataV1 | SajuDataV2) {
   return normalizeElement(sajuData.yongsin?.primary?.value ?? sajuData.yongsin?.primary?.label);
 }
 
 function buildSignatureSeed(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>,
   todayPillar: TodayPillarSnapshot
 ) {
@@ -1276,7 +1277,7 @@ function buildLocationCue(input: BirthInput) {
 
 function buildPublicTodayProfile(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options: Pick<TodayFortuneBuildOptions, 'calendarType' | 'timeRule'>,
   todayPillar: TodayPillarSnapshot
 ): PublicTodayProfile {
@@ -1688,7 +1689,7 @@ function getEvidenceActionHints(
   return uniqueStrings(getTodayEvidenceCard(report, type)?.practicalActions ?? [], limit);
 }
 
-function getLuckFactLine(sajuData: SajuDataV1) {
+function getLuckFactLine(sajuData: SajuDataV1 | SajuDataV2) {
   return compactStrings([
     sajuData.currentLuck?.currentMajorLuck?.ganzi
       ? `${sajuData.currentLuck.currentMajorLuck.ganzi} 큰 흐름`
@@ -1708,7 +1709,7 @@ function getTimeBlockBaseScore(report: SajuReport) {
 }
 
 function getTimeBlockCalculatedAt(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   block: (typeof TIME_BLOCKS)[number]
 ) {
   const baseDate = new Date(sajuData.metadata.calculatedAt);
@@ -1722,7 +1723,7 @@ function getTimeBlockCalculatedAt(
 }
 
 function parseTimeBlockPillar(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   block: (typeof TIME_BLOCKS)[number]
 ) {
   const calculatedAt = getTimeBlockCalculatedAt(sajuData, block);
@@ -1772,7 +1773,7 @@ function describeBranchRelation(left: Branch, right: Branch) {
 
 function getTimeBlockRelationImpact(
   blockBranch: Branch,
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ) {
   const natalBranches = [
     { slot: '시주', branch: sajuData.pillars.hour?.branch ?? null, weight: 0.9 },
@@ -1823,7 +1824,7 @@ function getTimeBlockRelationImpact(
   };
 }
 
-function getTimeBlockElementImpact(sajuData: SajuDataV1, stemElement: Element, branchElement: Element) {
+function getTimeBlockElementImpact(sajuData: SajuDataV1 | SajuDataV2, stemElement: Element, branchElement: Element) {
   const primaryElement = (sajuData.yongsin?.primary?.value as Element | undefined) ?? null;
   const supportElements = (sajuData.yongsin?.secondary ?? []).map((item) => item.value as Element);
   const cautionElements = (sajuData.yongsin?.kiyshin ?? []).map((item) => item.value as Element);
@@ -1941,7 +1942,7 @@ function getDailyBlockBias(startHour: number, ctx?: DailyContext | null): number
 function buildTimeBlockEvaluations(
   concernId: ConcernId,
   report: SajuReport,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   dailyContext?: DailyContext | null
 ) {
   const baseScore = getTimeBlockBaseScore(report);
@@ -2170,7 +2171,7 @@ function toTodayScores(
 function buildTimeWindows(
   concernId: ConcernId,
   report: SajuReport,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   type: 'favorable' | 'caution',
   dailyContext?: DailyContext | null
 ): TodayTimeWindow[] {
@@ -2190,7 +2191,7 @@ function buildTimeWindows(
 function buildScenarioComparison(
   concernId: ConcernId,
   report: SajuReport,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
@@ -2243,7 +2244,7 @@ function buildScenarioComparison(
 function buildEvidenceLines(
   focusReport: SajuReport,
   todayReport: SajuReport,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   unknownBirthTime: boolean
 ) {
   const lines = [
@@ -2334,7 +2335,7 @@ const DAILY_AVOID_VARIANTS: Record<DailyRelationKind, string[]> = {
   ],
 };
 
-function pickDailyLeadCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1) {
+function pickDailyLeadCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1 | SajuDataV2) {
   if (!dailyContext) return null;
   const myEl = sajuData.dayMaster?.element ?? null;
   const todayEl =
@@ -2343,7 +2344,7 @@ function pickDailyLeadCopy(dailyContext: DailyContext | null | undefined, sajuDa
   return pickVariant(DAILY_LEAD_VARIANTS[kind], dailyContext.signatureSeed, 17);
 }
 
-function pickDailyAvoidCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1) {
+function pickDailyAvoidCopy(dailyContext: DailyContext | null | undefined, sajuData: SajuDataV1 | SajuDataV2) {
   if (!dailyContext) return null;
   const myEl = sajuData.dayMaster?.element ?? null;
   const todayEl =
@@ -2355,7 +2356,7 @@ function pickDailyAvoidCopy(dailyContext: DailyContext | null | undefined, sajuD
 function buildRecommendedActions(
   concernId: ConcernId,
   focusReport: SajuReport,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
@@ -2387,7 +2388,7 @@ function buildAvoidActions(
   concernId: ConcernId,
   focusReport: SajuReport,
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   dailyContext?: DailyContext | null
 ) {
   const concernCopy = CONCERN_WINDOW_COPY[concernId];
@@ -2419,7 +2420,7 @@ function buildAvoidActions(
 // yongsin.primary 가 type='element' 면 value 직사용, type='stem'/'branch' 면 매핑.
 // 없으면 사주 최약 오행을 lucky 로, 최강 오행을 unlucky 로 fallback.
 export function deriveLuckyElements(
-  sajuData: SajuDataV1
+  sajuData: SajuDataV1 | SajuDataV2
 ): { lucky: '목' | '화' | '토' | '금' | '수'; unlucky: '목' | '화' | '토' | '금' | '수' | null } {
   type Elem = '목' | '화' | '토' | '금' | '수';
   const yongsin = sajuData.yongsin;
@@ -2477,7 +2478,7 @@ function computeDayGanziIndex(dayStem: string, dayBranch: string): number {
 }
 
 function buildSajuChartSnapshot(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   todayGanzi: string | null,
   todayStem: string | null,
   todayBranch: string | null,
@@ -2574,7 +2575,7 @@ function buildSajuChartSnapshot(
 
 export function buildTodayFortuneFreeResult(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options: TodayFortuneBuildOptions
 ): TodayFortuneFreeResult {
   const concern = getTodayConcern(options.concernId);
@@ -2745,7 +2746,7 @@ export function buildTodayFortuneFreeResult(
 
 // 2026-05-15 PR 3 — SajuDataV1 → iljin-score-engine 의 SajuOriginInput 변환.
 export function buildSajuOriginForIljin(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   yongsinEl: '목' | '화' | '토' | '금' | '수',
   kishinEl: '목' | '화' | '토' | '금' | '수' | null
 ): SajuOriginInput {
@@ -2777,7 +2778,7 @@ export function buildSajuOriginForIljin(
 // getTodayPillarSnapshot + deriveLuckyElements + buildSajuOriginForIljin + calculateIljinScore
 // 4단계를 묶어 하나의 호출로. 시 미입력 등 todayPillar 부족 시 null 반환.
 export function computeSajuIljinScore(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   options?: { now?: Date }
 ) {
   const todayPillar = getTodayPillarSnapshot(sajuData, options);
@@ -2792,7 +2793,7 @@ export function computeSajuIljinScore(
 
 export function buildTodayFortunePremiumResult(
   input: BirthInput,
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   concernId: ConcernId,
   grounding?: SajuInterpretationGrounding | null,
   kasiComparison?: KasiSingleInputComparison | null,
