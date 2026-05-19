@@ -19,6 +19,9 @@ import type {
 import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
 import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
 import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
+// 2026-05-19 fix — 일진 ganzi 기반 통일 점수 helper (사주 메인/상세/오늘 운세와 동일).
+//   PR #179/#180/#181 의 통일에서 fortune-calendar 만 누락된 경로를 fix.
+import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 
 // 한자 ganzi → 한글.
 const STEM_KOR: Record<string, string> = {
@@ -169,7 +172,15 @@ function createDayEntryDraft(
     engineVersion: 'legacy-typescript-v1-fortune-calendar',
   });
   const report = buildSajuReport(input, data, 'today');
-  const overall = report.scores.find((item) => item.key === 'overall')?.score ?? 68;
+  // 2026-05-19 fix: 일진 ganzi 기반 통일 점수 (사주 메인/상세/오늘 운세와 동일 helper).
+  //   기존 buildSajuReport.scores.overall 은 사주 원국 + 사용자 생일만 의존 →
+  //   calculatedAt(그 날) 영향 0 → 한 달 30+ 일이 모두 같은 점수로 노출되던 버그.
+  //   PR #179/#180/#181 의 통일에서 fortune-calendar 만 누락된 경로를 fix.
+  const iljinScoreResult = computeSajuIljinScore(sourceData, { now: new Date(referenceDate) });
+  const overall =
+    iljinScoreResult?.totalScore ??
+    report.scores.find((item) => item.key === 'overall')?.score ??
+    68;
   const supportLabels = getLuckyElementsFromSajuData(data)
     .map((element) => ELEMENT_INFO[element].name.split(' ')[0])
     .join(' · ');
