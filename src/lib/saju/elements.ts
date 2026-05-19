@@ -9,37 +9,45 @@ import type { Element, Stem, SajuResult } from './types';
 // 2026-05-16 — 기존 한 단어 라벨 ("성장 기운" 등) 을 두 단어로 교체했으나
 //   "X과 Y" 패턴이 한국어 조사 충돌 일으켜 다시 재설계 (위 2026-05-19 작업).
 export const ELEMENT_INFO: Record<Element, {
+  /** 전체 자연 비유 라벨 (예: '쇠의 결') — 카드 제목 / 단독 표시용 */
   name: string;
+  /** 한 단어 키워드 (예: '쇠') — 본문 합성용 ("쇠 기운", "쇠의 결이...") */
+  keyword: string;
   color: string;
   traits: string[];
   keywords: string[];
 }> = {
   목: {
     name: '새싹의 결',
+    keyword: '새싹',
     color: '#4CAF50',
     traits: ['성장', '발전', '창의성', '인자함'],
     keywords: ['새 시작', '추진력', '도전', '관계 확장', '봄'],
   },
   화: {
     name: '햇살의 결',
+    keyword: '햇살',
     color: '#F44336',
     traits: ['열정', '예의', '표현력', '통찰력'],
     keywords: ['열정', '활기', '표현', '결정', '여름'],
   },
   토: {
     name: '흙의 결',
+    keyword: '흙',
     color: '#FF9800',
     traits: ['신뢰', '안정', '중재력', '포용력'],
     keywords: ['안정감', '중심', '신뢰', '균형', '기반'],
   },
   금: {
     name: '쇠의 결',
+    keyword: '쇠',
     color: '#9E9E9E',
     traits: ['결단력', '의리', '정의감', '추진력'],
     keywords: ['결단력', '마무리', '판단', '원칙', '가을'],
   },
   수: {
     name: '물의 결',
+    keyword: '물',
     color: '#2196F3',
     traits: ['지혜', '유연성', '직관력', '깊이'],
     keywords: ['지혜', '유연함', '깊이', '회복', '겨울'],
