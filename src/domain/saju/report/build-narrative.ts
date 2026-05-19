@@ -161,11 +161,13 @@ function buildHeadline({
   dayKorean: string;
   patternName: string | null;
 }): string {
+  // 2026-05-19 B06 fix: '${sixtyGapjaTitle} · ${patternName}' 합성이 화면에 '흙·정인격'
+  //   같이 일상어와 명리 술어를 점(·) 으로 묶어 어색했던 표기 해소. 자연 한국어로 연결.
   if (sixtyGapjaTitle && patternName) {
-    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle} · ${patternName}의 결을 가진 사주입니다.`;
+    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}에 ${patternName}의 결을 가진 사주입니다.`;
   }
   if (sixtyGapjaTitle) {
-    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle} 결을 가진 사주입니다.`;
+    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}의 결을 가진 사주입니다.`;
   }
   if (patternName) {
     return `${dayKorean || dayGanzi}일주, ${patternName}의 결이 분명한 사주입니다.`;
