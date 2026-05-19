@@ -1,9 +1,9 @@
 import { Solar } from 'lunar-typescript';
 import {
-  calculateSajuDataV1,
+  loadSajuDataV2,
   type SajuDataV1,
-} from '@/domain/saju/engine/saju-data-v1';
-import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
+  type SajuDataV2,
+} from '@/domain/saju/engine';
 import {
   ELEMENT_INFO,
   getLuckyElementsFromSajuData,
@@ -353,10 +353,10 @@ function buildMonthlyEvidence(
   month: number
 ): MonthlyEvidenceBundle {
   const referenceDate = toYearlyReferenceDate(targetYear, month);
-  const data = calculateSajuDataV1(input, {
+  const data = loadSajuDataV2(input, null, {
     timezone: sourceData.input.timezone,
     location: sourceData.input.location,
-    calculatedAt: referenceDate,
+    now: referenceDate,
     engineVersion: 'legacy-typescript-v1-yearly-monthly',
   });
   const context = createYearlyContext(targetYear, data);
@@ -860,10 +860,10 @@ export function buildYearlyReport(
 ): SajuYearlyReport {
   const timezone = data.input.timezone || input.birthLocation?.timezone || 'Asia/Seoul';
   const referenceDate = toYearlyReferenceDate(targetYear);
-  const targetData = calculateSajuDataV1(input, {
+  const targetData = loadSajuDataV2(input, null, {
     timezone,
     location: data.input.location ?? input.birthLocation?.label ?? null,
-    calculatedAt: referenceDate,
+    now: referenceDate,
     engineVersion: 'legacy-typescript-v1-yearly-foundation',
   });
   const rawReports = getReportMap(input, targetData);

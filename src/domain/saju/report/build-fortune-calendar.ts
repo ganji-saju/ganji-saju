@@ -1,9 +1,9 @@
 import { Solar } from 'lunar-typescript';
 import {
-  calculateSajuDataV1,
+  loadSajuDataV2,
   type SajuDataV1,
-} from '@/domain/saju/engine/saju-data-v1';
-import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
+  type SajuDataV2,
+} from '@/domain/saju/engine';
 import { buildSajuReport } from './build-report';
 import { ELEMENT_INFO, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
 import type { BirthInput } from '@/lib/saju/types';
@@ -165,10 +165,10 @@ function createDayEntryDraft(
   day: number
 ): FortuneCalendarDayDraft {
   const referenceDate = buildReferenceDate(year, month, day);
-  const data = calculateSajuDataV1(input, {
+  const data = loadSajuDataV2(input, null, {
     timezone: sourceData.input.timezone,
     location: sourceData.input.location,
-    calculatedAt: referenceDate,
+    now: referenceDate,
     engineVersion: 'legacy-typescript-v1-fortune-calendar',
   });
   const report = buildSajuReport(input, data, 'today');
