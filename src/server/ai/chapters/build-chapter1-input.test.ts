@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { upgradeSajuDataV1ToV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildChapter1Input } from './build-chapter1-input';
 
-// 2026-05-19 (a) 2-1 — SajuDataV1 → ChapterLLMInput 변환 검증.
+// 2026-05-19 (a) 2-1 — SajuDataV1 + V2 → ChapterLLMInput 변환 검증.
 
 test('buildChapter1Input — fixture 사주에서 ChapterLLMInput 정상 빌드', () => {
   const data = calculateSajuDataV1({
@@ -130,4 +131,27 @@ test('buildChapter1Input — 변환된 ChapterSaju 가 chapter-prompts 의 build
   // (직접 import 해서 검증)
   // 별도 chapter-prompts.test.ts 에서 이미 검증되므로 여기서는 input 의 chapterId 만 확인.
   assert.equal(input.chapterId, 1);
+});
+
+// 2026-05-19 — V2 호환 검증 (engine/index.ts 의 가이드: "새 코드는 가급적 v2").
+test('buildChapter1Input — SajuDataV2 객체도 받아 동일 핵심 필드 매핑', () => {
+  const v1 = calculateSajuDataV1({
+    year: 1982,
+    month: 1,
+    day: 29,
+    hour: 8,
+    gender: 'male',
+  });
+  const v2 = upgradeSajuDataV1ToV2(v1);
+
+  const inputV1 = buildChapter1Input(v1, null, { name: '테스트', age: 43 });
+  const inputV2 = buildChapter1Input(v2, null, { name: '테스트', age: 43 });
+
+  // 핵심 매핑 (pillars/dayMaster/fiveElements/pattern/strength/tenGods) 가 V1, V2 동일
+  assert.deepEqual(inputV1.saju.pillars, inputV2.saju.pillars);
+  assert.deepEqual(inputV1.saju.dayMaster, inputV2.saju.dayMaster);
+  assert.deepEqual(inputV1.saju.fiveElements, inputV2.saju.fiveElements);
+  assert.deepEqual(inputV1.saju.pattern, inputV2.saju.pattern);
+  assert.equal(inputV1.saju.strength, inputV2.saju.strength);
+  assert.deepEqual(inputV1.saju.tenGods, inputV2.saju.tenGods);
 });

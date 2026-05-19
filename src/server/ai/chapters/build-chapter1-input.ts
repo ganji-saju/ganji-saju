@@ -1,4 +1,5 @@
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type {
   ConcernCategory,
   Element,
@@ -71,7 +72,11 @@ function narrowConcern(
 }
 
 /**
- * SajuDataV1 + UserSituation 을 챕터 1 LLM 입력으로 변환.
+ * SajuDataV1 또는 SajuDataV2 + UserSituation 을 챕터 1 LLM 입력으로 변환.
+ *
+ * V2 는 V1 의 superset (V1 의 모든 핵심 필드 보존 + interpretation/verification/legacy
+ * 추가 필드). 본 함수가 사용하는 필드는 모두 V1+V2 공통이라 union 타입으로 받음.
+ * (engine/index.ts 의 공식 가이드: "새 코드는 가급적 v2 를".)
  *
  * - pillars: 한자 ganzi → 한글 (toKoreanGanzi)
  * - dayMaster: stem 한글 + element 자연 비유 라벨 ('흙의 결')
@@ -81,7 +86,7 @@ function narrowConcern(
  * - tenGods: dominant + shortageList
  */
 export function buildChapter1Input(
-  sajuData: SajuDataV1,
+  sajuData: SajuDataV1 | SajuDataV2,
   userSituation: UserSituation | null,
   options: { name?: string | null; age?: number | null } = {}
 ): ChapterLLMInput {
