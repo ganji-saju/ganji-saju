@@ -1,8 +1,8 @@
+import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import {
-  normalizeToSajuDataV1,
-  type SajuDataV1,
-} from '@/domain/saju/engine/saju-data-v1';
-import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
+  loadSajuDataV2,
+  type SajuDataV2,
+} from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuReport } from '@/domain/saju/report/build-report';
 import { COMPATIBILITY_RESULT_LABELS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import { CONTROLS, ELEMENT_INFO, GENERATES, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
@@ -836,10 +836,10 @@ export function buildCompatibilityInterpretation(
   self: CompatibilityPerson,
   partner: CompatibilityPerson
 ): CompatibilityInterpretation {
-  const selfData = normalizeToSajuDataV1(self.birthInput, null, {
+  const selfData = loadSajuDataV2(self.birthInput, null, {
     location: self.birthInput.birthLocation?.label ?? null,
   });
-  const partnerData = normalizeToSajuDataV1(partner.birthInput, null, {
+  const partnerData = loadSajuDataV2(partner.birthInput, null, {
     location: partner.birthInput.birthLocation?.label ?? null,
   });
 

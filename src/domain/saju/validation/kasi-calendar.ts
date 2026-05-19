@@ -1,5 +1,5 @@
 import { Solar } from 'lunar-typescript';
-import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput } from '@/lib/saju/types';
 
 export const KASI_LUN_CAL_INFO_ENDPOINT =
@@ -258,7 +258,7 @@ export function buildLocalCalendarComparable(input: BirthInput): LocalCalendarCo
   const minute = input.unknownTime || input.minute === undefined ? 0 : input.minute;
   const lunar = Solar.fromYmdHms(input.year, input.month, input.day, hour, minute, 0).getLunar();
   const lunarMonth = lunar.getMonth();
-  const data = normalizeToSajuDataV1(input, null);
+  const data = loadSajuDataV2(input, null);
 
   return {
     lunarYear: lunar.getYear(),

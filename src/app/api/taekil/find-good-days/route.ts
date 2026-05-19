@@ -7,7 +7,7 @@ import { findGoodDays, type TaekilPurpose } from '@/lib/taekil/find-good-days';
 import type { SajuOriginInput } from '@/lib/today-fortune/iljin-score-engine';
 import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
 import { getOptionalSignedInProfile, hasCoreBirthProfile, toBirthInputFromProfile } from '@/lib/profile';
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 
 const VALID_PURPOSES: TaekilPurpose[] = ['wedding', 'open', 'move', 'contract', 'trip', 'etc'];
 
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const sajuData = calculateSajuDataV1(birthInput);
+  const sajuData = loadSajuDataV2(birthInput, null);
 
   // SajuDataV1 → SajuOriginInput (iljin-score-engine 형식).
   const byEl = sajuData.fiveElements.byElement;

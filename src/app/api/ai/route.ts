@@ -16,7 +16,7 @@ import {
   type DialogueExpertId,
 } from '@/lib/dialogue-experts';
 import { detectSafeRedirect } from '@/domain/safety/safe-redirect';
-import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildYearlyReport } from '@/domain/saju/report';
 import {
   FOCUS_TOPIC_META,
@@ -270,7 +270,7 @@ function createDialogueProfileGrounding(
   if (!hasCoreBirthProfile(profile)) return null;
 
   const input = toBirthInputFromProfile(profile);
-  const sajuData = normalizeToSajuDataV1(input, null, {
+  const sajuData = loadSajuDataV2(input, null, {
     location: input.birthLocation?.label ?? null,
   });
   const todayReport = buildSajuReport(input, sajuData, 'today');
@@ -477,7 +477,7 @@ function createYearlyDialogueBridge(
   if (!targetYear) return null;
 
   const input = toBirthInputFromProfile(profile);
-  const sajuData = normalizeToSajuDataV1(input, null, {
+  const sajuData = loadSajuDataV2(input, null, {
     location: input.birthLocation?.label ?? null,
   });
   const yearlyReport = buildYearlyReport(input, sajuData, targetYear);

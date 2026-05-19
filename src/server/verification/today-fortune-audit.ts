@@ -1,4 +1,4 @@
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { parseBirthInputDraft } from '@/domain/saju/validators/birth-input';
 import { MOONLIGHT_ANALYTICS_EVENTS } from '@/lib/analytics-events';
 import { normalizeMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
@@ -95,7 +95,7 @@ function buildUnknownBirthTimeSample() {
 
   return {
     input: parsed.input,
-    sajuData: calculateSajuDataV1(parsed.input),
+    sajuData: loadSajuDataV2(parsed.input, null),
   };
 }
 

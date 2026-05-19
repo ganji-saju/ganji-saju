@@ -5,7 +5,7 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
-import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { BirthInput, Stem } from '@/lib/saju/types';
 import {
   listPaidReadingSnapshotsForUser,
@@ -225,7 +225,7 @@ export async function getAccountDashboardData(
             gender: reading.gender ?? undefined,
           };
 
-          const sajuData = normalizeToSajuDataV1(input, reading.result_json);
+          const sajuData = loadSajuDataV2(input, reading.result_json);
 
           return {
             dayMasterStem: sajuData.dayMaster.stem,

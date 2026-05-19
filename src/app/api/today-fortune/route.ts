@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { buildSajuInterpretationGrounding, buildSajuReport } from '@/domain/saju/report';
 import { createClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { createReading, resolveReading } from '@/lib/saju/readings';
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  const sajuData = calculateSajuDataV1(parsed.input);
+  const sajuData = loadSajuDataV2(parsed.input, null);
   const supabase = await createClient();
   const {
     data: { user },
