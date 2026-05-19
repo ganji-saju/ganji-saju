@@ -329,6 +329,83 @@
   font-weight: 800 !important;
 }
 
+/* 2026-05-20 — 모바일 dock 보강:
+   1) 본문 콘텐츠가 dock 뒤로 가려지지 않도록 body padding-bottom 확보
+   2) dock z-index 명시 (footer/floating 요소와 stacking 안정화)
+   3) active 시 indicator dot 살짝 강조 */
+@media (max-width: 767px) {
+  body {
+    /* dock 약 5.2rem + safe-area 만큼 콘텐츠 하단 여백.
+       fixed dock 뒤로 footer/콘텐츠가 가려지는 현상 차단. */
+    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.app-mobile-dock {
+  /* fixed + z-40 이지만 다른 floating 요소 (모달/sheet/toast) 와의 명확한
+     stacking 보장 위해 z-index 명시. */
+  z-index: 40;
+}
+
+.app-mobile-dock-link[data-active="true"] .app-mobile-dock-indicator {
+  /* active 진입 시 dot 강조 — 사용자 위치 인지 향상 */
+  width: 0.4rem;
+  height: 0.4rem;
+  box-shadow: 0 0 0 0.22rem rgba(255, 79, 154, 0.22);
+}
+
+/* 2026-05-20 — Scroll-to-top floating button (모든 페이지 우하단).
+   data-visible 으로 fade in/out. 모바일에선 dock 위에 위치. */
+.app-scroll-to-top {
+  position: fixed;
+  right: 1rem;
+  /* 모바일 기준: dock (약 5.2rem) 위로 여유 1.2rem */
+  bottom: calc(5.6rem + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(17, 17, 20, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--app-pink-strong);
+  box-shadow:
+    0 12px 24px -8px rgba(17, 17, 20, 0.22),
+    0 4px 10px -4px rgba(216, 27, 114, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(0.6rem);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease, background-color 0.18s ease;
+}
+
+.app-scroll-to-top[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.app-scroll-to-top:hover {
+  background: var(--app-pink);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.app-scroll-to-top:active {
+  transform: translateY(0) scale(0.92);
+}
+
+@media (min-width: 768px) {
+  .app-scroll-to-top {
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
 .gangi-report-panel,
 .app-panel,
 .app-panel-muted,

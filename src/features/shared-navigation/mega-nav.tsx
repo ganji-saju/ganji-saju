@@ -223,9 +223,16 @@ export function MegaNavBar() {
               <HeaderLogoutButton className="mega-nav-icon-btn" />
             </>
           ) : (
-            <Link href="/login" className="mega-nav-login">
-              로그인
-            </Link>
+            <>
+              {/* 2026-05-20 — 사용자 보고: PC 메가메뉴에 회원가입 진입점 부재.
+                  로그인 옆에 회원가입 ghost 버튼 추가 (CTA pair 패턴). */}
+              <Link href="/signup" className="mega-nav-signup">
+                회원가입
+              </Link>
+              <Link href="/login" className="mega-nav-login">
+                로그인
+              </Link>
+            </>
           )}
         </div>
       </header>
