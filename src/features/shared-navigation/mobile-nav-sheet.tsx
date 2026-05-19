@@ -4,12 +4,18 @@
 //      부모 컨테이너의 transform/filter/contain 이 position:fixed 를 깨는 케이스.
 //      Portal 로 body 에 직접 마운트하면 부모 영향 0.
 //      또한 사용자가 "정가운데 또는 상단" 을 선호 → top sheet 채택 (햄버거 우상단에서 자연스럽게 펼침).
+//
+// 2026-05-20 — MY (로그인/로그아웃/회원가입) 섹션 추가.
+//   사용자 보고: 모바일 햄버거 메뉴에 MY 진입점 부재.
+//   비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: MY 진입 + 로그아웃.
 'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import type { User } from '@supabase/supabase-js';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
+import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { MEGA_NAV, type MegaNavItem } from './mega-nav-data';
 import './mobile-nav-sheet.css';
 
@@ -24,9 +30,38 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
   const [activeLabel, setActiveLabel] = useState(initialActiveLabel);
   // PR #158 — Portal mount 가드. SSR/CSR hydration mismatch 방지.
   const [mounted, setMounted] = useState(false);
+  // 2026-05-20 — MY 섹션 표시 분기 위한 auth 상태.
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!hasSupabaseBrowserEnv) return;
+    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setUser(data.user ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!cancelled) setUser(session?.user ?? null);
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    if (!hasSupabaseBrowserEnv) return;
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    onClose();
+    // 부드러운 reset — 홈 이동은 클라이언트 라우터에 위임.
+    if (typeof window !== 'undefined') {
+      window.location.assign('/');
+    }
+  };
 
   // Esc 키로 닫기
   useEffect(() => {
@@ -186,6 +221,47 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
               </div>
             </Link>
           ) : null}
+
+          {/* 2026-05-20 — MY 섹션 (계정 진입점).
+              비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: MY 진입 + 로그아웃. */}
+          <div className="mobile-nav-sheet-account" aria-label="계정">
+            <div className="mobile-nav-sheet-account-eyebrow">MY</div>
+            {user ? (
+              <div className="mobile-nav-sheet-account-row">
+                <Link
+                  href="/my"
+                  onClick={onClose}
+                  className="mobile-nav-sheet-account-primary"
+                >
+                  내 정보
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="mobile-nav-sheet-account-ghost"
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-nav-sheet-account-row">
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="mobile-nav-sheet-account-primary"
+                >
+                  로그인
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={onClose}
+                  className="mobile-nav-sheet-account-ghost"
+                >
+                  회원가입
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>,

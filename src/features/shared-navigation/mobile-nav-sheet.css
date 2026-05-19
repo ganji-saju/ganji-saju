@@ -299,3 +299,64 @@
   font-size: 11px;
   font-weight: 800;
 }
+
+/* 2026-05-20 — MY (계정) 섹션. featured 카드 아래에 위치.
+   비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: 내 정보 + 로그아웃. */
+.mobile-nav-sheet-account {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(17, 17, 20, 0.04);
+  border: 1px solid rgba(17, 17, 20, 0.06);
+}
+
+.mobile-nav-sheet-account-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--app-copy-muted, rgba(17, 17, 20, 0.55));
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.mobile-nav-sheet-account-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mobile-nav-sheet-account-primary,
+.mobile-nav-sheet-account-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: opacity 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+}
+
+.mobile-nav-sheet-account-primary {
+  background: var(--app-pink, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(216, 27, 114, 0.26);
+}
+
+.mobile-nav-sheet-account-primary:active {
+  opacity: 0.92;
+}
+
+.mobile-nav-sheet-account-ghost {
+  background: #ffffff;
+  color: var(--app-ink, #111114);
+  border: 1px solid var(--app-line, rgba(17, 17, 20, 0.10));
+}
+
+.mobile-nav-sheet-account-ghost:hover {
+  background: var(--app-pink-soft, rgba(255, 79, 154, 0.08));
+  border-color: var(--app-pink-line, rgba(255, 79, 154, 0.24));
+  color: var(--app-pink-strong, #d81b72);
+}

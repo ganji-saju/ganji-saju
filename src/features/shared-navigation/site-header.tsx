@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
@@ -417,10 +418,18 @@ function MobileChrome({
   onSignOut: () => Promise<void>;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // 2026-05-20 — 부모 컨테이너 (motion-page-transition-frame) 의 transform/will-change 가
+  //   position:fixed 를 깸. dock 을 body 에 직접 portal mount 해서 viewport 고정 보장.
+  //   PR #158 과 동일 패턴 (mobile-nav-sheet 에서 검증된 방식).
+  const [portalMounted, setPortalMounted] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    setPortalMounted(true);
+  }, []);
 
   return (
     <>
@@ -605,43 +614,52 @@ function MobileChrome({
       </header>
 
       {/* 2026-05-14: 하단 dock 리디자인 — 중앙 FAB (무료운세) 형광 글로우 +
-          나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터. */}
-      <nav className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden" aria-label="주 메뉴">
-        <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
-          {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
-            const active = matchesPath(item, pathname);
-            const isCenter = item.label === '무료운세';
+          나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터.
+          2026-05-20 (portal): body 직접 mount — 부모 transform 영향 차단. */}
+      {portalMounted
+        ? createPortal(
+            <nav
+              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden"
+              aria-label="주 메뉴"
+            >
+              <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
+                {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
+                  const active = matchesPath(item, pathname);
+                  const isCenter = item.label === '무료운세';
 
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                data-active={active}
-                data-center={isCenter ? 'true' : undefined}
-                aria-current={active ? 'page' : undefined}
-                className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
-              >
-                {/* 활성 indicator dot (center 제외) */}
-                {!isCenter && active ? (
-                  <span className="app-mobile-dock-indicator" aria-hidden="true" />
-                ) : null}
-                <span className="app-mobile-dock-icon">
-                  <DockIcon label={item.label} />
-                </span>
-                {/* center FAB 의 sparkle accent */}
-                {isCenter ? (
-                  <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
-                    <Sparkles className="h-2.5 w-2.5" />
-                  </span>
-                ) : null}
-                <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
-                  {getMobileDockLabel(item)}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      data-active={active}
+                      data-center={isCenter ? 'true' : undefined}
+                      aria-current={active ? 'page' : undefined}
+                      className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
+                    >
+                      {/* 활성 indicator dot (center 제외) */}
+                      {!isCenter && active ? (
+                        <span className="app-mobile-dock-indicator" aria-hidden="true" />
+                      ) : null}
+                      <span className="app-mobile-dock-icon">
+                        <DockIcon label={item.label} />
+                      </span>
+                      {/* center FAB 의 sparkle accent */}
+                      {isCenter ? (
+                        <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
+                          <Sparkles className="h-2.5 w-2.5" />
+                        </span>
+                      ) : null}
+                      <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
+                        {getMobileDockLabel(item)}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>,
+            document.body
+          )
+        : null}
 
       {/* PR #156 — 모바일 메뉴 시트 (bottom sheet). 햄버거 토글에 mobileMenuOpen 연결. */}
       <MobileNavSheet

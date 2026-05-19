@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import SiteFooter from '@/components/site-footer';
 import { MegaNavBar } from '@/features/shared-navigation/mega-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { ScrollToTopButton } from '@/shared/layout/scroll-to-top-button';
 import { cn } from '@/lib/utils';
 
 interface AppShellProps {
@@ -39,6 +40,9 @@ export function AppShell({ children, header, dock, footer, className }: AppShell
       <div className="app-shell-content">{children}</div>
       {footerNode}
       {dock}
+      {/* 2026-05-20 — 모든 페이지 우측 하단에 "맨 위로" floating 버튼.
+          320px 이상 스크롤 시 fade-in. 모바일 dock 위에 자동 배치. */}
+      <ScrollToTopButton />
     </main>
   );
 }
