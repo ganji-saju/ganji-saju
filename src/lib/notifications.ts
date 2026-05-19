@@ -2,7 +2,7 @@ import {
   HOME_DAILY_LINES,
   type NotificationSlotKey,
 } from '@/content/moonlight';
-import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
+import { loadSajuDataV2 } from '@/domain/saju/engine';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import type { BirthInput } from '@/lib/saju/types';
 import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
@@ -150,7 +150,7 @@ export async function getNotificationSnapshot(): Promise<NotificationSnapshot> {
   }
 
   const input = toInput(latest);
-  const sajuData = normalizeToSajuDataV1(input, latest.result_json);
+  const sajuData = loadSajuDataV2(input, latest.result_json);
   const dominant = sajuData.fiveElements.dominant;
   const weakest = sajuData.fiveElements.weakest;
   const currentLuckSummary =
