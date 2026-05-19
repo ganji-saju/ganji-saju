@@ -162,3 +162,46 @@ test('buildYearlyReport marks Peak / Pitfall on 12 monthly flows (PR 5, 2026-05-
     assert.equal(flow.peakKind, null, `month=${flow.month} 의 peakKind 는 null 이어야 함`);
   }
 });
+
+// 2026-05-19 P0 bugfix invariants (B03, B04)
+test('B03/B04 fix: yearly report 본문에 영어 단어·종결문 비문·"내 내" 누적 0건', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildYearlyReport(birthInput, data, 2026);
+
+  // 본문 텍스트 한 묶음으로 모음 — categories.move.summary 안에 'timing' 있던 자리 포함.
+  const collected: string[] = [report.oneLineSummary];
+  for (const key of YEARLY_CATEGORY_ORDER) {
+    const section = report.categories[key];
+    collected.push(section.headline, section.summary, section.opportunity, section.caution, section.action);
+  }
+  const allText = collected.filter(Boolean).join(' ');
+
+  // B03: 본문에 영어 단어 0건 (한자/숫자/percent 는 다른 invariant 에서 다룸)
+  const englishWords = allText.match(/\b[a-zA-Z]{2,}\b/g);
+  assert.equal(
+    englishWords,
+    null,
+    `yearly 본문에 영어 단어 노출: ${englishWords?.join(', ')}`
+  );
+
+  // B04: createOneLineSummary 의 종결문 비문 패턴 0건
+  const grammarBugPatterns = [
+    /세요과/, /세요를/, /세요와/,
+    /[다]과\b/, /[다]를\b/, /[다]와\b/,    // '챙기다과', '필요하다를' 등
+    /니다과/, /니다를/, /니다와/,
+    /어요과/, /어요를/, /어요와/,
+    /해요과/, /해요를/, /해요와/,
+  ];
+  for (const pattern of grammarBugPatterns) {
+    assert.ok(
+      !pattern.test(allText),
+      `yearly 본문 종결문 비문 패턴 매치: ${pattern} — 발췌 "${allText.match(pattern)?.[0]}"`
+    );
+  }
+
+  // B01 회귀: "내 내" 같은 누적 치환 0건
+  assert.ok(
+    !/내\s내/.test(allText),
+    `yearly 본문에 "내 내" 누적 치환 발생`
+  );
+});

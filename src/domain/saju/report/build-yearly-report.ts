@@ -566,7 +566,7 @@ function createMoveSection(
     headline: `이동과 변화운은 성급한 점프보다 순서를 설계하는 쪽이 더 잘 맞습니다.`,
     summary: compactStrings([
       context.currentMajorLuck
-        ? `${context.currentMajorLuck} 대운 위에서 ${context.yearGanji} 세운이 겹치므로, 자리를 바꾸거나 생활 패턴을 크게 손댈 때는 명분과 timing을 같이 보는 편이 좋습니다.`
+        ? `${context.currentMajorLuck} 대운 위에서 ${context.yearGanji} 세운이 겹치므로, 자리를 바꾸거나 생활 패턴을 크게 손댈 때는 명분과 타이밍을 같이 보는 편이 좋습니다.`
         : `${context.yearGanji} 세운에서는 변화 욕구가 커질 수 있어도, 이유와 순서를 함께 세우는 편이 더 안정적입니다.`,
       reports.career.summaryHighlights[0] ?? reports.career.summary,
       reports.relationship.summaryHighlights[0] ?? reports.relationship.summary,
@@ -841,11 +841,14 @@ function createOneLineSummary(
   context: YearlyFlowContext,
   categories: Record<YearlyCategoryKey, YearlyCategorySection>
 ) {
+  // 2026-05-19 B04 fix: 기존 'X.headline 과 Y.headline 를 같이 조율해야' 패턴이 종결문 headline
+  //   ('~챙기세요', '~핵심입니다') 에 조사를 직접 붙여 '챙기세요과', '핵심입니다를' 비문 생성.
+  //   해결: 한 줄 안 두 headline 결합 대신 세 문장 분리 — 각자 자기 종결문 그대로 안전 출력.
+  const introLine = `${targetYear}년은 ${context.yearGanji}의 흐름 아래에서 일과 관계를 함께 보면 한 해가 안정적으로 풀립니다.`;
   return compactStrings([
-    `${targetYear}년은 ${context.yearGanji}의 흐름 아래에서`,
-    `${categories.work.headline.replace(/\.$/, '')}과`,
-    `${categories.relationship.headline.replace(/\.$/, '')}를`,
-    `같이 조율해야 한 해가 안정적으로 풀립니다.`,
+    introLine,
+    categories.work.headline,
+    categories.relationship.headline,
   ]).join(' ');
 }
 
