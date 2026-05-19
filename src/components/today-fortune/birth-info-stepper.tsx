@@ -72,7 +72,15 @@ export function BirthInfoStepper({
       month: String(profile.birthMonth ?? ''),
       day: String(profile.birthDay ?? ''),
       hour: profile.birthHour === null ? '' : String(profile.birthHour),
-      minute: profile.birthMinute === null ? '' : String(profile.birthMinute),
+      // 2026-05-19 — 폼 UI 에서 분(minute) 입력 제거된 후로는 옛 profile.birthMinute 도
+      //   사용하지 않음. 옛 시드 profile (birth_minute = N) 을 자동 채우면 새 reading 의
+      //   BirthInput.minute = N 으로 저장되어, minute = null 인 기존 reading 과 다른 사주가
+      //   산출됨. E2E saju.spec.ts:157 회귀의 진짜 source.
+      //   buildBirthTimeCorrection / lunar-typescript 가 standard mode 에서도 minute 단위
+      //   를 시각 계산에 그대로 반영하므로, profile 의 옛 minute 값을 그대로 흘리면
+      //   "사주 페이지 (stored reading minute=null) ↔ 운세 페이지 (fresh reading minute=N)"
+      //   점수 불일치 발생.
+      minute: '',
       unknownBirthTime: profile.birthHour === null,
       birthLocationCode: profile.birthLocationCode ?? '',
       birthLocationLabel: profile.birthLocationLabel ?? '',

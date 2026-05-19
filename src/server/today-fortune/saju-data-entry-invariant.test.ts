@@ -20,6 +20,10 @@ import {
 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import { computeSajuIljinScore } from './build-today-fortune';
+import {
+  computeSajuAreaScores,
+  UNIFIED_AREA_ORDER,
+} from '@/lib/today-fortune/compute-saju-area-scores';
 import type { TodayCalendarType, TodayTimeRule } from '@/lib/today-fortune/types';
 
 declare const test: (name: string, fn: () => void) => void;
@@ -200,6 +204,106 @@ for (const caseItem of CASES) {
       );
     }
   });
+}
+
+// ============================================================
+// 보완 ③ 확장 — stored V1 (옛 timestamp) path ↔ fresh path invariant
+//   E2E saju.spec.ts:157 회귀 source 정밀 검증: real DB 의 reading row 는 옛
+//   시점에 저장된 V1 객체 + envelope. 그 V1 의 metadata.calculatedAt 이 옛
+//   timestamp → enrichSajuDataV1 의 calculateLuckData(input, oldTimestamp) 가
+//   옛 currentLuck 산출. PR #264 invariant ③ (fresh storedV1) 가 reproduce
+//   못 한 시나리오.
+// ============================================================
+const OLD_TIMESTAMP = '2025-01-01T00:00:00.000Z'; // 1년 이상 전 — currentLuck stale 보장
+for (const caseItem of CASES) {
+  test(`stored V1 (옛 timestamp) ↔ fresh: ${caseItem.label} — iljinScore.totalScore 동일`, () => {
+    const input = parseInput(caseItem);
+    const storedV1Old = calculateSajuDataV1(input, { calculatedAt: OLD_TIMESTAMP });
+    const v2FromOld = loadSajuDataV2(input, storedV1Old);
+    const v2Fresh = loadSajuDataV2(input, null);
+
+    const oldScore = computeSajuIljinScore(v2FromOld, { now: FIXED_NOW });
+    const freshScore = computeSajuIljinScore(v2Fresh, { now: FIXED_NOW });
+
+    assert.equal(
+      oldScore?.totalScore,
+      freshScore?.totalScore,
+      `${caseItem.label} — stored 옛 timestamp ↔ fresh drift (iljinScore.totalScore: stored ${oldScore?.totalScore} / fresh ${freshScore?.totalScore})`
+    );
+  });
+}
+
+// ============================================================
+// 보완 ③ 확장+ — computeSajuAreaScores 6 영역 score invariant (E2E 사주 페이지 실제 산식)
+//   사주 페이지의 SajuAreaCardsSection 이 사용하는 helper. iljinScore.totalScore 만이
+//   아니라 buildSajuReport + buildDailyDelta + buildConditionScore + unifyScoresWithIljinScore
+//   가 모두 통과한 6 영역 통일 score. 이게 stored vs fresh 다르면 E2E 회귀 source 확정.
+// ============================================================
+for (const caseItem of CASES) {
+  test(`stored V1 (옛 timestamp) ↔ fresh: ${caseItem.label} — computeSajuAreaScores 6 영역 동일`, () => {
+    const input = parseInput(caseItem);
+    const storedV1Old = calculateSajuDataV1(input, { calculatedAt: OLD_TIMESTAMP });
+    const v2FromOld = loadSajuDataV2(input, storedV1Old);
+    const v2Fresh = loadSajuDataV2(input, null);
+
+    const oldAreas = computeSajuAreaScores(input, v2FromOld, { now: FIXED_NOW });
+    const freshAreas = computeSajuAreaScores(input, v2Fresh, { now: FIXED_NOW });
+
+    for (const key of UNIFIED_AREA_ORDER) {
+      const oldScore = oldAreas.find((s) => s.key === key)?.score;
+      const freshScore = freshAreas.find((s) => s.key === key)?.score;
+      assert.equal(
+        oldScore,
+        freshScore,
+        `${caseItem.label} — "${key}" stored 옛 timestamp ↔ fresh drift (stored ${oldScore} / fresh ${freshScore})`
+      );
+    }
+  });
+}
+
+// ============================================================
+// minute=null vs minute=N 사주 invariant — E2E saju.spec.ts:157 회귀 진짜 source.
+//   옛 시드 reading 의 birth.minute = null 인데, 새 폼 제출 시 profile.birth_minute = N
+//   이면 새 BirthInput.minute = N → 다른 사주 산출. 같은 birth 라도 minute 차이로
+//   사주↔운세 페이지 score 불일치.
+//
+//   본 invariant 는 minute=null vs minute=0 두 input 의 사주 결과가 다른지 검증:
+//   같으면 minute 무관 (가설 기각), 다르면 가설 확인 + fix 의미 명확.
+// ============================================================
+const MINUTE_VARIANTS = ['0', '15', '30', '45', '59'];
+for (const caseItem of CASES) {
+  if (caseItem.draft.unknownBirthTime) continue; // unknownTime 케이스는 minute 자체 의미 없음
+  for (const variant of MINUTE_VARIANTS) {
+    test(`minute=null vs minute=${variant} invariant: ${caseItem.label} — 같은 사주 (시진 동일)`, () => {
+      const inputNullMinute = parseInput(caseItem); // minute = '' → BirthInput.minute = undefined
+      const draftWithMinute = {
+        ...caseItem.draft,
+        minute: variant,
+      };
+      const parsedWithMinute = resolveUnifiedBirthInput(draftWithMinute, { requireGender: false });
+      if (!parsedWithMinute.ok) throw new Error(`minute=${variant} parse 실패: ${caseItem.label}`);
+      const inputWithMinute = parsedWithMinute.input;
+
+      const v1NullMinute = calculateSajuDataV1(inputNullMinute);
+      const v1WithMinute = calculateSajuDataV1(inputWithMinute);
+
+      // 시진(2시간 단위) 이 같으면 시주(時柱) 동일이라야.
+      assert.deepEqual(
+        v1NullMinute.pillars.hour,
+        v1WithMinute.pillars.hour,
+        `${caseItem.label} — minute=null vs minute=${variant} 시주 drift (null: ${JSON.stringify(v1NullMinute.pillars.hour)} / ${variant}: ${JSON.stringify(v1WithMinute.pillars.hour)})`
+      );
+
+      // 사주 핵심 필드 deep equal.
+      for (const field of CORE_FIELDS) {
+        assert.deepEqual(
+          v1NullMinute[field],
+          v1WithMinute[field],
+          `${caseItem.label} — minute=null vs minute=${variant} ${field} drift`
+        );
+      }
+    });
+  }
 }
 
 // ============================================================
