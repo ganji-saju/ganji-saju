@@ -404,6 +404,24 @@ function DesktopSidebar({
   );
 }
 
+// 2026-05-20 — 무료운세 dock FAB 클릭 시 부채꼴로 펼쳐지는 5 메뉴.
+//   각도 -170° ~ -10° 사이 균등 분포 (5개 항목, 위쪽 반원).
+//   반경 105px (FAB center 기준).
+const FAN_MENU_ITEMS: ReadonlyArray<{
+  label: string;
+  href: string;
+  glyph: string;
+  /** -180° (왼쪽) ~ 0° (오른쪽). -90° = 위쪽. */
+  angleDeg: number;
+}> = [
+  { label: '운세',   href: '/today-fortune?concern=general', glyph: '☀', angleDeg: -170 },
+  { label: '사주',   href: '/saju/new',                       glyph: '辰', angleDeg: -130 },
+  { label: '별자리', href: '/star-sign',                      glyph: '✦', angleDeg: -90  },
+  { label: '띠운세', href: '/zodiac',                         glyph: '午', angleDeg: -50  },
+  { label: '꿈해몽', href: '/dream',                          glyph: '☾', angleDeg: -10  },
+];
+const FAN_RADIUS = 105;
+
 function MobileChrome({
   pathname,
   user,
@@ -422,9 +440,12 @@ function MobileChrome({
   //   position:fixed 를 깸. dock 을 body 에 직접 portal mount 해서 viewport 고정 보장.
   //   PR #158 과 동일 패턴 (mobile-nav-sheet 에서 검증된 방식).
   const [portalMounted, setPortalMounted] = useState(false);
+  // 2026-05-20 — 무료운세 부채꼴 메뉴 open state.
+  const [fanMenuOpen, setFanMenuOpen] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setFanMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -627,28 +648,49 @@ function MobileChrome({
                   const active = matchesPath(item, pathname);
                   const isCenter = item.label === '무료운세';
 
+                  // 2026-05-20 — center (무료운세) FAB 은 Link 가 아니라 button.
+                  //   클릭 시 부채꼴 메뉴 toggle (운세/사주/별자리/띠운세/꿈해몽).
+                  if (isCenter) {
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => setFanMenuOpen((open) => !open)}
+                        data-active={active}
+                        data-center="true"
+                        data-fan-open={fanMenuOpen ? 'true' : undefined}
+                        aria-expanded={fanMenuOpen}
+                        aria-label={fanMenuOpen ? '메뉴 닫기' : '무료운세 빠른 메뉴 열기'}
+                        className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
+                      >
+                        <span className="app-mobile-dock-icon">
+                          {fanMenuOpen ? <X className="h-7 w-7" strokeWidth={2.6} /> : <DockIcon label={item.label} />}
+                        </span>
+                        <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
+                          <Sparkles className="h-2.5 w-2.5" />
+                        </span>
+                        <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
+                          {fanMenuOpen ? '닫기' : getMobileDockLabel(item)}
+                        </span>
+                      </button>
+                    );
+                  }
+
                   return (
                     <Link
                       key={item.label}
                       href={item.href}
                       data-active={active}
-                      data-center={isCenter ? 'true' : undefined}
                       aria-current={active ? 'page' : undefined}
                       className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
                     >
-                      {/* 활성 indicator dot (center 제외) */}
-                      {!isCenter && active ? (
+                      {/* 활성 indicator dot */}
+                      {active ? (
                         <span className="app-mobile-dock-indicator" aria-hidden="true" />
                       ) : null}
                       <span className="app-mobile-dock-icon">
                         <DockIcon label={item.label} />
                       </span>
-                      {/* center FAB 의 sparkle accent */}
-                      {isCenter ? (
-                        <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
-                          <Sparkles className="h-2.5 w-2.5" />
-                        </span>
-                      ) : null}
                       <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
                         {getMobileDockLabel(item)}
                       </span>
@@ -656,6 +698,42 @@ function MobileChrome({
                   );
                 })}
               </div>
+
+              {/* 2026-05-20 — 부채꼴 메뉴 (무료운세 FAB 클릭 시 펼침).
+                  overlay 클릭 시 닫힘. 각 항목 클릭 시 라우트 이동 + 닫힘. */}
+              {fanMenuOpen ? (
+                <>
+                  <div
+                    className="app-fan-menu-overlay"
+                    onClick={() => setFanMenuOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="app-fan-menu" role="menu" aria-label="빠른 메뉴">
+                    {FAN_MENU_ITEMS.map((entry) => {
+                      const angleRad = (entry.angleDeg * Math.PI) / 180;
+                      const x = Math.round(Math.cos(angleRad) * FAN_RADIUS);
+                      const y = Math.round(Math.sin(angleRad) * FAN_RADIUS);
+                      return (
+                        <Link
+                          key={entry.label}
+                          href={entry.href}
+                          onClick={() => setFanMenuOpen(false)}
+                          role="menuitem"
+                          className="app-fan-menu-item"
+                          style={{
+                            transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                          }}
+                        >
+                          <span className="app-fan-menu-icon" aria-hidden="true">
+                            {entry.glyph}
+                          </span>
+                          <span className="app-fan-menu-label">{entry.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : null}
             </nav>,
             document.body
           )

@@ -4,7 +4,7 @@
 // AppShell/SiteHeader 없이 풀스크린 immersive 레이아웃.
 'use client';
 
-import { useId, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import type { ZodiacKey } from '@/components/gangi/zodiac-chip';
 
@@ -157,6 +157,53 @@ export function OnboardingCarousel({
   const isLast = idx === SLIDES.length - 1;
   const headingId = useId();
 
+  // 2026-05-20 — 사용자 보고: 온보딩 페이지 좌우 swipe (모바일 터치 + PC 마우스)
+  //   필요. pointer events 로 통합 처리 (touch/mouse/pen 모두 캡처).
+  //   drag distance > 40px 시 prev/next 슬라이드 전환.
+  const SWIPE_THRESHOLD = 40;
+  const dragRef = useRef<{
+    pointerId: number | null;
+    startX: number;
+    deltaX: number;
+  }>({ pointerId: null, startX: 0, deltaX: 0 });
+
+  const handlePointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    // a/button 등 인터랙티브 요소 안에서는 drag 시작 안 함 (clik 차단 방지).
+    const target = event.target as HTMLElement;
+    if (target.closest('a, button')) return;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      deltaX: 0,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, []);
+
+  const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    drag.deltaX = event.clientX - drag.startX;
+  }, []);
+
+  const handlePointerEnd = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    const { deltaX } = drag;
+    dragRef.current.pointerId = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) return;
+    setIdx((current) => {
+      if (deltaX < 0) {
+        // 왼쪽 swipe → 다음 슬라이드
+        return Math.min(current + 1, SLIDES.length - 1);
+      }
+      // 오른쪽 swipe → 이전 슬라이드
+      return Math.max(current - 1, 0);
+    });
+  }, []);
+
   return (
     <main
       className="flex min-h-screen flex-col bg-white"
@@ -174,11 +221,16 @@ export function OnboardingCarousel({
         </form>
       </header>
 
-      {/* 슬라이드 본문 */}
+      {/* 슬라이드 본문 — pointer events 로 좌우 swipe (모바일 터치 + PC 마우스 통합). */}
       <section
         className="flex flex-1 flex-col items-center justify-center px-6 text-center"
         aria-roledescription="carousel"
         aria-label={`온보딩 슬라이드 ${idx + 1}/${SLIDES.length}`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        style={{ touchAction: 'pan-y' }}
       >
         <ZodiacWheel hero={slide.hero} ariaLabel={slide.heroAriaLabel} />
 

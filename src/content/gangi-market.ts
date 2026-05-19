@@ -123,14 +123,15 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
   },
   {
-    // 2026-05-15 — 꿈해몽 메뉴. 2026-05-15(2) — /dream-interpretation 은 옛 디자인 +
-    // 검색 미작동이라 사용자가 "검색이 안 된다" 고 느낌. 검색 작동 페이지 /dream 으로 변경.
-    id: 'dream',
-    title: '꿈해몽',
-    desc: '꿈으로 보는 길흉',
+    // 2026-05-20 — 사용자 보고: 메인 카드 그리드에 별자리 진입점 누락.
+    //   꿈해몽 자리 (이전 7번) 에 별자리 배치, 꿈해몽은 마지막으로 이동.
+    //   zodiac chip 은 'pig' (亥/indigo) — 밤하늘 톤과 매칭.
+    id: 'star-sign',
+    title: '별자리',
+    desc: '12자리 오늘 메시지',
     price: '무료',
-    href: '/dream',
-    zodiac: 'dragon',
+    href: '/star-sign',
+    zodiac: 'pig',
     category: 'fortune',
   },
   {
@@ -150,6 +151,18 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',
+  },
+  {
+    // 2026-05-15 — 꿈해몽 메뉴. 2026-05-15(2) — /dream-interpretation 은 옛 디자인 +
+    // 검색 미작동이라 사용자가 "검색이 안 된다" 고 느낌. 검색 작동 페이지 /dream 으로 변경.
+    // 2026-05-20 — 별자리 카드 추가하면서 마지막 위치로 이동 (꿈해몽 ↔ 별자리 위치 교체).
+    id: 'dream',
+    title: '꿈해몽',
+    desc: '꿈으로 보는 길흉',
+    price: '무료',
+    href: '/dream',
+    zodiac: 'dragon',
+    category: 'fortune',
   },
 ] as const;
 

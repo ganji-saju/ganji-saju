@@ -95,7 +95,10 @@ export function GangiSeasonBanner({
         style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
         onScroll={handleScroll}
         onPointerDown={(event) => {
-          if (event.pointerType !== 'mouse' || event.button !== 0) return;
+          // 2026-05-20 — 사용자 보고: 모바일에서 손가락 swipe 가 부드럽지 않음.
+          //   기존 'mouse only' 가드 제거 → mouse + touch + pen 모두 drag 허용.
+          //   mouse 의 경우만 left button 체크 (right click 등 제외).
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
           const target = event.target as HTMLElement;
           if (target.closest('a, button')) return;
           const viewport = viewportRef.current;
