@@ -26,8 +26,14 @@ function compactStrings(values: Array<string | null | undefined | false>) {
     .filter(Boolean);
 }
 
+/** 본문 합성용 한 단어 키워드 ("쇠", "새싹"). "X 기운" / "X 결이..." 같은 합성 패턴 */
 function formatElementName(element: Element) {
-  return ELEMENT_INFO[element].name.split(' ')[0] ?? element;
+  return ELEMENT_INFO[element].keyword;
+}
+
+/** 단독 표시용 전체 라벨 ("쇠의 결"). 카드 제목 / 라벨 슬롯 */
+function formatElementLabel(element: Element) {
+  return ELEMENT_INFO[element].name;
 }
 
 function formatSymbolList(symbols: Array<{ label: string }> | null | undefined) {
@@ -375,15 +381,17 @@ function buildMentalText(
   const element = stem ?? context.weakest;
   const isSupport = context.supportElements.includes(element);
   const isDominant = element === context.dominant;
-  const elementLabel = formatElementName(element);
+  // 2026-05-19: 본문 합성 패턴 — "X의 결" 전체 라벨이 자연 ("쇠의 결이 일상의 결정...").
+  //   기존 formatElementName 의 .split(' ')[0] 결과 "쇠의" 단독 노출 버그 해결.
+  const elementLabel = formatElementLabel(element);
 
   let base: string;
   if (isSupport) {
-    base = `이 대운의 ${elementLabel} 결은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
+    base = `이 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
   } else if (isDominant) {
-    base = `이미 강한 ${elementLabel} 축이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+    base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
   } else {
-    base = `${elementLabel} 결이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
+    base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
   const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
@@ -927,12 +935,13 @@ function buildClosingNoteText(
   twelveStage: string | null = null,
   transitionPhase: 'entering' | 'leaving' | null = null
 ): string {
-  const supportLabel = formatElementName(context.supportElements[0] ?? context.weakest);
+  // 2026-05-19: '쇠의 결을 생활 루틴' 같이 전체 라벨이 자연. formatElementLabel 사용.
+  const supportLabel = formatElementLabel(context.supportElements[0] ?? context.weakest);
   const head = isCurrent
     ? `${toKoreanGanzi(cycle.ganzi)} 대운이 진행 중인 지금, `
     : `${toKoreanGanzi(cycle.ganzi)} 대운이 다가오면, `;
   // 2026-05-19 P0d: 안심하고 보기 정책 — '절대' / '반드시' 같은 단정·강요 표현 제거.
-  const base = `${head}한꺼번에 결정하지 않는 편이 좋습니다. ${supportLabel} 결을 생활 루틴에 두고 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
+  const base = `${head}한꺼번에 결정하지 않는 편이 좋습니다. ${supportLabel}을 생활 루틴에 두고 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
   // 2026-05-15 PR 7 응답 1 — 12운성 마지막 한마디 cue.
   const stageEntry = twelveStage
     ? (MYEONGRI_GLOSSARY as Record<string, { plainCue: string }>)[twelveStage]
