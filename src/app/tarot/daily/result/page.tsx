@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Bookmark, RotateCcw } from 'lucide-react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { TarotCardArtwork } from '@/components/tarot/tarot-card-artwork';
 // 2026-05-15 handoff PR-E: 53 m-tarot — 결과 페이지 진입 시 카드 flip reveal.
 import { TarotCardFlipReveal } from '@/components/tarot/tarot-card-flip-reveal';
@@ -153,6 +154,9 @@ export default async function TarotResultPage({ searchParams }: Props) {
               사주로 이어보기
             </Link>
           </div>
+
+          {/* 2026-05-20 Phase 8-E — 무료 → 유료 funnel (사주 + 궁합 + 멤버십). */}
+          <PaidFunnelGrid from="tarot" tone="light" includeMembership />
         </section>
       </AppPage>
     </AppShell>

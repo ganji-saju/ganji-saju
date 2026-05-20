@@ -7,6 +7,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
 import { DREAM_CONTENT } from '@/lib/dream/dream-content';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
 import {
   buildArticleSchema,
@@ -371,45 +372,8 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               꿈해몽 목록
             </Link>
           </div>
-          {/* 2026-05-20 Phase 8-D — 유료 funnel (사주 550원 + 궁합 990원), 별자리/띠 패턴 동일 */}
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <Link
-              href="/saju/new?from=dream"
-              className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[12px] font-bold no-underline"
-              style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
-            >
-              <span className="flex flex-col text-left">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.04em]" style={{ color: 'var(--app-copy-soft)' }}>
-                  사주 상세 풀이
-                </span>
-                <span className="mt-0.5" style={{ color: 'var(--app-copy)' }}>14 섹션 · A4 5~7p 리포트</span>
-              </span>
-              <span
-                className="ml-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold text-white"
-                style={{ background: 'var(--app-pink)' }}
-              >
-                550원~
-              </span>
-            </Link>
-            <Link
-              href="/compatibility/input?from=dream"
-              className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[12px] font-bold no-underline"
-              style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
-            >
-              <span className="flex flex-col text-left">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.04em]" style={{ color: 'var(--app-copy-soft)' }}>
-                  궁합 풀이
-                </span>
-                <span className="mt-0.5" style={{ color: 'var(--app-copy)' }}>두 사람 사주 결합 분석</span>
-              </span>
-              <span
-                className="ml-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold text-white"
-                style={{ background: 'var(--app-pink)' }}
-              >
-                990원
-              </span>
-            </Link>
-          </div>
+          {/* 2026-05-20 Phase 8-E — PaidFunnelGrid 공통 컴포넌트로 추출 + 멤버십 옵션 추가 (꿈해몽 가장 conversion 영역). */}
+          <PaidFunnelGrid from="dream" tone="light" includeMembership className="mt-3" />
         </article>
 
         {/* §다른 꿈도 보기 — related */}

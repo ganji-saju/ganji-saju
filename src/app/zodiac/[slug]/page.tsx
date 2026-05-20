@@ -12,6 +12,7 @@ import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { ZODIAC_RELATIONS, type ZodiacFortuneSlug } from '@/lib/zodiac/zodiac-relations';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
 import {
   buildArticleSchema,
@@ -523,33 +524,8 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 내 띠 다시 확인
               </Link>
             </div>
-            {/* 2026-05-20 Phase 8-C — 무료 → 유료 funnel: 사주 상세 (550원) + 궁합 풀이 (990원). 별자리 패턴 동일. */}
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <Link
-                href="/saju/new?from=zodiac"
-                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
-              >
-                <span className="flex flex-col text-left">
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">사주 상세 풀이</span>
-                  <span className="mt-0.5">14 섹션 · A4 5~7p 리포트</span>
-                </span>
-                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
-                  550원~
-                </span>
-              </Link>
-              <Link
-                href="/compatibility/input?from=zodiac"
-                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
-              >
-                <span className="flex flex-col text-left">
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">궁합 풀이</span>
-                  <span className="mt-0.5">두 사람 사주 결합 분석</span>
-                </span>
-                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
-                  990원
-                </span>
-              </Link>
-            </div>
+            {/* 2026-05-20 Phase 8-E — PaidFunnelGrid 공통 컴포넌트로 추출 (DRY). */}
+            <PaidFunnelGrid from="zodiac" tone="dark" className="mt-3" />
           </article>
 
           {/* §7 다른 띠 보기 — horizontal scroll */}
