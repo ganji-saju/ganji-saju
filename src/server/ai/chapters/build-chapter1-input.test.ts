@@ -28,11 +28,11 @@ test('buildChapter1Input — fixture 사주에서 ChapterLLMInput 정상 빌드'
 
   // dayMaster: stem 한글 + element 자연 비유 라벨
   assert.ok(/^[가-힣]$/.test(input.saju.dayMaster.stem), `stem 한 글자 한글: ${input.saju.dayMaster.stem}`);
-  assert.match(input.saju.dayMaster.element, /의 결$/, `element 자연 비유: ${input.saju.dayMaster.element}`);
+  assert.match(input.saju.dayMaster.element, / 기운$/, `element 자연 비유: ${input.saju.dayMaster.element}`);
 
   // fiveElements
-  assert.match(input.saju.fiveElements.dominant, /의 결$/);
-  assert.match(input.saju.fiveElements.weakest, /의 결$/);
+  assert.match(input.saju.fiveElements.dominant, / 기운$/);
+  assert.match(input.saju.fiveElements.weakest, / 기운$/);
   // distribution 5 entry 모두 정의됨
   for (const key of ['목', '화', '토', '금', '수'] as const) {
     const value = input.saju.fiveElements.distribution[key];

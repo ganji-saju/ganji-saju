@@ -22,12 +22,12 @@ class MockClient implements ChapterLLMClient {
 const originalStrategy: LifetimeStrategySection = {
   headline: '평생 활용 전략',
   summary:
-    '이 사주는 성향 해설보다 사용법이 더 중요합니다. 햇살의 결을 언제 살리고, 쇠의 결이 흔들릴 때 무엇을 지킬지가 핵심입니다. (기존 deterministic 본문)',
+    '이 사주는 성향 해설보다 사용법이 더 중요합니다. 화 기운을 언제 살리고, 금 기운이 흔들릴 때 무엇을 지킬지가 핵심입니다. (기존 deterministic 본문)',
   useWhenStrong: ['새 시작 작게', '말 정리부터'],
   defendWhenShaken: ['수면 먼저', '천천히 맞추기'],
   rememberRules: [
-    '강한 흙의 결은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.',
-    '햇살의 결을 생활 루틴으로 만들수록 명식의 장점이 살아납니다.',
+    '강한 토 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.',
+    '화 기운을 생활 루틴으로 만들수록 명식의 장점이 살아납니다.',
     '쇠의 축이 약해지는 날에는 속도보다 리듬을 먼저 바로잡는 편이 좋습니다.',
     '관계와 일에서 서운함을 결론처럼 말하기보다 사실과 기준을 먼저 정리해야 합니다.',
     '지금의 갑오 대운은 단기 반응보다 장기 기준을 바로 세울수록 힘을 실어줍니다.',
@@ -37,7 +37,7 @@ const originalStrategy: LifetimeStrategySection = {
 
 const priorDigests: ChapterPriorDigest[] = [
   { chapterId: 1, title: '타고난 성향', digest: '돌봄과 배움이 본질' },
-  { chapterId: 2, title: '기운의 균형', digest: '흙의 결 강 / 쇠의 결 부족' },
+  { chapterId: 2, title: '기운의 균형', digest: '토 기운 강 / 금 기운 부족' },
   { chapterId: 3, title: '역할과 보완 힌트', digest: '정인격 역할 반복' },
   { chapterId: 4, title: '관계 패턴', digest: '관계 = 챙기는 자리' },
   { chapterId: 5, title: '재물 감각', digest: '안정 자산형 — 자기계발 비용 분리' },
@@ -57,15 +57,15 @@ const baseInput: ChapterLLMInput = {
   },
   saju: {
     pillars: { year: '임술', month: '신축', day: '기사', hour: '무진' },
-    dayMaster: { stem: '기', element: '흙의 결', metaphor: '따뜻하게 익히는 흙' },
+    dayMaster: { stem: '기', element: '토 기운', metaphor: '따뜻하게 익히는 흙' },
     fiveElements: {
-      dominant: '흙의 결',
-      weakest: '쇠의 결',
-      supportElements: ['햇살의 결'],
+      dominant: '토 기운',
+      weakest: '금 기운',
+      supportElements: ['화 기운'],
       distribution: { 목: 0.1, 화: 0.2, 토: 0.4, 금: 0.1, 수: 0.2 },
     },
     pattern: { label: '정인격', plainCue: '돌봄·후원·배움의 결' },
-    yongsin: { primary: '햇살의 결', reason: '흙이 차가워질 때 햇살이 보강' },
+    yongsin: { primary: '화 기운', reason: '흙이 차가워질 때 햇살이 보강' },
     strength: '균형이 잡힌 편',
     tenGods: { dominant: '정인', shortageList: ['식신'] },
     notableSinsals: [],
@@ -81,7 +81,7 @@ const baseInput: ChapterLLMInput = {
 };
 
 const ENHANCED_BODY =
-  '테스트님의 평생 결을 관통하는 원칙은 세 가지입니다. 책임은 미리 글로 적고 시작하세요. 쇠의 결을 의식적으로 채우세요. 자기계발과 돌봄 비용을 같은 지갑에서 빼지 마세요.';
+  '테스트님의 평생 결을 관통하는 원칙은 세 가지입니다. 책임은 미리 글로 적고 시작하세요. 금 기운을 의식적으로 채우세요. 자기계발과 돌봄 비용을 같은 지갑에서 빼지 마세요.';
 
 test('enhanceLifetimeChapter9WithLLM — LLM 성공 시 summary 만 교체, 다른 field 보존', async () => {
   const client = new MockClient([ENHANCED_BODY]);

@@ -33,15 +33,15 @@ const baseInput: ChapterLLMInput = {
   },
   saju: {
     pillars: { year: '임술', month: '신축', day: '기사', hour: '무진' },
-    dayMaster: { stem: '기', element: '흙의 결', metaphor: '따뜻하게 익히는 흙' },
+    dayMaster: { stem: '기', element: '토 기운', metaphor: '따뜻하게 익히는 흙' },
     fiveElements: {
-      dominant: '흙의 결',
-      weakest: '쇠의 결',
-      supportElements: ['햇살의 결'],
+      dominant: '토 기운',
+      weakest: '금 기운',
+      supportElements: ['화 기운'],
       distribution: { 목: 0.1, 화: 0.2, 토: 0.4, 금: 0.1, 수: 0.2 },
     },
     pattern: { label: '정인격', plainCue: '돌봄·후원·배움의 결' },
-    yongsin: { primary: '햇살의 결', reason: '흙이 차가워질 때 햇살이 보강' },
+    yongsin: { primary: '화 기운', reason: '흙이 차가워질 때 햇살이 보강' },
     strength: '균형이 잡힌 편',
     tenGods: { dominant: '정인', shortageList: ['식신', '상관'] },
     notableSinsals: [],
@@ -56,13 +56,13 @@ const baseInput: ChapterLLMInput = {
 };
 
 const CLEAN_BODY =
-  '테스트님의 사주는 흙의 결을 중심으로 정인의 결이 또렷이 흐릅니다. 가까운 사람을 돌보는 패턴이 반복돼요. 무게가 누적되기 쉬우니 한 줄로 한계를 적어두는 게 좋아요.';
+  '테스트님의 사주는 토 기운을 중심으로 정인의 결이 또렷이 흐릅니다. 가까운 사람을 돌보는 패턴이 반복돼요. 무게가 누적되기 쉬우니 한 줄로 한계를 적어두는 게 좋아요.';
 
 test('buildChapterUserMessage — 사주 데이터 + 사용자 컨텍스트 + structure guide 포함', () => {
   const message = buildChapterUserMessage(baseInput);
   assert.ok(message.includes('사주 데이터'));
   assert.ok(message.includes('사용자 컨텍스트'));
-  assert.ok(message.includes('흙의 결'));
+  assert.ok(message.includes('토 기운'));
   assert.ok(message.includes('정인격'));
   assert.ok(message.includes('테스트'));
   assert.ok(message.includes('출력 가이드'));
@@ -112,7 +112,7 @@ test('generateChapter — 모두 fail → fallbackBody 사용 (source=fallback)'
   const dirty1 = '丙申 한자 1';
   const dirty2 = '丁酉 한자 2';
   const dirty3 = '戊戌 한자 3';
-  const fallback = '선생님의 사주는 흙의 결을 중심으로 정인의 결이 또렷이 흐릅니다.';
+  const fallback = '선생님의 사주는 토 기운을 중심으로 정인의 결이 또렷이 흐릅니다.';
   const client = new MockClient([dirty1, dirty2, dirty3]);
   const result = await generateChapter(baseInput, client, {
     maxRetries: 2,

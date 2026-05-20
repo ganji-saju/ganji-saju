@@ -29,10 +29,10 @@ const baseInput: ChapterLLMInput = {
   chapter: { title: '건강 리듬', lens: '신체 결', forbiddenTopics: ['구체적 질병 진단 - 절대 금지'] },
   saju: {
     pillars: { year: '임술', month: '신축', day: '기사', hour: '무진' },
-    dayMaster: { stem: '기', element: '흙의 결', metaphor: '' },
-    fiveElements: { dominant: '흙의 결', weakest: '쇠의 결', supportElements: [], distribution: { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 } },
+    dayMaster: { stem: '기', element: '토 기운', metaphor: '' },
+    fiveElements: { dominant: '토 기운', weakest: '금 기운', supportElements: [], distribution: { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 } },
     pattern: { label: '정인격', plainCue: '' },
-    yongsin: { primary: '햇살의 결', reason: '' },
+    yongsin: { primary: '화 기운', reason: '' },
     strength: '균형이 잡힌 편',
     tenGods: { dominant: '정인', shortageList: [] },
     notableSinsals: [],

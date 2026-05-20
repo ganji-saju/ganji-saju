@@ -31,7 +31,7 @@ test('CHAPTER_OUTPUT_SPECS 가 9 챕터 모두 정의', () => {
 test('COMMON_SYSTEM_PROMPT 가 핵심 7 룰 모두 포함', () => {
   const requiredRules = [
     '한자 금지',
-    '자연 비유 오행 라벨 강제',
+    '오행 라벨 한글 표기 강제',
     '영어 단어 금지',
     '단정형 금지',
     '공포 표현 금지',
@@ -46,8 +46,9 @@ test('COMMON_SYSTEM_PROMPT 가 핵심 7 룰 모두 포함', () => {
   }
 });
 
-test('COMMON_SYSTEM_PROMPT 가 자연 비유 5 라벨 모두 포함', () => {
-  const required = ['새싹의 결', '햇살의 결', '흙의 결', '쇠의 결', '물의 결'];
+test('COMMON_SYSTEM_PROMPT 가 한글 표기 5 라벨 모두 포함', () => {
+  // 2026-05-20 V2-5 PR O — 자연 비유 → 한국 사주 사이트 표준 표기.
+  const required = ['목 기운', '화 기운', '토 기운', '금 기운', '수 기운'];
   for (const label of required) {
     assert.ok(
       COMMON_SYSTEM_PROMPT.includes(label),

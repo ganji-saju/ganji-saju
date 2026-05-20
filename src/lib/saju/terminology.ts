@@ -191,7 +191,7 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
  *   "같은 명리 술어가 한 챕터에 2회 이상 등장" 을 차단하기 위한 검증 대상 목록.
  *
  * 제외 기준:
- *   - category === 'element': 오행 (목/화/토/금/수) 은 자연 비유 라벨 ("쇠의 결")
+ *   - category === 'element': 오행 (목/화/토/금/수) 은 한글 표기 라벨 ("금 기운")
  *     로 본문에 자주 나오므로 검증 대상 아님.
  *   - 1글자 키 (쇠/병/사/묘/절/태/양/합/충/형/해 등): 일반 한국어 명사·조사·
  *     접속사 (사람/사주/병원/병행/태우다 등) 와 충돌해 false positive 다수.
