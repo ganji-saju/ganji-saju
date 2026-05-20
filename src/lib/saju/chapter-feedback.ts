@@ -82,3 +82,87 @@ export async function listChapterFeedbackForReading(
   if (error || !data) return [];
   return data as ChapterFeedbackRecord[];
 }
+
+/**
+ * 2026-05-20 V2-5 PR S — admin 품질 모니터링 대시보드용 챕터별 집계.
+ *
+ * 챕터당 평균 별점, helpful 비율, 응답 수, 부정 응답 (별점 ≤ 2 또는 helpful=false) 비율.
+ * RLS 우회 위해 service-role client 가 호출 (admin guard 통과 시).
+ */
+export interface ChapterFeedbackStats {
+  chapterId: number;
+  totalResponses: number;
+  ratingResponses: number;
+  averageRating: number | null;
+  helpfulYes: number;
+  helpfulNo: number;
+  helpfulRate: number | null;
+  negativeRate: number | null;
+}
+
+export async function getChapterFeedbackStats(): Promise<ChapterFeedbackStats[]> {
+  if (!hasSupabaseServerEnv) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('chapter_feedback')
+    .select('chapter_id, rating, helpful_bool');
+
+  if (error || !data) return [];
+
+  const grouped = new Map<number, ChapterFeedbackRecord[]>();
+  for (const row of data as Array<{
+    chapter_id: number;
+    rating: number | null;
+    helpful_bool: boolean | null;
+  }>) {
+    const list = grouped.get(row.chapter_id) ?? [];
+    list.push(row as unknown as ChapterFeedbackRecord);
+    grouped.set(row.chapter_id, list);
+  }
+
+  const stats: ChapterFeedbackStats[] = [];
+  for (let chapterId = 1; chapterId <= 9; chapterId++) {
+    const rows = grouped.get(chapterId) ?? [];
+    const ratings = rows.map((r) => r.rating).filter((r): r is number => typeof r === 'number');
+    const helpfulYes = rows.filter((r) => r.helpful_bool === true).length;
+    const helpfulNo = rows.filter((r) => r.helpful_bool === false).length;
+    const helpfulTotal = helpfulYes + helpfulNo;
+    const averageRating =
+      ratings.length > 0
+        ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+        : null;
+    const negativeCount = ratings.filter((r) => r <= 2).length + helpfulNo;
+    const negativeRate =
+      rows.length > 0 ? Math.round((negativeCount / rows.length) * 1000) / 10 : null;
+    stats.push({
+      chapterId,
+      totalResponses: rows.length,
+      ratingResponses: ratings.length,
+      averageRating,
+      helpfulYes,
+      helpfulNo,
+      helpfulRate:
+        helpfulTotal > 0 ? Math.round((helpfulYes / helpfulTotal) * 1000) / 10 : null,
+      negativeRate,
+    });
+  }
+
+  return stats;
+}
+
+/**
+ * 최근 N개 피드백 (admin 대시보드용 stream view).
+ */
+export async function listRecentChapterFeedback(
+  limit: number = 50
+): Promise<ChapterFeedbackRecord[]> {
+  if (!hasSupabaseServerEnv) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('chapter_feedback')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data as ChapterFeedbackRecord[];
+}
