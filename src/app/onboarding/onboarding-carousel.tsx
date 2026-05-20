@@ -232,28 +232,40 @@ export function OnboardingCarousel({
         onPointerCancel={handlePointerEnd}
         style={{ touchAction: 'pan-y' }}
       >
-        <ZodiacWheel hero={slide.hero} ariaLabel={slide.heroAriaLabel} />
-
-        <div className="mt-7 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
-          {slide.eyebrow}
+        {/* 2026-05-20 — 슬라이드 transition: key={idx} 로 re-mount 시 fade + 미세 lift.
+            motion-safe variant 로 prefers-reduced-motion 시 모두 즉시 표시. */}
+        <div
+          key={`hero-${idx}`}
+          className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-300"
+        >
+          <ZodiacWheel hero={slide.hero} ariaLabel={slide.heroAriaLabel} />
         </div>
-        <h1
-          id={headingId}
-          className="mt-2 text-[22px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
-          style={{ wordBreak: 'keep-all' }}
+
+        <div
+          key={`copy-${idx}`}
+          className="flex flex-col items-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:delay-75"
         >
-          {slide.title[0]}
-          <br />
-          {slide.title[1]}
-        </h1>
-        <p
-          className="mt-3 max-w-xs text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
-          style={{ wordBreak: 'keep-all' }}
-        >
-          {slide.body[0]}
-          <br />
-          {slide.body[1]}
-        </p>
+          <div className="mt-7 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
+            {slide.eyebrow}
+          </div>
+          <h1
+            id={headingId}
+            className="mt-2 text-[22px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+            style={{ wordBreak: 'keep-all', textAlign: 'center' }}
+          >
+            {slide.title[0]}
+            <br />
+            {slide.title[1]}
+          </h1>
+          <p
+            className="mt-3 max-w-xs text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all', textAlign: 'center' }}
+          >
+            {slide.body[0]}
+            <br />
+            {slide.body[1]}
+          </p>
+        </div>
 
         {/* Pagination dots — 클릭으로도 슬라이드 점프. */}
         <div
