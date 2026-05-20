@@ -35,8 +35,12 @@ export interface ValidateChapterOptions {
   punchLines?: string[];
 }
 
-/** 옛 "X과/와 Y" 두 단어 오행 라벨 — 본문에 들어가면 한국어 조사 충돌. */
-const FORBIDDEN_OLD_ELEMENT_LABELS = [
+/**
+ * 옛 "X과/와 Y" 두 단어 오행 라벨 — 본문에 들어가면 한국어 조사 충돌.
+ * 2026-05-20 export: deterministic fallback 빌더(build-lifetime-report 등) 의
+ *   회귀 가드 테스트에서 동일 룰을 공유하기 위해 노출.
+ */
+export const FORBIDDEN_OLD_ELEMENT_LABELS = [
   '시작과 추진',
   '열정과 표현',
   '안정과 중심',
@@ -44,8 +48,15 @@ const FORBIDDEN_OLD_ELEMENT_LABELS = [
   '지혜와 유연',
 ];
 
-/** 사이트 정체성 (안심하고 보기 정책) 과 충돌하는 단정·자극 표현. */
-const FORBIDDEN_ABSOLUTE_PHRASES = [
+/**
+ * 사이트 정체성 (안심하고 보기 정책) 과 충돌하는 단정·자극·공포 표현.
+ *
+ * 2026-05-20 확장: 진단서 P0 ⑥ 잔존 패턴 점검에서 발견된 추가 자극어 보강.
+ *   - '역대급', '평생 후회', '폭발할', '망설일 시간', '한 번의 대박':
+ *     CHAPTER_PATTERN_TEMPLATES.fomoAd/secret 카테고리 fallback 잔존이 원인.
+ * 2026-05-20 export: deterministic fallback 빌더 회귀 가드 테스트 공유.
+ */
+export const FORBIDDEN_ABSOLUTE_PHRASES = [
   '반드시',
   '절대',
   '대흉',
@@ -53,6 +64,11 @@ const FORBIDDEN_ABSOLUTE_PHRASES = [
   '텅장',
   '비책',
   '운명을 내 편',
+  '역대급',
+  '평생 후회',
+  '폭발할',
+  '망설일 시간',
+  '한 번의 대박',
 ];
 
 const HANJA_PATTERN = /[一-鿿]/;

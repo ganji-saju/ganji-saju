@@ -318,7 +318,7 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 function getGrade(score: number): { grade: IljinScoreGrade; emoji: string; message: string } {
-  if (score >= 90) return { grade: '최고', emoji: '🌟', message: '역대급 길운! 큰 도전을 망설이지 마세요' };
+  if (score >= 90) return { grade: '최고', emoji: '🌟', message: '흐름이 매우 잘 받쳐주는 결, 큰 도전도 차근차근 시도하기 좋은 날' };
   if (score >= 80) return { grade: '매우 좋음', emoji: '✨', message: '흐름이 매우 좋은 날, 적극적으로 움직이세요' };
   if (score >= 70) return { grade: '좋음', emoji: '😊', message: '전반적으로 순조로운 하루' };
   if (score >= 60) return { grade: '무난', emoji: '🙂', message: '큰 변동 없이 안정적인 날' };
