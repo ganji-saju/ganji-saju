@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-risk-cards';
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
@@ -254,6 +255,9 @@ export function TodayFortuneResultClient({
 
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
               <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
+
+              {/* 2026-05-20 Phase 8-E — 무료 오늘운세 → 유료 cross-product funnel (사주 + 궁합 + 멤버십). PremiumLockCard 의 unlock 과 별개로 다른 상품 진입점. */}
+              <PaidFunnelGrid from="today-fortune" tone="light" includeMembership />
 
               {/* §8 — ML 피드백 카드 (PR 9 신설): 30초 dwell 후 노출.
                   사용자 평가 → today_fortune_feedback 테이블 → 추후 가중치 학습. */}
