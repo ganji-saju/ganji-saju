@@ -1,5 +1,6 @@
 import type { ReportEvidenceCard, SajuReport } from './types';
 import type { Element } from '@/lib/saju/types';
+import { ELEMENT_INFO } from '@/lib/saju/elements';
 
 export interface PunchReading {
   verdict: string;
@@ -163,16 +164,20 @@ function buildPersonalVerdict(report: SajuReport) {
   const focusLabel = report.focusLabel;
 
   // 2026-05-15: 유보형 ("좋아요") → 단정형/명령형 ("___ 합니다", "___ 하세요") 으로 전환.
+  // 2026-05-20 V2-5 PR V — "안정이 앞서고 정리가 비기 쉬운" 같은 추상명사 어법 어색 해소.
+  //   ELEMENT_INFO.name ("토 기운", "금 기운") 자연 표기로 전환 → 사용자 익숙 사주 어휘 사용.
   if (strongest && weakest && supportElement) {
-    return `${subjectParticle(ELEMENT_LABELS[strongest[0]])} 앞서고 ${subjectParticle(ELEMENT_LABELS[weakest[0]])} 비기 쉬운 날입니다. ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 시작하세요.`;
+    const strongName = ELEMENT_INFO[strongest[0]].name;
+    const weakName = ELEMENT_INFO[weakest[0]].name;
+    return `${strongName}이 강하고 ${weakName}이 부족한 날입니다. ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 시작하세요.`;
   }
 
   if (dayElement && supportElement) {
-    return `${ELEMENT_LABELS[dayElement]} 쪽으로 먼저 반응하는 날입니다. 오늘은 ${ELEMENT_ACTIONS[supportElement].support}부터 잡으세요.`;
+    return `${ELEMENT_INFO[dayElement].name}이 먼저 반응하는 날입니다. 오늘은 ${ELEMENT_ACTIONS[supportElement].support}부터 잡으세요.`;
   }
 
   if (dayElement) {
-    return `${ELEMENT_LABELS[dayElement]} 기질이 먼저 드러나는 날입니다. 한 가지 기준만 정하세요.`;
+    return `${ELEMENT_INFO[dayElement].name}이 먼저 드러나는 날입니다. 한 가지 기준만 정하세요.`;
   }
 
   return '';
