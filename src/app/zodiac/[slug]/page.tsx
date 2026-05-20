@@ -11,6 +11,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
+import { ZODIAC_RELATIONS, type ZodiacFortuneSlug } from '@/lib/zodiac/zodiac-relations';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
 import {
   buildArticleSchema,
@@ -426,6 +427,72 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
           </section>
 
           {/* §6 사주로 이어보기 CTA */}
+          {/* 2026-05-20 Phase 8-C — §궁합/조심할 띠 (12지 전통 호환 매트릭스). */}
+          {(() => {
+            const relation = ZODIAC_RELATIONS[item.slug as ZodiacFortuneSlug];
+            if (!relation) return null;
+            const slugToLabel = (slug: ZodiacFortuneSlug) =>
+              ZODIAC_FORTUNES.find((z) => z.slug === slug)?.label ?? slug;
+            return (
+              <article
+                className="rounded-[18px] border bg-white p-4"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                  💞 궁합과 조심
+                </div>
+                <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-[11px] font-bold text-[var(--app-jade)]">
+                      궁합 좋은 띠
+                    </div>
+                    <p
+                      className="mt-1 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                      style={{ wordBreak: 'keep-all' }}
+                    >
+                      {relation.matchSummary}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {relation.idealMatches.map((slug) => (
+                        <Link
+                          key={slug}
+                          href={`/zodiac/${slug}`}
+                          className="rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] border no-underline"
+                          style={{ borderColor: 'var(--app-pink-line)' }}
+                        >
+                          {slugToLabel(slug)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-[var(--app-coral)]">
+                      조심할 띠
+                    </div>
+                    <p
+                      className="mt-1 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                      style={{ wordBreak: 'keep-all' }}
+                    >
+                      {relation.bewareSummary}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {relation.bewareMatches.map((slug) => (
+                        <Link
+                          key={slug}
+                          href={`/zodiac/${slug}`}
+                          className="rounded-full bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-copy-soft)] border no-underline"
+                          style={{ borderColor: 'rgba(220,79,79,0.22)' }}
+                        >
+                          {slugToLabel(slug)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })()}
+
           <article
             className="rounded-[18px] p-5 text-white"
             style={{
@@ -442,9 +509,9 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
               내 사주로 더 자세히 봐주세요
             </h2>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
-                href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
+                href={readingSlug ? `/saju/${readingSlug}?from=zodiac` : '/saju/new?from=zodiac'}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 {readingSlug ? '내 사주로 이어보기' : '맞춤 사주로 이어보기'} →
@@ -454,6 +521,33 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
               >
                 내 띠 다시 확인
+              </Link>
+            </div>
+            {/* 2026-05-20 Phase 8-C — 무료 → 유료 funnel: 사주 상세 (550원) + 궁합 풀이 (990원). 별자리 패턴 동일. */}
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <Link
+                href="/saju/new?from=zodiac"
+                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
+              >
+                <span className="flex flex-col text-left">
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">사주 상세 풀이</span>
+                  <span className="mt-0.5">14 섹션 · A4 5~7p 리포트</span>
+                </span>
+                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
+                  550원~
+                </span>
+              </Link>
+              <Link
+                href="/compatibility/input?from=zodiac"
+                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
+              >
+                <span className="flex flex-col text-left">
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">궁합 풀이</span>
+                  <span className="mt-0.5">두 사람 사주 결합 분석</span>
+                </span>
+                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
+                  990원
+                </span>
               </Link>
             </div>
           </article>
