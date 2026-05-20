@@ -6,6 +6,22 @@ export type AiFallbackReason =
   | 'quota_exceeded'
   | 'openai_error';
 
+/**
+ * 2026-05-20 V2-5 PR N — OpenAI Responses API structured output 옵션.
+ *
+ * 자유 텍스트 응답은 마크다운 깨짐·incomplete 출력 위험이 있고, LLM 이
+ * structureGuide 를 *형식이 아닌 권장* 으로 해석할 수 있음. JSON schema 강제 시
+ * 응답이 *반드시 `{ body: string }` 객체* 형태로 직렬화 → 안정성 ↑.
+ *
+ * 사용법:
+ *   const result = await generateAiText({
+ *     ...,
+ *     responseFormat: { type: 'json_schema_body' }
+ *   });
+ *   // result.text 는 여전히 body 본문 (JSON 파싱은 generateAiText 내부에서 수행).
+ */
+export type AiResponseFormat = { type: 'text' } | { type: 'json_schema_body' };
+
 export interface AiTextRequest {
   instructions: string;
   input: string;
@@ -14,6 +30,8 @@ export interface AiTextRequest {
   maxOutputTokens?: number;
   temperature?: number;
   timeoutMs?: number;
+  /** 2026-05-20 V2-5 PR N — 응답 형식. 미지정 시 자유 텍스트 (기본 호환). */
+  responseFormat?: AiResponseFormat;
 }
 
 export interface AiTextResult {
@@ -85,18 +103,61 @@ export async function generateAiText(
       maxRetries: 0,
     });
 
-    const response = await client.responses.create({
+    // 2026-05-20 V2-5 PR N — responseFormat 분기.
+    //   - 미지정 / 'text': 기존 자유 텍스트 (이전 호환).
+    //   - 'json_schema_body': { body: string } JSON schema 강제 → 응답 안정성 ↑.
+    const wantsJsonBody = request.responseFormat?.type === 'json_schema_body';
+    const baseRequest = {
       model: model as never,
       instructions: request.instructions,
       input: request.input,
       max_output_tokens: request.maxOutputTokens ?? 700,
       temperature: request.temperature ?? undefined,
       store: false,
-    });
-    const text = response.output_text?.trim();
+    };
+    const apiRequest = wantsJsonBody
+      ? {
+          ...baseRequest,
+          text: {
+            format: {
+              type: 'json_schema' as const,
+              name: 'chapter_body',
+              schema: {
+                type: 'object',
+                properties: {
+                  body: {
+                    type: 'string',
+                    description: '챕터 본문 — 자연스러운 한국어 단락 (3~7 문장).',
+                  },
+                },
+                required: ['body'],
+                additionalProperties: false,
+              },
+              strict: true,
+            },
+          },
+        }
+      : baseRequest;
 
-    if (!text) {
+    const response = await client.responses.create(apiRequest as never);
+    const raw = response.output_text?.trim();
+
+    if (!raw) {
       return fallbackResult(request, 'empty_ai_response');
+    }
+
+    // JSON mode 인 경우 { body } 파싱. 파싱 실패 시 raw 그대로 (defensive — schema strict
+    // 이라 정상 응답은 항상 JSON 이지만 future API 변경에 대비).
+    let text = raw;
+    if (wantsJsonBody) {
+      try {
+        const parsed = JSON.parse(raw) as { body?: unknown };
+        if (typeof parsed.body === 'string' && parsed.body.trim()) {
+          text = parsed.body.trim();
+        }
+      } catch {
+        // raw 가 JSON 이 아니면 그대로 사용 (validator 가 후속 처리)
+      }
     }
 
     return {

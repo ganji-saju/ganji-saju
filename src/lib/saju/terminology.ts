@@ -186,6 +186,26 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
   병신합: { hanja: '丙辛合', plainCue: '한 가지에 꽂히면 끝장을 봐야 하는 집중력의 결', category: 'aux' },
 };
 
+/**
+ * 2026-05-20 V2-5 PR N — chapter-validator 의 `myeongri-jargon-repetition` 룰에서
+ *   "같은 명리 술어가 한 챕터에 2회 이상 등장" 을 차단하기 위한 검증 대상 목록.
+ *
+ * 제외 기준:
+ *   - category === 'element': 오행 (목/화/토/금/수) 은 자연 비유 라벨 ("쇠의 결")
+ *     로 본문에 자주 나오므로 검증 대상 아님.
+ *   - 1글자 키 (쇠/병/사/묘/절/태/양/합/충/형/해 등): 일반 한국어 명사·조사·
+ *     접속사 (사람/사주/병원/병행/태우다 등) 와 충돌해 false positive 다수.
+ *     spec §3 룰 7 "한 단락에 한 번만" 의 정신 — 1글자 술어는 그 자체로 변별력
+ *     약함. 2글자 이상 술어만 strict 검증.
+ *
+ * 결과: 십성 10 + 신살 6 + 격국 10 + 12운성 5 (2글자) + 보조 5 + 원진 1 ≈ 37개.
+ */
+export const MYEONGRI_TERMS_FOR_VALIDATION: readonly string[] = Object.entries(
+  MYEONGRI_GLOSSARY
+)
+  .filter(([term, entry]) => entry.category !== 'element' && term.length >= 2)
+  .map(([term]) => term);
+
 /** 명리 용어에 일상 비유를 ", " 뒤에 붙여 반환. 미등록 용어는 그대로. */
 export function glossaryHint(term: string): string {
   const entry = MYEONGRI_GLOSSARY[term];

@@ -66,3 +66,14 @@ test('OpenAIChapterClient — options 커스텀 (model, temperature, maxOutputTo
   });
   assert.ok(client instanceof OpenAIChapterClient);
 });
+
+// 2026-05-20 V2-5 PR N — JSON mode 옵션 검증.
+test('OpenAIChapterClient — useJsonMode 옵션 기본 활성 (constructor 통과)', () => {
+  const client = new OpenAIChapterClient({ useJsonMode: true });
+  assert.ok(client instanceof OpenAIChapterClient);
+});
+
+test('OpenAIChapterClient — useJsonMode=false 도 constructor 통과 (이전 호환)', () => {
+  const client = new OpenAIChapterClient({ useJsonMode: false });
+  assert.ok(client instanceof OpenAIChapterClient);
+});

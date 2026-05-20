@@ -252,8 +252,13 @@ test('buildLifetimeReport 의 모든 cycle 본문이 chapter-validator 4 룰을 
     for (const [field, body] of bodies) {
       if (!body) continue;
       const result = validateChapterBody(body, {
-        // 신규 룰 (PR M) — deterministic builder 점진 도입.
-        skipRules: ['sentence-length', 'gyeol-frequency', 'vague-comfort'],
+        // 신규 룰 (PR M·N) — deterministic builder 점진 도입.
+        skipRules: [
+          'sentence-length',
+          'gyeol-frequency',
+          'vague-comfort',
+          'myeongri-jargon-repetition',
+        ],
       });
       assert.equal(
         result.passed,

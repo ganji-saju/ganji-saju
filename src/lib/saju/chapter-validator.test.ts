@@ -198,3 +198,67 @@ test('skipRules — 특정 룰만 비활성화 가능', () => {
     'sentence-length skip 시 미적용'
   );
 });
+
+// 2026-05-20 V2-5 PR N — 명리 술어 반복 룰 단위 검증.
+
+test('명리 술어 반복 시 myeongri-jargon-repetition rule fail', () => {
+  // "정인" 3회 등장
+  const body =
+    '정인의 결이 또렷이 흐릅니다. 정인 작용이 강한 시기예요. 정인 영향이 또 들어와요.';
+  const result = validateChapterBody(body);
+  const fail = result.failures.find((f) => f.rule === 'myeongri-jargon-repetition');
+  assert.ok(fail, '"정인" 3회 등장이 fail 로 잡혀야 함');
+  assert.ok(fail?.excerpt?.includes('정인'));
+});
+
+test('명리 술어 1회 등장은 통과 (spec §3 룰 7 "한 단락에 한 번만")', () => {
+  const body = '정인의 결이 또렷이 흐릅니다. 가까운 사람을 챙기는 패턴이 반복돼요.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'myeongri-jargon-repetition'),
+    '1회 등장 통과'
+  );
+});
+
+test('명리 술어 substring 중복 카운트 차단 — "정인" 1회 + "정인격" 1회 = 각자 1회', () => {
+  const body = '정인격의 결입니다. 정인 작용이 강해요.';
+  const result = validateChapterBody(body);
+  // "정인" + "정인격" 각각 1회씩이므로 통과해야 함 (긴 술어 우선 매칭으로 중복 X)
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'myeongri-jargon-repetition'),
+    '정인격(1) + 정인(1) 통과'
+  );
+});
+
+test('자연 비유 라벨 "쇠의 결" 안의 "쇠" 는 명리 술어로 카운트 안 됨 (1글자 제외)', () => {
+  const body =
+    '쇠의 결이 부족해요. 쇠의 결이 흔들립니다. 쇠의 결이 회복돼요. 쇠의 결을 보강하세요.';
+  const result = validateChapterBody(body);
+  // "쇠" 는 1글자 12운성이지만 검증 제외 — 자연 비유 라벨이라 false positive 회피
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'myeongri-jargon-repetition'),
+    '1글자 명리 술어 제외'
+  );
+});
+
+test('서로 다른 술어 각자 1회씩은 통과', () => {
+  const body =
+    '정인의 결로 흐릅니다. 식신 작용이 약해요. 편관이 들어오는 시기예요.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'myeongri-jargon-repetition'),
+    '서로 다른 술어 1회씩 통과'
+  );
+});
+
+test('skipRules — myeongri-jargon-repetition 룰 skip 가능', () => {
+  const body =
+    '정인의 결. 정인 작용. 정인 영향. 정인 흐름. 정인 강함.';
+  const skipped = validateChapterBody(body, {
+    skipRules: ['myeongri-jargon-repetition'],
+  });
+  assert.ok(
+    !skipped.failures.find((f) => f.rule === 'myeongri-jargon-repetition'),
+    'skip 시 미적용'
+  );
+});
