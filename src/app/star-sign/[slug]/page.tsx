@@ -26,6 +26,12 @@ import {
   getAllCompatibilities,
   type StarSignSlug,
 } from '@/lib/star-sign/sign-content';
+import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
+import {
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+  serializeStructuredData,
+} from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -44,11 +50,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const item = getStarSign(slug);
   if (!item) return { title: '별자리' };
-  return {
+  return buildContentPageMetadata({
     title: `${item.label} 운세`,
     description: `${item.label} 오늘의 운세 · 성격 · 연애 · 직업 · 12궁 호환 매트릭스를 한눈에 — 간지사주 별자리 상세.`,
-    alternates: { canonical: `/star-sign/${item.slug}` },
-  };
+    path: `/star-sign/${item.slug}`,
+  });
 }
 
 const TONE_STYLE: Record<
@@ -133,9 +139,32 @@ export default async function StarSignDetailPage({ params }: Props) {
   const elementLabel = ELEMENT_LABEL[content.element];
   const qualityLabel = QUALITY_LABEL[content.quality];
 
+  // 2026-05-20 Phase 8-A — JSON-LD Article + Breadcrumb schema for SERP rich result.
+  const articleSchema = buildArticleSchema({
+    headline: `${item.label} 운세`,
+    description: `${item.label} 오늘의 운세 · 성격 · 연애 · 직업 · 12궁 호환 매트릭스를 한눈에 — 간지사주 별자리 상세.`,
+    path: `/star-sign/${item.slug}`,
+    articleSection: '별자리 운세',
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: '홈', path: '/' },
+    { name: '별자리', path: '/star-sign' },
+    { name: item.label, path: `/star-sign/${item.slug}` },
+  ]);
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
         <GangiPageHeader title={`${item.label} 별자리`} backHref="/star-sign" />
 
         <section className="space-y-5 px-1">

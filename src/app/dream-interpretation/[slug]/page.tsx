@@ -6,6 +6,12 @@ import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
+import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
+import {
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+  serializeStructuredData,
+} from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -30,13 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  return {
+  return buildContentPageMetadata({
     title: `${item.title} 꿈해몽`,
     description: `${item.title}이 반복해서 떠오를 때 참고할 수 있는 무료 꿈해몽 상세 페이지입니다.`,
-    alternates: {
-      canonical: `/dream-interpretation/${item.slug}`,
-    },
-  };
+    path: `/dream-interpretation/${item.slug}`,
+  });
 }
 
 const PANEL_STYLE = {
@@ -72,9 +76,33 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
 
   const relatedItems = DREAM_ENTRIES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
 
+  // 2026-05-20 Phase 8-A — JSON-LD Article + Breadcrumb schema for SERP rich result.
+  //   FAQPage schema 는 FAQ 콘텐츠 가 채워지는 Phase 8-D 에서 추가.
+  const articleSchema = buildArticleSchema({
+    headline: `${item.title} 꿈해몽`,
+    description: `${item.title}이 반복해서 떠오를 때 참고할 수 있는 무료 꿈해몽 상세 페이지입니다.`,
+    path: `/dream-interpretation/${item.slug}`,
+    articleSection: '꿈해몽',
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: '홈', path: '/' },
+    { name: '꿈해몽', path: '/dream-interpretation' },
+    { name: item.title, path: `/dream-interpretation/${item.slug}` },
+  ]);
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5 sm:space-y-6">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
         <GangiPageHeader title="꿈해몽" backHref="/dream-interpretation" />
 
         {/* Hero — badge + title + description */}

@@ -11,6 +11,12 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
+import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
+import {
+  buildArticleSchema,
+  buildBreadcrumbSchema,
+  serializeStructuredData,
+} from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { getKstParts, getKstStartOfDay } from '@/shared/utils/kst';
 
@@ -151,11 +157,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const item = getZodiac(slug);
   if (!item) return { title: '내 띠 운세' };
-  return {
+  return buildContentPageMetadata({
     title: `${item.label} 운세`,
     description: `${item.label}의 오늘 포인트와 가볍게 실천할 행동을 확인하는 간지사주 띠운세입니다.`,
-    alternates: { canonical: `/zodiac/${item.slug}` },
-  };
+    path: `/zodiac/${item.slug}`,
+  });
 }
 
 export default async function ZodiacDetailPage({ params, searchParams }: Props) {
@@ -194,9 +200,32 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
     { label: '건강', value: scores.health, color: 'var(--app-jade)' },
   ];
 
+  // 2026-05-20 Phase 8-A — JSON-LD Article + Breadcrumb schema for SERP rich result.
+  const articleSchema = buildArticleSchema({
+    headline: `${item.label} 운세`,
+    description: `${item.label}의 오늘 포인트와 가볍게 실천할 행동을 확인하는 간지사주 띠운세입니다.`,
+    path: `/zodiac/${item.slug}`,
+    articleSection: '띠 운세',
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: '홈', path: '/' },
+    { name: '띠운세', path: '/zodiac' },
+    { name: item.label, path: `/zodiac/${item.slug}` },
+  ]);
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
         <GangiPageHeader title={`${item.label} 운세`} backHref="/zodiac" />
 
         <section className="space-y-5 px-1">
