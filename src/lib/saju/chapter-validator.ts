@@ -7,6 +7,8 @@
 //  2. 향후 — saju-lifetime-service 의 LLM 출력을 검증해 fail 시 재생성 또는
 //     deterministic fallback 사용.
 
+import { MYEONGRI_TERMS_FOR_VALIDATION } from './terminology';
+
 export type ChapterValidationRule =
   | 'hanja'
   | 'x-과-label'
@@ -17,7 +19,9 @@ export type ChapterValidationRule =
   // 2026-05-20 V2-5 PR M (검증 4-A 항목 6 보강 — report-llm-spec.md §6 5종 검증 완성):
   | 'gyeol-frequency'      // "결" 빈도 — 챕터당 5회 초과 시 fail (사이트 정체성 단어 남용 차단)
   | 'sentence-length'      // 한 문장 길이 — 65자 초과 시 fail (가독성 가드)
-  | 'vague-comfort';       // 막연한 위로 — 데이터 근거 없는 "괜찮을 거예요" 패턴 차단
+  | 'vague-comfort'        // 막연한 위로 — 데이터 근거 없는 "괜찮을 거예요" 패턴 차단
+  // 2026-05-20 V2-5 PR N (검증 4-A 항목 4 보강 — 8번째 금지 규칙):
+  | 'myeongri-jargon-repetition';  // 명리 술어 반복 — 같은 술어 챕터당 2회 이상 등장 시 fail (spec §3 룰 7 "한 단락에 한 번만")
 
 export interface ChapterValidationFailure {
   rule: ChapterValidationRule;
@@ -121,6 +125,22 @@ const VAGUE_COMFORT_PHRASES = [
   '안심하세요',
   '괜찮습니다',
 ];
+
+/**
+ * 명리 술어 반복 한도 — 같은 술어가 한 챕터에 N회 이상 등장 시 fail.
+ *   spec §3 룰 7 "한 단락에 한 번만" 의 챕터 단위 변환.
+ *   = 2 이면 *2회 이상* fail, 즉 1회까지 OK.
+ */
+const MYEONGRI_TERM_MAX_PER_CHAPTER = 1;
+
+/**
+ * 명리 술어가 *단독 사용* 인지 판정하는 정규식 빌더.
+ *   "정인" 매치 — "정인격" 은 매치 X (격이 한글 word boundary 침범).
+ *   한글 word boundary 가 없으므로 negative lookbehind/lookahead 로 대체.
+ */
+function buildMyeongriPattern(term: string): RegExp {
+  return new RegExp(`(?<![가-힣])${term}(?![가-힣])`, 'gu');
+}
 
 /**
  * 챕터 본문이 사이트 톤 룰을 만족하는지 검증.
@@ -266,6 +286,37 @@ export function validateChapterBody(
           rule: 'vague-comfort',
           detail: `근거 없는 위로 표현 — 결·신호·시점 정보 동반 권장`,
           excerpt: phrase,
+        });
+      }
+    }
+  }
+
+  // 10. 명리 술어 반복 — 같은 술어 챕터당 2회 이상 등장 시 fail
+  //   spec §3 룰 7 "명리 술어 사용 시 한 단락에 한 번만 + 일상어 풀이 함께".
+  //   카탈로그 나열 금지 — 같은 술어 반복은 카탈로그 신호.
+  if (!skip.has('myeongri-jargon-repetition')) {
+    // 긴 술어 우선 매칭 (정인격 > 정인) — substring 중복 카운트 회피
+    const sortedTerms = [...MYEONGRI_TERMS_FOR_VALIDATION].sort(
+      (a, b) => b.length - a.length
+    );
+    // 매치 시 해당 영역을 "소비" — 다음 술어 매치 시 중복 카운트 X
+    let remaining = body;
+    const counts = new Map<string, number>();
+    for (const term of sortedTerms) {
+      const pattern = buildMyeongriPattern(term);
+      const matches = remaining.match(pattern);
+      if (matches && matches.length > 0) {
+        counts.set(term, matches.length);
+        // 카운트 후 매치 영역 제거 (substring 중복 카운트 차단)
+        remaining = remaining.replace(pattern, '');
+      }
+    }
+    for (const [term, count] of counts.entries()) {
+      if (count > MYEONGRI_TERM_MAX_PER_CHAPTER) {
+        failures.push({
+          rule: 'myeongri-jargon-repetition',
+          detail: `명리 술어 "${term}" ${count}회 등장 — 한 챕터당 최대 ${MYEONGRI_TERM_MAX_PER_CHAPTER}회 (spec §3 룰 7). 두 번째 이후는 일상어 풀이로 치환 권장.`,
+          excerpt: `${term} × ${count}`,
         });
       }
     }
