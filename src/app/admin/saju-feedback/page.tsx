@@ -7,10 +7,12 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import {
   getChapterFeedbackStats,
+  getChapterFeedbackTimeseries,
   listRecentChapterFeedback,
   type ChapterFeedbackRecord,
   type ChapterFeedbackStats,
 } from '@/lib/saju/chapter-feedback';
+import { ChapterFeedbackTimeseriesChart } from '@/components/admin/chapter-feedback-timeseries-chart';
 
 export const metadata: Metadata = {
   title: '챕터 피드백 (admin)',
@@ -167,12 +169,12 @@ function RecentStream({ items }: { items: ChapterFeedbackRecord[] }) {
 }
 
 export default async function SajuFeedbackAdminPage() {
-  // RLS 우회는 layout.tsx 의 admin guard 이후 createClient (anon) 사용.
-  //   chapter_feedback 의 service-role SELECT 정책은 *없음* → admin 도 RLS 적용.
-  //   추후 service-role 분리 필요 시 별도 dedicated client 도입 (현재는 본인 피드백만 보임).
-  const [stats, recent] = await Promise.all([
+  // 2026-05-20 PR T: service-role client 사용 → 모든 사용자 피드백 집계.
+  // 2026-05-20 PR U: 일별 추이 차트 추가.
+  const [stats, recent, timeseries] = await Promise.all([
     getChapterFeedbackStats(),
     listRecentChapterFeedback(50),
+    getChapterFeedbackTimeseries(30),
   ]);
 
   return (
@@ -184,6 +186,7 @@ export default async function SajuFeedbackAdminPage() {
           평균 별점·helpful 비율로 LLM 품질 신호를 빠르게 확인하세요.
           부정 비율 30%+ 챕터는 prompt 튜닝 우선순위 ↑.
         </p>
+        <ChapterFeedbackTimeseriesChart data={timeseries} />
         <StatsTable stats={stats} />
         <RecentStream items={recent} />
       </AppPage>

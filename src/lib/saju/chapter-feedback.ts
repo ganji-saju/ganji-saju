@@ -161,6 +161,89 @@ export async function getChapterFeedbackStats(): Promise<ChapterFeedbackStats[]>
 }
 
 /**
+ * 2026-05-20 V2-5 PR U — 일별 추이 시계열 (admin 대시보드 차트용).
+ *
+ * 최근 N일간 일별 응답 수 / 평균 별점 / helpful Yes·No 카운트.
+ * 챕터 전체 합산 — 챕터별 분리 추세는 후속 PR.
+ */
+export interface ChapterFeedbackDailyPoint {
+  /** YYYY-MM-DD (KST 기준) */
+  date: string;
+  totalResponses: number;
+  averageRating: number | null;
+  helpfulYes: number;
+  helpfulNo: number;
+  helpfulRate: number | null;
+}
+
+function ymdKst(date: Date): string {
+  // KST 자정 기준 YYYY-MM-DD.
+  const ms = date.getTime() + 9 * 60 * 60 * 1000;
+  const utc = new Date(ms);
+  return `${utc.getUTCFullYear()}-${String(utc.getUTCMonth() + 1).padStart(2, '0')}-${String(utc.getUTCDate()).padStart(2, '0')}`;
+}
+
+export async function getChapterFeedbackTimeseries(
+  days: number = 30
+): Promise<ChapterFeedbackDailyPoint[]> {
+  if (!hasSupabaseServiceEnv) return [];
+  const supabase = await createServiceClient();
+  const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
+  const sinceIso = new Date(sinceMs).toISOString();
+
+  const { data, error } = await supabase
+    .from('chapter_feedback')
+    .select('created_at, rating, helpful_bool')
+    .gte('created_at', sinceIso);
+
+  if (error || !data) return [];
+
+  // 일별 버킷 (KST).
+  const buckets = new Map<
+    string,
+    { ratings: number[]; helpfulYes: number; helpfulNo: number; rowCount: number }
+  >();
+  for (const row of data as Array<{
+    created_at: string;
+    rating: number | null;
+    helpful_bool: boolean | null;
+  }>) {
+    const date = ymdKst(new Date(row.created_at));
+    const bucket = buckets.get(date) ?? { ratings: [], helpfulYes: 0, helpfulNo: 0, rowCount: 0 };
+    bucket.rowCount += 1;
+    if (typeof row.rating === 'number') bucket.ratings.push(row.rating);
+    if (row.helpful_bool === true) bucket.helpfulYes++;
+    if (row.helpful_bool === false) bucket.helpfulNo++;
+    buckets.set(date, bucket);
+  }
+
+  // 결과: 최근 days 일 모든 날짜 채움 (빈 날도 포함, sparkline 연속성).
+  const result: ChapterFeedbackDailyPoint[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const day = ymdKst(new Date(Date.now() - i * 24 * 60 * 60 * 1000));
+    const bucket = buckets.get(day);
+    const ratings = bucket?.ratings ?? [];
+    const helpfulYes = bucket?.helpfulYes ?? 0;
+    const helpfulNo = bucket?.helpfulNo ?? 0;
+    const helpfulTotal = helpfulYes + helpfulNo;
+    result.push({
+      date: day,
+      totalResponses: bucket?.rowCount ?? 0,
+      averageRating:
+        ratings.length > 0
+          ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+          : null,
+      helpfulYes,
+      helpfulNo,
+      helpfulRate:
+        helpfulTotal > 0 ? Math.round((helpfulYes / helpfulTotal) * 1000) / 10 : null,
+    });
+  }
+
+  return result;
+}
+
+/**
  * 최근 N개 피드백 (admin 대시보드용 stream view).
  */
 export async function listRecentChapterFeedback(
