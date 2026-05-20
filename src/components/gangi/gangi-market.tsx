@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { StarSignChip } from '@/components/gangi/star-sign-chip';
 import type {
   GangiHomeBanner,
   GangiHomeCategoryKey,
@@ -441,7 +442,11 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+      {card.chipKind === 'star-sign' ? (
+        <StarSignChip kind={card.starSign} size="md" />
+      ) : (
+        <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+      )}
 
       <div className="min-w-0">
         <h2
