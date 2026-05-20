@@ -25,10 +25,17 @@ export function ChapterFeedbackCard({
 }: Props) {
   const [rating, setRating] = useState<number | null>(null);
   const [helpful, setHelpful] = useState<boolean | null>(null);
+  // 2026-05-20 V2-5 PR U — 자유 코멘트 (옵션 B 확장).
+  const [comment, setComment] = useState<string>('');
+  const [showCommentInput, setShowCommentInput] = useState(false);
   const [state, setState] = useState<SaveState>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  async function submitFeedback(nextRating: number | null, nextHelpful: boolean | null) {
+  async function submitFeedback(
+    nextRating: number | null,
+    nextHelpful: boolean | null,
+    nextComment: string | null = null
+  ) {
     // 빈 응답이면 저장 안 함 (DB CHECK 제약과 일치).
     if (nextRating === null && nextHelpful === null) return;
 
@@ -44,6 +51,7 @@ export function ChapterFeedbackCard({
           chapterId,
           rating: nextRating,
           helpfulBool: nextHelpful,
+          comment: nextComment?.trim() || null,
         }),
       });
 
@@ -73,13 +81,23 @@ export function ChapterFeedbackCard({
   function handleRatingClick(value: number) {
     const nextRating = rating === value ? null : value;
     setRating(nextRating);
-    void submitFeedback(nextRating, helpful);
+    void submitFeedback(nextRating, helpful, comment);
   }
 
   function handleHelpfulClick(value: boolean) {
     const nextHelpful = helpful === value ? null : value;
     setHelpful(nextHelpful);
-    void submitFeedback(rating, nextHelpful);
+    void submitFeedback(rating, nextHelpful, comment);
+  }
+
+  function handleCommentSubmit() {
+    // 별점 또는 helpful 응답이 먼저 있어야 코멘트 저장 가능 (DB CHECK 제약).
+    if (rating === null && helpful === null) {
+      setState('error');
+      setErrorMsg('별점 또는 도움됨 응답을 먼저 남겨주세요.');
+      return;
+    }
+    void submitFeedback(rating, helpful, comment);
   }
 
   if (state === 'auth-required') {
@@ -165,6 +183,53 @@ export function ChapterFeedbackCard({
           아쉬워요
         </button>
       </div>
+
+      {/* 자유 코멘트 (옵션 B 확장 — 별점/helpful 응답 후 활성화) */}
+      {(rating !== null || helpful !== null) && (
+        <div className="mt-3">
+          {!showCommentInput ? (
+            <button
+              type="button"
+              onClick={() => setShowCommentInput(true)}
+              className="text-[11.5px] font-bold text-[var(--app-pink-strong)] underline underline-offset-2"
+            >
+              + 자세한 의견 남기기 (선택)
+            </button>
+          ) : (
+            <div>
+              <label
+                htmlFor={`feedback-comment-${chapterId}`}
+                className="text-[11.5px] font-bold text-[var(--app-copy-soft)]"
+              >
+                자세한 의견 (선택, 200자 이내)
+              </label>
+              <textarea
+                id={`feedback-comment-${chapterId}`}
+                value={comment}
+                onChange={(e) => setComment(e.target.value.slice(0, 200))}
+                rows={2}
+                maxLength={200}
+                placeholder="어떤 부분이 좋았거나 아쉬웠나요?"
+                className="mt-1 w-full resize-none rounded-[8px] border border-[var(--app-line)] bg-white p-2 text-[12.5px] text-[var(--app-ink)] placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink-strong)] focus:outline-none"
+                disabled={state === 'saving'}
+              />
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+                  {comment.length}/200
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCommentSubmit}
+                  disabled={state === 'saving' || comment.trim().length === 0}
+                  className="rounded-full bg-[var(--app-pink-strong)] px-3 py-1 text-[11.5px] font-bold text-white disabled:opacity-50"
+                >
+                  의견 보내기
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 상태 메시지 */}
       {state === 'saved' && (
