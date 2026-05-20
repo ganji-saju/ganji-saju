@@ -105,8 +105,9 @@ function buildContactNavItem(): readonly [string, string] | null {
   return null;
 }
 
+// 2026-05-20 — dim 0.62 → 0.8 톤업 (브랜드 카피 / chevron 과 위계 일관).
 const LINK_STYLE: React.CSSProperties = {
-  color: 'rgba(255,255,255,0.62)',
+  color: 'rgba(255,255,255,0.8)',
   textDecoration: 'none',
   display: 'block',
   padding: '4px 0',
@@ -149,7 +150,11 @@ export default function SiteFooter() {
         background: '#000000',
         backgroundColor: '#000000',
         backgroundImage: 'none',
-        color: 'rgba(255,255,255,0.72)',
+        // 2026-05-20 — 사용자 보고: dark theme typography 톤다운 (0.72) 이
+        //   footer 전체 인상을 dim gray 로 만들었음. 100% white 로 변경.
+        //   dim 위계는 하위 element (nav link/회사정보/면책/copyright) 의
+        //   명시 color 로 계속 유지됨 (footer default 만 100%, 하위는 그대로).
+        color: 'rgba(255,255,255,1)',
         padding: '48px 24px 28px',
         fontSize: 13,
         lineHeight: 1.7,
@@ -199,7 +204,8 @@ export default function SiteFooter() {
                 </div>
               </div>
             </div>
-            <p style={{ maxWidth: 280, color: 'rgba(255,255,255,0.62)' }}>
+            {/* 2026-05-20 — dim 0.62 → 0.8 톤업 (브랜드 카피 가독성). */}
+            <p style={{ maxWidth: 280, color: 'rgba(255,255,255,0.8)' }}>
               오늘운세, 사주, 타로, 궁합을 쉽고 빠르게 보는 운세 서비스입니다.
             </p>
           </div>
@@ -236,7 +242,8 @@ export default function SiteFooter() {
                       'h-4 w-4 transition-transform',
                       isOpen && 'rotate-180'
                     )}
-                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                    // 2026-05-20 — dim 0.6 → 0.8 톤업 (chevron 가시성, h4 와 시각 균형).
+                    style={{ color: 'rgba(255,255,255,0.8)' }}
                     aria-hidden="true"
                   />
                 </button>
