@@ -58,16 +58,21 @@ CREATE TRIGGER chapter_feedback_set_updated_at
 -- RLS — 사용자는 본인 피드백만 SELECT/INSERT/UPDATE. admin (service_role) 은 모두 접근.
 ALTER TABLE chapter_feedback ENABLE ROW LEVEL SECURITY;
 
+-- 2026-05-20 idempotent fix — Postgres CREATE POLICY 는 IF NOT EXISTS 미지원.
+--   부분 적용 후 재실행 시 42710 (duplicate policy) 오류 회피 위해 DROP 선행.
+DROP POLICY IF EXISTS "Users can read own chapter feedback" ON chapter_feedback;
 CREATE POLICY "Users can read own chapter feedback"
   ON chapter_feedback
   FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own chapter feedback" ON chapter_feedback;
 CREATE POLICY "Users can insert own chapter feedback"
   ON chapter_feedback
   FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own chapter feedback" ON chapter_feedback;
 CREATE POLICY "Users can update own chapter feedback"
   ON chapter_feedback
   FOR UPDATE
