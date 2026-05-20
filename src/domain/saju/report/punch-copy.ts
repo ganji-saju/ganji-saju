@@ -184,6 +184,7 @@ function buildPersonalVerdict(report: SajuReport) {
 }
 
 function buildPersonalWhy(report: SajuReport) {
+  // 2026-05-20 V2-5 PR W — ELEMENT_LABELS 추상명사 (안정/정리/생각) → ELEMENT_INFO 자연 표기.
   const ratio = getElementRatio(report);
   const { strongest, weakest } = getElementEdges(ratio);
   const computed = getComputed(report);
@@ -193,9 +194,11 @@ function buildPersonalWhy(report: SajuReport) {
   return firstNonEmpty(
     [
       strongest && weakest
-        ? `${ELEMENT_LABELS[strongest[0]]} 쪽이 가장 앞에 있고 ${ELEMENT_LABELS[weakest[0]]} 쪽이 비기 쉬워, 오늘 선택의 차이가 여기서 납니다.`
+        ? `${ELEMENT_INFO[strongest[0]].name}이 가장 강하고 ${ELEMENT_INFO[weakest[0]].name}이 부족해, 오늘 선택의 차이가 여기서 납니다.`
         : null,
-      dayElement ? `${ELEMENT_LABELS[dayElement]} 기질은 상황을 ${ELEMENT_ACTIONS[dayElement].strength}으로 풀어가려는 편입니다.` : null,
+      dayElement
+        ? `${ELEMENT_INFO[dayElement].name}이 상황을 ${ELEMENT_ACTIONS[dayElement].strength}으로 풀어가려는 편입니다.`
+        : null,
       tenGodTone ? `반복 성향은 ${tenGodTone}으로 보입니다.` : null,
     ],
     ''
@@ -208,12 +211,15 @@ function buildPersonalCaution(report: SajuReport) {
   const supportElement = getSupportElement(report);
 
   // 2026-05-15: 유보형 → 단정형 + 명령형.
+  // 2026-05-20 V2-5 PR W — ELEMENT_INFO 자연 표기 + "반드시" 단정 표현 완화 (룰 5).
   return firstNonEmpty(
     [
       weakest
-        ? `${subjectParticle(ELEMENT_LABELS[weakest[0]])} 약해지는 날입니다. ${ELEMENT_ACTIONS[weakest[0]].weak}는 반드시 챙기세요.`
+        ? `${ELEMENT_INFO[weakest[0]].name}이 약해지는 날입니다. ${ELEMENT_ACTIONS[weakest[0]].weak}는 꼭 챙기세요.`
         : null,
-      supportElement ? `${objectParticle(ELEMENT_LABELS[supportElement])} 놓치면 같은 고민을 오래 붙잡습니다.` : null,
+      supportElement
+        ? `${ELEMENT_INFO[supportElement].name}을 놓치면 같은 고민을 오래 붙잡습니다.`
+        : null,
     ],
     ''
   );
@@ -229,16 +235,19 @@ function buildPersonalAction(report: SajuReport) {
 }
 
 function buildPersonalPoints(report: SajuReport) {
+  // 2026-05-20 V2-5 PR W — chip 라벨 자연 표기 ("기질 정리" → "기질 금 기운 중심").
+  //   사용자 보고: 추상명사 chip ("기질 생각", "강점 안정 45%", "보완 정리 0%") 가
+  //   사주 어휘와 동떨어져 어색. ELEMENT_INFO 자연 표기로 통일.
   const ratio = getElementRatio(report);
   const { strongest, weakest } = getElementEdges(ratio);
   const computed = getComputed(report);
   const dayElement = getDayElement(report);
   const supportElement = getSupportElement(report);
   const points = [
-    dayElement ? `기질 ${ELEMENT_LABELS[dayElement]}` : null,
-    strongest ? `강점 ${ELEMENT_LABELS[strongest[0]]} ${Math.round(strongest[1])}%` : null,
-    weakest ? `보완 ${ELEMENT_LABELS[weakest[0]]} ${Math.round(weakest[1])}%` : null,
-    supportElement ? `오늘 힌트 ${ELEMENT_LABELS[supportElement]}` : null,
+    dayElement ? `기질 ${ELEMENT_INFO[dayElement].name}` : null,
+    strongest ? `강점 ${ELEMENT_INFO[strongest[0]].name} ${Math.round(strongest[1])}%` : null,
+    weakest ? `보완 ${ELEMENT_INFO[weakest[0]].name} ${Math.round(weakest[1])}%` : null,
+    supportElement ? `오늘 힌트 ${ELEMENT_INFO[supportElement].name}` : null,
     computed?.tenGod ? TEN_GOD_PUBLIC_LABELS[computed.tenGod] : null,
   ];
 
