@@ -118,3 +118,83 @@ test('한 본문에 여러 룰 동시 violation — 모두 수집', () => {
   assert.ok(ruleSet.has('english'), 'english rule 포함');
   assert.ok(ruleSet.has('absolute'), 'absolute rule 포함');
 });
+
+// 2026-05-20 V2-5 PR M — 신규 룰 3종 단위 검증.
+
+test('"결" 빈도 초과 시 gyeol-frequency rule fail', () => {
+  // 6번 등장 (한도 5) — 단어 경계 매칭이 잡도록 자연 한국어 문맥
+  const body =
+    '흙의 결이 강한 사주예요. 쇠의 결이 부족해요. 물의 결을 보강하세요. 새싹의 결이 자라요. 햇살의 결을 살리세요. 흙의 결로 다시 돌아옵니다.';
+  const result = validateChapterBody(body);
+  const gyeolFail = result.failures.find((f) => f.rule === 'gyeol-frequency');
+  assert.ok(gyeolFail, '"결" 6회 등장이 fail 로 잡혀야 함');
+});
+
+test('"결" 빈도 5회 이내는 통과', () => {
+  const body =
+    '흙의 결이 강한 사주예요. 쇠의 결이 부족해요. 물의 결을 보강하세요. 새싹의 결이 자라요. 햇살의 결을 살리세요.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'gyeol-frequency'),
+    '"결" 5회는 통과'
+  );
+});
+
+test('"결단/결과/결정" 같은 복합어는 "결" 빈도 카운트에 포함 안 됨', () => {
+  // 복합어 ("결단력", "결정", "결과") 7회 — 단독 "결" 0회
+  const body =
+    '결단력이 좋아요. 결정에 신중해요. 결과를 봐요. 결단을 내려요. 결정적 순간이 옵니다. 결과적으로 좋아요. 결단의 시기입니다.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'gyeol-frequency'),
+    '복합어는 카운트 X'
+  );
+});
+
+test('한 문장 65자 초과 시 sentence-length rule fail', () => {
+  // 80자짜리 한 문장
+  const body =
+    '이 사주는 흙의 결이 강하고 쇠의 결이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬는 것이 중요합니다.';
+  const result = validateChapterBody(body);
+  const lenFail = result.failures.find((f) => f.rule === 'sentence-length');
+  assert.ok(lenFail, '긴 문장이 fail 로 잡혀야 함');
+});
+
+test('짧은 문장들은 sentence-length 통과', () => {
+  const body =
+    '이 사주는 흙의 결이 강해요. 쇠의 결을 보강하세요. 작은 루틴이 도움돼요.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'sentence-length'),
+    '짧은 문장 통과'
+  );
+});
+
+test('막연한 위로 표현 시 vague-comfort rule fail', () => {
+  const body = '걱정 마세요. 잘 될 거예요.';
+  const result = validateChapterBody(body);
+  const comfortFail = result.failures.find((f) => f.rule === 'vague-comfort');
+  assert.ok(comfortFail, '막연한 위로가 fail 로 잡혀야 함');
+});
+
+test('데이터 근거 있는 위로 표현은 통과', () => {
+  // "괜찮을 거예요" 가 없는 자연스러운 위로 — 결·신호·시점 정보 동반
+  const body =
+    '이 흐름이 안정되면 마음이 가벼워져요. 작은 루틴 하나가 회복 축이 됩니다.';
+  const result = validateChapterBody(body);
+  assert.ok(
+    !result.failures.find((f) => f.rule === 'vague-comfort'),
+    '근거 있는 위로 통과'
+  );
+});
+
+test('skipRules — 특정 룰만 비활성화 가능', () => {
+  // sentence-length 룰 위반 본문이지만 skipRules 로 스킵
+  const longBody =
+    '이 사주는 흙의 결이 강하고 쇠의 결이 부족해서 결단을 내리는 자리에서 마음이 흔들리기 쉬운데 그럴 때마다 잠시 멈춰 호흡을 다듬는 것이 중요합니다.';
+  const skipped = validateChapterBody(longBody, { skipRules: ['sentence-length'] });
+  assert.ok(
+    !skipped.failures.find((f) => f.rule === 'sentence-length'),
+    'sentence-length skip 시 미적용'
+  );
+});

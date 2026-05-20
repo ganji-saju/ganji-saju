@@ -6,6 +6,7 @@ import type { ChapterId, ChapterLLMInput } from './chapter-input-types';
 import {
   CHAPTER_META,
   CHAPTER_OUTPUT_SPECS,
+  FEW_SHOT_EXAMPLES,
   buildChapterSystemPrompt,
 } from './chapter-prompts';
 
@@ -53,13 +54,37 @@ export interface GenerateChapterOptions {
  */
 export function buildChapterUserMessage(input: ChapterLLMInput): string {
   const spec = CHAPTER_OUTPUT_SPECS[input.chapterId];
-  const lines = [
-    '## 사주 데이터',
+  const lines: string[] = [];
+
+  // 2026-05-20 V2-5 PR M — Few-shot 예시 주입 (chapter 1·4·5·9 만).
+  //   spec §5 의 예시를 user message *앞에* 두어 LLM 이 형식 (한 줄 결론 +
+  //   일상 비유 + 행동 1개) + 톤 (단정 X / 결 표현 / 60자 안팎) 을 학습.
+  //   같은 정인격 데이터를 챕터별로 *다른 렌즈* 로 풀어내는 사례.
+  const fewShot = FEW_SHOT_EXAMPLES[input.chapterId];
+  if (fewShot) {
+    lines.push(
+      '## 출력 예시 (형식과 톤 참고용)',
+      '',
+      '[입력]',
+      fewShot.input,
+      '',
+      '[출력]',
+      fewShot.output,
+      '',
+      '---',
+      '',
+      '## 실제 입력 — 사주 데이터'
+    );
+  } else {
+    lines.push('## 사주 데이터');
+  }
+
+  lines.push(
     JSON.stringify(input.saju, null, 2),
     '',
     '## 사용자 컨텍스트',
-    JSON.stringify(input.userContext, null, 2),
-  ];
+    JSON.stringify(input.userContext, null, 2)
+  );
 
   if (input.priorChapterDigests && input.priorChapterDigests.length > 0) {
     lines.push('', '## 1~7장 핵심 결론 (synthesis 입력)');

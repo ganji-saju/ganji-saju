@@ -13,7 +13,11 @@ export type ChapterValidationRule =
   | 'english'
   | 'absolute'
   | 'cross-chapter'
-  | 'punch-copy-duplication';
+  | 'punch-copy-duplication'
+  // 2026-05-20 V2-5 PR M (검증 4-A 항목 6 보강 — report-llm-spec.md §6 5종 검증 완성):
+  | 'gyeol-frequency'      // "결" 빈도 — 챕터당 5회 초과 시 fail (사이트 정체성 단어 남용 차단)
+  | 'sentence-length'      // 한 문장 길이 — 65자 초과 시 fail (가독성 가드)
+  | 'vague-comfort';       // 막연한 위로 — 데이터 근거 없는 "괜찮을 거예요" 패턴 차단
 
 export interface ChapterValidationFailure {
   rule: ChapterValidationRule;
@@ -33,6 +37,13 @@ export interface ValidateChapterOptions {
   allChapters?: string[];
   /** 중복 등장 차단할 punch-copy 한 줄 목록 (있으면 punch-copy-duplication 룰 활성). */
   punchLines?: string[];
+  /**
+   * 2026-05-20 V2-5 PR M — 특정 룰만 skip. LLM 출력엔 모든 룰 적용 (기본).
+   * deterministic builder 본문 invariant 테스트는 점진 도입을 위해 ['sentence-length',
+   * 'gyeol-frequency', 'vague-comfort'] 등 신규 룰을 opt-out 가능. 향후 deterministic
+   * 본문 다듬기 PR 마다 하나씩 제거.
+   */
+  skipRules?: ChapterValidationRule[];
 }
 
 /**
@@ -75,6 +86,43 @@ const HANJA_PATTERN = /[一-鿿]/;
 const ENGLISH_WORD_PATTERN = /\b[a-zA-Z]{2,}\b/g;
 
 /**
+ * "결" 빈도 한도 — 챕터당 최대 N회. 진단서 §3 ③ "한 섹션당 최대 2회" 기준에
+ *   섹션 ≈ 챕터 본문 한 단락 (3~5 문장) 으로 매핑.
+ *
+ * 자연스러운 *복합 명사* ("결단", "결정", "결과", "결혼", "결제" 등) 는
+ * 카운트 X. *단독 "결" + 조사 / 구두점 / 공백 / 문장 끝* 만 카운트.
+ *
+ * 패턴: "결" 뒤가 조사 (한글 1자 조사 19종) 이거나, 비한글 (공백·구두점·끝) 일 때.
+ */
+const GYEOL_MAX_PER_CHAPTER = 5;
+const GYEOL_STANDALONE_PATTERN =
+  /결(?:(?:이|가|을|를|은|는|의|에|와|과|도|만|로|라|들|에서|에는|에도|에만|이라|이라는|이다|입니다)(?=[\s.,!?。、]|$|[^가-힣])|(?=[\s.,!?。、]|$|[^가-힣]))/gu;
+
+/**
+ * 한 문장 길이 한도 — 65자 (60자 안팎 spec 의 5자 buffer).
+ *   문장 분리는 마침표/물음표/느낌표 + 줄바꿈 기준.
+ */
+const SENTENCE_LENGTH_MAX = 65;
+
+/**
+ * 막연한 위로 패턴 — *데이터 근거 없는* 위로 표현. 진단서 §3 ⑧ 규칙.
+ *   spec 정신: 위로 자체는 OK 지만 "괜찮을 거예요" 같이 *결 분석 없는* 빈 위로 차단.
+ *   진정한 위로 ("이 흐름이 안정되면 회복돼요") 는 *결 근거 + 시점* 이라 통과.
+ */
+const VAGUE_COMFORT_PHRASES = [
+  '괜찮을 거예요',
+  '잘 될 거예요',
+  '잘될 거예요',
+  '걱정 마세요',
+  '걱정마세요',
+  '걱정 안 하셔도',
+  '걱정 안하셔도',
+  '걱정할 일은 없',
+  '안심하세요',
+  '괜찮습니다',
+];
+
+/**
  * 챕터 본문이 사이트 톤 룰을 만족하는지 검증.
  *
  * 단일 챕터 검증 (rules 1~4): body 만 전달.
@@ -85,51 +133,60 @@ export function validateChapterBody(
   options: ValidateChapterOptions = {}
 ): ChapterValidationResult {
   const failures: ChapterValidationFailure[] = [];
+  const skip = new Set(options.skipRules ?? []);
 
   // 1. 한자 0건 (사주팔자 카드 외 본문)
-  const hanjaMatch = body.match(HANJA_PATTERN);
-  if (hanjaMatch) {
-    failures.push({
-      rule: 'hanja',
-      detail: '본문에 한자 노출',
-      excerpt: hanjaMatch[0],
-    });
+  if (!skip.has('hanja')) {
+    const hanjaMatch = body.match(HANJA_PATTERN);
+    if (hanjaMatch) {
+      failures.push({
+        rule: 'hanja',
+        detail: '본문에 한자 노출',
+        excerpt: hanjaMatch[0],
+      });
+    }
   }
 
   // 2. 옛 "X과/와 Y" 오행 라벨 0건
-  for (const label of FORBIDDEN_OLD_ELEMENT_LABELS) {
-    if (body.includes(label)) {
-      failures.push({
-        rule: 'x-과-label',
-        detail: `옛 오행 라벨 사용 — 자연 비유로 (새싹/햇살/흙/쇠/물 의 결)`,
-        excerpt: label,
-      });
+  if (!skip.has('x-과-label')) {
+    for (const label of FORBIDDEN_OLD_ELEMENT_LABELS) {
+      if (body.includes(label)) {
+        failures.push({
+          rule: 'x-과-label',
+          detail: `옛 오행 라벨 사용 — 자연 비유로 (새싹/햇살/흙/쇠/물 의 결)`,
+          excerpt: label,
+        });
+      }
     }
   }
 
   // 3. 영어 단어 0건 (한자/숫자/percent 제외, ASCII 2자 이상)
-  const englishMatches = body.match(ENGLISH_WORD_PATTERN);
-  if (englishMatches && englishMatches.length > 0) {
-    failures.push({
-      rule: 'english',
-      detail: '영어 단어 노출',
-      excerpt: englishMatches.join(', '),
-    });
-  }
-
-  // 4. 단정·공포 표현 0건
-  for (const phrase of FORBIDDEN_ABSOLUTE_PHRASES) {
-    if (body.includes(phrase)) {
+  if (!skip.has('english')) {
+    const englishMatches = body.match(ENGLISH_WORD_PATTERN);
+    if (englishMatches && englishMatches.length > 0) {
       failures.push({
-        rule: 'absolute',
-        detail: '안심하고 보기 정책과 충돌하는 단정·자극 표현',
-        excerpt: phrase,
+        rule: 'english',
+        detail: '영어 단어 노출',
+        excerpt: englishMatches.join(', '),
       });
     }
   }
 
+  // 4. 단정·공포 표현 0건
+  if (!skip.has('absolute')) {
+    for (const phrase of FORBIDDEN_ABSOLUTE_PHRASES) {
+      if (body.includes(phrase)) {
+        failures.push({
+          rule: 'absolute',
+          detail: '안심하고 보기 정책과 충돌하는 단정·자극 표현',
+          excerpt: phrase,
+        });
+      }
+    }
+  }
+
   // 5. cross-chapter 중복 — 본문 첫 문장이 다른 챕터와 정확히 일치하면 fail
-  if (options.allChapters && typeof options.chapterId === 'number') {
+  if (!skip.has('cross-chapter') && options.allChapters && typeof options.chapterId === 'number') {
     const myIndex = options.chapterId - 1;
     const firstSentence = firstSentenceOf(body);
     if (firstSentence) {
@@ -149,6 +206,7 @@ export function validateChapterBody(
 
   // 6. punch-copy 중복 — 같은 한 줄이 자기 챕터에 등장하면서 다른 챕터에도 등장 시 fail
   if (
+    !skip.has('punch-copy-duplication') &&
     options.allChapters &&
     options.punchLines &&
     typeof options.chapterId === 'number'
@@ -164,6 +222,50 @@ export function validateChapterBody(
           rule: 'punch-copy-duplication',
           detail: `punch-copy '${punch}' 가 ${others.length + 1}개 챕터에 등장 — 최대 1개 허용`,
           excerpt: punch,
+        });
+      }
+    }
+  }
+
+  // 7. "결" 빈도 — 챕터당 최대 5회 (진단서 §3 ③, 사이트 정체성 단어 남용 차단)
+  if (!skip.has('gyeol-frequency')) {
+    const gyeolMatches = body.match(GYEOL_STANDALONE_PATTERN);
+    if (gyeolMatches && gyeolMatches.length > GYEOL_MAX_PER_CHAPTER) {
+      failures.push({
+        rule: 'gyeol-frequency',
+        detail: `"결" 단어 ${gyeolMatches.length}회 등장 — 챕터당 최대 ${GYEOL_MAX_PER_CHAPTER}회 권장`,
+        excerpt: `${gyeolMatches.length}회`,
+      });
+    }
+  }
+
+  // 8. 문장 길이 — 한 문장 65자 초과 시 fail (가독성 가드, 60자 안팎 spec)
+  if (!skip.has('sentence-length')) {
+    const sentences = body
+      .split(/(?<=[.?!])\s+|\n+/u)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    for (const sentence of sentences) {
+      const lenWithoutPunct = sentence.replace(/[.?!]+$/u, '').length;
+      if (lenWithoutPunct > SENTENCE_LENGTH_MAX) {
+        failures.push({
+          rule: 'sentence-length',
+          detail: `문장 ${lenWithoutPunct}자 — ${SENTENCE_LENGTH_MAX}자 초과. 끊어 읽기 단위 권장`,
+          excerpt: sentence.slice(0, 40) + (sentence.length > 40 ? '…' : ''),
+        });
+        break;
+      }
+    }
+  }
+
+  // 9. 막연한 위로 — 데이터 근거 없는 빈 위로 표현 차단 (진단서 §3 ⑧)
+  if (!skip.has('vague-comfort')) {
+    for (const phrase of VAGUE_COMFORT_PHRASES) {
+      if (body.includes(phrase)) {
+        failures.push({
+          rule: 'vague-comfort',
+          detail: `근거 없는 위로 표현 — 결·신호·시점 정보 동반 권장`,
+          excerpt: phrase,
         });
       }
     }
