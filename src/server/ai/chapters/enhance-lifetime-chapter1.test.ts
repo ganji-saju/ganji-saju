@@ -36,15 +36,15 @@ const baseInput: ChapterLLMInput = {
   },
   saju: {
     pillars: { year: '임술', month: '신축', day: '기사', hour: '무진' },
-    dayMaster: { stem: '기', element: '흙의 결', metaphor: '따뜻하게 익히는 흙' },
+    dayMaster: { stem: '기', element: '토 기운', metaphor: '따뜻하게 익히는 흙' },
     fiveElements: {
-      dominant: '흙의 결',
-      weakest: '쇠의 결',
-      supportElements: ['햇살의 결'],
+      dominant: '토 기운',
+      weakest: '금 기운',
+      supportElements: ['화 기운'],
       distribution: { 목: 0.1, 화: 0.2, 토: 0.4, 금: 0.1, 수: 0.2 },
     },
     pattern: { label: '정인격', plainCue: '돌봄·후원·배움의 결' },
-    yongsin: { primary: '햇살의 결', reason: '흙이 차가워질 때 햇살이 보강' },
+    yongsin: { primary: '화 기운', reason: '흙이 차가워질 때 햇살이 보강' },
     strength: '균형이 잡힌 편',
     tenGods: { dominant: '정인', shortageList: ['식신'] },
     notableSinsals: [],
@@ -59,7 +59,7 @@ const baseInput: ChapterLLMInput = {
 };
 
 const ENHANCED_BODY =
-  '테스트님의 사주는 흙의 결을 중심으로 정인의 결이 또렷이 흐릅니다. 가까운 사람을 돌보는 패턴이 반복돼요. 책임을 미리 글로 적어두는 게 좋아요.';
+  '테스트님의 사주는 토 기운을 중심으로 정인의 결이 또렷이 흐릅니다. 가까운 사람을 돌보는 패턴이 반복돼요. 책임을 미리 글로 적어두는 게 좋아요.';
 
 test('enhanceLifetimeChapter1WithLLM — LLM 성공 시 summary 만 enhanced 본문으로 교체', async () => {
   const client = new MockClient([ENHANCED_BODY]);

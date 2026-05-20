@@ -24,9 +24,9 @@ const fixtureInput: ChapterLLMInput = {
   chapter: CHAPTER_META[4],
   saju: {
     pillars: { year: '임술', month: '신축', day: '계묘', hour: '병진' },
-    dayMaster: { stem: '계', element: '물의 결', metaphor: '' },
+    dayMaster: { stem: '계', element: '수 기운', metaphor: '' },
     fiveElements: {
-      dominant: '물의 결', weakest: '쇠의 결', supportElements: [],
+      dominant: '수 기운', weakest: '금 기운', supportElements: [],
       distribution: { 목: 0.2, 화: 0.1, 토: 0.2, 금: 0.1, 수: 0.4 },
     },
     pattern: { label: '식신격', plainCue: '' },

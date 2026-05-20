@@ -51,16 +51,29 @@ export interface ValidateChapterOptions {
 }
 
 /**
- * 옛 "X과/와 Y" 두 단어 오행 라벨 — 본문에 들어가면 한국어 조사 충돌.
+ * 옛 오행 라벨 — 본문에 들어가면 *익숙도 떨어짐* 또는 *조사 충돌*. 모두 차단.
+ *
+ * 2026-05-20 갱신: ELEMENT_INFO 자연 비유 라벨 → 한국 사주 사이트 표준 표기
+ *   ("목/화/토/금/수 기운") 로 전환. 이전 자연 비유 라벨 5종 ("새싹/햇살/흙/쇠/
+ *   물 의 결") 도 본문 잔존 시 fail. 사용자 피드백: 자연 비유가 명리학 익숙도
+ *   를 낮춤.
+ *
  * 2026-05-20 export: deterministic fallback 빌더(build-lifetime-report 등) 의
  *   회귀 가드 테스트에서 동일 룰을 공유하기 위해 노출.
  */
 export const FORBIDDEN_OLD_ELEMENT_LABELS = [
+  // 2026-05-16 이전의 "X과/와 Y" 두 단어 라벨 (한국어 조사 충돌 5종)
   '시작과 추진',
   '열정과 표현',
   '안정과 중심',
   '결단과 마무리',
   '지혜와 유연',
+  // 2026-05-19 자연 비유 라벨 5종 (사용자 피드백: 명리학 익숙도 ↓ → 표준 표기로 전환)
+  '새싹의 결',
+  '햇살의 결',
+  '흙의 결',
+  '쇠의 결',
+  '물의 결',
 ];
 
 /**
@@ -128,18 +141,34 @@ const VAGUE_COMFORT_PHRASES = [
 
 /**
  * 명리 술어 반복 한도 — 같은 술어가 한 챕터에 N회 이상 등장 시 fail.
- *   spec §3 룰 7 "한 단락에 한 번만" 의 챕터 단위 변환.
- *   = 2 이면 *2회 이상* fail, 즉 1회까지 OK.
+ *
+ * spec §3 룰 7: "명리 술어 사용 시 한 단락에 한 번만 + 일상어 풀이 함께".
+ *
+ * 2026-05-20 V2-5 PR O — 한도 1 → 2 완화. 사유:
+ *   - 검증 4-B 실측에서 챕터 2/5/9 fallback rate 37.5% (3/8).
+ *   - LLM 출력에 같은 명리 술어 2회 등장은 *자연스러운* 작문 (예: 첫 문장 +
+ *     마지막 문장 wrap-up). 1회 max 는 spec "한 *단락* 한 번" 을 *챕터* 단위로
+ *     너무 strict 변환한 것.
+ *   - 챕터당 한 단락 ≈ 3~5문장. 챕터 전체 ≈ 3~5 문장 (한 단락). 즉 챕터 = 단락
+ *     인 경우가 많음. 한도 1 유지하면 자연스러운 wrap-up 불가.
+ *   - 한도 2 로 변경: 첫 등장 (정의) + 마지막 등장 (wrap-up) 만 허용. 3회부터 fail.
  */
-const MYEONGRI_TERM_MAX_PER_CHAPTER = 1;
+const MYEONGRI_TERM_MAX_PER_CHAPTER = 2;
 
 /**
  * 명리 술어가 *단독 사용* 인지 판정하는 정규식 빌더.
- *   "정인" 매치 — "정인격" 은 매치 X (격이 한글 word boundary 침범).
- *   한글 word boundary 가 없으므로 negative lookbehind/lookahead 로 대체.
+ *   "정인" 매치 — "정인의" / "정인 " 모두 카운트. "정인격" 은 매치 X.
+ *   한글 word boundary 없음 → "결" 패턴과 동일하게 *조사 19종 + 비한글* 명시.
+ *   2026-05-20 V2-5 PR O 정밀화: 이전 단순 `(?![가-힣])` 는 "정인의" 의 "의"
+ *     (한글) 가 negative lookahead 를 차단해 매치 X. 조사 동반 패턴 인식 필수.
  */
+const MYEONGRI_PARTICLE_LIST =
+  '이|가|을|를|은|는|의|에|와|과|도|만|로|라|들|에서|에는|에도|에만|이라|이라는|이다|입니다';
 function buildMyeongriPattern(term: string): RegExp {
-  return new RegExp(`(?<![가-힣])${term}(?![가-힣])`, 'gu');
+  return new RegExp(
+    `(?<![가-힣])${term}(?:(?:${MYEONGRI_PARTICLE_LIST})(?=[\\s.,!?。、]|$|[^가-힣])|(?=[\\s.,!?。、]|$|[^가-힣]))`,
+    'gu'
+  );
 }
 
 /**
@@ -173,7 +202,7 @@ export function validateChapterBody(
       if (body.includes(label)) {
         failures.push({
           rule: 'x-과-label',
-          detail: `옛 오행 라벨 사용 — 자연 비유로 (새싹/햇살/흙/쇠/물 의 결)`,
+          detail: `옛 오행 라벨 사용 — 한글 표기로 (목/화/토/금/수 기운)`,
           excerpt: label,
         });
       }

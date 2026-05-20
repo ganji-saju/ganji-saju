@@ -79,7 +79,7 @@ function narrowConcern(
  * (engine/index.ts 의 공식 가이드: "새 코드는 가급적 v2 를".)
  *
  * - pillars: 한자 ganzi → 한글 (toKoreanGanzi)
- * - dayMaster: stem 한글 + element 자연 비유 라벨 ('흙의 결')
+ * - dayMaster: stem 한글 + element 한글 표기 라벨 ('토 기운')
  * - fiveElements: dominant/weakest 자연 비유 라벨 + distribution (목/화/토/금/수 키)
  * - pattern: 격국 + plainCue (MYEONGRI_GLOSSARY)
  * - strength: 신강/중화/신약 → 일상어
@@ -124,7 +124,7 @@ export function buildChapter1Input(
     },
     yongsin: {
       // SajuYongsin.primary 는 SajuSymbolRef { type, value, label }.
-      //   '쇠의 결' 같은 라벨이 아니라 명리 글자/술어 (예: '火') 이므로 label 그대로 노출.
+      //   '금 기운' 같은 한글 표기 라벨이 아니라 명리 글자/술어 (예: '火') 이므로 label 그대로 노출.
       primary: yongsin?.primary?.label ?? '',
       reason: yongsin?.rationale?.[0] ?? '',
     },

@@ -32,7 +32,7 @@ function formatElementName(element: Element) {
   return ELEMENT_INFO[element].keyword;
 }
 
-/** 단독 표시용 전체 라벨 ("쇠의 결"). 카드 제목 / 라벨 슬롯 */
+/** 단독 표시용 전체 라벨 ("금 기운"). 카드 제목 / 라벨 슬롯 */
 function formatElementLabel(element: Element) {
   return ELEMENT_INFO[element].name;
 }
@@ -382,7 +382,7 @@ function buildMentalText(
   const element = stem ?? context.weakest;
   const isSupport = context.supportElements.includes(element);
   const isDominant = element === context.dominant;
-  // 2026-05-19: 본문 합성 패턴 — "X의 결" 전체 라벨이 자연 ("쇠의 결이 일상의 결정...").
+  // 2026-05-20: 본문 합성 패턴 — "X 기운" 전체 라벨이 자연 ("금 기운이 일상의 결정...").
   //   기존 formatElementName 의 .split(' ')[0] 결과 "쇠의" 단독 노출 버그 해결.
   const elementLabel = formatElementLabel(element);
 
@@ -947,7 +947,7 @@ function buildClosingNoteText(
   twelveStage: string | null = null,
   transitionPhase: 'entering' | 'leaving' | null = null
 ): string {
-  // 2026-05-19: '쇠의 결을 생활 루틴' 같이 전체 라벨이 자연. formatElementLabel 사용.
+  // 2026-05-20: '금 기운을 생활 루틴' 같이 전체 라벨이 자연. formatElementLabel 사용.
   const supportLabel = formatElementLabel(context.supportElements[0] ?? context.weakest);
   const head = isCurrent
     ? `${toKoreanGanzi(cycle.ganzi)} 대운이 진행 중인 지금, `

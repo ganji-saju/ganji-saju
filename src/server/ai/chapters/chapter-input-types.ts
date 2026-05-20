@@ -25,7 +25,7 @@ export interface ChapterSajuPillars {
 export interface ChapterDayMaster {
   /** 한글 천간 (예: '기') */
   stem: string;
-  /** 자연 비유 라벨 (예: '흙의 결') */
+  /** 오행 한글 표기 라벨 (예: '토 기운') */
   element: string;
   metaphor: string;
 }

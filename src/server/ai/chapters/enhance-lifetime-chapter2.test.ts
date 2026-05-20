@@ -17,7 +17,7 @@ class MockClient implements ChapterLLMClient {
 
 const original: LifetimeStrengthBalanceSection = {
   headline: '기운의 균형',
-  summary: '흙의 결이 강하고 쇠의 결이 부족한 명식입니다. (기존 deterministic 본문)',
+  summary: '토 기운이 강하고 금 기운이 부족한 명식입니다. (기존 deterministic 본문)',
   strongAxis: '흙',
   weakAxis: '쇠',
   energyDrain: '책임 누적',
@@ -36,13 +36,13 @@ const baseInput: ChapterLLMInput = {
   },
   saju: {
     pillars: { year: '임술', month: '신축', day: '기사', hour: '무진' },
-    dayMaster: { stem: '기', element: '흙의 결', metaphor: '따뜻하게 익히는 흙' },
+    dayMaster: { stem: '기', element: '토 기운', metaphor: '따뜻하게 익히는 흙' },
     fiveElements: {
-      dominant: '흙의 결', weakest: '쇠의 결', supportElements: [],
+      dominant: '토 기운', weakest: '금 기운', supportElements: [],
       distribution: { 목: 0.1, 화: 0.2, 토: 0.4, 금: 0.1, 수: 0.2 },
     },
     pattern: { label: '정인격', plainCue: '돌봄·후원의 결' },
-    yongsin: { primary: '햇살의 결', reason: '흙 보강' },
+    yongsin: { primary: '화 기운', reason: '흙 보강' },
     strength: '균형이 잡힌 편',
     tenGods: { dominant: '정인', shortageList: ['식신'] },
     notableSinsals: [],
@@ -50,7 +50,7 @@ const baseInput: ChapterLLMInput = {
   userContext: { name: '테스트', age: 33, relationshipStatus: 'single', occupation: 'employee', currentConcern: null },
 };
 
-const ENHANCED = '흙의 결이 또렷이 흐르는 명식입니다. 쇠의 결이 부족해 우선순위가 모호해지기 쉬워요. 주간 3가지 안 할 일을 적는 루틴이 도움돼요.';
+const ENHANCED = '토 기운이 또렷이 흐르는 명식입니다. 금 기운이 부족해 우선순위가 모호해지기 쉬워요. 주간 3가지 안 할 일을 적는 루틴이 도움돼요.';
 
 test('enhanceLifetimeChapter2WithLLM — LLM 성공 시 summary 만 교체', async () => {
   const client = new MockClient([ENHANCED]);
