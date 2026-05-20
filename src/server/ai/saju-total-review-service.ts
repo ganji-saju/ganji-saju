@@ -21,6 +21,10 @@ import {
   buildTotalReviewCacheKey,
   isTotalReviewLLMEnabled,
 } from './total-review/total-review-cache';
+import {
+  createSupabaseTotalReviewCacheStore,
+  type TotalReviewCacheStore,
+} from './total-review/total-review-cache-store';
 import type { TotalReviewOutput } from './total-review/total-review-types';
 
 export interface GenerateTotalReviewArgs {
@@ -35,11 +39,13 @@ export interface GenerateTotalReviewArgs {
   /** 플래그 판정용 — 미지정 시 process.env */
   env?: NodeJS.ProcessEnv;
   maxRetries?: number;
+  /** DI — 미지정 시 Supabase 캐시 스토어. 테스트는 in-memory 주입. */
+  cacheStore?: TotalReviewCacheStore;
 }
 
 export interface TotalReviewResult {
-  /** llm = 3섹션 모두 LLM 통과 / fallback = 플래그 OFF·hard 위반·일부 섹션 실패 */
-  source: 'llm' | 'fallback';
+  /** llm = 신규 생성 / cache = 캐시 hit / fallback = 플래그 OFF·hard 위반·일부 섹션 실패 */
+  source: 'llm' | 'cache' | 'fallback';
   output: TotalReviewOutput;
   /** validateTotalReview 의 reasons (soft 포함, 로깅용) */
   reasons: string[];
@@ -86,6 +92,18 @@ export async function generateTotalReview(
 
   if (!isTotalReviewLLMEnabled(env)) {
     return { source: 'fallback', output: deterministic, reasons: ['llm_disabled'], meta };
+  }
+
+  // 영속 캐시 read-through: 동일 사주+컨텍스트는 1회만 OpenAI 호출 (페이지 조회마다 차감 방지).
+  const cacheStore = args.cacheStore ?? createSupabaseTotalReviewCacheStore();
+  const cached = await cacheStore.get(cacheKey);
+  if (cached) {
+    return {
+      source: 'cache',
+      output: cached.output,
+      reasons: [],
+      meta: { ...meta, generatedAt: cached.generatedAt },
+    };
   }
 
   const input = buildTotalReviewInput(args.sajuData, args.personalizationContext, {
@@ -137,11 +155,12 @@ export async function generateTotalReview(
   });
   const allLlm =
     oneLine.source === 'llm' && main.source === 'llm' && keys.source === 'llm';
+  const source: 'llm' | 'fallback' = allLlm ? 'llm' : 'fallback';
 
-  return {
-    source: allLlm ? 'llm' : 'fallback',
-    output,
-    reasons: full.reasons,
-    meta,
-  };
+  // 'llm' 통과 결과만 캐시 (fallback 은 캐시하지 않아 일시 실패가 고착되지 않게).
+  if (source === 'llm') {
+    await cacheStore.set(cacheKey, { output, reasons: full.reasons });
+  }
+
+  return { source, output, reasons: full.reasons, meta };
 }
