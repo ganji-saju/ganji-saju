@@ -18,6 +18,12 @@ import { buildSajuReportRuntimeMetadata, type SajuReportRuntimeMetadata } from '
 //   audit-reports/2026-05-19-v2-5-llm-integration-design.md 의 PR I 구현.
 import { enhanceLifetimeChapter1WithLLM } from './chapters/enhance-lifetime-chapter1';
 import { buildChapter1Input } from './chapters/build-chapter1-input';
+// V2-5 PR J: 챕터 4 (관계 패턴) + 챕터 5 (재물 감각) LLM enhancement 통합.
+//   PR I 와 동일 패턴. interpretLifetime 안에서 chain 으로 순차 적용.
+import { enhanceLifetimeChapter4WithLLM } from './chapters/enhance-lifetime-chapter4';
+import { buildChapter4Input } from './chapters/build-chapter4-input';
+import { enhanceLifetimeChapter5WithLLM } from './chapters/enhance-lifetime-chapter5';
+import { buildChapter5Input } from './chapters/build-chapter5-input';
 import { OpenAIChapterClient } from './chapters/openai-chapter-client';
 import {
   buildChapterCacheKey,
@@ -111,15 +117,23 @@ export async function generateLifetimeInterpretation(
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
   const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
   const model = getOpenAIInterpretationModel();
-  // V2-5 PR I: 챕터 1 (코어 정체성) LLM enhance — env flag 활성 시.
+  // V2-5 PR I + PR J: 챕터 1, 4, 5 순차 LLM enhance — 각 챕터 env flag 활성 시.
   //   cache hit 이면 DB envelope 의 body 사용. miss 면 OpenAI 호출 + envelope upsert.
   //   비활성 / 실패 시 deterministic baseReport 그대로 (회귀 0 보장).
-  const report = await applyChapter1LLMEnhancement(
-    reading,
-    baseReport,
-    userSituation,
-    model,
-    promptVersion
+  //
+  //   주의 (PR J): 동일 request 안에서 챕터 1/4/5 모두 cache miss 시 envelope
+  //   upsert 는 last-write-wins (각 apply 가 reading.chaptersEnvelope 의 pre-upsert
+  //   snapshot 만 봄). 결과: DB envelope 에 챕터 5 entry 만 남음. 다음 request 에서
+  //   챕터 1, 4 는 다시 cache miss → LLM 재호출 → envelope 1,4,5 모두 갖춤
+  //   (eventually consistent). 최대 비용 ≈ $0.005 × 2 = $0.01 1회 추가. 허용.
+  let report = await applyChapter1LLMEnhancement(
+    reading, baseReport, userSituation, model, promptVersion
+  );
+  report = await applyChapter4LLMEnhancement(
+    reading, report, userSituation, model, promptVersion
+  );
+  report = await applyChapter5LLMEnhancement(
+    reading, report, userSituation, model, promptVersion
   );
   const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
   const recentFeedbackSummary = reading.userId
@@ -291,6 +305,192 @@ async function applyChapter1LLMEnhancement(
       durationMs: Date.now() - stageStartedAt,
       retries: 0,
       cacheKey,
+      validationFailures: [],
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    return baseReport;
+  }
+}
+
+/**
+ * V2-5 PR J: 챕터 4 (관계 패턴) LLM enhancement.
+ * applyChapter1LLMEnhancement 와 동일 흐름. env flag + cache + envelope upsert.
+ */
+async function applyChapter4LLMEnhancement(
+  reading: ReadingRecord,
+  baseReport: ReturnType<typeof buildLifetimeReport>,
+  userSituation: Parameters<typeof buildLifetimeReport>[3],
+  model: string,
+  promptVersion: string
+): Promise<ReturnType<typeof buildLifetimeReport>> {
+  if (!isChapterLLMEnabled(4)) return baseReport;
+
+  const chapter4Input = buildChapter4Input(reading.sajuData, userSituation ?? null, {
+    name: reading.input.name ?? null,
+    age: null,
+  });
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4);
+  const cached = reading.chaptersEnvelope?.chapters?.[4];
+  const stageStartedAt = Date.now();
+
+  if (
+    cached &&
+    cached.cacheKey === cacheKey &&
+    cached.source === 'llm' &&
+    isChapterCacheFresh(cached.generatedAt)
+  ) {
+    logChapterRun({
+      chapterId: 4, source: 'cache',
+      durationMs: Date.now() - stageStartedAt,
+      retries: cached.retries, cacheKey,
+      validationFailures: cached.validationFailures ?? [],
+    });
+    return {
+      ...baseReport,
+      relationshipPattern: { ...baseReport.relationshipPattern, summary: cached.body },
+    };
+  }
+
+  try {
+    const client = new OpenAIChapterClient({ model });
+    const enhanced = await enhanceLifetimeChapter4WithLLM(
+      baseReport.relationshipPattern, chapter4Input, client
+    );
+
+    if (enhanced.source === 'llm' && isReadingId(reading.id)) {
+      const entry: PersistedChapterEntry = {
+        chapterId: 4,
+        body: enhanced.relationshipPattern.summary,
+        source: 'llm',
+        retries: enhanced.retries as 0 | 1 | 2,
+        cacheKey,
+        generatedAt: new Date().toISOString(),
+        validationFailures: [],
+      };
+      const envelope: PersistedChapterEnvelope = {
+        schemaVersion: PERSISTED_CHAPTER_ENVELOPE_V1,
+        generatedAt: entry.generatedAt,
+        promptVersion, model,
+        chapters: {
+          ...(reading.chaptersEnvelope?.chapters ?? {}),
+          4: entry,
+        },
+      };
+      try {
+        await updateReadingChapters(reading.id, envelope);
+      } catch (writeError) {
+        console.error('updateReadingChapters (ch4) failed', writeError);
+      }
+    }
+
+    logChapterRun({
+      chapterId: 4, source: enhanced.source,
+      durationMs: Date.now() - stageStartedAt,
+      retries: enhanced.retries, cacheKey,
+      validationFailures: [],
+    });
+    return {
+      ...baseReport,
+      relationshipPattern: enhanced.relationshipPattern,
+    };
+  } catch (error) {
+    logChapterRun({
+      chapterId: 4, source: 'fallback',
+      durationMs: Date.now() - stageStartedAt,
+      retries: 0, cacheKey,
+      validationFailures: [],
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    return baseReport;
+  }
+}
+
+/**
+ * V2-5 PR J: 챕터 5 (재물 감각) LLM enhancement.
+ * applyChapter4LLMEnhancement 와 구조 동일. wealthStyle field 만 교체.
+ */
+async function applyChapter5LLMEnhancement(
+  reading: ReadingRecord,
+  baseReport: ReturnType<typeof buildLifetimeReport>,
+  userSituation: Parameters<typeof buildLifetimeReport>[3],
+  model: string,
+  promptVersion: string
+): Promise<ReturnType<typeof buildLifetimeReport>> {
+  if (!isChapterLLMEnabled(5)) return baseReport;
+
+  const chapter5Input = buildChapter5Input(reading.sajuData, userSituation ?? null, {
+    name: reading.input.name ?? null,
+    age: null,
+  });
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5);
+  const cached = reading.chaptersEnvelope?.chapters?.[5];
+  const stageStartedAt = Date.now();
+
+  if (
+    cached &&
+    cached.cacheKey === cacheKey &&
+    cached.source === 'llm' &&
+    isChapterCacheFresh(cached.generatedAt)
+  ) {
+    logChapterRun({
+      chapterId: 5, source: 'cache',
+      durationMs: Date.now() - stageStartedAt,
+      retries: cached.retries, cacheKey,
+      validationFailures: cached.validationFailures ?? [],
+    });
+    return {
+      ...baseReport,
+      wealthStyle: { ...baseReport.wealthStyle, summary: cached.body },
+    };
+  }
+
+  try {
+    const client = new OpenAIChapterClient({ model });
+    const enhanced = await enhanceLifetimeChapter5WithLLM(
+      baseReport.wealthStyle, chapter5Input, client
+    );
+
+    if (enhanced.source === 'llm' && isReadingId(reading.id)) {
+      const entry: PersistedChapterEntry = {
+        chapterId: 5,
+        body: enhanced.wealthStyle.summary,
+        source: 'llm',
+        retries: enhanced.retries as 0 | 1 | 2,
+        cacheKey,
+        generatedAt: new Date().toISOString(),
+        validationFailures: [],
+      };
+      const envelope: PersistedChapterEnvelope = {
+        schemaVersion: PERSISTED_CHAPTER_ENVELOPE_V1,
+        generatedAt: entry.generatedAt,
+        promptVersion, model,
+        chapters: {
+          ...(reading.chaptersEnvelope?.chapters ?? {}),
+          5: entry,
+        },
+      };
+      try {
+        await updateReadingChapters(reading.id, envelope);
+      } catch (writeError) {
+        console.error('updateReadingChapters (ch5) failed', writeError);
+      }
+    }
+
+    logChapterRun({
+      chapterId: 5, source: enhanced.source,
+      durationMs: Date.now() - stageStartedAt,
+      retries: enhanced.retries, cacheKey,
+      validationFailures: [],
+    });
+    return {
+      ...baseReport,
+      wealthStyle: enhanced.wealthStyle,
+    };
+  } catch (error) {
+    logChapterRun({
+      chapterId: 5, source: 'fallback',
+      durationMs: Date.now() - stageStartedAt,
+      retries: 0, cacheKey,
       validationFailures: [],
       errorMessage: error instanceof Error ? error.message : String(error),
     });
