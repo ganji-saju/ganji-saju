@@ -45,7 +45,7 @@ import {
   isChapterCacheFresh,
   isChapterLLMEnabled,
 } from './chapters/chapter-cache';
-import { logChapterRun } from './chapters/chapter-telemetry';
+import { logChapterRun, logChapterRunWithUsage } from './chapters/chapter-telemetry';
 import {
   PERSISTED_CHAPTER_ENVELOPE_V1,
   type PersistedChapterEntry,
@@ -330,14 +330,14 @@ async function applyChapter1LLMEnhancement(
       }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 1,
       source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries,
       cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return {
       ...baseReport,
       coreIdentity: enhanced.coreIdentity,
@@ -428,12 +428,12 @@ async function applyChapter4LLMEnhancement(
       }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 4, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return {
       ...baseReport,
       relationshipPattern: enhanced.relationshipPattern,
@@ -521,12 +521,12 @@ async function applyChapter5LLMEnhancement(
       }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 5, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return {
       ...baseReport,
       wealthStyle: enhanced.wealthStyle,
@@ -598,12 +598,12 @@ async function applyChapter2LLMEnhancement(
       catch (writeError) { console.error('updateReadingChapters (ch2) failed', writeError); }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 2, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return { ...baseReport, strengthBalance: enhanced.strengthBalance };
   } catch (error) {
     logChapterRun({
@@ -671,12 +671,12 @@ async function applyChapter3LLMEnhancement(
       catch (writeError) { console.error('updateReadingChapters (ch3) failed', writeError); }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 3, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return { ...baseReport, patternAndYongsin: enhanced.patternAndYongsin };
   } catch (error) {
     logChapterRun({
@@ -744,12 +744,12 @@ async function applyChapter6LLMEnhancement(
       catch (writeError) { console.error('updateReadingChapters (ch6) failed', writeError); }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 6, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return { ...baseReport, careerDirection: enhanced.careerDirection };
   } catch (error) {
     logChapterRun({
@@ -818,12 +818,12 @@ async function applyChapter7LLMEnhancement(
       catch (writeError) { console.error('updateReadingChapters (ch7) failed', writeError); }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 7, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return { ...baseReport, healthRhythm: enhanced.healthRhythm };
   } catch (error) {
     logChapterRun({
@@ -927,12 +927,12 @@ async function applyChapter9LLMEnhancement(
       }
     }
 
-    logChapterRun({
+    logChapterRunWithUsage({
       chapterId: 9, source: enhanced.source,
       durationMs: Date.now() - stageStartedAt,
       retries: enhanced.retries, cacheKey,
       validationFailures: [],
-    });
+    }, { client, userId: reading.userId });
     return {
       ...baseReport,
       lifetimeStrategy: enhanced.lifetimeStrategy,

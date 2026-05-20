@@ -1371,7 +1371,12 @@ export function buildLifetimeReport(
     },
     lifetimeStrategy: {
       headline: '평생 활용 전략',
-      summary: `이 사주는 성향 해설보다 사용법이 더 중요합니다. ${supportLabels} 기운을 언제 살리고, ${weakest} 축이 흔들릴 때 무엇을 먼저 지킬지 아는 사람이 결국 흐름을 안정적으로 씁니다.`,
+      // 2026-05-20 V2-5 PR Q (검증 5 발견 보강) — 첫 문장에 dominant 한글 표기 라벨
+      //   포함시켜 사주별 변별력 ↑. 이전엔 5케이스 fallback 첫 문장이 모두 동일
+      //   ("이 사주는 성향 해설보다 사용법이 더 중요합니다") → cross-chapter rule fail.
+      //   `formatElementLabel(...)` 는 "X 기운" 형태 (예: '토 기운'). Element 타입
+      //   원본 (`sajuData.fiveElements.{dominant,weakest}`) 을 직접 전달.
+      summary: `${formatElementLabel(sajuData.fiveElements.dominant)}이 중심인 이 사주는 성향 해설보다 사용법이 더 중요합니다. ${supportLabels} 기운을 언제 살리고, ${formatElementLabel(sajuData.fiveElements.weakest)}이 흔들릴 때 무엇을 먼저 지킬지 아는 사람이 결국 흐름을 안정적으로 씁니다.`,
       useWhenStrong: compactStrings([
         todayReport.primaryAction.description,
         wealthReport.primaryAction.description,
