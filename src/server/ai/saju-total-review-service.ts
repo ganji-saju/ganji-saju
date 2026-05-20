@@ -13,7 +13,7 @@ import {
   validateTotalReview,
 } from '@/lib/saju/total-review-validator';
 import type { ChapterLLMClient } from './chapters/generate-chapter';
-import { OpenAIChapterClient } from './chapters/openai-chapter-client';
+import { createOpenAITotalReviewClient } from './total-review/openai-total-review-client';
 import { buildTotalReviewInput } from './total-review/build-total-review-input';
 import { generateTotalReviewSection } from './total-review/generate-total-review';
 import {
@@ -46,8 +46,8 @@ export interface TotalReviewResult {
   meta: { generatedAt: string; cacheKey: string; modelVersion: string };
 }
 
-const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 900;
-const TOTAL_REVIEW_TEMPERATURE = 0.6;
+// main_narrative(4단락 5~8문장)가 가장 큼 — 넉넉히. 작은 섹션은 조기 종료.
+const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 1500;
 
 function buildDeterministicOutput(narrative: SajuNarrative): TotalReviewOutput {
   return {
@@ -95,11 +95,7 @@ export async function generateTotalReview(
   });
   const client =
     args.client ??
-    new OpenAIChapterClient({
-      useJsonMode: false,
-      maxOutputTokens: TOTAL_REVIEW_MAX_OUTPUT_TOKENS,
-      temperature: TOTAL_REVIEW_TEMPERATURE,
-    });
+    createOpenAITotalReviewClient({ maxOutputTokens: TOTAL_REVIEW_MAX_OUTPUT_TOKENS });
   const maxRetries = args.maxRetries ?? 2;
 
   const [oneLine, main, keys] = await Promise.all([

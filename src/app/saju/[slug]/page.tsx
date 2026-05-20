@@ -7,8 +7,13 @@ import { TrackedLink } from '@/components/common/tracked-link';
 import { TodayDetailResultCta } from '@/components/saju/today-detail-result-cta';
 import { SajuResultViewTracker } from '@/features/saju-detail/saju-result-view-tracker';
 import { SajuNarrativeCard } from '@/components/saju/saju-narrative-card';
+import { SajuTotalReviewNarrative } from '@/components/saju/saju-total-review-narrative';
+import { SajuLifetimeKeysSection } from '@/components/saju/saju-lifetime-keys-section';
 import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
+// 2026-05-21 — 총평 LLM 풀이 (flag 게이팅, 기본 OFF → 기존 narrative 유지).
+import { generateTotalReview } from '@/server/ai/saju-total-review-service';
+import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-cache';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -306,6 +311,18 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     userName: input.name?.trim() || null,
   });
 
+  // 2026-05-21 — 총평 LLM 풀이. flag(OPENAI_INTERPRET_TOTAL_REVIEW=1) + personalizationContext
+  //   있을 때만 호출. source==='llm' 이면 4단락 + 평생 활용 3카드 렌더, 아니면 기존 카드 유지.
+  const totalReview =
+    isTotalReviewLLMEnabled() && personalizationContext
+      ? await generateTotalReview({
+          sajuData,
+          personalizationContext,
+          userName: input.name?.trim() || null,
+          gender: input.gender === 'female' ? 'F' : input.gender === 'male' ? 'M' : null,
+        })
+      : null;
+
   const pillars = [
     { label: '년', pillar: sajuData.pillars.year },
     { label: '월', pillar: sajuData.pillars.month },
@@ -412,8 +429,19 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
             {/* §1.6 narrative 카드 — 2026-05-15 P2. 일간 + 격국 + 용신 + 대운/세운을 한 단락
                 narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함.
-                2026-05-15 cleanup: §1.5 일주 캐릭터 → 성향 탭, §1.7 격국·용신·강약 + §1.8 합충·공망·신살 → 명식 탭으로 이전. */}
-            <SajuNarrativeCard narrative={sajuNarrative} />
+                2026-05-15 cleanup: §1.5 일주 캐릭터 → 성향 탭, §1.7 격국·용신·강약 + §1.8 합충·공망·신살 → 명식 탭으로 이전.
+                2026-05-21 — 총평 LLM(flag ON + source llm)이면 4단락 + 평생 활용 3카드, 아니면 기존 단락 카드. */}
+            {totalReview && totalReview.source === 'llm' ? (
+              <>
+                <SajuTotalReviewNarrative
+                  summary={totalReview.output.one_line_summary}
+                  narrative={totalReview.output.main_narrative}
+                />
+                <SajuLifetimeKeysSection keys={totalReview.output.lifetime_keys} />
+              </>
+            ) : (
+              <SajuNarrativeCard narrative={sajuNarrative} />
+            )}
 
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
