@@ -87,13 +87,48 @@ export function GangiSeasonBanner({
     });
   }, [safeBanners.length]);
 
+  // 2026-05-20 — 키보드 a11y: viewport focusable + ←/→/Home/End 키 carousel nav.
+  //   기존 pointer/scroll 동작 보존. focus 시 ring 으로 활성 indication.
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (safeBanners.length <= 1) return;
+      const target = event.target as HTMLElement;
+      // 슬라이드 안 Link/button 에 focus 된 경우는 native Tab 이동 우선.
+      if (target !== event.currentTarget) return;
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          goToBanner(activeIndex - 1);
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          goToBanner(activeIndex + 1);
+          break;
+        case 'Home':
+          event.preventDefault();
+          goToBanner(0);
+          break;
+        case 'End':
+          event.preventDefault();
+          goToBanner(safeBanners.length - 1);
+          break;
+      }
+    },
+    [activeIndex, goToBanner, safeBanners.length]
+  );
+
   return (
     <section className="px-4 pt-3" aria-label="추천 운세 배너">
       <div
         ref={viewportRef}
-        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none"
+        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink-strong)] focus-visible:ring-offset-2"
         style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
+        tabIndex={0}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={`추천 운세 배너 ${activeIndex + 1}/${safeBanners.length}`}
         onScroll={handleScroll}
+        onKeyDown={handleKeyDown}
         onPointerDown={(event) => {
           // 2026-05-20 — 사용자 보고: 모바일에서 손가락 swipe 가 부드럽지 않음.
           //   기존 'mouse only' 가드 제거 → mouse + touch + pen 모두 drag 허용.
