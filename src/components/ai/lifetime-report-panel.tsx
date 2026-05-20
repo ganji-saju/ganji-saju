@@ -8,6 +8,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ChapterFeedbackCard } from '@/components/saju/chapter-feedback-card';
 import Link from 'next/link';
 import {
   Activity,
@@ -65,17 +66,17 @@ interface LifetimeInterpretationResponse {
   }>;
 }
 
-// 9개 챕터 메타 — 토큰 컬러 cycling.
+// 9개 챕터 메타 — 토큰 컬러 cycling + chapter feedback 챕터 id 매핑.
 const SECTION_META = [
-  { key: 'coreIdentity', label: '타고난 성향', tone: 'pink' },
-  { key: 'strengthBalance', label: '기운의 균형', tone: 'jade' },
-  { key: 'patternAndYongsin', label: '역할과 보완 힌트', tone: 'amber' },
-  { key: 'relationshipPattern', label: '관계 패턴', tone: 'coral' },
-  { key: 'wealthStyle', label: '재물 감각', tone: 'amber' },
-  { key: 'careerDirection', label: '직업 방향', tone: 'indigo' },
-  { key: 'healthRhythm', label: '건강 리듬', tone: 'jade' },
-  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름 (대운)', tone: 'pink' },
-  { key: 'lifetimeStrategy', label: '평생 활용 전략', tone: 'indigo' },
+  { key: 'coreIdentity', label: '타고난 성향', tone: 'pink', chapterId: 1 },
+  { key: 'strengthBalance', label: '기운의 균형', tone: 'jade', chapterId: 2 },
+  { key: 'patternAndYongsin', label: '역할과 보완 힌트', tone: 'amber', chapterId: 3 },
+  { key: 'relationshipPattern', label: '관계 패턴', tone: 'coral', chapterId: 4 },
+  { key: 'wealthStyle', label: '재물 감각', tone: 'amber', chapterId: 5 },
+  { key: 'careerDirection', label: '직업 방향', tone: 'indigo', chapterId: 6 },
+  { key: 'healthRhythm', label: '건강 리듬', tone: 'jade', chapterId: 7 },
+  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름 (대운)', tone: 'pink', chapterId: 8 },
+  { key: 'lifetimeStrategy', label: '평생 활용 전략', tone: 'indigo', chapterId: 9 },
 ] as const;
 
 type ToneKey = 'pink' | 'jade' | 'amber' | 'coral' | 'indigo';
@@ -1172,6 +1173,12 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               report={report}
             />
             <BasisNotes items={basisLines} />
+            {/* 2026-05-20 V2-5 PR R — 챕터별 피드백 카드 (별점 + Yes/No). */}
+            <ChapterFeedbackCard
+              readingId={slug}
+              chapterId={section.chapterId}
+              chapterTitle={section.label}
+            />
           </section>
         );
       })}
