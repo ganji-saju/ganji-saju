@@ -125,9 +125,14 @@ export function buildSajuNarrative(
   ]);
 
   // ── 3. chips — 근거 라벨.
+  //
+  // 2026-05-20 V2-5 PR X — chip 한자 제거 정책 (사용자 보고):
+  //   이전 "일주 계미(癸未)" / "대운 경오(庚午)" 형태 → "일주 계미" / "대운 경오" 한글만.
+  //   사주팔자 4 pillars 카드 (page.tsx:418, han-font 24px 한자) 는 *명리학 정체성* 으로
+  //   별도 유지. chip 은 *라벨 정보 슬롯* 이라 가독성 우선.
   const chips: SajuNarrativeChip[] = [];
   if (dayKorean || dayGanzi) {
-    chips.push({ label: '일주', value: dayKorean ? `${dayKorean}(${dayGanzi})` : dayGanzi });
+    chips.push({ label: '일주', value: dayKorean || ganziToKorean(dayGanzi) || dayGanzi });
   }
   if (patternName) {
     chips.push({ label: '격국', value: patternName });
@@ -138,12 +143,11 @@ export function buildSajuNarrative(
   if (strengthLevel) {
     chips.push({ label: '강약', value: strengthLevel });
   }
-  // 2026-05-15: chip 도 한자 옆에 한글 병기. "丁酉" → "정유(丁酉)".
   if (majorLuck) {
-    chips.push({ label: '대운', value: withKoreanGanzi(majorLuck) });
+    chips.push({ label: '대운', value: ganziForBody(majorLuck) });
   }
   if (saewoon) {
-    chips.push({ label: '세운', value: withKoreanGanzi(saewoon) });
+    chips.push({ label: '세운', value: ganziForBody(saewoon) });
   }
 
   return { headline, body, chips };
@@ -266,15 +270,9 @@ function ganziForBody(ganzi: string): string {
   return ganziToKorean(ganzi) || ganzi;
 }
 
-/**
- * chip 메타 영역용 — 한자 + 한글 병기. "정유(丁酉)" 형태.
- *   chip 은 표 형식 라벨이라 한자 노출 OK (사주팔자 카드 한자 보존 정책 동일 정신).
- *   본문 narrative 에서는 `ganziForBody` 사용 권장.
- */
-function withKoreanGanzi(ganzi: string): string {
-  const korean = ganziToKorean(ganzi);
-  return korean ? `${korean}(${ganzi})` : ganzi;
-}
+// 2026-05-20 V2-5 PR X — `withKoreanGanzi` 함수 제거 (chip 한자 정책 변경).
+//   chip 도 한글만 표시 (사주팔자 4 pillars 카드만 한자 정체성 유지).
+//   본문 + chip 모두 `ganziForBody` 사용 — 단일 함수 통일.
 
 function buildLuckSentence({
   majorLuck,
