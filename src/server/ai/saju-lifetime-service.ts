@@ -24,6 +24,11 @@ import { enhanceLifetimeChapter4WithLLM } from './chapters/enhance-lifetime-chap
 import { buildChapter4Input } from './chapters/build-chapter4-input';
 import { enhanceLifetimeChapter5WithLLM } from './chapters/enhance-lifetime-chapter5';
 import { buildChapter5Input } from './chapters/build-chapter5-input';
+// V2-5 PR K: 챕터 9 (평생 활용 전략) LLM synthesis 통합.
+//   진단서 §3-1 ⑨ "9장이 1~7장 문장 복붙" 문제 해결. priorChapterDigests
+//   1~7장 입력 + cross-chapter validator 룰로 복사 차단.
+import { enhanceLifetimeChapter9WithLLM } from './chapters/enhance-lifetime-chapter9';
+import { buildChapter9Input } from './chapters/build-chapter9-input';
 import { OpenAIChapterClient } from './chapters/openai-chapter-client';
 import {
   buildChapterCacheKey,
@@ -133,6 +138,13 @@ export async function generateLifetimeInterpretation(
     reading, report, userSituation, model, promptVersion
   );
   report = await applyChapter5LLMEnhancement(
+    reading, report, userSituation, model, promptVersion
+  );
+  // V2-5 PR K: 챕터 9 synthesis — 반드시 1·4·5 LLM 적용 *이후* 호출.
+  //   priorChapterDigests 가 enhanced summary 를 digest 소스로 사용해야 LLM 이
+  //   *최신 본문* 을 재해석함. 1·4·5 가 fallback 이면 deterministic summary 그대로
+  //   digest 가 되므로 안전.
+  report = await applyChapter9LLMEnhancement(
     reading, report, userSituation, model, promptVersion
   );
   const fallback = buildFallbackLifetimeInterpretation(report, counselorId);
@@ -489,6 +501,119 @@ async function applyChapter5LLMEnhancement(
   } catch (error) {
     logChapterRun({
       chapterId: 5, source: 'fallback',
+      durationMs: Date.now() - stageStartedAt,
+      retries: 0, cacheKey,
+      validationFailures: [],
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    return baseReport;
+  }
+}
+
+/**
+ * V2-5 PR K: 챕터 9 (평생 활용 전략) LLM synthesis.
+ * 진단서 §3-1 ⑨ "9장이 1~7장 본문 복붙" 문제 해결.
+ *
+ * 흐름은 applyChapter{1,4,5}LLMEnhancement 와 동일 (env flag + cache + envelope).
+ * 차이점:
+ *   - input 빌더가 buildChapter9Input — 1~7장 baseReport 섹션을 priorChapterDigests
+ *     로 함께 전달.
+ *   - reading.sajuData 외에 baseReport (1~7장 enhanced 결과) 도 입력으로 사용.
+ *   - 교체 대상 필드는 lifetimeStrategy.summary.
+ */
+async function applyChapter9LLMEnhancement(
+  reading: ReadingRecord,
+  baseReport: ReturnType<typeof buildLifetimeReport>,
+  userSituation: Parameters<typeof buildLifetimeReport>[3],
+  model: string,
+  promptVersion: string
+): Promise<ReturnType<typeof buildLifetimeReport>> {
+  if (!isChapterLLMEnabled(9)) return baseReport;
+
+  const chapter9Input = buildChapter9Input(
+    reading.sajuData,
+    userSituation ?? null,
+    {
+      coreIdentity: baseReport.coreIdentity,
+      strengthBalance: baseReport.strengthBalance,
+      patternAndYongsin: baseReport.patternAndYongsin,
+      relationshipPattern: baseReport.relationshipPattern,
+      wealthStyle: baseReport.wealthStyle,
+      careerDirection: baseReport.careerDirection,
+      healthRhythm: baseReport.healthRhythm,
+    },
+    {
+      name: reading.input.name ?? null,
+      age: null,
+    }
+  );
+  const cacheKey = buildChapterCacheKey(reading.sajuData, chapter9Input.userContext, 9);
+  const cached = reading.chaptersEnvelope?.chapters?.[9];
+  const stageStartedAt = Date.now();
+
+  if (
+    cached &&
+    cached.cacheKey === cacheKey &&
+    cached.source === 'llm' &&
+    isChapterCacheFresh(cached.generatedAt)
+  ) {
+    logChapterRun({
+      chapterId: 9, source: 'cache',
+      durationMs: Date.now() - stageStartedAt,
+      retries: cached.retries, cacheKey,
+      validationFailures: cached.validationFailures ?? [],
+    });
+    return {
+      ...baseReport,
+      lifetimeStrategy: { ...baseReport.lifetimeStrategy, summary: cached.body },
+    };
+  }
+
+  try {
+    const client = new OpenAIChapterClient({ model });
+    const enhanced = await enhanceLifetimeChapter9WithLLM(
+      baseReport.lifetimeStrategy, chapter9Input, client
+    );
+
+    if (enhanced.source === 'llm' && isReadingId(reading.id)) {
+      const entry: PersistedChapterEntry = {
+        chapterId: 9,
+        body: enhanced.lifetimeStrategy.summary,
+        source: 'llm',
+        retries: enhanced.retries as 0 | 1 | 2,
+        cacheKey,
+        generatedAt: new Date().toISOString(),
+        validationFailures: [],
+      };
+      const envelope: PersistedChapterEnvelope = {
+        schemaVersion: PERSISTED_CHAPTER_ENVELOPE_V1,
+        generatedAt: entry.generatedAt,
+        promptVersion, model,
+        chapters: {
+          ...(reading.chaptersEnvelope?.chapters ?? {}),
+          9: entry,
+        },
+      };
+      try {
+        await updateReadingChapters(reading.id, envelope);
+      } catch (writeError) {
+        console.error('updateReadingChapters (ch9) failed', writeError);
+      }
+    }
+
+    logChapterRun({
+      chapterId: 9, source: enhanced.source,
+      durationMs: Date.now() - stageStartedAt,
+      retries: enhanced.retries, cacheKey,
+      validationFailures: [],
+    });
+    return {
+      ...baseReport,
+      lifetimeStrategy: enhanced.lifetimeStrategy,
+    };
+  } catch (error) {
+    logChapterRun({
+      chapterId: 9, source: 'fallback',
       durationMs: Date.now() - stageStartedAt,
       retries: 0, cacheKey,
       validationFailures: [],
