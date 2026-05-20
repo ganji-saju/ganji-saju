@@ -1,4 +1,5 @@
 import type { GangiZodiacKey } from '@/components/gangi/gangi-ui';
+import type { StarSignKey } from '@/components/gangi/star-sign-chip';
 
 export const GANGI_HOME_CATEGORIES = [
   { key: 'all', label: '전체' },
@@ -17,9 +18,22 @@ export type GangiServiceCard = {
   desc: string;
   price: string;
   href: string;
+  /**
+   * 12간지 chip 키 (rat/ox/.../pig). chipKind 가 'zodiac' (또는 미지정) 일 때 렌더.
+   * 카드 분류 자체는 zodiac 와 무관 — 단순 시각 cue.
+   */
   zodiac: GangiZodiacKey;
   category: GangiServiceCategory;
   tag?: string;
+  /**
+   * 2026-05-20 — chip 렌더 모드.
+   * 'zodiac' (default): ZodiacChip 으로 zodiac 키 사용.
+   * 'star-sign': StarSignChip (12서양 별자리 전용). 특정 sign 은 starSign 으로,
+   *   미지정이면 generic 밤하늘 통합 chip. zodiac 필드는 legacy fallback 으로 유지.
+   */
+  chipKind?: 'zodiac' | 'star-sign';
+  /** chipKind === 'star-sign' 일 때 특정 별자리. 미지정 시 generic 12별자리 통합 chip. */
+  starSign?: StarSignKey;
 };
 
 export type GangiHomeBanner = {
@@ -125,13 +139,16 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     // 2026-05-20 — 사용자 보고: 메인 카드 그리드에 별자리 진입점 누락.
     //   꿈해몽 자리 (이전 7번) 에 별자리 배치, 꿈해몽은 마지막으로 이동.
-    //   zodiac chip 은 'pig' (亥/indigo) — 밤하늘 톤과 매칭.
+    // 2026-05-20 (PR γ) — 12간지 'pig' chip 차용 → 12서양 별자리 전용 chip
+    //   (StarSignChip generic — 밤하늘 + ✦) 으로 교체. 시각적 일관성 보강.
+    //   zodiac: 'pig' 는 chipKind 미지원 환경 fallback 으로 그대로 둠.
     id: 'star-sign',
     title: '별자리',
     desc: '12자리 오늘 메시지',
     price: '무료',
     href: '/star-sign',
     zodiac: 'pig',
+    chipKind: 'star-sign',
     category: 'fortune',
   },
   {
