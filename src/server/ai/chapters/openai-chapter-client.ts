@@ -39,8 +39,21 @@ export class OpenAIChapterClientError extends Error {
   }
 }
 
+/**
+ * 2026-05-20 V2-5 PR Q — 호출별 마지막 usage 보존.
+ *   ChapterLLMClient.generate() 는 string 만 반환하므로 telemetry 가 별도 경로로
+ *   usage 를 받아야 함. `lastUsage` 가 가장 최근 호출의 model/tokens 를 노출.
+ */
+export interface ChapterClientUsage {
+  model: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 export class OpenAIChapterClient implements ChapterLLMClient {
   private readonly options: OpenAIChapterClientOptions;
+  /** 가장 최근 generate() 호출의 model/tokens — generateChapter 후 telemetry 에 사용. */
+  public lastUsage: ChapterClientUsage | null = null;
 
   constructor(options: OpenAIChapterClientOptions = {}) {
     this.options = options;
@@ -78,6 +91,13 @@ export class OpenAIChapterClient implements ChapterLLMClient {
         result.fallbackReason
       );
     }
+
+    // 2026-05-20 V2-5 PR Q — usage 보존 (telemetry 가 후속 추출).
+    this.lastUsage = {
+      model: result.model ?? this.options.model ?? getOpenAIInterpretationModel(),
+      inputTokens: result.inputTokens,
+      outputTokens: result.outputTokens,
+    };
 
     return result.text;
   }

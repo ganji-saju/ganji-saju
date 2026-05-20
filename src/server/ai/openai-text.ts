@@ -40,6 +40,13 @@ export interface AiTextResult {
   model: string | null;
   fallbackReason: AiFallbackReason | null;
   errorMessage: string | null;
+  /**
+   * 2026-05-20 V2-5 PR Q — 비용 추적용 usage 정보.
+   * OpenAI Responses API 응답의 response.usage 에서 추출. cache hit / fallback /
+   * 미지원 응답은 미설정 (undefined).
+   */
+  inputTokens?: number;
+  outputTokens?: number;
 }
 
 const DEFAULT_OPENAI_MODEL = 'gpt-5.2';
@@ -160,12 +167,23 @@ export async function generateAiText(
       }
     }
 
+    // 2026-05-20 V2-5 PR Q — usage 정보 추출 (비용 추적).
+    //   Responses API 의 `response.usage` 가 있을 때만 기록. 타입 안전을 위해
+    //   defensive 추출.
+    const usage = (response as unknown as {
+      usage?: { input_tokens?: number; output_tokens?: number };
+    }).usage;
+    const inputTokens = typeof usage?.input_tokens === 'number' ? usage.input_tokens : undefined;
+    const outputTokens = typeof usage?.output_tokens === 'number' ? usage.output_tokens : undefined;
+
     return {
       source: 'openai',
       text,
       model,
       fallbackReason: null,
       errorMessage: null,
+      inputTokens,
+      outputTokens,
     };
   } catch (error) {
     const status = typeof error === 'object' && error !== null && 'status' in error
