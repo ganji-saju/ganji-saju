@@ -431,7 +431,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함.
                 2026-05-15 cleanup: §1.5 일주 캐릭터 → 성향 탭, §1.7 격국·용신·강약 + §1.8 합충·공망·신살 → 명식 탭으로 이전.
                 2026-05-21 — 총평 LLM(flag ON + source llm)이면 4단락 + 평생 활용 3카드, 아니면 기존 단락 카드. */}
-            {totalReview && totalReview.source === 'llm' ? (
+            {totalReview && (totalReview.source === 'llm' || totalReview.source === 'cache') ? (
               <>
                 <SajuTotalReviewNarrative
                   summary={totalReview.output.one_line_summary}
