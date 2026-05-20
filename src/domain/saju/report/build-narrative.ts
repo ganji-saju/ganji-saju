@@ -207,15 +207,24 @@ function buildPatternSentence({
   strengthLevel: string | null;
 }): string | null {
   if (!patternName) return null;
+  // 2026-05-20 V2-5 PR W — 한 문장 술어 1개 제한 (spec §3 룰 7):
+  //   이전: "${strengthLevel}의 균형 위에서 ${patternName}이…" → 신약 + 정인격 + 천간 투출 = 3개 술어.
+  //   변경: strengthLevel 을 *일상어* ("힘이 차분한 편" 등) 로 옮기고, 격국만 술어로.
+  //   '천간 투출' 은 chip 메타에 위임 — 본문 노출 제거.
   const confidenceWord =
     patternConfidence === '확정'
       ? '분명히 자리잡혀'
       : patternConfidence === '보통'
         ? '뚜렷이 보이게'
         : '경향성으로';
-  const tougchulNote = patternTougchul ? ' 천간에도 투출되어' : '';
-  const strengthNote = strengthLevel ? `${strengthLevel}의 균형 위에서 ` : '';
-  return `${strengthNote}${patternName}이 ${confidenceWord}${tougchulNote} 흐름의 기준이 됩니다.`;
+  const strengthHint = strengthLevel === '신강'
+    ? '에너지가 강한 편에서 '
+    : strengthLevel === '신약'
+      ? '에너지가 차분한 편에서 '
+      : strengthLevel === '중화'
+        ? '에너지가 균형 잡힌 편에서 '
+        : '';
+  return `${strengthHint}${patternName}이 ${confidenceWord} 흐름의 기준이 됩니다.`;
 }
 
 function buildYongsinSentence({
@@ -276,14 +285,26 @@ function buildLuckSentence({
   saewoon: string | null;
   wolwoon: string | null;
 }): string | null {
-  const parts: string[] = [];
-  // 2026-05-20 V2-5 PR V — 본문 인용 시 한글만 ("경오 대운"). 한자 괄호 제거.
-  //   chip 메타 영역의 한자 병기 (withKoreanGanzi) 는 그대로 유지.
-  if (majorLuck) parts.push(`${ganziForBody(majorLuck)} 대운`);
-  if (saewoon) parts.push(`${ganziForBody(saewoon)} 세운`);
-  if (wolwoon) parts.push(`${ganziForBody(wolwoon)} 월운`);
-  if (parts.length === 0) return null;
-  return `지금은 ${parts.join(' · ')}이 함께 작동합니다.`;
+  // 2026-05-20 V2-5 PR W — 사주 술어 한 단락 1회 제한 (spec §3 룰 7) 부분 적용.
+  //   이전: "경오 대운 · 병오 세운 · 계사 월운이 함께 작동" — 3개 술어 동시.
+  //   변경: 대운만 *큰 흐름* 으로 본문 인용, 세운/월운은 *올해/이번 달* 일상어로 압축.
+  //   chip 메타 영역에는 술어 그대로 유지 (focusBadge 등 별도 영역 분리).
+  if (majorLuck) {
+    const luckParts = [`지금은 ${ganziForBody(majorLuck)} 대운이 큰 흐름의 축입니다.`];
+    if (saewoon || wolwoon) {
+      // 세운·월운은 *올해/이번 달 분위기* 일상어로 — 술어 노출 ↓
+      const subParts: string[] = [];
+      if (saewoon) subParts.push('올해 흐름');
+      if (wolwoon) subParts.push('이번 달 흐름');
+      luckParts.push(`그 위에서 ${subParts.join('과 ')}이 같이 움직입니다.`);
+    }
+    return luckParts.join(' ');
+  }
+  if (saewoon || wolwoon) {
+    // 대운 미산정 fallback — 세운/월운 만 일상어로
+    return '지금은 올해와 이번 달의 작은 흐름이 함께 움직입니다.';
+  }
+  return null;
 }
 
 function buildActionSentence({
