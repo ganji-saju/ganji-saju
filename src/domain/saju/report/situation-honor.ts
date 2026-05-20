@@ -103,9 +103,8 @@ export function buildSituationClosing(input: {
   userName?: string | null;
 }): string | null {
   if (!input.situation) return null;
-  const name = input.userName?.trim();
-  if (name) {
-    return `이 풀이는 ${name}님이 입력하신 현재 상황을 함께 반영했어요.`;
-  }
+  // 2026-05-20 V2-5 PR V — 호명 1회 규칙 (spec §3 룰 6) 준수:
+  //   closing 의 `${name}님` 재호명 제거. 호명은 headline 의 honorificPrefix 에서
+  //   1회만 등장 — 같은 본문에 ${name}님 이 두 번 노출되던 어색함 해소.
   return '이 풀이는 입력하신 현재 상황을 함께 반영했어요.';
 }

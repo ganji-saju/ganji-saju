@@ -33,11 +33,10 @@ function getPrimaryConcept(report: SajuReport) {
 }
 
 function formatYongsinSymbol(symbol: { label: string; value: string }) {
-  if (/\([^)]+\)/.test(symbol.label)) {
-    return symbol.label;
-  }
-
-  return `${symbol.label}(${symbol.value})`;
+  // 2026-05-20 V2-5 PR V — saju-data-v1.formatElementLabel 이 자연 표기 ("화 기운")
+  //   으로 전환됨. 추가 wrap (`(값)`) 은 본문 한자 노출 + `을(를)` 조사 fallback
+  //   원인이라 제거. label 을 그대로 반환.
+  return symbol.label;
 }
 
 function mapYongsinCandidate(candidate: SajuYongsinCandidate): SajuEvidenceYongsinCandidate {

@@ -1757,7 +1757,18 @@ function toElementSymbolRef(element: Element): SajuSymbolRef {
 }
 
 function formatElementLabel(element: Element) {
-  return `${ELEMENT_HANJA[element]} (${element})`;
+  // 2026-05-20 V2-5 PR V — 사용자 본문 노출 label 한자 제거 + 자연 한국어 표기.
+  //   이전 `'金 (금)'` 가 narrative 본문 + 조사 fallback 깨짐 (`을(를)`) 원인.
+  //   ELEMENT_INFO 의 표준 표기 ("금 기운") 와 일치.
+  //   value 는 한글 1글자 그대로 유지 (deterministic lookup 호환).
+  const NATURAL_LABEL: Record<Element, string> = {
+    목: '목 기운',
+    화: '화 기운',
+    토: '토 기운',
+    금: '금 기운',
+    수: '수 기운',
+  };
+  return NATURAL_LABEL[element] ?? `${element} 기운`;
 }
 
 function formatSeasonLabel(season: SeasonKey) {

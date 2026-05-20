@@ -187,7 +187,8 @@ function buildDaySentence({
   sixtyGapjaCore: string | null;
   dayElement: string;
 }): string {
-  const ref = dayKorean ? `${dayKorean}(${dayGanzi})` : dayGanzi;
+  // 2026-05-20 V2-5 PR V — 본문 인용 시 한자 괄호 제거. 한글만.
+  const ref = dayKorean || ganziToKorean(dayGanzi) || dayGanzi;
   if (sixtyGapjaCore) {
     return `${ref} 일간은 ${sixtyGapjaCore}`;
   }
@@ -232,7 +233,9 @@ function buildYongsinSentence({
 }
 
 // 2026-05-15 cleanup — 한자 ganzi 옆에 한글 발음 병기.
-// "丁酉" → "정유(丁酉)" 형식. 사용자 피드백: 한자 범벅으로 무슨 내용인지 파악 힘듦.
+// 2026-05-20 V2-5 PR V — 사용자 본문 노출 시 한자 제거. 한글만 표시.
+//   이전 `'경오(庚午)'` 가 본문 한자 범벅 + 가독성 ↓ + spec §3 룰 1 (한자 금지) 위반.
+//   chip 등 메타 영역은 한자 보존 가능하나 narrative 본문 *문장 안* 에는 한글만.
 const STEM_HANJA_TO_KOREAN: Record<string, string> = {
   甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
   己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
@@ -246,6 +249,19 @@ function ganziToKorean(ganzi: string): string {
   const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
   return `${stem}${branch}`;
 }
+/**
+ * 본문 인용용 — 한글만 (한자 괄호 X). chip 메타 영역 분리.
+ *   "경오 대운" 형태로 자연 한국어. dayKorean 미산정 시 ganzi raw 표시.
+ */
+function ganziForBody(ganzi: string): string {
+  return ganziToKorean(ganzi) || ganzi;
+}
+
+/**
+ * chip 메타 영역용 — 한자 + 한글 병기. "정유(丁酉)" 형태.
+ *   chip 은 표 형식 라벨이라 한자 노출 OK (사주팔자 카드 한자 보존 정책 동일 정신).
+ *   본문 narrative 에서는 `ganziForBody` 사용 권장.
+ */
 function withKoreanGanzi(ganzi: string): string {
   const korean = ganziToKorean(ganzi);
   return korean ? `${korean}(${ganzi})` : ganzi;
@@ -261,10 +277,11 @@ function buildLuckSentence({
   wolwoon: string | null;
 }): string | null {
   const parts: string[] = [];
-  // 2026-05-15: 한자 ganzi 옆에 한글 발음 병기 — "정유(丁酉) 대운".
-  if (majorLuck) parts.push(`${withKoreanGanzi(majorLuck)} 대운`);
-  if (saewoon) parts.push(`${withKoreanGanzi(saewoon)} 세운`);
-  if (wolwoon) parts.push(`${withKoreanGanzi(wolwoon)} 월운`);
+  // 2026-05-20 V2-5 PR V — 본문 인용 시 한글만 ("경오 대운"). 한자 괄호 제거.
+  //   chip 메타 영역의 한자 병기 (withKoreanGanzi) 는 그대로 유지.
+  if (majorLuck) parts.push(`${ganziForBody(majorLuck)} 대운`);
+  if (saewoon) parts.push(`${ganziForBody(saewoon)} 세운`);
+  if (wolwoon) parts.push(`${ganziForBody(wolwoon)} 월운`);
   if (parts.length === 0) return null;
   return `지금은 ${parts.join(' · ')}이 함께 작동합니다.`;
 }

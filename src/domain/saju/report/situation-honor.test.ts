@@ -94,13 +94,18 @@ test('buildSituationActionLine - concern other + concernNote (20자 truncate)', 
   assert.ok(result!.includes('대학원 진학 vs 취업'));
 });
 
-test('buildSituationClosing - situation 있으면 한 줄 반환', () => {
+test('buildSituationClosing - situation 있으면 한 줄 반환 (호명 1회 규칙으로 closing 자체 호명 제거)', () => {
+  // 2026-05-20 V2-5 PR V — closing 의 ${name}님 재호명 제거. 호명은 headline 의
+  //   honorificPrefix 에서 1회만 등장. closing 은 메타 안내 ("이 풀이는 입력하신
+  //   현재 상황을 함께 반영했어요.") 만 반환.
   const a = buildSituationClosing({
     situation: { occupation: 'employee' },
     userName: '영민',
   });
   assert.ok(a);
-  assert.ok(a!.includes('영민님'));
+  // 호명 미포함 확인 (이전과 반대 — closing 에서 ${name}님 제거됨)
+  assert.ok(!a!.includes('영민님'), 'closing 에 재호명 미포함');
+  assert.ok(a!.includes('입력하신'), '메타 안내 ("입력하신") 포함');
 
   const b = buildSituationClosing({ situation: { occupation: 'employee' } });
   assert.ok(b);
