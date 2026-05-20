@@ -477,6 +477,15 @@ export default async function StarSignDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
+            {/* 2026-05-20 Phase 8-B — 연애 영역 cross-link: 오늘 연애 타로 한 장 */}
+            <Link
+              href="/tarot/daily?topic=love"
+              className="mt-3 inline-flex w-full items-center justify-between rounded-full border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[12.5px] font-extrabold text-[var(--app-pink-strong)] no-underline"
+              style={{ borderColor: 'var(--app-pink-line)' }}
+            >
+              <span>오늘의 연애 타로 한 장 뽑기</span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </article>
 
           {/* §7 직업·재능 */}
@@ -679,7 +688,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
               서양의 별빛과 동양의 명식을 나란히 놓고 오늘 마음에 더 가까운 결을 함께 읽어드립니다.
             </p>
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={`/star-sign/${item.slug}/cross`}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
@@ -691,6 +700,33 @@ export default async function StarSignDetailPage({ params }: Props) {
                 className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
               >
                 {readingSlug ? '내 사주 풀이' : '사주 입력'}
+              </Link>
+            </div>
+            {/* 2026-05-20 Phase 8-B — 무료 → 유료 funnel: 사주 상세 (550원) + 궁합 풀이 (990원) 가격 명시 cross-link */}
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <Link
+                href="/saju/new?from=star-sign"
+                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
+              >
+                <span className="flex flex-col text-left">
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">사주 상세 풀이</span>
+                  <span className="mt-0.5">14 섹션 · A4 5~7p 리포트</span>
+                </span>
+                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
+                  550원~
+                </span>
+              </Link>
+              <Link
+                href="/compatibility/input?from=star-sign"
+                className="inline-flex items-center justify-between rounded-2xl border border-white/16 bg-white/8 px-3.5 py-2.5 text-[12px] font-bold text-white/90 no-underline"
+              >
+                <span className="flex flex-col text-left">
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-white/65">궁합 풀이</span>
+                  <span className="mt-0.5">두 사람 사주 결합 분석</span>
+                </span>
+                <span className="ml-2 shrink-0 rounded-full bg-[var(--app-pink)]/85 px-2 py-1 text-[11px] font-extrabold text-white">
+                  990원
+                </span>
               </Link>
             </div>
           </article>
