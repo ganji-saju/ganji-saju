@@ -6,10 +6,12 @@ import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
+import { DREAM_CONTENT } from '@/lib/dream/dream-content';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
 import {
   buildArticleSchema,
   buildBreadcrumbSchema,
+  buildFAQPageSchema,
   serializeStructuredData,
 } from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -74,13 +76,23 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
     notFound();
   }
 
-  const relatedItems = DREAM_ENTRIES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
+  // 2026-05-20 Phase 8-D — enriched content (10 sections + FAQ). fallback = 기존 단순 layout.
+  const content = DREAM_CONTENT[item.slug] ?? null;
+  const oneLine = content?.oneLineSummary ?? item.summary;
 
-  // 2026-05-20 Phase 8-A — JSON-LD Article + Breadcrumb schema for SERP rich result.
-  //   FAQPage schema 는 FAQ 콘텐츠 가 채워지는 Phase 8-D 에서 추가.
+  // related: enriched content 가 있으면 relatedSlugs 우선, 없으면 DREAM_ENTRIES 에서 3개.
+  const relatedFromContent = content?.relatedSlugs
+    ?.map((slug) => DREAM_ENTRIES.find((e) => e.slug === slug))
+    .filter(Boolean) as typeof DREAM_ENTRIES;
+  const relatedItems =
+    relatedFromContent && relatedFromContent.length > 0
+      ? relatedFromContent
+      : DREAM_ENTRIES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
+
+  // 2026-05-20 Phase 8-A + 8-D — JSON-LD Article + Breadcrumb + (조건부) FAQPage schema.
   const articleSchema = buildArticleSchema({
     headline: `${item.title} 꿈해몽`,
-    description: `${item.title}이 반복해서 떠오를 때 참고할 수 있는 무료 꿈해몽 상세 페이지입니다.`,
+    description: oneLine,
     path: `/dream-interpretation/${item.slug}`,
     articleSection: '꿈해몽',
   });
@@ -89,6 +101,11 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
     { name: '꿈해몽', path: '/dream-interpretation' },
     { name: item.title, path: `/dream-interpretation/${item.slug}` },
   ]);
+  const faqSchema = content?.faqs?.length
+    ? buildFAQPageSchema({
+        items: content.faqs.map((f) => ({ question: f.question, answer: f.answer })),
+      })
+    : null;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -103,6 +120,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
         />
+        {faqSchema ? (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: serializeStructuredData(faqSchema) }}
+          />
+        ) : null}
         <GangiPageHeader title="꿈해몽" backHref="/dream-interpretation" />
 
         {/* Hero — badge + title + description */}
@@ -139,43 +163,172 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             className="mt-2 text-[14px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
-            {item.summary}
+            {oneLine}
           </p>
         </section>
 
-        {/* §풀이 + 행동 — 2 card */}
-        <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
-          <article style={SOFT_FEATURE_STYLE}>
-            <div
-              className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
-              style={{ color: 'var(--app-pink-strong)' }}
-            >
-              보통 이렇게 봅니다
-            </div>
-            <p
-              className="mt-1.5 text-[13px] leading-[1.7]"
-              style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
-            >
-              {item.meaning}
-            </p>
-          </article>
-          <article style={SOFT_FEATURE_STYLE}>
-            <div
-              className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
-              style={{ color: 'var(--app-pink-strong)' }}
-            >
-              오늘 해볼 행동
-            </div>
-            <p
-              className="mt-1.5 text-[13px] leading-[1.7]"
-              style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
-            >
-              {item.action}
-            </p>
-          </article>
-        </div>
+        {/* 2026-05-20 Phase 8-D — enriched content (10 sections) 또는 fallback (단순 2-card) */}
+        {content ? (
+          <>
+            {/* §3 기본 의미 */}
+            <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+              <div style={KICKER_STYLE}>기본 의미</div>
+              <p
+                className="mt-2 text-[13.5px] leading-[1.8]"
+                style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+              >
+                {content.baseMeaning}
+              </p>
+            </article>
 
-        {/* §다음으로 — CTA 2 button */}
+            {/* §4 상황별 해석 */}
+            {content.situations.length > 0 ? (
+              <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+                <div style={KICKER_STYLE}>상황별 해석</div>
+                <ul className="mt-3 space-y-3">
+                  {content.situations.map((s) => (
+                    <li
+                      key={s.heading}
+                      className="rounded-[0.9rem] p-3"
+                      style={{ background: 'var(--app-pink-soft)' }}
+                    >
+                      <div
+                        className="text-[12.5px] font-extrabold"
+                        style={{ color: 'var(--app-pink-strong)' }}
+                      >
+                        {s.heading}
+                      </div>
+                      <p
+                        className="mt-1 text-[12.5px] leading-[1.65]"
+                        style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+                      >
+                        {s.body}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ) : null}
+
+            {/* §5 심리적 해석 + §7 주의할 점 — 2 card */}
+            <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
+              <article style={SOFT_FEATURE_STYLE}>
+                <div
+                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  style={{ color: 'var(--app-pink-strong)' }}
+                >
+                  심리적 해석
+                </div>
+                <p
+                  className="mt-1.5 text-[13px] leading-[1.75]"
+                  style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+                >
+                  {content.psychological}
+                </p>
+              </article>
+              <article style={SOFT_FEATURE_STYLE}>
+                <div
+                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  style={{ color: 'var(--app-coral)' }}
+                >
+                  주의할 점
+                </div>
+                <p
+                  className="mt-1.5 text-[13px] leading-[1.75]"
+                  style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+                >
+                  {content.caution}
+                </p>
+              </article>
+            </div>
+
+            {/* §6 오늘의 행동 가이드 */}
+            {content.actionGuide.length > 0 ? (
+              <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+                <div style={KICKER_STYLE}>오늘의 행동 가이드</div>
+                <ul className="mt-3 space-y-2">
+                  {content.actionGuide.map((line, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start gap-2 text-[13px] leading-[1.65]"
+                      style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ background: 'var(--app-pink)' }}
+                      />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ) : null}
+
+            {/* §10 FAQ */}
+            {content.faqs.length > 0 ? (
+              <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+                <div style={KICKER_STYLE}>자주 묻는 질문</div>
+                <dl className="mt-3 space-y-3">
+                  {content.faqs.map((faq, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-[0.9rem] border p-3"
+                      style={{ borderColor: 'var(--app-line)' }}
+                    >
+                      <dt
+                        className="text-[13px] font-extrabold leading-snug"
+                        style={{ color: 'var(--app-ink)' }}
+                      >
+                        Q. {faq.question}
+                      </dt>
+                      <dd
+                        className="mt-1.5 text-[12.5px] leading-[1.7]"
+                        style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+                      >
+                        {faq.answer}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ) : null}
+          </>
+        ) : (
+          // fallback (DREAM_CONTENT 에 없는 entry) — 기존 단순 2-card layout
+          <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
+            <article style={SOFT_FEATURE_STYLE}>
+              <div
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                보통 이렇게 봅니다
+              </div>
+              <p
+                className="mt-1.5 text-[13px] leading-[1.7]"
+                style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+              >
+                {item.meaning}
+              </p>
+            </article>
+            <article style={SOFT_FEATURE_STYLE}>
+              <div
+                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                style={{ color: 'var(--app-pink-strong)' }}
+              >
+                오늘 해볼 행동
+              </div>
+              <p
+                className="mt-1.5 text-[13px] leading-[1.7]"
+                style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
+              >
+                {item.action}
+              </p>
+            </article>
+          </div>
+        )}
+
+        {/* §9 CTA — 다음으로 (꿈 → 운세 / 타로 / 사주 cross-area + 유료 funnel) */}
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>다음으로</div>
           <h2
@@ -184,27 +337,77 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
           >
             마음에 남는 질문을 더 이어보세요
           </h2>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {/* 2026-05-20 Phase 8-D — 무료 cross-area 3 link */}
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <Link
-              href="/tarot/daily"
-              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
+              href="/today-fortune?from=dream"
+              className="inline-flex h-12 items-center justify-center rounded-full px-4 text-[13px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
                 boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
               }}
             >
-              오늘의 타로 보기
+              오늘운세 보기
+            </Link>
+            <Link
+              href="/tarot/daily?from=dream"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[13px] font-extrabold"
+              style={{
+                border: '1px solid var(--app-pink-line)',
+                background: 'var(--app-pink-soft)',
+                color: 'var(--app-pink-strong)',
+              }}
+            >
+              타로 한 장 뽑기
             </Link>
             <Link
               href="/dream-interpretation"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[13px] font-extrabold"
               style={{
                 border: '1px solid var(--app-line)',
                 color: 'var(--app-ink)',
-                boxShadow: '0 12px 28px -24px rgba(17, 17, 20, 0.32)',
               }}
             >
-              꿈해몽 목록으로
+              꿈해몽 목록
+            </Link>
+          </div>
+          {/* 2026-05-20 Phase 8-D — 유료 funnel (사주 550원 + 궁합 990원), 별자리/띠 패턴 동일 */}
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <Link
+              href="/saju/new?from=dream"
+              className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[12px] font-bold no-underline"
+              style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
+            >
+              <span className="flex flex-col text-left">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.04em]" style={{ color: 'var(--app-copy-soft)' }}>
+                  사주 상세 풀이
+                </span>
+                <span className="mt-0.5" style={{ color: 'var(--app-copy)' }}>14 섹션 · A4 5~7p 리포트</span>
+              </span>
+              <span
+                className="ml-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold text-white"
+                style={{ background: 'var(--app-pink)' }}
+              >
+                550원~
+              </span>
+            </Link>
+            <Link
+              href="/compatibility/input?from=dream"
+              className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[12px] font-bold no-underline"
+              style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
+            >
+              <span className="flex flex-col text-left">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.04em]" style={{ color: 'var(--app-copy-soft)' }}>
+                  궁합 풀이
+                </span>
+                <span className="mt-0.5" style={{ color: 'var(--app-copy)' }}>두 사람 사주 결합 분석</span>
+              </span>
+              <span
+                className="ml-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold text-white"
+                style={{ background: 'var(--app-pink)' }}
+              >
+                990원
+              </span>
             </Link>
           </div>
         </article>
