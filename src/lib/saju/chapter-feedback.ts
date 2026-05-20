@@ -1,7 +1,16 @@
 // 2026-05-20 V2-5 PR R — 챕터별 사용자 피드백 helper.
 //   chapter_feedback 테이블 (migration 035) 의 upsert + 조회.
+//
+// 2026-05-20 V2-5 PR T — admin 조회 (getChapterFeedbackStats / listRecentChapterFeedback)
+//   가 service-role client 사용으로 전환. RLS 우회 → 모든 사용자 피드백 집계 가능.
+//   기존 RLS policy (본인 피드백만) 는 *사용자 호출용* 그대로 유지.
 
-import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
+import {
+  createClient,
+  createServiceClient,
+  hasSupabaseServerEnv,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 
 export type ChapterId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
@@ -101,8 +110,9 @@ export interface ChapterFeedbackStats {
 }
 
 export async function getChapterFeedbackStats(): Promise<ChapterFeedbackStats[]> {
-  if (!hasSupabaseServerEnv) return [];
-  const supabase = await createClient();
+  // 2026-05-20 V2-5 PR T — admin guard 통과 후 호출. service_role 로 RLS 우회.
+  if (!hasSupabaseServiceEnv) return [];
+  const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from('chapter_feedback')
     .select('chapter_id, rating, helpful_bool');
@@ -156,8 +166,9 @@ export async function getChapterFeedbackStats(): Promise<ChapterFeedbackStats[]>
 export async function listRecentChapterFeedback(
   limit: number = 50
 ): Promise<ChapterFeedbackRecord[]> {
-  if (!hasSupabaseServerEnv) return [];
-  const supabase = await createClient();
+  // 2026-05-20 V2-5 PR T — admin guard 통과 후 호출. service_role 로 RLS 우회.
+  if (!hasSupabaseServiceEnv) return [];
+  const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from('chapter_feedback')
     .select('*')
