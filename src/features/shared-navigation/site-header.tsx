@@ -592,13 +592,17 @@ function MobileChrome({
                 </Link>
               )}
 
-              {/* Hamburger — 36×36 outline circle (mobile only) */}
+              {/* Hamburger — 36×36 outline circle. 2026-05-20: md:hidden → lg:hidden
+                  로 확장. 태블릿 (768~1023px) 영역에서 dock 은 md:hidden 으로 사라지지만
+                  mega-nav 는 lg+ 부터라 진입 vacuum 발생했음. 햄버거를 같이 lg:hidden 으로
+                  옮기면 mobile-nav-sheet (lg+ 부터 강제 hidden) 가 태블릿에서도
+                  MY 섹션 / 정책 / 보관함 등 추가 진입점으로 사용 가능. */}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen((current) => !current)}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-global-menu"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-white text-[var(--app-ink)] transition-colors hover:bg-[var(--app-pink-soft)] md:hidden"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border bg-white text-[var(--app-ink)] transition-colors hover:bg-[var(--app-pink-soft)] lg:hidden"
                 style={{ borderColor: 'var(--app-line)' }}
                 aria-label={mobileMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
               >
