@@ -7,6 +7,8 @@ import type { OhaengGuidanceInput } from './ohaeng-guidance-types';
 /** 프롬프트/스키마 버전 — 변경 시 캐시 무효화. */
 export const OHAENG_GUIDANCE_PROMPT_VERSION = 'ohaeng-guidance/v1';
 
+export const OHAENG_GUIDANCE_CACHE_TTL_DAYS = 30;
+
 const ORDER: Ohaeng[] = ['목', '화', '토', '금', '수'];
 
 /** 같은 오행 분포(+균형 레벨) → 같은 가이드 재사용. 사용자 무관 content-addressed. */
@@ -25,4 +27,17 @@ export function buildOhaengGuidanceCacheKey(input: OhaengGuidanceInput): string 
 /** env OPENAI_INTERPRET_OHAENG_GUIDANCE=1 일 때만 LLM 가이드 활성. 기본 OFF → 결정론 fallback. */
 export function isOhaengGuidanceLLMEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.OPENAI_INTERPRET_OHAENG_GUIDANCE === '1';
+}
+
+/** 캐시 만료 체크(TTL 기본 30일). total-review-cache 와 동일 산식. */
+export function isOhaengGuidanceCacheFresh(
+  generatedAt: string,
+  ttlDays: number = OHAENG_GUIDANCE_CACHE_TTL_DAYS,
+  now: Date = new Date()
+): boolean {
+  const generated = new Date(generatedAt);
+  if (Number.isNaN(generated.getTime())) return false;
+  const ageMs = now.getTime() - generated.getTime();
+  const ttlMs = ttlDays * 24 * 60 * 60 * 1000;
+  return ageMs >= 0 && ageMs < ttlMs;
 }
