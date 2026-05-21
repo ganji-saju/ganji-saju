@@ -8,7 +8,8 @@ export type TasteProductId =
   | 'money-pattern'
   | 'work-flow'
   | 'monthly-calendar'
-  | 'year-core';
+  | 'year-core'
+  | 'score-factor';
 
 export interface PaymentPackage {
   id: string;
@@ -111,6 +112,16 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'year-core',
     requiresSlug: true,
   },
+  {
+    // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
+    id: 'taste_score_factor',
+    name: '점수 풀이 보기',
+    credits: 0,
+    price: 550,
+    kind: 'taste_product',
+    tasteProductId: 'score-factor',
+    requiresSlug: true,
+  },
 ] as const satisfies readonly PaymentPackage[];
 
 export type PackageId = (typeof PAYMENT_PACKAGES)[number]['id'];
@@ -128,6 +139,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'work-flow': 'taste_work_flow',
   'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
+  'score-factor': 'taste_score_factor',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -137,7 +149,8 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'money-pattern' ||
     value === 'work-flow' ||
     value === 'monthly-calendar' ||
-    value === 'year-core'
+    value === 'year-core' ||
+    value === 'score-factor'
   );
 }
 

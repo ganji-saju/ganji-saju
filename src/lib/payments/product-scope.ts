@@ -54,6 +54,19 @@ export function buildLifetimeReportScopeKey(readingKey: string) {
   return `lifetime:${readingKey}`;
 }
 
+// 2026-05-22 — per-factor 점수 풀이 unlock. (readingKey, factorId) 당 1회.
+export function buildScoreFactorScopeKey(readingKey: string, factorId: string) {
+  return `score:${readingKey}:${factorId}`;
+}
+
+export type ScoreFactorId = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
+
+export function parseFactorScope(scope: string | null | undefined): ScoreFactorId | null {
+  const v = scope?.trim().toUpperCase();
+  if (v === 'F1' || v === 'F2' || v === 'F3' || v === 'F4' || v === 'F5') return v;
+  return null;
+}
+
 export function normalizeEntitlementScopeKey(scopeKey: string | null | undefined) {
   const trimmed = scopeKey?.trim() ?? '';
   return trimmed || 'global';
@@ -197,6 +210,21 @@ export async function resolvePaymentProductScope({
     };
   }
 
+  if (productId === 'score-factor') {
+    const factorId = parseFactorScope(scope);
+    return {
+      productId,
+      // factor 미지정 시 reading 단위로(방어). 정상 흐름은 scope=F1~F5.
+      scopeKey: factorId
+        ? buildScoreFactorScopeKey(readingIdentity.readingKey, factorId)
+        : buildReadingProductScopeKey(readingIdentity.readingKey),
+      kind: 'reading',
+      ...readingIdentity,
+      targetYear: null,
+      targetMonth: null,
+    };
+  }
+
   return {
     productId,
     scopeKey: buildLifetimeReportScopeKey(readingIdentity.readingKey),
@@ -237,6 +265,10 @@ export function buildPurchasedProductHref(
 
   if (productId === 'lifetime-report' && normalizedSlug) {
     return `/saju/${encodeURIComponent(normalizedSlug)}/premium`;
+  }
+
+  if (productId === 'score-factor' && normalizedSlug) {
+    return `/saju/${encodeURIComponent(normalizedSlug)}`;
   }
 
   if (productId === 'love-question') return '/compatibility/input';
