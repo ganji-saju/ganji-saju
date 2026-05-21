@@ -501,7 +501,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 내 사주 종합 점수
               </h2>
               <div className="rounded-[18px] border border-[var(--app-line)] bg-white p-5">
-                <SajuScoreGauge total={sajuScore.total} label={sajuScore.label} />
+                {/* 미리보기 — 등급만 노출, 총점/상세는 프리미엄(페이월). */}
+                <SajuScoreGauge total={sajuScore.total} label={sajuScore.label} preview />
                 <TrackedLink
                   href={`/saju/${slug}/premium`}
                   eventName="report_deep_report_click"
@@ -510,10 +511,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 >
                   <div className="min-w-0">
                     <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
-                      점수 자세히 보기
+                      총점 + 상세 풀이 잠금 해제
                     </div>
                     <div className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
-                      점수 내역(5개)·오행 균형·해설
+                      총점·내역(5)·오행 균형·해설 — 프리미엄
                     </div>
                   </div>
                   <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
