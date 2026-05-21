@@ -1,19 +1,23 @@
 // 2026-05-21 — 오행 차트 데이터. phase-1-task.md §6 / naming-policy.md §2 ("X 기운").
+//   라벨/색상은 visual-tokens.ts 단일 소스에서 파생(Phase 2). 의미만 여기서 관리.
 import type { Ohaeng, OhaengChartData, SajuData } from './types';
 import { countOhaeng } from './helpers';
 import { calculateF4 } from './formulas';
+import { OHAENG_TOKENS } from './visual-tokens';
 
-const OHAENG_LABELS: Record<Ohaeng, string> = {
-  목: '목 기운', 화: '화 기운', 토: '토 기운', 금: '금 기운', 수: '수 기운',
-};
+const ELEMENTS: Ohaeng[] = ['목', '화', '토', '금', '수'];
+
+const OHAENG_LABELS = Object.fromEntries(
+  ELEMENTS.map((e) => [e, OHAENG_TOKENS[e].label])
+) as Record<Ohaeng, string>;
+
+const OHAENG_COLORS = Object.fromEntries(
+  ELEMENTS.map((e) => [e, OHAENG_TOKENS[e].hex])
+) as Record<Ohaeng, string>;
 
 const OHAENG_MEANINGS: Record<Ohaeng, string> = {
   목: '자라남과 추진', 화: '표현과 열정', 토: '담아냄과 안정',
   금: '단단함과 결단', 수: '흐름과 깊이',
-};
-
-const OHAENG_COLORS: Record<Ohaeng, string> = {
-  목: '#10b981', 화: '#f43f5e', 토: '#f59e0b', 금: '#6b7280', 수: '#3b82f6',
 };
 
 export function computeOhaengChart(saju: SajuData): OhaengChartData {
