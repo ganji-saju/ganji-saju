@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import type { OhaengChartData } from '@/lib/saju-score';
 import type { ChapterLLMClient } from '../chapters/generate-chapter';
 import { generateOhaengGuidance } from './generate-ohaeng-guidance';
+import { createInMemoryOhaengGuidanceCacheStore } from './ohaeng-guidance-cache-store';
+import { buildOhaengGuidanceCacheKey } from './ohaeng-guidance-cache';
+import { buildOhaengGuidanceInput } from './ohaeng-guidance-content';
 
 // 2026-05-21 — 오행 가이드 오케스트레이터(Phase 5). DI mock client 로 플래그/검증/fallback 검증.
 
@@ -84,4 +87,52 @@ test('generateOhaengGuidance: 플래그 ON + LLM throw → fallback', async () =
 test('generateOhaengGuidance: 플래그 ON + 너무 짧은 응답 → fallback', async () => {
   const r = await generateOhaengGuidance({ chart: chart(), env: ON, client: fixedClient('토 기운.'), maxRetries: 1 });
   assert.equal(r.source, 'fallback');
+});
+
+test('generateOhaengGuidance: 플래그 ON + 캐시 hit → cache (LLM 미호출)', async () => {
+  const store = createInMemoryOhaengGuidanceCacheStore();
+  const c = chart();
+  const key = buildOhaengGuidanceCacheKey(buildOhaengGuidanceInput(c));
+  await store.set(key, { guidanceText: '캐시된 가이드 본문이에요. 충분히 긴 텍스트로 채워 검증을 통과합니다.' });
+  let called = false;
+  const client: ChapterLLMClient = {
+    async generate() {
+      called = true;
+      return 'x';
+    },
+  };
+  const r = await generateOhaengGuidance({ chart: c, env: ON, client, cacheStore: store });
+  assert.equal(r.source, 'cache');
+  assert.equal(r.guidanceText, '캐시된 가이드 본문이에요. 충분히 긴 텍스트로 채워 검증을 통과합니다.');
+  assert.equal(called, false, 'LLM 미호출이어야');
+});
+
+test('generateOhaengGuidance: 플래그 ON + miss + llm → 캐시에 저장', async () => {
+  const store = createInMemoryOhaengGuidanceCacheStore();
+  const good =
+    '토 기운이 도드라지는 사주예요. 안정의 힘을 살리면서 부족한 수 기운을 의식적으로 채워 주면 흐름이 한결 부드러워집니다.';
+  const c = chart();
+  const r = await generateOhaengGuidance({ chart: c, env: ON, client: fixedClient(good), cacheStore: store });
+  assert.equal(r.source, 'llm');
+  const cached = await store.get(buildOhaengGuidanceCacheKey(buildOhaengGuidanceInput(c)));
+  assert.ok(cached, 'llm 결과는 캐시에 저장');
+  assert.equal(cached?.guidanceText, good);
+});
+
+test('generateOhaengGuidance: 플래그 ON + fallback(한자) → 캐시 미저장', async () => {
+  const store = createInMemoryOhaengGuidanceCacheStore();
+  const c = chart();
+  const r = await generateOhaengGuidance({
+    chart: c,
+    env: ON,
+    client: fixedClient('土 기운이 강한 사주예요. 안정의 힘을 살리세요.'),
+    maxRetries: 0,
+    cacheStore: store,
+  });
+  assert.equal(r.source, 'fallback');
+  assert.equal(
+    await store.get(buildOhaengGuidanceCacheKey(buildOhaengGuidanceInput(c))),
+    null,
+    'fallback 은 캐시하지 않음'
+  );
 });

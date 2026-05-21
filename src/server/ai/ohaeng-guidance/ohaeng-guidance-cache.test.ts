@@ -3,6 +3,7 @@ import type { OhaengChartData } from '@/lib/saju-score';
 import {
   buildOhaengGuidanceCacheKey,
   isOhaengGuidanceLLMEnabled,
+  isOhaengGuidanceCacheFresh,
   OHAENG_GUIDANCE_PROMPT_VERSION,
 } from './ohaeng-guidance-cache';
 import { buildOhaengGuidanceInput } from './ohaeng-guidance-content';
@@ -51,4 +52,16 @@ test('isOhaengGuidanceLLMEnabled: OPENAI_INTERPRET_OHAENG_GUIDANCE=1 만 true', 
 
 test('OHAENG_GUIDANCE_PROMPT_VERSION: 정의됨', () => {
   assert.ok(OHAENG_GUIDANCE_PROMPT_VERSION.length > 0);
+});
+
+test('isOhaengGuidanceCacheFresh: TTL 이내 true / 초과 false', () => {
+  const now = new Date('2026-05-21T00:00:00Z');
+  const fresh = new Date('2026-05-10T00:00:00Z').toISOString(); // 11일 전
+  const stale = new Date('2026-04-01T00:00:00Z').toISOString(); // 50일 전
+  assert.equal(isOhaengGuidanceCacheFresh(fresh, 30, now), true);
+  assert.equal(isOhaengGuidanceCacheFresh(stale, 30, now), false);
+});
+
+test('isOhaengGuidanceCacheFresh: 잘못된 날짜 false', () => {
+  assert.equal(isOhaengGuidanceCacheFresh('not-a-date', 30, new Date()), false);
 });
