@@ -4,6 +4,7 @@ import type { SajuScore } from '@/lib/saju-score';
 import { cn } from '@/lib/utils';
 import { SajuScoreGauge } from './saju-score-gauge';
 import { SajuScoreBreakdown } from './saju-score-breakdown';
+import { SajuOhaengChart } from './saju-ohaeng-chart';
 import { SajuOhaengBalance } from './saju-ohaeng-balance';
 
 interface Props {
@@ -33,7 +34,8 @@ export function SajuScoreCard({ score, className }: Props) {
       <hr className="my-5 border-[var(--app-line)]" />
 
       <SectionHeading>오행 균형</SectionHeading>
-      <SajuOhaengBalance chart={score.ohaengChart} />
+      <SajuOhaengChart chart={score.ohaengChart} />
+      <SajuOhaengBalance chart={score.ohaengChart} className="mt-4" />
     </section>
   );
 }

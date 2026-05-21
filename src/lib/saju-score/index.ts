@@ -46,4 +46,10 @@ export {
 export type {
   ScoreLevel, BreakdownKey, ScoreLevelToken, OhaengToken, BreakdownFactorMeta,
 } from './visual-tokens';
+export {
+  OHAENG_RADAR_ORDER, computeOhaengRadarPoints, getDominantOhaeng, getOhaengBalanceLevel,
+} from './ohaeng-chart';
+export type {
+  RadarPoint, OhaengRadarGeometry, RadarOptions, OhaengBalanceLevel,
+} from './ohaeng-chart';
 export type { SajuData, SajuScore, ScoreLabel, OhaengChartData, Ohaeng } from './types';
