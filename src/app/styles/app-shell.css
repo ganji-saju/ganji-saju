@@ -359,9 +359,19 @@
 
   /* 2026-05-20 — main.app-shell 의 padding-bottom (dock-clearance) 제거.
      이전엔 main 자체에 dock 만큼 padding 을 줘서 footer 아래에 흰색 공간이
-     생기던 사용자 보고. footer 가 이미 dock 까지 덮으므로 main padding 불필요. */
-  .app-shell.app-shell-with-navigation {
+     생기던 사용자 보고. footer 가 이미 dock 까지 덮으므로 main padding 불필요.
+     단, footer(site-footer-redesign) 가 *있는* 페이지에만 해당 — :has 로 한정. */
+  .app-shell.app-shell-with-navigation:has(footer.site-footer-redesign) {
     padding-bottom: 0 !important;
+  }
+
+  /* 2026-05-22 fix — footer(site-footer-redesign) 가 *없는* 페이지(로그인/사주입력 등)는
+     위 0 처리로 인해 도크 clearance 가 사라져, 하단 콘텐츠가 fixed dock(z-40)에
+     가려지고 스크롤로도 도크 위로 못 올라오는 문제. footer 없는 shell 에만 도크
+     여백 복원 (footer 있는 페이지는 위 규칙으로 0 유지 → 흰 공간 회귀 없음).
+     :has 미지원 브라우저는 규칙 무시 → 기존 동작 유지(악화 없음). */
+  .app-shell.app-shell-with-navigation:not(:has(footer.site-footer-redesign)) {
+    padding-bottom: var(--app-mobile-dock-clearance) !important;
   }
 }
 
