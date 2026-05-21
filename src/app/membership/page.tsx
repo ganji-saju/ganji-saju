@@ -364,7 +364,7 @@ export default async function MembershipPage({
               {featuredPlan?.price ?? '월 9,900원'} 시작 →
             </Link>
             <p className="mt-3 text-center text-[11.5px] leading-[1.5] text-[var(--app-copy-soft)]">
-              7일 무료 체험 · 언제든 해지 가능
+              무료체험 없음 · 결제 승인일로부터 30일 이용 · 언제든 해지 가능
             </p>
           </div>
 

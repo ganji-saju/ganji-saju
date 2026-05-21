@@ -195,7 +195,7 @@ function CreditsPageContent() {
   const selectedMethod = getTossPaymentMethodOption(paymentMethod);
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-32 md:pb-12">
+    <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-32 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="코인 충전" backHref="/my" />
 
@@ -214,8 +214,7 @@ function CreditsPageContent() {
             >
               현재 보유
             </div>
-            {/* 2026-05-18 Phase 5-D: 잔액 skeleton + 에러 시 RetryButton.
-                기존 "✦ …" / "잔액 확인 중…" 단순 텍스트 → 명확한 상태 분리. */}
+            {/* 2026-05-18 Phase 5-D: 잔액 skeleton + 에러 시 RetryButton. */}
             {creditsFetchError ? (
               <div className="mt-1.5">
                 <button
@@ -230,7 +229,7 @@ function CreditsPageContent() {
                   잔액 확인 다시 시도
                 </button>
                 <p className="mt-2 text-[11.5px]" style={{ opacity: 0.7 }}>
-                  잔액을 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.
+                  잔액 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.
                 </p>
               </div>
             ) : (
@@ -246,7 +245,7 @@ function CreditsPageContent() {
                     </div>
                   ) : credits === null ? (
                     <div
-                      aria-label="잔액 불러오는 중"
+                      aria-label="잔액 확인 중"
                       className="h-[36px] w-32 animate-pulse rounded bg-white/15"
                     />
                   ) : (
@@ -265,7 +264,7 @@ function CreditsPageContent() {
                   {isLoggedIn === false
                     ? '로그인 후 잔액과 충전 내역이 표시됩니다'
                     : credits === null
-                      ? '잔액을 불러오는 중입니다'
+                      ? '잔액 확인 중입니다'
                       : '결제 즉시 잔액에 반영됩니다'}
                 </p>
               </>
@@ -372,6 +371,24 @@ function CreditsPageContent() {
             </div>
           </section>
 
+          {isLoggedIn === false ? (
+            <article
+              className="rounded-[14px] border bg-white px-4 py-3 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <div className="font-extrabold text-[var(--app-ink)]">계정 연결 뒤 결제할 수 있습니다</div>
+              <p className="mt-1">
+                코인팩과 환불 기준은 먼저 확인할 수 있고, 선택한 패키지는 로그인 뒤 결제로 이어집니다.
+              </p>
+              <Link
+                href={`/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`}
+                className="mt-2 inline-flex rounded-full bg-[var(--app-pink)] px-4 py-2 text-[12px] font-extrabold text-white"
+              >
+                로그인하고 충전하기
+              </Link>
+            </article>
+          ) : null}
+
           {/* §4 결제 수단 */}
           <section>
             <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
@@ -446,7 +463,9 @@ function CreditsPageContent() {
             {loading
               ? '처리중...'
               : selectedPackage
-                ? `${selectedPackage.price.toLocaleString()}원 충전하기 · ${selectedMethod.shortLabel}`
+                ? isLoggedIn === false
+                  ? `로그인하고 ${selectedPackage.price.toLocaleString()}원 충전하기`
+                  : `${selectedPackage.price.toLocaleString()}원 충전하기 · ${selectedMethod.shortLabel}`
                 : '패키지를 선택하세요'}
           </button>
         </div>
@@ -459,10 +478,10 @@ export default function CreditsPage() {
   return (
     <Suspense
       fallback={
-        <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+        <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
           <AppPage className="gangi-subpage saju-result-page text-center">
             <p className="px-1 py-8 text-[12.5px] text-[var(--app-copy-muted)]">
-              코인 센터를 불러오는 중입니다.
+              코인 센터 표시 준비
             </p>
           </AppPage>
         </AppShell>

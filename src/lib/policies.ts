@@ -12,6 +12,7 @@
 
 import { createHash } from 'node:crypto';
 import { createServiceClient } from '@/lib/supabase/server';
+import { BUNDLED_POLICIES, type BundledPolicy } from '@/lib/bundled-policies';
 import {
   POLICY_KINDS,
   POLICY_LABELS,
@@ -77,6 +78,46 @@ function rowToPolicy(row: PolicyRow): PolicyVersion {
   };
 }
 
+function bundledToPolicy(policy: BundledPolicy): PolicyVersion {
+  return {
+    id: `bundled:${policy.kind}:${policy.version}`,
+    kind: policy.kind,
+    version: policy.version,
+    effectiveDate: policy.effectiveDate,
+    content: policy.content,
+    contentFormat: 'markdown',
+    contentHash: computeContentHash(policy.content),
+    requiresReconsent: policy.requiresReconsent,
+    changelog: policy.changelog,
+    createdAt: `${policy.effectiveDate}T00:00:00.000+09:00`,
+    createdBy: 'bundled',
+  };
+}
+
+function parseVersion(version: string) {
+  return version
+    .replace(/^v/i, '')
+    .split('.')
+    .map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function compareVersion(a: string, b: string) {
+  const left = parseVersion(a);
+  const right = parseVersion(b);
+  const max = Math.max(left.length, right.length);
+  for (let index = 0; index < max; index += 1) {
+    const diff = (left[index] ?? 0) - (right[index] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+function selectCurrentPolicy(kind: PolicyKind, dbPolicy: PolicyVersion | null): PolicyVersion | null {
+  const bundled = bundledToPolicy(BUNDLED_POLICIES[kind]);
+  if (!dbPolicy) return bundled;
+  return compareVersion(bundled.version, dbPolicy.version) > 0 ? bundled : dbPolicy;
+}
+
 /**
  * 주어진 종류의 현재 활성 정책 버전 (시행일이 오늘 이전인 최신).
  * 운영자가 아직 본문 입력 안 했으면 null → 페이지는 noindex + CS 안내 fallback.
@@ -86,7 +127,7 @@ export async function getCurrentPolicyVersion(
 ): Promise<PolicyVersion | null> {
   // CI 빌드 / preview 빌드에서 Supabase env 없을 때 graceful null (PolicyNotReady 노출).
   // production runtime 에는 env 가 있어 정상 fetch.
-  if (!hasSupabaseServiceEnv()) return null;
+  if (!hasSupabaseServiceEnv()) return selectCurrentPolicy(kind, null);
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date());
   const supabase = await createServiceClient();
   const { data, error } = await supabase
@@ -98,8 +139,8 @@ export async function getCurrentPolicyVersion(
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (error || !data) return null;
-  return rowToPolicy(data as PolicyRow);
+  if (error || !data) return selectCurrentPolicy(kind, null);
+  return selectCurrentPolicy(kind, rowToPolicy(data as PolicyRow));
 }
 
 function hasSupabaseServiceEnv(): boolean {
@@ -126,7 +167,11 @@ export async function listPolicyVersions(kind: PolicyKind): Promise<PolicyVersio
 export async function getAllActivePolicyVersions(): Promise<
   Partial<Record<PolicyKind, PolicyVersion>>
 > {
-  if (!hasSupabaseServiceEnv()) return {};
+  if (!hasSupabaseServiceEnv()) {
+    return Object.fromEntries(
+      POLICY_KINDS.map((kind) => [kind, bundledToPolicy(BUNDLED_POLICIES[kind])])
+    ) as Partial<Record<PolicyKind, PolicyVersion>>;
+  }
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date());
   const supabase = await createServiceClient();
   const { data, error } = await supabase
@@ -134,12 +179,20 @@ export async function getAllActivePolicyVersions(): Promise<
     .select('*')
     .lte('effective_date', today)
     .order('effective_date', { ascending: false });
-  if (error || !data) return {};
+  if (error || !data) {
+    return Object.fromEntries(
+      POLICY_KINDS.map((kind) => [kind, bundledToPolicy(BUNDLED_POLICIES[kind])])
+    ) as Partial<Record<PolicyKind, PolicyVersion>>;
+  }
 
   const result: Partial<Record<PolicyKind, PolicyVersion>> = {};
   for (const row of data as PolicyRow[]) {
     const kind = row.kind as PolicyKind;
     if (!result[kind]) result[kind] = rowToPolicy(row);
+  }
+
+  for (const kind of POLICY_KINDS) {
+    result[kind] = selectCurrentPolicy(kind, result[kind] ?? null) ?? undefined;
   }
   return result;
 }

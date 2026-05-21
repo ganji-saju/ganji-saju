@@ -4,7 +4,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // 2026-05-15 PR-K: 예약 결과 transient feedback 을 sonner 토스트로 마이그레이션.
 import { toast } from 'sonner';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -12,11 +12,12 @@ import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { cn } from '@/lib/utils';
+import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
+import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 
 interface TeacherInfo {
   name: string;
   field: string;
-  meta: string;
   zodiac: ZodiacKey;
   online: boolean;
 }
@@ -26,10 +27,17 @@ interface TeacherInfo {
 const DEFAULT_TEACHER: TeacherInfo = {
   name: '명리호선생',
   field: '종합 명리',
-  meta: '경력 18년 · ★ 4.9 (312)',
   zodiac: 'tiger',
   online: true,
 };
+
+const APPOINTMENT_COST_COINS = 100;
+const APPOINTMENT_MINUTES = 30;
+const SINGLE_COIN_PRICE_KRW = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'credit_1')?.price ?? 500;
+const BONUS_COIN_PACKAGE = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'subscription_30');
+const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
+  ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
+);
 
 const TOPICS: Array<{ key: string; label: string }> = [
   { key: 'love', label: '연애·관계' },
@@ -52,6 +60,23 @@ const TIME_SLOTS: Array<{ time: string; available: boolean }> = [
 ];
 
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+
+function formatWon(value: number) {
+  return `${value.toLocaleString('ko-KR')}원`;
+}
+
+function getRecommendedTopUp(shortage: number): string {
+  if (shortage <= 0) return '추가 충전 없이 예약 가능';
+  const singlePackage = CREDIT_PACKAGES.find((pkg) => pkg.credits >= shortage);
+  if (singlePackage) {
+    return `${singlePackage.name} ${singlePackage.credits}코인 · ${formatWon(singlePackage.price)}`;
+  }
+  if (BONUS_COIN_PACKAGE) {
+    const count = Math.ceil(shortage / BONUS_COIN_PACKAGE.credits);
+    return `${BONUS_COIN_PACKAGE.name} ${count}회 · ${BONUS_COIN_PACKAGE.credits * count}코인 · ${formatWon(BONUS_COIN_PACKAGE.price * count)}`;
+  }
+  return '코인 센터에서 필요한 만큼 충전';
+}
 
 interface CalendarCell {
   day: number;
@@ -120,6 +145,8 @@ export default function AppointmentPage() {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [availableCredits, setAvailableCredits] = useState<number | null>(null);
 
   const todayYmd = useMemo(() => {
     const y = today.getFullYear();
@@ -132,6 +159,45 @@ export default function AppointmentPage() {
     () => buildCalendar(year, month, todayYmd),
     [year, month, todayYmd]
   );
+  const creditShortage =
+    availableCredits === null
+      ? APPOINTMENT_COST_COINS
+      : Math.max(0, APPOINTMENT_COST_COINS - availableCredits);
+  const recommendedTopUp = getRecommendedTopUp(creditShortage);
+  const appointmentKrwEquivalent = APPOINTMENT_COST_COINS * SINGLE_COIN_PRICE_KRW;
+
+  useEffect(() => {
+    if (!hasSupabaseBrowserEnv) {
+      setIsLoggedIn(false);
+      setAvailableCredits(null);
+      return;
+    }
+
+    const supabase = createClient();
+    let cancelled = false;
+
+    void (async () => {
+      const user = await getCurrentBrowserUser(supabase);
+      if (cancelled) return;
+      setIsLoggedIn(Boolean(user));
+      if (!user) {
+        setAvailableCredits(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('user_credits')
+        .select('balance, subscription_balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setAvailableCredits((data?.balance ?? 0) + (data?.subscription_balance ?? 0));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function goPrevMonth() {
     if (month === 0) {
@@ -274,9 +340,6 @@ export default function AppointmentPage() {
                 <div className="text-[14.5px] font-extrabold text-[var(--app-ink)]">
                   {DEFAULT_TEACHER.name} · {DEFAULT_TEACHER.field}
                 </div>
-                <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
-                  {DEFAULT_TEACHER.meta}
-                </div>
               </div>
               <Link
                 href="/dialogue"
@@ -285,6 +348,69 @@ export default function AppointmentPage() {
                 변경
               </Link>
             </article>
+
+            <section className="grid gap-3">
+              <article
+                className="rounded-[16px] border bg-white p-4"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                      상담 요금
+                    </div>
+                    <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                      {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인
+                    </h2>
+                    <p className="mt-1 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]">
+                      1코인 {formatWon(SINGLE_COIN_PRICE_KRW)} 기준 환산 {formatWon(appointmentKrwEquivalent)} 상당입니다. 실제 결제 금액은 선택한 충전팩 단가에 따라 달라질 수 있습니다.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/credits?from=appointment&needed=${APPOINTMENT_COST_COINS}`}
+                    className="shrink-0 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[11.5px] font-extrabold text-white"
+                  >
+                    코인 충전
+                  </Link>
+                </div>
+                <div className="mt-3 grid gap-2 rounded-[12px] bg-[var(--app-pink-soft)] p-3 text-[12px] leading-[1.55] text-[var(--app-copy)]">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[var(--app-copy-muted)]">보유 코인</span>
+                    <strong className="text-[var(--app-ink)]">
+                      {isLoggedIn === false
+                        ? '로그인 후 확인'
+                        : availableCredits === null
+                          ? '확인 중'
+                          : `${availableCredits.toLocaleString('ko-KR')}코인`}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[var(--app-copy-muted)]">부족 코인</span>
+                    <strong className={creditShortage > 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-jade)]'}>
+                      {creditShortage.toLocaleString('ko-KR')}코인
+                    </strong>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[var(--app-copy-muted)]">추천 충전팩</span>
+                    <strong className="max-w-[58%] text-right text-[var(--app-ink)]">
+                      {recommendedTopUp}
+                    </strong>
+                  </div>
+                </div>
+              </article>
+
+              <article
+                className="rounded-[16px] border bg-white p-4 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">예약 취소·환불 기준</h2>
+                <ul className="mt-2 grid gap-1.5">
+                  <li>상담 시작 24시간 전까지 취소하면 사용 코인을 전액 복구합니다.</li>
+                  <li>상담 시작 24시간 이내 취소 또는 예약 시간 미참석은 배정 준비가 시작되어 코인 복구가 제한됩니다.</li>
+                  <li>상담사가 불참하거나 운영 사정으로 진행되지 않으면 사용 코인을 전액 복구하고 고객센터에서 후속 일정을 안내합니다.</li>
+                </ul>
+              </article>
+            </section>
 
             {/* §2 주제 */}
             <section>
@@ -504,7 +630,7 @@ export default function AppointmentPage() {
               <div className="mx-auto max-w-md">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[11px] text-[var(--app-copy-soft)]">
-                    30분 상담 · 코인 100개
+                    {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인 · {formatWon(appointmentKrwEquivalent)} 상당
                   </span>
                   <span className="text-[14.5px] font-extrabold text-[var(--app-pink-strong)]">
                     {selectedDay
@@ -528,4 +654,3 @@ export default function AppointmentPage() {
     </AppShell>
   );
 }
-

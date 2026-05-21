@@ -5,12 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
+import { BUSINESS_INFO } from '@/lib/business-info';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
+const SUPPORT_EMAIL = BUSINESS_INFO.email || 'support@ganjisaju.kr';
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_YEAR - index);
 const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
@@ -324,7 +326,7 @@ function GatewayView({
           간지사주
         </h1>
         <div className="mt-1 text-[13px] font-bold text-[var(--app-pink-strong)]">
-          간지사주 · 오늘 바로 보는 운세
+          간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
         </div>
 
         <div className="mt-9 flex flex-col gap-2.5">
@@ -345,7 +347,7 @@ function GatewayView({
             >
               K
             </span>
-            카카오로 시작하기
+            카카오 로그인
           </button>
 
           <button
@@ -361,7 +363,7 @@ function GatewayView({
             >
               G
             </span>
-            Google로 계속하기
+            Google 로그인
           </button>
 
           <button
@@ -400,6 +402,19 @@ function GatewayView({
           시작 시{' '}
           <LegalLinks className="text-[var(--app-pink-strong)]" />
           에 동의합니다.
+          <br />
+          로그인 실패 또는 계정 확인이 필요하면{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="font-bold text-[var(--app-pink-strong)] underline"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+          {' '}또는{' '}
+          <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
+            고객센터
+          </a>
+          로 문의해 주세요.
         </div>
 
         {/* 2026-05-15 — 회원가입/비번찾기 진입점 prominent CTA 로 강화.
@@ -1252,7 +1267,7 @@ function LoginContent({
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#191919">
                 <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.709 1.6 5.09 4.008 6.535l-.96 3.584a.3.3 0 0 0 .448.328L9.74 19.05A11.6 11.6 0 0 0 12 19.2c5.523 0 10-3.358 10-7.5S17.523 3 12 3z" />
               </svg>
-              카카오로 계속하기
+              카카오 로그인
             </Button>
 
             <Button
@@ -1266,7 +1281,7 @@ function LoginContent({
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Google로 계속하기
+              Google 로그인
             </Button>
           </div>
         </>
@@ -1277,7 +1292,14 @@ function LoginContent({
       </p>
       {/* 2026-05-18 Phase 5-C: 고객센터 링크 (사용자 directive 필수) */}
       <p className="text-[11.5px] leading-6 text-[var(--app-copy-muted)]">
-        로그인 문제 또는 계정 안내가 필요하시면{' '}
+        로그인 실패 또는 계정 안내가 필요하시면{' '}
+        <a
+          href={`mailto:${SUPPORT_EMAIL}`}
+          className="font-bold text-[var(--app-pink-strong)] underline"
+        >
+          {SUPPORT_EMAIL}
+        </a>
+        {' '}또는{' '}
         <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
           고객센터
         </a>
@@ -1334,8 +1356,7 @@ function LoginScaffold() {
 export default function LoginPage() {
   return (
     <AppShell className="gangi-subpage-shell" footer={false}>
-      {/* 2026-05-18 Phase 5-C: "로딩중..." 단순 fallback → 표준 LoadingState + 인증 버튼 skeleton.
-          사용자 directive: 비로그인 공개 렌더에서 "로딩중..."만 보이지 않도록. */}
+      {/* 인증 버튼 형태를 유지하는 Suspense fallback. */}
       <Suspense fallback={<LoginPageFallback />}>
         <LoginScaffold />
       </Suspense>
@@ -1346,35 +1367,73 @@ export default function LoginPage() {
 function LoginPageFallback() {
   return (
     <div
-      role="status"
-      aria-live="polite"
+      aria-label="간지사주 로그인"
       className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md flex-col justify-center gap-5 px-5 py-8"
     >
-      {/* 로고 자리 */}
-      <div className="mx-auto h-12 w-12 rounded-full bg-[var(--app-line)]" aria-hidden="true" />
-      <div className="space-y-2 text-center">
-        <div className="mx-auto h-5 w-32 animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
-        <div className="mx-auto h-3 w-48 animate-pulse rounded bg-[var(--app-line)]" aria-hidden="true" />
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div
+          className="flex h-14 w-14 items-center justify-center rounded-[18px] text-3xl font-extrabold text-white shadow-[0_14px_28px_rgba(216,27,114,0.32)]"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
+            fontFamily: 'var(--font-han)',
+          }}
+        >
+          干
+        </div>
+        <div>
+          <div
+            className="text-[28px] font-extrabold leading-tight text-[var(--app-ink)]"
+            style={{ fontFamily: 'var(--font-han)' }}
+          >
+            간지사주
+          </div>
+          <p className="mt-2 text-[13px] font-semibold leading-6 text-[var(--app-copy-muted)]">
+            간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
+          </p>
+        </div>
       </div>
-      {/* 카카오 / Google 버튼 skeleton (disabled) */}
       <div className="space-y-2">
         <button
           type="button"
           disabled
-          className="h-11 w-full rounded-[12px] bg-[var(--app-line)] text-[13px] font-bold text-[var(--app-copy-muted)] opacity-70"
+          className="h-[52px] w-full rounded-[14px] text-[14.5px] font-extrabold opacity-80"
+          style={{
+            background: '#fee500',
+            color: '#191919',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}
         >
-          로그인 화면 준비 중
+          카카오 로그인
         </button>
         <button
           type="button"
           disabled
-          className="h-11 w-full rounded-[12px] border bg-white text-[13px] font-bold text-[var(--app-copy-muted)] opacity-70"
-          style={{ borderColor: 'var(--app-line)' }}
+          className="h-[52px] w-full rounded-[14px] bg-white text-[14.5px] font-bold text-[#1f1f1f] opacity-80"
+          style={{ border: '1.5px solid var(--app-line)' }}
         >
-          로그인 화면 준비 중
+          Google 로그인
         </button>
       </div>
-      <span className="sr-only">로그인 화면을 불러오는 중입니다.</span>
+      <div className="flex justify-center gap-3 text-[11.5px] text-[var(--app-copy-muted)]">
+        <a href="/terms" className="underline">
+          이용약관
+        </a>
+        <a href="/privacy" className="underline">
+          개인정보처리방침
+        </a>
+        <a href="/help" className="underline">
+          고객센터
+        </a>
+      </div>
+      <p className="text-center text-[11.5px] leading-6 text-[var(--app-copy-muted)]">
+        고객센터 이메일:{' '}
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-[var(--app-pink-strong)] underline">
+          {SUPPORT_EMAIL}
+        </a>
+        <br />
+        로그인 실패 시 위 이메일 또는 고객센터로 문의해 주세요.
+      </p>
     </div>
   );
 }

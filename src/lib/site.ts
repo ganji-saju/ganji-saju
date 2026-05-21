@@ -2,12 +2,12 @@
  * 사이트 전역 설정 — Phase 1 (도메인 canonical 통일).
  *
  * canonical: `https://ganjisaju.kr` (영문 ASCII apex — 사용자 directive 원안)
- * legacy (308 대상): www.ganjisaju.kr, 간지사주.kr (punycode), Vercel preview 자동 도메인
+ * legacy (301 대상): www.ganjisaju.kr, 간지사주.kr (punycode), Vercel preview 자동 도메인
  *
  * 변경 이력:
  * 2026-05-18 — Vercel 대시보드 정상화 후 canonical = apex (ganjisaju.kr) 로 복귀.
  *   운영자가 Vercel 에서 ganjisaju.kr 을 Production primary 로 설정 + www / punycode 4개
- *   모두 308 → ganjisaju.kr 으로 변경 완료. PR #221 의 사용자 directive 원안 그대로 복구.
+ *   모두 canonical ganjisaju.kr 로 변경 완료. PR #221 의 사용자 directive 원안 그대로 복구.
  *
  * 2026-05-18 hotfix #224 (이력) — canonical = www.ganjisaju.kr 로 임시 swap.
  *   당시 Vercel primary = www 였고 코드 = apex canonical 충돌로 ERR_TOO_MANY_REDIRECTS.
@@ -31,14 +31,17 @@ export const DEFAULT_DESCRIPTION =
   '오늘의 운세와 타로부터 사주, 궁합, 띠운세까지 가볍게 확인하는 모바일 운세 서비스 간지사주입니다.';
 export const DEFAULT_OG_IMAGE = '/og-image.png';
 export const CANONICAL_SITE_URL = SITE_CONFIG.canonicalOrigin;
+export const CANONICAL_REDIRECT_STATUS = 301;
 
 const FALLBACK_SITE_URL = CANONICAL_SITE_URL;
 
-// 308 redirect 대상 (= canonical 아님). production 환경에서 proxy.ts 가 이 목록 + Vercel 자동 도메인을 canonical 로 308 redirect.
-// Vercel 대시보드 자체에서도 동일한 alias → ganjisaju.kr 308 redirect 설정됨 — 본 목록은
+// 301 redirect 대상 (= canonical 아님). production 환경에서 proxy.ts 가 이 목록 + Vercel 자동 도메인을 canonical 로 redirect.
+// Vercel 대시보드 자체에서도 동일한 alias → ganjisaju.kr redirect 설정됨 — 본 목록은
 // 이중 보호 (defense-in-depth + Vercel 설정 일시 누락 시 대비).
 const LEGACY_SITE_HOSTS = new Set([
   // 한글 도메인 punycode (간지사주.kr) — UTF-8 직접 입력 시 브라우저가 자동 변환
+  '간지사주.kr',
+  'www.간지사주.kr',
   'xn--s39at50bo6fmwa.kr',
   'www.xn--s39at50bo6fmwa.kr',
   // www → non-www 통일 (canonical = apex)

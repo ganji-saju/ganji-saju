@@ -218,14 +218,14 @@ export default async function CompatibilityPage() {
               className="mt-2 text-[12.5px] leading-[1.6]"
               style={{ opacity: 0.72 }}
             >
-              풀이 형태로 깊이 정리합니다. 멤버십 가입 시 무제한 궁합 분석.
+              풀이 형태로 깊이 정리합니다. 멤버십 가입 시 월 사용량 기준 안에서 더 깊게 볼 수 있습니다.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href="/membership"
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
-                멤버십으로 무제한 열기 →
+                멤버십으로 더 깊게 열기 →
               </Link>
               <Link
                 href="/compatibility/input?relationship=lover"

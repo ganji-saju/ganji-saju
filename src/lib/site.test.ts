@@ -1,6 +1,7 @@
 // Phase 1 (2026-05-18): canonical 도메인 = https://ganjisaju.kr 반전 검증.
 import assert from 'node:assert/strict';
 import {
+  CANONICAL_REDIRECT_STATUS,
   CANONICAL_SITE_URL,
   DEFAULT_DESCRIPTION,
   SITE_CONFIG,
@@ -14,7 +15,7 @@ import {
 declare const test: (name: string, fn: () => void) => void;
 
 test('SITE_CONFIG canonical = https://ganjisaju.kr / 간지사주 (apex 복귀)', () => {
-  // 2026-05-18: Vercel 대시보드에서 ganjisaju.kr 을 primary 로 설정 + alias 모두 308 →
+  // 2026-05-18: Vercel 대시보드에서 ganjisaju.kr 을 primary 로 설정 + alias 모두 canonical
   // apex 로 변경 완료. PR #221 의 사용자 directive 원안 (canonical = apex) 복귀.
   assert.equal(SITE_CONFIG.canonicalHost, 'ganjisaju.kr');
   assert.equal(SITE_CONFIG.canonicalOrigin, 'https://ganjisaju.kr');
@@ -23,6 +24,7 @@ test('SITE_CONFIG canonical = https://ganjisaju.kr / 간지사주 (apex 복귀)'
   assert.equal(SITE_CONFIG.timezone, 'Asia/Seoul');
   assert.equal(SITE_NAME, '간지사주');
   assert.equal(CANONICAL_SITE_URL, 'https://ganjisaju.kr');
+  assert.equal(CANONICAL_REDIRECT_STATUS, 301);
 });
 
 test('DEFAULT_DESCRIPTION 에 간지사주 브랜드명 포함, 달빛인생 잔존 없음', () => {
@@ -58,11 +60,13 @@ test('shouldRedirectHost — canonical (apex) / localhost 는 false', () => {
 });
 
 test('shouldRedirectHost — www.ganjisaju.kr 는 true (www → apex 통일)', () => {
-  // Vercel 대시보드 자체에서도 동일하게 308 → apex 처리 — 본 entry 는 defense-in-depth.
+  // Vercel 대시보드 자체에서도 동일하게 apex 처리 — 본 entry 는 defense-in-depth.
   assert.equal(shouldRedirectHost('www.ganjisaju.kr'), true);
 });
 
 test('shouldRedirectHost — 한글 punycode (간지사주.kr) 는 true', () => {
+  assert.equal(shouldRedirectHost('간지사주.kr'), true);
+  assert.equal(shouldRedirectHost('www.간지사주.kr'), true);
   assert.equal(shouldRedirectHost('xn--s39at50bo6fmwa.kr'), true);
   assert.equal(shouldRedirectHost('www.xn--s39at50bo6fmwa.kr'), true);
 });

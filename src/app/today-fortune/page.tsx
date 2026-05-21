@@ -27,7 +27,7 @@ export default async function TodayFortunePage({
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
+    <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-0">
       <TodayFortuneExperience initialConcernId={concern} />
     </AppShell>
   );

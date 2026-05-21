@@ -124,7 +124,7 @@ export function BirthInfoStepper({
       );
     } catch {
       if (!silent) {
-        setProfileMessage('MY 프로필을 불러오는 중 네트워크 오류가 있었습니다.');
+        setProfileMessage('MY 프로필 확인 중 네트워크 오류가 있었습니다.');
       }
     } finally {
       if (!silent) {
@@ -172,7 +172,7 @@ export function BirthInfoStepper({
       setLocationMessage(
         items.length > 0
           ? '가장 가까운 지역을 골라 위도와 경도를 적용해 주세요.'
-          : '검색 결과가 없습니다. 시/군/구 이름을 조금 더 구체적으로 적어주세요.'
+          : '조건에 맞는 지역을 찾지 못했습니다. 시/군/구 이름을 조금 더 구체적으로 적어주세요.'
       );
     } catch {
       setLocationMessage('지역 좌표를 찾는 중 네트워크 오류가 있었습니다.');
@@ -209,7 +209,7 @@ export function BirthInfoStepper({
           disabled={profileLoading}
           className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] transition disabled:opacity-60"
         >
-          {profileLoading ? '불러오는 중...' : 'MY 프로필 불러오기'}
+          {profileLoading ? 'MY 프로필 확인 중' : 'MY 프로필 적용'}
         </button>
       </div>
 

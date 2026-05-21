@@ -370,39 +370,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             </ul>
           </section>
 
-          {/* §5 동의 + 약관 링크 */}
-          <section>
-            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="flex items-center gap-2 text-[13px] font-extrabold text-[var(--app-ink)]">
-                <span
-                  className="grid h-5 w-5 place-items-center rounded-[6px] text-[12px] font-black text-white"
-                  style={{ background: 'var(--app-pink)' }}
-                  aria-hidden="true"
-                >
-                  ✓
-                </span>
-                주문 내용을 확인하고 결제에 동의합니다
-              </div>
-              <div className="mt-2.5 grid gap-1.5 pl-7">
-                {[
-                  ['전자상거래 결제 동의', '/terms'],
-                  ['개인정보 제3자 제공 동의', '/privacy'],
-                  ['디지털 콘텐츠 환불 정책', '/terms'],
-                ].map(([label, href]) => (
-                  <Link
-                    key={label}
-                    href={href}
-                    className="flex items-center justify-between text-[11.5px] text-[var(--app-copy-soft)]"
-                  >
-                    <span>· {label}</span>
-                    <span>보기 ›</span>
-                  </Link>
-                ))}
-              </div>
-            </article>
-          </section>
-
-          {/* §6 결제 액션 — TossMembershipCheckout 또는 empty-state */}
+          {/* §5 결제 액션 — TossMembershipCheckout 또는 empty-state */}
           <section>
             <article className="rounded-[18px] border border-[var(--app-pink-line)] bg-white p-5">
               {paymentPackage?.kind === 'lifetime_report' && !slug ? (

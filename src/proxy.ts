@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CANONICAL_SITE_URL, shouldRedirectHost } from '@/lib/site';
+import { CANONICAL_REDIRECT_STATUS, CANONICAL_SITE_URL, shouldRedirectHost } from '@/lib/site';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const supabaseProxyUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,7 +55,7 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (shouldRedirectToCanonicalHost(req)) {
-    return NextResponse.redirect(buildCanonicalUrl(req), 308);
+    return NextResponse.redirect(buildCanonicalUrl(req), CANONICAL_REDIRECT_STATUS);
   }
 
   if (shouldForwardAuthCallback(req)) {

@@ -130,7 +130,7 @@ export default function TossMembershipCheckout({
       }
 
       if (!prepareResponse.ok || prepare?.error) {
-        setErrorMessage(prepare?.error ?? '결제 준비 중 문제가 생겼습니다.');
+        setErrorMessage(prepare?.error ?? '결제 사전 확인에 문제가 생겼습니다.');
         return;
       }
 
@@ -230,6 +230,25 @@ export default function TossMembershipCheckout({
   }
 
   const selectedMethod = getTossPaymentMethodOption(paymentMethod);
+  const confirmationItems = useMemo(() => {
+    if (!pkg) return [];
+
+    const items = [
+      `상품: ${orderName}`,
+      `결제 금액: ${amount.toLocaleString('ko-KR')}원`,
+      `결제 수단: ${selectedMethod.label}`,
+    ];
+
+    if (pkg.kind === 'subscription') {
+      items.push(
+        '다음 결제일: 결제 승인일로부터 30일 후',
+        '해지 방법: MY > 결제 관리에서 해지',
+        '무료체험 여부: 없음'
+      );
+    }
+
+    return items;
+  }, [amount, orderName, pkg, selectedMethod.label]);
 
   return (
     <div className="space-y-3">
@@ -238,6 +257,7 @@ export default function TossMembershipCheckout({
       {pkg && (
         <PaymentConsentCheckboxes
           pkg={pkg}
+          confirmationItems={confirmationItems}
           onValidChange={(valid, kinds) => {
             setConsentValid(valid);
             setAcceptedKinds(kinds);

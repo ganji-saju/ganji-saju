@@ -25,12 +25,14 @@ interface Props {
   onValidChange?: (valid: boolean, acceptedKinds: PolicyKind[]) => void;
   /** master checkbox 초기값 (보통 false). */
   defaultAllAccepted?: boolean;
+  confirmationItems?: readonly string[];
 }
 
 export function PaymentConsentCheckboxes({
   pkg,
   onValidChange,
   defaultAllAccepted = false,
+  confirmationItems = [],
 }: Props) {
   const items = useMemo<ConsentItemMeta[]>(() => getConsentItems(pkg), [pkg]);
   const [accepted, setAccepted] = useState<Set<PolicyKind>>(() =>
@@ -75,6 +77,17 @@ export function PaymentConsentCheckboxes({
       style={{ borderColor: 'var(--app-line)' }}
     >
       <h3 className="text-[13px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
+
+      {confirmationItems.length > 0 ? (
+        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+          {confirmationItems.map((item) => (
+            <li key={item} className="flex gap-1.5">
+              <span aria-hidden="true">·</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <label className="flex cursor-pointer items-start gap-2 border-b pb-2.5">
         <input

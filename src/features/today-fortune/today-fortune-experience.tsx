@@ -267,16 +267,20 @@ export function TodayFortuneExperience({
     }).catch(() => null);
   }
 
-  return (
-    <div className="gangi-subpage pb-8">
-      {/* PR #162 — 무료 결과 생성 중 12간지 로딩 모션. 결과 페이지 loading.tsx 와
-          동일 디자인이라 router.push 후에도 자연스럽게 이어짐. */}
-      {loading ? (
+  if (loading) {
+    return (
+      <div className="gangi-subpage pb-8">
+        <GangiPageHeader title="오늘운세" />
         <GangiLoadingOverlay
           title="오늘 운세를 풀어드리고 있어요"
           description="네 기둥과 오늘 흐름을 맞춰보는 중입니다."
         />
-      ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="gangi-subpage pb-8">
       <GangiPageHeader title="오늘운세" />
 
       {/* 2026-05-14: intro 는 TodayConcernSelector 가 pink-soft hero 로 자체 렌더. */}

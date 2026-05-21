@@ -47,7 +47,7 @@ const ITEMS: ReadonlyArray<{
     key: 'membership',
     href: '/membership',
     eyebrow: '멤버십',
-    body: '월간·일별 풀이 무제한',
+    body: '일 30회·월 120턴 공정사용',
     price: '월정액',
   },
 ];
