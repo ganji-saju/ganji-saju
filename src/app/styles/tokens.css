@@ -45,6 +45,33 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* 2026-05-22 — 점수 시스템 Phase 2+3 색 토큰 (Tailwind v4 @theme — config.ts 대체).
+   bg-score-* / text-score-* / ring-score-* / from-score-* / border-score-* / bg-ohaeng-* 생성.
+   naming-policy: 점수 5단계 + 오행 5종("X 기운"). */
+@theme {
+  --color-score-excellent: #ec4899;
+  --color-score-excellent-soft: #fdf2f8;
+  --color-score-good: #10b981;
+  --color-score-good-soft: #ecfdf5;
+  --color-score-neutral: #3b82f6;
+  --color-score-neutral-soft: #eff6ff;
+  --color-score-mindful: #f59e0b;
+  --color-score-mindful-soft: #fffbeb;
+  --color-score-potential: #a855f7;
+  --color-score-potential-soft: #faf5ff;
+
+  --color-ohaeng-mok: #10b981;
+  --color-ohaeng-mok-soft: #d1fae5;
+  --color-ohaeng-hwa: #f43f5e;
+  --color-ohaeng-hwa-soft: #ffe4e6;
+  --color-ohaeng-to: #f59e0b;
+  --color-ohaeng-to-soft: #fef3c7;
+  --color-ohaeng-geum: #6b7280;
+  --color-ohaeng-geum-soft: #f3f4f6;
+  --color-ohaeng-su: #3b82f6;
+  --color-ohaeng-su-soft: #dbeafe;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

@@ -20,3 +20,12 @@ footer.site-footer-redesign {
   background-color: #000000 !important;
   background-image: none !important;
 }
+
+/* 2026-05-22 — 가로 스크롤 컨테이너 스크롤바 숨김(스크롤은 동작). LifetimeKeysCarousel 등. */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

@@ -37,8 +37,8 @@ import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (총운/직장/재물/연애/관계/컨디션).
 //   사주 메인/상세 + 운세 페이지에서 공유하는 SajuAreaCardsSection 사용.
 import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
-// 2026-05-21 Phase 6~7 — 사주 종합 점수(무료 게이지 + 유료 상세 CTA).
-import { SajuScoreGauge } from '@/components/saju-score';
+// 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
+import { SajuScoreCard, ScoreBreakdownCard, OhaengChart } from '@/components/saju-score';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
@@ -492,36 +492,20 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </p>
             </section>
 
-            {/* §2.5 사주 종합 점수 — 무료 총점 게이지 + 상세(유료) 안내 (Phase 6~7) */}
-            <section>
-              <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                사주 점수
+            {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
+            <section className="space-y-4">
+              <div>
+                <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  사주 점수
+                </div>
+                <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
               </div>
-              <h2 className="mt-1 mb-3 text-[18px] font-extrabold text-[var(--app-ink)]">
-                내 사주 종합 점수
-              </h2>
-              <div className="rounded-[18px] border border-[var(--app-line)] bg-white p-5">
-                {/* 미리보기 — 등급만 노출, 총점/상세는 프리미엄(페이월). */}
-                <SajuScoreGauge total={sajuScore.total} label={sajuScore.label} preview />
-                <TrackedLink
-                  href={`/saju/${slug}/premium`}
-                  eventName="report_deep_report_click"
-                  eventParams={{ slug, product: 'saju-score-detail', from: 'result_score' }}
-                  className="mt-4 flex items-center justify-between rounded-[14px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-3.5"
-                >
-                  <div className="min-w-0">
-                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
-                      총점 + 상세 풀이 잠금 해제
-                    </div>
-                    <div className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
-                      총점·내역(5)·오행 균형·해설 — 프리미엄
-                    </div>
-                  </div>
-                  <span className="text-[var(--app-copy-soft)]" aria-hidden="true">
-                    ›
-                  </span>
-                </TrackedLink>
-              </div>
+              <SajuScoreCard score={sajuScore} />
+              <ScoreBreakdownCard score={sajuScore} slug={slug} isUnlocked={false} />
+              <OhaengChart
+                data={sajuScore.ohaengChart}
+                guidanceText={sajuScore.ohaengChart.guidanceText}
+              />
             </section>
 
             {/* §3 분야별 흐름 — 6 영역 통일 카드 (PR #181, 공유 컴포넌트). */}
