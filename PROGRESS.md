@@ -6,7 +6,77 @@
 
 ---
 
-## 0. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
+## 0. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
+
+사주 결과 *총평 탭* 을 결정론 7문장 단락에서 **LLM 3섹션(한 줄 요약 + 본문 4단락 + 평생 활용 3카드)** 으로 확장하고, 비용 최적화(영속 캐시) · 어휘 정책(naming-policy) · 점수 계산 엔진(Phase 1)까지 5 PR 로 마무리. 모두 main 머지 + 프로덕션 배포 완료.
+
+### 0.1 PR 누적 표 (#299 ~ #303, 5개)
+
+| PR | commit | 내용 |
+|----|--------|------|
+| #299 | 68ae221 | 총평 LLM 파이프라인 — _easy 도출 → 3섹션 병렬 생성 → §7 검증 10항목 → fallback. env 플래그 게이팅(기본 OFF). TDD |
+| #300 | cf925e6 | 영속 캐시 — content-addressed(cache_key 해시) Supabase 테이블. 조회마다 차감 → 사주+컨텍스트당 1회 |
+| #301 | 96a37d7 | naming-policy 어휘 정책 반영 — GANGUK 라벨 "결" 제거 · SIPSIN_SHORT · §12 정규식 검증 |
+| #302 | e5a0335 | 어휘 최종 스펙 잔여 2건 — 격국 label 설명형 · 오행 "X의 기운" 차단 |
+| #303 | 69029a0 | 점수 시스템 Phase 1 — F1~F5 계산 엔진 + 50 케이스 분포(평균 65.3) |
+
+### 0.2 총평 LLM 파이프라인 (PR #299)
+
+- 신규 모듈 `src/server/ai/total-review/` (types · content · build-input · prompts · generate · cache · 전용 OpenAI 클라이언트) + `lib/saju/total-review-validator.ts` + `saju-total-review-service.ts` + 컴포넌트 2종(`SajuTotalReviewNarrative`·`SajuLifetimeKeysSection`).
+- 입력 `_easy` 도출: `dayMaster`·`sixtyGapja`·`fiveElements`·`yongsin`·`pattern` → 일상어. 강점/약점 3개씩 보강(sixtyGapja 부족분 패딩). deepStripHanja 로 한자 0.
+- 3섹션 `Promise.all` 병렬 → validateTotalReview(§7 10항목) → hard 위반 시 deterministic(`buildSajuNarrative`) fallback.
+- 🐛 발견·수정: `gpt-5.2-chat-latest` 가 `temperature` 미지원(400) → 전용 클라이언트에서 미전달.
+
+### 0.3 비용 최적화 — 영속 캐시 (PR #300)
+
+- 결과 페이지가 dynamic 렌더라 캐시 없으면 **플래그 ON 시 총평 조회마다 3 OpenAI 호출 차감**(새로고침·fallback 포함) — 문제 발견 후 캐시로 해결.
+- `ai_total_review_interpretations`(마이그 036, `cache_key`+`prompt_version`, server-role RLS). read-through: hit→source `'cache'`, `'llm'` 만 write(fallback 미캐시). 30일 TTL. content-addressed → 사용자 무관 dedup.
+
+### 0.4 어휘 정책 (naming-policy.md) 반영 (PR #301·#302)
+
+- `naming-policy.md` = 최상위 어휘 권위. 오행 "X 기운" / 십성·격국·강약 원어+설명 / "결" 라벨·요약·카드 0회·단락 ≤1 / 한자 사주팔자 카드만.
+- GANGUK_EASY 라벨 "결" 제거("본인 기운이 강한 편" 등) · SIPSIN_SHORT(십성 설명, "X의 결" 없는 버전) · 격국 label 설명형 · validator §12 정규식 7종 + 오행 "X의 기운" hard 차단.
+- §12 검증: 실제 콘텐츠 위반 0건(매칭은 시스템 프롬프트 "금지 예시" 메타 참조뿐).
+
+### 0.5 점수 시스템 Phase 1 — 계산 엔진 (PR #303)
+
+- 신규 `src/lib/saju-score/`(10파일, 989줄): F1(일주)·F2(격국)·F3(용신)·F4(오행균형)·F5(합충신살) + `computeSajuScore` + 5단계 라벨 + 오행 차트 + 50 케이스 + 분포 검증.
+- 십성→천간 *관계식 계산*(100엔트리 테이블 대신 오행·음양). 12운성 테이블. MVP 격국/용신 판정.
+- 분포(§14 가중치 튜닝): 평균 60.9→**65.3** / 표준편차 12.5 / potential 10%·excellent 0%(≤15%). 결정론 100회 확인.
+- **순수 계산 엔진만** — UI·LLM·결제 미포함(Phase 2~7 후속).
+
+### 0.6 신규 DB / 플래그 / 모듈
+
+- DB: 마이그 **036** `ai_total_review_interpretations`(적용 완료).
+- env: **`OPENAI_INTERPRET_TOTAL_REVIEW`**(프로덕션 =1, 캐시로 비용 최적화).
+- 모듈: `total-review/`(11파일) · `saju-score/`(10파일) · `total-review-validator.ts`.
+
+### 0.7 운영 적용 현황
+
+- 총평 LLM: 프로덕션 **활성**(플래그 ON + 마이그 036 + 캐시). 사주+컨텍스트당 1회 생성, 재조회 캐시 hit(0 호출).
+- 점수 시스템: 엔진만 main 반영, **UI 미연결**(사용자 화면 변화 없음).
+- 권장 스테이징 QA(미완): 상황 보유 reading 으로 단락2 직업·단락4 고민 반영 육안 / 5케이스 BEFORE-AFTER / 비전문가 가독성.
+
+### 0.8 정량 지표 (Before → After)
+
+| 지표 | Before | After |
+|------|--------|-------|
+| 총평 본문 | 7문장 단락 | 4단락(25~35문장) + 평생활용 3카드 |
+| 총평 한자/명리어 | 노출 | 0 (validator 차단) |
+| 총평 비용(플래그 ON) | 조회마다 3호출 | 사주+컨텍스트당 1회(캐시) |
+| 어휘 | "쇠의 결"/"X의 결" | "X 기운"/"…사주" (§12 0건) |
+| 점수 엔진 | 없음 | F1~F5 + 50케이스(평균 65.3) |
+| 유닛 테스트 | ~538 | **562** |
+
+### 0.9 후속 (다음 주기)
+
+- **daewoon-llm-spec 어휘 반영**(B 확정 — 태스크 칩 생성): 챕터 `COMMON_SYSTEM_PROMPT` · `chapter-validator` · `MYEONGRI_GLOSSARY`("X의 결") 한 묶음. 라이브 9챕터 + 전역 글로서리라 신중히.
+- **점수 Phase 2~7**: Tailwind 토큰 → UI 컴포넌트 → 오행 차트 UI → LLM 가이드 연계 → 무료/유료 경계.
+- 📦 release: `2026-05-21 총평 LLM 풀스택 + 어휘 정책 + 점수 Phase 1`
+
+---
+
+## 0-prev. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
 
 진단서 6단계 검증을 순차 진행하면서 발견된 미흡 사항을 즉시 PR 로 처리. *9 챕터 LLM 풀이 인프라 완성* + *사용자 보고 톤 정합화* + *피드백 루프 + 대시보드* 까지 한 사이클 종료.
 
@@ -170,7 +240,7 @@
 
 ---
 
-## 0-prev. 2026-05-20 저녁 세션 종합 — UX 라운드 3 + V2-5 PR J + Phase 8 SEO (10 PR 머지 + 1 close)
+## 0-prev2. 2026-05-20 저녁 세션 종합 — UX 라운드 3 + V2-5 PR J + Phase 8 SEO (10 PR 머지 + 1 close)
 
 오후~저녁 한 세션에 PR #271 ~ #280 진행. 세 축:
 1. **UX 라운드 3** (3 PR 머지 + 1 close) — 홈 UX 폴리시 / nav 폴리시 / 12별자리 StarSignChip / footer color (롤백)
@@ -1514,6 +1584,16 @@ created_at  timestamptz
 ---
 
 ## 4. 다음에 이어서 할 일 (우선순위)
+
+### Tier 총평·점수 (2026-05-21 세션 follow-up) — 최우선
+| # | 작업 | 예상 | 상태 |
+|---|---|---|---|
+| **TR1** | **daewoon-llm-spec 어휘 정책 반영** — 챕터 `COMMON_SYSTEM_PROMPT`(§9 오행/§10 십성/결 강화) + `chapter-validator`(§12 정규식) + `MYEONGRI_GLOSSARY` "X의 결" ~10종 재작성. 라이브 9챕터 + 전역 글로서리라 글로서리·검증기·프롬프트·테스트 **한 묶음**으로 (총평 PR #301/#302 패턴 재사용) | 1일 | ⬜ **B 확정**(다음 주기), 태스크 칩 생성 |
+| **SC2** | **점수 Phase 2** — Tailwind 토큰 등록(`tailwind.config`) + 면책 문구 시스템 + 라벨별 UI 분기 준비 | 0.5일 | ⬜ |
+| **SC3** | **점수 Phase 3** — `SajuScoreCard`(원형 점수) + `ScoreBreakdownCard`(5요소 산출) + 카운트업 애니메이션 | 1.5일 | ⬜ |
+| **SC4** | **점수 Phase 4** — `OhaengChart` 막대 차트 + 부족/과다 가이드 카드 | 1일 | ⬜ |
+| **SC5** | **점수 Phase 5~6** — LLM `guidanceText` 연계(총평 파이프라인 활용) + 무료/유료 경계 재설계 | 1일 | ⬜ |
+| **TR2** | 총평 스테이징 QA — 상황 보유 reading 단락2 직업·단락4 고민 반영 육안 / 5케이스 BEFORE-AFTER / 비전문가 가독성 | 0.5일 | ⬜ |
 
 ### Tier 0 — 자동 회귀 검증 시스템 완성 (Phase 2B, 2026-05-16 세션 follow-up) ✅ 완료
 | # | 작업 | 예상 | 상태 |
