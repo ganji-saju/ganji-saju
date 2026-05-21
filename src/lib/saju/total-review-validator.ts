@@ -73,8 +73,9 @@ export interface TotalReviewValidationResult {
   reasons: string[];
 }
 
-/** 한자/금지 명리어/일일 톤/자극어 — 어디서든 출력 폐기 사유. */
-function hardTextReasons(text: string, where: string): string[] {
+/** 한자/금지 명리어/일일 톤/자극어 — 어디서든 출력 폐기 사유.
+ *  naming-policy 단일 소스 — 오행 가이드(Phase 5) 등 다른 LLM 검증기에서도 재사용. */
+export function hardTextReasons(text: string, where: string): string[] {
   const reasons: string[] = [];
   const hanja = text.match(HANJA_RE);
   if (hanja?.length) {
@@ -97,7 +98,8 @@ function hardTextReasons(text: string, where: string): string[] {
   return reasons;
 }
 
-function countGyeol(text: string): number {
+/** 단독 "결" 빈도(복합명사 결단/결과/결혼 제외) — naming-policy §9. 재사용 export. */
+export function countGyeol(text: string): number {
   return (text.match(GYEOL_STANDALONE_PATTERN) ?? []).length;
 }
 
