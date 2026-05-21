@@ -52,4 +52,5 @@ export {
 export type {
   RadarPoint, OhaengRadarGeometry, RadarOptions, OhaengBalanceLevel,
 } from './ohaeng-chart';
+export { sajuDataToScoreInput, computeSajuScoreFromData } from './from-saju-data';
 export type { SajuData, SajuScore, ScoreLabel, OhaengChartData, Ohaeng } from './types';
