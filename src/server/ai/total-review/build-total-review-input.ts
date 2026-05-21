@@ -212,9 +212,11 @@ function buildWonkuk(
   // naming-policy §3·§4: glossary plainCue 는 "돌봄·후원·배움의 결" 처럼 "X의 결" 패턴이 있어
   //   §12 위반 → SIPSIN_SHORT("표현하고 베푸는 별" 등 자연 명사·"의 결" 없는 설명)로 도출.
   const patternCue = tenGod ? SIPSIN_SHORT[tenGod] ?? '' : '';
+  // naming-policy §4 + 총평 §2: 격국 원어("식신격")를 입력 label 에 노출하지 않고 설명형으로.
+  //   (총평은 jargon-free — 본문에 격국명 금지. 원어 echo → validator fallback 위험 차단.)
   const kyeokguk_easy = {
-    label: data.pattern?.name ?? '',
-    detail: patternCue ? `${patternCue}이 중심인 사주` : '',
+    label: patternCue ? `${patternCue}이 명확한 사주` : '',
+    detail: patternCue ? `${patternCue}이 중심에 있어 그 방식이 평생 따라오는 사주` : '',
     career_fit: tenGod ? KYEOKGUK_CAREER_FIT[tenGod] ?? [] : [],
   };
 
