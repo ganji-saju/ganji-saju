@@ -6,6 +6,10 @@ import { notFound } from 'next/navigation';
 import { computeSajuScore } from '@/lib/saju-score';
 import { TEST_CASES_A_BASE } from '@/lib/saju-score/test-cases';
 import { SajuScoreCard } from '@/components/saju-score';
+import {
+  buildOhaengGuidanceInput,
+  buildDeterministicOhaengGuidance,
+} from '@/server/ai/ohaeng-guidance';
 
 export const metadata: Metadata = {
   title: '점수 컴포넌트 쇼케이스 (dev)',
@@ -17,11 +21,14 @@ export default function SajuScoreShowcasePage() {
 
   const fixedNow = new Date('2026-05-21T00:00:00.000Z');
   const samples = TEST_CASES_A_BASE.slice(0, 8)
-    .map((c) => ({
-      id: c.id,
-      description: c.description,
-      score: computeSajuScore(c.saju, { now: fixedNow }),
-    }))
+    .map((c) => {
+      const score = computeSajuScore(c.saju, { now: fixedNow });
+      // Phase 5: 결정론 가이드를 guidanceText 에 연계(플래그 OFF 기본 == fallback 노출).
+      score.ohaengChart.guidanceText = buildDeterministicOhaengGuidance(
+        buildOhaengGuidanceInput(score.ohaengChart)
+      );
+      return { id: c.id, description: c.description, score };
+    })
     .sort((a, b) => b.score.total - a.score.total);
 
   return (
@@ -34,10 +41,10 @@ export default function SajuScoreShowcasePage() {
       }}
     >
       <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">
-        사주 점수 컴포넌트 (Phase 3)
+        사주 점수 컴포넌트 (Phase 3~5)
       </h1>
       <p className="mt-1 mb-6 text-[12px] text-[var(--app-copy-soft)]">
-        visual-tokens(Phase 2) 소비 · 게이지 + 내역(F1~F5) + 오행 균형 · dev 전용
+        게이지 + 내역(F1~F5) + 오행 레이더(Phase 4) + 오행 가이드(Phase 5, 결정론 fallback) · dev 전용
       </p>
       <div className="grid gap-6">
         {samples.map((s) => (

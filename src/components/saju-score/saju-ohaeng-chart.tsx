@@ -86,6 +86,11 @@ export function SajuOhaengChart({ chart, className }: Props) {
           </>
         )}
       </p>
+      {chart.guidanceText && (
+        <p className="mt-3 max-w-[320px] text-center text-[12px] leading-5 text-[var(--app-copy)]">
+          {chart.guidanceText}
+        </p>
+      )}
     </div>
   );
 }
