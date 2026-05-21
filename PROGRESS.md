@@ -1,12 +1,67 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-22 (Codex 상용화 P0 차단 이슈 제거 + 프로덕션 배포)** — 공개 페이지 기준 로그인/코인/오늘운세/정책/결제/예약상담/도메인 정규화 보강
+> 최종 업데이트: **2026-05-22 (점수 풀스택 + 도크 fix 세션)** — 점수 Phase 4~7 + 가이드 캐시 + LLM 가이드 활성화 + 무료/유료 경계 + 모바일 도크 가림 fix (PR #307~#312 머지)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 
 ---
 
-## 0. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
+## 0. 2026-05-22 (점수 풀스택 + 도크 fix 세션) — 점수 Phase 4~7 + 가이드 캐시 + LLM 활성화 + 무료/유료 경계 + 모바일 도크 (PR #307~#312)
+
+점수 시스템을 **Phase 4~7 로 완주**(오행 레이더 → LLM 가이드 → 가이드 영속 캐시 → 실제 결과 페이지 연결 → 무료/유료 경계)하고, **운영(마이그 037 적용 + LLM 가이드 플래그 ON)** 까지 활성화. 추가로 사용자 보고 **모바일 도크 가림 버그**를 근본 수정. 6 PR 모두 main 머지 + 프로덕션 배포 완료. 점수 시스템이 기획→구현→배포→수익화 경계까지 라이브.
+
+### 0.1 PR 누적 표 (#307 ~ #312, 6개)
+
+| PR | commit | 내용 |
+|----|--------|------|
+| #307 | `05dd53a` | **Phase 4 오행 레이더** — `computeOhaengRadarPoints`(펜타곤 5축)·`getDominantOhaeng`·`getOhaengBalanceLevel`(순수, 10 유닛) + `SajuOhaengChart`(레이더 SVG) + 카드 통합 |
+| #308 | `aa161be` | **Phase 5 오행 LLM 가이드** — `ohaeng-guidance/`(content·validator·cache·prompts·generate, 플래그 OFF 기본·결정론 fallback). total-review-validator `hardTextReasons`/`countGyeol` export 재사용(naming-policy 단일 소스) |
+| #309 | `f3ea496` | **가이드 영속 캐시 + 마이그 037** — `ai_ohaeng_guidance_interpretations` + cache-store(in-memory+Supabase 방어적) + TTL 30일 + read-through('llm'만 저장) |
+| #310 | `95392df` | **Phase 6~7 결과 페이지 연결** — `from-saju-data` 어댑터(한자→한글) + 결과 페이지 무료 게이지 + 프리미엄 전체 카드(lifetime 게이팅) |
+| #311 | `2d51ec5` | **무료/유료 경계 강화** — 결과 페이지 `SajuScoreGauge` preview(등급명+🔒, 총점 미렌더=서버 컴포넌트라 HTML 미포함=진짜 페이월) |
+| #312 | `9ae2806` | **모바일 도크 가림 fix** — footer 없는 페이지 dock-clearance 복원(`:has()` 분기) |
+
+### 0.2 점수 Phase 4 — 오행 레이더 차트 (#307)
+
+- `src/lib/saju-score/ohaeng-chart.ts`(순수): 펜타곤 5축(목 top·시계방향 72°) 좌표 + count 비례 데이터 폴리곤(`maxScale` clamp·0 나눗셈 방지), `getDominantOhaeng`(동점 시 목화토금수), `getOhaengBalanceLevel`(F4 0~20 → high/mid/low). 10 유닛.
+- `SajuOhaengChart`(서버 컴포넌트): 그리드 펜타곤+스포크 + 데이터 폴리곤(도미넌트 색) + 오행별 꼭짓점/축라벨 + 균형 캡션. viewBox 여백으로 라벨 클리핑 방지. `SajuScoreCard` 오행 섹션에 레이더+막대 병행.
+
+### 0.3 점수 Phase 5 — 오행 LLM 가이드 (#308)
+
+- 신규 `src/server/ai/ohaeng-guidance/`(총평 LLM 파이프라인 lean 미러): types·content(input 빌더+결정론 fallback)·validator·cache(키+`isOhaengGuidanceLLMEnabled`)·prompts·`generateOhaengGuidance`(오케스트레이터: 플래그 OFF→fallback / ON→LLM(DI)→validate→재시도→실패 fallback). 20 유닛.
+- validator 는 `total-review-validator` 의 `hardTextReasons`/`countGyeol` 를 export 해 재사용(한자 0·명리어 0·"X의 기운" 차단·자극/일일톤 0·"결" ≤1).
+- env `OPENAI_INTERPRET_OHAENG_GUIDANCE`(기본 OFF). `SajuOhaengChart` 가 `guidanceText` 표시.
+
+### 0.4 가이드 영속 캐시 + 마이그 037 (#309)
+
+- `ohaeng-guidance-cache-store.ts`: `OhaengGuidanceCacheStore`(get/set) + in-memory(DI/테스트) + Supabase **방어적**(env/테이블 없으면 no-op·null) + TTL 30일 + read-through(`source='llm'` 만 read/write).
+- 마이그 **037** `ai_ohaeng_guidance_interpretations`(036 동일 구조: cache_key+prompt_version UNIQUE, RLS 활성 service-role 전용, `guidance_text TEXT`). content-addressed → 오행 분포당 1회.
+
+### 0.5 Phase 6~7 결과 페이지 연결 + 무료/유료 경계 (#310·#311)
+
+- 어댑터 `from-saju-data.ts`: 엔진 `SajuDataV1/V2`(한자 기둥) → 점수 `SajuData`(한글). `ganzi-korean` 변환 재사용. 격국/용신/신강약 null 폴백, 길신·흉살·공망 기본값(결과 페이지 미보유), 시주 미상 빈문자. `computeSajuScoreFromData`. 6 유닛.
+- **무료/유료 경계(최종)**: 결과 페이지(`/saju/[slug]`) = `SajuScoreGauge` preview(**등급명+🔒, 총점 미렌더**) + 프리미엄 CTA. 프리미엄(`/saju/[slug]/premium`) = 전체 `SajuScoreCard`(총점+내역 F1~F5+오행 레이더+해설) **lifetime 권한 게이팅**(비엔타이틀 시 blur+🔒). preview 는 서버 컴포넌트라 총점이 클라이언트 HTML 에 미포함(진짜 페이월).
+
+### 0.6 모바일 도크 가림 버그 fix (#312)
+
+- **증상**: footer 없는 페이지(`footer={false}` 6개: login/today-fortune(+loading)/credits(+loading)/reset-password)에서 하단 버튼이 고정 도크(z-40)에 가려지고 스크롤로도 못 올림.
+- **근본 원인**(app-shell.css 모바일 미디어쿼리, 2026-05-20 변경): main 의 dock-clearance padding 을 일괄 0 으로 만들고 도크 여백을 `site-footer-redesign` footer 패딩에 위임 → footer 없는 페이지는 여백 0.
+- **수정**: `:has()` 분기 — footer 있는 페이지는 0 유지(흰 공간 회귀 방지), 없는 페이지는 `var(--app-mobile-dock-clearance)` 복원. 미지원 브라우저는 규칙 무시(악화 없음). 브라우저 실측: /login·/today-fortune padding 0→117.6px·하단 버튼 도크 위로, 홈(footer) 무회귀.
+
+### 0.7 운영 활성화
+
+- 마이그 **037 프로덕션 적용**(Supabase 대시보드 SQL Editor, 멱등).
+- **`OPENAI_INTERPRET_OHAENG_GUIDANCE=1`**(Vercel production) + 재배포 → **오행 LLM 가이드 라이브**. 엔타이틀 사용자 프리미엄 카드에서 생성, 캐시(037)로 분포당 1회. 실패 시 결정론 fallback.
+
+### 0.8 정량 지표 / release
+
+- 유닛 테스트 562 → **618**(+56). 점수 시스템 Phase 1~7 + 캐시 + 어댑터 + 도크 fix.
+- 모든 점수 컴포넌트 사용자 화면 라이브(무료 등급 미리보기 / 유료 전체). 도크 가림 6개 페이지 해소.
+- 📦 release: `2026-05-22 점수 시스템 Phase 4~7 + 가이드 캐시 + LLM 활성화 + 무료/유료 경계 + 도크 fix`
+
+---
+
+## 0-prev. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
 
 작업자: **Codex**. Claude Code 2026-05-21 10시 작업 스냅샷을 로컬 백업으로 보존한 뒤, Codex 작업 브랜치에서 공개 페이지 상용화 차단 이슈를 정리했다. 최종 배포/머지는 백업 커밋을 main 에 포함하지 않도록 `origin/main` 기준 clean 브랜치에 P0 커밋만 cherry-pick 해서 진행했다.
 
@@ -74,7 +129,7 @@
 
 ---
 
-## 0-prev. 2026-05-21 (점수 UI 세션) — 점수 시스템 Phase 2~3: 시각 토큰 + UI 컴포넌트 (PR #305)
+## 0-prev-2. 2026-05-21 (점수 UI 세션) — 점수 시스템 Phase 2~3: 시각 토큰 + UI 컴포넌트 (PR #305)
 
 점수 시스템 Phase 1(계산 엔진 #303) 후속으로 **Phase 2(라벨/색상 시스템) + Phase 3(UI 컴포넌트)** 를 1 PR(2 원자 커밋)로 마무리. PROGRESS 로드맵 "Tailwind 토큰 → UI 컴포넌트" 구간. main 머지(squash `0f0e4f4`) + 프로덕션 배포 완료 — **단, 실제 사용자 페이지 미연결(컴포넌트만 추가)** 이라 사용자 체감 변화 없음. (시간순: 이 세션 이후 Codex 상용화 P0 세션이 main `4ee2484` 로 이어짐.)
 
@@ -123,7 +178,7 @@
 
 ---
 
-## 0-prev-2. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
+## 0-prev-3. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
 
 사주 결과 *총평 탭* 을 결정론 7문장 단락에서 **LLM 3섹션(한 줄 요약 + 본문 4단락 + 평생 활용 3카드)** 으로 확장하고, 비용 최적화(영속 캐시) · 어휘 정책(naming-policy) · 점수 계산 엔진(Phase 1)까지 5 PR 로 마무리. 모두 main 머지 + 프로덕션 배포 완료.
 
@@ -193,7 +248,7 @@
 
 ---
 
-## 0-prev-3. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
+## 0-prev-4. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
 
 진단서 6단계 검증을 순차 진행하면서 발견된 미흡 사항을 즉시 PR 로 처리. *9 챕터 LLM 풀이 인프라 완성* + *사용자 보고 톤 정합화* + *피드백 루프 + 대시보드* 까지 한 사이클 종료.
 
