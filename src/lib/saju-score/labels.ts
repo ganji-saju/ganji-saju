@@ -1,34 +1,8 @@
 // 2026-05-21 — 5단계 라벨 + 색상 토큰. phase-1-task.md §5 / naming-policy.md §11-1.
 //   라벨은 모두 "사주"(naming-policy §9 — "결" 미사용). 한자 0.
+//   색상은 visual-tokens.ts 단일 소스에서 파생(Phase 2).
 import type { ScoreLabel } from './types';
-
-const LABEL_COLORS = {
-  excellent: {
-    bg: 'bg-pink-500', bgSoft: 'bg-pink-50', text: 'text-pink-600',
-    textOnDark: 'text-pink-100', ring: 'ring-pink-300',
-    gradient: 'from-pink-400 to-pink-600',
-  },
-  good: {
-    bg: 'bg-emerald-500', bgSoft: 'bg-emerald-50', text: 'text-emerald-700',
-    textOnDark: 'text-emerald-100', ring: 'ring-emerald-300',
-    gradient: 'from-emerald-400 to-emerald-600',
-  },
-  neutral: {
-    bg: 'bg-blue-500', bgSoft: 'bg-blue-50', text: 'text-blue-700',
-    textOnDark: 'text-blue-100', ring: 'ring-blue-300',
-    gradient: 'from-blue-400 to-blue-600',
-  },
-  mindful: {
-    bg: 'bg-amber-500', bgSoft: 'bg-amber-50', text: 'text-amber-700',
-    textOnDark: 'text-amber-100', ring: 'ring-amber-300',
-    gradient: 'from-amber-400 to-amber-600',
-  },
-  potential: {
-    bg: 'bg-purple-500', bgSoft: 'bg-purple-50', text: 'text-purple-700',
-    textOnDark: 'text-purple-100', ring: 'ring-purple-300',
-    gradient: 'from-purple-400 to-purple-600',
-  },
-} as const;
+import { getScoreLevelToken } from './visual-tokens';
 
 const LABEL_TABLE: Array<{
   range: [number, number];
@@ -77,12 +51,13 @@ export function getLabel(total: number): ScoreLabel {
   const entry =
     LABEL_TABLE.find(({ range }) => total >= range[0] && total <= range[1]) ??
     LABEL_TABLE[LABEL_TABLE.length - 1];
+  const { hex: _hex, ...color } = getScoreLevelToken(entry.level);
   return {
     level: entry.level,
     title: entry.title,
     subtitle: entry.subtitle,
     description: entry.description,
     disclaimer: DISCLAIMER,
-    color: LABEL_COLORS[entry.level],
+    color,
   };
 }
