@@ -33,6 +33,18 @@ const CLICKBAIT_ABSOLUTE = [
   '대박', '비책', '암흑기', '텅장', '꿀팁', '반드시', '절대', '확실히',
 ];
 
+// naming-policy.md §12 — 어휘 정책 금지 패턴 (모두 0건이어야 함).
+//   일반 "X의 결" 은 "결과/결정/결혼" 복합어 오탐을 피하려 trailing "과" 를 제외(은/이/를/을/와/공백/끝만).
+const NAMING_POLICY_FORBIDDEN_PATTERNS: RegExp[] = [
+  /(새싹|햇살|흙|쇠|물)의\s*결/g,
+  /(새싹|햇살)\s+(기운|결|흐름)/g,
+  /결단과|안정과|열정과|시작과|지혜과/g,
+  /(표현|생각|절제|직관|돌봄|관찰|베푸는|밀어붙이는)의\s*기운/g,
+  /(돌봄|표현|기준|단단함)의\s*결/g,
+  /(표현|돌봄|재물|관계|기준)형\s*사주/g,
+  /[가-힣]+의\s*결(?=[은이를을와\s]|$)/g,
+];
+
 // 직업 컨텍스트(한글 라벨) → 단락 2 에 등장해야 할 키워드 후보 (spec §7 item 7)
 const OCCUPATION_KEYWORDS: Record<string, string[]> = {
   직장인: ['직장', '업무', '회사', '일하'],
@@ -75,6 +87,10 @@ function hardTextReasons(text: string, where: string): string[] {
   }
   for (const word of CLICKBAIT_ABSOLUTE) {
     if (text.includes(word)) reasons.push(`${where} 자극/단정 표현: ${word}`);
+  }
+  for (const pattern of NAMING_POLICY_FORBIDDEN_PATTERNS) {
+    const m = text.match(pattern);
+    if (m) reasons.push(`${where} 어휘 정책 위반(naming-policy §12): ${m[0]}`);
   }
   return reasons;
 }
@@ -177,14 +193,18 @@ export function validateTotalReview(
   // 1·2·3·5 (한자 / 금지어 / 일일 톤 / 자극어) — 전체 텍스트
   reasons.push(...hardTextReasons(fullText, '본문'));
 
-  // 4. "결" 빈도 — 단락당 최대 2회 (spec §7 item 4)
+  // 4. "결" 빈도 — naming-policy §9: 요약·카드 0회, 본문 단락당 최대 1회
   paragraphs.forEach((p, i) => {
     const count = countGyeol(p);
-    if (count > 2) reasons.push(`단락 ${i + 1} '결' 과다: ${count}회`);
+    if (count > 1) reasons.push(`단락 ${i + 1} '결' 과다: ${count}회 (단락당 최대 1회)`);
   });
-  if (countGyeol(output.one_line_summary) > 1) {
-    reasons.push(`한 줄 요약 '결' 과다: ${countGyeol(output.one_line_summary)}회`);
+  if (countGyeol(output.one_line_summary) > 0) {
+    reasons.push(`한 줄 요약 '결' 사용 — 요약엔 0회 (대안: 사주/성향/흐름)`);
   }
+  output.lifetime_keys.forEach((k, i) => {
+    const cardGyeol = countGyeol(k.title) + countGyeol(k.subtitle) + countGyeol(k.body);
+    if (cardGyeol > 0) reasons.push(`카드 ${i + 1} '결' 사용 — 카드엔 0회`);
+  });
 
   // 6. 이름 호명 ≤ 2 (userName 제공 시)
   if (context.userName) {

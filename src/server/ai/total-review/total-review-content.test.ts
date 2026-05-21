@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   GANGUK_EASY,
   KYEOKGUK_CAREER_FIT,
+  SIPSIN_SHORT,
   padToThree,
 } from './total-review-content';
 
@@ -55,4 +56,24 @@ test('padToThree: 중복은 제거하고 채운다', () => {
 
 test('padToThree: 공백/빈 항목은 무시', () => {
   assert.deepEqual(padToThree(['a', '  ', ''], ['b', 'c']), ['a', 'b', 'c']);
+});
+
+test('GANGUK_EASY: 라벨에 "결" 0건 (naming-policy §9)', () => {
+  for (const level of ['신강', '중화', '신약'] as const) {
+    assert.ok(
+      !/결/.test(GANGUK_EASY[level].label),
+      `${level} 라벨에 "결": ${GANGUK_EASY[level].label}`
+    );
+  }
+});
+
+test('SIPSIN_SHORT: 10개 십성 매핑 + "X의 결" 패턴 없음 (naming-policy §3·§12)', () => {
+  const tenGods = [
+    '비견', '겁재', '식신', '상관', '편재',
+    '정재', '편관', '정관', '편인', '정인',
+  ] as const;
+  for (const tg of tenGods) {
+    assert.ok(SIPSIN_SHORT[tg]?.length > 0, `${tg} 누락`);
+    assert.ok(!/의\s*결/.test(SIPSIN_SHORT[tg]), `${tg}에 "X의 결": ${SIPSIN_SHORT[tg]}`);
+  }
 });
