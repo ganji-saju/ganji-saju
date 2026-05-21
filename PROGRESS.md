@@ -1,12 +1,129 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-21 (검증 사이클 + 톤 정합 세션)** — 진단서 6단계 검증 + 후속 권장 5종 + 사용자 보고 fix (17 PR #281~#297 머지)
-> 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 308 → canonical
+> 최종 업데이트: **2026-05-22 (Codex 상용화 P0 차단 이슈 제거 + 프로덕션 배포)** — 공개 페이지 기준 로그인/코인/오늘운세/정책/결제/예약상담/도메인 정규화 보강
+> 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 
 ---
 
-## 0. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
+## 0. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
+
+작업자: **Codex**. Claude Code 2026-05-21 10시 작업 스냅샷을 로컬 백업으로 보존한 뒤, Codex 작업 브랜치에서 공개 페이지 상용화 차단 이슈를 정리했다. 최종 배포/머지는 백업 커밋을 main 에 포함하지 않도록 `origin/main` 기준 clean 브랜치에 P0 커밋만 cherry-pick 해서 진행했다.
+
+### 0.1 백업 / 브랜치 기준
+
+| 항목 | 값 |
+|------|-----|
+| Claude 백업 브랜치 | `backup/claude-code-2026-05-21-1000` |
+| Claude 백업 태그 | `claude-code-2026-05-21-1000` |
+| 백업 커밋 | `df529d6 backup: Claude Code 2026-05-21 10시 작업 스냅샷` |
+| 로컬 bundle 백업 | `.git/backups/claude-code-2026-05-21-1000.bundle` |
+| Codex 작업 브랜치 | `codex/2026-05-21-1900-work` |
+| clean 배포 브랜치 | `codex/2026-05-22-commercialization-p0` |
+| main 반영 커밋 | `4ee2484 fix(commercialization): clear public P0 blockers` |
+
+### 0.2 Codex P0 수정 범위
+
+| P0 | 처리 내용 |
+|----|-----------|
+| 도메인 통합 | `src/proxy.ts`, `src/lib/site.ts` 기준 legacy host 를 `https://ganjisaju.kr` 로 **301** 정규화. path/query 보존. Unicode/Punycode 한국어 도메인 테스트 추가 |
+| `/login` | "준비 중", "불러오는 중" 제거. 로고, 서비스 설명, 카카오 로그인, Google 로그인, 약관/개인정보 링크, 고객센터 이메일, 로그인 실패 문의 안내 노출. `next` 파라미터는 OAuth callback/email login 모두 유지 |
+| `/credits` | 비로그인 상태에서도 코인팩, 정책, 로그인 CTA 노출. 로딩/준비 문구 제거. 중복 footer 제거 |
+| `/today-fortune` | "오늘 흐름을 불러오는 중" 제거. loading 상태와 실제 폼 동시 노출 방지. 중복 footer 제거 |
+| 멤버십 문구 | "대화 상담 무제한", "무제한" 계열 판매 문구 제거. 일/월 사용량 제한 + 공정사용정책 문구로 교체 |
+| `/dialogue/appointment` | 30분 상담 100코인, 50,000원 상당, 보유/부족 코인, 추천 충전팩, 취소/노쇼/상담사 불참 환불 정책 표시. 실제 데이터 없는 경력/평점/상담건수 제거 |
+| 결제 동의 구조 | 기존 중복 동의 블록 제거. `PaymentConsentCheckboxes` 단일 "결제 전 확인" 블록으로 통합. 구독은 다음 결제일/해지 방법/무료체험 여부 표시 |
+| 개인정보처리방침 | OAuth, PG, LLM API, 호스팅, 분석도구 수탁자와 AI 프롬프트/응답 저장, AI 학습 활용/거부, 국외이전, 보유/파기/삭제 요청, 14세 미만 아동 처리 방침 보강 |
+| 정책 URL | `/terms`, `/privacy`, `/refund-policy`, `/digital-content-policy`, `/subscription-policy`, `/coin-policy`, `/appointment-policy`, `/ai-disclaimer`, `/commerce-disclosure` 접근 가능한 bundled policy fallback 추가 |
+| 금지 문구 테스트 | 공개 상용화 핵심 파일 대상 금지 문구 회귀 테스트 추가: 준비 중/준비중/로딩중/불러오는 중/결과가 없습니다/TODO/FIXME/placeholder/mock/dummy |
+
+### 0.3 신규/주요 파일
+
+- `src/lib/bundled-policies.ts` — DB 정책이 비어 있거나 낮은 버전일 때 사용할 9개 정책 기본 본문.
+- `src/lib/public-commercialization-copy.test.ts` — 공개 상용화 페이지 금지 문구 및 로그인 필수 구성 회귀 테스트.
+- `src/lib/policies.ts` — bundled policy fallback / DB 정책 우선순위 보강.
+- `src/app/login/page.tsx` — Codex 기준 로그인 완성 화면 및 fallback 필수 구성 반영.
+- `src/app/credits/page.tsx`, `src/app/today-fortune/page.tsx`, `src/app/dialogue/appointment/page.tsx` — 공개 핵심 유료 흐름 상용화 차단 문구 제거 및 고지 보강.
+
+### 0.4 검증 결과
+
+| 명령/검증 | 결과 |
+|-----------|------|
+| `npm test` | PASS — 157 tests |
+| `npm run typecheck` | PASS |
+| `npm run build` | PASS — Next 16.2.3, 184 static pages |
+| `git diff --check origin/main..HEAD` | PASS |
+| `npm run audit:mockup-placeholders:strict` | PASS — 의심 패턴 0 |
+| 브라우저 검증 | `/login?next=%2Fcredits`, `/credits`, `/today-fortune`, `/dialogue/appointment`, `/privacy` 핵심 문구 확인 |
+| 라이브 검증 | `https://ganjisaju.kr/login?next=%2Fcredits` HTTP 200, "준비 중"/"불러오는 중" 0건 |
+
+### 0.5 배포 / 머지
+
+- 원격 브랜치 푸시: `origin/codex/2026-05-22-commercialization-p0`
+- main fast-forward merge: `0f0e4f4..4ee2484`
+- main push 완료: `origin/main = 4ee2484`
+- Vercel production deployment: `dpl_5qeqzzh9jbzTti3FBzAuJTdS8Dk9`
+- Production URL: `https://ganjisaju.kr`
+- Inspect URL: `https://vercel.com/ganji-sajus-projects/ganji-saju/5qeqzzh9jbzTti3FBzAuJTdS8Dk9`
+
+### 0.6 운영 메모
+
+- `backup/claude-code-2026-05-21-1000` 커밋에는 `.mcp.json`, `.claude/`, 대량 audit report, screenshots, design docs 가 포함되어 있으나 **main 에는 병합하지 않았다**.
+- Codex P0 변경만 main 에 반영되어 롤백 시 `4ee2484` 이전 `0f0e4f4` 또는 백업 브랜치/태그를 기준으로 비교 가능하다.
+- `npm run lint` script 는 현재 `package.json`에 없어 실행 대상 없음.
+
+---
+
+## 0-prev. 2026-05-21 (점수 UI 세션) — 점수 시스템 Phase 2~3: 시각 토큰 + UI 컴포넌트 (PR #305)
+
+점수 시스템 Phase 1(계산 엔진 #303) 후속으로 **Phase 2(라벨/색상 시스템) + Phase 3(UI 컴포넌트)** 를 1 PR(2 원자 커밋)로 마무리. PROGRESS 로드맵 "Tailwind 토큰 → UI 컴포넌트" 구간. main 머지(squash `0f0e4f4`) + 프로덕션 배포 완료 — **단, 실제 사용자 페이지 미연결(컴포넌트만 추가)** 이라 사용자 체감 변화 없음. (시간순: 이 세션 이후 Codex 상용화 P0 세션이 main `4ee2484` 로 이어짐.)
+
+### 0.1 PR (#305, squash `0f0e4f4`)
+
+| 구분 | 내용 |
+|------|------|
+| Phase 2 | visual-tokens 단일 소스 + labels/ohaeng 파생 리팩터 + 유닛 11 |
+| Phase 3 | 게이지·내역·오행·통합카드 4 컴포넌트 + /dev/saju-score QA 쇼케이스 |
+
+### 0.2 Phase 2 — 점수 시각 토큰 단일 소스 (라벨/색상 시스템)
+
+- 신규 `src/lib/saju-score/visual-tokens.ts`: UI 가 소비할 색상/라벨을 한 곳에서 관리(단일 소스).
+  - 등급(5) `SCORE_LEVEL_TOKENS`(tailwind 클래스 6종 + SVG용 hex), 오행(5) `OHAENG_TOKENS`(hex + "X 기운"), 내역지표(F1~F5) `BREAKDOWN_FACTOR_META`(일상어 라벨·max 20·hex).
+  - resolver `getScoreLevelToken`/`getScoreLevelTokenByTotal`(labels 임계값 90/75/60/45 동일)·`getOhaengToken`·`getBreakdownFactorMeta` + `getBarFillPercent`(0~100 clamp, max≤0 → 0).
+- `labels.ts`/`ohaeng.ts` 를 토큰 파생으로 정리 — 색상 중복 제거, 공개 반환 shape 불변(`getLabel().color` 6필드 / `computeOhaengChart().colors|labels`) → 기존 562 테스트 그대로 통과.
+- TDD: RED(모듈 부재) → GREEN(11 테스트) → REFACTOR(파생 단일소스). 라벨/설명 한자 0(naming-policy §2·§9).
+
+### 0.3 Phase 3 — 점수 UI 컴포넌트 (서버 컴포넌트)
+
+- 신규 `src/components/saju-score/`:
+  - `SajuScoreGauge` — 총점 0~100 원형 SVG 게이지(반지름 52, 둘레 기준 dashoffset) + 등급 라벨(제목/부제/설명/면책).
+  - `SajuScoreBreakdown` — F1~F5 막대(라벨·값/20·fill%·지표색). 표시값 정수 반올림(소수 노출 제거).
+  - `SajuOhaengBalance` — 다섯 기운 상대 막대(최대치 기준) + 부족/과다 칩.
+  - `SajuScoreCard` — `SajuScore` 하나로 게이지+내역+오행 통합.
+- `src/app/dev/saju-score/page.tsx` — 컴포넌트 QA 쇼케이스(8 샘플, 등급 스펙트럼). **production `notFound()` + noindex**.
+- 스타일 관례 준수: `app-*` CSS var + 인라인 hex(동적색 → Tailwind purge 무관). `'use client'` 불필요(순수 프레젠테이션).
+
+### 0.4 검증
+
+- 유닛 573(+11) green · node:test 157 · vitest 64(5파일) · **typecheck 0** · 회귀 0.
+- 브라우저(`/dev/saju-score`): 등급별 게이지색 매핑(84·81=emerald / 72·68·67·61=blue / 59·54=amber) + dashoffset 점수 비례 + F1~F5 막대 + 오행 부족/과다 칩 + 콘솔 에러 0.
+- CI: `Test, Typecheck, Build` ✅ · `Playwright smoke E2E (Phase 2A)` ✅ · Vercel 배포 ✅.
+
+### 0.5 신규/변경 파일
+
+- 신규: `saju-score/visual-tokens.ts`(+`__tests__/visual-tokens.test.ts`) · `components/saju-score/`(4 컴포넌트 + index) · `app/dev/saju-score/page.tsx`.
+- 변경(파생 리팩터): `saju-score/{labels,ohaeng,index}.ts`.
+
+### 0.6 메모 / 후속
+
+- `saju-score-spec.md`/`phase-1-task.md` 는 미커밋(임시 기획 문서) — Phase 2/3 범위는 PROGRESS 로드맵 + 기존 코드 패턴 기준으로 확정.
+- 컴포넌트 렌더 테스트는 리포에 0개(러너가 `.test.ts`만 발견) → 로직은 visual-tokens 유닛으로, UI 는 브라우저/Playwright 로 검증하는 관례 유지.
+- **점수 Phase 4~7**: 오행 차트 UI → LLM 가이드 연계(`OhaengChartData.guidanceText`) → 무료/유료 경계 → **실제 사주 결과 페이지에 `SajuScoreCard` 연결**(현재 미연결, 최우선 후속).
+- 📦 release: `2026-05-21 점수 시스템 Phase 2~3 — 시각 토큰 + UI 컴포넌트`
+
+---
+
+## 0-prev-2. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
 
 사주 결과 *총평 탭* 을 결정론 7문장 단락에서 **LLM 3섹션(한 줄 요약 + 본문 4단락 + 평생 활용 3카드)** 으로 확장하고, 비용 최적화(영속 캐시) · 어휘 정책(naming-policy) · 점수 계산 엔진(Phase 1)까지 5 PR 로 마무리. 모두 main 머지 + 프로덕션 배포 완료.
 
@@ -76,7 +193,7 @@
 
 ---
 
-## 0-prev. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
+## 0-prev-3. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
 
 진단서 6단계 검증을 순차 진행하면서 발견된 미흡 사항을 즉시 PR 로 처리. *9 챕터 LLM 풀이 인프라 완성* + *사용자 보고 톤 정합화* + *피드백 루프 + 대시보드* 까지 한 사이클 종료.
 
@@ -1753,6 +1870,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-22 | **Codex 상용화 P0 차단 이슈 제거 + clean main 배포** | commit `4ee2484` | 로그인/코인/오늘운세 SSR 문구 정리, 301 canonical redirect, 멤버십 무제한 문구 제거, 예약상담 가격/환불 고지, 결제 동의 단일화, 9개 정책 bundled fallback, 공개 금지 문구 회귀 테스트. 백업 커밋 제외 후 clean branch cherry-pick → Vercel prod `dpl_5qeqzzh9jbzTti3FBzAuJTdS8Dk9` |
 | 2026-05-19 | **2026-05-19 9 챕터 LLM 통합 인프라 (chapter prompts + client + enhance + V1\|V2 호환)** | #250/#251/#252/#253/#256 | report-llm-spec.md §2-4 의 9 챕터 system prompt + ChapterMeta/OUTPUT_SPECS + ChapterLLMClient interface (DI) + OpenAIChapterClient (openai-text wrap) + generateChapter (validator 후처리 + 재생성 max 2) + enhanceLifetimeChapter1WithLLM (LifetimeCoreIdentitySection.summary 만 교체) + buildChapter1Input (SajuDataV1\|SajuDataV2 union, narrowOccupation/narrowConcern) |
 | 2026-05-19 | **2026-05-19 P0 풀이 엔진 재설계 (chapter-validator + cycle 본문 십성 + 한자/단정 제거)** | #245/#246/#248/#249 | cycleSipsin infra (getCycleSipsin + 5 빌더 시그니처) → 본문 4 빌더 (relationship/wealthCareer/mental/practicalActions) 십성 10 base × status/occupation 4 분기 곱 (9 cycle distinct 10/10/10) → P0 본문 버그 4건 fix (B01 '내 내' regex chain / B05 '커안쪽' word-boundary / B03 timing / B04 종결문 비문) + chapter-validator 6 룰 (한자/X과/영어/단정/cross-chapter/punch-copy) + 빌더 본문 한자 ganzi→한글 + '절대/반드시' 제거 |
 | 2026-05-19 | **2026-05-19 ELEMENT_INFO 자연 비유 + formatElementName + B06 헤드라인** | #247/#254/#255 | "X과/와 Y" 5 라벨 → 새싹/햇살/흙/쇠/물 의 결 (ㄹ 받침 통일로 호출처 "이/을" 자연) + ELEMENT_INFO.keyword 도입 + formatElementName .split 제거 + buildHeadline "흙·정인격" → "흙에 정인격" 자연 연결 |
