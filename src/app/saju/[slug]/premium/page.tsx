@@ -18,9 +18,6 @@ import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
 import YearlyReportPanel from '@/components/ai/yearly-report-panel';
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (사주 메인/오늘 운세와 동일).
 import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
-// 2026-05-21 Phase 6~7 — 사주 점수 상세(전체 카드, lifetime 엔타이틀먼트 게이팅).
-import { SajuScoreCard } from '@/components/saju-score';
-import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
 import {
   REPORT_SAMPLE_HREF,
@@ -287,8 +284,6 @@ export default async function SajuPremiumPage({ params }: Props) {
   if (!reading) notFound();
 
   const { sajuData } = reading;
-  // 2026-05-21 Phase 6~7 — 사주 종합 점수(순수·서버). 상세 카드는 lifetime 권한 게이팅.
-  const sajuScore = computeSajuScoreFromData(sajuData);
   const readingKey = toSlug(reading.input);
   const encodedSlug = encodeURIComponent(slug);
   const targetYear = new Date().getFullYear();
@@ -494,30 +489,7 @@ export default async function SajuPremiumPage({ params }: Props) {
           {/* PR #181 — 6 영역 통일 카드 (총운/직장·사업운/재물운/애정·연애운/인간관계운/컨디션·건강운).
              사주 메인 + 오늘 운세 페이지와 동일 score 노출. */}
           <SajuAreaCardsSection input={reading.input} sajuData={sajuData} />
-
-          {/* 사주 종합 점수 상세 — 전체 카드(게이지+내역+오행+해설). lifetime 권한 게이팅 (Phase 6~7). */}
-          <section id="premium-saju-score" className="scroll-mt-28 px-1">
-            <div className="mb-3 text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              사주 점수 상세
-            </div>
-            {hasLifetimeAccess ? (
-              <SajuScoreCard score={sajuScore} />
-            ) : (
-              <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white">
-                <div className="select-none blur-[5px] opacity-65" aria-hidden="true">
-                  <SajuScoreCard score={sajuScore} />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
-                    style={{ background: 'rgba(17,17,20,0.78)' }}
-                  >
-                    🔒 49,000원 결제 후 열림
-                  </span>
-                </div>
-              </article>
-            )}
-          </section>
+          {/* 2026-05-22 — 사주 점수 상세는 총평 탭(per-factor LockGate 모델)으로 이전. 프리미엄 점수 카드 제거. */}
 
           {/* §1 Hero — 2026-05-14 강화: 결제 권한이 있으면 ✓ 배지 + 부각 그라데이션. */}
           <article
