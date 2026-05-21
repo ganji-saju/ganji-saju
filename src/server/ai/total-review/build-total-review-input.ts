@@ -5,7 +5,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { SajuPersonalizationContext } from '@/domain/saju/report/personalization-context';
 import { MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
-import { GANGUK_EASY, KYEOKGUK_CAREER_FIT, padToThree } from './total-review-content';
+import { GANGUK_EASY, KYEOKGUK_CAREER_FIT, SIPSIN_SHORT, padToThree } from './total-review-content';
 import type {
   TotalReviewContext,
   TotalReviewInput,
@@ -150,7 +150,7 @@ function buildWonkuk(
   const dm = data.dayMaster;
 
   const ilgan_easy = {
-    label: ctx.sixtyGapja?.title ?? `${dm.element} 기운의 결`,
+    label: ctx.sixtyGapja?.title ?? `${dm.element} 기운`,
     detail: dm.description ?? ctx.sixtyGapja?.core ?? '',
     metaphor: dm.metaphor ?? '',
   };
@@ -209,18 +209,18 @@ function buildWonkuk(
   };
 
   const tenGod = data.pattern?.tenGod ?? null;
-  const patternCue = tenGod
-    ? MYEONGRI_GLOSSARY[tenGod]?.plainCue?.split(/\s*[—–-]\s*/)[0]?.trim() ?? ''
-    : '';
+  // naming-policy §3·§4: glossary plainCue 는 "돌봄·후원·배움의 결" 처럼 "X의 결" 패턴이 있어
+  //   §12 위반 → SIPSIN_SHORT("표현하고 베푸는 별" 등 자연 명사·"의 결" 없는 설명)로 도출.
+  const patternCue = tenGod ? SIPSIN_SHORT[tenGod] ?? '' : '';
   const kyeokguk_easy = {
     label: data.pattern?.name ?? '',
-    detail: tenGod ? MYEONGRI_GLOSSARY[tenGod]?.plainCue ?? '' : '',
+    detail: patternCue ? `${patternCue}이 중심인 사주` : '',
     career_fit: tenGod ? KYEOKGUK_CAREER_FIT[tenGod] ?? [] : [],
   };
 
   // 강점 3 = sixtyGapja.strengths(2) + 격국·지배오행·일반 보강
   const strengthFillers = [
-    patternCue ? `${patternCue} 감각` : '',
+    patternCue ? `${patternCue}이 잘 살아 있는 강점` : '',
     `${elementLabel(dominant)}을 자연스럽게 쓰는 힘`,
     '전체 흐름을 살피고 조율하는 감각',
     '꾸준히 신뢰를 쌓아가는 힘',

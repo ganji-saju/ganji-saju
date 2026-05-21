@@ -118,3 +118,27 @@ test('hasHardTotalReviewViolation: 정상 false, 한자 true', () => {
   bad.lifetime_keys[0].body = '金 기운이 핵심이에요.';
   assert.equal(hasHardTotalReviewViolation(bad), true);
 });
+
+test('validateTotalReview: 어휘 정책 위반("쇠의 결") 시 실패 (naming-policy §12)', () => {
+  const bad = structuredClone(GOOD);
+  bad.main_narrative.paragraph_4_now += ' 쇠의 결이 부족한 사주예요.';
+  const r = validateTotalReview(bad, CTX);
+  assert.ok(!r.ok);
+  assert.ok(r.reasons.some((x) => x.includes('어휘 정책')), r.reasons.join(' / '));
+});
+
+test('validateTotalReview: 십성 추상명사화("표현의 기운") 시 실패', () => {
+  const bad = structuredClone(GOOD);
+  bad.main_narrative.paragraph_1_who_you_are += ' 표현의 기운이 강해요.';
+  assert.ok(hasHardTotalReviewViolation(bad), '표현의 기운은 hard 위반');
+});
+
+test('validateTotalReview: "결과" 같은 복합어는 오탐 없이 통과', () => {
+  const ok = structuredClone(GOOD);
+  ok.main_narrative.paragraph_3_weak_zone += ' 이게 누적되면 지치는 결과로 이어져요.';
+  const r = validateTotalReview(ok, CTX);
+  assert.ok(
+    !r.reasons.some((x) => x.includes('어휘 정책')),
+    `"결과"는 오탐이면 안 됨: ${r.reasons.join(' / ')}`
+  );
+});

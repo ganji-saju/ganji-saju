@@ -10,17 +10,17 @@ import type { StrengthLevel, TenGodCode } from '@/domain/saju/engine/saju-data-v
  */
 export const GANGUK_EASY: Record<StrengthLevel, { label: string; detail: string }> = {
   신강: {
-    label: '자기 축이 단단한 결',
+    label: '본인 기운이 강한 편',
     detail:
       '본인 페이스가 또렷하고 주관이 분명한 편이에요. 단, 주변과 속도를 맞추는 연습이 같이 필요합니다.',
   },
   중화: {
-    label: '균형이 잡힌 결',
+    label: '균형이 잡힌 편',
     detail:
       '한쪽으로 치우치지 않고 상황에 맞춰 힘을 쓰는 편이에요. 큰 흔들림 없이 흐르는 구조입니다.',
   },
   신약: {
-    label: '자기 축이 다소 약한 결',
+    label: '본인 기운이 다소 약한 편',
     detail:
       '본인 페이스가 외부 영향에 흔들리기 쉬운 구조예요. 단, 흐름을 잘 읽는 강점도 같이 옵니다.',
   },
@@ -41,6 +41,24 @@ export const KYEOKGUK_CAREER_FIT: Record<TenGodCode, string[]> = {
   편인: ['연구', '기획', '데이터', '전문기술', '의료', '예술'],
   비견: ['독립', '전문직', '프리랜서', '창업', '운동', '현장'],
   겁재: ['영업', '경쟁', '스타트업', '현장', '중개', '추진'],
+};
+
+/**
+ * 십성 → 짧은 설명. naming-policy.md §3 ("원어 + 짧은 설명").
+ * MYEONGRI_GLOSSARY.plainCue 는 "돌봄·후원·배움의 결" 처럼 "X의 결" 패턴이 있어 §12 위반 →
+ * 총평 입력에는 glossary 대신 이 맵을 쓴다 (자연 명사·"의 결" 없음).
+ */
+export const SIPSIN_SHORT: Record<TenGodCode, string> = {
+  식신: '표현하고 베푸는 별',
+  상관: '재능을 드러내는 별',
+  정인: '돌봄과 배움의 별',
+  편인: '혼자 깊이 파고드는 별',
+  정관: '책임과 규범의 별',
+  편관: '밀어붙이는 별',
+  정재: '꾸준한 살림의 별',
+  편재: '움직이는 돈의 별',
+  비견: '같이 가는 별',
+  겁재: '경쟁하며 끌어가는 별',
 };
 
 /**
