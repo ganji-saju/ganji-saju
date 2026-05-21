@@ -10,7 +10,7 @@
  * prepare API 가 acceptedKinds 받아서 서버에서도 한 번 더 검증.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { POLICY_URLS, type PolicyKind } from '@/shared/policies/types';
 import {
@@ -44,12 +44,22 @@ export function PaymentConsentCheckboxes({
     setAccepted(defaultAllAccepted ? new Set(items.map((it) => it.kind)) : new Set());
   }, [pkg.id, defaultAllAccepted, items]);
 
-  // 부모에 valid 상태 + 체크된 kinds 전달
+  // onValidChange 콜백을 ref 로 고정한다.
+  //   부모가 매 렌더 새 인라인 콜백을 넘겨도(예: TossMembershipCheckout) notify effect 가
+  //   콜백 identity 변화로 재실행되지 않도록 한다. 콜백이 setState(새 배열)을 호출하면
+  //   부모 재렌더 → 새 콜백 → effect 재실행 → 무한 렌더("Maximum update depth exceeded")로 이어졌다.
+  const onValidChangeRef = useRef(onValidChange);
   useEffect(() => {
-    if (!onValidChange) return;
+    onValidChangeRef.current = onValidChange;
+  });
+
+  // 부모에 valid 상태 + 체크된 kinds 전달 — accepted/pkg 가 실제로 바뀔 때만.
+  useEffect(() => {
+    const notify = onValidChangeRef.current;
+    if (!notify) return;
     const missing = findMissingConsents(pkg, Array.from(accepted));
-    onValidChange(missing.length === 0, Array.from(accepted));
-  }, [accepted, pkg, onValidChange]);
+    notify(missing.length === 0, Array.from(accepted));
+  }, [accepted, pkg]);
 
   const allAccepted = items.every((it) => accepted.has(it.kind));
 
