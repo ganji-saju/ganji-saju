@@ -64,14 +64,14 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
   ],
   relationship_conflict: [
     { label: '궁합으로 이어보기', href: '/compatibility', body: '관계의 온도와 갈등 포인트를 두 사람 기준으로 읽습니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오해를 줄이는 말의 결을 바로 이어서 물을 수 있습니다.' },
+    { label: '대화로 더 묻기', href: '/dialogue', body: '오해를 줄이는 말투를 바로 이어서 물을 수 있습니다.' },
   ],
   energy_health: [
     { label: '상세 사주 보기', href: '/saju/new', body: '생활 리듬과 회복 패턴을 원국 기준으로 더 깊게 읽습니다.' },
     { label: '대화로 더 묻기', href: '/dialogue', body: '무리하면 바로 티 나는 구간을 더 구체적으로 물을 수 있습니다.' },
   ],
   general: [
-    { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 결을 한 장의 카드로 가볍게 더 확인합니다.' },
+    { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 흐름을 한 장의 카드로 가볍게 더 확인합니다.' },
     { label: '상세 사주 보기', href: '/saju/new', body: '오늘 흐름을 넘어서 내 명식의 큰 바탕까지 이어집니다.' },
   ],
 };

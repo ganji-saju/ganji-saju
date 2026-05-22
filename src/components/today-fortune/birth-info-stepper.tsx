@@ -49,6 +49,22 @@ function hasBirthCore(draft: TodayFortuneBirthPayload) {
   return Boolean(draft.year && draft.month && draft.day);
 }
 
+// 2026-05-23 naming-policy §9 받침조사 — 동적 지역명 뒤 조사를 받침에 맞춰 정확화.
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
+}
+
 export function BirthInfoStepper({
   draft,
   onChange,
@@ -241,7 +257,7 @@ export function BirthInfoStepper({
               birthLongitude: String(item.longitude),
             });
             setLocationResults([]);
-            setLocationMessage(`출생지로 ${item.displayName}를 적용했습니다.`);
+            setLocationMessage(`출생지로 ${withParticle(item.displayName, '을', '를')} 적용했습니다.`);
           }}
         />
       </div>

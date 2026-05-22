@@ -275,6 +275,22 @@ function formatElementList(elements: Element[]) {
   return [...new Set(elements)].map(getElementShortLabel).join(' · ');
 }
 
+// 2026-05-23 naming-policy §9 받침조사 — 동적 라벨(오행 단축명·영역명) 뒤 조사를 받침에 맞춰 정확화.
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
+}
+
 function getGanziElements(ganzi?: string | null) {
   if (!ganzi) return [];
 
@@ -421,7 +437,7 @@ function createYearlyKeywords(
     support ? `${support}|부족한 축을 살리고 기회를 넓히는 보완 포인트입니다.` : null,
     weakest ? `${weakest} 보완|과하거나 비어 있는 부분을 다듬어야 흐름이 오래 갑니다.` : null,
     context.pattern
-      ? `${context.pattern}|반복해서 맡게 되는 역할과 책임의 결을 보여줍니다.`
+      ? `${context.pattern}|반복해서 맡게 되는 역할과 책임의 흐름을 보여줍니다.`
       : null,
     context.strength
       ? `${context.strength}|올해 바로 진행할지, 조율할지의 기준이 됩니다.`
@@ -455,7 +471,7 @@ function createOverview(
         ? `현재는 ${context.currentMajorLuck} 대운 위에 ${context.yearGanji} 세운이 겹쳐 들어오는 구조라, 올해는 단기 성과보다 흐름의 방향을 먼저 읽는 편이 좋습니다.`
         : `올해는 ${context.yearGanji} 세운이 전면으로 들어오므로, 원국의 강약과 용신을 기준으로 한 해의 선택을 조율하는 편이 좋습니다.`,
       support
-        ? `${support} 기운은 기회 활용의 축이고, ${caution || '과해지는 축'}은 조절 포인트로 보시면 됩니다.`
+        ? `${support} 기운은 기회 활용의 축이고, ${withParticle(caution || '과해지는 축', '은', '는')} 조절 포인트로 보시면 됩니다.`
         : null,
     ]).join(' '),
     basis: compactStrings([
@@ -542,7 +558,7 @@ function createHealthSection(
       `${weakest} 보완이 필요한 해라 수면, 식사, 움직임처럼 반복 가능한 루틴을 먼저 고정하는 편이 좋습니다.`,
       reports.today.cautionAction.description,
     ]).join(' '),
-    opportunity: `보완축 ${formatElementList(context.supportElements)}를 생활 습관으로 옮기면 체감 회복력이 올라갑니다.`,
+    opportunity: `보완축 ${withParticle(formatElementList(context.supportElements), '을', '를')} 생활 습관으로 옮기면 체감 회복력이 올라갑니다.`,
     caution: `운세 해석보다 실제 증상과 회복 신호를 먼저 보셔야 합니다. 특히 과로와 수면 불균형은 오래 끌지 않는 편이 좋습니다.`,
     action: `무리한 계획보다 반복 가능한 루틴을 먼저 고정하세요. 생활 리듬을 버티는 방식으로 접근하는 편이 유리합니다.`,
     score: reports.today.scores.find((score) => score.key === 'overall')?.score ?? undefined,
@@ -665,8 +681,8 @@ function createMonthlyFlow(
     momentum === 'rise'
       ? `${guide.summaryLead} ${focusLabel}에서는 준비한 결정을 밖으로 꺼내기 좋습니다.`
       : momentum === 'caution'
-        ? `${guide.summaryLead} ${focusLabel}은 확정보다 확인을 먼저 두는 편이 좋습니다.`
-        : `${guide.summaryLead} ${focusLabel}은 새 일을 늘리기보다 기준을 정리할 때입니다.`;
+        ? `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 확정보다 확인을 먼저 두는 편이 좋습니다.`
+        : `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 새 일을 늘리기보다 기준을 정리할 때입니다.`;
 
   return {
     month: monthly.month,
@@ -891,7 +907,7 @@ export function buildYearlyReport(
   const monthlyFlows = monthlyEvidence.map((monthly) =>
     createMonthlyFlow(monthly)
   );
-  // 2026-05-15 PR 5 — Peak/Pitfall 마킹. 1년 중 가장 결이 좋은 'rise' 1개 + 가장
+  // 2026-05-15 PR 5 — Peak/Pitfall 마킹. 1년 중 가장 흐름이 좋은 'rise' 1개 + 가장
   // 흔들리는 'caution' 1개 선택 (없으면 마킹 X). 동률은 가장 빠른 달 우선.
   markPeakAndPitfall(monthlyFlows);
   const firstHalf = createHalfFlow(

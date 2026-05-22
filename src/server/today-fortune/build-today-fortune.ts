@@ -1813,11 +1813,11 @@ function getTimeBlockRelationImpact(
   const totalDelta = details.reduce((sum, detail) => sum + detail.weightedDelta, 0);
   const supportLabels = details
     .filter((detail) => detail.tone === 'support')
-    .map((detail) => `${detail.slot} ${detail.branch}와 ${detail.label}`)
+    .map((detail) => `${detail.slot} ${withKoreanParticle(detail.branch, '과', '와')} ${detail.label}`)
     .slice(0, 2);
   const cautionLabels = details
     .filter((detail) => detail.tone === 'caution')
-    .map((detail) => `${detail.slot} ${detail.branch}와 ${detail.label}`)
+    .map((detail) => `${detail.slot} ${withKoreanParticle(detail.branch, '과', '와')} ${detail.label}`)
     .slice(0, 2);
 
   return {
@@ -1992,7 +1992,7 @@ function buildTimeBlockEvaluations(
         `${timePillar.timeGanzi}시에는 ${timePillar.branchElement} 기운이 전면에 서서 오늘 흐름을 바꿉니다.`,
         ...elementImpact.supportLines,
         relationImpact.supportLabels[0]
-          ? `${relationImpact.supportLabels.join(', ')}이 들어와 말이나 결정이 묶이는 힘을 더합니다.`
+          ? `${withKoreanParticle(relationImpact.supportLabels.join(', '), '이', '가')} 들어와 말이나 결정이 묶이는 힘을 더합니다.`
           : null,
       ],
       2
@@ -2002,7 +2002,7 @@ function buildTimeBlockEvaluations(
         `${timePillar.timeGanzi}시는 ${timePillar.branchElement} 기운이 튀어나와 감정이나 판단이 과해지기 쉬운 블록입니다.`,
         ...elementImpact.cautionLines,
         relationImpact.cautionLabels[0]
-          ? `${relationImpact.cautionLabels.join(', ')}이 겹치면 작은 반응도 크게 받아들이기 쉽습니다.`
+          ? `${withKoreanParticle(relationImpact.cautionLabels.join(', '), '이', '가')} 겹치면 작은 반응도 크게 받아들이기 쉽습니다.`
           : null,
       ],
       2
@@ -2011,10 +2011,10 @@ function buildTimeBlockEvaluations(
       relationImpact.supportLabels[0] || relationImpact.cautionLabels[0]
         ? uniqueStrings([
             relationImpact.supportLabels[0]
-              ? `${relationImpact.supportLabels.join(', ')}이 들어와 관계가 묶이는 쪽으로 작동합니다.`
+              ? `${withKoreanParticle(relationImpact.supportLabels.join(', '), '이', '가')} 들어와 관계가 묶이는 쪽으로 작동합니다.`
               : null,
             relationImpact.cautionLabels[0]
-              ? `${relationImpact.cautionLabels.join(', ')}이 겹치면 말의 여파가 오래 남기 쉽습니다.`
+              ? `${withKoreanParticle(relationImpact.cautionLabels.join(', '), '이', '가')} 겹치면 말의 여파가 오래 남기 쉽습니다.`
               : null,
           ]).join(' ')
         : null;

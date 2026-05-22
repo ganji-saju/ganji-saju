@@ -278,7 +278,7 @@ export function buildFallbackYearlyInterpretation(
   const introPrefix =
     counselorId === 'male'
       ? `${report.year}년은 결론부터 보면 방향을 먼저 세우는 해입니다.`
-      : `${report.year}년은 한 해의 결이 서서히 드러나는 해입니다.`;
+      : `${report.year}년은 한 해의 흐름이 서서히 드러나는 해입니다.`;
   const keywords = report.coreKeywords
     .map((item) => `${item.label}: ${item.reason}`)
     .slice(0, 5);
