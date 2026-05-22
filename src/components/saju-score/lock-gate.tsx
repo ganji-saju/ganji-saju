@@ -13,6 +13,8 @@ export type LockFactorId = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
 interface LockGateProps {
   factorId: LockFactorId;
   factorTitle: string;
+  /** 현재 사주 결과 slug — 결제 scope 연결용. */
+  slug?: string;
   navigateTo?: string;
   isUnlocked?: boolean;
   className?: string;
@@ -31,6 +33,7 @@ const PRICE = '550원';
 export function LockGate({
   factorId,
   factorTitle,
+  slug,
   navigateTo,
   isUnlocked = false,
   className = '',
@@ -65,6 +68,7 @@ export function LockGate({
         <LockPaymentModal
           factorId={factorId}
           factorTitle={factorTitle}
+          slug={slug}
           valueLine={FACTOR_VALUE_LINES[factorId]}
           price={PRICE}
           onClose={() => setOpen(false)}
@@ -77,12 +81,13 @@ export function LockGate({
 interface LockPaymentModalProps {
   factorId: LockFactorId;
   factorTitle: string;
+  slug?: string;
   valueLine: string;
   price: string;
   onClose: () => void;
 }
 
-function LockPaymentModal({ factorId, factorTitle, valueLine, price, onClose }: LockPaymentModalProps) {
+function LockPaymentModal({ factorId, factorTitle, slug, valueLine, price, onClose }: LockPaymentModalProps) {
   // ESC 닫기 + body scroll 잠금 (terms-consent-modal idiom)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -152,9 +157,11 @@ function LockPaymentModal({ factorId, factorTitle, valueLine, price, onClose }: 
           <button
             type="button"
             onClick={() => {
-              // TODO(별도 PR): 실제 결제 플로우 연결.
-              // eslint-disable-next-line no-console
-              console.log(`[결제 예정] factor=${factorId} price=${price}`);
+              // 기존 Toss 결제 플로우(taste_product) 재사용 — score-factor 상품, factor 는 scope.
+              if (slug) {
+                window.location.href = `/membership/checkout?product=score-factor&slug=${encodeURIComponent(slug)}&scope=${factorId}&from=saju-result`;
+                return;
+              }
               onClose();
             }}
             className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"

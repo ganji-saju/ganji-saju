@@ -9,7 +9,8 @@ import { LockGate, type LockFactorId } from './lock-gate';
 interface ScoreBreakdownCardProps {
   score: SajuScore;
   slug: string;
-  isUnlocked?: boolean;
+  /** factor 별 결제 해제 여부. 미지정 시 전부 잠금. */
+  unlockedFactors?: Partial<Record<LockFactorId, boolean>>;
   className?: string;
 }
 
@@ -27,7 +28,7 @@ const FACTOR_META: Array<{
   { id: 'F5', emoji: '⑤', title: '합충·신살', subtitle: '관계와 작용의 부드러움', tab: 'deep' },
 ];
 
-export function ScoreBreakdownCard({ score, slug, isUnlocked = false, className = '' }: ScoreBreakdownCardProps) {
+export function ScoreBreakdownCard({ score, slug, unlockedFactors, className = '' }: ScoreBreakdownCardProps) {
   const colors = getScoreColorClasses(score.label.level);
   // 마운트 후 바 채움(animate-bar-fill 미등록 → 인라인 width + transition).
   const [filled, setFilled] = useState(false);
@@ -73,8 +74,9 @@ export function ScoreBreakdownCard({ score, slug, isUnlocked = false, className 
                 <LockGate
                   factorId={meta.id}
                   factorTitle={meta.title}
+                  slug={slug}
                   navigateTo={`/saju/${slug}/${meta.tab}`}
-                  isUnlocked={isUnlocked}
+                  isUnlocked={unlockedFactors?.[meta.id] ?? false}
                 />
               </div>
             </div>

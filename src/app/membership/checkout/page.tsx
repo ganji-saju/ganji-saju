@@ -60,6 +60,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'work-flow': 'tiger',
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
+  'score-factor': 'dragon',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -87,6 +88,18 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     opens: ['오늘 자세히 보기', '이미 구매한 오늘운 재열람', '대화로 이어 묻기'],
     notices: [
       '오늘 자세히 보기는 현재 결과 식별자와 연결됩니다.',
+      '다시 열 때는 구매 여부를 먼저 확인합니다.',
+    ],
+  },
+  'score-factor': {
+    title: '점수 풀이 보기',
+    price: '550원',
+    reassurance:
+      '점수 산출 내역 한 항목의 자세한 풀이를 여는 소액 풀이입니다. 같은 항목은 다시 결제하지 않습니다.',
+    nextRange: '선택한 항목(일주·격국·용신·오행·합충신살)의 구체 풀이와 활용 가이드가 열립니다.',
+    opens: ['선택한 항목 자세한 풀이', '이미 구매한 항목 재열람', '대화로 이어 묻기'],
+    notices: [
+      '점수 풀이는 현재 사주 결과 + 항목 단위로 연결됩니다.',
       '다시 열 때는 구매 여부를 먼저 확인합니다.',
     ],
   },
