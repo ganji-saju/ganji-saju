@@ -396,7 +396,7 @@ export default async function StarSignCompatPage({ params }: Props) {
               사주 궁합으로도 보기
             </h2>
             <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
-              서양 별자리 궁합은 큰 결을, 동양 사주 궁합은 음양·오행·일진의 세밀한 만남을 보여줍니다.
+              서양 별자리 궁합은 큰 흐름을, 동양 사주 궁합은 음양·오행·일진의 세밀한 만남을 보여줍니다.
               두 시스템을 함께 보면 입체적인 관계 그림이 나옵니다.
             </p>
             <Link
