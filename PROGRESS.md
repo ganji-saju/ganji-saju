@@ -1,12 +1,64 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-22 (점수 풀스택 + 도크 fix 세션)** — 점수 Phase 4~7 + 가이드 캐시 + LLM 가이드 활성화 + 무료/유료 경계 + 모바일 도크 가림 fix (PR #307~#312 머지)
+> 최종 업데이트: **2026-05-22 (점수 결제 연동 세션)** — Phase 2+3 스펙 빌드(#314 머지) + score-factor per-factor 550원 결제 연동(#315) + 결제 동의 무한루프 fix + 마이그 038(prod 적용) + 레거시 점수 컴포넌트 정리(#316). #315·#316 PR open(머지 대기)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 
 ---
 
-## 0. 2026-05-22 (점수 풀스택 + 도크 fix 세션) — 점수 Phase 4~7 + 가이드 캐시 + LLM 활성화 + 무료/유료 경계 + 모바일 도크 (PR #307~#312)
+## 0. 2026-05-22 (점수 결제 연동 세션) — Phase 2+3 스펙 빌드(#314) + score-factor per-factor 550원 결제 연동(#315) + 결제 동의 무한루프 fix + 레거시 정리(#316)
+
+붙여넣은 `phase-2-3-task.md` 스펙(LockGate per-factor 550원 모델)대로 점수 UI 를 신규 빌드(#314 머지)하고, 그 LockGate "풀이 보기" 를 **실제 Toss 550원 결제 + 항목(F1~F5) 단위 해제**로 연결(#315). 작업 중 발견한 **결제 동의 체크박스 무한 렌더 루프(기존 버그, 모든 checkout 영향)** 를 근본 수정하고, score-factor 권한을 위한 **마이그 038** 을 prod 에 적용. 마지막으로 스펙 모델로 대체된 **레거시 점수 컴포넌트 4종을 제거**(#316). #314 머지 완료, #315·#316 PR open(머지 대기).
+
+### 0.1 PR 누적 표 (#314 머지 · #315·#316 open)
+
+| PR | commit | 상태 | 내용 |
+|----|--------|------|------|
+| #314 | `14b0071` | 머지 | **Phase 2+3 스펙** — LockGate per-factor(550원) 모델 + 점수 UI(원형 SajuScoreCard·ScoreBreakdownCard·OhaengChart 막대·LifetimeKeysCarousel) + v4 `@theme` 토큰(score-*/ohaeng-*) |
+| #315 | `e68803a` | open | **score-factor 결제 연동** — catalog/product-scope/checkout/LockGate/score-factor-access + 결제 동의 무한루프 fix + 마이그 038(NOT VALID) |
+| #316 | `23eed0f` | open | **레거시 점수 컴포넌트 제거** — SajuScoreGauge/SajuScoreBreakdown/SajuOhaengBalance/SajuOhaengChart + 배럴 정리(–281 라인) |
+
+### 0.2 Phase 2+3 스펙 빌드 (#314, 머지)
+
+- 붙여넣은 스펙 기준 신규 모델: `LockGate`(무료 🔒 → 결제 모달 / 유료 자세히→ 링크), 원형 `SajuScoreCard`(rAF `useCountUp`), `ScoreBreakdownCard`(F1~F5 막대 + per-factor `LockGate`), `OhaengChart`(막대, 레이더 대체), `LifetimeKeysCarousel`.
+- Tailwind v4 `@theme` 토큰(`--color-score-*` 5등급+soft, `--color-ohaeng-*` 5요소+soft) + `labels` 보강 — 동적 클래스 purge 회피 위해 **LITERAL 색상 맵**(`getScoreColorClasses`/`OHAENG_COLOR_CLASSES`).
+- ※ 0-prev-3(#305)의 "Phase 2~3 시각토큰+UI" 와 구분 — 이번 #314 는 붙여넣은 스펙(550원 per-factor 모델)으로 **재정의된** 빌드.
+
+### 0.3 score-factor per-factor 550원 결제 연동 (#315)
+
+- **catalog**: `TasteProductId += 'score-factor'`, `taste_score_factor` 패키지(550원, `requiresSlug`).
+- **product-scope**: `buildScoreFactorScopeKey` = `score:{readingKey}:{factorId}`, `parseFactorScope`, `resolvePaymentProductScope`/`buildPurchasedProductHref` 의 score-factor 분기.
+- **LockGate** "풀이 보기" → `/membership/checkout?product=score-factor&slug&scope=F1&from=saju-result`.
+- **checkout**: score-factor 상품 안내(점수 풀이 보기, 소액 풀이, dragon zodiac).
+- **score-factor-access** `getSajuScoreFactorEntitlements(slug)`: F1~F5 entitlement 조회(방어적 all-locked). 결과 페이지 `ScoreBreakdownCard unlockedFactors` 로 항목별 잠금/해제.
+- **키 일치 확인**: grant 경로(`confirm` → `grantTasteProductEntitlement('score-factor', score:{readingKey}:{factorId})`) ↔ read 경로(score-factor-access) 모두 `toSlug(reading.input)` 동일 키.
+
+### 0.4 결제 동의 무한 렌더 루프 fix (기존 버그, #315 동봉)
+
+- **증상**: `/membership/checkout` 진입 시 "Maximum update depth exceeded" 수백 건. `?plan=premium` 등 score-factor 무관 경로 포함 **모든** 결제 checkout 재현.
+- **근본 원인**: `PaymentConsentCheckboxes` notify effect 가 `onValidChange` 콜백 identity 를 deps 에 포함 → 부모(`TossMembershipCheckout`)가 매 렌더 인라인 콜백 전달 → 콜백이 `setAcceptedKinds(새 배열)` 호출 → 부모 재렌더 → 새 콜백 → effect 재실행 → ∞.
+- **수정**: `onValidChange` 를 ref 로 고정, notify effect 는 `[accepted, pkg]` 변경 시에만 실행(동의→버튼 활성 동작 유지). 서버 로그(재컴파일 후 0건) + 콘솔 카운터(토글 0건)로 검증.
+
+### 0.5 마이그 038 — product_entitlements CHECK + score-factor (prod 적용)
+
+- `product_entitlements.product_id` CHECK 에 `'score-factor'` 추가(없으면 grant `23514`).
+- **드리프트 대응**: 전체 검증형 재생성 시 prod 레거시 product_id 행이 `23514`(violated by some row)로 실패 → **`NOT VALID`** 로 추가(신규 INSERT/UPDATE 강제 + 기존 레거시 행 grandfather). prod 적용 완료(Supabase SQL Editor).
+
+### 0.6 레거시 점수 컴포넌트 제거 (#316)
+
+- 스펙 모델로 대체돼 참조 0건이 된 `SajuScoreGauge`·`SajuScoreBreakdown`·`SajuOhaengBalance`·`SajuOhaengChart`(레이더) 제거 + 배럴 정리(–281 라인).
+- 순수 로직 `getDominantOhaeng`/`getOhaengBalanceLevel` 은 오행 LLM 가이드가 계속 사용 → 유지. 소비자 0건이 된 나머지 lib export(`getScoreLevelToken`/`getBarFillPercent`/`computeOhaengRadarPoints` 등)는 전용 테스트 동반 제거라 **별도 후속 PR**로 분리.
+
+### 0.7 검증 / 운영
+
+- typecheck 0 · 단위 157 + spec 64 = **221 pass** · 메인 CI 게이트(Test·Typecheck·Build) #315·#316 모두 pass.
+- 브라우저(dev): 결제 루프 0건, score-factor checkout 정상 렌더(점수 풀이 보기/550원).
+- 마이그 038 prod 적용 완료. #315·#316 머지 시 결제→해제 라이브.
+- 📦 release(예정): `2026-05-22 점수 per-factor 결제 연동 + 동의 무한루프 fix + 레거시 정리`
+
+---
+
+## 0-prev. 2026-05-22 (점수 풀스택 + 도크 fix 세션) — 점수 Phase 4~7 + 가이드 캐시 + LLM 활성화 + 무료/유료 경계 + 모바일 도크 (PR #307~#312)
 
 점수 시스템을 **Phase 4~7 로 완주**(오행 레이더 → LLM 가이드 → 가이드 영속 캐시 → 실제 결과 페이지 연결 → 무료/유료 경계)하고, **운영(마이그 037 적용 + LLM 가이드 플래그 ON)** 까지 활성화. 추가로 사용자 보고 **모바일 도크 가림 버그**를 근본 수정. 6 PR 모두 main 머지 + 프로덕션 배포 완료. 점수 시스템이 기획→구현→배포→수익화 경계까지 라이브.
 
@@ -61,7 +113,7 @@
 
 ---
 
-## 0-prev. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
+## 0-prev-2. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
 
 작업자: **Codex**. Claude Code 2026-05-21 10시 작업 스냅샷을 로컬 백업으로 보존한 뒤, Codex 작업 브랜치에서 공개 페이지 상용화 차단 이슈를 정리했다. 최종 배포/머지는 백업 커밋을 main 에 포함하지 않도록 `origin/main` 기준 clean 브랜치에 P0 커밋만 cherry-pick 해서 진행했다.
 
@@ -129,7 +181,7 @@
 
 ---
 
-## 0-prev-2. 2026-05-21 (점수 UI 세션) — 점수 시스템 Phase 2~3: 시각 토큰 + UI 컴포넌트 (PR #305)
+## 0-prev-3. 2026-05-21 (점수 UI 세션) — 점수 시스템 Phase 2~3: 시각 토큰 + UI 컴포넌트 (PR #305)
 
 점수 시스템 Phase 1(계산 엔진 #303) 후속으로 **Phase 2(라벨/색상 시스템) + Phase 3(UI 컴포넌트)** 를 1 PR(2 원자 커밋)로 마무리. PROGRESS 로드맵 "Tailwind 토큰 → UI 컴포넌트" 구간. main 머지(squash `0f0e4f4`) + 프로덕션 배포 완료 — **단, 실제 사용자 페이지 미연결(컴포넌트만 추가)** 이라 사용자 체감 변화 없음. (시간순: 이 세션 이후 Codex 상용화 P0 세션이 main `4ee2484` 로 이어짐.)
 
@@ -178,7 +230,7 @@
 
 ---
 
-## 0-prev-3. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
+## 0-prev-4. 2026-05-21 세션 종합 — 사주 총평 LLM 풀스택 + 영속 캐시 + 어휘 정책 + 점수 Phase 1 (PR #299~#303)
 
 사주 결과 *총평 탭* 을 결정론 7문장 단락에서 **LLM 3섹션(한 줄 요약 + 본문 4단락 + 평생 활용 3카드)** 으로 확장하고, 비용 최적화(영속 캐시) · 어휘 정책(naming-policy) · 점수 계산 엔진(Phase 1)까지 5 PR 로 마무리. 모두 main 머지 + 프로덕션 배포 완료.
 
@@ -248,7 +300,7 @@
 
 ---
 
-## 0-prev-4. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
+## 0-prev-5. 2026-05-20~21 세션 종합 — V2-5 LLM 풀스택 + 검증 1~6 사이클 + 톤 정합화 (17 PR #281~#297)
 
 진단서 6단계 검증을 순차 진행하면서 발견된 미흡 사항을 즉시 PR 로 처리. *9 챕터 LLM 풀이 인프라 완성* + *사용자 보고 톤 정합화* + *피드백 루프 + 대시보드* 까지 한 사이클 종료.
 
