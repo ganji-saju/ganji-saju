@@ -151,6 +151,16 @@ function extractJsonCandidate(text: string) {
 const PROMPT_ELEMENT_ORDER = ['목', '화', '토', '금', '수'] as const;
 const PROMPT_TEN_GOD_ORDER = ['비겁', '식상', '재성', '관성', '인성'] as const;
 
+// 받침 유무 판정 + 주격 조사(이/가) 선택. 오행 한글명(목/금=받침 O, 화/토/수=받침 X)
+// 처럼 받침이 값마다 달라지는 경우 "X가" 고정은 "목가/금가" 오류 → 동적 선택.
+function hasBatchim(value: string): boolean {
+  const c = value.charCodeAt(value.length - 1);
+  return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0;
+}
+function withSubjectParticle(value: string): string {
+  return `${value}${hasBatchim(value) ? '이' : '가'}`;
+}
+
 function classifyPromptStrength(value: number) {
   if (value <= 0) return '없음';
   if (value >= 2.5) return '강';
@@ -205,15 +215,15 @@ function buildElementImbalanceLines(grounding: SajuInterpretationGrounding) {
     const value = ratio[element] ?? 0;
 
     if (value >= 35) {
-      return [`${element}가 강함: 이 기운은 장점으로 쓰면 추진력이나 존재감이 되지만, 과하면 속도 조절이 필요합니다.`];
+      return [`${withSubjectParticle(element)} 강함: 이 기운은 장점으로 쓰면 추진력이나 존재감이 되지만, 과하면 속도 조절이 필요합니다.`];
     }
 
     if (value === 0) {
-      return [`${element}가 없음: 이 영역은 의식적으로 빌려 써야 하며, 생활 루틴과 선택 방식에서 보완이 필요합니다.`];
+      return [`${withSubjectParticle(element)} 없음: 이 영역은 의식적으로 빌려 써야 하며, 생활 루틴과 선택 방식에서 보완이 필요합니다.`];
     }
 
     if (value <= 10) {
-      return [`${element}가 약함: 이 기운은 쉽게 부족해질 수 있어 하루 선택에서 작게 보완해야 합니다.`];
+      return [`${withSubjectParticle(element)} 약함: 이 기운은 쉽게 부족해질 수 있어 하루 선택에서 작게 보완해야 합니다.`];
     }
 
     return [];
@@ -342,7 +352,7 @@ export function createInterpretationPrompt(
       // 의도적으로 노출하는 것이 신뢰감의 핵심. 기존 prompt 가 "내부 용어 금지" 였던 것을
       // "사주 글자·격국·용신·일주 라벨은 그대로 인용 권장" 으로 전환.
       '일주 한자(예: 갑자일주/壬寅일주), 격국 이름(예: 정관격·식신격), 용신/희신 글자(예: 火, 木), 강약(신강·신약·중화)은 본문에 그대로 인용해도 좋습니다. 단 한 문장에 하나만 — 카탈로그 나열 금지.',
-      'sixtyGapja.title 과 sixtyGapja.core 를 headline 또는 summary 첫 문장에 직접 인용하면 가장 좋습니다. 예: "갑자일주 큰 결을 세우는 나무, 오늘은 ___합니다."',
+      'sixtyGapja.title 과 sixtyGapja.core 를 headline 또는 summary 첫 문장에 직접 인용하면 가장 좋습니다. 예: "갑자일주 큰 방향을 세우는 나무, 오늘은 ___합니다."',
       // 2026-05-15 P1: 유보형 → 단정형 + 명령형 전환. 시장 벤치마크상 "할 수 있어요",
       // "편이 좋습니다" 같은 어미가 일반론으로 들려 5명 부정 피드백 1차 원인.
       '문장은 단정형 + 명령형으로 씁니다. "___ 할 수 있어요", "___ 편이 좋습니다", "___ 흐름입니다" 같은 유보형 어미는 금지. 대신 "___ 입니다", "___ 하세요", "___ 합니다" 로 끝맺습니다.',
