@@ -12,6 +12,24 @@ import type { Element, Stem, Branch } from './types';
 import type { TenGodCode } from '@/domain/saju/engine/saju-data-v1';
 
 // ──────────────────────────────────────────────────────────────────────────
+// 받침(종성) 기반 조사 선택 — 동적 값(신살/십성 라벨 등) 뒤 조사를 정확히.
+// ──────────────────────────────────────────────────────────────────────────
+
+/** 마지막 글자가 한글이고 종성(받침)이 있으면 true. */
+export function hasBatchim(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const code = trimmed.charCodeAt(trimmed.length - 1);
+  if (code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
+}
+
+/** 받침 유무에 맞는 조사 반환 — 받침O consonantParticle, 받침X vowelParticle. */
+export function josa(value: string, consonantParticle: string, vowelParticle: string): string {
+  return hasBatchim(value) ? consonantParticle : vowelParticle;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // 색상 팔레트 — 목업에서 추출한 정확한 hex (앱 ELEMENT_INFO 와 별개의 리포트 전용 톤).
 // ──────────────────────────────────────────────────────────────────────────
 

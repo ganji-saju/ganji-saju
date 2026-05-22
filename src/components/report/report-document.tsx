@@ -24,6 +24,7 @@ import {
   buildMonthlyScores,
   pickBestMonth,
   monthEnLabel,
+  josa,
 } from '@/lib/saju/pdf-report-maps';
 
 // 2026-05-23 사주 리포트 PDF 8페이지 문서 (표현 전용 컴포넌트).
@@ -451,14 +452,14 @@ export function buildPdfModel(
   const haveSinsalLabels = sinsal.filter((s) => s.have).map((s) => s.label);
   const sinsalPhrase =
     haveSinsalLabels.length >= 2
-      ? `${haveSinsalLabels[0]}과 ${haveSinsalLabels[1]}이 함께 있어`
+      ? `${haveSinsalLabels[0]}${josa(haveSinsalLabels[0], '과', '와')} ${haveSinsalLabels[1]}${josa(haveSinsalLabels[1], '이', '가')} 함께 있어`
       : haveSinsalLabels.length === 1
-        ? `${haveSinsalLabels[0]}이 자리해`
+        ? `${haveSinsalLabels[0]}${josa(haveSinsalLabels[0], '이', '가')} 자리해`
         : '특별히 도드라지는 신살 없이 균형 잡힌 구조라';
 
   const tenGodSummary = topGod
-    ? `${topGod.name}(${topGod.pct}%)이 가장 강해 ${TEN_GOD_DESCRIPTIONS[topGod.name].split('.')[0]}에 힘을 얻는 타입입니다.${
-        secondGod ? ` ${secondGod.name}(${secondGod.pct}%)이 더해져 추진과 균형을 함께 가져가요.` : ''
+    ? `${topGod.name}(${topGod.pct}%)${josa(topGod.name, '이', '가')} 가장 강해 ${TEN_GOD_DESCRIPTIONS[topGod.name].split('.')[0]}에 힘을 얻는 타입입니다.${
+        secondGod ? ` ${secondGod.name}(${secondGod.pct}%)${josa(secondGod.name, '이', '가')} 더해져 추진과 균형을 함께 가져가요.` : ''
       } ${sinsalPhrase} 학문·문서·관계에서 좋은 흐름이 자주 옵니다.`
     : '십성이 고르게 분포해 어느 한쪽으로 치우치지 않는 균형형입니다.';
 
@@ -470,7 +471,9 @@ export function buildPdfModel(
   const ilju = {
     ganzi: `${dayStem}${dayBranch}`,
     name: iljuName,
-    headline: sixty?.core ?? `${stemProfile.korean}과 ${branchProfile.korean}이 만나 만들어진 일주`,
+    headline:
+      sixty?.core ??
+      `${stemProfile.korean}${josa(stemProfile.korean, '과', '와')} ${branchProfile.korean}${josa(branchProfile.korean, '이', '가')} 만나 만들어진 일주`,
     stem: {
       hanja: dayStem,
       korean: stemProfile.korean,
@@ -487,7 +490,7 @@ export function buildPdfModel(
     },
     peers:
       (sixty?.strengths?.length
-        ? `같은 ${iljuName}는 ${sixty.strengths.join(', ')}이 돋보입니다. `
+        ? `같은 ${iljuName}는 ${sixty.strengths.join(', ')}${josa(sixty.strengths.join(', '), '이', '가')} 돋보입니다. `
         : `같은 ${iljuName}는 결정의 자리에서 활약하는 경우가 많습니다. `) +
       (sixty?.actionCue ?? '강점을 살리되 한 가지를 끝까지 마무리하는 습관이 큰 흐름을 만듭니다.'),
   };
@@ -537,24 +540,26 @@ export function buildPdfModel(
           : currentCycle.summary,
       }
     : null;
-  // 대운 phase → 짧은 키워드 + 한 줄 설명 (목업 톤; 긴 summary 대신 사용).
-  const PHASE_BRIEF: Record<string, { key: string; desc: string }> = {
-    성장기: { key: '배움과 도약', desc: '새 배움과 인맥이 열리는 시기' },
-    표현기: { key: '표현과 성과', desc: '실력을 드러내고 평판이 커지는 시기' },
-    기반기: { key: '안정과 책임', desc: '가정과 일의 기반을 다지는 시기' },
-    결정기: { key: '정리와 결실', desc: '선택과 기준이 또렷해지는 시기' },
-    준비기: { key: '준비와 전환', desc: '다음 방향을 조용히 준비하는 시기' },
-    전환기: { key: '변화와 적응', desc: '환경이 바뀌며 새로 적응하는 시기' },
+  // 대운 시기별 요약 — 연령대(생애 단계)별 고유 키워드 (목업 p4: 20대 배움 → 50대 정리).
+  //   phase 가 중복돼도 연령대로 구분해 라벨이 겹치지 않게 한다.
+  const DECADE_BRIEF: Record<number, { key: string; desc: string }> = {
+    20: { key: '배움과 도약', desc: '배움과 인맥을 쌓으며 사회로 나아가는 시기' },
+    30: { key: '표현과 성과', desc: '실력을 드러내고 흐름이 가장 가벼운 시기' },
+    40: { key: '안정과 책임', desc: '가정과 일의 기반을 다지는 시기' },
+    50: { key: '정리와 결실', desc: '그동안의 노력이 모이는 시기' },
   };
   const daewoonPeriods = cycles
     .filter((c) => startAge(c) >= 20 && startAge(c) <= 50)
-    .map((c) => ({
-      ageLabel: `${startAge(c)}-${startAge(c) + 10}`,
-      ganzi: c.ganzi,
-      phase: PHASE_BRIEF[c.phase]?.key ?? c.phase,
-      desc: PHASE_BRIEF[c.phase]?.desc ?? c.summary,
-      isCurrent: c.isCurrent,
-    }));
+    .map((c) => {
+      const brief = DECADE_BRIEF[Math.floor(startAge(c) / 10) * 10];
+      return {
+        ageLabel: `${startAge(c)}-${startAge(c) + 10}`,
+        ganzi: c.ganzi,
+        phase: brief?.key ?? c.phase,
+        desc: brief?.desc ?? c.summary,
+        isCurrent: c.isCurrent,
+      };
+    });
 
   // ── 분야별 종합 (P5) ─────────────────────────────
   const areaCards = (['love', 'wealth', 'career', 'relationship'] as const).map((key) => ({
@@ -593,7 +598,7 @@ export function buildPdfModel(
   // ── NEXT 추천 제품 (P8) ─────────────────────────────
   const nextProducts = [
     { title: '궁합 풀이', sub: '가까운 사람과의 흐름', price: '990원', href: '/compatibility' },
-    { title: '택일', sub: '중요한 날 직접 고르기', price: '1,900원', href: '/saju/new?product=monthly-calendar' },
+    { title: '택일', sub: '중요한 날 직접 고르기', price: '1,900원', href: '/taekil' },
     { title: '재회 타로', sub: '관계의 다음 흐름', price: '990원', href: '/tarot/daily' },
     { title: '1:1 상담', sub: '달빛선생과 30분 대화', price: '무료~', href: '/dialogue' },
   ];
