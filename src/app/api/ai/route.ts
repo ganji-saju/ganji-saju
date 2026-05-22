@@ -145,6 +145,19 @@ function readString(payload: Record<string, unknown>, key: string) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
+}
+
 function getCurrentKoreaYear() {
   const formatted = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Seoul',
@@ -410,7 +423,7 @@ function createYearlyDialogueFallback(
     intro,
     `${summary.firstHalf} ${summary.secondHalf}`,
     `좋게 쓰기 좋은 시기는 ${summary.goodPeriod} 쪽이고, 속도를 낮춰야 할 구간은 ${summary.cautionPeriod} 쪽입니다.`,
-    `지금 질문하신 “${message}”은 저장된 프로필 정보 ${simplifySajuCopy(profileSummary)}를 바탕으로 읽었고, 자세한 12개월 흐름과 분야별 해설은 올해 전략서에서 이어서 확인하시면 됩니다.`,
+    `지금 질문하신 “${message}”${withParticle(message, '은', '는')} 저장된 프로필 정보 ${withParticle(simplifySajuCopy(profileSummary), '을', '를')} 바탕으로 읽었고, 자세한 12개월 흐름과 분야별 해설은 올해 전략서에서 이어서 확인하시면 됩니다.`,
   ].join('\n\n');
 }
 

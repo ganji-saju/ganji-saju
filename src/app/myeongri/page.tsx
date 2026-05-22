@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 const EXPLORATIONS = [
   {
     title: '타고난 기질',
-    body: '내가 어떤 상황에서 편해지고, 어떤 장면에서 예민해지는지 기본 결을 살펴봅니다.',
-    hook: '나는 어떤 결의 사람인가',
+    body: '내가 어떤 상황에서 편해지고, 어떤 장면에서 예민해지는지 기본 성향을 살펴봅니다.',
+    hook: '나는 어떤 성향의 사람인가',
     href: '/saju/new',
     badge: '기질',
   },

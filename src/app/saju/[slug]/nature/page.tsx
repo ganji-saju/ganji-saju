@@ -16,7 +16,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 // 2026-05-15 cleanup — 총평 §1.5 일주 캐릭터 카드를 성향 탭으로 이전.
-// "내 타고난 결" sixtyGapja 깊은 풀이는 성향 탭이 더 자연스러움 ("성향 = 타고난 결").
+// "내 타고난 성향" sixtyGapja 깊은 풀이는 성향 탭이 더 자연스러움 (성향 탭 = 타고난 성향 풀이).
 import { DayPillarCharacterCard } from '@/components/saju/day-pillar-character-card';
 
 interface Props {
@@ -68,7 +68,7 @@ const NATURE_GUIDE: Record<
   },
   수: {
     strength: '큰 흐름을 읽고 여지를 남기며 움직이는 포용력과 기획력이 살아 있습니다.',
-    social: '사람의 속마음이나 상황의 결을 길게 읽을 때 오히려 더 정확해집니다.',
+    social: '사람의 속마음이나 상황의 흐름을 길게 읽을 때 오히려 더 정확해집니다.',
     caution: '생각이 깊어질수록 결론을 늦추거나 감정 표현을 아끼는 쪽으로 흐를 수 있습니다.',
     support: '머릿속 판단을 한 문장으로 먼저 꺼내는 습관이 기질의 장점을 더 빨리 살립니다.',
   },
@@ -151,7 +151,7 @@ export default async function SajuNaturePage({ params }: Props) {
             </article>
 
             {/* §1.5 일주 캐릭터 — 2026-05-15 cleanup. 총평 §1.5 이전.
-                "내 타고난 결" 깊은 풀이. grounding.sixtyGapja 가 있을 때만 노출. */}
+                "내 타고난 성향" 깊은 풀이. grounding.sixtyGapja 가 있을 때만 노출. */}
             <DayPillarCharacterCard
               profile={sixtyGapjaProfile}
               dayGanziHanja={dayGanziHanja}

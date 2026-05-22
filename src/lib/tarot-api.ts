@@ -145,7 +145,7 @@ const MAJOR_THEMES: Record<
   },
   'The High Priestess': {
     theme: '직관과 조용한 통찰',
-    focus: '겉말보다 마음의 결을 읽는 일',
+    focus: '겉말보다 마음의 흐름을 읽는 일',
     action: '바로 답하지 말고 마음이 먼저 반응하는 지점을 적어보세요.',
     sajuElement: '내면의 기운을 차분히 보존하는 힘',
   },
@@ -171,7 +171,7 @@ const MAJOR_THEMES: Record<
     theme: '선택과 조화',
     focus: '마음이 향하는 방향을 분명히 하는 일',
     action: '지키고 싶은 관계와 내려놓을 기대를 한 줄씩 써보세요.',
-    sajuElement: '인연의 결을 고르는 힘',
+    sajuElement: '인연의 흐름을 고르는 힘',
   },
   'The Chariot': {
     theme: '전진과 통제',
@@ -274,7 +274,7 @@ const SUIT_THEMES: Record<
     marker: '💧',
     theme: '감정과 관계',
     focus: '마음의 온도와 관계의 흐름',
-    sajuElement: '수기처럼 흐르는 감정의 결',
+    sajuElement: '수기처럼 흐르는 감정의 색채',
   },
   pentacles: {
     korean: '펜타클',
@@ -380,9 +380,9 @@ const VALUE_THEMES: Record<
 };
 
 const TONE_FOCUS: Record<TarotQuestionTone, (theme: string, focus: string) => string> = {
-  daily: (theme, focus) => `오늘 하루에는 ${theme}의 흐름이 올라옵니다. 특히 ${focus}을 차분히 살피면 하루의 결이 부드러워집니다.`,
-  relationship: (theme, focus) => `관계에서는 ${theme}이 중요한 장면으로 보입니다. 상대의 말보다 ${focus}을 먼저 읽으면 마음의 거리를 더 정확히 잡을 수 있습니다.`,
-  choice: (theme, focus) => `선택 앞에서는 ${theme}이 기준이 됩니다. 지금은 ${focus}을 기준으로 두면 흔들림이 줄어듭니다.`,
+  daily: (theme, focus) => `오늘 하루에는 ${theme}의 흐름이 올라옵니다. 특히 ${withParticle(focus, '을', '를')} 차분히 살피면 하루의 리듬이 부드러워집니다.`,
+  relationship: (theme, focus) => `관계에서는 ${withParticle(theme, '이', '가')} 중요한 장면으로 보입니다. 상대의 말보다 ${withParticle(focus, '을', '를')} 먼저 읽으면 마음의 거리를 더 정확히 잡을 수 있습니다.`,
+  choice: (theme, focus) => `선택 앞에서는 ${withParticle(theme, '이', '가')} 기준이 됩니다. 지금은 ${withParticle(focus, '을', '를')} 기준으로 두면 흔들림이 줄어듭니다.`,
   direction: (theme, focus) => `앞으로의 방향은 ${theme}에서 실마리가 보입니다. 멀리 보려 하기보다 ${focus}부터 정리해보세요.`,
 };
 
@@ -476,6 +476,19 @@ function getCardFlowState(card: TarotApiCard, orientation: TarotOrientation) {
   return 'turning' as const;
 }
 
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
+}
+
 function getSubjectLabel(context: TarotQuestionContext) {
   switch (context.subject) {
     case 'other':
@@ -504,7 +517,7 @@ function buildQuestionInsight(context: TarotQuestionContext) {
 
   switch (context.intent) {
     case 'feelings':
-      return `이 질문은 단순히 결과를 묻는 것이 아니라, ${getSubjectLabel(context)}이 아직 열려 있는지 확인하고 싶은 질문입니다. ${moodLine}`;
+      return `이 질문은 단순히 결과를 묻는 것이 아니라, ${withParticle(getSubjectLabel(context), '이', '가')} 아직 열려 있는지 확인하고 싶은 질문입니다. ${moodLine}`;
     case 'contact':
       return `겉으로는 연락해도 되는지를 묻고 있지만, 실제로는 지금 말을 건넸을 때 상처가 덜한 타이밍인지 확인하고 싶은 질문입니다. ${moodLine}`;
     case 'reconciliation':
@@ -557,15 +570,15 @@ function buildPsychologyCopy(
     }
   } else {
     if (flow === 'open') {
-      summary = `${subjectLabel}은 답을 알고 싶다는 마음과 함께 직접 움직여 보고 싶은 기운도 함께 올라와 있습니다. 다만 조급함보다 자연스러운 흐름을 타는 편이 더 좋습니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 답을 알고 싶다는 마음과 함께 직접 움직여 보고 싶은 기운도 함께 올라와 있습니다. 다만 조급함보다 자연스러운 흐름을 타는 편이 더 좋습니다.`;
     } else if (flow === 'steady') {
-      summary = `${subjectLabel}은 감정만으로 결정하기보다 기준과 안전선을 먼저 확인하고 싶어 합니다. 그래서 느려 보여도 생각이 없는 상태는 아닙니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 감정만으로 결정하기보다 기준과 안전선을 먼저 확인하고 싶어 합니다. 그래서 느려 보여도 생각이 없는 상태는 아닙니다.`;
     } else if (flow === 'guarded') {
-      summary = `${subjectLabel}은 감정이 없는 것이 아니라, 먼저 판단하고 상처를 피하려는 방어가 앞서 있습니다. 말보다 속뜻을 정리하는 시간이 필요합니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 감정이 없는 것이 아니라, 먼저 판단하고 상처를 피하려는 방어가 앞서 있습니다. 말보다 속뜻을 정리하는 시간이 필요합니다.`;
     } else if (flow === 'blocked') {
-      summary = `${subjectLabel}은 지금 결과를 내기보다 불안과 피로를 먼저 가라앉혀야 하는 상태에 가깝습니다. 서두르면 마음이 더 꼬일 수 있습니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 지금 결과를 내기보다 불안과 피로를 먼저 가라앉혀야 하는 상태에 가깝습니다. 서두르면 마음이 더 꼬일 수 있습니다.`;
     } else {
-      summary = `${subjectLabel}은 지금 하나의 결론보다 큰 흐름의 전환점을 지나고 있습니다. 그래서 평소보다 작은 신호도 크게 느껴질 수 있습니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 지금 하나의 결론보다 큰 흐름의 전환점을 지나고 있습니다. 그래서 평소보다 작은 신호도 크게 느껴질 수 있습니다.`;
     }
   }
 
@@ -854,8 +867,8 @@ function buildCardLead(
 
   if (card.type === 'major') {
     return orientation === 'upright'
-      ? `${name} 카드는 ${theme.focus}을 먼저 보라고 말합니다.`
-      : `${name} 카드가 거꾸로 나와, ${theme.focus}이 바로 풀리기보다 잠시 막힌 모습입니다.`;
+      ? `${name} 카드는 ${withParticle(theme.focus, '을', '를')} 먼저 보라고 말합니다.`
+      : `${name} 카드가 거꾸로 나와, ${withParticle(theme.focus, '이', '가')} 바로 풀리기보다 잠시 막힌 모습입니다.`;
   }
 
   const suit = card.suit ? SUIT_THEMES[card.suit] : SUIT_THEMES.cups;
@@ -866,8 +879,8 @@ function buildCardLead(
   };
 
   return orientation === 'upright'
-    ? `${name} 카드는 ${suit.theme}에서 ${value.focus}이 핵심이라고 말합니다.`
-    : `${name} 카드가 거꾸로 나와, ${suit.focus}에서 ${value.focus}이 어긋나기 쉽습니다.`;
+    ? `${name} 카드는 ${suit.theme}에서 ${withParticle(value.focus, '이', '가')} 핵심이라고 말합니다.`
+    : `${name} 카드가 거꾸로 나와, ${suit.focus}에서 ${withParticle(value.focus, '이', '가')} 어긋나기 쉽습니다.`;
 }
 
 function buildCardAction(
@@ -877,7 +890,7 @@ function buildCardAction(
   theme: TarotCardTheme
 ) {
   if (orientation === 'reversed') {
-    return `오늘은 ${theme.focus}을 바로 결론내기보다, 한 번 멈춰 확인하고 말과 행동을 줄이는 편이 좋습니다.`;
+    return `오늘은 ${withParticle(theme.focus, '을', '를')} 바로 결론내기보다, 한 번 멈춰 확인하고 말과 행동을 줄이는 편이 좋습니다.`;
   }
 
   if (card.type === 'major') {
@@ -943,7 +956,7 @@ function buildSajuBlendCopy(
             ? '급한 마음이 올라온 질문일수록 바로 결론내기보다, 오늘 할 행동과 미룰 행동을 나누는 것이 안전합니다.'
             : '차분히 묻는 질문이라도 카드가 남긴 감정이 있다면, 사주에서는 그 감정이 오래 반복되는 이유를 더 넓게 봅니다.';
 
-  return `${domainLine} ${moodLine} 이 카드의 핵심은 ${theme.theme}이며, 사주 상담에서는 ${theme.sajuElement} 관점으로 이어서 풀어볼 수 있습니다.`;
+  return `${domainLine} ${moodLine} 이 카드의 핵심은 ${withParticle(theme.theme, '이며', '며')}, 사주 상담에서는 ${theme.sajuElement} 관점으로 이어서 풀어볼 수 있습니다.`;
 }
 
 function getCardTheme(card: TarotApiCard) {
@@ -998,7 +1011,7 @@ function getDisplayName(card: TarotApiCard) {
 
 function getKeyword(card: TarotApiCard, theme: { theme: string; focus: string }) {
   const base = card.type === 'major' ? theme.theme : theme.focus;
-  return `${base}을 오늘의 언어로 부드럽게 읽어보세요.`;
+  return `${withParticle(base, '을', '를')} 오늘의 언어로 부드럽게 읽어보세요.`;
 }
 
 function getCardMarker(card: TarotApiCard) {

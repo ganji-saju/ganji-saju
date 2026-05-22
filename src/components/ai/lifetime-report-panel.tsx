@@ -288,7 +288,7 @@ function LifetimeAtAGlance({
       <div className="mt-4 grid gap-2.5">
         <LifetimeSummaryCard
           icon={Sparkles}
-          eyebrow="타고난 결"
+          eyebrow="타고난 성향"
           title="어떤 환경에서 잘 살아나는가"
           body={report.coreIdentity.bestEnvironment}
           href={`#${getLifetimeSectionId('coreIdentity')}`}
