@@ -2151,16 +2151,371 @@
   color: rgba(17, 17, 20, 0.5);
 }
 
-/* ── 모바일 미리보기: A4 페이지 축소 ── */
+/* ── 모바일 전용 반응형 리플로우 (≤640px) ──
+   데스크톱은 A4 고정폭 페이지 룩을 유지하고, 모바일은 transform: scale 을
+   버리고 실제 1단 흐름으로 재배치한다. (scale 은 레이아웃 박스를 줄이지 않아
+   595px 고정폭이 그대로 남아 가로 넘침/글 잘림이 발생함.)
+   각 페이지는 카드처럼 세로로 쌓여 스크롤로 읽는 뷰. */
 @media (max-width: 640px) {
-  .report-doc {
-    --rp-scale: calc((100vw - 2rem) / 595);
+  .pdf-report-page-wrap {
+    width: 100%;
   }
 
+  .report-doc {
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  /* A4 고정폭/높이/패딩 해제 → 화면폭에 맞춰 유동. */
   .report-page {
-    transform: scale(var(--rp-scale));
-    transform-origin: top center;
-    margin-bottom: calc((var(--rp-page-h) * (var(--rp-scale) - 1)) + 12px);
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 22px 16px !important;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(17, 17, 20, 0.1);
+    overflow: visible;
+  }
+
+  /* 干支 워터마크(220px abs)는 모바일 리플로우에서 넘치므로 숨김 (장식). */
+  .report-page .rp-watermark {
+    display: none;
+  }
+
+  /* 모든 다단 그리드 → 1단. */
+  .report-page .rp-twocol,
+  .report-page .rp-fld-grid,
+  .report-page .rp-trait-grid,
+  .report-page .rp-area-grid,
+  .report-page .rp-monthkey-grid,
+  .report-page .rp-next-grid,
+  .report-page .rp-sinsal-grid,
+  .report-page .rp-sinsal-grid-lg {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 차트 SVG / 도넛은 유동폭으로. */
+  .report-page .rp-svg {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 페이지 전체 글자 크기 상향 (A4 인쇄용 작은 px → 모바일 가독). */
+  .report-page {
+    font-size: 14px;
+  }
+
+  /* 헤더/푸터 행은 줄바꿈 허용. */
+  .report-page .rp-cover-head,
+  .report-page .rp-runhead,
+  .report-page .rp-cover-foot,
+  .report-page .rp-final-foot {
+    flex-wrap: wrap;
+  }
+
+  .report-page .rp-subject-info {
+    gap: 6px 14px;
+  }
+
+  /* ── eyebrow / kicker ── */
+  .report-page .rp-eyebrow {
+    font-size: 11.5px;
+  }
+
+  /* ── P1 표지 ── */
+  .report-page .rp-brand-title {
+    font-size: 18px;
+  }
+
+  .report-page .rp-brand-sub,
+  .report-page .rp-cover-meta {
+    font-size: 11px;
+    line-height: 17px;
+  }
+
+  .report-page .rp-cover-meta {
+    text-align: left;
+  }
+
+  .report-page .rp-subject-title {
+    font-size: 26px;
+    line-height: 1.25;
+  }
+
+  .report-page .rp-subject-info {
+    font-size: 13px;
+  }
+
+  .report-page .rp-block-title {
+    font-size: 17px;
+  }
+
+  /* 사주팔자 4기둥 — 한자 축소해 한 줄 유지. */
+  .report-page .rp-pillars {
+    gap: 6px;
+    padding: 14px 6px;
+  }
+
+  .report-page .rp-pillar-label {
+    font-size: 11px;
+  }
+
+  .report-page .rp-pillar-stem,
+  .report-page .rp-pillar-branch {
+    font-size: 30px;
+  }
+
+  .report-page .rp-pillar-god {
+    font-size: 10px;
+  }
+
+  .report-page .rp-summary p {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .report-page .rp-elem-legend li {
+    font-size: 13px;
+  }
+
+  .report-page .rp-bar-head,
+  .report-page .rp-bar-fill {
+    font-size: 13px;
+  }
+
+  .report-page .rp-fld-label {
+    font-size: 13px;
+  }
+
+  .report-page .rp-fld-card p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .report-page .rp-daewoon-row {
+    gap: 4px;
+  }
+
+  .report-page .rp-daewoon-age {
+    font-size: 10px;
+  }
+
+  .report-page .rp-daewoon-ganzi {
+    font-size: 13px;
+  }
+
+  .report-page .rp-cover-foot p {
+    font-size: 10.5px;
+  }
+
+  /* ── 챕터 헤더 ── */
+  .report-page .rp-chaptitle {
+    font-size: 24px;
+  }
+
+  .report-page .rp-chaplead {
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── P2 십성 ── */
+  .report-page .rp-tengod-name {
+    font-size: 15px;
+  }
+
+  .report-page .rp-tengod-name em,
+  .report-page .rp-tengod-body p {
+    font-size: 13px;
+  }
+
+  .report-page .rp-tengod-head strong,
+  .report-page .rp-tengod-head strong span {
+    font-size: 16px;
+  }
+
+  .report-page .rp-sinsal-name {
+    font-size: 14px;
+  }
+
+  .report-page .rp-sinsal-meaning {
+    font-size: 12.5px;
+  }
+
+  .report-page .rp-interp p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .report-page .rp-tip p {
+    font-size: 13px;
+  }
+
+  /* ── P3 일주 ── */
+  .report-page .rp-ilju-hero-name {
+    font-size: 22px;
+  }
+
+  .report-page .rp-ilju-hero-text p,
+  .report-page .rp-ilju-card p {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .report-page .rp-ilju-card-name {
+    font-size: 15px;
+  }
+
+  .report-page .rp-ilju-card-nature {
+    font-size: 12.5px;
+  }
+
+  .report-page .rp-trait-label {
+    font-size: 14px;
+  }
+
+  .report-page .rp-trait-sub {
+    font-size: 12.5px;
+  }
+
+  /* ── P4 대운 ── */
+  .report-page .rp-axis-age {
+    font-size: 9.5px;
+  }
+
+  .report-page .rp-axis-ganzi {
+    font-size: 12px;
+  }
+
+  .report-page .rp-now-name {
+    font-size: 18px;
+  }
+
+  .report-page .rp-now-text p {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .report-page .rp-period-age,
+  .report-page .rp-period-ganzi,
+  .report-page .rp-period-key {
+    font-size: 13px;
+  }
+
+  .report-page .rp-period-desc {
+    font-size: 12.5px;
+  }
+
+  /* ── P5 분야별 종합 ── */
+  .report-page .rp-area-name {
+    font-size: 15px;
+  }
+
+  .report-page .rp-area-sub {
+    font-size: 12px;
+  }
+
+  .report-page .rp-area-score strong {
+    font-size: 22px;
+  }
+
+  .report-page .rp-area-sw-label,
+  .report-page .rp-area-tip-label {
+    font-size: 11px;
+  }
+
+  .report-page .rp-area-sw-text,
+  .report-page .rp-area-tip p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── P6 격국 ── */
+  .report-page .rp-gyeokguk-name {
+    font-size: 22px;
+  }
+
+  .report-page .rp-gyeokguk-hero p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .report-page .rp-sinsal-lg-name {
+    font-size: 14px;
+  }
+
+  .report-page .rp-sinsal-lg-meaning {
+    font-size: 12px;
+  }
+
+  /* ── P7 12개월 ── */
+  .report-page .rp-month-anum {
+    font-size: 9px;
+  }
+
+  .report-page .rp-month-aval {
+    font-size: 8.5px;
+  }
+
+  .report-page .rp-best-name {
+    font-size: 18px;
+  }
+
+  .report-page .rp-best-text p {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .report-page .rp-monthkey-num,
+  .report-page .rp-monthkey-key {
+    font-size: 13px;
+  }
+
+  .report-page .rp-monthkey-key {
+    flex-basis: 56px;
+  }
+
+  .report-page .rp-monthkey-desc {
+    font-size: 12.5px;
+  }
+
+  /* ── P8 마무리 ── */
+  .report-page .rp-closing p {
+    font-size: 14px;
+    line-height: 1.85;
+  }
+
+  .report-page .rp-next-title {
+    font-size: 14px;
+  }
+
+  .report-page .rp-next-sub {
+    font-size: 12.5px;
+  }
+
+  .report-page .rp-next-price {
+    font-size: 13px;
+  }
+
+  .report-page .rp-notice p {
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  .report-page .rp-final-brand-title {
+    font-size: 14px;
+  }
+
+  .report-page .rp-final-brand-sub,
+  .report-page .rp-final-meta {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .report-page .rp-foot,
+  .report-page .rp-foot-page {
+    font-size: 11px;
   }
 }
 
@@ -2254,35 +2609,25 @@
     padding: 10px 8px !important;
   }
 
-  /* 인쇄 시 배경/그라데이션 색 유지 */
-  .report-page,
-  .rp-logo,
-  .rp-tengod-chip,
-  .rp-ilju-hero,
-  .rp-ilju-hero-glyph,
-  .rp-ilju-chip,
-  .rp-trait-score,
-  .rp-bar-fill,
-  .rp-donut,
-  .rp-daewoon-cell.is-current,
-  .rp-now-hero,
-  .rp-now-glyph,
-  .rp-gyeokguk-hero,
-  .rp-best-hero,
-  .rp-best-chip,
-  .rp-area-icon,
-  .rp-summary,
-  .rp-fld-card,
-  .rp-trait-card,
-  .rp-closing,
-  .rp-next-arrow,
-  .rp-have,
-  .rp-tip,
-  .rp-period-row.is-current,
-  .rp-monthkey-row.is-best,
-  .rp-axis-cell.is-current .rp-axis-ganzi {
+  /* 인쇄 시 배경/그라데이션 색 유지 — 리포트의 모든 요소(워터마크·그라데이션
+     hero·도넛·바·칩·pink-soft 박스 등)에 보편 적용. 브라우저의 "배경 그래픽"
+     체크가 꺼져 있어도 배경이 인쇄되도록 강제한다. */
+  html,
+  body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  .report-doc,
+  .report-page,
+  .report-page * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 干支 워터마크는 장식이므로 인쇄에서도 숨기지 않고 그대로 렌더. */
+  .rp-watermark {
+    display: block !important;
   }
 }
 
