@@ -82,7 +82,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     accent: 'var(--app-sky)',
     bodyHints: {
       high:
-        '주변 사람과 결이 잘 맞는 날입니다. 먼저 안부 전하기, 점심 한 끼 같이 하기 같은 작은 시도가 좋은 인연으로 이어집니다.',
+        '주변 사람과 성향이 잘 맞는 날입니다. 먼저 안부 전하기, 점심 한 끼 같이 하기 같은 작은 시도가 좋은 인연으로 이어집니다.',
       mid:
         '큰 갈등도, 큰 즐거움도 없는 무난한 관계의 날입니다. 듣는 자세를 한 단계 늘리면 의외의 정보를 얻을 수 있습니다.',
       low:

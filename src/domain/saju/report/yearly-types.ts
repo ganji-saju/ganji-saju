@@ -26,7 +26,7 @@ export type YearlyCategoryKey =
 
 export type YearlyMomentum = 'rise' | 'steady' | 'caution';
 
-// 2026-05-15 PR 5 — 사주아이 reference: 12개월 중 가장 결이 좋은 'peak' / 가장 결이
+// 2026-05-15 PR 5 — 사주아이 reference: 12개월 중 가장 흐름이 좋은 'peak' / 가장 흐름이
 // 흔들리는 'pitfall' 을 1개씩 마킹해 사용자에게 시각 강조.
 export type YearlyPeakKind = 'peak' | 'pitfall' | null;
 
