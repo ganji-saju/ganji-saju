@@ -100,6 +100,10 @@ function objectParticle(value: string) {
   return `${value}${hasBatchim(value) ? '을' : '를'}`;
 }
 
+function topicParticle(value: string) {
+  return `${value}${hasBatchim(value) ? '은' : '는'}`;
+}
+
 function evidenceLabel(card: ReportEvidenceCard) {
   if (card.key === 'strength' && card.computed.strength) {
     return '오늘 균형';
@@ -169,7 +173,7 @@ function buildPersonalVerdict(report: SajuReport) {
   if (strongest && weakest && supportElement) {
     const strongName = ELEMENT_INFO[strongest[0]].name;
     const weakName = ELEMENT_INFO[weakest[0]].name;
-    return `${strongName}이 강하고 ${weakName}이 부족한 날입니다. ${focusLabel}은 ${ELEMENT_ACTIONS[supportElement].support}부터 시작하세요.`;
+    return `${strongName}이 강하고 ${weakName}이 부족한 날입니다. ${topicParticle(focusLabel)} ${ELEMENT_ACTIONS[supportElement].support}부터 시작하세요.`;
   }
 
   if (dayElement && supportElement) {

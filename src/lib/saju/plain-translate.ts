@@ -5,8 +5,8 @@
 // helper 로 통합. 신규 코드는 이 helper 사용 권장. 기존 ad-hoc 매핑은 점진 마이그.
 //
 // 사용 예:
-//   toPlainKorean('정인격')                  → '정인격(배움·도움·후원 중심의 결)'
-//   toPlainKorean('정인격', { format: 'replace' }) → '배움·도움·후원 중심의 결'
+//   toPlainKorean('정인격')                  → '정인격(배움·도움·후원 중심)'
+//   toPlainKorean('정인격', { format: 'replace' }) → '배움·도움·후원 중심'
 //   toPlainKorean('신약')                    → '에너지가 차분한 편'
 //   toPlainKorean('대운')                    → '10년 큰 흐름'
 
@@ -37,10 +37,10 @@ const LUCK_PLAIN: Record<string, string> = {
  * 사주 핵심 구조 (일주/월주/연주/시주) 일상어 매핑.
  */
 const PILLAR_PLAIN: Record<string, string> = {
-  일주: '본인의 결',
-  월주: '환경의 결',
-  연주: '뿌리의 결',
-  시주: '미래 방향의 결',
+  일주: '본인의 본질',
+  월주: '환경과 사회성',
+  연주: '뿌리와 근본',
+  시주: '미래의 방향',
 };
 
 /**
@@ -48,8 +48,8 @@ const PILLAR_PLAIN: Record<string, string> = {
  *
  * @param term 명리 술어 (예: '정인격', '신약', '대운', '정인', '도화살')
  * @param options.format
- *   - 'inline' (기본): "정인격(배움·도움·후원 중심의 결)" 병기 — 한 단락 1회 노출용
- *   - 'replace': "배움·도움·후원 중심의 결" 풀이만 — 두 번째 등장부터 권장
+ *   - 'inline' (기본): "정인격(배움·도움·후원 중심)" 병기 — 한 단락 1회 노출용
+ *   - 'replace': "배움·도움·후원 중심" 풀이만 — 두 번째 등장부터 권장
  *   - 'plain-only': "에너지가 차분한 편" 같이 술어 단독 표기 (강약/운 등)
  * @param options.fallback 매핑 미존재 시 반환 (기본: term 그대로)
  */

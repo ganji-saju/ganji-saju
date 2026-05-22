@@ -90,7 +90,7 @@ export function buildSituationActionLine(input: {
   if (yong) {
     return `현재 ${topic} 고민은 사주의 보완 흐름인 ${yong}을(를) 통해 풀어가는 편이 자연스럽습니다.`;
   }
-  return `현재 ${topic} 고민은 위 격국·일간 결을 본인 상황에 비추어 해석하시면 도움이 됩니다.`;
+  return `현재 ${topic} 고민은 위 격국·일간 특성을 본인 상황에 비추어 해석하시면 도움이 됩니다.`;
 }
 
 /**

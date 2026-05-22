@@ -653,7 +653,7 @@ function buildRelations(
         });
       }
 
-      // 2026-05-15 PR 6 — 원진(怨嗔) 산출. 이유 없는 서운함·날카로운 말싸움이 생기기 쉬운 결.
+      // 2026-05-15 PR 6 — 원진(怨嗔) 산출. 이유 없는 서운함·날카로운 말싸움이 생기기 쉬운 관계.
       if (BRANCH_WONJIN.has(branchKey)) {
         relations.push({
           category: 'pair',

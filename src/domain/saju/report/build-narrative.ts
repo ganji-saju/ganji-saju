@@ -23,7 +23,7 @@ export interface SajuNarrativeChip {
 }
 
 export interface SajuNarrative {
-  /** 헤드라인 1줄 — 일주 + 격국 + 핵심 결. 단정형. PR #150 — userName + situation 있으면 prefix 추가. */
+  /** 헤드라인 1줄 — 일주 + 격국 + 핵심 흐름. 단정형. PR #150 — userName + situation 있으면 prefix 추가. */
   headline: string;
   /** 본문 3~4문장 — 일간 → 격국 → 용신 → 대운/세운 → 오늘 행동 흐름. PR #150 — situation 있으면 closing 추가. */
   body: string;
@@ -64,7 +64,7 @@ export function buildSajuNarrative(
   const saewoon = data.currentLuck?.saewoon?.ganzi ?? null;
   const wolwoon = data.currentLuck?.wolwoon?.ganzi ?? null;
 
-  // ── 1. headline — 일주 + 격국 + 핵심 결.
+  // ── 1. headline — 일주 + 격국 + 핵심 흐름.
   // PR #150 — userSituation 있으면 "[직장인이신 김영민님, ]" prefix 부착.
   const userSituation = personalizationContext?.userSituation ?? null;
   const honorificPrefix = buildHonorificPrefix({
@@ -169,13 +169,13 @@ function buildHeadline({
   // 2026-05-19 B06 fix: '${sixtyGapjaTitle} · ${patternName}' 합성이 화면에 '흙·정인격'
   //   같이 일상어와 명리 술어를 점(·) 으로 묶어 어색했던 표기 해소. 자연 한국어로 연결.
   if (sixtyGapjaTitle && patternName) {
-    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}에 ${patternName}의 결을 가진 사주입니다.`;
+    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}에 ${patternName} 성향을 가진 사주입니다.`;
   }
   if (sixtyGapjaTitle) {
-    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}의 결을 가진 사주입니다.`;
+    return `${dayKorean || dayGanzi}일주, ${sixtyGapjaTitle}의 기운을 가진 사주입니다.`;
   }
   if (patternName) {
-    return `${dayKorean || dayGanzi}일주, ${patternName}의 결이 분명한 사주입니다.`;
+    return `${dayKorean || dayGanzi}일주, ${patternName} 성향이 분명한 사주입니다.`;
   }
   return `${dayKorean || dayGanzi}일주의 흐름을 가진 사주입니다.`;
 }
@@ -314,7 +314,7 @@ function buildActionSentence({
 }): string | null {
   if (actionCue) return actionCue;
   if (yongsinPrimary) {
-    return `${yongsinPrimary} 결을 생활 안에서 한 가지씩 챙기세요.`;
+    return `${yongsinPrimary} 기운을 생활 안에서 한 가지씩 챙기세요.`;
   }
   return null;
 }
