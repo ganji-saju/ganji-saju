@@ -385,8 +385,14 @@ function GatewayView({
           </button>
         </div>
 
+        {/* 2026-05-22 — 결제 직전 게이트웨이 진입자가 "왜 로그인?"을 납득하도록 신뢰 문구 한 줄.
+            내 풀이·결제내역·환불이 계정에 안전 보관됨을 명시해 결제 직전 이탈을 줄인다. */}
+        <p className="mt-[18px] text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+          로그인하면 <strong className="font-bold text-[var(--app-copy-muted)]">내 풀이·결제내역·환불</strong>이 한 계정에 안전하게 보관돼요.
+        </p>
+
         <div
-          className="mt-[22px] flex items-center gap-2.5 rounded-[14px] px-3.5 py-3.5"
+          className="mt-3 flex items-center gap-2.5 rounded-[14px] px-3.5 py-3.5"
           style={{
             background: 'rgba(255,255,255,0.7)',
             border: '1px solid var(--app-line)',
