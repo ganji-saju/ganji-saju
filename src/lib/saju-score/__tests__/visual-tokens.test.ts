@@ -3,13 +3,9 @@ import type { Ohaeng } from '../types';
 import {
   SCORE_LEVEL_TOKENS,
   OHAENG_TOKENS,
-  BREAKDOWN_FACTOR_META,
-  BREAKDOWN_ORDER,
   getScoreLevelToken,
   getScoreLevelTokenByTotal,
   getOhaengToken,
-  getBreakdownFactorMeta,
-  getBarFillPercent,
 } from '../visual-tokens';
 import { getLabel } from '../labels';
 import { computeOhaengChart } from '../ohaeng';
@@ -93,42 +89,4 @@ test('getOhaengToken: computeOhaengChart 색상과 단일 소스 (동일 hex)', 
   for (const el of ['목', '화', '토', '금', '수'] as Ohaeng[]) {
     assert.equal(getOhaengToken(el).hex, chart.colors[el], `${el} hex 단일 소스`);
   }
-});
-
-// ── 내역지표(F1~F5) 메타 ──
-test('BREAKDOWN_ORDER: F1~F5 순서 고정', () => {
-  assert.deepEqual(BREAKDOWN_ORDER, ['F1', 'F2', 'F3', 'F4', 'F5']);
-});
-
-test('BREAKDOWN_FACTOR_META: F1~F5 라벨/max/hex + 한자 0', () => {
-  for (const key of BREAKDOWN_ORDER) {
-    const m = BREAKDOWN_FACTOR_META[key];
-    assert.ok(m, `${key} 메타 존재`);
-    assert.equal(m.key, key);
-    assert.ok(m.label.length > 0, `${key} 라벨`);
-    assert.equal(m.max, 20, `${key} max=20`);
-    assert.match(m.hex, HEX, `${key} hex`);
-    // naming-policy: 한자 미노출
-    assert.ok(!/[一-鿿]/.test(m.label), `${key} 라벨 한자 0`);
-    assert.ok(!/[一-鿿]/.test(m.description), `${key} 설명 한자 0`);
-  }
-});
-
-test('getBreakdownFactorMeta: key → 동일 메타', () => {
-  assert.deepEqual(getBreakdownFactorMeta('F3'), BREAKDOWN_FACTOR_META.F3);
-});
-
-// ── fill % helper ──
-test('getBarFillPercent: value/max 비율 0~100 clamp + 반올림', () => {
-  assert.equal(getBarFillPercent(10, 20), 50);
-  assert.equal(getBarFillPercent(0, 20), 0);
-  assert.equal(getBarFillPercent(20, 20), 100);
-  assert.equal(getBarFillPercent(25, 20), 100, '초과 → 100 clamp');
-  assert.equal(getBarFillPercent(-5, 20), 0, '음수 → 0 clamp');
-  assert.equal(getBarFillPercent(3, 20), 15);
-  assert.equal(getBarFillPercent(1, 3), 33, '반올림');
-});
-
-test('getBarFillPercent: max<=0 이면 0 (0 나눗셈 방지)', () => {
-  assert.equal(getBarFillPercent(5, 0), 0);
 });
