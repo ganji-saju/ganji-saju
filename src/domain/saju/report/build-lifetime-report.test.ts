@@ -3,6 +3,7 @@ import { normalizeToSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import type { BirthInput } from '@/lib/saju/types';
 import { validateChapterBody } from '@/lib/saju/chapter-validator';
+import { validateDaewoonText } from '@/lib/saju/daewoon-validator';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -266,5 +267,30 @@ test('buildLifetimeReport 의 모든 cycle 본문이 chapter-validator 4 룰을 
         `cycle ${cycle.ganzi} ${field} — ${JSON.stringify(result.failures)}`
       );
     }
+  }
+});
+
+// 2026-05-22 Step3 회귀 가드 — 대운 챕터 제목 고유성 + 본문 한자/명리용어 0.
+test('buildLifetimeReport: 대운 제목 고유 + 본문 한자/명리용어 0 (Step3)', () => {
+  const data = normalizeToSajuDataV1(birthInput, null);
+  const report = buildLifetimeReport(birthInput, data, 2026);
+  const cycles = report.majorLuckTimeline.cycles.filter((c) => c.ganzi !== '대운 미산정');
+  assert.ok(cycles.length >= 4);
+
+  // 1) 챕터 제목: 최소 (N-1)개 고유 (나이대 suffix 로 사실상 전부 고유)
+  const titles = cycles.map((c) => c.chapterTitle ?? '').filter(Boolean);
+  assert.ok(titles.length >= 4, '챕터 제목 채워진 cycle 4+');
+  assert.ok(
+    new Set(titles).size >= titles.length - 1,
+    `챕터 제목 거의 모두 고유여야 함: ${new Set(titles).size}/${titles.length}`
+  );
+
+  // 2) 본문 8단 — 한자 0 / 명리 전문용어 0 (대운·12운성 한글 허용)
+  for (const c of cycles) {
+    const body = [c.hook, c.chapterBody, c.mental, c.relationship, c.wealthCareer, c.closingNote]
+      .filter(Boolean)
+      .join(' ');
+    const r = validateDaewoonText(`${c.chapterTitle ?? ''} ${body}`);
+    assert.equal(r.ok, true, `cycle ${c.ganzi} 본문 위반: ${r.reasons.join(', ')}`);
   }
 });
