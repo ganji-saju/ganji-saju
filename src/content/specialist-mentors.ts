@@ -43,7 +43,7 @@ export const SPECIALIST_MENTORS: readonly SpecialistMentorCardData[] = [
     hanja: '🐑',
     title: '인연 선생',
     specialty: '궁합·관계',
-    description: '두 사람의 결이 어디에서 맞고 어긋나는지 봅니다.',
+    description: '두 사람이 어디에서 맞고 어긋나는지 봅니다.',
     href: '/compatibility?product=relationship-standard',
     statusLabel: '리포트에서 먼저 보기',
     ctaLabel: '궁합 풀이 보기',

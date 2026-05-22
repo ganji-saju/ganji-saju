@@ -87,7 +87,7 @@ export const STAR_SIGN_FORTUNES: StarSignFortune[] = [
   { slug: 'aries', label: '양자리', dateRange: '3.21 - 4.19', summary: '직진성이 살아나는 날이지만 말의 세기를 조절하는 편이 좋습니다.', todayFocus: '시작과 추진력', action: '먼저 시작하되 확인을 한 번 더 거치세요.' },
   { slug: 'taurus', label: '황소자리', dateRange: '4.20 - 5.20', summary: '느긋한 리듬 속에서 안정감을 챙길수록 결과가 좋아집니다.', todayFocus: '돈과 루틴', action: '지출을 정리하면 하루가 더 단단해집니다.' },
   { slug: 'gemini', label: '쌍둥이자리', dateRange: '5.21 - 6.21', summary: '말과 정보가 많이 오가는 날이라 선택지를 정리하는 힘이 필요합니다.', todayFocus: '연락과 이동', action: '중요한 메시지는 오전에 먼저 보내는 편이 좋습니다.' },
-  { slug: 'cancer', label: '게자리', dateRange: '6.22 - 7.22', summary: '감정의 결이 예민해지는 날이라 주변 분위기를 잘 읽게 됩니다.', todayFocus: '관계와 공감', action: '서운함이 생기면 바로 단정하지 말고 질문부터 해보세요.' },
+  { slug: 'cancer', label: '게자리', dateRange: '6.22 - 7.22', summary: '감정이 예민해지는 날이라 주변 분위기를 잘 읽게 됩니다.', todayFocus: '관계와 공감', action: '서운함이 생기면 바로 단정하지 말고 질문부터 해보세요.' },
   { slug: 'leo', label: '사자자리', dateRange: '7.23 - 8.22', summary: '주목받는 흐름이 들어오지만 에너지를 한곳에 모을수록 좋습니다.', todayFocus: '표현과 존재감', action: '내가 원하는 것을 한 문장으로 분명히 말해보세요.' },
   { slug: 'virgo', label: '처녀자리', dateRange: '8.23 - 9.23', summary: '정리 능력이 살아나는 날이라 미뤄둔 일들을 빠르게 정돈할 수 있습니다.', todayFocus: '업무와 건강', action: '완료 기준을 먼저 정하면 불필요한 소모가 줄어듭니다.' },
   { slug: 'libra', label: '천칭자리', dateRange: '9.24 - 10.22', summary: '균형을 맞추는 감각이 좋아서 협의와 조율에 강합니다.', todayFocus: '관계 조율', action: '둘 다 만족할 수 있는 중간 지점을 먼저 제안해보세요.' },

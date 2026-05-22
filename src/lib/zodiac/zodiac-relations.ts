@@ -23,7 +23,7 @@ export type ZodiacFortuneSlug =
   | 'pig';
 
 export interface ZodiacRelation {
-  /** 합·맞음 (삼합 + 육합) — 동업·결혼·중요 관계에서 결이 잘 맞는 띠. */
+  /** 합·맞음 (삼합 + 육합) — 동업·결혼·중요 관계에서 합이 잘 맞는 띠. */
   idealMatches: ReadonlyArray<ZodiacFortuneSlug>;
   /** 충·부딪힘 (육충) — 거리를 두거나 표현 톤을 조심해야 하는 띠. */
   bewareMatches: ReadonlyArray<ZodiacFortuneSlug>;
@@ -53,7 +53,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     // 申子辰 (원숭이·쥐·용) — 자기 제외 → 원숭이/용. 子丑 (쥐·소) → 소. 보조: 돼지 (해자축 방합).
     idealMatches: ['monkey', 'dragon', 'ox', 'pig'],
     bewareMatches: ['horse'],
-    matchSummary: '원숭이·용·소와 결이 잘 맞아 함께 일할 때 흐름이 빠릅니다.',
+    matchSummary: '원숭이·용·소와 합이 잘 맞아 함께 일할 때 흐름이 빠릅니다.',
     bewareSummary: '말띠와는 추진 속도와 표현 톤이 달라 충돌이 잦을 수 있습니다.',
   },
   ox: {
@@ -61,7 +61,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     idealMatches: ['snake', 'rooster', 'rat', 'pig'],
     bewareMatches: ['goat'],
     matchSummary: '뱀·닭·쥐와 안정적 동맹을 이루며 차분히 결과를 만듭니다.',
-    bewareSummary: '양띠와는 결이 다른 속도라 함께 결정할 때 마찰이 생깁니다.',
+    bewareSummary: '양띠와는 기질이 다른 속도라 함께 결정할 때 마찰이 생깁니다.',
   },
   tiger: {
     // 寅午戌 (호랑이·말·개) — 자기 제외 → 말/개. 寅亥 (호랑이·돼지) → 돼지. 보조: 토끼 (인묘진 방합).
@@ -74,21 +74,21 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     // 亥卯未 (돼지·토끼·양) — 자기 제외 → 돼지/양. 卯戌 (토끼·개) → 개. 보조: 호랑이 (인묘진 방합).
     idealMatches: ['pig', 'goat', 'dog', 'tiger'],
     bewareMatches: ['rooster'],
-    matchSummary: '돼지·양·개와 따뜻한 관계를 이루며 감정 결이 잘 맞습니다.',
+    matchSummary: '돼지·양·개와 따뜻한 관계를 이루며 감정 흐름이 잘 맞습니다.',
     bewareSummary: '닭띠와는 표현 방식이 달라 작은 말에 서로 상처받기 쉽습니다.',
   },
   dragon: {
-    // 申子辰 (원숭이·쥐·용) — 자기 제외 → 원숭이/쥐. 辰酉 (용·닭) → 닭. 보조: 뱀 (사오미 가까운 결).
+    // 申子辰 (원숭이·쥐·용) — 자기 제외 → 원숭이/쥐. 辰酉 (용·닭) → 닭. 보조: 뱀 (사오미 가까운 자리).
     idealMatches: ['monkey', 'rat', 'rooster', 'snake'],
     bewareMatches: ['dog'],
     matchSummary: '원숭이·쥐·닭과 함께할 때 큰 그림을 그리고 실행이 빨라집니다.',
     bewareSummary: '개띠와는 가치관 충돌이 잦아 큰 결정에서 마찰이 생깁니다.',
   },
   snake: {
-    // 巳酉丑 (뱀·닭·소) — 자기 제외 → 닭/소. 巳申 (뱀·원숭이) → 원숭이. 보조: 용 (이웃 결).
+    // 巳酉丑 (뱀·닭·소) — 자기 제외 → 닭/소. 巳申 (뱀·원숭이) → 원숭이. 보조: 용 (이웃 자리).
     idealMatches: ['rooster', 'ox', 'monkey', 'dragon'],
     bewareMatches: ['pig'],
-    matchSummary: '닭·소·원숭이와 차분한 전략을 같이 설계하기 좋은 결입니다.',
+    matchSummary: '닭·소·원숭이와 차분한 전략을 같이 설계하기 좋은 관계입니다.',
     bewareSummary: '돼지띠와는 결정 속도와 위험감수 성향이 달라 서로 답답합니다.',
   },
   horse: {
@@ -102,7 +102,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     // 亥卯未 (돼지·토끼·양) — 자기 제외 → 돼지/토끼. 午未 (말·양) → 말. 보조: 뱀 (사오미 방합).
     idealMatches: ['pig', 'rabbit', 'horse', 'snake'],
     bewareMatches: ['ox'],
-    matchSummary: '돼지·토끼·말과 정서적 결이 깊어 신뢰가 빨리 쌓입니다.',
+    matchSummary: '돼지·토끼·말과 정서적 교감이 깊어 신뢰가 빨리 쌓입니다.',
     bewareSummary: '소띠와는 결정 방식이 달라 함께 진행할 때 어긋남이 자주 보입니다.',
   },
   monkey: {
@@ -130,7 +130,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     // 亥卯未 (돼지·토끼·양) — 자기 제외 → 토끼/양. 寅亥 (호랑이·돼지) → 호랑이. 보조: 쥐 (해자축 방합).
     idealMatches: ['rabbit', 'goat', 'tiger', 'rat'],
     bewareMatches: ['snake'],
-    matchSummary: '토끼·양·호랑이·쥐와 깊은 신뢰 관계를 만들기 좋은 결입니다.',
+    matchSummary: '토끼·양·호랑이·쥐와 깊은 신뢰를 쌓기 좋은 흐름입니다.',
     bewareSummary: '뱀띠와는 위험 감수 방식이 정반대라 함께 결정하기 어렵습니다.',
   },
 };

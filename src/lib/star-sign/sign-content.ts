@@ -356,7 +356,7 @@ export const STAR_SIGN_CONTENT: Record<StarSignSlug, SignContent> = {
     loveCaveat: '경계가 모호해 상처를 자주 입는다',
     idealMatches: ['cancer', 'scorpio', 'taurus'],
     loveBeware: ['gemini', 'sagittarius'],
-    careerStrength: '창작·치유·영성 분야에 강하다. 마음의 결을 다루는 일에 빛난다.',
+    careerStrength: '창작·치유·영성 분야에 강하다. 마음을 다루는 일에 빛난다.',
     careerSuggestions: ['예술가·음악가', '심리치료', '간호·요양', '영성·종교', '자선·NGO'],
     careerCaveat: '냉정한 판단이 필요한 자리에서는 감정에 쓸린다',
     luckyColor: { name: '시폼그린', hex: '#22d3ee' },

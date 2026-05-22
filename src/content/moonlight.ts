@@ -435,7 +435,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     zodiac: '🐑',
     zodiacOrder: 8,
     serviceTitle: '궁합',
-    shortLabel: '상대와의 결',
+    shortLabel: '상대와의 합',
     role: '나와 상대의 속도, 거리감, 부딪히는 말을 관계 중심으로 풀어줍니다.',
     question: '이 사람과 다시 잘 맞출 수 있을까?',
     href: '/compatibility/input',
@@ -537,7 +537,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
     hanja: '🐲',
     title: '사주',
     hook: '나는 어떤 사람으로 태어난 걸까',
-    description: '태어난 때에 깃든 하늘의 결을 읽어, 선생님의 본성과 큰 흐름을 차분히 짚어드립니다.',
+    description: '태어난 때에 깃든 하늘의 뜻을 읽어, 선생님의 본성과 큰 흐름을 차분히 짚어드립니다.',
     href: '/saju/new',
     tone: 'gold',
   },
@@ -564,7 +564,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
     hanja: '🐑',
     title: '궁합',
     hook: '우리, 정말 잘 맞는 사이일까',
-    description: '두 사람의 결이 어디에서 닮고 어디에서 어긋나는지, 살가운 말로 풀어드립니다.',
+    description: '두 사람이 어디에서 닮고 어디에서 어긋나는지, 살가운 말로 풀어드립니다.',
     href: '/compatibility',
     tone: 'jade',
   },
@@ -573,7 +573,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
     hanja: '✦',
     title: '별자리',
     hook: '저 먼 별빛이 내게 전하는 말',
-    description: '오늘 마음의 결을 별빛 언어로 먼저 살피고, 사주와 만나는 지점까지 이어드립니다.',
+    description: '오늘 마음의 흐름을 별빛 언어로 먼저 살피고, 사주와 만나는 지점까지 이어드립니다.',
     href: '/star-sign',
     tone: 'sky',
   },
@@ -1192,7 +1192,7 @@ export const COMPATIBILITY_PREMIUM_EXPANSION: Record<
     preview: [
       {
         title: '역할이 엇갈리는 지점',
-        body: '의사결정 속도와 책임감의 결이 어떻게 다른지 짚어 실무 충돌 포인트를 설명합니다.',
+        body: '의사결정 속도와 책임감이 어떻게 다른지 짚어 실무 충돌 포인트를 설명합니다.',
       },
       {
         title: '재물 감각의 차이',
@@ -1442,7 +1442,7 @@ export const TEN_GODS_GUIDE: readonly MoonlightTenGodCard[] = [
     name: '비견',
     hanja: '나',
     meaning: '동료 · 형제 · 자존',
-    seniorCopy: '나와 같은 결의 사람들',
+    seniorCopy: '나와 잘 맞는 사람들',
   },
   {
     name: '겁재',
@@ -1547,7 +1547,7 @@ export const FAMILY_PLAN_LIMITS = [
 export const STAR_SIGN_BLUEPRINT = {
   featuredSlug: 'pisces',
   intro: '저 먼 별빛이 오늘 당신에게 전하는 한 마디',
-  cross: '서양의 별빛과 동양의 명식을 나란히 놓고, 오늘 마음에 더 가까운 결을 함께 읽어드립니다.',
+  cross: '서양의 별빛과 동양의 명식을 나란히 놓고, 오늘 마음에 더 가까운 이야기를 함께 읽어드립니다.',
 } as const;
 
 export const STAR_SIGN_META = {

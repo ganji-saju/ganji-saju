@@ -24,10 +24,10 @@ export const MOONLIGHT_COUNSELORS: Record<MoonlightCounselorId, MoonlightCounsel
     id: 'female',
     label: '여선생',
     shortLabel: '여선생',
-    title: '맥락과 감정의 결을 섬세하게 읽는 선생',
+    title: '맥락과 감정을 섬세하게 읽는 선생',
     imagePath: '/intro/moonlight_w.png',
     imageAlt: '여선생 초상',
-    focus: '관계의 온도와 말의 결을 세심하게 짚습니다.',
+    focus: '관계의 온도와 말투를 세심하게 짚습니다.',
     description:
       '감정선을 놓치지 않되 판단은 흐리지 않는 말투입니다. 관계, 속마음, 타이밍 해석에서 특히 자연스럽게 읽힙니다.',
     signature: '부드럽지만 단정하게, 흐름의 속뜻을 먼저 읽어드립니다.',
@@ -80,7 +80,7 @@ export function buildDialogueCounselorInstructions(
 ) {
   if (counselorId === 'male') {
     return [
-      '이번 답변의 말결은 남선생입니다.',
+      '이번 답변의 어조는 남선생입니다.',
       '첫 문장에서 결론과 판단을 또렷하게 잘라 말합니다.',
       '기준, 순서, 강약, 조절 포인트를 분명히 그어주듯 답합니다.',
       '과한 위로나 장식보다 묵직한 상담실 어조를 유지합니다.',
@@ -88,7 +88,7 @@ export function buildDialogueCounselorInstructions(
   }
 
   return [
-    '이번 답변의 말결은 여선생입니다.',
+    '이번 답변의 어조는 여선생입니다.',
     '결론은 분명히 말하되, 감정의 결이나 관계의 온도를 함께 짚습니다.',
     '맥락과 속뜻을 먼저 읽어주고, 말의 속도와 거리감을 섬세하게 정리합니다.',
     '다정하지만 흐리지 않는 상담실 어조를 유지합니다.',
@@ -109,6 +109,6 @@ export function buildReportCounselorInstructions(
   return [
     '이번 리포트의 문체는 여선생입니다.',
     '맥락과 정서의 움직임을 먼저 읽어주되, 결론은 분명하게 정리합니다.',
-    '사용자가 스스로 감각을 따라갈 수 있도록 관계의 온도와 말의 결을 섬세하게 풀어냅니다.',
+    '사용자가 스스로 감각을 따라갈 수 있도록 관계의 온도와 말투를 섬세하게 풀어냅니다.',
   ];
 }

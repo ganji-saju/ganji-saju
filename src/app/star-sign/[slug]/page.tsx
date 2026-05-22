@@ -687,7 +687,7 @@ export default async function StarSignDetailPage({ params }: Props) {
               내 사주와 함께 봐주세요
             </h2>
             <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
-              서양의 별빛과 동양의 명식을 나란히 놓고 오늘 마음에 더 가까운 결을 함께 읽어드립니다.
+              서양의 별빛과 동양의 명식을 나란히 놓고 오늘 마음에 더 가까운 이야기를 함께 읽어드립니다.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
