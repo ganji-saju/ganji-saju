@@ -8,7 +8,7 @@ test('synthesizeCross - aries (fire) + 丙 (화, 양) → identical relation', (
   // aries 의 element fire → 매핑된 동양 element 화. 丙 도 화 → identical.
   const result = synthesizeCross('aries', '丙');
   assert.equal(result.relation, 'identical');
-  assert.equal(result.relationLabel, '같은 결');
+  assert.equal(result.relationLabel, '같은 기운');
   assert.equal(result.relationTone, 'best');
   assert.equal(result.dayMasterElement, '화');
   assert.equal(result.yinYang, '양');
