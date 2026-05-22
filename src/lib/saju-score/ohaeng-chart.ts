@@ -1,6 +1,6 @@
 // 2026-05-21 — 오행 레이더(펜타곤) 차트 순수 로직(Phase 4 — 오행 차트 UI).
 //   computeOhaengRadarPoints: 5축 좌표(목 top, 시계방향 72°) + count 비례 데이터 폴리곤.
-//   컴포넌트(SajuOhaengChart)가 소비. UI/SVG 의존 없는 순수 계산이라 단위 테스트로 검증.
+//   UI/SVG 의존 없는 순수 계산이라 단위 테스트로 검증. (레거시 레이더 컴포넌트는 제거됨 — 순수 로직만 유지.)
 import type { Ohaeng } from './types';
 
 export const OHAENG_RADAR_ORDER: Ohaeng[] = ['목', '화', '토', '금', '수'];
