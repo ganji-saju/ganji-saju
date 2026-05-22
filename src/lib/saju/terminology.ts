@@ -34,7 +34,7 @@ export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string
   [/천간/gu, '겉으로 드러나는 기운'],
   // 2026-05-19 B05 fix: 일반 동사 '커지지만' 의 '지지' 부분 매치 차단.
   //   앞에 한글이 있으면 단어 중간이므로 매치 안 함. 뒤는 조사(의/가/는 등) 허용.
-  [/(?<![가-힣])지지(?!단)/gu, '안쪽 결'],
+  [/(?<![가-힣])지지(?!단)/gu, '안쪽 자리'],
   [/지장간/gu, '숨은 기운'],
 
   // §운(luck)
@@ -49,7 +49,7 @@ export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string
   [/신강/gu, '에너지가 강한 편'],
   [/신약/gu, '에너지가 차분한 편'],
   [/중화(?!된)/gu, '균형이 잡힌 편'],
-  [/강약 판정/gu, '컨디션 결'],
+  [/강약 판정/gu, '컨디션 흐름'],
   [/강약/gu, '컨디션 균형'],
   [/격국/gu, '반복되는 삶의 역할'],
   [/조후|조후 보정/gu, '계절 균형 보정'],
@@ -94,7 +94,7 @@ export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string
 /**
  * 2026-05-15 PR 5 — 명리 용어 → 일상어 병기 사전 (50+ 항목).
  * 사주아이 reference: 풀이 본문에 명리 라벨을 살려둔 채 옆에 일상 비유를 병기.
- *  예: "비견 — 나와 비슷한 결의 사람과 함께 가는 자리. 주체성↑ 양보↓."
+ *  예: "비견 — 나와 비슷한 성향의 사람과 함께 가는 자리. 주체성↑ 양보↓."
  * 빌더가 `term + glossaryHint(term)` 로 본문에 사용.
  *
  * 카테고리: 십성 10 + 오행 5 + 합·충·형·해 4 + 신살 6 + 12운성 12 + 격국 10 + 보조 5 = 52.
@@ -117,16 +117,16 @@ export interface MyeongriGlossaryEntry {
 
 export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
   // §십성 10
-  비견: { hanja: '比肩', plainCue: '나와 비슷한 결의 사람과 함께 가는 자리 (주체성↑, 양보↓)', category: 'tenGod' },
-  겁재: { hanja: '劫財', plainCue: '가까운 사람과 돈·기회를 나누다 갈등이 생기기 쉬운 결', category: 'tenGod' },
+  비견: { hanja: '比肩', plainCue: '나와 비슷한 성향의 사람과 함께 가는 자리 (주체성↑, 양보↓)', category: 'tenGod' },
+  겁재: { hanja: '劫財', plainCue: '가까운 사람과 돈·기회를 나누다 갈등이 생기기 쉬운 흐름', category: 'tenGod' },
   식신: { hanja: '食神', plainCue: '꾸준히 만들어내는 힘 — 결과물·자녀·취미의 풍요', category: 'tenGod' },
-  상관: { hanja: '傷官', plainCue: '재능과 표현은 강하지만 답답한 틀을 견디기 어려운 결', category: 'tenGod' },
-  편재: { hanja: '偏財', plainCue: '기회와 사람을 넓게 보는 결 — 큰 돈이 드나들지만 흩어지기 쉬움', category: 'tenGod' },
+  상관: { hanja: '傷官', plainCue: '재능과 표현은 강하지만 답답한 틀을 견디기 어려운 흐름', category: 'tenGod' },
+  편재: { hanja: '偏財', plainCue: '기회와 사람을 넓게 보는 흐름 — 큰 돈이 드나들지만 흩어지기 쉬움', category: 'tenGod' },
   정재: { hanja: '正財', plainCue: '안정적으로 쌓는 재물 감각 — 한 번 정한 구조 오래 유지', category: 'tenGod' },
   편관: { hanja: '偏官', plainCue: '압박·책임·도전 속에서 단련되는 추진력 (긴장 누적 주의)', category: 'tenGod' },
-  정관: { hanja: '正官', plainCue: '자리·책임·명예·질서를 중시하는 결 (스스로 무거워지기 쉬움)', category: 'tenGod' },
+  정관: { hanja: '正官', plainCue: '자리·책임·명예·질서를 중시하는 성향 (스스로 무거워지기 쉬움)', category: 'tenGod' },
   편인: { hanja: '偏印', plainCue: '직관·깊이로 혼자 파고드는 힘 — 남다른 시각', category: 'tenGod' },
-  정인: { hanja: '正印', plainCue: '돌봄·후원·배움의 결 — 누군가에게 받고 또 베푸는 인연', category: 'tenGod' },
+  정인: { hanja: '正印', plainCue: '돌봄·후원·배움의 흐름 — 누군가에게 받고 또 베푸는 인연', category: 'tenGod' },
 
   // §오행 5
   목: { hanja: '木', plainCue: '성장·시작·계획 — 새 일을 여는 힘', category: 'element' },
@@ -136,54 +136,54 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
   수: { hanja: '水', plainCue: '생각·휴식·정보 — 흐름을 읽고 정돈하는 힘', category: 'element' },
 
   // §관계 변화 합/충/형/해 4
-  합: { hanja: '合', plainCue: '서로 끌어당기며 묶이는 결 — 협력·이동·결합', category: 'relations' },
-  충: { hanja: '沖', plainCue: '서로 부딪치며 흔드는 결 — 변화·결단·이별', category: 'relations' },
-  형: { hanja: '刑', plainCue: '갈등·송사·심리적 마찰의 결 — 안 풀리는 일', category: 'relations' },
-  해: { hanja: '害', plainCue: '드러나지 않는 손해의 결 — 소모·균열', category: 'relations' },
+  합: { hanja: '合', plainCue: '서로 끌어당기며 묶이는 흐름 — 협력·이동·결합', category: 'relations' },
+  충: { hanja: '沖', plainCue: '서로 부딪치며 흔드는 흐름 — 변화·결단·이별', category: 'relations' },
+  형: { hanja: '刑', plainCue: '갈등·송사·심리적 마찰의 흐름 — 안 풀리는 일', category: 'relations' },
+  해: { hanja: '害', plainCue: '드러나지 않는 손해의 흐름 — 소모·균열', category: 'relations' },
 
   // §원진 (해 와 별개로 자주 사용)
-  원진: { hanja: '怨嗔', plainCue: '이유 없는 서운함·날카로운 말싸움이 생기기 쉬운 결', category: 'relations' },
+  원진: { hanja: '怨嗔', plainCue: '이유 없는 서운함·날카로운 말싸움이 생기기 쉬운 흐름', category: 'relations' },
 
   // §신살 6
-  양인살: { hanja: '羊刃殺', plainCue: '추진력이 엄청나지만 자칫 무리한 투자·다툼이 따르는 결', category: 'sinsal' },
-  역마살: { hanja: '驛馬殺', plainCue: '이동수·해외·장거리 — 자리에서 변화가 잦은 결', category: 'sinsal' },
+  양인살: { hanja: '羊刃殺', plainCue: '추진력이 엄청나지만 자칫 무리한 투자·다툼이 따르는 흐름', category: 'sinsal' },
+  역마살: { hanja: '驛馬殺', plainCue: '이동수·해외·장거리 — 자리에서 변화가 잦은 흐름', category: 'sinsal' },
   도화살: { hanja: '桃花殺', plainCue: '매력·인기·사람을 끄는 힘 — 관계 빠르게 변할 수 있음', category: 'sinsal' },
-  화개살: { hanja: '華蓋殺', plainCue: '예술·종교·학문 — 혼자 깊이 파고드는 결', category: 'sinsal' },
+  화개살: { hanja: '華蓋殺', plainCue: '예술·종교·학문 — 혼자 깊이 파고드는 흐름', category: 'sinsal' },
   백호살: { hanja: '白虎殺', plainCue: '큰 책임과 강한 실행력 — 사고·건강 주의 신호', category: 'sinsal' },
   괴강살: { hanja: '魁罡殺', plainCue: '강한 카리스마와 단호함 — 부드러움이 부족할 수 있음', category: 'sinsal' },
 
   // §12운성 12
-  장생: { hanja: '長生', plainCue: '새로 태어나 자라기 시작하는 결 — 시작·시도', category: 'twelveStage' },
-  목욕: { hanja: '沐浴', plainCue: '사회적으로 주목받고 매력을 발산하는 결', category: 'twelveStage' },
-  관대: { hanja: '冠帶', plainCue: '책임을 처음 입어보는 결 — 자기 자리 잡기', category: 'twelveStage' },
-  건록: { hanja: '建祿', plainCue: '본격적으로 자기 자리를 차지하는 결 — 안정된 힘', category: 'twelveStage' },
-  제왕: { hanja: '帝旺', plainCue: '에너지가 가장 강한 정점의 결 — 과한 자신감 주의', category: 'twelveStage' },
-  쇠: { hanja: '衰', plainCue: '정점 이후 힘이 가라앉기 시작하는 결 — 정리 시기', category: 'twelveStage' },
-  병: { hanja: '病', plainCue: '몸과 마음이 약해지기 쉬운 결 — 회복·점검 시기', category: 'twelveStage' },
-  사: { hanja: '死', plainCue: '한 챕터의 끝 — 비워내고 다음을 준비하는 결', category: 'twelveStage' },
-  묘: { hanja: '墓', plainCue: '쌓아둔 것을 갈무리하는 결 — 저장·은둔', category: 'twelveStage' },
-  절: { hanja: '絶', plainCue: '단절·휴지기 — 결이 끊기고 다음을 기다리는 시기', category: 'twelveStage' },
-  태: { hanja: '胎', plainCue: '아직 형태가 없는 결 — 잉태·기획의 초기', category: 'twelveStage' },
-  양: { hanja: '養', plainCue: '천천히 키워가는 결 — 안전한 성장기', category: 'twelveStage' },
+  장생: { hanja: '長生', plainCue: '새로 태어나 자라기 시작하는 흐름 — 시작·시도', category: 'twelveStage' },
+  목욕: { hanja: '沐浴', plainCue: '사회적으로 주목받고 매력을 발산하는 흐름', category: 'twelveStage' },
+  관대: { hanja: '冠帶', plainCue: '책임을 처음 입어보는 흐름 — 자기 자리 잡기', category: 'twelveStage' },
+  건록: { hanja: '建祿', plainCue: '본격적으로 자기 자리를 차지하는 흐름 — 안정된 힘', category: 'twelveStage' },
+  제왕: { hanja: '帝旺', plainCue: '에너지가 가장 강한 정점의 흐름 — 과한 자신감 주의', category: 'twelveStage' },
+  쇠: { hanja: '衰', plainCue: '정점 이후 힘이 가라앉기 시작하는 흐름 — 정리 시기', category: 'twelveStage' },
+  병: { hanja: '病', plainCue: '몸과 마음이 약해지기 쉬운 흐름 — 회복·점검 시기', category: 'twelveStage' },
+  사: { hanja: '死', plainCue: '한 챕터의 끝 — 비워내고 다음을 준비하는 흐름', category: 'twelveStage' },
+  묘: { hanja: '墓', plainCue: '쌓아둔 것을 갈무리하는 흐름 — 저장·은둔', category: 'twelveStage' },
+  절: { hanja: '絶', plainCue: '단절·휴지기 — 흐름이 끊기고 다음을 기다리는 시기', category: 'twelveStage' },
+  태: { hanja: '胎', plainCue: '아직 형태가 없는 흐름 — 잉태·기획의 초기', category: 'twelveStage' },
+  양: { hanja: '養', plainCue: '천천히 키워가는 흐름 — 안전한 성장기', category: 'twelveStage' },
 
   // §격국 10 (정격 위주)
-  정관격: { hanja: '正官格', plainCue: '자리·책임을 중심으로 풀려가는 결 — 안정형', category: 'pattern' },
-  편관격: { hanja: '偏官格', plainCue: '도전·압박을 추진력으로 쓰는 결 — 강한 실행형', category: 'pattern' },
+  정관격: { hanja: '正官格', plainCue: '자리·책임을 중심으로 풀려가는 흐름 — 안정형', category: 'pattern' },
+  편관격: { hanja: '偏官格', plainCue: '도전·압박을 추진력으로 쓰는 흐름 — 강한 실행형', category: 'pattern' },
   정재격: { hanja: '正財格', plainCue: '꾸준히 쌓는 재물형 — 안정 축적', category: 'pattern' },
   편재격: { hanja: '偏財格', plainCue: '큰 기회·움직이는 재물형 — 확장형', category: 'pattern' },
-  식신격: { hanja: '食神格', plainCue: '꾸준한 표현·결과물 중심의 결', category: 'pattern' },
-  상관격: { hanja: '傷官格', plainCue: '재능과 표현의 결 — 프레임 깨는 힘', category: 'pattern' },
-  정인격: { hanja: '正印格', plainCue: '배움·도움·후원 중심의 결', category: 'pattern' },
-  편인격: { hanja: '偏印格', plainCue: '직관·전문성·고독한 깊이의 결', category: 'pattern' },
-  비견격: { hanja: '比肩格', plainCue: '자기 색이 강한 결 — 협력보다 주도', category: 'pattern' },
-  건록격: { hanja: '建祿格', plainCue: '본인 자리에 단단히 서는 결 — 안정·자립', category: 'pattern' },
+  식신격: { hanja: '食神格', plainCue: '꾸준한 표현·결과물 중심의 흐름', category: 'pattern' },
+  상관격: { hanja: '傷官格', plainCue: '재능과 표현의 흐름 — 프레임 깨는 힘', category: 'pattern' },
+  정인격: { hanja: '正印格', plainCue: '배움·도움·후원 중심의 흐름', category: 'pattern' },
+  편인격: { hanja: '偏印格', plainCue: '직관·전문성·고독한 깊이의 흐름', category: 'pattern' },
+  비견격: { hanja: '比肩格', plainCue: '자기 색이 강한 흐름 — 협력보다 주도', category: 'pattern' },
+  건록격: { hanja: '建祿格', plainCue: '본인 자리에 단단히 서는 흐름 — 안정·자립', category: 'pattern' },
 
   // §보조 5 (자주 함께 등장)
-  재다신약: { hanja: '財多身弱', plainCue: '재물 기회는 많지만 본인 에너지가 약한 결 — 파트너십 필요', category: 'aux' },
-  식신생재: { hanja: '食神生財', plainCue: '꾸준한 표현이 돈으로 이어지는 결 — 일과 수익이 연결', category: 'aux' },
-  관살혼잡: { hanja: '官殺混雜', plainCue: '책임과 도전이 한꺼번에 들어오는 복잡한 결 — 우선순위 필요', category: 'aux' },
-  비겁태왕: { hanja: '比劫太旺', plainCue: '주체성이 너무 강해 양보와 협력이 어려운 결', category: 'aux' },
-  병신합: { hanja: '丙辛合', plainCue: '한 가지에 꽂히면 끝장을 봐야 하는 집중력의 결', category: 'aux' },
+  재다신약: { hanja: '財多身弱', plainCue: '재물 기회는 많지만 본인 에너지가 약한 흐름 — 파트너십 필요', category: 'aux' },
+  식신생재: { hanja: '食神生財', plainCue: '꾸준한 표현이 돈으로 이어지는 흐름 — 일과 수익이 연결', category: 'aux' },
+  관살혼잡: { hanja: '官殺混雜', plainCue: '책임과 도전이 한꺼번에 들어오는 복잡한 흐름 — 우선순위 필요', category: 'aux' },
+  비겁태왕: { hanja: '比劫太旺', plainCue: '주체성이 너무 강해 양보와 협력이 어려운 흐름', category: 'aux' },
+  병신합: { hanja: '丙辛合', plainCue: '한 가지에 꽂히면 끝장을 봐야 하는 집중력의 흐름', category: 'aux' },
 };
 
 /**
@@ -329,7 +329,7 @@ export const FRIENDLY_CONFIDENCE_LABEL: Record<string, string> = {
 
 /** UI 에서 자주 쓰는 블록/배지 라벨. v2 interpretation 의 block 라벨 통일용. */
 export const FRIENDLY_BLOCK_LABEL = {
-  foundation: '내 타고난 결',
+  foundation: '내 타고난 흐름',
   balance: '다섯 기운 균형',
   yongsin: '잘 풀리게 도와주는 기운',
   luck: '지금 흐르는 운',

@@ -4,7 +4,7 @@ import { simplifySajuCopy } from './public-copy';
 
 // 2026-05-19 P0 bugfix invariant — terminology.ts 의 FRIENDLY_TERM_MAP regex 회귀 차단.
 //   B01: '내 사주표' 안의 '사주표' 가 다시 매치되어 '내 내 사주표' 누적
-//   B05: '커지지만' 안의 '지지' 가 명리 술어로 매치되어 '커안쪽 결만'
+//   B05: '커지지만' 안의 '지지' 가 명리 술어로 매치되어 '커안쪽 자리만'
 
 test('B01 fix: 이미 "내 사주표" 가 들어간 텍스트는 재치환되지 않음', () => {
   const input = '생활 전체의 템포가 어긋나기 쉬운 내 사주표입니다.';
@@ -27,14 +27,14 @@ test('B05 fix: 일반 동사 "커지지만" 안의 "지지" 부분 매치 차단
   const input = '바꾸고 싶은 마음이 커지지만 시험 운전이 먼저인 달입니다.';
   const output = simplifySajuCopy(input) ?? '';
   assert.equal(output, input, '한국어 동사 -지지- 는 명리 술어 "지지" 와 다름');
-  assert.ok(!output.includes('커안쪽 결'), '"커안쪽 결만" 같은 깨짐 0건');
+  assert.ok(!output.includes('커안쪽 자리'), '"커안쪽 자리만" 같은 깨짐 0건');
 });
 
-test('B05 정상 동작: 명리 술어 "지지" 는 여전히 "안쪽 결" 로 치환', () => {
+test('B05 정상 동작: 명리 술어 "지지" 는 여전히 "안쪽 자리" 로 치환', () => {
   // 앞뒤에 한글이 없는 boundary 상황 (공백/문장부호)
   const output = simplifySajuCopy('천간과 지지의 결을 함께 봅니다.') ?? '';
   assert.ok(
-    output.includes('안쪽 결'),
+    output.includes('안쪽 자리'),
     `정상 명리 술어 매치 — 출력: "${output}"`
   );
 });
