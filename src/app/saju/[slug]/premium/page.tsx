@@ -17,7 +17,6 @@ import FortuneCalendarPanel from '@/components/ai/fortune-calendar-panel';
 import LifetimeReportPanel from '@/components/ai/lifetime-report-panel';
 import YearlyReportPanel from '@/components/ai/yearly-report-panel';
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (사주 메인/오늘 운세와 동일).
-import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
 import {
   REPORT_SAMPLE_HREF,
@@ -486,9 +485,8 @@ export default async function SajuPremiumPage({ params }: Props) {
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
           <SajuScreenNav slug={slug} current="premium" />
 
-          {/* PR #181 — 6 영역 통일 카드 (총운/직장·사업운/재물운/애정·연애운/인간관계운/컨디션·건강운).
-             사주 메인 + 오늘 운세 페이지와 동일 score 노출. */}
-          <SajuAreaCardsSection input={reading.input} sajuData={sajuData} />
+          {/* 2026-05-22 — '오늘의 분야별 흐름'(SajuAreaCardsSection)은 사주 메인 페이지에만 노출.
+             상세(이 페이지)에서 중복 렌더되어 같은 내용 반복으로 느껴져 제거(메인 요약 유지). */}
           {/* 2026-05-22 — 사주 점수 상세는 총평 탭(per-factor LockGate 모델)으로 이전. 프리미엄 점수 카드 제거. */}
 
           {/* §1 Hero — 2026-05-14 강화: 결제 권한이 있으면 ✓ 배지 + 부각 그라데이션. */}

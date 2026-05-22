@@ -1,4 +1,5 @@
-﻿import { notFound } from 'next/navigation';
+﻿import { Suspense, type ComponentProps } from 'react';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -12,7 +13,7 @@ import { SajuLifetimeKeysSection } from '@/components/saju/saju-lifetime-keys-se
 import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
 import { buildSajuNarrative } from '@/domain/saju/report';
 // 2026-05-21 — 총평 LLM 풀이 (flag 게이팅, 기본 OFF → 기존 narrative 유지).
-import { generateTotalReview } from '@/server/ai/saju-total-review-service';
+import { generateTotalReview, type GenerateTotalReviewArgs } from '@/server/ai/saju-total-review-service';
 import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-cache';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
@@ -46,6 +47,48 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ topic?: string }>;
+}
+
+// 2026-05-22 — 총평 LLM 스트리밍: 느린 LLM 호출을 Suspense 경계 안으로 옮겨
+//   페이지 셸·점수·분야별이 즉시 렌더되도록(새로고침 시 흰 화면 방지). 총평 자리엔 스켈레톤.
+async function TotalReviewSection({
+  args,
+  fallbackNarrative,
+}: {
+  args: GenerateTotalReviewArgs;
+  fallbackNarrative: ComponentProps<typeof SajuNarrativeCard>['narrative'];
+}) {
+  const totalReview = await generateTotalReview(args);
+  if (totalReview.source === 'llm' || totalReview.source === 'cache') {
+    return (
+      <>
+        <SajuTotalReviewNarrative
+          summary={totalReview.output.one_line_summary}
+          narrative={totalReview.output.main_narrative}
+        />
+        <SajuLifetimeKeysSection keys={totalReview.output.lifetime_keys} />
+      </>
+    );
+  }
+  return <SajuNarrativeCard narrative={fallbackNarrative} />;
+}
+
+function TotalReviewSkeleton() {
+  return (
+    <div
+      className="rounded-[18px] border border-[var(--app-line)] bg-white p-5"
+      aria-busy="true"
+      aria-label="사주 총평을 정리하는 중"
+    >
+      <div className="h-3 w-2/3 animate-pulse rounded bg-[var(--app-surface-muted)]" />
+      <div className="mt-3 space-y-2">
+        <div className="h-3 w-full animate-pulse rounded bg-[var(--app-surface-muted)]" />
+        <div className="h-3 w-11/12 animate-pulse rounded bg-[var(--app-surface-muted)]" />
+        <div className="h-3 w-4/5 animate-pulse rounded bg-[var(--app-surface-muted)]" />
+      </div>
+      <p className="mt-4 text-[12px] text-[var(--app-copy-soft)]">사주 총평을 정리하고 있어요…</p>
+    </div>
+  );
 }
 
 export async function generateMetadata(_: Props): Promise<Metadata> {
@@ -319,17 +362,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     userName: input.name?.trim() || null,
   });
 
-  // 2026-05-21 — 총평 LLM 풀이. flag(OPENAI_INTERPRET_TOTAL_REVIEW=1) + personalizationContext
-  //   있을 때만 호출. source==='llm' 이면 4단락 + 평생 활용 3카드 렌더, 아니면 기존 카드 유지.
-  const totalReview =
-    isTotalReviewLLMEnabled() && personalizationContext
-      ? await generateTotalReview({
-          sajuData,
-          personalizationContext,
-          userName: input.name?.trim() || null,
-          gender: input.gender === 'female' ? 'F' : input.gender === 'male' ? 'M' : null,
-        })
-      : null;
+  // 2026-05-22 — 총평 LLM 풀이는 아래 JSX 의 <TotalReviewSection>(Suspense 경계) 안에서 await 한다.
+  //   여기서 직접 await 하면 LLM(수 초) 동안 페이지 전체 HTML 이 막혀 새로고침 시 흰 화면이 떴다.
+  //   flag(OPENAI_INTERPRET_TOTAL_REVIEW) + personalizationContext 있을 때만 LLM, 아니면 결정론 narrative.
+  const totalReviewLLMActive = isTotalReviewLLMEnabled() && Boolean(personalizationContext);
 
   const pillars = [
     { label: '년', pillar: sajuData.pillars.year },
@@ -439,14 +475,18 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 narrative 로 엮어 사용자가 "이게 내 사주를 정리한 풀이" 라는 인과를 한 호흡에 받게 함.
                 2026-05-15 cleanup: §1.5 일주 캐릭터 → 성향 탭, §1.7 격국·용신·강약 + §1.8 합충·공망·신살 → 명식 탭으로 이전.
                 2026-05-21 — 총평 LLM(flag ON + source llm)이면 4단락 + 평생 활용 3카드, 아니면 기존 단락 카드. */}
-            {totalReview && (totalReview.source === 'llm' || totalReview.source === 'cache') ? (
-              <>
-                <SajuTotalReviewNarrative
-                  summary={totalReview.output.one_line_summary}
-                  narrative={totalReview.output.main_narrative}
+            {totalReviewLLMActive && personalizationContext ? (
+              <Suspense fallback={<TotalReviewSkeleton />}>
+                <TotalReviewSection
+                  args={{
+                    sajuData,
+                    personalizationContext,
+                    userName: input.name?.trim() || null,
+                    gender: input.gender === 'female' ? 'F' : input.gender === 'male' ? 'M' : null,
+                  }}
+                  fallbackNarrative={sajuNarrative}
                 />
-                <SajuLifetimeKeysSection keys={totalReview.output.lifetime_keys} />
-              </>
+              </Suspense>
             ) : (
               <SajuNarrativeCard narrative={sajuNarrative} />
             )}
@@ -499,9 +539,15 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             <section className="space-y-4">
               <div>
                 <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  사주 점수
+                  타고난 사주 점수
                 </div>
                 <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
+                <p
+                  className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-soft)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  아래 &lsquo;오늘의 분야별 흐름&rsquo;과 다른 점수예요. 이건 타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값입니다.
+                </p>
               </div>
               <SajuScoreCard score={sajuScore} />
               <ScoreBreakdownCard score={sajuScore} slug={slug} unlockedFactors={scoreFactorUnlocks} />
@@ -639,7 +685,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <li>· <strong>오행</strong> 탭 — <em>다섯 기운 균형</em> 차트</li>
                 <li>· <strong>명식</strong> 탭 — <em>반복되는 역할 후보 · 잘 풀리게 도와주는 기운 · 지금 흐르는 기운</em> (격국·용신·강약 + 합충·공망·신살)</li>
                 <li>· <strong>대운</strong> 탭 — 10년 단위 큰 흐름 + 시기별 8단 풀이 (12운성·원진·교운기)</li>
-                <li>· <strong>상세</strong> 탭 — 분야별 (연애 / 재물 / 직업 / 관계) 심화</li>
+                <li>· <strong>상세</strong> 탭 — 올해 전략·월간 타이밍·평생 흐름 (유료 심화 풀이)</li>
               </ul>
               <p
                 className="mt-2 text-[11px] leading-[1.55] text-[var(--app-copy-soft)]"
