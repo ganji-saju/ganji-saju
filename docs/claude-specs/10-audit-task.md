@@ -462,7 +462,17 @@ node scripts/audit-lifetime-report.mjs 2>&1 | tail -40
 - FAIL 스크립트의 핵심 메시지
 - `audit-narrative-tone.mjs` 결과를 가장 비중 있게 — 이게 본문 톤의 *기계 평가*
 
-(나머지 5개 audit 스크립트 — `audit-ai-chat-idempotency`, `audit-business-activity`, `audit-lucky-hybrid`, `audit-payment-idempotency`, `audit-user-entitlements` — 는 결제·인증 영역이라 이번 검수 범위 밖. 다만 실패해서 *전체 빌드*에 영향 주는지만 한 줄 보고.)
+**범위 밖 5개(결제·인증) — 빌드 영향만**:
+
+- `audit-ai-chat-idempotency` · `audit-business-activity` · `audit-lucky-hybrid` · `audit-payment-idempotency`
+  → 전체 스캔형. 인자 없이 정상 동작.
+- **`audit-user-entitlements`** → ⚠️ **운영자 수동 진단 CLI (인자 필수)**
+  - 정상 호출: `node scripts/audit-user-entitlements.mjs <user-id-or-email>`
+  - 인자 없이 실행하면 usage 출력 후 `exit(1)` → **이건 정상 동작, 회귀 아님**
+  - 이 검수에서는 **exit code 점검 제외** (인자 없이 돌리면 항상 1)
+  - 실제 무결성 확인은 `SUPABASE_SERVICE_ROLE_KEY` 환경에서 실유저 ID/email 인자와 함께 사용자가 직접 실행
+
+`build` = `next build` 로 audit 스크립트 **미체인** → 위 스크립트 결과는 Next.js 빌드 영향 없음(독립 실행 검사). (근거: `audit-reports/2026-05-22-user-entitlements-diagnosis.md`)
 
 ---
 

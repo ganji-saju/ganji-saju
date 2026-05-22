@@ -1,8 +1,9 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-22 (점수 결제 연동 세션)** — Phase 2+3 스펙 빌드(#314 머지) + score-factor per-factor 550원 결제 연동(#315) + 결제 동의 무한루프 fix + 마이그 038(prod 적용) + 레거시 점수 컴포넌트 정리(#316). #315·#316 PR open(머지 대기)
+> 최종 업데이트: **2026-05-22 (점수 결제 연동 세션)** — Phase 2+3 스펙 빌드(#314 머지) + score-factor per-factor 550원 결제 연동(#315) + 결제 동의 무한루프 fix + 마이그 038(prod 적용) + 레거시 점수 컴포넌트 정리(#316). #315·#316 머지 완료(2026-05-22)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
+> 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
 
 ---
 
