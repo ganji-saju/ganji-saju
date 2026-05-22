@@ -774,172 +774,1407 @@
   }
 }
 
-.pdf-print-page {
-  width: min(100%, 72rem);
+/* ─────────────────────────────────────────────────────────────────────────
+   사주 리포트 PDF 저장 화면 — 8페이지 A4 정확 복제 (2026-05-23).
+   화면 미리보기: A4 고정폭 페이지를 카드처럼 쌓고 모바일에선 축소.
+   인쇄(@media print): 각 .report-page 가 A4 1장, page-break-after.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 화면 미리보기 래퍼 — A4 페이지(595px)를 가로 중앙 정렬 + 모바일 축소. */
+.pdf-report-page-wrap {
+  width: min(100%, 48rem);
 }
 
-.pdf-print-document {
+.report-doc {
+  --rp-pink: #d81b72;
+  --rp-pink-strong: #ff4f9a;
+  --rp-pink-bright: #ff7bb8;
+  --rp-pink-soft: #fff0f7;
+  --rp-ink: #111114;
+  --rp-ink-soft: rgba(17, 17, 20, 0.76);
+  --rp-ink-muted: rgba(17, 17, 20, 0.56);
+  --rp-ink-faint: rgba(17, 17, 20, 0.45);
+  --rp-card-bg: #fafafb;
+  --rp-line: rgba(17, 17, 20, 0.1);
+  --rp-page-w: 595px;
+  --rp-page-h: 842px;
+  --rp-pad: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-body, 'Noto Sans KR', sans-serif);
+}
+
+/* A4 페이지 카드 */
+.report-page {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--rp-page-w);
+  min-height: var(--rp-page-h);
+  padding: var(--rp-pad) var(--rp-pad) 26px;
+  background: #fff;
+  color: var(--rp-ink);
   overflow: hidden;
-  border: 1px solid var(--app-line-strong);
-  border-radius: 1.6rem;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(212, 176, 106, 0.14), transparent 30%),
-    linear-gradient(180deg, rgba(246, 240, 226, 0.98), rgba(238, 230, 211, 0.96));
-  color: #151515;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.34);
+  border-radius: 6px;
+  box-shadow: 0 18px 48px rgba(17, 17, 20, 0.16);
+  display: flex;
+  flex-direction: column;
 }
 
-.pdf-print-cover,
-.pdf-print-summary,
-.pdf-print-section,
-.pdf-print-footer {
-  padding: 2rem;
-}
-
-.pdf-print-cover {
-  min-height: 20rem;
-  background:
-    radial-gradient(circle at 80% 20%, rgba(212, 176, 106, 0.32), transparent 26%),
-    linear-gradient(135deg, #101522, #1c2234);
-  color: var(--app-ivory);
-}
-
-.pdf-print-brand {
-  font-family: var(--font-body);
-  font-size: 1.35rem;
-  color: var(--app-gold-text);
-}
-
-.pdf-print-kicker,
-.pdf-print-section-kicker {
-  margin-top: 0.85rem;
-  color: #9b7b3d;
-  font-size: 0.78rem;
+/* 干支 워터마크 (P1) — 페이지 중앙 하단에 옅게 깔림. */
+.rp-watermark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 360px;
+  text-align: center;
+  font-family: var(--font-han, serif);
+  font-size: 220px;
   font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: 14px;
+  white-space: nowrap;
+  color: rgba(216, 27, 114, 0.045);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
-.pdf-print-cover h1 {
-  margin-top: 1.4rem;
-  max-width: 46rem;
-  font-family: var(--font-body);
-  font-size: clamp(2.4rem, 5vw, 4rem);
-  line-height: 1.12;
+.report-page > * {
+  position: relative;
+  z-index: 1;
 }
 
-.pdf-print-lead {
-  margin-top: 1.4rem;
-  max-width: 42rem;
-  color: rgba(246, 240, 226, 0.86);
-  font-size: 1.05rem;
-  line-height: 1.85;
+/* eyebrow 라벨 */
+.rp-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--rp-pink);
 }
 
-.pdf-print-meta {
+.rp-eyebrow.rp-on-pink {
+  color: #fff;
+}
+
+.rp-eyebrow.rp-faint {
+  color: rgba(17, 17, 20, 0.5);
+  font-weight: 800;
+  letter-spacing: 0.57px;
+}
+
+/* ── P1 표지 헤더 ── */
+.rp-cover-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--rp-ink);
+}
+
+.rp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rp-logo {
   display: grid;
-  gap: 0.55rem;
-  margin-top: 2rem;
-  color: rgba(246, 240, 226, 0.72);
-  font-size: 0.92rem;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff4f9a, #d81b72);
+  color: #fff;
+  font-family: var(--font-han, serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
 }
 
-.pdf-print-summary,
-.pdf-print-section {
-  border-top: 1px solid rgba(27, 31, 44, 0.14);
+.rp-logo-sm {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
 }
 
-.pdf-print-summary h2,
-.pdf-print-section h2 {
-  margin-top: 0.35rem;
-  font-family: var(--font-body);
-  font-size: 1.8rem;
-  line-height: 1.28;
-  color: #161922;
+.rp-brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
-.pdf-print-summary p,
-.pdf-print-section p,
-.pdf-print-section li {
-  color: rgba(20, 24, 34, 0.82);
-  font-size: 1rem;
-  line-height: 1.9;
+.rp-brand-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.42px;
+  color: var(--rp-ink);
 }
 
-.pdf-print-paragraphs {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
+.rp-brand-sub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rp-pink);
 }
 
-.pdf-print-keywords {
+.rp-cover-meta {
+  text-align: right;
+  font-size: 10px;
+  line-height: 16px;
+  color: var(--rp-ink-muted);
+}
+
+.rp-cover-meta strong {
+  color: var(--rp-ink);
+  font-weight: 700;
+}
+
+/* ── SUBJECT ── */
+.rp-subject {
+  margin-top: 18px;
+}
+
+.rp-subject-title {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.84px;
+  line-height: 1.2;
+  color: var(--rp-ink);
+}
+
+.rp-subject-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-top: 1.2rem;
+  gap: 18px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--rp-ink-soft);
 }
 
-.pdf-print-keywords span {
-  border: 1px solid rgba(155, 123, 61, 0.24);
-  border-radius: 9999px;
-  background: rgba(155, 123, 61, 0.08);
-  padding: 0.45rem 0.8rem;
-  color: #4b3b1f;
-  font-size: 0.86rem;
+.rp-subject-info strong {
+  font-weight: 700;
+  margin-right: 4px;
 }
 
-.pdf-print-rule,
-.pdf-print-cycle,
-.pdf-print-two-column > div {
-  margin-top: 1.1rem;
-  border: 1px solid rgba(27, 31, 44, 0.12);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.52);
-  padding: 1rem;
+/* ── 공통 블록 ── */
+.rp-block {
+  margin-top: 18px;
 }
 
-.pdf-print-cycle-list {
+.rp-block-title {
+  margin: 2px 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.28px;
+  color: var(--rp-ink);
+}
+
+/* ── 사주팔자 4기둥 ── */
+.rp-pillars {
   display: grid;
-  gap: 0.8rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  border: 1px solid var(--rp-line);
+  border-radius: 12px;
+  padding: 14px 8px;
 }
 
-.pdf-print-two-column {
+.rp-pillar {
+  text-align: center;
+}
+
+.rp-pillar-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--rp-ink-muted);
+}
+
+.rp-pillar-stem {
+  margin-top: 6px;
+  font-family: var(--font-han, serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-pillar-branch {
+  margin-top: 2px;
+  font-family: var(--font-han, serif);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-pillar-god {
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--rp-pink);
+}
+
+/* ── 한 줄 요약 / 같은 일주 / pink-soft 박스 ── */
+.rp-summary {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--rp-pink-soft);
+}
+
+.rp-summary p {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--rp-ink);
+  word-break: keep-all;
+}
+
+/* ── 2-column ── */
+.rp-twocol {
   display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.pdf-print-list {
+.rp-card {
+  border: 1px solid var(--rp-line);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+/* ── 五行 도넛 ── */
+.rp-donut-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.rp-donut {
+  position: relative;
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+}
+
+.rp-donut-hole {
+  position: absolute;
+  inset: 21px;
   display: grid;
-  gap: 0.7rem;
-  margin-top: 1rem;
-  padding-left: 1.1rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--font-han, serif);
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.pdf-print-footer {
-  border-top: 1px solid rgba(27, 31, 44, 0.14);
-  color: rgba(20, 24, 34, 0.62);
-  font-size: 0.85rem;
-  line-height: 1.75;
+.rp-elem-legend {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
 }
 
-@media (min-width: 768px) {
-  .pdf-print-two-column {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.rp-elem-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+}
+
+.rp-elem-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.rp-elem-name {
+  flex: 1;
+  font-weight: 700;
+  color: var(--rp-ink);
+}
+
+.rp-elem-pct {
+  font-weight: 700;
+  color: var(--rp-ink);
+}
+
+.rp-elem-pct span {
+  font-weight: 700;
+}
+
+/* ── 분야별 흐름 바 ── */
+.rp-bars {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rp-bar-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rp-ink);
+}
+
+.rp-bar-track {
+  margin-top: 4px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(17, 17, 20, 0.08);
+  overflow: hidden;
+}
+
+.rp-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff4f9a, #d81b72);
+}
+
+/* ── 분야별 풀이 카드 ── */
+.rp-fld-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.rp-fld-card {
+  border-radius: 10px;
+  background: var(--rp-card-bg);
+  padding: 12px 14px;
+}
+
+.rp-fld-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--rp-pink);
+}
+
+.rp-fld-card p {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--rp-ink-soft);
+  word-break: keep-all;
+}
+
+/* ── 大運 row (P1) ── */
+.rp-daewoon-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.rp-daewoon-cell {
+  text-align: center;
+  border: 1px solid var(--rp-line);
+  border-radius: 8px;
+  padding: 8px 2px;
+}
+
+.rp-daewoon-cell.is-current {
+  background: var(--rp-pink-strong);
+  border-color: var(--rp-pink-strong);
+}
+
+.rp-daewoon-cell.is-current .rp-daewoon-age,
+.rp-daewoon-cell.is-current .rp-daewoon-ganzi {
+  color: #fff;
+}
+
+.rp-daewoon-age {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--rp-ink);
+}
+
+.rp-daewoon-ganzi {
+  margin-top: 4px;
+  font-family: var(--font-han, serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--rp-ink);
+}
+
+/* ── 표지 하단 면책 / 페이지번호 ── */
+.rp-cover-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rp-cover-foot p {
+  margin: 0;
+  font-size: 8.5px;
+  line-height: 1.6;
+  color: var(--rp-ink-muted);
+}
+
+.rp-foot-page {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.54px;
+  color: var(--rp-ink-faint);
+  white-space: nowrap;
+}
+
+/* ── running header (P2~P8) ── */
+.rp-runhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rp-line);
+  font-size: 10px;
+  color: var(--rp-ink-faint);
+}
+
+.rp-runhead-mark {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rp-pink);
+}
+
+/* ── 챕터 헤더 ── */
+.rp-chaphead {
+  margin-top: 16px;
+}
+
+.rp-chaptitle {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.55px;
+  line-height: 1.2;
+  color: var(--rp-ink);
+}
+
+.rp-chaplead {
+  margin: 8px 0 0;
+  max-width: 460px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: rgba(17, 17, 20, 0.6);
+  word-break: keep-all;
+}
+
+/* ── 페이지 하단 footer ── */
+.rp-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--rp-ink-faint);
+}
+
+/* ── 십성 분포 (P2) ── */
+.rp-tengod-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--rp-line);
+  border-radius: 12px;
+  padding: 4px 16px;
+}
+
+.rp-tengod-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rp-line);
+}
+
+.rp-tengod-row:last-child {
+  border-bottom: none;
+}
+
+.rp-tengod-chip {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: #fff;
+  font-family: var(--font-han, serif);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.rp-tengod-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rp-tengod-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rp-tengod-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-tengod-name em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rp-ink-muted);
+}
+
+.rp-tengod-head strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.rp-tengod-head strong span {
+  font-size: 14px;
+}
+
+.rp-tengod-body p {
+  margin: 5px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--rp-ink-soft);
+  word-break: keep-all;
+}
+
+/* ── 신살 그리드 (P2 작은판) ── */
+.rp-sinsal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rp-sinsal-cell {
+  border: 1px solid var(--rp-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rp-sinsal-cell.is-absent {
+  opacity: 0.4;
+}
+
+.rp-sinsal-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-sinsal-meaning {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--rp-ink-muted);
+}
+
+/* ── 신살 그리드 (P6 큰판, 한자 + HAVE) ── */
+.rp-sinsal-grid-lg {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.rp-sinsal-lg {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--rp-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rp-sinsal-lg.is-absent {
+  opacity: 0.38;
+}
+
+.rp-sinsal-hanja {
+  flex: 0 0 auto;
+  font-family: var(--font-han, serif);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rp-sinsal-lg-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-have {
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.32px;
+  color: #fff;
+  background: var(--rp-pink-strong);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.rp-sinsal-lg-meaning {
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--rp-ink-muted);
+}
+
+/* ── 종합 해석 박스 ── */
+.rp-interp {
+  margin-top: 18px;
+  border: 1px solid var(--rp-line);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.rp-interp p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--rp-ink);
+  word-break: keep-all;
+}
+
+.rp-tip {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  border-radius: 10px;
+  background: #fff7e6;
+  padding: 12px 14px;
+}
+
+.rp-tip p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #7a5a00;
+  word-break: keep-all;
+}
+
+/* ── 일주 hero (P3) ── */
+.rp-ilju-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #ff7bb8, #d81b72);
+  color: #fff;
+}
+
+.rp-ilju-hero-glyph {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.18);
+  font-family: var(--font-han, serif);
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.76px;
+}
+
+.rp-ilju-hero-name {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.55px;
+}
+
+.rp-ilju-hero-text p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+  word-break: keep-all;
+}
+
+/* ── 일간/일지 카드 (P3) ── */
+.rp-ilju-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.rp-ilju-chip {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-han, serif);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rp-ilju-card-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-ilju-card-nature {
+  font-size: 10.5px;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-ilju-card p {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.65;
+  color: rgba(17, 17, 20, 0.7);
+  word-break: keep-all;
+}
+
+/* ── 성격 키워드 (P3) ── */
+.rp-trait-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rp-trait-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px;
+  background: var(--rp-card-bg);
+  padding: 12px 14px;
+}
+
+.rp-trait-score {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rp-trait-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-trait-sub {
+  font-size: 10px;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+/* ── 차트 카드 (P4 / P7) ── */
+.rp-chart-card {
+  margin-top: 16px;
+  border: 1px solid var(--rp-line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.rp-svg {
+  display: block;
+}
+
+.rp-chart-axis {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  margin-top: 6px;
+}
+
+.rp-axis-cell {
+  text-align: center;
+}
+
+.rp-axis-age {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(17, 17, 20, 0.5);
+}
+
+.rp-axis-ganzi {
+  margin-top: 2px;
+  font-family: var(--font-han, serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+
+.rp-axis-cell.is-current .rp-axis-ganzi {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 2px 6px;
+  background: var(--rp-pink-soft);
+  color: var(--rp-pink);
+}
+
+/* ── NOW hero (P4) ── */
+.rp-now-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  border-radius: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #2a0e1d, #4a1230);
+  color: #fff;
+}
+
+.rp-now-glyph {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  font-family: var(--font-han, serif);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.rp-now-eyebrow {
+  color: var(--rp-pink-bright);
+  font-weight: 800;
+  letter-spacing: 0.57px;
+}
+
+.rp-now-name {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.32px;
+}
+
+.rp-now-text p {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+  word-break: keep-all;
+}
+
+/* ── 시기별 요약 (P4) ── */
+.rp-period-list {
+  display: grid;
+  gap: 0;
+  margin-top: 10px;
+}
+
+.rp-period-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--rp-line);
+}
+
+.rp-period-row:last-child {
+  border-bottom: none;
+}
+
+.rp-period-row.is-current {
+  background: var(--rp-pink-soft);
+  border-radius: 8px;
+}
+
+.rp-period-age {
+  flex: 0 0 50px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-period-ganzi {
+  flex: 0 0 50px;
+  font-family: var(--font-han, serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+}
+
+.rp-period-row.is-current .rp-period-ganzi,
+.rp-period-row.is-current .rp-period-key {
+  color: var(--rp-pink);
+}
+
+.rp-period-key {
+  font-size: 11px;
+  font-weight: 800;
+  color: #111;
+}
+
+.rp-period-desc {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: rgba(17, 17, 20, 0.6);
+}
+
+/* ── 분야별 종합 카드 (P5) ── */
+.rp-area-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.rp-area-card {
+  border: 1px solid var(--rp-line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.rp-area-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rp-area-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-han, serif);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.rp-area-title {
+  flex: 1;
+}
+
+.rp-area-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-area-sub {
+  font-size: 10px;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-area-score {
+  text-align: right;
+}
+
+.rp-area-score strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.rp-area-score span {
+  font-size: 8px;
+  color: rgba(17, 17, 20, 0.4);
+  margin-left: 1px;
+}
+
+.rp-area-sw {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rp-area-sw-label {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.34px;
+}
+
+.rp-area-sw-text {
+  margin-top: 3px;
+  font-size: 10px;
+  color: rgba(17, 17, 20, 0.85);
+  word-break: keep-all;
+}
+
+.rp-area-tip {
+  margin-top: 12px;
+}
+
+.rp-area-tip-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.36px;
+}
+
+.rp-area-tip p {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: rgba(17, 17, 20, 0.75);
+  word-break: keep-all;
+}
+
+/* ── 격국 hero (P6) ── */
+.rp-gyeokguk-hero {
+  margin-top: 18px;
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #ff7bb8, #d81b72);
+  color: #fff;
+}
+
+.rp-gyeokguk-name {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.55px;
+}
+
+.rp-gyeokguk-hero p {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+  word-break: keep-all;
+}
+
+/* ── 12개월 차트 축 (P7) ── */
+.rp-month-axis {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  margin-top: 4px;
+}
+
+.rp-month-acell {
+  text-align: center;
+}
+
+.rp-month-anum {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-month-aval {
+  margin-top: 1px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: rgba(17, 17, 20, 0.5);
+}
+
+.rp-month-acell.is-best .rp-month-anum,
+.rp-month-acell.is-best .rp-month-aval {
+  color: var(--rp-pink);
+  font-weight: 800;
+}
+
+/* ── BEST hero (P7) ── */
+.rp-best-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  border-radius: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ff4f9a, #d81b72);
+  color: #fff;
+}
+
+.rp-best-chip {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  line-height: 1;
+}
+
+.rp-best-chip strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.rp-best-chip span {
+  font-size: 9px;
+}
+
+.rp-best-name {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.32px;
+}
+
+.rp-best-text p {
+  margin: 6px 0 0;
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+  word-break: keep-all;
+}
+
+/* ── 월별 키워드 2-col (P7) ── */
+.rp-monthkey-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  margin-top: 10px;
+}
+
+.rp-monthkey-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.rp-monthkey-row.is-best {
+  background: var(--rp-pink-soft);
+}
+
+.rp-monthkey-num {
+  flex: 0 0 24px;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-monthkey-row.is-best .rp-monthkey-num,
+.rp-monthkey-row.is-best .rp-monthkey-key {
+  color: var(--rp-pink);
+}
+
+.rp-monthkey-key {
+  flex: 0 0 50px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #111;
+}
+
+.rp-monthkey-desc {
+  flex: 1;
+  font-size: 10px;
+  color: rgba(17, 17, 20, 0.6);
+}
+
+/* ── 마무리 본문 (P8) ── */
+.rp-closing {
+  margin-top: 18px;
+  border-radius: 14px;
+  background: var(--rp-card-bg);
+  padding: 20px 22px;
+}
+
+.rp-closing p {
+  margin: 0 0 12px;
+  font-size: 11.5px;
+  line-height: 1.85;
+  letter-spacing: -0.06px;
+  color: #3a2a2a;
+  word-break: keep-all;
+}
+
+.rp-closing p:last-of-type {
+  margin-bottom: 0;
+}
+
+.rp-closing strong {
+  color: var(--rp-pink);
+  font-weight: 700;
+}
+
+.rp-sign {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.rp-sign-han {
+  display: block;
+  font-family: var(--font-han, serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--rp-pink);
+}
+
+.rp-sign-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+/* ── NEXT 추천 (P8) ── */
+.rp-next-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rp-next-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--rp-line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-decoration: none;
+}
+
+.rp-next-arrow {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--rp-pink-strong);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rp-next-body {
+  flex: 1;
+}
+
+.rp-next-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--rp-ink);
+}
+
+.rp-next-sub {
+  font-size: 10px;
+  color: rgba(17, 17, 20, 0.55);
+}
+
+.rp-next-price {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--rp-pink);
+  white-space: nowrap;
+}
+
+/* ── 안내 (P8) ── */
+.rp-notice {
+  margin-top: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--rp-line);
+  padding: 12px 16px;
+}
+
+.rp-notice-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.36px;
+  color: rgba(17, 17, 20, 0.7);
+}
+
+.rp-notice p {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  line-height: 1.65;
+  color: rgba(17, 17, 20, 0.65);
+  word-break: keep-all;
+}
+
+/* ── 최종 footer (P8) ── */
+.rp-final-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rp-line);
+}
+
+.rp-final-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rp-final-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-final-brand-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.11px;
+  color: var(--rp-ink);
+}
+
+.rp-final-brand-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--rp-pink);
+}
+
+.rp-final-meta {
+  text-align: right;
+  font-size: 8.5px;
+  line-height: 12.75px;
+  color: rgba(17, 17, 20, 0.5);
+}
+
+/* ── 모바일 미리보기: A4 페이지 축소 ── */
+@media (max-width: 640px) {
+  .report-doc {
+    --rp-scale: calc((100vw - 2rem) / 595);
+  }
+
+  .report-page {
+    transform: scale(var(--rp-scale));
+    transform-origin: top center;
+    margin-bottom: calc((var(--rp-page-h) * (var(--rp-scale) - 1)) + 12px);
   }
 }
 
+/* ─────────────── 인쇄 (실제 A4 PDF) ─────────────── */
 @media print {
   @page {
     size: A4;
-    margin: 14mm;
+    margin: 0;
   }
 
   html,
   body {
-    background: white !important;
-    color: #151515 !important;
+    background: #fff !important;
+    color: var(--rp-ink, #111114) !important;
   }
 
   body::before,
@@ -953,12 +2188,13 @@
 
   .app-shell,
   .app-shell-content,
-  .pdf-print-page {
+  .pdf-report-page-wrap {
     min-height: 0 !important;
-    background: white !important;
+    background: #fff !important;
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    max-width: none !important;
   }
 
   .app-shell::before,
@@ -966,48 +2202,90 @@
     display: none !important;
   }
 
-  .pdf-print-document {
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: white !important;
-    box-shadow: none !important;
+  .report-doc {
+    gap: 0 !important;
+    display: block !important;
   }
 
-  .pdf-print-cover {
-    min-height: 0;
-    color: #151515 !important;
-    background: white !important;
+  .report-page {
+    width: 210mm !important;
+    /* 고정 height(297mm)는 page-break-after 와 겹쳐 빈 페이지를 만든다.
+       콘텐츠가 1장에 들어오도록 두고 break-after 만으로 분할. */
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 297mm !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 12mm 13mm 9mm !important;
+    overflow: hidden;
+    break-inside: avoid;
+    break-after: page;
     page-break-after: always;
   }
 
-  .pdf-print-cover h1,
-  .pdf-print-summary h2,
-  .pdf-print-section h2 {
-    color: #151515 !important;
+  .report-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
   }
 
-  .pdf-print-brand,
-  .pdf-print-kicker,
-  .pdf-print-section-kicker {
-    color: #7a5d22 !important;
+  /* 인쇄 시 세로 여백 압축 — 각 페이지가 A4 1장 안에 들어오도록. */
+  .report-page .rp-block,
+  .report-page .rp-twocol,
+  .report-page .rp-summary,
+  .report-page .rp-interp,
+  .report-page .rp-tengod-list,
+  .report-page .rp-chart-card,
+  .report-page .rp-now-hero,
+  .report-page .rp-best-hero,
+  .report-page .rp-ilju-hero,
+  .report-page .rp-gyeokguk-hero,
+  .report-page .rp-area-grid,
+  .report-page .rp-closing,
+  .report-page .rp-notice,
+  .report-page .rp-chaphead {
+    margin-top: 12px !important;
   }
 
-  .pdf-print-lead,
-  .pdf-print-meta {
-    color: #444 !important;
+  .report-page .rp-tengod-row {
+    padding: 8px 0 !important;
   }
 
-  .pdf-print-summary,
-  .pdf-print-section,
-  .pdf-print-footer {
-    break-inside: avoid;
-    padding: 0 0 10mm;
+  .report-page .rp-pillars {
+    padding: 10px 8px !important;
   }
 
-  .pdf-print-section {
-    page-break-inside: avoid;
+  /* 인쇄 시 배경/그라데이션 색 유지 */
+  .report-page,
+  .rp-logo,
+  .rp-tengod-chip,
+  .rp-ilju-hero,
+  .rp-ilju-hero-glyph,
+  .rp-ilju-chip,
+  .rp-trait-score,
+  .rp-bar-fill,
+  .rp-donut,
+  .rp-daewoon-cell.is-current,
+  .rp-now-hero,
+  .rp-now-glyph,
+  .rp-gyeokguk-hero,
+  .rp-best-hero,
+  .rp-best-chip,
+  .rp-area-icon,
+  .rp-summary,
+  .rp-fld-card,
+  .rp-trait-card,
+  .rp-closing,
+  .rp-next-arrow,
+  .rp-have,
+  .rp-tip,
+  .rp-period-row.is-current,
+  .rp-monthkey-row.is-best,
+  .rp-axis-cell.is-current .rp-axis-ganzi {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
+
 
 html[data-reading-comfort="large"] {
   --app-mobile-dock-clearance: calc(7.35rem + env(safe-area-inset-bottom));
