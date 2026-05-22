@@ -43,8 +43,8 @@ test('toPlainKorean — 운 (대운/세운/월운/일진)', () => {
 });
 
 test('toPlainKorean — 사주 구조 (일주/월주/연주/시주)', () => {
-  assert.equal(toPlainKorean('일주', { format: 'plain-only' }), '본인의 결');
-  assert.equal(toPlainKorean('월주', { format: 'plain-only' }), '환경의 결');
+  assert.equal(toPlainKorean('일주', { format: 'plain-only' }), '본인의 본질');
+  assert.equal(toPlainKorean('월주', { format: 'plain-only' }), '환경과 사회성');
 });
 
 test('toPlainKorean — 미등록 term 은 fallback 반환', () => {

@@ -35,6 +35,22 @@ import {
 export const SAJU_DATA_V2 = 'saju-data/v2' as const;
 export const SAJU_RULE_SET_V2 = 'moonlight-rules/v2' as const;
 
+// 받침 유무로 한국어 조사를 고른다. 동적 라벨(동반/주의 등 받침이 갈리는 값)에 사용.
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
+}
+
 export type SajuDataVersionV2 = typeof SAJU_DATA_V2;
 export type SajuValidationSeverity = 'error' | 'warning' | 'info';
 export type SajuVerificationStatus = 'pass' | 'pass-with-warnings' | 'fail';
@@ -571,11 +587,11 @@ function buildFoundationBlock(data: SajuDataV1, tone: SajuContentTone): SajuInte
   return {
     id: 'foundation',
     title: FRIENDLY_BLOCK_LABEL.foundation,
-    summary: `내 핵심 기질은 ${elementLabel}의 결로 ${metaphor}처럼 풀이됩니다. 다만 기질 하나만 보지 말고, 다섯 기운의 균형 · 컨디션 결 · 관계 역할까지 같이 봐야 더 정확해져요.`,
+    summary: `내 핵심 기질은 ${elementLabel}으로 ${metaphor}처럼 풀이됩니다. 다만 기질 하나만 보지 말고, 다섯 기운의 균형 · 컨디션 · 관계 역할까지 같이 봐야 더 정확해져요.`,
     claims: [
       {
         id: 'foundation.dayMaster',
-        text: `내 핵심 기질은 ${elementLabel}의 ${metaphor}로 풀이돼요. 나를 표현하는 첫 출발점으로 가볍게 참고하면 좋아요.`,
+        text: `내 핵심 기질은 ${elementLabel}의 ${withParticle(metaphor, '으로', '로')} 풀이돼요. 나를 표현하는 첫 출발점으로 가볍게 참고하면 좋아요.`,
         confidence: 'high',
         evidence: [
           evidence('dayMaster.stem', '내 핵심 기질', data.dayMaster.stem),
@@ -603,7 +619,7 @@ function buildBalanceBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   return {
     id: 'five-elements-balance',
     title: FRIENDLY_BLOCK_LABEL.balance,
-    summary: `다섯 기운 중에서 ${dominantLabel}이 가장 강하고 ${weakestLabel}이 가장 약하게 잡혀요. 약한 기운은 “부족함”이라기보다 “일상에서 작게 채워두면 좋은 결”로 봐주세요.`,
+    summary: `다섯 기운 중에서 ${dominantLabel}이 가장 강하고 ${weakestLabel}이 가장 약하게 잡혀요. 약한 기운은 “부족함”이라기보다 “일상에서 작게 채워두면 좋은 부분”으로 봐주세요.`,
     claims: [
       {
         id: 'balance.dominant',
@@ -641,7 +657,7 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
   const monthHiddenStems = BRANCH_HIDDEN_STEMS[monthBranch] ?? [];
   const monthBranchKeyStem = monthHiddenStems[0] ?? null;
 
-  // 2026-05-14: 동반 십신 구조 — 격국이 어떤 결로 더 풍부해지는지 (또는
+  // 2026-05-14: 동반 십신 구조 — 격국이 어떤 방향으로 더 풍부해지는지 (또는
   //   주의해야 하는지) 1~3개 구절로 표시. detectPatternCompanions 가 8가지
   //   고전 동반 패턴을 평가한다.
   const accompanyingPhrases = data.tenGods
@@ -658,7 +674,7 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
 
   const summary =
     accompanyingPhrases.length > 0
-      ? `${candidateLabel}로 보입니다. ${monthRoot}이고 ${accompanyingPhrases.join(' · ')}으로 읽혀요.`
+      ? `${candidateLabel}로 보입니다. ${monthRoot}이고 ${withParticle(accompanyingPhrases.join(' · '), '으로', '로')} 읽혀요.`
       : `${candidateLabel}로 보입니다. ${monthRoot}으로 풀이됩니다.`;
 
   return {
@@ -670,7 +686,7 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
         id: 'pattern.candidate',
         text: `${candidateLabel}: ${monthRoot}.${
           accompanyingPhrases.length > 0
-            ? ` 동반 구조로 ${accompanyingPhrases.join(', ')}이 함께 보여 보수적으로 "${candidateLabel}"로 표기해요.`
+            ? ` 동반 구조로 ${withParticle(accompanyingPhrases.join(', '), '이', '가')} 함께 보여 보수적으로 "${candidateLabel}"로 표기해요.`
             : ` 단정 짓기보다 "후보"로 두고 다른 풀이와 함께 읽는 편이 안전해요.`
         }`,
         confidence: accompanyingPhrases.length > 0 ? 'medium' : 'low',
@@ -874,7 +890,7 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
     },
     {
       id: 'yongsin.secondary',
-      text: `희신(보조 도움 기운): ${secondaryText}. 1순위 도움 기운(${primaryLabel})을 든든하게 받쳐주는 결이에요.`,
+      text: `희신(보조 도움 기운): ${secondaryText}. 1순위 도움 기운(${primaryLabel})을 든든하게 받쳐주는 기운이에요.`,
       confidence: safeSecondary.length > 0 ? 'medium' : 'low',
       evidence: [
         evidence('yongsin.secondary', '보조 도움 기운 후보', secondaryText),
