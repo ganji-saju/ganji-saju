@@ -27,7 +27,7 @@ function compactStrings(values: Array<string | null | undefined | false>) {
     .filter(Boolean);
 }
 
-/** 본문 합성용 한 단어 키워드 ("쇠", "새싹"). "X 기운" / "X 결이..." 같은 합성 패턴 */
+/** 본문 합성용 한 단어 키워드 ("쇠", "새싹"). "X 기운" 같은 합성 패턴 */
 function formatElementName(element: Element) {
   return ELEMENT_INFO[element].keyword;
 }
@@ -416,7 +416,7 @@ function buildMentalText(
   } else if (isDominant) {
     base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
   } else {
-    base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화의 결을 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
+    base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화를 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
   }
   // 2026-05-15 PR 7 — 12운성 키워드 부각.
   const stageNuance = twelveStage ? buildMentalStageNuance(twelveStage) : null;
@@ -500,8 +500,8 @@ function buildRelationshipText(
 // occupation / concern 분기와 곱해 9 cycle distinct text 구현.
 const WEALTH_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
   비견: '이 10년은 비슷한 분야의 경쟁자·동료가 많아지는 흐름이에요. 협업과 경쟁이 동시에 들어와, 본인 색을 또렷이 보여주는 게 차별화 포인트입니다.',
-  겁재: '이 10년은 가까운 사람과의 동업·자금 거래에서 의외의 손실이 생기기 쉬운 결이에요. 큰 결정 전에 계약서 한 줄을 추가하는 게 가장 큰 보호막입니다.',
-  식신: '이 10년은 꾸준히 만들어내는 결과물이 수익으로 이어지는 결이에요. 새 시도보다는 반복할 수 있는 콘텐츠·서비스를 다듬는 게 우선입니다.',
+  겁재: '이 10년은 가까운 사람과의 동업·자금 거래에서 의외의 손실이 생기기 쉬운 흐름이에요. 큰 결정 전에 계약서 한 줄을 추가하는 게 가장 큰 보호막입니다.',
+  식신: '이 10년은 꾸준히 만들어내는 결과물이 수익으로 이어지는 흐름이에요. 새 시도보다는 반복할 수 있는 콘텐츠·서비스를 다듬는 게 우선입니다.',
   상관: '이 10년은 본인의 재능·표현이 큰 무기가 되는 흐름이에요. 다만 기존 틀을 깨는 시도가 자주 들어오므로, 안전망 (적금·고정 수입) 을 따로 두고 도전하세요.',
   편재: '이 10년은 큰 흐름의 돈·기회가 드나드는 흐름이에요. 들어오는 만큼 흩어지기도 쉬워, 받자마자 일부 보관·분산하는 룰이 필요합니다.',
   정재: '이 10년은 안정적인 소득과 자산 축적이 강해지는 흐름이에요. 새 투자보다는 기존 자산 구조 (적금·연금·저축성 보험) 점검이 효율적입니다.',
@@ -674,7 +674,7 @@ function buildCycleElementAction(
     return {
       reason: `대운에 ${cycleLabel} 기운이 들어와 평소 부족한 축을 채워주는 시기`,
       what: `${cycleLabel} 기운을 생활 루틴으로 받아들이기`,
-      how: `매일 5분이라도 ${cycleLabel} 결의 행동(목=시작/화=표현/토=정리/금=결단/수=학습) 한 가지 고정.`,
+      how: `매일 5분이라도 ${cycleLabel} 기운의 행동(목=시작/화=표현/토=정리/금=결단/수=학습) 한 가지 고정.`,
     };
   }
   if (isDominant) {
@@ -692,7 +692,7 @@ function buildCycleElementAction(
     };
   }
   return {
-    reason: `${cycleLabel} 결이 일상의 결정 방식을 흔드는 시기`,
+    reason: `${cycleLabel} 기운이 일상의 결정 방식을 흔드는 시기`,
     what: '익숙한 패턴 옆에 새 시도 1개 두기',
     how: '월 1회 안 해본 행동 한 가지(이동/대화/취미). 변화를 작게라도 받아들이기.',
   };
@@ -931,7 +931,7 @@ function selectChapterPattern(
     return 'questionFomo';
   }
 
-  // 3) 비현재 cycle — element 결 + 사용자 입력 분기.
+  // 3) 비현재 cycle — element 흐름 + 사용자 입력 분기.
   if (isSupport && (concern === 'wealth' || concern === 'business')) return 'transform';
   if (isWeakest) return 'warning';
   if (isDominant) return 'reverse';
