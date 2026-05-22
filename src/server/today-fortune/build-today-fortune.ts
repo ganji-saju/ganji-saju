@@ -973,20 +973,23 @@ function buildTodayFlowSignal(
     const myLabel = PUBLIC_ELEMENT_LABELS[myEl];
     const todayLabel = PUBLIC_ELEMENT_LABELS[todayEl];
     const ctx = position === '천간' ? '겉으로' : '바탕에서';
+    // 2026-05-22 naming-policy §9 — "X 결" 신조어 제거 + 받침별 조사 정확화(withKoreanParticle).
+    const todaySubject = withKoreanParticle(todayLabel, '이', '가');
+    const myObject = withKoreanParticle(myLabel, '을', '를');
     if (todayEl === myEl) {
-      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel} 결과 같아 자기 페이스를 지키기 좋은 흐름입니다.`;
+      return `오늘은 ${ctx} ${todaySubject} 내 성향과 같은 흐름이라 자기 페이스를 지키기 좋습니다.`;
     }
     if (GENERATOR_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel}을 받쳐주듯 들어와 회복과 정리에 도움이 되는 흐름입니다.`;
+      return `오늘은 ${ctx} ${todaySubject} 내 ${myObject} 받쳐주듯 들어와 회복과 정리에 도움이 되는 흐름입니다.`;
     }
     if (GENERATED_BY_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${todayLabel} 결로 내 ${myLabel} 에너지를 풀어내는 흐름이라, 표현은 잘 되지만 에너지 소모도 큰 편입니다.`;
+      return `오늘은 ${ctx} ${withKoreanParticle(todayLabel, '으로', '로')} 내 ${myLabel} 에너지를 풀어내는 흐름이라, 표현은 잘 되지만 에너지 소모도 큰 편입니다.`;
     }
     if (CONTROLLER_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${todayLabel} 결이 내 ${myLabel}을 누르듯 들어와 결정이 다소 무겁고 마찰이 생길 수 있는 흐름입니다.`;
+      return `오늘은 ${ctx} ${todaySubject} 내 ${myObject} 누르듯 들어와 결정이 다소 무겁고 마찰이 생길 수 있는 흐름입니다.`;
     }
     if (CONTROLLER_OF_MAP[todayEl] === myEl) {
-      return `오늘은 ${ctx} ${todayLabel} 결을 내 ${myLabel}로 정돈해야 하는 흐름이라, 작은 결정과 정리에 손이 많이 갑니다.`;
+      return `오늘은 ${ctx} ${withKoreanParticle(todayLabel, '을', '를')} 내 ${withKoreanParticle(myLabel, '으로', '로')} 정돈해야 하는 흐름이라, 작은 결정과 정리에 손이 많이 갑니다.`;
     }
     return null;
   }
@@ -1002,18 +1005,18 @@ function pickStrengthVariant(level: string | null | undefined, seed: number): st
   const variants: Record<'신강' | '신약' | '중화', string[]> = {
     신강: [
       '내가 먼저 끌고 가려는 힘이 강해지는 편입니다.',
-      '주도권을 잡고 움직이는 결이 살아 있어 결정이 빨라지기 쉬워요.',
+      '주도권을 잡고 움직이는 힘이 살아 있어 결정이 빨라지기 쉬워요.',
       '내 페이스로 끌고 가는 힘이 강해 무리하지 않게 호흡을 길게 가져가는 편이 좋아요.',
     ],
     신약: [
       '주변 분위기와 컨디션에 영향을 받기 쉬운 편입니다.',
-      '주변 흐름과 사람 결에 휘청이기 쉬운 결이라 자기 페이스를 먼저 정해두면 편해져요.',
-      '주변 신호에 민감해질 수 있는 결이라 정보와 일정을 단순화하는 편이 좋아요.',
+      '주변 흐름과 사람 분위기에 휘청이기 쉬운 편이라 자기 페이스를 먼저 정해두면 편해져요.',
+      '주변 신호에 민감해질 수 있어 정보와 일정을 단순화하는 편이 좋아요.',
     ],
     중화: [
       '상황을 보고 맞추는 감각이 살아 있는 편입니다.',
-      '한쪽으로 치우치지 않아 조율과 중재가 잘 되는 결이 살아 있어요.',
-      '균형을 보며 움직이는 결이 살아 있어 작은 분기마다 한 박자 쉬어가면 더 정돈됩니다.',
+      '한쪽으로 치우치지 않아 조율과 중재가 잘 되는 감각이 살아 있어요.',
+      '균형을 보며 움직이는 감각이 살아 있어 작은 분기마다 한 박자 쉬어가면 더 정돈됩니다.',
     ],
   };
   const key = (level === '신강' || level === '신약' || level === '중화') ? level : '중화';
@@ -1027,8 +1030,8 @@ function pickRoleBodyVariant(
 ): string {
   const extras = [
     baseRoleBody,
-    `${dayLabel} 감각이 먼저 반응하는 결로 흘러요.`,
-    `${dayLabel} 쪽 결이 첫 신호로 올라오는 흐름이에요.`,
+    `${dayLabel} 감각이 먼저 반응하는 흐름이에요.`,
+    `${dayLabel} 쪽이 첫 신호로 올라오는 흐름이에요.`,
   ];
   return pickVariant(extras, seed, 9);
 }
@@ -1986,7 +1989,7 @@ function buildTimeBlockEvaluations(
     );
     const supportSummary = uniqueStrings(
       [
-        `${timePillar.timeGanzi}시에는 ${timePillar.branchElement} 기운이 전면에 서서 오늘 흐름의 결을 바꿉니다.`,
+        `${timePillar.timeGanzi}시에는 ${timePillar.branchElement} 기운이 전면에 서서 오늘 흐름을 바꿉니다.`,
         ...elementImpact.supportLines,
         relationImpact.supportLabels[0]
           ? `${relationImpact.supportLabels.join(', ')}이 들어와 말이나 결정이 묶이는 힘을 더합니다.`
@@ -2283,15 +2286,15 @@ function getDailyRelationKind(
 
 const DAILY_LEAD_VARIANTS: Record<DailyRelationKind, string[]> = {
   same: [
-    '오늘은 내 결을 그대로 따라가는 일에서 가장 매끈한 성과가 나옵니다.',
+    '오늘은 내 흐름을 그대로 따라가는 일에서 가장 매끈한 성과가 나옵니다.',
     '오늘은 내 페이스가 살아나는 흐름이라 미뤄둔 본업을 잡아도 좋아요.',
   ],
   support: [
     '오늘은 받쳐주는 흐름이 들어오는 날이라 회복 · 학습 · 정리에 손이 잘 갑니다.',
-    '오늘은 도움을 받기 좋은 결이라 누군가에게 작게 요청해도 자연스럽습니다.',
+    '오늘은 도움을 받기 좋은 흐름이라 누군가에게 작게 요청해도 자연스럽습니다.',
   ],
   leak: [
-    '오늘은 표현이 잘 풀리는 결이지만 에너지 소모도 큰 편이라, 하루 종일 쏟지 마세요.',
+    '오늘은 표현이 잘 풀리는 흐름이지만 에너지 소모도 큰 편이라, 하루 종일 쏟지 마세요.',
     '오늘은 의견을 꺼내기 좋은 흐름이라 짧고 명확한 한 줄을 미리 적어두세요.',
   ],
   control: [
@@ -2299,7 +2302,7 @@ const DAILY_LEAD_VARIANTS: Record<DailyRelationKind, string[]> = {
     '오늘은 무게가 실리는 흐름이라 큰 약속은 다음 날로 미루는 편이 안전합니다.',
   ],
   spend: [
-    '오늘은 정돈해야 하는 결이라 작은 실행과 마무리에 손이 많이 갑니다.',
+    '오늘은 정돈해야 하는 흐름이라 작은 실행과 마무리에 손이 많이 갑니다.',
     '오늘은 끝내야 할 일을 먼저 짚고 시작하면 흐름이 가벼워져요.',
   ],
   neutral: [
@@ -2311,7 +2314,7 @@ const DAILY_LEAD_VARIANTS: Record<DailyRelationKind, string[]> = {
 const DAILY_AVOID_VARIANTS: Record<DailyRelationKind, string[]> = {
   same: [
     '오늘은 내 페이스에만 갇혀 주변 신호를 놓치지 않도록 한 박자 둘러보세요.',
-    '오늘은 자기 결이 강해 상대 의견을 가볍게 흘리기 쉽습니다.',
+    '오늘은 자기 주관이 강해 상대 의견을 가볍게 흘리기 쉽습니다.',
   ],
   support: [
     '오늘은 도움을 받기 좋은 만큼 의존이 길어지지 않도록 마무리는 직접 정리하세요.',
@@ -2322,7 +2325,7 @@ const DAILY_AVOID_VARIANTS: Record<DailyRelationKind, string[]> = {
     '오늘은 많이 표현하다 보면 에너지가 빠지기 쉽습니다.',
   ],
   control: [
-    '오늘은 마찰이 생기기 쉬운 결이라 즉답보다 한 박자 쉬고 답하세요.',
+    '오늘은 마찰이 생기기 쉬운 흐름이라 즉답보다 한 박자 쉬고 답하세요.',
     '오늘은 큰 결정은 다음 날로 미루는 편이 안전합니다.',
   ],
   spend: [
