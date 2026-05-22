@@ -42,18 +42,17 @@ export {
 export type { ScoreColorClasses } from './labels';
 export { computeOhaengChart } from './ohaeng';
 export {
-  SCORE_LEVEL_TOKENS, OHAENG_TOKENS, BREAKDOWN_FACTOR_META, BREAKDOWN_ORDER,
+  SCORE_LEVEL_TOKENS, OHAENG_TOKENS,
   getScoreLevelToken, getScoreLevelTokenByTotal, getOhaengToken,
-  getBreakdownFactorMeta, getBarFillPercent,
 } from './visual-tokens';
 export type {
-  ScoreLevel, BreakdownKey, ScoreLevelToken, OhaengToken, BreakdownFactorMeta,
+  ScoreLevel, ScoreLevelToken, OhaengToken,
 } from './visual-tokens';
 export {
-  OHAENG_RADAR_ORDER, computeOhaengRadarPoints, getDominantOhaeng, getOhaengBalanceLevel,
+  OHAENG_RADAR_ORDER, getDominantOhaeng, getOhaengBalanceLevel,
 } from './ohaeng-chart';
 export type {
-  RadarPoint, OhaengRadarGeometry, RadarOptions, OhaengBalanceLevel,
+  OhaengBalanceLevel,
 } from './ohaeng-chart';
 export { sajuDataToScoreInput, computeSajuScoreFromData } from './from-saju-data';
 export type { SajuData, SajuScore, ScoreLabel, OhaengChartData, Ohaeng } from './types';

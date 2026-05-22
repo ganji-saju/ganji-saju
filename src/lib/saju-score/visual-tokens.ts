@@ -1,11 +1,10 @@
 // 2026-05-21 — 점수 시각 토큰 단일 소스(Phase 2 — 라벨/색상 시스템).
-//   등급(5단계) · 오행(5) · 내역지표(F1~F5) 의 색상·라벨·max·fill% 를 한 곳에서 관리.
-//   labels.ts / ohaeng.ts 는 여기서 파생(REFACTOR). 컴포넌트(Phase 3)가 소비.
+//   등급(5단계) · 오행(5) 의 색상·라벨 토큰을 한 곳에서 관리. labels.ts / ohaeng.ts 가 파생 소비.
 //   naming-policy: 라벨/설명 한자 0, 오행 "X 기운".
+//   2026-05-22 — 레거시 점수 컴포넌트 제거로 내역지표(BREAKDOWN_*/getBreakdownFactorMeta/getBarFillPercent) 토큰 제거.
 import type { Ohaeng, ScoreLabel } from './types';
 
 export type ScoreLevel = ScoreLabel['level'];
-export type BreakdownKey = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
 
 export interface ScoreLevelToken {
   bg: string;
@@ -79,34 +78,4 @@ export const OHAENG_TOKENS: Record<Ohaeng, OhaengToken> = {
 
 export function getOhaengToken(ohaeng: Ohaeng): OhaengToken {
   return OHAENG_TOKENS[ohaeng];
-}
-
-export interface BreakdownFactorMeta {
-  key: BreakdownKey;
-  label: string;
-  description: string;
-  max: number;
-  hex: string;
-}
-
-export const BREAKDOWN_ORDER: BreakdownKey[] = ['F1', 'F2', 'F3', 'F4', 'F5'];
-
-// 내역지표 — 일상어 라벨(한자 0). hex 는 app 팔레트(tokens.css) 정렬.
-export const BREAKDOWN_FACTOR_META: Record<BreakdownKey, BreakdownFactorMeta> = {
-  F1: { key: 'F1', label: '타고난 본질', description: '일주가 만드는 기본 성향과 힘', max: 20, hex: '#ff4f9a' },
-  F2: { key: 'F2', label: '강점 구조', description: '타고난 강점이 또렷하게 작동하는 정도', max: 20, hex: '#5b58d6' },
-  F3: { key: 'F3', label: '균형 보강', description: '부족한 기운을 채워 주는 힘', max: 20, hex: '#0f9f7a' },
-  F4: { key: 'F4', label: '오행 균형', description: '다섯 기운이 고르게 분포한 정도', max: 20, hex: '#d99020' },
-  F5: { key: 'F5', label: '관계와 흐름', description: '글자 사이 관계와 변화의 흐름', max: 20, hex: '#368ee8' },
-};
-
-export function getBreakdownFactorMeta(key: BreakdownKey): BreakdownFactorMeta {
-  return BREAKDOWN_FACTOR_META[key];
-}
-
-/** value/max 비율을 0~100 정수 퍼센트로. max<=0 이면 0. */
-export function getBarFillPercent(value: number, max: number): number {
-  if (max <= 0) return 0;
-  const pct = Math.round((value / max) * 100);
-  return Math.max(0, Math.min(100, pct));
 }
