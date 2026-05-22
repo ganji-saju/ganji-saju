@@ -199,7 +199,7 @@ function buildDetailReportContent(
   const wealthDetail: DetailTopicReportContent = {
     lead: isMaleCounselor
       ? `${wealthReport.headline} 재물운은 ${wealthScore}점입니다. 이번 심화 해석은 “돈이 들어오나”보다 “어디서 새고, 어디서 붙잡아야 하며, 무엇은 지금 진행하고 무엇은 보류해야 하는가”를 먼저 정리해 드립니다.`
-      : `${wealthReport.headline} 재물운은 ${wealthScore}점으로, 무조건 돈이 들어온다는 약속보다 지금 내 돈의 결이 어디에서 흔들리고 어디에서 붙는지 먼저 읽는 점수입니다.`,
+      : `${wealthReport.headline} 재물운은 ${wealthScore}점으로, 무조건 돈이 들어온다는 약속보다 지금 내 돈의 흐름이 어디에서 흔들리고 어디에서 붙는지 먼저 읽는 점수입니다.`,
     scoreLabel: `${wealthScore}점`,
     highlights: ['재물운', `${wealthScore}점`, '지출 구조', '정산', '보류', '고정비'],
     blocks: [
@@ -280,7 +280,7 @@ function buildDetailReportContent(
       {
         tone: 'basis' as const,
         title: '지금 일에서 빛나는 방식',
-        body: `강한 ${dominant.name} 기운은 직업적으로 ${dominant.traits[2]}과 ${dominant.traits[0]}이 필요한 역할에서 장점으로 쓰기 좋습니다. 다만 ${weakest.name} 축이 약해지는 방식으로 일을 넓히면 피로가 커질 수 있습니다.`,
+        body: `강한 ${dominant.name} 기운은 직업적으로 ${dominant.traits[2]}과 ${withParticle(dominant.traits[0], '이', '가')} 필요한 역할에서 장점으로 쓰기 좋습니다. 다만 ${weakest.name} 축이 약해지는 방식으로 일을 넓히면 피로가 커질 수 있습니다.`,
         keywords: [dominant.name, weakest.name, dominant.traits[2], dominant.traits[0]],
       },
       {
@@ -428,6 +428,19 @@ function joinNarrative(parts: Array<string | undefined>) {
     .map((part) => part?.trim())
     .filter(Boolean)
     .join(' ');
+}
+
+function hasBatchim(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  if (!lastChar) return false;
+  const code = lastChar.charCodeAt(0) - 0xac00;
+  if (code < 0 || code > 11171) return false;
+  return code % 28 !== 0;
+}
+
+function withParticle(value: string, consonantParticle: string, vowelParticle: string) {
+  return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
 }
 
 function toReadableDetailTopic(topic: DetailTopicReportContent): DetailTopicReportContent {

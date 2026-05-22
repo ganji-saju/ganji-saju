@@ -36,7 +36,7 @@ export default async function DailyTarotPage() {
               한 장을 골라보세요
             </h1>
             <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
-              궁금한 한 가지를 고르고 바로 뽑으세요. 카드 한 장이 오늘 마음의 결을 보여줍니다.
+              궁금한 한 가지를 고르고 바로 뽑으세요. 카드 한 장이 오늘 마음의 흐름을 보여줍니다.
             </p>
           </div>
 

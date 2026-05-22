@@ -681,7 +681,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                <li>· <strong>성향</strong> 탭 — <em>내 타고난 결</em> (일주 캐릭터 풀이)</li>
+                <li>· <strong>성향</strong> 탭 — <em>내 타고난 성향</em> (일주 캐릭터 풀이)</li>
                 <li>· <strong>오행</strong> 탭 — <em>다섯 기운 균형</em> 차트</li>
                 <li>· <strong>명식</strong> 탭 — <em>반복되는 역할 후보 · 잘 풀리게 도와주는 기운 · 지금 흐르는 기운</em> (격국·용신·강약 + 합충·공망·신살)</li>
                 <li>· <strong>대운</strong> 탭 — 10년 단위 큰 흐름 + 시기별 8단 풀이 (12운성·원진·교운기)</li>

@@ -51,7 +51,7 @@ const BLOCK_TONE: Record<
     accent: 'var(--app-pink-strong)',
     soft: 'var(--app-pink-soft)',
     border: 'var(--app-pink-line)',
-    eyebrow: '내 결',
+    eyebrow: '내 성향',
   },
   'five-elements-balance': {
     accent: 'var(--app-jade)',

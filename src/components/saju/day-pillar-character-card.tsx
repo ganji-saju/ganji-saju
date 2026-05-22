@@ -80,7 +80,7 @@ export function DayPillarCharacterCard({
                 className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                일주가 알려주는 나의 결을 함께 보세요.
+                일주가 알려주는 나의 성향을 함께 보세요.
               </h3>
             </>
           )}

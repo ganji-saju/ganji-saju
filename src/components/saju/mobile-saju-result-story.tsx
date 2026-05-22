@@ -376,7 +376,7 @@ export function MobileSajuResultStory({
             />
             <div className="grid grid-cols-2 gap-2">
               <StoryInlineFact
-                label="타고난 결"
+                label="타고난 성향"
                 value={`${dayMasterLabel} · ${dayMasterMetaphor}`}
               />
               <StoryInlineFact

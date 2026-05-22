@@ -91,7 +91,7 @@ function SetupState({
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '궁합 결과',
-    description: '두 사람의 명식을 비교해 관계의 결을 읽는 궁합 결과 화면입니다.',
+    description: '두 사람의 명식을 비교해 관계의 흐름을 읽는 궁합 결과 화면입니다.',
   };
 }
 

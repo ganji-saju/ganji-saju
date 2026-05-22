@@ -71,7 +71,7 @@ export default async function DialoguePage({
               이야기 나눠볼까요?
             </h1>
             <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
-              분야를 고르고 바로 물어보세요. 각 선생님이 자신의 결로 답해드립니다.
+              분야를 고르고 바로 물어보세요. 각 선생님이 자신의 방식으로 답해드립니다.
             </p>
           </div>
 

@@ -23,7 +23,7 @@ const QUICK_GUIDE = [
   },
   {
     title: '상대와의 관계가 궁금할 때',
-    body: '내 정보와 상대 정보를 넣고 관계의 결, 갈등 지점, 보완점을 봅니다.',
+    body: '내 정보와 상대 정보를 넣고 관계의 흐름, 갈등 지점, 보완점을 봅니다.',
     href: '/compatibility/input',
     cta: '궁합 보기',
   },

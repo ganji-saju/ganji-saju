@@ -105,7 +105,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
         { label: '사주용선생', desc: '내 흐름 보기 · 사주', href: '/dialogue/dragon', zodiac: 'dragon' },
         { label: '꿈뱀선생', desc: '마음 신호 · 꿈해몽', href: '/dialogue/snake', zodiac: 'snake' },
         { label: '이동말선생', desc: '이직·이사·여행', href: '/dialogue/horse', zodiac: 'horse' },
-        { label: '궁합양선생', desc: '상대와의 결 · 궁합', href: '/dialogue/sheep', zodiac: 'sheep' },
+        { label: '궁합양선생', desc: '상대와의 합 · 궁합', href: '/dialogue/sheep', zodiac: 'sheep' },
         { label: '관상원선생', desc: '인상과 분위기 · 관상', href: '/dialogue/monkey', zodiac: 'monkey' },
         { label: '재물닭선생', desc: '돈 습관 · 재물운', href: '/dialogue/rooster', zodiac: 'rooster' },
         { label: '손금멍선생', desc: '손바닥 단서 · 손금', href: '/dialogue/dog', zodiac: 'dog' },

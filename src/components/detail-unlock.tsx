@@ -620,7 +620,7 @@ function getPreviewCopy(key: (typeof SECTIONS)[number]['key']) {
     case 'love':
       return '관계의 속도와 표현 온도를 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
     case 'career':
-      return '큰 흐름과 올해 흐름을 바탕으로 포지션 변화, 확장 타이밍, 일의 결을 더 구체적으로 읽습니다.';
+      return '큰 흐름과 올해 흐름을 바탕으로 포지션 변화, 확장 타이밍, 일의 방향을 더 구체적으로 읽습니다.';
     case 'health':
       return '많이 쓰는 기운과 채워야 할 기운을 함께 보고 생활 리듬에서 먼저 손볼 포인트를 제안합니다.';
   }

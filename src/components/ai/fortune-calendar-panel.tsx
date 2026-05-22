@@ -763,7 +763,7 @@ export default function FortuneCalendarPanel({
                   className="mt-1 text-[15px] font-extrabold leading-[1.55] text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
-                  {data?.report?.summary.headline ?? '이 달의 흐름을 해제하면 날별 결을 바로 읽을 수 있습니다.'}
+                  {data?.report?.summary.headline ?? '이 달의 흐름을 해제하면 날별 기운을 바로 읽을 수 있습니다.'}
                 </p>
               </div>
               {remaining !== null ? (

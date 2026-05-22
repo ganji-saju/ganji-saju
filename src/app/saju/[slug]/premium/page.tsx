@@ -586,7 +586,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 number={1}
                 tone="jade"
                 eyebrow="1장 · 큰 흐름"
-                title="10년 단위 대운으로 인생의 결을 봅니다"
+                title="10년 단위 대운으로 인생의 흐름을 봅니다"
                 description="타고난 성향과 관계·일의 패턴을 먼저 정리하고, 그 위에 10년씩 흐르는 큰 운(대운)을 차례로 짚어드립니다. 평생 한 번 정리해 두면 매년 흐름을 가벼운 마음으로 읽게 됩니다."
                 highlight="평생 활용 · 다시 볼 수 있게 보관"
               />
@@ -653,7 +653,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 number={1}
                 tone="jade"
                 eyebrow="1장 · 큰 흐름 (잠금)"
-                title="10년 단위 대운으로 인생의 결을 봅니다"
+                title="10년 단위 대운으로 인생의 흐름을 봅니다"
                 description="타고난 성향과 관계·일의 패턴을 정리한 뒤, 10년씩 흐르는 큰 운을 차례로 짚어드립니다. 결제 후 본문이 열립니다."
                 aside="49,000원 풀팩에 포함"
               />
@@ -661,7 +661,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
                   <div className="select-none blur-[5px] opacity-65">
                     <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
-                      자세한 풀이에서는 타고난 성향, 관계 패턴, 일·돈의 결을 정리한 뒤
+                      자세한 풀이에서는 타고난 성향, 관계 패턴, 일·돈의 흐름을 정리한 뒤
                       10년 단위로 흐르는 큰 운을 차례로 보여드립니다. 평생 한 번 정리해
                       두면 매년 흐름을 가볍게 읽게 됩니다.
                     </p>
@@ -776,7 +776,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <p className="mt-2.5 text-[14px] leading-[1.7] text-[var(--app-copy)]">
                     이 사주는 {sajuData.dayMaster.metaphor ?? '자연의 상징'}처럼 드러나는 기질을
-                    중심으로 봅니다. 겉으로 보이는 모습과 안쪽에서 오래 반복되는 마음의 결을 함께
+                    중심으로 봅니다. 겉으로 보이는 모습과 안쪽에서 오래 반복되는 마음의 바탕을 함께
                     확인합니다.
                   </p>
 
