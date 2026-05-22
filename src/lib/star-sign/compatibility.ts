@@ -77,7 +77,7 @@ function elementRelationLabel(ae: SignElement, be: SignElement): string {
     (ae === 'water' && be === 'fire') ||
     (ae === 'earth' && be === 'air') ||
     (ae === 'air' && be === 'earth');
-  if (clash) return '대조 원소 (서로를 깨우는 결)';
+  if (clash) return '대조 원소 (서로를 깨우는 기운)';
   return '중성 원소';
 }
 
@@ -101,14 +101,14 @@ function qualityRelationLabel(aq: string, bq: string): string {
 
 function buildHeadline(score: number, ae: SignElement, be: SignElement): string {
   if (score >= 88) {
-    if (ae === be) return '같은 결의 환상의 짝꿍 — 자연스럽게 통합니다';
+    if (ae === be) return '같은 성향의 환상의 짝꿍 — 자연스럽게 통합니다';
     return '서로를 빛나게 하는 완벽한 호흡';
   }
   if (score >= 78) {
     return '잘 맞춰가면 깊은 신뢰가 쌓이는 관계';
   }
   if (score >= 65) {
-    return '서로 다른 결을 이해하면 큰 성장이 있는 관계';
+    return '서로 다른 성향을 이해하면 큰 성장이 있는 관계';
   }
   if (score >= 55) {
     return '큰 차이가 있지만 그만큼 배울 점이 많은 관계';
@@ -188,7 +188,7 @@ function buildAreas(a: StarSignSlug, b: StarSignSlug, overall: number): AreaScor
       score: clamp(overall + commBoost),
       hint:
         commBoost > 0
-          ? '대화의 결이 자연스럽게 흐릅니다'
+          ? '대화의 흐름이 자연스럽게 흐릅니다'
           : '말보다 행동으로 마음을 전하면 좋아요',
     },
     {
@@ -253,7 +253,7 @@ function buildStrengths(a: StarSignSlug, b: StarSignSlug, score: number): string
       (ac.element === 'earth' && bc.element === 'water') ||
       (ac.element === 'water' && bc.element === 'earth');
     if (harmonic) {
-      items.push('조화 원소 — 서로의 결이 자연스럽게 보완됩니다');
+      items.push('조화 원소 — 서로의 기운이 자연스럽게 보완됩니다');
     }
   }
 
@@ -270,7 +270,7 @@ function buildStrengths(a: StarSignSlug, b: StarSignSlug, score: number): string
     items.push('서로의 강점을 자연스럽게 인정하는 케미');
   }
   if (items.length === 0) {
-    items.push('서로 다른 결을 발견하며 천천히 신뢰를 쌓을 수 있는 관계');
+    items.push('서로 다른 성향을 발견하며 천천히 신뢰를 쌓을 수 있는 관계');
   }
   return items.slice(0, 4);
 }
@@ -282,7 +282,7 @@ function buildTensions(a: StarSignSlug, b: StarSignSlug, score: number): string[
 
   const angle = angleDiff(a, b);
   if (angle === 3) items.push('90° 스퀘어 — 같은 일에 대해 접근 방식이 부딪칠 수 있어요');
-  if (angle === 5) items.push('150° 인콘정크션 — 서로의 결이 어색하게 엇갈리기 쉬워요');
+  if (angle === 5) items.push('150° 인콘정크션 — 서로의 기운이 어색하게 엇갈리기 쉬워요');
 
   const clash =
     (ac.element === 'fire' && bc.element === 'water') ||

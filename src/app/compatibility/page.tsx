@@ -190,7 +190,7 @@ export default async function CompatibilityPage() {
               </li>
               <li className="flex items-start gap-1.5">
                 <span className="mt-0.5 shrink-0 font-extrabold text-[var(--app-pink-strong)]">③</span>
-                <span><strong>궁합 점수 + 4축 분석</strong> — 닮은 결 / 어긋난 결 / 좋은 시기 / 조심할 흐름</span>
+                <span><strong>궁합 점수 + 4축 분석</strong> — 닮은 점 / 어긋난 점 / 좋은 시기 / 조심할 흐름</span>
               </li>
             </ul>
           </article>
@@ -210,7 +210,7 @@ export default async function CompatibilityPage() {
               VIP · PREMIUM
             </div>
             <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
-              두 사람의 결이 어디서 닮고
+              두 사람의 기운이 어디서 닮고
               <br />
               어디서 어긋나는지
             </h2>

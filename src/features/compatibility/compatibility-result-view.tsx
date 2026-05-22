@@ -167,7 +167,7 @@ export function CompatibilityResultView({
             분야별 궁합
           </h2>
           <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
-            관계의 결을 4축으로 나눠 봅니다
+            관계의 흐름을 4축으로 나눠 봅니다
           </p>
           <div className="mt-3 grid gap-2.5">
             {compatibility.practicalCards.map((card) => {
@@ -208,10 +208,10 @@ export function CompatibilityResultView({
           </div>
         </section>
 
-        {/* §5 두 사람 결 */}
+        {/* §5 두 사람 흐름 */}
         <section>
           <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
-            두 사람 결
+            두 사람 흐름
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
@@ -244,7 +244,7 @@ export function CompatibilityResultView({
         {/* §6 잘 맞는 / 조심 / 지금 살리는 */}
         <section>
           <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
-            관계 결 정리
+            관계 흐름 정리
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">

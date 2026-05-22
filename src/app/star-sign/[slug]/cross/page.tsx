@@ -139,7 +139,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 서양의 별빛 + 동양의 명식
               </h1>
               <p className="mt-2 text-[12.5px] leading-[1.6]" style={{ opacity: 0.9 }}>
-                서양 별자리는 외향적 결을, 동양 일간은 내면의 핵심 기질을 보여줍니다.
+                서양 별자리는 외향적 성향을, 동양 일간은 내면의 핵심 기질을 보여줍니다.
                 두 시스템을 함께 읽으면 한쪽만으로는 보이지 않는 입체감이 드러납니다.
               </p>
 
@@ -284,7 +284,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  ✨ 두 결을 함께 살리는 법
+                  ✨ 두 기운을 함께 살리는 법
                 </div>
                 <div className="mt-2 grid gap-2">
                   {cross.actionSuggestions.map((act, idx) => (
@@ -359,7 +359,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                   className="mt-2 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
-                  내 일간이 무엇이냐에 따라 같은 별자리도 다섯 가지 결로 나뉩니다 (목/화/토/금/수).
+                  내 일간이 무엇이냐에 따라 같은 별자리도 다섯 가지 성향으로 나뉩니다 (목/화/토/금/수).
                   사주 정보를 입력하시면 정확한 합성 인사이트를 받아보실 수 있어요.
                 </p>
               </article>
