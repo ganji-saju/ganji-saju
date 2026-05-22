@@ -80,11 +80,11 @@ const STEM_LABEL_KO: Record<Stem, string> = {
 export type CrossRelation = 'identical' | 'generate' | 'generated' | 'control' | 'controlled' | 'neutral';
 
 const RELATION_LABEL: Record<CrossRelation, { label: string; tone: 'best' | 'good' | 'mid' | 'caution' }> = {
-  identical: { label: '같은 결', tone: 'best' },
-  generate: { label: '내가 키우는 결', tone: 'good' },
-  generated: { label: '나를 키우는 결', tone: 'good' },
-  control: { label: '내가 누르는 결', tone: 'caution' },
-  controlled: { label: '나를 누르는 결', tone: 'caution' },
+  identical: { label: '같은 기운', tone: 'best' },
+  generate: { label: '내가 키우는 기운', tone: 'good' },
+  generated: { label: '나를 키우는 기운', tone: 'good' },
+  control: { label: '내가 누르는 기운', tone: 'caution' },
+  controlled: { label: '나를 누르는 기운', tone: 'caution' },
   neutral: { label: '중립', tone: 'mid' },
 };
 
@@ -139,21 +139,21 @@ const STEM_KEYWORDS: Record<Stem, string[]> = {
 };
 
 const RELATION_SYNERGY: Record<CrossRelation, string> = {
-  identical: '서양과 동양이 같은 결 — 강점이 곱셈으로 작동합니다',
+  identical: '서양과 동양이 같은 기운 — 강점이 곱셈으로 작동합니다',
   generate: '내 별자리가 일간을 키워주는 흐름 — 표현과 안정이 자연스럽게 이어집니다',
   generated: '일간이 내 별자리를 키워주는 흐름 — 내면이 외면을 받쳐줍니다',
-  control: '내 별자리가 일간을 누르는 결 — 추진력은 있지만 무리하기 쉽습니다',
-  controlled: '일간이 내 별자리를 누르는 결 — 안정감은 있으나 답답함을 느낄 수 있습니다',
-  neutral: '두 시스템이 따로 작동 — 각각의 결을 따로 챙기면 균형이 잡힙니다',
+  control: '내 별자리가 일간을 누르는 기운 — 추진력은 있지만 무리하기 쉽습니다',
+  controlled: '일간이 내 별자리를 누르는 기운 — 안정감은 있으나 답답함을 느낄 수 있습니다',
+  neutral: '두 시스템이 따로 작동 — 각각의 기운을 따로 챙기면 균형이 잡힙니다',
 };
 
 const RELATION_TENSION: Record<CrossRelation, string> = {
-  identical: '같은 결이라 단점도 곱절 — 약점 한 가지에 갇히지 않게 주의하세요',
+  identical: '같은 기운이라 단점도 곱절 — 약점 한 가지에 갇히지 않게 주의하세요',
   generate: '주는 쪽이 지치지 않게, 자기 회복도 챙기세요',
   generated: '받기만 하지 말고 외부 표현을 함께 늘려보세요',
   control: '강한 의지가 주변과 부딪칠 수 있으니 톤 조절이 키입니다',
   controlled: '눌리는 답답함을 풀 출구를 평소에 만들어두세요',
-  neutral: '두 결이 따로 놀 때 정체성이 흔들릴 수 있어요',
+  neutral: '두 기운이 따로 놀 때 정체성이 흔들릴 수 있어요',
 };
 
 const QUALITY_YINYANG_INTEGRATION: Record<`${SignQuality}-${YinYang}`, string> = {
@@ -167,7 +167,7 @@ const QUALITY_YINYANG_INTEGRATION: Record<`${SignQuality}-${YinYang}`, string> =
 
 const RELATION_ACTIONS: Record<CrossRelation, string[]> = {
   identical: [
-    '같은 결이 곱절로 강해지는 장점을 살릴 환경을 고르세요',
+    '같은 기운이 곱절로 강해지는 장점을 살릴 환경을 고르세요',
     '약점 한 가지에 매몰되지 않게 의식적으로 다양성을 챙기세요',
     '한 가지 분야에서 깊이를 만드세요',
   ],
@@ -192,7 +192,7 @@ const RELATION_ACTIONS: Record<CrossRelation, string[]> = {
     '나의 페이스를 지키는 경계선을 분명히 그으세요',
   ],
   neutral: [
-    '두 결을 각각 다른 영역에서 활용하세요 (일/관계)',
+    '두 기운을 각각 다른 영역에서 활용하세요 (일/관계)',
     '정체성이 흔들릴 때는 둘 중 하나에 우선순위를 두세요',
     '두 시스템의 키워드 중 가장 끌리는 단어를 매일 한 번 떠올리세요',
   ],
@@ -245,6 +245,6 @@ export function summarizeCrossOverview(signSlug: StarSignSlug) {
     signElementLabel: SIGN_ELEMENT_LABEL_KO[content.element],
     mappedEastElement: mappedElem,
     mappedEastElementLabel: ELEMENT_LABEL_KO[mappedElem],
-    hint: `${SIGN_ELEMENT_LABEL_KO[content.element]} 별자리는 동양의 ${ELEMENT_LABEL_KO[mappedElem]}와 가장 가까운 결을 가집니다.`,
+    hint: `${SIGN_ELEMENT_LABEL_KO[content.element]} 별자리는 동양의 ${ELEMENT_LABEL_KO[mappedElem]}와 가장 가까운 기운을 가집니다.`,
   };
 }

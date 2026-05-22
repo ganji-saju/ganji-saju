@@ -286,7 +286,7 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
 
   if (selfElement === partnerElement) {
     return {
-      label: '같은 결의 일간',
+      label: '같은 성향의 일간',
       score: 6,
       summary: `두 분의 일간은 모두 ${formatElementLabel(selfElement)}이라 기본 기질과 반응 속도가 비슷한 편입니다.`,
       caution: '서로를 빨리 이해하는 대신, 비슷한 약점도 같이 커질 수 있습니다.',
@@ -297,7 +297,7 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
     return {
       label: '내가 상대를 북돋우는 흐름',
       score: 8,
-      summary: `${formatElementLabel(selfElement)} 기운이 ${formatElementLabel(partnerElement)}을 생하는 구조라, 내가 상대를 살려주는 결이 있습니다.`,
+      summary: `${formatElementLabel(selfElement)} 기운이 ${formatElementLabel(partnerElement)}을 생하는 구조라, 내가 상대를 살려주는 흐름이 있습니다.`,
       caution: '한쪽이 늘 먼저 맞춰주면 피로가 누적될 수 있어 주고받는 균형을 봐야 합니다.',
     };
   }
@@ -306,7 +306,7 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
     return {
       label: '상대가 나를 북돋우는 흐름',
       score: 8,
-      summary: `${formatElementLabel(partnerElement)} 기운이 ${formatElementLabel(selfElement)}을 생해, 상대가 나를 받쳐주는 결이 있습니다.`,
+      summary: `${formatElementLabel(partnerElement)} 기운이 ${formatElementLabel(selfElement)}을 생해, 상대가 나를 받쳐주는 흐름이 있습니다.`,
       caution: '의지하는 쪽과 책임지는 쪽이 고정되면 관계 온도가 한쪽으로 기울 수 있습니다.',
     };
   }
@@ -358,7 +358,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
 
   return {
     score: 0,
-    title: '일간의 결은 다르지만 보완 여지가 있는 관계',
+    title: '일간의 성향은 다르지만 보완 여지가 있는 관계',
     body: `${selfStem}과 ${partnerStem}은 같은 방식으로 움직이지는 않지만, 차이를 이해하면 오히려 역할 분담이 선명해질 수 있습니다.`,
   };
 }
@@ -509,7 +509,7 @@ function buildHeadline(
     relationship === 'lover'
       ? '감정선'
       : relationship === 'family'
-        ? '가족의 결'
+        ? '가족 같은 분위기'
         : relationship === 'friend'
           ? '사람 사이의 호흡'
           : '함께 움직이는 힘';
@@ -522,7 +522,7 @@ function buildHeadline(
     return `${selfName}님과 ${partnerName}님은 다름이 있지만 맞춰갈 여지가 충분한 관계입니다.`;
   }
 
-  return `${selfName}님과 ${partnerName}님은 결이 달라 조율이 중요하게 작동하는 관계입니다.`;
+  return `${selfName}님과 ${partnerName}님은 성향이 달라 조율이 중요하게 작동하는 관계입니다.`;
 }
 
 function buildScoreLabel(score: number) {
@@ -927,7 +927,7 @@ export function buildCompatibilityInterpretation(
     ],
     evidence: [
       {
-        title: '일간의 기본 결',
+        title: '일간의 기본 성향',
         body: stemInteraction.body,
       },
       {
