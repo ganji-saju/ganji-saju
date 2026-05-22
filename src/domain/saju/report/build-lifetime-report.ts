@@ -304,7 +304,8 @@ function buildHookSentence(
   userSituation: UserSituation | null
 ): string {
   const ageRange = formatLuckRange(cycle);
-  const ganzi = cycle.ganzi;
+  // 2026-05-22 Step3 Phase C — hook 본문 간지 한글화(기존 toKoreanGanzi 재사용). raw 한자 노출 차단.
+  const ganzi = toKoreanGanzi(cycle.ganzi);
   const occ = userSituation?.occupation ? OCCUPATION_LABEL[userSituation.occupation] : null;
   const concern = userSituation?.currentConcern ? CONCERN_LABEL[userSituation.currentConcern] : null;
   const note = userSituation?.concernNote?.trim().slice(0, 60);
@@ -326,10 +327,20 @@ function buildTwelveStageCue(twelveStage: string | null | undefined): string | n
   return `이 대운은 ${twelveStage}지(${entry.plainCue})에 해당하는 결입니다.`;
 }
 
+// 2026-05-22 Step3 Phase B — 원진/월지·연지·시지 명리용어를 일상어로 재작성.
+//   slot 라벨 → 생활 영역으로 매핑, '결' 대신 '자리/시기' 사용(naming-policy §9).
+const WONJIN_SLOT_PLAIN: Record<string, string> = {
+  연지: '환경·뿌리', 年支: '환경·뿌리',
+  월지: '사회·일', 月支: '사회·일',
+  일지: '가까운 관계', 日支: '가까운 관계',
+  시지: '마무리·말년', 時支: '마무리·말년',
+};
+
 function buildWonjinCue(wonjinWith: string[] | undefined): string | null {
   if (!wonjinWith || wonjinWith.length === 0) return null;
-  const slots = wonjinWith.join(' · ');
-  return `사주 ${slots} 와 ${glossaryHint('원진')} 페어를 이루어 가까운 자리에서 미세한 마찰이 누적되기 쉬운 결입니다.`;
+  const areas = wonjinWith.map((s) => WONJIN_SLOT_PLAIN[s]).filter(Boolean);
+  const areaText = areas.length > 0 ? `${areas.join(' · ')} 자리` : '가까운 자리';
+  return `${areaText}와 미묘하게 어긋나기 쉬워, 가까운 사이일수록 작은 마찰이 천천히 쌓이기 쉬운 시기예요.`;
 }
 
 function buildChapterBodyText(
@@ -341,14 +352,27 @@ function buildChapterBodyText(
   cycleSipsin: TenGodCode | null = null
 ): string {
   const { stem, branch } = getGanziElements(cycle.ganzi);
-  const noteJoin = cycle.notes.slice(0, 3).join(' ').trim();
+  // 2026-05-22 Step3 Phase B — 엔진 notes 의 '순행/역행 대운 기준입니다'(명리 기술메타)는
+  //   사용자 본문에서 제외(엔진 saju-data-v1 미수정, 빌더 단계 필터).
+  const noteJoin = cycle.notes
+    .filter((n) => !/순행|역행/.test(n))
+    .slice(0, 3)
+    .join(' ')
+    .trim();
   const stemLabel = stem ? formatElementName(stem) : '';
   const branchLabel = branch ? formatElementName(branch) : '';
-  const headParts = compactStrings([
-    stemLabel ? `천간의 ${stemLabel}` : null,
-    branchLabel ? `지지의 ${branchLabel}` : null,
-  ]).join(' · ');
-  const head = headParts ? `${head_open(cycle)} ${headParts} 결이 함께 작동합니다.` : `${head_open(cycle)} 흐름이 함께 작동합니다.`;
+  // 2026-05-22 Step3 Phase B — '천간의/지지의' 명리용어 제거 → naming-policy 'X 기운'.
+  let head: string;
+  if (stemLabel && branchLabel) {
+    head =
+      stemLabel === branchLabel
+        ? `${head_open(cycle)} ${stemLabel} 기운이 위아래로 겹쳐 강하게 들어오는 결입니다.`
+        : `${head_open(cycle)} ${stemLabel} 기운과 ${branchLabel} 기운이 함께 들어오는 결입니다.`;
+  } else if (stemLabel || branchLabel) {
+    head = `${head_open(cycle)} ${stemLabel || branchLabel} 기운이 들어오는 결입니다.`;
+  } else {
+    head = `${head_open(cycle)} 흐름이 함께 작동합니다.`;
+  }
   // 2026-05-15 PR 7 — 12운성 cue prepend (있으면).
   const stageCue = buildTwelveStageCue(twelveStage);
   return compactStrings([head, stageCue, noteJoin || null, reading.summary]).join(' ');
@@ -844,6 +868,10 @@ const RELATIONSHIP_TITLE_HINT: Record<NonNullable<UserSituation['relationshipSta
 };
 
 const AGE_TITLE_HINT_BY_DECADE: Record<number, string> = {
+  0: '어린 시절',
+  5: '어린 시절',
+  10: '10대 초반',
+  15: '10대 중후반',
   20: '20대 초반',
   25: '20대 중후반',
   30: '30대 초반',
@@ -937,7 +965,12 @@ function buildChapterTitleText(
   const candidates = CHAPTER_PATTERN_TEMPLATES[pattern];
   const seed = ganziSeed(cycle.ganzi) + (isCurrent ? 7 : 0);
   const template = pickFromSeed(candidates, seed);
-  return fillTitleTemplate(template, cycle, userSituation);
+  const base = fillTitleTemplate(template, cycle, userSituation);
+  // 2026-05-22 Step3 Phase A — 제목 고유성: 대운은 10년 간격이라 나이대 hint 가
+  //   사이클마다 항상 달라, suffix 로 붙이면 secret 등 같은 패턴 사이클도 고유해짐.
+  //   이미 {age} 로 hint 가 들어간 템플릿(questionFomo)은 중복 회피.
+  const ageHint = hintForAge(cycle.startAge);
+  return base.includes(ageHint) ? base : `${base} · ${ageHint}`;
 }
 
 function buildClosingNoteText(
@@ -962,9 +995,9 @@ function buildClosingNoteText(
   // 2026-05-15 PR 7 응답 3 — 교운기 체감 현상 cue. 흐름사주 reference 의 변동 신호.
   const transitionPart =
     transitionPhase === 'entering'
-      ? ' 지금은 교운기(交運期) 진입 — 컨디션·인간관계·거주지 같은 큰 환경이 한꺼번에 바뀌는 신호가 생활 안으로 들어옵니다. 큰 결정은 1~2년 뒤로 미루는 편이 안전합니다.'
+      ? ' 지금은 운이 바뀌는 길목 — 컨디션·인간관계·거주지 같은 큰 환경이 한꺼번에 바뀌는 신호가 생활 안으로 들어옵니다. 큰 결정은 1~2년 뒤로 미루는 편이 안전합니다.'
       : transitionPhase === 'leaving'
-        ? ' 지금은 교운기(交運期) 퇴장 — 이번 대운이 마무리되는 ±1년이라 몸·마음·일의 결이 새로 정돈되는 시기입니다. 정리 우선, 새 시작은 다음 대운에서.'
+        ? ' 지금은 운이 마무리되는 길목 — 이번 대운이 마무리되는 ±1년이라 몸·마음·일의 결이 새로 정돈되는 시기입니다. 정리 우선, 새 시작은 다음 대운에서.'
         : '';
   return `${base}${stagePart}${transitionPart}`;
 }
