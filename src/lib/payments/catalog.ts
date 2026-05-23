@@ -14,7 +14,9 @@ export type TasteProductId =
   | 'work-flow'
   | 'monthly-calendar'
   | 'year-core'
-  | 'score-factor';
+  | 'score-factor'
+  // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.
+  | 'compat-reading';
 
 // 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
 // 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
@@ -137,6 +139,17 @@ export const PAYMENT_PACKAGES = [
     requiresSlug: true,
   },
   {
+    // 2026-05-23 ① — 궁합 1회권(커플 단위). slug 에 커플 키를 실어 compat:{coupleKey} scope 로 grant.
+    //   기존 990원 글로벌 love-question 구매자는 게이트에서 grandfather(별도 처리).
+    id: 'taste_compat_reading',
+    name: '궁합 깊은 풀이',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'compat-reading',
+    requiresSlug: true,
+  },
+  {
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체를 990원에.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
     id: 'bundle_today_set',
@@ -172,6 +185,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
   'score-factor': 'taste_score_factor',
+  'compat-reading': 'taste_compat_reading',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -182,7 +196,8 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'work-flow' ||
     value === 'monthly-calendar' ||
     value === 'year-core' ||
-    value === 'score-factor'
+    value === 'score-factor' ||
+    value === 'compat-reading'
   );
 }
 
