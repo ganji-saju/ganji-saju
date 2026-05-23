@@ -132,6 +132,18 @@ export interface CompatibilityPracticalCard {
   tone: 'coral' | 'sky' | 'gold' | 'jade';
 }
 
+/**
+ * 2026-05-23 — 유료 §8 "깊은 풀이" 섹션. 무료 화면(§4~6)은 "두 사람이 어떤지"(summary)
+ * 까지만 보여주고, 결제 후에는 각 축의 "그래서 어떻게 하면 되는지"(practice)를
+ * 커플별로 풀어준다. 관계유형별 정적 텍스트가 아니라 두 명식에서 파생되므로 커플마다 다르다.
+ * (②-b: 플래그 ON 시 LLM 이 더 깊은 버전으로 이 배열을 대체한다. 이것이 그 fallback.)
+ */
+export interface CompatibilityDeepSection {
+  key: string;
+  title: string;
+  body: string;
+}
+
 export interface CompatibilityInterpretation {
   relationship: CompatibilityRelationshipSlug;
   label: string;
@@ -147,6 +159,7 @@ export interface CompatibilityInterpretation {
   currentFlowSummary: string;
   evidence: CompatibilityEvidenceItem[];
   practicalCards: CompatibilityPracticalCard[];
+  deepSections: CompatibilityDeepSection[];
   dataNote: string | null;
   relationshipLensTitle: string;
   relationshipLensBody: string;
@@ -825,6 +838,28 @@ function buildDataNote(selfInput: BirthInput, partnerInput: BirthInput) {
   return missing.length > 0 ? missing.join(' ') : null;
 }
 
+// 2026-05-23 — 유료 §8 deepSections(결정론 버전 = LLM fallback).
+//   무료 §4~6 은 각 축의 "어떤지(summary)" 까지만 노출한다. 결제 후에는 같은 축을
+//   "그래서 어떻게 풀면 좋은지(practice)" 로 한 단계 더 풀어, 두 명식에 맞는 구체적
+//   실천을 제시한다. practice 는 두 사람의 기운/관계유형에서 파생되므로 커플마다 다르다
+//   (관계유형별 정적 텍스트였던 기존 premiumExpansion.preview 의 "모든 커플 동일" 문제 해소).
+const DEEP_SECTION_AXIS_LEAD: Record<CompatibilityPracticalCard['key'], string> = {
+  conflict: '갈등이 올라올 때는',
+  communication: '대화가 어긋난다 싶을 때는',
+  money: '돈 이야기를 꺼낼 때는',
+  distance: '거리와 연락의 리듬을 정할 때는',
+};
+
+function buildDeterministicDeepSections(
+  practicalCards: CompatibilityPracticalCard[]
+): CompatibilityDeepSection[] {
+  return practicalCards.map((card) => ({
+    key: card.key,
+    title: card.title,
+    body: `${DEEP_SECTION_AXIS_LEAD[card.key]} ${card.practice}`.trim(),
+  }));
+}
+
 export function getCompatibilityDataRequirements() {
   return [...RELATIONSHIP_HINTS];
 }
@@ -906,6 +941,29 @@ export function buildCompatibilityInterpretation(
     branchInteraction
   );
 
+  const practicalCards: CompatibilityPracticalCard[] = [
+    buildConflictCard(relationship, stemInteraction, elementInteraction, branchInteraction),
+    buildCommunicationCard(
+      relationship,
+      self,
+      selfData,
+      selfConnectionReport,
+      partner,
+      partnerData,
+      partnerConnectionReport
+    ),
+    buildMoneyCard(
+      relationship,
+      self,
+      selfData,
+      selfWealthReport,
+      partner,
+      partnerData,
+      partnerWealthReport
+    ),
+    buildDistanceCard(relationship, self, selfData, partner, partnerData, branchInteraction),
+  ];
+
   return {
     relationship,
     label,
@@ -925,28 +983,8 @@ export function buildCompatibilityInterpretation(
       partner.birthInput,
       partnerData
     ),
-    practicalCards: [
-      buildConflictCard(relationship, stemInteraction, elementInteraction, branchInteraction),
-      buildCommunicationCard(
-        relationship,
-        self,
-        selfData,
-        selfConnectionReport,
-        partner,
-        partnerData,
-        partnerConnectionReport
-      ),
-      buildMoneyCard(
-        relationship,
-        self,
-        selfData,
-        selfWealthReport,
-        partner,
-        partnerData,
-        partnerWealthReport
-      ),
-      buildDistanceCard(relationship, self, selfData, partner, partnerData, branchInteraction),
-    ],
+    practicalCards,
+    deepSections: buildDeterministicDeepSections(practicalCards),
     evidence: [
       {
         title: '일간의 기본 성향',

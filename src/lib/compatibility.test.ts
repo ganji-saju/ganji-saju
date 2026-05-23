@@ -4,8 +4,17 @@ import {
   inferCompatibilityRelationshipSlug,
   resolveProfileDisplayName,
 } from './compatibility';
+import type { CompatibilityRelationshipSlug } from '@/content/moonlight';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
+
+function makeCompat(slug: CompatibilityRelationshipSlug, ya: number, yb: number) {
+  return buildCompatibilityInterpretation(
+    slug,
+    { name: '나', birthInput: { year: ya, month: 3, day: 12, hour: 9, gender: 'male' } },
+    { name: '상대', birthInput: { year: yb, month: 7, day: 21, hour: 14, gender: 'female' } }
+  );
+}
 
 test('compatibility infers broader relationship types from saved labels', () => {
   assert.equal(inferCompatibilityRelationshipSlug('배우자'), 'lover');
@@ -142,6 +151,45 @@ test('compatibility: 본문에 한자 천간·지지 노출 0개 + 받침 조사
           `궁합(${slug}, ${ya}×${yb}) 받침 조사 오류(예: 戊과/己은): "${text}"`
         );
       }
+    }
+  }
+});
+
+// 2026-05-23 — ②-a: 유료 §8 "깊은 풀이" 가 관계유형별 정적 텍스트라 모든 커플이
+//   동일했던 문제(=부실)를 해소하기 위해 커플별 맞춤 deepSections 를 추가했다.
+//   (1) 최소 3개 섹션, 각 본문은 충분한 분량, (2) 서로 다른 커플은 내용이 달라야 함
+//   (정적 텍스트 회귀 가드), (3) 본문 한자 0개(naming-policy §5).
+test('compatibility: deepSections 가 커플별로 다르고(정적 회귀 가드) 분량·네이밍 정책을 지킴', () => {
+  const a = makeCompat('lover', 1982, 1990);
+
+  assert.ok(Array.isArray(a.deepSections), 'deepSections 가 배열이어야 함');
+  assert.ok(
+    a.deepSections.length >= 3,
+    `deepSections 가 너무 적음: ${a.deepSections.length}`
+  );
+  for (const section of a.deepSections) {
+    assert.ok(section.title.trim().length > 0, 'deep section title 비어 있음');
+    assert.ok(
+      [...section.body].length >= 30,
+      `deep section body 가 너무 짧음: "${section.body}"`
+    );
+  }
+
+  // 서로 다른 커플 → 깊은 풀이 본문이 달라야 한다(모든 커플 동일 = 부실 회귀).
+  const b = makeCompat('lover', 1995, 1970);
+  assert.notEqual(
+    a.deepSections.map((s) => s.body).join('|'),
+    b.deepSections.map((s) => s.body).join('|'),
+    '서로 다른 두 커플의 deepSections 가 완전히 동일 — 정적 텍스트 회귀'
+  );
+
+  // 본문 한자 0개 (naming-policy §5) — 모든 관계유형.
+  const HANJA = /[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]/;
+  for (const slug of ['lover', 'family', 'friend', 'partner'] as const) {
+    const r = makeCompat(slug, 1988, 1999);
+    for (const section of r.deepSections) {
+      assert.ok(!HANJA.test(section.title), `deep title 한자: "${section.title}"`);
+      assert.ok(!HANJA.test(section.body), `deep body 한자: "${section.body}"`);
     }
   }
 });

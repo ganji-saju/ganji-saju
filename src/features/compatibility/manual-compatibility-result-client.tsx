@@ -17,6 +17,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 interface ManualCompatibilityResultClientProps {
   relationship?: string;
   hasLoveQuestionPurchase?: boolean;
+  deepLlmEnabled?: boolean;
 }
 
 function resolveRelationship(value: string | undefined): CompatibilityRelationshipSlug {
@@ -66,6 +67,7 @@ function MissingManualState({ relationship }: { relationship: CompatibilityRelat
 export function ManualCompatibilityResultClient({
   relationship,
   hasLoveQuestionPurchase = false,
+  deepLlmEnabled = false,
 }: ManualCompatibilityResultClientProps) {
   const [payload, setPayload] = useState<ManualCompatibilityPayload | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -132,6 +134,9 @@ export function ManualCompatibilityResultClient({
           partnerBirthSummary={payload.partnerBirthSummary}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
           hasLoveQuestionPurchase={hasLoveQuestionPurchase}
+          selfBirthInput={payload.selfBirthInput}
+          partnerBirthInput={payload.partnerBirthInput}
+          deepLlmEnabled={deepLlmEnabled}
         />
       </AppPage>
     </AppShell>

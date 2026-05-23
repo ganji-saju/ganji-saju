@@ -20,6 +20,7 @@ import {
   type BirthProfileFields,
 } from '@/lib/profile';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -109,6 +110,7 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
       <ManualCompatibilityResultClient
         relationship={relationship}
         hasLoveQuestionPurchase={paid === 'love-question' || manualLoveEntitlement}
+        deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
       />
     );
   }
@@ -159,15 +161,17 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     );
   }
 
+  const selfBirthInput = toBirthInputFromProfile(data.profile);
+  const partnerBirthInput = toBirthInputFromProfile(selectedFamily);
   const compatibility = buildCompatibilityInterpretation(
     selected.slug,
     {
       name: displayName,
-      birthInput: toBirthInputFromProfile(data.profile),
+      birthInput: selfBirthInput,
     },
     {
       name: selectedFamily.label,
-      birthInput: toBirthInputFromProfile(selectedFamily),
+      birthInput: partnerBirthInput,
     }
   );
 
@@ -183,6 +187,9 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           partnerBirthSummary={formatBirthSummary(selectedFamily)}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
           hasLoveQuestionPurchase={hasLoveQuestionPurchase}
+          selfBirthInput={selfBirthInput}
+          partnerBirthInput={partnerBirthInput}
+          deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
         />
       </AppPage>
     </AppShell>
