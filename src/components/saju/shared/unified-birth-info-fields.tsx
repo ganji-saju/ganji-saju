@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,6 +94,9 @@ export function UnifiedBirthInfoFields({
       Array.from({ length: getDaysInMonth(draft.year, draft.month) }, (_, index) => String(index + 1)),
     [draft.month, draft.year]
   );
+  // 생년월일 자동 포커스 이동 — 연도 선택 시 월, 월 선택 시 일 칸으로(select 드롭다운).
+  const monthSelectRef = useRef<HTMLSelectElement>(null);
+  const daySelectRef = useRef<HTMLSelectElement>(null);
   const sections = visibleSections ?? ['date', 'gender', 'location-time'];
   const showDate = sections.includes('date');
   const showGender = sections.includes('gender');
@@ -161,7 +164,9 @@ export function UnifiedBirthInfoFields({
                       value={draft.year}
                       onChange={(event) => {
                         trigger(onStarted);
-                        applyDateSelectPatch({ year: event.target.value, month: draft.month, day: draft.day });
+                        const value = event.target.value;
+                        applyDateSelectPatch({ year: value, month: draft.month, day: draft.day });
+                        if (value) monthSelectRef.current?.focus();
                       }}
                       className="gangi-form-control gangi-birth-input px-3 text-sm"
                     >
@@ -194,12 +199,15 @@ export function UnifiedBirthInfoFields({
                   </Label>
                   {dateInputVariant === 'select' ? (
                     <select
+                      ref={monthSelectRef}
                       id={fieldId('birth-month')}
                       name="moonlight-birth-month"
                       value={draft.month}
                       onChange={(event) => {
                         trigger(onStarted);
-                        applyDateSelectPatch({ year: draft.year, month: event.target.value, day: draft.day });
+                        const value = event.target.value;
+                        applyDateSelectPatch({ year: draft.year, month: value, day: draft.day });
+                        if (value) daySelectRef.current?.focus();
                       }}
                       className="gangi-form-control gangi-birth-input px-3 text-sm"
                     >
@@ -232,6 +240,7 @@ export function UnifiedBirthInfoFields({
                   </Label>
                   {dateInputVariant === 'select' ? (
                     <select
+                      ref={daySelectRef}
                       id={fieldId('birth-day')}
                       name="moonlight-birth-day"
                       value={draft.day}

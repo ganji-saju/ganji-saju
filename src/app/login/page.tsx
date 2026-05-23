@@ -18,7 +18,6 @@ const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_
 const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
 const DAYS = Array.from({ length: 31 }, (_, index) => index + 1);
 const HOURS = Array.from({ length: 24 }, (_, index) => index);
-const MINUTES = Array.from({ length: 12 }, (_, index) => index * 5);
 
 type LoginMode = 'gateway' | 'signup' | 'login' | 'recover' | 'reset';
 type GenderValue = 'male' | 'female' | '';
@@ -35,7 +34,6 @@ type SignupForm = {
   gender: GenderValue;
   unknownBirthTime: boolean;
   birthHour: string;
-  birthMinute: string;
   birthLocationCode: string;
   timeRule: 'standard' | 'trueSolarTime';
 };
@@ -59,7 +57,6 @@ const DEFAULT_SIGNUP_FORM: SignupForm = {
   gender: '',
   unknownBirthTime: false,
   birthHour: '',
-  birthMinute: '0',
   birthLocationCode: 'seoul',
   timeRule: 'standard',
 };
@@ -216,7 +213,6 @@ function buildProfilePayloadFromSignupForm(form: SignupForm) {
     gender: form.gender,
     unknownBirthTime: form.unknownBirthTime,
     birthHour: form.birthHour,
-    birthMinute: form.birthMinute,
     birthLocationCode: birthLocation.code,
     birthLocationLabel: birthLocation.label,
     birthLatitude: birthLocation.latitude,
@@ -620,7 +616,6 @@ function LoginContent({
         gender: signupForm.gender,
         unknownBirthTime: signupForm.unknownBirthTime,
         birthHour: signupForm.birthHour,
-        birthMinute: signupForm.birthMinute,
         birthLocationCode: signupForm.birthLocationCode,
         timeRule: signupForm.timeRule,
       }),
@@ -1001,7 +996,7 @@ function LoginContent({
               </div>
               <div className="space-y-2">
                 <FieldLabel>출생 시간</FieldLabel>
-                <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                <div className="grid grid-cols-[1fr_auto] gap-2">
                   <NativeSelect
                     value={signupForm.birthHour}
                     disabled={signupForm.unknownBirthTime}
@@ -1011,17 +1006,6 @@ function LoginContent({
                     {HOURS.map((hour) => (
                       <option key={hour} value={hour}>
                         {formatOptionNumber(hour)}시
-                      </option>
-                    ))}
-                  </NativeSelect>
-                  <NativeSelect
-                    value={signupForm.birthMinute}
-                    disabled={signupForm.unknownBirthTime}
-                    onChange={(value) => updateSignupForm('birthMinute', value)}
-                  >
-                    {MINUTES.map((minute) => (
-                      <option key={minute} value={minute}>
-                        {formatOptionNumber(minute)}분
                       </option>
                     ))}
                   </NativeSelect>
