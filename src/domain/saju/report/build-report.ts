@@ -696,8 +696,8 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     label: '격국',
     title: pattern.tenGod ? `${pattern.name} · ${pattern.tenGod}` : pattern.name,
     body: pattern.tenGod
-      ? `${pattern.tenGod}의 역할감과 관계 패턴이 해석의 첫 기준으로 올라옵니다. 쉽게 말하면 삶에서 반복해서 맡게 되는 자리와 반응 방식을 보는 항목입니다.`
-      : '월령의 성격을 기준으로 명식의 큰 구조를 먼저 읽습니다.',
+      ? `${pattern.tenGod}이 어떤 자리와 관계 패턴으로 나타나는지 해석의 첫 기준으로 봅니다. 쉽게 말하면 삶에서 반복해서 맡게 되는 자리와 반응 방식을 보는 항목입니다.`
+      : '월령의 성격을 기준으로 사주의 큰 구조를 먼저 읽습니다.',
     details: pattern.rationale.length > 0
       ? pattern.rationale.slice(0, 3)
       : ['격국명은 준비되었고 상세 근거 문장은 다음 단계에서 보강됩니다.'],

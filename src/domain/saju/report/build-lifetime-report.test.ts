@@ -4,6 +4,8 @@ import { buildLifetimeReport } from '@/domain/saju/report';
 import type { BirthInput } from '@/lib/saju/types';
 import { validateChapterBody } from '@/lib/saju/chapter-validator';
 import { validateDaewoonText } from '@/lib/saju/daewoon-validator';
+import { buildFallbackLifetimeInterpretation } from '@/server/ai/saju-lifetime-interpretation';
+import { simplifySajuCopy } from '@/lib/saju/public-copy';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -293,4 +295,100 @@ test('buildLifetimeReport: 대운 제목 고유 + 본문 한자/명리용어 0 (
     const r = validateDaewoonText(`${c.chapterTitle ?? ''} ${body}`);
     assert.equal(r.ok, true, `cycle ${c.ganzi} 본문 위반: ${r.reasons.join(', ')}`);
   }
+});
+
+// 2026-05-23 — 평생 풀이 상세(2·3장) 텍스트 품질 회귀 가드.
+//   버그 5종: (1) 반복 문장, (2) "역할의 역할감", (3) "기운 기운"·"사주표을",
+//   (4) 영어 enum 누수(strong/balanced/...), (5) 칩 중복.
+//   여러 사주 입력으로 yongsin·오행 분포가 다른 케이스를 함께 검증한다.
+const QUALITY_FIXTURES: BirthInput[] = [
+  birthInput, // 1982-01-29 (壬水, 金水 강세, 火 결핍)
+  { year: 1990, month: 5, day: 5, hour: 14, minute: 0, gender: 'female' },
+  { year: 1975, month: 11, day: 20, hour: 3, minute: 30, gender: 'male' },
+  { year: 2001, month: 8, day: 12, hour: 22, minute: 10, gender: 'female' },
+];
+
+test('평생 풀이 상세: 2·3장 텍스트 품질 (반복·역할 중복·기운/사주표 조사·영어 enum·칩 중복)', () => {
+  // 패널이 본문에 적용하는 변환과 동일하게 simplifySajuCopy 를 거친 텍스트로 검증.
+  const STATE_ENUM = /\b(strong|balanced|weak|missing|excess)\b/;
+
+  for (const input of QUALITY_FIXTURES) {
+    const data = normalizeToSajuDataV1(input, null);
+    const report = buildLifetimeReport(input, data, 2026);
+    const pat = report.patternAndYongsin;
+    const tag = `${input.year}-${input.month}-${input.day}`;
+
+    // (1) 반복 문장: summary 가 patternRole·yongsinDirection 과 동일하면 안 됨.
+    assert.notEqual(pat.summary, pat.yongsinDirection, `${tag}: summary === yongsinDirection`);
+    assert.notEqual(pat.patternRole, pat.yongsinDirection, `${tag}: patternRole === yongsinDirection`);
+    assert.notEqual(pat.summary, pat.patternRole, `${tag}: summary === patternRole`);
+
+    // (4) 영어 enum 누수: elementHighlights 에 raw state enum 이 없어야 함.
+    for (const line of report.strengthBalance.elementHighlights) {
+      assert.doesNotMatch(line, STATE_ENUM, `${tag}: elementHighlights 영어 enum 누수 → ${line}`);
+      // 한글 상태 라벨이 들어가야 함.
+      assert.match(line, /강함|균형|약함|없음|과다/, `${tag}: 한글 상태 라벨 없음 → ${line}`);
+    }
+
+    // (5) 칩 중복: supportSymbols / cautionSymbols 에 같은 항목이 두 번 없어야 함.
+    assert.equal(
+      new Set(pat.supportSymbols).size,
+      pat.supportSymbols.length,
+      `${tag}: supportSymbols 중복 → ${pat.supportSymbols.join(', ')}`
+    );
+    assert.equal(
+      new Set(pat.cautionSymbols).size,
+      pat.cautionSymbols.length,
+      `${tag}: cautionSymbols 중복 → ${pat.cautionSymbols.join(', ')}`
+    );
+    // 칩은 모두 "X 기운" 형태(개별 오행) — "기운"이 두 번 들어가지 않아야 함.
+    for (const chip of [...pat.supportSymbols, ...pat.cautionSymbols]) {
+      assert.doesNotMatch(chip, /기운\s*기운/, `${tag}: 칩 "기운 기운" → ${chip}`);
+      assert.match(chip, /기운/, `${tag}: 칩에 기운 라벨 없음 → ${chip}`);
+    }
+
+    // (2)(3) 3장 본문(패널 렌더와 동일 변환) — 금지 표현 검증.
+    const interp = buildFallbackLifetimeInterpretation(report, 'female');
+    const chapter3 = simplifySajuCopy(interp.sections.patternAndYongsin);
+
+    assert.doesNotMatch(chapter3, /역할의 역할감/, `${tag}: "역할의 역할감" 잔존 → ${chapter3.slice(0, 120)}`);
+    assert.doesNotMatch(chapter3, /기운\s*기운/, `${tag}: "기운 기운" 잔존 → ${chapter3.slice(0, 120)}`);
+    assert.doesNotMatch(chapter3, /사주표을|사주표은|사주표과/, `${tag}: 사주표 조사 오류 → ${chapter3.slice(0, 160)}`);
+    assert.doesNotMatch(chapter3, STATE_ENUM, `${tag}: 3장 본문 영어 enum 누수 → ${chapter3.slice(0, 120)}`);
+
+    // (1) 3장 본문에 동일 문장이 두 번 등장하지 않아야 함.
+    const sentences = chapter3
+      .split(/(?<=[.!?。])\s+/u)
+      .map((s) => s.replace(/[\s.!?。]/gu, ''))
+      .filter(Boolean);
+    assert.equal(
+      new Set(sentences).size,
+      sentences.length,
+      `${tag}: 3장 본문 반복 문장 → ${chapter3}`
+    );
+  }
+
+  // male 보이스 chapter-3 도 동일하게 반복 0.
+  const dataMale = normalizeToSajuDataV1(birthInput, null);
+  const reportMale = buildLifetimeReport(birthInput, dataMale, 2026);
+  const chapter3Male = simplifySajuCopy(
+    buildFallbackLifetimeInterpretation(reportMale, 'male').sections.patternAndYongsin
+  );
+  const maleSentences = chapter3Male
+    .split(/(?<=[.!?。])\s+/u)
+    .map((s) => s.replace(/[\s.!?。]/gu, ''))
+    .filter(Boolean);
+  assert.equal(new Set(maleSentences).size, maleSentences.length, `male 3장 반복 문장 → ${chapter3Male}`);
+});
+
+// 2026-05-23 — simplifySajuCopy 가 명식→내 사주표 치환 후 조사를 정정한다.
+test('simplifySajuCopy: 명식 치환 후 사주표 조사 정정 (을→를, 은→는, 이→가, 과→와)', () => {
+  assert.equal(simplifySajuCopy('명식을 살리고').includes('사주표을'), false);
+  assert.match(simplifySajuCopy('명식을 살리고'), /사주표를 살리고/);
+  assert.match(simplifySajuCopy('이 명식은 강하다'), /사주표는 강하다/);
+  assert.match(simplifySajuCopy('명식이 흔들린다'), /사주표가 흔들린다/);
+  assert.match(simplifySajuCopy('명식과 운'), /사주표와 운/);
+  // 서술격 조사(이라/입니다)는 건드리지 않음 — '사주표가다' 같은 오변환 금지.
+  assert.doesNotMatch(simplifySajuCopy('명식이라 다르다'), /사주표가/);
+  assert.doesNotMatch(simplifySajuCopy('명식입니다'), /사주표가/);
 });

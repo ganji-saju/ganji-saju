@@ -132,6 +132,32 @@ function serializePillar(pillar: ReadingRecord['sajuData']['pillars']['year'] | 
   };
 }
 
+// 2026-05-23: 챕터 본문 조립 시 동일 문장이 두 번 들어가던 버그(반복) 차단.
+//   각 파트를 문장 단위로 분해해 정규화 키로 중복을 제거한 뒤 다시 합친다.
+function joinDistinctSentences(parts: Array<string | null | undefined>) {
+  const seen = new Set<string>();
+  const kept: string[] = [];
+
+  for (const part of parts) {
+    if (!part) continue;
+    const sentences = part
+      .replace(/\s+/g, ' ')
+      .trim()
+      .split(/(?<=[.!?。])\s+/u)
+      .map((sentence) => sentence.trim())
+      .filter(Boolean);
+
+    for (const sentence of sentences) {
+      const normalized = sentence.replace(/[\s.!?。]/gu, '');
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      kept.push(sentence);
+    }
+  }
+
+  return kept.join(' ');
+}
+
 function buildSectionFallback(
   report: SajuLifetimeReport,
   key: SajuLifetimeAiSectionKey,
@@ -157,12 +183,14 @@ function buildSectionFallback(
         `회복 힌트는 ${report.strengthBalance.recovery}`,
       ].join(' ');
     case 'patternAndYongsin':
-      return [
+      // 2026-05-23: summary·patternRole·yongsinDirection 중 동일 문장이 겹쳐
+      //   노출되던 버그(반복) 차단 — 문장 단위 중복 제거 후 합친다.
+      return joinDistinctSentences([
         `${prefix} ${report.patternAndYongsin.summary}`,
         report.patternAndYongsin.patternRole,
         report.patternAndYongsin.yongsinDirection,
         report.patternAndYongsin.choiceRule,
-      ].join(' ');
+      ]);
     case 'relationshipPattern':
       return [
         `${prefix} ${report.relationshipPattern.summary}`,
