@@ -108,3 +108,60 @@ test('terminology FRIENDLY_TERM_MAP 의 모든 regex 가 동음 한국어 단어
     );
   }
 });
+
+// 2026-05-23: 치환 후 받침 기준 조사 자동정정 (Fix 1) 회귀 가드.
+//   FRIENDLY_TERM_MAP/TERM_REPLACEMENTS 가 한자 술어(받침O)를 모음·ㄹ 종결 일상어로
+//   바꾼 뒤 조사가 어긋나던 class a 버그를 normalizeParticles 가 교정한다.
+
+test('Fix 1: 치환 결과가 모음 종결이면 으로→로 정정 (선택 기준으로 → 선택 힌트로)', () => {
+  assert.ok(simplifySajuCopy('선택 기준으로').includes('선택 힌트로'));
+  assert.ok(!simplifySajuCopy('선택 기준으로').includes('힌트으로'));
+  assert.ok(simplifySajuCopy('판단 기준으로').includes('판단 힌트로'));
+});
+
+test('Fix 1: ㄹ 종결(역할)은 으로→로 (관계 역할으로 → 관계 역할로)', () => {
+  const out = simplifySajuCopy('丑 월지를 관계 역할으로 환산');
+  assert.ok(out.includes('관계 역할로'), `출력: "${out}"`);
+  assert.ok(!out.includes('역할으로'), `출력: "${out}"`);
+});
+
+test('Fix 1: 모음 종결 단어 뒤 주격/목적격 조사 정정 (신호은/자리은/사주을 등)', () => {
+  const cases: Array<[input: string, expectFragment: string, banned: string]> = [
+    ['합충은 명식 안에서 묶입니다.', '만남과 변화 신호는', '신호은'],
+    ['공망은 비어 보입니다.', '비어있는 자리는', '자리은'],
+    ['신살은 도움을 줍니다.', '작은 신호는', '신호은'],
+    ['타고난 사주을 봅니다.', '타고난 사주를', '사주을'],
+    ['명식이 안내해요.', '내 사주표가', '사주표이'],
+    ['긴 흐름이 비어요.', '긴 흐름이', '흐름가'], // 흐름(받침ㅁ) → 이 유지
+  ];
+  for (const [input, expectFragment, banned] of cases) {
+    const output = simplifySajuCopy(input) ?? '';
+    assert.ok(output.includes(expectFragment), `"${input}" → "${output}" 에 "${expectFragment}" 기대`);
+    assert.ok(!output.includes(banned), `"${input}" → "${output}" 에 "${banned}" 잔존 금지`);
+  }
+});
+
+test('Fix 1: 서술격 조사(이다/이라/이란/입니다/이고)는 절대 변형하지 않음', () => {
+  // '이' 가 주격이 아니라 서술격(copula)일 때는 받침 정정 대상이 아님.
+  assert.equal(simplifySajuCopy('이것은 식신격이다.'), '이것은 표현·재능 자리이다.');
+  assert.equal(simplifySajuCopy('정관격입니다.'), '책임·도전 자리입니다.');
+  assert.equal(simplifySajuCopy('내 사주표입니다.'), '내 사주표입니다.');
+  assert.equal(simplifySajuCopy('관계 역할이라는 틀'), '관계 역할이라는 틀');
+  const out = simplifySajuCopy('내 사주표이라 과열되기 쉽습니다.');
+  assert.ok(out.includes('내 사주표이라'), `copula 보존 실패 — "${out}"`);
+});
+
+test('Fix 1: 인접 단어 중복 제거 (대운 흐름→긴 흐름, 오늘 일진→오늘 하루 흐름)', () => {
+  assert.equal(simplifySajuCopy('대운 흐름'), '긴 흐름');
+  assert.ok(!simplifySajuCopy('긴 흐름 흐름').includes('흐름 흐름'));
+  assert.ok(!simplifySajuCopy('오늘 일진 갑자').includes('오늘 오늘'));
+  // 조사가 붙은 중복도 정정 (임자 일주 title + ' 흐름이' 템플릿).
+  assert.equal(
+    simplifySajuCopy('큰 물이 큰 물을 만난 흐름 흐름이 기본 바탕입니다.'),
+    '큰 물이 큰 물을 만난 흐름이 기본 바탕입니다.'
+  );
+});
+
+test('Fix 1: 일반 강조 반복(점점/차근차근)은 보존 — 화이트리스트 단어만 dedupe', () => {
+  assert.equal(simplifySajuCopy('점점 점점 좋아진다'), '점점 점점 좋아진다');
+});
