@@ -1,9 +1,30 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-22 (점수 결제 연동 세션)** — Phase 2+3 스펙 빌드(#314 머지) + score-factor per-factor 550원 결제 연동(#315) + 결제 동의 무한루프 fix + 마이그 038(prod 적용) + 레거시 점수 컴포넌트 정리(#316). #315·#316 머지 완료(2026-05-22)
+> 최종 업데이트: **2026-05-23 (사주 풀이 텍스트 품질 정비 + PDF 저장 화면 세션)** — PDF 8페이지 저장 화면(#334)·모바일 반응형/인쇄 배경(#335) + 상세 풀이 텍스트 품질 6 PR(#336~#340) 머지: 문장 반복·역할/기운 중복어 제거, 받침 조사 자동정정 normalizer(전 화면 감사 조사 457→0·중복어 171→0), 영어 enum→한글, 오행 추상어 cue→표준 "X 기운", 궁합 화면 한자 노출 정정, 균형 안내 문장 자연화. 캐시 일괄 재생성 마이그레이션 **불필요** 확인(리포트가 매 로드 `buildReport`/`buildLifetimeReport`로 재빌드 + LLM off `OPENAI_INTERPRET_*=0`). **다음 작업: ↓ "다음 작업" 섹션.** (이전: 2026-05-22 점수 결제 연동 #314~#316 머지)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 다음 작업 (2026-05-23 이어서 — 가격/결제 정합성)
+
+사용자가 가격 정책 비일관성 지적(총운 무료 / 대운·오늘자세히 550 / 분야 990 / 좋은날 1,900 / 올해 3,900 / 보관형 49,000 — 구조 어색). 진행 순서:
+
+**(a) 가격 정책 개편안 문서 완성** — `docs/payments/pricing-proposal.md` (작성 중·미완성, 출력 중단됨). 구조 개선 골자:
+- 단건 최고가(3,900) ↔ 보관형(49,000) 사이 빈 중간 구간을 **묶음(번들) 상품(1만원대)** 으로 연결
+- 콘텐츠 지속성/범위 비례 차등(현재 `taste_score_factor` 550 일괄 → 대운 등 장기 콘텐츠 상향)
+- 결제 경로 단일화(코인 vs 단건 현금)
+- 멤버십(`membership_*`)에 풀이 unlock 혜택 연결(현재 AI 대화 코인 전용이라 분리됨)
+- 보관형 49,000 재검토
+
+**(b) 코드/표기 P0 정합성 정비** (근거: `docs/payments/product-catalog.md §2`):
+- 이중 결제 경로 — 동일 기능(예: 월간달력 1,900원 단건 = 2코인)이 코인 차감 + 단건 현금 양쪽 노출 → 통일/분리
+- 화면 라벨 ↔ `catalog.ts` 표기 불일치 — 예: 화면 "올해흐름"(990?) vs catalog `taste_year_core` "올해 핵심 3줄"(3,900) → 통일
+- `lifetime_report`(49,000) **환불 인프라 부재** — 환불 페이지·entitlement 회수 함수 없음 → 환불 후에도 열람 가능. revoke 함수 + 환불 UI 추가
+- 코인 만료 정책 불일치(FAQ "1년 유효" vs DB `user_credits` 만료 컬럼/cron 없음=영구) — 정책/구현 중 택1 (§2.3)
+
+> ⚠️ 세션 메모: 운세+결제 상세를 채팅으로 길게 출력하면 자동 콘텐츠 안전필터 오탐으로 응답이 truncation/차단됨. → 상세 표·수치는 **문서 파일에 기록**, 채팅은 요약만.
 
 ---
 
@@ -1978,6 +1999,8 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-23 | **사주 풀이 텍스트 품질 전면 정비** | #336/#337/#338/#339/#340 | 상세 풀이 문장 반복·역할/기운 중복 제거(#336) · 키워드 자연화/격국명 과치환/잔존 결/lifetimeRule 중복(#337) · `simplifySajuCopy` 받침 조사 자동정정 normalizer + 전 화면 감사 조사457→0·중복어171→0(#338) · 오행 추상어 cue→표준 "X 기운"(#339) · 균형 문장 자연화 + 궁합 한자 노출/택일 표기 정정(#340). 캐시 마이그레이션 불필요(리포트 매 로드 재빌드) |
+| 2026-05-23 | **PDF 저장 화면 (보관형 리포트)** | #334/#335 | 8페이지 A4 리포트 디자인 적용(브라우저 인쇄 · 결정론 데이터+매핑) + 모바일 반응형 화면 + `print-color-adjust` 인쇄 배경 표시 정정 |
 | 2026-05-22 | **Codex 상용화 P0 차단 이슈 제거 + clean main 배포** | commit `4ee2484` | 로그인/코인/오늘운세 SSR 문구 정리, 301 canonical redirect, 멤버십 무제한 문구 제거, 예약상담 가격/환불 고지, 결제 동의 단일화, 9개 정책 bundled fallback, 공개 금지 문구 회귀 테스트. 백업 커밋 제외 후 clean branch cherry-pick → Vercel prod `dpl_5qeqzzh9jbzTti3FBzAuJTdS8Dk9` |
 | 2026-05-19 | **2026-05-19 9 챕터 LLM 통합 인프라 (chapter prompts + client + enhance + V1\|V2 호환)** | #250/#251/#252/#253/#256 | report-llm-spec.md §2-4 의 9 챕터 system prompt + ChapterMeta/OUTPUT_SPECS + ChapterLLMClient interface (DI) + OpenAIChapterClient (openai-text wrap) + generateChapter (validator 후처리 + 재생성 max 2) + enhanceLifetimeChapter1WithLLM (LifetimeCoreIdentitySection.summary 만 교체) + buildChapter1Input (SajuDataV1\|SajuDataV2 union, narrowOccupation/narrowConcern) |
 | 2026-05-19 | **2026-05-19 P0 풀이 엔진 재설계 (chapter-validator + cycle 본문 십성 + 한자/단정 제거)** | #245/#246/#248/#249 | cycleSipsin infra (getCycleSipsin + 5 빌더 시그니처) → 본문 4 빌더 (relationship/wealthCareer/mental/practicalActions) 십성 10 base × status/occupation 4 분기 곱 (9 cycle distinct 10/10/10) → P0 본문 버그 4건 fix (B01 '내 내' regex chain / B05 '커안쪽' word-boundary / B03 timing / B04 종결문 비문) + chapter-validator 6 룰 (한자/X과/영어/단정/cross-chapter/punch-copy) + 빌더 본문 한자 ganzi→한글 + '절대/반드시' 제거 |
