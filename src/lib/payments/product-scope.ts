@@ -190,9 +190,12 @@ export async function resolvePaymentProductScope({
   }
 
   if (productId === 'today-detail') {
+    // 2026-05-24 — readingId(slug)는 사주 재생성·경로 교차마다 바뀌어 결제 무한반복을
+    //   유발했다. 다른 소액상품과 동일하게 안정적인 readingKey(생년월일 결정적)로 grant.
+    //   조회(checkTodayDetailAccess)는 readingKey + legacy readingId 를 함께 본다.
     return {
       productId,
-      scopeKey: buildTodayDetailScopeKey(readingIdentity.slug),
+      scopeKey: buildTodayDetailScopeKey(readingIdentity.readingKey),
       kind: 'today',
       ...readingIdentity,
       targetYear: null,

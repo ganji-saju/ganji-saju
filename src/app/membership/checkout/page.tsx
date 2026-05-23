@@ -21,8 +21,8 @@ import {
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
-import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
   buildPurchasedProductHref,
@@ -241,28 +241,19 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     if (user) {
       const paymentScope = await resolvePaymentProductScope({ pkg: paymentPackage, slug, scope });
       if (selectedProduct && isTasteProductPackage(paymentPackage)) {
-        const entitlement = await getTasteProductEntitlement(
-          user.id,
-          selectedProduct,
-          paymentScope?.scopeKey ?? null
-        );
-        // 2026-05-14: today-detail 은 slug / readingKey / 코인 unlock 3 가지
-        //   경로 모두 검사해 중복 결제 방지를 강화한다. paymentScope.slug 는
-        //   사주가 다시 만들어진 경우 다른 값이 될 수 있어 readingKey 도 함께 본다.
-        let coinUnlockedTodayDetail = false;
-        if (selectedProduct === 'today-detail' && paymentScope?.slug) {
-          coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
-            user.id,
-            paymentScope.slug
-          );
-          if (!coinUnlockedTodayDetail && paymentScope.readingKey && paymentScope.readingKey !== paymentScope.slug) {
-            coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
-              user.id,
-              paymentScope.readingKey
-            );
-          }
-        }
-        if (entitlement || coinUnlockedTodayDetail) {
+        // today-detail 은 checkTodayDetailAccess(readingKey 안정 + legacy readingId + coin)로
+        //   통일 — 사주 재생성·경로 교차로 slug 가 바뀌어도 인식해 재결제(무한반복)를 막는다.
+        const purchased =
+          selectedProduct === 'today-detail'
+            ? (await checkTodayDetailAccess(slug ?? '')).hasAccess
+            : Boolean(
+                await getTasteProductEntitlement(
+                  user.id,
+                  selectedProduct,
+                  paymentScope?.scopeKey ?? null
+                )
+              );
+        if (purchased) {
           alreadyPurchasedHref = buildPurchasedProductHref(selectedProduct, slug, {
             from,
             scope,
