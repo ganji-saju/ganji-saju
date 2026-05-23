@@ -83,7 +83,7 @@
 
 ### ② 내용 깊이 — **완료**
 - **②-a (결정론, 즉시·안전)**: 유료 §8 "깊은 풀이" 가 관계유형별 정적 텍스트(`COMPATIBILITY_PREMIUM_EXPANSION.preview`, 모든 커플 동일)였던 것을 두 명식에서 파생한 **커플별 실천 섹션**(`CompatibilityInterpretation.deepSections`)으로 교체. 무료 §4~6 은 "어떤지(summary)", 유료 §8 은 "어떻게(practice)" 로 free/paid 분리. `src/lib/compatibility.ts` + 회귀 테스트(커플별 차이·한자 0).
-- **②-b (LLM, 플래그 OFF 기본)**: `ohaeng-guidance` 패턴 복제. `src/server/ai/compatibility/*`(타입·캐시·프롬프트·validator·캐시스토어·generate) + `OPENAI_INTERPRET_COMPATIBILITY=1` 플래그 + content-addressed 캐시(커플·관계당 1회, 재열람 무과금) + 결정론 fallback. API 라우트 `/api/interpret/compatibility`(로그인+권한 게이팅) + 점진적 강화 클라이언트(`compatibility-deep-sections.tsx`)로 두 경로(저장·수동) 모두 비차단 교체. 마이그레이션 `0062_ai_compatibility_interpretations.sql`.
+- **②-b (LLM, 플래그 OFF 기본)**: `ohaeng-guidance` 패턴 복제. `src/server/ai/compatibility/*`(타입·캐시·프롬프트·validator·캐시스토어·generate) + `OPENAI_INTERPRET_COMPATIBILITY=1` 플래그 + content-addressed 캐시(커플·관계당 1회, 재열람 무과금) + 결정론 fallback. API 라우트 `/api/interpret/compatibility`(로그인+권한 게이팅) + 점진적 강화 클라이언트(`compatibility-deep-sections.tsx`)로 두 경로(저장·수동) 모두 비차단 교체. 마이그레이션 `039_ai_compatibility_interpretations.sql`.
 - 검증: unit(모듈 6 + lib 1) + typecheck 통과, 브라우저에서 §8 커플별 섹션 렌더 확인(플래그 OFF=결정론).
 
 ### ① 1회권 scope 분리 + grandfather — 진행 예정
