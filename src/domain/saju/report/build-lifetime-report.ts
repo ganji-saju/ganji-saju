@@ -1,4 +1,9 @@
-import type { SajuDataV1, SajuMajorLuckCycle, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
+import type {
+  FiveElementState,
+  SajuDataV1,
+  SajuMajorLuckCycle,
+  TenGodCode,
+} from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import {
   ELEMENT_INFO,
@@ -27,6 +32,21 @@ function compactStrings(values: Array<string | null | undefined | false>) {
     .filter(Boolean);
 }
 
+// 2026-05-23: 칩 라벨 중복 제거용. 같은 오행이 여러 형태(또는 동일 라벨)로 중복
+//   노출되던 버그(칩 중복) 차단.
+function dedupeStrings(values: Array<string | null | undefined | false>) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    if (typeof value !== 'string') continue;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    result.push(trimmed);
+  }
+  return result;
+}
+
 /** 본문 합성용 한 단어 키워드 ("쇠", "새싹"). "X 기운" 같은 합성 패턴 */
 function formatElementName(element: Element) {
   return ELEMENT_INFO[element].keyword;
@@ -39,6 +59,21 @@ function formatElementLabel(element: Element) {
 
 function formatSymbolList(symbols: Array<{ label: string }> | null | undefined) {
   return symbols && symbols.length > 0 ? symbols.map((symbol) => symbol.label).join(' · ') : '';
+}
+
+// 2026-05-23: 오행 상태(FiveElementState) 영어 enum → 한글 표기. byElement[].state 가
+//   strong/balanced/weak/missing 으로 들어와 그대로 본문에 노출되던 버그(영어 누수) 차단.
+//   excess 는 점수 기반 변형에서 추가될 수 있어 방어적으로 포함.
+const ELEMENT_STATE_KO: Record<FiveElementState | 'excess', string> = {
+  strong: '강함',
+  balanced: '균형',
+  weak: '약함',
+  missing: '없음',
+  excess: '과다',
+};
+
+function formatElementState(state: string) {
+  return ELEMENT_STATE_KO[state as FiveElementState | 'excess'] ?? state;
 }
 
 function formatLuckRange(cycle: { startAge: number | null; endAge: number | null }) {
@@ -1156,6 +1191,12 @@ export function buildLifetimeReport(
     sajuData.yongsin && sajuData.yongsin.kiyshin.length > 0
       ? formatSymbolList(sajuData.yongsin.kiyshin)
       : weakest;
+  // 2026-05-23: 조절할 기운을 칩 단위(개별 "X 기운")로 분해 — 칩 중복/형식 혼재 차단.
+  //   kiyshin 심볼 라벨은 이미 "금 기운" 형태(formatElementLabel). 폴백은 weakest(bare).
+  const kiyshinElementLabels =
+    sajuData.yongsin && sajuData.yongsin.kiyshin.length > 0
+      ? dedupeStrings(sajuData.yongsin.kiyshin.map((symbol) => symbol.label))
+      : [`${weakest} 기운`];
   const currentMajorLuck = sajuData.currentLuck?.currentMajorLuck ?? null;
   const todayTimeline = todayReport.timeline.find((item) => item.label === '오늘') ?? null;
   const monthTimeline = todayReport.timeline.find((item) => item.label === '이번 달') ?? null;
@@ -1193,7 +1234,7 @@ export function buildLifetimeReport(
   const firstCurrentCycle = majorLuckCycles.find((cycle) => cycle.isCurrent) ?? majorLuckCycles[0];
   const elementHighlights = Object.entries(sajuData.fiveElements.byElement).map(
     ([element, value]) =>
-      `${formatElementName(element as Element)} ${value.percentage}% · ${value.state} · ${value.score}점`
+      `${formatElementLabel(element as Element)} ${value.percentage}% · ${formatElementState(value.state)} · ${value.score}점`
   );
   const rememberRules = [
     `강한 ${dominant} 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.`,
@@ -1266,23 +1307,24 @@ export function buildLifetimeReport(
     },
     patternAndYongsin: {
       headline: '격국 / 용신',
-      summary:
-        yongsin?.body ??
-        `이 명식은 ${yongsinLabels} 기운을 보완 축으로 쓰는 것이 평생 선택의 기준입니다.`,
+      // 2026-05-23: summary 와 yongsinDirection 이 둘 다 yongsin?.body 로 폴백되어
+      //   동일 문장이 두 번 노출되던 버그(반복) 수정 — summary 는 격국·용신 역할을
+      //   한 줄로 짚는 고유 framing 으로 분리.
+      summary: `이 사주는 타고난 역할 구조(격국) 위에서 보완 기운(용신)을 어떻게 들이느냐가 평생 선택의 큰 줄기입니다.`,
       patternRole:
         pattern?.body ??
         '격국은 이 사람이 어떤 역할 구조에서 실력이 붙는지, 어디에서 책임과 반응이 반복되는지를 읽는 기준입니다.',
       yongsinDirection:
         yongsin?.body ??
-        `${yongsinLabels} 기운을 꾸준히 들이면 명식의 장점이 균형 있게 살아납니다.`,
-      choiceRule: `${supportLabels} 보완 축이 살아나는 선택은 길게 보면 명식을 살리고, ${kiyshinLabels} 기운이 과해지는 선택은 짧게는 편해도 오래 가면 균형을 흐릴 가능성이 큽니다.`,
-      supportSymbols: compactStrings([
-        yongsinLabels,
-        supportLabels,
-      ]),
-      cautionSymbols: compactStrings([
-        kiyshinLabels,
-        weakest,
+        `${yongsinLabels}을 꾸준히 들이면 타고난 사주의 장점이 균형 있게 살아납니다.`,
+      choiceRule: `${yongsinLabels} 보완 축이 살아나는 선택은 길게 보면 내 사주를 살리고, ${kiyshinLabels}이 과해지는 선택은 짧게는 편해도 오래 가면 균형을 흐릴 가능성이 큽니다.`,
+      supportSymbols:
+        supportElements.length > 0
+          ? supportElements.map((element) => `${element} 기운`)
+          : [`${dominant} 기운`],
+      cautionSymbols: dedupeStrings([
+        ...kiyshinElementLabels,
+        `${weakest} 기운`,
       ]),
       practicalActions: [
         ...(yongsin?.practicalActions ?? []),
