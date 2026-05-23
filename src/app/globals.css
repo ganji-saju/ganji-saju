@@ -19,6 +19,12 @@ footer.site-footer-redesign {
   background: #000000 !important;
   background-color: #000000 !important;
   background-image: none !important;
+  /* 2026-05-24: 푸터가 회색으로 보이던 원인 — 배경이 아니라 body/main 의 fixed
+     핑크 그라데이션 앰비언트 가상요소(::before/::after, z-index:0)가 in-flow 푸터
+     위에 페인트되어 순검정(#000)을 ~rgb(89,89,89) 로 덮던 것. 푸터를 자체 stacking
+     context 로 올려 오버레이 위에 그린다. z-index:1 은 dock/header/모달보다 낮아 안전. */
+  position: relative;
+  z-index: 1;
 }
 
 /* 2026-05-22 — 가로 스크롤 컨테이너 스크롤바 숨김(스크롤은 동작). LifetimeKeysCarousel 등. */
