@@ -14,6 +14,16 @@ export function toKoreanGanziStem(ganzi: string): string {
   return STEM_HANJA_TO_KOREAN[first] ?? first;
 }
 
+/** 단일 천간 글자 → 한글 (예: '戊' → '무'). */
+export function stemCharToKorean(stem: string): string {
+  return STEM_HANJA_TO_KOREAN[stem] ?? stem;
+}
+
+/** 단일 지지 글자 → 한글 (예: '酉' → '유'). */
+export function branchCharToKorean(branch: string): string {
+  return BRANCH_HANJA_TO_KOREAN[branch] ?? branch;
+}
+
 export function toKoreanGanziBranch(ganzi: string): string {
   if (!ganzi) return '';
   const second = ganzi.charAt(1);

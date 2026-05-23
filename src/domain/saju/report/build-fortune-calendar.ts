@@ -231,7 +231,9 @@ function createDayEntryDraft(
         sajuInput,
         iljin.stem as Stem,
         iljin.branch as Branch,
-        { name: input.name ?? '선생님' },
+        // 2026-05-23: [오행] placeholder (S36/S37 메시지) 가 빈 문자열로 치환되어
+        //   "  기운이" 처럼 깨지지 않도록 약한 오행을 전달.
+        { name: input.name ?? '선생님', element: sourceData.fiveElements.weakest },
         `${isoDate}::${sourceData.pillars.day.ganzi}`,
         2
       );
