@@ -1080,7 +1080,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `${withParticle(supportLabel, '을', '를')} 돈의 흐름에 쓰면 안정감이 커집니다.`,
+            `${supportLabel} 쪽 강점이 살아날수록 돈의 흐름이 안정됩니다.`,
             '오늘은 새 투자보다 고정비, 미뤄둔 정산, 결제 예정 금액을 먼저 확인하세요.',
             `${profile.role?.caution ?? '급하게 넓히는 선택'}만 줄이면 손에 남는 돈이 달라집니다.`,
           ]).join(' '),
@@ -1098,7 +1098,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `${withParticle(supportLabel, '을', '를')} 업무에 쓰면 일의 순서가 또렷해집니다.`,
+            `${supportLabel} 쪽을 업무에 살리면 일의 순서가 또렷해집니다.`,
             '오늘은 할 일을 세 단계로 나누고, 보고나 제안은 결론을 먼저 말한 뒤 근거를 붙이세요.',
             `${profile.role?.strength ?? '내가 잘하는 방식'}을 성과로 보이게 만드는 쪽이 좋습니다.`,
           ]).join(' '),
@@ -1116,7 +1116,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `관계는 ${withParticle(supportLabel, '을', '를')} 살린 짧은 확인이 좋습니다.`,
+            `관계는 ${supportLabel} 쪽을 살린 짧은 확인이 좋습니다.`,
             '가족, 친구, 동료에게는 큰 대화보다 안부, 감사, 일정 확인처럼 부담이 낮은 말이 먼저입니다.',
             '말의 순서와 확인을 맞추면 오해가 줄어듭니다.',
           ]).join(' '),

@@ -714,14 +714,14 @@ function buildCycleElementAction(
   }
   if (isDominant) {
     return {
-      reason: `이미 강한 ${cycleLabel} 축이 더 커지는 결`,
+      reason: `이미 강한 ${cycleLabel} 축이 더 커지는 흐름`,
       what: '과속을 의식적으로 줄이기',
       how: '큰 결정 전 1주일 보류. 결정 사유 한 줄 적고 한 번 더 비교 후 진행.',
     };
   }
   if (isWeakest) {
     return {
-      reason: `약한 ${cycleLabel} 축이 표면으로 드러나는 결`,
+      reason: `약한 ${cycleLabel} 축이 표면으로 드러나는 흐름`,
       what: '주변 받침대(사람·시스템) 미리 만들기',
       how: '새 정보 채널 1개 + 도움 줄 사람 1명 미리 등록. 혼자 버티지 않기.',
     };
@@ -846,12 +846,12 @@ export const CHAPTER_PATTERN_TEMPLATES: Record<ChapterPattern, string[]> = {
   signal: [
     '새로운 10년의 문이 열리는 분기점',
     '큰 흐름이 갈리는 시기,다음 10년의 방향이 정해지는 시기',
-    '한 챕터가 닫히고 새 챕터가 열리는 결',
+    '한 챕터가 닫히고 새 챕터가 열리는 분기점',
   ],
   questionFomo: [
     '{age} 한가운데, 어떤 결정에 비중을 둘지 점검할 시기',
     '{age}, 지금 흐름에 맞춰 한 걸음을 옮기기 좋은 시기',
-    '{age}에 맞는 다음 한 수를 천천히 고르는 결',
+    '{age}에 맞는 다음 한 수를 천천히 고르는 시기',
   ],
   fomoAd: [
     '기세가 잘 받쳐주는 시기,흐름에 맞춰 추진하기 좋은 10년',
@@ -871,7 +871,7 @@ export const CHAPTER_PATTERN_TEMPLATES: Record<ChapterPattern, string[]> = {
   warning: [
     '⚠️ 보존이 우선인 시기 — 몸과 마음을 챙기는 10년',
     '⚠️ 무리하지 않는 편이 좋은 10년, 보존이 핵심입니다',
-    '⚠️ 큰 결정은 한 박자 늦추기 좋은 — 지금은 흔들리는 결',
+    '⚠️ 큰 결정은 한 박자 늦추기 좋은 — 지금은 흔들리는 시기',
   ],
   reverse: [
     '드러난 결과 뒤, 내실을 다지는 편이 좋은 시기',
@@ -886,7 +886,7 @@ export const CHAPTER_PATTERN_TEMPLATES: Record<ChapterPattern, string[]> = {
   empathy: [
     '완벽주의 때문에 밤잠 설치는 당신에게',
     '혼자 다 짊어지려 했던 마음에 쉼표가 필요한 시기',
-    '마음의 무게를 한 번 정리하고 가야 할 결',
+    '마음의 무게를 한 번 정리하고 가야 할 시기',
   ],
   secret: [
     '흐름이 바뀌는 시기,작은 루틴을 지키는 10년',
