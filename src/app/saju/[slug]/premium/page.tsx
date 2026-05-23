@@ -744,6 +744,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                     69,000원
                   </div>
                 </div>
+                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
+                </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-monthly`}
@@ -869,6 +872,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                     69,000원
                   </div>
                 </div>
+                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
+                </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
