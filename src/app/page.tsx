@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { GangiHomeClient } from '@/features/home/gangi-home-client';
 import { getOptionalSignedInProfile } from '@/lib/profile';
@@ -7,18 +5,12 @@ import { getHomeBanners } from '@/server/home/home-banners';
 
 export const dynamic = 'force-dynamic';
 
-// 2026-05-15 PR-L: 첫 방문자 자동 onboarding redirect.
-// `moonlight:onboarded` cookie 가 없으면 `/onboarding` 으로 1회 redirect.
-// onboarding 페이지에서 "사주 입력하고 시작" 또는 "나중에" 클릭 시 cookie set.
-const ONBOARD_COOKIE = 'moonlight:onboarded';
+// 2026-05-24 — 첫 방문 강제 온보딩 redirect 제거(분리). 매 첫 방문마다 4슬라이드
+//   인트로 carousel 로 보내 사이트 진입을 가로막아 불편하다는 사용자 피드백.
+//   온보딩은 필수 데이터 수집이 아닌 소개라 제거해도 기능 영향 없음.
+//   /onboarding 라우트·컴포넌트는 그대로 유지 — 직접 접근/추후 재도입 가능.
 
 export default async function HomePage() {
-  const cookieStore = await cookies();
-  const hasOnboarded = cookieStore.get(ONBOARD_COOKIE)?.value === '1';
-  if (!hasOnboarded) {
-    redirect('/onboarding');
-  }
-
   // 2026-05-16 PR #132 — 프로필 있으면 MY 별자리 카드를 home 에 server-render 하여
   // GangiHomeClient (client) 에 slot 으로 전달. (profile 자체를 client 로 보내면
   // profile-personalization.ts → profile.ts → supabase/server.ts 트리거됨.)
