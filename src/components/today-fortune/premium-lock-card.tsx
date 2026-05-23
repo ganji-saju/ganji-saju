@@ -20,6 +20,9 @@ interface PremiumLockCardProps {
   sourceSessionId: string;
   concernId: string;
   errorMessage?: string | null;
+  // 990원 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
+  // 550원 단건 옆에 묶음 비교 CTA 노출. 없으면 기존 단건/충전 레이아웃 유지.
+  bundleHref?: string | null;
 }
 
 export function PremiumLockCard({
@@ -30,6 +33,7 @@ export function PremiumLockCard({
   sourceSessionId,
   concernId,
   errorMessage,
+  bundleHref,
 }: PremiumLockCardProps) {
   // 2026-05-16 — 이 사용자가 같은 sourceSessionId 의 today-detail 을 이미 결제/언락
   //   했다면 결제 button 대신 "이미 구매" UI 노출. 미인증/네트워크 실패 시는 기존 흐름.
@@ -117,32 +121,93 @@ export function PremiumLockCard({
         </span>
       </button>
 
-      {/* 결제·코인 부족 케이스용 보조 CTA — 라우팅 유지 */}
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <Link
-          href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
-          className="min-w-0"
-        >
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[13px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
+      {bundleHref ? (
+        <>
+          {/* 단건(550) vs 묶음(990) 비교 — 묶음을 filled + 넓은 컬럼으로 강조 */}
+          <div className="mt-3 grid grid-cols-[1fr_1.35fr] gap-2">
+            <Link
+              href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
+              className="min-w-0"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] border-[var(--app-pink-line)] bg-white px-2 text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
+              >
+                <span className="text-[13px] font-extrabold leading-tight">550원 단건</span>
+                <span className="text-[10.5px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
+              </Button>
+            </Link>
+            <Link href={bundleHref} className="min-w-0">
+              <Button
+                type="button"
+                size="lg"
+                className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] bg-[var(--app-pink)] px-2 text-white hover:bg-[var(--app-pink)]"
+                style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
+              >
+                <span className="flex items-center gap-1.5 leading-tight">
+                  <span className="text-[14.5px] font-extrabold">990원 묶음</span>
+                  <span className="text-[10px] font-semibold text-white/65 line-through">3,300원</span>
+                </span>
+                <span className="text-[10.5px] font-semibold text-white/85">오늘 + 점수 5항목 한 번에</span>
+              </Button>
+            </Link>
+          </div>
+
+          {/* 코인 충전 — 전체폭 보조(아래로 내림) */}
+          <Link href="/credits?from=today-fortune" className="mt-2 block">
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="h-10 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-white text-[12.5px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)]"
+            >
+              코인 충전 보기
+            </Button>
+          </Link>
+
+          {/* 옵션 설명 — 1코인 / 550원 / 990원 묶음 */}
+          <ul className="mt-3 grid gap-1 text-[11px] leading-relaxed text-[var(--app-copy-muted)]">
+            <li>
+              <b className="font-bold text-[var(--app-ink)]">1코인 열기</b> — 보유 코인으로 오늘 자세히 보기
+            </li>
+            <li>
+              <b className="font-bold text-[var(--app-ink)]">550원 단건</b> — 오늘 자세히 보기만 바로 결제
+            </li>
+            <li>
+              <b className="font-bold text-[var(--app-pink-strong)]">990원 묶음</b> — 오늘 자세히 + 점수 5항목까지(개별 3,300원어치)
+            </li>
+          </ul>
+        </>
+      ) : (
+        /* 결제·코인 부족 케이스용 보조 CTA — 라우팅 유지 */
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <Link
+            href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
+            className="min-w-0"
           >
-            550원 바로 결제
-          </Button>
-        </Link>
-        <Link href="/credits?from=today-fortune" className="min-w-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="h-11 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-[var(--app-ink)] text-[13px] font-bold text-white hover:bg-[rgba(17,17,20,0.86)] hover:text-white"
-          >
-            코인 충전 보기
-          </Button>
-        </Link>
-      </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[13px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
+            >
+              550원 바로 결제
+            </Button>
+          </Link>
+          <Link href="/credits?from=today-fortune" className="min-w-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="h-11 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-[var(--app-ink)] text-[13px] font-bold text-white hover:bg-[rgba(17,17,20,0.86)] hover:text-white"
+            >
+              코인 충전 보기
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <p className="mt-3 text-[11px] leading-relaxed text-[var(--app-copy-muted)]">
         <Lock className="mr-1 inline h-3 w-3 align-[-1px]" />
