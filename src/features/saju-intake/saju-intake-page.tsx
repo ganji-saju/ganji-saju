@@ -485,6 +485,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const hasTrackedStartRef = useRef(false);
   const hasTrackedBirthStartRef = useRef(false);
   const hasAutoAppliedProfileRef = useRef(false);
+  // 생년월일 자동 포커스 이동 — 연도 4자리 완료 시 월, 월 2자리 완료 시 일 칸으로.
+  const birthMonthInputRef = useRef<HTMLInputElement>(null);
+  const birthDayInputRef = useRef<HTMLInputElement>(null);
 
   // Redesign 2026-05-13: mockup 은 별도 동의 단계 없이 단일 흐름. 필수 동의는 마지막 단계 제출 시
   // implicit 동의 + CTA 하단 disclosure text 로 처리. CONSENT_STEP 은 제거.
@@ -1053,15 +1056,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           <div className="mt-1.5 grid grid-cols-[1.2fr_1fr_1fr] gap-2">
             <input
               value={form.year}
-              onChange={(event) =>
+              onChange={(event) => {
+                const value = event.target.value;
                 setForm((current) =>
                   applyUnifiedBirthPatch(current, {
-                    year: event.target.value,
+                    year: value,
                     month: current.month,
                     day: current.day,
                   })
-                )
-              }
+                );
+                if (value.length === 4) birthMonthInputRef.current?.focus();
+              }}
               placeholder="1995"
               inputMode="numeric"
               maxLength={4}
@@ -1069,16 +1074,19 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               className={cn('text-center', inputCls)}
             />
             <input
+              ref={birthMonthInputRef}
               value={form.month}
-              onChange={(event) =>
+              onChange={(event) => {
+                const value = event.target.value;
                 setForm((current) =>
                   applyUnifiedBirthPatch(current, {
                     year: current.year,
-                    month: event.target.value,
+                    month: value,
                     day: current.day,
                   })
-                )
-              }
+                );
+                if (value.length === 2) birthDayInputRef.current?.focus();
+              }}
               placeholder="08"
               inputMode="numeric"
               maxLength={2}
@@ -1086,6 +1094,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               className={cn('text-center', inputCls)}
             />
             <input
+              ref={birthDayInputRef}
               value={form.day}
               onChange={(event) =>
                 setForm((current) =>
