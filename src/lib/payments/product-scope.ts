@@ -54,6 +54,13 @@ export function buildLifetimeReportScopeKey(readingKey: string) {
   return `lifetime:${readingKey}`;
 }
 
+// buildLifetimeReportScopeKey 의 역함수 — 환불 회수 시 legacy credit_transactions
+// 의 metadata.readingKey 매칭에 필요(lifetime grant 는 readingKey 로 기록됨).
+export function parseLifetimeReportReadingKey(scopeKey: string | null | undefined) {
+  const trimmed = scopeKey?.trim() ?? '';
+  return trimmed.startsWith('lifetime:') ? trimmed.slice('lifetime:'.length) : null;
+}
+
 // 2026-05-22 — per-factor 점수 풀이 unlock. (readingKey, factorId) 당 1회.
 export function buildScoreFactorScopeKey(readingKey: string, factorId: string) {
   return `score:${readingKey}:${factorId}`;

@@ -253,6 +253,34 @@ export function TodayFortuneResultClient({
                 concernId={freeResult.concernId}
               />
 
+              {/* §6-b — 오늘 풀세트(990원) 묶음 업셀. 오늘 자세히 + 점수 풀이 5항목을
+                  한 번에. 점수 풀이는 사주 결과 기반이라 sajuSlug 가 있을 때만 노출. */}
+              {freeResult.sajuSlug ? (
+                <Link
+                  href={`/membership/checkout?product=bundle_today_set&slug=${encodeURIComponent(
+                    freeResult.sajuSlug
+                  )}&from=today-fortune`}
+                  className="block rounded-[18px] border border-[var(--app-line)] p-5"
+                  style={{ background: 'var(--app-pink-soft)' }}
+                >
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    묶음 · 한 번에 보기
+                  </div>
+                  <div className="mt-1 flex items-end gap-2">
+                    <span className="text-[15.5px] font-extrabold leading-tight text-[var(--app-ink)]">
+                      오늘 풀세트 990원
+                    </span>
+                    <span className="mb-0.5 text-[11px] text-[var(--app-copy-muted)] line-through">
+                      3,300원
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+                    오늘 자세히 보기 + 점수 풀이 5항목(일주·격국·용신·오행·합충신살)을 한 번에
+                    엽니다. 이미 구매한 항목은 다시 결제하지 않습니다.
+                  </p>
+                </Link>
+              ) : null}
+
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
               <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
 

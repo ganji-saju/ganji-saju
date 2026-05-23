@@ -1,6 +1,11 @@
 import type { PlanSlug } from '@/content/moonlight';
 
-export type PaymentPackageKind = 'credits' | 'subscription' | 'lifetime_report' | 'taste_product';
+export type PaymentPackageKind =
+  | 'credits'
+  | 'subscription'
+  | 'lifetime_report'
+  | 'taste_product'
+  | 'bundle';
 export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
 export type TasteProductId =
   | 'today-detail'
@@ -10,6 +15,14 @@ export type TasteProductId =
   | 'monthly-calendar'
   | 'year-core'
   | 'score-factor';
+
+// 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
+// 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
+// 고정 scope(예: score-factor 의 'F1') — 미지정 시 결제 scope 를 상속.
+export interface BundleComponent {
+  tasteProductId: TasteProductId;
+  scope?: string | null;
+}
 
 export interface PaymentPackage {
   id: string;
@@ -21,6 +34,7 @@ export interface PaymentPackage {
   subscriptionPlan?: SubscriptionPlan;
   tasteProductId?: TasteProductId;
   requiresSlug?: boolean;
+  components?: readonly BundleComponent[];
 }
 
 export const PAYMENT_PACKAGES = [
@@ -122,6 +136,24 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'score-factor',
     requiresSlug: true,
   },
+  {
+    // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체를 990원에.
+    // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
+    id: 'bundle_today_set',
+    name: '오늘 풀세트',
+    credits: 0,
+    price: 990,
+    kind: 'bundle',
+    requiresSlug: true,
+    components: [
+      { tasteProductId: 'today-detail' },
+      { tasteProductId: 'score-factor', scope: 'F1' },
+      { tasteProductId: 'score-factor', scope: 'F2' },
+      { tasteProductId: 'score-factor', scope: 'F3' },
+      { tasteProductId: 'score-factor', scope: 'F4' },
+      { tasteProductId: 'score-factor', scope: 'F5' },
+    ],
+  },
 ] as const satisfies readonly PaymentPackage[];
 
 export type PackageId = (typeof PAYMENT_PACKAGES)[number]['id'];
@@ -177,6 +209,12 @@ export function isTasteProductPackage(
   pkg: PaymentPackage
 ): pkg is PaymentPackage & { tasteProductId: TasteProductId } {
   return pkg.kind === 'taste_product' && isTasteProductId(pkg.tasteProductId);
+}
+
+export function isBundlePackage(
+  pkg: PaymentPackage
+): pkg is PaymentPackage & { components: readonly BundleComponent[] } {
+  return pkg.kind === 'bundle' && Array.isArray(pkg.components) && pkg.components.length > 0;
 }
 
 export function formatWon(value: number) {

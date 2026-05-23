@@ -5,7 +5,9 @@ import {
 import {
   getProductEntitlement,
   grantProductEntitlement,
+  revokeProductEntitlement,
   type ProductEntitlement,
+  type RevokeProductEntitlementResult,
 } from '@/lib/product-entitlements';
 import { buildLifetimeReportScopeKey } from '@/lib/payments/product-scope';
 
@@ -214,4 +216,20 @@ export async function grantLifetimeReportEntitlement(
   const fallback = await getLifetimeReportEntitlement(userId, readingKey, legacyKeys);
   if (!fallback) throw new Error('깊은 사주풀이 권한을 저장하지 못했습니다.');
   return fallback;
+}
+
+// 49,000원 lifetime-report 환불 시 권한 회수. product_entitlements 와 legacy
+// credit_transactions 양쪽에서 readingKey 단위로 제거 → 환불 후 열람 차단.
+// Toss 결제 취소는 호출부가 반환된 paymentKey 로 별도 처리.
+export async function revokeLifetimeReportEntitlement(
+  userId: string,
+  readingKey: string,
+  options: { reason: string; actor?: string | null; paymentKey?: string | null }
+): Promise<RevokeProductEntitlementResult> {
+  return revokeProductEntitlement(
+    userId,
+    'lifetime-report',
+    buildLifetimeReportScopeKey(readingKey),
+    options
+  );
 }

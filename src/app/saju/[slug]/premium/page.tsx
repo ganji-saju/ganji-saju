@@ -319,7 +319,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       } else if (subscription && canUseSubscriptionForPremiumReport(subscription)) {
         yearlyAccessLabel = subscription.plan === 'premium_monthly' ? 'Premium 이용권' : '라이트 이용권';
       } else if (yearCoreEntitlement) {
-        yearlyAccessLabel = '올해 핵심 구매';
+        yearlyAccessLabel = '올해 핵심 3줄 구매';
       } else if (hasMonthlyCalendar) {
         monthlyAccessLabel = '월간 달력 구매';
       }
@@ -744,6 +744,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                     69,000원
                   </div>
                 </div>
+                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
+                </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-monthly`}
@@ -755,7 +758,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
                     className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
                   >
-                    올해 흐름만 3,900원
+                    올해 핵심 3줄만 3,900원
                   </Link>
                 </div>
               </article>
@@ -869,6 +872,9 @@ export default async function SajuPremiumPage({ params }: Props) {
                     69,000원
                   </div>
                 </div>
+                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
+                </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
