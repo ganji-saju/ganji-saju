@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import {
+  buildCompatibilityCoupleKey,
   buildCompatibilityInterpretation,
+  buildCompatibilityScopeKey,
   inferCompatibilityRelationshipSlug,
   resolveProfileDisplayName,
 } from './compatibility';
 import type { CompatibilityRelationshipSlug } from '@/content/moonlight';
+import type { BirthInput } from '@/lib/saju/types';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
 
@@ -192,4 +195,20 @@ test('compatibility: deepSections 가 커플별로 다르고(정적 회귀 가�
       assert.ok(!HANJA.test(section.body), `deep body 한자: "${section.body}"`);
     }
   }
+});
+
+// 2026-05-23 — ① per-couple 1회권용 커플 키. 결제 CTA(클라이언트)와 권한 게이트(서버)가
+//   같은 키를 만들어야 per-couple scope 가 맞물린다. node:crypto 없이 isomorphic, 순서 무관.
+test('compatibility 커플 키: 순서 무관·결정론·다른 커플은 다른 키 + scope 포맷', () => {
+  const a: BirthInput = { year: 1990, month: 4, day: 12, hour: 9, gender: 'female' };
+  const b: BirthInput = { year: 1988, month: 9, day: 3, hour: 14, gender: 'male' };
+  const c: BirthInput = { year: 2000, month: 1, day: 1, gender: 'male' };
+
+  const k1 = buildCompatibilityCoupleKey(a, b);
+  const k2 = buildCompatibilityCoupleKey(b, a);
+  assert.equal(k1, k2, '순서만 바꾼 동일 커플의 키가 다름');
+  assert.ok(k1.length > 0 && /^[a-z0-9]+$/.test(k1), `커플 키가 URL-safe 가 아님: "${k1}"`);
+  assert.equal(buildCompatibilityCoupleKey(a, b), k1, '같은 입력인데 키가 비결정론적');
+  assert.notEqual(buildCompatibilityCoupleKey(a, c), k1, '다른 커플인데 키가 동일');
+  assert.equal(buildCompatibilityScopeKey(k1), `compat:${k1}`);
 });

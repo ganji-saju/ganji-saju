@@ -9,6 +9,7 @@ import { CompatibilityResultView } from '@/features/compatibility/compatibility-
 import { ManualCompatibilityResultClient } from '@/features/compatibility/manual-compatibility-result-client';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
+  buildCompatibilityCoupleKey,
   buildCompatibilityInterpretation,
   inferCompatibilityRelationshipSlug,
   resolveProfileDisplayName,
@@ -20,6 +21,10 @@ import {
   type BirthProfileFields,
 } from '@/lib/profile';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import {
+  hasCompatibilityAccess,
+  isCompatibilityPerCouplePricingEnabled,
+} from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
@@ -109,8 +114,11 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     return (
       <ManualCompatibilityResultClient
         relationship={relationship}
-        hasLoveQuestionPurchase={paid === 'love-question' || manualLoveEntitlement}
+        hasLoveQuestionPurchase={
+          paid === 'love-question' || paid === 'compat-reading' || manualLoveEntitlement
+        }
         deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
+        perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
       />
     );
   }
@@ -120,11 +128,6 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     : undefined;
   const redirectPath = `/compatibility/result${relationship || familyId ? `?${new URLSearchParams({ ...(relationship ? { relationship } : {}), ...(familyId ? { familyId } : {}) }).toString()}` : ''}`;
   const data = await getProfileSettingsData(redirectPath);
-  const hasLoveQuestionPurchase =
-    paid === 'love-question' ||
-    (data.user.id
-      ? Boolean(await getTasteProductEntitlement(data.user.id, 'love-question'))
-      : false);
   const displayName = resolveProfileDisplayName(data.profile.displayName, data.user.email);
   const selectedFamily = data.familyProfiles.find((profile) => profile.id === familyId) ?? null;
   const resolvedRelationship =
@@ -175,6 +178,14 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     }
   );
 
+  // ① per-couple 게이트(grandfather 포함). 플래그 OFF 환경에선 compat-reading 구매가 없어
+  //   사실상 love-question 글로벌 = 기존 동작과 동일.
+  const coupleKey = buildCompatibilityCoupleKey(selfBirthInput, partnerBirthInput);
+  const hasDeepReadingAccess =
+    paid === 'love-question' ||
+    paid === 'compat-reading' ||
+    (data.user.id ? await hasCompatibilityAccess(data.user.id, coupleKey) : false);
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
@@ -186,10 +197,12 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           selfBirthSummary={formatBirthSummary(data.profile)}
           partnerBirthSummary={formatBirthSummary(selectedFamily)}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
-          hasLoveQuestionPurchase={hasLoveQuestionPurchase}
+          hasLoveQuestionPurchase={hasDeepReadingAccess}
           selfBirthInput={selfBirthInput}
           partnerBirthInput={partnerBirthInput}
           deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
+          compatibilityCoupleKey={coupleKey}
+          perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
       </AppPage>
     </AppShell>

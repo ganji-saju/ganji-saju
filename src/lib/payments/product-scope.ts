@@ -14,7 +14,9 @@ export type PaymentProductScopeKind =
   | 'today'
   | 'calendar-month'
   | 'year'
-  | 'lifetime-reading';
+  | 'lifetime-reading'
+  // 2026-05-23 ① — 궁합 1회권. slug 가 커플 키(사주 reading 아님)라 별도 kind.
+  | 'compat';
 
 export interface PaymentProductScope {
   productId: PaidProductId;
@@ -52,6 +54,11 @@ export function buildYearCoreScopeKey(readingKey: string, year: number) {
 
 export function buildLifetimeReportScopeKey(readingKey: string) {
   return `lifetime:${readingKey}`;
+}
+
+// 2026-05-23 ① — 궁합 per-couple scope. coupleKey 는 buildCompatibilityCoupleKey(두 생년월일).
+export function buildCompatScopeKey(coupleKey: string) {
+  return `compat:${coupleKey}`;
 }
 
 // buildLifetimeReportScopeKey 의 역함수 — 환불 회수 시 legacy credit_transactions
@@ -150,6 +157,21 @@ export async function resolvePaymentProductScope({
       reading: null,
       readingKey: null,
       slug: slug?.trim() || null,
+      targetYear: null,
+      targetMonth: null,
+    };
+  }
+
+  // 2026-05-23 ① — 궁합 1회권: slug 는 커플 키(사주 reading 아님)라 reading 조회 없이 직접 scope.
+  if (productId === 'compat-reading') {
+    const coupleKey = slug?.trim() || null;
+    return {
+      productId,
+      scopeKey: coupleKey ? buildCompatScopeKey(coupleKey) : null,
+      kind: coupleKey ? 'compat' : 'global',
+      reading: null,
+      readingKey: null,
+      slug: coupleKey,
       targetYear: null,
       targetMonth: null,
     };
@@ -279,6 +301,7 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
+  if (productId === 'compat-reading') return '/compatibility/input';
   if (productId === 'money-pattern') return '/saju/new?topic=wealth';
   if (productId === 'work-flow') return '/saju/new?topic=career';
 

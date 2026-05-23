@@ -11,13 +11,14 @@ import {
   type ManualCompatibilityPayload,
 } from '@/features/compatibility/manual-compatibility-storage';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
-import { buildCompatibilityInterpretation } from '@/lib/compatibility';
+import { buildCompatibilityCoupleKey, buildCompatibilityInterpretation } from '@/lib/compatibility';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface ManualCompatibilityResultClientProps {
   relationship?: string;
   hasLoveQuestionPurchase?: boolean;
   deepLlmEnabled?: boolean;
+  perCouplePricingEnabled?: boolean;
 }
 
 function resolveRelationship(value: string | undefined): CompatibilityRelationshipSlug {
@@ -68,9 +69,13 @@ export function ManualCompatibilityResultClient({
   relationship,
   hasLoveQuestionPurchase = false,
   deepLlmEnabled = false,
+  perCouplePricingEnabled = false,
 }: ManualCompatibilityResultClientProps) {
   const [payload, setPayload] = useState<ManualCompatibilityPayload | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  // ① per-couple: 서버 페이지는 수동 입력의 생년월일을 모르므로, 클라이언트가 커플 키로
+  //   접근 여부를 확인한다. 플래그 OFF 면 서버가 넘긴 grandfather(love-question) 값을 그대로 쓴다.
+  const [perCoupleAccess, setPerCoupleAccess] = useState(false);
   const requestedRelationship = resolveRelationship(relationship);
 
   useEffect(() => {
@@ -106,6 +111,38 @@ export function ManualCompatibilityResultClient({
     });
   }, [payload]);
 
+  const coupleKey = useMemo(
+    () =>
+      payload
+        ? buildCompatibilityCoupleKey(payload.selfBirthInput, payload.partnerBirthInput)
+        : null,
+    [payload]
+  );
+
+  useEffect(() => {
+    if (!perCouplePricingEnabled || !coupleKey) return;
+    let cancelled = false;
+    fetch('/api/compatibility/access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coupleKey }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((result) => {
+        if (!cancelled && result?.ok && result.access === true) setPerCoupleAccess(true);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [perCouplePricingEnabled, coupleKey]);
+
+  // 플래그 ON: per-couple 접근(grandfather 포함, 서버 라우트 판정) 또는 낙관적 paid 프롭.
+  // 플래그 OFF: 서버가 넘긴 love-question 글로벌 값 그대로.
+  const effectiveAccess = perCouplePricingEnabled
+    ? perCoupleAccess || hasLoveQuestionPurchase
+    : hasLoveQuestionPurchase;
+
   if (!isLoaded) {
     return (
       <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -133,10 +170,12 @@ export function ManualCompatibilityResultClient({
           selfBirthSummary={payload.selfBirthSummary}
           partnerBirthSummary={payload.partnerBirthSummary}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
-          hasLoveQuestionPurchase={hasLoveQuestionPurchase}
+          hasLoveQuestionPurchase={effectiveAccess}
           selfBirthInput={payload.selfBirthInput}
           partnerBirthInput={payload.partnerBirthInput}
           deepLlmEnabled={deepLlmEnabled}
+          compatibilityCoupleKey={coupleKey ?? undefined}
+          perCouplePricingEnabled={perCouplePricingEnabled}
         />
       </AppPage>
     </AppShell>

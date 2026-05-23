@@ -63,6 +63,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
   'score-factor': 'dragon',
+  'compat-reading': 'pig',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -115,6 +116,18 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     notices: [
       '로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.',
       '구매 후에는 checkout에서 중복 결제를 막습니다.',
+    ],
+  },
+  'compat-reading': {
+    title: '궁합 깊은 풀이',
+    price: '990원',
+    reassurance:
+      '두 사람의 사주를 함께 본 깊은 궁합 풀이입니다. 한 번 결제하면 같은 두 사람의 풀이는 다시 결제하지 않습니다.',
+    nextRange: '두 사람의 흐름, 잘 맞는 부분, 조심할 장면, 오늘부터 해볼 행동을 봅니다.',
+    opens: ['두 사람 궁합 깊은 풀이', '같은 두 사람 재열람', '대화로 이어 묻기'],
+    notices: [
+      '궁합 풀이는 두 사람의 생년월일에 연결됩니다.',
+      '같은 두 사람을 다시 열 때는 구매 여부를 먼저 확인합니다.',
     ],
   },
   'money-pattern': {

@@ -28,6 +28,9 @@ interface CompatibilityResultViewProps {
   selfBirthInput?: BirthInput;
   partnerBirthInput?: BirthInput;
   deepLlmEnabled?: boolean;
+  /** ①: per-couple 1회권. 플래그 ON + 커플 키가 있으면 CTA 가 compat-reading(커플 단위)을 판매. */
+  compatibilityCoupleKey?: string;
+  perCouplePricingEnabled?: boolean;
 }
 
 const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
@@ -80,9 +83,16 @@ export function CompatibilityResultView({
   selfBirthInput,
   partnerBirthInput,
   deepLlmEnabled = false,
+  compatibilityCoupleKey,
+  perCouplePricingEnabled = false,
 }: CompatibilityResultViewProps) {
   const premiumExpansion = COMPATIBILITY_PREMIUM_EXPANSION[selected.slug];
   const score = clampScore(compatibility.score);
+  // ① per-couple 가격이 켜지고 커플 키가 있으면 compat-reading(커플 1회권) 결제, 아니면 기존 love-question.
+  const checkoutHref =
+    perCouplePricingEnabled && compatibilityCoupleKey
+      ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey)}&from=compatibility-result`
+      : '/membership/checkout?product=love-question&from=compatibility-result';
   const selfZodiac = getYearZodiac(compatibility.selfData);
   const partnerZodiac = getYearZodiac(compatibility.partnerData);
   const selfYear = getBirthYear(compatibility.selfData);
@@ -96,7 +106,7 @@ export function CompatibilityResultView({
         {/* §1 Eyebrow + headline with score highlight */}
         <div>
           <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-            {hasLoveQuestionPurchase ? '연애 질문 구매함' : selected.title} · 두 사람의 흐름
+            {hasLoveQuestionPurchase ? '깊은 풀이 열람중' : selected.title} · 두 사람의 흐름
           </div>
           <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
             궁합 <span className="text-[var(--app-pink-strong)]">{score}점</span>
@@ -454,7 +464,7 @@ export function CompatibilityResultView({
             </ul>
             <div className="mt-4 grid gap-2">
               <Link
-                href="/membership/checkout?product=love-question&from=compatibility-result"
+                href={checkoutHref}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 990원 · 깊은 궁합 풀이 보기 →

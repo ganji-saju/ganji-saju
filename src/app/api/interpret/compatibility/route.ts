@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { CompatibilityRelationshipSlug } from '@/content/moonlight';
-import { buildCompatibilityInterpretation, type CompatibilityPerson } from '@/lib/compatibility';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import {
+  buildCompatibilityCoupleKey,
+  buildCompatibilityInterpretation,
+  type CompatibilityPerson,
+} from '@/lib/compatibility';
+import { hasCompatibilityAccess } from '@/lib/payments/compatibility-access';
 import type { BirthInput } from '@/lib/saju/types';
 import { createClient } from '@/lib/supabase/server';
 import { generateCompatibilityInterpretation } from '@/server/ai/compatibility/generate-compatibility-interpretation';
@@ -76,8 +80,9 @@ export async function POST(req: NextRequest) {
   }
 
   // 유료 콘텐츠 — 권한 없는 사용자에게 LLM 비용을 쓰지 않도록 서버에서 게이팅.
-  //   (①에서 궁합 전용 1회권/구독 scope 로 교체 예정. 현재는 기존 love-question 권한.)
-  const entitled = Boolean(await getTasteProductEntitlement(user.id, 'love-question'));
+  //   ① per-couple(compat-reading) 또는 grandfather(love-question 글로벌) 보유 시 통과.
+  const coupleKey = buildCompatibilityCoupleKey(parsed.self.birthInput, parsed.partner.birthInput);
+  const entitled = await hasCompatibilityAccess(user.id, coupleKey);
   if (!entitled) {
     return NextResponse.json(
       { ok: false, error: '궁합 풀이 구매 후 깊은 풀이를 열람할 수 있습니다.' },

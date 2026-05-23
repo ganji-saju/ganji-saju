@@ -860,6 +860,34 @@ function buildDeterministicDeepSections(
   }));
 }
 
+// 2026-05-23 — ① 궁합 per-couple 1회권용 커플 키.
+//   결제 CTA(클라이언트)와 권한 게이트(서버)가 동일한 키를 산출해야 per-couple scope 가
+//   맞물리므로 node:crypto 미사용(브라우저 비호환) — 순수 JS FNV-1a 2-스트림(약 64bit).
+//   엔타이틀먼트 식별용 식별자일 뿐(보안 해시 아님). 두 사람을 정렬해 순서 무관.
+function normalizePersonForCoupleKey(birth: BirthInput): string {
+  return [birth.year, birth.month, birth.day, birth.hour ?? 'x', birth.gender ?? 'x'].join('.');
+}
+
+function fnv1aPair(input: string): string {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x811c9dc5 ^ 0x5bd1e995;
+  for (let i = 0; i < input.length; i += 1) {
+    const code = input.charCodeAt(i);
+    h1 = Math.imul(h1 ^ code, 0x01000193);
+    h2 = Math.imul(h2 ^ (code + 0x9e), 0x01000193);
+  }
+  return `${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
+}
+
+export function buildCompatibilityCoupleKey(self: BirthInput, partner: BirthInput): string {
+  const pair = [normalizePersonForCoupleKey(self), normalizePersonForCoupleKey(partner)].sort();
+  return fnv1aPair(pair.join('|'));
+}
+
+export function buildCompatibilityScopeKey(coupleKey: string): string {
+  return `compat:${coupleKey}`;
+}
+
 export function getCompatibilityDataRequirements() {
   return [...RELATIONSHIP_HINTS];
 }
