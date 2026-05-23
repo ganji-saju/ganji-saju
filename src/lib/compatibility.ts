@@ -297,7 +297,9 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
     return {
       label: '내가 상대를 북돋우는 흐름',
       score: 8,
-      summary: `${formatElementLabel(selfElement)} 기운이 ${formatElementLabel(partnerElement)}을 생하는 구조라, 내가 상대를 살려주는 흐름이 있습니다.`,
+      // 2026-05-23: formatElementLabel 이 이미 '… 기운' 포함 → ' 기운이' 덧붙이면
+      //   '화 기운 기운이' 중복. 라벨 뒤 조사만(기운 받침ㄴ → 이).
+      summary: `${formatElementLabel(selfElement)}이 ${formatElementLabel(partnerElement)}을 생하는 구조라, 내가 상대를 살려주는 흐름이 있습니다.`,
       caution: '한쪽이 늘 먼저 맞춰주면 피로가 누적될 수 있어 주고받는 균형을 봐야 합니다.',
     };
   }
@@ -306,7 +308,7 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
     return {
       label: '상대가 나를 북돋우는 흐름',
       score: 8,
-      summary: `${formatElementLabel(partnerElement)} 기운이 ${formatElementLabel(selfElement)}을 생해, 상대가 나를 받쳐주는 흐름이 있습니다.`,
+      summary: `${formatElementLabel(partnerElement)}이 ${formatElementLabel(selfElement)}을 생해, 상대가 나를 받쳐주는 흐름이 있습니다.`,
       caution: '의지하는 쪽과 책임지는 쪽이 고정되면 관계 온도가 한쪽으로 기울 수 있습니다.',
     };
   }
@@ -448,7 +450,9 @@ function summarizeElementBalance(selfData: SajuDataV1 | SajuDataV2, partnerData:
 
   if (sharedLucky.length > 0) {
     score += 5;
-    lines.push(`두 분 모두 ${sharedLucky.map(formatElementLabel).join(' · ')} 기운을 살릴 때 관계가 편안해집니다.`);
+    // 2026-05-23: formatElementLabel 이 이미 '… 기운' 을 포함하므로 ' 기운을' 을
+    //   덧붙이면 '수 기운 기운을' 중복이 된다. 라벨 뒤엔 조사만 붙인다.
+    lines.push(`두 분 모두 ${sharedLucky.map(formatElementLabel).join(' · ')}을 살릴 때 관계가 편안해집니다.`);
   }
 
   if (complement) {

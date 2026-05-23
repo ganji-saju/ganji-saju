@@ -74,7 +74,9 @@ export function buildFallbackInterpretation(
   const summaryCore = cleanText(
     compactStrings([
       personalContext?.sixtyGapja
-        ? `${personalContext.sixtyGapja.title} 흐름이 기본 바탕입니다. ${personalContext.sixtyGapja.core}`
+        ? // 2026-05-23: title 이 이미 '…흐름' 으로 끝나면(예: 임자 '큰 물이 큰 물을 만난 흐름')
+          //   ' 흐름이' 를 덧붙여 '흐름 흐름이' 중복이 생기므로, 끝나면 조사만 붙인다.
+          `${personalContext.sixtyGapja.title}${/흐름$/.test(personalContext.sixtyGapja.title) ? '이' : ' 흐름이'} 기본 바탕입니다. ${personalContext.sixtyGapja.core}`
         : null,
       primaryConcept ? `${primaryConcept} 흐름을 참고했습니다.` : null,
       strengthSummary,

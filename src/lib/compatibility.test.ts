@@ -59,3 +59,41 @@ test('compatibility interpretation compares two saved people and emits evidence 
   assert.match(result.practicalCards[1]?.eyebrow ?? '', /대화 방식/);
   assert.match(result.dataNote ?? '', /태어난 시간이|출생지/);
 });
+
+// 2026-05-23: 궁합 결과 화면은 simplifySajuCopy 를 거치지 않고 raw 렌더하므로,
+//   '오행 라벨(… 기운) + 기운' 중복 같은 텍스트 버그가 그대로 노출된다. 라벨 뒤에
+//   ' 기운' 을 덧붙이지 않고 조사만 붙였는지 회귀 가드.
+test('compatibility: 오행 라벨 뒤 "기운" 중복("화 기운 기운이")이 발생하지 않음', () => {
+  const years: Array<[number, number]> = [
+    [1982, 1990],
+    [1990, 1995],
+    [1995, 2001],
+    [1988, 1976],
+    [1999, 1970],
+  ];
+  for (const [ya, yb] of years) {
+    for (const slug of ['lover', 'family', 'friend', 'partner'] as const) {
+      const result = buildCompatibilityInterpretation(
+        slug,
+        { name: '나', birthInput: { year: ya, month: 3, day: 12, hour: 9, gender: 'male' } },
+        { name: '상대', birthInput: { year: yb, month: 7, day: 21, hour: 14, gender: 'female' } }
+      );
+      const fields = [
+        result.supportiveSummary,
+        result.cautionSummary,
+        result.summary,
+        result.practiceSummary,
+        result.currentFlowSummary,
+        ...result.evidence.map((e) => e.body),
+      ];
+      for (const text of fields) {
+        for (const dup of ['기운 기운', '흐름 흐름', '자리 자리', '역할 역할']) {
+          assert.ok(
+            !text.includes(dup),
+            `궁합(${slug}, ${ya}×${yb}) 텍스트에 중복 "${dup}" 잔존: "${text}"`
+          );
+        }
+      }
+    }
+  }
+});
