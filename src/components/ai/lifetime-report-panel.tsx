@@ -281,7 +281,9 @@ function LifetimeAtAGlance({
           className="mt-2 text-[14.5px] leading-[1.7] font-bold text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          {interpretation.lifetimeRule}
+          {/* 2026-05-23: '평생 힌트'(아래 lifetimeRule)와 동일 문장 중복 노출 차단.
+              짧은 한 줄 요약(oneLineSummary)을 쓰고, lifetimeRule 이 비었을 때만 폴백. */}
+          {interpretation.oneLineSummary || interpretation.lifetimeRule}
         </p>
       </article>
 

@@ -150,6 +150,39 @@ test('focus actions change by selected topic', () => {
   assert.match(buildSajuReport(birthInput, data, 'relationship').primaryAction.description, /관계|말의 순서|확인/);
 });
 
+// 2026-05-23 Fix B 회귀 가드 — 추상 오행 단서(표현/기준/생각/새 시작/정리)를
+//   "쓰면/살린 …" 처럼 배치형 목적어로 넣어 어색했던 템플릿을 "…쪽" 강점/측면
+//   표현으로 자연화. 어느 단서가 와도 "쪽" 으로 자연스럽게 읽혀야 한다.
+test('Fix B: 재물·직장·관계 액션이 추상 단서를 "쪽" 강점으로 자연스럽게 서술한다', () => {
+  // 입력별 supportLabel(오행 단서)이 달라지므로 5개 오행 단서 후보를 모두 커버하는
+  //   대표 입력 몇 개로 "쪽" 패턴과 어색한 옛 문구 부재를 검증.
+  const inputs: BirthInput[] = [
+    { year: 1982, month: 1, day: 29, hour: 8, gender: 'male' },
+    { year: 1990, month: 7, day: 15, hour: 14, gender: 'female' },
+    { year: 1975, month: 11, day: 3, hour: 22, gender: 'male' },
+  ];
+
+  for (const input of inputs) {
+    const data = normalizeToSajuDataV1(input, null);
+    const wealth = buildSajuReport(input, data, 'wealth').primaryAction.description;
+    const career = buildSajuReport(input, data, 'career').primaryAction.description;
+    const relationship = buildSajuReport(input, data, 'relationship').primaryAction.description;
+
+    // 새 자연화 패턴: "… 쪽 강점", "… 쪽을 업무에", "… 쪽을 살린"
+    assert.match(wealth, /쪽 강점이 살아날수록 돈의 흐름이 안정됩니다/);
+    assert.match(career, /쪽을 업무에 살리면 일의 순서가 또렷해집니다/);
+    assert.match(relationship, /관계는 .*쪽을 살린 짧은 확인이 좋습니다/);
+
+    // 옛 어색한 배치형 목적어 표현은 완전히 사라져야 한다.
+    for (const text of [wealth, career, relationship]) {
+      assert.doesNotMatch(text, /돈의 흐름에 쓰면/);
+      assert.doesNotMatch(text, /업무에 쓰면/);
+      // 옛 패턴은 단서 바로 뒤에 "을/를 살린" (쪽 없이) — "쪽을 살린" 은 새 패턴이라 OK.
+      assert.doesNotMatch(text, /(?<!쪽)[을를] 살린 짧은 확인/u);
+    }
+  }
+});
+
 test('summary and action copy now reference computed evidence instead of generic prose only', () => {
   const data = normalizeToSajuDataV1(birthInput, null);
   const report = buildSajuReport(birthInput, data, 'today');
