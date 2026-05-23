@@ -6,7 +6,20 @@ import {
 import { buildSajuReport } from '@/domain/saju/report/build-report';
 import { COMPATIBILITY_RESULT_LABELS, type CompatibilityRelationshipSlug } from '@/content/moonlight';
 import { CONTROLS, ELEMENT_INFO, GENERATES, getLuckyElementsFromSajuData } from '@/lib/saju/elements';
+import { branchCharToKorean, stemCharToKorean } from '@/lib/saju/ganzi-korean';
+import { josa } from '@/lib/saju/pdf-report-maps';
 import type { BirthInput, Branch, Element, Stem } from '@/lib/saju/types';
+
+// 2026-05-23: naming-policy §5 (본문 한자 0개) + 받침 조사 정합.
+//   궁합 본문은 simplifySajuCopy 를 거치지 않으므로, 일간(천간)·일지(지지)를 한글로
+//   노출하고 동적 조사는 josa() 로 붙인다. 戊(무)·己(기)·癸(계) 등 받침 없는 일간 뒤에
+//   '과/은/을' 이 붙던 버그(예: "戊과 己은")를 정정.
+function stemKo(stem: Stem): string {
+  return stemCharToKorean(stem);
+}
+function branchKo(branch: Branch): string {
+  return branchCharToKorean(branch);
+}
 
 const STEM_SEQUENCE: Stem[] = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 const BRANCH_SEQUENCE: Branch[] = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
@@ -331,11 +344,14 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
 }
 
 function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
+  const selfKo = stemKo(selfStem);
+  const partnerKo = stemKo(partnerStem);
+
   if (selfStem === partnerStem) {
     return {
       score: 4,
       title: '일간이 같은 관계',
-      body: `두 분 모두 ${selfStem} 일간이라 세상을 읽는 기본 프레임이 비슷합니다. 공감은 빠르지만 양보하지 않는 지점도 닮아 있을 수 있습니다.`,
+      body: `두 분 모두 ${selfKo} 일간이라 세상을 읽는 기본 프레임이 비슷합니다. 공감은 빠르지만 양보하지 않는 지점도 닮아 있을 수 있습니다.`,
     };
   }
 
@@ -346,7 +362,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
     return {
       score: 6,
       title: '일간 천간합이 잡히는 관계',
-      body: `${selfStem}과 ${partnerStem}은 천간합으로 묶여 기본적으로 서로를 붙잡아 주는 힘이 있습니다. 관계를 이어가려는 의지는 비교적 강한 편입니다.`,
+      body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 천간합으로 묶여 기본적으로 서로를 붙잡아 주는 힘이 있습니다. 관계를 이어가려는 의지는 비교적 강한 편입니다.`,
     };
   }
 
@@ -354,26 +370,28 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
     return {
       score: -5,
       title: '일간 충이 걸리는 관계',
-      body: `${selfStem}과 ${partnerStem}은 생각을 진행하는 속도가 달라, 결정을 빨리 내릴수록 마찰이 생기기 쉽습니다.`,
+      body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 생각을 진행하는 속도가 달라, 결정을 빨리 내릴수록 마찰이 생기기 쉽습니다.`,
     };
   }
 
   return {
     score: 0,
     title: '일간의 성향은 다르지만 보완 여지가 있는 관계',
-    body: `${selfStem}과 ${partnerStem}은 같은 방식으로 움직이지는 않지만, 차이를 이해하면 오히려 역할 분담이 선명해질 수 있습니다.`,
+    body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 같은 방식으로 움직이지는 않지만, 차이를 이해하면 오히려 역할 분담이 선명해질 수 있습니다.`,
   };
 }
 
 function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   const pairKey = canonicalPairKey(selfBranch, partnerBranch, BRANCH_SEQUENCE);
+  const selfKo = branchKo(selfBranch);
+  const partnerKo = branchKo(partnerBranch);
   const items: Array<{ label: string; detail: string; score: number }> = [];
 
   const sixHarmony = BRANCH_SIX_HARMONIES.get(pairKey);
   if (sixHarmony) {
     items.push({
       label: '육합',
-      detail: `${selfBranch}와 ${partnerBranch}는 육합으로 묶여 기본 정이 이어지는 편입니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 육합으로 묶여 기본 정이 이어지는 편입니다.`,
       score: 12,
     });
   }
@@ -381,7 +399,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   if (BRANCH_CLASHES.has(pairKey)) {
     items.push({
       label: '충',
-      detail: `${selfBranch}와 ${partnerBranch}는 충이 있어 부딪힐 때 정면으로 맞서는 경향이 있습니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 충이 있어 부딪힐 때 정면으로 맞서는 경향이 있습니다.`,
       score: -14,
     });
   }
@@ -389,7 +407,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   if (BRANCH_PUNISHMENTS.has(pairKey)) {
     items.push({
       label: '형',
-      detail: `${selfBranch}와 ${partnerBranch}는 형 관계가 있어 긴장과 압박이 누적되기 쉽습니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 형 관계가 있어 긴장과 압박이 누적되기 쉽습니다.`,
       score: -10,
     });
   }
@@ -397,7 +415,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   if (BRANCH_BREAKS.has(pairKey)) {
     items.push({
       label: '파',
-      detail: `${selfBranch}와 ${partnerBranch}는 파 관계라 기대가 어긋날 때 틈이 크게 느껴질 수 있습니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 파 관계라 기대가 어긋날 때 틈이 크게 느껴질 수 있습니다.`,
       score: -8,
     });
   }
@@ -405,7 +423,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   if (BRANCH_HARMS.has(pairKey)) {
     items.push({
       label: '해',
-      detail: `${selfBranch}와 ${partnerBranch}는 해 관계로 겉보다 속피로가 오래 남기 쉽습니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 해 관계로 겉보다 속피로가 오래 남기 쉽습니다.`,
       score: -8,
     });
   }
@@ -414,7 +432,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   if (halfHarmony) {
     items.push({
       label: '반합',
-      detail: `${selfBranch}와 ${partnerBranch}는 ${halfHarmony}으로 이어져, 함께 움직일 때 자연스러운 합이 생길 수 있습니다.`,
+      detail: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} ${halfHarmony}으로 이어져, 함께 움직일 때 자연스러운 합이 생길 수 있습니다.`,
       score: 8,
     });
   }
@@ -424,7 +442,7 @@ function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
       totalScore: 0,
       supportive: null,
       caution: null,
-      body: `${selfBranch}와 ${partnerBranch}는 큰 합충보다 생활 리듬과 말투 차이가 더 중요하게 작동하는 관계입니다.`,
+      body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 큰 합충보다 생활 리듬과 말투 차이가 더 중요하게 작동하는 관계입니다.`,
     };
   }
 

@@ -1241,7 +1241,7 @@ function buildInsights(data: SajuDataV1 | SajuDataV2, topic: FocusTopic, evidenc
     {
       eyebrow: '내 안의 균형',
       title: `${withParticle(dominant, '은', '는')} 앞서고 ${withParticle(weakest, '은', '는')} 비기 쉬운 흐름입니다.`,
-      body: `${formatElementDistribution(data)} ${withParticle(dominant, '을', '를')} 장점으로 쓰되 ${withParticle(weakest, '을', '를')} 생활 속에서 챙기면 결과가 더 안정됩니다.`,
+      body: `${formatElementDistribution(data)} ${withParticle(dominant, '은', '는')} 장점으로 살리고, ${withParticle(weakest, '은', '는')} 생활 속에서 의식적으로 채우면 흐름이 안정됩니다.`,
     },
     buildQuestionFocusInsight(topic, supportLabels, dominant, evidenceCards),
   ];
