@@ -173,12 +173,17 @@ const LUCK_ELEMENT_GUIDE: Record<Element, { theme: string; chance: string; cauti
   },
 };
 
-const PUBLIC_ELEMENT_CUES: Record<Element, string> = {
-  목: '새 시작',
-  화: '표현',
-  토: '정리',
-  금: '기준',
-  수: '생각',
+// 2026-05-23 — naming-policy §2 위반(오행 추상어 신조어 금지) 정정. "새 시작/표현/
+//   정리/기준/생각" 추상 단서를 사이트 표준 표기 "X 기운"(목/화/토/금/수 + 기운)으로
+//   교체. 단일 소스는 ELEMENT_INFO[element].name. 토→"정리"·금→"기준"은 의미상
+//   오류이기도 했음(토=담아냄·안정, 금=단단함·결단).
+// 첫 등장 의미 병기("토 기운(담아냄·안정)")용 한 줄 설명 — naming-policy §2 표.
+const ELEMENT_MEANING: Record<Element, string> = {
+  목: '자라남·시작',
+  화: '표현·열정',
+  토: '담아냄·안정',
+  금: '단단함·결단',
+  수: '흐름·깊이',
 };
 
 const ELEMENT_READING_COPY: Record<
@@ -196,7 +201,7 @@ const ELEMENT_READING_COPY: Record<
   }
 > = {
   목: {
-    label: PUBLIC_ELEMENT_CUES.목,
+    label: ELEMENT_INFO.목.name,
     gift: '새로운 일을 여는 힘',
     action: '할 일을 하나만 골라 바로 시작하세요.',
     avoid: '계획만 늘리면 마무리가 흐려질 수 있어요.',
@@ -207,7 +212,7 @@ const ELEMENT_READING_COPY: Record<
     relationship: '관계는 먼저 안부를 묻는 쪽이 어색함을 풀어줍니다.',
   },
   화: {
-    label: PUBLIC_ELEMENT_CUES.화,
+    label: ELEMENT_INFO.화.name,
     gift: '마음을 드러내는 힘',
     action: '하고 싶은 말을 짧고 부드럽게 먼저 꺼내세요.',
     avoid: '감정이 앞서면 말이 세게 들릴 수 있어요.',
@@ -218,7 +223,7 @@ const ELEMENT_READING_COPY: Record<
     relationship: '관계는 칭찬과 감사처럼 따뜻한 말이 먼저 닿습니다.',
   },
   토: {
-    label: PUBLIC_ELEMENT_CUES.토,
+    label: ELEMENT_INFO.토.name,
     gift: '흩어진 것을 모으는 힘',
     action: '일정, 돈, 약속 중 하나를 정리하세요.',
     avoid: '붙잡는 일이 많아지면 몸과 마음이 무거워질 수 있어요.',
@@ -229,7 +234,7 @@ const ELEMENT_READING_COPY: Record<
     relationship: '관계는 서로의 역할과 기대치를 차분히 맞추는 날입니다.',
   },
   금: {
-    label: PUBLIC_ELEMENT_CUES.금,
+    label: ELEMENT_INFO.금.name,
     gift: '기준을 세우는 힘',
     action: '오늘 꼭 할 일과 미룰 일을 나눠보세요.',
     avoid: '기준이 지나치면 말이 차갑게 들릴 수 있어요.',
@@ -240,7 +245,7 @@ const ELEMENT_READING_COPY: Record<
     relationship: '관계는 말의 순서와 확인이 오해를 줄여줍니다.',
   },
   수: {
-    label: PUBLIC_ELEMENT_CUES.수,
+    label: ELEMENT_INFO.수.name,
     gift: '흐름을 읽는 힘',
     action: '바로 결정하기 전 자료와 마음을 한 번 확인하세요.',
     avoid: '생각이 길어지면 실행이 늦어질 수 있어요.',
@@ -548,7 +553,7 @@ function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDat
   const profile = getReportProfile(data);
   const isHigh = score >= 80;
   const isMid = score >= 70;
-  const roleLabel = profile.role?.label ?? `${profile.day.label} 쪽이 먼저 반응하는 편`;
+  const roleLabel = profile.role?.label ?? `${withParticle(profile.day.label, '이', '가')} 먼저 반응하는 편`;
   // 2026-05-15: 같은 점수대 사용자 거의 동일 문장으로 떨어지던 회귀 수정.
   // 일주 ganzi + 격국 이름을 cue 로 prepend 해서 "내 사주 풀이" 인 게 보이도록.
   const dayGanzi = data.pillars.day.ganzi;
@@ -595,9 +600,9 @@ function buildSummaryHighlights(
   const currentLuck = describeCurrentLuckHighlight(data.currentLuck);
   const roleLine = profile.role
     ? `${profile.role.label}이라 ${profile.role.strength}이 오늘 선택에 먼저 드러납니다.`
-    : `${profile.day.label} 쪽으로 먼저 반응하는 편이라, 하루의 첫 선택이 중요합니다.`;
+    : `${withParticle(profile.day.label, '으로', '로')} 먼저 반응하는 편이라, 하루의 첫 선택이 중요합니다.`;
   const balanceLine = `${withParticle(profile.dominant.label, '은', '는')} 충분히 살아 있고 ${withParticle(profile.weakest.label, '은', '는')} 비기 쉬워, ${withParticle(supportLabels, '을', '를')} 챙길수록 하루가 덜 흔들립니다.`;
-  const cautionLine = `${weakest || profile.weakest.label} 쪽이 약해질 때는 ${profile.weakest.avoid}`;
+  const cautionLine = `${withParticle(weakest || profile.weakest.label, '이', '가')} 약해질 때는 ${profile.weakest.avoid}`;
 
   switch (topic) {
     case 'love':
@@ -744,9 +749,9 @@ function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     key,
     label: '용신',
     title: publicYongsinLabel ? `${withParticle(publicYongsinLabel, '을', '를')} 챙기는 흐름` : `1순위 ${yongsin.primary.label}`,
-    body: `${publicYongsinLabel || '균형'} 쪽을 생활 속에서 챙기면 선택이 덜 흔들립니다. ${
+    body: `${withParticle(publicYongsinLabel || '균형', '을', '를')} 생활 속에서 챙기면 선택이 덜 흔들립니다. ${
       publicKiyshinLabel
-        ? `${publicKiyshinLabel} 쪽이 과해질 때는 속도와 감정을 한 번 늦추세요.`
+        ? `${withParticle(publicKiyshinLabel, '이', '가')} 과해질 때는 속도와 감정을 한 번 늦추세요.`
         : '과속하거나 한쪽으로 치우친 선택은 한 번 더 조절하는 편이 좋습니다.'
     }`,
     details: [
@@ -930,14 +935,21 @@ function describeTenGodNarrative(tenGods: SajuDataV1['tenGods']) {
 function formatElementDistribution(data: SajuDataV1 | SajuDataV2) {
   const dominant = data.fiveElements.byElement[data.fiveElements.dominant];
   const weakest = data.fiveElements.byElement[data.fiveElements.weakest];
-  const dominantLabel = getPublicElementCue(data.fiveElements.dominant);
+  // (B) 첫 등장 의미 병기 — 우세 기운만 "토 기운(담아냄·안정)" 식으로 한 번.
+  //   "X 기운"은 ㄴ받침으로 끝나 의미 괄호 뒤 조사는 항상 이/은/을 형으로 고정.
+  const dominantLabel = getPublicElementCueWithMeaning(data.fiveElements.dominant);
   const weakestLabel = getPublicElementCue(data.fiveElements.weakest);
 
-  return `${dominantLabel} 쪽이 ${dominant.percentage}%로 가장 앞에 있고, ${weakestLabel} 쪽은 ${weakest.percentage}%라 이 빈칸을 어떻게 채우느냐가 오늘 선택의 차이를 만듭니다.`;
+  return `${dominantLabel}이 ${dominant.percentage}%로 가장 앞에 있고, ${withParticle(weakestLabel, '은', '는')} ${weakest.percentage}%라 이 빈칸을 어떻게 채우느냐가 오늘 선택의 차이를 만듭니다.`;
 }
 
 function getPublicElementCue(element: Element) {
-  return PUBLIC_ELEMENT_CUES[element];
+  return ELEMENT_INFO[element].name;
+}
+
+// 첫 등장 의미 병기 — "토 기운(담아냄·안정)". naming-policy §2: 섹션당 한 번만.
+function getPublicElementCueWithMeaning(element: Element) {
+  return `${ELEMENT_INFO[element].name}(${ELEMENT_MEANING[element]})`;
 }
 
 function getElementFromSymbolLabel(value: string | null | undefined): Element | null {
@@ -1018,24 +1030,24 @@ function getHeadline(
   switch (topic) {
     case 'love':
       return scoreMap.love >= 78
-        ? `${dominantCue} 흐름이 살아 있어, 연애는 먼저 분위기를 여는 쪽이 좋습니다.`
+        ? `${withParticle(dominantCue, '이', '가')} 살아 있어, 연애는 먼저 분위기를 여는 쪽이 좋습니다.`
         : `${weakestCue} 보완이 필요해, 연애는 속도보다 말의 온도가 중요합니다.`;
     case 'wealth':
       return scoreMap.wealth >= 78
-        ? `${dominantCue} 흐름이 강해, 돈은 작은 기회를 바로 정리하는 감각이 중요합니다.`
+        ? `${withParticle(dominantCue, '이', '가')} 강해, 돈은 작은 기회를 바로 정리하는 감각이 중요합니다.`
         : `${weakestCue} 보완이 필요해, 돈은 새 지출보다 기존 흐름 정리가 먼저입니다.`;
     case 'career':
       return scoreMap.career >= 78
-        ? `${dominantCue} 흐름이 살아 있어, 일은 제안과 피드백에 힘이 붙습니다.`
+        ? `${withParticle(dominantCue, '이', '가')} 살아 있어, 일은 제안과 피드백에 힘이 붙습니다.`
         : `${supportCue} 보완이 필요해, 일은 속도보다 완성도를 먼저 챙기세요.`;
     case 'relationship':
       return scoreMap.relationship >= 76
-        ? `${dominantCue} 흐름이 따뜻하게 풀려, 짧은 안부가 관계를 바꿉니다.`
+        ? `${withParticle(dominantCue, '이', '가')} 따뜻하게 풀려, 짧은 안부가 관계를 바꿉니다.`
         : `${weakestCue} 보완이 필요해, 관계는 거리와 표현 순서를 맞추는 게 핵심입니다.`;
     case 'today':
     default:
       return scoreMap.overall >= 78
-        ? `${dominantCue} 흐름이 강해, 오늘은 먼저 움직일수록 체감이 빠릅니다.`
+        ? `${withParticle(dominantCue, '이', '가')} 강해, 오늘은 먼저 움직일수록 체감이 빠릅니다.`
         : `${weakestCue} 보완이 필요해, 오늘은 균형을 잡을수록 편해집니다.`;
   }
 }
@@ -1080,7 +1092,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `${supportLabel} 쪽 강점이 살아날수록 돈의 흐름이 안정됩니다.`,
+            `${withParticle(supportLabel, '이', '가')} 살아날수록 돈의 흐름이 안정됩니다.`,
             '오늘은 새 투자보다 고정비, 미뤄둔 정산, 결제 예정 금액을 먼저 확인하세요.',
             `${profile.role?.caution ?? '급하게 넓히는 선택'}만 줄이면 손에 남는 돈이 달라집니다.`,
           ]).join(' '),
@@ -1098,7 +1110,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `${supportLabel} 쪽을 업무에 살리면 일의 순서가 또렷해집니다.`,
+            `${withParticle(supportLabel, '을', '를')} 업무에 살리면 일의 순서가 또렷해집니다.`,
             '오늘은 할 일을 세 단계로 나누고, 보고나 제안은 결론을 먼저 말한 뒤 근거를 붙이세요.',
             `${profile.role?.strength ?? '내가 잘하는 방식'}을 성과로 보이게 만드는 쪽이 좋습니다.`,
           ]).join(' '),
@@ -1116,7 +1128,7 @@ function buildTopicActions(
         primaryAction: {
           title: rule.actionTitles[scoreBand],
           description: compactStrings([
-            `관계는 ${supportLabel} 쪽을 살린 짧은 확인이 좋습니다.`,
+            `관계는 ${withParticle(supportLabel, '을', '를')} 살린 짧은 확인이 좋습니다.`,
             '가족, 친구, 동료에게는 큰 대화보다 안부, 감사, 일정 확인처럼 부담이 낮은 말이 먼저입니다.',
             '말의 순서와 확인을 맞추면 오해가 줄어듭니다.',
           ]).join(' '),
@@ -1223,7 +1235,7 @@ function buildInsights(data: SajuDataV1 | SajuDataV2, topic: FocusTopic, evidenc
   const insights: ReportInsight[] = [
     {
       eyebrow: '타고난 반응',
-      title: roleTone?.label ?? `${getPublicElementCue(data.dayMaster.element)} 쪽이 먼저 반응합니다.`,
+      title: roleTone?.label ?? `${withParticle(getPublicElementCue(data.dayMaster.element), '이', '가')} 먼저 반응합니다.`,
       body: `${getPersonalityFromSajuData(data)} ${roleTone ? `${roleTone.strength}이 장점으로 살아나지만, ${roleTone.caution}가 필요합니다.` : '오늘은 장점을 크게 쓰기보다 생활 속에서 바로 할 수 있는 선택으로 옮기는 편이 좋습니다.'}`,
     },
     {
