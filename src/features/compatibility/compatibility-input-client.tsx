@@ -545,7 +545,10 @@ export function CompatibilityInputClient({
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-32 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
+      {/* 2026-05-24 — app-shell.css 의 :has(footer) 규칙이 main padding-bottom 을 0 으로
+          덮어, 하단 fixed CTA(약 101px)가 폼 마지막 필드(출생지 좌표 안내)를 가려 잘리던
+          회귀. 폼 컨테이너에 CTA clearance 를 직접 부여(모바일만, 데스크탑은 CTA static). */}
+      <AppPage className="gangi-subpage saju-result-page space-y-5 pb-36 md:pb-0">
         <GangiPageHeader title="궁합 입력" backHref="/compatibility" />
 
         {/* §Hero — pink-soft + 1줄 안내 */}
