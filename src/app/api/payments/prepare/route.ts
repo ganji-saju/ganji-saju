@@ -10,7 +10,11 @@ import {
 } from '@/lib/payments/product-scope';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
-import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
+import {
+  hasDetailReportAccess,
+  hasTodayFortunePremiumAccess,
+  hasTodayFortunePremiumAccessByReading,
+} from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 // 2026-05-16 PR (B1) — funnel 단계 기록. admin/payment-funnel 대시보드 데이터 source.
@@ -136,11 +140,21 @@ export async function POST(req: NextRequest) {
         paymentScope.readingKey ?? paymentScope.slug ?? '',
         paymentScope.slug ? [paymentScope.slug] : []
       );
+  // today-detail 은 코인 경로(/api/credits/use·/api/today-fortune/unlock)로도 해제될 수
+  // 있어, Toss 단건 결제 중복을 막으려면 코인 해제를 양쪽 키로 확인해야 한다:
+  //   today-fortune 경로 = sourceSessionId(=slug) / saju 경로 = readingKey.
+  // readingKey 는 today_fortune_premium_access·detail_report_access 두 kind 모두 조회.
+  // ※ KST 일자 단위 fallback(hasTodayFortuneDailyAccess)은 의도적 제외 — 다른 사주의
+  //   오늘 결제까지 막는 과잉 차단 방지(결제 차단은 scope 단위여야 함).
   const coinUnlockedTodayDetail =
     isTasteProductPackage(pkg) &&
     pkg.tasteProductId === 'today-detail' &&
     paymentScope.slug
-      ? await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)
+      ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)) ||
+        (paymentScope.readingKey
+          ? (await hasTodayFortunePremiumAccessByReading(user.id, paymentScope.readingKey)) ||
+            (await hasDetailReportAccess(user.id, paymentScope.readingKey))
+          : false)
       : false;
 
   if (entitlement || coinUnlockedTodayDetail) {

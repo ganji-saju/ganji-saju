@@ -86,7 +86,7 @@ export function getPaidProductTitle(productId: PaidProductId) {
     case 'monthly-calendar':
       return '월간 달력';
     case 'year-core':
-      return '올해 핵심 보기';
+      return '올해 핵심 3줄';
     case 'lifetime-report':
       return '평생 소장 사주풀이';
     case 'love-question':
