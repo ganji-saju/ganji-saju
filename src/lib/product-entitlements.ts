@@ -2,15 +2,17 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import type { TasteProductId } from '@/lib/payments/catalog';
+import { getPackage, isBundlePackage, type TasteProductId } from '@/lib/payments/catalog';
 import {
   buildMonthlyCalendarScopeKey,
   buildReadingProductScopeKey,
   buildTodayDetailScopeKey,
   normalizeEntitlementScopeKey,
   parseLifetimeReportReadingKey,
+  resolvePaymentProductScope,
   type PaidProductId,
 } from '@/lib/payments/product-scope';
+import { revokeBundleComponents, type BundleRevokeResult } from '@/lib/payments/bundle';
 
 export {
   buildMonthlyCalendarScopeKey,
@@ -513,4 +515,34 @@ export async function revokeProductEntitlement(
     paymentKey: recoveredPaymentKey,
     amount: recoveredAmount,
   };
+}
+
+// 묶음(bundle) 결제 환불 시 구성품 entitlement 일괄 회수. revokeBundleComponents(순수,
+// bundle.test 로 고정)에 실제 의존성(scope 해석·단건 회수)을 주입한 운영용 진입점.
+// 운영자/admin 이 (bundlePackageId, userId, slug, reason)로 호출하면 confirm 의 grant 와
+// 동일한 분해로 모든 구성품을 회수한다.
+export async function revokeBundleEntitlement(
+  bundlePackageId: string,
+  userId: string,
+  slug: string | null,
+  options: { reason: string; actor?: string | null; paymentKey?: string | null }
+): Promise<BundleRevokeResult[]> {
+  const bundle = getPackage(bundlePackageId);
+  if (!bundle || !isBundlePackage(bundle)) return [];
+
+  return revokeBundleComponents(
+    bundle,
+    {
+      userId,
+      slug,
+      reason: options.reason,
+      actor: options.actor ?? null,
+      paymentKey: options.paymentKey ?? null,
+    },
+    {
+      resolveScope: (input) => resolvePaymentProductScope(input),
+      revoke: (uid, productId, scopeKey, opts) =>
+        revokeProductEntitlement(uid, productId, scopeKey, opts),
+    }
+  );
 }

@@ -4,6 +4,7 @@ import {
   areAllBundleComponentsOwned,
   grantBundleComponents,
   resolveBundleGrantInputs,
+  revokeBundleComponents,
 } from './bundle';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
@@ -139,4 +140,48 @@ test('areAllBundleComponentsOwned is false for a non-bundle package', async () =
     hasEntitlement: async () => true,
   });
   assert.equal(result, false);
+});
+
+// 묶음 환불 회수 — grantBundleComponents 의 역연산. 같은 분해로 각 구성품 scope 를
+// revokeProductEntitlement(b3) 한다. 환불 사유/처리자가 모든 회수에 전달돼야 audit 가 남는다.
+test('revokeBundleComponents revokes every component scope with the refund reason', async () => {
+  const bundle = getPackage('bundle_today_set');
+  assert.ok(bundle);
+
+  const revokeCalls: Array<{ productId: string; scopeKey: string | null; reason: string }> = [];
+
+  const result = await revokeBundleComponents(
+    bundle,
+    { userId: 'u1', slug: 's1', reason: '결제 회귀 환불', actor: 'admin', paymentKey: 'pk1' },
+    {
+      resolveScope: async ({ pkg, scope }) => ({ scopeKey: `${pkg.tasteProductId}:${scope ?? 'today'}` }),
+      revoke: async (_userId, productId, scopeKey, options) => {
+        revokeCalls.push({ productId, scopeKey, reason: options.reason });
+        return { revoked: true };
+      },
+    }
+  );
+
+  assert.equal(revokeCalls.length, 6);
+  assert.equal(revokeCalls[0].scopeKey, 'today-detail:today');
+  assert.equal(revokeCalls[1].scopeKey, 'score-factor:F1');
+  assert.equal(revokeCalls[5].scopeKey, 'score-factor:F5');
+  assert.ok(revokeCalls.every((c) => c.reason === '결제 회귀 환불'));
+  assert.equal(result.length, 6);
+  assert.ok(result.every((r) => r.revoked));
+});
+
+test('revokeBundleComponents returns empty for a non-bundle package', async () => {
+  const single = getPackage('taste_today_detail');
+  assert.ok(single);
+
+  const result = await revokeBundleComponents(
+    single,
+    { userId: 'u1', slug: 's1', reason: 'x' },
+    {
+      resolveScope: async () => ({ scopeKey: 'x' }),
+      revoke: async () => ({ revoked: true }),
+    }
+  );
+  assert.deepEqual(result, []);
 });

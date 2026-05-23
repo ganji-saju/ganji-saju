@@ -118,3 +118,54 @@ export async function areAllBundleComponentsOwned(
   }
   return true;
 }
+
+export interface BundleRevokeContext {
+  userId: string;
+  slug: string | null;
+  reason: string;
+  actor?: string | null;
+  paymentKey?: string | null;
+}
+
+export interface BundleRevokeDeps {
+  resolveScope: (input: {
+    pkg: PaymentPackage;
+    slug: string | null;
+    scope: string | null;
+  }) => Promise<{ scopeKey: string | null } | null>;
+  revoke: (
+    userId: string,
+    tasteProductId: TasteProductId,
+    scopeKey: string | null,
+    options: { reason: string; actor?: string | null; paymentKey?: string | null }
+  ) => Promise<{ revoked: boolean }>;
+}
+
+export interface BundleRevokeResult {
+  tasteProductId: TasteProductId;
+  scopeKey: string | null;
+  revoked: boolean;
+}
+
+// 묶음 환불 시 구성품 entitlement 일괄 회수 — grantBundleComponents 의 역연산. 같은
+// 분해(resolveBundleGrantInputs)로 각 구성품 scope 를 revokeProductEntitlement(b3) 한다.
+// confirm 의 grant 와 동일한 paymentKey/구성을 쓰므로 환불이 남김없이 회수된다.
+// scope 파생 실패 구성품은 건너뛴다. 묶음이 아니면 빈 배열.
+export async function revokeBundleComponents(
+  bundle: PaymentPackage,
+  ctx: BundleRevokeContext,
+  deps: BundleRevokeDeps
+): Promise<BundleRevokeResult[]> {
+  const results: BundleRevokeResult[] = [];
+  for (const input of resolveBundleGrantInputs(bundle)) {
+    const scope = await deps.resolveScope({ pkg: input.pkg, slug: ctx.slug, scope: input.scope });
+    if (!scope) continue;
+    const { revoked } = await deps.revoke(ctx.userId, input.tasteProductId, scope.scopeKey, {
+      reason: ctx.reason,
+      actor: ctx.actor ?? null,
+      paymentKey: ctx.paymentKey ?? null,
+    });
+    results.push({ tasteProductId: input.tasteProductId, scopeKey: scope.scopeKey, revoked });
+  }
+  return results;
+}

@@ -62,6 +62,11 @@ function buildTasteProductHref(
   if (slug && product === 'year-core') {
     return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#yearly-report`;
   }
+  // 오늘 풀세트(묶음) — 점수 풀이 5항목은 사주 결과 화면에서 직접 열리고 오늘 자세히도
+  // 여기서 이어진다. 구성품을 모두 볼 수 있는 허브(사주 결과)로 보낸다.
+  if (slug && product === 'bundle_today_set') {
+    return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
+  }
   return null;
 }
 

@@ -509,7 +509,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     <TossMembershipCheckout
                       packageId={paymentPackage.id}
                       plan={selectedPlan}
-                      product={selectedProduct ?? undefined}
+                      product={selectedProduct ?? selectedBundle?.id}
                       amount={paymentPackage.price}
                       orderName={paymentPackage.name}
                       slug={slug}
