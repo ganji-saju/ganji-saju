@@ -545,10 +545,7 @@ export function CompatibilityInputClient({
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-32 md:pb-12">
-      {/* 2026-05-24 — app-shell.css 의 :has(footer) 규칙이 main padding-bottom 을 0 으로
-          덮어, 하단 fixed CTA(약 101px)가 폼 마지막 필드(출생지 좌표 안내)를 가려 잘리던
-          회귀. 폼 컨테이너에 CTA clearance 를 직접 부여(모바일만, 데스크탑은 CTA static). */}
-      <AppPage className="gangi-subpage saju-result-page space-y-5 pb-36 md:pb-0">
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="궁합 입력" backHref="/compatibility" />
 
         {/* §Hero — pink-soft + 1줄 안내 */}
@@ -849,6 +846,12 @@ export function CompatibilityInputClient({
             {errorMessage}
           </div>
         ) : null}
+
+        {/* 모바일 한정 sticky CTA clearance. 이 폼은 결과 화면용 .saju-result-page 클래스를 공유하는데,
+            그 unlayered 규칙 padding-bottom:0 이 app-page 기본 하단 여백(@layer components)을 덮는다.
+            그래서 AppPage 에 pb-* (Tailwind utilities 레이어)를 줘도 무효 → fixed CTA(약 6rem+safe-area)가
+            마지막 입력 섹션을 가린다. cascade 무관한 spacer 로 확보. md+ 에선 CTA 가 static 이라 불필요. */}
+        <div aria-hidden="true" className="md:hidden" style={{ height: 'calc(6rem + env(safe-area-inset-bottom))' }} />
 
         {/* §Sticky CTA */}
         <div
