@@ -417,10 +417,11 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex flex-col gap-2.5 rounded-[18px] border bg-white p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
+      className="relative flex flex-col gap-2.5 rounded-[18px] border p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
       style={{
-        borderColor: 'var(--app-line)',
-        color: 'var(--app-ink)',
+        background: 'var(--app-ink)',
+        borderColor: 'var(--app-on-ink-line)',
+        color: 'var(--app-on-ink)',
         minHeight: 158,
       }}
     >
@@ -455,7 +456,7 @@ export function GangiServiceCardLink({
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '-0.02em',
-            color: 'var(--app-ink)',
+            color: 'var(--app-on-ink)',
           }}
         >
           {card.title}
@@ -464,7 +465,7 @@ export function GangiServiceCardLink({
           className="m-0 mt-1"
           style={{
             fontSize: 12,
-            color: 'var(--app-copy-muted)',
+            color: 'var(--app-on-ink-muted)',
             lineHeight: 1.45,
           }}
         >
@@ -478,14 +479,14 @@ export function GangiServiceCardLink({
           fontSize: 13,
           fontWeight: 800,
           color: isFree
-            ? 'var(--app-ink)'
+            ? 'var(--app-on-ink)'
             : isComingSoon
-            ? 'var(--app-copy-muted)'
-            : 'var(--app-pink-strong)',
+            ? 'var(--app-on-ink-faint)'
+            : 'var(--app-pink)',
         }}
       >
         {card.price}
-        <span className="ml-auto" style={{ color: 'var(--app-copy-muted)' }}>
+        <span className="ml-auto" style={{ color: 'var(--app-on-ink-faint)' }}>
           →
         </span>
       </div>
