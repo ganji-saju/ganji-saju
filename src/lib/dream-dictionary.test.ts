@@ -33,9 +33,40 @@ function entryText(key: string): string {
   return [e.summary, e.action ?? '', ...e.situations.map((s) => `${s.label} ${s.meaning}`)].join(' ');
 }
 
-test('사전은 60개 안팎(>=58)으로 확충되어 있다', () => {
+test('사전은 200개 이상으로 대량 확충되어 있다(phase 2)', () => {
   const count = Object.keys(DREAM_DICTIONARY).length;
-  assert.ok(count >= 58, `사전 엔트리 수 ${count} 가 58 이상이어야 합니다`);
+  assert.ok(count >= 200, `사전 엔트리 수 ${count} 가 200 이상이어야 합니다`);
+});
+
+test('keyword 는 사전 전체에서 유니크하다(중복 표제어 금지)', () => {
+  const keywords = Object.values(DREAM_DICTIONARY).map((e) => e.keyword);
+  const seen = new Set<string>();
+  const dups: string[] = [];
+  for (const kw of keywords) {
+    if (seen.has(kw)) dups.push(kw);
+    seen.add(kw);
+  }
+  assert.deepEqual(dups, [], `중복 키워드: ${dups.join(', ')}`);
+  assert.equal(seen.size, keywords.length, '유니크 키워드 수가 전체 엔트리 수와 일치해야 합니다');
+});
+
+test('흉몽 분류가 1건 이상 존재한다(주의·점검 신호 톤)', () => {
+  const hyung = Object.entries(DREAM_DICTIONARY).filter(
+    ([, e]) => e.fortune === '흉몽'
+  );
+  assert.ok(hyung.length >= 1, '흉몽으로 분류된 엔트리가 최소 1건 있어야 합니다');
+});
+
+test('흉몽 본문은 공포·단정 표현을 쓰지 않는다(순화 톤 가드)', () => {
+  // 흉몽도 "주의가 필요하다는 신호" 식 순화. 공포/단정 어휘는 0건이어야 함.
+  const FEAR_WORDS = /불행|재앙|저주|죽을|망한다|반드시|틀림없이|큰일난다/;
+  const findings: string[] = [];
+  for (const [key, entry] of Object.entries(DREAM_DICTIONARY)) {
+    if (entry.fortune !== '흉몽') continue;
+    const text = entryText(key);
+    if (FEAR_WORDS.test(text)) findings.push(`${key}: ${text.match(FEAR_WORDS)?.[0]}`);
+  }
+  assert.deepEqual(findings, [], `흉몽 본문 공포·단정 표현: ${findings.join(', ')}`);
 });
 
 test('모든 엔트리는 fortune(길/흉/중립)·action·situations 강화 필드를 가진다', () => {
