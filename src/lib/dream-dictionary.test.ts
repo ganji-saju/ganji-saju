@@ -33,9 +33,9 @@ function entryText(key: string): string {
   return [e.summary, e.action ?? '', ...e.situations.map((s) => `${s.label} ${s.meaning}`)].join(' ');
 }
 
-test('사전은 200개 이상으로 대량 확충되어 있다(phase 2)', () => {
+test('사전은 300개 이상으로 대량 확충되어 있다(phase 5)', () => {
   const count = Object.keys(DREAM_DICTIONARY).length;
-  assert.ok(count >= 200, `사전 엔트리 수 ${count} 가 200 이상이어야 합니다`);
+  assert.ok(count >= 300, `사전 엔트리 수 ${count} 가 300 이상이어야 합니다`);
 });
 
 test('keyword 는 사전 전체에서 유니크하다(중복 표제어 금지)', () => {
