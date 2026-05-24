@@ -193,7 +193,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
   const item = getZodiac(slug);
   if (!item) notFound();
 
-  // 2026-05-24 — 연생 풀이: byYear 가 있는 띠(현재 닭띠 파일럿)만 칩 노출.
+  // 2026-05-24 — 연생 풀이: byYear 가 있는 띠(12지 전체)만 칩 노출.
   const byYearEntries = getByYearEntries(item);
   const selectedYear = resolveSelectedYear(item, rawBirthYear);
   const selectedByYear = selectedYear !== null ? item.byYear?.[selectedYear] ?? null : null;
@@ -318,7 +318,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             ) : null}
           </article>
 
-          {/* §1.5 연생 풀이 — 2026-05-24: byYear 가 있는 띠(닭띠 파일럿)만 노출.
+          {/* §1.5 연생 풀이 — 2026-05-24: byYear 가 있는 띠(12지 전체)만 노출.
               칩으로 태어난 해 선택 → ?birthYear=YYYY. 선택 시 그 연생 풀이를 히어로 아래 표시. */}
           {byYearEntries.length > 0 ? (
             <section className="space-y-2.5">
@@ -404,7 +404,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 </article>
               ) : (
                 <p className="px-1 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
-                  태어난 해를 선택하면 같은 닭띠 안에서도 조금씩 다른 기운의 흐름을 볼 수 있어요.
+                  태어난 해를 선택하면 같은 {item.label} 안에서도 조금씩 다른 기운의 흐름을 볼 수 있어요.
                 </p>
               )}
             </section>
