@@ -217,6 +217,34 @@ export async function hasAnyMonthlyCalendarForReading(
   return false;
 }
 
+// 2026-05-24 today-detail 결제 정합성 — 같은 날(KST) today-detail 결제분 자동 인정.
+//   readingKey 가 이름 해시 등으로 흔들리거나 과거 readingId(slug) scope 로 결제한
+//   분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을 결제했으면 그날
+//   열람을 허용한다. '오늘 자세히 보기'는 (사람×날) 단위 제품이라 안전한 fallback.
+export async function hasTodayDetailEntitlementForDay(
+  userId: string | null | undefined,
+  dayKey: string
+): Promise<boolean> {
+  if (!userId || !hasSupabaseServiceEnv) return false;
+
+  const startMs = Date.parse(`${dayKey}T00:00:00+09:00`);
+  if (Number.isNaN(startMs)) return false;
+  const endMs = startMs + 86_400_000;
+
+  const service = await createServiceClient();
+  const { data, error } = await service
+    .from('product_entitlements')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('product_id', 'today-detail')
+    .gte('created_at', new Date(startMs).toISOString())
+    .lt('created_at', new Date(endMs).toISOString())
+    .limit(1);
+
+  if (error) return false;
+  return Boolean(data && data.length > 0);
+}
+
 async function recordLegacyTasteProductTransaction(
   userId: string,
   productId: TasteProductId,

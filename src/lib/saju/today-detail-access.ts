@@ -10,8 +10,10 @@
 import {
   buildTodayDetailScopeKey,
   getTasteProductEntitlement,
+  hasTodayDetailEntitlementForDay,
 } from '@/lib/product-entitlements';
 import {
+  getKoreaAccessDay,
   hasDetailReportAccess,
   hasTodayFortunePremiumAccess,
 } from '@/lib/credits/detail-report-access';
@@ -24,7 +26,7 @@ import {
 } from '@/lib/supabase/server';
 
 type TodayDetailAccess =
-  | { kind: 'product-entitlement'; via: 'slug' | 'reading-key' }
+  | { kind: 'product-entitlement'; via: 'slug' | 'reading-key' | 'same-day' }
   | { kind: 'credit-unlock'; via: 'today-fortune' };
 
 export interface SajuTodayDetailAccessResult {
@@ -77,6 +79,13 @@ export async function checkTodayDetailAccess(slug: string): Promise<SajuTodayDet
       const via = scopeKey === readingKeyScope ? 'reading-key' : 'slug';
       return { hasAccess: true, source: { kind: 'product-entitlement', via } };
     }
+  }
+
+  // 2026-05-24 같은 날(KST) fallback — readingKey 해시 드리프트(이름 포함)나 과거
+  //   readingId(slug) 결제분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을
+  //   결제했으면 그날 열람 허용. (사람×날 제품이라 안전 · 결제자 보호 안전망)
+  if (await hasTodayDetailEntitlementForDay(user.id, getKoreaAccessDay())) {
+    return { hasAccess: true, source: { kind: 'product-entitlement', via: 'same-day' } };
   }
 
   // 2) Today-fortune 1코인 unlock 기록 (별도 흐름이지만 같은 콘텐츠 unlock).
