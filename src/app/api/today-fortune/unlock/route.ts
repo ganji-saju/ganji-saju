@@ -21,7 +21,9 @@ import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   buildTodayDetailScopeKey,
   getTasteProductEntitlement,
+  hasTodayDetailEntitlementForDay,
 } from '@/lib/product-entitlements';
+import { todayDetailEntitlementScopeKeys } from '@/lib/saju/today-detail-access';
 import { resolveTodayFortuneUnlockAccess } from './route-helpers';
 
 export const runtime = 'nodejs';
@@ -79,8 +81,15 @@ export async function GET(req: NextRequest) {
       todayKey,
     },
     {
-      getTodayDetailEntitlement: (userId, scopeKey) =>
-        getTasteProductEntitlement(userId, 'today-detail', scopeKey),
+      // 2026-05-24 정합성 fix — entitlement API(checkTodayDetailAccess)와 동일하게
+      //   readingKey(안정) + legacy readingId(slug) scope + 같은날 fallback 으로 판정.
+      //   (구) today:${sourceSessionId} 단일 조회는 세션마다 달라져 결제분을 못 찾았다.
+      getTodayDetailEntitlement: async (userId) => {
+        for (const sk of todayDetailEntitlementScopeKeys({ slug: sourceSessionId, readingKey })) {
+          if (await getTasteProductEntitlement(userId, 'today-detail', sk)) return true;
+        }
+        return hasTodayDetailEntitlementForDay(userId, todayKey);
+      },
       hasTodayFortunePremiumAccess,
       hasTodayFortunePremiumAccessByReading,
       hasDetailReportAccess,
@@ -169,8 +178,15 @@ export async function POST(req: NextRequest) {
       todayKey,
     },
     {
-      getTodayDetailEntitlement: (userId, scopeKey) =>
-        getTasteProductEntitlement(userId, 'today-detail', scopeKey),
+      // 2026-05-24 정합성 fix — entitlement API(checkTodayDetailAccess)와 동일하게
+      //   readingKey(안정) + legacy readingId(slug) scope + 같은날 fallback 으로 판정.
+      //   (구) today:${sourceSessionId} 단일 조회는 세션마다 달라져 결제분을 못 찾았다.
+      getTodayDetailEntitlement: async (userId) => {
+        for (const sk of todayDetailEntitlementScopeKeys({ slug: sourceSessionId, readingKey })) {
+          if (await getTasteProductEntitlement(userId, 'today-detail', sk)) return true;
+        }
+        return hasTodayDetailEntitlementForDay(userId, todayKey);
+      },
       hasTodayFortunePremiumAccess,
       hasTodayFortunePremiumAccessByReading,
       hasDetailReportAccess,
