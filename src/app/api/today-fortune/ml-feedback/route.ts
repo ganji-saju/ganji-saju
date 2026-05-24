@@ -9,6 +9,7 @@ import {
   type TodayFortuneFeedbackInput,
 } from '@/lib/today-fortune/feedback';
 import { createClient } from '@/lib/supabase/server';
+import { feedbackSaveErrorResponse } from './route-helpers';
 
 function readNumber(payload: Record<string, unknown>, key: string): number | null {
   const v = payload[key];
@@ -85,7 +86,9 @@ export async function POST(req: NextRequest) {
 
   const result = await recordTodayFortuneFeedback(supabase, user.id, input);
   if (!result.ok) {
-    return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
+    const errorResponse = feedbackSaveErrorResponse(result.error);
+    console.error('[ml-feedback] 피드백 저장 실패:', errorResponse.logError);
+    return NextResponse.json(errorResponse.body, { status: errorResponse.status });
   }
 
   return NextResponse.json({ ok: true });
