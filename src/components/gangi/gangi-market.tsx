@@ -316,16 +316,16 @@ export function GangiQuickActionCard({
     <Link
       href={href}
       onClick={onTrack}
-      className="flex items-center gap-2.5 rounded-[18px] border bg-white p-3 no-underline"
-      style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
+      className="flex items-center gap-2.5 rounded-[18px] border p-3 no-underline"
+      style={{ background: 'var(--app-ink)', borderColor: 'var(--app-on-ink-line)', color: 'var(--app-on-ink)' }}
     >
       <ZodiacChip kind={zodiacKind} size="sm" />
       <div className="min-w-0 flex-1">
         <span
           className="inline-flex items-center rounded-[6px] px-1.5"
           style={{
-            background: 'var(--app-ink)',
-            color: '#fff',
+            background: 'var(--app-on-ink)',
+            color: 'var(--app-ink)',
             fontSize: 9.5,
             fontWeight: 800,
             letterSpacing: '0.02em',
@@ -349,7 +349,7 @@ export function GangiQuickActionCard({
             className="mt-0.5 truncate"
             style={{
               fontSize: 11.5,
-              color: 'var(--app-copy-muted)',
+              color: 'var(--app-on-ink-muted)',
             }}
           >
             {desc}
