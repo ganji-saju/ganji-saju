@@ -140,8 +140,8 @@ test('buildLifetimeReport practicalActions use 사전식 매핑 (PR 4, 2026-05-1
     .flatMap((c) => c.practicalActions ?? [])
     .map((a) => a.reason)
     .join('\n');
-  // 2026-05-19 P0d: 한자 오행 (木火土金水) → 한글 자연 단어 (새싹/햇살/흙/쇠/물) 변환.
-  const elementMarker = /(새싹|햇살|흙|쇠|물)\s*기운/.test(allReasons);
+  // 2026-05-25 naming-policy §2: 자연 비유(새싹/햇살/흙/쇠/물) 폐기 → 표준 "목/화/토/금/수 기운".
+  const elementMarker = /(목|화|토|금|수)\s*기운/.test(allReasons);
   const tenGodMarker = /(비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/.test(allReasons);
   assert.ok(elementMarker, `오행 사전 매핑 marker 가 reason 에 등장해야 함: ${allReasons.slice(0, 400)}`);
   assert.ok(tenGodMarker, `십성 사전 매핑 marker 가 reason 에 등장해야 함: ${allReasons.slice(0, 400)}`);
