@@ -25,6 +25,17 @@ export interface ZodiacByYearFortune {
   action: string;
 }
 
+// 2026-05-25 — 기간별 한 줄. 상세 페이지 기간 탭(오늘/이번주/이번달/올해)과
+//   라벨이 일치하도록, 각 기간의 호흡에 맞춘 한 줄을 따로 둔다.
+//   today=그날의 가벼운 포인트, week=짧은 호흡, month=중간 호흡, year=긴 호흡.
+//   summary 는 다른 곳(메타/요약)에서 쓰일 수 있어 보존한다.
+export interface ZodiacPeriodLines {
+  today: string;
+  week: string;
+  month: string;
+  year: string;
+}
+
 export interface ZodiacFortune {
   slug: string;
   label: string;
@@ -32,6 +43,8 @@ export interface ZodiacFortune {
   summary: string;
   todayFocus: string;
   action: string;
+  /** 기간별 한 줄(오늘/이번주/이번달/올해). 라벨과 내용 일치를 위해 분리. */
+  periodLines: ZodiacPeriodLines;
   /** 연생별 풀이 (연도 → 풀이). 없으면 단일 띠 화면 그대로. */
   byYear?: Record<number, ZodiacByYearFortune>;
 }
@@ -98,6 +111,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '작은 흐름을 먼저 읽어야 손실을 줄일 수 있는 날입니다.',
     todayFocus: '재물과 일정 정리',
     action: '급한 결정보다 체크리스트를 먼저 보세요.',
+    periodLines: {
+      today: '오늘은 작은 신호를 먼저 셈해 두면 헛걸음을 줄이기 좋습니다.',
+      week: '이번 주는 들고 나는 돈과 일정을 가볍게 점검하며 흐름을 잡아가는 구간입니다.',
+      month: '이번 달은 한 번에 키우기보다 조금씩 모아 두는 쪽이 마음을 편하게 합니다.',
+      year: '올해는 빠른 셈을 살려 차근차근 기반을 다져 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1960: {
         ganji: '庚子',
@@ -158,6 +177,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '느리더라도 꾸준히 이어가는 힘이 강하게 작동합니다.',
     todayFocus: '직장과 성과 관리',
     action: '미뤄둔 정리를 끝내면 마음이 훨씬 편해집니다.',
+    periodLines: {
+      today: '오늘은 미뤄 둔 일 하나를 끝까지 마무리하면 마음이 한결 가벼워집니다.',
+      week: '이번 주는 서두르기보다 맡은 자리를 묵묵히 다져 가는 흐름이 어울립니다.',
+      month: '이번 달은 천천히 쌓아 온 성과가 조금씩 모양을 갖춰 가는 구간입니다.',
+      year: '올해는 꾸준함을 밀고 나가 오래 익혀 온 일을 단단히 여물게 하기 좋습니다.',
+    },
     byYear: {
       1961: {
         ganji: '辛丑',
@@ -218,6 +243,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '주도권을 잡을 기회가 오지만 말의 온도 조절이 중요합니다.',
     todayFocus: '관계와 협업',
     action: '강한 표현보다 선명한 제안이 더 효과적입니다.',
+    periodLines: {
+      today: '오늘은 앞장서되 말의 세기를 한 톤 낮추면 사람이 더 잘 따라옵니다.',
+      week: '이번 주는 치고 나가기 전에 길목을 한 번 살피면 흐름이 매끄러워집니다.',
+      month: '이번 달은 기세를 선명한 제안으로 풀어낼수록 협업이 잘 굴러갑니다.',
+      year: '올해는 앞장서는 힘에 디딜 자리를 함께 다지며 무게를 키워 가기 좋습니다.',
+    },
     byYear: {
       1962: {
         ganji: '壬寅',
@@ -278,6 +309,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '감각이 좋은 날이라 취향과 직감이 꽤 잘 맞습니다.',
     todayFocus: '연애와 소통',
     action: '먼저 다가가되 속도를 과하게 높이지 마세요.',
+    periodLines: {
+      today: '오늘은 직감이 곱게 살아나니 끌리는 한 가지를 가볍게 잡아 보기 좋습니다.',
+      week: '이번 주는 먼저 다가가되 상대 속도에 맞춰 한 걸음씩 가는 흐름이 어울립니다.',
+      month: '이번 달은 좋아하는 것을 곱게 가꾸며 사람과의 사이를 넓혀 가는 구간입니다.',
+      year: '올해는 고운 감각을 살려 마음 가는 일을 천천히 피워 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1963: {
         ganji: '癸卯',
@@ -338,6 +375,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '큰 그림을 볼수록 오히려 오늘 해야 할 일이 선명해집니다.',
     todayFocus: '새로운 기회',
     action: '들어온 제안을 흘려보내지 말고 메모해두세요.',
+    periodLines: {
+      today: '오늘은 들어온 제안을 흘려보내지 말고 메모해 두면 다음으로 이어집니다.',
+      week: '이번 주는 머릿속 그림 하나를 작게라도 실제 일로 옮겨 보기 좋습니다.',
+      month: '이번 달은 벌여 둔 일 가운데 가장 크게 자랄 하나에 힘을 모으는 구간입니다.',
+      year: '올해는 큰 그림을 그리되 받칠 토대를 함께 다지며 키워 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1964: {
         ganji: '甲辰',
@@ -398,6 +441,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '관찰력이 강해지는 날이지만 해석만 길어지지 않게 주의가 필요합니다.',
     todayFocus: '심리와 관계 거리감',
     action: '생각만 하지 말고 짧은 확인 메시지를 보내보세요.',
+    periodLines: {
+      today: '오늘은 머릿속으로만 재지 말고 짧은 확인 메시지 하나로 거리를 좁혀 보기 좋습니다.',
+      week: '이번 주는 충분히 살핀 다음 작은 한 걸음으로 매듭지어 가는 흐름이 어울립니다.',
+      month: '이번 달은 오래 지켜본 일의 정곡을 짚어 차분히 정리해 가는 구간입니다.',
+      year: '올해는 깊은 통찰을 살려 멀리까지 내다보며 자리를 다져 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1965: {
         ganji: '乙巳',
@@ -458,6 +507,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '활동량이 늘어날수록 운도 같이 붙는 활기 구간입니다.',
     todayFocus: '일과 표현력',
     action: '먼저 제안하고 먼저 움직이는 쪽이 유리합니다.',
+    periodLines: {
+      today: '오늘은 먼저 제안하고 먼저 움직이는 쪽으로 활기를 살려 보기 좋습니다.',
+      week: '이번 주는 한 길을 정해 힘을 모으면 움직임이 더 멀리까지 갑니다.',
+      month: '이번 달은 바삐 내달리되 디딜 자리를 다져 두면 뒷심이 오래갑니다.',
+      year: '올해는 활동량을 살려 새 길을 트되 한 갈래에 무게를 실어 가기 좋습니다.',
+    },
     byYear: {
       1954: {
         ganji: '甲午',
@@ -518,6 +573,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '무리한 확장보다 주변 균형을 맞출 때 안정감이 생깁니다.',
     todayFocus: '감정과 휴식',
     action: '해야 할 일과 쉬어야 할 시간을 같이 정해두세요.',
+    periodLines: {
+      today: '오늘은 할 일과 쉴 시간을 같이 정해 두면 마음이 한결 놓입니다.',
+      week: '이번 주는 무리하게 벌이기보다 주변과 박자를 맞추는 흐름이 어울립니다.',
+      month: '이번 달은 한쪽으로 욕심내기보다 두루 편한 자리를 다져 가는 구간입니다.',
+      year: '올해는 균형 감각을 살려 모두가 편한 기반을 차근차근 가꿔 가기 좋습니다.',
+    },
     byYear: {
       1955: {
         ganji: '乙未',
@@ -578,6 +639,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '센스와 순발력이 강하게 살아나는 날이라 대응이 빠릅니다.',
     todayFocus: '거래와 커뮤니케이션',
     action: '가벼운 대화 속에서도 중요한 힌트를 챙기세요.',
+    periodLines: {
+      today: '오늘은 순발력이 살아나니 가벼운 대화 속 힌트를 놓치지 말고 챙겨 보기 좋습니다.',
+      week: '이번 주는 즉흥으로 튀기보다 흐름을 읽고 영리하게 받아넘기는 구간입니다.',
+      month: '이번 달은 이리저리 옮기기보다 한자리에 자리 잡고 키워 가는 쪽이 어울립니다.',
+      year: '올해는 빠른 센스를 살리되 디딜 자리를 다지며 무게를 더해 가기 좋습니다.',
+    },
     byYear: {
       1956: {
         ganji: '丙申',
@@ -638,6 +705,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '기준이 선명해질수록 오히려 마음이 가벼워지는 날입니다.',
     todayFocus: '기준 정리와 선택',
     action: '완벽을 기다리기보다 80점에서 먼저 실행하세요.',
+    periodLines: {
+      today: '오늘은 완벽을 기다리기보다 팔십 점에서 먼저 손을 대면 마음이 가벼워집니다.',
+      week: '이번 주는 기준을 또렷이 세워 두면 고르고 정하는 일이 한결 수월해집니다.',
+      month: '이번 달은 어수선한 자리를 하나씩 가지런히 채워 가는 흐름이 어울립니다.',
+      year: '올해는 또렷한 기준을 살려 핵심부터 차곡차곡 정리해 가기 좋은 흐름입니다.',
+    },
     // 2026-05-24 — 닭띠 연생별 풀이 파일럿(5연생). 천간 오행의 결을 살려 톤만 다르게.
     byYear: {
       1957: {
@@ -699,6 +772,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '주변 사람의 신뢰를 얻기 쉬운 날이라 관계운이 부드럽습니다.',
     todayFocus: '관계 회복',
     action: '오래 미뤄둔 답장을 오늘 정리해보세요.',
+    periodLines: {
+      today: '오늘은 오래 미뤄 둔 답장을 정리하면 관계가 한결 부드러워집니다.',
+      week: '이번 주는 곁의 사람을 묵묵히 챙기는 손길이 신뢰로 돌아오는 흐름입니다.',
+      month: '이번 달은 맡은 자리를 차근차근 지키며 사람과의 사이를 다져 가는 구간입니다.',
+      year: '올해는 한결같은 신의를 살려 곁을 든든히 지켜 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1958: {
         ganji: '戊戌',
@@ -759,6 +838,12 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
     summary: '편안함 안에 기회가 숨어 있는 날이라 조용한 흐름이 좋습니다.',
     todayFocus: '소비와 휴식',
     action: '마음이 가는 쪽을 너무 계산적으로만 재지 마세요.',
+    periodLines: {
+      today: '오늘은 너무 계산적으로만 재지 말고 끌리는 흐름을 가볍게 따라가 보기 좋습니다.',
+      week: '이번 주는 시끄러운 데서 한발 물러나 조용히 가늠하는 흐름이 어울립니다.',
+      month: '이번 달은 조급하게 거두기보다 천천히 익혀 너끈히 채워 가는 구간입니다.',
+      year: '올해는 넉넉한 품을 살려 무리 없이 살림을 불려 가기 좋은 흐름입니다.',
+    },
     byYear: {
       1959: {
         ganji: '己亥',
