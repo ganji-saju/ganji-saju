@@ -17,6 +17,7 @@
     "seed:classics-holds": "node scripts/seed-classics-hold-metadata.mjs",
     "seed:classics-summaries": "node scripts/seed-classic-korean-summaries.mjs",
     "validate:classics": "node scripts/validate-classics-corpus.mjs",
+    "progress:html": "node scripts/render-progress.mjs",
     "start": "next start",
     "generate:web-push-keys": "node scripts/generate-web-push-keys.mjs",
     "audit:user-entitlements": "node scripts/audit-user-entitlements.mjs",

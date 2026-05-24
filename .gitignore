@@ -54,3 +54,6 @@ next-env.d.ts
 /blob-report/
 /playwright/.cache/
 e2e/.auth/
+
+# generated progress report (PROGRESS.md → HTML via scripts/render-progress.mjs)
+PROGRESS.html
