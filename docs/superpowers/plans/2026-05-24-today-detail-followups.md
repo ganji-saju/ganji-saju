@@ -121,3 +121,15 @@ today-detail #356과 동일 패턴 적용:
 - **스펙 커버리지:** 설계 스펙 §9(환불 감사) → Part A. §10 비고(saju-detail 동일 패턴) → Part B. ✅
 - **placeholder:** Part B2는 B1 조사 결과에 따른 조건부(투기적 placeholder 아님 — 게이트가 명확). SQL은 완성형. ✅
 - **타입/이름 일관성:** `buildScoreFactorScopeKey`, `getSajuScoreFactorEntitlements`, `product_entitlements.product_id='today-detail'`, `amount/created_at/payment_key` 컬럼 — 모두 현재 main 코드/스키마와 일치. ✅
+
+---
+
+## 실행 결과 (2026-05-24, Inline)
+
+- **Part A:** 감사 SQL 확정. 코드 변경 없음 — 운영에서 SQL Editor 실행 + Toss `paymentKey` 기준 중복분 부분환불(사용자 전달 완료).
+- **Part B (검증 완료, 수정 불필요):**
+  - 쓰기: `resolvePaymentProductScope` → `score:${readingKey}:${factorId}` (readingKey 안정).
+  - 읽기: `getSajuScoreFactorEntitlements`(`src/lib/saju/score-factor-access.ts`) → `toSlug(reading.input)` = readingKey → `buildScoreFactorScopeKey(readingKey, f)`. **쓰기와 동일 스코프.**
+  - 읽기 경로 단일: `src/app/saju/[slug]/page.tsx`만 사용. `src/app/api/**`에 별도 score-factor unlock/deduct 라우트 **없음** → today-detail unlock 라우트가 갈라졌던 것과 같은 휘발성-키 불일치 **없음**.
+  - **결론: score-factor 정합성 OK. Task B2 skip.** (saju 경로는 slug 고정이라 today-fortune 같은 reading 재생성 이슈도 적음.)
+- **Part B3(백로그):** `readingKey=toSlug(input)`의 이름-해시 의존은 전 readingKey-스코프 상품 공통 잠재 리스크 → 이름 비의존 식별자 안정화는 별도 설계 과제로 보류.
