@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildFreshTodaySajuData } from '@/server/today-fortune/fresh-saju-data';
 import { buildSajuInterpretationGrounding, buildSajuReport } from '@/domain/saju/report';
 import { createClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
-import { createReading, resolveReading } from '@/lib/saju/readings';
+import { createReading, findReadingByInput, resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
 import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-fortune';
@@ -98,11 +98,21 @@ export async function POST(req: NextRequest) {
 
   if (hasSupabaseServiceEnv) {
     try {
-      sourceSessionId = await createReading(parsed.input, user?.id ?? null);
-      const persistedReading = await resolveReading(sourceSessionId);
-      if (persistedReading) {
-        persistedGrounding = persistedReading.grounding;
-        persistedKasiComparison = persistedReading.kasiComparison;
+      // 2026-05-24 — 매 생성마다 새 reading(UUID)을 만들면 sourceSessionId 가 휘발성이 돼
+      //   재방문/재생성 때 결제·결과 식별이 깨졌다(결제 무한반복의 근본 원인 중 하나).
+      //   로그인 사용자는 동일 identity 의 기존 reading 을 재사용해 안정화한다.
+      const existingReading = user?.id ? await findReadingByInput(user.id, parsed.input) : null;
+      if (existingReading) {
+        sourceSessionId = existingReading.id;
+        persistedGrounding = existingReading.grounding;
+        persistedKasiComparison = existingReading.kasiComparison;
+      } else {
+        sourceSessionId = await createReading(parsed.input, user?.id ?? null);
+        const persistedReading = await resolveReading(sourceSessionId);
+        if (persistedReading) {
+          persistedGrounding = persistedReading.grounding;
+          persistedKasiComparison = persistedReading.kasiComparison;
+        }
       }
     } catch {
       sourceSessionId = toSlug(parsed.input);
