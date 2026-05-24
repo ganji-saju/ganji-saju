@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import type { DreamMeaning } from '@/lib/dream-dictionary';
+import type { DreamFortune, DreamMeaning } from '@/lib/dream-dictionary';
 
 interface DreamApiResponse {
   query: string;
@@ -28,6 +28,13 @@ const CATEGORY_DECOR: Record<
   nature: { hanja: '山', color: 'var(--app-sky)' },
   object: { hanja: '物', color: 'var(--app-indigo)' },
   action: { hanja: '動', color: 'var(--app-coral)' },
+};
+
+// 2026-05-24 꿈해몽 풍부화 phase 1 — fortune 뱃지 색/톤. 민속 상징 분류이며 단정 아님.
+const FORTUNE_DECOR: Record<DreamFortune, { bg: string; border: string; text: string }> = {
+  길몽: { bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.32)', text: '#15803d' },
+  흉몽: { bg: 'rgba(244,63,94,0.10)', border: 'rgba(244,63,94,0.30)', text: '#be123c' },
+  중립: { bg: 'var(--app-line)', border: 'var(--app-line)', text: 'var(--app-copy-muted)' },
 };
 
 const TODAY_POPULAR: Array<{ rank: number; keyword: string; description: string }> = [
@@ -135,13 +142,27 @@ export default function DreamPage() {
                 >
                   {meaning.hanja}
                 </span>
-                <div>
+                <div className="min-w-0">
                   <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     꿈 풀이
                     {data && !data.exact ? <span className="ml-1.5 text-[var(--app-copy-soft)]">· 근접 매칭</span> : null}
                   </div>
-                  <div className="mt-0.5 text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                    &ldquo;{meaning.keyword}&rdquo; 꿈
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                    <span className="text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      &ldquo;{meaning.keyword}&rdquo; 꿈
+                    </span>
+                    {meaning.fortune ? (
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+                        style={{
+                          background: FORTUNE_DECOR[meaning.fortune].bg,
+                          border: `1px solid ${FORTUNE_DECOR[meaning.fortune].border}`,
+                          color: FORTUNE_DECOR[meaning.fortune].text,
+                        }}
+                      >
+                        {meaning.fortune}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -170,6 +191,44 @@ export default function DreamPage() {
                   ))}
                 </div>
               </article>
+
+              {/* 행동 가이드 — 꿈을 떠올린 직후 가볍게 해볼 한 문장 */}
+              {meaning.action ? (
+                <div
+                  className="mt-2.5 flex items-start gap-2 rounded-[12px] border bg-white px-3 py-2.5"
+                  style={{ borderColor: 'var(--app-pink-line)' }}
+                >
+                  <span
+                    className="mt-[3px] inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: 'var(--app-pink)' }}
+                    aria-hidden="true"
+                  />
+                  <span className="flex-1 text-[12px] leading-[1.55] text-[var(--app-ink)]">
+                    <span className="font-extrabold text-[var(--app-pink-strong)]">오늘 해볼 행동 · </span>
+                    {meaning.action}
+                  </span>
+                </div>
+              ) : null}
+
+              {/* 검색↔상세 연결 — DREAM_CONTENT 에 풍부 상세가 있는 키워드면 상세 페이지 링크 */}
+              {meaning.detailSlug ? (
+                <Link
+                  href={`/dream-interpretation/${meaning.detailSlug}`}
+                  className="mt-2.5 flex items-center justify-between rounded-[12px] px-3.5 py-3 text-[12.5px] font-extrabold text-white transition"
+                  style={{
+                    background: 'var(--app-pink-strong)',
+                    boxShadow: '0 10px 24px rgba(216, 27, 114, 0.28)',
+                  }}
+                >
+                  <span>이 꿈 자세히 풀어보기</span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              ) : null}
+
+              {/* 꿈해몽은 민속·상징 해석임을 부드럽게 안내 */}
+              <p className="mt-2.5 text-[10.5px] leading-[1.5] text-[var(--app-copy-soft)]">
+                꿈해몽은 민속·상징에 바탕한 해석으로, 단정적인 예언이 아닙니다. 마음의 신호로 가볍게 참고해 주세요.
+              </p>
             </article>
           ) : (
             <div className="rounded-[18px] border border-[var(--app-line)] bg-white p-8 text-center text-[12.5px] text-[var(--app-copy-muted)]">
