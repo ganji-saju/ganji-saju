@@ -316,16 +316,16 @@ export function GangiQuickActionCard({
     <Link
       href={href}
       onClick={onTrack}
-      className="flex items-center gap-2.5 rounded-[18px] border p-3 no-underline"
-      style={{ background: 'var(--app-ink)', borderColor: 'var(--app-on-ink-line)', color: 'var(--app-on-ink)' }}
+      className="flex items-center gap-2.5 rounded-[18px] border bg-white p-3 no-underline"
+      style={{ borderColor: 'var(--app-line)', color: 'var(--app-ink)' }}
     >
       <ZodiacChip kind={zodiacKind} size="sm" />
       <div className="min-w-0 flex-1">
         <span
           className="inline-flex items-center rounded-[6px] px-1.5"
           style={{
-            background: 'var(--app-on-ink)',
-            color: 'var(--app-ink)',
+            background: 'var(--app-ink)',
+            color: '#fff',
             fontSize: 9.5,
             fontWeight: 800,
             letterSpacing: '0.02em',
@@ -349,7 +349,7 @@ export function GangiQuickActionCard({
             className="mt-0.5 truncate"
             style={{
               fontSize: 11.5,
-              color: 'var(--app-on-ink-muted)',
+              color: 'var(--app-copy-muted)',
             }}
           >
             {desc}
@@ -417,11 +417,10 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex flex-col gap-2.5 rounded-[18px] border p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
+      className="relative flex flex-col gap-2.5 rounded-[18px] border bg-white p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
       style={{
-        background: 'var(--app-ink)',
-        borderColor: 'var(--app-on-ink-line)',
-        color: 'var(--app-on-ink)',
+        borderColor: 'var(--app-line)',
+        color: 'var(--app-ink)',
         minHeight: 158,
       }}
     >
@@ -456,7 +455,7 @@ export function GangiServiceCardLink({
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '-0.02em',
-            color: 'var(--app-on-ink)',
+            color: 'var(--app-ink)',
           }}
         >
           {card.title}
@@ -465,7 +464,7 @@ export function GangiServiceCardLink({
           className="m-0 mt-1"
           style={{
             fontSize: 12,
-            color: 'var(--app-on-ink-muted)',
+            color: 'var(--app-copy-muted)',
             lineHeight: 1.45,
           }}
         >
@@ -479,14 +478,14 @@ export function GangiServiceCardLink({
           fontSize: 13,
           fontWeight: 800,
           color: isFree
-            ? 'var(--app-on-ink)'
+            ? 'var(--app-ink)'
             : isComingSoon
-            ? 'var(--app-on-ink-faint)'
-            : 'var(--app-pink)',
+            ? 'var(--app-copy-muted)'
+            : 'var(--app-pink-strong)',
         }}
       >
         {card.price}
-        <span className="ml-auto" style={{ color: 'var(--app-on-ink-faint)' }}>
+        <span className="ml-auto" style={{ color: 'var(--app-copy-muted)' }}>
           →
         </span>
       </div>
