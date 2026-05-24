@@ -117,3 +117,14 @@ Layer 2:
 - main 머지 시 Vercel 자동 배포(앱). DB 마이그레이션은 이번 변경엔 없음(읽기 fallback만).
 - 비고: "사주풀이(saju-detail) 550원"이 today-detail과 다른 productId/스코프인지 별도 점검 필요(같은 휘발성 키 문제 여부).
 - 비고: 결과 페이지 "결과 없어요"는 bounce가 사라지면 자연 해소되나, 진짜 새 브라우저 직접진입 시의 rehydration은 별개 과제.
+
+## 11. 구현 조정 (2026-05-24, 실제 빌드 기준)
+
+구현 착수 시 **현재 main(3298abd)에 PR #346(`de6b509`)이 이미 today-detail 결제/조회를 안정적 `readingKey` 기반으로 옮겨두고** `checkTodayDetailAccess`(readingKey + legacy readingId + 코인)를 읽기 단일 출처로 만들어 둔 것을 발견. entitlement API는 이걸 쓰는데 **unlock 라우트만 옛 `today:${sourceSessionId}`로 남아** 불일치(이미 구매 ↔ 못 엶)가 났다.
+
+→ §5의 "per-day canonical 키 재설계"는 #346과 충돌(기존 `today:${readingKey}` 결제분 재고아화)하므로 **채택하지 않고**, 더 작고 안전한 조정안으로 구현:
+
+- **Layer 1**: unlock 라우트(GET·POST)를 `todayDetailEntitlementScopeKeys`(readingKey 우선 + legacy slug) + **같은날(KST) fallback**으로 통일 → entitlement API와 동일 판정. `checkTodayDetailAccess`에도 같은날 fallback 추가(SSR·체크아웃 전파). 신규 `hasTodayDetailEntitlementForDay`. **키는 #346의 `today:${readingKey}` 유지(날짜 미포함, per-day 강제 안 함)** — readingKey 해시 드리프트/과거 readingId 결제분은 같은날 fallback이 흡수.
+- **Layer 2**: `findReadingByInput`로 today-fortune 생성 시 동일 reading 재사용(전체 readingKey 일치).
+- per-day 재과금 모델은 #346(영구 readingKey)과 충돌 → 별도 제품 결정으로 보류.
+- 검증: 타입체크 0, 단위테스트 645 통과. (커밋 d4832c9, 3eba861)
