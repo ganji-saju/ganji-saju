@@ -5,6 +5,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { Badge } from '@/components/ui/badge';
 import {
   STAR_SIGN_BLUEPRINT,
@@ -81,6 +82,7 @@ export default async function StarSignPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-6">
+        <GangiPageHeader title="별자리 운세" backHref="/free" />
         {/* 2026-05-17 PR — PageHero → inline + design token (sibling redesign 패턴). */}
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
