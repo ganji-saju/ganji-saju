@@ -8,7 +8,11 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { ZODIAC_META } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { ZODIAC_FORTUNES } from '@/lib/free-content-pages';
+import {
+  ZODIAC_FORTUNES,
+  type ZodiacByYearFortune,
+  type ZodiacFortune,
+} from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { ZODIAC_RELATIONS, type ZodiacFortuneSlug } from '@/lib/zodiac/zodiac-relations';
@@ -24,7 +28,7 @@ import { getKstParts, getKstStartOfDay } from '@/shared/utils/kst';
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; birthYear?: string }>;
 }
 
 // /zodiac/[slug] uses 'goat' for 양띠; ZodiacChip uses 'sheep'
@@ -127,6 +131,22 @@ function normalizePeriod(value: string | undefined): ZodiacPeriod {
   return VALID_PERIODS.includes(value as ZodiacPeriod) ? (value as ZodiacPeriod) : 'today';
 }
 
+// 2026-05-24 — 연생(태어난 해)별 풀이. byYear 가 있는 띠만 ?birthYear=YYYY 로 분기.
+//   - 정렬: 최근 출생연도부터(기존 years 표기 순서와 동일한 직관).
+//   - 미선택/미존재 연도면 null → 기존 단일 띠 화면 그대로.
+function getByYearEntries(item: ZodiacFortune): Array<[number, ZodiacByYearFortune]> {
+  if (!item.byYear) return [];
+  return Object.entries(item.byYear)
+    .map(([year, fortune]) => [Number(year), fortune] as [number, ZodiacByYearFortune])
+    .sort((a, b) => b[0] - a[0]);
+}
+
+function resolveSelectedYear(item: ZodiacFortune, raw: string | undefined): number | null {
+  if (!item.byYear || !raw) return null;
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && item.byYear[parsed] ? parsed : null;
+}
+
 const LUCKY_COLOR_TABLE: Array<{ name: string; hex: string }> = [
   { name: '핑크', hex: '#ff4f9a' },
   { name: '코랄', hex: '#ff6b6b' },
@@ -168,10 +188,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ZodiacDetailPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { period: rawPeriod } = await searchParams;
+  const { period: rawPeriod, birthYear: rawBirthYear } = await searchParams;
   const period = normalizePeriod(rawPeriod);
   const item = getZodiac(slug);
   if (!item) notFound();
+
+  // 2026-05-24 — 연생 풀이: byYear 가 있는 띠(현재 닭띠 파일럿)만 칩 노출.
+  const byYearEntries = getByYearEntries(item);
+  const selectedYear = resolveSelectedYear(item, rawBirthYear);
+  const selectedByYear = selectedYear !== null ? item.byYear?.[selectedYear] ?? null : null;
 
   const profile = await getOptionalSignedInProfile();
   const personalizedSlug = buildZodiacSlugFromProfile(profile);
@@ -293,6 +318,84 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             ) : null}
           </article>
 
+          {/* §1.5 연생 풀이 — 2026-05-24: byYear 가 있는 띠(닭띠 파일럿)만 노출.
+              칩으로 태어난 해 선택 → ?birthYear=YYYY. 선택 시 그 연생 풀이를 히어로 아래 표시. */}
+          {byYearEntries.length > 0 ? (
+            <section className="space-y-2.5">
+              <div className="px-1 text-[13px] font-extrabold text-[var(--app-ink)]">
+                태어난 해로 더 보기
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {byYearEntries.map(([year]) => {
+                  const isActive = year === selectedYear;
+                  const href = isActive
+                    ? `/zodiac/${item.slug}${period === 'today' ? '' : `?period=${period}`}`
+                    : `/zodiac/${item.slug}?birthYear=${year}${period === 'today' ? '' : `&period=${period}`}`;
+                  return (
+                    <Link
+                      key={year}
+                      href={href}
+                      aria-pressed={isActive}
+                      className="rounded-full border px-3 py-1.5 text-[12.5px] font-bold transition-transform active:scale-95 no-underline"
+                      style={
+                        isActive
+                          ? {
+                              background: 'var(--app-pink)',
+                              color: '#fff',
+                              borderColor: 'var(--app-pink)',
+                            }
+                          : {
+                              background: '#fff',
+                              color: 'var(--app-copy-muted)',
+                              borderColor: 'var(--app-line)',
+                            }
+                      }
+                    >
+                      {year}년생
+                    </Link>
+                  );
+                })}
+              </div>
+              {selectedByYear ? (
+                <article
+                  className="rounded-[14px] border p-4"
+                  style={{
+                    background: 'var(--app-pink-soft)',
+                    borderColor: 'var(--app-pink-line)',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                      {selectedYear}년생 · {item.label}
+                    </div>
+                    <span
+                      className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold text-[var(--app-pink-strong)] border"
+                      style={{ borderColor: 'var(--app-pink-line)' }}
+                    >
+                      {selectedByYear.element}
+                    </span>
+                  </div>
+                  <p
+                    className="mt-2 text-[14px] font-bold leading-[1.55] text-[var(--app-ink)]"
+                    style={{ wordBreak: 'keep-all' }}
+                  >
+                    {selectedByYear.summary}
+                  </p>
+                  <p
+                    className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]"
+                    style={{ wordBreak: 'keep-all' }}
+                  >
+                    {selectedByYear.detail}
+                  </p>
+                </article>
+              ) : (
+                <p className="px-1 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
+                  태어난 해를 선택하면 같은 닭띠 안에서도 조금씩 다른 기운의 흐름을 볼 수 있어요.
+                </p>
+              )}
+            </section>
+          ) : null}
+
           {/* §2 Period tabs — 2026-05-15: 4개 기간 모두 클릭 가능. searchParam 기반 활성. */}
           <div className="flex gap-1.5">
             {([
@@ -302,10 +405,16 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               { key: 'year', label: '올해' },
             ] as Array<{ key: ZodiacPeriod; label: string }>).map((p) => {
               const isActive = p.key === period;
+              // 2026-05-24 — 연생 선택 시 기간 탭 전환에도 birthYear 유지.
+              const query = [
+                p.key === 'today' ? null : `period=${p.key}`,
+                selectedYear !== null ? `birthYear=${selectedYear}` : null,
+              ].filter(Boolean);
+              const href = query.length > 0 ? `/zodiac/${item.slug}?${query.join('&')}` : `/zodiac/${item.slug}`;
               return (
                 <Link
                   key={p.key}
-                  href={p.key === 'today' ? `/zodiac/${item.slug}` : `/zodiac/${item.slug}?period=${p.key}`}
+                  href={href}
                   className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
                   style={
                     isActive

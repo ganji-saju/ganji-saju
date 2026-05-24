@@ -5,6 +5,24 @@ export interface TopicBlock {
   body: string;
 }
 
+// 2026-05-24 — 연생(태어난 해)별 풀이.
+//   같은 띠라도 태어난 해의 천간(60갑자)이 달라 기운의 흐름이 조금씩 다름.
+//   닭띠 파일럿: byYear 가 있으면 상세 페이지에서 ?birthYear=YYYY 로 연생 선택 노출.
+//   - ganji/ganjiKo/element 은 정체성 표기용(한자/오행 라벨 허용),
+//     summary/detail 본문은 naming-policy 에 따라 한글 + "X 기운" 표기만 사용.
+export interface ZodiacByYearFortune {
+  /** 천간×지지 한자 (정체성 표기, 본문 노출 금지) */
+  ganji: string;
+  /** 간지 한글 독음 (예: '정유') */
+  ganjiKo: string;
+  /** 천간 오행 한 줄 라벨 (예: '화 기운') */
+  element: string;
+  /** 연생 한 줄 요약 */
+  summary: string;
+  /** 연생 풀이 2~3문장 */
+  detail: string;
+}
+
 export interface ZodiacFortune {
   slug: string;
   label: string;
@@ -12,6 +30,8 @@ export interface ZodiacFortune {
   summary: string;
   todayFocus: string;
   action: string;
+  /** 연생별 풀이 (연도 → 풀이). 없으면 단일 띠 화면 그대로. */
+  byYear?: Record<number, ZodiacByYearFortune>;
 }
 
 export interface StarSignFortune {
@@ -78,7 +98,57 @@ export const ZODIAC_FORTUNES: ZodiacFortune[] = [
   { slug: 'horse', label: '말띠', years: '2002, 1990, 1978, 1966', summary: '활동량이 늘어날수록 운도 같이 붙는 활기 구간입니다.', todayFocus: '일과 표현력', action: '먼저 제안하고 먼저 움직이는 쪽이 유리합니다.' },
   { slug: 'goat', label: '양띠', years: '2003, 1991, 1979, 1967', summary: '무리한 확장보다 주변 균형을 맞출 때 안정감이 생깁니다.', todayFocus: '감정과 휴식', action: '해야 할 일과 쉬어야 할 시간을 같이 정해두세요.' },
   { slug: 'monkey', label: '원숭이띠', years: '2004, 1992, 1980, 1968', summary: '센스와 순발력이 강하게 살아나는 날이라 대응이 빠릅니다.', todayFocus: '거래와 커뮤니케이션', action: '가벼운 대화 속에서도 중요한 힌트를 챙기세요.' },
-  { slug: 'rooster', label: '닭띠', years: '2005, 1993, 1981, 1969', summary: '기준이 선명해질수록 오히려 마음이 가벼워지는 날입니다.', todayFocus: '기준 정리와 선택', action: '완벽을 기다리기보다 80점에서 먼저 실행하세요.' },
+  {
+    slug: 'rooster',
+    label: '닭띠',
+    years: '2005, 1993, 1981, 1969',
+    summary: '기준이 선명해질수록 오히려 마음이 가벼워지는 날입니다.',
+    todayFocus: '기준 정리와 선택',
+    action: '완벽을 기다리기보다 80점에서 먼저 실행하세요.',
+    // 2026-05-24 — 닭띠 연생별 풀이 파일럿(5연생). 천간 오행의 결을 살려 톤만 다르게.
+    byYear: {
+      1957: {
+        ganji: '丁酉',
+        ganjiKo: '정유',
+        element: '화 기운',
+        summary: '따뜻하게 밝히는 화 기운이 닭띠의 또렷함과 어울리는 해예요.',
+        detail:
+          '같은 닭띠라도 1957년생은 표현하고 밝게 퍼지는 화 기운이 함께 흐르는 편이에요. 기준을 세우는 또렷함에 사람을 데우는 다정함이 더해져, 곁에 온기를 나누는 자리에서 편안함을 느끼기 쉽습니다. 다만 마음이 빠르게 달아오를 때는 한 박자 쉬어 가는 여유를 두면 흐름이 더 부드러워집니다.',
+      },
+      1969: {
+        ganji: '己酉',
+        ganjiKo: '기유',
+        element: '토 기운',
+        summary: '차분히 담아내는 토 기운이 닭띠의 꼼꼼함을 받쳐 주는 해예요.',
+        detail:
+          '1969년생은 안정감 있게 담아내는 토 기운이 닭띠의 정돈하는 성향과 잘 맞는 편이에요. 주변을 살피고 기반을 다지는 흐름이 강해, 천천히 쌓아 가는 일에서 마음의 안정을 얻기 쉽습니다. 너무 많은 것을 혼자 떠안기보다 나눌 부분을 정해 두면 한결 가벼워집니다.',
+      },
+      1981: {
+        ganji: '辛酉',
+        ganjiKo: '신유',
+        element: '금 기운',
+        summary: '단단하게 마무리하는 금 기운이 닭띠의 선명함과 겹치는 해예요.',
+        detail:
+          '1981년생은 단단함과 결단을 뜻하는 금 기운이 닭띠 본래의 또렷함과 겹쳐, 기준이 분명해지는 흐름이 강한 편이에요. 핵심을 골라 깔끔하게 매듭짓는 일에서 만족감을 느끼기 쉽습니다. 다만 기준이 날카로워질 때는 부드러운 말투를 한 겹 얹어 두면 관계가 편안해집니다.',
+      },
+      1993: {
+        ganji: '癸酉',
+        ganjiKo: '계유',
+        element: '수 기운',
+        summary: '깊이 흐르는 수 기운이 닭띠의 또렷함에 여유를 더하는 해예요.',
+        detail:
+          '1993년생은 흐름과 깊이를 뜻하는 수 기운이 함께해, 닭띠의 또렷한 기준에 유연함이 더해지는 편이에요. 상황을 천천히 읽고 사색하는 힘이 좋아, 서두르기보다 흐름을 살필 때 길이 잘 보입니다. 생각이 길어진다 싶으면 작은 행동 하나로 매듭을 지어 보면 마음이 가벼워집니다.',
+      },
+      2005: {
+        ganji: '乙酉',
+        ganjiKo: '을유',
+        element: '목 기운',
+        summary: '부드럽게 자라나는 목 기운이 닭띠의 또렷함을 살려 주는 해예요.',
+        detail:
+          '2005년생은 자라남과 시작을 뜻하는 목 기운이 함께해, 닭띠의 또렷한 성향에 새로운 시도를 더하기 좋은 편이에요. 호기심을 따라 한 걸음씩 넓혀 가는 흐름이 잘 어울립니다. 여러 갈래로 마음이 뻗을 때는 지금 가장 끌리는 한 가지에 먼저 집중해 보면 흐름이 또렷해집니다.',
+      },
+    },
+  },
   { slug: 'dog', label: '개띠', years: '2006, 1994, 1982, 1970', summary: '주변 사람의 신뢰를 얻기 쉬운 날이라 관계운이 부드럽습니다.', todayFocus: '관계 회복', action: '오래 미뤄둔 답장을 오늘 정리해보세요.' },
   { slug: 'pig', label: '돼지띠', years: '2007, 1995, 1983, 1971', summary: '편안함 안에 기회가 숨어 있는 날이라 조용한 흐름이 좋습니다.', todayFocus: '소비와 휴식', action: '마음이 가는 쪽을 너무 계산적으로만 재지 마세요.' },
 ];
