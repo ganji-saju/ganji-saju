@@ -387,6 +387,20 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   >
                     {selectedByYear.detail}
                   </p>
+                  <div
+                    className="mt-2.5 rounded-[10px] bg-white px-3 py-2.5"
+                    style={{ border: '1px solid var(--app-pink-line)' }}
+                  >
+                    <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                      이렇게 해보세요
+                    </div>
+                    <p
+                      className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-ink)]"
+                      style={{ wordBreak: 'keep-all' }}
+                    >
+                      {selectedByYear.action}
+                    </p>
+                  </div>
                 </article>
               ) : (
                 <p className="px-1 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
