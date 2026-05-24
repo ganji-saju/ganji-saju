@@ -179,3 +179,54 @@ test('모든 연생 본문은 naming-policy 금지 어휘를 포함하지 않는
   }
   assert.deepEqual(findings, []);
 });
+
+// 2026-05-25 — 기간별 한 줄(periodLines) 가드.
+//   상세 페이지 기간 탭(오늘/이번주/이번달/올해) 라벨과 내용 일치를 위해 추가한 필드.
+const PERIOD_KEYS = ['today', 'week', 'month', 'year'] as const;
+
+test('12지 모든 띠가 periodLines 의 4기간(오늘/이번주/이번달/올해)을 모두 가진다', () => {
+  for (const item of ZODIAC_FORTUNES) {
+    assert.ok(item.periodLines, `${item.slug} 는 periodLines 를 가져야 합니다`);
+    for (const key of PERIOD_KEYS) {
+      const line = item.periodLines[key];
+      assert.equal(typeof line, 'string', `${item.slug} periodLines.${key} 는 문자열이어야 합니다`);
+      assert.ok(line.trim().length > 0, `${item.slug} periodLines.${key} 가 비어있음`);
+    }
+  }
+});
+
+test('모든 띠 periodLines 4기간이 서로 다른 문장이다', () => {
+  for (const item of ZODIAC_FORTUNES) {
+    const lines = PERIOD_KEYS.map((key) => item.periodLines[key]);
+    const unique = new Set(lines);
+    assert.equal(unique.size, PERIOD_KEYS.length, `${item.slug} periodLines 기간별 문장이 중복됨`);
+  }
+});
+
+test('모든 띠 periodLines 에 한자가 노출되지 않는다', () => {
+  for (const item of ZODIAC_FORTUNES) {
+    for (const key of PERIOD_KEYS) {
+      assert.ok(
+        !HANJA_PATTERN.test(item.periodLines[key]),
+        `${item.slug} periodLines.${key} 에 한자 노출`
+      );
+    }
+  }
+});
+
+test('모든 띠 periodLines 는 naming-policy 금지 어휘를 포함하지 않는다', () => {
+  const findings: string[] = [];
+  for (const item of ZODIAC_FORTUNES) {
+    for (const key of PERIOD_KEYS) {
+      const text = item.periodLines[key];
+      for (const pattern of FORBIDDEN_PATTERNS) {
+        pattern.lastIndex = 0;
+        const matches = text.match(pattern) ?? [];
+        if (matches.length > 0) {
+          findings.push(`${item.slug} ${key}: ${matches.join(', ')}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(findings, []);
+});

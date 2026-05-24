@@ -305,7 +305,9 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               >
                 {PERIOD_LABEL[period]}
               </div>
-              <p className="mt-1 text-[14px] font-bold leading-[1.55]">{item.summary}</p>
+              {/* 2026-05-25 — 라벨(오늘/이번주/이번달/올해)과 내용이 어긋나던 회귀 fix.
+                  고정 summary → 기간별 한 줄(periodLines[period])로 교체. */}
+              <p className="mt-1 text-[14px] font-bold leading-[1.55]">{item.periodLines[period]}</p>
             </div>
 
             {isPersonalizedMatch ? (
@@ -335,6 +337,8 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                     <Link
                       key={year}
                       href={href}
+                      // 2026-05-25 — 같은 화면 내 연생 칩 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
+                      scroll={false}
                       aria-pressed={isActive}
                       className="rounded-full border px-3 py-1.5 text-[12.5px] font-bold transition-transform active:scale-95 no-underline"
                       style={
@@ -429,6 +433,8 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 <Link
                   key={p.key}
                   href={href}
+                  // 2026-05-25 — 같은 화면 내 기간 탭 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
+                  scroll={false}
                   className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
                   style={
                     isActive
