@@ -8,11 +8,15 @@ import {
   isOpenAIConfigured,
 } from '@/server/ai/openai-text';
 import type { ChapterLLMClient } from '../chapters/generate-chapter';
+import type { LlmFeature } from '@/server/ai/llm-telemetry';
 
 export interface OpenAITotalReviewClientOptions {
   model?: string;
   maxOutputTokens?: number;
   timeoutMs?: number;
+  /** 2026-05-25 Phase 0b — 텔레메트리 영역. 총평 기본 'total_review', 궁합은 'compatibility'. */
+  feature?: LlmFeature;
+  userId?: string | null;
 }
 
 /** generate() 가 LLM 실패 시 throw → generateTotalReviewSection 의 retry/fallback 흐름으로. */
@@ -31,6 +35,8 @@ export function createOpenAITotalReviewClient(
         model: options.model ?? getOpenAIInterpretationModel(),
         maxOutputTokens: options.maxOutputTokens ?? 1500,
         timeoutMs: options.timeoutMs,
+        feature: options.feature ?? 'total_review',
+        userId: options.userId ?? null,
         // temperature 미전달 (gpt-5.2-chat-latest 미지원). 자유 텍스트 응답.
         responseFormat: { type: 'text' },
       });

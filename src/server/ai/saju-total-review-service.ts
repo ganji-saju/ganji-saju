@@ -25,6 +25,7 @@ import {
   createSupabaseTotalReviewCacheStore,
   type TotalReviewCacheStore,
 } from './total-review/total-review-cache-store';
+import { recordLlmRun } from './llm-telemetry';
 import type { TotalReviewOutput } from './total-review/total-review-types';
 
 export interface GenerateTotalReviewArgs {
@@ -98,6 +99,7 @@ export async function generateTotalReview(
   const cacheStore = args.cacheStore ?? createSupabaseTotalReviewCacheStore();
   const cached = await cacheStore.get(cacheKey);
   if (cached) {
+    await recordLlmRun({ feature: 'total_review', source: 'cache', model: cached.model, userId: null });
     return {
       source: 'cache',
       output: cached.output,

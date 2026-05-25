@@ -101,6 +101,7 @@ function buildFallbackDailyCopy(dateKey: string) {
 async function buildDailyCopy(dateKey: string) {
   const fallback = buildFallbackDailyCopy(dateKey);
   const result = await generateAiText({
+    feature: 'home_banner',
     instructions: [
       '간지사주 홈 메인 배너에 들어갈 오늘의 운세 한 줄을 씁니다.',
       '사용자는 모바일에서 빠르게 운세를 눌러보는 일반 사용자입니다.',

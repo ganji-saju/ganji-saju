@@ -31,6 +31,7 @@ import {
   type AiFallbackReason,
   type AiGenerationSource,
 } from '@/server/ai/openai-text';
+import { recordLlmRun } from '@/server/ai/llm-telemetry';
 
 export type YearlyCacheKeyType = 'reading_id' | 'reading_slug' | 'unavailable';
 export type YearlyInterpretationStageKey = 'narrative' | 'monthly';
@@ -232,6 +233,7 @@ export async function generateYearlyInterpretation(
   if (cacheable && !request.regenerate) {
     const cached = await readCachedInterpretation(cacheKey, request.targetYear, counselorId);
     if (cached) {
+      await recordLlmRun({ feature: 'yearly', source: 'cache', model: cached.model, userId: reading.userId });
       return {
         ok: true,
         readingId: request.readingIdentifier,
@@ -293,6 +295,8 @@ export async function generateYearlyInterpretation(
         model,
         maxOutputTokens: YEARLY_NARRATIVE_OUTPUT_TOKENS,
         timeoutMs: YEARLY_NARRATIVE_TIMEOUT_MS,
+        feature: 'yearly',
+        userId: reading.userId,
       })
     ),
     runTimedAiStage(
@@ -302,6 +306,8 @@ export async function generateYearlyInterpretation(
         model,
         maxOutputTokens: YEARLY_MONTHLY_OUTPUT_TOKENS,
         timeoutMs: YEARLY_MONTHLY_TIMEOUT_MS,
+        feature: 'yearly',
+        userId: reading.userId,
       })
     ),
   ]);

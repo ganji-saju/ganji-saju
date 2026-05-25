@@ -1,3 +1,6 @@
+// 2026-05-25 Phase 0b — 전 LLM 호출 중앙 텔레메트리(console.log + ai_llm_runs).
+import { recordLlmRun, type LlmFeature, type LlmTelemetryStore } from './llm-telemetry';
+
 export type AiGenerationSource = 'openai' | 'fallback';
 
 export type AiFallbackReason =
@@ -32,6 +35,15 @@ export interface AiTextRequest {
   timeoutMs?: number;
   /** 2026-05-20 V2-5 PR N — 응답 형식. 미지정 시 자유 텍스트 (기본 호환). */
   responseFormat?: AiResponseFormat;
+  /**
+   * 2026-05-25 Phase 0b — 텔레메트리 영역 태그. 지정 시 호출(성공/fallback)을
+   * ai_llm_runs + console('llm_run') 기록. 미지정 시 계측 skip(점진 적용·기본 호환).
+   */
+  feature?: LlmFeature;
+  /** 텔레메트리 user_id_hash 용 원본 id. 비로그인/미상이면 미지정. */
+  userId?: string | null;
+  /** 테스트/DI 용 텔레메트리 스토어. 미지정 시 Supabase. */
+  telemetryStore?: LlmTelemetryStore;
 }
 
 export interface AiTextResult {
@@ -93,6 +105,30 @@ function fallbackResult(
 }
 
 export async function generateAiText(
+  request: AiTextRequest
+): Promise<AiTextResult> {
+  const startedAt = Date.now();
+  const result = await runGenerateAiText(request);
+  // 2026-05-25 Phase 0b — feature 지정 시에만 중앙 계측(성공·fallback 모든 경로). 비차단.
+  if (request.feature) {
+    await recordLlmRun(
+      {
+        feature: request.feature,
+        source: result.source,
+        model: result.model,
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+        durationMs: Date.now() - startedAt,
+        userId: request.userId ?? null,
+        fallbackReason: result.fallbackReason,
+      },
+      request.telemetryStore
+    );
+  }
+  return result;
+}
+
+async function runGenerateAiText(
   request: AiTextRequest
 ): Promise<AiTextResult> {
   const apiKey = getOpenAIKey();

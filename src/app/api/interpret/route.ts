@@ -32,6 +32,7 @@ import {
   type AiFallbackReason,
   type AiGenerationSource,
 } from '@/server/ai/openai-text';
+import { recordLlmRun } from '@/server/ai/llm-telemetry';
 
 export const runtime = 'nodejs';
 export const maxDuration = 25;
@@ -199,6 +200,7 @@ export async function POST(req: NextRequest) {
   if (cacheable && !parsed.regenerate) {
     const cached = await readCachedInterpretation(parsed.readingId, topic, counselorId);
     if (cached) {
+      await recordLlmRun({ feature: 'interpret', source: 'cache', model: cached.model, userId: reading.userId });
       return NextResponse.json({
         ok: true,
         readingId: parsed.readingId,
@@ -246,6 +248,8 @@ export async function POST(req: NextRequest) {
     model,
     maxOutputTokens: 900,
     temperature: 0.7,
+    feature: 'interpret',
+    userId: reading.userId,
   });
   const parsedInterpretation = parseInterpretationText(aiResult.text, fallback);
   const source: AiGenerationSource =
