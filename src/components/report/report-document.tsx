@@ -26,6 +26,12 @@ import {
   monthEnLabel,
   josa,
 } from '@/lib/saju/pdf-report-maps';
+import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
+import {
+  resolvePdfSubjectName,
+  pickInterpretationText,
+  firstSentences,
+} from '@/lib/saju/pdf-report-text';
 
 // 2026-05-23 사주 리포트 PDF 8페이지 문서 (표현 전용 컴포넌트).
 //   실제 인쇄 화면(premium/print)과 /dev 미리보기가 동일 마크업을 공유한다.
@@ -337,7 +343,10 @@ export function buildPdfModel(
   reading: ReadingRecord,
   report: SajuLifetimeReport,
   reportNo: string,
-  targetYear: number
+  targetYear: number,
+  // 2026-05-25 — 결제한 LLM 깊은 풀이(본편). 있으면 서술 슬롯을 실제 풀이로 채우고,
+  //   없으면(미생성/실패) 기존 결정론 generic 으로 폴백. 숫자/차트는 항상 실제 사주 기반.
+  interpretation?: SajuLifetimeAiInterpretation | null
 ) {
   const sajuData = reading.sajuData;
   const input = reading.input;
@@ -346,8 +355,10 @@ export function buildPdfModel(
   const dayElement = sajuData.pillars.day.stemElement;
 
   // 사용자 이름 (subject). grounding 에 표시명이 없으면 '달빛이' 폴백 (목업과 동일 톤).
-  const subjectName =
-    (reading.metadata as { displayName?: string } | undefined)?.displayName?.trim() || '달빛이';
+  const subjectName = resolvePdfSubjectName(
+    input,
+    reading.metadata as { displayName?: string } | undefined
+  );
 
   // ── 사주팔자 4기둥 ─────────────────────────────
   const pillarSources = [
@@ -457,11 +468,16 @@ export function buildPdfModel(
         ? `${haveSinsalLabels[0]}${josa(haveSinsalLabels[0], '이', '가')} 자리해`
         : '특별히 도드라지는 신살 없이 균형 잡힌 구조라';
 
-  const tenGodSummary = topGod
+  const tenGodFallback = topGod
     ? `${topGod.name}(${topGod.pct}%)${josa(topGod.name, '이', '가')} 가장 강해 ${TEN_GOD_DESCRIPTIONS[topGod.name].split('.')[0]}에 힘을 얻는 타입입니다.${
         secondGod ? ` ${secondGod.name}(${secondGod.pct}%)${josa(secondGod.name, '이', '가')} 더해져 추진과 균형을 함께 가져가요.` : ''
-      } ${sinsalPhrase} 학문·문서·관계에서 좋은 흐름이 자주 옵니다.`
+      } ${sinsalPhrase} 자기 강점을 꾸준히 다듬으면 흐름이 안정됩니다.`
     : '십성이 고르게 분포해 어느 한쪽으로 치우치지 않는 균형형입니다.';
+  // LLM 본편의 '기운의 균형'(strengthBalance)이 있으면 실제 풀이로 대체. 고정 A4 슬롯 보호 위해 3문장 바운드.
+  const tenGodSummary = firstSentences(
+    pickInterpretationText(interpretation, 'strengthBalance', tenGodFallback),
+    3
+  );
 
   // ── 일주 캐릭터 (P3) ─────────────────────────────
   const sixty = reading.grounding.personalizationContext.sixtyGapja;
@@ -574,8 +590,22 @@ export function buildPdfModel(
     desc:
       sajuData.pattern?.rationale?.[0] ??
       `${patternName}은 사주 전체 구조의 기본 골격입니다. 타고난 강점이 어디서 드러나는지 알려줘요.`,
-    summary: `${patternName}이 ${sinsalPhrase} 표현과 관계, 문서·학문의 영역에서 좋은 흐름이 자주 옵니다. 전반적으로 글·말·콘텐츠처럼 드러내는 일과 잘 맞아요.`,
-    tip: `${patternName}의 사람은 권위와 살짝 부딪힐 수 있어요. 자기 의견을 단단히 가지되, 전달은 한 박자 부드럽게 하면 흐름이 훨씬 가벼워집니다.`,
+    summary: firstSentences(
+      pickInterpretationText(
+        interpretation,
+        'patternAndYongsin',
+        `${patternName}이 ${sinsalPhrase} 사주의 기본 골격을 이룹니다. 강점이 어디서 드러나는지 보여주는 구조예요.`
+      ),
+      3
+    ),
+    tip: firstSentences(
+      pickInterpretationText(
+        interpretation,
+        'careerDirection',
+        '자기 의견을 단단히 가지되, 전달은 한 박자 부드럽게 하면 흐름이 훨씬 가벼워집니다.'
+      ),
+      2
+    ),
   };
 
   // ── 12개월 (P7) — 결정적 점수 + 고정 키워드 ───────────
@@ -592,7 +622,10 @@ export function buildPdfModel(
   const closing = {
     intro: `${subjectName}님, 여기까지 ${iljuName}의 여덟 페이지를 함께 살펴봤습니다. ${ELEMENT_INFO_NAME(dominantElement)}이 중심을 잡고 있는 사주에 강점과 보완점이 함께 담겨 있었어요.`,
     year: `올해는 ${bestMonth.month}월의 정점을 가지고 있습니다. 큰 결정은 ${bestMonth.month}월 전후로 검토하시면 가장 안정적이에요.`,
-    highlight: '오늘 한 가지를 끝까지 마무리하는 것',
+    highlight: firstSentences(
+      pickInterpretationText(interpretation, 'lifetimeStrategy', '오늘 한 가지를 끝까지 마무리하는 것'),
+      1
+    ),
   };
 
   // ── NEXT 추천 제품 (P8) ─────────────────────────────
@@ -614,16 +647,16 @@ export function buildPdfModel(
       genderLabel: GENDER_LABEL(input.gender),
     },
     pillars,
-    oneLine: report.cover.oneLineSummary,
+    oneLine: interpretation?.oneLineSummary?.trim() || report.cover.oneLineSummary,
     elements,
     donutGradient,
     dominantElement,
     areaBars,
     fieldNotes: [
-      { label: '연애', text: AREA_META.love.advice },
-      { label: '재물', text: AREA_META.wealth.advice },
-      { label: '직장', text: AREA_META.career.advice },
-      { label: '관계', text: AREA_META.relationship.advice },
+      { label: '연애', text: firstSentences(pickInterpretationText(interpretation, 'relationshipPattern', AREA_META.love.advice), 1) },
+      { label: '재물', text: firstSentences(pickInterpretationText(interpretation, 'wealthStyle', AREA_META.wealth.advice), 1) },
+      { label: '직장', text: firstSentences(pickInterpretationText(interpretation, 'careerDirection', AREA_META.career.advice), 1) },
+      { label: '관계', text: firstSentences(pickInterpretationText(interpretation, 'coreIdentity', AREA_META.relationship.advice), 1) },
     ],
     daewoon,
     daewoonChart,

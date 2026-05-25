@@ -5,6 +5,7 @@ import { ReportPrintActions } from '@/components/report/report-print-actions';
 import { EntitlementRefresher } from '@/components/saju/entitlement-refresher';
 import { ReportDocument, buildPdfModel } from '@/components/report/report-document';
 import { buildLifetimeReport } from '@/domain/saju/report';
+import { generateLifetimeInterpretation } from '@/server/ai/saju-lifetime-service';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { toSlug } from '@/lib/saju/pillars';
 import { resolveReading } from '@/lib/saju/readings';
@@ -199,7 +200,15 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   const report = buildLifetimeReport(reading.input, reading.sajuData, targetYear, userSituation);
   const reportNo = buildReportNumber(reading.sajuData.input);
   const issuedAt = issuedDateLabel();
-  const data = buildPdfModel(reading, report, reportNo, targetYear);
+  // 2026-05-25 — 결제한 LLM 깊은 풀이(본편)를 PDF 본문에 반영. Phase 0a 캐시로 재열람 시 즉시 hit.
+  //   cold miss/LLM 실패 시 내부 fallback(결정론) → PDF 는 항상 렌더(비차단).
+  const interpretationResult = await generateLifetimeInterpretation({
+    readingIdentifier: slug,
+    targetYear,
+    readingRecord: reading,
+  });
+  const interpretation = interpretationResult?.interpretation ?? null;
+  const data = buildPdfModel(reading, report, reportNo, targetYear, interpretation);
 
   return (
     <AppShell>
