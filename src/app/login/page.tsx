@@ -5,19 +5,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
+import {
+  UnifiedBirthInfoFields,
+  type BirthLocationSearchResultLike,
+} from '@/components/saju/shared/unified-birth-info-fields';
 import { BUSINESS_INFO } from '@/lib/business-info';
-import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
+import { BIRTH_LOCATION_PRESETS, getBirthLocationPreset } from '@/lib/saju/birth-location';
+import {
+  resolveUnifiedBirthInput,
+  type UnifiedBirthEntryDraft,
+  type UnifiedTimeRule,
+} from '@/lib/saju/unified-birth-entry';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const SUPPORT_EMAIL = BUSINESS_INFO.email || 'support@ganjisaju.kr';
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, index) => CURRENT_YEAR - index);
-const MONTHS = Array.from({ length: 12 }, (_, index) => index + 1);
-const DAYS = Array.from({ length: 31 }, (_, index) => index + 1);
-const HOURS = Array.from({ length: 24 }, (_, index) => index);
 
 type LoginMode = 'gateway' | 'signup' | 'login' | 'recover' | 'reset';
 type GenderValue = 'male' | 'female' | '';
@@ -34,8 +38,12 @@ type SignupForm = {
   gender: GenderValue;
   unknownBirthTime: boolean;
   birthHour: string;
+  birthMinute: string;
   birthLocationCode: string;
-  timeRule: 'standard' | 'trueSolarTime';
+  birthLocationLabel: string;
+  birthLatitude: string;
+  birthLongitude: string;
+  timeRule: UnifiedTimeRule;
 };
 
 type SignupResponse = {
@@ -44,6 +52,14 @@ type SignupResponse = {
   profileSaved?: boolean;
   error?: string;
 };
+
+const DEFAULT_BIRTH_LOCATION =
+  getBirthLocationPreset('seoul') ?? {
+    code: 'seoul',
+    label: '서울',
+    latitude: 37.5665,
+    longitude: 126.978,
+  };
 
 const DEFAULT_SIGNUP_FORM: SignupForm = {
   displayName: '',
@@ -57,7 +73,11 @@ const DEFAULT_SIGNUP_FORM: SignupForm = {
   gender: '',
   unknownBirthTime: false,
   birthHour: '',
-  birthLocationCode: 'seoul',
+  birthMinute: '',
+  birthLocationCode: DEFAULT_BIRTH_LOCATION.code ?? 'seoul',
+  birthLocationLabel: DEFAULT_BIRTH_LOCATION.label,
+  birthLatitude: String(DEFAULT_BIRTH_LOCATION.latitude),
+  birthLongitude: String(DEFAULT_BIRTH_LOCATION.longitude),
   timeRule: 'standard',
 };
 
@@ -185,10 +205,6 @@ function getAfterLoginHref(next: string) {
   return `${path}?${params.toString()}`;
 }
 
-function formatOptionNumber(value: number) {
-  return String(value).padStart(2, '0');
-}
-
 function getInitialLoginMode(value: string | null): LoginMode {
   if (value === 'reset-password') return 'reset';
   if (value === 'recover') return 'recover';
@@ -198,10 +214,76 @@ function getInitialLoginMode(value: string | null): LoginMode {
   return 'gateway';
 }
 
+// signupForm ↔ UnifiedBirthEntryDraft 변환.
+// 사주 입력폼(intake)·궁합 입력과 같은 UnifiedBirthInfoFields 를 회원가입에서도 쓰기 위해
+// signupForm 의 birthYear/Month/Day/Hour 등을 draft.year/month/day/hour 로 매핑한다.
+function buildSignupBirthDraft(form: SignupForm): UnifiedBirthEntryDraft {
+  return {
+    calendarType: form.calendarType,
+    timeRule: form.timeRule,
+    year: form.birthYear,
+    month: form.birthMonth,
+    day: form.birthDay,
+    hour: form.birthHour,
+    minute: form.birthMinute,
+    unknownBirthTime: form.unknownBirthTime,
+    gender: form.gender,
+    birthLocationCode: form.birthLocationCode,
+    birthLocationLabel: form.birthLocationLabel,
+    birthLatitude: form.birthLatitude,
+    birthLongitude: form.birthLongitude,
+  };
+}
+
+// UnifiedBirthInfoFields 가 보내는 draft patch 를 signupForm 키로 되돌려 반영한다.
+function applySignupBirthDraftPatch(
+  current: SignupForm,
+  patch: Partial<UnifiedBirthEntryDraft>
+): SignupForm {
+  const next: SignupForm = { ...current };
+
+  if ('calendarType' in patch && patch.calendarType !== undefined) next.calendarType = patch.calendarType;
+  if ('timeRule' in patch && patch.timeRule !== undefined) next.timeRule = patch.timeRule;
+  if ('year' in patch && patch.year !== undefined) next.birthYear = patch.year;
+  if ('month' in patch && patch.month !== undefined) next.birthMonth = patch.month;
+  if ('day' in patch && patch.day !== undefined) next.birthDay = patch.day;
+  if ('hour' in patch && patch.hour !== undefined) next.birthHour = patch.hour;
+  if ('minute' in patch && patch.minute !== undefined) next.birthMinute = patch.minute;
+  if ('unknownBirthTime' in patch && patch.unknownBirthTime !== undefined)
+    next.unknownBirthTime = patch.unknownBirthTime;
+  if ('gender' in patch && patch.gender !== undefined) next.gender = patch.gender as GenderValue;
+  if ('birthLocationCode' in patch && patch.birthLocationCode !== undefined)
+    next.birthLocationCode = patch.birthLocationCode;
+  if ('birthLocationLabel' in patch && patch.birthLocationLabel !== undefined)
+    next.birthLocationLabel = patch.birthLocationLabel;
+  if ('birthLatitude' in patch && patch.birthLatitude !== undefined)
+    next.birthLatitude = patch.birthLatitude;
+  if ('birthLongitude' in patch && patch.birthLongitude !== undefined)
+    next.birthLongitude = patch.birthLongitude;
+
+  // 시간 모름/시 입력 동기화(사주 intake 와 동일한 규칙).
+  if (patch.unknownBirthTime === true || next.birthHour === '') {
+    next.birthHour = '';
+    next.birthMinute = '';
+    next.unknownBirthTime = true;
+  }
+  if (patch.hour && patch.hour !== '') {
+    next.unknownBirthTime = false;
+  }
+
+  return next;
+}
+
 function buildProfilePayloadFromSignupForm(form: SignupForm) {
-  const birthLocation =
+  const presetLocation =
     BIRTH_LOCATION_PRESETS.find((location) => location.code === form.birthLocationCode) ??
-    BIRTH_LOCATION_PRESETS[0];
+    null;
+
+  // 프리셋이면 프리셋 좌표를, custom(주소 검색)이면 form 에 담긴 좌표를 사용한다.
+  const birthLocationCode = presetLocation?.code ?? form.birthLocationCode;
+  const birthLocationLabel = presetLocation?.label ?? form.birthLocationLabel;
+  const birthLatitude = presetLocation ? presetLocation.latitude : Number(form.birthLatitude);
+  const birthLongitude = presetLocation ? presetLocation.longitude : Number(form.birthLongitude);
 
   return {
     displayName: form.displayName,
@@ -213,10 +295,10 @@ function buildProfilePayloadFromSignupForm(form: SignupForm) {
     gender: form.gender,
     unknownBirthTime: form.unknownBirthTime,
     birthHour: form.birthHour,
-    birthLocationCode: birthLocation.code,
-    birthLocationLabel: birthLocation.label,
-    birthLatitude: birthLocation.latitude,
-    birthLongitude: birthLocation.longitude,
+    birthLocationCode,
+    birthLocationLabel,
+    birthLatitude,
+    birthLongitude,
     solarTimeMode: form.timeRule === 'trueSolarTime' ? 'longitude' : 'standard',
     note: '',
   };
@@ -239,33 +321,6 @@ function FieldLabel({
   );
 }
 
-function NativeSelect({
-  id,
-  value,
-  onChange,
-  children,
-  disabled,
-  className = '',
-}: {
-  id?: string;
-  value: string;
-  onChange: (value: string) => void;
-  children: ReactNode;
-  disabled?: boolean;
-  className?: string;
-}) {
-  return (
-    <select
-      id={id}
-      value={value}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
-      className={`motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition focus:border-[var(--app-pink)] ${className}`}
-    >
-      {children}
-    </select>
-  );
-}
 
 // 리디자인 2026-05-13 (Claude Design / screens-b.jsx ScreenAuth) — SNS gateway 진입 화면.
 // 라우팅/이벤트는 무수정. 카카오·Google: 기존 signInWithProvider 그대로 호출,
@@ -490,11 +545,100 @@ function LoginContent({
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
   const [isSubmittingRecovery, setIsSubmittingRecovery] = useState(false);
   const [isSubmittingReset, setIsSubmittingReset] = useState(false);
+  // 회원가입 출생지 주소 검색 상태 — 사주 입력폼/궁합 입력과 동일한 UnifiedBirthInfoFields 배선.
+  const [signupLocationStatus, setSignupLocationStatus] = useState<
+    'idle' | 'loading' | 'ready' | 'empty' | 'error'
+  >('idle');
+  const [signupLocationMessage, setSignupLocationMessage] = useState('');
+  const [signupLocationResults, setSignupLocationResults] = useState<
+    BirthLocationSearchResultLike[]
+  >([]);
 
   const afterLoginHref = useMemo(() => getAfterLoginHref(next), [next]);
 
   function updateSignupForm<K extends keyof SignupForm>(key: K, value: SignupForm[K]) {
     setSignupForm((current) => ({ ...current, [key]: value }));
+  }
+
+  // UnifiedBirthInfoFields → signupForm patch 반영.
+  function patchSignupBirthDraft(patch: Partial<UnifiedBirthEntryDraft>) {
+    setSignupForm((current) => applySignupBirthDraftPatch(current, patch));
+  }
+
+  // 출생지 프리셋 칩 선택 — 프리셋 좌표를 form 에 채우고 검색 결과를 초기화한다.
+  function selectSignupBirthLocation(code: string) {
+    const preset = BIRTH_LOCATION_PRESETS.find((item) => item.code === code);
+    setSignupForm((current) =>
+      applySignupBirthDraftPatch(current, {
+        birthLocationCode: code,
+        birthLocationLabel:
+          code === 'custom' ? current.birthLocationLabel : preset?.label ?? '',
+        birthLatitude:
+          code === 'custom' ? current.birthLatitude : preset ? String(preset.latitude) : '',
+        birthLongitude:
+          code === 'custom' ? current.birthLongitude : preset ? String(preset.longitude) : '',
+      })
+    );
+    setSignupLocationStatus('idle');
+    setSignupLocationMessage('');
+    setSignupLocationResults([]);
+  }
+
+  // 출생지 주소 검색 — /api/geo/birth-location 재사용(사주 intake 와 동일 엔드포인트).
+  async function searchSignupBirthLocationCoordinates() {
+    const query = signupForm.birthLocationLabel.trim();
+    if (query.length < 2) {
+      setSignupLocationStatus('error');
+      setSignupLocationMessage('지역명을 두 글자 이상 입력해 주세요.');
+      setSignupLocationResults([]);
+      return;
+    }
+
+    setSignupLocationStatus('loading');
+    setSignupLocationMessage('');
+    setSignupLocationResults([]);
+
+    try {
+      const response = await fetch(`/api/geo/birth-location?q=${encodeURIComponent(query)}`, {
+        cache: 'force-cache',
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { ok: boolean; error?: string; items?: BirthLocationSearchResultLike[] }
+        | null;
+
+      if (!response.ok || !data?.ok) {
+        setSignupLocationStatus('error');
+        setSignupLocationMessage(data?.error ?? '지역 좌표를 찾지 못했습니다.');
+        return;
+      }
+
+      const items = data.items ?? [];
+      setSignupLocationResults(items);
+      setSignupLocationStatus(items.length > 0 ? 'ready' : 'empty');
+      setSignupLocationMessage(
+        items.length > 0
+          ? '가장 가까운 지역을 골라 위도와 경도를 적용해 주세요.'
+          : '일치하는 지역을 찾지 못했습니다. 시/군/구 이름이나 영문 지명을 함께 입력해 보세요.'
+      );
+    } catch {
+      setSignupLocationStatus('error');
+      setSignupLocationMessage('지역 좌표를 찾는 중 네트워크 오류가 발생했습니다.');
+    }
+  }
+
+  // 검색 결과 선택 — custom 좌표로 form 을 채운다.
+  function applySignupBirthLocationSearchResult(result: BirthLocationSearchResultLike) {
+    setSignupForm((current) =>
+      applySignupBirthDraftPatch(current, {
+        birthLocationCode: 'custom',
+        birthLocationLabel: result.label,
+        birthLatitude: String(result.latitude),
+        birthLongitude: String(result.longitude),
+      })
+    );
+    setSignupLocationStatus('ready');
+    setSignupLocationMessage(`${result.label} 좌표를 적용했습니다.`);
+    setSignupLocationResults([]);
   }
 
   async function signInWithProvider(provider: 'google' | 'kakao') {
@@ -594,6 +738,16 @@ function LoginContent({
 
     if (signupForm.password !== signupForm.confirmPassword) {
       setErrorMessage('비밀번호 확인이 서로 다릅니다.');
+      setStatusMessage('');
+      return;
+    }
+
+    // 사주 입력폼/궁합 입력과 동일한 검증으로 생년월일·성별·출생지 입력을 사전 확인한다.
+    const parsedBirth = resolveUnifiedBirthInput(buildSignupBirthDraft(signupForm), {
+      requireGender: true,
+    });
+    if (!parsedBirth.ok) {
+      setErrorMessage(parsedBirth.error);
       setStatusMessage('');
       return;
     }
@@ -917,140 +1071,28 @@ function LoginContent({
           </section>
 
           <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4 sm:p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
-                <p className="mt-1 text-[11.5px] leading-5 text-[var(--app-copy-soft)]">
-                  저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
-                </p>
-              </div>
-              <NativeSelect
-                value={signupForm.calendarType}
-                onChange={(value) => updateSignupForm('calendarType', value as SignupForm['calendarType'])}
-                className="max-w-[112px]"
-              >
-                <option value="solar">양력</option>
-                <option value="lunar">음력</option>
-              </NativeSelect>
+            <div className="mb-4">
+              <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
+              <p className="mt-1 text-[11.5px] leading-5 text-[var(--app-copy-soft)]">
+                저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
+              </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <NativeSelect
-                id="birth-year"
-                value={signupForm.birthYear}
-                onChange={(value) => updateSignupForm('birthYear', value)}
-              >
-                <option value="">년</option>
-                {YEARS.map((year) => (
-                  <option key={year} value={year}>
-                    {year}년
-                  </option>
-                ))}
-              </NativeSelect>
-              <NativeSelect
-                value={signupForm.birthMonth}
-                onChange={(value) => updateSignupForm('birthMonth', value)}
-              >
-                <option value="">월</option>
-                {MONTHS.map((month) => (
-                  <option key={month} value={month}>
-                    {formatOptionNumber(month)}월
-                  </option>
-                ))}
-              </NativeSelect>
-              <NativeSelect
-                value={signupForm.birthDay}
-                onChange={(value) => updateSignupForm('birthDay', value)}
-              >
-                <option value="">일</option>
-                {DAYS.map((day) => (
-                  <option key={day} value={day}>
-                    {formatOptionNumber(day)}일
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <FieldLabel>성별</FieldLabel>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    ['male', '남성'],
-                    ['female', '여성'],
-                  ].map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => updateSignupForm('gender', value as GenderValue)}
-                      className={`h-12 rounded-[14px] border text-[14.5px] font-bold transition ${
-                        signupForm.gender === value
-                          ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
-                          : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <FieldLabel>출생 시간</FieldLabel>
-                <div className="grid grid-cols-[1fr_auto] gap-2">
-                  <NativeSelect
-                    value={signupForm.birthHour}
-                    disabled={signupForm.unknownBirthTime}
-                    onChange={(value) => updateSignupForm('birthHour', value)}
-                  >
-                    <option value="">시</option>
-                    {HOURS.map((hour) => (
-                      <option key={hour} value={hour}>
-                        {formatOptionNumber(hour)}시
-                      </option>
-                    ))}
-                  </NativeSelect>
-                  <label className="flex h-12 items-center gap-2 rounded-[14px] border border-[var(--app-line)] bg-white px-3 text-[12.5px] font-medium text-[var(--app-copy-muted)]">
-                    <input
-                      type="checkbox"
-                      checked={signupForm.unknownBirthTime}
-                      onChange={(event) =>
-                        updateSignupForm('unknownBirthTime', event.target.checked)
-                      }
-                      className="accent-[var(--app-pink)]"
-                    />
-                    모름
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <FieldLabel htmlFor="birth-location">출생지</FieldLabel>
-                <NativeSelect
-                  id="birth-location"
-                  value={signupForm.birthLocationCode}
-                  onChange={(value) => updateSignupForm('birthLocationCode', value)}
-                >
-                  {BIRTH_LOCATION_PRESETS.map((location) => (
-                    <option key={location.code} value={location.code}>
-                      {location.label}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-              <div className="space-y-1.5">
-                <FieldLabel htmlFor="time-rule">시간 기준</FieldLabel>
-                <NativeSelect
-                  id="time-rule"
-                  value={signupForm.timeRule}
-                  onChange={(value) => updateSignupForm('timeRule', value as SignupForm['timeRule'])}
-                >
-                  <option value="standard">표준시</option>
-                  <option value="trueSolarTime">진태양시</option>
-                </NativeSelect>
-              </div>
-            </div>
+            {/* 사주 입력폼(intake)·궁합 입력과 동일한 UnifiedBirthInfoFields 로 통일.
+                년/월/일/시/출생지/성별/양력음력/시간기준 입력 UX 를 사주 풀이 입력과 일치시킨다. */}
+            <UnifiedBirthInfoFields
+              idPrefix="signup"
+              draft={buildSignupBirthDraft(signupForm)}
+              onChange={patchSignupBirthDraft}
+              dateInputVariant="select"
+              visibleSections={['date', 'gender', 'location-time']}
+              locationLoading={signupLocationStatus === 'loading'}
+              locationMessage={signupLocationMessage}
+              locationResults={signupLocationResults}
+              onLocationSearch={searchSignupBirthLocationCoordinates}
+              onPresetSelect={selectSignupBirthLocation}
+              onLocationResultSelect={applySignupBirthLocationSearchResult}
+            />
           </section>
 
           <Button
