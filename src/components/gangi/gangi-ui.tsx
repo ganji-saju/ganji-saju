@@ -30,11 +30,11 @@ export const GANGI_TEACHERS = [
   { zodiac: 'rabbit', name: '타로토선생', topic: '타로', desc: '지금 마음을 카드 한 장으로 봅니다', href: '/tarot/daily', price: '무료' },
   { zodiac: 'dragon', name: '사주용선생', topic: '사주 종합', desc: '내 흐름을 생년월일 기준으로 봅니다', href: '/saju/new', price: '550원~' },
   { zodiac: 'snake', name: '꿈뱀선생', topic: '꿈해몽', desc: '꿈에 남은 장면을 마음 신호로 봅니다', href: '/guide?teacher=dream-baem', price: '준비 중' },
-  { zodiac: 'horse', name: '이동말선생', topic: '이동운', desc: '이직, 이사, 여행 타이밍을 봅니다', href: '/guide?teacher=move-mal', price: '준비 중' },
+  { zodiac: 'horse', name: '길일말선생', topic: '좋은 날', desc: '중요한 일에 좋은 날과 피할 날을 봅니다', href: '/taekil', price: '1,900원~' },
   { zodiac: 'sheep', name: '궁합양선생', topic: '궁합', desc: '상대와의 거리감과 속도를 봅니다', href: '/compatibility/input', price: '990원~' },
   { zodiac: 'monkey', name: '관상원선생', topic: '관상', desc: '인상과 분위기 풀이를 준비 중입니다', href: '/guide?teacher=face-won', price: '준비 중' },
-  { zodiac: 'rooster', name: '재물닭선생', topic: '재물운', desc: '돈이 새는 지점과 습관을 봅니다', href: '/saju/new?focus=money&product=money-pattern', price: '990원~' },
-  { zodiac: 'dog', name: '손금멍선생', topic: '손금', desc: '손바닥 단서 풀이를 준비 중입니다', href: '/guide?teacher=palm-meong', price: '준비 중' },
+  { zodiac: 'rooster', name: '별닭선생', topic: '별자리', desc: '오늘의 별자리 메시지를 가볍게 봅니다', href: '/star-sign', price: '무료' },
+  { zodiac: 'dog', name: '상담멍선생', topic: '고민 상담', desc: '편하게 고민을 나누고 방향을 잡아요', href: '/dialogue', price: '무료 시작' },
   { zodiac: 'pig', name: '복돼지선생', topic: '행운', desc: '출석, 쿠폰, 작은 행운을 준비 중입니다', href: '/guide?teacher=luck-dwaeji', price: '준비 중' },
 ] as const;
 
