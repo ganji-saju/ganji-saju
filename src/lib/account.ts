@@ -11,6 +11,7 @@ import {
   listPaidReadingSnapshotsForUser,
   type PaidReadingSnapshot,
 } from '@/lib/payments/paid-reading-snapshots';
+import { getNonExpiredLotBalance } from '@/lib/credits/deduct';
 
 export interface AccountCredits {
   balance: number;
@@ -156,13 +157,15 @@ export async function getAccountDashboardData(
   const readingOffset = Math.max(0, options.readingOffset ?? 0);
   const transactionLimit = options.transactionLimit ?? 6;
 
-  const [creditsResponse, subscription, readingCountResponse, readingsResponse, transactionsResponse, purchasedResults] =
+  const [creditsResponse, lotBalance, subscription, readingCountResponse, readingsResponse, transactionsResponse, purchasedResults] =
     await Promise.all([
       supabase
         .from('user_credits')
         .select('balance, subscription_balance')
         .eq('user_id', user.id)
         .maybeSingle(),
+      // 결제 코인은 1년 만료 — 표시 잔액은 비만료 lot 합으로 계산(구독 잔액은 별도).
+      getNonExpiredLotBalance(user.id),
       getManagedSubscription(user.id),
       supabase
         .from('readings')
@@ -192,7 +195,7 @@ export async function getAccountDashboardData(
   assertAccountQueryOk(readingsResponse.error, '저장 결과 목록');
   assertAccountQueryOk(transactionsResponse.error, '코인 이용 이력');
 
-  const balance = creditsResponse.data?.balance ?? 0;
+  const balance = lotBalance;
   const subscriptionBalance = creditsResponse.data?.subscription_balance ?? 0;
 
   return {
