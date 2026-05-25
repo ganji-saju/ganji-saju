@@ -6,7 +6,10 @@ import { notFound } from 'next/navigation';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { getAdminUserDetail } from '@/lib/admin/user-detail';
+import { RefundActions } from './refund-actions';
 
 export const metadata: Metadata = {
   title: '사용자 상세 (admin)',
@@ -60,6 +63,8 @@ export default async function AdminUserDetailPage({ params }: Props) {
   if (!detail) notFound();
 
   const { profile, palja, payment, llmStats, refund } = detail;
+  const adminRole = await getCurrentAdminRole(await createClient());
+  const role: 'admin' | 'super_admin' = adminRole.role ?? 'admin';
   const birth =
     profile?.birthYear && profile?.birthMonth && profile?.birthDay
       ? `${profile.birthYear}.${String(profile.birthMonth).padStart(2, '0')}.${String(profile.birthDay).padStart(2, '0')}` +
@@ -176,35 +181,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
 
         {/* 6. 환불 가능 여부 (상태 표시만 — 실제 환불은 Phase 2) */}
         <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refund.items.length}건)`}>
-          {refund.items.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">환불 대상 결제가 없습니다.</p>
+          {refund.items.length === 0 && detail.refundRequests.length === 0 ? (
+            <p className="text-[12px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
           ) : (
-            <>
-              <ul className="space-y-1.5">
-                {refund.items.map((i) => (
-                  <li
-                    key={i.id}
-                    className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2"
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-extrabold text-[var(--app-ink)]">
-                        {i.productName}
-                      </span>
-                      <span className="text-[10.5px] text-[var(--app-copy-soft)]">
-                        {fmtDate(i.createdAt)} ·{' '}
-                        {i.hasPaymentKey ? 'paymentKey 있음(Toss 취소 가능)' : 'paymentKey 없음'}
-                      </span>
-                    </div>
-                    <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
-                      {fmtWon(i.amountWon)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
-                ※ 실제 환불(Toss 결제취소)은 Phase 2에서 연동. 현재는 상태 표시만.
-              </p>
-            </>
+            <RefundActions role={role} items={refund.items} requests={detail.refundRequests} />
           )}
         </Card>
       </AppPage>

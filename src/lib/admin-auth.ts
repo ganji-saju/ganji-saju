@@ -86,6 +86,50 @@ export async function getCurrentAdminCheck(client: SupabaseClient): Promise<{
   return { ok: true, userId: user.id, reason: 'ok' };
 }
 
+// 2026-05-25 Phase 2 — super_admin 역할(환불 승인 등 민감 작업 게이트).
+export type AdminRole = 'admin' | 'super_admin';
+
+async function fetchAdminRole(userId: string): Promise<AdminRole | null> {
+  try {
+    const service = await createServiceClient();
+    const { data, error } = await service
+      .from('admin_users')
+      .select('role')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return (data as { role?: string }).role === 'super_admin' ? 'super_admin' : 'admin';
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * admin 역할 조회. env ADMIN_USER_IDS(부트스트랩)는 super_admin 으로 취급(시스템 설립자).
+ * 그 외는 admin_users.role. admin 아니면 null.
+ */
+export async function getAdminRole(userId: string): Promise<AdminRole | null> {
+  if (!userId) return null;
+  if (envAdminIds().has(userId)) return 'super_admin';
+  return fetchAdminRole(userId);
+}
+
+/** 현재 요청 user 의 admin 역할 검증(role 포함). */
+export async function getCurrentAdminRole(client: SupabaseClient): Promise<{
+  ok: boolean;
+  userId: string | null;
+  role: AdminRole | null;
+  reason: 'ok' | 'unauthenticated' | 'forbidden';
+}> {
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) return { ok: false, userId: null, role: null, reason: 'unauthenticated' };
+  const role = await getAdminRole(user.id);
+  if (!role) return { ok: false, userId: user.id, role: null, reason: 'forbidden' };
+  return { ok: true, userId: user.id, role, reason: 'ok' };
+}
+
 /** 테스트용 — cache 강제 비우기. */
 export function __clearAdminCache() {
   cache.clear();
