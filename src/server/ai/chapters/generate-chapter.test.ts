@@ -84,6 +84,36 @@ test('buildChapterUserMessage — 9장 synthesis 시 priorChapterDigests 포함'
   assert.ok(message.includes('2. 기운의 균형 — 흙 강 / 쇠 부족'));
 });
 
+// 🟡 대운 다양성 — 1~7장 직렬 생성 시, priorChapterDigests 는 "이미 다룬 결론
+//   (중복 회피용)" 으로 주입돼 같은 문장 반복을 prompt-level 에서 차단. 9장
+//   synthesis 헤더("1~7장 핵심 결론") 와 *다른* 헤더 + 반복 금지 지시 포함.
+test('buildChapterUserMessage — 1~7장은 priorChapterDigests 를 중복 회피 지시로 주입', () => {
+  const ch4Input: ChapterLLMInput = {
+    ...baseInput,
+    chapterId: 4,
+    chapter: { title: '관계 패턴', lens: 'lens', forbiddenTopics: ['x'] },
+    priorChapterDigests: [
+      { chapterId: 1, title: '타고난 성향', digest: '돌봄과 배움이 본질' },
+      { chapterId: 3, title: '역할과 보완 힌트', digest: '정인격 역할 반복' },
+    ],
+  };
+  const message = buildChapterUserMessage(ch4Input);
+  // synthesis 전용 헤더는 쓰지 않음
+  assert.ok(!message.includes('synthesis 입력'));
+  // 중복 회피용 헤더 + 반복 금지 지시
+  assert.ok(message.includes('이미 다룬 결론'));
+  assert.ok(message.includes('반복하지 말고'));
+  // digest 항목 자체는 동일 형식으로 노출
+  assert.ok(message.includes('1. 타고난 성향 — 돌봄과 배움이 본질'));
+  assert.ok(message.includes('3. 역할과 보완 힌트 — 정인격 역할 반복'));
+});
+
+test('buildChapterUserMessage — priorChapterDigests 없으면 digest 섹션 미출력 (첫 챕터/병렬 호환)', () => {
+  const message = buildChapterUserMessage(baseInput);
+  assert.ok(!message.includes('이미 다룬 결론'));
+  assert.ok(!message.includes('1~7장 핵심 결론'));
+});
+
 test('generateChapter — happy path: 첫 호출 통과 → source=llm, retries=0', async () => {
   const client = new MockClient([CLEAN_BODY]);
   const result: ChapterOutput = await generateChapter(baseInput, client);

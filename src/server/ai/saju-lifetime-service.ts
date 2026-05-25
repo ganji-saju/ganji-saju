@@ -38,7 +38,12 @@ import { buildChapter7Input } from './chapters/build-chapter7-input';
 //   진단서 §3-1 ⑨ "9장이 1~7장 문장 복붙" 문제 해결. priorChapterDigests
 //   1~7장 입력 + cross-chapter validator 룰로 복사 차단.
 import { enhanceLifetimeChapter9WithLLM } from './chapters/enhance-lifetime-chapter9';
-import { buildChapter9Input } from './chapters/build-chapter9-input';
+import { buildChapter9Input, extractChapterDigest } from './chapters/build-chapter9-input';
+import { CHAPTER_META } from './chapters/chapter-prompts';
+import type {
+  ChapterId,
+  ChapterPriorDigest,
+} from './chapters/chapter-input-types';
 import { OpenAIChapterClient } from './chapters/openai-chapter-client';
 import {
   buildChapterCacheKey,
@@ -132,48 +137,75 @@ export async function generateLifetimeInterpretation(
   const userSituation = reading.grounding.personalizationContext.userSituation ?? null;
   const baseReport = buildLifetimeReport(reading.input, reading.sajuData, request.targetYear, userSituation);
   const model = getOpenAIInterpretationModel();
-  // V2-5 PR L: 챕터 1·2·3·4·5·6·7 *병렬* LLM enhance (Promise.all).
-  //   - 7 챕터 모두 baseReport 의 *서로 다른 섹션* 만 교체 → 의존성 없음 → 병렬 안전.
-  //   - 챕터 9 는 1~7 결과(priorChapterDigests)가 필요하므로 직렬 유지 (병렬 이후).
+  // 🟡 대운 다양성 fix (이전 PR L 은 병렬): 챕터 1→2→3→4→5→6→7 *직렬* LLM enhance.
+  //   - 직렬 이유: 각 챕터가 *앞서 생성된 챕터*(priorChapterDigests + 본문) 를 보고
+  //     같은 문장/첫 문장 반복을 피하도록. (병렬이면 형제 챕터가 서로를 못 봐서
+  //     cross-chapter dedup 룰이 1~7 에서 무력화 — 챕터끼리 복붙 위험.) 챕터 9 가
+  //     이미 쓰던 패턴(priorChapterDigests)을 1~7 에도 동일 적용.
+  //   - 각 챕터에 (a) priorChapterDigests = 앞 챕터 enhanced summary 의 50자 digest,
+  //     (b) crossChapterContext.allChapters = 앞 챕터 enhanced 본문 → validator 의
+  //     cross-chapter/punch-copy 룰이 첫 문장 정확 일치를 reject.
   //   - cache hit 은 즉시 반환, miss 만 OpenAI 호출 + envelope upsert.
   //   - 비활성 / 실패 시 해당 챕터는 baseReport 그대로 (회귀 0).
   //
-  //   응답 시간: 직렬 3 챕터 ≈ 15초 → 병렬 7 챕터 ≈ 5초 (가장 느린 챕터 기준).
+  //   응답 시간 trade-off: 병렬 7 챕터 ≈ 5초(가장 느린 챕터) → 직렬 7 챕터는 각
+  //   챕터 지연의 합(cache miss 시 ≈ 합산). cache hit 시에는 거의 즉시. 다양성
+  //   확보를 위한 의도된 비용.
   //
   //   주의 (PR J 에서 이어옴): 동일 request 안에서 여러 챕터 cache miss 시
   //   envelope upsert 는 last-write-wins (각 apply 가 pre-upsert snapshot 만 봄).
   //   결과: DB envelope 에 마지막 챕터 entry 만 남음. 다음 request 에서 나머지
   //   챕터 cache miss → LLM 재호출 → envelope 모두 갖춤 (eventually consistent).
-  const [
-    enhancedCh1,
-    enhancedCh2,
-    enhancedCh3,
-    enhancedCh4,
-    enhancedCh5,
-    enhancedCh6,
-    enhancedCh7,
-  ] = await Promise.all([
-    applyChapter1LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter2LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter3LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter4LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter5LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter6LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-    applyChapter7LLMEnhancement(reading, baseReport, userSituation, model, promptVersion),
-  ]);
-  // 각 apply 결과는 baseReport + 자기 섹션 교체된 LifetimeReport.
-  // 병렬 호출이므로 각자 *자기 섹션만* 가져와 merge.
-  let report = {
-    ...baseReport,
-    coreIdentity: enhancedCh1.coreIdentity,
-    strengthBalance: enhancedCh2.strengthBalance,
-    patternAndYongsin: enhancedCh3.patternAndYongsin,
-    relationshipPattern: enhancedCh4.relationshipPattern,
-    wealthStyle: enhancedCh5.wealthStyle,
-    careerDirection: enhancedCh6.careerDirection,
-    healthRhythm: enhancedCh7.healthRhythm,
-  };
-  // V2-5 PR K: 챕터 9 synthesis — 1~7 LLM 적용 *이후* 직렬 호출.
+  let report = baseReport;
+  // 앞 챕터 누적: digest(50자) + 본문(cross-chapter validator 입력).
+  const priorChapterDigests: ChapterPriorDigest[] = [];
+  // allChapters 는 1-indexed 챕터 슬롯 9칸 (validator 가 chapterId-1 로 인덱싱).
+  //   아직 안 만든 챕터는 빈 문자열 → 매치 X.
+  const accumulatedBodies: string[] = ['', '', '', '', '', '', '', '', ''];
+
+  const sequentialChapters: ReadonlyArray<{
+    id: Exclude<ChapterId, 8 | 9>;
+    apply: (
+      reading: ReadingRecord,
+      baseReport: ReturnType<typeof buildLifetimeReport>,
+      userSituation: Parameters<typeof buildLifetimeReport>[3],
+      model: string,
+      promptVersion: string,
+      priorChapterDigests: ChapterPriorDigest[],
+      crossChapterContext: { allChapters: string[]; punchLines?: string[] }
+    ) => Promise<ReturnType<typeof buildLifetimeReport>>;
+    summaryOf: (report: ReturnType<typeof buildLifetimeReport>) => string;
+  }> = [
+    { id: 1, apply: applyChapter1LLMEnhancement, summaryOf: (r) => r.coreIdentity.summary },
+    { id: 2, apply: applyChapter2LLMEnhancement, summaryOf: (r) => r.strengthBalance.summary },
+    { id: 3, apply: applyChapter3LLMEnhancement, summaryOf: (r) => r.patternAndYongsin.summary },
+    { id: 4, apply: applyChapter4LLMEnhancement, summaryOf: (r) => r.relationshipPattern.summary },
+    { id: 5, apply: applyChapter5LLMEnhancement, summaryOf: (r) => r.wealthStyle.summary },
+    { id: 6, apply: applyChapter6LLMEnhancement, summaryOf: (r) => r.careerDirection.summary },
+    { id: 7, apply: applyChapter7LLMEnhancement, summaryOf: (r) => r.healthRhythm.summary },
+  ];
+
+  for (const { id, apply, summaryOf } of sequentialChapters) {
+    // 앞 챕터들의 digest/본문 snapshot 을 넘긴다 (이번 챕터는 아직 미반영).
+    report = await apply(
+      reading,
+      report,
+      userSituation,
+      model,
+      promptVersion,
+      [...priorChapterDigests],
+      { allChapters: [...accumulatedBodies], punchLines: [] }
+    );
+    // 이번 챕터의 enhanced(또는 fallback) summary 를 누적 — 다음 챕터가 본다.
+    const summary = summaryOf(report);
+    accumulatedBodies[id - 1] = summary;
+    priorChapterDigests.push({
+      chapterId: id,
+      title: CHAPTER_META[id].title,
+      digest: extractChapterDigest(summary),
+    });
+  }
+  // 🟡 챕터 9 synthesis — 1~7 LLM 적용 *이후* 직렬 호출.
   //   priorChapterDigests 가 enhanced summary 를 digest 소스로 사용해야 LLM 이
   //   *최신 본문* 을 재해석함. 1~7 가 fallback 이면 deterministic summary 그대로
   //   digest 가 되므로 안전.
@@ -260,14 +292,18 @@ async function applyChapter1LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(1)) return baseReport;
 
-  const chapter1Input = buildChapter1Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null,
-    age: null,
-  });
+  const chapter1Input = buildChapter1Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter1Input.userContext, 1);
   const cached = reading.chaptersEnvelope?.chapters?.[1];
   const stageStartedAt = Date.now();
@@ -299,7 +335,8 @@ async function applyChapter1LLMEnhancement(
     const enhanced = await enhanceLifetimeChapter1WithLLM(
       baseReport.coreIdentity,
       chapter1Input,
-      client
+      client,
+      { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -366,14 +403,18 @@ async function applyChapter4LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(4)) return baseReport;
 
-  const chapter4Input = buildChapter4Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null,
-    age: null,
-  });
+  const chapter4Input = buildChapter4Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter4Input.userContext, 4);
   const cached = reading.chaptersEnvelope?.chapters?.[4];
   const stageStartedAt = Date.now();
@@ -399,7 +440,7 @@ async function applyChapter4LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter4WithLLM(
-      baseReport.relationshipPattern, chapter4Input, client
+      baseReport.relationshipPattern, chapter4Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -459,14 +500,18 @@ async function applyChapter5LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(5)) return baseReport;
 
-  const chapter5Input = buildChapter5Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null,
-    age: null,
-  });
+  const chapter5Input = buildChapter5Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter5Input.userContext, 5);
   const cached = reading.chaptersEnvelope?.chapters?.[5];
   const stageStartedAt = Date.now();
@@ -492,7 +537,7 @@ async function applyChapter5LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter5WithLLM(
-      baseReport.wealthStyle, chapter5Input, client
+      baseReport.wealthStyle, chapter5Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -552,13 +597,18 @@ async function applyChapter2LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(2)) return baseReport;
 
-  const chapter2Input = buildChapter2Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null, age: null,
-  });
+  const chapter2Input = buildChapter2Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter2Input.userContext, 2);
   const cached = reading.chaptersEnvelope?.chapters?.[2];
   const stageStartedAt = Date.now();
@@ -579,7 +629,7 @@ async function applyChapter2LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter2WithLLM(
-      baseReport.strengthBalance, chapter2Input, client
+      baseReport.strengthBalance, chapter2Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -625,13 +675,18 @@ async function applyChapter3LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(3)) return baseReport;
 
-  const chapter3Input = buildChapter3Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null, age: null,
-  });
+  const chapter3Input = buildChapter3Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter3Input.userContext, 3);
   const cached = reading.chaptersEnvelope?.chapters?.[3];
   const stageStartedAt = Date.now();
@@ -652,7 +707,7 @@ async function applyChapter3LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter3WithLLM(
-      baseReport.patternAndYongsin, chapter3Input, client
+      baseReport.patternAndYongsin, chapter3Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -698,13 +753,18 @@ async function applyChapter6LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(6)) return baseReport;
 
-  const chapter6Input = buildChapter6Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null, age: null,
-  });
+  const chapter6Input = buildChapter6Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter6Input.userContext, 6);
   const cached = reading.chaptersEnvelope?.chapters?.[6];
   const stageStartedAt = Date.now();
@@ -725,7 +785,7 @@ async function applyChapter6LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter6WithLLM(
-      baseReport.careerDirection, chapter6Input, client
+      baseReport.careerDirection, chapter6Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {
@@ -772,13 +832,18 @@ async function applyChapter7LLMEnhancement(
   baseReport: ReturnType<typeof buildLifetimeReport>,
   userSituation: Parameters<typeof buildLifetimeReport>[3],
   model: string,
-  promptVersion: string
+  promptVersion: string,
+  priorChapterDigests: ChapterPriorDigest[] = [],
+  crossChapterContext: { allChapters: string[]; punchLines?: string[] } = { allChapters: [] }
 ): Promise<ReturnType<typeof buildLifetimeReport>> {
   if (!isChapterLLMEnabled(7)) return baseReport;
 
-  const chapter7Input = buildChapter7Input(reading.sajuData, userSituation ?? null, {
-    name: reading.input.name ?? null, age: null,
-  });
+  const chapter7Input = buildChapter7Input(
+    reading.sajuData,
+    userSituation ?? null,
+    { name: reading.input.name ?? null, age: null },
+    priorChapterDigests
+  );
   const cacheKey = buildChapterCacheKey(reading.sajuData, chapter7Input.userContext, 7);
   const cached = reading.chaptersEnvelope?.chapters?.[7];
   const stageStartedAt = Date.now();
@@ -799,7 +864,7 @@ async function applyChapter7LLMEnhancement(
   try {
     const client = new OpenAIChapterClient({ model });
     const enhanced = await enhanceLifetimeChapter7WithLLM(
-      baseReport.healthRhythm, chapter7Input, client
+      baseReport.healthRhythm, chapter7Input, client, { crossChapterContext }
     );
 
     if (enhanced.source === 'llm' && isReadingId(reading.id)) {

@@ -133,6 +133,27 @@ test('buildChapter1Input — 변환된 ChapterSaju 가 chapter-prompts 의 build
   assert.equal(input.chapterId, 1);
 });
 
+// 🟡 대운 다양성 — 직렬 생성 시 앞 챕터 digest 를 4번째 인자로 받아 input 에 실음.
+test('buildChapter1Input — priorChapterDigests 전달 시 input 에 포함', () => {
+  const data = calculateSajuDataV1({
+    year: 1982, month: 1, day: 29, hour: 8, gender: 'male',
+  });
+  const priors = [
+    { chapterId: 2 as const, title: '기운의 균형', digest: '토 기운 강 / 금 기운 부족' },
+  ];
+  const input = buildChapter1Input(data, null, { name: '테스트' }, priors);
+  assert.ok(input.priorChapterDigests);
+  assert.deepEqual(input.priorChapterDigests, priors);
+});
+
+test('buildChapter1Input — priorChapterDigests 미전달 시 input 에 없음 (병렬/첫 챕터 호환)', () => {
+  const data = calculateSajuDataV1({
+    year: 1982, month: 1, day: 29, hour: 8, gender: 'male',
+  });
+  const input = buildChapter1Input(data, null, { name: '테스트' });
+  assert.equal(input.priorChapterDigests, undefined);
+});
+
 // 2026-05-19 — V2 호환 검증 (engine/index.ts 의 가이드: "새 코드는 가급적 v2").
 test('buildChapter1Input — SajuDataV2 객체도 받아 동일 핵심 필드 매핑', () => {
   const v1 = calculateSajuDataV1({
