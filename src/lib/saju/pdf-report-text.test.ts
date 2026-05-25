@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {
+  cycleFortuneScore,
   firstSentences,
+  monthKeywordForScore,
   pickInterpretationText,
   resolvePdfSubjectName,
 } from './pdf-report-text';
@@ -31,4 +33,23 @@ test('firstSentences: 첫 N문장, 단문은 그대로', () => {
   assert.equal(firstSentences('첫 문장입니다. 둘째 문장. 셋째.', 2), '첫 문장입니다. 둘째 문장.');
   assert.equal(firstSentences('문장 하나', 1), '문장 하나');
   assert.equal(firstSentences('', 1), '');
+});
+
+test('cycleFortuneScore: 일간 대비 오행 생극(십성)으로 결정론 점수 — 사주별 상이', () => {
+  // 인성(cycle 生 일간) 최고 → 비화 → 식상 → 재 → 관 순.
+  assert.equal(cycleFortuneScore('수', '목'), 85); // 수생목 = 인성
+  assert.equal(cycleFortuneScore('목', '목'), 80); // 비화
+  assert.equal(cycleFortuneScore('화', '목'), 76); // 목생화 = 식상
+  assert.equal(cycleFortuneScore('토', '목'), 70); // 목극토 = 재
+  assert.equal(cycleFortuneScore('금', '목'), 66); // 금극목 = 관
+  // 같은 cycle 천간이라도 일간이 다르면 점수 다름(사주별 상이) 검증
+  assert.notEqual(cycleFortuneScore('수', '목'), cycleFortuneScore('수', '화'));
+});
+
+test('monthKeywordForScore: 점수대별 키워드(실 monthScores 기반)', () => {
+  assert.equal(monthKeywordForScore(90), '도약');
+  assert.equal(monthKeywordForScore(75), '성장');
+  assert.equal(monthKeywordForScore(60), '유지');
+  assert.equal(monthKeywordForScore(50), '점검');
+  assert.equal(monthKeywordForScore(30), '정비');
 });

@@ -31,7 +31,23 @@ import {
   resolvePdfSubjectName,
   pickInterpretationText,
   firstSentences,
+  cycleFortuneScore,
+  monthKeywordForScore,
 } from '@/lib/saju/pdf-report-text';
+
+// 깊은 풀이 전문(P9) 섹션 라벨 — saju-lifetime-interpretation SECTION_ORDER 와 동일.
+//   (server 모듈 value import 회피 위해 라벨만 로컬 복제.)
+const DEEP_SECTION_LABELS: Array<{ key: string; label: string }> = [
+  { key: 'coreIdentity', label: '타고난 성향' },
+  { key: 'strengthBalance', label: '기운의 균형' },
+  { key: 'patternAndYongsin', label: '역할과 보완 힌트' },
+  { key: 'relationshipPattern', label: '관계 패턴' },
+  { key: 'wealthStyle', label: '재물 감각' },
+  { key: 'careerDirection', label: '직업 방향' },
+  { key: 'healthRhythm', label: '건강 리듬' },
+  { key: 'majorLuckTimeline', label: '10년 단위 큰 흐름' },
+  { key: 'lifetimeStrategy', label: '평생 활용 전략' },
+];
 
 // 2026-05-23 사주 리포트 PDF 8페이지 문서 (표현 전용 컴포넌트).
 //   실제 인쇄 화면(premium/print)과 /dev 미리보기가 동일 마크업을 공유한다.
@@ -532,19 +548,12 @@ export function buildPdfModel(
     ganzi: c.ganzi,
     isCurrent: c.isCurrent,
   }));
-  // 대운 그래프 점수 — 결정적: phase 별 기준값 (목업 곡선과 유사한 산 모양).
-  const PHASE_VALUE: Record<string, number> = {
-    성장기: 70,
-    표현기: 88,
-    기반기: 78,
-    결정기: 74,
-    준비기: 66,
-    전환기: 72,
-  };
-  const daewoonChart = cycles.map((c) => ({
-    value: PHASE_VALUE[c.phase] ?? 72,
-    isCurrent: c.isCurrent,
-  }));
+  // 대운 그래프 점수 — cycle 천간이 일간 대비 갖는 십성 관계로 결정론 산출(사주별 상이, 고정 PHASE_VALUE 대체).
+  const daewoonChart = cycles.map((c) => {
+    const cycleStem = c.ganzi[0] as Stem;
+    const cycleEl = STEM_PROFILES[cycleStem]?.element ?? dayElement;
+    return { value: cycleFortuneScore(cycleEl, dayElement), isCurrent: c.isCurrent };
+  });
   const currentCycle = cycles.find((c) => c.isCurrent) ?? cycles[Math.min(3, cycles.length - 1)];
   const currentDaewoon = currentCycle
     ? {
@@ -616,7 +625,12 @@ export function buildPdfModel(
     score: bestMonthRaw.score,
     en: monthEnLabel(bestMonthRaw.month),
   };
-  const monthKeywords = MONTH_KEYWORDS;
+  // 12개월 키워드 — 고정 MONTH_KEYWORDS 대신 실제 monthScores 점수대 기반(키워드는 실데이터).
+  const monthKeywords = monthScores.map((m) => ({
+    month: m.month,
+    keyword: monthKeywordForScore(m.score),
+    desc: MONTH_KEYWORDS[m.month - 1]?.desc ?? '',
+  }));
 
   // ── 마무리 (P8) ─────────────────────────────
   const closing = {
@@ -635,6 +649,18 @@ export function buildPdfModel(
     { title: '재회 타로', sub: '관계의 다음 흐름', price: '990원', href: '/tarot/daily' },
     { title: '1:1 상담', sub: '달빛선생과 30분 대화', price: '무료~', href: '/dialogue' },
   ];
+
+  // ── 깊은 풀이 전문 (P9) — 결제한 LLM 본편 9섹션 verbatim ─────
+  const deepReading = interpretation
+    ? {
+        opening: interpretation.opening?.trim() ?? '',
+        sections: DEEP_SECTION_LABELS.map((s) => ({
+          label: s.label,
+          text: ((interpretation.sections as Record<string, string>)?.[s.key] ?? '').trim(),
+        })).filter((s) => s.text.length > 0),
+        rememberRules: (interpretation.rememberRules ?? []).filter((r) => Boolean(r && r.trim())),
+      }
+    : null;
 
   return {
     reportNo,
@@ -674,6 +700,7 @@ export function buildPdfModel(
     bestMonth,
     closing,
     nextProducts,
+    deepReading,
   };
 }
 
@@ -1331,6 +1358,40 @@ export function ReportDocument({
 
                 <PageFooter page={8} />
               </section>
+
+              {/* ─────────── PAGE 9 · 깊은 풀이 전문(LLM 본편 9섹션) ─────────── */}
+              {data.deepReading && (
+                <section className="report-page" data-page="9">
+                  <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
+                  <ChapterHead
+                    no="09"
+                    titleLines={['깊은 풀이', '전문(全文)']}
+                    lead="결제하신 깊은 사주풀이 본문입니다. 앞의 요약과 함께 평생 참고하세요."
+                  />
+                  {data.deepReading.opening ? (
+                    <div className="rp-block">
+                      <p>{data.deepReading.opening}</p>
+                    </div>
+                  ) : null}
+                  {data.deepReading.sections.map((s) => (
+                    <div key={s.label} className="rp-block">
+                      <div className="rp-eyebrow">{s.label}</div>
+                      <p>{s.text}</p>
+                    </div>
+                  ))}
+                  {data.deepReading.rememberRules.length > 0 ? (
+                    <div className="rp-block">
+                      <div className="rp-eyebrow">기억할 규칙</div>
+                      <ul className="rp-remember-list">
+                        {data.deepReading.rememberRules.map((r, i) => (
+                          <li key={i}>{r}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <PageFooter page={9} />
+                </section>
+              )}
             </article>
   );
 }
