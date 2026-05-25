@@ -4,6 +4,7 @@
 import type { CompatibilityInterpretation } from '@/lib/compatibility';
 import type { ChapterLLMClient } from '../chapters/generate-chapter';
 import { createOpenAITotalReviewClient } from '../total-review/openai-total-review-client';
+import { recordLlmRun } from '@/server/ai/llm-telemetry';
 import { buildCompatibilityInterpretationInput } from './compatibility-interpretation-content';
 import {
   COMPATIBILITY_INTERPRETATION_PROMPT_VERSION,
@@ -81,6 +82,7 @@ export async function generateCompatibilityInterpretation(
     args.cacheStore ?? createSupabaseCompatibilityInterpretationCacheStore();
   const cached = await cacheStore.get(cacheKey);
   if (cached) {
+    await recordLlmRun({ feature: 'compatibility', source: 'cache', model: cached.model, userId: null });
     return {
       source: 'cache',
       sections: cached.sections,
@@ -90,7 +92,8 @@ export async function generateCompatibilityInterpretation(
   }
 
   const client =
-    args.client ?? createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS });
+    args.client ??
+    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, feature: 'compatibility' });
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildCompatibilityInterpretationUserMessage(input);
   let lastReasons: string[] = [];

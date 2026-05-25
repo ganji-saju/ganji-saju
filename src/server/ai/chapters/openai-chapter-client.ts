@@ -78,6 +78,7 @@ export class OpenAIChapterClient implements ChapterLLMClient {
       maxOutputTokens: this.options.maxOutputTokens ?? 700,
       temperature: this.options.temperature ?? 0.5,
       timeoutMs: this.options.timeoutMs,
+      feature: 'chapter',
       // 2026-05-20 V2-5 PR N — JSON structured output 활성 (default: true).
       //   { body: string } schema 강제로 응답 안정성 ↑. validator 후처리는 동일
       //   (자유 텍스트 시 동일 흐름, generateAiText 가 body 추출 후 반환).

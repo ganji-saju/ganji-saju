@@ -81,6 +81,7 @@ import {
   createSupabaseLifetimeCacheStore,
   type LifetimeCacheStore,
 } from './lifetime/lifetime-cache-store';
+import { recordLlmRun } from './llm-telemetry';
 
 export interface GenerateLifetimeInterpretationRequest {
   readingIdentifier: string;
@@ -270,6 +271,12 @@ export async function generateLifetimeInterpretation(
     fallbackReason = null;
     errorMessage = null;
     cached = true;
+    await recordLlmRun({
+      feature: 'lifetime',
+      source: 'cache',
+      model: cacheHit.model,
+      userId: reading.userId,
+    });
   } else {
     const aiResult = await generateAiText({
       ...prompt,
@@ -277,6 +284,8 @@ export async function generateLifetimeInterpretation(
       model,
       maxOutputTokens: LIFETIME_OUTPUT_TOKENS,
       timeoutMs: LIFETIME_TIMEOUT_MS,
+      feature: 'lifetime',
+      userId: reading.userId,
     });
     const parsed = parseLifetimeInterpretationText(aiResult.text, fallback);
     const llmOk = aiResult.source === 'openai' && parsed.ok;

@@ -816,6 +816,8 @@ async function handleDialogue(request: DialogueAiRequest) {
     fallbackText,
     maxOutputTokens: yearlyBridge ? 420 : 600,
     timeoutMs: yearlyBridge ? 12_000 : undefined,
+    feature: 'chat',
+    userId: user.id,
   });
 
   if (!shouldChargeAiChat(result.source)) {
@@ -955,6 +957,7 @@ async function handleSajuReport(request: SajuReportAiRequest) {
     fallbackText: buildReportFallback(report),
     model,
     maxOutputTokens: 900,
+    feature: 'chat',
   });
 
   return NextResponse.json({
