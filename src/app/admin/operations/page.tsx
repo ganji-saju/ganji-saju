@@ -32,6 +32,12 @@ const ADMIN_NAV: AdminNavItem[] = [
     badge: 'NEW',
   },
   {
+    href: '/admin/llm-cost',
+    label: 'LLM 비용',
+    description: '영역별 호출·토큰·비용·캐시 hit률 추이',
+    badge: 'NEW',
+  },
+  {
     href: '/admin/saju-feedback',
     label: '챕터 피드백',
     description: 'LLM 풀이 별점·helpful 비율·부정 응답 챕터',
