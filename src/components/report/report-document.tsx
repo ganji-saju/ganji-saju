@@ -123,12 +123,12 @@ function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectNam
 }
 
 /** 모든 페이지 하단 footer (© + PAGE n / 8). */
-function PageFooter({ page }: { page: number }) {
+function PageFooter({ page, total = 8 }: { page: number; total?: number }) {
   return (
     <div className="rp-foot">
       <span>{FOOTER_COPY}</span>
       <span className="rp-foot-page">
-        PAGE {page} / 8
+        PAGE {page} / {total}
       </span>
     </div>
   );
@@ -756,6 +756,8 @@ export function ReportDocument({
   data: PdfReportModel;
   issuedAt: string;
 }) {
+  // 깊은 풀이 전문(P9)이 있으면 총 9페이지, 없으면 8페이지. 모든 footer 의 분모로 사용.
+  const totalPages = data.deepReading ? 9 : 8;
   return (
             <article className="report-doc" aria-label="사주 리포트 PDF 미리보기">
               {/* ─────────────── PAGE 1 · 표지 / 요약 ─────────────── */}
@@ -910,7 +912,7 @@ export function ReportDocument({
                     <br />
                     {FOOTER_COPY} · ganjisaju.kr
                   </p>
-                  <span className="rp-foot-page">PAGE 1 / 8</span>
+                  <span className="rp-foot-page">PAGE 1 / {totalPages}</span>
                 </div>
               </section>
 
@@ -968,7 +970,7 @@ export function ReportDocument({
                   <p>{data.tenGodSummary}</p>
                 </div>
 
-                <PageFooter page={2} />
+                <PageFooter page={2} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 3 · 일주 ─────────────── */}
@@ -1051,7 +1053,7 @@ export function ReportDocument({
                   <p>{data.ilju.peers}</p>
                 </div>
 
-                <PageFooter page={3} />
+                <PageFooter page={3} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 4 · 대운 ─────────────── */}
@@ -1113,7 +1115,7 @@ export function ReportDocument({
                   </div>
                 </div>
 
-                <PageFooter page={4} />
+                <PageFooter page={4} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 5 · 분야별 종합 ─────────────── */}
@@ -1165,7 +1167,7 @@ export function ReportDocument({
                   ))}
                 </div>
 
-                <PageFooter page={5} />
+                <PageFooter page={5} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 6 · 신살·격국 ─────────────── */}
@@ -1215,7 +1217,7 @@ export function ReportDocument({
                   <p>{data.gyeokguk.tip}</p>
                 </div>
 
-                <PageFooter page={6} />
+                <PageFooter page={6} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 7 · 12개월 ─────────────── */}
@@ -1287,7 +1289,7 @@ export function ReportDocument({
                   </div>
                 </div>
 
-                <PageFooter page={7} />
+                <PageFooter page={7} total={totalPages} />
               </section>
 
               {/* ─────────────── PAGE 8 · 마무리 ─────────────── */}
@@ -1356,7 +1358,7 @@ export function ReportDocument({
                   </div>
                 </div>
 
-                <PageFooter page={8} />
+                <PageFooter page={8} total={totalPages} />
               </section>
 
               {/* ─────────── PAGE 9 · 깊은 풀이 전문(LLM 본편 9섹션) ─────────── */}
@@ -1389,7 +1391,7 @@ export function ReportDocument({
                       </ul>
                     </div>
                   ) : null}
-                  <PageFooter page={9} />
+                  <PageFooter page={9} total={totalPages} />
                 </section>
               )}
             </article>
