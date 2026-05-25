@@ -70,6 +70,17 @@ import {
   type AiFallbackReason,
   type AiGenerationSource,
 } from '@/server/ai/openai-text';
+// 2026-05-25 Phase 0a — 본편(lifetime final) read-through 캐시.
+//   audit-reports/2026-05-25-llm-cost-structure.md §5 후보 1: 본편 무캐시 → 매 요청 cold LLM.
+import {
+  buildLifetimeCacheKey,
+  hashLifetimeReport,
+  type LifetimeCacheKeyContext,
+} from './lifetime/lifetime-interpretation-cache';
+import {
+  createSupabaseLifetimeCacheStore,
+  type LifetimeCacheStore,
+} from './lifetime/lifetime-cache-store';
 
 export interface GenerateLifetimeInterpretationRequest {
   readingIdentifier: string;
@@ -77,6 +88,8 @@ export interface GenerateLifetimeInterpretationRequest {
   counselorId?: MoonlightCounselorId | null;
   regenerate?: boolean;
   readingRecord?: ReadingRecord | null;
+  /** 테스트/DI 용 캐시 스토어 주입. 미지정 시 Supabase 스토어. */
+  cacheStore?: LifetimeCacheStore<SajuLifetimeAiInterpretation>;
 }
 
 export interface LifetimeGenerationStageResult {
@@ -96,8 +109,8 @@ export interface LifetimeInterpretationResponsePayload {
   counselorId: MoonlightCounselorId;
   promptVersion: string;
   metadata: SajuReportRuntimeMetadata;
-  cached: false;
-  cacheable: false;
+  cached: boolean;
+  cacheable: boolean;
   source: AiGenerationSource;
   model: string | null;
   fallbackReason: AiFallbackReason | null;
@@ -223,23 +236,86 @@ export async function generateLifetimeInterpretation(
     recentFeedbackSummary
   );
 
+  // 2026-05-25 Phase 0a — 본편 read-through 캐시 (audit §5 후보 1). 본편 풀이 *내용* 은 불변, 캐시 인프라만.
+  //   키: 사주 + 컨텍스트 + 상담사 + 연도 + reportHash(LLM enhance된 챕터 포함) + 피드백 + 프롬프트버전.
+  //   regenerate=true 면 읽기 skip(강제 재생성). 캐시 write 실패는 비차단. fallback 은 저장 안 함.
+  const cacheCtx: LifetimeCacheKeyContext = {
+    relationshipStatus: userSituation?.relationshipStatus ?? null,
+    occupation: userSituation?.occupation ?? null,
+    concern: userSituation?.currentConcern ?? null,
+    gender: reading.input.gender ?? null,
+    counselorId,
+    targetYear: request.targetYear,
+    reportHash: hashLifetimeReport(report),
+    recentFeedbackSummary,
+    promptVersion,
+  };
+  const cacheKey = buildLifetimeCacheKey(reading.sajuData, cacheCtx);
+  const cacheStore =
+    request.cacheStore ?? createSupabaseLifetimeCacheStore<SajuLifetimeAiInterpretation>();
+  const cacheHit = request.regenerate ? null : await cacheStore.get(cacheKey, promptVersion);
+
   const stageStartedAt = Date.now();
-  const aiResult = await generateAiText({
-    ...prompt,
-    fallbackText: JSON.stringify(fallback),
-    model,
-    maxOutputTokens: LIFETIME_OUTPUT_TOKENS,
-    timeoutMs: LIFETIME_TIMEOUT_MS,
-  });
-  const parsed = parseLifetimeInterpretationText(aiResult.text, fallback);
-  const interpretation =
-    aiResult.source === 'openai' && parsed.ok ? parsed.interpretation : fallback;
-  const source: AiGenerationSource =
-    aiResult.source === 'openai' && parsed.ok ? 'openai' : 'fallback';
-  const fallbackReason =
-    source === 'openai' ? null : aiResult.fallbackReason ?? 'empty_ai_response';
-  const errorMessage =
-    source === 'openai' ? null : aiResult.errorMessage ?? parsed.errorMessage;
+  let interpretation: SajuLifetimeAiInterpretation;
+  let source: AiGenerationSource;
+  let resolvedModel: string | null;
+  let fallbackReason: AiFallbackReason | null;
+  let errorMessage: string | null;
+  let cached: boolean;
+
+  if (cacheHit) {
+    interpretation = cacheHit.output;
+    source = 'openai'; // 캐시 저장은 source='llm' 만 통과 → 캐시된 본문은 LLM 생성물
+    resolvedModel = cacheHit.model;
+    fallbackReason = null;
+    errorMessage = null;
+    cached = true;
+  } else {
+    const aiResult = await generateAiText({
+      ...prompt,
+      fallbackText: JSON.stringify(fallback),
+      model,
+      maxOutputTokens: LIFETIME_OUTPUT_TOKENS,
+      timeoutMs: LIFETIME_TIMEOUT_MS,
+    });
+    const parsed = parseLifetimeInterpretationText(aiResult.text, fallback);
+    const llmOk = aiResult.source === 'openai' && parsed.ok;
+    interpretation = llmOk ? parsed.interpretation : fallback;
+    source = llmOk ? 'openai' : 'fallback';
+    resolvedModel = aiResult.model;
+    fallbackReason = source === 'openai' ? null : aiResult.fallbackReason ?? 'empty_ai_response';
+    errorMessage = source === 'openai' ? null : aiResult.errorMessage ?? parsed.errorMessage;
+    cached = false;
+    // LLM 성공만 캐시 저장 (fallback 은 저장 안 함 — 일시 실패가 고착되지 않게).
+    if (source === 'openai') {
+      await cacheStore.set(cacheKey, promptVersion, {
+        output: interpretation,
+        model: resolvedModel,
+        sajuSummary: {
+          pillars: {
+            year: reading.sajuData.pillars.year.ganzi,
+            month: reading.sajuData.pillars.month.ganzi,
+            day: reading.sajuData.pillars.day.ganzi,
+            hour: reading.sajuData.pillars.hour?.ganzi ?? null,
+          },
+          dayMaster: {
+            stem: reading.sajuData.dayMaster.stem,
+            element: reading.sajuData.dayMaster.element,
+          },
+          gender: reading.input.gender ?? null,
+        },
+        counselorId,
+        targetYear: request.targetYear,
+        context: {
+          relationshipStatus: cacheCtx.relationshipStatus,
+          occupation: cacheCtx.occupation,
+          concern: cacheCtx.concern,
+        },
+        inputTokens: aiResult.inputTokens ?? null,
+        outputTokens: aiResult.outputTokens ?? null,
+      });
+    }
+  }
   const reportText = renderLifetimeInterpretationReport(interpretation, report);
 
   return {
@@ -252,13 +328,13 @@ export async function generateLifetimeInterpretation(
     promptVersion,
     metadata: buildSajuReportRuntimeMetadata(reading.metadata, {
       promptVersion,
-      llmModel: aiResult.model,
+      llmModel: resolvedModel,
       generationSource: source,
     }),
-    cached: false,
-    cacheable: false,
+    cached,
+    cacheable: true,
     source,
-    model: aiResult.model,
+    model: resolvedModel,
     fallbackReason,
     errorMessage,
     generationMs: Date.now() - startedAt,
