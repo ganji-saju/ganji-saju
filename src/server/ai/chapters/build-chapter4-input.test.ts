@@ -64,3 +64,20 @@ test('buildChapter4Input — userSituation null 안전', () => {
   assert.equal(input.userContext.occupation, null);
   assert.equal(input.userContext.currentConcern, null);
 });
+
+// 🟡 대운 다양성 — 직렬 생성 시 앞 챕터 digest 를 4번째 인자로 받아 input 에 실음.
+//   (ch4/ch5 는 buildChapter1Input 위임이 아닌 독립 구현 경로라 별도 검증.)
+test('buildChapter4Input — priorChapterDigests 전달/미전달 분기', () => {
+  const data = calculateSajuDataV1({
+    year: 1982, month: 1, day: 29, hour: 8, gender: 'male',
+  });
+  const priors = [
+    { chapterId: 1 as const, title: '타고난 성향', digest: '돌봄과 배움이 본질' },
+    { chapterId: 3 as const, title: '역할과 보완 힌트', digest: '정인격 역할 반복' },
+  ];
+  const withPriors = buildChapter4Input(data, null, {}, priors);
+  assert.deepEqual(withPriors.priorChapterDigests, priors);
+
+  const withoutPriors = buildChapter4Input(data, null, {});
+  assert.equal(withoutPriors.priorChapterDigests, undefined);
+});

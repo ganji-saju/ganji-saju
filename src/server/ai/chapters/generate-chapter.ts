@@ -87,9 +87,24 @@ export function buildChapterUserMessage(input: ChapterLLMInput): string {
   );
 
   if (input.priorChapterDigests && input.priorChapterDigests.length > 0) {
-    lines.push('', '## 1~7장 핵심 결론 (synthesis 입력)');
-    for (const prior of input.priorChapterDigests) {
-      lines.push(`${prior.chapterId}. ${prior.title} — ${prior.digest}`);
+    // 9장(synthesis) — 1~7장 결론을 *재해석* 대상으로 받음.
+    //   header 문구는 enhance-lifetime-chapter9.test 가 검증하므로 변경 금지.
+    // 1~7장 — 직렬 생성 시 *이미 작성된 앞 챕터* 를 받음 → 같은 문장/첫 문장
+    //   반복 금지. (cross-chapter validator 룰의 prompt-level 짝.)
+    if (input.chapterId === 9) {
+      lines.push('', '## 1~7장 핵심 결론 (synthesis 입력)');
+      for (const prior of input.priorChapterDigests) {
+        lines.push(`${prior.chapterId}. ${prior.title} — ${prior.digest}`);
+      }
+    } else {
+      lines.push(
+        '',
+        '## 앞 챕터에서 이미 다룬 결론 (중복 회피용)',
+        '아래는 이 리포트의 앞 챕터들이 이미 쓴 핵심 문장입니다. **같은 문장·같은 첫 문장을 반복하지 말고**, 이 챕터의 렌즈로 다른 각도에서 새로 쓰세요.'
+      );
+      for (const prior of input.priorChapterDigests) {
+        lines.push(`${prior.chapterId}. ${prior.title} — ${prior.digest}`);
+      }
     }
   }
 
