@@ -54,14 +54,16 @@
   - (A) DB 컬럼 + 만료 cron 추가 (정책 유지)
   - (B) FAQ "1년 유효" 문구 삭제 (구현 유지)
 
-### 2.4 🚨 P0 — 49,000원 lifetime-report 환불 코드 부재
-- 별도 환불 페이지 / 환불 신청 UI 없음
-- entitlement 회수 함수 (`revokeLifetimeReportEntitlement` 등) 없음 → 운영자가 환불해도 권한 유지 → 사용자가 환불 후에도 계속 열람 가능
-- Phase 6 에서:
-  1. `/refund-policy` 페이지 신설
-  2. `revokeProductEntitlement(userId, productId, scopeKey, reason)` 함수 추가
-  3. admin 환불 처리 UI 추가
-  4. Toss 환불 API (`/v1/payments/{paymentKey}/cancel`) 연동
+### 2.4 🟡 P0(부분 해소) — 49,000원 lifetime-report 환불 인프라
+- **2026-05-23 회수 함수 추가 완료**:
+  - `revokeProductEntitlement(userId, productId, scopeKey, { reason, actor?, paymentKey? })` — `src/lib/product-entitlements.ts`. **조회 우선순위 양쪽**(product_entitlements + legacy credit_transactions)을 모두 제거 → 환불 후 권한이 되살아나지 않음. audit 행(`type='purchase'`, `feature='entitlement_revoke'`, `metadata.kind='entitlement_revoked'`)으로 환불 흔적 보존.
+  - `revokeLifetimeReportEntitlement(userId, readingKey, { reason, ... })` — `src/lib/report-entitlements.ts`. lifetime 전용 wrapper.
+  - 대칭성 회귀 방지: `resolveEntitlementRevokeQuery` + `product-entitlements.revoke.test.ts` (grant↔revoke 키 대칭 고정).
+  - `/refund-policy` 페이지는 이미 존재(안내 UI). 마이그레이션 불필요(hard-delete + audit, `payment_key` 컬럼으로 결제건 역매칭).
+- **남은 후속 작업** (별도 PR):
+  1. 회수 함수를 호출하는 운영 경로 — admin 환불 처리 UI 또는 CLI 스크립트(`scripts/revoke-entitlement.mjs`)
+  2. Toss 환불 API (`/v1/payments/{paymentKey}/cancel`) 연동 — `revoke...` 반환 `paymentKey` 로 결제 취소
+  3. (선택) `refund_requests` 테이블 + 사용자 환불 신청 flow
 
 ### 2.5 🟡 P1 — orderId 충돌 가능성
 - 생성식: `order_${pkg.id}_${method}_${Date.now()}`
@@ -142,3 +144,4 @@
 | 일자 | 변경 |
 |---|---|
 | 2026-05-17 | 초기 작성 (Phase 1 audit) |
+| 2026-05-23 | §2.4 P0 부분 해소 — entitlement 회수 함수(`revokeProductEntitlement`/`revokeLifetimeReportEntitlement`) + 대칭성 테스트 추가. 이중 결제(prepare today-detail 코인경로 인식)·올해 핵심 3줄 명칭 통일 동반 |

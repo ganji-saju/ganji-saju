@@ -3,7 +3,7 @@
 // 라우팅·검증은 호출 측 책임 — 본 컴포넌트는 순수 폼 UI만 담당.
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
+import { useRef, type Dispatch, type SetStateAction } from 'react';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import type {
   UnifiedBirthEntryDraft,
@@ -101,6 +101,9 @@ export function CompactBirthFields({
 }: CompactBirthFieldsProps) {
   const hourBranch = getHourBranch(draft.hour);
   const isHourUnknown = draft.hour === '';
+  // 생년월일 자동 포커스 이동 — 연도 4자리 입력 완료 시 월, 월 2자리 완료 시 일 칸으로.
+  const monthInputRef = useRef<HTMLInputElement>(null);
+  const dayInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className={cn('space-y-4 sm:space-y-5', className)}>
@@ -137,7 +140,9 @@ export function CompactBirthFields({
               value={draft.year}
               onChange={(event) => {
                 triggerStart(onStarted);
-                onChange({ year: event.target.value });
+                const value = event.target.value;
+                onChange({ year: value });
+                if (value.length === 4) monthInputRef.current?.focus();
               }}
               placeholder="1995"
               inputMode="numeric"
@@ -146,10 +151,13 @@ export function CompactBirthFields({
               className={cn('text-center', INPUT_CLS)}
             />
             <input
+              ref={monthInputRef}
               value={draft.month}
               onChange={(event) => {
                 triggerStart(onStarted);
-                onChange({ month: event.target.value });
+                const value = event.target.value;
+                onChange({ month: value });
+                if (value.length === 2) dayInputRef.current?.focus();
               }}
               placeholder="08"
               inputMode="numeric"
@@ -158,6 +166,7 @@ export function CompactBirthFields({
               className={cn('text-center', INPUT_CLS)}
             />
             <input
+              ref={dayInputRef}
               value={draft.day}
               onChange={(event) => {
                 triggerStart(onStarted);

@@ -72,7 +72,38 @@ export async function getCredits(userId: string): Promise<{ balance: number; sub
     .select('balance, subscription_balance')
     .eq('user_id', userId)
     .single();
-  return data;
+
+  if (!data) return null;
+
+  // user_credits.balance 는 비만료 lot 합으로 동기화되는 캐시값이지만, 시간 경과만으로
+  // lot 이 만료된 경우(차감/충전 이벤트 없음) 일시적으로 과대 표시될 수 있다. 결제 코인은
+  // 1년 만료 모델이므로 표시 잔액은 비만료 lot 합으로 재계산한다(구독 잔액은 그대로).
+  const nonExpired = await getNonExpiredLotBalance(userId);
+  return { balance: nonExpired, subscription_balance: data.subscription_balance };
+}
+
+// 비만료 credit_lots 의 amount_remaining 합 — 만료된 코인을 제외한 실제 보유 결제 코인.
+// credit_lots 가 없는(레거시 미백필) 환경에서는 user_credits.balance 로 폴백한다.
+export async function getNonExpiredLotBalance(userId: string): Promise<number> {
+  const supabase = await createServiceClient();
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('credit_lots')
+    .select('amount_remaining')
+    .eq('user_id', userId)
+    .gt('expires_at', nowIso);
+
+  if (error) {
+    // credit_lots 테이블이 아직 없거나 조회 실패 시 — 기존 balance 캐시로 폴백.
+    const { data: fallback } = await supabase
+      .from('user_credits')
+      .select('balance')
+      .eq('user_id', userId)
+      .maybeSingle();
+    return fallback?.balance ?? 0;
+  }
+
+  return (data ?? []).reduce((sum, lot) => sum + (lot.amount_remaining ?? 0), 0);
 }
 
 async function deductCreditsWithCost(
@@ -148,10 +179,30 @@ export async function addCredits(
 ): Promise<void> {
   const supabase = await createServiceClient();
 
+  // add_credits RPC: type='subscription' 은 subscription_balance(무만료) 증가,
+  // 그 외('purchase' 등)는 결제+1년 만료 lot 으로 적립(040 마이그레이션). 거래 이력도 남긴다.
   await supabase.rpc('add_credits', {
     p_user_id: userId,
     p_amount: amount,
     p_type: type,
     p_metadata: metadata,
+  });
+}
+
+// 결제 코인 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.
+// expiresAt 미지정 시 now()+1년. 일반 결제 충전은 addCredits(...,'purchase')로 충분하다.
+export async function addCreditLot(
+  userId: string,
+  amount: number,
+  options: { expiresAt?: Date | null; source?: string; metadata?: Record<string, unknown> } = {}
+): Promise<void> {
+  const supabase = await createServiceClient();
+
+  await supabase.rpc('add_credit_lot', {
+    p_user_id: userId,
+    p_amount: amount,
+    p_expires_at: options.expiresAt ? options.expiresAt.toISOString() : null,
+    p_source: options.source ?? 'purchase',
+    p_metadata: options.metadata ?? {},
   });
 }

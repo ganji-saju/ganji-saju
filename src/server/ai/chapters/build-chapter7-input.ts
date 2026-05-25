@@ -3,7 +3,7 @@ import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { UserSituation } from '@/lib/saju/types';
 import { CHAPTER_META } from './chapter-prompts';
 import { buildChapter1Input } from './build-chapter1-input';
-import type { ChapterLLMInput } from './chapter-input-types';
+import type { ChapterLLMInput, ChapterPriorDigest } from './chapter-input-types';
 
 // 2026-05-20 V2-5 PR L — 챕터 7 (건강 리듬) LLM 입력 converter.
 //
@@ -17,9 +17,10 @@ import type { ChapterLLMInput } from './chapter-input-types';
 export function buildChapter7Input(
   sajuData: SajuDataV1 | SajuDataV2,
   userSituation: UserSituation | null,
-  options: { name?: string | null; age?: number | null } = {}
+  options: { name?: string | null; age?: number | null } = {},
+  priorChapterDigests?: ChapterPriorDigest[]
 ): ChapterLLMInput {
-  const base = buildChapter1Input(sajuData, userSituation, options);
+  const base = buildChapter1Input(sajuData, userSituation, options, priorChapterDigests);
   return {
     ...base,
     chapterId: 7,

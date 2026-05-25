@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { isSubscriptionPackage, isTasteProductPackage } from '@/lib/payments/catalog';
+import { isBundlePackage, isSubscriptionPackage, isTasteProductPackage } from '@/lib/payments/catalog';
+import { grantBundleComponents } from '@/lib/payments/bundle';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
 import { addCredits, getCredits } from '@/lib/credits/deduct';
@@ -115,6 +116,20 @@ export async function POST(req: NextRequest) {
         })
       : null;
 
+  // 묶음(bundle) — 구성품을 개별 grant(1결제 = N권한). 분해/grant 핵심 로직은
+  // grantBundleComponents(bundle.test.ts 로 고정), 라우트는 scope 해석·grant 함수만 주입.
+  const bundleGrants = isBundlePackage(pkg)
+    ? await grantBundleComponents(
+        pkg,
+        { userId: user.id, slug, orderId, paymentKey, packageId: pkg.id },
+        {
+          resolveScope: (input) => resolvePaymentProductScope(input),
+          grant: (userId, productId, options) =>
+            grantTasteProductEntitlement(userId, productId, options),
+        }
+      )
+    : null;
+
   const lifetimeProductEntitlement =
     pkg.kind === 'lifetime_report' && paymentScope?.scopeKey
       ? await getProductEntitlement(user.id, 'lifetime-report', paymentScope.scopeKey)
@@ -147,6 +162,7 @@ export async function POST(req: NextRequest) {
     subscription,
     entitlement,
     productEntitlement,
+    bundleGrants,
     product: isTasteProductPackage(pkg) ? pkg.tasteProductId : null,
     plan: 'planSlug' in pkg ? pkg.planSlug : null,
   });

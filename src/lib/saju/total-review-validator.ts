@@ -112,7 +112,7 @@ function splitSentences(text: string): string[] {
 
 /**
  * 섹션 단위 hard 검증 — generate-total-review 의 재시도 게이트.
- * 구조(필수 필드/카드 수) + hard 텍스트 룰만. 컨텍스트/문장수 등 cross-section 룰은 제외.
+ * 구조(필수 필드/카드 수) + hard 텍스트 룰 + main_narrative 본문 문장수(25~35). 컨텍스트 등 cross-section 룰은 제외.
  */
 export function validateTotalReviewSection(
   sectionId: TotalReviewSectionId,
@@ -150,6 +150,14 @@ export function validateTotalReviewSection(
         continue;
       }
       reasons.push(...hardTextReasons(para, key));
+    }
+    // 본문 문장 수 25~35 enforce — 재시도 게이트에 포함(이전엔 validateTotalReview 로깅용으로만 검출).
+    const sentenceCount = keys.reduce((sum, key) => {
+      const para = narrative[key];
+      return sum + (typeof para === 'string' ? splitSentences(para).length : 0);
+    }, 0);
+    if (sentenceCount < 25 || sentenceCount > 35) {
+      reasons.push(`본문 문장 수 ${sentenceCount} (목표 25~35)`);
     }
     return { ok: reasons.length === 0, reasons };
   }

@@ -13,10 +13,6 @@ import {
   getMembershipPackage,
   isTasteProductId,
 } from '@/lib/payments/catalog';
-import {
-  hasDetailReportAccess,
-  hasTodayFortunePremiumAccess,
-} from '@/lib/credits/detail-report-access';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription } from '@/lib/subscription';
@@ -24,7 +20,7 @@ import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
-import { resolveTodayDetailCoinUnlock } from './route-helpers';
+import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -111,6 +107,23 @@ export async function GET(req: NextRequest) {
   if (!pkg) {
     return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null });
   }
+
+  // today-detail 은 readingKey(안정) + legacy readingId + coin 을 모두 보는 단일 진입점
+  //   checkTodayDetailAccess 로 통일 — 사주 재생성·경로 교차로 slug 가 바뀌어도 인식돼
+  //   결제 무한반복을 막는다(SSR 게이트·checkout 과 동일 판정).
+  if (productId === 'today-detail') {
+    const access = await checkTodayDetailAccess(slug ?? '');
+    return NextResponse.json({
+      hasEntitlement: access.hasAccess,
+      openHref: access.hasAccess ? buildPurchasedProductHref(productId, slug, { scope }) : null,
+      reason: access.hasAccess
+        ? access.source?.kind === 'credit-unlock'
+          ? 'coin-unlocked'
+          : 'product-purchased'
+        : null,
+    });
+  }
+
   const paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
   const entitlement = await getTasteProductEntitlement(
     user.id,
@@ -118,22 +131,10 @@ export async function GET(req: NextRequest) {
     paymentScope?.scopeKey ?? null
   );
 
-  // today-detail 은 coin unlock 경로도 함께 확인 (checkout 페이지와 동일).
-  // 두 kind 모두 fallback — today_fortune_premium_access (PR #178 신규 키) +
-  //   detail_report_access (credits/use route 가 실제 저장하는 레거시 키, A6 회귀 fix).
-  let coinUnlocked = false;
-  if (productId === 'today-detail') {
-    coinUnlocked = await resolveTodayDetailCoinUnlock(
-      user.id,
-      { slug: paymentScope?.slug ?? null, readingKey: paymentScope?.readingKey ?? null },
-      { hasTodayFortunePremiumAccess, hasDetailReportAccess },
-    );
-  }
-
-  const has = Boolean(entitlement) || coinUnlocked;
+  const has = Boolean(entitlement);
   return NextResponse.json({
     hasEntitlement: has,
     openHref: has ? buildPurchasedProductHref(productId, slug, { scope }) : null,
-    reason: has ? (entitlement ? 'product-purchased' : 'coin-unlocked') : null,
+    reason: has ? 'product-purchased' : null,
   });
 }

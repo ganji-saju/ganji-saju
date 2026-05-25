@@ -243,7 +243,7 @@ export function TodayFortuneResultClient({
                 <TodaySajuChartCard chart={freeResult.sajuChart} />
               ) : null}
 
-              {/* §6 — 550원 자세히 보기 unlock */}
+              {/* §6 — 550원 자세히 보기 unlock + 990원 묶음 비교 CTA(사주 결과 있을 때만) */}
               <PremiumLockCard
                 copy={freeResult.nextAction.copy}
                 coinCost={freeResult.nextAction.coinCost}
@@ -251,6 +251,13 @@ export function TodayFortuneResultClient({
                 loading={false}
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
+                bundleHref={
+                  freeResult.sajuSlug
+                    ? `/membership/checkout?product=bundle_today_set&slug=${encodeURIComponent(
+                        freeResult.sajuSlug
+                      )}&from=today-fortune`
+                    : undefined
+                }
               />
 
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}

@@ -13,6 +13,7 @@ import { MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 import { CHAPTER_META } from './chapter-prompts';
 import type {
   ChapterLLMInput,
+  ChapterPriorDigest,
   ChapterUserContext,
   ChapterSaju,
 } from './chapter-input-types';
@@ -64,7 +65,8 @@ function narrowConcern(
 export function buildChapter4Input(
   sajuData: SajuDataV1 | SajuDataV2,
   userSituation: UserSituation | null,
-  options: { name?: string | null; age?: number | null } = {}
+  options: { name?: string | null; age?: number | null } = {},
+  priorChapterDigests?: ChapterPriorDigest[]
 ): ChapterLLMInput {
   const { pillars, dayMaster, fiveElements, pattern, yongsin, strength, tenGods } = sajuData;
 
@@ -123,5 +125,8 @@ export function buildChapter4Input(
     chapter: CHAPTER_META[4],
     saju,
     userContext,
+    ...(priorChapterDigests && priorChapterDigests.length > 0
+      ? { priorChapterDigests }
+      : {}),
   };
 }

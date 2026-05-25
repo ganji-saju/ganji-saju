@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getPackage,
+  isBundlePackage,
   isSubscriptionPackage,
   isTasteProductPackage,
 } from '@/lib/payments/catalog';
+import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
 import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
+  type PaymentProductScope,
 } from '@/lib/payments/product-scope';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
-import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
+import {
+  hasDetailReportAccess,
+  hasTodayFortunePremiumAccess,
+  hasTodayFortunePremiumAccessByReading,
+} from '@/lib/credits/detail-report-access';
 import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 // 2026-05-16 PR (B1) — funnel 단계 기록. admin/payment-funnel 대시보드 데이터 source.
@@ -119,45 +126,84 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
-  if (!paymentScope) {
-    return NextResponse.json({
-      ok: true,
-      authenticated: true,
-      alreadyPurchased: false,
-      scopeKey: null,
-    });
-  }
+  // 묶음(bundle)은 1결제=N권한이라 단일 paymentScope 가 없다(resolvePaymentProductScope=null).
+  // 구성품을 전부 보유한 경우에만 중복 차단하고, 미보유면 아래 동의 검증을 거쳐 결제 진행한다
+  // (보유분은 confirm 의 grant 가 멱등 skip). b1 의 단건 중복 차단과 동일 취지.
+  let paymentScope: PaymentProductScope | null = null;
 
-  const entitlement = isTasteProductPackage(pkg)
-    ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
-    : await getLifetimeReportEntitlement(
-        user.id,
-        paymentScope.readingKey ?? paymentScope.slug ?? '',
-        paymentScope.slug ? [paymentScope.slug] : []
-      );
-  const coinUnlockedTodayDetail =
-    isTasteProductPackage(pkg) &&
-    pkg.tasteProductId === 'today-detail' &&
-    paymentScope.slug
-      ? await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)
-      : false;
+  if (isBundlePackage(pkg)) {
+    const allOwned = await areAllBundleComponentsOwned(pkg, slug, {
+      resolveScope: (input) => resolvePaymentProductScope(input),
+      hasEntitlement: (productId, scopeKey) =>
+        getTasteProductEntitlement(user.id, productId, scopeKey).then(Boolean),
+    });
+    if (allOwned) {
+      await logPaymentFunnelEvent(supabase, {
+        stage: 'prepare_blocked',
+        userId: user.id,
+        packageId,
+        reason: 'existing_entitlement',
+      });
+      return NextResponse.json({
+        ok: true,
+        authenticated: true,
+        alreadyPurchased: true,
+        scopeKey: null,
+        redirectHref: '/my/results',
+        reason: 'existing_entitlement',
+      });
+    }
+  } else {
+    paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
+    if (!paymentScope) {
+      return NextResponse.json({
+        ok: true,
+        authenticated: true,
+        alreadyPurchased: false,
+        scopeKey: null,
+      });
+    }
 
-  if (entitlement || coinUnlockedTodayDetail) {
-    await logPaymentFunnelEvent(supabase, {
-      stage: 'prepare_blocked',
-      userId: user.id,
-      packageId,
-      reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
-    });
-    return NextResponse.json({
-      ok: true,
-      authenticated: true,
-      alreadyPurchased: true,
-      scopeKey: paymentScope.scopeKey,
-      redirectHref: buildPurchasedProductHref(paymentScope.productId, slug, { from, scope }),
-      reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
-    });
+    const entitlement = isTasteProductPackage(pkg)
+      ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
+      : await getLifetimeReportEntitlement(
+          user.id,
+          paymentScope.readingKey ?? paymentScope.slug ?? '',
+          paymentScope.slug ? [paymentScope.slug] : []
+        );
+    // today-detail 은 코인 경로(/api/credits/use·/api/today-fortune/unlock)로도 해제될 수
+    // 있어, Toss 단건 결제 중복을 막으려면 코인 해제를 양쪽 키로 확인해야 한다:
+    //   today-fortune 경로 = sourceSessionId(=slug) / saju 경로 = readingKey.
+    // readingKey 는 today_fortune_premium_access·detail_report_access 두 kind 모두 조회.
+    // ※ KST 일자 단위 fallback(hasTodayFortuneDailyAccess)은 의도적 제외 — 다른 사주의
+    //   오늘 결제까지 막는 과잉 차단 방지(결제 차단은 scope 단위여야 함).
+    const coinUnlockedTodayDetail =
+      isTasteProductPackage(pkg) &&
+      pkg.tasteProductId === 'today-detail' &&
+      paymentScope.slug
+        ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)) ||
+          (paymentScope.readingKey
+            ? (await hasTodayFortunePremiumAccessByReading(user.id, paymentScope.readingKey)) ||
+              (await hasDetailReportAccess(user.id, paymentScope.readingKey))
+            : false)
+        : false;
+
+    if (entitlement || coinUnlockedTodayDetail) {
+      await logPaymentFunnelEvent(supabase, {
+        stage: 'prepare_blocked',
+        userId: user.id,
+        packageId,
+        reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
+      });
+      return NextResponse.json({
+        ok: true,
+        authenticated: true,
+        alreadyPurchased: true,
+        scopeKey: paymentScope.scopeKey,
+        redirectHref: buildPurchasedProductHref(paymentScope.productId, slug, { from, scope }),
+        reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
+      });
+    }
   }
 
   // 2026-05-18 Phase 3-C-1: 동의 검증 + DB 기록.
@@ -215,13 +261,13 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     packageId,
     amount: pkg.price ?? null,
-    metadata: { scopeKey: paymentScope.scopeKey, consentRecorded: acceptedKinds !== null },
+    metadata: { scopeKey: paymentScope?.scopeKey ?? null, consentRecorded: acceptedKinds !== null },
   });
 
   return NextResponse.json({
     ok: true,
     authenticated: true,
     alreadyPurchased: false,
-    scopeKey: paymentScope.scopeKey,
+    scopeKey: paymentScope?.scopeKey ?? null,
   });
 }

@@ -13,6 +13,7 @@ import { MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 import { CHAPTER_META } from './chapter-prompts';
 import type {
   ChapterLLMInput,
+  ChapterPriorDigest,
   ChapterUserContext,
   ChapterSaju,
 } from './chapter-input-types';
@@ -84,11 +85,16 @@ function narrowConcern(
  * - pattern: 격국 + plainCue (MYEONGRI_GLOSSARY)
  * - strength: 신강/중화/신약 → 일상어
  * - tenGods: dominant + shortageList
+ *
+ * @param priorChapterDigests 직렬 생성 시 앞서 작성된 챕터들의 digest. 있으면
+ *   user message 에 "이미 다룬 결론 — 반복 회피" 로 주입돼 챕터 간 문장 중복 차단.
+ *   첫 챕터(또는 병렬 호출)는 미전달 → 기존 동작 그대로.
  */
 export function buildChapter1Input(
   sajuData: SajuDataV1 | SajuDataV2,
   userSituation: UserSituation | null,
-  options: { name?: string | null; age?: number | null } = {}
+  options: { name?: string | null; age?: number | null } = {},
+  priorChapterDigests?: ChapterPriorDigest[]
 ): ChapterLLMInput {
   const { pillars, dayMaster, fiveElements, pattern, yongsin, strength, tenGods } =
     sajuData;
@@ -154,5 +160,8 @@ export function buildChapter1Input(
     chapter: CHAPTER_META[1],
     saju,
     userContext,
+    ...(priorChapterDigests && priorChapterDigests.length > 0
+      ? { priorChapterDigests }
+      : {}),
   };
 }

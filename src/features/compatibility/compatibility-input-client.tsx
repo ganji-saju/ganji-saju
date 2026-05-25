@@ -847,6 +847,12 @@ export function CompatibilityInputClient({
           </div>
         ) : null}
 
+        {/* 모바일 한정 sticky CTA clearance. 이 폼은 결과 화면용 .saju-result-page 클래스를 공유하는데,
+            그 unlayered 규칙 padding-bottom:0 이 app-page 기본 하단 여백(@layer components)을 덮는다.
+            그래서 AppPage 에 pb-* (Tailwind utilities 레이어)를 줘도 무효 → fixed CTA(약 6rem+safe-area)가
+            마지막 입력 섹션을 가린다. cascade 무관한 spacer 로 확보. md+ 에선 CTA 가 static 이라 불필요. */}
+        <div aria-hidden="true" className="md:hidden" style={{ height: 'calc(6rem + env(safe-area-inset-bottom))' }} />
+
         {/* §Sticky CTA */}
         <div
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-0"

@@ -10,8 +10,10 @@ import {
   type CompatibilityRelationship,
 } from '@/content/moonlight';
 import type { CompatibilityInterpretation } from '@/lib/compatibility';
+import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
+import { CompatibilityDeepSections } from '@/features/compatibility/compatibility-deep-sections';
 
 interface CompatibilityResultViewProps {
   selected: CompatibilityRelationship;
@@ -22,6 +24,13 @@ interface CompatibilityResultViewProps {
   partnerBirthSummary: string;
   retakeHref?: string;
   hasLoveQuestionPurchase?: boolean;
+  /** ②-b: 깊은 풀이 LLM 강화용. 두 값이 있고 deepLlmEnabled 면 §8 에서 비동기 LLM 호출. */
+  selfBirthInput?: BirthInput;
+  partnerBirthInput?: BirthInput;
+  deepLlmEnabled?: boolean;
+  /** ①: per-couple 1회권. 플래그 ON + 커플 키가 있으면 CTA 가 compat-reading(커플 단위)을 판매. */
+  compatibilityCoupleKey?: string;
+  perCouplePricingEnabled?: boolean;
 }
 
 const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
@@ -71,9 +80,19 @@ export function CompatibilityResultView({
   partnerBirthSummary,
   retakeHref = `/compatibility/input?relationship=${selected.slug}`,
   hasLoveQuestionPurchase = false,
+  selfBirthInput,
+  partnerBirthInput,
+  deepLlmEnabled = false,
+  compatibilityCoupleKey,
+  perCouplePricingEnabled = false,
 }: CompatibilityResultViewProps) {
   const premiumExpansion = COMPATIBILITY_PREMIUM_EXPANSION[selected.slug];
   const score = clampScore(compatibility.score);
+  // ① per-couple 가격이 켜지고 커플 키가 있으면 compat-reading(커플 1회권) 결제, 아니면 기존 love-question.
+  const checkoutHref =
+    perCouplePricingEnabled && compatibilityCoupleKey
+      ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey)}&from=compatibility-result`
+      : '/membership/checkout?product=love-question&from=compatibility-result';
   const selfZodiac = getYearZodiac(compatibility.selfData);
   const partnerZodiac = getYearZodiac(compatibility.partnerData);
   const selfYear = getBirthYear(compatibility.selfData);
@@ -87,7 +106,7 @@ export function CompatibilityResultView({
         {/* §1 Eyebrow + headline with score highlight */}
         <div>
           <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-            {hasLoveQuestionPurchase ? '연애 질문 구매함' : selected.title} · 두 사람의 흐름
+            {hasLoveQuestionPurchase ? '깊은 풀이 열람중' : selected.title} · 두 사람의 흐름
           </div>
           <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
             궁합 <span className="text-[var(--app-pink-strong)]">{score}점</span>
@@ -355,36 +374,46 @@ export function CompatibilityResultView({
               </p>
             </article>
 
-            <div className="grid gap-2.5">
-              {premiumExpansion.preview.map((item, index) => (
-                <article
-                  key={item.title}
-                  className="rounded-[14px] border bg-white p-4"
-                  style={{ borderColor: 'var(--app-pink-line)' }}
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
-                      style={{ background: 'var(--app-pink)' }}
-                      aria-hidden="true"
-                    >
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
-                        style={{ wordBreak: 'keep-all' }}
+            {selfBirthInput && partnerBirthInput ? (
+              <CompatibilityDeepSections
+                relationship={selected.slug}
+                self={{ name: selfName, birthInput: selfBirthInput }}
+                partner={{ name: partnerName, birthInput: partnerBirthInput }}
+                fallbackSections={compatibility.deepSections}
+                enabled={deepLlmEnabled}
+              />
+            ) : (
+              <div className="grid gap-2.5">
+                {compatibility.deepSections.map((item, index) => (
+                  <article
+                    key={item.key}
+                    className="rounded-[14px] border bg-white p-4"
+                    style={{ borderColor: 'var(--app-pink-line)' }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                        style={{ background: 'var(--app-pink)' }}
+                        aria-hidden="true"
                       >
-                        {item.title}
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+                          style={{ wordBreak: 'keep-all' }}
+                        >
+                          {item.title}
+                        </div>
+                        <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                          {item.body}
+                        </p>
                       </div>
-                      <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
-                        {item.body}
-                      </p>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
 
             {/* 2026-05-16 — 사용자 보고: 버튼이 텍스트 길이만큼만 좁게 그려져
                 좌측에 외롭게 놓였다. w-full + 적절한 가로 padding 으로 위 카드들과
@@ -435,7 +464,7 @@ export function CompatibilityResultView({
             </ul>
             <div className="mt-4 grid gap-2">
               <Link
-                href="/membership/checkout?product=love-question&from=compatibility-result"
+                href={checkoutHref}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 990원 · 깊은 궁합 풀이 보기 →

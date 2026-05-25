@@ -258,9 +258,9 @@ describe('detectPatternCompanions · 룰 활성 검증', () => {
 
 const ELEMENT_HANJA_MAP = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' } as const;
 const ELEMENT_FRIENDLY_MAP = {
-  목: '나무 기운',
-  화: '불 기운',
-  토: '땅 기운',
-  금: '쇠 기운',
-  수: '물 기운',
+  목: '목 기운',
+  화: '화 기운',
+  토: '토 기운',
+  금: '금 기운',
+  수: '수 기운',
 } as const;

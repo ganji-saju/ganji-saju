@@ -116,13 +116,13 @@ describe('1982-01-29 fixture · 표시 라벨 (v2 interpretation)', () => {
 
     const blockJson = JSON.stringify(v2.interpretation.blocks);
 
-    // 용신 블록의 본문에 火 또는 "불 기운" 이 등장.
-    expect(blockJson).toMatch(/火|불 기운/);
+    // 용신 블록의 본문에 火 또는 "화 기운" 이 등장.
+    expect(blockJson).toMatch(/火|화 기운/);
 
-    // 希神(보조 도움 기운) 후보에 木 또는 "나무 기운" 등장 → 화 결핍 보완.
-    expect(blockJson).toMatch(/木|나무 기운/);
+    // 希神(보조 도움 기운) 후보에 木 또는 "목 기운" 등장 → 화 결핍 보완.
+    expect(blockJson).toMatch(/木|목 기운/);
 
-    // 水(물 기운) 가 도움/희신처럼 강하게 등장하지 않아야 함.
+    // 水(수 기운) 가 도움/희신처럼 강하게 등장하지 않아야 함.
     // "조절할" / "주의" 컨텍스트에서만 등장하도록 제한.
     const yongsinBlock = v2.interpretation.blocks.find(
       (block) => block.id === 'yongsin'
@@ -130,7 +130,7 @@ describe('1982-01-29 fixture · 표시 라벨 (v2 interpretation)', () => {
     if (yongsinBlock) {
       const yongsinText = JSON.stringify(yongsinBlock);
       // 도움 기운 1순위가 "물 기운" 으로 잡히면 fail
-      expect(yongsinText).not.toMatch(/도움이 되는 1순위 기운[^.]*물 기운|1순위[^.]*수\(/);
+      expect(yongsinText).not.toMatch(/도움이 되는 1순위 기운[^.]*수 기운|1순위[^.]*수\(/);
     }
   });
 

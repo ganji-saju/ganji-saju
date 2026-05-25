@@ -81,7 +81,7 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'today',
-    title: '오늘운세',
+    title: '오늘운세 · 오늘소선생',
     desc: '지금 핵심 한 줄',
     price: '무료',
     href: '/today-fortune?concern=general',
@@ -91,7 +91,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'tarot',
-    title: '타로 한 장',
+    title: '타로 한 장 · 타로토선생',
     desc: '마음이 시키는 카드',
     price: '무료',
     href: '/tarot/daily',
@@ -101,7 +101,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'saju',
-    title: '사주',
+    title: '사주 · 사주용선생',
     desc: '내 사주 풀이',
     price: '550원~',
     href: '/saju/new',
@@ -110,7 +110,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'gunghap',
-    title: '궁합',
+    title: '궁합 · 궁합양선생',
     desc: '둘 사이의 흐름',
     price: '990원',
     href: '/compatibility/input',
@@ -119,7 +119,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'daewoon',
-    title: '올해 흐름',
+    title: '올해 흐름 · 명리호선생',
     desc: '진행하기 좋은 달',
     price: '990원',
     href: '/daewoon',
@@ -128,7 +128,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'taekil',
-    title: '좋은 날',
+    title: '좋은 날 · 길일말선생',
     desc: '중요한 날 확인',
     // 2026-05-15 — PR #111 로 fortune-calendar (1,900원 또는 2코인) 구현 완료. "준비 중" 표기 회귀 수정.
     price: '1,900원',
@@ -143,7 +143,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     //   (StarSignChip generic — 밤하늘 + ✦) 으로 교체. 시각적 일관성 보강.
     //   zodiac: 'pig' 는 chipKind 미지원 환경 fallback 으로 그대로 둠.
     id: 'star-sign',
-    title: '별자리',
+    title: '별자리 · 별닭선생',
     desc: '12자리 오늘 메시지',
     price: '무료',
     href: '/star-sign',
@@ -153,7 +153,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'zodiac',
-    title: '띠운세',
+    title: '띠운세 · 엠지쥐선생',
     desc: '내 띠의 오늘 기준',
     price: '무료',
     href: '/zodiac',
@@ -162,7 +162,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'consult',
-    title: '대화 상담',
+    title: '대화 상담 · 상담멍선생',
     desc: '선생님께 묻기',
     price: '무료 시작',
     href: '/dialogue',
@@ -174,7 +174,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     // 검색 미작동이라 사용자가 "검색이 안 된다" 고 느낌. 검색 작동 페이지 /dream 으로 변경.
     // 2026-05-20 — 별자리 카드 추가하면서 마지막 위치로 이동 (꿈해몽 ↔ 별자리 위치 교체).
     id: 'dream',
-    title: '꿈해몽',
+    title: '꿈해몽 · 꿈뱀선생',
     desc: '꿈으로 보는 길흉',
     price: '무료',
     href: '/dream',

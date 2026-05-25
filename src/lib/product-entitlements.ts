@@ -2,14 +2,17 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import type { TasteProductId } from '@/lib/payments/catalog';
+import { getPackage, isBundlePackage, type TasteProductId } from '@/lib/payments/catalog';
 import {
   buildMonthlyCalendarScopeKey,
   buildReadingProductScopeKey,
   buildTodayDetailScopeKey,
   normalizeEntitlementScopeKey,
+  parseLifetimeReportReadingKey,
+  resolvePaymentProductScope,
   type PaidProductId,
 } from '@/lib/payments/product-scope';
+import { revokeBundleComponents, type BundleRevokeResult } from '@/lib/payments/bundle';
 
 export {
   buildMonthlyCalendarScopeKey,
@@ -214,6 +217,34 @@ export async function hasAnyMonthlyCalendarForReading(
   return false;
 }
 
+// 2026-05-24 today-detail 결제 정합성 — 같은 날(KST) today-detail 결제분 자동 인정.
+//   readingKey 가 이름 해시 등으로 흔들리거나 과거 readingId(slug) scope 로 결제한
+//   분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을 결제했으면 그날
+//   열람을 허용한다. '오늘 자세히 보기'는 (사람×날) 단위 제품이라 안전한 fallback.
+export async function hasTodayDetailEntitlementForDay(
+  userId: string | null | undefined,
+  dayKey: string
+): Promise<boolean> {
+  if (!userId || !hasSupabaseServiceEnv) return false;
+
+  const startMs = Date.parse(`${dayKey}T00:00:00+09:00`);
+  if (Number.isNaN(startMs)) return false;
+  const endMs = startMs + 86_400_000;
+
+  const service = await createServiceClient();
+  const { data, error } = await service
+    .from('product_entitlements')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('product_id', 'today-detail')
+    .gte('created_at', new Date(startMs).toISOString())
+    .lt('created_at', new Date(endMs).toISOString())
+    .limit(1);
+
+  if (error) return false;
+  return Boolean(data && data.length > 0);
+}
+
 async function recordLegacyTasteProductTransaction(
   userId: string,
   productId: TasteProductId,
@@ -394,4 +425,152 @@ export async function grantTasteProductEntitlement(
   });
 
   return entitlement as TasteProductEntitlement;
+}
+
+export interface EntitlementRevokeQuery {
+  legacyFeature: 'lifetime_report' | 'taste_product';
+  legacyMatch: Record<string, unknown>;
+}
+
+// 환불 회수 시 삭제할 legacy(credit_transactions) grant 행을 특정하는 쿼리.
+// grant 가 저장하는 (feature, metadata.kind, 식별자)와 정확히 대칭이어야 환불 후
+// 권한이 조회에서 되살아나지 않는다(대칭은 product-entitlements.revoke.test 로 고정).
+//   - lifetime-report: feature='lifetime_report', kind='lifetime_report', readingKey
+//   - taste:           feature='taste_product',   kind='taste_product',   productId+scopeKey
+export function resolveEntitlementRevokeQuery(
+  productId: PaidProductId,
+  normalizedScopeKey: string
+): EntitlementRevokeQuery {
+  if (productId === 'lifetime-report') {
+    const readingKey = parseLifetimeReportReadingKey(normalizedScopeKey);
+    return {
+      legacyFeature: 'lifetime_report',
+      legacyMatch: readingKey ? { kind: 'lifetime_report', readingKey } : { kind: 'lifetime_report' },
+    };
+  }
+  return {
+    legacyFeature: 'taste_product',
+    legacyMatch: { kind: 'taste_product', productId, scopeKey: normalizedScopeKey },
+  };
+}
+
+export interface RevokeProductEntitlementResult {
+  revoked: boolean;
+  productTableDeleted: number;
+  legacyDeleted: number;
+  paymentKey: string | null;
+  amount: number | null;
+}
+
+// 환불 시 entitlement 회수. 조회 우선순위(product_entitlements → legacy
+// credit_transactions)의 양쪽을 모두 제거해야 환불 후 권한이 완전히 사라진다 —
+// 한쪽만 지우면 다른 경로 조회에서 권한이 되살아난다. credit_transactions.type
+// CHECK 가 'refund' 를 허용하지 않아 audit 은 type='purchase' +
+// feature='entitlement_revoke' + kind='entitlement_revoked' 로 남긴다(이 kind 는
+// grant 조회 매칭에 걸리지 않음).
+// ※ Toss 결제 취소(/v1/payments/{paymentKey}/cancel)는 이 함수 밖 — 반환된
+//   paymentKey 로 호출부(admin/스크립트)가 별도 처리한다.
+export async function revokeProductEntitlement(
+  userId: string,
+  productId: PaidProductId,
+  scopeKey: string | null,
+  options: {
+    reason: string;
+    actor?: string | null;
+    paymentKey?: string | null;
+  }
+): Promise<RevokeProductEntitlementResult> {
+  const service = await createServiceClient();
+  const normalizedScopeKey = normalizeEntitlementScopeKey(scopeKey);
+
+  // 1) product_entitlements 삭제 — 회수 전 결제 키/금액/주문번호를 audit 에 보존.
+  const { data: deletedRows, error: deleteError } = await service
+    .from('product_entitlements')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .eq('scope_key', normalizedScopeKey)
+    .select('payment_key, amount, order_id');
+
+  if (deleteError) throw new Error(deleteError.message);
+
+  const deleted =
+    (deletedRows as
+      | { payment_key: string | null; amount: number | null; order_id: string | null }[]
+      | null) ?? [];
+  const recoveredPaymentKey = options.paymentKey ?? deleted[0]?.payment_key ?? null;
+  const recoveredAmount = deleted[0]?.amount ?? null;
+  const recoveredOrderId = deleted[0]?.order_id ?? null;
+
+  // 2) legacy credit_transactions grant 행 삭제 — 조회 2순위(되살아남 방지).
+  const { legacyFeature, legacyMatch } = resolveEntitlementRevokeQuery(productId, normalizedScopeKey);
+  const { data: legacyDeletedRows, error: legacyError } = await service
+    .from('credit_transactions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('type', 'purchase')
+    .eq('feature', legacyFeature)
+    .contains('metadata', legacyMatch)
+    .select('id');
+
+  if (legacyError) throw new Error(legacyError.message);
+  const legacyDeleted = (legacyDeletedRows as { id: string }[] | null)?.length ?? 0;
+
+  // 3) audit 행 — 환불 흔적 보존(실패해도 회수 자체는 유효).
+  const { error: auditError } = await service.from('credit_transactions').insert({
+    user_id: userId,
+    amount: 0,
+    type: 'purchase',
+    feature: 'entitlement_revoke',
+    metadata: {
+      kind: 'entitlement_revoked',
+      productId,
+      scopeKey: normalizedScopeKey,
+      reason: options.reason,
+      actor: options.actor ?? null,
+      paymentKey: recoveredPaymentKey,
+      orderId: recoveredOrderId,
+      amount: recoveredAmount,
+      revokedAt: new Date().toISOString(),
+    },
+  });
+  if (auditError) console.warn('entitlement revoke audit write failed', auditError);
+
+  return {
+    revoked: deleted.length > 0 || legacyDeleted > 0,
+    productTableDeleted: deleted.length,
+    legacyDeleted,
+    paymentKey: recoveredPaymentKey,
+    amount: recoveredAmount,
+  };
+}
+
+// 묶음(bundle) 결제 환불 시 구성품 entitlement 일괄 회수. revokeBundleComponents(순수,
+// bundle.test 로 고정)에 실제 의존성(scope 해석·단건 회수)을 주입한 운영용 진입점.
+// 운영자/admin 이 (bundlePackageId, userId, slug, reason)로 호출하면 confirm 의 grant 와
+// 동일한 분해로 모든 구성품을 회수한다.
+export async function revokeBundleEntitlement(
+  bundlePackageId: string,
+  userId: string,
+  slug: string | null,
+  options: { reason: string; actor?: string | null; paymentKey?: string | null }
+): Promise<BundleRevokeResult[]> {
+  const bundle = getPackage(bundlePackageId);
+  if (!bundle || !isBundlePackage(bundle)) return [];
+
+  return revokeBundleComponents(
+    bundle,
+    {
+      userId,
+      slug,
+      reason: options.reason,
+      actor: options.actor ?? null,
+      paymentKey: options.paymentKey ?? null,
+    },
+    {
+      resolveScope: (input) => resolvePaymentProductScope(input),
+      revoke: (uid, productId, scopeKey, opts) =>
+        revokeProductEntitlement(uid, productId, scopeKey, opts),
+    }
+  );
 }

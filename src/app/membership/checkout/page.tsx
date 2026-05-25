@@ -14,13 +14,15 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   formatPaymentPackagePrice,
   getMembershipPackage,
+  getPackage,
   getTasteProductPackage,
+  isBundlePackage,
   isTasteProductId,
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
-import { hasTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
   buildPurchasedProductHref,
@@ -61,6 +63,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
   'score-factor': 'dragon',
+  'compat-reading': 'pig',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -115,6 +118,18 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
       '구매 후에는 checkout에서 중복 결제를 막습니다.',
     ],
   },
+  'compat-reading': {
+    title: '궁합 깊은 풀이',
+    price: '990원',
+    reassurance:
+      '두 사람의 사주를 함께 본 깊은 궁합 풀이입니다. 한 번 결제하면 같은 두 사람의 풀이는 다시 결제하지 않습니다.',
+    nextRange: '두 사람의 흐름, 잘 맞는 부분, 조심할 장면, 오늘부터 해볼 행동을 봅니다.',
+    opens: ['두 사람 궁합 깊은 풀이', '같은 두 사람 재열람', '대화로 이어 묻기'],
+    notices: [
+      '궁합 풀이는 두 사람의 생년월일에 연결됩니다.',
+      '같은 두 사람을 다시 열 때는 구매 여부를 먼저 확인합니다.',
+    ],
+  },
   'money-pattern': {
     title: '돈이 새는 패턴',
     price: '990원',
@@ -163,6 +178,23 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
 };
 
+// 묶음(bundle) 상품 안내. packageId 키. TASTE_PRODUCT_GUIDE 는 단일 TasteProductId 만
+// 다루므로 묶음은 별도 맵으로 분리(타입 충돌 회피).
+const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
+  bundle_today_set: {
+    title: '오늘 풀세트',
+    price: '990원',
+    reassurance:
+      '오늘 자세히 보기와 점수 풀이 5항목을 한 번에 여는 묶음입니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
+    nextRange: '오늘 자세히 + 일주·격국·용신·오행·합충신살 점수 풀이가 함께 열립니다.',
+    opens: ['오늘 자세히 보기', '점수 5항목 풀이', '대화로 이어 묻기'],
+    notices: [
+      '묶음은 현재 사주 결과에 연결됩니다.',
+      '이미 구매한 항목은 중복 결제하지 않습니다.',
+    ],
+  },
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '결제',
@@ -173,13 +205,21 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const { plan, product, slug, scope, error, from } = await searchParams;
   const selectedProduct = isTasteProductId(product) ? product : null;
+  // 묶음(bundle)은 product param 에 packageId(예: 'bundle_today_set')로 진입한다.
+  const candidateBundle = !selectedProduct && product ? getPackage(product) : undefined;
+  const selectedBundle =
+    candidateBundle && isBundlePackage(candidateBundle) ? candidateBundle : null;
   const selectedPlan = normalizePlanSlug(plan);
   const selected = selectedProduct
     ? TASTE_PRODUCT_GUIDE[selectedProduct]
-    : CHECKOUT_PLAN_GUIDE[selectedPlan] ?? CHECKOUT_PLAN_GUIDE.premium;
+    : selectedBundle
+      ? BUNDLE_GUIDE[selectedBundle.id] ?? CHECKOUT_PLAN_GUIDE.premium
+      : CHECKOUT_PLAN_GUIDE[selectedPlan] ?? CHECKOUT_PLAN_GUIDE.premium;
   const paymentPackage = selectedProduct
     ? getTasteProductPackage(selectedProduct)
-    : getMembershipPackage(selectedPlan);
+    : selectedBundle
+      ? selectedBundle
+      : getMembershipPackage(selectedPlan);
   const displayPrice = paymentPackage
     ? formatPaymentPackagePrice(paymentPackage)
     : selected.price;
@@ -201,28 +241,19 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     if (user) {
       const paymentScope = await resolvePaymentProductScope({ pkg: paymentPackage, slug, scope });
       if (selectedProduct && isTasteProductPackage(paymentPackage)) {
-        const entitlement = await getTasteProductEntitlement(
-          user.id,
-          selectedProduct,
-          paymentScope?.scopeKey ?? null
-        );
-        // 2026-05-14: today-detail 은 slug / readingKey / 코인 unlock 3 가지
-        //   경로 모두 검사해 중복 결제 방지를 강화한다. paymentScope.slug 는
-        //   사주가 다시 만들어진 경우 다른 값이 될 수 있어 readingKey 도 함께 본다.
-        let coinUnlockedTodayDetail = false;
-        if (selectedProduct === 'today-detail' && paymentScope?.slug) {
-          coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
-            user.id,
-            paymentScope.slug
-          );
-          if (!coinUnlockedTodayDetail && paymentScope.readingKey && paymentScope.readingKey !== paymentScope.slug) {
-            coinUnlockedTodayDetail = await hasTodayFortunePremiumAccess(
-              user.id,
-              paymentScope.readingKey
-            );
-          }
-        }
-        if (entitlement || coinUnlockedTodayDetail) {
+        // today-detail 은 checkTodayDetailAccess(readingKey 안정 + legacy readingId + coin)로
+        //   통일 — 사주 재생성·경로 교차로 slug 가 바뀌어도 인식해 재결제(무한반복)를 막는다.
+        const purchased =
+          selectedProduct === 'today-detail'
+            ? (await checkTodayDetailAccess(slug ?? '')).hasAccess
+            : Boolean(
+                await getTasteProductEntitlement(
+                  user.id,
+                  selectedProduct,
+                  paymentScope?.scopeKey ?? null
+                )
+              );
+        if (purchased) {
           alreadyPurchasedHref = buildPurchasedProductHref(selectedProduct, slug, {
             from,
             scope,
@@ -269,7 +300,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               <ZodiacChip kind={headerZodiac} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  {selectedProduct ? '소액 풀이' : `${selectedPlan.toUpperCase()} 멤버십`}
+                  {selectedProduct
+                    ? '소액 풀이'
+                    : selectedBundle
+                      ? '묶음 상품'
+                      : `${selectedPlan.toUpperCase()} 멤버십`}
                 </div>
                 <div className="mt-1 text-[15.5px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
                   {selected.title}
@@ -478,7 +513,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     <TossMembershipCheckout
                       packageId={paymentPackage.id}
                       plan={selectedPlan}
-                      product={selectedProduct ?? undefined}
+                      product={selectedProduct ?? selectedBundle?.id}
                       amount={paymentPackage.price}
                       orderName={paymentPackage.name}
                       slug={slug}

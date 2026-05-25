@@ -1,11 +1,23 @@
 import assert from 'node:assert/strict';
 import {
+  buildCompatibilityCoupleKey,
   buildCompatibilityInterpretation,
+  buildCompatibilityScopeKey,
   inferCompatibilityRelationshipSlug,
   resolveProfileDisplayName,
 } from './compatibility';
+import type { CompatibilityRelationshipSlug } from '@/content/moonlight';
+import type { BirthInput } from '@/lib/saju/types';
 
 declare const test: (name: string, fn: () => Promise<void> | void) => void;
+
+function makeCompat(slug: CompatibilityRelationshipSlug, ya: number, yb: number) {
+  return buildCompatibilityInterpretation(
+    slug,
+    { name: '나', birthInput: { year: ya, month: 3, day: 12, hour: 9, gender: 'male' } },
+    { name: '상대', birthInput: { year: yb, month: 7, day: 21, hour: 14, gender: 'female' } }
+  );
+}
 
 test('compatibility infers broader relationship types from saved labels', () => {
   assert.equal(inferCompatibilityRelationshipSlug('배우자'), 'lover');
@@ -144,4 +156,59 @@ test('compatibility: 본문에 한자 천간·지지 노출 0개 + 받침 조사
       }
     }
   }
+});
+
+// 2026-05-23 — ②-a: 유료 §8 "깊은 풀이" 가 관계유형별 정적 텍스트라 모든 커플이
+//   동일했던 문제(=부실)를 해소하기 위해 커플별 맞춤 deepSections 를 추가했다.
+//   (1) 최소 3개 섹션, 각 본문은 충분한 분량, (2) 서로 다른 커플은 내용이 달라야 함
+//   (정적 텍스트 회귀 가드), (3) 본문 한자 0개(naming-policy §5).
+test('compatibility: deepSections 가 커플별로 다르고(정적 회귀 가드) 분량·네이밍 정책을 지킴', () => {
+  const a = makeCompat('lover', 1982, 1990);
+
+  assert.ok(Array.isArray(a.deepSections), 'deepSections 가 배열이어야 함');
+  assert.ok(
+    a.deepSections.length >= 3,
+    `deepSections 가 너무 적음: ${a.deepSections.length}`
+  );
+  for (const section of a.deepSections) {
+    assert.ok(section.title.trim().length > 0, 'deep section title 비어 있음');
+    assert.ok(
+      [...section.body].length >= 30,
+      `deep section body 가 너무 짧음: "${section.body}"`
+    );
+  }
+
+  // 서로 다른 커플 → 깊은 풀이 본문이 달라야 한다(모든 커플 동일 = 부실 회귀).
+  const b = makeCompat('lover', 1995, 1970);
+  assert.notEqual(
+    a.deepSections.map((s) => s.body).join('|'),
+    b.deepSections.map((s) => s.body).join('|'),
+    '서로 다른 두 커플의 deepSections 가 완전히 동일 — 정적 텍스트 회귀'
+  );
+
+  // 본문 한자 0개 (naming-policy §5) — 모든 관계유형.
+  const HANJA = /[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]/;
+  for (const slug of ['lover', 'family', 'friend', 'partner'] as const) {
+    const r = makeCompat(slug, 1988, 1999);
+    for (const section of r.deepSections) {
+      assert.ok(!HANJA.test(section.title), `deep title 한자: "${section.title}"`);
+      assert.ok(!HANJA.test(section.body), `deep body 한자: "${section.body}"`);
+    }
+  }
+});
+
+// 2026-05-23 — ① per-couple 1회권용 커플 키. 결제 CTA(클라이언트)와 권한 게이트(서버)가
+//   같은 키를 만들어야 per-couple scope 가 맞물린다. node:crypto 없이 isomorphic, 순서 무관.
+test('compatibility 커플 키: 순서 무관·결정론·다른 커플은 다른 키 + scope 포맷', () => {
+  const a: BirthInput = { year: 1990, month: 4, day: 12, hour: 9, gender: 'female' };
+  const b: BirthInput = { year: 1988, month: 9, day: 3, hour: 14, gender: 'male' };
+  const c: BirthInput = { year: 2000, month: 1, day: 1, gender: 'male' };
+
+  const k1 = buildCompatibilityCoupleKey(a, b);
+  const k2 = buildCompatibilityCoupleKey(b, a);
+  assert.equal(k1, k2, '순서만 바꾼 동일 커플의 키가 다름');
+  assert.ok(k1.length > 0 && /^[a-z0-9]+$/.test(k1), `커플 키가 URL-safe 가 아님: "${k1}"`);
+  assert.equal(buildCompatibilityCoupleKey(a, b), k1, '같은 입력인데 키가 비결정론적');
+  assert.notEqual(buildCompatibilityCoupleKey(a, c), k1, '다른 커플인데 키가 동일');
+  assert.equal(buildCompatibilityScopeKey(k1), `compat:${k1}`);
 });

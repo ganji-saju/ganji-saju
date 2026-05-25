@@ -14,7 +14,9 @@ export type PaymentProductScopeKind =
   | 'today'
   | 'calendar-month'
   | 'year'
-  | 'lifetime-reading';
+  | 'lifetime-reading'
+  // 2026-05-23 ① — 궁합 1회권. slug 가 커플 키(사주 reading 아님)라 별도 kind.
+  | 'compat';
 
 export interface PaymentProductScope {
   productId: PaidProductId;
@@ -52,6 +54,18 @@ export function buildYearCoreScopeKey(readingKey: string, year: number) {
 
 export function buildLifetimeReportScopeKey(readingKey: string) {
   return `lifetime:${readingKey}`;
+}
+
+// 2026-05-23 ① — 궁합 per-couple scope. coupleKey 는 buildCompatibilityCoupleKey(두 생년월일).
+export function buildCompatScopeKey(coupleKey: string) {
+  return `compat:${coupleKey}`;
+}
+
+// buildLifetimeReportScopeKey 의 역함수 — 환불 회수 시 legacy credit_transactions
+// 의 metadata.readingKey 매칭에 필요(lifetime grant 는 readingKey 로 기록됨).
+export function parseLifetimeReportReadingKey(scopeKey: string | null | undefined) {
+  const trimmed = scopeKey?.trim() ?? '';
+  return trimmed.startsWith('lifetime:') ? trimmed.slice('lifetime:'.length) : null;
 }
 
 // 2026-05-22 — per-factor 점수 풀이 unlock. (readingKey, factorId) 당 1회.
@@ -148,6 +162,21 @@ export async function resolvePaymentProductScope({
     };
   }
 
+  // 2026-05-23 ① — 궁합 1회권: slug 는 커플 키(사주 reading 아님)라 reading 조회 없이 직접 scope.
+  if (productId === 'compat-reading') {
+    const coupleKey = slug?.trim() || null;
+    return {
+      productId,
+      scopeKey: coupleKey ? buildCompatScopeKey(coupleKey) : null,
+      kind: coupleKey ? 'compat' : 'global',
+      reading: null,
+      readingKey: null,
+      slug: coupleKey,
+      targetYear: null,
+      targetMonth: null,
+    };
+  }
+
   const readingIdentity = await resolveReadingIdentity(slug);
   if (!readingIdentity.slug || !readingIdentity.readingKey) {
     return {
@@ -161,9 +190,12 @@ export async function resolvePaymentProductScope({
   }
 
   if (productId === 'today-detail') {
+    // 2026-05-24 — readingId(slug)는 사주 재생성·경로 교차마다 바뀌어 결제 무한반복을
+    //   유발했다. 다른 소액상품과 동일하게 안정적인 readingKey(생년월일 결정적)로 grant.
+    //   조회(checkTodayDetailAccess)는 readingKey + legacy readingId 를 함께 본다.
     return {
       productId,
-      scopeKey: buildTodayDetailScopeKey(readingIdentity.slug),
+      scopeKey: buildTodayDetailScopeKey(readingIdentity.readingKey),
       kind: 'today',
       ...readingIdentity,
       targetYear: null,
@@ -272,6 +304,7 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
+  if (productId === 'compat-reading') return '/compatibility/input';
   if (productId === 'money-pattern') return '/saju/new?topic=wealth';
   if (productId === 'work-flow') return '/saju/new?topic=career';
 

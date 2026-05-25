@@ -3,7 +3,7 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import { fromSlug } from './pillars';
+import { fromSlug, toSlug } from './pillars';
 import type { BirthInput, SajuResult as LegacySajuResult } from './types';
 import {
   calculateSajuDataV1,
@@ -314,6 +314,39 @@ export async function getReadingById(id: string): Promise<ReadingRecord | null> 
   if (error || !data) return null;
 
   return mapReadingRow(data as ReadingRow);
+}
+
+// 2026-05-24 — today-fortune 생성이 매 요청마다 새 reading(UUID)을 INSERT 해
+//   sourceSessionId 가 휘발성이 되던 문제. 로그인 사용자의 동일 identity 기존 reading 을
+//   재사용해 안정화한다. (year,month,day) 후보를 좁힌 뒤 전체 readingKey(toSlug)로 확정
+//   매치 — 위치/시간/성별/이름상태까지 동일해야 같은 reading 으로 인정(오매칭 방지).
+export async function findReadingByInput(
+  userId: string,
+  input: BirthInput
+): Promise<ReadingRecord | null> {
+  if (!userId || !hasSupabaseServiceEnv) return null;
+
+  const targetKey = toSlug(input);
+  const supabase = await getPrivilegedOrSessionClient(userId);
+  const { data, error } = await supabase
+    .from('readings')
+    .select(
+      'id, user_id, birth_year, birth_month, birth_day, birth_hour, gender, result_json, situation_json'
+    )
+    .eq('user_id', userId)
+    .eq('birth_year', input.year)
+    .eq('birth_month', input.month)
+    .eq('birth_day', input.day)
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (error || !data || data.length === 0) return null;
+
+  for (const row of data as ReadingRow[]) {
+    const record = mapReadingRow(row);
+    if (toSlug(record.input) === targetKey) return record;
+  }
+  return null;
 }
 
 export async function deleteReadingForUser(id: string, userId: string): Promise<boolean> {

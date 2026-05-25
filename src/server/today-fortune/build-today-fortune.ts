@@ -16,6 +16,7 @@ import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { MoonlightCounselorId } from '@/lib/counselors';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
@@ -441,6 +442,11 @@ const PUBLIC_ELEMENT_LABELS: Record<Element, string> = {
   금: '기준',
   수: '생각',
 };
+
+export function formatTodayDateMarker(todayGanzi: string | null): string | null {
+  // naming-policy §10 + 오늘운세 plain 티어: 본문 한자 0 · 명리어 미사용. 간지는 한글 독음으로만.
+  return todayGanzi ? `오늘 하루(${toKoreanGanzi(todayGanzi)})` : null;
+}
 
 const PUBLIC_ELEMENT_COPY: Record<
   Element,
@@ -959,7 +965,7 @@ export function buildDailyDelta(
 
 // 오늘 일진 vs 내 일간 관계를 사람이 읽는 한 줄로 변환.
 // dailyDelta 단순 부호가 아니라 element 종류와 관계 (인성/관살/식상/재성/같음) 별 카피.
-function buildTodayFlowSignal(
+export function buildTodayFlowSignal(
   todayPillar: TodayPillarSnapshot,
   sajuData: SajuDataV1 | SajuDataV2
 ): string {
@@ -970,26 +976,22 @@ function buildTodayFlowSignal(
 
   function describe(todayEl: Element | null, position: '천간' | '지지'): string | null {
     if (!todayEl) return null;
-    const myLabel = PUBLIC_ELEMENT_LABELS[myEl];
-    const todayLabel = PUBLIC_ELEMENT_LABELS[todayEl];
     const ctx = position === '천간' ? '겉으로' : '바탕에서';
-    // 2026-05-22 naming-policy §9 — "X 결" 신조어 제거 + 받침별 조사 정확화(withKoreanParticle).
-    const todaySubject = withKoreanParticle(todayLabel, '이', '가');
-    const myObject = withKoreanParticle(myLabel, '을', '를');
+    // 오늘운세 plain 티어 — 명리어/한자 0. 오행 관계를 일상어 흐름으로만 표현(naming-policy).
     if (todayEl === myEl) {
-      return `오늘은 ${ctx} ${todaySubject} 내 성향과 같은 흐름이라 자기 페이스를 지키기 좋습니다.`;
+      return `오늘은 ${ctx} 들어오는 흐름이 내 성향과 잘 맞아, 자기 페이스를 지키기 좋은 날입니다.`;
     }
     if (GENERATOR_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${todaySubject} 내 ${myObject} 받쳐주듯 들어와 회복과 정리에 도움이 되는 흐름입니다.`;
+      return `오늘은 ${ctx} 나를 받쳐주는 흐름이 들어와, 회복과 정리에 도움이 되는 날입니다.`;
     }
     if (GENERATED_BY_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${withKoreanParticle(todayLabel, '으로', '로')} 내 ${myLabel} 에너지를 풀어내는 흐름이라, 표현은 잘 되지만 에너지 소모도 큰 편입니다.`;
+      return `오늘은 ${ctx} 내 에너지를 밖으로 풀어내는 흐름이라, 표현은 잘 되지만 그만큼 소모도 큰 편입니다.`;
     }
     if (CONTROLLER_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} ${todaySubject} 내 ${myObject} 누르듯 들어와 결정이 다소 무겁고 마찰이 생길 수 있는 흐름입니다.`;
+      return `오늘은 ${ctx} 나를 누르는 흐름이 들어와, 결정이 다소 무겁고 마찰이 생길 수 있는 날입니다.`;
     }
     if (CONTROLLER_OF_MAP[todayEl] === myEl) {
-      return `오늘은 ${ctx} ${withKoreanParticle(todayLabel, '을', '를')} 내 ${withKoreanParticle(myLabel, '으로', '로')} 정돈해야 하는 흐름이라, 작은 결정과 정리에 손이 많이 갑니다.`;
+      return `오늘은 ${ctx} 정돈이 필요한 흐름이라, 작은 결정과 정리에 손이 많이 가는 날입니다.`;
     }
     return null;
   }
@@ -1424,7 +1426,7 @@ function buildPublicTodayBody(
   // 오늘 일진 시그널 한 줄을 맨 앞에 두고, 시드 의존 변주를 섞어 매일 다르게.
   const concernLine = pickConcernBodyVariant(concernId, profile.signatureSeed);
   const flowSignal = profile.todayFlowSignal;
-  const todayDateMarker = profile.todayGanzi ? `오늘 일진 ${profile.todayGanzi}` : null;
+  const todayDateMarker = formatTodayDateMarker(profile.todayGanzi);
 
   return joinUniqueSentences([
     flowSignal || null,
@@ -1432,7 +1434,7 @@ function buildPublicTodayBody(
     profile.strengthVariant || profile.strengthBody,
     profile.hourSummary,
     concernLine,
-    `${profile.supportLabel} 쪽을 챙기면 좋아요. ${profile.actionBody}.`,
+    `오늘은 ${profile.actionBody}.`,
     profile.hourAction,
     profile.cautionBody,
     profile.calendarCue,
@@ -1553,7 +1555,7 @@ function buildAxisScoreSummary(
     return band === 'high'
       ? '마음을 어렵게 설명하기보다 짧고 부드럽게 꺼내면 좋습니다.'
       : band === 'mid'
-        ? `${label} 쪽을 챙기면 감정이 덜 엉킵니다. 답을 재촉하지 마세요.`
+        ? '마음을 짧고 부드럽게 표현하면 감정이 덜 엉킵니다. 답을 재촉하지 마세요.'
         : '오늘은 확인보다 여백이 필요합니다. 말의 양을 줄이면 편해요.';
   }
 
@@ -1577,7 +1579,7 @@ function buildAxisScoreSummary(
     return band === 'high'
       ? '짧은 안부나 확인처럼 가벼운 말이 관계를 편하게 만듭니다.'
       : band === 'mid'
-        ? `${withKoreanParticle(label, '이', '가')} 비면 오해가 커질 수 있어요. 사실과 기분을 나눠 말하세요.`
+        ? '말이 부족하면 오해가 커질 수 있어요. 사실과 기분을 나눠 말하세요.'
         : '서운함을 결론처럼 말하지 말고 한 번 더 확인하는 편이 안전합니다.';
   }
 
