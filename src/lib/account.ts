@@ -12,6 +12,14 @@ import {
   type PaidReadingSnapshot,
 } from '@/lib/payments/paid-reading-snapshots';
 import { getNonExpiredLotBalance } from '@/lib/credits/deduct';
+import {
+  buildPaymentHistory,
+  isCashCreditTransaction,
+  type CreditTransactionHistoryRow,
+  type PaymentHistoryEntry,
+  type PaymentHistoryResult,
+  type ProductEntitlementHistoryRow,
+} from '@/lib/billing/payment-history';
 
 export interface AccountCredits {
   balance: number;
@@ -265,5 +273,87 @@ export async function getAccountDashboardData(
             ? (transaction.metadata as Record<string, unknown>)
             : null,
       })) ?? [],
+  };
+}
+
+export interface PaymentHistoryData {
+  /** 현금(현금 결제) 내역 — 날짜 역순. */
+  entries: PaymentHistoryEntry[];
+  /** 총 결제액(원). */
+  totalSpentWon: number;
+  /** 결제 건수. */
+  count: number;
+}
+
+// 2026-05-25 — /my/billing 현금 결제 내역.
+//   - product_entitlements (단건 풀이 · 평생 리포트, amount=WON)
+//   - credit_transactions type IN ('purchase','subscription') (코인 충전 · 멤버십)
+//     단 legacy taste_product audit / entitlement_revoke audit 행은 제외(중복·비결제).
+// getAccountDashboardData 와 동일한 server supabase + 인증 패턴을 재사용한다.
+// (getAccountDashboardData 의 반환 모양은 건드리지 않는 별도 fn — 다른 호출부 안전.)
+export async function getPaymentHistory(
+  redirectPath: string
+): Promise<PaymentHistoryData> {
+  if (!hasSupabaseServerEnv || !hasSupabaseServiceEnv) {
+    return { entries: [], totalSpentWon: 0, count: 0 };
+  }
+
+  const { supabase, user } = await requireAccount(redirectPath);
+
+  const [entitlementsResponse, cashTransactionsResponse] = await Promise.all([
+    supabase
+      .from('product_entitlements')
+      .select('id, product_id, amount, order_id, payment_key, package_id, created_at, metadata')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    // 현금 결제만 — coin pack(purchase) + 멤버십(subscription). taste_product /
+    // entitlement_revoke 는 amount=0 audit·비결제라 SELECT 단계에서 배제(product_entitlements 와 중복 방지).
+    supabase
+      .from('credit_transactions')
+      .select('id, type, amount, feature, metadata, created_at')
+      .eq('user_id', user.id)
+      .in('type', ['purchase', 'subscription'])
+      .order('created_at', { ascending: false }),
+  ]);
+
+  assertAccountQueryOk(entitlementsResponse.error, '상품 결제 내역');
+  assertAccountQueryOk(cashTransactionsResponse.error, '코인·멤버십 결제 내역');
+
+  const productEntitlements = (entitlementsResponse.data ?? []).map((row) => ({
+    id: row.id,
+    product_id: row.product_id,
+    amount: row.amount ?? null,
+    order_id: row.order_id ?? null,
+    payment_key: row.payment_key ?? null,
+    package_id: row.package_id ?? null,
+    created_at: row.created_at,
+    metadata:
+      row.metadata && typeof row.metadata === 'object'
+        ? (row.metadata as Record<string, unknown>)
+        : null,
+  })) satisfies ProductEntitlementHistoryRow[];
+
+  const creditTransactions = (cashTransactionsResponse.data ?? [])
+    .filter((row) => isCashCreditTransaction({ type: row.type, feature: row.feature }))
+    .map((row) => ({
+      id: row.id,
+      type: row.type,
+      amount: row.amount,
+      metadata:
+        row.metadata && typeof row.metadata === 'object'
+          ? (row.metadata as Record<string, unknown>)
+          : null,
+      created_at: row.created_at,
+    })) satisfies CreditTransactionHistoryRow[];
+
+  const result: PaymentHistoryResult = buildPaymentHistory({
+    productEntitlements,
+    creditTransactions,
+  });
+
+  return {
+    entries: result.entries,
+    totalSpentWon: result.totalSpentWon,
+    count: result.count,
   };
 }

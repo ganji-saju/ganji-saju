@@ -3,10 +3,16 @@
 // 옛 marketing 컴포넌트로 빌드돼 /my/settings 등 자매 라우트와 시각 어긋남.
 // `/my/settings` 와 동일한 compact pink-soft hero + 둥근 흰 카드 패턴으로 통일.
 //
-// 라우팅 / 데이터 흐름은 무수정 — getAccountDashboardData + SubscriptionManager 그대로.
+// 2026-05-25 — 현금(현금 결제) 내역 전면 노출 추가. 기존엔 코인/멤버십만 보였고
+// Toss 로 실제 결제한 단건 풀이·평생 리포트·코인팩·멤버십의 "무엇을/얼마(₩)/언제"가
+// 어디에도 없었다. getPaymentHistory 로 product_entitlements + credit_transactions
+// (purchase/subscription) 를 합쳐 "결제 내역" 섹션으로 보여주고, 기존 이력은
+// "코인 사용 내역"(type='use')으로 의미를 좁힌다.
 import Link from 'next/link';
 import SubscriptionManager from '@/components/my/subscription-manager';
-import { getAccountDashboardData } from '@/lib/account';
+import { getAccountDashboardData, getPaymentHistory } from '@/lib/account';
+import { formatWon } from '@/lib/payments/catalog';
+import type { PaymentHistoryEntry } from '@/lib/billing/payment-history';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
@@ -19,6 +25,22 @@ function formatDate(value: string) {
     day: 'numeric',
   }).format(new Date(value));
 }
+
+// 영수증 참조 — 주문번호/결제키는 길어서 끝 8자리만 노출.
+function formatReceiptTail(receipt: string | null) {
+  if (!receipt) return null;
+  return receipt.length > 8 ? receipt.slice(-8) : receipt;
+}
+
+const PAYMENT_CATEGORY_STYLE: Record<
+  PaymentHistoryEntry['category'],
+  { bg: string; color: string }
+> = {
+  '단건 풀이': { bg: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' },
+  '평생 리포트': { bg: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' },
+  '코인 충전': { bg: 'rgba(16,185,129,0.10)', color: 'var(--app-jade)' },
+  '멤버십/구독': { bg: 'rgba(99,102,241,0.10)', color: '#6366f1' },
+};
 
 const TYPE_LABELS: Record<string, string> = {
   purchase: '코인 충전',
@@ -106,14 +128,23 @@ function getSubscriptionNotice(
 }
 
 export default async function MyBillingPage() {
-  const dashboard = await getAccountDashboardData('/my/billing', {
-    readingLimit: 3,
-    transactionLimit: 20,
-  });
+  const [dashboard, paymentHistory] = await Promise.all([
+    getAccountDashboardData('/my/billing', {
+      readingLimit: 3,
+      transactionLimit: 30,
+    }),
+    getPaymentHistory('/my/billing'),
+  ]);
 
   const subscriptionStatusLabel = dashboard.subscription
     ? getSubscriptionStatusLabel(dashboard.subscription.status)
     : '미가입';
+
+  // "코인 사용 내역" — 코인을 차감(소비)한 type='use' 행만. 결제(충전/구독)는
+  // 위 "결제 내역" 섹션에서 ₩ 기준으로 따로 보여준다.
+  const coinUsageTransactions = dashboard.recentTransactions.filter(
+    (transaction) => transaction.type === 'use'
+  );
 
   return (
     <div className="space-y-5 px-1">
@@ -183,6 +214,108 @@ export default async function MyBillingPage() {
               {dashboard.credits.subscriptionBalance}
             </div>
           </article>
+        </div>
+      </section>
+
+      {/* §결제 내역 (현금 결제) — product_entitlements + 코인충전/멤버십 결제 */}
+      <section>
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            결제 내역
+          </h2>
+          <span className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+            현금 결제
+          </span>
+        </div>
+
+        {/* 총 결제액 요약 */}
+        <article
+          className="mt-2 flex items-baseline justify-between rounded-[14px] border p-4"
+          style={{
+            background: 'var(--app-pink-soft)',
+            borderColor: 'var(--app-pink-line)',
+          }}
+        >
+          <div>
+            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              총 결제 금액
+            </div>
+            <div className="mt-0.5 text-[11px] text-[var(--app-copy-muted)]">
+              지금까지 {paymentHistory.count}건 결제
+            </div>
+          </div>
+          <div className="text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
+            {formatWon(paymentHistory.totalSpentWon)}
+          </div>
+        </article>
+
+        {/* 결제 카드 목록 */}
+        <div className="mt-2 grid gap-2">
+          {paymentHistory.entries.length > 0 ? (
+            paymentHistory.entries.map((entry) => {
+              const badgeStyle = PAYMENT_CATEGORY_STYLE[entry.category];
+              const receiptTail = formatReceiptTail(entry.receipt);
+              return (
+                <article
+                  key={entry.id}
+                  className="rounded-[14px] border bg-white p-3.5"
+                  style={{ borderColor: 'var(--app-line)' }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-[var(--app-copy-soft)]">
+                          {formatDate(entry.date)}
+                        </span>
+                        <span
+                          className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold"
+                          style={{ background: badgeStyle.bg, color: badgeStyle.color }}
+                        >
+                          {entry.category}
+                        </span>
+                      </div>
+                      <div
+                        className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]"
+                        style={{ wordBreak: 'keep-all' }}
+                      >
+                        {entry.productName}
+                      </div>
+                      {entry.coins !== null && entry.coins > 0 ? (
+                        <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+                          코인 {entry.coins}개 지급
+                        </div>
+                      ) : null}
+                      {receiptTail ? (
+                        <div className="mt-0.5 text-[10.5px] tabular-nums text-[var(--app-copy-soft)]">
+                          영수증 참조 ···{receiptTail}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-[16px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+                        {entry.amountWon !== null ? formatWon(entry.amountWon) : '—'}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <article
+              className="rounded-[14px] border bg-white p-4"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                아직 결제 내역 없음
+              </div>
+              <p
+                className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                단건 풀이, 평생 리포트, 코인 충전, 멤버십을 결제하면 여기에 금액과 함께 표시됩니다.
+              </p>
+            </article>
+          )}
         </div>
       </section>
 
@@ -280,14 +413,14 @@ export default async function MyBillingPage() {
         </div>
       </section>
 
-      {/* §최근 이용 이력 */}
+      {/* §코인 사용 내역 (type='use') */}
       <section>
         <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-          최근 결제 · 이용 이력
+          코인 사용 내역
         </h2>
         <div className="mt-2 grid gap-2">
-          {dashboard.recentTransactions.length > 0 ? (
-            dashboard.recentTransactions.map((transaction) => {
+          {coinUsageTransactions.length > 0 ? (
+            coinUsageTransactions.map((transaction) => {
               const positive = transaction.amount >= 0;
               return (
                 <article
@@ -335,7 +468,7 @@ export default async function MyBillingPage() {
                 className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                표시할 결제 또는 코인 사용 이력이 아직 없습니다.
+                코인을 사용한 이용 내역이 아직 없습니다.
               </p>
             </article>
           )}
