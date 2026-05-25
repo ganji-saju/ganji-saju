@@ -128,7 +128,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'taekil',
-    title: '좋은 날 · 이동말선생',
+    title: '좋은 날 · 길일말선생',
     desc: '중요한 날 확인',
     // 2026-05-15 — PR #111 로 fortune-calendar (1,900원 또는 2코인) 구현 완료. "준비 중" 표기 회귀 수정.
     price: '1,900원',
@@ -143,7 +143,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     //   (StarSignChip generic — 밤하늘 + ✦) 으로 교체. 시각적 일관성 보강.
     //   zodiac: 'pig' 는 chipKind 미지원 환경 fallback 으로 그대로 둠.
     id: 'star-sign',
-    title: '별자리 · 재물닭선생',
+    title: '별자리 · 별닭선생',
     desc: '12자리 오늘 메시지',
     price: '무료',
     href: '/star-sign',
@@ -162,7 +162,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'consult',
-    title: '대화 상담 · 손금멍선생',
+    title: '대화 상담 · 상담멍선생',
     desc: '선생님께 묻기',
     price: '무료 시작',
     href: '/dialogue',

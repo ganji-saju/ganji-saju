@@ -38,18 +38,18 @@ export const MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '무료 운세',
       items: [
-        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: 'FREE' },
-        { label: '타로 한 장', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: 'FREE' },
-        { label: '띠운세', desc: '내 띠 기준', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
-        { label: '별자리', desc: '12자리 메시지', href: '/star-sign', zodiac: 'pig', tag: 'FREE' },
+        { label: '오늘운세 · 오늘소선생', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: 'FREE' },
+        { label: '타로 한 장 · 타로토선생', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: 'FREE' },
+        { label: '띠운세 · 엠지쥐선생', desc: '내 띠 기준', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
+        { label: '별자리 · 별닭선생', desc: '12자리 메시지', href: '/star-sign', zodiac: 'pig', tag: 'FREE' },
       ],
     },
     c2: {
       heading: '인기 운세',
       items: [
-        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream' },
+        { label: '꿈해몽 · 꿈뱀선생', desc: '한 단어 검색', href: '/dream' },
         { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat' },
-        { label: '좋은날 (택일)', desc: '큰 결정 D-day', href: '/taekil' },
+        { label: '좋은 날 · 길일말선생', desc: '큰 결정 D-day', href: '/taekil' },
       ],
     },
     c3: {
@@ -64,9 +64,9 @@ export const MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '사주 풀이',
       items: [
-        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '550원~' },
+        { label: '내 사주 · 사주용선생', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '550원~' },
         { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', zodiac: 'snake', tag: 'VIP' },
-        { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', zodiac: 'sheep' },
+        { label: '궁합 · 궁합양선생', desc: '두 사람의 흐름', href: '/compatibility', zodiac: 'sheep' },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', zodiac: 'tiger' },
       ],
     },
@@ -104,11 +104,11 @@ export const MEGA_NAV: MegaNavGroup[] = [
         { label: '타로토선생', desc: '지금 마음 보기 · 타로', href: '/dialogue/rabbit', zodiac: 'rabbit' },
         { label: '사주용선생', desc: '내 흐름 보기 · 사주', href: '/dialogue/dragon', zodiac: 'dragon' },
         { label: '꿈뱀선생', desc: '마음 신호 · 꿈해몽', href: '/dialogue/snake', zodiac: 'snake' },
-        { label: '이동말선생', desc: '이직·이사·여행', href: '/dialogue/horse', zodiac: 'horse' },
+        { label: '길일말선생', desc: '좋은 날 고르기 · 택일', href: '/dialogue/horse', zodiac: 'horse' },
         { label: '궁합양선생', desc: '상대와의 합 · 궁합', href: '/dialogue/sheep', zodiac: 'sheep' },
         { label: '관상원선생', desc: '인상과 분위기 · 관상', href: '/dialogue/monkey', zodiac: 'monkey' },
-        { label: '재물닭선생', desc: '돈 습관 · 재물운', href: '/dialogue/rooster', zodiac: 'rooster' },
-        { label: '손금멍선생', desc: '손바닥 단서 · 손금', href: '/dialogue/dog', zodiac: 'dog' },
+        { label: '별닭선생', desc: '별자리 흐름 · 별자리', href: '/dialogue/rooster', zodiac: 'rooster' },
+        { label: '상담멍선생', desc: '편하게 고민 · 상담', href: '/dialogue/dog', zodiac: 'dog' },
         { label: '복돼지선생', desc: '복·쿠폰·리워드', href: '/dialogue/pig', zodiac: 'pig' },
       ],
     },
