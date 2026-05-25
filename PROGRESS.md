@@ -1,9 +1,56 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-25 (어휘·UI 정합 + 12간지 선생 리브랜드 세션)** — production 스크린샷 제보 기반: 오늘운세/평생리포트 한자(己亥)·메타포 오행어·비문 정비(#364) + 홈 카드 배경 흰색 복원(footer만 검정 유지, #365) + 홈 카드 제목 "기능명 · 선생" 병기(#366) + 12간지 선생 3명 리브랜드(재물닭→별닭/손금멍→상담멍/이동말→길일말)·메가메뉴(PC·모바일)/푸터 명칭 일치(#367) + V2 엔진 오행 라벨(FRIENDLY_ELEMENT_LABEL) 표준 "X 기운" 통일(#368). **상세: ↓ 첫 세션 섹션.** (이전: 2026-05-24~25 #355~#363 today-detail·콘텐츠 / 2026-05-24 #346~#353 결제·온보딩)
+> 최종 업데이트: **2026-05-26 (LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터 전수검사, #373~#384)** — 본편(평생리포트) read-through 캐시로 무캐시 비용 출혈 차단(#377) + 전 영역 LLM 텔레메트리 중앙 계측(#378) + 어드민 사용자 상세·검색(#379)·환불 자동화(Toss cancel 2단계 승인, #380)·LLM 비용 대시보드(#381) + PDF 목업→실데이터 전수검사(이름·대운곡선·12개월·LLM 9섹션 전문 P9, #382~#384). **상세: ↓ 첫 세션 섹션.** (이전: 2026-05-25 #364~#368 어휘·UI·12간지 선생 / 2026-05-24~25 #355~#363 today-detail·콘텐츠)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-25~26 세션 — LLM 비용 캐시·텔레메트리(Phase 0) + 어드민 운영(Phase 1~3) + PDF 실데이터 전수검사 (#373~#384)
+
+> 비용 출혈 차단 → 운영 자동화 → PDF 실데이터화의 3단계 작업. 모든 코드 작업은 **main 기반 worktree(`.claude/worktrees/*`)에서 격리** → TDD → PR → CI(typecheck·test·Playwright·Vercel preview) green → squash 머지 → Vercel 자동 배포. **DB 마이그레이션은 CI 자동 아님 → supabase CLI 수동 적용**(041·042는 적용, 043은 적용 대기 — ↓ 마이그레이션 상태).
+
+### 감사 리포트 · 정리 (read-only / 하우스키핑)
+- **#375 LLM 호출·캐시·비용 구조 진단** (docs, read-only): LLM 호출 지점·캐시 계층(L1 결정론 / L2 캐시 / L3 실시간)·비용 출혈 지점 진단. **본편(대운 평생리포트)이 무캐시라 매 조회·PDF마다 재생성 → 비용 출혈 핵심**으로 지목 → Phase 0a의 근거.
+- **#376 어드민·운영 자산 인벤토리** (docs, read-only, `audit-reports/2026-05-25-admin-inventory.md`): 어드민 6개 자산 인벤토리 → Phase 1~3의 근거.
+- **#354 PROGRESS.md → HTML 렌더 스크립트** (tooling): `scripts/render-progress.mjs` + `npm run progress:html`. 하이브리드 워크플로우(md 편집 → html 렌더). **PROGRESS.html은 gitignore 로컬 산출물 — 보존 대상**.
+- **#341 2026-05-23 세션 기록 + 가격 정책 개편안 초안** (docs): add/add 충돌(`pricing-proposal.md`)은 main의 완성본 유지(`--theirs`), PROGRESS만 머지.
+- **폴더 구조 진단·정리**: `.claude/worktrees/*`에 머지 완료된 잔재 누적 + codex/claude 혼재로 "어디가 진짜 작업 폴더?" 혼선 → **메인 트리(`/Users/kionya/ganji-saju`)로 전환 + 머지된 worktree 잔재만 정리**. PROGRESS.html은 삭제하지 않고 보존.
+
+### 비용 출혈 차단 — Phase 0
+- **#377 대운 본편 read-through 캐시 (Phase 0a)**: 신규 `041_ai_lifetime_interpretations`. **content-addressed 캐시 키 = reportHash + feedback + targetYear**(스펙 갭 보강), 30일 TTL, read-through, `source=openai|fallback|cache`. `saju-lifetime-service.generateLifetimeInterpretation`이 캐시 경유. → 무캐시 재생성 비용 차단. 041 테이블에 `input_tokens/output_tokens/cost_usd` 컬럼 선반영(Phase 0b 연계).
+- **#378 LLM 텔레메트리 시드 (Phase 0b)**: 신규 `042_ai_llm_runs`. **중앙 계측 — `generateAiText` 한 곳**에서 `feature/userId/telemetryStore`로 `recordLlmRun`(성공 + fallback + **캐시 hit**) 기록. `console.log` + **DB insert(비차단 await)** 둘 다. 챕터 포함 전 영역. 라이브 검증(feature×source별 count·cost 집계 정상).
+
+### 어드민 운영 — Phase 1~3 (사용자 원안 로드맵)
+- **#379 어드민 사용자 상세 + 검색 (Phase 1)**: `/admin/users`(검색) + `/admin/users/[id]`(회원정보·사주데이터·결제이력·AI챗 사용량·**LLM 캐시 hit 통계**·환불 가능 여부). 데이터 레이어 + 순수 로직 TDD. (typecheck 교훈: `gender`는 `reading.input.gender` — SajuDataV2 union엔 없음.)
+- **#380 환불 자동화 (Phase 2 · 마찰점 1 본체)**: 신규 `043_refund_requests`. **2단계 승인 — admin은 환불 요청, super_admin만 최종 승인**. 상태머신(`requested→processing→completed/failed/revoke_pending/rejected`). Toss `cancelPayment` + **Idempotency-Key(재시도 안전)**. `/api/admin/refund` 원자적 트랜잭션 + 상세 페이지 환불 버튼/pending UI. 오케스트레이션 순수 로직 TDD. ⚠️ **실제 Toss 환불은 사람(super_admin)이 실행 — 빌드 + 목 테스트만 수행**.
+- **#381 LLM 비용 대시보드 (Phase 3)**: `/admin/llm-cost`. **신규 테이블 없이 `ai_llm_runs` 재활용**(원안의 `llm_usage_logs` 중복 테이블 회피 — Phase 0b가 이미 구축). feature/source별 count·token·cost 집계 + 순수 로직 TDD.
+
+### PDF 전수검사 — 목업→실데이터
+- **#382 PDF 목업→실데이터 + 결제 LLM 깊은 풀이 반영**: 진단 — `buildPdfModel`이 `reading.metadata.displayName`(미populate)→**'달빛이' 목업 이름**, generic 서사, **결제한 LLM 본편 미반영**의 하이브리드. 수정 — `resolvePdfSubjectName`(input.name 우선, never '달빛이'), print 페이지가 `generateLifetimeInterpretation`(캐시) 호출 → `interpretation`을 `buildPdfModel`에 주입, LLM 9섹션을 PDF 슬롯에 `firstSentences()`로 **레이아웃-bounded** 매핑. `pdf-report-text.ts` 순수 헬퍼 + TDD.
+- **#383 대운곡선·12개월 키워드 실데이터 + LLM 9섹션 전문 페이지(P9)**: 대운 곡선 = `cycleFortuneScore`(오행 생극: 인성85/비화80/식상76/재70/관66), 12개월 = `monthKeywordForScore`. **결정론 유지(가짜 숫자 아님)**. 결제 본편이 있으면 9번째 페이지(`deepReading`)에 **LLM 9섹션 전문 노출**.
+- **#384 PDF 페이지 번호 분모 동기화**: #383의 P9 추가로 footer가 "PAGE 9 / 8"(분모 8 하드코딩) 버그 → `totalPages = deepReading ? 9 : 8`를 모든 footer 분모에 주입. 무료/구버전 `/ 8`, 결제 본편 `/ 9`.
+
+### UX (앞선 머지)
+- **#373 결제 내역(현금) 전면 노출**: 단건·평생·코인팩·멤버십 모두 표시.
+- **#374 회원가입 생년월일 입력 통일**: 사주 입력폼과 동일한 `UnifiedBirthInfoFields`로 교체.
+
+### 마이그레이션 상태 (⚠️ 수동 적용 — CI 자동 아님)
+- `041_ai_lifetime_interpretations`(Phase 0a) · `042_ai_llm_runs`(Phase 0b): **적용됨**(라이브 검증 통과).
+- `043_refund_requests`(Phase 2): **작성 완료 · prod 수동 적용 대기**(`supabase` CLI). 코드는 테이블 존재를 가정하므로 환불 기능 사용 전 적용 필수.
+
+### 운영 후속 (코드 밖 — 사용자 작업)
+- `043_refund_requests` prod 적용(supabase CLI).
+- **super_admin 지정**(`admin_users.role` 또는 `ADMIN_USER_IDS` 부트스트랩) — 환불 최종 승인 권한.
+- **결제 계정으로 PDF 시각 확인**: 실명 노출 / 대운 곡선이 사주별로 달라지는지 / P9 9섹션 레이아웃·페이지네이션(PAGE 7/9·8/9·9/9). **로컬 Turbopack symlink 제약으로 로컬 PDF 렌더 미검증** → 배포 빌드에서 확인.
+- 실제 Toss 환불 실행은 super_admin 수동(나는 미실행).
+
+### 교훈
+- **본편 캐시 키**는 `reportHash + feedback + targetYear` — feedback/targetYear 누락 시 캐시 오염(스펙 갭이었음).
+- **Phase 0b가 이미 텔레메트리 테이블을 구축** → Phase 3는 중복 테이블 없이 대시보드만(원안의 `llm_usage_logs` 폐기).
+- **PDF는 모델 주도 렌더**(`buildPdfModel` 출력이 그대로 렌더로 흐름) → 글로서리·사전이 아니라 **빌더가 조립한 실제 출력 문장**으로 검증해야 함.
+- 고정 A4 슬롯에 LLM 가변 텍스트를 넣을 땐 `firstSentences(n)`로 길이 bound(레이아웃 안전).
 
 ---
 
