@@ -26,6 +26,12 @@ interface AdminNavItem {
 
 const ADMIN_NAV: AdminNavItem[] = [
   {
+    href: '/admin/users',
+    label: '사용자 조회',
+    description: '이메일·UUID 검색 → 회원·결제·LLM 상세',
+    badge: 'NEW',
+  },
+  {
     href: '/admin/saju-feedback',
     label: '챕터 피드백',
     description: 'LLM 풀이 별점·helpful 비율·부정 응답 챕터',
