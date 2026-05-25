@@ -232,7 +232,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="text-xs font-medium text-[var(--app-copy-muted)]"
+      className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
     >
       {children}
     </label>
@@ -260,7 +260,7 @@ function NativeSelect({
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
-      className={`motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-3 text-sm font-semibold text-[var(--app-ink)] outline-none focus:border-[var(--app-pink)] ${className}`}
+      className={`motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition focus:border-[var(--app-pink)] ${className}`}
     >
       {children}
     </select>
@@ -862,9 +862,9 @@ function LoginContent({
 
       {mode === 'signup' ? (
         <form className="mt-6 space-y-5 text-left" onSubmit={submitSignup}>
-          <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
+          <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-4 sm:p-5">
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-name">이름 또는 별명</FieldLabel>
                 <input
                   id="signup-name"
@@ -873,10 +873,10 @@ function LoginContent({
                   placeholder="예: 지윤"
                   value={signupForm.displayName}
                   onChange={(event) => updateSignupForm('displayName', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-email">이메일</FieldLabel>
                 <input
                   id="signup-email"
@@ -886,10 +886,10 @@ function LoginContent({
                   placeholder="name@example.com"
                   value={signupForm.email}
                   onChange={(event) => updateSignupForm('email', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-password">비밀번호</FieldLabel>
                 <input
                   id="signup-password"
@@ -898,10 +898,10 @@ function LoginContent({
                   placeholder="8자 이상"
                   value={signupForm.password}
                   onChange={(event) => updateSignupForm('password', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-password-confirm">비밀번호 확인</FieldLabel>
                 <input
                   id="signup-password-confirm"
@@ -910,17 +910,17 @@ function LoginContent({
                   placeholder="한 번 더 입력"
                   value={signupForm.confirmPassword}
                   onChange={(event) => updateSignupForm('confirmPassword', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4">
+          <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
-                <p className="mt-1 text-xs leading-5 text-[var(--app-copy-muted)]">
+                <p className="mt-1 text-[11.5px] leading-5 text-[var(--app-copy-soft)]">
                   저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
                 </p>
               </div>
@@ -972,7 +972,7 @@ function LoginContent({
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel>성별</FieldLabel>
                 <div className="grid grid-cols-2 gap-2">
                   {[
@@ -983,7 +983,7 @@ function LoginContent({
                       key={value}
                       type="button"
                       onClick={() => updateSignupForm('gender', value as GenderValue)}
-                      className={`h-12 rounded-2xl border text-sm font-bold transition ${
+                      className={`h-12 rounded-[14px] border text-[14.5px] font-bold transition ${
                         signupForm.gender === value
                           ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
                           : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -994,7 +994,7 @@ function LoginContent({
                   ))}
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel>출생 시간</FieldLabel>
                 <div className="grid grid-cols-[1fr_auto] gap-2">
                   <NativeSelect
@@ -1009,7 +1009,7 @@ function LoginContent({
                       </option>
                     ))}
                   </NativeSelect>
-                  <label className="flex h-12 items-center gap-2 rounded-2xl border border-[var(--app-line)] bg-white px-3 text-xs font-medium text-[var(--app-copy-muted)]">
+                  <label className="flex h-12 items-center gap-2 rounded-[14px] border border-[var(--app-line)] bg-white px-3 text-[12.5px] font-medium text-[var(--app-copy-muted)]">
                     <input
                       type="checkbox"
                       checked={signupForm.unknownBirthTime}
@@ -1025,7 +1025,7 @@ function LoginContent({
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="birth-location">출생지</FieldLabel>
                 <NativeSelect
                   id="birth-location"
@@ -1039,7 +1039,7 @@ function LoginContent({
                   ))}
                 </NativeSelect>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <FieldLabel htmlFor="time-rule">시간 기준</FieldLabel>
                 <NativeSelect
                   id="time-rule"
@@ -1056,7 +1056,8 @@ function LoginContent({
           <Button
             type="submit"
             disabled={disabled || isSubmittingSignup}
-            className="h-12 w-full rounded-2xl text-base font-bold"
+            size="lg"
+            className="h-12 w-full rounded-[14px] text-[15px] font-extrabold"
           >
             {isSubmittingSignup ? '회원가입 중...' : '회원가입하고 사주정보 불러오기'}
           </Button>
@@ -1075,7 +1076,7 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, email: event.target.value }))
               }
-              className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <div className="space-y-2">
@@ -1089,13 +1090,13 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, password: event.target.value }))
               }
-              className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <Button
             type="submit"
             disabled={disabled || isSubmittingLogin}
-            className="h-12 w-full rounded-2xl text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-base font-bold"
           >
             {isSubmittingLogin ? '로그인 중...' : '로그인하고 내 정보 불러오기'}
           </Button>
@@ -1142,14 +1143,14 @@ function LoginContent({
                 placeholder="name@example.com"
                 value={recoveryEmail}
                 onChange={(event) => setRecoveryEmail(event.target.value)}
-                className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             </div>
           </section>
           <Button
             type="submit"
             disabled={disabled || isSubmittingRecovery}
-            className="h-12 w-full rounded-2xl text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-base font-bold"
           >
             {isSubmittingRecovery ? '메일 보내는 중...' : '이메일 인증 링크 받기'}
           </Button>
@@ -1189,7 +1190,7 @@ function LoginContent({
                       password: event.target.value,
                     }))
                   }
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -1206,7 +1207,7 @@ function LoginContent({
                       confirmPassword: event.target.value,
                     }))
                   }
-                  className="motion-input-effect h-12 w-full rounded-2xl border border-[var(--app-line)] bg-white px-4 text-sm font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>
@@ -1214,7 +1215,7 @@ function LoginContent({
           <Button
             type="submit"
             disabled={disabled || isSubmittingReset}
-            className="h-12 w-full rounded-2xl text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-base font-bold"
           >
             {isSubmittingReset ? '저장 중...' : '새 비밀번호 저장하기'}
           </Button>
