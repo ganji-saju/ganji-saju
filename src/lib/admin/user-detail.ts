@@ -140,6 +140,16 @@ export interface AdminUserDetail {
   dialogueCount: number;
   llmStats: LlmFeatureStat[];
   refund: RefundEligibility;
+  refundRequests: AdminRefundRequest[];
+}
+
+export interface AdminRefundRequest {
+  id: string;
+  productId: string;
+  amount: number | null;
+  reason: string;
+  status: string;
+  createdAt: string;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -271,6 +281,29 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
 
   const refund = determineRefundEligibility(productEntitlements);
 
+  const { data: refundRows } = await supabase
+    .from('refund_requests')
+    .select('id, product_id, amount, reason, status, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  const refundRequests: AdminRefundRequest[] = (
+    (refundRows ?? []) as unknown as Array<{
+      id: string;
+      product_id: string;
+      amount: number | null;
+      reason: string;
+      status: string;
+      created_at: string;
+    }>
+  ).map((r) => ({
+    id: r.id,
+    productId: r.product_id,
+    amount: r.amount,
+    reason: r.reason,
+    status: r.status,
+    createdAt: r.created_at,
+  }));
+
   return {
     id: user.id,
     email: user.email ?? null,
@@ -283,5 +316,6 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     dialogueCount: dialogueCount ?? 0,
     llmStats,
     refund,
+    refundRequests,
   };
 }
