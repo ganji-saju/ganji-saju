@@ -251,13 +251,13 @@ export const FRIENDLY_VERIFICATION_LABEL: Record<string, string> = {
   interpretation: '풀이 본문',
 };
 
-/** 오행의 일상어 라벨 (한자 병기 없이 부드럽게). */
+/** 오행의 일상어 라벨 — naming-policy §2 표준 "X 기운". */
 export const FRIENDLY_ELEMENT_LABEL: Record<Element, string> = {
-  목: '나무 기운',
-  화: '불 기운',
-  토: '땅 기운',
-  금: '쇠 기운',
-  수: '물 기운',
+  목: '목 기운',
+  화: '화 기운',
+  토: '토 기운',
+  금: '금 기운',
+  수: '수 기운',
 };
 
 /** 오행 한 줄 키워드 — 사용자가 "이게 뭐예요" 했을 때 1초로 이해되는 문장.
