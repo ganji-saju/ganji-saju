@@ -114,12 +114,12 @@ export function ReviewWriteDialog({
       role="dialog"
       aria-modal="true"
       aria-label="후기 작성"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget && !submitting) onClose();
       }}
     >
-      <div className="w-full max-w-md overflow-hidden rounded-[18px] bg-white shadow-xl">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[18px] bg-white shadow-xl">
         <div className="border-b border-[var(--app-line)] px-5 py-4">
           <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             {existing ? '후기 수정' : '후기 작성'}
