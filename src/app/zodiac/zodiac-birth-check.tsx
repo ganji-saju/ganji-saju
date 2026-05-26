@@ -49,94 +49,76 @@ export function ZodiacBirthCheck() {
   }
 
   return (
-    <form action={resolveZodiacByBirth} className="mx-auto mt-5 max-w-[22rem] space-y-4 text-left">
+    <form action={resolveZodiacByBirth} className="mx-auto mt-5 max-w-[22rem] space-y-3 text-left">
       <input type="hidden" name="calendarType" value={calendarType} />
 
-      <div className="gangi-birth-field">
-        <span className="gangi-birth-label">양력 / 음력</span>
-        <div className="gangi-birth-segment">
-          {[
-            { value: 'solar', label: '양력' },
-            { value: 'lunar', label: '음력' },
-          ].map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setCalendarType(item.value as 'solar' | 'lunar')}
-              className={cn('gangi-birth-choice', calendarType === item.value && 'is-selected')}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+      <div className="gangi-birth-segment">
+        {[
+          { value: 'solar', label: '양력' },
+          { value: 'lunar', label: '음력' },
+        ].map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => setCalendarType(item.value as 'solar' | 'lunar')}
+            className={cn('gangi-birth-choice', calendarType === item.value && 'is-selected')}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
       <div className="gangi-birth-date-grid">
-        <div className="gangi-birth-field">
-          <label htmlFor="zodiac-birth-year" className="gangi-birth-label">
-            년
-          </label>
-          <select
-            id="zodiac-birth-year"
-            name="year"
-            value={year}
-            onChange={(event) => {
-              const next = event.target.value;
-              setYear(next);
-              clampDay(next, month);
-            }}
-            className="gangi-form-control gangi-birth-input px-3 text-sm"
-          >
-            <option value="">연도</option>
-            {YEAR_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {value}년
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="gangi-birth-field">
-          <label htmlFor="zodiac-birth-month" className="gangi-birth-label">
-            월
-          </label>
-          <select
-            id="zodiac-birth-month"
-            name="month"
-            value={month}
-            onChange={(event) => {
-              const next = event.target.value;
-              setMonth(next);
-              clampDay(year, next);
-            }}
-            className="gangi-form-control gangi-birth-input px-3 text-sm"
-          >
-            <option value="">월</option>
-            {MONTH_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {value}월
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="gangi-birth-field">
-          <label htmlFor="zodiac-birth-day" className="gangi-birth-label">
-            일
-          </label>
-          <select
-            id="zodiac-birth-day"
-            name="day"
-            value={day}
-            onChange={(event) => setDay(event.target.value)}
-            className="gangi-form-control gangi-birth-input px-3 text-sm"
-          >
-            <option value="">일</option>
-            {dayOptions.map((value) => (
-              <option key={value} value={value}>
-                {value}일
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          aria-label="태어난 연도"
+          name="year"
+          value={year}
+          onChange={(event) => {
+            const next = event.target.value;
+            setYear(next);
+            clampDay(next, month);
+          }}
+          className="gangi-form-control gangi-birth-input px-3 text-sm"
+        >
+          <option value="">연도</option>
+          {YEAR_OPTIONS.map((value) => (
+            <option key={value} value={value}>
+              {value}년
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="태어난 월"
+          name="month"
+          value={month}
+          onChange={(event) => {
+            const next = event.target.value;
+            setMonth(next);
+            clampDay(year, next);
+          }}
+          className="gangi-form-control gangi-birth-input px-3 text-sm"
+        >
+          <option value="">월</option>
+          {MONTH_OPTIONS.map((value) => (
+            <option key={value} value={value}>
+              {value}월
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="태어난 일"
+          name="day"
+          value={day}
+          onChange={(event) => setDay(event.target.value)}
+          className="gangi-form-control gangi-birth-input px-3 text-sm"
+        >
+          <option value="">일</option>
+          {dayOptions.map((value) => (
+            <option key={value} value={value}>
+              {value}일
+            </option>
+          ))}
+        </select>
       </div>
 
       <button
