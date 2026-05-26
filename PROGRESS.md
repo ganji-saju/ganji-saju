@@ -1,9 +1,43 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-26 (LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터 전수검사, #373~#384)** — 본편(평생리포트) read-through 캐시로 무캐시 비용 출혈 차단(#377) + 전 영역 LLM 텔레메트리 중앙 계측(#378) + 어드민 사용자 상세·검색(#379)·환불 자동화(Toss cancel 2단계 승인, #380)·LLM 비용 대시보드(#381) + PDF 목업→실데이터 전수검사(이름·대운곡선·12개월·LLM 9섹션 전문 P9, #382~#384). **상세: ↓ 첫 세션 섹션.** (이전: 2026-05-25 #364~#368 어휘·UI·12간지 선생 / 2026-05-24~25 #355~#363 today-detail·콘텐츠)
+> 최종 업데이트: **2026-05-26 (프론트 UX — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비(PC 마이홈 드롭다운·모바일 MY 상단) + 리뷰 모달 정중앙 + 결제퍼널 500 픽스, #386~#389)**. 상세는 ↓ 첫 세션 섹션. 직전 세션: **#373~#384 (LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터)** — 본편(평생리포트) read-through 캐시로 무캐시 비용 출혈 차단(#377) + 전 영역 LLM 텔레메트리 중앙 계측(#378) + 어드민 사용자 상세·검색(#379)·환불 자동화(Toss cancel 2단계 승인, #380)·LLM 비용 대시보드(#381) + PDF 목업→실데이터 전수검사(이름·대운곡선·12개월·LLM 9섹션 전문 P9, #382~#384). **상세: ↓ 첫 세션 섹션.** (이전: 2026-05-25 #364~#368 어휘·UI·12간지 선생 / 2026-05-24~25 #355~#363 today-detail·콘텐츠)
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-26 세션 — 띠운세 입력 단순화·기간별 콘텐츠 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스 (#386~#389)
+
+> 프론트 UX 개선 4건 + 운영 버그픽스 1건. 모두 main 머지 → Vercel 자동 배포. **DB 마이그레이션 없음**(전부 코드/콘텐츠). 브라우저 렌더(Claude Preview)로 검증 후 PR.
+
+### 띠운세 (#386 — 2개 커밋)
+- **진입 단순화**: `/zodiac` 의 '생년월일로 내 띠 확인'이 사주 전체 폼(`/saju/new`: 출생시간·성별·출생지·닉네임·동의 멀티스텝)으로 보내던 비합리적 동선 제거 → 생년월일(+양/음력)만 받는 **인라인 펼침 입력**(신규 `zodiac-birth-check.tsx`). 제출 시 서버 액션(신규 `actions.ts`)이 **입춘 기준** 띠 계산(`deriveZodiacSlugFromBirthInput` 재사용, 음력→양력 변환) → `/zodiac/[띠]`. 시간·성별·출생지는 띠 판정에 불필요해 미수집.
+  - 검증: 1990-05-15→말띠, **입춘 경계 1990-02-01(입춘 전)→뱀띠**(연도 기준 말띠가 아님).
+- **상세 기간 탭별 콘텐츠 동적화**: 기존엔 점수·히어로 한 줄만 period(오늘/주/달/해)별로 바뀌고 '집중 포인트(`todayFocus`)·행동 제안(`action`)'은 '오늘' 단일 필드라 고정 → `ZodiacFortune` 에 `periodFocus`·`periodAction`(`ZodiacPeriodLines`) 추가, **12띠 전체 기간별 문구 작성**(naming-policy 준수: 한자·"결"·추상명사 신조어 금지). `zodiac/[slug]` §4·§5 를 period별 제목·내용으로, '올해 흐름' 카드는 올해 탭만 노출.
+- **레이아웃·라벨**: '태어난 해로 더 보기'(연생 칩)를 히어로 아래 → 운세 콘텐츠(점수·집중포인트) 아래로 이동. 입력 폼 라벨(양력/음력·년/월/일) 제거(select `aria-label` 로 접근성 유지).
+- 파일: `src/app/zodiac/{actions.ts,zodiac-birth-check.tsx,page.tsx}`, `src/app/zodiac/[slug]/page.tsx`, `src/lib/free-content-pages.ts`, `src/lib/profile-personalization.ts`(기존 재사용).
+
+### 헤더 네비게이션 (#387)
+- **PC 메가메뉴**: 우측 `/my` 아바타에 **hover 드롭다운**(마이홈 롤오버) 추가 — `MY_MENU_BLUEPRINT` 재사용(/my 페이지와 동일 항목), `top:100%` 부착으로 hover 연속성(갭 깜빡임 방지). 로그인 시만 노출, 비로그인은 현행 로그인/회원가입 유지. (`mega-nav.tsx`/`.css`)
+- **모바일 시트**: MY(계정) 섹션을 시트 하단 → **검색창 위(맨 위)**로 이동, 비로그인 시 '아이디·비밀번호 찾기'(`/login?mode=recover`) 보조 링크 추가. (`mobile-nav-sheet.tsx`/`.css`)
+- ⚠️ PC 아바타 드롭다운은 **로그인 상태에서만** 렌더 → dev 비로그인 세션으론 실물 hover 미검증(마크업·타입·CSS 검증 완료, 로그인 후 확인).
+
+### 리뷰 모달 (#388)
+- 후기 작성 모달이 모바일에서 화면 하단(`items-end`)에 뜨던 것을 **정중앙(`items-center`)** 레이어로. `max-h-[90vh]`+세로 스크롤로 긴 내용 잘림 방지. (`review-write-dialog.tsx`)
+
+### 결제 퍼널 500 (#389 — 버그픽스, systematic-debugging)
+- **증상**: `/admin/payment-funnel` "데이터를 불러올 수 없음". API(`/api/admin/payment-funnel`)가 3일 내내 지속 500.
+- **진단(증거 기반)**: ① `payment_funnel_events` 테이블은 prod 존재(`supabase migration list` 030 Local=Remote — **drift 아님**, 초기 가설 기각). ② 인증(`getCurrentAdminCheck`)은 **service-role**로 admin_users 확인해 통과(403 아님). ③ 그러나 데이터 조회는 **사용자 세션(authenticated)** 클라이언트 → 030 테이블이 RLS만 있고 **테이블 GRANT 없어** 조회 차단 → 500. `refund`/`push-ab-policy` 의 guard(사용자 세션)→데이터(service-role) 패턴 미준수가 차이.
+- **수정**: 데이터 조회를 **service-role**로 전환(코드 1파일, DB 변경 없음 → drift 위험 회피) + 원인 추적용 `console.error` 안전망. (`src/app/api/admin/payment-funnel/route.ts`)
+- ⚠️ **검증 대기**: prod 배포 후 `/admin/payment-funnel` 정상 표시 확인 필요(admin 세션). 안 되면 `console.error` 로그로 후속(추측 없이).
+
+### 교훈
+- 단일 목적 기능(띠운세)은 **진입 입력을 그 목적에 필요한 최소(생년월일)**로 — 공용 폼(`UnifiedBirthInfoFields`) 재사용이 과입력을 부른다.
+- 기간 탭 UI는 **모든 종속 콘텐츠가 period에 반응**해야 의미. 일부만 바뀌면 "왜 안 바뀌냐" 인지.
+- **admin 데이터 조회는 service-role 패턴**(getCurrentAdminCheck 통과 후) — RLS만 있고 GRANT 미비한 테이블을 사용자 세션으로 읽으면 500. 레퍼런스: `refund`/`push-ab-policy`.
+- 디버깅: "테이블 부재(drift)" 같은 그럴듯한 가설도 `migration list` 같은 **증거로 검증**해야 — 이번엔 기각됐다(추측 단정했으면 오진).
+- squash 머지 시 `--subject` 직접 지정하면 `(#PR)` 자동 부착 안 됨 → 생략 시 자동 부착(#389에서 확인).
 
 ---
 
