@@ -11,6 +11,7 @@ import { getOptionalSignedInProfile } from '@/lib/profile';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GANGI_ZODIAC, GangiCharacter, GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ZodiacBirthCheck } from './zodiac-birth-check';
 
 export const metadata: Metadata = {
   title: '내 띠 운세',
@@ -158,45 +159,40 @@ export default async function ZodiacPage() {
               </p>
             </article>
           ) : (
-            <Link
-              href="/saju/new"
-              className="mt-5 inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
-              style={{
-                background: 'var(--app-pink)',
-                boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
-              }}
-            >
-              생년월일로 내 띠 확인
-            </Link>
+            <ZodiacBirthCheck />
           )}
         </section>
 
-        {/* 하단 CTA — primary + secondary */}
-        <div className="mx-[0.25rem] grid gap-2 sm:grid-cols-2">
-          {featured ? (
-            <Link
-              href={`/zodiac/${featured.slug}`}
-              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
-              style={{
-                background: 'var(--app-pink)',
-                boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
-              }}
-            >
-              내 띠 바로 보기 →
-            </Link>
-          ) : null}
-          <Link
-            href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
-            style={{
-              border: '1px solid var(--app-line)',
-              color: 'var(--app-ink)',
-              boxShadow: '0 12px 28px -24px rgba(17, 17, 20, 0.32)',
-            }}
-          >
-            {readingSlug ? '내 사주로 이어보기' : '생년월일로 확인'}
-          </Link>
-        </div>
+        {/* 하단 CTA — featured면 내 띠 바로 보기, 사주 프로필 있으면 사주로 이어보기 */}
+        {featured || readingSlug ? (
+          <div className="mx-[0.25rem] grid gap-2 sm:grid-cols-2">
+            {featured ? (
+              <Link
+                href={`/zodiac/${featured.slug}`}
+                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
+                style={{
+                  background: 'var(--app-pink)',
+                  boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
+                }}
+              >
+                내 띠 바로 보기 →
+              </Link>
+            ) : null}
+            {readingSlug ? (
+              <Link
+                href={`/saju/${readingSlug}`}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
+                style={{
+                  border: '1px solid var(--app-line)',
+                  color: 'var(--app-ink)',
+                  boxShadow: '0 12px 28px -24px rgba(17, 17, 20, 0.32)',
+                }}
+              >
+                내 사주로 이어보기
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
       </AppPage>
     </AppShell>
   );

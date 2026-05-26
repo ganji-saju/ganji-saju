@@ -125,6 +125,14 @@ const PERIOD_LABEL: Record<ZodiacPeriod, string> = {
   year: '올해 흐름',
 };
 
+// 카드 제목·라벨용 짧은 기간 이름(탭 라벨과 일치).
+const PERIOD_SHORT: Record<ZodiacPeriod, string> = {
+  today: '오늘',
+  week: '이번 주',
+  month: '이번 달',
+  year: '올해',
+};
+
 const VALID_PERIODS: ZodiacPeriod[] = ['today', 'week', 'month', 'year'];
 
 function normalizePeriod(value: string | undefined): ZodiacPeriod {
@@ -320,8 +328,152 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             ) : null}
           </article>
 
-          {/* §1.5 연생 풀이 — 2026-05-24: byYear 가 있는 띠(12지 전체)만 노출.
-              칩으로 태어난 해 선택 → ?birthYear=YYYY. 선택 시 그 연생 풀이를 히어로 아래 표시. */}
+          {/* §2 Period tabs — 2026-05-15: 4개 기간 모두 클릭 가능. searchParam 기반 활성. */}
+          <div className="flex gap-1.5">
+            {([
+              { key: 'today', label: '오늘' },
+              { key: 'week', label: '이번 주' },
+              { key: 'month', label: '이번 달' },
+              { key: 'year', label: '올해' },
+            ] as Array<{ key: ZodiacPeriod; label: string }>).map((p) => {
+              const isActive = p.key === period;
+              // 2026-05-24 — 연생 선택 시 기간 탭 전환에도 birthYear 유지.
+              const query = [
+                p.key === 'today' ? null : `period=${p.key}`,
+                selectedYear !== null ? `birthYear=${selectedYear}` : null,
+              ].filter(Boolean);
+              const href = query.length > 0 ? `/zodiac/${item.slug}?${query.join('&')}` : `/zodiac/${item.slug}`;
+              return (
+                <Link
+                  key={p.key}
+                  href={href}
+                  // 2026-05-25 — 같은 화면 내 기간 탭 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
+                  scroll={false}
+                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
+                  style={
+                    isActive
+                      ? {
+                          background: 'var(--app-pink)',
+                          color: '#fff',
+                          borderColor: 'var(--app-pink)',
+                        }
+                      : {
+                          background: '#fff',
+                          color: 'var(--app-copy-muted)',
+                          borderColor: 'var(--app-line)',
+                        }
+                  }
+                >
+                  {p.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* §3 점수 4-card grid */}
+          <div className="grid grid-cols-4 gap-2">
+            {scoreCells.map((cell) => (
+              <article
+                key={cell.label}
+                className="rounded-[14px] border border-[var(--app-line)] bg-white p-3 text-center"
+              >
+                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                  {cell.label}
+                </div>
+                <div
+                  className="mt-0.5 text-[22px] font-extrabold tracking-tighter"
+                  style={{ color: cell.color }}
+                >
+                  {cell.value}
+                </div>
+                <div
+                  className="mt-1.5 h-0.5 overflow-hidden rounded-full"
+                  style={{ background: 'var(--app-line)' }}
+                >
+                  <span
+                    className="block h-full rounded-full"
+                    style={{ width: `${cell.value}%`, background: cell.color }}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* §4 운세 키워드 — pink-soft */}
+          <article
+            className="rounded-[14px] border p-4"
+            style={{
+              background: 'var(--app-pink-soft)',
+              borderColor: 'var(--app-pink-line)',
+            }}
+          >
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              {PERIOD_SHORT[period]} 운세 키워드
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-3">
+              {[
+                {
+                  label: '행운의 색',
+                  value: luckyColor.name,
+                  swatch: luckyColor.hex,
+                },
+                { label: '행운의 숫자', value: String(luckyNumber) },
+                { label: '행운의 방위', value: luckyDirection },
+                { label: '행운의 시간', value: luckyTime },
+                { label: `${PERIOD_SHORT[period]} 집중`, value: item.periodFocus[period] },
+                { label: '권하는 행동', value: '메모해두기' },
+              ].map((cell) => (
+                <div key={cell.label}>
+                  <div className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                    {cell.label}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 text-[13px] font-extrabold text-[var(--app-ink)]">
+                    {cell.swatch ? (
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                        style={{ background: cell.swatch }}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <span className="truncate">{cell.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          {/* §5 분야별 카드 */}
+          <section className="grid gap-2.5">
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                {PERIOD_SHORT[period]} 집중 포인트
+              </div>
+              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+                {item.periodFocus[period]}
+              </p>
+            </article>
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                행동 제안
+              </div>
+              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+                {item.periodAction[period]}
+              </p>
+            </article>
+            {period === 'year' ? (
+              <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  올해 흐름
+                </div>
+                <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+                  {meta.yearlyMessage}
+                </p>
+              </article>
+            ) : null}
+          </section>
+
+          {/* 연생 풀이 — 2026-05-26: 운세 콘텐츠(기간 탭·점수·집중 포인트) 아래로 이동.
+              태어난 해 선택은 심화 정보라 메인 흐름을 먼저 보여준 뒤 노출한다. */}
           {byYearEntries.length > 0 ? (
             <section className="space-y-2.5">
               <div className="px-1 text-[13px] font-extrabold text-[var(--app-ink)]">
@@ -413,148 +565,6 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               )}
             </section>
           ) : null}
-
-          {/* §2 Period tabs — 2026-05-15: 4개 기간 모두 클릭 가능. searchParam 기반 활성. */}
-          <div className="flex gap-1.5">
-            {([
-              { key: 'today', label: '오늘' },
-              { key: 'week', label: '이번 주' },
-              { key: 'month', label: '이번 달' },
-              { key: 'year', label: '올해' },
-            ] as Array<{ key: ZodiacPeriod; label: string }>).map((p) => {
-              const isActive = p.key === period;
-              // 2026-05-24 — 연생 선택 시 기간 탭 전환에도 birthYear 유지.
-              const query = [
-                p.key === 'today' ? null : `period=${p.key}`,
-                selectedYear !== null ? `birthYear=${selectedYear}` : null,
-              ].filter(Boolean);
-              const href = query.length > 0 ? `/zodiac/${item.slug}?${query.join('&')}` : `/zodiac/${item.slug}`;
-              return (
-                <Link
-                  key={p.key}
-                  href={href}
-                  // 2026-05-25 — 같은 화면 내 기간 탭 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
-                  scroll={false}
-                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
-                  style={
-                    isActive
-                      ? {
-                          background: 'var(--app-pink)',
-                          color: '#fff',
-                          borderColor: 'var(--app-pink)',
-                        }
-                      : {
-                          background: '#fff',
-                          color: 'var(--app-copy-muted)',
-                          borderColor: 'var(--app-line)',
-                        }
-                  }
-                >
-                  {p.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* §3 점수 4-card grid */}
-          <div className="grid grid-cols-4 gap-2">
-            {scoreCells.map((cell) => (
-              <article
-                key={cell.label}
-                className="rounded-[14px] border border-[var(--app-line)] bg-white p-3 text-center"
-              >
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
-                  {cell.label}
-                </div>
-                <div
-                  className="mt-0.5 text-[22px] font-extrabold tracking-tighter"
-                  style={{ color: cell.color }}
-                >
-                  {cell.value}
-                </div>
-                <div
-                  className="mt-1.5 h-0.5 overflow-hidden rounded-full"
-                  style={{ background: 'var(--app-line)' }}
-                >
-                  <span
-                    className="block h-full rounded-full"
-                    style={{ width: `${cell.value}%`, background: cell.color }}
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* §4 운세 키워드 — pink-soft */}
-          <article
-            className="rounded-[14px] border p-4"
-            style={{
-              background: 'var(--app-pink-soft)',
-              borderColor: 'var(--app-pink-line)',
-            }}
-          >
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              오늘의 운세 키워드
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {[
-                {
-                  label: '행운의 색',
-                  value: luckyColor.name,
-                  swatch: luckyColor.hex,
-                },
-                { label: '행운의 숫자', value: String(luckyNumber) },
-                { label: '행운의 방위', value: luckyDirection },
-                { label: '행운의 시간', value: luckyTime },
-                { label: '오늘 집중', value: item.todayFocus },
-                { label: '권하는 행동', value: '메모해두기' },
-              ].map((cell) => (
-                <div key={cell.label}>
-                  <div className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
-                    {cell.label}
-                  </div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[13px] font-extrabold text-[var(--app-ink)]">
-                    {cell.swatch ? (
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
-                        style={{ background: cell.swatch }}
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <span className="truncate">{cell.value}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          {/* §5 분야별 카드 */}
-          <section className="grid gap-2.5">
-            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                오늘 집중 포인트
-              </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
-                {item.todayFocus}
-              </p>
-            </article>
-            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                행동 제안
-              </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
-                {item.action}
-              </p>
-            </article>
-            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                올해 흐름
-              </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
-                {meta.yearlyMessage}
-              </p>
-            </article>
-          </section>
 
           {/* §6 사주로 이어보기 CTA */}
           {/* 2026-05-20 Phase 8-C — §궁합/조심할 띠 (12지 전통 호환 매트릭스). */}
