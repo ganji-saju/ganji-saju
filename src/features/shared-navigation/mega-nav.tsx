@@ -16,6 +16,7 @@ import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { HeaderLogoutButton } from '@/features/account/header-logout-button';
 import { MEGA_NAV, resolveActiveGroup, type MegaNavGroup, type MegaNavItem } from './mega-nav-data';
+import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import './mega-nav.css';
 
 interface SessionState {
@@ -214,9 +215,22 @@ export function MegaNavBar() {
               <Link href="/credits" className="mega-nav-coin-pill">
                 ✦ {session.credits ?? '···'} 코인
               </Link>
-              <Link href="/my" className="mega-nav-avatar-link" aria-label="내 정보">
-                👤
-              </Link>
+              {/* 2026-05-26 — 사용자 보고: PC 메가메뉴에 마이홈 롤오버 부재.
+                  아바타 hover 시 MY 하위 메뉴 드롭다운 노출(/my 페이지와 동일한 blueprint 재사용). */}
+              <div className="mega-nav-my">
+                <Link href="/my" className="mega-nav-avatar-link" aria-label="내 정보">
+                  👤
+                </Link>
+                <div className="mega-nav-my-menu" role="menu" aria-label="마이홈">
+                  <div className="mega-nav-my-eyebrow">마이홈</div>
+                  {MY_MENU_BLUEPRINT.map((it) => (
+                    <Link key={it.title} href={it.href} className="mega-nav-my-item" role="menuitem">
+                      <span className="mega-nav-my-item-label">{it.title}</span>
+                      <span className="mega-nav-my-item-desc">{it.description}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
               {/* 2026-05-16 — 사용자 보고: 상단 헤더에 로그아웃 진입점 부재.
                   avatar 옆에 아이콘-only 로그아웃 버튼 추가. /my/settings 의
                   풀폭 카드와 중복되지만 빠른 진입을 위한 의도된 중복. */}
