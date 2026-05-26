@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { buildPaymentFunnelSnapshot } from '@/lib/admin/payment-funnel-stats';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
   const daysParam = req.nextUrl.searchParams.get('days');
@@ -20,9 +20,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const snapshot = await buildPaymentFunnelSnapshot(supabase, { windowDays });
+    // 2026-05-26 — getCurrentAdminCheck 를 통과한 요청만 도달하므로 데이터 조회는 service-role 로 수행.
+    // payment_funnel_events 는 RLS(authenticated admin select)만 있고 테이블 GRANT 가 없어, 사용자
+    // 세션(authenticated) 클라이언트로는 조회가 막혀 500 이 났다. refund/push-ab-policy 와 동일하게
+    // guard(사용자 세션) → 데이터(service-role) 패턴으로 통일한다.
+    const service = await createServiceClient();
+    const snapshot = await buildPaymentFunnelSnapshot(service, { windowDays });
     return NextResponse.json({ ok: true, snapshot });
   } catch (err: unknown) {
+    console.error('[admin/payment-funnel] snapshot 생성 실패:', err);
     const message = err instanceof Error ? err.message : 'failed to build funnel snapshot';
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
