@@ -303,7 +303,8 @@
 /* 2026-05-20 — MY (계정) 섹션. featured 카드 아래에 위치.
    비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: 내 정보 + 로그아웃. */
 .mobile-nav-sheet-account {
-  margin-top: 12px;
+  /* 2026-05-26 — 검색창 위(시트 상단)로 이동: 좌우 마진으로 검색·탭과 정렬, 하단 간격 확보. */
+  margin: 8px 20px 10px;
   padding: 14px 16px;
   border-radius: 14px;
   background: rgba(17, 17, 20, 0.04);
@@ -359,4 +360,20 @@
   background: var(--app-pink-soft, rgba(255, 79, 154, 0.08));
   border-color: var(--app-pink-line, rgba(255, 79, 154, 0.24));
   color: var(--app-pink-strong, #d81b72);
+}
+
+/* 2026-05-26 — 비로그인 시 아이디·비밀번호 찾기 (로그인/회원가입 아래 보조 링크). */
+.mobile-nav-sheet-account-find {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-copy-soft);
+  text-decoration: none;
+}
+
+.mobile-nav-sheet-account-find:hover {
+  color: var(--app-pink-strong);
+  text-decoration: underline;
 }

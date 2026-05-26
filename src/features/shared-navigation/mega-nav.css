@@ -464,3 +464,79 @@
   font-size: 11.5px;
   font-weight: 800;
 }
+
+/* 2026-05-26 — 아바타 hover 마이홈 드롭다운 (롤오버 메뉴).
+   top:100% 로 아바타에 붙여 hover 연속성 확보(갭으로 인한 깜빡임 방지). */
+.mega-nav-my {
+  position: relative;
+  display: inline-flex;
+}
+
+.mega-nav-my-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 264px;
+  background: #fff;
+  border: 1px solid var(--app-line);
+  border-radius: 14px;
+  box-shadow: 0 20px 44px rgba(17, 17, 20, 0.14);
+  padding: 10px;
+  z-index: 5;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
+}
+
+.mega-nav-my:hover .mega-nav-my-menu,
+.mega-nav-my:focus-within .mega-nav-my-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mega-nav-my-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--app-copy-soft);
+  padding: 4px 10px 8px;
+}
+
+.mega-nav-my-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.mega-nav-my-item:hover {
+  background: var(--app-pink-soft);
+}
+
+.mega-nav-my-item-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--app-ink);
+}
+
+.mega-nav-my-item:hover .mega-nav-my-item-label {
+  color: var(--app-pink-strong);
+}
+
+.mega-nav-my-item-desc {
+  font-size: 11px;
+  color: var(--app-copy-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-nav-my-menu {
+    transition: none;
+  }
+}

@@ -117,6 +117,44 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
           </button>
         </div>
 
+        {/* 2026-05-26 — MY(계정) 섹션을 검색창 위로 이동(사용자 보고: MY가 가장 잘 보이도록).
+            비로그인: 로그인 + 회원가입 + 아이디/비밀번호 찾기 / 로그인: 내 정보 + 로그아웃. */}
+        <div className="mobile-nav-sheet-account" aria-label="계정">
+          <div className="mobile-nav-sheet-account-eyebrow">MY</div>
+          {user ? (
+            <div className="mobile-nav-sheet-account-row">
+              <Link href="/my" onClick={onClose} className="mobile-nav-sheet-account-primary">
+                내 정보
+              </Link>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="mobile-nav-sheet-account-ghost"
+              >
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="mobile-nav-sheet-account-row">
+                <Link href="/login" onClick={onClose} className="mobile-nav-sheet-account-primary">
+                  로그인
+                </Link>
+                <Link href="/signup" onClick={onClose} className="mobile-nav-sheet-account-ghost">
+                  회원가입
+                </Link>
+              </div>
+              <Link
+                href="/login?mode=recover"
+                onClick={onClose}
+                className="mobile-nav-sheet-account-find"
+              >
+                아이디 · 비밀번호 찾기
+              </Link>
+            </>
+          )}
+        </div>
+
         {/* 검색 빠른 진입 */}
         <Link
           href="/search"
@@ -222,46 +260,6 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
             </Link>
           ) : null}
 
-          {/* 2026-05-20 — MY 섹션 (계정 진입점).
-              비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: MY 진입 + 로그아웃. */}
-          <div className="mobile-nav-sheet-account" aria-label="계정">
-            <div className="mobile-nav-sheet-account-eyebrow">MY</div>
-            {user ? (
-              <div className="mobile-nav-sheet-account-row">
-                <Link
-                  href="/my"
-                  onClick={onClose}
-                  className="mobile-nav-sheet-account-primary"
-                >
-                  내 정보
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="mobile-nav-sheet-account-ghost"
-                >
-                  로그아웃
-                </button>
-              </div>
-            ) : (
-              <div className="mobile-nav-sheet-account-row">
-                <Link
-                  href="/login"
-                  onClick={onClose}
-                  className="mobile-nav-sheet-account-primary"
-                >
-                  로그인
-                </Link>
-                <Link
-                  href="/signup"
-                  onClick={onClose}
-                  className="mobile-nav-sheet-account-ghost"
-                >
-                  회원가입
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </>,
