@@ -1,147 +1,144 @@
 # 상품 카탈로그 / 가격 / 환불 정책 구조
 
-작성일: 2026-05-17 / 출처: `src/lib/payments/catalog.ts` 인벤토리 + migration 016/018/020 + FAQ 정책 문구
+작성일: 2026-05-17
+최종 갱신: 2026-05-27 / 출처: `src/lib/payments/catalog.ts`, `src/lib/payments/product-scope.ts`, `src/shared/payments/consent-rules.ts`, `supabase/migrations/040_credit_lots_expiry.sql`, `supabase/migrations/043_refund_requests.sql`
 
-> **주의**: 본 문서는 **현 상태 audit + 일관성 문제 정리**. 실제 정책 수치는 운영자 확정값으로 [`../legal-required-fields.md`](../legal-required-fields.md) 입력 후 갱신.
-
----
-
-## 1. 카탈로그 인벤토리 (현 코드 기준)
-
-### 1.1 코인 상품 (credits)
-| 상품ID | 이름 | 가격 | 코인 적립 | 비고 |
-|---|---|---|---|---|
-| `credit_1` | 체험 1 코인 | 500원 | 1 | 진입 |
-| `credit_3` | 스타터 3 코인 | 990원 | 3 | |
-| `credit_7` | 기본 7 코인 | 2,000원 | 7 | |
-| `subscription_30` | 보너스 36 코인 | 9,900원 | 36 | 일회성 / 1년 유효 (FAQ) |
-
-### 1.2 구독 상품 (subscription)
-| 상품ID | 이름 | 가격 | 주기 | 혜택 |
-|---|---|---|---|---|
-| `membership_plus` | 라이트 대화 멤버십 | 4,900원/월 | 월간 | AI 대화 코인 제공 |
-| `membership_premium` | 프리미엄 대화 멤버십 | 9,900원/월 | 월간 | AI 대화 코인 + 추가 혜택 |
-
-### 1.3 단건 권한 상품 (entitlement)
-| 상품ID | 이름 | 가격 | scope 필요 | 환불정책 명시 |
-|---|---|---|---|---|
-| `lifetime_report` | 보관형 사주 리포트 | **49,000원** | ✓ slug | 🚨 별도 환불 페이지 없음 |
-| `taste_today_detail` | 오늘 자세히 보기 | 550원 | ✓ slug | FAQ 일반조항 |
-| `taste_love_question` | 연애 마음 확인 | 990원 | — | FAQ 일반조항 |
-| `taste_money_pattern` | 돈이 새는 패턴 | 990원 | — | FAQ 일반조항 |
-| `taste_work_flow` | 일/직장 흐름 | 990원 | — | FAQ 일반조항 |
-| `taste_monthly_calendar` | 월간 달력 | 1,900원 | ✓ slug | FAQ 일반조항 |
-| `taste_year_core` | 올해 핵심 3줄 | 3,900원 | ✓ slug | FAQ 일반조항 |
+> 목적: 현재 로컬 구현과 운영 정책 문서의 기준점을 맞춘다. 정책 수치가 운영자 확정값이 아닌 항목은 "확인 필요"로 남긴다.
 
 ---
 
-## 2. 발견된 일관성 문제
+## 1. 카탈로그 인벤토리 (현재 로컬 코드 기준)
 
-### 2.1 🚨 P0 — Migration drift 의심
-- `supabase/migrations/016_product_entitlements.sql` 의 `product_id` CHECK 제약: `today-detail|monthly-calendar|love-question|money-pattern|work-flow|year-core` 6종
-- **`lifetime-report` 누락** — 코드 (`src/lib/product-entitlements.ts`) 는 `grantProductEntitlement('lifetime-report', ...)` 호출 가능. migration 018/020 후속에서 추가됐는지 확인 필요
-- 후속 migration 까지 확인 후 누락 시 Phase 6 에서 CHECK 제약 갱신 migration 추가
+현재 `PAYMENT_PACKAGES`는 총 16개다.
 
-### 2.2 🚨 P0 — 카탈로그 vs FAQ 가격 표기 불일치
-- `src/app/support/faq/page.tsx:39` — monthly-calendar 를 **"2코인(1,900원)"** 으로 표기
-- 카탈로그 = 단건 1,900원 결제 상품 (taste_product)
-- 코인 차감 (`unlock_credit_feature_once`) feature 목록에 `monthly-calendar` 도 있어 양쪽 경로 존재 가능. 사용자에게 혼란 → 표기 통일 또는 분리 안내 필요
+### 1.1 코인/충전 상품
 
-### 2.3 🚨 P0 — 코인 유효기간 정책-구현 불일치
-- FAQ: "결제 시점부터 1년간 유효", "구독 코인은 구독 종료 시 만료"
-- DB: `user_credits` 에 `expires_at` 컬럼 **없음** + 만료 cron **없음**
-- 현 구현 = **영구 유효**. 정책 vs 구현 충돌 → Phase 8 에서 둘 중 선택:
-  - (A) DB 컬럼 + 만료 cron 추가 (정책 유지)
-  - (B) FAQ "1년 유효" 문구 삭제 (구현 유지)
+| 상품ID | 이름 | 가격 | 적립 | 종류 | 비고 |
+|---|---|---:|---:|---|---|
+| `credit_1` | 체험 1 코인 | 500원 | 1 | `credits` | 일회성 충전 |
+| `credit_3` | 스타터 3 코인 | 990원 | 3 | `credits` | 일회성 충전 |
+| `credit_7` | 기본 7 코인 | 2,000원 | 7 | `credits` | 일회성 충전 |
+| `subscription_30` | 보너스 36 코인 | 9,900원 | 36 | `subscription` | `planSlug` 없음 → 월구독이 아니라 일회성 36코인 상품 |
 
-### 2.4 🟡 P0(부분 해소) — 49,000원 lifetime-report 환불 인프라
-- **2026-05-23 회수 함수 추가 완료**:
-  - `revokeProductEntitlement(userId, productId, scopeKey, { reason, actor?, paymentKey? })` — `src/lib/product-entitlements.ts`. **조회 우선순위 양쪽**(product_entitlements + legacy credit_transactions)을 모두 제거 → 환불 후 권한이 되살아나지 않음. audit 행(`type='purchase'`, `feature='entitlement_revoke'`, `metadata.kind='entitlement_revoked'`)으로 환불 흔적 보존.
-  - `revokeLifetimeReportEntitlement(userId, readingKey, { reason, ... })` — `src/lib/report-entitlements.ts`. lifetime 전용 wrapper.
-  - 대칭성 회귀 방지: `resolveEntitlementRevokeQuery` + `product-entitlements.revoke.test.ts` (grant↔revoke 키 대칭 고정).
-  - `/refund-policy` 페이지는 이미 존재(안내 UI). 마이그레이션 불필요(hard-delete + audit, `payment_key` 컬럼으로 결제건 역매칭).
-- **남은 후속 작업** (별도 PR):
-  1. 회수 함수를 호출하는 운영 경로 — admin 환불 처리 UI 또는 CLI 스크립트(`scripts/revoke-entitlement.mjs`)
-  2. Toss 환불 API (`/v1/payments/{paymentKey}/cancel`) 연동 — `revoke...` 반환 `paymentKey` 로 결제 취소
-  3. (선택) `refund_requests` 테이블 + 사용자 환불 신청 flow
+### 1.2 멤버십
 
-### 2.5 🟡 P1 — orderId 충돌 가능성
-- 생성식: `order_${pkg.id}_${method}_${Date.now()}`
-- 같은 사용자가 같은 ms 더블 클릭 시 동일 orderId → Toss 측에서 거부
-- Phase 6 에서 `crypto.randomUUID()` 기반 변경
+| 상품ID | 이름 | 가격 | 종류 | planSlug | subscriptionPlan |
+|---|---|---:|---|---|---|
+| `membership_plus` | 라이트 대화 멤버십 | 4,900원/월 | `subscription` | `basic` | `plus_monthly` |
+| `membership_premium` | 프리미엄 대화 멤버십 | 9,900원/월 | `subscription` | `premium` | `premium_monthly` |
 
-### 2.6 🟡 P1 — Toss webhook 라우트 부재
-- 현재 `/api/payments/confirm` 만 의존 (사용자가 success 페이지 도달 가정)
-- 브라우저 닫기 등으로 success 미도달 시 entitlement 미발급
-- Phase 6 에서 `/api/payments/webhook/toss` 신설 + idempotency 보강
+### 1.3 단건 권한 상품
 
-### 2.7 🟡 P1 — addCredits paymentKey 기반 idempotency 없음
-- 같은 paymentKey 로 confirm 2회 호출 시 코인 2배 적립 위험
-- entitlement 는 UNIQUE 로 차단되나 코인은 별도 경로
-- Phase 6 에서 `addCredits(paymentKey, ...)` 시그니처 변경 + DB 컬럼 추가
+| 상품ID | 이름 | 가격 | productId | scope | 비고 |
+|---|---|---:|---|---|---|
+| `lifetime_report` | 보관형 사주 리포트 | 49,000원 | `lifetime-report` | `lifetime:{readingKey}` | slug 필요 |
+| `taste_today_detail` | 오늘 자세히 보기 | 550원 | `today-detail` | `today:{readingKey}` | slug 필요 |
+| `taste_love_question` | 연애 마음 확인 | 990원 | `love-question` | global | slug 불필요 |
+| `taste_money_pattern` | 돈이 새는 패턴 | 990원 | `money-pattern` | global | slug 불필요 |
+| `taste_work_flow` | 일/직장 흐름 | 990원 | `work-flow` | global | slug 불필요 |
+| `taste_monthly_calendar` | 월간 달력 | 1,900원 | `monthly-calendar` | `calendar:{readingKey}:{YYYY-MM}` | slug 필요 |
+| `taste_year_core` | 올해 핵심 3줄 | 3,900원 | `year-core` | `year:{readingKey}:{year}` | slug 필요 |
+| `taste_score_factor` | 점수 풀이 보기 | 550원 | `score-factor` | `score:{readingKey}:{F1..F5}` | slug + factor scope 필요 |
+| `taste_compat_reading` | 궁합 깊은 풀이 | 990원 | `compat-reading` | `compat:{coupleKey}` | slug 필요 |
+
+### 1.4 묶음 상품
+
+| 상품ID | 이름 | 가격 | 종류 | 구성 | 비고 |
+|---|---|---:|---|---|---|
+| `bundle_today_set` | 오늘 풀세트 | 990원 | `bundle` | `today-detail` + `score-factor` F1~F5 | 결제 1건으로 구성품 6개 entitlement를 개별 grant |
 
 ---
 
-## 3. 결제 흐름 다이어그램 (현 상태)
+## 2. 구현 상태
 
-```
-[브라우저: /credits 또는 /membership/checkout]
-   │
-   ├─ POST /api/payments/prepare ──→ funnel: prepare_attempt | blocked | ready
-   │   (인증 / 중복 구매 차단)
-   │
-   ├─ loadTossPayments + requestPayment({method: 'CARD'|'TRANSFER'})
-   │   (orderId = `order_${pkg.id}_${method}_${Date.now()}`)
-   │
-   ├─ Toss 결제창
-   │
-   ├─ /credits/success 또는 /membership/success
-   │
-   └─ POST /api/payments/confirm
-       ├─ confirmPayment(orderId, paymentKey, amount)  → Toss API
-       ├─ addCredits (paymentKey idempotency ❌)
-       └─ grantProductEntitlement (UNIQUE 23505 idempotency ✓)
-```
+### 2.1 결제 준비/확정
 
-**누락 경로**: Toss webhook → success 페이지 미도달 시 entitlement 미발급.
+- `/membership/checkout` 경로는 `/api/payments/prepare`를 호출해 인증, 중복 구매, consent 기록, funnel 이벤트를 처리한 뒤 Toss 결제를 연다.
+- `/api/payments/confirm`은 Toss confirm 후 상품 종류별로 `addCredits`, `activateMembershipSubscription`, `grantLifetimeReportEntitlement`, `grantTasteProductEntitlement`, `grantBundleComponents`를 호출한다.
+- `bundle_today_set`은 구성품 분해 grant 방식이다. 기존 조회 경로는 각 단건 entitlement를 그대로 본다.
+- `/credits` 경로는 현재 Toss 결제를 직접 연다. 즉 `/api/payments/prepare`, `PaymentConsentCheckboxes`, consent 기록, prepare funnel을 거치지 않는다.
+
+### 2.2 코인 만료 정책
+
+- `040_credit_lots_expiry.sql`로 결제 코인 1년 만료 모델이 구현돼 있다.
+- `credit_lots`가 결제/이관 코인의 source of truth이고, `user_credits.balance`는 비만료 lot 합의 캐시다.
+- 기존 잔액은 migration 적용 시점 + 1년 만료인 `grandfather` lot으로 백필한다.
+- 신규 결제 코인은 결제 시점 + 1년 만료 lot으로 적립된다.
+- `getCredits`는 표시 잔액을 비만료 lot 합으로 재계산한다. cleanup cron 없이도 만료분은 조회/차감에서 제외된다.
+- 구독 지급분(`subscription_balance`)은 기존 정책대로 구독성 잔액으로 분리된다.
+
+### 2.3 환불/회수
+
+- `revokeProductEntitlement`, `revokeLifetimeReportEntitlement`, bundle revoke 경로가 존재한다.
+- `043_refund_requests.sql`은 admin 요청 → super_admin 승인/실행의 2단계 상태머신을 제공한다.
+- 사용자 확인 기준 2026-05-27에 prod 043 적용 완료. 실제 환불은 진행 중.
+- Toss cancel은 idempotency key를 사용한다.
+
+### 2.4 월간 달력 이중 경로
+
+- 월간 달력은 단건 현금(`taste_monthly_calendar`, 1,900원)과 코인 unlock(`calendar`, 2코인) 양쪽 경로가 있다.
+- UI/FAQ에서 `2코인` 또는 `1,900원` 대안으로 명시한다.
+- 운영 정책이 "두 대안 허용"이면 정합 상태다. "단일 경로 강제"가 목표라면 추가 정책 결정이 필요하다.
 
 ---
 
-## 4. 환불 정책 합의안 (Phase 5/6 작성 예정)
+## 3. 남은 결제정책 리스크
 
-> 본 섹션은 운영자 확정값이 필요. [`../legal-required-fields.md`](../legal-required-fields.md) §1.2 의 "환불 기준 세부 수치" 확정 후 채움.
+### 3.1 P0 후보 — 코인 구매 동의/prepare 우회
+
+- `credits` 상품은 `getRequiredConsentKinds`에서 `coin` 동의를 요구한다.
+- 하지만 `/credits`는 현재 `/api/payments/prepare`와 `PaymentConsentCheckboxes`를 거치지 않는다.
+- 보완 권장: `/credits` 구매 버튼도 membership checkout과 같은 prepare/consent/funnel 경로를 사용하도록 통일.
+
+### 3.2 P0 후보 — bundle digital-content 동의 누락
+
+- `bundle_today_set`은 디지털 콘텐츠 묶음이다.
+- 현재 consent rule은 `lifetime_report`/`taste_product`에만 `digital-content`를 붙이고, `bundle`은 공통 동의만 요구한다.
+- 보완 권장: bundle에도 `digital-content` 동의를 추가.
+
+### 3.3 P1 — credit addCredits paymentKey 멱등성 확인
+
+- entitlement 계열은 UNIQUE/스코프 기반으로 중복 grant가 방어된다.
+- credit 충전은 confirm 경로에서 `addCredits`를 호출한다.
+- `paymentKey/orderId` 중복 confirm 시 DB/RPC 레벨에서 중복 적립을 막는지 확인 필요. 아직 완료로 판정하지 않는다.
+
+### 3.4 P1 — orderId 충돌 가능성
+
+- `/credits`: `order_${pkg.id}_${method}_${Date.now()}`
+- `/membership/checkout`: `membership_${packageId}_${method}_${Date.now()}`
+- 같은 ms 더블 클릭 같은 극단 상황에서 orderId 충돌 가능성이 있다. `crypto.randomUUID()` 또는 서버 발급 order id로 개선 권장.
+
+### 3.5 P1 — Toss webhook 라우트 부재
+
+- 현재 success 페이지 도달 후 `/api/payments/confirm` 호출에 의존한다.
+- 사용자가 결제 후 브라우저를 닫는 경우 entitlement/credit 지급 누락 가능성이 있다.
+- 후속: Toss webhook 또는 결제 상태 reconciliation job.
+
+### 3.6 문서/노출 범위
+
+- `/pricing` 공개 페이지는 현재 주요 taste 상품과 코인/멤버십 중심이며 `taste_score_factor`, `taste_compat_reading`, `bundle_today_set`은 맥락형 상품으로 checkout/결과 화면에서 노출된다.
+- 공개 가격표가 전체 카탈로그 표 역할이어야 한다면 `/pricing`에도 추가 노출이 필요하다. 맥락형 upsell만 의도라면 현 상태 유지 가능.
+
+---
+
+## 4. 환불 정책 합의안
 
 | 상품 카테고리 | 청약철회 가능 기간 | 디지털콘텐츠 열람 후 | 부분환불 |
 |---|---|---|---|
-| 코인 패키지 | ? 일 (운영자 확정) | 불가 (사용 코인 차감) | 미사용분 환불 가능? |
-| 구독 (멤버십) | ? 일 (전자상거래법 §17 검토) | 진행 중 구독 해지 → 다음 결제일까지 유지 | — |
-| lifetime-report (49,000원) | ? 일 (열람 전) | 불가 | — |
-| taste 상품 (550~3,900원) | 열람 전 ? 일 | 불가 | — |
+| 코인 패키지 | 운영자 확정 필요 | 사용 코인 차감 후 환불 기준 확정 필요 | 미사용분 기준 가능 여부 확정 필요 |
+| 구독/멤버십 | 운영자 확정 필요 | 다음 결제일까지 유지/즉시 해지 기준 확정 필요 | 일반적으로 부분환불 없음 또는 별도 기준 |
+| lifetime-report | 열람 전 기준 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
+| taste 상품 | 열람 전 기준 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
+| bundle 상품 | 구성품 제공 전/후 기준 확정 필요 | 구성품 중 하나라도 제공 개시 후 불가 고지 필요 | 구성품별 부분환불 허용 여부 확정 필요 |
 
-### 4.1 청약철회 예외 사유 (전자상거래법 §17②)
-- 디지털콘텐츠 제공 개시 후 (사용자 명시 동의 + 안내 시)
-- 복제 가능한 콘텐츠 (사주 PDF 등)
-
-→ 결제 흐름에 "열람 시 환불 불가" 사전 동의 체크박스 추가 필요 (Phase 5 동의 모달과 연계)
+청약철회 예외 고지는 결제 전 동의 체크박스와 함께 유지한다. bundle은 digital-content 동의가 필요하다.
 
 ---
 
-## 5. admin 환불 흐름 합의안
-
-1. 사용자가 `/refund-policy` 페이지 또는 `/my/billing` 에서 환불 신청 (form → API)
-2. `refund_requests` 테이블에 행 insert (status='pending')
-3. admin `/admin/refunds` (신설) 에서 검토
-4. 승인 시:
-   - Toss `/v1/payments/{paymentKey}/cancel` 호출
-   - entitlement / 코인 회수
-   - `refund_requests.status='approved'`, `processed_at`
-5. 거부 시: 사유 + 안내 이메일 자동 발송
-
----
-
-## 6. 변경 이력
+## 5. 변경 이력
 
 | 일자 | 변경 |
 |---|---|
 | 2026-05-17 | 초기 작성 (Phase 1 audit) |
-| 2026-05-23 | §2.4 P0 부분 해소 — entitlement 회수 함수(`revokeProductEntitlement`/`revokeLifetimeReportEntitlement`) + 대칭성 테스트 추가. 이중 결제(prepare today-detail 코인경로 인식)·올해 핵심 3줄 명칭 통일 동반 |
+| 2026-05-23 | entitlement 회수 함수, today-detail/score-factor 정합성 내용 반영 |
+| 2026-05-27 | 현재 로컬 구현 기준으로 전면 갱신: 16개 카탈로그, `bundle_today_set`, `taste_compat_reading`, `credit_lots` 1년 만료, 043 환불 workflow, 남은 P0/P1 리스크 재정리 |

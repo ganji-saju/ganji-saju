@@ -1,9 +1,49 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-26 (프론트 UX — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비(PC 마이홈 드롭다운·모바일 MY 상단) + 리뷰 모달 정중앙 + 결제퍼널 500 픽스, #386~#389)**. 상세는 ↓ 첫 세션 섹션. 직전 세션: **#373~#384 (LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터)** — 본편(평생리포트) read-through 캐시로 무캐시 비용 출혈 차단(#377) + 전 영역 LLM 텔레메트리 중앙 계측(#378) + 어드민 사용자 상세·검색(#379)·환불 자동화(Toss cancel 2단계 승인, #380)·LLM 비용 대시보드(#381) + PDF 목업→실데이터 전수검사(이름·대운곡선·12개월·LLM 9섹션 전문 P9, #382~#384). **상세: ↓ 첫 세션 섹션.** (이전: 2026-05-25 #364~#368 어휘·UI·12간지 선생 / 2026-05-24~25 #355~#363 today-detail·콘텐츠)
+> 최종 업데이트: **2026-05-27 (Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검)**. 직전 구현 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비(PC 마이홈 드롭다운·모바일 MY 상단) + 리뷰 모달 정중앙 + 결제퍼널 500 픽스. 직전 운영 세션: **#373~#384** — LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-27 세션 — Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검
+
+> 목적: Claude Code/Codex 작업물이 섞인 현재 로컬 상태를 먼저 보존하고, 문서 상태를 현재 구현과 맞추기 위한 점검. **코드 경로는 수정하지 않음.**
+
+### 백업
+- 로컬 백업 디렉터리: `.codex-backups/20260527-094309-local-current/`
+- `repo-head.bundle`: 현재 `main` HEAD `4157a40c7ea756dce8123f523334e6c66c37a93f` 전체 git history 백업. `git bundle verify` 통과.
+- `untracked-files.tar.gz`: 백업 생성 전 미추적 작업물 3건 보존.
+  - `.claude/launch.json`
+  - `docs/claude-specs/phase-0a-lifetime-cache.md`
+  - `docs/검증 후 1주일 운영 데이터.md`
+- `tracked-working-tree.diff` / `staged.diff`: 둘 다 0B → 백업 시점에 추적 파일은 HEAD와 일치, staged 변경 없음.
+- `README.md` / `SHA256SUMS` / `git-status-short.txt` / `head-log.txt` 포함.
+
+### 사용자 확인으로 닫힌 운영 항목
+- `043_refund_requests`: 사용자가 prod 적용 확인. 환불은 진행 중.
+- `/admin/payment-funnel`: 사용자가 확인 완료.
+- PDF: 결제 본편 P9 포함, `PAGE 9 / 9` 사용자 확인 완료.
+- 로그인 상태 UX: 사용자 검증 완료.
+- 코인 만료 정책: `040_credit_lots_expiry` + `credit_lots` lot 기반 1년 만료 구현 존재. `getCredits`는 비만료 lot 합으로 표시 잔액을 재계산.
+
+### 로컬 구현 기준 결제/가격 상태
+- 카탈로그는 현재 16개 패키지: 코인 3종, 36코인 일회성 1종, 멤버십 2종, lifetime 1종, taste 8종, bundle 1종.
+- `bundle_today_set` 990원은 구현됨: `today-detail` + `score-factor` F1~F5 전체를 개별 entitlement로 grant/revoke.
+- `taste_score_factor` 550원과 `taste_compat_reading` 990원은 카탈로그/스코프/checkout 경로에 존재.
+- 월간 달력은 `2코인` 또는 `1,900원` 양쪽 경로가 UI/FAQ에서 대안으로 노출됨. 정책상 “이중 경로 허용”이면 정합, “단일 경로 강제”면 아직 정책 결정 필요.
+
+### 아직 완료 판정 전 점검 필요
+1. **코인 구매 동의/prepare 우회**: `/credits`는 Toss를 직접 열고 있어 `/api/payments/prepare`, `PaymentConsentCheckboxes`, consent 기록, prepare funnel이 빠짐. credit 상품은 정책상 `coin` 동의가 필요하므로 보완 권장.
+2. **bundle 동의 규칙**: `bundle_today_set`은 디지털 콘텐츠 묶음이지만 `getRequiredConsentKinds`에서 bundle은 공통 동의만 요구. `digital-content` 동의 추가 권장.
+3. **credit idempotency**: confirm 경로의 `addCredits`가 `paymentKey` 중복 적립을 DB/RPC 레벨에서 차단하는지 확인 필요. 기존 문서의 P1 리스크는 아직 완전 해소로 판단하지 않음.
+4. **문서 동기화**: `docs/payments/product-catalog.md`, `pricing-proposal.md`, `pricing-rollout-plan.md`를 현재 로컬 구현 기준으로 갱신.
+
+### 검증
+- `npm test`: 737 tests passed.
+- `npm run test:spec -- src/lib/payments/payment-duplicate-audit.spec.ts src/lib/payments/confirmation.test.ts`: 18 tests passed.
+- `npm run typecheck`: 통과.
 
 ---
 
@@ -72,13 +112,13 @@
 
 ### 마이그레이션 상태 (⚠️ 수동 적용 — CI 자동 아님)
 - `041_ai_lifetime_interpretations`(Phase 0a) · `042_ai_llm_runs`(Phase 0b): **적용됨**(라이브 검증 통과).
-- `043_refund_requests`(Phase 2): **작성 완료 · prod 수동 적용 대기**(`supabase` CLI). 코드는 테이블 존재를 가정하므로 환불 기능 사용 전 적용 필수.
+- `043_refund_requests`(Phase 2): **사용자 확인 기준 prod 적용 완료**(2026-05-27). 환불 처리는 진행 중.
 
 ### 운영 후속 (코드 밖 — 사용자 작업)
-- `043_refund_requests` prod 적용(supabase CLI).
-- **super_admin 지정**(`admin_users.role` 또는 `ADMIN_USER_IDS` 부트스트랩) — 환불 최종 승인 권한.
-- **결제 계정으로 PDF 시각 확인**: 실명 노출 / 대운 곡선이 사주별로 달라지는지 / P9 9섹션 레이아웃·페이지네이션(PAGE 7/9·8/9·9/9). **로컬 Turbopack symlink 제약으로 로컬 PDF 렌더 미검증** → 배포 빌드에서 확인.
-- 실제 Toss 환불 실행은 super_admin 수동(나는 미실행).
+- ✅ `043_refund_requests` prod 적용: 사용자 확인 완료(2026-05-27).
+- **super_admin 지정**(`admin_users.role` 또는 `ADMIN_USER_IDS` 부트스트랩) — 환불 최종 승인 권한. 이미 지정됐다면 닫힘.
+- ✅ **결제 계정으로 PDF 시각 확인**: 사용자 확인 기준 P9 포함 `PAGE 9 / 9` 확인 완료.
+- 실제 Toss 환불은 사용자 확인 기준 진행 중.
 
 ### 교훈
 - **본편 캐시 키**는 `reportHash + feedback + targetYear` — feedback/targetYear 누락 시 캐시 오염(스펙 갭이었음).
@@ -105,7 +145,7 @@
 - ◐ **사이트 네비/홈 카드 통일**("미착수") → #351~#353(다크 통일·별자리 뒤로가기)로 일부 진행 후, #365에서 카드 다크는 흰색으로 되돌림(사용자 요청).
 - ✅ **점수 Phase 2~7**(하단 §4 Tier 표 SC2~SC5 ⬜) → #305/#307~#312/#314로 **이미 완료·배포**됨(표가 stale).
 - ✅ **lifetime 환불 "회수 함수 없음"**(아래 가격정책 (b)) → `revokeProductEntitlement`·`payments/bundle.ts` 일괄회수 **존재**(#342).
-- ⬜ 여전히 열림: 가격 제안서 §3 미작성 · 코인 만료 정책↔구현 불일치(expiry/cron 없음) · today-detail 중복 과금 환불(운영) · audit 🟡 2(총평 문장수 enforce·대운 LLM 다양성).
+- ◐ 여전히 열림(2026-05-27 갱신): 코인 만료 정책↔구현 불일치는 `040_credit_lots_expiry`로 해소. today-detail 중복 과금 환불은 진행 중. 남은 결제정책 점검은 `/credits` prepare/동의 우회, bundle digital-content 동의, credit addCredits paymentKey 멱등성 확인. audit 🟡 2(총평 문장수 enforce·대운 LLM 다양성)는 별도.
 
 ### 후속
 - 선생 명칭: 관상원·복돼지는 주제 부합으로 유지. 추가 변경 시 별도 PR.
@@ -170,18 +210,18 @@
 
 사용자가 가격 정책 비일관성 지적(총운 무료 / 대운·오늘자세히 550 / 분야 990 / 좋은날 1,900 / 올해 3,900 / 보관형 49,000 — 구조 어색). 진행 순서:
 
-**(a) 가격 정책 개편안 문서 완성** — `docs/payments/pricing-proposal.md` (작성 중·미완성, 출력 중단됨). 구조 개선 골자:
+**(a) 가격 정책 개편안 문서 완성** — `docs/payments/pricing-proposal.md` (2026-05-27 기준 기본 문서는 존재하며, 로컬 구현 반영 상태로 갱신 필요). 구조 개선 골자:
 - 단건 최고가(3,900) ↔ 보관형(49,000) 사이 빈 중간 구간을 **묶음(번들) 상품(1만원대)** 으로 연결
 - 콘텐츠 지속성/범위 비례 차등(현재 `taste_score_factor` 550 일괄 → 대운 등 장기 콘텐츠 상향)
-- 결제 경로 단일화(코인 vs 단건 현금)
+- 결제 경로 정합화(코인 vs 단건 현금). 2026-05-27 기준 monthly-calendar는 `2코인`/`1,900원` 양쪽 경로를 의도적 대안으로 노출 중.
 - 멤버십(`membership_*`)에 풀이 unlock 혜택 연결(현재 AI 대화 코인 전용이라 분리됨)
 - 보관형 49,000 재검토
 
 **(b) 코드/표기 P0 정합성 정비** (근거: `docs/payments/product-catalog.md §2`):
 - 이중 결제 경로 — 동일 기능(예: 월간달력 1,900원 단건 = 2코인)이 코인 차감 + 단건 현금 양쪽 노출 → 통일/분리
 - 화면 라벨 ↔ `catalog.ts` 표기 불일치 — 예: 화면 "올해흐름"(990?) vs catalog `taste_year_core` "올해 핵심 3줄"(3,900) → 통일
-- `lifetime_report`(49,000) **환불 인프라 부재** — 환불 페이지·entitlement 회수 함수 없음 → 환불 후에도 열람 가능. revoke 함수 + 환불 UI 추가
-- 코인 만료 정책 불일치(FAQ "1년 유효" vs DB `user_credits` 만료 컬럼/cron 없음=영구) — 정책/구현 중 택1 (§2.3)
+- `lifetime_report`(49,000) **환불 인프라** — revoke 함수 + admin 환불 요청/승인 + 043 테이블까지 구현. 사용자 확인 기준 043 적용 완료, 환불 진행 중.
+- 코인 만료 정책 불일치(FAQ "1년 유효" vs 구현 영구)는 `040_credit_lots_expiry`의 `credit_lots` 1년 만료 모델로 해소.
 
 > ⚠️ 세션 메모: 운세+결제 상세를 채팅으로 길게 출력하면 자동 콘텐츠 안전필터 오탐으로 응답이 truncation/차단됨. → 상세 표·수치는 **문서 파일에 기록**, 채팅은 요약만.
 
