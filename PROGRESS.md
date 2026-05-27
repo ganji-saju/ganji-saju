@@ -1,9 +1,48 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-27 (Codex 후속 정리 — 문서 어휘/브랜드 톤 정리 + npm audit 확인 + vocabulary release 브랜치 정리)**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. 직전 UX/운영 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-27 (Codex 결제 안정성 P0 — Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation)**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. 직전 UX/운영 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-27 세션 — Codex 결제 안정성 P0 (`Next 16.2.6` + `payment_orders` + Toss webhook/reconciliation)
+
+> 목적: 남은 결제 P0 후보였던 Next high audit, client timestamp orderId, success page confirm 의존 리스크를 닫는다. DB/서버/클라이언트/cron까지 한 경로로 묶어 **결제 원장 일치성**을 높인 작업.
+
+### 구현 완료
+- **Next.js security patch**: `next`를 `16.2.3` → `16.2.6`으로 올려 audit high 제거. `shadcn`은 build-time/dev dependency로 이동해 `qs`를 production graph에서 제외.
+- **서버 orderId 발급**: `/api/payments/prepare`가 `payment_orders` 원장 row를 만들고 `ord_${crypto.randomUUID()}` 형식의 Toss `orderId`를 반환. `/credits`, `/membership/checkout`은 prepare 응답 `orderId`로 Toss 결제창을 연다.
+- **동의 기록 orderId 연결**: 결제 동의 기록(`user_policy_consents.order_id`)이 prepare에서 만든 서버 orderId와 연결됨.
+- **confirm 원장 대조**: `/api/payments/confirm`은 success URL payload만 믿지 않고 `payment_orders.user_id/package_id/amount/currency`와 Toss 결제 객체를 대조한 뒤 지급.
+- **공통 fulfillment**: confirm/webhook/reconciliation이 모두 `fulfillPaymentOrder`를 사용. `claim_payment_order_fulfillment()` RPC가 원자적으로 지급 작업을 claim해 멤버십 기간 연장/권한 grant/코인 적립 중복을 막는다. 이미 `fulfilled/fulfilling` 상태인 주문은 재확정하지 않아 중복 webhook/confirm 레이스도 차단한다.
+- **Toss webhook endpoint**: `/api/payments/webhook/toss` 추가. `PAYMENT_STATUS_CHANGED` payload는 원문 저장 후 Toss payment 조회 API로 검증하고 처리. 중복 webhook은 `payment_webhook_events.event_hash`로 dedupe.
+- **reconciliation cron**: `/api/payments/reconcile` 추가 + `vercel.json` hourly cron 등록. `prepared/in_progress/confirmed/fulfillment_failed` 주문을 Toss `paymentKey` 또는 `orderId` 조회로 보정.
+- **운영 env**: Vercel production `CRON_SECRET` 신규 설정 완료. reconciliation endpoint는 `Authorization: Bearer $CRON_SECRET` 또는 `x-payment-reconciliation-secret`만 허용.
+
+### DB 적용
+- 신규 migration: `045_payment_orders_reconciliation.sql`
+  - `payment_orders`
+  - `payment_webhook_events`
+  - `claim_payment_order_fulfillment(p_order_id)`
+  - `mark_payment_order_reconciliation_attempt(p_order_id)`
+- Supabase prod 적용 완료: `supabase db push` → migration list `045 Local=Remote` 확인.
+
+### 검증
+- `npm run typecheck`: 통과.
+- `npm test`: 747 tests passed + node:test 172 pass.
+- `npm run test:spec -- src/lib/payments/payment-duplicate-audit.spec.ts src/lib/payments/confirmation.test.ts src/lib/payments/order-ledger.test.ts src/lib/payments/bundle.test.ts src/lib/payments/consent.test.ts`: 18 tests passed.
+- `npm run build`: 통과 (Next.js 16.2.6, 191 static pages).
+- `npm audit --omit=dev --json`: high 0 / critical 0. 남은 production advisory는 Next 내부 `postcss` moderate 2건이며 npm 제안 fix가 `next@9.3.3`로 비정상이라 별도 upstream 추적.
+- `npm audit --json`: high 0 / critical 0. dev-only `qs` moderate는 `shadcn` 경로에만 남음.
+- `npm run audit:payment-idempotency:strict`: Supabase 조회 포함 통과(회귀 0건).
+- `npm run audit:mockup-placeholders:strict`: 의심 패턴 0.
+- `git diff --check`: 통과.
+
+### 운영 대기
+- **Toss 개발자센터 webhook 등록 필요**: URL `https://ganjisaju.kr/api/payments/webhook/toss`, event `PAYMENT_STATUS_CHANGED`.
+- **실결제 smoke 필요**: 코인 1건, 단건 상품 1건, 중복 confirm, success page 미도달 시나리오. 실제 결제수단/환불 처리가 필요한 운영 검증이라 코드 배포 후 별도 수행.
 
 ---
 
@@ -32,10 +71,9 @@
 - **Toss 환불 완료 여부**: 로컬 repo에서 사실 확인 불가. Toss 관리자/운영자 확인 후 완료 처리 필요.
 - **사용자 안내 완료 여부**: 현재 대화 기록만으로는 안내 발송 완료를 확정할 수 없음. 환불 완료 확인과 함께 닫을 항목.
 
-### 다음 P0 후보
-1. **Next.js 16.2.6 패치 업그레이드**: audit high가 production graph에 남아 있어 결제 안정성 작업과 별도로 빠르게 처리 권장.
-2. **결제 `orderId` 서버 발급/UUID화**: 현재 client timestamp 기반 orderId는 극단적 더블클릭/ms 충돌 가능성이 남아 있음.
-3. **Toss webhook/reconciliation**: success redirect 이후 confirm 의존을 줄이고, 브라우저 종료/네트워크 실패 시 미지급을 보정하는 별도 수신·대조 경로 필요.
+### 후속 처리 상태
+- 위 결제 안정성 P0 세션에서 **Next.js 16.2.6**, **서버 orderId/payment_orders**, **Toss webhook/reconciliation 코드·cron**까지 구현 완료.
+- 남은 것은 코드가 아니라 외부 운영 확인: Toss 개발자센터 webhook 등록, 실제 결제 smoke, 환불 완료/사용자 안내 완료 여부.
 
 ---
 

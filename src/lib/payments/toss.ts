@@ -1,4 +1,5 @@
 import { PAYMENT_PACKAGES, getPackage, type PackageId } from './catalog';
+import type { TossPaymentObject } from './order-ledger';
 
 export const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
   ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
@@ -6,26 +7,64 @@ export const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
 
 export { getPackage, type PackageId };
 
-export async function confirmPayment(paymentKey: string, orderId: string, amount: number) {
+function getTossAuthorizationHeader() {
   if (!process.env.TOSS_SECRET_KEY) {
     throw new Error('TOSS_SECRET_KEY가 설정되어 있지 않습니다.');
   }
 
+  return `Basic ${Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString('base64')}`;
+}
+
+async function parseTossResponse(response: Response, fallbackMessage: string) {
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+    throw new Error(typeof error.message === 'string' ? error.message : fallbackMessage);
+  }
+
+  return body as TossPaymentObject;
+}
+
+export async function confirmPayment(paymentKey: string, orderId: string, amount: number) {
   const response = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
     method: 'POST',
     headers: {
-      Authorization: `Basic ${Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString('base64')}`,
+      Authorization: getTossAuthorizationHeader(),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ paymentKey, orderId, amount }),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message ?? '결제 승인 실패');
-  }
+  return parseTossResponse(response, '결제 승인 실패');
+}
 
-  return response.json();
+export async function getPayment(paymentKey: string) {
+  const response = await fetch(
+    `https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: getTossAuthorizationHeader(),
+      },
+    }
+  );
+
+  return parseTossResponse(response, '결제 조회 실패');
+}
+
+export async function getPaymentByOrderId(orderId: string) {
+  const response = await fetch(
+    `https://api.tosspayments.com/v1/payments/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: getTossAuthorizationHeader(),
+      },
+    }
+  );
+
+  return parseTossResponse(response, '결제 주문 조회 실패');
 }
 
 // 2026-05-25 Phase 2 — 결제 취소(환불). confirmPayment 와 동일 Basic auth.
@@ -39,7 +78,7 @@ export async function cancelPayment(
   }
 
   const headers: Record<string, string> = {
-    Authorization: `Basic ${Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString('base64')}`,
+    Authorization: getTossAuthorizationHeader(),
     'Content-Type': 'application/json',
   };
   if (options.idempotencyKey) {

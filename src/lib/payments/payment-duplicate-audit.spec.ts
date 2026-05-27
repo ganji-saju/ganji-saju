@@ -55,7 +55,7 @@ describe('Payment catalog 정합성', () => {
     }
   });
 
-  it('requiresSlug 패키지는 슬러그 없이 결제 confirmation 통과 못한다', () => {
+  it('requiresSlug 패키지도 confirm callback 에서는 order ledger 가 scope 를 소유한다', () => {
     const requireSlugPkgs = (PAYMENT_PACKAGES as readonly PaymentPackage[]).filter(
       (pkg) => pkg.requiresSlug || pkg.kind === 'lifetime_report'
     );
@@ -67,9 +67,9 @@ describe('Payment catalog 정합성', () => {
         orderId: `test_order_${pkg.id}`,
         amount: pkg.price,
         packageId: pkg.id,
-        slug: '', // 슬러그 빠진 상태
+        slug: '',
       });
-      expect(validation.ok).toBe(false);
+      expect(validation.ok).toBe(true);
     }
   });
 });

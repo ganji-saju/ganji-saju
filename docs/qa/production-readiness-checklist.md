@@ -80,9 +80,13 @@
 - [ ] sitemap lastmod 동적화 (KST dateKey 기반)
 
 ### 결제 보강
-- [ ] orderId UUID 화 (`Date.now()` → `crypto.randomUUID()`)
-- [ ] Toss webhook 라우트 신설 (`/api/payments/webhook/toss`) + idempotency
-- [ ] `addCredits` paymentKey 기반 idempotency
+- [x] orderId UUID 화 (`Date.now()` → 서버 `crypto.randomUUID()`)
+  - 코드/DB: `/api/payments/prepare`가 `payment_orders` row와 `ord_${crypto.randomUUID()}` 형식 orderId를 만들고, `/credits`/멤버십 결제창은 prepare 응답 orderId만 사용.
+- [x] Toss webhook 라우트 신설 (`/api/payments/webhook/toss`) + idempotency
+  - 코드/DB: `payment_webhook_events.event_hash` dedupe + Toss 조회 검증 + 공통 fulfillment.
+  - 운영 대기: Toss 개발자센터에 production URL 등록 필요.
+- [x] `addCredits` paymentKey 기반 idempotency
+  - DB: `044_credit_payment_idempotency.sql` prod 적용 완료. `processed_credit_payments.payment_key` UNIQUE로 중복 코인 적립 차단.
 - [ ] 결제 prepare/confirm route unit test
 
 ### 인증 / 동의

@@ -93,20 +93,27 @@
 
 ---
 
-## 3. 남은 결제 안정성 리스크
+## 3. 결제 안정성 P0 처리 상태
 
-### 3.1 P0 후보 — orderId 서버 발급/UUID화
+### 3.1 완료 — orderId 서버 발급/UUID화
 
-- `/credits`: `order_${pkg.id}_${method}_${Date.now()}`
-- `/membership/checkout`: `membership_${packageId}_${method}_${Date.now()}`
-- 같은 ms 더블 클릭 같은 극단 상황에서 orderId 충돌 가능성이 있다.
-- 다음 결제 P0 후보로 `crypto.randomUUID()` 또는 서버 발급 order id 전환을 권장한다.
+- `/api/payments/prepare`가 `payment_orders` 원장을 만들고 `ord_${crypto.randomUUID()}` 형식의 Toss `orderId`를 반환한다.
+- `/credits`, `/membership/checkout`은 더 이상 `Date.now()` 기반 orderId를 직접 만들지 않고 prepare 응답의 `orderId`로 Toss 결제창을 연다.
+- 결제 동의 기록(`user_policy_consents.order_id`)도 prepare에서 생성된 서버 orderId와 연결된다.
+- `/api/payments/confirm`은 success URL payload만 믿지 않고 `payment_orders`의 `user_id/package_id/amount/currency`와 대조한다.
 
-### 3.2 P0 후보 — Toss webhook/reconciliation 부재
+### 3.2 코드 완료 — Toss webhook/reconciliation
 
-- 현재 success 페이지 도달 후 `/api/payments/confirm` 호출에 의존한다.
-- 사용자가 결제 후 브라우저를 닫는 경우 entitlement/credit 지급 누락 가능성이 있다.
-- 다음 결제 P0 후보로 Toss webhook 또는 결제 상태 reconciliation job을 권장한다.
+- 신규 webhook endpoint: `/api/payments/webhook/toss`
+  - `PAYMENT_STATUS_CHANGED` 이벤트를 수신한다.
+  - webhook payload는 그대로 믿지 않고 Toss payment 조회 API로 검증한 뒤 지급한다.
+  - webhook 중복 수신은 `payment_webhook_events.event_hash`로 dedupe한다.
+- 신규 reconciliation endpoint: `/api/payments/reconcile`
+  - Vercel Cron으로 매시 실행한다.
+  - `prepared/in_progress/confirmed/fulfillment_failed` 계열 주문을 Toss 조회/승인/지급 상태와 대조한다.
+  - `CRON_SECRET` 기반 인증이 필요하다.
+- 지급 로직은 confirm/webhook/reconciliation이 공통 `fulfillPaymentOrder` 경로를 타며, `claim_payment_order_fulfillment()`로 원자적 claim 후 1회만 수행한다.
+- 운영 등록 대기: Toss 개발자센터에서 `https://ganjisaju.kr/api/payments/webhook/toss`를 webhook URL로 등록하고 `PAYMENT_STATUS_CHANGED` 이벤트를 켜야 한다.
 
 ### 3.3 문서/노출 범위
 
@@ -139,3 +146,4 @@
 | 2026-05-27 | Codex 결제정책 보완 — `/credits` prepare/consent 통합, bundle digital-content 동의, 044 credit paymentKey idempotency, `subscription_30` purchase lot 적립 타입 및 coin 동의 반영 |
 | 2026-05-27 | 사용자 확인으로 Supabase prod에 `044_credit_payment_idempotency.sql` 수동 적용 완료 |
 | 2026-05-27 | 결제 안정성 다음 P0 후보를 orderId 서버 발급/UUID화, Toss webhook/reconciliation으로 재분류 |
+| 2026-05-27 | Codex 결제 안정성 P0 구현 — `045_payment_orders_reconciliation.sql`, 서버 orderId, payment_orders 기반 confirm, Toss webhook endpoint, reconciliation cron 추가. Supabase prod 적용 완료 |

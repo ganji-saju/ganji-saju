@@ -36,6 +36,7 @@ interface PaymentPrepareResponse {
   redirectHref?: string;
   loginHref?: string;
   error?: string;
+  orderId?: string;
 }
 
 export default function TossMembershipCheckout({
@@ -116,6 +117,7 @@ export default function TossMembershipCheckout({
           slug,
           scope,
           from: entrySource,
+          paymentMethod,
           // Phase 3-C-1: 결제 전 동의 정책 종류. prepare API 가 활성 PolicyVersion 으로 변환 후 DB insert.
           acceptedKinds,
         }),
@@ -139,9 +141,14 @@ export default function TossMembershipCheckout({
         return;
       }
 
+      if (!prepare?.orderId) {
+        setErrorMessage('결제 주문번호를 만들지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = `membership_${packageId}_${paymentMethod.toLowerCase()}_${Date.now()}`;
+      const orderId = prepare.orderId;
       const successParams = new URLSearchParams({
         packageId,
         plan,

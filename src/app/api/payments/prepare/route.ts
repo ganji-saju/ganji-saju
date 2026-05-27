@@ -25,6 +25,10 @@ import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 // 2026-05-18 Phase 3-C-1 — 결제 전 동의 검증 + DB 기록.
 import { findMissingConsents, recordConsentsForPayment } from '@/lib/payments/consent';
 import { POLICY_KINDS, type PolicyKind } from '@/shared/policies/types';
+import {
+  createPaymentOrder,
+  updatePaymentOrderPolicyVersions,
+} from '@/lib/payments/order-ledger';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -69,6 +73,7 @@ export async function POST(req: NextRequest) {
   const slug = readString(payload, 'slug') || null;
   const scope = readString(payload, 'scope') || null;
   const from = readString(payload, 'from') || null;
+  const paymentMethodCode = readString(payload, 'paymentMethod') || null;
   const pkg = getPackage(packageId);
 
   if (!pkg) {
@@ -234,6 +239,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const order = await createPaymentOrder({
+    userId: user.id,
+    pkg,
+    slug,
+    scope,
+    product,
+    plan,
+    entrySource: from,
+    paymentMethodCode,
+    acceptedKinds,
+    recordedPolicyVersionIds: [],
+    metadata: { checkoutPath },
+  });
+
   // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.
   // 실패해도 결제 자체는 진행 (graceful — 정책 본문 admin 입력 전이면 skip).
   let recordedPolicyVersionIds: string[] = [];
@@ -243,13 +262,14 @@ export async function POST(req: NextRequest) {
       userId: user.id,
       pkg,
       acceptedKinds,
-      orderId: null, // confirm 시점에는 orderId 별도 처리 (후속 PR)
+      orderId: order.orderId,
       userAgent: req.headers.get('user-agent') ?? null,
       ip:
         req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
         req.headers.get('x-real-ip') ??
         null,
     });
+    await updatePaymentOrderPolicyVersions(order.orderId, recordedPolicyVersionIds);
   } catch (err) {
     // 동의 기록 실패는 funnel 로그만 — 결제 차단 안 함.
     consentRecordError = true;
@@ -261,12 +281,14 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     packageId,
     amount: pkg.price ?? null,
+    orderId: order.orderId,
     metadata: {
       scopeKey: paymentScope?.scopeKey ?? null,
       consentAcceptedKinds: acceptedKinds,
       consentRecorded: recordedPolicyVersionIds.length > 0,
       consentRecordCount: recordedPolicyVersionIds.length,
       consentRecordError,
+      paymentMethodCode,
     },
   });
 
@@ -275,5 +297,6 @@ export async function POST(req: NextRequest) {
     authenticated: true,
     alreadyPurchased: false,
     scopeKey: paymentScope?.scopeKey ?? null,
+    orderId: order.orderId,
   });
 }

@@ -47,6 +47,7 @@ interface PaymentPrepareResponse {
   redirectHref?: string;
   loginHref?: string;
   error?: string;
+  orderId?: string;
 }
 
 function getPricePerCoin(pkg: PaymentPackage) {
@@ -173,6 +174,7 @@ function CreditsPageContent() {
         body: JSON.stringify({
           packageId: pkg.id,
           from: entrySource,
+          paymentMethod,
           acceptedKinds,
         }),
       });
@@ -196,9 +198,14 @@ function CreditsPageContent() {
         return;
       }
 
+      if (!prepare?.orderId) {
+        setErrorMessage('결제 주문번호를 만들지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = `order_${pkg.id}_${paymentMethod.toLowerCase()}_${Date.now()}`;
+      const orderId = prepare.orderId;
       const successParams = new URLSearchParams({
         packageId: pkg.id,
         from: entrySource,

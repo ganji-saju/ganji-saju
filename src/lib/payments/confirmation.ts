@@ -57,13 +57,6 @@ export function validatePaymentConfirmationPayload(
     return { ok: false, error: '잘못된 결제 정보입니다.' };
   }
 
-  if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {
-    return {
-      ok: false,
-      error: '이 상품 결제에는 연결할 결과 식별자가 필요합니다.',
-    };
-  }
-
   return {
     ok: true,
     input: {

@@ -9,7 +9,7 @@
 
 ## 0. 핵심 결론 (먼저 읽기)
 
-> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 근거다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. credit prepare/동의 경로와 bundle digital-content 동의도 보강됐고, 044 credit idempotency migration도 사용자 확인으로 Supabase prod 적용 완료됐다. 남은 것은 후속 번들, webhook/reconciliation 같은 후속 안정화다.
+> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 근거다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. credit prepare/동의 경로와 bundle digital-content 동의도 보강됐고, 044 credit idempotency migration 및 045 payment order ledger/webhook/reconciliation migration이 Supabase prod에 적용됐다. 남은 외부 운영 작업은 Toss 개발자센터 webhook 등록과 실제 결제 smoke다.
 
 1. **초안 당시 결제 모델은 `1 패키지 = 1 productId = 1 scope`** 로 고정돼 있었다(catalog·confirmation·confirm·scope·조회 전부 이 가정). 제안서의 묶음 상품(오늘 풀세트·올해 풀패키지)은 **`1 결제 = N 권한`** 이라, 이 모델에 없는 **묶음 인프라를 새로 도입**해야 했다.
 2. 그래서 제안서의 **"1순위 = 난이도 낮음"은 카탈로그/카피 관점일 뿐**, 실제로는 결제 백엔드(`confirm` grant 경로) 변경이 처음으로 필요해 **실질 난이도는 "중"**이었다.

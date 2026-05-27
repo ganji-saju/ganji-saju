@@ -52,7 +52,7 @@ test('payment confirmation rejects tampered package amount', () => {
   });
 });
 
-test('lifetime report confirmation requires a reading slug before Toss approval', () => {
+test('lifetime report confirmation callback can omit slug because order ledger owns scope', () => {
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
@@ -60,10 +60,9 @@ test('lifetime report confirmation requires a reading slug before Toss approval'
     packageId: 'lifetime_report',
   });
 
-  assert.deepEqual(result, {
-    ok: false,
-    error: '이 상품 결제에는 연결할 결과 식별자가 필요합니다.',
-  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.input.slug, null);
 });
 
 test('lifetime report confirmation trims the reading slug used for entitlement', () => {
@@ -101,7 +100,7 @@ test('taste product confirmation accepts product package with slug and scope', (
   assert.equal(result.input.scope, '2026-05');
 });
 
-test('scoped taste product confirmation requires a connected result slug', () => {
+test('scoped taste product confirmation callback can omit slug because order ledger owns scope', () => {
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
@@ -109,8 +108,7 @@ test('scoped taste product confirmation requires a connected result slug', () =>
     packageId: 'taste_year_core',
   });
 
-  assert.deepEqual(result, {
-    ok: false,
-    error: '이 상품 결제에는 연결할 결과 식별자가 필요합니다.',
-  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.input.slug, null);
 });

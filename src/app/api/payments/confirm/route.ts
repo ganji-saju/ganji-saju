@@ -1,41 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import {
-  getCreditGrantType,
-  isBundlePackage,
-  isSubscriptionPackage,
-  isTasteProductPackage,
-} from '@/lib/payments/catalog';
-import { grantBundleComponents } from '@/lib/payments/bundle';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
-import { addCredits, getCredits } from '@/lib/credits/deduct';
-import { grantLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
-  getProductEntitlement,
-  grantTasteProductEntitlement,
-} from '@/lib/product-entitlements';
+  attachPaymentKeyToOrder,
+  getPaymentOrderForUser,
+  markPaymentOrderConfirmed,
+  markPaymentOrderFailed,
+} from '@/lib/payments/order-ledger';
 import {
-  resolvePaymentProductScope,
-  type PaymentProductScope,
-} from '@/lib/payments/product-scope';
-import { upsertPaidReadingSnapshot } from '@/lib/payments/paid-reading-snapshots';
-import { ensureReadingOwnedByUser } from '@/lib/saju/readings';
-import { activateMembershipSubscription } from '@/lib/subscription';
+  buildAlreadyFulfilledResult,
+  fulfillPaymentOrder,
+} from '@/lib/payments/fulfillment';
 // 2026-05-16 PR (B1) — 결제 funnel 단계 기록.
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
-
-async function attachOwnedReading(
-  paymentScope: PaymentProductScope | null,
-  userId: string
-): Promise<PaymentProductScope | null> {
-  if (!paymentScope?.reading) return paymentScope;
-  const ownedReading = await ensureReadingOwnedByUser(paymentScope.reading, userId);
-  return {
-    ...paymentScope,
-    reading: ownedReading,
-  };
-}
 
 export async function POST(req: NextRequest) {
   const validation = validatePaymentConfirmationPayload(await req.json().catch(() => null));
@@ -44,7 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  const { paymentKey, orderId, amount: parsedAmount, slug, scope, pkg } = validation.input;
+  const { paymentKey, orderId, amount: parsedAmount, packageId, pkg } = validation.input;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -61,10 +39,67 @@ export async function POST(req: NextRequest) {
     orderId,
   });
 
+  let order = await getPaymentOrderForUser(orderId, user.id);
+  if (!order) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'order_not_found',
+    });
+    return NextResponse.json({ error: '결제 주문을 찾지 못했습니다.' }, { status: 400 });
+  }
+
+  if (order.status === 'fulfilled' || order.status === 'fulfilling') {
+    const result = await buildAlreadyFulfilledResult(order);
+    return NextResponse.json(result);
+  }
+
+  if (order.packageId !== packageId || order.amount !== parsedAmount) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'payload_mismatch',
+      metadata: { orderPackageId: order.packageId, orderAmount: order.amount },
+    });
+    return NextResponse.json({ error: '결제 정보가 내부 주문과 일치하지 않습니다.' }, { status: 400 });
+  }
+
+  if (order.paymentKey && order.paymentKey !== paymentKey) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'confirm_failed',
+      userId: user.id,
+      packageId: pkg.id,
+      amount: parsedAmount,
+      orderId,
+      reason: 'payment_key_mismatch',
+    });
+    return NextResponse.json({ error: '이미 다른 결제 키가 연결된 주문입니다.' }, { status: 400 });
+  }
+
+  order = await attachPaymentKeyToOrder({ order, paymentKey, source: 'confirm' });
+
   // 토스페이먼츠 결제 승인
-  const payment = await confirmPayment(paymentKey, orderId, parsedAmount).catch(err => {
-    return NextResponse.json({ error: err.message }, { status: 400 });
-  });
+  const payment =
+    order.status === 'confirmed' && order.tossPayment
+      ? order.tossPayment
+      : await confirmPayment(paymentKey, orderId, parsedAmount).catch(async (err) => {
+          await markPaymentOrderFailed({
+            orderId,
+            status: 'payment_failed',
+            error: err instanceof Error ? err.message : '결제 승인 실패',
+            source: 'confirm',
+          });
+          return NextResponse.json(
+            { error: err instanceof Error ? err.message : '결제 승인 실패' },
+            { status: 400 }
+          );
+        });
 
   if (payment instanceof NextResponse) {
     await logPaymentFunnelEvent(supabase, {
@@ -78,76 +113,41 @@ export async function POST(req: NextRequest) {
     return payment;
   }
 
-  let totalCredits: number | null = null;
-  const paymentScope = await attachOwnedReading(
-    await resolvePaymentProductScope({ pkg, slug, scope }),
-    user.id
-  );
+  const fulfillment = await (async () => {
+    try {
+      const confirmedOrder = await markPaymentOrderConfirmed({
+        orderId,
+        payment,
+        source: 'confirm',
+      });
 
-  if (pkg.credits > 0) {
-    await addCredits(user.id, pkg.credits, getCreditGrantType(pkg), {
-      orderId,
-      packageId: pkg.id,
-      paymentKey,
-    });
-    const updatedCredits = await getCredits(user.id);
-    totalCredits =
-      (updatedCredits?.balance ?? 0) + (updatedCredits?.subscription_balance ?? 0);
-  }
+      if (confirmedOrder.status === 'fulfilled' || confirmedOrder.status === 'fulfilling') {
+        return await buildAlreadyFulfilledResult(confirmedOrder);
+      }
 
-  const subscription = isSubscriptionPackage(pkg)
-    ? await activateMembershipSubscription(user.id, {
-        plan: pkg.subscriptionPlan,
-      })
-    : null;
+      return await fulfillPaymentOrder({
+        order: confirmedOrder,
+        payment,
+        source: 'confirm',
+      });
+    } catch (err) {
+      await logPaymentFunnelEvent(supabase, {
+        stage: 'confirm_failed',
+        userId: user.id,
+        packageId: pkg.id,
+        amount: parsedAmount,
+        orderId,
+        reason: 'fulfillment_error',
+      });
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : '결제 지급 처리 실패' },
+        { status: 500 }
+      );
+    }
+  })();
 
-  const entitlement =
-    pkg.kind === 'lifetime_report' && paymentScope?.readingKey
-      ? await grantLifetimeReportEntitlement(user.id, paymentScope.readingKey, {
-          orderId,
-          paymentKey,
-          amount: parsedAmount,
-        }, paymentScope.slug ? [paymentScope.slug] : [])
-      : null;
-
-  const productEntitlement =
-    isTasteProductPackage(pkg)
-      ? await grantTasteProductEntitlement(user.id, pkg.tasteProductId, {
-          scopeKey: paymentScope?.scopeKey ?? null,
-          orderId,
-          paymentKey,
-          amount: parsedAmount,
-          packageId: pkg.id,
-        })
-      : null;
-
-  // 묶음(bundle) — 구성품을 개별 grant(1결제 = N권한). 분해/grant 핵심 로직은
-  // grantBundleComponents(bundle.test.ts 로 고정), 라우트는 scope 해석·grant 함수만 주입.
-  const bundleGrants = isBundlePackage(pkg)
-    ? await grantBundleComponents(
-        pkg,
-        { userId: user.id, slug, orderId, paymentKey, packageId: pkg.id },
-        {
-          resolveScope: (input) => resolvePaymentProductScope(input),
-          grant: (userId, productId, options) =>
-            grantTasteProductEntitlement(userId, productId, options),
-        }
-      )
-    : null;
-
-  const lifetimeProductEntitlement =
-    pkg.kind === 'lifetime_report' && paymentScope?.scopeKey
-      ? await getProductEntitlement(user.id, 'lifetime-report', paymentScope.scopeKey)
-      : null;
-
-  if (paymentScope && (productEntitlement || lifetimeProductEntitlement)) {
-    await upsertPaidReadingSnapshot({
-      userId: user.id,
-      productId: paymentScope.productId,
-      entitlement: productEntitlement ?? lifetimeProductEntitlement,
-      scope: paymentScope,
-      sourceSlug: slug,
-    });
+  if (fulfillment instanceof NextResponse) {
+    return fulfillment;
   }
 
   // B1 funnel — confirm 성공.
@@ -161,14 +161,6 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({
-    success: true,
-    credits: pkg.credits,
-    totalCredits,
-    subscription,
-    entitlement,
-    productEntitlement,
-    bundleGrants,
-    product: isTasteProductPackage(pkg) ? pkg.tasteProductId : null,
-    plan: 'planSlug' in pkg ? pkg.planSlug : null,
+    ...fulfillment,
   });
 }

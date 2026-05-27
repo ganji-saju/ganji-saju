@@ -51,14 +51,16 @@
 
 | 라우트 | 파일 | 상태 | 비고 |
 |---|---|---|---|
-| `/credits` | `src/app/credits/page.tsx` | 🟡 | Toss SDK 직접 호출. orderId Date.now() 충돌 위험 (P1) |
+| `/credits` | `src/app/credits/page.tsx` | 🟢 | `/api/payments/prepare` 동의/원장 기록 후 서버 발급 orderId로 Toss SDK 호출 |
 | `/credits/success` | `src/app/credits/success/page.tsx` | 🟡 | robots disallow ✓ |
 | `/membership` | `src/app/membership/page.tsx` | 🟡 | — |
 | `/membership/{checkout,complete,success}` | `src/app/membership/**` | 🟡 | toss-membership-checkout 컴포넌트 |
 | `/pricing` | `src/app/pricing/page.tsx` | 🟡 | — |
 | `/pay` | `src/app/pay/page.tsx` | 🟡 | — |
 | `/api/payments/prepare` | `src/app/api/payments/prepare/route.ts` | 🟡 | unit test 부재 P1 |
-| `/api/payments/confirm` | `src/app/api/payments/confirm/route.ts` | 🟡 | unit test 부재 P1. webhook 부재 P1 |
+| `/api/payments/confirm` | `src/app/api/payments/confirm/route.ts` | 🟢 | `payment_orders` 원장 기반 confirm + 공통 fulfillment. webhook/reconciliation 보강 완료 |
+| `/api/payments/webhook/toss` | `src/app/api/payments/webhook/toss/route.ts` | 🟡 | 코드 구현 완료. Toss 개발자센터 production webhook 등록 필요 |
+| `/api/payments/reconcile` | `src/app/api/payments/reconcile/route.ts` | 🟢 | Vercel Cron + `CRON_SECRET` 인증. 결제 원장/Toss 상태 대조 |
 | `/api/payments/entitlement` | `src/app/api/payments/entitlement/route.ts` | 🟢 | route-helpers.test.ts 존재 |
 | `/api/subscription/manage` | — | 🟡 | cancel/resume action |
 | `/api/appointments` | `src/app/api/appointments/route.ts` | 🔴 | **PATCH/DELETE 부재 (P0 — 사용자 취소 경로 없음)** |

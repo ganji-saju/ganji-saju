@@ -1,6 +1,7 @@
 # Production Hardening Audit — 2026-05-17
 
 > **목적**: 간지사주(`https://ganjisaju.kr`) 서비스를 유료 상용화 가능한 수준으로 끌어올리기 위한 초기 감사 결과. 본 문서는 **읽기 전용 audit Phase 1** 산출물이며, 모든 후속 코드 변경은 별도 PR (Phase 2~N) 로 단계 진행한다.
+> 2026-05-27 후속 상태: 결제 P1/P0 중 `addCredits` paymentKey idempotency(044), 서버 발급 orderId + `payment_orders` 원장, Toss webhook endpoint, reconciliation cron은 구현 및 Supabase prod 적용 완료. 단, Toss 개발자센터 production webhook 등록과 실제 결제 smoke는 운영 확인 필요.
 
 ---
 
@@ -90,16 +91,16 @@
 ## 3. 결제 / 상품 / 환불 / 코인 / 상담
 
 ### 3.1 결제 모듈
-- **Toss SDK (브라우저)**: `src/components/membership/toss-membership-checkout.tsx`, `src/app/credits/page.tsx`
-- **백엔드 confirm**: `src/app/api/payments/confirm/route.ts` → `src/lib/payments/toss.ts:confirmPayment()` (Toss `/v1/payments/confirm` 호출)
-- **Toss webhook 라우트 없음** → 사용자가 success 페이지 미도달 시 entitlement 미발급 위험
-- **orderId**: `order_${pkg.id}_${method}_${Date.now()}` → 같은 ms 더블 클릭 시 충돌 가능. UUID 권장
+- **Toss SDK (브라우저)**: `src/components/membership/toss-membership-checkout.tsx`, `src/app/credits/page.tsx` — 결제창 호출 전 `/api/payments/prepare`로 동의/원장/orderId를 확정
+- **백엔드 confirm**: `src/app/api/payments/confirm/route.ts` → `payment_orders` 원장 대조 → Toss `/v1/payments/confirm` → 공통 fulfillment
+- **Toss webhook 라우트**: `src/app/api/payments/webhook/toss/route.ts` 추가 완료. 남은 작업은 Toss 개발자센터 production URL 등록
+- **orderId**: `/api/payments/prepare`가 `ord_${crypto.randomUUID()}` 형식으로 서버 발급. client `Date.now()` 기반 orderId 제거
 - **entitlement idempotency**: `product_entitlements (user_id, product_id, scope_key)` UNIQUE + `23505` 처리로 안전
-- **코인 적립 idempotency**: `addCredits` 함수에 **paymentKey 기반 중복 적립 차단 없음** → 같은 paymentKey 로 2회 confirm 시 코인 2배 적립 가능
+- **코인 적립 idempotency**: `processed_credit_payments.payment_key` UNIQUE 적용 완료(044 prod). 같은 paymentKey 재시도 시 중복 적립 차단
 - **코인 차감 idempotency**: migration 015 `unlock_credit_feature_once` SECURITY DEFINER + FOR UPDATE 락 → 안전
 
 ### 3.2 상품 카탈로그 요약
-13개 상품 (코인 3 + 구독 2 + 보너스 1 + lifetime 1 + taste 6). 상세는 [`payments/product-catalog.md`](../payments/product-catalog.md) 참고.
+16개 상품 (코인 3 + 36코인 일회성 1 + 멤버십 2 + lifetime 1 + taste 8 + bundle 1). 상세는 [`payments/product-catalog.md`](../payments/product-catalog.md) 참고.
 
 🚨 **불일치**:
 - **migration 016 `product_entitlements.product_id` CHECK 에 `lifetime-report` 누락** (코드는 grant 시도) — migration 018/020 후속 추가 여부 미확인
@@ -247,9 +248,9 @@
 2. proxy production-only 가드 — preview 환경 canonical 정규화 안 됨
 3. KST 유틸 4종 중복 → 단일 `src/shared/utils/kst.ts` 통합 필요
 4. daily 페이지 ISR/cache key 미설정 (dateKey cache tag 없음)
-5. orderId 충돌 가능성 (`Date.now()` 기반)
-6. Toss webhook 라우트 부재 — success 페이지 미도달 시 entitlement 미발급
-7. `addCredits` paymentKey 기반 idempotency 없음
+5. ~~orderId 충돌 가능성 (`Date.now()` 기반)~~ — 2026-05-27 서버 발급 orderId/payment_orders로 완료
+6. ~~Toss webhook 라우트 부재~~ — 2026-05-27 route/DB 구현 완료, 개발자센터 production 등록만 운영 대기
+7. ~~`addCredits` paymentKey 기반 idempotency 없음~~ — 2026-05-27 044 prod 적용 완료
 8. 사업자 정보 하드코딩 (env 분리 필요)
 9. eslint 미적용
 10. 결제 prepare/confirm route unit test 부재
@@ -291,7 +292,7 @@
 | 3 | KST 유틸 통합 + UTC drift 버그 fix | 1 PR |
 | 4 | 가짜 평점 제거 + 상담사 정보 정직화 | 1 PR (긴급, P2 와 합칠 수 있음) |
 | 5 | 법무 페이지 (환불정책 신설, 정책 버저닝, 동의 모달 실연결) + 푸터 사업자정보 env 화 + production 빌드 가드 | 2~3 PR |
-| 6 | 결제 하드닝 (Toss webhook, orderId UUID, addCredits idempotency, lifetime-report 회수 함수) | 2 PR |
+| 6 | 결제 하드닝 (Toss webhook, orderId UUID, addCredits idempotency, lifetime-report 회수 함수) | orderId/webhook/addCredits 완료. lifetime-report 회수 함수는 별도 |
 | 7 | 상담 예약 취소/노쇼 정책 + UI/API | 1 PR |
 | 8 | 코인 유효기간 정책-구현 정합 (만료 적용 또는 정책 수정) | 1 PR |
 | 9 | CI 보강 (vitest, audit:*:strict, env validator, eslint 도입) | 1 PR |
