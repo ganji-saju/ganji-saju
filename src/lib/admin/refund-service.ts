@@ -17,6 +17,22 @@ export type RefundEvent = 'approve' | 'toss_ok' | 'toss_fail' | 'revoke_ok' | 'r
 export type AdminRole = 'admin' | 'super_admin';
 export type RefundAction = 'request' | 'approve' | 'reject';
 
+export const REFUND_DEDUPE_STATUSES = [
+  'requested',
+  'processing',
+  'completed',
+  'failed',
+  'revoke_pending',
+] satisfies RefundStatus[];
+
+export interface TossRefundPaymentSnapshot {
+  status?: string | null;
+  balanceAmount?: number | null;
+  totalAmount?: number | null;
+  cancels?: unknown[] | null;
+  [key: string]: unknown;
+}
+
 // ── 순수 로직 (TDD) ──────────────────────────────────────
 
 /** 환불 요청 입력 검증 — amount>0, paymentKey 존재, reason 비어있지 않음. */
@@ -64,6 +80,15 @@ export function canRoleActOnRefund(role: AdminRole, action: RefundAction): boole
   return false;
 }
 
+export function isAlreadyCanceledTossError(error: string | undefined | null): boolean {
+  if (!error) return false;
+  return error.includes('이미 취소된 결제') || /already\s+cancell?ed/i.test(error);
+}
+
+export function isFullyCanceledTossPayment(payment: TossRefundPaymentSnapshot | null): boolean {
+  return payment?.status === 'CANCELED' && payment.balanceAmount === 0;
+}
+
 // ── 실행 오케스트레이션 (DI) ──────────────────────────────
 // DB·Toss·revoke 를 주입받아 상태머신을 실행. 라우트가 실제 구현 주입, 테스트는 mock.
 
@@ -90,6 +115,10 @@ export interface RefundExecutionDeps {
     paymentKey: string,
     options: { cancelReason: string; idempotencyKey: string }
   ): Promise<{ ok: boolean; response?: unknown; error?: string }>;
+  /** Toss 결제 조회. 이미 취소된 결제인지 확인할 때 사용한다. */
+  loadTossPayment?(
+    paymentKey: string
+  ): Promise<{ ok: true; payment: TossRefundPaymentSnapshot } | { ok: false; error?: string }>;
   /** revokeProductEntitlement wrapper. */
   revoke(args: {
     userId: string;
@@ -106,43 +135,13 @@ export interface RefundExecutionResult {
   error?: string;
 }
 
-/**
- * 환불 실행(super_admin 승인). 상태머신(nextRefundStatus)으로 전이:
- * requested/failed → processing → Toss cancel(멱등) → revoke → completed.
- * Toss 실패=failed(재시도), Toss성공·revoke실패=revoke_pending(경보·revoke 재시도).
- * 어떤 단계도 실패해도 상태를 남겨 재시도 안전.
- */
-export async function executeRefund(
-  params: { requestId: string; approvedBy: string },
-  deps: RefundExecutionDeps
+async function finishRefundWithRevoke(
+  req: RefundRequestSnapshot,
+  params: { approvedBy: string },
+  deps: RefundExecutionDeps,
+  tossResponse: unknown,
+  alreadyCanceled: boolean
 ): Promise<RefundExecutionResult> {
-  const req = await deps.loadRequest(params.requestId);
-  if (!req) return { status: 'failed', error: '환불 요청을 찾을 수 없습니다.' };
-
-  // approve 전이 검증(requested/failed 에서만 processing).
-  if (nextRefundStatus(req.status, 'approve') !== 'processing') {
-    return { status: req.status, error: `상태 '${req.status}' 에서는 승인할 수 없습니다.` };
-  }
-  if (!req.payment_key) {
-    await deps.setStatus(req.id, 'failed', { errorMessage: 'paymentKey 없음 — Toss 취소 불가' });
-    return { status: 'failed', error: 'paymentKey 없음' };
-  }
-
-  await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
-
-  const toss = await deps.tossCancel(req.payment_key, {
-    cancelReason: req.reason,
-    idempotencyKey: req.idempotency_key,
-  });
-  if (!toss.ok) {
-    const failed = nextRefundStatus('processing', 'toss_fail') ?? 'failed';
-    await deps.setStatus(req.id, failed, {
-      tossResponse: toss.response,
-      errorMessage: toss.error ?? 'Toss 결제취소 실패',
-    });
-    return { status: failed, error: toss.error ?? 'Toss 결제취소 실패' };
-  }
-
   let revoked = false;
   try {
     const r = await deps.revoke({
@@ -161,13 +160,77 @@ export async function executeRefund(
   if (!revoked) {
     const pending = nextRefundStatus('processing', 'revoke_fail') ?? 'revoke_pending';
     await deps.setStatus(req.id, pending, {
-      tossResponse: toss.response,
-      errorMessage: 'Toss 환불됨 · entitlement 회수 실패 — 재시도 필요(경보)',
+      tossResponse,
+      errorMessage: alreadyCanceled
+        ? 'Toss는 이미 취소됨 · entitlement 회수 실패 — 재시도 필요(경보)'
+        : 'Toss 환불됨 · entitlement 회수 실패 — 재시도 필요(경보)',
     });
     return { status: pending, error: 'revoke failed after toss success' };
   }
 
   const completed = nextRefundStatus('processing', 'revoke_ok') ?? 'completed';
-  await deps.setStatus(req.id, completed, { tossResponse: toss.response, errorMessage: null });
+  await deps.setStatus(req.id, completed, { tossResponse, errorMessage: null });
   return { status: completed };
+}
+
+/**
+ * 환불 실행(super_admin 승인). 상태머신(nextRefundStatus)으로 전이:
+ * requested/failed → processing → Toss cancel(멱등) → revoke → completed.
+ * Toss 실패=failed(재시도), Toss성공·revoke실패=revoke_pending(경보·revoke 재시도).
+ * 어떤 단계도 실패해도 상태를 남겨 재시도 안전.
+ */
+export async function executeRefund(
+  params: { requestId: string; approvedBy: string },
+  deps: RefundExecutionDeps
+): Promise<RefundExecutionResult> {
+  const req = await deps.loadRequest(params.requestId);
+  if (!req) return { status: 'failed', error: '환불 요청을 찾을 수 없습니다.' };
+
+  if (req.status === 'revoke_pending') {
+    await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
+    return finishRefundWithRevoke(req, params, deps, undefined, false);
+  }
+
+  // approve 전이 검증(requested/failed 에서만 processing).
+  if (nextRefundStatus(req.status, 'approve') !== 'processing') {
+    return { status: req.status, error: `상태 '${req.status}' 에서는 승인할 수 없습니다.` };
+  }
+  if (!req.payment_key) {
+    await deps.setStatus(req.id, 'failed', { errorMessage: 'paymentKey 없음 — Toss 취소 불가' });
+    return { status: 'failed', error: 'paymentKey 없음' };
+  }
+
+  await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
+
+  const toss = await deps.tossCancel(req.payment_key, {
+    cancelReason: req.reason,
+    idempotencyKey: req.idempotency_key,
+  });
+  if (!toss.ok) {
+    if (isAlreadyCanceledTossError(toss.error) && deps.loadTossPayment) {
+      const lookup = await deps.loadTossPayment(req.payment_key);
+      if (lookup.ok && isFullyCanceledTossPayment(lookup.payment)) {
+        return finishRefundWithRevoke(
+          req,
+          params,
+          deps,
+          {
+            alreadyCanceled: true,
+            verifiedAt: new Date().toISOString(),
+            payment: lookup.payment,
+          },
+          true
+        );
+      }
+    }
+
+    const failed = nextRefundStatus('processing', 'toss_fail') ?? 'failed';
+    await deps.setStatus(req.id, failed, {
+      tossResponse: toss.response,
+      errorMessage: toss.error ?? 'Toss 결제취소 실패',
+    });
+    return { status: failed, error: toss.error ?? 'Toss 결제취소 실패' };
+  }
+
+  return finishRefundWithRevoke(req, params, deps, toss.response, false);
 }

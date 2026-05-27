@@ -1,9 +1,38 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-27 (Codex 결제 안정성 P0 — Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation)**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. 직전 UX/운영 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-27 (Codex 환불 워크플로우 보강 — 중복 요청 차단 + 이미 취소된 Toss 결제 흡수 + 49,000원 권한 회수 정리)**. 직전 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-27 세션 — Codex 환불 워크플로우 보강 (`refund_requests` dedupe + already-canceled 흡수)
+
+> 목적: admin 사용자 상세 화면에 보이던 “환불 실패: 이미 취소된 결제 입니다.” row를 실제 환불 실패로 오인하지 않도록, 중복 요청을 차단하고 Toss에서 이미 전액 취소된 결제는 권한 회수 후 정상 완료 상태로 흡수한다.
+
+### 구현 완료
+- **중복 환불 요청 차단**: `/api/admin/refund` request 단계에서 같은 `entitlement_id` 또는 `payment_key`의 `requested/processing/completed/failed/revoke_pending` 요청이 있으면 새 요청을 만들지 않고 409로 기존 요청 상태를 반환.
+- **DB 레벨 dedupe**: 신규 migration `046_refund_request_dedupe.sql` 추가. 기존 중복 row는 대표 row 1개만 남기고 나머지는 `rejected`로 정리한 뒤, `refund_requests_active_entitlement_uidx`/`refund_requests_active_payment_key_uidx` partial unique index 생성.
+- **이미 취소된 Toss 결제 흡수**: Toss cancel이 “이미 취소된 결제”를 반환하면 `getPayment(paymentKey)`로 재조회하고, `status=CANCELED` + `balanceAmount=0`이면 실패가 아니라 entitlement 회수를 실행한 뒤 `completed`로 종료.
+- **권한 회수 재시도 보강**: `revoke_pending` 재시도는 Toss cancel을 다시 호출하지 않고 권한 회수만 재시도.
+- **admin 화면 표시 개선**: 환불 요청 목록에 `error_message`, `payment_key`, Toss 취소 확인(`CANCELED`, 잔여 0원)을 표시.
+
+### 운영 적용
+- Supabase prod `046_refund_request_dedupe.sql` 적용 완료: migration list `046 Local=Remote` 확인.
+- 기존 49,000원 lifetime 결제(`paymentKey=tviva20260515165740t9DA0`) 정리 완료:
+  - Toss 조회: `CANCELED`, `balanceAmount=0`, `cancelAmount=49,000`, 취소 시각 `2026-05-16T13:20:31+09:00`.
+  - 남아 있던 `product_entitlements` 1건 삭제.
+  - legacy `credit_transactions` lifetime grant 1건 삭제.
+  - `credit_transactions.feature='entitlement_revoke'` audit row 1건 추가.
+  - 대표 `refund_requests` row `96ee874e-646d-4417-a285-a7c50819f0bb`를 `completed`로 변경하고 Toss 취소 확인 payload 저장.
+  - 같은 `payment_key` 중복 failed row 2건은 `rejected`로 정리.
+- 기존 550원 중복 환불 row도 046 migration으로 완료 row 1개만 active로 남고 duplicate failed row는 `rejected` 처리됨.
+
+### 검증
+- `npm run typecheck`: 통과.
+- `npm test -- --grep refund`: 전체 unit runner 통과(750 tests passed + node:test 172 pass).
+- Prod DB active 중복 확인: `duplicateEntitlements=[]`, `duplicatePaymentKeys=[]`.
 
 ---
 
@@ -40,8 +69,8 @@
 - `npm run audit:mockup-placeholders:strict`: 의심 패턴 0.
 - `git diff --check`: 통과.
 
-### 운영 대기
-- **Toss 개발자센터 webhook 등록 필요**: URL `https://ganjisaju.kr/api/payments/webhook/toss`, event `PAYMENT_STATUS_CHANGED`.
+### 운영 상태
+- **Toss 개발자센터 webhook 등록 완료**(사용자 확인): URL `https://ganjisaju.kr/api/payments/webhook/toss`, event `PAYMENT_STATUS_CHANGED`.
 - **실결제 smoke 필요**: 코인 1건, 단건 상품 1건, 중복 confirm, success page 미도달 시나리오. 실제 결제수단/환불 처리가 필요한 운영 검증이라 코드 배포 후 별도 수행.
 
 ---

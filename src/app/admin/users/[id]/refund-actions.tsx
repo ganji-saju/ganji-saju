@@ -13,9 +13,13 @@ interface EligibleItem {
 interface RefundReq {
   id: string;
   productId: string;
+  paymentKey: string | null;
   amount: number | null;
   status: string;
   reason: string;
+  errorMessage: string | null;
+  tossResponse: unknown;
+  updatedAt: string | null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -26,6 +30,31 @@ const STATUS_LABEL: Record<string, string> = {
   revoke_pending: '⚠️ 환불됨·권한회수 실패',
   rejected: '거부됨',
 };
+
+function readObject(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function getTossRefundNote(request: RefundReq) {
+  const response = readObject(request.tossResponse);
+  if (!response) return null;
+
+  const payment = readObject(response.payment) ?? response;
+  const status = typeof payment.status === 'string' ? payment.status : null;
+  const balanceAmount = typeof payment.balanceAmount === 'number' ? payment.balanceAmount : null;
+  const totalAmount = typeof payment.totalAmount === 'number' ? payment.totalAmount : null;
+  const alreadyCanceled = response.alreadyCanceled === true;
+
+  if (alreadyCanceled || (status === 'CANCELED' && balanceAmount === 0)) {
+    return `Toss 취소 확인됨${totalAmount ? ` · ${totalAmount.toLocaleString()}원` : ''}`;
+  }
+  if (status) {
+    return `Toss 상태 ${status}${balanceAmount !== null ? ` · 잔여 ${balanceAmount.toLocaleString()}원` : ''}`;
+  }
+  return null;
+}
 
 export function RefundActions({
   role,
@@ -110,9 +139,23 @@ export function RefundActions({
               key={r.id}
               className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2"
             >
-              <span className="text-[11px] text-[var(--app-ink)]">
-                <b>{STATUS_LABEL[r.status] ?? r.status}</b> · {r.amount?.toLocaleString() ?? '—'}원 ·{' '}
-                {r.reason}
+              <span className="min-w-0 text-[11px] text-[var(--app-ink)]">
+                <span className="block">
+                  <b>{STATUS_LABEL[r.status] ?? r.status}</b> · {r.amount?.toLocaleString() ?? '—'}원 ·{' '}
+                  {r.reason}
+                </span>
+                {(r.errorMessage || getTossRefundNote(r)) && (
+                  <span className="mt-0.5 block break-words text-[10.5px] text-[var(--app-copy-soft)]">
+                    {r.errorMessage ? `사유: ${r.errorMessage}` : null}
+                    {r.errorMessage && getTossRefundNote(r) ? ' · ' : null}
+                    {getTossRefundNote(r)}
+                  </span>
+                )}
+                {r.paymentKey && (
+                  <span className="mt-0.5 block truncate text-[10px] text-[var(--app-copy-soft)]">
+                    {r.paymentKey}
+                  </span>
+                )}
               </span>
               {role === 'super_admin' && r.status === 'requested' && (
                 <span className="flex gap-1">

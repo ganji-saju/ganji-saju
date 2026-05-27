@@ -146,10 +146,14 @@ export interface AdminUserDetail {
 export interface AdminRefundRequest {
   id: string;
   productId: string;
+  paymentKey: string | null;
   amount: number | null;
   reason: string;
   status: string;
+  errorMessage: string | null;
+  tossResponse: unknown;
   createdAt: string;
+  updatedAt: string | null;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -283,25 +287,33 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
 
   const { data: refundRows } = await supabase
     .from('refund_requests')
-    .select('id, product_id, amount, reason, status, created_at')
+    .select('id, product_id, payment_key, amount, reason, status, error_message, toss_response, created_at, updated_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   const refundRequests: AdminRefundRequest[] = (
     (refundRows ?? []) as unknown as Array<{
       id: string;
       product_id: string;
+      payment_key: string | null;
       amount: number | null;
       reason: string;
       status: string;
+      error_message: string | null;
+      toss_response: unknown;
       created_at: string;
+      updated_at: string | null;
     }>
   ).map((r) => ({
     id: r.id,
     productId: r.product_id,
+    paymentKey: r.payment_key,
     amount: r.amount,
     reason: r.reason,
     status: r.status,
+    errorMessage: r.error_message,
+    tossResponse: r.toss_response,
     createdAt: r.created_at,
+    updatedAt: r.updated_at,
   }));
 
   return {

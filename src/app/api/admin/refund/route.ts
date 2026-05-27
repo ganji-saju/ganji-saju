@@ -6,9 +6,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
-import { cancelPayment } from '@/lib/payments/toss';
+import { cancelPayment, getPayment } from '@/lib/payments/toss';
 import { revokeProductEntitlement } from '@/lib/product-entitlements';
 import {
+  REFUND_DEDUPE_STATUSES,
   canRoleActOnRefund,
   executeRefund,
   validateRefundRequest,
@@ -18,6 +19,48 @@ import {
 } from '@/lib/admin/refund-service';
 
 type RevokeProductId = Parameters<typeof revokeProductEntitlement>[1];
+
+async function findExistingRefundRequest(
+  service: Awaited<ReturnType<typeof createServiceClient>>,
+  input: { entitlementId: string; paymentKey: string | null }
+) {
+  const byEntitlement = await service
+    .from('refund_requests')
+    .select('id, status, error_message, created_at')
+    .eq('entitlement_id', input.entitlementId)
+    .in('status', REFUND_DEDUPE_STATUSES)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (byEntitlement.error) {
+    throw new Error(byEntitlement.error.message);
+  }
+  if (byEntitlement.data?.[0]) {
+    return byEntitlement.data[0] as {
+      id: string;
+      status: string;
+      error_message: string | null;
+      created_at: string;
+    };
+  }
+
+  if (!input.paymentKey) return null;
+  const byPaymentKey = await service
+    .from('refund_requests')
+    .select('id, status, error_message, created_at')
+    .eq('payment_key', input.paymentKey)
+    .in('status', REFUND_DEDUPE_STATUSES)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  if (byPaymentKey.error) {
+    throw new Error(byPaymentKey.error.message);
+  }
+  return (byPaymentKey.data?.[0] as {
+    id: string;
+    status: string;
+    error_message: string | null;
+    created_at: string;
+  } | undefined) ?? null;
+}
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -75,6 +118,20 @@ export async function POST(req: NextRequest) {
     if (!v.ok) {
       return NextResponse.json({ ok: false, error: v.errors.join(' / ') }, { status: 400 });
     }
+    const existing = await findExistingRefundRequest(service, {
+      entitlementId: e.id,
+      paymentKey: e.payment_key,
+    });
+    if (existing) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `이미 환불 요청이 있습니다. 기존 요청 상태: ${existing.status}`,
+          existingRequest: existing,
+        },
+        { status: 409 }
+      );
+    }
     const { data: inserted, error } = await service
       .from('refund_requests')
       .insert({
@@ -91,6 +148,12 @@ export async function POST(req: NextRequest) {
       .select('id')
       .single();
     if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { ok: false, error: '이미 같은 결제 또는 권한의 환불 요청이 있습니다.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
     }
     return NextResponse.json({ ok: true, requestId: (inserted as { id: string }).id, status: 'requested' });
@@ -138,6 +201,13 @@ export async function POST(req: NextRequest) {
         return { ok: true, response };
       } catch (err) {
         return { ok: false, error: err instanceof Error ? err.message : 'Toss 결제취소 실패' };
+      }
+    },
+    async loadTossPayment(paymentKey) {
+      try {
+        return { ok: true, payment: await getPayment(paymentKey) };
+      } catch (err) {
+        return { ok: false, error: err instanceof Error ? err.message : 'Toss 결제 조회 실패' };
       }
     },
     async revoke(args) {

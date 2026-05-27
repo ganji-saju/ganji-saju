@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {
   canRoleActOnRefund,
   executeRefund,
+  isAlreadyCanceledTossError,
+  isFullyCanceledTossPayment,
   nextRefundStatus,
   validateRefundRequest,
   type RefundExecutionDeps,
@@ -54,13 +56,23 @@ test('canRoleActOnRefund: admin=요청만, super_admin=전부', () => {
   assert.equal(canRoleActOnRefund('super_admin', 'reject'), true);
 });
 
+test('이미 취소된 Toss 응답 판정', () => {
+  assert.equal(isAlreadyCanceledTossError('이미 취소된 결제 입니다.'), true);
+  assert.equal(isAlreadyCanceledTossError('temporary failure'), false);
+  assert.equal(isFullyCanceledTossPayment({ status: 'CANCELED', balanceAmount: 0 }), true);
+  assert.equal(isFullyCanceledTossPayment({ status: 'CANCELED', balanceAmount: 550 }), false);
+  assert.equal(isFullyCanceledTossPayment({ status: 'DONE', balanceAmount: 0 }), false);
+});
+
 // ── executeRefund 오케스트레이션 (DI mock — 실 Toss 호출 없음) ──
 
 function makeDeps(opts: {
   status?: RefundStatus;
   tossOk?: boolean;
+  tossError?: string;
   revokeOk?: boolean;
   revokeThrows?: boolean;
+  lookupPayment?: { status?: string | null; balanceAmount?: number | null; totalAmount?: number | null };
 }): { deps: RefundExecutionDeps; statuses: RefundStatus[]; tossArgs: unknown[] } {
   const statuses: RefundStatus[] = [];
   const tossArgs: unknown[] = [];
@@ -83,8 +95,14 @@ function makeDeps(opts: {
     async tossCancel(paymentKey, options) {
       tossArgs.push({ paymentKey, ...options });
       return opts.tossOk === false
-        ? { ok: false, error: 'toss 거절' }
+        ? { ok: false, error: opts.tossError ?? 'toss 거절' }
         : { ok: true, response: { status: 'CANCELED' } };
+    },
+    async loadTossPayment() {
+      return {
+        ok: true,
+        payment: opts.lookupPayment ?? { status: 'DONE', balanceAmount: 49000, totalAmount: 49000 },
+      };
     },
     async revoke() {
       if (opts.revokeThrows) throw new Error('db error');
@@ -109,11 +127,42 @@ test('executeRefund: Toss 실패 → failed (재시도 가능)', async () => {
   assert.deepEqual(statuses, ['processing', 'failed']);
 });
 
+test('executeRefund: Toss가 이미 취소된 결제라고 하면 조회 검증 후 회수하고 completed', async () => {
+  const { deps, statuses } = makeDeps({
+    tossOk: false,
+    tossError: '이미 취소된 결제 입니다.',
+    lookupPayment: { status: 'CANCELED', balanceAmount: 0, totalAmount: 49000 },
+  });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(statuses, ['processing', 'completed']);
+});
+
+test('executeRefund: 이미 취소된 결제지만 권한 회수 실패면 revoke_pending', async () => {
+  const { deps, statuses } = makeDeps({
+    tossOk: false,
+    tossError: '이미 취소된 결제 입니다.',
+    lookupPayment: { status: 'CANCELED', balanceAmount: 0, totalAmount: 49000 },
+    revokeThrows: true,
+  });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'revoke_pending');
+  assert.deepEqual(statuses, ['processing', 'revoke_pending']);
+});
+
 test('executeRefund: Toss 성공·revoke 실패 → revoke_pending (경보)', async () => {
   const { deps, statuses } = makeDeps({ tossOk: true, revokeThrows: true });
   const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
   assert.equal(result.status, 'revoke_pending');
   assert.deepEqual(statuses, ['processing', 'revoke_pending']);
+});
+
+test('executeRefund: revoke_pending 재시도는 Toss 취소 없이 권한 회수만 재시도', async () => {
+  const { deps, statuses, tossArgs } = makeDeps({ status: 'revoke_pending', revokeOk: true });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(statuses, ['processing', 'completed']);
+  assert.equal(tossArgs.length, 0);
 });
 
 test('executeRefund: 이미 completed 면 승인 불가 (상태 불변)', async () => {
