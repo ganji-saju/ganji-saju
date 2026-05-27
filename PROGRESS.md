@@ -17,6 +17,8 @@
 - **`/admin/payment-funnel` 검증 대기 정리**: #389의 stale "검증 대기"를 사용자 확인 완료 상태로 갱신.
 - **vocabulary release 원격 브랜치 정리**: `codex/vocabulary-sweep-20260527`는 `main` fast-forward merge 완료 후 원격 삭제 완료. 로컬 브랜치 참조도 삭제 완료.
 - **사용자 화면 어휘 릴리스 기록 보강**: commit `c063bef5e27768f89594ad90f57dc170cacb93f6`, Vercel production `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200 상태를 release history에 추가.
+- **이번 후속 릴리스 배포/머지**: commit `668d0022dd2e8d14b1da86db13182d06da38fb6d` pushed to `main`. Vercel production `dpl_3yLNYSfqdmAJm57Zy9SeW4FS2Smb` READY, alias `https://ganjisaju.kr` 연결 완료. Smoke: `/today-fortune` HTTP 200, `/method` HTTP 307 → `/interpretation`.
+- **PROGRESS HTML 재생성**: `npm run progress:html`로 로컬 `PROGRESS.html` 갱신(`gitignore` 산출물, git 추적 제외).
 
 ### npm audit 확인
 - `npm audit --json`: 3 vulnerabilities 확인(2 moderate, 1 high).
