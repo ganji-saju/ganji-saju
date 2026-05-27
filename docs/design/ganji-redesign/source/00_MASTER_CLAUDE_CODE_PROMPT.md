@@ -113,7 +113,7 @@ src/components/site-footer.tsx
 필수 구현:
 
 - `ZodiacChip`: 12지 한자, 색상, size `sm/md/lg/xl`, Noto Serif KR
-- Header: `干` 인장 로고, `간지사주`, `달빛인생 · 오늘운세`, credit pill, MY 버튼
+- Header: `干` 인장 로고, `간지사주`, `간지사주 · 오늘운세`, credit pill, MY 버튼
 - Dock: 홈, 사주추가, 무료운세 FAB, 대화방, 보관함
 - Footer: dark full footer, 회사 법적 정보 보존
 - Card: white card, soft card, ink card, pink banner, service card

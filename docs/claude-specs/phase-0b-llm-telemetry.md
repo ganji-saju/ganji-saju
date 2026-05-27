@@ -78,7 +78,7 @@ interpret→`interpret` / yearly→`yearly` / lifetime→`lifetime` / chapter→
 - 캐시 hit 기록: 호출처(가능하면 본편)에서 hit 시 source='cache' 레코드 1건 검증(in-memory store DI).
 - 전체 회귀 무손상 + typecheck 0.
 
-## 5. 수용 기준
+## 5. 수용 조건
 - [ ] 마이그 042 `ai_llm_runs`(source 3종 CHECK, RLS+무공개정책, 인덱스). (적용 수동; 미적용 시 store no-op로 안전)
 - [ ] `estimateLlmCostUsd`/`buildLlmRunRecord`(3 source)/`hashUserId` 단위 테스트 통과
 - [ ] `generateAiText` 중앙 계측(openai+fallback, feature 미지정 skip)

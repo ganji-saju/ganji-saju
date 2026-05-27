@@ -48,15 +48,15 @@
 ## Phase 2 — 도메인 Canonical 반전 + 브랜드 통일
 
 ### 목표
-`xn--s39at50bo6fmwa.kr` (간지사주.kr punycode) → `https://ganjisaju.kr` 로 canonical 반전. `달빛인생` → `간지사주` 브랜드명 통일.
+`xn--s39at50bo6fmwa.kr` (간지사주.kr punycode) → `https://ganjisaju.kr` 로 canonical 반전. `간지사주` → `간지사주` 브랜드명 통일.
 
 ### 영향 파일
 - Create: `docs/superpowers/plans/2026-05-17-production-hardening/phase-2-domain.md`
 - Modify: `src/lib/site.ts` (CANONICAL_SITE_URL, SITE_NAME, LEGACY_SITE_HOSTS 반전)
 - Modify: `src/proxy.ts` (canonical 호스트 변경, preview 가드 완화)
-- Modify: `src/app/layout.tsx` (title.template `달빛인생` → `간지사주`)
+- Modify: `src/app/layout.tsx` (title.template `간지사주` → `간지사주`)
 - Modify: `src/app/sitemap.ts` / `src/app/robots.ts` (canonical 정합)
-- Modify: 본문에서 "달빛인생" 표기 검토 (`SITE_NAME` import 외에 잔존 하드코딩 grep)
+- Modify: 본문에서 "간지사주" 표기 검토 (`SITE_NAME` import 외에 잔존 하드코딩 grep)
 - Modify: `.env.example` (NEXT_PUBLIC_SIT E_URL 기본값 갱신)
 - Test: `src/lib/site.test.ts` (신규) — canonical / legacy 판정 단위 테스트
 - 운영자 작업: Vercel 대시보드에서 `ganjisaju.kr`, `www.ganjisaju.kr`, `간지사주.kr` (xn--) 모두 production alias 등록 확인

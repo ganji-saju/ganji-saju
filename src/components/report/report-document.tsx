@@ -108,7 +108,7 @@ function issuedDateLabel() {
 
 // ── 공통 페이지 조각 ─────────────────────────────────────────────────────────
 
-const FOOTER_COPY = '© 2026 푸꼬컴퍼니 · 간지사주(달빛인생)';
+const FOOTER_COPY = '© 2026 푸꼬컴퍼니 · 간지사주';
 
 /** P2~P8 상단 running header (REPORT NO · 이름 + 干支). */
 function RunningHeader({ reportNo, subjectName }: { reportNo: string; subjectName: string }) {
@@ -647,7 +647,7 @@ export function buildPdfModel(
     { title: '궁합 풀이', sub: '가까운 사람과의 흐름', price: '990원', href: '/compatibility' },
     { title: '택일', sub: '중요한 날 직접 고르기', price: '1,900원', href: '/taekil' },
     { title: '재회 타로', sub: '관계의 다음 흐름', price: '990원', href: '/tarot/daily' },
-    { title: '1:1 상담', sub: '달빛선생과 30분 대화', price: '무료~', href: '/dialogue' },
+    { title: '1:1 상담', sub: '간지사주 상담방에서 대화', price: '무료~', href: '/dialogue' },
   ];
 
   // ── 깊은 풀이 전문 (P9) — 결제한 LLM 본편 9섹션 verbatim ─────
@@ -769,7 +769,7 @@ export function ReportDocument({
                     <span className="rp-logo" aria-hidden="true">干</span>
                     <span className="rp-brand-text">
                       <span className="rp-brand-title">간지사주</span>
-                      <span className="rp-brand-sub">달빛인생 · 사주 리포트</span>
+                      <span className="rp-brand-sub">간지사주 · 사주 리포트</span>
                     </span>
                   </div>
                   <div className="rp-cover-meta">
@@ -1309,8 +1309,8 @@ export function ReportDocument({
                     <strong>{data.closing.highlight}</strong>, 그 작은 결정이 큰 흐름을 바꿉니다.
                   </p>
                   <div className="rp-sign">
-                    <span className="rp-sign-han">達光</span>
-                    <span className="rp-sign-name">달빛선생 드림</span>
+                    <span className="rp-sign-han">干支四柱</span>
+                    <span className="rp-sign-name">간지사주 드림</span>
                   </div>
                 </div>
 
@@ -1348,7 +1348,7 @@ export function ReportDocument({
                     </span>
                     <span className="rp-final-brand-text">
                       <span className="rp-final-brand-title">간지사주</span>
-                      <span className="rp-final-brand-sub">달빛인생 · ganjisaju.kr</span>
+                      <span className="rp-final-brand-sub">간지사주 · ganjisaju.kr</span>
                     </span>
                   </div>
                   <div className="rp-final-meta">

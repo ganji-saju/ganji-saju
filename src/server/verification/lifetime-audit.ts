@@ -116,7 +116,7 @@ export async function getLifetimeVerificationAudit({
         ok: !hasForbiddenGuarantee(result.reportText),
         detail: hasForbiddenGuarantee(result.reportText)
           ? '무조건/반드시/100% 같은 단정 문구이 본문에 남아 있습니다.'
-          : '단정 금지 문구은 발견되지 않았습니다.',
+          : '단정 금지 문구는 발견되지 않았습니다.',
       },
       {
         key: 'lifetime-ai-tone',

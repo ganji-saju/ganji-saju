@@ -846,7 +846,7 @@ type Ohaeng = typeof OHAENG_ORDER[number];
 // 각 오행의 기본 보강 가이드 (Phase 5에서 LLM이 대체함)
 const DEFAULT_GUIDANCE: Record<Ohaeng, string> = {
   '목': '목 기운(자라남과 추진): 새로운 시작과 도전적 계획이 보강이 됩니다.',
-  '화': '화 기운(표현과 열정): 발표, 강의, 기록 같은 표현하는 자리가 보강이 됩니다.',
+  '화': '화 기운(드러냄과 열정): 발표, 강의, 기록 같은 말하고 드러내는 자리가 보강이 됩니다.',
   '토': '토 기운(담아냄과 안정): 규칙적인 루틴과 안정된 환경이 보강이 됩니다.',
   '금': '금 기운(단단함과 결단): 체크리스트, 정기 회고 같은 단단한 구조가 보강이 됩니다.',
   '수': '수 기운(흐름과 깊이): 사색, 학습, 깊이 있는 관계가 보강이 됩니다.',
@@ -1142,7 +1142,7 @@ export function TotalReviewTab({ sajuData, llmOutput, score, isUnlocked }: Total
 
 ### 12-1. 기준
 
-- **모바일 우선** (스크린샷 기준: ~390px)
+- **모바일 우선** (스크린샷 근거: ~390px)
 - 데스크탑 분기: `sm:` (640px), `md:` (768px)
 
 ### 12-2. 주요 반응형 포인트
@@ -1170,7 +1170,7 @@ export function TotalReviewTab({ sajuData, llmOutput, score, isUnlocked }: Total
 
 ---
 
-## 13. 수용 기준 체크리스트
+## 13. 수용 조건 체크리스트
 
 ### Step 1~2 (토큰·라벨)
 
@@ -1285,10 +1285,10 @@ Step 0 완료 시:
 
 각 Step 완료 시:
 - 생성/수정된 파일 목록 + 줄 수
-- 수용 기준 체크리스트 해당 항목 ✅/❌
+- 수용 조건 체크리스트 해당 항목 ✅/❌
 
 모든 Step 완료 시:
-- 전체 수용 기준 체크리스트 (phase-2-3-task.md §13)
+- 전체 수용 조건 체크리스트 (phase-2-3-task.md §13)
 - 스크린샷 또는 컴포넌트 렌더 결과
 - 기존 컴포넌트 깨진 항목 있으면 명시
 ```
@@ -1346,7 +1346,7 @@ const maxCount = Math.max(...Object.values(data.counts));
 const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
 ```
 
-옵션 A는 스펙 기준, 옵션 B는 시각적으로 더 좋음. 취향에 맞게 선택.
+옵션 A는 스펙 근거, 옵션 B는 시각적으로 더 좋음. 취향에 맞게 선택.
 
 ### 15-5. navigateTo 탭 앵커가 없는 경우
 

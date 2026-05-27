@@ -106,7 +106,7 @@ export default function AccountDeletePage() {
                 탈퇴가 완료되었습니다
               </h1>
               <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
-                그동안 간지사주을 이용해주셔서 감사합니다.<br />
+                그동안 간지사주를 이용해주셔서 감사합니다.<br />
                 결제 내역은 전자상거래법에 따라 5년간 안전하게 보관됩니다.
               </p>
               <Link

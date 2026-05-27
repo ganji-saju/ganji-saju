@@ -200,7 +200,7 @@ echo "=== P0 #5: '커안쪽 결만' 변수 누수 ==="
 grep -rn "커안쪽\|결만 시험" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -5
 
 echo ""
-echo "=== P0 #6: fallback 자극 표현 ==="
+echo "=== P0 #6: fallback 자극 문구 ==="
 grep -rnE "대박 나는|암흑기|텅장|꿀팁" src/ --include="*.ts" --include="*.tsx" 2>/dev/null \
   | grep -v "forbidden\|금지\|클리셰\|/__tests__/\|naming-policy" | head -10
 ```
@@ -227,7 +227,7 @@ grep -rnE "결단과|안정과|열정과|시작과|지혜과" src/ --include="*.
   | grep -v "/__tests__/\|naming-policy\|forbidden" | head -20
 
 echo ""
-echo "=== 십성 추상명사 ('표현의 기운' 등) ==="
+echo "=== 십성 추상명사 ('말의 기운' 등) ==="
 grep -rnE "(표현|생각|절제|직관|돌봄|관찰|베푸는)의\\s*기운" src/ --include="*.ts" --include="*.tsx" 2>/dev/null \
   | grep -v "/__tests__/\|naming-policy\|forbidden" | head -20
 
@@ -325,7 +325,7 @@ grep -c "id: '" src/lib/saju-score/test-cases.ts 2>/dev/null || echo "test-cases
 - F1~F5 모두 export 되는지
 - 테스트 통과율 (예: 28/32)
 - 50개 분포: 평균/표준편차/5단계 비율
-- 분포 수용 기준 (평균 65~70, 표준편차 ~12) 통과 여부
+- 분포 수용 조건 (평균 65~70, 표준편차 ~12) 통과 여부
 
 ---
 

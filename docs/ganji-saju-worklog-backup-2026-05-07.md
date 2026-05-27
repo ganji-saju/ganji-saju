@@ -12,7 +12,7 @@ GitHub 원격: `git@github.com-ganji-saju:ganji-saju/ganji-saju.git`
 - upstream 원본 `kionya/saju-app`은 읽기용으로만 남기고 push는 막아둠
 - ganji-saju 전용 GitHub SSH 원격을 사용
 - Vercel production은 ganji-saju 프로젝트로 배포
-- Supabase, Vercel, GitHub는 기존 달빛선생 계정 흐름과 분리하는 방향
+- Supabase, Vercel, GitHub는 기존 운영 계정 흐름과 분리하는 방향
 
 ## 2. 지금까지 확정된 서비스 방향
 
@@ -20,10 +20,10 @@ GitHub 원격: `git@github.com-ganji-saju:ganji-saju/ganji-saju.git`
 
 핵심 원칙:
 
-- 사이트명은 `달빛인생`을 전면 사용
+- 사이트명은 `간지사주`를 전면 사용
 - 흰 배경, 블랙 텍스트, 핑크 포인트를 기본 디자인으로 사용
 - 첫 화면은 설명보다 바로 누르는 운세/타로/사주/궁합 진입을 우선
-- 전문용어, 엔진, 판정근거, 기준서식 설명은 본문 전면에서 걷어내고 필요한 경우 안내/접힘 영역으로 분리
+- 전문용어, 엔진, 판정근거, 표준 서식 설명은 본문 전면에서 걷어내고 필요한 경우 안내/접힘 영역으로 분리
 - 550원/990원 소액 풀이 상품은 문제 중심 이름으로 보여줌
 - 12간지 캐릭터와 선생 시스템은 메뉴와 상담 흐름의 브랜드 자산으로 유지
 - 모바일 웹앱처럼 하단 도크, 큰 버튼, 단순한 카드 구조를 기준으로 삼음
@@ -33,7 +33,7 @@ GitHub 원격: `git@github.com-ganji-saju:ganji-saju/ganji-saju.git`
 ### 브랜드/디자인
 
 - `docs/DESIGN.md`를 기준 문서로 사용
-- 기존 달빛선생식 리포트/골드/다크 톤을 걷어내고 달빛인생 카드몰형 UI로 전환
+- 기존 리포트형 리포트/골드/다크 톤을 걷어내고 간지사주 카드몰형 UI로 전환
 - 폰트 굵기와 본문 밀도를 줄이고, 본문은 쉬운 생활 언어 중심으로 정리
 - `globals.css`를 기능별 CSS 파일로 분리
 - `GangiSection`, `GangiActionRow`, `GangiListLink`, `GangiMiniCard` 등 Gangi 공통 컴포넌트를 생산 기준으로 사용

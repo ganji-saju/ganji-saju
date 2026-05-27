@@ -1,7 +1,7 @@
 # 가격 사다리 신규 상품 — 반영 계획 & 코드 영향 분석
 
 작성일: 2026-05-23 / 최종 갱신: 2026-05-27 / 상태: **계획 문서 + 일부 구현 완료 상태 반영** / 출처: [`pricing-proposal.md`](pricing-proposal.md) 롤아웃 1~3순위 + 검증 지표
-초안 대상 커밋 기준: `1f65f40` (결제 P0 정비 직후)
+초안 대상 커밋 상태: `1f65f40` (결제 P0 정비 직후)
 
 > 목적: 제안서의 신규 상품을 **실제로 코드에 반영하면 무엇을 건드려야 하고 어떤 리스크가 있는지** 사전 검토. 실제 구현은 별도 승인 후.
 
@@ -9,14 +9,14 @@
 
 ## 0. 핵심 결론 (먼저 읽기)
 
-> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 기준이다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. credit prepare/동의 경로와 bundle digital-content 동의도 보강됐고, 044 credit idempotency migration도 사용자 확인 기준 Supabase prod 적용 완료됐다. 남은 것은 후속 번들, webhook/reconciliation 같은 후속 안정화다.
+> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 근거다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. credit prepare/동의 경로와 bundle digital-content 동의도 보강됐고, 044 credit idempotency migration도 사용자 확인으로 Supabase prod 적용 완료됐다. 남은 것은 후속 번들, webhook/reconciliation 같은 후속 안정화다.
 
 1. **초안 당시 결제 모델은 `1 패키지 = 1 productId = 1 scope`** 로 고정돼 있었다(catalog·confirmation·confirm·scope·조회 전부 이 가정). 제안서의 묶음 상품(오늘 풀세트·올해 풀패키지)은 **`1 결제 = N 권한`** 이라, 이 모델에 없는 **묶음 인프라를 새로 도입**해야 했다.
 2. 그래서 제안서의 **"1순위 = 난이도 낮음"은 카탈로그/카피 관점일 뿐**, 실제로는 결제 백엔드(`confirm` grant 경로) 변경이 처음으로 필요해 **실질 난이도는 "중"**이었다.
 3. **진짜 난이도 최저는 티어 C "분할 환산 문구"** (카피 1곳, 로직 0). 이건 즉시 가능.
 4. 따라서 권장 실행 순서를 아래처럼 재배열한다:
    - **0순위**: 분할 환산 문구 (카피만, 코드 로직 0)
-   - **1순위**: **묶음 인프라** + 오늘 풀세트 990원 (2026-05-27 기준 구현 완료)
+   - **1순위**: **묶음 인프라** + 오늘 풀세트 990원 (2026-05-27 구현 완료)
    - **2순위**: 올해 풀패키지 7,900원 (1순위 인프라 재사용)
    - **3순위**: 사주 코어팩 19,000원 (부분 lifetime — 별도 스펙, 이번 롤아웃 제외 권장)
 5. **묶음 설계는 "구성품 분해 grant" 방식(A안)을 권장**: 묶음 결제 시 confirm 이 구성 상품을 각각 기존 방식으로 grant. 조회·렌더(`useProductEntitlement`, premium/page.tsx)는 기존 productId 그대로라 **변경 0**. 새 productId를 만드는 B안은 조회/렌더 전면 변경이라 비권장.
@@ -49,7 +49,7 @@
 - **무엇**: lifetime 49,000원 옆에 "월 4,900원 멤버십 × 12 = 58,800원 / 평생 49,000원" 비교 문구 노출(앵커링).
 - **건드릴 파일**: `src/app/saju/[slug]/premium/page.tsx` (lifetime CTA 카드, 대략 :708-760 영역) — **카피 추가만**.
 - **코드 로직**: 0. entitlement·scope·결제 흐름 무관. 단순 정적 텍스트(또는 `membership_plus.price * 12` 산술).
-- **리스크**: 거의 없음. 단 표현은 단순 산술 비교만(과장·단정 금지). 사주 서비스라 의료광고법 무관하나, 톤은 `docs/safety-copy-guide.md` 준수.
+- **리스크**: 거의 없음. 단 문구는 단순 산술 비교만(과장·단정 금지). 사주 서비스라 의료광고법 무관하나, 톤은 `docs/safety-copy-guide.md` 준수.
 - **선행조건**: 없음. 즉시 가능.
 
 ### 2.1 [구현 완료] 묶음 인프라 + 오늘 풀세트 990원 — 티어 A (1순위)
@@ -126,7 +126,7 @@
 
 ## 6. 리스크 요약 (한눈에)
 
-- 🟡 **결제 백엔드 변경 = 매출/환불 직결**. 묶음 grant 멱등성, 부분보유 재결제, 묶음 환불 회수 테스트는 존재한다. credit paymentKey DB lock은 044 migration prod 적용 완료 기준으로 닫혔다.
+- 🟡 **결제 백엔드 변경 = 매출/환불 직결**. 묶음 grant 멱등성, 부분보유 재결제, 묶음 환불 회수 테스트는 존재한다. credit paymentKey DB lock은 044 migration prod 적용 완료 근거로 닫혔다.
 - ✅ **score-factor 묶음 구성 확정**: 오늘 풀세트는 F1~F5 전체를 포함하는 것으로 구현 완료.
 - 🟡 **monthly-calendar 월 범위**: 올해 풀패키지에서 "어느 달" 문제. 정책 결정 필요.
 - 🟡 **A/B 인프라 부재**: 정밀 A/B 불가 → 단계 출시 + 전후 비교로 갈음.
@@ -142,4 +142,4 @@
 | 2026-05-23 | 초안 — 묶음 인프라 부재 진단 + 상품별 영향 분석 + 순서 재배열(0~3순위) |
 | 2026-05-27 | 현재 로컬 구현 반영 — `bundle_today_set` 및 묶음 인프라 구현 완료로 상태 갱신. 남은 리스크를 bundle 동의/credit prepare/idempotency로 재정리 |
 | 2026-05-27 | Codex 결제정책 보완 반영 — credit prepare/consent, bundle digital-content consent, 044 credit payment idempotency 상태 갱신 |
-| 2026-05-27 | 사용자 확인 기준 Supabase prod에 044 credit idempotency migration 적용 완료 |
+| 2026-05-27 | 사용자 확인으로 Supabase prod에 044 credit idempotency migration 적용 완료 |

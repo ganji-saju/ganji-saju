@@ -14,7 +14,7 @@
  *   Vercel 정상화 후 본 commit 으로 원안 복귀.
  *
  * 2026-05-18 — Phase 1: canonical = ganjisaju.kr 로 반전 (이전: xn--s39at50bo6fmwa.kr)
- *               브랜드명 = 간지사주 로 통일 (이전: 달빛인생)
+ *               브랜드명 = 간지사주 로 통일 (이전 브랜드명)
  *               SITE_CONFIG export + getCanonicalUrl helper 신설
  */
 

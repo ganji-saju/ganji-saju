@@ -1,9 +1,39 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-27 (Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료)**. 직전 세션: **Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검**. 직전 구현 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-27 (Codex 후속 정리 — 문서 어휘/브랜드 톤 정리 + npm audit 확인 + vocabulary release 브랜치 정리)**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. 직전 UX/운영 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
-> 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
+> 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-27 세션 — Codex 후속 정리 (`docs` 어휘/브랜드 톤 + audit + branch cleanup)
+
+> 목적: 사용자 화면 어휘 전수 정리 릴리스(`c063bef`) 이후 남은 문서/운영 후속을 닫고, 결제 안정성·취약점 리스크를 다음 작업 후보로 분리한다. **계산·결제 로직 변경 없음**(문서/화면 카피만 정리).
+
+### 처리 완료
+- **운영/기획 문서 어휘 정리**: `docs/claude-specs`, `docs/payments`, `docs/safety-copy-guide.md`, premium planning docs, `PROGRESS.md`의 브랜드/상품 톤을 간지사주 톤으로 맞춤. 내부 검증용 정규식·테스트 fixture는 회귀 탐지를 위해 legacy term을 유지할 수 있음.
+- **잔여 화면 카피 정리**: PDF/report 문서, 비밀번호/탈퇴/안전 안내, method 읽을거리, CSS pseudo-content에 남은 구 브랜드 표기를 간지사주로 정리.
+- **`/admin/payment-funnel` 검증 대기 정리**: #389의 stale "검증 대기"를 사용자 확인 완료 상태로 갱신.
+- **vocabulary release 원격 브랜치 정리**: `codex/vocabulary-sweep-20260527`는 `main` fast-forward merge 완료 후 원격 삭제 완료. 로컬 브랜치 참조도 삭제 완료.
+- **사용자 화면 어휘 릴리스 기록 보강**: commit `c063bef5e27768f89594ad90f57dc170cacb93f6`, Vercel production `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200 상태를 release history에 추가.
+
+### npm audit 확인
+- `npm audit --json`: 3 vulnerabilities 확인(2 moderate, 1 high).
+- `npm audit --omit=dev --json`: 동일 결과 → production dependency graph에도 남음.
+- 항목:
+  - `next` direct dependency `16.2.3`: high 묶음 advisory. semver-major 없이 `16.2.6`으로 fix 가능.
+  - `postcss`: Next 내부 전이 의존성 moderate. `next@16.2.6`으로 함께 해소 가능.
+  - `qs`: `shadcn@4.7.0` → `@modelcontextprotocol/sdk` → `express` 경유 전이 의존성 moderate. 별도 dependency override 또는 상위 패키지 업데이트 검토 필요.
+
+### 아직 닫지 않은 운영 확인 항목
+- **Toss 환불 완료 여부**: 로컬 repo에서 사실 확인 불가. Toss 관리자/운영자 확인 후 완료 처리 필요.
+- **사용자 안내 완료 여부**: 현재 대화 기록만으로는 안내 발송 완료를 확정할 수 없음. 환불 완료 확인과 함께 닫을 항목.
+
+### 다음 P0 후보
+1. **Next.js 16.2.6 패치 업그레이드**: audit high가 production graph에 남아 있어 결제 안정성 작업과 별도로 빠르게 처리 권장.
+2. **결제 `orderId` 서버 발급/UUID화**: 현재 client timestamp 기반 orderId는 극단적 더블클릭/ms 충돌 가능성이 남아 있음.
+3. **Toss webhook/reconciliation**: success redirect 이후 confirm 의존을 줄이고, 브라우저 종료/네트워크 실패 시 미지급을 보정하는 별도 수신·대조 경로 필요.
 
 ---
 
@@ -20,7 +50,7 @@
 - **문서 동기화**: `docs/payments/product-catalog.md`, `pricing-proposal.md`, `pricing-rollout-plan.md`를 현재 구현 상태로 갱신. 남은 리스크는 orderId 서버 발급/UUID화, Toss webhook/reconciliation으로 좁힘.
 
 ### 운영 적용
-- `044_credit_payment_idempotency.sql`: 사용자 확인 기준 Supabase prod 수동 적용 완료(2026-05-27).
+- `044_credit_payment_idempotency.sql`: 사용자 확인으로 Supabase prod 수동 적용 완료(2026-05-27).
 - 이 repo는 DB migration이 CI/Vercel 배포로 자동 적용되지 않으므로, 후속 DB migration도 별도 수동 적용 상태를 `PROGRESS.md`에 기록한다.
 
 ### 검증
@@ -35,11 +65,11 @@
 - Git: `main` 커밋 `df0a37e3b405292cda279c0722b2a2aa70a9c509` 푸시 완료.
 - Vercel production: `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` READY.
 - Alias: `https://ganjisaju.kr` 연결 완료.
-- Production smoke: `https://ganjisaju.kr/credits` HTTP 200, `/admin/payment-funnel` 비로그인 기준 `/login?next=/admin` 307.
+- Production smoke: `https://ganjisaju.kr/credits` HTTP 200, `/admin/payment-funnel` 비로그인 상태 `/login?next=/admin` 307.
 
 ---
 
-## 2026-05-27 세션 — Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검
+## 2026-05-27 세션 — Codex 백업 스냅샷 + 로컬 구현 상태 결제/가격 정책 재점검
 
 > 목적: Claude Code/Codex 작업물이 섞인 현재 로컬 상태를 먼저 보존하고, 문서 상태를 현재 구현과 맞추기 위한 점검. **코드 경로는 수정하지 않음.**
 
@@ -60,7 +90,7 @@
 - 로그인 상태 UX: 사용자 검증 완료.
 - 코인 만료 정책: `040_credit_lots_expiry` + `credit_lots` lot 기반 1년 만료 구현 존재. `getCredits`는 비만료 lot 합으로 표시 잔액을 재계산.
 
-### 로컬 구현 기준 결제/가격 상태
+### 로컬 구현 상태 결제/가격 상태
 - 카탈로그는 현재 16개 패키지: 코인 3종, 36코인 일회성 1종, 멤버십 2종, lifetime 1종, taste 8종, bundle 1종.
 - `bundle_today_set` 990원은 구현됨: `today-detail` + `score-factor` F1~F5 전체를 개별 entitlement로 grant/revoke.
 - `taste_score_factor` 550원과 `taste_compat_reading` 990원은 카탈로그/스코프/checkout 경로에 존재.
@@ -69,7 +99,7 @@
 ### 점검 결과 후속 상태
 1. ✅ **코인 구매 동의/prepare 우회**: 후속 Codex 세션에서 `/credits` prepare/`PaymentConsentCheckboxes` 통합 완료.
 2. ✅ **bundle 동의 규칙**: 후속 Codex 세션에서 bundle `digital-content` 동의 추가 완료.
-3. ✅ **credit idempotency**: 후속 Codex 세션에서 044 migration + `processed_credit_payments.payment_key UNIQUE`로 보강. 사용자 확인 기준 prod 수동 적용 완료(2026-05-27).
+3. ✅ **credit idempotency**: 후속 Codex 세션에서 044 migration + `processed_credit_payments.payment_key UNIQUE`로 보강. 사용자 확인으로 prod 수동 적용 완료(2026-05-27).
 4. ✅ **문서 동기화**: 결제 문서와 PROGRESS 갱신 완료.
 
 ### 검증
@@ -102,7 +132,7 @@
 - **증상**: `/admin/payment-funnel` "데이터를 불러올 수 없음". API(`/api/admin/payment-funnel`)가 3일 내내 지속 500.
 - **진단(증거 기반)**: ① `payment_funnel_events` 테이블은 prod 존재(`supabase migration list` 030 Local=Remote — **drift 아님**, 초기 가설 기각). ② 인증(`getCurrentAdminCheck`)은 **service-role**로 admin_users 확인해 통과(403 아님). ③ 그러나 데이터 조회는 **사용자 세션(authenticated)** 클라이언트 → 030 테이블이 RLS만 있고 **테이블 GRANT 없어** 조회 차단 → 500. `refund`/`push-ab-policy` 의 guard(사용자 세션)→데이터(service-role) 패턴 미준수가 차이.
 - **수정**: 데이터 조회를 **service-role**로 전환(코드 1파일, DB 변경 없음 → drift 위험 회피) + 원인 추적용 `console.error` 안전망. (`src/app/api/admin/payment-funnel/route.ts`)
-- ⚠️ **검증 대기**: prod 배포 후 `/admin/payment-funnel` 정상 표시 확인 필요(admin 세션). 안 되면 `console.error` 로그로 후속(추측 없이).
+- ✅ **사용자 확인 완료**: prod 배포 후 `/admin/payment-funnel` 정상 표시를 사용자가 확인(2026-05-27). stale "검증 대기" 상태 닫힘.
 
 ### 교훈
 - 단일 목적 기능(띠운세)은 **진입 입력을 그 목적에 필요한 최소(생년월일)**로 — 공용 폼(`UnifiedBirthInfoFields`) 재사용이 과입력을 부른다.
@@ -144,13 +174,13 @@
 
 ### 마이그레이션 상태 (⚠️ 수동 적용 — CI 자동 아님)
 - `041_ai_lifetime_interpretations`(Phase 0a) · `042_ai_llm_runs`(Phase 0b): **적용됨**(라이브 검증 통과).
-- `043_refund_requests`(Phase 2): **사용자 확인 기준 prod 적용 완료**(2026-05-27). 환불 처리는 진행 중.
+- `043_refund_requests`(Phase 2): **사용자 확인으로 prod 적용 완료**(2026-05-27). 환불 처리는 진행 중.
 
 ### 운영 후속 (코드 밖 — 사용자 작업)
 - ✅ `043_refund_requests` prod 적용: 사용자 확인 완료(2026-05-27).
 - **super_admin 지정**(`admin_users.role` 또는 `ADMIN_USER_IDS` 부트스트랩) — 환불 최종 승인 권한. 이미 지정됐다면 닫힘.
-- ✅ **결제 계정으로 PDF 시각 확인**: 사용자 확인 기준 P9 포함 `PAGE 9 / 9` 확인 완료.
-- 실제 Toss 환불은 사용자 확인 기준 진행 중.
+- ✅ **결제 계정으로 PDF 시각 확인**: 사용자 확인으로 P9 포함 `PAGE 9 / 9` 확인 완료.
+- 실제 Toss 환불은 사용자 확인으로 진행 중.
 
 ### 교훈
 - **본편 캐시 키**는 `reportHash + feedback + targetYear` — feedback/targetYear 누락 시 캐시 오염(스펙 갭이었음).
@@ -165,7 +195,7 @@
 > 사용자 production 스크린샷 제보로 시작: 오늘운세/자세히보기 한자(己亥)·비문, 메인 카드 검은 배경. 5개 PR로 처리. 모든 코드 작업 main 기반 worktree → PR → CI green → squash 머지 → Vercel 자동 배포.
 
 ### 머지 완료
-- **#364 어휘·문장 품질**: (A) today-detail 마감문장 한자 일진(己亥)→한글 독음(`formatTodayDateMarker`). (B) 평생리포트 SHORTAGE/EXCESS 사전 reason 메타포 오행어(새싹/햇살/흙/쇠/물 기운)→표준 "목/화/토/금/수 기운" + "기운" 중복 제거(10건). (C)(D) 오늘운세 plain 티어 비문("표현 쪽을 챙기면 감정이 덜 엉킵니다"/"표현이 비면"/"생각이 내 성향과 같은 흐름")을 일상어로 자연화. **핵심 교훈: 오늘운세 본문은 "기운"조차 금지(plain 티어, 테스트가 강제) → lifetime-report만 "X 기운".** 회귀 테스트 추가(vocab-quality·practical-action-vocab).
+- **#364 어휘·문장 품질**: (A) today-detail 마감문장 한자 일진(己亥)→한글 독음(`formatTodayDateMarker`). (B) 평생리포트 SHORTAGE/EXCESS 사전 reason 메타포 오행어(새싹/햇살/흙/쇠/물 기운)→표준 "목/화/토/금/수 기운" + "기운" 중복 제거(10건). (C)(D) 오늘운세 plain 티어 비문("말하는 쪽을 챙기면 감정이 덜 엉킵니다"/"말이 부족하면"/"생각이 내 성향과 같은 흐름")을 일상어로 자연화. **핵심 교훈: 오늘운세 본문은 "기운"조차 금지(plain 티어, 테스트가 강제) → lifetime-report만 "X 기운".** 회귀 테스트 추가(vocab-quality·practical-action-vocab).
 - **#365 홈 카드 배경 흰색 복원**: #351/#352 다크 통일 revert(`gangi-market.tsx`). footer 검정(#350 globals.css)은 분리·유지.
 - **#366 홈 카드 제목 선생 병기**: `GANGI_HOME_CARDS` 10개 "기능명 · 선생"(사용자 지정 매핑).
 - **#367 12간지 선생 3명 리브랜드 + 메뉴 일치**: 재물닭→**별닭**(별자리)/손금멍→**상담멍**(고민 상담)/이동말→**길일말**(좋은날·택일). `dialogue-experts`(topic·keywords·answerFrame·RAG 오버레이)·`moonlight`·`gangi-ui`·메가메뉴 대화탭 일관 변경(slug/id/zodiac 라우트 유지). ⚠️ 기존 재물운·이동운·손금 대화 주제 의도적 대체. 메가메뉴(PC/모바일)·푸터 서비스명도 홈카드와 "기능명 · 선생" 일치. 관상원·복돼지선생 유지. `route.test.ts` 단언 갱신.
@@ -192,13 +222,13 @@
 ### 머지·배포 완료
 - **today_fortune_feedback 테이블 복구** (SQL Editor, 코드 PR 아님): 오늘운세 피드백 "평가하기"가 PostgREST `Could not find the table 'public.today_fortune_feedback' in the schema cache` 오류. 코드·마이그레이션(023)은 존재하나 **prod DB에 테이블 부재**(`migration list`엔 023 applied인데 카탈로그엔 없는 drift). 023 SQL을 Supabase SQL Editor에서 직접 실행 + `NOTIFY pgrst 'reload schema'`로 복구. ⚠️ **교훈: DB 마이그레이션은 CI 자동 아님 → supabase CLI 수동 적용. main 머지/Vercel 배포로 스키마 반영 안 됨.**
 - **#355 피드백 raw 오류 노출 fix**: `ml-feedback` API가 PostgREST raw 영문 오류를 사용자 화면에 그대로 반환 → 고정 한국어 안내만 반환 + raw는 `console.error` 서버 로그. `route-helpers.feedbackSaveErrorResponse` 분리 + 단위테스트(누출 방지 단언).
-- **#356 today-detail 결제 정합성 완결** (핵심·P0): #346이 결제 grant/조회를 안정 `readingKey` 기준으로 옮기고 `checkTodayDetailAccess`(단일 읽기)를 도입했으나 **unlock 라우트만 옛 `today:${sourceSessionId}`(세션마다 가변) 조회로 남아** "이미 구매 ↔ 풀이열기 누르면 무료결과로 되돌아감"의 직접 원인. (한 계정이 **6회 결제·6개 다른 scope_key**로 데이터 확인.)
+- **#356 today-detail 결제 정합성 완결** (핵심·P0): #346이 결제 grant/조회를 안정 `readingKey` 근거로 옮기고 `checkTodayDetailAccess`(단일 읽기)를 도입했으나 **unlock 라우트만 옛 `today:${sourceSessionId}`(세션마다 가변) 조회로 남아** "이미 구매 ↔ 풀이열기 누르면 무료결과로 되돌아감"의 직접 원인. (한 계정이 **6회 결제·6개 다른 scope_key**로 데이터 확인.)
   - Layer 1: unlock GET/POST 권한 판정을 `todayDetailEntitlementScopeKeys`(readingKey 우선 + legacy readingId) + **같은날(KST) fallback**으로 통일(entitlement API와 동일). 신규 `hasTodayDetailEntitlementForDay`. → readingKey 해시 드리프트·과거 readingId 결제분도 당일이면 인정.
   - Layer 2(근본): today-fortune 생성이 매 요청마다 새 reading(UUID) INSERT → `sourceSessionId` 휘발. `findReadingByInput`로 동일 사주 reading 재사용(전체 readingKey 일치).
 - **#357 후속 감사/검증** (docs): today-detail 중복결제 감사 SQL + score-factor(사주풀이 550원) 정합성 검증 → 읽기·쓰기 모두 `score:${readingKey}:${factorId}` 동일 스코프, 별도 휘발성 unlock 경로 없음 → **이상 없음(수정 불필요)**.
 - **#358 콘텐츠 보완 로드맵 + 궁합 LLM 활성**: 궁합·띠운세·꿈해몽 로드맵 + 확정 결정 문서. **궁합 깊은 풀이 LLM 프로덕션 활성** — `OPENAI_INTERPRET_COMPATIBILITY=1`(Vercel prod env 설정 + 재배포). #345로 코드는 있었으나 **플래그 OFF·`.env.example` 미문서화**라 무료·유료 모두 결정론 fallback(무료 4축 재포장)만 보던 게 "궁합 내용 안 바뀐 느낌"의 원인. 플래그 문서화.
 - **#359 띠운세 연생별 풀이**: 12지 × 5연생 = **60편**. `ZodiacFortune.byYear`(간지·독음·오행·풀이·행동조언) + `/zodiac/[slug]?birthYear=` 연생 칩 UI(라우트 폭증 없음). `EXPECTED_BY_YEAR` 표로 간지 정확성 강제, 한자·금지어 전수 가드.
-- **#362 띠운세 같은-오행 표현 다양화**: 같은 천간 오행 연생이 띠 달라도 같은 문장틀 쓰던 문제 → 오행별 12지 **1:1 비유 배정**(화=화롯불/횃불/촛불/등댓불/불꽃놀이…)으로 60편 재작성(간지·길이·톤 유지).
+- **#362 띠운세 같은-오행 말 다양화**: 같은 천간 오행 연생이 띠 달라도 같은 문장틀 쓰던 문제 → 오행별 12지 **1:1 비유 배정**(화=화롯불/횃불/촛불/등댓불/불꽃놀이…)으로 60편 재작성(간지·길이·톤 유지).
 - **#360 꿈해몽 풍부화(phase1+2)**: 구조 강화(`fortune` 길/흉/중립 뱃지·`action` 행동가이드·`detailSlug` 검색↔상세 연결) + 사전 **33→206**. 흉몽은 "주의·점검 신호" 순화 톤(공포·단정 회피) + "민속·상징 해석, 단정 아님" 안내.
 - **#361 꿈해몽 추가 확충**: 206→**304**(+100, 동물·자연·사물·인물·행동·신체·음식 6카테고리 고루, 중복 0).
 
@@ -206,7 +236,7 @@
 - **#363 띠운세 기간별 한 줄 + 기간탭/연생칩 스크롤 고정**: 기간 탭(오늘/주/월/년)이 점수·라벨은 바꾸나 헤드라인은 `item.summary` 고정 + 탭/연생칩 클릭 시 화면 맨위로 스크롤되던 2건. → `ZodiacFortune.periodLines`(12지×4=48문장)로 헤드라인을 `periodLines[period]` 교체(라벨-내용 일치) + 기간탭/연생칩 `<Link scroll={false}>`. typecheck 0 / 667 테스트.
 
 ### 운영 후속 (코드 밖)
-- ⚠️ **today-detail 중복 과금 환불**: 감사 SQL(`docs/superpowers/plans/2026-05-24-today-detail-followups.md`)로 다건 결제자 산출 → **Toss `paymentKey` 기준 중복분 부분환불**(1건은 정상 이용분 제외). 예: 본 사례 계정 6건 중 5건 ≈ 2,750원.
+- ⚠️ **today-detail 중복 과금 환불**: 감사 SQL(`docs/superpowers/plans/2026-05-24-today-detail-followups.md`)로 다건 결제자 산출 → **Toss `paymentKey`로 중복분 부분 환불**(1건은 정상 이용분 제외). 예: 본 사례 계정 6건 중 5건 ≈ 2,750원.
 - 배포 후 재테스트: 오늘운세 자세히보기(결제 정상화)·궁합(LLM 풀이)·띠운세 연생 칩·꿈해몽 검색.
 
 ### 참고
@@ -218,7 +248,7 @@
 ## 2026-05-24 세션 — 결제 무한반복 fix + 온보딩 제거 + 궁합입력 잘림(미완) + footer 회색(미해결)
 
 ### 머지·배포 완료
-- **#346 결제 무한반복 fix** (production 배포 완료): "오늘 자세히보기"(today-detail) 권한이 불안정한 reading id(slug, 매번 바뀜)에 묶여, 사주 재생성·경로 교차 시 결제해도 권한을 못 찾던 P0. `product-scope.ts`의 today-detail scope를 **readingKey(생년월일 결정적·안정)** 기준으로 통일 + `today-detail-access.ts`에 `todayDetailEntitlementScopeKeys`(readingKey 우선 + legacy readingId 병행) + coin 3키. entitlement API·checkout을 `checkTodayDetailAccess`로 통일. dead code(entitlement/route-helpers) 제거.
+- **#346 결제 무한반복 fix** (production 배포 완료): "오늘 자세히보기"(today-detail) 권한이 불안정한 reading id(slug, 매번 바뀜)에 묶여, 사주 재생성·경로 교차 시 결제해도 권한을 못 찾던 P0. `product-scope.ts`의 today-detail scope를 **readingKey(생년월일 결정적·안정)** 근거로 통일 + `today-detail-access.ts`에 `todayDetailEntitlementScopeKeys`(readingKey 우선 + legacy readingId 병행) + coin 3키. entitlement API·checkout을 `checkTodayDetailAccess`로 통일. dead code(entitlement/route-helpers) 제거.
 - **#347 온보딩 강제 redirect 제거** (배포 완료): `app/page.tsx`에서 `moonlight:onboarded` 쿠키 미보유 시 `/onboarding` 강제 redirect 제거. 온보딩은 4슬라이드 인트로 carousel(필수 데이터 X)이라 제거해도 기능 영향 0. `/onboarding` 라우트·컴포넌트는 유지(분리).
 - **#348 궁합 입력 폼 하단 잘림 fix** (배포됐으나 **여전히 잘림 — 미해결**): `app-shell.css`의 `:has(footer) { padding-bottom:0 !important }`가 main pb를 덮어, 하단 fixed CTA(약 101px)가 폼 마지막(출생지 안내)을 가림. `compatibility-input-client.tsx` AppPage에 `pb-36 md:pb-0` 추가했으나 production 여전 잘림.
 
@@ -242,17 +272,17 @@
 
 사용자가 가격 정책 비일관성 지적(총운 무료 / 대운·오늘자세히 550 / 분야 990 / 좋은날 1,900 / 올해 3,900 / 보관형 49,000 — 구조 어색). 진행 순서:
 
-**(a) 가격 정책 개편안 문서 완성** — `docs/payments/pricing-proposal.md` (2026-05-27 기준 기본 문서는 존재하며, 로컬 구현 반영 상태로 갱신 필요). 구조 개선 골자:
+**(a) 가격 정책 개편안 문서 완성** — `docs/payments/pricing-proposal.md` (2026-05-27 상태 기본 문서는 존재하며, 로컬 구현 반영 상태로 갱신 필요). 구조 개선 골자:
 - 단건 최고가(3,900) ↔ 보관형(49,000) 사이 빈 중간 구간을 **묶음(번들) 상품(1만원대)** 으로 연결
 - 콘텐츠 지속성/범위 비례 차등(현재 `taste_score_factor` 550 일괄 → 대운 등 장기 콘텐츠 상향)
-- 결제 경로 정합화(코인 vs 단건 현금). 2026-05-27 기준 monthly-calendar는 `2코인`/`1,900원` 양쪽 경로를 의도적 대안으로 노출 중.
+- 결제 경로 정합화(코인 vs 단건 현금). 2026-05-27 상태 monthly-calendar는 `2코인`/`1,900원` 양쪽 경로를 의도적 대안으로 노출 중.
 - 멤버십(`membership_*`)에 풀이 unlock 혜택 연결(현재 AI 대화 코인 전용이라 분리됨)
 - 보관형 49,000 재검토
 
 **(b) 코드/표기 P0 정합성 정비** (근거: `docs/payments/product-catalog.md §2`):
 - 이중 결제 경로 — 동일 기능(예: 월간달력 1,900원 단건 = 2코인)이 코인 차감 + 단건 현금 양쪽 노출 → 통일/분리
 - 화면 라벨 ↔ `catalog.ts` 표기 불일치 — 예: 화면 "올해흐름"(990?) vs catalog `taste_year_core` "올해 핵심 3줄"(3,900) → 통일
-- `lifetime_report`(49,000) **환불 인프라** — revoke 함수 + admin 환불 요청/승인 + 043 테이블까지 구현. 사용자 확인 기준 043 적용 완료, 환불 진행 중.
+- `lifetime_report`(49,000) **환불 인프라** — revoke 함수 + admin 환불 요청/승인 + 043 테이블까지 구현. 사용자 확인으로 043 적용 완료, 환불 진행 중.
 - 코인 만료 정책 불일치(FAQ "1년 유효" vs 구현 영구)는 `040_credit_lots_expiry`의 `credit_lots` 1년 만료 모델로 해소.
 
 > ⚠️ 세션 메모: 운세+결제 상세를 채팅으로 길게 출력하면 자동 콘텐츠 안전필터 오탐으로 응답이 truncation/차단됨. → 상세 표·수치는 **문서 파일에 기록**, 채팅은 요약만.
@@ -273,7 +303,7 @@
 
 ### 0.2 Phase 2+3 스펙 빌드 (#314, 머지)
 
-- 붙여넣은 스펙 기준 신규 모델: `LockGate`(무료 🔒 → 결제 모달 / 유료 자세히→ 링크), 원형 `SajuScoreCard`(rAF `useCountUp`), `ScoreBreakdownCard`(F1~F5 막대 + per-factor `LockGate`), `OhaengChart`(막대, 레이더 대체), `LifetimeKeysCarousel`.
+- 붙여넣은 스펙 근거 신규 모델: `LockGate`(무료 🔒 → 결제 모달 / 유료 자세히→ 링크), 원형 `SajuScoreCard`(rAF `useCountUp`), `ScoreBreakdownCard`(F1~F5 막대 + per-factor `LockGate`), `OhaengChart`(막대, 레이더 대체), `LifetimeKeysCarousel`.
 - Tailwind v4 `@theme` 토큰(`--color-score-*` 5등급+soft, `--color-ohaeng-*` 5요소+soft) + `labels` 보강 — 동적 클래스 purge 회피 위해 **LITERAL 색상 맵**(`getScoreColorClasses`/`OHAENG_COLOR_CLASSES`).
 - ※ 0-prev-3(#305)의 "Phase 2~3 시각토큰+UI" 와 구분 — 이번 #314 는 붙여넣은 스펙(550원 per-factor 모델)으로 **재정의된** 빌드.
 
@@ -368,9 +398,9 @@
 
 ## 0-prev-2. 2026-05-21~22 Codex 세션 — 공개 상용화 P0 차단 이슈 제거 + clean main 배포
 
-작업자: **Codex**. Claude Code 2026-05-21 10시 작업 스냅샷을 로컬 백업으로 보존한 뒤, Codex 작업 브랜치에서 공개 페이지 상용화 차단 이슈를 정리했다. 최종 배포/머지는 백업 커밋을 main 에 포함하지 않도록 `origin/main` 기준 clean 브랜치에 P0 커밋만 cherry-pick 해서 진행했다.
+작업자: **Codex**. Claude Code 2026-05-21 10시 작업 스냅샷을 로컬 백업으로 보존한 뒤, Codex 작업 브랜치에서 공개 페이지 상용화 차단 이슈를 정리했다. 최종 배포/머지는 백업 커밋을 main 에 포함하지 않도록 `origin/main`에서 만든 clean 브랜치에 P0 커밋만 cherry-pick 해서 진행했다.
 
-### 0.1 백업 / 브랜치 기준
+### 0.1 백업 / 브랜치 원칙
 
 | 항목 | 값 |
 |------|-----|
@@ -386,7 +416,7 @@
 
 | P0 | 처리 내용 |
 |----|-----------|
-| 도메인 통합 | `src/proxy.ts`, `src/lib/site.ts` 기준 legacy host 를 `https://ganjisaju.kr` 로 **301** 정규화. path/query 보존. Unicode/Punycode 한국어 도메인 테스트 추가 |
+| 도메인 통합 | `src/proxy.ts`, `src/lib/site.ts`에서 legacy host 를 `https://ganjisaju.kr` 로 **301** 정규화. path/query 보존. Unicode/Punycode 한국어 도메인 테스트 추가 |
 | `/login` | "준비 중", "불러오는 중" 제거. 로고, 서비스 설명, 카카오 로그인, Google 로그인, 약관/개인정보 링크, 고객센터 이메일, 로그인 실패 문의 안내 노출. `next` 파라미터는 OAuth callback/email login 모두 유지 |
 | `/credits` | 비로그인 상태에서도 코인팩, 정책, 로그인 CTA 노출. 로딩/준비 문구 제거. 중복 footer 제거 |
 | `/today-fortune` | "오늘 흐름을 불러오는 중" 제거. loading 상태와 실제 폼 동시 노출 방지. 중복 footer 제거 |
@@ -402,7 +432,7 @@
 - `src/lib/bundled-policies.ts` — DB 정책이 비어 있거나 낮은 버전일 때 사용할 9개 정책 기본 본문.
 - `src/lib/public-commercialization-copy.test.ts` — 공개 상용화 페이지 금지 문구 및 로그인 필수 구성 회귀 테스트.
 - `src/lib/policies.ts` — bundled policy fallback / DB 정책 우선순위 보강.
-- `src/app/login/page.tsx` — Codex 기준 로그인 완성 화면 및 fallback 필수 구성 반영.
+- `src/app/login/page.tsx` — Codex가 정리한 로그인 완성 화면 및 fallback 필수 구성 반영.
 - `src/app/credits/page.tsx`, `src/app/today-fortune/page.tsx`, `src/app/dialogue/appointment/page.tsx` — 공개 핵심 유료 흐름 상용화 차단 문구 제거 및 고지 보강.
 
 ### 0.4 검증 결과
@@ -429,7 +459,7 @@
 ### 0.6 운영 메모
 
 - `backup/claude-code-2026-05-21-1000` 커밋에는 `.mcp.json`, `.claude/`, 대량 audit report, screenshots, design docs 가 포함되어 있으나 **main 에는 병합하지 않았다**.
-- Codex P0 변경만 main 에 반영되어 롤백 시 `4ee2484` 이전 `0f0e4f4` 또는 백업 브랜치/태그를 기준으로 비교 가능하다.
+- Codex P0 변경만 main 에 반영되어 롤백 시 `4ee2484` 이전 `0f0e4f4` 또는 백업 브랜치/태그를 근거로 비교 가능하다.
 - `npm run lint` script 는 현재 `package.json`에 없어 실행 대상 없음.
 
 ---
@@ -456,9 +486,9 @@
 ### 0.3 Phase 3 — 점수 UI 컴포넌트 (서버 컴포넌트)
 
 - 신규 `src/components/saju-score/`:
-  - `SajuScoreGauge` — 총점 0~100 원형 SVG 게이지(반지름 52, 둘레 기준 dashoffset) + 등급 라벨(제목/부제/설명/면책).
+  - `SajuScoreGauge` — 총점 0~100 원형 SVG 게이지(반지름 52, 둘레로 dashoffset) + 등급 라벨(제목/부제/설명/면책).
   - `SajuScoreBreakdown` — F1~F5 막대(라벨·값/20·fill%·지표색). 표시값 정수 반올림(소수 노출 제거).
-  - `SajuOhaengBalance` — 다섯 기운 상대 막대(최대치 기준) + 부족/과다 칩.
+  - `SajuOhaengBalance` — 다섯 기운 상대 막대(최대치 대비) + 부족/과다 칩.
   - `SajuScoreCard` — `SajuScore` 하나로 게이지+내역+오행 통합.
 - `src/app/dev/saju-score/page.tsx` — 컴포넌트 QA 쇼케이스(8 샘플, 등급 스펙트럼). **production `notFound()` + noindex**.
 - 스타일 관례 준수: `app-*` CSS var + 인라인 hex(동적색 → Tailwind purge 무관). `'use client'` 불필요(순수 프레젠테이션).
@@ -476,7 +506,7 @@
 
 ### 0.6 메모 / 후속
 
-- `saju-score-spec.md`/`phase-1-task.md` 는 미커밋(임시 기획 문서) — Phase 2/3 범위는 PROGRESS 로드맵 + 기존 코드 패턴 기준으로 확정.
+- `saju-score-spec.md`/`phase-1-task.md` 는 미커밋(임시 기획 문서) — Phase 2/3 범위는 PROGRESS 로드맵 + 기존 코드 패턴 근거로 확정.
 - 컴포넌트 렌더 테스트는 리포에 0개(러너가 `.test.ts`만 발견) → 로직은 visual-tokens 유닛으로, UI 는 브라우저/Playwright 로 검증하는 관례 유지.
 - **점수 Phase 4~7**: 오행 차트 UI → LLM 가이드 연계(`OhaengChartData.guidanceText`) → 무료/유료 경계 → **실제 사주 결과 페이지에 `SajuScoreCard` 연결**(현재 미연결, 최우선 후속).
 - 📦 release: `2026-05-21 점수 시스템 Phase 2~3 — 시각 토큰 + UI 컴포넌트`
@@ -562,7 +592,7 @@
 | 단계 | 결과 | 비고 |
 |------|------|------|
 | 1 (회귀 테스트) | ✅ PASS | 5 보존 영역 모두 유지 |
-| 2 (P0 spot-check) | ✅ PASS (PR #281) | 6 버그 중 ⑥ chapter fallback 자극 표현 잔존 발견 → 즉시 fix |
+| 2 (P0 spot-check) | ✅ PASS (PR #281) | 6 버그 중 ⑥ chapter fallback 자극 문구 잔존 발견 → 즉시 fix |
 | 3 (네이밍 마이그레이션) | ✅ PASS | 옛 옛 라벨 잔존 0건 (정확 매핑 strict grep) |
 | 4-A (LLM 구조) | ⚠️ PARTIAL → ✅ 완료 (PR K/L/M/N) | 9챕터 중 8 LLM 활성 + 8/8 금지 규칙 + JSON schema + 병렬 호출 |
 | 4-B (콘텐츠 다양성) | ✅ PASS (실측 7/8 LLM) | §5 8개 패턴 모두 목표 이내 + 챕터 간 첫 문장 중복 0 |
@@ -613,7 +643,7 @@
 
 | PR | commit | 영역 |
 |----|--------|------|
-| #281 | `f690430` | P0 ⑥ 자극 표현 차단 + 회귀 가드 (chapter-pattern-templates) |
+| #281 | `f690430` | P0 ⑥ 자극 문구 차단 + 회귀 가드 (chapter-pattern-templates) |
 | #282 | `fbdc726` | V2-5 PR K — 9장 LLM synthesis (priorChapterDigests) |
 | #283 | `20629f8` | V2-5 PR L — 2·3·6·7 LLM + 1~7 병렬 호출 (Promise.all) |
 | #284 | `b7a2a4e` | V2-5 PR M — validator 룰 3종 (결 빈도/문장 길이/막연한 위로) + Few-shot 예시 |
@@ -752,7 +782,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 | #276 | Phase 8-A SEO metadata + JSON-LD schema 통일 | 신규 `src/lib/seo/structured-data.ts` (Article + FAQPage + BreadcrumbList schema builder + XSS-safe serializer) + `src/lib/seo/page-metadata.ts` (`buildContentPageMetadata` 통일 helper). 3 SEO area detail 페이지 (`/star-sign/[slug]` / `/zodiac/[slug]` / `/dream-interpretation/[slug]`) 의 `generateMetadata` 통일 + 본문에 Article + BreadcrumbList JSON-LD 2개씩 inject |
 | #277 | Phase 8-B 별자리 detail 내부링크 보강 (연애 타로 + 유료 CTA) | §6 연애 section 끝에 `/tarot/daily?topic=love` cross-link (pink-soft ghost). 마지막 cross-saju CTA section 에 유료 funnel 2 grid (사주 550원~ + 궁합 990원, `?from=star-sign` UTM). 12×12 호환 매트릭스 + 기존 saju upsell 모두 보존 |
 | #278 | Phase 8-C 띠운세 11 sections (§궁합·조심할 띠) | 신규 `src/lib/zodiac/zodiac-relations.ts` — 12지 전통 호환 매트릭스 (삼합 三合 4 group + 육합 六合 6 pair + 육충 六沖 6 clash). 각 띠 `idealMatches` 4 (삼합 2 + 육합 1 + 보조 1) + `bewareMatches` 1 (육충) + `matchSummary` / `bewareSummary` 한 줄. 페이지에 §궁합·조심 article 추가 + chip 양쪽 grid + 사주 CTA `?from=zodiac` UTM + 유료 funnel 2 grid |
-| #279 | Phase 8-D 꿈해몽 10 sections + 800자+ 본문 + FAQPage | Phase 8 spec 가장 큰 항목 — 기존 ~90 chars 의 단순 2-card 가 빈약하다는 회귀를 해소. 신규 `src/lib/dream/dream-content.ts` (8 entries × 10 sections — 제목/한 줄 요약/기본 의미/상황별 3~4/심리적/행동 3 bullet/주의/관련 꿈/FAQ 2~3). 각 entry 합산 본문 800자+ / 단정·공포·의료 표현 금지. 페이지 컴포넌트 enriched 10 sections layout + FAQPage JSON-LD inject (조건부) + 무료 cross-area 3 (오늘운세/타로/꿈해몽 목록) + 유료 funnel 2 (사주/궁합) + `?from=dream` UTM 5건 |
+| #279 | Phase 8-D 꿈해몽 10 sections + 800자+ 본문 + FAQPage | Phase 8 spec 가장 큰 항목 — 기존 ~90 chars 의 단순 2-card 가 빈약하다는 회귀를 해소. 신규 `src/lib/dream/dream-content.ts` (8 entries × 10 sections — 제목/한 줄 요약/기본 의미/상황별 3~4/심리적/행동 3 bullet/주의/관련 꿈/FAQ 2~3). 각 entry 합산 본문 800자+ / 단정·공포·의료 말 금지. 페이지 컴포넌트 enriched 10 sections layout + FAQPage JSON-LD inject (조건부) + 무료 cross-area 3 (오늘운세/타로/꿈해몽 목록) + 유료 funnel 2 (사주/궁합) + `?from=dream` UTM 5건 |
 | #280 | Phase 8-E PaidFunnelGrid 공통 컴포넌트 + 무료→유료 cross-area funnel | Phase 8-B/C/D 의 inline funnel ~40 lines × 3 = ~120 lines 의 중복을 `PaidFunnelGrid({ from, tone, includeMembership })` 로 추출. 5 페이지 적용: 별자리/띠 (tone=dark, 멤버십 X) + 꿈/타로 result/today-fortune client (tone=light, includeMembership). Phase 8 spec §4 내부링크 7개 흐름 전체 충족. Phase 8 완결 PR |
 
 ### 0.2 운영 적용
@@ -796,7 +826,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 4. **PR #273 StarSignChip** — iOS Safari / Android Chrome 에서 ♈~♓ 유니코드 glyph + system-ui font 정상 렌더 (font fallback 차이 확인)
 5. **PR #276 JSON-LD** — Google Rich Results Test (rich-results.google.com) 통과 — Article + BreadcrumbList 인식. 8-D 의 FAQPage 도 rich result preview 정상 (Q&A snippet)
 6. **PR #280 PaidFunnelGrid** — `?from=star-sign / zodiac / dream / tarot / today-fortune` UTM 5종이 사주 / 궁합 / 멤버십 페이지에서 analytics 추적 + conversion 비율 측정
-7. **꿈해몽 #279 콘텐츠 톤** — 단정·공포·의료 단정 표현 없는지 (사이트 톤 일관성). 사용자 review 권장
+7. **꿈해몽 #279 콘텐츠 톤** — 단정·공포·의료 단정 문구 없는지 (사이트 톤 일관성). 사용자 review 권장
 
 ### 0.5 알려진 위험 / 정리 후속
 
@@ -822,7 +852,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 |---|---|---|
 | #265 | V2-4 production callers — 8 files loadSajuDataV2 전환 | `audit-reports/2026-05-19-v2-migration-audit.md` §2-D 의 11 파일 중 production caller 8개 전환. API routes 2 (api/ai/route.ts ×2, api/taekil/find-good-days/route.ts), Verification 2 (today-fortune-audit.ts, kasi-calendar.ts), Lib utilities 4 (account.ts, notifications.ts, profile-personalization.ts, compatibility.ts). 변환 패턴: `normalizeToSajuDataV1(input, storedValue, opts?)` → `loadSajuDataV2(input, storedValue, opts?)`. 호환성: SajuDataV2 가 V1 super-set 이라 호출 본문 변경 0. PR #264 의 V1↔V2 entry invariant 30 케이스 모두 통과 |
 | #266 | V2-4 hot path — buildFreshTodaySajuData loadSajuDataV2 전환 | hot path 2 파일 (`today-fortune/route.ts:58` + `today-fortune/unlock/route.ts:97,193`) 은 PR #264 의 `buildFreshTodaySajuData` helper 를 통과. helper 1 곳만 `calculateSajuDataV1` → `loadSajuDataV2(input, null)` 로 전환하면 hot path 자동 V2 전환. diff: 1 file, +7/-6. PR #264 의 30 invariant 가 정확히 본 helper 의 V2 전환을 회귀 차단하기 위해 설계됨 |
-| #267 | V2-4 internal builders — multi-year cycle loadSajuDataV2 + 옵션 호환 패턴 | internal builder 2 파일 (`build-yearly-report.ts:356,863` + `build-fortune-calendar.ts:168`). 핵심: **calculatedAt/engineVersion 옵션 호환 패턴** 구현. SajuLoadOptions 에 `engineVersion` 추가 + normalizeToSajuDataV1 시그니처에 `calculatedAt`, `engineVersion` 추가 + loadSajuDataV2 가 V1 fallback path 호출 시 `calculatedAt: now` + `engineVersion` 전달. 이로써 multi-year cycle 의 referenceDate 가 V1 fallback 의 calculateLuckData 까지 정확히 전파 — 세운/월운 ganzi 가 yearly target year 기준으로 계산 |
+| #267 | V2-4 internal builders — multi-year cycle loadSajuDataV2 + 옵션 호환 패턴 | internal builder 2 파일 (`build-yearly-report.ts:356,863` + `build-fortune-calendar.ts:168`). 핵심: **calculatedAt/engineVersion 옵션 호환 패턴** 구현. SajuLoadOptions 에 `engineVersion` 추가 + normalizeToSajuDataV1 시그니처에 `calculatedAt`, `engineVersion` 추가 + loadSajuDataV2 가 V1 fallback path 호출 시 `calculatedAt: now` + `engineVersion` 전달. 이로써 multi-year cycle 의 referenceDate 가 V1 fallback 의 calculateLuckData 까지 정확히 전파 — 세운/월운 ganzi 가 yearly target year 근거로 계산 |
 
 #### UI 개선 라운드 1 — PR #268
 
@@ -854,7 +884,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 - **V2-5 PR J — 챕터 4·5 LLM enhance** (2026-05-26 이후 권장)
   - PR #261 (챕터 1 LLM) production 모니터링 1주일 후 진행
   - env: `OPENAI_INTERPRET_CHAPTERS=1` + `OPENAI_INTERPRET_CHAPTER_IDS=4,5` (또는 1,4,5)
-  - 챕터 4 (**관계 패턴** — 사람 사이 거리감·표현 방식), 챕터 5 (**재물 감각** — 돈의 흐름) → 별도 `enhanceLifetimeChapter4WithLLM` / `enhanceLifetimeChapter5WithLLM` 함수
+  - 챕터 4 (**관계 패턴** — 사람 사이 거리감·전달 방식), 챕터 5 (**재물 감각** — 돈의 흐름) → 별도 `enhanceLifetimeChapter4WithLLM` / `enhanceLifetimeChapter5WithLLM` 함수
   - 챕터 1 의 LLM cost (~$0.005/call) 측정값 검토 후 확장
   - **TDD 구현 plan 작성 완료 (2026-05-20)** — `docs/superpowers/plans/2026-05-20-v2-5-pr-j-chapter4-5-llm.md` (8 Task, 변경 9 파일 / +~600 -3 lines)
   - Pre-flight 확인 (2026-05-20): `CHAPTER_META[4,5]` 및 `CHAPTER_OUTPUT_SPECS[4,5]` 이미 정의됨 (`src/server/ai/chapters/chapter-prompts.ts:53-69, 160-177`) → plan 의 Task 0-2 (META 보강) skip 가능
@@ -907,7 +937,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 
 | PR | 제목 | 요약 |
 |---|---|---|
-| #237 | Phase 7a /sample-report '리포트 제작 기준' 디스클로저 | 결제 CTA 직전에 4 카드 (생성 약 1~2분 / 14 섹션·A4 5~7페이지 / AI 모델 작성 / 사람 검수 없음) + /refund-policy /support/faq link. 디자인 토큰 (PANEL_STYLE / SOFT_FEATURE_STYLE) 재사용 |
+| #237 | Phase 7a /sample-report '리포트 제작 안내' 디스클로저 | 결제 CTA 직전에 4 카드 (생성 약 1~2분 / 14 섹션·A4 5~7페이지 / AI 모델 작성 / 사람 검수 없음) + /refund-policy /support/faq link. 디자인 토큰 (PANEL_STYLE / SOFT_FEATURE_STYLE) 재사용 |
 | #238 | Phase 7b 후기 인프라 풀스택 (DB + API + 작성 UX + 표시 UI + admin moderation) | migration 033_reviews (table + RLS 4 policy + 3 인덱스 + updated_at trigger + UNIQUE user·product·scope). lib: types/queries/hash(SHA-256 12자)/verification(productId+scopeKey → entitlement 검증). API 5: POST·GET /api/reviews, /mine, /[id] PATCH·DELETE, /admin/reviews, /admin/reviews/moderate. UX: ReviewWriteDialog (별점·본문·표시명·검증) + saved-readings-list 통합 (구매 항목 카드 '✎ 후기 작성/심사 중/공개됨' 동적). 표시: ReviewList(server, productId='lifetime-report', 0건 empty state). Admin: /admin/reviews moderation queue + 공개·비공개 + 비공개 사유 |
 | #239 | env: REVIEW_USER_HASH_SALT placeholder + 32-byte hex 생성 안내 | `.env.example` 문서화. 미설정 시 `ganji-saju-review-hash-v1` default |
 | #241 | reviews policies repair migration 034 | 033 production push 시 `CREATE POLICY` IF NOT EXISTS 미지원으로 첫 select policy 충돌 → insert/update/delete 3 policy 누락. 034 가 `DROP POLICY IF EXISTS` + `CREATE POLICY` 4개 idempotent 재생성. `supabase migration repair --status applied 033 --linked` + `supabase db push --linked` 로 production 정상화 |
@@ -952,7 +982,7 @@ Phase 8 spec (꿈해몽 10 sections / 띠운세 11 sections / 별자리 9 sectio
 
 | PR | 제목 | 요약 |
 |---|---|---|
-| #221 | 도메인 canonical = ganjisaju.kr (영문 ASCII) + 브랜드 간지사주 | SITE_CONFIG + LEGACY 반전 + 38 파일 달빛인생 → 간지사주 + sitemap canonical + robots noindex 보강 + site.test.ts 16 시나리오 |
+| #221 | 도메인 canonical = ganjisaju.kr (영문 ASCII) + 브랜드 간지사주 | SITE_CONFIG + LEGACY 반전 + 38 파일 구 브랜드명 → 간지사주 + sitemap canonical + robots noindex 보강 + site.test.ts 16 시나리오 |
 | #222 | KST 유틸 통합 + UTC drift P0 fix + /api/health/daily | src/shared/utils/kst.ts 6 함수 (getKstNow/Parts/DateKey/StartOfDay/formatKoreanDate/getDailyVersion) + 21 시나리오 + zodiac/[slug] periodSeed + buildTodayFortune raw new Date() fix |
 | #223 | getTodayPillarSnapshot stored calculatedAt → 실제 오늘 | systematic-debugging Phase 1-4 — saju 페이지 (stored sajuData) vs today-fortune (fresh sajuData) calculatedAt 차이로 점수 95/71 deterministic mismatch root cause fix |
 | #224 | hotfix canonical = www.ganjisaju.kr swap | ERR_TOO_MANY_REDIRECTS 긴급 (Vercel primary = www 와 코드 apex 충돌) — admin override |
@@ -1193,7 +1223,7 @@ PR #234 변경:
 | #160 | 대화 메가 메뉴 선생 → `DALBIT_TEACHERS` 매핑 (명리호 / 타로토 / 사주용 / 궁합양) |
 | #161 | 12간지 선생 12명 모두 `status='active'` 복원 + 메가 c1 전체 노출 |
 | #162 | 오늘 운세 "무료 결과 보기" 전환 매끄럽게 — overlay + `setFreeResult` 제거 + min-loading |
-| #163 | `달빛선생 / 달빛 여선생 / 달빛 남선생` 임의 호명 9 파일 일괄 정리 |
+| #163 | 구 브랜드 임의 호명 9 파일 일괄 정리 |
 | #165 | **점수 전수 통일** — `iljinScore.totalScore` single source, 영역별 평균 normalize |
 | #166 | 사용자 이름 자동 주입 (`profile.display_name`) + storage prefix v2 |
 | #167 | 행운 패키지 일진 hybrid — 일진 element 가 lucky/unlucky 와 다르면 9 항목 합집합 |
@@ -1209,7 +1239,7 @@ PR #234 변경:
 | 3 | 사주 명식 카드의 오행 분포가 5행 vertical → 1행 5열 compact grid. 부족/과다는 셀 배경+외곽선으로 표시. |
 | 4 | 1코인 unlock 후 page 최상단으로 점프 → `premiumRef` + 220ms `scrollIntoView({behavior:'smooth'})` 로 프리미엄 패널 위치 자동 스크롤. |
 | 5 | "💭 깊이 들어갈 만한 질문" Q1/Q2/Q3 가 정적 `<li>` → 클릭 핸들러 없음. `TodayPremiumQuestionChips` client 컴포넌트 신설, `/dialogue?question=...` prefill (autoStart 제거 — 사용자가 전송). |
-| 6 | `ELEMENT_INFO.name` 어색한 단어 페어 교체: 성장기운→**시작과 추진** / 표현기운→**열정과 표현** / 안정기운→**안정과 중심** / 정리기운→**결단과 마무리** / 생각기운→**지혜와 유연**. `trimEasySentence` 의 "흐름→분위기", "기준→생각할 점" 치환 제거. |
+| 6 | `ELEMENT_INFO.name` 어색한 단어 페어 교체: 성장기운→**시작과 추진** / 화기운→**열정과 드러냄** / 안정기운→**안정과 중심** / 정리기운→**결단과 마무리** / 생각기운→**지혜와 유연**. `trimEasySentence` 의 "흐름→분위기", "기준→생각할 점" 치환 제거. |
 | 7 | 모든 nav 클릭 시 푸터로 점프 후 페이지 전환 → `site-header` 6 곳 `scroll={false}` 제거 (긴 페이지 → 짧은 페이지 이동 시 footer 근처 착륙 회귀). 결과 페이지 unlock 의 `window.location.href` → `router.push` soft navigation. |
 
 ### 1.23 행운 패키지 hybrid 매트릭스 audit + 전수 invariant test (PR #190)
@@ -1389,7 +1419,7 @@ PR #234 변경:
 **해결**:
 - `src/lib/today-fortune/compute-saju-area-scores.ts` (신규) — 사주 페이지에서 호출. buildSajuReport 5개 + buildConditionScore (운세 builder 와 동일 산식) + unifyScoresWithIljinScore 통합. 6 영역 통일 score 반환.
 - `src/components/saju/saju-area-cards-section.tsx` (신규) — 6 카드 grid 공유 컴포넌트. 사주 메인 + 사주 상세에서 import.
-- `UNIFIED_AREA_LABELS` 상수: 운세 페이지 기준 긴 라벨 (총운/직장·사업운/재물운/애정·연애운/인간관계운/컨디션·건강운).
+- `UNIFIED_AREA_LABELS` 상수: 운세 페이지 긴 라벨 (총운/직장·사업운/재물운/애정·연애운/인간관계운/컨디션·건강운).
 - `UNIFIED_AREA_COLORS` / `UNIFIED_AREA_ORDER` 상수.
 - build-today-fortune.ts: `buildConditionScore` / `buildDailyDelta` export 추가 (helper 재사용).
 - 사주 메인 (`/saju/[slug]/page.tsx`) — 기존 4 카드 inline → SajuAreaCardsSection.
@@ -2230,6 +2260,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-27 | **Codex 사용자 화면 어휘 전수 정리 + production 배포** | commit `c063bef` | today-fortune 등 사용자-facing copy의 legacy 어휘 제거. `codex/vocabulary-sweep-20260527` → `main` fast-forward merge. Vercel prod `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200. 후속으로 원격/로컬 브랜치 정리 완료 |
 | 2026-05-27 | **Codex 결제정책 P0/P1 보완 + 044 prod 적용 + production 배포** | commit `df0a37e` | `/credits` prepare/동의 통합, prepare API 동의 강제, bundle digital-content 동의, credit confirm `paymentKey` DB 멱등성(044), `subscription_30` coin 동의/purchase lot 정정. Supabase prod 044 적용 완료 → Vercel prod `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` |
 | 2026-05-23 | **사주 풀이 텍스트 품질 전면 정비** | #336/#337/#338/#339/#340 | 상세 풀이 문장 반복·역할/기운 중복 제거(#336) · 키워드 자연화/격국명 과치환/잔존 결/lifetimeRule 중복(#337) · `simplifySajuCopy` 받침 조사 자동정정 normalizer + 전 화면 감사 조사457→0·중복어171→0(#338) · 오행 추상어 cue→표준 "X 기운"(#339) · 균형 문장 자연화 + 궁합 한자 노출/택일 표기 정정(#340). 캐시 마이그레이션 불필요(리포트 매 로드 재빌드) |
 | 2026-05-23 | **PDF 저장 화면 (보관형 리포트)** | #334/#335 | 8페이지 A4 리포트 디자인 적용(브라우저 인쇄 · 결정론 데이터+매핑) + 모바일 반응형 화면 + `print-color-adjust` 인쇄 배경 표시 정정 |
@@ -2251,7 +2282,7 @@ created_at  timestamptz
 | 2026-05-18 | **2026-05-18 hotfix redirect-loop canonical www 임시 swap** | #224 | ERR_TOO_MANY_REDIRECTS 긴급 — admin override |
 | 2026-05-17 | **2026-05-17 fix today-pillar stored calculatedAt → 실제 오늘** | #223 | systematic-debugging — saju vs today-fortune 점수 95/71 mismatch root cause fix |
 | 2026-05-17 | **2026-05-17 phase-2 KST 유틸 통합 + UTC drift fix + /api/health/daily** | #222 | src/shared/utils/kst.ts 6 함수 + 21 시나리오 + zodiac/buildTodayFortune raw new Date() fix |
-| 2026-05-17 | **2026-05-17 phase-1 도메인 canonical + 브랜드 간지사주 통일** | #221 | SITE_CONFIG + 38 파일 달빛인생→간지사주 + sitemap/robots canonical |
+| 2026-05-17 | **2026-05-17 phase-1 도메인 canonical + 브랜드 간지사주 통일** | #221 | SITE_CONFIG + 38 파일 구 브랜드명 → 간지사주 + sitemap/robots canonical |
 | 2026-05-17 | **2026-05-17 production-hardening Phase 1 audit + master plan** | #220 | 9 docs/audit/* (production-hardening / route-status / incomplete-ui / legal-required / policy-versioning / product-catalog / qa-readiness / seo-plan / plan) |
 | 2026-05-17 | **2026-05-17 audit-business-activity 분기 재실행 1회차** | #219 | 우선순위 등급 변동 0건 |
 | 2026-05-17 | **2026-05-17 audit-lifetime-report — 49,000원 회귀 + 환불 정책** | #218 | scripts/audit-lifetime-report.mjs |

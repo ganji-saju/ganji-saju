@@ -245,8 +245,8 @@ export function sanitizeUserFacingCopy(value: string | null | undefined) {
     text = text.replace(pattern, replacement);
   }
   return text
-    .replace(/문구은/gu, '문구는')
-    .replace(/문구을/gu, '문구를');
+    .replace(/문구(?:은)/gu, '문구는')
+    .replace(/문구(?:을)/gu, '문구를');
 }
 
 export function simplifySajuCopy(value: string | null | undefined) {

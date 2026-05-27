@@ -15,7 +15,7 @@
 | robots.ts | disallow `/api/`, `/login`, `/saju/`, `/my`, `/admin` 등 — `/saju/` 차단 재검토 P1 |
 | root metadata 키워드 | 6개 (사주/팔자/풀이/오행/운세/명리학) — 카테고리 부족 |
 | slug 페이지 openGraph/twitter | 띠 12 + 별자리 12 + 꿈해몽 8 = 32 페이지 누락 P1 |
-| title.template | `%s | 달빛인생` → Phase 2 에서 `%s | 간지사주` 로 변경 |
+| title.template | `%s | 간지사주` → Phase 2 에서 `%s | 간지사주` 로 변경 |
 | Vercel Analytics + Speed Insights | 활성 ✓ |
 
 ---

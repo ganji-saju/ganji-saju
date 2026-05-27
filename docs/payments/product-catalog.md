@@ -3,11 +3,11 @@
 작성일: 2026-05-17
 최종 갱신: 2026-05-27 / 출처: `src/lib/payments/catalog.ts`, `src/lib/payments/product-scope.ts`, `src/shared/payments/consent-rules.ts`, `supabase/migrations/040_credit_lots_expiry.sql`, `supabase/migrations/043_refund_requests.sql`, `supabase/migrations/044_credit_payment_idempotency.sql`
 
-> 목적: 현재 로컬 구현과 운영 정책 문서의 기준점을 맞춘다. 정책 수치가 운영자 확정값이 아닌 항목은 "확인 필요"로 남긴다.
+> 목적: 현재 로컬 구현과 운영 정책 문서의 정합성을 맞춘다. 정책 수치가 운영자 확정값이 아닌 항목은 "확인 필요"로 남긴다.
 
 ---
 
-## 1. 카탈로그 인벤토리 (현재 로컬 코드 기준)
+## 1. 카탈로그 인벤토리 (현재 로컬 코드 상태)
 
 현재 `PAYMENT_PACKAGES`는 총 16개다.
 
@@ -74,7 +74,7 @@
 
 - `revokeProductEntitlement`, `revokeLifetimeReportEntitlement`, bundle revoke 경로가 존재한다.
 - `043_refund_requests.sql`은 admin 요청 → super_admin 승인/실행의 2단계 상태머신을 제공한다.
-- 사용자 확인 기준 2026-05-27에 prod 043 적용 완료. 실제 환불은 진행 중.
+- 사용자 확인으로 2026-05-27에 prod 043 적용 완료. 실제 환불은 진행 중.
 - Toss cancel은 idempotency key를 사용한다.
 
 ### 2.4 credit confirm idempotency
@@ -83,7 +83,7 @@
 - `payment_key`는 UNIQUE이며, `add_credits`가 잔액을 더하기 전에 먼저 paymentKey를 예약한다.
 - 같은 `paymentKey/orderId` confirm이 재시도되면 두 번째 호출은 잔액과 `credit_transactions`를 다시 쓰지 않고 idempotent success로 종료한다.
 - migration 적용 시 기존 `credit_transactions.metadata.paymentKey`를 backfill해 과거 성공 결제도 재시도 중복 적립을 막는다.
-- 사용자 확인 기준 2026-05-27에 Supabase prod 수동 적용 완료.
+- 사용자 확인으로 2026-05-27에 Supabase prod 수동 적용 완료.
 
 ### 2.5 월간 달력 이중 경로
 
@@ -93,19 +93,20 @@
 
 ---
 
-## 3. 남은 결제정책 리스크
+## 3. 남은 결제 안정성 리스크
 
-### 3.1 P1 — orderId 충돌 가능성
+### 3.1 P0 후보 — orderId 서버 발급/UUID화
 
 - `/credits`: `order_${pkg.id}_${method}_${Date.now()}`
 - `/membership/checkout`: `membership_${packageId}_${method}_${Date.now()}`
-- 같은 ms 더블 클릭 같은 극단 상황에서 orderId 충돌 가능성이 있다. `crypto.randomUUID()` 또는 서버 발급 order id로 개선 권장.
+- 같은 ms 더블 클릭 같은 극단 상황에서 orderId 충돌 가능성이 있다.
+- 다음 결제 P0 후보로 `crypto.randomUUID()` 또는 서버 발급 order id 전환을 권장한다.
 
-### 3.2 P1 — Toss webhook 라우트 부재
+### 3.2 P0 후보 — Toss webhook/reconciliation 부재
 
 - 현재 success 페이지 도달 후 `/api/payments/confirm` 호출에 의존한다.
 - 사용자가 결제 후 브라우저를 닫는 경우 entitlement/credit 지급 누락 가능성이 있다.
-- 후속: Toss webhook 또는 결제 상태 reconciliation job.
+- 다음 결제 P0 후보로 Toss webhook 또는 결제 상태 reconciliation job을 권장한다.
 
 ### 3.3 문서/노출 범위
 
@@ -118,11 +119,11 @@
 
 | 상품 카테고리 | 청약철회 가능 기간 | 디지털콘텐츠 열람 후 | 부분환불 |
 |---|---|---|---|
-| 코인 패키지 | 운영자 확정 필요 | 사용 코인 차감 후 환불 기준 확정 필요 | 미사용분 기준 가능 여부 확정 필요 |
-| 구독/멤버십 | 운영자 확정 필요 | 다음 결제일까지 유지/즉시 해지 기준 확정 필요 | 일반적으로 부분환불 없음 또는 별도 기준 |
-| lifetime-report | 열람 전 기준 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
-| taste 상품 | 열람 전 기준 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
-| bundle 상품 | 구성품 제공 전/후 기준 확정 필요 | 구성품 중 하나라도 제공 개시 후 불가 고지 필요 | 구성품별 부분환불 허용 여부 확정 필요 |
+| 코인 패키지 | 운영자 확정 필요 | 사용 코인 차감 후 환불 원칙 확정 필요 | 미사용분 원칙 가능 여부 확정 필요 |
+| 구독/멤버십 | 운영자 확정 필요 | 다음 결제일까지 유지/즉시 해지 원칙 확정 필요 | 일반적으로 부분환불 없음 또는 별도 원칙 |
+| lifetime-report | 열람 전 원칙 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
+| taste 상품 | 열람 전 원칙 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
+| bundle 상품 | 구성품 제공 전/후 원칙 확정 필요 | 구성품 중 하나라도 제공 개시 후 불가 고지 필요 | 구성품별 부분환불 허용 여부 확정 필요 |
 
 청약철회 예외 고지는 결제 전 동의 체크박스와 함께 유지한다. bundle도 digital-content 동의를 요구한다.
 
@@ -134,6 +135,7 @@
 |---|---|
 | 2026-05-17 | 초기 작성 (Phase 1 audit) |
 | 2026-05-23 | entitlement 회수 함수, today-detail/score-factor 정합성 내용 반영 |
-| 2026-05-27 | 현재 로컬 구현 기준으로 전면 갱신: 16개 카탈로그, `bundle_today_set`, `taste_compat_reading`, `credit_lots` 1년 만료, 043 환불 workflow, 남은 P0/P1 리스크 재정리 |
+| 2026-05-27 | 현재 로컬 구현 상태로 전면 갱신: 16개 카탈로그, `bundle_today_set`, `taste_compat_reading`, `credit_lots` 1년 만료, 043 환불 workflow, 남은 P0/P1 리스크 재정리 |
 | 2026-05-27 | Codex 결제정책 보완 — `/credits` prepare/consent 통합, bundle digital-content 동의, 044 credit paymentKey idempotency, `subscription_30` purchase lot 적립 타입 및 coin 동의 반영 |
-| 2026-05-27 | 사용자 확인 기준 Supabase prod에 `044_credit_payment_idempotency.sql` 수동 적용 완료 |
+| 2026-05-27 | 사용자 확인으로 Supabase prod에 `044_credit_payment_idempotency.sql` 수동 적용 완료 |
+| 2026-05-27 | 결제 안정성 다음 P0 후보를 orderId 서버 발급/UUID화, Toss webhook/reconciliation으로 재분류 |

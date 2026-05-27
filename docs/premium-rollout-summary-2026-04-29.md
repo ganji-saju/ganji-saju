@@ -4,7 +4,7 @@ Updated: 2026-04-29
 
 ## Scope
 
-This summary captures the premium "명리 기준서" rollout that followed the pre-premium backup point.
+This summary captures the premium "깊은 사주풀이" rollout that followed the pre-premium backup point.
 
 ## Baseline
 

@@ -10,7 +10,7 @@ Supabase Auth email templates are managed in the Supabase Dashboard, not deploye
 Recommended subject:
 
 ```text
-달빛인생 로그인 링크가 도착했습니다
+간지사주 로그인 링크가 도착했습니다
 ```
 
 ## Dashboard Setup

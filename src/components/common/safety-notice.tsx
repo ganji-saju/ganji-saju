@@ -31,7 +31,7 @@ const VARIANT_META: Record<
   health: {
     label: '건강·생활',
     title: '건강 해석은 생활 리듬 관리 관점에서만 읽습니다',
-    body: '몸의 상태나 치료 판단은 전문 진료가 필요한 영역입니다. 간지사주은 생활 리듬과 피로 관리에 대한 참고 흐름만 다룹니다.',
+    body: '몸의 상태나 치료 판단은 전문 진료가 필요한 영역입니다. 간지사주는 생활 리듬과 피로 관리에 대한 참고 흐름만 다룹니다.',
     icon: HeartPulse,
     tone: 'border-[var(--app-coral)]/22 bg-[var(--app-coral)]/10 text-[var(--app-copy)]',
   },

@@ -12,7 +12,7 @@ import {
 // 의료법 측면 가드는 chapter-prompts.ts:CHAPTER_META[7].forbiddenTopics 에 명시:
 //   - 구체적 질병 진단 — 절대 금지
 //   - 특정 약·영양제 추천 — 금지
-// generateChapter() 의 validator 가 자극 문구·단정 문구을 차단.
+// generateChapter() 의 validator 가 자극 문구·단정 문구를 차단.
 
 export interface EnhanceChapter7Result {
   healthRhythm: LifetimeHealthRhythmSection;
