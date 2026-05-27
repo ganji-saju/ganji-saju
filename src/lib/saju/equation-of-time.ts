@@ -8,7 +8,7 @@
 
 /**
  * 그레고리력 → 율리우스 적일 (JDN).
- * 1582-10-15 이후 그레고리력 기준. 정수만 반환.
+ * 1582-10-15 이후 그레고리력 원칙. 정수만 반환.
  */
 export function gregorianToJDN(year: number, month: number, day: number): number {
   let y = year;
@@ -24,7 +24,7 @@ export function gregorianToJDN(year: number, month: number, day: number): number
 
 /**
  * 그레고리력 + 시각 → 율리우스일 (JD, 소수점 포함).
- * 표준시 (KST 등) 가 아니라 UT(UTC) 기준 시각을 넣어야 정확.
+ * 표준시 (KST 등) 가 아니라 UT(UTC) 원칙 시각을 넣어야 정확.
  */
 export function gregorianToJD(
   year: number,
@@ -46,11 +46,11 @@ export function gregorianToJD(
  *
  * Meeus 25장 간이판 공식.
  *
- * @param jd 율리우스일 (UT 기준)
+ * @param jd 율리우스일 (UT 원칙)
  * @returns 분 단위 (-16 ~ +14 범위)
  */
 export function equationOfTimeMinutes(jd: number): number {
-  // 2000.0 기준 율리우스 세기.
+  // 2000.0 원칙 율리우스 세기.
   const T = (jd - 2451545.0) / 36525.0;
 
   // 태양의 평균 황경 (도).
@@ -91,16 +91,16 @@ export function equationOfTimeMinutes(jd: number): number {
 /**
  * 진태양시 종합 보정 (분):
  *   = (출생지 경도 - 표준 자오선) × 4    [경도 보정]
- *     + 균시차(EoT, 그날 기준)            [천체 보정]
+ *     + 균시차(EoT, 그날 원칙)            [천체 보정]
  *
- * 한국 표준시 (KST, 동경 135°) 기준, 서울 (126.978°) 출생자는:
+ * 한국 표준시 (KST, 동경 135°) 원칙, 서울 (126.978°) 출생자는:
  *   경도 보정 = (126.978 - 135) × 4 ≈ -32 분
  *   균시차    = -14 ~ +14 분 (날짜별)
  *   합계      = -46 ~ -18 분 (날짜별 변동)
  */
 export function trueSolarTimeOffsetMinutes(params: {
   longitude: number;
-  /** 보정 기준 표준 자오선 (한국 = 135°). */
+  /** 보정 원칙 표준 자오선 (한국 = 135°). */
   standardMeridian?: number;
   /** 출생 날짜 (그레고리력). 균시차 계산용. */
   year: number;

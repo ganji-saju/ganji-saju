@@ -47,7 +47,7 @@ export const FOCUS_TOPIC_META: Record<FocusTopic, FocusTopicMeta> = {
   love: {
     label: '연애',
     badge: '연애 포커스',
-    subtitle: '감정의 온도와 표현의 타이밍을 중심으로 읽어드립니다.',
+    subtitle: '감정의 온도와 말할 타이밍을 중심으로 읽어드립니다.',
   },
   wealth: {
     label: '재물',
@@ -94,7 +94,7 @@ const STRENGTH_INTERPRETATION: Record<'신강' | '중화' | '신약', string> = 
   신강:
     '기본적으로 스스로 판을 끌고 가는 힘이 강한 편이라, 장점은 추진력으로 드러나지만 과하면 혼자 짊어지는 피로로 바뀌기 쉽습니다.',
   중화:
-    '진행하는 힘과 조율하는 힘이 크게 한쪽으로 치우치지 않아 상황을 읽고 맞추는 감각이 살아 있습니다. 다만 결정이 늦어지지 않도록 기준을 먼저 세우는 편이 좋습니다.',
+    '진행하는 힘과 조율하는 힘이 크게 한쪽으로 치우치지 않아 상황을 읽고 맞추는 감각이 살아 있습니다. 다만 결정이 늦어지지 않도록 원칙을 먼저 세우는 편이 좋습니다.',
   신약:
     '외부 환경과 관계의 온도에 영향을 더 많이 받는 명식이라, 무리해서 버티기보다 나를 돕는 환경과 사람을 잘 고르는 것이 성패를 크게 가릅니다.',
 };
@@ -103,11 +103,11 @@ const TEN_GOD_INTERPRETATION: Record<TenGodCode, string> = {
   비견: '나와 비슷한 사람, 동료, 형제 같은 관계가 삶에서 자주 부각됩니다. 스스로 서려는 마음이 강하지만 양보가 어려워질 때도 있습니다.',
   겁재: '가까운 사람과 재물이나 역할을 나누는 문제에서 갈등이 생기기 쉬운 십신입니다. 정이 깊을수록 경계를 분명히 할 필요가 있습니다.',
   식신: '내가 키워내고 길러내는 힘이 좋아 자녀, 취미, 결과물, 생활의 여유 같은 주제가 삶을 따뜻하게 만듭니다.',
-  상관: '표현력과 재주는 뛰어나지만 답답한 틀을 견디기 어려운 편입니다. 재능이 잘 쓰이면 매력이 되고, 억눌리면 불편함이 커집니다.',
+  상관: '전달력과 재주는 뛰어나지만 답답한 틀을 견디기 어려운 편입니다. 재능이 잘 쓰이면 매력이 되고, 억눌리면 불편함이 커집니다.',
   편재: '사람과 기회를 넓게 움직이며 돈과 활동의 물결이 크게 드나드는 흐름입니다. 잘 맞으면 기회가 크지만 흩어지지 않게 관리가 필요합니다.',
   정재: '꾸준히 쌓아 안정적으로 지키는 재물 감각이 돋보입니다. 한 번 믿은 구조를 오래 가져가지만 변화에는 시간이 걸릴 수 있습니다.',
   편관: '경쟁, 압박, 책임 속에서 단련되며 힘이 생기는 십신입니다. 버텨내는 힘은 강하지만 긴장을 오래 품지 않도록 조절이 필요합니다.',
-  정관: '자리, 책임, 명예, 질서를 중시하는 흐름이라 역할을 바르게 감당하려는 마음이 큽니다. 스스로 기준이 높아 피로가 쌓일 수 있습니다.',
+  정관: '자리, 책임, 명예, 질서를 중시하는 흐름이라 역할을 바르게 감당하려는 마음이 큽니다. 스스로 기대가 높아 피로가 쌓일 수 있습니다.',
   편인: '남다른 감각과 직관, 혼자 깊이 파고드는 힘이 강합니다. 보통 사람보다 다른 방식으로 이해하고 받아들이는 재능이 있습니다.',
   정인: '돌봄, 후원, 배움의 흐름이 삶에서 중요한 힘으로 작용합니다. 누군가를 품고, 또 누군가에게 도움을 받는 인연이 크게 남습니다.',
 };
@@ -148,7 +148,7 @@ const LUCK_ELEMENT_GUIDE: Record<Element, { theme: string; chance: string; cauti
     action: '계획을 세 개 이하로 줄이고, 한 가지는 매주 반복해 보세요.',
   },
   화: {
-    theme: '표현, 노출, 인정, 속도',
+    theme: '말, 노출, 인정, 속도',
     chance: '말, 발표, 브랜딩, 관계의 온도를 올리는 데 힘이 붙습니다.',
     caution: '감정과 속도가 앞서면 피로와 오해가 같이 커질 수 있습니다.',
     action: '중요한 말은 바로 꺼내되, 결론 전 한 번 더 확인하세요.',
@@ -160,8 +160,8 @@ const LUCK_ELEMENT_GUIDE: Record<Element, { theme: string; chance: string; cauti
     action: '고정비, 역할, 생활 루틴을 정리해 부담을 숫자로 확인하세요.',
   },
   금: {
-    theme: '정리, 기준, 계약, 결단',
-    chance: '기준을 세우고 불필요한 것을 덜어내는 판단력이 살아납니다.',
+    theme: '정리, 원칙, 계약, 결단',
+    chance: '원칙을 정하고 불필요한 것을 덜어내는 판단력이 살아납니다.',
     caution: '말이 차갑게 들리거나 결과만 보고 관계의 온도를 놓칠 수 있습니다.',
     action: '계약, 일정, 책임 범위를 문장으로 남겨 오해를 줄이세요.',
   },
@@ -173,14 +173,14 @@ const LUCK_ELEMENT_GUIDE: Record<Element, { theme: string; chance: string; cauti
   },
 };
 
-// 2026-05-23 — naming-policy §2 위반(오행 추상어 신조어 금지) 정정. "새 시작/표현/
-//   정리/기준/생각" 추상 단서를 사이트 표준 표기 "X 기운"(목/화/토/금/수 + 기운)으로
-//   교체. 단일 소스는 ELEMENT_INFO[element].name. 토→"정리"·금→"기준"은 의미상
+// 2026-05-23 — naming-policy §2 위반(오행 추상어 신조어 금지) 정정. "새 시작/말/
+//   정리/원칙/생각" 추상 단서를 사이트 표준 표기 "X 기운"(목/화/토/금/수 + 기운)으로
+//   교체. 단일 소스는 ELEMENT_INFO[element].name. 토→"정리"·금→"원칙"은 의미상
 //   오류이기도 했음(토=담아냄·안정, 금=단단함·결단).
 // 첫 등장 의미 병기("토 기운(담아냄·안정)")용 한 줄 설명 — naming-policy §2 표.
 const ELEMENT_MEANING: Record<Element, string> = {
   목: '자라남·시작',
-  화: '표현·열정',
+  화: '전달·열정',
   토: '담아냄·안정',
   금: '단단함·결단',
   수: '흐름·깊이',
@@ -216,8 +216,8 @@ const ELEMENT_READING_COPY: Record<
     gift: '마음을 드러내는 힘',
     action: '하고 싶은 말을 짧고 부드럽게 먼저 꺼내세요.',
     avoid: '감정이 앞서면 말이 세게 들릴 수 있어요.',
-    today: '표현을 미루지 않을수록 흐름이 빨리 풀립니다.',
-    love: '연애는 마음을 숨기기보다 가벼운 표현으로 온도를 맞추세요.',
+    today: '말을 미루지 않을수록 흐름이 빨리 풀립니다.',
+    love: '연애는 마음을 숨기기보다 가벼운 말으로 온도를 맞추세요.',
     wealth: '재물은 충동 결제보다 왜 필요한지 한 줄로 적어보세요.',
     career: '일은 보고와 발표처럼 드러나는 장면에서 힘이 붙습니다.',
     relationship: '관계는 칭찬과 감사처럼 따뜻한 말이 먼저 닿습니다.',
@@ -235,13 +235,13 @@ const ELEMENT_READING_COPY: Record<
   },
   금: {
     label: ELEMENT_INFO.금.name,
-    gift: '기준을 세우는 힘',
+    gift: '원칙을 정하는 힘',
     action: '오늘 꼭 할 일과 미룰 일을 나눠보세요.',
-    avoid: '기준이 지나치면 말이 차갑게 들릴 수 있어요.',
+    avoid: '원칙이 지나치면 말이 차갑게 들릴 수 있어요.',
     today: '우선순위를 줄일수록 판단이 또렷해집니다.',
     love: '연애는 애매한 말보다 가능한 것과 어려운 것을 분명히 말하세요.',
     wealth: '재물은 금액, 조건, 계약 내용을 확인할 때 손실을 줄입니다.',
-    career: '일은 기준과 책임 범위를 문장으로 남기면 안정됩니다.',
+    career: '일은 역할과 책임 범위를 문장으로 남기면 안정됩니다.',
     relationship: '관계는 말의 순서와 확인이 오해를 줄여줍니다.',
   },
   수: {
@@ -259,8 +259,8 @@ const ELEMENT_READING_COPY: Record<
 
 const PUBLIC_TEN_GOD_TONES: Record<TenGodCode, { label: string; strength: string; caution: string }> = {
   비견: {
-    label: '내 기준이 뚜렷한 편',
-    strength: '스스로 정한 기준을 밀고 가는 힘',
+    label: '내 선택이 뚜렷한 편',
+    strength: '스스로 정한 원칙을 밀고 가는 힘',
     caution: '혼자 다 떠안지 않기',
   },
   겁재: {
@@ -274,7 +274,7 @@ const PUBLIC_TEN_GOD_TONES: Record<TenGodCode, { label: string; strength: string
     caution: '편한 쪽으로만 미루지 않기',
   },
   상관: {
-    label: '표현과 아이디어가 빠른 편',
+    label: '말과 아이디어가 빠른 편',
     strength: '답답한 틀을 새롭게 바꾸는 감각',
     caution: '말이 앞서서 관계를 다치게 하지 않기',
   },
@@ -294,7 +294,7 @@ const PUBLIC_TEN_GOD_TONES: Record<TenGodCode, { label: string; strength: string
     caution: '긴장을 오래 품지 않기',
   },
   정관: {
-    label: '책임과 기준을 중요하게 보는 편',
+    label: '책임과 원칙을 중요하게 보는 편',
     strength: '맡은 일을 바르게 정리하는 힘',
     caution: '스스로에게 너무 엄격해지지 않기',
   },
@@ -315,7 +315,7 @@ const CORE_TERM_EXPLAINERS = {
     {
       term: '강약',
       hanja: '强弱',
-      meaning: '일간이 명식 안에서 버티고 움직일 힘이 강한지 약한지를 보는 기준입니다.',
+      meaning: '일간이 명식 안에서 버티고 움직일 힘이 강한지 약한지를 보는 정보입니다.',
     },
     {
       term: '일간',
@@ -371,10 +371,10 @@ const CORE_TERM_EXPLAINERS = {
 const EVIDENCE_ACTIONS = {
   strength: {
     신강: ['혼자 짊어지는 일 줄이기', '결정 전 한 번 더 조율하기', '강한 추진력을 역할 분담으로 나누기'],
-    중화: ['판단 기준을 먼저 정하기', '기회와 부담을 함께 비교하기', '결정을 너무 미루지 않기'],
+    중화: ['판단 원칙을 먼저 정하기', '기회와 부담을 함께 비교하기', '결정을 너무 미루지 않기'],
     신약: ['나를 돕는 환경 먼저 만들기', '무리한 약속 줄이기', '도움을 요청할 사람을 정해두기'],
   },
-  pattern: ['반복되는 역할을 인식하기', '관계에서 맡는 자리를 정리하기', '일의 기준과 책임 범위 쓰기'],
+  pattern: ['반복되는 역할을 인식하기', '관계에서 맡는 자리를 정리하기', '일의 역할과 책임 범위 쓰기'],
   relations: ['부딪히는 주제는 바로 결론내지 않기', '묶이는 관계는 약속을 명확히 하기', '변화 신호를 일정 관리에 반영하기'],
   gongmang: ['중요 약속은 재확인하기', '비어 있는 역할을 무리해서 채우지 않기', '마감과 전달 과정을 한 번 더 점검하기'],
   specialSals: ['도움 흐름은 적극 활용하기', '주의 흐름은 속도를 늦추기', '신살은 단정 대신 보조 힌트로 보기'],
@@ -578,7 +578,7 @@ function buildScoreSummary(key: ReportScore['key'], score: number, data: SajuDat
     case 'relationship':
       if (isHigh) return `${cue} 관계는 ${stripTopicLead(profile.support.relationship)} 먼저 말을 여는 날입니다.`;
       if (isMid) return `${cue} 관계는 말의 순서와 확인을 맞추는 날입니다.`;
-      return `${cue} 관계는 바로 결론내지 말고 거리와 표현을 천천히 맞추세요.`;
+      return `${cue} 관계는 바로 결론내지 말고 거리와 말을 천천히 맞추세요.`;
     case 'overall':
     default:
       if (isHigh) return `${cue} ${profile.dominant.gift}이 살아 있어 ${profile.support.action}`;
@@ -608,7 +608,7 @@ function buildSummaryHighlights(
     case 'love':
       return compactStrings([
         roleLine,
-        `연애는 상대가 답하기 쉬운 표현부터 시작하면 마음의 온도가 더 부드럽게 맞춰집니다.`,
+        `연애는 상대가 답하기 쉬운 말부터 시작하면 마음의 온도가 더 부드럽게 맞춰집니다.`,
         currentLuck || cautionLine,
       ]).slice(0, 3);
     case 'wealth':
@@ -688,7 +688,7 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
       label: '격국',
       title: '격국 계산 준비 중',
       body: '격국 필드가 비어 있어도 카드 자리는 유지합니다.',
-      details: ['월령과 십신 기준의 rule-based 계산이 들어오면 격국 근거가 이 카드로 정리됩니다.'],
+      details: ['월령과 십신 원칙의 rule-based 계산이 들어오면 격국 근거가 이 카드로 정리됩니다.'],
       computed,
       source: getEvidenceSource(key),
       confidence: '참고',
@@ -701,15 +701,15 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     label: '격국',
     title: pattern.tenGod ? `${pattern.name} · ${pattern.tenGod}` : pattern.name,
     body: pattern.tenGod
-      ? `${pattern.tenGod}이 어떤 자리와 관계 패턴으로 나타나는지 해석의 첫 기준으로 봅니다. 쉽게 말하면 삶에서 반복해서 맡게 되는 자리와 반응 방식을 보는 항목입니다.`
-      : '월령의 성격을 기준으로 사주의 큰 구조를 먼저 읽습니다.',
+      ? `${pattern.tenGod}이 어떤 자리와 관계 패턴으로 나타나는지 해석의 첫 바탕으로 봅니다. 쉽게 말하면 삶에서 반복해서 맡게 되는 자리와 반응 방식을 보는 항목입니다.`
+      : '월령의 성격을 바탕으로 사주의 큰 구조를 먼저 읽습니다.',
     details: pattern.rationale.length > 0
       ? pattern.rationale.slice(0, 3)
       : ['격국명은 준비되었고 상세 근거 문장은 다음 단계에서 보강됩니다.'],
     plainSummary: pattern.tenGod
       ? `격국 메모: ${pattern.name} · ${pattern.tenGod}`
       : `격국 메모: ${pattern.name}`,
-    technicalSummary: '전문적으로는 월지의 주기운과 지장간을 일간 기준 십신으로 환산해 격국명을 정합니다.',
+    technicalSummary: '전문적으로는 월지의 주기운과 지장간을 일간 관점의 십신으로 환산해 격국명을 정합니다.',
     practicalActions: EVIDENCE_ACTIONS.pattern,
     explainers: CORE_TERM_EXPLAINERS.pattern,
     computed,
@@ -755,7 +755,7 @@ function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
         : '과속하거나 한쪽으로 치우친 선택은 한 번 더 조절하는 편이 좋습니다.'
     }`,
     details: [
-      yongsin.technicalSummary ?? `${yongsin.method} 기준으로 ${yongsinLabel}을 보완 축으로 봅니다.`,
+      yongsin.technicalSummary ?? `${yongsin.method} 바탕으로 ${yongsinLabel}을 보완 축으로 봅니다.`,
       `주의해서 볼 기운: ${kiyshinLabel}. 이 기운은 무조건 나쁘다는 뜻이 아니라, 이미 과하거나 균형을 흐릴 때 조절이 필요하다는 뜻입니다.`,
       ...candidateDetails,
       ...yongsin.rationale.slice(0, 2),
@@ -872,7 +872,7 @@ function buildGongmangEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     plainSummary: branches
       ? `공망 메모: ${branches} 공망`
       : '공망 메모: 확인된 흐름 없음',
-    technicalSummary: '전문적으로는 일주 기준 공망 글자를 잡고, 그 글자가 년·월·일·시 어느 자리에 닿는지 확인합니다.',
+    technicalSummary: '전문적으로는 일주 원칙 공망 글자를 잡고, 그 글자가 년·월·일·시 어느 자리에 닿는지 확인합니다.',
     practicalActions: EVIDENCE_ACTIONS.gongmang,
     explainers: CORE_TERM_EXPLAINERS.gongmang,
     computed,
@@ -906,7 +906,7 @@ function buildSpecialSalsEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvid
     plainSummary: names.length > 0
       ? `신살 메모: ${names.slice(0, 5).join(' · ')}`
       : '신살 메모: 주요 표지 없음',
-    technicalSummary: '전문적으로는 일간·일지·연지 등을 기준으로 귀인, 도화, 양인, 백호 같은 보조 표지를 대조합니다.',
+    technicalSummary: '전문적으로는 일간·일지·연지 등을 바탕으로 귀인, 도화, 양인, 백호 같은 보조 표지를 대조합니다.',
     practicalActions: EVIDENCE_ACTIONS.specialSals,
     explainers: CORE_TERM_EXPLAINERS.specialSals,
     computed,
@@ -1043,7 +1043,7 @@ function getHeadline(
     case 'relationship':
       return scoreMap.relationship >= 76
         ? `${withParticle(dominantCue, '이', '가')} 따뜻하게 풀려, 짧은 안부가 관계를 바꿉니다.`
-        : `${weakestCue} 보완이 필요해, 관계는 거리와 표현 순서를 맞추는 게 핵심입니다.`;
+        : `${weakestCue} 보완이 필요해, 관계는 거리와 말 순서를 맞추는 게 핵심입니다.`;
     case 'today':
     default:
       return scoreMap.overall >= 78
@@ -1083,7 +1083,7 @@ function buildTopicActions(
           title: rule.cautionTitles[scoreBand],
           description: compactStrings([
             `${withParticle(weaknessLabel, '이', '가')} 비면 상대 반응을 내 마음대로 해석하기 쉽습니다.`,
-            '답을 재촉하거나 시험하는 말보다 약속 시간과 표현 수위를 부드럽게 맞추세요.',
+            '답을 재촉하거나 시험하는 말보다 약속 시간과 말의 온도를 부드럽게 맞추세요.',
           ]).join(' '),
         },
       };
@@ -1179,7 +1179,7 @@ function buildQuestionFocusInsight(
     case 'love':
       return {
         eyebrow: '연애 포커스',
-        title: `${withParticle(supportText, '으로', '로')} 표현의 온도를 조절하는 날입니다.`,
+        title: `${withParticle(supportText, '으로', '로')} 말의 온도를 조절하는 날입니다.`,
         body: compactStrings([
           leadEvidenceSnippet,
           '좋아하는 마음을 크게 증명하려 하기보다, 상대가 받아들이기 쉬운 말투와 속도를 먼저 고르는 편이 좋습니다. 오늘의 연애운은 결론보다 분위기 회복에 더 민감합니다.',
@@ -1283,7 +1283,7 @@ function formatLuckWindow(cycle: NonNullable<SajuDataV1['currentLuck']>['current
 function describeTopicLuckFocus(topic: FocusTopic) {
   switch (topic) {
     case 'love':
-      return '연애에서는 감정의 확신보다 표현의 온도와 반복되는 관계 패턴을 먼저 보세요.';
+      return '연애에서는 감정의 확신보다 말의 온도와 반복되는 관계 패턴을 먼저 보세요.';
     case 'wealth':
       return '재물에서는 새 기회보다 현금 흐름, 지출 구조, 계약 조건을 먼저 확인하는 쪽이 안전합니다.';
     case 'career':

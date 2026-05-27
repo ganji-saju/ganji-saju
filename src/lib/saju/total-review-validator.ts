@@ -11,7 +11,7 @@ import type {
 
 const HANJA_RE = /[一-鿿]/g;
 
-// spec §7 의 bannedTerms. (§3 보다 짧은 §7 코드 기준 — 본문 노출 0건 대상)
+// spec §7 의 bannedTerms. (§3 보다 짧은 §7 코드 원칙 — 본문 노출 0건 대상)
 const BANNED_MYEONGRI_TERMS = [
   '천간', '지지', '일간', '일주', '월주', '시주', '연주', '시지', '월지', '연지',
   '격국', '식신격', '정인격', '편관격', '용신', '신강', '신약', '대운', '세운', '월운',
@@ -28,7 +28,7 @@ const DAILY_TONE_PATTERNS: RegExp[] = [
   /오늘의 흐름/,
 ];
 
-// spec §7 clickbait — 자극·단정 표현
+// spec §7 clickbait — 자극·단정 문구
 const CLICKBAIT_ABSOLUTE = [
   '대박', '비책', '암흑기', '텅장', '꿀팁', '반드시', '절대', '확실히',
 ];
@@ -39,9 +39,9 @@ const NAMING_POLICY_FORBIDDEN_PATTERNS: RegExp[] = [
   /(새싹|햇살|흙|쇠|물)의\s*결/g,
   /(새싹|햇살)\s+(기운|결|흐름)/g,
   /결단과|안정과|열정과|시작과|지혜과/g,
-  /(표현|생각|절제|직관|돌봄|관찰|베푸는|밀어붙이는)의\s*기운/g,
-  /(돌봄|표현|기준|단단함)의\s*결/g,
-  /(표현|돌봄|재물|관계|기준)형\s*사주/g,
+  /(표현|말|생각|절제|직관|돌봄|관찰|베푸는|밀어붙이는)의\s*기운/g,
+  /(돌봄|말|원칙|단단함)의\s*결/g,
+  /(말|돌봄|재물|관계|원칙)형\s*사주/g,
   /[가-힣]+의\s*결(?=[은이를을와\s]|$)/g,
   // 오행은 "X 기운"으로만 — "목의 기운/금의 기운" 등 "의" 형태 금지 (naming-policy §2, spec §7 #4-B)
   /(목|화|토|금|수)의\s*기운/g,
@@ -89,7 +89,7 @@ export function hardTextReasons(text: string, where: string): string[] {
     if (m) reasons.push(`${where} 일일 톤 누출: ${m[0]}`);
   }
   for (const word of CLICKBAIT_ABSOLUTE) {
-    if (text.includes(word)) reasons.push(`${where} 자극/단정 표현: ${word}`);
+    if (text.includes(word)) reasons.push(`${where} 자극/단정 문구: ${word}`);
   }
   for (const pattern of NAMING_POLICY_FORBIDDEN_PATTERNS) {
     const m = text.match(pattern);

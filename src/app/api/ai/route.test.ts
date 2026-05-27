@@ -54,15 +54,15 @@ test('dialogue output visibly differs by selected zodiac expert', () => {
 
   assert.match(
     ensureDialogueExpertVisibleOpening(genericText, 'rooster'),
-    /별닭선생 기준으로는 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
+    /별닭선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
   );
   assert.match(
     ensureDialogueExpertVisibleOpening(genericText, 'sheep'),
-    /궁합양선생 기준으로는 상대와 나의 속도 차이부터 봅니다/
+    /궁합양선생은 상대와 나의 속도 차이부터 봅니다/
   );
   assert.match(
     ensureDialogueExpertVisibleOpening('별닭선생입니다. 먼저 별자리를 봅니다.', 'rooster'),
-    /^별닭선생 기준으로는 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
+    /^별닭선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
   );
 });
 

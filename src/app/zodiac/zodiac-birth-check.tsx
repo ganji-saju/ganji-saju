@@ -130,7 +130,7 @@ export function ZodiacBirthCheck() {
         내 띠 보기 →
       </button>
       <p className="text-center text-[11.5px] leading-[1.6]" style={{ color: 'var(--app-copy-muted)' }}>
-        생년월일만 입력하면 입춘 기준으로 띠를 찾아드려요.
+        생년월일만 입력하면 입춘을 반영해 띠를 찾아드려요.
       </p>
     </form>
   );

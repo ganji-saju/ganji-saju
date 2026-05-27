@@ -160,7 +160,7 @@ export function PaymentFunnelDashboard() {
           className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          단계별 진입·차단·전환·실패 추세와 reason / 패키지 별 전환율을 봅니다. KST 기준.
+          단계별 진입·차단·전환·실패 추세와 reason / 패키지 별 전환율을 봅니다. KST 시간대.
         </p>
       </article>
 
@@ -404,7 +404,7 @@ export function PaymentFunnelDashboard() {
               <li>• prepare 단계: POST /api/payments/prepare 진입 / 차단 / 준비 완료</li>
               <li>• confirm 단계: POST /api/payments/confirm 진입 / 성공 / 실패</li>
               <li>• 전체 전환 = confirm_success / prepare_attempt</li>
-              <li>• KST(UTC+9) 자정 기준 일별 집계 · best-effort 로깅</li>
+              <li>• KST(UTC+9) 자정 단위 일별 집계 · best-effort 로깅</li>
             </ul>
           </article>
         </>

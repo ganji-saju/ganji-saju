@@ -49,7 +49,7 @@ const DEEP_SECTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ];
 
-// 2026-05-23 사주 리포트 PDF 8페이지 문서 (표현 전용 컴포넌트).
+// 2026-05-23 사주 리포트 PDF 8페이지 문서 (말 전용 컴포넌트).
 //   실제 인쇄 화면(premium/print)과 /dev 미리보기가 동일 마크업을 공유한다.
 //   데이터 갭은 src/lib/saju/pdf-report-maps.ts 의 결정적 매핑으로 채움.
 
@@ -309,7 +309,7 @@ const AREA_META: Record<
   love: {
     label: '연애',
     hanja: '戀',
-    sub: '타이밍과 표현',
+    sub: '타이밍과 말',
     color: '#ff6b6b',
     strength: '먼저 마음을 여는 용기',
     weakness: '감정을 다루는 인내',
@@ -457,7 +457,7 @@ export function buildPdfModel(
     dayGanziIndex: ganziIndexOf(dayStem, dayBranch),
   });
   const detectedNames = new Set(detected.map((d) => d.name));
-  // 홍염살(紅艶煞)은 종합 신살 compute 미포함 → 일간 기준 결정적 판정 추가.
+  // 홍염살(紅艶煞)은 종합 신살 compute 미포함 → 일간 원칙 결정적 판정 추가.
   const hasHongyeom = HONGYEOM_BRANCH[dayStem]
     ? [
         sajuData.pillars.year.branch,
@@ -569,7 +569,7 @@ export function buildPdfModel(
   //   phase 가 중복돼도 연령대로 구분해 라벨이 겹치지 않게 한다.
   const DECADE_BRIEF: Record<number, { key: string; desc: string }> = {
     20: { key: '배움과 도약', desc: '배움과 인맥을 쌓으며 사회로 나아가는 시기' },
-    30: { key: '표현과 성과', desc: '실력을 드러내고 흐름이 가장 가벼운 시기' },
+    30: { key: '말과 성과', desc: '실력을 드러내고 흐름이 가장 가벼운 시기' },
     40: { key: '안정과 책임', desc: '가정과 일의 기반을 다지는 시기' },
     50: { key: '정리와 결실', desc: '그동안의 노력이 모이는 시기' },
   };
@@ -908,7 +908,7 @@ export function ReportDocument({
                 <div className="rp-cover-foot">
                   <p>
                     본 리포트는 운세 콘텐츠로 참고용입니다. 의료·법률·투자·위기 판단은 전문
-                    기준을 우선하세요.
+                    원칙을 우선하세요.
                     <br />
                     {FOOTER_COPY} · ganjisaju.kr
                   </p>
@@ -922,7 +922,7 @@ export function ReportDocument({
                 <ChapterHead
                   no="02"
                   titleLines={['십성(十星)으로 보는', '기운의 분포']}
-                  lead="십성은 일간(나)을 기준으로 다른 글자들과의 관계를 10가지로 분류한 것입니다. 나를 둘러싼 기운을 보는 가장 직관적인 방법이에요."
+                  lead="십성은 일간(나)을 바탕으로 다른 글자들과의 관계를 10가지로 분류한 것입니다. 나를 둘러싼 기운을 보는 가장 직관적인 방법이에요."
                 />
 
                 <div className="rp-tengod-list">

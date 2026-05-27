@@ -243,11 +243,11 @@ export async function getTodayFortuneVerificationAudit({
       },
       {
         key: 'today-safety-forbidden-phrases',
-        label: '단정 표현 금지',
+        label: '단정 문구 금지',
         ok: !hasForbiddenGuarantee(combinedText),
         detail: hasForbiddenGuarantee(combinedText)
-          ? '무조건/반드시/절대/100% 같은 단정 표현이 오늘운세 문장에 남아 있습니다.'
-          : '단정 금지 표현은 오늘운세 문장에서 발견되지 않았습니다.',
+          ? '무조건/반드시/절대/100% 같은 단정 문구이 오늘운세 문장에 남아 있습니다.'
+          : '단정 금지 문구은 오늘운세 문장에서 발견되지 않았습니다.',
       },
       {
         key: 'today-safety-health',

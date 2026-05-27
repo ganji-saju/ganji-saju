@@ -141,7 +141,7 @@ export default async function MyBillingPage() {
     : '미가입';
 
   // "코인 사용 내역" — 코인을 차감(소비)한 type='use' 행만. 결제(충전/구독)는
-  // 위 "결제 내역" 섹션에서 ₩ 기준으로 따로 보여준다.
+  // 위 "결제 내역" 섹션에서 원화 단위로 따로 보여준다.
   const coinUsageTransactions = dashboard.recentTransactions.filter(
     (transaction) => transaction.type === 'use'
   );
@@ -481,7 +481,7 @@ export default async function MyBillingPage() {
         style={{ borderColor: 'var(--app-line)' }}
       >
         <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-          📚 결제·환불 기준
+          📚 결제·환불 정책
         </div>
         <ul
           className="mt-1.5 grid gap-1 text-[11.5px] leading-[1.65] text-[var(--app-copy)]"
@@ -489,7 +489,7 @@ export default async function MyBillingPage() {
         >
           <li>• 정기 이용 상품은 가격과 갱신 시점, 열리는 혜택을 같은 화면에서 다시 확인하실 수 있습니다.</li>
           <li>• 해지 예약을 하셔도 이번 이용 기간이 끝날 때까지 혜택은 그대로 유지됩니다.</li>
-          <li>• 디지털 해석은 열람 여부에 따라 환불 기준이 달라질 수 있어, 결제 전 안내를 먼저 보여드립니다.</li>
+          <li>• 디지털 해석은 열람 여부에 따라 환불 정책이 달라질 수 있어, 결제 전 안내를 먼저 보여드립니다.</li>
         </ul>
       </article>
     </div>

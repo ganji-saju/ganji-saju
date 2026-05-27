@@ -100,7 +100,7 @@ const GOEGANG_GANZI = new Set([
   '庚辰', '庚戌', '壬辰', '壬戌',
 ]);
 
-// 三合 그룹 기준 도화·역마·화개·망신·겁살.
+// 三合 그룹 원칙 도화·역마·화개·망신·겁살.
 const SAMHAP_GROUPS = [
   { branches: ['申', '子', '辰'], dohwa: '酉', yeokma: '寅', hwagae: '辰', mangsin: '亥', geopsal: '巳' },
   { branches: ['寅', '午', '戌'], dohwa: '卯', yeokma: '申', hwagae: '戌', mangsin: '巳', geopsal: '亥' },
@@ -145,7 +145,7 @@ function isGwimun(a: string, b: string): boolean {
   );
 }
 
-// 띠 기준 삼재 들어오는 3년 지지.
+// 띠 원칙 삼재 들어오는 3년 지지.
 const SAMJAE: Record<string, Branch[]> = {
   申: ['寅', '卯', '辰'], 子: ['寅', '卯', '辰'], 辰: ['寅', '卯', '辰'],
   亥: ['巳', '午', '未'], 卯: ['巳', '午', '未'], 未: ['巳', '午', '未'],
@@ -210,7 +210,7 @@ export function detectComprehensiveSinsals(
     });
   }
 
-  // 천덕귀인 (월지 기준, 사주 천간/일진 천간 검사)
+  // 천덕귀인 (월지 원칙, 사주 천간/일진 천간 검사)
   {
     const target = CHEONDEOK_GWIIN_STEM_ONLY[saju.monthBranch];
     if (target && options.iljin && options.iljin.stem === target) {
@@ -309,7 +309,7 @@ export function detectComprehensiveSinsals(
     });
   }
 
-  // 공망살 (일주 旬 기준)
+  // 공망살 (일주 旬 원칙)
   {
     const gongmang = getGongmangBranches(saju.dayGanziIndex);
     const positions: SinsalHit['positions'] = [];
@@ -412,7 +412,7 @@ export function detectComprehensiveSinsals(
     }
   }
 
-  // 삼재 (연지 기준 + 올해 연지).
+  // 삼재 (연지 원칙 + 올해 연지).
   if (options.currentYearBranch) {
     const samjaeBranches = SAMJAE[saju.yearBranch];
     if (samjaeBranches?.includes(options.currentYearBranch)) {
@@ -434,7 +434,7 @@ export function detectComprehensiveSinsals(
     { key: 'hwagae' as const, name: '화개살', score: 3, hint: '학문·예술·종교, 고독 속 통찰' },
   ]) {
     const positions: SinsalHit['positions'] = [];
-    // 연지·일지 두 기준 모두 검사 (학파 차이 대응).
+    // 연지·일지 두 원칙 모두 검사 (학파 차이 대응).
     for (const refBranch of [saju.yearBranch, saju.dayBranch]) {
       const group = SAMHAP_GROUPS.find((g) => g.branches.includes(refBranch));
       if (!group) continue;

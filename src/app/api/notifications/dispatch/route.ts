@@ -44,8 +44,8 @@ function appendNotifId(url: string, logId: string): string {
   return `${url}${sep}notif=${encodeURIComponent(logId)}`;
 }
 
-// 2026-05-16 PR #135 — KST 기준 시각으로 슬롯 매칭.
-// Vercel 서버가 UTC 라도 cron 트리거가 어느 시각에 오든 KST 기준으로 정확히 분기.
+// 2026-05-16 PR #135 — KST 시간대 시각으로 슬롯 매칭.
+// Vercel 서버가 UTC 라도 cron 트리거가 어느 시각에 오든 KST 시간대로 정확히 분기.
 function getKstHour(now: Date): number {
   const kstStr = now.toLocaleString('en-US', {
     timeZone: 'Asia/Seoul',

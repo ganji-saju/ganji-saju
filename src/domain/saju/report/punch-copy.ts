@@ -16,7 +16,7 @@ type ElementRatio = Partial<Record<Element, number>>;
 
 const ELEMENT_LABELS: Record<Element, string> = {
   목: '성장',
-  화: '표현',
+  화: '말',
   토: '안정',
   금: '정리',
   수: '생각',
@@ -29,9 +29,9 @@ const ELEMENT_ACTIONS: Record<Element, { strength: string; weak: string; support
     support: '오늘 할 일을 작게 시작하기',
   },
   화: {
-    strength: '표현하고 드러내는 힘',
+    strength: '말하고 드러내는 힘',
     weak: '마음을 너무 늦게 말하지 않기',
-    support: '짧게라도 먼저 표현하기',
+    support: '짧게라도 먼저 말하기',
   },
   토: {
     strength: '붙잡고 정리하는 힘',
@@ -39,7 +39,7 @@ const ELEMENT_ACTIONS: Record<Element, { strength: string; weak: string; support
     support: '돈과 일정을 한 번 정리하기',
   },
   금: {
-    strength: '기준을 세우는 힘',
+    strength: '원칙을 정하는 힘',
     weak: '결정을 흐리게 두지 않기',
     support: '우선순위를 두 개만 고르기',
   },
@@ -51,14 +51,14 @@ const ELEMENT_ACTIONS: Record<Element, { strength: string; weak: string; support
 };
 
 const TEN_GOD_PUBLIC_LABELS: Record<string, string> = {
-  비견: '내 기준이 뚜렷한 편',
+  비견: '내 선택이 뚜렷한 편',
   겁재: '가까운 사람과 역할을 나누는 편',
   식신: '꾸준히 만들어내는 편',
-  상관: '표현과 아이디어가 빠른 편',
+  상관: '말과 아이디어가 빠른 편',
   편재: '기회와 사람을 넓게 보는 편',
   정재: '돈과 일을 안정적으로 쌓는 편',
   편관: '압박 속에서 집중력이 살아나는 편',
-  정관: '책임과 기준을 중요하게 보는 편',
+  정관: '책임과 원칙을 중요하게 보는 편',
   편인: '혼자 깊게 파악하는 편',
   정인: '배움과 도움을 크게 쓰는 편',
 };
@@ -181,7 +181,7 @@ function buildPersonalVerdict(report: SajuReport) {
   }
 
   if (dayElement) {
-    return `${ELEMENT_INFO[dayElement].name}이 먼저 드러나는 날입니다. 한 가지 기준만 정하세요.`;
+    return `${ELEMENT_INFO[dayElement].name}이 먼저 드러나는 날입니다. 한 가지 원칙만 정하세요.`;
   }
 
   return '';
@@ -215,7 +215,7 @@ function buildPersonalCaution(report: SajuReport) {
   const supportElement = getSupportElement(report);
 
   // 2026-05-15: 유보형 → 단정형 + 명령형.
-  // 2026-05-20 V2-5 PR W — ELEMENT_INFO 자연 표기 + "반드시" 단정 표현 완화 (룰 5).
+  // 2026-05-20 V2-5 PR W — ELEMENT_INFO 자연 표기 + "반드시" 단정 문구 완화 (룰 5).
   return firstNonEmpty(
     [
       weakest
@@ -285,7 +285,7 @@ export function buildPunchReading(report: SajuReport): PunchReading {
       report.dayMasterSummary,
       report.summary,
     ],
-    '지금은 판단보다 기준 정리가 먼저입니다.'
+    '지금은 판단보다 원칙 정리가 먼저입니다.'
   );
 
   const caution = firstNonEmpty(

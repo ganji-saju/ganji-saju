@@ -21,7 +21,7 @@ let hitCount = 0;
 let missCount = 0;
 
 function buildKey(input: BirthInput): string {
-  // 같은 결과를 내는 모든 필드. BirthInput 인터페이스 기준.
+  // 같은 결과를 내는 모든 필드. BirthInput 인터페이스 값.
   const loc = input.birthLocation;
   return [
     input.year,

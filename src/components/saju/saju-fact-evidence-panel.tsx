@@ -132,7 +132,7 @@ export function SajuFactEvidencePanel({
           <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
             {hasKasiMatch === null
               ? '저장된 결과에 날짜 대조 정보가 아직 없습니다.'
-              : `음력 ${kasiComparison?.local.lunarYear}년 ${kasiComparison?.local.lunarMonth}월 ${kasiComparison?.local.lunarDay}일 기준으로 비교했습니다.`}
+              : `음력 ${kasiComparison?.local.lunarYear}년 ${kasiComparison?.local.lunarMonth}월 ${kasiComparison?.local.lunarDay}일 정보로 비교했습니다.`}
           </p>
           {kasiComparison ? (
             <div className="mt-4 grid gap-2 text-sm leading-7 text-[var(--app-copy)]">

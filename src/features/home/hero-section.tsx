@@ -173,7 +173,7 @@ export default function HeroSection({
                 <div className="text-sm text-white/45">본 서비스 우선</div>
                 <div className="mt-2 text-xl font-semibold text-[#f7ecd5]">정통사주 → 궁합 → 저장/결제</div>
                 <p className="mt-3 text-sm leading-6 text-white/58">
-                  Day 3 기준 홈은 본 서비스 시작선을 먼저 보여주고, 무료 운세는 뒤쪽 탐색 구간으로 분리합니다.
+                  Day 3 홈은 본 서비스 시작선을 먼저 보여주고, 무료 운세는 뒤쪽 탐색 구간으로 분리합니다.
                 </p>
               </div>
 

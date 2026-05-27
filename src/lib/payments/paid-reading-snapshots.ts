@@ -112,7 +112,7 @@ function buildSnapshotSummary(productId: PaidProductId, reading: ReadingRecord |
   }
 
   return reading
-    ? `${reading.input.year}.${reading.input.month}.${reading.input.day} 기준 풀이`
+    ? `${reading.input.year}.${reading.input.month}.${reading.input.day} 맞춤 풀이`
     : '결제 시점의 풀이 정보를 보관합니다.';
 }
 

@@ -251,11 +251,11 @@ export const REPORT_PREVIEW_VALUE_POINTS = [
   },
   {
     title: '답하는 질문',
-    body: '연애, 돈, 일, 가족, 올해 흐름처럼 사용자가 실제로 묻는 질문을 기준으로 리포트를 고릅니다.',
+    body: '연애, 돈, 일, 가족, 올해 흐름처럼 사용자가 실제로 묻는 질문을 바탕으로 리포트를 고릅니다.',
   },
   {
     title: '소장하면 남는 것',
-    body: '명식, 격국, 용신, 대운의 기준을 PDF와 MY 보관함에 남겨 다시 읽을 수 있습니다.',
+    body: '명식, 격국, 용신, 대운의 원칙을 PDF와 MY 보관함에 남겨 다시 읽을 수 있습니다.',
   },
   {
     title: '대화 연결',
@@ -450,7 +450,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     zodiacOrder: 9,
     serviceTitle: '관상',
     shortLabel: '인상과 분위기',
-    role: '관상과 첫인상 풀이를 안전한 표현 기준 안에서 확장할 메뉴입니다.',
+    role: '관상과 첫인상 풀이를 안전한 말투 안내 안에서 확장할 메뉴입니다.',
     question: '내 인상은 어떤 분위기로 전해질까?',
     href: `${DALBIT_TEACHER_GUIDE_HREF}face-won`,
     productPosition: '사진/자가진단 기반 무료 입구와 소액 풀이로 확장 예정입니다.',
@@ -522,11 +522,11 @@ export const TRUST_SIGNALS = [
     body: '중요한 결과는 보관함에서 다시 확인할 수 있습니다.',
   },
   {
-    title: '시간·출생지 기준',
-    body: '태어난 시간과 출생지 기준은 결과에서 확인 가능한 정보로 남깁니다.',
+    title: '시간·출생지 설정',
+    body: '태어난 시간과 출생지 설정은 결과에서 확인 가능한 정보로 남깁니다.',
   },
   {
-    title: '공포 표현 없음',
+    title: '공포 말 없음',
     body: '대흉, 반드시 실패 같은 단정 대신 참고 흐름과 생활 행동으로 말합니다.',
   },
 ] as const;
@@ -687,7 +687,7 @@ export const DIALOGUE_PRESETS: readonly MoonlightDialoguePreset[] = [
     category: '가족',
     question: '큰 며느리와는 어떤 인연인가요?',
     previewAnswer:
-      '가까운 가족 궁합은 좋고 나쁨보다 말의 온도와 기대하는 역할이 더 중요합니다. 두 분은 기본 인연은 이어지지만, 표현의 강약을 조절할 때 훨씬 편안해지는 관계로 읽힙니다.',
+      '가까운 가족 궁합은 좋고 나쁨보다 말의 온도와 기대하는 역할이 더 중요합니다. 두 분은 기본 인연은 이어지지만, 말의 강약을 조절할 때 훨씬 편안해지는 관계로 읽힙니다.',
     followUp: '서운함이 커지는 이유나 대화 타이밍까지 더 물어보실 수 있습니다.',
   },
   {
@@ -723,7 +723,7 @@ export const DIALOGUE_PRESETS: readonly MoonlightDialoguePreset[] = [
     question: '요즘 몸이 피곤한데, 흐름상 어떤가요?',
     previewAnswer:
       '몸의 피로는 사주 해석으로 진단하지 않지만, 생활 리듬이 무너지는 구간인지 살펴 생활 조절 포인트를 드릴 수 있습니다. 다만 증상 판단은 꼭 의료진과 함께 보시는 편이 안전합니다.',
-    followUp: '수면, 식사, 스트레스 중 어디가 먼저 무너지는지 기준으로 생활 팁을 이어드릴 수 있습니다.',
+    followUp: '수면, 식사, 스트레스 중 어디가 먼저 무너지는지 바탕으로 생활 팁을 이어드릴 수 있습니다.',
   },
   {
     category: '이동',
@@ -848,7 +848,7 @@ export const ONBOARDING_TONE_OPTIONS: readonly MoonlightToneOption[] = [
   {
     value: 'friendly',
     label: '친근하게',
-    description: '가깝고 다정한 표현으로 먼저 말을 건넵니다.',
+    description: '가깝고 다정한 말으로 먼저 말을 건넵니다.',
   },
   {
     value: 'polite',
@@ -882,7 +882,7 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
   {
     key: 'today-zodiac',
     title: '오늘의 띠운세',
-    body: '내 띠 기준 오늘 흐름을 가볍게 확인해 보세요.',
+    body: '내 띠 오늘 흐름을 가볍게 확인해 보세요.',
     timeLabel: '오후 8시',
     cadence: '매일',
     tone: 'plum',
@@ -1043,7 +1043,7 @@ export const PLAN_BLUEPRINT = [
     badge: '한 번 결제 · 평생 소장',
     summary: '원국, 격국, 용신, 대운을 한 권의 보관형 리포트로 남기는 소장형 상품입니다.',
     features: ['7개 섹션 완성형 풀이', 'PDF 다운로드', 'MY 보관함 저장', '평생 무료 업데이트'],
-    fit: '한 번의 결제로 내 명리 기준을 오래 보관하고 싶은 분',
+    fit: '한 번의 결제로 내 명리 흐름을 오래 보관하고 싶은 분',
     opens: ['격국·용신·대운을 한 권의 보관형 풀이로', 'PDF와 MY 보관함으로 오래 남기기', '해석이 다듬어질 때 다시 펼쳐보기'],
   },
 ] as const;
@@ -1102,7 +1102,7 @@ export const SAJU_PREMIUM_PREVIEW = [
 export const SAJU_PREMIUM_VALUE_POINTS = [
   '원국만 설명하는 데서 멈추지 않고, 강약과 격국을 함께 엮어 보관형 풀이로 정리합니다.',
   '현재 대운과 세운을 붙여 “왜 지금 이런가”를 한 화면에서 읽게 합니다.',
-  'PDF와 MY 보관함에 함께 남아, 이후 월운과 대화도 같은 기준 위에서 이어집니다.',
+  'PDF와 MY 보관함에 함께 남아, 이후 월운과 대화도 같은 설정 위에서 이어집니다.',
 ] as const;
 
 export const COMPATIBILITY_DEEPENING_PREVIEW = [
@@ -1131,11 +1131,11 @@ export const COMPATIBILITY_PREMIUM_EXPANSION: Record<
   lover: {
     ctaTitle: '연인 · 배우자는 감정의 타이밍까지 읽을 때 가장 또렷합니다',
     ctaBody:
-      '좋아하는 마음과 서운함이 언제 엇갈리는지, 연락과 표현의 속도를 어떻게 맞추면 좋은지까지 프리미엄에서 더 구체적으로 이어집니다.',
+      '좋아하는 마음과 서운함이 언제 엇갈리는지, 연락과 말의 속도를 어떻게 맞추면 좋은지까지 프리미엄에서 더 구체적으로 이어집니다.',
     preview: [
       {
         title: '서운함이 커지는 순간',
-        body: '누가 먼저 표현을 원하고, 누가 먼저 시간을 벌고 싶어 하는지 짚어 감정 충돌의 순서를 읽습니다.',
+        body: '누가 먼저 말을 원하고, 누가 먼저 시간을 벌고 싶어 하는지 짚어 감정 충돌의 순서를 읽습니다.',
       },
       {
         title: '관계가 가까워지는 대화법',
@@ -1150,7 +1150,7 @@ export const COMPATIBILITY_PREMIUM_EXPANSION: Record<
   family: {
     ctaTitle: '부모 · 자녀는 말의 무게와 거리 조절을 함께 볼 때 달라집니다',
     ctaBody:
-      '자녀에게 남는 말의 무게, 서로 지치기 쉬운 패턴, 응원으로 들리는 표현과 부담으로 남는 표현을 프리미엄에서 더 깊게 읽습니다.',
+      '자녀에게 남는 말의 무게, 서로 지치기 쉬운 패턴, 응원으로 들리는 말과 부담으로 남는 말을 프리미엄에서 더 깊게 읽습니다.',
     preview: [
       {
         title: '갈등이 반복되는 이유',
@@ -1259,7 +1259,7 @@ export const CHECKOUT_PLAN_GUIDE: Record<
     nextRange: '첫 결제 후 30일 이용',
     reassurance: '가볍게 시작해도 질문을 이어가는 흐름은 충분히 경험하실 수 있습니다.',
     opens: ['긴 사주풀이 미리보기 월 2회', '기본 해석과 대화 상담', '광고 없는 차분한 이용'],
-    notices: ['첫 결제 후 30일 이용권으로 반영', '마이페이지에서 상태 확인 가능', '열람 전 환불 기준 함께 안내'],
+    notices: ['첫 결제 후 30일 이용권으로 반영', '마이페이지에서 상태 확인 가능', '열람 전 환불 안내 함께 안내'],
   },
   premium: {
     title: '프리미엄 대화 멤버십',
@@ -1267,7 +1267,7 @@ export const CHECKOUT_PLAN_GUIDE: Record<
     nextRange: '첫 결제 후 30일 이용',
     reassurance: '가족 사주, 궁합, 대화까지 가장 넓게 이어 쓰실 수 있는 메인 구독 플랜입니다.',
     opens: ['궁합 분석과 가족 사주 5명', '긴 사주풀이 미리보기 월 10회', '대화 상담 월 120턴과 공정사용정책'],
-    notices: ['첫 결제 후 30일 이용권으로 반영', '언제든 플랜 화면에서 상태 확인 가능', '이용 내역과 환불 기준을 한 번 더 고지'],
+    notices: ['첫 결제 후 30일 이용권으로 반영', '언제든 플랜 화면에서 상태 확인 가능', '이용 내역과 환불 안내을 한 번 더 고지'],
   },
   lifetime: {
     title: '보관형 사주 리포트',
@@ -1388,7 +1388,7 @@ export const TAROT_CARD_READING_COPY = {
     sajuBlend:
       '사주 흐름과 만나면, 이 카드는 선생님의 장점과 진심을 감추지 말고 드러내는 편이 재물과 관계 모두에 더 도움이 된다고 읽습니다.',
     action:
-      '감사나 칭찬, 반가운 마음을 한 번 더 표현해보세요. 좋은 흐름이 더 크게 열립니다.',
+      '감사나 칭찬, 반가운 마음을 한 번 더 말해보세요. 좋은 흐름이 더 크게 열립니다.',
   },
   'The Hermit': {
     arcana: 'IX',
@@ -1452,8 +1452,8 @@ export const TEN_GODS_GUIDE: readonly MoonlightTenGodCard[] = [
   },
   {
     name: '식신',
-    hanja: '표현',
-    meaning: '표현 · 여유 · 자녀',
+    hanja: '말',
+    meaning: '말 · 여유 · 자녀',
     seniorCopy: '내가 키워내는 것, 자녀 혹은 결실',
   },
   {
@@ -1490,7 +1490,7 @@ export const TEN_GODS_GUIDE: readonly MoonlightTenGodCard[] = [
 
 export const MEMBERSHIP_REASSURANCE = [
   '해지는 언제든 가능하며, 남은 이용 기간은 끝까지 편히 보실 수 있습니다.',
-  '열람 전 상태와 이용 기준을 먼저 보여드리고, 환불 기준도 같은 화면에서 확인하실 수 있습니다.',
+  '열람 전 상태와 이용 안내을 먼저 보여드리고, 환불 안내도 같은 화면에서 확인하실 수 있습니다.',
   '현재 멤버십 결제는 30일 이용권으로 먼저 안전하게 반영하고, 자동 갱신 결제키 연동은 별도 단계로 다룹니다.',
 ] as const;
 

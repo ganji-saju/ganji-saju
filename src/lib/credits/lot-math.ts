@@ -12,7 +12,7 @@ export interface CreditLot {
   createdAt?: Date;
 }
 
-// 비만료(now 시점 기준 expires_at > now) lot 의 amount_remaining 합.
+// 비만료(now 시점 원칙 expires_at > now) lot 의 amount_remaining 합.
 // SQL: SUM(amount_remaining) WHERE expires_at > now().
 export function nonExpiredBalance(lots: readonly CreditLot[], now: Date): number {
   return lots

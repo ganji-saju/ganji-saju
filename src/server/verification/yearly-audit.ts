@@ -103,9 +103,9 @@ async function inspectYearlyCacheSchema(): Promise<YearlyCacheSchemaAudit> {
 function describeCacheKeyType(cacheKeyType: YearlyCacheKeyType) {
   switch (cacheKeyType) {
     case 'reading_id':
-      return 'DB reading id 기준으로 캐시를 읽고 씁니다.';
+      return 'DB reading id로 캐시를 읽고 씁니다.';
     case 'reading_slug':
-      return 'slug 기준 캐시 경로를 사용합니다. migration 012가 반영돼야 서버 캐시가 완전히 작동합니다.';
+      return 'slug 방식 캐시 경로를 사용합니다. migration 012가 반영돼야 서버 캐시가 완전히 작동합니다.';
     default:
       return '현재 요청은 캐시 키를 만들 수 없는 상태입니다.';
   }
@@ -191,8 +191,8 @@ export async function getYearlyVerificationAudit({
         label: '캐시 적중',
         ok: result.cached,
         detail: result.cached
-          ? `${result.cacheKeyType} 기준으로 캐시를 재사용했습니다.`
-          : `${result.cacheKeyType} 기준 재생성 응답입니다.`,
+          ? `${result.cacheKeyType} 바탕으로 캐시를 재사용했습니다.`
+          : `${result.cacheKeyType} 재생성 응답입니다.`,
       },
       {
         key: 'yearly-generation-time',
@@ -222,11 +222,11 @@ export async function getYearlyVerificationAudit({
       },
       {
         key: 'yearly-forbidden-phrases',
-        label: '금지 표현 검사',
+        label: '금지 문구 검사',
         ok: !hasForbiddenGuarantee(result.reportText),
         detail: hasForbiddenGuarantee(result.reportText)
-          ? '무조건/반드시/100% 같은 단정 표현이 본문에 남아 있습니다.'
-          : '단정 금지 표현은 발견되지 않았습니다.',
+          ? '무조건/반드시/100% 같은 단정 문구이 본문에 남아 있습니다.'
+          : '단정 금지 문구은 발견되지 않았습니다.',
       },
       {
         key: 'yearly-ai-tone',

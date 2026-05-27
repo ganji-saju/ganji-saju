@@ -37,8 +37,8 @@ const JOSA_NORMALIZE_WORDS: readonly string[] = [
   '선택 힌트', '판단 힌트', '풀이 안내', '계산 정보', '사주 정보', '저장된 정보',
   '도움이 되는 핵심 기운', '도움이 되는 보조 기운', '도움이 되는 기운 후보',
   '겉으로 드러나는 기운', '숨은 기운', '조절할 기운', '작은 신호', '만남과 변화 신호',
-  '관계 역할', '책임·도전 역할', '돈·기회 역할', '표현·재능 역할', '배움·휴식 역할',
-  '동료·경쟁 역할', '책임·도전 자리', '돈·기회 자리', '표현·재능 자리', '배움·휴식 자리',
+  '관계 역할', '책임·도전 역할', '돈·기회 역할', '전달·재능 역할', '배움·휴식 역할',
+  '동료·경쟁 역할', '책임·도전 자리', '돈·기회 자리', '전달·재능 자리', '배움·휴식 자리',
   '주체·자립 자리', '비어있는 자리', '안쪽 자리', '내 핵심 기질', '컨디션 흐름',
   '긴 흐름', '올해 흐름', '이번 달 흐름', '오늘 하루 흐름', '오늘 할 일', '태어난 계절 기운',
 ].slice().sort((a, b) => b.length - a.length);
@@ -178,6 +178,77 @@ const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/밀고/gu, '진행하고'],
 ];
 
+const USER_FACING_WORD_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/표현력/gu, '전달력'],
+  [/의사\s*표현/gu, '의사 전달'],
+  [/자기\s*표현/gu, '자기 전달'],
+  [/표현\s*방식/gu, '말투'],
+  [/표현\s*활동/gu, '말하고 보여주는 일'],
+  [/표현\s*욕구/gu, '드러내고 싶은 마음'],
+  [/표현\s*수위/gu, '말의 온도'],
+  [/표현의\s*온도/gu, '말의 온도'],
+  [/표현의\s*타이밍/gu, '말할 타이밍'],
+  [/표현의\s*기운/gu, '말의 힘'],
+  [/단정\s*표현/gu, '단정 문구'],
+  [/위험\s*표현/gu, '위험 문구'],
+  [/금지\s*표현/gu, '금지 문구'],
+  [/자극\s*표현/gu, '자극 문구'],
+  [/표현\s*쪽/gu, '말 쪽'],
+  [/표현을/gu, '말을'],
+  [/표현은/gu, '말은'],
+  [/표현이/gu, '말이'],
+  [/표현과/gu, '말과'],
+  [/표현·/gu, '전달·'],
+  [/표현/gu, '말'],
+  [/기준점/gu, '중심점'],
+  [/기준표/gu, '대조표'],
+  [/판단\s*기준으로/gu, '판단 힌트로'],
+  [/선택\s*기준으로/gu, '선택 힌트로'],
+  [/행동\s*기준으로/gu, '오늘 할 일로'],
+  [/풀이\s*기준으로/gu, '풀이 안내로'],
+  [/계산\s*기준으로/gu, '계산 정보로'],
+  [/명식\s*기준으로/gu, '사주 정보로'],
+  [/저장본\s*기준으로/gu, '저장된 정보로'],
+  [/판단\s*기준/gu, '판단 힌트'],
+  [/선택\s*기준/gu, '선택 힌트'],
+  [/행동\s*기준/gu, '오늘 할 일'],
+  [/풀이\s*기준/gu, '풀이 안내'],
+  [/계산\s*기준/gu, '계산 정보'],
+  [/명식\s*기준/gu, '사주 정보'],
+  [/저장본\s*기준/gu, '저장된 정보'],
+  [/기준으로\s*본/gu, '바탕으로 본'],
+  [/기준으로는/gu, '정보로는'],
+  [/기준으로/gu, '바탕으로'],
+  [/기준입니다/gu, '정보입니다'],
+  [/기준이\s*됩니다/gu, '바탕이 됩니다'],
+  [/기준을\s*세우/gu, '원칙을 정하'],
+  [/기준을\s*잡/gu, '방향을 잡'],
+  [/기준을\s*지키/gu, '원칙을 지키'],
+  [/기준이\s*흐려/gu, '선택할 선이 흐려'],
+  [/기준이\s*높아/gu, '기대가 높아'],
+  [/기준이\s*강해/gu, '원칙이 강해'],
+  [/기준이\s*분명/gu, '선택이 분명'],
+  [/기준이\s*뚜렷/gu, '선택이 뚜렷'],
+  [/기준과\s*책임/gu, '역할과 책임'],
+  [/기준\s*쪽/gu, '선택 쪽'],
+  [/기준을/gu, '원칙을'],
+  [/기준은/gu, '원칙은'],
+  [/기준이/gu, '원칙이'],
+  [/기준과/gu, '원칙과'],
+  [/기준/gu, '원칙'],
+];
+
+export function sanitizeUserFacingCopy(value: string | null | undefined) {
+  if (!value) return '';
+  let text = value;
+  for (const [pattern, replacement] of USER_FACING_WORD_REPLACEMENTS) {
+    text = text.replace(pattern, replacement);
+  }
+  return text
+    .replace(/문구은/gu, '문구는')
+    .replace(/문구을/gu, '문구를');
+}
+
 export function simplifySajuCopy(value: string | null | undefined) {
   if (!value) return '';
 
@@ -211,6 +282,7 @@ export function simplifySajuCopy(value: string | null | undefined) {
     .replace(/채워속에 깔린 기질\s*않는/gu, '채워지지 않는')
     .replace(/정보로는/gu, '정보로 보면');
 
+  cleaned = sanitizeUserFacingCopy(cleaned);
   cleaned = normalizeParticles(cleaned);
   cleaned = collapseAdjacentDuplicateWords(cleaned);
 

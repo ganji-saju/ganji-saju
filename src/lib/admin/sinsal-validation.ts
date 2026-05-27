@@ -15,7 +15,7 @@ export interface SinsalStats {
   effectSize: number;             // 차이 (mean1 - mean2)
   tStatistic: number;
   significance: 'strong' | 'moderate' | 'weak' | 'none'; // p<0.01 / p<0.05 / p<0.10 / 그 외
-  /** spec doc 의 가중치 (사주아이 표 기준). 데이터 결과와 비교용. */
+  /** spec doc 의 가중치 (사주아이 표 원칙). 데이터 결과와 비교용. */
   expectedScore: number;
   /** 결과 톤 — UI 표시용. */
   verdict: 'confirmed' | 'partial' | 'no-effect' | 'reverse' | 'low-data';

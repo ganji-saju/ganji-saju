@@ -43,7 +43,7 @@ const ELEMENT_LABEL: Record<SignElement, string> = {
   water: '물',
 };
 
-/** 오늘 별자리 일진 산출 — KST 자정 기준. */
+/** 오늘 별자리 일진 산출 — KST 자정 단위. */
 export function computeStarSignDailyDigest(dateKey: string = toKstDateKey()): StarSignDailyDigest {
   // 12 sign 일괄 계산.
   const entries: DigestSignEntry[] = STAR_SIGN_FORTUNES.map((item) => {
@@ -105,7 +105,7 @@ export function computeStarSignDailyDigest(dateKey: string = toKstDateKey()): St
     moodDistribution[ELEMENT_MOOD[e.element]] += 1;
   }
 
-  // notification body 후보 (KST 자정 기준 매일 변함).
+  // notification body 후보 (KST 자정 단위 매일 변함).
   const notificationCandidates = [
     `오늘 가장 맑은 별자리는 ${topThree[0]!.label} (${topThree[0]!.overall}점). ${topThree[0]!.highlight}`,
     `${ELEMENT_LABEL[bestElement]} 원소 별자리 평균 ${bestAvg.toFixed(1)}점 — 오늘 ${ELEMENT_LABEL[bestElement]} 분위기가 가장 좋아요.`,
@@ -142,7 +142,7 @@ export function chooseVariantFor(userId: string, dateKey: string): PushVariant {
 }
 
 /**
- * 사용자 별자리 기준 push body 한 줄.
+ * 사용자 별자리 원칙 push body 한 줄.
  * - slug 있으면 본인 운세를 variant 별로 변형:
  *   - A: 점수+highlight (기본)
  *   - B: boost (오늘의 부스터 한 줄)

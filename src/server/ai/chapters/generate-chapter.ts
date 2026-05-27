@@ -58,7 +58,7 @@ export function buildChapterUserMessage(input: ChapterLLMInput): string {
 
   // 2026-05-20 V2-5 PR M — Few-shot 예시 주입 (chapter 1·4·5·9 만).
   //   spec §5 의 예시를 user message *앞에* 두어 LLM 이 형식 (한 줄 결론 +
-  //   일상 비유 + 행동 1개) + 톤 (단정 X / 결 표현 / 60자 안팎) 을 학습.
+  //   일상 비유 + 행동 1개) + 톤 (단정 X / 결 말 / 60자 안팎) 을 학습.
   //   같은 정인격 데이터를 챕터별로 *다른 렌즈* 로 풀어내는 사례.
   const fewShot = FEW_SHOT_EXAMPLES[input.chapterId];
   if (fewShot) {

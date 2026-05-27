@@ -53,3 +53,17 @@ test('pickCategoryMessage - 점수 등급별 다른 풀 사용', () => {
   const dangerMsg = pickCategoryMessage('career', 10, {}, 'fixed');
   assert.notEqual(peakMsg, dangerMsg);
 });
+
+test('pickCategoryMessage - 사용자 노출 문구에서 표현/기준 계열 단어 제거', () => {
+  const categories = ['wealth', 'love', 'career', 'health', 'relationship', 'lottery'] as const;
+  const scores = [95, 80, 60, 40, 20];
+
+  for (const category of categories) {
+    for (const score of scores) {
+      for (let i = 0; i < 16; i += 1) {
+        const message = pickCategoryMessage(category, score, { name: '재호' }, `seed-${i}`);
+        assert.doesNotMatch(message, /표현|기준/, `${category}:${score}:${i} ${message}`);
+      }
+    }
+  }
+});

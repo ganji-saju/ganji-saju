@@ -16,7 +16,7 @@ import { ZodiacBirthCheck } from './zodiac-birth-check';
 export const metadata: Metadata = {
   title: '내 띠 운세',
   description:
-    '생년월일과 입춘 기준으로 내 띠를 먼저 확인하고 오늘의 흐름을 가볍게 살펴보세요.',
+    '생년월일과 입춘을 반영해 내 띠를 먼저 확인하고 오늘의 흐름을 가볍게 살펴보세요.',
   alternates: {
     canonical: '/zodiac',
   },

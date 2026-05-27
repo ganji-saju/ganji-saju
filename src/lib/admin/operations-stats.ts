@@ -14,7 +14,7 @@ export interface OperationsSnapshot {
   generatedAt: string;
   /** 시간 윈도우 (일). */
   windowDays: number;
-  /** 오늘 (KST 자정 기준). */
+  /** 오늘 (KST 자정 단위). */
   today: {
     /** 오늘 신규 가입 수. */
     newSignups: number;
@@ -72,7 +72,7 @@ interface CountByDateMap {
   [date: string]: number;
 }
 
-/** ISO 'YYYY-MM-DDTHH:mm:ss...' → 'YYYY-MM-DD' (KST 자정 기준). */
+/** ISO 'YYYY-MM-DDTHH:mm:ss...' → 'YYYY-MM-DD' (KST 자정 단위). */
 function toLocalDateKey(iso: string): string {
   const d = new Date(iso);
   // KST = UTC+9. 간단 변환: UTC 시각에 9h 더한 후 날짜 추출.
@@ -120,7 +120,7 @@ export async function buildOperationsSnapshot(
   const now = new Date();
   const todayKey = toLocalDateKey(now.toISOString());
 
-  // 윈도우 시작 (KST 기준 오늘 00:00 - windowDays).
+  // 윈도우 시작 (KST 시간대 오늘 00:00 - windowDays).
   const windowStart = new Date(now);
   windowStart.setUTCDate(now.getUTCDate() - windowDays);
 

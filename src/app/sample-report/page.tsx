@@ -397,9 +397,9 @@ export default function SampleReportPage() {
           </div>
         </article>
 
-        {/* §리포트 제작 기준 — Phase 7a. AI 사용/사람 검수/생성 시간/분량 정직 고지. */}
+        {/* §리포트 제작 원칙 — Phase 7a. AI 사용/사람 검수/생성 시간/분량 정직 고지. */}
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
-          <div style={KICKER_STYLE}>리포트 제작 기준</div>
+          <div style={KICKER_STYLE}>리포트 제작 원칙</div>
           <h2
             className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
@@ -490,7 +490,7 @@ export default function SampleReportPage() {
                 className="mt-1.5 text-[12px] leading-[1.6]"
                 style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
               >
-                자동 생성된 본문이 곧바로 제공됩니다. 부적절한 표현·왜곡된 해석은 고객센터로 신고 주시면 빠르게 조치합니다.
+                자동 생성된 본문이 곧바로 제공됩니다. 부적절한 문구·왜곡된 해석은 고객센터로 신고 주시면 빠르게 조치합니다.
               </p>
             </div>
           </dl>
@@ -500,7 +500,7 @@ export default function SampleReportPage() {
               className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[12.5px] font-extrabold"
               style={SECONDARY_BUTTON_STYLE}
             >
-              환불 기준 자세히
+              환불 정책 자세히
             </Link>
             <Link
               href="/support/faq"

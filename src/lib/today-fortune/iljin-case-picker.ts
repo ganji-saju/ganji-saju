@@ -159,7 +159,7 @@ export function detectTriggeredCases(
   if (YANGIN[saju.dayMaster] === iljinBranch) triggered.add('S26_YANGIN');
   if (BAEKHO_GANZI.has(`${iljinStem}${iljinBranch}`)) triggered.add('S32_BAEKHO');
 
-  // 도화 — 일지 기준 三合 그룹.
+  // 도화 — 일지 원칙 三合 그룹.
   const dohwaMap: Record<string, Branch> = { 申子辰: '酉', 寅午戌: '卯', 巳酉丑: '午', 亥卯未: '子' };
   for (const key of Object.keys(dohwaMap)) {
     if (key.includes(saju.dayBranch) && iljinBranch === dohwaMap[key]) {
@@ -167,7 +167,7 @@ export function detectTriggeredCases(
       break;
     }
   }
-  // 역마 — 일지/연지 기준.
+  // 역마 — 일지/연지 원칙.
   const yeokmaMap: Record<string, Branch> = { 申子辰: '寅', 寅午戌: '申', 巳酉丑: '亥', 亥卯未: '巳' };
   for (const key of Object.keys(yeokmaMap)) {
     if ((key.includes(saju.dayBranch) || key.includes(saju.yearBranch)) && iljinBranch === yeokmaMap[key]) {

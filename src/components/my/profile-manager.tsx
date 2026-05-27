@@ -503,7 +503,7 @@ export default function ProfileManager({
               <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-copy-muted)]">
                 <p>양력·음력 구분을 남겨두면 가족이나 본인 기록을 다시 볼 때 달력이 뒤섞이지 않습니다.</p>
                 <p>시간 모름으로 저장한 경우에는 시주 중심 해석을 줄이고, 일간과 월령 중심으로 읽습니다.</p>
-                <p>출생지와 시각 규칙을 저장하면 진태양시가 필요한 경우에도 같은 기준을 계속 씁니다.</p>
+                <p>출생지와 시각 규칙을 저장하면 진태양시가 필요한 경우에도 같은 설정을 계속 씁니다.</p>
               </div>
             </div>
           </div>
@@ -517,7 +517,7 @@ export default function ProfileManager({
             {savingProfile ? '저장 중...' : '내 기본 정보 저장'}
           </Button>
           <p className="text-sm text-[var(--app-copy-muted)]">
-            저장하면 기존 MY 프로필 값이 이 기준으로 업데이트됩니다.
+            저장하면 기존 MY 프로필 값이 이 정보로 업데이트됩니다.
           </p>
         </div>
       </section>
@@ -528,7 +528,7 @@ export default function ProfileManager({
           <div>
             <div className="app-caption">가족·다른 사람 보관함</div>
             <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
-              가족, 연인, 친구의 기준 정보도 같은 방식으로 저장합니다
+              가족, 연인, 친구의 저장 정보도 같은 방식으로 저장합니다
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">
               가족 프로필도 양력·음력, 시간 모름, 출생지, 시각 규칙을 함께 저장해두면 궁합과 비교 해석에서 입력을 다시 반복하지 않아도 됩니다.

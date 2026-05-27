@@ -59,9 +59,9 @@ const BRANCH_ELEMENT: Record<string, string> = {
 
 const ELEMENT_PLAIN_EFFECT_LOCAL: Record<string, string> = {
   목: '막힌 흐름을 틔우고 새 방향을 세우는',
-  화: '차가운 기운을 데우고 표현력을 살리는',
+  화: '차가운 기운을 데우고 전달력을 살리는',
   토: '흩어진 기운을 붙잡아 현실감과 안정감을 만드는',
-  금: '복잡한 흐름을 정리하고 기준을 세우는',
+  금: '복잡한 흐름을 정리하고 원칙을 정하는',
   수: '과열된 흐름을 식히고 생각을 깊게 만드는',
 };
 
@@ -173,7 +173,7 @@ function buildWonkuk(
           {
             element: weakest,
             label: elementLabel(weakest),
-            meaning: `${ELEMENT_PLAIN_EFFECT_LOCAL[weakest] ?? '기준을 세우는'} 기운이 부족한 편이에요.`,
+            meaning: `${ELEMENT_PLAIN_EFFECT_LOCAL[weakest] ?? '원칙을 정하는'} 기운이 부족한 편이에요.`,
           },
         ]
       : [];
@@ -210,7 +210,7 @@ function buildWonkuk(
 
   const tenGod = data.pattern?.tenGod ?? null;
   // naming-policy §3·§4: glossary plainCue 는 "돌봄·후원·배움의 결" 처럼 "X의 결" 패턴이 있어
-  //   §12 위반 → SIPSIN_SHORT("표현하고 베푸는 별" 등 자연 명사·"의 결" 없는 설명)로 도출.
+  //   §12 위반 → SIPSIN_SHORT("말하고 베푸는 별" 등 자연 명사·"의 결" 없는 설명)로 도출.
   const patternCue = tenGod ? SIPSIN_SHORT[tenGod] ?? '' : '';
   // naming-policy §4 + 총평 §2: 격국 원어("식신격")를 입력 label 에 노출하지 않고 설명형으로.
   //   (총평은 jargon-free — 본문에 격국명 금지. 원어 echo → validator fallback 위험 차단.)
@@ -232,7 +232,7 @@ function buildWonkuk(
   // 약점 3 = sixtyGapja.watchPoints(1) + 부족오행·강약·일반 보강
   const strengthLevel = data.strength?.level;
   const weaknessFillers = [
-    `${elementLabel(weakest)}—${ELEMENT_PLAIN_EFFECT_LOCAL[weakest] ?? '기준을 세우는'} 힘—이 부족해 그 자리에서 흔들리기 쉬움`,
+    `${elementLabel(weakest)}—${ELEMENT_PLAIN_EFFECT_LOCAL[weakest] ?? '원칙을 정하는'} 힘—이 부족해 그 자리에서 흔들리기 쉬움`,
     strengthLevel === '신약' ? '너무 많은 일·사람에 둘러싸이면 본인 페이스를 잃기 쉬움' : '',
     strengthLevel === '신강' ? '주관이 강해 주변과 속도를 맞추는 자리에서 마찰이 생기기 쉬움' : '',
     '한 가지에 몰입하다 다른 신호를 늦게 알아채기 쉬움',

@@ -98,17 +98,17 @@ const ELEMENT_HANJA: Record<Element, string> = {
 
 const ELEMENT_PLAIN_EFFECT: Record<Element, string> = {
   목: '막힌 흐름을 틔우고 새 방향을 세우는',
-  화: '차가운 기운을 데우고 표현력을 살리는',
+  화: '차가운 기운을 데우고 전달력을 살리는',
   토: '흩어진 기운을 붙잡아 현실감과 안정감을 만드는',
-  금: '복잡한 흐름을 정리하고 기준을 세우는',
+  금: '복잡한 흐름을 정리하고 원칙을 정하는',
   수: '과열된 흐름을 식히고 생각을 깊게 만드는',
 };
 
 const ELEMENT_PRACTICAL_ACTIONS: Record<Element, string[]> = {
   목: ['새 계획을 작게 시작하기', '걷기와 스트레칭으로 몸의 흐름 열기', '배움과 성장 루틴 만들기'],
-  화: ['햇빛을 쬐며 활동량 올리기', '말과 표현을 숨기지 않기', '작은 성취를 빠르게 확인하기'],
+  화: ['햇빛을 쬐며 활동량 올리기', '말과 말을 숨기지 않기', '작은 성취를 빠르게 확인하기'],
   토: ['생활 리듬을 일정하게 고정하기', '돈과 일정을 장부처럼 정리하기', '약속과 책임 범위를 분명히 하기'],
-  금: ['우선순위와 기준을 글로 적기', '불필요한 관계와 일을 덜어내기', '정리·편집·검토 시간을 확보하기'],
+  금: ['우선순위와 원칙을 글로 적기', '불필요한 관계와 일을 덜어내기', '정리·편집·검토 시간을 확보하기'],
   수: ['수면과 회복 시간을 먼저 확보하기', '결정 전 자료를 모아 차분히 검토하기', '물가 산책이나 조용한 환경을 활용하기'],
 };
 
@@ -156,7 +156,7 @@ const DAY_MASTER_METAPHORS: Record<Stem, string> = {
 const DAY_MASTER_DESCRIPTIONS: Record<Stem, string> = {
   '甲': '곧게 자라는 큰 나무처럼 원칙과 추진력이 분명한 성향입니다.',
   '乙': '바람을 타는 덩굴처럼 유연하고 섬세하게 관계를 읽는 성향입니다.',
-  '丙': '햇빛처럼 밝게 드러나며 주변을 움직이게 하는 표현력이 강합니다.',
+  '丙': '햇빛처럼 밝게 드러나며 주변을 움직이게 하는 전달력이 강합니다.',
   '丁': '작은 불씨처럼 집중력과 지속력이 좋아 한 분야를 깊게 파고듭니다.',
   '戊': '넓은 땅처럼 안정감과 책임감이 강하고 중심을 잡는 힘이 있습니다.',
   '己': '잘 다듬어진 흙처럼 현실 감각과 조정 능력이 뛰어난 편입니다.',
@@ -302,7 +302,7 @@ export interface SajuHiddenStem {
   tenGod: TenGodCode | null;
 }
 
-// 2026-05-15 PR 6 — 12운성(十二運星) — 일간 기준 지지의 생애 주기.
+// 2026-05-15 PR 6 — 12운성(十二運星) — 일간 정보 지지의 생애 주기.
 // 장생/목욕/관대/건록/제왕/쇠/병/사/묘/절/태/양 12 단계.
 // 사주아이 reference: "목욕지에 해당하니 사회적으로 주목받고…" 처럼 적극 활용.
 export type TwelveStage =
@@ -319,7 +319,7 @@ export interface SajuPillar {
   /** 천간 십신. 일주 천간(일간)은 null */
   stemTenGod: TenGodCode | null;
   hiddenStems: SajuHiddenStem[];
-  /** 2026-05-15 PR 6 — 일간 기준 이 지지의 12운성. 미산출 시 null. */
+  /** 2026-05-15 PR 6 — 일간 정보 이 지지의 12운성. 미산출 시 null. */
   twelveStage?: TwelveStage | null;
 }
 
@@ -865,7 +865,7 @@ function enrichPillar(pillar: SajuPillar, dayMasterStem: Stem, isDayMaster: bool
     ...pillar,
     stemTenGod: isDayMaster ? null : getTenGod(dayMasterStem, pillar.stem),
     hiddenStems,
-    // 2026-05-15 PR 6 — 일간 기준 이 지지의 12운성.
+    // 2026-05-15 PR 6 — 일간 정보 이 지지의 12운성.
     twelveStage: getTwelveStage(dayMasterStem, pillar.branch),
   };
 }
@@ -1046,7 +1046,7 @@ function calculatePattern(pillars: SajuPillars, dayMasterStem: Stem): SajuPatter
         fallbackTenGod === '비견' || fallbackTenGod === '겁재' ? '특수격' : '정격',
       tenGod: fallbackTenGod,
       rationale: [
-        `${pillars.month.branch} 월지의 hidden stems 가 비어 있어 월간(${fallbackStem})을 기준으로 ${fallbackTenGod} 격국으로 잡았습니다.`,
+        `${pillars.month.branch} 월지의 hidden stems 가 비어 있어 월간(${fallbackStem})을 바탕으로 ${fallbackTenGod} 격국으로 잡았습니다.`,
       ],
       confidence: '낮음',
       tougchul: false,
@@ -1067,7 +1067,7 @@ function calculatePattern(pillars: SajuPillars, dayMasterStem: Stem): SajuPatter
     top.tenGod === '비견' || top.tenGod === '겁재' ? '특수격' : '정격';
 
   const rationale: string[] = [
-    `${pillars.month.branch} 월지의 ${top.source}(${top.stem})를 일간(${dayMasterStem}) 기준 십신으로 환산하면 ${top.tenGod} → ${top.name}.`,
+    `${pillars.month.branch} 월지의 ${top.source}(${top.stem})를 일간(${dayMasterStem}) 관점의 십신으로 환산하면 ${top.tenGod} → ${top.name}.`,
   ];
   if (top.tougchul) {
     rationale.push(
@@ -1131,7 +1131,7 @@ function calculateYongsin(
       candidates: [],
       confidence: '낮음',
       plainSummary: buildYongsinPlainSummary(fallback.value as Element),
-      technicalSummary: '후보 계산값이 비어 있어 오행 균형 기준을 임시 적용했습니다.',
+      technicalSummary: '후보 계산값이 비어 있어 오행 균형 정보을 임시 적용했습니다.',
       practicalActions: ELEMENT_PRACTICAL_ACTIONS[fiveElements.weakest],
       terms: [...YONGSIN_TERM_EXPLANATIONS],
     };
@@ -1191,7 +1191,7 @@ function buildSeasonalYongsinCandidate({
       `${monthBranch}월은 ${formatSeasonLabel(monthSeason)}이라 조후를 먼저 보고 ${primary.label}을(를) 후보로 올렸습니다.`,
     ],
     plainSummary: `${primary.label}은 계절의 치우침을 먼저 맞추는 후보입니다.`,
-    technicalSummary: `조후(調候) 기준: ${formatSeasonLabel(monthSeason)}의 온도·습도 치우침을 ${primary.label}로 조절합니다.`,
+    technicalSummary: `조후(調候) 정보: ${formatSeasonLabel(monthSeason)}의 온도·습도 치우침을 ${primary.label}로 조절합니다.`,
   };
 }
 
@@ -1214,7 +1214,7 @@ function buildBalanceYongsinCandidate(
         `일간이 신강(${strength.score}점)으로 계산되어 기운을 덜어내는 설기(${formatElementLabel(output)})와 관성(${formatElementLabel(officer)})을 후보로 올렸습니다.`,
       ],
       plainSummary: `${primary.label}은 강한 기운을 밖으로 풀어 균형을 잡는 후보입니다.`,
-      technicalSummary: `억부(抑扶) 기준: 신강 명식이므로 일간을 더 돕기보다 설기·관성 방향을 봅니다.`,
+      technicalSummary: `억부(抑扶) 정보: 신강 명식이므로 일간을 더 돕기보다 설기·관성 방향을 봅니다.`,
     };
   }
 
@@ -1232,7 +1232,7 @@ function buildBalanceYongsinCandidate(
         `일간이 신약(${strength.score}점)으로 계산되어 일간을 돕는 인성(${formatElementLabel(resource)})과 비겁(${formatElementLabel(dayMasterElement)})을 후보로 올렸습니다.`,
       ],
       plainSummary: `${primary.label}은 약한 일간을 받쳐 균형을 잡는 후보입니다.`,
-      technicalSummary: `억부(抑扶) 기준: 신약 명식이므로 일간을 생하고 지탱하는 인성·비겁 방향을 봅니다.`,
+      technicalSummary: `억부(抑扶) 정보: 신약 명식이므로 일간을 생하고 지탱하는 인성·비겁 방향을 봅니다.`,
     };
   }
 
@@ -1246,10 +1246,10 @@ function buildBalanceYongsinCandidate(
     method: '억부용신',
     score: 62,
     rationale: [
-      `일간 강약이 중화(${strength.score}점)에 가까워 억부 기준은 강하게 단정하지 않고 일간 자체를 보조 후보로만 둡니다.`,
+      `일간 강약이 중화(${strength.score}점)에 가까워 억부 원칙은 강하게 단정하지 않고 일간 자체를 보조 후보로만 둡니다.`,
     ],
     plainSummary: `${primary.label}은 일간의 기본 체력을 유지하는 보조 후보입니다.`,
-    technicalSummary: '억부(抑扶) 기준: 신강·신약 어느 한쪽으로 강하게 치우치지 않아 참고 후보로만 봅니다.',
+    technicalSummary: '억부(抑扶) 정보: 신강·신약 어느 한쪽으로 강하게 치우치지 않아 참고 후보로만 봅니다.',
   };
 }
 
@@ -1272,7 +1272,7 @@ function buildElementBalanceYongsinCandidate(
       `오행 분포에서 ${formatElementLabel(weakest)} 점수는 ${round1(weakestScore)}점으로 가장 약하고, ${formatElementLabel(fiveElements.dominant)} 점수는 ${round1(dominantScore)}점으로 가장 강합니다.`,
     ],
     plainSummary: `${primary.label}은 부족한 축을 채워 전체 균형을 맞추는 후보입니다.`,
-    technicalSummary: '희기신 보정 기준: 가장 약한 오행과 그 오행을 생하는 기운을 보완 후보로 봅니다.',
+    technicalSummary: '희기신 보정 정보: 가장 약한 오행과 그 오행을 생하는 기운을 보완 후보로 봅니다.',
   };
 }
 
@@ -1472,7 +1472,7 @@ function buildSeasonRationale(
         ? '일간을 누르는 계절 보정'
         : '중립적인 계절 보정';
 
-  return `${formatSeasonLabel(monthSeason)}(${formatElementLabel(seasonElement)})에 태어나 ${direction}이 적용되었습니다. 일간 기준 핵심 오행은 ${formatElementLabel(dayMasterElement)}입니다.`;
+  return `${formatSeasonLabel(monthSeason)}(${formatElementLabel(seasonElement)})에 태어나 ${direction}이 적용되었습니다. 일간 정보 핵심 오행은 ${formatElementLabel(dayMasterElement)}입니다.`;
 }
 
 function getPatternName(tenGod: TenGodCode | null) {
@@ -1565,15 +1565,15 @@ function calculateLuckData(
     ganzi: currentEightChar.getYear(),
     year: currentDateTime.year,
     month: null,
-    notes: [`${currentDateTime.year}년 기준 세운입니다.`],
+    notes: [`${currentDateTime.year}년 세운 정보입니다.`],
   } satisfies SajuLuckDescriptor;
   const wolwoon = {
     ganzi: currentEightChar.getMonth(),
     year: currentDateTime.year,
     month: currentDateTime.month,
     notes: [
-      `${currentDateTime.year}년 ${currentDateTime.month}월 기준 월운입니다.`,
-      '절입 기준 월간지를 사용했습니다.',
+      `${currentDateTime.year}년 ${currentDateTime.month}월 월운 정보입니다.`,
+      '절입 방식 월간지를 사용했습니다.',
     ],
   } satisfies SajuLuckDescriptor;
 
@@ -1623,7 +1623,7 @@ function calculateLuckData(
               ganzi: currentLiuNian.getGanZhi(),
               notes: [
                 `${currentLiuNian.getYear()}년 세운입니다.`,
-                `현재 대운 기준 나이는 ${currentLiuNian.getAge()}세로 계산되었습니다.`,
+                `현재 대운 정보 나이는 ${currentLiuNian.getAge()}세로 계산되었습니다.`,
               ],
             },
       wolwoon,
@@ -1650,7 +1650,7 @@ function toMajorLuckCycle(
     notes: [
       `${cycle.getStartYear()}년부터 ${cycle.getEndYear()}년까지의 흐름입니다.`,
       `${cycle.getStartAge()}세부터 ${cycle.getEndAge()}세까지 적용됩니다.`,
-      `${isForward ? '순행' : '역행'} 대운 기준입니다.`,
+      `${isForward ? '순행' : '역행'} 대운 정보입니다.`,
       '절기 일수 미세보정 전 기본 계산값입니다.',
     ],
   };

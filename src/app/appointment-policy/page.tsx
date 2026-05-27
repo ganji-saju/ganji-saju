@@ -6,7 +6,7 @@ import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-pa
 export async function generateMetadata(): Promise<Metadata> {
   return buildPolicyMetadata(
     'appointment',
-    '간지사주 예약상담의 취소·변경·노쇼·상담사 불참 시 환불 기준 안내.'
+    '간지사주 예약상담의 취소·변경·노쇼·상담사 불참 시 환불 정책 안내.'
   );
 }
 

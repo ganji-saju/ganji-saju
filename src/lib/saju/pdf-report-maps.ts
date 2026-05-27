@@ -99,8 +99,8 @@ export const TEN_GOD_HANJA: Record<TenGodCode, string> = {
 export const TEN_GOD_DESCRIPTIONS: Record<TenGodCode, string> = {
   비견: '자존과 독립. 자기 확신과 주체성. 협력보다 단독 행동에 강함.',
   겁재: '협업과 경쟁자. 재물 분담과 사회적 네트워크. 동등한 동료 관계.',
-  식신: '표현과 먹을복. 여유·창의·기예. 안정된 결과물 만드는 능력.',
-  상관: '재능과 표현. 기교·순발력. 틀을 벗어나는 자유로움.',
+  식신: '말과 먹을복. 여유·창의·기예. 안정된 결과물 만드는 능력.',
+  상관: '재능과 말. 기교·순발력. 틀을 벗어나는 자유로움.',
   편재: '큰 재물과 기회. 유동성·사업 감각. 흐름을 읽는 눈.',
   정재: '안정적인 재물과 근면. 꾸준함·관리력. 실속을 챙기는 힘.',
   편관: '도전과 외부 압력. 경쟁·시험·결단. 추진력의 원천이자 스트레스 요인.',
@@ -237,7 +237,7 @@ export const BRANCH_PROFILES: Record<Branch, BranchProfile> = {
     korean: '오화',
     element: '화',
     natureLine: '말 · 남방',
-    description: '한낮의 뜨거운 불 같은 환경. 활동적이고 표현이 시원시원해요.',
+    description: '한낮의 뜨거운 불 같은 환경. 활동적이고 말이 시원시원해요.',
   },
   未: {
     korean: '미토',
@@ -292,7 +292,7 @@ const TRAIT_SEEDS_BY_ELEMENT: Record<Element, TraitSeed[]> = {
     { label: '인자함', sub: '품어주는 따뜻함', color: '#5b58d6' },
   ],
   화: [
-    { label: '표현력', sub: '밝게 드러냄', color: '#ff4f9a' },
+    { label: '전달력', sub: '밝게 드러냄', color: '#ff4f9a' },
     { label: '열정', sub: '한번 붙으면 끝까지', color: '#d99020' },
     { label: '직관력', sub: '빠르게 알아챔', color: '#0f9f7a' },
     { label: '사교성', sub: '주변을 환하게', color: '#5b58d6' },
@@ -332,7 +332,7 @@ export function buildPersonalityTraits(
   const seeds = TRAIT_SEEDS_BY_ELEMENT[dayElement];
   const total = Object.values(elementCounts).reduce((sum, n) => sum + n, 0) || 1;
   const dayPct = (elementCounts[dayElement] ?? 0) / total; // 0~1
-  // 기준점 88 ± 일간 오행 비중. 비중이 큰 사주일수록 1번 키워드가 더 강함.
+  // 원칙점 88 ± 일간 오행 비중. 비중이 큰 사주일수록 1번 키워드가 더 강함.
   const base = 84 + Math.round(dayPct * 12); // 84~96
   // 각 키워드는 base 에서 2씩 감산해 안정적 내림차순. 80 하한.
   return seeds.map((seed, i) => ({
@@ -407,7 +407,7 @@ export function buildMonthlyScores(daySeed: string): MonthScore[] {
   for (let i = 0; i < daySeed.length; i += 1) {
     hash = (hash * 31 + daySeed.charCodeAt(i)) % 997;
   }
-  // 위상별 기준 곡선 (1~12월). 5월 활동·9월 정점이 봉우리.
+  // 위상별 원칙 곡선 (1~12월). 5월 활동·9월 정점이 봉우리.
   const baseCurve = [58, 64, 70, 76, 82, 70, 64, 74, 90, 78, 68, 64];
   return baseCurve.map((base, idx) => {
     const month = idx + 1;

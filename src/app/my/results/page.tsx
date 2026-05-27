@@ -152,7 +152,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
         <ul className="mt-2 grid gap-1.5">
           <li>
             <span className="font-extrabold text-[var(--app-ink)]">환불 가능 여부:</span> 결제일·
-            상품·열람 여부에 따라 다릅니다. 자세한 기준은 환불 정책에서 확인해 주세요.
+            상품·열람 여부에 따라 다릅니다. 자세한 원칙은 환불 정책에서 확인해 주세요.
           </li>
           <li>
             <span className="font-extrabold text-[var(--app-ink)]">환불 요청:</span> 고객센터

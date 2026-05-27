@@ -162,7 +162,7 @@ const COMPACT_ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
 
 const ELEMENT_PUBLIC_LABELS: Record<Element, string> = {
   목: '성장',
-  화: '표현',
+  화: '말',
   토: '안정',
   금: '정리',
   수: '생각',
@@ -174,14 +174,14 @@ const FIELD_CARD_PHRASES: Record<
 > = {
   overall: {
     목: '새 시작 작게',
-    화: '표현 먼저',
+    화: '말 먼저',
     토: '정리부터',
-    금: '기준 세우기',
+    금: '원칙 세우기',
     수: '잠깐 멈춤',
   },
   love: {
     목: '가볍게 시작',
-    화: '마음 표현',
+    화: '마음 말',
     토: '약속 지키기',
     금: '말투 부드럽게',
     수: '반응 기다리기',
@@ -202,7 +202,7 @@ const FIELD_CARD_PHRASES: Record<
   },
   relationship: {
     목: '먼저 안부',
-    화: '따뜻하게 표현',
+    화: '따뜻하게 말',
     토: '약속 확인',
     금: '선 넘지 않기',
     수: '조용히 듣기',
@@ -268,7 +268,7 @@ function toCompactCardPhrase(value: string | null | undefined, fallback: string)
   if (/지출|소비/u.test(cleaned)) return '지출 정리 먼저';
   if (/투자|보수/u.test(cleaned)) return '새 투자 천천히';
   if (/기회|수익/u.test(cleaned)) return '작은 기회 잡기';
-  if (/표현/u.test(cleaned)) return '표현해도 좋음';
+  if (/말/u.test(cleaned)) return '말해도 좋음';
   if (/조율|거리감|분위기/u.test(cleaned)) return '분위기 조율';
   if (/성과|발표|제안/u.test(cleaned)) return '성과 보여주기';
   if (/커뮤니케이션|말|소통/u.test(cleaned)) return '말 정리부터';
@@ -348,7 +348,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const scoreFactorUnlocks = await getSajuScoreFactorEntitlements(slug);
   const rawReport = buildSajuReport(input, sajuData, topic);
   // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
-  //   iljinScore 산출 가능하면 (시 입력 등) overall+영역별을 iljinScore.totalScore 기준으로 통일.
+  //   iljinScore 산출 가능하면 (시 입력 등) overall+영역별을 iljinScore.totalScore 바탕으로 통일.
   //   불가능하면 raw scores 유지 (안전 fallback).
   const iljinResult = computeSajuIljinScore(sajuData);
   const report: SajuReport = iljinResult

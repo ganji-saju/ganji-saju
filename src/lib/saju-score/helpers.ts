@@ -59,7 +59,7 @@ export function get12Unseong(ilgan: string, ji: string): string {
   return UNSEONG_TABLE[ilgan]?.[ji] ?? '미정';
 }
 
-// ── 3-2. 오행 카운트 (본기 기준, 지장간 무시 MVP) ──────────────────────────────
+// ── 3-2. 오행 카운트 (본기 원칙, 지장간 무시 MVP) ──────────────────────────────
 export function countOhaeng(eightChars: string[]): Record<Ohaeng, number> {
   const counts: Record<Ohaeng, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
   for (const char of eightChars) {
@@ -74,7 +74,7 @@ type Sipseong =
   | '비견' | '겁재' | '식신' | '상관' | '편재'
   | '정재' | '편관' | '정관' | '편인' | '정인';
 
-/** 일간 기준 특정 십성에 해당하는 천간 글자. (오행 + 음양으로 결정) */
+/** 일간 정보 특정 십성에 해당하는 천간 글자. (오행 + 음양으로 결정) */
 export function getSipseongGan(ilgan: string, sipseong: string): string {
   const ilganOh = CHEONGAN_OHAENG[ilgan];
   const ilganYY = STEM_YINYANG[ilgan];

@@ -137,27 +137,27 @@ const BRANCH_LUCK_HINT_BY_SYMBOL: Record<string, string> = {
   子: '마음과 정보의 흐름이 자주 바뀔 수 있어, 중요한 약속과 돈의 흐름은 기록으로 남기는 습관이 필요합니다.',
   亥: '멀리 보거나 방향을 바꾸고 싶은 마음이 커질 수 있어, 바로 움직이기보다 준비 시간을 충분히 두는 편이 좋습니다.',
   寅: '새로운 일을 열 힘이 붙는 구간이라, 처음 만나는 사람과 배움이 이후 흐름을 크게 바꿀 수 있습니다.',
-  卯: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 기준이 중요합니다.',
-  巳: '속도와 표현이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
+  卯: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 원칙이 중요합니다.',
+  巳: '속도와 말이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
   午: '주목과 성과가 앞으로 나오기 쉬워, 체력과 감정의 과열을 조절해야 좋은 결과가 오래 갑니다.',
   辰: '쌓아 둔 역할과 생활 기반을 다시 점검하는 구간이라, 미뤄 둔 정리와 구조 조정이 흐름을 가볍게 만듭니다.',
   戌: '마무리와 경계선이 중요한 구간이라, 애매하게 이어 온 일과 관계를 분명히 정리하는 편이 좋습니다.',
   丑: '저장하고 버티는 힘이 커지는 구간이라, 돈과 생활 루틴을 안정적으로 묶어 두면 다음 선택이 편해집니다.',
   未: '돌봄, 가족, 오래된 책임이 함께 올라올 수 있어, 내가 맡을 것과 나눌 것을 구분해야 지치지 않습니다.',
-  申: '일, 기술, 거래처럼 실무 기준이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
-  酉: '판단과 마감의 힘이 강해지므로, 끊고 남기는 기준을 세우되 말투는 부드럽게 조절하는 편이 좋습니다.',
+  申: '일, 기술, 거래처럼 실무 원칙이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
+  酉: '판단과 마감의 힘이 강해지므로, 끊고 남기는 원칙을 정하되 말투는 부드럽게 조절하는 편이 좋습니다.',
   자: '마음과 정보의 흐름이 자주 바뀔 수 있어, 중요한 약속과 돈의 흐름은 기록으로 남기는 습관이 필요합니다.',
   해: '멀리 보거나 방향을 바꾸고 싶은 마음이 커질 수 있어, 바로 움직이기보다 준비 시간을 충분히 두는 편이 좋습니다.',
   인: '새로운 일을 열 힘이 붙는 구간이라, 처음 만나는 사람과 배움이 이후 흐름을 크게 바꿀 수 있습니다.',
-  묘: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 기준이 중요합니다.',
-  사: '속도와 표현이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
+  묘: '관계와 협업의 영향이 커지므로, 혼자 밀어붙이기보다 함께 갈 사람을 고르는 원칙이 중요합니다.',
+  사: '속도와 말이 빨라질 수 있어, 말하기 전 한 번 정리하고 결정 전 한 번 확인하는 습관이 도움이 됩니다.',
   오: '주목과 성과가 앞으로 나오기 쉬워, 체력과 감정의 과열을 조절해야 좋은 결과가 오래 갑니다.',
   진: '쌓아 둔 역할과 생활 기반을 다시 점검하는 구간이라, 미뤄 둔 정리와 구조 조정이 흐름을 가볍게 만듭니다.',
   술: '마무리와 경계선이 중요한 구간이라, 애매하게 이어 온 일과 관계를 분명히 정리하는 편이 좋습니다.',
   축: '저장하고 버티는 힘이 커지는 구간이라, 돈과 생활 루틴을 안정적으로 묶어 두면 다음 선택이 편해집니다.',
   미: '돌봄, 가족, 오래된 책임이 함께 올라올 수 있어, 내가 맡을 것과 나눌 것을 구분해야 지치지 않습니다.',
-  신: '일, 기술, 거래처럼 실무 기준이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
-  유: '판단과 마감의 힘이 강해지므로, 끊고 남기는 기준을 세우되 말투는 부드럽게 조절하는 편이 좋습니다.',
+  신: '일, 기술, 거래처럼 실무 원칙이 중요해져서, 작은 실수도 절차와 확인으로 줄이는 편이 좋습니다.',
+  유: '판단과 마감의 힘이 강해지므로, 끊고 남기는 원칙을 정하되 말투는 부드럽게 조절하는 편이 좋습니다.',
 };
 
 const ELEMENT_LUCK_READING: Record<
@@ -178,24 +178,24 @@ const ELEMENT_LUCK_READING: Record<
     dominantTask: '이미 커진 성장 욕구가 더 강해질 수 있어, 벌이는 일보다 마무리할 일을 먼저 정해야 흔들림이 줄어듭니다.',
   },
   화: {
-    phase: '표현기',
+    phase: '전달기',
     summary: '말, 평판, 성과처럼 바깥으로 드러나는 일이 커지기 쉬운 구간입니다.',
     task: '보여줄 것과 아껴둘 것을 구분하고, 성급한 반응보다 확인된 결과를 앞세우는 편이 좋습니다.',
-    supportTask: '표현과 추진력이 보완되는 시기라 발표, 홍보, 관계 회복처럼 밖으로 꺼내야 할 일을 미루지 않는 편이 좋습니다.',
+    supportTask: '말과 추진력이 보완되는 시기라 발표, 홍보, 관계 회복처럼 밖으로 꺼내야 할 일을 미루지 않는 편이 좋습니다.',
     dominantTask: '이미 뜨거운 기운이 더 빨라질 수 있어, 말과 결정의 속도를 낮추고 체력 회복 시간을 먼저 확보해야 합니다.',
   },
   토: {
     phase: '기반기',
     summary: '생활 기반, 책임, 자리 잡기가 중요한 구간입니다.',
     task: '한 번에 바꾸려 하기보다 집, 일, 돈, 관계의 기본 구조를 단단하게 정리해야 다음 선택이 편해집니다.',
-    supportTask: '흩어진 생활을 묶어 주는 힘이 들어오므로, 계약·저축·거주·가족 역할처럼 오래 남을 기준을 세우기 좋습니다.',
-    dominantTask: '책임이 무거워지거나 고집으로 굳기 쉬우니, 혼자 떠안기보다 역할을 나누는 기준을 먼저 정해야 합니다.',
+    supportTask: '흩어진 생활을 묶어 주는 힘이 들어오므로, 계약·저축·거주·가족 역할처럼 오래 남을 원칙을 정하기 좋습니다.',
+    dominantTask: '책임이 무거워지거나 고집으로 굳기 쉬우니, 혼자 떠안기보다 역할을 나누는 원칙을 먼저 정해야 합니다.',
   },
   금: {
     phase: '결정기',
-    summary: '정리, 선택, 기준 세우기가 강해지는 구간입니다.',
+    summary: '정리, 선택, 원칙 세우기가 강해지는 구간입니다.',
     task: '관계를 끊거나 일을 마감하기 전에 무엇을 남길지 먼저 정하면, 결정이 날카로움보다 실속으로 이어집니다.',
-    supportTask: '기준을 세우는 힘이 보완되는 시기라 미뤄둔 정리, 계약, 경계선 세우기를 차분히 진행하기 좋습니다.',
+    supportTask: '원칙을 정하는 힘이 보완되는 시기라 미뤄둔 정리, 계약, 경계선 세우기를 차분히 진행하기 좋습니다.',
     dominantTask: '판단이 강해져 말이나 결정이 차갑게 보일 수 있으니, 정리하더라도 설명과 여지를 남기는 편이 좋습니다.',
   },
   수: {
@@ -279,8 +279,8 @@ function buildKeywords(input: {
     {
       label: `${input.dayMasterStem} 일간`,
       reason: input.dayMasterMetaphor
-        ? `${input.dayMasterMetaphor}의 상징으로 반응 속도와 자기 표현 방식을 읽습니다.`
-        : `${input.dayMasterStem} 일간의 반응 방식이 삶 전체의 기준이 됩니다.`,
+        ? `${input.dayMasterMetaphor}의 상징으로 반응 속도와 자기 전달 방식을 읽습니다.`
+        : `${input.dayMasterStem} 일간의 반응 방식이 삶 전체의 바탕이 됩니다.`,
     },
     {
       label: `보완 축 ${input.supportLabels}`,
@@ -387,7 +387,7 @@ function buildChapterBodyText(
   cycleSipsin: TenGodCode | null = null
 ): string {
   const { stem, branch } = getGanziElements(cycle.ganzi);
-  // 2026-05-22 Step3 Phase B — 엔진 notes 의 '순행/역행 대운 기준입니다'(명리 기술메타)는
+  // 2026-05-22 Step3 Phase B — 엔진 notes 의 '순행/역행 대운 정보입니다'(명리 기술메타)는
   //   사용자 본문에서 제외(엔진 saju-data-v1 미수정, 빌더 단계 필터).
   const noteJoin = cycle.notes
     .filter((n) => !/순행|역행/.test(n))
@@ -423,7 +423,7 @@ const MENTAL_NUANCE_BY_SIPSIN: Partial<Record<TenGodCode, string>> = {
   비견: '자기 주관이 강해져, 가까운 사람의 조언도 다시 한 번 본인 색으로 다시 정리하게 돼요.',
   겁재: '경쟁심·승부욕이 자주 올라옵니다. 본인이 갖고 싶은 게 무엇인지 잠시 적어두면 충동이 가라앉아요.',
   식신: '여유와 즐거움이 자연스럽게 늘어나는 흐름이에요. 다만 일도 같이 풀어주면 균형이 잡힙니다.',
-  상관: '재능·표현이 강해지는 만큼, 비판하고 싶은 신호도 자주 올라와요. 말하기 전 한 박자만 두면 오해가 줄어듭니다.',
+  상관: '재능·말이 강해지는 만큼, 비판하고 싶은 신호도 자주 올라와요. 말하기 전 한 박자만 두면 오해가 줄어듭니다.',
   편관: '내적 압박과 책임감이 크게 들어옵니다. 운동·산책 같은 신체 회복 루틴이 멘탈의 가장 큰 안전판이에요.',
   정관: '책임감과 자존감이 함께 커지지만, 본인에게 너무 엄격해지기 쉬워요. 작은 성공을 의식적으로 기록하세요.',
   편인: '혼자 파고드는 시간이 늘어요. 외부 의견 한 줄만 정기적으로 들이면 시야가 좁아지지 않습니다.',
@@ -449,7 +449,7 @@ function buildMentalText(
   if (isSupport) {
     base = `이 대운의 ${elementLabel}은 내면의 빈 자리를 채워줍니다. 마음을 비우고 받아들이는 시간이 늘어나면 결정이 부드러워지고, 평소 무거웠던 일도 한 박자 가볍게 다룰 수 있는 시기입니다.`;
   } else if (isDominant) {
-    base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 기준만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
+    base = `이미 강한 ${elementLabel}이 더 커지는 흐름이라 자신감과 추진력이 빠르게 살아납니다. 다만 너무 자기 원칙만 밀면 피로가 누적되고 가까운 사람과 거리가 생기기 쉬워요. 의식적으로 한 박자 멈춰서 보세요.`;
   } else {
     base = `${elementLabel}이 일상의 결정 방식을 흔드는 시기입니다. 익숙한 패턴 대신 새로운 방식이 자연스럽게 자리 잡으니, 변화를 막지 말고 흐름에 맞춰 작은 루틴부터 정돈하면 마음이 편해집니다.`;
   }
@@ -487,8 +487,8 @@ function buildMentalStageNuance(stage: string): string | null {
 const RELATIONSHIP_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
   비견: '이 10년은 비슷한 성향의 동료·라이벌이 자주 등장해, 가까운 관계에서 비교와 자존심 신호가 늘어납니다.',
   겁재: '이 10년은 가까운 사람과 돈·기회를 나누는 일이 많아져, 작은 약속도 글로 적어두는 게 안전한 시기입니다.',
-  식신: '이 10년은 표현과 즐거움이 늘어나는 흐름이라, 가까운 사람과 함께 만들어가는 활동 (음식·취미·결과물) 이 관계를 단단하게 합니다.',
-  상관: '이 10년은 본인의 표현이 강해지는 시기라, 좋은 의도로 한 말도 날카롭게 전해지기 쉬워요. 한 박자 늦춰 전달하면 오해가 줄어듭니다.',
+  식신: '이 10년은 말과 즐거움이 늘어나는 흐름이라, 가까운 사람과 함께 만들어가는 활동 (음식·취미·결과물) 이 관계를 단단하게 합니다.',
+  상관: '이 10년은 본인의 말이 강해지는 시기라, 좋은 의도로 한 말도 날카롭게 전해지기 쉬워요. 한 박자 늦춰 전달하면 오해가 줄어듭니다.',
   편재: '이 10년은 넓은 사람·기회가 들어오는 흐름이라, 새 만남이 빈번해집니다. 다만 깊이 있게 남기고 싶은 인연은 따로 의식적으로 챙겨야 흩어지지 않아요.',
   정재: '이 10년은 안정적인 인연·약속이 단단해지는 시기예요. 한 번 정한 관계 구조를 오래 끌고 가는 힘이 강해집니다.',
   편관: '이 10년은 압박과 책임이 늘어나는 흐름이라, 가까운 사람에게 화살이 가기 쉬워요. 일과 관계의 스트레스를 분리하는 루틴 (퇴근 후 30분 산책 등) 이 보호막이 됩니다.',
@@ -498,7 +498,7 @@ const RELATIONSHIP_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
 };
 
 const RELATIONSHIP_BASELINE_DEFAULT =
-  '이 10년은 가까운 사람과의 거리감과 표현 방식을 함께 흔듭니다.';
+  '이 10년은 가까운 사람과의 거리감과 말투을 함께 흔듭니다.';
 
 function buildRelationshipText(
   cycle: SajuMajorLuckCycle,
@@ -537,7 +537,7 @@ const WEALTH_BASELINE_BY_SIPSIN: Record<TenGodCode, string> = {
   비견: '이 10년은 비슷한 분야의 경쟁자·동료가 많아지는 흐름이에요. 협업과 경쟁이 동시에 들어와, 본인 색을 또렷이 보여주는 게 차별화 포인트입니다.',
   겁재: '이 10년은 가까운 사람과의 동업·자금 거래에서 의외의 손실이 생기기 쉬운 흐름이에요. 큰 결정 전에 계약서 한 줄을 추가하는 게 가장 큰 보호막입니다.',
   식신: '이 10년은 꾸준히 만들어내는 결과물이 수익으로 이어지는 흐름이에요. 새 시도보다는 반복할 수 있는 콘텐츠·서비스를 다듬는 게 우선입니다.',
-  상관: '이 10년은 본인의 재능·표현이 큰 무기가 되는 흐름이에요. 다만 기존 틀을 깨는 시도가 자주 들어오므로, 안전망 (적금·고정 수입) 을 따로 두고 도전하세요.',
+  상관: '이 10년은 본인의 재능·말이 큰 무기가 되는 흐름이에요. 다만 기존 틀을 깨는 시도가 자주 들어오므로, 안전망 (적금·고정 수입) 을 따로 두고 도전하세요.',
   편재: '이 10년은 큰 흐름의 돈·기회가 드나드는 흐름이에요. 들어오는 만큼 흩어지기도 쉬워, 받자마자 일부 보관·분산하는 룰이 필요합니다.',
   정재: '이 10년은 안정적인 소득과 자산 축적이 강해지는 흐름이에요. 새 투자보다는 기존 자산 구조 (적금·연금·저축성 보험) 점검이 효율적입니다.',
   편관: '이 10년은 책임·압박이 큰 자리·프로젝트가 들어오는 흐름이에요. 보상도 크지만 번아웃 신호도 같이 올 수 있어, 일 외 회복 루틴을 의식적으로 짜야 합니다.',
@@ -578,7 +578,7 @@ function buildWealthCareerText(
 import { glossaryHint, MYEONGRI_GLOSSARY } from '@/lib/saju/terminology';
 
 // 2026-05-15 PR 4 — 개운법 reason/what/how 사전식 매핑.
-// 사주아이 reference 개운법 패턴 ("부족한 토의 기운을 보강해야 합니다 / 표현의 부족 /
+// 사주아이 reference 개운법 패턴 ("부족한 토의 기운을 보강해야 합니다 / 말의 부족 /
 // 마케팅을 시스템화") 처럼 명리 키를 일상 행동으로 번역.
 
 // (1) 부족 오행 사전 — weakest element 기반.
@@ -591,7 +591,7 @@ export const SHORTAGE_ACTION_DICT: Record<Element, PracticalAction> = {
   },
   화: {
     reason: '화 기운이 약해 마음을 드러내고 인정받는 자리가 부족한 패턴',
-    what: '마음과 결과를 짧게라도 먼저 표현하기',
+    what: '마음과 결과를 짧게라도 먼저 말하기',
     how: '주 1회 짧은 발표·SNS 한 줄·동료에게 안부 메시지. "혼자만의 깊이"를 풀어내는 통로 1개 고정.',
   },
   토: {
@@ -600,8 +600,8 @@ export const SHORTAGE_ACTION_DICT: Record<Element, PracticalAction> = {
     how: '매일 같은 시간 기상 + 매주 가계부·일정표 1줄 점검. 흩어진 일을 한 곳에 모아 정리.',
   },
   금: {
-    reason: '금 기운이 약해 기준과 결단, 마무리가 모호한 패턴',
-    what: '우선순위와 거절의 기준 명확히 세우기',
+    reason: '금 기운이 약해 원칙과 결단, 마무리가 모호한 패턴',
+    what: '우선순위와 거절의 원칙 명확히 세우기',
     how: '주간 회고 노트에 "할 일 3 / 안 할 일 3" 적기. 애매한 약속은 처음부터 자르기.',
   },
   수: {
@@ -654,12 +654,12 @@ const TEN_GOD_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
     how: '친한 사이도 차용증·할부 기록. 큰 지출은 가족·친구와 분리.',
   },
   식신: {
-    reason: `${glossaryHint('식신')} 기운이 살아 있어 표현과 결과물을 만들어내는 힘이 강함`,
+    reason: `${glossaryHint('식신')} 기운이 살아 있어 말과 결과물을 만들어내는 힘이 강함`,
     what: '한 작업물을 끝까지 완성해 공개',
     how: '월 1개 결과물 공개(글·영상·작품). 완벽함보다 출시 빈도 우선.',
   },
   상관: {
-    reason: `${glossaryHint('상관')} 기운이 강해 재능과 답답함 사이에서 표현이 갇히기 쉬움`,
+    reason: `${glossaryHint('상관')} 기운이 강해 재능과 답답함 사이에서 말이 갇히기 쉬움`,
     what: '프레임 밖에서 시도하기',
     how: '허락 구하지 말고 일단 시도 1건. 실패 시 회수 비용 적은 영역부터.',
   },
@@ -675,11 +675,11 @@ const TEN_GOD_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
   },
   편관: {
     reason: `${glossaryHint('편관')} 기운이 강해 압박과 책임이 추진력으로 작용하지만 과부하 위험`,
-    what: '거절의 기준 세우기',
+    what: '거절의 원칙 세우기',
     how: '주 1회 일정 비우기 + 거절 멘트 3가지 미리 적어두기.',
   },
   정관: {
-    reason: `${glossaryHint('정관')} 기운이 강해 자리·명예·기준을 중시하다가 스스로 무거워지기 쉬움`,
+    reason: `${glossaryHint('정관')} 기운이 강해 자리·명예·원칙을 중시하다가 스스로 무거워지기 쉬움`,
     what: '역할 분담 + 위임 1건',
     how: '한 달에 위임 가능한 일 1건 찾기. 책임지지 않는 일도 의식적으로 늘리기.',
   },
@@ -709,7 +709,7 @@ function buildCycleElementAction(
     return {
       reason: `대운에 ${cycleLabel} 기운이 들어와 평소 부족한 축을 채워주는 시기`,
       what: `${cycleLabel} 기운을 생활 루틴으로 받아들이기`,
-      how: `매일 5분이라도 ${cycleLabel} 기운의 행동(목=시작/화=표현/토=정리/금=결단/수=학습) 한 가지 고정.`,
+      how: `매일 5분이라도 ${cycleLabel} 기운의 행동(목=시작/화=말/토=정리/금=결단/수=학습) 한 가지 고정.`,
     };
   }
   if (isDominant) {
@@ -747,7 +747,7 @@ const CYCLE_SIPSIN_ACTION_DICT: Record<TenGodCode, PracticalAction> = {
     how: '구두 약속 → 메모 → 계약서 3단계. 친한 사이일수록 더 또렷이.',
   },
   식신: {
-    reason: '꾸준한 표현·결과물이 수익으로 이어지는 cycle',
+    reason: '꾸준한 전달·결과물이 수익으로 이어지는 cycle',
     what: '반복할 수 있는 콘텐츠·서비스 1개 정착',
     how: '주 1회 같은 형식으로 출력. 새 시도보다 반복을 우선.',
   },
@@ -835,8 +835,8 @@ type ChapterPattern =
  * 9 대운 카드 챕터 제목 fallback 후보 — `selectChapterPattern` 으로 카테고리가
  * 결정되면 `pickFromSeed(ganziSeed)` 가 후보 중 하나를 선택.
  *
- * 2026-05-20 P0 ⑥ 수정 — 진단서 §3-1 fallback 자극 표현 잔존 차단:
- *   - 자극·공포·강요·과장 표현 일괄 안심하고 보기 톤으로 치환.
+ * 2026-05-20 P0 ⑥ 수정 — 진단서 §3-1 fallback 자극 문구 잔존 차단:
+ *   - 자극·공포·강요·과장 말 일괄 안심하고 보기 톤으로 치환.
  *   - 회귀 가드 테스트(`build-lifetime-report.fallback.test.ts`) 에서
  *     `FORBIDDEN_ABSOLUTE_PHRASES` 와 교차 검증 → 신규 자극어 회귀 방지.
  *
@@ -880,7 +880,7 @@ export const CHAPTER_PATTERN_TEMPLATES: Record<ChapterPattern, string[]> = {
   ],
   crisis: [
     '{relationship}, 가까운 관계가 흔들릴 수 있어요',
-    '{relationship} 분에게 — 표현과 거리감을 새로 잡아야 할 시기',
+    '{relationship} 분에게 — 말과 거리감을 새로 잡아야 할 시기',
     '관계의 온도가 바뀌는 시기,말의 강도를 한 단계 낮추세요',
   ],
   empathy: [
@@ -972,7 +972,7 @@ function selectChapterPattern(
   if (isDominant) return 'reverse';
   if (status && (concern === 'romance' || concern === 'family')) return 'crisis';
   if (concern === 'health') return 'empathy';
-  // 4) phase 가 결정기/표현기 면 변환·희망 톤 우선.
+  // 4) phase 가 결정기/전달기 면 변환·희망 톤 우선.
   if (cycle.notes.join(' ').includes('결실') || cycle.notes.join(' ').includes('수확')) return 'transform';
   // 5) 사용자 정보 거의 없는 일반 cycle → 비밀형으로 개운법 부각.
   return 'secret';
@@ -1020,7 +1020,7 @@ function buildClosingNoteText(
   const head = isCurrent
     ? `${toKoreanGanzi(cycle.ganzi)} 대운이 진행 중인 지금, `
     : `${toKoreanGanzi(cycle.ganzi)} 대운이 다가오면, `;
-  // 2026-05-19 P0d: 안심하고 보기 정책 — '절대' / '반드시' 같은 단정·강요 표현 제거.
+  // 2026-05-19 P0d: 안심하고 보기 정책 — '절대' / '반드시' 같은 단정·강요 말 제거.
   const base = `${head}한꺼번에 결정하지 않는 편이 좋습니다. ${supportLabel}을 생활 루틴에 두고 10년이라는 호흡을 길게 가져가면 이 흐름이 본인의 편이 됩니다.`;
   // 2026-05-15 PR 7 응답 1 — 12운성 마지막 한마디 cue.
   const stageEntry = twelveStage
@@ -1240,16 +1240,16 @@ export function buildLifetimeReport(
     `강한 ${dominant} 기운은 무리하게 쓰기보다 방향을 정하고 쓸 때 오래 갑니다.`,
     `${supportLabels} 기운을 생활 루틴으로 만들수록 명식의 장점이 안정적으로 살아납니다.`,
     `${weakest} 축이 약해지는 날에는 속도보다 리듬을 먼저 바로잡는 편이 좋습니다.`,
-    '관계와 일에서 서운함이나 조급함을 결론처럼 말하기보다, 사실과 기준을 먼저 정리해야 합니다.',
-    `지금의 ${currentMajorLuck?.ganzi ?? '대운'}은 단기 반응보다 장기 기준을 바로 세울수록 힘을 실어줍니다.`,
+    '관계와 일에서 서운함이나 조급함을 결론처럼 말하기보다, 사실과 원칙을 먼저 정리해야 합니다.',
+    `지금의 ${currentMajorLuck?.ganzi ?? '대운'}은 단기 반응보다 장기 원칙을 바로 세울수록 힘을 실어줍니다.`,
   ];
 
   return {
     targetYear,
     pillars,
     cover: {
-      headline: `${sajuData.pillars.day.ganzi} 일주 기준 깊은 사주풀이`,
-      oneLineSummary: `이 사주는 ${supportLabels} 기운을 삶의 기준으로 들일 때 실력이 가장 안정적으로 오래 갑니다.`,
+      headline: `${sajuData.pillars.day.ganzi} 일주 맞춤 깊은 사주풀이`,
+      oneLineSummary: `이 사주는 ${supportLabels} 기운을 삶의 바탕으로 들일 때 실력이 가장 안정적으로 오래 갑니다.`,
       keywords: buildKeywords({
         dayMasterStem: sajuData.dayMaster.stem,
         dayMasterMetaphor: sajuData.dayMaster.metaphor,
@@ -1258,12 +1258,12 @@ export function buildLifetimeReport(
         supportLabels,
         currentMajorLuck: currentMajorLuck?.ganzi ?? null,
       }),
-      lifetimeRule: `${sajuData.dayMaster.stem} 일간의 추진력과 ${dominant} 기운의 장점은 이미 충분합니다. 평생 운을 살리는 기준은 더 세게 몰아가는 것이 아니라, ${supportLabels} 보완 축을 반복 가능한 습관과 선택 기준으로 만드는 데 있습니다.`,
+      lifetimeRule: `${sajuData.dayMaster.stem} 일간의 추진력과 ${dominant} 기운의 장점은 이미 충분합니다. 평생 운을 살리는 원칙은 더 세게 몰아가는 것이 아니라, ${supportLabels} 보완 축을 반복 가능한 습관과 선택 바탕으로 만드는 데 있습니다.`,
       basis: compactStrings([
         `원국: ${[pillars.year, pillars.month, pillars.day, pillars.hour ?? '시주 미입력'].join(' · ')}`,
-        strength?.title ? `강약 기준: ${strength.title}` : null,
-        pattern?.title ? `격국 기준: ${pattern.title}` : null,
-        yongsin?.title ? `용신 기준: ${yongsin.title}` : null,
+        strength?.title ? `강약 단서: ${strength.title}` : null,
+        pattern?.title ? `격국 단서: ${pattern.title}` : null,
+        yongsin?.title ? `용신 단서: ${yongsin.title}` : null,
       ]),
     },
     coreIdentity: {
@@ -1271,8 +1271,8 @@ export function buildLifetimeReport(
       summary: `${personality} ${todayReport.summaryHighlights[0] ?? ''}`.trim(),
       reactionStyle:
         todayReport.dayMasterSummary ||
-        `${sajuData.dayMaster.stem} 일간은 반응이 빠른 편이며, 한 번 기준이 잡히면 스스로 방향을 만들려는 힘이 강합니다.`,
-      bestEnvironment: `${supportLabels} 기운이 살아나는 구조, 즉 속도만 빠른 자리보다 기준과 리듬이 함께 있는 환경에서 강점이 가장 크게 드러납니다.`,
+        `${sajuData.dayMaster.stem} 일간은 반응이 빠른 편이며, 한 번 원칙이 잡히면 스스로 방향을 만들려는 힘이 강합니다.`,
+      bestEnvironment: `${supportLabels} 기운이 살아나는 구조, 즉 속도만 빠른 자리보다 원칙과 리듬이 함께 있는 환경에서 강점이 가장 크게 드러납니다.`,
       weakPattern: `${weakest} 축이 비거나 ${dominant} 기운이 과속할 때, 장점이 곧 피로와 고집으로 바뀌기 쉽습니다. 특히 서둘러 결론을 내리거나 감정을 바로 행동으로 옮길 때 무너지기 쉽습니다.`,
       basis: compactStrings([
         todayReport.headline,
@@ -1300,7 +1300,7 @@ export function buildLifetimeReport(
       ].slice(0, 5),
       elementHighlights,
       basis: compactStrings([
-        strength?.title ? `강약 기준: ${strength.title}` : null,
+        strength?.title ? `강약 단서: ${strength.title}` : null,
         `강한 오행: ${dominant}`,
         `약한 오행: ${weakest}`,
       ]),
@@ -1313,7 +1313,7 @@ export function buildLifetimeReport(
       summary: `이 사주는 타고난 역할 구조(격국) 위에서 보완 기운(용신)을 어떻게 들이느냐가 평생 선택의 큰 줄기입니다.`,
       patternRole:
         pattern?.body ??
-        '격국은 이 사람이 어떤 역할 구조에서 실력이 붙는지, 어디에서 책임과 반응이 반복되는지를 읽는 기준입니다.',
+        '격국은 이 사람이 어떤 역할 구조에서 실력이 붙는지, 어디에서 책임과 반응이 반복되는지를 읽는 정보입니다.',
       yongsinDirection:
         yongsin?.body ??
         `${yongsinLabels}을 꾸준히 들이면 타고난 사주의 장점이 균형 있게 살아납니다.`,
@@ -1350,7 +1350,7 @@ export function buildLifetimeReport(
         '가까운 사람일수록 한 번에 결론을 내리기보다, 말의 속도와 순서를 조절하는 편이 좋습니다.',
       expressionStyle:
         loveReport.primaryAction.description ||
-        '감정은 깊어도 표현은 늦게 나올 수 있어, 짧고 분명한 확인이 관계를 오래 가게 합니다.',
+        '감정은 깊어도 말은 늦게 나올 수 있어, 짧고 분명한 확인이 관계를 오래 가게 합니다.',
       conflictTriggers:
         relationshipReport.cautionAction.description ||
         '서운함을 판단처럼 말하거나, 상대의 반응을 기다리기 전에 먼저 마음이 닫히는 방식이 갈등의 시작점이 되기 쉽습니다.',
@@ -1361,7 +1361,7 @@ export function buildLifetimeReport(
         relationshipReport.headline,
         relationshipReport.summary,
         loveReport.summary,
-        relations?.title ? `합충 기준: ${relations.title}` : relations?.body,
+        relations?.title ? `합충 단서: ${relations.title}` : relations?.body,
       ]),
     },
     wealthStyle: {
@@ -1380,11 +1380,11 @@ export function buildLifetimeReport(
         '감정이 올라온 날의 결제, 지인 말만 믿고 움직이는 지출, 비교 없이 서두르는 선택이 재물 피로를 키우기 쉽습니다.',
       operatingStyle:
         wealthReport.summary ||
-        `${supportLabels} 기운이 살아나는 방식, 즉 자료 확인과 기준 정리, 반복 가능한 운영 습관이 맞는 재물 체질입니다.`,
+        `${supportLabels} 기운이 살아나는 방식, 즉 자료 확인과 원칙 정리, 반복 가능한 운영 습관이 맞는 재물 체질입니다.`,
       basis: compactStrings([
         wealthReport.headline,
         formatSymbolList(sajuData.yongsin ? [sajuData.yongsin.primary, ...sajuData.yongsin.secondary] : []),
-        strength?.title ? `강약 기준: ${strength.title}` : null,
+        strength?.title ? `강약 단서: ${strength.title}` : null,
       ]),
     },
     careerDirection: {
@@ -1394,20 +1394,20 @@ export function buildLifetimeReport(
         '직업운은 당장 붙는 자리보다 오래 버틸 수 있는 역할 구조를 봐야 정확합니다.',
       fitStructure:
         careerReport.primaryAction.description ||
-        '기준과 책임선이 분명한 구조에서 실력이 붙기 쉽습니다.',
+        '역할과 책임선이 분명한 구조에서 실력이 붙기 쉽습니다.',
       endureVsShine:
         careerReport.summaryHighlights[1] ??
         '버티는 일과 빛나는 일의 차이는 속도보다 역할의 적합도에서 갈립니다.',
       independenceStyle:
         pattern?.body ??
-        '독립과 조직 중 무엇이 맞느냐보다, 기준을 스스로 세울 수 있는 권한이 있는지가 더 중요합니다.',
+        '독립과 조직 중 무엇이 맞느냐보다, 원칙을 스스로 세울 수 있는 권한이 있는지가 더 중요합니다.',
       recognitionStyle:
         careerReport.cautionAction.description ||
-        '인정은 한 번의 강한 인상보다, 반복되는 신뢰와 기준 있는 결과물로 쌓이는 명식입니다.',
+        '인정은 한 번의 강한 인상보다, 반복되는 신뢰와 원칙 있는 결과물로 쌓이는 명식입니다.',
       basis: compactStrings([
         careerReport.headline,
         careerReport.summary,
-        pattern?.title ? `격국 기준: ${pattern.title}` : null,
+        pattern?.title ? `격국 단서: ${pattern.title}` : null,
       ]),
     },
     healthRhythm: {
@@ -1424,8 +1424,8 @@ export function buildLifetimeReport(
         ...(gongmang?.practicalActions ?? []),
       ].slice(0, 4),
       basis: compactStrings([
-        strength?.title ? `강약 기준: ${strength.title}` : null,
-        gongmang?.title ? `공망 기준: ${gongmang.title}` : gongmang?.body,
+        strength?.title ? `강약 단서: ${strength.title}` : null,
+        gongmang?.title ? `공망 단서: ${gongmang.title}` : gongmang?.body,
         monthTimeline?.headline,
       ]),
     },
@@ -1464,8 +1464,8 @@ export function buildLifetimeReport(
       ]).slice(0, 4),
       rememberRules,
       basis: compactStrings([
-        specialSals?.title ? `신살 기준: ${specialSals.title}` : specialSals?.body,
-        relations?.title ? `합충 기준: ${relations.title}` : relations?.body,
+        specialSals?.title ? `신살 단서: ${specialSals.title}` : specialSals?.body,
+        relations?.title ? `합충 단서: ${relations.title}` : relations?.body,
         majorTimeline?.body,
       ]),
     },

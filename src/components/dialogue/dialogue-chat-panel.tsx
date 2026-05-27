@@ -179,12 +179,12 @@ function formatProfileConnection(profile: ProfileApiProfile | null): ProfileConn
   const locationLabel = profile.birthLocationLabel || '출생지 미입력';
   const timeRuleLabel =
     profile.timeRule === 'trueSolarTime'
-      ? '진태양시 기준'
+      ? '진태양시 적용'
       : profile.timeRule === 'nightZi'
-        ? '야자시 기준'
+        ? '야자시 적용'
         : profile.timeRule === 'earlyZi'
-          ? '조자시 기준'
-          : '표준시 기준';
+          ? '조자시 적용'
+          : '표준시 적용';
   const nameLabel = profile.displayName.trim() || '내 정보';
 
   return {

@@ -7,8 +7,8 @@ import type { TodayFortunePremiumResult } from '@/lib/today-fortune/types';
 import { TodayPremiumQuestionChips } from './today-premium-question-chips';
 
 function trimEasySentence(value: string) {
-  // 2026-05-16 — "흐름→분위기", "기준→생각할 점" 치환이 오히려 사주 풀이 본문에서
-  //   의미를 흐리게 만든다는 피드백. "흐름/기준" 은 한국어로도 충분히 자연스러우므로 보존.
+  // 2026-05-16 — "흐름→분위기", "원칙→생각할 점" 치환이 오히려 사주 풀이 본문에서
+  //   의미를 흐리게 만든다는 피드백. "흐름/원칙" 은 한국어로도 충분히 자연스러우므로 보존.
   const cleaned = value
     .replace(/시간대별/g, '')
     .replace(/선택 시나리오/g, '고민되는 상황')
@@ -202,7 +202,7 @@ export function TodayPremiumPanel({
               className="mt-2 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              12 시진(時辰) 기준 길흉 + 추천/회피 행동 + 고민될 때 시나리오
+              12 시진(時辰) 풀이 + 추천/회피 행동 + 고민될 때 시나리오
             </p>
           </div>
           <span
@@ -386,7 +386,7 @@ export function TodayPremiumPanel({
         </details>
       ) : null}
 
-      {/* §풀이 기준 — collapsible */}
+      {/* §풀이 원칙 — collapsible */}
       <details
         className="group rounded-[14px] border bg-white"
         style={{ borderColor: 'var(--app-line)' }}
@@ -394,7 +394,7 @@ export function TodayPremiumPanel({
         <summary
           className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
         >
-          <span>풀이 기준 보기</span>
+          <span>풀이 방식 보기</span>
           <span
             className="text-[10px] transition-transform group-open:rotate-180"
             aria-hidden="true"

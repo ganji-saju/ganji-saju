@@ -38,9 +38,9 @@ function formatTimeRuleLabel(grounding: SajuInterpretationGrounding) {
   const jasi = grounding.factJson.calendarConversion.jasiMethod;
 
   if (mode === 'longitude') return '진태양시 보정';
-  if (jasi === 'split') return '조자시 기준';
-  if (jasi === 'unified') return '야자시 기준';
-  return '표준시 기준';
+  if (jasi === 'split') return '조자시 적용';
+  if (jasi === 'unified') return '야자시 적용';
+  return '표준시 정보';
 }
 
 function buildKasiBadge(kasiComparison: KasiSingleInputComparison | null | undefined): GroundingDecisionBadge | null {
@@ -58,7 +58,7 @@ export function buildGroundingDecisionTrace(
   const correctionMinutes = factJson.calendarConversion.birthTimeCorrectionMinutes;
   const referenceCards = evidenceJson.classics.cards.filter((card) => card.confidence === '참고');
   const badges: GroundingDecisionBadge[] = [
-    { label: '절기 기준 명식', tone: 'gold' },
+    { label: '절기 정보 명식', tone: 'gold' },
     { label: formatTimeRuleLabel(grounding), tone: correctionMinutes ? 'gold' : 'muted' },
   ];
 
@@ -78,7 +78,7 @@ export function buildGroundingDecisionTrace(
 
   const steps: GroundingDecisionStep[] = [
     {
-      title: '명식 계산 기준',
+      title: '명식 계산 방식',
       body: joinReadable([
         `${factJson.pillars.year.ganzi}년주`,
         `${factJson.pillars.month.ganzi}월주`,
@@ -92,7 +92,7 @@ export function buildGroundingDecisionTrace(
       body: correctionMinutes
         ? `${factJson.birthInput.birthLocationLabel ?? '출생지'} 경도를 반영해 ${correctionMinutes}분 보정했습니다.`
         : factJson.birthInput.hourKnown
-          ? '현재 입력 기준에서는 표준시 그대로 명식을 계산했습니다.'
+          ? '현재 입력 정보에서는 표준시 그대로 명식을 계산했습니다.'
           : '출생시각이 없어 시주 판단을 줄이고 일간·월령·현재 운 중심으로 읽었습니다.',
       emphasis: formatTimeRuleLabel(grounding),
     },

@@ -54,7 +54,7 @@ export const HERO_REPORT_PREVIEW: Record<
   },
   love: {
     score: 78,
-    summary: '감정 표현을 아끼기보다 타이밍을 맞춰 꺼낼수록 관계가 자연스럽게 움직입니다.',
+    summary: '마음 전달을 아끼기보다 타이밍을 맞춰 꺼낼수록 관계가 자연스럽게 움직입니다.',
     signal: '연애운이 회복 국면으로 들어갑니다',
     action: '먼저 답장을 미루지 않는 쪽이 흐름을 가져갑니다.',
   },

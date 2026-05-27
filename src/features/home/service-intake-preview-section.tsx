@@ -81,7 +81,7 @@ export default function ServiceIntakePreviewSection({
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="text-xs uppercase tracking-[0.24em] text-white/42">{focusMeta.badge}</div>
-              <h3 className="mt-2 text-2xl font-semibold text-[#f8f1df]">{focusMeta.label} 기준으로 입력 방식 고르기</h3>
+              <h3 className="mt-2 text-2xl font-semibold text-[#f8f1df]">{focusMeta.label}에 맞춰 입력 방식 고르기</h3>
             </div>
             <Badge className="w-fit border-emerald-400/20 bg-emerald-400/10 text-emerald-200">
               추천: 저입력

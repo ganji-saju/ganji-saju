@@ -81,10 +81,10 @@ const RELATIONSHIP_LENS: Record<
   }
 > = {
   lover: {
-    title: '감정의 속도와 표현 방식',
+    title: '감정의 속도와 말투',
     positive: '좋아하는 마음을 주고받는 온도와 가까워지는 속도를 함께 봅니다.',
     caution: '서운함이 커질 때 누가 바로 말하고, 누가 시간을 벌고 싶어 하는지 확인하는 것이 중요합니다.',
-    practice: '감정 확인, 연락 빈도, 표현의 타이밍을 맞추는 쪽으로 풀어가면 관계가 훨씬 안정됩니다.',
+    practice: '감정 확인, 연락 빈도, 말할 타이밍을 맞추는 쪽으로 풀어가면 관계가 훨씬 안정됩니다.',
   },
   family: {
     title: '역할 기대와 말의 무게',
@@ -102,7 +102,7 @@ const RELATIONSHIP_LENS: Record<
     title: '역할 분담과 결정 속도',
     positive: '함께 일하는 궁합은 누가 앞에서 열고 누가 뒤에서 정리하는지가 맞을 때 힘이 납니다.',
     caution: '판단 속도와 돈을 보는 감각이 다르면 신뢰보다 피로가 먼저 쌓일 수 있습니다.',
-    practice: '의사결정 기준, 책임 범위, 돈 흐름을 초반에 분명히 나누는 것이 핵심입니다.',
+    practice: '의사결정 원칙, 책임 범위, 돈 흐름을 초반에 분명히 나누는 것이 핵심입니다.',
   },
 };
 
@@ -183,13 +183,13 @@ const COMMUNICATION_STYLES: Record<
   },
   토: {
     label: '정리와 안정이 먼저인 편',
-    summary: '감정만 앞세우기보다 현실적인 기준과 생활 맥락을 함께 확인해야 편안해지는 타입입니다.',
-    need: '말의 뜻과 앞으로의 기준을 같이 들으면 신뢰가 생깁니다.',
-    caution: '상대는 공감이 필요한데 기준만 말하면 차갑게 들릴 수 있습니다.',
+    summary: '감정만 앞세우기보다 현실적인 원칙과 생활 맥락을 함께 확인해야 편안해지는 타입입니다.',
+    need: '말의 뜻과 앞으로의 원칙을 같이 들으면 신뢰가 생깁니다.',
+    caution: '상대는 공감이 필요한데 원칙만 말하면 차갑게 들릴 수 있습니다.',
   },
   금: {
-    label: '기준과 결론을 분명히 하려는 편',
-    summary: '말을 길게 돌리기보다 핵심과 기준을 선명하게 잡을 때 안심하는 타입입니다.',
+    label: '원칙과 결론을 분명히 하려는 편',
+    summary: '말을 길게 돌리기보다 핵심과 원칙을 선명하게 잡을 때 안심하는 타입입니다.',
     need: '중요한 대화일수록 조건, 약속, 범위를 문장으로 남기면 편합니다.',
     caution: '좋은 뜻으로 정리한 말도 상대에게는 평가나 지적으로 들릴 수 있습니다.',
   },
@@ -218,9 +218,9 @@ const MONEY_STYLES: Record<Element, { label: string; summary: string; caution: s
     caution: '안전을 중시하다 필요한 변화나 투자까지 너무 늦출 수 있습니다.',
   },
   금: {
-    label: '기준과 효율을 따져 돈을 쓰는 편',
+    label: '원칙과 효율을 따져 돈을 쓰는 편',
     summary: '가격, 품질, 조건, 약속이 선명해야 지출 결정을 편하게 내리는 흐름입니다.',
-    caution: '기준이 분명한 만큼 상대는 계산적이거나 차갑다고 느낄 수 있습니다.',
+    caution: '선택이 분명한 만큼 상대는 계산적이거나 차갑다고 느낄 수 있습니다.',
   },
   수: {
     label: '비교와 유보를 거쳐 돈을 쓰는 편',
@@ -236,9 +236,9 @@ const DISTANCE_STYLES: Record<Element, { label: string; summary: string; caution
     caution: '연결이 뜸해지면 생각보다 빨리 관계 온도가 식었다고 받아들일 수 있습니다.',
   },
   화: {
-    label: '반응과 표현이 가까울수록 안심하는 편',
-    summary: '마음이 보이는 표현과 빠른 반응이 있을 때 관계의 온도를 신뢰하는 편입니다.',
-    caution: '표현이 줄면 실제 거리보다 훨씬 멀어졌다고 느끼기 쉽습니다.',
+    label: '반응과 말이 가까울수록 안심하는 편',
+    summary: '마음이 보이는 말과 빠른 반응이 있을 때 관계의 온도를 신뢰하는 편입니다.',
+    caution: '말이 줄면 실제 거리보다 훨씬 멀어졌다고 느끼기 쉽습니다.',
   },
   토: {
     label: '정해진 리듬이 있을 때 편안한 편',
@@ -269,25 +269,25 @@ const RELATIONSHIP_PRACTICE_GUIDES: Record<
   lover: {
     conflict: '감정이 올라온 날엔 답부터 요구하지 말고, 서운했던 장면 하나만 먼저 꺼내는 방식이 훨씬 잘 맞습니다.',
     communication: '연애에서는 큰 결론보다 짧은 확인과 따뜻한 말투가 먼저 들어가야 대화가 풀립니다.',
-    money: '데이트 비용, 선물, 큰 지출은 분위기 따라 즉흥으로 정하지 말고 기준을 짧게라도 미리 합의해 두는 편이 좋습니다.',
-    distance: '연락 빈도와 혼자 쉬는 시간의 기준을 먼저 맞춰 두면 괜한 서운함이 크게 줄어듭니다.',
+    money: '데이트 비용, 선물, 큰 지출은 분위기 따라 즉흥으로 정하지 말고 원칙을 짧게라도 미리 합의해 두는 편이 좋습니다.',
+    distance: '연락 빈도와 혼자 쉬는 시간의 약속을 먼저 맞춰 두면 괜한 서운함이 크게 줄어듭니다.',
   },
   family: {
     conflict: '가족 관계는 맞는 말보다 듣기 쉬운 말이 더 중요합니다. 지적보다 부탁 형식으로 말하면 갈등이 훨씬 덜 커집니다.',
     communication: '가르치려는 말보다 확인과 공감을 먼저 두면 가족 사이의 말이 훨씬 부드럽게 들어갑니다.',
-    money: '생활비, 지원, 선물, 회비처럼 반복되는 돈은 정과 의리만 믿고 넘기지 말고 기준을 분명히 하는 편이 좋습니다.',
+    money: '생활비, 지원, 선물, 회비처럼 반복되는 돈은 정과 의리만 믿고 넘기지 말고 원칙을 분명히 하는 편이 좋습니다.',
     distance: '가까운 사이라도 간섭의 빈도와 도움 요청의 선을 정해두면 관계가 오래 편안합니다.',
   },
   friend: {
     conflict: '친구 사이는 기대를 말로 바꾸는 순간이 중요합니다. 부탁과 서운함을 한 문장에 섞지 않는 편이 좋습니다.',
     communication: '친구 관계는 무거운 대화보다 가벼운 확인과 솔직한 한마디가 더 오래 갑니다.',
     money: '빌려주고 받는 돈, 회비, 선물, 여행비는 친하다는 이유로 흐리지 말고 먼저 맞추는 편이 안전합니다.',
-    distance: '연락이 뜸해도 괜찮은 기준과 꼭 챙겨야 하는 순간을 나눠 두면 서운함이 적습니다.',
+    distance: '연락이 뜸해도 괜찮은 약속과 꼭 챙겨야 하는 순간을 나눠 두면 서운함이 적습니다.',
   },
   partner: {
-    conflict: '함께 일하는 사이는 감정 토론보다 기준 정리가 먼저입니다. 누가 무엇을 언제까지 맡는지 문장으로 남기세요.',
+    conflict: '함께 일하는 사이는 감정 토론보다 원칙 정리가 먼저입니다. 누가 무엇을 언제까지 맡는지 문장으로 남기세요.',
     communication: '업무 파트너 관계는 말의 온도보다 전달 순서와 결론의 명확함이 더 중요하게 작동합니다.',
-    money: '비용 분담, 수익 기준, 정산 시점은 초반에 문서나 메모로 남겨야 신뢰가 오래 갑니다.',
+    money: '비용 분담, 수익 조건, 정산 시점은 초반에 문서나 메모로 남겨야 신뢰가 오래 갑니다.',
     distance: '보고 주기와 개인 판단 범위를 정해두면 과한 간섭이나 방치처럼 느껴지는 일을 줄일 수 있습니다.',
   },
 };
@@ -352,7 +352,7 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
     label: '상대가 나를 세게 누를 수 있는 흐름',
     score: -6,
     summary: `${formatElementLabel(partnerElement)}이 ${formatElementLabel(selfElement)}을 극하는 관계라, 상대의 방식이 내게는 답답함이나 통제로 느껴질 수 있습니다.`,
-    caution: '기준과 속도 차이를 먼저 인정하지 않으면 작은 일도 금방 예민해질 수 있습니다.',
+    caution: '속도와 약속 차이를 먼저 인정하지 않으면 작은 일도 금방 예민해질 수 있습니다.',
   };
 }
 
@@ -565,7 +565,7 @@ function buildScoreLabel(score: number) {
   if (score >= 78) return '편하게 맞춰갈 흐름';
   if (score >= 70) return '다름을 조율하면 좋아지는 흐름';
   if (score >= 62) return '속도 조절이 중요한 흐름';
-  return '기준을 세우면 안정되는 흐름';
+  return '원칙을 정하면 안정되는 흐름';
 }
 
 function buildRelationshipSummaries(
@@ -599,21 +599,21 @@ function buildPlainRelationshipSummary(
 ) {
   const relationshipLabel =
     relationship === 'lover'
-      ? '감정 표현과 연락의 속도'
+      ? '마음 전달과 연락의 속도'
       : relationship === 'family'
         ? '말의 무게와 기대 역할'
         : relationship === 'partner'
-          ? '책임 분담과 결정 기준'
+          ? '책임 분담과 결정 원칙'
           : '편안함과 거리감';
   const strength =
     score >= 78
       ? '처음부터 완전히 같은 방식은 아니어도, 서로의 장점을 살릴 여지가 분명합니다.'
       : score >= 68
-        ? '잘 맞는 부분과 신경 써야 할 부분이 함께 있어, 기준을 정하면 관계가 훨씬 편해집니다.'
-        : '서로의 속도와 말투가 다르게 느껴질 수 있어, 초반부터 기준을 짧게 맞추는 편이 좋습니다.';
+        ? '잘 맞는 부분과 신경 써야 할 부분이 함께 있어, 원칙을 정하면 관계가 훨씬 편해집니다.'
+        : '서로의 속도와 말투가 다르게 느껴질 수 있어, 초반부터 원칙을 짧게 맞추는 편이 좋습니다.';
   const caution = branchInteraction.caution
     ? '특히 서운함이 생겼을 때 바로 결론을 내리기보다, 어느 장면에서 마음이 걸렸는지부터 나누는 편이 좋습니다.'
-    : '큰 충돌보다 작은 기대 차이가 쌓이지 않게, 연락·돈·약속의 기준을 미리 맞추는 편이 좋습니다.';
+    : '큰 충돌보다 작은 기대 차이가 쌓이지 않게, 연락·돈·약속의 선을 미리 맞추는 편이 좋습니다.';
 
   return `${selfName}님과 ${partnerName}님은 ${relationshipLabel}에서 관계의 체감이 크게 달라집니다. ${strength} ${caution} ${elementInteraction.caution}`;
 }
@@ -644,7 +644,7 @@ function buildConflictCard(
       key: 'conflict',
       eyebrow: '갈등 포인트',
       title: '정면으로 부딪히는 말싸움이 커지기 쉽습니다',
-      summary: `${branchInteraction.caution.detail} 서로 맞는 말부터 세우면 감정이 더 상하기 쉽고, 먼저 강한 표현이 나간 쪽이 오래 후회할 수 있습니다.`,
+      summary: `${branchInteraction.caution.detail} 서로 맞는 말부터 세우면 감정이 더 상하기 쉽고, 먼저 강한 말이 나간 쪽이 오래 후회할 수 있습니다.`,
       practice: guide,
       tone: 'coral',
     };
@@ -676,7 +676,7 @@ function buildConflictCard(
     return {
       key: 'conflict',
       eyebrow: '갈등 포인트',
-      title: '한쪽의 기준과 속도가 다른 쪽에 압박으로 느껴질 수 있습니다',
+      title: '한쪽의 속도와 약속가 다른 쪽에 압박으로 느껴질 수 있습니다',
       summary: `${elementInteraction.summary} 의도는 좋아도 말과 판단의 강도가 세지면 관계가 쉽게 피곤해질 수 있습니다.`,
       practice: guide,
       tone: 'coral',
@@ -697,7 +697,7 @@ function buildConflictCard(
   return {
     key: 'conflict',
     eyebrow: '갈등 포인트',
-    title: '큰 충돌보다 생활 기준을 맞추는 과정이 더 중요합니다',
+    title: '큰 충돌보다 생활 약속을 맞추는 과정이 더 중요합니다',
     summary: `${stemInteraction.body} 크게 부딪히는 구조는 아니어도 기대치와 말의 순서를 맞추지 않으면 피로가 쌓일 수 있습니다.`,
     practice: guide,
     tone: 'coral',
@@ -764,12 +764,12 @@ function buildMoneyCard(
 
   const title =
     selfData.fiveElements.dominant === partnerData.fiveElements.dominant || scoreGap <= 6
-      ? '돈을 보는 기본 기준은 비교적 비슷한 편입니다'
+      ? '돈을 보는 기본 원칙은 비교적 비슷한 편입니다'
       : scoreGap >= 14
         ? '지출 허용선과 불안선이 꽤 다를 수 있습니다'
         : '한쪽은 기회를 보고, 한쪽은 안전을 먼저 봅니다';
 
-  const summary = `${self.name}님은 ${selfStyle.label}이라 ${selfStyle.summary} ${partner.name}님은 ${partnerStyle.label}이라 ${partnerStyle.summary} 재물 감각 점수 차이가 ${scoreGap}점 수준이라, 돈 이야기는 감정이 좋을 때보다 기준이 맑을 때 하는 편이 낫습니다.`;
+  const summary = `${self.name}님은 ${selfStyle.label}이라 ${selfStyle.summary} ${partner.name}님은 ${partnerStyle.label}이라 ${partnerStyle.summary} 재물 감각 점수 차이가 ${scoreGap}점 수준이라, 돈 이야기는 감정이 좋을 때보다 원칙이 맑을 때 하는 편이 낫습니다.`;
 
   return {
     key: 'money',
@@ -795,7 +795,7 @@ function buildDistanceCard(
   const fastElements: Element[] = ['목', '화'];
   const slowElements: Element[] = ['금', '수'];
 
-  let title = '관계의 리듬을 맞추는 기준이 필요합니다';
+  let title = '관계의 리듬을 맞추는 원칙이 필요합니다';
 
   if (selfData.dayMaster.element === partnerData.dayMaster.element) {
     title = '가까워지는 리듬이 비슷해 맞춰가기 쉬운 편입니다';
@@ -832,7 +832,7 @@ function buildDataNote(selfInput: BirthInput, partnerInput: BirthInput) {
   }
 
   if (!selfInput.birthLocation || !partnerInput.birthLocation) {
-    missing.push('출생지가 빠진 쪽은 경도 보정 없이 일반 시각 기준으로 계산했습니다.');
+    missing.push('출생지가 빠진 쪽은 경도 보정 없이 일반 시각 바탕으로 계산했습니다.');
   }
 
   return missing.length > 0 ? missing.join(' ') : null;

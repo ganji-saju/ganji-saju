@@ -1,5 +1,5 @@
 // 2026-05-15 PR 3 — 운세톡톡 벤치마크 (일진_점수산출_알고리즘_정교화.md):
-// 일진 점수 산출 8영역 엔진. 기준 50점에서 다음을 누적:
+// 일진 점수 산출 8영역 엔진. 원칙 50점에서 다음을 누적:
 //   ① 일간 vs 일진 천간 (십성 작용)  가중치 1.5x
 //   ② 사주 지지 vs 일진 지지 (합/충/형/해/파/원진)  가중치 1.5x
 //   ③ 일진 오행이 용신/기신인지  가중치 1.3x
@@ -166,7 +166,7 @@ function scoreOhaengYongsin(saju: SajuOriginInput, iljin: IljinInput): number {
 }
 
 // === Score 4: 신살 발동 (간이판) ===
-// 천을귀인·문창귀인·도화·역마·양인·백호·공망 등을 일진 지지·천간 기준으로 간이 탐지.
+// 천을귀인·문창귀인·도화·역마·양인·백호·공망 등을 일진 지지·천간 바탕으로 간이 탐지.
 // 정밀 신살은 별도 엔진 필요. 여기선 사용자 체감이 큰 7개만.
 function scoreSinsal(saju: SajuOriginInput, iljin: IljinInput): number {
   let score = 0;
@@ -180,7 +180,7 @@ function scoreSinsal(saju: SajuOriginInput, iljin: IljinInput): number {
   };
   if (TIANYI[saju.dayMaster].includes(iljin.todayBranch)) score += 15;
 
-  // 도화 (일지 기준): 申子辰→酉, 寅午戌→卯, 巳酉丑→午, 亥卯未→子.
+  // 도화 (일지 원칙): 申子辰→酉, 寅午戌→卯, 巳酉丑→午, 亥卯未→子.
   const DOHWA: Record<string, Branch> = {
     申子辰: '酉', 寅午戌: '卯', 巳酉丑: '午', 亥卯未: '子',
   };
@@ -191,7 +191,7 @@ function scoreSinsal(saju: SajuOriginInput, iljin: IljinInput): number {
     }
   }
 
-  // 역마 (일지/연지 기준): 申子辰→寅, 寅午戌→申, 巳酉丑→亥, 亥卯未→巳.
+  // 역마 (일지/연지 원칙): 申子辰→寅, 寅午戌→申, 巳酉丑→亥, 亥卯未→巳.
   const YEOKMA: Record<string, Branch> = {
     申子辰: '寅', 寅午戌: '申', 巳酉丑: '亥', 亥卯未: '巳',
   };
@@ -202,7 +202,7 @@ function scoreSinsal(saju: SajuOriginInput, iljin: IljinInput): number {
     }
   }
 
-  // 양인 (일간 기준, 양간만): 甲卯, 丙午, 戊午, 庚酉, 壬子.
+  // 양인 (일간 원칙, 양간만): 甲卯, 丙午, 戊午, 庚酉, 壬子.
   const YANGIN: Record<Stem, Branch | null> = {
     甲: '卯', 丙: '午', 戊: '午', 庚: '酉', 壬: '子',
     乙: null, 丁: null, 己: null, 辛: null, 癸: null,

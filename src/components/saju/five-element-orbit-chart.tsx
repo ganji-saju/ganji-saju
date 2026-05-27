@@ -4,7 +4,7 @@ import type { Element } from '@/lib/saju/types';
 const ELEMENT_ORDER: Element[] = ['목', '화', '토', '금', '수'];
 const ELEMENT_DISPLAY: Record<Element, string> = {
   목: '성장',
-  화: '표현',
+  화: '말',
   토: '안정',
   금: '정리',
   수: '생각',

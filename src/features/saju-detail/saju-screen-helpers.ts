@@ -11,7 +11,7 @@ export function formatBirthSummary(input: BirthInput) {
     input.solarTimeMode === 'longitude' ? '진태양시' : '표준시';
   const timeLabel =
     input.hour !== undefined
-      ? `${input.hour}시${minuteLabel} 기준 · ${solarTimeLabel}`
+      ? `${input.hour}시${minuteLabel} 입력 · ${solarTimeLabel}`
       : '태어난 시간 미입력';
   const genderLabel = input.gender
     ? input.gender === 'male'

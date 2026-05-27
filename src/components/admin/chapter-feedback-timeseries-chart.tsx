@@ -129,7 +129,7 @@ export function ChapterFeedbackTimeseriesChart({ data }: Props) {
           </div>
           <Sparkline values={ratingSeries} color="var(--app-jade,#3F8796)" baseline={3.5} />
           <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
-            점선: 기준 3.5
+            점선: 목표 3.5
           </div>
         </article>
 
@@ -138,7 +138,7 @@ export function ChapterFeedbackTimeseriesChart({ data }: Props) {
             helpful 비율
           </div>
           <Sparkline values={helpfulRateSeries} color="#D59B2E" baseline={70} />
-          <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">점선: 기준 70%</div>
+          <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">점선: 목표 70%</div>
         </article>
       </div>
     </section>

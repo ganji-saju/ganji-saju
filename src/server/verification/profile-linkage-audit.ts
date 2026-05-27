@@ -51,8 +51,8 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
     usesSharedBirthSchema: true,
     usesSajuEngine: false,
     detail:
-      '양력·음력, 시간 모름, 출생지, timeRule을 저장하는 기준 저장소입니다. 오늘운세, 사주 시작하기, 궁합에서 같은 입력값을 다시 불러옵니다.',
-    continuity: '공통 입력의 기준 저장소',
+      '양력·음력, 시간 모름, 출생지, timeRule을 저장하는 입력 저장소입니다. 오늘운세, 사주 시작하기, 궁합에서 같은 입력값을 다시 불러옵니다.',
+    continuity: '공통 입력 저장소',
     sourceRefs: [
       '/src/components/my/profile-manager.tsx',
       '/src/app/api/profile/route.ts',
@@ -111,7 +111,7 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
     usesSharedBirthSchema: false,
     usesSajuEngine: true,
     detail:
-      '결과 자체는 생성된 reading slug를 기준으로 움직이고, 선생 선택과 일부 AI 레이어는 저장된 프로필 선호값을 다시 읽습니다. 즉 결과는 reading 중심, 페르소나는 profile 중심입니다.',
+      '결과 자체는 생성된 reading slug를 바탕으로 움직이고, 선생 선택과 일부 AI 레이어는 저장된 프로필 선호값을 다시 읽습니다. 즉 결과는 reading 중심, 페르소나는 profile 중심입니다.',
     continuity: 'reading 기반 결과 + profile 기반 선생 설정',
     sourceRefs: [
       '/src/app/saju/[slug]/page.tsx',
@@ -185,7 +185,7 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
     usesSharedBirthSchema: true,
     usesSajuEngine: true,
     detail:
-      '띠운세는 MY 프로필 생년월일을 공통 BirthInput으로 바꾼 뒤 실제 사주 엔진의 연주 지지를 읽어 내 띠를 맞춥니다. 입춘 전후 생일도 사주 결과와 같은 기준으로 맞습니다.',
+      '띠운세는 MY 프로필 생년월일을 공통 BirthInput으로 바꾼 뒤 실제 사주 엔진의 연주 지지를 읽어 내 띠를 맞춥니다. 입춘 전후 생일도 사주 결과와 같은 바탕으로 맞습니다.',
     continuity: 'MY 프로필 → 공통 입력 → 사주 엔진 연주 → 내 띠 운세',
     sourceRefs: [
       '/src/lib/profile-personalization.ts',
@@ -249,7 +249,7 @@ export function getProfileLinkageVerificationAudit(): ProfileLinkageAudit {
         label: '타로/별자리/명리 탐구와 엔진 연결 서비스를 정확히 구분했는가',
         ok: true,
         detail:
-          '타로/별자리/명리 탐구는 약한 개인화나 사주 브리지 CTA 수준이고, 띠운세는 실제 사주 엔진 연주 기준으로 내 띠를 계산합니다.',
+          '타로/별자리/명리 탐구는 약한 개인화나 사주 브리지 CTA 수준이고, 띠운세는 실제 사주 엔진 연주 정보로 내 띠를 계산합니다.',
       },
     ],
     services: SERVICES,

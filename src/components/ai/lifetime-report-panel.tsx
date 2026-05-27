@@ -729,7 +729,7 @@ function LifetimeSectionBody({
       return (
         <div className="mt-4 grid gap-2.5">
           <FactCard label="거리감" body={report.relationshipPattern.distanceStyle} tone={tone} />
-          <FactCard label="감정 표현 방식" body={report.relationshipPattern.expressionStyle} tone={tone} />
+          <FactCard label="감정 말투" body={report.relationshipPattern.expressionStyle} tone={tone} />
           <FactCard label="갈등 지점" body={report.relationshipPattern.conflictTriggers} tone={tone} />
           <FactCard label="오래 가는 법" body={report.relationshipPattern.longevityGuide} tone={tone} />
         </div>

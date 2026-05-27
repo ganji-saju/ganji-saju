@@ -6,7 +6,7 @@ import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-pa
 export async function generateMetadata(): Promise<Metadata> {
   return buildPolicyMetadata(
     'digital-content',
-    '간지사주의 디지털 콘텐츠 제공 시점과 청약철회 제한 안내 (전자상거래법 §17 기준).'
+    '간지사주의 디지털 콘텐츠 제공 시점과 청약철회 제한 안내 (전자상거래법 §17 원칙).'
   );
 }
 

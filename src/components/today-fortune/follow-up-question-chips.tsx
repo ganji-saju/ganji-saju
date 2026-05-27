@@ -30,7 +30,7 @@ export function FollowUpQuestionChips({
             지금 결과를 놓고 바로 물어보세요
           </h3>
           <p className="mt-2 text-sm font-normal leading-6 text-[var(--app-copy)]">
-            아래 질문을 누르면 대화방으로 이동해 이 결과를 기준으로 이어서 묻습니다.
+            아래 질문을 누르면 대화방으로 이동해 이 결과를 바탕으로 이어서 묻습니다.
           </p>
         </div>
       </div>

@@ -128,7 +128,7 @@ export function ReviewWriteDialog({
             {productTitle}
           </h2>
           <p className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
-            제출 후 검수를 거쳐 공개됩니다. 부적절한 표현은 비공개 처리될 수 있어요.
+            제출 후 검수를 거쳐 공개됩니다. 부적절한 문구은 비공개 처리될 수 있어요.
           </p>
         </div>
 

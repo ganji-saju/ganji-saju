@@ -158,13 +158,13 @@ const MAJOR_THEMES: Record<
   'The Emperor': {
     theme: '질서와 책임',
     focus: '흔들리는 일을 구조화하는 태도',
-    action: '오늘 결정해야 할 기준을 세 가지로 좁혀보세요.',
+    action: '오늘 결정해야 할 원칙을 세 가지로 좁혀보세요.',
     sajuElement: '중심을 세우고 흐름을 붙드는 힘',
   },
   'The Hierophant': {
     theme: '원칙과 배움',
     focus: '검증된 조언과 오래된 지혜',
-    action: '혼자 단정하지 말고 믿을 만한 기준을 하나 더 확인해보세요.',
+    action: '혼자 단정하지 말고 믿을 만한 원칙을 하나 더 확인해보세요.',
     sajuElement: '전통과 경험에서 길을 찾는 힘',
   },
   'The Lovers': {
@@ -242,7 +242,7 @@ const MAJOR_THEMES: Record<
   'The Sun': {
     theme: '환함과 성취',
     focus: '감추지 않고 밝게 드러내는 태도',
-    action: '감사나 칭찬, 반가운 마음을 한 번 더 표현해보세요.',
+    action: '감사나 칭찬, 반가운 마음을 한 번 더 말해보세요.',
     sajuElement: '기운을 밖으로 펼쳐 결실을 부르는 힘',
   },
   'The Last Judgment': {
@@ -294,7 +294,7 @@ const SUIT_THEMES: Record<
     korean: '완드',
     marker: '🔥',
     theme: '의욕과 행동',
-    focus: '움직임과 표현의 속도',
+    focus: '움직임과 말의 속도',
     sajuElement: '화기처럼 밖으로 뻗는 추진력',
   },
 };
@@ -382,7 +382,7 @@ const VALUE_THEMES: Record<
 const TONE_FOCUS: Record<TarotQuestionTone, (theme: string, focus: string) => string> = {
   daily: (theme, focus) => `오늘 하루에는 ${theme}의 흐름이 올라옵니다. 특히 ${withParticle(focus, '을', '를')} 차분히 살피면 하루의 리듬이 부드러워집니다.`,
   relationship: (theme, focus) => `관계에서는 ${withParticle(theme, '이', '가')} 중요한 장면으로 보입니다. 상대의 말보다 ${withParticle(focus, '을', '를')} 먼저 읽으면 마음의 거리를 더 정확히 잡을 수 있습니다.`,
-  choice: (theme, focus) => `선택 앞에서는 ${withParticle(theme, '이', '가')} 기준이 됩니다. 지금은 ${withParticle(focus, '을', '를')} 기준으로 두면 흔들림이 줄어듭니다.`,
+  choice: (theme, focus) => `선택 앞에서는 ${withParticle(theme, '이', '가')} 바탕이 됩니다. 지금은 ${withParticle(focus, '을', '를')} 바탕으로 두면 흔들림이 줄어듭니다.`,
   direction: (theme, focus) => `앞으로의 방향은 ${theme}에서 실마리가 보입니다. 멀리 보려 하기보다 ${focus}부터 정리해보세요.`,
 };
 
@@ -550,13 +550,13 @@ function buildPsychologyCopy(
 
   if (context.subject === 'other' && context.intent === 'feelings') {
     if (flow === 'open') {
-      summary = `${subjectLabel}는 완전히 닫힌 쪽보다 감정이 아직 살아 있는 쪽에 가깝습니다. 다만 마음이 있어도 바로 크게 표현하기보다 반응을 살피며 움직일 가능성이 큽니다.`;
+      summary = `${subjectLabel}는 완전히 닫힌 쪽보다 감정이 아직 살아 있는 쪽에 가깝습니다. 다만 마음이 있어도 바로 크게 말하기보다 반응을 살피며 움직일 가능성이 큽니다.`;
     } else if (flow === 'steady') {
       summary = `${subjectLabel}는 감정이 없어서라기보다 현실 가능성과 안정성을 먼저 보려는 심리가 강합니다. 마음보다 상황 정리가 먼저여야 움직이기 쉬운 타입으로 읽힙니다.`;
     } else if (flow === 'guarded') {
       summary = `${subjectLabel}는 지금 감정보다 생각과 경계가 앞서 있습니다. 상처를 되풀이하지 않으려는 마음이 있어, 쉽게 속마음을 드러내지 않을 수 있습니다.`;
     } else if (flow === 'blocked') {
-      summary = `${subjectLabel}는 마음이 아예 없는 것보다, 지금은 감정과 상황이 뒤엉켜 표현이 막혀 있는 상태에 가깝습니다. 당장 확답을 기대하면 더 움츠러들 수 있습니다.`;
+      summary = `${subjectLabel}는 마음이 아예 없는 것보다, 지금은 감정과 상황이 뒤엉켜 말이 막혀 있는 상태에 가깝습니다. 당장 확답을 기대하면 더 움츠러들 수 있습니다.`;
     } else {
       summary = `${subjectLabel}는 마음의 방향이 완전히 정해졌다기보다 큰 전환점 위에 서 있는 모습입니다. 지금은 한 번에 단정하기보다 흐름을 더 지켜보는 편이 맞습니다.`;
     }
@@ -572,7 +572,7 @@ function buildPsychologyCopy(
     if (flow === 'open') {
       summary = `${withParticle(subjectLabel, '은', '는')} 답을 알고 싶다는 마음과 함께 직접 움직여 보고 싶은 기운도 함께 올라와 있습니다. 다만 조급함보다 자연스러운 흐름을 타는 편이 더 좋습니다.`;
     } else if (flow === 'steady') {
-      summary = `${withParticle(subjectLabel, '은', '는')} 감정만으로 결정하기보다 기준과 안전선을 먼저 확인하고 싶어 합니다. 그래서 느려 보여도 생각이 없는 상태는 아닙니다.`;
+      summary = `${withParticle(subjectLabel, '은', '는')} 감정만으로 결정하기보다 원칙과 안전선을 먼저 확인하고 싶어 합니다. 그래서 느려 보여도 생각이 없는 상태는 아닙니다.`;
     } else if (flow === 'guarded') {
       summary = `${withParticle(subjectLabel, '은', '는')} 감정이 없는 것이 아니라, 먼저 판단하고 상처를 피하려는 방어가 앞서 있습니다. 말보다 속뜻을 정리하는 시간이 필요합니다.`;
     } else if (flow === 'blocked') {
@@ -608,7 +608,7 @@ function buildDirectAnswer(
       return withCardLead('관심의 유무보다 경계와 판단이 먼저 올라와 있어, 속마음이 있어도 쉽게 드러나지 않을 수 있습니다.');
     }
 
-    return withCardLead('지금은 마음의 유무를 단정하기보다, 감정과 상황이 정리되지 않아 표현이 막혀 있는 흐름으로 보는 편이 더 맞습니다.');
+    return withCardLead('지금은 마음의 유무를 단정하기보다, 감정과 상황이 정리되지 않아 말이 막혀 있는 흐름으로 보는 편이 더 맞습니다.');
   }
 
   if (context.intent === 'contact') {
@@ -637,7 +637,7 @@ function buildDirectAnswer(
     }
 
     if (flow === 'steady') {
-      return withCardLead('진행은 가능하지만 조건 점검이 먼저입니다. 기준과 현실선을 확인한 뒤 움직이면 후회가 줄어듭니다.');
+      return withCardLead('진행은 가능하지만 조건 점검이 먼저입니다. 원칙과 현실선을 확인한 뒤 움직이면 후회가 줄어듭니다.');
     }
 
     if (flow === 'guarded' || flow === 'blocked') {
@@ -651,7 +651,7 @@ function buildDirectAnswer(
     return withCardLead(
       flow === 'blocked'
         ? '일과 방향은 아직 무리하게 키우기보다 정리와 재정비가 먼저입니다.'
-        : '일의 흐름은 열려 있습니다. 다만 속도보다 기준을 세운 전진이 더 오래 갑니다.'
+        : '일의 흐름은 열려 있습니다. 다만 속도보다 원칙을 세운 전진이 더 오래 갑니다.'
     );
   }
 
@@ -684,7 +684,7 @@ function buildSpreadPositions(context: TarotQuestionContext) {
   }
 
   if (context.intent === 'decision') {
-    return ['지금 기준', '밀면 얻는 것', '지금 피할 점'];
+    return ['지금 원칙', '밀면 얻는 것', '지금 피할 점'];
   }
 
   if (context.domain === 'career' || context.tone === 'direction') {
@@ -692,7 +692,7 @@ function buildSpreadPositions(context: TarotQuestionContext) {
   }
 
   if (context.domain === 'money') {
-    return ['지금 돈 흐름', '새는 지점', '지켜야 할 기준'];
+    return ['지금 돈 흐름', '새는 지점', '지켜야 할 원칙'];
   }
 
   return ['현재 흐름', '숨은 원인', '오늘의 조언'];
@@ -899,7 +899,7 @@ function buildCardAction(
 
   const suitAction =
     card.suit === 'cups'
-      ? '감정 표현은 짧고 부드럽게 하되, 답을 재촉하지 마세요.'
+      ? '감정 말은 짧고 부드럽게 하되, 답을 재촉하지 마세요.'
       : card.suit === 'pentacles'
         ? '돈, 일정, 약속처럼 손에 잡히는 것부터 먼저 정리하세요.'
         : card.suit === 'swords'
@@ -942,7 +942,7 @@ function buildSajuBlendCopy(
       : context.domain === 'career'
         ? '타로는 오늘 일과 방향 앞에서 느끼는 망설임을 보여줍니다. 사주로 이어 보면 내가 일을 진행하는 방식, 버티는 힘, 바꾸기 좋은 시기를 함께 볼 수 있습니다.'
         : context.domain === 'money'
-          ? '타로는 지금 돈과 선택 앞에서 생기는 긴장감을 보여줍니다. 사주로 이어 보면 재물을 모으고 쓰는 방식, 무리하기 쉬운 흐름, 지켜야 할 기준을 더 구체적으로 볼 수 있습니다.'
+          ? '타로는 지금 돈과 선택 앞에서 생기는 긴장감을 보여줍니다. 사주로 이어 보면 재물을 모으고 쓰는 방식, 무리하기 쉬운 흐름, 지켜야 할 원칙을 더 구체적으로 볼 수 있습니다.'
           : '타로는 오늘 마음에 남은 장면을 보여줍니다. 사주로 이어 보면 그 장면이 내 성향과 운의 리듬에서 왜 익숙하게 반복되는지 확인할 수 있습니다.';
 
   const moodLine =

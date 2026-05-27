@@ -437,7 +437,7 @@ function CreditsPageContent() {
             >
               <div className="font-extrabold text-[var(--app-ink)]">계정 연결 뒤 결제할 수 있습니다</div>
               <p className="mt-1">
-                코인팩과 환불 기준은 먼저 확인할 수 있고, 선택한 패키지는 로그인 뒤 결제로 이어집니다.
+                코인팩과 환불 정책은 먼저 확인할 수 있고, 선택한 패키지는 로그인 뒤 결제로 이어집니다.
               </p>
               <Link
                 href={`/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`}

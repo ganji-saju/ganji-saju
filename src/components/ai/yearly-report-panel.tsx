@@ -108,7 +108,7 @@ const CORE_CATEGORY_GUIDE = {
     icon: Heart,
     opportunityLabel: '통하는 장면',
     cautionLabel: '엉키는 장면',
-    actionLabel: '표현 방법',
+    actionLabel: '말 방법',
   },
   relationship: {
     label: '관계운',

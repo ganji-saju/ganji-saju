@@ -104,7 +104,7 @@ export default async function StarSignPage() {
                 color: 'var(--app-pink-strong)',
               }}
             >
-              {dateKey} 기준
+              {dateKey} 원칙
             </span>
           </div>
           <h1
@@ -206,7 +206,7 @@ export default async function StarSignPage() {
         <section className="space-y-2 px-1">
           <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">오늘 운 좋은 TOP 3</h2>
           <p className="text-[11.5px] text-[var(--app-copy-soft)]">
-            12 별자리 총운 점수 상위 — 매일 자정 기준으로 바뀝니다
+            12 별자리 총운 점수 상위 — 매일 자정마다 바뀝니다
           </p>
           <div className="mt-1 grid gap-2">
             {topThree.map((d, idx) => {

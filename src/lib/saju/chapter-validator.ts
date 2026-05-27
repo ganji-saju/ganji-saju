@@ -3,7 +3,7 @@
 //
 // 사용 시나리오:
 //  1. 현재 — buildLifetimeReport 의 9 cycle 본문이 한자 / X과 라벨 / 영어 단어
-//     / 단정 표현 0건임을 자동 검증 (회귀 차단).
+//     / 단정 문구 0건임을 자동 검증 (회귀 차단).
 //  2. 향후 — saju-lifetime-service 의 LLM 출력을 검증해 fail 시 재생성 또는
 //     deterministic fallback 사용.
 
@@ -65,6 +65,7 @@ export const FORBIDDEN_OLD_ELEMENT_LABELS = [
   // 2026-05-16 이전의 "X과/와 Y" 두 단어 라벨 (한국어 조사 충돌 5종)
   '시작과 추진',
   '열정과 표현',
+  '열정과 말',
   '안정과 중심',
   '결단과 마무리',
   '지혜와 유연',
@@ -77,7 +78,7 @@ export const FORBIDDEN_OLD_ELEMENT_LABELS = [
 ];
 
 /**
- * 사이트 정체성 (안심하고 보기 정책) 과 충돌하는 단정·자극·공포 표현.
+ * 사이트 정체성 (안심하고 보기 정책) 과 충돌하는 단정·자극·공포 문구.
  *
  * 2026-05-20 확장: 진단서 P0 ⑥ 잔존 패턴 점검에서 발견된 추가 자극어 보강.
  *   - '역대급', '평생 후회', '폭발할', '망설일 시간', '한 번의 대박':
@@ -103,7 +104,7 @@ const HANJA_PATTERN = /[一-鿿]/;
 const ENGLISH_WORD_PATTERN = /\b[a-zA-Z]{2,}\b/g;
 
 /**
- * "결" 빈도 한도 — 챕터당 최대 N회. 진단서 §3 ③ "한 섹션당 최대 2회" 기준에
+ * "결" 빈도 한도 — 챕터당 최대 N회. 진단서 §3 ③ "한 섹션당 최대 2회" 원칙에
  *   섹션 ≈ 챕터 본문 한 단락 (3~5 문장) 으로 매핑.
  *
  * 자연스러운 *복합 명사* ("결단", "결정", "결과", "결혼", "결제" 등) 는
@@ -117,12 +118,12 @@ const GYEOL_STANDALONE_PATTERN =
 
 /**
  * 한 문장 길이 한도 — 65자 (60자 안팎 spec 의 5자 buffer).
- *   문장 분리는 마침표/물음표/느낌표 + 줄바꿈 기준.
+ *   문장 분리는 마침표/물음표/느낌표 + 줄바꿈 원칙.
  */
 const SENTENCE_LENGTH_MAX = 65;
 
 /**
- * 막연한 위로 패턴 — *데이터 근거 없는* 위로 표현. 진단서 §3 ⑧ 규칙.
+ * 막연한 위로 패턴 — *데이터 근거 없는* 위로 말. 진단서 §3 ⑧ 규칙.
  *   spec 정신: 위로 자체는 OK 지만 "괜찮을 거예요" 같이 *결 분석 없는* 빈 위로 차단.
  *   진정한 위로 ("이 흐름이 안정되면 회복돼요") 는 *결 근거 + 시점* 이라 통과.
  */
@@ -221,13 +222,13 @@ export function validateChapterBody(
     }
   }
 
-  // 4. 단정·공포 표현 0건
+  // 4. 단정·공포 문구 0건
   if (!skip.has('absolute')) {
     for (const phrase of FORBIDDEN_ABSOLUTE_PHRASES) {
       if (body.includes(phrase)) {
         failures.push({
           rule: 'absolute',
-          detail: '안심하고 보기 정책과 충돌하는 단정·자극 표현',
+          detail: '안심하고 보기 정책과 충돌하는 단정·자극 문구',
           excerpt: phrase,
         });
       }
@@ -307,13 +308,13 @@ export function validateChapterBody(
     }
   }
 
-  // 9. 막연한 위로 — 데이터 근거 없는 빈 위로 표현 차단 (진단서 §3 ⑧)
+  // 9. 막연한 위로 — 데이터 근거 없는 빈 위로 말 차단 (진단서 §3 ⑧)
   if (!skip.has('vague-comfort')) {
     for (const phrase of VAGUE_COMFORT_PHRASES) {
       if (body.includes(phrase)) {
         failures.push({
           rule: 'vague-comfort',
-          detail: `근거 없는 위로 표현 — 결·신호·시점 정보 동반 권장`,
+          detail: `근거 없는 위로 말 — 결·신호·시점 정보 동반 권장`,
           excerpt: phrase,
         });
       }

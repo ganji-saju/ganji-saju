@@ -42,8 +42,8 @@ export function hashUserId(rawId: string | null | undefined): string | undefined
 
 /**
  * OpenAI Responses API 모델별 단가 (USD per 1M tokens).
- *   2026-05-20 기준 OpenAI 공식 단가. 모델 변경 시 갱신.
- *   알려지지 않은 모델은 default fallback 단가 (gpt-5.2 기준 보수적 추정).
+ *   2026-05-20 당시 OpenAI 공식 단가. 모델 변경 시 갱신.
+ *   알려지지 않은 모델은 default fallback 단가 (gpt-5.2 원칙 보수적 추정).
  */
 const MODEL_PRICING_PER_M_TOKENS: Record<string, { input: number; output: number }> = {
   'gpt-5.2': { input: 1.25, output: 10.0 },

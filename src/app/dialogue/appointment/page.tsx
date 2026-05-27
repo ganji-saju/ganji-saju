@@ -363,7 +363,7 @@ export default function AppointmentPage() {
                       {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인
                     </h2>
                     <p className="mt-1 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]">
-                      1코인 {formatWon(SINGLE_COIN_PRICE_KRW)} 기준 환산 {formatWon(appointmentKrwEquivalent)} 상당입니다. 실제 결제 금액은 선택한 충전팩 단가에 따라 달라질 수 있습니다.
+                      1코인 {formatWon(SINGLE_COIN_PRICE_KRW)} 단가 환산 {formatWon(appointmentKrwEquivalent)} 상당입니다. 실제 결제 금액은 선택한 충전팩 단가에 따라 달라질 수 있습니다.
                     </p>
                   </div>
                   <Link
@@ -403,7 +403,7 @@ export default function AppointmentPage() {
                 className="rounded-[16px] border bg-white p-4 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">예약 취소·환불 기준</h2>
+                <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">예약 취소·환불 정책</h2>
                 <ul className="mt-2 grid gap-1.5">
                   <li>상담 시작 24시간 전까지 취소하면 사용 코인을 전액 복구합니다.</li>
                   <li>상담 시작 24시간 이내 취소 또는 예약 시간 미참석은 배정 준비가 시작되어 코인 복구가 제한됩니다.</li>

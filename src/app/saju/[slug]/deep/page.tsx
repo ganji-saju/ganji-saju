@@ -107,7 +107,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
   const phaseColor =
     cycle.phase === '성장기'
       ? 'var(--app-jade)'
-      : cycle.phase === '표현기'
+      : cycle.phase === '전달기'
         ? 'var(--app-pink-strong)'
         : cycle.phase === '결정기'
           ? 'var(--app-amber)'

@@ -334,7 +334,7 @@ function SearchContent() {
                 &ldquo;<span className="text-[var(--app-pink-strong)]">{query}</span>&rdquo;와 일치하는 풀이가 없어요
               </div>
               <p className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-soft)]">
-                검색어를 다르게 표현해보거나,
+                검색어를 다르게 말해보거나,
                 <br />
                 아래 추천 메뉴에서 시작해보세요.
               </p>

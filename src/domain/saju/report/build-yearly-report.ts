@@ -97,10 +97,10 @@ const MONTH_AREA_PLAN: Record<
   { relatedAreas: YearlyCategoryKey[]; theme: string }
 > = {
   1: { relatedAreas: ['health', 'relationship'], theme: '한 해의 리듬과 관계의 온도를 정리하는 달' },
-  2: { relatedAreas: ['work', 'wealth'], theme: '판을 세우고 돈과 일의 기준을 잡는 달' },
-  3: { relatedAreas: ['work', 'love'], theme: '실행과 표현이 함께 움직이는 달' },
+  2: { relatedAreas: ['work', 'wealth'], theme: '판을 세우고 돈과 일의 방향을 잡는 달' },
+  3: { relatedAreas: ['work', 'love'], theme: '실행과 말이 함께 움직이는 달' },
   4: { relatedAreas: ['love', 'relationship'], theme: '가까운 관계의 거리감이 중요해지는 달' },
-  5: { relatedAreas: ['love', 'move'], theme: '표현과 변화 욕구가 함께 커지는 달' },
+  5: { relatedAreas: ['love', 'move'], theme: '말과 변화 욕구가 함께 커지는 달' },
   6: { relatedAreas: ['health', 'move'], theme: '속도 조절과 생활 리듬 점검이 필요한 달' },
   7: { relatedAreas: ['work', 'wealth'], theme: '성과와 계산이 현실화되는 달' },
   8: { relatedAreas: ['wealth', 'work'], theme: '정산과 수익 구조를 손보는 달' },
@@ -125,22 +125,22 @@ const MONTH_DECISION_GUIDE: Record<
 > = {
   1: {
     question: '올해 초반에 사람과 생활 리듬 중 무엇부터 바로잡아야 할까?',
-    summaryLead: '사람과 생활 리듬의 기준을 먼저 바로잡을수록 뒤가 편해집니다.',
+    summaryLead: '사람과 생활 리듬의 원칙을 먼저 바로잡을수록 뒤가 편해집니다.',
     opportunityLead: '생활 리듬과 가까운 관계의 온도를 먼저 정리하는 움직임에 힘이 붙습니다.',
     cautionLead: '서운함을 바로 결론으로 말하거나 무리하게 일정을 넓히는 선택은 피하는 편이 좋습니다.',
     actionLead: '안부, 수면, 약속처럼 기본 리듬을 먼저 고정하는 방식으로 시작하세요.',
   },
   2: {
-    question: '돈과 일의 기준을 새로 세운다면 어떤 순서로 봐야 할까?',
-    summaryLead: '예산과 역할처럼 기준표를 다시 쓰기 좋은 달입니다.',
+    question: '돈과 일의 원칙을 새로 세운다면 어떤 순서로 봐야 할까?',
+    summaryLead: '예산과 역할처럼 대조표를 다시 쓰기 좋은 달입니다.',
     opportunityLead: '예산, 일정, 역할처럼 판을 다시 짜는 선택에 힘이 붙습니다.',
     cautionLead: '조건을 덜 본 채 서둘러 확정하면 뒤에서 다시 조정할 일이 커질 수 있습니다.',
     actionLead: '정산과 우선순위를 먼저 적고 움직이면 시행착오가 줄어듭니다.',
   },
   3: {
-    question: '실행과 표현이 함께 움직일 때 무엇을 먼저 꺼내야 할까?',
-    summaryLead: '준비해 둔 제안과 표현을 밖으로 꺼내기 좋은 달입니다.',
-    opportunityLead: '제안, 발표, 호감 표현처럼 밖으로 드러나는 장면에 기회가 생깁니다.',
+    question: '실행과 말이 함께 움직일 때 무엇을 먼저 꺼내야 할까?',
+    summaryLead: '준비해 둔 제안과 말을 밖으로 꺼내기 좋은 달입니다.',
+    opportunityLead: '제안, 발표, 호감 말처럼 밖으로 드러나는 장면에 기회가 생깁니다.',
     cautionLead: '말의 속도가 앞서면 기대보다 오해가 먼저 붙을 수 있습니다.',
     actionLead: '준비한 한 가지를 분명하게 꺼내고, 반응을 본 뒤 넓히세요.',
   },
@@ -152,7 +152,7 @@ const MONTH_DECISION_GUIDE: Record<
     actionLead: '감정 결론보다 요청과 확인을 먼저 말하는 편이 좋습니다.',
   },
   5: {
-    question: '표현과 변화 욕구가 커질 때 바로 움직여도 될까?',
+    question: '말과 변화 욕구가 커질 때 바로 움직여도 될까?',
     summaryLead: '바꾸고 싶은 마음이 커지지만 시험 운전이 먼저인 달입니다.',
     opportunityLead: '움직이고 싶은 마음을 새로운 만남이나 환경 정비로 쓰기 좋습니다.',
     cautionLead: '충동적으로 방향을 바꾸면 기대보다 피로가 크게 남을 수 있습니다.',
@@ -169,7 +169,7 @@ const MONTH_DECISION_GUIDE: Record<
     question: '성과와 계산이 현실화될 때 무엇을 진행하고 무엇을 남겨야 할까?',
     summaryLead: '성과와 숫자를 정리해 보여줄수록 실속이 생기는 달입니다.',
     opportunityLead: '실적, 정산, 결과 확인처럼 숫자로 남는 장면에서 진도가 납니다.',
-    cautionLead: '성과를 급히 키우려다 기준 없는 확장을 하면 수고만 커질 수 있습니다.',
+    cautionLead: '성과를 급히 키우려다 원칙 없는 확장을 하면 수고만 커질 수 있습니다.',
     actionLead: '이미 준비된 일부터 끝내고, 새 일은 한 단계 늦게 붙이세요.',
   },
   8: {
@@ -181,8 +181,8 @@ const MONTH_DECISION_GUIDE: Record<
   },
   9: {
     question: '평가와 협업이 겹칠 때 지금 무엇을 분명히 해야 할까?',
-    summaryLead: '평가와 협업의 기준을 문장으로 남길수록 흔들림이 줄어듭니다.',
-    opportunityLead: '역할 분리, 성과 정리, 협업 기준 제시에 강점이 살아납니다.',
+    summaryLead: '평가와 협업의 원칙을 문장으로 남길수록 흔들림이 줄어듭니다.',
+    opportunityLead: '역할 분리, 성과 정리, 협업 원칙 제시에 강점이 살아납니다.',
     cautionLead: '말하지 않아도 알겠지 하는 기대가 오히려 평판 손실로 번질 수 있습니다.',
     actionLead: '내 역할과 상대 역할을 문장으로 남기세요.',
   },
@@ -203,7 +203,7 @@ const MONTH_DECISION_GUIDE: Record<
   12: {
     question: '올해를 닫고 내년을 열기 전에 무엇을 정리해야 할까?',
     summaryLead: '무엇을 끝내고 무엇을 넘길지 정리해야 다음 해가 가벼워집니다.',
-    opportunityLead: '미완료 일과 생활 리듬을 정리하면서 다음 해 기준을 세우기 좋습니다.',
+    opportunityLead: '미완료 일과 생활 리듬을 정리하면서 다음 해 원칙을 정하기 좋습니다.',
     cautionLead: '마무리해야 한다는 압박 때문에 무리하게 결론을 내면 오히려 정리가 늦어질 수 있습니다.',
     actionLead: '정리할 것, 넘길 것, 버릴 것을 세 칸으로 나눠 적으세요.',
   },
@@ -243,7 +243,7 @@ function splitSentences(text: string) {
 
 function stripScoreLead(text: string) {
   const sentences = splitSentences(text);
-  if (sentences[0] && /(?:총운|연애운|재물운|직장운|관계운)\s*\d+점 기준/.test(sentences[0])) {
+  if (sentences[0] && /(?:총운|연애운|재물운|직장운|관계운)\s*\d+점 원칙/.test(sentences[0])) {
     return sentences.slice(1).join(' ');
   }
   return text.trim();
@@ -440,7 +440,7 @@ function createYearlyKeywords(
       ? `${context.pattern}|반복해서 맡게 되는 역할과 책임의 흐름을 보여줍니다.`
       : null,
     context.strength
-      ? `${context.strength}|올해 바로 진행할지, 조율할지의 기준이 됩니다.`
+      ? `${context.strength}|올해 바로 진행할지, 조율할지의 바탕이 됩니다.`
       : null,
     dominant ? `${dominant} 활용|가장 익숙하고 강한 기운을 어떻게 잘 써야 하는지 알려줍니다.` : null,
   ])
@@ -469,13 +469,13 @@ function createOverview(
       `${personality} ${reports.today.summaryHighlights[0] ?? reports.today.summary}`,
       context.currentMajorLuck
         ? `현재는 ${context.currentMajorLuck} 대운 위에 ${context.yearGanji} 세운이 겹쳐 들어오는 구조라, 올해는 단기 성과보다 흐름의 방향을 먼저 읽는 편이 좋습니다.`
-        : `올해는 ${context.yearGanji} 세운이 전면으로 들어오므로, 원국의 강약과 용신을 기준으로 한 해의 선택을 조율하는 편이 좋습니다.`,
+        : `올해는 ${context.yearGanji} 세운이 전면으로 들어오므로, 원국의 강약과 용신을 바탕으로 한 해의 선택을 조율하는 편이 좋습니다.`,
       support
         ? `${support} 기운은 기회 활용의 축이고, ${withParticle(caution || '과해지는 축', '은', '는')} 조절 포인트로 보시면 됩니다.`
         : null,
     ]).join(' '),
     basis: compactStrings([
-      `일간 기준 성향: ${targetData.dayMaster.description ?? targetData.dayMaster.metaphor}`,
+      `일간 원칙 성향: ${targetData.dayMaster.description ?? targetData.dayMaster.metaphor}`,
       context.strength ? `강약: ${context.strength}` : null,
       context.pattern ? `격국: ${context.pattern}` : null,
       context.yongsinLabels.length > 0
@@ -682,7 +682,7 @@ function createMonthlyFlow(
       ? `${guide.summaryLead} ${focusLabel}에서는 준비한 결정을 밖으로 꺼내기 좋습니다.`
       : momentum === 'caution'
         ? `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 확정보다 확인을 먼저 두는 편이 좋습니다.`
-        : `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 새 일을 늘리기보다 기준을 정리할 때입니다.`;
+        : `${guide.summaryLead} ${withParticle(focusLabel, '은', '는')} 새 일을 늘리기보다 원칙을 정리할 때입니다.`;
 
   return {
     month: monthly.month,
@@ -808,11 +808,11 @@ function createHalfFlow(
     headline:
       label === 'firstHalf'
         ? `${section.headline.replace(/\.$/, '')} 흐름이 상반기의 큰 줄기가 됩니다.`
-        : `${section.headline.replace(/\.$/, '')} 흐름이 하반기 판단의 기준이 됩니다.`,
+        : `${section.headline.replace(/\.$/, '')} 흐름이 하반기 판단의 바탕이 됩니다.`,
     summary:
       riseCount >= cautionCount
         ? `${section.summary} ${label === 'firstHalf' ? '상반기에는 준비해 온 것을 꺼내는 힘이 더 크고,' : '하반기에는 구조를 현실화하는 힘이 더 커지며,'} 다만 조급함만 줄이면 훨씬 안정적으로 풀립니다.`
-        : `${section.summary} ${label === 'firstHalf' ? '상반기에는 속도보다 기준을 세우는 편이 좋고,' : '하반기에는 확정보다 조율이 먼저인 흐름이 강해,'} 경계선을 먼저 정하는 쪽이 유리합니다.`,
+        : `${section.summary} ${label === 'firstHalf' ? '상반기에는 속도보다 원칙을 정하는 편이 좋고,' : '하반기에는 확정보다 조율이 먼저인 흐름이 강해,'} 경계선을 먼저 정하는 쪽이 유리합니다.`,
     opportunity: section.opportunity,
     caution: section.caution,
     action: section.action,
@@ -883,9 +883,9 @@ export function buildYearlyReport(
     engineVersion: 'legacy-typescript-v1-yearly-foundation',
   });
   const rawReports = getReportMap(input, targetData);
-  // 2026-05-16 PR #180 — 5개 report 의 scores 를 iljinScore.totalScore 기준으로 통일.
+  // 2026-05-16 PR #180 — 5개 report 의 scores 를 iljinScore.totalScore 바탕으로 통일.
   //   computeSajuIljinScore 는 원본 사주(data) 의 오늘 일진을 사용 — yearly target 과 별개.
-  //   targetData 의 시점이 yearly 라도, 사용자가 보는 화면 점수는 "오늘 기준" 으로 일치.
+  //   targetData 의 시점이 yearly 라도, 사용자가 보는 화면 점수는 "오늘 정보" 으로 일치.
   const yearlyIljinResult = computeSajuIljinScore(data);
   const reports = yearlyIljinResult
     ? {

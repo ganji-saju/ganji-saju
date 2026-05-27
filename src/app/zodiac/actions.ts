@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { deriveZodiacSlug, deriveZodiacSlugFromBirthInput } from '@/lib/profile-personalization';
 import type { BirthInput } from '@/lib/saju/types';
 
-// 띠운세 진입용 경량 액션 — 생년월일만 받아 입춘 기준 띠를 계산하고 상세로 이동.
+// 띠운세 진입용 경량 액션 — 생년월일만 받아 입춘 반영 띠를 계산하고 상세로 이동.
 // 사주(/saju/new)와 달리 시간·성별·출생지는 받지 않는다(띠 판정에 불필요).
 export async function resolveZodiacByBirth(formData: FormData) {
   const year = Number.parseInt(String(formData.get('year') ?? ''), 10);
@@ -38,7 +38,7 @@ export async function resolveZodiacByBirth(formData: FormData) {
   try {
     slug = deriveZodiacSlugFromBirthInput(input);
   } catch {
-    // 사주 엔진 계산 실패 시 연도 기준으로 폴백(입춘 경계만 부정확)
+    // 사주 엔진 계산 실패 시 연도 바탕으로 폴백(입춘 경계만 부정확)
     slug = deriveZodiacSlug(solarYear);
   }
 

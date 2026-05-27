@@ -287,10 +287,10 @@ export function CompatibilityResultView({
           </div>
         </section>
 
-        {/* §7 평가 기준 — details 접기 */}
+        {/* §7 평가 원칙 — details 접기 */}
         <details className="rounded-[14px] border border-[var(--app-line)] bg-white">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[13px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
-            <span>궁합 기준과 참고 단서 보기</span>
+            <span>궁합 풀이와 참고 단서 보기</span>
             <span className="text-[var(--app-copy-muted)]" aria-hidden="true">
               ▾
             </span>

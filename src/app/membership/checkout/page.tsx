@@ -114,7 +114,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     nextRange: '상대와의 거리감, 연락 타이밍, 오늘의 말투를 봅니다.',
     opens: ['연애 질문 풀이', '궁합 입력 화면', '대화 연결'],
     notices: [
-      '로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 기준으로 남습니다.',
+      '로그인하지 않아도 입력은 가능하지만, 구매 저장은 로그인 계정에 남습니다.',
       '구매 후에는 checkout에서 중복 결제를 막습니다.',
     ],
   },
@@ -137,7 +137,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     nextRange: '돈이 새는 장면, 조심할 소비, 지킬 행동을 짧게 봅니다.',
     opens: ['재물 질문 풀이', '사주 입력 흐름', '대화 연결'],
     notices: [
-      '소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.',
+      '소액 풀이 구매 상태는 로그인 계정에 저장됩니다.',
       '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
     ],
   },
@@ -148,7 +148,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     nextRange: '오늘 일에서 조심할 말, 유리한 태도, 다음 선택을 봅니다.',
     opens: ['일 질문 풀이', '사주 입력 흐름', '대화 연결'],
     notices: [
-      '소액 풀이 구매 상태는 로그인 기준으로 저장됩니다.',
+      '소액 풀이 구매 상태는 로그인 계정에 저장됩니다.',
       '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
     ],
   },

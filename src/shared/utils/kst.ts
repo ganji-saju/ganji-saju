@@ -7,7 +7,7 @@
  *   - 기존 KST 유틸 4종 (getKoreaAccessDay / getKoreaDateKey / getSeoulDateKey /
  *     toKstDateKey) 가 모듈별로 분산. 본 모듈로 통합.
  *
- * 모든 함수는 KST 기준으로 계산. 호출자는 `new Date().getXxx()` 직접 사용 금지.
+ * 모든 함수는 KST 시간대로 계산. 호출자는 `new Date().getXxx()` 직접 사용 금지.
  */
 
 export const KST_TIMEZONE = 'Asia/Seoul';
@@ -23,7 +23,7 @@ export function getKstNow(): Date {
 }
 
 /**
- * KST 기준 YYYY-MM-DD 문자열. cache key / seed / sitemap lastmod 등에 사용.
+ * KST 시간대 YYYY-MM-DD 문자열. cache key / seed / sitemap lastmod 등에 사용.
  *
  * @example
  *   UTC 2026-05-17T20:00:00Z (= KST 2026-05-18T05:00) → "2026-05-18"
@@ -40,8 +40,8 @@ export function getKstDateKey(date: Date = new Date()): string {
 }
 
 /**
- * KST 기준 컴포넌트 분해 — `new Date().getDate() / getMonth() / getFullYear()` 직접
- * 사용 대체. 모두 KST 시간대 기준.
+ * KST 시간대 컴포넌트 분해 — `new Date().getDate() / getMonth() / getFullYear()` 직접
+ * 사용 대체. 모두 KST 시간대 원칙.
  *
  * @returns {
  *   year: 4자리 연도 (예: 2026),
@@ -91,8 +91,8 @@ export function getKstParts(date: Date = new Date()): {
 }
 
 /**
- * KST 기준 자정 (00:00:00) 시각의 Date 객체.
- * 반환된 Date 는 UTC 기준 instant 이지만 KST 자정에 대응.
+ * KST 시간대 자정 (00:00:00) 시각의 Date 객체.
+ * 반환된 Date 는 UTC 시간대 instant 이지만 KST 자정에 대응.
  *
  * @example
  *   2026-05-18 KST 자정 → UTC 2026-05-17T15:00:00.000Z 의 Date 객체

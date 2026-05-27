@@ -18,7 +18,7 @@ import {
 
 // 서양 element ↔ 동양 오행 매핑 (의미 유사도 기반).
 const SIGN_ELEMENT_TO_STEM_ELEMENT: Record<SignElement, Element> = {
-  fire: '화', // 표현 기운 — 같은 불
+  fire: '화', // 말의 힘 — 같은 불
   earth: '토', // 안정 기운 — 흙은 동서양 공통 안정
   air: '목', // 성장·확장 — 공기와 목이 가장 가까움 (둘 다 외향적 확장)
   water: '수', // 생각/감정 — 같은 물
@@ -51,7 +51,7 @@ const CONTROLS: Record<Element, Element> = {
 
 const ELEMENT_LABEL_KO: Record<Element, string> = {
   '목': '나무 (성장)',
-  '화': '불 (표현)',
+  '화': '불 (말)',
   '토': '흙 (안정)',
   '금': '쇠 (정리)',
   '수': '물 (생각)',
@@ -128,7 +128,7 @@ export interface CrossSynthesis {
 const STEM_KEYWORDS: Record<Stem, string[]> = {
   '甲': ['추진력', '리더십', '독립', '곧음'],
   '乙': ['유연성', '섬세함', '예술', '관계'],
-  '丙': ['활기', '주목', '사교', '표현'],
+  '丙': ['활기', '주목', '사교', '말'],
   '丁': ['집중', '전문', '내면', '몰입'],
   '戊': ['책임', '신뢰', '중심', '안정'],
   '己': ['실용', '분석', '꼼꼼', '현실'],
@@ -140,7 +140,7 @@ const STEM_KEYWORDS: Record<Stem, string[]> = {
 
 const RELATION_SYNERGY: Record<CrossRelation, string> = {
   identical: '서양과 동양이 같은 기운 — 강점이 곱셈으로 작동합니다',
-  generate: '내 별자리가 일간을 키워주는 흐름 — 표현과 안정이 자연스럽게 이어집니다',
+  generate: '내 별자리가 일간을 키워주는 흐름 — 말과 안정이 자연스럽게 이어집니다',
   generated: '일간이 내 별자리를 키워주는 흐름 — 내면이 외면을 받쳐줍니다',
   control: '내 별자리가 일간을 누르는 기운 — 추진력은 있지만 무리하기 쉽습니다',
   controlled: '일간이 내 별자리를 누르는 기운 — 안정감은 있으나 답답함을 느낄 수 있습니다',
@@ -150,7 +150,7 @@ const RELATION_SYNERGY: Record<CrossRelation, string> = {
 const RELATION_TENSION: Record<CrossRelation, string> = {
   identical: '같은 기운이라 단점도 곱절 — 약점 한 가지에 갇히지 않게 주의하세요',
   generate: '주는 쪽이 지치지 않게, 자기 회복도 챙기세요',
-  generated: '받기만 하지 말고 외부 표현을 함께 늘려보세요',
+  generated: '받기만 하지 말고 밖으로 드러내기을 함께 늘려보세요',
   control: '강한 의지가 주변과 부딪칠 수 있으니 톤 조절이 키입니다',
   controlled: '눌리는 답답함을 풀 출구를 평소에 만들어두세요',
   neutral: '두 기운이 따로 놀 때 정체성이 흔들릴 수 있어요',
@@ -177,7 +177,7 @@ const RELATION_ACTIONS: Record<CrossRelation, string[]> = {
     '강점을 도울 사람을 옆에 두면 시너지가 큽니다',
   ],
   generated: [
-    '내면의 안정을 외부로 표현하는 연습을 늘리세요',
+    '내면의 안정을 외부로 말하는 연습을 늘리세요',
     '받는 만큼 도전해야 균형이 잡힙니다',
     '잠재력을 끌어낼 멘토·롤모델을 찾아보세요',
   ],

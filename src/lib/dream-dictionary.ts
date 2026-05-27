@@ -1,7 +1,7 @@
 // 2026-05-14: 꿈해몽 사전. /api/dream/search 가 여기서 데이터를 가져온다.
 // 추후 DB 로 이관해도 같은 인터페이스로 호환되도록 순수 데이터 모듈로 유지.
 // 2026-05-24 꿈해몽 풍부화 phase 1 — 구조 강화(fortune/action/detailSlug) + 파일럿 확충(33→60).
-//   민속·상징 해석 톤 유지: 단정/예언/치료 표현 금지, 한자 본문 노출 지양.
+//   민속·상징 해석 톤 유지: 단정/예언/치료 말 금지, 한자 본문 노출 지양.
 
 export type DreamFortune = '길몽' | '흉몽' | '중립';
 
@@ -325,7 +325,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
   옷: {
     keyword: '옷', hanja: '衣', category: 'object',
     fortune: '중립',
-    summary: '옷 꿈은 사회적 역할·자기 표현을 상징한다고 봅니다. 새 옷은 새 역할·기회, 더러운 옷은 평판을 살피라는 신호로 보기도 해요.',
+    summary: '옷 꿈은 사회적 역할·자기 전달을 상징한다고 봅니다. 새 옷은 새 역할·기회, 더러운 옷은 평판을 살피라는 신호로 보기도 해요.',
     situations: [
       { label: '새 옷을 입으면', meaning: '새 역할·승진·기회' },
       { label: '옷이 더러우면', meaning: '평판·구설 주의' },
@@ -628,7 +628,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '결국 길을 찾으면', meaning: '고민 끝의 정리·안도' },
     ],
     related: ['여행', '산', '지도'],
-    action: '지금 고민하는 선택의 기준 하나만 또렷이 정해보세요.',
+    action: '지금 고민하는 선택의 원칙 하나만 또렷이 정해보세요.',
   },
   뽀뽀: {
     keyword: '뽀뽀', hanja: '吻', category: 'action',
@@ -745,7 +745,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     situations: [
       { label: '펑펑 울면', meaning: '응어리 해소·후련함' },
       { label: '눈물이 멈추지 않으면', meaning: '오래된 감정의 정리' },
-      { label: '눈물을 참으면', meaning: '표현하지 못한 마음이 남음' },
+      { label: '눈물을 참으면', meaning: '말하지 못한 마음이 남음' },
     ],
     related: ['우는', '슬픔', '이별'],
     action: '눌러둔 감정이 있다면 오늘은 편한 사람에게 가볍게 털어놓아 보세요.',
@@ -921,7 +921,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '벌에 쏘이면', meaning: '작은 마찰, 가볍게 점검' },
     ],
     related: ['나비', '꽃', '개미'],
-    action: '함께 일하는 사람에게 오늘 고마운 마음을 한 번 표현해보세요.',
+    action: '함께 일하는 사람에게 오늘 고마운 마음을 한 번 말해보세요.',
   },
   개미: {
     keyword: '개미', hanja: '蟻', category: 'animal',
@@ -1938,7 +1938,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
   노래: {
     keyword: '노래', hanja: '歌', category: 'action',
     fortune: '길몽',
-    summary: '노래하는 꿈은 기쁨·표현·좋은 소식을 상징한다고 봅니다. 즐겁게 노래하면 마음이 풀리고 기쁜 일이 따른다는 해석이 있어요.',
+    summary: '노래하는 꿈은 기쁨·전달·좋은 소식을 상징한다고 봅니다. 즐겁게 노래하면 마음이 풀리고 기쁜 일이 따른다는 해석이 있어요.',
     situations: [
       { label: '즐겁게 노래하면', meaning: '기쁜 소식·해소' },
       { label: '여럿이 함께 부르면', meaning: '화목·좋은 인연' },
@@ -2022,14 +2022,14 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
   길찾기: {
     keyword: '길찾기', hanja: '探', category: 'action',
     fortune: '중립',
-    summary: '길을 찾아가는 꿈은 방향을 정하려는 마음·선택의 과정을 비춘다고 봅니다. 길을 찾으면 고민이 정리되고, 헤매면 기준을 다시 세울 시기로 본다는 해석이 있어요.',
+    summary: '길을 찾아가는 꿈은 방향을 정하려는 마음·선택의 과정을 비춘다고 봅니다. 길을 찾으면 고민이 정리되고, 헤매면 원칙을 다시 세울 시기로 본다는 해석이 있어요.',
     situations: [
       { label: '길을 잘 찾으면', meaning: '고민이 정리되는 흐름' },
       { label: '지도를 보면', meaning: '계획을 세우는 시기' },
-      { label: '계속 헤매면', meaning: '기준을 다시 세울 시기' },
+      { label: '계속 헤매면', meaning: '원칙을 다시 세울 시기' },
     ],
     related: ['길잃음', '여행', '지도'],
-    action: '지금 고민하는 선택의 기준 하나만 또렷이 정해보세요.',
+    action: '지금 고민하는 선택의 원칙 하나만 또렷이 정해보세요.',
   },
   // ── 신체 ──
   손: {
@@ -2098,7 +2098,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     summary: '눈썹 꿈은 인상·수명·기품을 상징한다고 봅니다. 짙고 단정한 눈썹은 좋은 기운, 눈썹이 빠지면 건강과 기운을 살피라는 신호로 보기도 해요.',
     situations: [
       { label: '짙고 단정하면', meaning: '좋은 인상·기운' },
-      { label: '눈썹을 그리면', meaning: '새 인상·자기 표현' },
+      { label: '눈썹을 그리면', meaning: '새 인상·자기 전달' },
       { label: '눈썹이 빠지면', meaning: '기운을 한 번 살필 시기' },
     ],
     related: ['눈', '얼굴', '머리카락'],
@@ -2504,7 +2504,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     situations: [
       { label: '또렷한 지도를 보면', meaning: '방향이 잡히는 신호' },
       { label: '지도로 길을 찾으면', meaning: '계획이 정리되는 시기' },
-      { label: '지도가 흐릿하면', meaning: '기준을 다시 세울 시기' },
+      { label: '지도가 흐릿하면', meaning: '원칙을 다시 세울 시기' },
     ],
     related: ['길찾기', '길잃음', '여행'],
     action: '지금 고민하는 일의 다음 단계를 오늘 지도처럼 그려보세요.',
@@ -3026,14 +3026,14 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
   발표: {
     keyword: '발표', hanja: '發', category: 'action',
     fortune: '중립',
-    summary: '발표하는 꿈은 드러냄·인정 욕구·자기 표현을 비춘다고 봅니다. 또렷이 발표하면 자신감이 오르는 시기, 말이 막히면 준비를 한 번 더 챙기라는 신호로 보기도 해요.',
+    summary: '발표하는 꿈은 드러냄·인정 욕구·자기 전달을 비춘다고 봅니다. 또렷이 발표하면 자신감이 오르는 시기, 말이 막히면 준비를 한 번 더 챙기라는 신호로 보기도 해요.',
     situations: [
       { label: '또렷이 발표하면', meaning: '자신감·인정의 기운' },
       { label: '박수를 받으면', meaning: '좋은 평판·기쁜 일' },
       { label: '말이 막히면', meaning: '준비를 한 번 더 챙길 시기' },
     ],
     related: ['시험', '박수', '면접'],
-    action: '드러내고 싶은 일 하나를 오늘 작게라도 한 번 표현해보세요.',
+    action: '드러내고 싶은 일 하나를 오늘 작게라도 한 번 말해보세요.',
   },
   여행떠남: {
     keyword: '여행떠남', hanja: '發', category: 'action',
@@ -3510,7 +3510,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
   입: {
     keyword: '입', hanja: '口', category: 'object',
     fortune: '중립',
-    summary: '입 꿈은 말·식복·표현을 상징한다고 봅니다. 또렷이 말하면 소통이 풀리는 시기, 입이 마르거나 다물어지면 말을 한 번 가다듬으라는 신호로 보기도 해요.',
+    summary: '입 꿈은 말·식복·말을 상징한다고 봅니다. 또렷이 말하면 소통이 풀리는 시기, 입이 마르거나 다물어지면 말을 한 번 가다듬으라는 신호로 보기도 해요.',
     situations: [
       { label: '또렷이 말하면', meaning: '소통이 풀리는 시기' },
       { label: '맛있게 먹으면', meaning: '식복·풍요의 기운' },

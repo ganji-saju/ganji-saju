@@ -406,7 +406,7 @@ function DesktopSidebar({
 
 // 2026-05-20 — 무료운세 dock FAB 클릭 시 부채꼴로 펼쳐지는 5 메뉴.
 //   각도 -170° ~ -10° 사이 균등 분포 (5개 항목, 위쪽 반원).
-//   반경 105px (FAB center 기준).
+//   반경 105px (FAB center 원칙).
 const FAN_MENU_ITEMS: ReadonlyArray<{
   label: string;
   href: string;

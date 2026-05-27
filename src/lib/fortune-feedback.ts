@@ -66,7 +66,7 @@ export function buildRecentFortuneFeedbackSummary(
       ? '최근 피드백은 전반적으로 잘 맞았다는 반응이 많았습니다.'
       : '최근 피드백에서는 단정 대신 범위와 조건을 함께 짚는 쪽이 더 잘 받아들여졌습니다.';
 
-  return `최근 오늘 운세 피드백 ${total}건 기준, 맞았다 ${counts.correct}건 · 비슷했다 ${counts.partial}건 · 빗나갔다 ${counts.miss}건입니다. ${cautionLine}`;
+  return `최근 오늘 운세 피드백 ${total}건 원칙, 맞았다 ${counts.correct}건 · 비슷했다 ${counts.partial}건 · 빗나갔다 ${counts.miss}건입니다. ${cautionLine}`;
 }
 
 export async function getRecentFortuneFeedbackSummary(userId: string | null | undefined) {

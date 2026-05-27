@@ -32,7 +32,7 @@ export interface SajuAreaScore {
   score: number;
 }
 
-// 6 영역 통일 라벨 (운세 페이지 기준 긴 라벨 — 사용자 선택).
+// 6 영역 통일 라벨 (운세 페이지 원칙 긴 라벨 — 사용자 선택).
 export const UNIFIED_AREA_LABELS: Record<SajuAreaKey, string> = {
   overall: '총운',
   career: '직장·사업운',

@@ -55,7 +55,7 @@ function seedFromSignAndDate(slug: StarSignSlug, dateKey: string): number {
   return h;
 }
 
-/** KST 기준 YYYY-MM-DD. */
+/** KST 시간 YYYY-MM-DD. */
 export function toKstDateKey(date: Date = new Date()): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(0, 10);
@@ -90,7 +90,7 @@ const HIGHLIGHT_TEMPLATES: Array<Record<StarSignSlug, string[]>> = [
     ],
     leo: [
       '주목받는 자리에서 내 색을 분명히 보여주세요',
-      '자신감 있게 표현하면 분위기가 잡힙니다',
+      '자신감 있게 말하면 분위기가 잡힙니다',
       '오늘은 작은 박수도 큰 동력이 됩니다',
       '내가 빛날 무대를 골라 서세요',
     ],

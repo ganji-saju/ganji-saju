@@ -4,7 +4,7 @@
 //
 //   전통 출처: 명리학 십이지 기본 합·충 — 한국명리연구의 표준 패턴.
 //   각 띠는 ideal 4개 (삼합 2 + 육합 1 + 자기 자신은 제외하면서 보조 1) +
-//   beware 1개 (육충) 로 표현.
+//   beware 1개 (육충) 로 말.
 
 // 2026-05-20 — slug 시스템: URL routable 한 free-content-pages.ts 의 ZODIAC_FORTUNES.slug 사용.
 //   ('goat' 는 12지 표준 영문 'sheep' 대신 free-content-pages 의 routable slug 와 맞춤.)
@@ -25,7 +25,7 @@ export type ZodiacFortuneSlug =
 export interface ZodiacRelation {
   /** 합·맞음 (삼합 + 육합) — 동업·결혼·중요 관계에서 합이 잘 맞는 띠. */
   idealMatches: ReadonlyArray<ZodiacFortuneSlug>;
-  /** 충·부딪힘 (육충) — 거리를 두거나 표현 톤을 조심해야 하는 띠. */
+  /** 충·부딪힘 (육충) — 거리를 두거나 말 톤을 조심해야 하는 띠. */
   bewareMatches: ReadonlyArray<ZodiacFortuneSlug>;
   /** 한 줄 호환 요약 (UI surface 용). */
   matchSummary: string;
@@ -54,7 +54,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     idealMatches: ['monkey', 'dragon', 'ox', 'pig'],
     bewareMatches: ['horse'],
     matchSummary: '원숭이·용·소와 합이 잘 맞아 함께 일할 때 흐름이 빠릅니다.',
-    bewareSummary: '말띠와는 추진 속도와 표현 톤이 달라 충돌이 잦을 수 있습니다.',
+    bewareSummary: '말띠와는 추진 속도와 말 톤이 달라 충돌이 잦을 수 있습니다.',
   },
   ox: {
     // 巳酉丑 (뱀·닭·소) — 자기 제외 → 뱀/닭. 子丑 (쥐·소) → 쥐. 보조: 돼지 (해자축 방합).
@@ -75,7 +75,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     idealMatches: ['pig', 'goat', 'dog', 'tiger'],
     bewareMatches: ['rooster'],
     matchSummary: '돼지·양·개와 따뜻한 관계를 이루며 감정 흐름이 잘 맞습니다.',
-    bewareSummary: '닭띠와는 표현 방식이 달라 작은 말에 서로 상처받기 쉽습니다.',
+    bewareSummary: '닭띠와는 말투이 달라 작은 말에 서로 상처받기 쉽습니다.',
   },
   dragon: {
     // 申子辰 (원숭이·쥐·용) — 자기 제외 → 원숭이/쥐. 辰酉 (용·닭) → 닭. 보조: 뱀 (사오미 가까운 자리).
@@ -116,7 +116,7 @@ export const ZODIAC_RELATIONS: Record<ZodiacFortuneSlug, ZodiacRelation> = {
     // 巳酉丑 (뱀·닭·소) — 자기 제외 → 뱀/소. 辰酉 (용·닭) → 용. 보조: 원숭이 (신유술 방합).
     idealMatches: ['snake', 'ox', 'dragon', 'monkey'],
     bewareMatches: ['rabbit'],
-    matchSummary: '뱀·소·용·원숭이와 함께 일하면 기준이 또렷해지고 마무리가 깔끔합니다.',
+    matchSummary: '뱀·소·용·원숭이와 함께 일하면 원칙이 또렷해지고 마무리가 깔끔합니다.',
     bewareSummary: '토끼띠와는 디테일 vs 큰 그림 차이로 평가 충돌이 생기기 쉽습니다.',
   },
   dog: {

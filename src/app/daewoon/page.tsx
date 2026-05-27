@@ -58,7 +58,7 @@ export default function DaewoonPage() {
               바뀌는 전환기예요
             </h2>
             <p className="mt-2 text-sm font-medium leading-6 text-[rgba(17,17,20,0.64)]">
-              실제 결과에서는 내 생년월일 기준으로 현재 대운과 올해 흐름을 이어서 보여드립니다.
+              실제 결과에서는 내 생년월일 정보로 현재 대운과 올해 흐름을 이어서 보여드립니다.
             </p>
           </div>
 

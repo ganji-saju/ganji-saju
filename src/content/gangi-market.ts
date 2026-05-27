@@ -154,7 +154,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'zodiac',
     title: '띠운세 · 엠지쥐선생',
-    desc: '내 띠의 오늘 기준',
+    desc: '내 띠의 오늘 흐름',
     price: '무료',
     href: '/zodiac',
     zodiac: 'horse',
@@ -221,7 +221,7 @@ export const GANGI_FREE_HUB_ITEMS = [
     href: '/zodiac',
     zodiac: 'horse',
     title: '띠운세',
-    desc: '내 띠 기준 오늘 흐름',
+    desc: '내 띠 오늘 흐름',
   },
   {
     // 2026-05-15 — 무료 hub 에서 검색 작동하는 /dream 으로.

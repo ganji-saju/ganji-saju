@@ -148,7 +148,7 @@ export async function getSajuVerificationAudit({
         label: '출생 지역 경도 보정',
         ok: data.input.solarTimeMode !== 'longitude' || Boolean(data.input.birthTimeCorrection),
         detail: data.input.birthTimeCorrection
-          ? `${data.input.location ?? '출생지'} 기준 ${data.input.birthTimeCorrection.offsetMinutes}분 보정`
+          ? `${data.input.location ?? '출생지'} 원칙 ${data.input.birthTimeCorrection.offsetMinutes}분 보정`
           : '출생 지역 경도 보정은 적용되지 않았습니다.',
       },
       {
@@ -174,7 +174,7 @@ export async function getSajuVerificationAudit({
           : 'errorMessage' in kasiValidation
             ? kasiValidation.errorMessage
             : kasiValidation.issues.length === 0
-              ? '현재 입력 기준으로 음력일과 일진이 KASI 응답과 일치합니다.'
+              ? '현재 입력 정보로 음력일과 일진이 KASI 응답과 일치합니다.'
               : `대조 차이 ${kasiValidation.issues.length}건: ${kasiValidation.issues
                   .map((item) => item.field)
                   .join(', ')}`,

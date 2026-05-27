@@ -30,8 +30,8 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
     },
     actionTitles: {
       high: '지금 바로 살릴 흐름',
-      mid: '오늘 먼저 정리할 기준',
-      low: '무리하지 않고 버티는 기준',
+      mid: '오늘 먼저 정리할 원칙',
+      low: '무리하지 않고 버티는 원칙',
     },
     actionLeads: {
       high: '잘 되는 축을 바로 행동으로 옮기세요. 오늘은 그 한 수가 흐름 전체를 살립니다.',
@@ -58,13 +58,13 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
       low: '연애는 감정보다 거리감 조절이 먼저인 날입니다.',
     },
     actionTitles: {
-      high: '먼저 표현해도 되는 흐름',
+      high: '먼저 말해도 되는 흐름',
       mid: '온도를 맞춰야 하는 흐름',
       low: '확인보다 여백이 필요한 흐름',
     },
     actionLeads: {
       high: '좋은 마음을 크게 증명하지 마세요. 짧고 분명한 한마디가 더 정확하게 전해집니다.',
-      mid: '상대가 받아들이기 쉬운 속도로 표현하세요. 오늘 연애운의 핵심은 속도입니다.',
+      mid: '상대가 받아들이기 쉬운 속도로 말하세요. 오늘 연애운의 핵심은 속도입니다.',
       low: '마음을 몰아가지 마세요. 불편한 부분을 키우지 않는 것이 오늘의 답입니다.',
     },
     cautionTitles: {
@@ -75,7 +75,7 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
     cautionLeads: {
       high: '흐름이 좋을수록 확인 압박은 독입니다. 답을 기다리는 시간을 늘리세요.',
       mid: '좋고 나쁨을 빨리 정리하려 들면 대화 자체가 막힙니다. 한 박자 늦추세요.',
-      low: '감정의 크기보다 표현 방식이 관계를 더 크게 흔드는 날입니다. 어미를 부드럽게 다듬으세요.',
+      low: '감정의 크기보다 말투이 관계를 더 크게 흔드는 날입니다. 어미를 부드럽게 다듬으세요.',
     },
   },
   wealth: {
@@ -87,9 +87,9 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
       low: '재물은 새 돈보다 새는 돈을 막는 쪽이 먼저인 날입니다.',
     },
     actionTitles: {
-      high: '기회를 선별할 기준',
-      mid: '정산을 먼저 볼 기준',
-      low: '지출부터 잠글 기준',
+      high: '기회를 선별할 원칙',
+      mid: '정산을 먼저 볼 원칙',
+      low: '지출부터 잠글 원칙',
     },
     actionLeads: {
       high: '들어오는 흐름을 키우지 말고 남길 수 있는 선택만 추리세요. 그게 오늘의 핵심입니다.',
@@ -116,9 +116,9 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
       low: '직장은 확장보다 완성도를 높이는 쪽이 안전한 날입니다.',
     },
     actionTitles: {
-      high: '성과를 보여줄 기준',
-      mid: '보고 순서를 세울 기준',
-      low: '역할을 줄여야 할 기준',
+      high: '성과를 보여줄 원칙',
+      mid: '보고 순서를 세울 원칙',
+      low: '역할을 줄여야 할 원칙',
     },
     actionLeads: {
       high: '해야 할 일을 좁혀서 결과를 눈에 보이게 만드세요. 오늘은 보여주는 게 일입니다.',
@@ -142,12 +142,12 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
     summaryLeads: {
       high: '관계운이 살아납니다. 먼저 손을 내미세요.',
       mid: '관계는 말의 순서와 거리감 조절이 결정하는 날입니다.',
-      low: '관계는 맞고 틀림보다 상처를 키우지 않는 표현이 먼저인 날입니다.',
+      low: '관계는 맞고 틀림보다 상처를 키우지 않는 말이 먼저인 날입니다.',
     },
     actionTitles: {
       high: '관계를 풀어주는 첫 말',
-      mid: '관계 거리감을 조율할 기준',
-      low: '관계 오해를 막는 말의 기준',
+      mid: '관계 거리감을 조율할 원칙',
+      low: '관계 오해를 막는 말의 원칙',
     },
     actionLeads: {
       high: '짧은 확인이나 안부처럼 부담이 낮은 말로 흐름을 여세요. 오늘은 가벼움이 정답입니다.',
@@ -161,8 +161,8 @@ const TOPIC_INTERPRETATION_RULES: Record<FocusTopic, TopicInterpretationRule> = 
     },
     cautionLeads: {
       high: '가볍게 풀릴 일도 말 한마디가 강하면 갑자기 멀어집니다. 어미를 한 단계 낮추세요.',
-      mid: '서운함을 바로 결론처럼 말하면 온도가 틀어집니다. 시간을 두고 표현하세요.',
-      low: '해명보다 표현의 강도 자체를 낮추세요. 오늘은 그게 가장 안전합니다.',
+      mid: '서운함을 바로 결론처럼 말하면 온도가 틀어집니다. 시간을 두고 말하세요.',
+      low: '해명보다 말의 강도 자체를 낮추세요. 오늘은 그게 가장 안전합니다.',
     },
   },
 };

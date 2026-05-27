@@ -73,7 +73,7 @@ const DETAIL_SECTION_META: Record<
   love: {
     eyebrow: '연애',
     focus: '지금 볼 마음 흐름',
-    guidance: '상대의 반응보다 표현 방식과 속도에 주목해 보세요.',
+    guidance: '상대의 반응보다 말투과 속도에 주목해 보세요.',
     color: '#fb7185',
     soft: 'rgba(251,113,133,0.11)',
     line: 'rgba(251,113,133,0.34)',
@@ -618,7 +618,7 @@ function getPreviewCopy(key: (typeof SECTIONS)[number]['key']) {
     case 'wealth':
       return '현재 운 흐름 안에서 금전 감각이 살아나는 구간과 지출을 조심할 구간을 함께 읽습니다.';
     case 'love':
-      return '관계의 속도와 표현 온도를 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
+      return '관계의 속도와 말의 온도를 지금 시점의 운세 문맥에 맞춰 차분하게 풀어드립니다.';
     case 'career':
       return '큰 흐름과 올해 흐름을 바탕으로 포지션 변화, 확장 타이밍, 일의 방향을 더 구체적으로 읽습니다.';
     case 'health':

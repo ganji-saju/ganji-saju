@@ -61,7 +61,7 @@ export async function getLifetimeVerificationAudit({
         key: 'lifetime-api-response',
         label: '깊은 사주풀이 API 응답',
         ok: true,
-        detail: `${result.targetYear}년 기준 깊은 사주풀이 응답이 생성되었습니다.`,
+        detail: `${result.targetYear}년 깊은 사주풀이 응답이 생성되었습니다.`,
       },
       {
         key: 'lifetime-openai-source',
@@ -112,11 +112,11 @@ export async function getLifetimeVerificationAudit({
       },
       {
         key: 'lifetime-forbidden-phrases',
-        label: '금지 표현 검사',
+        label: '금지 문구 검사',
         ok: !hasForbiddenGuarantee(result.reportText),
         detail: hasForbiddenGuarantee(result.reportText)
-          ? '무조건/반드시/100% 같은 단정 표현이 본문에 남아 있습니다.'
-          : '단정 금지 표현은 발견되지 않았습니다.',
+          ? '무조건/반드시/100% 같은 단정 문구이 본문에 남아 있습니다.'
+          : '단정 금지 문구은 발견되지 않았습니다.',
       },
       {
         key: 'lifetime-ai-tone',

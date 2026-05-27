@@ -134,7 +134,7 @@ export async function ClassicEvidencePanel({
             </div>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
               검수된 문단이 연결되면 원문, 독음, 직역, 해설, 출처와 라이선스가 이 영역에 함께
-              표시됩니다. 지금은 신뢰할 수 있는 판본과 출처 기준을 먼저 맞추고 있습니다.
+              표시됩니다. 지금은 신뢰할 수 있는 판본과 출처 원칙을 먼저 맞추고 있습니다.
             </p>
           </div>
         )}

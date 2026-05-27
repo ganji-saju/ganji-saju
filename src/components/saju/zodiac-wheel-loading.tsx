@@ -5,7 +5,7 @@
 // 2026-05-16 — 사용자 보고: 로딩 화면이 화면 정중앙이 아닌 엉뚱한 위치에서 떠
 // 보이지 않는 회귀. 원인: 부모 `.app-shell-content` 의 `animation: app-fade-up`
 // keyframe 이 `transform: translateY()` 를 사용해 `position: fixed` containing
-// block 을 생성. fixed 가 viewport 가 아닌 부모 박스 기준 위치됨.
+// block 을 생성. fixed 가 viewport 가 아닌 부모 박스 원칙 위치됨.
 // 해결: createPortal 로 document.body 에 직접 mount — ancestor transform 영향 0.
 'use client';
 

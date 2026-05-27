@@ -73,7 +73,7 @@ const CONFIDENCE_META: Record<
   { label: string; className: string }
 > = {
   orthodox: {
-    label: '중심 기준',
+    label: '중심 단서',
     className: 'border-[var(--app-gold)]/24 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]',
   },
   disputed: {

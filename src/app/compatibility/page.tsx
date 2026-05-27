@@ -218,7 +218,7 @@ export default async function CompatibilityPage() {
               className="mt-2 text-[12.5px] leading-[1.6]"
               style={{ opacity: 0.72 }}
             >
-              풀이 형태로 깊이 정리합니다. 멤버십 가입 시 월 사용량 기준 안에서 더 깊게 볼 수 있습니다.
+              풀이 형태로 깊이 정리합니다. 멤버십 가입 시 월 사용량 한도 안에서 더 깊게 볼 수 있습니다.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link

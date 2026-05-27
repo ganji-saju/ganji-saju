@@ -49,7 +49,7 @@ export const KYEOKGUK_CAREER_FIT: Record<TenGodCode, string[]> = {
  * 총평 입력에는 glossary 대신 이 맵을 쓴다 (자연 명사·"의 결" 없음).
  */
 export const SIPSIN_SHORT: Record<TenGodCode, string> = {
-  식신: '표현하고 베푸는 별',
+  식신: '말하고 베푸는 별',
   상관: '재능을 드러내는 별',
   정인: '돌봄과 배움의 별',
   편인: '혼자 깊이 파고드는 별',

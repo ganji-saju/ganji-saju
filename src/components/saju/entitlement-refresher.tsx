@@ -40,7 +40,7 @@ export function EntitlementRefresher({
   initialHasEntitlement,
 }: Props) {
   const router = useRouter();
-  // 매 fetch 후 비교 기준이 되는 "최근 확인된 server-side state". router.refresh() 후엔
+  // 매 fetch 후 비교값이 되는 "최근 확인된 server-side state". router.refresh() 후엔
   // 서버가 새로 전달한 initialHasEntitlement 가 들어옴.
   const lastConfirmedRef = useRef(initialHasEntitlement);
   lastConfirmedRef.current = initialHasEntitlement;

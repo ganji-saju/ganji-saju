@@ -355,7 +355,7 @@ function verifyPillars(
     const expectedHidden = BRANCH_HIDDEN_STEMS[pillar.branch] ?? [];
     const actualHidden = pillar.hiddenStems?.map((hidden) => hidden.stem) ?? [];
     if (!sameArray(expectedHidden, actualHidden)) {
-      pushIssue(issues, 'HIDDEN_STEMS_MISMATCH', 'warning', `${path}.hiddenStems`, '숨은 기운(지장간) 배열이 기준표와 달라요.', expectedHidden, actualHidden, '숨은 기운 기준표를 단일 소스로 분리하고 테스트 케이스를 고정하세요.');
+      pushIssue(issues, 'HIDDEN_STEMS_MISMATCH', 'warning', `${path}.hiddenStems`, '숨은 기운(지장간) 배열이 대조표와 달라요.', expectedHidden, actualHidden, '숨은 기운 대조표를 단일 소스로 분리하고 테스트 케이스를 고정하세요.');
     }
 
     if (key === 'day' && pillar.stemTenGod !== null) {
@@ -514,7 +514,7 @@ function verifyInterpretationIfPresent(data: SajuDataV1 | SajuDataV2, issues: Sa
 
       for (const pattern of PROHIBITED_INTERPRETATION_PATTERNS) {
         if (pattern.test(claim.text)) {
-          pushIssue(issues, 'PROHIBITED_INTERPRETATION_PATTERN', 'warning', `interpretation.blocks.${block.id}.claims.${claim.id}.text`, '단정적·위험 표현이 포함되어 있습니다.', pattern.source, claim.text);
+          pushIssue(issues, 'PROHIBITED_INTERPRETATION_PATTERN', 'warning', `interpretation.blocks.${block.id}.claims.${claim.id}.text`, '단정적·위험 문구이 포함되어 있습니다.', pattern.source, claim.text);
         }
       }
     }
@@ -591,7 +591,7 @@ function buildFoundationBlock(data: SajuDataV1, tone: SajuContentTone): SajuInte
     claims: [
       {
         id: 'foundation.dayMaster',
-        text: `내 핵심 기질은 ${elementLabel}의 ${withParticle(metaphor, '으로', '로')} 풀이돼요. 나를 표현하는 첫 출발점으로 가볍게 참고하면 좋아요.`,
+        text: `내 핵심 기질은 ${elementLabel}의 ${withParticle(metaphor, '으로', '로')} 풀이돼요. 나를 말하는 첫 출발점으로 가볍게 참고하면 좋아요.`,
         confidence: 'high',
         evidence: [
           evidence('dayMaster.stem', '내 핵심 기질', data.dayMaster.stem),
@@ -666,11 +666,11 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
 
   const candidateLabel = `${pattern.name} 후보`;
   const monthRoot = monthBranchKeyStem
-    ? `월지 ${monthBranch}의 ${monthBranchKeyStem}土 기준`.replace(
+    ? `월지 ${monthBranch}의 ${monthBranchKeyStem}土 원칙`.replace(
         /의 .土/,
-        `의 ${monthBranchKeyStem}${getStemElementHanja(monthBranchKeyStem)} 기준`
+        `의 ${monthBranchKeyStem}${getStemElementHanja(monthBranchKeyStem)} 원칙`
       )
-    : `월지 ${monthBranch} 기준`;
+    : `월지 ${monthBranch} 원칙`;
 
   const summary =
     accompanyingPhrases.length > 0
@@ -812,7 +812,7 @@ function buildYongsinBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
     : '';
 
   // 2026-05-14 (revised): secondary(희신) 에서 강세 오행을 마스킹.
-  //   기존 룰 "score >= weakest + 1.0" 은 fixture(1982-01-29) 기준 경험값이라
+  //   기존 룰 "score >= weakest + 1.0" 은 fixture(1982-01-29) 기반 경험값이라
   //   다른 명식에서 over/under-masking 위험이 있었다. 비율 기반으로 재설계:
   //
   //   1) dominant 오행 → 무조건 마스킹.

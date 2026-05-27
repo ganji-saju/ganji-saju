@@ -1074,12 +1074,12 @@ function LoginContent({
             <div className="mb-4">
               <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
               <p className="mt-1 text-[11.5px] leading-5 text-[var(--app-copy-soft)]">
-                저장 후 사주보기, 오늘운세, 궁합 입력에 같은 기준으로 불러옵니다.
+                저장 후 사주보기, 오늘운세, 궁합 입력에 같은 바탕으로 불러옵니다.
               </p>
             </div>
 
             {/* 사주 입력폼(intake)·궁합 입력과 동일한 UnifiedBirthInfoFields 로 통일.
-                년/월/일/시/출생지/성별/양력음력/시간기준 입력 UX 를 사주 풀이 입력과 일치시킨다. */}
+                년/월/일/시/출생지/성별/양력음력/시간 설정 입력 UX 를 사주 풀이 입력과 일치시킨다. */}
             <UnifiedBirthInfoFields
               idPrefix="signup"
               draft={buildSignupBirthDraft(signupForm)}

@@ -16,7 +16,7 @@ const OHAENG_COLORS = Object.fromEntries(
 ) as Record<Ohaeng, string>;
 
 const OHAENG_MEANINGS: Record<Ohaeng, string> = {
-  목: '자라남과 추진', 화: '표현과 열정', 토: '담아냄과 안정',
+  목: '자라남과 추진', 화: '말과 열정', 토: '담아냄과 안정',
   금: '단단함과 결단', 수: '흐름과 깊이',
 };
 

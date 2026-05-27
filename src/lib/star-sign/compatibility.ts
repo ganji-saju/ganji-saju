@@ -301,7 +301,7 @@ function buildTensions(a: StarSignSlug, b: StarSignSlug, score: number): string[
     items.push('말 한 마디의 톤에 신경 쓰면 오해를 크게 줄일 수 있어요');
   }
   if (items.length === 0) {
-    items.push('대부분 잘 맞지만 익숙해질수록 표현이 줄어들 수 있어요');
+    items.push('대부분 잘 맞지만 익숙해질수록 말이 줄어들 수 있어요');
   }
   return items.slice(0, 3);
 }
@@ -315,10 +315,10 @@ function buildConflictTips(a: StarSignSlug, b: StarSignSlug): string[] {
     tips.push('갈등 시 둘 다 한 발씩 물러나는 룰을 정해두세요');
   }
   if (ac.element === 'fire' || bc.element === 'fire') {
-    tips.push('말의 톤을 한 단계 부드럽게 — 직선적 표현은 한 박자 늦추기');
+    tips.push('말의 톤을 한 단계 부드럽게 — 직선적 말은 한 박자 늦추기');
   }
   if (ac.element === 'water' || bc.element === 'water') {
-    tips.push('감정 표현을 미루지 말고 그날 그날 짧게 풀어두세요');
+    tips.push('마음 전달을 미루지 말고 그날 그날 짧게 풀어두세요');
   }
   if (tips.length < 3) {
     tips.push('정기적인 짧은 대화 시간 — 일주일에 한 번 30분이면 충분합니다');

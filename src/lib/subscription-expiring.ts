@@ -14,7 +14,7 @@ export interface ExpiringRecipient {
   stage: ExpiringStage;
 }
 
-/** KST 자정 기준 days 후의 24시간 윈도우 [start, end) UTC ISO. */
+/** KST 자정 단위 days 후의 24시간 윈도우 [start, end) UTC ISO. */
 function getKstDayWindow(daysAhead: number): { start: string; end: string } {
   const now = new Date();
   // KST = UTC+9. KST 자정 = UTC 15:00 전날.

@@ -222,7 +222,7 @@ export function OperationsDashboard() {
           className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          오늘 신규/DAU/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 기준.
+          오늘 신규/DAU/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 단위.
         </p>
       </article>
 
@@ -273,7 +273,7 @@ export function OperationsDashboard() {
           {/* §오늘 (4 카드) */}
           <section className="grid gap-2.5">
             <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-              오늘 ({snap.generatedAt.slice(0, 10)} · KST 기준)
+              오늘 ({snap.generatedAt.slice(0, 10)} · KST 시간대)
             </h2>
 
             <article
@@ -546,7 +546,7 @@ export function OperationsDashboard() {
               <li>• 결제: credit_transactions.type=&apos;purchase&apos; AND amount &gt; 0</li>
               <li>• 만족도: overall_rating ∈ {'{-1, 0, +1}'}, area_rating ∈ [1, 5]</li>
               <li>• 결제 전환율 = 오늘 결제 건수 ÷ 오늘 DAU</li>
-              <li>• KST(UTC+9) 자정 기준 일별 집계</li>
+              <li>• KST(UTC+9) 자정 단위 일별 집계</li>
             </ul>
           </article>
         </>

@@ -15,7 +15,7 @@ import type { KasiSingleInputComparison } from '@/domain/saju/validation/kasi-ca
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { MoonlightCounselorId } from '@/lib/counselors';
-import { simplifySajuCopy } from '@/lib/saju/public-copy';
+import { sanitizeUserFacingCopy, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
@@ -197,7 +197,7 @@ const CONCERN_WINDOW_COPY: Record<
 > = {
   love_contact: {
     favorableTitle: '먼저 닿는 말을 쓰기 좋은 시간',
-    favorableTail: '짧은 안부나 확인처럼 부담이 낮은 표현부터 꺼내는 편이 맞습니다.',
+    favorableTail: '짧은 안부나 확인처럼 부담이 낮은 말부터 꺼내는 편이 맞습니다.',
     cautionTitle: '감정 해석이 과열되기 쉬운 시간',
     cautionTail: '반응을 재촉하거나 감정의 결론을 묻는 말은 한 템포 늦추는 편이 안전합니다.',
     actNowTitle: '오늘 먼저 연락할 때',
@@ -216,20 +216,20 @@ const CONCERN_WINDOW_COPY: Record<
     waitTail: '비교와 정산을 거치면 손실 체감이 확실히 줄어듭니다.',
   },
   work_meeting: {
-    favorableTitle: '기준과 역할을 먼저 세우기 좋은 시간',
+    favorableTitle: '역할과 순서을 먼저 세우기 좋은 시간',
     favorableTail: '회의나 계약은 결론보다 조건과 책임 범위를 선명히 하는 쪽이 더 강합니다.',
     cautionTitle: '확답이 부담으로 남기 쉬운 시간',
     cautionTail: '합의가 덜 된 상태에서 바로 확답하거나 서명하는 흐름은 조심해야 합니다.',
     actNowTitle: '오늘 미팅을 바로 진행할 때',
     waitTitle: '한 번 더 조율하고 진행할 때',
-    actNowTail: '기준과 역할만 분명하면 속도는 충분히 붙습니다.',
+    actNowTail: '역할과 순서만 분명하면 속도는 충분히 붙습니다.',
     waitTail: '수정안과 다음 약속을 함께 잡으면 주도권을 덜 잃습니다.',
   },
   relationship_conflict: {
     favorableTitle: '말의 순서를 조율하기 좋은 시간',
     favorableTail: '큰 대화보다 짧은 확인과 사실 정리를 먼저 두는 편이 흐름을 덜 흔듭니다.',
     cautionTitle: '서운함이 결론처럼 커지기 쉬운 시간',
-    cautionTail: '단정형 표현이나 감정의 잔상을 크게 남기는 말은 줄이는 편이 좋습니다.',
+    cautionTail: '단정형 말이나 감정의 잔상을 크게 남기는 말은 줄이는 편이 좋습니다.',
     actNowTitle: '바로 말할 때',
     waitTitle: '조금 식힌 뒤 말할 때',
     actNowTail: '사실과 감정을 분리해 말하면 오해를 줄이기 쉽습니다.',
@@ -252,7 +252,7 @@ const CONCERN_WINDOW_COPY: Record<
     cautionTail: '생각만 길어지거나 반대로 너무 서두르면 좋은 흐름도 거칠어질 수 있습니다.',
     actNowTitle: '바로 움직일 때',
     waitTitle: '흐름을 먼저 보고 움직일 때',
-    actNowTail: '작게라도 먼저 끝내는 행동이 하루 전체의 기준을 만들어 줍니다.',
+    actNowTail: '작게라도 먼저 끝내는 행동이 하루 전체의 흐름을 만들어 줍니다.',
     waitTail: '우선순위를 먼저 세우면 뒤쪽 선택이 훨씬 가벼워집니다.',
   },
 };
@@ -279,7 +279,7 @@ const FREE_RESULT_GUIDE_COPY: Record<
     riskBody: '권유만 듣고 바로 결제하는 일은 피하세요. 가격과 조건을 한 번 더 보면 충분합니다.',
   },
   work_meeting: {
-    opportunityTitle: '먼저 정하면 좋은 기준',
+    opportunityTitle: '먼저 정하면 좋은 순서',
     opportunityBody: '회의나 계약은 결론보다 조건, 일정, 책임 범위를 먼저 적어두면 편해요.',
     riskTitle: '오늘 피할 확답',
     riskBody: '아직 정리되지 않은 일에 바로 “네”라고 답하지 마세요. 확인 후 답해도 늦지 않습니다.',
@@ -287,7 +287,7 @@ const FREE_RESULT_GUIDE_COPY: Record<
   relationship_conflict: {
     opportunityTitle: '오해를 줄이는 말',
     opportunityBody: '바로 판단하기보다 “내가 이렇게 이해해도 될까?”처럼 확인하는 말이 좋아요.',
-    riskTitle: '오늘 피할 표현',
+    riskTitle: '오늘 피할 말',
     riskBody: '항상, 절대, 너는 원래 같은 단정적인 말은 줄이세요. 대화가 커질 수 있습니다.',
   },
   energy_health: {
@@ -423,7 +423,7 @@ const CONCERN_EASY_TIME_COPY: Record<
   },
   relationship_conflict: {
     favorable: '큰 대화보다 사실 확인과 짧은 질문으로 시작하는 편이 좋습니다.',
-    caution: '서운한 마음을 결론처럼 말하면 길어질 수 있어 표현을 낮춰보세요.',
+    caution: '서운한 마음을 결론처럼 말하면 길어질 수 있어 말을 낮춰보세요.',
   },
   energy_health: {
     favorable: '힘든 일은 짧게 나누고, 쉬는 시간을 먼저 정하면 덜 지칩니다.',
@@ -437,9 +437,9 @@ const CONCERN_EASY_TIME_COPY: Record<
 
 const PUBLIC_ELEMENT_LABELS: Record<Element, string> = {
   목: '시작',
-  화: '표현',
+  화: '말',
   토: '정리',
-  금: '기준',
+  금: '선택',
   수: '생각',
 };
 
@@ -466,8 +466,8 @@ const PUBLIC_ELEMENT_COPY: Record<
     bodyCue: '새로운 일은 크게 벌리지 말고 작게 열 때 편합니다.',
   },
   화: {
-    supportAction: '짧게라도 먼저 표현해보세요',
-    supportShort: '짧게 표현하세요',
+    supportAction: '짧게라도 먼저 말해보세요',
+    supportShort: '짧게 말하세요',
     weakCare: '말을 너무 아끼면 오해가 길어질 수 있어요',
     strongCaution: '감정이 앞서면 말이 세게 들릴 수 있어요',
     bodyCue: '마음은 길게 설명하기보다 짧고 부드럽게 꺼낼 때 좋습니다.',
@@ -480,9 +480,9 @@ const PUBLIC_ELEMENT_COPY: Record<
     bodyCue: '흩어진 일을 한곳에 모아두면 하루가 훨씬 안정됩니다.',
   },
   금: {
-    supportAction: '오늘의 기준을 두 개만 정해보세요',
-    supportShort: '기준을 세우세요',
-    weakCare: '기준이 흐리면 작은 선택도 오래 끌릴 수 있어요',
+    supportAction: '오늘 할 일 두 가지만 정해보세요',
+    supportShort: '먼저 정하세요',
+    weakCare: '선택할 선이 흐리면 작은 일도 오래 끌릴 수 있어요',
     strongCaution: '정답을 빨리 내리려다 말이 딱딱해질 수 있어요',
     bodyCue: '정할 것과 미룰 것을 나누면 선택이 쉬워집니다.',
   },
@@ -532,14 +532,14 @@ const TEN_GOD_PUBLIC_TONES: Record<string, { headline: string; body: string; cau
     caution: '긴장을 오래 끌고 가지 말고 중간에 쉬어가세요.',
   },
   정관: {
-    headline: '책임과 기준이 중요해지는 날',
+    headline: '책임과 선택이 중요해지는 날',
     body: '역할을 바르게 해내려는 마음이 강해질 수 있어요.',
     caution: '완벽하게 하려다 지치지 않게 우선순위를 줄이세요.',
   },
   편인: {
     headline: '생각이 깊어지는 날',
     body: '남들이 놓친 부분을 혼자 깊게 살피기 쉬워요.',
-    caution: '확인을 너무 오래 끌지 말고 기준을 정하면 멈추세요.',
+    caution: '확인을 너무 오래 끌지 말고 멈출 선을 정하세요.',
   },
   정인: {
     headline: '도움과 배움이 편하게 들어오는 날',
@@ -894,7 +894,7 @@ export function getTodayPillarSnapshot(
   //   문제: stored reading (saju 페이지) 의 calculatedAt = reading 생성 시점 (과거).
   //         fresh sajuData (today-fortune API) 의 calculatedAt = 지금.
   //         두 페이지가 다른 "오늘 ganzi" → 점수 불일치 (KST 자정 후 매일 fail).
-  //   의도 (코멘트): "매일 다르게 흐르도록 오늘 ganzi". calculatedAt 이 아닌 실제 오늘이 기준.
+  //   의도 (코멘트): "매일 다르게 흐르도록 오늘 ganzi". calculatedAt 이 아닌 실제 오늘이 원칙.
   //   대운/세운/월운 산출은 별도 함수에서 sajuData.metadata.calculatedAt 을 그대로 사용 — 영향 없음.
   //
   //   options.now 는 테스트 전용: 다른 "오늘" 시뮬레이션 시 fixed Date 주입.
@@ -977,7 +977,7 @@ export function buildTodayFlowSignal(
   function describe(todayEl: Element | null, position: '천간' | '지지'): string | null {
     if (!todayEl) return null;
     const ctx = position === '천간' ? '겉으로' : '바탕에서';
-    // 오늘운세 plain 티어 — 명리어/한자 0. 오행 관계를 일상어 흐름으로만 표현(naming-policy).
+    // 오늘운세 plain 티어 — 명리어/한자 0. 오행 관계를 일상어 흐름으로만 말(naming-policy).
     if (todayEl === myEl) {
       return `오늘은 ${ctx} 들어오는 흐름이 내 성향과 잘 맞아, 자기 페이스를 지키기 좋은 날입니다.`;
     }
@@ -985,7 +985,7 @@ export function buildTodayFlowSignal(
       return `오늘은 ${ctx} 나를 받쳐주는 흐름이 들어와, 회복과 정리에 도움이 되는 날입니다.`;
     }
     if (GENERATED_BY_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} 내 에너지를 밖으로 풀어내는 흐름이라, 표현은 잘 되지만 그만큼 소모도 큰 편입니다.`;
+      return `오늘은 ${ctx} 내 에너지를 밖으로 풀어내는 흐름이라, 말은 잘 되지만 그만큼 소모도 큰 편입니다.`;
     }
     if (CONTROLLER_OF_MAP[myEl] === todayEl) {
       return `오늘은 ${ctx} 나를 누르는 흐름이 들어와, 결정이 다소 무겁고 마찰이 생길 수 있는 날입니다.`;
@@ -1091,7 +1091,7 @@ function compactActionDescription(
   description: string,
   evidenceSnippet: string | null
 ) {
-  const withoutScorePrefix = description.replace(/^[^.!?]+점 기준입니다\.\s*/, '').trim();
+  const withoutScorePrefix = description.replace(/^[^.!?]+점 정보입니다\.\s*/, '').trim();
   const withoutEvidence = evidenceSnippet
     ? withoutScorePrefix.replace(evidenceSnippet, '').trim()
     : withoutScorePrefix;
@@ -1259,7 +1259,7 @@ function pickVariant<T>(items: T[], seed: number, offset = 0) {
 function buildCalendarCue(calendarType: TodayCalendarType) {
   return calendarType === 'lunar'
     ? '음력 생일은 양력 날짜로 바꿔 오늘 흐름에 맞춰 봤어요.'
-    : '양력 생일 기준으로 오늘 흐름을 봤어요.';
+    : '양력 생일로 오늘 흐름을 봤어요.';
 }
 
 function buildTimeRuleCue(input: BirthInput, timeRule: TodayTimeRule) {
@@ -1267,9 +1267,9 @@ function buildTimeRuleCue(input: BirthInput, timeRule: TodayTimeRule) {
   if (timeRule === 'trueSolarTime' && input.birthLocation) {
     return `${input.birthLocation.label}의 위치를 반영해 시간을 더 좁혀 봤어요.`;
   }
-  if (timeRule === 'earlyZi') return '자시를 이른 밤 기준으로 나눠 봤어요.';
+  if (timeRule === 'earlyZi') return '자시를 이른 밤 방식으로 나눠 봤어요.';
   if (timeRule === 'nightZi') return '늦은 밤 자시를 한 흐름으로 묶어 봤어요.';
-  return '표준시 기준으로 태어난 시간을 반영했어요.';
+  return '표준시 정보로 태어난 시간을 반영했어요.';
 }
 
 function buildLocationCue(input: BirthInput) {
@@ -1383,7 +1383,7 @@ const CONCERN_BODY_VARIANTS: Record<ConcernId, string[]> = {
   love_contact: [
     '오늘은 마음을 크게 확인하기보다 상대가 답하기 쉬운 한마디가 더 좋습니다.',
     '오늘은 진심을 길게 풀어내기보다 짧고 가벼운 안부가 거리감을 줄여줍니다.',
-    '오늘은 답을 재촉하기보다 상대의 호흡에 맞춰 한 박자 늦게 표현하는 편이 좋아요.',
+    '오늘은 답을 재촉하기보다 상대의 호흡에 맞춰 한 박자 늦게 말하는 편이 좋아요.',
   ],
   money_spend: [
     '오늘은 새 결제보다 이미 나갈 돈과 약속된 금액을 먼저 보는 쪽이 낫습니다.',
@@ -1438,7 +1438,7 @@ function buildPublicTodayBody(
     profile.hourAction,
     profile.cautionBody,
     profile.calendarCue,
-    todayDateMarker ? `${todayDateMarker} 기준으로 본 흐름입니다.` : null,
+    todayDateMarker ? `${todayDateMarker}로 본 흐름입니다.` : null,
     unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
   ]);
 }
@@ -1494,8 +1494,8 @@ function buildPublicGroundingSummary(
       available: Boolean(kasiComparison),
       ok: !kasiComparison || kasiComparison.issues.length === 0,
       summary: kasiComparison && kasiComparison.issues.length > 0
-        ? '달력 기준은 일부 확인이 필요합니다.'
-        : '달력 기준 확인 완료',
+        ? '달력 확인은 일부 확인이 필요합니다.'
+        : '달력 확인 확인 완료',
     },
   };
 }
@@ -1555,7 +1555,7 @@ function buildAxisScoreSummary(
     return band === 'high'
       ? '마음을 어렵게 설명하기보다 짧고 부드럽게 꺼내면 좋습니다.'
       : band === 'mid'
-        ? '마음을 짧고 부드럽게 표현하면 감정이 덜 엉킵니다. 답을 재촉하지 마세요.'
+        ? '마음을 짧고 부드럽게 말하면 감정이 덜 엉킵니다. 답을 재촉하지 마세요.'
         : '오늘은 확인보다 여백이 필요합니다. 말의 양을 줄이면 편해요.';
   }
 
@@ -2125,7 +2125,7 @@ function buildTimeWindowBody(
   // 매일 일진이 바뀌면 이 줄이 통째로 다른 ganzi 로 교체됨.
   const dailyMarker =
     dailyContext && windowIndex === 0 && dailyContext.todayPillar.ganzi
-      ? `오늘 일진 ${dailyContext.todayPillar.ganzi} 흐름 기준으로 본 시간대입니다.`
+      ? `오늘 일진 ${dailyContext.todayPillar.ganzi} 흐름으로 본 시간대입니다.`
       : null;
 
   return limitEasyTimeSentences(
@@ -2159,7 +2159,9 @@ function toTodayScores(
         key: score.key as TodayScoreItem['key'],
         label: SCORE_LABELS[score.key],
         score: adjusted,
-        summary: buildAxisScoreSummary(score.key as TodayScoreItem['key'], adjusted, profile),
+        summary: sanitizeUserFacingCopy(
+          buildAxisScoreSummary(score.key as TodayScoreItem['key'], adjusted, profile)
+        ),
       };
     });
 
@@ -2167,7 +2169,7 @@ function toTodayScores(
     key: 'condition',
     label: SCORE_LABELS.condition,
     score: conditionScore,
-    summary: buildAxisScoreSummary('condition', conditionScore, profile),
+    summary: sanitizeUserFacingCopy(buildAxisScoreSummary('condition', conditionScore, profile)),
   });
 
   return baseScores;
@@ -2296,7 +2298,7 @@ const DAILY_LEAD_VARIANTS: Record<DailyRelationKind, string[]> = {
     '오늘은 도움을 받기 좋은 흐름이라 누군가에게 작게 요청해도 자연스럽습니다.',
   ],
   leak: [
-    '오늘은 표현이 잘 풀리는 흐름이지만 에너지 소모도 큰 편이라, 하루 종일 쏟지 마세요.',
+    '오늘은 말이 잘 풀리는 흐름이지만 에너지 소모도 큰 편이라, 하루 종일 쏟지 마세요.',
     '오늘은 의견을 꺼내기 좋은 흐름이라 짧고 명확한 한 줄을 미리 적어두세요.',
   ],
   control: [
@@ -2324,7 +2326,7 @@ const DAILY_AVOID_VARIANTS: Record<DailyRelationKind, string[]> = {
   ],
   leak: [
     '오늘은 말이 길어지면 의도와 다르게 들릴 수 있으니 한 줄로 줄여보세요.',
-    '오늘은 많이 표현하다 보면 에너지가 빠지기 쉽습니다.',
+    '오늘은 많이 말하다 보면 에너지가 빠지기 쉽습니다.',
   ],
   control: [
     '오늘은 마찰이 생기기 쉬운 흐름이라 즉답보다 한 박자 쉬고 답하세요.',
@@ -2623,7 +2625,7 @@ export function buildTodayFortuneFreeResult(
       }
     : null;
 
-  // scores 의 overall + 영역별을 iljinScore.totalScore 기준으로 정규화.
+  // scores 의 overall + 영역별을 iljinScore.totalScore 바탕으로 정규화.
   // iljinScore 없으면 (시간 미입력 등) 기존 raw scores 유지.
   const unifiedScores: TodayScoreItem[] = computedIljinScore
     ? unifyScoresWithIljinScore(rawScores, computedIljinScore.totalScore)
@@ -2658,27 +2660,29 @@ export function buildTodayFortuneFreeResult(
     },
     oneLine: {
       eyebrow: `${concern.prompt} · ${concern.hanja}`,
-      headline: buildPublicTodayHeadline(options.concernId, profile),
-      body: buildPublicTodayBody(
-        options.concernId,
-        profile,
-        Boolean(input.unknownTime)
+      headline: sanitizeUserFacingCopy(buildPublicTodayHeadline(options.concernId, profile)),
+      body: sanitizeUserFacingCopy(
+        buildPublicTodayBody(
+          options.concernId,
+          profile,
+          Boolean(input.unknownTime)
+        )
       ),
     },
     scores,
     // PR #149 (Part C) — UI 가 chip strip + perspective 한 줄에 사용.
     userSituation,
     opportunity: {
-      title: opportunity.title,
-      body: opportunity.body,
+      title: sanitizeUserFacingCopy(opportunity.title),
+      body: sanitizeUserFacingCopy(opportunity.body),
     },
     risk: {
-      title: risk.title,
-      body: risk.body,
+      title: sanitizeUserFacingCopy(risk.title),
+      body: sanitizeUserFacingCopy(risk.body),
     },
     reasonSnippet: {
       title: '사주 근거 한 줄',
-      body: reasonBody,
+      body: sanitizeUserFacingCopy(reasonBody),
     },
     groundingSummary,
     nextAction: {

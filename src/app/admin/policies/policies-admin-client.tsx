@@ -239,7 +239,7 @@ export function PoliciesAdminClient({ kinds, initialActive }: Props) {
               type="text"
               value={form.changelog}
               onChange={(e) => setForm((f) => ({ ...f, changelog: e.target.value }))}
-              placeholder="예: 환불 기준 7일 → 14일로 연장"
+              placeholder="예: 환불 정책 7일 → 14일로 연장"
               className="mt-1 w-full rounded border px-3 py-2 text-[14px]"
               style={{ borderColor: 'var(--app-line)' }}
             />

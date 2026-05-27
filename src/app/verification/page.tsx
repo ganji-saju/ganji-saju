@@ -348,7 +348,7 @@ export default async function VerificationPage({ searchParams }: VerificationPag
 
         <SectionSurface surface="panel" size="lg">
           <SectionHeader
-            eyebrow="검증 기준"
+            eyebrow="검증 항목"
             title="필터를 바꾸면 같은 대시보드 안에서 다시 점검합니다"
             description="내부 운영 화면이지만 입력 필터와 상태 배지를 위에서 먼저 보여, 어떤 대상을 보고 있는지 한눈에 확인할 수 있게 정리했습니다."
             titleClassName="text-3xl"

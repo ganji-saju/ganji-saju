@@ -27,7 +27,7 @@ export function EngineMethodLinks({
     <section className="app-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="app-caption">기준 읽을거리</div>
+          <div className="app-caption">풀이 읽을거리</div>
           <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">{title}</h2>
           {description ? (
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">{description}</p>

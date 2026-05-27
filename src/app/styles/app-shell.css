@@ -389,7 +389,7 @@
 }
 
 /* 2026-05-20 — 부채꼴 FAB 메뉴 (무료운세 클릭 시 펼침).
-   FAB 위치 기준 절대 좌표 (left 50%, bottom dock-fab-top).
+   FAB 위치 원칙 절대 좌표 (left 50%, bottom dock-fab-top).
    각 항목은 inline style transform 으로 부채꼴 배치. */
 .app-fan-menu-overlay {
   position: fixed;

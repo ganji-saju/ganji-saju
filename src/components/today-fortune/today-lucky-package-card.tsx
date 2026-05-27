@@ -227,7 +227,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
             ) : null}
           </ul>
           <p className="mt-2 text-[10px] leading-[1.5] text-[var(--app-copy-soft)]">
-            * 오늘 일진 기준입니다. 절대 금기는 아니고, 신중함의 신호로만 받아주세요.
+            * 오늘 일진 정보입니다. 절대 금기는 아니고, 신중함의 신호로만 받아주세요.
           </p>
         </div>
       ) : null}

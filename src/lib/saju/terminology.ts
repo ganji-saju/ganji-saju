@@ -63,10 +63,10 @@ export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string
 
   // §격국 (전체 명칭 — 부분 십성 매칭보다 먼저 치환해 "역할격" 깨짐 차단)
   //   2026-05-23: '정관격' 이 '정관' 으로 부분 매치되어 '책임·도전 역할격' 으로
-  //   깨지던 과치환 버그 정정. 전체 격국명을 매끄러운 "…자리" 표현으로 먼저 교체.
+  //   깨지던 과치환 버그 정정. 전체 격국명을 매끄러운 "…자리" 문구로 먼저 교체.
   [/정관격|편관격/gu, '책임·도전 자리'],
   [/정재격|편재격/gu, '돈·기회 자리'],
-  [/식신격|상관격/gu, '표현·재능 자리'],
+  [/식신격|상관격/gu, '전달·재능 자리'],
   [/정인격|편인격/gu, '배움·휴식 자리'],
   [/비견격|겁재격|건록격/gu, '주체·자립 자리'],
 
@@ -74,7 +74,7 @@ export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string
   [/십신|십성|십성 구조/gu, '관계 역할'],
   [/정관|편관/gu, '책임·도전 역할'],
   [/정재|편재/gu, '돈·기회 역할'],
-  [/식신|상관/gu, '표현·재능 역할'],
+  [/식신|상관/gu, '전달·재능 역할'],
   [/정인|편인/gu, '배움·휴식 역할'],
   [/비견|겁재/gu, '동료·경쟁 역할'],
 
@@ -130,7 +130,7 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
   비견: { hanja: '比肩', plainCue: '나와 비슷한 성향의 사람과 함께 가는 자리 (주체성↑, 양보↓)', category: 'tenGod' },
   겁재: { hanja: '劫財', plainCue: '가까운 사람과 돈·기회를 나누다 갈등이 생기기 쉬운 흐름', category: 'tenGod' },
   식신: { hanja: '食神', plainCue: '꾸준히 만들어내는 힘 — 결과물·자녀·취미의 풍요', category: 'tenGod' },
-  상관: { hanja: '傷官', plainCue: '재능과 표현은 강하지만 답답한 틀을 견디기 어려운 흐름', category: 'tenGod' },
+  상관: { hanja: '傷官', plainCue: '재능과 전달은 강하지만 답답한 틀을 견디기 어려운 흐름', category: 'tenGod' },
   편재: { hanja: '偏財', plainCue: '기회와 사람을 넓게 보는 흐름 — 큰 돈이 드나들지만 흩어지기 쉬움', category: 'tenGod' },
   정재: { hanja: '正財', plainCue: '안정적으로 쌓는 재물 감각 — 한 번 정한 구조 오래 유지', category: 'tenGod' },
   편관: { hanja: '偏官', plainCue: '압박·책임·도전 속에서 단련되는 추진력 (긴장 누적 주의)', category: 'tenGod' },
@@ -140,9 +140,9 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
 
   // §오행 5
   목: { hanja: '木', plainCue: '성장·시작·계획 — 새 일을 여는 힘', category: 'element' },
-  화: { hanja: '火', plainCue: '표현·노출·인정 — 마음을 드러내는 힘', category: 'element' },
+  화: { hanja: '火', plainCue: '전달·노출·인정 — 마음을 드러내는 힘', category: 'element' },
   토: { hanja: '土', plainCue: '안정·정리·기반 — 흩어진 일을 모으는 힘', category: 'element' },
-  금: { hanja: '金', plainCue: '기준·결단·마무리 — 결정을 또렷이 하는 힘', category: 'element' },
+  금: { hanja: '金', plainCue: '선택·결단·마무리 — 결정을 또렷이 하는 힘', category: 'element' },
   수: { hanja: '水', plainCue: '생각·휴식·정보 — 흐름을 읽고 정돈하는 힘', category: 'element' },
 
   // §관계 변화 합/충/형/해 4
@@ -181,8 +181,8 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
   편관격: { hanja: '偏官格', plainCue: '도전·압박을 추진력으로 쓰는 흐름 — 강한 실행형', category: 'pattern' },
   정재격: { hanja: '正財格', plainCue: '꾸준히 쌓는 재물형 — 안정 축적', category: 'pattern' },
   편재격: { hanja: '偏財格', plainCue: '큰 기회·움직이는 재물형 — 확장형', category: 'pattern' },
-  식신격: { hanja: '食神格', plainCue: '꾸준한 표현·결과물 중심의 흐름', category: 'pattern' },
-  상관격: { hanja: '傷官格', plainCue: '재능과 표현의 흐름 — 프레임 깨는 힘', category: 'pattern' },
+  식신격: { hanja: '食神格', plainCue: '꾸준한 전달·결과물 중심의 흐름', category: 'pattern' },
+  상관격: { hanja: '傷官格', plainCue: '재능과 전달의 흐름 — 프레임 깨는 힘', category: 'pattern' },
   정인격: { hanja: '正印格', plainCue: '배움·도움·후원 중심의 흐름', category: 'pattern' },
   편인격: { hanja: '偏印格', plainCue: '직관·전문성·고독한 깊이의 흐름', category: 'pattern' },
   비견격: { hanja: '比肩格', plainCue: '자기 색이 강한 흐름 — 협력보다 주도', category: 'pattern' },
@@ -190,7 +190,7 @@ export const MYEONGRI_GLOSSARY: Record<string, MyeongriGlossaryEntry> = {
 
   // §보조 5 (자주 함께 등장)
   재다신약: { hanja: '財多身弱', plainCue: '재물 기회는 많지만 본인 에너지가 약한 흐름 — 파트너십 필요', category: 'aux' },
-  식신생재: { hanja: '食神生財', plainCue: '꾸준한 표현이 돈으로 이어지는 흐름 — 일과 수익이 연결', category: 'aux' },
+  식신생재: { hanja: '食神生財', plainCue: '꾸준한 전달이 돈으로 이어지는 흐름 — 일과 수익이 연결', category: 'aux' },
   관살혼잡: { hanja: '官殺混雜', plainCue: '책임과 도전이 한꺼번에 들어오는 복잡한 흐름 — 우선순위 필요', category: 'aux' },
   비겁태왕: { hanja: '比劫太旺', plainCue: '주체성이 너무 강해 양보와 협력이 어려운 흐름', category: 'aux' },
   병신합: { hanja: '丙辛合', plainCue: '한 가지에 꽂히면 끝장을 봐야 하는 집중력의 흐름', category: 'aux' },

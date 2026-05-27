@@ -9,7 +9,7 @@ type SafetyNoticeProps = {
 };
 
 const COMMON_COPY =
-  '간지사주의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은 전문 기준과 도움을 우선해 주세요.';
+  '간지사주의 해석은 삶의 흐름을 참고하기 위한 구조 해석입니다. 의료·법률·투자·위기상황 판단은 전문가 판단과 도움을 우선해 주세요.';
 
 const VARIANT_META: Record<
   SafetyNoticeVariant,
@@ -24,7 +24,7 @@ const VARIANT_META: Record<
   general: {
     label: '일반 안내',
     title: '해석은 참고 흐름으로만 보셔도 충분합니다',
-    body: '길흉을 단정하기보다, 지금 어떤 기준과 리듬을 점검하면 좋은지 살펴보는 안내로 받아들여 주세요.',
+    body: '길흉을 단정하기보다, 지금 어떤 리듬과 선택을 점검하면 좋은지 살펴보는 안내로 받아들여 주세요.',
     icon: AlertCircle,
     tone: 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy)]',
   },
@@ -37,7 +37,7 @@ const VARIANT_META: Record<
   },
   finance: {
     label: '투자·재물',
-    title: '투자 판단은 별도 전문 기준이 필요한 영역입니다',
+    title: '투자 판단은 별도 전문가 판단이 필요한 영역입니다',
     body: '재물 흐름은 지출과 선택의 경향을 참고하기 위한 해석입니다. 특정 상품이나 종목에 대한 투자 판단을 대신하지 않습니다.',
     icon: TrendingUp,
     tone: 'border-[var(--app-gold)]/22 bg-[var(--app-gold)]/10 text-[var(--app-copy)]',

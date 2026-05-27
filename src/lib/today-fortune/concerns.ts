@@ -54,7 +54,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
     staticUpsellCopy: '말실수 피하는 대화 문장 확인',
     followUpQuestions: [
       '오늘은 왜 말실수를 조심해야 하나요?',
-      '가까운 사람과 대화할 때 어떤 표현을 줄여야 하나요?',
+      '가까운 사람과 대화할 때 어떤 말을 줄여야 하나요?',
       '오해를 줄이는 한마디는 어떤 식이 좋을까요?',
     ],
   },
@@ -83,7 +83,7 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
     followUpQuestions: [
       '오늘은 무엇부터 하는 편이 좋나요?',
       '지금 가장 약한 흐름은 어디인가요?',
-      '오늘 하루를 무리 없이 쓰는 기준을 알려주세요.',
+      '오늘 하루를 무리 없이 쓰는 할 일을 알려주세요.',
     ],
   },
 ] as const;

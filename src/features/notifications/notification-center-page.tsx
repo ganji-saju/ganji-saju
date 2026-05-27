@@ -53,7 +53,7 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
   },
   'today-zodiac': {
     href: '/zodiac',
-    desc: '내 띠 기준 오늘 흐름',
+    desc: '내 띠 오늘 흐름',
     label: '띠운세 보기',
   },
   'today-star-sign': {

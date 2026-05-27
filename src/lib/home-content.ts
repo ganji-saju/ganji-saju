@@ -84,7 +84,7 @@ export const TAROT_CARDS = [
   },
   {
     name: 'The Sun',
-    theme: '표현',
+    theme: '말',
     message: '숨기고 있던 매력을 드러낼수록 관계와 일 모두 활기를 얻는 날입니다.',
     focus: '먼저 말 걸고 먼저 제안하는 쪽이 유리합니다.',
   },

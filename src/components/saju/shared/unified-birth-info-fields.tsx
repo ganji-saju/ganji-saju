@@ -29,7 +29,7 @@ const TIME_RULE_OPTIONS: Array<{
   label: string;
   desc: string;
 }> = [
-  { value: 'standard', label: '표준시', desc: '기본 한국 표준시 기준' },
+  { value: 'standard', label: '표준시', desc: '기본 한국 표준시 적용' },
   { value: 'trueSolarTime', label: '진태양시', desc: '출생지 경도 보정 반영' },
   { value: 'nightZi', label: '야자시', desc: '자시를 한 흐름으로 묶어 봄' },
   { value: 'earlyZi', label: '조자시', desc: '자시 경계를 더 엄격하게 분리' },
@@ -445,7 +445,7 @@ export function UnifiedBirthInfoFields({
           {hideTimePicker ? null : (
             <div className="gangi-birth-field">
               <Label htmlFor={fieldId('time-rule')} className="gangi-birth-label">
-                시간 기준
+                시간 적용
               </Label>
               <select
                 id={fieldId('time-rule')}

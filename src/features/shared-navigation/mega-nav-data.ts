@@ -1,5 +1,5 @@
 // 2026-05-16 PR #155 — PC 메가 메뉴 데이터.
-// 첨부 desktop.jsx MEGA_NAV 를 기준으로 우리 실제 라우트에 맞춰 정리.
+// 첨부 desktop.jsx MEGA_NAV 를 바탕으로 우리 실제 라우트에 맞춰 정리.
 
 import type { ZodiacKey } from '@/components/gangi/zodiac-chip';
 
@@ -40,7 +40,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
       items: [
         { label: '오늘운세 · 오늘소선생', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: 'FREE' },
         { label: '타로 한 장 · 타로토선생', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: 'FREE' },
-        { label: '띠운세 · 엠지쥐선생', desc: '내 띠 기준', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
+        { label: '띠운세 · 엠지쥐선생', desc: '내 띠 오늘 흐름', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
         { label: '별자리 · 별닭선생', desc: '12자리 메시지', href: '/star-sign', zodiac: 'pig', tag: 'FREE' },
       ],
     },

@@ -25,7 +25,7 @@ export type PaymentHistoryCategory =
 export interface PaymentHistoryEntry {
   /** 안정 키 — product_entitlements.id 또는 credit_transactions.id. */
   id: string;
-  /** 결제 발생 시각(ISO). 정렬 기준. */
+  /** 결제 발생 시각(ISO). 정렬값. */
   date: string;
   category: PaymentHistoryCategory;
   /** 카탈로그에서 해석한 상품명(미해석 시 raw product_id). */

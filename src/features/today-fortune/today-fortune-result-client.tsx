@@ -90,7 +90,7 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
   ],
   energy_health: [
     { label: '사주로 더 보기', href: '/saju/new', body: '생활 리듬과 회복 패턴을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 무리하지 않는 기준을 물어볼 수 있어요.' },
+    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 무리하지 않는 선택을 물어볼 수 있어요.' },
   ],
   general: [
     { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 흐름을 카드 한 장으로 가볍게 봅니다.' },

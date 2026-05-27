@@ -216,7 +216,7 @@ const BRANCH_HARMS = new Set<string>(['子-未', '丑-午', '寅-巳', '卯-辰'
 const BRANCH_BREAKS = new Set<string>(['子-酉', '卯-午', '辰-丑', '未-戌', '寅-亥', '巳-申']);
 // 2026-05-15 PR 6 — 원진(怨嗔) 6 쌍 신규 산출. 사주아이가 적극 활용하는 명리 신호.
 // 자미(子-未) / 축오(丑-午) / 인유(寅-酉) / 묘신(卯-申) / 진해(辰-亥) / 사술(巳-戌).
-// sortBranchKey 정렬 결과 기준 (BRANCH_ORDER alphabetical).
+// sortBranchKey 정렬 결과 원칙 (BRANCH_ORDER alphabetical).
 const BRANCH_WONJIN = new Set<string>(['子-未', '丑-午', '寅-酉', '卯-申', '辰-亥', '巳-戌']);
 const BRANCH_PUNISHMENTS = new Set<string>([
   '寅-巳',
@@ -439,7 +439,7 @@ export function buildOrreryReferenceExtension(data: SajuDataV1): SajuOrreryExten
     notes: [
       '4주, 지장간, 지지 십신, 12운성, 공망, 대운, 합충형파해를 reference 단계로 채웠습니다.',
       '강약·격국·용신 리포트는 여전히 현재 앱 말투 레이어가 맡고 있습니다.',
-      '양인·백호·괴강·도화·천을·천덕·월덕·문창·홍염·금여 기준도 함께 정리했습니다.',
+      '양인·백호·괴강·도화·천을·천덕·월덕·문창·홍염·금여 원칙도 함께 정리했습니다.',
     ],
   };
 }

@@ -789,7 +789,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   >
                     <div className="select-none blur-[5px] opacity-65">
                       <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
-                        자세한 풀이에서는 표현 방식, 관계에서 피로가 쌓이는 지점, 큰 흐름 안에서
+                        자세한 풀이에서는 말투, 관계에서 피로가 쌓이는 지점, 큰 흐름 안에서
                         오래 가져갈 힌트를 이어서 보여드립니다.
                       </p>
                     </div>

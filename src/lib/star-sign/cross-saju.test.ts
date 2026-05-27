@@ -83,5 +83,5 @@ test('summarizeCrossOverview - 일간 모를 때 hint', () => {
   assert.equal(aries.signElement, 'fire');
   assert.equal(aries.mappedEastElement, '화');
   assert.ok(aries.hint.includes('불'));
-  assert.ok(aries.hint.includes('표현'));
+  assert.ok(aries.hint.includes('말'));
 });

@@ -57,7 +57,7 @@ export const KASI_COMPARISON_SAMPLES: KasiComparisonSample[] = [
   {
     id: 'regular-docs-era',
     label: '일반 양력일',
-    reason: '기본 양력 → 음력 변환과 일진 대조가 흔들리지 않는지 보는 기준 샘플입니다.',
+    reason: '기본 양력 → 음력 변환과 일진 대조가 흔들리지 않는지 보는 대조 샘플입니다.',
     input: { year: 2015, month: 9, day: 22, hour: 12, minute: 0 },
     compare: { lunarDate: true, dayPillar: true },
   },

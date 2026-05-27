@@ -1,5 +1,5 @@
 // 2026-05-16 PR #144 — 컴백 리마인더 본문 + 발송 자격 판정.
-// 사용자별 inactivityReminderDays (3 | 5 | 7) 기준으로 lastSeenAt 가 N일 이상 지났으면
+// 사용자별 inactivityReminderDays (3 | 5 | 7) 바탕으로 lastSeenAt 가 N일 이상 지났으면
 // 발송. 같은 사용자에게 너무 자주 보내지 않도록 N/2 일 이내 동일 슬롯 sent 가 있으면 skip.
 
 import type { SupabaseClient } from '@supabase/supabase-js';

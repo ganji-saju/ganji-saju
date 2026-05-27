@@ -77,7 +77,7 @@ const ZODIAC_ORDER: Array<{ slug: string; label: string; key: ZodiacKey }> = [
 // 2026-05-15 — 기간 (today/week/month/year) 별로 다른 시드 → 진짜 다른 점수 노출.
 // 기존엔 'today' 만 작동, 나머지 탭은 클릭 자체 안 됐던 회귀 fix.
 // 2026-05-18 — Phase 2: raw new Date().getDate() (UTC) → getKstParts() (KST) 교체.
-//   기존 코드는 Vercel UTC 기준이라 KST 00:00 ~ 09:00 사이에 어제 점수 노출 (audit P0 #3).
+//   기존 코드는 Vercel UTC 시간대이라 KST 00:00 ~ 09:00 사이에 어제 점수 노출 (audit P0 #3).
 type ZodiacPeriod = 'today' | 'week' | 'month' | 'year';
 
 function periodSeed(period: ZodiacPeriod): number {

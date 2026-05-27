@@ -32,7 +32,7 @@ test('grounding decision trace exposes calculation badges and decision steps for
   const grounding = buildSajuInterpretationGrounding(birthInput, data, report);
   const trace = buildGroundingDecisionTrace(grounding, null);
 
-  assert.ok(trace.badges.some((badge) => badge.label.includes('절기 기준 명식')));
+  assert.ok(trace.badges.some((badge) => badge.label.includes('절기 정보 명식')));
   assert.ok(trace.badges.some((badge) => badge.label.includes('진태양시 보정')));
   assert.ok(trace.steps.some((step) => step.title === '격국 후보 검토'));
   assert.ok(trace.steps.some((step) => step.title === '용신 / 희신 / 기신'));

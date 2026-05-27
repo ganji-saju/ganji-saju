@@ -17,7 +17,7 @@ const OHAENG_ORDER: Ohaeng[] = ['목', '화', '토', '금', '수'];
 
 const DEFAULT_GUIDANCE: Record<Ohaeng, string> = {
   목: '목 기운(자라남과 추진): 새로운 시작과 도전적 계획이 보강이 됩니다.',
-  화: '화 기운(표현과 열정): 발표·기록 같은 표현하는 자리가 보강이 됩니다.',
+  화: '화 기운(말과 열정): 발표·기록 같은 말하는 자리가 보강이 됩니다.',
   토: '토 기운(담아냄과 안정): 규칙적인 루틴과 안정된 환경이 보강이 됩니다.',
   금: '금 기운(단단함과 결단): 체크리스트·정기 회고 같은 단단한 구조가 보강이 됩니다.',
   수: '수 기운(흐름과 깊이): 사색·학습·깊이 있는 관계가 보강이 됩니다.',
@@ -30,7 +30,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
     return () => cancelAnimationFrame(t);
   }, []);
 
-  // 시각 균형 위해 최대 개수 기준(스펙 §15.4 옵션 B).
+  // 시각 균형 위해 최대 개수 원칙(스펙 §15.4 옵션 B).
   const maxCount = Math.max(1, ...OHAENG_ORDER.map((o) => data.counts[o]));
 
   const guidance = (() => {

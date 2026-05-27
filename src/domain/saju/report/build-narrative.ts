@@ -228,7 +228,7 @@ function buildPatternSentence({
       : strengthLevel === '중화'
         ? '에너지가 균형 잡힌 편에서 '
         : '';
-  return `${strengthHint}${patternName}이 ${confidenceWord} 흐름의 기준이 됩니다.`;
+  return `${strengthHint}${patternName}이 ${confidenceWord} 흐름의 바탕이 됩니다.`;
 }
 
 function buildYongsinSentence({

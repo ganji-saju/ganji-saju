@@ -167,7 +167,7 @@ export async function getChapterFeedbackStats(): Promise<ChapterFeedbackStats[]>
  * 챕터 전체 합산 — 챕터별 분리 추세는 후속 PR.
  */
 export interface ChapterFeedbackDailyPoint {
-  /** YYYY-MM-DD (KST 기준) */
+  /** YYYY-MM-DD (KST 시간대) */
   date: string;
   totalResponses: number;
   averageRating: number | null;
@@ -177,7 +177,7 @@ export interface ChapterFeedbackDailyPoint {
 }
 
 function ymdKst(date: Date): string {
-  // KST 자정 기준 YYYY-MM-DD.
+  // KST 자정 단위 YYYY-MM-DD.
   const ms = date.getTime() + 9 * 60 * 60 * 1000;
   const utc = new Date(ms);
   return `${utc.getUTCFullYear()}-${String(utc.getUTCMonth() + 1).padStart(2, '0')}-${String(utc.getUTCDate()).padStart(2, '0')}`;

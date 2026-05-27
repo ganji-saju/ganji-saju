@@ -23,7 +23,7 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
     title: '2026 연간 운세 전략서',
     summary: '월별 흐름, 주의 달, 기회 달',
     recommendation: '올해 일정과 선택을 월 단위로 미리 점검하고 싶은 분',
-    whatToCheck: '상반기/하반기 흐름, 강한 달, 조심할 달, 행동 기준',
+    whatToCheck: '상반기/하반기 흐름, 강한 달, 조심할 달, 오늘 할 일',
     href: '/saju/new?product=yearly-2026',
     badge: '시즌',
   },
@@ -57,7 +57,7 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
     title: '이직·사업 선택 리포트',
     summary: '선택지 비교형',
     recommendation: '한 번의 결정보다, 어떤 선택 방식이 나와 맞는지 알고 싶은 분',
-    whatToCheck: '선택 기준, timing, 무리한 확장 신호, 보수적 판단 기준',
+    whatToCheck: '선택 힌트, timing, 무리한 확장 신호, 보수적 판단 힌트',
     href: '/saju/new?product=decision',
   },
   {
@@ -71,7 +71,7 @@ export const PRODUCT_REPORT_CATALOG: readonly ProductReportCardData[] = [
   {
     slug: 'dialogue',
     title: '대화형 사주 상담',
-    summary: '리포트 기준 위에서 이어지는 Q&A',
+    summary: '리포트 흐름 위에서 이어지는 Q&A',
     recommendation: '읽고 끝내지 않고, 내 질문으로 계속 좁혀가고 싶은 분',
     whatToCheck: '리포트 후속 질문, 개인 상황 해석, 다음 행동 정리',
     href: '/dialogue',

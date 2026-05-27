@@ -180,7 +180,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">자시 기준</span>
+              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">자시 적용</span>
               <select name="jasi" defaultValue={params.jasi ?? 'unified'}
                 className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
                 style={{ borderColor: 'var(--app-line)' }}>
@@ -207,7 +207,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             </label>
 
             <label className="block sm:col-span-2">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">현재 기준일 (ISO, 비우면 현재 시각)</span>
+              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">조회일 (ISO, 비우면 현재 시각)</span>
               <input name="now" defaultValue={params.now} placeholder="2026-05-14T12:00:00+09:00"
                 className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
                 style={{ borderColor: 'var(--app-line)' }} />
@@ -253,8 +253,8 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
                   <Row label="출생시간" value={v1.input.birth.hour !== null ? `${String(v1.input.birth.hour).padStart(2,'0')}:${String(v1.input.birth.minute ?? 0).padStart(2,'0')}` : '미입력'} />
                   <Row label="성별" value={v1.input.gender === 'male' ? '남성' : v1.input.gender === 'female' ? '여성' : '미선택'} />
                   <Row label="출생지" value={v1.input.location ?? '미입력'} />
-                  <Row label="자시 기준" value={v1.input.jasiMethod ?? 'unified'} />
-                  <Row label="현재 기준일" value={v1.metadata.calculatedAt} />
+                  <Row label="자시 적용" value={v1.input.jasiMethod ?? 'unified'} />
+                  <Row label="조회일" value={v1.metadata.calculatedAt} />
                 </dl>
               </div>
 
