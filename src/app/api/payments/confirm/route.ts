@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { isBundlePackage, isSubscriptionPackage, isTasteProductPackage } from '@/lib/payments/catalog';
+import {
+  getCreditGrantType,
+  isBundlePackage,
+  isSubscriptionPackage,
+  isTasteProductPackage,
+} from '@/lib/payments/catalog';
 import { grantBundleComponents } from '@/lib/payments/bundle';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
@@ -80,7 +85,7 @@ export async function POST(req: NextRequest) {
   );
 
   if (pkg.credits > 0) {
-    await addCredits(user.id, pkg.credits, pkg.kind === 'subscription' ? 'subscription' : 'purchase', {
+    await addCredits(user.id, pkg.credits, getCreditGrantType(pkg), {
       orderId,
       packageId: pkg.id,
       paymentKey,

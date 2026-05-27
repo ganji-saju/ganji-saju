@@ -14,14 +14,15 @@ import {
   type TossPaymentMethodCode,
 } from '@/lib/payments/methods';
 import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-picker';
+import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-checkboxes';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import LegalLinks from '@/components/legal-links';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 // 2026-05-18 Phase 5-D: 정책/CS 링크. (잔액 영역은 ink-dark 배경이라 ErrorState 표준 카드 대신 inline retry button 사용.)
 import Link from 'next/link';
 import { BUSINESS_INFO } from '@/lib/business-info';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
+import type { PolicyKind } from '@/shared/policies/types';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +39,15 @@ const CREDIT_PACKAGE_DESCRIPTIONS: Record<
 const PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
   ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
 );
+
+interface PaymentPrepareResponse {
+  ok?: boolean;
+  authenticated?: boolean;
+  alreadyPurchased?: boolean;
+  redirectHref?: string;
+  loginHref?: string;
+  error?: string;
+}
 
 function getPricePerCoin(pkg: PaymentPackage) {
   if (!pkg.credits) return null;
@@ -58,6 +68,8 @@ function CreditsPageContent() {
   const [creditsFetchVersion, setCreditsFetchVersion] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<TossPaymentMethodCode>(DEFAULT_TOSS_PAYMENT_METHOD);
+  const [consentValid, setConsentValid] = useState(false);
+  const [acceptedKinds, setAcceptedKinds] = useState<PolicyKind[]>([]);
   const [selectedPackageId, setSelectedPackageId] = useState<string>(
     PACKAGES.find((p) => CREDIT_PACKAGE_DESCRIPTIONS[p.id]?.badge === 'POPULAR')?.id ??
       PACKAGES[0]?.id ??
@@ -120,10 +132,30 @@ function CreditsPageContent() {
     () => PACKAGES.find((p) => p.id === selectedPackageId) ?? PACKAGES[0],
     [selectedPackageId]
   );
+  const selectedMethod = getTossPaymentMethodOption(paymentMethod);
+  const confirmationItems = useMemo(() => {
+    if (!selectedPackage) return [];
+    return [
+      `상품: ${selectedPackage.name}`,
+      `충전 코인: ${selectedPackage.credits.toLocaleString('ko-KR')}코인`,
+      `결제 금액: ${selectedPackage.price.toLocaleString('ko-KR')}원`,
+      `결제 수단: ${selectedMethod.label}`,
+    ];
+  }, [selectedMethod.label, selectedPackage]);
+  const purchaseDisabled =
+    !selectedPackage ||
+    loading !== null ||
+    isLoggedIn === null ||
+    (isLoggedIn === true && !consentValid);
 
   async function handlePurchase(pkg: PaymentPackage) {
     if (!isLoggedIn) {
       location.href = `/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`;
+      return;
+    }
+
+    if (!consentValid) {
+      setErrorMessage('결제 전 필수 동의 항목을 확인해 주세요.');
       return;
     }
 
@@ -135,6 +167,35 @@ function CreditsPageContent() {
     setLoading(pkg.id);
     setErrorMessage('');
     try {
+      const prepareResponse = await fetch('/api/payments/prepare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId: pkg.id,
+          from: entrySource,
+          acceptedKinds,
+        }),
+      });
+      const prepare = (await prepareResponse
+        .json()
+        .catch(() => null)) as PaymentPrepareResponse | null;
+
+      if (prepareResponse.status === 401 || prepare?.authenticated === false) {
+        location.href =
+          prepare?.loginHref ?? `/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`;
+        return;
+      }
+
+      if (!prepareResponse.ok || prepare?.error) {
+        setErrorMessage(prepare?.error ?? '결제 사전 확인에 문제가 생겼습니다.');
+        return;
+      }
+
+      if (prepare?.alreadyPurchased && prepare.redirectHref) {
+        location.href = prepare.redirectHref;
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
       const orderId = `order_${pkg.id}_${paymentMethod.toLowerCase()}_${Date.now()}`;
@@ -191,8 +252,6 @@ function CreditsPageContent() {
       setLoading(null);
     }
   }
-
-  const selectedMethod = getTossPaymentMethodOption(paymentMethod);
 
   return (
     <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-32 md:pb-12">
@@ -397,6 +456,17 @@ function CreditsPageContent() {
             </div>
           </section>
 
+          {selectedPackage ? (
+            <PaymentConsentCheckboxes
+              pkg={selectedPackage}
+              confirmationItems={confirmationItems}
+              onValidChange={(valid, kinds) => {
+                setConsentValid(valid);
+                setAcceptedKinds(kinds);
+              }}
+            />
+          ) : null}
+
           {/* 에러 안내 */}
           {hasPaymentError ? (
             <article
@@ -423,8 +493,7 @@ function CreditsPageContent() {
           ) : null}
 
           <p className="text-[11.5px] leading-[1.6] text-[var(--app-copy-soft)]">
-            토스페이먼츠 카드 결제 · 계좌이체 · 진행 시{' '}
-            <LegalLinks className="text-[var(--app-pink-strong)]" /> 동의
+            토스페이먼츠 카드 결제 · 계좌이체 · 모든 필수 동의가 확인된 뒤 결제창이 열립니다.
           </p>
         </section>
 
@@ -457,7 +526,7 @@ function CreditsPageContent() {
           <button
             type="button"
             onClick={() => selectedPackage && handlePurchase(selectedPackage)}
-            disabled={!selectedPackage || loading !== null}
+            disabled={purchaseDisabled}
             className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
           >
             {loading
@@ -465,6 +534,8 @@ function CreditsPageContent() {
               : selectedPackage
                 ? isLoggedIn === false
                   ? `로그인하고 ${selectedPackage.price.toLocaleString()}원 충전하기`
+                  : !consentValid
+                    ? '결제 전 동의가 필요합니다'
                   : `${selectedPackage.price.toLocaleString()}원 충전하기 · ${selectedMethod.shortLabel}`
                 : '패키지를 선택하세요'}
           </button>

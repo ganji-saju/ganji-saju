@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { validatePaymentConfirmationPayload } from './confirmation';
-import { getPackage, isSubscriptionPackage } from './catalog';
+import { getCreditGrantType, getPackage, isSubscriptionPackage } from './catalog';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -27,6 +27,15 @@ test('bonus coin package does not masquerade as a dialogue membership', () => {
   assert.ok(pkg);
   assert.equal(pkg.name, '보너스 36 코인');
   assert.equal(isSubscriptionPackage(pkg), false);
+  assert.equal(getCreditGrantType(pkg), 'purchase');
+});
+
+test('managed membership packages grant subscription credits', () => {
+  const pkg = getPackage('membership_plus');
+
+  assert.ok(pkg);
+  assert.equal(isSubscriptionPackage(pkg), true);
+  assert.equal(getCreditGrantType(pkg), 'subscription');
 });
 
 test('payment confirmation rejects tampered package amount', () => {

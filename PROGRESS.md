@@ -1,9 +1,35 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-27 (Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검)**. 직전 구현 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비(PC 마이홈 드롭다운·모바일 MY 상단) + 리뷰 모달 정중앙 + 결제퍼널 500 픽스. 직전 운영 세션: **#373~#384** — LLM 비용 캐시·텔레메트리 Phase 0 + 어드민 운영 Phase 1~3 + PDF 실데이터. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-27 (Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료)**. 직전 세션: **Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검**. 직전 구현 세션: **2026-05-26 #386~#389** — 띠운세 입력 단순화·상세 기간별 콘텐츠 동적화 + 헤더 네비 + 리뷰 모달 + 결제퍼널 500 픽스. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 달빛인생 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-27 세션 — Codex 결제정책 P0/P1 보완 (`/credits` prepare/동의 + bundle 동의 + credit idempotency)
+
+> Claude Code 토큰 만료로 Codex가 이어받은 결제정책 보완 작업. 기존 Claude 작업과 겹치지 않도록 범위를 네 가지로 분리하고, 코드·DB migration·문서 기록을 함께 남김.
+
+### 수정 완료
+- **코인 구매 prepare/동의 통합**: `/credits`가 Toss 결제창을 직접 열기 전에 `/api/payments/prepare`를 호출하도록 변경. `PaymentConsentCheckboxes`를 코인 충전 화면에 추가해 `terms/privacy/refund/coin` 동의가 모두 확인되어야 결제 버튼이 활성화됨.
+- **prepare API 강제 동의 검증**: `/api/payments/prepare`에서 `acceptedKinds` 누락 시 더 이상 통과시키지 않고 `prepare_blocked` + `consent_missing`으로 funnel 기록. non-entitlement 상품(코인/일회성 코인팩)도 consent 검증과 `prepare_ready` 로그를 거치도록 조기 반환 제거.
+- **bundle digital-content 동의**: `bundle_today_set` 같은 bundle 상품도 `digital-content` 동의를 요구하도록 `getRequiredConsentKinds`/`getConsentItems` 보강. 회귀 테스트 추가.
+- **credit confirm idempotency**: 신규 `044_credit_payment_idempotency.sql` 추가. `processed_credit_payments.payment_key UNIQUE`로 `add_credits` 호출을 DB 레벨에서 1회만 처리. 기존 `credit_transactions.metadata.paymentKey`도 backfill해 과거 성공 결제 재시도 중복 적립을 차단.
+- **`subscription_30` 적립/동의 타입 정정**: `subscription_30`은 `kind='subscription'`이지만 관리형 월구독이 아니므로 confirm에서 `purchase` grant type으로 적립. 36코인 일회성 상품이 1년 만료 lot에 들어가도록 `getCreditGrantType`으로 분기하고, 동의 정책도 `subscription`이 아니라 `coin`을 요구하도록 정정.
+- **문서 동기화**: `docs/payments/product-catalog.md`, `pricing-proposal.md`, `pricing-rollout-plan.md`를 현재 구현 상태로 갱신. 남은 리스크는 orderId 서버 발급/UUID화, Toss webhook/reconciliation으로 좁힘.
+
+### 운영 적용
+- `044_credit_payment_idempotency.sql`: 사용자 확인 기준 Supabase prod 수동 적용 완료(2026-05-27).
+- 이 repo는 DB migration이 CI/Vercel 배포로 자동 적용되지 않으므로, 후속 DB migration도 별도 수동 적용 상태를 `PROGRESS.md`에 기록한다.
+
+### 검증
+- `git diff --check`: 통과.
+- `npm test`: 740 tests passed.
+- `npm run test:spec -- src/lib/payments/payment-duplicate-audit.spec.ts`: 18 tests passed.
+- `npm run typecheck`: 통과.
+- `npm run build`: 통과 (Next.js 16.2.3, 189 static pages).
+- `npm run audit:mockup-placeholders:strict`: 의심 패턴 0.
 
 ---
 
@@ -34,11 +60,11 @@
 - `taste_score_factor` 550원과 `taste_compat_reading` 990원은 카탈로그/스코프/checkout 경로에 존재.
 - 월간 달력은 `2코인` 또는 `1,900원` 양쪽 경로가 UI/FAQ에서 대안으로 노출됨. 정책상 “이중 경로 허용”이면 정합, “단일 경로 강제”면 아직 정책 결정 필요.
 
-### 아직 완료 판정 전 점검 필요
-1. **코인 구매 동의/prepare 우회**: `/credits`는 Toss를 직접 열고 있어 `/api/payments/prepare`, `PaymentConsentCheckboxes`, consent 기록, prepare funnel이 빠짐. credit 상품은 정책상 `coin` 동의가 필요하므로 보완 권장.
-2. **bundle 동의 규칙**: `bundle_today_set`은 디지털 콘텐츠 묶음이지만 `getRequiredConsentKinds`에서 bundle은 공통 동의만 요구. `digital-content` 동의 추가 권장.
-3. **credit idempotency**: confirm 경로의 `addCredits`가 `paymentKey` 중복 적립을 DB/RPC 레벨에서 차단하는지 확인 필요. 기존 문서의 P1 리스크는 아직 완전 해소로 판단하지 않음.
-4. **문서 동기화**: `docs/payments/product-catalog.md`, `pricing-proposal.md`, `pricing-rollout-plan.md`를 현재 로컬 구현 기준으로 갱신.
+### 점검 결과 후속 상태
+1. ✅ **코인 구매 동의/prepare 우회**: 후속 Codex 세션에서 `/credits` prepare/`PaymentConsentCheckboxes` 통합 완료.
+2. ✅ **bundle 동의 규칙**: 후속 Codex 세션에서 bundle `digital-content` 동의 추가 완료.
+3. ✅ **credit idempotency**: 후속 Codex 세션에서 044 migration + `processed_credit_payments.payment_key UNIQUE`로 보강. 사용자 확인 기준 prod 수동 적용 완료(2026-05-27).
+4. ✅ **문서 동기화**: 결제 문서와 PROGRESS 갱신 완료.
 
 ### 검증
 - `npm test`: 737 tests passed.
@@ -145,7 +171,7 @@
 - ◐ **사이트 네비/홈 카드 통일**("미착수") → #351~#353(다크 통일·별자리 뒤로가기)로 일부 진행 후, #365에서 카드 다크는 흰색으로 되돌림(사용자 요청).
 - ✅ **점수 Phase 2~7**(하단 §4 Tier 표 SC2~SC5 ⬜) → #305/#307~#312/#314로 **이미 완료·배포**됨(표가 stale).
 - ✅ **lifetime 환불 "회수 함수 없음"**(아래 가격정책 (b)) → `revokeProductEntitlement`·`payments/bundle.ts` 일괄회수 **존재**(#342).
-- ◐ 여전히 열림(2026-05-27 갱신): 코인 만료 정책↔구현 불일치는 `040_credit_lots_expiry`로 해소. today-detail 중복 과금 환불은 진행 중. 남은 결제정책 점검은 `/credits` prepare/동의 우회, bundle digital-content 동의, credit addCredits paymentKey 멱등성 확인. audit 🟡 2(총평 문장수 enforce·대운 LLM 다양성)는 별도.
+- ◐ 여전히 열림(2026-05-27 갱신): 코인 만료 정책↔구현 불일치는 `040_credit_lots_expiry`로 해소. `/credits` prepare/동의, bundle digital-content 동의, credit addCredits paymentKey 멱등성은 후속 Codex 세션에서 보강. today-detail 중복 과금 환불은 진행 중. audit 🟡 2(총평 문장수 enforce·대운 LLM 다양성)는 별도.
 
 ### 후속
 - 선생 명칭: 관상원·복돼지는 주제 부합으로 유지. 추가 변경 시 별도 PR.

@@ -39,6 +39,13 @@ function buildCheckoutPath(input: {
   scope: string | null;
   from: string | null;
 }) {
+  if (!input.product && !input.plan) {
+    const params = new URLSearchParams();
+    if (input.from) params.set('from', input.from);
+    const query = params.toString();
+    return query ? `/credits?${query}` : '/credits';
+  }
+
   const params = new URLSearchParams();
   if (input.product) params.set('product', input.product);
   else if (input.plan) params.set('plan', input.plan);
@@ -155,105 +162,98 @@ export async function POST(req: NextRequest) {
     }
   } else {
     paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
-    if (!paymentScope) {
-      return NextResponse.json({
-        ok: true,
-        authenticated: true,
-        alreadyPurchased: false,
-        scopeKey: null,
-      });
-    }
+    if (paymentScope) {
+      const entitlement = isTasteProductPackage(pkg)
+        ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
+        : await getLifetimeReportEntitlement(
+            user.id,
+            paymentScope.readingKey ?? paymentScope.slug ?? '',
+            paymentScope.slug ? [paymentScope.slug] : []
+          );
+      // today-detail 은 코인 경로(/api/credits/use·/api/today-fortune/unlock)로도 해제될 수
+      // 있어, Toss 단건 결제 중복을 막으려면 코인 해제를 양쪽 키로 확인해야 한다:
+      //   today-fortune 경로 = sourceSessionId(=slug) / saju 경로 = readingKey.
+      // readingKey 는 today_fortune_premium_access·detail_report_access 두 kind 모두 조회.
+      // ※ KST 일자 단위 fallback(hasTodayFortuneDailyAccess)은 의도적 제외 — 다른 사주의
+      //   오늘 결제까지 막는 과잉 차단 방지(결제 차단은 scope 단위여야 함).
+      const coinUnlockedTodayDetail =
+        isTasteProductPackage(pkg) &&
+        pkg.tasteProductId === 'today-detail' &&
+        paymentScope.slug
+          ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)) ||
+            (paymentScope.readingKey
+              ? (await hasTodayFortunePremiumAccessByReading(user.id, paymentScope.readingKey)) ||
+                (await hasDetailReportAccess(user.id, paymentScope.readingKey))
+              : false)
+          : false;
 
-    const entitlement = isTasteProductPackage(pkg)
-      ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
-      : await getLifetimeReportEntitlement(
-          user.id,
-          paymentScope.readingKey ?? paymentScope.slug ?? '',
-          paymentScope.slug ? [paymentScope.slug] : []
-        );
-    // today-detail 은 코인 경로(/api/credits/use·/api/today-fortune/unlock)로도 해제될 수
-    // 있어, Toss 단건 결제 중복을 막으려면 코인 해제를 양쪽 키로 확인해야 한다:
-    //   today-fortune 경로 = sourceSessionId(=slug) / saju 경로 = readingKey.
-    // readingKey 는 today_fortune_premium_access·detail_report_access 두 kind 모두 조회.
-    // ※ KST 일자 단위 fallback(hasTodayFortuneDailyAccess)은 의도적 제외 — 다른 사주의
-    //   오늘 결제까지 막는 과잉 차단 방지(결제 차단은 scope 단위여야 함).
-    const coinUnlockedTodayDetail =
-      isTasteProductPackage(pkg) &&
-      pkg.tasteProductId === 'today-detail' &&
-      paymentScope.slug
-        ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)) ||
-          (paymentScope.readingKey
-            ? (await hasTodayFortunePremiumAccessByReading(user.id, paymentScope.readingKey)) ||
-              (await hasDetailReportAccess(user.id, paymentScope.readingKey))
-            : false)
-        : false;
-
-    if (entitlement || coinUnlockedTodayDetail) {
-      await logPaymentFunnelEvent(supabase, {
-        stage: 'prepare_blocked',
-        userId: user.id,
-        packageId,
-        reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
-      });
-      return NextResponse.json({
-        ok: true,
-        authenticated: true,
-        alreadyPurchased: true,
-        scopeKey: paymentScope.scopeKey,
-        redirectHref: buildPurchasedProductHref(paymentScope.productId, slug, { from, scope }),
-        reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
-      });
+      if (entitlement || coinUnlockedTodayDetail) {
+        await logPaymentFunnelEvent(supabase, {
+          stage: 'prepare_blocked',
+          userId: user.id,
+          packageId,
+          reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
+        });
+        return NextResponse.json({
+          ok: true,
+          authenticated: true,
+          alreadyPurchased: true,
+          scopeKey: paymentScope.scopeKey,
+          redirectHref: buildPurchasedProductHref(paymentScope.productId, slug, { from, scope }),
+          reason: entitlement ? 'existing_entitlement' : 'existing_credit_unlock',
+        });
+      }
     }
   }
 
-  // 2026-05-18 Phase 3-C-1: 동의 검증 + DB 기록.
-  // acceptedKinds 가 명시된 경우만 검증 (점진 전환 — 기존 결제 페이지 backward compat).
-  // 미동의 시 400 + funnel_log blocked. 동의 시 recordUserConsent 호출 (consent_method='payment_explicit').
-  const acceptedKindsRaw = Array.isArray(payload.acceptedKinds) ? payload.acceptedKinds : null;
-  const acceptedKinds: PolicyKind[] | null = acceptedKindsRaw
-    ? (acceptedKindsRaw.filter((k): k is PolicyKind =>
-        typeof k === 'string' && (POLICY_KINDS as readonly string[]).includes(k)
-      ))
-    : null;
+  // 2026-05-27: 모든 prepare 호출에서 동의 검증을 강제한다. /credits 도 이
+  // 경로를 타므로 coin 정책 동의와 funnel prepare 로그가 같은 방식으로 남는다.
+  const acceptedKindsRaw = Array.isArray(payload.acceptedKinds) ? payload.acceptedKinds : [];
+  const acceptedKinds: PolicyKind[] = acceptedKindsRaw.filter(
+    (k): k is PolicyKind =>
+      typeof k === 'string' && (POLICY_KINDS as readonly string[]).includes(k)
+  );
 
-  if (acceptedKinds !== null) {
-    const missing = findMissingConsents(pkg, acceptedKinds);
-    if (missing.length > 0) {
-      await logPaymentFunnelEvent(supabase, {
-        stage: 'prepare_blocked',
-        userId: user.id,
-        packageId,
-        reason: 'consent_missing',
-        metadata: { missing },
-      });
-      return NextResponse.json(
-        {
-          ok: false,
-          authenticated: true,
-          error: '필수 동의 항목이 누락되었습니다.',
-          missingConsents: missing,
-        },
-        { status: 400 }
-      );
-    }
-    // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.
-    // 실패해도 결제 자체는 진행 (graceful — 정책 본문 admin 입력 전이면 skip).
-    try {
-      await recordConsentsForPayment({
-        userId: user.id,
-        pkg,
-        acceptedKinds,
-        orderId: null, // confirm 시점에는 orderId 별도 처리 (후속 PR)
-        userAgent: req.headers.get('user-agent') ?? null,
-        ip:
-          req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-          req.headers.get('x-real-ip') ??
-          null,
-      });
-    } catch (err) {
-      // 동의 기록 실패는 funnel 로그만 — 결제 차단 안 함.
-      console.error('[prepare] recordConsentsForPayment failed', err);
-    }
+  const missing = findMissingConsents(pkg, acceptedKinds);
+  if (missing.length > 0) {
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'prepare_blocked',
+      userId: user.id,
+      packageId,
+      reason: 'consent_missing',
+      metadata: { missing },
+    });
+    return NextResponse.json(
+      {
+        ok: false,
+        authenticated: true,
+        error: '필수 동의 항목이 누락되었습니다.',
+        missingConsents: missing,
+      },
+      { status: 400 }
+    );
+  }
+
+  // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.
+  // 실패해도 결제 자체는 진행 (graceful — 정책 본문 admin 입력 전이면 skip).
+  let recordedPolicyVersionIds: string[] = [];
+  let consentRecordError = false;
+  try {
+    recordedPolicyVersionIds = await recordConsentsForPayment({
+      userId: user.id,
+      pkg,
+      acceptedKinds,
+      orderId: null, // confirm 시점에는 orderId 별도 처리 (후속 PR)
+      userAgent: req.headers.get('user-agent') ?? null,
+      ip:
+        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        req.headers.get('x-real-ip') ??
+        null,
+    });
+  } catch (err) {
+    // 동의 기록 실패는 funnel 로그만 — 결제 차단 안 함.
+    consentRecordError = true;
+    console.error('[prepare] recordConsentsForPayment failed', err);
   }
 
   await logPaymentFunnelEvent(supabase, {
@@ -261,7 +261,13 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     packageId,
     amount: pkg.price ?? null,
-    metadata: { scopeKey: paymentScope?.scopeKey ?? null, consentRecorded: acceptedKinds !== null },
+    metadata: {
+      scopeKey: paymentScope?.scopeKey ?? null,
+      consentAcceptedKinds: acceptedKinds,
+      consentRecorded: recordedPolicyVersionIds.length > 0,
+      consentRecordCount: recordedPolicyVersionIds.length,
+      consentRecordError,
+    },
   });
 
   return NextResponse.json({

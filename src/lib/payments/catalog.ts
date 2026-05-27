@@ -7,6 +7,7 @@ export type PaymentPackageKind =
   | 'taste_product'
   | 'bundle';
 export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
+export type CreditGrantType = 'purchase' | 'subscription';
 export type TasteProductId =
   | 'today-detail'
   | 'love-question'
@@ -218,6 +219,10 @@ export function isSubscriptionPackage(
   pkg: PaymentPackage
 ): pkg is PaymentPackage & { subscriptionPlan: SubscriptionPlan } {
   return pkg.kind === 'subscription' && Boolean(pkg.planSlug) && Boolean(pkg.subscriptionPlan);
+}
+
+export function getCreditGrantType(pkg: PaymentPackage): CreditGrantType {
+  return isSubscriptionPackage(pkg) ? 'subscription' : 'purchase';
 }
 
 export function isTasteProductPackage(

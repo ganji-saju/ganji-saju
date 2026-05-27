@@ -31,9 +31,17 @@ test('getRequiredConsentKinds — credits 종류 = + coin', () => {
   assert.equal(required.length, 4); // terms + privacy + refund + coin
 });
 
-test('getRequiredConsentKinds — subscription 종류 = + subscription', () => {
+test('getRequiredConsentKinds — one-time 36 coin package = + coin, not subscription', () => {
   const required = getRequiredConsentKinds(pkg('subscription_30'));
+  assert.ok(required.includes('coin'));
+  assert.equal(required.includes('subscription'), false);
+  assert.equal(required.length, 4);
+});
+
+test('getRequiredConsentKinds — managed subscription 종류 = + subscription', () => {
+  const required = getRequiredConsentKinds(pkg('membership_premium'));
   assert.ok(required.includes('subscription'));
+  assert.equal(required.includes('coin'), false);
   assert.equal(required.length, 4);
 });
 
@@ -45,6 +53,12 @@ test('getRequiredConsentKinds — lifetime_report = + digital-content', () => {
 
 test('getRequiredConsentKinds — taste_product = + digital-content', () => {
   const required = getRequiredConsentKinds(pkg('taste_today_detail'));
+  assert.ok(required.includes('digital-content'));
+  assert.equal(required.length, 4);
+});
+
+test('getRequiredConsentKinds — bundle = + digital-content', () => {
+  const required = getRequiredConsentKinds(pkg('bundle_today_set'));
   assert.ok(required.includes('digital-content'));
   assert.equal(required.length, 4);
 });
@@ -67,7 +81,7 @@ test('findMissingConsents — 모두 동의 시 빈 배열', () => {
 });
 
 test('findMissingConsents — 일부 누락 시 누락 항목 반환', () => {
-  const p = pkg('subscription_30');
+  const p = pkg('membership_premium');
   const accepted: PolicyKind[] = ['terms', 'privacy']; // refund / subscription 누락
   const missing = findMissingConsents(p, accepted);
   assert.ok(missing.includes('refund'));

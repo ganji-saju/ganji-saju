@@ -1,7 +1,7 @@
 # 상품 카탈로그 / 가격 / 환불 정책 구조
 
 작성일: 2026-05-17
-최종 갱신: 2026-05-27 / 출처: `src/lib/payments/catalog.ts`, `src/lib/payments/product-scope.ts`, `src/shared/payments/consent-rules.ts`, `supabase/migrations/040_credit_lots_expiry.sql`, `supabase/migrations/043_refund_requests.sql`
+최종 갱신: 2026-05-27 / 출처: `src/lib/payments/catalog.ts`, `src/lib/payments/product-scope.ts`, `src/shared/payments/consent-rules.ts`, `supabase/migrations/040_credit_lots_expiry.sql`, `supabase/migrations/043_refund_requests.sql`, `supabase/migrations/044_credit_payment_idempotency.sql`
 
 > 목적: 현재 로컬 구현과 운영 정책 문서의 기준점을 맞춘다. 정책 수치가 운영자 확정값이 아닌 항목은 "확인 필요"로 남긴다.
 
@@ -18,7 +18,7 @@
 | `credit_1` | 체험 1 코인 | 500원 | 1 | `credits` | 일회성 충전 |
 | `credit_3` | 스타터 3 코인 | 990원 | 3 | `credits` | 일회성 충전 |
 | `credit_7` | 기본 7 코인 | 2,000원 | 7 | `credits` | 일회성 충전 |
-| `subscription_30` | 보너스 36 코인 | 9,900원 | 36 | `subscription` | `planSlug` 없음 → 월구독이 아니라 일회성 36코인 상품 |
+| `subscription_30` | 보너스 36 코인 | 9,900원 | 36 | `subscription` | `planSlug` 없음 → 월구독이 아니라 일회성 36코인 상품. confirm에서는 `purchase` grant type으로 처리 |
 
 ### 1.2 멤버십
 
@@ -53,10 +53,12 @@
 
 ### 2.1 결제 준비/확정
 
-- `/membership/checkout` 경로는 `/api/payments/prepare`를 호출해 인증, 중복 구매, consent 기록, funnel 이벤트를 처리한 뒤 Toss 결제를 연다.
+- `/membership/checkout`과 `/credits` 경로는 `/api/payments/prepare`를 호출해 인증, 중복 구매, consent 기록, funnel 이벤트를 처리한 뒤 Toss 결제를 연다.
 - `/api/payments/confirm`은 Toss confirm 후 상품 종류별로 `addCredits`, `activateMembershipSubscription`, `grantLifetimeReportEntitlement`, `grantTasteProductEntitlement`, `grantBundleComponents`를 호출한다.
 - `bundle_today_set`은 구성품 분해 grant 방식이다. 기존 조회 경로는 각 단건 entitlement를 그대로 본다.
-- `/credits` 경로는 현재 Toss 결제를 직접 연다. 즉 `/api/payments/prepare`, `PaymentConsentCheckboxes`, consent 기록, prepare funnel을 거치지 않는다.
+- prepare API는 `acceptedKinds`를 필수로 검증한다. 누락 시 `prepare_blocked` / `consent_missing`으로 기록하고 결제창을 열지 않는다.
+- `/credits`는 `PaymentConsentCheckboxes`를 표시하고, credit 상품에 필요한 `coin` 동의를 서버에 기록한다.
+- `subscription_30`은 `kind='subscription'`이지만 관리형 구독이 아니므로 동의 정책도 `subscription`이 아니라 `coin`을 요구한다.
 
 ### 2.2 코인 만료 정책
 
@@ -64,8 +66,9 @@
 - `credit_lots`가 결제/이관 코인의 source of truth이고, `user_credits.balance`는 비만료 lot 합의 캐시다.
 - 기존 잔액은 migration 적용 시점 + 1년 만료인 `grandfather` lot으로 백필한다.
 - 신규 결제 코인은 결제 시점 + 1년 만료 lot으로 적립된다.
+- `subscription_30`은 월구독이 아니므로 confirm에서 `purchase` 타입으로 적립되어 1년 만료 lot에 들어간다.
 - `getCredits`는 표시 잔액을 비만료 lot 합으로 재계산한다. cleanup cron 없이도 만료분은 조회/차감에서 제외된다.
-- 구독 지급분(`subscription_balance`)은 기존 정책대로 구독성 잔액으로 분리된다.
+- 관리형 멤버십(`membership_plus`, `membership_premium`) 지급분만 `subscription_balance`로 분리된다.
 
 ### 2.3 환불/회수
 
@@ -74,7 +77,15 @@
 - 사용자 확인 기준 2026-05-27에 prod 043 적용 완료. 실제 환불은 진행 중.
 - Toss cancel은 idempotency key를 사용한다.
 
-### 2.4 월간 달력 이중 경로
+### 2.4 credit confirm idempotency
+
+- `044_credit_payment_idempotency.sql`은 `processed_credit_payments` 테이블을 추가한다.
+- `payment_key`는 UNIQUE이며, `add_credits`가 잔액을 더하기 전에 먼저 paymentKey를 예약한다.
+- 같은 `paymentKey/orderId` confirm이 재시도되면 두 번째 호출은 잔액과 `credit_transactions`를 다시 쓰지 않고 idempotent success로 종료한다.
+- migration 적용 시 기존 `credit_transactions.metadata.paymentKey`를 backfill해 과거 성공 결제도 재시도 중복 적립을 막는다.
+- 사용자 확인 기준 2026-05-27에 Supabase prod 수동 적용 완료.
+
+### 2.5 월간 달력 이중 경로
 
 - 월간 달력은 단건 현금(`taste_monthly_calendar`, 1,900원)과 코인 unlock(`calendar`, 2코인) 양쪽 경로가 있다.
 - UI/FAQ에서 `2코인` 또는 `1,900원` 대안으로 명시한다.
@@ -84,37 +95,19 @@
 
 ## 3. 남은 결제정책 리스크
 
-### 3.1 P0 후보 — 코인 구매 동의/prepare 우회
-
-- `credits` 상품은 `getRequiredConsentKinds`에서 `coin` 동의를 요구한다.
-- 하지만 `/credits`는 현재 `/api/payments/prepare`와 `PaymentConsentCheckboxes`를 거치지 않는다.
-- 보완 권장: `/credits` 구매 버튼도 membership checkout과 같은 prepare/consent/funnel 경로를 사용하도록 통일.
-
-### 3.2 P0 후보 — bundle digital-content 동의 누락
-
-- `bundle_today_set`은 디지털 콘텐츠 묶음이다.
-- 현재 consent rule은 `lifetime_report`/`taste_product`에만 `digital-content`를 붙이고, `bundle`은 공통 동의만 요구한다.
-- 보완 권장: bundle에도 `digital-content` 동의를 추가.
-
-### 3.3 P1 — credit addCredits paymentKey 멱등성 확인
-
-- entitlement 계열은 UNIQUE/스코프 기반으로 중복 grant가 방어된다.
-- credit 충전은 confirm 경로에서 `addCredits`를 호출한다.
-- `paymentKey/orderId` 중복 confirm 시 DB/RPC 레벨에서 중복 적립을 막는지 확인 필요. 아직 완료로 판정하지 않는다.
-
-### 3.4 P1 — orderId 충돌 가능성
+### 3.1 P1 — orderId 충돌 가능성
 
 - `/credits`: `order_${pkg.id}_${method}_${Date.now()}`
 - `/membership/checkout`: `membership_${packageId}_${method}_${Date.now()}`
 - 같은 ms 더블 클릭 같은 극단 상황에서 orderId 충돌 가능성이 있다. `crypto.randomUUID()` 또는 서버 발급 order id로 개선 권장.
 
-### 3.5 P1 — Toss webhook 라우트 부재
+### 3.2 P1 — Toss webhook 라우트 부재
 
 - 현재 success 페이지 도달 후 `/api/payments/confirm` 호출에 의존한다.
 - 사용자가 결제 후 브라우저를 닫는 경우 entitlement/credit 지급 누락 가능성이 있다.
 - 후속: Toss webhook 또는 결제 상태 reconciliation job.
 
-### 3.6 문서/노출 범위
+### 3.3 문서/노출 범위
 
 - `/pricing` 공개 페이지는 현재 주요 taste 상품과 코인/멤버십 중심이며 `taste_score_factor`, `taste_compat_reading`, `bundle_today_set`은 맥락형 상품으로 checkout/결과 화면에서 노출된다.
 - 공개 가격표가 전체 카탈로그 표 역할이어야 한다면 `/pricing`에도 추가 노출이 필요하다. 맥락형 upsell만 의도라면 현 상태 유지 가능.
@@ -131,7 +124,7 @@
 | taste 상품 | 열람 전 기준 확정 필요 | 제공 개시 후 불가 고지 필요 | 원칙상 없음 |
 | bundle 상품 | 구성품 제공 전/후 기준 확정 필요 | 구성품 중 하나라도 제공 개시 후 불가 고지 필요 | 구성품별 부분환불 허용 여부 확정 필요 |
 
-청약철회 예외 고지는 결제 전 동의 체크박스와 함께 유지한다. bundle은 digital-content 동의가 필요하다.
+청약철회 예외 고지는 결제 전 동의 체크박스와 함께 유지한다. bundle도 digital-content 동의를 요구한다.
 
 ---
 
@@ -142,3 +135,5 @@
 | 2026-05-17 | 초기 작성 (Phase 1 audit) |
 | 2026-05-23 | entitlement 회수 함수, today-detail/score-factor 정합성 내용 반영 |
 | 2026-05-27 | 현재 로컬 구현 기준으로 전면 갱신: 16개 카탈로그, `bundle_today_set`, `taste_compat_reading`, `credit_lots` 1년 만료, 043 환불 workflow, 남은 P0/P1 리스크 재정리 |
+| 2026-05-27 | Codex 결제정책 보완 — `/credits` prepare/consent 통합, bundle digital-content 동의, 044 credit paymentKey idempotency, `subscription_30` purchase lot 적립 타입 및 coin 동의 반영 |
+| 2026-05-27 | 사용자 확인 기준 Supabase prod에 `044_credit_payment_idempotency.sql` 수동 적용 완료 |

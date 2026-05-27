@@ -9,7 +9,7 @@
 
 ## 0. 핵심 결론 (먼저 읽기)
 
-> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 기준이다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. 아직 남은 것은 후속 번들, bundle 결제 동의 규칙, credit prepare/동의 경로 정합화다.
+> 2026-05-27 갱신: 아래 진단은 2026-05-23 초안 기준이다. 현재 로컬 코드에는 `kind: 'bundle'`, `components`, `grantBundleComponents`, `revokeBundleComponents`, `bundle_today_set`이 구현돼 있다. credit prepare/동의 경로와 bundle digital-content 동의도 보강됐고, 044 credit idempotency migration도 사용자 확인 기준 Supabase prod 적용 완료됐다. 남은 것은 후속 번들, webhook/reconciliation 같은 후속 안정화다.
 
 1. **초안 당시 결제 모델은 `1 패키지 = 1 productId = 1 scope`** 로 고정돼 있었다(catalog·confirmation·confirm·scope·조회 전부 이 가정). 제안서의 묶음 상품(오늘 풀세트·올해 풀패키지)은 **`1 결제 = N 권한`** 이라, 이 모델에 없는 **묶음 인프라를 새로 도입**해야 했다.
 2. 그래서 제안서의 **"1순위 = 난이도 낮음"은 카탈로그/카피 관점일 뿐**, 실제로는 결제 백엔드(`confirm` grant 경로) 변경이 처음으로 필요해 **실질 난이도는 "중"**이었다.
@@ -65,7 +65,7 @@
   5. `checkout/page.tsx`: 묶음 안내 카드. (단 `TASTE_PRODUCT_GUIDE`/`TASTE_PRODUCT_ZODIAC`는 `Record<TasteProductId>`라, 묶음은 TasteProductId가 아니면 별도 `BUNDLE_GUIDE` 맵 신설 — 타입 충돌 회피)
   6. `paid-reading-snapshots.ts`: bundle 직접 snapshot은 아직 제한적이다. 구성품 entitlement 기반 접근은 가능하나 "구매 결과 목록" UX는 추가 점검 여지.
   7. **테스트**: 묶음 grant/revoke와 구성품 scope 테스트 존재.
-- **남은 리스크**: bundle은 디지털 콘텐츠 묶음이므로 `getRequiredConsentKinds`에서 `digital-content` 동의를 요구하도록 보완 권장.
+- **동의 정책**: bundle은 디지털 콘텐츠 묶음이므로 `getRequiredConsentKinds`에서 `digital-content` 동의를 요구한다.
 
 ### 2.2 [난이도 ★★★☆☆ 중] 올해 풀패키지 7,900원 — 티어 B (2순위)
 
@@ -126,7 +126,7 @@
 
 ## 6. 리스크 요약 (한눈에)
 
-- 🔴 **결제 백엔드 변경 = 매출/환불 직결**. 묶음 grant 멱등성, 부분보유 재결제, 묶음 환불 회수 = 엣지 다수 → TDD 필수.
+- 🟡 **결제 백엔드 변경 = 매출/환불 직결**. 묶음 grant 멱등성, 부분보유 재결제, 묶음 환불 회수 테스트는 존재한다. credit paymentKey DB lock은 044 migration prod 적용 완료 기준으로 닫혔다.
 - ✅ **score-factor 묶음 구성 확정**: 오늘 풀세트는 F1~F5 전체를 포함하는 것으로 구현 완료.
 - 🟡 **monthly-calendar 월 범위**: 올해 풀패키지에서 "어느 달" 문제. 정책 결정 필요.
 - 🟡 **A/B 인프라 부재**: 정밀 A/B 불가 → 단계 출시 + 전후 비교로 갈음.
@@ -141,3 +141,5 @@
 |---|---|
 | 2026-05-23 | 초안 — 묶음 인프라 부재 진단 + 상품별 영향 분석 + 순서 재배열(0~3순위) |
 | 2026-05-27 | 현재 로컬 구현 반영 — `bundle_today_set` 및 묶음 인프라 구현 완료로 상태 갱신. 남은 리스크를 bundle 동의/credit prepare/idempotency로 재정리 |
+| 2026-05-27 | Codex 결제정책 보완 반영 — credit prepare/consent, bundle digital-content consent, 044 credit payment idempotency 상태 갱신 |
+| 2026-05-27 | 사용자 확인 기준 Supabase prod에 044 credit idempotency migration 적용 완료 |

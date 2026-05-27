@@ -181,12 +181,16 @@ export async function addCredits(
 
   // add_credits RPC: type='subscription' 은 subscription_balance(무만료) 증가,
   // 그 외('purchase' 등)는 결제+1년 만료 lot 으로 적립(040 마이그레이션). 거래 이력도 남긴다.
-  await supabase.rpc('add_credits', {
+  const { error } = await supabase.rpc('add_credits', {
     p_user_id: userId,
     p_amount: amount,
     p_type: type,
     p_metadata: metadata,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 // 결제 코인 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.

@@ -11,19 +11,21 @@ import type { PaymentPackage } from '@/lib/payments/catalog';
 /**
  * 결제 종류별 필수 동의 PolicyKind.
  * - 공통: terms, privacy, refund
- * - subscription: + subscription
+ * - managed subscription: + subscription
  * - credits: + coin
- * - lifetime_report / taste_product: + digital-content
+ * - one-time credit packs with kind='subscription' but no subscriptionPlan: + coin
+ * - lifetime_report / taste_product / bundle: + digital-content
  */
 export function getRequiredConsentKinds(pkg: PaymentPackage): PolicyKind[] {
   const common: PolicyKind[] = ['terms', 'privacy', 'refund'];
   switch (pkg.kind) {
     case 'subscription':
-      return [...common, 'subscription'];
+      return pkg.subscriptionPlan ? [...common, 'subscription'] : [...common, 'coin'];
     case 'credits':
       return [...common, 'coin'];
     case 'lifetime_report':
     case 'taste_product':
+    case 'bundle':
       return [...common, 'digital-content'];
     default:
       return common;
@@ -57,12 +59,21 @@ export function getConsentItems(pkg: PaymentPackage): ConsentItemMeta[] {
 
   switch (pkg.kind) {
     case 'subscription':
-      items.push({
-        kind: 'subscription',
-        label: '정기결제·구독 정책 확인 및 동의',
-        description:
-          '매월 자동결제, 무료체험 종료 후 유료 전환일, 해지 방법을 확인하셨습니다.',
-      });
+      if (pkg.subscriptionPlan) {
+        items.push({
+          kind: 'subscription',
+          label: '정기결제·구독 정책 확인 및 동의',
+          description:
+            '매월 자동결제, 무료체험 종료 후 유료 전환일, 해지 방법을 확인하셨습니다.',
+        });
+      } else {
+        items.push({
+          kind: 'coin',
+          label: '코인 정책 확인 및 동의',
+          description:
+            '유료/무료 코인 구분, 사용 코인 환불 제한, 코인 유효기간을 확인하셨습니다.',
+        });
+      }
       break;
     case 'credits':
       items.push({
@@ -74,6 +85,7 @@ export function getConsentItems(pkg: PaymentPackage): ConsentItemMeta[] {
       break;
     case 'lifetime_report':
     case 'taste_product':
+    case 'bundle':
       items.push({
         kind: 'digital-content',
         label: '디지털 콘텐츠 제공·철회 안내 확인 및 동의',
