@@ -31,6 +31,12 @@
 - `npm run build`: 통과 (Next.js 16.2.3, 189 static pages).
 - `npm run audit:mockup-placeholders:strict`: 의심 패턴 0.
 
+### 배포/머지
+- Git: `main` 커밋 `df0a37e3b405292cda279c0722b2a2aa70a9c509` 푸시 완료.
+- Vercel production: `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` READY.
+- Alias: `https://ganjisaju.kr` 연결 완료.
+- Production smoke: `https://ganjisaju.kr/credits` HTTP 200, `/admin/payment-funnel` 비로그인 기준 `/login?next=/admin` 307.
+
 ---
 
 ## 2026-05-27 세션 — Codex 백업 스냅샷 + 로컬 구현 기준 결제/가격 정책 재점검
@@ -2224,6 +2230,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-27 | **Codex 결제정책 P0/P1 보완 + 044 prod 적용 + production 배포** | commit `df0a37e` | `/credits` prepare/동의 통합, prepare API 동의 강제, bundle digital-content 동의, credit confirm `paymentKey` DB 멱등성(044), `subscription_30` coin 동의/purchase lot 정정. Supabase prod 044 적용 완료 → Vercel prod `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` |
 | 2026-05-23 | **사주 풀이 텍스트 품질 전면 정비** | #336/#337/#338/#339/#340 | 상세 풀이 문장 반복·역할/기운 중복 제거(#336) · 키워드 자연화/격국명 과치환/잔존 결/lifetimeRule 중복(#337) · `simplifySajuCopy` 받침 조사 자동정정 normalizer + 전 화면 감사 조사457→0·중복어171→0(#338) · 오행 추상어 cue→표준 "X 기운"(#339) · 균형 문장 자연화 + 궁합 한자 노출/택일 표기 정정(#340). 캐시 마이그레이션 불필요(리포트 매 로드 재빌드) |
 | 2026-05-23 | **PDF 저장 화면 (보관형 리포트)** | #334/#335 | 8페이지 A4 리포트 디자인 적용(브라우저 인쇄 · 결정론 데이터+매핑) + 모바일 반응형 화면 + `print-color-adjust` 인쇄 배경 표시 정정 |
 | 2026-05-22 | **Codex 상용화 P0 차단 이슈 제거 + clean main 배포** | commit `4ee2484` | 로그인/코인/오늘운세 SSR 문구 정리, 301 canonical redirect, 멤버십 무제한 문구 제거, 예약상담 가격/환불 고지, 결제 동의 단일화, 9개 정책 bundled fallback, 공개 금지 문구 회귀 테스트. 백업 커밋 제외 후 clean branch cherry-pick → Vercel prod `dpl_5qeqzzh9jbzTti3FBzAuJTdS8Dk9` |
