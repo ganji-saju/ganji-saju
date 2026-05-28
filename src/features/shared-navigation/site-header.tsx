@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -421,6 +421,25 @@ const FAN_MENU_ITEMS: ReadonlyArray<{
   { label: '꿈해몽', href: '/dream',                          glyph: '☾', angleDeg: -10  },
 ];
 const FAN_RADIUS = 105;
+const FAN_MENU_LAYOUT: ReadonlyArray<{
+  label: string;
+  href: string;
+  glyph: string;
+  style: CSSProperties;
+}> = FAN_MENU_ITEMS.map((entry) => {
+  const angleRad = (entry.angleDeg * Math.PI) / 180;
+  const x = Math.round(Math.cos(angleRad) * FAN_RADIUS);
+  const y = Math.round(Math.sin(angleRad) * FAN_RADIUS);
+
+  return {
+    label: entry.label,
+    href: entry.href,
+    glyph: entry.glyph,
+    style: {
+      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+    },
+  };
+});
 
 function MobileChrome({
   pathname,
@@ -713,28 +732,21 @@ function MobileChrome({
                     aria-hidden="true"
                   />
                   <div className="app-fan-menu" role="menu" aria-label="빠른 메뉴">
-                    {FAN_MENU_ITEMS.map((entry) => {
-                      const angleRad = (entry.angleDeg * Math.PI) / 180;
-                      const x = Math.round(Math.cos(angleRad) * FAN_RADIUS);
-                      const y = Math.round(Math.sin(angleRad) * FAN_RADIUS);
-                      return (
-                        <Link
-                          key={entry.label}
-                          href={entry.href}
-                          onClick={() => setFanMenuOpen(false)}
-                          role="menuitem"
-                          className="app-fan-menu-item"
-                          style={{
-                            transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                          }}
-                        >
-                          <span className="app-fan-menu-icon" aria-hidden="true">
-                            {entry.glyph}
-                          </span>
-                          <span className="app-fan-menu-label">{entry.label}</span>
-                        </Link>
-                      );
-                    })}
+                    {FAN_MENU_LAYOUT.map((entry) => (
+                      <Link
+                        key={entry.label}
+                        href={entry.href}
+                        onClick={() => setFanMenuOpen(false)}
+                        role="menuitem"
+                        className="app-fan-menu-item"
+                        style={entry.style}
+                      >
+                        <span className="app-fan-menu-icon" aria-hidden="true">
+                          {entry.glyph}
+                        </span>
+                        <span className="app-fan-menu-label">{entry.label}</span>
+                      </Link>
+                    ))}
                   </div>
                 </>
               ) : null}

@@ -143,7 +143,7 @@ export function mapCreditTransactionToHistory(
 // credit_transactions 중 "현금 결제"로 집계할 행만 통과시킨다.
 //   - type 은 'purchase' | 'subscription'
 //   - 단, legacy 소액상품 audit 행(feature='taste_product', amount=0)과
-//     환불 audit 행(feature='entitlement_revoke')은 product_entitlements 와
+  //     환불 audit 행(feature='entitlement_revoke'|'credit_refund')은 product_entitlements/credit_lots 와
 //     중복되거나 결제가 아니므로 제외 → 호출부 select 에서 이미 필터하지만,
 //     순수 매퍼 레벨에서도 방어한다.
 export function isCashCreditTransaction(row: {
@@ -153,6 +153,7 @@ export function isCashCreditTransaction(row: {
   if (row.type !== 'purchase' && row.type !== 'subscription') return false;
   if (row.feature === 'taste_product') return false;
   if (row.feature === 'entitlement_revoke') return false;
+  if (row.feature === 'credit_refund') return false;
   return true;
 }
 

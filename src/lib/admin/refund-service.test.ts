@@ -3,10 +3,12 @@ import {
   canRoleActOnRefund,
   executeRefund,
   isAlreadyCanceledTossError,
+  isCanceledForRefundRequest,
   isFullyCanceledTossPayment,
   nextRefundStatus,
   validateRefundRequest,
   type RefundExecutionDeps,
+  type RefundKind,
   type RefundStatus,
 } from './refund-service';
 
@@ -62,12 +64,22 @@ test('이미 취소된 Toss 응답 판정', () => {
   assert.equal(isFullyCanceledTossPayment({ status: 'CANCELED', balanceAmount: 0 }), true);
   assert.equal(isFullyCanceledTossPayment({ status: 'CANCELED', balanceAmount: 550 }), false);
   assert.equal(isFullyCanceledTossPayment({ status: 'DONE', balanceAmount: 0 }), false);
+  assert.equal(
+    isCanceledForRefundRequest({ status: 'PARTIAL_CANCELED', totalAmount: 2000, balanceAmount: 1429 }, 571),
+    true
+  );
+  assert.equal(
+    isCanceledForRefundRequest({ status: 'PARTIAL_CANCELED', totalAmount: 2000, balanceAmount: 1800 }, 571),
+    false
+  );
 });
 
 // ── executeRefund 오케스트레이션 (DI mock — 실 Toss 호출 없음) ──
 
 function makeDeps(opts: {
   status?: RefundStatus;
+  refundKind?: RefundKind;
+  amount?: number | null;
   tossOk?: boolean;
   tossError?: string;
   revokeOk?: boolean;
@@ -81,11 +93,16 @@ function makeDeps(opts: {
       return {
         id: 'req1',
         status: opts.status ?? 'requested',
+        refund_kind: opts.refundKind ?? 'product',
         payment_key: 'pk_1',
         idempotency_key: 'idem-1',
         user_id: 'u1',
         product_id: 'lifetime-report',
         scope_key: null,
+        amount: opts.amount ?? 49000,
+        original_amount: opts.amount ?? 49000,
+        credit_amount: opts.refundKind === 'credit_purchase' ? 2 : null,
+        credit_transaction_id: opts.refundKind === 'credit_purchase' ? 'tx1' : null,
         reason: '고객 변심',
       };
     },
@@ -120,6 +137,19 @@ test('executeRefund: Toss 성공 + revoke 성공 → completed, 멱등키 전달
   assert.equal((tossArgs[0] as { idempotencyKey: string }).idempotencyKey, 'idem-1');
 });
 
+test('executeRefund: 코인 부분환불은 Toss cancelAmount 를 전달', async () => {
+  const { deps, statuses, tossArgs } = makeDeps({
+    refundKind: 'credit_purchase',
+    amount: 571,
+    tossOk: true,
+    revokeOk: true,
+  });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(statuses, ['processing', 'completed']);
+  assert.equal((tossArgs[0] as { cancelAmount: number }).cancelAmount, 571);
+});
+
 test('executeRefund: Toss 실패 → failed (재시도 가능)', async () => {
   const { deps, statuses } = makeDeps({ tossOk: false });
   const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
@@ -132,6 +162,19 @@ test('executeRefund: Toss가 이미 취소된 결제라고 하면 조회 검증 
     tossOk: false,
     tossError: '이미 취소된 결제 입니다.',
     lookupPayment: { status: 'CANCELED', balanceAmount: 0, totalAmount: 49000 },
+  });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(statuses, ['processing', 'completed']);
+});
+
+test('executeRefund: 코인 부분환불이 이미 Toss에 반영됐으면 조회 검증 후 회수하고 completed', async () => {
+  const { deps, statuses } = makeDeps({
+    refundKind: 'credit_purchase',
+    amount: 571,
+    tossOk: false,
+    tossError: '이미 취소된 결제 입니다.',
+    lookupPayment: { status: 'PARTIAL_CANCELED', balanceAmount: 1429, totalAmount: 2000 },
   });
   const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
   assert.equal(result.status, 'completed');

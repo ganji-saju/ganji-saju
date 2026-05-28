@@ -36,15 +36,55 @@ const brandSerif = Noto_Serif_KR({
 
 const layoutModeScript = `
 (() => {
+  const root = document.documentElement;
+
+  const applyPerformanceMode = () => {
+    try {
+      const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const effectiveType = String(connection?.effectiveType || '');
+      const saveData = connection?.saveData === true;
+      const slowConnection = effectiveType === 'slow-2g' || effectiveType === '2g';
+      const memory = typeof navigator.deviceMemory === 'number' ? navigator.deviceMemory : null;
+      const cores = typeof navigator.hardwareConcurrency === 'number' ? navigator.hardwareConcurrency : null;
+      const lowMemory = memory !== null && memory <= 4;
+      const lowCpu = cores !== null && cores <= 4;
+      const reducedMotion = motionQuery?.matches === true;
+
+      root.dataset.motionPreference = reducedMotion ? 'reduced' : 'standard';
+      root.dataset.performanceMode =
+        reducedMotion || saveData || slowConnection || lowMemory || lowCpu ? 'lite' : 'standard';
+    } catch {
+      root.dataset.performanceMode = 'standard';
+      root.dataset.motionPreference = 'standard';
+    }
+  };
+
   try {
     const mode = window.localStorage.getItem('moonlight:layout-mode-v3');
-    document.documentElement.dataset.appLayout = mode === 'horizontal' ? 'horizontal' : 'vertical';
+    root.dataset.appLayout = mode === 'horizontal' ? 'horizontal' : 'vertical';
     const comfort = window.localStorage.getItem('moonlight:reading-comfort-v1');
-    document.documentElement.dataset.readingComfort = comfort === 'large' ? 'large' : 'standard';
+    root.dataset.readingComfort = comfort === 'large' ? 'large' : 'standard';
   } catch {
-    document.documentElement.dataset.appLayout = 'vertical';
-    document.documentElement.dataset.readingComfort = 'standard';
+    root.dataset.appLayout = 'vertical';
+    root.dataset.readingComfort = 'standard';
   }
+
+  applyPerformanceMode();
+
+  try {
+    const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (motionQuery?.addEventListener) {
+      motionQuery.addEventListener('change', applyPerformanceMode);
+    } else if (motionQuery?.addListener) {
+      motionQuery.addListener(applyPerformanceMode);
+    }
+
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection?.addEventListener) {
+      connection.addEventListener('change', applyPerformanceMode);
+    }
+  } catch {}
 })();
 `;
 
@@ -92,6 +132,8 @@ export default function RootLayout({
       lang="ko"
       className={`${brandSans.variable} ${brandSerif.variable} h-full antialiased`}
       data-app-layout="vertical"
+      data-motion-preference="standard"
+      data-performance-mode="standard"
       data-reading-comfort="standard"
       suppressHydrationWarning
     >

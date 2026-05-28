@@ -1,0 +1,197 @@
+/* 2026-05-27 Codex: mobile performance policy.
+ * Standard devices keep the current visual design. Lite mode is enabled early
+ * from layout.tsx for reduced-motion, data-saver/slow-network, or low CPU/RAM.
+ */
+
+button,
+a,
+[role="button"],
+.app-mobile-dock-link,
+.mobile-nav-sheet button,
+.mobile-nav-sheet a {
+  touch-action: manipulation;
+}
+
+.mobile-nav-sheet-body,
+.app-top-category-inner,
+.gangi-banner-viewport,
+.dialogue-report-scroll,
+.app-scroll-container {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-nav-sheet,
+.mobile-nav-sheet-overlay,
+.app-top-header,
+.app-mobile-dock,
+.app-scroll-to-top {
+  contain: layout style;
+}
+
+@supports (content-visibility: auto) {
+  .gangi-report-panel,
+  .app-panel,
+  .app-panel-muted,
+  .app-hero-card,
+  .section-surface,
+  .report-keepsake-section,
+  .decision-trace-panel {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 28rem;
+  }
+
+  @media (max-width: 767px) {
+    .gangi-report-panel,
+    .app-panel,
+    .app-panel-muted,
+    .app-hero-card,
+    .section-surface,
+    .report-keepsake-section,
+    .decision-trace-panel {
+      contain-intrinsic-size: auto 22rem;
+    }
+  }
+}
+
+@media (max-width: 1023px) {
+  html[data-performance-mode="lite"] .app-top-header,
+  html[data-performance-mode="lite"] .app-mobile-dock-inner,
+  html[data-performance-mode="lite"] .app-fan-menu-overlay,
+  html[data-performance-mode="lite"] .app-scroll-to-top,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-overlay,
+  html[data-performance-mode="lite"] .gangi-loading-overlay,
+  html[data-performance-mode="lite"] .zodiac-wheel-loading-overlay,
+  html[data-performance-mode="lite"] .detail-sticky-purchase,
+  html[data-performance-mode="lite"] .app-bottom-nav,
+  html[data-performance-mode="lite"] .app-bottom-dock,
+  html[data-performance-mode="lite"] .app-mobile-nav {
+    --tw-backdrop-blur: blur(0px) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  @supports (backdrop-filter: blur(0)) {
+    html[data-performance-mode="lite"] .app-top-header,
+    html[data-performance-mode="lite"] .app-mobile-dock-inner,
+    html[data-performance-mode="lite"] .app-fan-menu-overlay,
+    html[data-performance-mode="lite"] .app-scroll-to-top,
+    html[data-performance-mode="lite"] .mobile-nav-sheet-overlay,
+    html[data-performance-mode="lite"] .gangi-loading-overlay,
+    html[data-performance-mode="lite"] .zodiac-wheel-loading-overlay,
+    html[data-performance-mode="lite"] .detail-sticky-purchase,
+    html[data-performance-mode="lite"] .app-bottom-nav,
+    html[data-performance-mode="lite"] .app-bottom-dock,
+    html[data-performance-mode="lite"] .app-mobile-nav {
+      backdrop-filter: none !important;
+    }
+  }
+
+  html[data-performance-mode="lite"] .app-top-header {
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.06) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-inner {
+    box-shadow:
+      0 -1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 8px 18px -14px rgba(17, 17, 20, 0.28) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-link[data-center="true"] .app-mobile-dock-icon {
+    box-shadow:
+      0 0 0 2px rgba(180, 90, 200, 0.12),
+      0 8px 18px rgba(80, 30, 140, 0.28) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-link[data-center="true"][data-active="true"] .app-mobile-dock-icon {
+    box-shadow:
+      0 0 0 3px rgba(180, 90, 200, 0.14),
+      0 8px 18px rgba(80, 30, 140, 0.3) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-center-sparkle,
+  html[data-performance-mode="lite"] .app-mobile-dock-indicator,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-account-primary,
+  html[data-performance-mode="lite"] .app-brand-mini-logo {
+    box-shadow: none !important;
+  }
+
+  html[data-performance-mode="lite"] .app-fan-menu-overlay {
+    background: rgba(17, 17, 20, 0.34);
+  }
+
+  html[data-performance-mode="lite"] .app-fan-menu-item {
+    box-shadow: 0 6px 16px -12px rgba(17, 17, 20, 0.32) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-scroll-to-top {
+    box-shadow: 0 8px 18px -14px rgba(17, 17, 20, 0.34) !important;
+  }
+
+  html[data-performance-mode="lite"] .mobile-nav-sheet {
+    box-shadow: 0 8px 22px rgba(17, 17, 20, 0.12) !important;
+  }
+
+  html[data-performance-mode="lite"] .gangi-report-panel,
+  html[data-performance-mode="lite"] .app-panel,
+  html[data-performance-mode="lite"] .app-panel-muted,
+  html[data-performance-mode="lite"] .app-hero-card,
+  html[data-performance-mode="lite"] .section-surface,
+  html[data-performance-mode="lite"] .report-keepsake-section,
+  html[data-performance-mode="lite"] .decision-trace-panel {
+    box-shadow: 0 1px 0 rgba(17, 17, 20, 0.05), 0 8px 20px -18px rgba(17, 17, 20, 0.22) !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-link[data-center="true"] .app-mobile-dock-icon,
+  html[data-performance-mode="lite"] .app-mobile-dock-center-sparkle,
+  html[data-performance-mode="lite"] .app-fan-menu-overlay,
+  html[data-performance-mode="lite"] .app-fan-menu-item,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-overlay,
+  html[data-performance-mode="lite"] .mobile-nav-sheet,
+  html[data-performance-mode="lite"] .gangi-character,
+  html[data-performance-mode="lite"] .gangi-banner-moon,
+  html[data-performance-mode="lite"] .gangi-loading-moon,
+  html[data-performance-mode="lite"] .today-score-orb,
+  html[data-performance-mode="lite"] .today-score-ring,
+  html[data-performance-mode="lite"] .today-score-piece {
+    animation: none !important;
+  }
+
+  html[data-performance-mode="lite"] .app-mobile-dock-link,
+  html[data-performance-mode="lite"] .app-scroll-to-top,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-tab,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-account-primary,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-account-ghost,
+  html[data-performance-mode="lite"] .mobile-nav-sheet-item {
+    transition-duration: 80ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-mobile-dock-link,
+  .app-mobile-dock-link[data-center="true"] .app-mobile-dock-icon,
+  .app-mobile-dock-center-sparkle,
+  .app-fan-menu-overlay,
+  .app-fan-menu-item,
+  .app-scroll-to-top,
+  .mobile-nav-sheet-overlay,
+  .mobile-nav-sheet,
+  .mobile-nav-sheet-tab,
+  .mobile-nav-sheet-account-primary,
+  .mobile-nav-sheet-account-ghost,
+  .mobile-nav-sheet-item {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .app-mobile-dock-link:active,
+  .app-mobile-dock-link[data-center="true"],
+  .app-mobile-dock-link[data-center="true"]:active {
+    transform: none !important;
+  }
+
+  .app-scroll-to-top,
+  .app-scroll-to-top[data-visible="true"] {
+    transform: none !important;
+  }
+}

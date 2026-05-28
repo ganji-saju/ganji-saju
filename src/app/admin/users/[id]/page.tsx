@@ -71,6 +71,8 @@ export default async function AdminUserDetailPage({ params }: Props) {
         (profile.birthHour != null ? ` ${String(profile.birthHour).padStart(2, '0')}시` : ' (시 미상)')
       : '—';
   const llmTotalCost = llmStats.reduce((s, r) => s + r.costUsd, 0);
+  const refundTargetCount =
+    refund.items.length + refund.creditItems.filter((item) => item.status !== 'none').length;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -180,11 +182,16 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </Card>
 
         {/* 6. 환불 가능 여부 (상태 표시만 — 실제 환불은 Phase 2) */}
-        <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refund.items.length}건)`}>
-          {refund.items.length === 0 && detail.refundRequests.length === 0 ? (
+        <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refundTargetCount}건)`}>
+          {refund.items.length === 0 && refund.creditItems.length === 0 && detail.refundRequests.length === 0 ? (
             <p className="text-[12px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
           ) : (
-            <RefundActions role={role} items={refund.items} requests={detail.refundRequests} />
+            <RefundActions
+              role={role}
+              items={refund.items}
+              creditItems={refund.creditItems}
+              requests={detail.refundRequests}
+            />
           )}
         </Card>
       </AppPage>

@@ -10,11 +10,28 @@ interface EligibleItem {
   amountWon: number;
   hasPaymentKey: boolean;
 }
+interface CreditEligibleItem {
+  id: string;
+  productName: string;
+  packageId: string | null;
+  originalAmountWon: number | null;
+  refundAmountWon: number;
+  coinsPurchased: number;
+  coinsRemaining: number;
+  coinsUsed: number;
+  hasPaymentKey: boolean;
+  status: 'full' | 'partial' | 'none';
+  statusLabel: string;
+  expiresAt: string | null;
+}
 interface RefundReq {
   id: string;
+  refundKind: string;
   productId: string;
   paymentKey: string | null;
   amount: number | null;
+  originalAmount: number | null;
+  creditAmount: number | null;
   status: string;
   reason: string;
   errorMessage: string | null;
@@ -59,10 +76,12 @@ function getTossRefundNote(request: RefundReq) {
 export function RefundActions({
   role,
   items,
+  creditItems,
   requests,
 }: {
   role: 'admin' | 'super_admin';
   items: EligibleItem[];
+  creditItems: CreditEligibleItem[];
   requests: RefundReq[];
 }) {
   const router = useRouter();
@@ -95,13 +114,35 @@ export function RefundActions({
   function requestRefund(item: EligibleItem) {
     const reason = window.prompt(`"${item.productName}" 환불 사유`, '고객 요청');
     if (!reason || !reason.trim()) return;
-    void post({ action: 'request', entitlementId: item.id, reason: reason.trim() }, `req-${item.id}`);
+    void post(
+      { action: 'request', kind: 'product', entitlementId: item.id, reason: reason.trim() },
+      `req-${item.id}`
+    );
+  }
+
+  function requestCreditRefund(item: CreditEligibleItem) {
+    const mode = item.status === 'partial' ? '부분 환불' : '전액 환불';
+    const reason = window.prompt(`"${item.productName}" ${mode} 사유`, '고객 요청');
+    if (!reason || !reason.trim()) return;
+    void post(
+      {
+        action: 'request',
+        kind: 'credit_purchase',
+        creditTransactionId: item.id,
+        reason: reason.trim(),
+      },
+      `credit-req-${item.id}`
+    );
   }
 
   function approve(r: RefundReq) {
+    const target =
+      r.refundKind === 'credit_purchase'
+        ? `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원 · ${r.creditAmount ?? 0}코인 회수`
+        : `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원`;
     if (
       !window.confirm(
-        `실제 환불을 실행합니다 — Toss 결제취소 + 권한 회수.\n${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원\n계속할까요?`
+        `실제 환불을 실행합니다 — Toss 결제취소 + 권한/코인 회수.\n${target}\n계속할까요?`
       )
     ) {
       return;
@@ -112,24 +153,62 @@ export function RefundActions({
   return (
     <div className="mt-3 space-y-2">
       {/* 환불 요청 버튼 (대상 entitlement) */}
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className="flex items-center justify-between gap-2 rounded-[10px] border border-dashed border-[var(--app-line)] px-3 py-2"
-        >
-          <span className="text-[11.5px] text-[var(--app-copy-soft)]">
-            {item.productName} · {item.amountWon.toLocaleString()}원
-          </span>
-          <button
-            type="button"
-            disabled={!item.hasPaymentKey || busy !== null}
-            onClick={() => requestRefund(item)}
-            className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
-          >
-            환불 요청
-          </button>
+      {items.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10.5px] font-extrabold text-[var(--app-copy-soft)]">상품 환불</p>
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-2 rounded-[10px] border border-dashed border-[var(--app-line)] px-3 py-2"
+            >
+              <span className="text-[11.5px] text-[var(--app-copy-soft)]">
+                {item.productName} · {item.amountWon.toLocaleString()}원
+              </span>
+              <button
+                type="button"
+                disabled={!item.hasPaymentKey || busy !== null}
+                onClick={() => requestRefund(item)}
+                className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+              >
+                환불 요청
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {creditItems.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10.5px] font-extrabold text-[var(--app-copy-soft)]">코인 환불</p>
+          {creditItems.map((item) => {
+            const requestable = item.status !== 'none' && item.refundAmountWon > 0 && item.hasPaymentKey;
+            return (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-2 rounded-[10px] border border-dashed border-[var(--app-line)] px-3 py-2"
+              >
+                <span className="min-w-0 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <span className="block font-semibold text-[var(--app-ink)]">
+                    {item.productName} · 환불 {item.refundAmountWon.toLocaleString()}원
+                  </span>
+                  <span className="block">
+                    {item.statusLabel} · 남은 {item.coinsRemaining}/{item.coinsPurchased}코인
+                    {item.expiresAt ? ` · 만료 ${item.expiresAt.slice(0, 10)}` : ''}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  disabled={!requestable || busy !== null}
+                  onClick={() => requestCreditRefund(item)}
+                  className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+                >
+                  {item.status === 'partial' ? '부분 환불' : '환불 요청'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* 환불 요청 목록 + super_admin 승인/거부/재시도 */}
       {requests.length > 0 && (
@@ -143,6 +222,9 @@ export function RefundActions({
                 <span className="block">
                   <b>{STATUS_LABEL[r.status] ?? r.status}</b> · {r.amount?.toLocaleString() ?? '—'}원 ·{' '}
                   {r.reason}
+                  {r.refundKind === 'credit_purchase' && r.creditAmount != null
+                    ? ` · 코인 ${r.creditAmount}개`
+                    : ''}
                 </span>
                 {(r.errorMessage || getTossRefundNote(r)) && (
                   <span className="mt-0.5 block break-words text-[10.5px] text-[var(--app-copy-soft)]">

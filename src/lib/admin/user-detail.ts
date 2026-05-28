@@ -10,6 +10,12 @@ import {
   type PaymentHistoryResult,
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
+import {
+  determineCreditRefundEligibility,
+  type CreditRefundEligibleItem,
+  type CreditRefundEligibility,
+  type CreditRefundLotRow,
+} from '@/lib/admin/credit-refunds';
 import { hashUserId } from '@/server/ai/llm-telemetry';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 
@@ -85,6 +91,9 @@ export interface RefundEligibleItem {
 
 export interface RefundEligibility {
   items: RefundEligibleItem[];
+  creditItems: CreditRefundEligibleItem[];
+  totalProductRefundableWon: number;
+  totalCreditRefundableWon: number;
   totalRefundableWon: number;
 }
 
@@ -94,7 +103,12 @@ export interface RefundEligibility {
  * hasPaymentKey=true 여야 Phase 2 Toss cancel 가능.
  */
 export function determineRefundEligibility(
-  entitlements: ReadonlyArray<ProductEntitlementHistoryRow>
+  entitlements: ReadonlyArray<ProductEntitlementHistoryRow>,
+  creditEligibility: CreditRefundEligibility = {
+    items: [],
+    refundableItems: [],
+    totalRefundableWon: 0,
+  }
 ): RefundEligibility {
   const items: RefundEligibleItem[] = entitlements
     .filter((e) => typeof e.amount === 'number' && e.amount > 0)
@@ -107,8 +121,15 @@ export function determineRefundEligibility(
       orderId: e.order_id,
       createdAt: e.created_at,
     }));
-  const totalRefundableWon = items.reduce((sum, i) => sum + i.amountWon, 0);
-  return { items, totalRefundableWon };
+  const totalProductRefundableWon = items.reduce((sum, i) => sum + i.amountWon, 0);
+  const totalCreditRefundableWon = creditEligibility.totalRefundableWon;
+  return {
+    items,
+    creditItems: creditEligibility.items,
+    totalProductRefundableWon,
+    totalCreditRefundableWon,
+    totalRefundableWon: totalProductRefundableWon + totalCreditRefundableWon,
+  };
 }
 
 // ── 데이터 레이어 (service_role, RLS 우회) ──────────────────
@@ -145,9 +166,12 @@ export interface AdminUserDetail {
 
 export interface AdminRefundRequest {
   id: string;
+  refundKind: string;
   productId: string;
   paymentKey: string | null;
   amount: number | null;
+  originalAmount: number | null;
+  creditAmount: number | null;
   reason: string;
   status: string;
   errorMessage: string | null;
@@ -260,10 +284,16 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     .from('credit_transactions')
     .select('id, type, amount, metadata, created_at, feature')
     .eq('user_id', userId);
+  const { data: creditLotRows } = await supabase
+    .from('credit_lots')
+    .select('id, user_id, amount_remaining, amount_initial, expires_at, source, metadata, created_at')
+    .eq('user_id', userId)
+    .eq('source', 'purchase');
   const productEntitlements = (entitlementRows ?? []) as unknown as ProductEntitlementHistoryRow[];
-  const creditTransactions = ((creditRows ?? []) as unknown as Array<
+  const allCreditTransactions = (creditRows ?? []) as unknown as Array<
     CreditTransactionHistoryRow & { type: string; feature?: string | null }
-  >).filter((r) => isCashCreditTransaction(r));
+  >;
+  const creditTransactions = allCreditTransactions.filter((r) => isCashCreditTransaction(r));
   const payment = buildPaymentHistory({ productEntitlements, creditTransactions });
 
   const { count: dialogueCount } = await supabase
@@ -283,19 +313,28 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     );
   }
 
-  const refund = determineRefundEligibility(productEntitlements);
+  const creditRefundEligibility = determineCreditRefundEligibility(
+    allCreditTransactions,
+    (creditLotRows ?? []) as unknown as CreditRefundLotRow[]
+  );
+  const refund = determineRefundEligibility(productEntitlements, creditRefundEligibility);
 
   const { data: refundRows } = await supabase
     .from('refund_requests')
-    .select('id, product_id, payment_key, amount, reason, status, error_message, toss_response, created_at, updated_at')
+    .select(
+      'id, refund_kind, product_id, payment_key, amount, original_amount, credit_amount, reason, status, error_message, toss_response, created_at, updated_at'
+    )
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   const refundRequests: AdminRefundRequest[] = (
     (refundRows ?? []) as unknown as Array<{
       id: string;
+      refund_kind: string | null;
       product_id: string;
       payment_key: string | null;
       amount: number | null;
+      original_amount: number | null;
+      credit_amount: number | null;
       reason: string;
       status: string;
       error_message: string | null;
@@ -305,9 +344,12 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     }>
   ).map((r) => ({
     id: r.id,
+    refundKind: r.refund_kind ?? 'product',
     productId: r.product_id,
     paymentKey: r.payment_key,
     amount: r.amount,
+    originalAmount: r.original_amount,
+    creditAmount: r.credit_amount,
     reason: r.reason,
     status: r.status,
     errorMessage: r.error_message,

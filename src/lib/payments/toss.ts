@@ -71,7 +71,7 @@ export async function getPaymentByOrderId(orderId: string) {
 //   Idempotency-Key 헤더로 재시도 시 이중취소 방지(환불 상태머신 재시도 안전).
 export async function cancelPayment(
   paymentKey: string,
-  options: { cancelReason: string; idempotencyKey?: string }
+  options: { cancelReason: string; idempotencyKey?: string; cancelAmount?: number }
 ) {
   if (!process.env.TOSS_SECRET_KEY) {
     throw new Error('TOSS_SECRET_KEY가 설정되어 있지 않습니다.');
@@ -90,7 +90,12 @@ export async function cancelPayment(
     {
       method: 'POST',
       headers,
-      body: JSON.stringify({ cancelReason: options.cancelReason }),
+      body: JSON.stringify({
+        cancelReason: options.cancelReason,
+        ...(typeof options.cancelAmount === 'number' && options.cancelAmount > 0
+          ? { cancelAmount: options.cancelAmount }
+          : {}),
+      }),
     }
   );
 

@@ -153,6 +153,8 @@ test('isCashCreditTransaction excludes legacy audit and revoke rows', () => {
   assert.equal(isCashCreditTransaction({ type: 'purchase', feature: 'taste_product' }), false);
   // entitlement revoke audit
   assert.equal(isCashCreditTransaction({ type: 'purchase', feature: 'entitlement_revoke' }), false);
+  // coin refund audit
+  assert.equal(isCashCreditTransaction({ type: 'purchase', feature: 'credit_refund' }), false);
   // coin spend is not a cash payment
   assert.equal(isCashCreditTransaction({ type: 'use', feature: 'ai_chat' }), false);
 });

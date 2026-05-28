@@ -16,6 +16,7 @@ export type RefundEvent = 'approve' | 'toss_ok' | 'toss_fail' | 'revoke_ok' | 'r
 
 export type AdminRole = 'admin' | 'super_admin';
 export type RefundAction = 'request' | 'approve' | 'reject';
+export type RefundKind = 'product' | 'credit_purchase';
 
 export const REFUND_DEDUPE_STATUSES = [
   'requested',
@@ -89,17 +90,51 @@ export function isFullyCanceledTossPayment(payment: TossRefundPaymentSnapshot | 
   return payment?.status === 'CANCELED' && payment.balanceAmount === 0;
 }
 
+function getTossCanceledAmount(payment: TossRefundPaymentSnapshot | null): number | null {
+  if (!payment) return null;
+  if (Array.isArray(payment.cancels)) {
+    return payment.cancels.reduce<number>((sum, cancel) => {
+      const payload = cancel && typeof cancel === 'object' ? (cancel as Record<string, unknown>) : {};
+      const amount = payload.cancelAmount;
+      return sum + (typeof amount === 'number' && Number.isFinite(amount) ? amount : 0);
+    }, 0);
+  }
+  if (
+    typeof payment.totalAmount === 'number' &&
+    Number.isFinite(payment.totalAmount) &&
+    typeof payment.balanceAmount === 'number' &&
+    Number.isFinite(payment.balanceAmount)
+  ) {
+    return Math.max(0, payment.totalAmount - payment.balanceAmount);
+  }
+  return null;
+}
+
+export function isCanceledForRefundRequest(
+  payment: TossRefundPaymentSnapshot | null,
+  requestedAmount: number | null | undefined
+): boolean {
+  if (!requestedAmount) return isFullyCanceledTossPayment(payment);
+  const canceledAmount = getTossCanceledAmount(payment);
+  return canceledAmount !== null && canceledAmount >= requestedAmount;
+}
+
 // ── 실행 오케스트레이션 (DI) ──────────────────────────────
 // DB·Toss·revoke 를 주입받아 상태머신을 실행. 라우트가 실제 구현 주입, 테스트는 mock.
 
 export interface RefundRequestSnapshot {
   id: string;
   status: RefundStatus;
+  refund_kind: RefundKind;
   payment_key: string | null;
   idempotency_key: string;
   user_id: string;
   product_id: string;
   scope_key: string | null;
+  amount: number | null;
+  original_amount: number | null;
+  credit_amount: number | null;
+  credit_transaction_id: string | null;
   reason: string;
 }
 
@@ -113,7 +148,7 @@ export interface RefundExecutionDeps {
   /** Toss 결제취소. idempotencyKey 로 재시도 이중취소 방지. */
   tossCancel(
     paymentKey: string,
-    options: { cancelReason: string; idempotencyKey: string }
+    options: { cancelReason: string; idempotencyKey: string; cancelAmount?: number }
   ): Promise<{ ok: boolean; response?: unknown; error?: string }>;
   /** Toss 결제 조회. 이미 취소된 결제인지 확인할 때 사용한다. */
   loadTossPayment?(
@@ -127,6 +162,12 @@ export interface RefundExecutionDeps {
     reason: string;
     actor: string;
     paymentKey: string | null;
+    refundKind: RefundKind;
+    refundRequestId: string;
+    amount: number | null;
+    originalAmount: number | null;
+    creditAmount: number | null;
+    creditTransactionId: string | null;
   }): Promise<{ revoked: boolean }>;
 }
 
@@ -151,6 +192,12 @@ async function finishRefundWithRevoke(
       reason: req.reason,
       actor: params.approvedBy,
       paymentKey: req.payment_key,
+      refundKind: req.refund_kind,
+      refundRequestId: req.id,
+      amount: req.amount,
+      originalAmount: req.original_amount,
+      creditAmount: req.credit_amount,
+      creditTransactionId: req.credit_transaction_id,
     });
     revoked = r.revoked;
   } catch {
@@ -162,8 +209,8 @@ async function finishRefundWithRevoke(
     await deps.setStatus(req.id, pending, {
       tossResponse,
       errorMessage: alreadyCanceled
-        ? 'Toss는 이미 취소됨 · entitlement 회수 실패 — 재시도 필요(경보)'
-        : 'Toss 환불됨 · entitlement 회수 실패 — 재시도 필요(경보)',
+        ? 'Toss는 이미 취소됨 · 권한/코인 회수 실패 — 재시도 필요(경보)'
+        : 'Toss 환불됨 · 권한/코인 회수 실패 — 재시도 필요(경보)',
     });
     return { status: pending, error: 'revoke failed after toss success' };
   }
@@ -205,11 +252,18 @@ export async function executeRefund(
   const toss = await deps.tossCancel(req.payment_key, {
     cancelReason: req.reason,
     idempotencyKey: req.idempotency_key,
+    ...(req.refund_kind === 'credit_purchase' && req.amount ? { cancelAmount: req.amount } : {}),
   });
   if (!toss.ok) {
     if (isAlreadyCanceledTossError(toss.error) && deps.loadTossPayment) {
       const lookup = await deps.loadTossPayment(req.payment_key);
-      if (lookup.ok && isFullyCanceledTossPayment(lookup.payment)) {
+      if (
+        lookup.ok &&
+        isCanceledForRefundRequest(
+          lookup.payment,
+          req.refund_kind === 'credit_purchase' ? req.amount : null
+        )
+      ) {
         return finishRefundWithRevoke(
           req,
           params,
