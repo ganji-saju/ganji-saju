@@ -1,9 +1,60 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-27 (Codex 환불 워크플로우 보강 — 중복 요청 차단 + 이미 취소된 Toss 결제 흡수 + 49,000원 권한 회수 정리)**. 직전 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. 직전 구현 세션: **Codex 결제정책 P0/P1 보완 — `/credits` prepare/동의 통합 + bundle digital-content 동의 + 044 credit idempotency, Supabase prod 적용 완료**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-28 (Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화 + production 배포/머지)**. 직전 세션: **Codex 환불 워크플로우 보강 — 중복 요청 차단 + 이미 취소된 Toss 결제 흡수 + 49,000원 권한 회수 정리**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-28 세션 — Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화
+
+> 목적: 코인 구매 환불을 기존 상품 entitlement 환불 경로에 억지로 끼우지 않고 별도 관리자 플로우로 분리하고, 휴대폰 저사양/절전/모션감소 환경의 scroll/menu 버벅임을 줄인다. 일반 기기는 기존 디자인을 최대한 유지하고, 저사양 계열에서만 blur/glow/shadow/animation 비용을 낮추는 정책으로 구현했다.
+
+### 구현 완료
+- **관리자 코인 환불 가능 섹션**: `/admin/users/[id]` 사용자 상세에서 `credit_transactions.type='purchase'` + `metadata.paymentKey` 결제건을 기준으로 코인 환불 가능 항목을 표시.
+- **코인 lot 기준 잔여량 계산**: `credit_lots`의 `paymentKey/orderId/packageId` metadata를 기준으로 `amount_initial`, `amount_remaining`, 사용량, 환불 가능 금액을 계산.
+- **보수적 환불 정책 적용**:
+  - 미사용 lot: 전액 환불 가능.
+  - 일부 사용 lot: 남은 코인 기준 부분 환불 가능.
+  - 전부 사용 lot: 환불 불가로 표시.
+- **Toss 부분 취소 지원**: `cancelPayment()`에 `cancelAmount`를 추가해 남은 코인만 환불하는 부분 취소를 지원.
+- **코인 회수/감사 기록**: Toss 취소 후 `credit_lots.amount_remaining` 차감 또는 0 처리, `sync_credit_balance_from_lots(user_id)` 호출, `credit_transactions` 감사 row 추가.
+- **refund_requests 확장**: `entitlement_id=null`인 코인 환불 요청도 표현할 수 있도록 DB/서비스 경로를 확장. `processed_credit_payments`는 삭제하지 않아 confirm 재시도 시 중복 적립을 막는 ledger를 보존.
+- **모바일 성능 모드**: 루트 layout inline script가 `prefers-reduced-motion`, Save-Data/2G, 낮은 RAM/CPU 신호를 감지해 `data-performance-mode=lite`를 설정.
+- **저사양 전용 효과 감쇄**: 새 `src/app/styles/performance.css`에서 lite 모드에만 모바일 header/dock/menu의 blur, glow, shadow, animation을 낮춤. 일반 기기는 기존 blur/pulse/glow를 유지.
+- **공통 렌더링/스크롤 최적화**: 터치 응답(`touch-action`), 내부 스크롤 격리(`overscroll-behavior`), 긴 패널 `content-visibility`를 적용.
+- **모바일 FAB 메뉴 렌더 경량화**: 하단 dock 부채꼴 메뉴 좌표를 render 중 `Math.cos/sin` 계산하지 않고 모듈 레벨에서 사전 계산.
+
+### DB/운영 적용
+- 신규 migration: `047_credit_refund_workflow.sql`
+  - 코인 환불 요청/lot 차감/잔액 재동기화가 가능한 DB 경로 보강.
+  - 사용자 확인 기준: prod 수동 적용 완료 후 배포 진행.
+- Vercel production deploy:
+  - Branch: `codex/refund-credit-performance-20260528`
+  - Implementation commit: `5fc7dcc9f0c3b11f0bc14e0c740f528f1d237742`
+  - Main merge: fast-forward, `main` push 완료.
+  - Deployment: `dpl_M9xfzwD2wzhyYRYnFZrqNM8RmNVN`
+  - Production URL: `https://ganji-saju-iy7j8vdw4-ganji-sajus-projects.vercel.app`
+  - Alias: `https://ganjisaju.kr`
+
+### 검증
+- `npm run typecheck`: 통과.
+- `npm test`: 754 tests passed.
+- `npm run build`: 통과 (Next.js 16.2.6, 191 static pages).
+- `git diff --check`: 통과.
+- Playwright mobile smoke(390x844):
+  - 일반 모드: `performanceMode=standard`, header/dock blur와 center FAB pulse 유지.
+  - reduced-motion 모드: `performanceMode=lite`, header/dock blur `none`, FAB/menu animation `none`.
+- Production smoke:
+  - `https://ganjisaju.kr/today-fortune`: HTTP 200.
+  - `https://ganjisaju.kr/credits`: HTTP 200.
+  - `https://ganjisaju.kr/admin/users`: HTTP 307 → `/login?next=/admin`.
+- Vercel build audit notice: `5 moderate severity vulnerabilities` 경고 유지. 빌드 차단은 아니며 Next high는 16.2.6 패치로 제거된 상태.
+
+### 산출물
+- `PROGRESS.md`: 본 릴리스 기록 추가.
+- `PROGRESS.html`: `npm run progress:html`로 로컬 HTML 산출물 재생성(`gitignore` 대상, 커밋 제외).
 
 ---
 
@@ -2329,6 +2380,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-28 | **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화 + production 배포** | commit `5fc7dcc` | `codex/refund-credit-performance-20260528` → `main` fast-forward merge. 관리자 사용자 상세 코인 환불 가능 섹션, credit lot 잔여량 기반 전액/부분 환불, Toss `cancelAmount`, 코인 회수/감사 기록, `047_credit_refund_workflow.sql` prod 적용 확인 기준 배포. 모바일 `data-performance-mode=lite`로 저사양/모션감소 기기에서 blur/glow/shadow/animation 비용 감쇄, 일반 기기는 기존 디자인 유지. Vercel prod `dpl_M9xfzwD2wzhyYRYnFZrqNM8RmNVN`, alias `https://ganjisaju.kr`, smoke `/today-fortune` 200 · `/credits` 200 · `/admin/users` 307 |
 | 2026-05-27 | **Codex 사용자 화면 어휘 전수 정리 + production 배포** | commit `c063bef` | today-fortune 등 사용자-facing copy의 legacy 어휘 제거. `codex/vocabulary-sweep-20260527` → `main` fast-forward merge. Vercel prod `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200. 후속으로 원격/로컬 브랜치 정리 완료 |
 | 2026-05-27 | **Codex 결제정책 P0/P1 보완 + 044 prod 적용 + production 배포** | commit `df0a37e` | `/credits` prepare/동의 통합, prepare API 동의 강제, bundle digital-content 동의, credit confirm `paymentKey` DB 멱등성(044), `subscription_30` coin 동의/purchase lot 정정. Supabase prod 044 적용 완료 → Vercel prod `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` |
 | 2026-05-23 | **사주 풀이 텍스트 품질 전면 정비** | #336/#337/#338/#339/#340 | 상세 풀이 문장 반복·역할/기운 중복 제거(#336) · 키워드 자연화/격국명 과치환/잔존 결/lifetimeRule 중복(#337) · `simplifySajuCopy` 받침 조사 자동정정 normalizer + 전 화면 감사 조사457→0·중복어171→0(#338) · 오행 추상어 cue→표준 "X 기운"(#339) · 균형 문장 자연화 + 궁합 한자 노출/택일 표기 정정(#340). 캐시 마이그레이션 불필요(리포트 매 로드 재빌드) |
