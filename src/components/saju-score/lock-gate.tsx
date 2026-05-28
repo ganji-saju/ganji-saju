@@ -5,6 +5,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import '@/components/motion/motion-primitives.css';
 
@@ -64,16 +65,19 @@ export function LockGate({
         <span>자세히 →</span>
       </button>
 
-      {open && (
-        <LockPaymentModal
-          factorId={factorId}
-          factorTitle={factorTitle}
-          slug={slug}
-          valueLine={FACTOR_VALUE_LINES[factorId]}
-          price={PRICE}
-          onClose={() => setOpen(false)}
-        />
-      )}
+      {open
+        ? createPortal(
+            <LockPaymentModal
+              factorId={factorId}
+              factorTitle={factorTitle}
+              slug={slug}
+              valueLine={FACTOR_VALUE_LINES[factorId]}
+              price={PRICE}
+              onClose={() => setOpen(false)}
+            />,
+            document.body
+          )
+        : null}
     </>
   );
 }
@@ -107,7 +111,7 @@ function LockPaymentModal({ factorId, factorTitle, slug, valueLine, price, onClo
       role="dialog"
       aria-modal="true"
       aria-labelledby="lock-modal-title"
-      className="fixed inset-0 z-50 flex items-end justify-center px-3 sm:items-center"
+      className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center p-4"
     >
       <button
         type="button"
@@ -117,8 +121,14 @@ function LockPaymentModal({ factorId, factorTitle, slug, valueLine, price, onClo
       />
 
       <article
-        className="motion-modal-sheet relative w-full max-w-sm overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6"
-        style={{ borderColor: 'var(--app-pink-line)' }}
+        className="motion-modal-sheet w-full max-w-sm overflow-y-auto border bg-white p-5 shadow-[0_20px_60px_rgba(17,17,20,0.28)] sm:p-6"
+        style={{
+          borderColor: 'var(--app-pink-line)',
+          position: 'relative',
+          inset: 'auto',
+          borderRadius: '22px',
+          maxHeight: 'min(78dvh, 520px)',
+        }}
       >
         <button
           type="button"
