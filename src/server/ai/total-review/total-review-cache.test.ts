@@ -27,6 +27,18 @@ test('buildTotalReviewCacheKey: 성별 변경 → 다른 키', () => {
   assert.notEqual(buildTotalReviewCacheKey(data, baseCtx), other);
 });
 
+test('buildTotalReviewCacheKey: 이름 변경 → 다른 키', () => {
+  const first = buildTotalReviewCacheKey(data, { ...baseCtx, userName: '테스트3' });
+  const second = buildTotalReviewCacheKey(data, { ...baseCtx, userName: '김영민' });
+  assert.notEqual(first, second);
+});
+
+test('buildTotalReviewCacheKey: 이름 공백만 다르면 같은 키', () => {
+  const first = buildTotalReviewCacheKey(data, { ...baseCtx, userName: ' 김영민 ' });
+  const second = buildTotalReviewCacheKey(data, { ...baseCtx, userName: '김영민' });
+  assert.equal(first, second);
+});
+
 test('isTotalReviewLLMEnabled: 기본 OFF, =1 일 때만 ON', () => {
   assert.equal(isTotalReviewLLMEnabled({} as NodeJS.ProcessEnv), false);
   assert.equal(isTotalReviewLLMEnabled({ OPENAI_INTERPRET_TOTAL_REVIEW: '0' } as unknown as NodeJS.ProcessEnv), false);

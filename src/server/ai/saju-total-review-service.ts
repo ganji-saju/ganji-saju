@@ -84,6 +84,7 @@ export async function generateTotalReview(
     occupation: situation?.occupation ?? null,
     concern: situation?.currentConcern ?? null,
     gender: args.gender ?? null,
+    userName: args.userName ?? null,
   });
   const meta = {
     generatedAt: now.toISOString(),

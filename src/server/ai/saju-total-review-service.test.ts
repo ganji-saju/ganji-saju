@@ -144,6 +144,33 @@ test('generateTotalReview: 캐시 hit — 2번째 호출은 OpenAI 미호출 + s
   assert.deepEqual(r2.output, r1.output);
 });
 
+test('generateTotalReview: 같은 사주라도 이름이 다르면 캐시를 공유하지 않는다', async () => {
+  const { sajuData, personalizationContext } = fixture();
+  const cacheStore = createInMemoryTotalReviewCacheStore();
+  const client = countingClient(SECTIONS_GOOD);
+  const common = {
+    sajuData,
+    personalizationContext,
+    gender: 'F' as const,
+    env: ENV_ON,
+    client,
+    cacheStore,
+  };
+
+  const r1 = await generateTotalReview({ ...common, userName: '테스트3' });
+  assert.equal(r1.source, 'llm');
+  const callsAfterFirst = client.calls;
+
+  const r2 = await generateTotalReview({ ...common, userName: '김영민' });
+  assert.equal(r2.source, 'llm');
+  assert.ok(client.calls > callsAfterFirst, '이름이 다르면 기존 총평 캐시를 쓰지 않아야 함');
+
+  const callsAfterSecond = client.calls;
+  const r3 = await generateTotalReview({ ...common, userName: '김영민' });
+  assert.equal(r3.source, 'cache');
+  assert.equal(client.calls, callsAfterSecond, '같은 이름의 반복 조회만 캐시 hit');
+});
+
 test('generateTotalReview: fallback 결과는 캐시하지 않는다 (다음 호출 재생성)', async () => {
   const { sajuData, personalizationContext } = fixture();
   const cacheStore = createInMemoryTotalReviewCacheStore();
@@ -169,4 +196,3 @@ test('generateTotalReview: fallback 결과는 캐시하지 않는다 (다음 호
   assert.equal(r2.source, 'fallback');
   assert.ok(client.calls > callsAfterFirst, '캐시되지 않아 재호출이 발생해야 함');
 });
-
