@@ -11,6 +11,11 @@ import {
   listPaidReadingSnapshotsForUser,
   type PaidReadingSnapshot,
 } from '@/lib/payments/paid-reading-snapshots';
+import {
+  buildTodayFortuneResultSnapshotHref,
+  buildTodayFortuneResultSnapshotSummary,
+  listTodayFortuneResultSnapshotsForUser,
+} from '@/lib/today-fortune/result-snapshots';
 import { getNonExpiredLotBalance } from '@/lib/credits/deduct';
 import {
   buildPaymentHistory,
@@ -139,6 +144,12 @@ function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
   return '/my/results';
 }
 
+function paidSnapshotIdentity(snapshot: PaidReadingSnapshot) {
+  return snapshot.productId === 'today-detail' && snapshot.readingKey && snapshot.occurredOn
+    ? `${snapshot.readingKey}__${snapshot.occurredOn}`
+    : null;
+}
+
 export async function requireAccount(redirectPath: string) {
   const supabase = await createClient();
   const {
@@ -165,7 +176,16 @@ export async function getAccountDashboardData(
   const readingOffset = Math.max(0, options.readingOffset ?? 0);
   const transactionLimit = options.transactionLimit ?? 6;
 
-  const [creditsResponse, lotBalance, subscription, readingCountResponse, readingsResponse, transactionsResponse, purchasedResults] =
+  const [
+    creditsResponse,
+    lotBalance,
+    subscription,
+    readingCountResponse,
+    readingsResponse,
+    transactionsResponse,
+    purchasedResults,
+    todayFortuneSnapshots,
+  ] =
     await Promise.all([
       supabase
         .from('user_credits')
@@ -193,6 +213,10 @@ export async function getAccountDashboardData(
         .order('created_at', { ascending: false })
         .limit(transactionLimit),
       listPaidReadingSnapshotsForUser(user.id, {
+        limit: Math.max(readingLimit, 10),
+        offset: readingOffset,
+      }),
+      listTodayFortuneResultSnapshotsForUser(user.id, {
         limit: Math.max(readingLimit, 10),
         offset: readingOffset,
       }),
@@ -251,16 +275,37 @@ export async function getAccountDashboardData(
         gender: reading.gender,
         createdAt: reading.created_at,
       })) ?? [],
-    purchasedResults: purchasedResults.map((snapshot) => ({
-      id: snapshot.id,
-      title: snapshot.title,
-      summary: snapshot.summary,
-      productId: snapshot.productId,
-      scopeKey: snapshot.scopeKey,
-      href: buildPurchasedResultHref(snapshot),
-      createdAt: snapshot.createdAt,
-      occurredOn: snapshot.occurredOn,
-    })),
+    purchasedResults: [
+      ...todayFortuneSnapshots.map((snapshot) => ({
+        id: snapshot.id,
+        title: '오늘 자세히 보기',
+        summary: buildTodayFortuneResultSnapshotSummary(snapshot.occurredOn),
+        productId: 'today-detail',
+        scopeKey: snapshot.scopeKey,
+        href: buildTodayFortuneResultSnapshotHref(snapshot.id),
+        createdAt: snapshot.createdAt,
+        occurredOn: snapshot.occurredOn,
+      })),
+      ...purchasedResults
+        .filter((snapshot) => {
+          const identity = paidSnapshotIdentity(snapshot);
+          if (!identity) return true;
+          return !todayFortuneSnapshots.some(
+            (todaySnapshot) =>
+              `${todaySnapshot.readingKey}__${todaySnapshot.occurredOn}` === identity
+          );
+        })
+        .map((snapshot) => ({
+          id: snapshot.id,
+          title: snapshot.title,
+          summary: snapshot.summary,
+          productId: snapshot.productId,
+          scopeKey: snapshot.scopeKey,
+          href: buildPurchasedResultHref(snapshot),
+          createdAt: snapshot.createdAt,
+          occurredOn: snapshot.occurredOn,
+        })),
+    ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     recentTransactions:
       transactionsResponse.data?.map((transaction) => ({
         id: transaction.id,

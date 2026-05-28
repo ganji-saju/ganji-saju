@@ -14,12 +14,26 @@ import {
   type SajuDataV2,
 } from '@/domain/saju/engine';
 
+export interface FreshTodaySajuDataOptions {
+  now?: Date | string;
+}
+
 /**
  * /api/today-fortune entry point 의 fresh sajuData 생성 단일 entry.
  *
  * 모든 today-fortune 호출이 본 helper 를 통과해야 entrypoint 간 drift 방지.
  * 미래 변경 (V2.5 / V3 / 새 산식 등) 시 본 함수 한 곳만 수정.
  */
-export function buildFreshTodaySajuData(input: BirthInput): SajuDataV1 | SajuDataV2 {
-  return loadSajuDataV2(input, null);
+export function buildFreshTodaySajuData(
+  input: BirthInput,
+  options: FreshTodaySajuDataOptions = {}
+): SajuDataV1 | SajuDataV2 {
+  const now =
+    options.now instanceof Date
+      ? options.now.toISOString()
+      : typeof options.now === 'string'
+        ? options.now
+        : undefined;
+
+  return loadSajuDataV2(input, null, now ? { now } : undefined);
 }

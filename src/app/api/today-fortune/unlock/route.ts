@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveReading } from '@/lib/saju/readings';
-import { buildFreshTodaySajuData } from '@/server/today-fortune/fresh-saju-data';
 import { toSlug } from '@/lib/saju/pillars';
 import { createClient } from '@/lib/supabase/server';
 import { getUserProfileById } from '@/lib/profile';
@@ -13,10 +12,6 @@ import {
   hasTodayFortunePremiumAccessByReading,
   unlockTodayFortunePremium,
 } from '@/lib/credits/detail-report-access';
-import {
-  buildTodayFortuneFreeResult,
-  buildTodayFortunePremiumResult,
-} from '@/server/today-fortune/build-today-fortune';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   buildTodayDetailScopeKey,
@@ -24,6 +19,15 @@ import {
   hasTodayDetailEntitlementForDay,
 } from '@/lib/product-entitlements';
 import { todayDetailEntitlementScopeKeys } from '@/lib/saju/today-detail-access';
+import type { ReadingRecord } from '@/lib/saju/readings';
+import type { ConcernId } from '@/lib/today-fortune/types';
+import type { MoonlightCounselorId } from '@/lib/counselors';
+import {
+  buildTodayFortuneResultSnapshotScopeKey,
+  buildTodayFortuneSnapshotContent,
+  getTodayFortuneResultSnapshotByScope,
+  upsertTodayFortuneResultSnapshot,
+} from '@/lib/today-fortune/result-snapshots';
 import { resolveTodayFortuneUnlockAccess } from './route-helpers';
 
 export const runtime = 'nodejs';
@@ -31,6 +35,65 @@ export const runtime = 'nodejs';
 function readString(payload: Record<string, unknown>, key: string) {
   const value = payload[key];
   return typeof value === 'string' ? value.trim() : '';
+}
+
+async function getOrCreateTodayDetailSnapshot(input: {
+  userId: string;
+  reading: ReadingRecord;
+  readingKey: string;
+  sourceSessionId: string;
+  concernId: ConcernId;
+  counselorId: MoonlightCounselorId | null;
+  occurredOn: string;
+  now: Date;
+  accessSource: string | null;
+}) {
+  const scopeKey = buildTodayFortuneResultSnapshotScopeKey({
+    readingKey: input.readingKey,
+    occurredOn: input.occurredOn,
+    concernId: input.concernId,
+  });
+  const existing = await getTodayFortuneResultSnapshotByScope(input.userId, scopeKey);
+  if (existing) {
+    return {
+      snapshotId: existing.id,
+      occurredOn: existing.occurredOn,
+      freeResult: existing.freeResult,
+      result: existing.premiumResult,
+    };
+  }
+
+  const written = await upsertTodayFortuneResultSnapshot({
+    userId: input.userId,
+    reading: input.reading,
+    sourceSessionId: input.sourceSessionId,
+    concernId: input.concernId,
+    counselorId: input.counselorId,
+    now: input.now,
+    accessSource: input.accessSource,
+  });
+  if (written) {
+    return {
+      snapshotId: written.id,
+      occurredOn: written.occurredOn,
+      freeResult: written.freeResult,
+      result: written.premiumResult,
+    };
+  }
+
+  const fallback = buildTodayFortuneSnapshotContent({
+    reading: input.reading,
+    sourceSessionId: input.sourceSessionId,
+    concernId: input.concernId,
+    counselorId: input.counselorId,
+    now: input.now,
+  });
+  return {
+    snapshotId: null,
+    occurredOn: fallback.occurredOn,
+    freeResult: fallback.freeResult,
+    result: fallback.premiumResult,
+  };
 }
 
 // 2026-05-17 PR #201 — 자동 POST → 사용자 액션 UX 리팩토링.
@@ -71,7 +134,8 @@ export async function GET(req: NextRequest) {
   );
 
   const readingKey = toSlug(reading.input);
-  const todayKey = getKoreaAccessDay();
+  const now = new Date();
+  const todayKey = getKoreaAccessDay(now);
   const accessSource = await resolveTodayFortuneUnlockAccess(
     user.id,
     {
@@ -102,31 +166,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, hasAccess: false, accessSource: null });
   }
 
-  // entitlement 있음 — content 반환 (no deduct).
-  const todaySajuData = buildFreshTodaySajuData(reading.input);
-  const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
+  // entitlement 있음 — content 반환 (no deduct). 같은 날짜/고민의 유료 결과가 이미
+  // 저장되어 있으면 snapshot 을 우선 반환해 보관함/재방문 내용이 바뀌지 않게 한다.
+  const snapshot = await getOrCreateTodayDetailSnapshot({
+    userId: user.id,
+    reading,
+    readingKey,
     concernId,
     sourceSessionId,
-    calendarType: 'solar',
-    timeRule: 'standard',
     counselorId,
-    grounding: reading.grounding,
-    kasiComparison: reading.kasiComparison,
+    occurredOn: todayKey,
+    now,
+    accessSource,
   });
-  const result = buildTodayFortunePremiumResult(
-    reading.input,
-    todaySajuData,
-    concernId,
-    reading.grounding,
-    reading.kasiComparison,
-  );
 
   return NextResponse.json({
     ok: true,
     hasAccess: true,
     accessSource,
-    freeResult,
-    result,
+    freeResult: snapshot.freeResult,
+    result: snapshot.result,
+    snapshotId: snapshot.snapshotId,
+    snapshotOccurredOn: snapshot.occurredOn,
     access: accessSource === 'taste-product' ? 'purchased' : 'reused',
     counselorId,
   });
@@ -168,7 +229,8 @@ export async function POST(req: NextRequest) {
   //   row 가 있어도 매치 안 돼 새로고침마다 deduct. PR #192 (entitlement API 같은 패턴)
   //   와 동일 fallback — 3 path 어느 한쪽이라도 access 있으면 deduct skip.
   const readingKey = toSlug(reading.input);
-  const todayKey = getKoreaAccessDay();
+  const now = new Date();
+  const todayKey = getKoreaAccessDay(now);
   const accessSource = await resolveTodayFortuneUnlockAccess(
     user.id,
     {
@@ -202,40 +264,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '코인이 부족합니다.', remaining: access.remaining }, { status: 402 });
   }
 
-  // 2026-05-15: 자세히 보기를 누른 "오늘" 일진이 반영되도록 sajuData 를 현재 시점으로
-  // 재계산. 저장된 reading.sajuData 는 가입/최초 풀이 시점의 calculatedAt 을 들고 있어
-  // 매일 같은 일진/시드를 만들어버렸음. grounding·kasiComparison 은 출생 정보 기반이라
-  // 재사용해도 무방.
-  const todaySajuData = buildFreshTodaySajuData(reading.input);
-
-  const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
+  const responseAccess =
+    accessSource === 'taste-product'
+      ? 'purchased'
+      : accessSource || access.reused
+        ? 'reused'
+        : 'charged';
+  const snapshot = await getOrCreateTodayDetailSnapshot({
+    userId: user.id,
+    reading,
+    readingKey,
     concernId,
     sourceSessionId,
-    calendarType: 'solar',
-    timeRule: 'standard',
     counselorId,
-    grounding: reading.grounding,
-    kasiComparison: reading.kasiComparison,
+    occurredOn: todayKey,
+    now,
+    accessSource: responseAccess,
   });
-  const result = buildTodayFortunePremiumResult(
-    reading.input,
-    todaySajuData,
-    concernId,
-    reading.grounding,
-    reading.kasiComparison
-  );
 
   return NextResponse.json({
     ok: true,
-    freeResult,
-    result,
+    freeResult: snapshot.freeResult,
+    result: snapshot.result,
+    snapshotId: snapshot.snapshotId,
+    snapshotOccurredOn: snapshot.occurredOn,
     remaining: access.remaining,
-    access:
-      accessSource === 'taste-product'
-        ? 'purchased'
-        : accessSource || access.reused
-          ? 'reused'
-          : 'charged',
+    access: responseAccess,
     counselorId,
   });
 }

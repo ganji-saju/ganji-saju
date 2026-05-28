@@ -2,6 +2,7 @@ import { addCredits, getCredits } from '@/lib/credits/deduct';
 import {
   getCreditGrantType,
   getPackage,
+  getTasteProductPackage,
   isBundlePackage,
   isSubscriptionPackage,
   isTasteProductPackage,
@@ -28,6 +29,10 @@ import {
 } from '@/lib/payments/product-scope';
 import { upsertPaidReadingSnapshot } from '@/lib/payments/paid-reading-snapshots';
 import { ensureReadingOwnedByUser } from '@/lib/saju/readings';
+import { resolveMoonlightCounselor } from '@/lib/counselors';
+import { getUserProfileById } from '@/lib/profile';
+import { normalizeConcernId } from '@/lib/today-fortune/concerns';
+import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
 import { activateMembershipSubscription, getManagedSubscription } from '@/lib/subscription';
 
 async function attachOwnedReading(
@@ -40,6 +45,37 @@ async function attachOwnedReading(
     ...paymentScope,
     reading: ownedReading,
   };
+}
+
+async function snapshotTodayDetailFulfillment(input: {
+  userId: string;
+  paymentScope: PaymentProductScope | null;
+  order: PaymentOrder;
+  paymentKey: string | null;
+  entitlementId?: string | null;
+}) {
+  if (input.paymentScope?.productId !== 'today-detail' || !input.paymentScope.reading) return;
+
+  const sourceSessionId =
+    input.paymentScope.slug ?? input.order.slug ?? input.paymentScope.reading.id;
+
+  try {
+    const profile = await getUserProfileById(input.userId);
+    const counselorId = resolveMoonlightCounselor(null, profile.preferredCounselor);
+    await upsertTodayFortuneResultSnapshot({
+      userId: input.userId,
+      reading: input.paymentScope.reading,
+      sourceSessionId,
+      concernId: normalizeConcernId(input.order.scope),
+      counselorId,
+      accessSource: 'taste-product',
+      entitlementId: input.entitlementId ?? null,
+      paymentOrderId: input.order.id,
+      paymentKey: input.paymentKey,
+    });
+  } catch (error) {
+    console.warn('today-detail fulfillment snapshot failed', error);
+  }
 }
 
 export interface PaymentFulfillmentResult {
@@ -198,6 +234,22 @@ export async function fulfillPaymentOrder(input: {
         )
       : null;
 
+    const bundledTodayDetailScope =
+      isBundlePackage(pkg) && bundleGrants?.some((grant) => grant.tasteProductId === 'today-detail')
+        ? await attachOwnedReading(
+            await resolvePaymentProductScope({
+              pkg: getTasteProductPackage('today-detail')!,
+              slug: claimed.slug,
+              scope: claimed.scope,
+            }),
+            claimed.userId
+          )
+        : null;
+
+    const bundledTodayDetailEntitlement = bundledTodayDetailScope
+      ? await getProductEntitlement(claimed.userId, 'today-detail', bundledTodayDetailScope.scopeKey)
+      : null;
+
     const lifetimeProductEntitlement =
       pkg.kind === 'lifetime_report' && paymentScope?.scopeKey
         ? await getProductEntitlement(claimed.userId, 'lifetime-report', paymentScope.scopeKey)
@@ -212,6 +264,20 @@ export async function fulfillPaymentOrder(input: {
         sourceSlug: claimed.slug,
       });
     }
+
+    await snapshotTodayDetailFulfillment({
+      userId: claimed.userId,
+      paymentScope:
+        isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail'
+          ? paymentScope
+          : bundledTodayDetailScope,
+      order: claimed,
+      paymentKey,
+      entitlementId:
+        isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail'
+          ? productEntitlement?.id
+          : bundledTodayDetailEntitlement?.id,
+    });
 
     await markPaymentOrderFulfilled({
       orderId: claimed.orderId,

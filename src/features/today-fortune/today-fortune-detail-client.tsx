@@ -39,6 +39,8 @@ interface TodayFortuneUnlockResponse {
   remaining?: number;
   access?: 'charged' | 'reused' | 'purchased';
   hasAccess?: boolean;
+  snapshotId?: string | null;
+  snapshotOccurredOn?: string | null;
 }
 
 // 2026-05-17 PR #201 — 자동 POST → 사용자 액션 UX 리팩토링.
@@ -66,19 +68,26 @@ export function TodayFortuneDetailClient({
   // 2026-05-18 — /saju/[slug]/today-detail 진입 시에는 사주 페이지로 돌아가도록 override.
   // 미지정 시 today-fortune 무료 결과 경로로 기본 동작.
   backHref: backHrefOverride,
+  initialFreeResult = null,
+  initialResult = null,
+  initialNotice = null,
 }: {
   sourceSessionId?: string;
   concern?: string;
   paidProduct?: string;
   backHref?: string;
+  initialFreeResult?: TodayFortuneFreeResult | null;
+  initialResult?: TodayFortunePremiumResult | null;
+  initialNotice?: string | null;
 }) {
   const { counselorId } = usePreferredCounselor();
-  const [loading, setLoading] = useState(Boolean(sourceSessionId));
+  const hasInitialResult = Boolean(initialResult);
+  const [loading, setLoading] = useState(Boolean(sourceSessionId) && !hasInitialResult);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<TodayFortunePremiumResult | null>(null);
-  const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
+  const [result, setResult] = useState<TodayFortunePremiumResult | null>(initialResult);
+  const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(initialFreeResult);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice);
   const attemptedRef = useRef(false);
   // 2026-05-16 fix — unlock 후 페이지 상단으로 튀는 회귀.
   // 사용자가 "1코인 열기" 누르면 detail 페이지로 이동 → 항상 최상단부터 렌더 →
@@ -88,7 +97,7 @@ export function TodayFortuneDetailClient({
   const concernId: ConcernId = normalizeConcernId(concern);
 
   useEffect(() => {
-    if (attemptedRef.current || !sourceSessionId) return;
+    if (hasInitialResult || attemptedRef.current || !sourceSessionId) return;
     attemptedRef.current = true;
     const activeSourceSessionId = sourceSessionId;
 
@@ -177,7 +186,7 @@ export function TodayFortuneDetailClient({
     return () => {
       cancelled = true;
     };
-  }, [concernId, counselorId, paidProduct, sourceSessionId]);
+  }, [concernId, counselorId, hasInitialResult, paidProduct, sourceSessionId]);
 
   // 2026-05-16 — 로드 완료 + DOM 안정화 후 프리미엄 패널 위치로 스크롤.
   // unlock 직후 사용자가 "방금 산 컨텐츠" 를 바로 볼 수 있도록 보장.
