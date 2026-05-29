@@ -1,9 +1,40 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-28 (Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화 + production 배포/머지)**. 직전 세션: **Codex 환불 워크플로우 보강 — 중복 요청 차단 + 이미 취소된 Toss 결제 흡수 + 49,000원 권한 회수 정리**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-05-29 (Codex 모바일 하단 고정 CTA 겹침 수정 + production 배포/머지)**. 직전 세션: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-05-29 세션 — Codex 모바일 하단 고정 CTA 겹침 수정
+
+> 목적: 회원탈퇴 화면에서 하단 고정 버튼(`이전` / `계속 진행하기`)이 마지막 사유 항목 `기타`를 가리는 문제를 수정하고, 같은 구조의 화면을 전수조사해 재발 가능성이 있는 하단 고정 CTA 화면까지 함께 정리한다.
+
+### 구현 완료
+- **공통 하단 CTA 여백 클래스 추가**: `src/app/styles/components.css`에 `app-fixed-bottom-cta-clearance`를 추가해 fixed bottom CTA가 문서 흐름에서 차지하지 않는 높이를 명시적으로 예약.
+- **회원탈퇴 화면 수정**: `/my/settings/delete-account` step 2 사유 목록의 마지막 `기타` 카드가 `이전`/`계속 진행하기` CTA 아래로 들어가지 않도록 CTA 직전 clearance 적용.
+- **같은 위험 패턴 전수 반영**:
+  - `/credits`: 코인 정책/고객센터 링크가 결제 CTA에 가려지지 않도록 보강.
+  - `/dialogue/appointment`: 상담 예약 메모 입력 영역이 예약 CTA에 가려지지 않도록 보강.
+  - `/reset-password`: 보조 액션/약관 문구가 비밀번호 변경 CTA에 가려지지 않도록 보강.
+  - `/compatibility/input`: 기존 inline spacer를 공통 클래스 기반으로 정리.
+- **제외 범위 확인**: 전역 모바일 dock(`SiteHeader`)과 홈 전용 dock은 페이지 CTA가 아니라 navigation surface라 이번 overlap fix 대상에서 제외.
+
+### 검증
+- `git diff --check`: 통과.
+- `npm run typecheck`: 통과.
+- `npm run build`: 통과 (Next.js 16.2.6, 191 static pages).
+- Playwright mobile smoke(390x844):
+  - `/my/settings/delete-account` step 2: `기타` 카드 bottom 366px, CTA top 469px, gap 103px, overlap false.
+  - `/credits`: 정책 링크 섹션과 CTA gap 103px, overlap false.
+  - `/dialogue/appointment`: 메모 입력 영역과 CTA gap 78px, overlap false.
+  - `/reset-password`: 하단 문구와 CTA overlap false.
+
+### 운영 적용
+- Branch: `codex/mobile-cta-clearance-20260529`
+- Implementation commit: `f3db6fa`
+- Main merge: fast-forward 완료, `main` push/production deploy 진행 예정.
 
 ---
 
@@ -2380,6 +2411,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
+| 2026-05-29 | **Codex 모바일 하단 고정 CTA 겹침 수정 + production 배포** | commit `f3db6fa` | `codex/mobile-cta-clearance-20260529` → `main` fast-forward merge. 회원탈퇴 step 2 `기타` 항목이 `이전`/`계속 진행하기` fixed CTA에 가리던 문제를 공통 `app-fixed-bottom-cta-clearance`로 해결. 동일 위험 패턴 `/credits`, `/dialogue/appointment`, `/reset-password`, `/compatibility/input`까지 전수 반영. Mobile 390px smoke에서 overlap false 확인. Vercel production deploy 예정 |
 | 2026-05-28 | **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화 + production 배포** | commit `5fc7dcc` | `codex/refund-credit-performance-20260528` → `main` fast-forward merge. 관리자 사용자 상세 코인 환불 가능 섹션, credit lot 잔여량 기반 전액/부분 환불, Toss `cancelAmount`, 코인 회수/감사 기록, `047_credit_refund_workflow.sql` prod 적용 확인 기준 배포. 모바일 `data-performance-mode=lite`로 저사양/모션감소 기기에서 blur/glow/shadow/animation 비용 감쇄, 일반 기기는 기존 디자인 유지. Vercel prod `dpl_M9xfzwD2wzhyYRYnFZrqNM8RmNVN`, alias `https://ganjisaju.kr`, smoke `/today-fortune` 200 · `/credits` 200 · `/admin/users` 307 |
 | 2026-05-27 | **Codex 사용자 화면 어휘 전수 정리 + production 배포** | commit `c063bef` | today-fortune 등 사용자-facing copy의 legacy 어휘 제거. `codex/vocabulary-sweep-20260527` → `main` fast-forward merge. Vercel prod `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200. 후속으로 원격/로컬 브랜치 정리 완료 |
 | 2026-05-27 | **Codex 결제정책 P0/P1 보완 + 044 prod 적용 + production 배포** | commit `df0a37e` | `/credits` prepare/동의 통합, prepare API 동의 강제, bundle digital-content 동의, credit confirm `paymentKey` DB 멱등성(044), `subscription_30` coin 동의/purchase lot 정정. Supabase prod 044 적용 완료 → Vercel prod `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` |
