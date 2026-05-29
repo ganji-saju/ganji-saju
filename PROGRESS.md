@@ -34,7 +34,15 @@
 ### 운영 적용
 - Branch: `codex/mobile-cta-clearance-20260529`
 - Implementation commit: `f3db6fa`
-- Main merge: fast-forward 완료, `main` push/production deploy 진행 예정.
+- Main merge: fast-forward 완료, `main` push 완료.
+- Documentation commit: `3a4f4a8`
+- Vercel production deploy: `dpl_6pyMyLKKRWZCLjdu4shrWywBF1QR`
+- Production URL: `https://ganji-saju-jnfvefjkd-ganji-sajus-projects.vercel.app`
+- Alias: `https://ganjisaju.kr`
+- Production smoke:
+  - `https://ganjisaju.kr/my/settings/delete-account`: HTTP 200.
+  - `https://ganjisaju.kr/credits`: HTTP 200.
+  - `https://ganjisaju.kr/dialogue/appointment`: HTTP 200.
 
 ---
 
@@ -2411,7 +2419,7 @@ created_at  timestamptz
 
 | 날짜 | Release | PR | 핵심 |
 |---|---|---|---|
-| 2026-05-29 | **Codex 모바일 하단 고정 CTA 겹침 수정 + production 배포** | commit `f3db6fa` | `codex/mobile-cta-clearance-20260529` → `main` fast-forward merge. 회원탈퇴 step 2 `기타` 항목이 `이전`/`계속 진행하기` fixed CTA에 가리던 문제를 공통 `app-fixed-bottom-cta-clearance`로 해결. 동일 위험 패턴 `/credits`, `/dialogue/appointment`, `/reset-password`, `/compatibility/input`까지 전수 반영. Mobile 390px smoke에서 overlap false 확인. Vercel production deploy 예정 |
+| 2026-05-29 | **Codex 모바일 하단 고정 CTA 겹침 수정 + production 배포** | commit `f3db6fa` | `codex/mobile-cta-clearance-20260529` → `main` fast-forward merge. 회원탈퇴 step 2 `기타` 항목이 `이전`/`계속 진행하기` fixed CTA에 가리던 문제를 공통 `app-fixed-bottom-cta-clearance`로 해결. 동일 위험 패턴 `/credits`, `/dialogue/appointment`, `/reset-password`, `/compatibility/input`까지 전수 반영. Mobile 390px smoke에서 overlap false 확인. Vercel prod `dpl_6pyMyLKKRWZCLjdu4shrWywBF1QR`, alias `https://ganjisaju.kr`, smoke `/my/settings/delete-account` 200 · `/credits` 200 · `/dialogue/appointment` 200 |
 | 2026-05-28 | **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화 + production 배포** | commit `5fc7dcc` | `codex/refund-credit-performance-20260528` → `main` fast-forward merge. 관리자 사용자 상세 코인 환불 가능 섹션, credit lot 잔여량 기반 전액/부분 환불, Toss `cancelAmount`, 코인 회수/감사 기록, `047_credit_refund_workflow.sql` prod 적용 확인 기준 배포. 모바일 `data-performance-mode=lite`로 저사양/모션감소 기기에서 blur/glow/shadow/animation 비용 감쇄, 일반 기기는 기존 디자인 유지. Vercel prod `dpl_M9xfzwD2wzhyYRYnFZrqNM8RmNVN`, alias `https://ganjisaju.kr`, smoke `/today-fortune` 200 · `/credits` 200 · `/admin/users` 307 |
 | 2026-05-27 | **Codex 사용자 화면 어휘 전수 정리 + production 배포** | commit `c063bef` | today-fortune 등 사용자-facing copy의 legacy 어휘 제거. `codex/vocabulary-sweep-20260527` → `main` fast-forward merge. Vercel prod `dpl_9oP237RofyDLMjPmh89yuthnKohZ`, alias `https://ganjisaju.kr`, `/today-fortune` HTTP 200. 후속으로 원격/로컬 브랜치 정리 완료 |
 | 2026-05-27 | **Codex 결제정책 P0/P1 보완 + 044 prod 적용 + production 배포** | commit `df0a37e` | `/credits` prepare/동의 통합, prepare API 동의 강제, bundle digital-content 동의, credit confirm `paymentKey` DB 멱등성(044), `subscription_30` coin 동의/purchase lot 정정. Supabase prod 044 적용 완료 → Vercel prod `dpl_4ZS9xDLHVpUvdeZiVuh6Z4YTZ2Ec` |
