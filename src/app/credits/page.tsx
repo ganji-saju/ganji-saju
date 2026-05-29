@@ -525,6 +525,8 @@ function CreditsPageContent() {
           ) : null}
         </section>
 
+        <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
+
         {/* §5 Sticky bottom CTA */}
         <div
           className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"

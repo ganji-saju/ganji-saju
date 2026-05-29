@@ -44,6 +44,11 @@
     animation: app-fade-up 360ms ease both;
   }
 
+  .app-fixed-bottom-cta-clearance {
+    flex: 0 0 auto;
+    height: calc(7.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
   .app-moon-orb {
     position: relative;
     border-radius: 9999px;

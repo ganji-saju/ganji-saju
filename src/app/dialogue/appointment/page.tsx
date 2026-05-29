@@ -622,6 +622,8 @@ export default function AppointmentPage() {
 
             {/* 2026-05-15 PR-K: 자체 inline error 카드 제거 — 전역 sonner 토스트가 상단 표시 */}
 
+            <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
+
             {/* Sticky CTA */}
             <div
               className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"

@@ -336,6 +336,8 @@ function ResetPasswordContent() {
       <p className="pt-5 text-center text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
         계정 이용 시 <LegalLinks className="text-[var(--app-pink-strong)]" />이 적용됩니다.
       </p>
+
+      <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
     </div>
   );
 }
