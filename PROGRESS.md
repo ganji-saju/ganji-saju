@@ -1,9 +1,50 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-05-29 (Codex 모바일 하단 고정 CTA 겹침 수정 + production 배포/머지)**. 직전 세션: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-06-05 (Claude — 띠운세·네비·리뷰모달·결제퍼널·스크롤 + 오늘운세 본문 구조화 Phase 1, #386~#392 / 오늘운세 프리미엄 LLM Phase 2 로드맵)**. 상세 ↓ 첫 섹션. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-06-05 세션 (Claude) — 페이지 전환 스크롤 + 오늘운세 본문 구조화(Phase 1) + 프리미엄 LLM Phase 2 로드맵 (#391~#392)
+
+> 같은 흐름에서 앞서 #386~#390(띠운세 입력 단순화·상세 기간별 콘텐츠 / 헤더 네비 PC 마이홈 드롭다운·모바일 MY 상단 / 리뷰 모달 정중앙 / 결제 퍼널 500 service-role 픽스 / 세션 docs) 머지·배포 완료. 본 섹션은 그 뒤 #391·#392 + 오늘운세 프리미엄 LLM Phase 2 설계. 모두 코드만(DB 마이그레이션 없음).
+
+### #391 페이지 전환 스크롤 최상단 보장
+- **증상**: 페이지 이동 후 스크롤이 최상단으로 가지 않고 이전 위치/푸터가 보임(사용자 보고, 전체 사이트).
+- **진단**: 스크롤 컨테이너 = window(정상). 코드상 scroll-to-top 차단 없음(`scroll={false}`는 zodiac 기간 탭 등 쿼리 변경·주석뿐). **dev + production 빌드 모두** 일반 전환에서 scroll-to-top 정상(클라이언트 네비 마커 확정 + scrollY 0). template transform 애니메이션 가설도 기각 → **특정 재현 케이스 미발견**.
+- **수정**: 신규 `src/shared/layout/scroll-reset-on-navigate.tsx`(`usePathname` 변경 시 `window.scrollTo(0,0)`)를 `layout.tsx`에 추가 — Next 기본에 의존하지 않고 명시적 보장(미발견 엣지 케이스·실기기 방어). 쿼리만 바뀌는 탭(zodiac `?period=`·search·legal)은 `usePathname` 불변이라 **보존**(검증: 기간 탭 scrollY 유지, 일반 전환 scrollY 0).
+- ⚠️ 특정 재현을 못 해 **배포 후 실사용 확인 필요**.
+
+### #392 오늘의 운세 본문 구조화 (Phase 1 — 무료, LLM 없이)
+- **증상**: 본문이 점수 요소별(천간/지지/용신/신살/오행) 한 줄 템플릿을 무맥락 이어붙여 — "오늘은~날입니다" 반복, 천간/지지 **상충**("누르는 흐름"+"받쳐주는 흐름"이 한 문단), 끝맺음 누락("나눠보세요 정답을"), 성향 중복으로 빈약.
+- **수정** (`src/server/today-fortune/build-today-fortune.ts`):
+  - `buildTodayFlowSignal`: 천간/지지 2문장 → **겉·바탕 통합 1문장**(상충 제거)
+  - `buildPublicTodayBody`: **흐름 → 성향 → 핵심 포인트 → 조언 → 주의 → 마무리** 구조화, 성향 중복(roleBodyVariant) 제거, actionBody "오늘은" 접두 제거
+  - `asSentence` 헬퍼: 조각 끝맺음(마침표) 통일 / `cautionBody` 두 조각 마침표 보장
+- 무료 티어 한정(운영비 0). 유닛 760 통과(vocab-quality: naming-policy **"기운"·한자·명리어 0** 가드 — flowSignal "기운"→"에너지" 수정으로 통과). 본문 3케이스 실측 — 상충·중복·끝맺음·구조 개선 확인.
+
+### Phase 2 로드맵 — 오늘운세 프리미엄 LLM 풀이 (다음 세션, 미구현)
+> **결정**: 캐시 **생략**(today 프리미엄은 언락 후 snapshot 저장 + 일진 매일 변경 → 캐시 hit 거의 없음, snapshot 이 재조회 커버). 비용은 텔레메트리로 추적.
+> **비용 연동 확정**(사용자 질문): `generateAiText(feature:'today_premium')` → `recordLlmRun` 자동(openai-text.ts:113) → `ai_llm_runs`(토큰·USD 비용·캐시 hit) → `/admin/llm-cost` 자동 집계(`aggregateByFeature` 동적 그룹핑이라 새 feature 자동 노출). 별도 연동 코드 불필요.
+
+구현 순서:
+1. `lib/today-fortune/types.ts` — `TodayFortunePremiumResult` 에 `aiNarrative?: string | null` 추가
+2. `server/ai/llm-telemetry.ts` — `LlmFeature` 에 `'today_premium'` 추가
+3. **신규** `server/ai/today-premium-service.ts` — `generateTodayPremiumInterpretation(점수/근거)` → `generateAiText(feature:'today_premium')`. naming-policy 프롬프트(한자/명리어/"기운" 0, Phase 1 톤). 실패 시 `null`
+4. `lib/today-fortune/result-snapshots.ts` — `buildTodayFortuneSnapshotContent` **async 전환**(현재 동기, l.~165) + `premiumResult.aiNarrative` 주입. 호출처(unlock route POST·`today-fortune-audit`·write) await 연쇄
+5. `components/today-fortune/today-premium-panel.tsx` — `aiNarrative` 있으면 최상단 "AI 깊은 풀이" 블록 렌더(현재 recommendedActions/scenarios/evidenceLines 렌더 위)
+6. 캐시/마이그레이션 불필요. snapshot JSON 에 `premiumResult` 포함 → `aiNarrative` 자동 저장·복원.
+
+- **참고 패턴**: `server/ai/saju-lifetime-service.ts`(generateAiText + recordLlmRun 통합, #377/#378). lifetime 은 캐시 사용, today 는 캐시 생략만 다름.
+- **리스크**: ① `buildTodayFortuneSnapshotContent` async 전환의 호출처 연쇄 ② 언락 시 LLM 지연(결제 후라 허용) ③ 프롬프트 품질.
+
+### 교훈
+- **디버깅**: dev·production 빌드 모두 재현 안 되면 단정 수정 금지. 명시적 보장(scroll reset)으로 미발견 엣지 방어 + 배포 후 확인.
+- **LLM 비용 연동은 한 줄**: `generateAiText` 의 `feature` 태그만 주면 중앙 계측(#378)이 토큰·비용 자동 기록, 대시보드(#381)는 동적 그룹핑이라 새 feature 자동 노출. 신규 LLM 도입 시 별도 연동 작업 불필요.
+- **gh active 계정 주의**: 세션마다 active 계정이 바뀌어 PR/머지 시 `gh auth switch --user ganji-saju` 필요(push 는 SSH 라 영향 없음).
+- **오늘운세 본문은 plain 티어**: vocab-quality.test 가 "기운"까지 명리어로 차단 → 무료 본문 카피는 "에너지/흐름/성향" 등 일상어만.
 
 ---
 
