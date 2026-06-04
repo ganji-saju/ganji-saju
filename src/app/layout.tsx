@@ -9,6 +9,7 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 import { AppToaster } from "@/components/notifications/app-toaster";
 // 2026-05-16 PR #137 — push 알림 클릭 ack 자동 전송.
 import { NotificationClickTracker } from "@/components/notifications/notification-click-tracker";
+import { ScrollResetOnNavigate } from "@/shared/layout/scroll-reset-on-navigate";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -147,6 +148,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
+        <ScrollResetOnNavigate />
         {children}
         <AppToaster />
         <Analytics />
