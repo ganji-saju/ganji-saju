@@ -16,6 +16,19 @@ import {
   buildTodayFortunePremiumResult,
 } from '@/server/today-fortune/build-today-fortune';
 import { attachTodayPremiumNarrative } from '@/server/ai/today-premium-service';
+import { getUserProfileById } from '@/lib/profile';
+import type { BirthInput } from '@/lib/saju/types';
+
+// 2026-06-05 Bug A(detail page) — 오늘 payload 엔 이름 필드가 없어 persisted reading.input.name
+//   이 undefined → snapshot 으로 빌드되는 detail hero 가 항상 '달빛이' fallback.
+//   snapshot 시점에 profile.display_name 을 input.name 으로 보강(순수). 빈 값이면 원본 유지.
+export function applyDisplayNameToInput(
+  input: BirthInput,
+  displayName: string | null | undefined
+): BirthInput {
+  const trimmed = displayName?.trim();
+  return trimmed ? { ...input, name: trimmed } : input;
+}
 
 export const TODAY_FORTUNE_RESULT_SNAPSHOT_VERSION = 'today-fortune-result-snapshot/v1';
 export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v1';
@@ -176,7 +189,19 @@ export async function buildTodayFortuneSnapshotContent({
   now = new Date(),
 }: BuildTodayFortuneSnapshotContentInput) {
   const todaySajuData = buildFreshTodaySajuData(reading.input, { now });
-  const freeResult = buildTodayFortuneFreeResult(reading.input, todaySajuData, {
+  // 2026-06-05 Bug A — reading.input(오늘 payload)엔 이름이 없어 detail hero 가 '달빛이' 로
+  //   나오던 이슈. snapshot 시점에 profile.display_name 으로 보강(없으면 fallback 유지).
+  //   이름은 사주 계산과 무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
+  let displayName = '';
+  if (reading.userId) {
+    try {
+      displayName = (await getUserProfileById(reading.userId)).displayName.trim();
+    } catch {
+      // 이름 조회 실패는 비차단 — '달빛이' fallback 으로 graceful degrade.
+    }
+  }
+  const namedInput = applyDisplayNameToInput(reading.input, displayName);
+  const freeResult = buildTodayFortuneFreeResult(namedInput, todaySajuData, {
     concernId,
     sourceSessionId,
     calendarType: 'solar',
