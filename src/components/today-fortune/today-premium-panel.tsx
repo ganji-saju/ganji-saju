@@ -174,6 +174,12 @@ export function TodayPremiumPanel({
   const scenarios = result.scenarios;
   const followUpQuestions = result.followUpQuestions ?? [];
   const evidenceLines = result.evidenceLines ?? [];
+  // 2026-06-05 Phase 2 (PR #393) — 프리미엄 LLM 깊은 풀이. 있으면 최상단에 노출.
+  //   생성 실패/플래그 OFF 시 null → 블록 미노출(기존 카드만, graceful degrade).
+  const aiNarrative = result.aiNarrative?.trim() ?? '';
+  const aiNarrativeParagraphs = aiNarrative
+    ? aiNarrative.split(/\n{2,}/).map((para) => para.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="space-y-4">
@@ -216,6 +222,39 @@ export function TodayPremiumPanel({
           </span>
         </div>
       </article>
+
+      {/* §AI 깊은 풀이 — 2026-06-05 Phase 2 (PR #393). aiNarrative 있을 때만 최상단 노출.
+          결제 가치의 헤드라인. naming-policy(한자/명리어/"기운" 0) 프롬프트로 생성된 plain 톤 단락. */}
+      {aiNarrativeParagraphs.length > 0 ? (
+        <article
+          className="rounded-[18px] border p-5"
+          style={{
+            background: 'linear-gradient(135deg, #f6f1ff 0%, #fdeef6 100%)',
+            borderColor: 'rgba(74, 92, 184, 0.22)',
+          }}
+        >
+          <div
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-white"
+            style={{
+              background: 'linear-gradient(135deg, #6c5ce7 0%, #d81b72 100%)',
+              boxShadow: '0 6px 14px rgba(108,92,231,0.24)',
+            }}
+          >
+            ✦ AI 깊은 풀이
+          </div>
+          <div className="mt-3 space-y-2.5">
+            {aiNarrativeParagraphs.map((paragraph, index) => (
+              <p
+                key={`ai-narrative-${index}`}
+                className="break-keep text-[14px] leading-[1.85] text-[var(--app-ink)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </article>
+      ) : null}
 
       {/* 2026-05-15 — 사용자 피드백: "이 화면은 어떻게 활용하면 더 좋을까?"
           → 결제 후 시진별 길흉/행동 가이드/시나리오를 실제로 어떻게 쓰는지 callout 추가. */}

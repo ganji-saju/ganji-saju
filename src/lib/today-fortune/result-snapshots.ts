@@ -15,6 +15,7 @@ import {
   buildTodayFortuneFreeResult,
   buildTodayFortunePremiumResult,
 } from '@/server/today-fortune/build-today-fortune';
+import { attachTodayPremiumNarrative } from '@/server/ai/today-premium-service';
 
 export const TODAY_FORTUNE_RESULT_SNAPSHOT_VERSION = 'today-fortune-result-snapshot/v1';
 export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v1';
@@ -164,7 +165,10 @@ const SNAPSHOT_SELECT = [
   'updated_at',
 ].join(', ');
 
-export function buildTodayFortuneSnapshotContent({
+// 2026-06-05 Phase 2 (PR #393) — premium 결과에 LLM 깊은 풀이(aiNarrative)를 주입하므로
+//   동기 → async 전환. 호출처(upsert·unlock route GET/POST)는 await 연쇄.
+//   플래그 OFF/실패/미설정 키 시 aiNarrative=null 로 graceful degrade(기존 카드 그대로).
+export async function buildTodayFortuneSnapshotContent({
   reading,
   sourceSessionId,
   concernId,
@@ -182,7 +186,7 @@ export function buildTodayFortuneSnapshotContent({
     kasiComparison: reading.kasiComparison,
     now,
   });
-  const premiumResult = buildTodayFortunePremiumResult(
+  const basePremiumResult = buildTodayFortunePremiumResult(
     reading.input,
     todaySajuData,
     concernId,
@@ -190,6 +194,9 @@ export function buildTodayFortuneSnapshotContent({
     reading.kasiComparison,
     { now }
   );
+  const premiumResult = await attachTodayPremiumNarrative(freeResult, basePremiumResult, {
+    userId: reading.userId,
+  });
   const readingKey = toSlug(reading.input);
   const occurredOn = freeResult.dateKey;
   const scopeKey = buildTodayFortuneResultSnapshotScopeKey({
@@ -281,7 +288,7 @@ export async function upsertTodayFortuneResultSnapshot(
 ) {
   if (!hasSupabaseServiceEnv) return null;
 
-  const content = buildTodayFortuneSnapshotContent(input);
+  const content = await buildTodayFortuneSnapshotContent(input);
   const readingId = isReadingId(input.reading.id) ? input.reading.id : null;
   const service = await createServiceClient();
   const payload = {
