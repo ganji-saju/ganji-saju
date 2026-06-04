@@ -282,7 +282,12 @@ export function buildPurchasedProductHref(
       return `/saju/${encodeURIComponent(normalizedSlug)}/today-detail`;
     }
     if (normalizedSlug) {
-      return `/today-fortune/detail?paid=today-detail&sourceSessionId=${encodeURIComponent(normalizedSlug)}`;
+      // Bug fix — checkout 가 선택한 고민을 scope(=concernId)로 넘기는데(premium-lock-card),
+      //   열람 redirect 가 이를 버려 결제 후 항상 'general' 로 열리던 버그. concern 으로 복원.
+      //   (상세 페이지가 normalizeConcernId 로 정규화 → 빈/유효하지 않은 scope 는 general = 현행.)
+      const concern = options.scope?.trim();
+      const concernParam = concern ? `&concern=${encodeURIComponent(concern)}` : '';
+      return `/today-fortune/detail?paid=today-detail&sourceSessionId=${encodeURIComponent(normalizedSlug)}${concernParam}`;
     }
     return '/today-fortune';
   }
