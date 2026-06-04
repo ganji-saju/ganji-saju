@@ -81,7 +81,7 @@ async function getOrCreateTodayDetailSnapshot(input: {
     };
   }
 
-  const fallback = buildTodayFortuneSnapshotContent({
+  const fallback = await buildTodayFortuneSnapshotContent({
     reading: input.reading,
     sourceSessionId: input.sourceSessionId,
     concernId: input.concernId,

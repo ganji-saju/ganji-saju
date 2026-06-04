@@ -222,6 +222,12 @@ export interface TodayFortunePremiumResult {
   evidenceLines: string[];
   followUpQuestions: string[];
   safetyNote: string;
+  /**
+   * 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
+   * 언락(결제) 시 1회 생성되어 snapshot 에 영속(캐시 생략). 생성 실패·플래그 OFF 시 null
+   * → UI 는 블록 미노출(graceful degrade). plain 티어: 한자/명리어/"기운" 0.
+   */
+  aiNarrative?: string | null;
 }
 
 export interface TodayFortuneBirthPayload {
