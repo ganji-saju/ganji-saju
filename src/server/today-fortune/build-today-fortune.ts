@@ -676,6 +676,14 @@ function compactStrings(parts: Array<string | null | undefined>) {
     .filter((part): part is string => Boolean(part));
 }
 
+// 2026-06-04: 본문 조각 끝맺음 통일 — 종결부호가 없으면 마침표를 붙여
+//   join 시 "…나눠보세요 정답을…"처럼 문장이 붙는 현상을 막는다.
+function asSentence(text: string | null | undefined): string {
+  const trimmed = (text ?? '').trim();
+  if (!trimmed) return '';
+  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 function splitSentences(text: string) {
   return text
     .split(/(?<=[.!?])\s+/)
@@ -965,6 +973,22 @@ export function buildDailyDelta(
 
 // 오늘 일진 vs 내 일간 관계를 사람이 읽는 한 줄로 변환.
 // dailyDelta 단순 부호가 아니라 element 종류와 관계 (인성/관살/식상/재성/같음) 별 카피.
+type TodayFlowTone = 'same' | 'support' | 'release' | 'press' | 'tidy';
+
+// 천간(겉)/지지(바탕) 각각의 오늘 일진 vs 내 일간 관계 톤.
+function resolveTodayFlowTone(myEl: Element, todayEl: Element | null): TodayFlowTone | null {
+  if (!todayEl) return null;
+  if (todayEl === myEl) return 'same';
+  if (GENERATOR_OF_MAP[myEl] === todayEl) return 'support';
+  if (GENERATED_BY_MAP[myEl] === todayEl) return 'release';
+  if (CONTROLLER_OF_MAP[myEl] === todayEl) return 'press';
+  if (CONTROLLER_OF_MAP[todayEl] === myEl) return 'tidy';
+  return null;
+}
+
+// 2026-06-04: 천간/지지를 각각 "오늘은 ~날입니다" 두 문장으로 내보내면
+//   "나를 누르는 흐름" + "나를 받쳐주는 흐름"처럼 상충이 한 문단에 나열됐다.
+//   겉(천간)·바탕(지지)을 한 문장으로 통합 서술한다(naming-policy: 한자/명리어/"결" 0).
 export function buildTodayFlowSignal(
   todayPillar: TodayPillarSnapshot,
   sajuData: SajuDataV1 | SajuDataV2
@@ -974,33 +998,34 @@ export function buildTodayFlowSignal(
     return '';
   }
 
-  function describe(todayEl: Element | null, position: '천간' | '지지'): string | null {
-    if (!todayEl) return null;
-    const ctx = position === '천간' ? '겉으로' : '바탕에서';
-    // 오늘운세 plain 티어 — 명리어/한자 0. 오행 관계를 일상어 흐름으로만 말(naming-policy).
-    if (todayEl === myEl) {
-      return `오늘은 ${ctx} 들어오는 흐름이 내 성향과 잘 맞아, 자기 페이스를 지키기 좋은 날입니다.`;
+  // 단독 서술용(뉘앙스 포함) / 겉·바탕 대비용(짧은 수식).
+  const fullPhrase: Record<TodayFlowTone, string> = {
+    same: '내 성향과 잘 맞아 자기 페이스를 지키기 좋은',
+    support: '나를 받쳐줘 회복과 정리에 힘이 실리는',
+    release: '내 에너지를 밖으로 풀어내 표현은 잘 되지만 소모도 있는',
+    press: '나를 눌러 결정이 무겁고 마찰이 생기기 쉬운',
+    tidy: '잔손이 많이 가 작은 정리에 품이 드는',
+  };
+  const shortPhrase: Record<TodayFlowTone, string> = {
+    same: '나와 잘 맞는',
+    support: '나를 받쳐주는',
+    release: '에너지를 밖으로 풀어내는',
+    press: '나를 누르는',
+    tidy: '잔손이 가는',
+  };
+
+  const stemTone = resolveTodayFlowTone(myEl, todayPillar.stemElement);
+  const branchTone = resolveTodayFlowTone(myEl, todayPillar.branchElement);
+
+  if (stemTone && branchTone) {
+    if (stemTone === branchTone) {
+      return `오늘은 안팎으로 ${fullPhrase[stemTone]} 흐름이 함께 도는 날입니다.`;
     }
-    if (GENERATOR_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} 나를 받쳐주는 흐름이 들어와, 회복과 정리에 도움이 되는 날입니다.`;
-    }
-    if (GENERATED_BY_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} 내 에너지를 밖으로 풀어내는 흐름이라, 말은 잘 되지만 그만큼 소모도 큰 편입니다.`;
-    }
-    if (CONTROLLER_OF_MAP[myEl] === todayEl) {
-      return `오늘은 ${ctx} 나를 누르는 흐름이 들어와, 결정이 다소 무겁고 마찰이 생길 수 있는 날입니다.`;
-    }
-    if (CONTROLLER_OF_MAP[todayEl] === myEl) {
-      return `오늘은 ${ctx} 정돈이 필요한 흐름이라, 작은 결정과 정리에 손이 많이 가는 날입니다.`;
-    }
-    return null;
+    return `오늘은 겉으로는 ${shortPhrase[stemTone]} 흐름이, 바탕에서는 ${shortPhrase[branchTone]} 흐름이 함께 도는 날이라, 한쪽에 치우치지 말고 흐름을 살피며 움직이면 좋습니다.`;
   }
 
-  const sentences = compactStrings([
-    describe(todayPillar.stemElement, '천간'),
-    describe(todayPillar.branchElement, '지지'),
-  ]);
-  return sentences.join(' ');
+  const single = stemTone ?? branchTone;
+  return single ? `오늘은 ${fullPhrase[single]} 흐름이 도는 날입니다.` : '';
 }
 
 function pickStrengthVariant(level: string | null | undefined, seed: number): string {
@@ -1332,8 +1357,8 @@ function buildPublicTodayProfile(
     balanceBody: `${dominantCopy.bodyCue} ${supportCopy.bodyCue}`,
     cautionBody:
       dominantElement === weakestElement
-        ? supportCopy.weakCare
-        : `${dominantCopy.strongCaution} ${weakestCopy.weakCare}`,
+        ? asSentence(supportCopy.weakCare)
+        : `${asSentence(dominantCopy.strongCaution)} ${asSentence(weakestCopy.weakCare)}`,
     hourLabel: hourCopy.label,
     hourAction: hourCopy.action,
     hourCaution: hourCopy.caution,
@@ -1422,22 +1447,29 @@ function buildPublicTodayBody(
   profile: PublicTodayProfile,
   unknownBirthTime: boolean
 ) {
-  // 2026-05-15: 본문이 출생 정보 기반 고정 문자열만 이어붙던 회귀 수정.
-  // 오늘 일진 시그널 한 줄을 맨 앞에 두고, 시드 의존 변주를 섞어 매일 다르게.
+  // 2026-06-04: 조각 무맥락 나열 → 구조화(흐름 → 성향 → 핵심 포인트 → 조언 → 주의 → 마무리).
+  //   - flowSignal 은 천간/지지 통합 1문장(상충 제거, buildTodayFlowSignal)
+  //   - 성향은 strengthVariant 하나로(roleBodyVariant 와 중복이라 제거)
+  //   - actionBody 의 "오늘은" 접두 제거(반복 완화), 각 조각 asSentence 로 끝맺음 통일
   const concernLine = pickConcernBodyVariant(concernId, profile.signatureSeed);
   const flowSignal = profile.todayFlowSignal;
   const todayDateMarker = formatTodayDateMarker(profile.todayGanzi);
 
   return joinUniqueSentences([
-    flowSignal || null,
-    profile.roleBodyVariant || profile.roleBody,
-    profile.strengthVariant || profile.strengthBody,
-    profile.hourSummary,
-    concernLine,
-    `오늘은 ${profile.actionBody}.`,
-    profile.hourAction,
-    profile.cautionBody,
-    profile.calendarCue,
+    // 1) 오늘 흐름 — 겉·바탕 통합 종합
+    asSentence(flowSignal) || null,
+    // 2) 내 성향 — 강약 변주 한 줄
+    asSentence(profile.strengthVariant || profile.strengthBody),
+    // 3) 오늘 핵심 포인트 — 고민별
+    asSentence(concernLine),
+    // 4) 행동 조언 — 먼저 할 일 + 시간대 행동
+    asSentence(profile.actionBody),
+    asSentence(profile.hourAction),
+    // 5) 오늘 주의 — 끝맺음 통일된 cautionBody
+    asSentence(profile.cautionBody),
+    // 6) 마무리 흐름 + 기준 안내
+    asSentence(profile.hourSummary),
+    asSentence(profile.calendarCue),
     todayDateMarker ? `${todayDateMarker}로 본 흐름입니다.` : null,
     unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
   ]);
