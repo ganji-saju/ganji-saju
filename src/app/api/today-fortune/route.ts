@@ -8,6 +8,7 @@ import { normalizeMoonlightCounselor } from '@/lib/counselors';
 import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-fortune';
 import type { TodayFortuneBirthPayload } from '@/lib/today-fortune/types';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
+import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
 
 export const runtime = 'nodejs';
 
@@ -62,10 +63,10 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   const counselorId = normalizeMoonlightCounselor(rawPayload?.counselorId);
 
-  // PR #166 — 사용자 이름 누락 fix. 로그인 사용자는 profile.display_name 자동 주입.
-  // TodayFortuneBirthPayload 에 name 필드가 없어서 input.name = undefined 였고,
-  // result.userName 이 null 이 되어 hero 에서 "달빛이님" fallback 으로 표시되던 버그.
-  let resolvedDisplayName: string | undefined;
+  // PR #166 + 2026-06-05 — 오늘운세 입력엔 이름 필드가 없어 hero 가 "달빛이" fallback 으로
+  //   표시되던 이슈. profile.display_name → 소셜 로그인 메타데이터 → 클라이언트 입력 순으로 보강.
+  //   (display_name 이 비어 있어도 소셜 로그인 이름이 있으면 hero 에 실명 노출.)
+  let profileDisplayName: string | null = null;
   if (user?.id) {
     try {
       const { data: profileRow } = await supabase
@@ -73,17 +74,17 @@ export async function POST(req: NextRequest) {
         .select('display_name')
         .eq('user_id', user.id)
         .maybeSingle();
-      const name = (profileRow as { display_name?: string | null } | null)?.display_name?.trim();
-      if (name) resolvedDisplayName = name;
+      profileDisplayName =
+        (profileRow as { display_name?: string | null } | null)?.display_name ?? null;
     } catch {
       // silent — 이름 없어도 풀이는 정상 동작.
     }
   }
-  // 클라이언트가 직접 보낸 name 도 지원 (비로그인 사용자가 닉네임 입력하는 경우 대비).
-  if (!resolvedDisplayName && typeof rawPayload?.name === 'string') {
-    const clientName = rawPayload.name.trim();
-    if (clientName) resolvedDisplayName = clientName;
-  }
+  const resolvedDisplayName = resolveTodayDisplayName({
+    profileDisplayName,
+    authMetadata: user?.user_metadata ?? null,
+    clientName: rawPayload?.name,
+  });
   const enrichedInput = resolvedDisplayName
     ? { ...parsed.input, name: resolvedDisplayName }
     : parsed.input;
