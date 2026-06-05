@@ -105,7 +105,11 @@ export default async function AdminUserDetailPage({ params }: Props) {
     nowIso
   );
   const birth = formatBirth(profile?.birthYear ?? null, profile?.birthMonth ?? null, profile?.birthDay ?? null, role);
-  const birthFull = birth && profile?.birthHour != null ? `${birth} ${String(profile.birthHour).padStart(2, '0')}시` : (birth ?? '—');
+  // 출생 시(時)도 사주 PII — super_admin 에게만 노출, admin 은 가림.
+  const birthFull =
+    birth && header.isSuper && profile?.birthHour != null
+      ? `${birth} ${String(profile.birthHour).padStart(2, '0')}시`
+      : (birth ?? '—');
   const llmTotalCost = llmStats.reduce((s, r) => s + r.costUsd, 0);
   const refundTargetCount = refund.items.length + refund.creditItems.filter((i) => i.status !== 'none').length;
   const apptSummary = Object.entries(extras.appointments.byStatus).map(([k, v]) => `${k} ${v}`).join(' · ') || '—';
