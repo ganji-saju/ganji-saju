@@ -152,3 +152,22 @@ test('buildCsv: 콤마·따옴표 이스케이프', () => {
   const csv = buildCsv([item], 'super_admin');
   assert.ok(csv.includes('"홍, ""길동"""'));
 });
+
+test('parseListParams: M2 신규 필터 파싱', () => {
+  const sp = new URLSearchParams('signupWithinDays=7&refundable=yes&firstReading=none');
+  const p = parseListParams(sp);
+  assert.equal(p.signupWithinDays, 7);
+  assert.equal(p.refundable, 'yes');
+  assert.equal(p.firstReading, 'none');
+});
+
+test('parseListParams: M2 신규 필터 기본값/폴백', () => {
+  const p = parseListParams(new URLSearchParams(''));
+  assert.equal(p.signupWithinDays, null);
+  assert.equal(p.refundable, 'all');
+  assert.equal(p.firstReading, 'all');
+  const bad = parseListParams(new URLSearchParams('signupWithinDays=NaN&refundable=hack&firstReading=hack'));
+  assert.equal(bad.signupWithinDays, null);
+  assert.equal(bad.refundable, 'all');
+  assert.equal(bad.firstReading, 'all');
+});

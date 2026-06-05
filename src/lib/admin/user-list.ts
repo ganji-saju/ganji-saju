@@ -7,6 +7,9 @@ import {
   type AdminUserSummaryRow,
 } from './user-list-query';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SummaryQuery = any;
+
 const SAFE_CURSOR_V = /^[0-9T:.Z+-]+$/;    // ISO 타임스탬프 또는 정수만
 const SAFE_CURSOR_ID = /^[0-9a-fA-F-]+$/;  // UUID 문자만
 
@@ -23,6 +26,35 @@ export interface AdminUserListPage {
   refreshedAt: string | null;
 }
 
+/** 모든 필터를 AND로 적용(목록·카운트 공유). */
+function applyListFilters(qb: SummaryQuery, params: AdminUserListParams): SummaryQuery {
+  let q = qb;
+  if (params.status === 'active') {
+    q = q.gte('last_active_at', new Date(Date.now() - 30 * 86400000).toISOString());
+  } else if (params.status === 'dormant') {
+    q = q.lt('last_active_at', new Date(Date.now() - 30 * 86400000).toISOString());
+  }
+  if (params.signupFrom) q = q.gte('signup_at', `${params.signupFrom}T00:00:00.000Z`);
+  if (params.signupTo) q = q.lte('signup_at', `${params.signupTo}T23:59:59.999Z`);
+  if (params.signupWithinDays != null) {
+    q = q.gte('signup_at', new Date(Date.now() - params.signupWithinDays * 86400000).toISOString());
+  }
+  if (params.paid === 'yes') q = q.gt('paid_count', 0);
+  if (params.paid === 'no') q = q.eq('paid_count', 0);
+  if (params.minLtv != null) q = q.gte('ltv_won', params.minLtv);
+  if (params.refundable === 'yes') q = q.gt('refundable_won', 0);
+  if (params.firstReading === 'none') q = q.eq('reading_count', 0);
+  if (params.subscription === 'none') q = q.is('subscription_status', null);
+  else if (params.subscription !== 'all') q = q.eq('subscription_status', params.subscription);
+  if (params.provider.length > 0) q = q.in('signup_provider', params.provider);
+  if (params.inactiveDays != null) {
+    q = q.lt('last_active_at', new Date(Date.now() - params.inactiveDays * 86400000).toISOString());
+  }
+  if (params.profile === 'complete') q = q.eq('profile_complete', true);
+  if (params.profile === 'incomplete') q = q.eq('profile_complete', false);
+  return q;
+}
+
 export async function fetchAdminUserList(params: AdminUserListParams): Promise<AdminUserListPage> {
   if (!hasSupabaseServiceEnv) return { rows: [], hasMore: false, refreshedAt: null };
   const service = await createServiceClient();
@@ -30,25 +62,7 @@ export async function fetchAdminUserList(params: AdminUserListParams): Promise<A
 
   let qb = service.from('admin_user_summary').select('*');
 
-  // ── 필터(전부 AND) ──
-  if (params.status === 'active') {
-    qb = qb.gte('last_active_at', new Date(Date.now() - 30 * 86400000).toISOString());
-  } else if (params.status === 'dormant') {
-    qb = qb.lt('last_active_at', new Date(Date.now() - 30 * 86400000).toISOString());
-  }
-  if (params.signupFrom) qb = qb.gte('signup_at', `${params.signupFrom}T00:00:00.000Z`);
-  if (params.signupTo) qb = qb.lte('signup_at', `${params.signupTo}T23:59:59.999Z`);
-  if (params.paid === 'yes') qb = qb.gt('paid_count', 0);
-  if (params.paid === 'no') qb = qb.eq('paid_count', 0);
-  if (params.minLtv != null) qb = qb.gte('ltv_won', params.minLtv);
-  if (params.subscription === 'none') qb = qb.is('subscription_status', null);
-  else if (params.subscription !== 'all') qb = qb.eq('subscription_status', params.subscription);
-  if (params.provider.length > 0) qb = qb.in('signup_provider', params.provider);
-  if (params.inactiveDays != null) {
-    qb = qb.lt('last_active_at', new Date(Date.now() - params.inactiveDays * 86400000).toISOString());
-  }
-  if (params.profile === 'complete') qb = qb.eq('profile_complete', true);
-  if (params.profile === 'incomplete') qb = qb.eq('profile_complete', false);
+  qb = applyListFilters(qb, params);
 
   // ── keyset (모든 정렬 DESC, tie-break user_id DESC) ──
   const cursor = params.cursor ? decodeCursor(params.cursor) : null;
@@ -68,4 +82,14 @@ export async function fetchAdminUserList(params: AdminUserListParams): Promise<A
   const rows = all.slice(0, params.limit);
   const refreshedAt = rows[0]?.refreshed_at ?? all[0]?.refreshed_at ?? null;
   return { rows, hasMore, refreshedAt };
+}
+
+/** 세그먼트 인원수 등 — 필터 적용 후 정확 카운트(행 미전송). */
+export async function countAdminUsers(params: AdminUserListParams): Promise<number> {
+  if (!hasSupabaseServiceEnv) return 0;
+  const service = await createServiceClient();
+  let qb = service.from('admin_user_summary').select('user_id', { count: 'exact', head: true });
+  qb = applyListFilters(qb, params);
+  const { count, error } = await qb;
+  return error ? 0 : (count ?? 0);
 }

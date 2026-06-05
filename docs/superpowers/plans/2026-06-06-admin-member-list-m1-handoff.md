@@ -9,14 +9,27 @@
 - 신규 크론: `vercel.json`에 `/api/admin/users/summary/refresh` `0 * * * *` 추가(배포 시 등록)
 
 ## 1. 마이그레이션 적용 (수동 — drift 이력 주의)
+> **DB 식별:** ganji-saju Supabase ref = **`bgtzkjxihlbmxehmhtwg`**. (Claude에 연결된 Supabase MCP는 무관한 `richdoc-ops`(`trmbkdrzvtolvolchoad`) 프로젝트라 **MCP로 적용 금지** — 반드시 본인 자격증명으로.)
+
 ```bash
-# 미리보기
+# (최초 1회) CLI 로그인 + 프로젝트 링크
+supabase login
+supabase link --project-ref bgtzkjxihlbmxehmhtwg
+
+# 적용 전 로컬 vs 원격 비교(drift 확인)
 supabase migration list
-# 적용 (049, 050)
+# 적용
 supabase db push
-# 검증
-supabase db execute "select count(*) from admin_user_summary;"   # 0
-supabase db execute "select count(*) from admin_access_log;"     # 0
+```
+**drift로 `db push`가 history mismatch 오류 시 — 대시보드 SQL Editor 직접 실행(가장 안전):**
+1. https://supabase.com/dashboard/project/bgtzkjxihlbmxehmhtwg/sql
+2. `supabase/migrations/049_admin_user_summary.sql` 내용 붙여넣기 → Run
+3. `supabase/migrations/050_admin_access_log.sql` 내용 붙여넣기 → Run
+
+**검증(SQL Editor 또는 CLI):**
+```sql
+select to_regclass('public.admin_user_summary'), to_regclass('public.admin_access_log');
+-- 둘 다 테이블명 반환(널 아님)이면 성공
 ```
 > RLS는 정책 미생성 = 전면 deny. service_role(서버 데이터레이어)만 접근하므로 앱 사용자에게 노출되지 않음. 적용 후 Supabase advisor로 RLS 경고 없는지 확인 권장.
 
