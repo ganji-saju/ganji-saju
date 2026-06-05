@@ -14,6 +14,7 @@ import {
   cursorForRow,
   encodeCursor,
 } from '@/lib/admin/user-list-query';
+import { SEGMENTS } from '@/lib/admin/segments';
 
 export const metadata: Metadata = {
   title: '가입자 관리 (admin)',
@@ -61,16 +62,6 @@ export default async function AdminUsersPage({ searchParams }: Props) {
       ? encodeCursor(cursorForRow(page.rows[page.rows.length - 1], params.sort))
       : null;
 
-  const seg = (label: string, qs: string) => (
-    <Link
-      key={label}
-      href={`/admin/users?${qs}`}
-      className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12px] text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
-    >
-      {label}
-    </Link>
-  );
-
   const nextHref = (() => {
     if (!nextCursor) return null;
     const n = new URLSearchParams(usp);
@@ -116,13 +107,23 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           )}
         </form>
 
-        <div className="flex flex-wrap gap-2">
-          {seg('신규30일', 'sort=signup')}
-          {seg('고지출', 'sort=ltv&paid=yes')}
-          {seg('환불대상', 'sort=ltv&paid=yes')}
-          {seg('구독중', 'subscription=active')}
-          {seg('이탈위험', 'status=dormant&paid=yes&sort=last_active')}
-          {seg('첫결제 미완', 'paid=no&status=active')}
+        <div className="flex flex-wrap items-center gap-2">
+          {SEGMENTS.map((s) => (
+            <Link
+              key={s.key}
+              href={`/admin/users?${s.query}`}
+              title={s.description}
+              className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12px] text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
+            >
+              {s.label}
+            </Link>
+          ))}
+          <Link
+            href="/admin/users/segments"
+            className="rounded-full border border-[var(--app-pink-strong)] px-3 py-1 text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+          >
+            세그먼트·코호트 개요 →
+          </Link>
         </div>
 
         <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 grid grid-cols-2 gap-3 md:grid-cols-4 text-[12px]">
