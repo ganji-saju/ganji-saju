@@ -14,6 +14,13 @@ export interface TodayDisplayNameSources {
 const AUTH_NAME_KEYS = ['name', 'full_name', 'nickname', 'user_name'] as const;
 
 /**
+ * 표시 이름이 전혀 없을 때의 '달빛이' 브랜드 fallback — 단일 상수.
+ * surface 마다 raw `?? '달빛이'` 리터럴을 흩뿌리면 한 곳을 고쳐도 다른 데서 재발(blind spot)하므로
+ * 모든 이름 fallback 은 이 상수를 import 해 사용한다(가드: display-name-blindspot.test.ts).
+ */
+export const MOONLIGHT_FALLBACK_DISPLAY_NAME = '달빛이';
+
+/**
  * 오늘운세 hero 인사말용 표시 이름 resolution(순수).
  * 우선순위: profile.display_name → 소셜 메타데이터 → 클라이언트 입력.
  * 모두 비면 undefined → hero 는 '달빛이' fallback.
