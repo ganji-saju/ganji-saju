@@ -1,19 +1,22 @@
-// 2026-05-25 Phase 1 — 어드민 사용자 상세(6섹션).
-//   회원·사주(팔자)·결제·AI챗·LLM 통계·환불 가능 여부를 한 화면에. 읽기 전용.
-//   /admin 레이아웃이 화이트리스트 가드. service_role 로 own-row RLS 우회(getAdminUserDetail).
+// 2026-06-06 M3 — 어드민 사용자 360 상세(요약 헤더 + 6탭). 읽기 전용 + 환불.
+//   서버측 역할 마스킹(admin: 이메일/생년월일/영수증 가림) + view_detail 감사.
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { getAdminUserDetail } from '@/lib/admin/user-detail';
+import { getMemberExtras } from '@/lib/admin/member-extras';
+import { buildMemberHeader, formatBirth } from '@/lib/admin/detail-view';
+import { logAdminAccess } from '@/lib/admin/access-log';
+import { MemberDetailTabs, type DetailTab } from './member-detail-tabs';
 import { RefundActions } from './refund-actions';
 
 export const metadata: Metadata = {
   title: '사용자 상세 (admin)',
-  description: '회원·사주·결제·AI챗·LLM·환불 상태',
+  description: '회원 360 — 프로필·사주·결제·활동·LLM·환불',
   robots: { index: false, follow: false },
 };
 
@@ -45,62 +48,97 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
     </section>
   );
 }
-
 function Field({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-3 border-b border-[var(--app-line)] py-1.5 last:border-0">
       <span className="text-[11.5px] text-[var(--app-copy-soft)]">{label}</span>
-      <span className={`text-right text-[12px] font-semibold text-[var(--app-ink)] ${mono ? 'font-mono' : ''}`}>
-        {value}
-      </span>
+      <span className={`text-right text-[12px] font-semibold text-[var(--app-ink)] ${mono ? 'font-mono' : ''}`}>{value}</span>
     </div>
   );
+}
+function Badge({ children }: { children: React.ReactNode }) {
+  return <span className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[11px] font-bold text-[var(--app-ink)]">{children}</span>;
+}
+
+async function fetchSummaryRow(userId: string): Promise<{ last_active_at: string | null; subscription_status: string | null } | null> {
+  if (!hasSupabaseServiceEnv) return null;
+  const service = await createServiceClient();
+  const { data } = await service
+    .from('admin_user_summary')
+    .select('last_active_at, subscription_status')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return (data as { last_active_at: string | null; subscription_status: string | null } | null) ?? null;
 }
 
 export default async function AdminUserDetailPage({ params }: Props) {
   const { id } = await params;
-  const detail = await getAdminUserDetail(id);
+  const supabase = await createClient();
+  const check = await getCurrentAdminRole(supabase);
+  const role: 'admin' | 'super_admin' = check.role ?? 'admin';
+
+  const [detail, extras, summaryRow] = await Promise.all([
+    getAdminUserDetail(id),
+    getMemberExtras(id),
+    fetchSummaryRow(id),
+  ]);
   if (!detail) notFound();
 
+  if (check.userId) {
+    await logAdminAccess({ actorId: check.userId, actorRole: role, action: 'view_detail', targetUser: id });
+  }
+
   const { profile, palja, payment, llmStats, refund } = detail;
-  const adminRole = await getCurrentAdminRole(await createClient());
-  const role: 'admin' | 'super_admin' = adminRole.role ?? 'admin';
-  const birth =
-    profile?.birthYear && profile?.birthMonth && profile?.birthDay
-      ? `${profile.birthYear}.${String(profile.birthMonth).padStart(2, '0')}.${String(profile.birthDay).padStart(2, '0')}` +
-        (profile.birthHour != null ? ` ${String(profile.birthHour).padStart(2, '0')}시` : ' (시 미상)')
-      : '—';
+  const nowIso = new Date().toISOString();
+  const header = buildMemberHeader(
+    {
+      id: detail.id,
+      email: detail.email,
+      createdAt: detail.createdAt,
+      profile: { displayName: profile?.displayName ?? null },
+      ltvWon: payment.totalSpentWon,
+      subscriptionStatus: summaryRow?.subscription_status ?? null,
+      lastActiveAt: summaryRow?.last_active_at ?? detail.latestReadingAt ?? null,
+      refundableWon: refund.totalRefundableWon,
+    },
+    role,
+    nowIso
+  );
+  const birth = formatBirth(profile?.birthYear ?? null, profile?.birthMonth ?? null, profile?.birthDay ?? null, role);
+  // 출생 시(時)도 사주 PII — super_admin 에게만 노출, admin 은 가림.
+  const birthFull =
+    birth && header.isSuper && profile?.birthHour != null
+      ? `${birth} ${String(profile.birthHour).padStart(2, '0')}시`
+      : (birth ?? '—');
   const llmTotalCost = llmStats.reduce((s, r) => s + r.costUsd, 0);
-  const refundTargetCount =
-    refund.items.length + refund.creditItems.filter((item) => item.status !== 'none').length;
+  const refundTargetCount = refund.items.length + refund.creditItems.filter((i) => i.status !== 'none').length;
+  const apptSummary = Object.entries(extras.appointments.byStatus).map(([k, v]) => `${k} ${v}`).join(' · ') || '—';
 
-  return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-4">
-        <GangiPageHeader title="사용자 상세 (admin)" backHref="/admin/users" />
-
-        {/* 1. 회원 정보 */}
-        <Card title="회원 정보">
-          <Field label="이메일" value={detail.email ?? '—'} />
+  const tabs: DetailTab[] = [
+    {
+      key: 'member',
+      label: '회원·프로필',
+      content: (
+        <Card title="회원·프로필">
+          <Field label="이메일" value={header.emailMasked ?? '—'} />
           <Field label="UUID" value={detail.id} mono />
           <Field label="가입일" value={fmtDate(detail.createdAt)} />
-          <Field label="표시 이름" value={profile?.displayName ?? '—'} />
-          <Field label="생년월일" value={birth} />
+          <Field label="표시 이름" value={header.displayName} />
+          <Field label="생년월일" value={birthFull} />
           <Field label="성별" value={genderLabel(profile?.gender ?? null)} />
+          <Field label="가족 프로필" value={`${extras.familyCount}명`} />
+          <Field label="정책 동의" value={extras.consent.latestMethod ? `${extras.consent.latestMethod} · ${fmtDate(extras.consent.latestAt)}` : '—'} />
         </Card>
-
-        {/* 2. 사주 데이터 */}
-        <Card title="사주 데이터">
+      ),
+    },
+    {
+      key: 'saju',
+      label: '사주·콘텐츠',
+      content: (
+        <Card title="사주·콘텐츠">
           {palja ? (
             <>
-              <Field
-                label="팔자"
-                value={
-                  <span className="font-mono text-[14px]">
-                    {palja.year} {palja.month} {palja.day} {palja.hour ?? '시미상'}
-                  </span>
-                }
-              />
+              <Field label="팔자" value={<span className="font-mono text-[14px]">{palja.year} {palja.month} {palja.day} {palja.hour ?? '시미상'}</span>} />
               <Field label="최근 풀이" value={fmtDateTime(detail.latestReadingAt)} />
               <Field label="조회 기록 수" value={`${detail.readingCount}건`} />
             </>
@@ -108,47 +146,58 @@ export default async function AdminUserDetailPage({ params }: Props) {
             <p className="text-[12px] text-[var(--app-copy-soft)]">사주 조회 기록이 없습니다.</p>
           )}
         </Card>
-
-        {/* 3. 결제 이력 */}
+      ),
+    },
+    {
+      key: 'payment',
+      label: '결제·크레딧',
+      content: (
         <Card title={`결제 이력 · 총 ${fmtWon(payment.totalSpentWon)} (${payment.count}건)`}>
           {payment.entries.length === 0 ? (
             <p className="text-[12px] text-[var(--app-copy-soft)]">현금 결제 내역이 없습니다.</p>
           ) : (
             <ul className="space-y-1.5">
               {payment.entries.map((e) => (
-                <li
-                  key={e.id}
-                  className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2"
-                >
+                <li key={e.id} className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2">
                   <div className="flex flex-col">
-                    <span className="text-[12px] font-extrabold text-[var(--app-ink)]">
-                      {e.productName}
-                    </span>
+                    <span className="text-[12px] font-extrabold text-[var(--app-ink)]">{e.productName}</span>
                     <span className="text-[10.5px] text-[var(--app-copy-soft)]">
-                      {e.category} · {fmtDate(e.date)} · 영수증 {maskReceipt(e.receipt)}
+                      {e.category} · {fmtDate(e.date)}{header.isSuper ? ` · 영수증 ${maskReceipt(e.receipt)}` : ''}
                     </span>
                   </div>
                   <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
-                    {fmtWon(e.amountWon)}
-                    {e.coins != null ? ` · ${e.coins}코인` : ''}
+                    {fmtWon(e.amountWon)}{e.coins != null ? ` · ${e.coins}코인` : ''}
                   </span>
                 </li>
               ))}
             </ul>
           )}
         </Card>
-
-        {/* 4. AI 챗 사용량 */}
-        <Card title="AI 챗 사용량">
-          <Field label="대화 메시지 수" value={`${detail.dialogueCount}건`} />
+      ),
+    },
+    {
+      key: 'activity',
+      label: '활동·참여',
+      content: (
+        <Card title="활동·참여">
+          <Field label="AI 대화 메시지" value={`${detail.dialogueCount}건`} />
+          <Field label="피드백(오늘운세/정확도/챕터)" value={`${extras.feedback.todayCount} / ${extras.feedback.accuracyCount} / ${extras.feedback.chapterCount}`} />
+          <Field label="챕터 평균 별점" value={extras.feedback.avgChapterRating ?? '—'} />
+          <Field label="후기" value={`${extras.reviews.count}건 (검증 ${extras.reviews.verifiedCount}, 평균 ${extras.reviews.avgRating ?? '—'})`} />
+          <Field label="예약" value={`${extras.appointments.total}건 (${apptSummary})`} />
+          <Field label="알림" value={`기기 ${extras.notifications.activeDevices} · 발송 ${extras.notifications.deliveries} · 클릭 ${extras.notifications.clicks}`} />
+          <Field label="마지막 조회" value={fmtDateTime(extras.notifications.lastSeenAt)} />
+          <Field label="별자리 팔로우" value={`${extras.notifications.follows}개`} />
         </Card>
-
-        {/* 5. LLM 캐시 hit 통계 (Phase 0b ai_llm_runs) */}
-        <Card title={`LLM 사용/캐시 통계 · 비용 $${llmTotalCost.toFixed(4)}`}>
+      ),
+    },
+    {
+      key: 'llm',
+      label: 'LLM·비용',
+      content: (
+        <Card title={`LLM 사용/캐시 · 비용 $${llmTotalCost.toFixed(4)} (근사)`}>
           {llmStats.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">
-              기록 없음 (Phase 0b 배포 이후 호출분만 집계).
-            </p>
+            <p className="text-[12px] text-[var(--app-copy-soft)]">기록 없음 (Phase 0b 배포 이후 호출분만 집계).</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-[11.5px]">
@@ -167,11 +216,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                       <td className="py-1 font-semibold text-[var(--app-ink)]">{s.feature}</td>
                       <td className="py-1 text-right">{s.openai}</td>
                       <td className="py-1 text-right">{s.cache}</td>
-                      <td
-                        className={`py-1 text-right ${s.fallback > 0 ? 'font-extrabold text-[var(--app-pink-strong)]' : ''}`}
-                      >
-                        {s.fallback}
-                      </td>
+                      <td className={`py-1 text-right ${s.fallback > 0 ? 'font-extrabold text-[var(--app-pink-strong)]' : ''}`}>{s.fallback}</td>
                       <td className="py-1 text-right">{s.costUsd.toFixed(4)}</td>
                     </tr>
                   ))}
@@ -180,20 +225,51 @@ export default async function AdminUserDetailPage({ params }: Props) {
             </div>
           )}
         </Card>
-
-        {/* 6. 환불 가능 여부 (상태 표시만 — 실제 환불은 Phase 2) */}
+      ),
+    },
+    {
+      key: 'refund',
+      label: '환불·운영',
+      content: (
         <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refundTargetCount}건)`}>
           {refund.items.length === 0 && refund.creditItems.length === 0 && detail.refundRequests.length === 0 ? (
             <p className="text-[12px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
           ) : (
-            <RefundActions
-              role={role}
-              items={refund.items}
-              creditItems={refund.creditItems}
-              requests={detail.refundRequests}
-            />
+            <RefundActions role={role} items={refund.items} creditItems={refund.creditItems} requests={detail.refundRequests} />
           )}
         </Card>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-4">
+        <GangiPageHeader title="사용자 상세 (admin)" backHref="/admin/users" />
+
+        <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[16px] font-extrabold text-[var(--app-ink)]">{header.displayName}</div>
+              <div className="text-[12px] text-[var(--app-copy-soft)]">{header.emailMasked ?? '—'}</div>
+            </div>
+            <div className="text-right text-[11px] text-[var(--app-copy-soft)]">
+              가입 {fmtDate(header.signupAt)} ({header.ageDays}일째)
+              <br />
+              {header.inactiveDays != null ? `${header.inactiveDays}일 비활동` : '활동 기록 없음'}
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Badge>LTV {fmtWon(header.ltvWon)}</Badge>
+            <Badge>{header.subscriptionStatus ? `구독 ${header.subscriptionStatus}` : '구독 없음'}</Badge>
+            {header.refundableWon > 0 && <Badge>환불대상 {fmtWon(header.refundableWon)}</Badge>}
+          </div>
+          <p className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
+            ⚠ 이 화면 열람은 감사로그에 기록됩니다{header.isSuper ? ' · super_admin 전체표시' : ' · 일부 마스킹'}.
+          </p>
+        </section>
+
+        <MemberDetailTabs tabs={tabs} />
       </AppPage>
     </AppShell>
   );
