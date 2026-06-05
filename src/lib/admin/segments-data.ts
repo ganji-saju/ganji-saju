@@ -11,12 +11,13 @@ export interface SegmentCount {
 }
 
 export async function fetchSegmentCounts(): Promise<SegmentCount[]> {
-  const out: SegmentCount[] = [];
-  for (const segment of SEGMENTS) {
-    const params = parseListParams(new URLSearchParams(segment.query));
-    out.push({ segment, count: await countAdminUsers(params) });
-  }
-  return out;
+  // 세그먼트별 카운트는 서로 독립이라 병렬 실행(개요 페이지 지연 최소화).
+  return Promise.all(
+    SEGMENTS.map(async (segment) => {
+      const params = parseListParams(new URLSearchParams(segment.query));
+      return { segment, count: await countAdminUsers(params) };
+    })
+  );
 }
 
 export async function fetchCohortRetention(nowIso: string): Promise<CohortMetric[]> {
