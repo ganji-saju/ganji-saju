@@ -1,43 +1,91 @@
-// 2026-05-25 Phase 1 — 어드민 사용자 조회(검색·목록).
-//   이메일 부분일치(auth.admin.listUsers 첫 200명 내) 또는 UUID 정확일치 → /admin/users/[id] 링크.
-//   /admin 레이아웃이 화이트리스트 가드 수행(미인증/비admin redirect).
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { createClient } from '@/lib/supabase/server';
+import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { searchAdminUsers } from '@/lib/admin/user-detail';
+import { fetchAdminUserList } from '@/lib/admin/user-list';
+import { maskEmail } from '@/lib/admin/masking';
+import {
+  parseListParams,
+  buildListItem,
+  cursorForRow,
+  encodeCursor,
+} from '@/lib/admin/user-list-query';
 
 export const metadata: Metadata = {
-  title: '사용자 조회 (admin)',
-  description: '이메일·UUID로 사용자 검색',
+  title: '가입자 관리 (admin)',
+  description: '전체 가입자 목록·필터·정렬·검색',
   robots: { index: false, follow: false },
 };
 
 interface Props {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-function fmtDate(iso: string): string {
-  return typeof iso === 'string' ? iso.slice(0, 10) : '';
+function fmtDate(iso: string | null): string {
+  return iso ? iso.slice(0, 10) : '';
+}
+function fmtWon(won: number): string {
+  return `₩${won.toLocaleString('ko-KR')}`;
+}
+function toSP(sp: Record<string, string | string[] | undefined>): URLSearchParams {
+  const out = new URLSearchParams();
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === 'string') out.set(k, v);
+    else if (Array.isArray(v) && v[0]) out.set(k, v[0]);
+  }
+  return out;
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const { q } = await searchParams;
-  const query = (q ?? '').trim();
-  const results = query ? await searchAdminUsers(query) : [];
+  const raw = await searchParams;
+  const usp = toSP(raw);
+  const query = (usp.get('q') ?? '').trim();
+
+  const supabase = await createClient();
+  const check = await getCurrentAdminRole(supabase);
+  // 역할 조회 실패 시 가장 제한적인 'admin'(마스킹·비PII)으로 fail-safe. 권한 상승 없음.
+  const role = check.role ?? 'admin';
+
+  const searchResults = query ? await searchAdminUsers(query) : [];
+
+  const params = parseListParams(usp);
+  const page = await fetchAdminUserList(params);
+  const nowIso = new Date().toISOString();
+  const items = page.rows.map((r) => buildListItem(r, role, nowIso));
+  const nextCursor =
+    page.hasMore && page.rows.length > 0
+      ? encodeCursor(cursorForRow(page.rows[page.rows.length - 1], params.sort))
+      : null;
+
+  const seg = (label: string, qs: string) => (
+    <Link
+      key={label}
+      href={`/admin/users?${qs}`}
+      className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12px] text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
+    >
+      {label}
+    </Link>
+  );
+
+  const nextHref = (() => {
+    if (!nextCursor) return null;
+    const n = new URLSearchParams(usp);
+    n.set('cursor', nextCursor);
+    return `/admin/users?${n.toString()}`;
+  })();
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="사용자 조회 (admin)" backHref="/admin/operations" />
+        <GangiPageHeader title="가입자 관리 (admin)" backHref="/admin/operations" />
 
-        <form
-          method="get"
-          className="rounded-[14px] border border-[var(--app-line)] bg-white p-4"
-        >
+        <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <label htmlFor="q" className="text-[13px] font-extrabold text-[var(--app-ink)]">
-            이메일 또는 UUID
+            이메일 또는 UUID 빠른검색
           </label>
           <div className="mt-2 flex gap-2">
             <input
@@ -45,50 +93,126 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               name="q"
               defaultValue={query}
               placeholder="kym@example.com 또는 UUID"
-              className="flex-1 rounded-[10px] border border-[var(--app-line)] px-3 py-2 text-[13px] text-[var(--app-ink)]"
+              className="flex-1 rounded-[10px] border border-[var(--app-line)] px-3 py-2 text-[13px]"
             />
-            <button
-              type="submit"
-              className="rounded-[10px] bg-[var(--app-pink-strong)] px-4 py-2 text-[13px] font-extrabold text-white"
-            >
+            <button type="submit" className="rounded-[10px] bg-[var(--app-pink-strong)] px-4 py-2 text-[13px] font-extrabold text-white">
               검색
             </button>
           </div>
-          <p className="mt-1 text-[11px] text-[var(--app-copy-soft)]">
-            이메일은 부분 일치(첫 200명 내), UUID는 정확 일치.
-          </p>
+          {query && (
+            <ul className="mt-3 space-y-2">
+              {searchResults.length === 0 && (
+                <li className="text-[12px] text-[var(--app-copy-soft)]">일치하는 사용자가 없습니다.</li>
+              )}
+              {searchResults.map((u) => (
+                <li key={u.id}>
+                  <Link href={`/admin/users/${u.id}`} className="block rounded-[12px] border border-[var(--app-line)] p-3 hover:bg-[var(--app-pink-soft)]">
+                    <span className="text-[13px] font-bold">{maskEmail(u.email, role) ?? u.id}</span>
+                    <span className="ml-2 text-[11px] text-[var(--app-copy-soft)]">{fmtDate(u.createdAt)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </form>
+
+        <div className="flex flex-wrap gap-2">
+          {seg('신규30일', 'sort=signup')}
+          {seg('고지출', 'sort=ltv&paid=yes')}
+          {seg('환불대상', 'sort=ltv&paid=yes')}
+          {seg('구독중', 'subscription=active')}
+          {seg('이탈위험', 'status=dormant&paid=yes&sort=last_active')}
+          {seg('첫결제 미완', 'paid=no&status=active')}
+        </div>
+
+        <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 grid grid-cols-2 gap-3 md:grid-cols-4 text-[12px]">
+          <label className="flex flex-col gap-1">회원상태
+            <select name="status" defaultValue={params.status} className="rounded border px-2 py-1">
+              <option value="all">전체</option><option value="active">활성</option><option value="dormant">휴면</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">결제
+            <select name="paid" defaultValue={params.paid} className="rounded border px-2 py-1">
+              <option value="all">전체</option><option value="yes">있음</option><option value="no">없음</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">구독
+            <select name="subscription" defaultValue={params.subscription} className="rounded border px-2 py-1">
+              <option value="all">전체</option><option value="active">active</option><option value="cancelled">cancelled</option><option value="expired">expired</option><option value="none">없음</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">정렬
+            <select name="sort" defaultValue={params.sort} className="rounded border px-2 py-1">
+              <option value="signup">가입일↓</option><option value="ltv">결제액↓</option><option value="last_active">최근활동↓</option><option value="paid_count">결제건수↓</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">최소 결제액(₩)
+            <input name="minLtv" type="number" defaultValue={params.minLtv ?? ''} className="rounded border px-2 py-1" />
+          </label>
+          <label className="flex flex-col gap-1">비활동 ≥(일)
+            <input name="inactiveDays" type="number" defaultValue={params.inactiveDays ?? ''} className="rounded border px-2 py-1" />
+          </label>
+          <label className="flex flex-col gap-1">가입경로
+            <input name="provider" defaultValue={params.provider.join(',')} placeholder="email,google" className="rounded border px-2 py-1" />
+          </label>
+          <div className="flex items-end gap-2">
+            <button type="submit" className="rounded-[10px] bg-[var(--app-pink-strong)] px-4 py-2 font-extrabold text-white">적용</button>
+            <Link href="/admin/users" className="rounded-[10px] border px-3 py-2">초기화</Link>
+          </div>
         </form>
 
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-          <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">
-            결과 {query ? `(${results.length})` : ''}
-          </h2>
-          {!query && (
-            <p className="mt-2 text-[12px] text-[var(--app-copy-soft)]">검색어를 입력하세요.</p>
+          <div className="flex items-center justify-between">
+            <h2 className="text-[13px] font-extrabold">가입자 {items.length}{page.hasMore ? '+' : ''}명</h2>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-[var(--app-copy-soft)]">기준 {page.refreshedAt ? fmtDate(page.refreshedAt) : '—'}</span>
+              <a href={`/api/admin/users/export?${usp.toString()}`} className="rounded-[10px] border px-3 py-1 text-[12px]">CSV 내보내기</a>
+            </div>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="mt-4 rounded-[12px] border border-dashed border-[var(--app-line)] p-6 text-center">
+              <p className="text-[13px] font-bold">조건에 맞는 가입자가 없어요</p>
+              <p className="mt-1 text-[12px] text-[var(--app-copy-soft)]">필터를 바꾸거나 세그먼트를 눌러보세요.</p>
+              <Link href="/admin/users" className="mt-3 inline-block rounded-[10px] border px-3 py-1 text-[12px]">필터 초기화</Link>
+            </div>
+          ) : (
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="text-left text-[var(--app-copy-soft)]">
+                    <th className="py-1">표시명/이메일</th><th>가입일</th><th>LTV</th><th>결제</th><th>구독</th><th>최근활동</th><th>뱃지</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((it) => (
+                    <tr key={it.userId} className="border-t border-[var(--app-line)]">
+                      <td className="py-2">
+                        <Link href={`/admin/users/${it.userId}`} className="font-bold hover:underline">{it.displayName}</Link>
+                        <div className="text-[11px] text-[var(--app-copy-soft)]">{it.email ?? '—'}</div>
+                      </td>
+                      <td>{fmtDate(it.signupAt)}</td>
+                      <td>{fmtWon(it.ltvWon)}</td>
+                      <td>{it.paidCount}</td>
+                      <td>{it.subscriptionStatus ?? '—'}</td>
+                      <td>{fmtDate(it.lastActiveAt)}</td>
+                      <td className="space-x-1">
+                        {it.badges.map((b) => (
+                          <span key={b} className="rounded bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10px]">{b}</span>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-          {query && results.length === 0 && (
-            <p className="mt-2 text-[12px] text-[var(--app-copy-soft)]">
-              일치하는 사용자가 없습니다.
-            </p>
+
+          {nextHref && (
+            <div className="mt-4 text-center">
+              <Link href={nextHref} className="rounded-[10px] border px-4 py-2 text-[12px]">다음 페이지 ›</Link>
+            </div>
           )}
-          <ul className="mt-3 space-y-2">
-            {results.map((u) => (
-              <li key={u.id}>
-                <Link
-                  href={`/admin/users/${u.id}`}
-                  className="flex flex-col gap-0.5 rounded-[12px] border border-[var(--app-line)] p-3 transition-colors hover:bg-[var(--app-pink-soft)]"
-                >
-                  <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
-                    {u.email ?? '(이메일 없음)'}
-                  </span>
-                  <span className="font-mono text-[11px] text-[var(--app-copy-soft)]">{u.id}</span>
-                  <span className="text-[10.5px] text-[var(--app-copy-soft)]">
-                    가입 {fmtDate(u.createdAt)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </section>
       </AppPage>
     </AppShell>
