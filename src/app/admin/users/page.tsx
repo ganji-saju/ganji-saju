@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { searchAdminUsers } from '@/lib/admin/user-detail';
 import { fetchAdminUserList } from '@/lib/admin/user-list';
+import { maskEmail } from '@/lib/admin/masking';
 import {
   parseListParams,
   buildListItem,
@@ -46,6 +47,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
   const supabase = await createClient();
   const check = await getCurrentAdminRole(supabase);
+  // 역할 조회 실패 시 가장 제한적인 'admin'(마스킹·비PII)으로 fail-safe. 권한 상승 없음.
   const role = check.role ?? 'admin';
 
   const searchResults = query ? await searchAdminUsers(query) : [];
@@ -105,7 +107,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               {searchResults.map((u) => (
                 <li key={u.id}>
                   <Link href={`/admin/users/${u.id}`} className="block rounded-[12px] border border-[var(--app-line)] p-3 hover:bg-[var(--app-pink-soft)]">
-                    <span className="text-[13px] font-bold">{u.email ?? u.id}</span>
+                    <span className="text-[13px] font-bold">{maskEmail(u.email, role) ?? u.id}</span>
                     <span className="ml-2 text-[11px] text-[var(--app-copy-soft)]">{fmtDate(u.createdAt)}</span>
                   </Link>
                 </li>

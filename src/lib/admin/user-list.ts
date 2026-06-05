@@ -7,6 +7,9 @@ import {
   type AdminUserSummaryRow,
 } from './user-list-query';
 
+const SAFE_CURSOR_V = /^[0-9T:.Z+-]+$/;    // ISO 타임스탬프 또는 정수만
+const SAFE_CURSOR_ID = /^[0-9a-fA-F-]+$/;  // UUID 문자만
+
 const SORT_COLUMN: Record<AdminUserListParams['sort'], keyof AdminUserSummaryRow> = {
   signup: 'signup_at',
   ltv: 'ltv_won',
@@ -49,7 +52,7 @@ export async function fetchAdminUserList(params: AdminUserListParams): Promise<A
 
   // ── keyset (모든 정렬 DESC, tie-break user_id DESC) ──
   const cursor = params.cursor ? decodeCursor(params.cursor) : null;
-  if (cursor) {
+  if (cursor && SAFE_CURSOR_V.test(cursor.v) && SAFE_CURSOR_ID.test(cursor.id)) {
     qb = qb.or(`${col}.lt.${cursor.v},and(${col}.eq.${cursor.v},user_id.lt.${cursor.id})`);
   }
   qb = qb
