@@ -15,10 +15,8 @@ import {
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   buildTodayDetailScopeKey,
-  getTasteProductEntitlement,
   hasTodayDetailEntitlementForDay,
 } from '@/lib/product-entitlements';
-import { todayDetailEntitlementScopeKeys } from '@/lib/saju/today-detail-access';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import type { ConcernId } from '@/lib/today-fortune/types';
 import type { MoonlightCounselorId } from '@/lib/counselors';
@@ -145,18 +143,17 @@ export async function GET(req: NextRequest) {
       todayKey,
     },
     {
-      // 2026-05-24 정합성 fix — entitlement API(checkTodayDetailAccess)와 동일하게
-      //   readingKey(안정) + legacy readingId(slug) scope + 같은날 fallback 으로 판정.
-      //   (구) today:${sourceSessionId} 단일 조회는 세션마다 달라져 결제분을 못 찾았다.
-      getTodayDetailEntitlement: async (userId) => {
-        for (const sk of todayDetailEntitlementScopeKeys({ slug: sourceSessionId, readingKey })) {
-          if (await getTasteProductEntitlement(userId, 'today-detail', sk)) return true;
-        }
-        return hasTodayDetailEntitlementForDay(userId, todayKey);
-      },
-      hasTodayFortunePremiumAccess,
-      hasTodayFortunePremiumAccessByReading,
-      hasDetailReportAccess,
+      // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
+      //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
+      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
+      getTodayDetailEntitlement: async (userId) =>
+        hasTodayDetailEntitlementForDay(userId, todayKey),
+      hasTodayFortunePremiumAccess: (userId, sid) =>
+        hasTodayFortunePremiumAccess(userId, sid, todayKey),
+      hasTodayFortunePremiumAccessByReading: (userId, rk) =>
+        hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
+      hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
       hasTodayFortuneDailyAccess,
     },
   );
@@ -240,25 +237,24 @@ export async function POST(req: NextRequest) {
       todayKey,
     },
     {
-      // 2026-05-24 정합성 fix — entitlement API(checkTodayDetailAccess)와 동일하게
-      //   readingKey(안정) + legacy readingId(slug) scope + 같은날 fallback 으로 판정.
-      //   (구) today:${sourceSessionId} 단일 조회는 세션마다 달라져 결제분을 못 찾았다.
-      getTodayDetailEntitlement: async (userId) => {
-        for (const sk of todayDetailEntitlementScopeKeys({ slug: sourceSessionId, readingKey })) {
-          if (await getTasteProductEntitlement(userId, 'today-detail', sk)) return true;
-        }
-        return hasTodayDetailEntitlementForDay(userId, todayKey);
-      },
-      hasTodayFortunePremiumAccess,
-      hasTodayFortunePremiumAccessByReading,
-      hasDetailReportAccess,
+      // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
+      //   오늘(KST=todayKey) 생성분으로 한정한다. 영구 scope-key entitlement 조회는
+      //   제거하고 당일 entitlement(hasTodayDetailEntitlementForDay)만 본다.
+      //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
+      getTodayDetailEntitlement: async (userId) =>
+        hasTodayDetailEntitlementForDay(userId, todayKey),
+      hasTodayFortunePremiumAccess: (userId, sid) =>
+        hasTodayFortunePremiumAccess(userId, sid, todayKey),
+      hasTodayFortunePremiumAccessByReading: (userId, rk) =>
+        hasTodayFortunePremiumAccessByReading(userId, rk, todayKey),
+      hasDetailReportAccess: (userId, rk) => hasDetailReportAccess(userId, rk, todayKey),
       hasTodayFortuneDailyAccess,
     },
   );
 
   const access = accessSource
     ? { success: true, remaining: null, reused: true }
-    : await unlockTodayFortunePremium(user.id, readingKey, sourceSessionId);
+    : await unlockTodayFortunePremium(user.id, readingKey, sourceSessionId, todayKey);
 
   if (!access.success) {
     return NextResponse.json({ error: '코인이 부족합니다.', remaining: access.remaining }, { status: 402 });
