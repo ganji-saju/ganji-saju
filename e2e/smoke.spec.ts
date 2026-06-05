@@ -15,7 +15,12 @@ import { test, expect, type Page } from '@playwright/test';
 function collectConsoleErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('console', (msg) => {
-    if (msg.type() === 'error') errors.push(msg.text());
+    if (msg.type() === 'error') {
+      // 리소스 로드 실패(404 등)는 text 에 URL 이 없어 location().url 로 보강 —
+      // 환경성 인프라 리소스(/_vercel/*)를 필터링하기 위함.
+      const url = msg.location()?.url ?? '';
+      errors.push(url ? `${msg.text()} @ ${url}` : msg.text());
+    }
   });
   page.on('pageerror', (err) => {
     errors.push(err.message);
@@ -51,7 +56,12 @@ for (const { path, name } of PUBLIC_PAGES) {
         (e) =>
           // Vercel analytics / 외부 script 의 흔한 무해 error 무시.
           !/Failed to load resource.*analytics/i.test(e) &&
-          !/manifest\.webmanifest/i.test(e)
+          !/manifest\.webmanifest/i.test(e) &&
+          // Vercel Analytics / Speed Insights 스크립트(/_vercel/insights·speed-insights)
+          // 는 Vercel 배포 환경에서만 존재 — 로컬/CI 의 next start 에선 404. 인프라
+          // 리소스라 앱 회귀가 아니므로 무시. (prod 빌드 전환으로 dev 전용 React/Next
+          // 경고는 이미 사라짐.)
+          !/\/_vercel\/(insights|speed-insights)/.test(e)
       );
       expect(significant, `${path} console errors:\n${significant.join('\n')}`).toEqual([]);
     });
