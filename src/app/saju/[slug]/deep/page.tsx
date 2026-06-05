@@ -18,6 +18,7 @@ import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { LifetimeDeepCta } from '@/components/saju/lifetime-deep-cta';
+import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 // 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
 import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
@@ -360,7 +361,7 @@ export default async function SajuDeepPage({ params }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <div className="space-y-5 sm:space-y-6">
-          <GangiPageHeader title={`${input.name ?? '달빛이'} · 대운 풀이`} backHref={`/saju/${slug}`} />
+          <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME} · 대운 풀이`} backHref={`/saju/${slug}`} />
           <SajuScreenNav slug={slug} current="deep" />
 
           <section className="space-y-5 px-1">

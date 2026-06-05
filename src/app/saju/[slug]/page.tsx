@@ -21,6 +21,7 @@ import '@/components/motion/motion-primitives.css';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
+import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 import {
   buildSajuTodayDetailCheckoutHref,
   buildSajuTodayDetailHref,
@@ -425,7 +426,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
         <div className="space-y-5 sm:space-y-6">
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
               input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
-          <GangiPageHeader title={`${input.name ?? '달빛이'}님 사주`} backHref="/saju/new" />
+          <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
           <SajuScreenNav slug={slug} current="result" />
 
           <section className="space-y-4 px-1">

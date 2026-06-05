@@ -11,6 +11,7 @@ import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { resolveReading } from '@/lib/saju/readings';
+import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
@@ -130,7 +131,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                     {dayMasterLabel} · {yearZodiacLabel}
                   </div>
                   <h1 className="mt-1 text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                    {input.name ?? '달빛이'}님의 명식
+                    {input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님의 명식
                   </h1>
                   <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                     {formatBirthSummary(input)}

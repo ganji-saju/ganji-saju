@@ -3,6 +3,7 @@
 // 2026-05-16 PR #149 (Part C) — userSituation 있으면 "[직장인 · 사업 고민] 관점에서 오늘" 한 줄 추가.
 import { buildPerspectiveLine } from '@/lib/today-fortune/situation-score-priority';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
+import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric',
@@ -45,7 +46,7 @@ export function TodayFortuneSummaryCard({
       {/* 2026-05-15 — 사용자 이름 (input.name) 을 무시하고 항상 "달빛이님" 으로 출력하던 회귀 fix.
           빌더가 채워준 result.userName 우선 사용, 없을 때만 "달빛이" fallback. */}
       <h2 className="mt-1.5 text-[26px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
-        {result.userName ?? '달빛이'}님,
+        {result.userName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님,
         <br />
         <span className="text-[var(--app-pink-strong)]">총운 {overall}점</span>
         으로 시작
