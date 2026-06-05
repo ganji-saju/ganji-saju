@@ -8,6 +8,8 @@ export type MemberStatusFilter = 'all' | 'active' | 'dormant';
 export type PaidFilter = 'all' | 'yes' | 'no';
 export type SubscriptionFilter = 'all' | 'active' | 'cancelled' | 'expired' | 'none';
 export type ProfileFilter = 'all' | 'complete' | 'incomplete';
+export type RefundableFilter = 'all' | 'yes';
+export type FirstReadingFilter = 'all' | 'none';
 
 export interface AdminUserListParams {
   status: MemberStatusFilter;
@@ -19,6 +21,9 @@ export interface AdminUserListParams {
   provider: string[];
   inactiveDays: number | null;
   profile: ProfileFilter;
+  signupWithinDays: number | null;
+  refundable: RefundableFilter;
+  firstReading: FirstReadingFilter;
   sort: AdminUserSortKey;
   cursor: string | null;
   limit: number;
@@ -66,6 +71,8 @@ const STATUS: MemberStatusFilter[] = ['all', 'active', 'dormant'];
 const PAID: PaidFilter[] = ['all', 'yes', 'no'];
 const SUBS: SubscriptionFilter[] = ['all', 'active', 'cancelled', 'expired', 'none'];
 const PROFILE: ProfileFilter[] = ['all', 'complete', 'incomplete'];
+const REFUNDABLE: RefundableFilter[] = ['all', 'yes'];
+const FIRST_READING: FirstReadingFilter[] = ['all', 'none'];
 const PROVIDERS = ['email', 'google', 'kakao'];
 
 function pick<T extends string>(value: string | null, allowed: T[], fallback: T): T {
@@ -95,6 +102,9 @@ export function parseListParams(sp: URLSearchParams): AdminUserListParams {
     provider,
     inactiveDays: parseIntOrNull(sp.get('inactiveDays')),
     profile: pick(sp.get('profile'), PROFILE, 'all'),
+    signupWithinDays: parseIntOrNull(sp.get('signupWithinDays')),
+    refundable: pick(sp.get('refundable'), REFUNDABLE, 'all'),
+    firstReading: pick(sp.get('firstReading'), FIRST_READING, 'all'),
     sort: pick(sp.get('sort'), SORT_KEYS, 'signup'),
     cursor: sp.get('cursor') || null,
     limit,
