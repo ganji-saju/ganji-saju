@@ -77,11 +77,17 @@ export default defineConfig({
       testMatch: /payment-blocks\.spec\.ts/,
     },
   ],
-  // PLAYWRIGHT_BASE_URL 환경변수가 없으면 로컬 next dev 자동 실행.
+  // PLAYWRIGHT_BASE_URL 환경변수가 없으면 로컬 서버 자동 실행.
+  //   CI: 'npm run start'(프로덕션 빌드, next start)로 검증 — 개발 모드 전용
+  //     React/Next 경고(예: App Router template 의 keyless-array dev 경고)가
+  //     "console error 0" smoke 단언을 flaky 하게 깨는 문제 제거 + 실제 사용자가
+  //     받는 프로덕션 빌드를 테스트. (.next 출력 필요 → CI 워크플로가 'npm run build'
+  //     스텝을 선행한다.)
+  //   로컬: 'npm run dev' 로 빠른 반복 유지(빌드 불필요).
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: 'npm run dev',
+        command: process.env.CI ? 'npm run start' : 'npm run dev',
         port: PORT,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
