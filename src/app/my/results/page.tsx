@@ -1,5 +1,8 @@
 // Redesign 2026-05-13 (Claude Design / screens-d.jsx ScreenVaultDetail):
-// 보관함 — Hero 요약 + filter chips + 카드 list. 데이터 흐름 무수정.
+// 보관함 — Hero 요약 + filter chips + 카드 list.
+// 2026-06-05 #2 — filter chips 가 URL 만 바꾸고 데이터에 배선되지 않아 어떤 탭을 눌러도 목록이
+//   동일하던 버그 fix. currentFilter 를 카테고리로 정규화해 readings/purchased 를 실제로 필터링하고,
+//   데이터 있는 탭만 노출(타로는 보관함 저장 소스 없음 → 제외).
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import SavedReadingsList from '@/components/my/saved-readings-list';
@@ -7,6 +10,12 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { getAccountDashboardData } from '@/lib/account';
 import { getOptionalSignedInProfile } from '@/lib/profile';
+import {
+  normalizeVaultFilter,
+  vaultCategoryForProductId,
+  visibleVaultFilters,
+  type VaultCategory,
+} from '@/lib/vault-filter';
 
 const RESULTS_PAGE_SIZE = 30;
 
@@ -16,14 +25,6 @@ interface MyResultsPageProps {
     filter?: string;
   }>;
 }
-
-const FILTERS: Array<{ key: string; label: string }> = [
-  { key: 'all', label: '전체' },
-  { key: 'saju', label: '사주' },
-  { key: 'today', label: '오늘운세' },
-  { key: 'gunghap', label: '궁합' },
-  { key: 'tarot', label: '타로' },
-];
 
 function parsePageNumber(value: string | undefined) {
   const parsed = Number.parseInt(value ?? '1', 10);
@@ -41,7 +42,10 @@ function buildResultsPageHref(page: number, filter?: string) {
 export default async function MyResultsPage({ searchParams }: MyResultsPageProps) {
   const params = searchParams ? await searchParams : undefined;
   const currentPage = parsePageNumber(params?.page);
-  const currentFilter = params?.filter ?? 'all';
+  const currentFilter = normalizeVaultFilter(params?.filter);
+  // 사주(readings) 포함 뷰(전체·사주)에서만 readings 를 노출·페이지네이션한다.
+  //   오늘운세·궁합은 구매 결과(purchased) 전용 카테고리.
+  const showReadings = currentFilter === 'all' || currentFilter === 'saju';
   const readingOffset = (currentPage - 1) * RESULTS_PAGE_SIZE;
   const [dashboard, profile] = await Promise.all([
     getAccountDashboardData('/my/results', {
@@ -51,16 +55,37 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
     }),
     getOptionalSignedInProfile(),
   ]);
-  const totalPages = Math.max(1, Math.ceil(dashboard.readingCount / RESULTS_PAGE_SIZE));
 
-  if (dashboard.readingCount > 0 && currentPage > totalPages) {
-    redirect(buildResultsPageHref(totalPages));
+  // 구매 결과를 현재 필터 카테고리로 거른다('전체'면 그대로).
+  const purchasedToShow =
+    currentFilter === 'all'
+      ? dashboard.purchasedResults
+      : dashboard.purchasedResults.filter(
+          (item) => vaultCategoryForProductId(item.productId) === currentFilter
+        );
+
+  // 데이터가 존재하는 카테고리만 탭으로 노출(타로는 vault-filter 에서 구조적으로 제외).
+  const presentCategories = new Set<VaultCategory>();
+  if (dashboard.readingCount > 0) presentCategories.add('saju');
+  for (const item of dashboard.purchasedResults) {
+    presentCategories.add(vaultCategoryForProductId(item.productId));
+  }
+  const visibleFilters = visibleVaultFilters(presentCategories);
+
+  const readingsToShow = showReadings ? dashboard.recentReadings : [];
+  const readingsTotalForFilter = showReadings ? dashboard.readingCount : 0;
+  const totalPages = showReadings
+    ? Math.max(1, Math.ceil(dashboard.readingCount / RESULTS_PAGE_SIZE))
+    : 1;
+
+  if (showReadings && dashboard.readingCount > 0 && currentPage > totalPages) {
+    redirect(buildResultsPageHref(totalPages, currentFilter));
   }
 
-  const firstVisibleIndex = dashboard.readingCount === 0 ? 0 : readingOffset + 1;
+  const firstVisibleIndex = readingsTotalForFilter === 0 ? 0 : readingOffset + 1;
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
-  const total = dashboard.readingCount + dashboard.purchasedResults.length;
+  const total = readingsTotalForFilter + purchasedToShow.length;
   const displayName = dashboard.user.email?.split('@')[0] ?? '회원';
 
   return (
@@ -77,46 +102,48 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
         </h1>
       </div>
 
-      {/* §2 Filter chips */}
-      <nav
-        className="flex gap-1.5 overflow-x-auto pb-1"
-        aria-label="보관함 필터"
-      >
-        {FILTERS.map((filter) => {
-          const active = currentFilter === filter.key;
-          return (
-            <Link
-              key={filter.key}
-              href={buildResultsPageHref(1, filter.key)}
-              className="shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition"
-              style={
-                active
-                  ? {
-                      background: 'var(--app-pink)',
-                      color: '#fff',
-                      borderColor: 'transparent',
-                    }
-                  : {
-                      background: '#fff',
-                      color: 'var(--app-copy-muted)',
-                      borderColor: 'var(--app-line)',
-                    }
-              }
-              data-active={active}
-            >
-              {filter.label}
-            </Link>
-          );
-        })}
-      </nav>
+      {/* §2 Filter chips — 데이터 있는 카테고리만(전체뿐이면 숨김) */}
+      {visibleFilters.length > 1 ? (
+        <nav
+          className="flex gap-1.5 overflow-x-auto pb-1"
+          aria-label="보관함 필터"
+        >
+          {visibleFilters.map((filter) => {
+            const active = currentFilter === filter.key;
+            return (
+              <Link
+                key={filter.key}
+                href={buildResultsPageHref(1, filter.key)}
+                className="shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition"
+                style={
+                  active
+                    ? {
+                        background: 'var(--app-pink)',
+                        color: '#fff',
+                        borderColor: 'transparent',
+                      }
+                    : {
+                        background: '#fff',
+                        color: 'var(--app-copy-muted)',
+                        borderColor: 'var(--app-line)',
+                      }
+                }
+                data-active={active}
+              >
+                {filter.label}
+              </Link>
+            );
+          })}
+        </nav>
+      ) : null}
 
       {/* §2.5 MY 별자리 카드 (compact) — 프로필 birthMonth/Day 자동 매칭 */}
       <MyStarSignCard profile={profile} variant="compact" />
 
       <SavedReadingsList
-        readings={dashboard.recentReadings}
-        purchasedResults={dashboard.purchasedResults}
-        totalCount={dashboard.readingCount}
+        readings={readingsToShow}
+        purchasedResults={purchasedToShow}
+        totalCount={readingsTotalForFilter}
         visibleStartIndex={firstVisibleIndex || 1}
       />
 
