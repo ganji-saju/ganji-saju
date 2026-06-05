@@ -17,6 +17,7 @@ import {
 } from '@/server/today-fortune/build-today-fortune';
 import { attachTodayPremiumNarrative } from '@/server/ai/today-premium-service';
 import { getUserProfileById } from '@/lib/profile';
+import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
 import type { BirthInput } from '@/lib/saju/types';
 
 // 2026-06-05 Bug A(detail page) — 오늘 payload 엔 이름 필드가 없어 persisted reading.input.name
@@ -29,6 +30,45 @@ export function applyDisplayNameToInput(
   const trimmed = displayName?.trim();
   return trimmed ? { ...input, name: trimmed } : input;
 }
+
+// 2026-06-05 Bug A 재발(코인 결제 후 hero 가 '달빛이') — 스냅샷 이름 해석이 profile.display_name
+//   단일 소스라 소셜 로그인(display_name 미설정) 유저가 '달빛이'로 떨어졌다.
+//   today-fortune API(route.ts)와 동일하게 소셜 메타데이터까지 보도록 resolver 일원화한다.
+//   I/O(프로필·auth 메타 조회)는 주입형 deps 로 분리해 순수 단위 테스트가 가능하다.
+export interface SnapshotDisplayNameDeps {
+  loadProfileDisplayName: (userId: string) => Promise<string | null | undefined>;
+  loadAuthMetadata: (userId: string) => Promise<Record<string, unknown> | null>;
+}
+
+export async function resolveSnapshotInputName(
+  userId: string | null | undefined,
+  deps: SnapshotDisplayNameDeps
+): Promise<string | undefined> {
+  if (!userId) return undefined;
+  let profileDisplayName: string | null | undefined;
+  let authMetadata: Record<string, unknown> | null = null;
+  try {
+    profileDisplayName = await deps.loadProfileDisplayName(userId);
+  } catch {
+    // 프로필 조회 실패는 비차단 — 다음 소스(소셜 메타데이터)로 진행.
+  }
+  try {
+    authMetadata = await deps.loadAuthMetadata(userId);
+  } catch {
+    // auth 메타 조회 실패도 비차단 — '달빛이' fallback 으로 graceful degrade.
+  }
+  return resolveTodayDisplayName({ profileDisplayName, authMetadata });
+}
+
+const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
+  loadProfileDisplayName: async (userId) => (await getUserProfileById(userId)).displayName,
+  loadAuthMetadata: async (userId) => {
+    if (!hasSupabaseServiceEnv) return null;
+    const service = await createServiceClient();
+    const { data } = await service.auth.admin.getUserById(userId);
+    return data?.user?.user_metadata ?? null;
+  },
+};
 
 export const TODAY_FORTUNE_RESULT_SNAPSHOT_VERSION = 'today-fortune-result-snapshot/v1';
 export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v1';
@@ -190,17 +230,10 @@ export async function buildTodayFortuneSnapshotContent({
 }: BuildTodayFortuneSnapshotContentInput) {
   const todaySajuData = buildFreshTodaySajuData(reading.input, { now });
   // 2026-06-05 Bug A — reading.input(오늘 payload)엔 이름이 없어 detail hero 가 '달빛이' 로
-  //   나오던 이슈. snapshot 시점에 profile.display_name 으로 보강(없으면 fallback 유지).
-  //   이름은 사주 계산과 무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
-  let displayName = '';
-  if (reading.userId) {
-    try {
-      displayName = (await getUserProfileById(reading.userId)).displayName.trim();
-    } catch {
-      // 이름 조회 실패는 비차단 — '달빛이' fallback 으로 graceful degrade.
-    }
-  }
-  const namedInput = applyDisplayNameToInput(reading.input, displayName);
+  //   나오던 이슈. snapshot 시점에 profile.display_name → 소셜 메타데이터 순으로 보강(없으면
+  //   fallback 유지). 이름은 사주 계산과 무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
+  const resolvedName = await resolveSnapshotInputName(reading.userId, DEFAULT_SNAPSHOT_NAME_DEPS);
+  const namedInput = applyDisplayNameToInput(reading.input, resolvedName);
   const freeResult = buildTodayFortuneFreeResult(namedInput, todaySajuData, {
     concernId,
     sourceSessionId,
