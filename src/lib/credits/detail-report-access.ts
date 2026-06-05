@@ -73,6 +73,22 @@ export function getKoreaAccessDay(date = new Date()) {
   }).format(date);
 }
 
+/**
+ * KST 날짜('YYYY-MM-DD') → [그날 00:00, 다음날 00:00) 의 UTC ISO 구간(created_at 비교용).
+ * 잘못된 형식이면 null. (Korea 는 no DST → 24h 고정.)
+ */
+export function kstDayRangeIso(
+  dayKey: string
+): { startIso: string; endIso: string } | null {
+  const startMs = Date.parse(`${dayKey}T00:00:00+09:00`);
+  if (Number.isNaN(startMs)) return null;
+  const endMs = startMs + 86_400_000;
+  return {
+    startIso: new Date(startMs).toISOString(),
+    endIso: new Date(endMs).toISOString(),
+  };
+}
+
 async function getRemainingCredits(userId: string) {
   const credits = await getCredits(userId);
   return (credits?.balance ?? 0) + (credits?.subscription_balance ?? 0);
@@ -92,28 +108,46 @@ function getLegacyDailyDetailReportAccessMetadata(readingKey: string) {
   };
 }
 
-function getTodayFortunePremiumAccessMetadata(sourceSessionId: string, readingKey: string) {
+// 2026-06-05 — today-detail 일일 만료(영구 접근 버그 fix).
+//   dayKey 포함 시 RPC(unlock_credit_feature_once)의 dedup(`metadata @> v_access_metadata`,
+//   015 migration)이 일자별로 분리 → 날짜가 바뀌면 새 unlock 으로 재과금(일일 상품).
+//   미지정 시 dayKey 생략 → legacy(영구) 호환. export: 메타데이터 단위 테스트용.
+export function getTodayFortunePremiumAccessMetadata(
+  sourceSessionId: string,
+  readingKey: string,
+  dayKey?: string
+) {
   return {
     kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND,
     sourceSessionId,
     readingKey,
+    ...(dayKey ? { dayKey } : {}),
   };
 }
 
+// dayKey 지정 시 해당 KST 일자(created_at)에 생성된 row 만 매치(일일 만료). 미지정 시 전체(영구).
 async function hasFeatureAccess(
   userId: string,
   feature: Feature,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  dayKey?: string
 ) {
   const service = await createServiceClient();
-  const { data, error } = await service
+  let query = service
     .from('credit_transactions')
     .select('id')
     .eq('user_id', userId)
     .eq('type', 'use')
     .eq('feature', feature)
-    .contains('metadata', metadata)
-    .limit(1);
+    .contains('metadata', metadata);
+
+  if (dayKey) {
+    const range = kstDayRangeIso(dayKey);
+    if (!range) return false;
+    query = query.gte('created_at', range.startIso).lt('created_at', range.endIso);
+  }
+
+  const { data, error } = await query.limit(1);
 
   if (error) {
     throw new Error(error.message);
@@ -124,27 +158,36 @@ async function hasFeatureAccess(
 
 export async function hasDetailReportAccess(
   userId: string,
-  readingKey: string
+  readingKey: string,
+  // 2026-06-05 — today-detail 흐름에서 호출 시 todayKey 지정 → 당일 unlock 만 인정(일일 만료).
+  //   다른 호출자(saju-detail 자체 게이트)는 미지정 → 기존 동작 유지.
+  dayKey?: string
 ) {
-  if (await hasFeatureAccess(userId, 'detail_report', getDetailReportAccessMetadata(readingKey))) {
+  if (
+    await hasFeatureAccess(userId, 'detail_report', getDetailReportAccessMetadata(readingKey), dayKey)
+  ) {
     return true;
   }
 
   return hasFeatureAccess(
     userId,
     'detail_report',
-    getLegacyDailyDetailReportAccessMetadata(readingKey)
+    getLegacyDailyDetailReportAccessMetadata(readingKey),
+    dayKey
   );
 }
 
 export async function hasTodayFortunePremiumAccess(
   userId: string,
-  sourceSessionId: string
+  sourceSessionId: string,
+  dayKey?: string
 ) {
-  return hasFeatureAccess(userId, 'detail_report', {
-    kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND,
-    sourceSessionId,
-  });
+  return hasFeatureAccess(
+    userId,
+    'detail_report',
+    { kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND, sourceSessionId },
+    dayKey
+  );
 }
 
 // 2026-05-17 정확한 fix — PR #199 의 supabase MCP evidence 가 확정한 root cause:
@@ -157,12 +200,15 @@ export async function hasTodayFortunePremiumAccess(
 // 포함 매치 — sourceSessionId 가 매번 새로 생성되어도 readingKey 일치하면 reused.
 export async function hasTodayFortunePremiumAccessByReading(
   userId: string,
-  readingKey: string
+  readingKey: string,
+  dayKey?: string
 ) {
-  return hasFeatureAccess(userId, 'detail_report', {
-    kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND,
-    readingKey,
-  });
+  return hasFeatureAccess(
+    userId,
+    'detail_report',
+    { kind: TODAY_FORTUNE_PREMIUM_ACCESS_KIND, readingKey },
+    dayKey
+  );
 }
 
 // 2026-05-17 사용자 명시 요구 — "같은 날 두 번 결제 차단".
@@ -177,13 +223,10 @@ export async function hasTodayFortuneDailyAccess(
   userId: string,
   dateKey: string = getKoreaAccessDay()
 ) {
-  const startMs = Date.parse(`${dateKey}T00:00:00+09:00`);
-  if (Number.isNaN(startMs)) {
+  const range = kstDayRangeIso(dateKey);
+  if (!range) {
     throw new Error(`Invalid dateKey for hasTodayFortuneDailyAccess: ${dateKey}`);
   }
-  const endMs = startMs + 86_400_000;
-  const dayStartIso = new Date(startMs).toISOString();
-  const dayEndIso = new Date(endMs).toISOString();
 
   const service = await createServiceClient();
   const { data, error } = await service
@@ -192,8 +235,8 @@ export async function hasTodayFortuneDailyAccess(
     .eq('user_id', userId)
     .eq('type', 'use')
     .eq('feature', 'detail_report')
-    .gte('created_at', dayStartIso)
-    .lt('created_at', dayEndIso)
+    .gte('created_at', range.startIso)
+    .lt('created_at', range.endIso)
     .limit(1);
 
   if (error) {
@@ -224,7 +267,8 @@ export async function recordDetailReportAccess(
 export async function recordTodayFortunePremiumAccess(
   userId: string,
   readingKey: string,
-  sourceSessionId: string
+  sourceSessionId: string,
+  dayKey?: string
 ) {
   const service = await createServiceClient();
   const { error } = await service.from('credit_transactions').insert({
@@ -232,7 +276,7 @@ export async function recordTodayFortunePremiumAccess(
     amount: 0,
     type: 'use',
     feature: 'detail_report',
-    metadata: getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey),
+    metadata: getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey),
   });
 
   if (error) {
@@ -282,9 +326,12 @@ export async function unlockDetailReport(
 export async function unlockTodayFortunePremium(
   userId: string,
   readingKey: string,
-  sourceSessionId: string
+  sourceSessionId: string,
+  // 2026-06-05 — KST 일자. 지정 시 당일 unlock 만 reused 처리 + metadata 에 dayKey 포함
+  //   → RPC dedup 이 일자별 분리(날짜 바뀌면 재과금). 미지정 시 legacy(영구) 동작.
+  dayKey?: string
 ): Promise<DetailReportUnlockResult> {
-  if (await hasTodayFortunePremiumAccess(userId, sourceSessionId)) {
+  if (await hasTodayFortunePremiumAccess(userId, sourceSessionId, dayKey)) {
     return {
       success: true,
       remaining: await getRemainingCredits(userId),
@@ -292,7 +339,7 @@ export async function unlockTodayFortunePremium(
     };
   }
 
-  const accessMetadata = getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey);
+  const accessMetadata = getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey);
   const atomicResult = await unlockCreditsOnce(userId, 'detail_report', accessMetadata);
 
   if (atomicResult) {
@@ -310,7 +357,7 @@ export async function unlockTodayFortunePremium(
     };
   }
 
-  await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId);
+  await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
 
   return {
     success: true,

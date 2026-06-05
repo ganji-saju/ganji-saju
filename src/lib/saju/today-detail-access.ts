@@ -9,7 +9,6 @@
 // 반환 형태는 호출자가 truthy/falsy 만 확인하면 되도록 단순화.
 import {
   buildTodayDetailScopeKey,
-  getTasteProductEntitlement,
   hasTodayDetailEntitlementForDay,
 } from '@/lib/product-entitlements';
 import {
@@ -69,40 +68,30 @@ export async function checkTodayDetailAccess(slug: string): Promise<SajuTodayDet
   // 1) product_entitlements — readingKey(안정) primary + legacy readingId(slug) 병행.
   //    grant 가 readingKey 로 통일됐으므로 사주 재생성으로 slug 가 바뀌어도 인식되고,
   //    과거 readingId 로 결제한 분은 legacy slug scope 로 인식된다.
+  // 2026-06-05 today-detail 일일 만료 fix(영구 접근 버그) — 영구 scope-key entitlement
+  //   조회를 제거하고, 모든 접근을 오늘(KST=todayKey) 생성분으로 한정한다.
+  //   unlock 라우트(resolveTodayFortuneUnlockAccess)와 동일 정책으로 정합성 유지.
+  const todayKey = getKoreaAccessDay();
   const reading = await resolveReading(slug);
   const readingKey = reading ? toSlug(reading.input) : null;
-  const readingKeyScope = readingKey ? buildTodayDetailScopeKey(readingKey) : null;
 
-  for (const scopeKey of todayDetailEntitlementScopeKeys({ slug, readingKey })) {
-    const entitlement = await getTasteProductEntitlement(user.id, 'today-detail', scopeKey);
-    if (entitlement) {
-      const via = scopeKey === readingKeyScope ? 'reading-key' : 'slug';
-      return { hasAccess: true, source: { kind: 'product-entitlement', via } };
-    }
-  }
-
-  // 2026-05-24 같은 날(KST) fallback — readingKey 해시 드리프트(이름 포함)나 과거
-  //   readingId(slug) 결제분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을
-  //   결제했으면 그날 열람 허용. (사람×날 제품이라 안전 · 결제자 보호 안전망)
-  if (await hasTodayDetailEntitlementForDay(user.id, getKoreaAccessDay())) {
+  // 1) product_entitlements — 오늘(KST) 결제한 today-detail entitlement 만.
+  if (await hasTodayDetailEntitlementForDay(user.id, todayKey)) {
     return { hasAccess: true, source: { kind: 'product-entitlement', via: 'same-day' } };
   }
 
-  // 2) Today-fortune 1코인 unlock 기록 (별도 흐름이지만 같은 콘텐츠 unlock).
-  //    slug 또는 readingKey 어느 쪽이든 매칭되면 인정.
-  const coinUnlockedBySlug = await hasTodayFortunePremiumAccess(user.id, slug);
-  if (coinUnlockedBySlug) {
+  // 2) Today-fortune 1코인 unlock — 오늘(KST) unlock 만 인정 (slug / readingKey / legacy 키).
+  if (await hasTodayFortunePremiumAccess(user.id, slug, todayKey)) {
     return { hasAccess: true, source: { kind: 'credit-unlock', via: 'today-fortune' } };
   }
-  if (readingKey && readingKey !== slug) {
-    const coinUnlockedByKey = await hasTodayFortunePremiumAccess(user.id, readingKey);
-    if (coinUnlockedByKey) {
-      return { hasAccess: true, source: { kind: 'credit-unlock', via: 'today-fortune' } };
-    }
+  if (
+    readingKey &&
+    readingKey !== slug &&
+    (await hasTodayFortunePremiumAccess(user.id, readingKey, todayKey))
+  ) {
+    return { hasAccess: true, source: { kind: 'credit-unlock', via: 'today-fortune' } };
   }
-  // detail_report_access — credits/use(1코인)가 실제 저장하는 legacy 키(A6 회귀 fix 통합).
-  //   today-fortune / saju-detail 양쪽 동일 콘텐츠라 한쪽 unlock 이 다른 쪽도 인정.
-  if (readingKey && (await hasDetailReportAccess(user.id, readingKey))) {
+  if (readingKey && (await hasDetailReportAccess(user.id, readingKey, todayKey))) {
     return { hasAccess: true, source: { kind: 'credit-unlock', via: 'today-fortune' } };
   }
 

@@ -11,9 +11,13 @@ import {
   resolvePaymentProductScope,
   type PaymentProductScope,
 } from '@/lib/payments/product-scope';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import {
+  getTasteProductEntitlement,
+  hasTodayDetailEntitlementForDay,
+} from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import {
+  getKoreaAccessDay,
   hasDetailReportAccess,
   hasTodayFortunePremiumAccess,
   hasTodayFortunePremiumAccessByReading,
@@ -168,27 +172,33 @@ export async function POST(req: NextRequest) {
   } else {
     paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
     if (paymentScope) {
-      const entitlement = isTasteProductPackage(pkg)
-        ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
-        : await getLifetimeReportEntitlement(
-            user.id,
-            paymentScope.readingKey ?? paymentScope.slug ?? '',
-            paymentScope.slug ? [paymentScope.slug] : []
-          );
-      // today-detail 은 코인 경로(/api/credits/use·/api/today-fortune/unlock)로도 해제될 수
-      // 있어, Toss 단건 결제 중복을 막으려면 코인 해제를 양쪽 키로 확인해야 한다:
-      //   today-fortune 경로 = sourceSessionId(=slug) / saju 경로 = readingKey.
-      // readingKey 는 today_fortune_premium_access·detail_report_access 두 kind 모두 조회.
-      // ※ KST 일자 단위 fallback(hasTodayFortuneDailyAccess)은 의도적 제외 — 다른 사주의
-      //   오늘 결제까지 막는 과잉 차단 방지(결제 차단은 scope 단위여야 함).
+      // 2026-06-05 — today-detail 은 일일 상품. 재구매 차단(alreadyPurchased)도 오늘(KST)
+      //   접근분만 봐야 한다. 영구 entitlement/coin 조회로 차단하면 "어제 결제 → 오늘 재구매
+      //   차단 → detail 은 오늘 접근 없음" 루프가 생긴다(unlock/detail 게이트와 정합).
+      const todayKey = getKoreaAccessDay();
+      const isTodayDetail =
+        isTasteProductPackage(pkg) && pkg.tasteProductId === 'today-detail';
+
+      const entitlement = isTodayDetail
+        ? await hasTodayDetailEntitlementForDay(user.id, todayKey)
+        : isTasteProductPackage(pkg)
+          ? await getTasteProductEntitlement(user.id, pkg.tasteProductId, paymentScope.scopeKey)
+          : await getLifetimeReportEntitlement(
+              user.id,
+              paymentScope.readingKey ?? paymentScope.slug ?? '',
+              paymentScope.slug ? [paymentScope.slug] : []
+            );
+      // today-detail 코인 해제 중복 차단도 오늘(KST) unlock 만 확인(slug / readingKey 양쪽).
       const coinUnlockedTodayDetail =
-        isTasteProductPackage(pkg) &&
-        pkg.tasteProductId === 'today-detail' &&
-        paymentScope.slug
-          ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug)) ||
+        isTodayDetail && paymentScope.slug
+          ? (await hasTodayFortunePremiumAccess(user.id, paymentScope.slug, todayKey)) ||
             (paymentScope.readingKey
-              ? (await hasTodayFortunePremiumAccessByReading(user.id, paymentScope.readingKey)) ||
-                (await hasDetailReportAccess(user.id, paymentScope.readingKey))
+              ? (await hasTodayFortunePremiumAccessByReading(
+                  user.id,
+                  paymentScope.readingKey,
+                  todayKey
+                )) ||
+                (await hasDetailReportAccess(user.id, paymentScope.readingKey, todayKey))
               : false)
           : false;
 
