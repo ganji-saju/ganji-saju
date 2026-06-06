@@ -222,6 +222,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['공항', '여행', '하늘', '구름'],
     action: '미뤄둔 도전 하나를 30분 안에 시작할 수 있는 작은 크기로 줄여보세요.',
+    detailSlug: 'airplane-dream',
   },
   학교: {
     keyword: '학교', hanja: '校', category: 'object',
@@ -234,6 +235,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['시험', '책', '선생님', '친구'],
     action: '요즘 새로 배우고 있는 것 하나를 떠올려 다음 한 걸음을 적어보세요.',
+    detailSlug: 'school-dream',
   },
   집: {
     keyword: '집', hanja: '家', category: 'object',
@@ -321,6 +323,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['장미', '벚꽃', '국화', '나무'],
     action: '곧 피어날 일에 대한 기대를 한 줄로 적어 마음에 담아보세요.',
+    detailSlug: 'flower-dream',
   },
   거울: {
     keyword: '거울', hanja: '鏡', category: 'object',
@@ -333,6 +336,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['얼굴', '눈', '머리카락'],
     action: '오늘 하루 내 모습을 가만히 돌아보는 짧은 시간을 가져보세요.',
+    detailSlug: 'mirror-dream',
   },
   옷: {
     keyword: '옷', hanja: '衣', category: 'object',
@@ -345,6 +349,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['신발', '드레스', '양복', '거울'],
     action: '내가 맡고 싶은 새 역할 하나를 떠올려 그에 어울리는 준비를 시작해보세요.',
+    detailSlug: 'clothes-dream',
   },
   화재: {
     keyword: '화재', hanja: '災', category: 'nature',
@@ -675,6 +680,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['소식', '편지', '문자'],
     action: '연락하고 싶었던 사람에게 오늘 짧은 안부를 먼저 보내보세요.',
+    detailSlug: 'phone-dream',
   },
   신발: {
     keyword: '신발', hanja: '靴', category: 'object',
@@ -712,6 +718,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['꽃', '산', '숲'],
     action: '오래 키워온 일 하나를 떠올려 꾸준히 이어갈 한 걸음을 정해보세요.',
+    detailSlug: 'tree-dream',
   },
   계단: {
     keyword: '계단', hanja: '階', category: 'object',
@@ -810,6 +817,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['지각', '시험', '전화'],
     action: '서두르는 일이 있다면 마감을 한 번 더 확인하고 우선순위를 정해보세요.',
+    detailSlug: 'clock-dream',
   },
 
   // 2026-05-24 꿈해몽 풍부화 phase 2 — 사전 대량 확충(60 → 200+) + 흉몽 분류 도입.
@@ -851,6 +859,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['말', '돼지', '음식'],
     action: '꾸준히 해온 일 하나를 오늘도 한 걸음 이어가 보세요.',
+    detailSlug: 'cow-dream',
   },
   말: {
     keyword: '말', hanja: '馬', category: 'animal',
@@ -899,6 +908,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['돼지', '곡식', '돈'],
     action: '새는 지출이 없는지 오늘 가계의 작은 항목 하나를 점검해보세요.',
+    detailSlug: 'rat-dream',
   },
   닭: {
     keyword: '닭', hanja: '鷄', category: 'animal',
@@ -1212,6 +1222,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['눈오는', '겨울', '얼음'],
     action: '새로 시작하고 싶은 일 하나를 깨끗한 마음으로 적어보세요.',
+    detailSlug: 'snow-dream',
   },
   천둥: {
     keyword: '천둥', hanja: '雷', category: 'nature',
@@ -1875,6 +1886,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['집', '여행', '청소'],
     action: '바꾸고 싶은 환경 하나를 떠올려 작은 변화부터 시작해보세요.',
+    detailSlug: 'moving-dream',
   },
   결혼식: {
     keyword: '결혼식', hanja: '禮', category: 'action',
