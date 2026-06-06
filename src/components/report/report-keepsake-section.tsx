@@ -60,7 +60,7 @@ export function ReportKeepsakeSection({
       title: 'PDF 다운로드',
       body: '표지, 요약, 본문을 한 편의 리포트로 정리합니다.',
       href: pdfHref,
-      ctaLabel: pdfHref ? 'PDF 열기' : '준비 중',
+      ctaLabel: pdfHref ? 'PDF 열기' : '출시 예정',
       icon: FileText,
       statusTone: pdfHref
         ? 'border-[var(--app-gold)]/28 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]'

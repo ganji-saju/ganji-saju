@@ -22,6 +22,8 @@ const PUBLIC_CORE_COPY_FILES = [
   'src/components/membership/toss-membership-checkout.tsx',
   'src/components/policies/payment-consent-checkboxes.tsx',
   'src/lib/bundled-policies.ts',
+  // 2026-06-06 — 유료 리포트 keepsake CTA('준비 중' → '출시 예정') 회귀 잠금.
+  'src/components/report/report-keepsake-section.tsx',
 ] as const;
 
 const FORBIDDEN_PATTERNS = [
