@@ -8,6 +8,7 @@ import {
   type DreamFortune,
 } from './dream-dictionary';
 import { DREAM_CONTENT } from './dream/dream-content';
+import { toChosung } from './dream/hangul-search';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -147,4 +148,25 @@ test('모든 엔트리 본문은 naming-policy 금지 어휘를 포함하지 않
     }
   }
   assert.deepEqual(findings, []);
+});
+
+test('searchDream matches by chosung-only query', () => {
+  const r = searchDream('ㅂ');
+  assert.equal(r.exact, false);
+  assert.equal(toChosung(r.match.keyword).startsWith('ㅂ'), true);
+});
+
+test('searchDream still honors exact and substring matches (regression)', () => {
+  const exact = searchDream('뱀');
+  assert.equal(exact.exact, true);
+  assert.equal(exact.match.keyword, '뱀');
+
+  const empty = searchDream('');
+  assert.equal(empty.exact, true);
+  assert.equal(empty.match.keyword, '이빨');
+});
+
+test('searchDream tolerates jamo-level partial input', () => {
+  const partial = searchDream('뱀');
+  assert.ok(partial.match.keyword.length > 0);
 });
