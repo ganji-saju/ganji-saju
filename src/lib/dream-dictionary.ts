@@ -423,6 +423,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '잔치에 참석하면', meaning: '인덕·축하받을 일' },
     ],
     related: ['밥', '국', '잔치', '물고기'],
+    detailSlug: 'food-dream',
     action: '오늘은 끼니를 든든히 챙기며 몸과 마음의 기운을 채워보세요.',
   },
   알: {
@@ -871,6 +872,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '말이 멈춰 서면', meaning: '잠시 속도를 늦출 시기' },
     ],
     related: ['소', '자동차', '여행'],
+    detailSlug: 'horse-dream',
     action: '속도를 내고 싶은 일 하나를 골라 오늘 첫 출발을 해보세요.',
   },
   곰: {
@@ -1306,6 +1308,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '초승달을 보면', meaning: '차오르기 시작하는 기운' },
     ],
     related: ['해', '별', '하늘'],
+    detailSlug: 'moon-dream',
     action: '오늘 밤은 마음을 차분히 두고 하루를 가만히 돌아보세요.',
   },
   별: {
@@ -1318,6 +1321,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '별이 떨어지면', meaning: '큰 변화·소식의 예고' },
     ],
     related: ['해', '달', '하늘'],
+    detailSlug: 'star-dream',
     action: '이루고 싶은 소원 하나를 또렷이 떠올려 마음에 담아보세요.',
   },
   하늘: {
@@ -1499,6 +1503,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '칼에 다치면', meaning: '말·행동을 한 번 살필 시기' },
     ],
     related: ['가위', '싸움', '피'],
+    detailSlug: 'knife-dream',
     action: '끊어내고 싶은 일 하나를 떠올려 작은 정리부터 시작해보세요.',
   },
   가방: {
@@ -1511,6 +1516,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '새 가방을 메면', meaning: '새 역할·새 출발' },
     ],
     related: ['옷', '신발', '돈'],
+    detailSlug: 'bag-dream',
     action: '지금 맡은 일에서 빠진 준비가 없는지 오늘 한 번 점검해보세요.',
   },
   책: {
@@ -1547,6 +1553,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '빈 지갑이면', meaning: '실속을 챙길 시기' },
     ],
     related: ['돈', '돈다발', '카드'],
+    detailSlug: 'wallet-dream',
     action: '오늘은 새는 지출이 없는지 가벼운 가계 점검을 해보세요.',
   },
   보석: {
@@ -1812,6 +1819,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '긴장된 분위기면', meaning: '마음을 다잡을 시기' },
     ],
     related: ['경찰', '싸움', '제복'],
+    detailSlug: 'soldier-dream',
     action: '지켜야 할 약속 하나를 오늘 또렷이 정리해두세요.',
   },
   경찰: {
@@ -1824,6 +1832,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '경찰을 만나면', meaning: '질서가 잡히는 시기' },
     ],
     related: ['군인', '도둑', '싸움'],
+    detailSlug: 'police-dream',
     action: '혼자 끙끙대던 일이 있다면 오늘 도움을 한 번 청해보세요.',
   },
   아저씨: {
@@ -2079,6 +2088,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '손을 다치면', meaning: '하던 일을 한 번 살필 시기' },
     ],
     related: ['발', '얼굴', '반지'],
+    detailSlug: 'hand-dream',
     action: '함께하고 싶은 사람에게 오늘 먼저 손을 내밀어 보세요.',
   },
   발: {
@@ -2091,6 +2101,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '발을 다치면', meaning: '걸음을 잠시 늦출 시기' },
     ],
     related: ['손', '신발', '여행'],
+    detailSlug: 'foot-dream',
     action: '진행 중인 일에서 무리하지 않는 속도 하나를 정해보세요.',
   },
   코: {
@@ -2213,6 +2224,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '술에 취하면', meaning: '절제를 한 번 살필 시기' },
     ],
     related: ['잔치', '음식', '친구'],
+    detailSlug: 'alcohol-dream',
     action: '오늘은 교류와 휴식 사이에서 알맞은 균형을 챙겨보세요.',
   },
   떡: {
