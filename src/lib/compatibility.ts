@@ -933,8 +933,15 @@ function buildAxisEvidence(
       return `근거 — 오행 흐름: ${firstSentence(ctx.elementInteraction.summary)}`;
     case 'money':
       return `근거 — 오행 보완·겹침: ${firstSentence(ctx.balanceInteraction.body)}`;
-    case 'distance':
-      return `근거 — 일지 신호: ${firstSentence(ctx.branchInteraction.body)}`;
+    case 'distance': {
+      // 일지 body 는 합·충 두 문장이 한 줄로 합쳐질 수 있어 firstSentence 로 자르면
+      //   주의(충/형/파/해) 문구가 통째로 사라진다(과긍정 오인 → 하우스 가드 위반).
+      //   구조화된 supportive/caution 을 직접 조립해 주의가 있으면 절대 떨구지 않는다.
+      const branch = ctx.branchInteraction;
+      const parts = [branch.supportive?.detail, branch.caution?.detail].filter(Boolean);
+      const evidenceBody = parts.length > 0 ? parts.join(' ') : firstSentence(branch.body);
+      return `근거 — 일지 신호: ${evidenceBody}`;
+    }
   }
 }
 

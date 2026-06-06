@@ -241,7 +241,7 @@ test('deep sections are differentiated from free summary cards and carry evidenc
   );
 });
 
-test('deep section framing reflects score band and relationship kind', () => {
+test('deep section framing reflects score band and stem-interaction kind', () => {
   const a = makeCompat('lover', 1988, 1991).deepSections.find((s) => s.key === 'conflict');
   const b = makeCompat('lover', 1990, 1990).deepSections.find((s) => s.key === 'conflict');
   assert.ok(a && b);
