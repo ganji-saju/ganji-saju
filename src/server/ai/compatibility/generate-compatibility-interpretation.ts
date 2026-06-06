@@ -99,7 +99,7 @@ export async function generateCompatibilityInterpretation(
 
   const client =
     args.client ??
-    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, feature: 'compatibility' });
+    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, feature: 'compatibility', userId });
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildCompatibilityInterpretationUserMessage(input);
   let lastReasons: string[] = [];
