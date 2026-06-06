@@ -688,7 +688,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
       setLocationSearchMessage(
         items.length > 0
           ? '가장 가까운 지역을 골라 위도와 경도를 적용해 주세요.'
-          : '검색 결과가 없습니다. 시/군/구 이름이나 영문 지명을 함께 입력해 보세요.'
+          : '검색 결과가 없어요. 시/군/구 이름이나 영문 지명을 함께 입력해 보세요.'
       );
     } catch {
       setLocationSearchStatus('error');
@@ -1584,7 +1584,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ? '시간·출생지 입력'
         : activeStep.id === 'location'
           ? isSubmitting
-            ? '결과 준비 중...'
+            ? '결과 정리 중...'
             : '사주풀이 시작'
           : '다음 화면';
   return (

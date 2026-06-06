@@ -37,7 +37,7 @@ export const metadata: Metadata = {
 
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits' || item.id === 'subscription_30');
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
-const FALLBACK_TEACHERS = GANGI_TEACHERS.filter((teacher) => teacher.price !== '준비 중');
+const FALLBACK_TEACHERS = GANGI_TEACHERS.filter((teacher) => teacher.price !== '출시 예정');
 
 function getProductTeacher(index: number) {
   return FALLBACK_TEACHERS[index % FALLBACK_TEACHERS.length] ?? GANGI_TEACHERS[0];

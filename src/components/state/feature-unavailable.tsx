@@ -22,7 +22,7 @@ interface FeatureUnavailableProps {
 }
 
 const REASON_COPY: Record<NonNullable<FeatureUnavailableProps['reason']>, string> = {
-  coming_soon: '출시 준비 중인 기능입니다',
+  coming_soon: '곧 출시 예정인 기능입니다',
   maintenance: '일시 점검 중입니다',
   region_restricted: '현재 이용 지역에서는 지원하지 않는 기능입니다',
 };

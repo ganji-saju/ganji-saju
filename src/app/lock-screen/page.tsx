@@ -9,7 +9,7 @@ import { FeatureUnavailable } from '@/components/state/feature-unavailable';
 
 export const metadata: Metadata = {
   title: '락스크린 위젯',
-  description: '간지사주 락스크린 푸시 위젯 — 출시 준비 중인 기능 안내.',
+  description: '간지사주 락스크린 푸시 위젯 — 곧 출시 예정인 기능 안내.',
   robots: { index: false, follow: false },
   alternates: { canonical: '/lock-screen' },
 };

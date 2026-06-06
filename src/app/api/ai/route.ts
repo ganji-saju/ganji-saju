@@ -310,8 +310,8 @@ function createDialogueProfileGrounding(
       dayMasterMeaning: sajuData.dayMaster.description ?? sajuData.dayMaster.metaphor ?? '',
       strength: sajuData.strength
         ? `${sajuData.strength.level} · ${sajuData.strength.score}점`
-        : '강약 계산 준비 중',
-      pattern: sajuData.pattern?.name ?? '격국 계산 준비 중',
+        : '강약 분석 준비 안내',
+      pattern: sajuData.pattern?.name ?? '격국 분석 준비 안내',
       yongsin:
         sajuData.yongsin?.candidates
           ?.slice(0, 3)
