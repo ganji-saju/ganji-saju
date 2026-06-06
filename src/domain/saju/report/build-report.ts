@@ -648,7 +648,7 @@ function buildStrengthEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidenc
     return {
       key,
       label: '강약',
-      title: '강약 계산 준비 중',
+      title: '강약 분석 준비 안내',
       body: '현재 저장본은 seed 데이터라 강약 점수와 근거가 아직 비어 있습니다.',
       details: ['강약 계산이 연결되면 일간을 돕는 힘과 누르는 힘의 균형을 이 카드에서 먼저 보여줍니다.'],
       computed,
@@ -686,7 +686,7 @@ function buildPatternEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     return {
       key,
       label: '격국',
-      title: '격국 계산 준비 중',
+      title: '격국 분석 준비 안내',
       body: '격국 필드가 비어 있어도 카드 자리는 유지합니다.',
       details: ['월령과 십신 원칙의 rule-based 계산이 들어오면 격국 근거가 이 카드로 정리됩니다.'],
       computed,
@@ -728,7 +728,7 @@ function buildYongsinEvidenceCard(data: SajuDataV1 | SajuDataV2): ReportEvidence
     return {
       key,
       label: '용신',
-      title: '용신 계산 준비 중',
+      title: '용신 분석 준비 안내',
       body: '용신과 기신 자리가 열려 있습니다.',
       details: ['조후와 억부 판정이 채워지면 보완해야 할 기운과 피해야 할 기운을 분리해 보여줍니다.'],
       computed,

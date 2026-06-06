@@ -235,7 +235,7 @@ function ManagedBirthFields({
       setLocationMessage(
         items.length > 0
           ? '가장 가까운 지역을 골라 위도와 경도를 적용해 주세요.'
-          : '검색 결과가 없습니다. 시/군/구 이름을 조금 더 구체적으로 적어주세요.'
+          : '검색 결과가 없어요. 시/군/구 이름을 조금 더 구체적으로 적어주세요.'
       );
     } catch {
       setLocationStatus('error');

@@ -410,7 +410,7 @@ export function GangiServiceCardLink({
   onTrack?: (card: GangiServiceCard) => void;
 }) {
   const isFree = card.price === '무료' || card.price === '무료 시작';
-  const isComingSoon = card.price === '준비 중';
+  const isComingSoon = card.price === '출시 예정';
 
   return (
     <Link

@@ -12,8 +12,8 @@ interface ClassicEvidencePanelProps {
 
 function formatClassicEvidenceStatus(status: string, count: number) {
   if (count > 0) return `${count}개 문단`;
-  if (status === 'missing-env') return '연결 준비 중';
-  if (status === 'db-error') return '원문 준비 중';
+  if (status === 'missing-env') return '연결 준비 안내';
+  if (status === 'db-error') return '원문 준비 안내';
   return '검수 대기';
 }
 
