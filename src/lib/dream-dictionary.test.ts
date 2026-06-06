@@ -8,6 +8,7 @@ import {
   type DreamFortune,
 } from './dream-dictionary';
 import { DREAM_CONTENT } from './dream/dream-content';
+import { toChosung } from './dream/hangul-search';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -147,4 +148,43 @@ test('모든 엔트리 본문은 naming-policy 금지 어휘를 포함하지 않
     }
   }
   assert.deepEqual(findings, []);
+});
+
+test('searchDream matches by chosung-only query', () => {
+  // 'ㅂ' 초성 입력 → fallback 에코('ㅂ')가 아닌 실제 사전 키워드로 수렴해야 한다.
+  const r = searchDream('ㅂ');
+  assert.equal(r.exact, false);
+  assert.notEqual(r.match.keyword, 'ㅂ', 'must not echo the query as fallback');
+  assert.ok(r.match.keyword in DREAM_DICTIONARY, 'must resolve to a real dictionary entry');
+  assert.equal(toChosung(r.match.keyword).startsWith('ㅂ'), true);
+});
+
+test('searchDream still honors exact and substring matches (regression)', () => {
+  const exact = searchDream('뱀');
+  assert.equal(exact.exact, true);
+  assert.equal(exact.match.keyword, '뱀');
+
+  const empty = searchDream('');
+  assert.equal(empty.exact, true);
+  assert.equal(empty.match.keyword, '이빨');
+});
+
+test('searchDream resolves jamo-level partial input via the jamo tier', () => {
+  // 실제 사전에서 2음절+ 키를 골라, 1음절 + (2음절 초성) 형태의 부분입력을 만든다.
+  // 이 쿼리는 정확/부분(substring)/초성 단계를 통과하지 못하고 자모 단계(2.6)로 수렴해야 한다.
+  const CHOSUNG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  const key = Object.keys(DREAM_DICTIONARY).find((k) => k.length >= 2 && /^[가-힣]+$/.test(k));
+  assert.ok(key, 'expected at least one multi-syllable Hangul key');
+  const second = key!.charCodeAt(1) - 0xac00;
+  const query = key![0] + CHOSUNG[Math.floor(second / 588)];
+
+  // 가드: 이 쿼리가 정말 자모 단계 대상인지(정확/부분/초성 아님) 확인.
+  assert.notEqual(query, key);
+  assert.equal(key!.includes(query), false);
+  assert.equal(query.includes(key!), false);
+
+  const r = searchDream(query);
+  assert.equal(r.exact, false);
+  assert.ok(r.match.keyword in DREAM_DICTIONARY, 'must resolve to a real dictionary entry, not echo');
+  assert.notEqual(r.match.keyword, query);
 });

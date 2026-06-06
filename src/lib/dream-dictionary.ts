@@ -3,6 +3,8 @@
 // 2026-05-24 꿈해몽 풍부화 phase 1 — 구조 강화(fortune/action/detailSlug) + 파일럿 확충(33→60).
 //   민속·상징 해석 톤 유지: 단정/예언/치료 말 금지, 한자 본문 노출 지양.
 
+import { toChosung, toJamo, isChosungOnly } from './dream/hangul-search';
+
 export type DreamFortune = '길몽' | '흉몽' | '중립';
 
 export interface DreamMeaning {
@@ -3829,6 +3831,35 @@ export function searchDream(query: string): {
       suggestions: partial.slice(1, 4),
       exact: false,
     };
+  }
+
+  // 2.5) 초성 매치 — 초성만 입력한 경우
+  if (isChosungOnly(trimmed)) {
+    const byChosung = Object.keys(DREAM_DICTIONARY).filter((key) =>
+      toChosung(key).includes(trimmed)
+    );
+    if (byChosung.length > 0) {
+      return {
+        match: DREAM_DICTIONARY[byChosung[0]],
+        suggestions: byChosung.slice(1, 4),
+        exact: false,
+      };
+    }
+  }
+
+  // 2.6) 자모 부분 매치 — 오타/부분입력 흡수 (단일 자모 과매칭 방지: 길이 ≥ 2)
+  const qJamo = toJamo(trimmed);
+  if (qJamo.length >= 2) {
+    const byJamo = Object.keys(DREAM_DICTIONARY).filter((key) =>
+      toJamo(key).includes(qJamo)
+    );
+    if (byJamo.length > 0) {
+      return {
+        match: DREAM_DICTIONARY[byJamo[0]],
+        suggestions: byJamo.slice(1, 4),
+        exact: false,
+      };
+    }
   }
 
   // 3) related 태그 매치
