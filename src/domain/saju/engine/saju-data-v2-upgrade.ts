@@ -665,12 +665,12 @@ function buildPatternBlock(data: SajuDataV1, tone: SajuContentTone): SajuInterpr
     : [];
 
   const candidateLabel = `${pattern.name} 후보`;
+  // 월지 주기운(지장간 1순위)의 오행을 한자로 보정해 "월지 {지지}의 {천간}{오행} 기준" 으로 표기.
+  // 과거 base 문자열에 '土'·접미사를 박고 .replace 로 덧대던 방식은 접미사가 중복("기준 기준")되는
+  // 버그가 있어, 천간+오행 한자를 직접 조립하는 방식으로 단순화한다.
   const monthRoot = monthBranchKeyStem
-    ? `월지 ${monthBranch}의 ${monthBranchKeyStem}土 원칙`.replace(
-        /의 .土/,
-        `의 ${monthBranchKeyStem}${getStemElementHanja(monthBranchKeyStem)} 원칙`
-      )
-    : `월지 ${monthBranch} 원칙`;
+    ? `월지 ${monthBranch}의 ${monthBranchKeyStem}${getStemElementHanja(monthBranchKeyStem)} 기준`
+    : `월지 ${monthBranch} 기준`;
 
   const summary =
     accompanyingPhrases.length > 0
