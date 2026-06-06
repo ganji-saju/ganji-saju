@@ -80,6 +80,16 @@ export async function generateCompatibilityInterpretation(
   };
 
   if (!isCompatibilityInterpretationLLMEnabled(env)) {
+    // 관측성: 플래그 OFF 로 LLM 을 건너뛴 경우도 기록한다. 미기록 시 ai_llm_runs 에서
+    //   "플래그 OFF(설정)"와 "유료 §8 트래픽 없음"이 똑같이 0행으로 보여 구분이 안 된다.
+    //   fallback_reason='llm_disabled' 로 검증실패 fallback 과 구분 가능.
+    await recordRun({
+      feature: 'compatibility',
+      source: 'fallback',
+      model: null,
+      userId,
+      fallbackReason: 'llm_disabled',
+    });
     return { source: 'fallback', sections: input.fallbackSections, reasons: ['llm_disabled'], meta };
   }
 

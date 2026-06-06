@@ -173,9 +173,9 @@ test('compat interpretation: 검증 실패→fallback 은 source=fallback + 사�
   );
 });
 
-test('compat interpretation: 플래그 OFF fallback 은 계측하지 않는다(설정값이지 실패 아님)', async () => {
-  const calls: unknown[] = [];
-  const recordRun = (async (input: unknown) => {
+test('compat interpretation: 플래그 OFF fallback 도 llm_disabled 사유로 계측된다(OFF vs 무트래픽 구분)', async () => {
+  const calls: Array<{ source: string; feature: string; fallbackReason?: string | null }> = [];
+  const recordRun = (async (input: { source: string; feature: string; fallbackReason?: string | null }) => {
     calls.push(input);
   }) as unknown as Parameters<typeof generateCompatibilityInterpretation>[0]['recordRun'];
 
@@ -187,5 +187,8 @@ test('compat interpretation: 플래그 OFF fallback 은 계측하지 않는다(�
     recordRun,
   });
   assert.equal(result.source, 'fallback');
-  assert.equal(calls.length, 0, '플래그 OFF 경로는 계측하지 않아야 함');
+  assert.equal(calls.length, 1, '플래그 OFF 경로도 1회 계측되어야 함');
+  assert.equal(calls[0].source, 'fallback');
+  assert.equal(calls[0].feature, 'compatibility');
+  assert.equal(calls[0].fallbackReason, 'llm_disabled');
 });
