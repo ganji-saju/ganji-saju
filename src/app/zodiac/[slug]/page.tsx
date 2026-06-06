@@ -14,6 +14,7 @@ import {
   type ZodiacFortune,
 } from '@/lib/free-content-pages';
 import { getOptionalSignedInProfile } from '@/lib/profile';
+import { yearToGanji } from '@/lib/saju/year-ganji';
 import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profile-personalization';
 import { ZODIAC_RELATIONS, type ZodiacFortuneSlug } from '@/lib/zodiac/zodiac-relations';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
@@ -139,20 +140,34 @@ function normalizePeriod(value: string | undefined): ZodiacPeriod {
   return VALID_PERIODS.includes(value as ZodiacPeriod) ? (value as ZodiacPeriod) : 'today';
 }
 
-// 2026-05-24 — 연생(태어난 해)별 풀이. byYear 가 있는 띠만 ?birthYear=YYYY 로 분기.
-//   - 정렬: 최근 출생연도부터(기존 years 표기 순서와 동일한 직관).
-//   - 미선택/미존재 연도면 null → 기존 단일 띠 화면 그대로.
-function getByYearEntries(item: ZodiacFortune): Array<[number, ZodiacByYearFortune]> {
-  if (!item.byYear) return [];
-  return Object.entries(item.byYear)
-    .map(([year, fortune]) => [Number(year), fortune] as [number, ZodiacByYearFortune])
-    .sort((a, b) => b[0] - a[0]);
+// 2026-06-06 — 60갑자 확대: 정확 연도 키가 아니어도 연주 간지가 일치하면 같은 세대 풀이로 매핑.
+function resolveByYear(
+  item: ZodiacFortune,
+  raw: string | undefined
+): { year: number; fortune: ZodiacByYearFortune } | null {
+  if (!item.byYear || !raw) return null;
+  const year = Number(raw);
+  if (!Number.isInteger(year)) return null;
+
+  const exact = item.byYear[year];
+  if (exact) return { year, fortune: exact };
+
+  const ganji = yearToGanji(year);
+  const matched = Object.values(item.byYear).find((f) => f.ganji === ganji);
+  return matched ? { year, fortune: matched } : null;
 }
 
-function resolveSelectedYear(item: ZodiacFortune, raw: string | undefined): number | null {
-  if (!item.byYear || !raw) return null;
-  const parsed = Number(raw);
-  return Number.isInteger(parsed) && item.byYear[parsed] ? parsed : null;
+// 2026-06-06 — 칩 목록: byYear 5개 간지 각각의, 표시 범위 내 모든 연도(세대)를 생성.
+const ZODIAC_YEAR_RANGE = { min: 1930, max: 2026 } as const;
+
+function getGenerationYears(item: ZodiacFortune): number[] {
+  if (!item.byYear) return [];
+  const ganjiSet = new Set(Object.values(item.byYear).map((f) => f.ganji));
+  const years: number[] = [];
+  for (let y = ZODIAC_YEAR_RANGE.max; y >= ZODIAC_YEAR_RANGE.min; y -= 1) {
+    if (ganjiSet.has(yearToGanji(y))) years.push(y);
+  }
+  return years; // 내림차순
 }
 
 const LUCKY_COLOR_TABLE: Array<{ name: string; hex: string }> = [
@@ -201,10 +216,11 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
   const item = getZodiac(slug);
   if (!item) notFound();
 
-  // 2026-05-24 — 연생 풀이: byYear 가 있는 띠(12지 전체)만 칩 노출.
-  const byYearEntries = getByYearEntries(item);
-  const selectedYear = resolveSelectedYear(item, rawBirthYear);
-  const selectedByYear = selectedYear !== null ? item.byYear?.[selectedYear] ?? null : null;
+  // 2026-06-06 — 연생 풀이: byYear 가 있는 띠(12지 전체)만 칩 노출.
+  const generationYears = getGenerationYears(item);
+  const resolved = resolveByYear(item, rawBirthYear);
+  const selectedYear = resolved?.year ?? null;
+  const selectedByYear = resolved?.fortune ?? null;
 
   const profile = await getOptionalSignedInProfile();
   const personalizedSlug = buildZodiacSlugFromProfile(profile);
@@ -474,13 +490,13 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
 
           {/* 연생 풀이 — 2026-05-26: 운세 콘텐츠(기간 탭·점수·집중 포인트) 아래로 이동.
               태어난 해 선택은 심화 정보라 메인 흐름을 먼저 보여준 뒤 노출한다. */}
-          {byYearEntries.length > 0 ? (
+          {generationYears.length > 0 ? (
             <section className="space-y-2.5">
               <div className="px-1 text-[13px] font-extrabold text-[var(--app-ink)]">
                 태어난 해로 더 보기
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {byYearEntries.map(([year]) => {
+                {generationYears.map((year) => {
                   const isActive = year === selectedYear;
                   const href = isActive
                     ? `/zodiac/${item.slug}${period === 'today' ? '' : `?period=${period}`}`
