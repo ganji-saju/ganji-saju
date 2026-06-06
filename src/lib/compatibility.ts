@@ -142,6 +142,11 @@ export interface CompatibilityDeepSection {
   key: string;
   title: string;
   body: string;
+  /**
+   * 이 축 풀이의 사주 근거 한 줄. 결정론 경로에서만 채운다.
+   * LLM 경로(compatibility-interpretation-types.ts)와 동형 유지를 위해 옵셔널.
+   */
+  evidence?: string;
 }
 
 export interface CompatibilityInterpretation {
@@ -365,6 +370,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
       score: 4,
       title: '일간이 같은 관계',
       body: `두 분 모두 ${selfKo} 일간이라 세상을 읽는 기본 프레임이 비슷합니다. 공감은 빠르지만 양보하지 않는 지점도 닮아 있을 수 있습니다.`,
+      kind: 'same' as const,
     };
   }
 
@@ -376,6 +382,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
       score: 6,
       title: '일간 천간합이 잡히는 관계',
       body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 천간합으로 묶여 기본적으로 서로를 붙잡아 주는 힘이 있습니다. 관계를 이어가려는 의지는 비교적 강한 편입니다.`,
+      kind: 'harmony' as const,
     };
   }
 
@@ -384,6 +391,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
       score: -5,
       title: '일간 충이 걸리는 관계',
       body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 생각을 진행하는 속도가 달라, 결정을 빨리 내릴수록 마찰이 생기기 쉽습니다.`,
+      kind: 'clash' as const,
     };
   }
 
@@ -391,6 +399,7 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
     score: 0,
     title: '일간의 성향은 다르지만 보완 여지가 있는 관계',
     body: `${selfKo}${josa(selfKo, '과', '와')} ${partnerKo}${josa(partnerKo, '은', '는')} 같은 방식으로 움직이지는 않지만, 차이를 이해하면 오히려 역할 분담이 선명해질 수 있습니다.`,
+    kind: 'complement' as const,
   };
 }
 
@@ -704,6 +713,13 @@ function buildConflictCard(
   };
 }
 
+// 두 사람이 같은 스타일이면 caution 문장이 동일해 중복되므로 한 번만 노출.
+function joinStyleCautions(selfCaution: string, partnerCaution: string): string {
+  return selfCaution.trim() === partnerCaution.trim()
+    ? selfCaution.trim()
+    : `${selfCaution} ${partnerCaution}`.trim();
+}
+
 function buildCommunicationCard(
   relationship: CompatibilityRelationshipSlug,
   self: CompatibilityPerson,
@@ -741,7 +757,7 @@ function buildCommunicationCard(
     eyebrow: '대화 방식',
     title,
     summary,
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'sky',
   };
 }
@@ -776,7 +792,7 @@ function buildMoneyCard(
     eyebrow: '돈 감각 차이',
     title,
     summary,
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'gold',
   };
 }
@@ -819,7 +835,7 @@ function buildDistanceCard(
     eyebrow: '거리감 조절',
     title,
     summary: `${self.name}님은 ${selfStyle.label}이라 ${selfStyle.summary} ${partner.name}님은 ${partnerStyle.label}이라 ${partnerStyle.summary} ${supportiveLine}`.trim(),
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'jade',
   };
 }
@@ -843,6 +859,58 @@ function buildDataNote(selfInput: BirthInput, partnerInput: BirthInput) {
 //   "그래서 어떻게 풀면 좋은지(practice)" 로 한 단계 더 풀어, 두 명식에 맞는 구체적
 //   실천을 제시한다. practice 는 두 사람의 기운/관계유형에서 파생되므로 커플마다 다르다
 //   (관계유형별 정적 텍스트였던 기존 premiumExpansion.preview 의 "모든 커플 동일" 문제 해소).
+type StemInteractionKind = 'same' | 'harmony' | 'clash' | 'complement';
+
+// 점수대 5단계 — buildCompatibilityInterpretation 의 라벨 산출(>=84/78/70/62)과 동일 기준.
+// band 0 = 최상 … 4 = 가장 약함.
+function resolveScoreBand(score: number): 0 | 1 | 2 | 3 | 4 {
+  if (score >= 84) return 0;
+  if (score >= 78) return 1;
+  if (score >= 70) return 2;
+  if (score >= 62) return 3;
+  return 4;
+}
+
+// 한국어 첫 문장만 추출(근거 한 줄용). "…다." 단위. 없으면 전체.
+function firstSentence(text: string): string {
+  const trimmed = text.trim();
+  const idx = trimmed.indexOf('다.');
+  return idx >= 0 ? trimmed.slice(0, idx + 2) : trimmed;
+}
+
+// 관계유형(4) × 점수대(5) = 20셀 프레이밍 오프너. 축 공통 톤.
+// 하우스 스타일: "~경향/~편/~수 있습니다" — 단정·과장·보장 표현 금지(의료광고법 가드).
+const DEEP_SECTION_FRAME: Record<StemInteractionKind, [string, string, string, string, string]> = {
+  same: [
+    '두 분은 기본 결이 닮아 말이 잘 통하는 편이라, 이 강점을 살리면 관계가 더 단단해질 수 있습니다.',
+    '비슷한 기질 덕에 공감이 빠른 편이니, 닮은 약점만 함께 챙기면 흐름이 좋아질 수 있습니다.',
+    '닮은 점이 많아 편안하지만, 같은 지점에서 부딪히기도 쉬운 관계입니다.',
+    '비슷한 성향이 양보 없는 고집으로 겹치면 거리가 생길 수 있는 관계입니다.',
+    '닮은 만큼 같은 약점이 동시에 커지기 쉬워, 역할을 의식적으로 나눌 필요가 있는 관계입니다.',
+  ],
+  harmony: [
+    '서로를 붙잡아 주는 힘이 강해, 방향만 맞추면 오래 이어질 가능성이 높은 관계입니다.',
+    '기본적으로 끌어당기는 힘이 있어, 작은 차이를 조율하면 안정적으로 흐를 수 있습니다.',
+    '묶이는 힘은 있지만 생활 리듬 차이가 변수로 작동하는 관계입니다.',
+    '끌리는 마음과 달리 현실 조건에서 엇갈리기 쉬워 합의가 필요한 관계입니다.',
+    '서로를 원하는 마음은 있어도 부딪히는 지점이 많아 인내가 필요한 관계입니다.',
+  ],
+  clash: [
+    '속도 차이가 있지만 그만큼 서로를 자극해 키워 주는 힘으로 쓸 수 있는 관계입니다.',
+    '부딪힘이 있는 편이나, 차이를 인정하면 보완 관계로 바뀔 여지가 있습니다.',
+    '결정 속도와 시각 차이로 마찰이 생기기 쉬운 관계입니다.',
+    '같은 사안을 다르게 읽어 갈등이 반복되기 쉬워 규칙이 필요한 관계입니다.',
+    '기본 방향이 자주 충돌해, 거리와 역할을 분명히 해야 피로가 줄어드는 관계입니다.',
+  ],
+  complement: [
+    '움직이는 방식은 달라도 역할 분담이 선명해, 차이가 강점이 되는 관계입니다.',
+    '서로 다른 결이 빈 곳을 채워 주어, 차이를 이해할수록 편해지는 관계입니다.',
+    '다른 성향이 때로 보완으로, 때로 오해로 작동하는 관계입니다.',
+    '차이가 클 때는 서로의 기준을 설명하는 과정이 필요한 관계입니다.',
+    '서로 다른 방향이 자주 어긋나, 기대를 미리 맞춰야 서운함이 줄어드는 관계입니다.',
+  ],
+};
+
 const DEEP_SECTION_AXIS_LEAD: Record<CompatibilityPracticalCard['key'], string> = {
   conflict: '갈등이 올라올 때는',
   communication: '대화가 어긋난다 싶을 때는',
@@ -850,14 +918,59 @@ const DEEP_SECTION_AXIS_LEAD: Record<CompatibilityPracticalCard['key'], string> 
   distance: '거리와 연락의 리듬을 정할 때는',
 };
 
+interface DeepSectionContext {
+  stemInteraction: ReturnType<typeof summarizeStemInteraction>;
+  elementInteraction: ReturnType<typeof summarizeElementInteraction>;
+  branchInteraction: ReturnType<typeof summarizeBranchInteraction>;
+  balanceInteraction: ReturnType<typeof summarizeElementBalance>;
+  score: number;
+  selfName: string;
+  partnerName: string;
+}
+
+// 축 → 근거 소스 매핑(기존 evidence[] 4종과 대칭). 근거는 첫 문장만 발췌.
+function buildAxisEvidence(
+  key: CompatibilityPracticalCard['key'],
+  ctx: DeepSectionContext
+): string {
+  switch (key) {
+    case 'conflict':
+      return `근거 — 일간 신호: ${firstSentence(ctx.stemInteraction.body)}`;
+    case 'communication':
+      return `근거 — 오행 흐름: ${firstSentence(ctx.elementInteraction.summary)}`;
+    case 'money':
+      return `근거 — 오행 보완·겹침: ${firstSentence(ctx.balanceInteraction.body)}`;
+    case 'distance': {
+      // 일지 body 는 합·충 두 문장이 한 줄로 합쳐질 수 있어 firstSentence 로 자르면
+      //   주의(충/형/파/해) 문구가 통째로 사라진다(과긍정 오인 → 하우스 가드 위반).
+      //   구조화된 supportive/caution 을 직접 조립해 주의가 있으면 절대 떨구지 않는다.
+      const branch = ctx.branchInteraction;
+      const parts = [branch.supportive?.detail, branch.caution?.detail].filter(Boolean);
+      const evidenceBody = parts.length > 0 ? parts.join(' ') : firstSentence(branch.body);
+      return `근거 — 일지 신호: ${evidenceBody}`;
+    }
+  }
+}
+
 function buildDeterministicDeepSections(
-  practicalCards: CompatibilityPracticalCard[]
+  practicalCards: CompatibilityPracticalCard[],
+  ctx: DeepSectionContext
 ): CompatibilityDeepSection[] {
-  return practicalCards.map((card) => ({
-    key: card.key,
-    title: card.title,
-    body: `${DEEP_SECTION_AXIS_LEAD[card.key]} ${card.practice}`.trim(),
-  }));
+  const band = resolveScoreBand(ctx.score);
+  const frame = DEEP_SECTION_FRAME[ctx.stemInteraction.kind][band];
+
+  return practicalCards.map((card) => {
+    const coupleLine =
+      `${ctx.selfName}님과 ${ctx.partnerName}님은 ${DEEP_SECTION_AXIS_LEAD[card.key]} ${card.practice}`.trim();
+    const body = [frame, coupleLine].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+
+    return {
+      key: card.key,
+      title: card.title,
+      body,
+      evidence: buildAxisEvidence(card.key, ctx),
+    };
+  });
 }
 
 // 2026-05-23 — ① 궁합 per-couple 1회권용 커플 키.
@@ -1012,7 +1125,15 @@ export function buildCompatibilityInterpretation(
       partnerData
     ),
     practicalCards,
-    deepSections: buildDeterministicDeepSections(practicalCards),
+    deepSections: buildDeterministicDeepSections(practicalCards, {
+      stemInteraction,
+      elementInteraction,
+      branchInteraction,
+      balanceInteraction,
+      score,
+      selfName: self.name,
+      partnerName: partner.name,
+    }),
     evidence: [
       {
         title: '일간의 기본 성향',

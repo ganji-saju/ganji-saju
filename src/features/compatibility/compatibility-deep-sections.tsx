@@ -97,6 +97,14 @@ export function CompatibilityDeepSections({
               <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
                 {item.body}
               </p>
+              {item.evidence ? (
+                <p
+                  className="mt-1.5 break-keep text-[11px] leading-[1.6] text-[var(--app-copy-muted)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {item.evidence}
+                </p>
+              ) : null}
             </div>
           </div>
         </article>
