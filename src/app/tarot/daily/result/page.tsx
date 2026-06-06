@@ -17,6 +17,7 @@ import {
   getTarotReadingForQuestion,
   normalizeQuestion,
 } from '@/lib/tarot-api';
+import { TarotSnapshotSaver } from '@/components/tarot/tarot-snapshot-saver';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -54,6 +55,15 @@ export default async function TarotResultPage({ searchParams }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="오늘의 타로" backHref={pickHref} />
+
+        {/* 로그인 사용자의 타로 결과를 보관함에 저장(카드 선택된 경우만, 마운트 시 1회). */}
+        {cardId ? (
+          <TarotSnapshotSaver
+            question={currentQuestion}
+            cardId={cardId}
+            orientation={reading.orientation}
+          />
+        ) : null}
 
         <section className="space-y-5 px-1">
           {/* §1 Drawn card + 메타 — mockup §3 side-by-side */}

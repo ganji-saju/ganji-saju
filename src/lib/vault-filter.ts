@@ -1,7 +1,7 @@
 // 2026-06-05 #2 (보관함 탭 무반응) — 필터값이 데이터에 배선되지 않아 어떤 탭을 눌러도 목록이
 //   동일했다. 카테고리 분류 + 동적 탭(데이터 있는 탭만 노출)을 위한 순수 로직.
-//   '타로'는 보관함에 저장되는 소스가 없어 탭에서 제외한다(저장 기능 생기면 카테고리 추가).
-export type VaultCategory = 'saju' | 'today' | 'gunghap';
+//   2026-06-05 후속 — 타로 결과 보관함 저장(tarot_result_snapshots) 추가로 'tarot' 카테고리 편입.
+export type VaultCategory = 'saju' | 'today' | 'gunghap' | 'tarot';
 export type VaultFilterKey = 'all' | VaultCategory;
 
 export const VAULT_FILTERS: ReadonlyArray<{ key: VaultFilterKey; label: string }> = [
@@ -9,10 +9,17 @@ export const VAULT_FILTERS: ReadonlyArray<{ key: VaultFilterKey; label: string }
   { key: 'saju', label: '사주' },
   { key: 'today', label: '오늘운세' },
   { key: 'gunghap', label: '궁합' },
+  { key: 'tarot', label: '타로' },
 ];
 
 export function isVaultFilterKey(value: string | null | undefined): value is VaultFilterKey {
-  return value === 'all' || value === 'saju' || value === 'today' || value === 'gunghap';
+  return (
+    value === 'all' ||
+    value === 'saju' ||
+    value === 'today' ||
+    value === 'gunghap' ||
+    value === 'tarot'
+  );
 }
 
 export function normalizeVaultFilter(value: string | null | undefined): VaultFilterKey {
@@ -26,6 +33,7 @@ export function normalizeVaultFilter(value: string | null | undefined): VaultFil
 export function vaultCategoryForProductId(productId: string): VaultCategory {
   if (productId === 'today-detail') return 'today';
   if (productId === 'love-question') return 'gunghap';
+  if (productId === 'tarot-daily') return 'tarot';
   return 'saju';
 }
 

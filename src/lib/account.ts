@@ -16,6 +16,10 @@ import {
   buildTodayFortuneResultSnapshotSummary,
   listTodayFortuneResultSnapshotsForUser,
 } from '@/lib/today-fortune/result-snapshots';
+import {
+  buildTarotResultSnapshotHref,
+  listTarotResultSnapshotsForUser,
+} from '@/lib/tarot/result-snapshots';
 import { getNonExpiredLotBalance } from '@/lib/credits/deduct';
 import {
   buildPaymentHistory,
@@ -185,6 +189,7 @@ export async function getAccountDashboardData(
     transactionsResponse,
     purchasedResults,
     todayFortuneSnapshots,
+    tarotSnapshots,
   ] =
     await Promise.all([
       supabase
@@ -217,6 +222,10 @@ export async function getAccountDashboardData(
         offset: readingOffset,
       }),
       listTodayFortuneResultSnapshotsForUser(user.id, {
+        limit: Math.max(readingLimit, 10),
+        offset: readingOffset,
+      }),
+      listTarotResultSnapshotsForUser(user.id, {
         limit: Math.max(readingLimit, 10),
         offset: readingOffset,
       }),
@@ -305,6 +314,20 @@ export async function getAccountDashboardData(
           createdAt: snapshot.createdAt,
           occurredOn: snapshot.occurredOn,
         })),
+      ...tarotSnapshots.map((snapshot) => ({
+        id: snapshot.id,
+        title: snapshot.cardName,
+        summary: snapshot.question,
+        productId: 'tarot-daily',
+        scopeKey: snapshot.scopeKey,
+        href: buildTarotResultSnapshotHref({
+          question: snapshot.question,
+          cardId: snapshot.cardId,
+          orientation: snapshot.orientation,
+        }),
+        createdAt: snapshot.createdAt,
+        occurredOn: null,
+      })),
     ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
     recentTransactions:
       transactionsResponse.data?.map((transaction) => ({
