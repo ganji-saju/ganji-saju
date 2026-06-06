@@ -208,6 +208,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '차가 고장 나면', meaning: '진행 정체·회복 필요' },
     ],
     related: ['도로', '여행', '사고', '바퀴'],
+    detailSlug: 'car-dream',
     action: '지금 가장 속도를 내고 싶은 일과, 잠시 쉬어 가도 될 일을 따로 나눠보세요.',
   },
   비행기: {
@@ -257,6 +258,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '우산을 쓰면', meaning: '도움·보호받음' },
     ],
     related: ['우산', '눈오는', '하늘', '천둥'],
+    detailSlug: 'rain-dream',
     action: '마음이 무거우면 10분 가벼운 산책으로 한 박자 가라앉혀 보세요.',
   },
   바람: {
@@ -280,6 +282,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '죽은 새를 보면', meaning: '소식 단절·실망' },
     ],
     related: ['독수리', '비둘기', '닭', '까치', '봉황'],
+    detailSlug: 'bird-dream',
     action: '기다리던 소식이 있다면 오늘 먼저 가볍게 안부를 건네보세요.',
   },
   개: {
@@ -304,6 +307,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '새끼고양이를 키우면', meaning: '돌봄·새 시작' },
     ],
     related: ['개', '호랑이', '연예인'],
+    detailSlug: 'cat-dream',
     action: '관계에서 거리감이 느껴지면 한 박자 천천히 다가가 보세요.',
   },
   꽃: {
@@ -364,6 +368,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '도둑을 놓치면', meaning: '기회 일부 놓침' },
     ],
     related: ['돈', '지갑', '경찰'],
+    detailSlug: 'thief-dream',
     action: '들어올 기회를 놓치지 않게, 챙겨야 할 일 하나를 메모해두세요.',
   },
   여행: {
@@ -400,6 +405,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '말다툼만 하면', meaning: '오해 풀 기회' },
     ],
     related: ['전쟁', '복수', '쫓김'],
+    detailSlug: 'fight-dream',
     action: '마음에 걸리는 사람이 있다면 먼저 가벼운 한마디로 오해를 풀어보세요.',
   },
   음식: {
@@ -436,6 +442,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '바다에서 헤엄치면', meaning: '큰 도전·확장' },
     ],
     related: ['물', '파도', '물고기', '산'],
+    detailSlug: 'sea-dream',
     action: '마음이 출렁였다면 오늘은 결정을 한 박자 늦추고 충분히 쉬어보세요.',
   },
   눈오는: {
@@ -529,6 +536,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '산에서 길을 잃으면', meaning: '방향 점검이 필요' },
     ],
     related: ['바다', '나무', '길잃음'],
+    detailSlug: 'mountain-dream',
     action: '오르고 싶은 큰 목표를 작은 단계로 나눠 첫 칸을 정해보세요.',
   },
   쫓김: {
@@ -616,6 +624,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '머리를 자르면', meaning: '마음의 정리·새 출발' },
     ],
     related: ['이빨', '거울', '얼굴'],
+    detailSlug: 'hair-dream',
     action: '머릿속이 복잡하면 생각을 글로 적어 한 번 정리해보세요.',
   },
   돈줍기: {
@@ -677,6 +686,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '신발이 맞지 않으면', meaning: '지금 자리와의 어긋남' },
     ],
     related: ['옷', '여행', '길잃음'],
+    detailSlug: 'shoes-dream',
     action: '새로 내딛고 싶은 길 하나를 떠올려 첫걸음을 정해보세요.',
   },
   비둘기: {
@@ -725,6 +735,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '큰 거미를 보면', meaning: '돌봐줄 인연·재물의 신호' },
     ],
     related: ['뱀', '곤충', '돈'],
+    detailSlug: 'spider-dream',
     action: '복잡하게 얽힌 일 하나를 골라 실마리 한 가닥부터 풀어보세요.',
   },
   지진: {
@@ -749,6 +760,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '강아지가 아프면', meaning: '보살펴야 할 일이 있음' },
     ],
     related: ['개', '고양이', '아기'],
+    detailSlug: 'puppy-dream',
     action: '돌보고 싶은 새 인연이나 일에 오늘 작은 정성을 들여보세요.',
   },
   눈물: {
