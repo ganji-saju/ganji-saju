@@ -151,8 +151,11 @@ test('모든 엔트리 본문은 naming-policy 금지 어휘를 포함하지 않
 });
 
 test('searchDream matches by chosung-only query', () => {
+  // 'ㅂ' 초성 입력 → fallback 에코('ㅂ')가 아닌 실제 사전 키워드로 수렴해야 한다.
   const r = searchDream('ㅂ');
   assert.equal(r.exact, false);
+  assert.notEqual(r.match.keyword, 'ㅂ', 'must not echo the query as fallback');
+  assert.ok(r.match.keyword in DREAM_DICTIONARY, 'must resolve to a real dictionary entry');
   assert.equal(toChosung(r.match.keyword).startsWith('ㅂ'), true);
 });
 
