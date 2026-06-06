@@ -106,6 +106,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['이별', '병원', '관', '울음', '조상'],
     action: '마무리하고 싶은 오래된 일 하나를 골라 첫 정리부터 가볍게 시작해보세요.',
+    detailSlug: 'death-dream',
   },
   불: {
     keyword: '불',
@@ -122,6 +123,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['연기', '재', '태양', '화재', '집'],
     action: '요즘 키우고 싶은 일 하나에 오늘 작은 불씨 같은 첫걸음을 더해보세요.',
+    detailSlug: 'fire-dream',
   },
   시험: {
     keyword: '시험',
@@ -138,6 +140,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['학교', '책', '연필', '시계', '면접'],
     action: '지금 평가받고 있다고 느끼는 일 하나를 골라 다음 한 단계만 정해보세요.',
+    detailSlug: 'exam-dream',
   },
   우는: {
     keyword: '우는',
@@ -179,6 +182,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['임신', '엄마', '아빠', '가족'],
     action: '돌보고 있는 일·사람 가운데 가장 마음 쓰이는 하나를 떠올려보세요.',
+    detailSlug: 'baby-dream',
   },
   결혼: {
     keyword: '결혼', hanja: '婚', category: 'action',
@@ -191,6 +195,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['약혼', '예식', '연인', '드레스'],
     action: '앞두고 있는 큰 결정 하나를 한 문장으로 적어 마음을 정리해보세요.',
+    detailSlug: 'marriage-dream',
   },
   자동차: {
     keyword: '자동차', hanja: '車', category: 'object',
@@ -240,6 +245,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['이사', '문', '방', '거실'],
     action: '머무는 공간 한 곳을 가볍게 정돈하며 마음의 안정을 챙겨보세요.',
+    detailSlug: 'house-dream',
   },
   비: {
     keyword: '비', hanja: '雨', category: 'nature',
@@ -455,6 +461,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['뱀', '봉황', '구름', '하늘'],
     action: '크게 도약하고 싶은 일이 있다면 오늘 그 첫 준비를 시작해보세요.',
+    detailSlug: 'dragon-dream',
   },
 
   // 2026-05-24 꿈해몽 풍부화 phase 1 — 흔한 꿈 27개 파일럿 확충(36 → 63).
@@ -471,6 +478,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['돈', '화장실', '황금'],
     action: '들어올 수 있는 작은 이익 하나를 놓치지 않게 오늘 챙겨보세요.',
+    detailSlug: 'feces-dream',
   },
   돼지: {
     keyword: '돼지', hanja: '豚', category: 'animal',
@@ -483,6 +491,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['돈', '복', '음식'],
     action: '들어온 기회를 흘려보내지 않게, 오늘 챙길 일 하나를 메모해두세요.',
+    detailSlug: 'pig-dream',
   },
   호랑이: {
     keyword: '호랑이', hanja: '虎', category: 'animal',
@@ -495,6 +504,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['용', '사자', '쫓김'],
     action: '맡고 싶은 큰 역할이 있다면 한 걸음 먼저 다가가 보세요.',
+    detailSlug: 'tiger-dream',
   },
   물고기: {
     keyword: '물고기', hanja: '魚', category: 'animal',
@@ -507,6 +517,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['바다', '물', '낚시'],
     action: '눈앞의 기회 하나를 구체적인 다음 행동으로 붙잡아 보세요.',
+    detailSlug: 'fish-dream',
   },
   산: {
     keyword: '산', hanja: '山', category: 'nature',
@@ -2081,6 +2092,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
     ],
     related: ['이빨', '칼', '몸'],
     action: '들어올 기회를 놓치지 않게 오늘 챙길 일 하나를 적어보세요.',
+    detailSlug: 'blood-dream',
   },
   출산: {
     keyword: '출산', hanja: '産', category: 'person',

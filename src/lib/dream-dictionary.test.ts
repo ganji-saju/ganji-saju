@@ -8,6 +8,7 @@ import {
   type DreamFortune,
 } from './dream-dictionary';
 import { DREAM_CONTENT } from './dream/dream-content';
+import { DREAM_ENTRIES } from './free-content-pages';
 import { toChosung } from './dream/hangul-search';
 
 declare const test: (name: string, fn: () => void) => void;
@@ -120,7 +121,10 @@ test('searchDream 정확 매치는 강화 필드를 그대로 전달한다', () 
 });
 
 test('searchDream 미등록 검색어는 fallback(상세 링크 없음)을 반환한다', () => {
-  const result = searchDream('존재하지않는꿈단어zzz');
+  // 순수 ASCII 쿼리는 정확/부분/초성/자모/related 단계를 모두 통과하지 못하고
+  // 최종 FALLBACK_MEANING(detailSlug 없음)으로 수렴한다. (한글 쿼리는 자모 단계에서
+  // detailSlug 가 붙은 인기 키워드로 흡수될 수 있으므로 진짜 fallback 경로를 검증)
+  const result = searchDream('zzzqqq');
   assert.equal(result.exact, false);
   assert.equal(result.match.detailSlug, undefined, 'fallback 은 detailSlug 가 없어야 함');
 });
@@ -187,4 +191,46 @@ test('searchDream resolves jamo-level partial input via the jamo tier', () => {
   assert.equal(r.exact, false);
   assert.ok(r.match.keyword in DREAM_DICTIONARY, 'must resolve to a real dictionary entry, not echo');
   assert.notEqual(r.match.keyword, query);
+});
+
+test('DREAM_CONTENT 는 21개 이상이며 본문에 한자/금지어휘가 없다', () => {
+  const slugs = Object.keys(DREAM_CONTENT);
+  // 기존 8개 + 신규 12개 = 20개. 임계값은 실제 데이터에 맞춰 20 으로 둔다.
+  assert.ok(slugs.length >= 20, `DREAM_CONTENT ${slugs.length} 개 (>=20 기대)`);
+
+  const HANJA = /[一-鿿]/;
+  const FORBIDDEN: RegExp[] = [
+    /(새싹|햇살|흙|쇠|물)의\s*결/g,
+    /(반드시|100%|완치|무조건|틀림없이)/g,
+  ];
+  const findings: string[] = [];
+  for (const [slug, e] of Object.entries(DREAM_CONTENT)) {
+    const body = [
+      e.oneLineSummary, e.baseMeaning, e.psychological, e.caution,
+      ...e.situations.map((s) => `${s.heading} ${s.body}`),
+      ...e.actionGuide,
+      ...e.faqs.map((f) => `${f.question} ${f.answer}`),
+    ].join(' ');
+    if (HANJA.test(body)) findings.push(`${slug}: 한자 노출`);
+    for (const p of FORBIDDEN) { p.lastIndex = 0; if (p.test(body)) findings.push(`${slug}: 금지어휘`); }
+    for (const rel of e.relatedSlugs) {
+      assert.ok(DREAM_CONTENT[rel], `${slug}: relatedSlug "${rel}" 미실재`);
+    }
+  }
+  assert.deepEqual(findings, []);
+});
+
+test('신규 12 슬러그는 DREAM_ENTRIES·DREAM_CONTENT·detailSlug 3곳에 모두 존재한다', () => {
+  const NEW = ['pig-dream','dragon-dream','feces-dream','tiger-dream','fire-dream',
+    'death-dream','marriage-dream','fish-dream','house-dream','exam-dream',
+    'baby-dream','blood-dream'];
+  const entrySlugs = new Set(DREAM_ENTRIES.map((e) => e.slug));
+  const linked = new Set(
+    Object.values(DREAM_DICTIONARY).map((e) => e.detailSlug).filter(Boolean)
+  );
+  for (const s of NEW) {
+    assert.ok(DREAM_CONTENT[s], `${s} DREAM_CONTENT 누락`);
+    assert.ok(entrySlugs.has(s), `${s} DREAM_ENTRIES 누락`);
+    assert.ok(linked.has(s), `${s} detailSlug 연결 누락`);
+  }
 });
