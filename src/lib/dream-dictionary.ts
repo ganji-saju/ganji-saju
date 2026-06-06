@@ -155,6 +155,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '가족과 함께 울면', meaning: '가족 화해·관계 회복' },
     ],
     related: ['눈물', '슬픔', '이별', '병원'],
+    detailSlug: 'crying-dream',
     action: '오늘은 마음을 누르지 말고, 편한 사람에게 짧은 안부를 건네보세요.',
   },
   // 2026-05-15 — 사전 11 → 36 단어 확장. 사용자 검색 적중률 회복.
@@ -606,6 +607,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '멀리서 보기만 하면', meaning: '동경하는 목표가 있음' },
     ],
     related: ['고양이', '거울', '결혼'],
+    detailSlug: 'celebrity-dream',
     action: '닮고 싶은 모습 한 가지를 정해 오늘 작게 흉내 내보세요.',
   },
   지각: {
@@ -731,6 +733,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '계단이 끝없으면', meaning: '조급함, 페이스 조절 필요' },
     ],
     related: ['산', '엘리베이터', '학교'],
+    detailSlug: 'stairs-dream',
     action: '지금 오르는 일에서 다음 한 칸만 또렷이 정해 움직여 보세요.',
   },
   거미: {
@@ -756,6 +759,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '흔들림이 멎으면', meaning: '혼란이 가라앉는 시기' },
     ],
     related: ['화재', '집', '추락'],
+    detailSlug: 'earthquake-dream',
     action: '흔들릴 수 있는 일에 대비해 가장 중요한 한 가지를 먼저 챙겨두세요.',
   },
   강아지: {
@@ -805,6 +809,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '아무리 치워도 더러우면', meaning: '풀리지 않은 일이 남음' },
     ],
     related: ['집', '똥', '옷'],
+    detailSlug: 'cleaning-dream',
     action: '오늘은 가까운 공간 한 곳을 가볍게 정리하며 마음도 함께 비워보세요.',
   },
   시계: {
@@ -885,6 +890,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '곰이 화를 내면', meaning: '큰 부담, 한 박자 살필 시기' },
     ],
     related: ['호랑이', '늑대', '아기'],
+    detailSlug: 'bear-dream',
     action: '기대고 싶은 든든한 사람 한 명에게 오늘 안부를 건네보세요.',
   },
   여우: {
@@ -922,6 +928,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '닭이 모이를 쪼면', meaning: '꾸준한 수익의 누적' },
     ],
     related: ['새', '알', '병아리'],
+    detailSlug: 'chicken-dream',
     action: '미뤄둔 작은 소식 전하기 하나를 오늘 마무리해보세요.',
   },
   개구리: {
@@ -934,6 +941,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '올챙이를 보면', meaning: '아직 자라는 중인 가능성' },
     ],
     related: ['비', '연못', '뱀'],
+    detailSlug: 'frog-dream',
     action: '준비해 온 일에 오늘 한 번 가볍게 첫 도약을 시도해보세요.',
   },
   나비: {
@@ -1455,6 +1463,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '반지를 잃으면', meaning: '관계를 한 번 살필 시기' },
     ],
     related: ['결혼', '금', '보석'],
+    detailSlug: 'ring-dream',
     action: '소중한 관계 하나에 오늘 마음을 담은 한마디를 건네보세요.',
   },
   돈다발: {
@@ -1578,6 +1587,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '금을 선물받으면', meaning: '인덕·도움의 복' },
     ],
     related: ['돈', '보석', '반지'],
+    detailSlug: 'gold-dream',
     action: '들어올 기회를 놓치지 않게 오늘 챙길 일 하나를 메모해두세요.',
   },
   거울앞: {
@@ -1711,6 +1721,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '다시 가까워지면', meaning: '관계보다 내 마음을 살필 시기' },
     ],
     related: ['연인', '이별', '추억'],
+    detailSlug: 'ex-lover-dream',
     action: '마음에 남은 감정이 있다면 오늘 한 줄로 적어 정리해보세요.',
   },
   아이: {
@@ -3218,6 +3229,7 @@ export const DREAM_DICTIONARY: Record<string, DreamMeaning> = {
       { label: '달걀이 깨지면', meaning: '계획을 한 번 점검할 시기' },
     ],
     related: ['알', '닭', '병아리'],
+    detailSlug: 'egg-dream',
     action: '아직 품고 있는 작은 계획 하나를 떠올려 다음 단계를 정해보세요.',
   },
   물마시기: {
