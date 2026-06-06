@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
     interpretation,
     selfName: parsed.self.name,
     partnerName: parsed.partner.name,
+    userId: user.id,
   });
 
   return NextResponse.json({ ok: true, source: result.source, sections: result.sections });
