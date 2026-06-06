@@ -51,6 +51,13 @@ jobs:
       - name: Install Playwright browsers (chromium only)
         run: npx playwright install --with-deps chromium
 
+      # 프로덕션 빌드로 E2E 검증 — 개발 모드 전용 React/Next dev 경고(App Router
+      # template keyless-array 등)가 smoke 의 'console error 0' 단언을 flaky 하게
+      # 깨는 문제 제거 + 실제 사용자가 받는 빌드를 테스트. playwright.config 의
+      # webServer 가 CI 에서 'npm run start'(next start)로 이 .next 출력을 띄운다.
+      - name: Build (production)
+        run: npm run build
+
       - name: Run Playwright E2E
         run: npm run e2e
 
