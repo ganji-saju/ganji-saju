@@ -713,6 +713,13 @@ function buildConflictCard(
   };
 }
 
+// 두 사람이 같은 스타일이면 caution 문장이 동일해 중복되므로 한 번만 노출.
+function joinStyleCautions(selfCaution: string, partnerCaution: string): string {
+  return selfCaution.trim() === partnerCaution.trim()
+    ? selfCaution.trim()
+    : `${selfCaution} ${partnerCaution}`.trim();
+}
+
 function buildCommunicationCard(
   relationship: CompatibilityRelationshipSlug,
   self: CompatibilityPerson,
@@ -750,7 +757,7 @@ function buildCommunicationCard(
     eyebrow: '대화 방식',
     title,
     summary,
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'sky',
   };
 }
@@ -785,7 +792,7 @@ function buildMoneyCard(
     eyebrow: '돈 감각 차이',
     title,
     summary,
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'gold',
   };
 }
@@ -828,7 +835,7 @@ function buildDistanceCard(
     eyebrow: '거리감 조절',
     title,
     summary: `${self.name}님은 ${selfStyle.label}이라 ${selfStyle.summary} ${partner.name}님은 ${partnerStyle.label}이라 ${partnerStyle.summary} ${supportiveLine}`.trim(),
-    practice: `${guide} ${selfStyle.caution} ${partnerStyle.caution}`,
+    practice: `${guide} ${joinStyleCautions(selfStyle.caution, partnerStyle.caution)}`,
     tone: 'jade',
   };
 }

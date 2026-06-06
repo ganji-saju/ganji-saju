@@ -249,3 +249,19 @@ test('deep section framing reflects score band and stem-interaction kind', () =>
     assert.doesNotMatch(s.body, /반드시|100%|완벽한 궁합|무조건|절대/);
   }
 });
+
+test('deep section body never repeats a caution sentence for same-element couples', () => {
+  // 1980×1982: 두 일간이 같은 오행(목) → 과거엔 caution 문장이 중복되었다.
+  const result = makeCompat('lover', 1980, 1982);
+  for (const section of result.deepSections) {
+    const sentences = section.body
+      .split(/(?<=다\.)\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const seen = new Set<string>();
+    for (const s of sentences) {
+      assert.ok(!seen.has(s), `${section.key}: duplicated sentence -> "${s}"`);
+      seen.add(s);
+    }
+  }
+});
