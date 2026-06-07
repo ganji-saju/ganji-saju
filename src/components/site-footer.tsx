@@ -66,7 +66,7 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
       ['타로 한 장 · 타로토선생', '/tarot/daily'],
       ['띠운세 · 엠지쥐선생', '/zodiac'],
       ['별자리 · 별닭선생', '/star-sign'],
-      ['꿈해몽 · 꿈뱀선생', '/dream-interpretation'],
+      ['꿈해몽 · 꿈뱀선생', '/dream'],
     ],
   },
   {

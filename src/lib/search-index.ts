@@ -20,7 +20,8 @@ const MENU_HITS: SearchHit[] = [
     category: '운세 메뉴',
     title: '연애 마음 확인',
     description: '990원 · 작은 풀이',
-    href: '/saju/new?product=love-question',
+    // /saju/new 는 love-question(연애/궁합 상품)을 처리하지 않음(saju 상품만). 궁합 입구로 연결.
+    href: '/compatibility/input',
     zodiacKey: 'rabbit',
     keywords: ['연애', '사랑', '관계', '마음', '여친', '남친', '썸'],
   },

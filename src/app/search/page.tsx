@@ -32,7 +32,7 @@ interface SearchApiResponse {
 
 const RECOMMENDED: Array<{ label: string; zodiac: ZodiacKey; href: string }> = [
   { label: '오늘운세', zodiac: 'rooster', href: '/today-fortune' },
-  { label: '연애 풀이', zodiac: 'rabbit', href: '/saju/new?product=love-question' },
+  { label: '연애 풀이', zodiac: 'rabbit', href: '/compatibility/input' },
   { label: '이직 타이밍', zodiac: 'tiger', href: '/saju/new?product=work-flow' },
   { label: '재물 흐름', zodiac: 'dragon', href: '/saju/new?product=money-pattern' },
 ];

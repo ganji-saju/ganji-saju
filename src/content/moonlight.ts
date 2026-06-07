@@ -327,8 +327,6 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   },
 ] as const;
 
-const DALBIT_TEACHER_GUIDE_HREF = '/guide?teacher=';
-
 export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
   {
     slug: 'mg-ji',
@@ -340,7 +338,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     shortLabel: '성향 놀이',
     role: '가벼운 성향 테스트와 운세를 연결하는 확장 메뉴입니다.',
     question: '나는 어떤 말투와 관계 방식에 가까울까?',
-    href: `${DALBIT_TEACHER_GUIDE_HREF}mg-ji`,
+    href: '/dialogue/rat',
     productPosition: '무료 성향 테스트와 소액 궁금증 상품으로 확장 예정입니다.',
     status: 'active',
   },
@@ -354,7 +352,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     shortLabel: '생활 조언',
     role: '오늘의 운세를 생활 리듬, 습관, 작은 실천으로 바꾸는 확장 메뉴입니다.',
     question: '오늘 하루를 편하게 넘기려면 무엇부터 하면 좋을까?',
-    href: `${DALBIT_TEACHER_GUIDE_HREF}today-so`,
+    href: '/today-fortune?concern=general',
     productPosition: '출석, 루틴, 무료 오늘 조언, 리워드 흐름으로 확장 예정입니다.',
     status: 'active',
   },
@@ -410,7 +408,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     shortLabel: '마음 신호',
     role: '꿈에 남은 장면을 무의식, 감정, 오늘의 조심 포인트로 풀어내는 확장 메뉴입니다.',
     question: '어젯밤 꿈은 지금 마음의 어떤 신호일까?',
-    href: `${DALBIT_TEACHER_GUIDE_HREF}dream-baem`,
+    href: '/dream',
     productPosition: '무료 꿈 키워드 해석과 990원 자세히 보기로 확장 예정입니다.',
     status: 'active',
   },
@@ -452,7 +450,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     shortLabel: '인상과 분위기',
     role: '관상과 첫인상 풀이를 안전한 말투 안내 안에서 확장할 메뉴입니다.',
     question: '내 인상은 어떤 분위기로 전해질까?',
-    href: `${DALBIT_TEACHER_GUIDE_HREF}face-won`,
+    href: '/dialogue/monkey',
     productPosition: '사진/자가진단 기반 무료 입구와 소액 풀이로 확장 예정입니다.',
     status: 'active',
   },
@@ -494,7 +492,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     shortLabel: '복·쿠폰·리워드',
     role: '출석, 행운 카드, 쿠폰, 카카오 친구 유도 같은 리워드 흐름을 맡는 확장 메뉴입니다.',
     question: '오늘 받을 수 있는 작은 행운은 무엇일까?',
-    href: `${DALBIT_TEACHER_GUIDE_HREF}luck-dwaeji`,
+    href: '/dialogue/pig',
     productPosition: '출석 리워드, 무료 행운 카드, 쿠폰 안내로 확장 예정입니다.',
     status: 'active',
   },
