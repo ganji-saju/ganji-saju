@@ -125,7 +125,7 @@ export const FREE_EXPERIENCES = [
     title: '꿈해몽',
     body: 'SEO와 바이럴에 강한 메뉴입니다. 짧은 답과 연관 키워드 구조가 핵심입니다.',
     status: '검색 유입',
-    href: '/dream-interpretation',
+    href: '/dream',
   },
 ] as const;
 
