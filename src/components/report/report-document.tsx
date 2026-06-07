@@ -646,7 +646,7 @@ export function buildPdfModel(
   const nextProducts = [
     { title: '궁합 풀이', sub: '가까운 사람과의 흐름', price: '990원', href: '/compatibility' },
     { title: '좋은 날 캘린더', sub: '이번 달 좋은 날·조심할 날', price: '1,900원', href: '/saju/new?product=monthly-calendar' },
-    { title: '재회 타로', sub: '관계의 다음 흐름', price: '990원', href: '/tarot/daily' },
+    { title: '오늘의 타로', sub: '한 장으로 보는 오늘', price: '무료', href: '/tarot/daily' },
     { title: '1:1 상담', sub: '간지사주 상담방에서 대화', price: '무료~', href: '/dialogue' },
   ];
 
