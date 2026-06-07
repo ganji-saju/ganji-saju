@@ -24,18 +24,18 @@ export const GANGI_ZODIAC = [
 export type GangiZodiacKey = (typeof GANGI_ZODIAC)[number]['key'];
 
 export const GANGI_TEACHERS = [
-  { zodiac: 'rat', name: '엠지쥐선생', topic: '성향 놀이', desc: '말투와 관계 방식을 가볍게 봅니다', href: '/guide?teacher=mg-ji', price: '출시 예정' },
+  { zodiac: 'rat', name: '엠지쥐선생', topic: '성향 놀이', desc: '말투와 관계 방식을 가볍게 봅니다', href: '/dialogue/rat', price: '무료 시작' },
   { zodiac: 'ox', name: '오늘소선생', topic: '오늘 루틴', desc: '오늘 할 행동을 생활 조언으로 봅니다', href: '/today-fortune?concern=general', price: '무료' },
   { zodiac: 'tiger', name: '명리호선생', topic: '깊은 사주', desc: '반복되는 선택과 흐름을 정리합니다', href: '/myeongri', price: '990원~' },
   { zodiac: 'rabbit', name: '타로토선생', topic: '타로', desc: '지금 마음을 카드 한 장으로 봅니다', href: '/tarot/daily', price: '무료' },
   { zodiac: 'dragon', name: '사주용선생', topic: '사주 종합', desc: '내 흐름을 생년월일 정보로 봅니다', href: '/saju/new', price: '550원~' },
-  { zodiac: 'snake', name: '꿈뱀선생', topic: '꿈해몽', desc: '꿈에 남은 장면을 마음 신호로 봅니다', href: '/guide?teacher=dream-baem', price: '출시 예정' },
+  { zodiac: 'snake', name: '꿈뱀선생', topic: '꿈해몽', desc: '꿈에 남은 장면을 마음 신호로 봅니다', href: '/dream', price: '무료' },
   { zodiac: 'horse', name: '길일말선생', topic: '좋은 날', desc: '중요한 일에 좋은 날과 피할 날을 봅니다', href: '/taekil', price: '1,900원~' },
   { zodiac: 'sheep', name: '궁합양선생', topic: '궁합', desc: '상대와의 거리감과 속도를 봅니다', href: '/compatibility/input', price: '990원~' },
-  { zodiac: 'monkey', name: '관상원선생', topic: '관상', desc: '인상과 분위기 풀이를 곧 선보입니다', href: '/guide?teacher=face-won', price: '출시 예정' },
+  { zodiac: 'monkey', name: '관상원선생', topic: '관상', desc: '인상과 분위기를 가볍게 봅니다', href: '/dialogue/monkey', price: '무료 시작' },
   { zodiac: 'rooster', name: '별닭선생', topic: '별자리', desc: '오늘의 별자리 메시지를 가볍게 봅니다', href: '/star-sign', price: '무료' },
   { zodiac: 'dog', name: '상담멍선생', topic: '고민 상담', desc: '편하게 고민을 나누고 방향을 잡아요', href: '/dialogue', price: '무료 시작' },
-  { zodiac: 'pig', name: '복돼지선생', topic: '행운', desc: '출석, 쿠폰, 작은 행운을 곧 선보입니다', href: '/guide?teacher=luck-dwaeji', price: '출시 예정' },
+  { zodiac: 'pig', name: '복돼지선생', topic: '행운', desc: '행운과 기회의 타이밍을 가볍게 봅니다', href: '/dialogue/pig', price: '무료 시작' },
 ] as const;
 
 export function GangiCharacter({
