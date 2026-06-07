@@ -257,6 +257,18 @@ export async function resolvePaymentProductScope({
     };
   }
 
+  // 2026-06-07 — 사주 점수 단일 언락: reading 단위(reading:{readingKey}) scope.
+  if (productId === 'score-total') {
+    return {
+      productId,
+      scopeKey: buildReadingProductScopeKey(readingIdentity.readingKey),
+      kind: 'reading',
+      ...readingIdentity,
+      targetYear: null,
+      targetMonth: null,
+    };
+  }
+
   return {
     productId,
     scopeKey: buildLifetimeReportScopeKey(readingIdentity.readingKey),

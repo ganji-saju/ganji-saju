@@ -40,9 +40,9 @@ import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores
 //   사주 메인/상세 + 운세 페이지에서 공유하는 SajuAreaCardsSection 사용.
 import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
-import { SajuScoreCard, ScoreBreakdownCard, OhaengChart } from '@/components/saju-score';
+import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
-import { getSajuScoreFactorEntitlements } from '@/lib/saju/score-factor-access';
+import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -345,8 +345,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const { input, sajuData, grounding } = reading;
   // 2026-05-21 Phase 6~7 — 사주 종합 점수(순수·서버, 비용 0).
   const sajuScore = computeSajuScoreFromData(sajuData);
-  // 2026-05-22 — per-factor 결제 해제 맵(F1~F5). 결제한 항목은 잠금 해제.
-  const scoreFactorUnlocks = await getSajuScoreFactorEntitlements(slug);
+  // 2026-06-07 — 점수 단일 언락(score-total 550원). 미해제 시 점수 블록을 블러-락.
+  //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
+  const scoreUnlocked = await getScoreUnlockEntitlement(slug);
   const rawReport = buildSajuReport(input, sajuData, topic);
   // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
   //   iljinScore 산출 가능하면 (시 입력 등) overall+영역별을 iljinScore.totalScore 바탕으로 통일.
@@ -550,8 +551,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   아래 &lsquo;오늘의 분야별 흐름&rsquo;과 다른 점수예요. 이건 타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값입니다.
                 </p>
               </div>
-              <SajuScoreCard score={sajuScore} />
-              <ScoreBreakdownCard score={sajuScore} slug={slug} unlockedFactors={scoreFactorUnlocks} />
+              <ScoreLockGate
+                isUnlocked={scoreUnlocked}
+                slug={slug}
+                gradeLabel={sajuScore.label.title}
+              >
+                <SajuScoreCard score={sajuScore} />
+                <ScoreBreakdownCard score={sajuScore} />
+              </ScoreLockGate>
               <OhaengChart
                 data={sajuScore.ohaengChart}
                 guidanceText={sajuScore.ohaengChart.guidanceText}

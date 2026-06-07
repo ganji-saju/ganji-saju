@@ -63,6 +63,7 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'monthly-calendar': 'rooster',
   'year-core': 'sheep',
   'score-factor': 'dragon',
+  'score-total': 'dragon',
   'compat-reading': 'pig',
 };
 
@@ -103,6 +104,18 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     opens: ['선택한 항목 자세한 풀이', '이미 구매한 항목 재열람', '대화로 이어 묻기'],
     notices: [
       '점수 풀이는 현재 사주 결과 + 항목 단위로 연결됩니다.',
+      '다시 열 때는 구매 여부를 먼저 확인합니다.',
+    ],
+  },
+  'score-total': {
+    title: '사주 점수 공개',
+    price: '550원',
+    reassurance:
+      '종합점수와 5요소 산출 내역 전체를 한 번에 엽니다. 같은 결과는 다시 결제하지 않습니다.',
+    nextRange: '종합점수·등급 + 일주·격국·용신·오행·신살 5요소 풀이가 모두 열립니다.',
+    opens: ['종합점수·등급 공개', '5요소 산출 내역 전체', '이미 구매한 결과 재열람'],
+    notices: [
+      '점수 공개는 현재 사주 결과 단위로 연결됩니다.',
       '다시 열 때는 구매 여부를 먼저 확인합니다.',
     ],
   },

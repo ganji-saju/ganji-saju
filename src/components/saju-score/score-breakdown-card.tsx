@@ -1,34 +1,33 @@
-// 2026-05-22 — Phase 2+3 스펙 §8: 5요소 점수 산출 내역 + per-factor LockGate.
+// 2026-05-22 — Phase 2+3 스펙 §8: 5요소 점수 산출 내역.
+// 2026-06-07 — per-factor LockGate 제거. 점수 전체가 상위 ScoreLockGate(score-total 550원)로
+//   단일 게이팅되므로, 이 카드는 해제 상태에서만 렌더되어 5요소를 전부 노출한다.
 'use client';
 
 import { useEffect, useState } from 'react';
 import type { SajuScore } from '@/lib/saju-score';
 import { getScoreColorClasses } from '@/lib/saju-score';
-import { LockGate, type LockFactorId } from './lock-gate';
+
+type FactorId = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
 
 interface ScoreBreakdownCardProps {
   score: SajuScore;
-  slug: string;
-  /** factor 별 결제 해제 여부. 미지정 시 전부 잠금. */
-  unlockedFactors?: Partial<Record<LockFactorId, boolean>>;
   className?: string;
 }
 
 const FACTOR_META: Array<{
-  id: LockFactorId;
+  id: FactorId;
   emoji: string;
   title: string;
   subtitle: string;
-  tab: string; // 결과 페이지 하위 라우트(유료 시 이동)
 }> = [
-  { id: 'F1', emoji: '①', title: '일주 본질', subtitle: '타고난 성향의 안정도', tab: 'nature' },
-  { id: 'F2', emoji: '②', title: '격국 작동도', subtitle: '사회적 역할의 명확성', tab: 'deep' },
-  { id: 'F3', emoji: '③', title: '용신·기신 균형', subtitle: '보강 흐름의 작동', tab: 'deep' },
-  { id: 'F4', emoji: '④', title: '오행 균형', subtitle: '다섯 기운의 균형', tab: 'elements' },
-  { id: 'F5', emoji: '⑤', title: '합충·신살', subtitle: '관계와 작용의 부드러움', tab: 'deep' },
+  { id: 'F1', emoji: '①', title: '일주 본질', subtitle: '타고난 성향의 안정도' },
+  { id: 'F2', emoji: '②', title: '격국 작동도', subtitle: '사회적 역할의 명확성' },
+  { id: 'F3', emoji: '③', title: '용신·기신 균형', subtitle: '보강 흐름의 작동' },
+  { id: 'F4', emoji: '④', title: '오행 균형', subtitle: '다섯 기운의 균형' },
+  { id: 'F5', emoji: '⑤', title: '합충·신살', subtitle: '관계와 작용의 부드러움' },
 ];
 
-export function ScoreBreakdownCard({ score, slug, unlockedFactors, className = '' }: ScoreBreakdownCardProps) {
+export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCardProps) {
   const colors = getScoreColorClasses(score.label.level);
   // 마운트 후 바 채움(animate-bar-fill 미등록 → 인라인 width + transition).
   const [filled, setFilled] = useState(false);
@@ -71,13 +70,6 @@ export function ScoreBreakdownCard({ score, slug, unlockedFactors, className = '
                     style={{ width: `${filled ? barWidth : 0}%` }}
                   />
                 </div>
-                <LockGate
-                  factorId={meta.id}
-                  factorTitle={meta.title}
-                  slug={slug}
-                  navigateTo={`/saju/${slug}/${meta.tab}`}
-                  isUnlocked={unlockedFactors?.[meta.id] ?? false}
-                />
               </div>
             </div>
           );
