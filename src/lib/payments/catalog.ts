@@ -16,6 +16,9 @@ export type TasteProductId =
   | 'monthly-calendar'
   | 'year-core'
   | 'score-factor'
+  // 2026-06-07 — 사주 점수 단일 언락(종합점수+5요소 전체를 reading 단위 550원에).
+  //   per-factor(score-factor) 모델 통합. reading scope(reading:{readingKey})로 grant.
+  | 'score-total'
   // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.
   | 'compat-reading';
 
@@ -131,12 +134,23 @@ export const PAYMENT_PACKAGES = [
   },
   {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
+    //   2026-06-07 — score-total 로 통합되어 신규 노출 없음(grandfather 조회용 inert).
     id: 'taste_score_factor',
     name: '점수 풀이 보기',
     credits: 0,
     price: 550,
     kind: 'taste_product',
     tasteProductId: 'score-factor',
+    requiresSlug: true,
+  },
+  {
+    // 2026-06-07 — 사주 점수 단일 언락. 종합점수+5요소 전체를 reading 단위로 한 번에.
+    id: 'taste_score_total',
+    name: '사주 점수 공개',
+    credits: 0,
+    price: 550,
+    kind: 'taste_product',
+    tasteProductId: 'score-total',
     requiresSlug: true,
   },
   {
@@ -186,6 +200,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'monthly-calendar': 'taste_monthly_calendar',
   'year-core': 'taste_year_core',
   'score-factor': 'taste_score_factor',
+  'score-total': 'taste_score_total',
   'compat-reading': 'taste_compat_reading',
 };
 
@@ -198,6 +213,7 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'monthly-calendar' ||
     value === 'year-core' ||
     value === 'score-factor' ||
+    value === 'score-total' ||
     value === 'compat-reading'
   );
 }
