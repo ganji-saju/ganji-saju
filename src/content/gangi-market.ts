@@ -121,7 +121,9 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'daewoon',
     title: '올해 흐름 · 명리호선생',
     desc: '진행하기 좋은 달',
-    price: '990원',
+    // 2026-06-07 — /daewoon 은 무료 예시 허브(실제 결과는 year-core 3,900원 업셀).
+    //   990원 가격 라벨이 무료 허브 입구에 잘못 붙어 결제 오해 유발하던 것 정정.
+    price: '무료',
     href: '/daewoon',
     zodiac: 'tiger',
     category: 'saju',
