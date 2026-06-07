@@ -37,7 +37,9 @@ export const metadata: Metadata = {
 
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits' || item.id === 'subscription_30');
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
-const FALLBACK_TEACHERS = GANGI_TEACHERS.filter((teacher) => teacher.price !== '출시 예정');
+// 2026-06-07 — 선생 12명 전원 활성(dialogue/전용 기능 연결). 과거 '출시 예정'
+//   필터는 coming-soon 선생이 사라져 불필요 → 전체 사용.
+const FALLBACK_TEACHERS = GANGI_TEACHERS;
 
 function getProductTeacher(index: number) {
   return FALLBACK_TEACHERS[index % FALLBACK_TEACHERS.length] ?? GANGI_TEACHERS[0];
