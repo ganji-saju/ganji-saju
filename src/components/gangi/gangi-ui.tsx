@@ -30,7 +30,7 @@ export const GANGI_TEACHERS = [
   { zodiac: 'rabbit', name: '타로토선생', topic: '타로', desc: '지금 마음을 카드 한 장으로 봅니다', href: '/tarot/daily', price: '무료' },
   { zodiac: 'dragon', name: '사주용선생', topic: '사주 종합', desc: '내 흐름을 생년월일 정보로 봅니다', href: '/saju/new', price: '550원~' },
   { zodiac: 'snake', name: '꿈뱀선생', topic: '꿈해몽', desc: '꿈에 남은 장면을 마음 신호로 봅니다', href: '/dream', price: '무료' },
-  { zodiac: 'horse', name: '길일말선생', topic: '좋은 날', desc: '중요한 일에 좋은 날과 피할 날을 봅니다', href: '/taekil', price: '1,900원~' },
+  { zodiac: 'horse', name: '길일말선생', topic: '좋은 날', desc: '중요한 일에 좋은 날과 피할 날을 봅니다', href: '/taekil', price: '무료' },
   { zodiac: 'sheep', name: '궁합양선생', topic: '궁합', desc: '상대와의 거리감과 속도를 봅니다', href: '/compatibility/input', price: '990원~' },
   { zodiac: 'monkey', name: '관상원선생', topic: '관상', desc: '인상과 분위기를 가볍게 봅니다', href: '/dialogue/monkey', price: '무료 시작' },
   { zodiac: 'rooster', name: '별닭선생', topic: '별자리', desc: '오늘의 별자리 메시지를 가볍게 봅니다', href: '/star-sign', price: '무료' },

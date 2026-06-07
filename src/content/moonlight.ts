@@ -425,7 +425,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '이사·계약·시작 등 중요한 일에 좋은 날과 피할 날을 가볍게 확인하는 확장 메뉴입니다.',
     question: '이 일은 언제 시작하면 좋을까?',
     href: '/taekil',
-    productPosition: '좋은 날 택일 1,900원 상품으로 이어집니다.',
+    productPosition: '택일(좋은 날 찾기)은 무료이며, 월간 좋은날 캘린더(1,900원)로 이어집니다.',
     status: 'active',
   },
   {

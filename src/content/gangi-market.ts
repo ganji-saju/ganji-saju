@@ -130,8 +130,10 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'taekil',
     title: '좋은 날 · 길일말선생',
     desc: '중요한 날 확인',
-    // 2026-05-15 — PR #111 로 fortune-calendar (1,900원 또는 2코인) 구현 완료. "준비 중" 표기 회귀 수정.
-    price: '1,900원',
+    // 2026-06-07 — /taekil(좋은 날 찾기)은 무료 도구. 유료 1,900원 상품은 별개인
+    //   '월간 좋은날 캘린더'(monthly-calendar)이며 결과 화면에서 업셀로 안내.
+    //   가격 라벨이 무료 도구 입구에 1,900원으로 잘못 붙어 결제 오해를 유발하던 것 정정.
+    price: '무료',
     href: '/taekil',
     zodiac: 'ox',
     category: 'fortune',
