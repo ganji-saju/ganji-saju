@@ -12,63 +12,17 @@ import {
   readPendingLifetimeReportSlug,
 } from '@/lib/payments/lifetime-report';
 import { trackMoonlightEvent } from '@/lib/analytics';
-import { buildSajuTodayDetailHref } from '@/lib/saju/today-detail-links';
+import {
+  buildCompleteHref,
+  buildPremiumResultHref,
+  buildTasteProductHref,
+} from '@/lib/payments/post-payment-redirect';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 // 2026-05-15 handoff P0: 54 m-coin + 51 m-loading 연결.
 import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
 
 type ConfirmStatus = 'loading' | 'success' | 'error';
-
-function buildCompleteHref(plan: string, slug: string | null) {
-  const params = new URLSearchParams({ plan, payment: 'confirmed' });
-  if (slug) params.set('slug', slug);
-  return `/membership/complete?${params.toString()}`;
-}
-
-function buildPremiumResultHref(plan: string, slug: string | null) {
-  if (!slug || (plan !== 'premium' && plan !== 'lifetime')) return null;
-  const params = new URLSearchParams({ payment: 'confirmed', plan });
-  return `/saju/${encodeURIComponent(slug)}/premium?${params.toString()}`;
-}
-
-function buildTasteProductHref(
-  product: string | null,
-  slug: string | null,
-  scope: string | null,
-  entrySource: string | null
-) {
-  if (product === 'today-detail') {
-    if (slug && entrySource?.startsWith('saju')) {
-      return `${buildSajuTodayDetailHref(slug)}?paid=today-detail`;
-    }
-    const params = new URLSearchParams({ paid: product, concern: scope || 'general' });
-    if (slug) params.set('sourceSessionId', slug);
-    return `/today-fortune/detail?${params.toString()}`;
-  }
-  if (product === 'love-question') {
-    // 2026-05-14: 궁합 결과 페이지에서 결제로 진입한 경우 결과로 돌아가서 깊은 풀이를
-    // 보여준다. 그 외엔 기존대로 입력 화면으로. ManualCompatibilityResultClient 가
-    // sessionStorage 의 payload (selfName/partnerName/birthInput 등) 를 그대로
-    // 다시 읽으므로 입력을 다시 받지 않아도 결과가 복원된다.
-    if (entrySource?.startsWith('compatibility-result')) {
-      return '/compatibility/result?source=manual&paid=love-question';
-    }
-    return '/compatibility/input?relationship=lover&paid=love-question';
-  }
-  if (slug && product === 'monthly-calendar') {
-    return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#fortune-calendar`;
-  }
-  if (slug && product === 'year-core') {
-    return `/saju/${encodeURIComponent(slug)}/premium?payment=confirmed&product=${product}#yearly-report`;
-  }
-  // 오늘 풀세트(묶음) — 점수 풀이 5항목은 사주 결과 화면에서 직접 열리고 오늘 자세히도
-  // 여기서 이어진다. 구성품을 모두 볼 수 있는 허브(사주 결과)로 보낸다.
-  if (slug && product === 'bundle_today_set') {
-    return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
-  }
-  return null;
-}
 
 function CenteredCard({
   iconBg,
