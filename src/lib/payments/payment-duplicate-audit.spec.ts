@@ -34,7 +34,10 @@ import {
   parseYearMonthScope,
   parseYearScope,
   getPaidProductIdFromPackage,
+  resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
+import { toSlug } from '@/lib/saju/pillars';
+import type { BirthInput } from '@/lib/saju/types';
 
 describe('Payment catalog 정합성', () => {
   it('packageId 와 tasteProductId 는 카탈로그 안에서 유일하다', () => {
@@ -221,5 +224,47 @@ describe('getPackage 조회 안정성', () => {
 
   it('존재하지 않는 id 는 falsy (null 또는 undefined)', () => {
     expect(getPackage('does-not-exist')).toBeFalsy();
+  });
+});
+
+// 2026-06-07 (#428) — score-total 결제 grant scope 가 reading 단위로 가는지(=해제 조회와 일치).
+//   getScoreUnlockEntitlement 는 getTasteProductEntitlement('score-total',
+//   buildReadingProductScopeKey(readingKey)) 로 읽는다. grant 가 lifetime fallback 으로
+//   새면 "결제했는데 점수 안 열림" 버그가 된다. 인코딩 slug 는 resolveReading 이 무DB
+//   (fromSlug 인메모리)로 풀어 결정적으로 검증 가능.
+describe('score-total: 결제 grant scope ↔ 해제 조회 scope 일치 (#428)', () => {
+  const SAMPLE_BIRTH: BirthInput = {
+    year: 1990,
+    month: 5,
+    day: 15,
+    hour: 10,
+    minute: 30,
+    gender: 'male',
+    jasiMethod: 'unified',
+    solarTimeMode: 'standard',
+    unknownTime: false,
+    birthLocation: {
+      code: 'KR-SEL',
+      label: '서울',
+      latitude: 37.5665,
+      longitude: 126.978,
+      timezone: 'Asia/Seoul',
+    },
+  };
+
+  it('resolvePaymentProductScope(score-total) 는 reading 단위 scope (lifetime 으로 새지 않음)', async () => {
+    const pkg = getPackage('taste_score_total');
+    expect(pkg).toBeTruthy();
+
+    const slug = toSlug(SAMPLE_BIRTH);
+    const scope = await resolvePaymentProductScope({ pkg: pkg!, slug });
+
+    expect(scope?.productId).toBe('score-total');
+    // reading 단위(reading:{readingKey})여야 한다. lifetime-reading 으로 새면 해제 불가.
+    expect(scope?.kind).toBe('reading');
+    expect(scope?.readingKey).toBeTruthy();
+    expect(scope?.scopeKey).toBe(buildReadingProductScopeKey(scope!.readingKey!));
+    // 해제 조회(getScoreUnlockEntitlement)도 동일 buildReadingProductScopeKey(readingKey)
+    //   + 동일 resolveReading(slug) → readingKey 를 사용하므로 결제=해제가 보장된다.
   });
 });
