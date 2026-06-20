@@ -1,4 +1,5 @@
 import tarotCardData from '@/data/tarot-card-data.json';
+import { getTarotCardMeaningKo } from '@/data/tarot-card-meanings-ko';
 
 export type TarotOrientation = 'upright' | 'reversed';
 export type TarotQuestionTone = 'daily' | 'relationship' | 'choice' | 'direction';
@@ -48,6 +49,8 @@ export interface TarotReading {
   action: string;
   source: TarotDeckSource;
   meaningExcerpt: string;
+  /** 이 카드 자체의 한글 의미(정/역) — RWS 충실, 결과 페이지 "이 카드가 말하는 것" 렌더. */
+  cardMeaning: string;
 }
 
 export interface TarotSpreadCard {
@@ -885,6 +888,8 @@ function buildTarotReading({
     action,
     source,
     meaningExcerpt: compactMeaning(meaning),
+    // 한글 카드 의미 우선, 데이터 누락 시에만 영문 원전 발췌로 폴백.
+    cardMeaning: getTarotCardMeaningKo(card.name_short, orientation) ?? compactMeaning(meaning),
   };
 }
 

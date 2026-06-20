@@ -171,3 +171,19 @@ This is a synthesis-only task. All inputs (research, audit, draft plan, skeptic 
 **검증 종합**: tsc 클린 · 유닛 fail 0(신규 3 test ok) · next build 성공(256 페이지, 타로 4라우트).
 
 **다음(미반영)**: A6 질문 typed-enum 라우팅 · A2 78장 한글 의미 데이터셋(P1) · A4 3카드 스프레드 UI(P1) · C1 옵트인 AI 1턴(P2, DB scope=Supabase 수동).
+
+---
+
+## ✅ P1 1차 반영 완료 (2026-06-21) — A2 78장 한글 카드 의미
+
+56장 마이너 카드가 제너릭하게 느껴지던 근본 원인(실제 RWS 의미가 렌더 0회) 해결.
+
+| 항목 | 내용 |
+|---|---|
+| 데이터셋 | `src/data/tarot-card-meanings-ko.ts` 신규 — 78장×정역(156개) 한글 의미. 영문 Waite 원전을 소스로 **새로 집필**(직역 아님), 달빛선생 보이스·anti-Barnum·안전(doom/과장 0)·정역 분화. 길이 46~78자 |
+| 생성 방식 | 11에이전트 워크플로(5그룹 병렬 집필 → 그룹별 적대 검증 → 8장 재집필). 키는 카드명 매칭으로 실제 덱 `name_short`(waac/wapa 등)에 정합 |
+| 연결 | `tarot-api.ts`: `getTarotCardMeaningKo()` import, `TarotReading.cardMeaning` 필드 추가(한글 우선, 누락 시 영문 폴백). result page §3에 **"이 카드가 말하는 것 [정/역방향]"** 섹션 렌더 |
+| 테스트 | A2 회귀: 78장 정/역 모두 한글·정역 분화·고유성(distinct 78) 검증. B1 안전 게이트 surface에 cardMeaning 포함 |
+| 검증 | tsc 클린 · 유닛 fail 0 · 렌더 출력 확인(wapa 정/역, Death 역방향=회복 마감) |
+
+**남은 P1**: A4 3카드 스프레드 UI 연결+종합(replay=URL param 구조 변경 필요). **P2**: C1 옵트인 AI 1턴.
