@@ -147,6 +147,13 @@ export default async function TarotResultPage({ searchParams }: Props) {
             </article>
           </section>
 
+          {/* entertainment + agency 고지 — 예측 적중이 아니라 참고용 성찰 메시지임을 명시.
+              결정은 사용자에게 돌려준다(deterministic-doom 방지·정직성). */}
+          <p className="px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
+            오늘의 타로는 마음을 정리하는 참고용 메시지예요. 미래를 단정하지 않으며,
+            오늘의 선택은 늘 당신의 몫입니다.
+          </p>
+
           {/* §4 액션 — 다시 뽑기 + 사주로 이어보기 */}
           <div className="grid grid-cols-2 gap-2">
             <Link
