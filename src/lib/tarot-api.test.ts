@@ -302,3 +302,124 @@ test('local tarot deck cards all resolve to an existing image file', async () =>
     restoreFetch();
   }
 });
+
+// A1 회귀 — 22장 메이저 아르카나 전부 한글 표시명을 가져야 한다(은둔자 룩업 누락 방지).
+// 누락 시 영문명("The Hermit")이 그대로 사용자에게 노출됐었다.
+test('every major arcana card renders a Korean display name (no English leak)', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  try {
+    const deck = await getTarotDeck();
+    const majors = deck.cards.filter((card) => card.type === 'major');
+    assert.equal(majors.length, 22);
+
+    for (const card of majors) {
+      const reading = await getTarotReadingForQuestion({
+        question: '오늘 하루 어떤 메시지가 있을까',
+        cardId: card.name_short,
+        orientation: 'upright',
+      });
+      // displayName 은 "한글명 · English" 병기. 룩업 누락 시엔 한글 없이 bare 영문명만
+      // 나오므로(예: 'The Hermit'), 반드시 한글 음절로 시작해야 한다.
+      assert.match(
+        reading.displayName,
+        /^[가-힣]/,
+        `major ${card.name_short} (${card.name}) has no Korean name (lookup missing): ${reading.displayName}`
+      );
+    }
+  } finally {
+    restoreFetch();
+  }
+});
+
+// A3 회귀 — 역방향이 모든 카드를 하나의 흐름으로 뭉개지 않아야 한다.
+// (이전: 역방향이면 무조건 'blocked' → reversed Sun == reversed Tower)
+test('reversed readings differ by card (not collapsed to one flow)', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  try {
+    const question = '지금 이 상황은 어떤 흐름일까';
+    const sun = await getTarotReadingForQuestion({
+      question,
+      cardId: 'ar19',
+      orientation: 'reversed',
+    });
+    const tower = await getTarotReadingForQuestion({
+      question,
+      cardId: 'ar16',
+      orientation: 'reversed',
+    });
+
+    assert.notEqual(
+      sun.answer,
+      tower.answer,
+      'reversed Sun and reversed Tower must not produce identical answers'
+    );
+  } finally {
+    restoreFetch();
+  }
+});
+
+// B1 안전 게이트 — 생성되는 풀이 출력 어디에도 예측 적중·의료·재정·단정·doom 어휘가
+// 없어야 한다(entertainment 방패·의료광고법 정합·정직성). 카드명 상수의 오탐을 피하려
+// 소스가 아니라 실제 사용자 노출 필드를 검사한다.
+test('generated tarot readings never emit overclaim / medical / doom copy', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  const FORBIDDEN = [
+    /반드시/, /무조건/, /틀림없이/, /100\s*%/, /적중/, /예언/,
+    /완치/, /불치/, /시한부/, /진단받/,
+    /주식/, /종목/, /코인\s*(사|투자)/,
+    /죽음/, /파멸/, /망한다/, /끝장/,
+  ];
+  const QUESTIONS = [
+    '오늘 하루 어떤 메시지가 있을까',
+    '그 사람 마음은 어떤가요',
+    '이직을 결정해도 될까요',
+    '지금 고민 중인 관계에 대하여',
+    '돈 문제가 잘 풀릴까요',
+  ];
+
+  try {
+    const deck = await getTarotDeck();
+    const findings: string[] = [];
+
+    for (const question of QUESTIONS) {
+      for (const card of deck.cards) {
+        for (const orientation of ['upright', 'reversed'] as const) {
+          const reading = await getTarotReadingForQuestion({
+            question,
+            cardId: card.name_short,
+            orientation,
+          });
+          const surface = [
+            reading.answer,
+            reading.action,
+            reading.guidance,
+            reading.sajuBlend,
+            reading.psychology,
+            reading.questionInsight,
+          ].join(' ');
+
+          for (const pattern of FORBIDDEN) {
+            if (pattern.test(surface)) {
+              findings.push(
+                `${card.name_short}/${orientation} "${question}": ${pattern}`
+              );
+            }
+          }
+        }
+      }
+    }
+
+    assert.deepEqual(findings, [], `overclaim/unsafe copy found: ${findings.slice(0, 5).join(' | ')}`);
+  } finally {
+    restoreFetch();
+  }
+});

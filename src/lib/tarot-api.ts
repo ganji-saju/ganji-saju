@@ -108,6 +108,7 @@ const MAJOR_CARD_NAMES: Record<string, string> = {
   'The Lovers': '연인',
   'The Chariot': '전차',
   Fortitude: '힘',
+  'The Hermit': '은둔자',
   'Wheel Of Fortune': '운명의 수레바퀴',
   Justice: '정의',
   'The Hanged Man': '매달린 사람',
@@ -184,6 +185,12 @@ const MAJOR_THEMES: Record<
     focus: '무리하기보다 다스리는 태도',
     action: '센 말보다 차분한 말로 상황을 안정시켜보세요.',
     sajuElement: '강한 기운을 온화하게 쓰는 힘',
+  },
+  'The Hermit': {
+    theme: '성찰과 거리두기',
+    focus: '소란을 잠시 떠나 내 안의 답을 듣는 태도',
+    action: '오늘은 혼자만의 조용한 시간을 잠깐 내어 마음을 들여다보세요.',
+    sajuElement: '안으로 기운을 모아 길을 살피는 힘',
   },
   'Wheel Of Fortune': {
     theme: '전환과 흐름',
@@ -459,21 +466,44 @@ function analyzeQuestion(question: string): TarotQuestionContext {
   };
 }
 
-function getCardFlowState(card: TarotApiCard, orientation: TarotOrientation) {
-  if (orientation === 'reversed') return 'blocked' as const;
+type TarotFlowState = 'open' | 'inward' | 'steady' | 'guarded' | 'blocked' | 'turning';
 
+// 정방향 카드의 기운 상태 — suit/major 성격에서 도출.
+function getUprightFlowState(card: TarotApiCard): TarotFlowState {
   if (card.type === 'major') {
-    if (OPEN_MAJOR_CARDS.has(card.name)) return 'open' as const;
-    if (INWARD_MAJOR_CARDS.has(card.name)) return 'inward' as const;
-    if (CONTROL_MAJOR_CARDS.has(card.name)) return 'steady' as const;
-    return 'turning' as const;
+    if (OPEN_MAJOR_CARDS.has(card.name)) return 'open';
+    if (INWARD_MAJOR_CARDS.has(card.name)) return 'inward';
+    if (CONTROL_MAJOR_CARDS.has(card.name)) return 'steady';
+    return 'turning';
   }
 
-  if (card.suit === 'cups' || card.suit === 'wands') return 'open' as const;
-  if (card.suit === 'pentacles') return 'steady' as const;
-  if (card.suit === 'swords') return 'guarded' as const;
+  if (card.suit === 'cups' || card.suit === 'wands') return 'open';
+  if (card.suit === 'pentacles') return 'steady';
+  if (card.suit === 'swords') return 'guarded';
 
-  return 'turning' as const;
+  return 'turning';
+}
+
+// 역방향은 모든 카드를 'blocked' 하나로 뭉개지 않는다. 카드의 정방향 기운을
+// 안쪽으로 접거나 정체시키는 변환을 적용해 카드별로 다른 흐름을 유지한다
+// (예: 역방향 태양 → guarded, 역방향 탑 → blocked). 다운스트림 카피가 이미 가진
+// 버킷(open/steady/guarded/blocked/turning)만 사용해 회귀를 피한다.
+function getCardFlowState(card: TarotApiCard, orientation: TarotOrientation): TarotFlowState {
+  const base = getUprightFlowState(card);
+  if (orientation === 'upright') return base;
+
+  switch (base) {
+    case 'open':
+      return 'guarded'; // 밖으로 드러나던 기운이 안으로 접혀 주저로
+    case 'inward':
+      return 'guarded'; // 본래 안을 보던 기운이 더 깊이 위축
+    case 'steady':
+    case 'guarded':
+      return 'blocked'; // 안정·경계가 정체로
+    case 'turning':
+    default:
+      return 'blocked'; // 전환이 지연·혼란으로
+  }
 }
 
 function hasBatchim(value: string) {

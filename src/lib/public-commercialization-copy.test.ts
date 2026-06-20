@@ -24,6 +24,10 @@ const PUBLIC_CORE_COPY_FILES = [
   'src/lib/bundled-policies.ts',
   // 2026-06-06 — 유료 리포트 keepsake CTA('준비 중' → '출시 예정') 회귀 잠금.
   'src/components/report/report-keepsake-section.tsx',
+  // 2026-06-21 — 무료 타로 풀이 표면 카피도 정직성 가드 스캔에 포함(이전 미커버).
+  'src/app/tarot/daily/page.tsx',
+  'src/app/tarot/daily/pick/page.tsx',
+  'src/app/tarot/daily/result/page.tsx',
 ] as const;
 
 const FORBIDDEN_PATTERNS = [
