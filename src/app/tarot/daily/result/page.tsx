@@ -129,6 +129,18 @@ export default async function TarotResultPage({ searchParams }: Props) {
 
           {/* §3 풀이 stack */}
           <section className="space-y-2.5">
+            {/* 이 카드 자체의 의미(RWS 충실 한글) — 정/역 반영. 56 마이너 카드 차별화. */}
+            <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+              <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                이 카드가 말하는 것
+                <span className="rounded-full bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[9px] font-bold normal-case tracking-normal text-[var(--app-pink-strong)]">
+                  {reading.orientation === 'reversed' ? '역방향' : '정방향'}
+                </span>
+              </div>
+              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+                {reading.cardMeaning}
+              </p>
+            </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
               <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 마음에 둘 말

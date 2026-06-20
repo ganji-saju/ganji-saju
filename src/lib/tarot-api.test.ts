@@ -405,6 +405,7 @@ test('generated tarot readings never emit overclaim / medical / doom copy', asyn
             reading.sajuBlend,
             reading.psychology,
             reading.questionInsight,
+            reading.cardMeaning,
           ].join(' ');
 
           for (const pattern of FORBIDDEN) {
@@ -419,6 +420,61 @@ test('generated tarot readings never emit overclaim / medical / doom copy', asyn
     }
 
     assert.deepEqual(findings, [], `overclaim/unsafe copy found: ${findings.slice(0, 5).join(' | ')}`);
+  } finally {
+    restoreFetch();
+  }
+});
+
+// A2 — 78장 한글 카드 의미 데이터셋이 완전하고 카드별로 고유해야 한다.
+test('every card exposes a Korean card meaning (upright != reversed, card-specific)', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  try {
+    const deck = await getTarotDeck();
+    assert.equal(deck.cards.length, 78);
+
+    const uprights = new Set<string>();
+    const reverseds = new Set<string>();
+
+    for (const card of deck.cards) {
+      const up = await getTarotReadingForQuestion({
+        question: '오늘 하루 어떤 메시지가 있을까',
+        cardId: card.name_short,
+        orientation: 'upright',
+      });
+      const rev = await getTarotReadingForQuestion({
+        question: '오늘 하루 어떤 메시지가 있을까',
+        cardId: card.name_short,
+        orientation: 'reversed',
+      });
+
+      // 한글 의미가 채워져 있고(영문 폴백이 아님), 한글로 시작.
+      assert.match(
+        up.cardMeaning,
+        /^[가-힣]/,
+        `${card.name_short} upright cardMeaning not Korean: ${up.cardMeaning}`
+      );
+      assert.match(
+        rev.cardMeaning,
+        /^[가-힣]/,
+        `${card.name_short} reversed cardMeaning not Korean: ${rev.cardMeaning}`
+      );
+      // 정/역이 달라야 한다.
+      assert.notEqual(
+        up.cardMeaning,
+        rev.cardMeaning,
+        `${card.name_short} upright/reversed cardMeaning identical`
+      );
+
+      uprights.add(up.cardMeaning);
+      reverseds.add(rev.cardMeaning);
+    }
+
+    // 카드 고유성 — 78장 정방향 의미가 전부 distinct(anti-Barnum).
+    assert.equal(uprights.size, 78, 'upright card meanings must all be distinct');
+    assert.equal(reverseds.size, 78, 'reversed card meanings must all be distinct');
   } finally {
     restoreFetch();
   }
