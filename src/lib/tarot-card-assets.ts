@@ -1,4 +1,7 @@
 export const TAROT_CARD_IMAGE_DIRECTORY = '/images/tarot/cards';
+// 2026-06 perf: 사전 인코딩된 512px AVIF/WebP (런타임 옵티마이저 콜드인코딩 제거).
+// 원본 1024px PNG 는 마스터/폴백/테스트 픽스처로 cards/ 에 유지.
+export const TAROT_CARD_OPTIMIZED_DIRECTORY = '/images/tarot/cards-opt';
 export const TAROT_CARD_IMAGE_EXTENSION = 'png';
 export const TAROT_CARD_BACK_IMAGE_FILE = '00_back.png';
 
@@ -161,6 +164,22 @@ export function getTarotCardImagePath(cardId: string) {
 
 export function getTarotCardBackImagePath() {
   return `${TAROT_CARD_IMAGE_DIRECTORY}/${TAROT_CARD_BACK_IMAGE_FILE}`;
+}
+
+/**
+ * 사전 인코딩된 최적화 소스(avif/webp) + 원본 png 폴백 경로.
+ * <picture> 로 서빙하면 런타임 이미지 옵티마이저(3MB 콜드인코딩)를 거치지 않는다.
+ */
+export function getTarotCardOptimizedSources(cardId: string) {
+  const imagePath = getTarotCardImagePath(cardId);
+  const fileName = imagePath.split('/').pop() ?? '';
+  const baseName = fileName.replace(/\.png$/i, '');
+
+  return {
+    avif: `${TAROT_CARD_OPTIMIZED_DIRECTORY}/${baseName}.avif`,
+    webp: `${TAROT_CARD_OPTIMIZED_DIRECTORY}/${baseName}.webp`,
+    png: imagePath,
+  };
 }
 
 export function getTarotCardVisualTone(cardId: string) {
