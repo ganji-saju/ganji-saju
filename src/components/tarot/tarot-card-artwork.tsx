@@ -1,9 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
-  getTarotCardImagePath,
+  getTarotCardOptimizedSources,
   getTarotCardVisualTone,
 } from '@/lib/tarot-card-assets';
 import { cn } from '@/lib/utils';
@@ -28,12 +27,12 @@ export function TarotCardArtwork({
   priority = false,
 }: TarotCardArtworkProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const imagePath = getTarotCardImagePath(cardId);
+  const sources = getTarotCardOptimizedSources(cardId);
   const tone = getTarotCardVisualTone(cardId);
 
   useEffect(() => {
     setImageFailed(false);
-  }, [imagePath]);
+  }, [sources.webp]);
 
   return (
     <figure
@@ -45,16 +44,19 @@ export function TarotCardArtwork({
       )}
     >
       {!imageFailed ? (
-        <Image
-          src={imagePath}
-          alt={displayName}
-          fill
-          sizes="(max-width: 640px) 76vw, 14rem"
-          priority={priority}
-          quality={82}
-          onError={() => setImageFailed(true)}
-          className="object-cover"
-        />
+        <picture>
+          <source srcSet={sources.avif} type="image/avif" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- 사전 인코딩 정적 AVIF/WebP 직접 서빙(런타임 옵티마이저 우회) */}
+          <img
+            src={sources.webp}
+            alt={displayName}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
+            onError={() => setImageFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </picture>
       ) : null}
 
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,18,0.26),rgba(8,10,18,0.08)_34%,rgba(8,10,18,0.58))]" />

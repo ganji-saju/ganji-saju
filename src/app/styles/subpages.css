@@ -1076,154 +1076,246 @@
   margin-bottom: 0;
 }
 
+/* 타로 피커 — 한 화면 78장 부채 그리드 (2026-06 리디자인: 5스프레드 캐러셀 폐기)
+   sibling /tarot/daily 의 다크 카드 stage 와 톤 통일. 뒷면은 CSS+SVG(이미지 0바이트). */
 .gangi-tarot-stage {
+  position: relative;
   display: grid;
-  min-height: min(36rem, calc(100svh - 12rem));
-  align-content: center;
   justify-items: center;
-  gap: 0.95rem;
+  gap: 1.15rem;
   border-radius: 1.6rem;
   background:
-    radial-gradient(circle at 50% 62%, rgba(255, 79, 154, 0.08), transparent 32%),
-    linear-gradient(180deg, #ffffff 0%, #fff8fc 100%);
-  padding: 1.1rem 0 1.45rem;
+    radial-gradient(circle at 50% 16%, rgba(255, 79, 154, 0.12), transparent 44%),
+    linear-gradient(180deg, #1a0a1f 0%, #2a0d2f 100%);
+  padding: 1.25rem 0.85rem 1.5rem;
   overflow: hidden;
 }
 
-.gangi-tarot-carousel-head {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 1rem;
-}
-
-.gangi-tarot-carousel-head p {
-  margin: 0;
-  color: var(--app-copy-muted);
-  font-size: 0.92rem;
-  font-weight: 650;
-}
-
-.gangi-tarot-carousel-head strong {
-  display: block;
-  margin-top: 0.2rem;
-  color: var(--app-ink);
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.gangi-tarot-carousel-controls {
-  display: inline-flex;
-  gap: 0.45rem;
-}
-
-.gangi-tarot-carousel-controls button {
-  display: grid;
-  width: 2.65rem;
-  height: 2.65rem;
-  place-items: center;
-  border: 1px solid var(--app-line);
-  border-radius: 9999px;
-  background: #ffffff;
-  color: var(--app-ink);
-  box-shadow: 0 10px 24px rgba(17, 17, 20, 0.08);
-}
-
-.gangi-tarot-carousel-controls button:disabled {
-  opacity: 0.35;
-}
-
-.gangi-tarot-carousel {
-  display: flex;
-  width: 100%;
-  gap: 0.85rem;
-  overflow-x: auto;
-  overflow-y: visible;
-  scroll-padding-inline: 1rem;
-  scroll-snap-type: x mandatory;
-  padding: 0.65rem 1rem 1.15rem;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.gangi-tarot-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.gangi-tarot-spread-page {
-  position: relative;
-  width: 100%;
-  min-width: 100%;
-  height: clamp(17.5rem, 64vw, 22rem);
-  scroll-snap-align: center;
-}
-
-.gangi-tarot-spread-card {
+/* 밤하늘 별빛 */
+.gangi-tarot-stage::before {
+  content: '';
   position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 26%, #fff 0.6px, transparent 1.2px),
+    radial-gradient(circle at 82% 68%, #fff 0.6px, transparent 1.2px),
+    radial-gradient(circle at 48% 52%, #fff 0.6px, transparent 1.2px),
+    radial-gradient(circle at 34% 86%, #fff 0.5px, transparent 1px);
+  background-size: 64px 64px, 84px 84px, 42px 42px, 104px 104px;
+}
+
+.gangi-tarot-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* 검증치: 360px 화면 → 카드당 ~44px 탭타깃(Apple HIG) */
+  gap: 0.4rem;
+  width: 100%;
+  overflow-x: clip; /* 틸트 bleed 로 인한 가로 스크롤 방지 */
+  padding: 0.35rem 0.15rem;
+}
+
+.gangi-tarot-grid-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 7 / 10;
+  border-radius: 0.5rem;
+  border: 1.5px solid rgba(255, 79, 154, 0.6);
+  overflow: hidden;
+  color: rgba(210, 176, 114, 0.85); /* 만다라 currentColor */
+  transform: rotate(var(--card-tilt, 0deg));
+  transform-origin: 50% 120%;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* 골드 내부 프레임 */
+.gangi-tarot-grid-card::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(210, 176, 114, 0.28);
+  border-radius: 0.34rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gangi-tarot-card-motif {
+  position: absolute;
+  top: 50%;
   left: 50%;
-  top: 52%;
-  width: clamp(2.9rem, 12.8vw, 4.45rem);
-  border-radius: 0.72rem;
-  border-width: 2px;
-  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(calc(-50% + var(--fan-lift))) rotate(var(--fan-angle)) scale(var(--fan-depth));
-  transform-origin: 50% 110%;
-  box-shadow: 0 14px 30px rgba(17, 17, 20, 0.2);
-  will-change: transform, filter;
+  width: 66%;
+  height: 66%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
-.gangi-tarot-spread-card:hover,
-.gangi-tarot-spread-card:focus-visible {
-  z-index: 50 !important;
+.gangi-tarot-card-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  opacity: calc(var(--card-glow-strength, 0.4) * 0.35);
+  background: radial-gradient(circle at 50% 42%, var(--card-glow, transparent), transparent 62%);
+  transition: opacity 0.2s ease;
+}
+
+.gangi-tarot-card-slot {
+  position: absolute;
+  right: 0.22rem;
+  bottom: 0.16rem;
+  z-index: 3;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.gangi-tarot-card-shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.gangi-tarot-card-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -120%;
+  width: 55%;
+  height: 220%;
+  background: linear-gradient(115deg, transparent, rgba(255, 236, 200, 0.5), transparent);
+  transform: rotate(8deg);
+}
+
+/* hover / focus — 인터랙티브 리프트 */
+.gangi-tarot-grid-card:hover,
+.gangi-tarot-grid-card:focus-visible {
+  transform: rotate(0deg) translateY(-0.6rem) scale(1.12);
+  border-color: rgba(210, 176, 114, 1);
   filter: brightness(1.12) saturate(1.08);
-  transform: translateX(calc(-50% + (var(--fan-offset) * clamp(0.82rem, 3.15vw, 1.08rem)))) translateY(calc(-50% + var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5), 0 0 18px var(--card-glow, transparent);
+  outline: none;
+  z-index: 20;
+  will-change: transform; /* hover 된 1장에만 promote — 78노드 풋건 회피 */
 }
 
-.gangi-tarot-spread-card.is-selected {
-  z-index: 60;
+.gangi-tarot-grid-card:hover .gangi-tarot-card-glow,
+.gangi-tarot-grid-card:focus-visible .gangi-tarot-card-glow {
+  opacity: 0.9;
+}
+
+.gangi-tarot-grid-card:hover .gangi-tarot-card-shimmer,
+.gangi-tarot-grid-card:focus-visible .gangi-tarot-card-shimmer {
+  opacity: 1;
+}
+
+.gangi-tarot-grid-card:hover .gangi-tarot-card-shimmer::after,
+.gangi-tarot-grid-card:focus-visible .gangi-tarot-card-shimmer::after {
+  animation: gangi-tarot-sweep 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 이웃 갈라짐 (순수 CSS :has) */
+.gangi-tarot-grid-card:has(+ .gangi-tarot-grid-card:hover),
+.gangi-tarot-grid-card:has(+ .gangi-tarot-grid-card:focus-visible) {
+  transform: rotate(var(--card-tilt, 0deg)) translateX(-0.28rem) scale(0.98);
+  filter: brightness(0.82);
+}
+
+.gangi-tarot-grid-card:hover + .gangi-tarot-grid-card,
+.gangi-tarot-grid-card:focus-visible + .gangi-tarot-grid-card {
+  transform: rotate(var(--card-tilt, 0deg)) translateX(0.28rem) scale(0.98);
+  filter: brightness(0.82);
+}
+
+/* 누름 피드백 + 선택 */
+.gangi-tarot-grid-card:active {
+  transform: rotate(0deg) translateY(-0.3rem) scale(0.97);
+}
+
+.gangi-tarot-grid-card.is-selected {
+  border-color: rgba(210, 176, 114, 1);
+  box-shadow: 0 0 0 2px rgba(210, 176, 114, 0.9), 0 16px 30px rgba(216, 27, 114, 0.4);
   filter: brightness(1.16) saturate(1.1);
+  z-index: 25;
+}
+
+@keyframes gangi-tarot-sweep {
+  to {
+    left: 160%;
+  }
 }
 
 .gangi-tarot-shuffle {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   min-height: 3.25rem;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border: 1px solid var(--app-line);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 0.95rem;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.94);
   padding-inline: 1.25rem;
   color: var(--app-ink);
   font-size: 1rem;
   font-weight: 700;
-  box-shadow: 0 12px 28px rgba(17, 17, 20, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+@media (min-width: 640px) {
+  .gangi-tarot-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
 }
 
 @media (min-width: 768px) {
   .gangi-tarot-stage {
-    min-height: 36rem;
-    padding-top: 1.5rem;
+    padding: 1.5rem 1.25rem 1.75rem;
   }
 
-  .gangi-tarot-carousel {
-    scroll-padding-inline: 1.2rem;
-    padding-inline: 1.2rem;
+  .gangi-tarot-grid {
+    grid-template-columns: repeat(13, minmax(0, 1fr)); /* 13×6 = 78장 한 화면 */
+    gap: 0.55rem;
   }
 
-  .gangi-tarot-spread-page {
-    height: 24rem;
+  .gangi-tarot-grid-card {
+    border-radius: 0.6rem;
   }
 
-  .gangi-tarot-spread-card {
-    width: clamp(4rem, 6vw, 5.35rem);
-    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(calc(-50% + var(--fan-lift))) rotate(var(--fan-angle)) scale(var(--fan-depth));
+  .gangi-tarot-card-slot {
+    font-size: 0.62rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gangi-tarot-grid-card {
+    transition: filter 0.15s ease, border-color 0.15s ease;
   }
 
-  .gangi-tarot-spread-card:hover,
-  .gangi-tarot-spread-card:focus-visible {
-    transform: translateX(calc(-50% + (var(--fan-offset) * clamp(1.02rem, 1.55vw, 1.42rem)))) translateY(calc(-50% + var(--fan-lift) - 1.05rem)) rotate(var(--fan-angle)) scale(calc(var(--fan-depth) + 0.08));
+  .gangi-tarot-grid-card:hover,
+  .gangi-tarot-grid-card:focus-visible {
+    transform: rotate(0deg);
+    filter: brightness(1.14);
+  }
+
+  .gangi-tarot-grid-card:has(+ .gangi-tarot-grid-card:hover),
+  .gangi-tarot-grid-card:hover + .gangi-tarot-grid-card {
+    transform: rotate(var(--card-tilt, 0deg));
+  }
+
+  .gangi-tarot-card-shimmer::after {
+    animation: none !important;
   }
 }
 

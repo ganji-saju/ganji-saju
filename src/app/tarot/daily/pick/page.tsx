@@ -44,7 +44,7 @@ export default async function TarotPickPage({ searchParams }: Props) {
               한 장 골라요
             </>
           }
-          description="18장씩 부채꼴로 펼쳐진 카드를 옆으로 넘기며 골라보세요."
+          description="78장을 한 화면에 펼쳤어요. 마음이 가는 한 장을 톡 골라요."
         />
 
         <section className="px-4 sm:px-0">
