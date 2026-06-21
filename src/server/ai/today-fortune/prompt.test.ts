@@ -25,7 +25,13 @@ function makeGrounding(overrides: Partial<TodayFortuneGrounding> = {}): TodayFor
 
 test('instructions 에 금지 규칙(단정/한자) 명시', () => {
   const { instructions } = createTodayFortunePrompt(makeGrounding());
-  assert.match(instructions, /반드시|단정|한자/);
+  // All four absolute tokens must be present individually (AND — not OR).
+  assert.ok(instructions.includes('반드시'), 'instructions must contain 반드시');
+  assert.ok(instructions.includes('절대'), 'instructions must contain 절대');
+  assert.ok(instructions.includes('100%'), 'instructions must contain 100%');
+  assert.ok(instructions.includes('무조건'), 'instructions must contain 무조건');
+  // Hanja rule must appear.
+  assert.ok(instructions.includes('한자'), 'instructions must contain 한자 rule');
 });
 
 test('input 에 오늘 일진과 관심사가 포함된다', () => {
@@ -35,7 +41,7 @@ test('input 에 오늘 일진과 관심사가 포함된다', () => {
 
 test('instructions 에 doom/공포 금지 규칙이 포함된다', () => {
   const { instructions } = createTodayFortunePrompt(makeGrounding());
-  assert.match(instructions, /doom|공포|불안|무조건|절대|100%/);
+  assert.ok(instructions.includes('doom') || instructions.includes('공포') || instructions.includes('불안'), 'instructions must contain doom/공포/불안 rule');
 });
 
 test('instructions 에 JSON 출력 형식(headline, body) 명시', () => {

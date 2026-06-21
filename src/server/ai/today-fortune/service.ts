@@ -8,6 +8,9 @@
 // parseTodayFortuneNarrative 는 순수 함수로 분리 → 단위 테스트 가능.
 
 import { isTodayFortuneLlmEnabled } from '@/server/ai/today-fortune/flag';
+
+/** validateChapterBody 가 잡지 못하는 단정 표현 — today-fortune 전용 추가 금지 토큰. */
+const TODAY_FORTUNE_EXTRA_FORBIDDEN = ['100%', '무조건'];
 import { buildTodayFortuneGrounding } from '@/server/ai/today-fortune/grounding';
 import {
   createTodayFortunePrompt,
@@ -56,8 +59,14 @@ export function parseTodayFortuneNarrative(
     const headline = (parsed as { headline: string; body: string }).headline;
     const body = (parsed as { headline: string; body: string }).body;
 
-    const validation = validateChapterBody(headline + ' ' + body);
+    const combined = headline + ' ' + body;
+
+    const validation = validateChapterBody(combined);
     if (!validation.passed) {
+      return { ...fallback, source: 'fallback' };
+    }
+
+    if (TODAY_FORTUNE_EXTRA_FORBIDDEN.some((t) => combined.includes(t))) {
       return { ...fallback, source: 'fallback' };
     }
 
@@ -99,41 +108,48 @@ export async function generateTodayFortuneNarrative(args: {
   }
 
   // Step 3: grounding → prompt → LLM 호출.
-  const grounding = buildTodayFortuneGrounding({ result, sajuData, caseSummaries, situation });
-  const { instructions, input } = createTodayFortunePrompt(grounding);
+  // spec §8: LLM 경로의 어떤 예외도 500 을 유발해선 안 된다 — fallback 으로 강등.
   const fallback = { headline: result.oneLine.headline, body: result.oneLine.body };
 
-  const aiResult = await generateAiText({
-    instructions,
-    input,
-    fallbackText: buildTodayFortuneFallbackText(fallback.headline, fallback.body),
-    model: getOpenAIInterpretationModel(),
-    maxOutputTokens: 500,
-    temperature: 0.8,
-    responseFormat: { type: 'text' },
-    feature: 'today_fortune',
-    userId,
-  });
+  try {
+    const grounding = buildTodayFortuneGrounding({ result, sajuData, caseSummaries, situation });
+    const { instructions, input } = createTodayFortunePrompt(grounding);
 
-  // Step 4: 파싱 + 검증 (순수 함수).
-  // aiResult.source === 'openai' 일 때만 LLM 텍스트를 파싱. 진짜 LLM 실패는 fallback 유지.
-  const narrative =
-    aiResult.source === 'openai' && aiResult.text
-      ? parseTodayFortuneNarrative(aiResult.text, fallback)
-      : { ...fallback, source: 'fallback' as const };
+    const aiResult = await generateAiText({
+      instructions,
+      input,
+      fallbackText: buildTodayFortuneFallbackText(fallback.headline, fallback.body),
+      model: getOpenAIInterpretationModel(),
+      maxOutputTokens: 500,
+      temperature: 0.8,
+      responseFormat: { type: 'text' },
+      feature: 'today_fortune',
+      userId,
+    });
 
-  // Step 5: 캐시 저장 (비차단 — 실패해도 응답에 영향 없음).
-  // iljinGanzi: result.sajuChart?.todayGanzi 사용. 없으면 null.
-  const iljinGanzi = result.sajuChart?.todayGanzi ?? null;
+    // Step 4: 파싱 + 검증 (순수 함수).
+    // aiResult.source === 'openai' 일 때만 LLM 텍스트를 파싱. 진짜 LLM 실패는 fallback 유지.
+    const narrative =
+      aiResult.source === 'openai' && aiResult.text
+        ? parseTodayFortuneNarrative(aiResult.text, fallback)
+        : { ...fallback, source: 'fallback' as const };
 
-  await writeTodayFortuneAi(key, {
-    headline: narrative.headline,
-    body: narrative.body,
-    source: narrative.source,
-    model: aiResult.model,
-    fallbackReason: aiResult.fallbackReason ?? null,
-    iljinGanzi,
-  });
+    // Step 5: 캐시 저장 (비차단 — 실패해도 응답에 영향 없음).
+    // iljinGanzi: result.sajuChart?.todayGanzi 사용. 없으면 null.
+    const iljinGanzi = result.sajuChart?.todayGanzi ?? null;
 
-  return narrative;
+    await writeTodayFortuneAi(key, {
+      headline: narrative.headline,
+      body: narrative.body,
+      source: narrative.source,
+      model: aiResult.model,
+      fallbackReason: aiResult.fallbackReason ?? null,
+      iljinGanzi,
+    });
+
+    return narrative;
+  } catch {
+    // grounding/prompt/LLM 호출 중 예외 → 결정론 폴백으로 강등 (500 방지).
+    return { headline: fallback.headline, body: fallback.body, source: 'fallback' as const };
+  }
 }

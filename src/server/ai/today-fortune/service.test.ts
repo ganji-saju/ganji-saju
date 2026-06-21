@@ -37,6 +37,20 @@ test('headline 또는 body 가 문자열 아닐 때 폴백 반환', () => {
   assert.equal(r.source, 'fallback');
 });
 
+test('100% 포함 LLM 출력은 폴백으로 대체 (Finding A)', () => {
+  const fb = { headline: 'FB', body: 'FBB' };
+  const r = parseTodayFortuneNarrative('{"headline":"오늘은 100% 좋아요","body":"x"}', fb);
+  assert.equal(r.source, 'fallback');
+  assert.equal(r.headline, 'FB');
+});
+
+test('무조건 포함 LLM 출력은 폴백으로 대체 (Finding A)', () => {
+  const fb = { headline: 'FB', body: 'FBB' };
+  const r = parseTodayFortuneNarrative('{"headline":"무조건 잘 풀려요","body":"x"}', fb);
+  assert.equal(r.source, 'fallback');
+  assert.equal(r.headline, 'FB');
+});
+
 test('플래그 OFF 일 때 generateTodayFortuneNarrative 는 null 반환', async () => {
   // OPENAI_TODAY_FORTUNE 을 미설정(또는 '0')으로 두면 isTodayFortuneLlmEnabled() === false.
   delete process.env.OPENAI_TODAY_FORTUNE;
