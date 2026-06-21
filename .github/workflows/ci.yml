@@ -47,6 +47,12 @@ jobs:
       - name: Audit redesign coverage (PR #198/#206/#207 류 — 구스타일 named CSS class 회귀 차단)
         run: npm run audit:redesign-coverage:strict
 
+      # 2026-06-21 — lucky 오행 분기 정적 가드(코드 기반, DB 불필요)를 CI 에 편입.
+      # payment-idempotency·ai-chat-idempotency·lifetime-report 는 DB 데이터 감사라
+      # 운영 super_admin 트리거/스케줄로 별도 운영(prod service_role 의 CI 반입 금지 정책).
+      - name: Audit lucky hybrid (오행 분기 회귀 차단)
+        run: npm run audit:lucky-hybrid:strict
+
       - name: Validate KASI calendar samples
         if: ${{ env.KASI_SERVICE_KEY != '' }}
         run: npm run validate:kasi
