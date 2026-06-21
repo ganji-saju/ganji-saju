@@ -39,7 +39,7 @@ const SIPSUNG_TO_CASE: Record<SipSung, IljinCaseId> = {
 };
 
 // 우선순위 (강한 길흉 신호 우선).
-const PRIORITY: IljinCaseId[] = [
+export const PRIORITY: IljinCaseId[] = [
   'S30_TIANYI', // 천을귀인
   'S38_YONGSIN_IN',
   'S39_KISHIN_IN',
