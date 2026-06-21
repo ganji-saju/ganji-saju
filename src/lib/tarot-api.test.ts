@@ -479,3 +479,61 @@ test('every card exposes a Korean card meaning (upright != reversed, card-specif
     restoreFetch();
   }
 });
+
+// A4 — 3카드 스프레드 종합 서사: 결정론·세 포지션 반영·안전(예언/운명/doom 0)·주체성 마감.
+test('three-card spread synthesis is deterministic, safe, and agency-affirming', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  const { getTarotSpreadReadingForQuestion } = await import('./tarot-api');
+
+  const FATED = [
+    /운명/, /예언/, /반드시/, /무조건/, /틀림없이/, /적중/,
+    /끝장/, /파멸/, /죽음/, /결국 .*것입니다/,
+  ];
+
+  try {
+    const a = await getTarotSpreadReadingForQuestion('그 사람과 다시 잘 될 수 있을까요');
+    const b = await getTarotSpreadReadingForQuestion('그 사람과 다시 잘 될 수 있을까요');
+
+    // 결정론 — 같은 질문 = 같은 카드/종합
+    assert.equal(a.positions.length, 3);
+    assert.deepEqual(
+      a.positions.map((p) => `${p.position}:${p.reading.card.name_short}:${p.reading.orientation}`),
+      b.positions.map((p) => `${p.position}:${p.reading.card.name_short}:${p.reading.orientation}`)
+    );
+    assert.equal(a.synthesis, b.synthesis);
+
+    // 세 포지션이 모두 종합 안에 언급되어야 한다(자리별 흐름).
+    for (const entry of a.positions) {
+      assert.ok(
+        a.synthesis.includes(entry.position),
+        `synthesis must mention position "${entry.position}"`
+      );
+    }
+
+    // 주체성 마감 + 비단정.
+    assert.match(a.synthesis, /몫|골라보세요|정해진 결말은 아니/);
+
+    // 예언/운명/doom 어휘 금지 — 여러 질문에 대해 검사.
+    const questions = [
+      '그 사람과 다시 잘 될 수 있을까요',
+      '이직을 해도 괜찮을까요',
+      '지금 이 관계를 어떻게 풀어야 할까요',
+      '돈 문제가 잘 풀릴까요',
+      '오늘 하루 어떤 메시지가 있을까',
+    ];
+    for (const q of questions) {
+      const spread = await getTarotSpreadReadingForQuestion(q);
+      for (const pattern of FATED) {
+        assert.ok(
+          !pattern.test(spread.synthesis),
+          `spread synthesis for "${q}" must not contain ${pattern}: ${spread.synthesis}`
+        );
+      }
+    }
+  } finally {
+    restoreFetch();
+  }
+});

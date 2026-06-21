@@ -49,6 +49,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
     orientation,
   });
   const pickHref = `/tarot/daily/pick?question=${encodeURIComponent(currentQuestion)}`;
+  const spreadHref = `/tarot/daily/spread?question=${encodeURIComponent(currentQuestion)}`;
   const sajuHref = readingSlug ? `/saju/${readingSlug}` : '/saju/new';
 
   return (
@@ -165,6 +166,24 @@ export default async function TarotResultPage({ searchParams }: Props) {
             오늘의 타로는 마음을 정리하는 참고용 메시지예요. 미래를 단정하지 않으며,
             오늘의 선택은 늘 당신의 몫입니다.
           </p>
+
+          {/* P1·A4 — 같은 질문을 현재·원인·조언 세 자리로 펼치는 심화뷰(질문 시드 결정론). */}
+          <Link
+            href={spreadHref}
+            className="flex items-center justify-between rounded-[16px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3.5"
+          >
+            <span className="min-w-0">
+              <span className="block text-[13px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                세 장으로 더 깊이 보기
+              </span>
+              <span className="mt-0.5 block text-[11.5px] text-[var(--app-copy-soft)]">
+                현재 · 원인 · 조언 세 자리로 펼쳐 흐름을 이어 읽어요
+              </span>
+            </span>
+            <span className="ml-3 shrink-0 text-[var(--app-pink-strong)]" aria-hidden="true">
+              →
+            </span>
+          </Link>
 
           {/* §4 액션 — 다시 뽑기 + 사주로 이어보기 */}
           <div className="grid grid-cols-2 gap-2">

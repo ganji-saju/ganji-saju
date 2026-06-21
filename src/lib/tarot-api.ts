@@ -58,6 +58,14 @@ export interface TarotSpreadCard {
   reading: TarotReading;
 }
 
+export interface TarotSpreadReading {
+  question: string;
+  positions: TarotSpreadCard[];
+  /** 세 자리를 잇는 종합 서사 — 포지션 기반·예언 없음·주체성 마감. */
+  synthesis: string;
+  source: TarotDeckSource;
+}
+
 export interface TarotPickerCard {
   slot: number;
   card: TarotApiCard;
@@ -522,6 +530,16 @@ function withParticle(value: string, consonantParticle: string, vowelParticle: s
   return `${value}${hasBatchim(value) ? consonantParticle : vowelParticle}`;
 }
 
+// 로/으로 — 받침이 없거나 ㄹ받침이면 '로', 그 외 받침이면 '으로'(예: 재물로, 행동으로).
+function withRoParticle(value: string) {
+  const trimmed = value.trim();
+  const lastChar = trimmed.charAt(trimmed.length - 1);
+  const code = lastChar ? lastChar.charCodeAt(0) - 0xac00 : -1;
+  const jongseong = code >= 0 && code <= 11171 ? code % 28 : 0;
+  const takesRo = jongseong === 0 || jongseong === 8; // 받침 없음 또는 ㄹ
+  return `${value}${takesRo ? '로' : '으로'}`;
+}
+
 function getSubjectLabel(context: TarotQuestionContext) {
   switch (context.subject) {
     case 'other':
@@ -837,6 +855,63 @@ export async function getTarotSpreadForQuestion(question?: string): Promise<Taro
       }),
     };
   });
+}
+
+// 세 자리를 잇는 종합 서사. 카드 조합(suit/major 구성)에서 결정론적으로 도출하며,
+// 예언·운명 어휘 없이 포지션 흐름으로 읽고 주체성으로 마감한다(연구 §2-2 synthesis).
+function buildSpreadSynthesis(cards: TarotSpreadCard[]): string {
+  if (cards.length < 3) {
+    return '';
+  }
+
+  const [first, second, third] = cards as [TarotSpreadCard, TarotSpreadCard, TarotSpreadCard];
+  const suits = cards
+    .map((entry) => entry.reading.card.suit)
+    .filter((suit): suit is TarotSuit => Boolean(suit));
+  const majorCount = cards.filter((entry) => entry.reading.card.type === 'major').length;
+
+  // 종합용 짧은 테마(메이저=고유 테마, 마이너=수트 테마) — reading.theme 복합어는 장황.
+  const shortTheme = (entry: TarotSpreadCard) =>
+    entry.reading.card.type === 'major'
+      ? MAJOR_THEMES[entry.reading.card.name]?.theme ?? '큰 전환'
+      : entry.reading.card.suit
+        ? SUIT_THEMES[entry.reading.card.suit].theme
+        : '지금의 결';
+
+  const flow =
+    `${first.position}의 ${shortTheme(first)}에서 시작해, ` +
+    `${second.position}의 ${withParticle(shortTheme(second), '을', '를')} 지나, ` +
+    `${third.position}의 ${withRoParticle(shortTheme(third))} 이어지는 흐름이에요.`;
+
+  let texture: string;
+  if (majorCount >= 2) {
+    texture = '큰 전환의 카드가 여럿 겹쳐, 지금이 마음의 방향을 새로 잡는 자리로 보여요.';
+  } else if (suits.length === 3 && new Set(suits).size === 1) {
+    texture = `세 자리가 모두 ${SUIT_THEMES[suits[0]!].theme}의 결로 모여, 그 한 가지가 오늘의 중심 화두로 보여요.`;
+  } else {
+    texture = '서로 다른 결이 섞여 있어, 한쪽으로 단정하기보다 자리마다의 신호를 함께 읽는 편이 좋아요.';
+  }
+
+  const close =
+    `어느 자리도 정해진 결말은 아니에요. ` +
+    `${third.position}이 가리키는 쪽으로 오늘 할 수 있는 작은 한 걸음을 골라보세요.`;
+
+  return `${flow} ${texture} ${close}`;
+}
+
+// 3-card 스프레드 + 종합 서사. 질문 시드 기반이라 같은 질문 = 같은 스프레드(재현성).
+export async function getTarotSpreadReadingForQuestion(
+  question?: string
+): Promise<TarotSpreadReading> {
+  const normalizedQuestion = normalizeQuestion(question);
+  const positions = await getTarotSpreadForQuestion(normalizedQuestion);
+
+  return {
+    question: normalizedQuestion,
+    positions,
+    synthesis: buildSpreadSynthesis(positions),
+    source: positions[0]?.reading.source ?? 'local',
+  };
 }
 
 export function normalizeQuestion(question?: string) {
