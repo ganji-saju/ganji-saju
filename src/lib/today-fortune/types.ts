@@ -91,6 +91,8 @@ export interface TodayFortuneFreeResult {
     headline: string;
     body: string;
   };
+  /** LLM 풀이 출처. 'openai'/'cache' = AI 생성(고지 배지 노출), 'fallback'/미설정 = 결정론(배지 없음). */
+  aiSource?: 'openai' | 'fallback' | 'cache';
   scores: TodayScoreItem[];
   /** 2026-05-16 PR #149 (Part C) — 사용자 입력 상황. UI 가 chip strip + perspective 한 줄에 사용.
       grounding.personalizationContext.userSituation 에서 추출. 미입력이면 null. */

@@ -10,6 +10,7 @@ import type { TodayFortuneBirthPayload } from '@/lib/today-fortune/types';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
 import { generateTodayFortuneNarrative } from '@/server/ai/today-fortune/service';
+import { buildTodayCaseSummaries } from '@/server/today-fortune/today-case-summaries';
 import type { UserSituation } from '@/lib/saju/types';
 
 /**
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest) {
 
   // 오늘운세 무료 LLM 풀이(플래그 ON + 로그인 시). null 이면 결정론 유지.
   if (user?.id) {
-    const caseSummaries = result.iljinMessages?.messages ?? [];
+    const caseSummaries = buildTodayCaseSummaries({ sajuData });
     const situation = summarizeUserSituation(
       persistedGrounding?.personalizationContext?.userSituation ?? null
     );
@@ -184,6 +185,7 @@ export async function POST(req: NextRequest) {
     });
     if (narrative) {
       result.oneLine = { ...result.oneLine, headline: narrative.headline, body: narrative.body };
+      result.aiSource = narrative.source;
     }
   }
 
