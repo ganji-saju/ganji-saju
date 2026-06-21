@@ -223,3 +223,18 @@ This is a synthesis-only task. All inputs (research, audit, draft plan, skeptic 
 **적대적 코드리뷰(4관점)**: 블로커 0. 발견→수정: ① 중복 cardId 변조 URL→dedup ② >3장 무신호 절단→parse 정규화 ③ 오해 소지 재현성 주석 교정 ④ 카피 불일치 ~15곳 보정. 레거시 단일카드 `/result`·스냅샷·기존 보관함 항목은 유지(하위호환).
 
 **알려진 한계(의도)**: 3장 뽑기는 crypto 랜덤(질문 시드 아님) → "같은 질문 같은 날 같은 뽑기" 재현은 없음. 단 고른 3장이 URL에 고정되어 **URL replay·공유·보관함 재현은 가능**.
+
+---
+
+## ✅ 풀이 풍부화 (2026-06-21) — "가득가득 + 공감"
+
+피드백("풀이가 미흡, 풍부하게 공감되게 채워줘"). 스프레드가 카드별 1~2문장 의미만 보여주던 것을 대폭 확장.
+
+| 항목 | 내용 |
+|---|---|
+| 한글 카드 의미 확장 | `tarot-card-meanings-ko.ts` 156개를 **3~4문장(105~174자, 중앙 130) 공감형으로 재집필** — 2인칭("지금 당신은…"), 위로·다독임, 카드 이미지 묘사 포함. 11에이전트 워크플로(그룹 병렬 집필 → 적대 검증 empathy/fullness/faithfulness/safety/barnum/한국어 → 1장 재집필) |
+| 포지션 공감 인트로 | `buildSpreadPositionInsight(position, reading, index)` — 카드를 그 자리(현재/원인/조언)×정역으로 읽는 사람 마음에 말 거는 인트로. 결정론 |
+| 풍부한 종합 | `buildSpreadSynthesis` 보강 — opener(공감) + flow + texture(역방향 다수 분기 추가) + 따뜻한 agency 마감 |
+| 오늘 마음에 둘 한 가지 | `buildSpreadClosing` — 조언 자리 카드의 구체적 행동(reading.action) 노출. `TarotSpreadReading.closing` |
+| 렌더 | 스프레드 페이지: 카드별 [공감 인트로 + "카드의 메시지" 박스] + 종합 + "🌙 오늘 마음에 둘 한 가지" |
+| 검증 | tsc·유닛 fail 0(B1 안전 게이트가 확장 의미 포함 통과)·next build·렌더 출력 확인. 무거운 카드(Death/Tower/소드10) 역방향 모두 회복·주체성 마감(doom 0) |
