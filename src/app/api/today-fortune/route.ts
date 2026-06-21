@@ -9,6 +9,45 @@ import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-
 import type { TodayFortuneBirthPayload } from '@/lib/today-fortune/types';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
+import { generateTodayFortuneNarrative } from '@/server/ai/today-fortune/service';
+import type { UserSituation } from '@/lib/saju/types';
+
+/**
+ * 사용자 상황 객체를 한 줄 한국어 요약으로 변환.
+ * 한자 금지. null/빈 입력은 null 반환.
+ */
+function summarizeUserSituation(s: UserSituation | null): string | null {
+  if (!s) return null;
+
+  const occupationMap: Record<string, string> = {
+    employee: '직장인',
+    'self-employed': '자영업',
+    student: '학생',
+    homemaker: '주부',
+    'job-seeking': '구직중',
+    other: '기타',
+  };
+
+  const relationshipMap: Record<string, string> = {
+    single: '미혼',
+    dating: '연애 중',
+    married: '기혼',
+    separated: '이별',
+  };
+
+  const parts: string[] = [];
+  if (s.occupation) {
+    const label = occupationMap[s.occupation];
+    if (label) parts.push(label);
+  }
+  if (s.relationshipStatus) {
+    const label = relationshipMap[s.relationshipStatus];
+    if (label) parts.push(label);
+  }
+
+  if (parts.length === 0) return null;
+  return parts.join(' · ');
+}
 
 export const runtime = 'nodejs';
 
@@ -129,6 +168,24 @@ export async function POST(req: NextRequest) {
     grounding: persistedGrounding,
     kasiComparison: persistedKasiComparison,
   });
+
+  // 오늘운세 무료 LLM 풀이(플래그 ON + 로그인 시). null 이면 결정론 유지.
+  if (user?.id) {
+    const caseSummaries = result.iljinMessages?.messages ?? [];
+    const situation = summarizeUserSituation(
+      persistedGrounding?.personalizationContext?.userSituation ?? null
+    );
+    const narrative = await generateTodayFortuneNarrative({
+      result,
+      sajuData,
+      caseSummaries,
+      situation,
+      userId: user.id,
+    });
+    if (narrative) {
+      result.oneLine = { ...result.oneLine, headline: narrative.headline, body: narrative.body };
+    }
+  }
 
   return NextResponse.json({
     ok: true,
