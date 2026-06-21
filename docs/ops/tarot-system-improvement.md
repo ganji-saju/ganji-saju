@@ -187,3 +187,20 @@ This is a synthesis-only task. All inputs (research, audit, draft plan, skeptic 
 | 검증 | tsc 클린 · 유닛 fail 0 · 렌더 출력 확인(wapa 정/역, Death 역방향=회복 마감) |
 
 **남은 P1**: A4 3카드 스프레드 UI 연결+종합(replay=URL param 구조 변경 필요). **P2**: C1 옵트인 AI 1턴.
+
+---
+
+## ✅ P1 2차 반영 완료 (2026-06-21) — A4 3카드 스프레드 심화뷰
+
+데드코드였던 `getTarotSpreadForQuestion` 엔진을 활성화. **질문 시드 기반**(사용자 결정)이라 replay는 `?question=X`로 자명 — DB·스냅샷 변경 0.
+
+| 항목 | 내용 |
+|---|---|
+| 종합 서사 | `buildSpreadSynthesis()` 신규 — 3 포지션을 잇는 한 문단. **포지션 흐름**(현재→원인→조언) + 카드 구성 읽기(메이저 다수/단일 수트/혼합) + **주체성 마감**. 예언·운명·doom 어휘 0(하드 테스트). 짧은 테마(major=고유, minor=수트)·`withRoParticle` ㄹ예외 조사 처리 |
+| 엔진 | `getTarotSpreadReadingForQuestion()` — 기존 스프레드 엔진 + synthesis. 질문 시드 결정론(같은 질문=같은 스프레드) |
+| 라우트 | `src/app/tarot/daily/spread/page.tsx` 신규 — 3 포지션(카드 face+한글 의미+정역 배지) + 종합 + 면책문구 + 액션 |
+| CTA | result 페이지에 "세 장으로 더 깊이 보기 →"(`?question=X` 전달). 단일카드 '뽑기' 의식은 그대로 유지 |
+| 테스트 | A4: 결정론·세 포지션 모두 언급·주체성 마감·예언/운명/doom 어휘 0(5질문). 정직성 가드에 spread page 추가 |
+| 검증 | tsc 클린 · 유닛 fail 0 · next build 성공 · 렌더 출력 확인(조사 버그 2건 수정: 판단를→판단을, 재물으로→재물로) |
+
+**남은**: A4 pick-3 모델(별도, 큰 작업) · **P2 C1** 옵트인 AI 1턴(DB scope=Supabase 수동).

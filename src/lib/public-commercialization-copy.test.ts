@@ -28,6 +28,7 @@ const PUBLIC_CORE_COPY_FILES = [
   'src/app/tarot/daily/page.tsx',
   'src/app/tarot/daily/pick/page.tsx',
   'src/app/tarot/daily/result/page.tsx',
+  'src/app/tarot/daily/spread/page.tsx',
 ] as const;
 
 const FORBIDDEN_PATTERNS = [
