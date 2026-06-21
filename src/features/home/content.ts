@@ -111,7 +111,7 @@ export const FREE_EXPERIENCES = [
   },
   {
     title: '오늘의 무료 타로',
-    body: '질문 없이 한 장만 뽑아도 오늘의 기분과 흐름을 바로 읽을 수 있는 무입력 콘텐츠입니다.',
+    body: '질문 없이 세 장만 뽑아도 오늘의 기분과 흐름을 바로 읽을 수 있는 무입력 콘텐츠입니다.',
     status: '무입력',
     href: '/tarot/daily',
   },

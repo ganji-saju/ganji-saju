@@ -1319,6 +1319,97 @@
   }
 }
 
+/* 3장 선택 — 진행 표시 / 픽 배지 / 액션 */
+.gangi-tarot-pick-progress {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0 0.4rem;
+}
+
+.gangi-tarot-pick-step {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.45rem 0.3rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.gangi-tarot-pick-step strong {
+  display: grid;
+  width: 1.05rem;
+  height: 1.05rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.62rem;
+}
+
+.gangi-tarot-pick-step.is-filled {
+  border-color: rgba(210, 176, 114, 0.6);
+  background: rgba(210, 176, 114, 0.16);
+  color: var(--app-gold, rgba(210, 176, 114, 1));
+}
+
+.gangi-tarot-pick-step.is-filled strong {
+  background: rgba(210, 176, 114, 0.9);
+  color: #1a0a1f;
+}
+
+.gangi-tarot-pick-hint {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.gangi-tarot-card-pick-badge {
+  position: absolute;
+  right: 0.22rem;
+  bottom: 0.16rem;
+  z-index: 3;
+  display: grid;
+  width: 0.95rem;
+  height: 0.95rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(210, 176, 114, 0.95);
+  color: #1a0a1f;
+  font-size: 0.56rem;
+  font-weight: 800;
+}
+
+.gangi-tarot-pick-actions {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .gangi-tarot-pick-step {
+    font-size: 0.82rem;
+  }
+
+  .gangi-tarot-card-pick-badge {
+    width: 1.15rem;
+    height: 1.15rem;
+    font-size: 0.66rem;
+  }
+}
+
 .gangi-result-card {
   border: 1px solid var(--app-line);
   border-radius: 1rem;

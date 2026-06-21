@@ -537,3 +537,76 @@ test('three-card spread synthesis is deterministic, safe, and agency-affirming',
     restoreFetch();
   }
 });
+
+// A4(3장 직접 선택) — 사용자가 고른 카드가 순서대로 포지션에 배치되고, 부족하면 폴백.
+test('user-picked three-card spread places chosen cards into positions', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  const { getTarotSpreadReadingForCards } = await import('./tarot-api');
+
+  try {
+    const picks = [
+      { cardId: 'ar19', orientation: 'upright' as const },
+      { cardId: 'sw03', orientation: 'reversed' as const },
+      { cardId: 'cu02', orientation: 'upright' as const },
+    ];
+    const spread = await getTarotSpreadReadingForCards('오늘 하루 어떤 메시지가 있을까', picks);
+
+    assert.equal(spread.positions.length, 3);
+    assert.deepEqual(
+      spread.positions.map((p) => p.reading.card.name_short),
+      ['ar19', 'sw03', 'cu02']
+    );
+    assert.equal(spread.positions[0]?.reading.orientation, 'upright');
+    assert.equal(spread.positions[1]?.reading.orientation, 'reversed');
+    assert.ok(spread.synthesis.length > 0);
+
+    // 결정론 — 같은 픽 = 같은 결과
+    const again = await getTarotSpreadReadingForCards('오늘 하루 어떤 메시지가 있을까', picks);
+    assert.equal(spread.synthesis, again.synthesis);
+
+    // 부족하면 질문 시드 스프레드로 폴백(3장 채움)
+    const fallback = await getTarotSpreadReadingForCards('오늘 하루 어떤 메시지가 있을까', [
+      { cardId: 'ar19', orientation: 'upright' as const },
+    ]);
+    assert.equal(fallback.positions.length, 3);
+  } finally {
+    restoreFetch();
+  }
+});
+
+// A4 보안 — 중복 카드(변조/replay URL)는 같은 카드 3장을 렌더하지 않고 폴백한다.
+test('user-picked spread dedups identical cards and falls back', async () => {
+  mockFetch((async () => {
+    throw new Error('network unavailable');
+  }) as typeof fetch);
+
+  const { getTarotSpreadReadingForCards } = await import('./tarot-api');
+
+  try {
+    // 같은 카드 3장 → 고유 1장 → 3장 미만 → 질문 시드 폴백(서로 다른 3장)
+    const degenerate = await getTarotSpreadReadingForCards('오늘 하루 어떤 메시지가 있을까', [
+      { cardId: 'ar19', orientation: 'upright' as const },
+      { cardId: 'ar19', orientation: 'upright' as const },
+      { cardId: 'ar19', orientation: 'upright' as const },
+    ]);
+    const ids = degenerate.positions.map((p) => p.reading.card.name_short);
+    assert.equal(new Set(ids).size, 3, 'spread must not render the same card three times');
+
+    // 4장 이상이어도 앞의 고유 3장만
+    const overflow = await getTarotSpreadReadingForCards('오늘 하루 어떤 메시지가 있을까', [
+      { cardId: 'ar19', orientation: 'upright' as const },
+      { cardId: 'sw03', orientation: 'upright' as const },
+      { cardId: 'cu02', orientation: 'upright' as const },
+      { cardId: 'pe05', orientation: 'upright' as const },
+    ]);
+    assert.deepEqual(
+      overflow.positions.map((p) => p.reading.card.name_short),
+      ['ar19', 'sw03', 'cu02']
+    );
+  } finally {
+    restoreFetch();
+  }
+});

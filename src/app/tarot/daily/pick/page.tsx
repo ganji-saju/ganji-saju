@@ -34,17 +34,17 @@ export default async function TarotPickPage({ searchParams }: Props) {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
-        <GangiPageHeader title="타로 한 장" backHref="/tarot/daily" />
+        <GangiPageHeader title="타로 세 장" backHref="/tarot/daily" />
 
         <GangiIntro
           title={
             <>
               마음이 가는 카드를
               <br />
-              한 장 골라요
+              세 장 골라요
             </>
           }
-          description="78장을 한 화면에 펼쳤어요. 마음이 가는 한 장을 톡 골라요."
+          description="78장을 한 화면에 펼쳤어요. 마음이 가는 순서대로 세 장을 톡톡 골라요."
         />
 
         <section className="px-4 sm:px-0">

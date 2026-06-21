@@ -48,7 +48,7 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
   },
   'today-tarot': {
     href: '/tarot/daily',
-    desc: '마음이 가는 카드 한 장',
+    desc: '마음이 가는 카드 세 장',
     label: '타로 뽑기',
   },
   'today-zodiac': {

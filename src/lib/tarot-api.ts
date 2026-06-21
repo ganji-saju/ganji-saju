@@ -914,6 +914,65 @@ export async function getTarotSpreadReadingForQuestion(
   };
 }
 
+export interface TarotSpreadPick {
+  cardId: string;
+  orientation: TarotOrientation;
+}
+
+// 사용자가 직접 고른 3장으로 스프레드를 구성. 포지션 라벨은 질문 의도에서 도출하고,
+// 카드는 고른 순서대로 배치. 유효 카드가 3장 미만이면 질문 시드 스프레드로 폴백.
+export async function getTarotSpreadReadingForCards(
+  question: string | undefined,
+  picks: TarotSpreadPick[]
+): Promise<TarotSpreadReading> {
+  const deck = await getTarotDeck();
+  const normalizedQuestion = normalizeQuestion(question);
+
+  // 중복 카드 제거(같은 카드 3장 같은 변조 URL 방어) → 덱에 있는 카드만 → 앞 3장.
+  const seen = new Set<string>();
+  const validPicks = picks
+    .filter((pick) => {
+      if (seen.has(pick.cardId)) return false;
+      seen.add(pick.cardId);
+      return true;
+    })
+    .map((pick) => ({
+      card: deck.cards.find((card) => card.name_short === pick.cardId),
+      orientation: pick.orientation,
+    }))
+    .filter(
+      (entry): entry is { card: TarotApiCard; orientation: TarotOrientation } =>
+        Boolean(entry.card)
+    )
+    .slice(0, 3);
+
+  // 고유 카드 3장이 안 되면(변조·부족 URL) 질문 시드 스프레드로 폴백.
+  if (validPicks.length < 3) {
+    return getTarotSpreadReadingForQuestion(normalizedQuestion);
+  }
+
+  const positions = buildSpreadPositions(analyzeQuestion(normalizedQuestion));
+  const cards: TarotSpreadCard[] = positions.map((position, index) => {
+    const pick = validPicks[index]!;
+    return {
+      position,
+      reading: buildTarotReading({
+        card: pick.card,
+        orientation: pick.orientation,
+        question: normalizedQuestion,
+        source: deck.source,
+      }),
+    };
+  });
+
+  return {
+    question: normalizedQuestion,
+    positions: cards,
+    synthesis: buildSpreadSynthesis(cards),
+    source: deck.source,
+  };
+}
+
 export function normalizeQuestion(question?: string) {
   return question?.trim() || '오늘 하루 어떤 메시지가 있을까';
 }
