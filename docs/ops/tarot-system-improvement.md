@@ -204,3 +204,22 @@ This is a synthesis-only task. All inputs (research, audit, draft plan, skeptic 
 | 검증 | tsc 클린 · 유닛 fail 0 · next build 성공 · 렌더 출력 확인(조사 버그 2건 수정: 판단를→판단을, 재물으로→재물로) |
 
 **남은**: A4 pick-3 모델(별도, 큰 작업) · **P2 C1** 옵트인 AI 1턴(DB scope=Supabase 수동).
+
+---
+
+## ✅ A4 pick-3 완전 교체 (2026-06-21) — 데일리 플로우를 3장 직접 뽑기로
+
+사용자 피드백("처음에 한 장이 아니라 3장을 뽑아야"). 단일카드 뽑기 → **3장 직접 선택**으로 흐름 완전 교체("세 장으로 완전 교체" 결정).
+
+| 항목 | 내용 |
+|---|---|
+| 피커 | `tarot-card-picker.tsx`: Link 단일선택 → button **3장 순서 누적 선택**. 진행표시(현재/원인/조언)·픽 번호배지·"한 장 취소"·"다시 섞기". 3장째 → `router.push(/spread?cards=a,b,c&orientations=u,r,u)` |
+| 엔진 | `getTarotSpreadReadingForCards(question, picks[])` — 고른 3장으로 포지션 배치+풀이+종합. **중복 dedup·최대 3장 정규화**, 고유 3장 미만이면 질문 시드 폴백. `TarotSpreadPick` export |
+| 스프레드 페이지 | URL cards/orientations 파싱(dedup+cap) → 사용자 3장 렌더(없으면 폴백). 로그인 시 `TarotSpreadSnapshotSaver`. 액션=다시뽑기/사주로 이어보기 |
+| 보관함 | **마이그레이션 없이** 기존 `tarot_result_snapshots` 재사용(card_id/orientation는 CHECK 없는 TEXT). `upsertTarotSpreadSnapshot`(join 저장). `buildTarotResultSnapshotHref`가 쉼표 감지→/spread, 단일카드→/result 유지(레거시 하위호환) |
+| 카피 | daily/pick/moonlight + 홈·nav·footer·market·report·dream·알림 등 ~15곳 "한 장"→"세 장" 일괄 정합 |
+| 검증 | tsc·유닛 fail 0(신규: user-pick 배치·dedup·결정론)·next build·**실제 3장 선택→스프레드 렌더 확인** |
+
+**적대적 코드리뷰(4관점)**: 블로커 0. 발견→수정: ① 중복 cardId 변조 URL→dedup ② >3장 무신호 절단→parse 정규화 ③ 오해 소지 재현성 주석 교정 ④ 카피 불일치 ~15곳 보정. 레거시 단일카드 `/result`·스냅샷·기존 보관함 항목은 유지(하위호환).
+
+**알려진 한계(의도)**: 3장 뽑기는 crypto 랜덤(질문 시드 아님) → "같은 질문 같은 날 같은 뽑기" 재현은 없음. 단 고른 3장이 URL에 고정되어 **URL replay·공유·보관함 재현은 가능**.

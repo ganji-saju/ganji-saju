@@ -378,7 +378,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     zodiacOrder: 4,
     serviceTitle: '타로',
     shortLabel: '지금 마음 보기',
-    role: '카드 한 장으로 지금 마음, 망설임, 오늘 해볼 행동을 빠르게 보여줍니다.',
+    role: '카드 세 장으로 지금 마음, 숨은 원인, 오늘 해볼 행동을 차례로 보여줍니다.',
     question: '지금 내 마음은 어디로 기울어 있을까?',
     href: '/tarot/daily',
     productPosition: '무료 타로에서 시작하고, 마음이 남으면 990원 풀이로 이어집니다.',
@@ -553,7 +553,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
     hanja: '🐰',
     title: '타로',
     hook: '지금 이 선택, 괜찮은 걸까',
-    description: '지금 이 순간 마음 위로 스치는 기운을 한 장의 그림으로 읽어드립니다.',
+    description: '지금 이 순간 마음 위로 스치는 기운을 세 장의 그림으로 읽어드립니다.',
     href: '/tarot/daily',
     tone: 'plum',
   },
@@ -872,7 +872,7 @@ export const NOTIFICATION_SCHEDULE_BLUEPRINT: readonly MoonlightNotificationSlot
   {
     key: 'today-tarot',
     title: '오늘의 타로',
-    body: '오늘 마음에 필요한 타로 한 장을 뽑아보세요.',
+    body: '오늘 마음에 필요한 타로 세 장을 뽑아보세요.',
     timeLabel: '낮 12시',
     cadence: '매일',
     tone: 'plum',
@@ -1061,7 +1061,7 @@ export const INTERPRETATION_ENTRY_GUIDE = [
   },
   {
     title: '오늘 마음이 먼저 움직이신다면 타로',
-    body: '질문 하나와 카드 한 장으로 지금의 감정선을 비추고, 필요하면 더 깊은 사주 해석으로 이어집니다.',
+    body: '질문 하나와 카드 세 장으로 지금의 감정선을 비추고, 필요하면 더 깊은 사주 해석으로 이어집니다.',
     href: '/tarot/daily',
     cta: '타로 뽑기',
   },
@@ -1206,7 +1206,7 @@ export const COMPATIBILITY_PREMIUM_EXPANSION: Record<
 
 export const TAROT_TO_SAJU_BRIDGE = [
   '타로는 지금의 감정과 장면을 읽고, 사주는 그 장면이 왜 반복되는지를 설명합니다.',
-  '카드 한 장이 마음에 남았다면, 사주에서는 같은 질문을 대운과 오행의 구조까지 이어서 볼 수 있습니다.',
+  '카드 세 장이 마음에 남았다면, 사주에서는 같은 질문을 대운과 오행의 구조까지 이어서 볼 수 있습니다.',
   '관계, 재물, 진로처럼 오래 붙드는 질문일수록 타로 뒤에 사주를 붙였을 때 해석의 깊이가 크게 달라집니다.',
 ] as const;
 

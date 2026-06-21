@@ -45,7 +45,7 @@ export const TRUST_POINTS = [
 export const FREE_EXPERIENCES = [
   {
     title: '오늘의 무료 타로',
-    body: '질문 없이 한 장만 뽑아도 오늘의 기분과 흐름을 바로 읽을 수 있습니다.',
+    body: '질문 없이 세 장만 뽑아도 오늘의 기분과 흐름을 바로 읽을 수 있습니다.',
     status: '지금 보기',
     href: '/tarot/daily',
   },

@@ -359,7 +359,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
                 color: 'var(--app-pink-strong)',
               }}
             >
-              타로 한 장 뽑기
+              타로 세 장 뽑기
             </Link>
             <Link
               href="/dream-interpretation"

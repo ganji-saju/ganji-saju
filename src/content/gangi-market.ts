@@ -91,7 +91,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'tarot',
-    title: '타로 한 장 · 타로토선생',
+    title: '타로 세 장 · 타로토선생',
     desc: '마음이 시키는 카드',
     price: '무료',
     href: '/tarot/daily',
@@ -201,7 +201,7 @@ export const GANGI_FREE_ACTIONS = [
     id: 'tarot',
     href: '/tarot/daily',
     label: 'FREE',
-    title: '타로 한 장',
+    title: '타로 세 장',
     desc: '마음이 시키는 카드',
     mark: 'card',
     zodiac: 'rabbit',
@@ -218,7 +218,7 @@ export const GANGI_FREE_HUB_ITEMS = [
   {
     href: '/tarot/daily',
     zodiac: 'rabbit',
-    title: '타로 한 장',
+    title: '타로 세 장',
     desc: '마음이 시키는 카드',
   },
   {

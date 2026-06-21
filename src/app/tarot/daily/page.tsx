@@ -10,7 +10,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '타로',
-  description: '질문을 고르고 카드 한 장을 뽑아 오늘 마음의 흐름을 바로 확인하세요.',
+  description: '질문을 고르고 카드 세 장을 뽑아 현재·원인·조언으로 오늘의 흐름을 읽어보세요.',
   alternates: {
     canonical: '/tarot/daily',
   },
@@ -28,15 +28,15 @@ export default async function DailyTarotPage() {
           {/* §1 Eyebrow + headline */}
           <div>
             <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              한 장 타로 · 무료
+              세 장 타로 · 무료
             </div>
             <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               마음에 떠오르는
               <br />
-              한 장을 골라보세요
+              세 장을 골라보세요
             </h1>
             <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
-              궁금한 한 가지를 고르고 바로 뽑으세요. 카드 한 장이 오늘 마음의 흐름을 보여줍니다.
+              궁금한 한 가지를 고르고 카드 세 장을 뽑으세요. 현재·원인·조언으로 오늘의 흐름을 보여줍니다.
             </p>
           </div>
 
@@ -85,7 +85,7 @@ export default async function DailyTarotPage() {
               })}
             </div>
             <p className="relative mt-3.5 text-center text-[12px] text-white/70">
-              한 장을 골라 탭하세요
+              세 장을 골라 탭하세요
             </p>
             <div className="relative mt-4 flex justify-center">
               <span className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">

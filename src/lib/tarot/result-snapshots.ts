@@ -1,5 +1,11 @@
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
-import type { TarotOrientation, TarotQuestionTone, TarotReading } from '@/lib/tarot-api';
+import type {
+  TarotOrientation,
+  TarotQuestionTone,
+  TarotReading,
+  TarotSpreadPick,
+  TarotSpreadReading,
+} from '@/lib/tarot-api';
 
 // 2026-06-05 — 타로 결과 보관함 저장. 무료 한장타로 결과를 로그인 사용자의 보관함에 남긴다.
 //   결과는 (question, cardId, orientation)으로 완전 결정 → scope_key 는 날짜 무관 identity,
@@ -68,12 +74,23 @@ export function buildTarotResultSnapshotScopeKey(input: {
   return `tarot:${stableHash(basis)}`;
 }
 
-/** 보관함 항목 → 결과 재현 링크. 파라미터가 결과를 결정하므로 그대로 다시 렌더된다. */
+/** 보관함 항목 → 결과 재현 링크. 파라미터가 결과를 결정하므로 그대로 다시 렌더된다.
+ *  단일 카드는 /result, 3장 스프레드(card_id에 쉼표)는 /spread 로 라우팅한다. */
 export function buildTarotResultSnapshotHref(input: {
   question: string;
   cardId: string;
   orientation: string;
 }): string {
+  // 스프레드 스냅샷: card_id="ar01,cu02,sw03", orientation="u,r,u".
+  if (input.cardId.includes(',')) {
+    const params = new URLSearchParams({
+      question: input.question,
+      cards: input.cardId,
+      orientations: input.orientation,
+    });
+    return `/tarot/daily/spread?${params.toString()}`;
+  }
+
   const params = new URLSearchParams({
     question: input.question,
     cardId: input.cardId,
@@ -165,6 +182,58 @@ export async function upsertTarotResultSnapshot(
     .single();
   if (error || !data) {
     console.warn('tarot result snapshot write failed', error);
+    return null;
+  }
+  return mapRow(data as unknown as TarotResultSnapshotRow);
+}
+
+// 3장 스프레드를 같은 테이블에 저장(마이그레이션 없이). card_id/orientation 은 쉼표 join
+// 텍스트로 보관 → vault href 가 쉼표를 감지해 /spread 로 라우팅한다.
+export interface StoreTarotSpreadSnapshotInput {
+  userId: string;
+  question: string;
+  picks: TarotSpreadPick[];
+  spread: TarotSpreadReading;
+  now?: Date;
+}
+
+export async function upsertTarotSpreadSnapshot(
+  input: StoreTarotSpreadSnapshotInput
+): Promise<TarotResultSnapshot | null> {
+  if (!hasSupabaseServiceEnv) return null;
+  const now = input.now ?? new Date();
+  const cardId = input.picks.map((pick) => pick.cardId).join(',');
+  const orientation = input.picks
+    .map((pick) => (pick.orientation === 'reversed' ? 'r' : 'u'))
+    .join(',');
+  const cardName = input.spread.positions
+    .map((entry) => entry.reading.displayName)
+    .join(' · ');
+  const scopeKey = buildTarotResultSnapshotScopeKey({
+    question: input.question,
+    cardId,
+    orientation,
+  });
+  const service = await createServiceClient();
+  const payload = {
+    user_id: input.userId,
+    scope_key: scopeKey,
+    question: input.question.trim(),
+    question_tone: input.spread.positions[0]?.reading.tone ?? 'daily',
+    card_id: cardId,
+    card_name: cardName || '세 장 풀이',
+    orientation,
+    reading_json: input.spread,
+    snapshot_version: TAROT_RESULT_SNAPSHOT_VERSION,
+    generated_at: now.toISOString(),
+  };
+  const { data, error } = await service
+    .from('tarot_result_snapshots')
+    .upsert(payload, { onConflict: 'user_id,scope_key' })
+    .select(SNAPSHOT_SELECT)
+    .single();
+  if (error || !data) {
+    console.warn('tarot spread snapshot write failed', error);
     return null;
   }
   return mapRow(data as unknown as TarotResultSnapshotRow);

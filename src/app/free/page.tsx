@@ -10,7 +10,7 @@ import { GANGI_FREE_HUB_ITEMS } from '@/content/gangi-market';
 
 export const metadata: Metadata = {
   title: '무료운세',
-  description: '오늘운세, 타로 한 장, 띠운세를 무료로 바로 시작하는 간지사주 무료운세 허브입니다.',
+  description: '오늘운세, 타로 세 장, 띠운세를 무료로 바로 시작하는 간지사주 무료운세 허브입니다.',
   alternates: { canonical: '/free' },
 };
 

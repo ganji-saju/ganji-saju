@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { Shuffle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { RotateCcw, Shuffle } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useState } from 'react';
 import {
@@ -16,6 +16,9 @@ interface TarotCardPickerProps {
   cards: TarotPickerCardInput[];
   question: string;
 }
+
+const SPREAD_SIZE = 3;
+const SPREAD_POSITION_LABELS = ['현재 흐름', '숨은 원인', '오늘의 조언'] as const;
 
 const CARD_BACK_TONES: Record<
   TarotCardBackTone,
@@ -98,60 +101,126 @@ function MandalaBack() {
 }
 
 export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
+  const router = useRouter();
   const [drawDeck, setDrawDeck] = useState<TarotPickerCardDraw[]>(() =>
     createRandomTarotDrawDeck(cards)
   );
-  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  // 고른 순서대로 누적되는 3장. 카드 정체는 결과 전까지 가린 채 순번만 표시.
+  const [picks, setPicks] = useState<TarotPickerCardDraw[]>([]);
+  const [navigating, setNavigating] = useState(false);
 
   const reshuffleDeck = useCallback(() => {
-    setSelectedCardId(null);
+    setPicks([]);
+    setNavigating(false);
     setDrawDeck(createRandomTarotDrawDeck(cards));
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [cards]);
 
+  const undoLastPick = useCallback(() => {
+    setPicks((current) => current.slice(0, -1));
+  }, []);
+
+  const handlePick = useCallback(
+    (card: TarotPickerCardDraw) => {
+      if (navigating) return;
+      setPicks((current) => {
+        if (current.length >= SPREAD_SIZE) return current;
+        if (current.some((entry) => entry.cardId === card.cardId)) return current;
+
+        const next = [...current, card];
+        if (next.length === SPREAD_SIZE) {
+          setNavigating(true);
+          router.push(buildSpreadHref(question, next));
+        }
+        return next;
+      });
+    },
+    [navigating, question, router]
+  );
+
+  const remaining = SPREAD_SIZE - picks.length;
+
   return (
-    <article className="gangi-tarot-stage" aria-label="타로 카드 한 장 선택">
+    <article className="gangi-tarot-stage" aria-label="타로 카드 세 장 선택">
+      <div className="gangi-tarot-pick-progress" aria-live="polite">
+        {SPREAD_POSITION_LABELS.map((label, index) => {
+          const filled = index < picks.length;
+          return (
+            <span
+              key={label}
+              className={cn('gangi-tarot-pick-step', filled && 'is-filled')}
+            >
+              <strong>{index + 1}</strong>
+              {label}
+            </span>
+          );
+        })}
+      </div>
+
+      <p className="gangi-tarot-pick-hint">
+        {navigating
+          ? '세 장의 풀이를 펼치는 중…'
+          : remaining > 0
+            ? `마음이 가는 카드를 ${remaining}장 더 골라요`
+            : '세 장을 모두 골랐어요'}
+      </p>
+
       <div
         className="gangi-tarot-grid"
         role="list"
         aria-label={`펼쳐진 타로 카드 ${drawDeck.length}장`}
       >
         {drawDeck.map((card) => {
-          const selected = selectedCardId === card.cardId;
+          const pickIndex = picks.findIndex((entry) => entry.cardId === card.cardId);
+          const selected = pickIndex >= 0;
           const tone = CARD_BACK_TONES[card.backTone];
 
           return (
-            <Link
+            <button
               key={`${card.slot}-${card.cardId}-${card.orientation}`}
+              type="button"
               role="listitem"
-              href={buildResultHref(question, card)}
               aria-label={`${card.slot}번째 카드 선택`}
-              onClick={() => setSelectedCardId(card.cardId)}
+              aria-pressed={selected}
+              disabled={navigating || (!selected && picks.length >= SPREAD_SIZE)}
+              onClick={() => handlePick(card)}
               style={getCardBackStyle(card, selected)}
               className={cn('gangi-tarot-grid-card', selected && 'is-selected')}
             >
               <span className="gangi-tarot-card-glow" aria-hidden="true" />
               <MandalaBack />
               <span className="gangi-tarot-card-shimmer" aria-hidden="true" />
-              <span className="gangi-tarot-card-slot" style={{ color: tone.accent }}>
-                {card.slot}
-              </span>
-            </Link>
+              {selected ? (
+                <span className="gangi-tarot-card-pick-badge">{pickIndex + 1}</span>
+              ) : (
+                <span className="gangi-tarot-card-slot" style={{ color: tone.accent }}>
+                  {card.slot}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>
 
-      <button
-        type="button"
-        onClick={reshuffleDeck}
-        disabled={cards.length === 0}
-        className="gangi-tarot-shuffle"
-      >
-        <Shuffle className="h-5 w-5" aria-hidden="true" />
-        다시 섞기
-      </button>
+      <div className="gangi-tarot-pick-actions">
+        {picks.length > 0 && !navigating ? (
+          <button type="button" onClick={undoLastPick} className="gangi-tarot-shuffle">
+            <RotateCcw className="h-5 w-5" aria-hidden="true" />
+            한 장 취소
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={reshuffleDeck}
+          disabled={cards.length === 0 || navigating}
+          className="gangi-tarot-shuffle"
+        >
+          <Shuffle className="h-5 w-5" aria-hidden="true" />
+          다시 섞기
+        </button>
+      </div>
     </article>
   );
 }
@@ -170,12 +239,13 @@ function getCardBackStyle(card: TarotPickerCardDraw, selected: boolean): CSSProp
   } as CSSProperties;
 }
 
-function buildResultHref(question: string, card: TarotPickerCardDraw) {
+function buildSpreadHref(question: string, picks: TarotPickerCardDraw[]) {
   const params = new URLSearchParams({
     question,
-    cardId: card.cardId,
-    orientation: card.orientation,
+    cards: picks.map((card) => card.cardId).join(','),
+    // u/r 약어로 URL 길이 절약 (스프레드 페이지에서 복원).
+    orientations: picks.map((card) => (card.orientation === 'reversed' ? 'r' : 'u')).join(','),
   });
 
-  return `/tarot/daily/result?${params.toString()}`;
+  return `/tarot/daily/spread?${params.toString()}`;
 }

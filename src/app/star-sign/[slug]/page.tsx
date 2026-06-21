@@ -478,13 +478,13 @@ export default async function StarSignDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
-            {/* 2026-05-20 Phase 8-B — 연애 영역 cross-link: 오늘 연애 타로 한 장 */}
+            {/* 2026-05-20 Phase 8-B — 연애 영역 cross-link: 오늘 연애 타로 세 장 */}
             <Link
               href="/tarot/daily?topic=love"
               className="mt-3 inline-flex w-full items-center justify-between rounded-full border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[12.5px] font-extrabold text-[var(--app-pink-strong)] no-underline"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <span>오늘의 연애 타로 한 장 뽑기</span>
+              <span>오늘의 연애 타로 세 장 뽑기</span>
               <span aria-hidden="true">→</span>
             </Link>
           </article>

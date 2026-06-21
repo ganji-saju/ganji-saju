@@ -63,7 +63,7 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
     title: '운세',
     items: [
       ['오늘의 운세 · 오늘소선생', '/today-fortune'],
-      ['타로 한 장 · 타로토선생', '/tarot/daily'],
+      ['타로 세 장 · 타로토선생', '/tarot/daily'],
       ['띠운세 · 엠지쥐선생', '/zodiac'],
       ['별자리 · 별닭선생', '/star-sign'],
       ['꿈해몽 · 꿈뱀선생', '/dream'],
