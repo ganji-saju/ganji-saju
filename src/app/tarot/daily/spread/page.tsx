@@ -129,10 +129,19 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
                     <div className="mt-1 text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {entry.reading.displayName}
                     </div>
-                    <p className="mt-1.5 text-[12.5px] leading-[1.6] text-[var(--app-copy)]">
-                      {entry.reading.cardMeaning}
+                    <p className="mt-1.5 text-[12.5px] leading-[1.65] text-[var(--app-copy)]">
+                      {entry.insight}
                     </p>
                   </div>
+                </div>
+                {/* 카드 자체의 의미 — 풍부한 한글 풀이 */}
+                <div className="mt-3 rounded-[12px] bg-[var(--app-pink-soft)]/60 p-3">
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    카드의 메시지
+                  </div>
+                  <p className="mt-1 text-[12.5px] leading-[1.7] text-[var(--app-copy)]">
+                    {entry.reading.cardMeaning}
+                  </p>
                 </div>
               </article>
             ))}
@@ -149,10 +158,23 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
             <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               세 자리를 모아보면
             </div>
-            <p className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]">
+            <p className="mt-2 text-[13.5px] leading-[1.75] text-[var(--app-copy)]">
               {spread.synthesis}
             </p>
           </article>
+
+          {/* §3.5 오늘 마음에 둘 한 가지 — 조언 자리 카드의 구체적 행동 */}
+          {spread.closing ? (
+            <article className="rounded-[16px] border border-[var(--app-line)] bg-white p-4">
+              <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <span aria-hidden="true">🌙</span>
+                오늘 마음에 둘 한 가지
+              </div>
+              <p className="mt-1.5 text-[13.5px] font-semibold leading-[1.7] text-[var(--app-ink)]">
+                {spread.closing}
+              </p>
+            </article>
+          ) : null}
 
           {/* entertainment + agency 고지 */}
           <p className="px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">

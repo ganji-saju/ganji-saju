@@ -56,6 +56,8 @@ export interface TarotReading {
 export interface TarotSpreadCard {
   position: string;
   reading: TarotReading;
+  /** 이 카드를 그 자리에서 읽는 사람의 마음에 건네는 공감 인트로. */
+  insight: string;
 }
 
 export interface TarotSpreadReading {
@@ -63,6 +65,8 @@ export interface TarotSpreadReading {
   positions: TarotSpreadCard[];
   /** 세 자리를 잇는 종합 서사 — 포지션 기반·예언 없음·주체성 마감. */
   synthesis: string;
+  /** 오늘 마음에 둘 한 가지 — 조언 자리 카드의 구체적 행동. */
+  closing: string;
   source: TarotDeckSource;
 }
 
@@ -841,7 +845,7 @@ export async function getTarotSpreadForQuestion(question?: string): Promise<Taro
   const usedCards = new Set<string>();
   const positions = buildSpreadPositions(analyzeQuestion(normalizedQuestion));
 
-  return positions.map((position, index) => {
+  const entries = positions.map((position, index) => {
     const card = pickCard(deck.cards, `${seed}:spread:${index}`, usedCards);
     usedCards.add(card.name_short);
 
@@ -855,10 +859,51 @@ export async function getTarotSpreadForQuestion(question?: string): Promise<Taro
       }),
     };
   });
+
+  return attachPositionInsights(entries);
+}
+
+// 스프레드 카드의 짧은 테마(메이저=고유 테마, 마이너=수트 테마) — reading.theme 복합어는 장황.
+function spreadShortThemeOf(reading: TarotReading): string {
+  if (reading.card.type === 'major') {
+    return MAJOR_THEMES[reading.card.name]?.theme ?? '큰 전환';
+  }
+  return reading.card.suit ? SUIT_THEMES[reading.card.suit].theme : '지금의 결';
+}
+
+function spreadShortTheme(entry: TarotSpreadCard): string {
+  return spreadShortThemeOf(entry.reading);
+}
+
+// 포지션별 공감 인트로 — 카드를 그 자리(현재/원인/조언)에서 읽는 사람의 마음에 말을 건넨다.
+// 정/역 + 자리 역할(index 0/1/2)로 따뜻하게 프레이밍. 결정론·안전(예언/운명 없음).
+function buildSpreadPositionInsight(
+  position: string,
+  reading: TarotReading,
+  positionIndex: number
+): string {
+  const theme = spreadShortThemeOf(reading);
+  const reversed = reading.orientation === 'reversed';
+  const role = positionIndex === 0 ? 'present' : positionIndex === 1 ? 'cause' : 'advice';
+  const pos = position;
+
+  if (role === 'present') {
+    return reversed
+      ? `지금 '${pos}' 자리에는 ${withParticle(theme, '이', '가')} 안으로 조금 접혀 있어요. 겉으로 드러나지 않아도 그 마음은 분명히 거기 있으니, 천천히 들여다봐 주세요.`
+      : `지금 '${pos}' 자리에는 ${withParticle(theme, '이', '가')} 또렷하게 흐르고 있어요. 그 결을 가만히 느껴보면 오늘의 마음이 한결 선명해져요.`;
+  }
+  if (role === 'cause') {
+    return reversed
+      ? `'${pos}' 자리에서는 ${withParticle(theme, '이', '가')} 아직 풀리지 않은 채 머물러 있어요. 서두르지 않아도 괜찮으니, 무엇이 마음에 걸리는지 먼저 살펴봐 주세요.`
+      : `그 아래 '${pos}' 자리를 들여다보면, ${withParticle(theme, '이', '가')} 지금의 흐름을 조용히 움직이고 있어요. 까닭을 알아차리는 것만으로도 마음이 한결 가벼워질 수 있어요.`;
+  }
+  return reversed
+    ? `'${pos}' 자리로는, ${withParticle(theme, '을', '를')} 잠시 고르고 다듬는 시간이 필요해요. 멈춤도 분명한 한 걸음이니 자신을 다그치지 마세요.`
+    : `'${pos}' 자리로는, ${withParticle(theme, '을', '를')} 믿고 한 걸음 내디뎌도 좋아요. 거창하지 않아도 오늘 할 수 있는 작은 시작이면 충분해요.`;
 }
 
 // 세 자리를 잇는 종합 서사. 카드 조합(suit/major 구성)에서 결정론적으로 도출하며,
-// 예언·운명 어휘 없이 포지션 흐름으로 읽고 주체성으로 마감한다(연구 §2-2 synthesis).
+// 예언·운명 어휘 없이 포지션 흐름으로 읽고, 따뜻하게 다독이며 주체성으로 마감한다.
 function buildSpreadSynthesis(cards: TarotSpreadCard[]): string {
   if (cards.length < 3) {
     return '';
@@ -869,34 +914,49 @@ function buildSpreadSynthesis(cards: TarotSpreadCard[]): string {
     .map((entry) => entry.reading.card.suit)
     .filter((suit): suit is TarotSuit => Boolean(suit));
   const majorCount = cards.filter((entry) => entry.reading.card.type === 'major').length;
+  const reversedCount = cards.filter((entry) => entry.reading.orientation === 'reversed').length;
 
-  // 종합용 짧은 테마(메이저=고유 테마, 마이너=수트 테마) — reading.theme 복합어는 장황.
-  const shortTheme = (entry: TarotSpreadCard) =>
-    entry.reading.card.type === 'major'
-      ? MAJOR_THEMES[entry.reading.card.name]?.theme ?? '큰 전환'
-      : entry.reading.card.suit
-        ? SUIT_THEMES[entry.reading.card.suit].theme
-        : '지금의 결';
+  const opener = '세 장을 나란히 두고 보면, 오늘 당신의 마음이 지나온 길이 한눈에 들어와요.';
 
   const flow =
-    `${first.position}의 ${shortTheme(first)}에서 시작해, ` +
-    `${second.position}의 ${withParticle(shortTheme(second), '을', '를')} 지나, ` +
-    `${third.position}의 ${withRoParticle(shortTheme(third))} 이어지는 흐름이에요.`;
+    `${first.position}의 ${spreadShortTheme(first)}에서 시작해, ` +
+    `${second.position}의 ${withParticle(spreadShortTheme(second), '을', '를')} 지나, ` +
+    `${third.position}의 ${withRoParticle(spreadShortTheme(third))} 이어지는 흐름이에요.`;
 
   let texture: string;
   if (majorCount >= 2) {
-    texture = '큰 전환의 카드가 여럿 겹쳐, 지금이 마음의 방향을 새로 잡는 자리로 보여요.';
+    texture = '큰 전환의 카드가 여럿 겹친 걸 보면, 지금은 마음의 방향을 새로 잡아가는 의미 있는 시기에 가까워요.';
   } else if (suits.length === 3 && new Set(suits).size === 1) {
-    texture = `세 자리가 모두 ${SUIT_THEMES[suits[0]!].theme}의 결로 모여, 그 한 가지가 오늘의 중심 화두로 보여요.`;
+    texture = `세 자리가 모두 ${SUIT_THEMES[suits[0]!].theme}의 결로 모여 있어요. 그 한 가지가 요즘 당신 마음을 가장 크게 차지하고 있다는 신호로 읽혀요.`;
+  } else if (reversedCount >= 2) {
+    texture = '거꾸로 놓인 카드가 여럿이라, 지금은 밖으로 나아가기보다 안을 돌보고 정비할 때라는 마음으로 읽으면 좋아요.';
   } else {
-    texture = '서로 다른 결이 섞여 있어, 한쪽으로 단정하기보다 자리마다의 신호를 함께 읽는 편이 좋아요.';
+    texture = '서로 다른 결이 함께 섞여 있어요. 한쪽으로 단정하기보다, 자리마다 건네는 신호를 나란히 들어보면 더 또렷해져요.';
   }
 
   const close =
-    `어느 자리도 정해진 결말은 아니에요. ` +
-    `${third.position}이 가리키는 쪽으로 오늘 할 수 있는 작은 한 걸음을 골라보세요.`;
+    '어느 자리도 정해진 결말은 아니에요. ' +
+    `오늘은 '${third.position}'이 가리키는 쪽으로, 마음이 편안해지는 작은 한 걸음 하나만 골라보세요. 그것으로 충분해요.`;
 
-  return `${flow} ${texture} ${close}`;
+  return `${opener} ${flow} ${texture} ${close}`;
+}
+
+// 오늘 마음에 둘 한 가지 — 조언 자리(3번째) 카드의 구체적 행동을 따뜻하게 건넨다.
+function buildSpreadClosing(cards: TarotSpreadCard[]): string {
+  const advice = cards[2] ?? cards[cards.length - 1];
+  if (!advice) return '';
+  return advice.reading.action;
+}
+
+// 포지션 배열 + 각 카드 reading → insight 가 채워진 TarotSpreadCard 배열.
+function attachPositionInsights(
+  entries: Array<{ position: string; reading: TarotReading }>
+): TarotSpreadCard[] {
+  return entries.map((entry, index) => ({
+    position: entry.position,
+    reading: entry.reading,
+    insight: buildSpreadPositionInsight(entry.position, entry.reading, index),
+  }));
 }
 
 // 3-card 스프레드 + 종합 서사. 질문 시드 기반이라 같은 질문 = 같은 스프레드(재현성).
@@ -910,6 +970,7 @@ export async function getTarotSpreadReadingForQuestion(
     question: normalizedQuestion,
     positions,
     synthesis: buildSpreadSynthesis(positions),
+    closing: buildSpreadClosing(positions),
     source: positions[0]?.reading.source ?? 'local',
   };
 }
@@ -952,23 +1013,26 @@ export async function getTarotSpreadReadingForCards(
   }
 
   const positions = buildSpreadPositions(analyzeQuestion(normalizedQuestion));
-  const cards: TarotSpreadCard[] = positions.map((position, index) => {
-    const pick = validPicks[index]!;
-    return {
-      position,
-      reading: buildTarotReading({
-        card: pick.card,
-        orientation: pick.orientation,
-        question: normalizedQuestion,
-        source: deck.source,
-      }),
-    };
-  });
+  const cards = attachPositionInsights(
+    positions.map((position, index) => {
+      const pick = validPicks[index]!;
+      return {
+        position,
+        reading: buildTarotReading({
+          card: pick.card,
+          orientation: pick.orientation,
+          question: normalizedQuestion,
+          source: deck.source,
+        }),
+      };
+    })
+  );
 
   return {
     question: normalizedQuestion,
     positions: cards,
     synthesis: buildSpreadSynthesis(cards),
+    closing: buildSpreadClosing(cards),
     source: deck.source,
   };
 }
