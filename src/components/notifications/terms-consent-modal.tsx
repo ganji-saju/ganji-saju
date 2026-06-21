@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
+import { useFocusTrap } from '@/components/common/use-focus-trap';
 import '@/components/motion/motion-primitives.css';
 
 interface TermsConsentItem {
@@ -45,6 +46,7 @@ export function TermsConsentModal({
     for (const item of items) initial[item.id] = false;
     return initial;
   });
+  const trapRef = useFocusTrap<HTMLElement>(open);
 
   // open 이 true 가 될 때 항상 초기화 (재오픈 시 이전 체크 상태가 남지 않도록).
   useEffect(() => {
@@ -115,7 +117,9 @@ export function TermsConsentModal({
       />
 
       <article
-        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6"
+        ref={trapRef}
+        tabIndex={-1}
+        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6 focus:outline-none"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         <button
