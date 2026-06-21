@@ -110,13 +110,17 @@ export async function generateTodayFortuneNarrative(args: {
     model: getOpenAIInterpretationModel(),
     maxOutputTokens: 500,
     temperature: 0.8,
-    responseFormat: { type: 'json_schema_body' },
+    responseFormat: { type: 'text' },
     feature: 'today_fortune',
     userId,
   });
 
   // Step 4: 파싱 + 검증 (순수 함수).
-  const narrative = parseTodayFortuneNarrative(aiResult.text ?? '', fallback);
+  // aiResult.source === 'openai' 일 때만 LLM 텍스트를 파싱. 진짜 LLM 실패는 fallback 유지.
+  const narrative =
+    aiResult.source === 'openai' && aiResult.text
+      ? parseTodayFortuneNarrative(aiResult.text, fallback)
+      : { ...fallback, source: 'fallback' as const };
 
   // Step 5: 캐시 저장 (비차단 — 실패해도 응답에 영향 없음).
   // iljinGanzi: result.sajuChart?.todayGanzi 사용. 없으면 null.
