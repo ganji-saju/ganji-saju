@@ -185,6 +185,7 @@ export async function POST(req: NextRequest) {
     });
     if (narrative) {
       result.oneLine = { ...result.oneLine, headline: narrative.headline, body: narrative.body };
+      result.aiSource = narrative.source;
     }
   }
 

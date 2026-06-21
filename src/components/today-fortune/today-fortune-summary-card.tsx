@@ -1,9 +1,12 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx §4 ScreenToday):
 // 날짜 eyebrow + 헤드라인 (총운 N점 highlight). 데이터 로직 무수정.
 // 2026-05-16 PR #149 (Part C) — userSituation 있으면 "[직장인 · 사업 고민] 관점에서 오늘" 한 줄 추가.
+// 2026-06-22 — aiSource 노출 시 AI 생성 고지 배지 추가 (spec §8 safety).
+import Link from 'next/link';
 import { buildPerspectiveLine } from '@/lib/today-fortune/situation-score-priority';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
+import { shouldShowAiDisclosure } from './ai-disclosure';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric',
@@ -37,6 +40,7 @@ export function TodayFortuneSummaryCard({
   const overall = getOverallScore(result);
   const todayLabel = formatToday();
   const perspective = buildPerspectiveLine(result.userSituation);
+  const showAiDisclosure = shouldShowAiDisclosure(result.aiSource);
 
   return (
     <section className="px-1">
@@ -67,6 +71,16 @@ export function TodayFortuneSummaryCard({
         >
           🎯 {perspective} 오늘
         </p>
+      ) : null}
+      {/* spec §8 safety — AI 생성 시 고지 배지. 결정론(fallback/미설정)은 미노출. */}
+      {showAiDisclosure ? (
+        <Link
+          href="/ai-disclaimer"
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[11px] text-[var(--app-copy-soft)] hover:text-[var(--app-copy-muted)]"
+        >
+          <span aria-hidden="true">ℹ</span>
+          AI 생성 풀이 · 참고용
+        </Link>
       ) : null}
     </section>
   );
