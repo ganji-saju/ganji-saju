@@ -11,6 +11,7 @@ import {
   validateReviewInput,
   type Review,
 } from '@/lib/reviews/types';
+import { useFocusTrap } from '@/components/common/use-focus-trap';
 
 interface ReviewWriteDialogProps {
   open: boolean;
@@ -39,6 +40,7 @@ export function ReviewWriteDialog({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const trapRef = useFocusTrap<HTMLDivElement>(open);
 
   useEffect(() => {
     if (open) {
@@ -46,11 +48,26 @@ export function ReviewWriteDialog({
       setContent(existing?.content ?? '');
       setDisplayName(existing?.displayName ?? '');
       setError(null);
-      // focus textarea on next tick
+      // focus textarea on next tick (focus-trap 초기 포커스를 textarea 로 덮어씀 — 의도)
       const t = setTimeout(() => textareaRef.current?.focus(), 50);
       return () => clearTimeout(t);
     }
   }, [open, existing]);
+
+  // 2026-06-21 a11y — ESC 닫기 + body scroll 잠금(다른 모달과 동일 패턴, 누락 보강).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !submitting) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, submitting, onClose]);
 
   if (!open) return null;
 
@@ -119,7 +136,11 @@ export function ReviewWriteDialog({
         if (e.target === e.currentTarget && !submitting) onClose();
       }}
     >
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[18px] bg-white shadow-xl">
+      <div
+        ref={trapRef}
+        tabIndex={-1}
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[18px] bg-white shadow-xl focus:outline-none"
+      >
         <div className="border-b border-[var(--app-line)] px-5 py-4">
           <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             {existing ? '후기 수정' : '후기 작성'}

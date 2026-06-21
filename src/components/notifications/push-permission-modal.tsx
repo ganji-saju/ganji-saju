@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { Bell, Clock, MoonStar, Sparkles, X } from 'lucide-react';
+import { useFocusTrap } from '@/components/common/use-focus-trap';
 // 2026-05-15 handoff PR-G3: m-modal + m-push motion 효과.
 import '@/components/motion/motion-primitives.css';
 
@@ -55,6 +56,7 @@ export function PushPermissionModal({
 }: PushPermissionModalProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const trapRef = useFocusTrap<HTMLElement>(open);
 
   // ESC 닫기
   useEffect(() => {
@@ -151,7 +153,9 @@ export function PushPermissionModal({
 
       {/* §sheet — 2026-05-15 handoff 56 m-modal: 모바일 슬라이드-up / 데스크탑 scale-up */}
       <article
-        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6"
+        ref={trapRef}
+        tabIndex={-1}
+        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6 focus:outline-none"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         <button
