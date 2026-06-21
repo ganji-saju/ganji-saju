@@ -496,7 +496,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
               <div className="mb-2.5 flex items-end justify-between">
-                <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">사주팔자(四柱)</h2>
+                <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">사주팔자</h2>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/overview`}
                   className="text-[12px] font-bold text-[var(--app-pink-strong)]"
