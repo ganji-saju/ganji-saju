@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>타로 시스템 전면 개편 — 진행 리포트 (2026-06-21)</title>
+<style>
+  :root{
+    --bg:#0c0712; --panel:#15101d; --panel2:#1c1526; --line:rgba(255,255,255,0.10);
+    --ink:#f3eef8; --muted:rgba(243,238,248,0.62); --soft:rgba(243,238,248,0.40);
+    --pink:#ff4f9a; --pink-soft:rgba(255,79,154,0.14); --gold:#d2b072; --jade:#79b28b;
+    --ease:cubic-bezier(0.22,1,0.36,1);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(circle at 50% -10%,rgba(255,79,154,0.10),transparent 45%),var(--bg);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:40px 22px 80px}
+  header .eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+  header h1{font-size:30px;line-height:1.25;margin:8px 0 6px;letter-spacing:-0.02em}
+  header .sub{color:var(--muted);font-size:14px;margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+  .chip{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--muted)}
+  .chip b{color:var(--ink)}
+
+  h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:42px 0 14px;border-top:1px solid var(--line);padding-top:22px}
+
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:680px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .metric{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px}
+  .metric .v{font-size:26px;font-weight:800;letter-spacing:-0.02em}
+  .metric .v small{font-size:14px;color:var(--soft);font-weight:700}
+  .metric .k{font-size:12px;color:var(--muted);margin-top:4px}
+  .metric.good .v{color:var(--jade)}
+  .metric.pink .v{color:var(--pink)}
+
+  /* timeline */
+  .tl{position:relative;margin-left:8px;padding-left:26px;border-left:2px solid var(--line)}
+  .tl .item{position:relative;padding:0 0 22px 0}
+  .tl .item::before{content:"";position:absolute;left:-34px;top:4px;width:14px;height:14px;border-radius:50%;
+    background:var(--pink);box-shadow:0 0 0 4px var(--bg),0 0 0 6px rgba(255,79,154,0.3)}
+  .tl .pr{font-size:12px;font-weight:800;color:var(--pink)}
+  .tl .t{font-size:16px;font-weight:700;margin:2px 0 4px}
+  .tl .d{font-size:13.5px;color:var(--muted)}
+  .tl .live{display:inline-block;margin-left:8px;font-size:10px;font-weight:800;color:var(--jade);border:1px solid rgba(121,178,139,0.4);background:rgba(121,178,139,0.12);border-radius:999px;padding:2px 8px;vertical-align:middle}
+
+  /* before/after */
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.ba{grid-template-columns:1fr}}
+  .ba .col{border:1px solid var(--line);border-radius:16px;padding:18px}
+  .ba .before{background:var(--panel)}
+  .ba .after{background:linear-gradient(160deg,rgba(255,79,154,0.10),var(--panel2))}
+  .ba .lab{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+  .ba .before .lab{color:var(--soft)}
+  .ba .after .lab{color:var(--pink)}
+  .ba ul{margin:0;padding-left:18px}
+  .ba li{font-size:13.5px;margin:7px 0;color:var(--muted)}
+  .ba .after li{color:var(--ink)}
+
+  /* sample reading card */
+  .sample{background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:4px}
+  .sample .pos{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--pink)}
+  .sample .pos .n{display:grid;width:20px;height:20px;place-items:center;border-radius:50%;background:#fff;color:#1a0a1f;font-size:11px}
+  .sample .badge{font-size:10px;font-weight:700;color:var(--gold);border:1px solid rgba(210,176,114,0.4);border-radius:999px;padding:2px 7px}
+  .sample .cardname{font-size:15px;font-weight:800;margin:8px 0 6px}
+  .sample .intro{font-size:13.5px;color:var(--muted);margin:0 0 12px}
+  .sample .msgbox{background:var(--pink-soft);border-radius:12px;padding:12px 14px}
+  .sample .msgbox .mk{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink)}
+  .sample .msgbox p{font-size:13.5px;line-height:1.75;margin:6px 0 0}
+  .sample .closing{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .sample .closing .ck{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--pink)}
+  .sample .closing p{font-size:13.5px;font-weight:600;margin:5px 0 0}
+
+  .stance{background:linear-gradient(160deg,rgba(210,176,114,0.10),var(--panel));border:1px solid rgba(210,176,114,0.28);border-radius:16px;padding:20px}
+  .stance p{margin:0;font-size:14px;line-height:1.8}
+  .stance b{color:var(--gold)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .card h3{margin:0 0 8px;font-size:14px}
+  .card ul{margin:0;padding-left:18px}
+  .card li{font-size:13px;margin:6px 0;color:var(--muted)}
+  .card.warn{border-color:rgba(210,176,114,0.3)}
+
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .check{font-size:12.5px;font-weight:700;color:var(--jade);border:1px solid rgba(121,178,139,0.35);background:rgba(121,178,139,0.10);border-radius:10px;padding:8px 12px}
+
+  footer{margin-top:48px;border-top:1px solid var(--line);padding-top:18px;color:var(--soft);font-size:12px}
+  code{background:rgba(255,255,255,0.08);border-radius:5px;padding:1px 6px;font-size:12px}
+  a{color:var(--pink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">간지사주 · 운영 리포트</div>
+    <h1>타로 시스템 전면 개편</h1>
+    <p class="sub">카드 뽑기 UX → 풀이 정확성 → 깊이 → 풍부함까지 · 2026-06-21 (KST) · ganjisaju.kr</p>
+    <div class="chips">
+      <span class="chip">PR <b>6건</b> 머지·라이브</span>
+      <span class="chip">테스트 <b>fail 0</b></span>
+      <span class="chip">앞면 에셋 <b>−97%</b></span>
+      <span class="chip">제약 <b>$0·무료·결정론·정직성</b></span>
+    </div>
+  </header>
+
+  <h2>한눈에 보는 성과</h2>
+  <div class="metrics">
+    <div class="metric good"><div class="v">216MB<small> → ~4MB</small></div><div class="k">앞면 서빙 페이로드 (AVIF, −97%)</div></div>
+    <div class="metric pink"><div class="v">1<small> → 3장</small></div><div class="k">직접 뽑는 카드 수</div></div>
+    <div class="metric"><div class="v">1~2<small> → 3~4문장</small></div><div class="k">카드별 풀이 분량 (공감형)</div></div>
+    <div class="metric good"><div class="v">156</div><div class="k">한글 카드 의미(정·역) 신규 집필</div></div>
+  </div>
+
+  <h2>작업 타임라인</h2>
+  <div class="tl">
+    <div class="item">
+      <div class="pr">#432</div>
+      <div class="t">한 화면 78장 인터랙티브 피커 + AVIF 최적화 <span class="live">LIVE</span></div>
+      <div class="d">5묶음 스와이프 캐러셀 폐기 → 단일 그리드(모바일 5열 44px / 데스크톱 13×6). 뒷면 CSS 만다라(0바이트). 앞면 512px AVIF 사전인코딩으로 216MB→~4MB.</div>
+    </div>
+    <div class="item">
+      <div class="pr">#433</div>
+      <div class="t">풀이 품질 P0 — 버그수정 + 정직성 <span class="live">LIVE</span></div>
+      <div class="d">은둔자 룩업 누락 수정 · 역방향 카드별 분화(reversed Sun ≠ Tower) · entertainment 면책문구 · 예측적중/의료/doom 어휘 안전 게이트.</div>
+    </div>
+    <div class="item">
+      <div class="pr">#435</div>
+      <div class="t">78장 한글 카드 의미 + "이 카드가 말하는 것" <span class="live">LIVE</span></div>
+      <div class="d">실제 RWS 의미가 렌더 0회이던 근본 문제 해결. 56장 마이너 차별화. 11에이전트 워크플로 집필+검증.</div>
+    </div>
+    <div class="item">
+      <div class="pr">#436</div>
+      <div class="t">3카드 스프레드 심화뷰 + 종합 서사 <span class="live">LIVE</span></div>
+      <div class="d">데드코드였던 스프레드 엔진 활성화. 현재·원인·조언 3자리를 잇는 종합(예언/운명 어휘 0·주체성 마감).</div>
+    </div>
+    <div class="item">
+      <div class="pr">#437</div>
+      <div class="t">3장 직접 뽑기로 완전 교체 <span class="live">LIVE</span></div>
+      <div class="d">"1장 고르고 안 고른 3장 자동 표시" 모순 해소 → 사용자가 78장에서 3장 직접 선택. 마이그레이션 없이 보관함 재사용. 적대적 코드리뷰 블로커 0.</div>
+    </div>
+    <div class="item">
+      <div class="pr">#438</div>
+      <div class="t">스프레드 풀이 풍부화 — "가득가득 + 공감" <span class="live">LIVE</span></div>
+      <div class="d">156개 의미를 3~4문장 공감형으로 재집필 + 포지션 공감 인트로 + 풍부한 종합 + 🌙 오늘 마음에 둘 한 가지.</div>
+    </div>
+  </div>
+
+  <h2>전 / 후</h2>
+  <div class="ba">
+    <div class="col before">
+      <div class="lab">개편 전</div>
+      <ul>
+        <li>78장을 18장씩 5번 옆으로 넘겨야 봄</li>
+        <li>카드 1장만 뽑기</li>
+        <li>뒷면 3.3MB·앞면 3MB PNG(콜드 인코딩 느림)</li>
+        <li>은둔자 영문명 노출 버그</li>
+        <li>역방향 모든 카드가 동일 풀이</li>
+        <li>카드별 1~2문장, 실제 RWS 의미 미노출</li>
+        <li>예측 적중 비주장 면책 없음</li>
+      </ul>
+    </div>
+    <div class="col after">
+      <div class="lab">개편 후</div>
+      <ul>
+        <li>78장 한 화면 그리드, 인터랙티브 hover</li>
+        <li>3장 직접 순서대로 선택 → 스프레드</li>
+        <li>앞면 ~78KB AVIF(−97%), 뒷면 0바이트 CSS</li>
+        <li>22장 메이저 모두 한글명 정상</li>
+        <li>역방향 카드별 분화 + 회복 마감</li>
+        <li>카드별 3~4문장 공감형 + 포지션 인트로 + 오늘 한 가지</li>
+        <li>참고용·주체성 면책문구 명시</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>풍부해진 풀이 — 실제 예시</h2>
+  <div class="sample">
+    <span class="pos"><span class="n">1</span> 현재 흐름</span> <span class="badge">정방향</span>
+    <div class="cardname">태양 · The Sun</div>
+    <p class="intro">지금 ‘현재 흐름’ 자리에는 환함과 성취가 또렷하게 흐르고 있어요. 그 결을 가만히 느껴보면 오늘의 마음이 한결 선명해져요.</p>
+    <div class="msgbox">
+      <div class="mk">카드의 메시지</div>
+      <p>햇살처럼 환한 만족과 따뜻한 결실이 비치는 자리예요. 가렸던 것이 걷히고, 곁의 사람과 나누는 기쁨이 밝게 번져 가요. 애써 숨기지 않아도 좋으니, 지금 차오르는 그 온기를 마음껏 누려 보세요.</p>
+    </div>
+    <div class="closing">
+      <div class="ck">🌙 오늘 마음에 둘 한 가지</div>
+      <p>감사나 칭찬, 반가운 마음을 한 번 더 말해보세요.</p>
+    </div>
+  </div>
+
+  <h2>핵심 입장 — "맞다"의 정직한 정의</h2>
+  <div class="stance">
+    <p>타로는 <b>예측 적중을 실증 검증할 수 없습니다.</b> 사용자가 느끼는 “정확함”은 Forer/바넘 효과·확증편향으로 설명됩니다. 그래서 우리가 측정·개선한 것은 <b>적중이 아니라 풀이 품질</b> — 질문 관련성·내부 일관성·구체성·실제 RWS 의미 충실도·재현성·안전성·공명입니다. 달빛선생의 약속은 “미래를 맞힌다”가 아니라 <b>“오늘의 흐름·가능성을 비추고, 결정은 늘 당신의 몫”</b>이며, 이 입장을 면책문구·안전 게이트·테스트에 박아두었습니다.</p>
+  </div>
+
+  <h2>품질 보증</h2>
+  <div class="checks">
+    <span class="check">✓ tsc 클린</span>
+    <span class="check">✓ 유닛 테스트 fail 0</span>
+    <span class="check">✓ next build 성공</span>
+    <span class="check">✓ 실제 렌더 검증(Playwright)</span>
+    <span class="check">✓ 적대적 코드리뷰(블로커 0)</span>
+    <span class="check">✓ 11에이전트 집필+검증 워크플로</span>
+    <span class="check">✓ 무거운 카드 역방향 doom 0</span>
+    <span class="check">✓ 프로덕션 라이브 폴링 확인</span>
+  </div>
+
+  <h2>제약 준수 & 남은 일</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>지킨 제약</h3>
+      <ul>
+        <li><b>$0 런타임</b> — AI per-reading 비용 없음(결정론 엔진)</li>
+        <li><b>무료</b> — 타로는 페이월 없음</li>
+        <li><b>결정론/재현성</b> — 데이터 룩업·시드(3장 뽑기는 URL 고정으로 replay)</li>
+        <li><b>정직성</b> — 예측 적중 비주장(하드 테스트)</li>
+        <li><b>DB 마이그레이션 없음</b> — 보관함 기존 테이블 재사용</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3>남은 로드맵 (보류)</h3>
+      <ul>
+        <li><b>P2 · C1</b> — "달빛선생에게 한 번 더 묻기" 옵트인 AI 1턴</li>
+        <li>⚠️ 결정론 이탈 → Supabase DB scope 수동 + 비용 캡 + safety validator</li>
+        <li>사용자 결정으로 <b>보류</b>, 진행 전 별도 합의</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>인프라 메모</h2>
+  <div class="card">
+    <ul>
+      <li><b>Vercel 자동배포 복구</b>: #432 머지 시 자동배포가 13일째 미트리거(GitHub App↔Vercel 연결 끊김) → 수동 배포로 라이브 + App/Git 재연결 → 테스트 push로 복구 검증(~80초). 이후 #433~#438은 머지→자동배포 정상.</li>
+    </ul>
+  </div>
+
+  <footer>
+    산출물: <code>docs/ops/tarot-overhaul-progress.md</code> · <code>tarot-system-improvement.md</code> · <code>tarot-picker-redesign.md</code><br>
+    생성: 2026-06-21 · 간지사주 운영 기록
+  </footer>
+</div>
+</body>
+</html>
