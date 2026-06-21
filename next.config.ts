@@ -13,6 +13,27 @@ function firstNonEmptyEnv(...keys: string[]) {
   return undefined;
 }
 
+// 2026-06-21 보안(P2 Part B) — Content-Security-Policy "Report-Only" 도입.
+//   Report-Only 는 차단하지 않고 위반만 브라우저 콘솔에 보고한다(관찰→enforce 전 단계).
+//   출처 인벤토리: Toss 결제 SDK(js.tosspayments.com / 결제 iframe),
+//   Vercel Analytics·Speed Insights(va.vercel-scripts.com / vitals.vercel-insights.com),
+//   Supabase(*.supabase.co + wss), next/font/google(셀프호스팅이라 외부 폰트 출처 불필요),
+//   inline script/style(Next 주입 + JSON-LD + style 속성) → 'unsafe-inline'.
+//   ⚠️ 운영 권고: 콘솔 위반 로그를 일정 기간 수집한 뒤 enforce(Content-Security-Policy)로 승격.
+const CSP_REPORT_ONLY = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'self'",
+  "form-action 'self'",
+  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://va.vercel-scripts.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://vitals.vercel-insights.com",
+  "frame-src 'self' https://*.tosspayments.com https://*.tosspay.com",
+].join('; ');
+
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: firstNonEmptyEnv(
@@ -46,6 +67,7 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Content-Security-Policy-Report-Only', value: CSP_REPORT_ONLY },
         ],
       },
     ];
