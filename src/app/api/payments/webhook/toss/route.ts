@@ -8,6 +8,7 @@ import {
   recordPaymentWebhookEvent,
 } from '@/lib/payments/order-ledger';
 import { settlePaymentOrderFromToss } from '@/lib/payments/reconciliation';
+import { verifyTossWebhookSignature } from '@/lib/payments/webhook-signature';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +17,32 @@ function readString(value: unknown) {
 }
 
 export async function POST(req: NextRequest) {
-  const payload = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  // HMAC 검증을 위해 원본 body 를 raw text 로 읽는다(JSON.parse 전 정확한 바이트열 필요).
+  const rawBody = await req.text();
+
+  // 2026-06-21 보안 — Toss 웹훅 서명 검증(정식). 보안 키가 설정돼 있고 서명 헤더가
+  //   존재할 때만 강제한다. 서명 없는 웹훅 타입(PAYMENT_STATUS_CHANGED 등)은 헤더 부재로
+  //   이 블록을 건너뛰고, 아래의 Toss API 재조회(getPayment)로 진위를 보장한다(backstop).
+  const webhookSecurityKey = process.env.TOSS_WEBHOOK_SECURITY_KEY?.trim();
+  const signatureHeader = req.headers.get('tosspayments-webhook-signature');
+  if (webhookSecurityKey && signatureHeader) {
+    const valid = verifyTossWebhookSignature({
+      rawBody,
+      signatureHeader,
+      transmissionTime: req.headers.get('tosspayments-webhook-transmission-time'),
+      securityKey: webhookSecurityKey,
+    });
+    if (!valid) {
+      return NextResponse.json({ ok: false, error: 'invalid_signature' }, { status: 401 });
+    }
+  }
+
+  let payload: Record<string, unknown> | null;
+  try {
+    payload = rawBody ? (JSON.parse(rawBody) as Record<string, unknown>) : null;
+  } catch {
+    payload = null;
+  }
   if (!payload) {
     return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 });
   }
