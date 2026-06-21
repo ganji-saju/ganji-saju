@@ -800,7 +800,7 @@ export function ReportDocument({
 
                 {/* 四柱八字 */}
                 <div className="rp-block">
-                  <div className="rp-eyebrow">四柱八字</div>
+                  <div className="rp-eyebrow">사주팔자</div>
                   <h3 className="rp-block-title">네 기둥과 여덟 글자</h3>
                   <div className="rp-pillars">
                     {data.pillars.map((p) => (
@@ -827,7 +827,7 @@ export function ReportDocument({
                 {/* 2-col: 五行 균형 | 분야별 흐름 */}
                 <div className="rp-twocol">
                   <div className="rp-card">
-                    <div className="rp-eyebrow">五行 균형</div>
+                    <div className="rp-eyebrow">오행 균형</div>
                     <div className="rp-donut-row">
                       <div className="rp-donut" style={{ background: data.donutGradient }}>
                         <span
@@ -888,7 +888,7 @@ export function ReportDocument({
 
                 {/* 大運 10년 단위 row */}
                 <div className="rp-block">
-                  <div className="rp-eyebrow">大運 · 10년 단위</div>
+                  <div className="rp-eyebrow">대운 · 10년 단위</div>
                   <div className="rp-daewoon-row">
                     {data.daewoon.map((c) => (
                       <div
@@ -949,7 +949,7 @@ export function ReportDocument({
 
                 {/* 신살 */}
                 <div className="rp-block">
-                  <div className="rp-eyebrow">신살(神煞)</div>
+                  <div className="rp-eyebrow">신살</div>
                   <h3 className="rp-block-title">내 사주에 자리잡은 작은 별</h3>
                   <div className="rp-sinsal-grid">
                     {data.sinsal.map((s) => (
@@ -1061,7 +1061,7 @@ export function ReportDocument({
                 <RunningHeader reportNo={data.reportNo} subjectName={data.subjectName} />
                 <ChapterHead
                   no="04"
-                  titleLines={['대운(大運)', '10년 단위로 보는 큰 흐름']}
+                  titleLines={['대운', '10년 단위로 보는 큰 흐름']}
                   lead="태어난 사주는 변하지 않지만, 대운은 10년마다 새로운 환경을 가져옵니다. 인생의 큰 챕터를 미리 그려보세요."
                 />
 
