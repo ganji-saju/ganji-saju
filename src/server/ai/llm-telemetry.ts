@@ -16,7 +16,8 @@ export type LlmFeature =
   | 'compatibility'
   | 'chat'
   | 'home_banner'
-  | 'today_premium';
+  | 'today_premium'
+  | 'today_fortune';
 
 export type LlmRunSource = 'openai' | 'fallback' | 'cache';
 
