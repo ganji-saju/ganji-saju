@@ -20,7 +20,7 @@ function firstNonEmptyEnv(...keys: string[]) {
 //   Supabase(*.supabase.co + wss), next/font/google(셀프호스팅이라 외부 폰트 출처 불필요),
 //   inline script/style(Next 주입 + JSON-LD + style 속성) → 'unsafe-inline'.
 //   ⚠️ 운영 권고: 콘솔 위반 로그를 일정 기간 수집한 뒤 enforce(Content-Security-Policy)로 승격.
-const CSP_REPORT_ONLY = [
+const CSP_DIRECTIVES = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
@@ -32,7 +32,14 @@ const CSP_REPORT_ONLY = [
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://vitals.vercel-insights.com",
   "frame-src 'self' https://*.tosspayments.com https://*.tosspay.com",
+  // 2026-06-21 — 위반 보고를 /api/csp-report 로 수집(enforce 승격 전 관찰용).
+  'report-uri /api/csp-report',
 ].join('; ');
+
+// 2026-06-21 보안 — CSP enforce 승격 토글. 위반 로그를 충분히 관찰해 정상 트래픽이
+//   깨지지 않음을 확인한 뒤, Vercel 환경변수 CSP_MODE=enforce + 재배포로 강제 모드 전환.
+//   기본(미설정)은 Report-Only(차단 없이 보고만).
+const CSP_ENFORCE = process.env.CSP_MODE === 'enforce';
 
 const nextConfig: NextConfig = {
   env: {
@@ -67,7 +74,12 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          { key: 'Content-Security-Policy-Report-Only', value: CSP_REPORT_ONLY },
+          {
+            key: CSP_ENFORCE
+              ? 'Content-Security-Policy'
+              : 'Content-Security-Policy-Report-Only',
+            value: CSP_DIRECTIVES,
+          },
         ],
       },
     ];
