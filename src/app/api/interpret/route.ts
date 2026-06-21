@@ -16,7 +16,7 @@ import {
 } from '@/lib/counselors';
 import { getUserProfileById } from '@/lib/profile';
 import { getRecentFortuneFeedbackSummary } from '@/lib/fortune-feedback';
-import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
+import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { isReadingId, resolveReading } from '@/lib/saju/readings';
 import { buildSajuReportRuntimeMetadata } from '@/lib/saju/report-metadata';
 import {
@@ -223,6 +223,25 @@ export async function POST(req: NextRequest) {
         updatedAt: cached.updated_at,
       });
     }
+  }
+
+  // 2026-06-21 보안(P1) — 캐시 응답은 공개 유지하되, 신규/재생성(OpenAI 호출) 경로는
+  //   인증 + 소유권 필요. 비인증 regenerate 반복으로 인한 LLM 비용 증폭(DoS) 차단.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { ok: false, error: '풀이 생성은 로그인 후 이용할 수 있습니다.', code: 'auth_required' },
+      { status: 401 }
+    );
+  }
+  if (reading.userId && reading.userId !== user.id) {
+    return NextResponse.json(
+      { ok: false, error: '본인의 결과만 풀이를 생성할 수 있습니다.', code: 'forbidden' },
+      { status: 403 }
+    );
   }
 
   const report = buildSajuReport(reading.input, reading.sajuData, topic);
