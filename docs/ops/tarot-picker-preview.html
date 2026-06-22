@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>타로 피커 미리보기 — 한 화면 78장 인터랙티브</title>
+<style>
+  :root{
+    --pink: rgba(255,79,154,0.72);
+    --pink-strong: #ff4f9a;
+    --gold: rgba(210,176,114,1);
+    --gold-soft: rgba(210,176,114,0.55);
+    --ink:#fff;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,sans-serif;
+    background:#0c0712; color:#fff;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:20px 16px 60px}
+  header h1{font-size:18px; margin:0 0 4px; letter-spacing:-0.01em}
+  header p{margin:0; font-size:12.5px; color:rgba(255,255,255,0.55)}
+
+  /* controls */
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 10px}
+  .seg{display:inline-flex; border:1px solid rgba(255,255,255,0.16); border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.04)}
+  .seg button{appearance:none; border:0; background:transparent; color:rgba(255,255,255,0.6); font-size:12.5px; font-weight:700; padding:8px 14px; cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--pink-strong); color:#fff}
+  .btn{appearance:none; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.05); color:#fff; font-size:12.5px; font-weight:700; padding:8px 14px; border-radius:999px; cursor:pointer; display:inline-flex; gap:6px; align-items:center}
+  .hint{font-size:11.5px; color:rgba(255,255,255,0.4); align-self:center}
+
+  /* the mystical stage — maps to app .gangi-tarot-stage dark tokens */
+  .device{margin:0 auto; transition:max-width .3s var(--ease)}
+  .device[data-w="mobile"]{max-width:390px}
+  .stage{
+    position:relative; border-radius:22px; overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(255,79,154,0.10), transparent 42%),
+      linear-gradient(180deg,#1a0a1f 0%, #2a0d2f 100%);
+    padding:18px 12px 22px;
+    border:1px solid rgba(255,255,255,0.06);
+  }
+  .stage::before{ /* starfield */
+    content:""; position:absolute; inset:0; opacity:.22; pointer-events:none;
+    background-image:
+      radial-gradient(circle at 20% 30%, #fff .6px, transparent 1.2px),
+      radial-gradient(circle at 80% 70%, #fff .6px, transparent 1.2px),
+      radial-gradient(circle at 50% 50%, #fff .6px, transparent 1.2px),
+      radial-gradient(circle at 35% 85%, #fff .5px, transparent 1px);
+    background-size:60px 60px,80px 80px,40px 40px,100px 100px;
+  }
+  .stage-head{position:relative; display:flex; justify-content:space-between; align-items:flex-end; margin:0 4px 12px}
+  .stage-head .eyebrow{font-size:10px; font-weight:800; letter-spacing:.12em; color:var(--gold); text-transform:uppercase}
+  .stage-head h2{margin:2px 0 0; font-size:15px}
+  .stage-head .count{font-size:11px; color:rgba(255,255,255,0.5)}
+
+  /* ===== Variant 2: Fanned Grid ===== */
+  .grid{
+    position:relative;
+    display:grid; gap:6px;
+    grid-template-columns:repeat(5, 1fr);   /* 검증치: 360px 화면 가용 240px → 5열 = 44px 탭타깃(Apple HIG) */
+    padding:6px 2px 2px;
+    overflow-x:clip;                         /* 틸트 bleed로 가로 스크롤 생기는 것 방지 */
+  }
+  @media (min-width:560px){ .device[data-w="full"] .grid{grid-template-columns:repeat(11,1fr)} }
+  @media (min-width:820px){ .device[data-w="full"] .grid{grid-template-columns:repeat(13,1fr)} }
+
+  .card{
+    position:relative; display:block; aspect-ratio:7/10; border-radius:7px;
+    border:1.5px solid var(--pink);
+    background:var(--tone);
+    cursor:pointer; text-decoration:none;
+    transform: rotate(var(--tilt)) translateY(0) scale(1);
+    transform-origin:50% 120%;
+    transition: transform .2s var(--ease), filter .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
+    box-shadow:0 6px 14px rgba(0,0,0,0.35);
+    outline:none;
+  }
+  .card .motif{position:absolute; inset:0; display:grid; place-items:center; opacity:.85}
+  .card .motif svg{width:54%; height:54%}
+  .card .glow{position:absolute; inset:0; border-radius:inherit; opacity:0; transition:opacity .2s var(--ease);
+    box-shadow:0 0 18px 2px var(--glow), inset 0 0 12px var(--glow); }
+  .card .slot{position:absolute; right:4px; bottom:3px; font-size:8px; font-weight:700; color:var(--gold-soft); letter-spacing:.08em}
+  .card .shimmer{position:absolute; inset:0; border-radius:inherit; overflow:hidden; opacity:0}
+  .card .shimmer::after{content:""; position:absolute; top:-60%; left:-120%; width:60%; height:220%;
+    background:linear-gradient(115deg, transparent, rgba(255,236,200,0.55), transparent);
+    transform:rotate(8deg); }
+
+  /* hover / focus — the interactive lift */
+  .grid .card:hover, .grid .card:focus-visible{
+    transform: rotate(0deg) translateY(-10px) scale(1.16);
+    border-color: var(--gold);
+    filter:brightness(1.12) saturate(1.08);
+    z-index:20;
+    box-shadow:0 18px 36px rgba(0,0,0,0.5);
+  }
+  .grid .card:hover .glow, .grid .card:focus-visible .glow{opacity:.9}
+  .grid .card:hover .shimmer, .grid .card:focus-visible .shimmer{opacity:1}
+  .grid .card:hover .shimmer::after, .grid .card:focus-visible .shimmer::after{ animation:sweep .65s var(--ease) }
+  @keyframes sweep{ from{left:-120%} to{left:160%} }
+
+  /* neighbor parting (CSS :has) */
+  .grid .card:has(+ .card:hover){ transform: rotate(var(--tilt)) translateX(-5px) scale(0.98); filter:brightness(0.8) }
+  .grid .card:hover + .card{ transform: rotate(var(--tilt)) translateX(5px) scale(0.98); filter:brightness(0.8) }
+
+  /* selected */
+  .card.is-selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold), 0 16px 30px rgba(216,27,114,0.4); z-index:15 }
+  .grid.has-selection .card:not(.is-selected){ filter:brightness(0.62) saturate(0.85); opacity:.85 }
+
+  /* ===== Variant 1: Grand Arc Fan ===== */
+  .fan{position:relative; display:flex; justify-content:center; align-items:flex-end; min-height:230px;
+    padding:40px 0 8px; overflow-x:auto; overflow-y:hidden; scrollbar-width:none}
+  .fan::-webkit-scrollbar{display:none}
+  .fan .card{ flex:0 0 auto; width:34px; margin-left:-22px; transform-origin:50% 130%;
+    transform: rotate(var(--fan-angle)) translateY(var(--fan-lift)); }
+  .fan .card:first-child{margin-left:0}
+  .fan .card:hover, .fan .card:focus-visible{
+    transform: rotate(0deg) translateY(-26px) scale(1.5); z-index:30; border-color:var(--gold);
+    filter:brightness(1.14); box-shadow:0 22px 40px rgba(0,0,0,0.55);
+  }
+  .fan .card:hover .glow,.fan .card:focus-visible .glow{opacity:.9}
+  .fan .card:hover .shimmer,.fan .card:focus-visible .shimmer{opacity:1}
+  .fan .card:hover .shimmer::after,.fan .card:focus-visible .shimmer::after{animation:sweep .65s var(--ease)}
+  .fan .card:has(+ .card:hover){ transform: rotate(var(--fan-angle)) translateY(calc(var(--fan-lift) - 8px)) translateX(-10px) }
+  .fan .card:hover + .card{ transform: rotate(var(--fan-angle)) translateY(calc(var(--fan-lift) - 8px)) translateX(10px) }
+
+  .footer{position:relative; display:flex; justify-content:center; gap:10px; margin-top:14px}
+  .shuffle{appearance:none; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.06); color:#fff;
+    font-size:13px; font-weight:800; padding:11px 20px; border-radius:14px; cursor:pointer; display:inline-flex; gap:8px; align-items:center}
+  .toast{position:relative; text-align:center; margin-top:12px; min-height:20px; font-size:12.5px; color:var(--gold); font-weight:700}
+
+  @media (prefers-reduced-motion: reduce){
+    .card,.card .glow,.card .shimmer{transition:none}
+    .card:hover,.card:focus-visible{transform:none !important; filter:brightness(1.12)}
+    .shimmer::after{animation:none !important}
+  }
+
+  .legend{margin-top:18px; font-size:12px; color:rgba(255,255,255,0.5); line-height:1.7}
+  .legend b{color:rgba(255,255,255,0.8)}
+  kbd{background:rgba(255,255,255,0.1); border-radius:4px; padding:1px 6px; font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>타로 피커 미리보기 · 한 화면 78장 인터랙티브</h1>
+    <p>실제 동작 프로토타입 — 카드에 마우스를 올리거나 탭해 보세요. 뒷면은 전부 <b>이미지 0바이트(CSS+SVG)</b>입니다.</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="레이아웃 변형">
+      <button id="v2" aria-pressed="true">변형 2 · 부채 그리드 (추천)</button>
+      <button id="v1" aria-pressed="false">변형 1 · 그랜드 아치 부채</button>
+    </div>
+    <div class="seg" role="group" aria-label="화면 폭">
+      <button id="wmobile" aria-pressed="true">모바일 390px</button>
+      <button id="wfull" aria-pressed="false">데스크톱 폭</button>
+    </div>
+    <button class="btn" id="motion">⟳ 모션 다시 보기</button>
+    <span class="hint">키보드: <kbd>Tab</kbd>으로 카드 이동 · <kbd>Enter</kbd> 선택</span>
+  </div>
+
+  <div class="device" data-w="mobile" id="device">
+    <div class="stage">
+      <div class="stage-head">
+        <div>
+          <div class="eyebrow">한 장 타로 · 무료</div>
+          <h2>마음이 가는 한 장을 골라요</h2>
+        </div>
+        <div class="count">78장 · 한눈에</div>
+      </div>
+      <div id="board"></div>
+      <div class="toast" id="toast">&nbsp;</div>
+      <div class="footer">
+        <button class="shuffle" id="shuffle">🔀 다시 섞기</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b>지금 보고 계신 인터랙션:</b><br>
+    · hover/포커스 → 카드가 <b>들리고(−10px) 커지고(×1.16) 기울기가 펴지며</b> 금색 링 + 글로우 + <b>금빛 시머가 1회 sweep</b><br>
+    · 양옆 카드가 <b>좌우로 갈라지며</b> 어두워짐(선택 카드 부각) — 순수 CSS <code>:has()</code><br>
+    · 카드 클릭 → 선택 표시(나머지 dim). 실제 앱에선 이 시점에 <code>/tarot/daily/result</code>로 이동<br>
+    · <b>다시 섞기</b> → 톤·기울기·순서 재배치 (앱의 <code>createRandomTarotDrawDeck</code> 동작)<br>
+    · 변형 1(그랜드 부채)로 토글하면 78장 겹침 부채에서 왜 모바일 탭이 까다로운지(슬라이버) 직접 느낄 수 있습니다.<br>
+    <br><b>모바일은 5열 = 카드당 44px 탭 타깃(Apple HIG 충족).</b> 78장이라 5열×16행 → 한 화면 안에 다 안 들어가므로 <b>세로로 한 번 스크롤</b>합니다. 핵심은 "옆으로 5번 페이징"을 없애고 <b>하나의 연속 격자</b>로 만든 것. 데스크톱은 13×6으로 78장 전부 한 화면.
+  </div>
+</div>
+
+<script>
+const TONES = [
+  {bg:"linear-gradient(160deg,rgba(166,124,181,0.92),rgba(31,29,57,0.96) 56%,rgba(11,14,29,0.98))", glow:"rgba(166,124,181,0.55)"},
+  {bg:"linear-gradient(160deg,rgba(73,86,151,0.9),rgba(24,31,72,0.96) 58%,rgba(9,14,32,0.98))", glow:"rgba(99,123,188,0.55)"},
+  {bg:"linear-gradient(160deg,rgba(65,115,94,0.88),rgba(23,57,57,0.96) 58%,rgba(9,22,30,0.98))", glow:"rgba(121,178,139,0.5)"},
+  {bg:"linear-gradient(160deg,rgba(150,111,59,0.86),rgba(60,46,50,0.96) 56%,rgba(18,17,27,0.98))", glow:"rgba(210,176,114,0.55)"},
+  {bg:"linear-gradient(160deg,rgba(141,75,83,0.88),rgba(61,30,55,0.96) 58%,rgba(20,13,30,0.98))", glow:"rgba(211,129,103,0.5)"}
+];
+// 달빛선생 모티프 — 초승달 + 별 (gold, inline SVG, 색만 currentColor)
+const MOON = `<svg viewBox="0 0 48 48" fill="none" stroke="rgba(210,176,114,0.9)" stroke-width="1.4">
+  <path d="M30 10a14 14 0 1 0 8 22 11 11 0 0 1-8-22Z" fill="rgba(210,176,114,0.12)"/>
+  <circle cx="16" cy="14" r="0.9" fill="rgba(210,176,114,0.9)" stroke="none"/>
+  <circle cx="34" cy="38" r="0.7" fill="rgba(210,176,114,0.7)" stroke="none"/>
+  <path d="M13 33l1.2 2.6L17 37l-2.8 1.4L13 41l-1.2-2.6L9 37l2.8-1.4Z" fill="rgba(210,176,114,0.7)" stroke="none"/>
+</svg>`;
+
+const N = 78;
+let variant = 2;
+const board = document.getElementById('board');
+const toast = document.getElementById('toast');
+const rand = (n)=>Math.floor(Math.random()*n);
+
+function buildDeck(){
+  const deck = Array.from({length:N}, (_,i)=>({
+    slot:i+1, tone:rand(TONES.length), tilt:(rand(9)-4)
+  }));
+  for(let i=deck.length-1;i>0;i--){const j=rand(i+1);[deck[i],deck[j]]=[deck[j],deck[i]];}
+  return deck;
+}
+
+function render(deck){
+  const isFan = variant===1;
+  board.className = isFan ? 'fan' : 'grid';
+  board.innerHTML = '';
+  const center=(N-1)/2;
+  deck.forEach((c,idx)=>{
+    const a=document.createElement('a');
+    a.href='javascript:void 0'; a.className='card'; a.tabIndex=0;
+    a.style.setProperty('--tone', TONES[c.tone].bg);
+    a.style.setProperty('--glow', TONES[c.tone].glow);
+    a.style.setProperty('--tilt', c.tilt+'deg');
+    if(isFan){
+      const off=idx-center;
+      a.style.setProperty('--fan-angle',(off*1.05)+'deg');
+      a.style.setProperty('--fan-lift', (Math.abs(off)*0.6)+'px');
+    }
+    a.setAttribute('aria-label', c.slot+'번째 카드 선택');
+    a.innerHTML = `<span class="glow"></span><span class="motif">${MOON}</span><span class="shimmer"></span><span class="slot">${c.slot}</span>`;
+    const pick=(e)=>{e.preventDefault(); select(a, c.slot);};
+    a.addEventListener('click', pick);
+    a.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' ')pick(e);});
+    board.appendChild(a);
+  });
+}
+
+function select(el, slot){
+  board.querySelectorAll('.card').forEach(c=>c.classList.remove('is-selected'));
+  el.classList.add('is-selected');
+  board.classList.add('has-selection');
+  toast.textContent = `선택: ${slot}번째 카드 → 실제 앱에선 결과 화면으로 이동합니다`;
+}
+
+let deck = buildDeck();
+render(deck);
+
+document.getElementById('shuffle').onclick=()=>{deck=buildDeck(); board.classList.remove('has-selection'); toast.innerHTML='&nbsp;'; render(deck);};
+function setVariant(v){variant=v; document.getElementById('v2').setAttribute('aria-pressed', v===2); document.getElementById('v1').setAttribute('aria-pressed', v===1); board.classList.remove('has-selection'); toast.innerHTML='&nbsp;'; render(deck);}
+document.getElementById('v2').onclick=()=>setVariant(2);
+document.getElementById('v1').onclick=()=>setVariant(1);
+function setWidth(w){document.getElementById('device').dataset.w=w; document.getElementById('wmobile').setAttribute('aria-pressed', w==='mobile'); document.getElementById('wfull').setAttribute('aria-pressed', w==='full');}
+document.getElementById('wmobile').onclick=()=>setWidth('mobile');
+document.getElementById('wfull').onclick=()=>setWidth('full');
+document.getElementById('motion').onclick=()=>{ // demo the lift on a few cards
+  const cards=[...board.querySelectorAll('.card')]; let i=0;
+  const id=setInterval(()=>{ if(i>0)cards[(i-1)*7%cards.length]?.blur(); const el=cards[i*7%cards.length]; el?.focus(); i++; if(i>6){clearInterval(id); cards.forEach(c=>c.blur());}},220);
+};
+</script>
+</body>
+</html>

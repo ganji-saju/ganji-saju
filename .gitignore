@@ -15,6 +15,8 @@
 
 # next.js
 /.next/
+# .next 백업/캐시 변형 (빌드 중 캐시 손상 회피용으로 mv 한 디렉터리들 — 추적 금지)
+/.next.*
 /out/
 
 # production
@@ -54,6 +56,11 @@ next-env.d.ts
 /blob-report/
 /playwright/.cache/
 e2e/.auth/
+# playwright MCP 도구 캐시 (커밋 금지)
+/.playwright-mcp/
+
+# superpowers SDD 스크래치 (진행 원장·태스크 브리프·리뷰 패키지 — 로컬 전용)
+/.superpowers/
 
 # generated progress report (PROGRESS.md → HTML via scripts/render-progress.mjs)
 PROGRESS.html
