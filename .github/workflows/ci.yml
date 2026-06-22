@@ -53,6 +53,12 @@ jobs:
       - name: Audit lucky hybrid (오행 분기 회귀 차단)
         run: npm run audit:lucky-hybrid:strict
 
+      # 2026-06-22 — PR #448 회귀 차단: 마이그레이션 번호 중복(049 충돌 류)을
+      # PR 단계에서 검출. 동일 버전 문자열이면 supabase 가 두 번째를 영구 skip →
+      # 테이블 무성 미생성(타로 보관함 데드). 정적 검사(파일명만, DB 불필요).
+      - name: Audit migration numbers (PR #448 번호 충돌 회귀 차단)
+        run: npm run audit:migration-numbers:strict
+
       - name: Validate KASI calendar samples
         if: ${{ env.KASI_SERVICE_KEY != '' }}
         run: npm run validate:kasi
