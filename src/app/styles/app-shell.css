@@ -102,8 +102,8 @@
 .app-top-context-note,
 [data-app-layout="horizontal"] .app-top-context-note {
   display: block !important;
-  color: rgba(17, 17, 20, 0.54) !important;
-  font-size: 0.66rem !important;
+  color: var(--app-copy-muted) !important; /* 2026-06-22 가독성: 0.54(4.05:1) → --app-copy-muted(4.78:1 AA) */
+  font-size: 0.7rem !important; /* 0.66rem(~10.5px) → 0.7rem(~11.2px) */
   font-weight: 650;
 }
 

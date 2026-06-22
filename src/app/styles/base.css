@@ -162,6 +162,12 @@
     letter-spacing: 0;
   }
 
+  /* 2026-06-22 가독성: 단락 기본 행간을 한국어 장문 권장값으로(미설정 시 Tailwind 1.5 → 1.65).
+     :where 라 특이도 0 — leading-* 클래스/컴포넌트 스타일이 항상 우선(밀집 UI 영향 최소). */
+  :where(p, li, dt, dd) {
+    line-height: var(--app-leading-normal);
+  }
+
   body::before {
     content: "";
     position: fixed;
