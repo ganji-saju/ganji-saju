@@ -3859,7 +3859,7 @@ const FALLBACK_MEANING: DreamMeaning = {
   related: ['뱀', '이빨', '물', '돈'],
 };
 
-export function searchDream(query: string): {
+function searchDreamCore(query: string): {
   match: DreamMeaning;
   suggestions: string[];
   exact: boolean;
@@ -3938,6 +3938,18 @@ export function searchDream(query: string): {
     suggestions: ['뱀', '이빨', '물', '돈'],
     exact: false,
   };
+}
+
+// 2026-06-22 — fallback 플래그를 코어 위에 얇게 부착. 최종 FALLBACK_MEANING 으로 수렴한
+//   '진짜 무결과'를 명시 신호로 노출 → /api/dream/search 가 무결과 검색어를 로깅(수요 신호).
+export function searchDream(query: string): {
+  match: DreamMeaning;
+  suggestions: string[];
+  exact: boolean;
+  fallback: boolean;
+} {
+  const core = searchDreamCore(query);
+  return { ...core, fallback: core.match.summary === FALLBACK_MEANING.summary };
 }
 
 export function listDreamCategories() {
