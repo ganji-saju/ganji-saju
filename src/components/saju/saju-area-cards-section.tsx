@@ -73,7 +73,7 @@ export function SajuAreaCardsSection({ input, sajuData, heading = '오늘의 분
           );
         })}
       </div>
-      <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy-soft)]">
+      <p className="mt-2 text-[13px] leading-5 text-[var(--app-copy-soft)]">
         오늘 점수 {overall}점 · {getScoreStatus(overall)} · 총운
       </p>
     </section>

@@ -30,11 +30,11 @@ export function LifetimeKeysCarousel({ keys, className = '' }: LifetimeKeysCarou
               key={i}
               className={`w-72 flex-none snap-start rounded-xl border p-4 sm:w-full ${colors.bg} ${colors.border}`}
             >
-              <span className={`rounded-full bg-white/60 px-2 py-0.5 text-xs font-semibold ${colors.text}`}>
+              <span className={`rounded-full bg-white/60 px-2 py-0.5 text-[13px] font-semibold ${colors.text}`}>
                 {colors.badge}
               </span>
               <p className={`mt-2 text-base font-bold ${colors.text}`}>{key.title}</p>
-              <p className="mt-0.5 text-xs text-gray-500">{key.subtitle}</p>
+              <p className="mt-0.5 text-[13px] text-gray-500">{key.subtitle}</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
                 {key.body}
               </p>

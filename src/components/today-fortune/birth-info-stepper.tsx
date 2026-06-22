@@ -212,7 +212,7 @@ export function BirthInfoStepper({
     <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             출생 정보
           </div>
           <h2 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
@@ -223,14 +223,14 @@ export function BirthInfoStepper({
           type="button"
           onClick={handleLoadProfile}
           disabled={profileLoading}
-          className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] transition disabled:opacity-60"
+          className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13px] font-bold text-[var(--app-pink-strong)] transition disabled:opacity-60"
         >
           {profileLoading ? 'MY 프로필 확인 중' : 'MY 프로필 적용'}
         </button>
       </div>
 
       {profileMessage ? (
-        <p className="mt-3 text-[12px] leading-relaxed text-[var(--app-copy-soft)]">
+        <p className="mt-3 text-[13px] leading-relaxed text-[var(--app-copy-soft)]">
           {profileMessage}
         </p>
       ) : null}
@@ -262,7 +262,7 @@ export function BirthInfoStepper({
         />
       </div>
 
-      <p className="mt-4 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
+      <p className="mt-4 text-[13px] leading-[1.55] text-[var(--app-copy-soft)]">
         {hasBirthCore(draft)
           ? '입력이 준비되면 결과 화면으로 이동해 오늘 한 줄을 보여드려요.'
           : '오늘의 고민에 맞춰 무료 결과를 만들려면 기본 출생 정보가 필요합니다.'}

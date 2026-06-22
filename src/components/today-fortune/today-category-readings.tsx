@@ -142,14 +142,14 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
 
   return (
     <section aria-label="카테고리별 오늘운세">
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+      <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
         오늘의 운세 자세히
       </div>
       <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
         영역별로 자세히 보기
       </h2>
       <p
-        className="mt-1.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+        className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         궁금한 영역만 골라 읽어보세요. 점수가 낮아도 행동 한 가지만 챙기면 흐름이 정돈됩니다.

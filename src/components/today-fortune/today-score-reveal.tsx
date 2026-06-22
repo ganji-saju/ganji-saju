@@ -110,7 +110,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
         </div>
         <div>
           <div
-            className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[13px] font-extrabold uppercase tracking-[0.04em]"
             style={{ opacity: 0.85 }}
           >
             오늘의 시그널

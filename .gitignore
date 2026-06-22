@@ -71,3 +71,6 @@ PROGRESS.html
 # direnv — 레포별 gh/vercel/supabase 계정 고정용 .envrc (토큰 동적 추출, 커밋 금지)
 .envrc
 .direnv/
+
+# 가독성 회귀 스크린샷(사람 검토용 산출물, 재생성 가능)
+e2e/readability-shots/

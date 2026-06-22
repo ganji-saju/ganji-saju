@@ -36,7 +36,7 @@ export function SajuLifetimeKeysSection({
                 {card.title}
               </div>
               {card.subtitle ? (
-                <div className="mt-0.5 text-[12px] font-medium text-[var(--app-copy-muted)]">
+                <div className="mt-0.5 text-[13px] font-medium text-[var(--app-copy-muted)]">
                   {card.subtitle}
                 </div>
               ) : null}

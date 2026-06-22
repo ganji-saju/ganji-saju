@@ -29,7 +29,7 @@ function LuckyRow({ icon, label, items, accent }: RowProps) {
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]"
+          className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]"
         >
           {label}
         </div>
@@ -65,7 +65,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
     >
       <div className="flex items-baseline justify-between gap-2">
         <div>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             🍀 오늘의 행운 패키지
           </div>
           <h2
@@ -97,7 +97,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
       {/* ★ 로또 번호 6개 오행색 원 — 운세톡톡 핵심 시각화 차용 + 차별화 */}
       {luckyPackage.lottoNumbers.length > 0 ? (
         <div className="mt-3.5">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             🎰 추천 로또 번호 (오행 색상)
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -115,7 +115,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
               </div>
             ))}
           </div>
-          <p className="mt-1.5 text-[10.5px] leading-[1.5] text-[var(--app-copy-soft)]">
+          <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--app-copy-soft)]">
             * 재미 요소입니다. 큰 금액 베팅은 권하지 않습니다.
           </p>
         </div>
@@ -197,36 +197,36 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
             background: 'rgba(220,79,79,0.05)',
           }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
             ⚠️ 오늘 피하면 좋은 것
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {luckyPackage.avoidColors.length > 0 ? (
-              <li className="flex items-start gap-2 text-[11.5px] leading-[1.5] text-[var(--app-copy)]">
+              <li className="flex items-start gap-2 text-[13px] leading-[1.5] text-[var(--app-copy)]">
                 <span className="font-extrabold text-[var(--app-coral)]">색</span>
                 <span style={{ wordBreak: 'keep-all' }}>{luckyPackage.avoidColors.join(' · ')}</span>
               </li>
             ) : null}
             {luckyPackage.avoidDirections.length > 0 ? (
-              <li className="flex items-start gap-2 text-[11.5px] leading-[1.5] text-[var(--app-copy)]">
+              <li className="flex items-start gap-2 text-[13px] leading-[1.5] text-[var(--app-copy)]">
                 <span className="font-extrabold text-[var(--app-coral)]">방향</span>
                 <span style={{ wordBreak: 'keep-all' }}>{luckyPackage.avoidDirections.join(' · ')}</span>
               </li>
             ) : null}
             {luckyPackage.avoidTimeWindows.length > 0 ? (
-              <li className="flex items-start gap-2 text-[11.5px] leading-[1.5] text-[var(--app-copy)]">
+              <li className="flex items-start gap-2 text-[13px] leading-[1.5] text-[var(--app-copy)]">
                 <span className="font-extrabold text-[var(--app-coral)]">시간</span>
                 <span style={{ wordBreak: 'keep-all' }}>{luckyPackage.avoidTimeWindows.join(' · ')}</span>
               </li>
             ) : null}
             {luckyPackage.avoidZodiacs.length > 0 ? (
-              <li className="flex items-start gap-2 text-[11.5px] leading-[1.5] text-[var(--app-copy)]">
+              <li className="flex items-start gap-2 text-[13px] leading-[1.5] text-[var(--app-copy)]">
                 <span className="font-extrabold text-[var(--app-coral)]">띠</span>
                 <span style={{ wordBreak: 'keep-all' }}>{luckyPackage.avoidZodiacs.join(' · ')}</span>
               </li>
             ) : null}
           </ul>
-          <p className="mt-2 text-[10px] leading-[1.5] text-[var(--app-copy-soft)]">
+          <p className="mt-2 text-[13px] leading-[1.5] text-[var(--app-copy-soft)]">
             * 오늘 일진 정보입니다. 절대 금기는 아니고, 신중함의 신호로만 받아주세요.
           </p>
         </div>

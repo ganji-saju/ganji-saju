@@ -64,7 +64,7 @@ export function ScoreLockGate({
           className="w-full max-w-xs rounded-[22px] border bg-white/90 p-5 text-center backdrop-blur-sm shadow-[0_18px_48px_rgba(17,17,20,0.18)]"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             {gradeLabel} 등급
           </div>
           <h3
@@ -90,7 +90,7 @@ export function ScoreLockGate({
               점수 공개하고 보기
             </a>
           </div>
-          <p className="mt-3 text-[11.5px] text-[var(--app-copy-soft)]">
+          <p className="mt-3 text-[13px] text-[var(--app-copy-soft)]">
             결제 후 보관함에서 다시 볼 수 있어요
           </p>
         </div>

@@ -28,7 +28,7 @@ export function SajuTotalReviewNarrative({
         borderColor: 'var(--app-line)',
       }}
     >
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         평생 총평
       </div>
 
@@ -44,7 +44,7 @@ export function SajuTotalReviewNarrative({
       <div className="mt-4 space-y-4">
         {paragraphs.map(({ key, label }) => (
           <section key={key}>
-            <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+            <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
               {label}
             </div>
             <p

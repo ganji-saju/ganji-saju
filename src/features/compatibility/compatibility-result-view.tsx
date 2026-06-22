@@ -126,7 +126,7 @@ export function CompatibilityResultView({
               <div className="mt-2 text-[13px] font-extrabold text-[var(--app-ink)]">
                 {selfName}
               </div>
-              <div className="text-[11px] text-[var(--app-copy-soft)]">
+              <div className="text-[13px] text-[var(--app-copy-soft)]">
                 {selfYear} · {ZODIAC_KOR[selfZodiac]}
               </div>
             </div>
@@ -145,7 +145,7 @@ export function CompatibilityResultView({
               <div className="mt-2 text-[13px] font-extrabold text-[var(--app-ink)]">
                 {partnerName}
               </div>
-              <div className="text-[11px] text-[var(--app-copy-soft)]">
+              <div className="text-[13px] text-[var(--app-copy-soft)]">
                 {partnerYear} · {ZODIAC_KOR[partnerZodiac]}
               </div>
             </div>
@@ -185,7 +185,7 @@ export function CompatibilityResultView({
           <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
             분야별 궁합
           </h2>
-          <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
+          <p className="mt-1 text-[13px] text-[var(--app-copy-muted)]">
             관계의 흐름을 4축으로 나눠 봅니다
           </p>
           <div className="mt-3 grid gap-2.5">
@@ -218,7 +218,7 @@ export function CompatibilityResultView({
                       style={{ width: `${axisScore}%`, background: color }}
                     />
                   </div>
-                  <p className="mt-2 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  <p className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                     {card.summary}
                   </p>
                 </article>
@@ -234,26 +234,26 @@ export function CompatibilityResultView({
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">{selfName}</div>
+              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">{selfName}</div>
               <div className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]">
                 {compatibility.selfData.dayMaster.metaphor ?? '내 기본 기질'}
               </div>
-              <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.selfData.dayMaster.description ?? selfBirthSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">{partnerName}</div>
+              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">{partnerName}</div>
               <div className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]">
                 {compatibility.partnerData.dayMaster.metaphor ?? '상대 기본 기질'}
               </div>
-              <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.partnerData.dayMaster.description ?? partnerBirthSummary}
               </p>
             </article>
           </div>
           <p
-            className="mt-3 rounded-[12px] px-3.5 py-2.5 text-[12.5px] leading-[1.6]"
+            className="mt-3 rounded-[12px] px-3.5 py-2.5 text-[13px] leading-[1.6]"
             style={{ background: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' }}
           >
             {compatibility.summary}
@@ -267,19 +267,19 @@ export function CompatibilityResultView({
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[11px] font-bold text-[var(--app-jade)]">잘 맞는 지점</div>
+              <div className="text-[13px] font-bold text-[var(--app-jade)]">잘 맞는 지점</div>
               <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.supportiveSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[11px] font-bold text-[var(--app-coral)]">조심할 지점</div>
+              <div className="text-[13px] font-bold text-[var(--app-coral)]">조심할 지점</div>
               <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.cautionSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">지금 살리는 방식</div>
+              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">지금 살리는 방식</div>
               <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.currentFlowSummary}
               </p>
@@ -297,21 +297,21 @@ export function CompatibilityResultView({
           </summary>
           <div className="grid gap-2.5 border-t border-[var(--app-line)] px-4 py-4">
             <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
                 관계를 보는 렌즈
               </div>
               <div className="mt-1 text-[13px] font-bold text-[var(--app-ink)]">
                 {compatibility.relationshipLensTitle}
               </div>
-              <p className="mt-1 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.relationshipLensBody}
               </p>
             </article>
             <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
                 다루는 방식
               </div>
-              <p className="mt-1 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.practiceSummary}
               </p>
             </article>
@@ -320,10 +320,10 @@ export function CompatibilityResultView({
                 key={item.title}
                 className="rounded-[12px] border border-[var(--app-line)] bg-white p-3"
               >
-                <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
                   {item.title}
                 </div>
-                <p className="mt-1 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
                   {item.body}
                 </p>
               </article>
@@ -369,7 +369,7 @@ export function CompatibilityResultView({
               >
                 {premiumExpansion.ctaTitle}
               </h2>
-              <p className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]">
+              <p className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]">
                 {premiumExpansion.ctaBody}
               </p>
             </article>
@@ -443,7 +443,7 @@ export function CompatibilityResultView({
               {premiumExpansion.ctaTitle}
             </h2>
             <p
-              className="mt-2 text-[12.5px] leading-[1.55]"
+              className="mt-2 text-[13px] leading-[1.55]"
               style={{ opacity: 0.75 }}
             >
               {premiumExpansion.ctaBody}
@@ -452,7 +452,7 @@ export function CompatibilityResultView({
               {premiumExpansion.preview.slice(0, 2).map((item) => (
                 <li
                   key={item.title}
-                  className="rounded-[12px] px-3.5 py-2.5 text-[12.5px] leading-[1.55]"
+                  className="rounded-[12px] px-3.5 py-2.5 text-[13px] leading-[1.55]"
                   style={{ background: 'rgba(255,255,255,0.06)' }}
                 >
                   <strong className="text-white">{item.title}</strong>
@@ -471,7 +471,7 @@ export function CompatibilityResultView({
               </Link>
               <Link
                 href={retakeHref}
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[12.5px] font-bold text-white/80"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[13px] font-bold text-white/80"
               >
                 다른 사람과 다시 보기
               </Link>

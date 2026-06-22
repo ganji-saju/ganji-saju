@@ -67,13 +67,13 @@ export function PremiumLockCard({
         >
           <ZodiacChip kind="snake" size="md" className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-[11px] font-extrabold tracking-[0.04em] text-[var(--app-jade)]">
+            <div className="text-[13px] font-extrabold tracking-[0.04em] text-[var(--app-jade)]">
               ✓ 이미 구매한 풀이
             </div>
             <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
               오늘 자세히 보기
             </div>
-            <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+            <div className="mt-0.5 text-[13px] text-[var(--app-copy-soft)]">
               결제 없이 바로 열람합니다
             </div>
           </div>
@@ -101,13 +101,13 @@ export function PremiumLockCard({
       >
         <ZodiacChip kind="snake" size="md" className="shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
             550원 · 작은 풀이
           </div>
           <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
             오늘 자세히 보기
           </div>
-          <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+          <div className="mt-0.5 text-[13px] text-[var(--app-copy-soft)]">
             지금 흐름 · 조심할 시간대 · 핵심 한 줄
           </div>
         </div>
@@ -168,7 +168,7 @@ export function PremiumLockCard({
           </Link>
 
           {/* 옵션 설명 — 1코인 / 550원 / 990원 묶음 */}
-          <ul className="mt-3 grid gap-1 text-[11px] leading-relaxed text-[var(--app-copy-muted)]">
+          <ul className="mt-3 grid gap-1 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
             <li>
               <b className="font-bold text-[var(--app-ink)]">1코인 열기</b> — 보유 코인으로 오늘 자세히 보기
             </li>
@@ -209,13 +209,13 @@ export function PremiumLockCard({
         </div>
       )}
 
-      <p className="mt-3 text-[11px] leading-relaxed text-[var(--app-copy-muted)]">
+      <p className="mt-3 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
         <Lock className="mr-1 inline h-3 w-3 align-[-1px]" />
         {copy}
       </p>
 
       {errorMessage ? (
-        <p className="mt-3 text-[12px] text-[var(--app-coral)]">{errorMessage}</p>
+        <p className="mt-3 text-[13px] text-[var(--app-coral)]">{errorMessage}</p>
       ) : null}
     </section>
   );

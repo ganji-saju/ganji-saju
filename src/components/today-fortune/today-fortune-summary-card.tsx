@@ -66,7 +66,7 @@ export function TodayFortuneSummaryCard({
       {/* PR #149 (Part C) — 사용자 상황 있으면 perspective 한 줄 노출. */}
       {perspective ? (
         <p
-          className="mt-2 text-[11.5px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
+          className="mt-2 text-[13px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
           style={{ wordBreak: 'keep-all' }}
         >
           🎯 {perspective} 오늘
