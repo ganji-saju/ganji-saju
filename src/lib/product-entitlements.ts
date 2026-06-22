@@ -217,6 +217,50 @@ export async function hasAnyMonthlyCalendarForReading(
   return false;
 }
 
+// 2026-06-22 — 사용자의 특정 taste_product 이용권 scope_key 전부 회수(product_entitlements +
+//   legacy credit_transactions). 사주 정체성 매칭(reading-identity)에서 이 목록을 현재 reading 의
+//   사주 정체성과 대조해 분/경로 차이를 흡수한다. 조회 실패는 비차단(빈 배열로 graceful degrade).
+export async function listTasteProductEntitlementScopeKeys(
+  userId: string | null | undefined,
+  productId: TasteProductId
+): Promise<string[]> {
+  if (!userId || !hasSupabaseServiceEnv) return [];
+
+  const service = await createServiceClient();
+  const scopeKeys = new Set<string>();
+
+  // 1) product_entitlements (정식 테이블)
+  const { data: productRows } = await service
+    .from('product_entitlements')
+    .select('scope_key')
+    .eq('user_id', userId)
+    .eq('product_id', productId);
+  for (const row of (productRows as { scope_key: string | null }[] | null) ?? []) {
+    if (row.scope_key) scopeKeys.add(row.scope_key);
+  }
+
+  // 2) legacy credit_transactions (제약 드리프트 시절 폴백분 포함)
+  const { data: legacyRows } = await service
+    .from('credit_transactions')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('type', 'purchase')
+    .eq('feature', 'taste_product');
+  for (const row of (legacyRows as { metadata: Record<string, unknown> | null }[] | null) ?? []) {
+    const meta = row.metadata ?? {};
+    if (
+      meta.kind === 'taste_product' &&
+      meta.productId === productId &&
+      typeof meta.scopeKey === 'string' &&
+      meta.scopeKey
+    ) {
+      scopeKeys.add(meta.scopeKey);
+    }
+  }
+
+  return [...scopeKeys];
+}
+
 // 2026-05-24 today-detail 결제 정합성 — 같은 날(KST) today-detail 결제분 자동 인정.
 //   readingKey 가 이름 해시 등으로 흔들리거나 과거 readingId(slug) scope 로 결제한
 //   분이라 정확 scope 매치가 안 돼도, 본인이 그날 today-detail 을 결제했으면 그날

@@ -40,6 +40,14 @@ export function buildReadingProductScopeKey(readingKey: string) {
   return `reading:${readingKey}`;
 }
 
+// buildReadingProductScopeKey 역함수 — 'reading:{readingKey}' → readingKey. 이용권을 사주
+// 정체성으로 매칭(reading-identity)할 때 저장된 scope_key 에서 readingKey 를 회수하는 데 쓴다.
+export function parseReadingProductScopeKey(scopeKey: string | null | undefined): string | null {
+  const trimmed = scopeKey?.trim();
+  if (!trimmed || !trimmed.startsWith('reading:')) return null;
+  return trimmed.slice('reading:'.length) || null;
+}
+
 export function buildTodayDetailScopeKey(sourceSessionId: string) {
   return `today:${sourceSessionId}`;
 }
@@ -74,6 +82,21 @@ export function buildScoreFactorScopeKey(readingKey: string, factorId: string) {
 }
 
 export type ScoreFactorId = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
+
+// buildScoreFactorScopeKey 역함수 — 'score:{readingKey}:{factorId}' → {readingKey, factorId}.
+// readingKey 는 '-' 구분이라 ':' 가 없어 마지막 ':' 가 factorId 경계. 정체성 매칭에서 사용.
+export function parseScoreFactorScopeKey(
+  scopeKey: string | null | undefined
+): { readingKey: string; factorId: ScoreFactorId } | null {
+  const trimmed = scopeKey?.trim();
+  if (!trimmed || !trimmed.startsWith('score:')) return null;
+  const lastColon = trimmed.lastIndexOf(':');
+  if (lastColon < 'score:'.length) return null;
+  const readingKey = trimmed.slice('score:'.length, lastColon);
+  const factorId = parseFactorScope(trimmed.slice(lastColon + 1));
+  if (!readingKey || !factorId) return null;
+  return { readingKey, factorId };
+}
 
 export function parseFactorScope(scope: string | null | undefined): ScoreFactorId | null {
   const v = scope?.trim().toUpperCase();
