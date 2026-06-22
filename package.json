@@ -36,6 +36,8 @@
     "audit:ai-chat-idempotency:strict": "node scripts/audit-ai-chat-idempotency.mjs --strict",
     "audit:lifetime-report": "node scripts/audit-lifetime-report.mjs",
     "audit:lifetime-report:strict": "node scripts/audit-lifetime-report.mjs --strict",
+    "audit:migration-numbers": "node scripts/audit-migration-numbers.mjs",
+    "audit:migration-numbers:strict": "node scripts/audit-migration-numbers.mjs --strict",
     "backfill:snapshot-name": "node scripts/backfill-snapshot-display-name.mjs",
     "backfill:snapshot-name:apply": "node scripts/backfill-snapshot-display-name.mjs --apply",
     "e2e": "playwright test",
