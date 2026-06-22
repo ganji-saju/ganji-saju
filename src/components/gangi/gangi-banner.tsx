@@ -160,7 +160,7 @@ function BannerBody({
     return (
       <>
         {eyebrow ? (
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-white/85">
+          <div className="text-[12px] font-extrabold uppercase tracking-[0.06em] text-white/85">
             {eyebrow}
           </div>
         ) : null}
@@ -174,7 +174,7 @@ function BannerBody({
           <p className="mt-2 text-[12.5px] leading-[1.65] text-white/85">{description}</p>
         ) : null}
         {ctaLabel ? (
-          <span className="mt-3.5 inline-flex h-9 items-center rounded-full bg-white/20 px-3.5 text-[12px] font-extrabold backdrop-blur-sm">
+          <span className="mt-3.5 inline-flex h-9 items-center rounded-full bg-white/20 px-3.5 text-[13px] font-extrabold backdrop-blur-sm">
             {ctaLabel} →
           </span>
         ) : null}
@@ -210,7 +210,7 @@ function BannerBody({
           ) : null}
           <div className="min-w-0 flex-1">
             {eyebrow ? (
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.08em] text-white/70">
+              <div className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-white/70">
                 {eyebrow}
               </div>
             ) : null}
@@ -221,11 +221,11 @@ function BannerBody({
               {title}
             </div>
             {description ? (
-              <div className="mt-0.5 text-[11.5px] text-white/70">{description}</div>
+              <div className="mt-0.5 text-[13px] text-white/70">{description}</div>
             ) : null}
           </div>
           {ctaLabel ? (
-            <span className="shrink-0 text-[11.5px] font-extrabold text-white/85">
+            <span className="shrink-0 text-[13px] font-extrabold text-white/85">
               {ctaLabel} →
             </span>
           ) : null}
@@ -250,7 +250,7 @@ function BannerBody({
       <div className="min-w-0 flex-1">
         {eyebrow ? (
           <div
-            className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+            className="text-[12px] font-extrabold uppercase tracking-[0.06em]"
             style={{
               color:
                 kind === 'success'
@@ -270,14 +270,14 @@ function BannerBody({
           {title}
         </div>
         {description ? (
-          <div className="mt-0.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+          <div className="mt-0.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
             {description}
           </div>
         ) : null}
       </div>
       {ctaLabel ? (
         <span
-          className="shrink-0 text-[12px] font-extrabold"
+          className="shrink-0 text-[13px] font-extrabold"
           style={{ color: 'var(--app-pink-strong)' }}
           aria-hidden="true"
         >

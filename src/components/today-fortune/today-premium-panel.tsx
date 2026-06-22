@@ -79,7 +79,7 @@ function ToneSection({
       }}
     >
       <div
-        className="text-[11px] font-extrabold uppercase tracking-[0.06em]"
+        className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
         style={{ color: palette.accent }}
       >
         {eyebrow}
@@ -108,7 +108,7 @@ function ToneInnerCard({
     >
       {range ? (
         <div
-          className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+          className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
           style={{ color: palette.accent }}
         >
           {range}
@@ -193,7 +193,7 @@ export function TodayPremiumPanel({
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               오늘 자세히 보기
             </div>
             <h2
@@ -205,7 +205,7 @@ export function TodayPremiumPanel({
               + 고민 상황 풀이
             </h2>
             <p
-              className="mt-2 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]"
+              className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               12 시진(時辰) 풀이 + 추천/회피 행동 + 고민될 때 시나리오
@@ -262,11 +262,11 @@ export function TodayPremiumPanel({
         className="rounded-[16px] border bg-white p-4"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           💡 이렇게 활용하세요
         </div>
         <ul
-          className="mt-2 grid gap-1.5 text-[12px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-2 grid gap-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li className="flex items-start gap-1.5">
@@ -346,7 +346,7 @@ export function TodayPremiumPanel({
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           고민될 때
         </div>
         <div className="mt-3 grid gap-2.5">
@@ -414,7 +414,7 @@ export function TodayPremiumPanel({
             {evidenceLines.map((line, idx) => (
               <li
                 key={`${line}-${idx}`}
-                className="text-[12px] leading-[1.65] text-[var(--app-copy)]"
+                className="text-[13px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 <span className="mr-1 font-extrabold text-[var(--app-pink-strong)]">·</span>
@@ -442,10 +442,10 @@ export function TodayPremiumPanel({
           </span>
         </summary>
         <div className="border-t border-[var(--app-line)] px-4 py-3.5">
-          <p className="text-[12px] leading-[1.7] text-[var(--app-copy-soft)]">
+          <p className="text-[13px] leading-[1.7] text-[var(--app-copy-soft)]">
             오늘 분위기와 입력 정보를 함께 참고해 정리했습니다.
           </p>
-          <p className="mt-1.5 text-[12px] leading-[1.7] text-[var(--app-copy-soft)]">
+          <p className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy-soft)]">
             {result.safetyNote}
           </p>
         </div>

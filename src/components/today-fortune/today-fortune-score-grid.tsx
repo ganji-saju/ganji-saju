@@ -56,7 +56,7 @@ export function TodayFortuneScoreGrid({
                   style={{ width: `${value}%`, background: color }}
                 />
               </div>
-              <p className="mt-2.5 text-[11.5px] leading-relaxed text-[var(--app-copy-muted)]">
+              <p className="mt-2.5 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
                 {score.summary}
               </p>
             </article>

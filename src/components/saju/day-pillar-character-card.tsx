@@ -28,11 +28,11 @@ export function DayPillarCharacterCard({
       }}
     >
       <div className="flex items-center gap-2.5">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           나의 일주
         </div>
         <div
-          className="rounded-full px-2 py-0.5 text-[10.5px] font-bold"
+          className="rounded-full px-2 py-0.5 text-[13px] font-bold"
           style={{
             background: 'var(--app-pink-soft)',
             color: 'var(--app-pink-strong)',
@@ -94,14 +94,14 @@ export function DayPillarCharacterCard({
               className="rounded-[12px] border bg-white p-3"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 강점
               </div>
               <ul className="mt-1.5 flex flex-wrap gap-1.5">
                 {profile.strengths.map((strength) => (
                   <li
                     key={strength}
-                    className="rounded-full border px-2.5 py-1 text-[11.5px] font-bold text-[var(--app-ink)]"
+                    className="rounded-full border px-2.5 py-1 text-[13px] font-bold text-[var(--app-ink)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       borderColor: 'var(--app-pink-line)',
@@ -119,7 +119,7 @@ export function DayPillarCharacterCard({
               className="rounded-[12px] border bg-white p-3"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
                 주의 포인트
               </div>
               <ul className="mt-1.5 grid gap-1">
@@ -144,7 +144,7 @@ export function DayPillarCharacterCard({
                 borderColor: 'var(--app-pink-line)',
               }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 지금 핵심
               </div>
               <p

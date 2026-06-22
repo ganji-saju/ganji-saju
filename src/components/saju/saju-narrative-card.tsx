@@ -15,7 +15,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
         borderColor: 'var(--app-line)',
       }}
     >
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         한 단락으로 정리
       </div>
 
@@ -42,7 +42,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
           {narrative.chips.map((chip) => (
             <li
               key={`${chip.label}-${chip.value}`}
-              className="rounded-full border px-2.5 py-1 text-[11px] font-bold"
+              className="rounded-full border px-2.5 py-1 text-[13px] font-bold"
               style={{
                 background: 'var(--app-pink-soft)',
                 borderColor: 'var(--app-pink-line)',

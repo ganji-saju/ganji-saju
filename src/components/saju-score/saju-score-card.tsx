@@ -57,7 +57,7 @@ export function SajuScoreCard({ score, animateOnMount = true, className = '' }: 
       </div>
 
       <div className="mt-1 border-t border-gray-200/60 pt-3">
-        <p className="text-center text-xs leading-relaxed text-gray-400">{SCORE_DISCLAIMER}</p>
+        <p className="text-center text-[13px] leading-relaxed text-gray-400">{SCORE_DISCLAIMER}</p>
       </div>
     </div>
   );

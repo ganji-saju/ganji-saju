@@ -29,7 +29,7 @@ export function TodayDaewoonCtaCard({ sajuSlug }: Props) {
           10년 흐름
         </span>
         <span
-          className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+          className="text-[13px] font-extrabold uppercase tracking-[0.04em]"
           style={{ opacity: 0.7 }}
         >
           DAEUN
@@ -48,7 +48,7 @@ export function TodayDaewoonCtaCard({ sajuSlug }: Props) {
         챕터는 언제 시작되는지 한 호흡에 풀어드립니다.
       </p>
       <ul
-        className="mt-3 grid gap-1.5 text-[12px]"
+        className="mt-3 grid gap-1.5 text-[13px]"
         style={{ color: 'rgba(255,255,255,0.82)' }}
       >
         <li className="flex items-center gap-2">

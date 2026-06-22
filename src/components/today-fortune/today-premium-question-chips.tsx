@@ -27,7 +27,7 @@ export function TodayPremiumQuestionChips({
       className="rounded-[18px] border bg-white p-4 sm:p-5"
       style={{ borderColor: 'var(--app-pink-line)' }}
     >
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         💭 깊이 들어갈 만한 질문
       </div>
       <h3
@@ -36,7 +36,7 @@ export function TodayPremiumQuestionChips({
       >
         오늘 더 풀어볼 만한 질문들
       </h3>
-      <p className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+      <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
         누르면 대화방에 질문이 미리 적혀요. 전송 버튼만 누르면 이어집니다.
       </p>
       <ul className="mt-3 grid gap-1.5">

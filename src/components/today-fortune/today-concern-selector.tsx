@@ -112,7 +112,7 @@ export function TodayConcernSelector({
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             오늘운세
           </div>
           <h1
@@ -194,7 +194,7 @@ export function TodayConcernSelector({
                 >
                   {visual.label}
                 </span>
-                <span className="mt-0.5 block text-[11.5px] leading-[1.5] text-[var(--app-copy-muted)]">
+                <span className="mt-0.5 block text-[13px] leading-[1.5] text-[var(--app-copy-muted)]">
                   {visual.desc}
                 </span>
               </span>
@@ -209,7 +209,7 @@ export function TodayConcernSelector({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[11.5px] font-extrabold transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[13px] font-extrabold transition-colors"
             style={{
               borderColor: 'var(--app-line)',
               color: 'var(--app-copy-muted)',

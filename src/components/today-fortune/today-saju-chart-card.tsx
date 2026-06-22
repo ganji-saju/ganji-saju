@@ -56,7 +56,7 @@ export function TodaySajuChartCard({ chart }: Props) {
     >
       <div className="flex items-baseline justify-between">
         <div>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             나의 사주 명식
           </div>
           <h2 className="mt-0.5 text-[15px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
@@ -132,7 +132,7 @@ export function TodaySajuChartCard({ chart }: Props) {
           2026-05-16 — 기존 한 행에 한 오행씩 5행 → 카드 길이만 늘리고 비교가 어려워
           한 줄 5열 미니 게이지로 통일. 부족/과다 표시는 칩 대신 점/외곽선으로 컴팩트하게. */}
       <div className="mt-4">
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           오행 분포
         </div>
         <ul className="mt-1.5 grid grid-cols-5 gap-1.5">
@@ -201,7 +201,7 @@ export function TodaySajuChartCard({ chart }: Props) {
       {/* 2026-05-15 PR — 종합 신살 chip (길신·흉신·양날의검). 발동 위치도 함께 노출. */}
       {chart.detectedSinsals && chart.detectedSinsals.length > 0 ? (
         <div className="mt-4">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             발동한 신살
           </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -256,7 +256,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                 borderColor: 'rgba(45,135,88,0.22)',
               }}
             >
-              <div className="text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                 일주 강약
               </div>
               <div className="mt-0.5 text-[13px] font-extrabold text-[var(--app-ink)]">
@@ -272,7 +272,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                 borderColor: 'var(--app-pink-line)',
               }}
             >
-              <div className="text-[9.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 격국
               </div>
               <div

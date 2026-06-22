@@ -69,7 +69,7 @@ export function CompatibilityDeepSections({
   return (
     <div className="grid gap-2.5">
       {loading && (
-        <div className="text-[12px] font-medium text-[var(--app-copy-muted)]" aria-live="polite">
+        <div className="text-[13px] font-medium text-[var(--app-copy-muted)]" aria-live="polite">
           두 분께 맞춘 더 깊은 풀이를 불러오는 중입니다…
         </div>
       )}
@@ -99,7 +99,7 @@ export function CompatibilityDeepSections({
               </p>
               {item.evidence ? (
                 <p
-                  className="mt-1.5 break-keep text-[11px] leading-[1.6] text-[var(--app-copy-muted)]"
+                  className="mt-1.5 break-keep text-[13px] leading-[1.6] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {item.evidence}
