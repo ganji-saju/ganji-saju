@@ -71,7 +71,7 @@ export default function DaewoonPage() {
                 <div className="flex items-baseline justify-between gap-3">
                   <div>
                     <strong className="text-sm font-bold text-[var(--app-ink)]">{period.age}</strong>
-                    <span className="ml-2 text-xs font-medium text-[rgba(17,17,20,0.56)]">{period.years}</span>
+                    <span className="ml-2 text-xs font-medium text-[var(--app-copy-muted)]">{period.years}</span>
                     {period.current ? (
                       <span className="ml-2 rounded-full bg-[var(--app-pink)] px-2 py-0.5 text-[10px] font-bold text-white">
                         NOW

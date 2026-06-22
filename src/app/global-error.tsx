@@ -105,7 +105,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 marginTop: 6,
                 fontSize: 10.5,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                color: 'rgba(17,17,20,0.5)',
+                color: 'rgba(17,17,20,0.74)',
               }}
             >
               오류 코드: {error.digest}

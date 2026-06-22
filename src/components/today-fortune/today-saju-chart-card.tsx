@@ -112,7 +112,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                 >
                   {item.pillar.stem}
                 </div>
-                <div className="mt-0.5 text-[9px] text-[var(--app-copy-soft)]">{stemKor}</div>
+                <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">{stemKor}</div>
               </div>
               <div className="pb-2 pt-0.5">
                 <div
@@ -121,7 +121,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                 >
                   {item.pillar.branch}
                 </div>
-                <div className="mt-0.5 text-[9px] text-[var(--app-copy-soft)]">{branchKor}</div>
+                <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">{branchKor}</div>
               </div>
             </article>
           );
@@ -179,14 +179,14 @@ export function TodaySajuChartCard({ chart }: Props) {
                 </span>
                 {lacking ? (
                   <span
-                    className="mt-1 text-[8.5px] font-extrabold leading-none"
+                    className="mt-1 text-[10.5px] font-extrabold leading-none"
                     style={{ color: 'var(--app-coral)' }}
                   >
                     부족
                   </span>
                 ) : excess ? (
                   <span
-                    className="mt-1 text-[8.5px] font-extrabold leading-none"
+                    className="mt-1 text-[10.5px] font-extrabold leading-none"
                     style={{ color: 'var(--app-amber)' }}
                   >
                     과다
