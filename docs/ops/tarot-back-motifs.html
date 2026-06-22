@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>타로 뒷면 모티프 후보 — CSS/SVG (0바이트)</title>
+<style>
+  :root{ --pink:rgba(255,79,154,0.72); --gold:rgba(210,176,114,1); --ease:cubic-bezier(0.22,1,0.36,1) }
+  *{box-sizing:border-box} body{margin:0;font-family:-apple-system,"Apple SD Gothic Neo","Segoe UI",sans-serif;background:#0c0712;color:#fff}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 18px 60px}
+  h1{font-size:18px;margin:0 0 4px} .sub{font-size:12.5px;color:rgba(255,255,255,0.55);margin:0 0 22px}
+  .row{display:grep;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:720px){.row{grid-template-columns:repeat(2,1fr)}}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .name{font-size:13px;font-weight:800} .name b{color:var(--gold)} .desc{font-size:11px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.5;min-height:46px}
+  /* big card */
+  .card{position:relative;width:130px;aspect-ratio:7/10;border-radius:11px;border:1.6px solid var(--pink);
+    background:linear-gradient(160deg,rgba(73,86,151,0.9),rgba(24,31,72,0.96) 58%,rgba(9,14,32,0.98));
+    box-shadow:0 10px 26px rgba(0,0,0,0.45);transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease);
+    cursor:pointer;overflow:hidden}
+  .card:hover{transform:translateY(-10px) scale(1.07);border-color:var(--gold);box-shadow:0 22px 44px rgba(0,0,0,0.55)}
+  .card .frame{position:absolute;inset:6px;border:1px solid rgba(210,176,114,0.32);border-radius:7px;pointer-events:none}
+  .card .art{position:absolute;inset:0;display:grid;place-items:center}
+  .card .art svg{width:66%;height:66%}
+  .card .shim{position:absolute;inset:0;overflow:hidden;opacity:0}
+  .card:hover .shim{opacity:1}
+  .card .shim::after{content:"";position:absolute;top:-60%;left:-120%;width:55%;height:220%;
+    background:linear-gradient(115deg,transparent,rgba(255,236,200,0.5),transparent);transform:rotate(8deg)}
+  .card:hover .shim::after{animation:sweep .7s var(--ease)}
+  @keyframes sweep{to{left:160%}}
+  /* small 44px tap-size legibility check */
+  .mini{width:44px;aspect-ratio:7/10;border-radius:5px;border:1.2px solid var(--pink);
+    background:linear-gradient(160deg,rgba(73,86,151,0.9),rgba(24,31,72,0.96) 58%,rgba(9,14,32,0.98));position:relative;overflow:hidden}
+  .mini .art{position:absolute;inset:0;display:grid;place-items:center}.mini .art svg{width:70%;height:70%}
+  .minilabel{font-size:10px;color:rgba(255,255,255,0.4)}
+  .note{margin-top:26px;font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7}
+  .note b{color:rgba(255,255,255,0.85)}
+</style></head>
+<body><div class="wrap">
+  <h1>타로 뒷면 모티프 후보 · CSS+SVG (이미지 0바이트)</h1>
+  <p class="sub">큰 카드는 hover 가능(리프트+시머). 아래 작은 44px는 실제 모바일 탭 크기에서의 가독성 확인용. 색·선 굵기·골드 톤은 모두 조정 가능.</p>
+  <div class="row" id="row"></div>
+  <div class="note">
+    <b>참고 — 브랜드 정합</b><br>
+    · ②만다라는 가장 "정통 타로 뒷면" 느낌(라이더-웨이트 계열), ③단청 연꽃은 <b>사주=한국 점술</b> 정체성과 직결, ①성좌는 별·운세 톤.<br>
+    · 어떤 안이든 카드별 톤(plum/indigo/jade/gold/rose)·글로우·미세 회전으로 78장이 똑같은 복제가 아닌 "진짜 덱"처럼 보입니다.<br>
+    · 골드 단색 라인이라 44px에서도 또렷 — 복잡한 안(②③)은 선 굵기/디테일을 작은 크기에 맞춰 한 단계 단순화한 버전을 별도 보유.
+  </div>
+</div>
+<script>
+const MOTIFS = {
+  moon: `<svg viewBox="0 0 48 64" fill="none" stroke="rgba(210,176,114,0.92)" stroke-width="1.4">
+    <path d="M30 14a16 16 0 1 0 9 25 12.5 12.5 0 0 1-9-25Z" fill="rgba(210,176,114,0.12)"/>
+    <circle cx="15" cy="18" r="1" fill="rgba(210,176,114,0.9)" stroke="none"/>
+    <path d="M13 40l1.4 3L17.5 44l-3.1 1.6L13 49l-1.4-3.4L8.5 44l3.1-1Z" fill="rgba(210,176,114,0.75)" stroke="none"/>
+    <circle cx="36" cy="48" r="0.8" fill="rgba(210,176,114,0.7)" stroke="none"/></svg>`,
+  constellation: `<svg viewBox="0 0 48 64" fill="none" stroke="rgba(210,176,114,0.85)" stroke-width="0.9">
+    <path d="M11 16 L20 26 L31 18 L35 33 L25 42 L14 47 M31 18 L36 12"/>
+    ${[[11,16,1.8],[20,26,1.4],[31,18,2.0],[35,33,1.5],[25,42,1.7],[14,47,1.3],[36,12,1.1]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(210,176,114,0.95)" stroke="none"/>`).join('')}
+    <path d="M38 50l1 2.2 2.2 1-2.2 1L38 56l-1-2.2-2.2-1 2.2-1Z" fill="rgba(210,176,114,0.7)" stroke="none"/></svg>`,
+  mandala: `<svg viewBox="0 0 48 64" fill="none" stroke="rgba(210,176,114,0.85)" stroke-width="0.9">
+    <g transform="translate(24,32)">
+      <circle r="15" stroke-opacity="0.5"/><circle r="10.5"/><circle r="5.5" stroke-opacity="0.7"/>
+      <g>${Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;const x=Math.cos(a)*15,y=Math.sin(a)*15;return `<line x1="0" y1="0" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke-opacity="0.35"/>`}).join('')}</g>
+      <rect x="-7.5" y="-7.5" width="15" height="15" transform="rotate(0)" stroke-opacity="0.8"/>
+      <rect x="-7.5" y="-7.5" width="15" height="15" transform="rotate(45)" stroke-opacity="0.8"/>
+      <circle r="1.6" fill="rgba(210,176,114,0.95)" stroke="none"/>
+    </g></svg>`,
+  lotus: `<svg viewBox="0 0 48 64" fill="none" stroke="rgba(210,176,114,0.9)" stroke-width="0.95">
+    <g transform="translate(24,32)">
+      ${Array.from({length:8},(_,i)=>{const a=i*45;return `<path d="M0 0 C 4 -10, 4 -16, 0 -19 C -4 -16, -4 -10, 0 0 Z" transform="rotate(${a})" fill="rgba(210,176,114,0.10)"/>`}).join('')}
+      ${Array.from({length:8},(_,i)=>{const a=i*45+22.5;return `<path d="M0 0 C 2.4 -6, 2.4 -10, 0 -12 C -2.4 -10, -2.4 -6, 0 0 Z" transform="rotate(${a})" fill="rgba(210,176,114,0.18)" stroke-opacity="0.7"/>`}).join('')}
+      <circle r="2.4" fill="rgba(210,176,114,0.9)" stroke="none"/>
+    </g></svg>`,
+};
+const ITEMS = [
+  {key:'constellation', name:'① <b>성좌</b> (Constellation)', desc:'별·운세 톤. 금빛 별자리 연결선. 가장 가벼운 인상.'},
+  {key:'mandala', name:'② <b>신비 기하 만다라</b>', desc:'정통 타로 뒷면(라이더-웨이트 계열). 대칭·고급감 최강.'},
+  {key:'lotus', name:'③ <b>단청 연꽃 메달리온</b>', desc:'사주=한국 점술 정체성 직결. 단청 골드 연화문.'},
+  {key:'moon', name:'현재안 · 초승달', desc:'달빛선생 "달빛" 브랜드 직결(참고용).'},
+];
+document.getElementById('row').innerHTML = ITEMS.map(it=>`
+  <div class="cell">
+    <div class="name">${it.name}</div>
+    <div class="card"><span class="frame"></span><span class="art">${MOTIFS[it.key]}</span><span class="shim"></span></div>
+    <div class="desc">${it.desc}</div>
+    <div class="mini"><span class="art">${MOTIFS[it.key]}</span></div>
+    <div class="minilabel">↑ 실제 44px 탭 크기</div>
+  </div>`).join('');
+</script>
+</body></html>
