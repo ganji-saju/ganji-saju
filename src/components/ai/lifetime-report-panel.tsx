@@ -106,7 +106,7 @@ function renderParagraphs(text: string) {
   return splitParagraphs(text).map((paragraph, index) => (
     <p
       key={`${paragraph.slice(0, 24)}-${index}`}
-      className="text-[14px] leading-[1.78] text-[var(--app-copy)]"
+      className="text-[16.1px] leading-[1.78] text-[var(--app-copy)]"
       style={{ wordBreak: 'keep-all' }}
     >
       {paragraph}
@@ -122,13 +122,13 @@ function FactCard({ label, body, tone = 'pink' }: { label: string; body: string;
       style={{ borderColor: palette.innerBorder }}
     >
       <div
-        className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+        className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
         style={{ color: palette.accent }}
       >
         {label}
       </div>
       <p
-        className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]"
+        className="mt-2 text-[15.5px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {limitSajuSentences(body, 2)}
@@ -142,17 +142,17 @@ function BasisNotes({ items }: { items: string[] }) {
   return (
     <details className="group mt-4">
       <summary
-        className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+        className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-4 py-3 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
         style={{ borderColor: 'var(--app-line)' }}
       >
         <span>풀이 배경 보기</span>
-        <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+        <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
       </summary>
       <div className="mt-2 grid gap-2">
         {items.map((line) => (
           <div
             key={line}
-            className="rounded-[12px] border bg-white px-4 py-3 text-[12.5px] leading-[1.7] text-[var(--app-copy-soft)]"
+            className="rounded-[12px] border bg-white px-4 py-3 text-[14.4px] leading-[1.7] text-[var(--app-copy-soft)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             {simplifySajuCopy(line)}
@@ -226,16 +226,16 @@ function LifetimeSummaryCard({
         </span>
         <div className="min-w-0">
           <div
-            className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+            className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
             style={{ color: palette.accent }}
           >
             {eyebrow}
           </div>
-          <div className="mt-0.5 text-[14.5px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
+          <div className="mt-0.5 text-[16.7px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
             {title}
           </div>
           <p
-            className="mt-1.5 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="mt-1.5 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {body}
@@ -261,11 +261,11 @@ function LifetimeAtAGlance({
         borderColor: 'var(--app-pink-line)',
       }}
     >
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         한 장 요약
       </div>
       <h3
-        className="mt-1.5 text-[20px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+        className="mt-1.5 text-[23px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
         먼저 이 장면만 보세요
@@ -274,11 +274,11 @@ function LifetimeAtAGlance({
         className="mt-4 rounded-[14px] border bg-white p-4"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           기억할 한 줄
         </div>
         <p
-          className="mt-2 text-[14.5px] leading-[1.7] font-bold text-[var(--app-ink)]"
+          className="mt-2 text-[16.7px] leading-[1.7] font-bold text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {/* 2026-05-23: '평생 힌트'(아래 lifetimeRule)와 동일 문장 중복 노출 차단.
@@ -376,20 +376,20 @@ function MajorLuckTimeline({
               <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span
-                    className="rounded-full border bg-white px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]"
+                    className="rounded-full border bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     {cycle.ageLabel}
                   </span>
                   <span
-                    className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
+                    className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                     style={{ background: palette.accent }}
                   >
                     {cycle.phase}
                   </span>
                   {cycle.isCurrent ? (
                     <span
-                      className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
+                      className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                       style={{
                         background: 'var(--app-ink)',
                         boxShadow: '0 4px 10px rgba(15,23,42,0.22)',
@@ -401,7 +401,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 2 — 12운성 chip (PR 6 산출 활용) */}
                   {cycle.twelveStage ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#eef0f8',
                         borderColor: 'rgba(82, 102, 162, 0.22)',
@@ -414,7 +414,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 2 — 원진 chip (사주 원국 자리와 원진 페어 발생 시) */}
                   {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#fff3d6',
                         borderColor: 'rgba(212, 148, 38, 0.32)',
@@ -428,7 +428,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 3 — 교운기(交運期) chip. 대운 진입/퇴장 ±1년 사용자. */}
                   {cycle.transitionPhase === 'entering' ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#e8f5ee',
                         borderColor: 'rgba(45, 135, 88, 0.32)',
@@ -441,7 +441,7 @@ function MajorLuckTimeline({
                   ) : null}
                   {cycle.transitionPhase === 'leaving' ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold"
+                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#fdecec',
                         borderColor: 'rgba(198, 69, 69, 0.32)',
@@ -454,21 +454,21 @@ function MajorLuckTimeline({
                   ) : null}
                   <span
                     aria-hidden="true"
-                    className="ml-auto text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+                    className="ml-auto text-[13.8px] font-bold text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
                   >
                     ▾
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2">
                   <h4
-                    className="text-[18px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                    className="text-[20.7px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
                     style={{ fontFamily: 'var(--font-han)' }}
                   >
                     {cycle.ganzi}
                   </h4>
                   {cycle.chapterTitle ? (
                     <span
-                      className="text-[12.5px] font-bold leading-[1.45] text-[var(--app-pink-strong)]"
+                      className="text-[14.4px] font-bold leading-[1.45] text-[var(--app-pink-strong)]"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       {cycle.chapterTitle}
@@ -477,14 +477,14 @@ function MajorLuckTimeline({
                 </div>
                 {cycle.hook ? (
                   <p
-                    className="text-[13.5px] leading-[1.65] text-[var(--app-copy)]"
+                    className="text-[15.5px] leading-[1.65] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {cycle.hook}
                   </p>
                 ) : (
                   <p
-                    className="text-[13.5px] leading-[1.65] text-[var(--app-copy)]"
+                    className="text-[15.5px] leading-[1.65] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {cycle.summary}
@@ -508,7 +508,7 @@ function MajorLuckTimeline({
                 ) : null}
                 {cycle.practicalActions && cycle.practicalActions.length > 0 ? (
                   <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                    <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                       개운법 🧭
                     </div>
                     {/* 2026-05-16 — 사용자 보고: 박스 안에 박스가 들어 보임.
@@ -528,17 +528,17 @@ function MajorLuckTimeline({
                           className="px-3 py-2.5"
                           style={{ borderColor: 'var(--app-pink-line)' }}
                         >
-                          <div className="text-[11.5px] font-bold text-[var(--app-pink-strong)]">
+                          <div className="text-[13.2px] font-bold text-[var(--app-pink-strong)]">
                             {index + 1}. {action.what}
                           </div>
                           <p
-                            className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+                            className="mt-1 text-[14.4px] leading-[1.6] text-[var(--app-copy)]"
                             style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
                           >
                             <span className="font-bold text-[var(--app-copy-muted)]">왜 ›</span> {action.reason}
                           </p>
                           <p
-                            className="mt-0.5 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+                            className="mt-0.5 text-[14.4px] leading-[1.6] text-[var(--app-copy)]"
                             style={{ wordBreak: 'keep-all', overflowWrap: 'anywhere' }}
                           >
                             <span className="font-bold text-[var(--app-copy-muted)]">어떻게 ›</span> {action.how}
@@ -592,11 +592,11 @@ function CycleSection({
           : undefined
       }
     >
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         {label}
       </div>
       <p
-        className="mt-1 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+        className="mt-1 text-[15px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {body}
@@ -638,7 +638,7 @@ function LifetimeSectionBody({
             {report.strengthBalance.elementHighlights.map((item) => (
               <div
                 key={item}
-                className="rounded-[12px] border bg-white px-4 py-2.5 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+                className="rounded-[12px] border bg-white px-4 py-2.5 text-[15px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
               >
                 {item}
@@ -647,17 +647,17 @@ function LifetimeSectionBody({
           </div>
           <details className="group mt-4">
             <summary
-              className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+              className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-4 py-3 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               <span>생활 균형 포인트 보기</span>
-              <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+              <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
             </summary>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {report.strengthBalance.balanceGuide.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border bg-white px-3 py-1.5 text-[11.5px] font-bold text-[var(--app-copy)]"
+                  className="rounded-full border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   {simplifySajuCopy(item)}
@@ -680,14 +680,14 @@ function LifetimeSectionBody({
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'rgba(45,135,88,0.18)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                 살려야 할 기운
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {report.patternAndYongsin.supportSymbols.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border px-2.5 py-1 text-[11.5px] font-extrabold"
+                    className="rounded-full border px-2.5 py-1 text-[13.2px] font-extrabold"
                     style={{
                       background: '#e8f5ee',
                       borderColor: 'rgba(45,135,88,0.22)',
@@ -703,14 +703,14 @@ function LifetimeSectionBody({
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'rgba(198,69,69,0.18)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
                 조절할 기운
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {report.patternAndYongsin.cautionSymbols.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border px-2.5 py-1 text-[11.5px] font-extrabold"
+                    className="rounded-full border px-2.5 py-1 text-[13.2px] font-extrabold"
                     style={{
                       background: '#fdecec',
                       borderColor: 'rgba(198,69,69,0.22)',
@@ -763,7 +763,7 @@ function LifetimeSectionBody({
             {report.healthRhythm.habitPoints.map((item) => (
               <span
                 key={item}
-                className="rounded-full border bg-white px-3 py-1.5 text-[11.5px] font-bold text-[var(--app-copy)]"
+                className="rounded-full border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {item}
@@ -785,7 +785,7 @@ function LifetimeSectionBody({
             {interpretation.rememberRules.map((item) => (
               <div
                 key={item}
-                className="rounded-[12px] border bg-white px-4 py-2.5 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+                className="rounded-[12px] border bg-white px-4 py-2.5 text-[15px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
               >
                 {item}
@@ -861,7 +861,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       >
         <div className="text-center">
           <div
-            className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[22px] font-extrabold"
+            className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[25.3px] font-extrabold"
             style={{
               background: '#fff',
               color: 'var(--app-pink-strong)',
@@ -873,13 +873,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           >
             月
           </div>
-          <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             깊은 사주풀이 생성 중
           </div>
-          <h2 className="mt-1.5 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+          <h2 className="mt-1.5 text-[23px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
             타고난 사주를 정리하고 있어요
           </h2>
-          <p className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
             성향·관계·재물·일·건강·대운·평생 전략까지 9개 챕터로 묶어드릴게요.
           </p>
         </div>
@@ -887,11 +887,11 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           {['타고난 성향과 보완 방향 정리', '10년 단위 대운 흐름 매칭', '평생 활용 전략 작성'].map((label, index) => (
             <li
               key={label}
-              className="flex items-center gap-2.5 rounded-[12px] border bg-white px-3.5 py-2.5 text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              className="flex items-center gap-2.5 rounded-[12px] border bg-white px-3.5 py-2.5 text-[14.4px] font-extrabold text-[var(--app-ink)]"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
               <span
-                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11.5px] font-extrabold text-white"
                 style={{ background: 'var(--app-pink)' }}
                 aria-hidden="true"
               >
@@ -916,19 +916,19 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           borderColor: 'rgba(198,69,69,0.22)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
           불러오기 실패
         </div>
-        <h3 className="mt-1.5 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+        <h3 className="mt-1.5 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
           깊은 사주풀이를 열지 못했어요
         </h3>
-        <p className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
+        <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
           {error || '깊은 사주풀이를 불러오지 못했습니다.'}
         </p>
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="mt-4 inline-flex h-11 items-center justify-center gap-1.5 rounded-full border bg-white px-4 text-[13px] font-extrabold text-[var(--app-ink)]"
+          className="mt-4 inline-flex h-11 items-center justify-center gap-1.5 rounded-full border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <RefreshCw className="h-4 w-4" />
@@ -960,7 +960,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
         <div className="relative flex items-start gap-3">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
             style={{
               background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
               boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
@@ -973,20 +973,20 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-pink-strong)]"
+                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 ✦ 깊은 풀이
               </span>
             </div>
             <h2
-              className="mt-1.5 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+              className="mt-1.5 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               내 사주를 자세히
@@ -994,7 +994,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               정리했습니다
             </h2>
             <p
-              className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               어떤 환경에서 잘 살아나는지, 어디서 무리하기 쉬운지 먼저 봅니다.
@@ -1005,7 +1005,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="relative mt-4 inline-flex h-9 items-center gap-1.5 rounded-full border bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy-muted)]"
+          className="relative mt-4 inline-flex h-9 items-center gap-1.5 rounded-full border bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -1025,11 +1025,11 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               className="rounded-[12px] border bg-white p-2.5 text-center"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 {label}
               </div>
               <div
-                className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]"
+                className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]"
                 style={{ fontFamily: 'var(--font-han)' }}
               >
                 {value}
@@ -1044,7 +1044,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             {interpretation.keywords.slice(0, 6).map((keyword) => (
               <span
                 key={keyword}
-                className="rounded-full border bg-white px-2.5 py-1 text-[11.5px] font-bold text-[var(--app-copy)]"
+                className="rounded-full border bg-white px-2.5 py-1 text-[13.2px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {keyword}
@@ -1067,11 +1067,11 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             이 사주의 평생 힌트
           </div>
           <p
-            className="mt-2 text-[14px] leading-[1.7] font-bold text-[var(--app-ink)]"
+            className="mt-2 text-[16.1px] leading-[1.7] font-bold text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {interpretation.lifetimeRule}
@@ -1083,10 +1083,10 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
       {/* §챕터 nav */}
       <section className="rounded-[20px] border bg-white p-5" style={{ borderColor: 'var(--app-line)' }}>
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           바로 보기
         </div>
-        <h3 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h3 className="mt-1 text-[19.5px] font-extrabold leading-snug text-[var(--app-ink)]">
           필요한 장으로 바로 이동합니다
         </h3>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -1100,13 +1100,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <span
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
                   style={{ background: palette.accent }}
                   aria-hidden="true"
                 >
                   {index + 1}
                 </span>
-                <span className="min-w-0 flex-1 text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                <span className="min-w-0 flex-1 text-[14.4px] font-extrabold text-[var(--app-ink)]">
                   {section.label}
                 </span>
               </Link>
@@ -1130,7 +1130,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           >
             <div className="flex items-center gap-2">
               <span
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-[14px] font-extrabold text-white"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-[16.1px] font-extrabold text-white"
                 style={{
                   background: palette.accent,
                   boxShadow: `0 6px 14px ${palette.accent}40`,
@@ -1142,13 +1142,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
                   style={{ color: palette.accent }}
                 >
                   {index + 1}장 · {section.label}
                 </div>
                 <h3
-                  className="mt-0.5 text-[19px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+                  className="mt-0.5 text-[21.8px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {reportSection.headline}
@@ -1195,22 +1195,22 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       >
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold"
+            className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{ borderColor: 'rgba(74,92,184,0.22)', color: '#4a5cb8' }}
           >
             부록
           </span>
           <span
-            className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold"
+            className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{ borderColor: 'rgba(74,92,184,0.22)', color: '#4a5cb8' }}
           >
             {report.yearlyAppendix.yearLabel} · {report.yearlyAppendix.yearGanji}
           </span>
         </div>
-        <h3 className="mt-2 text-[19px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+        <h3 className="mt-2 text-[21.8px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
           {report.yearlyAppendix.headline}
         </h3>
-        <p className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
+        <p className="mt-2 text-[15.5px] leading-[1.7] text-[var(--app-copy)]" style={{ wordBreak: 'keep-all' }}>
           {report.yearlyAppendix.oneLineSummary}
         </p>
         <div className="mt-4 grid gap-2.5">
@@ -1225,7 +1225,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="mt-4">
           <Link
             href={report.yearlyAppendix.ctaAnchor}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             {report.yearlyAppendix.ctaLabel}
           </Link>
@@ -1235,11 +1235,11 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       {/* §증거/계산 정보 */}
       <details className="group" id="lifetime-evidence">
         <summary
-          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[14px] border bg-white px-5 py-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[14px] border bg-white px-5 py-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <span>계산 정보와 검증 보기</span>
-          <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+          <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
         </summary>
         <div className="mt-3 grid gap-3">
           <GroundingKasiSummary

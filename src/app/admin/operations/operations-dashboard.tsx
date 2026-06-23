@@ -83,7 +83,7 @@ function Sparkline({
           })()
         ) : null}
       </svg>
-      <div className="flex flex-col text-[9.5px] leading-tight text-[var(--app-copy-soft)]">
+      <div className="flex flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
         <span>오늘 {formatNum(lastVal)}</span>
         <span>평균 {avg.toFixed(1)}</span>
       </div>
@@ -110,7 +110,7 @@ function StackedRateBar({
   if (total === 0) {
     return (
       <div
-        className="mt-2.5 grid h-7 place-items-center rounded-[10px] border text-[10.5px] text-[var(--app-copy-soft)]"
+        className="mt-2.5 grid h-7 place-items-center rounded-[10px] border text-[12.1px] text-[var(--app-copy-soft)]"
         style={{ borderColor: 'var(--app-line)', background: 'rgba(0,0,0,0.025)' }}
       >
         표본 없음
@@ -137,7 +137,7 @@ function StackedRateBar({
         return (
           <div
             key={seg.key}
-            className="flex h-full items-center justify-center text-[10.5px] font-extrabold tabular-nums"
+            className="flex h-full items-center justify-center text-[12.1px] font-extrabold tabular-nums"
             style={{
               width: `${pct}%`,
               background: seg.color,
@@ -212,14 +212,14 @@ export function OperationsDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           📊 운영 모니터링
         </div>
-        <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
           핵심 지표 한눈에
         </h1>
         <p
-          className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           오늘 신규/DAU/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 단위.
@@ -235,7 +235,7 @@ export function OperationsDashboard() {
               key={opt.value}
               type="button"
               onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
               style={{
                 background: isActive ? 'var(--app-pink)' : 'white',
                 color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -254,7 +254,7 @@ export function OperationsDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">집계 중...</p>
+          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">집계 중...</p>
         </article>
       ) : state === 'error' ? (
         <article
@@ -264,7 +264,7 @@ export function OperationsDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[13px] text-[var(--app-coral)]">
+          <p className="text-[15px] text-[var(--app-coral)]">
             {data?.error ?? '데이터를 불러오지 못했습니다.'}
           </p>
         </article>
@@ -272,7 +272,7 @@ export function OperationsDashboard() {
         <>
           {/* §오늘 (4 카드) */}
           <section className="grid gap-2.5">
-            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               오늘 ({snap.generatedAt.slice(0, 10)} · KST 시간대)
             </h2>
 
@@ -281,10 +281,10 @@ export function OperationsDashboard() {
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   🆕 신규 가입
                 </div>
-                <div className="text-[22px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {formatNum(snap.today.newSignups)}
                 </div>
               </div>
@@ -298,17 +298,17 @@ export function OperationsDashboard() {
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   👥 DAU (활성 사용자)
                 </div>
-                <div className="text-[22px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {formatNum(snap.today.activeUsers)}
                 </div>
               </div>
               <div className="mt-2.5">
                 <Sparkline series={snap.trends.activeUsers} color="var(--app-jade)" />
               </div>
-              <div className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
+              <div className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 readings / 피드백 / 대화 중 1+ 활동 distinct user
               </div>
             </article>
@@ -318,17 +318,17 @@ export function OperationsDashboard() {
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   💳 결제 (건수)
                 </div>
-                <div className="text-[22px] font-extrabold tabular-nums text-[var(--app-amber)]">
+                <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-amber)]">
                   {formatNum(snap.today.purchaseCount)}
                 </div>
               </div>
               <div className="mt-2.5">
                 <Sparkline series={snap.trends.purchaseCount} color="var(--app-amber)" />
               </div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-[10.5px] text-[var(--app-copy-soft)]">
+              <div className="mt-2 grid grid-cols-2 gap-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 <span>
                   결제 코인 합계{' '}
                   <strong className="tabular-nums text-[var(--app-ink)]">
@@ -349,17 +349,17 @@ export function OperationsDashboard() {
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   📝 사주 풀이 작성
                 </div>
-                <div className="text-[22px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {formatNum(snap.today.readingsCreated)}
                 </div>
               </div>
               <div className="mt-2.5">
                 <Sparkline series={snap.trends.readingsCreated} color="var(--app-ink)" />
               </div>
-              <div className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
+              <div className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 피드백 수집 {formatNum(snap.today.feedbackCount)}건
               </div>
             </article>
@@ -370,7 +370,7 @@ export function OperationsDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               😊 만족도 ({snap.windowDays}일 윈도우 · 표본 {formatNum(snap.satisfaction.sampleSize)}건)
             </h2>
             <div className="mt-3 grid grid-cols-2 gap-2.5">
@@ -381,10 +381,10 @@ export function OperationsDashboard() {
                   borderColor: 'rgba(45,135,88,0.2)',
                 }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                   평균 (-1~+1)
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {formatRating(snap.satisfaction.averageRating)}
                 </div>
               </div>
@@ -395,10 +395,10 @@ export function OperationsDashboard() {
                   borderColor: 'var(--app-pink-line)',
                 }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   맞춤 비율
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {formatPct(snap.satisfaction.correctRate)}
                 </div>
               </div>
@@ -410,7 +410,7 @@ export function OperationsDashboard() {
               partialRate={snap.satisfaction.partialRate}
               missRate={snap.satisfaction.missRate}
             />
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.1px] text-[var(--app-copy-soft)]">
               <span className="inline-flex items-center gap-1">
                 <span
                   className="inline-block h-2 w-2 rounded-sm"
@@ -439,7 +439,7 @@ export function OperationsDashboard() {
 
             {/* 영역별 별점 평균 */}
             <div className="mt-3 grid gap-1.5">
-              <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+              <div className="text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                 영역별 별점 (1~5)
               </div>
               {(Object.keys(AREA_LABEL) as Array<keyof typeof AREA_LABEL>).map((key) => {
@@ -447,7 +447,7 @@ export function OperationsDashboard() {
                 const pct = value === null ? 0 : ((value - 1) / 4) * 100;
                 return (
                   <div key={key} className="grid grid-cols-[80px_1fr_44px] items-center gap-2">
-                    <span className="text-[11px] font-bold text-[var(--app-copy-muted)]">
+                    <span className="text-[12.6px] font-bold text-[var(--app-copy-muted)]">
                       {AREA_LABEL[key]}
                     </span>
                     <div
@@ -469,7 +469,7 @@ export function OperationsDashboard() {
                         }}
                       />
                     </div>
-                    <span className="text-right text-[11px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                    <span className="text-right text-[12.6px] font-extrabold tabular-nums text-[var(--app-ink)]">
                       {value === null ? '—' : value.toFixed(2)}
                     </span>
                   </div>
@@ -483,37 +483,37 @@ export function OperationsDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <h2 className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               📈 누적 (Lifetime)
             </h2>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[11px] text-[var(--app-copy-soft)]">총 가입자</div>
-                <div className="mt-0.5 text-[18px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="text-[12.6px] text-[var(--app-copy-soft)]">총 가입자</div>
+                <div className="mt-0.5 text-[20.7px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {formatNum(snap.lifetime.totalUsers)}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-[var(--app-copy-soft)]">활성 구독자</div>
-                <div className="mt-0.5 text-[18px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] text-[var(--app-copy-soft)]">활성 구독자</div>
+                <div className="mt-0.5 text-[20.7px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {formatNum(snap.lifetime.activeSubscribers)}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-[var(--app-copy-soft)]">누적 사주 풀이</div>
-                <div className="mt-0.5 text-[18px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[12.6px] text-[var(--app-copy-soft)]">누적 사주 풀이</div>
+                <div className="mt-0.5 text-[20.7px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {formatNum(snap.lifetime.totalReadings)}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-[var(--app-copy-soft)]">누적 결제 건수</div>
-                <div className="mt-0.5 text-[18px] font-extrabold tabular-nums text-[var(--app-amber)]">
+                <div className="text-[12.6px] text-[var(--app-copy-soft)]">누적 결제 건수</div>
+                <div className="mt-0.5 text-[20.7px] font-extrabold tabular-nums text-[var(--app-amber)]">
                   {formatNum(snap.lifetime.totalPurchases)}
                 </div>
               </div>
             </div>
             <div
-              className="mt-3 rounded-[10px] px-3 py-2 text-[11px] text-[var(--app-copy)]"
+              className="mt-3 rounded-[10px] px-3 py-2 text-[12.6px] text-[var(--app-copy)]"
               style={{ background: 'rgba(0,0,0,0.025)' }}
             >
               누적 충전 코인 합계{' '}
@@ -534,11 +534,11 @@ export function OperationsDashboard() {
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               📚 산출 방식
             </div>
             <ul
-              className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
+              className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 신규: credit_transactions.type=&apos;signup_bonus&apos; 일별 count</li>

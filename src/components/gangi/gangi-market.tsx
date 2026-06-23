@@ -200,7 +200,7 @@ export function GangiSeasonBanner({
               className="pointer-events-none absolute -top-3 -right-3 select-none"
               style={{
                 fontFamily: 'var(--font-han)',
-                fontSize: 140,
+                fontSize: 161,
                 fontWeight: 700,
                 lineHeight: 1,
                 opacity: 0.08,
@@ -214,7 +214,7 @@ export function GangiSeasonBanner({
               <p
                 className="m-0"
                 style={{
-                  fontSize: 11.5,
+                  fontSize: 13.2,
                   fontWeight: 800,
                   letterSpacing: '0.06em',
                   opacity: 0.85,
@@ -225,7 +225,7 @@ export function GangiSeasonBanner({
               <h2
                 className="m-0 mt-1.5"
                 style={{
-                  fontSize: 20,
+                  fontSize: 23,
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.35,
@@ -236,7 +236,7 @@ export function GangiSeasonBanner({
               <p
                 className="m-0 mt-3"
                 style={{
-                  fontSize: 12.5,
+                  fontSize: 14.4,
                   opacity: 0.9,
                   lineHeight: 1.5,
                 }}
@@ -251,7 +251,7 @@ export function GangiSeasonBanner({
                       ? 'var(--app-pink-strong)'
                       : 'rgba(255,255,255,0.22)',
                   color: '#fff',
-                  fontSize: 12,
+                  fontSize: 13.8,
                   fontWeight: 800,
                   padding: '7px 12px',
                 }}
@@ -326,7 +326,7 @@ export function GangiQuickActionCard({
           style={{
             background: 'var(--app-ink)',
             color: '#fff',
-            fontSize: 9.5,
+            fontSize: 10.9,
             fontWeight: 800,
             letterSpacing: '0.02em',
             height: 18,
@@ -337,7 +337,7 @@ export function GangiQuickActionCard({
         <div
           className="mt-1 truncate"
           style={{
-            fontSize: 13.5,
+            fontSize: 15.5,
             fontWeight: 800,
             letterSpacing: '-0.01em',
           }}
@@ -348,7 +348,7 @@ export function GangiQuickActionCard({
           <div
             className="mt-0.5 truncate"
             style={{
-              fontSize: 11.5,
+              fontSize: 13.2,
               color: 'var(--app-copy-muted)',
             }}
           >
@@ -383,7 +383,7 @@ export function GangiCategoryTabs({
             data-active={isActive ? 'true' : 'false'}
             onClick={() => onChange(category.key)}
             className={cn(
-              'inline-flex shrink-0 items-center rounded-[999px] border px-3 text-[12.5px] font-semibold transition-colors',
+              'inline-flex shrink-0 items-center rounded-[999px] border px-3 text-[14.4px] font-semibold transition-colors',
               'whitespace-nowrap'
             )}
             style={{
@@ -438,7 +438,7 @@ export function GangiServiceCardLink({
           style={{
             background: card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
             color: '#fff',
-            fontSize: 9.5,
+            fontSize: 10.9,
             fontWeight: 900,
             letterSpacing: '0.03em',
             height: 18,
@@ -473,13 +473,13 @@ export function GangiServiceCardLink({
       </span>
 
       <span className="flex min-w-0 flex-col">
-        <span style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em' }}>{card.title}</span>
-        <span className="mt-0.5" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--app-copy-muted)' }}>
+        <span style={{ fontSize: 19.5, fontWeight: 900, letterSpacing: '-0.02em' }}>{card.title}</span>
+        <span className="mt-0.5" style={{ fontSize: 13.2, fontWeight: 600, color: 'var(--app-copy-muted)' }}>
           {card.desc}
         </span>
         <span
           className="mt-1.5"
-          style={{ fontSize: 12, fontWeight: 800, color: isFree ? 'var(--app-ink)' : tint.price }}
+          style={{ fontSize: 13.8, fontWeight: 800, color: isFree ? 'var(--app-ink)' : tint.price }}
         >
           {card.price}
         </span>
@@ -502,7 +502,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
         <div className="min-w-0 flex-1">
           <div
             style={{
-              fontSize: 11,
+              fontSize: 12.6,
               fontWeight: 800,
               color: 'var(--app-pink)',
               letterSpacing: '0.04em',
@@ -513,7 +513,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
           <div
             className="mt-1"
             style={{
-              fontSize: 16,
+              fontSize: 18.4,
               fontWeight: 800,
               letterSpacing: '-0.02em',
               lineHeight: 1.35,
@@ -529,7 +529,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
           style={{
             background: 'var(--app-pink)',
             color: '#fff',
-            fontSize: 11,
+            fontSize: 12.6,
             fontWeight: 800,
             padding: '7px 11px',
           }}

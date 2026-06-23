@@ -184,13 +184,13 @@ export function SajuVerifyComparePanel({ expected }: { expected: ExpectedValues 
 
   return (
     <section className="rounded-[18px] border bg-white p-5" style={{ borderColor: 'var(--app-pink-line)' }}>
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
         STEP 3 · 사이트 풀이 원문 붙여넣기
       </div>
-      <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
+      <h2 className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">
         사이트에서 본 풀이 텍스트를 그대로 붙여넣으세요
       </h2>
-      <p className="mt-1.5 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]">
+      <p className="mt-1.5 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]">
         붙이는 즉시, 위 입력으로 계산된 핵심 값(년주·일간·우세 오행·신강/신약·용신·세운 등)이
         본문에 정확히 등장하는지 자동 비교합니다.
       </p>
@@ -199,7 +199,7 @@ export function SajuVerifyComparePanel({ expected }: { expected: ExpectedValues 
         value={siteText}
         onChange={(event) => setSiteText(event.target.value)}
         placeholder="예: '갑자 일주, 木 일간으로 신강한 편이며 용신은 火입니다 …'"
-        className="mt-3 min-h-[200px] w-full rounded-[12px] border bg-white p-3 text-[13px] leading-[1.7] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
+        className="mt-3 min-h-[200px] w-full rounded-[12px] border bg-white p-3 text-[15px] leading-[1.7] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
         style={{ borderColor: 'var(--app-line)' }}
       />
 
@@ -218,19 +218,19 @@ export function SajuVerifyComparePanel({ expected }: { expected: ExpectedValues 
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.06em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.06em]"
               style={{
                 color: requiredPassed === required.length ? 'var(--app-jade)' : '#b87a14',
               }}
             >
               검증 결과
             </div>
-            <h3 className="mt-1 text-[18px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
+            <h3 className="mt-1 text-[20.7px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
               필수 {requiredPassed}/{required.length} 매칭{' '}
               {optionalTotal > 0 ? `· 선택 ${optionalPassed}/${optionalTotal}` : ''}
               {requiredPassed === required.length ? ' ✓' : ' ⚠'}
             </h3>
-            <p className="mt-1 text-[12.5px] leading-[1.65] text-[var(--app-copy)]">
+            <p className="mt-1 text-[14.4px] leading-[1.65] text-[var(--app-copy)]">
               {requiredPassed === required.length
                 ? '핵심 계산값이 풀이 본문에 모두 등장합니다 — 같은 사주의 풀이로 보입니다.'
                 : '일부 핵심 값이 본문에서 발견되지 않았어요. 다른 사주 입력의 풀이거나, 본문이 한자/한글 변환되어 매칭이 빠진 것일 수 있어요.'}
@@ -248,24 +248,24 @@ export function SajuVerifyComparePanel({ expected }: { expected: ExpectedValues 
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                      <span className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
                         {result.label}
                       </span>
                       {result.optional ? (
                         <span
-                          className="rounded-full px-1.5 py-0.5 text-[9.5px] font-extrabold text-[var(--app-copy-muted)]"
+                          className="rounded-full px-1.5 py-0.5 text-[10.9px] font-extrabold text-[var(--app-copy-muted)]"
                           style={{ background: 'rgba(0,0,0,0.04)' }}
                         >
                           선택
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+                    <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-muted)]">
                       예상값: <strong className="text-[var(--app-ink)]">{result.expected}</strong>
                     </div>
                   </div>
                   <span
-                    className="shrink-0 inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-extrabold"
+                    className="shrink-0 inline-flex h-7 items-center rounded-full border px-2.5 text-[12.6px] font-extrabold"
                     style={
                       result.found
                         ? {
@@ -288,7 +288,7 @@ export function SajuVerifyComparePanel({ expected }: { expected: ExpectedValues 
                     {result.matchedTokens.map((token) => (
                       <span
                         key={token}
-                        className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[10.5px] font-extrabold text-[var(--app-pink-strong)]"
+                        className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
                       >
                         {token}
                       </span>

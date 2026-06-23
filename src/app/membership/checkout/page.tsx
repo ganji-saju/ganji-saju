@@ -312,17 +312,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             <div className="flex items-center gap-3">
               <ZodiacChip kind={headerZodiac} size="md" />
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   {selectedProduct
                     ? '단품 풀이'
                     : selectedBundle
                       ? '묶음 상품'
                       : `${selectedPlan.toUpperCase()} 멤버십`}
                 </div>
-                <div className="mt-1 text-[15.5px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+                <div className="mt-1 text-[17.8px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
                   {selected.title}
                 </div>
-                <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                   {selected.reassurance}
                 </p>
               </div>
@@ -332,7 +332,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 {selected.opens.slice(0, 3).map((item) => (
                   <li
                     key={item}
-                    className="flex items-center gap-2 text-[12px] leading-[1.55] text-[var(--app-copy)]"
+                    className="flex items-center gap-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]"
                   >
                     <span
                       className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -348,17 +348,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
 
           {/* §2 결제 금액 breakdown */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 금액</h2>
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 금액</h2>
             <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
               <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
-                <span className="text-[13px] text-[var(--app-copy)]">상품 금액</span>
-                <span className="text-[13.5px] font-bold text-[var(--app-ink)]">
+                <span className="text-[15px] text-[var(--app-copy)]">상품 금액</span>
+                <span className="text-[15.5px] font-bold text-[var(--app-ink)]">
                   {displayPrice}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-[13px] text-[var(--app-copy)]">할인 / 쿠폰</span>
-                <span className="text-[13.5px] font-bold text-[var(--app-copy-soft)]">
+                <span className="text-[15px] text-[var(--app-copy)]">할인 / 쿠폰</span>
+                <span className="text-[15.5px] font-bold text-[var(--app-copy-soft)]">
                   결제창에서 적용
                 </span>
               </div>
@@ -366,10 +366,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 className="mt-2 flex items-center justify-between pt-3"
                 style={{ borderTop: '1px solid var(--app-ink)' }}
               >
-                <span className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                <span className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
                   최종 결제 금액
                 </span>
-                <span className="text-[22px] font-extrabold tracking-tight text-[var(--app-pink-strong)]">
+                <span className="text-[25.3px] font-extrabold tracking-tight text-[var(--app-pink-strong)]">
                   {displayPrice}
                 </span>
               </div>
@@ -378,7 +378,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
 
           {/* §3 결제 수단 안내 — 토스 단일 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
             <article
               className="mt-3 flex items-center gap-3 rounded-[14px] border-2 p-3.5"
               style={{
@@ -387,17 +387,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               }}
             >
               <div
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[14px] font-black text-white"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[16.1px] font-black text-white"
                 style={{ background: '#3182f6' }}
                 aria-hidden="true"
               >
                 T
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
                   토스 결제
                 </div>
-                <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                   결제창에서 카드 · 계좌이체 · 간편결제 중 선택
                 </p>
               </div>
@@ -410,19 +410,19 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           </section>
 
           {error === 'payment' ? (
-            <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
+            <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]">
               결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다.
             </p>
           ) : null}
 
           {/* §4 결제 안내 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 안내</h2>
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 안내</h2>
             <ul className="mt-3 grid gap-1.5">
               {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-2 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                  className="flex items-start gap-2 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]"
                 >
                   <span aria-hidden="true">·</span>
                   <span>{item}</span>
@@ -436,57 +436,57 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             <article className="rounded-[18px] border border-[var(--app-pink-line)] bg-white p-5">
               {paymentPackage?.kind === 'lifetime_report' && !slug ? (
                 <div className="grid gap-3 text-center">
-                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                     먼저 사주 결과가 필요합니다
                   </strong>
-                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
                     이 풀이는 특정 사주 결과에 붙습니다. 결과를 만든 뒤 다시 결제하면 바로 연결됩니다.
                   </p>
                   <Link
                     href="/saju/new"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기
                   </Link>
                 </div>
               ) : needsResultFirst && selectedProduct ? (
                 <div className="grid gap-3 text-center">
-                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                     먼저 결과를 만들어 주세요
                   </strong>
-                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
                     단품 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
                   </p>
                   <Link
                     href={`/saju/new?product=${selectedProduct}`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기
                   </Link>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     상품 목록으로
                   </Link>
                 </div>
               ) : alreadyPurchasedHref ? (
                 <div className="grid gap-3 text-center">
-                  <strong className="text-[15px] font-extrabold text-[var(--app-jade)]">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-jade)]">
                     이미 구매한 풀이입니다
                   </strong>
-                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
                     결제창을 다시 열지 않고 바로 열람 화면으로 이동합니다.
                   </p>
                   <Link
                     href={alreadyPurchasedHref}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     구매한 풀이 열기
                   </Link>
                   <Link
                     href="/my/billing"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     결제 상태 확인
                   </Link>
@@ -494,32 +494,32 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               ) : activeMembershipPlan ? (
                 // 2026-05-16 — 활성 멤버십 상태에서 같은 plan 결제 시도 차단.
                 <div className="grid gap-3 text-center">
-                  <strong className="text-[15px] font-extrabold text-[var(--app-jade)]">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-jade)]">
                     이미 이용 중인 멤버십입니다
                   </strong>
-                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
                     중복 결제를 막기 위해 결제창을 열지 않습니다. 결제 상태와 다음
                     갱신일은 결제 내역에서 확인해 주세요.
                   </p>
                   <Link
                     href="/my/billing"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     결제 내역 보기
                   </Link>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     멤버십 화면으로
                   </Link>
                 </div>
               ) : paymentPackage ? (
                 <>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <p className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     결제창 열기
                   </p>
-                  <h3 className="mt-1 text-[18px] font-extrabold leading-snug text-[var(--app-ink)]">
+                  <h3 className="mt-1 text-[20.7px] font-extrabold leading-snug text-[var(--app-ink)]">
                     {displayPrice} 결제하기 →
                   </h3>
                   <div className="mt-3">
@@ -537,15 +537,15 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 </>
               ) : (
                 <div className="grid gap-3 text-center">
-                  <strong className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                  <strong className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                     결제 정보를 찾지 못했습니다
                   </strong>
-                  <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
                     멤버십 화면으로 돌아가 다시 선택해 주세요.
                   </p>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     상품 다시 선택
                   </Link>

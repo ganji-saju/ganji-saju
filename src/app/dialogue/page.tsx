@@ -62,15 +62,15 @@ export default async function DialoguePage({
         <section className="space-y-5 px-1">
           {/* §1 Hero */}
           <div>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               12간지 전문 분야
             </div>
-            <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               어떤 선생님과
               <br />
               이야기 나눠볼까요?
             </h1>
-            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
               분야를 고르고 바로 물어보세요. 각 선생님이 자신의 방식으로 답해드립니다.
             </p>
           </div>
@@ -92,10 +92,10 @@ export default async function DialoguePage({
                 >
                   <ZodiacChip kind={expert.id as ZodiacKey} size="md" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {expert.teacherName}
                     </div>
-                    <div className="mt-0.5 text-[12px] leading-[1.5] text-[var(--app-copy-muted)]">
+                    <div className="mt-0.5 text-[13.8px] leading-[1.5] text-[var(--app-copy-muted)]">
                       <span className="font-bold text-[var(--app-pink-strong)]">
                         {expert.label}
                       </span>{' '}
@@ -103,7 +103,7 @@ export default async function DialoguePage({
                     </div>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[11px] font-extrabold"
+                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold"
                     style={
                       active
                         ? {
@@ -133,7 +133,7 @@ export default async function DialoguePage({
             }}
           >
             <div
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[20px] font-extrabold"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[23px] font-extrabold"
               style={{
                 background: 'var(--app-pink)',
                 color: '#fff',
@@ -144,16 +144,16 @@ export default async function DialoguePage({
             </div>
             <div className="min-w-0 flex-1">
               <div
-                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink)' }}
               >
                 1:1 예약
               </div>
-              <div className="mt-1 text-[15px] font-extrabold leading-snug tracking-tight">
+              <div className="mt-1 text-[17.3px] font-extrabold leading-snug tracking-tight">
                 선생님과 30분 깊은 상담 →
               </div>
               <div
-                className="mt-0.5 text-[11.5px]"
+                className="mt-0.5 text-[13.2px]"
                 style={{ opacity: 0.65 }}
               >
                 날짜와 시간을 골라 1:1 예약을 잡으세요

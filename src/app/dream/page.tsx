@@ -89,10 +89,10 @@ export default function DreamPage() {
         <section className="space-y-5 px-1">
           {/* §1 헤드라인 */}
           <div>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               밤에 꾼 꿈, 무슨 뜻일까?
             </div>
-            <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               한 단어로 검색해 보세요
             </h1>
           </div>
@@ -103,10 +103,10 @@ export default function DreamPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="예) 이빨, 뱀, 물, 죽음"
-              className="h-[54px] w-full rounded-[14px] border border-[var(--app-line)] bg-white pl-11 pr-11 text-[15.5px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="h-[54px] w-full rounded-[14px] border border-[var(--app-line)] bg-white pl-11 pr-11 text-[17.8px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
             <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-[var(--app-pink-strong)]"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[20.7px] text-[var(--app-pink-strong)]"
               aria-hidden="true"
             >
               ⌕
@@ -115,7 +115,7 @@ export default function DreamPage() {
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="absolute right-3.5 top-1/2 grid h-[22px] w-[22px] -translate-y-1/2 place-items-center rounded-full bg-[var(--app-line)] text-[11px] text-white"
+                className="absolute right-3.5 top-1/2 grid h-[22px] w-[22px] -translate-y-1/2 place-items-center rounded-full bg-[var(--app-line)] text-[12.6px] text-white"
               >
                 ✕
               </button>
@@ -133,7 +133,7 @@ export default function DreamPage() {
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[30px] font-bold leading-none"
+                  className="text-[34.5px] font-bold leading-none"
                   style={{
                     fontFamily: 'var(--font-han)',
                     color: 'var(--app-pink-strong)',
@@ -143,17 +143,17 @@ export default function DreamPage() {
                   {meaning.hanja}
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     꿈 풀이
                     {data && !data.exact ? <span className="ml-1.5 text-[var(--app-copy-soft)]">· 근접 매칭</span> : null}
                   </div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                    <span className="text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <span className="text-[20.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       &ldquo;{meaning.keyword}&rdquo; 꿈
                     </span>
                     {meaning.fortune ? (
                       <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[12.6px] font-extrabold"
                         style={{
                           background: FORTUNE_DECOR[meaning.fortune].bg,
                           border: `1px solid ${FORTUNE_DECOR[meaning.fortune].border}`,
@@ -167,7 +167,7 @@ export default function DreamPage() {
                 </div>
               </div>
 
-              <p className="mt-3.5 text-[13.5px] leading-[1.65] text-[var(--app-ink)]">
+              <p className="mt-3.5 text-[15.5px] leading-[1.65] text-[var(--app-ink)]">
                 {meaning.summary}
               </p>
 
@@ -175,16 +175,16 @@ export default function DreamPage() {
                 className="mt-3.5 rounded-[12px] border bg-white p-3"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
-                <div className="text-[11.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[13.2px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   상황별 의미
                 </div>
                 <div className="mt-1.5 grid gap-1.5">
                   {meaning.situations.map((s) => (
                     <div key={s.label} className="flex items-start gap-2.5 py-1">
-                      <span className="min-w-[92px] text-[12px] font-extrabold text-[var(--app-ink)]">
+                      <span className="min-w-[92px] text-[13.8px] font-extrabold text-[var(--app-ink)]">
                         {s.label}
                       </span>
-                      <span className="flex-1 text-[11.5px] leading-[1.5] text-[var(--app-copy-muted)]">
+                      <span className="flex-1 text-[13.2px] leading-[1.5] text-[var(--app-copy-muted)]">
                         {s.meaning}
                       </span>
                     </div>
@@ -203,7 +203,7 @@ export default function DreamPage() {
                     style={{ background: 'var(--app-pink)' }}
                     aria-hidden="true"
                   />
-                  <span className="flex-1 text-[12px] leading-[1.55] text-[var(--app-ink)]">
+                  <span className="flex-1 text-[13.8px] leading-[1.55] text-[var(--app-ink)]">
                     <span className="font-extrabold text-[var(--app-pink-strong)]">오늘 해볼 행동 · </span>
                     {meaning.action}
                   </span>
@@ -214,7 +214,7 @@ export default function DreamPage() {
               {meaning.detailSlug ? (
                 <Link
                   href={`/dream-interpretation/${meaning.detailSlug}`}
-                  className="mt-2.5 flex items-center justify-between rounded-[12px] px-3.5 py-3 text-[12.5px] font-extrabold text-white transition"
+                  className="mt-2.5 flex items-center justify-between rounded-[12px] px-3.5 py-3 text-[14.4px] font-extrabold text-white transition"
                   style={{
                     background: 'var(--app-pink-strong)',
                     boxShadow: '0 10px 24px rgba(216, 27, 114, 0.28)',
@@ -226,12 +226,12 @@ export default function DreamPage() {
               ) : null}
 
               {/* 꿈해몽은 민속·상징 해석임을 부드럽게 안내 */}
-              <p className="mt-2.5 text-[10.5px] leading-[1.5] text-[var(--app-copy-soft)]">
+              <p className="mt-2.5 text-[12.1px] leading-[1.5] text-[var(--app-copy-soft)]">
                 꿈해몽은 민속·상징에 바탕한 해석으로, 단정적인 예언이 아닙니다. 마음의 신호로 가볍게 참고해 주세요.
               </p>
             </article>
           ) : (
-            <div className="rounded-[18px] border border-[var(--app-line)] bg-white p-8 text-center text-[12.5px] text-[var(--app-copy-muted)]">
+            <div className="rounded-[18px] border border-[var(--app-line)] bg-white p-8 text-center text-[14.4px] text-[var(--app-copy-muted)]">
               {loading ? '풀이를 불러오는 중...' : '검색어를 입력하세요.'}
             </div>
           )}
@@ -239,7 +239,7 @@ export default function DreamPage() {
           {/* §4 함께 본 꿈 */}
           {meaning ? (
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 함께 본 꿈
               </div>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -248,7 +248,7 @@ export default function DreamPage() {
                     key={tag}
                     type="button"
                     onClick={() => setQuery(tag)}
-                    className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
+                    className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
                   >
                     {tag}
                   </button>
@@ -260,7 +260,7 @@ export default function DreamPage() {
           {/* §5 인기 카테고리 */}
           {data?.categories?.length ? (
             <section>
-              <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">인기 꿈 카테고리</h2>
+              <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">인기 꿈 카테고리</h2>
               <div className="mt-3 grid grid-cols-3 gap-2.5">
                 {data.categories.map((cat) => {
                   const decor = CATEGORY_DECOR[cat.key] ?? CATEGORY_DECOR.object;
@@ -270,7 +270,7 @@ export default function DreamPage() {
                       className="flex flex-col items-center gap-1.5 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
                     >
                       <div
-                        className="grid h-10 w-10 place-items-center rounded-[12px] text-[18px] font-bold text-white"
+                        className="grid h-10 w-10 place-items-center rounded-[12px] text-[20.7px] font-bold text-white"
                         style={{
                           background: decor.color,
                           fontFamily: 'var(--font-han)',
@@ -279,8 +279,8 @@ export default function DreamPage() {
                       >
                         {decor.hanja}
                       </div>
-                      <div className="text-[12px] font-extrabold text-[var(--app-ink)]">{cat.label}</div>
-                      <div className="text-[9.5px] text-[var(--app-copy-soft)]">{cat.count}개</div>
+                      <div className="text-[13.8px] font-extrabold text-[var(--app-ink)]">{cat.label}</div>
+                      <div className="text-[10.9px] text-[var(--app-copy-soft)]">{cat.count}개</div>
                     </article>
                   );
                 })}
@@ -290,7 +290,7 @@ export default function DreamPage() {
 
           {/* §6 오늘 많이 본 꿈 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">오늘 많이 본 꿈</h2>
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">오늘 많이 본 꿈</h2>
             <article className="mt-3 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
               {TODAY_POPULAR.map((item, index) => (
                 <button
@@ -303,7 +303,7 @@ export default function DreamPage() {
                   }
                 >
                   <span
-                    className="w-5 text-[14px] font-extrabold"
+                    className="w-5 text-[16.1px] font-extrabold"
                     style={{
                       color: item.rank <= 3 ? 'var(--app-pink-strong)' : 'var(--app-copy-soft)',
                       fontFamily: 'var(--font-han)',
@@ -313,14 +313,14 @@ export default function DreamPage() {
                     {item.rank}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                    <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                       {item.keyword}
                     </div>
-                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                    <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       {item.description}
                     </div>
                   </div>
-                  <span className="text-[13px] text-[var(--app-copy-soft)]" aria-hidden="true">
+                  <span className="text-[15px] text-[var(--app-copy-soft)]" aria-hidden="true">
                     ›
                   </span>
                 </button>
@@ -337,23 +337,23 @@ export default function DreamPage() {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 깊이
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
               꿈이 자주 반복되나요?
             </h2>
             <p
-              className="mt-2 text-[12.5px] leading-[1.55]"
+              className="mt-2 text-[14.4px] leading-[1.55]"
               style={{ opacity: 0.75 }}
             >
               반복되는 꿈은 내가 지금 가장 신경 쓰는 일입니다. 내 사주 흐름으로 이어 봐주세요.
             </p>
             <Link
               href="/saju/new"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
             >
               사주 풀이로 이어보기 →
             </Link>

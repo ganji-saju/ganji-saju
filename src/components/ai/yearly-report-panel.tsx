@@ -184,7 +184,7 @@ function renderCompactParagraphs(text: string, limit = 2) {
     .map((paragraph, index) => (
       <p
         key={`${paragraph.slice(0, 24)}-${index}`}
-        className="text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+        className="text-[15.5px] leading-[1.78] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {paragraph}
@@ -268,8 +268,8 @@ function MomentumSummaryRow({
           <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[12.5px] font-extrabold">{meta.guideLabel}</div>
-          <div className="mt-0.5 text-[15px] font-extrabold">{flows.length}개월</div>
+          <div className="text-[14.4px] font-extrabold">{meta.guideLabel}</div>
+          <div className="mt-0.5 text-[17.3px] font-extrabold">{flows.length}개월</div>
         </div>
       </div>
       <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -278,13 +278,13 @@ function MomentumSummaryRow({
             <a
               key={`${tone}-${flow.month}`}
               href={`#yearly-month-${flow.month}`}
-              className="inline-flex h-7 items-center rounded-full bg-white/70 px-2.5 text-[11.5px] font-extrabold backdrop-blur-sm transition-colors"
+              className="inline-flex h-7 items-center rounded-full bg-white/70 px-2.5 text-[13.2px] font-extrabold backdrop-blur-sm transition-colors"
             >
               {flow.month}월
             </a>
           ))
         ) : (
-          <span className="text-[12px]">해당 월 없음</span>
+          <span className="text-[13.8px]">해당 월 없음</span>
         )}
       </div>
     </article>
@@ -305,15 +305,15 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
       >
         <div className="flex items-center gap-1.5">
           <MapPinned className="h-4 w-4 text-[var(--app-pink-strong)]" aria-hidden="true" />
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             연간 지도
           </div>
         </div>
-        <h3 className="mt-1.5 text-[17px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
+        <h3 className="mt-1.5 text-[19.5px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
           먼저 색으로 봅니다
         </h3>
         <p
-          className="mt-1.5 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+          className="mt-1.5 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           진행하기 좋은 달과 한 번 더 확인할 달만 먼저 나눠 봅니다.
@@ -328,20 +328,20 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
         <div className="mt-3 grid gap-2">
           {highlightedGood ? (
             <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
                 가장 쓰기 좋은 구간
               </div>
-              <p className="mt-1.5 text-[12.5px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-1.5 text-[14.4px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
                 {highlightedGood.months.map((month) => `${month}월`).join(' · ')} · {highlightedGood.strategy}
               </p>
             </div>
           ) : null}
           {highlightedCaution ? (
             <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
                 확인이 필요한 구간
               </div>
-              <p className="mt-1.5 text-[12.5px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-1.5 text-[14.4px] leading-[1.65]" style={{ wordBreak: 'keep-all' }}>
                 {highlightedCaution.months.map((month) => `${month}월`).join(' · ')} · {highlightedCaution.strategy}
               </p>
             </div>
@@ -356,7 +356,7 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
       >
         <div className="flex items-center gap-1.5">
           <CalendarDays className="h-4 w-4 text-[var(--app-pink-strong)]" aria-hidden="true" />
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             12개월 흐름 레일
           </div>
         </div>
@@ -370,12 +370,12 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
                 className={`rounded-[12px] border px-2.5 py-2.5 transition-all hover:-translate-y-0.5 ${meta.dotClassName}`}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[14px] font-extrabold">{flow.month}월</span>
-                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[9.5px] font-extrabold backdrop-blur-sm">
+                  <span className="text-[16.1px] font-extrabold">{flow.month}월</span>
+                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[10.9px] font-extrabold backdrop-blur-sm">
                     {meta.shortLabel}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[10.5px] leading-[1.45]" style={{ wordBreak: 'keep-all' }}>
+                <p className="mt-1.5 text-[12.1px] leading-[1.45]" style={{ wordBreak: 'keep-all' }}>
                   {getTopAreaLabel(flow)}
                 </p>
               </a>
@@ -383,7 +383,7 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
           })}
         </div>
         <p
-          className="mt-3 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+          className="mt-3 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           색이 진한 달부터 확인하세요.
@@ -416,19 +416,19 @@ function MonthlyFlowCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <span
-                className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                className="grid h-7 w-7 place-items-center rounded-full text-[13.8px] font-extrabold text-white"
                 style={{ background: 'var(--app-pink)' }}
                 aria-hidden="true"
               >
                 {flow.month}
               </span>
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 {flow.month}월
               </div>
               {/* 2026-05-15 PR 7 응답 2 — Peak/Pitfall 시각 강조 (PR 5 데이터 활용) */}
               {flow.peakKind === 'peak' ? (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold text-white"
+                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink-strong)' }}
                 >
                   🚨 PEAK
@@ -436,7 +436,7 @@ function MonthlyFlowCard({
               ) : null}
               {flow.peakKind === 'pitfall' ? (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10.5px] font-extrabold"
+                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12.1px] font-extrabold"
                   style={{ background: '#fff3d6', color: 'var(--app-amber)', border: '1px solid var(--app-amber)' }}
                 >
                   ⚠️ PITFALL
@@ -444,14 +444,14 @@ function MonthlyFlowCard({
               ) : null}
             </div>
             <p
-              className="mt-2 text-[14px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+              className="mt-2 text-[16.1px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {tightenUiLine(flow.summary, 78)}
             </p>
-            <div className="mt-1 text-[11px] text-[var(--app-copy-soft)]">{areaLabel}</div>
+            <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{areaLabel}</div>
           </div>
-          <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[10.5px] font-extrabold ${momentumMeta.badgeClassName}`}>
+          <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[12.1px] font-extrabold ${momentumMeta.badgeClassName}`}>
             <MomentumIcon className="h-3 w-3" aria-hidden="true" />
             {momentumMeta.shortLabel}
           </span>
@@ -460,10 +460,10 @@ function MonthlyFlowCard({
 
       <div className="mt-3 grid gap-2">
         <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
             이번 달 바로 할 일
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
             {tightenUiLine(flow.action, 84)}
           </p>
         </div>
@@ -471,11 +471,11 @@ function MonthlyFlowCard({
           className="rounded-[14px] border bg-white px-3.5 py-3"
           style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             먼저 볼 질문
           </div>
           <p
-            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {simplifySajuCopy(flow.focusQuestion)}
@@ -485,21 +485,21 @@ function MonthlyFlowCard({
           className="rounded-[14px] border bg-white px-3.5 py-3"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             진행해볼 것
           </div>
           <p
-            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {tightenUiLine(flow.opportunity, 104)}
           </p>
         </div>
         <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
             한 번 더 확인할 것
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
             {tightenUiLine(flow.caution, 104)}
           </p>
         </div>
@@ -507,7 +507,7 @@ function MonthlyFlowCard({
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span
-          className="rounded-full border bg-white px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-copy-muted)]"
+          className="rounded-full border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           {flow.monthlyGanji ?? `${flow.month}월`}
@@ -517,17 +517,17 @@ function MonthlyFlowCard({
       {flow.basis.length > 0 ? (
         <details className="group mt-3">
           <summary
-            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <span>이 달 흐름 근거 보기</span>
-            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+            <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
           </summary>
           <div className="mt-2 grid gap-1.5">
             {flow.basis.map((item) => (
               <div
                 key={item}
-                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.8px] leading-[1.65] text-[var(--app-copy-soft)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {simplifySajuCopy(item)}
@@ -582,15 +582,15 @@ function CoreAreaCard({
               <Icon className="h-[18px] w-[18px]" />
             </span>
             <div className="min-w-0">
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 {meta.eyebrow}
               </div>
-              <h3 className="text-[16px] font-extrabold text-[var(--app-ink)]">{item.label}</h3>
+              <h3 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">{item.label}</h3>
             </div>
           </div>
           {item.scoreLabel ? (
             <span
-              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-copy-muted)]"
+              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               {item.scoreLabel}
@@ -607,31 +607,31 @@ function CoreAreaCard({
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             올해 핵심
           </div>
           <p
-            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-ink)]"
+            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {tightenUiLine(item.summary, 104)}
           </p>
         </div>
         <div className="yearly-tone-good rounded-[14px] border px-3.5 py-3">
-          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+          <div className="flex items-center gap-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
             <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
             {meta.opportunityLabel}
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
             {tightenUiLine(item.opportunity, 100)}
           </p>
         </div>
         <div className="yearly-tone-caution rounded-[14px] border px-3.5 py-3">
-          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+          <div className="flex items-center gap-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
             <AlertTriangle className="h-3 w-3" aria-hidden="true" />
             {meta.cautionLabel}
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-1.5 text-[15px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
             {tightenUiLine(item.caution, 100)}
           </p>
         </div>
@@ -639,12 +639,12 @@ function CoreAreaCard({
           className="rounded-[14px] border bg-white px-3.5 py-3"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
-          <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="flex items-center gap-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             <ArrowRight className="h-3 w-3" aria-hidden="true" />
             {meta.actionLabel}
           </div>
           <p
-            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {tightenUiLine(item.action, 88)}
@@ -654,11 +654,11 @@ function CoreAreaCard({
 
       <details className="group mt-3">
         <summary
-          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <span>풀이 자세히 보기</span>
-          <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+          <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
         </summary>
         <div
           className="mt-2 space-y-2 rounded-[12px] border p-3.5"
@@ -671,17 +671,17 @@ function CoreAreaCard({
       {item.basis.length > 0 ? (
         <details className="group mt-3">
           <summary
-            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <span>올해 흐름 근거 보기</span>
-            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+            <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
           </summary>
           <div className="mt-2 grid gap-1.5">
             {item.basis.map((line) => (
               <div
                 key={line}
-                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.8px] leading-[1.65] text-[var(--app-copy-soft)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {simplifySajuCopy(line)}
@@ -723,27 +723,27 @@ function SupportAreaCard({
           <Icon className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             {eyebrow}
           </div>
-          <h3 className="text-[15px] font-extrabold text-[var(--app-ink)]">{label}</h3>
+          <h3 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">{label}</h3>
         </div>
       </div>
       <div className="mt-3 space-y-2">
         <p
-          className="text-[13px] leading-[1.78] text-[var(--app-copy)]"
+          className="text-[15px] leading-[1.78] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {limitSajuSentences(section.summary, 2)}
         </p>
         <p
-          className="text-[13px] leading-[1.78] text-[var(--app-copy-muted)]"
+          className="text-[15px] leading-[1.78] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {limitSajuSentences(section.caution, 2)}
         </p>
         <p
-          className="text-[13px] leading-[1.78] text-[var(--app-copy)]"
+          className="text-[15px] leading-[1.78] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {limitSajuSentences(section.action, 2)}
@@ -751,11 +751,11 @@ function SupportAreaCard({
       </div>
       <details className="group mt-3">
         <summary
-          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <span>풀이 자세히 보기</span>
-          <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+          <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
         </summary>
         <div
           className="mt-2 space-y-2 rounded-[12px] border p-3.5"
@@ -767,17 +767,17 @@ function SupportAreaCard({
       {basis.length > 0 ? (
         <details className="group mt-3">
           <summary
-            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <span>생활 리듬 근거 보기</span>
-            <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+            <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
           </summary>
           <div className="mt-2 grid gap-1.5">
             {basis.map((line) => (
               <div
                 key={line}
-                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[12px] leading-[1.65] text-[var(--app-copy-soft)]"
+                className="rounded-[12px] border bg-white px-3.5 py-2.5 text-[13.8px] leading-[1.65] text-[var(--app-copy-soft)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {line}
@@ -807,7 +807,7 @@ function TimingWindowCard({
 
   return (
     <article className={`rounded-[16px] border px-4 py-3.5 ${cardClassName}`}>
-      <div className={`text-[10.5px] font-extrabold uppercase tracking-[0.06em] ${captionClassName}`}>
+      <div className={`text-[12.1px] font-extrabold uppercase tracking-[0.06em] ${captionClassName}`}>
         {title}
       </div>
       <div className="mt-3 grid gap-2">
@@ -816,13 +816,13 @@ function TimingWindowCard({
             key={`${title}-${window.label}-${window.months.join('-')}`}
             className="rounded-[12px] bg-white/70 px-3.5 py-2.5 backdrop-blur-sm"
           >
-            <div className="text-[13px] font-extrabold">
+            <div className="text-[15px] font-extrabold">
               {window.months.map((month) => `${month}월`).join(' · ')}
             </div>
-            <p className="mt-1.5 text-[12.5px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
+            <p className="mt-1.5 text-[14.4px] leading-[1.7]" style={{ wordBreak: 'keep-all' }}>
               {window.reason}
             </p>
-            <p className="mt-1 text-[12px] leading-[1.65]" style={{ wordBreak: 'keep-all', opacity: 0.78 }}>
+            <p className="mt-1 text-[13.8px] leading-[1.65]" style={{ wordBreak: 'keep-all', opacity: 0.78 }}>
               {window.strategy}
             </p>
           </div>
@@ -863,17 +863,17 @@ function YearlyMonthlySection({
       className="rounded-[20px] border bg-white p-5"
       style={{ borderColor: 'var(--app-pink-line)' }}
     >
-      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         월별 핵심 장면
       </div>
       <h3
-        className="mt-1 text-[17px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+        className="mt-1 text-[19.5px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {title}
       </h3>
       <p
-        className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+        className="mt-2 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {description}
@@ -911,7 +911,7 @@ function TimingSummaryBlock({
 
   return (
     <article className={`rounded-[16px] border px-4 py-4 ${toneClassName}`}>
-      <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]">
+      <div className="flex items-center gap-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em]">
         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
         {title}
       </div>
@@ -919,7 +919,7 @@ function TimingSummaryBlock({
         {items.map((item) => (
           <p
             key={item}
-            className="text-[13px] leading-[1.7]"
+            className="text-[15px] leading-[1.7]"
             style={{ wordBreak: 'keep-all' }}
           >
             {item}
@@ -955,7 +955,7 @@ function ChapterNavigation({
         <button
           type="button"
           onClick={() => onChange((chapter - 1) as YearlyChapter)}
-          className="inline-flex h-10 items-center rounded-full border bg-white px-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="inline-flex h-10 items-center rounded-full border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           ← 이전
@@ -963,14 +963,14 @@ function ChapterNavigation({
       ) : (
         <span />
       )}
-      <div className="text-[11.5px] font-extrabold text-[var(--app-pink-strong)]">
+      <div className="text-[13.2px] font-extrabold text-[var(--app-pink-strong)]">
         {chapter} / 3
       </div>
       {chapter < 3 ? (
         <button
           type="button"
           onClick={() => onChange((chapter + 1) as YearlyChapter)}
-          className="inline-flex h-10 items-center rounded-full px-4 text-[12.5px] font-extrabold text-white"
+          className="inline-flex h-10 items-center rounded-full px-4 text-[14.4px] font-extrabold text-white"
           style={{
             background: 'var(--app-pink)',
             boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
@@ -1011,10 +1011,10 @@ function DeepReadingLinks({ slug }: { slug: string }) {
             >
               <ArrowRight className="h-3.5 w-3.5" />
             </span>
-            <div className="text-[14px] font-extrabold text-[var(--app-ink)]">{link.label}</div>
+            <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">{link.label}</div>
           </div>
           <p
-            className="mt-2 text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+            className="mt-2 text-[14.4px] leading-[1.7] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {link.body}
@@ -1110,7 +1110,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
       >
         <div className="text-center">
           <div
-            className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[22px] font-extrabold"
+            className="mx-auto grid h-14 w-14 place-items-center rounded-full text-[25.3px] font-extrabold"
             style={{
               background: '#fff',
               color: 'var(--app-pink-strong)',
@@ -1122,14 +1122,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           >
             年
           </div>
-          <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             올해 흐름 정리 중
           </div>
-          <h2 className="mt-1.5 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+          <h2 className="mt-1.5 text-[23px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
             {targetYear}년 흐름을 정리하고 있어요
           </h2>
           <p
-            className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]"
+            className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             타고난 사주와 올해·이번 달 흐름을 다시 맞추고, 선택 포인트를 정리하고 있어요.
@@ -1139,11 +1139,11 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           {['올해 12개월 흐름 매칭', '분야별(일·돈·연애·관계) 정리', '월별 결정·주의 시기 산출'].map((label, index) => (
             <li
               key={label}
-              className="flex items-center gap-2.5 rounded-[12px] border bg-white px-3.5 py-2.5 text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              className="flex items-center gap-2.5 rounded-[12px] border bg-white px-3.5 py-2.5 text-[14.4px] font-extrabold text-[var(--app-ink)]"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
               <span
-                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11.5px] font-extrabold text-white"
                 style={{ background: 'var(--app-pink)' }}
                 aria-hidden="true"
               >
@@ -1166,14 +1166,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           borderColor: 'rgba(198,69,69,0.22)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
           불러오기 실패
         </div>
-        <h3 className="mt-1.5 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+        <h3 className="mt-1.5 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
           올해 흐름을 열지 못했어요
         </h3>
         <p
-          className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+          className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {error || '올해 흐름을 불러오지 못했습니다.'}
@@ -1181,7 +1181,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-full border bg-white px-4 text-[13px] font-extrabold text-[var(--app-ink)]"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-full border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           다시 불러오기
@@ -1242,7 +1242,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
         <div className="relative flex items-start gap-3">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
             style={{
               background: 'linear-gradient(135deg, #d4982e, #b87a14)',
               boxShadow: '0 10px 22px rgba(184,122,20,0.32)',
@@ -1255,26 +1255,26 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold"
+                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
                 style={{ borderColor: 'rgba(184,122,20,0.28)', color: '#b87a14' }}
               >
                 {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[10px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {data.cached ? '✓ 저장됨' : '✦ 새로 정리'}
               </span>
             </div>
             <div
-              className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+              className="mt-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
               style={{ color: '#b87a14' }}
             >
               {targetYear} 올해 흐름 · {chapterLabels[chapter].kicker}
             </div>
             <h2
-              className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+              className="mt-1 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {chapterLabels[chapter].title}
@@ -1282,12 +1282,12 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           </div>
         </div>
 
-        <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[11.5px] text-[var(--app-copy-muted)]">
+        <div className="relative mt-4 flex flex-wrap items-center gap-2 text-[13.2px] text-[var(--app-copy-muted)]">
           {updatedAtLabel ? <span>최근 생성: {updatedAtLabel}</span> : null}
           <button
             type="button"
             onClick={() => setReloadToken((value) => value + 1)}
-            className="inline-flex h-8 items-center gap-1 rounded-full border bg-white px-2.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-8 items-center gap-1 rounded-full border bg-white px-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             ↻ 다시 생성
@@ -1303,7 +1303,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 key={index}
                 type="button"
                 onClick={() => goToChapter(index)}
-                className="rounded-[12px] border px-2 py-2.5 text-center text-[12px] font-extrabold transition-colors"
+                className="rounded-[12px] border px-2 py-2.5 text-center text-[13.8px] font-extrabold transition-colors"
                 style={{
                   background: active ? '#b87a14' : '#fff',
                   borderColor: active ? '#b87a14' : 'rgba(184,122,20,0.22)',
@@ -1328,11 +1328,11 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               올해 한 줄 먼저
             </div>
             <p
-              className="mt-2 text-[18px] font-extrabold leading-[1.55] tracking-tight text-[var(--app-ink)]"
+              className="mt-2 text-[20.7px] font-extrabold leading-[1.55] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {interpretation.oneLineSummary}
@@ -1347,14 +1347,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             className="rounded-[18px] border bg-white p-5"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               올해 핵심 키워드
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {interpretation.keywords.map((keyword) => (
                 <span
                   key={keyword}
-                  className="rounded-full border bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-copy)]"
+                  className="rounded-full border bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy)]"
                   style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
                 >
                   {keyword}
@@ -1371,13 +1371,13 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             >
               <div className="flex items-center gap-1.5">
                 <span
-                  className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                  className="grid h-7 w-7 place-items-center rounded-full text-[13.8px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
                   aria-hidden="true"
                 >
                   上
                 </span>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   상반기 먼저 볼 것
                 </div>
               </div>
@@ -1389,13 +1389,13 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
             >
               <div className="flex items-center gap-1.5">
                 <span
-                  className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+                  className="grid h-7 w-7 place-items-center rounded-full text-[13.8px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink)', fontFamily: 'var(--font-han)' }}
                   aria-hidden="true"
                 >
                   下
                 </span>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   하반기 먼저 볼 것
                 </div>
               </div>
@@ -1405,14 +1405,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
           {/* §4 핵심 분야 */}
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               사람들이 가장 많이 묻는 4가지
             </div>
-            <h3 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
+            <h3 className="mt-1 text-[19.5px] font-extrabold leading-snug text-[var(--app-ink)]">
               일·돈·연애·관계 한눈에
             </h3>
             <p
-              className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+              className="mt-2 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               각 분야 카드를 펼치면 핵심 / 기회 / 주의 / 행동을 한 줄씩 봅니다.
@@ -1462,14 +1462,14 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
               className="rounded-[18px] border bg-white p-5"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 행동 조언
               </div>
               <div className="mt-3 space-y-2">
                 {data.interpretation.actionAdvice.map((item) => (
                   <p
                     key={item}
-                    className="text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+                    className="text-[15.5px] leading-[1.78] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {item}
@@ -1489,7 +1489,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           >
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full px-2.5 py-1 text-[10.5px] font-extrabold text-white"
+                className="rounded-full px-2.5 py-1 text-[12.1px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
                   boxShadow: '0 4px 10px rgba(216,27,114,0.28)',
@@ -1498,20 +1498,20 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 프리미엄 이용권
               </span>
               <span
-                className="rounded-full border bg-white px-2.5 py-1 text-[10.5px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-full border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 별도 열림
               </span>
             </div>
             <h3
-              className="mt-3 text-[19px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+              className="mt-3 text-[21.8px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               더 궁금한 부분은 아래 버튼으로 이어보세요
             </h3>
             <p
-              className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               일주 본질, 오행 균형, 성향 구조는 각각 별도 화면으로 열리게 연결했습니다.
@@ -1521,11 +1521,11 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
 
           <details className="group" id="yearly-evidence">
             <summary
-              className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[14px] border bg-white px-5 py-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+              className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[14px] border bg-white px-5 py-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               <span>계산 정보와 검증 보기</span>
-              <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+              <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
             </summary>
             <div className="mt-3 grid gap-3">
               <GroundingKasiSummary

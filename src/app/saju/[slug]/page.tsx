@@ -87,7 +87,7 @@ function TotalReviewSkeleton() {
         <div className="h-3 w-11/12 animate-pulse rounded bg-[var(--app-surface-muted)]" />
         <div className="h-3 w-4/5 animate-pulse rounded bg-[var(--app-surface-muted)]" />
       </div>
-      <p className="mt-4 text-[12px] text-[var(--app-copy-soft)]">사주 총평을 정리하고 있어요…</p>
+      <p className="mt-4 text-[13.8px] text-[var(--app-copy-soft)]">사주 총평을 정리하고 있어요…</p>
     </div>
   );
 }
@@ -441,11 +441,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             >
               <div className="flex items-center gap-2.5">
                 <ZodiacChip kind="dragon" size="sm" />
-                <div className="text-[12px] font-extrabold text-[var(--app-pink-strong)]">
+                <div className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
                   한 줄 요약
                 </div>
               </div>
-              <h1 className="mt-3 text-[21px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+              <h1 className="mt-3 text-[24.2px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
                 {easyResultCopy(punchReading.verdict, 1)}
               </h1>
               {summaryChips.length > 0 ? (
@@ -453,14 +453,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   {summaryChips.map((point) => (
                     <span
                       key={point}
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1 text-[12px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                     >
                       {point}
                     </span>
                   ))}
                 </div>
               ) : null}
-              <p className="mt-3 text-[11.5px] leading-5 text-[var(--app-copy-muted)]">
+              <p className="mt-3 text-[13.2px] leading-5 text-[var(--app-copy-muted)]">
                 {formatBirthSummary(input)}
               </p>
             </article>
@@ -496,10 +496,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* §2 4 pillars — 시·일·월·연 한자 + 한국명 + element color */}
             <section>
               <div className="mb-2.5 flex items-end justify-between">
-                <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">사주팔자</h2>
+                <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">사주팔자</h2>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/overview`}
-                  className="text-[12px] font-bold text-[var(--app-pink-strong)]"
+                  className="text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                 >
                   도식 보기 →
                 </Link>
@@ -515,11 +515,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       key={item.label}
                       className="rounded-[14px] border border-[var(--app-line)] bg-white px-2.5 py-3 text-center"
                     >
-                      <div className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                      <div className="text-[12.1px] font-bold text-[var(--app-copy-soft)]">
                         {item.label}주
                       </div>
                       <div
-                        className="mt-1.5 text-[24px] font-bold leading-none tracking-wider"
+                        className="mt-1.5 text-[27.6px] font-bold leading-none tracking-wider"
                         style={{
                           fontFamily: 'var(--font-han)',
                           color: stemColor,
@@ -532,7 +532,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   );
                 })}
               </div>
-              <p className="mt-2 text-[11px] leading-5 text-[var(--app-copy-soft)]">
+              <p className="mt-2 text-[12.6px] leading-5 text-[var(--app-copy-soft)]">
                 {report.focusBadge} 시점
               </p>
             </section>
@@ -540,12 +540,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
             <section className="space-y-4">
               <div>
-                <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   타고난 사주 점수
                 </div>
-                <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
+                <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
                 <p
-                  className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-soft)]"
+                  className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   아래 &lsquo;오늘의 분야별 흐름&rsquo;과 다른 점수예요. 이건 타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값입니다.
@@ -571,10 +571,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
             {/* §4 더 보고 싶은 질문 — 가격 pill + 제목 + 한 줄 */}
             <section>
-              <div className="text-[12px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 작은 풀이
               </div>
-              <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">
                 더 보고 싶은 질문
               </h2>
               <div className="mt-3 grid gap-2.5">
@@ -591,7 +591,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
                     <div
-                      className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
                       style={{
                         background: 'var(--app-pink-soft)',
                         border: '1px solid var(--app-pink-line)',
@@ -600,10 +600,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       {pick.price}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      <div className="text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                         {pick.label}
                       </div>
-                      <div className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
+                      <div className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
                         {pick.desc}
                       </div>
                     </div>
@@ -624,12 +624,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               }}
             >
               <div
-                className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[13.8px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink)' }}
               >
                 다음 단계
               </div>
-              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+              <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
                 깊은 풀이와 대화로
                 <br />
                 이어가 보세요
@@ -643,7 +643,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     product: 'dialogue',
                     from: 'result_next_step',
                   }}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   선생님과 대화하기 →
                 </TrackedLink>
@@ -662,7 +662,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
                   unpaidLabel="오늘 자세히 · 9,900원"
                   ownedLabel="구매한 풀이 열기"
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 />
               </div>
             </article>
@@ -676,17 +676,17 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               className="rounded-[18px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 더 들여다볼 곳
               </div>
               <h3
-                className="mt-1 text-[15px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+                className="mt-1 text-[17.3px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 같은 풀이를 다른 시각으로 보고 싶다면
               </h3>
               <ul
-                className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
+                className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 <li>· <strong>성향</strong> 탭 — <em>내 타고난 성향</em> (일주 캐릭터 풀이)</li>
@@ -696,7 +696,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <li>· <strong>상세</strong> 탭 — 올해 전략·월간 타이밍·평생 흐름 (유료 심화 풀이)</li>
               </ul>
               <p
-                className="mt-2 text-[11px] leading-[1.55] text-[var(--app-copy-soft)]"
+                className="mt-2 text-[12.6px] leading-[1.55] text-[var(--app-copy-soft)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 모든 탭은 같은 사주 데이터를 다르게 보여줍니다 — 풀이는 동일합니다.

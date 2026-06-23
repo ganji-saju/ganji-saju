@@ -113,14 +113,14 @@ export function ValidationDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           🔬 신살 룰 검증
         </div>
-        <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
           데이터로 본 명리 효과
         </h1>
         <p
-          className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           사용자 피드백 (overall_rating: -1/0/+1) 을 신살 발동 vs 미발동 두 그룹으로
@@ -137,7 +137,7 @@ export function ValidationDashboard() {
               key={opt.value}
               type="button"
               onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
               style={{
                 background: isActive ? 'var(--app-pink)' : 'white',
                 color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -156,7 +156,7 @@ export function ValidationDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">통계 분석 중...</p>
+          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">통계 분석 중...</p>
         </article>
       ) : state === 'error' ? (
         <article
@@ -166,7 +166,7 @@ export function ValidationDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[13px] text-[var(--app-coral)]">
+          <p className="text-[15px] text-[var(--app-coral)]">
             {data?.error ?? '데이터를 불러오지 못했습니다.'}
           </p>
         </article>
@@ -177,31 +177,31 @@ export function ValidationDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               데이터셋 ({data.windowDays}일 윈도우)
             </div>
             <div className="mt-2.5 grid grid-cols-3 gap-3">
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {data.summary.totalFeedback.toLocaleString()}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">총 피드백</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">총 피드백</div>
               </div>
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {data.summary.feedbackWithSinsals.toLocaleString()}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">신살 발동 있음</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">신살 발동 있음</div>
               </div>
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {data.summary.uniqueSinsals}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">분석 신살 종</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">분석 신살 종</div>
               </div>
             </div>
             {data.summary.oldestDate && data.summary.newestDate ? (
-              <div className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
+              <div className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 범위 {data.summary.oldestDate.slice(0, 10)} ~ {data.summary.newestDate.slice(0, 10)}
               </div>
             ) : null}
@@ -213,17 +213,17 @@ export function ValidationDashboard() {
               className="rounded-[18px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[32px]">📊</div>
-              <p className="mt-2 text-[13px] font-bold text-[var(--app-ink)]">
+              <div className="text-[36.8px]">📊</div>
+              <p className="mt-2 text-[15px] font-bold text-[var(--app-ink)]">
                 아직 분석할 신살 데이터가 없습니다
               </p>
-              <p className="mt-1 text-[11.5px] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[13.2px] text-[var(--app-copy-muted)]">
                 사용자 피드백이 누적되면 자동으로 통계가 산출됩니다.
               </p>
             </article>
           ) : (
             <section>
-              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 효과 크기 절댓값 순 — {data.stats.length}개
               </h2>
               <div className="mt-2 grid gap-2.5">
@@ -239,20 +239,20 @@ export function ValidationDashboard() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
+                            <span className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                               {s.name}
                             </span>
-                            <span className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                            <span className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                               {CATEGORY_LABEL[s.category]}
                             </span>
                           </div>
-                          <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                          <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                             발동 {s.triggeredCount.toLocaleString()}건 · 미발동{' '}
                             {s.notTriggeredCount.toLocaleString()}건
                           </div>
                         </div>
                         <span
-                          className="shrink-0 rounded-full border px-2.5 py-0.5 text-[10.5px] font-extrabold"
+                          className="shrink-0 rounded-full border px-2.5 py-0.5 text-[12.1px] font-extrabold"
                           style={{
                             background: verdict.bg,
                             borderColor: verdict.border,
@@ -273,10 +273,10 @@ export function ValidationDashboard() {
                             borderColor: 'rgba(45,135,88,0.18)',
                           }}
                         >
-                          <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                          <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                             발동 시 평균
                           </div>
-                          <div className="mt-1 text-[15px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                          <div className="mt-1 text-[17.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
                             {formatSigned(s.meanWhenTriggered)}
                           </div>
                         </div>
@@ -287,10 +287,10 @@ export function ValidationDashboard() {
                             borderColor: 'var(--app-line)',
                           }}
                         >
-                          <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                          <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                             미발동 평균
                           </div>
-                          <div className="mt-1 text-[15px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                          <div className="mt-1 text-[17.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
                             {formatSigned(s.meanWhenNotTriggered)}
                           </div>
                         </div>
@@ -299,11 +299,11 @@ export function ValidationDashboard() {
                       {/* 효과 + 유의성 */}
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <span className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                          <span className="text-[12.1px] font-bold text-[var(--app-copy-soft)]">
                             차이
                           </span>
                           <span
-                            className="ml-1.5 text-[14px] font-extrabold tabular-nums"
+                            className="ml-1.5 text-[16.1px] font-extrabold tabular-nums"
                             style={{
                               color:
                                 s.effectSize > 0
@@ -315,12 +315,12 @@ export function ValidationDashboard() {
                           >
                             {formatSigned(s.effectSize)}
                           </span>
-                          <span className="ml-2 text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                          <span className="ml-2 text-[12.1px] font-bold text-[var(--app-copy-soft)]">
                             t = {s.tStatistic.toFixed(2)}
                           </span>
                         </div>
                         <span
-                          className="text-[10.5px] font-extrabold"
+                          className="text-[12.1px] font-extrabold"
                           style={{ color: sig.tone }}
                         >
                           {sig.label}
@@ -329,7 +329,7 @@ export function ValidationDashboard() {
 
                       {/* 예상 vs 실제 */}
                       <div
-                        className="mt-2.5 rounded-[10px] px-3 py-2 text-[11px] leading-[1.5] text-[var(--app-copy)]"
+                        className="mt-2.5 rounded-[10px] px-3 py-2 text-[12.6px] leading-[1.5] text-[var(--app-copy)]"
                         style={{ background: 'rgba(0,0,0,0.025)', wordBreak: 'keep-all' }}
                       >
                         <strong className="text-[var(--app-pink-strong)]">현재 가중치:</strong>{' '}
@@ -348,11 +348,11 @@ export function ValidationDashboard() {
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               📚 방법론
             </div>
             <ul
-              className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
+              className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 각 신살별로 발동 일 vs 미발동 일의 overall_rating 평균 비교</li>

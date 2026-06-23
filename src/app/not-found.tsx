@@ -28,7 +28,7 @@ export default function NotFound() {
             style={{ background: 'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)' }}
           />
           <div
-            className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[36px] font-extrabold"
+            className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[41.4px] font-extrabold"
             style={{
               background: '#fff',
               color: 'var(--app-pink-strong)',
@@ -40,29 +40,29 @@ export default function NotFound() {
           >
             ?
           </div>
-          <div className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             404 · 길을 잃었어요
           </div>
           <h1
-            className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+            className="mt-1 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             여긴 비어 있는 자리예요
           </h1>
-          <p className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]">
             주소가 바뀌었거나 사라진 페이지일 수 있어요. 홈에서 다시 시작해보세요.
           </p>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <Link
               href="/"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               홈으로 →
             </Link>
             <Link
               href="/search"
-              className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               검색해보기

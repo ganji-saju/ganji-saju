@@ -112,18 +112,18 @@ export function TodayConcernSelector({
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             오늘운세
           </div>
           <h1
-            className="mt-1.5 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+            className="mt-1.5 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             오늘 어떤 부분이
             <br />
             가장 궁금해요?
           </h1>
-          <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
             한 가지를 골라야 더 또렷이 보여드려요.
           </p>
         </article>
@@ -187,14 +187,14 @@ export function TodayConcernSelector({
               {/* Copy */}
               <span className="min-w-0">
                 <span
-                  className="block text-[14px] font-extrabold tracking-tight"
+                  className="block text-[16.1px] font-extrabold tracking-tight"
                   style={{
                     color: active ? 'var(--app-pink-strong)' : 'var(--app-ink)',
                   }}
                 >
                   {visual.label}
                 </span>
-                <span className="mt-0.5 block text-[13px] leading-[1.5] text-[var(--app-copy-muted)]">
+                <span className="mt-0.5 block text-[15px] leading-[1.5] text-[var(--app-copy-muted)]">
                   {visual.desc}
                 </span>
               </span>
@@ -209,7 +209,7 @@ export function TodayConcernSelector({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[13px] font-extrabold transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[15px] font-extrabold transition-colors"
             style={{
               borderColor: 'var(--app-line)',
               color: 'var(--app-copy-muted)',

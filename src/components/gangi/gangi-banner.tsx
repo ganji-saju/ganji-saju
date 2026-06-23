@@ -160,28 +160,28 @@ function BannerBody({
     return (
       <>
         {eyebrow ? (
-          <div className="text-[12px] font-extrabold uppercase tracking-[0.06em] text-white/85">
+          <div className="text-[13.8px] font-extrabold uppercase tracking-[0.06em] text-white/85">
             {eyebrow}
           </div>
         ) : null}
         <div
-          className="mt-1.5 text-[20px] font-extrabold leading-[1.35] tracking-tight"
+          className="mt-1.5 text-[23px] font-extrabold leading-[1.35] tracking-tight"
           style={{ wordBreak: 'keep-all' }}
         >
           {title}
         </div>
         {description ? (
-          <p className="mt-2 text-[12.5px] leading-[1.65] text-white/85">{description}</p>
+          <p className="mt-2 text-[14.4px] leading-[1.65] text-white/85">{description}</p>
         ) : null}
         {ctaLabel ? (
-          <span className="mt-3.5 inline-flex h-9 items-center rounded-full bg-white/20 px-3.5 text-[13px] font-extrabold backdrop-blur-sm">
+          <span className="mt-3.5 inline-flex h-9 items-center rounded-full bg-white/20 px-3.5 text-[15px] font-extrabold backdrop-blur-sm">
             {ctaLabel} →
           </span>
         ) : null}
         <span
           aria-hidden="true"
           className="pointer-events-none absolute -right-2 -top-2 leading-none opacity-10"
-          style={{ fontFamily: 'var(--font-han)', fontSize: 130, fontWeight: 700 }}
+          style={{ fontFamily: 'var(--font-han)', fontSize: 149.5, fontWeight: 700 }}
         >
           運
         </span>
@@ -204,28 +204,28 @@ function BannerBody({
         />
         <div className="relative flex items-center gap-3.5">
           {leading ? (
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-white/30 bg-white/10 text-[24px] font-light">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-white/30 bg-white/10 text-[27.6px] font-light">
               {leading}
             </div>
           ) : null}
           <div className="min-w-0 flex-1">
             {eyebrow ? (
-              <div className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-white/70">
+              <div className="text-[13.8px] font-extrabold uppercase tracking-[0.08em] text-white/70">
                 {eyebrow}
               </div>
             ) : null}
             <div
-              className="mt-0.5 text-[15px] font-extrabold leading-[1.4] tracking-tight"
+              className="mt-0.5 text-[17.3px] font-extrabold leading-[1.4] tracking-tight"
               style={{ wordBreak: 'keep-all' }}
             >
               {title}
             </div>
             {description ? (
-              <div className="mt-0.5 text-[13px] text-white/70">{description}</div>
+              <div className="mt-0.5 text-[15px] text-white/70">{description}</div>
             ) : null}
           </div>
           {ctaLabel ? (
-            <span className="shrink-0 text-[13px] font-extrabold text-white/85">
+            <span className="shrink-0 text-[15px] font-extrabold text-white/85">
               {ctaLabel} →
             </span>
           ) : null}
@@ -239,7 +239,7 @@ function BannerBody({
     <div className="flex items-center gap-3.5">
       {pricePill ? (
         <div
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[12.5px] font-extrabold text-white"
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[14.4px] font-extrabold text-white"
           style={{ background: 'var(--app-pink)' }}
           aria-hidden="true"
         >
@@ -250,7 +250,7 @@ function BannerBody({
       <div className="min-w-0 flex-1">
         {eyebrow ? (
           <div
-            className="text-[12px] font-extrabold uppercase tracking-[0.06em]"
+            className="text-[13.8px] font-extrabold uppercase tracking-[0.06em]"
             style={{
               color:
                 kind === 'success'
@@ -264,20 +264,20 @@ function BannerBody({
           </div>
         ) : null}
         <div
-          className="mt-0.5 text-[14.5px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+          className="mt-0.5 text-[16.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {title}
         </div>
         {description ? (
-          <div className="mt-0.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+          <div className="mt-0.5 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
             {description}
           </div>
         ) : null}
       </div>
       {ctaLabel ? (
         <span
-          className="shrink-0 text-[13px] font-extrabold"
+          className="shrink-0 text-[15px] font-extrabold"
           style={{ color: 'var(--app-pink-strong)' }}
           aria-hidden="true"
         >

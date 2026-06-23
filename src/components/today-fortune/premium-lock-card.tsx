@@ -67,18 +67,18 @@ export function PremiumLockCard({
         >
           <ZodiacChip kind="snake" size="md" className="shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-extrabold tracking-[0.04em] text-[var(--app-jade)]">
+            <div className="text-[15px] font-extrabold tracking-[0.04em] text-[var(--app-jade)]">
               ✓ 이미 구매한 풀이
             </div>
-            <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
+            <div className="mt-0.5 text-[17.3px] font-extrabold tracking-tight text-[var(--app-ink)]">
               오늘 자세히 보기
             </div>
-            <div className="mt-0.5 text-[13px] text-[var(--app-copy-soft)]">
+            <div className="mt-0.5 text-[15px] text-[var(--app-copy-soft)]">
               결제 없이 바로 열람합니다
             </div>
           </div>
           <span
-            className="shrink-0 inline-flex items-center rounded-full bg-[var(--app-jade)] px-3 py-2 text-[12px] font-extrabold text-white"
+            className="shrink-0 inline-flex items-center rounded-full bg-[var(--app-jade)] px-3 py-2 text-[13.8px] font-extrabold text-white"
           >
             바로 열기 →
           </span>
@@ -101,18 +101,18 @@ export function PremiumLockCard({
       >
         <ZodiacChip kind="snake" size="md" className="shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[15px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
             9,900원 · 자세한 풀이
           </div>
-          <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
+          <div className="mt-0.5 text-[17.3px] font-extrabold tracking-tight text-[var(--app-ink)]">
             오늘 자세히 보기
           </div>
-          <div className="mt-0.5 text-[13px] text-[var(--app-copy-soft)]">
+          <div className="mt-0.5 text-[15px] text-[var(--app-copy-soft)]">
             지금 흐름 · 조심할 시간대 · 핵심 한 줄
           </div>
         </div>
         <span
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[12px] font-extrabold text-white"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[13.8px] font-extrabold text-white"
           style={{ boxShadow: '0 8px 20px rgba(216,27,114,0.28)' }}
         >
           {/* 2026-05-15 handoff 60 m-spinners — inline ring spinner */}
@@ -135,8 +135,8 @@ export function PremiumLockCard({
                 size="lg"
                 className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] border-[var(--app-pink-line)] bg-white px-2 text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
               >
-                <span className="text-[13px] font-extrabold leading-tight">9,900원 단품</span>
-                <span className="text-[10.5px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
+                <span className="text-[15px] font-extrabold leading-tight">9,900원 단품</span>
+                <span className="text-[12.1px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
               </Button>
             </Link>
             <Link href={bundleHref} className="min-w-0">
@@ -147,10 +147,10 @@ export function PremiumLockCard({
                 style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
               >
                 <span className="flex items-center gap-1.5 leading-tight">
-                  <span className="text-[14.5px] font-extrabold">9,900원 묶음</span>
-                  <span className="text-[10px] font-semibold text-white/85">이득</span>
+                  <span className="text-[16.7px] font-extrabold">9,900원 묶음</span>
+                  <span className="text-[11.5px] font-semibold text-white/85">이득</span>
                 </span>
-                <span className="text-[10.5px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
+                <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
               </Button>
             </Link>
           </div>
@@ -161,14 +161,14 @@ export function PremiumLockCard({
               type="button"
               variant="outline"
               size="lg"
-              className="h-10 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-white text-[12.5px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)]"
+              className="h-10 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-white text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)]"
             >
               코인 충전 보기
             </Button>
           </Link>
 
           {/* 옵션 설명 — 1코인 / 9,900원 단품 / 9,900원 묶음 */}
-          <ul className="mt-3 grid gap-1 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
+          <ul className="mt-3 grid gap-1 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
             <li>
               <b className="font-bold text-[var(--app-ink)]">1코인 열기</b> — 보유 코인으로 오늘 자세히 보기
             </li>
@@ -191,7 +191,7 @@ export function PremiumLockCard({
               type="button"
               variant="outline"
               size="lg"
-              className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[13px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
+              className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[15px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
             >
               9,900원 바로 결제
             </Button>
@@ -201,7 +201,7 @@ export function PremiumLockCard({
               type="button"
               variant="outline"
               size="lg"
-              className="h-11 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-[var(--app-ink)] text-[13px] font-bold text-white hover:bg-[rgba(17,17,20,0.86)] hover:text-white"
+              className="h-11 w-full rounded-full border-[rgba(17,17,20,0.12)] bg-[var(--app-ink)] text-[15px] font-bold text-white hover:bg-[rgba(17,17,20,0.86)] hover:text-white"
             >
               코인 충전 보기
             </Button>
@@ -209,13 +209,13 @@ export function PremiumLockCard({
         </div>
       )}
 
-      <p className="mt-3 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
+      <p className="mt-3 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
         <Lock className="mr-1 inline h-3 w-3 align-[-1px]" />
         {copy}
       </p>
 
       {errorMessage ? (
-        <p className="mt-3 text-[13px] text-[var(--app-coral)]">{errorMessage}</p>
+        <p className="mt-3 text-[15px] text-[var(--app-coral)]">{errorMessage}</p>
       ) : null}
     </section>
   );

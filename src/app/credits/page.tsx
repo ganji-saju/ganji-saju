@@ -275,7 +275,7 @@ function CreditsPageContent() {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               현재 보유
@@ -290,11 +290,11 @@ function CreditsPageContent() {
                     setCredits(null);
                     setCreditsFetchVersion((v) => v + 1);
                   }}
-                  className="rounded-[10px] bg-white/15 px-3 py-2 text-[12.5px] font-bold text-white"
+                  className="rounded-[10px] bg-white/15 px-3 py-2 text-[14.4px] font-bold text-white"
                 >
                   잔액 확인 다시 시도
                 </button>
-                <p className="mt-2 text-[11.5px]" style={{ opacity: 0.7 }}>
+                <p className="mt-2 text-[13.2px]" style={{ opacity: 0.7 }}>
                   잔액 확인 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.
                 </p>
               </div>
@@ -303,7 +303,7 @@ function CreditsPageContent() {
                 <div className="mt-1.5 flex items-end gap-2">
                   {isLoggedIn === false ? (
                     <div
-                      className="text-[36px] font-extrabold tracking-tighter"
+                      className="text-[41.4px] font-extrabold tracking-tighter"
                       style={{ color: 'var(--app-pink)' }}
                     >
                       {/* audit-mockup: intentional — 비로그인 사용자에게 dash 표시 (의도된 UX) */}
@@ -316,17 +316,17 @@ function CreditsPageContent() {
                     />
                   ) : (
                     <div
-                      className="text-[36px] font-extrabold tracking-tighter"
+                      className="text-[41.4px] font-extrabold tracking-tighter"
                       style={{ color: 'var(--app-pink)' }}
                     >
                       ✦ {credits.toLocaleString()}
                     </div>
                   )}
-                  <span className="pb-1.5 text-[14px] font-bold" style={{ opacity: 0.6 }}>
+                  <span className="pb-1.5 text-[16.1px] font-bold" style={{ opacity: 0.6 }}>
                     코인
                   </span>
                 </div>
-                <p className="mt-2 text-[11.5px]" style={{ opacity: 0.6 }}>
+                <p className="mt-2 text-[13.2px]" style={{ opacity: 0.6 }}>
                   {isLoggedIn === false
                     ? '로그인 후 잔액과 충전 내역이 표시됩니다'
                     : credits === null
@@ -339,7 +339,7 @@ function CreditsPageContent() {
 
           {/* §2 사용 안내 */}
           <article
-            className="rounded-[14px] border px-4 py-3 text-[12px] leading-[1.55] text-[var(--app-pink-strong)]"
+            className="rounded-[14px] border px-4 py-3 text-[13.8px] leading-[1.55] text-[var(--app-pink-strong)]"
             style={{
               background: 'var(--app-pink-soft)',
               borderColor: 'var(--app-pink-line)',
@@ -351,8 +351,8 @@ function CreditsPageContent() {
 
           {/* §3 패키지 list */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">충전 패키지</h2>
-            <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">충전 패키지</h2>
+            <p className="mt-1 text-[13.8px] text-[var(--app-copy-muted)]">
               원하는 만큼 골라 결제하면 즉시 코인이 충전됩니다.
             </p>
             <div className="mt-3 grid gap-3">
@@ -382,7 +382,7 @@ function CreditsPageContent() {
                   >
                     {info?.badge ? (
                       <span
-                        className="absolute -top-2 left-4 rounded-[6px] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.04em] text-white"
+                        className="absolute -top-2 left-4 rounded-[6px] px-2 py-0.5 text-[11.5px] font-extrabold tracking-[0.04em] text-white"
                         style={{
                           background:
                             info.badge === 'BEST' ? 'var(--app-ink)' : 'var(--app-pink)',
@@ -393,7 +393,7 @@ function CreditsPageContent() {
                     ) : null}
                     <div className="flex items-center gap-3">
                       <div
-                        className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[18px] font-extrabold"
+                        className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[20.7px] font-extrabold"
                         style={
                           active
                             ? {
@@ -412,20 +412,20 @@ function CreditsPageContent() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-1.5">
-                          <span className="text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                          <span className="text-[20.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                             {pkg.credits.toLocaleString()}
                           </span>
-                          <span className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+                          <span className="text-[13.2px] font-bold text-[var(--app-copy-soft)]">
                             코인
                           </span>
                         </div>
-                        <div className="mt-1 text-[11px] text-[var(--app-copy-soft)]">
+                        <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">
                           {info?.desc}
                           {each !== null ? ` · 1코인 ≈ ${each}원` : ''}
                         </div>
                       </div>
                       <div
-                        className="shrink-0 text-right text-[16px] font-extrabold tracking-tight"
+                        className="shrink-0 text-right text-[18.4px] font-extrabold tracking-tight"
                         style={{ color: active ? 'var(--app-pink-strong)' : 'var(--app-ink)' }}
                       >
                         {pkg.price.toLocaleString()}원
@@ -439,7 +439,7 @@ function CreditsPageContent() {
 
           {isLoggedIn === false ? (
             <article
-              className="rounded-[14px] border bg-white px-4 py-3 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+              className="rounded-[14px] border bg-white px-4 py-3 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="font-extrabold text-[var(--app-ink)]">계정 연결 뒤 결제할 수 있습니다</div>
@@ -448,7 +448,7 @@ function CreditsPageContent() {
               </p>
               <Link
                 href={`/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`}
-                className="mt-2 inline-flex rounded-full bg-[var(--app-pink)] px-4 py-2 text-[12px] font-extrabold text-white"
+                className="mt-2 inline-flex rounded-full bg-[var(--app-pink)] px-4 py-2 text-[13.8px] font-extrabold text-white"
               >
                 로그인하고 충전하기
               </Link>
@@ -457,7 +457,7 @@ function CreditsPageContent() {
 
           {/* §4 결제 수단 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
             <div className="mt-3">
               <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
             </div>
@@ -477,7 +477,7 @@ function CreditsPageContent() {
           {/* 에러 안내 */}
           {hasPaymentError ? (
             <article
-              className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]"
+              className="rounded-[12px] border px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]"
               style={{
                 background: 'rgba(248,113,113,0.08)',
                 borderColor: 'rgba(248,113,113,0.3)',
@@ -489,7 +489,7 @@ function CreditsPageContent() {
 
           {errorMessage ? (
             <article
-              className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]"
+              className="rounded-[12px] border px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]"
               style={{
                 background: 'rgba(248,113,113,0.08)',
                 borderColor: 'rgba(248,113,113,0.3)',
@@ -499,14 +499,14 @@ function CreditsPageContent() {
             </article>
           ) : null}
 
-          <p className="text-[11.5px] leading-[1.6] text-[var(--app-copy-soft)]">
+          <p className="text-[13.2px] leading-[1.6] text-[var(--app-copy-soft)]">
             토스페이먼츠 카드 결제 · 계좌이체 · 모든 필수 동의가 확인된 뒤 결제창이 열립니다.
           </p>
         </section>
 
         {/* §4-b 정책 + CS 링크 (Phase 5-D 사용자 directive) — 결제 sticky CTA 위 */}
         <section
-          className="flex flex-wrap gap-x-3 gap-y-1 text-[11.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="flex flex-wrap gap-x-3 gap-y-1 text-[13.2px] leading-[1.6] text-[var(--app-copy-muted)]"
           aria-label="코인 정책 및 고객센터"
         >
           <Link href="/coin-policy" className="underline">
@@ -536,7 +536,7 @@ function CreditsPageContent() {
             type="button"
             onClick={() => selectedPackage && handlePurchase(selectedPackage)}
             disabled={purchaseDisabled}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
           >
             {loading
               ? '처리중...'
@@ -560,7 +560,7 @@ export default function CreditsPage() {
       fallback={
         <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
           <AppPage className="gangi-subpage saju-result-page text-center">
-            <p className="px-1 py-8 text-[12.5px] text-[var(--app-copy-muted)]">
+            <p className="px-1 py-8 text-[14.4px] text-[var(--app-copy-muted)]">
               코인 센터 표시 준비
             </p>
           </AppPage>

@@ -97,7 +97,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
 
       {guidance && (
         <div className="mx-5 mb-5 rounded-xl border border-amber-100 bg-amber-50/60 p-4">
-          <p className="mb-1.5 text-[13px] font-semibold text-amber-700">✨ 보강할 기운</p>
+          <p className="mb-1.5 text-[15px] font-semibold text-amber-700">✨ 보강할 기운</p>
           <p className="text-sm leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
             {guidance}
           </p>

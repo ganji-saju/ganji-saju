@@ -67,11 +67,11 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             📊 점수 산출 내역
           </div>
           <h2
-            className="mt-0.5 text-[15.5px] font-extrabold text-[var(--app-ink)]"
+            className="mt-0.5 text-[17.8px] font-extrabold text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             오늘 점수가 이렇게 나온 이유
@@ -79,21 +79,21 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
         </div>
         <div className="text-right">
           <div className="flex items-center gap-1.5">
-            <span aria-hidden="true" className="text-[18px]">
+            <span aria-hidden="true" className="text-[20.7px]">
               {iljinScore.gradeEmoji}
             </span>
-            <span className="text-[22px] font-extrabold tabular-nums text-[var(--app-ink)]">
+            <span className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
               {iljinScore.totalScore}
             </span>
           </div>
-          <div className="text-[10.5px] font-extrabold text-[var(--app-copy-soft)]">
+          <div className="text-[12.1px] font-extrabold text-[var(--app-copy-soft)]">
             {iljinScore.grade}
           </div>
         </div>
       </div>
 
       <p
-        className="mt-2 rounded-[10px] px-3 py-2 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+        className="mt-2 rounded-[10px] px-3 py-2 text-[15px] leading-[1.55] text-[var(--app-copy)]"
         style={{ background: 'var(--app-pink-soft)', wordBreak: 'keep-all' }}
       >
         {iljinScore.gradeMessage}
@@ -109,15 +109,15 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
             >
               <div className="min-w-0">
                 <div
-                  className="text-[12.5px] font-extrabold text-[var(--app-ink)]"
+                  className="text-[14.4px] font-extrabold text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {row.label}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">{row.detail}</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">{row.detail}</div>
               </div>
               <div
-                className="shrink-0 rounded-full px-2.5 py-0.5 text-[12.5px] font-extrabold tabular-nums"
+                className="shrink-0 rounded-full px-2.5 py-0.5 text-[14.4px] font-extrabold tabular-nums"
                 style={{
                   background: val > 0 ? 'rgba(45,135,88,0.10)' : val < 0 ? 'rgba(220,79,79,0.10)' : 'transparent',
                   color: valueColor(val),
@@ -130,7 +130,7 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
         })}
       </ul>
 
-      <div className="mt-2.5 flex items-center justify-between border-t border-[var(--app-line)] pt-2.5 text-[12px] text-[var(--app-copy-muted)]">
+      <div className="mt-2.5 flex items-center justify-between border-t border-[var(--app-line)] pt-2.5 text-[13.8px] text-[var(--app-copy-muted)]">
         <span>+ 기본점 50 + 합 {formatSigned(sum)}</span>
         <span className="font-extrabold text-[var(--app-ink)]">
           = {iljinScore.totalScore}점
@@ -139,14 +139,14 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
 
       {iljinMessages && iljinMessages.messages.length > 0 ? (
         <div className="mt-3">
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             오늘 발동한 명리 케이스
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {iljinMessages.messages.map((msg, idx) => (
               <li
                 key={idx}
-                className="rounded-[12px] border px-3 py-2 text-[13px] leading-[1.6] text-[var(--app-copy)]"
+                className="rounded-[12px] border px-3 py-2 text-[15px] leading-[1.6] text-[var(--app-copy)]"
                 style={{
                   borderColor: 'var(--app-line)',
                   background: 'rgba(0,0,0,0.02)',

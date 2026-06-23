@@ -156,11 +156,11 @@ export default async function MyBillingPage() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           결제 관리
         </div>
         <h1
-          className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+          className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           코인 · 멤버십 · 이용 내역을
@@ -168,7 +168,7 @@ export default async function MyBillingPage() {
           한 화면에서 살펴보세요
         </h1>
         <p
-          className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           지금 남은 코인, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다.
@@ -177,7 +177,7 @@ export default async function MyBillingPage() {
 
       {/* §남은 잔액 — 3 칸 */}
       <section>
-        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           남은 잔액
         </h2>
         <div className="mt-2 grid grid-cols-3 gap-2.5">
@@ -185,10 +185,10 @@ export default async function MyBillingPage() {
             className="rounded-[14px] border bg-white p-3.5"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
               전체 코인
             </div>
-            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
+            <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
               {dashboard.credits.total}
             </div>
           </article>
@@ -196,10 +196,10 @@ export default async function MyBillingPage() {
             className="rounded-[14px] border bg-white p-3.5"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
               일반 코인
             </div>
-            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+            <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
               {dashboard.credits.balance}
             </div>
           </article>
@@ -207,10 +207,10 @@ export default async function MyBillingPage() {
             className="rounded-[14px] border bg-white p-3.5"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
               월간 플랜
             </div>
-            <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+            <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
               {dashboard.credits.subscriptionBalance}
             </div>
           </article>
@@ -220,10 +220,10 @@ export default async function MyBillingPage() {
       {/* §결제 내역 (현금 결제) — product_entitlements + 코인충전/멤버십 결제 */}
       <section>
         <div className="flex items-baseline justify-between px-1">
-          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          <h2 className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
             결제 내역
           </h2>
-          <span className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+          <span className="text-[12.1px] font-bold text-[var(--app-copy-soft)]">
             현금 결제
           </span>
         </div>
@@ -237,14 +237,14 @@ export default async function MyBillingPage() {
           }}
         >
           <div>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               총 결제 금액
             </div>
-            <div className="mt-0.5 text-[11px] text-[var(--app-copy-muted)]">
+            <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-muted)]">
               지금까지 {paymentHistory.count}건 결제
             </div>
           </div>
-          <div className="text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
+          <div className="text-[25.3px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
             {formatWon(paymentHistory.totalSpentWon)}
           </div>
         </article>
@@ -264,35 +264,35 @@ export default async function MyBillingPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-[var(--app-copy-soft)]">
+                        <span className="text-[12.6px] text-[var(--app-copy-soft)]">
                           {formatDate(entry.date)}
                         </span>
                         <span
-                          className="rounded-full px-1.5 py-0.5 text-[10px] font-extrabold"
+                          className="rounded-full px-1.5 py-0.5 text-[11.5px] font-extrabold"
                           style={{ background: badgeStyle.bg, color: badgeStyle.color }}
                         >
                           {entry.category}
                         </span>
                       </div>
                       <div
-                        className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]"
+                        className="mt-1 text-[16.1px] font-extrabold text-[var(--app-ink)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         {entry.productName}
                       </div>
                       {entry.coins !== null && entry.coins > 0 ? (
-                        <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+                        <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-muted)]">
                           코인 {entry.coins}개 지급
                         </div>
                       ) : null}
                       {receiptTail ? (
-                        <div className="mt-0.5 text-[10.5px] tabular-nums text-[var(--app-copy-soft)]">
+                        <div className="mt-0.5 text-[12.1px] tabular-nums text-[var(--app-copy-soft)]">
                           영수증 참조 ···{receiptTail}
                         </div>
                       ) : null}
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="text-[16px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+                      <div className="text-[18.4px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
                         {entry.amountWon !== null ? formatWon(entry.amountWon) : '—'}
                       </div>
                     </div>
@@ -305,11 +305,11 @@ export default async function MyBillingPage() {
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
                 아직 결제 내역 없음
               </div>
               <p
-                className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 단건 풀이, 평생 리포트, 코인 충전, 멤버십을 결제하면 여기에 금액과 함께 표시됩니다.
@@ -321,7 +321,7 @@ export default async function MyBillingPage() {
 
       {/* §멤버십 상태 */}
       <section>
-        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           멤버십 상태
         </h2>
         <article
@@ -329,28 +329,28 @@ export default async function MyBillingPage() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="flex items-baseline justify-between gap-2">
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
               상태
             </div>
-            <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
+            <div className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
               {subscriptionStatusLabel}
             </div>
           </div>
           {dashboard.subscription ? (
             <div className="mt-3 grid grid-cols-2 gap-2 border-t pt-3" style={{ borderColor: 'var(--app-line)' }}>
               <div>
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   플랜
                 </div>
-                <div className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                <div className="mt-0.5 text-[15.5px] font-extrabold text-[var(--app-ink)]">
                   {getSubscriptionPlanLabel(dashboard.subscription.plan)}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   다음 결제일
                 </div>
-                <div className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                <div className="mt-0.5 text-[15.5px] font-extrabold text-[var(--app-ink)]">
                   {dashboard.subscription.renewsAt
                     ? formatDate(dashboard.subscription.renewsAt)
                     : '미정'}
@@ -359,7 +359,7 @@ export default async function MyBillingPage() {
             </div>
           ) : null}
           <p
-            className="mt-3 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+            className="mt-3 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {getSubscriptionNotice(dashboard.subscription)}
@@ -372,7 +372,7 @@ export default async function MyBillingPage() {
 
       {/* §바로가기 */}
       <section>
-        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           바로가기
         </h2>
         <div className="mt-2 grid grid-cols-2 gap-2">
@@ -382,10 +382,10 @@ export default async function MyBillingPage() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="min-w-0">
-              <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+              <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                 코인 센터
               </div>
-              <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+              <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                 충전 · 재시작
               </div>
             </div>
@@ -399,10 +399,10 @@ export default async function MyBillingPage() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="min-w-0">
-              <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+              <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                 멤버십
               </div>
-              <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+              <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                 플랜 · 혜택 안내
               </div>
             </div>
@@ -415,7 +415,7 @@ export default async function MyBillingPage() {
 
       {/* §코인 사용 내역 (type='use') */}
       <section>
-        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           코인 사용 내역
         </h2>
         <div className="mt-2 grid gap-2">
@@ -430,21 +430,21 @@ export default async function MyBillingPage() {
                 >
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-[11px] text-[var(--app-copy-soft)]">
+                      <div className="text-[12.6px] text-[var(--app-copy-soft)]">
                         {formatDate(transaction.createdAt)}
                       </div>
                       <div
-                        className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]"
+                        className="mt-0.5 text-[15.5px] font-extrabold text-[var(--app-ink)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         {getTransactionLabel(transaction)}
                       </div>
-                      <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+                      <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-muted)]">
                         {getTransactionFeatureLabel(transaction)}
                       </div>
                     </div>
                     <div
-                      className="shrink-0 text-[14px] font-extrabold tabular-nums"
+                      className="shrink-0 text-[16.1px] font-extrabold tabular-nums"
                       style={{
                         color: positive ? 'var(--app-jade)' : 'var(--app-coral)',
                       }}
@@ -461,11 +461,11 @@ export default async function MyBillingPage() {
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
                 아직 기록 없음
               </div>
               <p
-                className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 코인을 사용한 이용 내역이 아직 없습니다.
@@ -480,11 +480,11 @@ export default async function MyBillingPage() {
         className="rounded-[14px] border bg-white p-4"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           📚 결제·환불 정책
         </div>
         <ul
-          className="mt-1.5 grid gap-1 text-[11.5px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-1.5 grid gap-1 text-[13.2px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li>• 정기 이용 상품은 가격과 갱신 시점, 열리는 혜택을 같은 화면에서 다시 확인하실 수 있습니다.</li>

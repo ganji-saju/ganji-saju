@@ -79,10 +79,10 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           </Link>
           <ZodiacChip kind={expertId as ZodiacKey} size="sm" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+            <h1 className="truncate text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
               {meta.teacherName}
             </h1>
-            <p className="mt-0.5 flex items-center gap-1 whitespace-nowrap text-[11px] font-bold text-[var(--app-jade)]">
+            <p className="mt-0.5 flex items-center gap-1 whitespace-nowrap text-[12.6px] font-bold text-[var(--app-jade)]">
               <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--app-jade)]" />
               풀이 응답 중
             </p>
@@ -90,7 +90,7 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           <button
             type="button"
             aria-label="더보기"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-line)] bg-white text-[17.3px] font-bold text-[var(--app-copy-muted)]"
           >
             ⋯
           </button>

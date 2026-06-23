@@ -28,13 +28,13 @@ export function SajuTotalReviewNarrative({
         borderColor: 'var(--app-line)',
       }}
     >
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         평생 총평
       </div>
 
       {summary ? (
         <h2
-          className="mt-2 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+          className="mt-2 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {summary}
@@ -44,11 +44,11 @@ export function SajuTotalReviewNarrative({
       <div className="mt-4 space-y-4">
         {paragraphs.map(({ key, label }) => (
           <section key={key}>
-            <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
+            <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">
               {label}
             </div>
             <p
-              className="mt-1.5 text-[13.5px] leading-[1.75] text-[var(--app-copy)]"
+              className="mt-1.5 text-[15.5px] leading-[1.75] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all', whiteSpace: 'pre-line' }}
             >
               {narrative[key]}

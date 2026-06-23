@@ -101,7 +101,7 @@ export function SajuFactEvidencePanel({
                   후보 · {candidate.score}점
                 </div>
                 {candidate.plainSummary ? (
-                  <div className="mt-2 text-[13px] leading-6 text-[var(--app-copy-soft)]">{simplifySajuCopy(candidate.plainSummary)}</div>
+                  <div className="mt-2 text-[15px] leading-6 text-[var(--app-copy-soft)]">{simplifySajuCopy(candidate.plainSummary)}</div>
                 ) : null}
               </div>
             ))}

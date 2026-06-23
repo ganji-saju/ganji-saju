@@ -75,7 +75,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         <GangiPageHeader title="가입자 관리 (admin)" backHref="/admin/operations" />
 
         <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-          <label htmlFor="q" className="text-[13px] font-extrabold text-[var(--app-ink)]">
+          <label htmlFor="q" className="text-[15px] font-extrabold text-[var(--app-ink)]">
             이메일 또는 UUID 빠른검색
           </label>
           <div className="mt-2 flex gap-2">
@@ -84,22 +84,22 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               name="q"
               defaultValue={query}
               placeholder="kym@example.com 또는 UUID"
-              className="flex-1 rounded-[10px] border border-[var(--app-line)] px-3 py-2 text-[13px]"
+              className="flex-1 rounded-[10px] border border-[var(--app-line)] px-3 py-2 text-[15px]"
             />
-            <button type="submit" className="rounded-[10px] bg-[var(--app-pink-strong)] px-4 py-2 text-[13px] font-extrabold text-white">
+            <button type="submit" className="rounded-[10px] bg-[var(--app-pink-strong)] px-4 py-2 text-[15px] font-extrabold text-white">
               검색
             </button>
           </div>
           {query && (
             <ul className="mt-3 space-y-2">
               {searchResults.length === 0 && (
-                <li className="text-[12px] text-[var(--app-copy-soft)]">일치하는 사용자가 없습니다.</li>
+                <li className="text-[13.8px] text-[var(--app-copy-soft)]">일치하는 사용자가 없습니다.</li>
               )}
               {searchResults.map((u) => (
                 <li key={u.id}>
                   <Link href={`/admin/users/${u.id}`} className="block rounded-[12px] border border-[var(--app-line)] p-3 hover:bg-[var(--app-pink-soft)]">
-                    <span className="text-[13px] font-bold">{maskEmail(u.email, role) ?? u.id}</span>
-                    <span className="ml-2 text-[11px] text-[var(--app-copy-soft)]">{fmtDate(u.createdAt)}</span>
+                    <span className="text-[15px] font-bold">{maskEmail(u.email, role) ?? u.id}</span>
+                    <span className="ml-2 text-[12.6px] text-[var(--app-copy-soft)]">{fmtDate(u.createdAt)}</span>
                   </Link>
                 </li>
               ))}
@@ -113,20 +113,20 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               key={s.key}
               href={`/admin/users?${s.query}`}
               title={s.description}
-              className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12px] text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
+              className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[13.8px] text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
             >
               {s.label}
             </Link>
           ))}
           <Link
             href="/admin/users/segments"
-            className="rounded-full border border-[var(--app-pink-strong)] px-3 py-1 text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+            className="rounded-full border border-[var(--app-pink-strong)] px-3 py-1 text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
           >
             세그먼트·코호트 개요 →
           </Link>
         </div>
 
-        <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 grid grid-cols-2 gap-3 md:grid-cols-4 text-[12px]">
+        <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 grid grid-cols-2 gap-3 md:grid-cols-4 text-[13.8px]">
           <label className="flex flex-col gap-1">회원상태
             <select name="status" defaultValue={params.status} className="rounded border px-2 py-1">
               <option value="all">전체</option><option value="active">활성</option><option value="dormant">휴면</option>
@@ -164,22 +164,22 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[13px] font-extrabold">가입자 {items.length}{page.hasMore ? '+' : ''}명</h2>
+            <h2 className="text-[15px] font-extrabold">가입자 {items.length}{page.hasMore ? '+' : ''}명</h2>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] text-[var(--app-copy-soft)]">기준 {page.refreshedAt ? fmtDate(page.refreshedAt) : '—'}</span>
-              <a href={`/api/admin/users/export?${usp.toString()}`} className="rounded-[10px] border px-3 py-1 text-[12px]">CSV 내보내기</a>
+              <span className="text-[12.6px] text-[var(--app-copy-soft)]">기준 {page.refreshedAt ? fmtDate(page.refreshedAt) : '—'}</span>
+              <a href={`/api/admin/users/export?${usp.toString()}`} className="rounded-[10px] border px-3 py-1 text-[13.8px]">CSV 내보내기</a>
             </div>
           </div>
 
           {items.length === 0 ? (
             <div className="mt-4 rounded-[12px] border border-dashed border-[var(--app-line)] p-6 text-center">
-              <p className="text-[13px] font-bold">조건에 맞는 가입자가 없어요</p>
-              <p className="mt-1 text-[12px] text-[var(--app-copy-soft)]">필터를 바꾸거나 세그먼트를 눌러보세요.</p>
-              <Link href="/admin/users" className="mt-3 inline-block rounded-[10px] border px-3 py-1 text-[12px]">필터 초기화</Link>
+              <p className="text-[15px] font-bold">조건에 맞는 가입자가 없어요</p>
+              <p className="mt-1 text-[13.8px] text-[var(--app-copy-soft)]">필터를 바꾸거나 세그먼트를 눌러보세요.</p>
+              <Link href="/admin/users" className="mt-3 inline-block rounded-[10px] border px-3 py-1 text-[13.8px]">필터 초기화</Link>
             </div>
           ) : (
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-[12px]">
+              <table className="w-full text-[13.8px]">
                 <thead>
                   <tr className="text-left text-[var(--app-copy-soft)]">
                     <th className="py-1">표시명/이메일</th><th>가입일</th><th>LTV</th><th>결제</th><th>구독</th><th>최근활동</th><th>뱃지</th>
@@ -190,7 +190,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                     <tr key={it.userId} className="border-t border-[var(--app-line)]">
                       <td className="py-2">
                         <Link href={`/admin/users/${it.userId}`} className="font-bold hover:underline">{it.displayName}</Link>
-                        <div className="text-[11px] text-[var(--app-copy-soft)]">{it.email ?? '—'}</div>
+                        <div className="text-[12.6px] text-[var(--app-copy-soft)]">{it.email ?? '—'}</div>
                       </td>
                       <td>{fmtDate(it.signupAt)}</td>
                       <td>{fmtWon(it.ltvWon)}</td>
@@ -199,7 +199,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       <td>{fmtDate(it.lastActiveAt)}</td>
                       <td className="space-x-1">
                         {it.badges.map((b) => (
-                          <span key={b} className="rounded bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10px]">{b}</span>
+                          <span key={b} className="rounded bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[11.5px]">{b}</span>
                         ))}
                       </td>
                     </tr>
@@ -211,7 +211,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
           {nextHref && (
             <div className="mt-4 text-center">
-              <Link href={nextHref} className="rounded-[10px] border px-4 py-2 text-[12px]">다음 페이지 ›</Link>
+              <Link href={nextHref} className="rounded-[10px] border px-4 py-2 text-[13.8px]">다음 페이지 ›</Link>
             </div>
           )}
         </section>

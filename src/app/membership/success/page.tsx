@@ -49,15 +49,15 @@ function CenteredCard({
         }}
         aria-hidden="true"
       >
-        <span className="text-[48px] font-extrabold leading-none" style={{ color: iconText }}>
+        <span className="text-[55.2px] font-extrabold leading-none" style={{ color: iconText }}>
           {iconChar}
         </span>
       </div>
       <div>
-        <h1 className="text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+        <h1 className="text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
           {title}
         </h1>
-        <p className="mt-2 px-4 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+        <p className="mt-2 px-4 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
           {description}
         </p>
       </div>
@@ -101,12 +101,12 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
         style={{ borderColor: 'var(--app-coral)' }}
       >
         <div
-          className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+          className="text-[13.2px] font-extrabold uppercase tracking-[0.04em]"
           style={{ color: 'var(--app-coral)' }}
         >
           오류 안내
         </div>
-        <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+        <p className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]">
           {errorMessage}
         </p>
       </article>
@@ -114,13 +114,13 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href="/membership"
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           멤버십으로 돌아가기
         </Link>
         <Link
           href="/my/billing"
-          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
         >
           결제 상태 확인
         </Link>
@@ -164,13 +164,13 @@ function SuccessState({
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href={completeHref}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           다음으로 이동 →
         </Link>
         <Link
           href="/membership"
-          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
         >
           멤버십 보기
         </Link>

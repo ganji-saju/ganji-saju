@@ -140,14 +140,14 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-white"
+              className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
               style={{ background: phaseColor }}
             >
               {cycle.phase}
             </span>
             {cycle.isCurrent ? (
               <span
-                className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-white"
+                className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
                 style={{ background: 'var(--app-pink)' }}
               >
                 지금
@@ -155,7 +155,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {transitionChip ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[10.5px] font-bold"
+                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold"
                 style={{
                   background: '#fff7e6',
                   borderColor: 'rgba(212,148,38,0.32)',
@@ -167,7 +167,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {cycle.twelveStage ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[10.5px] font-bold text-[var(--app-copy)]"
+                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {cycle.twelveStage}지
@@ -175,7 +175,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[10.5px] font-bold text-[var(--app-coral)]"
+                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-coral)]"
                 style={{ borderColor: 'rgba(220,79,79,0.22)' }}
               >
                 원진 · {cycle.wonjinWith.join(', ')}
@@ -183,12 +183,12 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
           </div>
           <div
-            className="mt-1.5 text-[15px] font-extrabold leading-tight text-[var(--app-ink)]"
+            className="mt-1.5 text-[17.3px] font-extrabold leading-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {cycle.chapterTitle ?? `${ganziLabel} · ${cycle.ageLabel}`}
           </div>
-          <div className="mt-0.5 text-[11px] font-bold text-[var(--app-copy-soft)]">
+          <div className="mt-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)]">
             {ganziLabel} · {cycle.ageLabel}
           </div>
         </div>
@@ -203,7 +203,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
       <div className="space-y-4 border-t border-[var(--app-line)] px-4 py-4">
         {cycle.hook ? (
           <p
-            className="rounded-[12px] bg-white p-3 text-[13px] font-medium leading-[1.65] text-[var(--app-ink)]"
+            className="rounded-[12px] bg-white p-3 text-[15px] font-medium leading-[1.65] text-[var(--app-ink)]"
             style={{
               border: '1px solid var(--app-pink-line)',
               background: 'var(--app-pink-soft)',
@@ -216,11 +216,11 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.chapterBody ? (
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               본문
             </div>
             <p
-              className="mt-1.5 text-[13.5px] leading-[1.75] text-[var(--app-copy)]"
+              className="mt-1.5 text-[15.5px] leading-[1.75] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {cycle.chapterBody}
@@ -230,11 +230,11 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.mental ? (
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-indigo)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-indigo)]">
               멘탈 · 내면
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {cycle.mental}
@@ -244,11 +244,11 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.relationship ? (
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
               관계
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {cycle.relationship}
@@ -258,11 +258,11 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.wealthCareer ? (
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
               돈 · 커리어
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {cycle.wealthCareer}
@@ -272,7 +272,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.practicalActions && cycle.practicalActions.length > 0 ? (
           <section>
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
               실천 4단 · 왜 / 무엇을 / 어떻게
             </div>
             <ul className="mt-2 grid gap-2">
@@ -282,19 +282,19 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
                   className="rounded-[12px] border border-[var(--app-line)] bg-white p-3"
                 >
                   <div
-                    className="text-[12px] font-extrabold leading-tight text-[var(--app-ink)]"
+                    className="text-[13.8px] font-extrabold leading-tight text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {idx + 1}. {action.what}
                   </div>
                   <div
-                    className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                    className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     <strong className="text-[var(--app-copy)]">왜 ·</strong> {action.reason}
                   </div>
                   <div
-                    className="mt-0.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                    className="mt-0.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     <strong className="text-[var(--app-copy)]">어떻게 ·</strong> {action.how}
@@ -307,7 +307,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
 
         {cycle.closingNote ? (
           <p
-            className="rounded-[12px] p-3 text-[12.5px] leading-[1.7] text-[var(--app-ink)]"
+            className="rounded-[12px] p-3 text-[14.4px] leading-[1.7] text-[var(--app-ink)]"
             style={{
               background: 'rgba(15,23,42,0.04)',
               border: '1px solid var(--app-line)',
@@ -373,23 +373,23 @@ export default async function SajuDeepPage({ params }: Props) {
               <div className="flex items-center gap-3">
                 <ZodiacChip kind={yearZodiac} size="lg" />
                 <div className="min-w-0">
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     {dayGanziLabel}일주 · {yearZodiacLabel}
                   </div>
                   <h1
-                    className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+                    className="mt-1 text-[20.7px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     10년 단위로 나뉘는 큰 흐름
                   </h1>
-                  <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
                     {birthMeta} · 현재 만 {currentAge}세
                   </div>
                 </div>
               </div>
               {currentCycle ? (
                 <p
-                  className="mt-3 rounded-[12px] bg-white p-3 text-[12.5px] leading-[1.65] text-[var(--app-copy)]"
+                  className="mt-3 rounded-[12px] bg-white p-3 text-[14.4px] leading-[1.65] text-[var(--app-copy)]"
                   style={{
                     border: '1px solid var(--app-pink-line)',
                     wordBreak: 'keep-all',
@@ -399,7 +399,7 @@ export default async function SajuDeepPage({ params }: Props) {
                   {currentCycle.ageLabel} · <strong>{currentCycle.phase}</strong> 구간을 지나고 있어요.
                 </p>
               ) : (
-                <p className="mt-3 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+                <p className="mt-3 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]">
                   태어난 시간이 비어 있어 대운 진행도를 정확히 잡지 못했어요. 아래 타임라인으로 큰 흐름만 살펴봐요.
                 </p>
               )}
@@ -411,10 +411,10 @@ export default async function SajuDeepPage({ params }: Props) {
                 중앙 정렬 scrollBy 처리. */}
             {cycles.length > 0 ? (
               <section>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   大運 · 대운 흐름
                 </div>
-                <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                   내 인생의 10년 단위 챕터
                 </h2>
                 <DaewoonTimelineStrip cycles={cycles} />
@@ -424,14 +424,14 @@ export default async function SajuDeepPage({ params }: Props) {
             {/* §3 cycle 8단 풀이 — 현재 cycle 은 펼친 상태, 나머지는 접힌 카드 */}
             {cycles.length > 0 ? (
               <section>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   시기별 8단 풀이
                 </div>
-                <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                   각 대운에서 일어나는 변화
                 </h2>
                 <p
-                  className="mt-1.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                  className="mt-1.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   대운마다 8가지 시각 — 호명 · 챕터 제목 · 본문 · 멘탈 · 관계 · 돈/커리어 · 실천 4단 · 마무리 — 으로 풀었습니다.
@@ -459,33 +459,33 @@ export default async function SajuDeepPage({ params }: Props) {
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
+                  className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink)' }}
                 >
                   VIP
                 </span>
                 <span
-                  className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ opacity: 0.7 }}
                 >
                   PREMIUM
                 </span>
               </div>
-              <h2 className="mt-2 text-[19px] font-extrabold leading-snug tracking-tight">
+              <h2 className="mt-2 text-[21.8px] font-extrabold leading-snug tracking-tight">
                 평생리포트로
                 <br />
                 AI 1:1 깊은 풀이까지
               </h2>
               <p
-                className="mt-2 text-[12.5px] leading-[1.55]"
+                className="mt-2 text-[14.4px] leading-[1.55]"
                 style={{ opacity: 0.7 }}
               >
                 대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관 + 1:1 풀이 30분
               </p>
               <div className="mt-4 flex items-end gap-2.5">
-                <div className="text-[23px] font-extrabold tracking-tight">49,000원</div>
+                <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
                 <div
-                  className="mb-1.5 text-[11px] line-through"
+                  className="mb-1.5 text-[12.6px] line-through"
                   style={{ opacity: 0.5 }}
                 >
                   69,000원
@@ -511,7 +511,7 @@ export default async function SajuDeepPage({ params }: Props) {
             <div className="grid gap-2">
               <Link
                 href={`/saju/${encodeURIComponent(slug)}`}
-                className="rounded-[12px] border border-[var(--app-line)] bg-white px-4 py-3 text-center text-[13px] font-bold text-[var(--app-copy-muted)]"
+                className="rounded-[12px] border border-[var(--app-line)] bg-white px-4 py-3 text-center text-[15px] font-bold text-[var(--app-copy-muted)]"
               >
                 ← 사주 총평으로 돌아가기
               </Link>

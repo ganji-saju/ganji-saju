@@ -47,11 +47,11 @@ export function ContactForm() {
         className="rounded-[18px] border bg-white p-5 text-center"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[36px]">✉️</div>
-        <h2 className="mt-2 text-[16px] font-extrabold text-[var(--app-ink)]">
+        <div className="text-[41.4px]">✉️</div>
+        <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]">
           메일 클라이언트가 열렸습니다
         </h2>
-        <p className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+        <p className="mt-2 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
           기본 메일 앱에서 발송을 완료해 주세요. 메일 앱이 열리지 않으면 직접 <a href={`mailto:${SUPPORT_EMAIL}`} className="font-extrabold text-[var(--app-pink-strong)] underline">{SUPPORT_EMAIL}</a> 로 보내주세요.
         </p>
         <button
@@ -61,7 +61,7 @@ export function ContactForm() {
             setTitle('');
             setBody('');
           }}
-          className="mt-4 inline-flex items-center justify-center rounded-full border px-5 py-2 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="mt-4 inline-flex items-center justify-center rounded-full border px-5 py-2 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           새 문의 작성
@@ -78,7 +78,7 @@ export function ContactForm() {
     >
       {/* 카테고리 */}
       <label className="grid gap-1.5">
-        <span className="text-[12px] font-extrabold text-[var(--app-ink)]">카테고리</span>
+        <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">카테고리</span>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => {
             const isActive = c.value === category;
@@ -87,7 +87,7 @@ export function ContactForm() {
                 key={c.value}
                 type="button"
                 onClick={() => setCategory(c.value)}
-                className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+                className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
                 style={{
                   background: isActive ? 'var(--app-pink)' : 'white',
                   color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -103,7 +103,7 @@ export function ContactForm() {
 
       {/* 제목 */}
       <label className="grid gap-1.5">
-        <span className="text-[12px] font-extrabold text-[var(--app-ink)]">제목</span>
+        <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">제목</span>
         <input
           type="text"
           required
@@ -111,15 +111,15 @@ export function ContactForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 결제 후 코인이 충전되지 않습니다"
-          className="rounded-[10px] border bg-white px-3 py-2.5 text-[13px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
+          className="rounded-[10px] border bg-white px-3 py-2.5 text-[15px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-line)' }}
         />
-        <span className="text-[10.5px] text-[var(--app-copy-soft)]">{title.length}/60</span>
+        <span className="text-[12.1px] text-[var(--app-copy-soft)]">{title.length}/60</span>
       </label>
 
       {/* 본문 */}
       <label className="grid gap-1.5">
-        <span className="text-[12px] font-extrabold text-[var(--app-ink)]">내용</span>
+        <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">내용</span>
         <textarea
           required
           maxLength={1000}
@@ -127,25 +127,25 @@ export function ContactForm() {
           onChange={(e) => setBody(e.target.value)}
           rows={6}
           placeholder="언제 / 어떤 상황에서 / 무슨 문제가 발생했는지 자세히 적어주세요. 결제 영수증 번호, 스크린샷 등을 함께 보내주시면 더 빠르게 도와드릴 수 있습니다."
-          className="rounded-[10px] border bg-white px-3 py-2.5 text-[13px] leading-[1.65] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
+          className="rounded-[10px] border bg-white px-3 py-2.5 text-[15px] leading-[1.65] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
         />
-        <span className="text-[10.5px] text-[var(--app-copy-soft)]">{body.length}/1000</span>
+        <span className="text-[12.1px] text-[var(--app-copy-soft)]">{body.length}/1000</span>
       </label>
 
       {/* 이메일 */}
       <label className="grid gap-1.5">
-        <span className="text-[12px] font-extrabold text-[var(--app-ink)]">답신 이메일</span>
+        <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">답신 이메일</span>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="answer@example.com"
-          className="rounded-[10px] border bg-white px-3 py-2.5 text-[13px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
+          className="rounded-[10px] border bg-white px-3 py-2.5 text-[15px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-line)' }}
         />
-        <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+        <span className="text-[12.1px] text-[var(--app-copy-soft)]">
           답변 받으실 이메일 주소를 정확히 입력해 주세요.
         </span>
       </label>
@@ -153,12 +153,12 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={submitState === 'submitting' || !title.trim() || !body.trim() || !email.trim()}
-        className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white disabled:opacity-60"
+        className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white disabled:opacity-60"
       >
         {submitState === 'submitting' ? '여는 중…' : '문의 보내기 →'}
       </button>
 
-      <p className="text-[10.5px] leading-[1.55] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
+      <p className="text-[12.1px] leading-[1.55] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
         * 보내기 버튼을 누르면 기본 메일 앱이 열립니다. 메일이 열리지 않으면 직접 <strong className="text-[var(--app-copy-muted)]">{SUPPORT_EMAIL}</strong> 로 보내주세요.
       </p>
     </form>

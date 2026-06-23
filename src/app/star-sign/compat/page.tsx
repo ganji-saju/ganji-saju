@@ -85,14 +85,14 @@ export default async function StarSignCompatMatrixPage() {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               12 × 12 = 144 칸 한눈에
             </div>
-            <h1 className="mt-1 text-[18px] font-extrabold leading-snug text-[var(--app-ink)]">
+            <h1 className="mt-1 text-[20.7px] font-extrabold leading-snug text-[var(--app-ink)]">
               내 별자리 행과 다른 별자리 열을 짚어보세요
             </h1>
             <p
-              className="mt-2 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]"
+              className="mt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               점수 (50-95) 가 높을수록 색이 강하게 표시됩니다. 셀을 누르면 두 별자리의
@@ -100,20 +100,20 @@ export default async function StarSignCompatMatrixPage() {
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[var(--app-copy-soft)]">최저</div>
-                <div className="text-[16px] font-extrabold tabular-nums text-[var(--app-amber)]">
+                <div className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">최저</div>
+                <div className="text-[18.4px] font-extrabold tabular-nums text-[var(--app-amber)]">
                   {minScore}
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[var(--app-copy-soft)]">평균</div>
-                <div className="text-[16px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">평균</div>
+                <div className="text-[18.4px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {averageScore}
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-[10px] font-bold text-[var(--app-copy-soft)]">최고</div>
-                <div className="text-[16px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">최고</div>
+                <div className="text-[18.4px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {maxScore}
                 </div>
               </div>
@@ -126,10 +126,10 @@ export default async function StarSignCompatMatrixPage() {
               className="rounded-[14px] border bg-white p-3"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 ⭐ MY 별자리 행이 강조됩니다
               </div>
-              <p className="mt-1 text-[11.5px] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[13.2px] text-[var(--app-copy-muted)]">
                 {STAR_SIGN_FORTUNES.find((s) => s.slug === mySlug)?.label} 행을 따라가며 가장
                 잘 맞는 별자리를 찾아보세요.
               </p>
@@ -144,7 +144,7 @@ export default async function StarSignCompatMatrixPage() {
             >
               <thead>
                 <tr>
-                  <th className="text-[10px] font-bold text-[var(--app-copy-soft)]">
+                  <th className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">
                     <span className="sr-only">행: 내 별자리</span>
                   </th>
                   {SIGN_ORDER.map((b) => {
@@ -213,7 +213,7 @@ export default async function StarSignCompatMatrixPage() {
                                   ? `/star-sign/${a}`
                                   : `/star-sign/compat/${a}/${b}`
                               }
-                              className="grid h-7 w-7 place-items-center rounded-[8px] text-[10px] font-extrabold tabular-nums transition-transform active:scale-95"
+                              className="grid h-7 w-7 place-items-center rounded-[8px] text-[11.5px] font-extrabold tabular-nums transition-transform active:scale-95"
                               style={{
                                 background: isSelf
                                   ? 'rgba(0,0,0,0.06)'
@@ -240,14 +240,14 @@ export default async function StarSignCompatMatrixPage() {
             className="rounded-[14px] border bg-white p-3"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               범례
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {(['best', 'good', 'mid', 'avoid'] as const).map((t) => (
                 <div key={t} className="flex items-center gap-1.5">
                   <span
-                    className="grid h-6 w-10 place-items-center rounded-[6px] text-[10px] font-extrabold"
+                    className="grid h-6 w-10 place-items-center rounded-[6px] text-[11.5px] font-extrabold"
                     style={{ background: TONE_BG[t], color: TONE_COLOR[t] }}
                   >
                     {t === 'best'
@@ -258,7 +258,7 @@ export default async function StarSignCompatMatrixPage() {
                           ? '60+'
                           : '<60'}
                   </span>
-                  <span className="text-[11px] text-[var(--app-copy-muted)]">
+                  <span className="text-[12.6px] text-[var(--app-copy-muted)]">
                     {t === 'best'
                       ? '최상'
                       : t === 'good'
@@ -277,13 +277,13 @@ export default async function StarSignCompatMatrixPage() {
             className="rounded-[14px] border bg-white p-3"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               빠른 이동
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Link
                 href="/star-sign"
-                className="rounded-full border bg-white px-3 py-2 text-center text-[12px] font-bold text-[var(--app-pink-strong)]"
+                className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 12 별자리 메인
@@ -291,7 +291,7 @@ export default async function StarSignCompatMatrixPage() {
               {mySlug ? (
                 <Link
                   href={`/star-sign/${mySlug}`}
-                  className="rounded-full border bg-white px-3 py-2 text-center text-[12px] font-bold text-[var(--app-ink)]"
+                  className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   내 별자리 상세
@@ -299,7 +299,7 @@ export default async function StarSignCompatMatrixPage() {
               ) : (
                 <Link
                   href="/compatibility"
-                  className="rounded-full border bg-white px-3 py-2 text-center text-[12px] font-bold text-[var(--app-ink)]"
+                  className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   사주 궁합

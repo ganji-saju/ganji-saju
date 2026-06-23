@@ -40,7 +40,7 @@ export default async function ZodiacPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -50,7 +50,7 @@ export default async function ZodiacPage() {
               띠운세
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -61,7 +61,7 @@ export default async function ZodiacPage() {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             내 띠 하나를 먼저 봅니다
@@ -80,13 +80,13 @@ export default async function ZodiacPage() {
           }}
         >
           <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink-strong)' }}
           >
             12띠 바로 선택
           </div>
           <h2
-            className="mt-1.5 text-[16px] font-extrabold tracking-tight"
+            className="mt-1.5 text-[18.4px] font-extrabold tracking-tight"
             style={{ color: 'var(--app-ink)' }}
           >
             띠를 골라 오늘운을 보세요
@@ -101,7 +101,7 @@ export default async function ZodiacPage() {
               >
                 <GangiCharacter zodiac={zodiac.key} size="sm" className="mx-auto" />
                 <span
-                  className="mt-1.5 block text-[11px] font-bold"
+                  className="mt-1.5 block text-[12.6px] font-bold"
                   style={{ color: 'var(--app-ink)' }}
                 >
                   {zodiac.name}
@@ -123,18 +123,18 @@ export default async function ZodiacPage() {
           }}
         >
           <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink-strong)' }}
           >
             {hasPersonalizedProfile ? '내 띠' : '생년월일로 확인'}
           </div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             {hasPersonalizedProfile && featured ? `내 띠는 ${featured.label}` : '내 띠를 자동으로 맞춰볼까요?'}
           </h2>
-          <div className="mt-4 text-[48px]" aria-hidden="true">
+          <div className="mt-4 text-[55.2px]" aria-hidden="true">
             {featuredMeta?.symbol ?? '🎂'}
           </div>
           {featured && featuredMeta ? (
@@ -146,13 +146,13 @@ export default async function ZodiacPage() {
               }}
             >
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 {featured.label}의 2026년
               </div>
               <p
-                className="mt-1.5 text-[13px] leading-[1.7]"
+                className="mt-1.5 text-[15px] leading-[1.7]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {featuredMeta.yearlyMessage}. {featured.todayFocus}
@@ -169,7 +169,7 @@ export default async function ZodiacPage() {
             {featured ? (
               <Link
                 href={`/zodiac/${featured.slug}`}
-                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
+                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
                   boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
@@ -181,7 +181,7 @@ export default async function ZodiacPage() {
             {readingSlug ? (
               <Link
                 href={`/saju/${readingSlug}`}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[15.5px] font-extrabold"
                 style={{
                   border: '1px solid var(--app-line)',
                   color: 'var(--app-ink)',

@@ -47,12 +47,12 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             className="rounded-[18px] border bg-white p-5 text-center"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <div className="text-[32px]">🔒</div>
+            <div className="text-[36.8px]">🔒</div>
             {/* audit-mockup: intentional — `if (!user)` 비로그인 분기 안의 fallback. */}
-            <p className="mt-2 text-[13px] text-[var(--app-copy-muted)]">로그인 후 다시 시도해주세요.</p>
+            <p className="mt-2 text-[15px] text-[var(--app-copy-muted)]">로그인 후 다시 시도해주세요.</p>
             <Link
               href={`/login?next=%2Fdialogue%2Fhistory%2F${sessionId}`}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13px] font-extrabold text-white"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
             >
               로그인 →
             </Link>
@@ -82,13 +82,13 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             <div className="flex items-center gap-3">
               <ZodiacChip kind={expertId as ZodiacKey} size="md" />
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   대화 상대
                 </div>
-                <div className="text-[16px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
                   {meta.teacherName}
                 </div>
-                <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                   메시지 {messages.length}개 · {formatTime(messages[0]!.created_at)} 시작
                 </div>
               </div>
@@ -97,7 +97,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
 
           {/* §Messages — 채팅 흐름 (오래된 순) */}
           <section>
-            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               대화 내용
             </h2>
             <div className="mt-2 grid gap-3">
@@ -124,13 +124,13 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
                     }
                   >
                     <p
-                      className="text-[13px] leading-[1.65] whitespace-pre-wrap"
+                      className="text-[15px] leading-[1.65] whitespace-pre-wrap"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       {msg.text}
                     </p>
                     <div
-                      className="mt-1.5 text-[10px] font-bold"
+                      className="mt-1.5 text-[11.5px] font-bold"
                       style={{
                         opacity: 0.7,
                         color: msg.role === 'user' ? 'white' : 'var(--app-copy-soft)',
@@ -153,17 +153,17 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               다음 대화
             </div>
-            <h2 className="mt-1.5 text-[16px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[18.4px] font-extrabold leading-snug tracking-tight">
               {meta.teacherName}님과 새 대화 시작하기
             </h2>
             <Link
               href={`/dialogue/${expertId}`}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white"
             >
               대화방 열기 →
             </Link>

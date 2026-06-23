@@ -225,14 +225,14 @@ export function WeightTuningDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           🤖 ML 가중치 학습
         </div>
-        <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
           데이터로 가중치 자동 조정
         </h1>
         <p
-          className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           today_fortune_feedback 의 overall_rating (-1/0/+1) 을 종속변수, 발동된 신살을
@@ -246,7 +246,7 @@ export function WeightTuningDashboard() {
         style={{ borderColor: 'var(--app-line)' }}
       >
         <div>
-          <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             윈도우
           </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -257,7 +257,7 @@ export function WeightTuningDashboard() {
                   key={opt.value}
                   type="button"
                   onClick={() => setWindowDays(opt.value)}
-                  className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+                  className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
                   style={{
                     background: isActive ? 'var(--app-pink)' : 'white',
                     color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -271,7 +271,7 @@ export function WeightTuningDashboard() {
           </div>
         </div>
         <div>
-          <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             정규화 강도
           </div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -282,7 +282,7 @@ export function WeightTuningDashboard() {
                   key={opt.value}
                   type="button"
                   onClick={() => setLambda(opt.value)}
-                  className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+                  className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
                   style={{
                     background: isActive ? 'var(--app-jade)' : 'white',
                     color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -303,7 +303,7 @@ export function WeightTuningDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">학습 중...</p>
+          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">학습 중...</p>
         </article>
       ) : state === 'error' ? (
         <article
@@ -313,7 +313,7 @@ export function WeightTuningDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[13px] text-[var(--app-coral)]">
+          <p className="text-[15px] text-[var(--app-coral)]">
             {preview?.error ?? '학습 실패'}
           </p>
         </article>
@@ -324,36 +324,36 @@ export function WeightTuningDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               📊 학습 결과
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {preview.preview.sampleSize.toLocaleString()}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">학습 표본</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">학습 표본</div>
               </div>
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {preview.preview.features.length}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">분석 신살</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">분석 신살</div>
               </div>
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {preview.preview.rSquared === null ? '—' : preview.preview.rSquared.toFixed(3)}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">R² (설명력)</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">R² (설명력)</div>
               </div>
               <div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-amber)]">
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-amber)]">
                   {preview.preview.mse.toFixed(3)}
                 </div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">MSE</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">MSE</div>
               </div>
             </div>
-            <div className="mt-2.5 text-[10.5px] text-[var(--app-copy-soft)]">
+            <div className="mt-2.5 text-[12.1px] text-[var(--app-copy-soft)]">
               intercept = {formatSigned(preview.preview.intercept)} · λ = {preview.preview.lambda}
             </div>
           </section>
@@ -361,7 +361,7 @@ export function WeightTuningDashboard() {
           {/* §변경 권고 (diffs) */}
           {preview.diffs && preview.diffs.length > 0 ? (
             <section>
-              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 현재 vs 학습 — 변경 권고 순
               </h2>
               <div className="mt-2 grid gap-2">
@@ -375,16 +375,16 @@ export function WeightTuningDashboard() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                          <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
                             {d.name}
                           </div>
-                          <div className="mt-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                          <div className="mt-0.5 text-[12.1px] text-[var(--app-copy-soft)]">
                             발동 {d.triggered.toLocaleString()}건 · 평균 rating{' '}
                             {formatSigned(d.meanRating)}
                           </div>
                         </div>
                         <span
-                          className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-extrabold"
+                          className="shrink-0 rounded-full border px-2 py-0.5 text-[11.5px] font-extrabold"
                           style={{ background: rec.bg, borderColor: rec.border, color: rec.color }}
                           title={d.hint}
                         >
@@ -393,20 +393,20 @@ export function WeightTuningDashboard() {
                       </div>
                       <div className="mt-2.5 grid grid-cols-3 items-center gap-2 text-center">
                         <div>
-                          <div className="text-[9.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                          <div className="text-[10.9px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                             현재
                           </div>
-                          <div className="mt-0.5 text-[14px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                          <div className="mt-0.5 text-[16.1px] font-extrabold tabular-nums text-[var(--app-ink)]">
                             {formatSigned(d.current)}
                           </div>
                         </div>
-                        <div className="text-[16px] text-[var(--app-copy-soft)]">→</div>
+                        <div className="text-[18.4px] text-[var(--app-copy-soft)]">→</div>
                         <div>
-                          <div className="text-[9.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                          <div className="text-[10.9px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                             학습
                           </div>
                           <div
-                            className="mt-0.5 text-[14px] font-extrabold tabular-nums"
+                            className="mt-0.5 text-[16.1px] font-extrabold tabular-nums"
                             style={{
                               color:
                                 d.learned > 0
@@ -421,7 +421,7 @@ export function WeightTuningDashboard() {
                         </div>
                       </div>
                       <div
-                        className="mt-2 text-[10.5px] leading-[1.5] text-[var(--app-copy-muted)]"
+                        className="mt-2 text-[12.1px] leading-[1.5] text-[var(--app-copy-muted)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         Δ = {formatSigned(d.delta)} · {d.hint}
@@ -438,14 +438,14 @@ export function WeightTuningDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               💾 결과 저장 (draft)
             </div>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="메모 (선택) — 예: 봄 시즌 데이터, lambda 비교 등"
-              className="mt-2 w-full rounded-[10px] border bg-white px-3 py-2 text-[12px] leading-[1.5] text-[var(--app-ink)] focus:outline-none"
+              className="mt-2 w-full rounded-[10px] border bg-white px-3 py-2 text-[13.8px] leading-[1.5] text-[var(--app-ink)] focus:outline-none"
               style={{ borderColor: 'var(--app-line)' }}
               rows={2}
             />
@@ -453,7 +453,7 @@ export function WeightTuningDashboard() {
               type="button"
               onClick={handleSaveDraft}
               disabled={saving}
-              className="mt-2 w-full rounded-full border px-4 py-2.5 text-[13px] font-extrabold transition-transform active:scale-95 disabled:opacity-50"
+              className="mt-2 w-full rounded-full border px-4 py-2.5 text-[15px] font-extrabold transition-transform active:scale-95 disabled:opacity-50"
               style={{
                 background: 'var(--app-ink)',
                 color: 'white',
@@ -463,7 +463,7 @@ export function WeightTuningDashboard() {
               {saving ? '저장 중...' : '학습 결과를 draft 로 저장'}
             </button>
             {savedMsg ? (
-              <p className="mt-2 text-[11px] text-[var(--app-copy-muted)]">{savedMsg}</p>
+              <p className="mt-2 text-[12.6px] text-[var(--app-copy-muted)]">{savedMsg}</p>
             ) : null}
           </section>
         </>
@@ -472,9 +472,9 @@ export function WeightTuningDashboard() {
           className="rounded-[18px] border bg-white p-5 text-center"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[32px]">📉</div>
-          <p className="mt-2 text-[13px] font-bold text-[var(--app-ink)]">학습 가능한 표본 부족</p>
-          <p className="mt-1 text-[11.5px] text-[var(--app-copy-muted)]">
+          <div className="text-[36.8px]">📉</div>
+          <p className="mt-2 text-[15px] font-bold text-[var(--app-ink)]">학습 가능한 표본 부족</p>
+          <p className="mt-1 text-[13.2px] text-[var(--app-copy-muted)]">
             {preview?.reason ?? '데이터가 더 누적되면 자동으로 학습됩니다.'} (현재 표본{' '}
             {preview?.sampleSize ?? 0}건)
           </p>
@@ -484,7 +484,7 @@ export function WeightTuningDashboard() {
       {/* §저장된 버전 목록 */}
       {versions.length > 0 ? (
         <section>
-          <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
             🗂 저장된 버전 ({versions.length})
           </h2>
           <div className="mt-2 grid gap-2">
@@ -510,10 +510,10 @@ export function WeightTuningDashboard() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <div className="text-[12px] font-extrabold text-[var(--app-ink)]">
+                      <div className="text-[13.8px] font-extrabold text-[var(--app-ink)]">
                         {v.learned_at.slice(0, 16).replace('T', ' ')}
                       </div>
-                      <div className="mt-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                      <div className="mt-0.5 text-[12.1px] text-[var(--app-copy-soft)]">
                         표본 {v.sample_size.toLocaleString()}건 · MSE {v.mse.toFixed(3)} · R²{' '}
                         <span
                           className="font-extrabold"
@@ -529,7 +529,7 @@ export function WeightTuningDashboard() {
                       </div>
                       {isLowQuality ? (
                         <div
-                          className="mt-1.5 rounded-[8px] px-2 py-1 text-[10.5px] font-bold"
+                          className="mt-1.5 rounded-[8px] px-2 py-1 text-[12.1px] font-bold"
                           style={{
                             background: 'rgba(212,148,38,0.08)',
                             color: 'var(--app-amber)',
@@ -541,7 +541,7 @@ export function WeightTuningDashboard() {
                       ) : null}
                       {v.note ? (
                         <div
-                          className="mt-1 text-[11px] text-[var(--app-copy-muted)]"
+                          className="mt-1 text-[12.6px] text-[var(--app-copy-muted)]"
                           style={{ wordBreak: 'keep-all' }}
                         >
                           {v.note}
@@ -549,7 +549,7 @@ export function WeightTuningDashboard() {
                       ) : null}
                     </div>
                     <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold"
+                      className="shrink-0 rounded-full px-2 py-0.5 text-[11.5px] font-extrabold"
                       style={{ background: tone.bg, color: tone.color }}
                     >
                       {tone.label}
@@ -559,7 +559,7 @@ export function WeightTuningDashboard() {
                     <button
                       type="button"
                       onClick={() => handleActivate(v.id)}
-                      className="mt-2.5 w-full rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition-transform active:scale-95"
+                      className="mt-2.5 w-full rounded-full border px-3 py-1.5 text-[13.2px] font-bold transition-transform active:scale-95"
                       style={{
                         background: 'white',
                         color: 'var(--app-jade)',
@@ -581,11 +581,11 @@ export function WeightTuningDashboard() {
         className="rounded-[14px] border bg-white p-4"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           📚 방법론
         </div>
         <ul
-          className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li>• 모델: y(overall_rating) = α + Σ w_j × x_j (x_j = 신살 j 발동 indicator)</li>

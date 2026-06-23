@@ -139,11 +139,11 @@ export default function FaqPage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             📚 FAQ
           </div>
           <h1
-            className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+            className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             먼저 자주 묻는 질문을
@@ -151,7 +151,7 @@ export default function FaqPage() {
             찾아보세요
           </h1>
           <p
-            className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             결제·구독·풀이·계정 5개 영역 자주 묻는 질문을 정리했습니다. 찾는 답이 없으면 1:1 문의로 바로 보내주세요.
@@ -161,7 +161,7 @@ export default function FaqPage() {
         {FAQ_GROUPS.map((group) => (
           <section key={group.title}>
             <h2
-              className="px-1 text-[14.5px] font-extrabold text-[var(--app-ink)]"
+              className="px-1 text-[16.7px] font-extrabold text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {group.emoji} {group.title}
@@ -181,21 +181,21 @@ export default function FaqPage() {
                         Q{idx + 1}.
                       </span>
                       <span
-                        className="text-[13.5px] font-extrabold text-[var(--app-ink)]"
+                        className="text-[15.5px] font-extrabold text-[var(--app-ink)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         {item.q}
                       </span>
                     </div>
                     <span
-                      className="shrink-0 text-[12px] text-[var(--app-copy-soft)] transition-transform group-open:rotate-180"
+                      className="shrink-0 text-[13.8px] text-[var(--app-copy-soft)] transition-transform group-open:rotate-180"
                       aria-hidden="true"
                     >
                       ▾
                     </span>
                   </summary>
                   <div
-                    className="border-t border-[var(--app-line)] px-4 py-3 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+                    className="border-t border-[var(--app-line)] px-4 py-3 text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {item.a}
@@ -214,23 +214,23 @@ export default function FaqPage() {
           }}
         >
           <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink)' }}
           >
             못 찾으셨다면
           </div>
-          <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+          <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
             1:1 문의로 직접 보내주세요
           </h2>
           <p
-            className="mt-2 text-[12.5px] leading-[1.6]"
+            className="mt-2 text-[14.4px] leading-[1.6]"
             style={{ opacity: 0.72 }}
           >
             평일 9~18시 사이 답변 드립니다. 결제 영수증·캡처가 있다면 함께 첨부해 주세요.
           </p>
           <Link
             href="/support/contact"
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             1:1 문의 보내기 →
           </Link>

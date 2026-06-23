@@ -94,10 +94,10 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
 
       {/* §1 Hero — 누적 풀이 개수 */}
       <div>
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           {displayName} · 누적 보관
         </div>
-        <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
           총 <span className="text-[var(--app-pink-strong)]">{total}개</span>의 풀이
         </h1>
       </div>
@@ -114,7 +114,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
               <Link
                 key={filter.key}
                 href={buildResultsPageHref(1, filter.key)}
-                className="shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition"
+                className="shrink-0 rounded-full border px-3.5 py-1.5 text-[13.8px] font-bold transition"
                 style={
                   active
                     ? {
@@ -152,7 +152,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
           {hasPreviousPage ? (
             <Link
               href={buildResultsPageHref(currentPage - 1, currentFilter)}
-              className="rounded-full border border-[var(--app-line)] bg-white px-5 py-2 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+              className="rounded-full border border-[var(--app-line)] bg-white px-5 py-2 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
             >
               이전
             </Link>
@@ -160,7 +160,7 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
           {hasNextPage ? (
             <Link
               href={buildResultsPageHref(currentPage + 1, currentFilter)}
-              className="rounded-full border border-[var(--app-line)] bg-white px-5 py-2 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+              className="rounded-full border border-[var(--app-line)] bg-white px-5 py-2 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
             >
               다음
             </Link>
@@ -170,10 +170,10 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
 
       {/* Phase 7d — 보관함 안내: 환불 정책 / 계정 삭제 / 고객센터 link. */}
       <section
-        className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+        className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
         aria-label="보관함 안내"
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           보관함 안내
         </div>
         <ul className="mt-2 grid gap-1.5">
@@ -193,25 +193,25 @@ export default async function MyResultsPage({ searchParams }: MyResultsPageProps
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href="/refund-policy"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             환불 정책 자세히
           </Link>
           <Link
             href="/support/contact"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             환불 요청 (고객센터)
           </Link>
           <Link
             href="/my/settings/delete-account"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             계정·개인정보 삭제
           </Link>
           <Link
             href="/support/faq"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             자주 묻는 질문
           </Link>

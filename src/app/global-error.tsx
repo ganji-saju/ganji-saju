@@ -55,7 +55,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               borderRadius: '999px',
               background: '#fff',
               color: '#c64545',
-              fontSize: 34,
+              fontSize: 39.1,
               fontWeight: 800,
               border: '1px solid rgba(198,69,69,0.22)',
               boxShadow: '0 14px 28px rgba(198,69,69,0.16)',
@@ -66,7 +66,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <div
             style={{
               marginTop: 12,
-              fontSize: 11,
+              fontSize: 12.6,
               fontWeight: 800,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
@@ -78,7 +78,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <h1
             style={{
               marginTop: 4,
-              fontSize: 22,
+              fontSize: 25.3,
               fontWeight: 800,
               lineHeight: 1.3,
               color: '#111114',
@@ -90,7 +90,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <p
             style={{
               marginTop: 8,
-              fontSize: 13,
+              fontSize: 15,
               lineHeight: 1.7,
               color: 'rgba(17,17,20,0.66)',
               wordBreak: 'keep-all',
@@ -103,7 +103,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             <p
               style={{
                 marginTop: 6,
-                fontSize: 10.5,
+                fontSize: 12.1,
                 fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                 color: 'rgba(17,17,20,0.74)',
               }}
@@ -124,7 +124,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               border: 'none',
               background: '#ff4f9a',
               color: '#fff',
-              fontSize: 14,
+              fontSize: 16.1,
               fontWeight: 800,
               cursor: 'pointer',
               boxShadow: '0 12px 28px rgba(216,27,114,0.32)',

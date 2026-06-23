@@ -38,10 +38,10 @@ export function ErrorState({
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="space-y-1">
-        <h2 className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">{title}</h2>
+        <h2 className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">{title}</h2>
         {description ? (
           <p
-            className="text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+            className="text-[14.4px] leading-[1.6] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {description}
@@ -53,7 +53,7 @@ export function ErrorState({
           <button
             type="button"
             onClick={onRetry}
-            className="rounded-[10px] bg-[var(--app-pink-strong)] px-3 py-2 text-[12.5px] font-bold text-white"
+            className="rounded-[10px] bg-[var(--app-pink-strong)] px-3 py-2 text-[14.4px] font-bold text-white"
           >
             {retryLabel}
           </button>
@@ -62,7 +62,7 @@ export function ErrorState({
         {showSupportLink && BUSINESS_INFO.email ? (
           <a
             href={`mailto:${BUSINESS_INFO.email}`}
-            className="text-[12px] font-bold text-[var(--app-copy-muted)] underline"
+            className="text-[13.8px] font-bold text-[var(--app-copy-muted)] underline"
           >
             고객센터 문의
           </a>

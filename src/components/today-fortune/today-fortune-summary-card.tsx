@@ -44,29 +44,29 @@ export function TodayFortuneSummaryCard({
 
   return (
     <section className="px-1">
-      <div className="text-[12px] font-bold tracking-[0.04em] text-[var(--app-copy-muted)]">
+      <div className="text-[13.8px] font-bold tracking-[0.04em] text-[var(--app-copy-muted)]">
         {todayLabel}
       </div>
       {/* 2026-05-15 — 사용자 이름 (input.name) 을 무시하고 항상 "달빛이님" 으로 출력하던 회귀 fix.
           빌더가 채워준 result.userName 우선 사용, 없을 때만 "달빛이" fallback. */}
-      <h2 className="mt-1.5 text-[26px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+      <h2 className="mt-1.5 text-[29.9px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
         {result.userName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님,
         <br />
         <span className="text-[var(--app-pink-strong)]">총운 {overall}점</span>
         으로 시작
       </h2>
       <div className="mt-3 flex items-center gap-2">
-        <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-[11px] font-bold text-[var(--app-pink-strong)]">
+        <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-pink-strong)]">
           {result.oneLine.eyebrow}
         </span>
-        <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-[11px] font-medium text-[var(--app-copy-muted)]">
+        <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-[12.6px] font-medium text-[var(--app-copy-muted)]">
           무료 결과
         </span>
       </div>
       {/* PR #149 (Part C) — 사용자 상황 있으면 perspective 한 줄 노출. */}
       {perspective ? (
         <p
-          className="mt-2 text-[13px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
+          className="mt-2 text-[15px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
           style={{ wordBreak: 'keep-all' }}
         >
           🎯 {perspective} 오늘
@@ -76,7 +76,7 @@ export function TodayFortuneSummaryCard({
       {showAiDisclosure ? (
         <Link
           href="/ai-disclaimer"
-          className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[11px] text-[var(--app-copy-soft)] hover:text-[var(--app-copy-muted)]"
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[12.6px] text-[var(--app-copy-soft)] hover:text-[var(--app-copy-muted)]"
         >
           <span aria-hidden="true">ℹ</span>
           AI 생성 풀이 · 참고용

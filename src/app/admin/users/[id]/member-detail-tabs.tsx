@@ -18,7 +18,7 @@ export function MemberDetailTabs({ tabs }: { tabs: DetailTab[] }) {
             key={t.key}
             type="button"
             onClick={() => setActive(t.key)}
-            className={`rounded-full px-3 py-1 text-[12px] font-bold ${
+            className={`rounded-full px-3 py-1 text-[13.8px] font-bold ${
               t.key === current?.key
                 ? 'bg-[var(--app-pink-strong)] text-white'
                 : 'border border-[var(--app-line)] text-[var(--app-ink)]'

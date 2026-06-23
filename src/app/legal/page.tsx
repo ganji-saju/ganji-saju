@@ -40,9 +40,9 @@ export default async function LegalHubPage({ searchParams }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-4">
         <GangiPageHeader title="정책 모아보기" backHref="/" />
-        <p className="text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]">
+        <p className="text-[14.4px] leading-[1.7] text-[var(--app-copy-muted)]">
           이용약관·개인정보처리방침·환불·구독·코인 등 9 정책을 한 페이지에서 탭으로 확인하실
-          수 있습니다. 각 정책은 별도 URL (예: <code className="text-[11.5px]">/terms</code>) 로
+          수 있습니다. 각 정책은 별도 URL (예: <code className="text-[13.2px]">/terms</code>) 로
           직접 접근도 가능합니다.
         </p>
         <LegalTabsClient

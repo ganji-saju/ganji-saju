@@ -134,7 +134,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -144,7 +144,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               꿈해몽
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -155,13 +155,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             {item.title}
           </h1>
           <p
-            className="mt-2 text-[14px] leading-[1.7]"
+            className="mt-2 text-[16.1px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             {oneLine}
@@ -175,7 +175,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             <article className="mx-[0.25rem]" style={PANEL_STYLE}>
               <div style={KICKER_STYLE}>기본 의미</div>
               <p
-                className="mt-2 text-[13.5px] leading-[1.8]"
+                className="mt-2 text-[15.5px] leading-[1.8]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {content.baseMeaning}
@@ -194,13 +194,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
                       style={{ background: 'var(--app-pink-soft)' }}
                     >
                       <div
-                        className="text-[12.5px] font-extrabold"
+                        className="text-[14.4px] font-extrabold"
                         style={{ color: 'var(--app-pink-strong)' }}
                       >
                         {s.heading}
                       </div>
                       <p
-                        className="mt-1 text-[12.5px] leading-[1.65]"
+                        className="mt-1 text-[14.4px] leading-[1.65]"
                         style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                       >
                         {s.body}
@@ -215,13 +215,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
               <article style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   심리적 해석
                 </div>
                 <p
-                  className="mt-1.5 text-[13px] leading-[1.75]"
+                  className="mt-1.5 text-[15px] leading-[1.75]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {content.psychological}
@@ -229,13 +229,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               </article>
               <article style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-coral)' }}
                 >
                   주의할 점
                 </div>
                 <p
-                  className="mt-1.5 text-[13px] leading-[1.75]"
+                  className="mt-1.5 text-[15px] leading-[1.75]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {content.caution}
@@ -251,7 +251,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
                   {content.actionGuide.map((line, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-2 text-[13px] leading-[1.65]"
+                      className="flex items-start gap-2 text-[15px] leading-[1.65]"
                       style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                     >
                       <span
@@ -278,13 +278,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
                       style={{ borderColor: 'var(--app-line)' }}
                     >
                       <dt
-                        className="text-[13px] font-extrabold leading-snug"
+                        className="text-[15px] font-extrabold leading-snug"
                         style={{ color: 'var(--app-ink)' }}
                       >
                         Q. {faq.question}
                       </dt>
                       <dd
-                        className="mt-1.5 text-[12.5px] leading-[1.7]"
+                        className="mt-1.5 text-[14.4px] leading-[1.7]"
                         style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                       >
                         {faq.answer}
@@ -300,13 +300,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
           <div className="mx-[0.25rem] grid gap-3 sm:grid-cols-2">
             <article style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 보통 이렇게 봅니다
               </div>
               <p
-                className="mt-1.5 text-[13px] leading-[1.7]"
+                className="mt-1.5 text-[15px] leading-[1.7]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {item.meaning}
@@ -314,13 +314,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </article>
             <article style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 오늘 해볼 행동
               </div>
               <p
-                className="mt-1.5 text-[13px] leading-[1.7]"
+                className="mt-1.5 text-[15px] leading-[1.7]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {item.action}
@@ -333,7 +333,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>다음으로</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             마음에 남는 질문을 더 이어보세요
@@ -342,7 +342,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <Link
               href="/today-fortune?from=dream"
-              className="inline-flex h-12 items-center justify-center rounded-full px-4 text-[13px] font-extrabold text-white"
+              className="inline-flex h-12 items-center justify-center rounded-full px-4 text-[15px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
                 boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
@@ -352,7 +352,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </Link>
             <Link
               href="/tarot/daily?from=dream"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[13px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[15px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -363,7 +363,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </Link>
             <Link
               href="/dream-interpretation"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[13px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[15px] font-extrabold"
               style={{
                 border: '1px solid var(--app-line)',
                 color: 'var(--app-ink)',
@@ -380,7 +380,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>다른 꿈도 보기</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             비슷한 꿈해몽
@@ -398,13 +398,13 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
                 }}
               >
                 <h3
-                  className="text-[14px] font-extrabold leading-snug tracking-tight"
+                  className="text-[16.1px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {entry.title}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
                 >
                   {entry.summary}

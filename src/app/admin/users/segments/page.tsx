@@ -39,23 +39,23 @@ export default async function AdminSegmentsPage() {
               href={`/admin/users?${segment.query}`}
               className="rounded-[14px] border border-[var(--app-line)] bg-white p-4 hover:bg-[var(--app-pink-soft)]"
             >
-              <div className="text-[12px] text-[var(--app-copy-soft)]">{segment.label}</div>
-              <div className="text-[22px] font-extrabold text-[var(--app-ink)]">{count.toLocaleString('ko-KR')}</div>
-              <div className="mt-1 text-[11px] text-[var(--app-copy-soft)]">{segment.description}</div>
+              <div className="text-[13.8px] text-[var(--app-copy-soft)]">{segment.label}</div>
+              <div className="text-[25.3px] font-extrabold text-[var(--app-ink)]">{count.toLocaleString('ko-KR')}</div>
+              <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{segment.description}</div>
             </Link>
           ))}
         </section>
 
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-          <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">가입 코호트 잔존율</h2>
-          <p className="mt-1 text-[11px] text-[var(--app-copy-soft)]">
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">가입 코호트 잔존율</h2>
+          <p className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">
             DN = 가입 후 N일 이상 활동 유지 비율(프록시). 성숙 코호트만 표시, 그 외 —. 표본 적을 땐 참고치.
           </p>
           {cohorts.length === 0 ? (
-            <p className="mt-3 text-[12px] text-[var(--app-copy-soft)]">데이터가 없습니다.</p>
+            <p className="mt-3 text-[13.8px] text-[var(--app-copy-soft)]">데이터가 없습니다.</p>
           ) : (
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-[12px]">
+              <table className="w-full text-[13.8px]">
                 <thead>
                   <tr className="text-left text-[var(--app-copy-soft)]">
                     <th className="py-1">가입월</th><th>인원</th><th>평균 LTV</th><th>D7</th><th>D30</th>

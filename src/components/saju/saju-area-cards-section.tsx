@@ -42,7 +42,7 @@ export function SajuAreaCardsSection({ input, sajuData, heading = '오늘의 분
 
   return (
     <section>
-      <h2 className="mb-3 text-[16px] font-extrabold text-[var(--app-ink)]">{heading}</h2>
+      <h2 className="mb-3 text-[18.4px] font-extrabold text-[var(--app-ink)]">{heading}</h2>
       <div className="grid gap-2.5">
         {ordered.map((item) => {
           const value = Math.max(0, Math.min(100, Math.round(item.score)));
@@ -52,9 +52,9 @@ export function SajuAreaCardsSection({ input, sajuData, heading = '오늘의 분
               className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[14px] font-bold text-[var(--app-ink)]">{item.label}</span>
+                <span className="text-[16.1px] font-bold text-[var(--app-ink)]">{item.label}</span>
                 <span
-                  className="text-[18px] font-extrabold tracking-tighter"
+                  className="text-[20.7px] font-extrabold tracking-tighter"
                   style={{ color: item.color }}
                 >
                   {value}
@@ -73,7 +73,7 @@ export function SajuAreaCardsSection({ input, sajuData, heading = '오늘의 분
           );
         })}
       </div>
-      <p className="mt-2 text-[13px] leading-5 text-[var(--app-copy-soft)]">
+      <p className="mt-2 text-[15px] leading-5 text-[var(--app-copy-soft)]">
         오늘 점수 {overall}점 · {getScoreStatus(overall)} · 총운
       </p>
     </section>

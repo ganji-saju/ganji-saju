@@ -142,14 +142,14 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
 
   return (
     <section aria-label="카테고리별 오늘운세">
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
         오늘의 운세 자세히
       </div>
-      <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
+      <h2 className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">
         영역별로 자세히 보기
       </h2>
       <p
-        className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]"
+        className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         궁금한 영역만 골라 읽어보세요. 점수가 낮아도 행동 한 가지만 챙기면 흐름이 정돈됩니다.
@@ -178,15 +178,15 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className="text-[20px] leading-none">
+                  <span aria-hidden="true" className="text-[23px] leading-none">
                     {meta.icon}
                   </span>
-                  <span className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  <span className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                     {meta.label}
                   </span>
                 </div>
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-[12px] font-extrabold text-white"
+                  className="rounded-full px-2.5 py-0.5 text-[13.8px] font-extrabold text-white"
                   style={{ background: meta.accent }}
                 >
                   {value}
@@ -194,13 +194,13 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
               </div>
               {/* 운세톡톡 핵심: 파란색 헤드라인 — 본문 안 읽어도 한 줄 결론 인지 가능. */}
               <p
-                className="mt-2.5 text-[13.5px] font-extrabold leading-[1.55]"
+                className="mt-2.5 text-[15.5px] font-extrabold leading-[1.55]"
                 style={{ color: meta.accent, wordBreak: 'keep-all' }}
               >
                 🔵 {headline}
               </p>
               <p
-                className="mt-2 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+                className="mt-2 text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {body}

@@ -77,17 +77,17 @@ export function TaekilClient() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           좋은 날 택일
         </div>
         <h1
-          className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+          className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           어떤 날을 잡아드릴까요?
         </h1>
         <p
-          className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           본인 사주 + 다음 60일 일진을 분석해 목적에 가장 좋은 7일을 찾아드립니다.
@@ -96,7 +96,7 @@ export function TaekilClient() {
 
       {/* §목적 선택 */}
       <section>
-        <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
           목적 선택
         </h2>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -114,8 +114,8 @@ export function TaekilClient() {
                   boxShadow: isActive ? '0 4px 12px rgba(216,27,114,0.16)' : 'none',
                 }}
               >
-                <div className="text-[22px] leading-none">{p.emoji}</div>
-                <div className="mt-1.5 text-[12px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                <div className="text-[25.3px] leading-none">{p.emoji}</div>
+                <div className="mt-1.5 text-[13.8px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                   {p.label}
                 </div>
               </button>
@@ -123,7 +123,7 @@ export function TaekilClient() {
           })}
         </div>
         <p
-          className="mt-2 px-1 text-[10.5px] leading-[1.55] text-[var(--app-copy-soft)]"
+          className="mt-2 px-1 text-[12.1px] leading-[1.55] text-[var(--app-copy-soft)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {TAEKIL_PURPOSES.find((p) => p.key === purpose)?.hint}
@@ -134,31 +134,31 @@ export function TaekilClient() {
       {state === 'loading' ? (
         <article className="rounded-[16px] border bg-white p-8 text-center" style={{ borderColor: 'var(--app-line)' }}>
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] font-bold text-[var(--app-copy-muted)]">길일 산출 중...</p>
+          <p className="mt-3 text-[15px] font-bold text-[var(--app-copy-muted)]">길일 산출 중...</p>
         </article>
       ) : state === 'no-profile' ? (
         <article
           className="rounded-[18px] border bg-white p-5 text-center"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
-          <div className="text-[32px]">📅</div>
-          <h2 className="mt-2 text-[16px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+          <div className="text-[36.8px]">📅</div>
+          <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
             먼저 내 사주 정보를 등록해 주세요
           </h2>
-          <p className="mt-2 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+          <p className="mt-2 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
             택일은 본인 사주 원국을 기반으로 합니다. 사주를 한 번 보면 그 정보로
             자동 산출됩니다.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
               href="/saju/new"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13px] font-extrabold text-white"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
             >
               사주 시작하기 →
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-full border bg-white px-5 py-3 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex items-center justify-center rounded-full border bg-white px-5 py-3 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               로그인
@@ -170,11 +170,11 @@ export function TaekilClient() {
           className="rounded-[16px] border bg-white p-5 text-center"
           style={{ borderColor: 'rgba(220,79,79,0.28)', background: 'rgba(220,79,79,0.05)' }}
         >
-          <p className="text-[13px] font-bold text-[var(--app-coral)]">{error}</p>
+          <p className="text-[15px] font-bold text-[var(--app-coral)]">{error}</p>
         </article>
       ) : results && results.length > 0 ? (
         <section>
-          <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+          <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
             추천 {results.length}일 — 점수 높은 순
           </h2>
           <div className="mt-2 grid gap-2.5">
@@ -192,13 +192,13 @@ export function TaekilClient() {
                     borderColor: idx === 0 ? 'var(--app-pink-line)' : 'var(--app-line)',
                   }}
                 >
-                  <div className="text-[9.5px] font-extrabold text-[var(--app-pink-strong)]">
+                  <div className="text-[10.9px] font-extrabold text-[var(--app-pink-strong)]">
                     {idx + 1}순위
                   </div>
-                  <div className="text-[15px] font-extrabold leading-none text-[var(--app-ink)]">
+                  <div className="text-[17.3px] font-extrabold leading-none text-[var(--app-ink)]">
                     {parseInt(day.isoDate.split('-')[2], 10)}일
                   </div>
-                  <div className="text-[9.5px] font-bold text-[var(--app-copy-soft)]">
+                  <div className="text-[10.9px] font-bold text-[var(--app-copy-soft)]">
                     {WEEKDAY_KO[day.weekday]}요
                   </div>
                 </div>
@@ -207,21 +207,21 @@ export function TaekilClient() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span aria-hidden="true">{day.gradeEmoji}</span>
-                    <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                    <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                       {day.grade}
                     </span>
-                    <span className="text-[11.5px] font-bold tabular-nums text-[var(--app-pink-strong)]">
+                    <span className="text-[13.2px] font-bold tabular-nums text-[var(--app-pink-strong)]">
                       · {day.adjustedScore}점
                     </span>
                   </div>
                   <div
-                    className="mt-0.5 text-[11px] font-bold text-[var(--app-copy-soft)]"
+                    className="mt-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
                     style={{ fontFamily: 'var(--font-han)' }}
                   >
                     {formatDate(day.isoDate, day.weekday)} · {day.iljinKorean}({day.iljinGanzi})일
                   </div>
                   <p
-                    className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy)]"
+                    className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {day.reasonHint}
@@ -231,7 +231,7 @@ export function TaekilClient() {
                       {day.positiveSinsals.map((s) => (
                         <span
                           key={`pos-${s}`}
-                          className="rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                          className="rounded-full border px-2 py-0.5 text-[11.5px] font-bold"
                           style={{
                             background: 'rgba(45,135,88,0.08)',
                             borderColor: 'rgba(45,135,88,0.28)',
@@ -244,7 +244,7 @@ export function TaekilClient() {
                       {day.negativeSinsals.map((s) => (
                         <span
                           key={`neg-${s}`}
-                          className="rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                          className="rounded-full border px-2 py-0.5 text-[11.5px] font-bold"
                           style={{
                             background: 'rgba(220,79,79,0.06)',
                             borderColor: 'rgba(220,79,79,0.28)',
@@ -267,12 +267,12 @@ export function TaekilClient() {
             className="mt-3 flex items-center gap-3 rounded-[16px] border bg-white p-4 no-underline"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <span aria-hidden="true" className="text-[20px]">🗓️</span>
+            <span aria-hidden="true" className="text-[23px]">🗓️</span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-extrabold text-[var(--app-ink)]">
+              <span className="block text-[15px] font-extrabold text-[var(--app-ink)]">
                 이번 달 좋은 날을 달력으로 한눈에
               </span>
-              <span className="block text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+              <span className="block text-[13.2px] font-bold text-[var(--app-copy-soft)]">
                 월간 좋은날 캘린더 · 9,900원
               </span>
             </span>
@@ -294,27 +294,27 @@ export function TaekilClient() {
                   const next = TAEKIL_PURPOSES.find((p) => p.key !== purpose);
                   if (next) setPurpose(next.key);
                 }}
-                className="rounded-[10px] bg-[var(--app-pink-strong)] px-3 py-2 text-[12.5px] font-bold text-white"
+                className="rounded-[10px] bg-[var(--app-pink-strong)] px-3 py-2 text-[14.4px] font-bold text-white"
               >
                 다른 목적으로 다시 찾기
               </button>
               <Link
                 href="/my/profile"
-                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-copy)]"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[14.4px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 생년월일 확인
               </Link>
               <Link
                 href="/saju/new?focus=year"
-                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-copy)]"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[14.4px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 추천 날짜 생성
               </Link>
               <Link
                 href="/membership"
-                className="rounded-[10px] border bg-white px-3 py-2 text-[12.5px] font-bold text-[var(--app-pink-strong)]"
+                className="rounded-[10px] border bg-white px-3 py-2 text-[14.4px] font-bold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 유료 상세 풀이
@@ -329,11 +329,11 @@ export function TaekilClient() {
         className="rounded-[16px] border bg-white p-4"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           💡 어떻게 산출되나요?
         </div>
         <ul
-          className="mt-2 grid gap-1 text-[11.5px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-2 grid gap-1 text-[13.2px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li>① 사용자 사주 원국 + 다음 60일 각 날짜의 일진 ganzi 산출</li>

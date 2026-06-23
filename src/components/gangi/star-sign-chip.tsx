@@ -36,10 +36,10 @@ export const STAR_SIGNS = {
 export type StarSignKey = keyof typeof STAR_SIGNS;
 
 const SIZE = {
-  sm: 'h-10 w-10 rounded-[13px] text-[19px]',
-  md: 'h-14 w-14 rounded-[18px] text-[26px]',
-  lg: 'h-[72px] w-[72px] rounded-[22px] text-[34px]',
-  xl: 'h-24 w-24 rounded-[28px] text-[46px]',
+  sm: 'h-10 w-10 rounded-[13px] text-[21.8px]',
+  md: 'h-14 w-14 rounded-[18px] text-[29.9px]',
+  lg: 'h-[72px] w-[72px] rounded-[22px] text-[39.1px]',
+  xl: 'h-24 w-24 rounded-[28px] text-[52.9px]',
 };
 
 export interface StarSignChipProps {

@@ -39,11 +39,11 @@ export function LogoutButton() {
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="min-w-0">
-        <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+        <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
           {busy ? '로그아웃 중…' : '로그아웃'}
         </div>
         <div
-          className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]"
+          className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]"
           style={{ wordBreak: 'keep-all' }}
         >
           이 기기에서 로그아웃합니다. 데이터는 그대로 보관됩니다.

@@ -115,13 +115,13 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             검증 도구 · 운영 노출 X
           </div>
-          <h1 className="mt-1.5 text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
+          <h1 className="mt-1.5 text-[23px] font-extrabold leading-[1.4] text-[var(--app-ink)]">
             입력값으로 계산된 결과와<br />사이트 풀이가 일치하는지 확인하세요
           </h1>
-          <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
             아래 입력을 채우고 "계산" 버튼을 누르면 년주·월주·일주·시주·일간·오행·십신·신강신약·격국·용신·대운·세운·월운이 자동으로 표시됩니다.
             그 다음 "사이트 풀이 원문" 박스에 화면에서 본 텍스트를 붙여넣으면 주요 용어가 계산값과 일치하는지 자동 비교합니다.
           </p>
@@ -133,45 +133,45 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
           className="rounded-[18px] border bg-white p-5"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             STEP 1 · 입력값
           </div>
-          <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">
             생년월일과 출생 정보를 넣어주세요
           </h2>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">생년월일 (YYYY-MM-DD)</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">생년월일 (YYYY-MM-DD)</span>
               <div className="mt-1 grid grid-cols-3 gap-1.5">
                 <input name="year" defaultValue={params.year} placeholder="1990" type="number" min="1900" max="2100"
-                  className="h-11 rounded-[10px] border bg-white px-2 text-[13px]"
+                  className="h-11 rounded-[10px] border bg-white px-2 text-[15px]"
                   style={{ borderColor: 'var(--app-line)' }} required />
                 <input name="month" defaultValue={params.month} placeholder="5" type="number" min="1" max="12"
-                  className="h-11 rounded-[10px] border bg-white px-2 text-[13px]"
+                  className="h-11 rounded-[10px] border bg-white px-2 text-[15px]"
                   style={{ borderColor: 'var(--app-line)' }} required />
                 <input name="day" defaultValue={params.day} placeholder="17" type="number" min="1" max="31"
-                  className="h-11 rounded-[10px] border bg-white px-2 text-[13px]"
+                  className="h-11 rounded-[10px] border bg-white px-2 text-[15px]"
                   style={{ borderColor: 'var(--app-line)' }} required />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">출생시간 (HH MM, 모르면 비움)</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">출생시간 (HH MM, 모르면 비움)</span>
               <div className="mt-1 grid grid-cols-2 gap-1.5">
                 <input name="hour" defaultValue={params.hour} placeholder="10" type="number" min="0" max="23"
-                  className="h-11 rounded-[10px] border bg-white px-2 text-[13px]"
+                  className="h-11 rounded-[10px] border bg-white px-2 text-[15px]"
                   style={{ borderColor: 'var(--app-line)' }} />
                 <input name="minute" defaultValue={params.minute} placeholder="30" type="number" min="0" max="59"
-                  className="h-11 rounded-[10px] border bg-white px-2 text-[13px]"
+                  className="h-11 rounded-[10px] border bg-white px-2 text-[15px]"
                   style={{ borderColor: 'var(--app-line)' }} />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">성별</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">성별</span>
               <select name="gender" defaultValue={params.gender ?? ''}
-                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
+                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[15px]"
                 style={{ borderColor: 'var(--app-line)' }}>
                 <option value="">선택</option>
                 <option value="male">남성</option>
@@ -180,9 +180,9 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">자시 적용</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">자시 적용</span>
               <select name="jasi" defaultValue={params.jasi ?? 'unified'}
-                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
+                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[15px]"
                 style={{ borderColor: 'var(--app-line)' }}>
                 <option value="unified">통합 자시 (unified)</option>
                 <option value="split">분할 자시 (split)</option>
@@ -190,9 +190,9 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">시간 보정 방식</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">시간 보정 방식</span>
               <select name="solar" defaultValue={params.solar ?? 'standard'}
-                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
+                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[15px]"
                 style={{ borderColor: 'var(--app-line)' }}>
                 <option value="standard">표준시 (standard)</option>
                 <option value="longitude">진태양시 (longitude)</option>
@@ -200,23 +200,23 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             </label>
 
             <label className="block">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">출생지 (텍스트, 선택)</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">출생지 (텍스트, 선택)</span>
               <input name="location" defaultValue={params.location} placeholder="서울"
-                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
+                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[15px]"
                 style={{ borderColor: 'var(--app-line)' }} />
             </label>
 
             <label className="block sm:col-span-2">
-              <span className="text-[11.5px] font-extrabold text-[var(--app-ink)]">조회일 (ISO, 비우면 현재 시각)</span>
+              <span className="text-[13.2px] font-extrabold text-[var(--app-ink)]">조회일 (ISO, 비우면 현재 시각)</span>
               <input name="now" defaultValue={params.now} placeholder="2026-05-14T12:00:00+09:00"
-                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[13px]"
+                className="mt-1 h-11 w-full rounded-[10px] border bg-white px-2 text-[15px]"
                 style={{ borderColor: 'var(--app-line)' }} />
             </label>
           </div>
 
           <button
             type="submit"
-            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             계산하기 →
           </button>
@@ -224,7 +224,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
 
         {/* §에러 */}
         {errorMessage ? (
-          <div className="rounded-[14px] border px-4 py-3 text-[13px] text-[var(--app-ink)]"
+          <div className="rounded-[14px] border px-4 py-3 text-[15px] text-[var(--app-ink)]"
             style={{ background: '#fdecec', borderColor: 'rgba(198,69,69,0.22)' }}>
             ⚠ 계산 실패: {errorMessage}
           </div>
@@ -237,17 +237,17 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
               className="rounded-[18px] border bg-white p-5"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 STEP 2 · 계산 결과
               </div>
-              <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">
                 자동 계산된 값
               </h2>
 
               {/* 입력값 echo */}
               <div className="mt-3 rounded-[12px] border bg-white p-3" style={{ borderColor: 'var(--app-line)' }}>
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">[입력값]</div>
-                <dl className="mt-1.5 grid grid-cols-[8rem_1fr] gap-y-1 text-[12.5px] leading-[1.7]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">[입력값]</div>
+                <dl className="mt-1.5 grid grid-cols-[8rem_1fr] gap-y-1 text-[14.4px] leading-[1.7]">
                   <Row label="생년월일" value={`${v1.input.birth.year}-${String(v1.input.birth.month).padStart(2,'0')}-${String(v1.input.birth.day).padStart(2,'0')}`} />
                   <Row label="양력/음력" value={v1.input.calendar === 'solar' ? '양력' : '음력'} />
                   <Row label="출생시간" value={v1.input.birth.hour !== null ? `${String(v1.input.birth.hour).padStart(2,'0')}:${String(v1.input.birth.minute ?? 0).padStart(2,'0')}` : '미입력'} />
@@ -261,8 +261,8 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
               {/* 계산 결과 */}
               <div className="mt-3 rounded-[12px] border p-3"
                 style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}>
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">[계산 결과]</div>
-                <dl className="mt-1.5 grid grid-cols-[8rem_1fr] gap-y-1 text-[12.5px] leading-[1.7]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">[계산 결과]</div>
+                <dl className="mt-1.5 grid grid-cols-[8rem_1fr] gap-y-1 text-[14.4px] leading-[1.7]">
                   <Row label="년주" value={`${v1.pillars.year.ganzi} (${v1.pillars.year.stemElement}/${v1.pillars.year.branchElement})`} />
                   <Row label="월주" value={`${v1.pillars.month.ganzi} (${v1.pillars.month.stemElement}/${v1.pillars.month.branchElement})`} />
                   <Row label="일주" value={`${v1.pillars.day.ganzi} (${v1.pillars.day.stemElement}/${v1.pillars.day.branchElement})`} />
@@ -287,21 +287,21 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
 
               {/* v2 검증 score */}
               <div className="mt-3 rounded-[12px] border bg-white p-3" style={{ borderColor: 'var(--app-line)' }}>
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   v2 풀이 검증
                 </div>
-                <p className="mt-1 text-[12.5px] leading-[1.7] text-[var(--app-copy)]">
+                <p className="mt-1 text-[14.4px] leading-[1.7] text-[var(--app-copy)]">
                   점수: <strong>{v2.verification.score}점</strong> · 상태: <strong>{v2.verification.status}</strong> ·
                   오류 {v2.verification.summary.errors}건 / 경고 {v2.verification.summary.warnings}건
                 </p>
                 {v2.verification.issues.length > 0 ? (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-[11.5px] font-extrabold text-[var(--app-copy-muted)]">
+                    <summary className="cursor-pointer text-[13.2px] font-extrabold text-[var(--app-copy-muted)]">
                       검증 이슈 상세 ({v2.verification.issues.length}건)
                     </summary>
                     <ul className="mt-2 grid gap-1">
                       {v2.verification.issues.map((issue) => (
-                        <li key={`${issue.code}-${issue.path}`} className="rounded-[8px] border px-2 py-1.5 text-[11px] leading-[1.55]"
+                        <li key={`${issue.code}-${issue.path}`} className="rounded-[8px] border px-2 py-1.5 text-[12.6px] leading-[1.55]"
                           style={{ borderColor: 'var(--app-line)' }}>
                           <strong className="text-[var(--app-coral)]">{issue.severity}</strong> · {issue.code} @ {issue.path}: {issue.message}
                         </li>
@@ -333,7 +333,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             />
           </>
         ) : (
-          <div className="rounded-[14px] border bg-white px-4 py-3 text-center text-[12.5px] text-[var(--app-copy-muted)]"
+          <div className="rounded-[14px] border bg-white px-4 py-3 text-center text-[14.4px] text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}>
             입력값을 채우고 "계산하기" 를 누르면 결과가 여기에 표시됩니다.
           </div>

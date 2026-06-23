@@ -290,7 +290,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               className="pointer-events-none absolute -right-3 -top-3 select-none leading-none"
               style={{
                 fontFamily: 'var(--font-han)',
-                fontSize: 180,
+                fontSize: 207,
                 fontWeight: 700,
                 color: '#fff',
                 opacity: 0.12,
@@ -300,7 +300,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             </div>
 
             <div
-              className="relative text-[11px] font-extrabold uppercase tracking-[0.06em]"
+              className="relative text-[12.6px] font-extrabold uppercase tracking-[0.06em]"
               style={{ opacity: 0.85 }}
             >
               ZODIAC · {hanja} / {zodiacKey.toUpperCase()}
@@ -309,8 +309,8 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             <div className="relative mt-2.5 flex items-end gap-3">
               <ZodiacChip kind={zodiacKey} size="xl" />
               <div>
-                <div className="text-[22px] font-extrabold tracking-tight">{item.label}</div>
-                <div className="mt-0.5 text-[12px]" style={{ opacity: 0.85 }}>
+                <div className="text-[25.3px] font-extrabold tracking-tight">{item.label}</div>
+                <div className="mt-0.5 text-[13.8px]" style={{ opacity: 0.85 }}>
                   {item.years}
                 </div>
               </div>
@@ -324,19 +324,19 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               }}
             >
               <div
-                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ opacity: 0.85 }}
               >
                 {PERIOD_LABEL[period]}
               </div>
               {/* 2026-05-25 — 라벨(오늘/이번주/이번달/올해)과 내용이 어긋나던 회귀 fix.
                   고정 summary → 기간별 한 줄(periodLines[period])로 교체. */}
-              <p className="mt-1 text-[14px] font-bold leading-[1.55]">{item.periodLines[period]}</p>
+              <p className="mt-1 text-[16.1px] font-bold leading-[1.55]">{item.periodLines[period]}</p>
             </div>
 
             {isPersonalizedMatch ? (
               <div
-                className="relative mt-3 inline-flex rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.04em]"
+                className="relative mt-3 inline-flex rounded-full px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ background: 'rgba(255,255,255,0.18)' }}
               >
                 ★ 내 띠로 맞춤 표시
@@ -365,7 +365,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   href={href}
                   // 2026-05-25 — 같은 화면 내 기간 탭 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
                   scroll={false}
-                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[12px] font-bold transition-transform active:scale-95"
+                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[13.8px] font-bold transition-transform active:scale-95"
                   style={
                     isActive
                       ? {
@@ -393,11 +393,11 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 key={cell.label}
                 className="rounded-[14px] border border-[var(--app-line)] bg-white p-3 text-center"
               >
-                <div className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   {cell.label}
                 </div>
                 <div
-                  className="mt-0.5 text-[22px] font-extrabold tracking-tighter"
+                  className="mt-0.5 text-[25.3px] font-extrabold tracking-tighter"
                   style={{ color: cell.color }}
                 >
                   {cell.value}
@@ -423,7 +423,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               {PERIOD_SHORT[period]} 운세 키워드
             </div>
             <div className="mt-3 grid grid-cols-3 gap-3">
@@ -440,10 +440,10 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 { label: '권하는 행동', value: '메모해두기' },
               ].map((cell) => (
                 <div key={cell.label}>
-                  <div className="text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                  <div className="text-[12.1px] font-bold text-[var(--app-copy-soft)]">
                     {cell.label}
                   </div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[13px] font-extrabold text-[var(--app-ink)]">
+                  <div className="mt-1 flex items-center gap-1.5 text-[15px] font-extrabold text-[var(--app-ink)]">
                     {cell.swatch ? (
                       <span
                         className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
@@ -461,27 +461,27 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
           {/* §5 분야별 카드 */}
           <section className="grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 {PERIOD_SHORT[period]} 집중 포인트
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+              <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                 {item.periodFocus[period]}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 행동 제안
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+              <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                 {item.periodAction[period]}
               </p>
             </article>
             {period === 'year' ? (
               <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   올해 흐름
                 </div>
-                <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+                <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                   {meta.yearlyMessage}
                 </p>
               </article>
@@ -492,7 +492,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               태어난 해 선택은 심화 정보라 메인 흐름을 먼저 보여준 뒤 노출한다. */}
           {generationYears.length > 0 ? (
             <section className="space-y-2.5">
-              <div className="px-1 text-[13px] font-extrabold text-[var(--app-ink)]">
+              <div className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">
                 태어난 해로 더 보기
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -508,7 +508,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                       // 2026-05-25 — 같은 화면 내 연생 칩 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
                       scroll={false}
                       aria-pressed={isActive}
-                      className="rounded-full border px-3 py-1.5 text-[12.5px] font-bold transition-transform active:scale-95 no-underline"
+                      className="rounded-full border px-3 py-1.5 text-[14.4px] font-bold transition-transform active:scale-95 no-underline"
                       style={
                         isActive
                           ? {
@@ -537,24 +537,24 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                       {selectedYear}년생 · {item.label}
                     </div>
                     <span
-                      className="rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold text-[var(--app-pink-strong)] border"
+                      className="rounded-full bg-white px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-pink-strong)] border"
                       style={{ borderColor: 'var(--app-pink-line)' }}
                     >
                       {selectedByYear.element}
                     </span>
                   </div>
                   <p
-                    className="mt-2 text-[14px] font-bold leading-[1.55] text-[var(--app-ink)]"
+                    className="mt-2 text-[16.1px] font-bold leading-[1.55] text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {selectedByYear.summary}
                   </p>
                   <p
-                    className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]"
+                    className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy-muted)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {selectedByYear.detail}
@@ -563,11 +563,11 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                     className="mt-2.5 rounded-[10px] bg-white px-3 py-2.5"
                     style={{ border: '1px solid var(--app-pink-line)' }}
                   >
-                    <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                       이렇게 해보세요
                     </div>
                     <p
-                      className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-ink)]"
+                      className="mt-1 text-[14.4px] leading-[1.6] text-[var(--app-ink)]"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       {selectedByYear.action}
@@ -575,7 +575,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   </div>
                 </article>
               ) : (
-                <p className="px-1 text-[12px] leading-[1.55] text-[var(--app-copy-soft)]">
+                <p className="px-1 text-[13.8px] leading-[1.55] text-[var(--app-copy-soft)]">
                   태어난 해를 선택하면 같은 {item.label} 안에서도 조금씩 다른 기운의 흐름을 볼 수 있어요.
                 </p>
               )}
@@ -594,16 +594,16 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                 className="rounded-[18px] border bg-white p-4"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   💞 궁합과 조심
                 </div>
                 <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
                   <div>
-                    <div className="text-[11px] font-bold text-[var(--app-jade)]">
+                    <div className="text-[12.6px] font-bold text-[var(--app-jade)]">
                       궁합 좋은 띠
                     </div>
                     <p
-                      className="mt-1 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                      className="mt-1 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       {relation.matchSummary}
@@ -613,7 +613,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                         <Link
                           key={slug}
                           href={`/zodiac/${slug}`}
-                          className="rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] border no-underline"
+                          className="rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)] border no-underline"
                           style={{ borderColor: 'var(--app-pink-line)' }}
                         >
                           {slugToLabel(slug)}
@@ -622,11 +622,11 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold text-[var(--app-coral)]">
+                    <div className="text-[12.6px] font-bold text-[var(--app-coral)]">
                       조심할 띠
                     </div>
                     <p
-                      className="mt-1 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                      className="mt-1 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       {relation.bewareSummary}
@@ -636,7 +636,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                         <Link
                           key={slug}
                           href={`/zodiac/${slug}`}
-                          className="rounded-full bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-copy-soft)] border no-underline"
+                          className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-copy-soft)] border no-underline"
                           style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                         >
                           {slugToLabel(slug)}
@@ -657,24 +657,24 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 깊이
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
               내 사주로 더 자세히 봐주세요
             </h2>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}?from=zodiac` : '/saju/new?from=zodiac'}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 {readingSlug ? '내 사주로 이어보기' : '맞춤 사주로 이어보기'} →
               </Link>
               <Link
                 href="/zodiac"
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 내 띠 다시 확인
               </Link>
@@ -685,7 +685,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
 
           {/* §7 다른 띠 보기 — horizontal scroll */}
           <section>
-            <div className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">
+            <div className="px-1 text-[17.3px] font-extrabold text-[var(--app-ink)]">
               다른 띠도 보기
             </div>
             <div className="mt-2.5 flex gap-2 overflow-x-auto pb-1">
@@ -696,7 +696,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   className="flex w-[60px] shrink-0 flex-col items-center gap-1.5 rounded-[12px] py-2 text-center"
                 >
                   <ZodiacChip kind={z.key} size="sm" />
-                  <span className="text-[11px] font-bold text-[var(--app-copy-muted)]">
+                  <span className="text-[12.6px] font-bold text-[var(--app-copy-muted)]">
                     {z.label}
                   </span>
                 </Link>

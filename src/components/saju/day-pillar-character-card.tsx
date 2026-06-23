@@ -28,11 +28,11 @@ export function DayPillarCharacterCard({
       }}
     >
       <div className="flex items-center gap-2.5">
-        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           나의 일주
         </div>
         <div
-          className="rounded-full px-2 py-0.5 text-[13px] font-bold"
+          className="rounded-full px-2 py-0.5 text-[15px] font-bold"
           style={{
             background: 'var(--app-pink-soft)',
             color: 'var(--app-pink-strong)',
@@ -49,7 +49,7 @@ export function DayPillarCharacterCard({
           style={{
             background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
             fontFamily: 'var(--font-han)',
-            fontSize: 30,
+            fontSize: 34.5,
             fontWeight: 700,
             letterSpacing: '0.04em',
             boxShadow: '0 10px 22px rgba(216,27,114,0.28)',
@@ -61,11 +61,11 @@ export function DayPillarCharacterCard({
         <div className="min-w-0 flex-1">
           {profile ? (
             <>
-              <div className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[14.4px] font-bold text-[var(--app-pink-strong)]">
                 {profile.title}
               </div>
               <h3
-                className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+                className="mt-1 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {profile.core}
@@ -73,11 +73,11 @@ export function DayPillarCharacterCard({
             </>
           ) : (
             <>
-              <div className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[14.4px] font-bold text-[var(--app-pink-strong)]">
                 {dayGanziKorean}일주
               </div>
               <h3
-                className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+                className="mt-1 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 일주가 알려주는 나의 성향을 함께 보세요.
@@ -94,14 +94,14 @@ export function DayPillarCharacterCard({
               className="rounded-[12px] border bg-white p-3"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 강점
               </div>
               <ul className="mt-1.5 flex flex-wrap gap-1.5">
                 {profile.strengths.map((strength) => (
                   <li
                     key={strength}
-                    className="rounded-full border px-2.5 py-1 text-[13px] font-bold text-[var(--app-ink)]"
+                    className="rounded-full border px-2.5 py-1 text-[15px] font-bold text-[var(--app-ink)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       borderColor: 'var(--app-pink-line)',
@@ -119,14 +119,14 @@ export function DayPillarCharacterCard({
               className="rounded-[12px] border bg-white p-3"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+              <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
                 주의 포인트
               </div>
               <ul className="mt-1.5 grid gap-1">
                 {profile.watchPoints.map((point) => (
                   <li
                     key={point}
-                    className="text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
+                    className="text-[14.4px] leading-[1.55] text-[var(--app-copy)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     · {point}
@@ -144,11 +144,11 @@ export function DayPillarCharacterCard({
                 borderColor: 'var(--app-pink-line)',
               }}
             >
-              <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 지금 핵심
               </div>
               <p
-                className="mt-1 text-[13px] font-bold leading-[1.55] text-[var(--app-ink)]"
+                className="mt-1 text-[15px] font-bold leading-[1.55] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {profile.actionCue}

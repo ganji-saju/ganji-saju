@@ -22,7 +22,7 @@ function ModeBadge({ mode }: { mode: SpecialistMentorMode }) {
   if (mode === 'ai-report') {
     return (
       <span
-        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
         style={{
           background: 'var(--app-pink-soft)',
           borderColor: 'var(--app-pink-line)',
@@ -35,7 +35,7 @@ function ModeBadge({ mode }: { mode: SpecialistMentorMode }) {
   }
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
       style={{
         background: 'rgba(17, 17, 20, 0.06)',
         borderColor: 'rgba(17, 17, 20, 0.18)',
@@ -86,7 +86,7 @@ export function SpecialistMentorGrid({
               </>
             }
             badge={
-              <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-[11px] text-[var(--app-copy-muted)]">
+              <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-[12.6px] text-[var(--app-copy-muted)]">
                 {mentor.statusLabel}
               </span>
             }
@@ -105,8 +105,8 @@ export function SpecialistMentorGrid({
       </ProductGrid>
 
       {/* Phase 7c — AI/사람 구분 명시 + 환불·취소 정책 link */}
-      <div className="mt-5 rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[12.5px] leading-[1.7] text-[var(--app-copy)]">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+      <div className="mt-5 rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[14.4px] leading-[1.7] text-[var(--app-copy)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           상담 안내
         </div>
         <ul className="mt-2 grid gap-1.5">
@@ -123,13 +123,13 @@ export function SpecialistMentorGrid({
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href="/refund-policy"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             환불 / 취소 정책
           </Link>
           <Link
             href="/appointment-policy"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[12px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             예약 상담 정책 (예정)
           </Link>

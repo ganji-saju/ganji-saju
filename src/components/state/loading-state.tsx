@@ -24,7 +24,7 @@ export function LoadingState({
   size = 'md',
 }: LoadingStateProps) {
   const padding = size === 'sm' ? 'py-2' : size === 'lg' ? 'py-12' : 'py-6';
-  const labelSize = size === 'sm' ? 'text-[12px]' : size === 'lg' ? 'text-[15px]' : 'text-[13px]';
+  const labelSize = size === 'sm' ? 'text-[13.8px]' : size === 'lg' ? 'text-[17.3px]' : 'text-[15px]';
 
   return (
     <div
@@ -35,7 +35,7 @@ export function LoadingState({
       <Spinner size={size} />
       <span className={`${labelSize} font-bold text-[var(--app-copy-muted)]`}>{label}</span>
       {description ? (
-        <span className="text-[11.5px] leading-[1.5] text-[var(--app-copy-soft)]">
+        <span className="text-[13.2px] leading-[1.5] text-[var(--app-copy-soft)]">
           {description}
         </span>
       ) : null}

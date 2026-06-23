@@ -44,7 +44,7 @@ export function ScoreLockGate({
         >
           <span className="text-3xl font-bold text-[var(--app-copy-soft)]">●●</span>
         </div>
-        <p className="mt-3 text-center text-[13px] font-bold text-[var(--app-copy-soft)]">
+        <p className="mt-3 text-center text-[15px] font-bold text-[var(--app-copy-soft)]">
           {gradeLabel}
         </p>
         <div className="mt-4 grid gap-2.5">
@@ -64,33 +64,33 @@ export function ScoreLockGate({
           className="w-full max-w-xs rounded-[22px] border bg-white/90 p-5 text-center backdrop-blur-sm shadow-[0_18px_48px_rgba(17,17,20,0.18)]"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             {gradeLabel} 등급
           </div>
           <h3
-            className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+            className="mt-1 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             내 사주 종합점수 공개
           </h3>
           <p
-            className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             종합점수와 일주·격국·용신·오행·신살 5요소 산출 내역을 한 번에 열어 드려요.
           </p>
           <div className="mt-4 flex items-center justify-center gap-2.5">
-            <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1.5 text-[13px] font-bold text-[var(--app-pink-strong)]">
+            <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1.5 text-[15px] font-bold text-[var(--app-pink-strong)]">
               {price}
             </span>
             <a
               href={checkoutHref}
-              className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               점수 공개하고 보기
             </a>
           </div>
-          <p className="mt-3 text-[13px] text-[var(--app-copy-soft)]">
+          <p className="mt-3 text-[15px] text-[var(--app-copy-soft)]">
             결제 후 보관함에서 다시 볼 수 있어요
           </p>
         </div>

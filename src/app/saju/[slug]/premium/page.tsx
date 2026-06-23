@@ -168,7 +168,7 @@ function ChapterIntro({
         <div className="relative flex items-start gap-3">
           {number ? (
             <span
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-[18px] font-extrabold text-white"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] text-[20.7px] font-extrabold text-white"
               style={{
                 background: palette.accent,
                 boxShadow: `0 8px 18px ${palette.accent}40`,
@@ -181,26 +181,26 @@ function ChapterIntro({
           ) : null}
           <div className="min-w-0 flex-1">
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.06em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.06em]"
               style={{ color: palette.accent }}
             >
               {eyebrow}
             </div>
             <h2
-              className="mt-1 text-[20px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)] sm:text-[22px]"
+              className="mt-1 text-[23px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)] sm:text-[25.3px]"
               style={{ wordBreak: 'keep-all' }}
             >
               {title}
             </h2>
             <p
-              className="mt-2 text-[13.5px] leading-[1.7] text-[var(--app-copy)]"
+              className="mt-2 text-[15.5px] leading-[1.7] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {description}
             </p>
             {highlight ? (
               <p
-                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[11.5px] font-extrabold"
+                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[13.2px] font-extrabold"
                 style={{
                   background: '#fff',
                   borderColor: palette.border,
@@ -212,7 +212,7 @@ function ChapterIntro({
             ) : null}
             {aside ? (
               <p
-                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[11px] font-extrabold"
+                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[12.6px] font-extrabold"
                 style={{
                   background: 'var(--app-pink-soft)',
                   borderColor: 'var(--app-pink-line)',
@@ -240,10 +240,10 @@ function SmallQuestionProducts({
   //   이전엔 #yearly-chapter-2 라는 미존재 id 였음 (사용자 보고: 버튼 클릭 안 됨).
   return (
     <section id="premium-monthly" className="scroll-mt-28 px-1">
-      <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
         작은 질문
       </div>
-      <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+      <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
         궁금한 것 하나만 먼저 봐도 좋아요
       </h2>
       <div className="mt-3 grid grid-cols-2 gap-2.5">
@@ -253,13 +253,13 @@ function SmallQuestionProducts({
             href={getTasteProductHref(product.slug, encodedSlug, targetYear)}
             className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
           >
-            <div className="text-[11px] font-extrabold text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
               {product.price}
             </div>
-            <div className="mt-1.5 text-[14px] font-extrabold leading-snug text-[var(--app-ink)]">
+            <div className="mt-1.5 text-[16.1px] font-extrabold leading-snug text-[var(--app-ink)]">
               {product.title}
             </div>
-            <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+            <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
               {product.result}
             </p>
           </Link>
@@ -517,7 +517,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 {/* 결제 권한 ✓ 배지 (paid 일 때만) */}
                 {hasLifetimeAccess || yearlyAccessLabel || monthlyAccessLabel ? (
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold text-white"
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12.1px] font-extrabold text-white"
                     style={{
                       background: 'var(--app-pink)',
                       boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
@@ -529,17 +529,17 @@ export default async function SajuPremiumPage({ params }: Props) {
                     {hasLifetimeAccess ? '평생 소장' : yearlyAccessLabel ?? monthlyAccessLabel}
                   </span>
                 ) : null}
-                <div className="mt-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="mt-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   {dayMasterPillar} · {yearZodiacLabel}
                 </div>
                 <h1
-                  className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                  className="mt-1 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {heroTitle}
                 </h1>
                 <p
-                  className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+                  className="mt-2 text-[15px] leading-[1.65] text-[var(--app-copy)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {heroDescription}
@@ -557,11 +557,11 @@ export default async function SajuPremiumPage({ params }: Props) {
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   <span
-                    className="text-[10px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]"
+                    className="text-[11.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]"
                   >
                     {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                  <span className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
                     {step.label}
                   </span>
                 </Link>
@@ -573,7 +573,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 href={`/saju/${slug}/premium/print`}
                 eventName="report_pdf_click"
                 eventParams={{ slug, from: 'premium_hero', status: 'available' }}
-                className="relative mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="relative mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 📄 PDF로 저장하기
               </TrackedLink>
@@ -660,7 +660,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <section id="premium-locked-lifetime" className="scroll-mt-28 px-1">
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
                   <div className="select-none blur-[5px] opacity-65">
-                    <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                    <p className="text-[15px] leading-[1.7] text-[var(--app-copy)]">
                       자세한 풀이에서는 타고난 성향, 관계 패턴, 일·돈의 흐름을 정리한 뒤
                       10년 단위로 흐르는 큰 운을 차례로 보여드립니다. 평생 한 번 정리해
                       두면 매년 흐름을 가볍게 읽게 됩니다.
@@ -668,7 +668,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span
-                      className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
+                      className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
                       🔒 49,000원 결제 후 열림
@@ -688,7 +688,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               <section id="premium-locked-yearly" className="scroll-mt-28 px-1">
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
                   <div className="select-none blur-[5px] opacity-65">
-                    <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                    <p className="text-[15px] leading-[1.7] text-[var(--app-copy)]">
                       올해의 큰 주제와 월별 타이밍을 한자리에서 봅니다. 분야별로 무엇을
                       먼저 할지, 무엇을 미뤄도 좋을지 결정에 도움이 되는 한 줄을
                       정리해 드립니다.
@@ -696,7 +696,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span
-                      className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
+                      className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
                       🔒 결제 후 열림
@@ -714,49 +714,49 @@ export default async function SajuPremiumPage({ params }: Props) {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
+                    className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                     style={{ background: 'var(--app-pink)' }}
                   >
                     VIP
                   </span>
                   <span
-                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ opacity: 0.7 }}
                   >
                     PREMIUM
                   </span>
                 </div>
-                <h2 className="mt-2 text-[19px] font-extrabold leading-snug tracking-tight">
+                <h2 className="mt-2 text-[21.8px] font-extrabold leading-snug tracking-tight">
                   큰 흐름 + 올해 흐름까지
                   <br />
                   한 번에 열기
                 </h2>
-                <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ color: 'rgba(255,255,255,0.78)' }}>
+                <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ color: 'rgba(255,255,255,0.78)' }}>
                   월별 흐름은 이미 열려 있어요. 49,000원 풀팩으로 큰 흐름과 올해 흐름이
                   바로 함께 열립니다.
                 </p>
                 <div className="mt-4 flex items-end gap-2.5">
-                  <div className="text-[23px] font-extrabold tracking-tight">49,000원</div>
+                  <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
                   <div
-                    className="mb-1.5 text-[11px] line-through"
+                    className="mb-1.5 text-[12.6px] line-through"
                     style={{ opacity: 0.5 }}
                   >
                     69,000원
                   </div>
                 </div>
-                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <p className="mt-1.5 text-[12.6px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-monthly`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                   >
                     1·2장 함께 열기 →
                   </Link>
                   <Link
                     href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
-                    className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                    className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                   >
                     올해 핵심 3줄만 9,900원
                   </Link>
@@ -774,10 +774,10 @@ export default async function SajuPremiumPage({ params }: Props) {
 
               <section id="premium-guide" className="scroll-mt-28 px-1">
                 <article className="rounded-[18px] border border-[var(--app-line)] bg-white p-5">
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     열리는 내용
                   </div>
-                  <p className="mt-2.5 text-[14px] leading-[1.7] text-[var(--app-copy)]">
+                  <p className="mt-2.5 text-[16.1px] leading-[1.7] text-[var(--app-copy)]">
                     이 사주는 {sajuData.dayMaster.metaphor ?? '자연의 상징'}처럼 드러나는 기질을
                     중심으로 봅니다. 겉으로 보이는 모습과 안쪽에서 오래 반복되는 마음의 바탕을 함께
                     확인합니다.
@@ -788,14 +788,14 @@ export default async function SajuPremiumPage({ params }: Props) {
                     style={{ background: 'var(--app-surface-muted, rgba(0,0,0,0.02))' }}
                   >
                     <div className="select-none blur-[5px] opacity-65">
-                      <p className="text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                      <p className="text-[15px] leading-[1.7] text-[var(--app-copy)]">
                         자세한 풀이에서는 말투, 관계에서 피로가 쌓이는 지점, 큰 흐름 안에서
                         오래 가져갈 힌트를 이어서 보여드립니다.
                       </p>
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span
-                        className="rounded-full px-3.5 py-1.5 text-[12px] font-extrabold text-white"
+                        className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                         style={{ background: 'rgba(17,17,20,0.78)' }}
                       >
                         🔒 결제 후 열림
@@ -807,7 +807,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     {SAJU_PREMIUM_SECTIONS.map((item) => (
                       <li
                         key={item}
-                        className="flex items-center gap-2 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                        className="flex items-center gap-2 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                       >
                         <span
                           className="h-1.5 w-1.5 shrink-0 rounded-full"
@@ -830,19 +830,19 @@ export default async function SajuPremiumPage({ params }: Props) {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
+                    className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                     style={{ background: 'var(--app-pink)' }}
                   >
                     VIP
                   </span>
                   <span
-                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ opacity: 0.7 }}
                   >
                     PREMIUM
                   </span>
                 </div>
-                <h2 className="mt-2 text-[19px] font-extrabold leading-snug tracking-tight">
+                <h2 className="mt-2 text-[21.8px] font-extrabold leading-snug tracking-tight">
                   깊은 사주풀이
                   <br />
                   내 인생 흐름 잡기
@@ -851,7 +851,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   {SAJU_PREMIUM_VALUE_POINTS.map((item) => (
                     <li
                       key={item}
-                      className="flex items-start gap-2 text-[12.5px] leading-[1.55]"
+                      className="flex items-start gap-2 text-[14.4px] leading-[1.55]"
                       style={{ color: 'rgba(255,255,255,0.82)' }}
                     >
                       <span
@@ -864,21 +864,21 @@ export default async function SajuPremiumPage({ params }: Props) {
                   ))}
                 </ul>
                 <div className="mt-4 flex items-end gap-2.5">
-                  <div className="text-[23px] font-extrabold tracking-tight">49,000원</div>
+                  <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
                   <div
-                    className="mb-1.5 text-[11px] line-through"
+                    className="mb-1.5 text-[12.6px] line-through"
                     style={{ opacity: 0.5 }}
                   >
                     69,000원
                   </div>
                 </div>
-                <p className="mt-1.5 text-[11px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <p className="mt-1.5 text-[12.6px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   한 번 결제로 평생 다시 봅니다 · 1년으로 나눠도 하루 약 130원꼴이에요.
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                   >
                     풀이 열기 →
                   </Link>
@@ -887,21 +887,21 @@ export default async function SajuPremiumPage({ params }: Props) {
                     {activeMembershipPlan === 'premium_monthly' ? (
                       <Link
                         href="/my/billing"
-                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                       >
                         ✓ 멤버십 이용 중
                       </Link>
                     ) : (
                       <Link
                         href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
-                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                       >
                         멤버십으로 먼저
                       </Link>
                     )}
                     <Link
                       href={REPORT_SAMPLE_HREF}
-                      className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[12.5px] font-bold text-white/85"
+                      className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                     >
                       샘플 보기
                     </Link>
@@ -927,10 +927,10 @@ export default async function SajuPremiumPage({ params }: Props) {
 
           {/* §last 안심 정보 — trust signals */}
           <section className="px-1">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               안심하고 보기
             </div>
-            <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
               무섭게 단정하지 않고, 다시 볼 수 있게 남깁니다
             </h2>
             {/* 2026-05-15 — TRUST_SIGNALS title+body 가 중간 길이 본문. 1열 stack. */}
@@ -940,10 +940,10 @@ export default async function SajuPremiumPage({ params }: Props) {
                   key={signal.title}
                   className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                 >
-                  <div className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                  <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
                     {signal.title}
                   </div>
-                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                     {signal.body}
                   </p>
                 </article>

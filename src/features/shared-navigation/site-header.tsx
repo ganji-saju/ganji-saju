@@ -243,7 +243,7 @@ function DesktopNavLink({
           {item.label}
         </span>
         {!compact ? (
-          <span className="mt-0.5 block truncate text-[11px] text-[var(--app-copy-soft)]">
+          <span className="mt-0.5 block truncate text-[12.6px] text-[var(--app-copy-soft)]">
             {meta.description}
           </span>
         ) : null}
@@ -304,7 +304,7 @@ function DesktopSidebar({
 
       <div className="relative z-10 border-b border-[var(--app-line)] px-6 py-5">
         <Link href="/" className="group block">
-          <div className=" text-[11px] tracking-[0.48em] text-[var(--app-gold)]/72">
+          <div className=" text-[12.6px] tracking-[0.48em] text-[var(--app-gold)]/72">
             DALBIT LIFE
           </div>
           <div className="mt-3 flex items-center gap-3">
@@ -507,7 +507,7 @@ function MobileChrome({
                     key={item.label}
                     href={item.href}
                     data-active={active}
-                    className="relative inline-flex shrink-0 items-center rounded-[10px] px-3 py-2 text-[13.5px] font-bold transition-colors"
+                    className="relative inline-flex shrink-0 items-center rounded-[10px] px-3 py-2 text-[15.5px] font-bold transition-colors"
                     style={{
                       color: active
                         ? 'var(--app-pink-strong)'
@@ -527,14 +527,14 @@ function MobileChrome({
               <Link
                 href="/credits"
                 aria-label={`보유 코인 ${creditLabel(user, credits)}`}
-                className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-[12px] font-extrabold md:inline-flex"
+                className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13.8px] font-extrabold md:inline-flex"
                 style={{
                   background: 'var(--app-pink-soft)',
                   color: 'var(--app-pink-strong)',
                   border: '1px solid var(--app-pink-line)',
                 }}
               >
-                <span style={{ fontSize: 13 }} aria-hidden="true">✦</span>
+                <span style={{ fontSize: 15 }} aria-hidden="true">✦</span>
                 {creditLabel(user, credits)}
               </Link>
 
@@ -577,7 +577,7 @@ function MobileChrome({
                 <button
                   type="button"
                   onClick={onSignOut}
-                  className="hidden h-9 items-center rounded-full border bg-white px-3.5 text-[12.5px] font-extrabold text-[var(--app-copy-muted)] md:inline-flex"
+                  className="hidden h-9 items-center rounded-full border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)] md:inline-flex"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   로그아웃
@@ -585,7 +585,7 @@ function MobileChrome({
               ) : (
                 <Link
                   href={authHref}
-                  className="hidden h-9 items-center rounded-full px-3.5 text-[12.5px] font-extrabold text-white md:inline-flex"
+                  className="hidden h-9 items-center rounded-full px-3.5 text-[14.4px] font-extrabold text-white md:inline-flex"
                   style={{
                     background: 'var(--app-pink)',
                     boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
@@ -676,7 +676,7 @@ function MobileChrome({
                         <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
                           <Sparkles className="h-2.5 w-2.5" />
                         </span>
-                        <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
+                        <span className="app-mobile-dock-label mt-1 text-[12.6px] font-medium">
                           {fanMenuOpen ? '닫기' : getMobileDockLabel(item)}
                         </span>
                       </button>
@@ -698,7 +698,7 @@ function MobileChrome({
                       <span className="app-mobile-dock-icon">
                         <DockIcon label={item.label} />
                       </span>
-                      <span className="app-mobile-dock-label mt-1 text-[11px] font-medium">
+                      <span className="app-mobile-dock-label mt-1 text-[12.6px] font-medium">
                         {getMobileDockLabel(item)}
                       </span>
                     </Link>

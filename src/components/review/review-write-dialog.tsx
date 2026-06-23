@@ -142,20 +142,20 @@ export function ReviewWriteDialog({
         className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[18px] bg-white shadow-xl focus:outline-none"
       >
         <div className="border-b border-[var(--app-line)] px-5 py-4">
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             {existing ? '후기 수정' : '후기 작성'}
           </div>
-          <h2 className="mt-1 text-[16px] font-extrabold leading-snug text-[var(--app-ink)]">
+          <h2 className="mt-1 text-[18.4px] font-extrabold leading-snug text-[var(--app-ink)]">
             {productTitle}
           </h2>
-          <p className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+          <p className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]">
             제출 후 검수를 거쳐 공개됩니다. 부적절한 문구는 비공개 처리될 수 있어요.
           </p>
         </div>
 
         <div className="space-y-4 px-5 py-4">
           <div>
-            <label className="block text-[12.5px] font-extrabold text-[var(--app-ink)]">
+            <label className="block text-[14.4px] font-extrabold text-[var(--app-ink)]">
               별점
             </label>
             <div className="mt-2 flex items-center gap-1">
@@ -165,7 +165,7 @@ export function ReviewWriteDialog({
                   type="button"
                   aria-label={STAR_LABELS[n - 1]}
                   onClick={() => setRating(n)}
-                  className="text-[28px] leading-none transition"
+                  className="text-[32.2px] leading-none transition"
                   style={{
                     color: n <= rating ? 'var(--app-pink-strong)' : 'rgba(17,17,20,0.18)',
                   }}
@@ -173,7 +173,7 @@ export function ReviewWriteDialog({
                   ★
                 </button>
               ))}
-              <span className="ml-2 text-[12px] font-bold text-[var(--app-copy-muted)]">
+              <span className="ml-2 text-[13.8px] font-bold text-[var(--app-copy-muted)]">
                 {rating}점
               </span>
             </div>
@@ -182,7 +182,7 @@ export function ReviewWriteDialog({
           <div>
             <label
               htmlFor="review-content"
-              className="block text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              className="block text-[14.4px] font-extrabold text-[var(--app-ink)]"
             >
               본문
             </label>
@@ -192,11 +192,11 @@ export function ReviewWriteDialog({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
-              className="mt-2 w-full rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[13.5px] leading-[1.6] outline-none focus:border-[var(--app-pink-strong)]"
+              className="mt-2 w-full rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[15.5px] leading-[1.6] outline-none focus:border-[var(--app-pink-strong)]"
               placeholder={`${REVIEW_CONTENT_MIN}자 이상, ${REVIEW_CONTENT_MAX}자 이내로 솔직한 사용 경험을 적어주세요.`}
               maxLength={REVIEW_CONTENT_MAX}
             />
-            <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--app-copy-muted)]">
+            <div className="mt-1 flex items-center justify-between text-[12.6px] text-[var(--app-copy-muted)]">
               <span>
                 {trimmedLen < REVIEW_CONTENT_MIN
                   ? `${REVIEW_CONTENT_MIN - trimmedLen}자 더 작성해주세요`
@@ -211,7 +211,7 @@ export function ReviewWriteDialog({
           <div>
             <label
               htmlFor="review-display-name"
-              className="block text-[12.5px] font-extrabold text-[var(--app-ink)]"
+              className="block text-[14.4px] font-extrabold text-[var(--app-ink)]"
             >
               표시명 <span className="font-bold text-[var(--app-copy-muted)]">(선택)</span>
             </label>
@@ -222,13 +222,13 @@ export function ReviewWriteDialog({
               onChange={(e) => setDisplayName(e.target.value)}
               maxLength={REVIEW_DISPLAY_NAME_MAX}
               placeholder="비워두면 '익명' 으로 표시"
-              className="mt-2 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-2.5 text-[13.5px] outline-none focus:border-[var(--app-pink-strong)]"
+              className="mt-2 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-2.5 text-[15.5px] outline-none focus:border-[var(--app-pink-strong)]"
             />
           </div>
 
           {error ? (
             <div
-              className="rounded-[10px] border px-3 py-2 text-[12px] font-bold"
+              className="rounded-[10px] border px-3 py-2 text-[13.8px] font-bold"
               style={{
                 background: 'rgba(255, 79, 79, 0.06)',
                 borderColor: 'rgba(255, 79, 79, 0.3)',
@@ -245,7 +245,7 @@ export function ReviewWriteDialog({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex-1 rounded-full border border-[var(--app-line)] bg-white py-2.5 text-[13px] font-extrabold text-[var(--app-copy)] disabled:opacity-60"
+            className="flex-1 rounded-full border border-[var(--app-line)] bg-white py-2.5 text-[15px] font-extrabold text-[var(--app-copy)] disabled:opacity-60"
           >
             취소
           </button>
@@ -253,7 +253,7 @@ export function ReviewWriteDialog({
             type="button"
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="flex-1 rounded-full py-2.5 text-[13px] font-extrabold text-white disabled:opacity-60"
+            className="flex-1 rounded-full py-2.5 text-[15px] font-extrabold text-white disabled:opacity-60"
             style={{
               background: 'var(--app-pink)',
               boxShadow: canSubmit ? '0 8px 18px rgba(216, 27, 114, 0.32)' : 'none',

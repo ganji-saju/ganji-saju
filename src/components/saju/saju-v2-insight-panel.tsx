@@ -112,7 +112,7 @@ function VerificationBadge({ report }: { report: SajuVerificationReport }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[13px] font-extrabold"
+      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[15px] font-extrabold"
       style={{ background: palette.bg, color: palette.fg, borderColor: palette.border }}
     >
       <span aria-hidden="true">
@@ -137,21 +137,21 @@ function ClaimRow({
     >
       <div className="flex items-start gap-2">
         <span
-          className="grid h-5 shrink-0 items-center rounded-full border bg-white px-2 text-[11px] font-extrabold"
+          className="grid h-5 shrink-0 items-center rounded-full border bg-white px-2 text-[12.6px] font-extrabold"
           style={{ borderColor: tone.border, color: tone.accent }}
         >
           {FRIENDLY_UI_LABEL.confidenceLabel} · {CONFIDENCE_LABEL[claim.confidence]}
         </span>
       </div>
       <p
-        className="mt-2 text-[13.5px] leading-[1.75] text-[var(--app-ink)]"
+        className="mt-2 text-[15.5px] leading-[1.75] text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {claim.text}
       </p>
       {claim.caveat ? (
         <p
-          className="mt-1.5 rounded-[10px] px-2.5 py-1.5 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]"
+          className="mt-1.5 rounded-[10px] px-2.5 py-1.5 text-[15px] leading-[1.65] text-[var(--app-copy-muted)]"
           style={{
             background: 'rgba(0,0,0,0.03)',
             wordBreak: 'keep-all',
@@ -163,11 +163,11 @@ function ClaimRow({
 
       <details className="group mt-2">
         <summary
-          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+          className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: tone.border }}
         >
           <span>{FRIENDLY_UI_LABEL.evidenceCount(claim.evidence.length)}</span>
-          <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">
+          <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">
             ▼
           </span>
         </summary>
@@ -175,19 +175,19 @@ function ClaimRow({
           {claim.evidence.map((ev) => (
             <li
               key={ev.path}
-              className="rounded-[10px] border bg-white px-3 py-2 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+              className="rounded-[10px] border bg-white px-3 py-2 text-[15px] leading-[1.55] text-[var(--app-copy)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <span className="block text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+              <span className="block text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                 {ev.path}
               </span>
               <span
-                className="mt-0.5 block text-[13px] font-bold text-[var(--app-ink)]"
+                className="mt-0.5 block text-[15px] font-bold text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {ev.label}
                 {ev.value !== undefined && ev.value !== null ? (
-                  <span className="ml-1.5 text-[13px] font-extrabold" style={{ color: tone.accent }}>
+                  <span className="ml-1.5 text-[15px] font-extrabold" style={{ color: tone.accent }}>
                     {String(ev.value)}
                   </span>
                 ) : null}
@@ -210,7 +210,7 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
     >
       <div className="flex items-center gap-2">
         <span
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11.5px] font-extrabold text-white"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[13.2px] font-extrabold text-white"
           style={{
             background: tone.accent,
             boxShadow: `0 6px 14px ${tone.accent}40`,
@@ -221,17 +221,17 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
         </span>
         <div className="min-w-0 flex-1">
           <div
-            className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
+            className="text-[15px] font-extrabold uppercase tracking-[0.06em]"
             style={{ color: tone.accent }}
           >
             {tone.eyebrow}
           </div>
-          <h3 className="text-[16px] font-extrabold text-[var(--app-ink)]">{block.title}</h3>
+          <h3 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">{block.title}</h3>
         </div>
       </div>
 
       <p
-        className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+        className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {block.summary}
@@ -247,14 +247,14 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
 
       {block.actions.length > 0 ? (
         <div className="mt-3">
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             오늘부터 작게 해볼 일
           </div>
           <ul className="mt-1.5 grid gap-1.5">
             {block.actions.map((action) => (
               <li
                 key={action}
-                className="flex items-start gap-2 rounded-[10px] border bg-white px-3 py-2 text-[12.5px] leading-[1.65] text-[var(--app-copy)]"
+                className="flex items-start gap-2 rounded-[10px] border bg-white px-3 py-2 text-[14.4px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
               >
                 <span
@@ -271,14 +271,14 @@ function Block({ block }: { block: SajuInterpretationBlock }) {
 
       {block.antiClaims.length > 0 ? (
         <div className="mt-3">
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
             {FRIENDLY_UI_LABEL.antiClaimsTitle}
           </div>
           <ul className="mt-1.5 grid gap-1">
             {block.antiClaims.map((line) => (
               <li
                 key={line}
-                className="rounded-[10px] border px-3 py-2 text-[13px] leading-[1.6] text-[var(--app-ink)]"
+                className="rounded-[10px] border px-3 py-2 text-[15px] leading-[1.6] text-[var(--app-ink)]"
                 style={{
                   background: '#fdecec',
                   borderColor: 'rgba(198,69,69,0.18)',
@@ -323,7 +323,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
 
         <div className="relative flex items-start gap-3">
           <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
             style={{
               background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
               boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
@@ -336,7 +336,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[13px] font-extrabold text-[var(--app-pink-strong)]"
+                className="rounded-full border bg-white px-2 py-0.5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 ✦ 한 줄 요약
@@ -344,7 +344,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
               <VerificationBadge report={verification} />
             </div>
             <p
-              className="mt-2 text-[14.5px] leading-[1.78] font-bold text-[var(--app-ink)]"
+              className="mt-2 text-[16.7px] leading-[1.78] font-bold text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {interpretation.executiveSummary}
@@ -362,11 +362,11 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
             borderColor: 'rgba(198,69,69,0.28)',
           }}
         >
-          <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+          <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
             ⚠ 풀이 점검에 문제가 있어요
           </div>
           <p
-            className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-ink)]"
+            className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             풀이를 만드는 과정에서 {verification.summary.errors}건의 문제가 있었어요. 본문을 그대로 믿기보다, 다시 계산하는 편이 안전해요.
@@ -374,11 +374,11 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           {verification.issues.length > 0 ? (
             <details className="group mt-2.5">
               <summary
-                className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[13px] font-extrabold text-[var(--app-coral)]"
+                className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[10px] border bg-white px-3 py-2 text-[15px] font-extrabold text-[var(--app-coral)]"
                 style={{ borderColor: 'rgba(198,69,69,0.28)' }}
               >
                 <span>문제 자세히 보기 ({verification.issues.length}건)</span>
-                <span className="text-[9px] transition-transform group-open:rotate-180" aria-hidden="true">
+                <span className="text-[10.4px] transition-transform group-open:rotate-180" aria-hidden="true">
                   ▼
                 </span>
               </summary>
@@ -386,16 +386,16 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
                 {verification.issues.slice(0, 8).map((issue) => (
                   <li
                     key={`${issue.code}-${issue.path}`}
-                    className="rounded-[10px] border bg-white px-3 py-2 text-[13px] leading-[1.55] text-[var(--app-copy)]"
+                    className="rounded-[10px] border bg-white px-3 py-2 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
-                    <span className="block text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-coral)]">
+                    <span className="block text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-coral)]">
                       {issue.severity} · {issue.code}
                     </span>
-                    <span className="mt-0.5 block text-[13px] font-bold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+                    <span className="mt-0.5 block text-[15px] font-bold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                       {issue.path}
                     </span>
-                    <span className="mt-0.5 block text-[13px] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+                    <span className="mt-0.5 block text-[15px] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
                       {issue.message}
                     </span>
                   </li>
@@ -425,19 +425,19 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           }}
         >
           <div
-            className="text-[13px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[15px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink)' }}
           >
             {FRIENDLY_UI_LABEL.nextStepsTitle}
           </div>
-          <h3 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+          <h3 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
             가장 먼저 시작해보면 좋아요
           </h3>
           <ul className="mt-3 grid gap-1.5">
             {interpretation.nextBestActions.map((action, index) => (
               <li
                 key={action}
-                className="flex items-start gap-2 rounded-[10px] px-3 py-2 text-[12.5px] leading-[1.7]"
+                className="flex items-start gap-2 rounded-[10px] px-3 py-2 text-[14.4px] leading-[1.7]"
                 style={{
                   background: 'rgba(255,255,255,0.06)',
                   color: 'rgba(255,255,255,0.92)',
@@ -445,7 +445,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
                 }}
               >
                 <span
-                  className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                  className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11.5px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink)' }}
                   aria-hidden="true"
                 >
@@ -464,9 +464,9 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           className="group rounded-[12px] border bg-white"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[13px] font-extrabold text-[var(--app-copy-muted)]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[15px] font-extrabold text-[var(--app-copy-muted)]">
             <span>{FRIENDLY_UI_LABEL.disclaimers} ({interpretation.disclaimers.length})</span>
-            <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">
+            <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">
               ▼
             </span>
           </summary>
@@ -475,7 +475,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
               {interpretation.disclaimers.map((line) => (
                 <li
                   key={line}
-                  className="text-[13px] leading-[1.65] text-[var(--app-copy-soft)]"
+                  className="text-[15px] leading-[1.65] text-[var(--app-copy-soft)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   · {line}

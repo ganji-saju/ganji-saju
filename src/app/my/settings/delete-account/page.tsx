@@ -93,7 +93,7 @@ export default function AccountDeletePage() {
               }}
             >
               <div
-                className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[28px] font-extrabold"
+                className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[32.2px] font-extrabold"
                 style={{
                   background: '#fff',
                   color: 'var(--app-pink-strong)',
@@ -102,16 +102,16 @@ export default function AccountDeletePage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
+              <h1 className="mt-4 text-[23px] font-extrabold leading-snug text-[var(--app-ink)]">
                 탈퇴가 완료되었습니다
               </h1>
-              <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+              <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                 그동안 간지사주를 이용해주셔서 감사합니다.<br />
                 결제 내역은 전자상거래법에 따라 5년간 안전하게 보관됩니다.
               </p>
               <Link
                 href="/login"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 로그인 화면으로
               </Link>
@@ -119,7 +119,7 @@ export default function AccountDeletePage() {
 
             <Link
               href="/"
-              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13.5px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
             >
               ← 메인으로 돌아가기
             </Link>
@@ -144,15 +144,15 @@ export default function AccountDeletePage() {
               <>
                 <div>
                   <div
-                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ color: 'var(--app-coral)' }}
                   >
                     STEP 1 / 3
                   </div>
-                  <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+                  <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
                     정말 떠나시나요?
                   </h1>
-                  <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                     탈퇴하시기 전에 잃게 되는 것들을 확인해주세요.
                   </p>
                 </div>
@@ -166,7 +166,7 @@ export default function AccountDeletePage() {
                   }}
                 >
                   <div
-                    className="text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[13.2px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ color: 'var(--app-pink)' }}
                   >
                     탈퇴 시 사라지는 것들
@@ -175,7 +175,7 @@ export default function AccountDeletePage() {
                     {LOSS_ITEMS.map((item) => (
                       <li key={item.label} className="flex items-center gap-3">
                         <div
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[14px] font-extrabold"
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[16.1px] font-extrabold"
                           style={{
                             background: 'rgba(255,255,255,0.08)',
                             color: 'rgba(255,255,255,0.7)',
@@ -185,10 +185,10 @@ export default function AccountDeletePage() {
                           {item.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-[13px] font-extrabold text-white">
+                          <div className="text-[15px] font-extrabold text-white">
                             {item.label}
                           </div>
-                          <div className="mt-0.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                          <div className="mt-0.5 text-[12.6px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
                             {item.description}
                           </div>
                         </div>
@@ -205,22 +205,22 @@ export default function AccountDeletePage() {
                     borderColor: 'var(--app-pink-line)',
                   }}
                 >
-                  <div className="text-[12px] font-extrabold text-[var(--app-pink-strong)]">
+                  <div className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
                     잠시 쉬어가는 것은 어때요?
                   </div>
-                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy)]">
+                  <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
                     <strong>알림 끄기</strong> 또는 <strong>일시 정지</strong>로 코인과 풀이를 그대로 유지할 수 있어요.
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <Link
                       href="/notifications"
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
                     >
                       알림 끄기
                     </Link>
                     <Link
                       href="/my"
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
                     >
                       3개월 일시정지
                     </Link>
@@ -231,15 +231,15 @@ export default function AccountDeletePage() {
               <>
                 <div>
                   <div
-                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ color: 'var(--app-coral)' }}
                   >
                     STEP 2 / 3
                   </div>
-                  <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+                  <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
                     떠나는 이유가 있을까요?
                   </h1>
-                  <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                     조금만 알려주시면 더 나은 서비스를 만들 수 있어요.
                   </p>
                 </div>
@@ -288,10 +288,10 @@ export default function AccountDeletePage() {
                             aria-hidden="true"
                           />
                           <div className="min-w-0 flex-1">
-                            <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                            <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                               {r.label}
                             </div>
-                            <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                            <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                               {r.description}
                             </div>
                           </div>
@@ -305,7 +305,7 @@ export default function AccountDeletePage() {
                       placeholder="자세한 의견을 알려주세요"
                       value={otherReason}
                       onChange={(event) => setOtherReason(event.target.value)}
-                      className="min-h-[76px] w-full rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[13px] font-medium text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                      className="min-h-[76px] w-full rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[15px] font-medium text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                     />
                   ) : null}
                 </div>
@@ -314,15 +314,15 @@ export default function AccountDeletePage() {
               <>
                 <div>
                   <div
-                    className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ color: 'var(--app-coral)' }}
                   >
                     STEP 3 / 3
                   </div>
-                  <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+                  <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
                     마지막 확인이에요
                   </h1>
-                  <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                     아래 문구를 정확히 입력해주시면 탈퇴 요청이 접수돼요.
                   </p>
                 </div>
@@ -335,12 +335,12 @@ export default function AccountDeletePage() {
                   }}
                 >
                   <div
-                    className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
+                    className="text-[13.8px] font-extrabold uppercase tracking-[0.04em]"
                     style={{ color: 'var(--app-coral)' }}
                   >
                     ⚠ 주의사항
                   </div>
-                  <ul className="mt-2.5 grid gap-1.5 pl-4 text-[12px] leading-[1.65] text-[var(--app-copy)]">
+                  <ul className="mt-2.5 grid gap-1.5 pl-4 text-[13.8px] leading-[1.65] text-[var(--app-copy)]">
                     <li className="list-disc">탈퇴 후 30일 이내 재가입 시 데이터 복구 불가</li>
                     <li className="list-disc">코인 잔액은 환불되지 않습니다</li>
                     <li className="list-disc">결제 내역은 5년간 보관 (전자상거래법)</li>
@@ -351,7 +351,7 @@ export default function AccountDeletePage() {
                 <div>
                   <label
                     htmlFor="delete-confirm"
-                    className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+                    className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
                   >
                     &ldquo;
                     <span className="font-extrabold" style={{ color: 'var(--app-coral)' }}>
@@ -365,14 +365,14 @@ export default function AccountDeletePage() {
                     value={confirm}
                     onChange={(event) => setConfirm(event.target.value)}
                     placeholder="탈퇴합니다"
-                    className="mt-1.5 h-12 w-full rounded-[12px] border bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)]"
+                    className="mt-1.5 h-12 w-full rounded-[12px] border bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)]"
                     style={{
                       borderColor: canSubmit ? 'var(--app-coral)' : 'var(--app-line)',
                     }}
                   />
                   {canSubmit ? (
                     <p
-                      className="mt-1.5 pl-1 text-[11.5px] font-extrabold"
+                      className="mt-1.5 pl-1 text-[13.2px] font-extrabold"
                       style={{ color: 'var(--app-jade)' }}
                     >
                       ✓ 확인되었습니다
@@ -381,7 +381,7 @@ export default function AccountDeletePage() {
                 </div>
 
                 {errorMessage ? (
-                  <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
+                  <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]">
                     {errorMessage}
                   </p>
                 ) : null}
@@ -400,7 +400,7 @@ export default function AccountDeletePage() {
                   <button
                     type="button"
                     onClick={() => setStep(((step as number) - 1) as Step)}
-                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[13.5px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     이전
@@ -408,7 +408,7 @@ export default function AccountDeletePage() {
                 ) : (
                   <Link
                     href="/my/settings"
-                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[13.5px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     돌아가기
@@ -422,7 +422,7 @@ export default function AccountDeletePage() {
                       setStep(((step as number) + 1) as Step);
                     }}
                     disabled={step === 2 && !canProceedStep2}
-                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[14px] font-extrabold text-white transition disabled:opacity-50"
+                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white transition disabled:opacity-50"
                     style={{ background: 'var(--app-ink)' }}
                   >
                     계속 진행하기
@@ -432,7 +432,7 @@ export default function AccountDeletePage() {
                     type="button"
                     onClick={handleFinalSubmit}
                     disabled={!canSubmit || isSubmitting}
-                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
                     style={{
                       background: canSubmit ? 'var(--app-coral)' : 'var(--app-line)',
                     }}

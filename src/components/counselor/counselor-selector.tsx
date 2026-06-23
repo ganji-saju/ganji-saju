@@ -76,13 +76,13 @@ export function CounselorSelector({
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn('text-[11px] font-semibold uppercase tracking-[0.22em]', counselor.accentClassName)}>
+                    <span className={cn('text-[12.6px] font-semibold uppercase tracking-[0.22em]', counselor.accentClassName)}>
                       {counselor.shortLabel}
                     </span>
                     {selected ? (
                       <span
                         className={cn(
-                          'rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+                          'rounded-full border px-2 py-0.5 text-[11.5px] font-semibold',
                           counselor.borderClassName,
                           counselor.accentClassName,
                           counselor.surfaceClassName

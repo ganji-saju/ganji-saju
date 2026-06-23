@@ -15,17 +15,17 @@ export function PushModalShowcaseClient() {
         className="rounded-[18px] border bg-white p-5"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           trigger
         </div>
         <h2
-          className="mt-1 text-[17px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+          className="mt-1 text-[19.5px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           푸시 알림 권한 모달 미리보기
         </h2>
         <p
-          className="mt-1.5 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+          className="mt-1.5 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           실제 호출 흐름: <code>Notification.requestPermission</code> →{' '}
@@ -40,7 +40,7 @@ export function PushModalShowcaseClient() {
             setLastEvent(null);
             setOpen(true);
           }}
-          className="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-[var(--app-pink)] px-5 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-[var(--app-pink)] px-5 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           <Bell className="h-4 w-4" />
           모달 열기
@@ -48,7 +48,7 @@ export function PushModalShowcaseClient() {
 
         {lastEvent ? (
           <div
-            className="mt-3 rounded-[10px] border px-3 py-2 text-[11.5px] leading-[1.55]"
+            className="mt-3 rounded-[10px] border px-3 py-2 text-[13.2px] leading-[1.55]"
             style={{
               borderColor: 'var(--app-pink-line)',
               background: 'var(--app-pink-soft)',

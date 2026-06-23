@@ -132,18 +132,18 @@ export function TermsConsentModal({
           <X className="h-4 w-4" />
         </button>
 
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           약관 동의
         </div>
         <h2
           id="terms-modal-title"
-          className="mt-1 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+          className="mt-1 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {title}
         </h2>
         <p
-          className="mt-2 text-[12.5px] leading-[1.65] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[14.4px] leading-[1.65] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           서비스 이용을 위해 다음 약관 동의가 필요합니다. 필수 항목은 모두 동의해야 진행할 수 있어요.
@@ -157,7 +157,7 @@ export function TermsConsentModal({
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+          <span className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">
             모든 약관에 동의합니다
           </span>
           <input
@@ -183,12 +183,12 @@ export function TermsConsentModal({
                   className="h-5 w-5 cursor-pointer accent-[var(--app-pink)]"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                     {item.label}
                     {item.required ? (
                       <span className="ml-1 text-[var(--app-pink-strong)]">*</span>
                     ) : (
-                      <span className="ml-1 text-[11px] font-bold text-[var(--app-copy-soft)]">(선택)</span>
+                      <span className="ml-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]">(선택)</span>
                     )}
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export function TermsConsentModal({
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 text-[11.5px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
+                  className="shrink-0 text-[13.2px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
                 >
                   전체 보기
                 </a>
@@ -213,14 +213,14 @@ export function TermsConsentModal({
             onClick={handleConfirmClick}
             disabled={!requiredAllChecked}
             aria-disabled={!requiredAllChecked}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:bg-[var(--app-copy-soft)] disabled:opacity-60 disabled:shadow-none"
+            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:bg-[var(--app-copy-soft)] disabled:opacity-60 disabled:shadow-none"
           >
             {confirmLabel}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-bold text-[var(--app-copy-muted)]"
+            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-bold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             취소

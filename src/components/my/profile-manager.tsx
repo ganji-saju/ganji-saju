@@ -282,7 +282,7 @@ function ManagedBirthFields({
           setLocationMessage(`출생지로 ${item.displayName}를 적용했습니다.`);
         }}
       />
-      <div className="rounded-[12px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-3.5 py-3 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+      <div className="rounded-[12px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-3.5 py-3 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
         {helperText}
       </div>
     </div>

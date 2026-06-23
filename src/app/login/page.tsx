@@ -314,7 +314,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+      className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
     >
       {children}
     </label>
@@ -363,7 +363,7 @@ function GatewayView({
             background:
               'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
             fontFamily: 'var(--font-han)',
-            fontSize: 30,
+            fontSize: 34.5,
             fontWeight: 800,
             boxShadow: '0 14px 28px rgba(216,27,114,0.32)',
           }}
@@ -371,12 +371,12 @@ function GatewayView({
           干
         </div>
         <h1
-          className="text-[28px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]"
+          className="text-[32.2px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]"
           style={{ fontFamily: 'var(--font-han)' }}
         >
           간지사주
         </h1>
-        <div className="mt-1 text-[13px] font-bold text-[var(--app-pink-strong)]">
+        <div className="mt-1 text-[15px] font-bold text-[var(--app-pink-strong)]">
           간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
         </div>
 
@@ -385,7 +385,7 @@ function GatewayView({
             type="button"
             onClick={() => onProvider('kakao')}
             disabled={disabled}
-            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] text-[14.5px] font-extrabold disabled:opacity-60"
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] text-[16.7px] font-extrabold disabled:opacity-60"
             style={{
               background: '#fee500',
               color: '#191919',
@@ -393,7 +393,7 @@ function GatewayView({
             }}
           >
             <span
-              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] text-[13px] font-black"
+              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] text-[15px] font-black"
               style={{ background: '#191919', color: '#fee500' }}
             >
               K
@@ -405,11 +405,11 @@ function GatewayView({
             type="button"
             onClick={() => onProvider('google')}
             disabled={disabled}
-            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-white text-[14.5px] font-bold text-[#1f1f1f] disabled:opacity-60"
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-white text-[16.7px] font-bold text-[#1f1f1f] disabled:opacity-60"
             style={{ border: '1.5px solid var(--app-line)' }}
           >
             <span
-              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] bg-white text-[13px] font-black"
+              className="grid h-[22px] w-[22px] place-items-center rounded-[5px] bg-white text-[15px] font-black"
               style={{ color: '#4285F4', border: '1px solid rgba(0,0,0,0.08)' }}
             >
               G
@@ -420,11 +420,11 @@ function GatewayView({
           <button
             type="button"
             onClick={onOpenEmailLogin}
-            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-transparent text-[14.5px] font-bold text-[var(--app-ink)]"
+            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-transparent text-[16.7px] font-bold text-[var(--app-ink)]"
             style={{ border: '1.5px solid var(--app-line)' }}
           >
             <span
-              className="grid h-[22px] w-[22px] place-items-center rounded-full text-[11px] font-black"
+              className="grid h-[22px] w-[22px] place-items-center rounded-full text-[12.6px] font-black"
               style={{
                 background: 'var(--app-pink-soft)',
                 color: 'var(--app-pink-strong)',
@@ -438,7 +438,7 @@ function GatewayView({
 
         {/* 2026-05-22 — 결제 직전 게이트웨이 진입자가 "왜 로그인?"을 납득하도록 신뢰 문구 한 줄.
             내 풀이·결제내역·환불이 계정에 안전 보관됨을 명시해 결제 직전 이탈을 줄인다. */}
-        <p className="mt-[18px] text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+        <p className="mt-[18px] text-center text-[13.2px] leading-relaxed text-[var(--app-copy-soft)]">
           로그인하면 <strong className="font-bold text-[var(--app-copy-muted)]">내 풀이·결제내역·환불</strong>이 한 계정에 안전하게 보관돼요.
         </p>
 
@@ -450,12 +450,12 @@ function GatewayView({
           }}
         >
           <ZodiacChip kind="rooster" size="sm" />
-          <div className="text-[12px] leading-relaxed text-[var(--app-copy-muted)]">
+          <div className="text-[13.8px] leading-relaxed text-[var(--app-copy-muted)]">
             <strong className="text-[var(--app-ink)]">로그인 없이도</strong> 오늘운세·타로는 무료로 볼 수 있어요
           </div>
         </div>
 
-        <div className="mt-[18px] text-center text-[11px] leading-relaxed text-[var(--app-copy-soft)]">
+        <div className="mt-[18px] text-center text-[12.6px] leading-relaxed text-[var(--app-copy-soft)]">
           시작 시{' '}
           <LegalLinks className="text-[var(--app-pink-strong)]" />
           에 동의합니다.
@@ -480,7 +480,7 @@ function GatewayView({
           <button
             type="button"
             onClick={onOpenSignup}
-            className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
+            className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             처음 오셨나요? 이메일로 회원가입 →
@@ -488,7 +488,7 @@ function GatewayView({
           <button
             type="button"
             onClick={onOpenRecover}
-            className="inline-flex h-10 items-center justify-center rounded-full border bg-white px-5 text-[12px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
+            className="inline-flex h-10 items-center justify-center rounded-full border bg-white px-5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
             style={{ borderColor: 'var(--app-line)' }}
           >
             비밀번호를 잊으셨나요?
@@ -1027,7 +1027,7 @@ function LoginContent({
                   placeholder="예: 지윤"
                   value={signupForm.displayName}
                   onChange={(event) => updateSignupForm('displayName', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -1040,7 +1040,7 @@ function LoginContent({
                   placeholder="name@example.com"
                   value={signupForm.email}
                   onChange={(event) => updateSignupForm('email', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -1052,7 +1052,7 @@ function LoginContent({
                   placeholder="8자 이상"
                   value={signupForm.password}
                   onChange={(event) => updateSignupForm('password', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -1064,7 +1064,7 @@ function LoginContent({
                   placeholder="한 번 더 입력"
                   value={signupForm.confirmPassword}
                   onChange={(event) => updateSignupForm('confirmPassword', event.target.value)}
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>
@@ -1073,7 +1073,7 @@ function LoginContent({
           <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4 sm:p-5">
             <div className="mb-4">
               <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
-              <p className="mt-1 text-[11.5px] leading-5 text-[var(--app-copy-soft)]">
+              <p className="mt-1 text-[13.2px] leading-5 text-[var(--app-copy-soft)]">
                 저장 후 사주보기, 오늘운세, 궁합 입력에 같은 바탕으로 불러옵니다.
               </p>
             </div>
@@ -1099,7 +1099,7 @@ function LoginContent({
             type="submit"
             disabled={disabled || isSubmittingSignup}
             size="lg"
-            className="h-12 w-full rounded-[14px] text-[15px] font-extrabold"
+            className="h-12 w-full rounded-[14px] text-[17.3px] font-extrabold"
           >
             {isSubmittingSignup ? '회원가입 중...' : '회원가입하고 사주정보 불러오기'}
           </Button>
@@ -1118,7 +1118,7 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, email: event.target.value }))
               }
-              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <div className="space-y-2">
@@ -1132,7 +1132,7 @@ function LoginContent({
               onChange={(event) =>
                 setLoginForm((current) => ({ ...current, password: event.target.value }))
               }
-              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
             />
           </div>
           <Button
@@ -1185,7 +1185,7 @@ function LoginContent({
                 placeholder="name@example.com"
                 value={recoveryEmail}
                 onChange={(event) => setRecoveryEmail(event.target.value)}
-                className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             </div>
           </section>
@@ -1232,7 +1232,7 @@ function LoginContent({
                       password: event.target.value,
                     }))
                   }
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
               <div className="space-y-2">
@@ -1249,7 +1249,7 @@ function LoginContent({
                       confirmPassword: event.target.value,
                     }))
                   }
-                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
               </div>
             </div>
@@ -1324,7 +1324,7 @@ function LoginContent({
         회원가입 또는 로그인 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
       </p>
       {/* 2026-05-18 Phase 5-C: 고객센터 링크 (사용자 directive 필수) */}
-      <p className="text-[11.5px] leading-6 text-[var(--app-copy-muted)]">
+      <p className="text-[13.2px] leading-6 text-[var(--app-copy-muted)]">
         로그인 실패 또는 계정 안내가 필요하시면{' '}
         <a
           href={`mailto:${SUPPORT_EMAIL}`}
@@ -1416,12 +1416,12 @@ function LoginPageFallback() {
         </div>
         <div>
           <div
-            className="text-[28px] font-extrabold leading-tight text-[var(--app-ink)]"
+            className="text-[32.2px] font-extrabold leading-tight text-[var(--app-ink)]"
             style={{ fontFamily: 'var(--font-han)' }}
           >
             간지사주
           </div>
-          <p className="mt-2 text-[13px] font-semibold leading-6 text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[15px] font-semibold leading-6 text-[var(--app-copy-muted)]">
             간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
           </p>
         </div>
@@ -1430,7 +1430,7 @@ function LoginPageFallback() {
         <button
           type="button"
           disabled
-          className="h-[52px] w-full rounded-[14px] text-[14.5px] font-extrabold opacity-80"
+          className="h-[52px] w-full rounded-[14px] text-[16.7px] font-extrabold opacity-80"
           style={{
             background: '#fee500',
             color: '#191919',
@@ -1442,13 +1442,13 @@ function LoginPageFallback() {
         <button
           type="button"
           disabled
-          className="h-[52px] w-full rounded-[14px] bg-white text-[14.5px] font-bold text-[#1f1f1f] opacity-80"
+          className="h-[52px] w-full rounded-[14px] bg-white text-[16.7px] font-bold text-[#1f1f1f] opacity-80"
           style={{ border: '1.5px solid var(--app-line)' }}
         >
           Google 로그인
         </button>
       </div>
-      <div className="flex justify-center gap-3 text-[11.5px] text-[var(--app-copy-muted)]">
+      <div className="flex justify-center gap-3 text-[13.2px] text-[var(--app-copy-muted)]">
         <a href="/terms" className="underline">
           이용약관
         </a>
@@ -1459,7 +1459,7 @@ function LoginPageFallback() {
           고객센터
         </a>
       </div>
-      <p className="text-center text-[11.5px] leading-6 text-[var(--app-copy-muted)]">
+      <p className="text-center text-[13.2px] leading-6 text-[var(--app-copy-muted)]">
         고객센터 이메일:{' '}
         <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-[var(--app-pink-strong)] underline">
           {SUPPORT_EMAIL}

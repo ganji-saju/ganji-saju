@@ -15,13 +15,13 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
         borderColor: 'var(--app-line)',
       }}
     >
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         한 단락으로 정리
       </div>
 
       {narrative.headline ? (
         <h2
-          className="mt-2 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+          className="mt-2 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {narrative.headline}
@@ -30,7 +30,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
 
       {narrative.body ? (
         <p
-          className="mt-3 text-[13.5px] leading-[1.75] text-[var(--app-copy)]"
+          className="mt-3 text-[15.5px] leading-[1.75] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {narrative.body}
@@ -42,7 +42,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
           {narrative.chips.map((chip) => (
             <li
               key={`${chip.label}-${chip.value}`}
-              className="rounded-full border px-2.5 py-1 text-[13px] font-bold"
+              className="rounded-full border px-2.5 py-1 text-[15px] font-bold"
               style={{
                 background: 'var(--app-pink-soft)',
                 borderColor: 'var(--app-pink-line)',

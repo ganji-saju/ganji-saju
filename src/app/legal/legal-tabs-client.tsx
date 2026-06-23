@@ -64,7 +64,7 @@ export function LegalTabsClient({ kinds, labels, initialTab, initialActive }: Pr
               onClick={() => selectTab(kind)}
               aria-pressed={isSelected}
               className={
-                'shrink-0 rounded-full border px-3 py-1.5 text-[12.5px] font-bold leading-none transition-colors ' +
+                'shrink-0 rounded-full border px-3 py-1.5 text-[14.4px] font-bold leading-none transition-colors ' +
                 (isSelected
                   ? 'border-[var(--app-pink-strong)] bg-[var(--app-pink-strong)] text-white'
                   : 'border-[var(--app-line)] bg-white text-[var(--app-copy)]')

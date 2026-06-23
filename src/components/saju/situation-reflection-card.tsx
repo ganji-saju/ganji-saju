@@ -78,13 +78,13 @@ export function SituationReflectionCard({
         className="flex flex-wrap items-center gap-1.5 rounded-[12px] border bg-white px-3 py-2"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
-        <span className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <span className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           ✓ 반영
         </span>
         {items.map((item) => (
           <span
             key={item.key}
-            className="inline-flex items-center gap-0.5 rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[13px] font-bold text-[var(--app-pink-strong)] border"
+            className="inline-flex items-center gap-0.5 rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             <span aria-hidden="true">{item.emoji}</span>
@@ -105,11 +105,11 @@ export function SituationReflectionCard({
           borderColor: 'rgba(212,148,38,0.28)',
         }}
       >
-        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+        <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
           💡 더 정확한 풀이를 받으시려면
         </div>
         <p
-          className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-ink)]"
+          className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           현재 관계·직업·고민을 알려주시면 본인 상황에 맞춘 호명으로 풀이가 만들어져요.
@@ -117,7 +117,7 @@ export function SituationReflectionCard({
         </p>
         <Link
           href={fallbackInputHref}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border bg-white px-4 py-2 text-[13px] font-extrabold text-[var(--app-pink-strong)]"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full border bg-white px-4 py-2 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
           현재 상황 입력하기 →
@@ -134,14 +134,14 @@ export function SituationReflectionCard({
         borderColor: 'var(--app-pink-line)',
       }}
     >
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         ✓ 이 풀이는 당신의 상황을 반영했어요
       </div>
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         {items.map((item) => (
           <span
             key={item.key}
-            className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[13px] font-bold text-[var(--app-pink-strong)] border"
+            className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             <span aria-hidden="true">{item.emoji}</span>
@@ -150,14 +150,14 @@ export function SituationReflectionCard({
         ))}
       </div>
       <p
-        className="mt-2.5 text-[13px] leading-[1.45] text-[var(--app-copy-muted)]"
+        className="mt-2.5 text-[15px] leading-[1.45] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         본문의 일간 풀이 · 십성 · 대운 해석이 위 상황을 호명하여 작성됐어요.
       </p>
       <Link
         href={fallbackInputHref}
-        className="mt-2 inline-block text-[13px] font-bold text-[var(--app-copy-muted)] underline-offset-2 hover:underline"
+        className="mt-2 inline-block text-[15px] font-bold text-[var(--app-copy-muted)] underline-offset-2 hover:underline"
       >
         상황 다시 입력하기 →
       </Link>

@@ -103,7 +103,7 @@ export function ChapterFeedbackCard({
   if (state === 'auth-required') {
     return (
       <div
-        className="mt-3 rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[12.5px] text-[var(--app-copy-soft)]"
+        className="mt-3 rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[14.4px] text-[var(--app-copy-soft)]"
         role="status"
       >
         피드백은{' '}
@@ -122,7 +122,7 @@ export function ChapterFeedbackCard({
       className="mt-3 rounded-[12px] border border-[var(--app-line)] bg-white p-3.5"
       aria-label={`챕터 ${chapterId}${titleSuffix} 피드백`}
     >
-      <div className="text-[12.5px] font-bold text-[var(--app-ink)]">
+      <div className="text-[14.4px] font-bold text-[var(--app-ink)]">
         이 풀이가 잘 맞았나요?
       </div>
 
@@ -139,7 +139,7 @@ export function ChapterFeedbackCard({
               aria-label={`${value}점`}
               onClick={() => handleRatingClick(value)}
               disabled={state === 'saving'}
-              className="text-[20px] leading-none transition-transform active:scale-95 disabled:opacity-50"
+              className="text-[23px] leading-none transition-transform active:scale-95 disabled:opacity-50"
               style={{ color: filled ? '#F4B632' : 'var(--app-line)' }}
             >
               {filled ? '★' : '☆'}
@@ -147,19 +147,19 @@ export function ChapterFeedbackCard({
           );
         })}
         {rating !== null && (
-          <span className="ml-1.5 text-[13px] text-[var(--app-copy-soft)]">{rating}/5</span>
+          <span className="ml-1.5 text-[15px] text-[var(--app-copy-soft)]">{rating}/5</span>
         )}
       </div>
 
       {/* Yes/No 버튼 */}
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-[13px] text-[var(--app-copy-soft)]">도움됐어요?</span>
+        <span className="text-[15px] text-[var(--app-copy-soft)]">도움됐어요?</span>
         <button
           type="button"
           onClick={() => handleHelpfulClick(true)}
           disabled={state === 'saving'}
           aria-pressed={helpful === true}
-          className="rounded-full border px-3 py-1 text-[13px] font-bold transition-colors disabled:opacity-50"
+          className="rounded-full border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
           style={{
             borderColor: helpful === true ? 'var(--app-pink-strong)' : 'var(--app-line)',
             background: helpful === true ? 'var(--app-pink-soft)' : 'white',
@@ -173,7 +173,7 @@ export function ChapterFeedbackCard({
           onClick={() => handleHelpfulClick(false)}
           disabled={state === 'saving'}
           aria-pressed={helpful === false}
-          className="rounded-full border px-3 py-1 text-[13px] font-bold transition-colors disabled:opacity-50"
+          className="rounded-full border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
           style={{
             borderColor: helpful === false ? 'var(--app-pink-strong)' : 'var(--app-line)',
             background: helpful === false ? 'var(--app-pink-soft)' : 'white',
@@ -191,7 +191,7 @@ export function ChapterFeedbackCard({
             <button
               type="button"
               onClick={() => setShowCommentInput(true)}
-              className="text-[13px] font-bold text-[var(--app-pink-strong)] underline underline-offset-2"
+              className="text-[15px] font-bold text-[var(--app-pink-strong)] underline underline-offset-2"
             >
               + 자세한 의견 남기기 (선택)
             </button>
@@ -199,7 +199,7 @@ export function ChapterFeedbackCard({
             <div>
               <label
                 htmlFor={`feedback-comment-${chapterId}`}
-                className="text-[13px] font-bold text-[var(--app-copy-soft)]"
+                className="text-[15px] font-bold text-[var(--app-copy-soft)]"
               >
                 자세한 의견 (선택, 200자 이내)
               </label>
@@ -210,18 +210,18 @@ export function ChapterFeedbackCard({
                 rows={2}
                 maxLength={200}
                 placeholder="어떤 부분이 좋았거나 아쉬웠나요?"
-                className="mt-1 w-full resize-none rounded-[8px] border border-[var(--app-line)] bg-white p-2 text-[12.5px] text-[var(--app-ink)] placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink-strong)] focus:outline-none"
+                className="mt-1 w-full resize-none rounded-[8px] border border-[var(--app-line)] bg-white p-2 text-[14.4px] text-[var(--app-ink)] placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink-strong)] focus:outline-none"
                 disabled={state === 'saving'}
               />
               <div className="mt-1 flex items-center justify-between">
-                <span className="text-[13px] text-[var(--app-copy-soft)]">
+                <span className="text-[15px] text-[var(--app-copy-soft)]">
                   {comment.length}/200
                 </span>
                 <button
                   type="button"
                   onClick={handleCommentSubmit}
                   disabled={state === 'saving' || comment.trim().length === 0}
-                  className="rounded-full bg-[var(--app-pink-strong)] px-3 py-1 text-[13px] font-bold text-white disabled:opacity-50"
+                  className="rounded-full bg-[var(--app-pink-strong)] px-3 py-1 text-[15px] font-bold text-white disabled:opacity-50"
                 >
                   의견 보내기
                 </button>
@@ -233,12 +233,12 @@ export function ChapterFeedbackCard({
 
       {/* 상태 메시지 */}
       {state === 'saved' && (
-        <div className="mt-2.5 text-[13px] text-[var(--app-jade,#3F8796)]" role="status">
+        <div className="mt-2.5 text-[15px] text-[var(--app-jade,#3F8796)]" role="status">
           ✓ 피드백 저장됨 — 풀이 개선에 활용됩니다
         </div>
       )}
       {state === 'error' && errorMsg && (
-        <div className="mt-2.5 text-[13px] text-[var(--app-coral,#E05298)]" role="alert">
+        <div className="mt-2.5 text-[15px] text-[var(--app-coral,#E05298)]" role="alert">
           {errorMsg}
         </div>
       )}

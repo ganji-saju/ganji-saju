@@ -62,7 +62,7 @@ function SituationChipGroup<T extends string>({
 }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]">
+      <div className="flex items-center gap-1.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]">
         {icon ? <span aria-hidden="true">{icon}</span> : null}
         <span>{label}</span>
       </div>
@@ -76,7 +76,7 @@ function SituationChipGroup<T extends string>({
               onClick={() => onChange(selected ? '' : option.value)}
               data-selected={selected}
               className={cn(
-                'rounded-full border px-3.5 py-1.5 text-[12.5px] font-bold transition-all active:scale-95',
+                'rounded-full border px-3.5 py-1.5 text-[14.4px] font-bold transition-all active:scale-95',
                 selected
                   ? 'border-[var(--app-pink-strong)] bg-[var(--app-pink-strong)] text-white shadow-[0_4px_12px_rgba(236,72,153,0.25)]'
                   : 'border-[var(--app-line)] bg-white text-[var(--app-copy)] hover:border-[var(--app-pink)]/40 hover:bg-[var(--app-pink-soft)]'
@@ -1025,14 +1025,14 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     const isHourUnknown = form.hour === '';
 
     const inputCls =
-      'h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
+      'h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
 
     return (
       <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-5">
         <div>
           <label
             htmlFor="saju-nickname"
-            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+            className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
           >
             이름 (별칭)
           </label>
@@ -1050,7 +1050,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         </div>
 
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             생년월일
           </label>
           <div className="mt-1.5 grid grid-cols-[1.2fr_1fr_1fr] gap-2">
@@ -1130,7 +1130,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                     )
                   }
                   className={cn(
-                    'rounded-full border px-3 py-1.5 text-[12px] font-bold transition',
+                    'rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition',
                     active
                       ? 'border-transparent bg-[var(--app-pink)] text-white'
                       : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -1144,7 +1144,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         </div>
 
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             태어난 시각
           </label>
           <div
@@ -1155,32 +1155,32 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               <>
                 <ZodiacChip kind={hourBranch.zodiac} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-bold text-[var(--app-ink)]">
+                  <div className="text-[16.1px] font-bold text-[var(--app-ink)]">
                     {Number.parseInt(form.hour, 10)}시 ({hourBranch.label})
                   </div>
-                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                     {hourBranch.range}
                   </div>
                 </div>
-                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                <span className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">
                   변경
                 </span>
               </>
             ) : (
               <>
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[18px] font-bold text-[var(--app-copy-muted)]"
+                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[20.7px] font-bold text-[var(--app-copy-muted)]"
                   aria-hidden="true"
                 >
                   ?
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-bold text-[var(--app-ink)]">시간 모름</div>
-                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="text-[16.1px] font-bold text-[var(--app-ink)]">시간 모름</div>
+                  <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                     탭하여 출생 시간을 선택하세요
                   </div>
                 </div>
-                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                <span className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">
                   변경
                 </span>
               </>
@@ -1206,7 +1206,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
               ))}
             </select>
           </div>
-          <label className="mt-2.5 flex items-center gap-2 text-[13px] text-[var(--app-copy-muted)]">
+          <label className="mt-2.5 flex items-center gap-2 text-[15px] text-[var(--app-copy-muted)]">
             <input
               type="checkbox"
               checked={isHourUnknown}
@@ -1226,7 +1226,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         </div>
 
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             성별
           </label>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
@@ -1247,7 +1247,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                     )
                   }
                   className={cn(
-                    'h-12 rounded-[14px] border text-[14.5px] font-bold transition',
+                    'h-12 rounded-[14px] border text-[16.7px] font-bold transition',
                     active
                       ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
                       : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -1301,7 +1301,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 {selectedEntryPoint.reportAnswer}
               </p>
             </div>
-            <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
+            <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[12.6px] font-semibold text-[var(--app-pink-strong)]">
               선택됨
             </span>
           </div>
@@ -1319,23 +1319,23 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         >
           <div className="flex items-baseline justify-between gap-2">
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+              <div className="flex items-center gap-1.5 text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                 <span aria-hidden="true">🎯</span>
                 <span>맞춤 풀이를 위해</span>
               </div>
-              <h3 className="mt-1 text-[15px] font-extrabold leading-snug text-[var(--app-ink)]">
+              <h3 className="mt-1 text-[17.3px] font-extrabold leading-snug text-[var(--app-ink)]">
                 지금 내 상황을 알려주세요
               </h3>
             </div>
             <span
-              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[10px] font-extrabold text-[var(--app-pink-strong)]"
+              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
               정확도 ↑
             </span>
           </div>
           <p
-            className="mt-1.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+            className="mt-1.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             연애·직업·고민을 골라주시면, 사주 풀이와 오늘의 운세가{' '}
@@ -1361,7 +1361,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             if (previewItems.length === 0) {
               return (
                 <div
-                  className="mt-3 rounded-[10px] border-2 border-dashed bg-white/60 px-3 py-2.5 text-center text-[11px] text-[var(--app-copy-muted)]"
+                  className="mt-3 rounded-[10px] border-2 border-dashed bg-white/60 px-3 py-2.5 text-center text-[12.6px] text-[var(--app-copy-muted)]"
                   style={{ borderColor: 'var(--app-pink-line)' }}
                 >
                   ↓ 아래에서 골라주시면 여기 미리보기가 나타나요
@@ -1373,14 +1373,14 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 className="mt-3 rounded-[12px] border bg-white px-3 py-2.5"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
-                <div className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   ✓ 이 풀이에 반영될 정보
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {previewItems.map((item) => (
                     <span
                       key={item.key}
-                      className="inline-flex items-center gap-1 rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-pink-strong)] border"
+                      className="inline-flex items-center gap-1 rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)] border"
                       style={{ borderColor: 'var(--app-pink-line)' }}
                     >
                       <span aria-hidden="true">{item.emoji}</span>
@@ -1389,7 +1389,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   ))}
                 </div>
                 <p
-                  className="mt-1.5 text-[10.5px] leading-[1.4] text-[var(--app-copy-muted)]"
+                  className="mt-1.5 text-[12.1px] leading-[1.4] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   사주 결과의 hero 영역과 본문, 오늘의 운세 영역별 점수에 자동 반영돼요.
@@ -1447,7 +1447,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   setForm((prev) => ({ ...prev, concernNote: event.target.value.slice(0, 80) }))
                 }
                 placeholder="고민을 짧게 적어주세요 (최대 80자)"
-                className="motion-input-effect h-11 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[13.5px] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="motion-input-effect h-11 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[15.5px] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             ) : null}
           </div>
@@ -1462,7 +1462,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
                 </p>
               </div>
-              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[11px] font-semibold text-[var(--app-pink-strong)]">
+              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[12.6px] font-semibold text-[var(--app-pink-strong)]">
                 로컬 저장
               </span>
             </div>
@@ -1544,7 +1544,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 text-sm font-medium text-[var(--app-ink)]">{profile.label}</div>
-                    <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[10px] text-[var(--app-pink-strong)]">
+                    <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[11.5px] text-[var(--app-pink-strong)]">
                       선택
                     </span>
                   </div>
@@ -1700,7 +1700,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 onClick={goNext}
                 disabled={isSubmitting}
                 size="lg"
-                className="h-12 w-full rounded-[14px] text-[15px] font-extrabold"
+                className="h-12 w-full rounded-[14px] text-[17.3px] font-extrabold"
               >
                 {nextLabel}
                 {!isSubmitting ? <ArrowRight className="ml-2 h-4 w-4" /> : null}
@@ -1712,17 +1712,17 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   disabled={isSubmitting}
                   variant="ghost"
                   size="sm"
-                  className="mx-auto h-9 px-4 text-[12.5px] font-medium text-[var(--app-copy-muted)] hover:text-[var(--app-pink-strong)]"
+                  className="mx-auto h-9 px-4 text-[14.4px] font-medium text-[var(--app-copy-muted)] hover:text-[var(--app-pink-strong)]"
                 >
                   <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
                   이전 단계로
                 </Button>
               ) : null}
-              <p className="text-center text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+              <p className="text-center text-[13.2px] leading-relaxed text-[var(--app-copy-soft)]">
                 결과는 자동으로 보관함에 저장돼요
               </p>
               {activeStep.id === 'location' && !consentAccepted ? (
-                <p className="mt-1 text-center text-[10.5px] leading-relaxed text-[var(--app-copy-soft)]">
+                <p className="mt-1 text-center text-[12.1px] leading-relaxed text-[var(--app-copy-soft)]">
                   시작 시 <LegalLinks className="text-[var(--app-pink-strong)]" />
                   과 AI 모델 전송에 동의합니다.
                 </p>

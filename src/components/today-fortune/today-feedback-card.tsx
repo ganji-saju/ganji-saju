@@ -110,11 +110,11 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
         className="rounded-[18px] border bg-white p-4 text-center"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[24px]">🙏</div>
-        <p className="mt-1 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+        <div className="text-[27.6px]">🙏</div>
+        <p className="mt-1 text-[15.5px] font-extrabold text-[var(--app-ink)]">
           소중한 피드백 감사합니다
         </p>
-        <p className="mt-1 text-[13px] text-[var(--app-copy-muted)]">
+        <p className="mt-1 text-[15px] text-[var(--app-copy-muted)]">
           더 정확한 풀이를 만드는 데 사용됩니다.
         </p>
       </section>
@@ -126,10 +126,10 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
       className="rounded-[18px] border bg-white p-4"
       style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
     >
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         💬 피드백
       </div>
-      <h3 className="mt-0.5 text-[14.5px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+      <h3 className="mt-0.5 text-[16.7px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
         오늘 운세가 얼마나 맞았나요?
       </h3>
 
@@ -146,8 +146,8 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
               boxShadow: accuracy === opt.key ? '0 4px 12px rgba(216,27,114,0.18)' : 'none',
             }}
           >
-            <div className="text-[24px] leading-none">{opt.emoji}</div>
-            <div className="mt-1 text-[13px] font-bold text-[var(--app-ink)]">{opt.label}</div>
+            <div className="text-[27.6px] leading-none">{opt.emoji}</div>
+            <div className="mt-1 text-[15px] font-bold text-[var(--app-ink)]">{opt.label}</div>
           </button>
         ))}
       </div>
@@ -157,7 +157,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
           <button
             type="button"
             onClick={() => setShowAreas((v) => !v)}
-            className="mt-3 text-[13px] font-bold text-[var(--app-pink-strong)]"
+            className="mt-3 text-[15px] font-bold text-[var(--app-pink-strong)]"
           >
             {showAreas ? '— 영역별 별점 접기' : '+ 영역별 정확도 (선택)'}
           </button>
@@ -166,7 +166,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
             <div className="mt-2 grid gap-1.5 rounded-[12px] border border-[var(--app-line)] bg-white p-3">
               {AREA_LABELS.map((area) => (
                 <div key={area.key} className="flex items-center justify-between">
-                  <span className="text-[13px] font-bold text-[var(--app-ink)]">
+                  <span className="text-[15px] font-bold text-[var(--app-ink)]">
                     {area.icon} {area.label}
                   </span>
                   <div className="flex gap-1">
@@ -177,7 +177,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
                         onClick={() =>
                           setAreaRatings((prev) => ({ ...prev, [area.key]: n }))
                         }
-                        className="text-[16px] leading-none"
+                        className="text-[18.4px] leading-none"
                         style={{
                           opacity: (areaRatings[area.key] ?? 0) >= n ? 1 : 0.25,
                         }}
@@ -194,7 +194,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="자유 코멘트 (선택)"
                 maxLength={300}
-                className="mt-2 w-full rounded-[10px] border border-[var(--app-line)] bg-white px-3 py-2 text-[13px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
+                className="mt-2 w-full rounded-[10px] border border-[var(--app-line)] bg-white px-3 py-2 text-[15px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
                 rows={2}
               />
             </div>
@@ -204,17 +204,17 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
             type="button"
             onClick={submit}
             disabled={state === 'submitting'}
-            className="mt-3 w-full rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white disabled:opacity-60"
+            className="mt-3 w-full rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white disabled:opacity-60"
           >
             {state === 'submitting' ? '전송 중…' : '피드백 보내기'}
           </button>
           {errorMsg ? (
-            <p className="mt-1.5 text-center text-[13px] text-[var(--app-coral)]">{errorMsg}</p>
+            <p className="mt-1.5 text-center text-[15px] text-[var(--app-coral)]">{errorMsg}</p>
           ) : null}
         </>
       ) : null}
 
-      <p className="mt-2 text-[13px] leading-[1.5] text-[var(--app-copy-soft)]">
+      <p className="mt-2 text-[15px] leading-[1.5] text-[var(--app-copy-soft)]">
         * 모든 피드백은 익명으로 처리되며, 더 정확한 풀이 학습에만 사용됩니다.
       </p>
     </section>

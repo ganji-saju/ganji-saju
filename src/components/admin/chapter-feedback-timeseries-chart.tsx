@@ -25,7 +25,7 @@ function Sparkline({
   const numeric = values.filter((v): v is number => typeof v === 'number');
   if (numeric.length === 0) {
     return (
-      <div className="text-[10.5px] text-[var(--app-copy-soft)]">
+      <div className="text-[12.1px] text-[var(--app-copy-soft)]">
         데이터 없음
       </div>
     );
@@ -83,8 +83,8 @@ export function ChapterFeedbackTimeseriesChart({ data }: Props) {
   if (data.length === 0) {
     return (
       <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-        <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">일별 추이 (30일)</h2>
-        <p className="mt-2 text-[12.5px] text-[var(--app-copy-soft)]">
+        <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">일별 추이 (30일)</h2>
+        <p className="mt-2 text-[14.4px] text-[var(--app-copy-soft)]">
           아직 응답이 없습니다.
         </p>
       </section>
@@ -106,39 +106,39 @@ export function ChapterFeedbackTimeseriesChart({ data }: Props) {
 
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">일별 추이 (30일)</h2>
-      <p className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+      <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">일별 추이 (30일)</h2>
+      <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
         최근 30일 / 총 {totalResponses}건 / 평균 별점{' '}
         {overallAverage !== null ? `${overallAverage}/5` : '—'}
       </p>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             응답 수
           </div>
           <Sparkline values={responsesSeries} color="var(--app-pink-strong)" />
-          <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+          <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
             {data[0]?.date} → {data[data.length - 1]?.date}
           </div>
         </article>
 
         <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade,#3F8796)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade,#3F8796)]">
             평균 별점
           </div>
           <Sparkline values={ratingSeries} color="var(--app-jade,#3F8796)" baseline={3.5} />
-          <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+          <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
             점선: 목표 3.5
           </div>
         </article>
 
         <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber,#D59B2E)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber,#D59B2E)]">
             helpful 비율
           </div>
           <Sparkline values={helpfulRateSeries} color="#D59B2E" baseline={70} />
-          <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">점선: 목표 70%</div>
+          <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">점선: 목표 70%</div>
         </article>
       </div>
     </section>

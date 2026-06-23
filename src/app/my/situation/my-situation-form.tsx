@@ -50,7 +50,7 @@ function ChipGroup<T extends string>({
 }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]">
+      <div className="flex items-center gap-1.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]">
         {icon ? <span aria-hidden="true">{icon}</span> : null}
         <span>{label}</span>
       </div>
@@ -62,7 +62,7 @@ function ChipGroup<T extends string>({
               key={option.value}
               type="button"
               onClick={() => onChange(selected ? null : option.value)}
-              className="rounded-full border px-3.5 py-1.5 text-[12.5px] font-bold transition-all active:scale-95"
+              className="rounded-full border px-3.5 py-1.5 text-[14.4px] font-bold transition-all active:scale-95"
               style={
                 selected
                   ? {
@@ -173,14 +173,14 @@ export function MySituationForm({
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           🎯 내 default 상황
         </div>
-        <h1 className="mt-1.5 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[23px] font-extrabold leading-snug text-[var(--app-ink)]">
           매번 입력하지 않아도 자동 반영
         </h1>
         <p
-          className="mt-2 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           여기서 저장한 정보는 새 사주 풀이 / 오늘의 운세 / 궁합 결과에 자동으로 반영됩니다.
@@ -220,7 +220,7 @@ export function MySituationForm({
             value={concernNote}
             onChange={(e) => setConcernNote(e.target.value.slice(0, 80))}
             placeholder="고민을 짧게 적어주세요 (최대 80자)"
-            className="h-11 w-full rounded-[12px] border bg-white px-3 text-[13.5px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink)]"
+            className="h-11 w-full rounded-[12px] border bg-white px-3 text-[15.5px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink)]"
             style={{ borderColor: 'var(--app-line)' }}
           />
         ) : null}
@@ -232,7 +232,7 @@ export function MySituationForm({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-full border px-4 py-3 text-[14px] font-extrabold text-white transition-transform active:scale-95 disabled:opacity-60"
+          className="rounded-full border px-4 py-3 text-[16.1px] font-extrabold text-white transition-transform active:scale-95 disabled:opacity-60"
           style={{
             background: 'var(--app-pink-strong)',
             borderColor: 'var(--app-pink-strong)',
@@ -245,7 +245,7 @@ export function MySituationForm({
             type="button"
             onClick={handleClear}
             disabled={saving}
-            className="rounded-full border bg-white px-4 py-2.5 text-[12.5px] font-bold text-[var(--app-copy-muted)]"
+            className="rounded-full border bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             저장된 정보 모두 지우기
@@ -253,7 +253,7 @@ export function MySituationForm({
         ) : null}
       </div>
       {savedMsg ? (
-        <p className="text-center text-[12px] text-[var(--app-jade)]">{savedMsg}</p>
+        <p className="text-center text-[13.8px] text-[var(--app-jade)]">{savedMsg}</p>
       ) : null}
 
       {/* §Where it shows up */}
@@ -261,11 +261,11 @@ export function MySituationForm({
         className="rounded-[14px] border bg-white p-4"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           ✓ 어디에 반영되나요?
         </div>
         <ul
-          className="mt-1.5 grid gap-1 text-[11.5px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-1.5 grid gap-1 text-[13.2px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li>• 사주 풀이 본문 호명 ("직장인이신 ○○님, ...")</li>
@@ -275,7 +275,7 @@ export function MySituationForm({
         </ul>
         <Link
           href="/saju/new"
-          className="mt-3 inline-block text-[11.5px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
+          className="mt-3 inline-block text-[13.2px] font-bold text-[var(--app-pink-strong)] underline-offset-2 hover:underline"
         >
           새 사주 풀이 받기 →
         </Link>
