@@ -153,14 +153,10 @@ export default async function PricingPage() {
                   }
                   return (
                     <Link
-                      href={
-                        plan.slug === 'premium'
-                          ? '/membership/checkout?plan=premium&from=pricing'
-                          : '/membership/checkout?plan=basic&from=pricing'
-                      }
-                      className={plan.slug === 'premium' ? 'gangi-primary-button mt-4' : 'gangi-secondary-button mt-4'}
+                      href="/membership/checkout?plan=premium&from=pricing"
+                      className="gangi-primary-button mt-4"
                     >
-                      {plan.slug === 'premium' ? '프리미엄 보기' : '라이트 보기'}
+                      프리미엄 보기
                     </Link>
                   );
                 })()}

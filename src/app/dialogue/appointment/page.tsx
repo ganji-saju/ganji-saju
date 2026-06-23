@@ -38,7 +38,7 @@ const COIN_PACK_15 = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'credit_15');
 const SINGLE_COIN_PRICE_KRW = COIN_PACK_15 ? Math.round(COIN_PACK_15.price / COIN_PACK_15.credits) : 660;
 const BONUS_COIN_PACKAGE = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'subscription_30');
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_15', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'credit_40', 'credit_100', 'subscription_30'].includes(pkg.id)
 );
 
 const TOPICS: Array<{ key: string; label: string }> = [
