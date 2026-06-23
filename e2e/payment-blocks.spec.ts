@@ -55,7 +55,8 @@ test.describe('1-3. Active subscription 활성 사용자 (PR #177 회귀 차단)
     const credentials = getTestUser();
     if (!credentials || !process.env.SUPABASE_SERVICE_ROLE_KEY) return; // beforeEach 가 skip 처리
     userId = await resolveTestUserId(credentials.email);
-    await seedSubscription(userId, 'plus_monthly');
+    // 2026-06-23 — 라이트(plus_monthly) 멤버십 신규 판매 중단 → 프리미엄 구독 기준으로 검증.
+    await seedSubscription(userId, 'premium_monthly');
   });
 
   test.afterAll(async () => {
@@ -87,11 +88,11 @@ test.describe('1-3. Active subscription 활성 사용자 (PR #177 회귀 차단)
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test('/membership/checkout?plan=basic 에 "이미 이용 중인 멤버십입니다" 안내', async ({
+  test('/membership/checkout?plan=premium 에 "이미 이용 중인 멤버십입니다" 안내', async ({
     page,
   }) => {
-    // plus_monthly = basic plan. URL 의 plan slug 는 basic.
-    await page.goto('/membership/checkout?plan=basic');
+    // premium_monthly = premium plan. URL 의 plan slug 는 premium.
+    await page.goto('/membership/checkout?plan=premium');
     await page.waitForLoadState('networkidle');
 
     const blockMessage = page.getByText(/이미 이용 중인 멤버십/);
