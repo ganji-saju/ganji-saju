@@ -410,31 +410,37 @@ export function GangiServiceCardLink({
   onTrack?: (card: GangiServiceCard) => void;
 }) {
   const isFree = card.price === '무료' || card.price === '무료 시작';
-  const isComingSoon = card.price === '출시 예정';
+
+  // 2026-06-23 메인 리디자인(간지사주 메인 리디자인.html): 파스텔 틴트 카드 배경·가격색.
+  const TINT: Record<NonNullable<GangiServiceCard['tint']>, { bg: string; price: string }> = {
+    pink: { bg: '#fff0f7', price: 'var(--app-pink-strong)' },
+    plum: { bg: '#f6eefe', price: 'var(--app-plum)' },
+    sky: { bg: '#eaf4fd', price: 'var(--app-sky)' },
+    coral: { bg: '#fff0ee', price: 'var(--app-coral)' },
+    indigo: { bg: '#eeeefb', price: 'var(--app-indigo)' },
+    amber: { bg: '#fdf4e3', price: '#b87a10' },
+    jade: { bg: '#e9f7f2', price: 'var(--app-jade)' },
+  };
+  const tint = TINT[card.tint ?? 'pink'];
 
   return (
     <Link
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex flex-col gap-2 overflow-hidden rounded-[18px] border bg-white pb-3.5 no-underline transition-transform hover:-translate-y-[2px]"
-      style={{
-        borderColor: 'var(--app-line)',
-        color: 'var(--app-ink)',
-        minHeight: 158,
-      }}
+      className="relative flex items-center gap-3 overflow-hidden rounded-[20px] p-4 no-underline transition-transform active:scale-[0.98]"
+      style={{ background: tint.bg, color: 'var(--app-ink)', minHeight: 96 }}
     >
       {/* 태그 (HOT / 추천) */}
       {card.tag ? (
         <span
           className="absolute right-2.5 top-2.5 z-10 inline-flex items-center rounded-[6px] px-1.5"
           style={{
-            background:
-              card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
+            background: card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
             color: '#fff',
             fontSize: 9.5,
-            fontWeight: 800,
-            letterSpacing: '0.02em',
+            fontWeight: 900,
+            letterSpacing: '0.03em',
             height: 18,
           }}
         >
@@ -442,12 +448,12 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 2026-06-23 시안: 캐릭터 일러스트(있으면) — picture(avif/webp/png 폴백). 없으면 기존 chip. */}
-      {card.image ? (
-        <div
-          className="relative h-[132px] w-full overflow-hidden"
-          style={{ background: 'linear-gradient(160deg, var(--app-pink-soft) 0%, #ffffff 78%)' }}
-        >
+      {/* 원형 아바타 — 캐릭터 이미지(picture avif/webp/png) object-top. 없으면 chip. */}
+      <span
+        className="relative grid h-[60px] w-[60px] shrink-0 place-items-center overflow-hidden rounded-full"
+        style={{ border: '2px solid #fff', boxShadow: '0 4px 10px rgba(23,21,26,.12)', background: 'rgba(255,255,255,.6)' }}
+      >
+        {card.image ? (
           <picture>
             <source srcSet={`/images/gangi/characters/${card.image}.avif`} type="image/avif" />
             <source srcSet={`/images/gangi/characters/${card.image}.webp`} type="image/webp" />
@@ -456,67 +462,28 @@ export function GangiServiceCardLink({
               alt={card.title}
               loading="lazy"
               decoding="async"
-              className="absolute inset-x-0 bottom-0 mx-auto h-full w-auto object-contain object-bottom"
+              className="h-full w-full object-cover object-top"
             />
           </picture>
-          <span
-            className="absolute left-2.5 top-2.5 inline-flex items-center rounded-full px-2 py-0.5"
-            style={{
-              background: isFree ? 'rgba(15,159,122,0.12)' : 'var(--app-pink-soft)',
-              color: isFree ? 'var(--app-jade)' : 'var(--app-pink-strong)',
-              fontSize: 11,
-              fontWeight: 800,
-            }}
-          >
-            {card.price}
-          </span>
-        </div>
-      ) : (
-        <div className="px-3.5 pt-3.5">
-          {card.chipKind === 'star-sign' ? (
-            <StarSignChip kind={card.starSign} size="md" />
-          ) : (
-            <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
-          )}
-        </div>
-      )}
+        ) : card.chipKind === 'star-sign' ? (
+          <StarSignChip kind={card.starSign} size="sm" />
+        ) : (
+          <ZodiacChip kind={card.zodiac as ZodiacKey} size="sm" />
+        )}
+      </span>
 
-      <div className="min-w-0 px-3.5">
-        <h2
-          className="m-0"
-          style={{
-            fontSize: 16,
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            color: 'var(--app-ink)',
-          }}
+      <span className="flex min-w-0 flex-col">
+        <span style={{ fontSize: 17, fontWeight: 900, letterSpacing: '-0.02em' }}>{card.title}</span>
+        <span className="mt-0.5" style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--app-copy-muted)' }}>
+          {card.desc}
+        </span>
+        <span
+          className="mt-1.5"
+          style={{ fontSize: 12, fontWeight: 800, color: isFree ? 'var(--app-ink)' : tint.price }}
         >
-          {card.title}
-        </h2>
-        <p
-          className="m-0 mt-1"
-          style={{
-            fontSize: 13,
-            color: 'var(--app-copy)',
-            lineHeight: 1.45,
-          }}
-        >
-          {card.headline ?? card.desc}
-        </p>
-      </div>
-
-      <div
-        className="mt-auto mx-3.5 flex items-center justify-center gap-1 rounded-[12px] py-2"
-        style={{
-          background: isComingSoon ? 'var(--app-surface-muted)' : 'var(--app-pink-soft)',
-          fontSize: 13,
-          fontWeight: 800,
-          color: isComingSoon ? 'var(--app-copy-muted)' : 'var(--app-pink-strong)',
-        }}
-      >
-        {isComingSoon ? card.price : '바로 확인하기'}
-        {!isComingSoon ? <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-      </div>
+          {card.price}
+        </span>
+      </span>
     </Link>
   );
 }

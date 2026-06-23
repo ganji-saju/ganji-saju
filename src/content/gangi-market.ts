@@ -41,6 +41,11 @@ export type GangiServiceCard = {
   image?: string;
   /** 후킹 카피(시안). 있으면 카드 본문에 desc 대신 headline 노출. */
   headline?: string;
+  /**
+   * 2026-06-23 — 메인 리디자인(간지사주 메인 리디자인.html). 카드 파스텔 틴트 배경.
+   *   가로 레이아웃(원형 아바타 + 텍스트)에서 카드별 부드러운 배경색·가격색 결정.
+   */
+  tint?: 'pink' | 'plum' | 'sky' | 'coral' | 'indigo' | 'amber' | 'jade';
 };
 
 export type GangiHomeBanner = {
@@ -96,93 +101,93 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'saju',
     title: '사주',
     desc: '내 사주 풀이',
-    headline: '소름 돋는 내 운명 풀이',
     price: '9,900원',
     href: '/saju/new',
     zodiac: 'dragon',
     category: 'saju',
     image: 'saju',
+    tint: 'pink',
   },
   {
     id: 'daewoon',
     title: '대운',
-    desc: '진행하기 좋은 달',
-    headline: '인생 바뀌는 운의 흐름',
-    // /daewoon 은 무료 예시 허브(실제 결과는 year-core 3,900원 업셀).
+    desc: '10년 큰 흐름',
+    // /daewoon 은 무료 예시 허브(실제 결과는 year-core 업셀). 가격 라벨 '무료' 유지(페이월 정합).
     price: '무료',
     href: '/daewoon',
     zodiac: 'tiger',
     category: 'saju',
     image: 'daewoon',
+    tint: 'plum',
   },
   {
     id: 'taekil',
     title: '택일',
-    desc: '중요한 날 확인',
-    headline: '성공하는 날은 따로 있다',
-    // /taekil(좋은 날 찾기)은 무료 도구. 유료 1,900원 '월간 좋은날 캘린더'는 결과 화면 업셀.
+    desc: '좋은 날 찾기',
+    // /taekil 은 무료 도구. 유료 '월간 좋은날 캘린더'는 결과 화면 업셀. 가격 라벨 '무료' 유지.
     price: '무료',
     href: '/taekil',
     zodiac: 'ox',
     category: 'fortune',
     image: 'taekil',
+    tint: 'sky',
   },
   {
     id: 'gunghap',
     title: '궁합',
-    desc: '둘 사이의 흐름',
-    headline: '우리, 진짜 맞는 인연일까?',
+    desc: '두 사람의 흐름',
     price: '9,900원',
     href: '/compatibility/input',
     zodiac: 'sheep',
     category: 'saju',
     image: 'gunghap',
+    tint: 'coral',
   },
   {
     id: 'dream',
     title: '꿈해몽',
-    desc: '꿈으로 보는 길흉',
-    headline: '꿈이 알려주는 숨은 신호',
+    desc: '꿈 한 단어 풀이',
     price: '무료',
     href: '/dream',
     zodiac: 'dragon',
     category: 'fortune',
     image: 'dream',
+    tint: 'indigo',
   },
   {
     id: 'consult',
     title: '대화상담',
     desc: '선생님께 묻기',
-    headline: '말 못 할 고민, 속 시원히',
     price: '무료 시작',
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',
     image: 'consult',
+    tint: 'amber',
   },
   {
     id: 'tarot',
     title: '무료타로',
-    desc: '마음이 시키는 카드',
-    headline: '3장의 카드 선택',
+    desc: '한 장 뽑기',
     price: '무료',
     href: '/tarot/daily',
     zodiac: 'rabbit',
     category: 'fortune',
     tag: 'HOT',
     image: 'tarot',
+    tint: 'jade',
   },
   {
     id: 'today',
     title: '무료운세',
-    desc: '지금 핵심 한 줄',
-    headline: '오늘의 나의 운세는',
+    desc: '오늘 한 줄',
     price: '무료',
     href: '/today-fortune?concern=general',
     zodiac: 'rooster',
     category: 'fortune',
     tag: '추천',
     image: 'today',
+    tint: 'pink',
   },
 ] as const;
 
