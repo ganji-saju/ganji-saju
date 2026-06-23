@@ -417,7 +417,7 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex flex-col gap-2.5 rounded-[18px] border bg-white p-3.5 no-underline transition-transform hover:-translate-y-[2px]"
+      className="relative flex flex-col gap-2 overflow-hidden rounded-[18px] border bg-white pb-3.5 no-underline transition-transform hover:-translate-y-[2px]"
       style={{
         borderColor: 'var(--app-line)',
         color: 'var(--app-ink)',
@@ -427,7 +427,7 @@ export function GangiServiceCardLink({
       {/* 태그 (HOT / 추천) */}
       {card.tag ? (
         <span
-          className="absolute right-2.5 top-2.5 inline-flex items-center rounded-[6px] px-1.5"
+          className="absolute right-2.5 top-2.5 z-10 inline-flex items-center rounded-[6px] px-1.5"
           style={{
             background:
               card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
@@ -442,13 +442,46 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {card.chipKind === 'star-sign' ? (
-        <StarSignChip kind={card.starSign} size="md" />
+      {/* 2026-06-23 시안: 캐릭터 일러스트(있으면) — picture(avif/webp/png 폴백). 없으면 기존 chip. */}
+      {card.image ? (
+        <div
+          className="relative h-[132px] w-full overflow-hidden"
+          style={{ background: 'linear-gradient(160deg, var(--app-pink-soft) 0%, #ffffff 78%)' }}
+        >
+          <picture>
+            <source srcSet={`/images/gangi/characters/${card.image}.avif`} type="image/avif" />
+            <source srcSet={`/images/gangi/characters/${card.image}.webp`} type="image/webp" />
+            <img
+              src={`/images/gangi/characters/${card.image}.png`}
+              alt={card.title}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-x-0 bottom-0 mx-auto h-full w-auto object-contain object-bottom"
+            />
+          </picture>
+          <span
+            className="absolute left-2.5 top-2.5 inline-flex items-center rounded-full px-2 py-0.5"
+            style={{
+              background: isFree ? 'rgba(15,159,122,0.12)' : 'var(--app-pink-soft)',
+              color: isFree ? 'var(--app-jade)' : 'var(--app-pink-strong)',
+              fontSize: 11,
+              fontWeight: 800,
+            }}
+          >
+            {card.price}
+          </span>
+        </div>
       ) : (
-        <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+        <div className="px-3.5 pt-3.5">
+          {card.chipKind === 'star-sign' ? (
+            <StarSignChip kind={card.starSign} size="md" />
+          ) : (
+            <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+          )}
+        </div>
       )}
 
-      <div className="min-w-0">
+      <div className="min-w-0 px-3.5">
         <h2
           className="m-0"
           style={{
@@ -463,31 +496,26 @@ export function GangiServiceCardLink({
         <p
           className="m-0 mt-1"
           style={{
-            fontSize: 12,
-            color: 'var(--app-copy-muted)',
+            fontSize: 13,
+            color: 'var(--app-copy)',
             lineHeight: 1.45,
           }}
         >
-          {card.desc}
+          {card.headline ?? card.desc}
         </p>
       </div>
 
       <div
-        className="mt-auto inline-flex items-center gap-1"
+        className="mt-auto mx-3.5 flex items-center justify-center gap-1 rounded-[12px] py-2"
         style={{
+          background: isComingSoon ? 'var(--app-surface-muted)' : 'var(--app-pink-soft)',
           fontSize: 13,
           fontWeight: 800,
-          color: isFree
-            ? 'var(--app-ink)'
-            : isComingSoon
-            ? 'var(--app-copy-muted)'
-            : 'var(--app-pink-strong)',
+          color: isComingSoon ? 'var(--app-copy-muted)' : 'var(--app-pink-strong)',
         }}
       >
-        {card.price}
-        <span className="ml-auto" style={{ color: 'var(--app-copy-muted)' }}>
-          →
-        </span>
+        {isComingSoon ? card.price : '바로 확인하기'}
+        {!isComingSoon ? <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       </div>
     </Link>
   );
