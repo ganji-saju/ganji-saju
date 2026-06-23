@@ -32,7 +32,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
         return;
       }
 
-      setMessage(action === 'cancel' ? '해지 예약이 반영됐습니다.' : '라이트 멤버십 이용 상태가 다시 활성화됐습니다.');
+      setMessage(action === 'cancel' ? '해지 예약이 반영됐습니다.' : '멤버십 이용 상태가 다시 활성화됐습니다.');
       router.refresh();
     } catch {
       setMessage('구독 상태를 바꾸는 중 네트워크 오류가 발생했습니다.');
@@ -46,7 +46,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Link href="/credits">
           <Button>
-            라이트 시작하기
+            멤버십 시작하기
           </Button>
         </Link>
         <Link href="/membership">
@@ -79,7 +79,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
         ) : (
           <Link href="/credits">
             <Button>
-              라이트 다시 시작하기
+              멤버십 다시 시작하기
             </Button>
           </Link>
         )}

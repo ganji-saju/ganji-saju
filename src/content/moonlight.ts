@@ -1013,17 +1013,10 @@ export const MY_MENU_BLUEPRINT = [
   },
 ] as const;
 
+// 2026-06-23 — 라이트(basic, 4,900원) 멤버십 신규 판매 중단. PLAN_BLUEPRINT(멤버십·가격 페이지
+//   카드 소스)에서 제거 → 라이트 카드 미노출. plan 'basic' 타입·기존 구독자 로직(MEMBERSHIP_
+//   PACKAGE_BY_PLAN·CHECKOUT_PLAN_GUIDE·구독 갱신/해지·연간접근)은 레거시 호환 위해 유지.
 export const PLAN_BLUEPRINT = [
-  {
-    slug: 'basic' as const,
-    title: '라이트 대화 멤버십',
-    price: '월 4,900원',
-    badge: '대화로 가볍게 시작',
-    summary: '짧은 질문과 오늘의 흐름을 조용히 이어보는 가장 가벼운 대화용 플랜입니다.',
-    features: ['매일 해석 10회', '사주풀이 미리보기 월 2회', '대화 상담 월 30턴', '보관함 다시 보기'],
-    fit: '지금 궁금한 질문을 가볍게 이어 묻고 싶은 분',
-    opens: ['마음이 흔들릴 때 짧게 여쭙는 대화', '월 2회 긴 사주풀이 미리보기', '광고 없이 차분히 읽는 해석'],
-  },
   {
     slug: 'premium' as const,
     title: '프리미엄 대화 멤버십',

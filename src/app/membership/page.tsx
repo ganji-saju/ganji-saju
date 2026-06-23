@@ -146,11 +146,11 @@ export default async function MembershipPage({
           {/* §2 Plan 2-col 카드 (basic / premium).
               2026-05-16 — 활성 멤버십이면 "이용 중" 배지 + 결제 링크 비활성. */}
           <section>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {DIALOGUE_PLANS.map((plan) => {
                 const isPremium = plan.slug === 'premium';
                 const subscriptionPlanId =
-                  plan.slug === 'basic' || plan.slug === 'premium'
+                  plan.slug === 'premium'
                     ? planSlugToSubscription[plan.slug]
                     : null;
                 const isActive =

@@ -48,6 +48,9 @@ export const PAYMENT_PACKAGES = [
   //   기준, 9,900원 결제 시 50% 보너스로 15코인 지급. 기존 소액팩(500/990/2,000원 = 1/3/7코인)은
   //   폐지(상품이 10코인이라 소액팩으론 상품 하나도 못 열고 코인당 단가가 역전됨).
   { id: 'credit_15', name: '15 코인 (50% 보너스)', credits: 15, price: 9900, kind: 'credits' },
+  // 2026-06-23 — 대용량 코인팩(벌크 우대). 코인당 단가: 15코인 660원 > 40코인 495원 > 100코인 449원.
+  { id: 'credit_40', name: '40 코인', credits: 40, price: 19800, kind: 'credits' },
+  { id: 'credit_100', name: '100 코인 (최대 혜택)', credits: 100, price: 44900, kind: 'credits' },
   {
     id: 'subscription_30',
     name: '보너스 36 코인',
