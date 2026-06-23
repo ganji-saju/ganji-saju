@@ -27,11 +27,11 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
       className="rounded-[18px] border bg-white p-4"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         관계·신살 신호
       </div>
       <h3
-        className="mt-1 text-[15px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+        className="mt-1 text-[17.3px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
         style={{ wordBreak: 'keep-all' }}
       >
         사람·선택·타이밍에서 함께 볼 부분
@@ -65,7 +65,7 @@ export function SajuRelationsSymbolsCard({ grounding }: SajuRelationsSymbolsCard
       </div>
 
       <p
-        className="mt-3 text-[13px] leading-[1.55] text-[var(--app-copy-soft)]"
+        className="mt-3 text-[15px] leading-[1.55] text-[var(--app-copy-soft)]"
         style={{ wordBreak: 'keep-all' }}
       >
         이 신호들은 풀이 본문의 보조 근거로 쓰이며 단독 해석은 피하는 편이 좋습니다.
@@ -110,7 +110,7 @@ function Row({
     >
       <div className="flex items-center justify-between gap-2">
         <span
-          className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
+          className="text-[15px] font-extrabold uppercase tracking-[0.06em]"
           style={{ color: palette.label }}
         >
           {label}
@@ -120,7 +120,7 @@ function Row({
         {items.map((item) => (
           <li
             key={item}
-            className="rounded-full border bg-white px-2.5 py-1 text-[13px] font-bold text-[var(--app-ink)]"
+            className="rounded-full border bg-white px-2.5 py-1 text-[15px] font-bold text-[var(--app-ink)]"
             style={{ borderColor: palette.border }}
           >
             {simplifySajuCopy(item)}
@@ -128,7 +128,7 @@ function Row({
         ))}
       </ul>
       <p
-        className="mt-1.5 text-[13px] leading-[1.5] text-[var(--app-copy-muted)]"
+        className="mt-1.5 text-[15px] leading-[1.5] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {hint}

@@ -40,16 +40,16 @@ export default function SajuScoreShowcasePage() {
         paddingBottom: 'var(--app-mobile-dock-clearance)',
       }}
     >
-      <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">
+      <h1 className="text-[23px] font-extrabold text-[var(--app-ink)]">
         사주 점수 컴포넌트 (Phase 3~5)
       </h1>
-      <p className="mt-1 mb-6 text-[12px] text-[var(--app-copy-soft)]">
+      <p className="mt-1 mb-6 text-[13.8px] text-[var(--app-copy-soft)]">
         게이지 + 내역(F1~F5) + 오행 레이더(Phase 4) + 오행 가이드(Phase 5, 결정론 fallback) · dev 전용
       </p>
       <div className="grid gap-6">
         {samples.map((s) => (
           <div key={s.id}>
-            <p className="mb-2 text-[11px] font-semibold text-[var(--app-copy-muted)]">
+            <p className="mb-2 text-[12.6px] font-semibold text-[var(--app-copy-muted)]">
               {s.id} · {s.description} · {s.score.total}점 · {s.score.label.level}
             </p>
             <SajuScoreCard score={s.score} />

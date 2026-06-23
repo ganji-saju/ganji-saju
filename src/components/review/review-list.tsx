@@ -27,7 +27,7 @@ function StarRow({ rating }: { rating: number }) {
   return (
     <span
       aria-label={`별점 ${rating}점`}
-      className="text-[14px] leading-none"
+      className="text-[16.1px] leading-none"
       style={{ color: 'var(--app-pink-strong)' }}
     >
       {'★'.repeat(rating)}
@@ -45,13 +45,13 @@ function ReviewCard({ review }: { review: PublicReview }) {
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <StarRow rating={review.rating} />
-          <span className="text-[10.5px] font-extrabold text-[var(--app-copy-muted)]">
+          <span className="text-[12.1px] font-extrabold text-[var(--app-copy-muted)]">
             {review.rating}.0
           </span>
         </div>
         {review.isVerifiedPurchase ? (
           <span
-            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold"
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{
               background: 'var(--app-pink-soft)',
               color: 'var(--app-pink-strong)',
@@ -62,12 +62,12 @@ function ReviewCard({ review }: { review: PublicReview }) {
         ) : null}
       </header>
       <p
-        className="mt-3 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+        className="mt-3 text-[15px] leading-[1.65] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {review.content}
       </p>
-      <footer className="mt-3 flex items-center gap-1.5 text-[11px] text-[var(--app-copy-muted)]">
+      <footer className="mt-3 flex items-center gap-1.5 text-[12.6px] text-[var(--app-copy-muted)]">
         <span className="font-bold">{review.displayName}</span>
         <span>·</span>
         <span>{formatDate(review.createdAt)}</span>
@@ -96,15 +96,15 @@ export async function ReviewList({
       <div className="flex items-end justify-between gap-2">
         <div>
           <div
-            className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink-strong)' }}
           >
             {kicker}
           </div>
-          <h2 className="mt-1 text-[18px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+          <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">{title}</h2>
         </div>
         {total > 0 ? (
-          <span className="text-[11px] font-extrabold text-[var(--app-copy-muted)]">
+          <span className="text-[12.6px] font-extrabold text-[var(--app-copy-muted)]">
             총 {total}건
           </span>
         ) : null}
@@ -115,9 +115,9 @@ export async function ReviewList({
           className="rounded-[16px] border border-dashed p-6 text-center"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[14px] font-extrabold text-[var(--app-ink)]">{emptyTitle}</div>
+          <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">{emptyTitle}</div>
           <p
-            className="mt-1.5 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="mt-1.5 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {emptyDescription}

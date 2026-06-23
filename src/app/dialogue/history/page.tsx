@@ -56,11 +56,11 @@ export default async function DialogueHistoryPage() {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               내 대화
             </div>
             <h1
-              className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+              className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               지금까지 나눈 대화
@@ -68,7 +68,7 @@ export default async function DialogueHistoryPage() {
               {sessions.length}개
             </h1>
             <p
-              className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+              className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               12지신 선생님과 나눈 질문·답변을 시기 순으로 다시 살펴볼 수 있습니다.
@@ -81,16 +81,16 @@ export default async function DialogueHistoryPage() {
               className="rounded-[18px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[32px]">💬</div>
-              <h2 className="mt-2 text-[16px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+              <div className="text-[36.8px]">💬</div>
+              <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                 로그인하면 대화 기록을 볼 수 있어요
               </h2>
-              <p className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
                 대화 내용은 본인 계정에만 안전하게 저장됩니다.
               </p>
               <Link
                 href="/login?next=%2Fdialogue%2Fhistory"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13px] font-extrabold text-white"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
               >
                 로그인 →
               </Link>
@@ -100,23 +100,23 @@ export default async function DialogueHistoryPage() {
               className="rounded-[18px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[32px]">🌱</div>
-              <h2 className="mt-2 text-[16px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
+              <div className="text-[36.8px]">🌱</div>
+              <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                 아직 나눈 대화가 없어요
               </h2>
-              <p className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]" style={{ wordBreak: 'keep-all' }}>
                 대화방에서 첫 질문을 던져보세요. 대화 내용이 여기 자동으로 저장됩니다.
               </p>
               <Link
                 href="/dialogue"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[13px] font-extrabold text-white"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
               >
                 대화 시작하기 →
               </Link>
             </article>
           ) : (
             <section>
-              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 최근 대화 — {sessions.length}건
               </h2>
               <div className="mt-2 grid gap-2.5">
@@ -133,15 +133,15 @@ export default async function DialogueHistoryPage() {
                       <ZodiacChip kind={expertId as ZodiacKey} size="sm" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                          <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                             {meta.teacherName}
                           </span>
-                          <span className="shrink-0 text-[10.5px] font-bold text-[var(--app-copy-soft)]">
+                          <span className="shrink-0 text-[12.1px] font-bold text-[var(--app-copy-soft)]">
                             {formatRelativeTime(session.lastAt)}
                           </span>
                         </div>
                         <p
-                          className="mt-1 text-[12.5px] font-bold text-[var(--app-copy)]"
+                          className="mt-1 text-[14.4px] font-bold text-[var(--app-copy)]"
                           style={{
                             wordBreak: 'keep-all',
                             display: '-webkit-box',
@@ -154,7 +154,7 @@ export default async function DialogueHistoryPage() {
                         </p>
                         {session.lastReply ? (
                           <p
-                            className="mt-1 text-[11.5px] leading-[1.55] text-[var(--app-copy-soft)]"
+                            className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy-soft)]"
                             style={{
                               wordBreak: 'keep-all',
                               display: '-webkit-box',
@@ -166,7 +166,7 @@ export default async function DialogueHistoryPage() {
                             A. {session.lastReply}
                           </p>
                         ) : null}
-                        <div className="mt-1.5 text-[10.5px] font-bold text-[var(--app-pink-strong)]">
+                        <div className="mt-1.5 text-[12.1px] font-bold text-[var(--app-pink-strong)]">
                           메시지 {session.messageCount}개 · 자세히 보기 →
                         </div>
                       </div>

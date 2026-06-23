@@ -572,7 +572,7 @@ export default function NotificationCenterPage({
           <ZodiacChip kind={item.zodiac} size="sm" />
         ) : (
           <div
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[16px] font-extrabold"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[18.4px] font-extrabold"
             style={{
               background: 'var(--app-pink-soft)',
               color: 'var(--app-pink-strong)',
@@ -584,14 +584,14 @@ export default function NotificationCenterPage({
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <div className="truncate text-[13.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+            <div className="truncate text-[15.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
               {item.title}
             </div>
-            <div className="shrink-0 text-[10.5px] text-[var(--app-copy-soft)]">
+            <div className="shrink-0 text-[12.1px] text-[var(--app-copy-soft)]">
               {item.time}
             </div>
           </div>
-          <div className="mt-0.5 truncate text-[11.5px] text-[var(--app-copy-soft)]">
+          <div className="mt-0.5 truncate text-[13.2px] text-[var(--app-copy-soft)]">
             {item.desc}
           </div>
         </div>
@@ -629,7 +629,7 @@ export default function NotificationCenterPage({
                 type="button"
                 onClick={() => setTab(t.key)}
                 className={cn(
-                  'flex-1 border-b-2 px-2 py-3 text-[13.5px] transition',
+                  'flex-1 border-b-2 px-2 py-3 text-[15.5px] transition',
                   active
                     ? 'border-[var(--app-pink)] font-extrabold text-[var(--app-pink-strong)]'
                     : 'border-transparent font-medium text-[var(--app-copy-soft)]'
@@ -654,21 +654,21 @@ export default function NotificationCenterPage({
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="rounded-[6px] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.04em] text-white"
+                    className="rounded-[6px] px-2 py-0.5 text-[11.5px] font-extrabold tracking-[0.04em] text-white"
                     style={{ background: 'var(--app-pink-strong)' }}
                   >
                     PIN
                   </span>
-                  <span className="text-[11px] font-extrabold text-[var(--app-pink-strong)]">
+                  <span className="text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
                     오늘 아침 데일리
                   </span>
                 </div>
-                <h2 className="mt-2 text-[16px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]">
+                <h2 className="mt-2 text-[18.4px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]">
                   {snapshot.latestReading.dailyLine}
                 </h2>
                 <Link
                   href={snapshot.latestReading.href}
-                  className="mt-3 inline-flex text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                  className="mt-3 inline-flex text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
                 >
                   오늘운세 자세히 →
                 </Link>
@@ -683,7 +683,7 @@ export default function NotificationCenterPage({
             ].map((group) =>
               group.list.length > 0 ? (
                 <section key={group.heading}>
-                  <div className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                  <div className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                     {group.heading}
                   </div>
                   <div className="mt-2 grid gap-2.5">
@@ -699,16 +699,16 @@ export default function NotificationCenterPage({
           <section className="space-y-5 px-1">
             {/* §1 알림 시간 */}
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 알림 시간
               </div>
-              <h2 className="mt-1 text-[17px] font-extrabold leading-snug text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[19.5px] font-extrabold leading-snug text-[var(--app-ink)]">
                 매일 오전 7:00 받기
               </h2>
             </div>
 
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[13px] font-extrabold text-[var(--app-ink)]">
+              <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
                 알림 받을 시간
               </div>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -718,7 +718,7 @@ export default function NotificationCenterPage({
                     return (
                       <span
                         key={time}
-                        className="rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition"
+                        className="rounded-full border px-3 py-1.5 text-[13.2px] font-bold transition"
                         style={
                           active
                             ? {
@@ -743,8 +743,8 @@ export default function NotificationCenterPage({
 
             {/* §2 알림 종류 - 슬롯 토글 */}
             <section>
-              <h2 className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">알림 종류</h2>
-              <p className="px-1 mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+              <h2 className="px-1 text-[17.3px] font-extrabold text-[var(--app-ink)]">알림 종류</h2>
+              <p className="px-1 mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                 {honorific}께 필요한 알림만 남겼습니다.
               </p>
               <article className="mt-3 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
@@ -761,7 +761,7 @@ export default function NotificationCenterPage({
                       )}
                     >
                       <div
-                        className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-[14px] font-extrabold"
+                        className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] text-[16.1px] font-extrabold"
                         style={
                           enabled
                             ? {
@@ -778,10 +778,10 @@ export default function NotificationCenterPage({
                         ✦
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                        <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                           {slot.title}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                        <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                           {route.desc} · {slot.timeLabel}
                         </div>
                       </div>
@@ -816,22 +816,22 @@ export default function NotificationCenterPage({
 
             {/* §3 채널 */}
             <section>
-              <h2 className="px-1 text-[15px] font-extrabold text-[var(--app-ink)]">채널</h2>
+              <h2 className="px-1 text-[17.3px] font-extrabold text-[var(--app-ink)]">채널</h2>
               <article className="mt-3 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
                 <div
                   className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--app-line)]"
                 >
                   <div
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"
                     aria-hidden="true"
                   >
                     📱
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                    <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                       앱 푸시 알림
                     </div>
-                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                    <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       {isCurrentDeviceSubscribed
                         ? '이 브라우저에서 알림을 받고 있어요'
                         : pushSupported
@@ -843,7 +843,7 @@ export default function NotificationCenterPage({
                     type="button"
                     onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
                     disabled={isConnectingPush || !pushReady}
-                    className="rounded-full px-3 py-1.5 text-[11px] font-extrabold transition disabled:opacity-50"
+                    className="rounded-full px-3 py-1.5 text-[12.6px] font-extrabold transition disabled:opacity-50"
                     style={
                       isCurrentDeviceSubscribed
                         ? {
@@ -866,41 +866,41 @@ export default function NotificationCenterPage({
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--app-line)]">
                   <div
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"
                     aria-hidden="true"
                   >
                     💬
                   </div>
                   {/* 2026-05-18 Phase 5-B: "준비 중" → "출시 예정" 명확화 — 사용자 directive 부합 */}
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                    <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                       카카오톡 알림톡
                     </div>
-                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                    <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       출시 예정
                     </div>
                   </div>
                   <span
-                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
+                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
                   >
                     출시 예정
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3.5">
                   <div
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[16px]"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"
                     aria-hidden="true"
                   >
                     ✉
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">이메일</div>
-                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                    <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">이메일</div>
+                    <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       등록한 이메일로 받기 · 출시 예정
                     </div>
                   </div>
                   <span
-                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[11px] font-bold text-[var(--app-copy-soft)]"
+                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
                   >
                     출시 예정
                   </span>
@@ -913,7 +913,7 @@ export default function NotificationCenterPage({
                   type="button"
                   onClick={sendTestPush}
                   disabled={isSendingTest}
-                  className="mt-3 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[12.5px] font-bold text-[var(--app-copy-muted)] disabled:opacity-50"
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[14.4px] font-bold text-[var(--app-copy-muted)] disabled:opacity-50"
                 >
                   <Send className="h-3.5 w-3.5" />
                   {isSendingTest ? '발송 중...' : '테스트 알림 보내기'}
@@ -930,7 +930,7 @@ export default function NotificationCenterPage({
                   enabled: !current.enabled,
                 }))
               }
-              className="inline-flex h-12 w-full items-center justify-center rounded-full text-[14px] font-extrabold transition"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full text-[16.1px] font-extrabold transition"
               style={
                 preferences.enabled
                   ? {
@@ -952,7 +952,7 @@ export default function NotificationCenterPage({
 
         {statusMessage ? (
           <p
-            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[var(--app-ink)]"
+            className="rounded-[12px] border px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]"
             style={{
               background: 'var(--app-pink-soft)',
               borderColor: 'var(--app-pink-line)',

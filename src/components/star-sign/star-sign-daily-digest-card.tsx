@@ -34,12 +34,12 @@ export function StarSignDailyDigestCard() {
     >
       {/* §header */}
       <div className="flex items-baseline justify-between">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           ⭐ 오늘 별자리 일진
         </div>
-        <div className="text-[10.5px] text-[var(--app-copy-soft)]">{digest.dateKey}</div>
+        <div className="text-[12.1px] text-[var(--app-copy-soft)]">{digest.dateKey}</div>
       </div>
-      <p className="mt-1 text-[11.5px] text-[var(--app-copy-muted)]">
+      <p className="mt-1 text-[13.2px] text-[var(--app-copy-muted)]">
         12 별자리 평균 {digest.globalAverage}점 · 최다 분위기 {MOOD_LABEL[dominantMood[0]]}
       </p>
 
@@ -53,17 +53,17 @@ export function StarSignDailyDigestCard() {
       >
         <div className="flex items-center gap-2">
           <span
-            className="grid h-7 w-7 place-items-center rounded-full text-[12px] font-extrabold text-white"
+            className="grid h-7 w-7 place-items-center rounded-full text-[13.8px] font-extrabold text-white"
             style={{ background: bestElementHex }}
             aria-hidden="true"
           >
             {digest.bestElement.label[0]}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               오늘 흐름 좋은 원소
             </div>
-            <div className="text-[13px] font-extrabold text-[var(--app-ink)]">
+            <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
               {digest.bestElement.label}자리 평균{' '}
               <span style={{ color: bestElementHex }}>
                 {digest.bestElement.averageScore}
@@ -75,7 +75,7 @@ export function StarSignDailyDigestCard() {
 
       {/* §top 3 */}
       <div className="mt-3">
-        <div className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           TOP 3
         </div>
         <div className="mt-1.5 grid gap-1.5">
@@ -95,27 +95,27 @@ export function StarSignDailyDigestCard() {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <span
-                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
                   style={{ background: rankColor }}
                 >
                   {idx + 1}
                 </span>
-                <span className="text-[18px]" style={{ color: elementHex }} aria-hidden="true">
+                <span className="text-[20.7px]" style={{ color: elementHex }} aria-hidden="true">
                   {entry.symbol}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                  <div className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
                     {entry.label}
                   </div>
                   <div
-                    className="truncate text-[10.5px] text-[var(--app-copy-soft)]"
+                    className="truncate text-[12.1px] text-[var(--app-copy-soft)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {entry.highlight}
                   </div>
                 </div>
                 <div
-                  className="text-[15px] font-extrabold tabular-nums"
+                  className="text-[17.3px] font-extrabold tabular-nums"
                   style={{ color: rankColor }}
                 >
                   {entry.overall}
@@ -135,21 +135,21 @@ export function StarSignDailyDigestCard() {
           borderColor: 'rgba(212,148,38,0.22)',
         }}
       >
-        <span className="text-[16px]" style={{ color: 'var(--app-amber)' }} aria-hidden="true">
+        <span className="text-[18.4px]" style={{ color: 'var(--app-amber)' }} aria-hidden="true">
           ⚠
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-extrabold text-[var(--app-amber)]">
+          <div className="text-[12.6px] font-extrabold text-[var(--app-amber)]">
             살짝 주의 · {digest.caution.label}
           </div>
           <div
-            className="truncate text-[10.5px] text-[var(--app-copy-soft)]"
+            className="truncate text-[12.1px] text-[var(--app-copy-soft)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {digest.caution.highlight}
           </div>
         </div>
-        <div className="text-[14px] font-extrabold tabular-nums text-[var(--app-amber)]">
+        <div className="text-[16.1px] font-extrabold tabular-nums text-[var(--app-amber)]">
           {digest.caution.overall}
         </div>
       </Link>
@@ -157,7 +157,7 @@ export function StarSignDailyDigestCard() {
       {/* §cta */}
       <Link
         href="/star-sign"
-        className="mt-3 block rounded-full border bg-white py-2 text-center text-[12px] font-bold text-[var(--app-pink-strong)]"
+        className="mt-3 block rounded-full border bg-white py-2 text-center text-[13.8px] font-bold text-[var(--app-pink-strong)]"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         12 별자리 전체 보기 →

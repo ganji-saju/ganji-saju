@@ -230,23 +230,23 @@ export function TodayFortuneDetailClient({
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               결과가 필요해요
             </div>
             <h1
-              className="mt-2 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+              className="mt-2 text-[23px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               먼저 오늘운세 무료 결과를
               <br />
               만들어 주세요
             </h1>
-            <p className="mt-2.5 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]">
+            <p className="mt-2.5 text-[15px] leading-[1.65] text-[var(--app-copy-muted)]">
               오늘 자세히 보기는 방금 만든 결과에 연결해서 열립니다.
             </p>
             <Link
               href={`/today-fortune?concern=${encodeURIComponent(concernId)}`}
-              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[13.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               오늘운세 보러가기 →
             </Link>
@@ -263,33 +263,33 @@ export function TodayFortuneDetailClient({
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-coral)' }}
             >
               열람 실패
             </div>
-            <h1 className="mt-1.5 text-[18px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]">
               바로 열지 못했습니다
             </h1>
-            <p className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+            <p className="mt-2 text-[15px] leading-[1.65] text-[var(--app-copy)]">
               {error}
             </p>
             {remainingCredits !== null ? (
-              <p className="mt-1.5 text-[12.5px] text-[var(--app-copy-soft)]">
+              <p className="mt-1.5 text-[14.4px] text-[var(--app-copy-soft)]">
                 현재 잔여 코인 {remainingCredits}개
               </p>
             ) : null}
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Link
                 href={resultHref}
-                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15px] font-extrabold text-[var(--app-copy-muted)]"
               >
                 <ArrowLeft className="h-4 w-4" />
                 무료 결과로
               </Link>
               <Link
                 href="/credits?from=today-detail"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 코인 충전 →
               </Link>
@@ -300,7 +300,7 @@ export function TodayFortuneDetailClient({
         {/* §Notice — jade-tone 으로 통일 */}
         {notice && result ? (
           <div
-            className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.6]"
+            className="rounded-[12px] border px-3.5 py-2.5 text-[14.4px] leading-[1.6]"
             style={{
               background: '#e8f5ee',
               borderColor: 'rgba(45,135,88,0.18)',
@@ -366,14 +366,14 @@ export function TodayFortuneDetailClient({
           <div className="grid gap-2 pt-2 sm:grid-cols-2">
             <Link
               href={resultHref}
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15px] font-extrabold text-[var(--app-copy-muted)]"
             >
               <ArrowLeft className="h-4 w-4" />
               무료 결과로 돌아가기
             </Link>
             <Link
               href="/dialogue"
-              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full px-5 text-[13.5px] font-extrabold text-white"
+              className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full px-5 text-[15.5px] font-extrabold text-white"
               style={{
                 background: 'var(--app-ink)',
                 boxShadow: '0 12px 28px rgba(15,23,42,0.22)',

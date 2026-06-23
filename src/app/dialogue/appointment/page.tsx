@@ -281,7 +281,7 @@ export default function AppointmentPage() {
               }}
             >
               <div
-                className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[28px] font-extrabold"
+                className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[32.2px] font-extrabold"
                 style={{
                   background: '#fff',
                   color: 'var(--app-pink-strong)',
@@ -290,10 +290,10 @@ export default function AppointmentPage() {
               >
                 ✓
               </div>
-              <h1 className="mt-4 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
+              <h1 className="mt-4 text-[23px] font-extrabold leading-snug text-[var(--app-ink)]">
                 예약 요청이 접수되었어요
               </h1>
-              <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+              <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                 {year}년 {month + 1}월 {selectedDay}일 · {selectedTime}
                 <br />
                 상담 시작 30분 전 알림으로 안내드립니다.
@@ -303,13 +303,13 @@ export default function AppointmentPage() {
             <div className="grid gap-2">
               <Link
                 href="/dialogue"
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 대화방으로 이동 →
               </Link>
               <Link
                 href="/my"
-                className="inline-flex h-11 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+                className="inline-flex h-11 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
               >
                 MY 홈으로
               </Link>
@@ -339,13 +339,13 @@ export default function AppointmentPage() {
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[14.5px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[16.7px] font-extrabold text-[var(--app-ink)]">
                   {DEFAULT_TEACHER.name} · {DEFAULT_TEACHER.field}
                 </div>
               </div>
               <Link
                 href="/dialogue"
-                className="text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
+                className="text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
               >
                 변경
               </Link>
@@ -358,24 +358,24 @@ export default function AppointmentPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                    <div className="text-[13.8px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                       상담 요금
                     </div>
-                    <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                    <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                       {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인
                     </h2>
-                    <p className="mt-1 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]">
+                    <p className="mt-1 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]">
                       1코인 {formatWon(SINGLE_COIN_PRICE_KRW)} 단가 환산 {formatWon(appointmentKrwEquivalent)} 상당입니다. 실제 결제 금액은 선택한 충전팩 단가에 따라 달라질 수 있습니다.
                     </p>
                   </div>
                   <Link
                     href={`/credits?from=appointment&needed=${APPOINTMENT_COST_COINS}`}
-                    className="shrink-0 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[11.5px] font-extrabold text-white"
+                    className="shrink-0 rounded-full bg-[var(--app-pink)] px-3 py-2 text-[13.2px] font-extrabold text-white"
                   >
                     코인 충전
                   </Link>
                 </div>
-                <div className="mt-3 grid gap-2 rounded-[12px] bg-[var(--app-pink-soft)] p-3 text-[12px] leading-[1.55] text-[var(--app-copy)]">
+                <div className="mt-3 grid gap-2 rounded-[12px] bg-[var(--app-pink-soft)] p-3 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
                   <div className="flex justify-between gap-3">
                     <span className="text-[var(--app-copy-muted)]">보유 코인</span>
                     <strong className="text-[var(--app-ink)]">
@@ -402,10 +402,10 @@ export default function AppointmentPage() {
               </article>
 
               <article
-                className="rounded-[16px] border bg-white p-4 text-[12px] leading-[1.65] text-[var(--app-copy-muted)]"
+                className="rounded-[16px] border bg-white p-4 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">예약 취소·환불 정책</h2>
+                <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">예약 취소·환불 정책</h2>
                 <ul className="mt-2 grid gap-1.5">
                   <li>상담 시작 24시간 전까지 취소하면 사용 코인을 전액 복구합니다.</li>
                   <li>상담 시작 24시간 이내 취소 또는 예약 시간 미참석은 배정 준비가 시작되어 코인 복구가 제한됩니다.</li>
@@ -416,7 +416,7 @@ export default function AppointmentPage() {
 
             {/* §2 주제 */}
             <section>
-              <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+              <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
                 상담 주제
               </label>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -427,7 +427,7 @@ export default function AppointmentPage() {
                       key={t.key}
                       type="button"
                       onClick={() => setTopic(t.key)}
-                      className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition"
+                      className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition"
                       style={
                         active
                           ? {
@@ -455,18 +455,18 @@ export default function AppointmentPage() {
                 <button
                   type="button"
                   onClick={goPrevMonth}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[18px] text-[var(--app-copy-muted)]"
+                  className="grid h-8 w-8 place-items-center rounded-full text-[20.7px] text-[var(--app-copy-muted)]"
                   aria-label="이전 달"
                 >
                   ‹
                 </button>
-                <div className="text-[16px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                <div className="text-[18.4px] font-extrabold tracking-tight text-[var(--app-ink)]">
                   {year}년 {month + 1}월
                 </div>
                 <button
                   type="button"
                   onClick={goNextMonth}
-                  className="grid h-8 w-8 place-items-center rounded-full text-[18px] text-[var(--app-copy-muted)]"
+                  className="grid h-8 w-8 place-items-center rounded-full text-[20.7px] text-[var(--app-copy-muted)]"
                   aria-label="다음 달"
                 >
                   ›
@@ -477,7 +477,7 @@ export default function AppointmentPage() {
                 {WEEKDAY_LABELS.map((label, i) => (
                   <div
                     key={label}
-                    className="py-1 text-[10.5px] font-extrabold"
+                    className="py-1 text-[12.1px] font-extrabold"
                     style={{
                       color:
                         i === 0
@@ -505,7 +505,7 @@ export default function AppointmentPage() {
                         }
                       }}
                       className={cn(
-                        'relative grid aspect-square place-items-center rounded-[12px] text-[13px] font-bold transition'
+                        'relative grid aspect-square place-items-center rounded-[12px] text-[15px] font-bold transition'
                       )}
                       style={
                         isSelected
@@ -537,7 +537,7 @@ export default function AppointmentPage() {
                 })}
               </div>
 
-              <div className="mt-3 flex items-center gap-3 text-[10.5px] text-[var(--app-copy-soft)]">
+              <div className="mt-3 flex items-center gap-3 text-[12.1px] text-[var(--app-copy-soft)]">
                 <span className="flex items-center gap-1">
                   <span
                     className="h-2 w-2 rounded-[3px]"
@@ -565,8 +565,8 @@ export default function AppointmentPage() {
             {/* §4 시간 슬롯 */}
             <section>
               <div className="flex items-baseline justify-between">
-                <div className="text-[13px] font-extrabold text-[var(--app-ink)]">시간 선택</div>
-                <span className="text-[11px] font-bold text-[var(--app-copy-soft)]">
+                <div className="text-[15px] font-extrabold text-[var(--app-ink)]">시간 선택</div>
+                <span className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
                   · 30분 단위
                 </span>
               </div>
@@ -579,7 +579,7 @@ export default function AppointmentPage() {
                       type="button"
                       disabled={!slot.available}
                       onClick={() => slot.available && setSelectedTime(slot.time)}
-                      className="rounded-[10px] py-2.5 text-[13px] font-bold transition"
+                      className="rounded-[10px] py-2.5 text-[15px] font-bold transition"
                       style={
                         active
                           ? {
@@ -609,7 +609,7 @@ export default function AppointmentPage() {
             <section>
               <label
                 htmlFor="appointment-note"
-                className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+                className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
               >
                 미리 알려주실 게 있나요? (선택)
               </label>
@@ -618,7 +618,7 @@ export default function AppointmentPage() {
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
                 placeholder="상담 전에 알려주시면 더 정확히 풀어드려요"
-                className="mt-1.5 min-h-[80px] w-full resize-none rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[13px] leading-[1.55] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="mt-1.5 min-h-[80px] w-full resize-none rounded-[12px] border border-[var(--app-line)] bg-white p-3 text-[15px] leading-[1.55] text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
             </section>
 
@@ -633,10 +633,10 @@ export default function AppointmentPage() {
             >
               <div className="mx-auto max-w-md">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[11px] text-[var(--app-copy-soft)]">
+                  <span className="text-[12.6px] text-[var(--app-copy-soft)]">
                     {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인 · {formatWon(appointmentKrwEquivalent)} 상당
                   </span>
-                  <span className="text-[14.5px] font-extrabold text-[var(--app-pink-strong)]">
+                  <span className="text-[16.7px] font-extrabold text-[var(--app-pink-strong)]">
                     {selectedDay
                       ? `${month + 1}월 ${selectedDay}일 ${selectedTime}`
                       : '날짜를 선택하세요'}
@@ -646,7 +646,7 @@ export default function AppointmentPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={!canSubmit || submitting}
-                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
                 >
                   {submitting ? '예약 중...' : '예약 확정 →'}
                 </button>

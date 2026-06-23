@@ -43,7 +43,7 @@ function maskReceipt(r: string | null): string {
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
       <div className="mt-2.5">{children}</div>
     </section>
   );
@@ -51,13 +51,13 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Field({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-3 border-b border-[var(--app-line)] py-1.5 last:border-0">
-      <span className="text-[11.5px] text-[var(--app-copy-soft)]">{label}</span>
-      <span className={`text-right text-[12px] font-semibold text-[var(--app-ink)] ${mono ? 'font-mono' : ''}`}>{value}</span>
+      <span className="text-[13.2px] text-[var(--app-copy-soft)]">{label}</span>
+      <span className={`text-right text-[13.8px] font-semibold text-[var(--app-ink)] ${mono ? 'font-mono' : ''}`}>{value}</span>
     </div>
   );
 }
 function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[11px] font-bold text-[var(--app-ink)]">{children}</span>;
+  return <span className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-ink)]">{children}</span>;
 }
 
 async function fetchSummaryRow(userId: string): Promise<{ last_active_at: string | null; subscription_status: string | null } | null> {
@@ -138,12 +138,12 @@ export default async function AdminUserDetailPage({ params }: Props) {
         <Card title="사주·콘텐츠">
           {palja ? (
             <>
-              <Field label="팔자" value={<span className="font-mono text-[14px]">{palja.year} {palja.month} {palja.day} {palja.hour ?? '시미상'}</span>} />
+              <Field label="팔자" value={<span className="font-mono text-[16.1px]">{palja.year} {palja.month} {palja.day} {palja.hour ?? '시미상'}</span>} />
               <Field label="최근 풀이" value={fmtDateTime(detail.latestReadingAt)} />
               <Field label="조회 기록 수" value={`${detail.readingCount}건`} />
             </>
           ) : (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">사주 조회 기록이 없습니다.</p>
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">사주 조회 기록이 없습니다.</p>
           )}
         </Card>
       ),
@@ -154,18 +154,18 @@ export default async function AdminUserDetailPage({ params }: Props) {
       content: (
         <Card title={`결제 이력 · 총 ${fmtWon(payment.totalSpentWon)} (${payment.count}건)`}>
           {payment.entries.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">현금 결제 내역이 없습니다.</p>
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">현금 결제 내역이 없습니다.</p>
           ) : (
             <ul className="space-y-1.5">
               {payment.entries.map((e) => (
                 <li key={e.id} className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2">
                   <div className="flex flex-col">
-                    <span className="text-[12px] font-extrabold text-[var(--app-ink)]">{e.productName}</span>
-                    <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+                    <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">{e.productName}</span>
+                    <span className="text-[12.1px] text-[var(--app-copy-soft)]">
                       {e.category} · {fmtDate(e.date)}{header.isSuper ? ` · 영수증 ${maskReceipt(e.receipt)}` : ''}
                     </span>
                   </div>
-                  <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+                  <span className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
                     {fmtWon(e.amountWon)}{e.coins != null ? ` · ${e.coins}코인` : ''}
                   </span>
                 </li>
@@ -197,10 +197,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
       content: (
         <Card title={`LLM 사용/캐시 · 비용 $${llmTotalCost.toFixed(4)} (근사)`}>
           {llmStats.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">기록 없음 (Phase 0b 배포 이후 호출분만 집계).</p>
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">기록 없음 (Phase 0b 배포 이후 호출분만 집계).</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-[11.5px]">
+              <table className="w-full text-[13.2px]">
                 <thead>
                   <tr className="text-[var(--app-copy-soft)]">
                     <th className="py-1 text-left font-semibold">영역</th>
@@ -233,7 +233,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
       content: (
         <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refundTargetCount}건)`}>
           {refund.items.length === 0 && refund.creditItems.length === 0 && detail.refundRequests.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
           ) : (
             <RefundActions role={role} items={refund.items} creditItems={refund.creditItems} requests={detail.refundRequests} />
           )}
@@ -250,10 +250,10 @@ export default async function AdminUserDetailPage({ params }: Props) {
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[16px] font-extrabold text-[var(--app-ink)]">{header.displayName}</div>
-              <div className="text-[12px] text-[var(--app-copy-soft)]">{header.emailMasked ?? '—'}</div>
+              <div className="text-[18.4px] font-extrabold text-[var(--app-ink)]">{header.displayName}</div>
+              <div className="text-[13.8px] text-[var(--app-copy-soft)]">{header.emailMasked ?? '—'}</div>
             </div>
-            <div className="text-right text-[11px] text-[var(--app-copy-soft)]">
+            <div className="text-right text-[12.6px] text-[var(--app-copy-soft)]">
               가입 {fmtDate(header.signupAt)} ({header.ageDays}일째)
               <br />
               {header.inactiveDays != null ? `${header.inactiveDays}일 비활동` : '활동 기록 없음'}
@@ -264,7 +264,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
             <Badge>{header.subscriptionStatus ? `구독 ${header.subscriptionStatus}` : '구독 없음'}</Badge>
             {header.refundableWon > 0 && <Badge>환불대상 {fmtWon(header.refundableWon)}</Badge>}
           </div>
-          <p className="mt-2 text-[10.5px] text-[var(--app-copy-soft)]">
+          <p className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
             ⚠ 이 화면 열람은 감사로그에 기록됩니다{header.isSuper ? ' · super_admin 전체표시' : ' · 일부 마스킹'}.
           </p>
         </section>

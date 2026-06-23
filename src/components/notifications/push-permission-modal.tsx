@@ -180,12 +180,12 @@ export function PushPermissionModal({
             <Bell className="h-6 w-6" />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               알림 받기
             </div>
             <h2
               id="push-modal-title"
-              className="mt-0.5 text-[20px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+              className="mt-0.5 text-[23px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               매일 잠깐, 한 줄로
@@ -196,7 +196,7 @@ export function PushPermissionModal({
         </div>
 
         <p
-          className="mt-3 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+          className="mt-3 text-[15px] leading-[1.7] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           광고 알림은 보내지 않아요. 사주 흐름에 맞춰 하루 1번까지만 부드럽게 알려드립니다.
@@ -223,11 +223,11 @@ export function PushPermissionModal({
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                     {benefit.title}
                   </div>
                   <p
-                    className="mt-0.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                    className="mt-0.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {benefit.desc}
@@ -240,7 +240,7 @@ export function PushPermissionModal({
 
         {error ? (
           <div
-            className="mt-3 rounded-[10px] border px-3 py-2 text-[12px] leading-[1.55]"
+            className="mt-3 rounded-[10px] border px-3 py-2 text-[13.8px] leading-[1.55]"
             style={{
               background: '#fdecec',
               borderColor: 'rgba(198,69,69,0.22)',
@@ -256,14 +256,14 @@ export function PushPermissionModal({
             type="button"
             onClick={handleAllow}
             disabled={busy}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
           >
             {busy ? '연결 중...' : '알림 허용하기'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             다음에 받기
@@ -271,7 +271,7 @@ export function PushPermissionModal({
         </div>
 
         <p
-          className="mt-2 text-center text-[10.5px] leading-[1.55] text-[var(--app-copy-soft)]"
+          className="mt-2 text-center text-[12.1px] leading-[1.55] text-[var(--app-copy-soft)]"
           style={{ wordBreak: 'keep-all' }}
         >
           언제든 MY → 알림 센터 → 알림 끄기 에서 끌 수 있어요.

@@ -25,12 +25,12 @@ export function EmptyState({ title, description, actions, icon }: EmptyStateProp
       className="flex flex-col items-center gap-3 rounded-[14px] border bg-white px-4 py-8 text-center"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      {icon ? <div className="text-[28px]">{icon}</div> : null}
+      {icon ? <div className="text-[32.2px]">{icon}</div> : null}
       <div className="space-y-1">
-        <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+        <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">{title}</h2>
         {description ? (
           <p
-            className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             {description}

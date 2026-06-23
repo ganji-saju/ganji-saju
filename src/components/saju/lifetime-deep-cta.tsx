@@ -30,7 +30,7 @@ export function LifetimeDeepCta({ slug, initialEntitlement }: Props) {
     return (
       <Link
         href={openHref ?? `/saju/${encodeURIComponent(slug)}/premium`}
-        className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-jade)] px-5 py-2.5 text-[13px] font-extrabold text-white"
+        className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-jade)] px-5 py-2.5 text-[15px] font-extrabold text-white"
       >
         ✓ 구매한 풀이 보기
       </Link>
@@ -47,7 +47,7 @@ export function LifetimeDeepCta({ slug, initialEntitlement }: Props) {
         product: 'lifetime-report',
         from: 'saju_deep_premium_cta',
       }}
-      className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+      className="ml-auto inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
     >
       결제하기 →
     </TrackedLink>

@@ -77,7 +77,7 @@ export default async function MyeongriPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -87,7 +87,7 @@ export default async function MyeongriPage() {
               명리 쉽게 보기
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -98,13 +98,13 @@ export default async function MyeongriPage() {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             내 안에서 반복되는 패턴을 바로 봅니다
           </h1>
           <p
-            className="mt-2 text-[14px] leading-[1.7]"
+            className="mt-2 text-[16.1px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             긴 개념 설명 대신, 내 결과로 이어지는 입구만 남겼습니다.
@@ -115,7 +115,7 @@ export default async function MyeongriPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>내 패턴의 바탕</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             반복되는 장면의 이유를 내 사주 위에서 확인합니다
@@ -124,19 +124,19 @@ export default async function MyeongriPage() {
             {EXPLORATIONS.map((item) => (
               <div key={item.title} style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {item.badge}
                 </div>
                 <h3
-                  className="mt-1 text-[14px] font-extrabold leading-snug tracking-tight"
+                  className="mt-1 text-[16.1px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {item.title}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {item.hook}
@@ -151,7 +151,7 @@ export default async function MyeongriPage() {
           <article className="mx-[0.25rem]" style={PANEL_STYLE}>
             <div style={KICKER_STYLE}>내 사주로 이어보기</div>
             <h2
-              className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+              className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
               style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
             >
               내 사주 위에서 바로 확인할 수 있습니다
@@ -159,7 +159,7 @@ export default async function MyeongriPage() {
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Link
                 href={`/saju/${readingSlug}`}
-                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold text-white"
+                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
                   boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
@@ -169,7 +169,7 @@ export default async function MyeongriPage() {
               </Link>
               <Link
                 href={`/saju/${readingSlug}/elements`}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[13.5px] font-extrabold"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[15.5px] font-extrabold"
                 style={{
                   border: '1px solid var(--app-line)',
                   color: 'var(--app-ink)',
@@ -186,7 +186,7 @@ export default async function MyeongriPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>탐구 주제</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             명리 안에서 가장 자주 다시 보게 되는 세 가지
@@ -204,19 +204,19 @@ export default async function MyeongriPage() {
                 }}
               >
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {item.badge}
                 </div>
                 <h3
-                  className="mt-1 text-[14px] font-extrabold leading-snug tracking-tight"
+                  className="mt-1 text-[16.1px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {item.title}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
                 >
                   {item.hook} →

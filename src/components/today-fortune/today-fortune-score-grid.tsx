@@ -37,11 +37,11 @@ export function TodayFortuneScoreGrid({
               className="rounded-[18px] border border-[var(--app-line)] bg-white p-3.5"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-bold text-[var(--app-ink)]">
+                <span className="text-[15px] font-bold text-[var(--app-ink)]">
                   {score.label}
                 </span>
                 <span
-                  className="text-[16px] font-extrabold"
+                  className="text-[18.4px] font-extrabold"
                   style={{ color }}
                 >
                   {value}
@@ -56,7 +56,7 @@ export function TodayFortuneScoreGrid({
                   style={{ width: `${value}%`, background: color }}
                 />
               </div>
-              <p className="mt-2.5 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
+              <p className="mt-2.5 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
                 {score.summary}
               </p>
             </article>

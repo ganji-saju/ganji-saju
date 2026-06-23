@@ -26,11 +26,11 @@ export default function ContactPage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             💬 1:1 문의
           </div>
           <h1
-            className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
+            className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             궁금한 점을
@@ -38,7 +38,7 @@ export default function ContactPage() {
             직접 보내주세요
           </h1>
           <p
-            className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]"
+            className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
             평일 9~18시 사이 24시간 이내 답변 드립니다. 결제 영수증·스크린샷이 있으면 함께 보내주세요.
@@ -53,11 +53,11 @@ export default function ContactPage() {
           className="rounded-[14px] border bg-white p-4"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             보내기 전에
           </div>
           <p
-            className="mt-1 text-[12.5px] leading-[1.6] text-[var(--app-copy)]"
+            className="mt-1 text-[14.4px] leading-[1.6] text-[var(--app-copy)]"
             style={{ wordBreak: 'keep-all' }}
           >
             결제·구독·환불 등 자주 묻는 질문은 <a href="/support/faq" className="font-extrabold text-[var(--app-pink-strong)] underline underline-offset-2">FAQ</a> 에 정리되어 있습니다. FAQ 에서 못 찾은 질문만 여기로 보내주세요.

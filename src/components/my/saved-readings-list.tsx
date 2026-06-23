@@ -97,7 +97,7 @@ function TagBadge({ tag }: { tag: VaultTag }) {
         : { background: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' };
   return (
     <span
-      className="rounded-[4px] px-1.5 py-0.5 text-[9.5px] font-extrabold tracking-[0.04em]"
+      className="rounded-[4px] px-1.5 py-0.5 text-[10.9px] font-extrabold tracking-[0.04em]"
       style={style}
     >
       {tag}
@@ -205,16 +205,16 @@ export default function SavedReadingsList({
 
   return (
     <div className="space-y-3.5">
-      <div className="flex items-center justify-between rounded-[12px] bg-[var(--app-pink-soft)]/40 px-3.5 py-2.5 text-[12px]">
+      <div className="flex items-center justify-between rounded-[12px] bg-[var(--app-pink-soft)]/40 px-3.5 py-2.5 text-[13.8px]">
         <span className="font-bold text-[var(--app-copy-soft)]">
           전체 {totalVisibleCount}개
         </span>
-        <span className="text-[11.5px] text-[var(--app-copy-muted)]">{visibleRangeLabel}</span>
+        <span className="text-[13.2px] text-[var(--app-copy-muted)]">{visibleRangeLabel}</span>
       </div>
 
       {message ? (
         <div
-          className="rounded-[12px] border px-3.5 py-2.5 text-[12.5px] font-bold"
+          className="rounded-[12px] border px-3.5 py-2.5 text-[14.4px] font-bold"
           style={{
             background: 'var(--app-pink-soft)',
             borderColor: 'var(--app-pink-line)',
@@ -230,10 +230,10 @@ export default function SavedReadingsList({
           <div className="mx-auto inline-flex">
             <ZodiacChip kind="snake" size="lg" />
           </div>
-          <div className="mt-3 text-[14px] font-extrabold text-[var(--app-ink)]">
+          <div className="mt-3 text-[16.1px] font-extrabold text-[var(--app-ink)]">
             아직 저장된 풀이가 없어요
           </div>
-          <p className="mt-1 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+          <p className="mt-1 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
             {count > 0
               ? '현재 페이지의 결과를 모두 삭제했습니다.'
               : '사주를 본 뒤 보관함에서 다시 확인할 수 있습니다.'}
@@ -254,16 +254,16 @@ export default function SavedReadingsList({
                 <Link href={item.href} className="flex items-start gap-3 p-3.5">
                   <ZodiacChip kind="rabbit" size="md" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                    <div className="flex items-center gap-1.5 text-[12.1px] text-[var(--app-copy-soft)]">
                       <span>{item.occurredOn ?? formatShortCreatedAt(item.createdAt)}</span>
                       <span>·</span>
                       <span>{formatTimeOfDay(item.createdAt)}</span>
                       <TagBadge tag={tag} />
                     </div>
-                    <div className="mt-1 text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="mt-1 text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {item.title}
                     </div>
-                    <p className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
+                    <p className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
                       {item.summary ?? '구매 당시 풀이를 다시 엽니다.'}
                     </p>
                   </div>
@@ -279,7 +279,7 @@ export default function SavedReadingsList({
                         existing: existingReview,
                       })
                     }
-                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                    className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
                   >
                     {existingReview
                       ? `✎ 후기 · ${statusLabel(existingReview.moderationStatus)}`
@@ -287,13 +287,13 @@ export default function SavedReadingsList({
                   </button>
                   <button
                     type="button"
-                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                    className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
                   >
                     ↗ 공유
                   </button>
                   <Link
                     href={item.href}
-                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="grid h-8 place-items-center rounded-[8px] text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{ background: 'var(--app-pink-soft)' }}
                   >
                     다시 보기 →
@@ -313,16 +313,16 @@ export default function SavedReadingsList({
                 <Link href={`/saju/${reading.id}`} className="flex items-start gap-3 p-3.5">
                   <ZodiacChip kind={getDisplayZodiac(reading)} size="md" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                    <div className="flex items-center gap-1.5 text-[12.1px] text-[var(--app-copy-soft)]">
                       <span>{formatShortCreatedAt(reading.createdAt)}</span>
                       <span>·</span>
                       <span>{formatTimeOfDay(reading.createdAt)}</span>
                       <TagBadge tag={tag} />
                     </div>
-                    <div className="mt-1 text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="mt-1 text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {reading.birthMonth}월 {reading.birthDay}일 풀이
                     </div>
-                    <p className="mt-1 text-[12px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
+                    <p className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-muted)] line-clamp-2">
                       {formatBirthLabel(reading)}
                     </p>
                   </div>
@@ -332,19 +332,19 @@ export default function SavedReadingsList({
                     type="button"
                     onClick={() => deleteReading(reading.id)}
                     disabled={deletingId === reading.id}
-                    className="h-8 rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-coral)]/10 disabled:opacity-60"
+                    className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-coral)]/10 disabled:opacity-60"
                   >
                     {deletingId === reading.id ? '삭제 중...' : '🗑 삭제'}
                   </button>
                   <Link
                     href={`/saju/${reading.id}/share`}
-                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                    className="grid h-8 place-items-center rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
                   >
                     ↗ 공유
                   </Link>
                   <Link
                     href={`/saju/${reading.id}`}
-                    className="grid h-8 place-items-center rounded-[8px] text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="grid h-8 place-items-center rounded-[8px] text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{ background: 'var(--app-pink-soft)' }}
                   >
                     다시 보기 →

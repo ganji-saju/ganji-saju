@@ -139,7 +139,7 @@ function SearchContent() {
     if (group.length === 0) return null;
     return (
       <section key={label}>
-        <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">{label}</h2>
+        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{label}</h2>
         <div className="mt-2.5 grid gap-2">
           {group.map((hit) => (
             <Link
@@ -151,10 +151,10 @@ function SearchContent() {
                 <ZodiacChip kind={hit.zodiacKey} size="sm" />
               ) : null}
               <div className="min-w-0 flex-1">
-                <div className="text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                   {highlight(hit.title, query)}
                 </div>
-                <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                   {hit.description}
                 </div>
               </div>
@@ -194,13 +194,13 @@ function SearchContent() {
               onChange={(event) => applyQuery(event.target.value)}
               placeholder="궁금한 것을 검색하세요"
               autoFocus
-              className="flex-1 bg-transparent text-[14px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
+              className="flex-1 bg-transparent text-[16.1px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)]"
             />
             {query ? (
               <button
                 type="button"
                 onClick={() => applyQuery('')}
-                className="grid h-[18px] w-[18px] place-items-center rounded-full bg-[var(--app-line)] text-[11px] text-white"
+                className="grid h-[18px] w-[18px] place-items-center rounded-full bg-[var(--app-line)] text-[12.6px] text-white"
                 aria-label="검색어 지우기"
               >
                 ✕
@@ -212,7 +212,7 @@ function SearchContent() {
         <section className="space-y-5 px-1 pt-4">
           {mode === 'results' ? (
             <>
-              <div className="text-[11px] font-extrabold text-[var(--app-copy-soft)]">
+              <div className="text-[12.6px] font-extrabold text-[var(--app-copy-soft)]">
                 <span className="text-[var(--app-pink-strong)]">&ldquo;{query}&rdquo;</span>{' '}
                 검색 결과 {totalCount}건
               </div>
@@ -226,7 +226,7 @@ function SearchContent() {
           {mode === 'empty-input' ? (
             <>
               <section>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   최근 검색어
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -235,10 +235,10 @@ function SearchContent() {
                       key={tag}
                       type="button"
                       onClick={() => applyQuery(tag)}
-                      className="flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-copy-muted)]"
+                      className="flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)]"
                     >
                       {tag}
-                      <span className="text-[10px] text-[var(--app-copy-soft)]" aria-hidden="true">
+                      <span className="text-[11.5px] text-[var(--app-copy-soft)]" aria-hidden="true">
                         ✕
                       </span>
                     </button>
@@ -247,7 +247,7 @@ function SearchContent() {
               </section>
 
               <section>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   실시간 인기 검색
                 </div>
                 <article className="mt-2.5 overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white">
@@ -264,7 +264,7 @@ function SearchContent() {
                       }
                     >
                       <span
-                        className="w-5 text-[14px] font-extrabold"
+                        className="w-5 text-[16.1px] font-extrabold"
                         style={{
                           color:
                             item.rank <= 3
@@ -276,11 +276,11 @@ function SearchContent() {
                       >
                         {item.rank}
                       </span>
-                      <span className="flex-1 text-[13px] font-bold text-[var(--app-ink)]">
+                      <span className="flex-1 text-[15px] font-bold text-[var(--app-ink)]">
                         {item.keyword}
                       </span>
                       <span
-                        className="text-[10px] font-extrabold"
+                        className="text-[11.5px] font-extrabold"
                         style={{
                           color: item.up
                             ? 'var(--app-pink-strong)'
@@ -296,7 +296,7 @@ function SearchContent() {
               </section>
 
               <section>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   추천 카테고리
                 </div>
                 <div className="mt-2.5 grid grid-cols-2 gap-2.5">
@@ -307,7 +307,7 @@ function SearchContent() {
                       className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
                     >
                       <ZodiacChip kind={cat.zodiac} size="sm" />
-                      <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                      <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                         {cat.label}
                       </span>
                     </Link>
@@ -320,7 +320,7 @@ function SearchContent() {
           {mode === 'empty-results' ? (
             <div className="px-8 pt-16 text-center">
               <div
-                className="mx-auto grid h-24 w-24 place-items-center rounded-full text-[44px] font-bold"
+                className="mx-auto grid h-24 w-24 place-items-center rounded-full text-[50.6px] font-bold"
                 style={{
                   background: 'var(--app-pink-soft)',
                   color: 'var(--app-pink-strong)',
@@ -330,10 +330,10 @@ function SearchContent() {
               >
                 ?
               </div>
-              <div className="mt-5 text-[17px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+              <div className="mt-5 text-[19.5px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
                 &ldquo;<span className="text-[var(--app-pink-strong)]">{query}</span>&rdquo;와 일치하는 풀이가 없어요
               </div>
-              <p className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-soft)]">
+              <p className="mt-2 text-[15px] leading-[1.55] text-[var(--app-copy-soft)]">
                 검색어를 다르게 말해보거나,
                 <br />
                 아래 추천 메뉴에서 시작해보세요.
@@ -345,7 +345,7 @@ function SearchContent() {
                   borderColor: 'var(--app-pink-line)',
                 }}
               >
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   이런 검색은 어때요?
                 </div>
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -354,7 +354,7 @@ function SearchContent() {
                       key={tag}
                       type="button"
                       onClick={() => applyQuery(tag)}
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                     >
                       {tag}
                     </button>
@@ -363,7 +363,7 @@ function SearchContent() {
               </article>
               <Link
                 href="/saju/new"
-                className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-6 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-6 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 사주 시작하기 →
               </Link>

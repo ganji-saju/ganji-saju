@@ -273,7 +273,7 @@ export function TodayFortuneResultClient({
 
             {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}
             <details className="group rounded-[20px] border border-[var(--app-line)] bg-white">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[14px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[16.1px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
                 <span>더 깊이 들여다보기</span>
                 <span
                   aria-hidden="true"

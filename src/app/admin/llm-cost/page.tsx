@@ -20,7 +20,7 @@ const num = (n: number) => n.toLocaleString('ko-KR');
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
       <div className="mt-2.5">{children}</div>
     </section>
   );
@@ -46,8 +46,8 @@ export default async function LlmCostPage() {
               { label: '캐시 hit률', value: pct(summary.cacheHitRate) },
             ].map((m) => (
               <div key={m.label} className="rounded-[12px] border border-[var(--app-line)] p-3">
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">{m.label}</div>
-                <div className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">{m.value}</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">{m.label}</div>
+                <div className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">{m.value}</div>
               </div>
             ))}
           </div>
@@ -56,12 +56,12 @@ export default async function LlmCostPage() {
         {/* 영역별 */}
         <Card title="영역별 (비용 순)">
           {byFeature.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">
               데이터 없음 (Phase 0b 배포 이후 호출분만 집계).
             </p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-[11.5px]">
+              <table className="w-full text-[13.2px]">
                 <thead>
                   <tr className="text-[var(--app-copy-soft)]">
                     <th className="py-1 text-left font-semibold">영역</th>
@@ -102,12 +102,12 @@ export default async function LlmCostPage() {
         {/* 일별 추이 */}
         <Card title="일별 비용 추이">
           {daily.length === 0 ? (
-            <p className="text-[12px] text-[var(--app-copy-soft)]">데이터 없음.</p>
+            <p className="text-[13.8px] text-[var(--app-copy-soft)]">데이터 없음.</p>
           ) : (
             <ul className="space-y-1">
               {daily.map((d) => (
                 <li key={d.date} className="flex items-center gap-2">
-                  <span className="w-[78px] shrink-0 text-[11px] text-[var(--app-copy-soft)]">
+                  <span className="w-[78px] shrink-0 text-[12.6px] text-[var(--app-copy-soft)]">
                     {d.date.slice(5)}
                   </span>
                   <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-[var(--app-pink-soft)]">
@@ -116,7 +116,7 @@ export default async function LlmCostPage() {
                       style={{ width: `${Math.round((d.costUsd / maxDayCost) * 100)}%` }}
                     />
                   </span>
-                  <span className="w-[120px] shrink-0 text-right text-[11px] text-[var(--app-ink)]">
+                  <span className="w-[120px] shrink-0 text-right text-[12.6px] text-[var(--app-ink)]">
                     {usd(d.costUsd)} · {num(d.distinctUsers)}인
                   </span>
                 </li>
@@ -125,7 +125,7 @@ export default async function LlmCostPage() {
           )}
         </Card>
 
-        <p className="text-[10.5px] text-[var(--app-copy-soft)]">
+        <p className="text-[12.1px] text-[var(--app-copy-soft)]">
           ※ 데이터는 Phase 0b(텔레메트리) 배포 이후 호출분만. &quot;LLM 활성 사용자&quot;는
           기간 내 LLM을 1회 이상 쓴 고유 사용자(비로그인 제외) — 방문 DAU와 다름. 대운 챕터의
           envelope 캐시 hit은 집계 미포함(별도 chapter_run 로그)이라 챕터 hit률은 과소 추정될 수 있음.

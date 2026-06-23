@@ -137,13 +137,13 @@ export default async function SajuNaturePage({ params }: Props) {
               <div className="flex items-center gap-3">
                 <ZodiacChip kind={yearZodiac} size="lg" />
                 <div>
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     {dayMasterPillar} · {yearZodiacLabel}
                   </div>
-                  <h1 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                  <h1 className="mt-1 text-[20.7px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
                     {metaphor}처럼 드러나는 나
                   </h1>
-                  <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
                     {formatBirthSummary(input)}
                   </div>
                 </div>
@@ -160,10 +160,10 @@ export default async function SajuNaturePage({ params }: Props) {
 
             {/* §2 핵심 장점 */}
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 핵심
               </div>
-              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                 내 장점이 살아나는 장면
               </h2>
               <article className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-white p-4">
@@ -171,17 +171,17 @@ export default async function SajuNaturePage({ params }: Props) {
                   {traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full px-3 py-1 text-[12px] font-extrabold text-white"
+                      className="rounded-full px-3 py-1 text-[13.8px] font-extrabold text-white"
                       style={{ background: elementColor }}
                     >
                       {trait}
                     </span>
                   ))}
                 </div>
-                <p className="mt-3.5 text-[14px] leading-[1.65] text-[var(--app-copy)]">
+                <p className="mt-3.5 text-[16.1px] leading-[1.65] text-[var(--app-copy)]">
                   {guide.strength}
                 </p>
-                <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+                <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
                   {description}
                 </p>
               </article>
@@ -189,10 +189,10 @@ export default async function SajuNaturePage({ params }: Props) {
 
             {/* §3 생활 힌트 — 2x2 */}
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 생활 힌트
               </div>
-              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                 이렇게 쓰면 더 편해요
               </h2>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
@@ -201,13 +201,13 @@ export default async function SajuNaturePage({ params }: Props) {
                     key={card.label}
                     className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
-                    <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                    <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
                       {card.label}
                     </div>
-                    <div className="mt-1 text-[13.5px] font-extrabold leading-snug text-[var(--app-ink)]">
+                    <div className="mt-1 text-[15.5px] font-extrabold leading-snug text-[var(--app-ink)]">
                       {card.title}
                     </div>
-                    <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                    <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                       {card.desc}
                     </p>
                   </article>
@@ -224,16 +224,16 @@ export default async function SajuNaturePage({ params }: Props) {
               }}
             >
               <div
-                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink)' }}
               >
                 다음
               </div>
-              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+              <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
                 기운 균형도 이어서 봐주세요
               </h2>
               <p
-                className="mt-2 text-[12.5px] leading-[1.55]"
+                className="mt-2 text-[14.4px] leading-[1.55]"
                 style={{ opacity: 0.7 }}
               >
                 강한 쪽과 채울 쪽을 원형 그래프로 한눈에 확인할 수 있어요.
@@ -241,13 +241,13 @@ export default async function SajuNaturePage({ params }: Props) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/elements`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   기운 균형 보기 →
                 </Link>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}`}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   사주 총평으로
                 </Link>

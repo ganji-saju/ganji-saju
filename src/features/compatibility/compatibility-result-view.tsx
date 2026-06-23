@@ -105,10 +105,10 @@ export function CompatibilityResultView({
       <section className="space-y-5 px-1">
         {/* §1 Eyebrow + headline with score highlight */}
         <div>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             {hasLoveQuestionPurchase ? '깊은 풀이 열람중' : selected.title} · 두 사람의 흐름
           </div>
-          <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+          <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
             궁합 <span className="text-[var(--app-pink-strong)]">{score}점</span>
             <br />
             {compatibility.headline}
@@ -123,15 +123,15 @@ export function CompatibilityResultView({
           <div className="flex items-center justify-between gap-3">
             <div className="flex flex-1 flex-col items-center text-center">
               <ZodiacChip kind={selfZodiac} size="lg" />
-              <div className="mt-2 text-[13px] font-extrabold text-[var(--app-ink)]">
+              <div className="mt-2 text-[15px] font-extrabold text-[var(--app-ink)]">
                 {selfName}
               </div>
-              <div className="text-[13px] text-[var(--app-copy-soft)]">
+              <div className="text-[15px] text-[var(--app-copy-soft)]">
                 {selfYear} · {ZODIAC_KOR[selfZodiac]}
               </div>
             </div>
             <div
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[22px] font-extrabold text-white"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[25.3px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
                 boxShadow: '0 6px 14px rgba(216,27,114,0.32)',
@@ -142,10 +142,10 @@ export function CompatibilityResultView({
             </div>
             <div className="flex flex-1 flex-col items-center text-center">
               <ZodiacChip kind={partnerZodiac} size="lg" />
-              <div className="mt-2 text-[13px] font-extrabold text-[var(--app-ink)]">
+              <div className="mt-2 text-[15px] font-extrabold text-[var(--app-ink)]">
                 {partnerName}
               </div>
-              <div className="text-[13px] text-[var(--app-copy-soft)]">
+              <div className="text-[15px] text-[var(--app-copy-soft)]">
                 {partnerYear} · {ZODIAC_KOR[partnerZodiac]}
               </div>
             </div>
@@ -154,7 +154,7 @@ export function CompatibilityResultView({
 
         {/* §3 Big score gauge */}
         <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-5 text-center">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             총 궁합
           </div>
           <div
@@ -168,24 +168,24 @@ export function CompatibilityResultView({
               aria-hidden="true"
             >
               <div>
-                <div className="text-[36px] font-extrabold tracking-tighter text-[var(--app-ink)]">
+                <div className="text-[41.4px] font-extrabold tracking-tighter text-[var(--app-ink)]">
                   {score}
                 </div>
-                <div className="-mt-1 text-[11px] text-[var(--app-copy-soft)]">/ 100</div>
+                <div className="-mt-1 text-[12.6px] text-[var(--app-copy-soft)]">/ 100</div>
               </div>
             </div>
           </div>
-          <p className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy)]">
+          <p className="mt-2 text-[15px] leading-[1.55] text-[var(--app-copy)]">
             {compatibility.dataNote ?? compatibility.summary}
           </p>
         </article>
 
         {/* §4 분야별 궁합 — 4축 bar */}
         <section>
-          <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
             분야별 궁합
           </h2>
-          <p className="mt-1 text-[13px] text-[var(--app-copy-muted)]">
+          <p className="mt-1 text-[15px] text-[var(--app-copy-muted)]">
             관계의 흐름을 4축으로 나눠 봅니다
           </p>
           <div className="mt-3 grid gap-2.5">
@@ -199,11 +199,11 @@ export function CompatibilityResultView({
                   className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[13.5px] font-bold text-[var(--app-ink)]">
+                    <span className="text-[15.5px] font-bold text-[var(--app-ink)]">
                       {card.eyebrow}
                     </span>
                     <span
-                      className="text-[14px] font-extrabold"
+                      className="text-[16.1px] font-extrabold"
                       style={{ color }}
                     >
                       {axisScore}
@@ -218,7 +218,7 @@ export function CompatibilityResultView({
                       style={{ width: `${axisScore}%`, background: color }}
                     />
                   </div>
-                  <p className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  <p className="mt-2 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                     {card.summary}
                   </p>
                 </article>
@@ -229,31 +229,31 @@ export function CompatibilityResultView({
 
         {/* §5 두 사람 흐름 */}
         <section>
-          <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
             두 사람 흐름
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">{selfName}</div>
-              <div className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]">
+              <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">{selfName}</div>
+              <div className="mt-1 text-[16.1px] font-extrabold text-[var(--app-ink)]">
                 {compatibility.selfData.dayMaster.metaphor ?? '내 기본 기질'}
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.selfData.dayMaster.description ?? selfBirthSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">{partnerName}</div>
-              <div className="mt-1 text-[14px] font-extrabold text-[var(--app-ink)]">
+              <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">{partnerName}</div>
+              <div className="mt-1 text-[16.1px] font-extrabold text-[var(--app-ink)]">
                 {compatibility.partnerData.dayMaster.metaphor ?? '상대 기본 기질'}
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.partnerData.dayMaster.description ?? partnerBirthSummary}
               </p>
             </article>
           </div>
           <p
-            className="mt-3 rounded-[12px] px-3.5 py-2.5 text-[13px] leading-[1.6]"
+            className="mt-3 rounded-[12px] px-3.5 py-2.5 text-[15px] leading-[1.6]"
             style={{ background: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' }}
           >
             {compatibility.summary}
@@ -262,25 +262,25 @@ export function CompatibilityResultView({
 
         {/* §6 잘 맞는 / 조심 / 지금 살리는 */}
         <section>
-          <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
             관계 흐름 정리
           </h2>
           <div className="mt-3 grid gap-2.5">
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[13px] font-bold text-[var(--app-jade)]">잘 맞는 지점</div>
-              <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+              <div className="text-[15px] font-bold text-[var(--app-jade)]">잘 맞는 지점</div>
+              <p className="mt-1 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.supportiveSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[13px] font-bold text-[var(--app-coral)]">조심할 지점</div>
-              <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+              <div className="text-[15px] font-bold text-[var(--app-coral)]">조심할 지점</div>
+              <p className="mt-1 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.cautionSummary}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">지금 살리는 방식</div>
-              <p className="mt-1 text-[13px] leading-[1.6] text-[var(--app-ink)]">
+              <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">지금 살리는 방식</div>
+              <p className="mt-1 text-[15px] leading-[1.6] text-[var(--app-ink)]">
                 {compatibility.currentFlowSummary}
               </p>
             </article>
@@ -289,7 +289,7 @@ export function CompatibilityResultView({
 
         {/* §7 평가 원칙 — details 접기 */}
         <details className="rounded-[14px] border border-[var(--app-line)] bg-white">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[13px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[15px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
             <span>궁합 풀이와 참고 단서 보기</span>
             <span className="text-[var(--app-copy-muted)]" aria-hidden="true">
               ▾
@@ -297,21 +297,21 @@ export function CompatibilityResultView({
           </summary>
           <div className="grid gap-2.5 border-t border-[var(--app-line)] px-4 py-4">
             <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">
                 관계를 보는 렌즈
               </div>
-              <div className="mt-1 text-[13px] font-bold text-[var(--app-ink)]">
+              <div className="mt-1 text-[15px] font-bold text-[var(--app-ink)]">
                 {compatibility.relationshipLensTitle}
               </div>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.relationshipLensBody}
               </p>
             </article>
             <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-              <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
+              <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">
                 다루는 방식
               </div>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {compatibility.practiceSummary}
               </p>
             </article>
@@ -320,10 +320,10 @@ export function CompatibilityResultView({
                 key={item.title}
                 className="rounded-[12px] border border-[var(--app-line)] bg-white p-3"
               >
-                <div className="text-[13px] font-bold text-[var(--app-pink-strong)]">
+                <div className="text-[15px] font-bold text-[var(--app-pink-strong)]">
                   {item.title}
                 </div>
-                <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]">
+                <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]">
                   {item.body}
                 </p>
               </article>
@@ -357,19 +357,19 @@ export function CompatibilityResultView({
                   </svg>
                 </span>
                 <div
-                  className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   구매 완료 · 깊은 풀이
                 </div>
               </div>
               <h2
-                className="mt-2 text-[18px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
+                className="mt-2 text-[20.7px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {premiumExpansion.ctaTitle}
               </h2>
-              <p className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy-muted)]">
+              <p className="mt-2 text-[15px] leading-[1.65] text-[var(--app-copy-muted)]">
                 {premiumExpansion.ctaBody}
               </p>
             </article>
@@ -392,7 +392,7 @@ export function CompatibilityResultView({
                   >
                     <div className="flex items-start gap-3">
                       <span
-                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
                         style={{ background: 'var(--app-pink)' }}
                         aria-hidden="true"
                       >
@@ -400,12 +400,12 @@ export function CompatibilityResultView({
                       </span>
                       <div className="min-w-0 flex-1">
                         <div
-                          className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+                          className="break-keep text-[16.7px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
                           style={{ wordBreak: 'keep-all' }}
                         >
                           {item.title}
                         </div>
-                        <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+                        <p className="mt-1.5 break-keep text-[15px] leading-[1.7] text-[var(--app-copy)]">
                           {item.body}
                         </p>
                       </div>
@@ -420,7 +420,7 @@ export function CompatibilityResultView({
                 동일한 폭으로 확장. text-overflow 발생 시 ellipsis. */}
             <Link
               href={retakeHref}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 text-[13px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 text-[15px] font-bold text-[var(--app-copy-muted)]"
             >
               <span className="truncate">다른 사람과 다시 보기</span>
             </Link>
@@ -434,16 +434,16 @@ export function CompatibilityResultView({
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 보고 싶다면
             </div>
-            <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
               {premiumExpansion.ctaTitle}
             </h2>
             <p
-              className="mt-2 text-[13px] leading-[1.55]"
+              className="mt-2 text-[15px] leading-[1.55]"
               style={{ opacity: 0.75 }}
             >
               {premiumExpansion.ctaBody}
@@ -452,7 +452,7 @@ export function CompatibilityResultView({
               {premiumExpansion.preview.slice(0, 2).map((item) => (
                 <li
                   key={item.title}
-                  className="rounded-[12px] px-3.5 py-2.5 text-[13px] leading-[1.55]"
+                  className="rounded-[12px] px-3.5 py-2.5 text-[15px] leading-[1.55]"
                   style={{ background: 'rgba(255,255,255,0.06)' }}
                 >
                   <strong className="text-white">{item.title}</strong>
@@ -465,13 +465,13 @@ export function CompatibilityResultView({
             <div className="mt-4 grid gap-2">
               <Link
                 href={checkoutHref}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 9,900원 · 깊은 궁합 풀이 보기 →
               </Link>
               <Link
                 href={retakeHref}
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[13px] font-bold text-white/80"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[15px] font-bold text-white/80"
               >
                 다른 사람과 다시 보기
               </Link>

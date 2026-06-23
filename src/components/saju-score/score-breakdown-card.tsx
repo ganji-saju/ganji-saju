@@ -40,12 +40,12 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
     <div className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm ${className}`}>
       <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
         <div>
-          <p className="mb-0.5 text-[13px] text-gray-400">왜 이 점수가 나왔는지</p>
+          <p className="mb-0.5 text-[15px] text-gray-400">왜 이 점수가 나왔는지</p>
           <h3 className="text-base font-bold text-gray-900">📊 점수 산출 내역</h3>
         </div>
         <div className="text-right">
           <span className={`text-2xl font-bold ${colors.text}`}>{score.total}</span>
-          <div className={`mt-0.5 text-[13px] font-medium ${colors.text}`}>{score.label.title}</div>
+          <div className={`mt-0.5 text-[15px] font-medium ${colors.text}`}>{score.label.title}</div>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
                 </div>
                 <span className={`text-sm font-bold ${colors.text}`}>+{factorScore}점</span>
               </div>
-              <p className="mb-2 pl-6 text-[13px] text-gray-500">{meta.subtitle}</p>
+              <p className="mb-2 pl-6 text-[15px] text-gray-500">{meta.subtitle}</p>
               <div className="flex items-center gap-3 pl-6">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
                   <div

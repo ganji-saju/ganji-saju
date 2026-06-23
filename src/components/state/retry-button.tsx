@@ -32,7 +32,7 @@ export function RetryButton({
   };
 
   const base =
-    'rounded-[10px] px-3 py-2 text-[12.5px] font-bold disabled:opacity-50';
+    'rounded-[10px] px-3 py-2 text-[14.4px] font-bold disabled:opacity-50';
   const skin =
     variant === 'primary'
       ? 'bg-[var(--app-pink-strong)] text-white'

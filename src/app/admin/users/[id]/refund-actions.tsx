@@ -155,20 +155,20 @@ export function RefundActions({
       {/* 환불 요청 버튼 (대상 entitlement) */}
       {items.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10.5px] font-extrabold text-[var(--app-copy-soft)]">상품 환불</p>
+          <p className="text-[12.1px] font-extrabold text-[var(--app-copy-soft)]">상품 환불</p>
           {items.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between gap-2 rounded-[10px] border border-dashed border-[var(--app-line)] px-3 py-2"
             >
-              <span className="text-[11.5px] text-[var(--app-copy-soft)]">
+              <span className="text-[13.2px] text-[var(--app-copy-soft)]">
                 {item.productName} · {item.amountWon.toLocaleString()}원
               </span>
               <button
                 type="button"
                 disabled={!item.hasPaymentKey || busy !== null}
                 onClick={() => requestRefund(item)}
-                className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+                className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
               >
                 환불 요청
               </button>
@@ -179,7 +179,7 @@ export function RefundActions({
 
       {creditItems.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10.5px] font-extrabold text-[var(--app-copy-soft)]">코인 환불</p>
+          <p className="text-[12.1px] font-extrabold text-[var(--app-copy-soft)]">코인 환불</p>
           {creditItems.map((item) => {
             const requestable = item.status !== 'none' && item.refundAmountWon > 0 && item.hasPaymentKey;
             return (
@@ -187,7 +187,7 @@ export function RefundActions({
                 key={item.id}
                 className="flex items-center justify-between gap-2 rounded-[10px] border border-dashed border-[var(--app-line)] px-3 py-2"
               >
-                <span className="min-w-0 text-[11.5px] text-[var(--app-copy-soft)]">
+                <span className="min-w-0 text-[13.2px] text-[var(--app-copy-soft)]">
                   <span className="block font-semibold text-[var(--app-ink)]">
                     {item.productName} · 환불 {item.refundAmountWon.toLocaleString()}원
                   </span>
@@ -200,7 +200,7 @@ export function RefundActions({
                   type="button"
                   disabled={!requestable || busy !== null}
                   onClick={() => requestCreditRefund(item)}
-                  className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+                  className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
                 >
                   {item.status === 'partial' ? '부분 환불' : '환불 요청'}
                 </button>
@@ -218,7 +218,7 @@ export function RefundActions({
               key={r.id}
               className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2"
             >
-              <span className="min-w-0 text-[11px] text-[var(--app-ink)]">
+              <span className="min-w-0 text-[12.6px] text-[var(--app-ink)]">
                 <span className="block">
                   <b>{STATUS_LABEL[r.status] ?? r.status}</b> · {r.amount?.toLocaleString() ?? '—'}원 ·{' '}
                   {r.reason}
@@ -227,14 +227,14 @@ export function RefundActions({
                     : ''}
                 </span>
                 {(r.errorMessage || getTossRefundNote(r)) && (
-                  <span className="mt-0.5 block break-words text-[10.5px] text-[var(--app-copy-soft)]">
+                  <span className="mt-0.5 block break-words text-[12.1px] text-[var(--app-copy-soft)]">
                     {r.errorMessage ? `사유: ${r.errorMessage}` : null}
                     {r.errorMessage && getTossRefundNote(r) ? ' · ' : null}
                     {getTossRefundNote(r)}
                   </span>
                 )}
                 {r.paymentKey && (
-                  <span className="mt-0.5 block truncate text-[10px] text-[var(--app-copy-soft)]">
+                  <span className="mt-0.5 block truncate text-[11.5px] text-[var(--app-copy-soft)]">
                     {r.paymentKey}
                   </span>
                 )}
@@ -245,7 +245,7 @@ export function RefundActions({
                     type="button"
                     disabled={busy !== null}
                     onClick={() => approve(r)}
-                    className="rounded-[8px] bg-[var(--app-pink-strong)] px-2.5 py-1 text-[11px] font-extrabold text-white disabled:opacity-40"
+                    className="rounded-[8px] bg-[var(--app-pink-strong)] px-2.5 py-1 text-[12.6px] font-extrabold text-white disabled:opacity-40"
                   >
                     승인·실행
                   </button>
@@ -253,7 +253,7 @@ export function RefundActions({
                     type="button"
                     disabled={busy !== null}
                     onClick={() => void post({ action: 'reject', requestId: r.id }, `rej-${r.id}`)}
-                    className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+                    className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
                   >
                     거부
                   </button>
@@ -264,7 +264,7 @@ export function RefundActions({
                   type="button"
                   disabled={busy !== null}
                   onClick={() => approve(r)}
-                  className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[11px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
+                  className="rounded-[8px] border border-[var(--app-line)] px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-ink)] disabled:opacity-40"
                 >
                   재시도
                 </button>
@@ -275,11 +275,11 @@ export function RefundActions({
       )}
 
       {role === 'admin' && (
-        <p className="text-[10.5px] text-[var(--app-copy-soft)]">
+        <p className="text-[12.1px] text-[var(--app-copy-soft)]">
           ※ admin 은 환불 *요청*만 가능 — 실제 환불은 super_admin 승인.
         </p>
       )}
-      {msg && <p className="text-[11px] font-semibold text-[var(--app-ink)]">{msg}</p>}
+      {msg && <p className="text-[12.6px] font-semibold text-[var(--app-ink)]">{msg}</p>}
     </div>
   );
 }

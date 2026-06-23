@@ -17,7 +17,7 @@ export function SajuLifetimeKeysSection({
 
   return (
     <section>
-      <div className="mb-2.5 text-[16px] font-extrabold text-[var(--app-ink)]">
+      <div className="mb-2.5 text-[18.4px] font-extrabold text-[var(--app-ink)]">
         평생 활용 핵심 3가지
       </div>
       <div className="space-y-2.5">
@@ -30,19 +30,19 @@ export function SajuLifetimeKeysSection({
               style={{ background: accent.bg, borderColor: accent.border }}
             >
               <div
-                className="text-[15px] font-extrabold tracking-tight"
+                className="text-[17.3px] font-extrabold tracking-tight"
                 style={{ color: accent.title, wordBreak: 'keep-all' }}
               >
                 {card.title}
               </div>
               {card.subtitle ? (
-                <div className="mt-0.5 text-[13px] font-medium text-[var(--app-copy-muted)]">
+                <div className="mt-0.5 text-[15px] font-medium text-[var(--app-copy-muted)]">
                   {card.subtitle}
                 </div>
               ) : null}
               {card.body ? (
                 <p
-                  className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+                  className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {card.body}

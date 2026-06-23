@@ -49,24 +49,24 @@ export default function HelpCenterShellPage() {
         >
           {/* 2026-05-18 Phase 5-B: "✦ 준비 중" 배지 제거 — h1 + 본문 카피가 이미 명확. */}
           <h1
-            className="text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+            className="text-[23px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             지금은 카카오/전화로 받아드려요
           </h1>
-          <p className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]">
             1:1 문의 시스템은 아직 개발 중이에요. 급한 일은 아래 채널로 바로 보내주시면 빠르게 답변드립니다.
           </p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <a
               href="tel:010-8123-9184"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               ☎ 010-8123-9184
             </a>
             <Link
               href="/dialogue"
-              className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               풀이 관련 질문은 대화방
@@ -76,10 +76,10 @@ export default function HelpCenterShellPage() {
 
         {/* §FAQ */}
         <section>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             자주 묻는 질문
           </div>
-          <h2 className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="mt-1 text-[18.4px] font-extrabold text-[var(--app-ink)]">
             많이 받는 질문 3가지
           </h2>
           <div className="mt-3 grid gap-2">
@@ -91,20 +91,20 @@ export default function HelpCenterShellPage() {
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
                   <span className="min-w-0">
-                    <span className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                    <span className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                       {item.category}
                     </span>
                     <span
-                      className="mt-0.5 block text-[13.5px] font-extrabold text-[var(--app-ink)]"
+                      className="mt-0.5 block text-[15.5px] font-extrabold text-[var(--app-ink)]"
                       style={{ wordBreak: 'keep-all' }}
                     >
                       Q. {item.q}
                     </span>
                   </span>
-                  <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
+                  <span className="text-[11.5px] transition-transform group-open:rotate-180" aria-hidden="true">▼</span>
                 </summary>
                 <p
-                  className="border-t border-[var(--app-line)] px-4 py-3 text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+                  className="border-t border-[var(--app-line)] px-4 py-3 text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {item.a}
@@ -144,10 +144,10 @@ function BusinessInfoCard() {
 
   return (
     <article
-      className="rounded-[14px] border bg-white p-4 text-[11.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+      className="rounded-[14px] border bg-white p-4 text-[13.2px] leading-[1.7] text-[var(--app-copy-muted)]"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+      <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
         회사 정보
       </div>
       {lines.map((line, i) => (

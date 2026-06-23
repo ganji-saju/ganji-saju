@@ -24,12 +24,12 @@ export function MyFavoriteSignsStrip({ favorites }: Props) {
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="flex items-baseline justify-between">
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           ♥ 즐겨찾는 별자리
         </div>
         <Link
           href="/star-sign"
-          className="text-[11px] font-bold text-[var(--app-copy-soft)]"
+          className="text-[12.6px] font-bold text-[var(--app-copy-soft)]"
         >
           더보기 →
         </Link>
@@ -49,17 +49,17 @@ export function MyFavoriteSignsStrip({ favorites }: Props) {
               style={{ borderColor: 'var(--app-line)', minWidth: '96px' }}
             >
               <span
-                className="text-[22px]"
+                className="text-[25.3px]"
                 style={{ color: elementHex }}
                 aria-hidden="true"
               >
                 {meta?.symbol ?? ''}
               </span>
-              <div className="mt-0.5 text-[11px] font-extrabold text-[var(--app-ink)]">
+              <div className="mt-0.5 text-[12.6px] font-extrabold text-[var(--app-ink)]">
                 {item?.label.replace('자리', '') ?? slug}
               </div>
               <div
-                className="text-[14px] font-extrabold tabular-nums"
+                className="text-[16.1px] font-extrabold tabular-nums"
                 style={{
                   color:
                     fortune.scores.overall >= 80

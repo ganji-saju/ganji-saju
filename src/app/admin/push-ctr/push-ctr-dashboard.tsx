@@ -166,14 +166,14 @@ export function PushCtrDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           📈 Push CTR 분석
         </div>
-        <h1 className="mt-1.5 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[23px] font-extrabold leading-snug text-[var(--app-ink)]">
           variant A/B/C 클릭률 + 현재 winner
         </h1>
         <p
-          className="mt-2 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           PR #136 의 3 variant 본문(A 점수, B 부스터, C 럭키) 별 발송 + 클릭 통계.
@@ -190,7 +190,7 @@ export function PushCtrDashboard() {
               key={opt.value}
               type="button"
               onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
               style={{
                 background: isActive ? 'var(--app-pink)' : 'white',
                 color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -205,7 +205,7 @@ export function PushCtrDashboard() {
           type="button"
           onClick={handleForceRefresh}
           disabled={refreshing}
-          className="ml-auto rounded-full border bg-white px-3 py-1.5 text-[12px] font-bold text-[var(--app-jade)] disabled:opacity-60"
+          className="ml-auto rounded-full border bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-jade)] disabled:opacity-60"
           style={{ borderColor: 'rgba(45,135,88,0.3)' }}
         >
           {refreshing ? '재계산 중...' : '🔄 winner 재계산'}
@@ -218,27 +218,27 @@ export function PushCtrDashboard() {
           className="rounded-[16px] border bg-white p-4"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
             🎯 현재 정책 (today-star-sign)
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-[10px] font-bold uppercase text-[var(--app-copy-soft)]">
+            <span className="text-[11.5px] font-bold uppercase text-[var(--app-copy-soft)]">
               winner
             </span>
             {policy.selection.winner ? (
               <span
-                className="text-[20px] font-extrabold"
+                className="text-[23px] font-extrabold"
                 style={{ color: VARIANT_COLOR[policy.selection.winner] }}
               >
                 {policy.selection.winner}
               </span>
             ) : (
-              <span className="text-[14px] font-bold text-[var(--app-copy-soft)]">
+              <span className="text-[16.1px] font-bold text-[var(--app-copy-soft)]">
                 결정 안됨 (균등 분배 중)
               </span>
             )}
             {policy.selection.winner ? (
-              <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+              <span className="text-[12.1px] text-[var(--app-copy-soft)]">
                 margin {policy.selection.marginPp}%p · 90% exploit / 10% explore
               </span>
             ) : null}
@@ -261,26 +261,26 @@ export function PushCtrDashboard() {
                 }}
               >
                 <div
-                  className="text-[10.5px] font-bold"
+                  className="text-[12.1px] font-bold"
                   style={{ color: VARIANT_COLOR[s.variant] }}
                 >
                   {VARIANT_LABEL[s.variant]}
                 </div>
-                <div className="mt-1 text-[16px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="mt-1 text-[18.4px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {formatPct(s.ctr)}
                 </div>
-                <div className="text-[10px] text-[var(--app-copy-soft)]">
+                <div className="text-[11.5px] text-[var(--app-copy-soft)]">
                   {s.clicked.toLocaleString()} / {s.sent.toLocaleString()}
                 </div>
               </div>
             ))}
           </div>
           {!policy.selection.sampleEnough ? (
-            <p className="mt-2 text-[11px] text-[var(--app-amber)]">
+            <p className="mt-2 text-[12.6px] text-[var(--app-amber)]">
               ⚠ per-variant 표본 50건 미만 — winner 미확정 (균등 분배 유지)
             </p>
           ) : null}
-          <p className="mt-1.5 text-[10.5px] text-[var(--app-copy-soft)]">
+          <p className="mt-1.5 text-[12.1px] text-[var(--app-copy-soft)]">
             계산: {policy.selection.computedAt.slice(0, 16).replace('T', ' ')}
           </p>
         </article>
@@ -292,7 +292,7 @@ export function PushCtrDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">집계 중...</p>
+          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">집계 중...</p>
         </article>
       ) : ctrState === 'error' ? (
         <article
@@ -302,7 +302,7 @@ export function PushCtrDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[13px] text-[var(--app-coral)]">
+          <p className="text-[15px] text-[var(--app-coral)]">
             {ctrData?.error ?? '데이터를 불러오지 못했습니다.'}
           </p>
         </article>
@@ -313,25 +313,25 @@ export function PushCtrDashboard() {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               지난 {ctrData.windowDays}일 전체
             </div>
             <div className="mt-2 grid grid-cols-3 gap-3">
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">발송</div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">발송</div>
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {ctrData.totalSent.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">클릭</div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-jade)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">클릭</div>
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {ctrData.totalClicked.toLocaleString()}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">전체 CTR</div>
-                <div className="text-[18px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">전체 CTR</div>
+                <div className="text-[20.7px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {formatPct(totalCtr)}
                 </div>
               </div>
@@ -344,8 +344,8 @@ export function PushCtrDashboard() {
               className="rounded-[16px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[32px]">📭</div>
-              <p className="mt-2 text-[13px] font-bold text-[var(--app-ink)]">
+              <div className="text-[36.8px]">📭</div>
+              <p className="mt-2 text-[15px] font-bold text-[var(--app-ink)]">
                 아직 push 발송 기록이 없습니다
               </p>
             </article>
@@ -362,14 +362,14 @@ export function PushCtrDashboard() {
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     <div className="flex items-baseline justify-between">
-                      <div className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                      <div className="text-[15px] font-extrabold text-[var(--app-ink)]">
                         {SLOT_LABEL[slot] ?? slot}
                       </div>
-                      <div className="text-[13.5px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                      <div className="text-[15.5px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                         {formatPct(slotCtr)}
                       </div>
                     </div>
-                    <div className="mt-0.5 text-[10.5px] text-[var(--app-copy-soft)]">
+                    <div className="mt-0.5 text-[12.1px] text-[var(--app-copy-soft)]">
                       {slotClicked.toLocaleString()} 클릭 / {slotTotal.toLocaleString()} 발송
                     </div>
                     {/* variant 별 (별자리 슬롯만 보통 있음) */}
@@ -391,7 +391,7 @@ export function PushCtrDashboard() {
                                   style={{ background: variantHue }}
                                   aria-hidden="true"
                                 />
-                                <span className="text-[11px] font-bold text-[var(--app-copy-muted)]">
+                                <span className="text-[12.6px] font-bold text-[var(--app-copy-muted)]">
                                   {row.variant
                                     ? VARIANT_LABEL[row.variant].slice(0, 12)
                                     : '— variant 없음'}
@@ -410,7 +410,7 @@ export function PushCtrDashboard() {
                                 />
                               </div>
                               <span
-                                className="text-right text-[11px] font-extrabold tabular-nums"
+                                className="text-right text-[12.6px] font-extrabold tabular-nums"
                                 style={{ color: variantHue }}
                               >
                                 {formatPct(row.ctr)}
@@ -432,11 +432,11 @@ export function PushCtrDashboard() {
         className="rounded-[14px] border bg-white p-4"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
           📚 산출 방식
         </div>
         <ul
-          className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li>• 데이터: notification_delivery_logs.status=&apos;sent&apos; + clicked_at IS NOT NULL</li>

@@ -115,7 +115,7 @@ export function ReportKeepsakeSection({
                 </div>
               }
               badge={
-                <span className={cn('rounded-full border px-2.5 py-1 text-[11px]', item.statusTone)}>
+                <span className={cn('rounded-full border px-2.5 py-1 text-[12.6px]', item.statusTone)}>
                   {item.ctaLabel}
                 </span>
               }

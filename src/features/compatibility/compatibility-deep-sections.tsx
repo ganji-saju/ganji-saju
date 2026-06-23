@@ -69,7 +69,7 @@ export function CompatibilityDeepSections({
   return (
     <div className="grid gap-2.5">
       {loading && (
-        <div className="text-[13px] font-medium text-[var(--app-copy-muted)]" aria-live="polite">
+        <div className="text-[15px] font-medium text-[var(--app-copy-muted)]" aria-live="polite">
           두 분께 맞춘 더 깊은 풀이를 불러오는 중입니다…
         </div>
       )}
@@ -81,7 +81,7 @@ export function CompatibilityDeepSections({
         >
           <div className="flex items-start gap-3">
             <span
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
               style={{ background: 'var(--app-pink)' }}
               aria-hidden="true"
             >
@@ -89,17 +89,17 @@ export function CompatibilityDeepSections({
             </span>
             <div className="min-w-0 flex-1">
               <div
-                className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+                className="break-keep text-[16.7px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {item.title}
               </div>
-              <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+              <p className="mt-1.5 break-keep text-[15px] leading-[1.7] text-[var(--app-copy)]">
                 {item.body}
               </p>
               {item.evidence ? (
                 <p
-                  className="mt-1.5 break-keep text-[13px] leading-[1.6] text-[var(--app-copy-muted)]"
+                  className="mt-1.5 break-keep text-[15px] leading-[1.6] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {item.evidence}

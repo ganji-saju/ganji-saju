@@ -93,7 +93,7 @@ export function ReviewsModerationClient({
             key={f.value}
             type="button"
             onClick={() => setStatus(f.value)}
-            className="rounded-full border px-3 py-1.5 text-[12.5px] font-extrabold transition"
+            className="rounded-full border px-3 py-1.5 text-[14.4px] font-extrabold transition"
             style={{
               borderColor: status === f.value ? 'var(--app-pink-strong)' : 'var(--app-line)',
               background: status === f.value ? 'var(--app-pink)' : 'white',
@@ -103,14 +103,14 @@ export function ReviewsModerationClient({
             {f.label}
           </button>
         ))}
-        <span className="ml-2 text-[12px] font-bold text-[var(--app-copy-muted)]">
+        <span className="ml-2 text-[13.8px] font-bold text-[var(--app-copy-muted)]">
           총 {total}건
         </span>
       </div>
 
       {error ? (
         <div
-          className="rounded-[10px] border px-3 py-2 text-[12.5px] font-bold"
+          className="rounded-[10px] border px-3 py-2 text-[14.4px] font-bold"
           style={{
             background: 'rgba(255, 79, 79, 0.06)',
             borderColor: 'rgba(255, 79, 79, 0.3)',
@@ -122,11 +122,11 @@ export function ReviewsModerationClient({
       ) : null}
 
       {loading ? (
-        <div className="rounded-[14px] border border-dashed border-[var(--app-line)] bg-white p-6 text-center text-[12.5px] text-[var(--app-copy-muted)]">
+        <div className="rounded-[14px] border border-dashed border-[var(--app-line)] bg-white p-6 text-center text-[14.4px] text-[var(--app-copy-muted)]">
           불러오는 중...
         </div>
       ) : reviews.length === 0 ? (
-        <div className="rounded-[14px] border border-dashed border-[var(--app-line)] bg-white p-6 text-center text-[12.5px] text-[var(--app-copy-muted)]">
+        <div className="rounded-[14px] border border-dashed border-[var(--app-line)] bg-white p-6 text-center text-[14.4px] text-[var(--app-copy-muted)]">
           해당 상태의 후기가 없습니다.
         </div>
       ) : (
@@ -137,7 +137,7 @@ export function ReviewsModerationClient({
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <header className="flex flex-wrap items-center justify-between gap-2 text-[11.5px]">
+              <header className="flex flex-wrap items-center justify-between gap-2 text-[13.2px]">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className="rounded-full px-2 py-0.5 font-extrabold"
@@ -179,12 +179,12 @@ export function ReviewsModerationClient({
                 </span>
               </header>
               <p
-                className="mt-3 text-[13.5px] leading-[1.65] text-[var(--app-copy)]"
+                className="mt-3 text-[15.5px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {review.content}
               </p>
-              <footer className="mt-3 flex items-center justify-between gap-2 text-[11.5px]">
+              <footer className="mt-3 flex items-center justify-between gap-2 text-[13.2px]">
                 <span className="font-bold text-[var(--app-copy-muted)]">
                   {review.displayName ?? '익명'}
                 </span>
@@ -213,7 +213,7 @@ export function ReviewsModerationClient({
                 </div>
               </footer>
               {review.moderationNote ? (
-                <div className="mt-2 rounded-[8px] bg-[var(--app-pink-soft)]/50 px-2.5 py-1.5 text-[11px] font-bold text-[var(--app-copy-muted)]">
+                <div className="mt-2 rounded-[8px] bg-[var(--app-pink-soft)]/50 px-2.5 py-1.5 text-[12.6px] font-bold text-[var(--app-copy-muted)]">
                   메모: {review.moderationNote}
                 </div>
               ) : null}

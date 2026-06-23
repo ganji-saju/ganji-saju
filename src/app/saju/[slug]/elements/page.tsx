@@ -141,15 +141,15 @@ export default async function SajuElementsPage({ params }: Props) {
               <div className="flex items-center gap-3">
                 <ZodiacChip kind={yearZodiac} size="lg" />
                 <div>
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     {dayMasterPillar} · {yearZodiacLabel}
                   </div>
-                  <h1 className="mt-1 text-[18px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+                  <h1 className="mt-1 text-[20.7px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
                     {ELEMENT_INFO[dominant].name}이 강하고,
                     <br />
                     {ELEMENT_INFO[weakest].name}을 채우면 편해요
                   </h1>
-                  <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
                     {formatBirthSummary(input)}
                   </div>
                 </div>
@@ -160,15 +160,15 @@ export default async function SajuElementsPage({ params }: Props) {
             <section>
               <div className="flex items-baseline justify-between">
                 <div>
-                  <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     五行 · 오행 균형
                   </div>
-                  <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+                  <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                     다섯 기운을 한눈에
                   </h2>
                 </div>
                 <span
-                  className="rounded-full border px-3 py-1 text-[11px] font-extrabold text-[var(--app-pink-strong)]"
+                  className="rounded-full border px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{
                     background: 'var(--app-pink-soft)',
                     borderColor: 'var(--app-pink-line)',
@@ -189,7 +189,7 @@ export default async function SajuElementsPage({ params }: Props) {
                     >
                       <div className="text-center">
                         <div
-                          className="text-[26px] font-bold leading-none"
+                          className="text-[29.9px] font-bold leading-none"
                           style={{
                             fontFamily: 'var(--font-han)',
                             color: dominantColor,
@@ -197,7 +197,7 @@ export default async function SajuElementsPage({ params }: Props) {
                         >
                           {ELEMENT_HAN[dominant]}
                         </div>
-                        <div className="text-[10px] text-[var(--app-copy-soft)]">
+                        <div className="text-[11.5px] text-[var(--app-copy-soft)]">
                           {dominantPercent}%
                         </div>
                       </div>
@@ -214,12 +214,12 @@ export default async function SajuElementsPage({ params }: Props) {
                             aria-hidden="true"
                           />
                           <span
-                            className="flex-1 text-[12px] font-bold text-[var(--app-copy)]"
+                            className="flex-1 text-[13.8px] font-bold text-[var(--app-copy)]"
                             style={{ fontFamily: 'var(--font-han)' }}
                           >
                             {el}({ELEMENT_HAN[el]})
                           </span>
-                          <span className="text-[12px] font-extrabold text-[var(--app-ink)]">
+                          <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">
                             {pct}%
                           </span>
                         </li>
@@ -228,7 +228,7 @@ export default async function SajuElementsPage({ params }: Props) {
                   </ul>
                 </div>
                 <p
-                  className="mt-3.5 rounded-[10px] px-3 py-2.5 text-[12.5px] leading-[1.55] text-[var(--app-pink-strong)]"
+                  className="mt-3.5 rounded-[10px] px-3 py-2.5 text-[14.4px] leading-[1.55] text-[var(--app-pink-strong)]"
                   style={{ background: 'var(--app-pink-soft)' }}
                 >
                   <strong>해석</strong> · {ELEMENT_INFO[dominant].name}의 리듬이 먼저 서고,{' '}
@@ -240,13 +240,13 @@ export default async function SajuElementsPage({ params }: Props) {
 
             {/* §3 균형 메모 */}
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 균형 메모
               </div>
-              <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+              <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
                 이렇게 채우면 편해집니다
               </h2>
-              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+              <p className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]">
                 {supportGuide.support}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-2.5">
@@ -257,26 +257,26 @@ export default async function SajuElementsPage({ params }: Props) {
                     borderColor: 'var(--app-pink-line)',
                   }}
                 >
-                  <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">강한 쪽</div>
+                  <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">강한 쪽</div>
                   <div
-                    className="mt-1 text-[15px] font-extrabold tracking-tight"
+                    className="mt-1 text-[17.3px] font-extrabold tracking-tight"
                     style={{ color: dominantColor }}
                   >
                     {ELEMENT_INFO[dominant].name}
                   </div>
-                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                     {ELEMENT_INFO[dominant].traits.slice(0, 2).join(' · ')} 쪽 장점이 먼저 드러납니다.
                   </p>
                 </article>
                 <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5">
-                  <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">채울 쪽</div>
+                  <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">채울 쪽</div>
                   <div
-                    className="mt-1 text-[15px] font-extrabold tracking-tight"
+                    className="mt-1 text-[17.3px] font-extrabold tracking-tight"
                     style={{ color: ELEMENT_INFO[weakest].color }}
                   >
                     {supportGuide.label}
                   </div>
-                  <p className="mt-1.5 text-[12px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
                     {ELEMENT_INFO[weakest].name}을 채우는 쪽으로 하루 리듬을 잡아보세요.
                   </p>
                 </article>
@@ -285,10 +285,10 @@ export default async function SajuElementsPage({ params }: Props) {
                     key={habit}
                     className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
-                    <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+                    <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
                       작은 습관 {index + 1}
                     </div>
-                    <p className="mt-1.5 text-[13px] font-bold leading-[1.5] text-[var(--app-ink)]">
+                    <p className="mt-1.5 text-[15px] font-bold leading-[1.5] text-[var(--app-ink)]">
                       {habit}
                     </p>
                   </article>
@@ -305,12 +305,12 @@ export default async function SajuElementsPage({ params }: Props) {
               }}
             >
               <div
-                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink)' }}
               >
                 더 자세히
               </div>
-              <h2 className="mt-1.5 text-[18px] font-extrabold leading-snug tracking-tight">
+              <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
                 10년 단위 큰 흐름을
                 <br />
                 대운 풀이에서 이어보세요
@@ -318,13 +318,13 @@ export default async function SajuElementsPage({ params }: Props) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/deep`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   대운 풀이 보기 →
                 </Link>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/nature`}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   성향으로 돌아가기
                 </Link>

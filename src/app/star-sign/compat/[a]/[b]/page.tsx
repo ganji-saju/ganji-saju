@@ -74,9 +74,9 @@ function ScoreBar({ label, value, hint }: { label: string; value: number; hint: 
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="flex items-baseline justify-between">
-        <span className="text-[12px] font-extrabold text-[var(--app-ink)]">{label}</span>
+        <span className="text-[13.8px] font-extrabold text-[var(--app-ink)]">{label}</span>
         <span
-          className="text-[16px] font-extrabold tabular-nums"
+          className="text-[18.4px] font-extrabold tabular-nums"
           style={{ color: hue }}
         >
           {value}
@@ -92,7 +92,7 @@ function ScoreBar({ label, value, hint }: { label: string; value: number; hint: 
         />
       </div>
       <p
-        className="mt-1.5 text-[10.5px] leading-[1.4] text-[var(--app-copy-muted)]"
+        className="mt-1.5 text-[12.1px] leading-[1.4] text-[var(--app-copy-muted)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {hint}
@@ -139,7 +139,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             />
             <div className="relative">
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.08em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.08em]"
                 style={{ opacity: 0.7 }}
               >
                 12 별자리 궁합
@@ -147,7 +147,7 @@ export default async function StarSignCompatPage({ params }: Props) {
               <div className="mt-3 flex items-center justify-center gap-4">
                 <Link href={`/star-sign/${a}`} className="text-center">
                   <div
-                    className="mx-auto grid h-[68px] w-[68px] place-items-center rounded-full text-[28px]"
+                    className="mx-auto grid h-[68px] w-[68px] place-items-center rounded-full text-[32.2px]"
                     style={{
                       background: 'rgba(255,255,255,0.15)',
                       border: '1.5px solid rgba(255,255,255,0.32)',
@@ -156,14 +156,14 @@ export default async function StarSignCompatPage({ params }: Props) {
                   >
                     {aMeta.symbol}
                   </div>
-                  <div className="mt-1.5 text-[12px] font-extrabold">{aItem.label}</div>
+                  <div className="mt-1.5 text-[13.8px] font-extrabold">{aItem.label}</div>
                 </Link>
-                <div className="text-[28px] font-extrabold" style={{ opacity: 0.8 }}>
+                <div className="text-[32.2px] font-extrabold" style={{ opacity: 0.8 }}>
                   ×
                 </div>
                 <Link href={`/star-sign/${b}`} className="text-center">
                   <div
-                    className="mx-auto grid h-[68px] w-[68px] place-items-center rounded-full text-[28px]"
+                    className="mx-auto grid h-[68px] w-[68px] place-items-center rounded-full text-[32.2px]"
                     style={{
                       background: 'rgba(255,255,255,0.15)',
                       border: '1.5px solid rgba(255,255,255,0.32)',
@@ -172,19 +172,19 @@ export default async function StarSignCompatPage({ params }: Props) {
                   >
                     {bMeta.symbol}
                   </div>
-                  <div className="mt-1.5 text-[12px] font-extrabold">{bItem.label}</div>
+                  <div className="mt-1.5 text-[13.8px] font-extrabold">{bItem.label}</div>
                 </Link>
               </div>
               <div className="mt-4 text-center">
-                <div className="text-[10px] uppercase font-bold" style={{ opacity: 0.6 }}>
+                <div className="text-[11.5px] uppercase font-bold" style={{ opacity: 0.6 }}>
                   종합 궁합 점수
                 </div>
-                <div className="text-[48px] font-extrabold tabular-nums leading-none">
+                <div className="text-[55.2px] font-extrabold tabular-nums leading-none">
                   {report.overallScore}
                 </div>
               </div>
               <p
-                className="mt-3 text-center text-[12.5px] leading-[1.55]"
+                className="mt-3 text-center text-[14.4px] leading-[1.55]"
                 style={{ opacity: 0.95, wordBreak: 'keep-all' }}
               >
                 {report.headline}
@@ -198,7 +198,7 @@ export default async function StarSignCompatPage({ params }: Props) {
               className="rounded-[14px] border bg-white p-3.5"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+              <div className="text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                 원소
               </div>
               <div className="mt-1 flex items-center gap-1.5">
@@ -214,7 +214,7 @@ export default async function StarSignCompatPage({ params }: Props) {
                 />
               </div>
               <div
-                className="mt-1 text-[11.5px] font-bold leading-[1.4] text-[var(--app-ink)]"
+                className="mt-1 text-[13.2px] font-bold leading-[1.4] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {report.elementRelation}
@@ -224,11 +224,11 @@ export default async function StarSignCompatPage({ params }: Props) {
               className="rounded-[14px] border bg-white p-3.5"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+              <div className="text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                 모달리티
               </div>
               <div
-                className="mt-1 text-[11.5px] font-bold leading-[1.4] text-[var(--app-ink)]"
+                className="mt-1 text-[13.2px] font-bold leading-[1.4] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {report.qualityRelation}
@@ -238,10 +238,10 @@ export default async function StarSignCompatPage({ params }: Props) {
 
           {/* §3 6 영역 점수 */}
           <section>
-            <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
               영역별 궁합
             </h2>
-            <p className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+            <p className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
               연애·우정·직장·결혼·소통·여행 6 영역의 케미를 나누어 봤습니다
             </p>
             <div className="mt-2.5 grid grid-cols-2 gap-2">
@@ -259,11 +259,11 @@ export default async function StarSignCompatPage({ params }: Props) {
               borderColor: 'rgba(45,135,88,0.22)',
             }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
               ☘ 잘 맞는 점
             </div>
             <ul
-              className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-ink)]"
+              className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {report.strengths.map((s, idx) => (
@@ -283,11 +283,11 @@ export default async function StarSignCompatPage({ params }: Props) {
               borderColor: 'rgba(220,79,79,0.22)',
             }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
               ⚡ 부딪칠 수 있는 점
             </div>
             <ul
-              className="mt-2 grid gap-1.5 text-[12.5px] leading-[1.55] text-[var(--app-ink)]"
+              className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {report.tensions.map((t, idx) => (
@@ -304,7 +304,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               💝 함께하면 좋은 시간
             </div>
             <div className="mt-2 grid gap-1.5">
@@ -315,13 +315,13 @@ export default async function StarSignCompatPage({ params }: Props) {
                   style={{ background: 'var(--app-pink-soft)' }}
                 >
                   <span
-                    className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-extrabold text-white"
+                    className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11.5px] font-extrabold text-white"
                     style={{ background: 'var(--app-pink-strong)' }}
                   >
                     {idx + 1}
                   </span>
                   <p
-                    className="text-[12px] leading-[1.5] text-[var(--app-ink)]"
+                    className="text-[13.8px] leading-[1.5] text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {d}
@@ -336,11 +336,11 @@ export default async function StarSignCompatPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
               🛡 갈등이 생기면
             </div>
             <ul
-              className="mt-2 grid gap-1.5 text-[12px] leading-[1.5] text-[var(--app-ink)]"
+              className="mt-2 grid gap-1.5 text-[13.8px] leading-[1.5] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {report.conflictTips.map((t, idx) => (
@@ -357,20 +357,20 @@ export default async function StarSignCompatPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               🔄 다른 조합도 보기
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Link
                 href={`/star-sign/compat/${b}/${a}`}
-                className="rounded-full border bg-white px-3 py-2 text-center text-[11.5px] font-bold text-[var(--app-pink-strong)]"
+                className="rounded-full border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 {bItem.label} → {aItem.label}
               </Link>
               <Link
                 href={`/star-sign/${a}`}
-                className="rounded-full border bg-white px-3 py-2 text-center text-[11.5px] font-bold text-[var(--app-copy-muted)]"
+                className="rounded-full border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {aItem.label} 상세
@@ -387,21 +387,21 @@ export default async function StarSignCompatPage({ params }: Props) {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 깊이
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
               사주 궁합으로도 보기
             </h2>
-            <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
+            <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.75 }}>
               서양 별자리 궁합은 큰 흐름을, 동양 사주 궁합은 음양·오행·일진의 세밀한 만남을 보여줍니다.
               두 시스템을 함께 보면 입체적인 관계 그림이 나옵니다.
             </p>
             <Link
               href="/compatibility"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
             >
               사주 궁합 입력하기 →
             </Link>

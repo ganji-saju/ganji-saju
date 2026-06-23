@@ -23,13 +23,13 @@ export function PolicyNotReady({ kind }: PolicyNotReadyProps) {
       data-policy-state="not-ready"
     >
       <header className="space-y-1">
-        <h1 className="text-[20px] font-extrabold leading-tight text-[var(--app-ink)]">
+        <h1 className="text-[23px] font-extrabold leading-tight text-[var(--app-ink)]">
           {POLICY_LABELS[kind]}
         </h1>
       </header>
 
       <p
-        className="text-[14px] leading-[1.8] text-[var(--app-copy)]"
+        className="text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         해당 정책의 상세 안내는 아래 고객센터를 통해 직접 안내드리고 있습니다. 결제 또는
@@ -37,10 +37,10 @@ export function PolicyNotReady({ kind }: PolicyNotReadyProps) {
       </p>
 
       <section
-        className="rounded-[14px] border bg-white p-4 text-[13px] leading-[1.7] text-[var(--app-copy)]"
+        className="rounded-[14px] border bg-white p-4 text-[15px] leading-[1.7] text-[var(--app-copy)]"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <h2 className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <h2 className="mb-2 text-[13.8px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           고객센터 안내
         </h2>
         {BUSINESS_INFO.phone && (
@@ -70,7 +70,7 @@ export function PolicyNotReady({ kind }: PolicyNotReadyProps) {
         )}
       </section>
 
-      <p className="text-[12px] leading-[1.7] text-[var(--app-copy-muted)]">
+      <p className="text-[13.8px] leading-[1.7] text-[var(--app-copy-muted)]">
         본 페이지는 검색엔진에 노출되지 않습니다. 정식 안내는 운영자가 등록 후 게시됩니다.
         다른 정책은{' '}
         <Link href="/terms" className="underline">

@@ -92,10 +92,10 @@ export default async function SajuSharePage({ params }: Props) {
         <section className="space-y-5 px-1">
           {/* §1 미리보기 eyebrow + 헤드라인 */}
           <div>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               공유 미리보기
             </div>
-            <h1 className="mt-1.5 text-[18px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[20.7px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
               이렇게 친구에게 보여줘요
             </h1>
           </div>
@@ -116,7 +116,7 @@ export default async function SajuSharePage({ params }: Props) {
               className="pointer-events-none absolute -right-5 -top-5 select-none leading-none"
               style={{
                 fontFamily: 'var(--font-han)',
-                fontSize: 240,
+                fontSize: 276,
                 fontWeight: 700,
                 color: '#fff',
                 opacity: 0.18,
@@ -128,7 +128,7 @@ export default async function SajuSharePage({ params }: Props) {
             {/* 상단 브랜드 */}
             <div className="relative flex items-center gap-2">
               <div
-                className="grid h-7 w-7 place-items-center rounded-[8px] text-[16px] font-bold text-white"
+                className="grid h-7 w-7 place-items-center rounded-[8px] text-[18.4px] font-bold text-white"
                 style={{
                   background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
                   fontFamily: 'var(--font-han)',
@@ -136,10 +136,10 @@ export default async function SajuSharePage({ params }: Props) {
               >
                 干
               </div>
-              <div className="text-[13px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              <div className="text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
                 간지사주
               </div>
-              <span className="ml-auto text-[10px] font-extrabold text-[var(--app-pink-strong)]">
+              <span className="ml-auto text-[11.5px] font-extrabold text-[var(--app-pink-strong)]">
                 간지사주
               </span>
             </div>
@@ -147,13 +147,13 @@ export default async function SajuSharePage({ params }: Props) {
             {/* 가운데 컨텐츠 */}
             <div className="relative flex flex-1 flex-col items-center justify-center pt-6 pb-2 text-center">
               <ZodiacChip kind={yearZodiac} size="xl" />
-              <div className="mt-3 text-[11px] font-extrabold tracking-[0.08em] text-[var(--app-pink-strong)]">
+              <div className="mt-3 text-[12.6px] font-extrabold tracking-[0.08em] text-[var(--app-pink-strong)]">
                 오늘의 한 줄 · {zodiacLabel} {dayMasterLabel}
               </div>
-              <div className="mt-3 text-[20px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+              <div className="mt-3 text-[23px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
                 {verdict}
               </div>
-              <div className="mt-3 text-[12.5px] leading-[1.55] text-[var(--app-copy)]">
+              <div className="mt-3 text-[14.4px] leading-[1.55] text-[var(--app-copy)]">
                 총운 {overall}
                 {mainScoreLine ? ` · ${mainScoreLine}` : ''}
               </div>
@@ -164,7 +164,7 @@ export default async function SajuSharePage({ params }: Props) {
               className="relative flex items-center justify-between pt-3"
               style={{ borderTop: '1px dashed rgba(216,27,114,0.32)' }}
             >
-              <div className="text-[10px] font-bold leading-tight text-[var(--app-copy-soft)]">
+              <div className="text-[11.5px] font-bold leading-tight text-[var(--app-copy-soft)]">
                 내 운세 보기
                 <br />
                 <span className="font-extrabold text-[var(--app-pink-strong)]">간지사주.kr</span>
@@ -189,13 +189,13 @@ export default async function SajuSharePage({ params }: Props) {
 
           {/* §3 공유 채널 */}
           <section>
-            <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">어디로 보낼까요?</h2>
+            <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">어디로 보낼까요?</h2>
             <ShareActions text={shareText} url={shareUrl} className="mt-2.5" />
           </section>
 
           {/* §4 추천 코인 안내 */}
           <article
-            className="rounded-[14px] border px-4 py-3 text-[12px] leading-[1.55] text-[var(--app-pink-strong)]"
+            className="rounded-[14px] border px-4 py-3 text-[13.8px] leading-[1.55] text-[var(--app-pink-strong)]"
             style={{
               background: 'var(--app-pink-soft)',
               borderColor: 'var(--app-pink-line)',

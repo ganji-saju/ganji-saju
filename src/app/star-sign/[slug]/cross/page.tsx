@@ -130,15 +130,15 @@ export default async function StarSignCrossPage({ params }: Props) {
             />
             <div className="relative">
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.08em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.08em]"
                 style={{ opacity: 0.7 }}
               >
                 별자리 × 사주
               </div>
-              <h1 className="mt-2 text-[22px] font-extrabold leading-snug tracking-tight">
+              <h1 className="mt-2 text-[25.3px] font-extrabold leading-snug tracking-tight">
                 서양의 별빛 + 동양의 명식
               </h1>
-              <p className="mt-2 text-[12.5px] leading-[1.6]" style={{ opacity: 0.9 }}>
+              <p className="mt-2 text-[14.4px] leading-[1.6]" style={{ opacity: 0.9 }}>
                 서양 별자리는 외향적 성향을, 동양 일간은 내면의 핵심 기질을 보여줍니다.
                 두 시스템을 함께 읽으면 한쪽만으로는 보이지 않는 입체감이 드러납니다.
               </p>
@@ -151,14 +151,14 @@ export default async function StarSignCrossPage({ params }: Props) {
                     border: '1px solid rgba(255,255,255,0.18)',
                   }}
                 >
-                  <div className="text-[10px] uppercase font-bold" style={{ opacity: 0.6 }}>
+                  <div className="text-[11.5px] uppercase font-bold" style={{ opacity: 0.6 }}>
                     서양 별자리
                   </div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[20px]">{meta.symbol}</span>
-                    <span className="text-[14px] font-extrabold">{item.label}</span>
+                    <span className="text-[23px]">{meta.symbol}</span>
+                    <span className="text-[16.1px] font-extrabold">{item.label}</span>
                   </div>
-                  <div className="mt-1 text-[10.5px]" style={{ opacity: 0.75 }}>
+                  <div className="mt-1 text-[12.1px]" style={{ opacity: 0.75 }}>
                     {overview.signElementLabel} · {content.rulingPlanetKo}
                   </div>
                 </div>
@@ -169,18 +169,18 @@ export default async function StarSignCrossPage({ params }: Props) {
                     border: '1px solid rgba(255,255,255,0.18)',
                   }}
                 >
-                  <div className="text-[10px] uppercase font-bold" style={{ opacity: 0.6 }}>
+                  <div className="text-[11.5px] uppercase font-bold" style={{ opacity: 0.6 }}>
                     동양 일간
                   </div>
                   <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[18px] font-extrabold">
+                    <span className="text-[20.7px] font-extrabold">
                       {cross ? cross.dayMaster : '—'}
                     </span>
-                    <span className="text-[11.5px] font-bold" style={{ opacity: 0.85 }}>
+                    <span className="text-[13.2px] font-bold" style={{ opacity: 0.85 }}>
                       {cross ? cross.dayMasterLabel : '미확인'}
                     </span>
                   </div>
-                  <div className="mt-1 text-[10.5px]" style={{ opacity: 0.75 }}>
+                  <div className="mt-1 text-[12.1px]" style={{ opacity: 0.75 }}>
                     {cross ? `${cross.dayMasterElementLabel} · ${cross.yinYang}` : '프로필 등록 필요'}
                   </div>
                 </div>
@@ -196,19 +196,19 @@ export default async function StarSignCrossPage({ params }: Props) {
                 style={{ background: toneStyle.bg, borderColor: toneStyle.border }}
               >
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
                   style={{ color: toneStyle.color }}
                 >
                   두 시스템의 관계
                 </div>
                 <div
-                  className="mt-1.5 text-[18px] font-extrabold leading-snug"
+                  className="mt-1.5 text-[20.7px] font-extrabold leading-snug"
                   style={{ color: 'var(--app-ink)' }}
                 >
                   {cross.relationLabel}
                 </div>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]"
+                  className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   서양 {overview.signElementLabel} → 동양 {cross.dayMasterElementLabel.split(' ')[0]}{' '}
@@ -221,23 +221,23 @@ export default async function StarSignCrossPage({ params }: Props) {
                 className="rounded-[16px] border bg-white p-4"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   🔮 통합 인사이트
                 </div>
                 <h2
-                  className="mt-1.5 text-[16px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
+                  className="mt-1.5 text-[18.4px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {cross.integratedInsight}
                 </h2>
-                <div className="mt-3 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                <div className="mt-3 text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                   결합 키워드
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {cross.combinedKeywords.map((kw) => (
                     <span
                       key={kw}
-                      className="rounded-full border bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-full border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)]"
                       style={{ borderColor: 'var(--app-pink-line)' }}
                     >
                       {kw}
@@ -252,11 +252,11 @@ export default async function StarSignCrossPage({ params }: Props) {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                 >
-                  <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                     ☘ 시너지
                   </div>
                   <p
-                    className="mt-1 text-[13px] leading-[1.55] text-[var(--app-ink)]"
+                    className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {cross.synergyLine}
@@ -266,11 +266,11 @@ export default async function StarSignCrossPage({ params }: Props) {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                 >
-                  <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
                     ⚡ 갈등 가능성
                   </div>
                   <p
-                    className="mt-1 text-[13px] leading-[1.55] text-[var(--app-ink)]"
+                    className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]"
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {cross.tensionLine}
@@ -283,7 +283,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 className="rounded-[16px] border bg-white p-4"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   ✨ 두 기운을 함께 살리는 법
                 </div>
                 <div className="mt-2 grid gap-2">
@@ -294,13 +294,13 @@ export default async function StarSignCrossPage({ params }: Props) {
                       style={{ background: 'rgba(0,0,0,0.025)' }}
                     >
                       <span
-                        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+                        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
                         style={{ background: 'var(--app-pink-strong)' }}
                       >
                         {idx + 1}
                       </span>
                       <p
-                        className="text-[12.5px] leading-[1.5] text-[var(--app-ink)]"
+                        className="text-[14.4px] leading-[1.5] text-[var(--app-ink)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         {act}
@@ -319,21 +319,21 @@ export default async function StarSignCrossPage({ params }: Props) {
                 }}
               >
                 <div
-                  className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink)' }}
                 >
                   더 깊이
                 </div>
-                <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+                <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
                   내 사주 전체 풀이로 이어보기
                 </h2>
-                <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
+                <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.75 }}>
                   일간 한 글자만으로는 닿지 않는 음양/오행 균형과 십성 흐름을 함께 보면, 두 시스템의
                   결합이 더 또렷해집니다.
                 </p>
                 <Link
                   href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   내 사주 풀이로 이어보기 →
                 </Link>
@@ -346,17 +346,17 @@ export default async function StarSignCrossPage({ params }: Props) {
                 className="rounded-[16px] border bg-white p-4"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   🔮 일반 매핑
                 </div>
                 <p
-                  className="mt-2 text-[13px] leading-[1.6] text-[var(--app-ink)]"
+                  className="mt-2 text-[15px] leading-[1.6] text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {overview.hint}
                 </p>
                 <p
-                  className="mt-2 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+                  className="mt-2 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   내 일간이 무엇이냐에 따라 같은 별자리도 다섯 가지 성향으로 나뉩니다 (목/화/토/금/수).
@@ -369,14 +369,14 @@ export default async function StarSignCrossPage({ params }: Props) {
                 className="rounded-[16px] border bg-white p-4"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
                   서양 별자리만으로 본 강점
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {content.strengths.map((s) => (
                     <span
                       key={s}
-                      className="rounded-full border bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-jade)]"
+                      className="rounded-full border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)]"
                       style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                     >
                       {s}
@@ -394,20 +394,20 @@ export default async function StarSignCrossPage({ params }: Props) {
                 }}
               >
                 <div
-                  className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink)' }}
                 >
                   지금 시작
                 </div>
-                <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+                <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
                   내 일간을 알고 싶다면
                 </h2>
-                <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
+                <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.75 }}>
                   생년월일·태어난 시간을 입력하면 동양 명식의 핵심인 일간을 자동으로 산출합니다.
                 </p>
                 <Link
                   href="/saju/new"
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   사주 정보 입력하기 →
                 </Link>
@@ -418,7 +418,7 @@ export default async function StarSignCrossPage({ params }: Props) {
           {/* §Back to detail */}
           <Link
             href={`/star-sign/${item.slug}`}
-            className="block rounded-full border bg-white px-4 py-2.5 text-center text-[13px] font-bold text-[var(--app-copy-muted)]"
+            className="block rounded-full border bg-white px-4 py-2.5 text-center text-[15px] font-bold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             ← {item.label} 별자리로 돌아가기

@@ -92,9 +92,9 @@ function ScoreBar({ label, value, hue }: { label: string; value: number; hue: st
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-bold text-[var(--app-copy-soft)]">{label}</span>
+        <span className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">{label}</span>
         <span
-          className="text-[15px] font-extrabold tabular-nums"
+          className="text-[17.3px] font-extrabold tabular-nums"
           style={{ color: 'var(--app-ink)' }}
         >
           {value}
@@ -193,14 +193,14 @@ export default async function StarSignDetailPage({ params }: Props) {
             />
             <div className="relative">
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.08em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.08em]"
                 style={{ opacity: 0.7 }}
               >
                 {item.slug.toUpperCase()} · {item.dateRange}
               </div>
               <div className="mt-2.5 flex items-end gap-3.5">
                 <div
-                  className="grid h-[80px] w-[80px] place-items-center rounded-full text-[38px] font-light"
+                  className="grid h-[80px] w-[80px] place-items-center rounded-full text-[43.7px] font-light"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1.5px solid rgba(255,255,255,0.3)',
@@ -210,27 +210,27 @@ export default async function StarSignDetailPage({ params }: Props) {
                   {meta.symbol}
                 </div>
                 <div>
-                  <div className="text-[24px] font-extrabold tracking-tight">{item.label}</div>
-                  <div className="mt-0.5 text-[11.5px]" style={{ opacity: 0.7 }}>
+                  <div className="text-[27.6px] font-extrabold tracking-tight">{item.label}</div>
+                  <div className="mt-0.5 text-[13.2px]" style={{ opacity: 0.7 }}>
                     지배별 · {content.rulingPlanetKo} ({content.rulingPlanet})
                   </div>
                 </div>
               </div>
               <p
-                className="mt-4 text-[13px] leading-[1.6]"
+                className="mt-4 text-[15px] leading-[1.6]"
                 style={{ opacity: 0.92 }}
               >
                 {item.summary}
               </p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <span
-                  className="rounded-full px-2 py-0.5 text-[10.5px] font-extrabold"
+                  className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold"
                   style={{ background: elementHex, color: 'white' }}
                 >
                   {elementLabel}
                 </span>
                 <span
-                  className="rounded-full px-2 py-0.5 text-[10.5px] font-bold"
+                  className="rounded-full px-2 py-0.5 text-[12.1px] font-bold"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1px solid rgba(255,255,255,0.22)',
@@ -239,7 +239,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                   {qualityLabel}
                 </span>
                 <span
-                  className="rounded-full px-2 py-0.5 text-[10.5px] font-bold"
+                  className="rounded-full px-2 py-0.5 text-[12.1px] font-bold"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1px solid rgba(255,255,255,0.22)',
@@ -269,12 +269,12 @@ export default async function StarSignDetailPage({ params }: Props) {
             }}
           >
             <div className="flex items-baseline justify-between">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 오늘 종합 운세
               </div>
-              <div className="text-[10.5px] text-[var(--app-copy-soft)]">{fortune.dateKey}</div>
+              <div className="text-[12.1px] text-[var(--app-copy-soft)]">{fortune.dateKey}</div>
             </div>
-            <h2 className="mt-1.5 text-[16px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]">
+            <h2 className="mt-1.5 text-[18.4px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]">
               {fortune.highlight}
             </h2>
             <div className="mt-4 grid grid-cols-2 gap-3">
@@ -293,10 +293,10 @@ export default async function StarSignDetailPage({ params }: Props) {
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'rgba(45,135,88,0.22)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                 ☘ 오늘의 부스터
               </div>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-ink)]">
+              <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]">
                 {fortune.boost}
               </p>
             </article>
@@ -304,10 +304,10 @@ export default async function StarSignDetailPage({ params }: Props) {
               className="rounded-[14px] border bg-white p-4"
               style={{ borderColor: 'rgba(212,148,38,0.32)' }}
             >
-              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+              <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
                 ⚠ 살짝 주의
               </div>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-ink)]">
+              <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]">
                 {fortune.caution}
               </p>
             </article>
@@ -318,12 +318,12 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               🍀 오늘의 럭키
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">컬러</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">컬러</div>
                 <div className="mt-1 flex items-center gap-2">
                   <span
                     className="h-5 w-5 rounded-full border"
@@ -333,26 +333,26 @@ export default async function StarSignDetailPage({ params }: Props) {
                     }}
                     aria-hidden="true"
                   />
-                  <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                  <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                     {fortune.luckyOfDay.color.name}
                   </span>
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">숫자</div>
-                <div className="mt-1 text-[18px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">숫자</div>
+                <div className="mt-1 text-[20.7px] font-extrabold tabular-nums text-[var(--app-pink-strong)]">
                   {fortune.luckyOfDay.number}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">방위</div>
-                <div className="mt-1 text-[13px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">방위</div>
+                <div className="mt-1 text-[15px] font-extrabold text-[var(--app-ink)]">
                   {fortune.luckyOfDay.direction}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">시간대</div>
-                <div className="mt-1 text-[13px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">시간대</div>
+                <div className="mt-1 text-[15px] font-extrabold text-[var(--app-ink)]">
                   {fortune.luckyOfDay.time}
                 </div>
               </div>
@@ -364,10 +364,10 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               🎭 성격
             </div>
-            <div className="mt-1.5 text-[12px] italic text-[var(--app-copy-muted)]">
+            <div className="mt-1.5 text-[13.8px] italic text-[var(--app-copy-muted)]">
               &ldquo;{content.motto}&rdquo;
             </div>
             <div className="mt-3 grid gap-2.5">
@@ -378,14 +378,14 @@ export default async function StarSignDetailPage({ params }: Props) {
                   borderColor: 'rgba(45,135,88,0.2)',
                 }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
                   강점
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {content.strengths.map((s) => (
                     <span
                       key={s}
-                      className="rounded-full bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-jade)] border"
+                      className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)] border"
                       style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                     >
                       {s}
@@ -400,14 +400,14 @@ export default async function StarSignDetailPage({ params }: Props) {
                   borderColor: 'rgba(220,79,79,0.2)',
                 }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
                   약점
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {content.weaknesses.map((w) => (
                     <span
                       key={w}
-                      className="rounded-full bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-coral)] border"
+                      className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-coral)] border"
                       style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                     >
                       {w}
@@ -423,18 +423,18 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
               💘 연애
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-ink)]"
+              className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <strong className="text-[var(--app-pink-strong)]">매력 · </strong>
               {content.loveCharm}
             </p>
             <p
-              className="mt-1.5 text-[12.5px] leading-[1.55] text-[var(--app-copy-muted)]"
+              className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <strong className="text-[var(--app-coral)]">유의 · </strong>
@@ -442,7 +442,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div>
-                <div className="text-[10.5px] font-bold text-[var(--app-jade)]">잘 맞는 별자리</div>
+                <div className="text-[12.1px] font-bold text-[var(--app-jade)]">잘 맞는 별자리</div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {content.idealMatches.map((m) => {
                     const ms = STAR_SIGN_META[m];
@@ -450,7 +450,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[11px] font-bold text-[var(--app-pink-strong)] border"
+                        className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-pink-strong)] border"
                         style={{ borderColor: 'var(--app-pink-line)' }}
                       >
                         {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
@@ -460,7 +460,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] font-bold text-[var(--app-coral)]">신중한 별자리</div>
+                <div className="text-[12.1px] font-bold text-[var(--app-coral)]">신중한 별자리</div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {content.loveBeware.map((m) => {
                     const ms = STAR_SIGN_META[m];
@@ -468,7 +468,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[var(--app-copy-soft)] border"
+                        className="rounded-full bg-white px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)] border"
                         style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                       >
                         {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
@@ -481,7 +481,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             {/* 2026-05-20 Phase 8-B — 연애 영역 cross-link: 오늘 연애 타로 세 장 */}
             <Link
               href="/tarot/daily?topic=love"
-              className="mt-3 inline-flex w-full items-center justify-between rounded-full border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[12.5px] font-extrabold text-[var(--app-pink-strong)] no-underline"
+              className="mt-3 inline-flex w-full items-center justify-between rounded-full border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[14.4px] font-extrabold text-[var(--app-pink-strong)] no-underline"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
               <span>오늘의 연애 타로 세 장 뽑기</span>
@@ -494,23 +494,23 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
               💼 직업·재능
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.55] text-[var(--app-ink)]"
+              className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               {content.careerStrength}
             </p>
-            <div className="mt-2.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="mt-2.5 text-[12.1px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               추천 분야
             </div>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {content.careerSuggestions.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full bg-white px-2.5 py-0.5 text-[11.5px] font-bold text-[var(--app-ink)] border"
+                  className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-ink)] border"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   {c}
@@ -518,7 +518,7 @@ export default async function StarSignDetailPage({ params }: Props) {
               ))}
             </div>
             <p
-              className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--app-copy-muted)]"
+              className="mt-2.5 text-[13.2px] leading-[1.5] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <strong className="text-[var(--app-amber)]">주의 · </strong>
@@ -528,10 +528,10 @@ export default async function StarSignDetailPage({ params }: Props) {
 
           {/* §8 12궁 호환 매트릭스 */}
           <section>
-            <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
               12궁 호환 매트릭스
             </h2>
-            <p className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+            <p className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
               element + 각도(120°/60°/90°/180°/150°) 조합으로 산출
             </p>
             <div className="mt-2.5 grid grid-cols-3 gap-2">
@@ -552,7 +552,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                     }}
                   >
                     <div
-                      className="mx-auto grid h-9 w-9 place-items-center rounded-full text-[18px]"
+                      className="mx-auto grid h-9 w-9 place-items-center rounded-full text-[20.7px]"
                       style={{
                         background:
                           c.tone === 'best'
@@ -567,13 +567,13 @@ export default async function StarSignDetailPage({ params }: Props) {
                       {targetMeta?.symbol ?? ''}
                     </div>
                     <div
-                      className="mt-1 text-[10.5px] font-bold"
+                      className="mt-1 text-[12.1px] font-bold"
                       style={{ color: c.tone === 'best' ? '#fff' : 'var(--app-ink)' }}
                     >
                       {targetItem?.label.replace('자리', '') ?? c.slug}
                     </div>
                     <div
-                      className="mt-0.5 text-[13px] font-extrabold tabular-nums"
+                      className="mt-0.5 text-[15px] font-extrabold tabular-nums"
                       style={{ color: c.tone === 'best' ? '#fff' : style.color }}
                     >
                       {c.score}
@@ -589,12 +589,12 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               ✨ 라이프스타일
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">주된 럭키 컬러</div>
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">주된 럭키 컬러</div>
                 <div className="mt-0.5 flex items-center gap-1.5">
                   <span
                     className="h-4 w-4 rounded-full border"
@@ -604,38 +604,38 @@ export default async function StarSignDetailPage({ params }: Props) {
                     }}
                     aria-hidden="true"
                   />
-                  <span className="text-[12.5px] font-bold text-[var(--app-ink)]">
+                  <span className="text-[14.4px] font-bold text-[var(--app-ink)]">
                     {content.luckyColor.name}
                   </span>
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">럭키 숫자</div>
-                <div className="mt-0.5 text-[12.5px] font-bold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">럭키 숫자</div>
+                <div className="mt-0.5 text-[14.4px] font-bold text-[var(--app-ink)]">
                   {content.luckyNumbers.join(' · ')}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">럭키 요일</div>
-                <div className="mt-0.5 text-[12.5px] font-bold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">럭키 요일</div>
+                <div className="mt-0.5 text-[14.4px] font-bold text-[var(--app-ink)]">
                   {content.luckyDay}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">탄생석</div>
-                <div className="mt-0.5 text-[12.5px] font-bold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">탄생석</div>
+                <div className="mt-0.5 text-[14.4px] font-bold text-[var(--app-ink)]">
                   {content.birthstone}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">방향</div>
-                <div className="mt-0.5 text-[12.5px] font-bold text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">방향</div>
+                <div className="mt-0.5 text-[14.4px] font-bold text-[var(--app-ink)]">
                   {content.luckyDirection}
                 </div>
               </div>
               <div>
-                <div className="text-[10.5px] text-[var(--app-copy-soft)]">신체 강·약</div>
-                <div className="mt-0.5 text-[11.5px] leading-[1.4] text-[var(--app-ink)]">
+                <div className="text-[12.1px] text-[var(--app-copy-soft)]">신체 강·약</div>
+                <div className="mt-0.5 text-[13.2px] leading-[1.4] text-[var(--app-ink)]">
                   <strong className="text-[var(--app-jade)]">강 · </strong>
                   {content.bodyStrong}
                   <br />
@@ -656,13 +656,13 @@ export default async function StarSignDetailPage({ params }: Props) {
             }}
           >
             <div
-              className="text-[10.5px] font-extrabold uppercase tracking-[0.06em]"
+              className="text-[12.1px] font-extrabold uppercase tracking-[0.06em]"
               style={{ opacity: 0.6 }}
             >
               📜 신화
             </div>
             <p
-              className="mt-1.5 text-[13px] leading-[1.55]"
+              className="mt-1.5 text-[15px] leading-[1.55]"
               style={{ opacity: 0.92, wordBreak: 'keep-all' }}
             >
               {content.mythology}
@@ -678,27 +678,27 @@ export default async function StarSignDetailPage({ params }: Props) {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 깊이
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
               내 사주와 함께 봐주세요
             </h2>
-            <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
+            <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.75 }}>
               서양의 별빛과 동양의 명식을 나란히 놓고 오늘 마음에 더 가까운 이야기를 함께 읽어드립니다.
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={`/star-sign/${item.slug}/cross`}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 별자리 × 사주 크로스 보기 →
               </Link>
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 {readingSlug ? '내 사주 풀이' : '사주 입력'}
               </Link>

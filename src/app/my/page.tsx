@@ -106,8 +106,8 @@ export default async function MyPage() {
         <div className="flex items-center gap-3.5">
           <ZodiacChip kind={userZodiac} size="lg" />
           <div className="min-w-0 flex-1">
-            <div className="text-[17px] font-extrabold tracking-tight">{displayName}님</div>
-            <div className="mt-0.5 text-[12px]" style={{ opacity: 0.65 }}>
+            <div className="text-[19.5px] font-extrabold tracking-tight">{displayName}님</div>
+            <div className="mt-0.5 text-[13.8px]" style={{ opacity: 0.65 }}>
               {mostRecentReading
                 ? formatBirthLabel(mostRecentReading)
                 : '아직 저장된 사주가 없어요'}
@@ -115,7 +115,7 @@ export default async function MyPage() {
           </div>
           <Link
             href="/my/profile"
-            className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-bold text-white/75"
+            className="rounded-full border border-white/20 px-3 py-1.5 text-[12.6px] font-bold text-white/75"
           >
             편집
           </Link>
@@ -127,35 +127,35 @@ export default async function MyPage() {
           style={{ borderColor: 'rgba(255,255,255,0.1)' }}
         >
           <Link href="/credits" className="block">
-            <div className="text-[10.5px]" style={{ opacity: 0.6 }}>
+            <div className="text-[12.1px]" style={{ opacity: 0.6 }}>
               코인 잔액
             </div>
             <div
-              className="mt-0.5 text-[17px] font-extrabold"
+              className="mt-0.5 text-[19.5px] font-extrabold"
               style={{ color: 'var(--app-pink)' }}
             >
               ✦ {dashboard.credits.total}
             </div>
           </Link>
           <Link href="/membership" className="block">
-            <div className="text-[10.5px]" style={{ opacity: 0.6 }}>
+            <div className="text-[12.1px]" style={{ opacity: 0.6 }}>
               멤버십
             </div>
-            <div className="mt-1 text-[13px] font-extrabold leading-tight text-white">
+            <div className="mt-1 text-[15px] font-extrabold leading-tight text-white">
               {planTitle}
             </div>
           </Link>
           <Link href="/my/results" className="block">
-            <div className="text-[10.5px]" style={{ opacity: 0.6 }}>
+            <div className="text-[12.1px]" style={{ opacity: 0.6 }}>
               보관 풀이
             </div>
-            <div className="mt-0.5 text-[17px] font-extrabold text-white">
+            <div className="mt-0.5 text-[19.5px] font-extrabold text-white">
               {dashboard.readingCount}
             </div>
           </Link>
         </div>
 
-        <p className="mt-3 text-[11.5px]" style={{ opacity: 0.55 }}>
+        <p className="mt-3 text-[13.2px]" style={{ opacity: 0.55 }}>
           {planSummary}
         </p>
       </article>
@@ -168,7 +168,7 @@ export default async function MyPage() {
 
       {/* §2 바로가기 list */}
       <section>
-        <h2 className="px-1 text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
+        <h2 className="px-1 text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
           바로가기
         </h2>
         <div className="mt-2 grid gap-2.5">
@@ -182,7 +182,7 @@ export default async function MyPage() {
                 className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
               >
                 <div
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[16px] font-bold"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[18.4px] font-bold"
                   style={
                     isPink
                       ? {
@@ -200,10 +200,10 @@ export default async function MyPage() {
                   {meta.icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                  <div className="text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                     {item.title}
                   </div>
-                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                     {item.description}
                   </div>
                 </div>
@@ -219,10 +219,10 @@ export default async function MyPage() {
       {/* §3 최근 풀이 preview */}
       <section>
         <div className="flex items-baseline justify-between px-1">
-          <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">최근 풀이</h2>
+          <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">최근 풀이</h2>
           <Link
             href="/my/results"
-            className="text-[12px] font-extrabold text-[var(--app-pink-strong)]"
+            className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
           >
             전체 →
           </Link>
@@ -240,10 +240,10 @@ export default async function MyPage() {
                   size="sm"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] text-[var(--app-copy-soft)]">
+                  <div className="text-[12.6px] text-[var(--app-copy-soft)]">
                     {formatBirthLabel(reading)}
                   </div>
-                  <div className="mt-0.5 text-[13.5px] font-extrabold text-[var(--app-ink)]">
+                  <div className="mt-0.5 text-[15.5px] font-extrabold text-[var(--app-ink)]">
                     {reading.dayPillarLabel
                       ? `${reading.dayPillarLabel} · 다시 보기`
                       : '다시 보기'}
@@ -256,8 +256,8 @@ export default async function MyPage() {
             ))
           ) : (
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">아직 없음</div>
-              <p className="mt-1 text-[13px] leading-[1.55] text-[var(--app-ink)]">
+              <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">아직 없음</div>
+              <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]">
                 저장된 풀이가 없습니다. 사주를 본 뒤 MY에서 다시 확인할 수 있어요.
               </p>
             </article>

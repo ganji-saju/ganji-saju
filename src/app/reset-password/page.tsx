@@ -217,20 +217,20 @@ function ResetPasswordContent() {
       </div>
 
       <div>
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           STEP 3 / 3
         </div>
-        <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
           새 비밀번호 설정
         </h1>
-        <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+        <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
           이메일에서 받은 재설정 링크가 확인되면 새 비밀번호를 바로 저장할 수 있습니다.
         </p>
       </div>
 
       {resetState === 'checking' ? (
         <div
-          className="mt-5 rounded-[14px] border px-4 py-3 text-[12.5px] font-bold text-[var(--app-pink-strong)]"
+          className="mt-5 rounded-[14px] border px-4 py-3 text-[14.4px] font-bold text-[var(--app-pink-strong)]"
           style={{
             background: 'var(--app-pink-soft)',
             borderColor: 'var(--app-pink-line)',
@@ -244,7 +244,7 @@ function ResetPasswordContent() {
         <div>
           <label
             htmlFor="new-password"
-            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+            className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
           >
             새 비밀번호
           </label>
@@ -256,9 +256,9 @@ function ResetPasswordContent() {
             value={password}
             disabled={!isReady || isSubmitting}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1.5 h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)] disabled:bg-[var(--app-pink-soft)]/50 disabled:opacity-70"
+            className="mt-1.5 h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)] disabled:bg-[var(--app-pink-soft)]/50 disabled:opacity-70"
           />
-          <p className="mt-1.5 pl-1 text-[11px] text-[var(--app-copy-soft)]">
+          <p className="mt-1.5 pl-1 text-[12.6px] text-[var(--app-copy-soft)]">
             영문 + 숫자 + 특수문자 / 8자 이상
           </p>
         </div>
@@ -266,7 +266,7 @@ function ResetPasswordContent() {
         <div>
           <label
             htmlFor="new-password-confirm"
-            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+            className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
           >
             비밀번호 확인
           </label>
@@ -278,7 +278,7 @@ function ResetPasswordContent() {
             value={confirmPassword}
             disabled={!isReady || isSubmitting}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="mt-1.5 h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)] disabled:bg-[var(--app-pink-soft)]/50 disabled:opacity-70"
+            className="mt-1.5 h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)] disabled:bg-[var(--app-pink-soft)]/50 disabled:opacity-70"
           />
         </div>
 
@@ -291,7 +291,7 @@ function ResetPasswordContent() {
             <button
               type="submit"
               disabled={!isReady || isSubmitting || isSaved}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
             >
               {isSubmitting ? '저장 중...' : isSaved ? '저장됨' : '비밀번호 변경 완료'}
             </button>
@@ -301,7 +301,7 @@ function ResetPasswordContent() {
 
       {statusMessage ? (
         <p
-          className="mt-4 rounded-[12px] border px-4 py-3 text-[12.5px] leading-relaxed text-[var(--app-ink)]"
+          className="mt-4 rounded-[12px] border px-4 py-3 text-[14.4px] leading-relaxed text-[var(--app-ink)]"
           style={{
             background: 'var(--app-jade-soft, rgba(15,159,122,0.1))',
             borderColor: 'var(--app-jade)',
@@ -312,7 +312,7 @@ function ResetPasswordContent() {
       ) : null}
 
       {errorMessage ? (
-        <p className="mt-4 rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-[12.5px] leading-relaxed text-[var(--app-ink)]">
+        <p className="mt-4 rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-[14.4px] leading-relaxed text-[var(--app-ink)]">
           {errorMessage}
         </p>
       ) : null}
@@ -321,19 +321,19 @@ function ResetPasswordContent() {
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Link
           href="/login?mode=recover"
-          className="flex h-11 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[13px] font-extrabold text-[var(--app-pink-strong)]"
+          className="flex h-11 items-center justify-center rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[15px] font-extrabold text-[var(--app-pink-strong)]"
         >
           재설정 링크 다시 받기
         </Link>
         <Link
           href="/login?mode=login"
-          className="flex h-11 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[13px] font-bold text-[var(--app-copy-muted)]"
+          className="flex h-11 items-center justify-center rounded-full border border-[var(--app-line)] bg-white text-[15px] font-bold text-[var(--app-copy-muted)]"
         >
           로그인으로
         </Link>
       </div>
 
-      <p className="pt-5 text-center text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
+      <p className="pt-5 text-center text-[12.6px] leading-[1.6] text-[var(--app-copy-soft)]">
         계정 이용 시 <LegalLinks className="text-[var(--app-pink-strong)]" />이 적용됩니다.
       </p>
 

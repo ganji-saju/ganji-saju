@@ -81,7 +81,7 @@ export default function SampleReportPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -91,7 +91,7 @@ export default function SampleReportPage() {
               {SAMPLE_REPORT_HERO.eyebrow}
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -102,13 +102,13 @@ export default function SampleReportPage() {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             {SAMPLE_REPORT_HERO.title}
           </h1>
           <p
-            className="mt-2 text-[14px] leading-[1.7]"
+            className="mt-2 text-[16.1px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             {SAMPLE_REPORT_HERO.description}
@@ -119,13 +119,13 @@ export default function SampleReportPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>샘플 대상</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             {SAMPLE_SUBJECT.label} {SAMPLE_SUBJECT.name}의 풀이 예시입니다
           </h2>
           <p
-            className="mt-2 text-[13px] leading-[1.7]"
+            className="mt-2 text-[15px] leading-[1.7]"
             style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
           >
             {SAMPLE_SUBJECT.birth} · {SAMPLE_SUBJECT.place}
@@ -136,7 +136,7 @@ export default function SampleReportPage() {
             href="/saju/new"
             eventName="sample_report_start_click"
             eventParams={{ from: 'sample_report_hero' }}
-            className="mt-4 inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold"
+            className="mt-4 inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
             style={PRIMARY_BUTTON_STYLE}
           >
             내 깊은 사주풀이 만들기
@@ -146,13 +146,13 @@ export default function SampleReportPage() {
             {SAMPLE_REPORT_TEASERS.map((item) => (
               <div key={item.label} style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {item.label}
                 </div>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {item.body}
@@ -168,13 +168,13 @@ export default function SampleReportPage() {
             <div>
               <div style={KICKER_STYLE}>결제 전 확인</div>
               <h2
-                className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+                className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
                 style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
               >
                 샘플에서 바로 확인할 네 가지
               </h2>
               <p
-                className="mt-2 text-[13px] leading-[1.7]"
+                className="mt-2 text-[15px] leading-[1.7]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 결과 예시 한 장, 어떤 질문에 답하는지, 소장하면 무엇이 남는지, 대화 상담으로
@@ -185,14 +185,14 @@ export default function SampleReportPage() {
                   href="/saju/new"
                   eventName="sample_report_start_click"
                   eventParams={{ from: 'sample_report_preview_value' }}
-                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold"
+                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
                   style={PRIMARY_BUTTON_STYLE}
                 >
                   질문으로 시작하기
                 </TrackedLink>
                 <Link
                   href="/membership"
-                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold"
+                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
                   style={SECONDARY_BUTTON_STYLE}
                 >
                   상품 보기
@@ -203,13 +203,13 @@ export default function SampleReportPage() {
               {REPORT_PREVIEW_VALUE_POINTS.map((item) => (
                 <div key={item.title} style={SOFT_FEATURE_STYLE}>
                   <h3
-                    className="text-[15px] font-extrabold leading-snug tracking-tight"
+                    className="text-[17.3px] font-extrabold leading-snug tracking-tight"
                     style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                   >
                     {item.title}
                   </h3>
                   <p
-                    className="mt-1.5 text-[12.5px] leading-[1.65]"
+                    className="mt-1.5 text-[14.4px] leading-[1.65]"
                     style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                   >
                     {item.body}
@@ -224,7 +224,7 @@ export default function SampleReportPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>어떤 질문에 답하나요</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             사용자는 상품명이 아니라, 자기 문제의 이름으로 들어옵니다
@@ -233,19 +233,19 @@ export default function SampleReportPage() {
             {QUESTION_ENTRY_POINTS.map((entry) => (
               <div key={entry.slug} style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {entry.label}
                 </div>
                 <h3
-                  className="mt-1 text-[14px] font-extrabold leading-snug tracking-tight"
+                  className="mt-1 text-[16.1px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {entry.question}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {entry.reportAnswer}
@@ -259,7 +259,7 @@ export default function SampleReportPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>1분 미리보기</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             리포트 첫 1분 안에 무엇을 확인하게 되는지 먼저 보여드립니다
@@ -267,13 +267,13 @@ export default function SampleReportPage() {
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <div style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 이 사주의 핵심 한 줄
               </div>
               <p
-                className="mt-1.5 text-[12.5px] leading-[1.65]"
+                className="mt-1.5 text-[14.4px] leading-[1.65]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {SAMPLE_SUMMARY.oneLine}
@@ -281,13 +281,13 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 유리한 선택 방식
               </div>
               <p
-                className="mt-1.5 text-[12.5px] leading-[1.65]"
+                className="mt-1.5 text-[14.4px] leading-[1.65]"
                 style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
               >
                 {SAMPLE_SUMMARY.favorableChoice}
@@ -295,7 +295,7 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 올해 가장 강한 주제 3개
@@ -304,7 +304,7 @@ export default function SampleReportPage() {
                 {SAMPLE_SUMMARY.strongTopics.map((topic) => (
                   <li
                     key={topic}
-                    className="relative pl-3 text-[12.5px] leading-[1.65]"
+                    className="relative pl-3 text-[14.4px] leading-[1.65]"
                     style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                   >
                     <span
@@ -323,7 +323,7 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 조심해야 할 패턴 3개
@@ -332,7 +332,7 @@ export default function SampleReportPage() {
                 {SAMPLE_SUMMARY.cautionPatterns.map((pattern) => (
                   <li
                     key={pattern}
-                    className="relative pl-3 text-[12.5px] leading-[1.65]"
+                    className="relative pl-3 text-[14.4px] leading-[1.65]"
                     style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                   >
                     <span
@@ -366,7 +366,7 @@ export default function SampleReportPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>맛보기에서 풀이까지</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             처음부터 큰 리포트가 부담스러우면 작은 풀이로 먼저 확인합니다
@@ -375,19 +375,19 @@ export default function SampleReportPage() {
             {TASTE_PRODUCTS.filter((product) => !product.compatibilityOnly).map((product) => (
               <div key={product.slug} style={SOFT_FEATURE_STYLE}>
                 <div
-                  className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                  className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {product.price}
                 </div>
                 <h3
-                  className="mt-1 text-[14px] font-extrabold leading-snug tracking-tight"
+                  className="mt-1 text-[16.1px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {product.title}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {product.result}
@@ -401,13 +401,13 @@ export default function SampleReportPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>리포트 제작 원칙</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             결제 전에 알아두실 점을 정직하게 안내드립니다
           </h2>
           <p
-            className="mt-2 text-[12.5px] leading-[1.65]"
+            className="mt-2 text-[14.4px] leading-[1.65]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             과장 없이 실제 제공되는 형태를 그대로 표시합니다.
@@ -415,19 +415,19 @@ export default function SampleReportPage() {
           <dl className="mt-5 grid gap-3 sm:grid-cols-2">
             <div style={SOFT_FEATURE_STYLE}>
               <dt
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 생성 소요 시간
               </dt>
               <dd
-                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                className="mt-1.5 text-[15px] font-extrabold leading-snug"
                 style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
               >
                 결제 후 약 1~2분 내 자동 생성
               </dd>
               <p
-                className="mt-1.5 text-[12px] leading-[1.6]"
+                className="mt-1.5 text-[13.8px] leading-[1.6]"
                 style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
               >
                 트래픽 상황에 따라 다소 지연될 수 있으며, 화면을 닫아도 마이페이지 보관함에서 다시 확인하실 수 있습니다.
@@ -435,19 +435,19 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <dt
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 본문 분량
               </dt>
               <dd
-                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                className="mt-1.5 text-[15px] font-extrabold leading-snug"
                 style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
               >
                 14개 섹션 / 평균 A4 5~7페이지
               </dd>
               <p
-                className="mt-1.5 text-[12px] leading-[1.6]"
+                className="mt-1.5 text-[13.8px] leading-[1.6]"
                 style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
               >
                 목차 14개 섹션을 모두 채운 보관용 리포트로, 사주에 따라 페이지 수가 일부 변동될 수 있습니다.
@@ -455,19 +455,19 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <dt
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 AI 사용 여부
               </dt>
               <dd
-                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                className="mt-1.5 text-[15px] font-extrabold leading-snug"
                 style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
               >
                 사주 데이터 기반 AI 모델이 본문 작성
               </dd>
               <p
-                className="mt-1.5 text-[12px] leading-[1.6]"
+                className="mt-1.5 text-[13.8px] leading-[1.6]"
                 style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
               >
                 계산된 사주 구조와 고전 규칙을 입력으로, 대규모 언어 모델이 본문을 생성합니다. 모델·프롬프트는 시기에 따라 갱신될 수 있습니다.
@@ -475,19 +475,19 @@ export default function SampleReportPage() {
             </div>
             <div style={SOFT_FEATURE_STYLE}>
               <dt
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-pink-strong)' }}
               >
                 사람 검수 여부
               </dt>
               <dd
-                className="mt-1.5 text-[13px] font-extrabold leading-snug"
+                className="mt-1.5 text-[15px] font-extrabold leading-snug"
                 style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
               >
                 현재 별도 사람 검수 단계 없음
               </dd>
               <p
-                className="mt-1.5 text-[12px] leading-[1.6]"
+                className="mt-1.5 text-[13.8px] leading-[1.6]"
                 style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
               >
                 자동 생성된 본문이 곧바로 제공됩니다. 부적절한 문구·왜곡된 해석은 고객센터로 신고 주시면 빠르게 조치합니다.
@@ -497,14 +497,14 @@ export default function SampleReportPage() {
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Link
               href="/refund-policy"
-              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[12.5px] font-extrabold"
+              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[14.4px] font-extrabold"
               style={SECONDARY_BUTTON_STYLE}
             >
               환불 정책 자세히
             </Link>
             <Link
               href="/support/faq"
-              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[12.5px] font-extrabold"
+              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[14.4px] font-extrabold"
               style={SECONDARY_BUTTON_STYLE}
             >
               자주 묻는 질문
@@ -523,13 +523,13 @@ export default function SampleReportPage() {
           }}
         >
           <div
-            className="text-[10.5px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
             style={{ color: 'var(--app-pink)' }}
           >
             다음 단계
           </div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ wordBreak: 'keep-all' }}
           >
             샘플 구조가 마음에 드셨다면, 이제 선생님의 풀이를 직접 만들어보셔도 좋습니다
@@ -537,14 +537,14 @@ export default function SampleReportPage() {
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <Link
               href="/saju/new"
-              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[13.5px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
               style={PRIMARY_BUTTON_STYLE}
             >
               내 깊은 사주풀이 만들기
             </Link>
             <Link
               href="/membership"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white/10 px-5 text-[13.5px] font-extrabold text-white backdrop-blur"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-white/10 px-5 text-[15.5px] font-extrabold text-white backdrop-blur"
               style={{ border: '1px solid rgba(255, 255, 255, 0.18)' }}
             >
               상품 보기

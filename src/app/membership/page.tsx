@@ -130,15 +130,15 @@ export default async function MembershipPage({
         <section className="space-y-5 px-1">
           {/* §1 Hero — eyebrow + 가격 강조 헤드라인 */}
           <div>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               달빛 클럽
             </div>
-            <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               매일 가볍게,
               <br />
               <span className="text-[var(--app-pink-strong)]">{featuredPlan?.price ?? '월 9,900원'}</span>
             </h1>
-            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
               광고 없이 데일리 리포트와 대화·보관함이 자유로워집니다.
             </p>
           </div>
@@ -168,7 +168,7 @@ export default async function MembershipPage({
                   <>
                     <div className="flex items-center justify-between">
                       <div
-                        className="text-[12px] font-extrabold uppercase tracking-[0.04em]"
+                        className="text-[13.8px] font-extrabold uppercase tracking-[0.04em]"
                         style={{
                           color: isPremium
                             ? 'var(--app-pink-strong)'
@@ -179,17 +179,17 @@ export default async function MembershipPage({
                       </div>
                       {isActive ? (
                         <span
-                          className="rounded-full px-1.5 py-0.5 text-[9.5px] font-extrabold text-white"
+                          className="rounded-full px-1.5 py-0.5 text-[10.9px] font-extrabold text-white"
                           style={{ background: 'var(--app-jade)' }}
                         >
                           이용 중
                         </span>
                       ) : null}
                     </div>
-                    <div className="mt-1.5 text-[18px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="mt-1.5 text-[20.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {plan.price}
                     </div>
-                    <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">
+                    <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       {plan.title}
                     </div>
                   </>
@@ -224,12 +224,12 @@ export default async function MembershipPage({
           {/* §3 Benefits — featured plan.opens */}
           {featuredPlan ? (
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">포함된 혜택</h2>
+              <h2 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">포함된 혜택</h2>
               <ul className="mt-3 grid gap-2.5">
                 {featuredPlan.opens.slice(0, 5).map((benefit, index) => (
                   <li key={benefit} className="flex items-center gap-3">
                     <div
-                      className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[14px] font-extrabold"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[16.1px] font-extrabold"
                       style={{
                         background: 'var(--app-pink-soft)',
                         color: 'var(--app-pink-strong)',
@@ -238,7 +238,7 @@ export default async function MembershipPage({
                     >
                       {['✦', '◆', '☰', '⌘', '✶'][index] ?? '·'}
                     </div>
-                    <p className="text-[13px] font-medium leading-[1.5] text-[var(--app-ink)]">
+                    <p className="text-[15px] font-medium leading-[1.5] text-[var(--app-ink)]">
                       {benefit}
                     </p>
                   </li>
@@ -255,26 +255,26 @@ export default async function MembershipPage({
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="flex items-center gap-1.5 text-[12px] font-extrabold text-[var(--app-pink-strong)]">
+            <div className="flex items-center gap-1.5 text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
               <span>★★★★★</span>
               <span className="text-[var(--app-ink)]">4.8</span>
               <span className="font-medium text-[var(--app-copy-soft)]">· 멤버 후기</span>
             </div>
-            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy)]">
+            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy)]">
               &ldquo;매일 아침 가볍게 한 줄 보고 출근해요. 광고 없으니 진짜 깔끔.&rdquo;
             </p>
-            <div className="mt-1.5 text-[11px] text-[var(--app-copy-soft)]">— 닭띠 · 1991</div>
+            <div className="mt-1.5 text-[12.6px] text-[var(--app-copy-soft)]">— 닭띠 · 1991</div>
           </article>
 
           {/* §5 소액 풀이 — TASTE_PRODUCTS */}
           <section>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               소액 풀이
             </div>
-            <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
               궁금한 것 하나만 먼저
             </h2>
-            <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
+            <p className="mt-1 text-[13.8px] text-[var(--app-copy-muted)]">
               큰 결제 전에 오늘 궁금한 질문 하나를 짧게 확인하는 입구입니다.
             </p>
             <div className="mt-3 grid gap-2.5">
@@ -289,15 +289,15 @@ export default async function MembershipPage({
                     size="sm"
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {product.title}
                     </div>
-                    <p className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
+                    <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
                       {product.question}
                     </p>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[11px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       border: '1px solid var(--app-pink-line)',
@@ -312,10 +312,10 @@ export default async function MembershipPage({
 
           {/* §6 보관형 리포트 — COLLECTIBLE_REPORTS */}
           <section>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               보관형 풀이
             </div>
-            <h2 className="mt-1 text-[17px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
               오래 다시 볼 내용은 리포트로
             </h2>
             <div className="mt-3 grid gap-2.5">
@@ -334,15 +334,15 @@ export default async function MembershipPage({
                 >
                   <ZodiacChip kind={report.zodiac} size="sm" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {report.title}
                     </div>
-                    <p className="mt-0.5 text-[12px] text-[var(--app-copy-soft)]">
+                    <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
                       {report.summary}
                     </p>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[11px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       border: '1px solid var(--app-pink-line)',
@@ -359,11 +359,11 @@ export default async function MembershipPage({
           <div>
             <Link
               href={`/membership/checkout?plan=${featuredPlan?.slug ?? 'premium'}&from=membership`}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               {featuredPlan?.price ?? '월 9,900원'} 시작 →
             </Link>
-            <p className="mt-3 text-center text-[11.5px] leading-[1.5] text-[var(--app-copy-soft)]">
+            <p className="mt-3 text-center text-[13.2px] leading-[1.5] text-[var(--app-copy-soft)]">
               무료체험 없음 · 결제 승인일로부터 30일 이용 · 언제든 해지 가능
             </p>
           </div>

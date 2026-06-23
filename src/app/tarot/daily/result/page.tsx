@@ -70,10 +70,10 @@ export default async function TarotResultPage({ searchParams }: Props) {
           {/* §1 Drawn card + 메타 — mockup §3 side-by-side */}
           <article className="rounded-[18px] border border-[var(--app-line)] bg-white p-4">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-[var(--app-ink)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.04em] text-white">
+              <span className="rounded-full bg-[var(--app-ink)] px-2 py-0.5 text-[11.5px] font-extrabold uppercase tracking-[0.04em] text-white">
                 DRAWN
               </span>
-              <span className="text-[12px] text-[var(--app-copy-soft)]">
+              <span className="text-[13.8px] text-[var(--app-copy-soft)]">
                 방금 뽑은 카드
               </span>
             </div>
@@ -93,16 +93,16 @@ export default async function TarotResultPage({ searchParams }: Props) {
                 </TarotCardFlipReveal>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   {reading.arcanaLabel}
                 </div>
-                <h1 className="mt-0.5 text-[20px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+                <h1 className="mt-0.5 text-[23px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
                   {reading.displayName}
                 </h1>
-                <div className="mt-1 text-[12.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[14.4px] text-[var(--app-copy-soft)]">
                   {reading.shortName}
                 </div>
-                <p className="mt-2.5 text-[12.5px] leading-[1.55] text-[var(--app-copy)]">
+                <p className="mt-2.5 text-[14.4px] leading-[1.55] text-[var(--app-copy)]">
                   {reading.answer}
                 </p>
               </div>
@@ -117,13 +117,13 @@ export default async function TarotResultPage({ searchParams }: Props) {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               오늘의 조언
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               {reading.answer}
             </h2>
-            <p className="mt-2 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+            <p className="mt-2 text-[15px] leading-[1.65] text-[var(--app-copy)]">
               {reading.action}
             </p>
           </article>
@@ -132,29 +132,29 @@ export default async function TarotResultPage({ searchParams }: Props) {
           <section className="space-y-2.5">
             {/* 이 카드 자체의 의미(RWS 충실 한글) — 정/역 반영. 56 마이너 카드 차별화. */}
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="flex items-center gap-1.5 text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 이 카드가 말하는 것
-                <span className="rounded-full bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[9px] font-bold normal-case tracking-normal text-[var(--app-pink-strong)]">
+                <span className="rounded-full bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10.4px] font-bold normal-case tracking-normal text-[var(--app-pink-strong)]">
                   {reading.orientation === 'reversed' ? '역방향' : '정방향'}
                 </span>
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+              <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
                 {reading.cardMeaning}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 마음에 둘 말
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+              <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
                 {reading.guidance}
               </p>
             </article>
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 사주와 이어보면
               </div>
-              <p className="mt-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]">
+              <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
                 {reading.sajuBlend}
               </p>
             </article>
@@ -162,7 +162,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
 
           {/* entertainment + agency 고지 — 예측 적중이 아니라 참고용 성찰 메시지임을 명시.
               결정은 사용자에게 돌려준다(deterministic-doom 방지·정직성). */}
-          <p className="px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
+          <p className="px-1 text-[12.6px] leading-[1.6] text-[var(--app-copy-soft)]">
             오늘의 타로는 마음을 정리하는 참고용 메시지예요. 미래를 단정하지 않으며,
             오늘의 선택은 늘 당신의 몫입니다.
           </p>
@@ -173,10 +173,10 @@ export default async function TarotResultPage({ searchParams }: Props) {
             className="flex items-center justify-between rounded-[16px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-3.5"
           >
             <span className="min-w-0">
-              <span className="block text-[13px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              <span className="block text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
                 세 장으로 더 깊이 보기
               </span>
-              <span className="mt-0.5 block text-[11.5px] text-[var(--app-copy-soft)]">
+              <span className="mt-0.5 block text-[13.2px] text-[var(--app-copy-soft)]">
                 현재 · 원인 · 조언 세 자리로 펼쳐 흐름을 이어 읽어요
               </span>
             </span>
@@ -189,14 +189,14 @@ export default async function TarotResultPage({ searchParams }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={pickHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-4 py-3 text-[13px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-4 py-3 text-[15px] font-bold text-[var(--app-copy-muted)]"
             >
               <RotateCcw className="h-4 w-4" />
               다시 뽑기
             </Link>
             <Link
               href={sajuHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 py-3 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               <Bookmark className="h-4 w-4" />
               사주로 이어보기

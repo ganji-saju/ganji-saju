@@ -551,13 +551,13 @@ export function DialogueChatPanel({
                   <p className="mt-1 text-xs leading-5 opacity-85">{profileConnection.detail}</p>
                 </div>
                 {profileConnection.status === 'ready' ? (
-                  <span className="w-fit rounded-full border border-current/20 px-3 py-1 text-[11px] font-medium">
+                  <span className="w-fit rounded-full border border-current/20 px-3 py-1 text-[12.6px] font-medium">
                     자동 적용
                   </span>
                 ) : (
                   <Link
                     href="/my/profile"
-                    className="w-fit rounded-full border border-[var(--app-gold)]/30 bg-[var(--app-gold)]/10 px-3 py-1 text-[11px] font-medium text-[var(--app-gold-text)] transition hover:border-[var(--app-gold)]/55 hover:bg-[var(--app-gold)]/16"
+                    className="w-fit rounded-full border border-[var(--app-gold)]/30 bg-[var(--app-gold)]/10 px-3 py-1 text-[12.6px] font-medium text-[var(--app-gold-text)] transition hover:border-[var(--app-gold)]/55 hover:bg-[var(--app-gold)]/16"
                   >
                     MY 정보 저장
                   </Link>
@@ -701,7 +701,7 @@ export function DialogueChatPanel({
             })}
           </div>
         </div>
-        <p className={roomMode ? 'mt-2 text-[11px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
+        <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
           처음 3회 무료 · 이후 3회 3코인
         </p>
 

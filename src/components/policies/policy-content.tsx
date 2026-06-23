@@ -24,10 +24,10 @@ export function PolicyContent({ policy }: PolicyContentProps) {
       data-policy-version={policy.version}
     >
       <header className="space-y-1">
-        <h1 className="text-[20px] font-extrabold leading-tight text-[var(--app-ink)]">
+        <h1 className="text-[23px] font-extrabold leading-tight text-[var(--app-ink)]">
           {POLICY_LABELS[policy.kind]}
         </h1>
-        <p className="text-[12px] text-[var(--app-copy-muted)]">
+        <p className="text-[13.8px] text-[var(--app-copy-muted)]">
           버전 {policy.version} · 시행일 {formatKoreanDate(new Date(policy.effectiveDate))}
         </p>
       </header>
@@ -46,7 +46,7 @@ function PolicyBody({
   if (format === 'html') {
     return (
       <div
-        className="policy-body text-[14px] leading-[1.8] text-[var(--app-copy)]"
+        className="policy-body text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
         // 운영자 입력 HTML 신뢰 (admin 인증 + 본인 입력 가정)
         dangerouslySetInnerHTML={{ __html: content }}
       />
@@ -55,7 +55,7 @@ function PolicyBody({
   if (format === 'plaintext') {
     return (
       <pre
-        className="policy-body whitespace-pre-wrap text-[14px] leading-[1.8] text-[var(--app-copy)]"
+        className="policy-body whitespace-pre-wrap text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
         style={{ fontFamily: 'inherit' }}
       >
         {content}
@@ -91,7 +91,7 @@ function MarkdownLite({ content }: { content: string }) {
       const level = headerMatch[1].length;
       const text = headerMatch[2];
       const HeaderTag = (`h${level + 1}` as 'h2' | 'h3' | 'h4');
-      const headerSize = level === 1 ? 'text-[18px]' : level === 2 ? 'text-[16px]' : 'text-[14px]';
+      const headerSize = level === 1 ? 'text-[20.7px]' : level === 2 ? 'text-[18.4px]' : 'text-[16.1px]';
       blocks.push(
         <HeaderTag
           key={key++}
@@ -114,7 +114,7 @@ function MarkdownLite({ content }: { content: string }) {
       blocks.push(
         <ul
           key={key++}
-          className="ml-5 list-disc space-y-1 text-[14px] leading-[1.8] text-[var(--app-copy)]"
+          className="ml-5 list-disc space-y-1 text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
         >
           {items.map((it, idx) => (
             <li key={idx}>{renderInline(it)}</li>
@@ -133,7 +133,7 @@ function MarkdownLite({ content }: { content: string }) {
     blocks.push(
       <p
         key={key++}
-        className="text-[14px] leading-[1.8] text-[var(--app-copy)]"
+        className="text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
         style={{ wordBreak: 'keep-all' }}
       >
         {renderInline(paraLines.join(' '))}
@@ -156,7 +156,7 @@ function renderInline(text: string): React.ReactNode {
       parts.push(<em key={idx}>{tok.slice(1, -1)}</em>);
     } else if (/^`.+`$/.test(tok)) {
       parts.push(
-        <code key={idx} className="rounded bg-[var(--app-line)] px-1 text-[13px]">
+        <code key={idx} className="rounded bg-[var(--app-line)] px-1 text-[15px]">
           {tok.slice(1, -1)}
         </code>
       );

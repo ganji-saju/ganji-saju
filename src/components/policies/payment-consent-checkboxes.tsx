@@ -86,10 +86,10 @@ export function PaymentConsentCheckboxes({
       className="payment-consent space-y-3 rounded-[14px] border bg-white p-4"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      <h3 className="text-[13px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
+      <h3 className="text-[15px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
 
       {confirmationItems.length > 0 ? (
-        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2.5 text-[11.5px] leading-[1.55] text-[var(--app-copy-muted)]">
+        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]">
           {confirmationItems.map((item) => (
             <li key={item} className="flex gap-1.5">
               <span aria-hidden="true">·</span>
@@ -107,7 +107,7 @@ export function PaymentConsentCheckboxes({
           className="mt-0.5 h-4 w-4"
           aria-label="모든 항목 확인 및 동의"
         />
-        <span className="text-[13px] font-bold text-[var(--app-ink)]">
+        <span className="text-[15px] font-bold text-[var(--app-ink)]">
           아래 항목 모두 확인 및 동의
         </span>
       </label>
@@ -125,19 +125,19 @@ export function PaymentConsentCheckboxes({
                 required
               />
               <span className="flex-1">
-                <span className="block text-[13px] font-bold text-[var(--app-ink)]">
+                <span className="block text-[15px] font-bold text-[var(--app-ink)]">
                   [필수] {it.label}{' '}
                   <Link
                     href={POLICY_URLS[it.kind]}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-1 text-[11px] font-normal text-[var(--app-pink-strong)] underline"
+                    className="ml-1 text-[12.6px] font-normal text-[var(--app-pink-strong)] underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     전문 보기
                   </Link>
                 </span>
-                <span className="mt-0.5 block text-[11.5px] leading-[1.5] text-[var(--app-copy-muted)]">
+                <span className="mt-0.5 block text-[13.2px] leading-[1.5] text-[var(--app-copy-muted)]">
                   {it.description}
                 </span>
               </span>
@@ -146,7 +146,7 @@ export function PaymentConsentCheckboxes({
         ))}
       </ul>
 
-      <p className="text-[11px] leading-[1.5] text-[var(--app-copy-muted)]">
+      <p className="text-[12.6px] leading-[1.5] text-[var(--app-copy-muted)]">
         모든 필수 항목 확인 후 결제 버튼이 활성화됩니다. 동의 시점은 본인 식별 정보와 함께
         안전하게 기록됩니다 (IP 원문은 저장하지 않습니다).
       </p>

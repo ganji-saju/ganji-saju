@@ -79,7 +79,7 @@ function ToneSection({
       }}
     >
       <div
-        className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
+        className="text-[15px] font-extrabold uppercase tracking-[0.06em]"
         style={{ color: palette.accent }}
       >
         {eyebrow}
@@ -108,19 +108,19 @@ function ToneInnerCard({
     >
       {range ? (
         <div
-          className="text-[13px] font-extrabold uppercase tracking-[0.06em]"
+          className="text-[15px] font-extrabold uppercase tracking-[0.06em]"
           style={{ color: palette.accent }}
         >
           {range}
         </div>
       ) : null}
       <div
-        className="break-keep text-[14.5px] font-extrabold leading-[1.55] text-[var(--app-ink)]"
+        className="break-keep text-[16.7px] font-extrabold leading-[1.55] text-[var(--app-ink)]"
         style={{ marginTop: range ? '0.45rem' : 0 }}
       >
         {title}
       </div>
-      <p className="mt-1.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+      <p className="mt-1.5 break-keep text-[15px] leading-[1.7] text-[var(--app-copy)]">
         {body}
       </p>
     </div>
@@ -143,13 +143,13 @@ function ActionRow({
       style={{ borderColor: palette.inner }}
     >
       <span
-        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-extrabold text-white"
+        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12.6px] font-extrabold text-white"
         style={{ background: palette.accent }}
         aria-hidden="true"
       >
         {index + 1}
       </span>
-      <p className="break-keep text-[13.5px] leading-[1.7] text-[var(--app-copy)]">
+      <p className="break-keep text-[15.5px] leading-[1.7] text-[var(--app-copy)]">
         {text}
       </p>
     </div>
@@ -193,11 +193,11 @@ export function TodayPremiumPanel({
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[15px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               오늘 자세히 보기
             </div>
             <h2
-              className="mt-1.5 text-[20px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+              className="mt-1.5 text-[23px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
               시간대별 행동 가이드
@@ -205,14 +205,14 @@ export function TodayPremiumPanel({
               + 고민 상황 풀이
             </h2>
             <p
-              className="mt-2 text-[13px] leading-[1.55] text-[var(--app-copy-muted)]"
+              className="mt-2 text-[15px] leading-[1.55] text-[var(--app-copy-muted)]"
               style={{ wordBreak: 'keep-all' }}
             >
               12 시진(時辰) 풀이 + 추천/회피 행동 + 고민될 때 시나리오
             </p>
           </div>
           <span
-            className="shrink-0 rounded-full px-3 py-1.5 text-[11px] font-extrabold text-white"
+            className="shrink-0 rounded-full px-3 py-1.5 text-[12.6px] font-extrabold text-white"
             style={{
               background: 'var(--app-pink)',
               boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
@@ -234,7 +234,7 @@ export function TodayPremiumPanel({
           }}
         >
           <div
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-white"
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-white"
             style={{
               background: 'linear-gradient(135deg, #6c5ce7 0%, #d81b72 100%)',
               boxShadow: '0 6px 14px rgba(108,92,231,0.24)',
@@ -246,7 +246,7 @@ export function TodayPremiumPanel({
             {aiNarrativeParagraphs.map((paragraph, index) => (
               <p
                 key={`ai-narrative-${index}`}
-                className="break-keep text-[14px] leading-[1.85] text-[var(--app-ink)]"
+                className="break-keep text-[16.1px] leading-[1.85] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {paragraph}
@@ -262,11 +262,11 @@ export function TodayPremiumPanel({
         className="rounded-[16px] border bg-white p-4"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
-        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           💡 이렇게 활용하세요
         </div>
         <ul
-          className="mt-2 grid gap-1.5 text-[13px] leading-[1.65] text-[var(--app-copy)]"
+          className="mt-2 grid gap-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           <li className="flex items-start gap-1.5">
@@ -346,7 +346,7 @@ export function TodayPremiumPanel({
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           고민될 때
         </div>
         <div className="mt-3 grid gap-2.5">
@@ -360,18 +360,18 @@ export function TodayPremiumPanel({
               }}
             >
               <div
-                className="break-keep text-[14.5px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
+                className="break-keep text-[16.7px] font-extrabold leading-[1.5] text-[var(--app-ink)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 {trimEasySentence(scenario.title)}
               </div>
-              <p className="mt-2.5 break-keep text-[13px] leading-[1.7] text-[var(--app-copy)]">
+              <p className="mt-2.5 break-keep text-[15px] leading-[1.7] text-[var(--app-copy)]">
                 <span className="font-extrabold text-[var(--app-pink-strong)]">
                   이렇게 해보세요.{' '}
                 </span>
                 {trimEasySentence(scenario.better)}
               </p>
-              <p className="mt-1.5 break-keep text-[12.5px] leading-[1.65] text-[var(--app-copy-soft)]">
+              <p className="mt-1.5 break-keep text-[14.4px] leading-[1.65] text-[var(--app-copy-soft)]">
                 <span className="font-extrabold text-[var(--app-ink)]">
                   이건 줄여요.{' '}
                 </span>
@@ -400,11 +400,11 @@ export function TodayPremiumPanel({
           open
         >
           <summary
-            className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+            className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           >
             <span>📋 풀이 근거 ({evidenceLines.length}개)</span>
             <span
-              className="text-[10px] transition-transform group-open:rotate-180"
+              className="text-[11.5px] transition-transform group-open:rotate-180"
               aria-hidden="true"
             >
               ▼
@@ -414,7 +414,7 @@ export function TodayPremiumPanel({
             {evidenceLines.map((line, idx) => (
               <li
                 key={`${line}-${idx}`}
-                className="text-[13px] leading-[1.65] text-[var(--app-copy)]"
+                className="text-[15px] leading-[1.65] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
                 <span className="mr-1 font-extrabold text-[var(--app-pink-strong)]">·</span>
@@ -431,21 +431,21 @@ export function TodayPremiumPanel({
         style={{ borderColor: 'var(--app-line)' }}
       >
         <summary
-          className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[12.5px] font-extrabold text-[var(--app-copy-muted)]"
+          className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
         >
           <span>풀이 방식 보기</span>
           <span
-            className="text-[10px] transition-transform group-open:rotate-180"
+            className="text-[11.5px] transition-transform group-open:rotate-180"
             aria-hidden="true"
           >
             ▼
           </span>
         </summary>
         <div className="border-t border-[var(--app-line)] px-4 py-3.5">
-          <p className="text-[13px] leading-[1.7] text-[var(--app-copy-soft)]">
+          <p className="text-[15px] leading-[1.7] text-[var(--app-copy-soft)]">
             오늘 분위기와 입력 정보를 함께 참고해 정리했습니다.
           </p>
-          <p className="mt-1.5 text-[13px] leading-[1.7] text-[var(--app-copy-soft)]">
+          <p className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy-soft)]">
             {result.safetyNote}
           </p>
         </div>

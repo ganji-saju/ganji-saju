@@ -90,12 +90,12 @@ export function PaidFunnelGrid({
         <Link
           key={item.key}
           href={`${item.href}?from=${from}`}
-          className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[12px] font-bold no-underline"
+          className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[13.8px] font-bold no-underline"
           style={cardStyle}
         >
           <span className="flex flex-col text-left">
             <span
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: eyebrowColor }}
             >
               {item.eyebrow}
@@ -105,7 +105,7 @@ export function PaidFunnelGrid({
             </span>
           </span>
           <span
-            className="ml-2 shrink-0 rounded-full px-2 py-1 text-[11px] font-extrabold text-white"
+            className="ml-2 shrink-0 rounded-full px-2 py-1 text-[12.6px] font-extrabold text-white"
             style={pillStyle}
           >
             {item.price}

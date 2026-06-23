@@ -83,8 +83,8 @@ const ADMIN_NAV: AdminNavItem[] = [
 function AdminNavGrid() {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[13px] font-extrabold text-[var(--app-ink)]">관리자 메뉴</h2>
-      <p className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
+      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">관리자 메뉴</h2>
+      <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
         각 영역의 admin 페이지로 바로 이동합니다.
       </p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -95,19 +95,19 @@ function AdminNavGrid() {
             className="flex flex-col gap-1 rounded-[12px] border border-[var(--app-line)] bg-white p-3 transition-colors hover:bg-[var(--app-pink-soft)]"
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-[12.5px] font-extrabold text-[var(--app-ink)]">
+              <span className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
                 {item.label}
               </span>
               {item.badge && (
                 <span
-                  className="rounded-full bg-[var(--app-pink-strong)] px-1.5 py-0.5 text-[9px] font-extrabold text-white"
+                  className="rounded-full bg-[var(--app-pink-strong)] px-1.5 py-0.5 text-[10.4px] font-extrabold text-white"
                   aria-label={`${item.label} ${item.badge} 표시`}
                 >
                   {item.badge}
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-[var(--app-copy-soft)]">{item.description}</div>
+            <div className="text-[12.6px] text-[var(--app-copy-soft)]">{item.description}</div>
           </Link>
         ))}
       </div>

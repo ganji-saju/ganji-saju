@@ -69,7 +69,7 @@ export function TarotCardArtwork({
             >
               {shortName}
             </span>
-            <span className="text-[10px] tracking-[0.18em] text-[var(--app-copy-soft)]">
+            <span className="text-[11.5px] tracking-[0.18em] text-[var(--app-copy-soft)]">
               {tone.label}
             </span>
           </div>
@@ -91,7 +91,7 @@ export function TarotCardArtwork({
             <div className="flex justify-center">
               <span
                 className={cn(
-                  'inline-flex rounded-full border px-3 py-1 text-[10px] tracking-[0.22em] backdrop-blur-sm',
+                  'inline-flex rounded-full border px-3 py-1 text-[11.5px] tracking-[0.22em] backdrop-blur-sm',
                   tone.borderClassName,
                   tone.accentClassName
                 )}
@@ -111,7 +111,7 @@ export function TarotCardArtwork({
       </div>
 
       {imageFailed ? (
-        <div className="absolute inset-x-4 bottom-4 z-20 rounded-full border border-[var(--app-line)] bg-[rgba(8,10,18,0.7)] px-3 py-2 text-center text-[10px] tracking-[0.16em] text-[var(--app-copy-soft)] backdrop-blur">
+        <div className="absolute inset-x-4 bottom-4 z-20 rounded-full border border-[var(--app-line)] bg-[rgba(8,10,18,0.7)] px-3 py-2 text-center text-[11.5px] tracking-[0.16em] text-[var(--app-copy-soft)] backdrop-blur">
           이미지 로드 실패
         </div>
       ) : null}

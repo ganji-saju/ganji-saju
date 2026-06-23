@@ -214,7 +214,7 @@ export function OnboardingCarousel({
         <form action={skipAction}>
           <button
             type="submit"
-            className="rounded-full px-2 py-1 text-[12.5px] font-bold text-[var(--app-copy-soft)] transition-colors hover:text-[var(--app-copy)]"
+            className="rounded-full px-2 py-1 text-[14.4px] font-bold text-[var(--app-copy-soft)] transition-colors hover:text-[var(--app-copy)]"
           >
             건너뛰기 →
           </button>
@@ -245,12 +245,12 @@ export function OnboardingCarousel({
           key={`copy-${idx}`}
           className="flex flex-col items-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:delay-75"
         >
-          <div className="mt-7 text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
+          <div className="mt-7 text-[12.1px] font-extrabold uppercase tracking-[0.16em] text-[var(--app-pink-strong)]">
             {slide.eyebrow}
           </div>
           <h1
             id={headingId}
-            className="mt-2 text-[22px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+            className="mt-2 text-[25.3px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all', textAlign: 'center' }}
           >
             {slide.title[0]}
@@ -258,7 +258,7 @@ export function OnboardingCarousel({
             {slide.title[1]}
           </h1>
           <p
-            className="mt-3 max-w-xs text-[12.5px] leading-[1.7] text-[var(--app-copy-muted)]"
+            className="mt-3 max-w-xs text-[14.4px] leading-[1.7] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all', textAlign: 'center' }}
           >
             {slide.body[0]}
@@ -300,7 +300,7 @@ export function OnboardingCarousel({
           <form action={finishAction}>
             <button
               type="submit"
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
             >
               사주 입력하고 시작 →
             </button>
@@ -309,7 +309,7 @@ export function OnboardingCarousel({
           <button
             type="button"
             onClick={() => setIdx((i) => Math.min(i + 1, SLIDES.length - 1))}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
           >
             다음 →
           </button>

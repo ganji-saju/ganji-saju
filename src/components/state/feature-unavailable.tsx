@@ -37,7 +37,7 @@ export function FeatureUnavailable({
   if (variant === 'inline') {
     return (
       <span
-        className="inline-flex items-center gap-1.5 text-[11.5px] text-[var(--app-copy-muted)]"
+        className="inline-flex items-center gap-1.5 text-[13.2px] text-[var(--app-copy-muted)]"
         data-feature-unavailable={reason}
       >
         <span aria-hidden="true">✦</span>
@@ -56,12 +56,12 @@ export function FeatureUnavailable({
       data-feature-unavailable={reason}
     >
       <header className="space-y-1">
-        <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">{featureName}</h2>
-        <p className="text-[12.5px] text-[var(--app-copy-muted)]">{REASON_COPY[reason]}</p>
+        <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">{featureName}</h2>
+        <p className="text-[14.4px] text-[var(--app-copy-muted)]">{REASON_COPY[reason]}</p>
       </header>
       {detail ? (
         <p
-          className="text-[12.5px] leading-[1.7] text-[var(--app-copy)]"
+          className="text-[14.4px] leading-[1.7] text-[var(--app-copy)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {detail}
@@ -72,14 +72,14 @@ export function FeatureUnavailable({
         {BUSINESS_INFO.email ? (
           <a
             href={`mailto:${BUSINESS_INFO.email}?subject=${encodeURIComponent(`[기능 문의] ${featureName}`)}`}
-            className="text-[11.5px] font-bold text-[var(--app-pink-strong)] underline"
+            className="text-[13.2px] font-bold text-[var(--app-pink-strong)] underline"
           >
             문의하기
           </a>
         ) : null}
         <Link
           href="/legal"
-          className="text-[11.5px] font-bold text-[var(--app-copy-muted)] underline"
+          className="text-[13.2px] font-bold text-[var(--app-copy-muted)] underline"
         >
           정책 안내
         </Link>

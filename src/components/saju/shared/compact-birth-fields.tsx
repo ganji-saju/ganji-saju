@@ -46,7 +46,7 @@ function getHourBranch(hourStr: string) {
 // 2026-05-15 handoff PR-G2: 61 m-input — input focus 시 ring + lift 모션.
 // motion-input-effect 클래스가 box-shadow + transform 으로 강조.
 const INPUT_CLS =
-  'motion-input-effect h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[14.5px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
+  'motion-input-effect h-12 w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]';
 
 export interface CompactBirthFieldsProps {
   draft: UnifiedBirthEntryDraft;
@@ -111,7 +111,7 @@ export function CompactBirthFields({
         <div>
           <label
             htmlFor="compact-nickname"
-            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+            className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
           >
             이름 (별칭)
           </label>
@@ -132,7 +132,7 @@ export function CompactBirthFields({
 
       {showDate ? (
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             생년월일
           </label>
           <div className="mt-1.5 grid grid-cols-[1.2fr_1fr_1fr] gap-2">
@@ -194,7 +194,7 @@ export function CompactBirthFields({
                     onChange({ calendarType: opt.v as UnifiedCalendarType });
                   }}
                   className={cn(
-                    'rounded-full border px-3 py-1.5 text-[12px] font-bold transition',
+                    'rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition',
                     active
                       ? 'border-transparent bg-[var(--app-pink)] text-white'
                       : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -210,7 +210,7 @@ export function CompactBirthFields({
 
       {showTime ? (
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             태어난 시각
           </label>
           <div
@@ -221,32 +221,32 @@ export function CompactBirthFields({
               <>
                 <ZodiacChip kind={hourBranch.zodiac} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-bold text-[var(--app-ink)]">
+                  <div className="text-[16.1px] font-bold text-[var(--app-ink)]">
                     {Number.parseInt(draft.hour, 10)}시 ({hourBranch.label})
                   </div>
-                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                     {hourBranch.range}
                   </div>
                 </div>
-                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                <span className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">
                   변경
                 </span>
               </>
             ) : (
               <>
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[18px] font-bold text-[var(--app-copy-muted)]"
+                  className="flex h-10 w-10 items-center justify-center rounded-[13px] border border-[var(--app-line)] bg-white text-[20.7px] font-bold text-[var(--app-copy-muted)]"
                   aria-hidden="true"
                 >
                   ?
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-bold text-[var(--app-ink)]">시간 모름</div>
-                  <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                  <div className="text-[16.1px] font-bold text-[var(--app-ink)]">시간 모름</div>
+                  <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                     탭하여 출생 시간을 선택하세요
                   </div>
                 </div>
-                <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
+                <span className="text-[16.1px] font-extrabold text-[var(--app-pink-strong)]">
                   변경
                 </span>
               </>
@@ -271,7 +271,7 @@ export function CompactBirthFields({
               ))}
             </select>
           </div>
-          <label className="mt-2.5 flex items-center gap-2 text-[13px] text-[var(--app-copy-muted)]">
+          <label className="mt-2.5 flex items-center gap-2 text-[15px] text-[var(--app-copy-muted)]">
             <input
               type="checkbox"
               checked={isHourUnknown}
@@ -292,7 +292,7 @@ export function CompactBirthFields({
 
       {showGender ? (
         <div>
-          <label className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]">
+          <label className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]">
             성별
           </label>
           <div className="mt-1.5 grid grid-cols-2 gap-2">
@@ -310,7 +310,7 @@ export function CompactBirthFields({
                     onChange({ gender: opt.v as 'female' | 'male' });
                   }}
                   className={cn(
-                    'h-12 rounded-[14px] border text-[14.5px] font-bold transition',
+                    'h-12 rounded-[14px] border text-[16.7px] font-bold transition',
                     active
                       ? 'border-[var(--app-pink)] bg-[var(--app-pink)] text-white'
                       : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -328,7 +328,7 @@ export function CompactBirthFields({
         <div>
           <label
             htmlFor="compact-birth-location"
-            className="block text-[12.5px] font-medium text-[var(--app-copy-muted)]"
+            className="block text-[14.4px] font-medium text-[var(--app-copy-muted)]"
           >
             출생지
           </label>
@@ -353,14 +353,14 @@ export function CompactBirthFields({
                 type="button"
                 onClick={onLocationSearch}
                 disabled={locationLoading}
-                className="h-12 shrink-0 rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 text-[12.5px] font-bold text-[var(--app-pink-strong)] transition hover:bg-[var(--app-pink-soft)] disabled:opacity-60"
+                className="h-12 shrink-0 rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 text-[14.4px] font-bold text-[var(--app-pink-strong)] transition hover:bg-[var(--app-pink-soft)] disabled:opacity-60"
               >
                 {locationLoading ? '검색 중' : '주소 검색'}
               </button>
             ) : null}
           </div>
           {locationMessage ? (
-            <p className="mt-1.5 text-[11.5px] text-[var(--app-copy-soft)]">{locationMessage}</p>
+            <p className="mt-1.5 text-[13.2px] text-[var(--app-copy-soft)]">{locationMessage}</p>
           ) : null}
           {locationResults && locationResults.length > 0 ? (
             <ul className="mt-2 grid gap-1.5">
@@ -369,7 +369,7 @@ export function CompactBirthFields({
                   <button
                     type="button"
                     onClick={() => onLocationResultSelect?.(item)}
-                    className="block w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-2.5 text-left text-[13px] font-medium text-[var(--app-ink)] transition hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
+                    className="block w-full rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-2.5 text-left text-[15px] font-medium text-[var(--app-ink)] transition hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
                   >
                     {item.displayName}
                   </button>
@@ -387,7 +387,7 @@ export function CompactBirthFields({
                     type="button"
                     onClick={() => onLocationPresetSelect(preset.code)}
                     className={cn(
-                      'rounded-full border px-3 py-1.5 text-[11.5px] font-bold transition',
+                      'rounded-full border px-3 py-1.5 text-[13.2px] font-bold transition',
                       active
                         ? 'border-transparent bg-[var(--app-pink)] text-white'
                         : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'

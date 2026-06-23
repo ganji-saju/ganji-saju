@@ -125,7 +125,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
             <div className="relative flex items-start gap-3">
               <span
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[22px] font-extrabold text-white"
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
                 style={{
                   background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
                   boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
@@ -137,13 +137,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <span
-                  className="rounded-full border bg-white px-2.5 py-0.5 text-[10.5px] font-extrabold text-[var(--app-pink-strong)]"
+                  className="rounded-full border bg-white px-2.5 py-0.5 text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{ borderColor: 'var(--app-pink-line)' }}
                 >
                   🔒 PDF 저장 권한 필요
                 </span>
                 <h1
-                  className="mt-2 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+                  className="mt-2 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   깊은 사주풀이 PDF는
@@ -151,7 +151,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
                   소장권에서 열립니다
                 </h1>
                 <p
-                  className="mt-2.5 text-[13.5px] leading-[1.78] text-[var(--app-copy)]"
+                  className="mt-2.5 text-[15.5px] leading-[1.78] text-[var(--app-copy)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   PDF 저장본은 평생 소장 풀이 본문과 함께 제공됩니다. 풀이를 열면 같은 사주로 다시 들어와도
@@ -162,7 +162,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
 
             {!isOwner ? (
               <div
-                className="relative mt-4 rounded-[12px] border px-3.5 py-2.5 text-[12.5px] leading-[1.7]"
+                className="relative mt-4 rounded-[12px] border px-3.5 py-2.5 text-[14.4px] leading-[1.7]"
                 style={{
                   background: '#fdecec',
                   borderColor: 'rgba(198,69,69,0.22)',
@@ -176,13 +176,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             <div className="relative mt-5 grid gap-2">
               <Link
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 깊은 사주풀이 열기 →
               </Link>
               <Link
                 href={backHref}
-                className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+                className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 ← 풀이 화면으로 돌아가기

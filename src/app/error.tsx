@@ -39,7 +39,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           style={{ background: 'radial-gradient(circle, rgba(198,69,69,0.16), transparent 70%)' }}
         />
         <div
-          className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[34px] font-extrabold"
+          className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[39.1px] font-extrabold"
           style={{
             background: '#fff',
             color: 'var(--app-coral)',
@@ -51,19 +51,19 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           !
         </div>
         <div
-          className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.06em]"
+          className="mt-3 text-[12.6px] font-extrabold uppercase tracking-[0.06em]"
           style={{ color: 'var(--app-coral)' }}
         >
           잠시 끊겼어요
         </div>
         <h1
-          className="mt-1 text-[22px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
+          className="mt-1 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
           화면을 그리는 중 문제가 생겼어요
         </h1>
         <p
-          className="mt-2 text-[13px] leading-[1.7] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           데이터를 불러오거나 화면을 그리는 중 끊긴 것 같아요. 다시 시도하거나
@@ -71,7 +71,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         </p>
 
         {error?.digest ? (
-          <p className="mt-2 text-[10.5px] font-mono text-[var(--app-copy-soft)]">
+          <p className="mt-2 text-[12.1px] font-mono text-[var(--app-copy-soft)]">
             오류 코드: {error.digest}
           </p>
         ) : null}
@@ -80,14 +80,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             <RotateCcw className="h-4 w-4" />
             다시 시도하기
           </button>
           <Link
             href="/"
-            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border bg-white px-5 text-[13px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <Home className="h-4 w-4" />

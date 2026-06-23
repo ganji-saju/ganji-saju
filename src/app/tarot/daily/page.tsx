@@ -27,15 +27,15 @@ export default async function DailyTarotPage() {
         <section className="space-y-5 px-1">
           {/* §1 Eyebrow + headline */}
           <div>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               세 장 타로 · 무료
             </div>
-            <h1 className="mt-1.5 text-[24px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               마음에 떠오르는
               <br />
               세 장을 골라보세요
             </h1>
-            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
               궁금한 한 가지를 고르고 카드 세 장을 뽑으세요. 현재·원인·조언으로 오늘의 흐름을 보여줍니다.
             </p>
           </div>
@@ -66,7 +66,7 @@ export default async function DailyTarotPage() {
                 return (
                   <div
                     key={i}
-                    className="grid h-[92px] w-[56px] place-items-center rounded-[10px] border text-[24px] font-bold"
+                    className="grid h-[92px] w-[56px] place-items-center rounded-[10px] border text-[27.6px] font-bold"
                     style={{
                       background: isCenter
                         ? 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))'
@@ -84,11 +84,11 @@ export default async function DailyTarotPage() {
                 );
               })}
             </div>
-            <p className="relative mt-3.5 text-center text-[12px] text-white/70">
+            <p className="relative mt-3.5 text-center text-[13.8px] text-white/70">
               세 장을 골라 탭하세요
             </p>
             <div className="relative mt-4 flex justify-center">
-              <span className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[13px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">
+              <span className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">
                 카드 뽑으러 가기 →
               </span>
             </div>
@@ -96,10 +96,10 @@ export default async function DailyTarotPage() {
 
           {/* §3 질문별 타로 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
               질문별 타로
             </h2>
-            <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
+            <p className="mt-1 text-[13.8px] text-[var(--app-copy-muted)]">
               궁금한 주제를 먼저 골라보세요
             </p>
             <div className="mt-3 grid gap-2.5">
@@ -110,7 +110,7 @@ export default async function DailyTarotPage() {
                   className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                 >
                   <div
-                    className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-[18px]"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-[20.7px]"
                     style={{
                       background: '#2a0d2f',
                       color: '#fff',
@@ -119,10 +119,10 @@ export default async function DailyTarotPage() {
                     {question.emoji}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[14px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
                       {question.label}
                     </div>
-                    <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                    <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                       {question.description}
                     </p>
                   </div>
@@ -136,10 +136,10 @@ export default async function DailyTarotPage() {
 
           {/* §4 직접 질문 작성 */}
           <section>
-            <h2 className="text-[16px] font-extrabold text-[var(--app-ink)]">
+            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">
               직접 질문 쓰기
             </h2>
-            <p className="mt-1 text-[12px] text-[var(--app-copy-muted)]">
+            <p className="mt-1 text-[13.8px] text-[var(--app-copy-muted)]">
               내 마음에 떠오른 그대로 물어보세요
             </p>
             <form
@@ -150,11 +150,11 @@ export default async function DailyTarotPage() {
                 name="question"
                 rows={3}
                 placeholder="예: 지금 마음을 전해도 괜찮을까요"
-                className="min-h-[88px] w-full resize-none rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 py-3 text-[14px] font-medium leading-6 text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                className="min-h-[88px] w-full resize-none rounded-[12px] border border-[var(--app-line)] bg-white px-3.5 py-3 text-[16.1px] font-medium leading-6 text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
               />
               <button
                 type="submit"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 이 질문으로 카드 뽑기 →
               </button>

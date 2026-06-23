@@ -25,16 +25,16 @@ export default function PushModalShowcasePage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             design QA · 운영 노출 X
           </div>
           <h1
-            className="mt-1.5 text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+            className="mt-1.5 text-[23px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            <code className="text-[18px]">PushPermissionModal</code>
+            <code className="text-[20.7px]">PushPermissionModal</code>
           </h1>
-          <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
             가치 제안 → 알림 권한 요청 → subscribe API 호출 흐름을 단일 모달로 캡슐화한
             컴포넌트. 가입 7일차 자동 노출 등 caller 가 트리거 시점을 결정.
           </p>
@@ -46,10 +46,10 @@ export default function PushModalShowcasePage() {
           className="rounded-[14px] border bg-white p-4"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
             source of truth
           </div>
-          <ul className="mt-2 grid gap-1 text-[11.5px] leading-[1.55] text-[var(--app-copy)]">
+          <ul className="mt-2 grid gap-1 text-[13.2px] leading-[1.55] text-[var(--app-copy)]">
             <li>
               · component: <code>src/components/notifications/push-permission-modal.tsx</code>
             </li>
@@ -68,11 +68,11 @@ export default function PushModalShowcasePage() {
           className="rounded-[14px] border bg-white p-4"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
             usage
           </div>
           <pre
-            className="mt-2 overflow-x-auto rounded-[10px] p-3 text-[11px] leading-[1.55]"
+            className="mt-2 overflow-x-auto rounded-[10px] p-3 text-[12.6px] leading-[1.55]"
             style={{ background: '#0f0f12', color: '#e6e6ea' }}
           >
             {`'use client';

@@ -135,13 +135,13 @@ export function ShareActions({ text, url, className }: ShareActionsProps) {
             className="flex flex-col items-center gap-1.5"
           >
             <span
-              className="grid h-12 w-12 place-items-center rounded-[14px] text-[18px] font-extrabold"
+              className="grid h-12 w-12 place-items-center rounded-[14px] text-[20.7px] font-extrabold"
               style={{ background: channel.bg, color: channel.color }}
               aria-hidden="true"
             >
               {channel.glyph}
             </span>
-            <span className="text-[10.5px] font-bold text-[var(--app-copy)]">
+            <span className="text-[12.1px] font-bold text-[var(--app-copy)]">
               {channel.label}
             </span>
           </button>

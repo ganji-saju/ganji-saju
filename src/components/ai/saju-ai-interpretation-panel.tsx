@@ -259,7 +259,7 @@ export function SajuAiInterpretationPanel({
               shouldInsightUseFullRow(insight) ? 'md:col-span-2' : undefined
             )}
           >
-            <div className="text-[11px] font-bold text-[var(--app-pink-strong)]">
+            <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
               포인트 {index + 1}
             </div>
             <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(insight)}</p>
@@ -301,7 +301,7 @@ export function SajuAiInterpretationPanel({
                   </div>
                   <span
                     className={cn(
-                      'rounded-full border px-2.5 py-1 text-[11px]',
+                      'rounded-full border px-2.5 py-1 text-[12.6px]',
                       compareState.source === 'openai'
                         ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
                         : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-soft)]'

@@ -78,25 +78,25 @@ export function DaewoonTimelineStrip({ cycles }: Props) {
             }
           >
             <div
-              className="text-[10.5px] font-bold"
+              className="text-[12.1px] font-bold"
               style={{ opacity: cycle.isCurrent ? 0.85 : 0.55 }}
             >
               {cycle.ageLabel}
             </div>
             <div
-              className="mt-1 text-[16px] font-bold leading-none"
+              className="mt-1 text-[18.4px] font-bold leading-none"
               style={{ fontFamily: 'var(--font-han)' }}
             >
               {cycle.ganzi}
             </div>
             <div
-              className="mt-1 text-[10px] font-bold"
+              className="mt-1 text-[11.5px] font-bold"
               style={{ opacity: cycle.isCurrent ? 0.95 : 0.7 }}
             >
               {ganziToKorean(cycle.ganzi)}
             </div>
             <div
-              className="mt-1 text-[9.5px] font-extrabold uppercase tracking-[0.04em]"
+              className="mt-1 text-[10.9px] font-extrabold uppercase tracking-[0.04em]"
               style={{ opacity: cycle.isCurrent ? 0.95 : 0.55 }}
             >
               {cycle.phase}

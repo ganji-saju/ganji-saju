@@ -151,7 +151,7 @@ export default function SiteFooter() {
         backgroundImage: 'none',
         color: 'rgba(255,255,255,0.72)',
         padding: '48px 24px 28px',
-        fontSize: 13,
+        fontSize: 15,
         lineHeight: 1.7,
       }}
     >
@@ -169,7 +169,7 @@ export default function SiteFooter() {
                     'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
                   fontFamily: 'var(--font-han)',
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: 23,
                   letterSpacing: '-0.02em',
                   boxShadow: '0 4px 12px rgba(216,27,114,0.32)',
                 }}
@@ -180,7 +180,7 @@ export default function SiteFooter() {
                 <div
                   style={{
                     color: 'var(--app-pink)',
-                    fontSize: 11,
+                    fontSize: 12.6,
                     fontWeight: 700,
                     letterSpacing: '0.04em',
                   }}
@@ -189,7 +189,7 @@ export default function SiteFooter() {
                 </div>
                 <div
                   style={{
-                    fontSize: 22,
+                    fontSize: 25.3,
                     fontWeight: 800,
                     letterSpacing: '-0.03em',
                     color: '#fff',
@@ -221,7 +221,7 @@ export default function SiteFooter() {
                 >
                   <h4
                     style={{
-                      fontSize: 13,
+                      fontSize: 15,
                       fontWeight: 800,
                       color: '#fff',
                       margin: 0,
@@ -245,7 +245,7 @@ export default function SiteFooter() {
                 <h4
                   className="hidden sm:block"
                   style={{
-                    fontSize: 12,
+                    fontSize: 13.8,
                     fontWeight: 800,
                     color: '#fff',
                     margin: '0 0 14px',
@@ -279,7 +279,7 @@ export default function SiteFooter() {
           className="mt-6 grid gap-x-6 gap-y-2 pt-5 sm:grid-cols-2 lg:grid-cols-3"
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
-            fontSize: 12,
+            fontSize: 13.8,
           }}
         >
           {companyItems.map((item) => (
@@ -315,7 +315,7 @@ export default function SiteFooter() {
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
             color: 'rgba(255,255,255,0.46)',
-            fontSize: 11.5,
+            fontSize: 13.2,
             lineHeight: 1.7,
           }}
         >
@@ -333,7 +333,7 @@ export default function SiteFooter() {
         {/* Bottom */}
         <div
           className="mt-6 flex flex-wrap items-center justify-between gap-2"
-          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 11.5 }}
+          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 13.2 }}
         >
           <span>
             © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.

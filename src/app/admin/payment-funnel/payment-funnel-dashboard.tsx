@@ -80,7 +80,7 @@ function Sparkline({ daily, stage, color }: { daily: PaymentFunnelDailyPoint[]; 
           points={points}
         />
       </svg>
-      <div className="flex flex-col text-[9.5px] leading-tight text-[var(--app-copy-soft)]">
+      <div className="flex flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
         <span>오늘 {fmtNum(lastVal)}</span>
         <span>합 {fmtNum(total)}</span>
       </div>
@@ -150,14 +150,14 @@ export function PaymentFunnelDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           💳 결제 Funnel
         </div>
-        <h1 className="mt-1.5 text-[22px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
           /credits → prepare → confirm
         </h1>
         <p
-          className="mt-2 text-[12px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           단계별 진입·차단·전환·실패 추세와 reason / 패키지 별 전환율을 봅니다. KST 시간대.
@@ -173,7 +173,7 @@ export function PaymentFunnelDashboard() {
               key={opt.value}
               type="button"
               onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[12px] font-bold transition-transform active:scale-95"
+              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
               style={{
                 background: isActive ? 'var(--app-pink)' : 'white',
                 color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -192,7 +192,7 @@ export function PaymentFunnelDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[13px] text-[var(--app-copy-muted)]">집계 중...</p>
+          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">집계 중...</p>
         </article>
       ) : state === 'error' ? (
         <article
@@ -202,7 +202,7 @@ export function PaymentFunnelDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[13px] text-[var(--app-coral)]">
+          <p className="text-[15px] text-[var(--app-coral)]">
             {data?.error ?? '데이터를 불러오지 못했습니다.'}
           </p>
         </article>
@@ -210,7 +210,7 @@ export function PaymentFunnelDashboard() {
         <>
           {/* §전환율 4 카드 */}
           <section>
-            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               전환율 ({snap.windowDays}일)
             </h2>
             <div className="mt-2 grid grid-cols-2 gap-2.5">
@@ -218,13 +218,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   전체 전환
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-jade)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-jade)]">
                   {fmtPct(snap.totals.overallConversionRate)}
                 </div>
-                <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
                   prepare → 결제 성공
                 </div>
               </article>
@@ -232,13 +232,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   confirm 성공률
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
                   {fmtPct(snap.totals.confirmSuccessRate)}
                 </div>
-                <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
                   confirm 진입 중 성공
                 </div>
               </article>
@@ -246,13 +246,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   prepare 차단율
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-copy-muted)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-copy-muted)]">
                   {fmtPct(snap.totals.prepareBlockRate)}
                 </div>
-                <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
                   미로그인·중복 구매 등
                 </div>
               </article>
@@ -260,13 +260,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[10.5px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   confirm 실패율
                 </div>
-                <div className="mt-1 text-[20px] font-extrabold tabular-nums leading-none text-[var(--app-coral)]">
+                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-coral)]">
                   {fmtPct(snap.totals.confirmFailRate)}
                 </div>
-                <div className="mt-1 text-[10.5px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
                   토스 승인 또는 후속 실패
                 </div>
               </article>
@@ -275,7 +275,7 @@ export function PaymentFunnelDashboard() {
 
           {/* §단계별 카드 + sparkline */}
           <section>
-            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               단계별 추세
             </h2>
             <div className="mt-2 grid gap-2">
@@ -286,11 +286,11 @@ export function PaymentFunnelDashboard() {
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <div className="text-[12px] font-bold text-[var(--app-copy)]">
+                    <div className="text-[13.8px] font-bold text-[var(--app-copy)]">
                       {STAGE_LABEL[stage]}
                     </div>
                     <div
-                      className="text-[18px] font-extrabold tabular-nums"
+                      className="text-[20.7px] font-extrabold tabular-nums"
                       style={{ color: STAGE_COLOR[stage] }}
                     >
                       {fmtNum(snap.totals.counts[stage])}
@@ -312,14 +312,14 @@ export function PaymentFunnelDashboard() {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
-                  <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                     prepare 차단 사유
                   </div>
                   <ul className="mt-2 grid gap-1.5">
                     {snap.blockedReasons.map((r) => (
                       <li
                         key={r.reason}
-                        className="flex items-center justify-between text-[12px]"
+                        className="flex items-center justify-between text-[13.8px]"
                       >
                         <span className="text-[var(--app-copy)]">
                           {BLOCK_REASON_LABEL[r.reason] ?? r.reason}
@@ -337,14 +337,14 @@ export function PaymentFunnelDashboard() {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
-                  <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
                     confirm 실패 사유
                   </div>
                   <ul className="mt-2 grid gap-1.5">
                     {snap.failedReasons.map((r) => (
                       <li
                         key={r.reason}
-                        className="flex items-center justify-between text-[12px]"
+                        className="flex items-center justify-between text-[13.8px]"
                       >
                         <span className="text-[var(--app-copy)]">{r.reason}</span>
                         <span className="font-extrabold tabular-nums text-[var(--app-coral)]">
@@ -361,14 +361,14 @@ export function PaymentFunnelDashboard() {
           {/* §패키지 별 전환 */}
           {snap.byPackage.length > 0 ? (
             <section>
-              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 패키지 별 전환
               </h2>
               <div className="mt-2 grid gap-1.5">
                 {snap.byPackage.map((p) => (
                   <article
                     key={p.packageId}
-                    className="rounded-[12px] border bg-white p-3 text-[12px]"
+                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     <div className="flex items-baseline justify-between gap-3">
@@ -393,11 +393,11 @@ export function PaymentFunnelDashboard() {
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               📚 산출 방식
             </div>
             <ul
-              className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
+              className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 데이터: `payment_funnel_events` 테이블 (PR B1 신설)</li>

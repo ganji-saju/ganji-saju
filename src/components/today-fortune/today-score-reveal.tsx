@@ -89,7 +89,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
       <div className="relative flex items-center gap-3.5">
         <div className="relative">
           <div
-            className="grid h-[86px] w-[86px] place-items-center rounded-full text-[36px] font-extrabold tracking-tighter"
+            className="grid h-[86px] w-[86px] place-items-center rounded-full text-[41.4px] font-extrabold tracking-tighter"
             style={{ border: '3px solid rgba(255,255,255,0.4)' }}
             aria-live="polite"
           >
@@ -97,7 +97,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
           </div>
           {/* 2026-05-15 PR 1 — 점수 위 등급 이모지 (운세톡톡 벤치마크 4-1). */}
           <div
-            className="absolute -right-1 -top-1 grid h-8 w-8 place-items-center rounded-full text-[18px]"
+            className="absolute -right-1 -top-1 grid h-8 w-8 place-items-center rounded-full text-[20.7px]"
             style={{
               background: 'rgba(255,255,255,0.95)',
               boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
@@ -110,20 +110,20 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
         </div>
         <div>
           <div
-            className="text-[13px] font-extrabold uppercase tracking-[0.04em]"
+            className="text-[15px] font-extrabold uppercase tracking-[0.04em]"
             style={{ opacity: 0.85 }}
           >
             오늘의 시그널
           </div>
           {/* 2026-05-15 PR 1 — 등급 라벨 노출 ("무난한 날" / "신중해야 할 날" 등). */}
           <div
-            className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+            className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12.6px] font-extrabold"
             style={{ background: 'rgba(255,255,255,0.22)' }}
           >
             <span aria-hidden="true">{grade.emoji}</span>
             <span>{grade.label}</span>
           </div>
-          <div className="mt-1.5 text-[16px] font-extrabold leading-snug">
+          <div className="mt-1.5 text-[18.4px] font-extrabold leading-snug">
             {signalLines.map((line, idx) => (
               <span key={idx}>
                 {line}
@@ -135,7 +135,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
       </div>
 
       <p
-        className="relative mt-4 text-[13.5px] leading-relaxed"
+        className="relative mt-4 text-[15.5px] leading-relaxed"
         style={{ opacity: 0.94 }}
       >
         {result.oneLine.body}

@@ -68,7 +68,7 @@ export default function InterpretationPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -78,7 +78,7 @@ export default function InterpretationPage() {
               해석 허브
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -89,13 +89,13 @@ export default function InterpretationPage() {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             지금 궁금한 해석을 바로 고르세요
           </h1>
           <p
-            className="mt-2 text-[14px] leading-[1.7]"
+            className="mt-2 text-[16.1px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             사주·궁합·타로 중 지금 필요한 풀이로 바로 이동합니다.
@@ -106,7 +106,7 @@ export default function InterpretationPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>빠른 시작</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             가장 많이 찾는 세 가지 길
@@ -115,20 +115,20 @@ export default function InterpretationPage() {
             {QUICK_GUIDE.map((item) => (
               <div key={item.title} style={SOFT_FEATURE_STYLE}>
                 <h3
-                  className="text-[15px] font-extrabold leading-snug tracking-tight"
+                  className="text-[17.3px] font-extrabold leading-snug tracking-tight"
                   style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
                 >
                   {item.title}
                 </h3>
                 <p
-                  className="mt-1.5 text-[12.5px] leading-[1.65]"
+                  className="mt-1.5 text-[14.4px] leading-[1.65]"
                   style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                 >
                   {item.body}
                 </p>
                 <Link
                   href={item.href}
-                  className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-extrabold"
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-[13.8px] font-extrabold"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
                   {item.cta}
@@ -143,7 +143,7 @@ export default function InterpretationPage() {
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
           <div style={KICKER_STYLE}>해석 입구</div>
           <h2
-            className="mt-1.5 text-[20px] font-extrabold leading-snug tracking-tight"
+            className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             필요한 서비스만 골라서 열어보세요
@@ -163,24 +163,24 @@ export default function InterpretationPage() {
                   }}
                 >
                   <span
-                    className={`text-[10.5px] font-extrabold uppercase tracking-[0.22em] ${tone.text}`}
+                    className={`text-[12.1px] font-extrabold uppercase tracking-[0.22em] ${tone.text}`}
                   >
                     {card.hanja}
                   </span>
                   <h3
-                    className={`mt-1 text-[15px] font-extrabold leading-snug tracking-tight ${tone.text}`}
+                    className={`mt-1 text-[17.3px] font-extrabold leading-snug tracking-tight ${tone.text}`}
                     style={{ wordBreak: 'keep-all' }}
                   >
                     {card.title}
                   </h3>
                   <p
-                    className="mt-1.5 text-[12.5px] leading-[1.65]"
+                    className="mt-1.5 text-[14.4px] leading-[1.65]"
                     style={{ color: 'var(--app-copy)', wordBreak: 'keep-all' }}
                   >
                     {card.hook}
                   </p>
                   <span
-                    className={`mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-extrabold ${tone.text}`}
+                    className={`mt-2.5 inline-flex items-center gap-1.5 text-[13.8px] font-extrabold ${tone.text}`}
                   >
                     바로 열기
                     <ArrowRight className="h-3.5 w-3.5" />

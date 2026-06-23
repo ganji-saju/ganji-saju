@@ -243,7 +243,7 @@ function SavedProfileQuickFill({
             저장한 이름을 눌러 바로 넣을 수 있습니다
           </h3>
         </div>
-        <p className="text-[13px] leading-5 text-[var(--app-copy-soft)]">
+        <p className="text-[15px] leading-5 text-[var(--app-copy-soft)]">
           자세한 정보 카드는 아래에 그대로 남겨두었습니다.
         </p>
       </div>
@@ -257,8 +257,8 @@ function SavedProfileQuickFill({
             <div
               className={
                 group.tone === 'jade'
-                  ? 'mb-2 text-[13px] font-semibold text-[var(--app-jade)]'
-                  : 'mb-2 text-[13px] font-semibold text-[var(--app-pink-strong)]'
+                  ? 'mb-2 text-[15px] font-semibold text-[var(--app-jade)]'
+                  : 'mb-2 text-[15px] font-semibold text-[var(--app-pink-strong)]'
               }
             >
               {group.label}
@@ -556,25 +556,25 @@ export function CompatibilityInputClient({
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             궁합 보기
           </div>
           <h1
-            className="mt-1.5 text-[22px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
+            className="mt-1.5 text-[25.3px] font-extrabold leading-[1.35] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
             두 사람의 흐름을
             <br />
             함께 봅니다
           </h1>
-          <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
             관계를 고르고, 두 사람의 정보를 넣으면 바로 결과로 이어집니다.
           </p>
         </article>
 
         {hasLoveQuestionPurchase ? (
           <div
-            className="rounded-[12px] border px-3.5 py-2.5 text-[13px] leading-[1.6]"
+            className="rounded-[12px] border px-3.5 py-2.5 text-[15px] leading-[1.6]"
             style={{
               background: '#e8f5ee',
               borderColor: 'rgba(45,135,88,0.18)',
@@ -587,10 +587,10 @@ export function CompatibilityInputClient({
 
         {/* §관계 선택 — 2x2 grid, 명확한 active 표시 */}
         <section>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             1단계 · 관계 선택
           </div>
-          <h2 className="mt-1 text-[16.5px] font-extrabold leading-snug text-[var(--app-ink)]">
+          <h2 className="mt-1 text-[19px] font-extrabold leading-snug text-[var(--app-ink)]">
             어떤 사이의 궁합인가요?
           </h2>
 
@@ -632,7 +632,7 @@ export function CompatibilityInputClient({
                   ) : null}
 
                   <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[18px]"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[20.7px]"
                     style={{
                       background: active ? 'var(--app-pink)' : 'rgba(0,0,0,0.04)',
                       filter: active ? undefined : 'grayscale(0.05)',
@@ -644,14 +644,14 @@ export function CompatibilityInputClient({
                   </span>
                   <div className="min-w-0">
                     <div
-                      className="text-[14px] font-extrabold tracking-tight"
+                      className="text-[16.1px] font-extrabold tracking-tight"
                       style={{
                         color: active ? 'var(--app-pink-strong)' : 'var(--app-ink)',
                       }}
                     >
                       {item.title}
                     </div>
-                    <div className="mt-0.5 text-[13px] leading-[1.5] text-[var(--app-copy-muted)]">
+                    <div className="mt-0.5 text-[15px] leading-[1.5] text-[var(--app-copy-muted)]">
                       {item.hook}
                     </div>
                   </div>
@@ -670,7 +670,7 @@ export function CompatibilityInputClient({
 
         {profileLoadMessage && profileLoadStatus !== 'error' ? (
           <div
-            className="rounded-[12px] border px-3.5 py-2.5 text-[13px] leading-[1.6]"
+            className="rounded-[12px] border px-3.5 py-2.5 text-[15px] leading-[1.6]"
             style={{
               background: '#e8f5ee',
               borderColor: 'rgba(45,135,88,0.18)',
@@ -691,27 +691,27 @@ export function CompatibilityInputClient({
         >
           <div className="flex items-center gap-2">
             <span
-              className="grid h-8 w-8 place-items-center rounded-full text-[13px] font-extrabold text-white"
+              className="grid h-8 w-8 place-items-center rounded-full text-[15px] font-extrabold text-white"
               style={{ background: 'var(--app-pink)' }}
               aria-hidden="true"
             >
               나
             </span>
             <div className="min-w-0 flex-1">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 2단계
               </div>
-              <div className="text-[15.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              <div className="text-[17.8px] font-extrabold tracking-tight text-[var(--app-ink)]">
                 내 정보 입력
               </div>
             </div>
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
             생년월일 · 태어난 시간 · 성별 · 출생지를 넣으면 사주가 만들어집니다.
           </p>
           {selfSummary ? (
             <div
-              className="mt-2 rounded-[10px] px-3 py-2 text-[13px] font-bold"
+              className="mt-2 rounded-[10px] px-3 py-2 text-[15px] font-bold"
               style={{
                 background: 'var(--app-pink-soft)',
                 color: 'var(--app-pink-strong)',
@@ -725,7 +725,7 @@ export function CompatibilityInputClient({
             <div>
               <Label
                 htmlFor="compatibility-self-name"
-                className="mb-1.5 block text-[13px] font-extrabold text-[var(--app-ink)]"
+                className="mb-1.5 block text-[15px] font-extrabold text-[var(--app-ink)]"
               >
                 내 호칭{' '}
                 <span className="font-bold text-[var(--app-copy-soft)]">(선택)</span>
@@ -735,7 +735,7 @@ export function CompatibilityInputClient({
                 value={selfName}
                 onChange={(event) => setSelfName(event.target.value)}
                 placeholder="예: 나, 민지"
-                className="h-12 rounded-[12px] text-[14px]"
+                className="h-12 rounded-[12px] text-[16.1px]"
               />
             </div>
 
@@ -766,7 +766,7 @@ export function CompatibilityInputClient({
         >
           <div className="flex items-center gap-2">
             <span
-              className="grid h-8 w-8 place-items-center rounded-full text-[13px] font-extrabold text-white"
+              className="grid h-8 w-8 place-items-center rounded-full text-[15px] font-extrabold text-white"
               style={{ background: 'var(--app-jade)' }}
               aria-hidden="true"
             >
@@ -774,22 +774,22 @@ export function CompatibilityInputClient({
             </span>
             <div className="min-w-0 flex-1">
               <div
-                className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+                className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ color: 'var(--app-jade)' }}
               >
                 3단계
               </div>
-              <div className="text-[15.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              <div className="text-[17.8px] font-extrabold tracking-tight text-[var(--app-ink)]">
                 상대 정보 입력
               </div>
             </div>
           </div>
-          <p className="mt-1.5 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
             상대분의 생년월일 · 태어난 시간 · 성별을 알면 더 정확해집니다.
           </p>
           {partnerSummary ? (
             <div
-              className="mt-2 rounded-[10px] px-3 py-2 text-[13px] font-bold"
+              className="mt-2 rounded-[10px] px-3 py-2 text-[15px] font-bold"
               style={{
                 background: '#e8f5ee',
                 color: '#1f6a44',
@@ -803,7 +803,7 @@ export function CompatibilityInputClient({
             <div>
               <Label
                 htmlFor="compatibility-partner-name"
-                className="mb-1.5 block text-[13px] font-extrabold text-[var(--app-ink)]"
+                className="mb-1.5 block text-[15px] font-extrabold text-[var(--app-ink)]"
               >
                 상대 호칭{' '}
                 <span className="font-bold text-[var(--app-copy-soft)]">(선택)</span>
@@ -813,7 +813,7 @@ export function CompatibilityInputClient({
                 value={partnerName}
                 onChange={(event) => setPartnerName(event.target.value)}
                 placeholder="예: 배우자, 엄마, 동업자"
-                className="h-12 rounded-[12px] text-[14px]"
+                className="h-12 rounded-[12px] text-[16.1px]"
               />
             </div>
 
@@ -836,7 +836,7 @@ export function CompatibilityInputClient({
 
         {errorMessage ? (
           <div
-            className="rounded-[12px] border px-3.5 py-2.5 text-[13px] leading-[1.65]"
+            className="rounded-[12px] border px-3.5 py-2.5 text-[15px] leading-[1.65]"
             style={{
               background: '#fdecec',
               borderColor: 'rgba(198,69,69,0.22)',
@@ -862,12 +862,12 @@ export function CompatibilityInputClient({
             <button
               type="button"
               onClick={submitManualCompatibility}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[14.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               style={{ background: 'var(--app-pink)' }}
             >
               이 정보로 궁합 보기 →
             </button>
-            <p className="text-center text-[13px] leading-[1.55] text-[var(--app-copy-soft)]">
+            <p className="text-center text-[15px] leading-[1.55] text-[var(--app-copy-soft)]">
               비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
             </p>
           </div>

@@ -26,16 +26,16 @@ export default function BannersShowcasePage() {
             borderColor: 'var(--app-pink-line)',
           }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             design QA · 운영 노출 X
           </div>
           <h1
-            className="mt-1.5 text-[20px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
+            className="mt-1.5 text-[23px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            <code className="text-[18px]">GangiBanner</code> 7 variant
+            <code className="text-[20.7px]">GangiBanner</code> 7 variant
           </h1>
-          <p className="mt-2 text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]">
             새 화면을 만들 때 inline pink-soft hero 를 다시 짜지 말고{' '}
             <code>{'<GangiBanner kind="hero|soft|cosmic|inline|sticky|success|warning" ...>'}</code>{' '}
             를 사용하세요. 기존 화면도 자연스럽게 마이그레이션 가능.
@@ -126,10 +126,10 @@ export default function BannersShowcasePage() {
           className="rounded-[14px] border bg-white p-4"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-muted)]">
             source of truth
           </div>
-          <ul className="mt-2 grid gap-1 text-[11.5px] leading-[1.55] text-[var(--app-copy)]">
+          <ul className="mt-2 grid gap-1 text-[13.2px] leading-[1.55] text-[var(--app-copy)]">
             <li>· component: <code>src/components/gangi/gangi-banner.tsx</code></li>
             <li>· spec: <code>docs/design/ganji-redesign/source/02_BOARD_MANIFEST.md</code> (board `banners`)</li>
             <li>· manifest: <code>docs/design/ganji-redesign/BOARD_MANIFEST.md</code></li>
@@ -156,12 +156,12 @@ function BannerSection({
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           {label}
         </div>
         <a
           href={`#banner-${kind}`}
-          className="text-[10.5px] font-extrabold text-[var(--app-pink-strong)]"
+          className="text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
         >
           #banner-{kind}
         </a>

@@ -87,7 +87,7 @@ export default async function StarSignPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-sky)',
                 background: 'rgba(56, 189, 248, 0.1)',
@@ -97,7 +97,7 @@ export default async function StarSignPage() {
               별자리
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold"
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -108,13 +108,13 @@ export default async function StarSignPage() {
             </span>
           </div>
           <h1
-            className="mt-3 text-[24px] font-extrabold leading-tight tracking-tight"
+            className="mt-3 text-[27.6px] font-extrabold leading-tight tracking-tight"
             style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             {hasPersonalizedProfile ? `선생님은 ${featured.item.label}` : '오늘 12 별자리 운세'}
           </h1>
           <p
-            className="mt-2 text-[14px] leading-[1.7]"
+            className="mt-2 text-[16.1px] leading-[1.7]"
             style={{ color: 'var(--app-copy-muted)', wordBreak: 'keep-all' }}
           >
             원소·점수·하이라이트를 한눈에 비교하고 내 별자리 상세 흐름을 확인하세요.
@@ -145,14 +145,14 @@ export default async function StarSignPage() {
             />
             <div className="relative">
               <div
-                className="text-[10.5px] font-extrabold uppercase tracking-[0.08em]"
+                className="text-[12.1px] font-extrabold uppercase tracking-[0.08em]"
                 style={{ opacity: 0.7 }}
               >
                 {hasPersonalizedProfile ? 'MY 별자리' : '오늘의 추천'}
               </div>
               <div className="mt-2.5 flex items-end gap-3.5">
                 <div
-                  className="grid h-[68px] w-[68px] place-items-center rounded-full text-[32px] font-light"
+                  className="grid h-[68px] w-[68px] place-items-center rounded-full text-[36.8px] font-light"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1.5px solid rgba(255,255,255,0.3)',
@@ -162,24 +162,24 @@ export default async function StarSignPage() {
                   {featured.meta.symbol}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[22px] font-extrabold tracking-tight">
+                  <div className="text-[25.3px] font-extrabold tracking-tight">
                     {featured.item.label}
                   </div>
-                  <div className="mt-0.5 text-[11px]" style={{ opacity: 0.7 }}>
+                  <div className="mt-0.5 text-[12.6px]" style={{ opacity: 0.7 }}>
                     {featured.item.dateRange} · {featured.content.rulingPlanetKo}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-bold uppercase" style={{ opacity: 0.6 }}>
+                  <div className="text-[11.5px] font-bold uppercase" style={{ opacity: 0.6 }}>
                     총운
                   </div>
-                  <div className="text-[28px] font-extrabold tabular-nums leading-none">
+                  <div className="text-[32.2px] font-extrabold tabular-nums leading-none">
                     {featured.fortune.scores.overall}
                   </div>
                 </div>
               </div>
               <p
-                className="mt-3 text-[12.5px] leading-[1.55]"
+                className="mt-3 text-[14.4px] leading-[1.55]"
                 style={{ opacity: 0.92, wordBreak: 'keep-all' }}
               >
                 {featured.fortune.highlight}
@@ -187,13 +187,13 @@ export default async function StarSignPage() {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link
                   href={`/star-sign/${featured.slug}`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-4 py-2.5 text-[13px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-4 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   상세 흐름 보기 →
                 </Link>
                 <Link
                   href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-4 py-2.5 text-[13px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-4 py-2.5 text-[15px] font-bold text-white/85"
                 >
                   {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
                 </Link>
@@ -204,8 +204,8 @@ export default async function StarSignPage() {
 
         {/* §2 오늘의 TOP 3 별자리 */}
         <section className="space-y-2 px-1">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">오늘 운 좋은 TOP 3</h2>
-          <p className="text-[11.5px] text-[var(--app-copy-soft)]">
+          <h2 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">오늘 운 좋은 TOP 3</h2>
+          <p className="text-[13.2px] text-[var(--app-copy-soft)]">
             12 별자리 총운 점수 상위 — 매일 자정마다 바뀝니다
           </p>
           <div className="mt-1 grid gap-2">
@@ -220,31 +220,31 @@ export default async function StarSignPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[18px] font-extrabold text-white"
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[20.7px] font-extrabold text-white"
                       style={{ background: rankColor }}
                     >
                       {idx + 1}
                     </div>
                     <span
-                      className="text-[22px]"
+                      className="text-[25.3px]"
                       style={{ color: ELEMENT_HEX[d.content.element] }}
                       aria-hidden="true"
                     >
                       {d.meta.symbol}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                      <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
                         {d.item.label}
                       </div>
                       <div
-                        className="mt-0.5 truncate text-[11.5px] text-[var(--app-copy-muted)]"
+                        className="mt-0.5 truncate text-[13.2px] text-[var(--app-copy-muted)]"
                         style={{ wordBreak: 'keep-all' }}
                       >
                         {d.fortune.highlight}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[20px] font-extrabold tabular-nums" style={{ color: rankColor }}>
+                      <div className="text-[23px] font-extrabold tabular-nums" style={{ color: rankColor }}>
                         {d.fortune.scores.overall}
                       </div>
                     </div>
@@ -264,30 +264,30 @@ export default async function StarSignPage() {
               borderColor: 'rgba(212,148,38,0.22)',
             }}
           >
-            <div className="text-[10.5px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
+            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
               ⚠ 오늘 살짝 주의
             </div>
             <Link href={`/star-sign/${cautionOne.slug}`} className="mt-2 flex items-center gap-3">
               <span
-                className="text-[26px]"
+                className="text-[29.9px]"
                 style={{ color: ELEMENT_HEX[cautionOne.content.element] }}
                 aria-hidden="true"
               >
                 {cautionOne.meta.symbol}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-extrabold text-[var(--app-ink)]">
+                <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
                   {cautionOne.item.label}
                 </div>
                 <div
-                  className="mt-0.5 text-[11.5px] leading-[1.45] text-[var(--app-copy-muted)]"
+                  className="mt-0.5 text-[13.2px] leading-[1.45] text-[var(--app-copy-muted)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
                   {cautionOne.fortune.caution}
                 </div>
               </div>
               <div
-                className="text-[20px] font-extrabold tabular-nums text-[var(--app-amber)]"
+                className="text-[23px] font-extrabold tabular-nums text-[var(--app-amber)]"
               >
                 {cautionOne.fortune.scores.overall}
               </div>
@@ -297,10 +297,10 @@ export default async function StarSignPage() {
 
         {/* §4 12 별자리 오늘 점수 grid */}
         <section className="px-1">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">
+          <h2 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
             12 별자리 오늘 점수
           </h2>
-          <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+          <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
             내 별자리를 눌러 상세 흐름·럭키·호환 매트릭스를 확인하세요
           </p>
           <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -319,18 +319,18 @@ export default async function StarSignPage() {
                   }}
                 >
                   <div className="flex items-center justify-center gap-1">
-                    <span className="text-[18px]" style={{ color: elHex }} aria-hidden="true">
+                    <span className="text-[20.7px]" style={{ color: elHex }} aria-hidden="true">
                       {d.meta.symbol}
                     </span>
-                    <span className="text-[10px]" aria-hidden="true">
+                    <span className="text-[11.5px]" aria-hidden="true">
                       {MOOD_EMOJI[d.fortune.mood] ?? ''}
                     </span>
                   </div>
-                  <div className="mt-1 text-[11.5px] font-extrabold text-[var(--app-ink)]">
+                  <div className="mt-1 text-[13.2px] font-extrabold text-[var(--app-ink)]">
                     {d.item.label.replace('자리', '')}
                   </div>
                   <div
-                    className="mt-0.5 text-[15px] font-extrabold tabular-nums"
+                    className="mt-0.5 text-[17.3px] font-extrabold tabular-nums"
                     style={{
                       color: d.fortune.scores.overall >= 80
                         ? 'var(--app-jade)'
@@ -349,8 +349,8 @@ export default async function StarSignPage() {
 
         {/* §5 원소별 분류 */}
         <section className="px-1">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">원소별 별자리</h2>
-          <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+          <h2 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">원소별 별자리</h2>
+          <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
             불·땅·공기·물 — 점성술의 4 원소가 성격의 베이스를 만듭니다
           </p>
           <div className="mt-3 grid gap-2">
@@ -364,16 +364,16 @@ export default async function StarSignPage() {
                 >
                   <div className="flex items-center gap-2">
                     <span
-                      className="grid h-7 w-7 place-items-center rounded-full text-[13px] font-extrabold text-white"
+                      className="grid h-7 w-7 place-items-center rounded-full text-[15px] font-extrabold text-white"
                       style={{ background: elHex }}
                       aria-hidden="true"
                     >
                       {ELEMENT_LABEL[element][0]}
                     </span>
-                    <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                    <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                       {ELEMENT_LABEL[element]}자리
                     </span>
-                    <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+                    <span className="text-[12.1px] text-[var(--app-copy-soft)]">
                       ({members.length}개)
                     </span>
                   </div>
@@ -385,13 +385,13 @@ export default async function StarSignPage() {
                         className="rounded-[10px] border bg-white px-2 py-1.5 text-center"
                         style={{ borderColor: 'var(--app-line)' }}
                       >
-                        <div className="text-[14px]" style={{ color: elHex }} aria-hidden="true">
+                        <div className="text-[16.1px]" style={{ color: elHex }} aria-hidden="true">
                           {m.meta.symbol}
                         </div>
-                        <div className="mt-0.5 text-[10.5px] font-bold text-[var(--app-ink)]">
+                        <div className="mt-0.5 text-[12.1px] font-bold text-[var(--app-ink)]">
                           {m.item.label.replace('자리', '')}
                         </div>
-                        <div className="text-[10.5px] tabular-nums text-[var(--app-copy-soft)]">
+                        <div className="text-[12.1px] tabular-nums text-[var(--app-copy-soft)]">
                           {m.fortune.scores.overall}
                         </div>
                       </Link>
@@ -405,8 +405,8 @@ export default async function StarSignPage() {
 
         {/* §6 quality (3 modality) 한 줄 */}
         <section className="px-1">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">3 모달리티</h2>
-          <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+          <h2 className="text-[17.3px] font-extrabold text-[var(--app-ink)]">3 모달리티</h2>
+          <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
             시작·고정·변통 — 같은 원소 안에서도 행동 패턴이 갈립니다
           </p>
           <div className="mt-3 grid gap-2">
@@ -419,10 +419,10 @@ export default async function StarSignPage() {
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-extrabold text-[var(--app-ink)]">
+                    <span className="text-[15px] font-extrabold text-[var(--app-ink)]">
                       {QUALITY_LABEL[q]}
                     </span>
-                    <span className="text-[10.5px] text-[var(--app-copy-soft)]">
+                    <span className="text-[12.1px] text-[var(--app-copy-soft)]">
                       ({members.length}개)
                     </span>
                   </div>
@@ -431,7 +431,7 @@ export default async function StarSignPage() {
                       <Link
                         key={m.slug}
                         href={`/star-sign/${m.slug}`}
-                        className="rounded-full border bg-white px-2.5 py-0.5 text-[11px] font-bold text-[var(--app-ink)]"
+                        className="rounded-full border bg-white px-2.5 py-0.5 text-[12.6px] font-bold text-[var(--app-ink)]"
                         style={{ borderColor: 'var(--app-line)' }}
                       >
                         {m.meta.symbol} {m.item.label.replace('자리', '')}
@@ -454,27 +454,27 @@ export default async function StarSignPage() {
             }}
           >
             <div
-              className="text-[11px] font-extrabold uppercase tracking-[0.04em]"
+              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
               style={{ color: 'var(--app-pink)' }}
             >
               더 깊이
             </div>
-            <h2 className="mt-1.5 text-[17px] font-extrabold leading-snug tracking-tight">
+            <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
               내 사주와 함께 봐주세요
             </h2>
-            <p className="mt-2 text-[12.5px] leading-[1.55]" style={{ opacity: 0.75 }}>
+            <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.75 }}>
               {STAR_SIGN_BLUEPRINT.cross}
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
               </Link>
               <Link
                 href="/star-sign/compat"
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 12×12 매트릭스
               </Link>
@@ -484,7 +484,7 @@ export default async function StarSignPage() {
 
         {/* §legacy: original 12 grid (keep for icon-style preview) */}
         <section className="gangi-card-panel p-5">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+          <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
             12 별자리 아이콘 뷰
           </div>
           <div className="gangi-star-sign-grid mt-3">

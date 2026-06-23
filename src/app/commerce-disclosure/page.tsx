@@ -29,10 +29,10 @@ export default async function CommerceDisclosurePage() {
         <GangiPageHeader title={POLICY_LABELS['commerce-disclosure']} backHref="/" />
 
         <section
-          className="space-y-2 rounded-[14px] border bg-white p-4 text-[14px] leading-[1.8] text-[var(--app-copy)]"
+          className="space-y-2 rounded-[14px] border bg-white p-4 text-[16.1px] leading-[1.8] text-[var(--app-copy)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
-          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          <h2 className="text-[13.8px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
             사업자 정보
           </h2>
           {BUSINESS_INFO.companyName && <div>상호명 : {BUSINESS_INFO.companyName}</div>}
@@ -73,7 +73,7 @@ export default async function CommerceDisclosurePage() {
         {policy ? (
           <PolicyContent policy={policy} />
         ) : (
-          <p className="text-[13px] leading-[1.7] text-[var(--app-copy-muted)]">
+          <p className="text-[15px] leading-[1.7] text-[var(--app-copy-muted)]">
             결제 및 환불 통합 정책 본문은 운영자 입력 후 게시됩니다. 상세 문의는 위
             고객센터로 연락 부탁드립니다.
           </p>
