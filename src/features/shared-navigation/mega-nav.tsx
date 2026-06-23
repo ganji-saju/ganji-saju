@@ -175,12 +175,19 @@ export function MegaNavBar() {
       onMouseLeave={() => setHoverIdx(null)}
     >
       <header className="mega-nav-header" data-panel-open={showPanel ? 'true' : 'false'}>
-        <Link href="/" className="mega-nav-logo">
-          <span className="mega-nav-logo-mark">干</span>
-          <span className="mega-nav-logo-text">
-            <span className="mega-nav-logo-name">간지사주</span>
-            <span className="mega-nav-logo-tag">간지사주 · 오늘 바로 보는 운세</span>
-          </span>
+        {/* 2026-06-24 — 데스크톱(lg+) 메가내브 로고도 붓글씨 이미지로 통일(헤더 일관). */}
+        <Link href="/" className="mega-nav-logo" aria-label="간지사주 홈">
+          <picture>
+            <source srcSet="/images/gangi/logo.avif" type="image/avif" />
+            <source srcSet="/images/gangi/logo.webp" type="image/webp" />
+            <img
+              src="/images/gangi/logo.png"
+              alt="간지사주 9,900원"
+              className="w-auto"
+              style={{ height: 30 }}
+              decoding="async"
+            />
+          </picture>
         </Link>
 
         <nav className="mega-nav-list" aria-label="주 메뉴">
