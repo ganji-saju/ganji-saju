@@ -43,7 +43,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
   return (
     <div className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm ${className}`}>
       <div className="border-b border-gray-100 px-5 py-4">
-        <h3 className="text-base font-bold text-gray-900">🍃 다섯 기운 분포</h3>
+        <h3 className="text-lg font-bold text-gray-900">🍃 다섯 기운 분포</h3>
       </div>
 
       <div className="space-y-3 px-5 py-4">
@@ -55,7 +55,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
           const c = OHAENG_COLOR_CLASSES[oh];
           return (
             <div key={oh} className="flex items-center gap-3">
-              <span className="w-14 shrink-0 text-sm font-medium text-gray-700">{data.labels[oh]}</span>
+              <span className="w-14 shrink-0 text-base font-medium text-gray-700">{data.labels[oh]}</span>
               <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-gray-100">
                 {count > 0 ? (
                   <div
@@ -66,15 +66,15 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
                   <div className="h-full w-full rounded-full border-2 border-dashed border-gray-200" />
                 )}
               </div>
-              <span className="w-8 shrink-0 text-right text-sm tabular-nums text-gray-500">{count}개</span>
-              <div className="w-16 shrink-0">
+              <span className="w-8 shrink-0 text-right text-base tabular-nums text-gray-500">{count}개</span>
+              <div className="min-w-16 shrink-0">
                 {isLack && (
-                  <span className="whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
+                  <span className="whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-sm font-medium text-amber-600">
                     보강 필요
                   </span>
                 )}
                 {isExcess && (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">과다</span>
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium text-gray-500">과다</span>
                 )}
               </div>
             </div>
@@ -83,7 +83,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
       </div>
 
       <div className="flex items-center gap-2 px-5 pb-4">
-        <span className="text-xs text-gray-500">균형 점수</span>
+        <span className="text-sm text-gray-500">균형 점수</span>
         <div className="flex gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
@@ -92,13 +92,13 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
             />
           ))}
         </div>
-        <span className="text-xs font-semibold text-gray-700">{data.balanceScore}/20</span>
+        <span className="text-sm font-semibold text-gray-700">{data.balanceScore}/20</span>
       </div>
 
       {guidance && (
         <div className="mx-5 mb-5 rounded-xl border border-amber-100 bg-amber-50/60 p-4">
           <p className="mb-1.5 text-[15px] font-semibold text-amber-700">✨ 보강할 기운</p>
-          <p className="text-sm leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
+          <p className="text-base leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
             {guidance}
           </p>
         </div>

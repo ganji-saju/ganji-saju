@@ -43,15 +43,15 @@ export function SajuScoreCard({ score, animateOnMount = true, className = '' }: 
       <div className="flex flex-col items-center py-4">
         <div className={cn('relative flex h-40 w-40 items-center justify-center rounded-full ring-4 sm:h-48 sm:w-48', colors.ring)}>
           <div className={cn('flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-full sm:h-40 sm:w-40', colors.bgSoft)}>
-            <span className={cn('text-5xl font-bold tabular-nums', colors.text)} aria-label={`${score.total}점`}>
+            <span className={cn('text-6xl font-bold tabular-nums', colors.text)} aria-label={`${score.total}점`}>
               {display}
             </span>
-            <span className={cn('px-2 text-center text-sm font-semibold leading-tight', colors.text)}>
+            <span className={cn('px-2 text-center text-base font-semibold leading-tight', colors.text)}>
               {score.label.title}
             </span>
           </div>
         </div>
-        <p className="mt-3 text-center text-sm leading-relaxed text-gray-600" style={{ wordBreak: 'keep-all' }}>
+        <p className="mt-3 text-center text-base leading-relaxed text-gray-600" style={{ wordBreak: 'keep-all' }}>
           {score.label.subtitle}
         </p>
       </div>

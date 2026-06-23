@@ -76,15 +76,15 @@ export function SafetyNotice({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="app-caption">안전한 해석 안내</div>
-          <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">{meta.title}</h2>
+          <h2 className="mt-2 text-3xl text-[var(--app-ivory)]">{meta.title}</h2>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-xs text-[var(--app-copy-muted)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.04)] px-3 py-1 text-sm text-[var(--app-copy-muted)]">
           <Icon className="h-3.5 w-3.5" />
           <span>{meta.label}</span>
         </div>
       </div>
 
-      <div className="mt-4 space-y-3 text-sm leading-7">
+      <div className="mt-4 space-y-3 text-base leading-7">
         <p className="text-[var(--app-copy)]">{COMMON_COPY}</p>
         <p className="text-[var(--app-copy-muted)]">{meta.body}</p>
       </div>

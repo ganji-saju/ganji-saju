@@ -23,7 +23,7 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
     <div className="pdf-print-actions sticky top-4 z-20 mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-[rgba(8,10,18,0.92)] p-3 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur">
       <div>
         <div className="app-caption text-[var(--app-gold-soft)]">PDF 저장</div>
-        <p className="mt-1 text-sm text-[var(--app-copy-muted)]">
+        <p className="mt-1 text-base text-[var(--app-copy-muted)]">
           버튼을 누른 뒤 인쇄 창에서 “PDF로 저장”을 선택하세요.
         </p>
       </div>

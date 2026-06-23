@@ -229,7 +229,7 @@ function DesktopNavLink({
       <span
         className={cn(
           'flex shrink-0 items-center justify-center rounded-xl border bg-[var(--app-surface-muted)] font-semibold',
-          compact ? 'h-7 w-7 text-xs' : 'h-8 w-8 text-sm'
+          compact ? 'h-7 w-7 text-sm' : 'h-8 w-8 text-base'
         )}
         style={{
           borderColor: active ? meta.accent : 'var(--app-line)',
@@ -239,7 +239,7 @@ function DesktopNavLink({
         {meta.glyph}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-[var(--app-ivory)]">
+        <span className="block truncate text-base font-medium text-[var(--app-ivory)]">
           {item.label}
         </span>
         {!compact ? (
@@ -270,10 +270,10 @@ function DesktopNavChip({ item, pathname }: { item: NavItem; pathname: string })
         if (active) event.preventDefault();
       }}
       data-active={active}
-      className="app-nav-card flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-xs font-medium text-[var(--app-copy-muted)]"
+      className="app-nav-card flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-sm font-medium text-[var(--app-copy-muted)]"
     >
       <span
-        className=" text-xs"
+        className=" text-sm"
         style={{ color: meta.accent }}
       >
         {meta.glyph}
@@ -310,10 +310,10 @@ function DesktopSidebar({
           <div className="mt-3 flex items-center gap-3">
             <div className="app-moon-orb h-10 w-10" />
             <div>
-              <div className=" text-2xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
+              <div className=" text-3xl font-medium tracking-tight text-[var(--app-gold-text)] transition-colors group-hover:text-[var(--app-ivory)]">
                 간지사주
               </div>
-              <div className="text-xs text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
+              <div className="text-sm text-[var(--app-copy-soft)]">오늘의 운세와 타로</div>
             </div>
           </div>
         </Link>
@@ -322,14 +322,14 @@ function DesktopSidebar({
       <div className="relative z-10 border-b border-[var(--app-line)] px-5 py-3">
         <div className="rounded-[1.2rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 text-lg text-[var(--app-gold-text)]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/16 text-xl text-[var(--app-gold-text)]">
               {user ? '👤' : '🌙'}
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-medium text-[var(--app-ivory)]">
+              <div className="truncate text-base font-medium text-[var(--app-ivory)]">
                 {displayName}님
               </div>
-              <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
+              <div className="mt-1 text-sm text-[var(--app-copy-soft)]">
                 {user ? `${credits ?? '...'} 코인 보유` : '로그인하면 기록 저장'}
               </div>
             </div>
@@ -627,7 +627,7 @@ function MobileChrome({
                   href={item.href}
                   data-active={active}
                   className={cn(
-                    'app-top-category-chip shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors',
+                    'app-top-category-chip shrink-0 rounded-full border px-3 py-1.5 text-base transition-colors',
                     active
                       ? 'border-[var(--app-gold)]/40 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
                       : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)] hover:border-[var(--app-line-strong)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'

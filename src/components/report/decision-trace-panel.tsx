@@ -134,10 +134,10 @@ export function DecisionTracePanel({
       <summary className="cursor-pointer list-none">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">{title}</div>
-            <p className="mt-1 text-xs leading-6 text-[var(--app-copy-soft)]">{description}</p>
+            <div className="text-base font-semibold text-[var(--app-ivory)]">{title}</div>
+            <p className="mt-1 text-sm leading-6 text-[var(--app-copy-soft)]">{description}</p>
           </div>
-          <span className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-xs text-[var(--app-copy-soft)]">
+          <span className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm text-[var(--app-copy-soft)]">
             펼쳐서 보기
           </span>
         </div>
@@ -154,29 +154,29 @@ export function DecisionTracePanel({
               className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(7,9,16,0.28)] px-4 py-4"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 text-sm text-[var(--app-gold)]/60">{item.step}</span>
+                <span className="mt-0.5 text-base text-[var(--app-gold)]/60">{item.step}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-sm font-semibold text-[var(--app-ivory)]">{item.title}</div>
-                    <span className={cn('rounded-full border px-3 py-1 text-xs leading-6', confidence.className)}>
+                    <div className="text-base font-semibold text-[var(--app-ivory)]">{item.title}</div>
+                    <span className={cn('rounded-full border px-3 py-1 text-sm leading-6', confidence.className)}>
                       {confidence.label}
                     </span>
                   </div>
 
                   {item.input ? (
-                    <div className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-xs leading-6 text-[var(--app-copy-soft)]">
+                    <div className="mt-3 rounded-[14px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm leading-6 text-[var(--app-copy-soft)]">
                       입력 정보 · {item.input}
                     </div>
                   ) : null}
 
                   {item.rule ? (
-                    <div className="mt-2 text-xs leading-6 text-[var(--app-gold-text)]">세부 메모 · {item.rule}</div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--app-gold-text)]">세부 메모 · {item.rule}</div>
                   ) : null}
 
-                  <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{item.result}</p>
+                  <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">{item.result}</p>
 
                   {item.note ? (
-                    <p className="mt-2 text-xs leading-6 text-[var(--app-copy-soft)]">{item.note}</p>
+                    <p className="mt-2 text-sm leading-6 text-[var(--app-copy-soft)]">{item.note}</p>
                   ) : null}
                 </div>
               </div>
@@ -187,7 +187,7 @@ export function DecisionTracePanel({
 
       <div className="mt-4 rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4">
         <div className="app-caption text-[var(--app-gold-soft)]">풀이 정보</div>
-        <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
+        <p className="mt-3 text-sm leading-6 text-[var(--app-copy-soft)]">
           {buildMetaLine({
             timeRule,
             isTimeUnknown,

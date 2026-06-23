@@ -1277,7 +1277,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 onClick={() => selectEntryTopic(entry)}
                 data-selected={isSelected ? 'true' : 'false'}
                 className={cn(
-                  'group rounded-full border px-3 py-2 text-center text-sm font-semibold transition-colors sm:px-4 sm:py-2.5',
+                  'group rounded-full border px-3 py-2 text-center text-base font-semibold transition-colors sm:px-4 sm:py-2.5',
                   isSelected
                     ? 'border-[var(--app-pink)]/42 bg-[var(--app-pink)]/10'
                     : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] hover:border-[var(--app-pink)]/30 hover:bg-[var(--app-pink)]/8'
@@ -1294,10 +1294,10 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         <div className="rounded-[1.05rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[var(--app-ink)]">
+              <div className="text-base font-semibold text-[var(--app-ink)]">
                 {selectedEntryPoint.question}
               </div>
-              <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy)]">
+              <p className="mt-1.5 text-base leading-6 text-[var(--app-copy)]">
                 {selectedEntryPoint.reportAnswer}
               </p>
             </div>
@@ -1457,8 +1457,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
-                <p className="mt-1.5 text-sm leading-6 text-[var(--app-copy-muted)]">
+                <div className="text-base font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
+                <p className="mt-1.5 text-base leading-6 text-[var(--app-copy-muted)]">
                   로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
                 </p>
               </div>
@@ -1466,7 +1466,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 로컬 저장
               </span>
             </div>
-            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-xs leading-6 text-[var(--app-copy)]">
+            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm leading-6 text-[var(--app-copy)]">
               {recentGuestDetail}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -1486,15 +1486,15 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadStatus === 'loading' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-sm text-[var(--app-copy-muted)]">
+          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-base text-[var(--app-copy-muted)]">
             저장된 내 정보와 등록한 사람을 확인하고 있습니다.
           </div>
         ) : null}
 
         {profileLoadStatus === 'anonymous' ? (
           <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+            <div className="text-base font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
+            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
               {recentGuestDraft
                 ? '지금은 새 정보를 직접 입력하거나, 이 기기에 남아 있는 최근 정보를 불러올 수 있습니다.'
                 : '저장은 나중에 해도 됩니다. 먼저 사주풀이를 열어보세요.'}
@@ -1519,15 +1519,15 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
         {profileLoadStatus === 'empty' ? (
           <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
-            <div className="text-sm font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
-            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+            <div className="text-base font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
+            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
               이번에 입력한 정보는 다음부터 바로 불러올 수 있게 저장됩니다.
             </p>
           </div>
         ) : null}
 
         {profileLoadStatus === 'error' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-sm leading-6 text-rose-700">
+          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-base leading-6 text-rose-700">
             {profileLoadMessage}
           </div>
         ) : null}
@@ -1543,12 +1543,12 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                   className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-pink)]/38 hover:bg-[var(--app-pink)]/8"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 text-sm font-medium text-[var(--app-ink)]">{profile.label}</div>
+                    <div className="min-w-0 text-base font-medium text-[var(--app-ink)]">{profile.label}</div>
                     <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[11.5px] text-[var(--app-pink-strong)]">
                       선택
                     </span>
                   </div>
-                  <div className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">{profile.detail}</div>
+                  <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{profile.detail}</div>
                 </button>
               ))}
             </ProductGrid>
@@ -1556,13 +1556,13 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
         ) : null}
 
         {profileLoadMessage && profileLoadStatus !== 'error' ? (
-          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-xs leading-5 text-[var(--app-pink-strong)]">
+          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-sm leading-5 text-[var(--app-pink-strong)]">
             {profileLoadMessage}
           </p>
         ) : null}
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-          <span className="text-sm leading-6 text-[var(--app-copy-muted)]">새 생년월일로 보려면 직접 입력하세요.</span>
+          <span className="text-base leading-6 text-[var(--app-copy-muted)]">새 생년월일로 보려면 직접 입력하세요.</span>
           <Button
             type="button"
             onClick={() => setActiveIndex(birthStepIndex)}
@@ -1639,7 +1639,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 ))}
               </div>
               {consentAccepted ? (
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-3 py-1 text-xs text-[var(--app-jade)]">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-3 py-1 text-sm text-[var(--app-jade)]">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   동의 저장됨
                 </span>
@@ -1657,9 +1657,9 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
                 <SectionHeader
                   eyebrow={`STEP ${activeIndex + 1} / ${steps.length} · ${activeStep.eyebrow}`}
                   title={activeStep.title}
-                  titleClassName="text-2xl sm:text-3xl"
+                  titleClassName="text-3xl sm:text-4xl"
                   description={activeStep.description}
-                  descriptionClassName="max-w-3xl text-sm text-[var(--app-copy)] sm:text-base"
+                  descriptionClassName="max-w-3xl text-base text-[var(--app-copy)] sm:text-lg"
                 />
 
                 {activeStep.id === 'profile' ? (
@@ -1688,7 +1688,7 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
             </div>
 
             {errorMessage ? (
-              <div className="mt-6 rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ink)]">
+              <div className="mt-6 rounded-[1.2rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-3 text-base leading-7 text-[var(--app-ink)]">
                 {errorMessage}
               </div>
             ) : null}

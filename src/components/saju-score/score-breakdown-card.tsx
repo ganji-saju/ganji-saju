@@ -41,10 +41,10 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
       <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
         <div>
           <p className="mb-0.5 text-[15px] text-gray-400">왜 이 점수가 나왔는지</p>
-          <h3 className="text-base font-bold text-gray-900">📊 점수 산출 내역</h3>
+          <h3 className="text-lg font-bold text-gray-900">📊 점수 산출 내역</h3>
         </div>
         <div className="text-right">
-          <span className={`text-2xl font-bold ${colors.text}`}>{score.total}</span>
+          <span className={`text-3xl font-bold ${colors.text}`}>{score.total}</span>
           <div className={`mt-0.5 text-[15px] font-medium ${colors.text}`}>{score.label.title}</div>
         </div>
       </div>
@@ -57,10 +57,10 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
             <div key={meta.id} className="px-5 py-4">
               <div className="mb-1.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-400">{meta.emoji}</span>
-                  <span className="text-sm font-semibold text-gray-900">{meta.title}</span>
+                  <span className="text-base text-gray-400">{meta.emoji}</span>
+                  <span className="text-base font-semibold text-gray-900">{meta.title}</span>
                 </div>
-                <span className={`text-sm font-bold ${colors.text}`}>+{factorScore}점</span>
+                <span className={`text-base font-bold ${colors.text}`}>+{factorScore}점</span>
               </div>
               <p className="mb-2 pl-6 text-[15px] text-gray-500">{meta.subtitle}</p>
               <div className="flex items-center gap-3 pl-6">
@@ -77,8 +77,8 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
       </div>
 
       <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-5 py-4">
-        <span className="text-sm font-semibold text-gray-700">합계</span>
-        <span className={`text-xl font-bold ${colors.text}`}>{score.total}점</span>
+        <span className="text-base font-semibold text-gray-700">합계</span>
+        <span className={`text-2xl font-bold ${colors.text}`}>{score.total}점</span>
       </div>
     </div>
   );

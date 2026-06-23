@@ -21,7 +21,7 @@ export function LifetimeKeysCarousel({ keys, className = '' }: LifetimeKeysCarou
   if (!keys || keys.length === 0) return null;
   return (
     <div className={className}>
-      <h3 className="mb-3 px-1 text-base font-bold text-gray-900">🎯 평생 활용 핵심 3가지</h3>
+      <h3 className="mb-3 px-1 text-lg font-bold text-gray-900">🎯 평생 활용 핵심 3가지</h3>
       <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none sm:flex-col sm:overflow-visible">
         {keys.map((key, i) => {
           const colors = KEY_CARD_COLORS[i % KEY_CARD_COLORS.length];
@@ -33,9 +33,9 @@ export function LifetimeKeysCarousel({ keys, className = '' }: LifetimeKeysCarou
               <span className={`rounded-full bg-white/60 px-2 py-0.5 text-[15px] font-semibold ${colors.text}`}>
                 {colors.badge}
               </span>
-              <p className={`mt-2 text-base font-bold ${colors.text}`}>{key.title}</p>
+              <p className={`mt-2 text-lg font-bold ${colors.text}`}>{key.title}</p>
               <p className="mt-0.5 text-[15px] text-gray-500">{key.subtitle}</p>
-              <p className="mt-2 text-sm leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
+              <p className="mt-2 text-base leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
                 {key.body}
               </p>
             </div>

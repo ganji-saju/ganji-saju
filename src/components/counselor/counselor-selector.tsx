@@ -31,10 +31,10 @@ export function CounselorSelector({
       {title || description ? (
         <div>
           {title ? (
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">{title}</div>
+            <div className="text-base font-semibold text-[var(--app-ivory)]">{title}</div>
           ) : null}
           {description ? (
-            <p className="mt-1 text-xs leading-6 text-[var(--app-copy-soft)]">
+            <p className="mt-1 text-sm leading-6 text-[var(--app-copy-soft)]">
               {description}
             </p>
           ) : null}
@@ -92,14 +92,14 @@ export function CounselorSelector({
                       </span>
                     ) : null}
                   </div>
-                  <div className={cn('mt-2 font-semibold text-[var(--app-ivory)]', compact ? 'text-sm leading-6' : 'text-lg leading-7')}>
+                  <div className={cn('mt-2 font-semibold text-[var(--app-ivory)]', compact ? 'text-base leading-6' : 'text-xl leading-7')}>
                     {counselor.title}
                   </div>
-                  <p className={cn('mt-2 text-[var(--app-copy)]', compact ? 'hidden text-xs leading-6 sm:block' : 'text-sm leading-7')}>
+                  <p className={cn('mt-2 text-[var(--app-copy)]', compact ? 'hidden text-sm leading-6 sm:block' : 'text-base leading-7')}>
                     {compact ? counselor.focus : counselor.description}
                   </p>
                   {!compact ? (
-                    <p className="mt-2 text-xs leading-6 text-[var(--app-copy-soft)]">
+                    <p className="mt-2 text-sm leading-6 text-[var(--app-copy-soft)]">
                       {counselor.signature}
                     </p>
                   ) : null}

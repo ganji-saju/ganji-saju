@@ -226,7 +226,7 @@ function SavedProfileQuickFill({
 }) {
   if (status === 'loading') {
     return (
-      <div className="mt-5 rounded-[1.2rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-sm text-[var(--app-copy-muted)]">
+      <div className="mt-5 rounded-[1.2rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-3 text-base text-[var(--app-copy-muted)]">
         저장한 사람을 확인하고 있습니다.
       </div>
     );
@@ -239,7 +239,7 @@ function SavedProfileQuickFill({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="app-caption text-[var(--app-pink-strong)]">빠른 채우기</div>
-          <h3 className="mt-1 text-lg font-semibold text-[var(--app-ink)]">
+          <h3 className="mt-1 text-xl font-semibold text-[var(--app-ink)]">
             저장한 이름을 눌러 바로 넣을 수 있습니다
           </h3>
         </div>
@@ -272,8 +272,8 @@ function SavedProfileQuickFill({
                   title={profile.detail}
                   className={
                     group.tone === 'jade'
-                      ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-sm font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
-                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-sm font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
+                      ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-base font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
+                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-base font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
                   }
                 >
                   {profile.nickname}

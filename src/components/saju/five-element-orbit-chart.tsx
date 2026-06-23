@@ -98,7 +98,7 @@ export default function FiveElementOrbitChart({
         <div className="mt-3 text-[1.6rem] font-bold text-[var(--app-pink-strong)]">
           다섯 기운
         </div>
-        <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+        <div className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
           강한 쪽 {ELEMENT_DISPLAY[dominant]} · 채울 쪽 {ELEMENT_DISPLAY[weakest]}
         </div>
       </div>

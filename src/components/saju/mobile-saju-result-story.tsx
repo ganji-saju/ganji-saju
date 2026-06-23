@@ -170,7 +170,7 @@ function StoryReadablePanel({
       <div className={cn('text-[15px] font-semibold tracking-[0.14em]', eyebrowClass)}>
         {eyebrow}
       </div>
-      <div className="mt-1.5 text-sm font-semibold leading-5 text-[var(--app-ivory)]">
+      <div className="mt-1.5 text-base font-semibold leading-5 text-[var(--app-ivory)]">
         {title}
       </div>
       <p className="mt-2 text-[15px] leading-5 text-[var(--app-copy)]">{body}</p>
@@ -211,10 +211,10 @@ function MiniPillarGrid({ pillars }: { pillars: MobilePillar[] }) {
           className="rounded-[0.95rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.035)] px-1.5 py-2.5 text-center"
         >
           <div className="text-[11.5px] text-[var(--app-copy-soft)]">{pillar.label.replace('주', '')}</div>
-          <div className="mt-2 text-2xl font-semibold leading-none" style={{ color: pillar.stemColor }}>
+          <div className="mt-2 text-3xl font-semibold leading-tight" style={{ color: pillar.stemColor }}>
             {pillar.stem}
           </div>
-          <div className="mt-1 text-xl font-semibold leading-none" style={{ color: pillar.branchColor }}>
+          <div className="mt-1 text-2xl font-semibold leading-tight" style={{ color: pillar.branchColor }}>
             {pillar.branch}
           </div>
         </div>
@@ -250,7 +250,7 @@ function StoryActionCard({
   return (
     <div className={cn('rounded-[1rem] border px-3 py-3', toneClass)}>
       <div className={cn('text-[15px] font-semibold', eyebrowClass)}>{eyebrow}</div>
-      <div className="mt-1 text-sm font-semibold leading-5 text-[var(--app-ivory)]">{title}</div>
+      <div className="mt-1 text-base font-semibold leading-5 text-[var(--app-ivory)]">{title}</div>
       <p className="mt-2 text-[15px] leading-5 text-[var(--app-copy)]">{body}</p>
     </div>
   );
@@ -303,7 +303,7 @@ function FieldStoryCard({
           </span>
         ) : null}
       </div>
-      <div className="mt-2 text-sm font-semibold text-[var(--app-ivory)]">{label}</div>
+      <div className="mt-2 text-base font-semibold text-[var(--app-ivory)]">{label}</div>
       <p className="mt-1 text-[15px] leading-5 text-[var(--app-copy-muted)]">{body}</p>
     </Link>
   );
@@ -365,7 +365,7 @@ export function MobileSajuResultStory({
             <h1 className="mt-3 text-[1.32rem] font-semibold leading-tight tracking-tight text-[var(--app-ivory)]">
               {simplifySajuCopy(headline)}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-[var(--app-copy)]">{simplifySajuCopy(dayMasterSummary)}</p>
+            <p className="mt-3 text-base leading-6 text-[var(--app-copy)]">{simplifySajuCopy(dayMasterSummary)}</p>
             <p className="mt-3 text-[15px] leading-5 text-[var(--app-copy-soft)]">{birthSummary}</p>
           </div>
           <div className="grid gap-2">
@@ -432,7 +432,7 @@ export function MobileSajuResultStory({
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 올해로 이어지는 흐름
               </div>
-              <div className="mt-1 text-sm font-semibold leading-5 text-[var(--app-ivory)]">
+              <div className="mt-1 text-base font-semibold leading-5 text-[var(--app-ivory)]">
                 {monthlyTimeline.headline}
               </div>
               <p className="mt-2 text-[15px] leading-5 text-[var(--app-copy-muted)]">{monthlyTimeline.body}</p>
@@ -566,7 +566,7 @@ export function MobileSajuResultStory({
               <div className="text-[15px] font-semibold tracking-[0.16em] text-[var(--app-gold-text)]">
                 {strongestTimeline.label}
               </div>
-              <div className="mt-2 text-base font-semibold leading-6 text-[var(--app-ivory)]">
+              <div className="mt-2 text-lg font-semibold leading-6 text-[var(--app-ivory)]">
                 {strongestTimeline.headline}
               </div>
               <p className="mt-2 text-[15px] leading-5 text-[var(--app-copy-muted)]">

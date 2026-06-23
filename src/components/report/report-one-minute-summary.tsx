@@ -35,7 +35,7 @@ function SummaryList({
       children={
         <BulletList
           items={items}
-          className="text-sm text-[var(--app-copy)]"
+          className="text-base text-[var(--app-copy)]"
           markerClassName={tone === 'caution' ? 'text-[var(--app-coral)]' : undefined}
         />
       }
@@ -55,7 +55,7 @@ export function ReportOneMinuteSummary({
       <SectionHeader
         eyebrow="1분 요약"
         title="먼저, 지금 필요한 답만 짚어드립니다"
-        titleClassName="text-3xl"
+        titleClassName="text-4xl"
         description="핵심 한 줄, 조심할 패턴, 오늘 할 행동만 먼저 봅니다."
       />
 
@@ -64,11 +64,11 @@ export function ReportOneMinuteSummary({
         surface="soft"
         eyebrow="지금 핵심 한 줄"
         description={headline}
-        descriptionClassName="text-base leading-8 text-[var(--app-ivory)] sm:text-lg"
+        descriptionClassName="text-lg leading-8 text-[var(--app-ivory)] sm:text-xl"
       />
 
       {isTimeUnknown ? (
-        <div className="mt-4 rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy)]">
+        <div className="mt-4 rounded-[20px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-base leading-7 text-[var(--app-copy)]">
           태어난 시간이 정확하지 않아 시간에 민감한 풀이는 조심해서 읽습니다.
         </div>
       ) : null}

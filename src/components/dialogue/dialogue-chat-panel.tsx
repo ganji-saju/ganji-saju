@@ -500,11 +500,11 @@ export function DialogueChatPanel({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="app-caption">대화</div>
-            <h2 className="mt-3 text-2xl text-[var(--app-ink)] sm:text-3xl">
+            <h2 className="mt-3 text-3xl text-[var(--app-ink)] sm:text-4xl">
               바로 물어보세요
             </h2>
             {sourceSessionId && concernId ? (
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-[var(--app-pink-strong)]">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--app-pink-strong)]">
                 오늘 결과에서 이어진 첫 질문은 무료입니다.
               </p>
             ) : null}
@@ -512,20 +512,20 @@ export function DialogueChatPanel({
               <div className="flex items-start gap-3">
                 <ZodiacChip kind={selectedExpert.id as ZodiacKey} size="md" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-[var(--app-pink-strong)]">
+                  <div className="text-base font-bold text-[var(--app-pink-strong)]">
                     선택한 전문 분야
                   </div>
-                  <div className="mt-1 text-lg font-bold leading-7 text-[var(--app-ink)]">
+                  <div className="mt-1 text-xl font-bold leading-7 text-[var(--app-ink)]">
                     {selectedExpert.teacherName}
                   </div>
-                  <p className="mt-1 text-xs font-medium leading-5 text-[var(--app-copy-muted)]">
+                  <p className="mt-1 text-sm font-medium leading-5 text-[var(--app-copy-muted)]">
                     {selectedExpert.description}
                   </p>
                 </div>
               </div>
 
               <details className="mt-3">
-                <summary className="cursor-pointer list-none text-xs font-bold text-[var(--app-pink-strong)]">
+                <summary className="cursor-pointer list-none text-sm font-bold text-[var(--app-pink-strong)]">
                   전문 분야 바꾸기
                 </summary>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -547,8 +547,8 @@ export function DialogueChatPanel({
             <div className={`mt-4 rounded-[1.15rem] border px-4 py-3 ${getProfileStateClass(profileConnection.status)}`}>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-sm font-semibold">{profileConnection.summary}</div>
-                  <p className="mt-1 text-xs leading-5 opacity-85">{profileConnection.detail}</p>
+                  <div className="text-base font-semibold">{profileConnection.summary}</div>
+                  <p className="mt-1 text-sm leading-5 opacity-85">{profileConnection.detail}</p>
                 </div>
                 {profileConnection.status === 'ready' ? (
                   <span className="w-fit rounded-full border border-current/20 px-3 py-1 text-[12.6px] font-medium">
@@ -623,7 +623,7 @@ export function DialogueChatPanel({
 
         {status === 'loading' ? (
           <div className="flex justify-start">
-            <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+            <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-base leading-7 text-[var(--app-copy-muted)]">
               <span>간지사주이 답변을 정리하고 있습니다</span>
               <span className="ml-2 inline-flex gap-1 align-middle">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/70" />
@@ -645,7 +645,7 @@ export function DialogueChatPanel({
             : 'scroll-mt-24 border-t border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5 sm:p-6'
         }
       >
-        <label className={roomMode ? 'sr-only' : 'block text-sm font-medium text-[var(--app-gold-text)]'}>
+        <label className={roomMode ? 'sr-only' : 'block text-base font-medium text-[var(--app-gold-text)]'}>
           지금 묻고 싶은 말
         </label>
         <div className={roomMode ? 'gangi-chat-composer-row' : 'mt-3 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end'}>
@@ -663,7 +663,7 @@ export function DialogueChatPanel({
             className={
               roomMode
                 ? 'gangi-chat-input'
-                : 'min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-sm leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60'
+                : 'min-h-24 w-full resize-y rounded-[1.15rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] px-4 py-3 text-base leading-7 text-[var(--app-ivory)] outline-none transition-colors placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-gold)]/60'
             }
             placeholder={`${selectedExpert.teacherName}에게 물어보기`}
           />
@@ -676,7 +676,7 @@ export function DialogueChatPanel({
           </button>
         </div>
         <div className={roomMode ? 'mt-3' : 'mt-4'}>
-          <div className="mb-2 text-xs font-medium tracking-[0.08em] text-[var(--app-pink-strong)]">
+          <div className="mb-2 text-sm font-medium tracking-[0.08em] text-[var(--app-pink-strong)]">
             바로 물어보기
           </div>
           <div className={roomMode ? 'gangi-chat-presets' : 'flex flex-wrap gap-2'}>
@@ -687,7 +687,7 @@ export function DialogueChatPanel({
                   key={preset.question}
                   type="button"
                   onClick={() => applyPreset(preset.question)}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-200 ${
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-all duration-200 ${
                     active
                       ? 'border-[var(--app-gold)]/50 bg-[var(--app-gold)]/14 text-[var(--app-ivory)] shadow-[0_0_0_1px_rgba(210,176,114,0.12)]'
                       : 'border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy)] hover:-translate-y-0.5 hover:border-[var(--app-gold)]/32 hover:bg-[var(--app-surface)] hover:text-[var(--app-ivory)]'
@@ -701,12 +701,12 @@ export function DialogueChatPanel({
             })}
           </div>
         </div>
-        <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-xs leading-6 text-[var(--app-copy-soft)]'}>
+        <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-sm leading-6 text-[var(--app-copy-soft)]'}>
           처음 3회 무료 · 이후 3회 3코인
         </p>
 
         {errorMessage ? (
-          <div className="mt-4 rounded-[1.1rem] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ivory)]">
+          <div className="mt-4 rounded-[1.1rem] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-base leading-7 text-[var(--app-ivory)]">
             {errorMessage}
           </div>
         ) : null}

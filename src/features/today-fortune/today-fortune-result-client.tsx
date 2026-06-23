@@ -180,14 +180,14 @@ export function TodayFortuneResultClient({
         {!freeResult ? (
           <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(0,0,0,0.06)]">
             <div className="app-caption">결과를 다시 불러와 주세요</div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-[var(--app-ink)]">
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[var(--app-ink)]">
               무료 결과가 이 브라우저에 남아 있지 않아요
             </h1>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+            <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">
               개인정보가 담긴 결과라 공개 URL로 다시 불러오지 않습니다. 오늘운세에서 한 번 더 눌러주세요.
             </p>
             <Link href={`/today-fortune?concern=${concernId}`} className="mt-5 inline-flex">
-              <span className="rounded-full bg-[var(--app-pink)] px-5 py-3 text-sm font-bold text-white">
+              <span className="rounded-full bg-[var(--app-pink)] px-5 py-3 text-base font-bold text-white">
                 오늘운세 다시 보기
               </span>
             </Link>

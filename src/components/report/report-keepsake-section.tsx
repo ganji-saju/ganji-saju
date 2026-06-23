@@ -98,7 +98,7 @@ export function ReportKeepsakeSection({
         eyebrow="리포트 소장 가치"
         title={title}
         description={description}
-        titleClassName="text-3xl"
+        titleClassName="text-4xl"
         descriptionClassName="text-[var(--app-copy)]"
       />
 
@@ -120,18 +120,18 @@ export function ReportKeepsakeSection({
                 </span>
               }
               title={item.title}
-              titleClassName="text-xl"
+              titleClassName="text-2xl"
               description={item.body}
               footer={
                 item.href ? (
                   <Link
                     href={item.href}
-                    className="text-sm text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
+                    className="text-base text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
                   >
                     {item.ctaLabel}
                   </Link>
                 ) : (
-                  <span className="text-sm text-[var(--app-copy-soft)]">{item.ctaLabel}</span>
+                  <span className="text-base text-[var(--app-copy-soft)]">{item.ctaLabel}</span>
                 )
               }
             >

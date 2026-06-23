@@ -810,13 +810,13 @@ export default function FortuneCalendarPanel({
                   const isSelected = data?.report && isFortuneCalendarEntry(cell) && cell.day === selectedDay;
                   const content = (
                     <>
-                      <div className="text-[15.5px] font-extrabold leading-none">{cell.day}</div>
+                      <div className="text-[15.5px] font-extrabold leading-tight">{cell.day}</div>
                       {data?.report && isFortuneCalendarEntry(cell) ? (
-                        <div className="mt-1.5 text-[10.4px] font-extrabold leading-none opacity-85">
+                        <div className="mt-1.5 text-[10.4px] font-extrabold leading-tight opacity-85">
                           {TONE_META[cell.tone].label}
                         </div>
                       ) : (
-                        <div className="mt-1.5 text-[10.4px] font-extrabold leading-none opacity-50">잠금</div>
+                        <div className="mt-1.5 text-[10.4px] font-extrabold leading-tight opacity-50">잠금</div>
                       )}
                     </>
                   );

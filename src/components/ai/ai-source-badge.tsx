@@ -36,7 +36,7 @@ export function AiSourceBadge({ state }: AiSourceBadgeProps) {
 
   return (
     <span
-      className={`inline-flex h-8 items-center rounded-full border px-3 text-xs font-semibold tracking-[0.08em] ${copy.className}`}
+      className={`inline-flex h-8 items-center rounded-full border px-3 text-sm font-semibold tracking-[0.08em] ${copy.className}`}
     >
       {copy.label}
     </span>

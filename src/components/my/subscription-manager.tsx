@@ -91,7 +91,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
         </Link>
       </div>
 
-      {message ? <p className="mt-4 text-sm text-[#d2b072]">{message}</p> : null}
+      {message ? <p className="mt-4 text-base text-[#d2b072]">{message}</p> : null}
     </div>
   );
 }

@@ -107,7 +107,7 @@ export function TodaySajuChartCard({ chart }: Props) {
               </div>
               <div className="py-1.5">
                 <div
-                  className="text-[23px] font-bold leading-none"
+                  className="text-[23px] font-bold leading-tight"
                   style={{ fontFamily: 'var(--font-han)' }}
                 >
                   {item.pillar.stem}
@@ -116,7 +116,7 @@ export function TodaySajuChartCard({ chart }: Props) {
               </div>
               <div className="pb-2 pt-0.5">
                 <div
-                  className="text-[23px] font-bold leading-none"
+                  className="text-[23px] font-bold leading-tight"
                   style={{ fontFamily: 'var(--font-han)' }}
                 >
                   {item.pillar.branch}
@@ -160,7 +160,7 @@ export function TodaySajuChartCard({ chart }: Props) {
                 title={lacking ? '부족한 오행' : excess ? '과다 오행' : undefined}
               >
                 <span
-                  className="text-[12.6px] font-extrabold leading-none"
+                  className="text-[12.6px] font-extrabold leading-tight"
                   style={{ fontFamily: 'var(--font-han)', color }}
                 >
                   {el.element}({ELEMENT_HAN[el.element]})

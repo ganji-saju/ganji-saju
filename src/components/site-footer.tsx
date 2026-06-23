@@ -287,8 +287,9 @@ export default function SiteFooter() {
               <dt
                 style={{
                   color: 'rgba(255,255,255,0.46)',
-                  minWidth: 92,
+                  minWidth: 106,
                   fontWeight: 600,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {item.label}

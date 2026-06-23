@@ -69,7 +69,7 @@ export function GroundingKasiSummary({
         {factLines.map((line) => (
           <span
             key={line}
-            className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-xs leading-6 text-[var(--app-copy-soft)]"
+            className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm leading-6 text-[var(--app-copy-soft)]"
           >
             {line}
           </span>
@@ -80,15 +80,15 @@ export function GroundingKasiSummary({
         {evidenceLines.map((line) => (
           <div
             key={line}
-            className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-sm leading-7 text-[var(--app-copy)]"
+            className="rounded-[18px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-4 py-4 text-base leading-7 text-[var(--app-copy)]"
           >
             {line}
           </div>
         ))}
       </div>
-      <p className="mt-4 text-xs leading-6 text-[var(--app-copy-soft)]">{buildKasiLine(kasiComparison)}</p>
+      <p className="mt-4 text-sm leading-6 text-[var(--app-copy-soft)]">{buildKasiLine(kasiComparison)}</p>
       {metadata ? (
-        <p className="mt-2 text-xs leading-6 text-[var(--app-copy-soft)]">
+        <p className="mt-2 text-sm leading-6 text-[var(--app-copy-soft)]">
           저장된 풀이를 다시 열어도 같은 흐름을 확인할 수 있습니다.
         </p>
       ) : null}

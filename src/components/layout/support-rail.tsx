@@ -32,7 +32,7 @@ export function SupportRail({
           eyebrow={eyebrow}
           title={title}
           description={description}
-          titleClassName="text-2xl"
+          titleClassName="text-3xl"
         />
       ) : null}
       <div className={cn(title ? 'mt-5' : '')}>{children}</div>

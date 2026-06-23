@@ -426,10 +426,10 @@ export default function ProfileManager({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="app-caption">내 기본 정보</div>
-            <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
+            <h2 className="mt-2 text-3xl text-[var(--app-ivory)]">
               오늘운세와 사주 시작하기가 이 정보를 같이 씁니다
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--app-copy-muted)]">
               여기서 저장한 양력·음력, 태어난 시간, 출생지, 시각 규칙은 `/today-fortune`과 `/saju/new`에서 같은 방식으로 다시 불러옵니다.
             </p>
           </div>
@@ -441,14 +441,14 @@ export default function ProfileManager({
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm text-[var(--app-copy)]">이름 또는 별칭</label>
+              <label className="mb-2 block text-base text-[var(--app-copy)]">이름 또는 별칭</label>
               <Input
                 value={profileForm.displayName}
                 onChange={(event) =>
                   setProfileForm((current) => ({ ...current, displayName: event.target.value }))
                 }
                 placeholder="예: 민지"
-                className="gangi-form-control h-12 px-3 text-sm"
+                className="gangi-form-control h-12 px-3 text-base"
               />
             </div>
 
@@ -459,7 +459,7 @@ export default function ProfileManager({
             />
 
             <div>
-              <label className="mb-2 block text-sm text-[var(--app-copy)]">메모</label>
+              <label className="mb-2 block text-base text-[var(--app-copy)]">메모</label>
               <textarea
                 value={profileForm.note}
                 onChange={(event) =>
@@ -467,7 +467,7 @@ export default function ProfileManager({
                 }
                 rows={4}
                 placeholder="예: 태어난 시간은 오전으로만 기억남"
-                className="gangi-form-control min-h-28 px-3 py-3 text-sm leading-7"
+                className="gangi-form-control min-h-28 px-3 py-3 text-base leading-7"
               />
             </div>
           </div>
@@ -475,10 +475,10 @@ export default function ProfileManager({
           <div className="space-y-4">
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5">
               <div className="app-caption">현재 저장값</div>
-              <h3 className="mt-2 text-xl font-semibold text-[var(--app-ivory)]">
+              <h3 className="mt-2 text-2xl font-semibold text-[var(--app-ivory)]">
                 {profileForm.displayName.trim() || '이름 미입력'}
               </h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+              <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">
                 {formatBirthSummary({
                   calendarType: profileForm.calendarType,
                   timeRule: profileForm.timeRule,
@@ -493,14 +493,14 @@ export default function ProfileManager({
                   birthLocationLabel: profileForm.birthLocationLabel || undefined,
                 })}
               </p>
-              <p className="mt-3 text-xs leading-6 text-[var(--app-copy-soft)]">
+              <p className="mt-3 text-sm leading-6 text-[var(--app-copy-soft)]">
                 저장 후에는 오늘의 운세와 사주 시작하기에서 매번 다시 선택하지 않고 바로 이어집니다.
               </p>
             </div>
 
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5">
               <div className="app-caption">저장 효과</div>
-              <div className="mt-4 space-y-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div className="mt-4 space-y-3 text-base leading-7 text-[var(--app-copy-muted)]">
                 <p>양력·음력 구분을 남겨두면 가족이나 본인 기록을 다시 볼 때 달력이 뒤섞이지 않습니다.</p>
                 <p>시간 모름으로 저장한 경우에는 시주 중심 해석을 줄이고, 일간과 월령 중심으로 읽습니다.</p>
                 <p>출생지와 시각 규칙을 저장하면 진태양시가 필요한 경우에도 같은 설정을 계속 씁니다.</p>
@@ -516,7 +516,7 @@ export default function ProfileManager({
           >
             {savingProfile ? '저장 중...' : '내 기본 정보 저장'}
           </Button>
-          <p className="text-sm text-[var(--app-copy-muted)]">
+          <p className="text-base text-[var(--app-copy-muted)]">
             저장하면 기존 MY 프로필 값이 이 정보로 업데이트됩니다.
           </p>
         </div>
@@ -527,10 +527,10 @@ export default function ProfileManager({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="app-caption">가족·다른 사람 보관함</div>
-            <h2 className="mt-2 text-2xl text-[var(--app-ivory)]">
+            <h2 className="mt-2 text-3xl text-[var(--app-ivory)]">
               가족, 연인, 친구의 저장 정보도 같은 방식으로 저장합니다
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--app-copy-muted)]">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--app-copy-muted)]">
               가족 프로필도 양력·음력, 시간 모름, 출생지, 시각 규칙을 함께 저장해두면 궁합과 비교 해석에서 입력을 다시 반복하지 않아도 됩니다.
             </p>
           </div>
@@ -549,10 +549,10 @@ export default function ProfileManager({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-[var(--app-ivory)]">
+                      <div className="text-base font-semibold text-[var(--app-ivory)]">
                         {profile.label} · {profile.relationship}
                       </div>
-                      <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
+                      <div className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
                         {formatBirthSummary(profile)}
                         {profile.gender ? ` · ${profile.gender === 'male' ? '남성' : '여성'}` : ''}
                       </div>
@@ -579,7 +579,7 @@ export default function ProfileManager({
                 </article>
               ))
             ) : (
-              <div className="rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-[var(--app-surface-muted)] px-5 py-6 text-sm leading-7 text-[var(--app-copy-muted)]">
+              <div className="rounded-[1.25rem] border border-dashed border-[var(--app-line)] bg-[var(--app-surface-muted)] px-5 py-6 text-base leading-7 text-[var(--app-copy-muted)]">
                 아직 가족 프로필이 없습니다. 배우자, 부모, 자녀, 친구처럼 자주 보는 분부터 저장해두면 이후 궁합과 가족 리포트로 곧바로 이어집니다.
               </div>
             )}
@@ -588,24 +588,24 @@ export default function ProfileManager({
           <div className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-[var(--app-copy)]">이름 또는 별칭</label>
+                <label className="mb-2 block text-base text-[var(--app-copy)]">이름 또는 별칭</label>
                 <Input
                   value={familyForm.label}
                   onChange={(event) =>
                     setFamilyForm((current) => ({ ...current, label: event.target.value }))
                   }
                   placeholder="이름 또는 별칭"
-                  className="gangi-form-control h-12 px-3 text-sm"
+                  className="gangi-form-control h-12 px-3 text-base"
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm text-[var(--app-copy)]">관계</label>
+                <label className="mb-2 block text-base text-[var(--app-copy)]">관계</label>
                 <select
                   value={familyForm.relationship}
                   onChange={(event) =>
                     setFamilyForm((current) => ({ ...current, relationship: event.target.value }))
                   }
-                  className="gangi-form-control h-12 px-3 text-sm"
+                  className="gangi-form-control h-12 px-3 text-base"
                 >
                   {RELATIONSHIP_OPTIONS.map((option) => (
                     <option key={option} value={option} className="bg-slate-950">
@@ -623,7 +623,7 @@ export default function ProfileManager({
             />
 
             <div>
-              <label className="mb-2 block text-sm text-[var(--app-copy)]">메모</label>
+              <label className="mb-2 block text-base text-[var(--app-copy)]">메모</label>
               <textarea
                 value={familyForm.note}
                 onChange={(event) =>
@@ -631,7 +631,7 @@ export default function ProfileManager({
                 }
                 rows={4}
                 placeholder="예: 엄마, 음력 생일만 기억남"
-                className="gangi-form-control min-h-28 px-3 py-3 text-sm leading-7"
+                className="gangi-form-control min-h-28 px-3 py-3 text-base leading-7"
               />
             </div>
 
@@ -661,7 +661,7 @@ export default function ProfileManager({
           </div>
         </div>
 
-        {message ? <p className="mt-5 text-sm text-[var(--app-gold-text)]">{message}</p> : null}
+        {message ? <p className="mt-5 text-base text-[var(--app-gold-text)]">{message}</p> : null}
       </section>
     </div>
   );

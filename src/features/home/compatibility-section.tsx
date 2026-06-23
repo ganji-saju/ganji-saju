@@ -8,9 +8,9 @@ export default function CompatibilitySection() {
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4">
-            <p className="text-sm uppercase tracking-[0.24em] text-[#d2b072]/75">Compatibility</p>
-            <h2 className="text-3xl font-semibold tracking-tight text-[#f8f1df]">궁합은 입력 난도에 따라 두 겹으로 나눕니다</h2>
-            <p className="text-sm leading-7 text-white/60 sm:text-base">
+            <p className="text-base uppercase tracking-[0.24em] text-[#d2b072]/75">Compatibility</p>
+            <h2 className="text-4xl font-semibold tracking-tight text-[#f8f1df]">궁합은 입력 난도에 따라 두 겹으로 나눕니다</h2>
+            <p className="text-base leading-7 text-white/60 sm:text-lg">
               본 서비스 안에서 궁합도 같은 논리로 움직입니다. 먼저 가볍게 보는 Lite 궁합으로 진입시키고, 상세 궁합은 관계 포인트와
               조심할 흐름까지 묶어 유료로 열어주는 구조가 적합합니다.
             </p>
@@ -51,9 +51,9 @@ export default function CompatibilitySection() {
               },
             ].map((item) => (
               <article key={item.title} className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
-                <div className="text-sm text-[#d2b072]/80">{item.price}</div>
-                <h3 className="mt-3 text-2xl font-semibold text-[#f8f1df]">{item.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-white/58">{item.desc}</p>
+                <div className="text-base text-[#d2b072]/80">{item.price}</div>
+                <h3 className="mt-3 text-3xl font-semibold text-[#f8f1df]">{item.title}</h3>
+                <p className="mt-4 text-base leading-7 text-white/58">{item.desc}</p>
               </article>
             ))}
           </div>
