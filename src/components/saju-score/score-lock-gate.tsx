@@ -19,7 +19,7 @@ export function ScoreLockGate({
   isUnlocked,
   slug,
   gradeLabel,
-  price = '550원',
+  price = '9,900원',
   children,
 }: ScoreLockGateProps) {
   if (isUnlocked) return <>{children}</>;

@@ -1,18 +1,23 @@
 import { createServiceClient } from '@/lib/supabase/server';
 
 export type Feature =
-  | 'detail_report'   // 1 크레딧
-  | 'compat'          // 2 크레딧
-  | 'ai_chat'         // 3 크레딧 / 3회 묶음
-  | 'daewoon'         // 3 크레딧
-  | 'calendar';       // 2 크레딧
+  | 'detail_report'   // 18 크레딧 (9,900원 / 코인단가 550)
+  | 'compat'          // 18 크레딧 (궁합 9,900원)
+  | 'ai_chat'         // 3 크레딧 / 3회 묶음 (대화상담 = 무료 시작, 9,900 정책 대상 아님)
+  | 'daewoon'         // 3 크레딧 (미사용 — 유지)
+  | 'calendar';       // 18 크레딧 (월간 캘린더 9,900원)
 
+// 2026-06-23 — 소액상품 9,900원 단일가 통일에 맞춰 코인 차감량 비례 인상(코인 1개 = 550원 기준,
+//   9,900 / 550 = 18). 9,900 대상 상품과 연결된 feature(detail_report·compat·calendar)만 적용.
+//   ai_chat(대화상담=무료 시작)·daewoon(미사용)은 유지.
+//   ⚠️ 코인 충전 최대 7개(2,000원)라 18코인은 단발 충전으로 부족 → 코인 경로는 사실상
+//      직접 9,900원 결제로 수렴(코인 보유분 누적 시에만 코인 결제). 충전팩 확대는 후속.
 const CREDIT_COSTS: Record<Feature, number> = {
-  detail_report: 1,
-  compat: 2,
+  detail_report: 18,
+  compat: 18,
   ai_chat: 3,
   daewoon: 3,
-  calendar: 2,
+  calendar: 18,
 };
 
 export function isFeature(value: unknown): value is Feature {

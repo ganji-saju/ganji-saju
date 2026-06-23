@@ -267,7 +267,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'today-detail',
     title: '오늘 자세히 보기',
-    price: '550원',
+    price: '9,900원',
     question: '오늘 무엇을 조심하면 좋을까',
     result: '무료 결과에서 걸린 부분만 조금 더 짧게 봅니다.',
     href: '/today-fortune?concern=general&product=today-detail',
@@ -277,7 +277,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'love-question',
     title: '연애 마음 확인',
-    price: '990원',
+    price: '9,900원',
     question: '상대와 다시 이어질 수 있을까',
     result: '상대의 속도, 내 마음, 다시 말 걸 타이밍을 짧게 봅니다.',
     href: '/membership/checkout?product=love-question&from=taste-product',
@@ -288,7 +288,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'money-pattern',
     title: '돈이 새는 패턴',
-    price: '990원',
+    price: '9,900원',
     question: '왜 돈이 잘 모이지 않을까',
     result: '돈이 들어오는 말보다, 지켜야 할 습관을 먼저 봅니다.',
     href: '/saju/new?focus=wealth&product=money-pattern',
@@ -298,7 +298,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'work-flow',
     title: '일/직장 흐름',
-    price: '990원',
+    price: '9,900원',
     question: '지금 버틸까, 움직일까',
     result: '오늘의 역할, 말의 강도, 일에서 조심할 장면을 짧게 봅니다.',
     href: '/saju/new?focus=career&product=work-flow',
@@ -308,7 +308,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'monthly-calendar',
     title: '월간 달력',
-    price: '1,900원',
+    price: '9,900원',
     question: '이번 달 좋은 날과 조심할 날은 언제일까',
     result: '좋은 날, 한 번 더 확인할 날, 차분히 정리할 날을 달력처럼 봅니다.',
     href: '/saju/new?product=monthly-calendar',
@@ -318,7 +318,7 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
   {
     slug: 'year-core',
     title: '올해 핵심 3줄',
-    price: '3,900원',
+    price: '9,900원',
     question: '올해 무엇을 해보고, 무엇을 조심할까',
     result: '올해의 핵심 주제, 주의 패턴, 진행하기 좋은 달을 짧게 정리합니다.',
     href: '/saju/new?product=year-core',
@@ -367,7 +367,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '돈, 일, 반복되는 선택처럼 조금 더 깊게 봐야 할 문제를 정리합니다.',
     question: '왜 이 패턴이 자꾸 반복될까?',
     href: '/myeongri',
-    productPosition: '돈이 새는 패턴 990원, 일/직장 흐름 990원과 연결됩니다.',
+    productPosition: '돈이 새는 패턴 9,900원, 일/직장 흐름 9,900원과 연결됩니다.',
     status: 'active',
   },
   {
@@ -381,7 +381,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '카드 세 장으로 지금 마음, 숨은 원인, 오늘 해볼 행동을 차례로 보여줍니다.',
     question: '지금 내 마음은 어디로 기울어 있을까?',
     href: '/tarot/daily',
-    productPosition: '무료 타로에서 시작하고, 마음이 남으면 990원 풀이로 이어집니다.',
+    productPosition: '무료 타로에서 시작하고, 마음이 남으면 9,900원 풀이로 이어집니다.',
     status: 'active',
   },
   {
@@ -395,7 +395,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '생년월일과 태어난 시간을 바탕으로 오늘과 올해의 큰 흐름을 짚습니다.',
     question: '나는 지금 어떤 흐름 위에 있을까?',
     href: '/saju/new',
-    productPosition: '무료 사주, 오늘 자세히 보기 550원, 긴 사주풀이로 이어집니다.',
+    productPosition: '무료 사주, 오늘 자세히 보기 9,900원, 긴 사주풀이로 이어집니다.',
     status: 'active',
   },
   {
@@ -409,7 +409,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '꿈에 남은 장면을 무의식, 감정, 오늘의 조심 포인트로 풀어내는 확장 메뉴입니다.',
     question: '어젯밤 꿈은 지금 마음의 어떤 신호일까?',
     href: '/dream',
-    productPosition: '무료 꿈 키워드 해석과 990원 자세히 보기로 확장 예정입니다.',
+    productPosition: '무료 꿈 키워드 해석과 9,900원 자세히 보기로 확장 예정입니다.',
     status: 'active',
   },
   {
@@ -423,7 +423,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '이사·계약·시작 등 중요한 일에 좋은 날과 피할 날을 가볍게 확인하는 확장 메뉴입니다.',
     question: '이 일은 언제 시작하면 좋을까?',
     href: '/taekil',
-    productPosition: '택일(좋은 날 찾기)은 무료이며, 월간 좋은날 캘린더(1,900원)로 이어집니다.',
+    productPosition: '택일(좋은 날 찾기)은 무료이며, 월간 좋은날 캘린더(9,900원)로 이어집니다.',
     status: 'active',
   },
   {
@@ -437,7 +437,7 @@ export const DALBIT_TEACHERS: readonly DalbitTeacherCard[] = [
     role: '나와 상대의 속도, 거리감, 부딪히는 말을 관계 중심으로 풀어줍니다.',
     question: '이 사람과 다시 잘 맞출 수 있을까?',
     href: '/compatibility/input',
-    productPosition: '연애 마음 확인 990원, 궁합 입력, 관계 풀이로 이어집니다.',
+    productPosition: '연애 마음 확인 9,900원, 궁합 입력, 관계 풀이로 이어집니다.',
     status: 'active',
   },
   {

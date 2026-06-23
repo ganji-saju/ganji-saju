@@ -1,6 +1,6 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx §4 ScreenToday — Detail unlock):
-// snake ZodiacChip + 550원 작은풀이 eyebrow + 오늘 자세히 보기 h3 + 1줄 desc + 구매 pill.
-// 기존 모든 CTA (코인 열기 / 550원 결제 / 코인 충전) 보존 — mockup 의 단일 "구매"는 코인 열기로 매핑.
+// snake ZodiacChip + 9,900원 자세한풀이 eyebrow + 오늘 자세히 보기 h3 + 1줄 desc + 구매 pill.
+// 기존 모든 CTA (코인 열기 / 9,900원 결제 / 코인 충전) 보존 — mockup 의 단일 "구매"는 코인 열기로 매핑.
 'use client';
 
 import { Lock } from 'lucide-react';
@@ -20,8 +20,8 @@ interface PremiumLockCardProps {
   sourceSessionId: string;
   concernId: string;
   errorMessage?: string | null;
-  // 990원 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
-  // 550원 단건 옆에 묶음 비교 CTA 노출. 없으면 기존 단건/충전 레이아웃 유지.
+  // 9,900원 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
+  // 9,900원 단품 옆에 묶음 비교 CTA 노출. 없으면 기존 단품/충전 레이아웃 유지.
   bundleHref?: string | null;
 }
 
@@ -92,7 +92,7 @@ export function PremiumLockCard({
       className="relative overflow-hidden rounded-[20px] border border-[var(--app-pink-line)] bg-white p-4"
       style={{ boxShadow: '0 14px 36px rgba(216,27,114,0.10)' }}
     >
-      {/* mockup: snake ZodiacChip + 550원·작은 풀이 + 헤드라인 + 한 줄 desc + 구매 pill */}
+      {/* mockup: snake ZodiacChip + 9,900원·자세한 풀이 + 헤드라인 + 한 줄 desc + 구매 pill */}
       <button
         type="button"
         onClick={handleUnlockClick}
@@ -102,7 +102,7 @@ export function PremiumLockCard({
         <ZodiacChip kind="snake" size="md" className="shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-[13px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
-            550원 · 작은 풀이
+            9,900원 · 자세한 풀이
           </div>
           <div className="mt-0.5 text-[15px] font-extrabold tracking-tight text-[var(--app-ink)]">
             오늘 자세히 보기
@@ -123,7 +123,7 @@ export function PremiumLockCard({
 
       {bundleHref ? (
         <>
-          {/* 단건(550) vs 묶음(990) 비교 — 묶음을 filled + 넓은 컬럼으로 강조 */}
+          {/* 단품(9,900) vs 묶음(9,900) 비교 — 같은 값이면 묶음이 이득, filled + 넓은 컬럼으로 강조 */}
           <div className="mt-3 grid grid-cols-[1fr_1.35fr] gap-2">
             <Link
               href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
@@ -135,7 +135,7 @@ export function PremiumLockCard({
                 size="lg"
                 className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] border-[var(--app-pink-line)] bg-white px-2 text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
               >
-                <span className="text-[13px] font-extrabold leading-tight">550원 단건</span>
+                <span className="text-[13px] font-extrabold leading-tight">9,900원 단품</span>
                 <span className="text-[10.5px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
               </Button>
             </Link>
@@ -147,10 +147,10 @@ export function PremiumLockCard({
                 style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
               >
                 <span className="flex items-center gap-1.5 leading-tight">
-                  <span className="text-[14.5px] font-extrabold">990원 묶음</span>
-                  <span className="text-[10px] font-semibold text-white/65 line-through">3,300원</span>
+                  <span className="text-[14.5px] font-extrabold">9,900원 묶음</span>
+                  <span className="text-[10px] font-semibold text-white/85">이득</span>
                 </span>
-                <span className="text-[10.5px] font-semibold text-white/85">오늘 + 점수 5항목 한 번에</span>
+                <span className="text-[10.5px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
               </Button>
             </Link>
           </div>
@@ -167,16 +167,16 @@ export function PremiumLockCard({
             </Button>
           </Link>
 
-          {/* 옵션 설명 — 1코인 / 550원 / 990원 묶음 */}
+          {/* 옵션 설명 — 1코인 / 9,900원 단품 / 9,900원 묶음 */}
           <ul className="mt-3 grid gap-1 text-[13px] leading-relaxed text-[var(--app-copy-muted)]">
             <li>
               <b className="font-bold text-[var(--app-ink)]">1코인 열기</b> — 보유 코인으로 오늘 자세히 보기
             </li>
             <li>
-              <b className="font-bold text-[var(--app-ink)]">550원 단건</b> — 오늘 자세히 보기만 바로 결제
+              <b className="font-bold text-[var(--app-ink)]">9,900원 단품</b> — 오늘 자세히 보기만 바로 결제
             </li>
             <li>
-              <b className="font-bold text-[var(--app-pink-strong)]">990원 묶음</b> — 오늘 자세히 + 점수 5항목까지(개별 3,300원어치)
+              <b className="font-bold text-[var(--app-pink-strong)]">9,900원 묶음</b> — 같은 값에 오늘 자세히 + 점수 6종까지 한 번에
             </li>
           </ul>
         </>
@@ -193,7 +193,7 @@ export function PremiumLockCard({
               size="lg"
               className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[13px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
             >
-              550원 바로 결제
+              9,900원 바로 결제
             </Button>
           </Link>
           <Link href="/credits?from=today-fortune" className="min-w-0">

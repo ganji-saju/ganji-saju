@@ -261,7 +261,7 @@ export function TaekilClient() {
             ))}
           </div>
 
-          {/* 2026-06-07 업셀: 택일(좋은 날 찾기)은 무료, 월간 좋은날 캘린더는 유료(1,900원). */}
+          {/* 2026-06-07 업셀: 택일(좋은 날 찾기)은 무료, 월간 좋은날 캘린더는 유료(9,900원). */}
           <Link
             href="/saju/new?product=monthly-calendar"
             className="mt-3 flex items-center gap-3 rounded-[16px] border bg-white p-4 no-underline"
@@ -273,7 +273,7 @@ export function TaekilClient() {
                 이번 달 좋은 날을 달력으로 한눈에
               </span>
               <span className="block text-[11.5px] font-bold text-[var(--app-copy-soft)]">
-                월간 좋은날 캘린더 · 1,900원
+                월간 좋은날 캘린더 · 9,900원
               </span>
             </span>
             <span aria-hidden="true" className="text-[var(--app-pink-strong)]">→</span>

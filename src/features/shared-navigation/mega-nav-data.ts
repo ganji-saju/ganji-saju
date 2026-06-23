@@ -64,7 +64,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '사주 풀이',
       items: [
-        { label: '내 사주 · 사주용선생', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '550원~' },
+        { label: '내 사주 · 사주용선생', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '9,900원' },
         { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', zodiac: 'snake', tag: 'VIP' },
         { label: '궁합 · 궁합양선생', desc: '두 사람의 흐름', href: '/compatibility', zodiac: 'sheep' },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', zodiac: 'tiger' },

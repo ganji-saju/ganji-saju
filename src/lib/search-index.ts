@@ -19,7 +19,7 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '연애 마음 확인',
-    description: '990원 · 작은 풀이',
+    description: '9,900원 · 작은 풀이',
     // /saju/new 는 love-question(연애/궁합 상품)을 처리하지 않음(saju 상품만). 궁합 입구로 연결.
     href: '/compatibility/input',
     zodiacKey: 'rabbit',
@@ -52,7 +52,7 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '돈이 새는 패턴',
-    description: '990원 · 재물 흐름의 약한 지점',
+    description: '9,900원 · 재물 흐름의 약한 지점',
     href: '/saju/new?product=money-pattern',
     zodiacKey: 'tiger',
     keywords: ['재물', '돈', '재테크', '소비', '저축'],
@@ -60,7 +60,7 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '일/직장 흐름',
-    description: '990원 · 오늘의 말, 역할, 타이밍',
+    description: '9,900원 · 오늘의 말, 역할, 타이밍',
     href: '/saju/new?product=work-flow',
     zodiacKey: 'dragon',
     keywords: ['직장', '이직', '일', '업무', '커리어', '회사'],

@@ -85,9 +85,9 @@ type CheckoutGuide = {
 const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   'today-detail': {
     title: '오늘 자세히 보기',
-    price: '550원',
+    price: '9,900원',
     reassurance:
-      '오늘 만든 무료 결과에서 걸리는 부분만 조금 더 여는 소액 풀이입니다. 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
+      '오늘 만든 무료 결과에서 걸리는 부분만 조금 더 여는 단품 풀이입니다. 같은 오늘운을 다시 열 때 중복 차감하지 않습니다.',
     nextRange: '오늘 핵심, 조심할 것, 바로 할 행동까지 짧게 열립니다.',
     opens: ['오늘 자세히 보기', '이미 구매한 오늘운 재열람', '대화로 이어 묻기'],
     notices: [
@@ -97,9 +97,9 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'score-factor': {
     title: '점수 풀이 보기',
-    price: '550원',
+    price: '9,900원',
     reassurance:
-      '점수 산출 내역 한 항목의 자세한 풀이를 여는 소액 풀이입니다. 같은 항목은 다시 결제하지 않습니다.',
+      '점수 산출 내역 한 항목의 자세한 풀이를 여는 단품 풀이입니다. 같은 항목은 다시 결제하지 않습니다.',
     nextRange: '선택한 항목(일주·격국·용신·오행·합충신살)의 구체 풀이와 활용 가이드가 열립니다.',
     opens: ['선택한 항목 자세한 풀이', '이미 구매한 항목 재열람', '대화로 이어 묻기'],
     notices: [
@@ -109,7 +109,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'score-total': {
     title: '사주 점수 공개',
-    price: '550원',
+    price: '9,900원',
     reassurance:
       '종합점수와 5요소 산출 내역 전체를 한 번에 엽니다. 같은 결과는 다시 결제하지 않습니다.',
     nextRange: '종합점수·등급 + 일주·격국·용신·오행·신살 5요소 풀이가 모두 열립니다.',
@@ -121,9 +121,9 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'love-question': {
     title: '연애 마음 확인',
-    price: '990원',
+    price: '9,900원',
     reassurance:
-      '상대의 마음, 내 마음, 다시 말 걸 타이밍을 부담 없이 먼저 열 수 있는 소액 풀이입니다.',
+      '상대의 마음, 내 마음, 다시 말 걸 타이밍을 부담 없이 먼저 열 수 있는 단품 풀이입니다.',
     nextRange: '상대와의 거리감, 연락 타이밍, 오늘의 말투를 봅니다.',
     opens: ['연애 질문 풀이', '궁합 입력 화면', '대화 연결'],
     notices: [
@@ -133,7 +133,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'compat-reading': {
     title: '궁합 깊은 풀이',
-    price: '990원',
+    price: '9,900원',
     reassurance:
       '두 사람의 사주를 함께 본 깊은 궁합 풀이입니다. 한 번 결제하면 같은 두 사람의 풀이는 다시 결제하지 않습니다.',
     nextRange: '두 사람의 흐름, 잘 맞는 부분, 조심할 장면, 오늘부터 해볼 행동을 봅니다.',
@@ -145,31 +145,31 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'money-pattern': {
     title: '돈이 새는 패턴',
-    price: '990원',
+    price: '9,900원',
     reassurance: '재물운을 크게 말하기보다 오늘부터 줄일 수 있는 지출 습관을 먼저 봅니다.',
     nextRange: '돈이 새는 장면, 조심할 소비, 지킬 행동을 짧게 봅니다.',
     opens: ['재물 질문 풀이', '사주 입력 흐름', '대화 연결'],
     notices: [
-      '소액 풀이 구매 상태는 로그인 계정에 저장됩니다.',
+      '단품 풀이 구매 상태는 로그인 계정에 저장됩니다.',
       '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
     ],
   },
   'work-flow': {
     title: '일/직장 흐름',
-    price: '990원',
+    price: '9,900원',
     reassurance: '직장운을 길게 풀기보다 오늘의 말, 역할, 움직일 타이밍을 짧게 봅니다.',
     nextRange: '오늘 일에서 조심할 말, 유리한 태도, 다음 선택을 봅니다.',
     opens: ['일 질문 풀이', '사주 입력 흐름', '대화 연결'],
     notices: [
-      '소액 풀이 구매 상태는 로그인 계정에 저장됩니다.',
+      '단품 풀이 구매 상태는 로그인 계정에 저장됩니다.',
       '같은 상품을 다시 열 때 구매 여부를 먼저 확인합니다.',
     ],
   },
   'monthly-calendar': {
     title: '월간 달력',
-    price: '1,900원',
+    price: '9,900원',
     reassurance:
-      '선택한 사주 결과와 월에 붙는 달력형 해금입니다. 이미 연 달은 다시 코인을 쓰지 않습니다.',
+      '선택한 사주 결과와 월에 붙는 달력형 해금입니다. 이미 연 달은 다시 결제하지 않습니다.',
     nextRange: '좋은 날, 확인할 날, 결정일을 달력으로 봅니다.',
     opens: ['선택한 월간 달력', '해당 월 재열람', '긴 사주풀이로 이어보기'],
     notices: [
@@ -179,7 +179,7 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
   },
   'year-core': {
     title: '올해 핵심 3줄',
-    price: '3,900원',
+    price: '9,900원',
     reassurance:
       '선택한 사주 결과에 붙는 올해 요약 상품입니다. 결제 뒤 올해 전략 흐름으로 바로 이동합니다.',
     nextRange: '올해 핵심 주제, 주의 패턴, 진행하기 좋은 달을 먼저 봅니다.',
@@ -196,9 +196,9 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
 const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
   bundle_today_set: {
     title: '오늘 풀세트',
-    price: '990원',
+    price: '9,900원',
     reassurance:
-      '오늘 자세히 보기와 점수 풀이 5항목을 한 번에 여는 묶음입니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
+      '오늘 자세히 보기와 점수 풀이 5항목(개별 6종)을 한 번에 여는 묶음입니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
     nextRange: '오늘 자세히 + 일주·격국·용신·오행·합충신살 점수 풀이가 함께 열립니다.',
     opens: ['오늘 자세히 보기', '점수 5항목 풀이', '대화로 이어 묻기'],
     notices: [
@@ -314,7 +314,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               <div className="min-w-0 flex-1">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                   {selectedProduct
-                    ? '소액 풀이'
+                    ? '단품 풀이'
                     : selectedBundle
                       ? '묶음 상품'
                       : `${selectedPlan.toUpperCase()} 멤버십`}
@@ -455,7 +455,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     먼저 결과를 만들어 주세요
                   </strong>
                   <p className="text-[12.5px] leading-[1.6] text-[var(--app-copy-muted)]">
-                    소액 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
+                    단품 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
                   </p>
                   <Link
                     href={`/saju/new?product=${selectedProduct}`}

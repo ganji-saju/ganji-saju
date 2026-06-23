@@ -463,7 +463,7 @@ export default function FortuneCalendarPanel({
   const [error, setError] = useState('');
   const [data, setData] = useState<FortuneCalendarResponse | null>(null);
   // 2026-05-16 — 선택된 (slug, year-month) 의 monthly-calendar entitlement 조회.
-  //   "1,900원으로 열기" link 를 중복 결제하지 않도록 미리 차단.
+  //   "9,900원으로 열기" link 를 중복 결제하지 않도록 미리 차단.
   const monthScope = `${targetYear}-${String(selectedMonth).padStart(2, '0')}`;
   const { hasEntitlement: hasMonthEntitlement, openHref: monthOpenHref } = useProductEntitlement({
     productId: 'monthly-calendar',
@@ -1000,7 +1000,7 @@ export default function FortuneCalendarPanel({
                           className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[12.5px] font-extrabold text-[var(--app-pink-strong)]"
                           style={{ borderColor: 'var(--app-pink-line)' }}
                         >
-                          1,900원으로 열기
+                          9,900원으로 열기
                         </Link>
                         <Link
                           href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
