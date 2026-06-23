@@ -34,6 +34,13 @@ export type GangiServiceCard = {
   chipKind?: 'zodiac' | 'star-sign';
   /** chipKind === 'star-sign' 일 때 특정 별자리. 미지정 시 generic 12별자리 통합 chip. */
   starSign?: StarSignKey;
+  /**
+   * 2026-06-23 — 메인 캐릭터 카드 개편(slide3 시안). 캐릭터 일러스트 id.
+   *   public/images/gangi/characters/{image}.{avif,webp,png}. 있으면 chip 대신 캐릭터 렌더.
+   */
+  image?: string;
+  /** 후킹 카피(시안). 있으면 카드 본문에 desc 대신 headline 노출. */
+  headline?: string;
 };
 
 export type GangiHomeBanner = {
@@ -78,112 +85,104 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   },
 ] as const;
 
+// 2026-06-23 — 메인 캐릭터 카드 개편(20260623 시안 slide3). 8카드 그리드:
+//   상단 사주·대운·택일·궁합 / 하단 꿈해몽·대화상담·무료타로·무료운세.
+//   각 카드 = 캐릭터 일러스트(image) + 메뉴명(title) + 후킹 카피(headline) + "바로 확인하기".
+//   별자리(star-sign)·띠운세(zodiac)는 시안에서 빠짐 → 그리드 제외, 진입점은 상단 별자리 slot +
+//   무료 허브(GANGI_FREE_HUB_ITEMS) 로 보존(라우트·SEO 유지, dead-anchor 회귀 방지).
+//   price 라벨은 기존값 유지(페이월 정합 — 결제 오해 방지).
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
-    id: 'today',
-    title: '오늘운세 · 오늘소선생',
-    desc: '지금 핵심 한 줄',
+    id: 'saju',
+    title: '사주',
+    desc: '내 사주 풀이',
+    headline: '소름 돋는 내 운명 풀이',
+    price: '550원~',
+    href: '/saju/new',
+    zodiac: 'dragon',
+    category: 'saju',
+    image: 'saju',
+  },
+  {
+    id: 'daewoon',
+    title: '대운',
+    desc: '진행하기 좋은 달',
+    headline: '인생 바뀌는 운의 흐름',
+    // /daewoon 은 무료 예시 허브(실제 결과는 year-core 3,900원 업셀).
     price: '무료',
-    href: '/today-fortune?concern=general',
-    zodiac: 'rooster',
+    href: '/daewoon',
+    zodiac: 'tiger',
+    category: 'saju',
+    image: 'daewoon',
+  },
+  {
+    id: 'taekil',
+    title: '택일',
+    desc: '중요한 날 확인',
+    headline: '성공하는 날은 따로 있다',
+    // /taekil(좋은 날 찾기)은 무료 도구. 유료 1,900원 '월간 좋은날 캘린더'는 결과 화면 업셀.
+    price: '무료',
+    href: '/taekil',
+    zodiac: 'ox',
     category: 'fortune',
-    tag: '추천',
+    image: 'taekil',
+  },
+  {
+    id: 'gunghap',
+    title: '궁합',
+    desc: '둘 사이의 흐름',
+    headline: '우리, 진짜 맞는 인연일까?',
+    price: '990원',
+    href: '/compatibility/input',
+    zodiac: 'sheep',
+    category: 'saju',
+    image: 'gunghap',
+  },
+  {
+    id: 'dream',
+    title: '꿈해몽',
+    desc: '꿈으로 보는 길흉',
+    headline: '꿈이 알려주는 숨은 신호',
+    price: '무료',
+    href: '/dream',
+    zodiac: 'dragon',
+    category: 'fortune',
+    image: 'dream',
+  },
+  {
+    id: 'consult',
+    title: '대화상담',
+    desc: '선생님께 묻기',
+    headline: '말 못 할 고민, 속 시원히',
+    price: '무료 시작',
+    href: '/dialogue',
+    zodiac: 'snake',
+    category: 'consult',
+    image: 'consult',
   },
   {
     id: 'tarot',
-    title: '타로 세 장 · 타로토선생',
+    title: '무료타로',
     desc: '마음이 시키는 카드',
+    headline: '3장의 카드 선택',
     price: '무료',
     href: '/tarot/daily',
     zodiac: 'rabbit',
     category: 'fortune',
     tag: 'HOT',
+    image: 'tarot',
   },
   {
-    id: 'saju',
-    title: '사주 · 사주용선생',
-    desc: '내 사주 풀이',
-    price: '550원~',
-    href: '/saju/new',
-    zodiac: 'dragon',
-    category: 'saju',
-  },
-  {
-    id: 'gunghap',
-    title: '궁합 · 궁합양선생',
-    desc: '둘 사이의 흐름',
-    price: '990원',
-    href: '/compatibility/input',
-    zodiac: 'sheep',
-    category: 'saju',
-  },
-  {
-    id: 'daewoon',
-    title: '올해 흐름 · 명리호선생',
-    desc: '진행하기 좋은 달',
-    // 2026-06-07 — /daewoon 은 무료 예시 허브(실제 결과는 year-core 3,900원 업셀).
-    //   990원 가격 라벨이 무료 허브 입구에 잘못 붙어 결제 오해 유발하던 것 정정.
+    id: 'today',
+    title: '무료운세',
+    desc: '지금 핵심 한 줄',
+    headline: '오늘의 나의 운세는',
     price: '무료',
-    href: '/daewoon',
-    zodiac: 'tiger',
-    category: 'saju',
-  },
-  {
-    id: 'taekil',
-    title: '좋은 날 · 길일말선생',
-    desc: '중요한 날 확인',
-    // 2026-06-07 — /taekil(좋은 날 찾기)은 무료 도구. 유료 1,900원 상품은 별개인
-    //   '월간 좋은날 캘린더'(monthly-calendar)이며 결과 화면에서 업셀로 안내.
-    //   가격 라벨이 무료 도구 입구에 1,900원으로 잘못 붙어 결제 오해를 유발하던 것 정정.
-    price: '무료',
-    href: '/taekil',
-    zodiac: 'ox',
+    href: '/today-fortune?concern=general',
+    zodiac: 'rooster',
     category: 'fortune',
-  },
-  {
-    // 2026-05-20 — 사용자 보고: 메인 카드 그리드에 별자리 진입점 누락.
-    //   꿈해몽 자리 (이전 7번) 에 별자리 배치, 꿈해몽은 마지막으로 이동.
-    // 2026-05-20 (PR γ) — 12간지 'pig' chip 차용 → 12서양 별자리 전용 chip
-    //   (StarSignChip generic — 밤하늘 + ✦) 으로 교체. 시각적 일관성 보강.
-    //   zodiac: 'pig' 는 chipKind 미지원 환경 fallback 으로 그대로 둠.
-    id: 'star-sign',
-    title: '별자리 · 별닭선생',
-    desc: '12자리 오늘 메시지',
-    price: '무료',
-    href: '/star-sign',
-    zodiac: 'pig',
-    chipKind: 'star-sign',
-    category: 'fortune',
-  },
-  {
-    id: 'zodiac',
-    title: '띠운세 · 엠지쥐선생',
-    desc: '내 띠의 오늘 흐름',
-    price: '무료',
-    href: '/zodiac',
-    zodiac: 'horse',
-    category: 'fortune',
-  },
-  {
-    id: 'consult',
-    title: '대화 상담 · 상담멍선생',
-    desc: '선생님께 묻기',
-    price: '무료 시작',
-    href: '/dialogue',
-    zodiac: 'snake',
-    category: 'consult',
-  },
-  {
-    // 2026-05-15 — 꿈해몽 메뉴. 2026-05-15(2) — /dream-interpretation 은 옛 디자인 +
-    // 검색 미작동이라 사용자가 "검색이 안 된다" 고 느낌. 검색 작동 페이지 /dream 으로 변경.
-    // 2026-05-20 — 별자리 카드 추가하면서 마지막 위치로 이동 (꿈해몽 ↔ 별자리 위치 교체).
-    id: 'dream',
-    title: '꿈해몽 · 꿈뱀선생',
-    desc: '꿈으로 보는 길흉',
-    price: '무료',
-    href: '/dream',
-    zodiac: 'dragon',
-    category: 'fortune',
+    tag: '추천',
+    image: 'today',
   },
 ] as const;
 

@@ -1,18 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import {
-  GangiCategoryTabs,
   GangiHomeBottomCta,
-  GangiQuickActionCard,
   GangiSeasonBanner,
   GangiServiceCardLink,
 } from '@/components/gangi/gangi-market';
 import {
-  GANGI_FREE_ACTIONS,
   GANGI_HOME_CARDS,
   type GangiHomeBanner,
-  type GangiHomeCategoryKey,
 } from '@/content/gangi-market';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { trackMoonlightEvent } from '@/lib/analytics';
@@ -26,15 +22,9 @@ export function GangiHomeClient({
   /** server-rendered MyStarSignCard (profile 있을 때만 truthy). client 는 그대로 노출. */
   myStarSignSlot?: ReactNode;
 }) {
-  const [activeCategory, setActiveCategory] = useState<GangiHomeCategoryKey>('all');
-  const visibleCards = useMemo(() => {
-    // 2026-05-18 Phase 5-B: 미완성('출시 예정') 가격 카드 hidden — 결제 CTA 영역에서 미완성 표기 0건.
-    //   GANGI_HOME_CARDS 는 home grid 의 활성 메뉴여서 출시 예정 카드는 표시 안 함.
-    //   운영자가 가격 확정 + comingSoon 제거 시 자동 노출.
-    const activeCards = GANGI_HOME_CARDS.filter((card) => card.price !== '출시 예정');
-    if (activeCategory === 'all') return activeCards;
-    return activeCards.filter((card) => card.category === activeCategory);
-  }, [activeCategory]);
+  // 2026-06-23 — 메인 캐릭터 카드 개편(slide3 시안): 카테고리 탭·무료액션 분리 섹션 제거,
+  //   8개 캐릭터 카드 단일 그리드로 통합. 출시 예정 카드는 계속 숨김(미완성 노출 0).
+  const visibleCards = GANGI_HOME_CARDS.filter((card) => card.price !== '출시 예정');
 
   useEffect(() => {
     trackMoonlightEvent('home_view', { brand: 'dalbit-insaeng-card-mall' });
@@ -55,43 +45,10 @@ export function GangiHomeClient({
           </section>
         ) : null}
 
+        {/* 2026-06-23 시안 — 8개 캐릭터 카드 그리드(사주·대운·택일·궁합 / 꿈해몽·대화상담·무료타로·무료운세). */}
         <section
-          className="grid grid-cols-2 gap-2.5 px-4 pt-3.5"
-          aria-label="무료 빠른 운세"
-        >
-          {GANGI_FREE_ACTIONS.map((action) => (
-            <GangiQuickActionCard
-              key={action.id}
-              href={action.href}
-              mark={action.mark}
-              zodiac={action.zodiac}
-              label={action.label}
-              title={action.title}
-              desc={action.desc}
-              onTrack={() =>
-                trackMoonlightEvent(
-                  action.id === 'today' ? 'home_free_today_click' : 'home_free_tarot_click',
-                  { from: 'home_quick_action' }
-                )
-              }
-            />
-          ))}
-        </section>
-
-        <GangiCategoryTabs
-          active={activeCategory}
-          onChange={(category) => {
-            setActiveCategory(category);
-            trackMoonlightEvent('home_service_menu_click', {
-              from: 'home_category_tabs',
-              category,
-            });
-          }}
-        />
-
-        <section
-          className="grid grid-cols-2 gap-3 px-4 pt-3"
-          aria-label="간지사주 운세 상품"
+          className="grid grid-cols-2 gap-3 px-4 pt-4"
+          aria-label="간지사주 운세 메뉴"
         >
           {visibleCards.map((card) => (
             <GangiServiceCardLink
