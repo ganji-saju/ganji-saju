@@ -30,14 +30,12 @@ const CREDIT_PACKAGE_DESCRIPTIONS: Record<
   string,
   { desc: string; badge?: 'POPULAR' | 'BEST' | '보너스' }
 > = {
-  credit_1: { desc: '입문 패키지' },
-  credit_3: { desc: '첫 결제 추천', badge: 'POPULAR' },
-  credit_7: { desc: '주제 여러 개 안정적인 묶음' },
+  credit_15: { desc: '50% 보너스 · 상품 1개+여유', badge: 'BEST' },
   subscription_30: { desc: '+6코인 보너스 묶음', badge: '보너스' },
 };
 
 const PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'subscription_30'].includes(pkg.id)
 );
 
 interface PaymentPrepareResponse {

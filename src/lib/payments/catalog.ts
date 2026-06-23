@@ -44,9 +44,10 @@ export interface PaymentPackage {
 }
 
 export const PAYMENT_PACKAGES = [
-  { id: 'credit_1', name: '체험 1 코인', credits: 1, price: 500, kind: 'credits' },
-  { id: 'credit_3', name: '스타터 3 코인', credits: 3, price: 990, kind: 'credits' },
-  { id: 'credit_7', name: '기본 7 코인', credits: 7, price: 2000, kind: 'credits' },
+  // 2026-06-23 — 9,900원 단일가 통일에 맞춘 코인팩 재편. 코인 1개 = 990원(상품 9,900원 = 10코인)
+  //   기준, 9,900원 결제 시 50% 보너스로 15코인 지급. 기존 소액팩(500/990/2,000원 = 1/3/7코인)은
+  //   폐지(상품이 10코인이라 소액팩으론 상품 하나도 못 열고 코인당 단가가 역전됨).
+  { id: 'credit_15', name: '15 코인 (50% 보너스)', credits: 15, price: 9900, kind: 'credits' },
   {
     id: 'subscription_30',
     name: '보너스 36 코인',

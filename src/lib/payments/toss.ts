@@ -2,7 +2,7 @@ import { PAYMENT_PACKAGES, getPackage, type PackageId } from './catalog';
 import type { TossPaymentObject } from './order-ledger';
 
 export const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'subscription_30'].includes(pkg.id)
 );
 
 export { getPackage, type PackageId };
