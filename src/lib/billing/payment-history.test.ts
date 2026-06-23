@@ -83,7 +83,7 @@ test('mapProductEntitlementToHistory falls back to metadata.amount then package 
     created_at: '2026-05-19T00:00:00.000Z',
     metadata: null,
   });
-  assert.equal(pkgFallback.amountWon, 3900);
+  assert.equal(pkgFallback.amountWon, 9900);
 
   // nothing resolvable → null (excluded from total)
   const unresolved = mapProductEntitlementToHistory({
@@ -106,15 +106,15 @@ test('mapCreditTransactionToHistory derives WON from package price, category fro
   const coinPack: CreditTransactionHistoryRow = {
     id: 'ct-1',
     type: 'purchase',
-    amount: 7,
-    metadata: { packageId: 'credit_7', orderId: 'ORD-COIN-7', paymentKey: 'pay_coin' },
+    amount: 15,
+    metadata: { packageId: 'credit_15', orderId: 'ORD-COIN-7', paymentKey: 'pay_coin' },
     created_at: '2026-05-18T00:00:00.000Z',
   };
   const coin = mapCreditTransactionToHistory(coinPack);
   assert.equal(coin.category, '코인 충전');
-  assert.equal(coin.productName, '기본 7 코인');
-  assert.equal(coin.amountWon, 2000);
-  assert.equal(coin.coins, 7);
+  assert.equal(coin.productName, '15 코인 (50% 보너스)');
+  assert.equal(coin.amountWon, 9900);
+  assert.equal(coin.coins, 15);
   assert.equal(coin.receipt, 'ORD-COIN-7');
 
   // membership subscription — WON from package price, category 멤버십/구독
@@ -187,8 +187,8 @@ test('buildPaymentHistory combines sources, sorts date-desc, sums WON', () => {
       {
         id: 'ct-a',
         type: 'purchase',
-        amount: 7,
-        metadata: { packageId: 'credit_7', orderId: 'OC' },
+        amount: 15,
+        metadata: { packageId: 'credit_15', orderId: 'OC' },
         created_at: '2026-05-22T00:00:00.000Z',
       },
     ],
@@ -200,8 +200,8 @@ test('buildPaymentHistory combines sources, sorts date-desc, sums WON', () => {
     ['ct-a', 'pe-a', 'pe-b']
   );
   assert.equal(result.count, 3);
-  // total = 2000 (coin_7) + 550 (today-detail) + 49000 (lifetime) = 51550
-  assert.equal(result.totalSpentWon, 51550);
+  // total = 9900 (coin_15) + 550 (today-detail) + 49000 (lifetime) = 59450
+  assert.equal(result.totalSpentWon, 59450);
 });
 
 test('buildPaymentHistory skips null amounts in total but keeps the entry', () => {
@@ -222,12 +222,12 @@ test('buildPaymentHistory skips null amounts in total but keeps the entry', () =
       {
         id: 'ct-x',
         type: 'purchase',
-        amount: 1,
-        metadata: { packageId: 'credit_1' },
+        amount: 15,
+        metadata: { packageId: 'credit_15' },
         created_at: '2026-05-21T00:00:00.000Z',
       },
     ],
   });
   assert.equal(result.count, 2); // both kept
-  assert.equal(result.totalSpentWon, 500); // only credit_1 (500) counted; null skipped
+  assert.equal(result.totalSpentWon, 9900); // only credit_15 (9900) counted; null skipped
 });

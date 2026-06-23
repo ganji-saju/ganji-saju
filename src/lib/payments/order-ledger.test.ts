@@ -14,7 +14,7 @@ function baseOrder(overrides: Partial<PaymentOrder> = {}): PaymentOrder {
     id: 'id',
     orderId: 'ord_018d64b1-2bd7-4f96-a6ce-0f9d0ef34300',
     userId: 'user-id',
-    packageId: 'credit_1',
+    packageId: 'credit_15',
     amount: 500,
     currency: 'KRW',
     status: 'prepared',

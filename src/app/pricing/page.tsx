@@ -29,7 +29,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '가격 한눈보기',
-  description: '간지사주의 무료 운세, 550원/990원 소액 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
+  description: '간지사주의 무료 운세, 9,900원 단품 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
   alternates: {
     canonical: '/pricing',
   },
@@ -74,7 +74,7 @@ export default async function PricingPage() {
               필요한 풀이만 열어요
             </>
           }
-          description="오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 550원/990원 단위로 가볍게 이어볼 수 있습니다."
+          description="오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 9,900원 단품으로 이어볼 수 있습니다."
         >
           <GangiActionRow>
             <Link href="/today-fortune?concern=general" className="gangi-primary-button">

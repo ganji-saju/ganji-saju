@@ -47,7 +47,7 @@ export default function CompatibilitySection() {
               {
                 title: '연애궁합 상세',
                 desc: '두 사람의 사주 흐름, 강점·마찰 포인트, 관계 유지 팁까지 묶는 프리미엄 리포트',
-                price: '990원 이상',
+                price: '9,900원',
               },
             ].map((item) => (
               <article key={item.title} className="rounded-[26px] border border-white/10 bg-white/[0.04] p-6">

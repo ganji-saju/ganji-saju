@@ -34,14 +34,14 @@ const ITEMS: ReadonlyArray<{
     href: '/saju/new',
     eyebrow: '사주 상세 풀이',
     body: '14 섹션 · A4 5~7p 리포트',
-    price: '550원~',
+    price: '9,900원',
   },
   {
     key: 'gunghap',
     href: '/compatibility/input',
     eyebrow: '궁합 풀이',
     body: '두 사람 사주 결합 분석',
-    price: '990원',
+    price: '9,900원',
   },
   {
     key: 'membership',

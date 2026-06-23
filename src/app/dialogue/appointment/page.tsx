@@ -33,10 +33,12 @@ const DEFAULT_TEACHER: TeacherInfo = {
 
 const APPOINTMENT_COST_COINS = 100;
 const APPOINTMENT_MINUTES = 30;
-const SINGLE_COIN_PRICE_KRW = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'credit_1')?.price ?? 500;
+// 2026-06-23 — 코인팩 재편(credit_15: 9,900원=15코인). 코인 실효단가 = 9,900/15 = 660원.
+const COIN_PACK_15 = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'credit_15');
+const SINGLE_COIN_PRICE_KRW = COIN_PACK_15 ? Math.round(COIN_PACK_15.price / COIN_PACK_15.credits) : 660;
 const BONUS_COIN_PACKAGE = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'subscription_30');
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_1', 'credit_3', 'credit_7', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'subscription_30'].includes(pkg.id)
 );
 
 const TOPICS: Array<{ key: string; label: string }> = [

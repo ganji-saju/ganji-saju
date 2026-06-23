@@ -79,24 +79,24 @@ test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 코�
     {
       id: 'tx-full',
       type: 'purchase',
-      amount: 3,
-      metadata: { paymentKey: 'pk-full', orderId: 'ord-full', packageId: 'credit_3' },
+      amount: 15,
+      metadata: { paymentKey: 'pk-full', orderId: 'ord-full', packageId: 'credit_15' },
       created_at: '2026-05-20T00:00:00Z',
       feature: null,
     },
     {
       id: 'tx-partial',
       type: 'purchase',
-      amount: 7,
-      metadata: { paymentKey: 'pk-partial', orderId: 'ord-partial', packageId: 'credit_7' },
+      amount: 15,
+      metadata: { paymentKey: 'pk-partial', orderId: 'ord-partial', packageId: 'credit_15' },
       created_at: '2026-05-21T00:00:00Z',
       feature: null,
     },
     {
       id: 'tx-empty',
       type: 'purchase',
-      amount: 1,
-      metadata: { paymentKey: 'pk-empty', orderId: 'ord-empty', packageId: 'credit_1' },
+      amount: 15,
+      metadata: { paymentKey: 'pk-empty', orderId: 'ord-empty', packageId: 'credit_15' },
       created_at: '2026-05-22T00:00:00Z',
       feature: null,
     },
@@ -104,29 +104,29 @@ test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 코�
   const lots = [
     {
       id: 'lot-full',
-      amount_remaining: 3,
-      amount_initial: 3,
+      amount_remaining: 15,
+      amount_initial: 15,
       expires_at: '2027-05-20T00:00:00Z',
       source: 'purchase',
-      metadata: { paymentKey: 'pk-full', orderId: 'ord-full', packageId: 'credit_3' },
+      metadata: { paymentKey: 'pk-full', orderId: 'ord-full', packageId: 'credit_15' },
       created_at: '2026-05-20T00:00:00Z',
     },
     {
       id: 'lot-partial',
-      amount_remaining: 2,
-      amount_initial: 7,
+      amount_remaining: 5,
+      amount_initial: 15,
       expires_at: '2027-05-21T00:00:00Z',
       source: 'purchase',
-      metadata: { paymentKey: 'pk-partial', orderId: 'ord-partial', packageId: 'credit_7' },
+      metadata: { paymentKey: 'pk-partial', orderId: 'ord-partial', packageId: 'credit_15' },
       created_at: '2026-05-21T00:00:00Z',
     },
     {
       id: 'lot-empty',
       amount_remaining: 0,
-      amount_initial: 1,
+      amount_initial: 15,
       expires_at: '2027-05-22T00:00:00Z',
       source: 'purchase',
-      metadata: { paymentKey: 'pk-empty', orderId: 'ord-empty', packageId: 'credit_1' },
+      metadata: { paymentKey: 'pk-empty', orderId: 'ord-empty', packageId: 'credit_15' },
       created_at: '2026-05-22T00:00:00Z',
     },
   ];
@@ -135,9 +135,9 @@ test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 코�
   assert.equal(result.items.length, 3);
   assert.equal(result.refundableItems.length, 2);
   assert.equal(result.items.find((i) => i.id === 'tx-full')?.status, 'full');
-  assert.equal(result.items.find((i) => i.id === 'tx-full')?.refundAmountWon, 990);
+  assert.equal(result.items.find((i) => i.id === 'tx-full')?.refundAmountWon, 9900);
   assert.equal(result.items.find((i) => i.id === 'tx-partial')?.status, 'partial');
-  assert.equal(result.items.find((i) => i.id === 'tx-partial')?.refundAmountWon, 571);
+  assert.equal(result.items.find((i) => i.id === 'tx-partial')?.refundAmountWon, 3300);
   assert.equal(result.items.find((i) => i.id === 'tx-empty')?.status, 'none');
-  assert.equal(result.totalRefundableWon, 1561);
+  assert.equal(result.totalRefundableWon, 13200);
 });

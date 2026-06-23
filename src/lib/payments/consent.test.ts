@@ -17,7 +17,7 @@ function pkg(id: string) {
 }
 
 test('getRequiredConsentKinds — 공통 3 (terms/privacy/refund) 모든 종류 포함', () => {
-  for (const id of ['credit_1', 'subscription_30', 'lifetime_report', 'taste_today_detail']) {
+  for (const id of ['credit_15', 'subscription_30', 'lifetime_report', 'taste_today_detail']) {
     const required = getRequiredConsentKinds(pkg(id));
     assert.ok(required.includes('terms'), `${id}: terms 누락`);
     assert.ok(required.includes('privacy'), `${id}: privacy 누락`);
@@ -26,7 +26,7 @@ test('getRequiredConsentKinds — 공통 3 (terms/privacy/refund) 모든 종류 
 });
 
 test('getRequiredConsentKinds — credits 종류 = + coin', () => {
-  const required = getRequiredConsentKinds(pkg('credit_3'));
+  const required = getRequiredConsentKinds(pkg('credit_15'));
   assert.ok(required.includes('coin'));
   assert.equal(required.length, 4); // terms + privacy + refund + coin
 });
@@ -74,7 +74,7 @@ test('getConsentItems — 각 항목에 kind/label/description 포함', () => {
 });
 
 test('findMissingConsents — 모두 동의 시 빈 배열', () => {
-  const p = pkg('credit_1');
+  const p = pkg('credit_15');
   const required = getRequiredConsentKinds(p);
   const missing = findMissingConsents(p, required);
   assert.deepEqual(missing, []);
@@ -96,7 +96,7 @@ test('findMissingConsents — 빈 동의 시 전체 누락', () => {
 });
 
 test('findMissingConsents — 불필요한 동의 추가는 OK (필수만 검사)', () => {
-  const p = pkg('credit_1');
+  const p = pkg('credit_15');
   const accepted: PolicyKind[] = ['terms', 'privacy', 'refund', 'coin', 'subscription'];
   const missing = findMissingConsents(p, accepted);
   assert.deepEqual(missing, []);

@@ -398,14 +398,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   }> = [
     {
       label: '오늘 자세히 보기',
-      price: '550원',
+      price: '9,900원',
       desc: '지금 흐름과 조심해야 할 시간대',
       href: todayDetailHref,
       eventProduct: 'today-detail',
     },
     {
       label: '깊은 사주 풀이',
-      price: '3,900원',
+      price: '9,900원',
       desc: '성격·일·관계·재물의 큰 흐름 한 번에',
       href: `/saju/${encodeURIComponent(slug)}/premium`,
       eventProduct: 'saju-premium',
@@ -660,7 +660,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     reason: todayDetailEntitlement ? 'product-purchased' : null,
                   }}
                   unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
-                  unpaidLabel="오늘 자세히 · 550원"
+                  unpaidLabel="오늘 자세히 · 9,900원"
                   ownedLabel="구매한 풀이 열기"
                   className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[13px] font-bold text-white/85"
                 />

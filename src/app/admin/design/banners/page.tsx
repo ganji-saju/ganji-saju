@@ -88,7 +88,7 @@ export default function BannersShowcasePage() {
               title="오늘 자세히 보기"
               description="지금 흐름 · 조심할 시간대 · 핵심 한 줄"
               ctaLabel=""
-              pricePill="550원"
+              pricePill="9,900원"
               href="/today-fortune/detail"
             />
           </BannerSection>

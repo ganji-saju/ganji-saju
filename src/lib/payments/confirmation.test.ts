@@ -85,7 +85,7 @@ test('taste product confirmation accepts product package with slug and scope', (
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
-    amount: 1900,
+    amount: 9900,
     packageId: 'taste_monthly_calendar',
     slug: 'reading-123',
     scope: '2026-05',
@@ -104,7 +104,7 @@ test('scoped taste product confirmation callback can omit slug because order led
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
-    amount: 3900,
+    amount: 9900,
     packageId: 'taste_year_core',
   });
 

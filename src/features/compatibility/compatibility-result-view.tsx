@@ -467,7 +467,7 @@ export function CompatibilityResultView({
                 href={checkoutHref}
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
-                990원 · 깊은 궁합 풀이 보기 →
+                9,900원 · 깊은 궁합 풀이 보기 →
               </Link>
               <Link
                 href={retakeHref}
