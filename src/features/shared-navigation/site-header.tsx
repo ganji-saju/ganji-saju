@@ -480,35 +480,19 @@ function MobileChrome({
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
             {/* §Brand — 2026-05-14 리디자인: 컨텍스트 설명 제거, 한 줄 lockup */}
-            <Link href="/" className="app-top-brand min-w-0 flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] text-white"
-                style={{
-                  background: 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-                  fontFamily: 'var(--font-han)',
-                  fontWeight: 800,
-                  fontSize: 19,
-                  letterSpacing: '-0.02em',
-                  boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
-                }}
-              >
-                干
-              </span>
-              <div className="leading-none min-w-0">
-                <div
-                  className="text-[9.5px] font-extrabold uppercase tracking-[0.08em] text-[var(--app-pink-strong)]"
-                  style={{ marginBottom: 3 }}
-                >
-                  간지사주
-                </div>
-                <div
-                  className="text-[16.5px] font-extrabold tracking-tight text-[var(--app-ink)]"
-                  style={{ fontFamily: 'var(--font-han)' }}
-                >
-                  간지사주
-                </div>
-              </div>
+            {/* 2026-06-24 — 붓글씨 로고 이미지(간지사주 9,900원). picture(avif/webp/png 폴백). */}
+            <Link href="/" className="app-top-brand min-w-0 flex items-center" aria-label="간지사주 홈">
+              <picture>
+                <source srcSet="/images/gangi/logo.avif" type="image/avif" />
+                <source srcSet="/images/gangi/logo.webp" type="image/webp" />
+                <img
+                  src="/images/gangi/logo.png"
+                  alt="간지사주 9,900원"
+                  className="w-auto"
+                  style={{ height: 28 }}
+                  decoding="async"
+                />
+              </picture>
             </Link>
 
             {/* §Desktop primary nav — 라운드 underline 형 */}

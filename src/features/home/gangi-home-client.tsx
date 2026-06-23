@@ -47,13 +47,6 @@ export function GangiHomeClient({
           onTrack={(payload) => trackMoonlightEvent('home_service_menu_click', payload)}
         />
 
-        {/* server-rendered MyStarSignCard slot. profile 없으면 null. */}
-        {myStarSignSlot ? (
-          <section className="px-4 pt-3" aria-label="MY 별자리 오늘 운세">
-            {myStarSignSlot}
-          </section>
-        ) : null}
-
         {/* 카테고리 칩 (전체 · 사주·명리 · 운세·택일 · 상담) */}
         <GangiCategoryTabs
           active={activeCategory}
@@ -95,6 +88,13 @@ export function GangiHomeClient({
             })
           }
         />
+
+        {/* 2026-06-24 — MY 별자리 slot 을 푸터 직전으로 이동(배너 아래 → 하단). profile 없으면 null. */}
+        {myStarSignSlot ? (
+          <section className="px-4 pb-4 pt-2" aria-label="MY 별자리 오늘 운세">
+            {myStarSignSlot}
+          </section>
+        ) : null}
       </div>
     </AppShell>
   );
