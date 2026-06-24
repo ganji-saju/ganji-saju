@@ -9,9 +9,9 @@ export default function SeoEntrySection() {
     <section id="seo-entry" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-3">
-          <p className="text-sm uppercase tracking-[0.24em] text-[#d2b072]/75">Free Entry / SEO</p>
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f8f1df]">가볍게 둘러보는 무료 입구는 뒤쪽 탐색 구간으로 분리</h2>
-          <p className="max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
+          <p className="text-base uppercase tracking-[0.24em] text-[#d2b072]/75">Free Entry / SEO</p>
+          <h2 className="text-4xl font-semibold tracking-tight text-[#f8f1df]">가볍게 둘러보는 무료 입구는 뒤쪽 탐색 구간으로 분리</h2>
+          <p className="max-w-2xl text-base leading-7 text-white/60 sm:text-lg">
             오늘의 운세, 무료 타로, 띠별, 꿈해몽은 검색과 첫 경험을 담당하는 유입선입니다. Day 3에서는 이들을 본 서비스와 같은
             무게로 앞세우지 않고, 탐색용 구간으로 한 단계 뒤에 배치합니다.
           </p>
@@ -32,10 +32,10 @@ export default function SeoEntrySection() {
         {FREE_EXPERIENCES.map((item) => (
           <article key={item.title} className="flex h-full flex-col rounded-[26px] border border-white/10 bg-white/[0.04] p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-[#f8f1df]">{item.title}</h3>
+              <h3 className="text-2xl font-semibold text-[#f8f1df]">{item.title}</h3>
               <Badge
                 className={cn(
-                  'border text-xs',
+                  'border text-sm',
                   item.status === '무입력'
                     ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
                     : 'border-white/10 bg-white/5 text-white/55'
@@ -44,8 +44,8 @@ export default function SeoEntrySection() {
                 {item.status}
               </Badge>
             </div>
-            <p className="flex-1 text-sm leading-7 text-white/58">{item.body}</p>
-            <Link href={item.href} className="mt-6 text-sm text-[#d2b072] underline underline-offset-4 hover:text-[#e3c68d]">
+            <p className="flex-1 text-base leading-7 text-white/58">{item.body}</p>
+            <Link href={item.href} className="mt-6 text-base text-[#d2b072] underline underline-offset-4 hover:text-[#e3c68d]">
               무료 메뉴 열기
             </Link>
           </article>

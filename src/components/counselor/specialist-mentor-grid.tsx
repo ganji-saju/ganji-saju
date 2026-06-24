@@ -60,7 +60,7 @@ export function SpecialistMentorGrid({
           eyebrow="전문 선생"
           title={title}
           description={description}
-          titleClassName="text-2xl"
+          titleClassName="text-3xl"
         />
       ) : null}
 
@@ -70,19 +70,19 @@ export function SpecialistMentorGrid({
             key={mentor.slug}
             surface="soft"
             eyebrow={
-              <span className="flex items-center gap-2 text-xs tracking-[0.22em] text-[var(--app-gold)]/72">
+              <span className="flex items-center gap-2 text-sm tracking-[0.22em] text-[var(--app-gold)]/72">
                 <span>{mentor.hanja}</span>
                 <ModeBadge mode={mentor.mode} />
               </span>
             }
             title={mentor.title}
-            titleClassName="text-xl"
+            titleClassName="text-2xl"
             description={
               <>
-                <div className="text-sm font-medium text-[var(--app-gold-text)]">
+                <div className="text-base font-medium text-[var(--app-gold-text)]">
                   {mentor.specialty}
                 </div>
-                <p className="mt-2 text-sm leading-7 text-[var(--app-copy)]">{mentor.description}</p>
+                <p className="mt-2 text-base leading-7 text-[var(--app-copy)]">{mentor.description}</p>
               </>
             }
             badge={
@@ -93,7 +93,7 @@ export function SpecialistMentorGrid({
             footer={
               <Link
                 href={mentor.href}
-                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
+                className="inline-flex items-center gap-2 text-base font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
               >
                 {mentor.ctaLabel}
                 <ArrowRight className="h-4 w-4" />

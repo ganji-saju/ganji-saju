@@ -78,7 +78,7 @@ export function ZodiacBirthCheck() {
             setYear(next);
             clampDay(next, month);
           }}
-          className="gangi-form-control gangi-birth-input px-3 text-sm"
+          className="gangi-form-control gangi-birth-input px-3 text-base"
         >
           <option value="">연도</option>
           {YEAR_OPTIONS.map((value) => (
@@ -96,7 +96,7 @@ export function ZodiacBirthCheck() {
             setMonth(next);
             clampDay(year, next);
           }}
-          className="gangi-form-control gangi-birth-input px-3 text-sm"
+          className="gangi-form-control gangi-birth-input px-3 text-base"
         >
           <option value="">월</option>
           {MONTH_OPTIONS.map((value) => (
@@ -110,7 +110,7 @@ export function ZodiacBirthCheck() {
           name="day"
           value={day}
           onChange={(event) => setDay(event.target.value)}
-          className="gangi-form-control gangi-birth-input px-3 text-sm"
+          className="gangi-form-control gangi-birth-input px-3 text-base"
         >
           <option value="">일</option>
           {dayOptions.map((value) => (

@@ -193,10 +193,10 @@ function DetailTopicReport({
             <div className="app-caption" style={{ color: meta.color }}>
               {meta.eyebrow}
             </div>
-            <div className="mt-2 text-xl font-semibold text-[var(--app-ink)]">{label}</div>
+            <div className="mt-2 text-2xl font-semibold text-[var(--app-ink)]">{label}</div>
           </div>
           <Badge
-            className="border text-xs"
+            className="border text-sm"
             style={{
               borderColor: meta.line,
               backgroundColor: meta.soft,
@@ -222,14 +222,14 @@ function DetailTopicReport({
             </span>
             {content.scoreLabel ? (
               <span
-                className="rounded-full border px-2.5 py-1 text-xs font-semibold"
+                className="rounded-full border px-2.5 py-1 text-sm font-semibold"
                 style={{ borderColor: meta.line, color: meta.color }}
               >
                 {content.scoreLabel}
               </span>
             ) : null}
           </div>
-          <p className="mt-3 text-base font-semibold leading-8 text-[var(--app-ink)] sm:text-lg">
+          <p className="mt-3 text-lg font-semibold leading-8 text-[var(--app-ink)] sm:text-xl">
             <HighlightedText
               text={limitSajuSentences(content.lead, 2)}
               keywords={content.highlights}
@@ -241,7 +241,7 @@ function DetailTopicReport({
               {content.highlights.map((keyword) => (
                 <span
                   key={`${topic}-${keyword}`}
-                  className="rounded-full border px-3 py-1 text-xs font-semibold"
+                  className="rounded-full border px-3 py-1 text-sm font-semibold"
                   style={{
                     borderColor: meta.line,
                     backgroundColor: '#ffffff',
@@ -267,12 +267,12 @@ function DetailTopicReport({
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: block.tone === 'caution' ? '#fb7185' : meta.color }}
                 />
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--app-copy-soft)]">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--app-copy-soft)]">
                   {block.tone ? TONE_LABELS[block.tone] : '풀이'}
                 </div>
               </div>
-              <h3 className="mt-3 text-base font-semibold text-[var(--app-ink)]">{block.title}</h3>
-              <p className="mt-3 text-sm leading-8 text-[var(--app-copy)]">
+              <h3 className="mt-3 text-lg font-semibold text-[var(--app-ink)]">{block.title}</h3>
+              <p className="mt-3 text-base leading-8 text-[var(--app-copy)]">
                 <HighlightedText
                   text={limitSajuSentences(block.body, 2)}
                   keywords={[...(content.highlights ?? []), ...(block.keywords ?? [])]}
@@ -304,7 +304,7 @@ function ReferenceDetails({ children }: { children?: ReactNode }) {
 
   return (
     <details className="mt-6 rounded-[24px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-4">
-      <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--app-copy)]">
+      <summary className="cursor-pointer list-none text-base font-semibold text-[var(--app-copy)]">
         사주표 보기
       </summary>
       <div className="mt-4 space-y-5">{children}</div>
@@ -409,7 +409,7 @@ export default function DetailUnlock({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">분야별 깊이보기</div>
-            <h2 className="mt-3 text-xl font-semibold text-[var(--app-ink)]">
+            <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">
               돈·연애·일·생활 리듬 풀이가 열려 있습니다
             </h2>
           </div>
@@ -421,12 +421,12 @@ export default function DetailUnlock({
               열람 가능
             </Badge>
             {remaining !== null ? (
-              <span className="text-xs text-[var(--app-copy-soft)]">잔여 코인 {remaining}개</span>
+              <span className="text-sm text-[var(--app-copy-soft)]">잔여 코인 {remaining}개</span>
             ) : null}
           </div>
         </div>
 
-        <p className="app-body-copy mt-4 text-sm">
+        <p className="app-body-copy mt-4 text-base">
           {access === 'reused'
             ? '이전에 열었던 같은 결과라 코인 차감 없이 다시 보여드립니다.'
             : '지금 궁금한 분야를 짧게 나눠서 보여드립니다.'}
@@ -447,7 +447,7 @@ export default function DetailUnlock({
 
         <div className="rounded-[24px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] p-5">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[var(--app-ink)]">기억할 키워드</div>
+            <div className="text-base font-medium text-[var(--app-ink)]">기억할 키워드</div>
             <Badge className="border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy-muted)]">
               추천 포인트
             </Badge>
@@ -456,7 +456,7 @@ export default function DetailUnlock({
             {content.luckyKeywords.map((kw) => (
               <Badge
                 key={kw}
-                className="border text-xs"
+                className="border text-sm"
                 style={{
                   backgroundColor: `${content.luckyColor}18`,
                   borderColor: `${content.luckyColor}45`,
@@ -481,7 +481,7 @@ export default function DetailUnlock({
         <p className="font-medium text-rose-200">{errorMsg}</p>
         {errorMsg.includes('부족') ? (
           <>
-            <p className="app-body-copy text-sm">잔여 코인: {remaining}개</p>
+            <p className="app-body-copy text-base">잔여 코인: {remaining}개</p>
             <Link href="/credits">
               <Button className="border border-[var(--app-gold)]/35 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)] hover:bg-[var(--app-gold)]/18">
                 코인 충전하기
@@ -508,10 +508,10 @@ export default function DetailUnlock({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
             <div className="app-caption text-emerald-700">이미 포함됨</div>
-            <h2 className="mt-3 text-xl font-semibold text-[var(--app-ink)]">
+            <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">
               깊은 사주풀이에서 바로 볼 수 있어요
             </h2>
-            <p className="app-body-copy mt-3 text-sm">
+            <p className="app-body-copy mt-3 text-base">
               {premiumAccessLabel}에 포함된 내용이라 1코인을 다시 쓰지 않습니다.
             </p>
           </div>
@@ -523,7 +523,7 @@ export default function DetailUnlock({
         {premiumHref ? (
           <Link
             href={premiumHref}
-            className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--app-gold)]/38 bg-[var(--app-gold)]/14 px-6 text-sm font-semibold text-[var(--app-gold-text)] shadow-[0_16px_42px_rgba(210,176,114,0.12)] transition hover:bg-[var(--app-gold)]/20"
+            className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--app-gold)]/38 bg-[var(--app-gold)]/14 px-6 text-base font-semibold text-[var(--app-gold-text)] shadow-[0_16px_42px_rgba(210,176,114,0.12)] transition hover:bg-[var(--app-gold)]/20"
           >
             깊은 사주풀이 이어보기
           </Link>
@@ -546,7 +546,7 @@ export default function DetailUnlock({
           <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="app-caption">선택 심화</div>
-            <h2 className="mt-3 text-xl font-semibold text-[var(--app-ink)]">
+            <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ink)]">
               궁금한 분야만 더 보기
             </h2>
           </div>
@@ -555,7 +555,7 @@ export default function DetailUnlock({
           </Badge>
         </div>
 
-        <p className="app-body-copy mt-4 max-w-2xl text-sm">
+        <p className="app-body-copy mt-4 max-w-2xl text-base">
           기본 풀이를 본 뒤, 돈·연애·일·생활 중 더 궁금한 부분만 열어보세요.
         </p>
 
@@ -567,7 +567,7 @@ export default function DetailUnlock({
           ].map((item) => (
             <div
               key={item}
-              className="rounded-[18px] border border-[var(--app-line)] bg-white/75 px-4 py-4 text-sm leading-7 text-[var(--app-copy)]"
+              className="rounded-[18px] border border-[var(--app-line)] bg-white/75 px-4 py-4 text-base leading-7 text-[var(--app-copy)]"
             >
               {item}
             </div>
@@ -580,8 +580,8 @@ export default function DetailUnlock({
               key={key}
               className="rounded-[22px] border border-[var(--app-line)] bg-white/70 p-4"
             >
-              <div className="text-sm font-medium text-[var(--app-ink)]">{label}</div>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--app-copy)]">
+              <div className="text-base font-medium text-[var(--app-ink)]">{label}</div>
+              <p className="mt-2 text-base leading-relaxed text-[var(--app-copy)]">
                 {getPreviewCopy(key)}
               </p>
             </div>
@@ -590,7 +590,7 @@ export default function DetailUnlock({
 
         <div className="relative z-20 mt-6 rounded-[24px] border border-[var(--app-line)] bg-white/86 p-5 text-center backdrop-blur-sm">
           <p className="font-semibold text-[var(--app-ink)]">분야별 깊이보기</p>
-          <p className="mt-2 text-sm text-[var(--app-copy-muted)]">
+          <p className="mt-2 text-base text-[var(--app-copy-muted)]">
             돈·연애·일·건강 4개 영역을 한 번에 열고, 같은 결과는 이후에도 다시 차감하지 않습니다.
           </p>
           <Button
@@ -601,7 +601,7 @@ export default function DetailUnlock({
           >
             {state === 'loading' ? '처리 중...' : '1코인으로 분야별 보기'}
           </Button>
-          <p className="mt-3 text-xs text-[var(--app-copy-soft)]">
+          <p className="mt-3 text-sm text-[var(--app-copy-soft)]">
             이미 열었던 같은 결과는 코인 차감 없이 다시 열립니다.
           </p>
           </div>

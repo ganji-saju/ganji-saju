@@ -225,10 +225,10 @@ export function SajuAiInterpretationPanel({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="app-caption text-[var(--app-pink-strong)]">선생님 풀이 · {focusLabel}</div>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-[var(--app-ink)]">
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-[var(--app-ink)]">
             {simplifySajuCopy(interpretation.headline)}
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">
+          <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--app-copy)]">
             {status === 'loading'
               ? '입력된 사주 정보를 바탕으로 읽기 쉬운 풀이를 정리하는 중입니다.'
               : simplifySajuCopy(interpretation.summary)}
@@ -262,14 +262,14 @@ export function SajuAiInterpretationPanel({
             <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">
               포인트 {index + 1}
             </div>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{simplifySajuCopy(insight)}</p>
+            <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">{simplifySajuCopy(insight)}</p>
           </div>
         ))}
       </div>
 
       <div className="mt-6">
         <div className="app-caption text-[var(--app-pink-strong)]">말투 바꿔 보기</div>
-        <p className="mt-2 text-sm leading-7 text-[var(--app-copy-soft)]">
+        <p className="mt-2 text-base leading-7 text-[var(--app-copy-soft)]">
           풀이 내용은 유지하고, 설명하는 온도만 다르게 정리합니다.
         </p>
         {/* 2026-05-15 — 말투 비교 counselor 카드는 긴 풀이라 2열로 좁아지면 가독성↓. 1열 stack. */}
@@ -292,10 +292,10 @@ export function SajuAiInterpretationPanel({
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <div className="text-sm font-semibold text-[var(--app-ivory)]">
+                    <div className="text-base font-semibold text-[var(--app-ivory)]">
                       {compareCounselorId === 'male' ? '또렷한 말투' : '부드러운 말투'}
                     </div>
-                    <div className="mt-1 text-xs text-[var(--app-copy-soft)]">
+                    <div className="mt-1 text-sm text-[var(--app-copy-soft)]">
                       {isActive ? '현재 선택됨' : '비교용'}
                     </div>
                   </div>
@@ -310,17 +310,17 @@ export function SajuAiInterpretationPanel({
                     {compareState.source === 'openai' ? '정밀 해석' : '기본 해석'}
                   </span>
                 </div>
-                <div className="mt-4 text-lg font-semibold leading-8 text-[var(--app-ivory)]">
+                <div className="mt-4 text-xl font-semibold leading-8 text-[var(--app-ivory)]">
                   {simplifySajuCopy(compareState.interpretation.headline)}
                 </div>
-                <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">
+                <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">
                   {simplifySajuCopy(compareState.interpretation.summary)}
                 </p>
                 <div className="mt-4 grid gap-2">
                   {compareState.interpretation.insights.slice(0, 2).map((insight, index) => (
                     <div
                       key={`${compareCounselorId}-${index}-${insight}`}
-                      className="rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-3 py-3 text-sm leading-7 text-[var(--app-copy)]"
+                      className="rounded-[1rem] border border-[var(--app-line)] bg-[var(--app-pink-soft)] px-3 py-3 text-base leading-7 text-[var(--app-copy)]"
                     >
                       {simplifySajuCopy(insight)}
                     </div>
@@ -332,7 +332,7 @@ export function SajuAiInterpretationPanel({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs leading-6 text-[var(--app-copy-soft)]">
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-sm leading-6 text-[var(--app-copy-soft)]">
         <span>{result.counselorId === 'male' ? '남선생 풀이' : '여선생 풀이'}</span>
         {result.source === 'openai' ? (
           <span>{result.cached ? '저장된 해석' : '새로 정리'}</span>
@@ -352,14 +352,14 @@ export function SajuAiInterpretationPanel({
           {status === 'loading' ? '불러오는 중' : cacheEnabled ? '저장된 해석 확인' : '해석 정리하기'}
         </button>
         {!cacheEnabled ? (
-          <span className="text-xs leading-6 text-[var(--app-copy-soft)]">
+          <span className="text-sm leading-6 text-[var(--app-copy-soft)]">
             임시 결과는 이 화면에서 한 번만 정리합니다.
           </span>
         ) : null}
       </div>
 
       {error ? (
-        <div className="mt-4 rounded-[1.1rem] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-sm leading-7 text-[var(--app-ivory)]">
+        <div className="mt-4 rounded-[1.1rem] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-base leading-7 text-[var(--app-ivory)]">
           {error}
         </div>
       ) : null}

@@ -13,7 +13,7 @@ export function SajuReasonSnippet({
         {result.groundingSummary.factLines.slice(0, 3).map((line) => (
           <span
             key={line}
-            className="rounded-full border border-white/70 bg-white/80 px-3 py-1 text-xs leading-6 text-[var(--app-copy-muted)]"
+            className="rounded-full border border-white/70 bg-white/80 px-3 py-1 text-sm leading-6 text-[var(--app-copy-muted)]"
           >
             {line}
           </span>

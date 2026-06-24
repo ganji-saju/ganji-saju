@@ -25,11 +25,11 @@ export function FollowUpQuestionChips({
           <MessageCircle className="h-5 w-5" />
         </span>
         <div className="min-w-0">
-          <div className="text-sm font-normal leading-5 text-[var(--app-pink-strong)]">대화방으로 바로 이어가기</div>
-          <h3 className="mt-1 text-xl font-normal leading-8 text-[var(--app-ink)]">
+          <div className="text-base font-normal leading-5 text-[var(--app-pink-strong)]">대화방으로 바로 이어가기</div>
+          <h3 className="mt-1 text-2xl font-normal leading-8 text-[var(--app-ink)]">
             지금 결과를 놓고 바로 물어보세요
           </h3>
-          <p className="mt-2 text-sm font-normal leading-6 text-[var(--app-copy)]">
+          <p className="mt-2 text-base font-normal leading-6 text-[var(--app-copy)]">
             아래 질문을 누르면 대화방으로 이동해 이 결과를 바탕으로 이어서 묻습니다.
           </p>
         </div>

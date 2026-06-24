@@ -70,17 +70,17 @@ export function SwipeSectionDeck({
       <div className="mb-4 rounded-[1.4rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 sm:px-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--app-ink)]">
               {title}
             </h2>
             {description ? (
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
+              <p className="mt-2 max-w-3xl text-base leading-7 text-[var(--app-copy-muted)]">
                 {description}
               </p>
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="rounded-full border border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 px-3 py-1 text-xs text-[var(--app-pink-strong)]">
+            <span className="rounded-full border border-[var(--app-pink)]/25 bg-[var(--app-pink)]/10 px-3 py-1 text-sm text-[var(--app-pink-strong)]">
               {activeIndex + 1} / {items.length}
             </span>
             <Button
@@ -113,7 +113,7 @@ export function SwipeSectionDeck({
               type="button"
               onClick={() => scrollToIndex(index)}
               className={cn(
-                'shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors',
+                'shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors',
                 activeIndex === index
                   ? 'border-[var(--app-pink)]/35 bg-[var(--app-pink)]/14 text-[var(--app-pink-strong)]'
                   : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)] hover:bg-[var(--app-pink-soft)] hover:text-[var(--app-ink)]'
@@ -156,11 +156,11 @@ export function SwipeSectionSlide({
     <section className={cn('min-w-0', className)}>
       <div className="mb-4 rounded-[1.35rem] border border-[var(--app-line)] bg-white px-4 py-4 sm:px-5">
         {eyebrow ? <div className="app-caption">{eyebrow}</div> : null}
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--app-ink)]">
+        <h3 className="mt-2 text-3xl font-semibold tracking-tight text-[var(--app-ink)]">
           {title}
         </h3>
         {description ? (
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-[var(--app-copy-muted)]">
+          <p className="mt-2 max-w-3xl text-base leading-7 text-[var(--app-copy-muted)]">
             {description}
           </p>
         ) : null}

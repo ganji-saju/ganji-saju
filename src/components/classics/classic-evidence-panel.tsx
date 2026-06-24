@@ -37,24 +37,24 @@ function ClassicEvidenceCard({ item }: { item: ClassicEvidenceItem }) {
         </Badge>
       </div>
 
-      <div className="mt-4 text-xs uppercase tracking-[0.22em] text-[var(--app-copy-soft)]">
+      <div className="mt-4 text-sm uppercase tracking-[0.22em] text-[var(--app-copy-soft)]">
         {item.section.path} · {item.section.titleKo}
       </div>
 
       <div className="mt-3 rounded-2xl border border-[var(--app-gold)]/18 bg-[var(--app-gold)]/8 px-4 py-4">
-        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--app-gold-soft)]">
+        <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--app-gold-soft)]">
           한글 풀이
         </div>
-        <p className="mt-2 text-sm leading-7 text-[var(--app-ivory)]">{summary}</p>
+        <p className="mt-2 text-base leading-7 text-[var(--app-ivory)]">{summary}</p>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+      <div className="mt-4 flex flex-col gap-3 text-base leading-7 text-[var(--app-copy-muted)]">
         {item.passage.readingKo ? <p>독음 · {item.passage.readingKo}</p> : null}
         {item.passage.literalKo ? <p>직역 · {item.passage.literalKo}</p> : null}
       </div>
 
       <details className="group mt-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-sm font-semibold text-[var(--app-copy)] transition-colors hover:border-[var(--app-gold)]/30 hover:text-[var(--app-ivory)]">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-base font-semibold text-[var(--app-copy)] transition-colors hover:border-[var(--app-gold)]/30 hover:text-[var(--app-ivory)]">
           <span>원문 보기</span>
           <span
             aria-hidden="true"
@@ -65,13 +65,13 @@ function ClassicEvidenceCard({ item }: { item: ClassicEvidenceItem }) {
         </summary>
         <blockquote
           lang="zh-Hant"
-          className=" mt-3 break-words rounded-2xl border border-[var(--app-gold)]/14 bg-[var(--app-surface-muted)] px-4 py-4 text-base leading-8 text-[var(--app-gold-text)]"
+          className=" mt-3 break-words rounded-2xl border border-[var(--app-gold)]/14 bg-[var(--app-surface-muted)] px-4 py-4 text-lg leading-8 text-[var(--app-gold-text)]"
         >
           {item.passage.originalZh}
         </blockquote>
       </details>
 
-      <div className="mt-4 flex flex-wrap gap-2 text-xs">
+      <div className="mt-4 flex flex-wrap gap-2 text-sm">
         <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-[var(--app-copy)]">
           {item.provenance.sourceName}
         </span>
@@ -100,10 +100,10 @@ export async function ClassicEvidencePanel({
         <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-5 py-4 transition-colors hover:border-[var(--app-gold)]/30 sm:flex-row sm:items-center sm:justify-between">
           <span>
             <span className="app-caption">참고 원문</span>
-            <span className="mt-2 block text-lg font-semibold text-[var(--app-ivory)]">
+            <span className="mt-2 block text-xl font-semibold text-[var(--app-ivory)]">
               {evidence.concept} 참고 자료
             </span>
-            <span className="mt-2 block text-sm leading-7 text-[var(--app-copy-muted)]">
+            <span className="mt-2 block text-base leading-7 text-[var(--app-copy-muted)]">
               출처 확인이 필요한 경우에만 열어보세요.
             </span>
           </span>
@@ -129,10 +129,10 @@ export async function ClassicEvidencePanel({
           </div>
         ) : (
           <div className="mt-5 rounded-2xl border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-5 py-5">
-            <div className="text-sm font-semibold text-[var(--app-ivory)]">
+            <div className="text-base font-semibold text-[var(--app-ivory)]">
               원문 코퍼스 적재를 기다리고 있습니다
             </div>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy-muted)]">
+            <p className="mt-3 text-base leading-7 text-[var(--app-copy-muted)]">
               검수된 문단이 연결되면 원문, 독음, 직역, 해설, 출처와 라이선스가 이 영역에 함께
               표시됩니다. 지금은 신뢰할 수 있는 판본과 출처 원칙을 먼저 맞추고 있습니다.
             </p>

@@ -178,7 +178,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className="text-[23px] leading-none">
+                  <span aria-hidden="true" className="text-[23px] leading-tight">
                     {meta.icon}
                   </span>
                   <span className="text-[15.5px] font-extrabold text-[var(--app-ink)]">

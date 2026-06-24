@@ -11,7 +11,7 @@ export default function MobileHomeDock() {
             key={item.label}
             href={item.href}
             className={cn(
-              'rounded-2xl border px-3 py-2 text-center text-xs font-medium transition-colors',
+              'rounded-2xl border px-3 py-2 text-center text-sm font-medium transition-colors',
               item.tone === 'acquisition'
                 ? 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)]'
                 : 'border-[var(--app-gold)]/22 bg-[var(--app-gold)]/10 text-[var(--app-gold-soft)]'

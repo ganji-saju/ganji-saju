@@ -41,14 +41,14 @@ export default function SafeRedirectPage() {
             <SectionHeader
               eyebrow="대화 예시"
               title="지금은 해석보다 연결이 먼저입니다"
-              titleClassName="text-3xl"
+              titleClassName="text-4xl"
               description="공감의 말로만 머무르지 않고, 실제로 지금 연결하실 수 있는 자원을 먼저 보여드리는 것이 이 화면의 역할입니다."
               descriptionClassName="max-w-3xl text-[var(--app-copy)]"
             />
 
             <div className="mt-6 space-y-4">
               <div className="flex justify-end">
-                <div className="max-w-[18rem] rounded-[1.2rem] bg-[var(--app-surface-muted)] px-4 py-4 text-sm leading-7 text-[var(--app-ivory)]">
+                <div className="max-w-[18rem] rounded-[1.2rem] bg-[var(--app-surface-muted)] px-4 py-4 text-base leading-7 text-[var(--app-ivory)]">
                   요즘 너무 힘들어서
                   <br />
                   그만 살고 싶어요
@@ -95,7 +95,7 @@ export default function SafeRedirectPage() {
           <SectionHeader
             eyebrow="다른 안전 연결 예시"
             title="상황에 따라 먼저 연결할 수 있는 자원들"
-            titleClassName="text-3xl"
+            titleClassName="text-4xl"
             description="의료, 법률, 투자, 애도처럼 성격이 다른 고위험 장면도 사주 해석과 분리해 안전 자원으로 안내합니다."
             descriptionClassName="max-w-3xl text-[var(--app-copy)]"
           />

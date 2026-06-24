@@ -28,9 +28,9 @@ export function EngineMethodLinks({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="app-caption">풀이 읽을거리</div>
-          <h2 className="mt-3 text-2xl font-semibold text-[var(--app-ivory)]">{title}</h2>
+          <h2 className="mt-3 text-3xl font-semibold text-[var(--app-ivory)]">{title}</h2>
           {description ? (
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--app-copy)]">{description}</p>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--app-copy)]">{description}</p>
           ) : null}
         </div>
         <Link
@@ -53,9 +53,9 @@ export function EngineMethodLinks({
                 {entry.eyebrow}
               </Badge>
             </div>
-            <h3 className="mt-4 text-2xl font-semibold text-[var(--app-ivory)]">{entry.title}</h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--app-copy)]">{entry.summary}</p>
-            <div className="mt-4 text-sm font-semibold text-[var(--app-gold-text)]">이 글 읽기</div>
+            <h3 className="mt-4 text-3xl font-semibold text-[var(--app-ivory)]">{entry.title}</h3>
+            <p className="mt-3 text-base leading-7 text-[var(--app-copy)]">{entry.summary}</p>
+            <div className="mt-4 text-base font-semibold text-[var(--app-gold-text)]">이 글 읽기</div>
           </Link>
         ))}
       </div>

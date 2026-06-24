@@ -284,9 +284,9 @@ export default function TossMembershipCheckout({
             : `${amount.toLocaleString()}원 ${selectedMethod.shortLabel}로 결제하기`}
       </Button>
       {errorMessage ? (
-        <p className="text-center text-xs leading-6 text-rose-600">{errorMessage}</p>
+        <p className="text-center text-sm leading-6 text-rose-600">{errorMessage}</p>
       ) : (
-        <p className="text-center text-xs leading-6 text-[var(--app-copy-soft)]">
+        <p className="text-center text-sm leading-6 text-[var(--app-copy-soft)]">
           Toss 결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
         </p>
       )}

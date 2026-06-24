@@ -133,7 +133,7 @@ export default function DreamPage() {
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[34.5px] font-bold leading-none"
+                  className="text-[34.5px] font-bold leading-tight"
                   style={{
                     fontFamily: 'var(--font-han)',
                     color: 'var(--app-pink-strong)',

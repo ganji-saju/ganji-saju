@@ -496,19 +496,19 @@ function GatewayView({
         </div>
 
         {!hasSupabaseBrowserEnv ? (
-          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
             로컬 환경에서는 Supabase URL과 공개 키를 설정해야 회원가입과 로그인을 사용할 수 있습니다.
           </p>
         ) : null}
 
         {statusMessage ? (
-          <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+          <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
             {statusMessage}
           </p>
         ) : null}
 
         {errorMessage ? (
-          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+          <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
             {errorMessage}
           </p>
         ) : null}
@@ -980,10 +980,10 @@ function LoginContent({
     >
       <div className="mb-5">
         <div className="app-caption mb-3">{modeCopy.eyebrow}</div>
-        <h1 className=" text-3xl font-bold tracking-tight text-[var(--app-ink)] sm:text-4xl">
+        <h1 className=" text-4xl font-bold tracking-tight text-[var(--app-ink)] sm:text-5xl">
           {modeCopy.title}
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--app-copy-muted)]">
+        <p className="mx-auto mt-3 max-w-xl text-base leading-6 text-[var(--app-copy-muted)]">
           {modeCopy.description}
         </p>
       </div>
@@ -996,7 +996,7 @@ function LoginContent({
             setErrorMessage('');
             setStatusMessage('');
           }}
-          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
         >
           ← SNS 로그인으로 돌아가기
         </button>
@@ -1008,7 +1008,7 @@ function LoginContent({
             setErrorMessage('');
             setStatusMessage('');
           }}
-          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-xs font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
         >
           로그인 화면으로 돌아가기
         </button>
@@ -1072,7 +1072,7 @@ function LoginContent({
 
           <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4 sm:p-5">
             <div className="mb-4">
-              <div className="text-sm font-bold text-[var(--app-ink)]">기본 사주 정보</div>
+              <div className="text-base font-bold text-[var(--app-ink)]">기본 사주 정보</div>
               <p className="mt-1 text-[13.2px] leading-5 text-[var(--app-copy-soft)]">
                 저장 후 사주보기, 오늘운세, 궁합 입력에 같은 바탕으로 불러옵니다.
               </p>
@@ -1138,7 +1138,7 @@ function LoginContent({
           <Button
             type="submit"
             disabled={disabled || isSubmittingLogin}
-            className="h-12 w-full rounded-[14px] text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-lg font-bold"
           >
             {isSubmittingLogin ? '로그인 중...' : '로그인하고 내 정보 불러오기'}
           </Button>
@@ -1169,10 +1169,10 @@ function LoginContent({
       ) : mode === 'recover' ? (
         <form className="mt-6 space-y-4 text-left" onSubmit={submitRecovery}>
           <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
-            <div className="text-sm font-bold text-[var(--app-ink)]">
+            <div className="text-base font-bold text-[var(--app-ink)]">
               이메일로 아이디 확인/비밀번호 재설정
             </div>
-            <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
+            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
               간지사주의 로그인 아이디는 이메일입니다. 가입했을 가능성이 있는 이메일을 입력하면 확인 링크와 새 비밀번호 설정 링크를 보내드립니다.
             </p>
             <div className="mt-4 space-y-2">
@@ -1192,7 +1192,7 @@ function LoginContent({
           <Button
             type="submit"
             disabled={disabled || isSubmittingRecovery}
-            className="h-12 w-full rounded-[14px] text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-lg font-bold"
           >
             {isSubmittingRecovery ? '메일 보내는 중...' : '이메일 인증 링크 받기'}
           </Button>
@@ -1203,7 +1203,7 @@ function LoginContent({
               setErrorMessage('');
               setStatusMessage('');
             }}
-            className="w-full text-center text-xs font-medium text-[var(--app-copy-muted)] underline underline-offset-4"
+            className="w-full text-center text-sm font-medium text-[var(--app-copy-muted)] underline underline-offset-4"
           >
             로그인으로 돌아가기
           </button>
@@ -1211,10 +1211,10 @@ function LoginContent({
       ) : (
         <form className="mt-6 space-y-4 text-left" onSubmit={submitPasswordReset}>
           <section className="rounded-3xl border border-[var(--app-line)] bg-white p-4">
-            <div className="text-sm font-bold text-[var(--app-ink)]">
+            <div className="text-base font-bold text-[var(--app-ink)]">
               새 비밀번호를 설정해 주세요
             </div>
-            <p className="mt-2 text-xs leading-6 text-[var(--app-copy-muted)]">
+            <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
               이메일 인증 링크로 확인된 세션에서만 변경됩니다. 링크가 만료됐다면 다시 아이디/비밀번호 찾기를 진행해 주세요.
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -1257,7 +1257,7 @@ function LoginContent({
           <Button
             type="submit"
             disabled={disabled || isSubmittingReset}
-            className="h-12 w-full rounded-[14px] text-base font-bold"
+            className="h-12 w-full rounded-[14px] text-lg font-bold"
           >
             {isSubmittingReset ? '저장 중...' : '새 비밀번호 저장하기'}
           </Button>
@@ -1265,26 +1265,26 @@ function LoginContent({
       )}
 
       {!hasSupabaseBrowserEnv ? (
-        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
           로컬 환경에서는 Supabase URL과 공개 키를 설정해야 회원가입과 로그인을 사용할 수 있습니다.
         </p>
       ) : null}
 
       {statusMessage ? (
-        <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+        <p className="mt-4 rounded-2xl border border-[var(--app-jade)]/30 bg-[var(--app-jade)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
           {statusMessage}
         </p>
       ) : null}
 
       {errorMessage ? (
-        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-xs leading-6 text-[var(--app-ink)]">
+        <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
           {errorMessage}
         </p>
       ) : null}
 
       {mode === 'login' || mode === 'signup' ? (
         <>
-          <div className="my-6 flex items-center gap-3 text-xs text-[var(--app-copy-soft)]">
+          <div className="my-6 flex items-center gap-3 text-sm text-[var(--app-copy-soft)]">
             <span className="h-px flex-1 bg-[var(--app-line)]" />
             간편 로그인
             <span className="h-px flex-1 bg-[var(--app-line)]" />
@@ -1320,7 +1320,7 @@ function LoginContent({
         </>
       ) : null}
 
-      <p className="pt-4 text-xs leading-6 text-[var(--app-copy-soft)]">
+      <p className="pt-4 text-sm leading-6 text-[var(--app-copy-soft)]">
         회원가입 또는 로그인 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
       </p>
       {/* 2026-05-18 Phase 5-C: 고객센터 링크 (사용자 directive 필수) */}
@@ -1371,11 +1371,11 @@ function LoginScaffold() {
       ) : (
         <>
           <div className="flex flex-col items-center gap-2 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--app-pink)] text-2xl font-bold text-white shadow-[0_16px_32px_rgba(216,27,114,0.22)]">
               달
             </div>
-            <div className=" text-lg font-semibold text-[var(--app-ink)]">간지사주</div>
-            <div className="text-xs text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
+            <div className=" text-xl font-semibold text-[var(--app-ink)]">간지사주</div>
+            <div className="text-sm text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
           </div>
           <div className="w-full">
             <LoginContent mode={mode} setMode={setMode} />
@@ -1405,7 +1405,7 @@ function LoginPageFallback() {
     >
       <div className="flex flex-col items-center gap-3 text-center">
         <div
-          className="flex h-14 w-14 items-center justify-center rounded-[18px] text-3xl font-extrabold text-white shadow-[0_14px_28px_rgba(216,27,114,0.32)]"
+          className="flex h-14 w-14 items-center justify-center rounded-[18px] text-4xl font-extrabold text-white shadow-[0_14px_28px_rgba(216,27,114,0.32)]"
           style={{
             background:
               'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',

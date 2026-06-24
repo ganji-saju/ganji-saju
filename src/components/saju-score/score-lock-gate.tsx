@@ -42,7 +42,7 @@ export function ScoreLockGate({
         <div className="mx-auto grid h-28 w-28 place-items-center rounded-full border-[6px]"
           style={{ borderColor: 'var(--app-pink-soft)' }}
         >
-          <span className="text-3xl font-bold text-[var(--app-copy-soft)]">●●</span>
+          <span className="text-4xl font-bold text-[var(--app-copy-soft)]">●●</span>
         </div>
         <p className="mt-3 text-center text-[15px] font-bold text-[var(--app-copy-soft)]">
           {gradeLabel}
