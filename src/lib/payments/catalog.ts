@@ -52,13 +52,6 @@ export const PAYMENT_PACKAGES = [
   { id: 'credit_40', name: '40 코인', credits: 40, price: 19800, kind: 'credits' },
   { id: 'credit_100', name: '100 코인 (최대 혜택)', credits: 100, price: 44900, kind: 'credits' },
   {
-    id: 'subscription_30',
-    name: '보너스 36 코인',
-    credits: 36,
-    price: 9900,
-    kind: 'subscription',
-  },
-  {
     id: 'membership_plus',
     name: '라이트 대화 멤버십',
     credits: 2,

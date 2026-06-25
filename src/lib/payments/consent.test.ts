@@ -17,7 +17,7 @@ function pkg(id: string) {
 }
 
 test('getRequiredConsentKinds — 공통 3 (terms/privacy/refund) 모든 종류 포함', () => {
-  for (const id of ['credit_15', 'subscription_30', 'lifetime_report', 'taste_today_detail']) {
+  for (const id of ['credit_15', 'lifetime_report', 'taste_today_detail']) {
     const required = getRequiredConsentKinds(pkg(id));
     assert.ok(required.includes('terms'), `${id}: terms 누락`);
     assert.ok(required.includes('privacy'), `${id}: privacy 누락`);
@@ -29,13 +29,6 @@ test('getRequiredConsentKinds — credits 종류 = + coin', () => {
   const required = getRequiredConsentKinds(pkg('credit_15'));
   assert.ok(required.includes('coin'));
   assert.equal(required.length, 4); // terms + privacy + refund + coin
-});
-
-test('getRequiredConsentKinds — one-time 36 coin package = + coin, not subscription', () => {
-  const required = getRequiredConsentKinds(pkg('subscription_30'));
-  assert.ok(required.includes('coin'));
-  assert.equal(required.includes('subscription'), false);
-  assert.equal(required.length, 4);
 });
 
 test('getRequiredConsentKinds — managed subscription 종류 = + subscription', () => {
@@ -64,7 +57,7 @@ test('getRequiredConsentKinds — bundle = + digital-content', () => {
 });
 
 test('getConsentItems — 각 항목에 kind/label/description 포함', () => {
-  const items = getConsentItems(pkg('subscription_30'));
+  const items = getConsentItems(pkg('credit_15'));
   assert.equal(items.length, 4);
   for (const item of items) {
     assert.ok(item.kind);
