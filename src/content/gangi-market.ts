@@ -57,36 +57,61 @@ export type GangiHomeBanner = {
   href: string;
   zodiac?: GangiZodiacKey;
   tone: 'pink' | 'soft' | 'night';
+  /**
+   * 2026-06-26 — 완성형 이미지 배너(3:1). 지정 시 캐러셀이 picture(avif/webp/png)로 렌더하고
+   * 텍스트 배너 레이어를 대체한다. public/images/gangi/banners/{image}.{avif,webp,png}.
+   */
+  image?: string;
+  /** 이미지 배너 접근성 대체텍스트. */
+  alt?: string;
 };
 
+// 2026-06-26 — 완성형 이미지 배너로 교체(사용자 제작 배너1·3·도사·2). 3:1 이미지가 문구를
+//   포함하므로 캐러셀은 이미지만 풀블리드 렌더. kicker/title/cta 는 추적·폴백용으로 유지.
 export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   {
-    id: 'today-flow',
-    kicker: '오늘의 한 줄',
-    title: '오늘, 작은 결정이 큰 흐름을 바꾸는 날',
-    description: '크게 벌리기보다 지금 필요한 한 가지를 먼저 골라보세요.',
-    cta: '오늘운세 보러가기',
-    href: '/today-fortune?concern=general',
-    tone: 'pink',
-  },
-  {
-    id: 'zodiac-week',
-    kicker: '오늘의 띠',
-    title: '오늘의 띠운세를 확인해 보세요',
-    description: '12간지 중 오늘의 흐름이 매일 새롭게 열립니다.',
-    cta: '12띠 운세 모두 보기',
-    href: '/zodiac',
-    zodiac: 'rooster',
+    id: 'consult-pro',
+    image: 'consult-pro',
+    alt: '사주·명리·타로 전문 상담사 — 경험과 해석력을 갖춘 상담사와 상담하세요',
+    kicker: '전문 상담',
+    title: '사주·명리·타로 전문 상담사',
+    description: '경험과 해석력을 갖춘 상담사와 믿고 상담하세요.',
+    cta: '전문 상담 보기',
+    href: '/dialogue',
     tone: 'soft',
   },
   {
-    id: 'star-week',
-    kicker: '오늘의 별자리',
-    title: '오늘의 별자리 흐름을 확인해 보세요',
-    description: '열두 별자리 중 오늘의 메시지를 가볍게 보여드려요.',
-    cta: '자세히 보기',
-    href: '/star-sign',
-    tone: 'night',
+    id: 'tarot-free',
+    image: 'tarot-free',
+    alt: '공짜로 보는 운세·타로 — 오늘의 운세와 타로를 무료로 시작',
+    kicker: '무료',
+    title: '공짜로 보는 운세·타로',
+    description: '오늘의 운세와 타로를 무료로 가볍게 시작해보세요.',
+    cta: '무료로 보기',
+    href: '/tarot/daily',
+    tone: 'soft',
+  },
+  {
+    id: 'saju-9900',
+    image: 'saju-9900',
+    alt: '9,900원 내 운명 확인 — 사주·명리 상담',
+    kicker: '사주·명리',
+    title: '9,900원 내 운명 확인',
+    description: '복잡한 고민, 방향이 필요할 때 부담 없이 시작하세요.',
+    cta: '지금 확인하기',
+    href: '/saju/new',
+    tone: 'pink',
+  },
+  {
+    id: 'talk',
+    image: 'talk',
+    alt: '말 못 할 고민 바로 상담 — 연애·진로·인간관계',
+    kicker: '대화상담',
+    title: '말 못 할 고민, 바로 상담',
+    description: '연애·진로·인간관계·마음고민, 혼자 끌어안지 말고 편하게 이야기해요.',
+    cta: '바로 상담하기',
+    href: '/dialogue',
+    tone: 'soft',
   },
 ] as const;
 

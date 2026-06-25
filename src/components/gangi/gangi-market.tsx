@@ -175,17 +175,24 @@ export function GangiSeasonBanner({
           <Link
             key={banner.id}
             href={banner.href}
-            className="relative block w-full shrink-0 snap-start overflow-hidden rounded-[22px] p-5 text-white no-underline"
-            style={{
-              background:
-                banner.tone === 'soft'
-                  ? 'var(--app-pink-soft)'
-                  : banner.tone === 'night'
-                  ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
-                  : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-              color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
-              minHeight: 160,
-            }}
+            className={`relative block w-full shrink-0 snap-start overflow-hidden rounded-[22px] no-underline${
+              banner.image ? '' : ' p-5 text-white'
+            }`}
+            style={
+              banner.image
+                ? undefined
+                : {
+                    background:
+                      banner.tone === 'soft'
+                        ? 'var(--app-pink-soft)'
+                        : banner.tone === 'night'
+                        ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
+                        : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
+                    color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
+                    minHeight: 160,
+                  }
+            }
+            aria-label={banner.image ? banner.alt ?? banner.title : undefined}
             onClick={() =>
               onTrack?.({
                 from: 'home_banner',
@@ -194,6 +201,22 @@ export function GangiSeasonBanner({
               })
             }
           >
+            {/* 2026-06-26 — 완성형 이미지 배너(3:1). 지정 시 이미지만 풀블리드, 텍스트 레이어 대체. */}
+            {banner.image ? (
+              <picture>
+                <source srcSet={`/images/gangi/banners/${banner.image}.avif`} type="image/avif" />
+                <source srcSet={`/images/gangi/banners/${banner.image}.webp`} type="image/webp" />
+                <img
+                  src={`/images/gangi/banners/${banner.image}.png`}
+                  alt={banner.alt ?? banner.title}
+                  className="block w-full"
+                  style={{ aspectRatio: '3 / 1', objectFit: 'cover' }}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            ) : (
+            <>
             {/* 한자 배경 (운/緣 등) */}
             <span
               aria-hidden="true"
@@ -260,6 +283,8 @@ export function GangiSeasonBanner({
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </div>
+            </>
+            )}
           </Link>
         ))}
       </div>
@@ -411,26 +436,57 @@ export function GangiServiceCardLink({
 }) {
   const isFree = card.price === '무료' || card.price === '무료 시작';
 
-  // 2026-06-23 메인 리디자인(간지사주 메인 리디자인.html): 파스텔 틴트 카드 배경·가격색.
-  const TINT: Record<NonNullable<GangiServiceCard['tint']>, { bg: string; price: string }> = {
-    pink: { bg: '#fff0f7', price: 'var(--app-pink-strong)' },
-    plum: { bg: '#f6eefe', price: 'var(--app-plum)' },
-    sky: { bg: '#eaf4fd', price: 'var(--app-sky)' },
-    coral: { bg: '#fff0ee', price: 'var(--app-coral)' },
-    indigo: { bg: '#eeeefb', price: 'var(--app-indigo)' },
-    amber: { bg: '#fdf4e3', price: '#b87a10' },
-    jade: { bg: '#e9f7f2', price: 'var(--app-jade)' },
+  // 2026-06-26 메인 카드 시안 C(20260625 PPTX): 인물 사진 풀블리드 + 비네팅 + 하단 외곽선 강조 텍스트.
+  //   파스텔 틴트는 인물 사진의 투명 영역(배경 제거 PNG) 채움색. 인물 이미지는 추후 교체 예정.
+  const TINT: Record<NonNullable<GangiServiceCard['tint']>, string> = {
+    pink: '#fff0f7',
+    plum: '#f6eefe',
+    sky: '#eaf4fd',
+    coral: '#fff0ee',
+    indigo: '#eeeefb',
+    amber: '#fdf4e3',
+    jade: '#e9f7f2',
   };
-  const tint = TINT[card.tint ?? 'pink'];
+  const tintBg = TINT[card.tint ?? 'pink'];
 
   return (
     <Link
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex items-center gap-3 overflow-hidden rounded-[20px] p-4 no-underline transition-transform active:scale-[0.98]"
-      style={{ background: tint.bg, color: 'var(--app-ink)', minHeight: 96 }}
+      className="relative block aspect-[3/4] overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
+      style={{ background: tintBg, color: 'var(--app-ink)' }}
     >
+      {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
+      {card.image ? (
+        <picture>
+          <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
+          <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
+          <img
+            src={`/images/gangi/people/${card.image}.png`}
+            alt={card.title}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-top"
+          />
+        </picture>
+      ) : (
+        <span className="absolute inset-0 grid place-items-center">
+          {card.chipKind === 'star-sign' ? (
+            <StarSignChip kind={card.starSign} size="lg" />
+          ) : (
+            <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
+          )}
+        </span>
+      )}
+
+      {/* 비네팅 — 가장자리만 은은하게 어둡게(글씨 가독성). */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(120% 80% at 50% 16%, transparent 38%, rgba(15,8,16,0.58) 100%)' }}
+      />
+
       {/* 태그 (HOT / 추천) */}
       {card.tag ? (
         <span
@@ -448,38 +504,35 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 원형 아바타 — 캐릭터 이미지(picture avif/webp/png) object-top. 없으면 chip. */}
-      <span
-        className="relative grid h-[60px] w-[60px] shrink-0 place-items-center overflow-hidden rounded-full"
-        style={{ border: '2px solid #fff', boxShadow: '0 4px 10px rgba(23,21,26,.12)', background: 'rgba(255,255,255,.6)' }}
-      >
-        {card.image ? (
-          <picture>
-            <source srcSet={`/images/gangi/characters/${card.image}.avif`} type="image/avif" />
-            <source srcSet={`/images/gangi/characters/${card.image}.webp`} type="image/webp" />
-            <img
-              src={`/images/gangi/characters/${card.image}.png`}
-              alt={card.title}
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover object-top"
-            />
-          </picture>
-        ) : card.chipKind === 'star-sign' ? (
-          <StarSignChip kind={card.starSign} size="sm" />
-        ) : (
-          <ZodiacChip kind={card.zodiac as ZodiacKey} size="sm" />
-        )}
-      </span>
-
-      <span className="flex min-w-0 flex-col">
-        <span style={{ fontSize: 19.5, fontWeight: 900, letterSpacing: '-0.02em' }}>{card.title}</span>
-        <span className="mt-0.5" style={{ fontSize: 13.2, fontWeight: 600, color: 'var(--app-copy-muted)' }}>
+      {/* 하단 강조 텍스트 — 외곽선·그림자로 가독성. 제목 + 부제 + 가격 배지. */}
+      <span className="absolute inset-x-0 bottom-0 block p-3.5">
+        <span
+          className="block"
+          style={{
+            fontSize: 21,
+            fontWeight: 900,
+            letterSpacing: '-0.02em',
+            color: '#fff',
+            WebkitTextStroke: '0.5px rgba(0,0,0,0.35)',
+            textShadow: '0 2px 10px rgba(0,0,0,0.65)',
+          }}
+        >
+          {card.title}
+        </span>
+        <span
+          className="mt-1 block"
+          style={{ fontSize: 12.6, fontWeight: 700, color: '#fff', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+        >
           {card.desc}
         </span>
         <span
-          className="mt-1.5"
-          style={{ fontSize: 13.8, fontWeight: 800, color: isFree ? 'var(--app-ink)' : tint.price }}
+          className="mt-2 inline-flex items-center rounded-[8px] px-2 py-0.5"
+          style={{
+            background: isFree ? 'rgba(255,255,255,0.92)' : 'var(--app-pink)',
+            color: isFree ? 'var(--app-jade)' : '#fff',
+            fontSize: 12.6,
+            fontWeight: 900,
+          }}
         >
           {card.price}
         </span>
