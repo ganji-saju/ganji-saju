@@ -36,9 +36,8 @@ const APPOINTMENT_MINUTES = 30;
 // 2026-06-23 — 코인팩 재편(credit_15: 9,900원=15코인). 코인 실효단가 = 9,900/15 = 660원.
 const COIN_PACK_15 = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'credit_15');
 const SINGLE_COIN_PRICE_KRW = COIN_PACK_15 ? Math.round(COIN_PACK_15.price / COIN_PACK_15.credits) : 660;
-const BONUS_COIN_PACKAGE = PAYMENT_PACKAGES.find((pkg) => pkg.id === 'subscription_30');
 const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_15', 'credit_40', 'credit_100', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'credit_40', 'credit_100'].includes(pkg.id)
 );
 
 const TOPICS: Array<{ key: string; label: string }> = [
@@ -72,10 +71,6 @@ function getRecommendedTopUp(shortage: number): string {
   const singlePackage = CREDIT_PACKAGES.find((pkg) => pkg.credits >= shortage);
   if (singlePackage) {
     return `${singlePackage.name} ${singlePackage.credits}코인 · ${formatWon(singlePackage.price)}`;
-  }
-  if (BONUS_COIN_PACKAGE) {
-    const count = Math.ceil(shortage / BONUS_COIN_PACKAGE.credits);
-    return `${BONUS_COIN_PACKAGE.name} ${count}회 · ${BONUS_COIN_PACKAGE.credits * count}코인 · ${formatWon(BONUS_COIN_PACKAGE.price * count)}`;
   }
   return '코인 센터에서 필요한 만큼 충전';
 }

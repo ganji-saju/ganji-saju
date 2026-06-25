@@ -21,15 +21,6 @@ test('payment confirmation accepts a valid subscription package', () => {
   assert.equal(result.input.scope, null);
 });
 
-test('bonus coin package does not masquerade as a dialogue membership', () => {
-  const pkg = getPackage('subscription_30');
-
-  assert.ok(pkg);
-  assert.equal(pkg.name, '보너스 36 코인');
-  assert.equal(isSubscriptionPackage(pkg), false);
-  assert.equal(getCreditGrantType(pkg), 'purchase');
-});
-
 test('managed membership packages grant subscription credits', () => {
   const pkg = getPackage('membership_plus');
 

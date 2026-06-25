@@ -33,11 +33,10 @@ const CREDIT_PACKAGE_DESCRIPTIONS: Record<
   credit_15: { desc: '50% 보너스 · 상품 1개+여유', badge: 'POPULAR' },
   credit_40: { desc: '코인당 495원 · 상품 4개' },
   credit_100: { desc: '코인당 449원 · 가장 알뜰', badge: 'BEST' },
-  subscription_30: { desc: '+6코인 보너스 묶음', badge: '보너스' },
 };
 
 const PACKAGES = PAYMENT_PACKAGES.filter((pkg) =>
-  ['credit_15', 'credit_40', 'credit_100', 'subscription_30'].includes(pkg.id)
+  ['credit_15', 'credit_40', 'credit_100'].includes(pkg.id)
 );
 
 interface PaymentPrepareResponse {
