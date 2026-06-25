@@ -2890,6 +2890,29 @@ export function buildTodayFortunePremiumResult(
         : concernId === 'money_spend'
           ? '재물운은 투자 종목이나 매수·매도 지시가 아니라 돈이 새기 쉬운 패턴과 정산 타이밍을 읽는 참고 조언입니다.'
           : '관계와 선택의 흐름을 읽는 참고 해석이며, 이별·파혼·법적 판단처럼 큰 결론을 단정하지 않습니다.',
+    // 2026-06-24 — 오늘 일진 풀이를 premium 에도 통합(근인: free 만 쓰고 premium 은 미사용 →
+    //   결제 풀이가 매일 동일). 매일 다른 일진 → 발동 케이스 → 메시지. premium 은 topN=5 로 더 깊게,
+    //   seed 에 'premium' prefix 로 free 와 다른 variant 노출.
+    todayIljinReading: (() => {
+      if (!todayPillar.stem || !todayPillar.branch) return null;
+      const { lucky, unlucky } = deriveLuckyElements(sajuData);
+      const sajuOrigin = buildSajuOriginForIljin(sajuData, lucky, unlucky);
+      const picked = pickIljinMessages(
+        sajuOrigin,
+        todayPillar.stem as IljinStem,
+        todayPillar.branch as IljinBranch,
+        { name: input.name ?? '선생님', element: sajuData.fiveElements.weakest },
+        `premium::${todayPillar.dateKey}::${sajuData.pillars.day.ganzi}`,
+        5
+      );
+      if (picked.messages.length === 0) return null;
+      const iljinScore = computeSajuIljinScore(sajuData, options);
+      return {
+        ganzi: todayPillar.ganzi,
+        score: iljinScore?.totalScore ?? null,
+        messages: picked.messages,
+      };
+    })(),
   };
 }
 

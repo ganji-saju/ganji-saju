@@ -225,6 +225,17 @@ export interface TodayFortunePremiumResult {
   followUpQuestions: string[];
   safetyNote: string;
   /**
+   * 2026-06-24 — 오늘 일진(日辰) 풀이. 결제 자세히보기가 "매일 오늘 상황에 맞게" 달라지도록
+   * free 와 동일한 pickIljinMessages(오늘 일진 vs 사주 발동 케이스 50종)를 premium 에도 통합.
+   * 근인: 일진 메시지 라이브러리를 free 만 쓰고 premium 은 안 써서 매일 거의 동일했음.
+   * 매일 다른 60갑자 → 발동 케이스 → 메시지로 결제 풀이가 오늘 위주로 변동. ganzi 한글 독음은 UI.
+   */
+  todayIljinReading?: {
+    ganzi: string;
+    score: number | null;
+    messages: string[];
+  } | null;
+  /**
    * 2026-06-05 Phase 2 (PR #393 로드맵) — 오늘운세 프리미엄 LLM 깊은 풀이.
    * 언락(결제) 시 1회 생성되어 snapshot 에 영속(캐시 생략). 생성 실패·플래그 OFF 시 null
    * → UI 는 블록 미노출(graceful degrade). plain 티어: 한자/명리어/"기운" 0.
