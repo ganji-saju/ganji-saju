@@ -256,6 +256,54 @@ export function TodayPremiumPanel({
         </article>
       ) : null}
 
+      {/* §오늘의 흐름 풀이 — 2026-06-24. 오늘 일진(매일 다른 60갑자) vs 사주 발동 케이스(천을귀인·
+          충·삼합·도화 등 50종) 기반 메시지. 근인: 일진 메시지 라이브러리를 free 만 쓰고 premium 은
+          안 써서 결제 풀이가 매일 동일했음 → premium 통합. 매일 오늘 흐름에 맞춰 달라지는 핵심 블록. */}
+      {result.todayIljinReading && result.todayIljinReading.messages.length > 0 ? (
+        <article
+          className="rounded-[18px] border p-5"
+          style={{
+            background: 'linear-gradient(135deg, #eafaf3 0%, #fff7ef 100%)',
+            borderColor: 'rgba(15,159,122,0.22)',
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-white"
+              style={{
+                background: 'linear-gradient(135deg, #0f9f7a 0%, #d81b72 100%)',
+                boxShadow: '0 6px 14px rgba(15,159,122,0.22)',
+              }}
+            >
+              ✦ 오늘의 흐름 풀이
+            </div>
+            {result.todayIljinReading.score != null ? (
+              <span className="text-[13.8px] font-extrabold text-[var(--app-jade)]">
+                오늘 흐름 {result.todayIljinReading.score}점
+              </span>
+            ) : null}
+          </div>
+          <p
+            className="mt-2 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            날짜가 바뀌면 오늘의 흐름에 맞춰 이 풀이도 매일 달라집니다.
+          </p>
+          <ul className="mt-3 space-y-2.5">
+            {result.todayIljinReading.messages.map((msg, index) => (
+              <li
+                key={`iljin-${index}`}
+                className="flex items-start gap-2 break-keep text-[16.1px] leading-[1.8] text-[var(--app-ink)]"
+                style={{ wordBreak: 'keep-all' }}
+              >
+                <span className="mt-0.5 shrink-0 text-[var(--app-jade)]">·</span>
+                <span>{msg}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
+
       {/* 2026-05-15 — 사용자 피드백: "이 화면은 어떻게 활용하면 더 좋을까?"
           → 결제 후 시진별 길흉/행동 가이드/시나리오를 실제로 어떻게 쓰는지 callout 추가. */}
       <article
