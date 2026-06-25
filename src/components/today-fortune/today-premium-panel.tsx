@@ -218,7 +218,7 @@ export function TodayPremiumPanel({
               boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
             }}
           >
-            ✦ 1코인
+            ✦ 10코인
           </span>
         </div>
       </article>

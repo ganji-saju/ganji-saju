@@ -2720,7 +2720,8 @@ export function buildTodayFortuneFreeResult(
     nextAction: {
       copy: upsell.copy,
       product: 'TODAY_DEEP_READING',
-      coinCost: 1,
+      // 2026-06-26 — 실제 차감(detail_report=10코인)과 표시 일치. 기존 1 은 표시≠실제 불일치였음.
+      coinCost: 10,
     },
     followUpQuestions: concern.followUpQuestions,
     // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드 + 대운 CTA 데이터.
@@ -2869,7 +2870,8 @@ export function buildTodayFortunePremiumResult(
 
   return {
     productCode: 'TODAY_DEEP_READING',
-    coinCost: 1,
+    // 2026-06-26 — 실제 차감(detail_report=10코인)과 표시 일치(기존 1 은 표시≠실제 불일치).
+    coinCost: 10,
     dateKey: todayPillar.dateKey,
     groundingSummary: buildTodayGroundingSummary(
       grounding,

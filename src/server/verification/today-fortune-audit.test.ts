@@ -19,7 +19,7 @@ test('today fortune verification audit exposes free/premium structure and safety
   assert.equal(audit.concernCoverage.primaryVisibleCount, 4);
   assert.equal(audit.concernCoverage.totalCount, 6);
   assert.equal(audit.freeResultSummary.scoreCount, 6);
-  assert.equal(audit.premiumResultSummary.coinCost, 1);
+  assert.equal(audit.premiumResultSummary.coinCost, 10);
   assert.equal(audit.analytics.missingEvents.length, 0);
   assert.ok(audit.checks.some((check) => check.key === 'today-grounding-kasi' && check.ok));
   assert.ok(audit.checks.some((check) => check.key === 'today-safety-wealth'));
