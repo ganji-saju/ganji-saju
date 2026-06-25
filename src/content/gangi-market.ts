@@ -113,6 +113,17 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     href: '/dialogue',
     tone: 'soft',
   },
+  {
+    id: 'dream',
+    image: 'dream',
+    alt: '꿈해몽 — 당신의 꿈, 어떤 메시지를 담고 있을까요? 꿈 한 단어 풀이',
+    kicker: '꿈해몽',
+    title: '꿈자리가 도대체 왜 이래',
+    description: '당신의 꿈, 어떤 메시지를 담고 있을까요?',
+    cta: '꿈 풀이 보기',
+    href: '/dream',
+    tone: 'night',
+  },
 ] as const;
 
 // 2026-06-23 — 메인 캐릭터 카드 개편(20260623 시안 slide3). 8카드 그리드:
