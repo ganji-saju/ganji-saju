@@ -36,8 +36,14 @@ interface RefundReq {
   reason: string;
   errorMessage: string | null;
   tossResponse: unknown;
+  provider: 'toss' | 'nicepay';
   updatedAt: string | null;
 }
+
+const PG_LABEL: Record<'toss' | 'nicepay', string> = {
+  toss: 'Toss',
+  nicepay: '나이스페이',
+};
 
 const STATUS_LABEL: Record<string, string> = {
   requested: '요청됨',
@@ -54,7 +60,10 @@ function readObject(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function getTossRefundNote(request: RefundReq) {
+// 2026-06-27 — PG 동적 표기. 결제 건 provider(toss/nicepay)에 따라 라벨만 분기.
+//   상세 파싱(status/잔여)은 toss 응답 형태 기준 best-effort, 나이스페이는 status 그대로 노출.
+function getRefundNote(request: RefundReq) {
+  const pg = PG_LABEL[request.provider];
   const response = readObject(request.tossResponse);
   if (!response) return null;
 
@@ -65,10 +74,10 @@ function getTossRefundNote(request: RefundReq) {
   const alreadyCanceled = response.alreadyCanceled === true;
 
   if (alreadyCanceled || (status === 'CANCELED' && balanceAmount === 0)) {
-    return `Toss 취소 확인됨${totalAmount ? ` · ${totalAmount.toLocaleString()}원` : ''}`;
+    return `${pg} 취소 확인됨${totalAmount ? ` · ${totalAmount.toLocaleString()}원` : ''}`;
   }
   if (status) {
-    return `Toss 상태 ${status}${balanceAmount !== null ? ` · 잔여 ${balanceAmount.toLocaleString()}원` : ''}`;
+    return `${pg} 상태 ${status}${balanceAmount !== null ? ` · 잔여 ${balanceAmount.toLocaleString()}원` : ''}`;
   }
   return null;
 }
@@ -142,7 +151,7 @@ export function RefundActions({
         : `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원`;
     if (
       !window.confirm(
-        `실제 환불을 실행합니다 — Toss 결제취소 + 권한/코인 회수.\n${target}\n계속할까요?`
+        `실제 환불을 실행합니다 — ${PG_LABEL[r.provider]} 결제취소 + 권한/코인 회수.\n${target}\n계속할까요?`
       )
     ) {
       return;
@@ -226,11 +235,11 @@ export function RefundActions({
                     ? ` · 코인 ${r.creditAmount}개`
                     : ''}
                 </span>
-                {(r.errorMessage || getTossRefundNote(r)) && (
+                {(r.errorMessage || getRefundNote(r)) && (
                   <span className="mt-0.5 block break-words text-[12.1px] text-[var(--app-copy-soft)]">
                     {r.errorMessage ? `사유: ${r.errorMessage}` : null}
-                    {r.errorMessage && getTossRefundNote(r) ? ' · ' : null}
-                    {getTossRefundNote(r)}
+                    {r.errorMessage && getRefundNote(r) ? ' · ' : null}
+                    {getRefundNote(r)}
                   </span>
                 )}
                 {r.paymentKey && (
