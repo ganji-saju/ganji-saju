@@ -261,7 +261,8 @@ export async function POST(req: NextRequest) {
     paymentMethodCode,
     acceptedKinds,
     recordedPolicyVersionIds: [],
-    metadata: { checkoutPath },
+    // 2026-06-26 — 환불 시 PG 분기용 provider 저장(admin refund 가 toss/nicepay 취소 선택).
+    metadata: { checkoutPath, provider: getPaymentProvider() },
   });
 
   // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.
