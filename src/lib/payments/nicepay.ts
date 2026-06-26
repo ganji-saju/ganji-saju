@@ -31,9 +31,18 @@ function getSecretKey(): string {
   return key;
 }
 
-/** 인가 헤더 — Basic base64(clientKey:secretKey). */
+/**
+ * Basic 인증에 쓰는 clientId — 결제창 clientKey 의 환경 prefix(R2_/S2_ 등)를 제거한 값.
+ * 문서의 Basic 예시 clientId 가 prefix 없는 순수 hex 라, 결제창/서명용 clientKey(R2_...) 와 구분.
+ * ⚠️ 샌드박스 E2E 로 확정(docs §6).
+ */
+function getBasicAuthClientId(): string {
+  return getClientKey().replace(/^[A-Za-z]+\d*_/, '');
+}
+
+/** 인가 헤더 — Basic base64(clientId:secretKey). clientId 는 prefix 제거값. */
 function getNicepayAuthorizationHeader(): string {
-  return `Basic ${Buffer.from(`${getClientKey()}:${getSecretKey()}`).toString('base64')}`;
+  return `Basic ${Buffer.from(`${getBasicAuthClientId()}:${getSecretKey()}`).toString('base64')}`;
 }
 
 /** SHA256 hex 서명 유틸(테스트 가능하도록 secretKey 주입형 코어 + env 래퍼 분리). */
@@ -119,6 +128,7 @@ export async function approveNicepayPayment(
     tid,
     amount,
     ediDate,
+    basicClientId: getBasicAuthClientId(), // prefix 제거된 Basic 인증 clientId 확인용
   });
 
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
