@@ -4,6 +4,8 @@
 //        주문 'canceled' 기록 → 지급된 코인 회수. 토스 웹훅(webhook/toss)과 동일 패턴.
 //   참고: docs/payment-nicepay-migration.md §2
 //
+// ⚠️ 나이스페이 규약: 응답 body 는 반드시 plain text 'OK' (status 200). JSON 이면 등록/통보 실패.
+//
 // ⚠️ 스캐폴드 — 게재 전 샌드박스 E2E 로 확정(docs §6):
 //   1) 통보 payload 형식(form-urlencoded vs json)·필드명(status/tid/orderId/cancelAmt)
 //   2) 통보 서명 검증식(현재는 결제 재조회 backstop 으로 진위 보장)
@@ -25,6 +27,14 @@ export const runtime = 'nodejs';
 
 const CANCEL_STATUSES = new Set(['cancelled', 'canceled', 'CANCELLED', 'CANCELED']);
 
+// 나이스페이는 status 200 + body 'OK' 를 성공으로 인정(등록 검증·통보 응답 공통).
+function ok() {
+  return new NextResponse('OK', {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
+
 function parseBody(rawBody: string): Record<string, string> {
   const trimmed = rawBody.trim();
   if (!trimmed) return {};
@@ -38,6 +48,11 @@ function parseBody(rawBody: string): Record<string, string> {
   return Object.fromEntries(new URLSearchParams(trimmed));
 }
 
+// 등록 시 나이스페이가 GET 으로 핑을 보낼 수 있어 'OK' 로 응답.
+export async function GET() {
+  return ok();
+}
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const payload = parseBody(rawBody);
@@ -46,6 +61,7 @@ export async function POST(req: NextRequest) {
   const orderId = String(payload.orderId ?? '');
   const status = String(payload.status ?? '');
 
+  // 등록 검증(빈/비취소 통보)도 여기서 'OK' 로 응답된다.
   // 1) 멱등 — 동일 통보 재수신 시 1회만 처리(토스 웹훅과 동일).
   const eventHash = hashWebhookPayload(payload);
   const insertState = await recordPaymentWebhookEvent({
@@ -58,24 +74,24 @@ export async function POST(req: NextRequest) {
     paymentStatus: status || null,
   });
   if (insertState === 'duplicate') {
-    return NextResponse.json({ ok: true, duplicate: true });
+    return ok();
   }
 
   // 2) 취소 통보만 처리(결제/가상계좌 등은 무시 — returnUrl 핸들러가 담당).
   if (!CANCEL_STATUSES.has(status)) {
     await markPaymentWebhookEvent({ eventHash, status: 'ignored' });
-    return NextResponse.json({ ok: true, ignored: true });
+    return ok();
   }
 
   if (!orderId) {
     await markPaymentWebhookEvent({ eventHash, status: 'failed', error: 'order_id_missing' });
-    return NextResponse.json({ ok: false, error: 'order_id_missing' }, { status: 400 });
+    return ok();
   }
 
   const order = await getPaymentOrderByOrderId(orderId);
   if (!order) {
     await markPaymentWebhookEvent({ eventHash, status: 'ignored', error: 'order_not_found' });
-    return NextResponse.json({ ok: true, ignored: true, reason: 'order_not_found' });
+    return ok();
   }
 
   try {
@@ -104,10 +120,11 @@ export async function POST(req: NextRequest) {
     }
 
     await markPaymentWebhookEvent({ eventHash, status: 'processed' });
-    return NextResponse.json({ ok: true });
+    return ok();
   } catch (err) {
+    // 처리 실패해도 'OK' 로 응답하고 failed 로 기록(수동 보정 대상). 통보 재수신은 멱등으로 흡수.
     const message = err instanceof Error ? err.message : 'cancel_processing_failed';
     await markPaymentWebhookEvent({ eventHash, status: 'failed', error: message });
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    return ok();
   }
 }
