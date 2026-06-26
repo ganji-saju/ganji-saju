@@ -21,7 +21,7 @@ import {
   markPaymentWebhookEvent,
   recordPaymentWebhookEvent,
 } from '@/lib/payments/order-ledger';
-import { addCredits } from '@/lib/credits/deduct';
+import { revokeCredits } from '@/lib/credits/deduct';
 
 export const runtime = 'nodejs';
 
@@ -135,10 +135,13 @@ export async function POST(req: NextRequest) {
       revoke: canRevoke,
     });
     if (canRevoke && pkg) {
-      await addCredits(order.userId, -pkg.credits, 'purchase', {
+      const revokeResult = await revokeCredits(order.userId, pkg.credits, 'nicepay-cancel');
+      // 진단 로그(임시) — 회수 RPC 결과 확인.
+      console.log('[nicepay-webhook] 회수 결과', {
         orderId,
-        reason: 'nicepay-cancel',
-        tid,
+        success: revokeResult.success,
+        remaining: revokeResult.remaining,
+        error: revokeResult.error ?? null,
       });
     }
 
