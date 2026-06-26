@@ -267,7 +267,7 @@ export function PaymentFunnelDashboard() {
                   {fmtPct(snap.totals.confirmFailRate)}
                 </div>
                 <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
-                  토스 승인 또는 후속 실패
+                  결제 승인 또는 후속 실패
                 </div>
               </article>
             </div>

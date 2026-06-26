@@ -176,6 +176,7 @@ export interface AdminRefundRequest {
   status: string;
   errorMessage: string | null;
   tossResponse: unknown;
+  provider: 'toss' | 'nicepay';
   createdAt: string;
   updatedAt: string | null;
 }
@@ -326,6 +327,27 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     )
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
+  // 2026-06-27 — 환불 표기용 PG. payment_key → order metadata.provider (배치 1쿼리, N+1 회피).
+  const refundPaymentKeys = Array.from(
+    new Set(
+      ((refundRows ?? []) as Array<{ payment_key: string | null }>)
+        .map((r) => r.payment_key)
+        .filter((k): k is string => Boolean(k))
+    )
+  );
+  const { data: refundOrderRows } = refundPaymentKeys.length
+    ? await supabase
+        .from('payment_orders')
+        .select('payment_key, metadata')
+        .in('payment_key', refundPaymentKeys)
+    : { data: [] as Array<{ payment_key: string; metadata: unknown }> };
+  const refundProviderByKey = new Map<string, 'toss' | 'nicepay'>(
+    ((refundOrderRows ?? []) as Array<{ payment_key: string; metadata: unknown }>).map((o) => {
+      const meta = (o.metadata ?? null) as Record<string, unknown> | null;
+      return [o.payment_key, meta?.provider === 'nicepay' ? 'nicepay' : 'toss'] as const;
+    })
+  );
+
   const refundRequests: AdminRefundRequest[] = (
     (refundRows ?? []) as unknown as Array<{
       id: string;
@@ -354,6 +376,7 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     status: r.status,
     errorMessage: r.error_message,
     tossResponse: r.toss_response,
+    provider: r.payment_key ? (refundProviderByKey.get(r.payment_key) ?? 'toss') : 'toss',
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }));
