@@ -175,6 +175,33 @@ export async function deductCreditsAmount(
   return deductCreditsWithCost(userId, feature, cost);
 }
 
+// 2026-06-26 — 결제 취소/환불 시 충전 코인 회수. deduct_credits RPC 로 차감(잔액 범위).
+//   addCredits(음수)는 양수 lot 적립 RPC 라 차감되지 않아 회수에 쓸 수 없다.
+//   p_feature 는 거래 이력 라벨(예: 'nicepay-cancel'). 잔액 부족 시 success=false(음수 잔액 미생성).
+export async function revokeCredits(
+  userId: string,
+  amount: number,
+  reason: string
+): Promise<{ success: boolean; remaining: number; error?: string }> {
+  const supabase = await createServiceClient();
+
+  const { data, error } = await supabase.rpc('deduct_credits', {
+    p_user_id: userId,
+    p_cost: amount,
+    p_feature: reason,
+  });
+
+  if (error || !data?.success) {
+    return {
+      success: false,
+      remaining: data?.remaining ?? 0,
+      error: error?.message ?? '코인 회수 실패(잔액 부족)',
+    };
+  }
+
+  return { success: true, remaining: data.remaining };
+}
+
 export async function addCredits(
   userId: string,
   amount: number,
