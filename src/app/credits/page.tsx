@@ -162,7 +162,7 @@ function CreditsPageContent() {
     }
 
     if (!process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY) {
-      setErrorMessage('Toss 결제 키가 아직 설정되지 않았습니다. 운영 설정을 확인한 뒤 다시 시도해 주세요.');
+      setErrorMessage('결제 키가 아직 설정되지 않았습니다. 운영 설정을 확인한 뒤 다시 시도해 주세요.');
       return;
     }
 
@@ -520,7 +520,7 @@ function CreditsPageContent() {
           ) : null}
 
           <p className="text-[13.2px] leading-[1.6] text-[var(--app-copy-soft)]">
-            토스페이먼츠 카드 결제 · 계좌이체 · 모든 필수 동의가 확인된 뒤 결제창이 열립니다.
+            카드 결제 · 계좌이체 · 모든 필수 동의가 확인된 뒤 결제창이 열립니다.
           </p>
         </section>
 
