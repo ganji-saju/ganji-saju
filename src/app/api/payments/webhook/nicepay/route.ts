@@ -25,7 +25,13 @@ import { addCredits } from '@/lib/credits/deduct';
 
 export const runtime = 'nodejs';
 
-const CANCEL_STATUSES = new Set(['cancelled', 'canceled', 'CANCELLED', 'CANCELED']);
+const CANCEL_STATUSES = new Set([
+  'cancelled',
+  'canceled',
+  'CANCELLED',
+  'CANCELED',
+  'partialCancelled', // 부분취소(나이스페이 통보 status). ⚠️ 현재는 전액 회수 — 비례 회수는 후속.
+]);
 
 // 나이스페이는 status 200 + body 'OK' 를 성공으로 인정(등록 검증·통보 응답 공통).
 function ok() {
@@ -60,6 +66,15 @@ export async function POST(req: NextRequest) {
   const tid = String(payload.tid ?? '');
   const orderId = String(payload.orderId ?? '');
   const status = String(payload.status ?? '');
+
+  // 진단 로그(임시) — 통보 실제 필드명/status/파싱 확인. 값은 미노출(키·status·orderId 만).
+  console.log('[nicepay-webhook] 수신', {
+    keys: Object.keys(payload),
+    status,
+    orderId,
+    hasTid: Boolean(tid),
+    isCancel: CANCEL_STATUSES.has(status),
+  });
 
   // 등록 검증(빈/비취소 통보)도 여기서 'OK' 로 응답된다.
   // 1) 멱등 — 동일 통보 재수신 시 1회만 처리(토스 웹훅과 동일).
@@ -111,7 +126,15 @@ export async function POST(req: NextRequest) {
     // 5) 코인 회수 — 이미 지급(fulfilled)된 주문만, 지급분만큼 음수 적립으로 회수.
     //    ⚠️ 음수 잔액(이미 사용한 코인)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
     const pkg = getPackage(order.packageId);
-    if (pkg && pkg.credits > 0 && order.status === 'fulfilled') {
+    const canRevoke = Boolean(pkg && pkg.credits > 0 && order.status === 'fulfilled');
+    // 진단 로그(임시) — 회수 실행/스킵 사유 확인.
+    console.log('[nicepay-webhook] 취소 처리', {
+      orderId,
+      orderStatus: order.status,
+      pkgCredits: pkg?.credits ?? null,
+      revoke: canRevoke,
+    });
+    if (canRevoke && pkg) {
       await addCredits(order.userId, -pkg.credits, 'purchase', {
         orderId,
         reason: 'nicepay-cancel',
