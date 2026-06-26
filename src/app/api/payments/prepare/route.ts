@@ -6,6 +6,7 @@ import {
   isTasteProductPackage,
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
+import { getPaymentProvider } from '@/lib/payments/provider';
 import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
@@ -308,5 +309,7 @@ export async function POST(req: NextRequest) {
     alreadyPurchased: false,
     scopeKey: paymentScope?.scopeKey ?? null,
     orderId: order.orderId,
+    // 2026-06-26 — 결제창 분기용 PG. 클라이언트가 toss SDK ↔ nicepay 결제창을 선택.
+    provider: getPaymentProvider(),
   });
 }
