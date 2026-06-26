@@ -44,18 +44,6 @@ export async function POST(req: NextRequest) {
   const clientId = (form.get('clientId') as string | null) ?? undefined;
   const amount = Number(amountRaw);
 
-  // 진단 로그(임시) — 나이스페이 콜백 실제 필드명/값. authToken/signature 값은 미노출.
-  console.log('[nicepay-return] 콜백 수신', {
-    allKeys: Array.from(form.keys()),
-    authResultCode,
-    tid,
-    orderId,
-    amount: amountRaw,
-    clientId,
-    hasAuthToken: Boolean(authToken),
-    hasSignature: Boolean(signature),
-  });
-
   // 1) 인증 결과(0000=성공)
   if (authResultCode !== '0000') return failRedirect('결제 인증에 실패했습니다.');
   if (!tid || !orderId || !Number.isFinite(amount)) {
@@ -90,7 +78,6 @@ export async function POST(req: NextRequest) {
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
   } catch (err) {
-    console.error('[nicepay-return] 승인 실패', err instanceof Error ? err.message : err);
     await markPaymentOrderFailed({
       orderId,
       status: 'payment_failed',
@@ -132,5 +119,8 @@ export async function POST(req: NextRequest) {
   }
 
   // 7) 성공 결과 페이지(이미 승인·지급 완료 → success 페이지는 confirm 재호출 없이 결과만 표시)
-  return redirectTo(`/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}`);
+  //    충전 코인 수를 함께 넘겨 success 페이지가 '+N 코인'을 정확히 표시.
+  return redirectTo(
+    `/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}&credits=${pkg.credits}`
+  );
 }

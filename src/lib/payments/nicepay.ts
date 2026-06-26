@@ -88,13 +88,6 @@ async function parseNicepayResponse(
 
   // HTTP 비정상 또는 resultCode 가 정상(0000)이 아니면 실패.
   if (!response.ok || (body.resultCode && body.resultCode !== '0000')) {
-    // 진단 로그(임시) — 나이스페이 실제 거부 사유. secret 미노출.
-    console.error('[nicepay] API 응답 실패', {
-      httpStatus: response.status,
-      resultCode: body.resultCode ?? '(none)',
-      resultMsg: body.resultMsg ?? '(none)',
-      keys: Object.keys(body),
-    });
     const message =
       typeof body.resultMsg === 'string' && body.resultMsg ? body.resultMsg : fallbackMessage;
     throw new Error(message);
@@ -113,15 +106,6 @@ export async function approveNicepayPayment(
 ): Promise<NicepayPaymentObject> {
   const ediDate = buildEdiDate();
   const signData = buildApproveSignData(tid, amount, ediDate);
-
-  // 진단 로그(임시) — 승인 요청 파라미터. signData/secret 미노출.
-  console.log('[nicepay] approve 요청', {
-    url: `${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`,
-    tid,
-    amount,
-    ediDate,
-    clientIdLen: getClientKey().length, // trim 적용 확인용(탭 제거 시 35)
-  });
 
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
     method: 'POST',
