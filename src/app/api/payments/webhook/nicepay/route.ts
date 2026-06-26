@@ -67,15 +67,6 @@ export async function POST(req: NextRequest) {
   const orderId = String(payload.orderId ?? '');
   const status = String(payload.status ?? '');
 
-  // 진단 로그(임시) — 통보 실제 필드명/status/파싱 확인. 값은 미노출(키·status·orderId 만).
-  console.log('[nicepay-webhook] 수신', {
-    keys: Object.keys(payload),
-    status,
-    orderId,
-    hasTid: Boolean(tid),
-    isCancel: CANCEL_STATUSES.has(status),
-  });
-
   // 등록 검증(빈/비취소 통보)도 여기서 'OK' 로 응답된다.
   // 1) 멱등 — 동일 통보 재수신 시 1회만 처리(토스 웹훅과 동일).
   const eventHash = hashWebhookPayload(payload);
@@ -123,26 +114,15 @@ export async function POST(req: NextRequest) {
       source: 'webhook',
     });
 
-    // 5) 코인 회수 — 이미 지급(fulfilled)된 주문만, 지급분만큼 음수 적립으로 회수.
+    // 5) 코인 회수 — 이미 지급(fulfilled)된 주문만, deduct_credits 로 잔액 범위 차감.
     //    ⚠️ 음수 잔액(이미 사용한 코인)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
     const pkg = getPackage(order.packageId);
-    const canRevoke = Boolean(pkg && pkg.credits > 0 && order.status === 'fulfilled');
-    // 진단 로그(임시) — 회수 실행/스킵 사유 확인.
-    console.log('[nicepay-webhook] 취소 처리', {
-      orderId,
-      orderStatus: order.status,
-      pkgCredits: pkg?.credits ?? null,
-      revoke: canRevoke,
-    });
-    if (canRevoke && pkg) {
+    if (pkg && pkg.credits > 0 && order.status === 'fulfilled') {
       const revokeResult = await revokeCredits(order.userId, pkg.credits, 'nicepay-cancel');
-      // 진단 로그(임시) — 회수 RPC 결과 확인.
-      console.log('[nicepay-webhook] 회수 결과', {
-        orderId,
-        success: revokeResult.success,
-        remaining: revokeResult.remaining,
-        error: revokeResult.error ?? null,
-      });
+      // 회수 실패(잔액 부족 등)는 운영 추적용으로 남긴다 — 수동 보정 대상.
+      if (!revokeResult.success) {
+        console.error('[nicepay-webhook] 코인 회수 실패', { orderId, error: revokeResult.error });
+      }
     }
 
     await markPaymentWebhookEvent({ eventHash, status: 'processed' });
