@@ -120,12 +120,7 @@ export function UnifiedBirthInfoFields({
   }
 
   return (
-    <div
-      className={cn(
-        'unified-birth-form grid gap-4 sm:gap-5',
-        sections.length === 1 ? 'lg:grid-cols-1' : 'lg:grid-cols-2'
-      )}
-    >
+    <div className="unified-birth-form grid gap-4 sm:gap-5">
       {showDate || showGender ? (
         <div className="space-y-4">
           {showDate ? (
