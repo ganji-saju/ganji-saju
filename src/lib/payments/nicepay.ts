@@ -20,29 +20,21 @@ function getApiBase(): string {
 
 function getClientKey(): string {
   // 결제창용 clientKey 는 공개(NEXT_PUBLIC_)지만 서버 Basic 인가에도 필요.
-  const key = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY;
+  // ⚠️ env 복사 시 trailing 탭/공백/개행이 딸려오면 Basic 인증 U116 → 반드시 trim.
+  const key = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY?.trim();
   if (!key) throw new Error('NEXT_PUBLIC_NICEPAY_CLIENT_KEY 가 설정되어 있지 않습니다.');
   return key;
 }
 
 function getSecretKey(): string {
-  const key = process.env.NICEPAY_SECRET_KEY;
+  const key = process.env.NICEPAY_SECRET_KEY?.trim();
   if (!key) throw new Error('NICEPAY_SECRET_KEY 가 설정되어 있지 않습니다.');
   return key;
 }
 
-/**
- * Basic 인증에 쓰는 clientId — 결제창 clientKey 의 환경 prefix(R2_/S2_ 등)를 제거한 값.
- * 문서의 Basic 예시 clientId 가 prefix 없는 순수 hex 라, 결제창/서명용 clientKey(R2_...) 와 구분.
- * ⚠️ 샌드박스 E2E 로 확정(docs §6).
- */
-function getBasicAuthClientId(): string {
-  return getClientKey().replace(/^[A-Za-z]+\d*_/, '');
-}
-
-/** 인가 헤더 — Basic base64(clientId:secretKey). clientId 는 prefix 제거값. */
+/** 인가 헤더 — Basic base64(clientKey:secretKey). 키는 trim 된 값(getClientKey/getSecretKey). */
 function getNicepayAuthorizationHeader(): string {
-  return `Basic ${Buffer.from(`${getBasicAuthClientId()}:${getSecretKey()}`).toString('base64')}`;
+  return `Basic ${Buffer.from(`${getClientKey()}:${getSecretKey()}`).toString('base64')}`;
 }
 
 /** SHA256 hex 서명 유틸(테스트 가능하도록 secretKey 주입형 코어 + env 래퍼 분리). */
@@ -128,7 +120,7 @@ export async function approveNicepayPayment(
     tid,
     amount,
     ediDate,
-    basicClientId: getBasicAuthClientId(), // prefix 제거된 Basic 인증 clientId 확인용
+    clientIdLen: getClientKey().length, // trim 적용 확인용(탭 제거 시 35)
   });
 
   const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
