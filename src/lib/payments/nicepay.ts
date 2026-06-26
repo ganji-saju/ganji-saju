@@ -20,18 +20,19 @@ function getApiBase(): string {
 
 function getClientKey(): string {
   // 결제창용 clientKey 는 공개(NEXT_PUBLIC_)지만 서버 Basic 인가에도 필요.
-  const key = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY;
+  // ⚠️ env 복사 시 trailing 탭/공백/개행이 딸려오면 Basic 인증 U116 → 반드시 trim.
+  const key = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY?.trim();
   if (!key) throw new Error('NEXT_PUBLIC_NICEPAY_CLIENT_KEY 가 설정되어 있지 않습니다.');
   return key;
 }
 
 function getSecretKey(): string {
-  const key = process.env.NICEPAY_SECRET_KEY;
+  const key = process.env.NICEPAY_SECRET_KEY?.trim();
   if (!key) throw new Error('NICEPAY_SECRET_KEY 가 설정되어 있지 않습니다.');
   return key;
 }
 
-/** 인가 헤더 — Basic base64(clientKey:secretKey). */
+/** 인가 헤더 — Basic base64(clientKey:secretKey). 키는 trim 된 값(getClientKey/getSecretKey). */
 function getNicepayAuthorizationHeader(): string {
   return `Basic ${Buffer.from(`${getClientKey()}:${getSecretKey()}`).toString('base64')}`;
 }

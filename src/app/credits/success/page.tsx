@@ -169,7 +169,12 @@ function SuccessContent() {
     didConfirm.current = true;
 
     // 2026-06-26 — 나이스페이: returnUrl 서버 핸들러가 이미 승인·지급 완료. confirm 재호출 없이 완료 표시.
+    //   충전 코인 수는 returnUrl 이 credits 쿼리로 전달(success 가 잔액 재조회 안 하므로).
     if (searchParams.get('provider') === 'nicepay') {
+      const grantedCredits = Number(searchParams.get('credits') ?? 0);
+      if (Number.isFinite(grantedCredits) && grantedCredits > 0) {
+        setCoins(grantedCredits);
+      }
       setStatus('success');
       trackMoonlightEvent('payment_completed', {
         from: searchParams.get('from') ?? 'credits',

@@ -119,5 +119,8 @@ export async function POST(req: NextRequest) {
   }
 
   // 7) 성공 결과 페이지(이미 승인·지급 완료 → success 페이지는 confirm 재호출 없이 결과만 표시)
-  return redirectTo(`/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}`);
+  //    충전 코인 수를 함께 넘겨 success 페이지가 '+N 코인'을 정확히 표시.
+  return redirectTo(
+    `/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}&credits=${pkg.credits}`
+  );
 }
