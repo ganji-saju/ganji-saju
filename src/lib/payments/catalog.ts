@@ -162,12 +162,13 @@ export const PAYMENT_PACKAGES = [
     requiresSlug: true,
   },
   {
-    // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체를 990원에.
+    // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
+    // 2026-06-26 — 묶음열기 9,900원 → 19,800원.
     id: 'bundle_today_set',
     name: '오늘 풀세트',
     credits: 0,
-    price: 9900,
+    price: 19800,
     kind: 'bundle',
     requiresSlug: true,
     components: [

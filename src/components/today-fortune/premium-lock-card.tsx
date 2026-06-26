@@ -123,7 +123,7 @@ export function PremiumLockCard({
 
       {bundleHref ? (
         <>
-          {/* 단품(9,900) vs 묶음(9,900) 비교 — 같은 값이면 묶음이 이득, filled + 넓은 컬럼으로 강조 */}
+          {/* 단품(9,900) vs 묶음(19,800) 비교 — 묶음은 오늘 자세히 + 점수 6종 7개를 한 번에, filled + 넓은 컬럼으로 강조 */}
           <div className="mt-3 grid grid-cols-[1fr_1.35fr] gap-2">
             <Link
               href={`/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`}
@@ -147,8 +147,8 @@ export function PremiumLockCard({
                 style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
               >
                 <span className="flex items-center gap-1.5 leading-tight">
-                  <span className="text-[16.7px] font-extrabold">9,900원 묶음</span>
-                  <span className="text-[11.5px] font-semibold text-white/85">이득</span>
+                  <span className="text-[16.7px] font-extrabold">19,800원 묶음</span>
+                  <span className="text-[11.5px] font-semibold text-white/85">7종</span>
                 </span>
                 <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
               </Button>
@@ -167,16 +167,16 @@ export function PremiumLockCard({
             </Button>
           </Link>
 
-          {/* 옵션 설명 — 1코인 / 9,900원 단품 / 9,900원 묶음 */}
+          {/* 옵션 설명 — 10코인 / 9,900원 단품 / 19,800원 묶음 */}
           <ul className="mt-3 grid gap-1 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
             <li>
-              <b className="font-bold text-[var(--app-ink)]">1코인 열기</b> — 보유 코인으로 오늘 자세히 보기
+              <b className="font-bold text-[var(--app-ink)]">10코인 열기</b> — 보유 코인으로 오늘 자세히 보기
             </li>
             <li>
               <b className="font-bold text-[var(--app-ink)]">9,900원 단품</b> — 오늘 자세히 보기만 바로 결제
             </li>
             <li>
-              <b className="font-bold text-[var(--app-pink-strong)]">9,900원 묶음</b> — 같은 값에 오늘 자세히 + 점수 6종까지 한 번에
+              <b className="font-bold text-[var(--app-pink-strong)]">19,800원 묶음</b> — 오늘 자세히 + 점수 6종까지 한 번에
             </li>
           </ul>
         </>

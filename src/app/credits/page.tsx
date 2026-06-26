@@ -344,7 +344,7 @@ function CreditsPageContent() {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            ✦ <strong>오늘 자세히 보기 1코인</strong> · <strong>연애 마음 확인 2코인</strong> ·
+            ✦ <strong>오늘 자세히 보기 10코인</strong> · <strong>연애 마음 확인 10코인</strong> ·
             결제 즉시 잔액 반영
           </article>
 

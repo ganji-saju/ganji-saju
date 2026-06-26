@@ -533,7 +533,7 @@ export default async function VerificationPage({ searchParams }: VerificationPag
             <div>
               <div className="app-caption">오늘운세 운영 검증</div>
               <h2 className="mt-2 text-3xl font-semibold text-[var(--app-ivory)]">
-                무료 결과 / 1코인 심화 / safety / analytics 준비 상태
+                무료 결과 / 10코인 심화 / safety / analytics 준비 상태
               </h2>
             </div>
             <JsonLink href={todayFortuneApiHref} />

@@ -122,7 +122,7 @@ export interface TodayFortuneFreeResult {
   nextAction: {
     copy: string;
     product: 'TODAY_DEEP_READING';
-    coinCost: 1;
+    coinCost: number;
   };
   followUpQuestions: string[];
   /** 2026-05-15 PR 1 — 사주 명식 신뢰 카드용 스냅샷. 미산정 시 null. */
@@ -212,7 +212,7 @@ export interface TodayScenarioComparison {
 
 export interface TodayFortunePremiumResult {
   productCode: 'TODAY_DEEP_READING';
-  coinCost: 1;
+  coinCost: number;
   /** YYYY-MM-DD (timezone-local). 2026-05-15: 매일 다른 자세히-보기 결과를 보장하기 위해 추가. */
   dateKey: string;
   groundingSummary: TodayFortuneFreeResult['groundingSummary'];
