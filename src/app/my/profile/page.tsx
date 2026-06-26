@@ -77,8 +77,8 @@ export default async function MyProfilePage() {
         </p>
       </article>
 
-      {/* §2 현재 저장값 요약 — 2칸 grid */}
-      <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {/* §2 현재 저장값 요약 — 1컬럼(세로 텍스트 방지) */}
+      <section className="grid grid-cols-1 gap-2.5">
         <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
             내 기본 프로필

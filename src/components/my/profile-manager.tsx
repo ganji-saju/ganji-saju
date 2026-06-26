@@ -438,7 +438,7 @@ export default function ProfileManager({
           </Badge>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-6 grid gap-6">
           <div className="space-y-5">
             <div>
               <label className="mb-2 block text-base text-[var(--app-copy)]">이름 또는 별칭</label>
@@ -539,7 +539,7 @@ export default function ProfileManager({
           </Badge>
         </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+        <div className="mt-6 grid gap-6">
           <div className="space-y-3">
             {familyProfiles.length > 0 ? (
               familyProfiles.map((profile) => (
@@ -586,7 +586,7 @@ export default function ProfileManager({
           </div>
 
           <div className="space-y-5">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               <div>
                 <label className="mb-2 block text-base text-[var(--app-copy)]">이름 또는 별칭</label>
                 <Input
