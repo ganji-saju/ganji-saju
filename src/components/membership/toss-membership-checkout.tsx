@@ -16,6 +16,7 @@ import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/li
 // 2026-05-18 Phase 3-C-1: 결제 전 동의 체크박스 + prepare API 검증.
 import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-checkboxes';
 import { getPackage } from '@/lib/payments/catalog';
+import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
 import type { PolicyKind } from '@/shared/policies/types';
 
 interface Props {
@@ -37,6 +38,7 @@ interface PaymentPrepareResponse {
   loginHref?: string;
   error?: string;
   orderId?: string;
+  provider?: 'toss' | 'nicepay';
 }
 
 export default function TossMembershipCheckout({
@@ -146,9 +148,34 @@ export default function TossMembershipCheckout({
         return;
       }
 
+      const orderId = prepare.orderId;
+
+      // 2026-06-26 — 나이스페이 분기: 결제창 SDK·승인 방식이 달라(서버승인 returnUrl) 별도 흐름.
+      //   토스(successUrl/failUrl 클라 redirect) ↔ 나이스페이(returnUrl 서버 승인) 차이.
+      if (prepare.provider === 'nicepay') {
+        if (packageId === 'lifetime_report' && slug) {
+          savePendingLifetimeReportSlug(slug);
+        }
+        trackMoonlightEvent('payment_started', {
+          from: entrySource,
+          packageId,
+          product,
+          paymentMethod,
+          amount,
+          plan,
+        });
+        await requestNicepayPayment({
+          orderId,
+          amount,
+          goodsName: orderName,
+          method: toNicepayMethod(paymentMethod),
+          onError: (message) => setErrorMessage(message),
+        });
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = prepare.orderId;
       const successParams = new URLSearchParams({
         packageId,
         plan,

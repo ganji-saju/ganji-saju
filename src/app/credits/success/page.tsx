@@ -168,6 +168,16 @@ function SuccessContent() {
     if (didConfirm.current) return;
     didConfirm.current = true;
 
+    // 2026-06-26 — 나이스페이: returnUrl 서버 핸들러가 이미 승인·지급 완료. confirm 재호출 없이 완료 표시.
+    if (searchParams.get('provider') === 'nicepay') {
+      setStatus('success');
+      trackMoonlightEvent('payment_completed', {
+        from: searchParams.get('from') ?? 'credits',
+        provider: 'nicepay',
+      });
+      return;
+    }
+
     const paymentKey = searchParams.get('paymentKey');
     const orderId = searchParams.get('orderId');
     const amount = searchParams.get('amount');

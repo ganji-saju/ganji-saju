@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { BUSINESS_INFO } from '@/lib/business-info';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
+import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
 import type { PolicyKind } from '@/shared/policies/types';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,7 @@ interface PaymentPrepareResponse {
   loginHref?: string;
   error?: string;
   orderId?: string;
+  provider?: 'toss' | 'nicepay';
 }
 
 function getPricePerCoin(pkg: PaymentPackage) {
@@ -202,9 +204,28 @@ function CreditsPageContent() {
         return;
       }
 
+      const orderId = prepare.orderId;
+
+      // 2026-06-26 — 나이스페이 분기(서버승인 returnUrl). 토스(successUrl 클라 redirect)와 별도.
+      if (prepare.provider === 'nicepay') {
+        trackMoonlightEvent('payment_started', {
+          from: entrySource,
+          packageId: pkg.id,
+          paymentMethod,
+          amount: pkg.price,
+        });
+        await requestNicepayPayment({
+          orderId,
+          amount: pkg.price,
+          goodsName: `${pkg.name} ${pkg.credits}코인`,
+          method: toNicepayMethod(paymentMethod),
+          onError: (message) => setErrorMessage(message),
+        });
+        return;
+      }
+
       const toss = await loadTossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
       const payment = toss.payment({ customerKey: ANONYMOUS });
-      const orderId = prepare.orderId;
       const successParams = new URLSearchParams({
         packageId: pkg.id,
         from: entrySource,
