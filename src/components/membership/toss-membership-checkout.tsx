@@ -101,7 +101,7 @@ export default function TossMembershipCheckout({
     }
 
     if (!process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY) {
-      setErrorMessage('Toss 클라이언트 키가 설정되어 있지 않습니다.');
+      setErrorMessage('결제 클라이언트 키가 설정되어 있지 않습니다.');
       return;
     }
 
@@ -314,7 +314,7 @@ export default function TossMembershipCheckout({
         <p className="text-center text-sm leading-6 text-rose-600">{errorMessage}</p>
       ) : (
         <p className="text-center text-sm leading-6 text-[var(--app-copy-soft)]">
-          Toss 결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
+          결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
         </p>
       )}
     </div>
