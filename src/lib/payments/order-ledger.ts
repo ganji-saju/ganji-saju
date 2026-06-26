@@ -14,7 +14,12 @@ export type PaymentOrderStatus =
   | 'canceled'
   | 'expired';
 
-export type PaymentOrderSource = 'prepare' | 'confirm' | 'webhook' | 'reconciliation';
+export type PaymentOrderSource =
+  | 'prepare'
+  | 'confirm'
+  | 'webhook'
+  | 'reconciliation'
+  | 'nicepay-return'; // 2026-06-26 나이스페이 서버승인 returnUrl 핸들러
 
 export interface TossPaymentObject {
   paymentKey?: string | null;
