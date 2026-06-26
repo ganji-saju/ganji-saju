@@ -7,9 +7,9 @@ export const TOSS_PAYMENT_METHOD_OPTIONS = [
   },
   {
     code: 'TRANSFER',
-    label: '계좌이체',
-    shortLabel: '계좌이체',
-    description: '은행 계좌에서 바로 이체하는 방식입니다.',
+    label: '실시간 계좌이체',
+    shortLabel: '실시간 계좌이체',
+    description: '은행 계좌에서 실시간으로 바로 이체하는 방식입니다.',
   },
 ] as const;
 
