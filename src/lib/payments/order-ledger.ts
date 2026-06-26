@@ -237,6 +237,20 @@ export async function getPaymentOrderByOrderId(orderId: string) {
   return data ? mapPaymentOrder(data as PaymentOrderRow) : null;
 }
 
+// 2026-06-26 — 환불 시 PG 분기용. order metadata.provider 로 toss/nicepay 판별(없으면 toss).
+export async function getOrderProviderByPaymentKey(
+  paymentKey: string
+): Promise<'toss' | 'nicepay'> {
+  const service = await createServiceClient();
+  const { data } = await service
+    .from('payment_orders')
+    .select('metadata')
+    .eq('payment_key', paymentKey)
+    .maybeSingle();
+  const metadata = (data?.metadata ?? null) as Record<string, unknown> | null;
+  return metadata?.provider === 'nicepay' ? 'nicepay' : 'toss';
+}
+
 export async function getPaymentOrderForUser(orderId: string, userId: string) {
   const order = await getPaymentOrderByOrderId(orderId);
   if (!order || order.userId !== userId) return null;

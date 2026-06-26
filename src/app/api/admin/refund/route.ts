@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { cancelPayment, getPayment } from '@/lib/payments/toss';
+import { cancelNicepayPayment } from '@/lib/payments/nicepay';
+import { getOrderProviderByPaymentKey } from '@/lib/payments/order-ledger';
 import { revokeProductEntitlement } from '@/lib/product-entitlements';
 import {
   buildCreditRefundItem,
@@ -374,7 +376,22 @@ export async function POST(req: NextRequest) {
         })
         .eq('id', id);
     },
+    // 2026-06-26 — PG 분기: order metadata.provider 로 nicepay/toss 취소 선택.
+    //   나이스페이는 cancelNicepayPayment(idempotencyKey 로 멱등). 옵션 매핑(cancelReason→reason 등).
     async tossCancel(paymentKey, options) {
+      const provider = await getOrderProviderByPaymentKey(paymentKey);
+      if (provider === 'nicepay') {
+        try {
+          const response = await cancelNicepayPayment(paymentKey, {
+            reason: options.cancelReason,
+            idempotencyKey: options.idempotencyKey,
+            ...(typeof options.cancelAmount === 'number' ? { cancelAmt: options.cancelAmount } : {}),
+          });
+          return { ok: true, response };
+        } catch (err) {
+          return { ok: false, error: err instanceof Error ? err.message : '나이스페이 결제취소 실패' };
+        }
+      }
       try {
         const response = await cancelPayment(paymentKey, options);
         return { ok: true, response };
@@ -383,6 +400,7 @@ export async function POST(req: NextRequest) {
       }
     },
     async loadTossPayment(paymentKey) {
+      // 나이스페이는 already-canceled backstop 을 cancelNicepayPayment 멱등으로 흡수하므로 토스만 조회.
       try {
         return { ok: true, payment: await getPayment(paymentKey) };
       } catch (err) {
