@@ -115,7 +115,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
             </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[13.8px] text-[var(--app-copy-soft)]">결제 수단</span>
-              <span className="text-[13.8px] font-bold text-[var(--app-copy)]">토스페이</span>
+              <span className="text-[13.8px] font-bold text-[var(--app-copy)]">카드 · 계좌이체</span>
             </div>
           </article>
 

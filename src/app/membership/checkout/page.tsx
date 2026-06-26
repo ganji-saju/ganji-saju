@@ -50,7 +50,7 @@ interface Props {
 }
 
 const CHECKOUT_FLOW_POINTS = [
-  '토스 결제창에서 카드 또는 계좌이체로 결제합니다.',
+  '카드 또는 계좌이체로 결제합니다.',
   '결제가 끝나면 구매한 풀이가 바로 열립니다.',
   '이미 구매한 풀이는 다시 결제하지 않고 보관함에서 볼 수 있습니다.',
 ] as const;
@@ -376,7 +376,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             </article>
           </section>
 
-          {/* §3 결제 수단 안내 — 토스 단일 */}
+          {/* §3 결제 수단 안내 */}
           <section>
             <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
             <article
@@ -388,14 +388,14 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             >
               <div
                 className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[16.1px] font-black text-white"
-                style={{ background: '#3182f6' }}
+                style={{ background: 'var(--app-pink)' }}
                 aria-hidden="true"
               >
-                T
+                💳
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
-                  토스 결제
+                  카드 · 계좌이체 결제
                 </div>
                 <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
                   결제창에서 카드 · 계좌이체 · 간편결제 중 선택
