@@ -492,7 +492,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
   const recentGuestDetail = recentGuestDraft ? formatRecentGuestDetail(recentGuestDraft) : '';
   const selectedEntryPoint =
     QUESTION_ENTRY_POINTS.find((entry) => entry.slug === selectedEntrySlug) ?? QUESTION_ENTRY_POINTS[0];
-  const birthStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'birth'));
   const locationStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'location'));
   const profileStepIndex = Math.max(0, steps.findIndex((item) => item.id === 'profile'));
   // 2026-05-15 — 최종 제출 단계 = profile. (이전엔 location 이 마지막이었음.)
@@ -1010,6 +1009,8 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
 
     return (
       <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-5">
+        {renderSavedProfilePicker()}
+
         <div>
           <label
             htmlFor="saju-nickname"
@@ -1244,6 +1245,119 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     );
   }
 
+  // 2026-06-27 #507 — 저장 프로필(내 사주·가족) 선택→자동입력 picker. 이전엔 마지막 step(profile/concern)
+  //   하단에 있어 사용자가 못 찾음(#493 자동적용 제거와 무관, 위치만 이동). 첫 슬라이드(birth) 최상단으로 이동.
+  //   chip 선택 시 applySavedProfile 가 전 항목(시간·출생지 포함) 채우고 concern(마지막) step 으로 점프 → 바로 제출.
+  function renderSavedProfilePicker() {
+    if (profileLoadStatus === 'idle' && !recentGuestDraft) return null;
+    return (
+      <div className="space-y-3">
+        {recentGuestDraft ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-base font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
+                <p className="mt-1.5 text-base leading-6 text-[var(--app-copy-muted)]">
+                  로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
+                </p>
+              </div>
+              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[12.6px] font-semibold text-[var(--app-pink-strong)]">
+                로컬 저장
+              </span>
+            </div>
+            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm leading-6 text-[var(--app-copy)]">
+              {recentGuestDetail}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" onClick={applyRecentGuestInput} size="sm">
+                최근 정보로 이어보기
+              </Button>
+              <Button
+                type="button"
+                onClick={removeRecentGuestInput}
+                variant="secondary"
+                size="sm"
+              >
+                이 기기에서 지우기
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {profileLoadStatus === 'loading' ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-base text-[var(--app-copy-muted)]">
+            저장된 내 정보와 등록한 사람을 확인하고 있습니다.
+          </div>
+        ) : null}
+
+        {profileLoadStatus === 'anonymous' ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4">
+            <div className="text-base font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
+            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
+              {recentGuestDraft
+                ? '아래에 새 정보를 직접 입력하거나, 이 기기에 남아 있는 최근 정보를 불러올 수 있습니다.'
+                : '저장은 나중에 해도 됩니다. 아래에 정보를 입력하면 바로 사주풀이를 열어볼 수 있어요.'}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link href="/login?next=/saju/new" className="gangi-secondary-button">
+                로그인하고 저장 정보 불러오기
+              </Link>
+            </div>
+          </div>
+        ) : null}
+
+        {profileLoadStatus === 'empty' ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
+            <div className="text-base font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
+            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
+              이번에 입력한 정보는 다음부터 바로 불러올 수 있게 저장됩니다.
+            </p>
+          </div>
+        ) : null}
+
+        {profileLoadStatus === 'error' ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-base leading-6 text-rose-700">
+            {profileLoadMessage}
+          </div>
+        ) : null}
+
+        {profileLoadStatus === 'ready' ? (
+          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/6 px-3.5 py-3.5">
+            <div className="mb-2.5 text-[13.6px] font-semibold text-[var(--app-ink)]">
+              저장한 사주로 바로 채우기 · 내 정보·가족 중 선택
+            </div>
+            <div className="max-h-[min(42vh,22rem)] overflow-y-auto pr-1">
+              <ProductGrid columns={2}>
+                {savedProfileOptions.map((profile) => (
+                  <button
+                    key={profile.id}
+                    type="button"
+                    onClick={() => applySavedProfile(profile)}
+                    className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-pink)]/38 hover:bg-[var(--app-pink)]/8"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 text-base font-medium text-[var(--app-ink)]">{profile.label}</div>
+                      <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[11.5px] text-[var(--app-pink-strong)]">
+                        선택
+                      </span>
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{profile.detail}</div>
+                  </button>
+                ))}
+              </ProductGrid>
+            </div>
+          </div>
+        ) : null}
+
+        {profileLoadMessage && profileLoadStatus !== 'error' ? (
+          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-sm leading-5 text-[var(--app-pink-strong)]">
+            {profileLoadMessage}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
   function renderProfileStep() {
     return (
       <div className="mt-4 space-y-3">
@@ -1434,125 +1548,6 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
           </div>
         </section>
 
-        {recentGuestDraft ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-base font-semibold text-[var(--app-ink)]">최근 입력한 정보가 있어요</div>
-                <p className="mt-1.5 text-base leading-6 text-[var(--app-copy-muted)]">
-                  로그인하지 않아도 같은 브라우저에서는 다시 입력하지 않도록 이 기기에만 기억합니다.
-                </p>
-              </div>
-              <span className="rounded-full border border-[var(--app-pink)]/24 bg-[var(--app-pink)]/10 px-2.5 py-1 text-[12.6px] font-semibold text-[var(--app-pink-strong)]">
-                로컬 저장
-              </span>
-            </div>
-            <div className="mt-3 rounded-[0.9rem] border border-[var(--app-line)] bg-white px-3 py-2.5 text-sm leading-6 text-[var(--app-copy)]">
-              {recentGuestDetail}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button type="button" onClick={applyRecentGuestInput} size="sm">
-                최근 정보로 이어보기
-              </Button>
-              <Button
-                type="button"
-                onClick={removeRecentGuestInput}
-                variant="secondary"
-                size="sm"
-              >
-                이 기기에서 지우기
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        {profileLoadStatus === 'loading' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4 text-base text-[var(--app-copy-muted)]">
-            저장된 내 정보와 등록한 사람을 확인하고 있습니다.
-          </div>
-        ) : null}
-
-        {profileLoadStatus === 'anonymous' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-4 py-4">
-            <div className="text-base font-medium text-[var(--app-ink)]">비로그인으로도 바로 볼 수 있습니다</div>
-            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
-              {recentGuestDraft
-                ? '지금은 새 정보를 직접 입력하거나, 이 기기에 남아 있는 최근 정보를 불러올 수 있습니다.'
-                : '저장은 나중에 해도 됩니다. 먼저 사주풀이를 열어보세요.'}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                type="button"
-                onClick={() => setActiveIndex(birthStepIndex)}
-                size="sm"
-              >
-                새 정보 입력
-              </Button>
-              <Link
-                href="/login?next=/saju/new"
-                className="gangi-secondary-button"
-              >
-                로그인
-              </Link>
-            </div>
-          </div>
-        ) : null}
-
-        {profileLoadStatus === 'empty' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-4">
-            <div className="text-base font-medium text-[var(--app-ink)]">아직 저장된 정보가 없습니다</div>
-            <p className="mt-2 text-base leading-6 text-[var(--app-copy-muted)]">
-              이번에 입력한 정보는 다음부터 바로 불러올 수 있게 저장됩니다.
-            </p>
-          </div>
-        ) : null}
-
-        {profileLoadStatus === 'error' ? (
-          <div className="rounded-[1.1rem] border border-[var(--app-coral)]/28 bg-[var(--app-coral)]/10 px-4 py-4 text-base leading-6 text-rose-700">
-            {profileLoadMessage}
-          </div>
-        ) : null}
-
-        {profileLoadStatus === 'ready' ? (
-          <div className="max-h-[min(42vh,22rem)] overflow-y-auto pr-1">
-            <ProductGrid columns={2}>
-              {savedProfileOptions.map((profile) => (
-                <button
-                  key={profile.id}
-                  type="button"
-                  onClick={() => applySavedProfile(profile)}
-                  className="app-feature-card-soft text-left transition-colors hover:border-[var(--app-pink)]/38 hover:bg-[var(--app-pink)]/8"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 text-base font-medium text-[var(--app-ink)]">{profile.label}</div>
-                    <span className="shrink-0 rounded-full border border-[var(--app-pink)]/22 bg-[var(--app-pink)]/8 px-2 py-0.5 text-[11.5px] text-[var(--app-pink-strong)]">
-                      선택
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">{profile.detail}</div>
-                </button>
-              ))}
-            </ProductGrid>
-          </div>
-        ) : null}
-
-        {profileLoadMessage && profileLoadStatus !== 'error' ? (
-          <p className="rounded-full border border-[var(--app-pink)]/18 bg-[var(--app-pink)]/8 px-3 py-2 text-sm leading-5 text-[var(--app-pink-strong)]">
-            {profileLoadMessage}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[var(--app-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-          <span className="text-base leading-6 text-[var(--app-copy-muted)]">새 생년월일로 보려면 직접 입력하세요.</span>
-          <Button
-            type="button"
-            onClick={() => setActiveIndex(birthStepIndex)}
-            variant="secondary"
-            size="sm"
-          >
-            직접 입력
-          </Button>
-        </div>
       </div>
     );
   }
