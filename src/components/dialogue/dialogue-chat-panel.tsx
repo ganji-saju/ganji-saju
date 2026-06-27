@@ -100,6 +100,13 @@ type ProfileConnectionState =
   | { status: 'partial'; summary: string; detail: string }
   | { status: 'error'; summary: string; detail: string };
 
+// 짧은 명칭(teacherName)이 받침 유무에 따라 '예요/이에요'가 갈려 보정(예: 사주→사주예요, 관상→관상이에요).
+function withCopula(word: string): string {
+  const code = word.charCodeAt(word.length - 1);
+  const hasFinalConsonant = code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0;
+  return `${word}${hasFinalConsonant ? '이에요' : '예요'}`;
+}
+
 function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): ChatMessage {
   const expert = getDialogueExpertMeta(expertId);
   const teacherName = expert.teacherName;
@@ -114,7 +121,7 @@ function createInitialMessage(expertId: DialogueExpertId, roomMode: boolean): Ch
     expertId: expert.id,
     expertLabel: expert.label,
     text: roomMode
-      ? `안녕하세요, ${teacherName}이에요. 무엇이 궁금하세요?`
+      ? `안녕하세요, ${withCopula(teacherName)}. 무엇이 궁금하세요?`
       : `${teacherName}에게 편하게 물어보세요.`,
   };
 }

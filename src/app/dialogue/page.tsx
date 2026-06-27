@@ -10,7 +10,6 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
-  DIALOGUE_MENU_LABEL,
   MENU_DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
@@ -80,7 +79,6 @@ export default async function DialoguePage({
           <div className="grid gap-2.5">
             {MENU_DIALOGUE_EXPERTS.map((expert) => {
               const active = selectedExpertId === expert.id;
-              const menuLabel = DIALOGUE_MENU_LABEL[expert.id] ?? expert.teacherName;
               return (
                 <Link
                   key={expert.id}
@@ -95,11 +93,11 @@ export default async function DialoguePage({
                   <ZodiacChip kind={expert.id as ZodiacKey} size="md" />
                   <div className="min-w-0 flex-1">
                     <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                      {menuLabel}
+                      {expert.teacherName}
                     </div>
                     <div className="mt-0.5 text-[13.8px] leading-[1.5] text-[var(--app-copy-muted)]">
                       <span className="font-bold text-[var(--app-pink-strong)]">
-                        {expert.teacherName}
+                        {expert.label}
                       </span>{' '}
                       · {expert.description}
                     </div>

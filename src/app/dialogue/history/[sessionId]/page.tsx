@@ -159,7 +159,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
               다음 대화
             </div>
             <h2 className="mt-1.5 text-[18.4px] font-extrabold leading-snug tracking-tight">
-              {meta.teacherName}님과 새 대화 시작하기
+              {meta.teacherName} 새 대화 시작하기
             </h2>
             <Link
               href={`/dialogue/${expertId}`}
