@@ -553,6 +553,14 @@ export default function SajuIntakePage({ step: _step }: { step?: OnboardingStep 
     setActiveIndex(Math.max(0, steps.length - 1));
   }, [activeIndex, steps.length]);
 
+  // 2026-06-27 — swipe wizard 의 step 전환('다음'/스와이프) 시 상단으로 스크롤.
+  //   /saju/new 내 step 이동은 pathname 이 불변이라 전역 ScrollResetOnNavigate(pathname 기반)가
+  //   안 먹어 '다음' 눌러도 이전 스크롤 위치가 남던 문제. step(activeIndex) 변화마다 명시적 top.
+  //   (참고 memory: project_scroll-reset-on-navigate — pathname 외 in-page step 전환 케이스)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [activeIndex]);
+
   useEffect(() => {
     if (!isHydrated) return;
 
