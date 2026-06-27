@@ -998,34 +998,80 @@ export function buildTodayFlowSignal(
     return '';
   }
 
-  // 단독 서술용(뉘앙스 포함) / 겉·바탕 대비용(짧은 수식).
-  const fullPhrase: Record<TodayFlowTone, string> = {
-    same: '내 성향과 잘 맞아 자기 페이스를 지키기 좋은',
-    support: '나를 받쳐줘 회복과 정리에 힘이 실리는',
-    release: '내 에너지를 밖으로 풀어내 표현은 잘 되지만 소모도 있는',
-    press: '나를 눌러 결정이 무겁고 마찰이 생기기 쉬운',
-    tidy: '잔손이 많이 가 작은 정리에 품이 드는',
+  // 2026-06-28 — 같은 오행 톤이라도 날짜(일진 ganzi)마다 표현이 달라지도록 변형군 + 결정론적 선택.
+  //   같은 날은 항상 같은 문장(새로고침 안정), 일진이 바뀌면 문장도 바뀜. (한자/명리어/예측 0 유지)
+  const fullPhrases: Record<TodayFlowTone, readonly string[]> = {
+    same: [
+      '내 성향과 잘 맞아 자기 페이스를 지키기 좋은',
+      '나와 비슷해 무리 없이 흘러가는',
+      '내 페이스대로 움직이기 편한',
+    ],
+    support: [
+      '나를 받쳐줘 회복과 정리에 힘이 실리는',
+      '뒤에서 힘을 보태줘 차분히 채우기 좋은',
+      '나를 도와줘 쉬어가며 정돈하기 좋은',
+    ],
+    release: [
+      '내 에너지를 밖으로 풀어내 표현은 잘 되지만 소모도 있는',
+      '에너지를 바깥으로 내보내 활동은 늘지만 지치기 쉬운',
+      '나를 드러내기 좋지만 그만큼 힘이 빠지는',
+    ],
+    press: [
+      '나를 눌러 결정이 무겁고 마찰이 생기기 쉬운',
+      '부담이 더해져 속도가 더디고 마찰이 생기기 쉬운',
+      '신중함이 필요해 한 박자 천천히 가는 편이 나은',
+    ],
+    tidy: [
+      '잔손이 많이 가 작은 정리에 품이 드는',
+      '자잘한 일이 늘어 정리에 손이 가는',
+      '소소한 정리가 쌓여 손이 자주 가는',
+    ],
   };
-  const shortPhrase: Record<TodayFlowTone, string> = {
-    same: '나와 잘 맞는',
-    support: '나를 받쳐주는',
-    release: '에너지를 밖으로 풀어내는',
-    press: '나를 누르는',
-    tidy: '잔손이 가는',
+  const shortPhrases: Record<TodayFlowTone, readonly string[]> = {
+    same: ['나와 잘 맞는', '내 성향과 통하는', '나와 같은'],
+    support: ['나를 받쳐주는', '나에게 힘을 보태는', '나를 도와주는'],
+    release: ['에너지를 밖으로 풀어내는', '에너지를 바깥으로 내보내는', '나를 드러내게 하는'],
+    press: ['나를 누르는', '나에게 부담을 주는', '나를 조이는'],
+    tidy: ['잔손이 가는', '자잘한 정리가 필요한', '손이 자주 가는'],
   };
+
+  // 일진 ganzi 기반 결정론 seed: 같은 날 고정, 날마다(일진 변동 시) 달라짐.
+  const seedBase = todayPillar.ganzi || `${todayPillar.stem}${todayPillar.branch}`;
+  let seed = 0;
+  for (let i = 0; i < seedBase.length; i += 1) seed = (seed * 31 + seedBase.charCodeAt(i)) >>> 0;
+  const pick = (arr: readonly string[], salt: number) => arr[(seed + salt) % arr.length];
 
   const stemTone = resolveTodayFlowTone(myEl, todayPillar.stemElement);
   const branchTone = resolveTodayFlowTone(myEl, todayPillar.branchElement);
 
   if (stemTone && branchTone) {
     if (stemTone === branchTone) {
-      return `오늘은 안팎으로 ${fullPhrase[stemTone]} 흐름이 함께 도는 날입니다.`;
+      const f = pick(fullPhrases[stemTone], 0);
+      const sameTemplates = [
+        `오늘은 안팎으로 ${f} 흐름이 함께 도는 날입니다.`,
+        `오늘은 겉과 속이 모두 ${f} 흐름으로 도는 하루예요.`,
+        `오늘은 위아래로 ${f} 흐름이 한 방향으로 도는 날입니다.`,
+      ];
+      return sameTemplates[seed % sameTemplates.length];
     }
-    return `오늘은 겉으로는 ${shortPhrase[stemTone]} 흐름이, 바탕에서는 ${shortPhrase[branchTone]} 흐름이 함께 도는 날이라, 한쪽에 치우치지 말고 흐름을 살피며 움직이면 좋습니다.`;
+    const a = pick(shortPhrases[stemTone], 0);
+    const b = pick(shortPhrases[branchTone], 5);
+    const mixTemplates = [
+      `오늘은 겉으로는 ${a} 흐름이, 바탕에서는 ${b} 흐름이 함께 도는 날이라, 한쪽에 치우치지 말고 흐름을 살피며 움직이면 좋습니다.`,
+      `오늘은 드러나는 쪽은 ${a} 흐름, 안쪽은 ${b} 흐름이 같이 도는 하루예요. 한쪽만 보지 말고 균형을 잡아보세요.`,
+      `겉으로는 ${a} 흐름이 보이지만 바탕에는 ${b} 흐름이 깔려 있는 하루라, 둘 다 염두에 두고 움직이면 좋습니다.`,
+    ];
+    return mixTemplates[seed % mixTemplates.length];
   }
 
   const single = stemTone ?? branchTone;
-  return single ? `오늘은 ${fullPhrase[single]} 흐름이 도는 날입니다.` : '';
+  if (!single) return '';
+  const f = pick(fullPhrases[single], 0);
+  const singleTemplates = [
+    `오늘은 ${f} 흐름이 도는 날입니다.`,
+    `오늘은 ${f} 흐름이 하루를 이끄는 날이에요.`,
+  ];
+  return singleTemplates[seed % singleTemplates.length];
 }
 
 function pickStrengthVariant(level: string | null | undefined, seed: number): string {

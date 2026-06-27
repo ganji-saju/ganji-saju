@@ -47,6 +47,11 @@ function findLatestStoredResult(
   sourceSessionId: string
 ): TodayFortuneFreeResult | null {
   try {
+    // 2026-06-28 — '오늘(KST)' 결과만 사용. sessionStorage 가 모바일/PWA 에서 며칠 살아남으면
+    //   '가장 최신' 저장분(이전 날)이 그대로 떠 "오늘운세가 매일 똑같다"고 보이던 문제.
+    //   dateKey 가 오늘과 다르면 stale 로 무시 → 결과 페이지가 '다시 보기' 안내 → 오늘 자로 재생성.
+    //   (엔진은 일진 기반이라 날마다 달라짐. dateKey 포맷은 getTodayPillarSnapshot 와 동일 YYYY-MM-DD.)
+    const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
     const exactPrefix = `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:`;
     let latest: { dateKey: string; payload: TodayFortuneFreeResult } | null = null;
     for (let i = 0; i < window.sessionStorage.length; i += 1) {
@@ -58,6 +63,7 @@ function findLatestStoredResult(
         const parsed = JSON.parse(raw) as TodayFortuneFreeResult;
         if (parsed.sourceSessionId !== sourceSessionId) continue;
         const dk = parsed.dateKey ?? '';
+        if (dk !== todayKey) continue; // 이전 날 캐시는 표시하지 않는다.
         if (!latest || dk > latest.dateKey) {
           latest = { dateKey: dk, payload: parsed };
         }
