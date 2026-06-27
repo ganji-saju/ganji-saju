@@ -976,7 +976,7 @@ function LoginContent({
 
   return (
     <div
-      className={`app-panel gangi-login-card mx-auto w-full p-3.5 text-center sm:p-8 ${
+      className={`app-panel gangi-login-card mx-auto w-full min-w-0 overflow-x-clip p-3.5 text-center sm:p-8 ${
         mode === 'signup' ? 'max-w-3xl' : 'max-w-md'
       }`}
     >
@@ -1379,7 +1379,7 @@ function LoginScaffold() {
             <div className=" text-xl font-semibold text-[var(--app-ink)]">간지사주</div>
             <div className="text-sm text-[var(--app-copy-muted)]">오늘운세 · 타로 · 사주</div>
           </div>
-          <div className="w-full">
+          <div className="w-full min-w-0 px-4">
             <LoginContent mode={mode} setMode={setMode} />
           </div>
         </>
