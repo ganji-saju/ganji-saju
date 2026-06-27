@@ -190,6 +190,21 @@ export const MENU_DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = MENU_DIALOGU
   (id) => DIALOGUE_EXPERTS.find((expert) => expert.id === id)
 ).filter((expert): expert is DialogueExpertMeta => Boolean(expert));
 
+// 2026-06-28 — 메뉴/허브에 노출하는 짧은 서비스 명칭(상단 드롭다운 label 과 동일).
+//   허브·드롭다운은 이 라벨을 대표 명칭으로 쓰고 teacherName 은 부제로 병기한다.
+//   (in-chat 대화 페르소나는 그대로 teacherName 사용.)
+export const DIALOGUE_MENU_LABEL: Partial<Record<DialogueExpertId, string>> = {
+  dragon: '사주',
+  tiger: '명리',
+  horse: '길일',
+  sheep: '궁합',
+  snake: '꿈해몽',
+  dog: '대화상담',
+  rabbit: '타로',
+  ox: '오늘운세',
+  rooster: '별자리',
+};
+
 const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOverlay> = {
   rat: {
     visibleOpening: '엠지쥐선생은 성격보다 먼저 반복되는 반응을 봅니다.',
