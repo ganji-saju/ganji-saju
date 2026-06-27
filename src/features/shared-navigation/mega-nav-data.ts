@@ -89,27 +89,20 @@ export const MEGA_NAV: MegaNavGroup[] = [
   {
     label: '대화',
     c1: {
-      // DALBIT_TEACHERS (src/content/moonlight.ts) 12명 전체.
-      // 사용자가 직접 명명한 12간지 선생 이름을 그대로 사용.
-      //
-      // 2026-05-16 — 사용자 보고: 대화 메뉴의 각 선생 카드가 엉뚱한 라우트(/guide·
-      // /myeongri·/saju/new·/tarot/daily·/compatibility) 로 연결돼 AI 대화방으로
-      // 들어가지 못함. 모든 선생을 12간지 zodiac id 기반 `/dialogue/<id>` 대화방
-      // 으로 통일. DIALOGUE_EXPERTS (src/lib/dialogue-experts.ts) 와 일치.
+      // 2026-06-28 — 홈 8캐릭터 카드 대응 8명 + 별자리(별닭선생) = 9명 노출. /dialogue 허브
+      //   (MENU_DIALOGUE_EXPERTS)와 동일 구성. 나머지 3명(엠지쥐 성향·관상원 관상·복돼지 행운)은
+      //   /dialogue/<id> 라우트는 유지하고 이 메뉴에서만 숨긴다.
       heading: '선생님과 대화',
       items: [
-        { label: '엠지쥐선생', desc: '성향 놀이 · MBTI', href: '/dialogue/rat', zodiac: 'rat' },
-        { label: '오늘소선생', desc: '오늘 루틴 · 생활 조언', href: '/dialogue/ox', zodiac: 'ox' },
-        { label: '명리호선생', desc: '조금 더 깊게 · 명리', href: '/dialogue/tiger', zodiac: 'tiger', tag: 'TOP' },
-        { label: '타로토선생', desc: '지금 마음 보기 · 타로', href: '/dialogue/rabbit', zodiac: 'rabbit' },
-        { label: '사주용선생', desc: '내 흐름 보기 · 사주', href: '/dialogue/dragon', zodiac: 'dragon' },
-        { label: '꿈뱀선생', desc: '마음 신호 · 꿈해몽', href: '/dialogue/snake', zodiac: 'snake' },
-        { label: '길일말선생', desc: '좋은 날 고르기 · 택일', href: '/dialogue/horse', zodiac: 'horse' },
-        { label: '궁합양선생', desc: '상대와의 합 · 궁합', href: '/dialogue/sheep', zodiac: 'sheep' },
-        { label: '관상원선생', desc: '인상과 분위기 · 관상', href: '/dialogue/monkey', zodiac: 'monkey' },
-        { label: '별닭선생', desc: '별자리 흐름 · 별자리', href: '/dialogue/rooster', zodiac: 'rooster' },
-        { label: '상담멍선생', desc: '편하게 고민 · 상담', href: '/dialogue/dog', zodiac: 'dog' },
-        { label: '복돼지선생', desc: '복·쿠폰·리워드', href: '/dialogue/pig', zodiac: 'pig' },
+        { label: '사주', desc: '내 흐름 보기 · 사주용선생', href: '/dialogue/dragon', zodiac: 'dragon' },
+        { label: '명리', desc: '조금 더 깊게 · 명리호선생', href: '/dialogue/tiger', zodiac: 'tiger', tag: 'TOP' },
+        { label: '길일', desc: '좋은 날 고르기 · 길일말선생', href: '/dialogue/horse', zodiac: 'horse' },
+        { label: '궁합', desc: '상대와의 합 · 궁합양선생', href: '/dialogue/sheep', zodiac: 'sheep' },
+        { label: '꿈해몽', desc: '마음 신호 · 꿈뱀선생', href: '/dialogue/snake', zodiac: 'snake' },
+        { label: '대화상담', desc: '편하게 고민 · 상담멍선생', href: '/dialogue/dog', zodiac: 'dog' },
+        { label: '타로', desc: '지금 마음 보기 · 타로토선생', href: '/dialogue/rabbit', zodiac: 'rabbit' },
+        { label: '오늘운세', desc: '오늘 루틴 · 오늘소선생', href: '/dialogue/ox', zodiac: 'ox' },
+        { label: '별자리', desc: '별자리 흐름 · 별닭선생', href: '/dialogue/rooster', zodiac: 'rooster' },
       ],
     },
     c2: {

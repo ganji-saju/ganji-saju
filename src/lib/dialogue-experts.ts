@@ -170,6 +170,26 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
 ] as const;
 
+// 2026-06-28 — 홈 8캐릭터 카드 대응 8명 + 별자리(별닭선생) 1명 = 9명을 메뉴(상단 드롭다운 ·
+//   /dialogue 허브)에 노출. 순서는 홈 카드 순서 + 별자리.
+//   나머지 3명(rat 성향·monkey 관상·pig 행운)은 /dialogue/<id> 라우트는 유지하고
+//   메뉴에서만 숨긴다(직접 링크·SEO 보존).
+export const MENU_DIALOGUE_EXPERT_IDS: readonly DialogueExpertId[] = [
+  'dragon', // 사주
+  'tiger', // 대운
+  'horse', // 택일
+  'sheep', // 궁합
+  'snake', // 꿈해몽
+  'dog', // 대화상담
+  'rabbit', // 무료타로
+  'ox', // 무료운세
+  'rooster', // 별자리(추가)
+];
+
+export const MENU_DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = MENU_DIALOGUE_EXPERT_IDS.map(
+  (id) => DIALOGUE_EXPERTS.find((expert) => expert.id === id)
+).filter((expert): expert is DialogueExpertMeta => Boolean(expert));
+
 const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOverlay> = {
   rat: {
     visibleOpening: '엠지쥐선생은 성격보다 먼저 반복되는 반응을 봅니다.',
