@@ -779,7 +779,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <p className="mt-2.5 text-[16.1px] leading-[1.7] text-[var(--app-copy)]">
                     이 사주는 {sajuData.dayMaster.metaphor ?? '자연의 상징'}처럼 드러나는 기질을
-                    중심으로 봅니다. 겉으로 보이는 모습과 안쪽에서 오래 반복되는 마음의 바탕을 함께
+                    중심으로 봅니다. 겉으로 보이는 모습과 속에서 오래 반복되는 마음의 바탕을 함께
                     확인합니다.
                   </p>
 
