@@ -157,7 +157,8 @@
   --app-leading-snug: 1.5;       /* 카드 내 보조 */
   --app-leading-normal: 1.65;    /* 본문 단락(한국어 장문 호흡) */
   --app-shadow: 0 18px 52px rgba(216, 27, 114, 0.12);
-  --app-mobile-dock-clearance: calc(6.75rem + env(safe-area-inset-bottom));
+  /* 2026-06-27 — full-width dock 실측 가림으로 6.75→8rem 상향(footer/콘텐츠 하단 여백). */
+  --app-mobile-dock-clearance: calc(8rem + env(safe-area-inset-bottom));
   --app-mobile-top-clearance: 8.5rem;
 }
 
