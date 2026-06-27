@@ -23,7 +23,8 @@
 // - subscription-expiring notification feed
 
 import { test, expect } from '@playwright/test';
-import { hasTestUser, getTestUser, getTestReadingSlug } from './fixtures/test-user';
+import { hasTestUser, getTestUser } from './fixtures/test-user';
+import { resolveProfileReadingSlug } from './fixtures/reading-slug';
 import {
   resolveTestUserId,
   seedSubscription,
@@ -33,7 +34,8 @@ import {
   buildLifetimeReportScopeKey,
 } from './fixtures/entitlement-helpers';
 
-const READING_SLUG = getTestReadingSlug();
+// auth.setup.ts 가 저장하는 storageState — beforeAll 에서 인증 컨텍스트로 슬러그 유도용.
+const AUTH_STORAGE_PATH = 'e2e/.auth/test-user.json';
 
 // 모든 spec 이 service_role + test user 의존. 미설정 환경은 skip.
 test.beforeEach(async () => {
@@ -108,24 +110,36 @@ test.describe('4. Lifetime report 보유 사용자 (PR #177 회귀 차단)', () 
   test.describe.configure({ mode: 'serial' });
 
   let userId: string;
-  const scopeKey = buildLifetimeReportScopeKey(READING_SLUG);
+  // 슬러그·scopeKey 는 beforeAll 에서 프로필 기반으로 런타임 유도(영속 reading 의존 제거).
+  let readingSlug: string;
+  let scopeKey: string;
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browser }) => {
     const credentials = getTestUser();
     if (!credentials || !process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+    // 인증 컨텍스트로 테스트 유저의 정식 사주 슬러그 유도 → 같은 슬러그로 scope seed +
+    // deep 페이지 접근(권한 매칭 보장). #484 데이터 초기화에도 안 깨짐.
+    const context = await browser.newContext({ storageState: AUTH_STORAGE_PATH });
+    try {
+      const page = await context.newPage();
+      readingSlug = await resolveProfileReadingSlug(page);
+    } finally {
+      await context.close();
+    }
+    scopeKey = buildLifetimeReportScopeKey(readingSlug);
     userId = await resolveTestUserId(credentials.email);
     await seedProductEntitlement(userId, 'lifetime-report', scopeKey);
   });
 
   test.afterAll(async () => {
-    if (!userId) return;
+    if (!userId || !scopeKey) return;
     await cleanupProductEntitlement(userId, 'lifetime-report', scopeKey);
   });
 
-  test(`/saju/${READING_SLUG}/deep 에 "✓ 구매한 풀이 보기" CTA (결제 button 미노출)`, async ({
+  test('/saju/[slug]/deep 에 "✓ 구매한 풀이 보기" CTA (결제 button 미노출)', async ({
     page,
   }) => {
-    await page.goto(`/saju/${READING_SLUG}/deep`);
+    await page.goto(`/saju/${readingSlug}/deep`);
     await page.waitForLoadState('networkidle');
 
     const ownedCta = page.getByText(/구매한 풀이 보기/);
