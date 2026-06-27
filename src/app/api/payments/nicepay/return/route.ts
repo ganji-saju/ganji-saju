@@ -12,7 +12,7 @@ import {
   verifyNicepayAuthSignature,
   type NicepayPaymentObject,
 } from '@/lib/payments/nicepay';
-import { getPackage } from '@/lib/payments/catalog';
+import { getPackage, isTasteProductPackage, type PaymentPackage } from '@/lib/payments/catalog';
 import {
   attachPaymentKeyToOrder,
   getPaymentOrderByOrderId,
@@ -23,7 +23,38 @@ import {
 import {
   buildAlreadyFulfilledResult,
   fulfillPaymentOrder,
+  type PaymentFulfillmentResult,
 } from '@/lib/payments/fulfillment';
+// 2026-06-27 — toss(membership/success)와 동일한 결제 후 라우팅 분기를 서버에서 재사용.
+import {
+  buildCompleteHref,
+  buildPremiumResultHref,
+  buildTasteProductHref,
+} from '@/lib/payments/post-payment-redirect';
+
+// 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
+//   우선순위: ① taste_product(today-detail/궁합/캘린더) ② 사주 premium·lifetime 풀이
+//             ③ 코인 충전(/credits/success) ④ 그 외 멤버십 완료.
+//   fulfillment(신규 지급)이 있으면 그 product/plan 을, 없으면(이미 지급된 재진입) pkg 에서 유도.
+function resolveNicepayResultHref(opts: {
+  pkg: PaymentPackage;
+  order: { slug: string | null; scope: string | null; entrySource: string | null };
+  orderId: string;
+  fulfillment?: PaymentFulfillmentResult | null;
+}): string {
+  const { pkg, order, orderId, fulfillment } = opts;
+  const product =
+    fulfillment?.product ?? (isTasteProductPackage(pkg) ? pkg.tasteProductId : null);
+  const plan = fulfillment?.plan ?? ('planSlug' in pkg ? pkg.planSlug ?? null : null);
+
+  return (
+    buildTasteProductHref(product, order.slug, order.scope, order.entrySource) ??
+    buildPremiumResultHref(plan ?? '', order.slug) ??
+    (pkg.kind === 'credits'
+      ? `/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}&credits=${pkg.credits}`
+      : buildCompleteHref(plan ?? 'premium', order.slug))
+  );
+}
 
 export async function POST(req: NextRequest) {
   const form = await req.formData().catch(() => null);
@@ -59,13 +90,13 @@ export async function POST(req: NextRequest) {
   const order = await getPaymentOrderByOrderId(orderId);
   if (!order) return failRedirect('결제 주문을 찾지 못했습니다.');
 
-  // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로.
-  if (order.status === 'fulfilled' || order.status === 'fulfilling') {
-    return redirectTo(`/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}`);
-  }
-
   const pkg = getPackage(order.packageId);
   if (!pkg) return failRedirect('상품 정보를 찾지 못했습니다.');
+
+  // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로(상품별 분기 — 코인/사주풀이/소액상품).
+  if (order.status === 'fulfilled' || order.status === 'fulfilling') {
+    return redirectTo(resolveNicepayResultHref({ pkg, order, orderId }));
+  }
   if (order.amount !== amount || pkg.price !== amount) {
     return failRedirect('결제 금액이 주문과 일치하지 않습니다.');
   }
@@ -100,6 +131,7 @@ export async function POST(req: NextRequest) {
   };
 
   // 6) confirm + fulfillment (현행 confirm 라우트와 동일 절차)
+  let fulfillment: PaymentFulfillmentResult | null = null;
   try {
     const linked = await attachPaymentKeyToOrder({ order, paymentKey: tid, source: 'nicepay-return' });
     const confirmedOrder = await markPaymentOrderConfirmed({
@@ -109,18 +141,17 @@ export async function POST(req: NextRequest) {
     });
 
     if (confirmedOrder.status !== 'fulfilled' && confirmedOrder.status !== 'fulfilling') {
-      await fulfillPaymentOrder({ order: confirmedOrder, payment: adapted, source: 'nicepay-return' });
+      fulfillment = await fulfillPaymentOrder({ order: confirmedOrder, payment: adapted, source: 'nicepay-return' });
     } else {
-      await buildAlreadyFulfilledResult(confirmedOrder);
+      fulfillment = await buildAlreadyFulfilledResult(confirmedOrder);
     }
     void linked;
   } catch (err) {
     return failRedirect(err instanceof Error ? err.message : '결제 지급 처리에 실패했습니다.');
   }
 
-  // 7) 성공 결과 페이지(이미 승인·지급 완료 → success 페이지는 confirm 재호출 없이 결과만 표시)
-  //    충전 코인 수를 함께 넘겨 success 페이지가 '+N 코인'을 정확히 표시.
-  return redirectTo(
-    `/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}&credits=${pkg.credits}`
-  );
+  // 7) 결과 페이지 redirect — 상품별 분기(헬퍼). 이전엔 pkg.kind 무관 항상 /credits/success 로
+  //    보내, 사주 풀이(lifetime_report)가 코인 페이지로 새어 '오늘운세 무료보기'만 뜨고 풀이를 못
+  //    보던 버그(#473~ nicepay 도입 시 membership success 정합 누락). toss 와 동일 흐름으로 통일.
+  return redirectTo(resolveNicepayResultHref({ pkg, order, orderId, fulfillment }));
 }
