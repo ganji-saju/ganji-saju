@@ -1422,7 +1422,10 @@
 
   .gangi-birth-date-grid {
     display: grid;
-    grid-template-columns: minmax(6.5rem, 1.25fr) repeat(2, minmax(4.7rem, 0.9fr));
+    /* 2026-06-27 — 생년월일 3칸 min-width 270→180px 축소: 회원가입 폼이 좁은 카드(가입 max-w-3xl
+       +패딩) 안 모바일(아이폰15 Pro 393px 등 전 기종)에서 컨테이너를 밀어 양력음력/성별/시간/출생지
+       까지 화면 밖으로 넘기던 문제. 380px 이하는 기존대로 1컬럼(아래 미디어쿼리). */
+    grid-template-columns: minmax(4.5rem, 1.25fr) repeat(2, minmax(3.4rem, 0.9fr));
     gap: 0.55rem;
     min-width: 0;
   }
