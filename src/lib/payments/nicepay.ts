@@ -10,25 +10,34 @@
 //   4) ediDate 정확한 포맷(ISO 8601 vs yyyyMMddHHmmss) — 공식 파라미터표
 //   5) 결과/상태 코드표(0000=정상만 확정)
 import { createHash, timingSafeEqual } from 'node:crypto';
+import {
+  getNicepayApiBase,
+  getNicepayClientKey,
+  getNicepayMode,
+} from '@/lib/payments/nicepay-env';
 
-const DEFAULT_API_BASE = 'https://api.nicepay.co.kr';
-
-/** 운영/샌드박스 전환: NICEPAY_API_BASE 미설정 시 운영. 샌드박스는 https://sandbox-api.nicepay.co.kr. */
+// 2026-06-27 — sandbox/live 단일 토글(NEXT_PUBLIC_NICEPAY_MODE)로 API_BASE·clientKey 자동 선택.
+//   apiBase/clientKey 는 클라이언트(nicepay-checkout)와 공유하는 nicepay-env 로 일원화.
 function getApiBase(): string {
-  return process.env.NICEPAY_API_BASE?.replace(/\/$/, '') ?? DEFAULT_API_BASE;
+  return getNicepayApiBase();
 }
 
 function getClientKey(): string {
-  // 결제창용 clientKey 는 공개(NEXT_PUBLIC_)지만 서버 Basic 인가에도 필요.
-  // ⚠️ env 복사 시 trailing 탭/공백/개행이 딸려오면 Basic 인증 U116 → 반드시 trim.
-  const key = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY?.trim();
-  if (!key) throw new Error('NEXT_PUBLIC_NICEPAY_CLIENT_KEY 가 설정되어 있지 않습니다.');
-  return key;
+  return getNicepayClientKey();
 }
 
+// secretKey 는 서버 전용(NEXT_PUBLIC 아님 → 클라 번들 미노출). MODE 별 키 선택, 기존 NICEPAY_SECRET_KEY 폴백.
 function getSecretKey(): string {
-  const key = process.env.NICEPAY_SECRET_KEY?.trim();
-  if (!key) throw new Error('NICEPAY_SECRET_KEY 가 설정되어 있지 않습니다.');
+  const modeKey =
+    getNicepayMode() === 'sandbox'
+      ? process.env.NICEPAY_SANDBOX_SECRET_KEY
+      : process.env.NICEPAY_LIVE_SECRET_KEY;
+  const key = (modeKey ?? process.env.NICEPAY_SECRET_KEY)?.trim();
+  if (!key) {
+    throw new Error(
+      'NICEPAY secretKey 가 없습니다. NICEPAY_SANDBOX/LIVE_SECRET_KEY 또는 NICEPAY_SECRET_KEY 를 설정하세요.'
+    );
+  }
   return key;
 }
 
