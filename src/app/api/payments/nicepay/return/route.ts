@@ -13,6 +13,9 @@ import {
   type NicepayPaymentObject,
 } from '@/lib/payments/nicepay';
 import { getPackage, isTasteProductPackage, type PaymentPackage } from '@/lib/payments/catalog';
+// 2026-06-27 — buildTasteProductHref 가 못 잡는 단품(money-pattern/work-flow 등)을 '구매상품 보기'
+//   위치로 보내 /membership/complete 누수 차단(결제후 위치 == 이미 구매 시 위치 불변식).
+import { buildPurchasedProductHref } from '@/lib/payments/product-scope';
 import {
   attachPaymentKeyToOrder,
   getPaymentOrderByOrderId,
@@ -38,18 +41,33 @@ import {
 //   fulfillment(신규 지급)이 있으면 그 product/plan 을, 없으면(이미 지급된 재진입) pkg 에서 유도.
 function resolveNicepayResultHref(opts: {
   pkg: PaymentPackage;
-  order: { slug: string | null; scope: string | null; entrySource: string | null };
+  order: {
+    slug: string | null;
+    scope: string | null;
+    entrySource: string | null;
+    product: string | null;
+    plan: string | null;
+  };
   orderId: string;
   fulfillment?: PaymentFulfillmentResult | null;
 }): string {
   const { pkg, order, orderId, fulfillment } = opts;
+  // 2026-06-27 — order.product/plan(주문에 저장된 사용자 실제 선택)을 1순위로. fulfillment/pkg 는 폴백.
+  //   bundle 등은 fulfillment.product 가 null 이라 order.product 없이는 결과 라우팅이 샜다.
   const product =
-    fulfillment?.product ?? (isTasteProductPackage(pkg) ? pkg.tasteProductId : null);
-  const plan = fulfillment?.plan ?? ('planSlug' in pkg ? pkg.planSlug ?? null : null);
+    order.product ?? fulfillment?.product ?? (isTasteProductPackage(pkg) ? pkg.tasteProductId : null);
+  const plan = order.plan ?? fulfillment?.plan ?? ('planSlug' in pkg ? pkg.planSlug ?? null : null);
 
   return (
     buildTasteProductHref(product, order.slug, order.scope, order.entrySource) ??
     buildPremiumResultHref(plan ?? '', order.slug) ??
+    // buildTasteProductHref 미커버 단품은 '구매상품 보기' 위치로(불변식). 사주 무관 상품만 아래 폴백.
+    (product
+      ? buildPurchasedProductHref(product as Parameters<typeof buildPurchasedProductHref>[0], order.slug, {
+          from: order.entrySource,
+          scope: order.scope,
+        })
+      : null) ??
     (pkg.kind === 'credits'
       ? `/credits/success?provider=nicepay&orderId=${encodeURIComponent(orderId)}&credits=${pkg.credits}`
       : buildCompleteHref(plan ?? 'premium', order.slug))
@@ -109,9 +127,8 @@ export async function POST(req: NextRequest) {
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
   } catch (err) {
+    // 실패 사유(나이스페이 resultMsg)는 서버 로그·주문 error 에만 보존, 사용자에겐 일반 문구.
     const reason = err instanceof Error && err.message ? err.message : '결제 승인 실패';
-    // 2026-06-27 — 진단: 나이스페이 실제 응답(resultMsg)을 서버 로그 + fail 페이지에 노출해
-    //   V2/V3 규격 불일치인지 키 문제인지 실측으로 가린다. 원인 확정 후 일반 문구로 되돌릴 것.
     console.error('[nicepay-return] 승인 실패', { orderId, tid, amount, reason });
     await markPaymentOrderFailed({
       orderId,
@@ -119,8 +136,8 @@ export async function POST(req: NextRequest) {
       error: reason,
       source: 'nicepay-return',
     });
-    // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 샌드박스 검증 시 추가.
-    return failRedirect(`승인 실패: ${reason}`);
+    // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
+    return failRedirect('결제 승인에 실패했습니다.');
   }
 
   // 5) TossPaymentObject 호환 어댑팅 — 기존 fulfillment/order-ledger 무변경 재사용.

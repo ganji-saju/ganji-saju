@@ -59,5 +59,10 @@ export function buildTasteProductHref(
   if (slug && product === 'bundle_today_set') {
     return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
   }
+  // 2026-06-27 — 종합점수(score-total)·요소(score-factor): 결제 후 사주 결과 화면에서 점수 블록이
+  //   엔타이틀먼트로 열린다. 분기가 없어 buildCompleteHref(/membership/complete)로 새던 회귀 차단.
+  if (slug && (product === 'score-total' || product === 'score-factor')) {
+    return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
+  }
   return null;
 }

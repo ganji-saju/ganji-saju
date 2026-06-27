@@ -17,6 +17,9 @@ import {
   buildPremiumResultHref,
   buildTasteProductHref,
 } from '@/lib/payments/post-payment-redirect';
+// 2026-06-27 — buildTasteProductHref 미커버 단품(money-pattern/work-flow 등)을 '구매상품 보기'
+//   위치로 보내 나이스페이 return 과 동일 불변식(결제후 위치 == 이미 구매 시 위치) 유지.
+import { buildPurchasedProductHref } from '@/lib/payments/product-scope';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 // 2026-05-15 handoff P0: 54 m-coin + 51 m-loading 연결.
 import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
@@ -265,6 +268,22 @@ function SuccessContent() {
             clearPendingLifetimeReportSlug();
           }
           location.replace(premiumResultHref);
+          return;
+        }
+
+        // buildTasteProductHref 가 못 잡은 단품도 '구매상품 보기' 위치로(/membership/complete·generic 누수 차단).
+        const purchasedHref = nextProduct
+          ? buildPurchasedProductHref(
+              nextProduct as Parameters<typeof buildPurchasedProductHref>[0],
+              slug,
+              { from: entrySource, scope }
+            )
+          : null;
+        if (purchasedHref) {
+          if (packageId === 'lifetime_report') {
+            clearPendingLifetimeReportSlug();
+          }
+          location.replace(purchasedHref);
           return;
         }
 
