@@ -37,12 +37,12 @@ test('dialogue prompt uses the selected zodiac expert and infers focus topic fro
   assert.match(prompt.instructions, /마크다운 기호를 쓰지 않습니다/);
   assert.match(prompt.instructions, /로봇처럼 설명하지 말고 실제 역술가/);
   assert.match(prompt.instructions, /AI 비서처럼 메타 설명/);
-  assert.match(prompt.instructions, /별닭선생 · 별자리/);
+  assert.match(prompt.instructions, /별자리선생 · 별자리/);
   assert.match(prompt.instructions, /전문 오버레이 RAG/);
   assert.match(prompt.instructions, /첫 문단은 반드시 이 관점으로 시작합니다/);
   assert.match(prompt.instructions, /오늘 별자리 분위기/);
   assert.match(prompt.instructions, /별자리를 운명처럼 단정하지 않습니다/);
-  assert.match(alternatePrompt.instructions, /궁합양선생 · 궁합과 관계/);
+  assert.match(alternatePrompt.instructions, /궁합선생 · 궁합과 관계/);
   assert.match(alternatePrompt.instructions, /상대와 나의 속도 차이/);
   assert.match(alternatePrompt.instructions, /상대 마음을 확정하지 않습니다/);
   assert.equal(inferDialogueFocusTopic('올해 재물운을 단도직입적으로 봐줘'), 'wealth');
@@ -54,15 +54,15 @@ test('dialogue output visibly differs by selected zodiac expert', () => {
 
   assert.match(
     ensureDialogueExpertVisibleOpening(genericText, 'rooster'),
-    /별닭선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
+    /별자리선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
   );
   assert.match(
     ensureDialogueExpertVisibleOpening(genericText, 'sheep'),
-    /궁합양선생은 상대와 나의 속도 차이부터 봅니다/
+    /궁합선생은 상대와 나의 속도 차이부터 봅니다/
   );
   assert.match(
     ensureDialogueExpertVisibleOpening('별닭선생입니다. 먼저 별자리를 봅니다.', 'rooster'),
-    /^별닭선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
+    /^별자리선생은 오늘 별자리 흐름에서 가볍게 챙길 한 가지를 봅니다/
   );
 });
 
