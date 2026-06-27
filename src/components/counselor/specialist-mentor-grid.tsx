@@ -91,13 +91,22 @@ export function SpecialistMentorGrid({
               </span>
             }
             footer={
-              <Link
-                href={mentor.href}
-                className="inline-flex items-center gap-2 text-base font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
-              >
-                {mentor.ctaLabel}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              // 2026-06-28 — '출시 예정' 선생(예: 가문 선생/family-report 미구현)은 클릭 시
+              //   /saju/new?product=family-report(무효 product)로 빠져 광고한 기능이 동작 안 하던
+              //   문제. 출시 전까지 비클릭 라벨로 노출(런치 감사 P1).
+              mentor.statusLabel === '출시 예정' ? (
+                <span className="inline-flex items-center gap-2 text-base font-medium text-[var(--app-copy-soft)]">
+                  {mentor.ctaLabel} (준비 중)
+                </span>
+              ) : (
+                <Link
+                  href={mentor.href}
+                  className="inline-flex items-center gap-2 text-base font-medium text-[var(--app-gold-text)] underline underline-offset-4 hover:text-[var(--app-ivory)]"
+                >
+                  {mentor.ctaLabel}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )
             }
           >
           </FeatureCard>

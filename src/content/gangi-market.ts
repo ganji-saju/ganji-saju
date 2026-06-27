@@ -94,9 +94,9 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   {
     id: 'saju-9900',
     image: 'saju-9900',
-    alt: '9,900원 내 운명 확인 — 사주·명리 상담',
+    alt: '9,900원 내 사주 풀이 — 사주·명리 상담',
     kicker: '사주·명리',
-    title: '9,900원 내 운명 확인',
+    title: '9,900원 내 사주 풀이',
     description: '복잡한 고민, 방향이 필요할 때 부담 없이 시작하세요.',
     cta: '지금 확인하기',
     href: '/saju/new',
