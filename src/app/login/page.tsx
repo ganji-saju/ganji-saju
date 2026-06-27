@@ -356,7 +356,8 @@ function GatewayView({
         <ZodiacChip kind="snake" size="sm" />
       </div>
 
-      <div className="relative pt-[180px]">
+      {/* 2026-06-27 — 상단 여백 180→64px 축소: 모바일에서 카카오/구글/이메일 로그인이 한 화면에 다 보이도록. */}
+      <div className="relative pt-[64px]">
         <div
           className="mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] text-white"
           style={{
@@ -455,28 +456,9 @@ function GatewayView({
           </div>
         </div>
 
-        <div className="mt-[18px] text-center text-[12.6px] leading-relaxed text-[var(--app-copy-soft)]">
-          시작 시{' '}
-          <LegalLinks className="text-[var(--app-pink-strong)]" />
-          에 동의합니다.
-          <br />
-          로그인 실패 또는 계정 확인이 필요하면{' '}
-          <a
-            href={`mailto:${SUPPORT_EMAIL}`}
-            className="font-bold text-[var(--app-pink-strong)] underline"
-          >
-            {SUPPORT_EMAIL}
-          </a>
-          {' '}또는{' '}
-          <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
-            고객센터
-          </a>
-          로 문의해 주세요.
-        </div>
-
-        {/* 2026-05-15 — 회원가입/비번찾기 진입점 prominent CTA 로 강화.
-            이전엔 underline 작은 글씨로 사용자가 못 찾음. */}
-        <div className="mt-4 grid gap-2">
+        {/* 2026-05-15 — 회원가입/비번찾기 진입점 prominent CTA. 2026-06-27: 약관동의 위로 올림
+            (모바일에서 회원가입/비번 진입이 먼저 보이도록). */}
+        <div className="mt-[18px] grid gap-2">
           <button
             type="button"
             onClick={onOpenSignup}
@@ -493,6 +475,26 @@ function GatewayView({
           >
             비밀번호를 잊으셨나요?
           </button>
+        </div>
+
+        {/* 2026-06-27 — 시작 시 약관 동의 + 로그인 실패 문의를 회원가입/비번 아래로 이동. */}
+        <div className="mt-4 text-center text-[12.6px] leading-relaxed text-[var(--app-copy-soft)]">
+          시작 시{' '}
+          <LegalLinks className="text-[var(--app-pink-strong)]" />
+          에 동의합니다.
+          <br />
+          로그인 실패 또는 계정 확인이 필요하면{' '}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="font-bold text-[var(--app-pink-strong)] underline"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+          {' '}또는{' '}
+          <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
+            고객센터
+          </a>
+          로 문의해 주세요.
         </div>
 
         {!hasSupabaseBrowserEnv ? (
@@ -974,7 +976,7 @@ function LoginContent({
 
   return (
     <div
-      className={`app-panel gangi-login-card mx-auto w-full p-5 text-center sm:p-8 ${
+      className={`app-panel gangi-login-card mx-auto w-full p-3.5 text-center sm:p-8 ${
         mode === 'signup' ? 'max-w-3xl' : 'max-w-md'
       }`}
     >
@@ -1016,7 +1018,7 @@ function LoginContent({
 
       {mode === 'signup' ? (
         <form className="mt-6 space-y-5 text-left" onSubmit={submitSignup}>
-          <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-4 sm:p-5">
+          <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-3 sm:p-5">
             <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
               <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-name">이름 또는 별명</FieldLabel>
@@ -1070,7 +1072,7 @@ function LoginContent({
             </div>
           </section>
 
-          <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-4 sm:p-5">
+          <section className="rounded-[18px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-3 sm:p-5">
             <div className="mb-4">
               <div className="text-base font-bold text-[var(--app-ink)]">기본 사주 정보</div>
               <p className="mt-1 text-[13.2px] leading-5 text-[var(--app-copy-soft)]">
