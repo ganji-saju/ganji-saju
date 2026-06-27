@@ -1355,7 +1355,7 @@ function LoginScaffold() {
   // 카드 모드(login/signup/recover/reset)는 기존 달 lockup + card 보존.
   return (
     <AppPage
-      className={`gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center gap-6 py-10 text-[var(--app-ink)] ${
+      className={`gangi-login-subpage gangi-auth-page flex min-h-[calc(100vh-5rem)] w-full max-w-full flex-col items-center justify-center gap-6 overflow-x-hidden py-10 text-[var(--app-ink)] ${
         isGateway ? 'gangi-auth-gateway-page' : ''
       }`}
     >

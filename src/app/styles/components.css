@@ -1531,7 +1531,9 @@
     color: var(--app-pink-strong);
   }
 
-  @media (max-width: 380px) {
+  /* 2026-06-27 — 생년월일 3칸 → 480px 이하 세로 1컬럼(좁은 가입 카드 모바일 overflow 확실 차단).
+     기존 380px 이하만 1컬럼이라 381~480px(아이폰15 Pro 393 포함)에서 3칸이 카드를 넘쳤음. */
+  @media (max-width: 480px) {
     .gangi-birth-date-grid {
       grid-template-columns: minmax(0, 1fr);
     }
