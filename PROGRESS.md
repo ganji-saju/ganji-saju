@@ -1,9 +1,191 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-06-05 (Claude — 띠운세·네비·리뷰모달·결제퍼널·스크롤 + 오늘운세 본문 구조화 Phase 1, #386~#392 / 오늘운세 프리미엄 LLM Phase 2 로드맵)**. 상세 ↓ 첫 섹션. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-06-27 (Claude — 회원가입 폼 모바일 overflow 진짜 근본 #501(unified-birth-form grid auto 트랙 → minmax(0,1fr), 실측·영구게이트) / 입력폼·결제PG·나이스페이가드·스크롤근본·사주자동넘어감·하단dock·로그인UI #485~#500 / 실운영 전 데이터 초기화(docs/data-reset.sql) + 나이스페이 결제 프로덕션 가동+admin환불+문구중립화 #473~#484(탭트랩/U116 해결) / 오늘 자세히보기 10코인·묶음 19800 #472 / 꿈해몽 배너+가격제거 #469·#471 / 보너스36코인 삭제 #470 / HOT·추천 이동 #468 / 인물 사진 8종 #467 / 메인 카드 인물사진형+이미지 배너 #466 / 오늘 자세히보기 매일 일진+plain #464·#465 / 제목 폰트 확대+정렬 #463 / 전역 폰트 ×1.15 #462 / 대운·택일 9,900원+4메뉴 결제 검증 #461 / 붓글씨 로고 #459·#460 / 메인 리디자인 #458)**. 상세 ↓ 첫 섹션. 직전: **2026-06-22 (#448~#452)**. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-06-23~24 세션 (Claude) — 꿈 RPC·파일럿 + 메인 캐릭터 카드 + 9,900원 단일가·코인팩 + 라이트 멤버십 폐지 + 메인 리디자인(claude_design) + 붓글씨 로고·별자리 이동 (#453~#475)
+
+> 꿈해몽 Phase 0 마무리(#453) → 꿈 사전 파일럿 20(#454) → PPTX 시안 기반 메인 8카드 개편(#455) → 가격 9,900 통일+코인팩(#456). 전부 main 머지·배포.
+
+### #453 꿈 무결과 로깅 RPC 잠금
+- `record_dream_search_miss` anon/authenticated EXECUTE 잔존(REVOKE FROM PUBLIC 부족) → `REVOKE EXECUTE FROM anon, authenticated`(055). `db query --linked`로 권한 직접 검증(anon/auth=false, service=true).
+
+### #454 꿈해몽 사전 파일럿 20개 (305→325)
+- LLM 배치 생성→적대적 가드 자가검증(4건 수정)→결정론 재검증(한자·공포어·신조어·중복·스키마 0)→렌더 품질. 흔한 누락 키워드(시체·화장실·귀신·태풍 등). LLM은 오프라인 1회 생성, 서빙은 결정론 사전(쿼리당 비용 0).
+
+### #455 메인화면 캐릭터 카드 개편 (PPTX 시안 slide3)
+- 메인 서비스 영역을 8개 캐릭터 일러스트 카드(사주·대운·택일·궁합 / 꿈해몽·대화상담·무료타로·무료운세)로. 각 카드 = 캐릭터 + 메뉴명 + 후킹 카피 + "바로 확인하기". 8개 메뉴 라우트 전부 기존 존재(신규 개발 0). 카테고리 탭·무료액션 분리 섹션 제거. 별자리·띠운세는 그리드 제외(라우트·진입 보존).
+- 이미지 최적화(sharp): 원본 ~2MB → avif 30~156KB·webp(90%+ 절감). picture(avif/webp/png) 직접 서빙. 변환본만 커밋.
+
+### #456 소액상품 9,900원 단일가 통일 + 코인팩 재편
+- **전략 결정**: 표시만 vs 결제가 → "소액상품 결제가 9,900"(결제 정합 우선). 코인 경로 충돌(고정 차감) → 코인 차감 비례 + 코인팩 재편.
+- catalog 10개 소액상품 price → 9,900(결제 단일 출처). 표시 라벨 19파일 동기화(워크플로) — 표시≠결제 불일치 0. 번들 거짓원가·"소액 풀이" 포지셔닝 정리.
+- 코인팩 재편: credit_1/3/7(소액) 폐지 → **credit_15(9,900원=15코인, 50% 보너스)**. 상품 차감 10코인. 9,900 팩으로 상품 1개+5코인 여유(코인 우대·충전 한계 해소).
+- 유지: 멤버십(4,900/9,900월)·평생리포트(49,000).
+
+### #457 코인팩 2종 추가 + 라이트 멤버십 폐지
+- 코인팩 추가: credit_40(19,800원=40코인, 495원/코인)·credit_100(44,900원=100코인, 449원/코인). 벌크 우대(15코인 660 > 40코인 495 > 100코인 449원/코인).
+- 라이트 멤버십(basic, 4,900원) 신규 판매/노출 중단: PLAN_BLUEPRINT에서 basic 제거 → 멤버십·pricing 라이트 카드 미노출(렌더 확인). faq·billing·subscription-manager 문구 일반화. **plan 'basic' 타입·MEMBERSHIP_PACKAGE_BY_PLAN·CHECKOUT_PLAN_GUIDE(Record<PlanSlug> 제약)·구독 해지/재개·기존 구독자는 레거시 보존**. catalog membership_plus 유지(직접 URL 외 노출 0).
+- E2E(payment-blocks) 프리미엄 구독 기준으로 수정(라이트 폐지로 "이용 중" 배지 단언 깨진 것 — 정당한 회귀).
+
+### #458 메인 리디자인 적용 (claude_design MCP)
+- claude_design MCP(DesignSync)로 "간지사주 메인 리디자인.html" import → 메인화면 적용. [적용 가이드.md] 원칙: 라우팅·데이터·이벤트 불변, 시각 레이어만.
+- 카드 UI: 세로 큰이미지(#455) → 가로 레이아웃(원형 아바타 + 텍스트 + 파스텔 틴트 7색). 원형 아바타는 기존 캐릭터 이미지 object-top 재활용(에셋 추가 0). 디자인 카피·틴트로 desc/필드 갱신.
+- 홈 구조: 배너 캐러셀(현재 데이터) → 카테고리 칩 복원(#455에서 뺀 것) → 8카드 그리드 → 신규 유저 CTA. 별자리 slot·하단 독 유지.
+- 가격 라벨 현재값 유지(디자인 '대운/택일 9,900' 표기는 시안 단순화 — 실제 무료 허브라 '무료' 유지, 표시≠결제 오해 방지).
+- 배너 이미지는 사용자가 별도 제작 전달 예정 → 캐러셀 골격 + 현재 배너데이터 유지.
+- **claude_design 연결**: get_project로 design-system 스코프(user:design:read/write) 자동 인증 — /design-login 불필요.
+
+### #459 헤더 붓글씨 로고 + 별자리 slot 이동
+- 헤더 로고: 한자 인장(干)+텍스트 → 사용자 제공 붓글씨 "간지사주 9,900원" 이미지(picture avif 12KB/webp/png, trim+120 최적화, 표시 28px). 전역 헤더(app-top-brand).
+- 메인 별자리 slot(MyStarSignCard): 배너 아래 → 신규 유저 CTA 다음(푸터 직전) 이동(로그인 사용자 노출).
+
+### #460 데스크톱 메가내브 로고도 붓글씨 (#459 후속)
+- #459가 모바일/태블릿 헤더(app-top-header, lg:hidden)만 교체 → 데스크톱(lg+)은 mega-nav 별도 헤더라 옛 로고(干) 잔존. mega-nav-logo 도 붓글씨 이미지로 통일. (교훈: 헤더가 반응형 분기로 2개 — 한쪽만 바꾸면 다른 뷰포트에서 안 보임)
+
+### #461 대운·택일 카드 9,900원 + 4메뉴 결제 경로 검증
+- **검증(워크플로 4메뉴 적대적)**: 사주(score-total)·궁합(compat-reading)·대운(year-core)·택일(monthly-calendar) 결제 플로 전부 정합(prepare 금액=catalog → confirm 불일치 거부 → fulfillment scope grant → 접근게이트). catalog 단일 출처 9,900 → 표시=결제 자동 일치.
+- "slug=null → global 권한" 적대적 가설 → prepare L87 가드(requiresSlug && !slug → 400)로 **기각**(안전).
+- 수정: 대운·택일 카드 '무료' → '9,900원'(year-core·monthly-calendar catalog 9,900과 표시 일치). href 유지(/daewoon·/taekil 무료 예시 + 9,900 결제 CTA). → 사주·대운·택일·궁합 4메뉴 모두 9,900.
+
+### #462 전역 폰트 ×1.15 확대
+- "전체적으로 폰트가 작다" 피드백 → px 폰트 전역 비례 확대. text-[Npx] 2,547곳 + 인라인 fontSize 36곳 ×1.15(163파일, 소수1자리 반올림). 루트 font-size는 미변경(rem spacing 동반 확대 회피 — '폰트만' 키움). 오버플로 게이트 10/10 통과·렌더 확인.
+
+### #463 제목 폰트 확대 + 정렬/박스 전수조사
+- "제목은 안 커져 어색 / 정렬·박스 안 맞음" 피드백. #462가 text-[Npx]만 ×1.15 → Tailwind 시맨틱 클래스(제목 text-2xl 등)는 미반영이었음. **Tailwind 텍스트 클래스(text-xs~5xl) 526곳 한 단계 ↑**(61파일, font-size+line-height 세트 유지 → 정렬 안전). base.css h태그엔 font-size 없음(className 따름)이라 클래스 ↑가 정답.
+- 정렬/박스: 워크플로 9그룹 전수조사. 박스 대부분 패딩/min-height 기반이라 폰트 흡수 → 명백한 깨짐만 보수 수정(leading-none→tight: CJK 한자 글리프 상하 잘림 / 고정폭 배지 w-16→min-w-16 / footer dt minWidth 등). 게이트 10/10·렌더(pricing·dream) 정상.
+- ⚠️ 인증/데이터 표면(사주·궁합 결과)은 게이트 자동 커버 못 함 — 로그인 시각 점검 권장.
+
+### #464 오늘 자세히보기 — 매일 오늘 일진 기반 (결제 가치 회복)
+- 버그: "오늘 자세히보기"(결제) 풀이가 매일 똑같음. 실측(같은 사주·다른 날짜 4개)으로 확정 — 본문 80~90% 사주 고정, 오늘 일진은 element 형용사로만 약하게 반영.
+- 근인: 오늘 일진(60갑자) 메시지 라이브러리(pickIljinMessages, 412줄)를 free 만 쓰고 결제 premium 은 안 씀(아이러니: 무료가 유료보다 오늘 반영 큼).
+- 수정: premium 빌더에 todayIljinReading 통합(발동 케이스 50종 — 천을귀인·충·삼합·도화 등, topN=5, seed 'premium' prefix). 일진 점수도 노출(매일 변동). today-premium-panel 에 "오늘의 흐름 풀이" 섹션. 회귀 테스트(5날짜 고유≥3).
+- 실측: 4날짜 메시지 전부 다름, 점수 95/95/95/67.
+
+### #465 일진 메시지 250문장 plain 톤 통일
+- #464 후속. 일진 메시지에 명리 전문어(용신·삼합·천을귀인·겁재 등) 많아 거부감 → naming-policy "알아들을 수 있는 문장".
+- 250문장(50케이스×5) plain 재작성(워크플로 5그룹 병렬). 십성·신살·합충형해·용신/기신 → 쉬운 일상어, 한자 0. 변수([이름]/[오행])·길흉·5변형 다양성 보존. "[오행] 기운"은 허용.
+- 가드 테스트: ILJIN_MESSAGE_LIBRARY 전체 명리 전문어/한자 0. (조립: 워크플로 반환 → node 스크립트로 객체 재생성, 같은 파일 동시 Edit 충돌 회피)
+
+### #466 메인 카드 인물 사진형(시안 C) + 상단 이미지 배너 4종 (20260625 PPTX)
+- 시안 2~3개 렌더 비교(card-samples 임시 페이지) → 사용자가 시안 C 선택. (Claude Read 이미지는 사용자에 안 보임 → Downloads 복사 + 합성 비교본으로 전달하는 패턴 확립)
+- 카드: 가로 원형 아바타 → 인물 사진 풀블리드 세로(3:4) + 비네팅 + 하단 외곽선·그림자 강조 텍스트(가독성). 인물 PNG(배경 제거) 7종 최적화 → public/images/gangi/people. 택일은 사진 미제공 → 기존 캐릭터 임시 placeholder. 인물 이미지는 추후 같은 경로로 덮어쓰기 교체.
+- 배너: 동적 텍스트 배너(AI/띠/별자리) → 사용자 제작 이미지 배너 4종(3:1, picture 풀블리드). GangiHomeBanner.image 분기, getHomeBanners→GANGI_HOME_BANNERS. 동적 로직 git history 보존.
+
+### #467 메인 카드 인물 사진 8종 정식 교체 (택일 포함)
+- 사용자 제작 인물 사진 8종으로 전체 교체(#466 임시 7종 + 택일 placeholder → 정식 8종). 사주(할머니)·궁합(홍한복)·대운(백발 도사)·꿈해몽(도복)·대화상담(보라)·택일(오방색)·무료타로(자주)·무료운세(황룡포).
+- 각 560×720 cover/top, avif 26~76KB. 경로·구조 동일(people/{id})이라 카드 코드 무변경, 에셋만 덮어쓰기 — 인물 이미지 교체 워크플로 확립.
+
+### #468 HOT·추천 배지를 사주·대운으로 이동
+- 무료타로(HOT)·무료운세(추천) → 사주(HOT)·대운(추천). 주력 유료 메뉴에 강조 배지. card.tag 4곳.
+
+### #469 상단 꿈해몽 배너 추가
+- 사용자 제작 꿈해몽 이미지 배너(2.69:1) 캐러셀 5번째 추가. href /dream, avif 30KB. (이미지 비율 다르나 3:1 cover로 텍스트·핵심 노출.)
+
+### #470 보너스 36코인(9,900원) 상품 삭제
+- subscription_30('보너스 36 코인', 9,900원/36코인, kind subscription) 제거. catalog + 전 참조처(dialogue/appointment·pricing·credits·toss 코인팩 목록, credits desc, BONUS_COIN_PACKAGE fallback) 정리. 코인팩 credit_15/40/100 3종만. 관련 테스트 2개 제거. 과거 결제 이력 영향 없음(신규 경로만 제거).
+
+### #471 꿈해몽 배너 1,900원 가격 제거
+- #469 배너에 '1,900원' 박혀 표시≠결제(/dream 무료) 오해 → sharp 로 '1,900원'만 박스 내부색(rgb 58,48,115)으로 덮어 제거('꿈 한 단어 풀이' 유지). 노랑 잔여 픽셀 0 검증. (픽셀 스캔으로 글자 좌표 정밀 측정 → composite 사각형 패턴 확립.)
+
+### #472 오늘 자세히보기 10코인 표시 정정 + 묶음 19,800원
+- **표시≠실제 버그 발견**: 오늘 자세히보기는 unlockTodayFortunePremium → deductCredits('detail_report')로 **실제 10코인 차감** 중인데 표시만 '1코인'이었음. 사용자 '1→10' 요청이 불일치 해소와 일치.
+- coinCost 1→10(build-today-fortune free/premium, types coinCost:1→number). UI 전 노출(premium-panel·premium-lock-card 동적+옵션·detail-client 메시지·credits·verification) + audit 테스트 10.
+- 묶음(bundle_today_set = today-detail + 점수 6종 7개) 9,900→19,800원. premium-lock-card 묶음 버튼/설명 동기화.
+
+### #473~#483 나이스페이(NICEPAY V2) 결제 — 프로덕션 가동+취소회수+admin환불+문구중립화 완료 (토스 입점 심사 지연 대비)
+- 결정(공식 문서 github.com/nicepayments/nicepay-manual 검증): **서버승인 + Basic 인증**(현행 토스와 동일 패턴). docs/payment-nicepay-migration.md.
+- #473 어댑터 스캐폴드: provider.ts(PAYMENT_PROVIDER 스위치, 기본 toss) + nicepay.ts(Basic base64(clientKey:secretKey) + SHA256 hex 서명 + 승인/취소/조회). 가드 테스트(서명·변조거부).
+- #474 서버승인 returnUrl 라우트(/api/payments/nicepay/return): authResultCode→signature 검증→orderId 주문조회(cross-site user세션X)→금액정합→approve→**TossPaymentObject 호환 어댑팅으로 기존 fulfillment 무변경 재사용**. PaymentOrderSource 'nicepay-return'.
+- #475 결제창 분기(nicepay-checkout.ts SDK 동적로드+AUTHNICE.requestPay) + prepare 응답 provider + credits/membership 결제창 분기 + credits/success(confirm 스킵) + credits/fail.
+- #476 **운영 실결제 E2E 검증 완료**(Vercel Preview, api.nicepay.co.kr). 검증 중 발견·수정: (1) **clientKey/secretKey trim** — env 복사 시 딸려온 trailing 탭(\t)이 Basic 인증 clientId 오염 → 승인 401 U116 반복(진짜 원인, 서명은 깨끗한 콜백 clientId 써서 통과했음). (2) success '+0 코인' → returnUrl이 credits 쿼리 전달. (3) fail 빈 화면 → AppShell 래핑.
+- #477 **취소 통보 웹훅**(/api/payments/webhook/nicepay): 취소 통보→멱등(recordPaymentWebhookEvent 재사용)→결제재조회 backstop→주문 canceled+코인 회수(addCredits 음수, fulfilled만). 콘솔 '결제데이터통보' URL 등록 필요.
+- ⚠️ 후속(샌드박스 E2E): 통보 payload/서명식·취소상태문자열·회수정책(음수잔액/부분취소)·멤버십/단품 success 정합·가상계좌·구독 빌링키.
+- 환경변수: NEXT_PUBLIC_NICEPAY_CLIENT_KEY·NICEPAY_SECRET_KEY·NICEPAY_API_BASE(운영=api.nicepay.co.kr)·PAYMENT_PROVIDER=nicepay. **운영 상점 키는 R2_ prefix(푸꼬컴퍼니); 운영 키↔운영 API 일치 필수**(sandbox-api에 운영키 보내면 U116).
+- #478 취소 웹훅 응답 plain text 'OK'(나이스페이 등록 규약 — JSON이면 "OK 문자열 응답" 안내로 등록 실패) + GET 핑 핸들러.
+- **프로덕션 가동 완료(2026-06-26)**: Production env 4종 + 콘솔 통보URL(ganjisaju.kr/api/payments/webhook/nicepay, 200/OK) 등록 + ganjisaju.kr 실결제→나이스페이 결제창→충전 정상 확인(프로덕션 nicepay/return 303). PAYMENT_PROVIDER 미설정/오타 시 toss로 안전 복귀.
+- #479~#481 취소→코인 회수 실거래 검증·수정: #479 통보 status 진단(form 아닌 **JSON**, status='cancelled')+partialCancelled 회수대상 추가, #480 **회수 RPC 버그 수정** — addCredits(음수)는 add_credits(양수 lot 적립) RPC라 차감 안 됨(조용히 실패) → deduct_credits 기반 revokeCredits 신설, #481 진단로그 제거(회수 실패만 운영로깅). **전체 E2E(결제·충전·취소·회수) 프로덕션 검증 완료**. (회수 상세 [[credit-refund-revoke]])
+- #482 결제 문구 PG 중립화: 사용자 노출 '토스 결제/토스페이' 7곳(checkout 로고T→💳·라벨·안내, credits 안내·에러, complete 수단라벨, faq 처리시간) → 카드·계좌이체. 결제수단 코드(CARD/TRANSFER)·SDK 무수정. operations/payment-funnel은 결제 type 기준이라 PG 무관(나이스페이 자동 포함).
+- #483 admin 환불 나이스페이 대응: 기존 admin/refund 가 토스 cancel 전용 → 나이스페이 결제 환불 실패. prepare createPaymentOrder metadata.provider 저장 + getOrderProviderByPaymentKey(payment_key→provider, 없으면 toss) + refund tossCancel deps PG 분기(nicepay=cancelNicepayPayment, 옵션 매핑·idempotency 멱등). ⚠️ provider 저장은 #483 이후 신규결제부터(기존 나이스페이 결제 환불은 콘솔 취소). 토스 경로 무수정.
+- ⚠️ 잔여: 부분취소 비례 회수·음수잔액 정책·가상계좌·구독 빌링키·나이스페이 already-canceled backstop. test/nicepay-sandbox 브랜치 삭제완료, Preview env(사용자 대시보드 정리).
+
+### 데이터 초기화 — 실운영 전환 (2026-06-26, 실행 완료)
+- 실유저 없음 확인 후 테스트 데이터 전체 초기화. **유지**: 가입/로그인(auth.users·profiles)·관리자(admin_*)·콘텐츠(classic_* 13)·약관(policy_versions)·동의(user_policy_consents)·알림설정(notification_preferences·push_subscriptions)·가중치(sinsal_weight_versions). **초기화**: 결제(payment_*)·코인(user_credits·credit_lots·credit_transactions)·구독·권한(product_entitlements)·풀이(readings·dialogue_messages)·AI(ai_* 7)·결과스냅샷·피드백·예약·리뷰·즐겨찾기·family_profiles.
+- SQL: **docs/data-reset.sql**(#484) — TRUNCATE CASCADE(유지대상은 auth/policy/classic만 참조라 미연루). 백업·외부PG·검증 절차 주석 포함. ⚠️ 외부 PG(나이스페이/토스) 실제결제는 DB와 별개 — 환불은 PG 콘솔.
+
+### UI·결제문구 후속 (2026-06-26~27)
+- #485/#486 입력 폼 2컬럼→1컬럼: /my/profile 가족사주의 좁은 2컬럼에서 라벨+입력+긴 안내문이 세로로 wrap되던 문제. #485 가족사주(page 요약·내정보 폼/카드·가족목록/입력·이름·관계), #486 생년월일 공통입력(unified-birth-info-fields lg 패널). Workflow 전수 점검 — 짧은 숫자/버튼 2칸(성별·년월일·관계카드)은 의도 유지. 결과/카드형(상품·홈·결과표)은 미변경.
+- #487/#488 결제 PG 문구 정리: #487 결제창 잔여 토스 문구 4곳 중립화(picker '결제 방식'·'별도 결제창', checkout 키 에러·완료 안내 — #482 후속). #488 admin PG 동적 표기 — user-detail refund fetch 에 payment_key→order provider 배치 1쿼리(N+1 회피), refund-actions PG_LABEL(toss=Toss·nicepay=나이스페이)로 취소노트·confirm 분기, payment-funnel 'confirm 실패율' 설명 PG 무관화. provider 없는 기존결제는 toss 폴백. 코드 식별자·키 변수 무수정.
+- #489 결제수단 라벨 '계좌이체'→'실시간 계좌이체'(나이스페이 콘솔 명칭 일치, methods.ts TRANSFER label·shortLabel·desc). picker·결제버튼 자동 반영, method 코드(bank) 무수정.
+- #490 나이스페이 계좌이체 임시 숨김 가드: 계좌이체 선택 시 **W004(결제수단 유효하지 않음)** — method 'bank'(나이스페이 매뉴얼상 유일·정확)·콘솔 실시간계좌이체 활성·카드 정상이라 **발급 clientId 에 계좌이체 미연결(키 권한)** 으로 확정(directbank 부재 교차검증). picker: provider(prop)??NEXT_PUBLIC_PAYMENT_PROVIDER==='nicepay' && NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED!=='true' → TRANSFER 숨김+카드 폴백(useEffect). ⚠️ 작동조건: **NEXT_PUBLIC_PAYMENT_PROVIDER=nicepay**(클라이언트 env, 서버 PAYMENT_PROVIDER 와 쌍). 복구: NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED=true. 실해결은 나이스페이 기술지원에 키-계좌이체 연결 요청(코드 변경 0).
+- #491 결제수단 picker 단일 옵션 빈칸 제거: 계좌이체 숨김으로 카드 1개만 남을 때 sm:grid-cols-2 고정이라 빈 칸 → options.length>1 일 때만 2열, 1개면 grid-cols-1(full-width).
+- #492 화면전환 스크롤 미상단 만성 재발 근본 수정(#268·#270·#391 후속, 네 번째): Workflow 5가설 다각 검증으로 근본 확정 — template.tsx page-transition(will-change:transform) 프레임에서 Next 기본 scroll-to-top 좌표 교란/누락 × ScrollReset 의 useEffect(paint 후 1프레임 지연). useEffect→useIsomorphicLayoutEffect + #해시 가드(Next 앵커 존중) + behavior:'instant' 로 수정. **세 번 재발한 메타 원인=매번 증상만 고치고 메모리 미기록** → [[project_scroll-reset-on-navigate]] 강하게 기록(재수정 전 체크리스트 포함).
+- #493 로그인 시 사주 입력 단계 자동 넘어감 제거: loadSavedProfiles 가 로그인 프로필을 자동 applySavedProfile→setActiveIndex(profileStepIndex) 로 입력단계 점프 → '자동으로 넘어간다'는 버그 오인. 자동 적용 블록만 제거(hasReusableBirthDraft·hasAutoAppliedProfileRef 정리), 저장 프로필 chip(수동 '내 정보 불러오기')은 유지.
+- ⚠️ 환경 이슈(반복): 로컬 `npm run build` ENOTEMPTY('.next/server' rmdir) — Turbopack 빌드캐시 충돌. .next 를 scratchpad 로 mv 후 clean build 로 우회(루트에 .next_* 잔재 금지).
+- #494~#496 하단 dock full-width 바닥 bar 화: 플로팅(중앙 max-w·둥근모서리·여백)→화면 맨아래 full-width(좌우/하단 여백 0, 상단만 둥글게, safe-area inner 이동). #495 footer clearance 가 floating 시절 5.2rem 이라 dock 가림 → token(--app-mobile-dock-clearance) 통일. #496 실측 가림으로 clearance 6.75→8rem.
+- #497~#498 모바일 로그인 화면: #497 게이트웨이 상단여백 180→64px(소셜/이메일 한 화면)·회원가입/비번 위·약관동의 아래·회원가입 카드/섹션 패딩 축소. #498 '간지사주' 텍스트 z-10+장식 top↑(가림 해소), 회원가입 폼 overflow 근본=생년월일 grid(gangi-birth-date-grid) min-width 270px 가 카드 밀어냄→180px 축소(양력음력/성별/시간/출생지 전부 박스 안).
+- #499~#500 회원가입 폼 overflow 실측 재발(아이폰15 Pro): #498/#499(생년월일 min-width·카드 overflow-x-clip)가 무력했던 진짜 근본=app-page 가 width min(100%,88rem)+padding 1rem 인데 login(gangi-login-subpage)은 flow-polish 480px 캡(gangi-subpage)에 안 걸려 카드가 넓게 감. #500: login AppPage max-w-full+overflow-x-hidden(페이지 가로 스크롤 차단)+생년월일 grid 480px↓ 세로 1컬럼(기존 380px만). 교훈: overflow 디버깅은 자식 grid 추측보다 컨테이너 width 체인(app-page→card)부터 실측. ⚠️ login 은 gangi-subpage 가 아니라 flow-polish 480 캡 미적용(별도 처리 필요).
+- **#501 회원가입 폼 overflow 진짜 근본(5번째·종결, systematic-debugging 실측)**: #498~#500 이 4번 실패한 이유 = 매번 자식 `.gangi-birth-date-grid` 만 만짐. Playwright 로 393/375/360px width 체인 실측 → 범인은 **`.unified-birth-form`(display:grid)의 base 에 grid-template-columns 가 없어 암묵적 `auto` 트랙이 컨테이너(270px)를 무시하고 max-content(842.5px)로 부풂** → 모든 자식이 843px 로 늘어 카드(330px)를 +511px 뚫음. **documentElement 가로 스크롤은 0**(카드 overflow-x-clip 이 숨김) — 그래서 기존 readability 게이트(scrollWidth 기반)가 4번 다 통과시킴(버그가 안 잡힌 메타 원인). 유일한 클램프 룰 `.gangi-subpage .unified-birth-form { minmax(0,1fr) }` 은 login(`.gangi-login-subpage`)에 안 닿음. **수정: base `.unified-birth-form` 에 `grid-template-columns: minmax(0,1fr)`**(폼은 컴포넌트에 grid-cols 없는 항상 1컬럼, `.unified-birth-form` 클래스는 실측상 login 단독 사용 → 영향범위 login 한정·.gangi-subpage 는 동일값이라 무변경). **신규 영구 게이트 `e2e/login-overflow.spec.ts`**: documentElement 스크롤이 아니라 '뷰포트 밖으로 나가는 요소(가로 스크롤 컨테이너 자식 제외)'를 직접 검출 → clip 으로 숨겨도 잡음(red 45개 → green 6/6). readability 게이트 10/10·typecheck 통과·스크린샷 1컬럼 전부 화면 내 확인.
+
+### 교훈(추가)
+- **`overflow-x:hidden/clip` 은 회귀 게이트를 멀게 한다**: 카드에 clip 을 걸면 콘텐츠가 화면 밖으로 나가도 documentElement 가로 스크롤=0 → scrollWidth 기반 게이트가 통과시켜 버그가 4번 재발. 게이트는 element 단위 boundingRect.right > viewport 로 '잘림'을 직접 봐야 한다.
+- **grid 트랙 `auto` vs `minmax(0,1fr)`**: 명시 트랙 없는 `display:grid` 의 암묵적 `auto` 트랙은 컨테이너 width 를 무시하고 max-content 로 부푼다. 단일 컬럼 폼은 base 에서 `minmax(0,1fr)` 로 클램프해야 좁은 카드에서 안전(자식 grid 만 고치면 부모 트랙 폭이 그대로 내려와 무력).
+
+### 교훈(추가, 기존)
+- **가격은 catalog 단일 출처 + UI 20+곳 하드코딩 흩어짐**: 결제가만 바꾸면 표시≠결제 인시던트. 전수 조사(워크플로)로 상품별 분류 후 일괄. 결제 정합 가드(`pkg.price !== amount` 거부)가 옛 금액 fixture를 잡아줌 → 테스트가 안전망.
+- **코인 경제는 소액가 전제로 설계**: 단가 인상 시 차감·충전팩·충전한계가 연쇄 → 코인 1개 가치를 일관(990원)시켜 재설계해야 정합.
+
+## 2026-06-22 세션 (Claude) — 마이그레이션 049 충돌 복구·타로 보관함 + 사주 점수 이용권 정체성 매칭 + 진행로그 자동화 + 텍스트 가독성(기반·결과표면) + 꿈해몽 무결과 로깅 (#448·#449·#450·#451·#452)
+
+> 세션 재개 → 마이그레이션 장부 드리프트 복구 → 결제 버그(990 번들 ↔ 550 재청구) 근인 추적·수정 → 작업종료 자동 진행로그(이 PROGRESS.md) Stop 훅 설정. 모두 main 머지·배포.
+
+### #448 마이그레이션 049 번호 충돌 → 타로 보관함 복구 + CI 가드
+- **증상**: `tarot_result_snapshots` 테이블이 원격에 없어 타로 보관함 저장/조회가 **에러 없이 조용히** 데드(`tarot/result-snapshots.ts` 가 에러 삼킴 → console.warn 후 null/[]).
+- **근인**: `049_admin_user_summary`(#402)와 `049_tarot_result_snapshots`(#401)가 같은 버전 `049` 공유 → supabase 가 admin 을 049 로 적용 후 tarot 은 "이미 적용"으로 영구 skip.
+- **수정**: tarot 마이그레이션 → `053` 리네임(R100·내용 멱등). 원격 장부 정리(`repair reverted 20260607144500`=051 중복 + `repair applied 051 052`) 후 `db push` 로 테이블 생성. 원격 스키마 덤프로 6객체(테이블·인덱스2·트리거·함수·RLS enable·정책) 실재 검증.
+- **재발 방지**: `scripts/audit-migration-numbers.mjs`(DUPLICATE/AMBIGUOUS/MALFORMED, --strict) + `npm run audit:migration-numbers` + ci.yml 편입. 자릿수는 강제 안 함(기존 0060/0061 혼용 보존).
+
+### #449 사주 점수 이용권을 사주팔자 정체성으로 매칭 (번들 ↔ 게이트 이중과금)
+- **증상**: 990 '오늘 풀세트'(score-factor F1~F5 부여) 구매 후 사주 종합점수 게이트가 550원(score-total) 재요구 → 이중과금(실사용자 550 2회 청구 확인).
+- **근인(실측)**: 이용권 scope 가 `readingKey=toSlug(input)` 에 묶임 → 같은 사람이라도 입력 경로/분 정밀도가 다르면 readingKey 갈림(오늘운세 8시 vs 직접입력 8시45분) → grandfather 불발.
+- **수정**: 점수 게이트 매칭을 readingKey 문자열이 아니라 **사주(4기둥 간지 + 성별) 정체성**으로(`src/lib/saju/reading-identity.ts` + score-factor/score-unlock-access 재작성, `listTasteProductEntitlementScopeKeys`). grant·DB·기존 scope_key **무변경(체크만)** → 기존 결제 보존 + 분 변형 깨진 케이스 자동 복구. 신규 테스트 10(실측 키) + 회귀 933 통과.
+
+### 진단 / 운영
+- **8시 vs 9시 reading 갈림(워크플로 조사)**: 두 폼 모두 raw 0-23 시 `<select>`(지지 매핑·야자시·진태양시 시프트 없음) → **사용자 입력 차이**(진짜 다른 사주, 시주 甲辰 vs 乙巳) = 코드 버그 아님. 분(m45) 비대칭만 경로 차이(today-fortune `minute:''` 강제 vs saju-intake 프로필 분 복원, birth-info-stepper.tsx:99) — #449 가 흡수.
+- **환불**: 6/18·6/22 550 청구 = 영수증 `dashboard-sandbox.tosspayments.com` = 샌드박스 → 실청구 0 → **환불 불필요**(라이브 키 전환 전).
+
+### 진행로그 자동화 (이 세션 설정)
+- `.claude/settings.local.json` Stop 훅: `[ PROGRESS.md -nt PROGRESS.html ] && npm run progress:html` — PROGRESS.md 변경 시에만 HTML 자동 렌더(무변경 턴 skip). gitignore(PROGRESS.html).
+- 메모리 `feedback_progress-log-on-work-done`: substantive 작업 종료 시 PROGRESS.md 세션 항목 갱신을 기본화.
+
+### #450 텍스트 가독성 기반 개선 (판단→예측→검증→실행)
+- **판단(정량 감사 워크플로)**: 대비 `--app-copy-soft` 3.99:1(AA 미달, 223+곳)·`--app-copy-muted`는 4.78:1 통과 / 글자 ≤12px 1,305곳(63%)·≤9.5px 35곳 / body·p line-height 미설정(Tailwind 1.5).
+- **실행(광역·저위험)**: `--app-copy-soft` 0.82→0.88(4.52:1, 223+곳 동시) + 하드코딩 저대비 3곳(global-error·app-shell·daewoon)→토큰/AA / `:where(p·li·dt·dd) line-height 1.65` / 타입스케일·행간 토큰(`--app-text-*`·`--app-leading-*`, additive) / 최악 마이크로텍스트(사주명식 8.5·9px→10.5·11px).
+- **검증**: 933 tests·typecheck·build·CI 정적가드 5종 통과. 색-only/additive/외과적 → 레이아웃 위험 최소.
+- **후속 #451 (C단계)**: 결과 표면 ≤12px 상향(today 60·saju+score 92·compat·홈배너 8, 워크플로 3에이전트 판단 기반, tabular/고정폭/배지/차트 스킵) + 가독성 회귀 하니스(`e2e/readability-visual.spec.ts` 오버플로 게이트+캡처). unauth 게이트 10/10·입력/홈 눈으로 확인 후 머지·배포.
+
+### #452 꿈해몽 무결과 검색 로깅 (커버리지 확장 Phase 0)
+- 피드백 "검색해도 없다"(커버리지 갭). **전략 결정**: 런타임 LLM/스크래핑 ❌ → 기존 결정론 사전(304개)을 **LLM 배치 생성→가드→머지**로 확장(쿼리당 비용 0·SEO·정직성 유지)이 장기 우위. (decision-framer)
+- **Phase 0(수요 신호)**: `searchDream` fallback 플래그(코어 무변경 래퍼, TDD) + `/api/dream/search` 무결과 시 빈도 누적 로깅(비차단) + 마이그레이션 054 `dream_search_misses`(RLS service 전용 + 멱등 RPC). 054 적용·원격 덤프로 테이블·RPC·인덱스·RLS 실재 검증 → **로깅 가동**.
+- **#453(055) 보강**: 덤프 검증 중 발견 — `record_dream_search_miss` 가 Supabase 기본 권한으로 anon/authenticated EXECUTE 잔존(`REVOKE FROM PUBLIC` 만으론 부족) → 익명 PostgREST `/rpc` 직접 호출로 hit_count 오염 가능(SECURITY DEFINER·쓰기전용이라 노출 0, 무결성 리스크만). `REVOKE EXECUTE FROM anon, authenticated` 로 잠금(서버 service_role 유지). 적용 후 `db query --linked` 로 권한 직접 검증(anon/auth=false, service=true).
+
+### #454 꿈해몽 사전 파일럿 20개 확충 (Phase 1, 305→325)
+- 흔하지만 누락 키워드 20개(시체·화장실·엘리베이터·귀신·벌레·모기·바퀴벌레·다람쥐·상어·딸기·바나나·커피·케이크·소나무·장미·태풍·터널·오토바이·컴퓨터·침대).
+- **생성 파이프라인(워크플로 40에이전트)**: 키워드별 LLM 생성(스키마 강제) → 적대적 가드 자가검증(4건 수정: 단정어 '분명히'·비문·naming-policy `안정과` 정규식 충돌) → **머지 전 결정론 재검증**(테스트 정규식 직접: 한자0·공포어0·신조어0·유니크·스키마 = 위반 0) → 렌더 출력 문장 품질 확인.
+- LLM은 **오프라인 1회 생성만** → 서빙은 결정론 사전(쿼리당 비용 0·SEO·정직성). detailSlug 없음(가드 강제). 933 tests·typecheck 통과.
+- 다음: 같은 파이프라인으로 #452 수요 Top-N 쌓이면 데이터 주도 확장 / 톤 OK면 배치 확대.
+
+### 교훈(추가)
+- **Supabase RPC 권한은 REVOKE FROM PUBLIC 만으론 부족**: public 스키마 함수는 anon/authenticated 에 EXECUTE 기본 부여 → service 전용 RPC 는 `REVOKE EXECUTE FROM anon, authenticated` 명시 필요. 마이그레이션 적용 후 원격 덤프(GRANT 라인)로 실검증.
+
+### 교훈
+- **무성(無聲) 실패**: 에러를 삼키는 코드(타로 보관함)는 기능이 죽어도 안 보임 → CI 정적 가드로 회귀 차단.
+- **이용권은 입력 문자열이 아니라 도메인 정체성에**: readingKey(toSlug)는 경로/정밀도로 흔들림 → 사주팔자 기반 매칭이 일반해(today-detail·year-core·monthly-calendar 등 다른 reading-scope 상품은 아직 잔존 — 후속).
+- **프로덕션 장부/결제/권한·settings 변경은 분류기가 차단** → 사용자가 `!` 로 직접 실행(migration repair·db push·settings.local 훅).
 
 ---
 
