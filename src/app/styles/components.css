@@ -1396,8 +1396,16 @@
   .unified-birth-form {
     align-items: start;
     min-width: 0;
+    /* 2026-06-27 — 폼은 항상 1컬럼(컴포넌트에 grid-cols 없음). base 에 명시 트랙이
+       없으면 암묵적 auto 트랙이 max-content 로 부풀어(~843px) 좁은 카드를 뚫는다.
+       (#498~#500 로그인 회원가입 폼 모바일 overflow 만성 재발의 진짜 근본 — login 은
+       .gangi-login-subpage 라 아래 .gangi-subpage 오버라이드가 안 닿았다.)
+       minmax(0,1fr) 로 트랙을 컨테이너에 묶어 모든 페이지에서 1컬럼·축소 가능하게 한다. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
+  /* .gangi-subpage 페이지는 기존대로 강제(동일값). base 가 생겨 redundant 지만,
+     혹시 다른 곳에서 grid-template-columns 를 덮을 경우의 방어로 유지한다. */
   .gangi-subpage .unified-birth-form {
     grid-template-columns: minmax(0, 1fr) !important;
   }
