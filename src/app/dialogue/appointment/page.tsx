@@ -23,9 +23,9 @@ interface TeacherInfo {
 }
 
 // 2026-05-16 PR #163 — 구 브랜드 임의 호명 정리.
-// 2026-06-28 — 대화 선생 명칭 통일(서비스명)에 맞춰 '명리호선생' → '명리'(호랑이, 종합 명리/active TOP).
+// 2026-06-28 — 대화 선생 명칭 통일(서비스명+선생)에 맞춰 '명리호선생' → '명리선생'(호랑이, 종합 명리/active TOP).
 const DEFAULT_TEACHER: TeacherInfo = {
-  name: '명리',
+  name: '명리선생',
   field: '종합 명리',
   zodiac: 'tiger',
   online: true,
