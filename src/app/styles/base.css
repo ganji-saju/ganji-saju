@@ -197,4 +197,39 @@
     background: rgba(255, 79, 154, 0.22);
     color: var(--app-ink);
   }
+
+  /* 2026-06-27 — 인터랙티브 요소 기본 커서(손가락) 복원.
+     Tailwind v4 Preflight 가 bare <button> 의 cursor:pointer 를 제거(브라우저 기본=화살표)
+     → shadcn Button(컴포넌트) 외 커스텀 버튼·[role=button]·select·summary·label·체크박스가
+     마우스 호버 시 손가락으로 안 바뀐다는 피드백 대응. 모든 링크·버튼형태에 기본 적용.
+     :where() 라 특이도 0 → carousel grab / disabled not-allowed / 의도적 default(home.css)
+     같은 명시 커서가 항상 우선(기존 디자인 무영향). */
+  :where(
+    a[href],
+    button,
+    [role="button"],
+    [type="button"],
+    [type="submit"],
+    [type="reset"],
+    [type="radio"],
+    [type="checkbox"],
+    [type="file"],
+    select,
+    summary,
+    label[for]
+  ) {
+    cursor: pointer;
+  }
+
+  /* 비활성 컨트롤은 금지 커서(관례 + 기존 .gangi-form-control:disabled 와 일치). */
+  :where(
+    button:disabled,
+    [type="button"]:disabled,
+    [type="submit"]:disabled,
+    [type="reset"]:disabled,
+    select:disabled,
+    [aria-disabled="true"]
+  ) {
+    cursor: not-allowed;
+  }
 }
