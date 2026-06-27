@@ -28,6 +28,7 @@ interface Props {
   slug?: string;
   scope?: string;
   entrySource?: string;
+  provider?: 'toss' | 'nicepay';
 }
 
 interface PaymentPrepareResponse {
@@ -50,6 +51,7 @@ export default function TossMembershipCheckout({
   slug,
   scope,
   entrySource = 'membership',
+  provider,
 }: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);

@@ -479,7 +479,7 @@ function CreditsPageContent() {
           <section>
             <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
             <div className="mt-3">
-              <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} provider={provider} />
+              <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
             </div>
           </section>
 
