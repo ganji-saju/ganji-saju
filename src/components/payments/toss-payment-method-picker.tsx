@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
 import {
   TOSS_PAYMENT_METHOD_OPTIONS,
   type TossPaymentMethodCode,
@@ -10,13 +11,35 @@ interface TossPaymentMethodPickerProps {
   value: TossPaymentMethodCode;
   onChange: (method: TossPaymentMethodCode) => void;
   className?: string;
+  provider?: 'toss' | 'nicepay';
 }
 
 export default function TossPaymentMethodPicker({
   value,
   onChange,
   className,
+  provider,
 }: TossPaymentMethodPickerProps) {
+  // 2026-06-27 — 나이스페이 실시간 계좌이체(bank)가 발급 clientId 에 미연결(W004)이라 임시 숨김.
+  //   키 연결 완료 후 복구: 환경변수 NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED=true. 토스 경로는 영향 없음.
+  const hideTransfer =
+    provider === 'nicepay' &&
+    process.env.NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED !== 'true';
+  const options = useMemo(
+    () =>
+      hideTransfer
+        ? TOSS_PAYMENT_METHOD_OPTIONS.filter((option) => option.code !== 'TRANSFER')
+        : TOSS_PAYMENT_METHOD_OPTIONS,
+    [hideTransfer]
+  );
+
+  // 숨김으로 현재 선택값이 옵션에서 사라지면 첫 옵션(카드)으로 폴백 — TRANSFER 가 결제로 새는 것 방지.
+  useEffect(() => {
+    if (!options.some((option) => option.code === value)) {
+      onChange(options[0].code);
+    }
+  }, [options, value, onChange]);
+
   return (
     <div
       className={cn(
@@ -26,10 +49,11 @@ export default function TossPaymentMethodPicker({
     >
       <div className="app-caption">결제 방식</div>
       <p className="mt-2 text-sm leading-6 text-[var(--app-copy-muted)]">
-        결제는 별도 결제창에서 진행됩니다. 여기서는 카드와 계좌이체 중 하나만 고르면 됩니다.
+        결제는 별도 결제창에서 진행됩니다.
+        {options.length > 1 ? ' 여기서는 카드와 실시간 계좌이체 중 하나만 고르면 됩니다.' : ''}
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        {TOSS_PAYMENT_METHOD_OPTIONS.map((option) => {
+        {options.map((option) => {
           const isSelected = value === option.code;
 
           return (

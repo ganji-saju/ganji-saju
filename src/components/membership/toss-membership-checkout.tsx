@@ -286,7 +286,7 @@ export default function TossMembershipCheckout({
 
   return (
     <div className="space-y-3">
-      <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+      <TossPaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} provider={provider} />
       {/* Phase 3-C-1: 결제 전 동의 — 필수 동의 모두 체크해야 결제 버튼 활성 */}
       {pkg && (
         <PaymentConsentCheckboxes
