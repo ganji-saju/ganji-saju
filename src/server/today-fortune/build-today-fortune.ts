@@ -1057,9 +1057,9 @@ export function buildTodayFlowSignal(
     const a = pick(shortPhrases[stemTone], 0);
     const b = pick(shortPhrases[branchTone], 5);
     const mixTemplates = [
-      `오늘은 겉으로는 ${a} 흐름이, 바탕에서는 ${b} 흐름이 함께 도는 날이라, 한쪽에 치우치지 말고 흐름을 살피며 움직이면 좋습니다.`,
-      `오늘은 드러나는 쪽은 ${a} 흐름, 안쪽은 ${b} 흐름이 같이 도는 하루예요. 한쪽만 보지 말고 균형을 잡아보세요.`,
-      `겉으로는 ${a} 흐름이 보이지만 바탕에는 ${b} 흐름이 깔려 있는 하루라, 둘 다 염두에 두고 움직이면 좋습니다.`,
+      `오늘은 겉으로는 ${a} 흐름이, 속에서는 ${b} 흐름이 함께 도는 날이라, 한쪽에 치우치지 말고 흐름을 살피며 움직이면 좋습니다.`,
+      `오늘은 드러나는 쪽은 ${a} 흐름, 속은 ${b} 흐름이 같이 도는 하루예요. 한쪽만 보지 말고 균형을 잡아보세요.`,
+      `겉으로는 ${a} 흐름이 보이지만 속에는 ${b} 흐름이 깔려 있는 하루라, 둘 다 염두에 두고 움직이면 좋습니다.`,
     ];
     return mixTemplates[seed % mixTemplates.length];
   }
