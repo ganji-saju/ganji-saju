@@ -353,10 +353,10 @@
       padding-bottom 적용 (footer 검정 배경이 dock 까지 덮음). */
 @media (max-width: 767px) {
   footer.site-footer-redesign {
-    /* dock 약 5.2rem + safe-area 만큼 footer 내부 padding 추가.
-       footer 검정 (#000000) 배경이 dock 위치까지 연장 → footer ↔ dock 사이
-       흰 공간 차단. footer 콘텐츠는 dock 에 안 가려진다. */
-    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)) !important;
+    /* 2026-06-27 — footer 콘텐츠가 fixed dock 에 가려지던 문제. clearance 토큰(6.75rem+safe-area)
+       으로 통일(기존 5.2rem 은 floating dock 시절 값이라 full-width dock 높이보다 부족했음).
+       footer 검정 배경이 dock 위치까지 연장 → footer↔dock 흰 공간 차단 + 콘텐츠 안 가림. */
+    padding-bottom: var(--app-mobile-dock-clearance) !important;
   }
 
   /* 2026-05-20 — main.app-shell 의 padding-bottom (dock-clearance) 제거.
