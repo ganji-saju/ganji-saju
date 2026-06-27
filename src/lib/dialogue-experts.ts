@@ -170,6 +170,25 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
 ] as const;
 
+// 2026-06-28 — 홈 8캐릭터 카드에 대응하는 대화선생 8명만 메뉴(상단 드롭다운 · /dialogue 허브)에 노출.
+//   순서는 홈 카드와 동일(사주→대운→택일→궁합→꿈해몽→대화상담→무료타로→무료운세).
+//   나머지 4명(rat 성향·monkey 관상·rooster 별자리·pig 행운)은 /dialogue/<id> 라우트는 유지하고
+//   메뉴에서만 숨긴다(직접 링크·SEO 보존).
+export const MENU_DIALOGUE_EXPERT_IDS: readonly DialogueExpertId[] = [
+  'dragon', // 사주
+  'tiger', // 대운
+  'horse', // 택일
+  'sheep', // 궁합
+  'snake', // 꿈해몽
+  'dog', // 대화상담
+  'rabbit', // 무료타로
+  'ox', // 무료운세
+];
+
+export const MENU_DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = MENU_DIALOGUE_EXPERT_IDS.map(
+  (id) => DIALOGUE_EXPERTS.find((expert) => expert.id === id)
+).filter((expert): expert is DialogueExpertMeta => Boolean(expert));
+
 const DIALOGUE_EXPERT_RAG_OVERLAYS: Record<DialogueExpertId, DialogueExpertRagOverlay> = {
   rat: {
     visibleOpening: '엠지쥐선생은 성격보다 먼저 반복되는 반응을 봅니다.',

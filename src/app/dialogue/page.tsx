@@ -10,7 +10,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
-  DIALOGUE_EXPERTS,
+  MENU_DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
 
@@ -63,7 +63,7 @@ export default async function DialoguePage({
           {/* §1 Hero */}
           <div>
             <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              12간지 전문 분야
+              분야별 전문 선생
             </div>
             <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               어떤 선생님과
@@ -75,9 +75,9 @@ export default async function DialoguePage({
             </p>
           </div>
 
-          {/* §2 12지 전문가 list */}
+          {/* §2 대화선생 list — 홈 8카드 대응 8명(MENU_DIALOGUE_EXPERTS). 나머지 4명은 라우트만 유지. */}
           <div className="grid gap-2.5">
-            {DIALOGUE_EXPERTS.map((expert) => {
+            {MENU_DIALOGUE_EXPERTS.map((expert) => {
               const active = selectedExpertId === expert.id;
               return (
                 <Link
