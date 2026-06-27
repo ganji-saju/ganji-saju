@@ -173,7 +173,8 @@
 /* 2026-05-14: 하단 dock 리디자인 — 더 부드러운 그림자 + 활성 dot indicator
    + center FAB 글로우 + press 시 미세 scale 피드백. */
 .app-mobile-dock {
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom)) !important;
+  /* 2026-06-27 — 하단 full-width bar: wrapper 여백 0(화면 끝까지). safe-area 는 inner 내부로 이동. */
+  padding-bottom: 0 !important;
   pointer-events: none;
 }
 
@@ -182,12 +183,13 @@
   pointer-events: auto;
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   overflow: visible !important;
-  border: 1px solid rgba(255, 79, 154, 0.10) !important;
-  border-radius: 1.55rem !important;
+  border-top: 1px solid rgba(255, 79, 154, 0.10) !important;
+  /* 2026-06-27 — 하단 full-width bar 로: 좌우/하단 딱 붙이고 상단만 둥글게(여백 0). */
+  border-radius: 1.1rem 1.1rem 0 0 !important;
   background:
     radial-gradient(circle at 50% -20%, rgba(255, 79, 154, 0.06), transparent 55%),
     rgba(255, 255, 255, 0.98) !important;
-  padding: 0.4rem 0.3rem 0.35rem !important;
+  padding: 0.4rem 0.3rem max(0.35rem, env(safe-area-inset-bottom)) !important;
   box-shadow:
     0 -2px 0 rgba(255, 255, 255, 0.8) inset,
     0 22px 44px -12px rgba(17, 17, 20, 0.18),

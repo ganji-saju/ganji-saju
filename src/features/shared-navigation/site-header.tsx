@@ -647,10 +647,10 @@ function MobileChrome({
       {portalMounted
         ? createPortal(
             <nav
-              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 px-3 py-3 md:hidden"
+              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 md:hidden"
               aria-label="주 메뉴"
             >
-              <div className="app-mobile-dock-inner mx-auto grid max-w-md grid-cols-5">
+              <div className="app-mobile-dock-inner grid w-full grid-cols-5">
                 {MOBILE_PRIMARY_NAV_ITEMS.map((item) => {
                   const active = matchesPath(item, pathname);
                   const isCenter = item.label === '무료운세';
