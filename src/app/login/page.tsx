@@ -349,15 +349,15 @@ function GatewayView({
       <div className="pointer-events-none absolute -right-5 top-3 opacity-60" aria-hidden="true">
         <ZodiacChip kind="rabbit" size="xl" />
       </div>
-      <div className="pointer-events-none absolute -left-3 top-32 opacity-50" aria-hidden="true">
+      <div className="pointer-events-none absolute -left-3 top-1 opacity-50" aria-hidden="true">
         <ZodiacChip kind="dragon" size="lg" />
       </div>
-      <div className="pointer-events-none absolute right-24 top-16 opacity-50" aria-hidden="true">
+      <div className="pointer-events-none absolute right-24 top-1 opacity-50" aria-hidden="true">
         <ZodiacChip kind="snake" size="sm" />
       </div>
 
-      {/* 2026-06-27 — 상단 여백 180→64px 축소: 모바일에서 카카오/구글/이메일 로그인이 한 화면에 다 보이도록. */}
-      <div className="relative pt-[64px]">
+      {/* 2026-06-27 — 상단 여백 180→64px 축소 + z-10(장식 위로 올려 '간지사주' 텍스트가 안 가리도록). */}
+      <div className="relative z-10 pt-[64px]">
         <div
           className="mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] text-white"
           style={{
