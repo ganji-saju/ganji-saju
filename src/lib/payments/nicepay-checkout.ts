@@ -5,6 +5,8 @@
 //
 // ⚠️ 스캐폴드 — requestPay 파라미터·method 문자열·SDK URL(운영/샌드박스)은 샌드박스 E2E 로
 //   확정(docs §6). 나이스페이 클라이언트 키가 'Server 승인 방식'으로 발급돼야 서버승인 결제창 동작.
+import { getNicepayClientKey } from '@/lib/payments/nicepay-env';
+
 const SDK_URL = 'https://pay.nicepay.co.kr/v1/js/';
 
 interface NicepayRequestPayOptions {
@@ -76,10 +78,8 @@ export async function requestNicepayPayment(opts: {
   method: string; // toNicepayMethod 결과
   onError?: (message: string) => void;
 }): Promise<void> {
-  const clientId = process.env.NEXT_PUBLIC_NICEPAY_CLIENT_KEY;
-  if (!clientId) {
-    throw new Error('나이스페이 클라이언트 키가 설정되어 있지 않습니다.');
-  }
+  // 2026-06-27 — MODE(sandbox/live) 별 clientKey 자동 선택(nicepay-env, 기존 단일 키 폴백).
+  const clientId = getNicepayClientKey();
 
   await loadNicepaySdk();
   if (!window.AUTHNICE) {
