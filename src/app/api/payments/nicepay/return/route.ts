@@ -109,14 +109,18 @@ export async function POST(req: NextRequest) {
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
   } catch (err) {
+    const reason = err instanceof Error && err.message ? err.message : '결제 승인 실패';
+    // 2026-06-27 — 진단: 나이스페이 실제 응답(resultMsg)을 서버 로그 + fail 페이지에 노출해
+    //   V2/V3 규격 불일치인지 키 문제인지 실측으로 가린다. 원인 확정 후 일반 문구로 되돌릴 것.
+    console.error('[nicepay-return] 승인 실패', { orderId, tid, amount, reason });
     await markPaymentOrderFailed({
       orderId,
       status: 'payment_failed',
-      error: err instanceof Error ? err.message : '결제 승인 실패',
+      error: reason,
       source: 'nicepay-return',
     });
     // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 샌드박스 검증 시 추가.
-    return failRedirect('결제 승인에 실패했습니다.');
+    return failRedirect(`승인 실패: ${reason}`);
   }
 
   // 5) TossPaymentObject 호환 어댑팅 — 기존 fulfillment/order-ledger 무변경 재사용.
