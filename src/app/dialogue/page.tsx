@@ -75,7 +75,7 @@ export default async function DialoguePage({
             </p>
           </div>
 
-          {/* §2 대화선생 list — 홈 8카드 대응 8명(MENU_DIALOGUE_EXPERTS). 나머지 4명은 라우트만 유지. */}
+          {/* §2 대화선생 list — 홈 8카드 대응 8명 + 별자리 = 9명(MENU_DIALOGUE_EXPERTS). 나머지 3명은 라우트만 유지. */}
           <div className="grid gap-2.5">
             {MENU_DIALOGUE_EXPERTS.map((expert) => {
               const active = selectedExpertId === expert.id;

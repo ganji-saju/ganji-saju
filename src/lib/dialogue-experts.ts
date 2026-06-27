@@ -170,9 +170,9 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
 ] as const;
 
-// 2026-06-28 — 홈 8캐릭터 카드에 대응하는 대화선생 8명만 메뉴(상단 드롭다운 · /dialogue 허브)에 노출.
-//   순서는 홈 카드와 동일(사주→대운→택일→궁합→꿈해몽→대화상담→무료타로→무료운세).
-//   나머지 4명(rat 성향·monkey 관상·rooster 별자리·pig 행운)은 /dialogue/<id> 라우트는 유지하고
+// 2026-06-28 — 홈 8캐릭터 카드 대응 8명 + 별자리(별닭선생) 1명 = 9명을 메뉴(상단 드롭다운 ·
+//   /dialogue 허브)에 노출. 순서는 홈 카드 순서 + 별자리.
+//   나머지 3명(rat 성향·monkey 관상·pig 행운)은 /dialogue/<id> 라우트는 유지하고
 //   메뉴에서만 숨긴다(직접 링크·SEO 보존).
 export const MENU_DIALOGUE_EXPERT_IDS: readonly DialogueExpertId[] = [
   'dragon', // 사주
@@ -183,6 +183,7 @@ export const MENU_DIALOGUE_EXPERT_IDS: readonly DialogueExpertId[] = [
   'dog', // 대화상담
   'rabbit', // 무료타로
   'ox', // 무료운세
+  'rooster', // 별자리(추가)
 ];
 
 export const MENU_DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = MENU_DIALOGUE_EXPERT_IDS.map(

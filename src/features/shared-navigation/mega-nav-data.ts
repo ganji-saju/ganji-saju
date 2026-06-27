@@ -89,9 +89,9 @@ export const MEGA_NAV: MegaNavGroup[] = [
   {
     label: '대화',
     c1: {
-      // 2026-06-28 — 홈 8캐릭터 카드에 대응하는 대화선생 8명만 노출(메인 카드 순서). /dialogue 허브
-      //   (MENU_DIALOGUE_EXPERTS)와 동일 구성. 나머지 4명(엠지쥐 성향·관상원 관상·별닭 별자리·
-      //   복돼지 행운)은 /dialogue/<id> 라우트는 유지하고 이 메뉴에서만 숨긴다.
+      // 2026-06-28 — 홈 8캐릭터 카드 대응 8명 + 별자리(별닭선생) = 9명 노출. /dialogue 허브
+      //   (MENU_DIALOGUE_EXPERTS)와 동일 구성. 나머지 3명(엠지쥐 성향·관상원 관상·복돼지 행운)은
+      //   /dialogue/<id> 라우트는 유지하고 이 메뉴에서만 숨긴다.
       heading: '선생님과 대화',
       items: [
         { label: '사주용선생', desc: '내 흐름 보기 · 사주', href: '/dialogue/dragon', zodiac: 'dragon' },
@@ -102,6 +102,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
         { label: '상담멍선생', desc: '편하게 고민 · 상담', href: '/dialogue/dog', zodiac: 'dog' },
         { label: '타로토선생', desc: '지금 마음 보기 · 타로', href: '/dialogue/rabbit', zodiac: 'rabbit' },
         { label: '오늘소선생', desc: '오늘 루틴 · 생활 조언', href: '/dialogue/ox', zodiac: 'ox' },
+        { label: '별닭선생', desc: '별자리 흐름 · 별자리', href: '/dialogue/rooster', zodiac: 'rooster' },
       ],
     },
     c2: {
