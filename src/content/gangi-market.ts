@@ -137,7 +137,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'saju',
     title: '사주',
     desc: '내 사주 풀이',
-    price: '9,900원',
+    price: '무료 상담',
     href: '/dialogue/dragon',
     zodiac: 'dragon',
     category: 'saju',
@@ -151,7 +151,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     desc: '10년 큰 흐름',
     // 2026-06-24 — 대운 풀이(올해 핵심, year-core)는 9,900원. /daewoon 은 무료 예시 허브 +
     //   year-core 9,900원 결제 CTA(daewoon/page.tsx). catalog year-core=9,900 과 표시 일치.
-    price: '9,900원',
+    price: '무료 상담',
     href: '/dialogue/tiger',
     zodiac: 'tiger',
     category: 'saju',
@@ -165,7 +165,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     desc: '좋은 날 찾기',
     // 2026-06-24 — 택일(월간 좋은날 캘린더, monthly-calendar)은 9,900원. /taekil 은 무료 도구 +
     //   monthly-calendar 9,900원 결제 CTA(taekil-client.tsx). catalog monthly-calendar=9,900 과 일치.
-    price: '9,900원',
+    price: '무료 상담',
     href: '/dialogue/horse',
     zodiac: 'horse',
     category: 'fortune',
@@ -176,7 +176,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'gunghap',
     title: '궁합',
     desc: '두 사람의 흐름',
-    price: '9,900원',
+    price: '무료 상담',
     href: '/dialogue/sheep',
     zodiac: 'sheep',
     category: 'saju',
