@@ -56,7 +56,7 @@ export default function TossPaymentMethodPicker({
         결제는 별도 결제창에서 진행됩니다.
         {options.length > 1 ? ' 여기서는 카드와 실시간 계좌이체 중 하나만 고르면 됩니다.' : ''}
       </p>
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      <div className={cn('mt-4 grid gap-2', options.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1')}>
         {options.map((option) => {
           const isSelected = value === option.code;
 
