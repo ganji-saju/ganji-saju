@@ -12,12 +12,6 @@ import {
   verifyNicepayAuthSignature,
   type NicepayPaymentObject,
 } from '@/lib/payments/nicepay';
-// 2026-06-27 진단(U116) — 승인용 clientKey 가 결제창이 쓴 clientId 와 같은지/환경이 맞는지 실측.
-import {
-  getNicepayApiBase,
-  getNicepayClientKey,
-  getNicepayMode,
-} from '@/lib/payments/nicepay-env';
 import { getPackage, isTasteProductPackage, type PaymentPackage } from '@/lib/payments/catalog';
 import {
   attachPaymentKeyToOrder,
@@ -111,34 +105,12 @@ export async function POST(req: NextRequest) {
   }
 
   // 4) 서버 승인 — POST /v1/payments/{tid}
-  // 2026-06-27 진단(U116 '사용자 정보 없음') — 승인 Authorization 에 쓰는 clientKey 가
-  //   ① 결제창이 쓴 clientId(form.clientId)와 같은지 ② 환경(mode/host)이 맞는지를 실측.
-  //   키 값은 노출하지 않고 길이·끝4자리·일치여부만(샌드박스 진단용, 확정 후 제거).
-  let serverClientKey = '';
-  try {
-    serverClientKey = getNicepayClientKey();
-  } catch {
-    serverClientKey = '';
-  }
-  const diag = {
-    mode: getNicepayMode(),
-    apiBase: getNicepayApiBase(),
-    cidLen: clientId?.length ?? 0,
-    cidTail: clientId ? clientId.slice(-4) : null,
-    srvLen: serverClientKey.length,
-    srvTail: serverClientKey ? serverClientKey.slice(-4) : null,
-    keyMatch: !!clientId && clientId === serverClientKey,
-  };
-  console.error('[nicepay-return] 승인 직전 진단', { orderId, tid, amount, ...diag });
-
   let nicePayment: NicepayPaymentObject;
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
   } catch (err) {
-    const baseReason = err instanceof Error && err.message ? err.message : '결제 승인 실패';
-    const reason = `${baseReason} [mode=${diag.mode} match=${diag.keyMatch} cidL=${diag.cidLen} srvL=${diag.srvLen} cidT=${diag.cidTail ?? '-'} srvT=${diag.srvTail ?? '-'}]`;
-    // 2026-06-27 — 진단: 나이스페이 실제 응답(resultMsg) + clientKey 비교를 서버 로그 + fail 페이지에 노출.
-    //   원인 확정 후 일반 문구로 되돌릴 것.
+    // 실패 사유(나이스페이 resultMsg)는 서버 로그·주문 error 에만 보존, 사용자에겐 일반 문구.
+    const reason = err instanceof Error && err.message ? err.message : '결제 승인 실패';
     console.error('[nicepay-return] 승인 실패', { orderId, tid, amount, reason });
     await markPaymentOrderFailed({
       orderId,
@@ -146,8 +118,8 @@ export async function POST(req: NextRequest) {
       error: reason,
       source: 'nicepay-return',
     });
-    // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 샌드박스 검증 시 추가.
-    return failRedirect(`승인 실패: ${reason}`);
+    // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
+    return failRedirect('결제 승인에 실패했습니다.');
   }
 
   // 5) TossPaymentObject 호환 어댑팅 — 기존 fulfillment/order-ledger 무변경 재사용.
