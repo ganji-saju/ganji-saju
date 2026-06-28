@@ -12,6 +12,8 @@ import { logAdminAccess } from '@/lib/admin/access-log';
 import { MemberDetailTabs, type DetailTab } from './member-detail-tabs';
 import { RefundActions } from './refund-actions';
 import { GrantCreditsActions } from './grant-credits-actions';
+import { GrantMembershipActions } from './grant-membership-actions';
+import { getManagedSubscription } from '@/lib/subscription';
 
 export const metadata: Metadata = {
   title: '사용자 상세 (admin)',
@@ -76,10 +78,11 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const check = await getCurrentAdminRole(supabase);
   const role: 'admin' | 'super_admin' = check.role ?? 'admin';
 
-  const [detail, extras, summaryRow] = await Promise.all([
+  const [detail, extras, summaryRow, subscription] = await Promise.all([
     getAdminUserDetail(id),
     getMemberExtras(id),
     fetchSummaryRow(id),
+    getManagedSubscription(id).catch(() => null),
   ]);
   if (!detail) notFound();
 
@@ -243,6 +246,17 @@ export default async function AdminUserDetailPage({ params }: Props) {
               보상·사과 등 임의 지급. 결제 코인은 1년 만료, 구독 코인은 무만료. 회수는 환불로.
             </p>
             <GrantCreditsActions role={role} userId={id} />
+          </Card>
+          <Card title="멤버십 권한 변경 (super_admin)">
+            <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
+              프리미엄 멤버십을 N일 부여하거나 즉시 해제. 코인은 지급하지 않음(코인 수동 지급 별도).
+            </p>
+            <GrantMembershipActions
+              role={role}
+              userId={id}
+              currentPlan={subscription?.plan ?? null}
+              currentStatus={subscription?.status ?? null}
+            />
           </Card>
         </>
       ),
