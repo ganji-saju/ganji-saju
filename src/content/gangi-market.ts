@@ -208,7 +208,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'tarot',
     title: '무료타로',
-    desc: '한 장 뽑기',
+    desc: '세 장 뽑기',
     price: '무료',
     href: '/tarot/daily',
     zodiac: 'rabbit',
