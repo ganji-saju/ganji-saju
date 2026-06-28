@@ -4,6 +4,8 @@
 //   grandfather: 기존/연애확인 love-question 글로벌 보유자는 계속 모든 커플 열람(클레임 방지).
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { buildCompatScopeKey } from '@/lib/payments/product-scope';
+import { createServiceClient } from '@/lib/supabase/server';
+import { monthlyPeriodKey, MEMBER_BENEFITS } from '@/lib/credits/member-benefits';
 
 /**
  * env COMPAT_PER_COUPLE_PRICING=1 일 때만 궁합 CTA 가 compat-reading(커플 1회권)을 판매.
@@ -38,4 +40,46 @@ export async function hasCompatibilityAccess(
     buildCompatScopeKey(coupleKey)
   );
   return Boolean(perCouple);
+}
+
+// 2026-06-28 — 프리미엄 멤버 궁합 월 3회 무료. 커플별 멱등(같은 커플 재열람은 횟수 미차감).
+//   credit_transactions(feature='compat', metadata.kind='member_compat_free', coupleKey, month)로
+//   기록 = (1)재열람 멱등 (2)월간 distinct 커플 수 카운트. 한도 내면 기록 후 true.
+//   호출 전제: 이미 hasCompatibilityAccess(구매) false + isPremiumMember true 인 경우에만.
+export async function tryConsumeMemberCompatAccess(
+  userId: string,
+  coupleKey: string,
+  now: Date = new Date()
+): Promise<boolean> {
+  if (!userId || !coupleKey) return false;
+  const month = monthlyPeriodKey(now);
+  const service = await createServiceClient();
+
+  // (1) 이번 달 이 커플을 이미 멤버 무료로 열었으면 멱등 무료(횟수 미차감).
+  const { data: existing } = await service
+    .from('credit_transactions')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('feature', 'compat')
+    .contains('metadata', { kind: 'member_compat_free', coupleKey, month })
+    .limit(1);
+  if (existing && existing.length > 0) return true;
+
+  // (2) 이번 달 멤버 무료 사용 distinct 커플 수 < 3 이면 새로 1회 소비.
+  const { count } = await service
+    .from('credit_transactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('feature', 'compat')
+    .contains('metadata', { kind: 'member_compat_free', month });
+  if ((count ?? 0) >= MEMBER_BENEFITS.compatMonthly.limit) return false;
+
+  const { error } = await service.from('credit_transactions').insert({
+    user_id: userId,
+    amount: 0,
+    type: 'use',
+    feature: 'compat',
+    metadata: { kind: 'member_compat_free', coupleKey, month },
+  });
+  return !error;
 }
