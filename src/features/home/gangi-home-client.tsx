@@ -79,6 +79,13 @@ export function GangiHomeClient({
           ))}
         </section>
 
+        {/* 2026-06-28 — MY 별자리 slot 을 신규 유저 CTA 바로 위로 이동. profile 없으면 null. */}
+        {myStarSignSlot ? (
+          <section className="px-4 pb-1 pt-3" aria-label="MY 별자리 오늘 운세">
+            {myStarSignSlot}
+          </section>
+        ) : null}
+
         {/* 신규 유저 CTA — "생년월일만 알면 3초 안에 시작" 다크 카드. */}
         <GangiHomeBottomCta
           onTrack={() =>
@@ -88,13 +95,6 @@ export function GangiHomeClient({
             })
           }
         />
-
-        {/* 2026-06-24 — MY 별자리 slot 을 푸터 직전으로 이동(배너 아래 → 하단). profile 없으면 null. */}
-        {myStarSignSlot ? (
-          <section className="px-4 pb-4 pt-2" aria-label="MY 별자리 오늘 운세">
-            {myStarSignSlot}
-          </section>
-        ) : null}
       </div>
     </AppShell>
   );
