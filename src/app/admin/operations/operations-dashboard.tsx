@@ -45,25 +45,27 @@ function Sparkline({
   const max = Math.max(...values, 1);
   const min = Math.min(...values, 0);
   const range = max - min || 1;
-  const width = 120;
-  const stepX = series.length > 1 ? width / (series.length - 1) : width;
+  // 2026-06-28 — 풀폭 반응형: viewBox 좌표(0~100)만 쓰고 svg 는 컨테이너 폭에 맞춰 늘어남.
+  //   preserveAspectRatio="none" 로 가로 stretch, stroke 는 non-scaling 으로 크기 유지.
+  const vbWidth = 100;
+  const stepX = series.length > 1 ? vbWidth / (series.length - 1) : vbWidth;
   const points = series
     .map((s, i) => {
       const x = i * stepX;
       const y = height - ((s.value - min) / range) * (height - 4) - 2;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
+      return `${x.toFixed(2)},${y.toFixed(1)}`;
     })
     .join(' ');
   const lastVal = values[values.length - 1] ?? 0;
   const sum = values.reduce((a, b) => a + b, 0);
   const avg = sum / values.length;
   return (
-    <div className="flex items-end gap-2">
+    <div className="flex items-center gap-3">
       <svg
-        width={width}
+        viewBox={`0 0 ${vbWidth} ${height}`}
         height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        className="overflow-visible"
+        preserveAspectRatio="none"
+        className="h-9 flex-1"
         aria-hidden="true"
       >
         <polyline
@@ -72,18 +74,11 @@ function Sparkline({
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
           points={points}
         />
-        {/* 마지막 포인트 마커 */}
-        {series.length > 0 ? (
-          (() => {
-            const lastX = (series.length - 1) * stepX;
-            const lastY = height - ((lastVal - min) / range) * (height - 4) - 2;
-            return <circle cx={lastX} cy={lastY} r={2.5} fill={color} />;
-          })()
-        ) : null}
       </svg>
-      <div className="flex flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
+      <div className="flex shrink-0 flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
         <span>오늘 {formatNum(lastVal)}</span>
         <span>평균 {avg.toFixed(1)}</span>
       </div>
