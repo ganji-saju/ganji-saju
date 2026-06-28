@@ -79,8 +79,29 @@ export async function POST(req: NextRequest) {
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.url), 303);
-  const failRedirect = (reason: string) =>
-    redirectTo(`/credits/fail?provider=nicepay&reason=${encodeURIComponent(reason)}`);
+  // 결제 실패 시 "다시 결제하기" 가 원래 상품 결제로 돌아가도록 retryPath 를 함께 싣는다.
+  //   retryPath 없으면 fail 페이지가 /credits(코인충전)로 폴백 — 그게 이 버그의 증상이었다.
+  const failRedirect = (reason: string, retryPath?: string | null) => {
+    const params = new URLSearchParams({ provider: 'nicepay', reason });
+    if (retryPath && retryPath.startsWith('/') && !retryPath.startsWith('//')) {
+      params.set('retry', retryPath);
+    }
+    return redirectTo(`/credits/fail?${params.toString()}`);
+  };
+  // 주문 metadata.checkoutPath = prepare 가 저장한 원결제 재개 경로(/membership/checkout?... 또는 /credits).
+  const readRetryPath = (meta: Record<string, unknown> | null | undefined) => {
+    const p = meta?.checkoutPath;
+    return typeof p === 'string' ? p : null;
+  };
+  // order 미조회 단계(인증 실패 등)에서 orderId 로 best-effort 조회해 재시도 경로를 살린다.
+  const lookupRetryPath = async (id: string) => {
+    if (!id) return null;
+    try {
+      return readRetryPath((await getPaymentOrderByOrderId(id))?.metadata);
+    } catch {
+      return null;
+    }
+  };
 
   if (!form) return failRedirect('결제 응답을 해석하지 못했습니다.');
 
@@ -93,15 +114,17 @@ export async function POST(req: NextRequest) {
   const clientId = (form.get('clientId') as string | null) ?? undefined;
   const amount = Number(amountRaw);
 
-  // 1) 인증 결과(0000=성공)
-  if (authResultCode !== '0000') return failRedirect('결제 인증에 실패했습니다.');
+  // 1) 인증 결과(0000=성공) — 카드 거절/사용자 취소 등 가장 흔한 재시도 지점.
+  if (authResultCode !== '0000') {
+    return failRedirect('결제 인증에 실패했습니다.', await lookupRetryPath(orderId));
+  }
   if (!tid || !orderId || !Number.isFinite(amount)) {
-    return failRedirect('결제 응답 값이 올바르지 않습니다.');
+    return failRedirect('결제 응답 값이 올바르지 않습니다.', await lookupRetryPath(orderId));
   }
 
   // 2) 위변조 검증 (서버승인 핵심) — signature = sha256(authToken+clientId+amount+secretKey)
   if (!verifyNicepayAuthSignature({ authToken, clientId, amount: amountRaw, signature })) {
-    return failRedirect('결제 서명 검증에 실패했습니다.');
+    return failRedirect('결제 서명 검증에 실패했습니다.', await lookupRetryPath(orderId));
   }
 
   // 3) 주문 조회(user 무관) + 금액 정합 (현행 confirm 의 pkg.price 검증과 동일 원칙)
@@ -109,14 +132,14 @@ export async function POST(req: NextRequest) {
   if (!order) return failRedirect('결제 주문을 찾지 못했습니다.');
 
   const pkg = getPackage(order.packageId);
-  if (!pkg) return failRedirect('상품 정보를 찾지 못했습니다.');
+  if (!pkg) return failRedirect('상품 정보를 찾지 못했습니다.', readRetryPath(order.metadata));
 
   // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로(상품별 분기 — 코인/사주풀이/소액상품).
   if (order.status === 'fulfilled' || order.status === 'fulfilling') {
     return redirectTo(resolveNicepayResultHref({ pkg, order, orderId }));
   }
   if (order.amount !== amount || pkg.price !== amount) {
-    return failRedirect('결제 금액이 주문과 일치하지 않습니다.');
+    return failRedirect('결제 금액이 주문과 일치하지 않습니다.', readRetryPath(order.metadata));
   }
   if (order.paymentKey && order.paymentKey !== tid) {
     return failRedirect('이미 다른 결제가 연결된 주문입니다.');
@@ -137,7 +160,7 @@ export async function POST(req: NextRequest) {
       source: 'nicepay-return',
     });
     // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
-    return failRedirect('결제 승인에 실패했습니다.');
+    return failRedirect('결제 승인에 실패했습니다.', readRetryPath(order.metadata));
   }
 
   // 5) TossPaymentObject 호환 어댑팅 — 기존 fulfillment/order-ledger 무변경 재사용.
