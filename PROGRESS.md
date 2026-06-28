@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-06-28 세션 (Claude) — 대화 충전CTA·결제실패 재시도·코인 만료보정 테스트·코인 수동지급·관리자 콘솔 (#529~#534)
+
+> 결제/코인/어드민 라운드. 전부 main 머지·배포. 각 PR tsc+next build+npm test+CI+E2E 그린 확인 후 머지.
+
+- **#529 대화방 코인충전 CTA**: 3회 무료 소진+`insufficient_credits` 시 하단 안내에 "코인 충전 바로가기"(/credits) 링크. `needsRecharge` 상태(전송시작·프리셋 리셋). dialogue-chat-panel.tsx.
+- **#530 결제 실패 '다시 결제하기' 회귀**: 실패페이지 버튼이 상품 무관 `/credits`(코인충전) 하드코딩 → 상품결제 실패도 충전창으로 오라우팅. 주문 `metadata.checkoutPath`(prepare 저장 원결제 경로)를 nicepay return 핸들러가 `retry`로 동봉 → fail 페이지가 원래 상품으로 복귀. 적용: 인증실패/서명실패/금액불일치/승인실패(미청구 안전). 미적용(이중청구 위험): 이미연결·지급실패(청구됨). open-redirect 차단(내부 절대경로만).
+- **#531 코인 표시 만료보정 테스트**: 마이페이지 코인=`dashboard.credits.total`=비만료 `credit_lots` 합+`subscription_balance`. 기존 `.gt('expires_at',now)` DB필터 단일의존 → `sumNonExpiredLots()` 순수함수 분리(JS 이중가드) + 7케이스 회귀테스트(경계=now 제외·null 제외·전부만료=0). lib/credits/lot-balance.ts.
+- **#532 어드민 코인 수동지급**: 유저상세 환불·운영 탭에 "코인 수동 지급" 카드(super_admin). `validateGrantCredits`(정수·양수·상한1000·type·사유) 9테스트 + POST /api/admin/credits/grant → addCredits RPC(purchase=1년만료/subscription=무만료) → logAdminAccess('grant_credit'). paymentKey 미주입(멱등스킵 방지). 회수는 환불(deduct_credits).
+- **#533·#534 관리자 콘솔**(설계: docs/admin-console-design.md): 진단=기능 13섹션 풍부하나 `/admin` 랜딩·내비 부재(고립된 섬). **#533** 영속 내비(lib/admin/nav.ts config + 사이드바/모바일 햄버거 components/admin/admin-nav.tsx + layout role기반, operations 인라인 내비 제거) 8테스트. **#534** `/admin` 랜딩 대시보드(getAdminDashboardSummary=운영+퍼널+LLM 스냅샷+대기건수(환불/후기)+활동피드 통합, 오늘/누적 KPI·전환율·만족도·14일 스파크라인·기간토글7/14/30·사용자검색·섹션 바로가기).
+
+---
+
 ## 2026-06-23~24 세션 (Claude) — 꿈 RPC·파일럿 + 메인 캐릭터 카드 + 9,900원 단일가·코인팩 + 라이트 멤버십 폐지 + 메인 리디자인(claude_design) + 붓글씨 로고·별자리 이동 (#453~#475)
 
 > 꿈해몽 Phase 0 마무리(#453) → 꿈 사전 파일럿 20(#454) → PPTX 시안 기반 메인 8카드 개편(#455) → 가격 9,900 통일+코인팩(#456). 전부 main 머지·배포.
