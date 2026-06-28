@@ -8,6 +8,7 @@ import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { addCredits, getCredits } from '@/lib/credits/deduct';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { validateGrantCredits } from '@/lib/admin/grant-credits';
+import { refreshAdminUserSummaryForUser } from '@/lib/admin/summary-refresh';
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -60,6 +61,9 @@ export async function POST(req: NextRequest) {
     reason,
     meta: { amount, type },
   });
+
+  // 사용자조회(요약 캐시) 즉시 반영.
+  await refreshAdminUserSummaryForUser(userId);
 
   // 지급 후 잔액 회신(만료 보정된 표시 잔액 + 구독 잔액).
   const credits = await getCredits(userId).catch(() => null);

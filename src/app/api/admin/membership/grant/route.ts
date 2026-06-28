@@ -10,6 +10,7 @@ import {
   updateSubscriptionStatus,
 } from '@/lib/subscription';
 import { logAdminAccess } from '@/lib/admin/access-log';
+import { refreshAdminUserSummaryForUser } from '@/lib/admin/summary-refresh';
 
 const MAX_DAYS = 400;
 
@@ -68,6 +69,9 @@ export async function POST(req: NextRequest) {
     reason,
     meta: { membershipAction: action, days: action === 'grant' ? days : null },
   });
+
+  // 사용자조회(요약 캐시) 즉시 반영.
+  await refreshAdminUserSummaryForUser(userId);
 
   const sub = await getManagedSubscription(userId).catch(() => null);
   return NextResponse.json({
