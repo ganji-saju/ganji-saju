@@ -4,9 +4,7 @@
 //
 // 운영 노출 차단: robots noindex + 로그인 필수.
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { WeightTuningDashboard } from './weight-tuning-dashboard';
 
 export const metadata: Metadata = {
@@ -17,11 +15,8 @@ export const metadata: Metadata = {
 
 export default function WeightTuningPage() {
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="신살 가중치 학습 (admin)" backHref="/" />
-        <WeightTuningDashboard />
-      </AppPage>
-    </AppShell>
+    <AdminPage title="신살 가중치 학습">
+      <WeightTuningDashboard />
+    </AdminPage>
   );
 }

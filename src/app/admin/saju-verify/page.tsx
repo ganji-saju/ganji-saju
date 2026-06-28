@@ -4,9 +4,7 @@
 import type { Metadata } from 'next';
 import { calculateSajuDataV1, upgradeSajuDataV1ToV2 } from '@/domain/saju/engine';
 import type { BirthInput, JasiMethod, SolarTimeMode } from '@/lib/saju/types';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { AdminPage } from '@/components/admin/admin-page';
 import { SajuVerifyComparePanel } from './compare-panel';
 
 export const metadata: Metadata = {
@@ -103,9 +101,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
   }
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="사주 검증 도구" backHref="/" />
+    <AdminPage title="사주 검증 도구">
 
         {/* §Intro */}
         <article
@@ -338,8 +334,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
             입력값을 채우고 "계산하기" 를 누르면 결과가 여기에 표시됩니다.
           </div>
         )}
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }
 

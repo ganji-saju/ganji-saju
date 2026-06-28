@@ -2,9 +2,7 @@
 //   진단서 6단계 후 권장 작업 "품질 모니터링 대시보드".
 //   집계: 챕터별 평균 별점 / helpful 비율 / 최근 N개 피드백 stream.
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import {
   getChapterFeedbackStats,
   getChapterFeedbackTimeseries,
@@ -178,9 +176,7 @@ export default async function SajuFeedbackAdminPage() {
   ]);
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="챕터 피드백 (admin)" backHref="/admin/operations" />
+    <AdminPage title="챕터 피드백">
         <p className="rounded-[10px] border border-[var(--app-line)] bg-white p-3 text-[13.2px] text-[var(--app-copy-soft)]">
           chapter_feedback 테이블 (migration 035) 의 챕터별 집계.
           평균 별점·helpful 비율로 LLM 품질 신호를 빠르게 확인하세요.
@@ -189,7 +185,6 @@ export default async function SajuFeedbackAdminPage() {
         <ChapterFeedbackTimeseriesChart data={timeseries} />
         <StatsTable stats={stats} />
         <RecentStream items={recent} />
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }

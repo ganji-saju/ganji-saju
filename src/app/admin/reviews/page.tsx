@@ -1,8 +1,6 @@
 // 2026-05-18 Phase 7b — admin moderation 페이지. pending / approved / rejected 필터 + approve/reject.
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { ReviewsModerationClient } from './reviews-moderation-client';
 
 export const metadata: Metadata = {
@@ -22,11 +20,8 @@ export default async function ReviewsAdminPage({ searchParams }: PageProps) {
       ? sp.status
       : 'pending';
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="후기 검수 (admin)" backHref="/admin/operations" />
-        <ReviewsModerationClient initialStatus={initialStatus} />
-      </AppPage>
-    </AppShell>
+    <AdminPage title="후기 검수">
+      <ReviewsModerationClient initialStatus={initialStatus} />
+    </AdminPage>
   );
 }

@@ -2,9 +2,7 @@
 //   일별 비용 추이 · 영역별 토큰/비용/캐시 hit률 · LLM 활성 사용자 대비 비용.
 //   /admin 레이아웃이 화이트리스트 가드. 신규 테이블 없음(ai_llm_runs 재활용).
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { getLlmCostStats } from '@/lib/admin/llm-cost-stats';
 
 export const metadata: Metadata = {
@@ -32,9 +30,7 @@ export default async function LlmCostPage() {
   const maxDayCost = Math.max(0.000001, ...daily.map((d) => d.costUsd));
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-4">
-        <GangiPageHeader title="LLM 비용 (admin)" backHref="/admin/operations" />
+    <AdminPage title="LLM 비용">
 
         {/* 요약 */}
         <Card title={`최근 ${stats.windowDays}일 요약`}>
@@ -130,7 +126,6 @@ export default async function LlmCostPage() {
           기간 내 LLM을 1회 이상 쓴 고유 사용자(비로그인 제외) — 방문 DAU와 다름. 대운 챕터의
           envelope 캐시 hit은 집계 미포함(별도 chapter_run 로그)이라 챕터 hit률은 과소 추정될 수 있음.
         </p>
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }

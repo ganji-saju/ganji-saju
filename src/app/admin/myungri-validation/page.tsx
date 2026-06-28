@@ -4,9 +4,7 @@
 //
 // 운영 노출 차단: robots noindex + 로그인 필수 (API).
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { ValidationDashboard } from './validation-dashboard';
 
 export const metadata: Metadata = {
@@ -17,11 +15,8 @@ export const metadata: Metadata = {
 
 export default function MyungriValidationPage() {
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="신살 룰 검증 (admin)" backHref="/" />
-        <ValidationDashboard />
-      </AppPage>
-    </AppShell>
+    <AdminPage title="신살 룰 검증">
+      <ValidationDashboard />
+    </AdminPage>
   );
 }
