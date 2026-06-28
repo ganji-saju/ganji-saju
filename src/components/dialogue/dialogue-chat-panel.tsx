@@ -285,6 +285,7 @@ export function DialogueChatPanel({
     createInitialMessage(normalizeDialogueExpertId(initialExpertId) ?? 'dragon', roomMode),
   ]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [needsRecharge, setNeedsRecharge] = useState(false);
   const [profileConnection, setProfileConnection] = useState<ProfileConnectionState>({
     status: 'checking',
     summary: '내 정보 확인 중',
@@ -377,6 +378,7 @@ export function DialogueChatPanel({
 
     setStatus('loading');
     setErrorMessage(null);
+    setNeedsRecharge(false);
     startTransition(() => {
       setMessages((current) => [...current, userMessage]);
       setInput('');
@@ -421,6 +423,7 @@ export function DialogueChatPanel({
 
       if (!response.ok || !payload.ok) {
         const billingLabel = getBillingLabel(payload.billing);
+        setNeedsRecharge(payload.billing?.status === 'insufficient_credits');
         throw new Error(
           [payload.error ?? 'AI 답변을 불러오지 못했습니다.', billingLabel]
             .filter(Boolean)
@@ -715,6 +718,18 @@ export function DialogueChatPanel({
         {errorMessage ? (
           <div className="mt-4 rounded-[1.1rem] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-base leading-7 text-[var(--app-ivory)]">
             {errorMessage}
+            {needsRecharge ? (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[var(--app-copy-soft)]">코인을 충전하면 바로 이어서 대화할 수 있어요.</span>
+                <Link
+                  href="/credits"
+                  className="inline-flex items-center gap-1 rounded-full bg-[var(--app-gold)] px-4 py-2 text-sm font-bold text-[var(--app-ink)] transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  코인 충전 바로가기
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </form>
