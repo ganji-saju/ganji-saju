@@ -5,7 +5,7 @@ import type { AdminRole } from '@/lib/admin-auth';
 
 export type AdminAction =
   | 'view_detail' | 'view_pii' | 'export_csv'
-  | 'grant_credit' | 'revoke_credit' | 'suspend_sub' | 'cancel_sub'
+  | 'grant_credit' | 'revoke_credit' | 'grant_membership' | 'suspend_sub' | 'cancel_sub'
   | 'force_reconsent' | 'refund_request' | 'refund_approve'
   | 'batch_refund_request' | 'purge_deleted_user';
 

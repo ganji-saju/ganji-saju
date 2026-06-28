@@ -88,6 +88,13 @@ export function AdminNav({ role }: { role: AdminRole }) {
       {/* 모바일 드로어 */}
       {open ? (
         <div className="border-b border-[var(--app-line)] bg-white px-4 py-4 md:hidden">
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className="mb-3 flex items-center gap-1.5 rounded-[10px] border border-[var(--app-line)] px-2.5 py-2 text-[13px] font-semibold text-[var(--app-ink)]"
+          >
+            <span aria-hidden>↗</span> 사이트로 가기
+          </Link>
           <NavList role={role} activeHref={activeHref} onNavigate={() => setOpen(false)} />
         </div>
       ) : null}
@@ -97,9 +104,15 @@ export function AdminNav({ role }: { role: AdminRole }) {
         <Link href="/admin" className="block px-2 text-[16px] font-extrabold text-[var(--app-ink)]">
           관리자 콘솔
         </Link>
-        <p className="mb-4 px-2 text-[11px] font-semibold text-[var(--app-copy-muted)]">
+        <p className="mb-2 px-2 text-[11px] font-semibold text-[var(--app-copy-muted)]">
           {role === 'super_admin' ? 'super_admin' : 'admin'}
         </p>
+        <Link
+          href="/"
+          className="mb-3 flex items-center gap-1.5 rounded-[10px] border border-[var(--app-line)] px-2.5 py-2 text-[13px] font-semibold text-[var(--app-ink)] hover:bg-[var(--app-pink-soft)]"
+        >
+          <span aria-hidden>↗</span> 사이트로 가기
+        </Link>
         <NavList role={role} activeHref={activeHref} />
       </aside>
     </>
