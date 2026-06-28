@@ -11,9 +11,7 @@
 //   4. 즉시 해당 정책 페이지 (/terms 등) 에 노출 (effective_date 이 오늘 이전이면)
 
 import type { Metadata } from 'next';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { AdminPage } from '@/components/admin/admin-page';
 import { POLICY_KINDS, getAllActivePolicyVersions } from '@/lib/policies';
 import { PoliciesAdminClient } from './policies-admin-client';
 
@@ -29,14 +27,11 @@ export default async function PoliciesAdminPage() {
   const active = await getAllActivePolicyVersions();
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="정책 버전 관리 (admin)" backHref="/admin/operations" />
-        <PoliciesAdminClient
-          kinds={POLICY_KINDS as unknown as string[]}
-          initialActive={JSON.parse(JSON.stringify(active))}
-        />
-      </AppPage>
-    </AppShell>
+    <AdminPage title="정책 버전 관리">
+      <PoliciesAdminClient
+        kinds={POLICY_KINDS as unknown as string[]}
+        initialActive={JSON.parse(JSON.stringify(active))}
+      />
+    </AdminPage>
   );
 }

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { fetchSegmentCounts, fetchCohortRetention } from '@/lib/admin/segments-data';
@@ -28,9 +26,7 @@ export default async function AdminSegmentsPage() {
   const [counts, cohorts] = await Promise.all([fetchSegmentCounts(), fetchCohortRetention(nowIso)]);
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="세그먼트·코호트 (admin)" backHref="/admin/users" />
+    <AdminPage title="세그먼트·코호트">
 
         <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {counts.map(({ segment, count }) => (
@@ -76,7 +72,6 @@ export default async function AdminSegmentsPage() {
             </div>
           )}
         </section>
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }

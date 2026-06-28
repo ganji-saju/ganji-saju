@@ -85,7 +85,7 @@ export default async function AdminDashboardPage({
   const navGroups = getVisibleNavGroups(role).filter((g) => g.title !== '개요');
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-5 px-4 py-5 md:px-6">
+    <main className="w-full space-y-5 px-4 py-5 md:px-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>

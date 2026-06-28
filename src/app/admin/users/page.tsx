@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { searchAdminUsers } from '@/lib/admin/user-detail';
@@ -70,9 +68,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   })();
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="가입자 관리 (admin)" backHref="/admin/operations" />
+    <AdminPage title="가입자 관리">
 
         <form method="get" className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <label htmlFor="q" className="text-[15px] font-extrabold text-[var(--app-ink)]">
@@ -215,7 +211,6 @@ export default async function AdminUsersPage({ searchParams }: Props) {
             </div>
           )}
         </section>
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }

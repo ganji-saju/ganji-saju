@@ -2,9 +2,7 @@
 //   서버측 역할 마스킹(admin: 이메일/생년월일/영수증 가림) + view_detail 감사.
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { getAdminUserDetail } from '@/lib/admin/user-detail';
@@ -252,9 +250,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
   ];
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-4">
-        <GangiPageHeader title="사용자 상세 (admin)" backHref="/admin/users" />
+    <AdminPage title="사용자 상세">
 
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="flex items-start justify-between gap-3">
@@ -279,7 +275,6 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </section>
 
         <MemberDetailTabs tabs={tabs} />
-      </AppPage>
-    </AppShell>
+    </AdminPage>
   );
 }

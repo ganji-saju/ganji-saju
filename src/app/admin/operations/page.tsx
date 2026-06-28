@@ -5,9 +5,7 @@
 //
 // 2026-06-28 — 인라인 ADMIN_NAV 그리드 제거. 섹션 내비는 layout 의 영속 사이드바(AdminNav)로 통일.
 import type { Metadata } from 'next';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
-import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { AdminPage } from '@/components/admin/admin-page';
 import { OperationsDashboard } from './operations-dashboard';
 
 export const metadata: Metadata = {
@@ -18,11 +16,8 @@ export const metadata: Metadata = {
 
 export default function OperationsPage() {
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="운영 모니터링 (admin)" backHref="/admin" />
-        <OperationsDashboard />
-      </AppPage>
-    </AppShell>
+    <AdminPage title="운영 모니터링">
+      <OperationsDashboard />
+    </AdminPage>
   );
 }
