@@ -63,8 +63,8 @@ export const PAYMENT_PACKAGES = [
   {
     id: 'membership_premium',
     name: '프리미엄 대화 멤버십',
-    credits: 10,
-    price: 9900,
+    credits: 90,
+    price: 49000,
     kind: 'subscription',
     planSlug: 'premium',
     subscriptionPlan: 'premium_monthly',

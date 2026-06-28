@@ -136,10 +136,10 @@ export default async function MembershipPage({
             <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               매일 가볍게,
               <br />
-              <span className="text-[var(--app-pink-strong)]">{featuredPlan?.price ?? '월 9,900원'}</span>
+              <span className="text-[var(--app-pink-strong)]">{featuredPlan?.price ?? '월 49,000원'}</span>
             </h1>
             <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
-              광고 없이 데일리 리포트와 대화·보관함이 자유로워집니다.
+              매월 90코인에 매일 대화 5건·궁합 월 3회·가족 사주 5명까지 함께 열립니다.
             </p>
           </div>
 
@@ -361,7 +361,7 @@ export default async function MembershipPage({
               href={`/membership/checkout?plan=${featuredPlan?.slug ?? 'premium'}&from=membership`}
               className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
-              {featuredPlan?.price ?? '월 9,900원'} 시작 →
+              {featuredPlan?.price ?? '월 49,000원'} 시작 →
             </Link>
             <p className="mt-3 text-center text-[13.2px] leading-[1.5] text-[var(--app-copy-soft)]">
               무료체험 없음 · 결제 승인일로부터 30일 이용 · 언제든 해지 가능
