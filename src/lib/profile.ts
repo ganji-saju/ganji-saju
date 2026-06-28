@@ -707,6 +707,17 @@ export async function updatePreferredCounselor(
   return { persisted: true as const };
 }
 
+// 2026-06-28 — 가족 프로필 등록 수(한도 게이트용). 테이블 미적용 환경은 0(추가 허용).
+export async function countFamilyProfiles(userId: string): Promise<number> {
+  const service = await createServiceClient();
+  const { count, error } = await service
+    .from('family_profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId);
+  if (error) return 0;
+  return count ?? 0;
+}
+
 export async function createFamilyProfile(
   userId: string,
   profile: FamilyProfileInput

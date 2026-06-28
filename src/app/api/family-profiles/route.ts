@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import {
+  countFamilyProfiles,
   createFamilyProfile,
   deleteFamilyProfile,
   updateFamilyProfile,
   type FamilyProfileInput,
 } from '@/lib/profile';
+import { isPremiumMember } from '@/lib/subscription';
+
+// 가족 사주 슬롯: 비멤버 3명 / 프리미엄 멤버 5명.
+const FAMILY_LIMIT_MEMBER = 5;
+const FAMILY_LIMIT_NON_MEMBER = 3;
 import type { SolarTimeMode } from '@/lib/saju/types';
 import type { UnifiedCalendarType, UnifiedTimeRule } from '@/lib/saju/unified-birth-entry';
 
@@ -172,6 +178,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: '가족 프로필 정보가 올바르지 않습니다.' },
       { status: 400 }
+    );
+  }
+
+  // 슬롯 한도 — 기존 등록자(>한도)는 읽기/수정/삭제는 가능하고 '추가'만 차단(소급).
+  const [isMember, currentCount] = await Promise.all([
+    isPremiumMember(user.id),
+    countFamilyProfiles(user.id),
+  ]);
+  const limit = isMember ? FAMILY_LIMIT_MEMBER : FAMILY_LIMIT_NON_MEMBER;
+  if (currentCount >= limit) {
+    return NextResponse.json(
+      {
+        error: isMember
+          ? `가족 사주는 최대 ${FAMILY_LIMIT_MEMBER}명까지 등록할 수 있습니다.`
+          : `가족 사주는 ${FAMILY_LIMIT_NON_MEMBER}명까지 등록할 수 있어요. 멤버십에 가입하면 ${FAMILY_LIMIT_MEMBER}명까지 등록할 수 있습니다.`,
+        code: 'family_limit_reached',
+        limit,
+      },
+      { status: 403 }
     );
   }
 
