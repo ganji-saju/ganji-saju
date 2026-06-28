@@ -131,7 +131,7 @@ export default async function MembershipPage({
           {/* §1 Hero — eyebrow + 가격 강조 헤드라인 */}
           <div>
             <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              달빛 클럽
+              간지클럽
             </div>
             <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               매일 가볍게,
