@@ -8,6 +8,7 @@ export const AI_CHAT_BUNDLE_COST = 3;
 export type AiChatBillingStatus =
   | 'free_intro'
   | 'result_intro_free'
+  | 'member_daily_free'
   | 'charged_bundle'
   | 'bundle_included'
   | 'not_charged_fallback'

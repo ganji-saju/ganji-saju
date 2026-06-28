@@ -36,6 +36,13 @@ import {
   shouldChargeAiChat,
 } from '@/lib/credits/ai-chat-access';
 import { deductCreditsAmount, getCredits } from '@/lib/credits/deduct';
+import { isPremiumMember } from '@/lib/subscription';
+import {
+  MEMBER_BENEFITS,
+  consumeMemberBenefit,
+  getMemberBenefitUsed,
+  dailyPeriodKey,
+} from '@/lib/credits/member-benefits';
 import {
   getUserProfileById,
   hasCoreBirthProfile,
@@ -763,6 +770,13 @@ async function handleDialogue(request: DialogueAiRequest) {
   const availableCredits = getAvailableCreditsTotal(currentCredits);
   const successfulTurns = await getAiChatSuccessfulTurns(user.id);
   const turnPlan = getAiChatTurnPlan(successfulTurns);
+  // 2026-06-28 — 프리미엄 멤버: 매일 5턴 무료(코인 우회). 5턴 소진 후 기존 번들 과금 폴백.
+  const dailyKey = dailyPeriodKey();
+  const isMember = await isPremiumMember(user.id);
+  const memberDailyUsed = isMember
+    ? await getMemberBenefitUsed(user.id, MEMBER_BENEFITS.dialogueDaily.benefit, dailyKey)
+    : MEMBER_BENEFITS.dialogueDaily.limit;
+  const memberDailyFreeEligible = isMember && memberDailyUsed < MEMBER_BENEFITS.dialogueDaily.limit;
   const resultFollowupFreeAvailable =
     request.from === 'today-fortune' && request.sourceSessionId
       ? !(await hasTodayResultFollowupFreeTurn(user.id, request.sourceSessionId))
@@ -786,6 +800,7 @@ async function handleDialogue(request: DialogueAiRequest) {
   if (
     configured &&
     !resultFollowupFreeAvailable &&
+    !memberDailyFreeEligible &&
     turnPlan.cost > 0 &&
     availableCredits < turnPlan.cost
   ) {
@@ -882,6 +897,33 @@ async function handleDialogue(request: DialogueAiRequest) {
       profileContext,
       ...dialogueResult,
     });
+  }
+
+  // 프리미엄 멤버 일일 무료(5턴/일) — 코인 차감 없이 통과. 한도 초과(원자적 false) 시 기존 과금 폴백.
+  if (memberDailyFreeEligible) {
+    const consumed = await consumeMemberBenefit(
+      user.id,
+      MEMBER_BENEFITS.dialogueDaily.benefit,
+      dailyKey,
+      MEMBER_BENEFITS.dialogueDaily.limit
+    );
+    if (consumed) {
+      await recordAiChatIncludedTurn(user.id, turnPlan);
+      const dailyRemaining = Math.max(0, MEMBER_BENEFITS.dialogueDaily.limit - (memberDailyUsed + 1));
+      return NextResponse.json({
+        ok: true,
+        mode: request.mode,
+        configured,
+        expertId,
+        expertLabel: expert.label,
+        billing: createAiChatBillingSummary('member_daily_free', availableCredits, {
+          turnNumber: turnPlan.turnNumber,
+          freeTurnsRemaining: dailyRemaining,
+        }),
+        profileContext,
+        ...dialogueResult,
+      });
+    }
   }
 
   if (turnPlan.status === 'charged_bundle') {

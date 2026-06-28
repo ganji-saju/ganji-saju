@@ -138,6 +138,8 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
       return `첫 3회 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음`;
     case 'result_intro_free':
       return '오늘 결과 기반 첫 질문 무료 · 코인 차감 없음';
+    case 'member_daily_free':
+      return `멤버십 오늘 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음 · 코인 차감 없음`;
     case 'charged_bundle':
       return `${billing.bundleSize}회 묶음 시작 · ${billing.cost}코인 차감 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음 · 잔여 ${billing.remaining ?? 0}개`;
     case 'bundle_included':
