@@ -62,21 +62,21 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
   {
     title: '운세',
     items: [
-      ['오늘의 운세 · 오늘소선생', '/today-fortune'],
-      ['타로 세 장 · 타로토선생', '/tarot/daily'],
-      ['띠운세 · 엠지쥐선생', '/zodiac'],
-      ['별자리 · 별닭선생', '/star-sign'],
-      ['꿈해몽 · 꿈뱀선생', '/dream'],
+      ['오늘운세', '/today-fortune'],
+      ['타로 세 장', '/tarot/daily'],
+      ['띠운세', '/zodiac'],
+      ['별자리', '/star-sign'],
+      ['꿈해몽', '/dream'],
     ],
   },
   {
     title: '사주',
     items: [
-      ['내 사주 풀이 · 사주용선생', '/saju/new'],
-      ['궁합 · 궁합양선생', '/compatibility/input'],
-      ['올해 흐름 · 명리호선생', '/daewoon'],
-      ['좋은 날 택일 · 길일말선생', '/taekil'],
-      ['대화 상담 · 상담멍선생', '/dialogue'],
+      ['내 사주', '/saju/new'],
+      ['궁합', '/compatibility/input'],
+      ['올해 흐름', '/daewoon'],
+      ['택일', '/taekil'],
+      ['대화 상담', '/dialogue'],
     ],
   },
   {
