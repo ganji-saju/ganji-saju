@@ -13,10 +13,16 @@ export const metadata = {
 export default async function CreditsFailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string; provider?: string }>;
+  searchParams: Promise<{ reason?: string; provider?: string; retry?: string }>;
 }) {
   const params = await searchParams;
   const reason = params.reason?.trim() || '결제가 취소되었거나 완료되지 않았습니다.';
+  // 2026-06-28 — "다시 결제하기" 가 코인충전(/credits)이 아니라 원래 결제하던 상품으로 돌아가게 한다.
+  //   retry 는 nicepay return 핸들러가 주문 metadata.checkoutPath 를 실어 보낸 내부 경로.
+  //   open-redirect 차단: 내부 절대경로('/'로 시작, '//' 제외)만 허용, 없으면 /credits 폴백.
+  const retryRaw = params.retry?.trim() ?? '';
+  const retryHref =
+    retryRaw.startsWith('/') && !retryRaw.startsWith('//') ? retryRaw : '/credits';
 
   return (
     <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-32 md:pb-12">
@@ -37,7 +43,7 @@ export default async function CreditsFailPage({
           </p>
           <div className="mt-6 grid w-full gap-2">
             <Link
-              href="/credits"
+              href={retryHref}
               className="flex h-12 items-center justify-center rounded-full text-[15px] font-bold text-white no-underline"
               style={{ background: '#e85b8a' }}
             >
