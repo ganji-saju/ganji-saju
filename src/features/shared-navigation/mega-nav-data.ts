@@ -81,7 +81,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
     },
     c3: {
       title: '평생 리포트 49,000원',
-      description: '대운 30년 · 1:1 30분 포함',
+      description: '대운 30년 · 평생 소장',
       cta: 'VIP 자세히',
       href: '/pricing',
     },
@@ -114,8 +114,8 @@ export const MEGA_NAV: MegaNavGroup[] = [
       ],
     },
     c3: {
-      title: '1:1 상담 첫 30분',
-      description: '가입 코인 100개로 무료',
+      title: '선생님과 1:1 대화',
+      description: '처음 3회 무료로 시작',
       cta: '대화방 열기',
       href: '/dialogue',
     },

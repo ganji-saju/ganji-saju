@@ -10,7 +10,7 @@ export default function MembershipSection() {
         <div>
           <p className="text-base uppercase tracking-[0.24em] text-[#d2b072]/75">Membership</p>
           <h2 className="mt-3 text-4xl font-semibold tracking-tight text-[#f8f1df]">
-            단건 리포트를 넘어서 다시 오게 만드는 달빛 멤버십
+            단건 리포트를 넘어서 다시 오게 만드는 간지 멤버십
           </h2>
           <div className="mt-5 flex flex-wrap gap-2">
             {MEMBERSHIP_POINTS.map((point) => (
