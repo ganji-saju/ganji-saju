@@ -13,6 +13,7 @@ import { buildMemberHeader, formatBirth } from '@/lib/admin/detail-view';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { MemberDetailTabs, type DetailTab } from './member-detail-tabs';
 import { RefundActions } from './refund-actions';
+import { GrantCreditsActions } from './grant-credits-actions';
 
 export const metadata: Metadata = {
   title: '사용자 상세 (admin)',
@@ -231,13 +232,21 @@ export default async function AdminUserDetailPage({ params }: Props) {
       key: 'refund',
       label: '환불·운영',
       content: (
-        <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refundTargetCount}건)`}>
-          {refund.items.length === 0 && refund.creditItems.length === 0 && detail.refundRequests.length === 0 ? (
-            <p className="text-[13.8px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
-          ) : (
-            <RefundActions role={role} items={refund.items} creditItems={refund.creditItems} requests={detail.refundRequests} />
-          )}
-        </Card>
+        <>
+          <Card title={`환불 가능 · 대상 ${fmtWon(refund.totalRefundableWon)} (${refundTargetCount}건)`}>
+            {refund.items.length === 0 && refund.creditItems.length === 0 && detail.refundRequests.length === 0 ? (
+              <p className="text-[13.8px] text-[var(--app-copy-soft)]">환불 대상 결제·요청이 없습니다.</p>
+            ) : (
+              <RefundActions role={role} items={refund.items} creditItems={refund.creditItems} requests={detail.refundRequests} />
+            )}
+          </Card>
+          <Card title="코인 수동 지급 (super_admin)">
+            <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
+              보상·사과 등 임의 지급. 결제 코인은 1년 만료, 구독 코인은 무만료. 회수는 환불로.
+            </p>
+            <GrantCreditsActions role={role} userId={id} />
+          </Card>
+        </>
       ),
     },
   ];
