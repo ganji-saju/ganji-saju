@@ -71,7 +71,7 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
     { label: '대화로 더 묻기', href: '/dialogue', body: '무리하면 바로 티 나는 구간을 더 구체적으로 물을 수 있습니다.' },
   ],
   general: [
-    { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 흐름을 한 장의 카드로 가볍게 더 확인합니다.' },
+    { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 흐름을 세 장의 카드로 가볍게 더 확인합니다.' },
     { label: '상세 사주 보기', href: '/saju/new', body: '오늘 흐름을 넘어서 내 명식의 큰 바탕까지 이어집니다.' },
   ],
 };
