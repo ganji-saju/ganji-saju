@@ -96,7 +96,7 @@ export function SpecialistMentorGrid({
               //   문제. 출시 전까지 비클릭 라벨로 노출(런치 감사 P1).
               mentor.statusLabel === '출시 예정' ? (
                 <span className="inline-flex items-center gap-2 text-base font-medium text-[var(--app-copy-soft)]">
-                  {mentor.ctaLabel} (준비 중)
+                  {mentor.ctaLabel} (출시 예정)
                 </span>
               ) : (
                 <Link
