@@ -90,6 +90,14 @@ export async function getManagedSubscription(userId: string): Promise<ManagedSub
   return mapSubscription(normalized);
 }
 
+// 2026-06-28 — 프리미엄 멤버십(월 49,000원 30일권) 혜택 게이트 공통 판별.
+//   active + plan='premium_monthly' 이면 멤버. expireIfNeeded 가 만료를 status='expired'로 정규화.
+export async function isPremiumMember(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  const sub = await getManagedSubscription(userId);
+  return sub?.status === 'active' && sub.plan === 'premium_monthly';
+}
+
 export async function activatePlusSubscription(
   userId: string,
   options: { customerKey?: string | null; billingKey?: string | null } = {}
