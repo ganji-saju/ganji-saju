@@ -175,6 +175,36 @@ export interface RefreshResult {
   refreshedAt: string;
 }
 
+// 2026-06-28 — 단일 유저 요약 즉시 갱신. 코인/멤버십 어드민 변경 직후 호출해
+//   사용자조회(admin_user_summary, 시간당 배치)에 바로 반영. 실패는 삼킴(배치가 결국 보정).
+export async function refreshAdminUserSummaryForUser(userId: string): Promise<boolean> {
+  if (!hasSupabaseServiceEnv || !userId) return false;
+  try {
+    const service = await createServiceClient();
+    const nowIso = new Date().toISOString();
+    const { data, error } = await service.auth.admin.getUserById(userId);
+    if (error || !data?.user) return false;
+    const u = data.user;
+    const row = await computeUserSummary(
+      service,
+      {
+        id: u.id,
+        email: u.email ?? null,
+        created_at: u.created_at,
+        last_sign_in_at: u.last_sign_in_at ?? null,
+        app_metadata: u.app_metadata as Record<string, unknown> | undefined,
+      },
+      nowIso
+    );
+    const { error: upsertError } = await service
+      .from('admin_user_summary')
+      .upsert(row, { onConflict: 'user_id' });
+    return !upsertError;
+  } catch {
+    return false;
+  }
+}
+
 export async function refreshAdminUserSummary(): Promise<RefreshResult> {
   if (!hasSupabaseServiceEnv) return { processed: 0, refreshedAt: new Date().toISOString() };
   const service = await createServiceClient();
