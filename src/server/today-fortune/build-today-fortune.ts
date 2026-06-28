@@ -1299,13 +1299,13 @@ function buildSignatureSeed(
         : options.timeRule === 'nightZi'
           ? 11
           : 0;
-  // 2026-05-15: 매일 다른 카피가 뽑히도록 오늘 일진(일주/월주) ganzi 와 dateKey 를 시드에 mixin.
-  // 가중치 31 을 곱해 base 시드 대비 충분히 분포가 흔들리도록 함.
-  const todayGanziSeed = Array.from(`${todayPillar.ganzi}${todayPillar.monthGanzi}`)
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const dateKeySeed = Array.from(todayPillar.dateKey).reduce(
-    (sum, char) => sum + char.charCodeAt(0),
-    0
+  // 2026-06-28: 인접일이 항상 다른 변형을 고르도록 일별 항을 "하루마다 +1 증가하는 날짜 서수"로 교체.
+  //   기존엔 일진 ganzi·dateKey 문자합에 ×31/×7 가중치를 섞어 % 배열길이에서 불규칙 충돌(다른 일진인데
+  //   같은 문장)이 났다. dayOrdinal(=dateKey 의 UTC 일수)을 더하면 (정적 personSeed + dayOrdinal) % len 이
+  //   매일 정확히 +1 회전 → 어제와 항상 다른 변형(배열 길이 ≥2). 테마/톤은 resolveTodayFlowTone(실제 오행)이
+  //   별도 결정하므로 의미는 유지되고 문구만 매일 신선해진다. 결정론(같은 날·같은 사람 = 동일).
+  const dayOrdinal = Math.floor(
+    Date.parse(`${todayPillar.dateKey}T00:00:00Z`) / 86_400_000
   );
 
   return (
@@ -1318,8 +1318,7 @@ function buildSignatureSeed(
     ganziSeed +
     calendarSeed +
     timeRuleSeed +
-    todayGanziSeed * 31 +
-    dateKeySeed * 7
+    (Number.isFinite(dayOrdinal) ? dayOrdinal : 0)
   );
 }
 
