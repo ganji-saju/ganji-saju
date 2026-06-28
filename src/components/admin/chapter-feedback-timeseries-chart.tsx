@@ -11,13 +11,11 @@ interface Props {
 function Sparkline({
   values,
   color,
-  width = 220,
   height = 44,
   baseline,
 }: {
   values: Array<number | null>;
   color: string;
-  width?: number;
   height?: number;
   /** baseline 평균 (점선) — 선택 */
   baseline?: number;
@@ -33,14 +31,16 @@ function Sparkline({
   const max = Math.max(...numeric, 1);
   const min = Math.min(...numeric, 0);
   const range = max - min || 1;
-  const stepX = values.length > 1 ? width / (values.length - 1) : width;
+  // 2026-06-28 — 풀폭 반응형(viewBox 0~100 + preserveAspectRatio="none" + non-scaling stroke).
+  const vbWidth = 100;
+  const stepX = values.length > 1 ? vbWidth / (values.length - 1) : vbWidth;
 
   const pointsArr = values
     .map((v, i) => {
       if (v === null) return null;
       const x = i * stepX;
       const y = height - ((v - min) / range) * height;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
+      return `${x.toFixed(2)},${y.toFixed(1)}`;
     })
     .filter((p): p is string => p !== null);
 
@@ -49,21 +49,22 @@ function Sparkline({
 
   return (
     <svg
-      width={width}
+      viewBox={`0 0 ${vbWidth} ${height}`}
       height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
       aria-hidden="true"
-      style={{ display: 'block' }}
+      className="block h-11 w-full"
     >
       {baselineY !== null && (
         <line
           x1={0}
           y1={baselineY}
-          x2={width}
+          x2={vbWidth}
           y2={baselineY}
           stroke="var(--app-copy-soft)"
           strokeDasharray="2 3"
           strokeWidth={0.8}
+          vectorEffect="non-scaling-stroke"
           opacity={0.4}
         />
       )}
@@ -74,6 +75,7 @@ function Sparkline({
         strokeWidth={1.8}
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );

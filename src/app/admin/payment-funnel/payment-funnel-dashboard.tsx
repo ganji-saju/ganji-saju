@@ -50,25 +50,26 @@ function Sparkline({ daily, stage, color }: { daily: PaymentFunnelDailyPoint[]; 
   if (daily.length === 0) return null;
   const values = daily.map((d) => d.counts[stage]);
   const max = Math.max(...values, 1);
-  const width = 160;
+  // 2026-06-28 — 풀폭 반응형(viewBox 0~100 + preserveAspectRatio="none" + non-scaling stroke).
+  const vbWidth = 100;
   const height = 36;
-  const stepX = daily.length > 1 ? width / (daily.length - 1) : width;
+  const stepX = daily.length > 1 ? vbWidth / (daily.length - 1) : vbWidth;
   const points = daily
     .map((d, i) => {
       const x = i * stepX;
       const y = height - (d.counts[stage] / max) * (height - 4) - 2;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
+      return `${x.toFixed(2)},${y.toFixed(1)}`;
     })
     .join(' ');
   const lastVal = values[values.length - 1] ?? 0;
   const total = values.reduce((a, b) => a + b, 0);
   return (
-    <div className="flex items-end gap-2">
+    <div className="flex items-center gap-3">
       <svg
-        width={width}
+        viewBox={`0 0 ${vbWidth} ${height}`}
         height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        className="overflow-visible"
+        preserveAspectRatio="none"
+        className="h-9 flex-1"
         aria-hidden="true"
       >
         <polyline
@@ -77,10 +78,11 @@ function Sparkline({ daily, stage, color }: { daily: PaymentFunnelDailyPoint[]; 
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
           points={points}
         />
       </svg>
-      <div className="flex flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
+      <div className="flex shrink-0 flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
         <span>오늘 {fmtNum(lastVal)}</span>
         <span>합 {fmtNum(total)}</span>
       </div>
