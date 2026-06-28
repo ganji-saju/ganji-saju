@@ -430,7 +430,7 @@ export default function ProfileManager({
               오늘운세와 사주 시작하기가 이 정보를 같이 씁니다
             </h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--app-copy-muted)]">
-              여기서 저장한 양력·음력, 태어난 시간, 출생지, 시각 규칙은 `/today-fortune`과 `/saju/new`에서 같은 방식으로 다시 불러옵니다.
+              여기서 저장한 생년월일, 태어난 시간, 출생지 정보는 오늘운세·사주·궁합을 볼 때 자동으로 채워져요.
             </p>
           </div>
           <Badge className="border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 text-[var(--app-gold-text)]">
