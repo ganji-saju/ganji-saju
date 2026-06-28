@@ -822,12 +822,15 @@ async function handleDialogue(request: DialogueAiRequest) {
 
   if (!shouldChargeAiChat(result.source)) {
     const statusCode = result.fallbackReason === 'ai_not_configured' ? 503 : 502;
-    const error =
+    const baseError =
       result.fallbackReason === 'ai_not_configured'
         ? 'OpenAI 연결 설정이 완료되지 않았습니다.'
         : result.fallbackReason === 'quota_exceeded'
           ? 'OpenAI 계정의 사용량 또는 결제 한도가 초과되어 답변을 만들지 못했습니다.'
         : 'OpenAI 답변 연결에 실패했습니다. 잠시 후 다시 질문해 주세요.';
+    // 2026-06-28 임시 진단: 실제 OpenAI 에러(키/모델/quota)를 화면에 노출해 원인을 가린다.
+    //   원인 확정 후 이 append 제거(운영 기본 문구로 환원).
+    const error = result.errorMessage ? `${baseError} [진단: ${result.errorMessage}]` : baseError;
 
     console.error('[ai/dialogue] OpenAI generation did not complete', {
       fallbackReason: result.fallbackReason,
