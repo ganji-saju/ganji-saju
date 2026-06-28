@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { GangiBackButton } from './gangi-back-button';
 // 2026-05-15 handoff P0: 풀이/결제 로딩 overlay 내부 motion 연결.
 // PR #157 — GangiLoadingOverlay 를 회전 12간지 모션으로 통합.
 // MotionPalshjaShuffle / MotionSajuLoading 더 이상 이 파일에서 사용 X (gallery 등 다른 곳에서 직접 import).
@@ -66,9 +67,7 @@ export function GangiCharacter({
 export function GangiPageHeader({ title, backHref = '/' }: { title: string; backHref?: string }) {
   return (
     <div className="gangi-sub-header">
-      <Link href={backHref} className="gangi-sub-back" aria-label="뒤로">
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
+      <GangiBackButton fallbackHref={backHref} />
       <div>{title}</div>
       <span aria-hidden="true" />
     </div>
