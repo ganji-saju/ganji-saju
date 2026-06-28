@@ -8,7 +8,7 @@ test('payment confirmation accepts a valid subscription package', () => {
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
-    amount: 9900,
+    amount: 49000,
     packageId: 'membership_premium',
   });
 
