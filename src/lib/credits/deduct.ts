@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server';
+import { sumNonExpiredLots, type CreditLotRow } from '@/lib/credits/lot-balance';
 
 export type Feature =
   | 'detail_report'   // 10 크레딧 (9,900원 / 코인단가 990)
@@ -90,10 +91,12 @@ export async function getCredits(userId: string): Promise<{ balance: number; sub
 // credit_lots 가 없는(레거시 미백필) 환경에서는 user_credits.balance 로 폴백한다.
 export async function getNonExpiredLotBalance(userId: string): Promise<number> {
   const supabase = await createServiceClient();
-  const nowIso = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+  // expires_at 도 함께 조회해 sumNonExpiredLots 로 JS 측 만료 보정을 한 번 더 보장(이중 가드).
   const { data, error } = await supabase
     .from('credit_lots')
-    .select('amount_remaining')
+    .select('amount_remaining, expires_at')
     .eq('user_id', userId)
     .gt('expires_at', nowIso);
 
@@ -107,7 +110,7 @@ export async function getNonExpiredLotBalance(userId: string): Promise<number> {
     return fallback?.balance ?? 0;
   }
 
-  return (data ?? []).reduce((sum, lot) => sum + (lot.amount_remaining ?? 0), 0);
+  return sumNonExpiredLots((data ?? []) as CreditLotRow[], now);
 }
 
 async function deductCreditsWithCost(
