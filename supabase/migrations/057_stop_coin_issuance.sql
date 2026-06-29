@@ -9,6 +9,8 @@
 --   - 보존: EXCEPTION 블록(017에서 도입한 non-blocking auth-resilience)
 --   - 보존: RETURNS TRIGGER / SECURITY DEFINER / SET search_path
 --   - 보존: 트리거 자체(on_auth_user_created) — 변경 불필요
+--   - 추가: INSERT INTO user_credits (balance 0) — 보너스 코인/credit_transactions 제거하되
+--           user_credits 행은 잔액 0으로 생성(불변식 유지). ON CONFLICT DO NOTHING으로 안전.
 --
 -- ⚠️ 프로덕션 적용: 배포 체크리스트에 따라 수동으로 `supabase db push` 실행.
 --    이 파일만 커밋; 원격 DB 자동 적용 안 함.
@@ -20,8 +22,10 @@ SECURITY DEFINER
 SET search_path = public, auth
 AS $$
 BEGIN
-  -- 코인 보너스 지급 코드 제거됨(057 마이그레이션).
-  -- 무료 체험은 코드 레벨 상수(FREE_TURNS)로 처리; DB 코인 발행 없음.
+  -- 코인 보너스 제거(057). 단, user_credits 행 불변식은 유지(잔액 0으로 생성).
+  INSERT INTO public.user_credits (user_id, balance, subscription_balance)
+  VALUES (NEW.id, 0, 0)
+  ON CONFLICT DO NOTHING;
   RETURN NEW;
 EXCEPTION
   WHEN OTHERS THEN
