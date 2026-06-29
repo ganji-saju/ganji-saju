@@ -22,6 +22,15 @@ function getSafeNext(value: string | null): string {
   return value;
 }
 
+// GoTrue 는 signInWithIdToken 의 raw nonce 를 sha256(hex) 해 id_token.nonce 와 비교한다.
+// → 구글에는 "해시된 nonce" 를 보내고, raw 는 쿠키에 저장해 콜백에서 supabase 로 넘긴다.
+async function sha256Hex(input: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 export async function GET(req: NextRequest) {
   const origin = resolveOrigin(req);
   const next = getSafeNext(new URL(req.url).searchParams.get('next'));
@@ -32,7 +41,8 @@ export async function GET(req: NextRequest) {
   }
 
   const state = crypto.randomUUID();
-  const nonce = crypto.randomUUID();
+  const rawNonce = crypto.randomUUID();
+  const hashedNonce = await sha256Hex(rawNonce);
   const redirectUri = `${origin}/api/auth/google/callback`;
 
   const authUrl = new URL(GOOGLE_AUTH_URL);
@@ -41,7 +51,7 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('scope', 'openid email profile');
   authUrl.searchParams.set('state', state);
-  authUrl.searchParams.set('nonce', nonce);
+  authUrl.searchParams.set('nonce', hashedNonce); // 구글엔 해시된 nonce
   authUrl.searchParams.set('prompt', 'select_account');
 
   const res = NextResponse.redirect(authUrl.toString());
@@ -53,7 +63,7 @@ export async function GET(req: NextRequest) {
     maxAge: 600, // 10분
   };
   res.cookies.set('g_oauth_state', state, cookieOptions);
-  res.cookies.set('g_oauth_nonce', nonce, cookieOptions);
+  res.cookies.set('g_oauth_nonce', rawNonce, cookieOptions); // 쿠키엔 raw(콜백→supabase)
   res.cookies.set('g_oauth_next', next, cookieOptions);
   return res;
 }
