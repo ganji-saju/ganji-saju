@@ -653,29 +653,11 @@ function LoginContent({
     setErrorMessage('');
     setStatusMessage('');
 
-    // 2026-06-29 — 구글은 내 도메인 인가코드 플로우(/api/auth/google/start)로.
+    // 2026-06-29 — 구글·카카오 모두 내 도메인 인가코드 플로우(/api/auth/<provider>/start)로.
     //   동의화면 redirect_uri 가 ganjisaju.kr 이 되어 supabase.co 노출이 사라진다.
-    //   카카오는 기존 signInWithOAuth 그대로.
-    if (provider === 'google') {
-      window.location.assign(
-        `${getRedirectOrigin()}/api/auth/google/start?next=${encodeURIComponent(afterLoginHref)}`
-      );
-      return;
-    }
-
-    const supabase = createClient();
-    const providerLabel = '카카오';
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${getRedirectOrigin()}/api/auth/callback?provider=${provider}&next=${encodeURIComponent(afterLoginHref)}`,
-      },
-    });
-
-    if (error) {
-      setErrorMessage(`${providerLabel} 로그인 설정을 확인해 주세요. ${error.message}`);
-    }
+    window.location.assign(
+      `${getRedirectOrigin()}/api/auth/${provider}/start?next=${encodeURIComponent(afterLoginHref)}`
+    );
   }
 
   async function signInWithPassword(
