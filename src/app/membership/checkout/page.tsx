@@ -299,8 +299,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
 
   return (
-    <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 pb-32">
+    <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
+      <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="결제" backHref="/membership" />
 
         <section className="space-y-5 px-1">

@@ -5,6 +5,7 @@ import { ANONYMOUS, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-picker';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import {
   DEFAULT_TOSS_PAYMENT_METHOD,
   getTossPaymentMethodOption,
@@ -300,18 +301,6 @@ export default function TossMembershipCheckout({
           }}
         />
       )}
-      <Button
-        type="button"
-        onClick={handlePayment}
-        disabled={isLoading || isLoggedIn === null || !consentValid}
-        className="w-full"
-      >
-        {isLoading
-          ? '결제창 여는 중...'
-          : !consentValid
-            ? '결제 전 동의가 필요합니다'
-            : `${amount.toLocaleString()}원 ${selectedMethod.shortLabel}로 결제하기`}
-      </Button>
       {errorMessage ? (
         <p className="text-center text-sm leading-6 text-rose-600">{errorMessage}</p>
       ) : (
@@ -319,6 +308,22 @@ export default function TossMembershipCheckout({
           결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
         </p>
       )}
+      {/* 2026-06-30 — 결제 버튼을 화면 하단에 진짜 고정(포커스 체크아웃). 결제수단·동의는
+          흐름상 위에 유지(전자상거래법상 결제 전 동의 순서 보존). body portal 로 viewport 고정. */}
+      <StickyBottomBar variant="bottom">
+        <Button
+          type="button"
+          onClick={handlePayment}
+          disabled={isLoading || isLoggedIn === null || !consentValid}
+          className="w-full"
+        >
+          {isLoading
+            ? '결제창 여는 중...'
+            : !consentValid
+              ? '결제 전 동의가 필요합니다'
+              : `${amount.toLocaleString()}원 ${selectedMethod.shortLabel}로 결제하기`}
+        </Button>
+      </StickyBottomBar>
     </div>
   );
 }

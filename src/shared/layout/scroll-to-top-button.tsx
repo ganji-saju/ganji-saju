@@ -11,6 +11,8 @@
 import { ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
+import { isFocusedCheckoutRoute } from '@/shared/layout/focused-checkout';
 
 const SCROLL_THRESHOLD = 320;
 
@@ -18,6 +20,8 @@ export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
   // SSR/CSR hydration mismatch 방지 — body portal 은 client-only.
   const [mounted, setMounted] = useState(false);
+  // 2026-06-30 — 포커스 체크아웃(결제 화면)에서는 하단 CTA 와 겹치지 않도록 숨김.
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -43,7 +47,7 @@ export function ScrollToTopButton() {
     });
   };
 
-  if (!mounted) return null;
+  if (!mounted || isFocusedCheckoutRoute(pathname)) return null;
 
   return createPortal(
     <button

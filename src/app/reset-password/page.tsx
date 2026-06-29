@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import LegalLinks from '@/components/legal-links';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
 type ResetState = 'checking' | 'ready' | 'missing' | 'saved';
 
@@ -240,7 +241,7 @@ function ResetPasswordContent() {
         </div>
       ) : null}
 
-      <form className="mt-5 space-y-4" onSubmit={submitPasswordReset}>
+      <form id="reset-password-form" className="mt-5 space-y-4" onSubmit={submitPasswordReset}>
         <div>
           <label
             htmlFor="new-password"
@@ -282,21 +283,18 @@ function ResetPasswordContent() {
           />
         </div>
 
-        {/* Sticky CTA */}
-        <div
-          className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"
-          style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
-        >
-          <div className="mx-auto max-w-md">
-            <button
-              type="submit"
-              disabled={!isReady || isSubmitting || isSaved}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
-            >
-              {isSubmitting ? '저장 중...' : isSaved ? '저장됨' : '비밀번호 변경 완료'}
-            </button>
-          </div>
-        </div>
+        {/* Sticky CTA — body portal 로 dock 위 고정. portal 이 button 을 form DOM 밖으로
+            옮기므로 form="reset-password-form" 로 명시 연결(네이티브 submit 유지). */}
+        <StickyBottomBar>
+          <button
+            type="submit"
+            form="reset-password-form"
+            disabled={!isReady || isSubmitting || isSaved}
+            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+          >
+            {isSubmitting ? '저장 중...' : isSaved ? '저장됨' : '비밀번호 변경 완료'}
+          </button>
+        </StickyBottomBar>
       </form>
 
       {statusMessage ? (

@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-06-30 세션 (Claude) — 결제 버튼 포커스 체크아웃(하단 진짜 고정 CTA) + sticky 잠복버그 수정
+
+> 피드백: "결제 버튼이 너무 하단에 있어 결제가 불편". 멤버십/단품 체크아웃·코인충전 양쪽 적용. tsc + next build(EXIT 0) + Playwright 렌더/측정/상호작용 검증 그린. 아직 PR 미생성(로컬 변경).
+
+- **발견(검증 완료)**: 기존 코인충전 "sticky" CTA 는 **실제로 고정돼 있지 않았음**. `motion-page-transition-frame`(`will-change: transform`)·`app-shell-content`(애니메이션 잔여 `transform: matrix(1,0,0,1,0,0)`)가 `position:fixed` containing block 을 가로채 CTA 가 뷰포트가 아니라 **콘텐츠 끝**에 붙음(맨 위에선 안 보임, 끝까지 스크롤해야 보임). Playwright 측정 `pinnedToViewport:false`(top=2354 / vh=844). → 사용자 "버튼이 멀다" 피드백의 실제 원인.
+- **해법(코드베이스 검증 패턴)**: 모바일 dock·"맨 위로" FAB 이 쓰는 `createPortal(→document.body)` 방식으로 CTA 를 body 에 직접 mount → 진짜 viewport 고정 보장. 공용 컴포넌트 **`src/components/payments/sticky-checkout-cta.tsx`** 신설(멤버십·코인 공통).
+- **포커스 체크아웃**: 결제 라우트(`/membership/checkout`·`/credits`·`/pay`)에서 하단 글로벌 dock + 스크롤 FAB 숨김 → CTA 하나만 하단 고정(이탈/주의분산↓, 토스·쿠팡 표준). 라우트 판정 **`src/shared/layout/focused-checkout.ts`**. site-header MobileChrome(dock portal gate)·scroll-to-top-button(usePathname gate) 수정. 비결제 라우트(홈·/membership)는 dock/FAB 정상 유지(회귀 검증).
+- **법적 순서 보존**: 결제수단·동의 체크박스는 흐름상 위에 유지(전자상거래법 결제-전-동의). 버튼만 하단 고정. 동의→버튼 활성 흐름 정상(상호작용 테스트: 비활성"결제 전 동의가 필요합니다"→`전체 동의`체크→활성"49,000원 카드로 결제하기").
+- 멤버십 체크아웃 `footer={false}`(코인 페이지와 동일, 고정 CTA 와 footer 겹침 방지). 콘텐츠 하단여백은 `.app-shell-with-navigation`의 `--app-mobile-dock-clearance`(8rem)가 확보 → 별도 spacer 불필요.
+
+### 2차: 비결제 고정 CTA 4종 동일 버그 정리 + 공용 컴포넌트화
+- 공용 컴포넌트 일반화: `sticky-checkout-cta.tsx` → **`src/components/ui/sticky-bottom-bar.tsx`**(`StickyBottomBar`). `variant`: `'bottom'`(결제 등 dock 숨김 라우트=화면 맨 아래) / `'above-dock'`(기본, dock 보이는 일반 페이지=dock 바로 위). above-dock 은 dock 높이를 **런타임 실측**(getBoundingClientRect, 측정 전엔 `--app-mobile-dock-clearance` fallback 으로 겹침 방지; ResizeObserver+resize 갱신)해 flush 배치(폰트배율·safe-area·reading-comfort 자동 대응). 결제 2곳(멤버십·코인)은 `variant="bottom"` 으로 전환(재검증 OK).
+- 적용 4종(전부 dock 유지, `above-dock`): `dialogue/appointment`(예약 확정)·`my/settings/delete-account`(이전/계속/탈퇴)·`reset-password`(비번변경)·`compatibility/input`(궁합 보기). Playwright 실측 `sitsAboveDock:true`(barBottom=736=vh844−dock108)·`visibleAtTop:true`.
+- 엣지케이스: **reset-password** 는 `type="submit"`(form 내부) → portal 로 form DOM 밖으로 나가므로 `<form id>`+버튼 `form="..."` 연결로 네이티브 submit 유지. **compatibility/input** 은 기존 `md:static`(모바일 fixed/데스크탑 inline) 유지 위해 모바일 portal 바(`md:hidden`)+데스크탑 인라인(`hidden md:block`) 분리. delete-account 은 form 없음(onClick) — 안전.
+- 비결제 페이지는 dock·"맨 위로" FAB 그대로 유지(포커스 라우트 아님). FAB 이 CTA 바 우측에 약간 겹침은 기존 동작.
+
+---
+
 ## 2026-06-28 세션 (Claude) — 대화 충전CTA·결제실패 재시도·코인 만료보정 테스트·코인 수동지급·관리자 콘솔 (#529~#534)
 
 > 결제/코인/어드민 라운드. 전부 main 머지·배포. 각 PR tsc+next build+npm test+CI+E2E 그린 확인 후 머지.
