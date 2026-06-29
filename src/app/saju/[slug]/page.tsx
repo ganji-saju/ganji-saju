@@ -77,17 +77,35 @@ async function TotalReviewSection({
 function TotalReviewSkeleton() {
   return (
     <div
-      className="rounded-[18px] border border-[var(--app-line)] bg-white p-5"
+      className="rounded-[18px] border p-5"
+      style={{
+        background: 'linear-gradient(180deg, #fff 0%, #fbf7f1 100%)',
+        borderColor: 'var(--app-line)',
+      }}
       aria-busy="true"
       aria-label="사주 총평을 정리하는 중"
     >
-      <div className="h-3 w-2/3 animate-pulse rounded bg-[var(--app-surface-muted)]" />
-      <div className="mt-3 space-y-2">
+      {/* 카드 외형을 본 카드(한 단락으로 정리)와 맞춰 어느 영역이 로딩 중인지 분명히. */}
+      <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
+        한 단락으로 정리
+      </div>
+      <div className="mt-2.5 flex items-center gap-2">
+        <span
+          className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[var(--app-pink-line)] border-t-[var(--app-pink-strong)]"
+          aria-hidden="true"
+        />
+        <p className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
+          사주 총평을 정리하고 있어요…
+        </p>
+      </div>
+      <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
+        사주가 복잡할수록 조금 더 걸릴 수 있어요. 화면을 닫지 말고 잠시만 기다려 주세요.
+      </p>
+      <div className="mt-3.5 space-y-2">
         <div className="h-3 w-full animate-pulse rounded bg-[var(--app-surface-muted)]" />
         <div className="h-3 w-11/12 animate-pulse rounded bg-[var(--app-surface-muted)]" />
         <div className="h-3 w-4/5 animate-pulse rounded bg-[var(--app-surface-muted)]" />
       </div>
-      <p className="mt-4 text-[13.8px] text-[var(--app-copy-soft)]">사주 총평을 정리하고 있어요…</p>
     </div>
   );
 }
