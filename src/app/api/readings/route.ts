@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -6,7 +6,15 @@ import {
 } from '@/lib/supabase/server';
 import { parseBirthInputDraft } from '@/domain/saju/validators/birth-input';
 import { toSlug } from '@/lib/saju/pillars';
-import { createReading, deleteReadingForUser, getReadingCountForUser } from '@/lib/saju/readings';
+import {
+  createReading,
+  deleteReadingForUser,
+  getReadingCountForUser,
+  resolveReading,
+} from '@/lib/saju/readings';
+// 2026-06-29 — 총평 LLM 캐시 프리워밍(생성 직후 백그라운드). 결과 재조회·동시조회 시 캐시 hit.
+import { generateTotalReview } from '@/server/ai/saju-total-review-service';
+import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-cache';
 import {
   isUnifiedBirthEntryDraft,
   resolveUnifiedBirthInput,
@@ -120,6 +128,33 @@ export async function POST(req: NextRequest) {
 
   try {
     const id = await createReading(parsed.input, user?.id ?? null, effectiveSituation);
+
+    // 총평 LLM 캐시 프리워밍 — 응답 후 백그라운드(after)로 생성해 캐시를 데운다.
+    //   같은 사주+컨텍스트는 1회만 생성되므로(read-through 캐시), 결과 재조회·동시 조회가 빨라진다.
+    //   resolveReading 으로 페이지와 동일한 sajuData/grounding 을 재사용(인자 중복 없음).
+    if (isTotalReviewLLMEnabled()) {
+      after(async () => {
+        try {
+          const reading = await resolveReading(id);
+          const personalizationContext = reading?.grounding?.personalizationContext;
+          if (!reading || !personalizationContext) return;
+          await generateTotalReview({
+            sajuData: reading.sajuData,
+            personalizationContext,
+            userName: reading.input.name?.trim() || null,
+            gender:
+              reading.input.gender === 'female'
+                ? 'F'
+                : reading.input.gender === 'male'
+                  ? 'M'
+                  : null,
+          });
+        } catch {
+          // 프리워밍 실패는 무시 — 결과 페이지가 어차피 on-demand 생성/표시한다.
+        }
+      });
+    }
+
     return NextResponse.json({ id });
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
