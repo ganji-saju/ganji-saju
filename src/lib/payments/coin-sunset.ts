@@ -14,3 +14,8 @@ export function assertCoinTopupAllowed(pkg: PaymentPackage): void {
     throw new Error('코인 충전은 현재 제공하지 않습니다.');
   }
 }
+
+/** 코인 적립 허용 여부. COIN_TOPUP_ENABLED=false 인 동안 멤버십 포함 모든 신규 코인 적립 중단. */
+export function shouldGrantCredits(pkg: PaymentPackage): boolean {
+  return COIN_TOPUP_ENABLED && pkg.credits > 0;
+}
