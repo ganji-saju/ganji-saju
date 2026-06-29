@@ -120,7 +120,7 @@ function Row({
         {items.map((item) => (
           <li
             key={item}
-            className="rounded-full border bg-white px-2.5 py-1 text-[15px] font-bold text-[var(--app-ink)]"
+            className="max-w-full whitespace-normal break-keep rounded-[12px] border bg-white px-2.5 py-1 text-[15px] font-bold leading-snug text-[var(--app-ink)] [overflow-wrap:anywhere]"
             style={{ borderColor: palette.border }}
           >
             {simplifySajuCopy(item)}
