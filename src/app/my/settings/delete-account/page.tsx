@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import { cn } from '@/lib/utils';
 
 type Step = 1 | 2 | 3 | 'done';
@@ -390,58 +391,53 @@ export default function AccountDeletePage() {
 
             <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
 
-            {/* Sticky bottom CTA */}
-            <div
-              className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"
-              style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
-            >
-              <div className="mx-auto flex max-w-md gap-2">
-                {step > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep(((step as number) - 1) as Step)}
-                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    이전
-                  </button>
-                ) : (
-                  <Link
-                    href="/my/settings"
-                    className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    돌아가기
-                  </Link>
-                )}
-                {step < 3 ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (step === 2 && !canProceedStep2) return;
-                      setStep(((step as number) + 1) as Step);
-                    }}
-                    disabled={step === 2 && !canProceedStep2}
-                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white transition disabled:opacity-50"
-                    style={{ background: 'var(--app-ink)' }}
-                  >
-                    계속 진행하기
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleFinalSubmit}
-                    disabled={!canSubmit || isSubmitting}
-                    className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{
-                      background: canSubmit ? 'var(--app-coral)' : 'var(--app-line)',
-                    }}
-                  >
-                    {isSubmitting ? '요청 중...' : '영구 탈퇴하기'}
-                  </button>
-                )}
-              </div>
-            </div>
+            {/* Sticky bottom CTA — body portal 로 dock 위 고정(조상 transform 회피) */}
+            <StickyBottomBar innerClassName="flex gap-2">
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setStep(((step as number) - 1) as Step)}
+                  className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  이전
+                </button>
+              ) : (
+                <Link
+                  href="/my/settings"
+                  className="inline-flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white text-[15.5px] font-bold text-[var(--app-copy-muted)]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  돌아가기
+                </Link>
+              )}
+              {step < 3 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (step === 2 && !canProceedStep2) return;
+                    setStep(((step as number) + 1) as Step);
+                  }}
+                  disabled={step === 2 && !canProceedStep2}
+                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white transition disabled:opacity-50"
+                  style={{ background: 'var(--app-ink)' }}
+                >
+                  계속 진행하기
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={!canSubmit || isSubmitting}
+                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{
+                    background: canSubmit ? 'var(--app-coral)' : 'var(--app-line)',
+                  }}
+                >
+                  {isSubmitting ? '요청 중...' : '영구 탈퇴하기'}
+                </button>
+              )}
+            </StickyBottomBar>
           </section>
         )}
       </AppPage>

@@ -16,6 +16,7 @@ import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
 type PersonKey = 'self' | 'partner';
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
@@ -853,25 +854,35 @@ export function CompatibilityInputClient({
             마지막 입력 섹션을 가린다. cascade 무관한 spacer 로 확보. md+ 에선 CTA 가 static 이라 불필요. */}
         <div aria-hidden="true" className="app-fixed-bottom-cta-clearance md:hidden" />
 
-        {/* §Sticky CTA */}
-        <div
-          className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-0"
-          style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
-        >
-          <div className="mx-auto max-w-md space-y-2">
-            <button
-              type="button"
-              onClick={submitManualCompatibility}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-              style={{ background: 'var(--app-pink)' }}
-            >
-              이 정보로 궁합 보기 →
-            </button>
-            <p className="text-center text-[15px] leading-[1.55] text-[var(--app-copy-soft)]">
-              비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
-            </p>
-          </div>
+        {/* §CTA — 데스크탑: 인라인 static(기존 md:static 디자인 유지) */}
+        <div className="mx-auto hidden max-w-md space-y-2 md:block">
+          <button
+            type="button"
+            onClick={submitManualCompatibility}
+            className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            style={{ background: 'var(--app-pink)' }}
+          >
+            이 정보로 궁합 보기 →
+          </button>
+          <p className="text-center text-[15px] leading-[1.55] text-[var(--app-copy-soft)]">
+            비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
+          </p>
         </div>
+
+        {/* §CTA — 모바일: body portal 로 dock 위 고정(조상 transform 이 fixed 를 깨므로) */}
+        <StickyBottomBar className="md:hidden" innerClassName="space-y-2">
+          <button
+            type="button"
+            onClick={submitManualCompatibility}
+            className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            style={{ background: 'var(--app-pink)' }}
+          >
+            이 정보로 궁합 보기 →
+          </button>
+          <p className="text-center text-[15px] leading-[1.55] text-[var(--app-copy-soft)]">
+            비로그인 입력은 현재 브라우저에만 임시 보관됩니다.
+          </p>
+        </StickyBottomBar>
       </AppPage>
     </AppShell>
   );

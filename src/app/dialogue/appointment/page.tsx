@@ -11,6 +11,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import { cn } from '@/lib/utils';
 import { PAYMENT_PACKAGES, type PaymentPackage } from '@/lib/payments/catalog';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
@@ -621,32 +622,27 @@ export default function AppointmentPage() {
 
             <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
 
-            {/* Sticky CTA */}
-            <div
-              className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"
-              style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
-            >
-              <div className="mx-auto max-w-md">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[12.6px] text-[var(--app-copy-soft)]">
-                    {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인 · {formatWon(appointmentKrwEquivalent)} 상당
-                  </span>
-                  <span className="text-[16.7px] font-extrabold text-[var(--app-pink-strong)]">
-                    {selectedDay
-                      ? `${month + 1}월 ${selectedDay}일 ${selectedTime}`
-                      : '날짜를 선택하세요'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!canSubmit || submitting}
-                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
-                >
-                  {submitting ? '예약 중...' : '예약 확정 →'}
-                </button>
+            {/* Sticky CTA — body portal 로 dock 위 고정(조상 transform 이 fixed 를 깨므로) */}
+            <StickyBottomBar>
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[12.6px] text-[var(--app-copy-soft)]">
+                  {APPOINTMENT_MINUTES}분 상담 · {APPOINTMENT_COST_COINS}코인 · {formatWon(appointmentKrwEquivalent)} 상당
+                </span>
+                <span className="text-[16.7px] font-extrabold text-[var(--app-pink-strong)]">
+                  {selectedDay
+                    ? `${month + 1}월 ${selectedDay}일 ${selectedTime}`
+                    : '날짜를 선택하세요'}
+                </span>
               </div>
-            </div>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canSubmit || submitting}
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
+              >
+                {submitting ? '예약 중...' : '예약 확정 →'}
+              </button>
+            </StickyBottomBar>
           </section>
         )}
       </AppPage>

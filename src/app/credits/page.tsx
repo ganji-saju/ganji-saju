@@ -14,6 +14,7 @@ import {
   type TossPaymentMethodCode,
 } from '@/lib/payments/methods';
 import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-picker';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-checkboxes';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -545,13 +546,9 @@ function CreditsPageContent() {
           ) : null}
         </section>
 
-        <div aria-hidden="true" className="app-fixed-bottom-cta-clearance" />
-
-        {/* §5 Sticky bottom CTA */}
-        <div
-          className="fixed inset-x-0 bottom-0 z-10 border-t border-[var(--app-line)] bg-white/95 px-4 py-3.5 backdrop-blur"
-          style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom))' }}
-        >
+        {/* §5 Sticky bottom CTA — 포커스 체크아웃: body portal 로 viewport 진짜 고정.
+            (이전 inline fixed 는 부모 transform 에 막혀 콘텐츠 끝에 붙어 있었음) */}
+        <StickyBottomBar variant="bottom">
           <button
             type="button"
             onClick={() => selectedPackage && handlePurchase(selectedPackage)}
@@ -568,7 +565,7 @@ function CreditsPageContent() {
                   : `${selectedPackage.price.toLocaleString()}원 충전하기 · ${selectedMethod.shortLabel}`
                 : '패키지를 선택하세요'}
           </button>
-        </div>
+        </StickyBottomBar>
       </AppPage>
     </AppShell>
   );

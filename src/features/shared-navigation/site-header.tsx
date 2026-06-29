@@ -25,6 +25,7 @@ import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/li
 import { MobileNavSheet } from './mobile-nav-sheet';
 import { resolveActiveGroup } from './mega-nav-data';
 import { cn } from '@/lib/utils';
+import { isFocusedCheckoutRoute } from '@/shared/layout/focused-checkout';
 import {
   HEADER_SECONDARY_NAV_ITEMS,
   MOBILE_PRIMARY_NAV_ITEMS,
@@ -461,6 +462,9 @@ function MobileChrome({
   const [portalMounted, setPortalMounted] = useState(false);
   // 2026-05-20 — 무료운세 부채꼴 메뉴 open state.
   const [fanMenuOpen, setFanMenuOpen] = useState(false);
+  // 2026-06-30 — 포커스 체크아웃: 결제 화면에서는 하단 dock 을 숨겨(결제 CTA 만 노출)
+  //   이탈/주의분산을 줄인다.
+  const focusedCheckout = isFocusedCheckoutRoute(pathname);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -643,8 +647,9 @@ function MobileChrome({
 
       {/* 2026-05-14: 하단 dock 리디자인 — 중앙 FAB (무료운세) 형광 글로우 +
           나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터.
-          2026-05-20 (portal): body 직접 mount — 부모 transform 영향 차단. */}
-      {portalMounted
+          2026-05-20 (portal): body 직접 mount — 부모 transform 영향 차단.
+          2026-06-30: 포커스 체크아웃 라우트에서는 dock 숨김. */}
+      {portalMounted && !focusedCheckout
         ? createPortal(
             <nav
               className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 md:hidden"
