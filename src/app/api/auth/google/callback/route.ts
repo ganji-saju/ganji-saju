@@ -7,6 +7,8 @@ import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
 function resolveOrigin(req: NextRequest): string {

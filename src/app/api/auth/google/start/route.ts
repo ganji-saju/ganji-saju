@@ -5,6 +5,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 
+// state/nonce 쿠키가 매 요청 새로 세팅되도록 캐시 금지(캐시되면 Set-Cookie 누락→state_mismatch).
+export const dynamic = 'force-dynamic';
+
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 
 function resolveOrigin(req: NextRequest): string {
@@ -55,6 +58,7 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set('prompt', 'select_account');
 
   const res = NextResponse.redirect(authUrl.toString());
+  res.headers.set('Cache-Control', 'no-store, max-age=0');
   const cookieOptions = {
     httpOnly: true,
     secure: true,
