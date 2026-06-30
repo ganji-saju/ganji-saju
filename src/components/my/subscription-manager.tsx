@@ -44,7 +44,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
   if (!subscription) {
     return (
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link href="/credits">
+        <Link href="/membership">
           <Button>
             멤버십 시작하기
           </Button>
@@ -77,7 +77,7 @@ export default function SubscriptionManager({ subscription }: SubscriptionManage
             {loadingAction === 'resume' ? '처리 중..' : '해지 예약 취소'}
           </Button>
         ) : (
-          <Link href="/credits">
+          <Link href="/membership">
             <Button>
               멤버십 다시 시작하기
             </Button>

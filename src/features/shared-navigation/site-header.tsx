@@ -361,7 +361,7 @@ function DesktopSidebar({
                 className="gangi-secondary-button"
               >
                 <CreditCard className="h-3.5 w-3.5" />
-                코인 충전
+                코인 잔액
               </Link>
               <Link
                 href="/membership"

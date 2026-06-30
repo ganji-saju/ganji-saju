@@ -383,10 +383,10 @@ export default async function MyBillingPage() {
           >
             <div className="min-w-0">
               <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
-                코인 센터
+                코인 잔액
               </div>
               <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
-                충전 · 재시작
+                보유 잔액 확인
               </div>
             </div>
             <span className="text-[var(--app-copy-soft)]" aria-hidden="true">

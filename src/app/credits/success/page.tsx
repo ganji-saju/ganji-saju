@@ -108,7 +108,7 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
           href="/credits"
           className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
-          코인 충전으로 돌아가기
+          코인 잔액으로
         </Link>
         <Link
           href="/my/billing"

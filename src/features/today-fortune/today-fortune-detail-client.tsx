@@ -288,10 +288,10 @@ export function TodayFortuneDetailClient({
                 무료 결과로
               </Link>
               <Link
-                href="/credits?from=today-detail"
+                href="/membership"
                 className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
-                코인 충전 →
+                멤버십 보기 →
               </Link>
             </div>
           </article>
