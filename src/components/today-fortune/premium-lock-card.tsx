@@ -37,7 +37,7 @@ export function PremiumLockCard({
   errorMessage,
   bundleHref,
 }: PremiumLockCardProps) {
-  const { hasEntitlement, openHref, memberFreeEligible, hasLegacyCoins } = useProductEntitlement({
+  const { hasEntitlement, openHref, memberFreeEligible, hasLegacyCoins, loading: entitlementLoading } = useProductEntitlement({
     productId: 'today-detail',
     slug: sourceSessionId,
     scope: concernId,
@@ -52,6 +52,40 @@ export function PremiumLockCard({
       productCode: 'TODAY_DETAIL_VIEW',
     });
     onUnlock();
+  }
+
+  // Loading guard: sourceSessionId 가 있고 entitlement fetch 가 아직 완료 전이면
+  // 결제 CTA 를 노출하지 않는다. 멤버십 회원이 잠깐 '9,900원 단품'을 보고 실수 결제하는
+  // 것을 방지한다. sourceSessionId 가 없으면(enabled=false) 훅이 fetch 를 건너뛰므로
+  // 이 guard 에 걸리지 않고 그대로 Branch 3 으로 진행한다.
+  if (Boolean(sourceSessionId) && entitlementLoading && !hasEntitlement && !memberFreeEligible) {
+    return (
+      <section
+        className="relative overflow-hidden rounded-[20px] border bg-white p-4"
+        style={{ borderColor: 'rgba(17,17,20,0.12)', boxShadow: '0 14px 36px rgba(17,17,20,0.04)' }}
+      >
+        <div className="flex items-center gap-3.5">
+          <ZodiacChip kind="snake" size="md" className="shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="mt-0.5 text-[17.3px] font-extrabold tracking-tight text-[var(--app-ink)]">
+              오늘 자세히 보기
+            </div>
+            <div className="mt-0.5 text-[15px] text-[var(--app-copy-soft)]">
+              <Lock className="mr-1 inline h-3 w-3 align-[-1px]" />
+              {copy}
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          disabled
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-[16px] bg-[rgba(17,17,20,0.06)] text-[15.5px] font-extrabold text-[var(--app-copy-muted)] disabled:cursor-not-allowed"
+        >
+          <span className="motion-spinner-inline" aria-hidden="true" />
+          확인하고 있어요
+        </button>
+      </section>
+    );
   }
 
   // Branch 1: 이미 구매한 today-detail — 결제 button 대신 열람 link.
