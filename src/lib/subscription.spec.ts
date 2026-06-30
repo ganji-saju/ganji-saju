@@ -82,6 +82,17 @@ const expiredRow: FakeRow = {
   toss_customer_key: null,
 };
 
+// expired premium: status==='expired' with premium_monthly plan
+const expiredPremiumRow: FakeRow = {
+  status: 'expired',
+  plan: 'premium_monthly',
+  renews_at: new Date(Date.now() - 86_400_000).toISOString(), // 과거
+  created_at: NOW,
+  updated_at: NOW,
+  toss_billing_key: null,
+  toss_customer_key: null,
+};
+
 // ─── getMemberTier ───────────────────────────────────────────────────
 describe('getMemberTier', () => {
   beforeEach(() => {
@@ -106,6 +117,11 @@ describe('getMemberTier', () => {
   it('expired → null (status !== "active")', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeClient(expiredRow) as never);
     expect(await getMemberTier('user-expired')).toBeNull();
+  });
+
+  it('expired premium_monthly → null (회귀테스트: 만료된 프리미엄은 null)', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(expiredPremiumRow) as never);
+    expect(await getMemberTier('user-expired-premium')).toBeNull();
   });
 
   it('구독 없음(null) → null', async () => {
