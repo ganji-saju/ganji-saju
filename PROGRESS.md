@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-06-30 세션 (Claude) — 코인→카드+멤버십 전환 Phase 1+2 머지 + Phase 3 설계
+
+> 코인충전 PG차단/전금법 이슈 → 코인 발행 중단+멤버십 정액이용권화. **Phase 1+2 머지 완료(PR #563, main CI 그린)**. Phase 3(페이월 카드/멤버십 재배치+코인카피 정리) 계획 수립.
+
+- **Phase 1+2 (머지됨, PR #563)**: 코인 발행 중단(충전 410·가입보너스0(057, user_credits 행은 유지)·멤버십 코인미지급·관리자차단·/credits 잔액화) + 멤버십 정액이용권화(MEMBER_QUOTAS premium 상세/달력 무제한·대화일5·궁합월3 / plus 3·1·2·1, getMemberTier, 상세풀이/달력/궁합 멤버십 게이트, 카피 재표현). 코인 차감은 레거시 잔액 소진용 유지. SDD 18태스크 전부 task-review + opus whole-branch 리뷰(머니패스 SOUND) + 172 node·103 vitest·E2E 그린.
+  - 머지 전 review-driven fix 2건: 상세풀이 게이트를 고아 detail-unlock→**라이브 unlockTodayFortunePremium(오늘 자세히보기)**로 이전; 관리자 가입카운터를 admin_user_summary.signup_at으로 repoint(057 후 signup_bonus 0 회귀 방지).
+  - ⚠️ 057 마이그레이션 supabase 수동 적용 완료(사용자). 법무/PG 확인은 별도.
+- **⭐ Phase 3 핵심 정정(2회 오판 끝 확정)**: **상세풀이·달력 카드 단건상품은 신규 제작 불필요 — 이미 존재**. 상세풀이=`taste_today_detail`('today-detail' 9,900), 달력=`monthly-calendar`. 코인경로(credit_transactions kind)와 카드경로(product_entitlements)가 동일 콘텐츠 두 결제경로, 수렴=`resolveTodayFortuneUnlockAccess`(today-detail) / fortune-calendar unlock(달력). 오판 원인: 코인 접근체크와 카드 entitlement 체크가 다른 함수에 분리.
+- **Phase 3 계획**(`docs/superpowers/plans/2026-06-30-phase3-paywall-card-membership.md`, 미실행): Wave0 userHasLegacyCoins(balance>0) 잔액게이트 인프라 → Wave1 코인포함 페이월(상세/달력/대화) 멤버십우선+카드1차+코인 잔액자한정 → Wave2 멤버십 CTA(궁합/점수/saju premium)+코인 fallback 유지 → Wave3 stale 코인카피 정리(충전 dead-end·상담예약 가공 100코인·pricing 코인팩·오링크 subscription-manager→/credits 버그·주석). 신규상품·마이그레이션 0. 가정: 상세풀이 per-day 유지, 비회원=비구독 로그인, 코인 fallback 잔액소진까지 유지.
+
+---
+
 ## 2026-06-30 세션 (Claude) — 결제 버튼 포커스 체크아웃(하단 진짜 고정 CTA) + sticky 잠복버그 수정
 
 > 피드백: "결제 버튼이 너무 하단에 있어 결제가 불편". 멤버십/단품 체크아웃·코인충전 양쪽 적용. tsc + next build(EXIT 0) + Playwright 렌더/측정/상호작용 검증 그린. 아직 PR 미생성(로컬 변경).
