@@ -112,11 +112,20 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
     url: "/",
+    images: [
+      {
+        url: "/images/gangi/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: SITE_NAME,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
+    images: ["/images/gangi/og-image.png"],
   },
   verification: {
     google: "oi2g6kU6Sh-Ko3-4dJFPDknRw1f-SwaSLzOUa0Y43ng",
