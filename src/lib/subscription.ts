@@ -90,28 +90,34 @@ export async function getManagedSubscription(userId: string): Promise<ManagedSub
   return mapSubscription(normalized);
 }
 
+// 2026-06-30 — 해지 예약(cancelled)은 renews_at 까지 유효(billing 카피가 명시 약속).
+//   expireIfNeeded 가 기간 경과 시 'expired'로 정규화하므로, 'cancelled'는 곧 grace 기간 내.
+function isEntitledStatus(status: SubscriptionStatus): boolean {
+  return status === 'active' || status === 'cancelled';
+}
+
 // 2026-06-28 — 프리미엄 멤버십(월 49,000원 30일권) 혜택 게이트 공통 판별.
-//   active + plan='premium_monthly' 이면 멤버. expireIfNeeded 가 만료를 status='expired'로 정규화.
+//   active 또는 cancelled(grace 기간) + plan='premium_monthly' 이면 멤버.
 export async function isPremiumMember(userId: string): Promise<boolean> {
   if (!userId) return false;
   const sub = await getManagedSubscription(userId);
-  return sub?.status === 'active' && sub.plan === 'premium_monthly';
+  return !!sub && isEntitledStatus(sub.status) && sub.plan === 'premium_monthly';
 }
 
 // 2026-06-30 — 라이트(플러스) 멤버십(월 4,900원 30일권) 혜택 게이트 공통 판별.
-//   active + plan='plus_monthly' 이면 멤버. isPremiumMember 패턴과 동일.
+//   active 또는 cancelled(grace 기간) + plan='plus_monthly' 이면 멤버.
 export async function isPlusMember(userId: string): Promise<boolean> {
   if (!userId) return false;
   const sub = await getManagedSubscription(userId);
-  return sub?.status === 'active' && sub.plan === 'plus_monthly';
+  return !!sub && isEntitledStatus(sub.status) && sub.plan === 'plus_monthly';
 }
 
 // 2026-06-30 — 활성 구독의 등급(tier) 반환. 피처 게이트가 tier별 혜택 분기에 사용.
-//   active 아니면 null, plan 불일치도 null.
+//   entitled(active|cancelled) 아니면 null, plan 불일치도 null.
 export async function getMemberTier(userId: string): Promise<'premium' | 'plus' | null> {
   if (!userId) return null;
   const sub = await getManagedSubscription(userId);
-  if (sub?.status !== 'active') return null;
+  if (!sub || !isEntitledStatus(sub.status)) return null;
   if (sub.plan === 'premium_monthly') return 'premium';
   if (sub.plan === 'plus_monthly') return 'plus';
   return null;

@@ -12,7 +12,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 import { createServiceClient } from '@/lib/supabase/server';
-import { isPlusMember, getMemberTier } from '@/lib/subscription';
+import { isPlusMember, getMemberTier, isPremiumMember } from '@/lib/subscription';
 
 // ─── 테스트용 타입 ──────────────────────────────────────────────────
 type FakeStatus = 'active' | 'cancelled' | 'expired';
@@ -60,10 +60,21 @@ const plusActiveRow: FakeRow = {
   toss_customer_key: null,
 };
 
-// cancelled: renews_at 미래 → expireIfNeeded DB 호출 없음
+// cancelled premium: renews_at 미래 → expireIfNeeded DB 호출 없음 (grace 기간 내)
 const cancelledRow: FakeRow = {
   status: 'cancelled',
   plan: 'premium_monthly',
+  renews_at: FUTURE,
+  created_at: NOW,
+  updated_at: NOW,
+  toss_billing_key: null,
+  toss_customer_key: null,
+};
+
+// cancelled plus: renews_at 미래 → grace 기간 내
+const cancelledPlusRow: FakeRow = {
+  status: 'cancelled',
+  plan: 'plus_monthly',
   renews_at: FUTURE,
   created_at: NOW,
   updated_at: NOW,
@@ -109,9 +120,14 @@ describe('getMemberTier', () => {
     expect(await getMemberTier('user-plus')).toBe('plus');
   });
 
-  it('cancelled → null (status !== "active")', async () => {
+  it('cancelled premium (해지 예약, grace 기간 내) → "premium"', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledRow) as never);
-    expect(await getMemberTier('user-cancelled')).toBeNull();
+    expect(await getMemberTier('user-cancelled')).toBe('premium');
+  });
+
+  it('cancelled plus (해지 예약, grace 기간 내) → "plus"', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledPlusRow) as never);
+    expect(await getMemberTier('user-cancelled-plus')).toBe('plus');
   });
 
   it('expired → null (status !== "active")', async () => {
@@ -150,9 +166,14 @@ describe('isPlusMember', () => {
     expect(await isPlusMember('user-premium')).toBe(false);
   });
 
-  it('cancelled → false (status 불일치)', async () => {
+  it('cancelled premium (plan 불일치 — plus 아님) → false', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledRow) as never);
     expect(await isPlusMember('user-cancelled')).toBe(false);
+  });
+
+  it('cancelled plus (해지 예약, grace 기간 내) → true', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledPlusRow) as never);
+    expect(await isPlusMember('user-cancelled-plus')).toBe(true);
   });
 
   it('구독 없음(null) → false', async () => {
@@ -162,5 +183,41 @@ describe('isPlusMember', () => {
 
   it('빈 userId → false (DB 호출 없이 즉시)', async () => {
     expect(await isPlusMember('')).toBe(false);
+  });
+});
+
+// ─── isPremiumMember ─────────────────────────────────────────────────
+describe('isPremiumMember', () => {
+  beforeEach(() => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(null) as never);
+  });
+
+  it('premium_monthly + active → true', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(premiumActiveRow) as never);
+    expect(await isPremiumMember('user-premium')).toBe(true);
+  });
+
+  it('plus_monthly + active → false (plan 불일치)', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(plusActiveRow) as never);
+    expect(await isPremiumMember('user-plus')).toBe(false);
+  });
+
+  it('cancelled premium (해지 예약, grace 기간 내) → true', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledRow) as never);
+    expect(await isPremiumMember('user-cancelled')).toBe(true);
+  });
+
+  it('expired premium → false (만료된 구독은 혜택 없음 — 회귀)', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(expiredPremiumRow) as never);
+    expect(await isPremiumMember('user-expired-premium')).toBe(false);
+  });
+
+  it('구독 없음(null) → false', async () => {
+    vi.mocked(createServiceClient).mockResolvedValue(makeClient(null) as never);
+    expect(await isPremiumMember('user-no-sub')).toBe(false);
+  });
+
+  it('빈 userId → false (DB 호출 없이 즉시)', async () => {
+    expect(await isPremiumMember('')).toBe(false);
   });
 });
