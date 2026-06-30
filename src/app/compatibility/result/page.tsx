@@ -26,7 +26,6 @@ import {
   isCompatibilityPerCouplePricingEnabled,
   tryConsumeMemberCompatAccess,
 } from '@/lib/payments/compatibility-access';
-import { isPremiumMember } from '@/lib/subscription';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
@@ -183,14 +182,13 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
   // ① per-couple 게이트(grandfather 포함). 플래그 OFF 환경에선 compat-reading 구매가 없어
   //   사실상 love-question 글로벌 = 기존 동작과 동일.
   const coupleKey = buildCompatibilityCoupleKey(selfBirthInput, partnerBirthInput);
-  // 구매(글로벌/커플) > 프리미엄 멤버 월 3회 무료(커플별 멱등) 순으로 접근 판정.
+  // 구매(글로벌/커플) > 멤버 월 무료(premium 3/plus 1, 커플별 멱등) 순으로 접근 판정.
+  // tryConsumeMemberCompatAccess 가 내부에서 tier 자가 판별하므로 사전 isPremiumMember 체크 불필요.
   const hasDeepReadingAccess =
     paid === 'love-question' ||
     paid === 'compat-reading' ||
     (data.user.id ? await hasCompatibilityAccess(data.user.id, coupleKey) : false) ||
-    (data.user.id && (await isPremiumMember(data.user.id))
-      ? await tryConsumeMemberCompatAccess(data.user.id, coupleKey)
-      : false);
+    (data.user.id ? await tryConsumeMemberCompatAccess(data.user.id, coupleKey) : false);
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">

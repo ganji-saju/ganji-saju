@@ -139,7 +139,7 @@ export default async function MembershipPage({
               <span className="text-[var(--app-pink-strong)]">{featuredPlan?.price ?? '월 49,000원'}</span>
             </h1>
             <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
-              매월 90코인에 매일 대화 5건·궁합 월 3회·가족 사주 5명까지 함께 열립니다.
+              상세 풀이·운세 달력 무제한, 매일 대화 5건·궁합 월 3회·가족 사주 5명까지 함께 열립니다.
             </p>
           </div>
 

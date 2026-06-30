@@ -9,6 +9,22 @@ export const MEMBER_BENEFITS = {
   compatMonthly: { benefit: 'compat_monthly', limit: 3, period: 'month' },
 } as const;
 
+// 2026-06-30 코인→정액이용권 전환: 멤버 혜택을 등급별 쿼터로 표현.
+//   benefit/period 버킷 키는 consume_member_benefit RPC 용, 한도는 등급별 MEMBER_QUOTAS 참조.
+/** consumeMemberBenefit 의 period 버킷 키. 한도는 MEMBER_QUOTAS[tier] 에서 가져온다. */
+export const MEMBER_BENEFIT_KEYS = {
+  detailMonthly: { benefit: 'detail_monthly', period: 'month' },
+  calendarMonthly: { benefit: 'calendar_monthly', period: 'month' },
+  dialogueDaily: { benefit: 'dialogue_daily', period: 'day' },
+  compatMonthly: { benefit: 'compat_monthly', period: 'month' },
+} as const;
+
+/** 2026-06-30 사용자 승인 확정 쿼터. null = 무제한(소비추적 없이 등급 게이트만으로 통과). */
+export const MEMBER_QUOTAS = {
+  premium: { detailMonthly: null, calendarMonthly: null, dialogueDaily: 5, compatMonthly: 3 },
+  plus: { detailMonthly: 3, calendarMonthly: 1, dialogueDaily: 2, compatMonthly: 1 },
+} as const;
+
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 /** KST 기준 일 기간키 'YYYY-MM-DD'. */

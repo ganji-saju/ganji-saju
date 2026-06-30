@@ -9,6 +9,7 @@ import { addCredits, getCredits } from '@/lib/credits/deduct';
 import { logAdminAccess } from '@/lib/admin/access-log';
 import { validateGrantCredits } from '@/lib/admin/grant-credits';
 import { refreshAdminUserSummaryForUser } from '@/lib/admin/summary-refresh';
+import { COIN_TOPUP_ENABLED } from '@/lib/payments/coin-sunset';
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -24,6 +25,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { ok: false, error: "super_admin 만 코인을 지급할 수 있습니다." },
       { status: 403 }
+    );
+  }
+
+  // 코인 sunset 가드: 신규 코인 발행이 전면 중단된 상태에서는 수동 지급도 불가.
+  if (!COIN_TOPUP_ENABLED) {
+    return NextResponse.json(
+      { ok: false, error: '코인 발행이 중단되어 수동 코인 지급을 사용할 수 없습니다.' },
+      { status: 410 }
     );
   }
 

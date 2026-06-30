@@ -34,6 +34,7 @@ import {
   createPaymentOrder,
   updatePaymentOrderPolicyVersions,
 } from '@/lib/payments/order-ledger';
+import { isCreditPackage } from '@/lib/payments/coin-sunset';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -83,6 +84,14 @@ export async function POST(req: NextRequest) {
 
   if (!pkg) {
     return NextResponse.json({ error: '결제 상품을 찾지 못했습니다.' }, { status: 400 });
+  }
+
+  // 2026-06-30 코인 충전 전면 중단(coin-sunset Phase 1). 코인팩 결제 요청 자체를 거부.
+  if (isCreditPackage(pkg)) {
+    return NextResponse.json(
+      { ok: false, error: '코인 충전은 현재 제공하지 않습니다.' },
+      { status: 410 }
+    );
   }
 
   if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {

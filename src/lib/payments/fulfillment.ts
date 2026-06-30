@@ -34,6 +34,7 @@ import { getUserProfileById } from '@/lib/profile';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
 import { activateMembershipSubscription, getManagedSubscription } from '@/lib/subscription';
+import { shouldGrantCredits } from '@/lib/payments/coin-sunset';
 
 async function attachOwnedReading(
   paymentScope: PaymentProductScope | null,
@@ -174,7 +175,7 @@ export async function fulfillPaymentOrder(input: {
       claimed.userId
     );
 
-    if (pkg.credits > 0) {
+    if (shouldGrantCredits(pkg)) {
       await addCredits(claimed.userId, pkg.credits, getCreditGrantType(pkg), {
         orderId: claimed.orderId,
         packageId: pkg.id,

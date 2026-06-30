@@ -4,6 +4,13 @@ import {
   getCredits,
   unlockCreditsOnce,
 } from './deduct';
+import { getMemberTier } from '@/lib/subscription';
+import {
+  MEMBER_QUOTAS,
+  MEMBER_BENEFIT_KEYS,
+  consumeMemberBenefit,
+  monthlyPeriodKey,
+} from './member-benefits';
 
 export const FORTUNE_CALENDAR_MONTH_ACCESS_KIND = 'fortune_calendar_month_access';
 
@@ -12,6 +19,7 @@ export interface FortuneCalendarUnlockResult {
   remaining: number;
   reused: boolean;
   error?: string;
+  viaMembership?: boolean;
 }
 
 function pad(value: number) {
@@ -103,6 +111,22 @@ export async function unlockFortuneCalendarMonth(
     };
   }
 
+  // [멤버십 게이트] 코인 앞에 삽입: premium 무제한 / plus 월쿼터 소진
+  const tier = await getMemberTier(userId);
+  if (tier) {
+    const limit = MEMBER_QUOTAS[tier].calendarMonthly; // null = 무제한(premium)
+    const granted =
+      limit === null
+        ? true
+        : await consumeMemberBenefit(userId, MEMBER_BENEFIT_KEYS.calendarMonthly.benefit, monthlyPeriodKey(), limit);
+    if (granted) {
+      await recordFortuneCalendarMonthAccess(userId, readingKey, year, month);
+      return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
+    }
+    // plus 한도 초과 → 아래 레거시 코인/페이월로 폴스루
+  }
+
+  // [레거시 코인 경로] 기존 잔액 보유자 소진용 — 삭제 금지
   const accessMetadata = getFortuneCalendarMonthAccessMetadata(readingKey, year, month);
   const atomicResult = await unlockCreditsOnce(userId, 'calendar', accessMetadata);
 
