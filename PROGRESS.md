@@ -21,7 +21,12 @@
   - Wave1 페이월(멤버 인지 3분기): premium-lock-card(오늘자세히)·fortune-calendar-panel(달력, 402→/membership/checkout)·dialogue-chat-panel(대화=멤버십전용). 멤버="멤버십에 포함·바로 열기"(결제 CTA 0), 비회원=멤버십우선+카드9,900, 코인은 hasLegacyCoins만.
   - Wave3 정리: 전역 stale 코인충전 CTA→멤버십/잔액(site-header·today-detail·membership-section·my/billing·home dock·credits success/loading/layout), **subscription-manager 멤버십버튼 /credits 오링크 버그 수정→/membership**, 상담예약 가짜 100코인 경제 전면 제거(api 무차감)·정책 v1.1, pricing 코인팩 섹션 제거, stale 주석/토스트(550원·1코인)·faq '코인 자동충전' 정정.
   - 범위 외 보류: T6/T8(궁합·saju premium 멤버십 CT**추가**=폴리시), T7(점수 가격 550 vs 9,900 코드 충돌=확인필요 블로커).
-  - ⚠️ Fast-follow(최종리뷰 Minor, 비차단): ①premium-lock-card 멤버 플리커(initialEntitlement 없어 sub-초간 결제UI 후 '포함'으로—극히 좁은 race) ②bundled-policies 코인정책(kind='coin') 문구 잔존(충전 서버차단이라 무해) ③cancelled 구독 grace기간 tier=null 의미 팀 확인.
+  - ⚠️ Fast-follow(최종리뷰 Minor, 비차단): ①premium-lock-card 멤버 플리커 ②bundled-policies 코인정책 문구 ③cancelled grace 의미 — **전부 PR #567에서 처리**(아래).
+- **Phase 3 follow-ups (PR #567, branch feat/phase3-followups)**: 백로그 정리. opus 최종 whole-branch 리뷰 SAFE AS-IS, npm test 172/172.
+  - **해지예약(cancelled) grace 실버그 수정**: billing UI가 "해지예약해도 기간 끝까지 혜택 유지" 명시 약속하나 코드는 즉시 회수했음. `isEntitledStatus`(active||cancelled)로 멤버십 게이트 전체(isPremiumMember/isPlusMember/getMemberTier) + saju-premium·yearly-interpret 게이트까지 통일(FU1+FU6). expireIfNeeded가 renews_at 경과 시 expired로 정규화 → cancelled=grace 내. 알림 만료리마인더·재구매차단은 의미상 active-only 유지.
+  - premium-lock-card entitlement 로딩 중 결제 CTA 차단(멤버 플리커 과금 race 방지, FU2). 궁합 페이월 멤버십 업셀 CTA(FU3). 코인정책 문서 v1.1.0 충전종료 반영(FU5).
+  - T7 점수 가격: **코드 변경 0** — score-total=9,900 이미 일관(catalog=배포진실; 메모 550은 #456 이전 stale), 메모리만 정정.
+  - 의도 보류: FU4(평생리포트 멤버십 CTA) — 멤버십 혜택 아니라 '포함' 오인 우려로 skip.
 
 ---
 
