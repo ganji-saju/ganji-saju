@@ -48,7 +48,7 @@ export async function resolveTodayFortuneUnlockAccess(
   scope: TodayFortuneUnlockScope,
   deps: TodayFortuneUnlockDeps,
 ): Promise<TodayFortuneAccessSource> {
-  // 1) entitlement (taste product DB row — 550원 직접 결제).
+  // 1) entitlement (taste product DB row — 9,900원 카드 직접 결제).
   const entitlement = await deps.getTodayDetailEntitlement(userId, scope.scopeKey);
   if (entitlement) return 'taste-product';
 

@@ -51,7 +51,7 @@ interface TodayFortuneUnlockResponse {
 function getAccessNotice(access: TodayFortuneUnlockResponse['access']) {
   switch (access) {
     case 'charged':
-      return '10코인으로 오늘 자세히 보기를 열었습니다.';
+      return '오늘 자세히 보기를 열었습니다.';
     case 'reused':
       return '이미 열어본 풀이입니다. 코인은 다시 차감하지 않았습니다.';
     case 'purchased':
