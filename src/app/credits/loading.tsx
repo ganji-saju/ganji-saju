@@ -11,7 +11,7 @@ export default function CreditsLoading() {
         <GangiPageHeader title="코인 잔액" />
         <GangiLoadingOverlay
           title="코인 잔액을 확인하고 있어요"
-          description="보유 잔액을 불러오는 중입니다."
+          description="보유 잔액과 사용 안내를 정리하고 있어요."
           steps={[
             '잔액 확인',
             '사용 내역 정리',
