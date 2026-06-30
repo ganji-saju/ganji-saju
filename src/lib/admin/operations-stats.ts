@@ -1,5 +1,5 @@
 // 2026-05-15 — 운영 모니터링 메트릭 산출.
-// auth.users / credit_transactions / readings / subscriptions / today_fortune_feedback /
+// admin_user_summary / credit_transactions / readings / subscriptions / today_fortune_feedback /
 // dialogue_messages 등에서 DAU·결제·만족도·구독 활성 등 계산.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -31,7 +31,7 @@ export interface OperationsSnapshot {
   };
   /** 누적 (현재 시점). */
   lifetime: {
-    /** 총 가입자 (signup_bonus 트랜잭션 count). */
+    /** 총 가입자 (admin_user_summary row count). */
     totalUsers: number;
     /** 활성 구독자 (status='active'). */
     activeSubscribers: number;
@@ -136,13 +136,14 @@ export async function buildOperationsSnapshot(
     totalReadingsCountResp,
     totalUsersCountResp,
   ] = await Promise.all([
-    // 신규 가입 (signup_bonus 트랜잭션).
+    // 신규 가입 (admin_user_summary.signup_at — migration 049 기준).
+    // admin_user_summary 는 cron 으로 주기적으로 갱신되므로 매우 최근 가입자는
+    // 다음 cron 실행 전까지 반영이 지연될 수 있음(대시보드 허용 범위).
     client
-      .from('credit_transactions')
-      .select('user_id, created_at')
-      .eq('type', 'signup_bonus')
-      .gte('created_at', windowStart.toISOString())
-      .order('created_at', { ascending: true })
+      .from('admin_user_summary')
+      .select('user_id, signup_at')
+      .gte('signup_at', windowStart.toISOString())
+      .order('signup_at', { ascending: true })
       .limit(50_000),
 
     // 결제 (purchase type, 윈도우 내).
@@ -197,14 +198,16 @@ export async function buildOperationsSnapshot(
       .select('id', { count: 'exact', head: true })
       .not('user_id', 'is', null),
 
-    // 누적 가입자.
+    // 누적 가입자 (admin_user_summary — user_id 가 PK, id 컬럼 없음).
     client
-      .from('credit_transactions')
-      .select('id', { count: 'exact', head: true })
-      .eq('type', 'signup_bonus'),
+      .from('admin_user_summary')
+      .select('user_id', { count: 'exact', head: true }),
   ]);
 
-  const signupRows = (signupResp.data ?? []) as Array<{ user_id: string; created_at: string }>;
+  // signup_at → created_at 로 매핑해 countByDate / toLocalDateKey 공통 인터페이스를 유지한다.
+  const signupRows = ((signupResp.data ?? []) as Array<{ user_id: string; signup_at: string }>).map(
+    (r) => ({ user_id: r.user_id, created_at: r.signup_at }),
+  );
   const purchaseRows = (creditTxResp.data ?? []) as Array<{
     user_id: string;
     amount: number;
