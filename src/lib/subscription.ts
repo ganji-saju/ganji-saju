@@ -98,6 +98,25 @@ export async function isPremiumMember(userId: string): Promise<boolean> {
   return sub?.status === 'active' && sub.plan === 'premium_monthly';
 }
 
+// 2026-06-30 — 라이트(플러스) 멤버십(월 4,900원 30일권) 혜택 게이트 공통 판별.
+//   active + plan='plus_monthly' 이면 멤버. isPremiumMember 패턴과 동일.
+export async function isPlusMember(userId: string): Promise<boolean> {
+  if (!userId) return false;
+  const sub = await getManagedSubscription(userId);
+  return sub?.status === 'active' && sub.plan === 'plus_monthly';
+}
+
+// 2026-06-30 — 활성 구독의 등급(tier) 반환. 피처 게이트가 tier별 혜택 분기에 사용.
+//   active 아니면 null, plan 불일치도 null.
+export async function getMemberTier(userId: string): Promise<'premium' | 'plus' | null> {
+  if (!userId) return null;
+  const sub = await getManagedSubscription(userId);
+  if (sub?.status !== 'active') return null;
+  if (sub.plan === 'premium_monthly') return 'premium';
+  if (sub.plan === 'plus_monthly') return 'plus';
+  return null;
+}
+
 export async function activatePlusSubscription(
   userId: string,
   options: { customerKey?: string | null; billingKey?: string | null } = {}
