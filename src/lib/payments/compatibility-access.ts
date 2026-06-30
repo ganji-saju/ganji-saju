@@ -70,7 +70,7 @@ export async function tryConsumeMemberCompatAccess(
     .limit(1);
   if (existing && existing.length > 0) return true;
 
-  // (2) 이번 달 멤버 무료 사용 distinct 커플 수 < 3 이면 새로 1회 소비.
+  // (2) 이번 달 멤버 무료 사용 distinct 커플 수 < limit(등급별: premium 3 / plus 1) 이면 새로 1회 소비.
   const { count } = await service
     .from('credit_transactions')
     .select('id', { count: 'exact', head: true })
