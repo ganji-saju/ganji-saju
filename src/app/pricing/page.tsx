@@ -14,10 +14,6 @@ import {
 } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
-import {
-  PAYMENT_PACKAGES,
-  formatWon,
-} from '@/lib/payments/catalog';
 // 2026-05-16 — 활성 멤버십 plan 을 표시해 중복 결제 진입 차단.
 import { getManagedSubscription } from '@/lib/subscription';
 import {
@@ -29,13 +25,12 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '가격 한눈보기',
-  description: '간지사주의 무료 운세, 9,900원 단품 풀이, 코인팩, 멤버십을 한 화면에서 비교합니다.',
+  description: '간지사주의 무료 운세, 9,900원 단품 풀이, 멤버십을 한 화면에서 비교합니다.',
   alternates: {
     canonical: '/pricing',
   },
 };
 
-const CREDIT_PACKAGES = PAYMENT_PACKAGES.filter((item) => item.kind === 'credits');
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
 // 2026-06-07 — 선생 12명 전원 활성(dialogue/전용 기능 연결). 과거 '출시 예정'
 //   필터는 coming-soon 선생이 사라져 불필요 → 전체 사용.
@@ -162,28 +157,6 @@ export default async function PricingPage() {
                 })()}
               </article>
             ))}
-          </div>
-        </GangiSection>
-
-        <GangiSection
-          eyebrow="코인팩"
-          title="필요한 만큼만 충전"
-          description="코인은 일부 깊이보기와 달력 기능에 사용합니다. 이미 연 항목은 다시 결제하지 않는 흐름으로 이어갑니다."
-        >
-          <div className="grid gap-3">
-            {CREDIT_PACKAGES.map((pack, index) => {
-              const teacher = GANGI_TEACHERS[(index + 2) % GANGI_TEACHERS.length];
-              return (
-                <GangiListLink
-                  key={pack.id}
-                  href="/credits"
-                  zodiac={teacher.zodiac}
-                  title={pack.name}
-                  desc={String(pack.credits) + '코인 충전권'}
-                  price={formatWon(pack.price)}
-                />
-              );
-            })}
           </div>
         </GangiSection>
       </AppPage>
