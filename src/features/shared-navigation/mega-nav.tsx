@@ -141,13 +141,18 @@ export function MegaNavBar() {
   const activeLabel = resolveActiveGroup(pathname);
 
   // session — 로그인 여부 + 코인.
+  // mega-nav 는 app-shell 에 영속 마운트되어 soft navigation/router.refresh() 로는
+  // 리마운트되지 않는다. 로그아웃/로그인 후 헤더가 stale 해지지 않도록 SiteHeader 와
+  // 동일하게 onAuthStateChange 를 구독해 세션 상태를 반응형으로 갱신한다.
   useEffect(() => {
     if (!hasSupabaseBrowserEnv) return;
     let cancelled = false;
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (cancelled || !user) {
-        if (!cancelled) setSession({ authenticated: false, credits: null });
+
+    async function syncSession(user: { id: string } | null) {
+      if (cancelled) return;
+      if (!user) {
+        setSession({ authenticated: false, credits: null });
         return;
       }
       setSession({ authenticated: true, credits: null });
@@ -160,9 +165,24 @@ export function MegaNavBar() {
       if (cancelled) return;
       const total = (creditRow?.balance ?? 0) + (creditRow?.subscription_balance ?? 0);
       setSession({ authenticated: true, credits: total });
+    }
+
+    // 초기값: JWT 를 서버 검증하는 getUser 로 판정.
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      void syncSession(user);
     });
+
+    // 이후 로그인/로그아웃 등 세션 변경에 반응(영속 컴포넌트라 리마운트 없음).
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'INITIAL_SESSION') return; // 초기값은 위 getUser 로 처리.
+      void syncSession(nextSession?.user ?? null);
+    });
+
     return () => {
       cancelled = true;
+      subscription.unsubscribe();
     };
   }, []);
 
