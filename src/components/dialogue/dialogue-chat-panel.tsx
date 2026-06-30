@@ -151,7 +151,7 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
     case 'auth_required':
       return '대화는 로그인 후 사용할 수 있습니다.';
     case 'insufficient_credits':
-      return `${billing.bundleSize}회 묶음 시작에 ${billing.cost}코인이 필요합니다 · 현재 ${billing.remaining ?? 0}개`;
+      return `멤버십으로 매일 대화를 이어갈 수 있어요`;
     default:
       return null;
   }
@@ -714,7 +714,7 @@ export function DialogueChatPanel({
           </div>
         </div>
         <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-sm leading-6 text-[var(--app-copy-soft)]'}>
-          처음 3회 무료 · 이후 3회 3코인
+          멤버십 매일 무료 · 비회원 첫 3회 무료
         </p>
 
         {errorMessage ? (
@@ -722,12 +722,12 @@ export function DialogueChatPanel({
             {errorMessage}
             {needsRecharge ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="text-sm text-[var(--app-copy-soft)]">코인을 충전하면 바로 이어서 대화할 수 있어요.</span>
+                <span className="text-sm text-[var(--app-copy-soft)]">멤버십이면 매일 대화를 이어갈 수 있어요.</span>
                 <Link
-                  href="/credits"
+                  href="/membership"
                   className="inline-flex items-center gap-1 rounded-full bg-[var(--app-gold)] px-4 py-2 text-sm font-bold text-[var(--app-ink)] transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  코인 충전 바로가기
+                  멤버십 보기
                   <span aria-hidden>→</span>
                 </Link>
               </div>
