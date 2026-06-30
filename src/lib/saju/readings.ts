@@ -32,7 +32,7 @@ import type { PersistedChapterEnvelope } from '@/server/ai/chapters/chapter-stor
 const READING_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-interface ReadingRow {
+export interface ReadingRow {
   id: string;
   user_id: string | null;
   birth_year: number;
@@ -143,7 +143,7 @@ export function isReadingId(value: string): boolean {
   return READING_ID_PATTERN.test(value);
 }
 
-function mapReadingRow(row: ReadingRow): ReadingRecord {
+export function mapReadingRow(row: ReadingRow): ReadingRecord {
   const persisted = extractPersistedReadingEnvelope(row.result_json);
   const input: BirthInput = {
     name: persisted._metadata?.birthInputSnapshot.name ?? undefined,

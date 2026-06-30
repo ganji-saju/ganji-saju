@@ -7,7 +7,8 @@ export type AdminAction =
   | 'view_detail' | 'view_pii' | 'export_csv'
   | 'grant_credit' | 'revoke_credit' | 'grant_membership' | 'suspend_sub' | 'cancel_sub'
   | 'force_reconsent' | 'refund_request' | 'refund_approve'
-  | 'batch_refund_request' | 'purge_deleted_user';
+  | 'batch_refund_request' | 'purge_deleted_user'
+  | 'grant_lifetime_report';
 
 export interface AccessLogInput {
   actorId: string;
