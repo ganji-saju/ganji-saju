@@ -677,6 +677,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       : null,
                     reason: todayDetailEntitlement ? 'product-purchased' : null,
                     hasLegacyCoins: false,
+                    memberFreeEligible: false,
                   }}
                   unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
                   unpaidLabel="오늘 자세히 · 9,900원"

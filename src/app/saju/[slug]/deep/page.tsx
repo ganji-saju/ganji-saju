@@ -502,6 +502,7 @@ export default async function SajuDeepPage({ params }: Props) {
                       : null,
                     reason: hasLifetimeAccess ? 'lifetime-purchased' : null,
                     hasLegacyCoins: false,
+                    memberFreeEligible: false,
                   }}
                 />
 
