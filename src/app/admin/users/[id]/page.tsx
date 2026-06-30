@@ -13,7 +13,9 @@ import { MemberDetailTabs, type DetailTab } from './member-detail-tabs';
 import { RefundActions } from './refund-actions';
 import { GrantCreditsActions } from './grant-credits-actions';
 import { GrantMembershipActions } from './grant-membership-actions';
+import { GrantLifetimeReportActions } from './grant-lifetime-report-actions';
 import { getManagedSubscription } from '@/lib/subscription';
+import { listUserReadingsForAdmin } from '@/lib/admin/user-readings';
 
 export const metadata: Metadata = {
   title: '사용자 상세 (admin)',
@@ -78,11 +80,12 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const check = await getCurrentAdminRole(supabase);
   const role: 'admin' | 'super_admin' = check.role ?? 'admin';
 
-  const [detail, extras, summaryRow, subscription] = await Promise.all([
+  const [detail, extras, summaryRow, subscription, lifetimeReadings] = await Promise.all([
     getAdminUserDetail(id),
     getMemberExtras(id),
     fetchSummaryRow(id),
     getManagedSubscription(id).catch(() => null),
+    listUserReadingsForAdmin(id).catch(() => [] as Awaited<ReturnType<typeof listUserReadingsForAdmin>>),
   ]);
   if (!detail) notFound();
 
@@ -256,6 +259,16 @@ export default async function AdminUserDetailPage({ params }: Props) {
               userId={id}
               currentPlan={subscription?.plan ?? null}
               currentStatus={subscription?.status ?? null}
+            />
+          </Card>
+          <Card title="평생 리포트 권한 부여 (super_admin)">
+            <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
+              특정 사주 결과에 평생리포트 접근권(lifetime-report)을 무료 수동 부여. 결제·코인 무관.
+            </p>
+            <GrantLifetimeReportActions
+              role={role}
+              userId={id}
+              readings={lifetimeReadings.map((r) => ({ id: r.id, label: r.label, hasLifetime: r.hasLifetime }))}
             />
           </Card>
         </>
