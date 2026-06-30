@@ -40,7 +40,7 @@ import {
   hasSupabaseServerEnv,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
-import { getManagedSubscription } from '@/lib/subscription';
+import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -68,7 +68,8 @@ function canUseSubscriptionForPremiumReport(
   subscription: Awaited<ReturnType<typeof getManagedSubscription>>
 ) {
   return (
-    subscription?.status === 'active' &&
+    subscription != null &&
+    isEntitledStatus(subscription.status) &&
     (subscription.plan === 'plus_monthly' || subscription.plan === 'premium_monthly')
   );
 }
@@ -323,7 +324,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       } else if (hasMonthlyCalendar) {
         monthlyAccessLabel = '월간 달력 구매';
       }
-      if (subscription && subscription.status === 'active') {
+      if (subscription && isEntitledStatus(subscription.status)) {
         activeMembershipPlan = subscription.plan;
       }
     }

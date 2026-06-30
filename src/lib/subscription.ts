@@ -92,7 +92,7 @@ export async function getManagedSubscription(userId: string): Promise<ManagedSub
 
 // 2026-06-30 — 해지 예약(cancelled)은 renews_at 까지 유효(billing 카피가 명시 약속).
 //   expireIfNeeded 가 기간 경과 시 'expired'로 정규화하므로, 'cancelled'는 곧 grace 기간 내.
-function isEntitledStatus(status: SubscriptionStatus): boolean {
+export function isEntitledStatus(status: SubscriptionStatus): boolean {
   return status === 'active' || status === 'cancelled';
 }
 
