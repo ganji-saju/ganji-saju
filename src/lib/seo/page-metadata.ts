@@ -15,18 +15,22 @@ export interface ContentPageMetadataInput {
   path: string;
   /** OG type. content page 는 'article' 권장. */
   ogType?: 'article' | 'website';
-  /** OG image absolute or site-relative URL. 미지정 시 사이트 default. */
+  /** OG image absolute or site-relative URL. 미지정 시 사이트 default(브랜드 og-image). */
   ogImagePath?: string;
 }
+
+// 2026-06-30 — og:image 사이트 기본값(브랜드 로고). Next 는 child 가 openGraph 를
+//   정의하면 parent(layout)의 openGraph.images 를 상속하지 않으므로, 콘텐츠 페이지도
+//   명시적으로 기본 og-image 를 싣는다(미지정 시 폴백).
+const DEFAULT_OG_IMAGE_PATH = '/images/gangi/og-image.png';
 
 export function buildContentPageMetadata(input: ContentPageMetadataInput): Metadata {
   const url = `${getSiteUrl()}${input.path}`;
   const ogType = input.ogType ?? 'article';
-  const ogImageUrl = input.ogImagePath
-    ? input.ogImagePath.startsWith('http')
-      ? input.ogImagePath
-      : `${getSiteUrl()}${input.ogImagePath}`
-    : undefined;
+  const ogImagePath = input.ogImagePath ?? DEFAULT_OG_IMAGE_PATH;
+  const ogImageUrl = ogImagePath.startsWith('http')
+    ? ogImagePath
+    : `${getSiteUrl()}${ogImagePath}`;
 
   return {
     title: input.title,
