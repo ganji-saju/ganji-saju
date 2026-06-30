@@ -304,21 +304,6 @@ export async function unlockDetailReport(
     };
   }
 
-  // [멤버십 게이트] 코인 앞에 삽입: premium 무제한 / plus 월쿼터 소진
-  const tier = await getMemberTier(userId);
-  if (tier) {
-    const limit = MEMBER_QUOTAS[tier].detailMonthly; // null = 무제한
-    const granted =
-      limit === null
-        ? true
-        : await consumeMemberBenefit(userId, MEMBER_BENEFIT_KEYS.detailMonthly.benefit, monthlyPeriodKey(), limit);
-    if (granted) {
-      await recordDetailReportAccess(userId, readingKey);
-      return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
-    }
-    // plus 한도 초과 → 아래 레거시 코인/페이월로 폴스루
-  }
-
   // [레거시 코인 경로] 기존 잔액 보유자 소진용 — 삭제 금지
   const accessMetadata = getDetailReportAccessMetadata(readingKey);
   const atomicResult = await unlockCreditsOnce(userId, 'detail_report', accessMetadata);
@@ -361,6 +346,21 @@ export async function unlockTodayFortunePremium(
       remaining: await getRemainingCredits(userId),
       reused: true,
     };
+  }
+
+  // [멤버십 게이트] 코인 앞에 삽입: premium 무제한 / plus 월쿼터 소진
+  const tier = await getMemberTier(userId); // 'premium' | 'plus' | null
+  if (tier) {
+    const limit = MEMBER_QUOTAS[tier].detailMonthly; // null = 무제한(premium)
+    const granted =
+      limit === null
+        ? true
+        : await consumeMemberBenefit(userId, MEMBER_BENEFIT_KEYS.detailMonthly.benefit, monthlyPeriodKey(), limit);
+    if (granted) {
+      await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
+      return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
+    }
+    // plus 한도 초과 → 아래 레거시 코인/페이월로 폴스루
   }
 
   const accessMetadata = getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey);

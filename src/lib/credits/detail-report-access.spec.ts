@@ -1,5 +1,5 @@
 /**
- * Task 10: unlockDetailReport — 멤버십 게이트 단위 테스트
+ * unlockTodayFortunePremium — 멤버십 게이트 단위 테스트
  *
  * 게이트 순서: (1)기존 access → (2)멤버십(premium 무제한/plus 월쿼터) → (3)레거시 코인 → (4)페이월
  *
@@ -43,19 +43,21 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { getCredits, unlockCreditsOnce, deductCredits } from './deduct';
 import { getMemberTier } from '@/lib/subscription';
 import { consumeMemberBenefit } from './member-benefits';
-import { unlockDetailReport } from './detail-report-access';
+import { unlockTodayFortunePremium } from './detail-report-access';
 
 // ── Supabase 클라이언트 팩토리 ───────────────────────────────────────────────
-// hasDetailReportAccess: .from().select().eq().eq().eq().contains().limit(1)
-// recordDetailReportAccess: .from().insert({...})
+// hasTodayFortunePremiumAccess: .from().select().eq().eq().eq().contains().limit(1)
+// recordTodayFortunePremiumAccess: .from().insert({...})
 function makeSupabaseClient(hasAccess = false) {
   const rows = hasAccess ? [{ id: '1' }] : [];
-  const limit = vi.fn().mockResolvedValue({ data: rows, error: null });
-  const contains = vi.fn().mockReturnValue({ limit });
-  // chainObj 가 .eq() 의 공유 반환 — eq / contains / limit 모두 달린 유연한 체인
+  // 모든 chaining 메서드가 동일한 chainObj 를 반환 → gte/lt/contains 순서 무관하게 동작
   const chainObj: Record<string, unknown> = {};
+  const limit = vi.fn().mockResolvedValue({ data: rows, error: null });
   const eq = vi.fn().mockReturnValue(chainObj);
-  Object.assign(chainObj, { eq, contains, limit });
+  const gte = vi.fn().mockReturnValue(chainObj);
+  const lt = vi.fn().mockReturnValue(chainObj);
+  const contains = vi.fn().mockReturnValue(chainObj);
+  Object.assign(chainObj, { eq, gte, lt, contains, limit });
   const select = vi.fn().mockReturnValue(chainObj);
   const insert = vi.fn().mockResolvedValue({ error: null });
   const from = vi.fn().mockReturnValue({ select, insert });
@@ -64,8 +66,10 @@ function makeSupabaseClient(hasAccess = false) {
 
 const USER = 'user-test';
 const READING_KEY = 'test-reading-key';
+const SESSION_ID = 'test-session-id';
+const DAY_KEY = '2026-06-30';
 
-describe('unlockDetailReport — 멤버십 게이트', () => {
+describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // 기본: 미접근, 멤버십 없음, 코인 부족(페이월 기본)
@@ -78,10 +82,10 @@ describe('unlockDetailReport — 멤버십 게이트', () => {
   });
 
   // ── (1) 기존 접근(reused) ─────────────────────────────────────────────────
-  it('이미 접근한 경우: reused:true, 멤버십/코인 미호출', async () => {
+  it('이미 접근한 경우(hasTodayFortunePremiumAccess=true): reused:true, 멤버십/코인 미호출', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeSupabaseClient(true) as never);
 
-    const result = await unlockDetailReport(USER, READING_KEY);
+    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
 
     expect(result.success).toBe(true);
     expect(result.reused).toBe(true);
@@ -95,7 +99,7 @@ describe('unlockDetailReport — 멤버십 게이트', () => {
   it('premium 멤버: viaMembership:true, consumeMemberBenefit/코인 미호출', async () => {
     vi.mocked(getMemberTier).mockResolvedValue('premium');
 
-    const result = await unlockDetailReport(USER, READING_KEY);
+    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
 
     expect(result.success).toBe(true);
     expect(result.reused).toBe(false);
@@ -112,7 +116,7 @@ describe('unlockDetailReport — 멤버십 게이트', () => {
     vi.mocked(getMemberTier).mockResolvedValue('plus');
     vi.mocked(consumeMemberBenefit).mockResolvedValue(true);
 
-    const result = await unlockDetailReport(USER, READING_KEY);
+    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
 
     expect(result.success).toBe(true);
     expect(result.reused).toBe(false);
@@ -130,7 +134,7 @@ describe('unlockDetailReport — 멤버십 게이트', () => {
     vi.mocked(unlockCreditsOnce).mockResolvedValue(null);
     vi.mocked(deductCredits).mockResolvedValue({ success: true, remaining: 0 });
 
-    const result = await unlockDetailReport(USER, READING_KEY);
+    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
 
     expect(result.viaMembership).toBeUndefined();
     expect(consumeMemberBenefit).toHaveBeenCalledOnce();
@@ -145,7 +149,7 @@ describe('unlockDetailReport — 멤버십 게이트', () => {
     vi.mocked(unlockCreditsOnce).mockResolvedValue(null);
     vi.mocked(deductCredits).mockResolvedValue({ success: true, remaining: 5 });
 
-    const result = await unlockDetailReport(USER, READING_KEY);
+    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
 
     expect(result.viaMembership).toBeUndefined();
     expect(consumeMemberBenefit).not.toHaveBeenCalled();
