@@ -464,10 +464,16 @@ export function CompatibilityResultView({
             </ul>
             <div className="mt-4 grid gap-2">
               <Link
-                href={checkoutHref}
+                href="/membership"
                 className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
-                9,900원 · 깊은 궁합 풀이 보기 →
+                멤버십이면 궁합 매달 무료 →
+              </Link>
+              <Link
+                href={checkoutHref}
+                className="inline-flex items-center justify-center rounded-full border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
+              >
+                9,900원 · 깊은 궁합 풀이 보기
               </Link>
               <Link
                 href={retakeHref}

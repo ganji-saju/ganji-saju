@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
-import { getManagedSubscription } from '@/lib/subscription';
+import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
 
@@ -115,7 +115,8 @@ export async function POST(req: NextRequest) {
     ),
   ]);
   const subscriptionUnlocks =
-    subscription?.status === 'active' &&
+    subscription != null &&
+    isEntitledStatus(subscription.status) &&
     (subscription.plan === 'plus_monthly' || subscription.plan === 'premium_monthly');
   const hasYearlyAccess = Boolean(lifetime) || Boolean(subscriptionUnlocks) || Boolean(yearCore);
   if (!hasYearlyAccess) {
