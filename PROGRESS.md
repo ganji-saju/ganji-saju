@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-30 세션 (Claude) — 관리자 평생리포트 권한 부여 + dead-code 정리 + codebase-memory
+
+- **관리자 평생리포트 수동 부여(PR 예정, branch feat/admin-grant-lifetime-report)**: super_admin이 유저의 특정 사주 결과에 lifetime-report 권한 부여. 설계 `docs/superpowers/specs/2026-06-30-admin-grant-lifetime-report-design.md`. SDD 백엔드+프론트 각 task-review clean.
+  - 백엔드: `AdminAction`에 `grant_lifetime_report` 추가; `src/lib/admin/user-readings.ts`(`listUserReadingsForAdmin`+`buildReadingLabel`, readings.ts에 `ReadingRow`/`mapReadingRow` export 추출=behavior-preserving); `POST /api/admin/lifetime-report/grant`(super_admin 가드→getReadingById→**소유자 검증**→readingKey=toSlug 서버도출→grantLifetimeReportEntitlement{amount:0} 멱등→logAdminAccess). 평생리포트는 reading 단위 스코프(`lifetime:{readingKey}`)라 결과별 부여.
+  - 프론트: `grant-lifetime-report-actions.tsx`(결과 드롭다운+✓보유중+사유, /admin/users/[id] 환불·운영 탭). readingKey는 클라 미전송(readingId만).
+  - 신규 결제상품·마이그레이션 0. v1 부여만(revoke 제외). Minor(비차단): listUserReadingsForAdmin N+1 hasLifetime 조회.
+- **dead-code 정리(PR #570)**: 미사용 19파일 삭제(메인 리디자인 잔재 8 + 옛 컴포넌트 11). ripgrep 심볼+경로 교차검증(codebase-memory 그래프 OPTIONAL MATCH count가 관계 미바인딩으로 못 씀). −2,443줄.
+- **codebase-memory**: ganji-saju 인덱싱(11,826노드) + auto_index on + 협업자 온보딩 문서(PR #569). detectComprehensiveSinsals 핫패스=오탐 확인(루프 4지지 고정상수, O(1)).
+
+---
+
 ## 2026-06-30 세션 (Claude) — 코인→카드+멤버십 전환 Phase 1+2 머지 + Phase 3 설계
 
 > 코인충전 PG차단/전금법 이슈 → 코인 발행 중단+멤버십 정액이용권화. **Phase 1+2 머지 완료(PR #563, main CI 그린)**. Phase 3(페이월 카드/멤버십 재배치+코인카피 정리) 계획 수립.
