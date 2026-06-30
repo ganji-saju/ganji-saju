@@ -501,6 +501,7 @@ export default async function SajuDeepPage({ params }: Props) {
                       ? `/saju/${encodeURIComponent(slug)}/premium`
                       : null,
                     reason: hasLifetimeAccess ? 'lifetime-purchased' : null,
+                    hasLegacyCoins: false,
                   }}
                 />
 
