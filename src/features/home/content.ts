@@ -156,6 +156,6 @@ export const MEMBERSHIP_POINTS = [
 export const MOBILE_HOME_DOCK_ITEMS = [
   { label: '사주 시작', href: '/saju/new', tone: 'service' },
   { label: '궁합', href: '/#compatibility-lab', tone: 'service' },
-  { label: '코인', href: '/credits', tone: 'service' },
+  { label: '멤버십', href: '/membership', tone: 'service' },
   { label: '무료운세', href: '/today-fortune', tone: 'acquisition' },
 ] as const;

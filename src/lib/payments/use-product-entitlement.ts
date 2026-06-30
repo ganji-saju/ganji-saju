@@ -27,6 +27,8 @@ export interface InitialEntitlement {
   hasEntitlement: boolean;
   openHref: string | null;
   reason: string | null;
+  hasLegacyCoins: boolean;
+  memberFreeEligible: boolean;
 }
 
 export interface ProductEntitlementInput {
@@ -52,6 +54,8 @@ export interface ProductEntitlementResult {
   hasEntitlement: boolean;
   openHref: string | null;
   reason: string | null;
+  hasLegacyCoins: boolean;
+  memberFreeEligible: boolean;
   loading: boolean;
   /** 명시적 재요청 trigger. 결제 확인 callback 등에서 호출. */
   refresh: () => void;
@@ -61,6 +65,8 @@ const EMPTY_INITIAL: InitialEntitlement = {
   hasEntitlement: false,
   openHref: null,
   reason: null,
+  hasLegacyCoins: false,
+  memberFreeEligible: false,
 };
 
 export function useProductEntitlement({
@@ -80,6 +86,8 @@ export function useProductEntitlement({
     hasEntitlement: initial.hasEntitlement,
     openHref: initial.openHref,
     reason: initial.reason,
+    hasLegacyCoins: initial.hasLegacyCoins,
+    memberFreeEligible: initial.memberFreeEligible,
     // initialEntitlement 가 있으면 loading=false 로 시작 (SSR 일치 paint).
     // 없으면 enabled 일 때 loading=true 로 client fetch 진행.
     loading: hasInitial ? false : enabled,
@@ -103,6 +111,8 @@ export function useProductEntitlement({
           hasEntitlement: Boolean(data?.hasEntitlement),
           openHref: typeof data?.openHref === 'string' ? data.openHref : null,
           reason: typeof data?.reason === 'string' ? data.reason : null,
+          hasLegacyCoins: Boolean(data?.hasLegacyCoins),
+          memberFreeEligible: Boolean(data?.memberFreeEligible),
           loading: false,
         });
       })
@@ -140,6 +150,8 @@ export function useProductEntitlement({
           hasEntitlement: Boolean(data?.hasEntitlement),
           openHref: typeof data?.openHref === 'string' ? data.openHref : null,
           reason: typeof data?.reason === 'string' ? data.reason : null,
+          hasLegacyCoins: Boolean(data?.hasLegacyCoins),
+          memberFreeEligible: Boolean(data?.memberFreeEligible),
           loading: false,
         });
       })
@@ -149,14 +161,14 @@ export function useProductEntitlement({
         if (hasInitial) {
           setResult({ ...initial, loading: false });
         } else {
-          setResult({ hasEntitlement: false, openHref: null, reason: null, loading: false });
+          setResult({ hasEntitlement: false, openHref: null, reason: null, hasLegacyCoins: false, memberFreeEligible: false, loading: false });
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [productId, slug, scope, plan, enabled, hasInitial, initial.hasEntitlement, initial.openHref, initial.reason]);
+  }, [productId, slug, scope, plan, enabled, hasInitial, initial.hasEntitlement, initial.openHref, initial.reason, initial.hasLegacyCoins, initial.memberFreeEligible]);
 
   // focus / visibility revalidation — 다른 탭/창 결제 후 돌아온 경우 자동 갱신.
   useEffect(() => {

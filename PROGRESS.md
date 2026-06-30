@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-06-30 세션 (Claude) — 코인→카드+멤버십 전환 Phase 1+2 머지 + Phase 3 설계
+
+> 코인충전 PG차단/전금법 이슈 → 코인 발행 중단+멤버십 정액이용권화. **Phase 1+2 머지 완료(PR #563, main CI 그린)**. Phase 3(페이월 카드/멤버십 재배치+코인카피 정리) 계획 수립.
+
+- **Phase 1+2 (머지됨, PR #563)**: 코인 발행 중단(충전 410·가입보너스0(057, user_credits 행은 유지)·멤버십 코인미지급·관리자차단·/credits 잔액화) + 멤버십 정액이용권화(MEMBER_QUOTAS premium 상세/달력 무제한·대화일5·궁합월3 / plus 3·1·2·1, getMemberTier, 상세풀이/달력/궁합 멤버십 게이트, 카피 재표현). 코인 차감은 레거시 잔액 소진용 유지. SDD 18태스크 전부 task-review + opus whole-branch 리뷰(머니패스 SOUND) + 172 node·103 vitest·E2E 그린.
+  - 머지 전 review-driven fix 2건: 상세풀이 게이트를 고아 detail-unlock→**라이브 unlockTodayFortunePremium(오늘 자세히보기)**로 이전; 관리자 가입카운터를 admin_user_summary.signup_at으로 repoint(057 후 signup_bonus 0 회귀 방지).
+  - ⚠️ 057 마이그레이션 supabase 수동 적용 완료(사용자). 법무/PG 확인은 별도.
+- **⭐ Phase 3 핵심 정정(2회 오판 끝 확정)**: **상세풀이·달력 카드 단건상품은 신규 제작 불필요 — 이미 존재**. 상세풀이=`taste_today_detail`('today-detail' 9,900), 달력=`monthly-calendar`. 코인경로(credit_transactions kind)와 카드경로(product_entitlements)가 동일 콘텐츠 두 결제경로, 수렴=`resolveTodayFortuneUnlockAccess`(today-detail) / fortune-calendar unlock(달력). 오판 원인: 코인 접근체크와 카드 entitlement 체크가 다른 함수에 분리.
+- **Phase 3 계획**(`docs/superpowers/plans/2026-06-30-phase3-paywall-card-membership.md`): Wave0 인프라 → Wave1 페이월 → Wave3 카피정리. 신규상품·마이그레이션 0. 가정: 상세풀이 per-day 유지, 비회원=비구독 로그인, 코인 fallback 잔액소진까지 유지.
+- **Phase 3 실행 완료(PR #564 예정, branch feat/phase3-paywall)**: SDD 12커밋, 전부 task-review + **opus 최종 whole-branch 리뷰 = DEPLOY 안전(머니패스 SOUND, Critical/Important 0)** + 114 vitest·172 node·build 그린.
+  - Wave0 인프라: `userHasLegacyCoins`(balance>0) + entitlement route/hook에 `hasLegacyCoins`·`memberFreeEligible`(premium 무제한/plus 쿼터잔여/covered=today-detail·monthly-calendar) read-only 노출.
+  - Wave1 페이월(멤버 인지 3분기): premium-lock-card(오늘자세히)·fortune-calendar-panel(달력, 402→/membership/checkout)·dialogue-chat-panel(대화=멤버십전용). 멤버="멤버십에 포함·바로 열기"(결제 CTA 0), 비회원=멤버십우선+카드9,900, 코인은 hasLegacyCoins만.
+  - Wave3 정리: 전역 stale 코인충전 CTA→멤버십/잔액(site-header·today-detail·membership-section·my/billing·home dock·credits success/loading/layout), **subscription-manager 멤버십버튼 /credits 오링크 버그 수정→/membership**, 상담예약 가짜 100코인 경제 전면 제거(api 무차감)·정책 v1.1, pricing 코인팩 섹션 제거, stale 주석/토스트(550원·1코인)·faq '코인 자동충전' 정정.
+  - 범위 외 보류: T6/T8(궁합·saju premium 멤버십 CT**추가**=폴리시), T7(점수 가격 550 vs 9,900 코드 충돌=확인필요 블로커).
+  - ⚠️ Fast-follow(최종리뷰 Minor, 비차단): ①premium-lock-card 멤버 플리커(initialEntitlement 없어 sub-초간 결제UI 후 '포함'으로—극히 좁은 race) ②bundled-policies 코인정책(kind='coin') 문구 잔존(충전 서버차단이라 무해) ③cancelled 구독 grace기간 tier=null 의미 팀 확인.
+
+---
+
 ## 2026-06-30 세션 (Claude) — 결제 버튼 포커스 체크아웃(하단 진짜 고정 CTA) + sticky 잠복버그 수정
 
 > 피드백: "결제 버튼이 너무 하단에 있어 결제가 불편". 멤버십/단품 체크아웃·코인충전 양쪽 적용. tsc + next build(EXIT 0) + Playwright 렌더/측정/상호작용 검증 그린. 아직 PR 미생성(로컬 변경).

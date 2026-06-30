@@ -37,15 +37,6 @@ export default function MembershipSection() {
           >
               멤버십 보기
           </Link>
-          <Link
-            href="/credits"
-            className={cn(
-              buttonVariants({ variant: 'outline' }),
-              'h-12 rounded-full border-white/15 bg-white/5 px-6 text-base text-white hover:bg-white/10 hover:text-white'
-            )}
-          >
-              코인 센터 열기
-          </Link>
         </div>
       </div>
     </section>

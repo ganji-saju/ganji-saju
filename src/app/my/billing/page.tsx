@@ -113,7 +113,7 @@ function getSubscriptionNotice(
   subscription: Awaited<ReturnType<typeof getAccountDashboardData>>['subscription']
 ) {
   if (!subscription) {
-    return '아직 멤버십을 시작하지 않았습니다. 코인 센터나 멤버십 화면에서 시작하면 30일 이용 기간과 포함 혜택이 바로 반영됩니다.';
+    return '아직 멤버십을 시작하지 않았습니다. 멤버십 화면에서 시작하면 30일 이용 기간과 포함 혜택이 바로 반영됩니다.';
   }
 
   if (subscription.status === 'active') {
@@ -383,10 +383,10 @@ export default async function MyBillingPage() {
           >
             <div className="min-w-0">
               <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
-                코인 센터
+                코인 잔액
               </div>
               <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
-                충전 · 재시작
+                보유 잔액 확인
               </div>
             </div>
             <span className="text-[var(--app-copy-soft)]" aria-hidden="true">

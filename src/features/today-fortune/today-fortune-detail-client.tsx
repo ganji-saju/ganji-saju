@@ -51,7 +51,7 @@ interface TodayFortuneUnlockResponse {
 function getAccessNotice(access: TodayFortuneUnlockResponse['access']) {
   switch (access) {
     case 'charged':
-      return '10코인으로 오늘 자세히 보기를 열었습니다.';
+      return '오늘 자세히 보기를 열었습니다.';
     case 'reused':
       return '이미 열어본 풀이입니다. 코인은 다시 차감하지 않았습니다.';
     case 'purchased':
@@ -288,10 +288,10 @@ export function TodayFortuneDetailClient({
                 무료 결과로
               </Link>
               <Link
-                href="/credits?from=today-detail"
+                href="/membership"
                 className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
-                코인 충전 →
+                멤버십 보기 →
               </Link>
             </div>
           </article>

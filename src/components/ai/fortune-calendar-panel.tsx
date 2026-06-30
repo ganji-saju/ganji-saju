@@ -465,7 +465,12 @@ export default function FortuneCalendarPanel({
   // 2026-05-16 — 선택된 (slug, year-month) 의 monthly-calendar entitlement 조회.
   //   "9,900원으로 열기" link 를 중복 결제하지 않도록 미리 차단.
   const monthScope = `${targetYear}-${String(selectedMonth).padStart(2, '0')}`;
-  const { hasEntitlement: hasMonthEntitlement, openHref: monthOpenHref } = useProductEntitlement({
+  const {
+    hasEntitlement: hasMonthEntitlement,
+    openHref: monthOpenHref,
+    memberFreeEligible: calendarMemberFree,
+    hasLegacyCoins,
+  } = useProductEntitlement({
     productId: 'monthly-calendar',
     slug,
     scope: monthScope,
@@ -580,7 +585,7 @@ export default function FortuneCalendarPanel({
       }
 
       if (response.status === 402) {
-        window.location.href = `/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`;
+        window.location.href = `/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`;
         return;
       }
 
@@ -644,7 +649,7 @@ export default function FortuneCalendarPanel({
                     : '0 4px 10px rgba(74,92,184,0.28)',
                 }}
               >
-                {hasLifetimeAccess ? '✓ 소장권' : '월 단위 2코인'}
+                {hasLifetimeAccess ? '✓ 소장권' : calendarMemberFree ? '멤버십 포함' : '월 9,900원'}
               </span>
               {data?.access === 'month_unlock' ? (
                 <span className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
@@ -985,31 +990,41 @@ export default function FortuneCalendarPanel({
                     >
                       ✓ 이미 구매한 {selectedMonth}월 캘린더 열기
                     </Link>
+                  ) : calendarMemberFree ? (
+                    <Button
+                      onClick={() => void handleUnlock()}
+                      disabled={unlocking}
+                      className="h-12 rounded-full text-[16.1px] font-extrabold"
+                    >
+                      {unlocking ? '여는 중...' : `멤버십에 포함 · ${selectedMonth}월 캘린더 열기`}
+                    </Button>
                   ) : (
                     <>
-                      <Button
-                        onClick={() => void handleUnlock()}
-                        disabled={unlocking}
-                        className="h-12 rounded-full text-[16.1px] font-extrabold"
+                      <Link href="/membership" className="block">
+                        <Button
+                          type="button"
+                          className="h-12 w-full rounded-full text-[16.1px] font-extrabold"
+                        >
+                          멤버십으로 매달 더 보기
+                        </Button>
+                      </Link>
+                      <Link
+                        href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
+                        className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[14.4px] font-extrabold text-[var(--app-pink-strong)]"
+                        style={{ borderColor: 'var(--app-pink-line)' }}
                       >
-                        {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
-                      </Button>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Link
-                          href={`/membership/checkout?product=monthly-calendar&slug=${encodeURIComponent(slug)}&scope=${targetYear}-${String(selectedMonth).padStart(2, '0')}&from=fortune-calendar`}
-                          className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[14.4px] font-extrabold text-[var(--app-pink-strong)]"
-                          style={{ borderColor: 'var(--app-pink-line)' }}
+                        9,900원으로 열기
+                      </Link>
+                      {hasLegacyCoins ? (
+                        <Button
+                          onClick={() => void handleUnlock()}
+                          disabled={unlocking}
+                          variant="outline"
+                          className="h-11 rounded-full text-[14.4px] font-extrabold"
                         >
-                          9,900원으로 열기
-                        </Link>
-                        <Link
-                          href={`/credits?from=fortune-calendar&slug=${encodeURIComponent(slug)}`}
-                          className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
-                          style={{ borderColor: 'var(--app-line)' }}
-                        >
-                          코인팩 보기
-                        </Link>
-                      </div>
+                          {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
+                        </Button>
+                      ) : null}
                     </>
                   )}
                 </div>

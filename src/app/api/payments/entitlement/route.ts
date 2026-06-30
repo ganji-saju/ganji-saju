@@ -15,12 +15,14 @@ import {
 } from '@/lib/payments/catalog';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
-import { getManagedSubscription } from '@/lib/subscription';
+import { getManagedSubscription, getMemberTier } from '@/lib/subscription';
 import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
+import { userHasLegacyCoins } from '@/lib/credits/legacy-coins';
+import { computeMemberFreeEligible } from '@/lib/credits/member-benefits';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -41,13 +43,22 @@ export async function GET(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 레거시 결제코인 보유 여부 — 코인 sunset 후 코인옵션 노출 대상 판정용 (read-only).
+  const hasLegacyCoins = user ? await userHasLegacyCoins(user.id) : false;
+
   if (!user) {
     return NextResponse.json({
       hasEntitlement: false,
       openHref: null,
       reason: 'unauthenticated',
+      hasLegacyCoins: false,
+      memberFreeEligible: false,
     });
   }
+
+  // 멤버 등급 — 커버 상품 여부와 관계없이 1회만 조회.
+  // non-covered productId 는 computeMemberFreeEligible 이 내부에서 단락(short-circuit)한다.
+  const tier = await getMemberTier(user.id);
 
   // === 멤버십 구독 ===
   if (productId === 'subscription') {
@@ -69,6 +80,8 @@ export async function GET(req: NextRequest) {
       hasEntitlement: Boolean(isActive),
       openHref: isActive ? '/my/billing' : null,
       reason: isActive ? 'active-subscription' : null,
+      hasLegacyCoins,
+      memberFreeEligible: false,
     });
   }
 
@@ -76,11 +89,11 @@ export async function GET(req: NextRequest) {
   if (productId === 'lifetime-report') {
     const pkg = getMembershipPackage('lifetime');
     if (!pkg) {
-      return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null });
+      return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null, hasLegacyCoins, memberFreeEligible: false });
     }
     const paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
     if (!paymentScope?.readingKey) {
-      return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null });
+      return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null, hasLegacyCoins, memberFreeEligible: false });
     }
     const entitlement = await getLifetimeReportEntitlement(
       user.id,
@@ -93,6 +106,8 @@ export async function GET(req: NextRequest) {
         ? buildPurchasedProductHref('lifetime-report', slug, { scope })
         : null,
       reason: entitlement ? 'lifetime-purchased' : null,
+      hasLegacyCoins,
+      memberFreeEligible: false,
     });
   }
 
@@ -105,7 +120,7 @@ export async function GET(req: NextRequest) {
   }
   const pkg = getTasteProductPackage(productId);
   if (!pkg) {
-    return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null });
+    return NextResponse.json({ hasEntitlement: false, openHref: null, reason: null, hasLegacyCoins, memberFreeEligible: false });
   }
 
   // today-detail 은 readingKey(안정) + legacy readingId + coin 을 모두 보는 단일 진입점
@@ -113,6 +128,7 @@ export async function GET(req: NextRequest) {
   //   결제 무한반복을 막는다(SSR 게이트·checkout 과 동일 판정).
   if (productId === 'today-detail') {
     const access = await checkTodayDetailAccess(slug ?? '');
+    const memberFreeEligible = await computeMemberFreeEligible(user.id, productId, tier);
     return NextResponse.json({
       hasEntitlement: access.hasAccess,
       openHref: access.hasAccess ? buildPurchasedProductHref(productId, slug, { scope }) : null,
@@ -121,6 +137,8 @@ export async function GET(req: NextRequest) {
           ? 'coin-unlocked'
           : 'product-purchased'
         : null,
+      hasLegacyCoins,
+      memberFreeEligible,
     });
   }
 
@@ -132,9 +150,12 @@ export async function GET(req: NextRequest) {
   );
 
   const has = Boolean(entitlement);
+  const memberFreeEligible = await computeMemberFreeEligible(user.id, productId, tier);
   return NextResponse.json({
     hasEntitlement: has,
     openHref: has ? buildPurchasedProductHref(productId, slug, { scope }) : null,
     reason: has ? 'product-purchased' : null,
+    hasLegacyCoins,
+    memberFreeEligible,
   });
 }

@@ -72,3 +72,33 @@ export async function getMemberBenefitUsed(
   if (error || typeof data !== 'number') return 0;
   return data;
 }
+
+/** 멤버십 무료 개방 가능 여부 판정.
+ *  today-detail / monthly-calendar 만 커버 상품. 나머지 → false.
+ *  premium → 무제한(true). plus → 월 쿼터 잔여분 확인. non-member → false. */
+export async function computeMemberFreeEligible(
+  userId: string,
+  productId: string,
+  tier: 'premium' | 'plus' | null
+): Promise<boolean> {
+  if (productId !== 'today-detail' && productId !== 'monthly-calendar') return false;
+  if (tier === null) return false;
+  if (tier === 'premium') return true;
+  // plus: 월 쿼터 잔여 확인 (DB 조회 1회).
+  const periodKey = monthlyPeriodKey();
+  if (productId === 'today-detail') {
+    const used = await getMemberBenefitUsed(
+      userId,
+      MEMBER_BENEFIT_KEYS.detailMonthly.benefit,
+      periodKey
+    );
+    return used < (MEMBER_QUOTAS.plus.detailMonthly as number);
+  }
+  // monthly-calendar
+  const used = await getMemberBenefitUsed(
+    userId,
+    MEMBER_BENEFIT_KEYS.calendarMonthly.benefit,
+    periodKey
+  );
+  return used < (MEMBER_QUOTAS.plus.calendarMonthly as number);
+}
