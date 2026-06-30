@@ -113,7 +113,7 @@ function getSubscriptionNotice(
   subscription: Awaited<ReturnType<typeof getAccountDashboardData>>['subscription']
 ) {
   if (!subscription) {
-    return '아직 멤버십을 시작하지 않았습니다. 코인 센터나 멤버십 화면에서 시작하면 30일 이용 기간과 포함 혜택이 바로 반영됩니다.';
+    return '아직 멤버십을 시작하지 않았습니다. 멤버십 화면에서 시작하면 30일 이용 기간과 포함 혜택이 바로 반영됩니다.';
   }
 
   if (subscription.status === 'active') {
