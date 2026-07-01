@@ -119,7 +119,7 @@ function DockIcon({ label }: { label: string }) {
 }
 
 function creditLabel(user: User | null, credits: number | null) {
-  return user ? `${credits ?? '...'} 전` : '전';
+  return user ? `${credits ?? '...'} 전` : '재화';
 }
 
 function readStoredCreditSnapshot(userId: string) {

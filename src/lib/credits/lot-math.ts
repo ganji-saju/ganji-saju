@@ -1,4 +1,4 @@
-// 결제 전 1년 만료 — lot 기반 차감/잔액 계산의 순수 로직.
+// 결제 재화 1년 만료 — lot 기반 차감/잔액 계산의 순수 로직.
 //
 // 이 모듈은 040_credit_lots_expiry.sql 의 SQL 함수(consume_credit_lots / deduct_credits /
 // sync_credit_balance_from_lots)가 구현하는 알고리즘을 TypeScript 로 1:1 미러링한 것이다.

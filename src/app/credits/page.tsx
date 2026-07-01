@@ -211,10 +211,10 @@ function CreditsPageContent() {
         {/* §4 정책 + CS 링크 — 기존 잔액 보유자에게 여전히 유효 */}
         <section
           className="flex flex-wrap gap-x-3 gap-y-1 text-[13.2px] leading-[1.6] text-[var(--app-copy-muted)]"
-          aria-label="전 정책 및 고객센터"
+          aria-label="재화(전) 정책 및 고객센터"
         >
           <Link href="/coin-policy" className="underline">
-            전 정책
+            재화(전) 정책
           </Link>
           <Link href="/refund-policy" className="underline">
             환불·청약철회

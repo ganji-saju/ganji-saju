@@ -1,6 +1,6 @@
 // 2026-06-28 — POST /api/admin/membership/grant. 어드민 멤버십 권한 변경(super_admin 전용).
 //   action='grant': 프리미엄 멤버십 N일(기본 30) 활성화. action='revoke': 즉시 해제(cancelled).
-//   addCredits 와 달리 전은 안 줌(멤버십 상태만). 결제 전 지급은 전 수동지급 별도.
+//   addCredits 와 달리 전은 안 줌(멤버십 상태만). 결제 재화 지급은 재화 수동지급 별도.
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';

@@ -32,7 +32,7 @@ export interface PaymentHistoryEntry {
   productName: string;
   /** 결제 금액(원). 해석 불가 시 null — 총액에서 제외. */
   amountWon: number | null;
-  /** 전 충전/구독에 한해 지급 전 수(없으면 null). */
+  /** 재화 충전/구독에 한해 지급 재화 수(없으면 null). */
   coins: number | null;
   /** 영수증 참조 — 주문번호 우선, 없으면 결제키. UI 는 끝 8자리만 노출. */
   receipt: string | null;

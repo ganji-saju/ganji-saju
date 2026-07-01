@@ -40,11 +40,11 @@ export function validateGrantCredits(input: {
         ? Number(input.amount)
         : NaN;
   if (!Number.isInteger(amount)) {
-    errors.push('지급 전 수는 정수여야 합니다.');
+    errors.push('지급 재화 수는 정수여야 합니다.');
   } else if (amount <= 0) {
-    errors.push('지급 전 수는 1 이상이어야 합니다.');
+    errors.push('지급 재화 수는 1 이상이어야 합니다.');
   } else if (amount > MAX_GRANT_AMOUNT) {
-    errors.push(`지급 전 수는 ${MAX_GRANT_AMOUNT} 이하여야 합니다(과지급 방지).`);
+    errors.push(`지급 재화 수는 ${MAX_GRANT_AMOUNT} 이하여야 합니다(과지급 방지).`);
   }
 
   const type = input.type;

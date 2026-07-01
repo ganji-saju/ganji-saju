@@ -24,7 +24,7 @@ const SHORT_LABELS: Record<PolicyKind, string> = {
   privacy: '개인정보',
   refund: '환불',
   subscription: '구독',
-  coin: '전',
+  coin: '재화',
   'digital-content': '디지털',
   appointment: '예약상담',
   'ai-disclaimer': 'AI 한계',

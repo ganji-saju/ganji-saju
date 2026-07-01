@@ -246,7 +246,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
           </Card>
           <Card title="전 수동 지급 (super_admin)">
             <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
-              보상·사과 등 임의 지급. 결제 전은 1년 만료, 구독 전은 무만료. 회수는 환불로.
+              보상·사과 등 임의 지급. 결제 재화는 1년 만료, 구독 재화는 무만료. 회수는 환불로.
             </p>
             <GrantCreditsActions role={role} userId={id} />
           </Card>
