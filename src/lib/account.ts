@@ -197,7 +197,7 @@ export async function getAccountDashboardData(
         .select('balance, subscription_balance')
         .eq('user_id', user.id)
         .maybeSingle(),
-      // 결제 전은 1년 만료 — 표시 잔액은 비만료 lot 합으로 계산(구독 잔액은 별도).
+      // 결제 재화는 1년 만료 — 표시 잔액은 비만료 lot 합으로 계산(구독 잔액은 별도).
       getNonExpiredLotBalance(user.id),
       getManagedSubscription(user.id),
       supabase
@@ -231,7 +231,7 @@ export async function getAccountDashboardData(
       }),
     ]);
 
-  assertAccountQueryOk(creditsResponse.error, '전');
+  assertAccountQueryOk(creditsResponse.error, '재화');
   assertAccountQueryOk(readingCountResponse.error, '저장 결과 개수');
   assertAccountQueryOk(readingsResponse.error, '저장 결과 목록');
   assertAccountQueryOk(transactionsResponse.error, '전 이용 이력');

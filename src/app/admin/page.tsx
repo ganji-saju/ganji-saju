@@ -156,7 +156,7 @@ export default async function AdminDashboardPage({
             <Stat label="신규 가입" value={fmtNum(ops.today.newSignups)} />
             <Stat label="활성 사용자" value={fmtNum(ops.today.activeUsers)} />
             <Stat label="결제 건수" value={fmtNum(ops.today.purchaseCount)} />
-            <Stat label="충전 전" value={fmtNum(ops.today.purchasedCredits)} />
+            <Stat label="충전 재화" value={fmtNum(ops.today.purchasedCredits)} />
             <Stat label="풀이 작성" value={fmtNum(ops.today.readingsCreated)} />
             <Stat label="피드백" value={fmtNum(ops.today.feedbackCount)} />
           </div>

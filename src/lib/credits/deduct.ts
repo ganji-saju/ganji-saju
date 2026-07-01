@@ -81,13 +81,13 @@ export async function getCredits(userId: string): Promise<{ balance: number; sub
   if (!data) return null;
 
   // user_credits.balance 는 비만료 lot 합으로 동기화되는 캐시값이지만, 시간 경과만으로
-  // lot 이 만료된 경우(차감/충전 이벤트 없음) 일시적으로 과대 표시될 수 있다. 결제 전은
+  // lot 이 만료된 경우(차감/충전 이벤트 없음) 일시적으로 과대 표시될 수 있다. 결제 재화는
   // 1년 만료 모델이므로 표시 잔액은 비만료 lot 합으로 재계산한다(구독 잔액은 그대로).
   const nonExpired = await getNonExpiredLotBalance(userId);
   return { balance: nonExpired, subscription_balance: data.subscription_balance };
 }
 
-// 비만료 credit_lots 의 amount_remaining 합 — 만료된 전을 제외한 실제 보유 결제 전.
+// 비만료 credit_lots 의 amount_remaining 합 — 만료된 재화를 제외한 실제 보유 결제 재화.
 // credit_lots 가 없는(레거시 미백필) 환경에서는 user_credits.balance 로 폴백한다.
 export async function getNonExpiredLotBalance(userId: string): Promise<number> {
   const supabase = await createServiceClient();
@@ -178,7 +178,7 @@ export async function deductCreditsAmount(
   return deductCreditsWithCost(userId, feature, cost);
 }
 
-// 2026-06-26 — 결제 취소/환불 시 충전 전 회수. deduct_credits RPC 로 차감(잔액 범위).
+// 2026-06-26 — 결제 취소/환불 시 충전 재화 회수. deduct_credits RPC 로 차감(잔액 범위).
 //   addCredits(음수)는 양수 lot 적립 RPC 라 차감되지 않아 회수에 쓸 수 없다.
 //   p_feature 는 거래 이력 라벨(예: 'nicepay-cancel'). 잔액 부족 시 success=false(음수 잔액 미생성).
 export async function revokeCredits(
@@ -227,7 +227,7 @@ export async function addCredits(
   }
 }
 
-// 결제 전 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.
+// 결제 재화 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.
 // expiresAt 미지정 시 now()+1년. 일반 결제 충전은 addCredits(...,'purchase')로 충분하다.
 export async function addCreditLot(
   userId: string,

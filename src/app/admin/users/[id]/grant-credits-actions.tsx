@@ -29,14 +29,14 @@ export function GrantCreditsActions({
   async function submit() {
     const coins = Number(amount);
     if (!Number.isInteger(coins) || coins <= 0) {
-      setMsg('지급 전 수를 1 이상의 정수로 입력하세요.');
+      setMsg('지급 재화 수를 1 이상의 정수로 입력하세요.');
       return;
     }
     if (reason.trim().length < 2) {
       setMsg('지급 사유를 2자 이상 입력하세요.');
       return;
     }
-    const typeLabel = type === 'purchase' ? '결제 전(1년 만료)' : '구독 전(무만료)';
+    const typeLabel = type === 'purchase' ? '결제 재화(1년 만료)' : '구독 재화(무만료)';
     if (!window.confirm(`이 사용자에게 ${coins}전(${typeLabel})을 지급합니다.\n사유: ${reason.trim()}`)) {
       return;
     }
@@ -95,8 +95,8 @@ export function GrantCreditsActions({
           className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
           disabled={busy}
         >
-          <option value="purchase">결제 전(1년 만료)</option>
-          <option value="subscription">구독 전(무만료)</option>
+          <option value="purchase">결제 재화(1년 만료)</option>
+          <option value="subscription">구독 재화(무만료)</option>
         </select>
         <input
           type="text"

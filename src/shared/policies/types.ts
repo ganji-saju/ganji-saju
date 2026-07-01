@@ -49,7 +49,7 @@ export const POLICY_LABELS: Record<PolicyKind, string> = {
   refund: '환불·청약철회 정책',
   'digital-content': '디지털 콘텐츠 제공·철회 안내',
   subscription: '정기결제·구독 정책',
-  coin: '전 정책',
+  coin: '재화(전) 정책',
   appointment: '예약상담 정책',
   'ai-disclaimer': 'AI 상담·운세 콘텐츠 한계 고지',
   'commerce-disclosure': '사업자·통신판매 통합 고지',
