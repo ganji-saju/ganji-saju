@@ -197,7 +197,7 @@ export async function getAccountDashboardData(
         .select('balance, subscription_balance')
         .eq('user_id', user.id)
         .maybeSingle(),
-      // 결제 코인은 1년 만료 — 표시 잔액은 비만료 lot 합으로 계산(구독 잔액은 별도).
+      // 결제 전은 1년 만료 — 표시 잔액은 비만료 lot 합으로 계산(구독 잔액은 별도).
       getNonExpiredLotBalance(user.id),
       getManagedSubscription(user.id),
       supabase
@@ -231,10 +231,10 @@ export async function getAccountDashboardData(
       }),
     ]);
 
-  assertAccountQueryOk(creditsResponse.error, '코인');
+  assertAccountQueryOk(creditsResponse.error, '전');
   assertAccountQueryOk(readingCountResponse.error, '저장 결과 개수');
   assertAccountQueryOk(readingsResponse.error, '저장 결과 목록');
-  assertAccountQueryOk(transactionsResponse.error, '코인 이용 이력');
+  assertAccountQueryOk(transactionsResponse.error, '전 이용 이력');
 
   const balance = lotBalance;
   const subscriptionBalance = creditsResponse.data?.subscription_balance ?? 0;
@@ -355,7 +355,7 @@ export interface PaymentHistoryData {
 
 // 2026-05-25 — /my/billing 현금 결제 내역.
 //   - product_entitlements (단건 풀이 · 평생 리포트, amount=WON)
-//   - credit_transactions type IN ('purchase','subscription') (코인 충전 · 멤버십)
+//   - credit_transactions type IN ('purchase','subscription') (전 충전 · 멤버십)
 //     단 legacy taste_product audit / entitlement_revoke audit 행은 제외(중복·비결제).
 // getAccountDashboardData 와 동일한 server supabase + 인증 패턴을 재사용한다.
 // (getAccountDashboardData 의 반환 모양은 건드리지 않는 별도 fn — 다른 호출부 안전.)
@@ -385,7 +385,7 @@ export async function getPaymentHistory(
   ]);
 
   assertAccountQueryOk(entitlementsResponse.error, '상품 결제 내역');
-  assertAccountQueryOk(cashTransactionsResponse.error, '코인·멤버십 결제 내역');
+  assertAccountQueryOk(cashTransactionsResponse.error, '전·멤버십 결제 내역');
 
   const productEntitlements = (entitlementsResponse.data ?? []).map((row) => ({
     id: row.id,

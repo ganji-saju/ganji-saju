@@ -166,7 +166,7 @@ export function TodayPremiumPanel({
   concernId?: string;
 }) {
   // 2026-05-15 fix — 결제 후 페이지 빈약 회귀. 모든 windows/actions/scenarios 노출
-  // (이전엔 top 2/3 만 slice). 1코인 결제 가치를 실제로 느끼게 함.
+  // (이전엔 top 2/3 만 slice). 1전 결제 가치를 실제로 느끼게 함.
   const favorableWindows = result.favorableWindows;
   const cautionWindows = result.cautionWindows;
   const recommendedActions = result.recommendedActions.map(trimEasySentence);
@@ -218,7 +218,7 @@ export function TodayPremiumPanel({
               boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
             }}
           >
-            ✦ 10코인
+            ✦ 10전
           </span>
         </div>
       </article>

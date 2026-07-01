@@ -54,7 +54,7 @@ const NAV_META: Record<string, { glyph: string; accent: string; description: str
   사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '생년월일 입력' },
   무료운세: { glyph: '✨', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
   대화방: { glyph: '💬', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
-  보관함: { glyph: '🔖', accent: 'var(--app-copy-muted)', description: '기록과 코인' },
+  보관함: { glyph: '🔖', accent: 'var(--app-copy-muted)', description: '기록과 전' },
   오늘운: { glyph: '🐮', accent: 'var(--app-pink)', description: '지금 바로 한 줄' },
   사주: { glyph: '🐲', accent: 'var(--app-pink)', description: '내 사주 풀이' },
   명리: { glyph: '🐯', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
@@ -119,7 +119,7 @@ function DockIcon({ label }: { label: string }) {
 }
 
 function creditLabel(user: User | null, credits: number | null) {
-  return user ? `${credits ?? '...'} 코인` : '코인';
+  return user ? `${credits ?? '...'} 전` : '전';
 }
 
 function readStoredCreditSnapshot(userId: string) {
@@ -331,7 +331,7 @@ function DesktopSidebar({
                 {displayName}님
               </div>
               <div className="mt-1 text-sm text-[var(--app-copy-soft)]">
-                {user ? `${credits ?? '...'} 코인 보유` : '로그인하면 기록 저장'}
+                {user ? `${credits ?? '...'} 전 보유` : '로그인하면 기록 저장'}
               </div>
             </div>
           </div>
@@ -361,7 +361,7 @@ function DesktopSidebar({
                 className="gangi-secondary-button"
               >
                 <CreditCard className="h-3.5 w-3.5" />
-                코인 잔액
+                전 잔액
               </Link>
               <Link
                 href="/membership"
@@ -527,10 +527,10 @@ function MobileChrome({
 
             {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼 */}
             <div className="app-top-actions flex items-center gap-1.5">
-              {/* 코인 chip — desktop only, pink-soft */}
+              {/* 전 chip — desktop only, pink-soft */}
               <Link
                 href="/credits"
-                aria-label={`보유 코인 ${creditLabel(user, credits)}`}
+                aria-label={`보유 전 ${creditLabel(user, credits)}`}
                 className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13.8px] font-extrabold md:inline-flex"
                 style={{
                   background: 'var(--app-pink-soft)',

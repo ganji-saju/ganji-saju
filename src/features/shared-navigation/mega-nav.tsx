@@ -4,7 +4,7 @@
 // - 운세/사주/대화 호버 시 3컬럼 풀폭 패널
 // - 멤버십은 simple 링크 (패널 없음)
 // - 운세 기본 활성 (pathname 분기, resolveActiveGroup)
-// - 오른쪽: 검색 ⌕, 코인 pill (로그인 시), 로그인/로그아웃
+// - 오른쪽: 검색 ⌕, 전 pill (로그인 시), 로그인/로그아웃
 //
 // lg(1024px) 이상에서만 표시. mobile 은 PR 2 (모바일 시트) 에서.
 'use client';
@@ -140,7 +140,7 @@ export function MegaNavBar() {
 
   const activeLabel = resolveActiveGroup(pathname);
 
-  // session — 로그인 여부 + 코인.
+  // session — 로그인 여부 + 전.
   // mega-nav 는 app-shell 에 영속 마운트되어 soft navigation/router.refresh() 로는
   // 리마운트되지 않는다. 로그아웃/로그인 후 헤더가 stale 해지지 않도록 SiteHeader 와
   // 동일하게 onAuthStateChange 를 구독해 세션 상태를 반응형으로 갱신한다.
@@ -240,7 +240,7 @@ export function MegaNavBar() {
           {session.authenticated ? (
             <>
               <Link href="/credits" className="mega-nav-coin-pill">
-                ✦ {session.credits ?? '···'} 코인
+                ✦ {session.credits ?? '···'} 전
               </Link>
               {/* 2026-05-26 — 사용자 보고: PC 메가메뉴에 마이홈 롤오버 부재.
                   아바타 hover 시 MY 하위 메뉴 드롭다운 노출(/my 페이지와 동일한 blueprint 재사용). */}

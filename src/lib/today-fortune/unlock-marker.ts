@@ -1,6 +1,6 @@
 // 2026-05-17 PR #201 — 자동 POST → 사용자 액션 UX 리팩토링용 sessionStorage marker.
 //
-// 무료 페이지의 "1코인 열기" 클릭 시 sourceSessionId 를 marker 로 저장.
+// 무료 페이지의 "1전 열기" 클릭 시 sourceSessionId 를 marker 로 저장.
 // detail page mount 시 marker 확인 → 있으면 POST (deduct trigger), 없으면 GET (read-only).
 // 새로고침 시 marker 없어서 GET → entitlement true 면 content, false 면 redirect.
 //

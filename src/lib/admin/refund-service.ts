@@ -209,8 +209,8 @@ async function finishRefundWithRevoke(
     await deps.setStatus(req.id, pending, {
       tossResponse,
       errorMessage: alreadyCanceled
-        ? 'Toss는 이미 취소됨 · 권한/코인 회수 실패 — 재시도 필요(경보)'
-        : 'Toss 환불됨 · 권한/코인 회수 실패 — 재시도 필요(경보)',
+        ? 'Toss는 이미 취소됨 · 권한/전 회수 실패 — 재시도 필요(경보)'
+        : 'Toss 환불됨 · 권한/전 회수 실패 — 재시도 필요(경보)',
     });
     return { status: pending, error: 'revoke failed after toss success' };
   }

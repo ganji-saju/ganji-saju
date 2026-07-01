@@ -6,7 +6,7 @@ import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-pa
 export async function generateMetadata(): Promise<Metadata> {
   return buildPolicyMetadata(
     'refund',
-    '간지사주의 환불 및 청약철회 정책 안내. 디지털 콘텐츠/구독/코인/예약상담별 환불 정책.'
+    '간지사주의 환불 및 청약철회 정책 안내. 디지털 콘텐츠/구독/전/예약상담별 환불 정책.'
   );
 }
 

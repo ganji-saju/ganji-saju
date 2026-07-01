@@ -1,5 +1,5 @@
 // Redesign 2026-05-13 (Claude Design / screens-b.jsx ScreenMy):
-// ink-dark 사용자 카드 (ZodiacChip + 이름/생일·띠·일주 + 코인/멤버십/보관) ·
+// ink-dark 사용자 카드 (ZodiacChip + 이름/생일·띠·일주 + 전/멤버십/보관) ·
 // 바로가기 list · 최근 풀이 preview. PR6+ 디자인 언어 적용.
 // 라우팅·데이터·이벤트 무수정.
 import Link from 'next/link';
@@ -121,14 +121,14 @@ export default async function MyPage() {
           </Link>
         </div>
 
-        {/* 코인 / 멤버십 / 보관 풀이 — 3 column stats */}
+        {/* 전 / 멤버십 / 보관 풀이 — 3 column stats */}
         <div
           className="mt-4 grid grid-cols-3 gap-2 border-t pt-4"
           style={{ borderColor: 'rgba(255,255,255,0.1)' }}
         >
           <Link href="/credits" className="block">
             <div className="text-[12.1px]" style={{ opacity: 0.6 }}>
-              코인 잔액
+              전 잔액
             </div>
             <div
               className="mt-0.5 text-[19.5px] font-extrabold"

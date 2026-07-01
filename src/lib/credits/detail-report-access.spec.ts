@@ -1,7 +1,7 @@
 /**
  * unlockTodayFortunePremium — 멤버십 게이트 단위 테스트
  *
- * 게이트 순서: (1)기존 access → (2)멤버십(premium 무제한/plus 월쿼터) → (3)레거시 코인 → (4)페이월
+ * 게이트 순서: (1)기존 access → (2)멤버십(premium 무제한/plus 월쿼터) → (3)레거시 전 → (4)페이월
  *
  * 의존 모듈을 mock 해 DB 없이 경로별 동작을 검증한다.
  */
@@ -72,17 +72,17 @@ const DAY_KEY = '2026-06-30';
 describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // 기본: 미접근, 멤버십 없음, 코인 부족(페이월 기본)
+    // 기본: 미접근, 멤버십 없음, 전 부족(페이월 기본)
     vi.mocked(createServiceClient).mockResolvedValue(makeSupabaseClient(false) as never);
     vi.mocked(getCredits).mockResolvedValue({ balance: 5, subscription_balance: 0 });
     vi.mocked(unlockCreditsOnce).mockResolvedValue(null); // RPC 미지원 → deductCredits 폴스루
-    vi.mocked(deductCredits).mockResolvedValue({ success: false, remaining: 0, error: '코인이 부족합니다.' });
+    vi.mocked(deductCredits).mockResolvedValue({ success: false, remaining: 0, error: '전이 부족합니다.' });
     vi.mocked(getMemberTier).mockResolvedValue(null);
     vi.mocked(consumeMemberBenefit).mockResolvedValue(false);
   });
 
   // ── (1) 기존 접근(reused) ─────────────────────────────────────────────────
-  it('이미 접근한 경우(hasTodayFortunePremiumAccess=true): reused:true, 멤버십/코인 미호출', async () => {
+  it('이미 접근한 경우(hasTodayFortunePremiumAccess=true): reused:true, 멤버십/전 미호출', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeSupabaseClient(true) as never);
 
     const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
@@ -96,7 +96,7 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
   });
 
   // ── (2) 프리미엄 멤버 — 무제한 ──────────────────────────────────────────
-  it('premium 멤버: viaMembership:true, consumeMemberBenefit/코인 미호출', async () => {
+  it('premium 멤버: viaMembership:true, consumeMemberBenefit/전 미호출', async () => {
     vi.mocked(getMemberTier).mockResolvedValue('premium');
 
     const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
@@ -106,13 +106,13 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
     expect(result.viaMembership).toBe(true);
     // 무제한(detailMonthly=null) 이므로 consumeMemberBenefit 호출 없음
     expect(consumeMemberBenefit).not.toHaveBeenCalled();
-    // 코인 경로 미호출
+    // 전 경로 미호출
     expect(unlockCreditsOnce).not.toHaveBeenCalled();
     expect(deductCredits).not.toHaveBeenCalled();
   });
 
   // ── (3) 플러스 멤버 — 한도 내 ───────────────────────────────────────────
-  it('plus 멤버(한도 내): viaMembership:true, 코인 미호출', async () => {
+  it('plus 멤버(한도 내): viaMembership:true, 전 미호출', async () => {
     vi.mocked(getMemberTier).mockResolvedValue('plus');
     vi.mocked(consumeMemberBenefit).mockResolvedValue(true);
 
@@ -122,13 +122,13 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
     expect(result.reused).toBe(false);
     expect(result.viaMembership).toBe(true);
     expect(consumeMemberBenefit).toHaveBeenCalledOnce();
-    // 코인 경로 미호출
+    // 전 경로 미호출
     expect(unlockCreditsOnce).not.toHaveBeenCalled();
     expect(deductCredits).not.toHaveBeenCalled();
   });
 
-  // ── (4) 플러스 멤버 — 한도 초과 → 코인 폴스루 ──────────────────────────
-  it('plus 멤버(한도 초과): 코인 경로로 폴스루(unlockCreditsOnce/deductCredits 호출)', async () => {
+  // ── (4) 플러스 멤버 — 한도 초과 → 전 폴스루 ──────────────────────────
+  it('plus 멤버(한도 초과): 전 경로로 폴스루(unlockCreditsOnce/deductCredits 호출)', async () => {
     vi.mocked(getMemberTier).mockResolvedValue('plus');
     vi.mocked(consumeMemberBenefit).mockResolvedValue(false);
     vi.mocked(unlockCreditsOnce).mockResolvedValue(null);
@@ -138,13 +138,13 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
 
     expect(result.viaMembership).toBeUndefined();
     expect(consumeMemberBenefit).toHaveBeenCalledOnce();
-    // 코인 경로 호출됨
+    // 전 경로 호출됨
     expect(unlockCreditsOnce).toHaveBeenCalledOnce();
     expect(deductCredits).toHaveBeenCalledOnce();
   });
 
-  // ── (5) 비회원(tier=null) — 코인 경로 ───────────────────────────────────
-  it('비회원: 멤버십 판별만, consumeMemberBenefit 미호출, 코인 경로 진입', async () => {
+  // ── (5) 비회원(tier=null) — 전 경로 ───────────────────────────────────
+  it('비회원: 멤버십 판별만, consumeMemberBenefit 미호출, 전 경로 진입', async () => {
     vi.mocked(getMemberTier).mockResolvedValue(null);
     vi.mocked(unlockCreditsOnce).mockResolvedValue(null);
     vi.mocked(deductCredits).mockResolvedValue({ success: true, remaining: 5 });
@@ -153,7 +153,7 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
 
     expect(result.viaMembership).toBeUndefined();
     expect(consumeMemberBenefit).not.toHaveBeenCalled();
-    // 코인 경로 호출됨
+    // 전 경로 호출됨
     expect(unlockCreditsOnce).toHaveBeenCalledOnce();
     expect(deductCredits).toHaveBeenCalledOnce();
   });

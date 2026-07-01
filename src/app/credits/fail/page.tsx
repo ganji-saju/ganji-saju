@@ -17,7 +17,7 @@ export default async function CreditsFailPage({
 }) {
   const params = await searchParams;
   const reason = params.reason?.trim() || '결제가 취소되었거나 완료되지 않았습니다.';
-  // 2026-06-28 — "다시 결제하기" 가 코인충전(/credits)이 아니라 원래 결제하던 상품으로 돌아가게 한다.
+  // 2026-06-28 — "다시 결제하기" 가 전충전(/credits)이 아니라 원래 결제하던 상품으로 돌아가게 한다.
   //   retry 는 nicepay return 핸들러가 주문 metadata.checkoutPath 를 실어 보낸 내부 경로.
   //   open-redirect 차단: 내부 절대경로('/'로 시작, '//' 제외)만 허용, 없으면 /credits 폴백.
   const retryRaw = params.retry?.trim() ?? '';

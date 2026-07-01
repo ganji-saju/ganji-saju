@@ -3,7 +3,7 @@ import { resolveBackfillUserName } from './backfill-snapshot-name';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
-// 2026-06-05 #1 후속 — 코인 결제 fix(#398) 이전에 저장된 today_fortune_result_snapshots 의
+// 2026-06-05 #1 후속 — 전 결제 fix(#398) 이전에 저장된 today_fortune_result_snapshots 의
 //   free_result_json.userName 이 null('달빛이' 렌더)인 과거분을 현재 프로필/소셜 이름으로 교정한다.
 //   순수 결정 규칙: 이미 실명이 있으면 보존, 없을 때만 새 실명으로 패치(없으면 그대로).
 

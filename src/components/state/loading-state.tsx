@@ -7,7 +7,7 @@
 import type { ReactNode } from 'react';
 
 interface LoadingStateProps {
-  /** 무엇을 불러오는지 (예: "코인 정보", "결과", "사주 분석"). */
+  /** 무엇을 불러오는지 (예: "전 정보", "결과", "사주 분석"). */
   label?: string;
   /** 추가 안내 (선택). */
   description?: string;

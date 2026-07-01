@@ -87,7 +87,7 @@ export function buildExpiringPushBody(input: {
   if (input.stage === 'd0') {
     return {
       title: '오늘 멤버십이 만료돼요',
-      body: `${input.planLabel} 가 오늘 만료됩니다. 지금 연장하시면 코인이 그대로 이어집니다.`,
+      body: `${input.planLabel} 가 오늘 만료됩니다. 지금 연장하시면 전이 그대로 이어집니다.`,
       url,
     };
   }

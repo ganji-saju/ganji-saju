@@ -424,7 +424,7 @@ test('today fortune free result changes across different calendar dates (daily s
 });
 
 test('today fortune premium changes across different calendar dates (daily premium regression)', () => {
-  // 2026-05-15: 코인/550원 결제 후 자세히 보기 화면도 매일 다르게 흐르도록 — 회귀 가드.
+  // 2026-05-15: 전/550원 결제 후 자세히 보기 화면도 매일 다르게 흐르도록 — 회귀 가드.
   // 2026-05-18: getTodayPillarSnapshot 가 실제 "오늘" 사용 → options.now 로 fixed Date 주입.
   const input = createSampleInput();
   const sajuData = calculateSajuDataV1(input);

@@ -156,7 +156,7 @@ export default async function AdminDashboardPage({
             <Stat label="신규 가입" value={fmtNum(ops.today.newSignups)} />
             <Stat label="활성 사용자" value={fmtNum(ops.today.activeUsers)} />
             <Stat label="결제 건수" value={fmtNum(ops.today.purchaseCount)} />
-            <Stat label="충전 코인" value={fmtNum(ops.today.purchasedCredits)} />
+            <Stat label="충전 전" value={fmtNum(ops.today.purchasedCredits)} />
             <Stat label="풀이 작성" value={fmtNum(ops.today.readingsCreated)} />
             <Stat label="피드백" value={fmtNum(ops.today.feedbackCount)} />
           </div>
@@ -174,7 +174,7 @@ export default async function AdminDashboardPage({
               <Stat label="활성 구독" value={fmtNum(ops.lifetime.activeSubscribers)} />
               <Stat label="총 풀이" value={fmtNum(ops.lifetime.totalReadings)} />
               <Stat label="총 결제" value={fmtNum(ops.lifetime.totalPurchases)} />
-              <Stat label="총 충전코인" value={fmtNum(ops.lifetime.totalPurchasedCredits)} />
+              <Stat label="총 충전전" value={fmtNum(ops.lifetime.totalPurchasedCredits)} />
             </div>
           ) : (
             <p className="text-[13px] text-[var(--app-copy-soft)]">—</p>

@@ -1,4 +1,4 @@
-// 2026-06-28 — POST /api/admin/credits/grant. 어드민 수동 코인 지급.
+// 2026-06-28 — POST /api/admin/credits/grant. 어드민 수동 전 지급.
 //   super_admin 전용(금전가치 부여 = 환불 승인급 민감 작업).
 //   addCredits RPC 호출(purchase=1년 만료 lot / subscription=무만료) + admin_access_log 기록.
 //   회수/차감은 이 라우트가 아니라 deduct_credits(revokeCredits) 경로.
@@ -20,18 +20,18 @@ export async function POST(req: NextRequest) {
       { status: check.reason === 'unauthenticated' ? 401 : 403 }
     );
   }
-  // 코인 지급은 super_admin 만(환불 승인과 동일 등급).
+  // 전 지급은 super_admin 만(환불 승인과 동일 등급).
   if (check.role !== 'super_admin') {
     return NextResponse.json(
-      { ok: false, error: "super_admin 만 코인을 지급할 수 있습니다." },
+      { ok: false, error: "super_admin 만 전을 지급할 수 있습니다." },
       { status: 403 }
     );
   }
 
-  // 코인 sunset 가드: 신규 코인 발행이 전면 중단된 상태에서는 수동 지급도 불가.
+  // 전 sunset 가드: 신규 전 발행이 전면 중단된 상태에서는 수동 지급도 불가.
   if (!COIN_TOPUP_ENABLED) {
     return NextResponse.json(
-      { ok: false, error: '코인 발행이 중단되어 수동 코인 지급을 사용할 수 없습니다.' },
+      { ok: false, error: '전 발행이 중단되어 수동 전 지급을 사용할 수 없습니다.' },
       { status: 410 }
     );
   }
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       grantedBy: check.userId,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : '코인 지급에 실패했습니다.';
+    const message = err instanceof Error ? err.message : '전 지급에 실패했습니다.';
     console.error('[admin-credit-grant] addCredits 실패', { userId, amount, type, message });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }

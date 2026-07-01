@@ -111,8 +111,8 @@ test('mapCreditTransactionToHistory derives WON from package price, category fro
     created_at: '2026-05-18T00:00:00.000Z',
   };
   const coin = mapCreditTransactionToHistory(coinPack);
-  assert.equal(coin.category, '코인 충전');
-  assert.equal(coin.productName, '15 코인 (50% 보너스)');
+  assert.equal(coin.category, '전 충전');
+  assert.equal(coin.productName, '15 전 (50% 보너스)');
   assert.equal(coin.amountWon, 9900);
   assert.equal(coin.coins, 15);
   assert.equal(coin.receipt, 'ORD-COIN-7');
@@ -141,7 +141,7 @@ test('mapCreditTransactionToHistory falls back when packageId missing', () => {
     created_at: '2026-05-16T00:00:00.000Z',
   };
   const entry = mapCreditTransactionToHistory(noPkg);
-  assert.equal(entry.productName, '코인 충전'); // generic label
+  assert.equal(entry.productName, '전 충전'); // generic label
   assert.equal(entry.amountWon, 990); // metadata.amount
   assert.equal(entry.receipt, 'pay_only'); // paymentKey when no orderId
 });

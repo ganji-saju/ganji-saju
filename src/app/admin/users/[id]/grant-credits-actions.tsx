@@ -1,5 +1,5 @@
 'use client';
-// 2026-06-28 — 어드민 수동 코인 지급 폼. POST /api/admin/credits/grant (super_admin 전용).
+// 2026-06-28 — 어드민 수동 전 지급 폼. POST /api/admin/credits/grant (super_admin 전용).
 //   purchase=1년 만료 lot / subscription=무만료. 회수는 환불(별도)로.
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,25 +19,25 @@ export function GrantCreditsActions({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // 코인 지급은 super_admin 만. admin 에게는 비활성 안내만.
+  // 전 지급은 super_admin 만. admin 에게는 비활성 안내만.
   if (role !== 'super_admin') {
     return (
-      <p className="text-xs text-neutral-500">코인 지급은 super_admin 만 가능합니다.</p>
+      <p className="text-xs text-neutral-500">전 지급은 super_admin 만 가능합니다.</p>
     );
   }
 
   async function submit() {
     const coins = Number(amount);
     if (!Number.isInteger(coins) || coins <= 0) {
-      setMsg('지급 코인 수를 1 이상의 정수로 입력하세요.');
+      setMsg('지급 전 수를 1 이상의 정수로 입력하세요.');
       return;
     }
     if (reason.trim().length < 2) {
       setMsg('지급 사유를 2자 이상 입력하세요.');
       return;
     }
-    const typeLabel = type === 'purchase' ? '결제 코인(1년 만료)' : '구독 코인(무만료)';
-    if (!window.confirm(`이 사용자에게 ${coins}코인(${typeLabel})을 지급합니다.\n사유: ${reason.trim()}`)) {
+    const typeLabel = type === 'purchase' ? '결제 전(1년 만료)' : '구독 전(무만료)';
+    if (!window.confirm(`이 사용자에게 ${coins}전(${typeLabel})을 지급합니다.\n사유: ${reason.trim()}`)) {
       return;
     }
 
@@ -59,8 +59,8 @@ export function GrantCreditsActions({
         setMsg(`실패: ${data.error ?? '오류'}`);
       } else {
         setMsg(
-          `완료: ${data.granted}코인 지급${
-            data.balance != null ? ` · 현재 잔액 ${data.balance}코인` : ''
+          `완료: ${data.granted}전 지급${
+            data.balance != null ? ` · 현재 잔액 ${data.balance}전` : ''
           }`
         );
         setAmount('');
@@ -85,7 +85,7 @@ export function GrantCreditsActions({
           inputMode="numeric"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="코인 수"
+          placeholder="전 수"
           className="w-24 rounded border border-neutral-300 px-2 py-1.5 text-sm"
           disabled={busy}
         />
@@ -95,8 +95,8 @@ export function GrantCreditsActions({
           className="rounded border border-neutral-300 px-2 py-1.5 text-sm"
           disabled={busy}
         >
-          <option value="purchase">결제 코인(1년 만료)</option>
-          <option value="subscription">구독 코인(무만료)</option>
+          <option value="purchase">결제 전(1년 만료)</option>
+          <option value="subscription">구독 전(무만료)</option>
         </select>
         <input
           type="text"
@@ -112,7 +112,7 @@ export function GrantCreditsActions({
           disabled={busy}
           className="rounded bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white disabled:opacity-50"
         >
-          {busy ? '지급 중…' : '코인 지급'}
+          {busy ? '지급 중…' : '전 지급'}
         </button>
       </div>
       {msg ? <p className="text-xs text-neutral-700">{msg}</p> : null}

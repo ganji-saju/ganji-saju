@@ -195,7 +195,7 @@ export async function getTodayFortuneVerificationAudit({
           selected.free.groundingSummary.evidenceLines.length >= 2 &&
           selected.free.nextAction.product === 'TODAY_DEEP_READING' &&
           selected.free.nextAction.coinCost === 1,
-        detail: `scores ${selected.free.scores.length}개 · grounding facts ${selected.free.groundingSummary.factLines.length}개 · follow-up ${selected.free.followUpQuestions.length}개 · CTA ${selected.free.nextAction.coinCost}코인`,
+        detail: `scores ${selected.free.scores.length}개 · grounding facts ${selected.free.groundingSummary.factLines.length}개 · follow-up ${selected.free.followUpQuestions.length}개 · CTA ${selected.free.nextAction.coinCost}전`,
       },
       {
         key: 'today-premium-result-shape',

@@ -1,6 +1,6 @@
 'use client';
 // 2026-06-28 — 어드민 멤버십 권한 변경 폼. POST /api/admin/membership/grant (super_admin 전용).
-//   부여(프리미엄 N일) / 해제(즉시 cancelled). 코인은 별도(코인 수동지급).
+//   부여(프리미엄 N일) / 해제(즉시 cancelled). 전은 별도(전 수동지급).
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 

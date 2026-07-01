@@ -1,6 +1,6 @@
 // 2026-05-17 — /api/today-fortune/unlock 의 idempotent access 결정 helper.
 //
-// 사용자 보고: /today-fortune/detail 페이지 새로고침마다 1코인이 다시 차감되는
+// 사용자 보고: /today-fortune/detail 페이지 새로고침마다 1전이 다시 차감되는
 // 회귀. 자동 POST /api/today-fortune/unlock 이 mount 시마다 호출되는데
 // (TodayFortuneDetailClient line 79 useEffect, attemptedRef 가 새 인스턴스마다
 // 리셋), `unlockTodayFortunePremium` 내부 `hasTodayFortunePremiumAccess` 는
@@ -70,7 +70,7 @@ export async function resolveTodayFortuneUnlockAccess(
 
   // 4) coin unlock by KST 일자 (broadest fallback — 사용자 명시 요구).
   //    sourceSessionId / readingKey 가 어떤 이유로 매치 못 잡아도 같은 user 가
-  //    같은 날 detail_report 1코인 결제를 했다면 reused — 같은 날 두 번 차감 차단.
+  //    같은 날 detail_report 1전 결제를 했다면 reused — 같은 날 두 번 차감 차단.
   if (await deps.hasTodayFortuneDailyAccess(userId, scope.todayKey)) {
     return 'coin-daily';
   }

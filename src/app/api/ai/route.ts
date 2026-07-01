@@ -770,7 +770,7 @@ async function handleDialogue(request: DialogueAiRequest) {
   const availableCredits = getAvailableCreditsTotal(currentCredits);
   const successfulTurns = await getAiChatSuccessfulTurns(user.id);
   const turnPlan = getAiChatTurnPlan(successfulTurns);
-  // 2026-06-28 — 프리미엄 멤버: 매일 5턴 무료(코인 우회). 5턴 소진 후 기존 번들 과금 폴백.
+  // 2026-06-28 — 프리미엄 멤버: 매일 5턴 무료(전 우회). 5턴 소진 후 기존 번들 과금 폴백.
   const dailyKey = dailyPeriodKey();
   const isMember = await isPremiumMember(user.id);
   const memberDailyUsed = isMember
@@ -807,7 +807,7 @@ async function handleDialogue(request: DialogueAiRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: '코인이 부족합니다.',
+        error: '전이 부족합니다.',
         configured,
         billing: createAiChatBillingSummary('insufficient_credits', availableCredits, turnPlan),
       },
@@ -899,7 +899,7 @@ async function handleDialogue(request: DialogueAiRequest) {
     });
   }
 
-  // 프리미엄 멤버 일일 무료(5턴/일) — 코인 차감 없이 통과. 한도 초과(원자적 false) 시 기존 과금 폴백.
+  // 프리미엄 멤버 일일 무료(5턴/일) — 전 차감 없이 통과. 한도 초과(원자적 false) 시 기존 과금 폴백.
   if (memberDailyFreeEligible) {
     const consumed = await consumeMemberBenefit(
       user.id,
@@ -933,7 +933,7 @@ async function handleDialogue(request: DialogueAiRequest) {
       return NextResponse.json(
         {
           ok: false,
-          error: '코인이 부족합니다.',
+          error: '전이 부족합니다.',
           configured,
           expertId,
           expertLabel: expert.label,

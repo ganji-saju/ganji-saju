@@ -39,7 +39,7 @@ export const QUESTION_CHIPS: Array<{ key: FocusTopic; label: string; hook: strin
 export const TRUST_POINTS = [
   '태어난 시간 몰라도 시작 가능',
   '결과 자동 저장',
-  '심화 리포트는 코인으로 확장',
+  '심화 리포트는 전으로 확장',
 ];
 
 export const HERO_REPORT_PREVIEW: Record<
@@ -96,7 +96,7 @@ export const SERVICE_ENTRY_CARDS = [
   {
     eyebrow: 'Retention',
     title: '저장과 다시보기',
-    body: '결과 보관함, 코인, 멤버십을 묶어 단발성 조회가 아니라 반복 효용이 생기는 서비스로 바꿉니다.',
+    body: '결과 보관함, 전, 멤버십을 묶어 단발성 조회가 아니라 반복 효용이 생기는 서비스로 바꿉니다.',
     cta: 'MY 보기',
     href: '/my',
   },

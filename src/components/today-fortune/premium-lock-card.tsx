@@ -4,7 +4,7 @@
 //   branch 1: hasEntitlement → "이미 구매" UI (unchanged)
 //   branch 2: memberFreeEligible → "멤버십에 포함 · 바로 열기" (no payment)
 //   branch 3: else → membership CTA primary + card single + bundle + coin(legacy only)
-//   /credits 링크 전면 제거 (코인 판매 중단)
+//   /credits 링크 전면 제거 (전 판매 중단)
 'use client';
 
 import { Lock } from 'lucide-react';
@@ -157,7 +157,7 @@ export function PremiumLockCard({
     );
   }
 
-  // Branch 3: 비멤버 / 레거시 코인 보유자 — 멤버십 우선 결제 UI.
+  // Branch 3: 비멤버 / 레거시 전 보유자 — 멤버십 우선 결제 UI.
   const singleHref = `/membership/checkout?product=today-detail&slug=${encodeURIComponent(sourceSessionId)}&scope=${encodeURIComponent(concernId)}&from=today-fortune`;
 
   return (
@@ -224,7 +224,7 @@ export function PremiumLockCard({
             </Link>
           </div>
 
-          {/* 레거시 코인 보유자에게만 코인 열기 노출 */}
+          {/* 레거시 전 보유자에게만 전 열기 노출 */}
           {hasLegacyCoins ? (
             <button
               type="button"
@@ -233,7 +233,7 @@ export function PremiumLockCard({
               className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
             >
               {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
-              {loading ? '여는 중' : `${coinCost}코인 열기`}
+              {loading ? '여는 중' : `${coinCost}전 열기`}
             </button>
           ) : null}
 
@@ -241,7 +241,7 @@ export function PremiumLockCard({
           <ul className="mt-3 grid gap-1 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
             {hasLegacyCoins ? (
               <li>
-                <b className="font-bold text-[var(--app-ink)]">{coinCost}코인 열기</b> — 보유 코인으로 오늘 자세히 보기
+                <b className="font-bold text-[var(--app-ink)]">{coinCost}전 열기</b> — 보유 전으로 오늘 자세히 보기
               </li>
             ) : null}
             <li>
@@ -266,7 +266,7 @@ export function PremiumLockCard({
             </Button>
           </Link>
 
-          {/* 레거시 코인 보유자에게만 코인 열기 노출 */}
+          {/* 레거시 전 보유자에게만 전 열기 노출 */}
           {hasLegacyCoins ? (
             <button
               type="button"
@@ -275,7 +275,7 @@ export function PremiumLockCard({
               className="flex w-full items-center justify-center gap-1.5 rounded-full border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
             >
               {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
-              {loading ? '여는 중' : `${coinCost}코인 열기`}
+              {loading ? '여는 중' : `${coinCost}전 열기`}
             </button>
           ) : null}
         </div>

@@ -71,8 +71,8 @@ function matchLotToPayment(lot: CreditRefundLotRow, paymentKey: string, now: Dat
 
 function statusLabel(status: CreditRefundPolicyStatus, coinsUsed: number) {
   if (status === 'full') return '미사용 · 전액 환불 가능';
-  if (status === 'partial') return `${coinsUsed}코인 사용됨 · 부분 환불 가능`;
-  return coinsUsed > 0 ? '전부 사용됨 · 환불 불가' : '환불 가능 잔여 코인 없음';
+  if (status === 'partial') return `${coinsUsed}전 사용됨 · 부분 환불 가능`;
+  return coinsUsed > 0 ? '전부 사용됨 · 환불 불가' : '환불 가능 잔여 전 없음';
 }
 
 function resolveRefundAmount(amountWon: number | null, coinsPurchased: number, coinsRemaining: number) {

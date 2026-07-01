@@ -1,7 +1,7 @@
-// 2026-06-26 — 나이스페이(NICEPAY V2) 결제 통보(웹훅) 핸들러. 취소/환불 통보 시 코인 회수.
+// 2026-06-26 — 나이스페이(NICEPAY V2) 결제 통보(웹훅) 핸들러. 취소/환불 통보 시 전 회수.
 //   나이스페이 가맹점관리자 '결제데이터통보' URL 로 이 라우트를 등록한다.
 //   흐름: 통보 수신 → 멱등 기록 → (backstop) 결제 재조회로 취소 진위 확인 →
-//        주문 'canceled' 기록 → 지급된 코인 회수. 토스 웹훅(webhook/toss)과 동일 패턴.
+//        주문 'canceled' 기록 → 지급된 전 회수. 토스 웹훅(webhook/toss)과 동일 패턴.
 //   참고: docs/payment-nicepay-migration.md §2
 //
 // ⚠️ 나이스페이 규약: 응답 body 는 반드시 plain text 'OK' (status 200). JSON 이면 등록/통보 실패.
@@ -10,7 +10,7 @@
 //   1) 통보 payload 형식(form-urlencoded vs json)·필드명(status/tid/orderId/cancelAmt)
 //   2) 통보 서명 검증식(현재는 결제 재조회 backstop 으로 진위 보장)
 //   3) 취소 상태 문자열(cancelled/canceled/...) + 부분취소(PARTIAL) 처리
-//   4) 코인 회수 정책 — 음수 잔액 허용 여부(이미 사용한 코인), 부분취소 비례 회수
+//   4) 전 회수 정책 — 음수 잔액 허용 여부(이미 사용한 전), 부분취소 비례 회수
 import { NextRequest, NextResponse } from 'next/server';
 import { getNicepayPayment } from '@/lib/payments/nicepay';
 import { getPackage } from '@/lib/payments/catalog';
@@ -114,14 +114,14 @@ export async function POST(req: NextRequest) {
       source: 'webhook',
     });
 
-    // 5) 코인 회수 — 이미 지급(fulfilled)된 주문만, deduct_credits 로 잔액 범위 차감.
-    //    ⚠️ 음수 잔액(이미 사용한 코인)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
+    // 5) 전 회수 — 이미 지급(fulfilled)된 주문만, deduct_credits 로 잔액 범위 차감.
+    //    ⚠️ 음수 잔액(이미 사용한 전)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
     const pkg = getPackage(order.packageId);
     if (pkg && pkg.credits > 0 && order.status === 'fulfilled') {
       const revokeResult = await revokeCredits(order.userId, pkg.credits, 'nicepay-cancel');
       // 회수 실패(잔액 부족 등)는 운영 추적용으로 남긴다 — 수동 보정 대상.
       if (!revokeResult.success) {
-        console.error('[nicepay-webhook] 코인 회수 실패', { orderId, error: revokeResult.error });
+        console.error('[nicepay-webhook] 전 회수 실패', { orderId, error: revokeResult.error });
       }
     }
 

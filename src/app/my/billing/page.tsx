@@ -3,11 +3,11 @@
 // 옛 marketing 컴포넌트로 빌드돼 /my/settings 등 자매 라우트와 시각 어긋남.
 // `/my/settings` 와 동일한 compact pink-soft hero + 둥근 흰 카드 패턴으로 통일.
 //
-// 2026-05-25 — 현금(현금 결제) 내역 전면 노출 추가. 기존엔 코인/멤버십만 보였고
-// Toss 로 실제 결제한 단건 풀이·평생 리포트·코인팩·멤버십의 "무엇을/얼마(₩)/언제"가
+// 2026-05-25 — 현금(현금 결제) 내역 전면 노출 추가. 기존엔 전/멤버십만 보였고
+// Toss 로 실제 결제한 단건 풀이·평생 리포트·전팩·멤버십의 "무엇을/얼마(₩)/언제"가
 // 어디에도 없었다. getPaymentHistory 로 product_entitlements + credit_transactions
 // (purchase/subscription) 를 합쳐 "결제 내역" 섹션으로 보여주고, 기존 이력은
-// "코인 사용 내역"(type='use')으로 의미를 좁힌다.
+// "전 사용 내역"(type='use')으로 의미를 좁힌다.
 import Link from 'next/link';
 import SubscriptionManager from '@/components/my/subscription-manager';
 import { getAccountDashboardData, getPaymentHistory } from '@/lib/account';
@@ -38,14 +38,14 @@ const PAYMENT_CATEGORY_STYLE: Record<
 > = {
   '단건 풀이': { bg: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' },
   '평생 리포트': { bg: 'var(--app-pink-soft)', color: 'var(--app-pink-strong)' },
-  '코인 충전': { bg: 'rgba(16,185,129,0.10)', color: 'var(--app-jade)' },
+  '전 충전': { bg: 'rgba(16,185,129,0.10)', color: 'var(--app-jade)' },
   '멤버십/구독': { bg: 'rgba(99,102,241,0.10)', color: '#6366f1' },
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  purchase: '코인 충전',
+  purchase: '전 충전',
   subscription: '월간 상품 시작',
-  use: '코인 사용',
+  use: '전 사용',
   signup_bonus: '가입 보너스',
 };
 
@@ -140,7 +140,7 @@ export default async function MyBillingPage() {
     ? getSubscriptionStatusLabel(dashboard.subscription.status)
     : '미가입';
 
-  // "코인 사용 내역" — 코인을 차감(소비)한 type='use' 행만. 결제(충전/구독)는
+  // "전 사용 내역" — 전을 차감(소비)한 type='use' 행만. 결제(충전/구독)는
   // 위 "결제 내역" 섹션에서 원화 단위로 따로 보여준다.
   const coinUsageTransactions = dashboard.recentTransactions.filter(
     (transaction) => transaction.type === 'use'
@@ -163,7 +163,7 @@ export default async function MyBillingPage() {
           className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          코인 · 멤버십 · 이용 내역을
+          전 · 멤버십 · 이용 내역을
           <br />
           한 화면에서 살펴보세요
         </h1>
@@ -171,7 +171,7 @@ export default async function MyBillingPage() {
           className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          지금 남은 코인, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다.
+          지금 남은 전, 멤버십 상태, 다음 결제일, 최근 이용 내역을 한곳에 모았습니다.
         </p>
       </article>
 
@@ -186,7 +186,7 @@ export default async function MyBillingPage() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
-              전체 코인
+              전체 전
             </div>
             <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-pink-strong)]">
               {dashboard.credits.total}
@@ -197,7 +197,7 @@ export default async function MyBillingPage() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
-              일반 코인
+              일반 전
             </div>
             <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
               {dashboard.credits.balance}
@@ -217,7 +217,7 @@ export default async function MyBillingPage() {
         </div>
       </section>
 
-      {/* §결제 내역 (현금 결제) — product_entitlements + 코인충전/멤버십 결제 */}
+      {/* §결제 내역 (현금 결제) — product_entitlements + 전충전/멤버십 결제 */}
       <section>
         <div className="flex items-baseline justify-between px-1">
           <h2 className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
@@ -282,7 +282,7 @@ export default async function MyBillingPage() {
                       </div>
                       {entry.coins !== null && entry.coins > 0 ? (
                         <div className="mt-0.5 text-[13.2px] text-[var(--app-copy-muted)]">
-                          코인 {entry.coins}개 지급
+                          전 {entry.coins}개 지급
                         </div>
                       ) : null}
                       {receiptTail ? (
@@ -312,7 +312,7 @@ export default async function MyBillingPage() {
                 className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                단건 풀이, 평생 리포트, 코인 충전, 멤버십을 결제하면 여기에 금액과 함께 표시됩니다.
+                단건 풀이, 평생 리포트, 전 충전, 멤버십을 결제하면 여기에 금액과 함께 표시됩니다.
               </p>
             </article>
           )}
@@ -383,7 +383,7 @@ export default async function MyBillingPage() {
           >
             <div className="min-w-0">
               <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
-                코인 잔액
+                전 잔액
               </div>
               <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                 보유 잔액 확인
@@ -413,10 +413,10 @@ export default async function MyBillingPage() {
         </div>
       </section>
 
-      {/* §코인 사용 내역 (type='use') */}
+      {/* §전 사용 내역 (type='use') */}
       <section>
         <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-          코인 사용 내역
+          전 사용 내역
         </h2>
         <div className="mt-2 grid gap-2">
           {coinUsageTransactions.length > 0 ? (
@@ -468,7 +468,7 @@ export default async function MyBillingPage() {
                 className="mt-1 text-[15px] leading-[1.55] text-[var(--app-copy)]"
                 style={{ wordBreak: 'keep-all' }}
               >
-                코인을 사용한 이용 내역이 아직 없습니다.
+                전을 사용한 이용 내역이 아직 없습니다.
               </p>
             </article>
           )}

@@ -39,7 +39,7 @@ export const QUESTION_CHIPS: Array<{ key: FocusTopic; label: string; hook: strin
 export const TRUST_POINTS = [
   '태어난 시간 몰라도 시작 가능',
   '결과 자동 저장',
-  '심화 리포트는 1코인부터',
+  '심화 리포트는 1전부터',
 ];
 
 export const FREE_EXPERIENCES = [

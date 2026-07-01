@@ -1,5 +1,5 @@
 // Redesign 2026-05-17 (Claude Design / screens-f.jsx ScreenPaymentResult):
-// 코인 충전 결제 콜백 — loading/success/error 3 state. mockup 96px pink circle hero.
+// 전 충전 결제 콜백 — loading/success/error 3 state. mockup 96px pink circle hero.
 // membership/success 와 동일 디자인 토큰 (CenteredCard 패턴) — 신규 BOARD_MANIFEST 항목.
 // 결제 승인·라우팅·트래킹 무수정.
 'use client';
@@ -10,7 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
-// 2026-05-15 handoff P0: 54 m-coin (코인 충전 성공) + 51 m-loading 연결.
+// 2026-05-15 handoff P0: 54 m-coin (전 충전 성공) + 51 m-loading 연결.
 import { MotionCoinSuccess, MotionSajuLoading } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
 
@@ -65,13 +65,13 @@ function LoadingState() {
       iconText="#fff"
       iconChar="…"
       title="결제 확인 중"
-      description={`결제 승인과 코인 반영을 확인하고 있어요.\n잠시만 기다려 주세요.`}
+      description={`결제 승인과 전 반영을 확인하고 있어요.\n잠시만 기다려 주세요.`}
     >
       {/* 2026-05-15 handoff 51 m-loading — Phase 3 결제 spinner motion 교체. */}
       <div className="mx-auto flex w-full max-w-md justify-center pt-2">
         <MotionSajuLoading
           active
-          labels={['결제 승인', '코인 반영', '확인 완료']}
+          labels={['결제 승인', '전 반영', '확인 완료']}
           moonGlyph="貨"
         />
       </div>
@@ -86,7 +86,7 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
       iconText="var(--app-coral)"
       iconChar="!"
       title="결제 확인에 실패했어요"
-      description="결제는 진행되었지만 코인 충전을 확인하지 못했습니다. 잠시 후 다시 시도하거나 결제 상태에서 확인해 주세요."
+      description="결제는 진행되었지만 전 충전을 확인하지 못했습니다. 잠시 후 다시 시도하거나 결제 상태에서 확인해 주세요."
     >
       <article
         className="mx-auto max-w-md rounded-[14px] border bg-white p-4 text-left"
@@ -108,7 +108,7 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
           href="/credits"
           className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
-          코인 잔액으로
+          전 잔액으로
         </Link>
         <Link
           href="/my/billing"
@@ -127,15 +127,15 @@ function SuccessState({ coins }: { coins: number }) {
       iconBg="linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))"
       iconText="#fff"
       iconChar="✓"
-      title="코인이 충전됐어요"
-      description={`필요할 때 여는 해석을 위한 코인이 준비됐어요.\n바로 이어보거나 결제 내역에서 확인할 수 있어요.`}
+      title="전이 충전됐어요"
+      description={`필요할 때 여는 해석을 위한 전이 준비됐어요.\n바로 이어보거나 결제 내역에서 확인할 수 있어요.`}
     >
       {/* 2026-05-15 handoff 54 m-coin — 결제 성공 직후 입자 + ✓ 카드. */}
       <div className="mx-auto flex w-full max-w-md justify-center pb-1">
         <MotionCoinSuccess
           active
           title="충전 완료"
-          sub={`+ ${coins} 코인`}
+          sub={`+ ${coins} 전`}
         />
       </div>
 
@@ -169,7 +169,7 @@ function SuccessContent() {
     didConfirm.current = true;
 
     // 2026-06-26 — 나이스페이: returnUrl 서버 핸들러가 이미 승인·지급 완료. confirm 재호출 없이 완료 표시.
-    //   충전 코인 수는 returnUrl 이 credits 쿼리로 전달(success 가 잔액 재조회 안 하므로).
+    //   충전 전 수는 returnUrl 이 credits 쿼리로 전달(success 가 잔액 재조회 안 하므로).
     if (searchParams.get('provider') === 'nicepay') {
       const grantedCredits = Number(searchParams.get('credits') ?? 0);
       if (Number.isFinite(grantedCredits) && grantedCredits > 0) {

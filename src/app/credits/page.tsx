@@ -1,4 +1,4 @@
-// Phase 1 Task 6 (2026-06-30): 코인 충전 종료 — 잔액·소진 안내 페이지로 전환.
+// Phase 1 Task 6 (2026-06-30): 전 충전 종료 — 잔액·소진 안내 페이지로 전환.
 // 패키지 선택·결제 CTA·결제 수단·동의 블록 제거. 잔액 표시·정책 링크 유지.
 'use client';
 
@@ -55,7 +55,7 @@ function CreditsPageContent() {
       }
     })();
 
-    // 결제 완료 / 코인 소진 시 SiteHeader 가 dispatch 하는 event 를 listen — 즉시 갱신.
+    // 결제 완료 / 전 소진 시 SiteHeader 가 dispatch 하는 event 를 listen — 즉시 갱신.
     const syncFromEvent = (event: Event) => {
       const detail = (event as CustomEvent<{ credits?: number; remaining?: number }>).detail;
       const next = typeof detail?.credits === 'number' ? detail.credits : detail?.remaining;
@@ -74,7 +74,7 @@ function CreditsPageContent() {
   return (
     <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="코인 잔액" backHref="/my" />
+        <GangiPageHeader title="전 잔액" backHref="/my" />
 
         <section className="space-y-5 px-1">
           {/* §1 현재 잔액 ink-dark */}
@@ -133,7 +133,7 @@ function CreditsPageContent() {
                     </div>
                   )}
                   <span className="pb-1.5 text-[16.1px] font-bold" style={{ opacity: 0.6 }}>
-                    코인
+                    전
                   </span>
                 </div>
                 <p className="mt-2 text-[13.2px]" style={{ opacity: 0.6 }}>
@@ -142,8 +142,8 @@ function CreditsPageContent() {
                     : credits === null
                       ? '잔액 확인 중입니다'
                       : credits > 0
-                        ? '보유 코인은 만료일까지 사용하실 수 있습니다'
-                        : '현재 사용 가능한 코인이 없습니다'}
+                        ? '보유 전은 만료일까지 사용하실 수 있습니다'
+                        : '현재 사용 가능한 전이 없습니다'}
                 </p>
               </>
             )}
@@ -157,7 +157,7 @@ function CreditsPageContent() {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            ✦ 코인 추가 충전은 종료되었습니다. 보유 코인은 만료일까지 계속 사용하실 수 있습니다.
+            ✦ 전 추가 충전은 종료되었습니다. 보유 전은 만료일까지 계속 사용하실 수 있습니다.
           </article>
 
           {/* §3 잔액별 안내 카드 */}
@@ -167,9 +167,9 @@ function CreditsPageContent() {
                 className="rounded-[14px] border bg-white px-4 py-3 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="font-extrabold text-[var(--app-ink)]">보유 코인 사용 안내</div>
+                <div className="font-extrabold text-[var(--app-ink)]">보유 전 사용 안내</div>
                 <p className="mt-1 text-[13.8px]">
-                  오늘 자세히 보기 10코인 · 연애 마음 확인 10코인
+                  오늘 자세히 보기 10전 · 연애 마음 확인 10전
                 </p>
               </article>
             ) : (
@@ -179,7 +179,7 @@ function CreditsPageContent() {
               >
                 <div className="font-extrabold text-[var(--app-ink)]">멤버십으로 계속 이용하기</div>
                 <p className="mt-1">
-                  코인 충전은 종료되었습니다. 멤버십 구독으로 프리미엄 기능을 이용하세요.
+                  전 충전은 종료되었습니다. 멤버십 구독으로 프리미엄 기능을 이용하세요.
                 </p>
                 <Link
                   href="/membership"
@@ -211,10 +211,10 @@ function CreditsPageContent() {
         {/* §4 정책 + CS 링크 — 기존 잔액 보유자에게 여전히 유효 */}
         <section
           className="flex flex-wrap gap-x-3 gap-y-1 text-[13.2px] leading-[1.6] text-[var(--app-copy-muted)]"
-          aria-label="코인 정책 및 고객센터"
+          aria-label="전 정책 및 고객센터"
         >
           <Link href="/coin-policy" className="underline">
-            코인 정책
+            전 정책
           </Link>
           <Link href="/refund-policy" className="underline">
             환불·청약철회
@@ -240,7 +240,7 @@ export default function CreditsPage() {
         <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-12">
           <AppPage className="gangi-subpage saju-result-page text-center">
             <p className="px-1 py-8 text-[14.4px] text-[var(--app-copy-muted)]">
-              코인 잔액 확인 중
+              전 잔액 확인 중
             </p>
           </AppPage>
         </AppShell>

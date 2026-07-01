@@ -175,7 +175,7 @@ export interface RefreshResult {
   refreshedAt: string;
 }
 
-// 2026-06-28 — 단일 유저 요약 즉시 갱신. 코인/멤버십 어드민 변경 직후 호출해
+// 2026-06-28 — 단일 유저 요약 즉시 갱신. 전/멤버십 어드민 변경 직후 호출해
 //   사용자조회(admin_user_summary, 시간당 배치)에 바로 반영. 실패는 삼킴(배치가 결국 보정).
 export async function refreshAdminUserSummaryForUser(userId: string): Promise<boolean> {
   if (!hasSupabaseServiceEnv || !userId) return false;

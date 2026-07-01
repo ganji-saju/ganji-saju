@@ -199,14 +199,14 @@ export function MotionTarotFlip({
 }
 
 // ============================================================================
-// 54 · m-coin — 코인 충전 성공 (입자 + 카드 확정)
-// 2026-05-15: production 연결을 위해 title / sub prop 추가. 결제·코인·멤버십 등
-// success 화면에서 자기 컨텍스트의 라벨 주입 (예: "+ 7 코인", "Plus 멤버십 시작").
+// 54 · m-coin — 전 충전 성공 (입자 + 카드 확정)
+// 2026-05-15: production 연결을 위해 title / sub prop 추가. 결제·전·멤버십 등
+// success 화면에서 자기 컨텍스트의 라벨 주입 (예: "+ 7 전", "Plus 멤버십 시작").
 // ============================================================================
 export function MotionCoinSuccess({
   active = true,
   title = '충전 완료',
-  sub = '+ 7 코인',
+  sub = '+ 7 전',
 }: {
   active?: boolean;
   title?: string;
@@ -300,7 +300,7 @@ export function MotionModalAppear({ active = true }: { active?: boolean }) {
 export function MotionToastStack({ active = true }: { active?: boolean }) {
   const reduced = useReducedMotion();
   const [items, setItems] = useState<string[]>([]);
-  const queue = ['저장됨', '복사됨', '코인 적립됨'];
+  const queue = ['저장됨', '복사됨', '전 적립됨'];
   useEffect(() => {
     if (!active) return setItems([]);
     if (reduced) return setItems(queue);

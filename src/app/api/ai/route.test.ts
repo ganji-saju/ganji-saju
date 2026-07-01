@@ -26,7 +26,7 @@ test('dialogue fallback copy stays conversational without internal memo leakage'
   const text = buildDialogueFallback('오늘 관계운을 짧게 알려줘');
 
   assert.match(text, /상대|질문/);
-  assert.doesNotMatch(text, /기본 흐름은|핵심 단서는|답변 순서|코인을 차감/);
+  assert.doesNotMatch(text, /기본 흐름은|핵심 단서는|답변 순서|전을 차감/);
 });
 
 test('dialogue prompt uses the selected zodiac expert and infers focus topic from the question', () => {

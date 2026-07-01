@@ -69,18 +69,18 @@ export function getConsentItems(pkg: PaymentPackage): ConsentItemMeta[] {
       } else {
         items.push({
           kind: 'coin',
-          label: '코인 정책 확인 및 동의',
+          label: '전 정책 확인 및 동의',
           description:
-            '유료/무료 코인 구분, 사용 코인 환불 제한, 코인 유효기간을 확인하셨습니다.',
+            '유료/무료 전 구분, 사용 전 환불 제한, 전 유효기간을 확인하셨습니다.',
         });
       }
       break;
     case 'credits':
       items.push({
         kind: 'coin',
-        label: '코인 정책 확인 및 동의',
+        label: '전 정책 확인 및 동의',
         description:
-          '유료/무료 코인 구분, 사용 코인 환불 제한, 코인 유효기간을 확인하셨습니다.',
+          '유료/무료 전 구분, 사용 전 환불 제한, 전 유효기간을 확인하셨습니다.',
       });
       break;
     case 'lifetime_report':

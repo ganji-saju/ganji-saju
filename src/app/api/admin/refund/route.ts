@@ -178,14 +178,14 @@ export async function POST(req: NextRequest) {
 
       const credit = await buildCreditRefundRequestItem(service, creditTransactionId);
       if (!credit?.row) {
-        return NextResponse.json({ ok: false, error: '코인 결제 내역을 찾을 수 없습니다.' }, { status: 404 });
+        return NextResponse.json({ ok: false, error: '전 결제 내역을 찾을 수 없습니다.' }, { status: 404 });
       }
       if (!credit.item) {
-        return NextResponse.json({ ok: false, error: '환불 가능한 코인 결제가 아닙니다.' }, { status: 400 });
+        return NextResponse.json({ ok: false, error: '환불 가능한 전 결제가 아닙니다.' }, { status: 400 });
       }
       if (credit.item.status === 'none' || credit.item.refundAmountWon <= 0) {
         return NextResponse.json(
-          { ok: false, error: credit.item.statusLabel || '환불 가능한 잔여 코인이 없습니다.' },
+          { ok: false, error: credit.item.statusLabel || '환불 가능한 잔여 전이 없습니다.' },
           { status: 400 }
         );
       }
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
       if (error) {
         if (error.code === '23505') {
           return NextResponse.json(
-            { ok: false, error: '이미 같은 결제 또는 코인 충전건의 환불 요청이 있습니다.' },
+            { ok: false, error: '이미 같은 결제 또는 전 충전건의 환불 요청이 있습니다.' },
             { status: 409 }
           );
         }

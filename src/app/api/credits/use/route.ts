@@ -25,7 +25,7 @@ import {
   simplifySajuCopyList,
 } from '@/lib/saju/public-copy';
 import { buildSajuReport, type ReportEvidenceKey } from '@/domain/saju/report';
-// 2026-05-16 PR #180 — 코인 결제 후 detail 풀이 텍스트도 single source 일치.
+// 2026-05-16 PR #180 — 전 결제 후 detail 풀이 텍스트도 single source 일치.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
 
     const result = await unlockDetailReport(user.id, toSlug(reading.input));
     if (!result.success) {
-      return NextResponse.json({ error: '코인이 부족합니다.', remaining: result.remaining }, { status: 402 });
+      return NextResponse.json({ error: '전이 부족합니다.', remaining: result.remaining }, { status: 402 });
     }
 
     content = buildDetailReportContent(reading, counselorId);
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
 
   const result = await deductCredits(user.id, feature);
   if (!result.success) {
-    return NextResponse.json({ error: '코인이 부족합니다.', remaining: result.remaining }, { status: 402 });
+    return NextResponse.json({ error: '전이 부족합니다.', remaining: result.remaining }, { status: 402 });
   }
 
   return NextResponse.json({ success: true, remaining: result.remaining, content, counselorId, access: 'charged' });

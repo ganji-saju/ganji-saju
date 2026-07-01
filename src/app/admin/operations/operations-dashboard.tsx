@@ -325,7 +325,7 @@ export function OperationsDashboard() {
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 <span>
-                  결제 코인 합계{' '}
+                  결제 전 합계{' '}
                   <strong className="tabular-nums text-[var(--app-ink)]">
                     {formatNum(snap.today.purchasedCredits)}
                   </strong>
@@ -511,7 +511,7 @@ export function OperationsDashboard() {
               className="mt-3 rounded-[10px] px-3 py-2 text-[12.6px] text-[var(--app-copy)]"
               style={{ background: 'rgba(0,0,0,0.025)' }}
             >
-              누적 충전 코인 합계{' '}
+              누적 충전 전 합계{' '}
               <strong className="tabular-nums text-[var(--app-ink)]">
                 {formatNum(snap.lifetime.totalPurchasedCredits)}
               </strong>{' '}

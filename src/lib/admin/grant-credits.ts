@@ -1,5 +1,5 @@
-// 2026-06-28 — 어드민 수동 코인 지급 입력 검증(순수). API/클라이언트가 공유.
-//   코인 지급은 금전가치 부여라 super_admin 게이트 + 엄격 검증 + 감사 로그를 둔다.
+// 2026-06-28 — 어드민 수동 전 지급 입력 검증(순수). API/클라이언트가 공유.
+//   전 지급은 금전가치 부여라 super_admin 게이트 + 엄격 검증 + 감사 로그를 둔다.
 //   실제 적립은 addCredits RPC(purchase=1년 만료 lot / subscription=무만료)가 수행.
 
 export type GrantCreditType = 'purchase' | 'subscription';
@@ -40,11 +40,11 @@ export function validateGrantCredits(input: {
         ? Number(input.amount)
         : NaN;
   if (!Number.isInteger(amount)) {
-    errors.push('지급 코인 수는 정수여야 합니다.');
+    errors.push('지급 전 수는 정수여야 합니다.');
   } else if (amount <= 0) {
-    errors.push('지급 코인 수는 1 이상이어야 합니다.');
+    errors.push('지급 전 수는 1 이상이어야 합니다.');
   } else if (amount > MAX_GRANT_AMOUNT) {
-    errors.push(`지급 코인 수는 ${MAX_GRANT_AMOUNT} 이하여야 합니다(과지급 방지).`);
+    errors.push(`지급 전 수는 ${MAX_GRANT_AMOUNT} 이하여야 합니다(과지급 방지).`);
   }
 
   const type = input.type;

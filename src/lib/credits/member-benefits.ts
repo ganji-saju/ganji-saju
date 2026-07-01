@@ -9,7 +9,7 @@ export const MEMBER_BENEFITS = {
   compatMonthly: { benefit: 'compat_monthly', limit: 3, period: 'month' },
 } as const;
 
-// 2026-06-30 코인→정액이용권 전환: 멤버 혜택을 등급별 쿼터로 표현.
+// 2026-06-30 전→정액이용권 전환: 멤버 혜택을 등급별 쿼터로 표현.
 //   benefit/period 버킷 키는 consume_member_benefit RPC 용, 한도는 등급별 MEMBER_QUOTAS 참조.
 /** consumeMemberBenefit 의 period 버킷 키. 한도는 MEMBER_QUOTAS[tier] 에서 가져온다. */
 export const MEMBER_BENEFIT_KEYS = {
