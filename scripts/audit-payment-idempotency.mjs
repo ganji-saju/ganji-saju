@@ -20,7 +20,7 @@
  *
  * 출력:
  *   - 회귀 row 표 (user_id, kst_date, daily_charges, overcharged)
- *   - 총 overcharged 코인 (잠재 환불 대상)
+ *   - 총 overcharged 전 (잠재 환불 대상)
  *   - --strict 모드: 1건 이상 시 exit 1
  *
  * 권장 운영:
@@ -130,7 +130,7 @@ if (rows.length === 0) {
 
 const totalOvercharged = rows.reduce((sum, r) => sum + r.overcharged, 0);
 
-console.log(`  🔴 회귀 ${rows.length} 케이스 — 총 overcharged ${totalOvercharged} 코인`);
+console.log(`  🔴 회귀 ${rows.length} 케이스 — 총 overcharged ${totalOvercharged} 전`);
 console.log('');
 console.log(
   `  ${'user_id'.padEnd(38)} ${'kst_date'.padEnd(12)} ${'charges'.padStart(8)} ${'overcharged'.padStart(12)}  kinds`,

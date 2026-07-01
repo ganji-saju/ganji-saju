@@ -15,8 +15,8 @@
  * 검출 범위: src/ 의 모든 *.tsx, *.ts 파일
  *
  * 검출 룰 (JSX text 노드 한정 — string literal 또는 ternary 안의 mockup 은 정상):
- *   - Rule 1: `>✦ —<` / `>✦ -<` — 코인 prefix + dash 단독 (PR #194 의 회귀 패턴)
- *   - Rule 2: `>✦ …<` / `>✦ ...<` — 코인 prefix + ellipsis 단독
+ *   - Rule 1: `>✦ —<` / `>✦ -<` — 전 prefix + dash 단독 (PR #194 의 회귀 패턴)
+ *   - Rule 2: `>✦ …<` / `>✦ ...<` — 전 prefix + ellipsis 단독
  *   - Rule 3: `>로그인 후 ...<` — 분기 없는 "로그인 후" 시작 hardcoded 안내
  *
  * 의도된 leading-dash typography (예: `<strong>label</strong> — 설명`, 후기 "— 닉네임")
@@ -60,13 +60,13 @@ function collectFiles(dir, results = []) {
 const RULES = [
   {
     id: 'coin-dash',
-    label: '코인 prefix + dash 단독 (✦ —)',
+    label: '전 prefix + dash 단독 (✦ —)',
     // > [whitespace] ✦ [whitespace] (em-dash / en-dash / hyphen) [whitespace] <
     re: />\s*✦\s*[—–\-]\s*</g,
   },
   {
     id: 'coin-ellipsis',
-    label: '코인 prefix + ellipsis 단독 (✦ … / ✦ ...)',
+    label: '전 prefix + ellipsis 단독 (✦ … / ✦ ...)',
     re: />\s*✦\s*(?:…|\.{3,})\s*</g,
   },
   {

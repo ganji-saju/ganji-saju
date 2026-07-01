@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ai_chat (3코인 dialogue) idempotency 검증.
+ * ai_chat (3전 dialogue) idempotency 검증.
  *
  * 배경 (사용자 후속 작업 1번):
  *   audit-business-activity 가 ai_chat 22 events / 3 users (MEDIUM) 검출.

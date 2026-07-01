@@ -5,7 +5,7 @@
  * 배경 (사용자 후속 작업 2번):
  *   audit-business-activity 가 lifetime-report 8 events / 4 users (MEDIUM) 검출.
  *   49,000원 = 가장 비싼 단일 상품 → 회귀 발생 시 사용자 환불 부담 큼.
- *   detail_report 회귀 (PR #199) 후 9 코인 환불 처리 — 비슷한 패턴 lifetime 에서
+ *   detail_report 회귀 (PR #199) 후 9 전 환불 처리 — 비슷한 패턴 lifetime 에서
  *   재발 시 환불액 ~10배 (1 회 49,000원).
  *
  * 검증 항목:

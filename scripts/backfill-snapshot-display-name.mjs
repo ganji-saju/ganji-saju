@@ -2,7 +2,7 @@
 /**
  * Backfill — 과거 today_fortune_result_snapshots 의 free_result_json.userName 교정.
  *
- * 배경: 코인 결제 이름 fix(PR #398) 이전에 저장된 스냅샷은 빌드 시점에 이름이 없어
+ * 배경: 전 결제 이름 fix(PR #398) 이전에 저장된 스냅샷은 빌드 시점에 이름이 없어
  *   free_result_json.userName = null 로 굳었고, 상세 hero 가 '달빛이' 로 렌더된다.
  *   이 스크립트가 각 행의 user_id 로 현재 프로필(display_name) → 소셜 메타데이터 순으로
  *   이름을 다시 해석해, 실명이 있으면 free_result_json.userName 만 패치한다.
