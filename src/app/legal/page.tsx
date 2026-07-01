@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: '정책 모아보기',
   description:
-    '간지사주 이용약관·개인정보처리방침·환불정책·구독·코인·예약상담·AI 콘텐츠 한계·사업자 고지 통합 안내.',
+    '간지사주 이용약관·개인정보처리방침·환불정책·구독·전·예약상담·AI 콘텐츠 한계·사업자 고지 통합 안내.',
 };
 
 interface Props {
@@ -41,7 +41,7 @@ export default async function LegalHubPage({ searchParams }: Props) {
       <AppPage className="gangi-subpage saju-result-page space-y-4">
         <GangiPageHeader title="정책 모아보기" backHref="/" />
         <p className="text-[14.4px] leading-[1.7] text-[var(--app-copy-muted)]">
-          이용약관·개인정보처리방침·환불·구독·코인 등 9 정책을 한 페이지에서 탭으로 확인하실
+          이용약관·개인정보처리방침·환불·구독·전 등 9 정책을 한 페이지에서 탭으로 확인하실
           수 있습니다. 각 정책은 별도 URL (예: <code className="text-[13.2px]">/terms</code>) 로
           직접 접근도 가능합니다.
         </p>

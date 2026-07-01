@@ -17,7 +17,7 @@ type Step = 1 | 2 | 3 | 'done';
 
 const REASONS: Array<{ key: string; label: string; description: string }> = [
   { key: 'not-use', label: '이제 사용하지 않아요', description: '관심이 사라졌어요' },
-  { key: 'price', label: '가격이 부담돼요', description: '유료 결제 / 코인이 비싸요' },
+  { key: 'price', label: '가격이 부담돼요', description: '유료 결제 / 전이 비싸요' },
   { key: 'accuracy', label: '풀이가 잘 안 맞아요', description: '결과의 신뢰도가 떨어져요' },
   { key: 'ui', label: '사용하기 어려워요', description: 'UI / UX 가 불편해요' },
   { key: 'duplicate', label: '다른 계정이 있어요', description: '중복 계정을 정리해요' },
@@ -26,7 +26,7 @@ const REASONS: Array<{ key: string; label: string; description: string }> = [
 ];
 
 const LOSS_ITEMS: Array<{ icon: string; label: string; description: string }> = [
-  { icon: '✦', label: '보유 코인 전부', description: '환불 불가, 즉시 소멸' },
+  { icon: '✦', label: '보유 전 전부', description: '환불 불가, 즉시 소멸' },
   { icon: '☰', label: '저장된 풀이', description: '복구 불가능' },
   { icon: '◐', label: '대화 상담 기록', description: '선생님과 나눈 대화 모두 삭제' },
   { icon: '♥', label: '멤버십 / 결제내역', description: '결제 기록은 5년 보관' },
@@ -210,7 +210,7 @@ export default function AccountDeletePage() {
                     잠시 쉬어가는 것은 어때요?
                   </div>
                   <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy)]">
-                    <strong>알림 끄기</strong> 또는 <strong>일시 정지</strong>로 코인과 풀이를 그대로 유지할 수 있어요.
+                    <strong>알림 끄기</strong> 또는 <strong>일시 정지</strong>로 전과 풀이를 그대로 유지할 수 있어요.
                   </p>
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <Link
@@ -343,7 +343,7 @@ export default function AccountDeletePage() {
                   </div>
                   <ul className="mt-2.5 grid gap-1.5 pl-4 text-[13.8px] leading-[1.65] text-[var(--app-copy)]">
                     <li className="list-disc">탈퇴 후 30일 이내 재가입 시 데이터 복구 불가</li>
-                    <li className="list-disc">코인 잔액은 환불되지 않습니다</li>
+                    <li className="list-disc">전 잔액은 환불되지 않습니다</li>
                     <li className="list-disc">결제 내역은 5년간 보관 (전자상거래법)</li>
                     <li className="list-disc">같은 이메일로 30일 후 재가입 가능</li>
                   </ul>

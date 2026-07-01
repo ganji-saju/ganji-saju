@@ -137,7 +137,7 @@ test('executeRefund: Toss 성공 + revoke 성공 → completed, 멱등키 전달
   assert.equal((tossArgs[0] as { idempotencyKey: string }).idempotencyKey, 'idem-1');
 });
 
-test('executeRefund: 코인 부분환불은 Toss cancelAmount 를 전달', async () => {
+test('executeRefund: 전 부분환불은 Toss cancelAmount 를 전달', async () => {
   const { deps, statuses, tossArgs } = makeDeps({
     refundKind: 'credit_purchase',
     amount: 571,
@@ -168,7 +168,7 @@ test('executeRefund: Toss가 이미 취소된 결제라고 하면 조회 검증 
   assert.deepEqual(statuses, ['processing', 'completed']);
 });
 
-test('executeRefund: 코인 부분환불이 이미 Toss에 반영됐으면 조회 검증 후 회수하고 completed', async () => {
+test('executeRefund: 전 부분환불이 이미 Toss에 반영됐으면 조회 검증 후 회수하고 completed', async () => {
   const { deps, statuses } = makeDeps({
     refundKind: 'credit_purchase',
     amount: 571,

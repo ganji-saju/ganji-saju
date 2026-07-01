@@ -22,7 +22,7 @@ export interface OperationsSnapshot {
     activeUsers: number;
     /** 오늘 결제 건수 (type='purchase'). */
     purchaseCount: number;
-    /** 오늘 결제로 충전된 코인 총량 (amount > 0). */
+    /** 오늘 결제로 충전된 전 총량 (amount > 0). */
     purchasedCredits: number;
     /** 오늘 사주 풀이 작성 건수. */
     readingsCreated: number;
@@ -39,7 +39,7 @@ export interface OperationsSnapshot {
     totalReadings: number;
     /** 누적 결제 건수. */
     totalPurchases: number;
-    /** 누적 충전된 코인 총량. */
+    /** 누적 충전된 전 총량. */
     totalPurchasedCredits: number;
   };
   /** 윈도우 내 평균 만족도 (today_fortune_feedback.overall_rating). -1~+1. */

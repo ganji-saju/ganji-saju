@@ -70,10 +70,10 @@ test('today fortune snapshot summary mentions preserved date', () => {
   );
 });
 
-// 2026-06-05 Bug A 재발(코인 결제 후 hero 가 '달빛이') —
+// 2026-06-05 Bug A 재발(전 결제 후 hero 가 '달빛이') —
 //   스냅샷 이름 해석이 profile.display_name 단일 소스라 소셜 로그인(display_name 미설정)
 //   유저는 '달빛이'로 떨어졌다. today-fortune API 와 동일하게 소셜 메타데이터까지 본다.
-test('resolveSnapshotInputName: display_name 비어도 소셜 메타 이름으로 보강(코인 달빛이 방지)', async () => {
+test('resolveSnapshotInputName: display_name 비어도 소셜 메타 이름으로 보강(전 달빛이 방지)', async () => {
   const name = await resolveSnapshotInputName('user-1', {
     loadProfileDisplayName: async () => '',
     loadAuthMetadata: async () => ({ name: '김영민' }),

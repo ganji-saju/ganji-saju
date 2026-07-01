@@ -304,7 +304,7 @@ export async function unlockDetailReport(
     };
   }
 
-  // [레거시 코인 경로] 기존 잔액 보유자 소진용 — 삭제 금지
+  // [레거시 전 경로] 기존 잔액 보유자 소진용 — 삭제 금지
   const accessMetadata = getDetailReportAccessMetadata(readingKey);
   const atomicResult = await unlockCreditsOnce(userId, 'detail_report', accessMetadata);
 
@@ -348,7 +348,7 @@ export async function unlockTodayFortunePremium(
     };
   }
 
-  // [멤버십 게이트] 코인 앞에 삽입: premium 무제한 / plus 월쿼터 소진
+  // [멤버십 게이트] 전 앞에 삽입: premium 무제한 / plus 월쿼터 소진
   const tier = await getMemberTier(userId); // 'premium' | 'plus' | null
   if (tier) {
     const limit = MEMBER_QUOTAS[tier].detailMonthly; // null = 무제한(premium)
@@ -360,7 +360,7 @@ export async function unlockTodayFortunePremium(
       await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
       return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
     }
-    // plus 한도 초과 → 아래 레거시 코인/페이월로 폴스루
+    // plus 한도 초과 → 아래 레거시 전/페이월로 폴스루
   }
 
   const accessMetadata = getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey);

@@ -1,5 +1,5 @@
 // Redesign 2026-05-14 (PR6+ 디자인 언어 통일):
-// /today-fortune/detail — 1코인 결제 후 또는 재방문 시 진입.
+// /today-fortune/detail — 1전 결제 후 또는 재방문 시 진입.
 // 기존: 가운데 정렬 평문 + 작은 그림자 카드 + 초록 notice.
 // 변경: 외곽 wrapper 를 sub-page 통일된 wrapper 로, lock/loading/error/notice
 //       모두 PR6+ pink-soft hero 패턴으로 통일. 하단 CTA 도 pink/ink 굵은 버튼.
@@ -53,7 +53,7 @@ function getAccessNotice(access: TodayFortuneUnlockResponse['access']) {
     case 'charged':
       return '오늘 자세히 보기를 열었습니다.';
     case 'reused':
-      return '이미 열어본 풀이입니다. 코인은 다시 차감하지 않았습니다.';
+      return '이미 열어본 풀이입니다. 전은 다시 차감하지 않았습니다.';
     case 'purchased':
       return '구매한 오늘 자세히 보기를 열었습니다.';
     default:
@@ -90,7 +90,7 @@ export function TodayFortuneDetailClient({
   const [notice, setNotice] = useState<string | null>(initialNotice);
   const attemptedRef = useRef(false);
   // 2026-05-16 fix — unlock 후 페이지 상단으로 튀는 회귀.
-  // 사용자가 "1코인 열기" 누르면 detail 페이지로 이동 → 항상 최상단부터 렌더 →
+  // 사용자가 "1전 열기" 누르면 detail 페이지로 이동 → 항상 최상단부터 렌더 →
   // 실제 결제한 컨텐츠(프리미엄 패널)는 화면 밖에 있음.
   // 해결: 로드 완료 후 premiumRef 위치로 부드럽게 스크롤.
   const premiumRef = useRef<HTMLDivElement | null>(null);
@@ -214,7 +214,7 @@ export function TodayFortuneDetailClient({
       {loading ? (
         <GangiLoadingOverlay
           title="오늘 자세히 보기를 여는 중"
-          description="결제·코인 사용 이력을 확인하고 풀이를 정리하는 중입니다."
+          description="결제·전 사용 이력을 확인하고 풀이를 정리하는 중입니다."
         />
       ) : null}
 
@@ -276,7 +276,7 @@ export function TodayFortuneDetailClient({
             </p>
             {remainingCredits !== null ? (
               <p className="mt-1.5 text-[14.4px] text-[var(--app-copy-soft)]">
-                현재 잔여 코인 {remainingCredits}개
+                현재 잔여 전 {remainingCredits}개
               </p>
             ) : null}
             <div className="mt-4 grid gap-2 sm:grid-cols-2">

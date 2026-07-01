@@ -51,7 +51,7 @@ const BOARDS: BoardEntry[] = [
   },
   {
     id: 'm-coin',
-    title: '54 · 코인 충전 성공',
+    title: '54 · 전 충전 성공',
     duration: '5s',
     trigger: '/credits/success',
     render: (active) => <MotionCoinSuccess active={active} />,

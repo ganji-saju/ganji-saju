@@ -5,7 +5,7 @@ import { AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '오늘 자세히 보기',
-  description: '구매하거나 코인으로 연 오늘 상세 풀이를 별도 화면에서 확인합니다.',
+  description: '구매하거나 전으로 연 오늘 상세 풀이를 별도 화면에서 확인합니다.',
   alternates: { canonical: '/today-fortune/detail' },
   robots: {
     index: false,

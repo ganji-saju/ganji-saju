@@ -171,7 +171,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                     </span>
                   </div>
                   <span className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
-                    {fmtWon(e.amountWon)}{e.coins != null ? ` · ${e.coins}코인` : ''}
+                    {fmtWon(e.amountWon)}{e.coins != null ? ` · ${e.coins}전` : ''}
                   </span>
                 </li>
               ))}
@@ -244,15 +244,15 @@ export default async function AdminUserDetailPage({ params }: Props) {
               <RefundActions role={role} items={refund.items} creditItems={refund.creditItems} requests={detail.refundRequests} />
             )}
           </Card>
-          <Card title="코인 수동 지급 (super_admin)">
+          <Card title="전 수동 지급 (super_admin)">
             <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
-              보상·사과 등 임의 지급. 결제 코인은 1년 만료, 구독 코인은 무만료. 회수는 환불로.
+              보상·사과 등 임의 지급. 결제 전은 1년 만료, 구독 전은 무만료. 회수는 환불로.
             </p>
             <GrantCreditsActions role={role} userId={id} />
           </Card>
           <Card title="멤버십 권한 변경 (super_admin)">
             <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
-              프리미엄 멤버십을 N일 부여하거나 즉시 해제. 코인은 지급하지 않음(코인 수동 지급 별도).
+              프리미엄 멤버십을 N일 부여하거나 즉시 해제. 전은 지급하지 않음(전 수동 지급 별도).
             </p>
             <GrantMembershipActions
               role={role}
@@ -263,7 +263,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
           </Card>
           <Card title="평생 리포트 권한 부여 (super_admin)">
             <p className="mb-2 text-[12.1px] text-[var(--app-copy-soft)]">
-              특정 사주 결과에 평생리포트 접근권(lifetime-report)을 무료 수동 부여. 결제·코인 무관.
+              특정 사주 결과에 평생리포트 접근권(lifetime-report)을 무료 수동 부여. 결제·전 무관.
             </p>
             <GrantLifetimeReportActions
               role={role}

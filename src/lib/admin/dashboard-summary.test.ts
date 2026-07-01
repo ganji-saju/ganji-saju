@@ -5,7 +5,7 @@ import { labelForAdminAction, normalizeDashboardWindow } from './dashboard-summa
 declare const test: (name: string, fn: () => void) => void;
 
 test('대시보드: 알려진 action 은 한글 라벨', () => {
-  assert.equal(labelForAdminAction('grant_credit'), '코인 지급');
+  assert.equal(labelForAdminAction('grant_credit'), '전 지급');
   assert.equal(labelForAdminAction('refund_approve'), '환불 승인');
   assert.equal(labelForAdminAction('view_detail'), '회원 상세 조회');
 });

@@ -1,5 +1,5 @@
 // Redesign 2026-05-13 (Claude Design / screens-f.jsx ScreenSajuShare):
-// 신규 /saju/[slug]/share — 인스타 1:1.3 비율 결과 카드 + 5 채널 공유 + 추천 코인 안내.
+// 신규 /saju/[slug]/share — 인스타 1:1.3 비율 결과 카드 + 5 채널 공유 + 추천 전 안내.
 // 실제 공유는 Web Share API + 클립보드 fallback. QR 코드는 임시 picture-pattern.
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -193,7 +193,7 @@ export default async function SajuSharePage({ params }: Props) {
             <ShareActions text={shareText} url={shareUrl} className="mt-2.5" />
           </section>
 
-          {/* §4 추천 코인 안내 */}
+          {/* §4 추천 전 안내 */}
           <article
             className="rounded-[14px] border px-4 py-3 text-[13.8px] leading-[1.55] text-[var(--app-pink-strong)]"
             style={{
@@ -201,7 +201,7 @@ export default async function SajuSharePage({ params }: Props) {
               borderColor: 'var(--app-pink-line)',
             }}
           >
-            ✨ 친구가 가입하면 <strong>코인 50개</strong>를 추가로 받아요
+            ✨ 친구가 가입하면 <strong>전 50개</strong>를 추가로 받아요
           </article>
         </section>
       </AppPage>

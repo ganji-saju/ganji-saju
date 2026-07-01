@@ -137,17 +137,17 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
     case 'free_intro':
       return `첫 3회 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음`;
     case 'result_intro_free':
-      return '오늘 결과 기반 첫 질문 무료 · 코인 차감 없음';
+      return '오늘 결과 기반 첫 질문 무료 · 전 차감 없음';
     case 'member_daily_free':
-      return `멤버십 오늘 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음 · 코인 차감 없음`;
+      return `멤버십 오늘 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음 · 전 차감 없음`;
     case 'charged_bundle':
-      return `${billing.bundleSize}회 묶음 시작 · ${billing.cost}코인 차감 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음 · 잔여 ${billing.remaining ?? 0}개`;
+      return `${billing.bundleSize}회 묶음 시작 · ${billing.cost}전 차감 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음 · 잔여 ${billing.remaining ?? 0}개`;
     case 'bundle_included':
       return `결제된 ${billing.bundleSize}회 묶음 사용 중 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음`;
     case 'not_charged_fallback':
-      return `기본 답변 · 횟수/코인 차감 없음 · 잔여 ${billing.remaining ?? 0}개`;
+      return `기본 답변 · 횟수/전 차감 없음 · 잔여 ${billing.remaining ?? 0}개`;
     case 'not_charged_safe_redirect':
-      return '안전 안내 전환 · 횟수/코인 차감 없음';
+      return '안전 안내 전환 · 횟수/전 차감 없음';
     case 'auth_required':
       return '대화는 로그인 후 사용할 수 있습니다.';
     case 'insufficient_credits':

@@ -1,4 +1,4 @@
-// 어드민 수동 코인 지급 입력 검증 회귀 가드.
+// 어드민 수동 전 지급 입력 검증 회귀 가드.
 import assert from 'node:assert/strict';
 import { validateGrantCredits, MAX_GRANT_AMOUNT } from './grant-credits';
 

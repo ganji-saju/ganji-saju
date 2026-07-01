@@ -40,7 +40,7 @@ const SLIDES: readonly Slide[] = [
     eyebrow: '02 · TODAY',
     title: ['오늘 흐름과', '깊은 풀이'] as const,
     body: [
-      '오늘운세는 무료, 깊은 풀이는 코인 1회나 멤버십으로.',
+      '오늘운세는 무료, 깊은 풀이는 전 1회나 멤버십으로.',
       '시간 모르셔도 양·음력 자동 변환·보정합니다.',
     ] as const,
   },

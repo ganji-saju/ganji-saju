@@ -48,7 +48,7 @@ async function handle(req: NextRequest) {
     });
     if (!result.ok) {
       console.warn(
-        `[payment-idempotency-audit] 회귀 ${result.rowCount}건 / overcharged ${result.totalOvercharged} 코인 (since ${result.sinceIso})`,
+        `[payment-idempotency-audit] 회귀 ${result.rowCount}건 / overcharged ${result.totalOvercharged} 전 (since ${result.sinceIso})`,
         result.rows
       );
     }

@@ -8,7 +8,7 @@ import { PolicyPage, buildPolicyMetadata } from '@/components/policies/policy-pa
 export async function generateMetadata(): Promise<Metadata> {
   return buildPolicyMetadata(
     'terms',
-    '간지사주 이용 조건, 코인 정책, 결제 및 책임 제한에 대한 안내입니다.'
+    '간지사주 이용 조건, 전 정책, 결제 및 책임 제한에 대한 안내입니다.'
   );
 }
 

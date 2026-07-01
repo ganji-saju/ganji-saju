@@ -37,7 +37,7 @@ import {
 
 // 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
 //   우선순위: ① taste_product(today-detail/궁합/캘린더) ② 사주 premium·lifetime 풀이
-//             ③ 코인 충전(/credits/success) ④ 그 외 멤버십 완료.
+//             ③ 전 충전(/credits/success) ④ 그 외 멤버십 완료.
 //   fulfillment(신규 지급)이 있으면 그 product/plan 을, 없으면(이미 지급된 재진입) pkg 에서 유도.
 function resolveNicepayResultHref(opts: {
   pkg: PaymentPackage;
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.url), 303);
   // 결제 실패 시 "다시 결제하기" 가 원래 상품 결제로 돌아가도록 retryPath 를 함께 싣는다.
-  //   retryPath 없으면 fail 페이지가 /credits(코인충전)로 폴백 — 그게 이 버그의 증상이었다.
+  //   retryPath 없으면 fail 페이지가 /credits(전충전)로 폴백 — 그게 이 버그의 증상이었다.
   const failRedirect = (reason: string, retryPath?: string | null) => {
     const params = new URLSearchParams({ provider: 'nicepay', reason });
     if (retryPath && retryPath.startsWith('/') && !retryPath.startsWith('//')) {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
   const pkg = getPackage(order.packageId);
   if (!pkg) return failRedirect('상품 정보를 찾지 못했습니다.', readRetryPath(order.metadata));
 
-  // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로(상품별 분기 — 코인/사주풀이/소액상품).
+  // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로(상품별 분기 — 전/사주풀이/소액상품).
   if (order.status === 'fulfilled' || order.status === 'fulfilling') {
     return redirectTo(resolveNicepayResultHref({ pkg, order, orderId }));
   }
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 7) 결과 페이지 redirect — 상품별 분기(헬퍼). 이전엔 pkg.kind 무관 항상 /credits/success 로
-  //    보내, 사주 풀이(lifetime_report)가 코인 페이지로 새어 '오늘운세 무료보기'만 뜨고 풀이를 못
+  //    보내, 사주 풀이(lifetime_report)가 전 페이지로 새어 '오늘운세 무료보기'만 뜨고 풀이를 못
   //    보던 버그(#473~ nicepay 도입 시 membership success 정합 누락). toss 와 동일 흐름으로 통일.
   return redirectTo(resolveNicepayResultHref({ pkg, order, orderId, fulfillment }));
 }

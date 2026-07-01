@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 레거시 결제코인 보유 여부 — 코인 sunset 후 코인옵션 노출 대상 판정용 (read-only).
+  // 레거시 결제전 보유 여부 — 전 sunset 후 전옵션 노출 대상 판정용 (read-only).
   const hasLegacyCoins = user ? await userHasLegacyCoins(user.id) : false;
 
   if (!user) {

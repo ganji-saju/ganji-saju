@@ -1,5 +1,5 @@
-// 코인 "만료 보정" 회귀 가드 — 마이페이지 코인 표시(dashboard.credits.total)가
-//   만료 안 된 결제 코인만 더하는지 검증. sumNonExpiredLots 가 표시 잔액의 보정 핵심.
+// 전 "만료 보정" 회귀 가드 — 마이페이지 전 표시(dashboard.credits.total)가
+//   만료 안 된 결제 전만 더하는지 검증. sumNonExpiredLots 가 표시 잔액의 보정 핵심.
 import assert from 'node:assert/strict';
 import { sumNonExpiredLots, type CreditLotRow } from './lot-balance';
 

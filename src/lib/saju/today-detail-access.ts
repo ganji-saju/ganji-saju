@@ -1,11 +1,11 @@
 // 2026-05-14: today-detail 중복 결제 방지 — 결제는 slug 방식으로 저장됐지만,
 // 사주를 다시 만들면 slug가 바뀌어 같은 사람이 또 결제하라는 메시지를 받는
-// 버그가 있었다. 또 today-fortune 1코인 unlock 과 saju 555원 결제가 별도
+// 버그가 있었다. 또 today-fortune 1전 unlock 과 saju 555원 결제가 별도
 // 사일로로 동작해 cross-flow 인식이 안 됐다. 이 함수는 다음 3가지를 모두
 // 시도해 본인이 이미 권한을 가지면 entitlement-like 객체를 반환한다.
 //   1) product_entitlements 의 slug-기반 scope key  (legacy)
 //   2) product_entitlements 의 readingKey-기반 scope key (input-deterministic)
-//   3) credit_transactions 의 today-fortune 1코인 unlock 기록
+//   3) credit_transactions 의 today-fortune 1전 unlock 기록
 // 반환 형태는 호출자가 truthy/falsy 만 확인하면 되도록 단순화.
 import {
   buildTodayDetailScopeKey,
@@ -80,7 +80,7 @@ export async function checkTodayDetailAccess(slug: string): Promise<SajuTodayDet
     return { hasAccess: true, source: { kind: 'product-entitlement', via: 'same-day' } };
   }
 
-  // 2) Today-fortune 1코인 unlock — 오늘(KST) unlock 만 인정 (slug / readingKey / legacy 키).
+  // 2) Today-fortune 1전 unlock — 오늘(KST) unlock 만 인정 (slug / readingKey / legacy 키).
   if (await hasTodayFortunePremiumAccess(user.id, slug, todayKey)) {
     return { hasAccess: true, source: { kind: 'credit-unlock', via: 'today-fortune' } };
   }

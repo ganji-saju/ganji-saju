@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
   if (!result.success) {
     return NextResponse.json(
       {
-        error: result.error ?? '코인이 부족합니다.',
+        error: result.error ?? '전이 부족합니다.',
         remaining: result.remaining,
         coinCost: getFeatureCost('calendar'),
       },

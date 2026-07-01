@@ -8,7 +8,7 @@ import { AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: '보관된 오늘운세 다시보기',
-  description: '결제하거나 코인으로 열었던 오늘운세 상세 풀이를 보관함에서 다시 확인합니다.',
+  description: '결제하거나 전으로 열었던 오늘운세 상세 풀이를 보관함에서 다시 확인합니다.',
   robots: {
     index: false,
     follow: false,

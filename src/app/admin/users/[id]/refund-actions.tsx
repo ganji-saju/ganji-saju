@@ -147,11 +147,11 @@ export function RefundActions({
   function approve(r: RefundReq) {
     const target =
       r.refundKind === 'credit_purchase'
-        ? `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원 · ${r.creditAmount ?? 0}코인 회수`
+        ? `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원 · ${r.creditAmount ?? 0}전 회수`
         : `${r.productId} · ${r.amount?.toLocaleString() ?? '—'}원`;
     if (
       !window.confirm(
-        `실제 환불을 실행합니다 — ${PG_LABEL[r.provider]} 결제취소 + 권한/코인 회수.\n${target}\n계속할까요?`
+        `실제 환불을 실행합니다 — ${PG_LABEL[r.provider]} 결제취소 + 권한/전 회수.\n${target}\n계속할까요?`
       )
     ) {
       return;
@@ -188,7 +188,7 @@ export function RefundActions({
 
       {creditItems.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[12.1px] font-extrabold text-[var(--app-copy-soft)]">코인 환불</p>
+          <p className="text-[12.1px] font-extrabold text-[var(--app-copy-soft)]">전 환불</p>
           {creditItems.map((item) => {
             const requestable = item.status !== 'none' && item.refundAmountWon > 0 && item.hasPaymentKey;
             return (
@@ -201,7 +201,7 @@ export function RefundActions({
                     {item.productName} · 환불 {item.refundAmountWon.toLocaleString()}원
                   </span>
                   <span className="block">
-                    {item.statusLabel} · 남은 {item.coinsRemaining}/{item.coinsPurchased}코인
+                    {item.statusLabel} · 남은 {item.coinsRemaining}/{item.coinsPurchased}전
                     {item.expiresAt ? ` · 만료 ${item.expiresAt.slice(0, 10)}` : ''}
                   </span>
                 </span>
@@ -232,7 +232,7 @@ export function RefundActions({
                   <b>{STATUS_LABEL[r.status] ?? r.status}</b> · {r.amount?.toLocaleString() ?? '—'}원 ·{' '}
                   {r.reason}
                   {r.refundKind === 'credit_purchase' && r.creditAmount != null
-                    ? ` · 코인 ${r.creditAmount}개`
+                    ? ` · 전 ${r.creditAmount}개`
                     : ''}
                 </span>
                 {(r.errorMessage || getRefundNote(r)) && (

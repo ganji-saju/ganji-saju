@@ -8,7 +8,7 @@ import { useState } from 'react';
 type Category = 'payment' | 'subscription' | 'reading' | 'account' | 'other';
 
 const CATEGORIES: Array<{ value: Category; label: string }> = [
-  { value: 'payment', label: '결제·코인' },
+  { value: 'payment', label: '결제·전' },
   { value: 'subscription', label: '구독·멤버십' },
   { value: 'reading', label: '풀이·해석' },
   { value: 'account', label: '계정·로그인' },
@@ -110,7 +110,7 @@ export function ContactForm() {
           maxLength={60}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="예: 결제 후 코인이 충전되지 않습니다"
+          placeholder="예: 결제 후 전이 충전되지 않습니다"
           className="rounded-[10px] border bg-white px-3 py-2.5 text-[15px] text-[var(--app-ink)] outline-none focus:border-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-line)' }}
         />

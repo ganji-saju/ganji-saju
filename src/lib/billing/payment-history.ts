@@ -1,11 +1,11 @@
 // 2026-05-25 — /my/billing 현금(현금 결제) 내역 전면 노출.
-// 기존 /my/billing 은 코인 잔액 + credit_transactions + 멤버십만 보여줬고,
-// Toss 로 실제 결제한 단건 풀이(550~3,900원) · 평생 리포트(49,000) · 코인팩 ·
+// 기존 /my/billing 은 전 잔액 + credit_transactions + 멤버십만 보여줬고,
+// Toss 로 실제 결제한 단건 풀이(550~3,900원) · 평생 리포트(49,000) · 전팩 ·
 // 멤버십의 "무엇을 / 얼마(₩) / 언제 샀는지"를 보여주는 화면이 없었다.
 //
-// 현금 결제는 두 곳에 흩어져 있다(겹치지 않음 — 제품 vs 코인/구독):
+// 현금 결제는 두 곳에 흩어져 있다(겹치지 않음 — 제품 vs 전/구독):
 //   1) product_entitlements  : 단건 풀이 · 평생 리포트(amount = WON)
-//   2) credit_transactions   : 코인 충전(purchase) · 멤버십/구독(subscription)
+//   2) credit_transactions   : 전 충전(purchase) · 멤버십/구독(subscription)
 //                               (amount = COINS, ₩는 패키지 정가 또는 metadata.amount)
 //
 // 이 모듈은 두 소스를 한 모양(PaymentHistoryEntry)으로 합쳐 날짜 역순 정렬하고
@@ -19,7 +19,7 @@ import {
 export type PaymentHistoryCategory =
   | '단건 풀이'
   | '평생 리포트'
-  | '코인 충전'
+  | '전 충전'
   | '멤버십/구독';
 
 export interface PaymentHistoryEntry {
@@ -32,7 +32,7 @@ export interface PaymentHistoryEntry {
   productName: string;
   /** 결제 금액(원). 해석 불가 시 null — 총액에서 제외. */
   amountWon: number | null;
-  /** 코인 충전/구독에 한해 지급 코인 수(없으면 null). */
+  /** 전 충전/구독에 한해 지급 전 수(없으면 null). */
   coins: number | null;
   /** 영수증 참조 — 주문번호 우선, 없으면 결제키. UI 는 끝 8자리만 노출. */
   receipt: string | null;
@@ -54,7 +54,7 @@ export interface ProductEntitlementHistoryRow {
   metadata: Record<string, unknown> | null;
 }
 
-// credit_transactions: id, type, amount(코인), metadata, created_at
+// credit_transactions: id, type, amount(전), metadata, created_at
 export interface CreditTransactionHistoryRow {
   id: string;
   type: string;
@@ -117,10 +117,10 @@ export function mapCreditTransactionToHistory(
   row: CreditTransactionHistoryRow
 ): PaymentHistoryEntry {
   const isSubscription = row.type === 'subscription';
-  const category: PaymentHistoryCategory = isSubscription ? '멤버십/구독' : '코인 충전';
+  const category: PaymentHistoryCategory = isSubscription ? '멤버십/구독' : '전 충전';
   const pkg = getPackage(readMetaString(row.metadata, 'packageId'));
 
-  const productName = pkg?.name ?? (isSubscription ? '멤버십' : '코인 충전');
+  const productName = pkg?.name ?? (isSubscription ? '멤버십' : '전 충전');
 
   // ₩ = 패키지 정가(catalog) 우선, 없으면 metadata.amount.
   const amountWon = pkg?.price ?? readMetaNumber(row.metadata, 'amount') ?? null;

@@ -31,7 +31,7 @@ export function applyDisplayNameToInput(
   return trimmed ? { ...input, name: trimmed } : input;
 }
 
-// 2026-06-05 Bug A 재발(코인 결제 후 hero 가 '달빛이') — 스냅샷 이름 해석이 profile.display_name
+// 2026-06-05 Bug A 재발(전 결제 후 hero 가 '달빛이') — 스냅샷 이름 해석이 profile.display_name
 //   단일 소스라 소셜 로그인(display_name 미설정) 유저가 '달빛이'로 떨어졌다.
 //   today-fortune API(route.ts)와 동일하게 소셜 메타데이터까지 보도록 resolver 일원화한다.
 //   I/O(프로필·auth 메타 조회)는 주입형 deps 로 분리해 순수 단위 테스트가 가능하다.

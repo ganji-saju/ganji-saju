@@ -73,7 +73,7 @@ test('determineRefundEligibility: amount>0 만 환불 대상, 합계', () => {
   assert.equal(a?.hasPaymentKey, true);
 });
 
-test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 코인 환불 금액 계산', () => {
+test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 전 환불 금액 계산', () => {
   const now = new Date('2026-05-27T00:00:00Z');
   const txRows = [
     {

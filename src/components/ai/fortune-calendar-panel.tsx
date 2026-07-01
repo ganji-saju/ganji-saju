@@ -773,7 +773,7 @@ export default function FortuneCalendarPanel({
               </div>
               {remaining !== null ? (
                 <div className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]" style={{ borderColor: 'var(--app-line)' }}>
-                  잔여 코인 {remaining}
+                  잔여 전 {remaining}
                 </div>
               ) : null}
             </div>
@@ -1022,7 +1022,7 @@ export default function FortuneCalendarPanel({
                           variant="outline"
                           className="h-11 rounded-full text-[14.4px] font-extrabold"
                         >
-                          {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2코인으로 열기`}
+                          {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2전으로 열기`}
                         </Button>
                       ) : null}
                     </>

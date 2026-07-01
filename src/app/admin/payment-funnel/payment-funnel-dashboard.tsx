@@ -34,7 +34,7 @@ const BLOCK_REASON_LABEL: Record<string, string> = {
   unauthenticated: '미로그인',
   active_subscription: '이미 활성 멤버십',
   existing_entitlement: '이미 권한 보유',
-  existing_credit_unlock: '이미 코인 잠금 해제',
+  existing_credit_unlock: '이미 전 잠금 해제',
 };
 
 function fmtPct(value: number): string {

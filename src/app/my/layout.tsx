@@ -5,7 +5,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
   title: 'MY',
-  description: '사주 결과, 코인 잔액, 결제 및 구독 상태를 관리하는 개인 공간입니다.',
+  description: '사주 결과, 전 잔액, 결제 및 구독 상태를 관리하는 개인 공간입니다.',
   robots: {
     index: false,
     follow: false,

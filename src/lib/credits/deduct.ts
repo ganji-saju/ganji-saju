@@ -2,16 +2,16 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { sumNonExpiredLots, type CreditLotRow } from '@/lib/credits/lot-balance';
 
 export type Feature =
-  | 'detail_report'   // 10 크레딧 (9,900원 / 코인단가 990)
+  | 'detail_report'   // 10 크레딧 (9,900원 / 전단가 990)
   | 'compat'          // 10 크레딧 (궁합 9,900원)
   | 'ai_chat'         // 3 크레딧 / 3회 묶음 (대화상담 = 무료 시작, 9,900 정책 대상 아님)
   | 'daewoon'         // 3 크레딧 (미사용 — 유지)
   | 'calendar';       // 10 크레딧 (월간 캘린더 9,900원)
 
-// 2026-06-23 — 소액상품 9,900원 단일가 통일. 코인 1개 = 990원 기준이라 9,900원 상품 = 10코인 차감.
+// 2026-06-23 — 소액상품 9,900원 단일가 통일. 전 1개 = 990원 기준이라 9,900원 상품 = 10전 차감.
 //   9,900 대상 상품과 연결된 feature(detail_report·compat·calendar)만 적용. ai_chat(대화상담=무료
-//   시작)·daewoon(미사용)은 유지. 코인팩은 9,900원 = 15코인(50% 보너스)이라 한 번 충전으로
-//   상품 1개(10코인) + 5코인 여유 → 코인 결제 = 직접결제 대비 우대(재방문 유인).
+//   시작)·daewoon(미사용)은 유지. 전팩은 9,900원 = 15전(50% 보너스)이라 한 번 충전으로
+//   상품 1개(10전) + 5전 여유 → 전 결제 = 직접결제 대비 우대(재방문 유인).
 const CREDIT_COSTS: Record<Feature, number> = {
   detail_report: 10,
   compat: 10,
@@ -81,13 +81,13 @@ export async function getCredits(userId: string): Promise<{ balance: number; sub
   if (!data) return null;
 
   // user_credits.balance 는 비만료 lot 합으로 동기화되는 캐시값이지만, 시간 경과만으로
-  // lot 이 만료된 경우(차감/충전 이벤트 없음) 일시적으로 과대 표시될 수 있다. 결제 코인은
+  // lot 이 만료된 경우(차감/충전 이벤트 없음) 일시적으로 과대 표시될 수 있다. 결제 전은
   // 1년 만료 모델이므로 표시 잔액은 비만료 lot 합으로 재계산한다(구독 잔액은 그대로).
   const nonExpired = await getNonExpiredLotBalance(userId);
   return { balance: nonExpired, subscription_balance: data.subscription_balance };
 }
 
-// 비만료 credit_lots 의 amount_remaining 합 — 만료된 코인을 제외한 실제 보유 결제 코인.
+// 비만료 credit_lots 의 amount_remaining 합 — 만료된 전을 제외한 실제 보유 결제 전.
 // credit_lots 가 없는(레거시 미백필) 환경에서는 user_credits.balance 로 폴백한다.
 export async function getNonExpiredLotBalance(userId: string): Promise<number> {
   const supabase = await createServiceClient();
@@ -130,7 +130,7 @@ async function deductCreditsWithCost(
     return {
       success: false,
       remaining: data?.remaining ?? 0,
-      error: error?.message ?? '코인이 부족합니다.',
+      error: error?.message ?? '전이 부족합니다.',
     };
   }
 
@@ -178,7 +178,7 @@ export async function deductCreditsAmount(
   return deductCreditsWithCost(userId, feature, cost);
 }
 
-// 2026-06-26 — 결제 취소/환불 시 충전 코인 회수. deduct_credits RPC 로 차감(잔액 범위).
+// 2026-06-26 — 결제 취소/환불 시 충전 전 회수. deduct_credits RPC 로 차감(잔액 범위).
 //   addCredits(음수)는 양수 lot 적립 RPC 라 차감되지 않아 회수에 쓸 수 없다.
 //   p_feature 는 거래 이력 라벨(예: 'nicepay-cancel'). 잔액 부족 시 success=false(음수 잔액 미생성).
 export async function revokeCredits(
@@ -198,7 +198,7 @@ export async function revokeCredits(
     return {
       success: false,
       remaining: data?.remaining ?? 0,
-      error: error?.message ?? '코인 회수 실패(잔액 부족)',
+      error: error?.message ?? '전 회수 실패(잔액 부족)',
     };
   }
 
@@ -227,7 +227,7 @@ export async function addCredits(
   }
 }
 
-// 결제 코인 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.
+// 결제 전 1년 만료 lot 을 직접 적립한다(거래 이력은 별도). 만료 시각을 명시하고 싶을 때 사용.
 // expiresAt 미지정 시 now()+1년. 일반 결제 충전은 addCredits(...,'purchase')로 충분하다.
 export async function addCreditLot(
   userId: string,
