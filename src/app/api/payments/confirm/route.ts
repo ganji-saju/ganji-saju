@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { sendAlimtalkToUser } from '@/lib/kakao/send';
+import { kakaoConfig } from '@/lib/kakao/config';
 import { confirmPayment } from '@/lib/payments/toss';
 import { validatePaymentConfirmationPayload } from '@/lib/payments/confirmation';
 import {
@@ -159,6 +161,28 @@ export async function POST(req: NextRequest) {
     orderId,
     metadata: { credits: pkg.credits, kind: pkg.kind },
   });
+
+  // 결제 완료 알림톡(정보성) — 비차단(after). 템플릿 코드 미설정이면 트리거 자체를 건너뜀.
+  // send 내부에서도 번호없음/미설정이면 no-op 이라 결제 결과엔 영향 없음.
+  if (kakaoConfig.templates.paymentComplete) {
+    after(async () => {
+      try {
+        await sendAlimtalkToUser({
+          userId: user.id,
+          templateCode: kakaoConfig.templates.paymentComplete,
+          // 변수 키는 승인된 템플릿에 맞춰 조정 필요(#{product}, #{amount}).
+          variables: {
+            '#{product}': String(pkg.id),
+            '#{amount}': `${parsedAmount.toLocaleString('ko-KR')}원`,
+          },
+          idempotencyKey: `payment_complete:${orderId}`,
+          requireAdConsent: false,
+        });
+      } catch {
+        // 알림톡 실패는 결제 결과에 영향 없음.
+      }
+    });
+  }
 
   return NextResponse.json({
     ...fulfillment,

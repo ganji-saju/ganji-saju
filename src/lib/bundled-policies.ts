@@ -58,6 +58,7 @@ export const BUNDLED_POLICIES: Record<PolicyKind, BundledPolicy> = {
 
 - OAuth 인증: 카카오, Google, Supabase Auth
 - 결제대행: Toss Payments
+- 알림 메시지 발송: 카카오 알림톡·친구톡 발송대행사(Solapi)
 - LLM API: OpenAI API 등 AI 응답 생성을 위한 외부 모델 제공자
 - 호스팅과 데이터 인프라: Vercel, Supabase
 - 분석도구: Vercel Analytics, Vercel Speed Insights
