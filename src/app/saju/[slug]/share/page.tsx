@@ -17,6 +17,7 @@ import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortun
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -190,7 +191,17 @@ export default async function SajuSharePage({ params }: Props) {
           {/* §3 공유 채널 */}
           <section>
             <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">어디로 보낼까요?</h2>
-            <ShareActions text={shareText} url={shareUrl} className="mt-2.5" />
+            <ShareActions
+              text={shareText}
+              url={shareUrl}
+              className="mt-2.5"
+              kakao={buildKakaoShare({
+                title: `${zodiacLabel} ${dayMasterLabel} 사주`,
+                description: verdict,
+                path: `/saju/${slug}`,
+                buttonTitle: '내 사주 보기',
+              })}
+            />
           </section>
 
           {/* §4 추천 전 안내 */}

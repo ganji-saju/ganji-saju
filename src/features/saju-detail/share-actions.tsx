@@ -5,11 +5,14 @@
 // 2026-05-15 handoff PR-J: 자체 setTimeout 토스트 → sonner 전역 토스트 인프라로 마이그레이션.
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { shareToKakao, type KakaoSharePayload } from '@/lib/kakao/share';
 
 interface ShareActionsProps {
   text: string;
   url: string;
   className?: string;
+  /** 카카오 리치 카드 payload. 있으면 카톡 버튼이 SDK sendDefault 로 공유(미가용 시 폴백). */
+  kakao?: KakaoSharePayload;
 }
 
 type ChannelKey = 'kakao' | 'instagram' | 'threads' | 'twitter' | 'copy';
@@ -66,7 +69,7 @@ async function triggerWebShare({
   }
 }
 
-export function ShareActions({ text, url, className }: ShareActionsProps) {
+export function ShareActions({ text, url, className, kakao }: ShareActionsProps) {
   // 2026-05-15: 자체 setTimeout 토스트 제거 — sonner `toast.success / toast.error` 사용.
   function notifySuccess(message: string) {
     toast.success(message);
@@ -111,6 +114,8 @@ export function ShareActions({ text, url, className }: ShareActionsProps) {
     }
 
     if (channel === 'kakao') {
+      // ① 카카오 SDK 리치카드(payload 있고 SDK 가용 시). 실패하면 ②/③ 폴백.
+      if (kakao && shareToKakao(kakao)) return;
       const ok = await triggerWebShare({ text, url });
       if (!ok) {
         const copied = await copyToClipboard(shareText);

@@ -34,6 +34,9 @@ import {
   serializeStructuredData,
 } from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -706,6 +709,22 @@ export default async function StarSignDetailPage({ params }: Props) {
             {/* 2026-05-20 Phase 8-E — PaidFunnelGrid 공통 컴포넌트로 추출 (DRY). */}
             <PaidFunnelGrid from="star-sign" tone="dark" className="mt-3" />
           </article>
+
+          {/* §12 친구에게 공유 */}
+          <section>
+            <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+            <ShareActions
+              text={`${item.label} 운세 — ${fortune.highlight}`}
+              url={getCanonicalUrl(`/star-sign/${item.slug}`)}
+              className="mt-2.5"
+              kakao={buildKakaoShare({
+                title: `${item.label} 운세`,
+                description: fortune.highlight,
+                path: `/star-sign/${item.slug}`,
+                buttonTitle: '별자리 운세 보기',
+              })}
+            />
+          </section>
         </section>
       </AppPage>
     </AppShell>

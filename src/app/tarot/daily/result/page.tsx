@@ -19,6 +19,9 @@ import {
 } from '@/lib/tarot-api';
 import { TarotSnapshotSaver } from '@/components/tarot/tarot-snapshot-saver';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
   searchParams: Promise<{
@@ -51,6 +54,14 @@ export default async function TarotResultPage({ searchParams }: Props) {
   const pickHref = `/tarot/daily/pick?question=${encodeURIComponent(currentQuestion)}`;
   const spreadHref = `/tarot/daily/spread?question=${encodeURIComponent(currentQuestion)}`;
   const sajuHref = readingSlug ? `/saju/${readingSlug}` : '/saju/new';
+
+  // 공유 링크는 같은 카드 결과를 재현하도록 현재 query(question/cardId/orientation)를 보존.
+  const shareQuery = new URLSearchParams({
+    question: currentQuestion,
+    ...(cardId ? { cardId } : {}),
+    ...(orientation ? { orientation } : {}),
+  }).toString();
+  const sharePath = `/tarot/daily/result${shareQuery ? `?${shareQuery}` : ''}`;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -205,6 +216,22 @@ export default async function TarotResultPage({ searchParams }: Props) {
 
           {/* 2026-05-20 Phase 8-E — 무료 → 유료 funnel (사주 + 궁합 + 멤버십). */}
           <PaidFunnelGrid from="tarot" tone="light" includeMembership />
+
+          {/* 친구에게 공유 */}
+          <section>
+            <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+            <ShareActions
+              text={`오늘의 타로 · ${reading.displayName} — ${reading.answer}`}
+              url={getCanonicalUrl(sharePath)}
+              className="mt-2.5"
+              kakao={buildKakaoShare({
+                title: '오늘의 타로',
+                description: `${reading.displayName} — ${reading.answer}`,
+                path: sharePath,
+                buttonTitle: '타로 결과 보기',
+              })}
+            />
+          </section>
         </section>
       </AppPage>
     </AppShell>

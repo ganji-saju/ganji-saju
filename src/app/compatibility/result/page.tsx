@@ -28,6 +28,9 @@ import {
 } from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
   searchParams: Promise<{ relationship?: string; familyId?: string; source?: string; paid?: string }>;
@@ -208,6 +211,22 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           compatibilityCoupleKey={coupleKey}
           perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
+
+        {/* 친구에게 공유 — 궁합 결과. 공유 링크는 같은 두 사람을 재현하도록 relationship/familyId 보존. */}
+        <section className="px-1">
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+          <ShareActions
+            text={`${displayName} × ${selectedFamily.label} 궁합 — ${compatibility.label}`}
+            url={getCanonicalUrl(redirectPath)}
+            className="mt-2.5"
+            kakao={buildKakaoShare({
+              title: `${displayName} × ${selectedFamily.label} 궁합`,
+              description: compatibility.summary,
+              path: redirectPath,
+              buttonTitle: '궁합 결과 보기',
+            })}
+          />
+        </section>
       </AppPage>
     </AppShell>
   );
