@@ -19,6 +19,7 @@ import {
   type ConsentItemMeta,
 } from '@/shared/payments/consent-rules';
 import type { PaymentPackage } from '@/lib/payments/catalog';
+import { KakaoContactCheckoutField } from '@/features/account/kakao-contact-checkout-field';
 
 interface Props {
   pkg: PaymentPackage;
@@ -150,6 +151,9 @@ export function PaymentConsentCheckboxes({
         모든 필수 항목 확인 후 결제 버튼이 활성화됩니다. 동의 시점은 본인 식별 정보와 함께
         안전하게 기록됩니다 (IP 원문은 저장하지 않습니다).
       </p>
+
+      {/* 선택 — 결제완료 알림톡 도달률용 전화번호 수집. 결제를 막지 않음(필수 아님). */}
+      <KakaoContactCheckoutField />
     </section>
   );
 }
