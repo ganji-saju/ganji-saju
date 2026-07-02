@@ -11,6 +11,7 @@ import { SETTINGS_BLUEPRINT } from '@/content/moonlight';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
 import { LogoutButton } from '@/features/account/logout-button';
+import { KakaoContactCard } from '@/features/account/kakao-contact-card';
 
 const QUICK_LINK_TONE = {
   pink: {
@@ -169,6 +170,8 @@ export default function MySettingsPage() {
             <LayoutModeControl />
           </div>
         </article>
+        {/* 카카오 알림톡 수신용 전화번호 + 광고(친구톡) 수신동의 */}
+        <KakaoContactCard />
       </section>
 
       {/* §읽기 경험 — 글자 / 말투 / 톤 */}
