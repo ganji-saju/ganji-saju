@@ -26,6 +26,9 @@ import {
 } from '@/lib/seo/structured-data';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { getKstParts, getKstStartOfDay } from '@/shared/utils/kst';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -703,6 +706,28 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               ))}
             </div>
           </section>
+
+          {/* §8 친구에게 공유 */}
+          {(() => {
+            const sharePath = `/zodiac/${item.slug}${period === 'today' ? '' : `?period=${period}`}`;
+            const shareLine = item.periodLines[period];
+            return (
+              <section>
+                <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+                <ShareActions
+                  text={`${item.label} 운세 — ${shareLine}`}
+                  url={getCanonicalUrl(sharePath)}
+                  className="mt-2.5"
+                  kakao={buildKakaoShare({
+                    title: `${item.label} 운세`,
+                    description: shareLine,
+                    path: sharePath,
+                    buttonTitle: '띠 운세 보기',
+                  })}
+                />
+              </section>
+            );
+          })()}
         </section>
       </AppPage>
     </AppShell>
