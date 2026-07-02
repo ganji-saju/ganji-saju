@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { KakaoChannelAddButton } from '@/features/account/kakao-channel-add-button';
 
 export function KakaoContactCard() {
   const [phone, setPhone] = useState('');
@@ -113,6 +114,9 @@ export function KakaoContactCard() {
       >
         저장
       </button>
+
+      {/* 친구톡(광고) 소식은 채널 친구에게만 도달 → 채널 추가 유도. 채널 ID 없으면 버튼 자체가 렌더 안 됨. */}
+      <KakaoChannelAddButton />
     </article>
   );
 }
