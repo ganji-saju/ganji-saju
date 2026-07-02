@@ -30,6 +30,9 @@ interface KakaoStatic {
   Share?: {
     sendDefault(settings: KakaoShareDefaultFeed): void;
   };
+  Channel?: {
+    addChannel(settings: { channelPublicId: string }): void;
+  };
 }
 
 interface Window {
