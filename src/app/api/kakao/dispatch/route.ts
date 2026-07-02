@@ -41,12 +41,12 @@ export async function POST(req: NextRequest) {
   let failed = 0;
   for (const r of targets) {
     const planLabel = PLAN_LABEL[r.plan] ?? r.plan;
-    const days = r.stage === 'd0' ? '0' : '3';
-    // 변수 키는 승인된 템플릿에 맞춰 조정 필요(#{plan}, #{days}).
+    const when = r.stage === 'd0' ? '오늘' : '3일 뒤';
+    // 템플릿 변수(#{plan}=플랜명, #{when}=만료 시점 "오늘"/"3일 뒤").
     const outcome = await sendAlimtalkToUser({
       userId: r.userId,
       templateCode,
-      variables: { '#{plan}': planLabel, '#{days}': days },
+      variables: { '#{plan}': planLabel, '#{when}': when },
       idempotencyKey: `sub_expiring:${r.userId}:${r.stage}:${r.renewsAt.slice(0, 10)}`,
       requireAdConsent: false, // 거래 고지성(정보) 알림톡
     });

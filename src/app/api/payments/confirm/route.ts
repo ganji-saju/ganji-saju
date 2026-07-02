@@ -170,9 +170,9 @@ export async function POST(req: NextRequest) {
         await sendAlimtalkToUser({
           userId: user.id,
           templateCode: kakaoConfig.templates.paymentComplete,
-          // 변수 키는 승인된 템플릿에 맞춰 조정 필요(#{product}, #{amount}).
+          // 템플릿 변수(#{product}=상품명, #{amount}=결제금액).
           variables: {
-            '#{product}': String(pkg.id),
+            '#{product}': pkg.name,
             '#{amount}': `${parsedAmount.toLocaleString('ko-KR')}원`,
           },
           idempotencyKey: `payment_complete:${orderId}`,

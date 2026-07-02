@@ -14,7 +14,7 @@
 | 발신프로필 | `kakaoOptions.pfId` | `SOLAPI_KAKAO_PFID` |
 | 알림톡 템플릿 | `kakaoOptions.templateId` | `KAKAO_TPL_PAYMENT_COMPLETE` / `KAKAO_TPL_SUBSCRIPTION_EXPIRING` |
 | 결제완료 변수 | `payments/confirm/route.ts` | `#{product}`, `#{amount}` |
-| 구독만료 변수 | `api/kakao/dispatch/route.ts` | `#{plan}`, `#{days}`(값: "3" 또는 "0") |
+| 구독만료 변수 | `api/kakao/dispatch/route.ts` | `#{plan}`, `#{when}`(값: "오늘" 또는 "3일 뒤") |
 | SMS 대체 발신번호 | `kakaoConfig.sender` | `SOLAPI_SENDER` |
 | 발송결과 webhook | `api/kakao/webhook` | `x-webhook-secret` = `SOLAPI_WEBHOOK_SECRET` |
 | cron 인증 | `dispatch`·`friendtalk-dispatch` | `Authorization: Bearer <KAKAO_CRON_SECRET>` |
@@ -61,16 +61,17 @@
 - 버튼(선택): "결제내역 보기" → `https://ganjisaju.kr/my/billing`
 - 승인되면 발급되는 **템플릿 ID** → `KAKAO_TPL_PAYMENT_COMPLETE`.
 
-### 5-2. 구독 만료 임박 (변수: `#{plan}`, `#{days}`)
+### 5-2. 구독 만료 임박 (변수: `#{plan}`, `#{when}`)
 ```
 [간지사주] 멤버십 만료 안내
 
-#{plan} 멤버십이 #{days}일 이내 만료됩니다.
-지금 연장하시면 혜택이 이어집니다.
+#{plan} 멤버십이 #{when} 만료됩니다.
+연장하시면 이용 중인 혜택이 계속 유지됩니다.
+
+마이페이지 > 멤버십에서 확인하실 수 있습니다.
 ```
-- 코드는 `#{days}` 에 D-3="3", D-day="0" 을 넣음. "0일 이내" 문구가 어색하면
-  문구를 "#{days}일 후" 대신 위처럼 **"#{days}일 이내"** 로 두거나, 원하면 코드에서
-  "오늘/3일 뒤" 문자열로 바꿔줄 수 있음(요청 시 조정).
+- 코드가 `#{when}` 에 D-3="3일 뒤", D-day="오늘" 을 넣음 → "오늘 만료 / 3일 뒤 만료"로 자연스럽게 표시.
+- `#{when}` 심의 예시값: `3일 뒤`
 - 버튼(선택): "멤버십 연장" → `https://ganjisaju.kr/membership`
 - 승인 템플릿 ID → `KAKAO_TPL_SUBSCRIPTION_EXPIRING`.
 
