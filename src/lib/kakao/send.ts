@@ -57,7 +57,13 @@ async function prepareSend(opts: {
     })
     .select('id')
     .single();
-  if (insertError || !inserted) return { status: 'skipped', reason: 'race_or_insert_error' };
+  if (insertError || !inserted) {
+    // 23505 = unique_violation → 동시성 경합에서 다른 요청이 먼저 큐잉(정상 스킵).
+    // 그 외(컬럼/RLS/DB 장애)는 재시도/알림 대상이므로 failed 로 구분(스킵으로 감추지 않음).
+    const code = (insertError as { code?: string } | null)?.code;
+    if (code === '23505') return { status: 'skipped', reason: 'duplicate' };
+    return { status: 'failed', reason: `insert_error:${insertError?.message ?? 'unknown'}` };
+  }
 
   const logId = inserted.id as string;
   const fail = async (reason: string): Promise<SendOutcome> => {

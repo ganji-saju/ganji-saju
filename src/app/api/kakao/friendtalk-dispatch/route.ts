@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { sendFriendtalkToUser } from '@/lib/kakao/send';
 import { isKakaoSendConfigured } from '@/lib/kakao/config';
+import { isKakaoAdNightTime } from '@/lib/kakao/compliance';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
   if (!hasSupabaseServiceEnv) return NextResponse.json({ ok: true, skipped: 'no_service_env' });
   // 미설정이면 로그를 만들지 않고 조기 종료(완전 dormant).
   if (!isKakaoSendConfigured()) return NextResponse.json({ ok: true, skipped: 'not_configured' });
+  // 배치 상단에서 야간(21~08 KST) 광고 차단 — 대량 부분발송·불필요 DB 쓰기 방지(정보통신망법).
+  if (isKakaoAdNightTime(new Date())) return NextResponse.json({ ok: true, skipped: 'night_time' });
 
   const supabase = await createServiceClient();
   const { data, error } = await supabase

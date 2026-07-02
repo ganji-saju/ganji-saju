@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { listExpiringSubscribers } from '@/lib/subscription-expiring';
 import { sendAlimtalkToUser } from '@/lib/kakao/send';
-import { kakaoConfig } from '@/lib/kakao/config';
+import { kakaoConfig, isKakaoSendConfigured } from '@/lib/kakao/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
   if (!hasSupabaseServiceEnv) return NextResponse.json({ ok: true, skipped: 'no_service_env' });
+  // 미설정이면 로그를 만들지 않고 조기 종료(dormant 시 failed 로그 스팸 방지 — friendtalk 라우트와 동일).
+  if (!isKakaoSendConfigured()) return NextResponse.json({ ok: true, skipped: 'not_configured' });
 
   const templateCode = kakaoConfig.templates.subscriptionExpiring;
   const supabase = await createServiceClient();
