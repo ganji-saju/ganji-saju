@@ -42,12 +42,14 @@ async function handleDispatch(req: NextRequest) {
   let failed = 0;
   for (const r of targets) {
     const planLabel = PLAN_LABEL[r.plan] ?? r.plan;
-    const when = r.stage === 'd0' ? '오늘' : '3일 뒤';
-    // 템플릿 변수(#{plan}=플랜명, #{when}=만료 시점 "오늘"/"3일 뒤").
+    // 2026-07-04 — 승인 템플릿(KA01TP…szkNn) 본문이 "#{plan} 멤버십이 #{days}일 이내
+    // 만료됩니다."라 #{days}(숫자)로 발송. D-day 는 "0일 이내"가 어색해 "1일 이내"
+    // (=오늘 만료, 의미상 참)로 매핑. 문구를 바꾸려면 템플릿 재심의 필요.
+    const days = r.stage === 'd0' ? '1' : '3';
     const outcome = await sendAlimtalkToUser({
       userId: r.userId,
       templateCode,
-      variables: { '#{plan}': planLabel, '#{when}': when },
+      variables: { '#{plan}': planLabel, '#{days}': days },
       idempotencyKey: `sub_expiring:${r.userId}:${r.stage}:${r.renewsAt.slice(0, 10)}`,
       requireAdConsent: false, // 거래 고지성(정보) 알림톡
     });
