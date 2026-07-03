@@ -9,7 +9,9 @@ import Script from 'next/script';
 const KAKAO_SDK_SRC = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js';
 
 export function KakaoSdkLoader() {
-  const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+  // 값 끝 공백/줄바꿈(복붙 트랩) 방어 — 공백 붙으면 init 은 되지만 카카오가
+  // 잘못된 키로 인식해 공유 시 4019(인증 실패)가 난다.
+  const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY?.trim();
   if (!jsKey) return null;
 
   return (
