@@ -9,22 +9,8 @@ export interface UserContact {
   adConsentAt: string | null;
 }
 
-/**
- * 국내 휴대폰 정규화: 하이픈/공백/국가코드 제거 후 `010########`(11자리) 검증.
- * 유효하지 않으면 null. Solapi 발송 포맷(하이픈 없는 국내번호)에 맞춘다.
- */
-export function normalizeKoreanMobile(raw: string | null | undefined): string | null {
-  const digits = (raw ?? '').replace(/\D/g, '');
-  // +82 10... → 010...
-  const local = digits.startsWith('8210') ? `0${digits.slice(2)}` : digits;
-  return /^010\d{8}$/.test(local) ? local : null;
-}
-
-/** 표시용 마스킹: 010-1234-**** */
-export function maskKoreanMobile(phone: string | null): string {
-  if (!phone || !/^010\d{8}$/.test(phone)) return '';
-  return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-****`;
-}
+// 2026-07-03 — 순수 헬퍼는 클라이언트 공용을 위해 phone.ts 로 분리(기존 import 호환 재수출).
+export { normalizeKoreanMobile, maskKoreanMobile } from './phone';
 
 export async function getUserContact(userId: string): Promise<UserContact | null> {
   const supabase = await createClient();
