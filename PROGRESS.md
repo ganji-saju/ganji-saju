@@ -69,6 +69,12 @@
 - 인스타 공유 "안 됨"은 정상(인스타가 웹→앱 자동공유 차단 → 링크복사 폴백).
 - 상세: `docs/kakao-integration-guide.md`, `docs/solapi-setup.md`, 메모리 `project_kakao-integration`.
 
+### ⚠️ 카카오 로그인 KOE205 인시던트 (2026-07-04, 해결)
+- #591(scope `openid name phone_number` 확장) 배포 후 **카카오 로그인 전면 중단** — 동의항목 심사가 실제로는 **진행중**이었는데 승인으로 오인. **미설정 동의항목 scope 요청 = KOE205 전면 거부**(승인≠자동활성화 — [동의항목]에서 직접 "필수 동의" 설정 필요).
+- **#596 핫픽스**: 기본 scope=`openid`, 추가는 `KAKAO_LOGIN_EXTRA_SCOPES` env 게이트(현재 꺼짐). **로그인 복구 확인됨**.
+- **재활성화 순서(엄수)**: ①심사 승인 → ②[동의항목] 이름·전화번호=필수 동의 설정 → ③env=`name phone_number`+재배포. **env 선입력 금지**(자동배포 타는 순간 재발). OIDC 토글(사용함)도 전제.
+- 함께 배포: 카카오 함께 로그아웃(#595, SSO 세션 종료 — 콘솔 로그아웃 리다이렉트 URI=`https://ganjisaju.kr/` 등록됨).
+
 ---
 
 ## 2026-06-30 세션 (Claude) — 관리자 평생리포트 권한 부여 + dead-code 정리 + codebase-memory
