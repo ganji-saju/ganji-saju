@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('scope', 'openid');
+  // 2026-07-03 — 카카오 동의항목 심사 승인분: 이름(name)·카카오계정 전화번호(phone_number)
+  // 필수 동의. 콜백이 user/me 로 조회해 user_contact(알림톡 대상)·프로필 이름에 저장.
+  authUrl.searchParams.set('scope', 'openid name phone_number');
   authUrl.searchParams.set('state', state);
   authUrl.searchParams.set('nonce', hashedNonce);
 

@@ -1,13 +1,88 @@
 // 2026-06-29 — 카카오 OAuth 콜백(인가코드 → 토큰교환 → supabase 세션). 구글과 동일 패턴.
 //   code → kauth.kakao.com/oauth/token → id_token → supabase.auth.signInWithIdToken('kakao').
+// 2026-07-03 — 동의항목 심사 승인(이름·전화번호 필수) 후속: access_token 으로 user/me 를
+//   조회해 전화번호→user_contact(알림톡 대상), 이름→profiles.display_name(비어있을 때만)
+//   자동 저장. 전부 best-effort — 실패해도 로그인은 진행.
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
-import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
+import {
+  createServiceClient,
+  hasSupabaseServiceEnv,
+  supabaseAnonKey,
+  supabaseServerUrl,
+} from '@/lib/supabase/server';
+import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 
 export const dynamic = 'force-dynamic';
 
 const KAKAO_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
+const KAKAO_USER_ME_URL = 'https://kapi.kakao.com/v2/user/me';
+
+// user/me 에서 전화번호·이름 추출(스코프 미동의/미제공 시 null).
+async function fetchKakaoContact(
+  accessToken: string
+): Promise<{ phone: string | null; name: string | null }> {
+  try {
+    const res = await fetch(KAKAO_USER_ME_URL, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return { phone: null, name: null };
+    const me = (await res.json()) as {
+      kakao_account?: { phone_number?: string; name?: string };
+    };
+    // 카카오 형식 "+82 10-1234-5678" → normalizeKoreanMobile 이 01012345678 로 정규화.
+    return {
+      phone: normalizeKoreanMobile(me.kakao_account?.phone_number),
+      name: me.kakao_account?.name?.trim() || null,
+    };
+  } catch {
+    return { phone: null, name: null };
+  }
+}
+
+// 전화번호는 user_contact 에(수동 입력값 있으면 보존 — 비어있을 때만 채움, ad_consent 불변),
+// 이름은 profiles.display_name 이 비어있을 때만. 로그인 흐름을 절대 막지 않는다.
+async function saveKakaoContact(
+  userId: string,
+  contact: { phone: string | null; name: string | null }
+): Promise<void> {
+  if (!hasSupabaseServiceEnv) return;
+  try {
+    const service = await createServiceClient();
+
+    if (contact.phone) {
+      const { data: existing } = await service
+        .from('user_contact')
+        .select('user_id, phone')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (!existing) {
+        await service
+          .from('user_contact')
+          .insert({ user_id: userId, phone: contact.phone, ad_consent: false });
+      } else if (!existing.phone) {
+        await service.from('user_contact').update({ phone: contact.phone }).eq('user_id', userId);
+      }
+    }
+
+    if (contact.name) {
+      const { data: profile } = await service
+        .from('profiles')
+        .select('user_id, display_name')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (profile && !profile.display_name) {
+        await service
+          .from('profiles')
+          .update({ display_name: contact.name })
+          .eq('user_id', userId);
+      }
+    }
+  } catch {
+    // best-effort — 실패 시 설정/온보딩에서 재수집.
+  }
+}
 
 function resolveOrigin(req: NextRequest): string {
   try {
@@ -59,6 +134,7 @@ export async function GET(req: NextRequest) {
 
   // 인가코드 → 토큰 교환
   let idToken: string | null = null;
+  let accessToken: string | null = null;
   try {
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
@@ -74,8 +150,9 @@ export async function GET(req: NextRequest) {
       body,
     });
     if (!tokenRes.ok) return fail('token_exchange');
-    const tokens = (await tokenRes.json()) as { id_token?: string };
+    const tokens = (await tokenRes.json()) as { id_token?: string; access_token?: string };
     idToken = tokens.id_token ?? null;
+    accessToken = tokens.access_token ?? null;
   } catch {
     return fail('token_exchange');
   }
@@ -95,12 +172,20 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.signInWithIdToken({
+  const { data: signInData, error } = await supabase.auth.signInWithIdToken({
     provider: 'kakao',
     token: idToken,
     nonce,
   });
   if (error) return fail(error.message);
+
+  // 2026-07-03 — 전화번호(알림톡 대상)·이름 자동 수집. 실패해도 로그인은 그대로 진행.
+  if (accessToken && signInData?.user?.id) {
+    const contact = await fetchKakaoContact(accessToken);
+    if (contact.phone || contact.name) {
+      await saveKakaoContact(signInData.user.id, contact);
+    }
+  }
 
   return response;
 }
