@@ -49,6 +49,10 @@ async function copyToClipboard(text: string) {
   }
 }
 
+// 2026-07-03 공유 전수감사 — 사용자 취소(AbortError)를 실패로 취급하면 취소했는데
+// 클립보드를 덮어쓰고 "복사됐어요" 토스트가 떠서 3-상태로 구분한다.
+type WebShareOutcome = 'shared' | 'cancelled' | 'failed';
+
 async function triggerWebShare({
   text,
   url,
@@ -57,15 +61,19 @@ async function triggerWebShare({
   text: string;
   url: string;
   title?: string;
-}) {
-  if (typeof navigator === 'undefined') return false;
+}): Promise<WebShareOutcome> {
+  if (typeof navigator === 'undefined') return 'failed';
   const share = (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share;
-  if (!share) return false;
+  if (!share) return 'failed';
   try {
     await share({ title: title ?? '간지사주', text, url });
-    return true;
-  } catch {
-    return false;
+    return 'shared';
+  } catch (err) {
+    // instanceof 대신 name 검사 — cross-realm/WebKit 에서도 안전.
+    if (err && typeof err === 'object' && (err as { name?: string }).name === 'AbortError') {
+      return 'cancelled';
+    }
+    return 'failed';
   }
 }
 
@@ -101,8 +109,9 @@ export function ShareActions({ text, url, className, kakao }: ShareActionsProps)
 
     if (channel === 'instagram') {
       // Instagram 은 web share intent 미지원 → 일반 Web Share 또는 안내
-      const ok = await triggerWebShare({ text, url });
-      if (!ok) {
+      const outcome = await triggerWebShare({ text, url });
+      // shared/cancelled 는 종료 — 취소 시 클립보드 덮어쓰기·성공 토스트 금지.
+      if (outcome === 'failed') {
         const copied = await copyToClipboard(shareText);
         if (copied) {
           notifySuccess('인스타 앱은 자동 공유가 막혀 있어요. 링크가 복사됐어요!');
@@ -116,8 +125,8 @@ export function ShareActions({ text, url, className, kakao }: ShareActionsProps)
     if (channel === 'kakao') {
       // ① 카카오 SDK 리치카드(payload 있고 SDK 가용 시). 실패하면 ②/③ 폴백.
       if (kakao && shareToKakao(kakao)) return;
-      const ok = await triggerWebShare({ text, url });
-      if (!ok) {
+      const outcome = await triggerWebShare({ text, url });
+      if (outcome === 'failed') {
         const copied = await copyToClipboard(shareText);
         if (copied) {
           notifySuccess('카톡에 붙여넣으세요. 링크가 복사됐어요!');

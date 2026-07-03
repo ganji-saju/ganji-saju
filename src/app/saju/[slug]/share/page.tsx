@@ -18,6 +18,7 @@ import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -82,13 +83,16 @@ export default async function SajuSharePage({ params }: Props) {
     .filter(Boolean)
     .join(' · ');
 
-  const shareUrl = `https://간지사주.kr/saju/${encodeURIComponent(slug)}`;
+  // 2026-07-03 공유 전수감사 — 레거시 한글도메인(간지사주.kr, 301 대상) 대신 canonical.
+  //   85/91/kakao path 가 같은 인코딩 경로를 공유하도록 상수화.
+  const sajuPath = `/saju/${encodeURIComponent(slug)}`;
+  const shareUrl = getCanonicalUrl(sajuPath);
   const shareText = `${zodiacLabel} ${dayMasterLabel} — ${verdict}`;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="공유하기" backHref={`/saju/${slug}`} />
+        <GangiPageHeader title="공유하기" backHref={sajuPath} />
 
         <section className="space-y-5 px-1">
           {/* §1 미리보기 eyebrow + 헤드라인 */}
@@ -96,8 +100,9 @@ export default async function SajuSharePage({ params }: Props) {
             <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
               공유 미리보기
             </div>
+            {/* 2026-07-03 — 카드 자체가 전송되는 게 아니라 텍스트+링크가 공유되므로 정확한 안내로. */}
             <h1 className="mt-1.5 text-[20.7px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
-              이렇게 친구에게 보여줘요
+              링크와 함께 이런 내용이 전달돼요
             </h1>
           </div>
 
@@ -160,7 +165,7 @@ export default async function SajuSharePage({ params }: Props) {
               </div>
             </div>
 
-            {/* 하단 워터마크 */}
+            {/* 하단 워터마크 — 2026-07-03: 스캔 불가능한 가짜 QR(CSS 패턴) 제거, 도메인 표기는 canonical. */}
             <div
               className="relative flex items-center justify-between pt-3"
               style={{ borderTop: '1px dashed rgba(216,27,114,0.32)' }}
@@ -168,22 +173,7 @@ export default async function SajuSharePage({ params }: Props) {
               <div className="text-[11.5px] font-bold leading-tight text-[var(--app-copy-soft)]">
                 내 운세 보기
                 <br />
-                <span className="font-extrabold text-[var(--app-pink-strong)]">간지사주.kr</span>
-              </div>
-              <div
-                className="grid h-10 w-10 place-items-center rounded-[8px] bg-white"
-                aria-hidden="true"
-              >
-                <div
-                  className="h-7 w-7"
-                  style={{
-                    backgroundImage: `
-                      linear-gradient(90deg, #000 0 4px, transparent 4px 8px, #000 8px 10px, transparent 10px 14px, #000 14px 20px, transparent 20px 24px, #000 24px 28px),
-                      linear-gradient(0deg, #000 0 4px, transparent 4px 8px, #000 8px 12px, transparent 12px 16px, #000 16px 22px, transparent 22px 28px)
-                    `,
-                    backgroundBlendMode: 'multiply',
-                  }}
-                />
+                <span className="font-extrabold text-[var(--app-pink-strong)]">ganjisaju.kr</span>
               </div>
             </div>
           </article>
@@ -198,22 +188,15 @@ export default async function SajuSharePage({ params }: Props) {
               kakao={buildKakaoShare({
                 title: `${zodiacLabel} ${dayMasterLabel} 사주`,
                 description: verdict,
-                path: `/saju/${slug}`,
+                path: sajuPath,
                 buttonTitle: '내 사주 보기',
               })}
             />
           </section>
 
-          {/* §4 추천 전 안내 */}
-          <article
-            className="rounded-[14px] border px-4 py-3 text-[13.8px] leading-[1.55] text-[var(--app-pink-strong)]"
-            style={{
-              background: 'var(--app-pink-soft)',
-              borderColor: 'var(--app-pink-line)',
-            }}
-          >
-            ✨ 친구가 가입하면 <strong>전 50개</strong>를 추가로 받아요
-          </article>
+          {/* 2026-07-03 — "친구가 가입하면 전 50개" 추천 보상 안내 제거: 추천(referral)
+              시스템·귀속 파라미터·지급 로직이 존재하지 않는 허위 약속이었고, 전(재화)
+              발행도 중단됨(PR #563). 추천 보상 도입 시 ref 파라미터+지급 로직과 함께 복원. */}
         </section>
       </AppPage>
     </AppShell>

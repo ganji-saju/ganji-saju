@@ -29,6 +29,14 @@
 - **#583** JS키 `.trim()`(공유 4019 대응 — 값 끝 공백 방어).
 - migration **059 수동적용 완료**. **개인정보처리방침 admin 반영 완료**(휴대폰 수집·Solapi 수탁자).
 
+### 공유 버튼 전수감사 (2026-07-03, ultracode 워크플로 22에이전트)
+- 7표면 병렬감사→dedupe→적대검증으로 **14건 확정(기각 0)** 전부 수정:
+  - **[보안] 궁합 페이월 우회**: `?paid=love-question` 쿼리만으로 990원 유료 무결제 열람 — result·manual·input 3곳에서 paid 쿼리 신뢰 제거(서버 entitlement만).
+  - **[critical] 궁합 공유링크 수신자 재현 불가**(familyId=공유자 계정 스코프+로그인벽) → 공유 URL을 초대 랜딩(/compatibility/input?relationship=)으로 분리(본인 redirectPath 유지). 근본해결(공개 스냅샷 /compatibility/share/[slug])은 후속.
+  - **[critical] 보관함 구매카드 죽은 "↗ 공유" 버튼** 제거(grid 3→2).
+  - 카카오 카드 썸네일 404(DEFAULT_OG_IMAGE 옛 경로) 교정+page-metadata와 단일화 / saju 공유 레거시 간지사주.kr→canonical / 허위 "전 50개" 추천보상 블록 제거 / 가짜 QR 제거 / zodiac 공유 birthYear 보존 / tarot 공유쿼리를 확정 결과에서 재조립(날짜종속 폴백 차단)+shared=1 수신자 저장 게이트(result·spread) / spread 페이지 공유 신규 / star-sign 날짜 명시 / Web Share 사용자취소(AbortError) 구분.
+- 게이트: typecheck 0 · 커스텀러너 995 · vitest 129. 후속: 궁합 공개 공유 스냅샷 뷰.
+
 ### 🔴 카카오 미완 — 재부팅 후 이어서 (중요)
 - **공유 4019 미해결**: 앱 1개·플랫폼>Web+제품링크관리 도메인등록·카카오톡공유 ON·JS키 확인·`Kakao.isInitialized()`=true **전부 확인됨**. 링크도메인=ganjisaju.kr(정상). **유력 원인 = Vercel env 값 끝 공백(#583 trim 방어, 재배포 필요) 또는 stale deploy**. → 재배포+env값 공백정리 후 재테스트. **그래도 4019면 → 화면 임시 디버그배지(클라 실제 키 길이·끝문자·init) 넣어 원인 특정** 예정.
 - **발송(B) 전부 dormant**: Solapi 템플릿 2개 **심의 진행중**, env 미입력.

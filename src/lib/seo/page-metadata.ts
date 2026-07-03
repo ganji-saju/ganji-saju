@@ -4,7 +4,7 @@
 //   build 되도록 한 곳에서 관리.
 
 import type { Metadata } from 'next';
-import { getSiteUrl, SITE_NAME } from '@/lib/site';
+import { getSiteUrl, SITE_NAME, DEFAULT_OG_IMAGE } from '@/lib/site';
 
 export interface ContentPageMetadataInput {
   /** 페이지 메인 title. SITE_NAME 은 layout.tsx 의 template (`%s | 간지사주`) 에서 자동 append. */
@@ -22,7 +22,8 @@ export interface ContentPageMetadataInput {
 // 2026-06-30 — og:image 사이트 기본값(브랜드 로고). Next 는 child 가 openGraph 를
 //   정의하면 parent(layout)의 openGraph.images 를 상속하지 않으므로, 콘텐츠 페이지도
 //   명시적으로 기본 og-image 를 싣는다(미지정 시 폴백).
-const DEFAULT_OG_IMAGE_PATH = '/images/gangi/og-image.png';
+// 2026-07-03 — site.ts DEFAULT_OG_IMAGE 로 단일화(두 기본값이 다시 어긋나지 않게).
+const DEFAULT_OG_IMAGE_PATH = DEFAULT_OG_IMAGE;
 
 export function buildContentPageMetadata(input: ContentPageMetadataInput): Metadata {
   const url = `${getSiteUrl()}${input.path}`;

@@ -268,7 +268,10 @@ export default function SavedReadingsList({
                     </p>
                   </div>
                 </Link>
-                <div className="grid grid-cols-3 gap-1 border-t border-[var(--app-line)] p-1.5">
+                {/* 2026-07-03 공유 전수감사 — onClick 없는 죽은 "↗ 공유" 버튼 제거(grid 3→2).
+                    구매 상품 href 는 입력 페이지(/compatibility/input 등)인 경우가 있어
+                    공유 대상 URL 로 부적합 — 상품별 공유 경로가 정리되면 재도입. */}
+                <div className="grid grid-cols-2 gap-1 border-t border-[var(--app-line)] p-1.5">
                   <button
                     type="button"
                     onClick={() =>
@@ -284,12 +287,6 @@ export default function SavedReadingsList({
                     {existingReview
                       ? `✎ 후기 · ${statusLabel(existingReview.moderationStatus)}`
                       : '✎ 후기 작성'}
-                  </button>
-                  <button
-                    type="button"
-                    className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
-                  >
-                    ↗ 공유
                   </button>
                   <Link
                     href={item.href}

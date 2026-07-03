@@ -19,9 +19,18 @@ import {
 } from '@/lib/tarot-api';
 import { TarotSpreadSnapshotSaver } from '@/components/tarot/tarot-spread-snapshot-saver';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface Props {
-  searchParams: Promise<{ question?: string; cards?: string; orientations?: string }>;
+  searchParams: Promise<{
+    question?: string;
+    cards?: string;
+    orientations?: string;
+    /** 공유 링크 유입 표시 — 수신자 보관함 자동 저장을 막는다. */
+    shared?: string;
+  }>;
 }
 
 // URL의 cards/orientations(쉼표 구분) → 사용자가 고른 픽 배열. 중복 제거 + 최대 3장
@@ -52,7 +61,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarotSpreadPage({ searchParams }: Props) {
-  const { question, cards, orientations } = await searchParams;
+  const { question, cards, orientations, shared } = await searchParams;
   const currentQuestion = normalizeQuestion(question);
   const picks = parseSpreadPicks(cards, orientations);
   // 사용자가 직접 고른 3장이 있으면 그 카드로, 없으면 질문 시드 스프레드로.
@@ -66,13 +75,27 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
   const readingSlug = buildProfileReadingSlug(profile);
   const sajuHref = readingSlug ? `/saju/${readingSlug}` : '/saju/new';
 
+  // 2026-07-03 공유 전수감사 — 공유 링크는 "해석 확정된 스프레드"에서 canonical 재조립.
+  //   (질문 시드 폴백은 KST 날짜 종속이라 raw URL 공유 시 다음 날 다른 3장이 됨.
+  //    변조·중복 URL 도 항상 정규화된 3장으로 공유.) shared=1 은 수신자 저장 게이트.
+  const shareQuery = new URLSearchParams({
+    question: currentQuestion,
+    cards: spread.positions.map((p) => p.reading.card.name_short).join(','),
+    orientations: spread.positions
+      .map((p) => (p.reading.orientation === 'reversed' ? 'r' : 'u'))
+      .join(','),
+    shared: '1',
+  }).toString();
+  const sharePath = `/tarot/daily/spread?${shareQuery}`;
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="세 장 풀이" backHref={pickHref} />
 
-        {/* 로그인 사용자의 스프레드 결과를 보관함에 저장(사용자가 직접 고른 3장일 때만). */}
-        {isUserPicked ? (
+        {/* 로그인 사용자의 스프레드 결과를 보관함에 저장(사용자가 직접 고른 3장일 때만).
+            2026-07-03 — shared=1(공유 링크 유입)이면 저장 안 함(수신자 보관함 오염 방지). */}
+        {isUserPicked && !shared ? (
           <TarotSpreadSnapshotSaver
             question={currentQuestion}
             picks={picks}
@@ -198,6 +221,23 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
               사주로 이어보기
             </Link>
           </div>
+
+          {/* 친구에게 공유 — 2026-07-03 전수감사: 완전 재현 가능한 결과 페이지인데 공유 UI 만
+              누락돼 있던 비대칭 해소(한장 결과 페이지와 동일 패턴). */}
+          <section>
+            <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+            <ShareActions
+              text={`타로 세 장 풀이 · "${currentQuestion}" — ${spread.synthesis.slice(0, 60)}`}
+              url={getCanonicalUrl(sharePath)}
+              className="mt-2.5"
+              kakao={buildKakaoShare({
+                title: '타로 세 장 풀이',
+                description: `"${currentQuestion}" — 현재·원인·조언 세 자리 흐름`,
+                path: sharePath,
+                buttonTitle: '세 장 풀이 보기',
+              })}
+            />
+          </section>
 
           <PaidFunnelGrid from="tarot" tone="light" includeMembership />
         </section>

@@ -707,9 +707,17 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             </div>
           </section>
 
-          {/* §8 친구에게 공유 */}
+          {/* §8 친구에게 공유 — 2026-07-03: birthYear 도 보존(연생 선택 시 연생 전용
+              풀이 섹션까지 받는 사람에게 재현). 기간 탭(§상단)과 동일 쿼리 패턴. */}
           {(() => {
-            const sharePath = `/zodiac/${item.slug}${period === 'today' ? '' : `?period=${period}`}`;
+            const shareQuery = [
+              period === 'today' ? null : `period=${period}`,
+              selectedYear !== null ? `birthYear=${selectedYear}` : null,
+            ].filter(Boolean);
+            const sharePath =
+              shareQuery.length > 0
+                ? `/zodiac/${item.slug}?${shareQuery.join('&')}`
+                : `/zodiac/${item.slug}`;
             const shareLine = item.periodLines[period];
             return (
               <section>

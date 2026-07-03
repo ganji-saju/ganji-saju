@@ -28,6 +28,8 @@ interface Props {
     question?: string;
     cardId?: string;
     orientation?: string;
+    /** 공유 링크 유입 표시 — 수신자 보관함 자동 저장을 막는다. */
+    shared?: string;
   }>;
 }
 
@@ -42,7 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarotResultPage({ searchParams }: Props) {
-  const { question, cardId, orientation } = await searchParams;
+  const { question, cardId, orientation, shared } = await searchParams;
   const profile = await getOptionalSignedInProfile();
   const readingSlug = buildProfileReadingSlug(profile);
   const currentQuestion = normalizeQuestion(question);
@@ -55,21 +57,28 @@ export default async function TarotResultPage({ searchParams }: Props) {
   const spreadHref = `/tarot/daily/spread?question=${encodeURIComponent(currentQuestion)}`;
   const sajuHref = readingSlug ? `/saju/${readingSlug}` : '/saju/new';
 
-  // 공유 링크는 같은 카드 결과를 재현하도록 현재 query(question/cardId/orientation)를 보존.
+  // 공유 링크는 같은 카드 결과를 재현하도록 보존 — 2026-07-03 전수감사:
+  //   raw searchParams 가 아니라 "해석 확정된 결과(reading)"에서 재조립한다.
+  //   (cardId 없는 진입에서 raw 를 보존하면 폴백 시드가 KST 날짜 종속이라
+  //    받는 사람이 다음 날 열면 다른 카드가 나옴.)
+  //   shared=1 은 수신자 보관함 자동 저장 게이트용(재공유에도 자동 유지).
   const shareQuery = new URLSearchParams({
     question: currentQuestion,
-    ...(cardId ? { cardId } : {}),
-    ...(orientation ? { orientation } : {}),
+    cardId: reading.card.name_short,
+    orientation: reading.orientation,
+    shared: '1',
   }).toString();
-  const sharePath = `/tarot/daily/result${shareQuery ? `?${shareQuery}` : ''}`;
+  const sharePath = `/tarot/daily/result?${shareQuery}`;
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="오늘의 타로" backHref={pickHref} />
 
-        {/* 로그인 사용자의 타로 결과를 보관함에 저장(카드 선택된 경우만, 마운트 시 1회). */}
-        {cardId ? (
+        {/* 로그인 사용자의 타로 결과를 보관함에 저장(카드 선택된 경우만, 마운트 시 1회).
+            2026-07-03 — shared=1(공유 링크 유입)이면 저장 안 함: 남이 공유한 결과가
+            수신자 보관함에 자동 저장되는 것을 차단. */}
+        {cardId && !shared ? (
           <TarotSnapshotSaver
             question={currentQuestion}
             cardId={cardId}
