@@ -12,7 +12,11 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
 import { buildCompatibilityCoupleKey, buildCompatibilityInterpretation } from '@/lib/compatibility';
+import { buildCompatibilityShareSlug } from '@/lib/compatibility/share-slug';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 interface ManualCompatibilityResultClientProps {
   relationship?: string;
@@ -159,6 +163,17 @@ export function ManualCompatibilityResultClient({
     return <MissingManualState relationship={requestedRelationship} />;
   }
 
+  // 2026-07-03 — 직접입력 궁합도 공개 스냅샷으로 공유(기존엔 sessionStorage 라 공유 불가).
+  const shareSlug = buildCompatibilityShareSlug(
+    selected.slug,
+    payload.selfBirthInput,
+    payload.partnerBirthInput
+  );
+  const sharePath = `/compatibility/share/${shareSlug}?${new URLSearchParams({
+    a: payload.selfName,
+    b: payload.partnerName,
+  }).toString()}`;
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
@@ -177,6 +192,22 @@ export function ManualCompatibilityResultClient({
           compatibilityCoupleKey={coupleKey ?? undefined}
           perCouplePricingEnabled={perCouplePricingEnabled}
         />
+
+        {/* 친구에게 공유 — 공개 스냅샷(/compatibility/share/[slug]) */}
+        <section className="px-1">
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+          <ShareActions
+            text={`${payload.selfName} × ${payload.partnerName} 궁합 — ${compatibility.label}`}
+            url={getCanonicalUrl(sharePath)}
+            className="mt-2.5"
+            kakao={buildKakaoShare({
+              title: `${payload.selfName} × ${payload.partnerName} 궁합`,
+              description: compatibility.summary,
+              path: sharePath,
+              buttonTitle: '궁합 결과 보기',
+            })}
+          />
+        </section>
       </AppPage>
     </AppShell>
   );

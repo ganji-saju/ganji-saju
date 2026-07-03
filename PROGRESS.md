@@ -35,7 +35,15 @@
   - **[critical] 궁합 공유링크 수신자 재현 불가**(familyId=공유자 계정 스코프+로그인벽) → 공유 URL을 초대 랜딩(/compatibility/input?relationship=)으로 분리(본인 redirectPath 유지). 근본해결(공개 스냅샷 /compatibility/share/[slug])은 후속.
   - **[critical] 보관함 구매카드 죽은 "↗ 공유" 버튼** 제거(grid 3→2).
   - 카카오 카드 썸네일 404(DEFAULT_OG_IMAGE 옛 경로) 교정+page-metadata와 단일화 / saju 공유 레거시 간지사주.kr→canonical / 허위 "전 50개" 추천보상 블록 제거 / 가짜 QR 제거 / zodiac 공유 birthYear 보존 / tarot 공유쿼리를 확정 결과에서 재조립(날짜종속 폴백 차단)+shared=1 수신자 저장 게이트(result·spread) / spread 페이지 공유 신규 / star-sign 날짜 명시 / Web Share 사용자취소(AbortError) 구분.
-- 게이트: typecheck 0 · 커스텀러너 995 · vitest 129. 후속: 궁합 공개 공유 스냅샷 뷰.
+- 게이트: typecheck 0 · 커스텀러너 995 · vitest 129. 후속: 궁합 공개 공유 스냅샷 뷰 → **같은 날 구현됨(아래)**.
+
+### 궁합 공개 공유 스냅샷 + 전체 풀이 공유 커버리지 (2026-07-03)
+- 설계: `docs/superpowers/specs/2026-07-03-share-snapshot-design.md` (원칙: 수신자 재현성·개인ID 비노출·유료 비포함·noindex·toSlug 재사용).
+- **`/compatibility/share/[slug]` 공개 뷰 신설**: slug=`{relationship}--{selfSlug}--{partnerSlug}`(기존 toSlug/fromSlug 재사용, 이름은 ?a=&b= 쿼리), 로그인 없이 결정론 재계산 → CompatibilityResultView 무료 화면+유료CTA(심층은 수신자 본인 entitlement만, 멤버쿼터 미소모), 재공유 섹션, robots noindex.
+- 발신측: result 페이지(저장 프로필)·**직접입력(manual) 결과**(기존 sessionStorage라 공유 불가였음) 모두 스냅샷 URL로 공유. `lib/compatibility/share-slug.ts`(+테스트 6, 순수·클라 안전).
+- **꿈해몽 상세 공유 버튼**(공개 SEO 페이지 quick win). 커버리지 매트릭스: 사주·별자리·띠·타로 완료, 오늘운세 무료 티저 스냅샷은 후속 설계로 기록(유료/개인 풀이는 정책상 비대상).
+- ⚠️ fromSlug 의 key 해시 토큰은 검증 안 함(무시) — 변조=다른 생년 재계산일 뿐 보안 무관(테스트로 명문화).
+- 게이트: typecheck 0 · 커스텀러너 1001 · vitest 129 · next build 성공(신규 라우트 등록 확인).
 
 ### 🔴 카카오 미완 — 재부팅 후 이어서 (중요)
 - **공유 4019 미해결**: 앱 1개·플랫폼>Web+제품링크관리 도메인등록·카카오톡공유 ON·JS키 확인·`Kakao.isInitialized()`=true **전부 확인됨**. 링크도메인=ganjisaju.kr(정상). **유력 원인 = Vercel env 값 끝 공백(#583 trim 방어, 재배포 필요) 또는 stale deploy**. → 재배포+env값 공백정리 후 재테스트. **그래도 4019면 → 화면 임시 디버그배지(클라 실제 키 길이·끝문자·init) 넣어 원인 특정** 예정.
