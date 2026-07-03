@@ -1,6 +1,16 @@
 // 2026-05-15 — 운영 모니터링 메트릭 산출.
-// admin_user_summary / credit_transactions / readings / subscriptions / today_fortune_feedback /
+// admin_user_summary / payment_orders / readings / subscriptions / today_fortune_feedback /
 // dialogue_messages 등에서 DAU·결제·만족도·구독 활성 등 계산.
+//
+// 2026-07-04 admin 지표 전수감사 반영:
+//   - 결제 지표 소스를 credit_transactions(type='purchase' — 코인충전 폐지로 신규 행 없음)
+//     → payment_orders(카드 단건·멤버십·나이스페이/토스 공통 원장)로 교체. 금액은 원화.
+//   - 행 fetch 후 JS 합산 쿼리 전부 페이지네이션(fetchAllPages) — PostgREST 기본
+//     1000행 캡으로 조용히 절단되던 문제 해소.
+//   - 시리즈 날짜축을 KST 로 통일(기존엔 축=UTC·버킷키=KST 라 KST 00~09시에 '오늘'이
+//     축에 없어 통째로 버려짐). 윈도우 시작도 KST 자정으로 스냅해 totals=Σdaily 정합.
+//   - 활성 구독에 renews_at > now 조건 추가(만료 lazy 처리로 인한 과대집계 방지).
+//   - admin_user_summary 최신 refreshed_at 을 스냅샷에 포함(요약 갱신 지연 관측).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -18,12 +28,12 @@ export interface OperationsSnapshot {
   today: {
     /** 오늘 신규 가입 수. */
     newSignups: number;
-    /** 오늘 DAU — distinct user 가 readings/today_feedback/dialogue 중 하나 이상 활동. */
+    /** 오늘 활동 사용자 — distinct user 가 readings/today_feedback/dialogue 중 하나 이상 활동. */
     activeUsers: number;
-    /** 오늘 결제 건수 (type='purchase'). */
+    /** 오늘 결제 건수 (payment_orders 완료 상태). */
     purchaseCount: number;
-    /** 오늘 결제로 충전된 전 총량 (amount > 0). */
-    purchasedCredits: number;
+    /** 오늘 결제 금액 합계 (원). */
+    purchaseAmountWon: number;
     /** 오늘 사주 풀이 작성 건수. */
     readingsCreated: number;
     /** 오늘 누적 피드백 건수. */
@@ -33,14 +43,16 @@ export interface OperationsSnapshot {
   lifetime: {
     /** 총 가입자 (admin_user_summary row count). */
     totalUsers: number;
-    /** 활성 구독자 (status='active'). */
+    /** 활성 구독자 (status='active' AND 만료 전). */
     activeSubscribers: number;
     /** 누적 사주 풀이 작성 건수. */
     totalReadings: number;
-    /** 누적 결제 건수. */
+    /** 누적 결제 건수 (payment_orders 완료 상태). */
     totalPurchases: number;
-    /** 누적 충전된 전 총량. */
-    totalPurchasedCredits: number;
+    /** 누적 결제 금액 합계 (원). */
+    totalPurchaseAmountWon: number;
+    /** admin_user_summary 마지막 갱신 시각 (요약 지연 관측용, 없으면 null). */
+    summaryRefreshedAt: string | null;
   };
   /** 윈도우 내 평균 만족도 (today_fortune_feedback.overall_rating). -1~+1. */
   satisfaction: {
@@ -80,11 +92,12 @@ function toLocalDateKey(iso: string): string {
   return kst.toISOString().slice(0, 10);
 }
 
-function buildEmptySeries(days: number, endDate: Date): DailySeries[] {
+/** KST 날짜키(YYYY-MM-DD) 기준으로 endKey 포함 직전 days 일의 축 생성. */
+function buildEmptySeries(days: number, endKey: string): DailySeries[] {
+  const endMs = Date.parse(`${endKey}T00:00:00Z`); // 날짜 산술용(표기만 사용)
   const series: DailySeries[] = [];
   for (let i = days - 1; i >= 0; i -= 1) {
-    const d = new Date(endDate);
-    d.setUTCDate(endDate.getUTCDate() - i);
+    const d = new Date(endMs - i * 86_400_000);
     series.push({ date: d.toISOString().slice(0, 10), value: 0 });
   }
   return series;
@@ -109,8 +122,42 @@ function countByDate<T extends { created_at: string }>(
   return map;
 }
 
+const PAGE_SIZE = 1000;
+const MAX_PAGES = 50; // 안전 상한(5만 행) — 초과 시 경고 로그.
+
+/**
+ * PostgREST 기본 max-rows(1000) 절단 방지 — range 페이지네이션으로 전량 수집.
+ * fetchPage 는 (from, to) inclusive 범위를 받아 해당 페이지를 조회해야 한다.
+ */
+async function fetchAllPages<T>(
+  label: string,
+  fetchPage: (
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>
+): Promise<T[]> {
+  const all: T[] = [];
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const from = page * PAGE_SIZE;
+    const { data, error } = await fetchPage(from, from + PAGE_SIZE - 1);
+    if (error) {
+      console.error(`[operations-stats] ${label} page ${page} failed:`, error.message);
+      break;
+    }
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < PAGE_SIZE) return all;
+  }
+  console.error(`[operations-stats] ${label} exceeded ${MAX_PAGES * PAGE_SIZE} rows — truncated`);
+  return all;
+}
+
+/** payment_orders 에서 "완료된 결제"로 집계하는 상태들. */
+const COMPLETED_ORDER_STATUSES = ['confirmed', 'fulfilling', 'fulfilled'];
+
 /**
  * 운영 메트릭 한 번에 산출.
+ * ⚠️ client 는 service-role 이어야 함(집계 테이블 다수가 owner-only/deny RLS).
  */
 export async function buildOperationsSnapshot(
   client: SupabaseClient,
@@ -120,77 +167,109 @@ export async function buildOperationsSnapshot(
   const now = new Date();
   const todayKey = toLocalDateKey(now.toISOString());
 
-  // 윈도우 시작 (KST 시간대 오늘 00:00 - windowDays).
-  const windowStart = new Date(now);
-  windowStart.setUTCDate(now.getUTCDate() - windowDays);
+  // 시리즈 축(KST) 먼저 만들고, 윈도우 시작을 축 첫날의 KST 자정으로 스냅.
+  const seriesSkeleton = buildEmptySeries(windowDays, todayKey);
+  const windowStart = new Date(Date.parse(`${seriesSkeleton[0].date}T00:00:00+09:00`));
+  const windowStartIso = windowStart.toISOString();
+  const nowIso = now.toISOString();
 
-  // 병렬 쿼리.
+  // 병렬 쿼리 — 행이 필요한 것들은 전량 페이지네이션, 건수만 필요한 것은 count head.
   const [
-    signupResp,
-    creditTxResp,
-    purchaseResp,
-    readingsResp,
-    feedbackResp,
-    activitySources,
+    signupRowsRaw,
+    orderRows,
+    lifetimeOrderRows,
+    readingsRows,
+    feedbackRows,
+    dialogueRows,
     subscriptionsResp,
     totalReadingsCountResp,
     totalUsersCountResp,
+    lastRefreshResp,
   ] = await Promise.all([
     // 신규 가입 (admin_user_summary.signup_at — migration 049 기준).
     // admin_user_summary 는 cron 으로 주기적으로 갱신되므로 매우 최근 가입자는
-    // 다음 cron 실행 전까지 반영이 지연될 수 있음(대시보드 허용 범위).
-    client
-      .from('admin_user_summary')
-      .select('user_id, signup_at')
-      .gte('signup_at', windowStart.toISOString())
-      .order('signup_at', { ascending: true })
-      .limit(50_000),
+    // 다음 cron 실행 전까지 반영이 지연될 수 있음(summaryRefreshedAt 으로 관측).
+    fetchAllPages<{ user_id: string; signup_at: string }>('signups', (from, to) =>
+      client
+        .from('admin_user_summary')
+        .select('user_id, signup_at')
+        .gte('signup_at', windowStartIso)
+        .order('signup_at', { ascending: true })
+        .range(from, to)
+    ),
 
-    // 결제 (purchase type, 윈도우 내).
-    client
-      .from('credit_transactions')
-      .select('user_id, amount, created_at')
-      .eq('type', 'purchase')
-      .gt('amount', 0)
-      .gte('created_at', windowStart.toISOString())
-      .limit(50_000),
+    // 결제 (payment_orders 완료 상태, 윈도우 내) — 카드 단건·멤버십·PG 공통 원장.
+    fetchAllPages<{ user_id: string | null; amount: number | null; created_at: string }>(
+      'orders-window',
+      (from, to) =>
+        client
+          .from('payment_orders')
+          .select('user_id, amount, created_at')
+          .in('status', COMPLETED_ORDER_STATUSES)
+          .gte('created_at', windowStartIso)
+          .order('created_at', { ascending: true })
+          .range(from, to)
+    ),
 
-    // 전체 결제 — lifetime 통계용.
-    client
-      .from('credit_transactions')
-      .select('amount, created_at')
-      .eq('type', 'purchase')
-      .gt('amount', 0)
-      .limit(50_000),
+    // 전체 결제 — lifetime 통계용(금액 합산에 행 필요).
+    fetchAllPages<{ amount: number | null; created_at: string }>('orders-lifetime', (from, to) =>
+      client
+        .from('payment_orders')
+        .select('amount, created_at')
+        .in('status', COMPLETED_ORDER_STATUSES)
+        .order('created_at', { ascending: true })
+        .range(from, to)
+    ),
 
     // readings — 윈도우 내.
-    client
-      .from('readings')
-      .select('user_id, created_at')
-      .not('user_id', 'is', null)
-      .gte('created_at', windowStart.toISOString())
-      .limit(50_000),
+    fetchAllPages<{ user_id: string; created_at: string }>('readings', (from, to) =>
+      client
+        .from('readings')
+        .select('user_id, created_at')
+        .not('user_id', 'is', null)
+        .gte('created_at', windowStartIso)
+        .order('created_at', { ascending: true })
+        .range(from, to)
+    ),
 
     // today_fortune_feedback — 만족도 윈도우 내 + 만족도 30일 분석.
-    client
-      .from('today_fortune_feedback')
-      .select('overall_rating, wealth_rating, love_rating, career_rating, health_rating, relationship_rating, created_at, user_id')
-      .gte('created_at', windowStart.toISOString())
-      .limit(50_000),
+    fetchAllPages<{
+      overall_rating: number | null;
+      wealth_rating: number | null;
+      love_rating: number | null;
+      career_rating: number | null;
+      health_rating: number | null;
+      relationship_rating: number | null;
+      created_at: string;
+      user_id: string;
+    }>('feedback', (from, to) =>
+      client
+        .from('today_fortune_feedback')
+        .select(
+          'overall_rating, wealth_rating, love_rating, career_rating, health_rating, relationship_rating, created_at, user_id'
+        )
+        .gte('created_at', windowStartIso)
+        .order('created_at', { ascending: true })
+        .range(from, to)
+    ),
 
-    // 활동 소스 — readings + today_fortune_feedback + dialogue_messages 의 user_id+date.
-    // readings 는 위에서 가져왔으니 여기서 dialogue 만 한 번 더.
-    client
-      .from('dialogue_messages')
-      .select('user_id, created_at')
-      .gte('created_at', windowStart.toISOString())
-      .limit(50_000),
+    // 활동 소스 — dialogue_messages 의 user_id+date.
+    fetchAllPages<{ user_id: string; created_at: string }>('dialogue', (from, to) =>
+      client
+        .from('dialogue_messages')
+        .select('user_id, created_at')
+        .gte('created_at', windowStartIso)
+        .order('created_at', { ascending: true })
+        .range(from, to)
+    ),
 
-    // 활성 구독.
+    // 활성 구독 — 만료 lazy 처리(expireIfNeeded는 유저 재방문 시에만 실행)라
+    // status='active' 만으로는 과대집계 → renews_at 미래(또는 null) 조건 추가.
     client
       .from('subscriptions')
       .select('user_id', { count: 'exact', head: true })
-      .eq('status', 'active'),
+      .eq('status', 'active')
+      .or(`renews_at.is.null,renews_at.gt.${nowIso}`),
 
     // 누적 사주 readings count.
     client
@@ -199,44 +278,35 @@ export async function buildOperationsSnapshot(
       .not('user_id', 'is', null),
 
     // 누적 가입자 (admin_user_summary — user_id 가 PK, id 컬럼 없음).
+    client.from('admin_user_summary').select('user_id', { count: 'exact', head: true }),
+
+    // 요약 테이블 최신 갱신 시각(지연 관측).
     client
       .from('admin_user_summary')
-      .select('user_id', { count: 'exact', head: true }),
+      .select('refreshed_at')
+      .order('refreshed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   // signup_at → created_at 로 매핑해 countByDate / toLocalDateKey 공통 인터페이스를 유지한다.
-  const signupRows = ((signupResp.data ?? []) as Array<{ user_id: string; signup_at: string }>).map(
-    (r) => ({ user_id: r.user_id, created_at: r.signup_at }),
-  );
-  const purchaseRows = (creditTxResp.data ?? []) as Array<{
-    user_id: string;
-    amount: number;
-    created_at: string;
-  }>;
-  const allPurchaseRows = (purchaseResp.data ?? []) as Array<{ amount: number; created_at: string }>;
-  const readingsRows = (readingsResp.data ?? []) as Array<{ user_id: string; created_at: string }>;
-  const feedbackRows = (feedbackResp.data ?? []) as Array<{
-    overall_rating: number;
-    wealth_rating: number | null;
-    love_rating: number | null;
-    career_rating: number | null;
-    health_rating: number | null;
-    relationship_rating: number | null;
-    created_at: string;
-    user_id: string;
-  }>;
-  const dialogueRows = (activitySources.data ?? []) as Array<{
-    user_id: string;
-    created_at: string;
-  }>;
+  const signupRows = signupRowsRaw.map((r) => ({ user_id: r.user_id, created_at: r.signup_at }));
+  const purchaseRows = orderRows.map((r) => ({
+    user_id: r.user_id ?? '',
+    amount: r.amount ?? 0,
+    created_at: r.created_at,
+  }));
+  const allPurchaseRows = lifetimeOrderRows.map((r) => ({
+    amount: r.amount ?? 0,
+    created_at: r.created_at,
+  }));
 
   // 일별 추이 시리즈 빌드 — 오래된 → 최신.
-  const seriesSkeleton = buildEmptySeries(windowDays, now);
   const trends = {
     newSignups: fillSeries(seriesSkeleton, countByDate(signupRows)),
     purchaseCount: fillSeries(seriesSkeleton, countByDate(purchaseRows)),
     readingsCreated: fillSeries(seriesSkeleton, countByDate(readingsRows)),
-    // DAU 추이 — 일별 distinct user_id.
+    // 활동 사용자 추이 — 일별 distinct user_id.
     activeUsers: (() => {
       const dailyUsers: Record<string, Set<string>> = {};
       for (const row of readingsRows) {
@@ -279,8 +349,9 @@ export async function buildOperationsSnapshot(
     if (toLocalDateKey(r.created_at) === todayKey) todayActiveUsers.add(r.user_id);
   }
 
-  // 만족도 통계 — 윈도우 내 피드백.
-  const sample = feedbackRows.length;
+  // 만족도 통계 — 윈도우 내 피드백. overall_rating 이 -1/0/1 이 아닌 행(null 등)은
+  // 표본에서 제외(기존엔 miss 로 오분류 + null 이면 NaN 전파).
+  let sample = 0;
   let totalRating = 0;
   let correctN = 0;
   let partialN = 0;
@@ -288,10 +359,13 @@ export async function buildOperationsSnapshot(
   const areaSums = { wealth: 0, love: 0, career: 0, health: 0, relationship: 0 };
   const areaCounts = { wealth: 0, love: 0, career: 0, health: 0, relationship: 0 };
   for (const row of feedbackRows) {
-    totalRating += row.overall_rating;
-    if (row.overall_rating === 1) correctN += 1;
-    else if (row.overall_rating === 0) partialN += 1;
-    else missN += 1;
+    if (row.overall_rating === 1 || row.overall_rating === 0 || row.overall_rating === -1) {
+      sample += 1;
+      totalRating += row.overall_rating;
+      if (row.overall_rating === 1) correctN += 1;
+      else if (row.overall_rating === 0) partialN += 1;
+      else missN += 1;
+    }
     for (const key of ['wealth', 'love', 'career', 'health', 'relationship'] as const) {
       const v = row[`${key}_rating`];
       if (typeof v === 'number') {
@@ -310,7 +384,7 @@ export async function buildOperationsSnapshot(
       newSignups: todaySignups,
       activeUsers: todayActiveUsers.size,
       purchaseCount: todayPurchaseRows.length,
-      purchasedCredits: todayPurchaseRows.reduce((sum, r) => sum + r.amount, 0),
+      purchaseAmountWon: todayPurchaseRows.reduce((sum, r) => sum + r.amount, 0),
       readingsCreated: todayReadings,
       feedbackCount: todayFeedback,
     },
@@ -319,7 +393,9 @@ export async function buildOperationsSnapshot(
       activeSubscribers: subscriptionsResp.count ?? 0,
       totalReadings: totalReadingsCountResp.count ?? 0,
       totalPurchases: allPurchaseRows.length,
-      totalPurchasedCredits: allPurchaseRows.reduce((sum, r) => sum + r.amount, 0),
+      totalPurchaseAmountWon: allPurchaseRows.reduce((sum, r) => sum + r.amount, 0),
+      summaryRefreshedAt:
+        (lastRefreshResp.data as { refreshed_at?: string } | null)?.refreshed_at ?? null,
     },
     satisfaction: {
       sampleSize: sample,

@@ -18,7 +18,8 @@ export const metadata: Metadata = {
 };
 
 const fmtNum = (n: number | null | undefined) => (n ?? 0).toLocaleString('ko-KR');
-const fmtPct = (rate: number | null | undefined) => `${Math.round((rate ?? 0) * 100)}%`;
+// 2026-07-04 — 반올림 대신 소수 1자리: 0.5% 미만 전환율이 전부 '0%'로 보이던 문제.
+const fmtPct = (rate: number | null | undefined) => `${((rate ?? 0) * 100).toFixed(1)}%`;
 const fmtUsd = (n: number | null | undefined) => `$${(n ?? 0).toFixed(2)}`;
 function fmtDateTime(iso: string | null) {
   if (!iso) return '—';
@@ -154,9 +155,10 @@ export default async function AdminDashboardPage({
         {ops ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             <Stat label="신규 가입" value={fmtNum(ops.today.newSignups)} />
-            <Stat label="활성 사용자" value={fmtNum(ops.today.activeUsers)} />
+            {/* 2026-07-04 — 라벨 정정: 페이지 방문이 아니라 풀이·피드백·대화 활동 기준. */}
+            <Stat label="활동 사용자" value={fmtNum(ops.today.activeUsers)} />
             <Stat label="결제 건수" value={fmtNum(ops.today.purchaseCount)} />
-            <Stat label="충전 재화" value={fmtNum(ops.today.purchasedCredits)} />
+            <Stat label="결제 금액" value={`${fmtNum(ops.today.purchaseAmountWon)}원`} />
             <Stat label="풀이 작성" value={fmtNum(ops.today.readingsCreated)} />
             <Stat label="피드백" value={fmtNum(ops.today.feedbackCount)} />
           </div>
@@ -174,7 +176,7 @@ export default async function AdminDashboardPage({
               <Stat label="활성 구독" value={fmtNum(ops.lifetime.activeSubscribers)} />
               <Stat label="총 풀이" value={fmtNum(ops.lifetime.totalReadings)} />
               <Stat label="총 결제" value={fmtNum(ops.lifetime.totalPurchases)} />
-              <Stat label="총 충전전" value={fmtNum(ops.lifetime.totalPurchasedCredits)} />
+              <Stat label="총 결제 금액" value={`${fmtNum(ops.lifetime.totalPurchaseAmountWon)}원`} />
             </div>
           ) : (
             <p className="text-[13px] text-[var(--app-copy-soft)]">—</p>

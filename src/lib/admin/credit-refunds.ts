@@ -92,14 +92,18 @@ export function buildCreditRefundItem(
   const packageId = readString(row.metadata, 'packageId');
   const orderId = readString(row.metadata, 'orderId');
   const pkg = getPackage(packageId);
-  if (!paymentKey || pkg?.kind !== 'credits') return null;
+  // 2026-07-04 감사 — 카탈로그에서 폐지된 구 전팩(credit_1/3/7 등)은 pkg=null 이라
+  // 환불 대상 판정 자체가 안 되던 문제: packageId 접두사로도 전팩 판정.
+  const isCreditPack = pkg ? pkg.kind === 'credits' : Boolean(packageId?.startsWith('credit_'));
+  if (!paymentKey || !isCreditPack) return null;
 
   const matchedLots = lots.filter((lot) => matchLotToPayment(lot, paymentKey, now));
   const coinsPurchased =
     matchedLots.reduce((sum, lot) => sum + Math.max(0, lot.amount_initial ?? 0), 0) || row.amount;
   const coinsRemaining = matchedLots.reduce((sum, lot) => sum + Math.max(0, lot.amount_remaining ?? 0), 0);
   const coinsUsed = Math.max(0, coinsPurchased - coinsRemaining);
-  const originalAmountWon = pkg.price ?? readNumber(row.metadata, 'amount');
+  // 실결제액(metadata.amount) 우선 — 정가 우선이면 가격 개정 시 과거 결제가 소급 왜곡.
+  const originalAmountWon = readNumber(row.metadata, 'amount') ?? pkg?.price ?? null;
   const refundAmountWon = resolveRefundAmount(originalAmountWon, coinsPurchased, coinsRemaining);
 
   let status: CreditRefundPolicyStatus = 'none';
@@ -114,7 +118,7 @@ export function buildCreditRefundItem(
 
   return {
     id: row.id,
-    productName: pkg.name,
+    productName: pkg?.name ?? packageId ?? '전 충전',
     packageId,
     paymentKey,
     orderId,

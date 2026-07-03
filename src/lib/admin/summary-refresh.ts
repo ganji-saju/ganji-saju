@@ -5,6 +5,7 @@ import {
   buildPaymentHistory,
   isCashCreditTransaction,
   type CreditTransactionHistoryRow,
+  type PaymentOrderHistoryRow,
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
 import {
@@ -74,7 +75,21 @@ async function computeUserSummary(
     CreditTransactionHistoryRow & { type: string; feature?: string | null }
   >;
   const cashCredit = allCredit.filter((r) => isCashCreditTransaction(r));
-  const payment = buildPaymentHistory({ productEntitlements, creditTransactions: cashCredit });
+
+  // 2026-07-04 감사 — 코인 sunset 이후 멤버십 결제는 credit_transactions 에 안 남아
+  // LTV/결제수에서 누락되던 문제: 완료 주문 원장을 세 번째 소스로(orderId dedupe).
+  const { data: orderRows } = await service
+    .from('payment_orders')
+    .select('id, order_id, package_id, amount, status, created_at')
+    .eq('user_id', userId)
+    .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
+  const paymentOrders = (orderRows ?? []) as unknown as PaymentOrderHistoryRow[];
+
+  const payment = buildPaymentHistory({
+    productEntitlements,
+    creditTransactions: cashCredit,
+    paymentOrders,
+  });
 
   const { data: lotRows } = await service
     .from('credit_lots')
@@ -104,13 +119,24 @@ async function computeUserSummary(
   );
   const refund = determineRefundEligibility(productEntitlements, creditRefund);
 
+  // 2026-07-04 감사 — 만료 처리는 lazy(사용자 재방문 시)라 renews_at 이 지난 행도
+  // status='active'/'cancelled' 로 남음 → 요약 저장 시 'expired' 로 정규화.
   const { data: sub } = await service
     .from('subscriptions')
-    .select('status')
+    .select('status, renews_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
+  const rawSubStatus = (sub?.status as string | undefined) ?? null;
+  const subRenewsAt = (sub?.renews_at as string | undefined) ?? null;
+  const subscriptionStatus =
+    rawSubStatus &&
+    (rawSubStatus === 'active' || rawSubStatus === 'cancelled') &&
+    subRenewsAt &&
+    new Date(subRenewsAt).getTime() < new Date(nowIso).getTime()
+      ? 'expired'
+      : rawSubStatus;
 
   const { count: readingCount } = await service
     .from('readings')
@@ -148,7 +174,9 @@ async function computeUserSummary(
       (latestChat?.created_at as string | undefined) ?? null
     ) ?? user.created_at;
 
-  const paidCount = productEntitlements.filter((e) => ((e.amount ?? 0) as number) > 0).length;
+  // 2026-07-04 감사 — 기존엔 product_entitlements(카드 단건)만 세서 멤버십/전충전
+  // 구매자가 'LTV>0 인데 paid_count=0'이 되던 문제: LTV 와 동일 소스(payment.entries)로 통일.
+  const paidCount = payment.entries.filter((e) => (e.amountWon ?? 0) > 0).length;
 
   return {
     user_id: userId,
@@ -162,7 +190,7 @@ async function computeUserSummary(
     paid_count: paidCount,
     credit_balance: creditBalance,
     credit_expiring: creditExpiring,
-    subscription_status: (sub?.status as string | undefined) ?? null,
+    subscription_status: subscriptionStatus,
     refundable_won: refund.totalRefundableWon,
     reading_count: readingCount ?? 0,
     chat_count: chatCount ?? 0,
@@ -205,38 +233,64 @@ export async function refreshAdminUserSummaryForUser(userId: string): Promise<bo
   }
 }
 
+// 2026-07-04 감사 — 유저당 ~10쿼리 × 전원 순차 실행은 수백 명부터 route maxDuration 을
+// 초과(뒤쪽=최근 가입자가 매번 갱신 실패). 유저 단위 병렬(동시 CONCURRENCY)로 완화.
+const REFRESH_CONCURRENCY = 10;
+
 export async function refreshAdminUserSummary(): Promise<RefreshResult> {
   if (!hasSupabaseServiceEnv) return { processed: 0, refreshedAt: new Date().toISOString() };
   const service = await createServiceClient();
   const nowIso = new Date().toISOString();
   let page = 1;
   let processed = 0;
+  // 전원 완주 여부 — 탈퇴자 행 정리는 완주했을 때만(부분 실행 중 삭제하면 오삭제).
+  let completed = false;
 
   for (;;) {
     const { data, error } = await service.auth.admin.listUsers({ page, perPage: 200 });
-    if (error || data.users.length === 0) break;
+    if (error) break;
+    if (data.users.length === 0) {
+      completed = true;
+      break;
+    }
+    const users = data.users.map((u) => ({
+      id: u.id,
+      email: u.email ?? null,
+      created_at: u.created_at,
+      last_sign_in_at: u.last_sign_in_at ?? null,
+      app_metadata: u.app_metadata as Record<string, unknown> | undefined,
+    }));
     const rows: SummaryUpsert[] = [];
-    for (const u of data.users) {
-      rows.push(
-        await computeUserSummary(
-          service,
-          {
-            id: u.id,
-            email: u.email ?? null,
-            created_at: u.created_at,
-            last_sign_in_at: u.last_sign_in_at ?? null,
-            app_metadata: u.app_metadata as Record<string, unknown> | undefined,
-          },
-          nowIso
-        )
+    for (let i = 0; i < users.length; i += REFRESH_CONCURRENCY) {
+      const chunk = users.slice(i, i + REFRESH_CONCURRENCY);
+      const computed = await Promise.all(
+        chunk.map((u) => computeUserSummary(service, u, nowIso))
       );
+      rows.push(...computed);
     }
     if (rows.length > 0) {
       await service.from('admin_user_summary').upsert(rows, { onConflict: 'user_id' });
       processed += rows.length;
     }
-    if (data.users.length < 200) break;
+    if (data.users.length < 200) {
+      completed = true;
+      break;
+    }
     page += 1;
   }
+
+  // 2026-07-04 감사 — 탈퇴(auth.users 삭제) 사용자의 요약 행이 영구 잔존해 가입자
+  // 수·세그먼트·코호트가 과대집계되던 문제: 이번 패스에서 갱신되지 않은 행 정리.
+  // (upsert 가 refreshed_at=nowIso 를 기록하므로, nowIso 미만 = auth 에 없는 유저.)
+  if (completed && processed > 0) {
+    const { error: cleanupError } = await service
+      .from('admin_user_summary')
+      .delete()
+      .lt('refreshed_at', nowIso);
+    if (cleanupError) {
+      console.error('[summary-refresh] stale row cleanup failed:', cleanupError.message);
+    }
+  }
+
   return { processed, refreshedAt: nowIso };
 }

@@ -217,7 +217,7 @@ export function OperationsDashboard() {
           className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          오늘 신규/DAU/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 단위.
+          오늘 신규/활동 사용자/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 단위.
         </p>
       </article>
 
@@ -293,8 +293,10 @@ export function OperationsDashboard() {
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
+                {/* 2026-07-04 — 라벨 정정: 방문 트래픽이 아니라 풀이·피드백·대화 활동 기준.
+                    실제 방문/유입은 Vercel Analytics 대시보드에서 확인. */}
                 <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
-                  👥 DAU (활성 사용자)
+                  👥 활동 사용자 (풀이·피드백·대화)
                 </div>
                 <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-jade)]">
                   {formatNum(snap.today.activeUsers)}
@@ -325,13 +327,13 @@ export function OperationsDashboard() {
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-[12.1px] text-[var(--app-copy-soft)]">
                 <span>
-                  결제 재화 합계{' '}
+                  결제 금액 합계{' '}
                   <strong className="tabular-nums text-[var(--app-ink)]">
-                    {formatNum(snap.today.purchasedCredits)}
+                    {formatNum(snap.today.purchaseAmountWon)}원
                   </strong>
                 </span>
                 <span>
-                  결제 전환율{' '}
+                  결제/활동자 비율{' '}
                   <strong className="tabular-nums text-[var(--app-ink)]">
                     {formatPct(todayConversionRate)}
                   </strong>
@@ -511,9 +513,9 @@ export function OperationsDashboard() {
               className="mt-3 rounded-[10px] px-3 py-2 text-[12.6px] text-[var(--app-copy)]"
               style={{ background: 'rgba(0,0,0,0.025)' }}
             >
-              누적 충전 재화 합계{' '}
+              누적 결제 금액{' '}
               <strong className="tabular-nums text-[var(--app-ink)]">
-                {formatNum(snap.lifetime.totalPurchasedCredits)}
+                {formatNum(snap.lifetime.totalPurchaseAmountWon)}원
               </strong>{' '}
               · 풀이당 결제 전환{' '}
               <strong className="tabular-nums text-[var(--app-ink)]">
@@ -536,11 +538,21 @@ export function OperationsDashboard() {
               className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              <li>• 신규: credit_transactions.type=&apos;signup_bonus&apos; 일별 count</li>
-              <li>• DAU: readings + today_fortune_feedback + dialogue_messages 의 distinct user</li>
-              <li>• 결제: credit_transactions.type=&apos;purchase&apos; AND amount &gt; 0</li>
+              <li>
+                • 신규: admin_user_summary.signup_at 일별 count (시간별 cron 갱신
+                {snap.lifetime.summaryRefreshedAt
+                  ? ` — 요약 갱신 ${new Date(snap.lifetime.summaryRefreshedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`
+                  : ' — 요약 미갱신 상태(cron 확인 필요)'}
+                )
+              </li>
+              <li>
+                • 활동 사용자: readings + today_fortune_feedback + dialogue_messages 의 distinct
+                user — 페이지 방문만 한 사용자는 미포함(방문/유입 트래픽은 Vercel Analytics 에서 확인)
+              </li>
+              <li>• 결제: payment_orders status ∈ (confirmed, fulfilling, fulfilled) — 카드 단건·멤버십·PG 공통, 금액=원화</li>
               <li>• 만족도: overall_rating ∈ {'{-1, 0, +1}'}, area_rating ∈ [1, 5]</li>
-              <li>• 결제 전환율 = 오늘 결제 건수 ÷ 오늘 DAU</li>
+              <li>• 결제/활동자 비율 = 오늘 결제 건수 ÷ 오늘 활동 사용자 (방문 대비 전환율 아님)</li>
+              <li>• 활성 구독: status=&apos;active&apos; AND renews_at &gt; now (만료 lazy 반영 보정)</li>
               <li>• KST(UTC+9) 자정 단위 일별 집계</li>
             </ul>
           </article>

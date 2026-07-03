@@ -231,3 +231,94 @@ test('buildPaymentHistory skips null amounts in total but keeps the entry', () =
   assert.equal(result.count, 2); // both kept
   assert.equal(result.totalSpentWon, 9900); // only credit_15 (9900) counted; null skipped
 });
+
+// ── 2026-07-04 admin 지표 감사 — payment_orders 소스 병합 + 관련 회귀 가드 ──
+
+test('buildPaymentHistory merges payment_orders but dedupes by orderId', () => {
+  const result = buildPaymentHistory({
+    productEntitlements: [
+      {
+        id: 'pe-1',
+        product_id: 'today-detail',
+        amount: 9900,
+        order_id: 'ORD-DUP-ENT',
+        payment_key: null,
+        package_id: 'taste_today_detail',
+        created_at: '2026-07-01T00:00:00.000Z',
+        metadata: null,
+      },
+    ],
+    creditTransactions: [
+      {
+        id: 'ct-1',
+        type: 'purchase',
+        amount: 15,
+        metadata: { packageId: 'credit_15', orderId: 'ORD-DUP-CT' },
+        created_at: '2026-07-02T00:00:00.000Z',
+      },
+    ],
+    paymentOrders: [
+      // 기존 소스와 겹치는 주문 2건 — 제외돼야 함(레거시 이중기록 방지).
+      {
+        id: 'po-dup-1',
+        order_id: 'ORD-DUP-ENT',
+        package_id: 'taste_today_detail',
+        amount: 9900,
+        status: 'fulfilled',
+        created_at: '2026-07-01T00:00:00.000Z',
+      },
+      {
+        id: 'po-dup-2',
+        order_id: 'ORD-DUP-CT',
+        package_id: 'credit_15',
+        amount: 9900,
+        status: 'fulfilled',
+        created_at: '2026-07-02T00:00:00.000Z',
+      },
+      // 코인 sunset 이후 멤버십 — 다른 소스에 없음 → 포함돼야 함.
+      {
+        id: 'po-mem',
+        order_id: 'ORD-MEM-ONLY',
+        package_id: 'membership_premium',
+        amount: 49000,
+        status: 'fulfilled',
+        created_at: '2026-07-03T00:00:00.000Z',
+      },
+    ],
+  });
+  assert.equal(result.count, 3); // ent + ct + 멤버십 주문(중복 2건 제외)
+  const memEntry = result.entries.find((e) => e.receipt === 'ORD-MEM-ONLY');
+  assert.ok(memEntry);
+  assert.equal(memEntry.category, '멤버십/구독');
+  assert.equal(memEntry.amountWon, 49000);
+  assert.equal(memEntry.source, 'payment_orders');
+  assert.equal(result.totalSpentWon, 9900 + 9900 + 49000);
+});
+
+test('mapCreditTransactionToHistory prefers metadata.amount(실결제액) over catalog price', () => {
+  const row: CreditTransactionHistoryRow = {
+    id: 'ct-price',
+    type: 'purchase',
+    amount: 15,
+    // 실결제액 8910(예: 프로모션) — 카탈로그 정가 9900 보다 우선해야 함.
+    metadata: { packageId: 'credit_15', amount: 8910 },
+    created_at: '2026-07-01T00:00:00.000Z',
+  };
+  assert.equal(mapCreditTransactionToHistory(row).amountWon, 8910);
+});
+
+test('isCashCreditTransaction excludes admin manual grants', () => {
+  assert.equal(
+    isCashCreditTransaction({
+      type: 'purchase',
+      feature: null,
+      metadata: { source: 'admin_manual_grant' },
+    }),
+    false
+  );
+  assert.equal(
+    isCashCreditTransaction({ type: 'purchase', feature: null, metadata: { source: 'checkout' } }),
+    true
+  );
+  assert.equal(isCashCreditTransaction({ type: 'purchase', feature: null }), true);
+});

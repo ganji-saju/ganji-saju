@@ -23,9 +23,19 @@ export async function fetchSegmentCounts(): Promise<SegmentCount[]> {
 export async function fetchCohortRetention(nowIso: string): Promise<CohortMetric[]> {
   if (!hasSupabaseServiceEnv) return [];
   const service = await createServiceClient();
-  const { data, error } = await service
-    .from('admin_user_summary')
-    .select('signup_at, last_active_at, ltv_won');
-  if (error || !data) return [];
-  return buildCohortRetention(data as unknown as CohortRow[], nowIso);
+  // 2026-07-04 감사 — 무페이지네이션 전량 select 는 PostgREST 기본 1000행 캡으로
+  // 가입자 1,000명 초과 시 코호트가 조용히 절단 → range 루프로 전량 수집.
+  const rows: CohortRow[] = [];
+  for (let page = 0; page < 100; page += 1) {
+    const from = page * 1000;
+    const { data, error } = await service
+      .from('admin_user_summary')
+      .select('signup_at, last_active_at, ltv_won')
+      .order('signup_at', { ascending: true })
+      .range(from, from + 999);
+    if (error || !data) break;
+    rows.push(...(data as unknown as CohortRow[]));
+    if (data.length < 1000) break;
+  }
+  return buildCohortRetention(rows, nowIso);
 }

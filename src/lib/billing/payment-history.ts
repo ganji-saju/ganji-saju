@@ -37,7 +37,7 @@ export interface PaymentHistoryEntry {
   /** 영수증 참조 — 주문번호 우선, 없으면 결제키. UI 는 끝 8자리만 노출. */
   receipt: string | null;
   /** 소스 구분(디버깅/필터용). */
-  source: 'product_entitlements' | 'credit_transactions';
+  source: 'product_entitlements' | 'credit_transactions' | 'payment_orders';
 }
 
 // ── 입력 행(서버에서 select 한 raw shape) ─────────────────────────────
@@ -60,6 +60,18 @@ export interface CreditTransactionHistoryRow {
   type: string;
   amount: number;
   metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+// payment_orders: 코인 sunset(PR #563) 이후 멤버십 결제는 credit_transactions 행을
+// 만들지 않아(shouldGrantCredits=false) 두 기존 소스 어디에도 없다 → 완료된 주문
+// 원장을 세 번째 소스로 합산(orderId 로 기존 소스와 dedupe — 레거시 중복 방지).
+export interface PaymentOrderHistoryRow {
+  id: string;
+  order_id: string;
+  package_id: string | null;
+  amount: number | null;
+  status: string;
   created_at: string;
 }
 
@@ -122,8 +134,10 @@ export function mapCreditTransactionToHistory(
 
   const productName = pkg?.name ?? (isSubscription ? '멤버십' : '전 충전');
 
-  // ₩ = 패키지 정가(catalog) 우선, 없으면 metadata.amount.
-  const amountWon = pkg?.price ?? readMetaNumber(row.metadata, 'amount') ?? null;
+  // ₩ = 실결제액(metadata.amount) 우선, 카탈로그 정가는 폴백.
+  //   2026-07-04 감사 — 정가 우선이면 (a) 카탈로그에서 폐지된 팩은 금액 미해석,
+  //   (b) 가격 개정 시 과거 결제가 현재가로 소급 왜곡되던 문제.
+  const amountWon = readMetaNumber(row.metadata, 'amount') ?? pkg?.price ?? null;
 
   return {
     id: row.id,
@@ -149,17 +163,45 @@ export function mapCreditTransactionToHistory(
 export function isCashCreditTransaction(row: {
   type: string;
   feature?: string | null;
+  metadata?: Record<string, unknown> | null;
 }): boolean {
   if (row.type !== 'purchase' && row.type !== 'subscription') return false;
   if (row.feature === 'taste_product') return false;
   if (row.feature === 'entitlement_revoke') return false;
   if (row.feature === 'credit_refund') return false;
+  // 2026-07-04 감사 — 어드민 수동 지급(보상)은 현금 결제가 아님: 결제 건수/LTV 에서 제외.
+  if (row.metadata?.source === 'admin_manual_grant') return false;
   return true;
+}
+
+// 완료된 주문(payment_orders) → history entry. 카테고리는 카탈로그 kind 기준.
+export function mapPaymentOrderToHistory(row: PaymentOrderHistoryRow): PaymentHistoryEntry {
+  const pkg = getPackage(row.package_id);
+  const category: PaymentHistoryCategory =
+    pkg?.kind === 'subscription'
+      ? '멤버십/구독'
+      : pkg?.kind === 'credits'
+        ? '전 충전'
+        : pkg?.kind === 'lifetime_report'
+          ? '평생 리포트'
+          : '단건 풀이';
+  return {
+    id: row.id,
+    date: row.created_at,
+    category,
+    productName: pkg?.name ?? row.package_id ?? '결제 상품',
+    amountWon: row.amount ?? pkg?.price ?? null,
+    coins: null,
+    receipt: row.order_id,
+    source: 'payment_orders',
+  };
 }
 
 export interface BuildPaymentHistoryInput {
   productEntitlements: ProductEntitlementHistoryRow[];
   creditTransactions: CreditTransactionHistoryRow[];
+  /** 완료된 주문 원장(선택) — 기존 두 소스에 없는 주문(코인 sunset 이후 멤버십 등)만 합산. */
+  paymentOrders?: PaymentOrderHistoryRow[];
 }
 
 export interface PaymentHistoryResult {
@@ -176,6 +218,24 @@ export function buildPaymentHistory(
     ...input.productEntitlements.map(mapProductEntitlementToHistory),
     ...input.creditTransactions.map(mapCreditTransactionToHistory),
   ];
+
+  // payment_orders 는 기존 두 소스와 겹칠 수 있음(레거시 전팩·단건은 양쪽 기록)
+  // → 이미 잡힌 주문번호(order_id / metadata.orderId)는 제외하고 "구멍"만 채운다.
+  if (input.paymentOrders && input.paymentOrders.length > 0) {
+    const seenOrderIds = new Set<string>();
+    for (const ent of input.productEntitlements) {
+      if (ent.order_id) seenOrderIds.add(ent.order_id);
+    }
+    for (const tx of input.creditTransactions) {
+      const orderId = readMetaString(tx.metadata, 'orderId');
+      if (orderId) seenOrderIds.add(orderId);
+    }
+    for (const order of input.paymentOrders) {
+      if (!seenOrderIds.has(order.order_id)) {
+        entries.push(mapPaymentOrderToHistory(order));
+      }
+    }
+  }
 
   entries.sort((a, b) => {
     const diff = Date.parse(b.date) - Date.parse(a.date);

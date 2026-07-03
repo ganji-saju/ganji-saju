@@ -4,7 +4,7 @@ import { AdminPage } from '@/components/admin/admin-page';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { searchAdminUsers } from '@/lib/admin/user-detail';
-import { fetchAdminUserList } from '@/lib/admin/user-list';
+import { countAdminUsers, fetchAdminUserList } from '@/lib/admin/user-list';
 import { maskEmail } from '@/lib/admin/masking';
 import {
   parseListParams,
@@ -52,7 +52,12 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const searchResults = query ? await searchAdminUsers(query) : [];
 
   const params = parseListParams(usp);
-  const page = await fetchAdminUserList(params);
+  // 2026-07-04 감사 — 헤더 '가입자 N명'이 현재 페이지 행수(최대 50)를 표시하던 문제:
+  // 필터 적용 정확 총원(countAdminUsers, head 카운트)을 병렬 조회.
+  const [page, totalCount] = await Promise.all([
+    fetchAdminUserList(params),
+    countAdminUsers(params),
+  ]);
   const nowIso = new Date().toISOString();
   const items = page.rows.map((r) => buildListItem(r, role, nowIso));
   const nextCursor =
@@ -160,7 +165,14 @@ export default async function AdminUsersPage({ searchParams }: Props) {
 
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[15px] font-extrabold">가입자 {items.length}{page.hasMore ? '+' : ''}명</h2>
+            <h2 className="text-[15px] font-extrabold">
+              가입자 {totalCount.toLocaleString('ko-KR')}명
+              {items.length < totalCount ? (
+                <span className="ml-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]">
+                  (표시 {items.length})
+                </span>
+              ) : null}
+            </h2>
             <div className="flex items-center gap-3">
               <span className="text-[12.6px] text-[var(--app-copy-soft)]">기준 {page.refreshedAt ? fmtDate(page.refreshedAt) : '—'}</span>
               <a href={`/api/admin/users/export?${usp.toString()}`} className="rounded-[10px] border px-3 py-1 text-[13.8px]">CSV 내보내기</a>

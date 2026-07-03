@@ -95,28 +95,44 @@ function buildDateAxis(windowDays: number): string[] {
   return dates;
 }
 
+const PAGE_SIZE = 1000;
+const MAX_PAGES = 50;
+
 export async function buildPaymentFunnelSnapshot(
   supabase: SupabaseClient,
   options: { windowDays?: number } = {}
 ): Promise<PaymentFunnelSnapshot> {
   const windowDays = Math.max(1, Math.min(120, options.windowDays ?? 14));
-  const sinceMs = Date.now() - windowDays * 24 * 60 * 60 * 1000;
-  const sinceIso = new Date(sinceMs).toISOString();
 
-  const { data, error } = await supabase
-    .from('payment_funnel_events')
-    .select('stage, package_id, reason, created_at')
-    .gte('created_at', sinceIso)
-    .order('created_at', { ascending: true });
+  // 2026-07-04 감사 — 윈도우 시작을 날짜축 첫날의 KST 자정으로 스냅.
+  //   기존엔 '지금-24h×N'(UTC 롤링)이라 축 밖 행이 totals 에만 섞여 totals≠Σdaily.
+  const dateAxis = buildDateAxis(windowDays);
+  const sinceIso = new Date(Date.parse(`${dateAxis[0]}T00:00:00+09:00`)).toISOString();
 
-  if (error) {
-    throw new Error(`payment_funnel_events query failed: ${error.message}`);
+  // 2026-07-04 감사 — PostgREST 기본 1000행 캡으로 최신 데이터가 조용히 잘리던 문제
+  //   → range 페이지네이션으로 전량 수집(퍼널은 시도당 2~3행이라 윈도우에서 쉽게 초과).
+  const rows: FunnelRow[] = [];
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const from = page * PAGE_SIZE;
+    const { data, error } = await supabase
+      .from('payment_funnel_events')
+      .select('stage, package_id, reason, created_at')
+      .gte('created_at', sinceIso)
+      .order('created_at', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`payment_funnel_events query failed: ${error.message}`);
+    }
+    const pageRows = (data ?? []) as FunnelRow[];
+    rows.push(...pageRows);
+    if (pageRows.length < PAGE_SIZE) break;
+    if (page === MAX_PAGES - 1) {
+      console.error(`[funnel-stats] exceeded ${MAX_PAGES * PAGE_SIZE} rows — truncated`);
+    }
   }
 
-  const rows: FunnelRow[] = (data ?? []) as FunnelRow[];
-
   // 일별 buckets — date 축은 항상 windowDays 만큼 (빈 날짜도 0 포함).
-  const dateAxis = buildDateAxis(windowDays);
   const dayMap = new Map<string, Record<PaymentFunnelStage, number>>();
   for (const d of dateAxis) dayMap.set(d, emptyCounts());
 

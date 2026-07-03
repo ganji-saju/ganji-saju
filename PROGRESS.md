@@ -51,6 +51,16 @@
 - 재현성 회귀 가드 `share-teaser.test.ts`(라운드트립·고정날짜 결정론·dateKey=고정날짜) 3종.
 - 게이트: typecheck 0 · 커스텀러너 1009 · vitest 129 · next build 성공.
 
+### admin 지표 전수검증 (2026-07-04, 워크플로 감사 51건→수정)
+- 사용자 보고 "유입자·가입자·모든 수치 이상" — 워크플로 감사(6표면 완주, 51 raw findings)로 **3대 근본원인** 확정·수정:
+  1. **운영 API가 anon 클라이언트로 집계**(admin_user_summary=RLS 정책 0개 deny-all) → 가입자·신규가 항상 0, 타 테이블은 본인 행만 → service 클라이언트로 교체(#A).
+  2. **payment_funnel_events INSERT 정책 부재** → 유저 세션의 퍼널 기록 전부 조용히 거부(퍼널 대시보드 공백) → funnel-log 를 service 로 기록+에러 관측. 나이스페이 경로 confirm_* 로그 신설(기존 Toss 전용).
+  3. **결제 지표 소스 stale**: credit_transactions purchase(코인충전 폐지로 신규 0) → **payment_orders**(카드·멤버십·PG 공통, 원화) 전환. "충전 재화"→"결제 금액" 라벨.
+- 구조 수정: PostgREST 1000행 절단(ops·funnel·cohort·user-detail credit/llm) → count-head/range 페이지네이션 / 시리즈 축 KST 통일(KST 00~09시 '오늘' 소실) / 활성구독 renews_at>now(만료 lazy 과대) / **payment_orders 를 buildPaymentHistory 3번째 소스**(orderId dedupe — 코인 sunset 후 멤버십이 LTV·빌링·paid_count 에서 누락되던 문제, admin+/my/billing 공통) / paid_count=LTV 동일소스 / 수동지급 admin_manual_grant 제외 / summary-refresh: 만료 정규화·완주시 탈퇴자 행 정리·10병렬 / 가입자 목록 헤더=정확 총원(countAdminUsers, 기존=페이지 행수 50) / KST 가입일 필터·상세 날짜 표기 / 요약 신선도(summaryRefreshedAt) 노출 / 라벨 정정(활동 사용자·결제/활동자 비율·산출방식·퍼널 /credits 표기) / 구 전팩 환불판정 복구 / prepare_blocked(sunset) 관측.
+- **"유입자" 지표는 원래 존재하지 않음**: trackMoonlightEvent=dataLayer 전용(DB 저장 없음), DAU 라벨이 오해 유발 → "활동 사용자(풀이·피드백·대화)"로 정정+방문은 Vercel Analytics 안내. 실방문 카운트 신설은 후속 설계.
+- 보류: 환불 provider 'unknown' 표기([50], 환불실행 경로 검토 필요), 실방문 트래픽 테이블 신설.
+- 게이트: typecheck 0 · 커스텀러너 1014(신규/갱신 10) · vitest 129 · build ✓. ⚠️ 가입자 수·LTV 정정은 다음 시간별 summary cron 완주 후 반영.
+
 ### ✅ 카카오 공유 4019 해결 (2026-07-03) + 발송 활성화 잔여
 - **4019 근본원인 = 카카오 콘솔 오타**: [플랫폼 키 > JavaScript 키]의 "JavaScript SDK 도메인"이 **`httpa://ganjisaju.kr`**(https 오타)로 등록돼 있었음. 새 콘솔은 JS 키별 SDK 도메인을 검증하므로 영구 불일치 → 4019. 코드·env·제품링크관리는 전부 정상이었음. `https://`로 정정 후 **공유 성공 확인**. 진단은 임시 페이지 `/dev/kakao-share-debug`(#588)로 클라 측 전부 정상임을 확정한 뒤 콘솔 대조로 특정 — 해결 후 페이지 제거.
 - **알림톡 템플릿 2종(결제완료·멤버십만료) 심의 승인 완료**. 회원가입 안내 템플릿은 예비 승인만(트리거 넣지 않기로 — 사용자 지시). 구독만료 자동발송 크론 등록됨(#587, 매일 KST10 + GET 지원).

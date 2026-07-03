@@ -34,6 +34,11 @@ import {
   buildPremiumResultHref,
   buildTasteProductHref,
 } from '@/lib/payments/post-payment-redirect';
+// 2026-07-04 admin 지표 감사 — 나이스페이 경로에 confirm_* 퍼널 로그가 전무해
+// (Toss 전용 confirm 라우트에만 있었음) 프로덕션 퍼널이 prepare 까지만 기록되던
+// 문제 수정. funnel-log 는 내부에서 service 클라이언트로 기록(비차단).
+import { logPaymentFunnelEvent, type PaymentFunnelEventInput } from '@/lib/payments/funnel-log';
+import { createClient } from '@/lib/supabase/server';
 
 // 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
 //   우선순위: ① taste_product(today-detail/궁합/캘린더) ② 사주 premium·lifetime 풀이
@@ -76,6 +81,16 @@ function resolveNicepayResultHref(opts: {
 
 export async function POST(req: NextRequest) {
   const form = await req.formData().catch(() => null);
+
+  // 퍼널 로그(비차단) — cross-site POST 라 세션 없음; funnel-log 가 service 로 기록.
+  const logFunnel = async (input: PaymentFunnelEventInput) => {
+    try {
+      const client = await createClient();
+      await logPaymentFunnelEvent(client, input);
+    } catch {
+      // best-effort
+    }
+  };
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.url), 303);
@@ -139,6 +154,14 @@ export async function POST(req: NextRequest) {
     return redirectTo(resolveNicepayResultHref({ pkg, order, orderId }));
   }
   if (order.amount !== amount || pkg.price !== amount) {
+    await logFunnel({
+      stage: 'confirm_failed',
+      userId: order.userId,
+      packageId: order.packageId,
+      amount,
+      orderId,
+      reason: 'amount_mismatch',
+    });
     return failRedirect('결제 금액이 주문과 일치하지 않습니다.', readRetryPath(order.metadata));
   }
   if (order.paymentKey && order.paymentKey !== tid) {
@@ -146,6 +169,14 @@ export async function POST(req: NextRequest) {
   }
 
   // 4) 서버 승인 — POST /v1/payments/{tid}
+  await logFunnel({
+    stage: 'confirm_attempt',
+    userId: order.userId,
+    packageId: order.packageId,
+    amount,
+    orderId,
+    metadata: { provider: 'nicepay' },
+  });
   let nicePayment: NicepayPaymentObject;
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
@@ -158,6 +189,14 @@ export async function POST(req: NextRequest) {
       status: 'payment_failed',
       error: reason,
       source: 'nicepay-return',
+    });
+    await logFunnel({
+      stage: 'confirm_failed',
+      userId: order.userId,
+      packageId: order.packageId,
+      amount,
+      orderId,
+      reason: reason.slice(0, 200),
     });
     // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
     return failRedirect('결제 승인에 실패했습니다.', readRetryPath(order.metadata));
@@ -191,8 +230,25 @@ export async function POST(req: NextRequest) {
     }
     void linked;
   } catch (err) {
+    await logFunnel({
+      stage: 'confirm_failed',
+      userId: order.userId,
+      packageId: order.packageId,
+      amount,
+      orderId,
+      reason: 'fulfillment_error',
+    });
     return failRedirect(err instanceof Error ? err.message : '결제 지급 처리에 실패했습니다.');
   }
+
+  await logFunnel({
+    stage: 'confirm_success',
+    userId: order.userId,
+    packageId: order.packageId,
+    amount,
+    orderId,
+    metadata: { provider: 'nicepay' },
+  });
 
   // 7) 결과 페이지 redirect — 상품별 분기(헬퍼). 이전엔 pkg.kind 무관 항상 /credits/success 로
   //    보내, 사주 풀이(lifetime_report)가 전 페이지로 새어 '오늘운세 무료보기'만 뜨고 풀이를 못
