@@ -108,14 +108,35 @@ export async function POST(req: NextRequest) {
     const p = meta?.checkoutPath;
     return typeof p === 'string' ? p : null;
   };
-  // order 미조회 단계(인증 실패 등)에서 orderId 로 best-effort 조회해 재시도 경로를 살린다.
-  const lookupRetryPath = async (id: string) => {
+  // order 미조회 단계(인증 실패 등)에서 orderId 로 best-effort 조회 — 재시도 경로와
+  // 퍼널 이벤트의 userId/packageId 식별에 함께 사용.
+  const lookupOrder = async (id: string) => {
     if (!id) return null;
     try {
-      return readRetryPath((await getPaymentOrderByOrderId(id))?.metadata);
+      return await getPaymentOrderByOrderId(id);
     } catch {
       return null;
     }
+  };
+
+  // 2026-07-04 감사 — 인증 실패(사용자 취소·카드 거절 = 실전 최다 실패)·서명 실패·주문
+  // 미조회가 퍼널에 전무해 prepare_ready→confirm 사이 이탈로만 뭉개지던 공백 수정.
+  // attempt+failed 쌍으로 기록해 confirmFailRate(=failed/attempt) 분모 왜곡을 막는다.
+  const logFailPair = async (opts: {
+    reason: string;
+    order: Awaited<ReturnType<typeof lookupOrder>>;
+    orderId: string;
+    amount: number | null;
+  }) => {
+    const base = {
+      userId: opts.order?.userId ?? null,
+      packageId: opts.order?.packageId ?? null,
+      amount: opts.amount,
+      orderId: opts.orderId || null,
+      metadata: { provider: 'nicepay' },
+    };
+    await logFunnel({ stage: 'confirm_attempt', ...base });
+    await logFunnel({ stage: 'confirm_failed', ...base, reason: opts.reason });
   };
 
   if (!form) return failRedirect('결제 응답을 해석하지 못했습니다.');
@@ -131,28 +152,59 @@ export async function POST(req: NextRequest) {
 
   // 1) 인증 결과(0000=성공) — 카드 거절/사용자 취소 등 가장 흔한 재시도 지점.
   if (authResultCode !== '0000') {
-    return failRedirect('결제 인증에 실패했습니다.', await lookupRetryPath(orderId));
+    const failedOrder = await lookupOrder(orderId);
+    await logFailPair({
+      reason: `auth_failed:${authResultCode || 'unknown'}`.slice(0, 200),
+      order: failedOrder,
+      orderId,
+      amount: Number.isFinite(amount) ? amount : null,
+    });
+    return failRedirect('결제 인증에 실패했습니다.', readRetryPath(failedOrder?.metadata));
   }
   if (!tid || !orderId || !Number.isFinite(amount)) {
-    return failRedirect('결제 응답 값이 올바르지 않습니다.', await lookupRetryPath(orderId));
+    const failedOrder = await lookupOrder(orderId);
+    await logFailPair({
+      reason: 'invalid_response',
+      order: failedOrder,
+      orderId,
+      amount: Number.isFinite(amount) ? amount : null,
+    });
+    return failRedirect('결제 응답 값이 올바르지 않습니다.', readRetryPath(failedOrder?.metadata));
   }
 
   // 2) 위변조 검증 (서버승인 핵심) — signature = sha256(authToken+clientId+amount+secretKey)
   if (!verifyNicepayAuthSignature({ authToken, clientId, amount: amountRaw, signature })) {
-    return failRedirect('결제 서명 검증에 실패했습니다.', await lookupRetryPath(orderId));
+    const failedOrder = await lookupOrder(orderId);
+    await logFailPair({ reason: 'signature_invalid', order: failedOrder, orderId, amount });
+    return failRedirect('결제 서명 검증에 실패했습니다.', readRetryPath(failedOrder?.metadata));
   }
 
   // 3) 주문 조회(user 무관) + 금액 정합 (현행 confirm 의 pkg.price 검증과 동일 원칙)
   const order = await getPaymentOrderByOrderId(orderId);
-  if (!order) return failRedirect('결제 주문을 찾지 못했습니다.');
+  if (!order) {
+    await logFailPair({ reason: 'order_not_found', order: null, orderId, amount });
+    return failRedirect('결제 주문을 찾지 못했습니다.');
+  }
 
   const pkg = getPackage(order.packageId);
   if (!pkg) return failRedirect('상품 정보를 찾지 못했습니다.', readRetryPath(order.metadata));
 
   // 이미 지급 완료된 주문이면 승인 재호출 없이 결과 페이지로(상품별 분기 — 전/사주풀이/소액상품).
+  // 재진입은 퍼널에 기록하지 않는다(toss confirm 라우트와 의미 통일).
   if (order.status === 'fulfilled' || order.status === 'fulfilling') {
     return redirectTo(resolveNicepayResultHref({ pkg, order, orderId }));
   }
+
+  // 신규 confirm 시도 — 이후의 모든 실패(confirm_failed)에 대응하는 attempt 를 한 번 기록.
+  await logFunnel({
+    stage: 'confirm_attempt',
+    userId: order.userId,
+    packageId: order.packageId,
+    amount,
+    orderId,
+    metadata: { provider: 'nicepay' },
+  });
+
   if (order.amount !== amount || pkg.price !== amount) {
     await logFunnel({
       stage: 'confirm_failed',
@@ -165,18 +217,18 @@ export async function POST(req: NextRequest) {
     return failRedirect('결제 금액이 주문과 일치하지 않습니다.', readRetryPath(order.metadata));
   }
   if (order.paymentKey && order.paymentKey !== tid) {
+    await logFunnel({
+      stage: 'confirm_failed',
+      userId: order.userId,
+      packageId: order.packageId,
+      amount,
+      orderId,
+      reason: 'payment_key_mismatch',
+    });
     return failRedirect('이미 다른 결제가 연결된 주문입니다.');
   }
 
   // 4) 서버 승인 — POST /v1/payments/{tid}
-  await logFunnel({
-    stage: 'confirm_attempt',
-    userId: order.userId,
-    packageId: order.packageId,
-    amount,
-    orderId,
-    metadata: { provider: 'nicepay' },
-  });
   let nicePayment: NicepayPaymentObject;
   try {
     nicePayment = await approveNicepayPayment(tid, amount);

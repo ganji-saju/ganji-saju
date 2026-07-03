@@ -268,7 +268,11 @@ export function OperationsDashboard() {
           {/* §오늘 (4 카드) */}
           <section className="grid gap-2.5">
             <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-              오늘 ({snap.generatedAt.slice(0, 10)} · KST 시간대)
+              오늘 (
+              {new Date(new Date(snap.generatedAt).getTime() + 9 * 3600 * 1000)
+                .toISOString()
+                .slice(0, 10)}{' '}
+              · KST 시간대)
             </h2>
 
             {/* 2026-07-04 — 자체 순방문(유입) 카드. 클라 일1회 핑 기반 하한치.
@@ -582,7 +586,10 @@ export function OperationsDashboard() {
               <li>• 결제: payment_orders status ∈ (confirmed, fulfilling, fulfilled) — 카드 단건·멤버십·PG 공통, 금액=원화</li>
               <li>• 만족도: overall_rating ∈ {'{-1, 0, +1}'}, area_rating ∈ [1, 5]</li>
               <li>• 결제/활동자 비율 = 오늘 결제 건수 ÷ 오늘 활동 사용자 (방문 대비 전환율 아님)</li>
-              <li>• 활성 구독: status=&apos;active&apos; AND renews_at &gt; now (만료 lazy 반영 보정)</li>
+              <li>
+                • 활성 구독: status=&apos;active&apos; AND (renews_at &gt; now OR renews_at 미설정)
+                — 만료 lazy 반영 보정
+              </li>
               <li>• KST(UTC+9) 자정 단위 일별 집계</li>
             </ul>
           </article>

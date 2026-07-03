@@ -90,7 +90,15 @@ export async function POST(req: NextRequest) {
   if (isCreditPackage(pkg)) {
     // 2026-07-04 감사 — 잔존 유입(구 링크·캐시 UI) 관측용. 410이 prepare_attempt(110행)
     // 보다 앞이라 이 시도들이 퍼널에 전혀 안 잡히던 문제.
-    await logPaymentFunnelEvent(await createClient(), {
+    // attempt+blocked 쌍으로 기록 — blocked ⊆ attempt 불변식 유지(blockRate>100% 모순 방지).
+    const sunsetClient = await createClient();
+    await logPaymentFunnelEvent(sunsetClient, {
+      stage: 'prepare_attempt',
+      packageId,
+      amount: pkg.price ?? null,
+      metadata: { product, plan, slug, scope, from },
+    });
+    await logPaymentFunnelEvent(sunsetClient, {
       stage: 'prepare_blocked',
       packageId,
       amount: pkg.price ?? null,

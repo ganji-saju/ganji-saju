@@ -26,7 +26,7 @@ export interface OperationsSnapshot {
   windowDays: number;
   /** 오늘 (KST 자정 단위). */
   today: {
-    /** 오늘 순방문자(자체 핑 기반, 하한치). 미집계(마이그레이션 060 미적용 등)면 null. */
+    /** 오늘 순방문자(자체 핑 기반, 하한치). 미집계(마이그레이션 062 미적용 등)면 null. */
     visitors: number | null;
     /** 오늘 신규 가입 수. */
     newSignups: number;
@@ -145,8 +145,9 @@ async function fetchAllPages<T>(
     const from = page * PAGE_SIZE;
     const { data, error } = await fetchPage(from, from + PAGE_SIZE - 1);
     if (error) {
-      console.error(`[operations-stats] ${label} page ${page} failed:`, error.message);
-      break;
+      // 부분 데이터를 정상 집계처럼 반환하면 지표가 조용히 과소 표시된다(그럴듯한 작은
+      // 숫자 — 관측 불가). route 의 try/catch 가 500 으로 응답하도록 throw.
+      throw new Error(`[operations-stats] ${label} page ${page} failed: ${error.message}`);
     }
     const rows = data ?? [];
     all.push(...rows);
@@ -199,7 +200,9 @@ export async function buildOperationsSnapshot(
         .from('admin_user_summary')
         .select('user_id, signup_at')
         .gte('signup_at', windowStartIso)
+        // 정렬 tiebreak(유니크 키) — 타임스탬프 동률 시 페이지 경계 중복/누락 방지.
         .order('signup_at', { ascending: true })
+        .order('user_id', { ascending: true })
         .range(from, to)
     ),
 
@@ -213,6 +216,7 @@ export async function buildOperationsSnapshot(
           .in('status', COMPLETED_ORDER_STATUSES)
           .gte('created_at', windowStartIso)
           .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
           .range(from, to)
     ),
 
@@ -223,6 +227,7 @@ export async function buildOperationsSnapshot(
         .select('amount, created_at')
         .in('status', COMPLETED_ORDER_STATUSES)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to)
     ),
 
@@ -234,10 +239,11 @@ export async function buildOperationsSnapshot(
         .not('user_id', 'is', null)
         .gte('created_at', windowStartIso)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to)
     ),
 
-    // today_fortune_feedback — 만족도 윈도우 내 + 만족도 30일 분석.
+    // today_fortune_feedback — windowDays 윈도우 내 만족도 분석.
     fetchAllPages<{
       overall_rating: number | null;
       wealth_rating: number | null;
@@ -255,6 +261,7 @@ export async function buildOperationsSnapshot(
         )
         .gte('created_at', windowStartIso)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to)
     ),
 
@@ -265,6 +272,7 @@ export async function buildOperationsSnapshot(
         .select('user_id, created_at')
         .gte('created_at', windowStartIso)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
         .range(from, to)
     ),
 
@@ -313,7 +321,7 @@ export async function buildOperationsSnapshot(
     created_at: r.created_at,
   }));
 
-  // 순방문자(자체 핑) — RPC 미존재(마이그레이션 060 미적용)면 null 로 표시.
+  // 순방문자(자체 핑) — RPC 미존재(마이그레이션 062 미적용)면 null 로 표시.
   const visitRows = visitCountsResp.error
     ? null
     : ((visitCountsResp.data ?? []) as Array<{ date_key: string; visitors: number }>);

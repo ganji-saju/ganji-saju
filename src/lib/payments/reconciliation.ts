@@ -9,6 +9,10 @@ import {
   validateTossPaymentAgainstOrder,
 } from '@/lib/payments/order-ledger';
 import { fulfillPaymentOrder, type PaymentFulfillmentResult } from '@/lib/payments/fulfillment';
+// 2026-07-04 admin 지표 감사 — 웹훅/정산 경유 fulfillment 가 퍼널에 전무해, confirm 라우트를
+// 못 탄 성공 건(결제 후 브라우저 이탈)이 원장에는 있는데 confirm_success 는 0 이던 괴리 수정.
+import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
+import { createClient } from '@/lib/supabase/server';
 
 export type PaymentReconciliationResult =
   | { status: 'fulfilled'; fulfillment: PaymentFulfillmentResult }
@@ -102,6 +106,21 @@ export async function settlePaymentOrderFromToss(input: {
     payment: confirmedPayment,
     source: input.source,
   });
+
+  // 신규 fulfillment 일 때만 도달(이미 지급이면 위에서 조기반환) — confirm 라우트 성공과
+  // 중복 기록되지 않는다. best-effort(퍼널 로그 실패가 정산을 막지 않도록).
+  try {
+    await logPaymentFunnelEvent(await createClient(), {
+      stage: 'confirm_success',
+      userId: order.userId,
+      packageId: order.packageId,
+      amount: order.amount,
+      orderId: order.orderId,
+      metadata: { source: input.source },
+    });
+  } catch {
+    // 비차단.
+  }
 
   return { status: 'fulfilled', fulfillment };
 }

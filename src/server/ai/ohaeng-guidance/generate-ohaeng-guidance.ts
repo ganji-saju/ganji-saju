@@ -72,7 +72,9 @@ export async function generateOhaengGuidance(
   }
 
   const client =
-    args.client ?? createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS });
+    args.client ??
+    // feature 미지정 시 기본 'total_review'로 오귀속(ai_llm_runs 영역별 비용 왜곡) — 명시.
+    createOpenAITotalReviewClient({ maxOutputTokens: MAX_OUTPUT_TOKENS, feature: 'ohaeng_guidance' });
   const maxRetries = args.maxRetries ?? 2;
   const userMessage = buildOhaengGuidanceUserMessage(input);
   let lastReasons: string[] = [];
