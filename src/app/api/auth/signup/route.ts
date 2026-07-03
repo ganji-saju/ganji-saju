@@ -7,6 +7,8 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import { upsertProfile, type UserProfile } from '@/lib/profile';
+// 2026-07-03 — 카카오 개인정보 동의항목 심사 대응: 이름·휴대폰 필수 수집.
+import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 
 type SignupGender = 'male' | 'female';
 
@@ -54,7 +56,13 @@ function parseSignupPayload(payload: unknown) {
   }
 
   if (!displayName) {
-    return { ok: false as const, error: '이름 또는 별명을 입력해 주세요.' };
+    return { ok: false as const, error: '이름을 입력해 주세요.' };
+  }
+
+  // 2026-07-03 — 휴대폰 번호 필수(가입자 식별·결제/이용 안내 발송).
+  const phone = normalizeKoreanMobile(readString(data.phone));
+  if (!phone) {
+    return { ok: false as const, error: '휴대폰 번호 형식을 확인해 주세요 (010-0000-0000).' };
   }
 
   if (!gender) {
@@ -91,7 +99,7 @@ function parseSignupPayload(payload: unknown) {
     note: '',
   };
 
-  return { ok: true as const, email, password, profile };
+  return { ok: true as const, email, password, phone, profile };
 }
 
 function isExistingUserError(message: string) {
@@ -162,6 +170,17 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
+  }
+
+  // 휴대폰 번호 저장(user_contact) — 알림톡 대상. 광고 수신동의(ad_consent)는 별개라 false.
+  // 저장 실패해도 가입 자체는 성공 처리(마이페이지 설정에서 재입력 가능).
+  try {
+    await service.from('user_contact').upsert(
+      { user_id: data.user.id, phone: parsed.phone, ad_consent: false },
+      { onConflict: 'user_id' }
+    );
+  } catch {
+    // best-effort — 실패 시 설정 화면에서 재수집.
   }
 
   return NextResponse.json({

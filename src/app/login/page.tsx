@@ -17,6 +17,7 @@ import {
   type UnifiedTimeRule,
 } from '@/lib/saju/unified-birth-entry';
 import { CANONICAL_SITE_URL } from '@/lib/site';
+import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
@@ -28,6 +29,8 @@ type GenderValue = 'male' | 'female' | '';
 
 type SignupForm = {
   displayName: string;
+  /** 2026-07-03 — 카카오 동의항목 심사 대응: 휴대폰 번호 필수 수집(식별·이용 안내 발송). */
+  phone: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -63,6 +66,7 @@ const DEFAULT_BIRTH_LOCATION =
 
 const DEFAULT_SIGNUP_FORM: SignupForm = {
   displayName: '',
+  phone: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -737,6 +741,18 @@ function LoginContent({
       return;
     }
 
+    if (!signupForm.displayName.trim()) {
+      setErrorMessage('이름을 입력해 주세요.');
+      setStatusMessage('');
+      return;
+    }
+
+    if (!normalizeKoreanMobile(signupForm.phone)) {
+      setErrorMessage('휴대폰 번호 형식을 확인해 주세요 (010-0000-0000).');
+      setStatusMessage('');
+      return;
+    }
+
     // 사주 입력폼/궁합 입력과 동일한 검증으로 생년월일·성별·출생지 입력을 사전 확인한다.
     const parsedBirth = resolveUnifiedBirthInput(buildSignupBirthDraft(signupForm), {
       requireGender: true,
@@ -756,6 +772,7 @@ function LoginContent({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         displayName: signupForm.displayName,
+        phone: signupForm.phone,
         email: signupForm.email,
         password: signupForm.password,
         calendarType: signupForm.calendarType,
@@ -1014,16 +1031,37 @@ function LoginContent({
           <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-3 sm:p-5">
             <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
               <div className="space-y-1.5">
-                <FieldLabel htmlFor="signup-name">이름 또는 별명</FieldLabel>
+                <FieldLabel htmlFor="signup-name">이름 (필수)</FieldLabel>
                 <input
                   id="signup-name"
                   type="text"
                   autoComplete="name"
                   placeholder="예: 지윤"
+                  required
                   value={signupForm.displayName}
                   onChange={(event) => updateSignupForm('displayName', event.target.value)}
                   className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
                 />
+                <p className="text-[12.1px] leading-[1.5] text-[var(--app-copy-soft)]">
+                  가입자 식별에 사용해요.
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <FieldLabel htmlFor="signup-phone">휴대폰 번호 (필수)</FieldLabel>
+                <input
+                  id="signup-phone"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder="010-0000-0000"
+                  required
+                  value={signupForm.phone}
+                  onChange={(event) => updateSignupForm('phone', event.target.value)}
+                  className="motion-input-effect h-12 w-full rounded-[14px] border border-[var(--app-line)] bg-white px-3.5 text-[16.7px] font-semibold text-[var(--app-ink)] outline-none transition placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+                />
+                <p className="text-[12.1px] leading-[1.5] text-[var(--app-copy-soft)]">
+                  결제·이용 관련 안내(카카오 알림톡) 발송에 사용해요.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <FieldLabel htmlFor="signup-email">이메일</FieldLabel>
