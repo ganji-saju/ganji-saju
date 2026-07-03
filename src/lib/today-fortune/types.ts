@@ -130,6 +130,9 @@ export interface TodayFortuneFreeResult {
   /** 2026-05-15 PR 1 — 깊은 풀이 / 대운 풀이 CTA 용 사주 slug.
    *  result 만든 사용자가 이미 /saju 에 사주 reading 을 등록했으면 deep 탭으로 연결. */
   sajuSlug?: string | null;
+  /** 2026-07-03 — 공개 공유 티저(/today-fortune/share/[slug])용 생년 slug(toSlug 산출물).
+   *  sajuSlug(reading id 일 수 있음)와 달리 항상 fromSlug 복원 가능 — 게스트 포함. */
+  shareSlug?: string | null;
   /** 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종. */
   luckyPackage?: TodayLuckyPackage | null;
   /** 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 8영역 breakdown. */

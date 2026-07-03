@@ -17,6 +17,7 @@ import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import type { MoonlightCounselorId } from '@/lib/counselors';
 import { sanitizeUserFacingCopy, simplifySajuCopy } from '@/lib/saju/public-copy';
 import { toKoreanGanzi } from '@/lib/saju/ganzi-korean';
+import { toSlug } from '@/lib/saju/pillars';
 import { selectUpsell } from '@/lib/upsell';
 import { getTodayConcern } from '@/lib/today-fortune/concerns';
 // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
@@ -2832,6 +2833,9 @@ export function buildTodayFortuneFreeResult(
     ),
     // sourceSessionId 는 createReading() 이 반환한 reading slug. /saju/[slug]/deep 으로 직접 연결.
     sajuSlug: options.sourceSessionId,
+    // 2026-07-03 — 공개 공유 티저용 생년 slug. sourceSessionId(reading id 가능)와 달리
+    // 항상 fromSlug 복원 가능해 수신자가 로그인 없이 같은 날 결과를 재계산할 수 있다.
+    shareSlug: toSlug(input),
     // 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종.
     // PR #167 — 사주 lucky element 외에 오늘 일진 천간의 element 도 source 로 추가.
     // 사주 lucky 가 평생 안 변하던 항목 (색·숫자·방향·음식·향·보석·음악·시간·성씨) 이

@@ -36,9 +36,29 @@ import { trackMoonlightEvent } from '@/lib/analytics';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { markPendingUnlock } from '@/lib/today-fortune/unlock-marker';
 import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
+// 2026-07-03 — 오늘운세 공개 공유 티저(/today-fortune/share/[slug]).
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 
 // PR #166 — prefix 버전업. 옛 캐시 (점수 미통일 / 이름 누락) 자동 무효화.
 const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v3:';
+
+// 2026-07-03 — 공유 티저 경로: 날짜를 URL 에 고정해 수신자가 다음 날 열어도
+// 발신자가 본 그 날 결과가 재현된다. 이름·걱정도 유지.
+function formatShareDateLabel(dateKey: string): string {
+  const [, month, day] = dateKey.split('-');
+  return `${Number(month)}월 ${Number(day)}일`;
+}
+
+function buildShareTeaserPath(result: TodayFortuneFreeResult): string {
+  const query = new URLSearchParams({
+    d: result.dateKey,
+    ...(result.userName ? { n: result.userName } : {}),
+    ...(result.concernId !== 'general' ? { c: result.concernId } : {}),
+  });
+  return `/today-fortune/share/${result.shareSlug}?${query.toString()}`;
+}
 
 // 2026-05-15: 어제 캐시가 오늘 화면을 가리지 않도록 sessionStorage 키에 dateKey 가 붙는다.
 // 결과 페이지는 URL 의 sourceSessionId 만 알고 dateKey 는 모르므로, prefix 매칭 후
@@ -268,6 +288,26 @@ export function TodayFortuneResultClient({
 
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
               <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
+
+              {/* 친구에게 공유 — 2026-07-03 공개 티저(/today-fortune/share/[slug]?d=날짜):
+                  수신자가 로그인 없이 같은 날 무료 결과(한 줄+점수)를 재계산해 봄. 유료 미포함.
+                  shareSlug 는 신규 결과부터 존재(구 sessionStorage payload 는 미노출). */}
+              {freeResult.shareSlug ? (
+                <section>
+                  <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+                  <ShareActions
+                    text={`${freeResult.userName ?? '나'}님의 ${formatShareDateLabel(freeResult.dateKey)} 운세 — ${freeResult.oneLine.headline}`}
+                    url={getCanonicalUrl(buildShareTeaserPath(freeResult))}
+                    className="mt-2.5"
+                    kakao={buildKakaoShare({
+                      title: `${freeResult.userName ?? '나'}님의 ${formatShareDateLabel(freeResult.dateKey)} 운세`,
+                      description: freeResult.oneLine.headline,
+                      path: buildShareTeaserPath(freeResult),
+                      buttonTitle: '운세 보기',
+                    })}
+                  />
+                </section>
+              ) : null}
 
               {/* 2026-05-20 Phase 8-E — 무료 오늘운세 → 유료 cross-product funnel (사주 + 궁합 + 멤버십). PremiumLockCard 의 unlock 과 별개로 다른 상품 진입점. */}
               <PaidFunnelGrid from="today-fortune" tone="light" includeMembership />
