@@ -153,7 +153,12 @@ export default async function AdminDashboardPage({
         action={<Link href="/admin/operations" className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">운영 지표 →</Link>}
       >
         {ops ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
+            {/* 2026-07-04 — 자체 순방문(하한치). 미집계(062 미적용)면 '—'. */}
+            <Stat
+              label="방문자"
+              value={ops.today.visitors == null ? '—' : fmtNum(ops.today.visitors)}
+            />
             <Stat label="신규 가입" value={fmtNum(ops.today.newSignups)} />
             {/* 2026-07-04 — 라벨 정정: 페이지 방문이 아니라 풀이·피드백·대화 활동 기준. */}
             <Stat label="활동 사용자" value={fmtNum(ops.today.activeUsers)} />

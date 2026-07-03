@@ -26,6 +26,8 @@ export interface OperationsSnapshot {
   windowDays: number;
   /** 오늘 (KST 자정 단위). */
   today: {
+    /** 오늘 순방문자(자체 핑 기반, 하한치). 미집계(마이그레이션 060 미적용 등)면 null. */
+    visitors: number | null;
     /** 오늘 신규 가입 수. */
     newSignups: number;
     /** 오늘 활동 사용자 — distinct user 가 readings/today_feedback/dialogue 중 하나 이상 활동. */
@@ -73,6 +75,8 @@ export interface OperationsSnapshot {
   };
   /** 지난 14일 일별 추이 (오래된 → 최신). */
   trends: {
+    /** 일별 순방문자(자체 핑). 미집계면 빈 배열. */
+    visitors: DailySeries[];
     newSignups: DailySeries[];
     purchaseCount: DailySeries[];
     activeUsers: DailySeries[];
@@ -185,6 +189,7 @@ export async function buildOperationsSnapshot(
     totalReadingsCountResp,
     totalUsersCountResp,
     lastRefreshResp,
+    visitCountsResp,
   ] = await Promise.all([
     // 신규 가입 (admin_user_summary.signup_at — migration 049 기준).
     // admin_user_summary 는 cron 으로 주기적으로 갱신되므로 매우 최근 가입자는
@@ -287,6 +292,13 @@ export async function buildOperationsSnapshot(
       .order('refreshed_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+
+    // 순방문자(자체 핑, migration 062) — RPC group-by 라 행 전송 없음.
+    // 함수 미존재(미적용) 시 error → null-graceful 처리.
+    client.rpc('site_visit_daily_counts', {
+      from_key: seriesSkeleton[0].date,
+      to_key: todayKey,
+    }),
   ]);
 
   // signup_at → created_at 로 매핑해 countByDate / toLocalDateKey 공통 인터페이스를 유지한다.
@@ -301,8 +313,18 @@ export async function buildOperationsSnapshot(
     created_at: r.created_at,
   }));
 
+  // 순방문자(자체 핑) — RPC 미존재(마이그레이션 060 미적용)면 null 로 표시.
+  const visitRows = visitCountsResp.error
+    ? null
+    : ((visitCountsResp.data ?? []) as Array<{ date_key: string; visitors: number }>);
+  const visitorCounts: CountByDateMap = {};
+  if (visitRows) {
+    for (const row of visitRows) visitorCounts[row.date_key] = Number(row.visitors) || 0;
+  }
+
   // 일별 추이 시리즈 빌드 — 오래된 → 최신.
   const trends = {
+    visitors: visitRows ? fillSeries(seriesSkeleton, visitorCounts) : [],
     newSignups: fillSeries(seriesSkeleton, countByDate(signupRows)),
     purchaseCount: fillSeries(seriesSkeleton, countByDate(purchaseRows)),
     readingsCreated: fillSeries(seriesSkeleton, countByDate(readingsRows)),
@@ -381,6 +403,7 @@ export async function buildOperationsSnapshot(
     generatedAt: now.toISOString(),
     windowDays,
     today: {
+      visitors: visitRows ? (visitorCounts[todayKey] ?? 0) : null,
       newSignups: todaySignups,
       activeUsers: todayActiveUsers.size,
       purchaseCount: todayPurchaseRows.length,
