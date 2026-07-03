@@ -49,9 +49,17 @@ export async function GET(req: NextRequest) {
   authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', redirectUri);
   authUrl.searchParams.set('response_type', 'code');
-  // 2026-07-03 — 카카오 동의항목 심사 승인분: 이름(name)·카카오계정 전화번호(phone_number)
-  // 필수 동의. 콜백이 user/me 로 조회해 user_contact(알림톡 대상)·프로필 이름에 저장.
-  authUrl.searchParams.set('scope', 'openid name phone_number');
+  // 2026-07-04 핫픽스 — 콘솔 [동의항목]에 미설정된 scope 를 요청하면 카카오가
+  // KOE205 로 전면 거부해 로그인이 통째로 죽는다(#591 배포 직후 발생: 심사 진행중이라
+  // 이름·전화번호 항목을 아직 설정 못 함). 기본은 openid 만 요청해 로그인을 보장하고,
+  // 심사 승인 + [동의항목] 설정 완료 후 env 로 추가 scope 를 켠다:
+  //   KAKAO_LOGIN_EXTRA_SCOPES="name phone_number" (+재배포)
+  // 콜백(user/me 수집)은 scope 미동의 시 null 을 반환하므로 어느 상태든 안전.
+  const extraScopes = (process.env.KAKAO_LOGIN_EXTRA_SCOPES ?? '')
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  authUrl.searchParams.set('scope', ['openid', ...extraScopes].join(' '));
   authUrl.searchParams.set('state', state);
   authUrl.searchParams.set('nonce', hashedNonce);
 
