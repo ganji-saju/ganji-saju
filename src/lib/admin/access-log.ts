@@ -8,7 +8,9 @@ export type AdminAction =
   | 'grant_credit' | 'revoke_credit' | 'grant_membership' | 'suspend_sub' | 'cancel_sub'
   | 'force_reconsent' | 'refund_request' | 'refund_approve'
   | 'batch_refund_request' | 'purge_deleted_user'
-  | 'grant_lifetime_report';
+  | 'grant_lifetime_report'
+  // 2026-07-04 — 계정 관리(이용정지/해제·정보수정·삭제).
+  | 'ban_user' | 'unban_user' | 'update_user_info' | 'delete_user';
 
 export interface AccessLogInput {
   actorId: string;

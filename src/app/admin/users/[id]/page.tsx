@@ -14,6 +14,7 @@ import { RefundActions } from './refund-actions';
 import { GrantCreditsActions } from './grant-credits-actions';
 import { GrantMembershipActions } from './grant-membership-actions';
 import { GrantLifetimeReportActions } from './grant-lifetime-report-actions';
+import { AccountManagementActions } from './account-management-actions';
 import { getManagedSubscription } from '@/lib/subscription';
 import { listUserReadingsForAdmin } from '@/lib/admin/user-readings';
 
@@ -278,6 +279,17 @@ export default async function AdminUserDetailPage({ params }: Props) {
               readings={lifetimeReadings.map((r) => ({ id: r.id, label: r.label, hasLifetime: r.hasLifetime }))}
             />
           </Card>
+          {/* 2026-07-04 — 계정 관리: 이용정지/해제 · 정보수정 · 삭제 (super_admin) */}
+          <Card title="계정 관리 (super_admin)">
+            <AccountManagementActions
+              role={role}
+              userId={id}
+              email={detail.email}
+              bannedUntil={detail.bannedUntil}
+              currentDisplayName={profile?.displayName ?? null}
+              currentPhone={detail.phone}
+            />
+          </Card>
         </>
       ),
     },
@@ -289,7 +301,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
         <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[18.4px] font-extrabold text-[var(--app-ink)]">{header.displayName}</div>
+              <div className="flex items-center gap-2 text-[18.4px] font-extrabold text-[var(--app-ink)]">
+                {header.displayName}
+                {detail.bannedUntil ? (
+                  <span className="rounded bg-[var(--app-coral)] px-1.5 py-0.5 text-[11.5px] font-extrabold text-white">
+                    ⛔ 이용정지
+                  </span>
+                ) : null}
+              </div>
               <div className="text-[13.8px] text-[var(--app-copy-soft)]">{header.emailMasked ?? '—'}</div>
             </div>
             <div className="text-right text-[12.6px] text-[var(--app-copy-soft)]">
