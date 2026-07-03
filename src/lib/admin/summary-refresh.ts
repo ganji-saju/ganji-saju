@@ -241,6 +241,7 @@ export async function refreshAdminUserSummary(): Promise<RefreshResult> {
   if (!hasSupabaseServiceEnv) return { processed: 0, refreshedAt: new Date().toISOString() };
   const service = await createServiceClient();
   const nowIso = new Date().toISOString();
+  const startedMs = Date.now();
   let page = 1;
   let processed = 0;
   // 전원 완주 여부 — 탈퇴자 행 정리는 완주했을 때만(부분 실행 중 삭제하면 오삭제).
@@ -248,7 +249,10 @@ export async function refreshAdminUserSummary(): Promise<RefreshResult> {
 
   for (;;) {
     const { data, error } = await service.auth.admin.listUsers({ page, perPage: 200 });
-    if (error) break;
+    if (error) {
+      console.error('[summary-refresh] listUsers failed at page', page, error.message);
+      break;
+    }
     if (data.users.length === 0) {
       completed = true;
       break;
@@ -260,17 +264,23 @@ export async function refreshAdminUserSummary(): Promise<RefreshResult> {
       last_sign_in_at: u.last_sign_in_at ?? null,
       app_metadata: u.app_metadata as Record<string, unknown> | undefined,
     }));
-    const rows: SummaryUpsert[] = [];
+    // 2026-07-04 — 청크(10명) 단위로 "즉시" upsert: 이전엔 200명 페이지 완성 후에야
+    // 커밋해서, 함수 타임아웃 시 그 시간 전체가 무효 → 요약이 몇 주씩 굳는 사고의
+    // 원인(기준 2026-06-05 고착). 이제 타임아웃이 나도 그때까지 진행분은 남고
+    // 매시간 크론이 이어서 전진(자가 치유).
     for (let i = 0; i < users.length; i += REFRESH_CONCURRENCY) {
       const chunk = users.slice(i, i + REFRESH_CONCURRENCY);
       const computed = await Promise.all(
         chunk.map((u) => computeUserSummary(service, u, nowIso))
       );
-      rows.push(...computed);
-    }
-    if (rows.length > 0) {
-      await service.from('admin_user_summary').upsert(rows, { onConflict: 'user_id' });
-      processed += rows.length;
+      const { error: upsertError } = await service
+        .from('admin_user_summary')
+        .upsert(computed, { onConflict: 'user_id' });
+      if (upsertError) {
+        console.error('[summary-refresh] chunk upsert failed:', upsertError.message);
+      } else {
+        processed += computed.length;
+      }
     }
     if (data.users.length < 200) {
       completed = true;
@@ -278,6 +288,10 @@ export async function refreshAdminUserSummary(): Promise<RefreshResult> {
     }
     page += 1;
   }
+
+  console.log(
+    `[summary-refresh] processed=${processed} completed=${completed} elapsedMs=${Date.now() - startedMs}`
+  );
 
   // 2026-07-04 감사 — 탈퇴(auth.users 삭제) 사용자의 요약 행이 영구 잔존해 가입자
   // 수·세그먼트·코호트가 과대집계되던 문제: 이번 패스에서 갱신되지 않은 행 정리.
