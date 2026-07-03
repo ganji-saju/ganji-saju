@@ -9,6 +9,9 @@ import { DREAM_ENTRIES } from '@/lib/free-content-pages';
 import { DREAM_CONTENT } from '@/lib/dream/dream-content';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
+import { ShareActions } from '@/features/saju-detail/share-actions';
+import { buildKakaoShare } from '@/lib/kakao/share';
+import { getCanonicalUrl } from '@/lib/site';
 import {
   buildArticleSchema,
   buildBreadcrumbSchema,
@@ -413,6 +416,22 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             ))}
           </div>
         </article>
+
+        {/* 친구에게 공유 — 2026-07-03 공유 커버리지: 공개 SEO 페이지인데 공유 UI 만 없던 곳. */}
+        <section className="px-1">
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+          <ShareActions
+            text={`${item.title} 꿈해몽 — ${oneLine}`}
+            url={getCanonicalUrl(`/dream-interpretation/${item.slug}`)}
+            className="mt-2.5"
+            kakao={buildKakaoShare({
+              title: `${item.title} 꿈해몽`,
+              description: oneLine,
+              path: `/dream-interpretation/${item.slug}`,
+              buttonTitle: '꿈해몽 보기',
+            })}
+          />
+        </section>
       </AppPage>
     </AppShell>
   );

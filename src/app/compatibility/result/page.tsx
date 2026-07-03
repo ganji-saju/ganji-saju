@@ -31,6 +31,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
+import { buildCompatibilityShareSlug } from '@/lib/compatibility/share-slug';
 
 interface Props {
   searchParams: Promise<{ relationship?: string; familyId?: string; source?: string; paid?: string }>;
@@ -172,8 +173,6 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
 
   const selfBirthInput = toBirthInputFromProfile(data.profile);
   const partnerBirthInput = toBirthInputFromProfile(selectedFamily);
-  // 공유용 초대 랜딩(수신자가 자기 커플 정보로 재계산) — familyId 미포함.
-  const compatibilityInvitePath = `/compatibility/input?relationship=${selected.slug}`;
   const compatibility = buildCompatibilityInterpretation(
     selected.slug,
     {
@@ -217,25 +216,37 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
-        {/* 친구에게 공유 — 2026-07-03 전수감사: 기존 redirectPath(?familyId=) 공유는 받는 사람에게
-            절대 재현 불가(requireAccount 로그인벽 + familyId 가 공유자 계정 스코프 → SetupState)
-            + 내부 저장 프로필 UUID 노출. 공유 링크는 초대 랜딩(/compatibility/input)으로 분리.
-            본인 재방문용 redirectPath(로그인 next)는 그대로 유지. 근본 해결(공개 스냅샷
-            /compatibility/share/[slug])은 후속. */}
-        <section className="px-1">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
-          <ShareActions
-            text={`${displayName} × ${selectedFamily.label} 궁합 — ${compatibility.label}`}
-            url={getCanonicalUrl(compatibilityInvitePath)}
-            className="mt-2.5"
-            kakao={buildKakaoShare({
-              title: `${displayName} × ${selectedFamily.label} 궁합`,
-              description: `${compatibility.label} — 두 사람의 궁합도 확인해보세요`,
-              path: compatibilityInvitePath,
-              buttonTitle: '우리 궁합 보러가기',
-            })}
-          />
-        </section>
+        {/* 친구에게 공유 — 2026-07-03 공개 스냅샷: 두 사람 생년을 slug 로 인코딩한
+            /compatibility/share/[slug] 공개 뷰(로그인 불필요·결정론 재계산·familyId 미노출).
+            수신자가 이 결과 그대로 열람. 본인 재방문용 redirectPath(로그인 next)는 별개 유지. */}
+        {(() => {
+          const shareSlug = buildCompatibilityShareSlug(
+            selected.slug,
+            selfBirthInput,
+            partnerBirthInput
+          );
+          const shareNameQuery = new URLSearchParams({
+            a: displayName,
+            b: selectedFamily.label,
+          }).toString();
+          const sharePath = `/compatibility/share/${shareSlug}?${shareNameQuery}`;
+          return (
+            <section className="px-1">
+              <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
+              <ShareActions
+                text={`${displayName} × ${selectedFamily.label} 궁합 — ${compatibility.label}`}
+                url={getCanonicalUrl(sharePath)}
+                className="mt-2.5"
+                kakao={buildKakaoShare({
+                  title: `${displayName} × ${selectedFamily.label} 궁합`,
+                  description: compatibility.summary,
+                  path: sharePath,
+                  buttonTitle: '궁합 결과 보기',
+                })}
+              />
+            </section>
+          );
+        })()}
       </AppPage>
     </AppShell>
   );
