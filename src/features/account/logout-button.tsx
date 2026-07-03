@@ -5,7 +5,8 @@
 // 단일 책임 client 컴포넌트로 추출. supabase.auth.signOut() 후 '/' 로 이동.
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
+// 2026-07-04 — 카카오 가입자는 카카오 SSO 세션까지 함께 종료(공용 PC 재로그인 방지).
+import { signOutWithProviderCleanup } from '@/lib/auth/sign-out';
 
 export function LogoutButton() {
   const router = useRouter();
@@ -15,14 +16,8 @@ export function LogoutButton() {
   async function handleClick() {
     if (busy) return;
     setBusy(true);
-    if (hasSupabaseBrowserEnv) {
-      const supabase = createClient();
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        // 네트워크 실패해도 클라이언트 세션은 비우고 홈으로.
-      }
-    }
+    const result = await signOutWithProviderCleanup();
+    if (result === 'kakao-redirect') return; // 풀 내비게이션 진행 중 — 라우팅 불필요.
     startNavigation(() => {
       router.replace('/');
       router.refresh();

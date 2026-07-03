@@ -911,12 +911,19 @@ export default function SiteHeader() {
       return;
     }
 
+    // 2026-07-04 — 카카오 가입자는 SSO 세션까지 함께 종료(signOut 전에 provider 판정).
+    const isKakao = user?.app_metadata?.provider === 'kakao';
+
     const supabase = createClient();
     await supabase.auth.signOut();
     cachedHeaderUser = null;
     clearCreditSnapshot();
     setUser(null);
     setCredits(null);
+    if (isKakao) {
+      window.location.href = '/api/auth/kakao/logout';
+      return;
+    }
     router.push('/');
     router.refresh();
   }
