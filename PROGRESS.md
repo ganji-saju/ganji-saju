@@ -45,6 +45,12 @@
 - ⚠️ fromSlug 의 key 해시 토큰은 검증 안 함(무시) — 변조=다른 생년 재계산일 뿐 보안 무관(테스트로 명문화).
 - 게이트: typecheck 0 · 커스텀러너 1001 · vitest 129 · next build 성공(신규 라우트 등록 확인).
 
+### 오늘운세 공개 티저 스냅샷 (2026-07-03, 커버리지 Part 3)
+- **`/today-fortune/share/[slug]?d=YYYY-MM-DD&n=이름&c=걱정`**: slug=생년 toSlug → fromSlug+loadSajuDataV2+`buildTodayFortuneFreeResult({now:고정날짜})` 로 발신자가 본 그 날 **무료 결과(한 줄+점수 6종)만** 로그인 없이 재계산. 유료(상세/프리미엄) 미포함. noindex. 날짜 파서 `lib/today-fortune/share-date.ts`(+테스트 5, KST 정오·실존날짜 검증).
+- free result 에 `shareSlug: toSlug(input)` 서버 주입(sajuSlug 는 reading id 일 수 있어 별도) — **게스트 결과도 공유 가능**. 발신측=결과 클라이언트에 공유 섹션(shareSlug 있는 신규 결과부터; 구 sessionStorage payload 는 미노출).
+- 재현성 회귀 가드 `share-teaser.test.ts`(라운드트립·고정날짜 결정론·dateKey=고정날짜) 3종.
+- 게이트: typecheck 0 · 커스텀러너 1009 · vitest 129 · next build 성공.
+
 ### 🔴 카카오 미완 — 재부팅 후 이어서 (중요)
 - **공유 4019 미해결**: 앱 1개·플랫폼>Web+제품링크관리 도메인등록·카카오톡공유 ON·JS키 확인·`Kakao.isInitialized()`=true **전부 확인됨**. 링크도메인=ganjisaju.kr(정상). **유력 원인 = Vercel env 값 끝 공백(#583 trim 방어, 재배포 필요) 또는 stale deploy**. → 재배포+env값 공백정리 후 재테스트. **그래도 4019면 → 화면 임시 디버그배지(클라 실제 키 길이·끝문자·init) 넣어 원인 특정** 예정.
 - **발송(B) 전부 dormant**: Solapi 템플릿 2개 **심의 진행중**, env 미입력.
