@@ -20,7 +20,7 @@ function authorize(req: NextRequest): boolean {
 // 오늘의 운세 재방문 유도(광고성). (광고)/무료수신거부는 자동 부착.
 const DAILY_BODY = '오늘의 운세가 도착했어요. 지금 확인해보세요 → https://ganjisaju.kr/today';
 
-export async function POST(req: NextRequest) {
+async function handleFriendtalkDispatch(req: NextRequest) {
   if (!authorize(req)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
@@ -57,4 +57,14 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, targets: targets.length, sent, skipped, failed });
+}
+
+// Vercel Cron(GET) + 수동 트리거(POST) 둘 다 지원.
+// ⚠️ vercel.json 크론 등록은 의도적으로 보류 — 광고 발송 개시는 명시적 운영 결정 필요.
+export async function GET(req: NextRequest) {
+  return handleFriendtalkDispatch(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleFriendtalkDispatch(req);
 }

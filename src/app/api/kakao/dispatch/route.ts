@@ -1,6 +1,7 @@
 // 카카오 알림톡 배치 발송(cron). 현재: 구독 만료 임박(D-3/D-day) 정보성 알림톡.
 // 인증: Authorization: Bearer <secret> 또는 x-kakao-secret (KAKAO_CRON_SECRET ?? CRON_SECRET).
 // notifications/dispatch 와 동일한 cron-secret 패턴.
+// 2026-07-03 — Vercel Cron 은 GET 으로 호출(+Bearer CRON_SECRET 자동 부착) → GET 도 지원.
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { listExpiringSubscribers } from '@/lib/subscription-expiring';
@@ -22,7 +23,7 @@ const PLAN_LABEL: Record<string, string> = {
   plus: '플러스',
 };
 
-export async function POST(req: NextRequest) {
+async function handleDispatch(req: NextRequest) {
   if (!authorize(req)) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
@@ -56,4 +57,13 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, targets: targets.length, sent, skipped, failed });
+}
+
+// Vercel Cron(GET) + 수동 트리거(POST) 둘 다 지원.
+export async function GET(req: NextRequest) {
+  return handleDispatch(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleDispatch(req);
 }
