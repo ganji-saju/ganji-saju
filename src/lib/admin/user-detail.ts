@@ -154,6 +154,10 @@ export interface AdminUserDetail {
   id: string;
   email: string | null;
   createdAt: string;
+  /** 이용정지 만료 시각(정지 중이면 미래 ISO, 아니면 null). 2026-07-04 계정관리. */
+  bannedUntil: string | null;
+  /** 등록된 전화번호(알림톡 대상, 없으면 null). 2026-07-04 계정관리 — 정보수정 프리필. */
+  phone: string | null;
   profile: AdminUserProfile | null;
   palja: PaljaResult | null;
   latestReadingAt: string | null;
@@ -249,6 +253,18 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
   const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
   if (authError || !authData.user) return null;
   const user = authData.user;
+  // banned_until: supabase-js 타입에 없을 수 있어 방어적으로 읽음. 'none'/과거 시각 = 정지 아님.
+  const bannedUntilRaw = (user as { banned_until?: string | null }).banned_until ?? null;
+  const bannedUntil =
+    bannedUntilRaw && bannedUntilRaw !== 'none' && new Date(bannedUntilRaw).getTime() > Date.now()
+      ? bannedUntilRaw
+      : null;
+
+  const { data: contactRow } = await supabase
+    .from('user_contact')
+    .select('phone')
+    .eq('user_id', userId)
+    .maybeSingle();
 
   const { data: profileRow } = await supabase
     .from('profiles')
@@ -415,6 +431,8 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     id: user.id,
     email: user.email ?? null,
     createdAt: user.created_at,
+    bannedUntil,
+    phone: (contactRow?.phone as string | null) ?? null,
     profile,
     palja,
     latestReadingAt,
