@@ -106,7 +106,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CompatibilityResultPage({ searchParams }: Props) {
-  const { relationship, familyId, source, paid } = await searchParams;
+  // 2026-07-03 — paid 쿼리는 접근 판정에서 제거(위조 가능). destructure 에서도 미사용 정리.
+  const { relationship, familyId, source } = await searchParams;
 
   if (source === 'manual') {
     // 2026-05-16 — manual 분기도 URL paid 만 의존하지 않고 server 측 entitlement 도 확인.
@@ -118,9 +119,10 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     return (
       <ManualCompatibilityResultClient
         relationship={relationship}
-        hasLoveQuestionPurchase={
-          paid === 'love-question' || paid === 'compat-reading' || manualLoveEntitlement
-        }
+        // 2026-07-03 보안 — URL ?paid= 쿼리 단락 제거(위조 가능 페이월 우회).
+        //   서버 entitlement(getTasteProductEntitlement)만 신뢰. 결제 confirm 이
+        //   entitlement 를 동기 기록하므로 결제 직후에도 이 값이 곧바로 true.
+        hasLoveQuestionPurchase={manualLoveEntitlement}
         deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
         perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
       />
@@ -170,6 +172,8 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
 
   const selfBirthInput = toBirthInputFromProfile(data.profile);
   const partnerBirthInput = toBirthInputFromProfile(selectedFamily);
+  // 공유용 초대 랜딩(수신자가 자기 커플 정보로 재계산) — familyId 미포함.
+  const compatibilityInvitePath = `/compatibility/input?relationship=${selected.slug}`;
   const compatibility = buildCompatibilityInterpretation(
     selected.slug,
     {
@@ -187,9 +191,10 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
   const coupleKey = buildCompatibilityCoupleKey(selfBirthInput, partnerBirthInput);
   // 구매(글로벌/커플) > 멤버 월 무료(premium 3/plus 1, 커플별 멱등) 순으로 접근 판정.
   // tryConsumeMemberCompatAccess 가 내부에서 tier 자가 판별하므로 사전 isPremiumMember 체크 불필요.
+  // 2026-07-03 보안 — URL ?paid= 쿼리 단락 제거: 쿼리만 붙이면 무결제 열람되는 위조 가능
+  //   페이월 우회였음. 결제 confirm 이 entitlement 를 동기 기록하므로 결제 직후에도
+  //   hasCompatibilityAccess 가 곧바로 true → 정상 흐름 영향 없음.
   const hasDeepReadingAccess =
-    paid === 'love-question' ||
-    paid === 'compat-reading' ||
     (data.user.id ? await hasCompatibilityAccess(data.user.id, coupleKey) : false) ||
     (data.user.id ? await tryConsumeMemberCompatAccess(data.user.id, coupleKey) : false);
 
@@ -212,18 +217,22 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
-        {/* 친구에게 공유 — 궁합 결과. 공유 링크는 같은 두 사람을 재현하도록 relationship/familyId 보존. */}
+        {/* 친구에게 공유 — 2026-07-03 전수감사: 기존 redirectPath(?familyId=) 공유는 받는 사람에게
+            절대 재현 불가(requireAccount 로그인벽 + familyId 가 공유자 계정 스코프 → SetupState)
+            + 내부 저장 프로필 UUID 노출. 공유 링크는 초대 랜딩(/compatibility/input)으로 분리.
+            본인 재방문용 redirectPath(로그인 next)는 그대로 유지. 근본 해결(공개 스냅샷
+            /compatibility/share/[slug])은 후속. */}
         <section className="px-1">
           <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
           <ShareActions
             text={`${displayName} × ${selectedFamily.label} 궁합 — ${compatibility.label}`}
-            url={getCanonicalUrl(redirectPath)}
+            url={getCanonicalUrl(compatibilityInvitePath)}
             className="mt-2.5"
             kakao={buildKakaoShare({
               title: `${displayName} × ${selectedFamily.label} 궁합`,
-              description: compatibility.summary,
-              path: redirectPath,
-              buttonTitle: '궁합 결과 보기',
+              description: `${compatibility.label} — 두 사람의 궁합도 확인해보세요`,
+              path: compatibilityInvitePath,
+              buttonTitle: '우리 궁합 보러가기',
             })}
           />
         </section>

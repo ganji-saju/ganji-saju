@@ -29,7 +29,9 @@ export const SITE_CONFIG = {
 export const SITE_NAME = SITE_CONFIG.serviceName;
 export const DEFAULT_DESCRIPTION =
   '오늘의 운세와 타로부터 사주, 궁합, 띠운세까지 가볍게 확인하는 모바일 운세 서비스 간지사주입니다.';
-export const DEFAULT_OG_IMAGE = '/og-image.png';
+// 2026-07-03 공유 전수감사 — 실존 파일로 교정(/og-image.png 은 public 에 없어 카카오 썸네일 404).
+//   layout.tsx metadata·page-metadata.ts(DEFAULT_OG_IMAGE_PATH)와 동일 경로.
+export const DEFAULT_OG_IMAGE = '/images/gangi/og-image.png';
 export const CANONICAL_SITE_URL = SITE_CONFIG.canonicalOrigin;
 export const CANONICAL_REDIRECT_STATUS = 301;
 

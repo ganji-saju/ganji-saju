@@ -29,8 +29,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CompatibilityInputPage({ searchParams }: Props) {
-  const { relationship, paid } = await searchParams;
-  let hasLoveQuestionPurchase = paid === 'love-question';
+  const { relationship } = await searchParams;
+  // 2026-07-03 보안 — URL ?paid= 쿼리 신뢰 제거(위조 가능 페이월 우회 + client 로
+  //   paid= 재전파 체인 차단). 서버 entitlement 조회만 신뢰.
+  let hasLoveQuestionPurchase = false;
 
   if (!hasLoveQuestionPurchase && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();

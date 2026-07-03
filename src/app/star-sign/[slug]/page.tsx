@@ -710,15 +710,16 @@ export default async function StarSignDetailPage({ params }: Props) {
             <PaidFunnelGrid from="star-sign" tone="dark" className="mt-3" />
           </article>
 
-          {/* §12 친구에게 공유 */}
+          {/* §12 친구에게 공유 — 2026-07-03: highlight 는 오늘(KST) 시드 기반이라
+              받는 사람이 다음 날 열면 본문과 달라짐 → 날짜를 문구에 명시해 불일치 오해 방지. */}
           <section>
             <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">친구에게 공유</h2>
             <ShareActions
-              text={`${item.label} 운세 — ${fortune.highlight}`}
+              text={`${item.label} ${fortune.dateKey} 운세 — ${fortune.highlight}`}
               url={getCanonicalUrl(`/star-sign/${item.slug}`)}
               className="mt-2.5"
               kakao={buildKakaoShare({
-                title: `${item.label} 운세`,
+                title: `${item.label} ${fortune.dateKey} 운세`,
                 description: fortune.highlight,
                 path: `/star-sign/${item.slug}`,
                 buttonTitle: '별자리 운세 보기',
