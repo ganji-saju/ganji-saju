@@ -1,9 +1,41 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-07-01 (Claude — 재화 명칭 리브랜딩: 사이트 전역 "코인"→"전" 치환(97파일·324곳). 가상화폐/투기 의미의 "코인"(재물운 해석 7곳·타로 크립토질문 감지·safe-redirect FINANCIAL_KEYWORDS)만 유지. URL 경로(/coin-policy)·DB 값(kind='coin')·영문 식별자는 보존. ⚠️ 정책 본문은 DB policy_versions(032/057 seed) 우선 서빙이라 라이브 법률/코인정책 텍스트는 별도 DB 업데이트 필요) / 2026-07-01 (Claude — PC 메가내브 우상단 로그아웃 버튼 "작동 안 함" 수정: `MegaNavBar` 가 영속 마운트 클라 컴포넌트라 로그아웃의 `router.refresh()` 로는 리마운트 안 됨 → `getUser` 마운트 1회 판정 + `onAuthStateChange` 미구독으로 세션 state stale. SiteHeader 처럼 `onAuthStateChange` 구독 추가) / 2026-06-27 (Claude — 저장프로필 선택 자동입력 첫 슬라이드 이동 #507 / 나이스페이 결제후 사주풀이 라우팅 회귀수정 #505·sandbox/live 단일토글 #506 / step스크롤 #504·인증E2E복구 #502·커서복원 #503·회원가입폼 overflow 근본 #501·하단dock·로그인UI #485~#500 / 실운영 전 데이터 초기화(docs/data-reset.sql) + 나이스페이 결제 프로덕션 가동+admin환불+문구중립화 #473~#484(탭트랩/U116 해결) / 오늘 자세히보기 10코인·묶음 19800 #472 / 꿈해몽 배너+가격제거 #469·#471 / 보너스36코인 삭제 #470 / HOT·추천 이동 #468 / 인물 사진 8종 #467 / 메인 카드 인물사진형+이미지 배너 #466 / 오늘 자세히보기 매일 일진+plain #464·#465 / 제목 폰트 확대+정렬 #463 / 전역 폰트 ×1.15 #462 / 대운·택일 9,900원+4메뉴 결제 검증 #461 / 붓글씨 로고 #459·#460 / 메인 리디자인 #458)**. 상세 ↓ 첫 섹션. 직전: **2026-06-22 (#448~#452)**. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-07-03 (Claude — 카카오 연동 전면 구현: 공유 SDK 5메뉴(사주·궁합·별자리·띠·타로) + 알림톡/친구톡 발송엔진(Solapi, env-gated dormant)+webhook+채널추가버튼+전화번호수집(설정·결제화면)+migration 059. PR #576~#583. 🔴 공유 4019 미해결(앱·도메인·JS키·init 다 정상 → env값 끝 공백 or 재배포 의심, #583 trim 방어). 발송은 Solapi 템플릿 심의중·env 미입력. 개인정보처리방침 admin 반영·059 수동적용 완료. 재부팅 후 이어서 — 상세 ↓ 첫 섹션 "🔴 카카오 미완") / 2026-07-01 (Claude — 재화 명칭 리브랜딩: 사이트 전역 "코인"→"전" 치환(97파일·324곳). 가상화폐/투기 의미의 "코인"(재물운 해석 7곳·타로 크립토질문 감지·safe-redirect FINANCIAL_KEYWORDS)만 유지. URL 경로(/coin-policy)·DB 값(kind='coin')·영문 식별자는 보존. ⚠️ 정책 본문은 DB policy_versions(032/057 seed) 우선 서빙이라 라이브 법률/코인정책 텍스트는 별도 DB 업데이트 필요) / 2026-07-01 (Claude — PC 메가내브 우상단 로그아웃 버튼 "작동 안 함" 수정: `MegaNavBar` 가 영속 마운트 클라 컴포넌트라 로그아웃의 `router.refresh()` 로는 리마운트 안 됨 → `getUser` 마운트 1회 판정 + `onAuthStateChange` 미구독으로 세션 state stale. SiteHeader 처럼 `onAuthStateChange` 구독 추가) / 2026-06-27 (Claude — 저장프로필 선택 자동입력 첫 슬라이드 이동 #507 / 나이스페이 결제후 사주풀이 라우팅 회귀수정 #505·sandbox/live 단일토글 #506 / step스크롤 #504·인증E2E복구 #502·커서복원 #503·회원가입폼 overflow 근본 #501·하단dock·로그인UI #485~#500 / 실운영 전 데이터 초기화(docs/data-reset.sql) + 나이스페이 결제 프로덕션 가동+admin환불+문구중립화 #473~#484(탭트랩/U116 해결) / 오늘 자세히보기 10코인·묶음 19800 #472 / 꿈해몽 배너+가격제거 #469·#471 / 보너스36코인 삭제 #470 / HOT·추천 이동 #468 / 인물 사진 8종 #467 / 메인 카드 인물사진형+이미지 배너 #466 / 오늘 자세히보기 매일 일진+plain #464·#465 / 제목 폰트 확대+정렬 #463 / 전역 폰트 ×1.15 #462 / 대운·택일 9,900원+4메뉴 결제 검증 #461 / 붓글씨 로고 #459·#460 / 메인 리디자인 #458)**. 상세 ↓ 첫 섹션. 직전: **2026-06-22 (#448~#452)**. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-07-02~03 세션 (Claude) — 카카오 연동(공유+알림톡/친구톡) + 코인→전 리브랜딩 + 메가내브 로그아웃
+
+### 메가내브 로그아웃 (#572)
+- `MegaNavBar`(app-shell 영속 클라 컴포넌트)가 `onAuthStateChange` 미구독 → 로그아웃 후 UI stale("작동 안 함"). SiteHeader 처럼 구독 추가해 반응형 갱신.
+
+### 코인 → "전" 재화명 리브랜딩 (#573·#574·#575)
+- **#573**: 전역 "코인"→"전" 324곳/97파일. **crypto/투기 의미 10곳 유지**(재물운 해석 7·타로 크립토질문 감지·safe-redirect FINANCIAL_KEYWORDS). URL 경로(/coin-policy)·DB 값(kind='coin')·영문 식별자 보존.
+- **#574**: migration **058**(policy_versions content in-place 치환 + content_hash 재계산) + scripts 5파일. ⚠️058 수동적용 완료.
+- **#575**: 단독/제목 라벨 모호성 → **"재화(전)"**(사용자 선택). 인접충돌(결제/충전/지급/사용 "전"=before 오독) → "재화"로 교정.
+
+### 카카오 연동 전면 구현 — PR #576~#583
+- **#576** Phase A(공유 SDK, 5메뉴: 사주·궁합·별자리·띠·타로)+B1(전화번호·광고동의·migration **059**: user_contact/kakao_message_log)+B2(Solapi 알림톡 엔진·webhook·dispatch cron·결제완료 after() 트리거)+B3(친구톡·야간가드·(광고)표기). **전부 env-gated dormant**.
+- **#578** 코드리뷰 반영: 멱등 insert 오류구분(23505 vs 실오류)·webhook fail-closed+timingSafeEqual·상태매핑 실패우선·dispatch dormant 가드.
+- **#577** 채널추가 버튼(`NEXT_PUBLIC_KAKAO_CHANNEL_ID`).
+- **#579** `docs/solapi-setup.md`(설정 단계별 가이드).
+- **#580** webhook `X-Solapi-Secret` 유연화(헤더-해시/평문/URL토큰 모두 수용)+GET 검증핑. + `scripts/solapi-channels.mjs`(pfId 조회).
+- **8eac37c**(⚠️main 직접커밋) 템플릿 변수 다듬기: `#{product}`=pkg.name(상품명), `#{days}`→`#{when}`("오늘"/"3일 뒤").
+- **#581** `scripts/solapi-templates.mjs`(템플릿 ID 조회).
+- **#582** 결제화면 전화번호 수집(선택, PaymentConsentCheckboxes에 배치, **ad_consent 기존값 보존**).
+- **#583** JS키 `.trim()`(공유 4019 대응 — 값 끝 공백 방어).
+- migration **059 수동적용 완료**. **개인정보처리방침 admin 반영 완료**(휴대폰 수집·Solapi 수탁자).
+
+### 🔴 카카오 미완 — 재부팅 후 이어서 (중요)
+- **공유 4019 미해결**: 앱 1개·플랫폼>Web+제품링크관리 도메인등록·카카오톡공유 ON·JS키 확인·`Kakao.isInitialized()`=true **전부 확인됨**. 링크도메인=ganjisaju.kr(정상). **유력 원인 = Vercel env 값 끝 공백(#583 trim 방어, 재배포 필요) 또는 stale deploy**. → 재배포+env값 공백정리 후 재테스트. **그래도 4019면 → 화면 임시 디버그배지(클라 실제 키 길이·끝문자·init) 넣어 원인 특정** 예정.
+- **발송(B) 전부 dormant**: Solapi 템플릿 2개 **심의 진행중**, env 미입력.
+- **남은 순서**: ①공유 4019(재배포+env공백) ②Solapi env(`SOLAPI_API_KEY`/`SECRET`/`KAKAO_PFID`/`SENDER`/`WEBHOOK_SECRET`) ③webhook 등록(`/api/kakao/webhook`+X-Solapi-Secret 헤더) ④템플릿 승인→`node scripts/solapi-templates.mjs`로 ID→`KAKAO_TPL_PAYMENT_COMPLETE`/`SUBSCRIPTION_EXPIRING`→테스트 결제.
+- ⚠️ **Solapi 필드명(templateId/pfId/adFlag/messageId)·HMAC salt는 go-live 전 vendor.ts에서 현행 문서 재확인**(어댑터 국소 조정).
+- 인스타 공유 "안 됨"은 정상(인스타가 웹→앱 자동공유 차단 → 링크복사 폴백).
+- 상세: `docs/kakao-integration-guide.md`, `docs/solapi-setup.md`, 메모리 `project_kakao-integration`.
 
 ---
 
