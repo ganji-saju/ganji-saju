@@ -85,6 +85,31 @@ export async function fetchAdminUserList(params: AdminUserListParams): Promise<A
   return { rows, hasMore, refreshedAt };
 }
 
+/** 표시 중인 행들의 연락처 보유/광고동의 — 알림톡 도달 가능 여부 표시용(50행 IN 조회). */
+export async function fetchContactFlags(
+  userIds: readonly string[]
+): Promise<Map<string, { hasPhone: boolean; adConsent: boolean }>> {
+  const map = new Map<string, { hasPhone: boolean; adConsent: boolean }>();
+  if (!hasSupabaseServiceEnv || userIds.length === 0) return map;
+  const service = await createServiceClient();
+  const { data, error } = await service
+    .from('user_contact')
+    .select('user_id, phone, ad_consent')
+    .in('user_id', userIds as string[]);
+  if (error) {
+    console.error('[user-list] fetchContactFlags failed:', error.message);
+    return map;
+  }
+  for (const row of (data ?? []) as Array<{
+    user_id: string;
+    phone: string | null;
+    ad_consent: boolean;
+  }>) {
+    map.set(row.user_id, { hasPhone: Boolean(row.phone), adConsent: Boolean(row.ad_consent) });
+  }
+  return map;
+}
+
 /** 세그먼트 인원수 등 — 필터 적용 후 정확 카운트(행 미전송). */
 export async function countAdminUsers(params: AdminUserListParams): Promise<number> {
   if (!hasSupabaseServiceEnv) return 0;
