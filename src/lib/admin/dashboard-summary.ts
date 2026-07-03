@@ -82,8 +82,15 @@ export async function getAdminDashboardSummary(
     const supabase = await createServiceClient();
 
     const [operations, funnel, llm, refundRes, reviewRes, activityRes] = await Promise.all([
-      buildOperationsSnapshot(supabase, { windowDays }).catch(() => null),
-      buildPaymentFunnelSnapshot(supabase, { windowDays }).catch(() => null),
+      // 2026-07-04 감사 — 실패를 조용히 null 로 삼키면 'env 문제'로 오도됨 → 원인 로그.
+      buildOperationsSnapshot(supabase, { windowDays }).catch((e) => {
+        console.error('[admin-dashboard] operations snapshot failed:', e);
+        return null;
+      }),
+      buildPaymentFunnelSnapshot(supabase, { windowDays }).catch((e) => {
+        console.error('[admin-dashboard] funnel snapshot failed:', e);
+        return null;
+      }),
       getLlmCostStats(windowDays).catch(() => null),
       supabase
         .from('refund_requests')

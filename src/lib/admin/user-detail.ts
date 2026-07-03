@@ -8,6 +8,7 @@ import {
   resolveProductEntitlementName,
   type CreditTransactionHistoryRow,
   type PaymentHistoryResult,
+  type PaymentOrderHistoryRow,
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
 import {
@@ -281,21 +282,35 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     .from('product_entitlements')
     .select('id, product_id, amount, order_id, payment_key, package_id, created_at, metadata')
     .eq('user_id', userId);
+  // 2026-07-04 감사 — type 무필터 전량 fetch 는 사용(use) 행까지 포함해 1000행 캡에서
+  // 결제 행이 잘릴 수 있음 → 서버측 type 필터 + 정렬(이력·환불판정 모두 purchase/subscription 만 검사).
   const { data: creditRows } = await supabase
     .from('credit_transactions')
     .select('id, type, amount, metadata, created_at, feature')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .in('type', ['purchase', 'subscription'])
+    .order('created_at', { ascending: false });
   const { data: creditLotRows } = await supabase
     .from('credit_lots')
     .select('id, user_id, amount_remaining, amount_initial, expires_at, source, metadata, created_at')
     .eq('user_id', userId)
     .eq('source', 'purchase');
+  // 코인 sunset 이후 멤버십 결제는 credit_transactions 에 없음 → 완료 주문 원장 보강(orderId dedupe).
+  const { data: orderHistoryRows } = await supabase
+    .from('payment_orders')
+    .select('id, order_id, package_id, amount, status, created_at')
+    .eq('user_id', userId)
+    .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
   const productEntitlements = (entitlementRows ?? []) as unknown as ProductEntitlementHistoryRow[];
   const allCreditTransactions = (creditRows ?? []) as unknown as Array<
     CreditTransactionHistoryRow & { type: string; feature?: string | null }
   >;
   const creditTransactions = allCreditTransactions.filter((r) => isCashCreditTransaction(r));
-  const payment = buildPaymentHistory({ productEntitlements, creditTransactions });
+  const payment = buildPaymentHistory({
+    productEntitlements,
+    creditTransactions,
+    paymentOrders: (orderHistoryRows ?? []) as unknown as PaymentOrderHistoryRow[],
+  });
 
   const { count: dialogueCount } = await supabase
     .from('dialogue_messages')
@@ -305,13 +320,25 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
   const hash = hashUserId(userId);
   let llmStats: LlmFeatureStat[] = [];
   if (hash) {
-    const { data: llmRows } = await supabase
-      .from('ai_llm_runs')
-      .select('feature, source, cost_usd')
-      .eq('user_id_hash', hash);
-    llmStats = buildUserLlmStats(
-      (llmRows ?? []) as unknown as Array<{ feature: string; source: string; cost_usd: number | null }>
-    );
+    // 2026-07-04 감사 — 헤비유저는 1000행 캡으로 LLM 사용/비용 과소집계 → 페이지네이션.
+    const llmRows: Array<{ feature: string; source: string; cost_usd: number | null }> = [];
+    for (let pageIdx = 0; pageIdx < 20; pageIdx += 1) {
+      const from = pageIdx * 1000;
+      const { data: llmPage } = await supabase
+        .from('ai_llm_runs')
+        .select('feature, source, cost_usd')
+        .eq('user_id_hash', hash)
+        .order('created_at', { ascending: false })
+        .range(from, from + 999);
+      const rows = (llmPage ?? []) as unknown as Array<{
+        feature: string;
+        source: string;
+        cost_usd: number | null;
+      }>;
+      llmRows.push(...rows);
+      if (rows.length < 1000) break;
+    }
+    llmStats = buildUserLlmStats(llmRows);
   }
 
   const creditRefundEligibility = determineCreditRefundEligibility(

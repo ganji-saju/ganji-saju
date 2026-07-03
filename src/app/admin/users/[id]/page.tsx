@@ -27,11 +27,17 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+// 2026-07-04 감사 — UTC slice 는 KST 00~09시 발생 건이 전날로 표시(가입·결제 대사 오류)
+// → Asia/Seoul 변환 후 포맷(sv-SE 로케일 = YYYY-MM-DD 형식).
 function fmtDate(iso: string | null): string {
-  return iso ? iso.slice(0, 10) : '—';
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
 }
 function fmtDateTime(iso: string | null): string {
-  return iso ? iso.slice(0, 16).replace('T', ' ') : '—';
+  if (!iso) return '—';
+  return new Date(iso)
+    .toLocaleString('sv-SE', { timeZone: 'Asia/Seoul', hour12: false })
+    .slice(0, 16);
 }
 function fmtWon(n: number | null): string {
   return n == null ? '—' : `${n.toLocaleString('ko-KR')}원`;
@@ -102,7 +108,8 @@ export default async function AdminUserDetailPage({ params }: Props) {
       createdAt: detail.createdAt,
       profile: { displayName: profile?.displayName ?? null },
       ltvWon: payment.totalSpentWon,
-      subscriptionStatus: summaryRow?.subscription_status ?? null,
+      // 2026-07-04 감사 — 요약(시간별 cron)은 stale 할 수 있어 라이브 구독값 우선.
+      subscriptionStatus: subscription?.status ?? summaryRow?.subscription_status ?? null,
       lastActiveAt: summaryRow?.last_active_at ?? detail.latestReadingAt ?? null,
       refundableWon: refund.totalRefundableWon,
     },

@@ -155,8 +155,9 @@ export function PaymentFunnelDashboard() {
         <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           💳 결제 Funnel
         </div>
+        {/* 2026-07-04 — 코인충전(/credits) 표기는 폐지된 상품 기준이라 현행(멤버십·단건)으로 정정. */}
         <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
-          /credits → prepare → confirm
+          상품 결제 prepare → confirm
         </h1>
         <p
           className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"

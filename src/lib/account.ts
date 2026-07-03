@@ -27,6 +27,7 @@ import {
   type CreditTransactionHistoryRow,
   type PaymentHistoryEntry,
   type PaymentHistoryResult,
+  type PaymentOrderHistoryRow,
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
 
@@ -368,7 +369,7 @@ export async function getPaymentHistory(
 
   const { supabase, user } = await requireAccount(redirectPath);
 
-  const [entitlementsResponse, cashTransactionsResponse] = await Promise.all([
+  const [entitlementsResponse, cashTransactionsResponse, ordersResponse] = await Promise.all([
     supabase
       .from('product_entitlements')
       .select('id, product_id, amount, order_id, payment_key, package_id, created_at, metadata')
@@ -381,6 +382,14 @@ export async function getPaymentHistory(
       .select('id, type, amount, feature, metadata, created_at')
       .eq('user_id', user.id)
       .in('type', ['purchase', 'subscription'])
+      .order('created_at', { ascending: false }),
+    // 2026-07-04 — 코인 sunset 이후 멤버십 결제는 credit_transactions 에 안 남아
+    // 빌링 내역에 안 보이던 문제: 완료 주문 원장 보강(buildPaymentHistory 가 orderId dedupe).
+    supabase
+      .from('payment_orders')
+      .select('id, order_id, package_id, amount, status, created_at')
+      .eq('user_id', user.id)
+      .in('status', ['confirmed', 'fulfilling', 'fulfilled'])
       .order('created_at', { ascending: false }),
   ]);
 
@@ -402,7 +411,16 @@ export async function getPaymentHistory(
   })) satisfies ProductEntitlementHistoryRow[];
 
   const creditTransactions = (cashTransactionsResponse.data ?? [])
-    .filter((row) => isCashCreditTransaction({ type: row.type, feature: row.feature }))
+    .filter((row) =>
+      isCashCreditTransaction({
+        type: row.type,
+        feature: row.feature,
+        metadata:
+          row.metadata && typeof row.metadata === 'object'
+            ? (row.metadata as Record<string, unknown>)
+            : null,
+      })
+    )
     .map((row) => ({
       id: row.id,
       type: row.type,
@@ -417,6 +435,7 @@ export async function getPaymentHistory(
   const result: PaymentHistoryResult = buildPaymentHistory({
     productEntitlements,
     creditTransactions,
+    paymentOrders: ((ordersResponse.data ?? []) as unknown as PaymentOrderHistoryRow[]),
   });
 
   return {

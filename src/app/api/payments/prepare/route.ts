@@ -88,6 +88,14 @@ export async function POST(req: NextRequest) {
 
   // 2026-06-30 전 충전 전면 중단(coin-sunset Phase 1). 전팩 결제 요청 자체를 거부.
   if (isCreditPackage(pkg)) {
+    // 2026-07-04 감사 — 잔존 유입(구 링크·캐시 UI) 관측용. 410이 prepare_attempt(110행)
+    // 보다 앞이라 이 시도들이 퍼널에 전혀 안 잡히던 문제.
+    await logPaymentFunnelEvent(await createClient(), {
+      stage: 'prepare_blocked',
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'credit_package_sunset',
+    });
     return NextResponse.json(
       { ok: false, error: '전 충전은 현재 제공하지 않습니다.' },
       { status: 410 }

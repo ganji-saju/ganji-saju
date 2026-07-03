@@ -34,8 +34,9 @@ function applyListFilters(qb: SummaryQuery, params: AdminUserListParams): Summar
   } else if (params.status === 'dormant') {
     q = q.lt('last_active_at', new Date(Date.now() - 30 * 86400000).toISOString());
   }
-  if (params.signupFrom) q = q.gte('signup_at', `${params.signupFrom}T00:00:00.000Z`);
-  if (params.signupTo) q = q.lte('signup_at', `${params.signupTo}T23:59:59.999Z`);
+  // 2026-07-04 감사 — 관리자 입력은 KST 날짜인데 UTC 경계로 비교해 9시간 밀리던 문제.
+  if (params.signupFrom) q = q.gte('signup_at', `${params.signupFrom}T00:00:00+09:00`);
+  if (params.signupTo) q = q.lte('signup_at', `${params.signupTo}T23:59:59.999+09:00`);
   if (params.signupWithinDays != null) {
     q = q.gte('signup_at', new Date(Date.now() - params.signupWithinDays * 86400000).toISOString());
   }
@@ -91,5 +92,10 @@ export async function countAdminUsers(params: AdminUserListParams): Promise<numb
   let qb = service.from('admin_user_summary').select('user_id', { count: 'exact', head: true });
   qb = applyListFilters(qb, params);
   const { count, error } = await qb;
-  return error ? 0 : (count ?? 0);
+  // 에러를 0으로 삼키면 '데이터 없음'과 구분 불가 — 최소한 관측은 남긴다.
+  if (error) {
+    console.error('[user-list] countAdminUsers failed:', error.message);
+    return 0;
+  }
+  return count ?? 0;
 }

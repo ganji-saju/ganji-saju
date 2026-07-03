@@ -3,7 +3,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { buildOperationsSnapshot } from '@/lib/admin/operations-stats';
-import { createClient } from '@/lib/supabase/server';
+import {
+  createClient,
+  createServiceClient,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
   const daysParam = req.nextUrl.searchParams.get('days');
@@ -20,8 +24,19 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // 2026-07-04 감사 — 집계 대상 테이블 다수가 owner-only/deny RLS(admin_user_summary 는
+  // 정책 0개)라 세션(anon) 클라이언트로는 가입자=0·타인 데이터 미집계로 전부 틀렸음.
+  // admin 가드 통과 후 service 클라이언트로 집계(dashboard-summary.ts 와 동일 패턴).
+  if (!hasSupabaseServiceEnv) {
+    return NextResponse.json(
+      { ok: false, error: 'service env missing (SUPABASE_SERVICE_ROLE_KEY)' },
+      { status: 500 }
+    );
+  }
+
   try {
-    const snapshot = await buildOperationsSnapshot(supabase, { windowDays });
+    const service = await createServiceClient();
+    const snapshot = await buildOperationsSnapshot(service, { windowDays });
     return NextResponse.json({ ok: true, snapshot });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'failed to build snapshot';
