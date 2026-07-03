@@ -177,7 +177,9 @@ export interface AdminRefundRequest {
   status: string;
   errorMessage: string | null;
   tossResponse: unknown;
-  provider: 'toss' | 'nicepay';
+  /** 표기용 PG. 'unknown' = payment_key 가 주문과 매칭 안 됨(수동 처리·구버전) —
+   *  실행 시점 분기는 refund route 가 getOrderProviderByPaymentKey 로 별도 판정. */
+  provider: 'toss' | 'nicepay' | 'unknown';
   createdAt: string;
   updatedAt: string | null;
 }
@@ -403,7 +405,8 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     status: r.status,
     errorMessage: r.error_message,
     tossResponse: r.toss_response,
-    provider: r.payment_key ? (refundProviderByKey.get(r.payment_key) ?? 'toss') : 'toss',
+    // 2026-07-04 — 매칭 실패 시 'toss' 단정 대신 'unknown'(나이스페이 전환 후 오표기 방지).
+    provider: r.payment_key ? (refundProviderByKey.get(r.payment_key) ?? 'unknown') : 'unknown',
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }));

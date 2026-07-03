@@ -36,13 +36,16 @@ interface RefundReq {
   reason: string;
   errorMessage: string | null;
   tossResponse: unknown;
-  provider: 'toss' | 'nicepay';
+  provider: 'toss' | 'nicepay' | 'unknown';
   updatedAt: string | null;
 }
 
-const PG_LABEL: Record<'toss' | 'nicepay', string> = {
+// 2026-07-04 — 'unknown' = 주문 미매칭(수동 처리·구버전). 실행 시 PG 는 서버가
+// getOrderProviderByPaymentKey 로 별도 판정하므로 표기만 정직하게.
+const PG_LABEL: Record<'toss' | 'nicepay' | 'unknown', string> = {
   toss: 'Toss',
   nicepay: '나이스페이',
+  unknown: 'PG 미상',
 };
 
 const STATUS_LABEL: Record<string, string> = {

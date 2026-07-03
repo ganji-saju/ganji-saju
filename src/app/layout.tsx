@@ -11,6 +11,8 @@ import { AppToaster } from "@/components/notifications/app-toaster";
 import { NotificationClickTracker } from "@/components/notifications/notification-click-tracker";
 import { ScrollResetOnNavigate } from "@/shared/layout/scroll-reset-on-navigate";
 import { KakaoSdkLoader } from "@/components/kakao/kakao-sdk-loader";
+// 2026-07-04 — 자체 방문(유입) 카운트(일 1회 익명 핑, admin 지표용).
+import { VisitPing } from "@/components/analytics/visit-ping";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -161,6 +163,7 @@ export default function RootLayout({
         <ScrollResetOnNavigate />
         {children}
         <KakaoSdkLoader />
+        <VisitPing />
         <AppToaster />
         <Analytics />
         <SpeedInsights />

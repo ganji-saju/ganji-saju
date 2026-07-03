@@ -271,6 +271,32 @@ export function OperationsDashboard() {
               오늘 ({snap.generatedAt.slice(0, 10)} · KST 시간대)
             </h2>
 
+            {/* 2026-07-04 — 자체 순방문(유입) 카드. 클라 일1회 핑 기반 하한치.
+                migration 062 미적용이면 '—' 표시. */}
+            <article
+              className="rounded-[16px] border bg-white p-4"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
+                  🚪 방문자 (순, 자체 집계)
+                </div>
+                <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
+                  {snap.today.visitors == null ? '—' : formatNum(snap.today.visitors)}
+                </div>
+              </div>
+              {snap.trends.visitors.length > 0 ? (
+                <div className="mt-2.5">
+                  <Sparkline series={snap.trends.visitors} color="var(--app-copy-muted)" />
+                </div>
+              ) : (
+                <p className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
+                  집계 대기 — migration 062(site_visits) 적용 후 수집 시작. 광고차단/JS 미실행
+                  방문은 미포함(하한치), 전체 트래픽은 Vercel Analytics 참조.
+                </p>
+              )}
+            </article>
+
             <article
               className="rounded-[16px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
@@ -546,8 +572,12 @@ export function OperationsDashboard() {
                 )
               </li>
               <li>
+                • 방문자(순): site_visits — 클라 일 1회 익명 핑(KST) 기반 하한치. 광고차단/JS
+                미실행 방문 미포함, 전체 트래픽은 Vercel Analytics 참조
+              </li>
+              <li>
                 • 활동 사용자: readings + today_fortune_feedback + dialogue_messages 의 distinct
-                user — 페이지 방문만 한 사용자는 미포함(방문/유입 트래픽은 Vercel Analytics 에서 확인)
+                user — 페이지 방문만 한 사용자는 미포함
               </li>
               <li>• 결제: payment_orders status ∈ (confirmed, fulfilling, fulfilled) — 카드 단건·멤버십·PG 공통, 금액=원화</li>
               <li>• 만족도: overall_rating ∈ {'{-1, 0, +1}'}, area_rating ∈ [1, 5]</li>
