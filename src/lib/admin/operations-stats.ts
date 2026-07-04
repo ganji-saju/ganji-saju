@@ -157,8 +157,42 @@ async function fetchAllPages<T>(
   return all;
 }
 
-/** payment_orders 에서 "완료된 결제"로 집계하는 상태들. */
+/** payment_orders 에서 "완료된 결제"로 집계하는 상태들. (migration 063 RPC 와 일치 유지) */
 const COMPLETED_ORDER_STATUSES = ['confirmed', 'fulfilling', 'fulfilled'];
+
+/**
+ * 누적 결제 건수/금액 — RPC(payment_order_totals, migration 063) 우선.
+ * 행 전송 없이 SQL 집계라 5만 행(MAX_PAGES) 절단·전체 원장 왕복이 없다.
+ * RPC 미존재(마이그레이션 미적용)면 기존 행 페이지네이션 폴백(상한 내 정확).
+ */
+async function fetchLifetimeOrderTotals(
+  client: SupabaseClient
+): Promise<{ count: number; amountWon: number }> {
+  const rpcResp = await client.rpc('payment_order_totals');
+  if (!rpcResp.error && rpcResp.data) {
+    const row = (Array.isArray(rpcResp.data) ? rpcResp.data[0] : rpcResp.data) as
+      | { order_count: number | string | null; total_amount: number | string | null }
+      | undefined;
+    if (row) {
+      return {
+        count: Number(row.order_count) || 0,
+        amountWon: Number(row.total_amount) || 0,
+      };
+    }
+  }
+  const rows = await fetchAllPages<{ amount: number | null }>('orders-lifetime', (from, to) =>
+    client
+      .from('payment_orders')
+      .select('amount')
+      .in('status', COMPLETED_ORDER_STATUSES)
+      .order('id', { ascending: true })
+      .range(from, to)
+  );
+  return {
+    count: rows.length,
+    amountWon: rows.reduce((sum, r) => sum + (r.amount ?? 0), 0),
+  };
+}
 
 /**
  * 운영 메트릭 한 번에 산출.
@@ -182,7 +216,7 @@ export async function buildOperationsSnapshot(
   const [
     signupRowsRaw,
     orderRows,
-    lifetimeOrderRows,
+    lifetimeTotals,
     readingsRows,
     feedbackRows,
     dialogueRows,
@@ -220,16 +254,8 @@ export async function buildOperationsSnapshot(
           .range(from, to)
     ),
 
-    // 전체 결제 — lifetime 통계용(금액 합산에 행 필요).
-    fetchAllPages<{ amount: number | null; created_at: string }>('orders-lifetime', (from, to) =>
-      client
-        .from('payment_orders')
-        .select('amount, created_at')
-        .in('status', COMPLETED_ORDER_STATUSES)
-        .order('created_at', { ascending: true })
-        .order('id', { ascending: true })
-        .range(from, to)
-    ),
+    // 전체 결제 — lifetime 통계(RPC 집계 우선, 미적용 시 행 페이지네이션 폴백).
+    fetchLifetimeOrderTotals(client),
 
     // readings — 윈도우 내.
     fetchAllPages<{ user_id: string; created_at: string }>('readings', (from, to) =>
@@ -316,11 +342,6 @@ export async function buildOperationsSnapshot(
     amount: r.amount ?? 0,
     created_at: r.created_at,
   }));
-  const allPurchaseRows = lifetimeOrderRows.map((r) => ({
-    amount: r.amount ?? 0,
-    created_at: r.created_at,
-  }));
-
   // 순방문자(자체 핑) — RPC 미존재(마이그레이션 062 미적용)면 null 로 표시.
   const visitRows = visitCountsResp.error
     ? null
@@ -423,8 +444,8 @@ export async function buildOperationsSnapshot(
       totalUsers: totalUsersCountResp.count ?? 0,
       activeSubscribers: subscriptionsResp.count ?? 0,
       totalReadings: totalReadingsCountResp.count ?? 0,
-      totalPurchases: allPurchaseRows.length,
-      totalPurchaseAmountWon: allPurchaseRows.reduce((sum, r) => sum + r.amount, 0),
+      totalPurchases: lifetimeTotals.count,
+      totalPurchaseAmountWon: lifetimeTotals.amountWon,
       summaryRefreshedAt:
         (lastRefreshResp.data as { refreshed_at?: string } | null)?.refreshed_at ?? null,
     },
