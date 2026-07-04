@@ -109,9 +109,12 @@
 - **키워드 메타**: 홈 title '간지사주' 단독 → 검색어형, 랜딩 title 교체(타로/궁합/사주/대운/꿈해몽), canonical 보강. **noindex 5곳**(결제 checkout·개인 결과 2·회원가입·잔액).
 - **한국 검색엔진**: 네이버 서치어드바이저 소유확인 meta를 env(`NEXT_PUBLIC_NAVER_SITE_VERIFICATION`) 게이트로 추가 + Organization/WebSite JSON-LD 루트 주입.
 - **#604 후속**: `/rss.xml` RSS 2.0 피드(꿈해몽+띠+별자리, 92항목, buildRssFeed 순수함수+테스트4) + `/support/faq` FAQPage JSON-LD(기존 FAQ_GROUPS 재사용). Service/Offer 가격 스키마는 **의도 제외**(무료 시작 랜딩에 고정가=실제 불일치).
-- 사이트맵 `https://ganjisaju.kr/sitemap.xml` · RSS `https://ganjisaju.kr/rss.xml`(둘 다 라이브 200 확인). **네이버 RSS 제출 500 오류=배포 전 404였던 것**(#604 머지·배포로 해결).
-- ⚠️ **사용자 잔여 액션**: 네이버 서치어드바이저에 sitemap·rss 제출(소유확인 meta는 이미 라이브 확인), 구글 서치콘솔 sitemap 재제출.
+- 사이트맵 `https://ganjisaju.kr/sitemap.xml` · RSS `https://ganjisaju.kr/rss.xml`(둘 다 라이브 200 확인). **네이버 RSS 제출 500 오류=배포 전 404였던 것**(#604 머지·배포로 해결). 네이버 소유확인 meta·sitemap·rss 제출 완료(사용자).
 - 게이트: typecheck 0 · 커스텀러너 1022 · vitest 129 · build ✓.
+
+### 콘텐츠 내부 링크 확충 + 계정 격리 (#605·#606, 2026-07-05)
+- **#605 꿈해몽 관련 링크 2→6 자동 확충**: 감사 결과 띠·별자리 상세는 이미 형제 링크 풍부(중복 미추가), 꿈만 curated 2개로 얇음. `buildRelatedDreamSlugs`(순수·결정론, 테스트7): 큐레이션 우선 + 결정론적 회전 이웃으로 6개까지 보강 → **68개 전부 유입 링크(강연결)**·링크 균등 분산. 실데이터 검증(68/68 6링크). "꿈해몽 목록" 링크 스텁→`/dream` 직결. `docs/internal-link-map.md`(URL 레퍼런스 꿈68·띠12·별자리12·궁합144).
+- **#606 GitHub 계정 격리**: gh 전역 활성 계정을 타 프로젝트가 kionya 로 바꾸면 push/PR 이 비협업자로 실패하던 문제. `scripts/gh-ganji`(keyring 의 ganji-saju 토큰 런타임 조회→GH_TOKEN 오버라이드, 전역 무관) + repo-local git credential 고정(`scripts/setup-project-account.sh`) + AGENTS.md 규칙. 토큰 파일 저장 안 함. **앞으로 PR/머지는 `./scripts/gh-ganji` 사용**([[reference_gh-account-for-pr]] 갱신).
 
 ---
 
