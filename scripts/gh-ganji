@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# ganji-saju 전용 gh 래퍼 — 전역 활성 gh 계정(다른 프로젝트/프로세스가 바꿔도)과
+# 무관하게 항상 ganji-saju 로 실행한다. keyring 에서 ganji-saju 토큰을 런타임 조회해
+# GH_TOKEN 으로 오버라이드(파일에 토큰 저장 안 함). PR/머지 등 repo 쓰기에 사용.
+#   사용: scripts/gh-ganji pr create ...  /  scripts/gh-ganji pr merge ...
+set -euo pipefail
+TOKEN="$(env -u GH_TOKEN -u GITHUB_TOKEN gh auth token --user ganji-saju)"
+if [ -z "$TOKEN" ]; then
+  echo "gh-ganji: ganji-saju 계정 토큰을 찾지 못했습니다. 'gh auth login' 으로 ganji-saju 로그인 필요." >&2
+  exit 1
+fi
+exec env -u GITHUB_TOKEN GH_TOKEN="$TOKEN" gh "$@"
