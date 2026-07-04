@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { DREAM_ENTRIES } from '@/lib/free-content-pages';
+import { buildRelatedDreamSlugs } from '@/lib/dream/related-dreams';
 import { DREAM_CONTENT } from '@/lib/dream/dream-content';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { buildContentPageMetadata } from '@/lib/seo/page-metadata';
@@ -84,14 +85,16 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
   const content = DREAM_CONTENT[item.slug] ?? null;
   const oneLine = content?.oneLineSummary ?? item.summary;
 
-  // related: enriched content 가 있으면 relatedSlugs 우선, 없으면 DREAM_ENTRIES 에서 3개.
-  const relatedFromContent = content?.relatedSlugs
-    ?.map((slug) => DREAM_ENTRIES.find((e) => e.slug === slug))
+  // 관련 꿈: 큐레이션(relatedSlugs) 우선 + 결정론적 회전 이웃으로 6개까지 자동 보강.
+  //   내부 링크 확충(페이지당 링크↑) + 모든 꿈이 유입 링크를 받도록(강연결) — related-dreams.ts.
+  const relatedItems = buildRelatedDreamSlugs(
+    DREAM_ENTRIES.map((e) => e.slug),
+    item.slug,
+    content?.relatedSlugs ?? [],
+    6
+  )
+    .map((slug) => DREAM_ENTRIES.find((e) => e.slug === slug))
     .filter(Boolean) as typeof DREAM_ENTRIES;
-  const relatedItems =
-    relatedFromContent && relatedFromContent.length > 0
-      ? relatedFromContent
-      : DREAM_ENTRIES.filter((entry) => entry.slug !== item.slug).slice(0, 3);
 
   // 2026-05-20 Phase 8-A + 8-D — JSON-LD Article + Breadcrumb + (조건부) FAQPage schema.
   const articleSchema = buildArticleSchema({
@@ -365,7 +368,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               타로 세 장 뽑기
             </Link>
             <Link
-              href="/dream-interpretation"
+              href="/dream"
               className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[15px] font-extrabold"
               style={{
                 border: '1px solid var(--app-line)',
