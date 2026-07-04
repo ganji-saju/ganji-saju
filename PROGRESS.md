@@ -90,7 +90,14 @@
 - **운영지표**: fetchAllPages 에러 시 부분집계 침묵 반환 → throw(500 관측) / offset 페이지네이션 정렬 tiebreak(id) / '오늘' 헤더 UTC→KST / 활성구독 문구=쿼리(renews_at null 포함) 일치 / 주석 060→062 정정.
 - **결제퍼널 — 기록은 작동하나 비율 왜곡 4곳**: ①toss confirm 재진입(성공페이지 새로고침)마다 attempt만 누적 → 성공률 하향 왜곡 → attempt 를 이미-지급 조기반환 뒤로(nicepay와 의미 통일) ②웹훅/정산(reconciliation) 경유 성공이 confirm_success 미기록(원장≠퍼널 괴리) → 기록 추가 ③nicepay 인증실패(사용자취소·카드거절=실전 최다)·서명실패·주문미조회·paymentKey 불일치 전부 퍼널 공백 → attempt+failed 쌍 기록 ④prepare sunset 차단이 attempt 없는 blocked 단독(blockRate>100% 모순 가능) → 쌍 기록.
 - **#600(후속)**: 누적 결제 건수/금액을 행 전량 fetch+JS 합산 → **SQL 집계 RPC**(migration **063** `payment_order_totals`) 전환. 5만 행 절단 리스크 제거+로드 경량화. **RPC 미적용 시 행 페이지네이션 폴백**(무중단). 적대검증 2렌즈 결함 0.
-- 게이트: typecheck 0 · 커스텀러너 1018(신규 2: LLM KST 경계·RPC 경로) · vitest 129 · build ✓. ⚠️ **migration 063 수동적용 필요**(062 미적용이면 같이). 비문제 확인: 퍼널 조회는 이미 guard→service-role 패턴.
+- 게이트: typecheck 0 · 커스텀러너 1018(신규 2: LLM KST 경계·RPC 경로) · vitest 129 · build ✓. ~~⚠️ migration 063 수동적용 필요~~ → **062·063 적용 확인됨**(migration list). 비문제 확인: 퍼널 조회는 이미 guard→service-role 패턴.
+
+### ⚠️ dialogue_messages 프로덕션 drift 발견·복구 (#601, 2026-07-04)
+- #599 배포 직후 /admin '오늘' 카드 "데이터를 불러오지 못했습니다(service env 확인)" — **env 아님**. Vercel 로그: `Could not find the table 'public.dialogue_messages'`. **프로덕션 DB에 테이블 실부재**(migration 024는 히스토리에 적용 기록만 — inspect table-stats 로 확정. 마이그레이션 생성 테이블 전수 vs 원격 비교: 누락은 이 하나뿐).
+- 그동안 안 보였던 이유: 구 코드는 조회 실패를 침묵 부분집계(활동 사용자에서 대화 누락=틀린 수치 표시) — #599의 throw 전환이 **의도대로 잠복 drift 를 드러낸 것**.
+- **더 큰 영향**: AI 대화 기록 저장이 프로덕션에서 조용히 전멸 중이었음(클라 best-effort 라 500 무시, 서버 로그도 없어 무관측 — 대화 히스토리 미보존).
+- 수정: migration **064**(024 동일 DDL 멱등 복원판 — 히스토리상 024 '적용됨'이라 db push 미재실행, 새 번호 필수) + /api/dialogue/messages 저장실패 서버로그 + /admin 오도 문구 교체. ⚠️ **064 수동적용 필요**.
+- 교훈: **마이그레이션 히스토리 '적용됨' ≠ 실존재** — drift 의심 시 `supabase inspect db table-stats --linked` 로 실사.
 
 ---
 
