@@ -32,7 +32,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
   }
 
-  // B1 funnel — confirm 진입.
+  let order = await getPaymentOrderForUser(orderId, user.id);
+
+  // 이미 지급(완료/진행중) 주문 재진입(성공 페이지 새로고침 등)은 퍼널에 기록하지 않는다.
+  // 2026-07-04 감사 — attempt 를 이 조기반환 '앞'에서 찍으면 재진입마다 attempt 만 쌓여
+  // confirmSuccessRate(=success/attempt)가 체계적으로 하향 왜곡(nicepay return 과 의미 통일).
+  if (order && (order.status === 'fulfilled' || order.status === 'fulfilling')) {
+    const result = await buildAlreadyFulfilledResult(order);
+    return NextResponse.json(result);
+  }
+
+  // B1 funnel — confirm 진입(신규 시도만).
   await logPaymentFunnelEvent(supabase, {
     stage: 'confirm_attempt',
     userId: user.id,
@@ -41,7 +51,6 @@ export async function POST(req: NextRequest) {
     orderId,
   });
 
-  let order = await getPaymentOrderForUser(orderId, user.id);
   if (!order) {
     await logPaymentFunnelEvent(supabase, {
       stage: 'confirm_failed',
@@ -52,11 +61,6 @@ export async function POST(req: NextRequest) {
       reason: 'order_not_found',
     });
     return NextResponse.json({ error: '결제 주문을 찾지 못했습니다.' }, { status: 400 });
-  }
-
-  if (order.status === 'fulfilled' || order.status === 'fulfilling') {
-    const result = await buildAlreadyFulfilledResult(order);
-    return NextResponse.json(result);
   }
 
   if (order.packageId !== packageId || order.amount !== parsedAmount) {

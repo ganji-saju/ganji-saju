@@ -17,7 +17,9 @@ export type LlmFeature =
   | 'chat'
   | 'home_banner'
   | 'today_premium'
-  | 'today_fortune';
+  | 'today_fortune'
+  // 2026-07-04 감사 — 오행 가이드가 기본값 'total_review'로 오귀속되던 문제(비용 영역 분리).
+  | 'ohaeng_guidance';
 
 export type LlmRunSource = 'openai' | 'fallback' | 'cache';
 

@@ -23,6 +23,7 @@ import {
   type TodayFortuneCacheKey,
 } from '@/server/ai/today-fortune/cache';
 import { generateAiText, getOpenAIInterpretationModel } from '@/server/ai/openai-text';
+import { recordLlmRun } from '@/server/ai/llm-telemetry';
 import { validateChapterBody } from '@/lib/saju/chapter-validator';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import type { SajuDataV1, SajuDataV2 } from '@/domain/saju/engine';
@@ -104,6 +105,9 @@ export async function generateTodayFortuneNarrative(args: {
 
   const cached = await readTodayFortuneAi(key);
   if (cached) {
+    // 2026-07-04 감사 — 캐시 hit 계측 누락 수정(형제 서비스 yearly/interpret/total_review 와
+    // 동일 패턴). 미기록 시 대시보드 cacheHitRate 가 항상 0%로 표시됨. 비차단(내부 no-throw).
+    await recordLlmRun({ feature: 'today_fortune', source: 'cache', model: cached.model, userId });
     return { headline: cached.headline, body: cached.body, source: 'cache' };
   }
 

@@ -1,6 +1,19 @@
 // 2026-05-25 Phase 3 — LLM 비용 대시보드 집계. 기존 ai_llm_runs(0b) 재활용(신규 테이블 없음).
 //   service_role 로 최근 N일 rows fetch 후 JS 집계. 순수 집계는 단위 테스트로 고정.
+//
+// 2026-07-04 admin 지표 전수감사 반영(operations-stats.ts 와 동일 결함 잔존분):
+//   - .limit(50000) 단일 fetch → PostgREST 기본 max-rows(1000)가 limit 을 클램프해
+//     최신 1000행만 집계되던 문제 → range 페이지네이션으로 전량 수집.
+//   - 일별 버킷을 UTC 날짜 → KST 날짜로 교체(KST 00~09시 호출이 전날로 집계되던 문제).
+//   - 윈도우 시작을 KST (오늘-N+1일) 자정으로 스냅(첫 날 부분일 과소집계 방지).
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
+
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/** timestamptz(UTC ISO) → KST 날짜키(YYYY-MM-DD). 날짜축=KST 정합 공통 규칙. */
+function toKstDateKey(iso: string): string {
+  return new Date(new Date(iso).getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+}
 
 export interface LlmRunRow {
   created_at: string;
@@ -45,7 +58,7 @@ const round3 = (n: number) => Math.round(n * 1000) / 1000;
 export function aggregateByDay(rows: ReadonlyArray<LlmRunRow>): DayStat[] {
   const map = new Map<string, { calls: number; costUsd: number; users: Set<string> }>();
   for (const r of rows) {
-    const date = r.created_at.slice(0, 10);
+    const date = toKstDateKey(r.created_at);
     let d = map.get(date);
     if (!d) {
       d = { calls: 0, costUsd: 0, users: new Set() };
@@ -139,15 +152,37 @@ export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
   if (!hasSupabaseServiceEnv) return empty;
   try {
     const supabase = await createServiceClient();
-    const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
-    const { data, error } = await supabase
-      .from('ai_llm_runs')
-      .select('created_at, feature, source, input_tokens, output_tokens, cost_usd, user_id_hash')
-      .gte('created_at', since)
-      .order('created_at', { ascending: false })
-      .limit(50000);
-    if (error || !data) return empty;
-    const rows = data as unknown as LlmRunRow[];
+    // 윈도우 시작 = KST (오늘 - windowDays + 1)일의 자정.
+    const todayKey = toKstDateKey(new Date().toISOString());
+    const startKey = new Date(
+      Date.parse(`${todayKey}T00:00:00Z`) - (windowDays - 1) * 86_400_000
+    )
+      .toISOString()
+      .slice(0, 10);
+    const since = new Date(Date.parse(`${startKey}T00:00:00+09:00`)).toISOString();
+
+    // PostgREST 기본 max-rows(1000)가 .limit 을 클램프 — range 페이지네이션으로 전량 수집.
+    // 정렬 tiebreak(id)로 페이지 경계 중복/누락 방지.
+    const PAGE_SIZE = 1000;
+    const MAX_PAGES = 50;
+    const rows: LlmRunRow[] = [];
+    for (let page = 0; page < MAX_PAGES; page += 1) {
+      const from = page * PAGE_SIZE;
+      const { data, error } = await supabase
+        .from('ai_llm_runs')
+        .select('created_at, feature, source, input_tokens, output_tokens, cost_usd, user_id_hash')
+        .gte('created_at', since)
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) return empty;
+      const pageRows = (data ?? []) as unknown as LlmRunRow[];
+      rows.push(...pageRows);
+      if (pageRows.length < PAGE_SIZE) break;
+      if (page === MAX_PAGES - 1) {
+        console.error(`[llm-cost-stats] exceeded ${MAX_PAGES * PAGE_SIZE} rows — truncated`);
+      }
+    }
     return {
       daily: aggregateByDay(rows),
       byFeature: aggregateByFeature(rows),

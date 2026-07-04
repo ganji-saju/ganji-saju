@@ -53,6 +53,18 @@ test('overallSummary: 전체 합·고유사용자·hit률', () => {
   assert.equal(s.cacheHitRate, 0.25); // cache 1 / 4
 });
 
+test('aggregateByDay: KST 날짜 버킷 — UTC 15시 이후는 KST 다음날', () => {
+  // 2026-05-24T16:00Z = KST 05-25 01:00 → '2026-05-25' 버킷이어야 한다(UTC slice 였으면 05-24).
+  const boundary = [
+    { created_at: '2026-05-24T14:59:00Z', feature: 'chat', source: 'openai', input_tokens: 1, output_tokens: 1, cost_usd: 0.001, user_id_hash: 'u1' },
+    { created_at: '2026-05-24T16:00:00Z', feature: 'chat', source: 'openai', input_tokens: 1, output_tokens: 1, cost_usd: 0.001, user_id_hash: 'u1' },
+  ];
+  const days = aggregateByDay(boundary);
+  assert.equal(days.length, 2);
+  assert.equal(days[0].date, '2026-05-24'); // 14:59Z = KST 23:59
+  assert.equal(days[1].date, '2026-05-25'); // 16:00Z = KST 익일 01:00
+});
+
 test('aggregate: 빈 배열 안전', () => {
   assert.deepEqual(aggregateByDay([]), []);
   assert.deepEqual(aggregateByFeature([]), []);
