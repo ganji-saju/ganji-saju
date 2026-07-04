@@ -168,7 +168,10 @@ export default async function AdminDashboardPage({
             <Stat label="피드백" value={fmtNum(ops.today.feedbackCount)} />
           </div>
         ) : (
-          <p className="text-[13px] text-[var(--app-copy-soft)]">데이터를 불러오지 못했습니다(service env 확인).</p>
+          <p className="text-[13px] text-[var(--app-copy-soft)]">
+            운영지표 스냅샷 생성 실패 — 서버 로그의 [admin-dashboard] 항목 확인 (service env
+            부재 또는 집계 쿼리 오류).
+          </p>
         )}
       </Card>
 
