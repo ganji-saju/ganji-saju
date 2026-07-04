@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { buildFAQPageSchema, serializeStructuredData } from '@/lib/seo/structured-data';
 
 export const metadata: Metadata = {
   title: '자주하는 질문 (FAQ)',
@@ -127,8 +128,17 @@ const FAQ_GROUPS: FaqGroup[] = [
 ];
 
 export default function FaqPage() {
+  // 2026-07-05 SEO — 실제 FAQ_GROUPS 콘텐츠 그대로 FAQPage JSON-LD 로 노출(콘텐츠 창작 없음).
+  const faqSchema = buildFAQPageSchema({
+    items: FAQ_GROUPS.flatMap((group) => group.items.map((it) => ({ question: it.q, answer: it.a }))),
+  });
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeStructuredData(faqSchema) }}
+      />
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="자주하는 질문" backHref="/my/settings" />
 
