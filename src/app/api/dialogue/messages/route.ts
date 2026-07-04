@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
   });
 
   if (!result.ok) {
+    // 클라이언트는 best-effort 저장이라 이 500 을 조용히 무시함 — 서버 로그가 유일한 관측점.
+    // (2026-07-04 프로덕션에서 dialogue_messages 테이블 drift 로 저장이 조용히 전멸했던 이력.)
+    console.error('[dialogue/messages] insert failed:', result.error);
     return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
   }
   return NextResponse.json({ ok: true, id: result.id });
