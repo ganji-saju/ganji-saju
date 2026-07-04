@@ -100,6 +100,12 @@ const layoutModeScript = `
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   applicationName: SITE_NAME,
+  // 2026-07-05 SEO — RSS 피드 자동발견 링크(<link rel="alternate" type="application/rss+xml">).
+  alternates: {
+    types: {
+      'application/rss+xml': '/rss.xml',
+    },
+  },
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
