@@ -4,9 +4,10 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: '꿈해몽',
+  title: '꿈해몽 — 무료 꿈해몽 사전 · 꿈풀이 검색',
   description:
-    '꿈에 나온 상징을 검색해 의미를 찾아보세요. 단어별 풀이와 상황별 해석을 제공하는 꿈해몽 사전입니다.',
+    '꿈에 나온 상징을 검색해 의미를 찾아보세요. 뱀꿈·돼지꿈·이빨 빠지는 꿈 등 단어별 풀이와 상황별 해석을 제공하는 무료 꿈해몽 사전입니다.',
+  alternates: { canonical: '/dream' },
 };
 
 export default function DreamLayout({ children }: { children: ReactNode }) {

@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/credits',
   },
+  // 코인 sunset(2026-06-30) 후 개인 잔액 페이지 — 색인 대상 아님.
+  robots: { index: false, follow: false },
 };
 
 export default function CreditsLayout({

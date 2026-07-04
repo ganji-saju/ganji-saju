@@ -11,8 +11,9 @@ import {
 } from '@/components/gangi/gangi-ui';
 
 export const metadata: Metadata = {
-  title: '대운 · 올해 흐름',
-  description: '10년 흐름과 올해 진행하기 좋은 달을 모바일 운세형 카드로 확인하는 간지사주 대운 화면입니다.',
+  title: '대운 풀이 — 10년 대운 · 올해 흐름',
+  description:
+    '내 사주의 10년 대운 흐름과 올해 진행하기 좋은 달을 확인하세요. 생년월일로 보는 명리 기반 대운 풀이입니다.',
   alternates: { canonical: '/daewoon' },
 };
 

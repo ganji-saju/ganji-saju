@@ -5,6 +5,11 @@ import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
+import {
+  buildOrganizationSchema,
+  buildWebSiteSchema,
+  serializeStructuredData,
+} from "@/lib/seo/structured-data";
 // 2026-05-15 handoff PR-J: 57 m-toast — 전역 토스트 인프라.
 import { AppToaster } from "@/components/notifications/app-toaster";
 // 2026-05-16 PR #137 — push 알림 클릭 ack 자동 전송.
@@ -132,6 +137,11 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "oi2g6kU6Sh-Ko3-4dJFPDknRw1f-SwaSLzOUa0Y43ng",
+    // 2026-07-04 SEO — 네이버 서치어드바이저 소유확인. 발급 값을 Vercel env
+    // NEXT_PUBLIC_NAVER_SITE_VERIFICATION 에 넣으면 meta 태그가 켜진다(미설정 시 생략).
+    ...(process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION
+      ? { other: { "naver-site-verification": process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION } }
+      : {}),
   },
 };
 
@@ -156,6 +166,15 @@ export default function RootLayout({
           render-blocking 으로 <head> 에 두어야 한다. */}
       <head>
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
+        {/* 2026-07-04 SEO — 사이트 아이덴티티 JSON-LD (Organization + WebSite). */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(buildOrganizationSchema()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(buildWebSiteSchema()) }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <SupabaseRecoveryRedirect />

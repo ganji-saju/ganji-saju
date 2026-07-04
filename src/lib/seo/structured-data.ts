@@ -99,6 +99,33 @@ export function buildBreadcrumbSchema(items: ReadonlyArray<BreadcrumbItem>): Rec
   };
 }
 
+// 2026-07-04 SEO 감사 — 사이트 아이덴티티 스키마(루트 layout 전용).
+// SearchAction 은 /search 가 미완성(robots disallow)이라 의도적으로 제외 — 완성 후 추가.
+
+/** schema.org Organization — 브랜드명·로고. 루트 layout 에 1회 주입. */
+export function buildOrganizationSchema(): Record<string, unknown> {
+  const siteUrl = getSiteUrl();
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: siteUrl,
+    logo: `${siteUrl}/images/gangi/og-image.png`,
+  };
+}
+
+/** schema.org WebSite — 사이트명(구글 사이트네임 인식 근거). 루트 layout 에 1회 주입. */
+export function buildWebSiteSchema(): Record<string, unknown> {
+  const siteUrl = getSiteUrl();
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: siteUrl,
+    inLanguage: 'ko-KR',
+  };
+}
+
 /** JSON.stringify wrapper — XSS-safe `<` 이스케이프 포함. JSON-LD <script> 안에서 사용. */
 export function serializeStructuredData(schema: Record<string, unknown>): string {
   return JSON.stringify(schema).replace(/</g, '\\u003c');

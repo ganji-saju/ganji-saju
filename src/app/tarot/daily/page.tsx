@@ -9,8 +9,9 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: '타로',
-  description: '질문을 고르고 카드 세 장을 뽑아 현재·원인·조언으로 오늘의 흐름을 읽어보세요.',
+  title: '오늘의 타로 — 무료 타로 카드 3장 뽑기',
+  description:
+    '무료 타로점을 지금 바로. 질문을 고르고 타로 카드 세 장을 뽑아 현재·원인·조언으로 오늘의 흐름을 읽어보세요.',
   alternates: {
     canonical: '/tarot/daily',
   },

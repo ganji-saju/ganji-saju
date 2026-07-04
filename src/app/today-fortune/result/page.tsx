@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: '오늘운세 결과',
   description: '오늘운세 무료 결과를 한 화면에서 확인하고 필요한 부분만 이어서 볼 수 있습니다.',
   alternates: { canonical: '/today-fortune/result' },
+  // 개인 결과 화면 — meta noindex(공유 스냅샷과 동일 정책).
+  robots: { index: false, follow: false },
 };
 
 export default async function TodayFortuneResultPage({

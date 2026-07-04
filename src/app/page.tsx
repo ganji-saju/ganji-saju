@@ -1,9 +1,19 @@
+import type { Metadata } from 'next';
 import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { GangiHomeClient } from '@/features/home/gangi-home-client';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { getHomeBanners } from '@/server/home/home-banners';
 
 export const dynamic = 'force-dynamic';
+
+// 2026-07-04 SEO — 홈이 루트 layout 기본 title('간지사주' 단독)만 노출하던 문제.
+// 핵심 검색 키워드(오늘의 운세·사주풀이·궁합·꿈해몽·타로)를 홈 title/description 에 반영.
+export const metadata: Metadata = {
+  title: { absolute: '간지사주 — 오늘의 운세 · 사주풀이 · 궁합 · 꿈해몽 · 무료 타로' },
+  description:
+    '생년월일로 보는 내 사주풀이와 오늘의 운세, 두 사람의 궁합, 꿈해몽 사전, 무료 타로 3장까지. 명리 기반 해석을 매일 무료로 시작하세요.',
+  alternates: { canonical: '/' },
+};
 
 // 2026-05-24 — 첫 방문 강제 온보딩 redirect 제거(분리). 매 첫 방문마다 4슬라이드
 //   인트로 carousel 로 보내 사이트 진입을 가로막아 불편하다는 사용자 피드백.
