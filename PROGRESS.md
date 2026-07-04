@@ -102,6 +102,17 @@
 ### 메인 카드 무료 진입점 우선 배치 (#602, 2026-07-04)
 - GANGI_HOME_CARDS 재정렬: 1줄 무료운세·무료타로(**HOT**) / 2줄 사주·대운(**추천**, 사주 HOT→추천) / 3줄 택일·궁합 / 4줄 꿈해몽·대화상담. 데이터 순서·태그만 변경(렌더러·라우트·가격 라벨 무변경).
 
+### 실운영 전 SEO 전수감사·하드닝 (#603·#604, 2026-07-04~05)
+- 워크플로 3감사(라우트 커버리지·메타데이터·한국검색) → 17건 발견 → **#603에서 14건 수정** + 인라인 적대검증(세션한도로 워크플로 사망 → 인라인 대체).
+- **[critical] robots 자기모순**: disallow `/saju/`가 핵심 전환 랜딩 `/saju/new`(sitemap priority 0.95)까지 차단 → allow 병기(최장일치). disallow `/my`(prefix)가 공개 콘텐츠 `/myeongri`(명리)까지 차단 → `/my/`+`/my$`로 축소.
+- **sitemap 정합**: 리다이렉트 스텁 6종·폐지 /credits 제거, Phase1(5/18) 이후 신규 공개 라우트(궁합·대운·택일·꿈해몽 허브·명리·별자리궁합 12×12 등) 추가. 리다이렉트 스텁 10곳 `redirect()`→`permanentRedirect()`(308).
+- **키워드 메타**: 홈 title '간지사주' 단독 → 검색어형, 랜딩 title 교체(타로/궁합/사주/대운/꿈해몽), canonical 보강. **noindex 5곳**(결제 checkout·개인 결과 2·회원가입·잔액).
+- **한국 검색엔진**: 네이버 서치어드바이저 소유확인 meta를 env(`NEXT_PUBLIC_NAVER_SITE_VERIFICATION`) 게이트로 추가 + Organization/WebSite JSON-LD 루트 주입.
+- **#604 후속**: `/rss.xml` RSS 2.0 피드(꿈해몽+띠+별자리, 92항목, buildRssFeed 순수함수+테스트4) + `/support/faq` FAQPage JSON-LD(기존 FAQ_GROUPS 재사용). Service/Offer 가격 스키마는 **의도 제외**(무료 시작 랜딩에 고정가=실제 불일치).
+- 사이트맵 `https://ganjisaju.kr/sitemap.xml` · RSS `https://ganjisaju.kr/rss.xml`(둘 다 라이브 200 확인). **네이버 RSS 제출 500 오류=배포 전 404였던 것**(#604 머지·배포로 해결).
+- ⚠️ **사용자 잔여 액션**: 네이버 서치어드바이저에 sitemap·rss 제출(소유확인 meta는 이미 라이브 확인), 구글 서치콘솔 sitemap 재제출.
+- 게이트: typecheck 0 · 커스텀러너 1022 · vitest 129 · build ✓.
+
 ---
 
 ## 2026-06-30 세션 (Claude) — 관리자 평생리포트 권한 부여 + dead-code 정리 + codebase-memory
