@@ -212,6 +212,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '결제',
     description: '선택한 플랜의 결제 정보를 마지막으로 확인하는 화면입니다.',
+    // 결제 화면 — 검색 색인 금지(플랜 파라미터별 URL 노출 방지).
+    robots: { index: false, follow: false },
   };
 }
 

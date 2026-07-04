@@ -23,8 +23,10 @@ function resolveRelationship(value: string | undefined): CompatibilityRelationsh
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: '궁합 입력',
-    description: '내 정보와 상대 정보를 직접 입력하거나 저장된 정보를 불러와 궁합을 준비하는 화면입니다.',
+    title: '궁합 보기 — 생년월일 궁합 테스트',
+    description:
+      '두 사람의 생년월일로 보는 사주 궁합. 연인·부부·친구·가족 관계별로 명식을 비교해 케미와 관계의 흐름을 읽어드립니다.',
+    alternates: { canonical: '/compatibility/input' },
   };
 }
 

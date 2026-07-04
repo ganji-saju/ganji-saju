@@ -103,6 +103,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: '궁합 결과',
     description: '두 사람의 명식을 비교해 관계의 흐름을 읽는 궁합 결과 화면입니다.',
+    // 개인 결과(쿼리에 생년 정보) — 공유 스냅샷과 동일하게 meta noindex 로 처리.
+    robots: { index: false, follow: false },
   };
 }
 
