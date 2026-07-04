@@ -126,13 +126,38 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   },
 ] as const;
 
-// 2026-06-23 — 메인 캐릭터 카드 개편(20260623 시안 slide3). 8카드 그리드:
-//   상단 사주·대운·택일·궁합 / 하단 꿈해몽·대화상담·무료타로·무료운세.
+// 2026-06-23 — 메인 캐릭터 카드 개편(20260623 시안 slide3). 8카드 그리드.
 //   각 카드 = 캐릭터 일러스트(image) + 메뉴명(title) + 후킹 카피(headline) + "바로 확인하기".
 //   별자리(star-sign)·띠운세(zodiac)는 시안에서 빠짐 → 그리드 제외, 진입점은 상단 별자리 slot +
 //   무료 허브(GANGI_FREE_HUB_ITEMS) 로 보존(라우트·SEO 유지, dead-anchor 회귀 방지).
 //   price 라벨은 기존값 유지(페이월 정합 — 결제 오해 방지).
+// 2026-07-04 — 무료 진입점 우선 배치(사용자 지시): 상단 무료운세·무료타로(HOT) /
+//   사주·대운(추천)은 한 줄 아래로 / 이후 택일·궁합·꿈해몽·대화상담.
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
+  {
+    id: 'today',
+    title: '무료운세',
+    desc: '오늘 한 줄',
+    price: '무료',
+    href: '/today-fortune?concern=general',
+    zodiac: 'rooster',
+    category: 'fortune',
+    tag: 'HOT',
+    image: 'today',
+    tint: 'pink',
+  },
+  {
+    id: 'tarot',
+    title: '무료타로',
+    desc: '세 장 뽑기',
+    price: '무료',
+    href: '/tarot/daily',
+    zodiac: 'rabbit',
+    category: 'fortune',
+    tag: 'HOT',
+    image: 'tarot',
+    tint: 'jade',
+  },
   {
     id: 'saju',
     title: '사주',
@@ -141,7 +166,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/saju/new',
     zodiac: 'dragon',
     category: 'saju',
-    tag: 'HOT',
+    tag: '추천',
     image: 'saju',
     tint: 'pink',
   },
@@ -204,28 +229,6 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'consult',
     image: 'consult',
     tint: 'amber',
-  },
-  {
-    id: 'tarot',
-    title: '무료타로',
-    desc: '세 장 뽑기',
-    price: '무료',
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
-    category: 'fortune',
-    image: 'tarot',
-    tint: 'jade',
-  },
-  {
-    id: 'today',
-    title: '무료운세',
-    desc: '오늘 한 줄',
-    price: '무료',
-    href: '/today-fortune?concern=general',
-    zodiac: 'rooster',
-    category: 'fortune',
-    image: 'today',
-    tint: 'pink',
   },
 ] as const;
 
