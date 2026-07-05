@@ -56,33 +56,32 @@ export function buildFallbackInterpretation(
   const evidenceCards = grounding?.evidenceJson.classics.cards ?? [];
   const personalContext = grounding?.personalizationContext;
   const primaryConcept = grounding?.evidenceJson.primaryConcept ?? null;
-  const strengthSummary =
-    grounding?.evidenceJson.strength.level && grounding?.evidenceJson.strength.score !== null
-      ? `강약은 ${grounding.evidenceJson.strength.level} 흐름이며, 현재 균형 점수는 ${grounding.evidenceJson.strength.score}점입니다.`
-      : null;
-  const patternSummary = grounding?.evidenceJson.pattern.name
-    ? `격국의 중심은 ${grounding.evidenceJson.pattern.name}${grounding.evidenceJson.pattern.tenGod ? ` · ${grounding.evidenceJson.pattern.tenGod}` : ''}입니다.`
+  // 2026-07-06 — "강약은 …균형 점수는 N점" 은 점수 나열이라 밀착감이 떨어져
+  //   레벨만 자연어로. "강약" 은 simplify 가 "컨디션 균형" 으로 바꿔 "균형" 이
+  //   세 번 겹치므로 주어를 "기운의 세기" 로 바꿔 겹침을 피한다.
+  const strengthSummary = grounding?.evidenceJson.strength.level
+    ? `기운의 세기는 ${grounding.evidenceJson.strength.level} 쪽으로 흐릅니다.`
     : null;
   const yongsinSummary = grounding?.evidenceJson.yongsin.primary
     ? `보완 축은 ${grounding.evidenceJson.yongsin.primary}${grounding.evidenceJson.yongsin.support.length > 0 ? `, ${grounding.evidenceJson.yongsin.support.join(' · ')}` : ''}입니다.`
     : null;
-  const luckSummary = grounding?.evidenceJson.luckFlow.currentMajorLuck
-    ? `현재 ${grounding.evidenceJson.luckFlow.currentMajorLuck} 대운이 함께 작동합니다.`
-    : grounding?.evidenceJson.luckFlow.saewoon
-      ? `현재 ${grounding.evidenceJson.luckFlow.saewoon} 세운이 크게 작동합니다.`
-      : null;
+  // 2026-07-06 — 밀착 개인화: 사람 얘기(육십갑자 core)로 시작하고, 보완 축·기운
+  //   세기처럼 자연어로 깔끔히 읽히는 줄로 받친다. 과거의 "{개념} 흐름을
+  //   참고했습니다" 는 풀이가 아니라 인용 각주라 제거.
+  //   luckSummary(currentMajorLuck)는 한자 간지("丁酉")를 담아 한글 규칙 위반 +
+  //   patternSummary 는 격국명·십성 라벨이 겹쳐 "책임·도전 · 책임·도전" 이 되므로
+  //   요약에서는 제외 — 방향은 insights·headline 이 이미 짚는다.
   const summaryCore = cleanText(
     compactStrings([
       personalContext?.sixtyGapja
         ? // 2026-05-23: title 이 이미 '…흐름' 으로 끝나면(예: 임자 '큰 물이 큰 물을 만난 흐름')
           //   ' 흐름이' 를 덧붙여 '흐름 흐름이' 중복이 생기므로, 끝나면 조사만 붙인다.
           `${personalContext.sixtyGapja.title}${/흐름$/.test(personalContext.sixtyGapja.title) ? '이' : ' 흐름이'} 기본 바탕입니다. ${personalContext.sixtyGapja.core}`
-        : null,
-      primaryConcept ? `${primaryConcept} 흐름을 참고했습니다.` : null,
-      strengthSummary,
-      patternSummary,
+        : primaryConcept
+          ? `${primaryConcept} 흐름이 이 사주의 중심을 잡습니다.`
+          : null,
       yongsinSummary,
-      luckSummary,
+      strengthSummary,
     ]).join(' '),
     MAX_SUMMARY_LENGTH
   );
@@ -114,7 +113,7 @@ export function buildFallbackInterpretation(
   return {
     headline: cleanText(simplifySajuCopy(report.headline), MAX_HEADLINE_LENGTH),
     summary: cleanText(
-      `${summaryPrefix}${limitSajuSentences(summaryCore || report.summary, 3)}`,
+      `${summaryPrefix}${limitSajuSentences(summaryCore || report.summary, 4)}`,
       MAX_SUMMARY_LENGTH
     ),
     insights:
@@ -363,12 +362,16 @@ export function createInterpretationPrompt(
       'recentFeedbackSummary가 있으면 최근 사용자 반응을 참고해 단정 문구의 강도만 미세 조절하되 유보형으로 돌아가지 않습니다. 계산 근거를 앞세웁니다.',
       '의학, 법률, 투자, 생명·안전 문제는 단정하지 말고 생활 조언 수준으로 제한합니다. 그 외 일·관계·연애·재물 등 일상 흐름은 단정형으로 작성합니다.',
       '근거 없는 일반론을 길게 늘어놓지 말고, 사용자가 바로 이해할 수 있는 상황과 행동으로 바꿉니다.',
-      'insights 각 항목은 반드시 "근거 글자 1개(일주/격국/용신/오행 중 하나) + 행동" 구조로 씁니다. 예: "정관격이라 책임을 분명히 적어두세요." / "용신 火를 살리려면 짧게라도 말하세요."',
+      // 2026-07-06 — 밀착 개인화(show, don't tell): 추상 성격어 대신 이 사람의 실제 일상 장면으로.
+      '[밀착 개인화] 성향·강점·약점을 추상적으로 서술하지 말고 그 성향이 드러나는 구체적 일상 장면으로 보여주세요. "책임감이 강합니다"(추상·일반론) ❌ → "맡은 일은 끝을 봐야 마음이 놓입니다. 남들이 이미 넘어간 자리를 혼자 한 번 더 확인합니다"(장면·단정형) ⭕.',
+      '[밀착 개인화] 누구에게나 해당되는 말은 실패입니다. "대인관계가 원만합니다" ❌ → "처음 보는 자리에선 말수를 줄이고 상대를 살핍니다. 편해졌다 싶으면 그때 말문이 트입니다" ⭕. 반드시 이 사주 데이터(강약·격국·용신·오행·일주)에서만 나오는 차이를 장면으로 짚습니다.',
+      '[밀착 개인화] structuredInput 의 직업·관계·고민 컨텍스트가 있으면 장면의 배경으로 자연스럽게 깔아 이 사람의 지금 삶에 닿게 합니다. 없는 사실·사건은 지어내지 말고, 일어날 수 있는 장면은 "~한다면", "~할 때"처럼 조건으로 엽니다.',
+      'insights 각 항목은 반드시 "근거 글자 1개(일주/격국/용신/오행 중 하나) + 그 성향이 드러나는 구체 장면 + 행동" 구조로 씁니다. 예: "정관격이라 책임을 혼자 떠안다 지치기 쉬우니, 맡기 전에 \'어디까지\' 를 한 줄로 적어두세요." / "용신 火가 약해 하고 싶은 말을 삼키다 뒤늦게 후회하니, 떠오를 때 짧게라도 먼저 말하세요."',
       '응답은 반드시 JSON 객체 하나만 반환합니다. Markdown, 설명 문장, 코드블록을 붙이지 않습니다.',
-      'JSON 스키마: {"headline":"짧은 제목","summary":"2~3문장의 자연어 요약","insights":["근거 기반 통찰 1","근거 기반 통찰 2","근거 기반 통찰 3"]}',
+      'JSON 스키마: {"headline":"짧은 제목","summary":"3~4문장의 자연어 요약","insights":["근거+장면+행동 통찰 1","통찰 2","통찰 3","통찰 4"]}',
       'headline은 38자 안팎으로, 일주 이름 또는 격국을 인용해 사용자가 "내 사주 풀이다" 라고 즉시 인식할 수 있게 씁니다.',
-      'summary는 2~3문장으로 쓰고, 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 현재 흐름의 핵심 해석을 단정형으로 넣습니다.',
-      'insights는 3~4개로 작성하며, 각 항목은 서로 겹치지 않게 강점/주의점/행동 제안/관계 또는 일의 포인트를 나눠 담습니다. 모든 항목은 단정형 + 명령형으로 끝맺습니다.',
+      'summary는 3~4문장으로 풍성하게 씁니다. 첫 문장에는 일주 + 격국 + 용신 중 최소 하나를 인용해 핵심 해석을 단정형으로 넣고, 이어지는 문장은 그 해석이 이 사람 삶에서 어떻게 드러나는지 구체적 장면으로 풀어 읽는 맛을 살립니다.',
+      'insights는 4개로 작성하며, 강점/약점(무너지는 자리)/관계 또는 일의 포인트/오늘의 행동을 각각 다른 항목에 담되 서로 겹치지 않게 합니다. 각 항목은 근거 글자 + 구체 장면 + 행동 구조로, 단정형 + 명령형으로 끝맺습니다.',
       ...buildReportCounselorInstructions(counselorId),
     ].join('\n'),
     input: structuredInput,
