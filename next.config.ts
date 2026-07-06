@@ -17,6 +17,7 @@ function firstNonEmptyEnv(...keys: string[]) {
 //   Report-Only 는 차단하지 않고 위반만 브라우저 콘솔에 보고한다(관찰→enforce 전 단계).
 //   출처 인벤토리: Toss 결제 SDK(js.tosspayments.com / 결제 iframe),
 //   Vercel Analytics·Speed Insights(va.vercel-scripts.com / vitals.vercel-insights.com),
+//   Google Analytics 4 + Tag Manager(www.googletagmanager.com 스크립트·noscript iframe · *.google-analytics.com·*.analytics.google.com 비콘),
 //   Supabase(*.supabase.co + wss), next/font/google(셀프호스팅이라 외부 폰트 출처 불필요),
 //   inline script/style(Next 주입 + JSON-LD + style 속성) → 'unsafe-inline'.
 //   ⚠️ 운영 권고: 콘솔 위반 로그를 일정 기간 수집한 뒤 enforce(Content-Security-Policy)로 승격.
@@ -26,12 +27,15 @@ const CSP_DIRECTIVES = [
   "object-src 'none'",
   "frame-ancestors 'self'",
   "form-action 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://va.vercel-scripts.com",
+  // Google Analytics 4 (gtag.js) — 스크립트는 googletagmanager, 수집 비콘은 google-analytics/analytics.google.com.
+  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://va.vercel-scripts.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://vitals.vercel-insights.com",
-  "frame-src 'self' https://*.tosspayments.com https://*.tosspay.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com",
+  // GTM noscript iframe(googletagmanager.com/ns.html) 허용. ⚠️ GTM 컨테이너가 추가
+  //   태그(광고 픽셀 등)를 붙이면 그 출처는 컨테이너별로 CSP 에 별도 추가 필요.
+  "frame-src 'self' https://*.tosspayments.com https://*.tosspay.com https://www.googletagmanager.com",
   // 2026-06-21 — 위반 보고를 /api/csp-report 로 수집(enforce 승격 전 관찰용).
   'report-uri /api/csp-report',
 ].join('; ');
