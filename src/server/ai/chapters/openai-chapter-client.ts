@@ -14,7 +14,10 @@ export interface OpenAIChapterClientOptions {
   model?: string;
   /** 최대 출력 토큰. 챕터당 300자 본문이면 ~600 토큰 충분 */
   maxOutputTokens?: number;
-  /** 0~1 (기본 0.5) — 결정성 vs 자연스러움 균형 */
+  /**
+   * 0~1. **기본 미전달** — GPT-5.x 계열이 temperature 를 지원하지 않아(400) 값을 넣으면
+   * 챕터 LLM 이 전량 fallback 으로 떨어진다. temperature 를 받는 구형 모델을 쓸 때만 명시.
+   */
   temperature?: number;
   /** OpenAI 호출 타임아웃 (기본 15초) */
   timeoutMs?: number;
@@ -76,7 +79,8 @@ export class OpenAIChapterClient implements ChapterLLMClient {
       fallbackText: '',
       model: this.options.model ?? getOpenAIInterpretationModel(),
       maxOutputTokens: this.options.maxOutputTokens ?? 700,
-      temperature: this.options.temperature ?? 0.5,
+      // temperature 는 명시 시에만 전달 (미설정=undefined=미전달). GPT-5.x 미지원 대응.
+      temperature: this.options.temperature,
       timeoutMs: this.options.timeoutMs,
       feature: 'chapter',
       // 2026-05-20 V2-5 PR N — JSON structured output 활성 (default: true).
