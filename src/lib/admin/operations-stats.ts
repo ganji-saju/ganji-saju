@@ -20,6 +20,12 @@ export interface DailySeries {
   value: number;
 }
 
+/** 기간별 결제 집계 — 건수 + 금액(원). */
+export interface PeriodPayment {
+  count: number;
+  amountWon: number;
+}
+
 export interface OperationsSnapshot {
   generatedAt: string;
   /** 시간 윈도우 (일). */
@@ -55,6 +61,28 @@ export interface OperationsSnapshot {
     totalPurchaseAmountWon: number;
     /** admin_user_summary 마지막 갱신 시각 (요약 지연 관측용, 없으면 null). */
     summaryRefreshedAt: string | null;
+  };
+  /**
+   * 방문자(순, 자체 핑) 기간별 — distinct visitor. 오늘은 daily_counts(062),
+   * 주간/월간/누적은 distinct RPC(site_visit_unique_counts, migration 065).
+   * RPC 미적용/미집계면 해당 값 null('—' 표시). 오늘 ≤ 주간 ≤ 월간 ≤ 누적.
+   */
+  visitors: {
+    /** 오늘 순방문자 (= today.visitors, 편의 재노출). */
+    today: number | null;
+    /** 최근 7일 순방문자(distinct). */
+    weekly: number | null;
+    /** 최근 30일 순방문자(distinct). */
+    monthly: number | null;
+    /** 전체 기간 순방문자(distinct). */
+    allTime: number | null;
+  };
+  /** 결제(payment_orders 완료 상태) 기간별 — 건수 + 금액(원). */
+  payments: {
+    today: PeriodPayment;
+    weekly: PeriodPayment;
+    monthly: PeriodPayment;
+    allTime: PeriodPayment;
   };
   /** 윈도우 내 평균 만족도 (today_fortune_feedback.overall_rating). -1~+1. */
   satisfaction: {
@@ -105,6 +133,12 @@ function buildEmptySeries(days: number, endKey: string): DailySeries[] {
     series.push({ date: d.toISOString().slice(0, 10), value: 0 });
   }
   return series;
+}
+
+/** KST 날짜키(YYYY-MM-DD)를 deltaDays 만큼 이동. buildEmptySeries 와 동일 산술(표기용). */
+function shiftDateKey(key: string, deltaDays: number): string {
+  const ms = Date.parse(`${key}T00:00:00Z`) + deltaDays * 86_400_000;
+  return new Date(ms).toISOString().slice(0, 10);
 }
 
 function fillSeries(empty: DailySeries[], counts: CountByDateMap): DailySeries[] {
@@ -212,6 +246,15 @@ export async function buildOperationsSnapshot(
   const windowStartIso = windowStart.toISOString();
   const nowIso = now.toISOString();
 
+  // 주간(7일)·월간(30일) 기간 시작(오늘 포함) — KST 자정 기준 날짜키.
+  const weeklyStartKey = shiftDateKey(todayKey, -6);
+  const monthlyStartKey = shiftDateKey(todayKey, -29);
+  // 결제 기간별 집계는 월간(30일)까지 커버해야 하므로, 시리즈 윈도우와 월간 중
+  // '이른 쪽'부터 결제 행을 가져온다(트렌드는 여전히 windowDays 만큼만 그려짐).
+  const ordersStartKey =
+    seriesSkeleton[0].date < monthlyStartKey ? seriesSkeleton[0].date : monthlyStartKey;
+  const ordersStartIso = new Date(Date.parse(`${ordersStartKey}T00:00:00+09:00`)).toISOString();
+
   // 병렬 쿼리 — 행이 필요한 것들은 전량 페이지네이션, 건수만 필요한 것은 count head.
   const [
     signupRowsRaw,
@@ -225,6 +268,7 @@ export async function buildOperationsSnapshot(
     totalUsersCountResp,
     lastRefreshResp,
     visitCountsResp,
+    visitUniqueResp,
   ] = await Promise.all([
     // 신규 가입 (admin_user_summary.signup_at — migration 049 기준).
     // admin_user_summary 는 cron 으로 주기적으로 갱신되므로 매우 최근 가입자는
@@ -248,7 +292,8 @@ export async function buildOperationsSnapshot(
           .from('payment_orders')
           .select('user_id, amount, created_at')
           .in('status', COMPLETED_ORDER_STATUSES)
-          .gte('created_at', windowStartIso)
+          // 월간(30일) 버킷까지 커버하도록 시리즈 윈도우보다 넓게 fetch 가능.
+          .gte('created_at', ordersStartIso)
           .order('created_at', { ascending: true })
           .order('id', { ascending: true })
           .range(from, to)
@@ -333,6 +378,13 @@ export async function buildOperationsSnapshot(
       from_key: seriesSkeleton[0].date,
       to_key: todayKey,
     }),
+
+    // 기간별 순방문자(distinct visitor_hash) — RPC(site_visit_unique_counts, migration 065).
+    // 미적용 시 error → weekly/monthly/allTime = null(graceful). 오늘은 daily_counts 로 별도 산출.
+    client.rpc('site_visit_unique_counts', {
+      week_key: weeklyStartKey,
+      month_key: monthlyStartKey,
+    }),
   ]);
 
   // signup_at → created_at 로 매핑해 countByDate / toLocalDateKey 공통 인터페이스를 유지한다.
@@ -350,6 +402,14 @@ export async function buildOperationsSnapshot(
   if (visitRows) {
     for (const row of visitRows) visitorCounts[row.date_key] = Number(row.visitors) || 0;
   }
+  // 기간별 순방문자(distinct) — RPC 미적용/에러면 null(graceful, '—' 표시).
+  const visitUniqueRow = visitUniqueResp.error
+    ? null
+    : ((visitUniqueResp.data ?? [])[0] as
+        | { weekly: number | string; monthly: number | string; all_time: number | string }
+        | undefined);
+  const toVisitorCount = (v: number | string | undefined) =>
+    visitUniqueRow == null || v == null ? null : Number(v) || 0;
 
   // 일별 추이 시리즈 빌드 — 오래된 → 최신.
   const trends = {
@@ -386,6 +446,17 @@ export async function buildOperationsSnapshot(
   // 오늘 통계.
   const todaySignups = signupRows.filter((r) => toLocalDateKey(r.created_at) === todayKey).length;
   const todayPurchaseRows = purchaseRows.filter((r) => toLocalDateKey(r.created_at) === todayKey);
+  // 기간별 결제 — purchaseRows 는 월간(30일)까지 커버해 fetch 됨(ordersStartIso).
+  const sumPayments = (rows: typeof purchaseRows): PeriodPayment => ({
+    count: rows.length,
+    amountWon: rows.reduce((sum, r) => sum + r.amount, 0),
+  });
+  const weeklyPayment = sumPayments(
+    purchaseRows.filter((r) => toLocalDateKey(r.created_at) >= weeklyStartKey)
+  );
+  const monthlyPayment = sumPayments(
+    purchaseRows.filter((r) => toLocalDateKey(r.created_at) >= monthlyStartKey)
+  );
   const todayReadings = readingsRows.filter((r) => toLocalDateKey(r.created_at) === todayKey).length;
   const todayFeedback = feedbackRows.filter((r) => toLocalDateKey(r.created_at) === todayKey).length;
 
@@ -448,6 +519,18 @@ export async function buildOperationsSnapshot(
       totalPurchaseAmountWon: lifetimeTotals.amountWon,
       summaryRefreshedAt:
         (lastRefreshResp.data as { refreshed_at?: string } | null)?.refreshed_at ?? null,
+    },
+    visitors: {
+      today: visitRows ? (visitorCounts[todayKey] ?? 0) : null,
+      weekly: toVisitorCount(visitUniqueRow?.weekly),
+      monthly: toVisitorCount(visitUniqueRow?.monthly),
+      allTime: toVisitorCount(visitUniqueRow?.all_time),
+    },
+    payments: {
+      today: sumPayments(todayPurchaseRows),
+      weekly: weeklyPayment,
+      monthly: monthlyPayment,
+      allTime: { count: lifetimeTotals.count, amountWon: lifetimeTotals.amountWon },
     },
     satisfaction: {
       sampleSize: sample,

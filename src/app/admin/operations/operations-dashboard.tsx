@@ -25,6 +25,18 @@ function formatNum(n: number): string {
   return n.toLocaleString();
 }
 
+/** 순방문자 값 — 미집계(null)면 '—'. */
+function fmtVisitor(n: number | null): string {
+  return n == null ? '—' : formatNum(n);
+}
+
+/** 원화 금액 — 만/억 단위 축약(좁은 셀 대응). 미만은 그대로. */
+function fmtWonCompact(won: number): string {
+  if (won >= 100_000_000) return `${(won / 100_000_000).toFixed(won % 100_000_000 === 0 ? 0 : 1)}억`;
+  if (won >= 10_000) return `${(won / 10_000).toFixed(won % 10_000 === 0 ? 0 : 1)}만`;
+  return `${formatNum(won)}원`;
+}
+
 function formatRating(n: number): string {
   if (n > 0) return `+${n.toFixed(3)}`;
   return n.toFixed(3);
@@ -157,6 +169,36 @@ const AREA_LABEL: Record<keyof OperationsSnapshot['satisfaction']['areaAverages'
   relationship: '👥 인간관계',
 };
 
+/** 카드 하단의 기간별(주간/월간/누적) 미니 브레이크다운 — 큰 숫자(오늘)를 보완. */
+function PeriodRow({
+  items,
+}: {
+  items: { label: string; value: string; sub?: string }[];
+}) {
+  return (
+    <div
+      className="mt-3 grid gap-2"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}
+    >
+      {items.map((it) => (
+        <div
+          key={it.label}
+          className="rounded-[10px] border px-2 py-1.5 text-center"
+          style={{ borderColor: 'var(--app-line)' }}
+        >
+          <div className="text-[11px] font-medium text-[var(--app-copy-soft)]">{it.label}</div>
+          <div className="mt-0.5 text-[15px] font-extrabold tabular-nums text-[var(--app-ink)]">
+            {it.value}
+          </div>
+          {it.sub ? (
+            <div className="text-[10.5px] tabular-nums text-[var(--app-copy-soft)]">{it.sub}</div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function OperationsDashboard() {
   const [windowDays, setWindowDays] = useState(14);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
@@ -283,7 +325,7 @@ export function OperationsDashboard() {
             >
               <div className="flex items-baseline justify-between gap-2">
                 <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
-                  🚪 방문자 (순, 자체 집계)
+                  🚪 방문자 (순, 자체 집계) · 오늘
                 </div>
                 <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {snap.today.visitors == null ? '—' : formatNum(snap.today.visitors)}
@@ -299,6 +341,19 @@ export function OperationsDashboard() {
                   방문은 미포함(하한치), 전체 트래픽은 Vercel Analytics 참조.
                 </p>
               )}
+              {/* 기간별 순방문자(distinct) — migration 065 미적용이면 '—'. */}
+              <PeriodRow
+                items={[
+                  { label: '주간(7일)', value: fmtVisitor(snap.visitors.weekly) },
+                  { label: '월간(30일)', value: fmtVisitor(snap.visitors.monthly) },
+                  { label: '누적(전체)', value: fmtVisitor(snap.visitors.allTime) },
+                ]}
+              />
+              {snap.visitors.weekly == null ? (
+                <p className="mt-2 text-[11px] text-[var(--app-copy-soft)]">
+                  주간/월간/누적 순방문자는 migration 065(site_visit_unique_counts) 적용 후 표시.
+                </p>
+              ) : null}
             </article>
 
             <article
@@ -346,7 +401,7 @@ export function OperationsDashboard() {
             >
               <div className="flex items-baseline justify-between gap-2">
                 <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
-                  💳 결제 (건수)
+                  💳 결제 (건수) · 오늘
                 </div>
                 <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-amber)]">
                   {formatNum(snap.today.purchaseCount)}
@@ -369,6 +424,26 @@ export function OperationsDashboard() {
                   </strong>
                 </span>
               </div>
+              {/* 기간별 결제 — 건수(위) + 금액(아래). 누적은 payment_orders 전체(RPC/폴백). */}
+              <PeriodRow
+                items={[
+                  {
+                    label: '주간(7일)',
+                    value: `${formatNum(snap.payments.weekly.count)}건`,
+                    sub: fmtWonCompact(snap.payments.weekly.amountWon),
+                  },
+                  {
+                    label: '월간(30일)',
+                    value: `${formatNum(snap.payments.monthly.count)}건`,
+                    sub: fmtWonCompact(snap.payments.monthly.amountWon),
+                  },
+                  {
+                    label: '누적(전체)',
+                    value: `${formatNum(snap.payments.allTime.count)}건`,
+                    sub: fmtWonCompact(snap.payments.allTime.amountWon),
+                  },
+                ]}
+              />
             </article>
 
             <article
