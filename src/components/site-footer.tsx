@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BUSINESS_INFO } from '@/lib/business-info';
+// 2026-07-06 — 동의 배너 재노출(재선택·철회 경로). PIPA: 철회는 동의만큼 쉬워야 한다.
+import { openConsentBanner } from '@/components/analytics/analytics-consent';
 
 interface CompanyItem {
   label: string;
@@ -339,7 +341,17 @@ export default function SiteFooter() {
           <span>
             © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
           </span>
-          <span>서비스명 간지사주</span>
+          <span className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={openConsentBanner}
+              className="underline underline-offset-2 hover:text-white"
+              style={{ color: 'inherit', background: 'none', border: 0, padding: 0, cursor: 'pointer', fontSize: 'inherit' }}
+            >
+              쿠키 설정
+            </button>
+            서비스명 간지사주
+          </span>
         </div>
       </div>
     </footer>
