@@ -66,12 +66,22 @@ product_price_changes           -- append-only 감사 이력
 
 ### Phase 1 — 결제 금액 + admin 메뉴 (PR ①)
 
-**머니패스 리졸버 전환**(4곳, 서버):
-- `prepare/route.ts` — 주문 amount = `await resolvePackagePrice(pkg.id)`
-- `confirmation.ts` — 검증 기준을 리졸버 값으로
-- `order-ledger.ts` — 원장 금액을 리졸버 값으로(주문 생성 시점 스냅샷 — 과거 주문은 자기 값 보존)
-- `nicepay/return/route.ts` — 검증 기준을 리졸버 값으로
-- 4곳 모두 **동일 리졸버** → 사용자 노출가 = 청구액 = 검증값.
+**머니패스 — 스냅샷 방식(리졸버는 주문 생성 시점에만 호출):**
+
+계획 중 확인한 핵심 사실:
+- 주문 금액의 단일 기록 지점은 `order-ledger.ts:187`(`createPaymentOrder`가 `amount: input.pkg.price` 저장).
+- `confirm/route.ts:66`은 이미 `order.amount !== parsedAmount → 거부`로 **저장된 스냅샷을 authoritative 검증**한다. `nicepay/return:208`도 `order.amount !== amount`를 검증한다.
+- 따라서 `confirmation.ts:56`·`nicepay/return:208`의 `pkg.price !== amount`(카탈로그 상수 비교)는 **중복 가드**이며, 가격 변경 시 (order.amount=신가, 카탈로그 상수=구가) **정상 주문을 거부**해 버린다.
+
+전환:
+1. `prepare/route.ts` — 주문 생성 전 `const resolved = await resolvePackagePrice(pkg.id)` 1회 호출. `createPaymentOrder`에 명시적 `amount: resolved` 전달(신규 파라미터). 퍼널 로그 amount도 `resolved` 사용.
+2. `order-ledger.ts` `createPaymentOrder` — `amount` 파라미터 추가, `amount: input.pkg.price` → `amount: input.amount`(리졸버가 스냅샷한 값).
+3. `confirmation.ts:56` — `pkg.price !== amount` 중복 체크 **제거**(pkg 존재·amount 유한만 검증). authoritative 정합은 `confirm/route.ts:66`의 `order.amount` 비교가 담당.
+4. `nicepay/return/route.ts:208` — `order.amount !== amount || pkg.price !== amount` → `order.amount !== amount`(카탈로그 상수 절 제거).
+
+→ 리졸버는 **주문 생성(quote) 시점에만** 값을 스냅샷. 이후 confirm/return은 그 스냅샷(order.amount)을 검증하므로 **in-flight 가격 변경에도 진행 중 결제가 깨지지 않는다**(현행 상수 방식보다 오히려 정확). 과거 주문은 자기 order.amount·metadata.amount 보존.
+
+**리졸버를 쓰지 않는 경로(중요):** 환불(`credit-refunds.ts`)·이력(`payment-history.ts`)·이행(`fulfillment.ts`)은 실결제액(`metadata.amount`) 또는 카탈로그 기본값을 유지한다 — 과거 충실도. 리졸버(라이브 편집가)는 **신규 청구에만** 쓴다.
 
 **신규 `/admin/pricing`** (`/admin/policies` 3파일 구조 미러):
 - `src/app/admin/pricing/page.tsx` — 서버 컴포넌트, **super_admin** 게이트, 전 카탈로그 상품 + 리졸버 가격 로드.
