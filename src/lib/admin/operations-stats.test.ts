@@ -263,11 +263,61 @@ test('buildOperationsSnapshot - 누적 결제: RPC(payment_order_totals) 우선'
   assert.equal(snap.today.purchaseCount, 1);
 });
 
+test('buildOperationsSnapshot - 결제 기간별 버킷(오늘/주간/월간/누적)', async () => {
+  const day = 86_400_000;
+  const iso = (offsetDays: number) => new Date(Date.now() - offsetDays * day).toISOString();
+  const client = createMockClient({
+    payment_orders: [
+      // window(=월간까지 커버) 행 — 오늘 / 10일 전 / 40일 전.
+      {
+        data: [
+          { user_id: 'u1', amount: 9900, created_at: iso(0) }, // 오늘·주간·월간
+          { user_id: 'u2', amount: 5000, created_at: iso(10) }, // 월간만(주간 밖)
+          { user_id: 'u3', amount: 3000, created_at: iso(40) }, // 월간 밖
+        ],
+      },
+      // lifetime 폴백(RPC 미정의) — allTime 원장.
+      {
+        data: [
+          { amount: 9900, created_at: iso(0) },
+          { amount: 5000, created_at: iso(10) },
+          { amount: 3000, created_at: iso(40) },
+          { amount: 100, created_at: iso(400) },
+        ],
+      },
+    ],
+  });
+  const snap = await buildOperationsSnapshot(client);
+  assert.deepEqual(snap.payments.today, { count: 1, amountWon: 9900 });
+  assert.deepEqual(snap.payments.weekly, { count: 1, amountWon: 9900 });
+  assert.deepEqual(snap.payments.monthly, { count: 2, amountWon: 14900 });
+  assert.deepEqual(snap.payments.allTime, { count: 4, amountWon: 18000 });
+});
+
 test('buildOperationsSnapshot - 방문자: RPC 미존재면 null(미적용 graceful)', async () => {
   const client = createMockClient({});
   const snap = await buildOperationsSnapshot(client);
   assert.equal(snap.today.visitors, null);
   assert.deepEqual(snap.trends.visitors, []);
+  // 기간별 순방문자도 미집계면 모두 null.
+  assert.equal(snap.visitors.weekly, null);
+  assert.equal(snap.visitors.monthly, null);
+  assert.equal(snap.visitors.allTime, null);
+});
+
+test('buildOperationsSnapshot - 방문자 기간별: distinct RPC 결과 반영', async () => {
+  const client = createMockClient(
+    {},
+    {
+      site_visit_unique_counts: {
+        data: [{ weekly: 50, monthly: 120, all_time: 400 }] as unknown as Row[],
+      },
+    }
+  );
+  const snap = await buildOperationsSnapshot(client);
+  assert.equal(snap.visitors.weekly, 50);
+  assert.equal(snap.visitors.monthly, 120);
+  assert.equal(snap.visitors.allTime, 400);
 });
 
 test('buildOperationsSnapshot - 방문자: RPC 결과 반영', async () => {
