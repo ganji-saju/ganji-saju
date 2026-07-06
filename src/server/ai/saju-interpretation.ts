@@ -28,9 +28,16 @@ const MAX_SUMMARY_LENGTH = 520;
 const MAX_INSIGHT_LENGTH = 220;
 const MAX_INSIGHTS = 4;
 
+// 2026-07-06 — interpret 경로는 챕터/총평과 달리 런타임 한자 validator 가 없다.
+//   프롬프트 입력에 간지(辛巳 등)가 한자로 들어가 LLM 이 "辛巳대운" 처럼 흘리면
+//   그대로 사용자에게 노출된다(한글 규칙 위반). cleanText 가 headline/summary/
+//   insights 의 유일 관문이므로 여기서 한자를 제거해 방어한다(프롬프트 금지 + 스트립
+//   이중 방어). chapter-validator 와 동일한 문자 클래스(U+4E00–U+9FFF).
+const HANJA_PATTERN = /[一-鿿]/g;
+
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== 'string') return '';
-  return value.replace(/\s+/g, ' ').trim().slice(0, maxLength);
+  return value.replace(HANJA_PATTERN, '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
 
 function normalizeInsights(value: unknown) {
@@ -352,7 +359,8 @@ export function createInterpretationPrompt(
       // 2026-05-15 P1: 한국 사주 사이트 벤치마크상 일주 이름과 격국·용신 같은 명리 라벨을
       // 의도적으로 노출하는 것이 신뢰감의 핵심. 기존 prompt 가 "내부 용어 금지" 였던 것을
       // "사주 글자·격국·용신·일주 라벨은 그대로 인용 권장" 으로 전환.
-      '일주 한자(예: 갑자일주/壬寅일주), 격국 이름(예: 정관격·식신격), 용신/희신 글자(예: 火, 木), 강약(신강·신약·중화)은 본문에 그대로 인용해도 좋습니다. 단 한 문장에 하나만 — 카탈로그 나열 금지.',
+      '일주 이름(한글, 예: 갑자일주), 격국 이름(예: 정관격·식신격), 용신/희신(한글 기운, 예: 화 기운·목 기운), 강약(신강·신약·중화)은 본문에 그대로 인용해도 좋습니다. 단 한 문장에 하나만 — 카탈로그 나열 금지.',
+      '한자(漢字)는 본문에 한 글자도 쓰지 않습니다. 입력에 간지가 한자(예: 辛巳·壬寅)로 있어도 절대 그대로 옮기지 말고, 필요하면 한글 일주 이름으로만 씁니다.',
       'sixtyGapja.title 과 sixtyGapja.core 를 headline 또는 summary 첫 문장에 직접 인용하면 가장 좋습니다. 예: "갑자일주 큰 방향을 세우는 나무, 오늘은 ___합니다."',
       // 2026-05-15 P1: 유보형 → 단정형 + 명령형 전환. 시장 벤치마크상 "할 수 있어요",
       // "편이 좋습니다" 같은 어미가 일반론으로 들려 5명 부정 피드백 1차 원인.

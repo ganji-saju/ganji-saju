@@ -46,6 +46,30 @@ test('parseInterpretationText falls back when JSON is malformed', () => {
   assert.ok(result.errorMessage);
 });
 
+test('parseInterpretationText strips hanja leaked from LLM output (interpret has no validator)', () => {
+  // LLM 이 입력의 간지(辛巳·壬寅)를 그대로 흘리는 실제 케이스. interpret 경로엔
+  // 런타임 한자 validator 가 없으므로 cleanText 스트립이 유일 방어선.
+  const result = parseInterpretationText(
+    JSON.stringify({
+      headline: '壬寅일주, 오늘은 순서로 이긴다',
+      summary: '辛巳대운 1년차인 지금, 정리 습관을 들이면 흐름이 안정됩니다.',
+      insights: ['용신 火가 약해 말을 삼키기 쉬우니, 짧게라도 먼저 꺼내세요.', '두 번째 통찰입니다.'],
+    }),
+    fallback
+  );
+
+  assert.equal(result.ok, true);
+  const all = [
+    result.interpretation.headline,
+    result.interpretation.summary,
+    ...result.interpretation.insights,
+  ].join(' ');
+  assert.doesNotMatch(all, /[一-鿿]/, '본문에 한자가 남아있으면 안 됩니다');
+  // 스트립 후에도 한글 문장은 자연스럽게 유지된다(간지는 뒤 한글 단어에 붙어있어 깔끔히 제거).
+  assert.match(result.interpretation.summary, /대운 1년차인 지금/);
+  assert.equal(result.interpretation.headline, '일주, 오늘은 순서로 이긴다');
+});
+
 test('buildFallbackInterpretation derives compact insight copy from report', () => {
   const report = {
     headline: '오늘은 균형을 잡는 날',

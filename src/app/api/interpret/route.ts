@@ -266,7 +266,9 @@ export async function POST(req: NextRequest) {
     fallbackText: JSON.stringify(fallback),
     model,
     maxOutputTokens: 900,
-    temperature: 0.7,
+    // 2026-07-06 — temperature 미전달. GPT-5.x 계열은 temperature 파라미터를
+    //   지원하지 않아 400(Unsupported parameter)→ 전량 fallback 으로 조용히 떨어졌다.
+    //   total-review/yearly/lifetime 이 이미 temperature 를 빼는 것과 동일 패턴.
     feature: 'interpret',
     userId: reading.userId,
   });
