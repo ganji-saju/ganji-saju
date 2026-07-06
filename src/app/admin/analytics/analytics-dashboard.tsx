@@ -78,16 +78,43 @@ function InflowTable({
   );
 }
 
+const DAILY_PAGE_SIZE = 15; // 한 페이지 15일.
+const DAILY_PAGE_WINDOW = 5; // 숫자 버튼 최대 노출 개수(1,2,3,4,5 …).
+
 function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
+  const [page, setPage] = useState(0);
+  // 윈도우(30/90/365) 전환 등 rows 갱신 시 첫 페이지로.
+  useEffect(() => {
+    setPage(0);
+  }, [rows]);
+
   const ordered = [...rows].reverse(); // 최신 날짜 먼저.
+  const totalPages = Math.max(1, Math.ceil(ordered.length / DAILY_PAGE_SIZE));
+  const current = Math.min(page, totalPages - 1); // 방어적 clamp.
+  const start = current * DAILY_PAGE_SIZE;
+  const pageRows = ordered.slice(start, start + DAILY_PAGE_SIZE);
+
+  // 현재 페이지를 가운데 두는 슬라이딩 숫자 윈도우.
+  let winStart = Math.max(0, current - Math.floor(DAILY_PAGE_WINDOW / 2));
+  winStart = Math.min(winStart, Math.max(0, totalPages - DAILY_PAGE_WINDOW));
+  const winEnd = Math.min(totalPages, winStart + DAILY_PAGE_WINDOW);
+  const pageNumbers: number[] = [];
+  for (let i = winStart; i < winEnd; i += 1) pageNumbers.push(i);
+
   const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
   const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+  const navBtn =
+    'flex h-8 min-w-8 items-center justify-center rounded-[9px] border px-2.5 text-[13px] font-bold disabled:cursor-not-allowed disabled:opacity-40';
+
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">날짜별 상세</h2>
-      <div className="mt-3 max-h-[440px] overflow-auto rounded-[10px] border border-[var(--app-line)]">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">날짜별 상세</h2>
+        <span className="text-[11.5px] text-[var(--app-copy-soft)]">총 {ordered.length}일</span>
+      </div>
+      <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
         <table className="w-full border-collapse text-[12.5px]">
-          <thead className="sticky top-0 z-10 bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
             <tr>
               <th className={`${th} text-left`}>날짜</th>
               <th className={th}>방문자</th>
@@ -99,7 +126,7 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
             </tr>
           </thead>
           <tbody>
-            {ordered.map((d) => (
+            {pageRows.map((d) => (
               <tr key={d.date} className="border-t border-[var(--app-line)]">
                 <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{d.date}</td>
                 <td className={td}>{formatNum(d.visitors)}</td>
@@ -113,6 +140,44 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPage(Math.max(0, current - 1))}
+            disabled={current === 0}
+            aria-label="이전 페이지"
+            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
+          >
+            ‹
+          </button>
+          {pageNumbers.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPage(p)}
+              aria-current={p === current ? 'page' : undefined}
+              className={`${navBtn} ${
+                p === current
+                  ? 'border-[var(--app-ink)] bg-[var(--app-ink)] text-white'
+                  : 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
+              }`}
+            >
+              {p + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setPage(Math.min(totalPages - 1, current + 1))}
+            disabled={current === totalPages - 1}
+            aria-label="다음 페이지"
+            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
+          >
+            ›
+          </button>
+        </div>
+      )}
     </section>
   );
 }
