@@ -33,6 +33,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/admin/metrics/rollup",
+      "schedule": "10 * * * *"
+    },
+    {
       "path": "/api/admin/audits/payment-idempotency",
       "schedule": "0 2 * * *"
     },

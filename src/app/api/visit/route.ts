@@ -42,6 +42,18 @@ export async function POST(req: NextRequest) {
     }
   })();
 
+  // 2026-07-07 — 유입 캠페인 분석용 UTM(선택). 랜딩 URL 의 utm_* 를 그대로 수집(≤120자).
+  const utm = (key: string): string | null => {
+    const raw = data[key];
+    if (typeof raw !== 'string') return null;
+    const trimmed = raw.trim().slice(0, 120);
+    return trimmed || null;
+  };
+  const utmSource = utm('utm_source');
+  const utmMedium = utm('utm_medium');
+  const utmCampaign = utm('utm_campaign');
+  const hasUtm = Boolean(utmSource || utmMedium || utmCampaign);
+
   // 로그인 사용자면 user_id 참조(선택 — 활동 지표와 교차분석용).
   let userId: string | null = null;
   try {
@@ -59,7 +71,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const service = await createServiceClient();
-    // 같은 날 재핑(다중 탭·localStorage 유실)은 PV 만 +1 — 순방문은 PK 로 자연 dedupe.
+    // 같은 날 재핑(다중 탭·localStorage 유실)은 순방문 PK 로 자연 dedupe(첫 진입 first-touch 유지).
     const { error } = await service.from('site_visits').upsert(
       {
         date_key: dateKey,
@@ -67,10 +79,30 @@ export async function POST(req: NextRequest) {
         user_id: userId,
         first_path: path,
         referrer_host: refHost,
+        utm_source: utmSource,
+        utm_medium: utmMedium,
+        utm_campaign: utmCampaign,
       },
       { onConflict: 'date_key,visitor_hash', ignoreDuplicates: true }
     );
     if (error) console.error('[visit] upsert failed:', error.message);
+
+    // 2026-07-07 — 같은 날 direct 방문(utm 없음) 후 광고 클릭(utm 있음) 순서라면 위 insert 는
+    //   ignoreDuplicates 로 무시된다. utm 이 있으면 기존 행의 비어있는 utm/referrer 만 채운다
+    //   (당일 first-touch UTM). 이미 값이 있으면 덮지 않음.
+    if (hasUtm) {
+      const { error: fillErr } = await service
+        .from('site_visits')
+        .update({
+          utm_source: utmSource,
+          utm_medium: utmMedium,
+          utm_campaign: utmCampaign,
+        })
+        .eq('date_key', dateKey)
+        .eq('visitor_hash', visitorHash)
+        .is('utm_source', null);
+      if (fillErr) console.error('[visit] utm fill failed:', fillErr.message);
+    }
   } catch (err) {
     console.error('[visit] unexpected failure:', err);
   }

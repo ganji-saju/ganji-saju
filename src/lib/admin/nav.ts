@@ -28,6 +28,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     title: '운영·분석',
     items: [
+      { href: '/admin/analytics', label: '누적 지표 분석', description: '방문자·전환·유입·결제 일별 그래프' },
       { href: '/admin/operations', label: '운영 지표', description: 'DAU·결제·만족도·구독 추이' },
       { href: '/admin/payment-funnel', label: '결제 퍼널', description: '진입 → 결제 단계별 이탈률' },
       { href: '/admin/llm-cost', label: 'LLM 비용', description: '영역별 호출·토큰·비용·캐시 hit률' },
