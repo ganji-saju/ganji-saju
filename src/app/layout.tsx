@@ -20,6 +20,9 @@ import { KakaoSdkLoader } from "@/components/kakao/kakao-sdk-loader";
 import { VisitPing } from "@/components/analytics/visit-ping";
 // 2026-07-06 — 개인정보 제거 GA4 page_view(사주/공유 URL 의 생년월일·이름 미전송).
 import { GaPageView } from "@/components/analytics/ga-page-view";
+// 2026-07-06 — 자체 쿠키/분석 동의 배너 + Consent Mode v2 키 공유.
+import { AnalyticsConsentBanner } from "@/components/analytics/analytics-consent-banner";
+import { ANALYTICS_CONSENT_KEY } from "@/components/analytics/analytics-consent";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -53,9 +56,37 @@ const brandSerif = Noto_Serif_KR({
 //   민감정보가 나간다. 대신 <GaPageView/>(client) 가 라우트 변경 시 그 값들을 제거한
 //   경로만 page_view 로 보낸다. 방문/유입·페이지뷰 통계는 정상 수집.
 const GA_MEASUREMENT_ID = 'G-F6BP90L8E2';
-const gaInitScript = `
+
+// 2026-07-06 — Consent Mode v2. 모든 태그(GTM·GA4·픽셀)보다 먼저 실행되어야 하므로
+//   head 최상단(GTM 스크립트보다 앞)에 둔다. 기본을 전부 denied 로 선언하면 GA4 는
+//   쿠키·광고 식별자 없이 익명 모델링만 하고, 사용자가 배너에서 '동의'를 누르면
+//   applyConsent() 가 gtag('consent','update', granted) 로 승격한다(analytics-consent.ts).
+//   재방문 시(localStorage 에 granted 저장됨)엔 여기서 즉시 granted 로 복원해 재노출 없이
+//   정상 수집. wait_for_update 로 태그가 최대 500ms 동안 이 복원/선택을 기다렸다 발화.
+const consentInitScript = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  wait_for_update: 500
+});
+try {
+  if (window.localStorage.getItem('${ANALYTICS_CONSENT_KEY}') === 'granted') {
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted'
+    });
+  }
+} catch (e) {}
+`;
+
+// gtag 스텁·dataLayer 는 consentInitScript 에서 이미 정의됨 → 여기선 js/config 만.
+const gaConfigScript = `
 gtag('js', new Date());
 gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
 `;
@@ -200,12 +231,14 @@ export default function RootLayout({
           React component") 발생. layout mode FOUC 차단용 inline script 는
           render-blocking 으로 <head> 에 두어야 한다. */}
       <head>
-        {/* Google Tag Manager — <head> 최대한 위. */}
+        {/* Consent Mode v2 — 어떤 태그(GTM·GA4)보다 먼저. 기본 denied + 재방문 복원. */}
+        <script dangerouslySetInnerHTML={{ __html: consentInitScript }} />
+        {/* Google Tag Manager — <head> 최대한 위(단, consent default 다음). */}
         <script dangerouslySetInnerHTML={{ __html: gtmScript }} />
         {/* Google Analytics (GA4) — gtag.js. 자동 page_view 는 끄고(send_page_view:false)
             <GaPageView/> 가 개인정보 제거한 경로만 수동 전송. */}
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
-        <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: gaConfigScript }} />
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
         {/* 2026-07-04 SEO — 사이트 아이덴티티 JSON-LD (Organization + WebSite). */}
         <script
@@ -234,6 +267,7 @@ export default function RootLayout({
         {children}
         <KakaoSdkLoader />
         <VisitPing />
+        <AnalyticsConsentBanner />
         <AppToaster />
         <Analytics />
         <SpeedInsights />
