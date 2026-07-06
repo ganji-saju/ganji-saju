@@ -1,9 +1,36 @@
 # 간지사주 — 작업 진행 정리
 
-> 최종 업데이트: **2026-07-04 (Claude — admin 신뢰성 집중: 지표 전수검증 #593·#594(3대 근본원인: anon집계·퍼널INSERT정책부재·결제소스stale) → 사용자요약 stale 근본수정+목록보강 #597 → 계정관리(정지/수정/삭제) #598 → 재감사 15건 중 12건 수정 #599(LLM 1000행 클램프·UTC버킷·캐시hit 0%·퍼널 비율왜곡 4곳)+누적결제 SQL RPC #600(migration 063 ⚠️수동적용). 카카오 KOE205 인시던트 해결 #596(scope env게이트)+함께로그아웃 #595 — 상세 ↓ 첫 섹션)** / 직전: **2026-07-03 (Claude — 카카오 연동 전면 구현: 공유 SDK 5메뉴(사주·궁합·별자리·띠·타로) + 알림톡/친구톡 발송엔진(Solapi, env-gated dormant)+webhook+채널추가버튼+전화번호수집(설정·결제화면)+migration 059. PR #576~#583. 공유 4019 **해결**(2026-07-03, 근본원인=카카오 콘솔 JS키 SDK 도메인 오타 `httpa://` — 콘솔 정정으로 종결, 진단페이지 #588→제거). 알림톡 템플릿 2종 승인·크론 등록(#587) 완료, 남은 건 Solapi env 입력뿐. 개인정보처리방침 admin 반영·059 수동적용 완료 — 상세 ↓ 첫 섹션) / 2026-07-01 (Claude — 재화 명칭 리브랜딩: 사이트 전역 "코인"→"전" 치환(97파일·324곳). 가상화폐/투기 의미의 "코인"(재물운 해석 7곳·타로 크립토질문 감지·safe-redirect FINANCIAL_KEYWORDS)만 유지. URL 경로(/coin-policy)·DB 값(kind='coin')·영문 식별자는 보존. ⚠️ 정책 본문은 DB policy_versions(032/057 seed) 우선 서빙이라 라이브 법률/코인정책 텍스트는 별도 DB 업데이트 필요) / 2026-07-01 (Claude — PC 메가내브 우상단 로그아웃 버튼 "작동 안 함" 수정: `MegaNavBar` 가 영속 마운트 클라 컴포넌트라 로그아웃의 `router.refresh()` 로는 리마운트 안 됨 → `getUser` 마운트 1회 판정 + `onAuthStateChange` 미구독으로 세션 state stale. SiteHeader 처럼 `onAuthStateChange` 구독 추가) / 2026-06-27 (Claude — 저장프로필 선택 자동입력 첫 슬라이드 이동 #507 / 나이스페이 결제후 사주풀이 라우팅 회귀수정 #505·sandbox/live 단일토글 #506 / step스크롤 #504·인증E2E복구 #502·커서복원 #503·회원가입폼 overflow 근본 #501·하단dock·로그인UI #485~#500 / 실운영 전 데이터 초기화(docs/data-reset.sql) + 나이스페이 결제 프로덕션 가동+admin환불+문구중립화 #473~#484(탭트랩/U116 해결) / 오늘 자세히보기 10코인·묶음 19800 #472 / 꿈해몽 배너+가격제거 #469·#471 / 보너스36코인 삭제 #470 / HOT·추천 이동 #468 / 인물 사진 8종 #467 / 메인 카드 인물사진형+이미지 배너 #466 / 오늘 자세히보기 매일 일진+plain #464·#465 / 제목 폰트 확대+정렬 #463 / 전역 폰트 ×1.15 #462 / 대운·택일 9,900원+4메뉴 결제 검증 #461 / 붓글씨 로고 #459·#460 / 메인 리디자인 #458)**. 상세 ↓ 첫 섹션. 직전: **2026-06-22 (#448~#452)**. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
+> 최종 업데이트: **2026-07-06 (Claude — 사주풀이 밀착 개인화 #607(5개 프롬프트+fallback show-don't-tell) → LLM 조용한 fallback 근본수정 #608(GPT-5.x temperature 400·모델 env 오표기·interpret 한자 스트립) → admin 방문/결제 오늘·주간·월간·누적 구분 #609 → GA4+GTM 정제 임베드 #610(사주/공유 URL의 생년월일·이름 미전송 sanitize) → 자체 쿠키/분석 동의 배너 Consent Mode v2 #611(기본 denied·재방문 복원·푸터 재선택·above-dock 충돌해소) — 상세 ↓ 첫 섹션)** / 직전: **2026-07-04 (Claude — admin 신뢰성 집중: 지표 전수검증 #593·#594(3대 근본원인: anon집계·퍼널INSERT정책부재·결제소스stale) → 사용자요약 stale 근본수정+목록보강 #597 → 계정관리(정지/수정/삭제) #598 → 재감사 15건 중 12건 수정 #599(LLM 1000행 클램프·UTC버킷·캐시hit 0%·퍼널 비율왜곡 4곳)+누적결제 SQL RPC #600(migration 063 ⚠️수동적용). 카카오 KOE205 인시던트 해결 #596(scope env게이트)+함께로그아웃 #595 — 상세 ↓ 첫 섹션)** / 직전: **2026-07-03 (Claude — 카카오 연동 전면 구현: 공유 SDK 5메뉴(사주·궁합·별자리·띠·타로) + 알림톡/친구톡 발송엔진(Solapi, env-gated dormant)+webhook+채널추가버튼+전화번호수집(설정·결제화면)+migration 059. PR #576~#583. 공유 4019 **해결**(2026-07-03, 근본원인=카카오 콘솔 JS키 SDK 도메인 오타 `httpa://` — 콘솔 정정으로 종결, 진단페이지 #588→제거). 알림톡 템플릿 2종 승인·크론 등록(#587) 완료, 남은 건 Solapi env 입력뿐. 개인정보처리방침 admin 반영·059 수동적용 완료 — 상세 ↓ 첫 섹션) / 2026-07-01 (Claude — 재화 명칭 리브랜딩: 사이트 전역 "코인"→"전" 치환(97파일·324곳). 가상화폐/투기 의미의 "코인"(재물운 해석 7곳·타로 크립토질문 감지·safe-redirect FINANCIAL_KEYWORDS)만 유지. URL 경로(/coin-policy)·DB 값(kind='coin')·영문 식별자는 보존. ⚠️ 정책 본문은 DB policy_versions(032/057 seed) 우선 서빙이라 라이브 법률/코인정책 텍스트는 별도 DB 업데이트 필요) / 2026-07-01 (Claude — PC 메가내브 우상단 로그아웃 버튼 "작동 안 함" 수정: `MegaNavBar` 가 영속 마운트 클라 컴포넌트라 로그아웃의 `router.refresh()` 로는 리마운트 안 됨 → `getUser` 마운트 1회 판정 + `onAuthStateChange` 미구독으로 세션 state stale. SiteHeader 처럼 `onAuthStateChange` 구독 추가) / 2026-06-27 (Claude — 저장프로필 선택 자동입력 첫 슬라이드 이동 #507 / 나이스페이 결제후 사주풀이 라우팅 회귀수정 #505·sandbox/live 단일토글 #506 / step스크롤 #504·인증E2E복구 #502·커서복원 #503·회원가입폼 overflow 근본 #501·하단dock·로그인UI #485~#500 / 실운영 전 데이터 초기화(docs/data-reset.sql) + 나이스페이 결제 프로덕션 가동+admin환불+문구중립화 #473~#484(탭트랩/U116 해결) / 오늘 자세히보기 10코인·묶음 19800 #472 / 꿈해몽 배너+가격제거 #469·#471 / 보너스36코인 삭제 #470 / HOT·추천 이동 #468 / 인물 사진 8종 #467 / 메인 카드 인물사진형+이미지 배너 #466 / 오늘 자세히보기 매일 일진+plain #464·#465 / 제목 폰트 확대+정렬 #463 / 전역 폰트 ×1.15 #462 / 대운·택일 9,900원+4메뉴 결제 검증 #461 / 붓글씨 로고 #459·#460 / 메인 리디자인 #458)**. 상세 ↓ 첫 섹션. 직전: **2026-06-22 (#448~#452)**. 직전: **2026-05-29 Codex 모바일 하단 고정 CTA 겹침 수정**. 그 직전: **Codex 코인 환불 관리자 플로우 + 모바일 저사양 성능 최적화**. 결제 안정성 세션: **Next 16.2.6 + 서버 orderId/payment_orders + Toss webhook/reconciliation**. **상세: ↓ 첫 세션 섹션.**
 > 대상 도메인: `https://ganjisaju.kr` (canonical) · www / 간지사주.kr / xn--s39at50bo6fmwa.kr → 301 → canonical
 > 브랜드: 간지사주 (2026-05-18 구 브랜드명 → 간지사주 통일 완료)
 > 2026-05-22 종합 검수: `audit-reports/2026-05-22-comprehensive-audit.md` — 🟢 12 / 🟡 2 / 🔴 0 (점수 Phase 1~3 + 어휘 정책 + P0 6종 완료 · 잔존 🟡 2: 총평 25~35문장 enforce 미확인 / 대운 LLM 다양성 미검증). `audit:user-entitlements` exit 1은 인자 필수 CLI 오탐(`audit-reports/2026-05-22-user-entitlements-diagnosis.md`).
+
+---
+
+## 2026-07-06 세션 (Claude) — 사주풀이 밀착 개인화 + LLM fallback 근본수정 + admin 기간구분 + GA4/GTM + 자체 동의배너
+
+### 사주풀이 밀착 개인화 (#607)
+- 사용자 요청 "훨씬 풍성하고 간지나게". **5개 LLM 프롬프트 소스**(interpret `saju-interpretation.ts` / chapters `COMMON_SYSTEM_PROMPT` / total-review / yearly / lifetime) + 결정론 fallback 전부에 **show-don't-tell 하이퍼 개인화** 지침 주입(사주 원국 근거를 구체 장면으로).
+- 적대 리뷰 2건 반영: yearly 예시가 미명시 사실 전제 → 조건부+반(反)날조 절, "X의 결" 신조어(naming-policy §3 금지) → "차이/성향".
+
+### LLM 조용한 fallback 근본수정 (#608)
+- 배포 실측 "실제 풀이 뽑아 확인" → interpret/chapters 가 **조용히 fallback** 중이던 것 발견. 2대 근본원인:
+  1. **GPT-5.x 는 `temperature` 미지원**(400 Unsupported parameter) — interpret·chapter 클라이언트에서 temperature 제거(total-review 패턴에 맞춤). ⚠️재추가 금지.
+  2. **모델 env 가 표시명 'GPT‑5.3 Instant'**(무효 id) → env 교정.
+- interpret 경로엔 chapter-validator 같은 런타임 한자 가드가 **없어** cleanText 에 한자 스트립 추가.
+
+### admin 방문/결제 기간 구분 (#609)
+- 사용자 요청 "오늘만 말고 주간·월간·누적도, 결제도 동일하게". `operations-stats.ts` 에 방문·결제 **오늘/주간/월간/누적** 브레이크다운 섹션 + 대시보드 PeriodRow·fmtVisitor·fmtWonCompact. 집계=service 클라(RLS deny), KST 축, payment_orders 원장.
+
+### GA4 + GTM 정제 임베드 (#610)
+- GA4(`G-F6BP90L8E2`)·GTM(`GTM-N9MSPMCG`) 를 layout `<head>` 에 임베드. **개인정보 정제 필수**: 이 앱의 사주/공유 URL 은 경로·쿼리에 생년월일·시간·성별·이름을 담음(toSlug + a·b·n·d·c) → 자동 page_view 끄고(`send_page_view:false`) `<GaPageView/>`(client, usePathname) 가 정제 경로만 수동 전송.
+- `ga-sanitize.ts`(순수함수, 테스트 7): 생년월일 세그먼트·key 해시 → `redacted`, 쿼리는 utm/gclid/fbclid/ref 화이트리스트. CSP 에 googletagmanager/google-analytics 출처 허용. ⚠️GTM 컨테이너엔 이 속성 GA4 page_view 태그 넣지 말 것(코드 정제 우회).
+
+### 자체 쿠키/분석 동의 배너 — Consent Mode v2 (#611)
+- GA4·GTM 무조건 로드 → **Consent Mode v2**: 기본 전부 `denied` 로 로드(쿠키·식별자 없이 익명 모델링), 자체 배너에서 '동의' 시 `granted` 승격. 재방문자는 인라인 스크립트가 즉시 복원(재노출 없음).
+- `analytics-consent.ts`(공유 로직: readConsent/applyConsent, localStorage `ganji:analytics-consent:v1`, gtag consent update, openConsentBanner/CONSENT_REOPEN_EVENT) / `analytics-consent-banner.tsx`(StickyBottomBar body-portal, 동의·거부·/privacy) / layout `consentInitScript`(스텁+default denied+복원) **GTM·gtag.js 보다 먼저** 실행+gaConfigScript 분리 / 푸터 '쿠키 설정' 재노출.
+- 3-lens 적대 리뷰 6건 CONFIRMED 전부 수정: 철회 UI 부재→푸터 재노출(PIPA), `variant="bottom"` 이 dock·결제CTA 와 bottom:0 충돌→`above-dock`(dock 위/포커스라우트 8rem clearance 위), GA-only 고지→1P 방문분석 포함 문구.
+- ⚠️ **남은 결정**: 현재 advanced 모드(동의 전에도 Google 로 쿠키리스 핑 전송, 표준 기본값). 의료 인접이라 *동의 전 3P 전송 0* 원하면 basic 모드(동의 전 로더 미주입, 모델링 손실)로 전환 가능. `/privacy` 에 GA·1P 방문분석 상세 고지 추가 권장.
 
 ---
 
