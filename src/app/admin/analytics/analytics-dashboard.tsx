@@ -78,6 +78,45 @@ function InflowTable({
   );
 }
 
+function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
+  const ordered = [...rows].reverse(); // 최신 날짜 먼저.
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+  return (
+    <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">날짜별 상세</h2>
+      <div className="mt-3 max-h-[440px] overflow-auto rounded-[10px] border border-[var(--app-line)]">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead className="sticky top-0 z-10 bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+            <tr>
+              <th className={`${th} text-left`}>날짜</th>
+              <th className={th}>방문자</th>
+              <th className={th}>PV</th>
+              <th className={th}>신규가입</th>
+              <th className={th}>결제</th>
+              <th className={th}>매출</th>
+              <th className={th}>결제/방문</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordered.map((d) => (
+              <tr key={d.date} className="border-t border-[var(--app-line)]">
+                <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{d.date}</td>
+                <td className={td}>{formatNum(d.visitors)}</td>
+                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatNum(d.pageViews)}</td>
+                <td className={td}>{formatNum(d.newSignups)}</td>
+                <td className={td}>{formatNum(d.paidOrders)}</td>
+                <td className={td}>{d.revenueWon > 0 ? fmtWon(d.revenueWon) : '—'}</td>
+                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatPct(d.visitorToPaidRate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export function AnalyticsDashboard() {
   const [days, setDays] = useState(30);
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
@@ -163,10 +202,17 @@ export function AnalyticsDashboard() {
             <SummaryCard label="결제창 전환" value={formatPct(snap.totals.checkoutConversionRate)} sub="성공÷시도" />
           </div>
 
-          {/* 그래프 */}
+          {/* 방문자·PV 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
             <MetricsLineChart title="방문자" points={series((d) => d.visitors)} color="var(--app-pink-strong)" />
             <MetricsLineChart title="페이지뷰(PV)" points={series((d) => d.pageViews)} color="#7C5CBF" />
+          </div>
+
+          {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
+          <DailyTable rows={snap.daily} />
+
+          {/* 나머지 그래프 */}
+          <div className="grid gap-3 lg:grid-cols-2">
             <MetricsLineChart title="신규가입" points={series((d) => d.newSignups)} color="var(--app-jade,#3F8796)" />
             <MetricsLineChart
               title="매출(원)"
