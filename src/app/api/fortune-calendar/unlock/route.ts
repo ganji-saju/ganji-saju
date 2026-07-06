@@ -9,6 +9,8 @@ import {
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
+// 2026-07-07 — 달력 iljin 메시지 "[이름] 님" 이 '선생님' fallback 으로 새지 않도록 표시 이름 보강.
+import { resolveNamedReadingInput } from '@/lib/today-fortune/result-snapshots';
 import { createClient } from '@/lib/supabase/server';
 
 function parseRequest(payload: unknown) {
@@ -50,11 +52,12 @@ export async function POST(req: NextRequest) {
   }
 
   const readingKey = toSlug(reading.input);
+  const namedInput = await resolveNamedReadingInput(reading.input, reading.userId);
 
   const entitlement = await getLifetimeReportEntitlement(user.id, readingKey, [parsed.slug]);
   if (entitlement) {
     const report = buildFortuneCalendarMonth(
-      reading.input,
+      namedInput,
       reading.sajuData,
       parsed.targetYear,
       parsed.month
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest) {
   );
   if (productEntitlement) {
     const report = buildFortuneCalendarMonth(
-      reading.input,
+      namedInput,
       reading.sajuData,
       parsed.targetYear,
       parsed.month
@@ -112,7 +115,7 @@ export async function POST(req: NextRequest) {
   }
 
   const report = buildFortuneCalendarMonth(
-    reading.input,
+    namedInput,
     reading.sajuData,
     parsed.targetYear,
     parsed.month
