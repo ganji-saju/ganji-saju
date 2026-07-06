@@ -18,6 +18,8 @@ import { ScrollResetOnNavigate } from "@/shared/layout/scroll-reset-on-navigate"
 import { KakaoSdkLoader } from "@/components/kakao/kakao-sdk-loader";
 // 2026-07-04 — 자체 방문(유입) 카운트(일 1회 익명 핑, admin 지표용).
 import { VisitPing } from "@/components/analytics/visit-ping";
+// 2026-07-06 — 개인정보 제거 GA4 page_view(사주/공유 URL 의 생년월일·이름 미전송).
+import { GaPageView } from "@/components/analytics/ga-page-view";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -46,13 +48,29 @@ const brandSerif = Noto_Serif_KR({
 // 2026-07-06 — Google Analytics 4 (gtag.js). measurement id 는 공개값(클라 노출 정상).
 //   head 최상단(<head> 바로 다음)에 두는 것이 Google 권장. CSP(next.config.ts)에
 //   googletagmanager / google-analytics 출처를 함께 허용해야 enforce 모드에서도 동작.
+//   ⚠️ 개인정보 보호: 자동 page_view 를 끈다(send_page_view:false). 이 앱의 사주/공유
+//   URL 은 경로·쿼리에 생년월일·시간·성별·이름을 담으므로(toSlug), 자동 전송하면 구글로
+//   민감정보가 나간다. 대신 <GaPageView/>(client) 가 라우트 변경 시 그 값들을 제거한
+//   경로만 page_view 로 보낸다. 방문/유입·페이지뷰 통계는 정상 수집.
 const GA_MEASUREMENT_ID = 'G-F6BP90L8E2';
 const gaInitScript = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', '${GA_MEASUREMENT_ID}');
+gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
 `;
+
+// 2026-07-06 — Google Tag Manager. <head> 최대한 위 + <body> 직후 noscript(표준 스니펫).
+//   ⚠️ GTM 컨테이너 태그는 GTM 웹 UI 에서 관리된다. 컨테이너가 GA4(G-...) 태그로 자동
+//   page_view 를 쏘면 위 gtag 의 send_page_view:false / GaPageView 정제가 적용되지 않고
+//   URL(생년월일·이름)이 그대로 나갈 수 있다 → 개인정보 보호는 GTM UI 에서도 설정 필요.
+//   또한 같은 GA4 속성을 gtag(직접)과 GTM 양쪽에서 쏘면 이중 집계된다(§둘 중 하나만).
+const GTM_CONTAINER_ID = 'GTM-N9MSPMCG';
+const gtmScript = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${GTM_CONTAINER_ID}');`;
 
 const layoutModeScript = `
 (() => {
@@ -182,7 +200,10 @@ export default function RootLayout({
           React component") 발생. layout mode FOUC 차단용 inline script 는
           render-blocking 으로 <head> 에 두어야 한다. */}
       <head>
-        {/* Google Analytics (GA4) — gtag.js. <head> 최상단(Google 권장 위치). */}
+        {/* Google Tag Manager — <head> 최대한 위. */}
+        <script dangerouslySetInnerHTML={{ __html: gtmScript }} />
+        {/* Google Analytics (GA4) — gtag.js. 자동 page_view 는 끄고(send_page_view:false)
+            <GaPageView/> 가 개인정보 제거한 경로만 수동 전송. */}
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
         <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
@@ -197,6 +218,16 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        {/* Google Tag Manager (noscript) — <body> 태그 바로 뒤(표준 위치). */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_CONTAINER_ID}`}
+            height="0"
+            width="0"
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+        <GaPageView />
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
         <ScrollResetOnNavigate />
