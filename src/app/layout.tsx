@@ -43,6 +43,17 @@ const brandSerif = Noto_Serif_KR({
   variable: "--font-dalbit-serif",
 });
 
+// 2026-07-06 — Google Analytics 4 (gtag.js). measurement id 는 공개값(클라 노출 정상).
+//   head 최상단(<head> 바로 다음)에 두는 것이 Google 권장. CSP(next.config.ts)에
+//   googletagmanager / google-analytics 출처를 함께 허용해야 enforce 모드에서도 동작.
+const GA_MEASUREMENT_ID = 'G-F6BP90L8E2';
+const gaInitScript = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');
+`;
+
 const layoutModeScript = `
 (() => {
   const root = document.documentElement;
@@ -171,6 +182,9 @@ export default function RootLayout({
           React component") 발생. layout mode FOUC 차단용 inline script 는
           render-blocking 으로 <head> 에 두어야 한다. */}
       <head>
+        {/* Google Analytics (GA4) — gtag.js. <head> 최상단(Google 권장 위치). */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+        <script dangerouslySetInnerHTML={{ __html: gaInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: layoutModeScript }} />
         {/* 2026-07-04 SEO — 사이트 아이덴티티 JSON-LD (Organization + WebSite). */}
         <script
