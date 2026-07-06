@@ -9,6 +9,9 @@ import {
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { toSlug } from '@/lib/saju/pillars';
 import { resolveReading } from '@/lib/saju/readings';
+// 2026-07-07 — 달력 iljin 메시지 "[이름] 님" 이 '선생님' fallback 으로 새지 않도록
+//   reading.input(이름 없음)에 표시 이름 보강. toSlug 은 원본 그대로 사용(슬러그 안정).
+import { resolveNamedReadingInput } from '@/lib/today-fortune/result-snapshots';
 import { createClient, hasSupabaseServerEnv, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 
 type AccessKind = 'lifetime' | 'month_unlock' | 'product_unlock' | 'locked';
@@ -126,7 +129,8 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const report = buildFortuneCalendarMonth(reading.input, reading.sajuData, targetYear, month);
+  const namedInput = await resolveNamedReadingInput(reading.input, reading.userId);
+  const report = buildFortuneCalendarMonth(namedInput, reading.sajuData, targetYear, month);
 
   return NextResponse.json({
     ok: true,

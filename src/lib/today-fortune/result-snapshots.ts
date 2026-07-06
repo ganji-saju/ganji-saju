@@ -60,7 +60,7 @@ export async function resolveSnapshotInputName(
   return resolveTodayDisplayName({ profileDisplayName, authMetadata });
 }
 
-const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
+export const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
   loadProfileDisplayName: async (userId) => (await getUserProfileById(userId)).displayName,
   loadAuthMetadata: async (userId) => {
     if (!hasSupabaseServiceEnv) return null;
@@ -69,6 +69,20 @@ const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
     return data?.user?.user_metadata ?? null;
   },
 };
+
+// 2026-07-07 — reading.input(오늘 payload)은 이름을 안 담으므로, 표시 이름(프로필→소셜 메타)을
+//   해석해 input.name 을 보강한 사본을 만든다. iljin/카테고리 메시지의 "[이름] 님" 이 '선생님'
+//   fallback 으로 새지 않도록 today detail·운세 달력 등 모든 소비 지점이 이걸 거쳐야 한다.
+//   ⚠️ toSlug(pillars.ts)는 input.name 을 포함하므로, readingKey/entitlement 계산엔 원본
+//   reading.input 을 쓰고(슬러그 안정), 이 named 사본은 메시지 빌더에만 넘긴다.
+export async function resolveNamedReadingInput(
+  input: BirthInput,
+  userId: string | null | undefined,
+  deps: SnapshotDisplayNameDeps = DEFAULT_SNAPSHOT_NAME_DEPS
+): Promise<BirthInput> {
+  const name = await resolveSnapshotInputName(userId, deps);
+  return applyDisplayNameToInput(input, name);
+}
 
 export const TODAY_FORTUNE_RESULT_SNAPSHOT_VERSION = 'today-fortune-result-snapshot/v1';
 export const TODAY_FORTUNE_RESULT_BUILDER_VERSION = 'today-fortune-builder/v1';
@@ -131,6 +145,8 @@ export interface BuildTodayFortuneSnapshotContentInput {
   concernId: ConcernId;
   counselorId: MoonlightCounselorId | null;
   now?: Date;
+  /** 표시 이름 해석 deps 주입(테스트용). 미지정 시 프로필/소셜 메타 조회. */
+  nameDeps?: SnapshotDisplayNameDeps;
 }
 
 export interface StoreTodayFortuneResultSnapshotInput
@@ -227,12 +243,13 @@ export async function buildTodayFortuneSnapshotContent({
   concernId,
   counselorId,
   now = new Date(),
+  nameDeps = DEFAULT_SNAPSHOT_NAME_DEPS,
 }: BuildTodayFortuneSnapshotContentInput) {
   const todaySajuData = buildFreshTodaySajuData(reading.input, { now });
   // 2026-06-05 Bug A — reading.input(오늘 payload)엔 이름이 없어 detail hero 가 '달빛이' 로
   //   나오던 이슈. snapshot 시점에 profile.display_name → 소셜 메타데이터 순으로 보강(없으면
   //   fallback 유지). 이름은 사주 계산과 무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
-  const resolvedName = await resolveSnapshotInputName(reading.userId, DEFAULT_SNAPSHOT_NAME_DEPS);
+  const resolvedName = await resolveSnapshotInputName(reading.userId, nameDeps);
   const namedInput = applyDisplayNameToInput(reading.input, resolvedName);
   const freeResult = buildTodayFortuneFreeResult(namedInput, todaySajuData, {
     concernId,
@@ -244,8 +261,10 @@ export async function buildTodayFortuneSnapshotContent({
     kasiComparison: reading.kasiComparison,
     now,
   });
+  // 2026-07-07 — premium 도 free 와 동일하게 namedInput 사용(이전엔 reading.input 전달 →
+  //   detail '오늘의 흐름' iljin 메시지의 "[이름] 님" 이 '선생님 님' 으로 새던 버그).
   const basePremiumResult = buildTodayFortunePremiumResult(
-    reading.input,
+    namedInput,
     todaySajuData,
     concernId,
     reading.grounding,
