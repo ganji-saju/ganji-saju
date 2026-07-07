@@ -81,6 +81,8 @@ product_price_changes           -- append-only 감사 이력
 
 → 리졸버는 **주문 생성(quote) 시점에만** 값을 스냅샷. 이후 confirm/return은 그 스냅샷(order.amount)을 검증하므로 **in-flight 가격 변경에도 진행 중 결제가 깨지지 않는다**(현행 상수 방식보다 오히려 정확). 과거 주문은 자기 order.amount·metadata.amount 보존.
 
+5. **체크아웃 청구액(5번째 지점 — 적대적 리뷰로 발견):** 클라이언트가 PG에 보내는 청구 금액이 카탈로그 상수(`membership/checkout/page.tsx`의 `paymentPackage.price` → `TossMembershipCheckout` prop → nicepay/Toss `value`)였다. 이대로면 order.amount(리졸버)와 갈라져 가격 변경 시 confirm/return이 전건 거부. 수정: prepare 응답에 `amount(=order.amount)` 포함 → 클라이언트가 `prepare.amount`로 청구(prop은 폴백). 체크아웃 페이지 표시가도 `resolvePackagePrice`로 통일(판매시점 표시=청구). `TossMembershipCheckout`가 유일한 PG 청구 진입점(전 상품·묶음·멤버십 통합).
+
 **리졸버를 쓰지 않는 경로(중요):** 환불(`credit-refunds.ts`)·이력(`payment-history.ts`)·이행(`fulfillment.ts`)은 실결제액(`metadata.amount`) 또는 카탈로그 기본값을 유지한다 — 과거 충실도. 리졸버(라이브 편집가)는 **신규 청구에만** 쓴다.
 
 **신규 `/admin/pricing`** (`/admin/policies` 3파일 구조 미러):
