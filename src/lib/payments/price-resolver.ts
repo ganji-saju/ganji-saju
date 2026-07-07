@@ -66,10 +66,10 @@ export const getResolvedPrices = cache(async (): Promise<Map<PackageId, Resolved
   }
 });
 
-/** 단일 상품의 현재 가격(폴백 포함). */
-export async function resolvePackagePrice(id: PackageId): Promise<number> {
+/** 단일 상품의 현재 가격(폴백 포함). 호출부가 string id 를 갖는 경우가 많아 string 허용. */
+export async function resolvePackagePrice(id: string): Promise<number> {
   const prices = await getResolvedPrices();
-  const resolved = prices.get(id);
+  const resolved = prices.get(id as PackageId);
   if (resolved) return resolved.price;
   return getPackage(id)?.price ?? 0;
 }

@@ -29,7 +29,9 @@ test('managed membership packages grant subscription credits', () => {
   assert.equal(getCreditGrantType(pkg), 'subscription');
 });
 
-test('payment confirmation rejects tampered package amount', () => {
+test('payment confirmation accepts a known package regardless of quoted amount (route enforces order.amount)', () => {
+  // 2026-07-07 — 정확 금액 정합은 confirm/route 의 order.amount(prepare 스냅샷) 비교로 이동.
+  //   payload 검증은 known package + 양수 amount 만 강제(가격 변경 시 정상 주문 통과).
   const result = validatePaymentConfirmationPayload({
     paymentKey: 'pay_123',
     orderId: 'order_123',
@@ -37,10 +39,18 @@ test('payment confirmation rejects tampered package amount', () => {
     packageId: 'membership_premium',
   });
 
-  assert.deepEqual(result, {
-    ok: false,
-    error: '잘못된 결제 정보입니다.',
+  assert.equal(result.ok, true);
+});
+
+test('payment confirmation rejects non-positive amount', () => {
+  const result = validatePaymentConfirmationPayload({
+    paymentKey: 'pay_123',
+    orderId: 'order_123',
+    amount: 0,
+    packageId: 'membership_premium',
   });
+
+  assert.equal(result.ok, false);
 });
 
 test('lifetime report confirmation callback can omit slug because order ledger owns scope', () => {

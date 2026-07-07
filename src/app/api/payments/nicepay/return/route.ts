@@ -205,7 +205,9 @@ export async function POST(req: NextRequest) {
     metadata: { provider: 'nicepay' },
   });
 
-  if (order.amount !== amount || pkg.price !== amount) {
+  // 2026-07-07 — order.amount(prepare 스냅샷)가 authoritative. 카탈로그 상수 비교는
+  //   가격 변경 시 정상 주문을 거부해 제거.
+  if (order.amount !== amount) {
     await logFunnel({
       stage: 'confirm_failed',
       userId: order.userId,

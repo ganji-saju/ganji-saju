@@ -52,8 +52,10 @@ export function validatePaymentConfirmationPayload(
     return { ok: false, error: '결제 정보가 올바르지 않습니다.' };
   }
 
+  // 2026-07-07 — 금액 정합은 confirm/route 의 order.amount(prepare 스냅샷) 비교가
+  //   authoritative. 여기 카탈로그 상수 비교는 가격 변경 시 정상 주문을 거부해 제거.
   const pkg = getPackage(packageId);
-  if (!pkg || pkg.price !== amount) {
+  if (!pkg || !(amount > 0)) {
     return { ok: false, error: '잘못된 결제 정보입니다.' };
   }
 

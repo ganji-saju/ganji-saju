@@ -35,6 +35,7 @@ import {
   updatePaymentOrderPolicyVersions,
 } from '@/lib/payments/order-ledger';
 import { isCreditPackage } from '@/lib/payments/coin-sunset';
+import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -275,9 +276,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-07-07 — 주문 금액을 리졸버로 스냅샷(카탈로그 기본가 위 DB 오버라이드).
+  //   이후 confirm/return 은 이 order.amount 를 authoritative 검증한다.
+  const resolvedAmount = await resolvePackagePrice(pkg.id);
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
+    amount: resolvedAmount,
     slug,
     scope,
     product,

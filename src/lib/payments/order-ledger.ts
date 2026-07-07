@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import type { PolicyKind } from '@/shared/policies/types';
@@ -163,28 +164,32 @@ function mapPaymentOrder(row: PaymentOrderRow): PaymentOrder {
   };
 }
 
-export async function createPaymentOrder(input: {
-  userId: string;
-  pkg: PaymentPackage;
-  slug?: string | null;
-  scope?: string | null;
-  product?: string | null;
-  plan?: string | null;
-  entrySource?: string | null;
-  paymentMethodCode?: string | null;
-  acceptedKinds: PolicyKind[];
-  recordedPolicyVersionIds: string[];
-  metadata?: Record<string, unknown>;
-}) {
-  const service = await createServiceClient();
+export async function createPaymentOrder(
+  input: {
+    userId: string;
+    pkg: PaymentPackage;
+    amount: number; // 2026-07-07 — 리졸버 스냅샷가(카탈로그 price 아님). prepare 가 전달.
+    slug?: string | null;
+    scope?: string | null;
+    product?: string | null;
+    plan?: string | null;
+    entrySource?: string | null;
+    paymentMethodCode?: string | null;
+    acceptedKinds: PolicyKind[];
+    recordedPolicyVersionIds: string[];
+    metadata?: Record<string, unknown>;
+  },
+  service?: SupabaseClient
+) {
+  const client = service ?? (await createServiceClient());
   const orderId = generatePaymentOrderId();
-  const { data, error } = await service
+  const { data, error } = await client
     .from('payment_orders')
     .insert({
       order_id: orderId,
       user_id: input.userId,
       package_id: input.pkg.id,
-      amount: input.pkg.price,
+      amount: input.amount,
       currency: 'KRW',
       status: 'prepared',
       slug: input.slug ?? null,
