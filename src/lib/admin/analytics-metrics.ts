@@ -2,6 +2,7 @@
 //   전환율 파생, 윈도우 상위 유입 집계. service 클라이언트 전용(metrics_daily RLS deny-all).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  kstMidnightIso,
   recentKstDateKeys,
   type InflowReferrer,
   type InflowUtm,
@@ -54,6 +55,21 @@ export interface AnalyticsSnapshot {
   hasData: boolean;
 }
 
+export interface MetricsFreshnessRow {
+  date_key: string;
+  refreshed_at: string | null;
+}
+
+export type MetricsFreshnessReason = 'fresh' | 'missing_today' | 'stale_today';
+
+export interface MetricsFreshnessDecision {
+  shouldRefresh: boolean;
+  reason: MetricsFreshnessReason;
+  todayKey: string;
+  staleBeforeIso: string;
+  refreshedAt: string | null;
+}
+
 interface MetricsDailyDbRow {
   date_key: string;
   visitors: number;
@@ -85,6 +101,50 @@ function asUtm(v: unknown): InflowUtm[] {
 }
 
 const TOP_N = 12;
+export const METRICS_AUTO_REFRESH_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+export function assessDailyMetricsFreshness(
+  rows: MetricsFreshnessRow[],
+  now: Date = new Date(),
+  maxAgeMs = METRICS_AUTO_REFRESH_MAX_AGE_MS
+): MetricsFreshnessDecision {
+  const todayKey = recentKstDateKeys(1, now)[0]!;
+  const kstStartMs = Date.parse(kstMidnightIso(todayKey));
+  const maxAgeCutoffMs = now.getTime() - Math.max(1, maxAgeMs);
+  const staleBeforeMs = Math.max(kstStartMs, maxAgeCutoffMs);
+  const staleBeforeIso = new Date(staleBeforeMs).toISOString();
+  const today = rows.find((row) => row.date_key === todayKey);
+
+  if (!today) {
+    return {
+      shouldRefresh: true,
+      reason: 'missing_today',
+      todayKey,
+      staleBeforeIso,
+      refreshedAt: null,
+    };
+  }
+
+  const refreshedAt = today.refreshed_at;
+  const refreshedMs = refreshedAt ? Date.parse(refreshedAt) : Number.NaN;
+  if (!Number.isFinite(refreshedMs) || refreshedMs < staleBeforeMs) {
+    return {
+      shouldRefresh: true,
+      reason: 'stale_today',
+      todayKey,
+      staleBeforeIso,
+      refreshedAt,
+    };
+  }
+
+  return {
+    shouldRefresh: false,
+    reason: 'fresh',
+    todayKey,
+    staleBeforeIso,
+    refreshedAt,
+  };
+}
 
 export async function getDailyMetrics(
   service: SupabaseClient,
