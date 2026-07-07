@@ -35,6 +35,7 @@ import {
   updatePaymentOrderPolicyVersions,
 } from '@/lib/payments/order-ledger';
 import { isCreditPackage } from '@/lib/payments/coin-sunset';
+import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -275,9 +276,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-07-07 — 주문 금액을 리졸버로 스냅샷(카탈로그 기본가 위 DB 오버라이드).
+  //   이후 confirm/return 은 이 order.amount 를 authoritative 검증한다.
+  const resolvedAmount = await resolvePackagePrice(pkg.id);
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
+    amount: resolvedAmount,
     slug,
     scope,
     product,
@@ -317,7 +322,7 @@ export async function POST(req: NextRequest) {
     stage: 'prepare_ready',
     userId: user.id,
     packageId,
-    amount: pkg.price ?? null,
+    amount: resolvedAmount,
     orderId: order.orderId,
     metadata: {
       scopeKey: paymentScope?.scopeKey ?? null,
@@ -335,6 +340,9 @@ export async function POST(req: NextRequest) {
     alreadyPurchased: false,
     scopeKey: paymentScope?.scopeKey ?? null,
     orderId: order.orderId,
+    // 2026-07-07 — 청구 금액은 order.amount(리졸버 스냅샷). 클라이언트는 이 값으로 PG 청구해야
+    //   confirm/return 의 order.amount 검증과 일치(카탈로그 prop 사용 시 가격 변경 후 전건 거부).
+    amount: resolvedAmount,
     // 2026-06-26 — 결제창 분기용 PG. 클라이언트가 toss SDK ↔ nicepay 결제창을 선택.
     provider: getPaymentProvider(),
   });

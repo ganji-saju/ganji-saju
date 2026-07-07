@@ -78,17 +78,26 @@ describe('Payment catalog 정합성', () => {
 });
 
 describe('서버 측 금액 재검증', () => {
-  it('카탈로그 가격과 다른 amount 가 들어오면 거부한다', () => {
-    for (const pkg of PAYMENT_PACKAGES as readonly PaymentPackage[]) {
-      const validation = validatePaymentConfirmationPayload({
-        paymentKey: 'test_pk_dummy',
-        orderId: `test_order_${pkg.id}`,
-        amount: pkg.price + 1, // 1원만 깎으려고 시도
-        packageId: pkg.id,
-        slug: pkg.requiresSlug || pkg.kind === 'lifetime_report' ? 'test-slug' : null,
-      });
-      expect(validation.ok).toBe(false);
-    }
+  it('알 수 없는 패키지 또는 비정상 금액이면 거부한다(정확 금액은 order.amount 가 검증)', () => {
+    // 2026-07-07 — 정확 금액 정합은 confirm/route 의 order.amount(prepare 스냅샷) 비교로 이동.
+    //   payload 검증은 known package + 양수 amount 만 강제.
+    const unknownPkg = validatePaymentConfirmationPayload({
+      paymentKey: 'test_pk_dummy',
+      orderId: 'test_order_x',
+      amount: 9900,
+      packageId: 'nonexistent_package',
+      slug: null,
+    });
+    expect(unknownPkg.ok).toBe(false);
+
+    const nonPositive = validatePaymentConfirmationPayload({
+      paymentKey: 'test_pk_dummy',
+      orderId: 'test_order_y',
+      amount: 0,
+      packageId: 'taste_today_detail',
+      slug: 'test-slug',
+    });
+    expect(nonPositive.ok).toBe(false);
   });
 
   it('카탈로그 가격과 같은 amount + 필요한 슬러그가 있으면 통과한다', () => {

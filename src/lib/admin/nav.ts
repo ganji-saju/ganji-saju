@@ -56,6 +56,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: '/admin/push-ctr', label: '알림 CTR', description: '푸시 전송·클릭·CTR 추이' },
       {
+        href: '/admin/pricing',
+        label: '가격 관리',
+        description: '전 상품 가격 변경(즉시 반영)',
+        minRole: 'super_admin',
+      },
+      {
         href: '/admin/policies',
         label: '약관·정책',
         description: '정책 버전·게시 상태',

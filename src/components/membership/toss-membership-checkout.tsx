@@ -41,6 +41,9 @@ interface PaymentPrepareResponse {
   error?: string;
   orderId?: string;
   provider?: 'toss' | 'nicepay';
+  // 2026-07-07 — 서버가 스냅샷한 청구 금액(order.amount). PG 청구는 이 값을 써야
+  //   confirm/return 의 order.amount 검증과 일치한다(prop amount 는 폴백).
+  amount?: number;
 }
 
 export default function TossMembershipCheckout({
@@ -152,6 +155,10 @@ export default function TossMembershipCheckout({
       }
 
       const orderId = prepare.orderId;
+      // 2026-07-07 — 실제 PG 청구액은 서버가 만든 order.amount(리졸버 스냅샷)를 따른다.
+      //   prop amount(카탈로그)는 폴백 — 가격 변경/렌더 레이스 시 confirm 거부 방지.
+      const chargeAmount =
+        typeof prepare.amount === 'number' && prepare.amount > 0 ? prepare.amount : amount;
 
       // 2026-06-26 — 나이스페이 분기: 결제창 SDK·승인 방식이 달라(서버승인 returnUrl) 별도 흐름.
       //   토스(successUrl/failUrl 클라 redirect) ↔ 나이스페이(returnUrl 서버 승인) 차이.
@@ -164,12 +171,12 @@ export default function TossMembershipCheckout({
           packageId,
           product,
           paymentMethod,
-          amount,
+          amount: chargeAmount,
           plan,
         });
         await requestNicepayPayment({
           orderId,
-          amount,
+          amount: chargeAmount,
           goodsName: orderName,
           method: toNicepayMethod(paymentMethod),
           onError: (message) => setErrorMessage(message),
@@ -214,12 +221,12 @@ export default function TossMembershipCheckout({
         packageId,
         product,
         paymentMethod,
-        amount,
+        amount: chargeAmount,
         plan,
       });
 
       const paymentRequest = {
-        amount: { currency: 'KRW', value: amount },
+        amount: { currency: 'KRW', value: chargeAmount },
         orderId,
         orderName,
         successUrl: `${location.origin}/membership/success?${successParams.toString()}`,
