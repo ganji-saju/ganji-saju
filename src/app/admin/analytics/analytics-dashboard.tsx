@@ -18,6 +18,7 @@ const WINDOW_OPTIONS = [
   { value: 365, label: '365일' },
 ];
 
+const AUTO_REFRESH_MS = 10 * 60 * 1000;
 const formatNum = (n: number) => n.toLocaleString();
 const formatPct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
 
@@ -190,23 +191,43 @@ export function AnalyticsDashboard() {
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/admin/analytics?days=${days}`)
-      .then((r) => r.json() as Promise<ApiResponse>)
-      .then((res) => {
+    let loadedOnce = false;
+
+    const load = async (initial: boolean) => {
+      if (initial) {
+        setLoading(true);
+        setError(null);
+      }
+
+      try {
+        const res = (await fetch(`/api/admin/analytics?days=${days}`, {
+          cache: 'no-store',
+        }).then((r) => r.json())) as ApiResponse;
         if (!alive) return;
-        if (res.ok && res.snapshot) setSnap(res.snapshot);
-        else setError(res.error ?? '불러오기 실패');
-      })
-      .catch((e) => {
-        if (alive) setError(e instanceof Error ? e.message : '네트워크 오류');
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
+        if (res.ok && res.snapshot) {
+          loadedOnce = true;
+          setSnap(res.snapshot);
+          setError(null);
+        } else if (initial || !loadedOnce) {
+          setError(res.error ?? '불러오기 실패');
+        }
+      } catch (e) {
+        if (alive && (initial || !loadedOnce)) {
+          setError(e instanceof Error ? e.message : '네트워크 오류');
+        }
+      } finally {
+        if (alive && initial) setLoading(false);
+      }
+    };
+
+    void load(true);
+    const timer = window.setInterval(() => {
+      void load(false);
+    }, AUTO_REFRESH_MS);
+
     return () => {
       alive = false;
+      window.clearInterval(timer);
     };
   }, [days]);
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { getDailyMetrics } from './analytics-metrics';
+import { assessDailyMetricsFreshness, getDailyMetrics } from './analytics-metrics';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
@@ -99,4 +99,46 @@ test('getDailyMetrics: windowDays 범위 클램프(1..365)', async () => {
   assert.equal(big.daily.length, 365);
   const small = await getDailyMetrics(fakeService([]), 0, NOW);
   assert.equal(small.windowDays, 30); // 0 → 기본 30
+});
+
+test('assessDailyMetricsFreshness: 오늘 행이 없으면 자동 롤업 대상', () => {
+  const result = assessDailyMetricsFreshness(
+    [{ date_key: '2026-07-06', refreshed_at: '2026-07-06T18:00:00.000Z' }],
+    new Date('2026-07-07T05:00:00Z')
+  );
+
+  assert.equal(result.todayKey, '2026-07-07');
+  assert.equal(result.shouldRefresh, true);
+  assert.equal(result.reason, 'missing_today');
+  assert.equal(result.refreshedAt, null);
+});
+
+test('assessDailyMetricsFreshness: 오늘 행이 있어도 KST 자정 전 갱신이면 stale', () => {
+  const result = assessDailyMetricsFreshness(
+    [{ date_key: '2026-07-07', refreshed_at: '2026-07-06T14:59:59.000Z' }],
+    new Date('2026-07-07T05:00:00Z')
+  );
+
+  assert.equal(result.shouldRefresh, true);
+  assert.equal(result.reason, 'stale_today');
+});
+
+test('assessDailyMetricsFreshness: 오늘 행이 6시간 이내 갱신이면 fresh', () => {
+  const result = assessDailyMetricsFreshness(
+    [{ date_key: '2026-07-07', refreshed_at: '2026-07-07T04:00:00.000Z' }],
+    new Date('2026-07-07T05:00:00Z')
+  );
+
+  assert.equal(result.shouldRefresh, false);
+  assert.equal(result.reason, 'fresh');
+});
+
+test('assessDailyMetricsFreshness: 오늘 행이 6시간 넘게 오래되면 stale', () => {
+  const result = assessDailyMetricsFreshness(
+    [{ date_key: '2026-07-07', refreshed_at: '2026-07-07T00:00:00.000Z' }],
+    new Date('2026-07-07T07:00:01Z')
+  );
+
+  assert.equal(result.shouldRefresh, true);
+  assert.equal(result.reason, 'stale_today');
 });

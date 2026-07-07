@@ -41,6 +41,9 @@ export interface PaymentPackage {
   tasteProductId?: TasteProductId;
   requiresSlug?: boolean;
   components?: readonly BundleComponent[];
+  // 2026-07-07 Phase 2 — 취소선(compare-at) 마케팅 원가 기본값. 표시 전용(청구 무관).
+  //   런타임 오버라이드는 product_prices.previous_price 가 우선(admin 과거가격 입력).
+  compareAt?: number;
 }
 
 export const PAYMENT_PACKAGES = [
@@ -77,6 +80,8 @@ export const PAYMENT_PACKAGES = [
     kind: 'lifetime_report',
     planSlug: 'lifetime',
     requiresSlug: true,
+    // 2026-07-07 — premium/deep VIP 카드의 취소선 원가(마케팅 앵커, 기존 하드코딩 69,000).
+    compareAt: 69000,
   },
   {
     id: 'taste_today_detail',

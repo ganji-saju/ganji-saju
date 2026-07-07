@@ -23,6 +23,9 @@ import { GaPageView } from "@/components/analytics/ga-page-view";
 // 2026-07-06 — 자체 쿠키/분석 동의 배너 + Consent Mode v2 키 공유.
 import { AnalyticsConsentBanner } from "@/components/analytics/analytics-consent-banner";
 import { ANALYTICS_CONSENT_KEY } from "@/components/analytics/analytics-consent";
+// 2026-07-07 Phase 2 — 전역 가격 표시 단일화. 서버에서 리졸버 맵 1회 로드 → 클라 전파.
+import { PriceProvider } from "@/components/payments/price-provider";
+import { getPriceDisplayMap } from "@/lib/payments/price-display";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -211,11 +214,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 전역 가격 표시 맵(리졸버: 카탈로그 + product_prices 오버라이드). 클라 컴포넌트가
+  //   usePriceLabel 로 소비. 가격 변경 시 admin 이 revalidatePath 로 캐시 무효화.
+  const priceMap = await getPriceDisplayMap();
   return (
     <html
       lang="ko"
@@ -264,7 +270,7 @@ export default function RootLayout({
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
         <ScrollResetOnNavigate />
-        {children}
+        <PriceProvider map={priceMap}>{children}</PriceProvider>
         <KakaoSdkLoader />
         <VisitPing />
         <AnalyticsConsentBanner />
