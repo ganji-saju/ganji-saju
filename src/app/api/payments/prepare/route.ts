@@ -322,7 +322,7 @@ export async function POST(req: NextRequest) {
     stage: 'prepare_ready',
     userId: user.id,
     packageId,
-    amount: pkg.price ?? null,
+    amount: resolvedAmount,
     orderId: order.orderId,
     metadata: {
       scopeKey: paymentScope?.scopeKey ?? null,
@@ -340,6 +340,9 @@ export async function POST(req: NextRequest) {
     alreadyPurchased: false,
     scopeKey: paymentScope?.scopeKey ?? null,
     orderId: order.orderId,
+    // 2026-07-07 — 청구 금액은 order.amount(리졸버 스냅샷). 클라이언트는 이 값으로 PG 청구해야
+    //   confirm/return 의 order.amount 검증과 일치(카탈로그 prop 사용 시 가격 변경 후 전건 거부).
+    amount: resolvedAmount,
     // 2026-06-26 — 결제창 분기용 PG. 클라이언트가 toss SDK ↔ nicepay 결제창을 선택.
     provider: getPaymentProvider(),
   });

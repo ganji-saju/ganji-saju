@@ -12,7 +12,7 @@ import {
 } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
-  formatPaymentPackagePrice,
+  formatWon,
   getMembershipPackage,
   getPackage,
   getTasteProductPackage,
@@ -21,6 +21,7 @@ import {
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
+import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
@@ -235,9 +236,16 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     : selectedBundle
       ? selectedBundle
       : getMembershipPackage(selectedPlan);
-  const displayPrice = paymentPackage
-    ? formatPaymentPackagePrice(paymentPackage)
-    : selected.price;
+  // 2026-07-07 — 청구·표시 금액 모두 리졸버(카탈로그 위 DB 오버라이드)로 통일.
+  //   판매 시점 표시가 = 실제 청구액(order.amount) 이어야 하고, prop amount 도 같은 값이어야
+  //   confirm/return 의 order.amount 검증을 통과한다.
+  const chargeAmount = paymentPackage ? await resolvePackagePrice(paymentPackage.id) : null;
+  const displayPrice =
+    paymentPackage && chargeAmount != null
+      ? paymentPackage.kind === 'subscription' && paymentPackage.planSlug
+        ? `월 ${formatWon(chargeAmount)}`
+        : formatWon(chargeAmount)
+      : selected.price;
   const headerZodiac: ZodiacKey = selectedProduct
     ? TASTE_PRODUCT_ZODIAC[selectedProduct] ?? 'dragon'
     : 'dragon';
@@ -529,7 +537,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                       packageId={paymentPackage.id}
                       plan={selectedPlan}
                       product={selectedProduct ?? selectedBundle?.id}
-                      amount={paymentPackage.price}
+                      amount={chargeAmount ?? paymentPackage.price}
                       orderName={paymentPackage.name}
                       slug={slug}
                       scope={scope}
