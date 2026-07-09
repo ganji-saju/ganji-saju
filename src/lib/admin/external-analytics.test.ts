@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  buildVercelRangeChunks,
   buildVercelRangeAttempts,
   getExternalAnalyticsSnapshot,
   normalizeExternalDate,
@@ -101,6 +102,42 @@ test('buildVercelRangeAttempts: KST 오늘이 UTC 기준 미래면 Vercel until�
   );
 
   assert.deepEqual(attempts[0], { fromKey: '2026-07-08', toKey: '2026-07-09' });
+});
+
+test('buildVercelRangeChunks: Vercel aggregate limit에 맞춰 100일 이하로 분할', () => {
+  assert.deepEqual(buildVercelRangeChunks('2026-01-01', '2026-04-15'), [
+    { fromKey: '2026-01-01', toKey: '2026-04-10' },
+    { fromKey: '2026-04-11', toKey: '2026-04-15' },
+  ]);
+});
+
+test('getExternalAnalyticsSnapshot: Vercel 100일 초과 조회는 limit=100 chunk로 호출', async () => {
+  const calls: string[] = [];
+  const snap = await getExternalAnalyticsSnapshot(
+    105,
+    NOW,
+    {
+      VERCEL_ANALYTICS_TOKEN: 'token',
+      VERCEL_PROJECT_ID: 'project',
+    },
+    async (input) => {
+      calls.push(String(input));
+      return new Response(JSON.stringify({ data: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+  );
+
+  const expectedChunks = buildVercelRangeChunks(snap.from, snap.to);
+  assert.equal(calls.length, expectedChunks.length);
+  for (let i = 0; i < calls.length; i += 1) {
+    const url = new URL(calls[i]!);
+    assert.equal(url.searchParams.get('limit'), '100');
+    assert.equal(url.searchParams.get('since'), expectedChunks[i]!.fromKey);
+    assert.equal(url.searchParams.get('until'), expectedChunks[i]!.toKey);
+  }
+  assert.equal(snap.sources.vercel.ok, true);
 });
 
 test('getExternalAnalyticsSnapshot: Vercel reporting window 오류면 30일 fallback으로 재시도', async () => {
