@@ -1,19 +1,20 @@
-// 2026-07-04 — 자체 방문(유입) 카운트 핑. 루트 레이아웃에 1회 마운트.
-// localStorage 익명 vid + KST 일 1회 게이트 → POST /api/visit (sendBeacon 우선).
-// 광고차단기/JS 미실행 방문은 안 잡힘 — admin 지표는 "하한치"로 표기.
-// 2026-07-07 — 유입 캠페인 분석용 UTM 수집 추가. 방문 핑은 하루 1회지만, UTM 이 있는
-//   랜딩(광고 클릭)은 별도 게이트로 하루 1회 더 허용 — 당일 direct 후 광고 클릭도 귀속.
+// 2026-07-04 — 자체 방문(유입) 카운트 핑.
+// 2026-07-10 — GA/Vercel 비교 정확도를 위해 라우트 변경마다 page_view 를 전송한다.
+// visitor 는 서버에서 KST 일별 1명으로 dedupe, page_views 는 매 전송마다 증가.
+// 광고차단기/JS 미실행 방문은 안 잡힘 — admin 지표는 "자체 수집 기준"으로 표기.
+// 2026-07-07 — 유입 캠페인 분석용 UTM 수집 추가. 서버는 당일 첫 UTM 을 보존한다.
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
+import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
+import { sanitizePath, sanitizeQuery } from './ga-sanitize';
 
 const VID_KEY = 'moonlight:vid';
 const GATE_PREFIX = 'moonlight:visit-ping:';
 const UTM_GATE_PREFIX = 'moonlight:visit-utm:';
-
-function kstDateKey(): string {
-  return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-}
+const PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+const PUBLIC_VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? '';
 
 function readUtm(): {
   utm_source: string | null;
@@ -36,20 +37,39 @@ function readUtm(): {
   }
 }
 
+function cleanupLegacyGateKeys() {
+  try {
+    for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+      const key = window.localStorage.key(i);
+      if (!key) continue;
+      if (key.startsWith(GATE_PREFIX) || key.startsWith(UTM_GATE_PREFIX)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // 저장소 접근 불가(시크릿 모드 제한 등) — 무시.
+  }
+}
+
 export function VisitPing() {
+  const pathname = usePathname();
+  const lastSentRef = useRef<string | null>(null);
+
   useEffect(() => {
     try {
-      const dateKey = kstDateKey();
-      const gateKey = `${GATE_PREFIX}${dateKey}`;
-      const utmGateKey = `${UTM_GATE_PREFIX}${dateKey}`;
-      const dailyPinged = Boolean(window.localStorage.getItem(gateKey));
+      const skipReason = shouldSkipVisitAnalytics({
+        path: pathname,
+        host: window.location.host,
+        siteUrl: PUBLIC_SITE_URL,
+        deploymentEnv: PUBLIC_VERCEL_ENV,
+      });
+      if (skipReason) return;
+
+      const safePath = sanitizePath(pathname) + sanitizeQuery(window.location.search);
+      if (lastSentRef.current === safePath) return;
+      lastSentRef.current = safePath;
+
       const utm = readUtm();
-      const hasUtm = Boolean(utm.utm_source || utm.utm_medium || utm.utm_campaign);
-      const utmPinged = Boolean(window.localStorage.getItem(utmGateKey));
-
-      // 오늘 방문 핑을 했고, UTM 이 없거나 이미 UTM 핑도 했으면 skip.
-      if (dailyPinged && (!hasUtm || utmPinged)) return;
-
       let vid = window.localStorage.getItem(VID_KEY);
       if (!vid) {
         vid = crypto.randomUUID();
@@ -57,8 +77,9 @@ export function VisitPing() {
       }
 
       const payload = JSON.stringify({
+        event: 'page_view',
         vid,
-        path: window.location.pathname,
+        path: safePath,
         ref: document.referrer || null,
         ...utm,
       });
@@ -77,21 +98,11 @@ export function VisitPing() {
         }).catch(() => {});
       }
 
-      window.localStorage.setItem(gateKey, '1');
-      if (hasUtm) window.localStorage.setItem(utmGateKey, '1');
-      // 지난 날짜 게이트 정리(축적 방지) — 방문·UTM 게이트 모두.
-      for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
-        const key = window.localStorage.key(i);
-        if (!key) continue;
-        const isGate = key.startsWith(GATE_PREFIX) || key.startsWith(UTM_GATE_PREFIX);
-        if (isGate && key !== gateKey && key !== utmGateKey) {
-          window.localStorage.removeItem(key);
-        }
-      }
+      cleanupLegacyGateKeys();
     } catch {
       // 저장소 접근 불가(시크릿 모드 제한 등) — 무시.
     }
-  }, []);
+  }, [pathname]);
 
   return null;
 }

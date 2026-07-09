@@ -16,7 +16,7 @@ import { AppToaster } from "@/components/notifications/app-toaster";
 import { NotificationClickTracker } from "@/components/notifications/notification-click-tracker";
 import { ScrollResetOnNavigate } from "@/shared/layout/scroll-reset-on-navigate";
 import { KakaoSdkLoader } from "@/components/kakao/kakao-sdk-loader";
-// 2026-07-04 — 자체 방문(유입) 카운트(일 1회 익명 핑, admin 지표용).
+// 2026-07-10 — 자체 방문/페이지뷰 수집(admin 지표용, 내부/admin/preview 제외).
 import { VisitPing } from "@/components/analytics/visit-ping";
 // 2026-07-06 — 개인정보 제거 GA4 page_view(사주/공유 URL 의 생년월일·이름 미전송).
 import { GaPageView } from "@/components/analytics/ga-page-view";
