@@ -3,10 +3,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runSearch, TRENDING_KEYWORDS } from '@/lib/search-index';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
 
 export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get('q') ?? '').slice(0, 60);
-  const hits = runSearch(q);
+  // 2026-07-07 Phase 2 — 검색 결과 설명의 가격 토큰을 리졸버 값으로 채운다.
+  const priceMap = await getPriceDisplayMap();
+  const hits = runSearch(q, priceMap);
   return NextResponse.json({
     query: q,
     total: hits.length,
