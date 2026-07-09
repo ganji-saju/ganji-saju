@@ -1,5 +1,5 @@
 // 2026-05-22 — Phase 2+3 스펙 §8: 5요소 점수 산출 내역.
-// 2026-06-07 — per-factor LockGate 제거. 점수 전체가 상위 ScoreLockGate(score-total 550원)로
+// 2026-06-07 — per-factor LockGate 제거. 점수 전체가 상위 ScoreLockGate(score-total 9,900원)로
 //   단일 게이팅되므로, 이 카드는 해제 상태에서만 렌더되어 5요소를 전부 노출한다.
 'use client';
 

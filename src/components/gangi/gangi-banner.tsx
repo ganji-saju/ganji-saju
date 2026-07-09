@@ -30,7 +30,7 @@ interface GangiBannerProps {
   href?: string;
   /** kind='soft'/'inline' 의 좌측 아이콘/뱃지/ZodiacChip */
   leading?: ReactNode;
-  /** 가격 칩 (예: 550원). kind='inline' 에서 주로 사용 */
+  /** 가격 칩 (예: 9,900원). kind='inline' 에서 주로 사용 */
   pricePill?: string;
   /** 추가 클래스명 (caller 가 layout 보조 시) */
   className?: string;

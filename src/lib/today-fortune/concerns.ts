@@ -79,7 +79,9 @@ export const TODAY_CONCERNS: readonly TodayConcernDefinition[] = [
     shortLabel: '총운',
     prompt: '오늘 전체 흐름',
     focusTopic: 'today',
-    staticUpsellCopy: '오늘 심화풀이 9,900원으로 열기',
+    // 2026-07-07 Phase 2 — 가격 단일화: 인라인 하드코딩가 제거(스테일 방지).
+    //   실제 청구가는 목적지(오늘 자세히 결제) 화면이 리졸버로 표시.
+    staticUpsellCopy: '오늘 심화풀이 자세히 열기',
     followUpQuestions: [
       '오늘은 무엇부터 하는 편이 좋나요?',
       '지금 가장 약한 흐름은 어디인가요?',

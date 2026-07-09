@@ -297,7 +297,7 @@ export default async function SajuPremiumPage({ params }: Props) {
   const lifetimeLabel = priceLabelFromMap(priceMap, 'lifetime_report');
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
-  // 2026-05-18 — 1,900원 monthly-calendar 단독 구매자도 상세 화면(캘린더 + 잠금 1·2 preview)
+  // 2026-05-18 — 9,900원 monthly-calendar 단독 구매자도 상세 화면(캘린더 + 잠금 1·2 preview)
   //   로 진입하도록 추가. lifetime / yearly 보다 우선순위 낮음.
   let monthlyAccessLabel: string | null = null;
   // 2026-05-16 — 활성 멤버십 plan 을 추적해 plan=premium 결제 CTA 가 중복 결제로
@@ -642,7 +642,7 @@ export default async function SajuPremiumPage({ params }: Props) {
             </>
           ) : monthlyAccessLabel ? (
             <>
-              {/* 2026-05-18 Branch D — 월간달력(1,900원) 단독 구매자: 캘린더 우선 + 1·2장 잠금 미리보기. */}
+              {/* 2026-05-18 Branch D — 월간달력(9,900원) 단독 구매자: 캘린더 우선 + 1·2장 잠금 미리보기. */}
               <ChapterIntro
                 tone="indigo"
                 eyebrow="월별 흐름"

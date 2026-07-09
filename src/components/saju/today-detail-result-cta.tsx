@@ -16,7 +16,7 @@ interface Props {
   initialEntitlement: InitialEntitlement;
   /** 미구매 시 사용할 결제 페이지 href. entitlement openHref 보다 우선. */
   unpaidHref: string;
-  /** "오늘 자세히 · 550원" 등 미구매 라벨 */
+  /** "오늘 자세히 · 9,900원" 등 미구매 라벨 */
   unpaidLabel: string;
   /** "구매한 풀이 열기" 등 보유 라벨 */
   ownedLabel: string;

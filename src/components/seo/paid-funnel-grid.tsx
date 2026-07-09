@@ -1,6 +1,6 @@
 // 2026-05-20 Phase 8-E — 무료 SEO 콘텐츠 페이지 → 유료 상품 funnel grid (DRY).
 //   Phase 8-B/C/D 에서 별자리/띠/꿈해몽 detail 의 마지막 CTA section 에 inline 으로
-//   사주 (550원~) + 궁합 (990원) link grid 가 추가됐는데, 동일 패턴을
+//   사주 (9,900원~) + 궁합 (990원) link grid 가 추가됐는데, 동일 패턴을
 //   today-fortune / tarot result 페이지에도 적용하면서 컴포넌트로 추출.
 //
 //   from 매개변수로 UTM 식별 (?from=star-sign | zodiac | dream | today-fortune | tarot).
