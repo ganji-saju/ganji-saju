@@ -33,6 +33,8 @@ import {
   hasAnyMonthlyCalendarForReading,
 } from '@/lib/product-entitlements';
 import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
+import { Price } from '@/components/payments/price-provider';
+import { tasteProductPriceKey } from '@/lib/payments/price-display-shared';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import {
@@ -255,7 +257,7 @@ function SmallQuestionProducts({
             className="rounded-[14px] border border-[var(--app-line)] bg-white p-3.5 transition-colors hover:border-[var(--app-pink-line)] hover:bg-[var(--app-pink-soft)]"
           >
             <div className="text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
-              {product.price}
+              <Price priceKey={tasteProductPriceKey(product.slug)} />
             </div>
             <div className="mt-1.5 text-[16.1px] font-extrabold leading-snug text-[var(--app-ink)]">
               {product.title}
