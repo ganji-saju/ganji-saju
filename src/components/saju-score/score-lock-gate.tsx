@@ -4,6 +4,7 @@
 //        등급명 + 장식 블러 스켈레톤(가짜 형태, 숫자 없음) + 중앙 결제 CTA 만.
 //   서버 컴포넌트: 잠금 분기가 서버에서 결정되어 민감값(총점/요소 숫자)이 번들에 미포함.
 import type { ReactNode } from 'react';
+import { Price } from '@/components/payments/price-provider';
 
 interface ScoreLockGateProps {
   isUnlocked: boolean;
@@ -11,6 +12,10 @@ interface ScoreLockGateProps {
   slug: string;
   /** 잠금 시 노출할 등급명(예: '안정·양호'). 숫자는 노출하지 않음. */
   gradeLabel: string;
+  /**
+   * 2026-07-07 Phase 2 — 미전달 시 리졸버(admin product_prices)의 score-total 가격을 렌더.
+   *   문자열을 넘기면 그대로 사용(레거시 호환).
+   */
   price?: string;
   children: ReactNode;
 }
@@ -19,7 +24,7 @@ export function ScoreLockGate({
   isUnlocked,
   slug,
   gradeLabel,
-  price = '9,900원',
+  price,
   children,
 }: ScoreLockGateProps) {
   if (isUnlocked) return <>{children}</>;
@@ -81,7 +86,7 @@ export function ScoreLockGate({
           </p>
           <div className="mt-4 flex items-center justify-center gap-2.5">
             <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1.5 text-[15px] font-bold text-[var(--app-pink-strong)]">
-              {price}
+              {price ?? <Price priceKey="taste_score_total" />}
             </span>
             <a
               href={checkoutHref}

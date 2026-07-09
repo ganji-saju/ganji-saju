@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { useProductEntitlement } from '@/lib/payments/use-product-entitlement';
+import { usePriceLabel } from '@/components/payments/price-provider';
 
 interface PremiumLockCardProps {
   copy: string;
@@ -23,7 +24,7 @@ interface PremiumLockCardProps {
   concernId: string;
   errorMessage?: string | null;
   // 9,900원 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
-  // 9,900원 단품 옆에 묶음 비교 CTA 노출. 없으면 기존 단품 레이아웃 유지.
+  // {singleLabel} 단품 옆에 묶음 비교 CTA 노출. 없으면 기존 단품 레이아웃 유지.
   bundleHref?: string | null;
 }
 
@@ -44,6 +45,10 @@ export function PremiumLockCard({
     enabled: Boolean(sourceSessionId),
   });
 
+  // 2026-07-07 Phase 2 — 단품(오늘 자세히=saju_entry)·묶음(오늘 풀세트) 가격을 리졸버로 단일화.
+  const singleLabel = usePriceLabel('saju_entry');
+  const bundleLabel = usePriceLabel('bundle_today_set');
+
   function handleUnlockClick() {
     trackMoonlightEvent('unlock_clicked', {
       from: 'today-fortune',
@@ -55,7 +60,7 @@ export function PremiumLockCard({
   }
 
   // Loading guard: sourceSessionId 가 있고 entitlement fetch 가 아직 완료 전이면
-  // 결제 CTA 를 노출하지 않는다. 멤버십 회원이 잠깐 '9,900원 단품'을 보고 실수 결제하는
+  // 결제 CTA 를 노출하지 않는다. 멤버십 회원이 잠깐 '{singleLabel} 단품'을 보고 실수 결제하는
   // 것을 방지한다. sourceSessionId 가 없으면(enabled=false) 훅이 fetch 를 건너뛰므로
   // 이 guard 에 걸리지 않고 그대로 Branch 3 으로 진행한다.
   if (Boolean(sourceSessionId) && entitlementLoading && !hasEntitlement && !memberFreeEligible) {
@@ -170,7 +175,7 @@ export function PremiumLockCard({
         <ZodiacChip kind="snake" size="md" className="shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-[15px] font-extrabold tracking-[0.04em] text-[var(--app-pink-strong)]">
-            9,900원 · 자세한 풀이
+            {singleLabel} · 자세한 풀이
           </div>
           <div className="mt-0.5 text-[17.3px] font-extrabold tracking-tight text-[var(--app-ink)]">
             오늘 자세히 보기
@@ -204,7 +209,7 @@ export function PremiumLockCard({
                 size="lg"
                 className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] border-[var(--app-pink-line)] bg-white px-2 text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
               >
-                <span className="text-[15px] font-extrabold leading-tight">9,900원 단품</span>
+                <span className="text-[15px] font-extrabold leading-tight">{singleLabel} 단품</span>
                 <span className="text-[12.1px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
               </Button>
             </Link>
@@ -216,7 +221,7 @@ export function PremiumLockCard({
                 style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
               >
                 <span className="flex items-center gap-1.5 leading-tight">
-                  <span className="text-[16.7px] font-extrabold">19,800원 묶음</span>
+                  <span className="text-[16.7px] font-extrabold">{bundleLabel} 묶음</span>
                   <span className="text-[11.5px] font-semibold text-white/85">7종</span>
                 </span>
                 <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
@@ -245,10 +250,10 @@ export function PremiumLockCard({
               </li>
             ) : null}
             <li>
-              <b className="font-bold text-[var(--app-ink)]">9,900원 단품</b> — 오늘 자세히 보기만 바로 결제
+              <b className="font-bold text-[var(--app-ink)]">{singleLabel} 단품</b> — 오늘 자세히 보기만 바로 결제
             </li>
             <li>
-              <b className="font-bold text-[var(--app-pink-strong)]">19,800원 묶음</b> — 오늘 자세히 + 점수 6종까지 한 번에
+              <b className="font-bold text-[var(--app-pink-strong)]">{bundleLabel} 묶음</b> — 오늘 자세히 + 점수 6종까지 한 번에
             </li>
           </ul>
         </>
@@ -262,7 +267,7 @@ export function PremiumLockCard({
               size="lg"
               className="h-11 w-full rounded-full border-[var(--app-pink-line)] bg-white text-[15px] font-bold text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
             >
-              9,900원으로 열기
+              {singleLabel}으로 열기
             </Button>
           </Link>
 
