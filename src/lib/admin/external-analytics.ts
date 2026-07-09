@@ -9,6 +9,8 @@ const GOOGLE_ANALYTICS_SCOPE = 'https://www.googleapis.com/auth/analytics.readon
 const GOOGLE_ANALYTICS_RUN_REPORT_BASE = 'https://analyticsdata.googleapis.com/v1beta';
 const VERCEL_WEB_ANALYTICS_AGGREGATE_URL =
   'https://api.vercel.com/v1/query/web-analytics/visits/aggregate';
+const VERCEL_WEB_ANALYTICS_LIMIT = 100;
+const VERCEL_WEB_ANALYTICS_CHUNK_DAYS = 100;
 const REQUEST_TIMEOUT_MS = 12_000;
 
 type FetchLike = (input: string | URL, init?: RequestInit) => Promise<Response>;
@@ -375,7 +377,43 @@ export function buildVercelRangeAttempts(
   return attempts;
 }
 
+export function buildVercelRangeChunks(
+  fromKey: string,
+  toKey: string,
+  chunkDays = VERCEL_WEB_ANALYTICS_CHUNK_DAYS
+): Array<{ fromKey: string; toKey: string }> {
+  const safeChunkDays = Math.max(
+    1,
+    Math.min(VERCEL_WEB_ANALYTICS_LIMIT, Math.floor(chunkDays) || 1)
+  );
+  const chunks: Array<{ fromKey: string; toKey: string }> = [];
+  let cursor = fromKey;
+
+  for (let i = 0; i < 366 * 5 && cursor <= toKey; i += 1) {
+    const chunkTo = shiftDateKey(cursor, safeChunkDays - 1);
+    const safeTo = chunkTo < toKey ? chunkTo : toKey;
+    chunks.push({ fromKey: cursor, toKey: safeTo });
+    cursor = shiftDateKey(safeTo, 1);
+  }
+
+  return chunks;
+}
+
 async function fetchVercelAnalyticsRange(
+  config: VercelAnalyticsConfig,
+  fromKey: string,
+  toKey: string,
+  fetcher: FetchLike
+): Promise<Map<string, VercelAnalyticsDay>> {
+  const out = new Map<string, VercelAnalyticsDay>();
+  for (const range of buildVercelRangeChunks(fromKey, toKey)) {
+    const rows = await fetchVercelAnalyticsRangeChunk(config, range.fromKey, range.toKey, fetcher);
+    for (const [date, value] of rows) out.set(date, value);
+  }
+  return out;
+}
+
+async function fetchVercelAnalyticsRangeChunk(
   config: VercelAnalyticsConfig,
   fromKey: string,
   toKey: string,
@@ -386,7 +424,7 @@ async function fetchVercelAnalyticsRange(
   url.searchParams.set('by', 'day');
   url.searchParams.set('since', fromKey);
   url.searchParams.set('until', toKey);
-  url.searchParams.set('limit', '500');
+  url.searchParams.set('limit', String(VERCEL_WEB_ANALYTICS_LIMIT));
   if (config.teamId) url.searchParams.set('teamId', config.teamId);
   else if (config.teamSlug) url.searchParams.set('slug', config.teamSlug);
 
