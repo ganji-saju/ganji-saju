@@ -18,6 +18,7 @@ import type { FortuneCalendarMonthReport, FortuneCalendarTone } from '@/domain/s
 // 2026-05-16 — 같은 slug+년월에 대해 이미 monthly-calendar 구매한 사용자가
 //   다시 결제 link 를 보지 않도록 entitlement 확인.
 import { useProductEntitlement } from '@/lib/payments/use-product-entitlement';
+import { Price } from '@/components/payments/price-provider';
 
 interface Props {
   slug: string;
@@ -649,7 +650,7 @@ export default function FortuneCalendarPanel({
                     : '0 4px 10px rgba(74,92,184,0.28)',
                 }}
               >
-                {hasLifetimeAccess ? '✓ 소장권' : calendarMemberFree ? '멤버십 포함' : '월 9,900원'}
+                {hasLifetimeAccess ? '✓ 소장권' : calendarMemberFree ? '멤버십 포함' : <>월 <Price priceKey="taste_monthly_calendar" /></>}
               </span>
               {data?.access === 'month_unlock' ? (
                 <span className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
@@ -1013,7 +1014,7 @@ export default function FortuneCalendarPanel({
                         className="inline-flex h-11 items-center justify-center rounded-full border bg-white text-[14.4px] font-extrabold text-[var(--app-pink-strong)]"
                         style={{ borderColor: 'var(--app-pink-line)' }}
                       >
-                        9,900원으로 열기
+                        <Price priceKey="taste_monthly_calendar" />으로 열기
                       </Link>
                       {hasLegacyCoins ? (
                         <Button

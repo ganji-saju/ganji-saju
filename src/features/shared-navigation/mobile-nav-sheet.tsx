@@ -17,6 +17,7 @@ import type { User } from '@supabase/supabase-js';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { MEGA_NAV, type MegaNavItem } from './mega-nav-data';
+import { Price } from '@/components/payments/price-provider';
 import './mobile-nav-sheet.css';
 
 interface Props {
@@ -227,7 +228,7 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
                           it.tag === 'FREE' || it.tag === 'VIP' || it.tag === 'TOP'
                         }
                       >
-                        {it.tag}
+                        {it.tagPriceKey ? <Price priceKey={it.tagPriceKey} /> : it.tag}
                       </span>
                     ) : null}
                   </div>
@@ -249,7 +250,15 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
             >
               <span className="mobile-nav-sheet-featured-glyph" aria-hidden="true">運</span>
               <div className="mobile-nav-sheet-featured-body">
-                <div className="mobile-nav-sheet-featured-title">{activeGroup.c3.title}</div>
+                <div className="mobile-nav-sheet-featured-title">
+                  {activeGroup.c3.title}
+                  {activeGroup.c3.titlePriceKey ? (
+                    <>
+                      {' '}
+                      <Price priceKey={activeGroup.c3.titlePriceKey} />
+                    </>
+                  ) : null}
+                </div>
                 <div className="mobile-nav-sheet-featured-desc">
                   {activeGroup.c3.description}
                 </div>

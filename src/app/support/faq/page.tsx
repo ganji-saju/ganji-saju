@@ -8,6 +8,9 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { buildFAQPageSchema, serializeStructuredData } from '@/lib/seo/structured-data';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
+import { priceValueFromMap } from '@/lib/payments/price-display-shared';
+import { formatWon } from '@/lib/payments/catalog';
 
 export const metadata: Metadata = {
   title: '자주하는 질문 (FAQ)',
@@ -26,7 +29,10 @@ interface FaqGroup {
   items: FaqItem[];
 }
 
-const FAQ_GROUPS: FaqGroup[] = [
+// 2026-07-07 Phase 2 — 정책성 가격(9,900/49,000)을 리졸버(admin product_prices) 값으로
+//   주입. 렌더와 FAQPage JSON-LD 가 동일 소스를 쓰도록 빌더 함수로 전환.
+function buildFaqGroups(p: { taste: string; premium: string; lifetime: string }): FaqGroup[] {
+  return [
   {
     title: '결제·전',
     emoji: '💳',
@@ -37,7 +43,7 @@ const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: '오늘 자세히 보기·캘린더는 얼마인가요?',
-        a: '오늘 자세히 보기, 좋은날 1개월 캘린더 모두 직접 결제 시 9,900원입니다. 보유한 전으로도 열 수 있으며 콘텐츠별 전 차감량은 결제 화면에서 안내됩니다. 전은 결제 시점부터 1년간 유효합니다.',
+        a: `오늘 자세히 보기, 좋은날 1개월 캘린더 모두 직접 결제 시 ${p.taste}입니다. 보유한 전으로도 열 수 있으며 콘텐츠별 전 차감량은 결제 화면에서 안내됩니다. 전은 결제 시점부터 1년간 유효합니다.`,
       },
       {
         q: '같은 풀이를 다시 열어도 전이 또 빠지나요?',
@@ -55,7 +61,7 @@ const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         q: '프리미엄 멤버십에는 무엇이 포함되나요?',
-        a: '프리미엄 (49,000원/월, 30일 이용권): 상세 풀이 무제한, 운세 달력 무제한, 매일 대화 5건, 궁합 월 3회, 가족 사주 5명 등록. 공정사용정책이 적용됩니다.',
+        a: `프리미엄 (${p.premium}/월, 30일 이용권): 상세 풀이 무제한, 운세 달력 무제한, 매일 대화 5건, 궁합 월 3회, 가족 사주 5명 등록. 공정사용정책이 적용됩니다.`,
       },
       {
         q: '구독 해지 후 전은 남아 있나요?',
@@ -63,7 +69,7 @@ const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: '평생 리포트가 무엇인가요?',
-        a: '49,000원 일회성 결제로 평생 인생 흐름 리포트 (대운 10주기 + 세운 30년 + 십성 디테일 + PDF 보관 + 1:1 30분 풀이) 를 받습니다. 구독과 별개입니다.',
+        a: `${p.lifetime} 일회성 결제로 평생 인생 흐름 리포트 (대운 10주기 + 세운 30년 + 십성 디테일 + PDF 보관 + 1:1 30분 풀이) 를 받습니다. 구독과 별개입니다.`,
       },
     ],
   },
@@ -125,9 +131,17 @@ const FAQ_GROUPS: FaqGroup[] = [
       },
     ],
   },
-];
+  ];
+}
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  // 2026-07-07 Phase 2 — 정책성 가격을 리졸버 값으로 주입해 FAQ 본문·JSON-LD 동시 정합.
+  const priceMap = await getPriceDisplayMap();
+  const FAQ_GROUPS = buildFaqGroups({
+    taste: formatWon(priceValueFromMap(priceMap, 'saju_entry')),
+    premium: formatWon(priceValueFromMap(priceMap, 'membership_premium')),
+    lifetime: formatWon(priceValueFromMap(priceMap, 'lifetime_report')),
+  });
   // 2026-07-05 SEO — 실제 FAQ_GROUPS 콘텐츠 그대로 FAQPage JSON-LD 로 노출(콘텐츠 창작 없음).
   const faqSchema = buildFAQPageSchema({
     items: FAQ_GROUPS.flatMap((group) => group.items.map((it) => ({ question: it.q, answer: it.a }))),

@@ -269,7 +269,7 @@ export function TodayFortuneResultClient({
                 <TodaySajuChartCard chart={freeResult.sajuChart} />
               ) : null}
 
-              {/* §6 — 550원 자세히 보기 unlock + 990원 묶음 비교 CTA(사주 결과 있을 때만) */}
+              {/* §6 — 9,900원 자세히 보기 unlock + 990원 묶음 비교 CTA(사주 결과 있을 때만) */}
               <PremiumLockCard
                 copy={freeResult.nextAction.copy}
                 coinCost={freeResult.nextAction.coinCost}

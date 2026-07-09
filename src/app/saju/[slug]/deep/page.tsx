@@ -18,6 +18,7 @@ import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { LifetimeDeepCta } from '@/components/saju/lifetime-deep-cta';
+import { Price, ComparePrice } from '@/components/payments/price-provider';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 // 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
@@ -483,12 +484,14 @@ export default async function SajuDeepPage({ params }: Props) {
                 대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관 + 1:1 풀이 30분
               </p>
               <div className="mt-4 flex items-end gap-2.5">
-                <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
+                <div className="text-[26.5px] font-extrabold tracking-tight">
+                  <Price priceKey="lifetime_report" />
+                </div>
                 <div
                   className="mb-1.5 text-[12.6px] line-through"
                   style={{ opacity: 0.5 }}
                 >
-                  69,000원
+                  <ComparePrice priceKey="lifetime_report" />
                 </div>
                 {/* 2026-05-16 A7 — LifetimeDeepCta 클라이언트 wrapper 로 통일.
                     서버에서 hasLifetimeAccess 계산 → initialEntitlement 로 전달 →

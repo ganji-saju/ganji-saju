@@ -8,6 +8,7 @@ import type { TaekilDayResult, TaekilPurpose } from '@/lib/taekil/find-good-days
 import { TAEKIL_PURPOSES } from '@/lib/taekil/find-good-days';
 // 2026-05-18 Phase 5-E: 결과 없음 시 표준 EmptyState + 4 CTA (사용자 directive).
 import { EmptyState } from '@/components/state/empty-state';
+import { Price } from '@/components/payments/price-provider';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -273,7 +274,7 @@ export function TaekilClient() {
                 이번 달 좋은 날을 달력으로 한눈에
               </span>
               <span className="block text-[13.2px] font-bold text-[var(--app-copy-soft)]">
-                월간 좋은날 캘린더 · 9,900원
+                월간 좋은날 캘린더 · <Price priceKey="taste_monthly_calendar" />
               </span>
             </span>
             <span aria-hidden="true" className="text-[var(--app-pink-strong)]">→</span>

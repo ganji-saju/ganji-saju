@@ -15,6 +15,18 @@ export function toPackageId(key: PriceKey): PackageId {
   return (SPECIAL_TO_PACKAGE as Record<string, PackageId>)[key] ?? (key as PackageId);
 }
 
+// 콘텐츠 상수(TASTE_PRODUCTS slug, 플랜 slug)를 레지스트리 키로 매핑 — 소비처가 사용.
+/** taste 상품 slug('today-detail') → 카탈로그 키('taste_today_detail'). */
+export function tasteProductPriceKey(slug: string): PriceKey {
+  return `taste_${slug.replace(/-/g, '_')}` as PriceKey;
+}
+/** 멤버십 플랜 slug → 카탈로그 키. */
+export function planPriceKey(plan: 'basic' | 'premium' | 'lifetime'): PriceKey {
+  if (plan === 'basic') return 'membership_plus';
+  if (plan === 'premium') return 'membership_premium';
+  return 'lifetime_report';
+}
+
 export interface PriceDisplay {
   value: number; // 청구가와 동일(리졸버 결과)
   label: string; // "9,900원" / 구독 "월 49,000원"

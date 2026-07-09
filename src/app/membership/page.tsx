@@ -8,10 +8,13 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import {
-  formatPaymentPackagePrice,
-  getMembershipPackage,
-} from '@/lib/payments/catalog';
+  priceLabelFromMap,
+  tasteProductPriceKey,
+  planPriceKey,
+  type PriceKey,
+} from '@/lib/payments/price-display-shared';
 // 2026-05-16 — 활성 멤버십을 표시하기 위해 구독 + 인증 조회 추가.
 import { getManagedSubscription } from '@/lib/subscription';
 import {
@@ -21,18 +24,15 @@ import {
 } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
-const LIFETIME_REPORT_PACKAGE = getMembershipPackage('lifetime');
-const LIFETIME_REPORT_PRICE = LIFETIME_REPORT_PACKAGE
-  ? formatPaymentPackagePrice(LIFETIME_REPORT_PACKAGE)
-  : '49,000원';
-
 // 2026-05-18 Phase 5-B: comingSoon 카드는 결제 CTA 영역에서 숨김.
 //   사용자 directive: "준비 중" 가격 표시 금지 + 결제 CTA 에서는 숨긴다.
 //   운영자가 가격 확정 + 활성화 시 comingSoon=false 로 바꾸면 즉시 노출.
+// 2026-07-07 Phase 2: 활성 리포트는 priceKey 로 리졸버 표시가를 렌더(하드코딩 제거).
 const COLLECTIBLE_REPORTS: ReadonlyArray<{
   slug: string;
   title: string;
   price: string;
+  priceKey?: PriceKey;
   summary: string;
   href: string;
   zodiac: ZodiacKey;
@@ -41,7 +41,8 @@ const COLLECTIBLE_REPORTS: ReadonlyArray<{
   {
     slug: 'life-standard',
     title: '보관형 사주 리포트',
-    price: LIFETIME_REPORT_PRICE,
+    price: '',
+    priceKey: 'lifetime_report',
     summary: '타고난 성향, 올해 흐름, 선택 힌트를 한 번에 정리합니다.',
     href: '/saju/new?plan=lifetime',
     zodiac: 'dragon',
@@ -99,8 +100,14 @@ export default async function MembershipPage({
   const resolvedSearchParams = (await searchParams) ?? {};
   const focus = resolvedSearchParams.focus;
 
+  // 2026-07-07 Phase 2 — 전 가격 표시를 리졸버(admin product_prices) 값으로 단일화.
+  const priceMap = await getPriceDisplayMap();
+
   // mockup 가격 hero — 가장 강조할 가격은 premium plan
   const featuredPlan = DIALOGUE_PLANS.find((p) => p.slug === 'premium') ?? DIALOGUE_PLANS[0];
+  const featuredPlanLabel = featuredPlan
+    ? priceLabelFromMap(priceMap, planPriceKey(featuredPlan.slug))
+    : '월 49,000원';
 
   // 2026-05-16 — 활성 멤버십 plan 조회. plan 카드에 "이용 중" 배지 표시 + 결제 링크 비활성.
   let activeMembershipPlan: string | null = null;
@@ -136,7 +143,7 @@ export default async function MembershipPage({
             <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               매일 가볍게,
               <br />
-              <span className="text-[var(--app-pink-strong)]">{featuredPlan?.price ?? '월 49,000원'}</span>
+              <span className="text-[var(--app-pink-strong)]">{featuredPlanLabel}</span>
             </h1>
             <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy-muted)]">
               상세 풀이·운세 달력 무제한, 매일 대화 5건·궁합 월 3회·가족 사주 5명까지 함께 열립니다.
@@ -187,7 +194,7 @@ export default async function MembershipPage({
                       ) : null}
                     </div>
                     <div className="mt-1.5 text-[20.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                      {plan.price}
+                      {priceLabelFromMap(priceMap, planPriceKey(plan.slug))}
                     </div>
                     <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
                       {plan.title}
@@ -303,7 +310,7 @@ export default async function MembershipPage({
                       border: '1px solid var(--app-pink-line)',
                     }}
                   >
-                    {product.price}
+                    {priceLabelFromMap(priceMap, tasteProductPriceKey(product.slug))}
                   </span>
                 </Link>
               ))}
@@ -348,7 +355,7 @@ export default async function MembershipPage({
                       border: '1px solid var(--app-pink-line)',
                     }}
                   >
-                    {report.price}
+                    {report.priceKey ? priceLabelFromMap(priceMap, report.priceKey) : report.price}
                   </span>
                 </Link>
               ))}
@@ -361,7 +368,7 @@ export default async function MembershipPage({
               href={`/membership/checkout?plan=${featuredPlan?.slug ?? 'premium'}&from=membership`}
               className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
-              {featuredPlan?.price ?? '월 49,000원'} 시작 →
+              {featuredPlanLabel} 시작 →
             </Link>
             <p className="mt-3 text-center text-[13.2px] leading-[1.5] text-[var(--app-copy-soft)]">
               무료체험 없음 · 결제 승인일로부터 30일 이용 · 언제든 해지 가능

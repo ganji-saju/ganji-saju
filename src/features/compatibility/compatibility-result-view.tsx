@@ -14,6 +14,7 @@ import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { CompatibilityDeepSections } from '@/features/compatibility/compatibility-deep-sections';
+import { Price } from '@/components/payments/price-provider';
 
 interface CompatibilityResultViewProps {
   selected: CompatibilityRelationship;
@@ -473,7 +474,7 @@ export function CompatibilityResultView({
                 href={checkoutHref}
                 className="inline-flex items-center justify-center rounded-full border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
               >
-                9,900원 · 깊은 궁합 풀이 보기
+                <Price priceKey="taste_love_question" /> · 깊은 궁합 풀이 보기
               </Link>
               <Link
                 href={retakeHref}

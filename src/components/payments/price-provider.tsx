@@ -32,3 +32,23 @@ export function useCompareLabel(key: PriceKey): string | null {
 export function usePriceValue(key: PriceKey): number {
   return priceValueFromMap(useContext(PriceContext), key);
 }
+
+// 서버·클라 어디서나 쓰는 가격 표시 리프. 루트 PriceProvider 컨텍스트에서 라벨을 읽어
+//   admin(product_prices) 값으로 렌더한다. 서버 컴포넌트도 이 client 리프를 자식으로 둘 수 있다.
+export function Price({ priceKey, className }: { priceKey: PriceKey; className?: string }) {
+  const label = usePriceLabel(priceKey);
+  return <span className={className}>{label}</span>;
+}
+
+// 취소선(compare-at) 원가. 값 없으면 아무것도 렌더 안 함.
+export function ComparePrice({
+  priceKey,
+  className,
+}: {
+  priceKey: PriceKey;
+  className?: string;
+}) {
+  const label = useCompareLabel(priceKey);
+  if (!label) return null;
+  return <span className={className}>{label}</span>;
+}

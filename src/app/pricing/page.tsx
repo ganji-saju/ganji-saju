@@ -14,6 +14,12 @@ import {
 } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
+import {
+  priceLabelFromMap,
+  tasteProductPriceKey,
+  planPriceKey,
+} from '@/lib/payments/price-display-shared';
 // 2026-05-16 — 활성 멤버십 plan 을 표시해 중복 결제 진입 차단.
 import { getManagedSubscription } from '@/lib/subscription';
 import {
@@ -23,13 +29,16 @@ import {
 } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
-export const metadata: Metadata = {
-  title: '가격 한눈보기',
-  description: '간지사주의 무료 운세, 9,900원 단품 풀이, 멤버십을 한 화면에서 비교합니다.',
-  alternates: {
-    canonical: '/pricing',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const entry = priceLabelFromMap(await getPriceDisplayMap(), 'saju_entry');
+  return {
+    title: '가격 한눈보기',
+    description: `간지사주의 무료 운세, ${entry} 단품 풀이, 멤버십을 한 화면에서 비교합니다.`,
+    alternates: {
+      canonical: '/pricing',
+    },
+  };
+}
 
 const DIALOGUE_PLANS = PLAN_BLUEPRINT.filter((plan) => plan.slug !== 'lifetime');
 // 2026-06-07 — 선생 12명 전원 활성(dialogue/전용 기능 연결). 과거 '출시 예정'
@@ -41,6 +50,8 @@ function getProductTeacher(index: number) {
 }
 
 export default async function PricingPage() {
+  const priceMap = await getPriceDisplayMap();
+  const entryLabel = priceLabelFromMap(priceMap, 'saju_entry');
   // 2026-05-16 — 활성 멤버십 plan 조회. plan 카드에 "이용 중" + 결제 링크 비활성.
   let activeMembershipPlan: string | null = null;
   if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
@@ -69,7 +80,7 @@ export default async function PricingPage() {
               필요한 풀이만 열어요
             </>
           }
-          description="오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 9,900원 단품으로 이어볼 수 있습니다."
+          description={`오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 ${entryLabel} 단품으로 이어볼 수 있습니다.`}
         >
           <GangiActionRow>
             <Link href="/today-fortune?concern=general" className="gangi-primary-button">
@@ -97,7 +108,7 @@ export default async function PricingPage() {
                   zodiac={teacher.zodiac}
                   title={product.title}
                   desc={product.question}
-                  price={product.price}
+                  price={priceLabelFromMap(priceMap, tasteProductPriceKey(product.slug))}
                 />
               );
             })}
@@ -118,7 +129,9 @@ export default async function PricingPage() {
                     <h2 className="mt-2 text-xl font-bold leading-7 text-[var(--app-ink)]">{plan.title}</h2>
                     <p className="mt-2 text-base font-medium leading-6 text-[rgba(17,17,20,0.64)]">{plan.summary}</p>
                   </div>
-                  <strong className="shrink-0 text-base font-bold text-[var(--app-pink-strong)]">{plan.price}</strong>
+                  <strong className="shrink-0 text-base font-bold text-[var(--app-pink-strong)]">
+                    {priceLabelFromMap(priceMap, planPriceKey(plan.slug))}
+                  </strong>
                 </div>
                 <div className="gangi-mini-grid">
                   {plan.opens.slice(0, 3).map((item, index) => (

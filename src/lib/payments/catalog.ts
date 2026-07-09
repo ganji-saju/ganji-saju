@@ -16,7 +16,7 @@ export type TasteProductId =
   | 'monthly-calendar'
   | 'year-core'
   | 'score-factor'
-  // 2026-06-07 — 사주 점수 단일 언락(종합점수+5요소 전체를 reading 단위 550원에).
+  // 2026-06-07 — 사주 점수 단일 언락(종합점수+5요소 전체를 reading 단위 9,900원에).
   //   per-factor(score-factor) 모델 통합. reading scope(reading:{readingKey})로 grant.
   | 'score-total'
   // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.

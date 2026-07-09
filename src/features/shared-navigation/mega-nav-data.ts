@@ -2,6 +2,7 @@
 // 첨부 desktop.jsx MEGA_NAV 를 바탕으로 우리 실제 라우트에 맞춰 정리.
 
 import type { ZodiacKey } from '@/components/gangi/zodiac-chip';
+import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export interface MegaNavItem {
   label: string;
@@ -9,6 +10,8 @@ export interface MegaNavItem {
   href: string;
   zodiac?: ZodiacKey;
   tag?: 'FREE' | 'VIP' | 'TOP' | string;
+  /** 2026-07-07 Phase 2 — 지정 시 tag 를 리졸버 가격(admin product_prices)으로 렌더. */
+  tagPriceKey?: PriceKey;
 }
 
 export interface MegaNavFeatured {
@@ -16,6 +19,8 @@ export interface MegaNavFeatured {
   description: string;
   cta: string;
   href: string;
+  /** 2026-07-07 Phase 2 — 지정 시 title 뒤에 리졸버 가격을 덧붙여 렌더. */
+  titlePriceKey?: PriceKey;
 }
 
 export interface MegaNavGroup {
@@ -64,7 +69,7 @@ export const MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '사주 풀이',
       items: [
-        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '9,900원' },
+        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '9,900원', tagPriceKey: 'saju_entry' },
         { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', zodiac: 'snake', tag: 'VIP' },
         { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', zodiac: 'sheep' },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', zodiac: 'tiger' },
@@ -80,7 +85,8 @@ export const MEGA_NAV: MegaNavGroup[] = [
       ],
     },
     c3: {
-      title: '평생 리포트 49,000원',
+      title: '평생 리포트',
+      titlePriceKey: 'lifetime_report',
       description: '대운 30년 · 평생 소장',
       cta: 'VIP 자세히',
       href: '/pricing',

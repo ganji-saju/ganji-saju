@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Price } from '@/components/payments/price-provider';
+import type { PriceKey } from '@/lib/payments/price-display-shared';
 import type { SajuLifetimeReport } from '@/domain/saju/report';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import type { SajuDataV1, TenGodCode } from '@/domain/saju/engine/saju-data-v1';
@@ -643,9 +645,15 @@ export function buildPdfModel(
   };
 
   // ── NEXT 추천 제품 (P8) ─────────────────────────────
-  const nextProducts = [
-    { title: '궁합 풀이', sub: '가까운 사람과의 흐름', price: '9,900원', href: '/compatibility' },
-    { title: '좋은 날 캘린더', sub: '이번 달 좋은 날·조심할 날', price: '9,900원', href: '/saju/new?product=monthly-calendar' },
+  const nextProducts: Array<{
+    title: string;
+    sub: string;
+    price: string;
+    priceKey?: PriceKey;
+    href: string;
+  }> = [
+    { title: '궁합 풀이', sub: '가까운 사람과의 흐름', price: '9,900원', priceKey: 'taste_love_question', href: '/compatibility' },
+    { title: '좋은 날 캘린더', sub: '이번 달 좋은 날·조심할 날', price: '9,900원', priceKey: 'taste_monthly_calendar', href: '/saju/new?product=monthly-calendar' },
     { title: '오늘의 타로', sub: '세 장으로 보는 오늘', price: '무료', href: '/tarot/daily' },
     { title: '1:1 상담', sub: '간지사주 상담방에서 대화', price: '무료~', href: '/dialogue' },
   ];
@@ -1326,7 +1334,9 @@ export function ReportDocument({
                           <div className="rp-next-title">{p.title}</div>
                           <div className="rp-next-sub">{p.sub}</div>
                         </div>
-                        <span className="rp-next-price">{p.price}</span>
+                        <span className="rp-next-price">
+                          {p.priceKey ? <Price priceKey={p.priceKey} /> : p.price}
+                        </span>
                       </Link>
                     ))}
                   </div>

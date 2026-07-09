@@ -3,6 +3,11 @@
 // 모두 정적이므로 클라이언트가 무한 fetch 해도 비용은 거의 0.
 
 import { DREAM_DICTIONARY } from '@/lib/dream-dictionary';
+import {
+  priceLabelFromMap,
+  type PriceDisplay,
+  type PriceKey,
+} from '@/lib/payments/price-display-shared';
 
 export type SearchCategory = '운세 메뉴' | '관련 풀이' | '꿈해몽' | '띠/별자리';
 
@@ -13,13 +18,19 @@ export interface SearchHit {
   href: string;
   zodiacKey?: string; // ZodiacKey 문자열 (client 에서만 의미)
   keywords: string[];
+  /**
+   * 2026-07-07 Phase 2 — 지정 시 description 의 '{price}' 를 리졸버(admin product_prices)
+   *   가격으로 치환. runSearch 가 priceMap 을 받아 결과에 반영.
+   */
+  priceKey?: PriceKey;
 }
 
 const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '연애 마음 확인',
-    description: '9,900원 · 작은 풀이',
+    description: '{price} · 작은 풀이',
+    priceKey: 'taste_love_question',
     // /saju/new 는 love-question(연애/궁합 상품)을 처리하지 않음(saju 상품만). 궁합 입구로 연결.
     href: '/compatibility/input',
     zodiacKey: 'rabbit',
@@ -52,7 +63,8 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '돈이 새는 패턴',
-    description: '9,900원 · 재물 흐름의 약한 지점',
+    description: '{price} · 재물 흐름의 약한 지점',
+    priceKey: 'taste_money_pattern',
     href: '/saju/new?product=money-pattern',
     zodiacKey: 'tiger',
     keywords: ['재물', '돈', '재테크', '소비', '저축'],
@@ -60,7 +72,8 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '일/직장 흐름',
-    description: '9,900원 · 오늘의 말, 역할, 타이밍',
+    description: '{price} · 오늘의 말, 역할, 타이밍',
+    priceKey: 'taste_work_flow',
     href: '/saju/new?product=work-flow',
     zodiacKey: 'dragon',
     keywords: ['직장', '이직', '일', '업무', '커리어', '회사'],
@@ -68,7 +81,8 @@ const MENU_HITS: SearchHit[] = [
   {
     category: '운세 메뉴',
     title: '내 사주 풀이',
-    description: '깊은 사주풀이 + PDF · 49,000원',
+    description: '깊은 사주풀이 + PDF · {price}',
+    priceKey: 'lifetime_report',
     href: '/saju/new',
     zodiacKey: 'dragon',
     keywords: ['사주', '명리', '갑신일주', '운명', '팔자'],
@@ -193,15 +207,26 @@ const ALL_HITS: SearchHit[] = [
   ...DREAM_HITS,
 ];
 
-export function runSearch(query: string): SearchHit[] {
+export function runSearch(
+  query: string,
+  priceMap?: Record<string, PriceDisplay>
+): SearchHit[] {
   const q = (query ?? '').trim().toLowerCase();
   if (!q) return [];
 
-  return ALL_HITS.filter((hit) => {
+  const hits = ALL_HITS.filter((hit) => {
     if (hit.title.toLowerCase().includes(q)) return true;
     if (hit.description.toLowerCase().includes(q)) return true;
     return hit.keywords.some((k) => k.toLowerCase().includes(q));
   });
+
+  // 2026-07-07 Phase 2 — description 의 '{price}' 를 리졸버 가격으로 치환(가격 변경 즉시 반영).
+  if (!priceMap) return hits;
+  return hits.map((hit) =>
+    hit.priceKey && hit.description.includes('{price}')
+      ? { ...hit, description: hit.description.replace('{price}', priceLabelFromMap(priceMap, hit.priceKey)) }
+      : hit
+  );
 }
 
 export const TRENDING_KEYWORDS: Array<{ rank: number; keyword: string; up: boolean }> = [

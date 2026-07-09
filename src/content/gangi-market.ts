@@ -1,5 +1,6 @@
 import type { GangiZodiacKey } from '@/components/gangi/gangi-ui';
 import type { StarSignKey } from '@/components/gangi/star-sign-chip';
+import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export const GANGI_HOME_CATEGORIES = [
   { key: 'all', label: '전체' },
@@ -17,6 +18,11 @@ export type GangiServiceCard = {
   title: string;
   desc: string;
   price: string;
+  /**
+   * 2026-07-07 Phase 2 — 가격 표시 단일화. 지정 시 소비처가 리졸버(admin product_prices)
+   *   값으로 렌더하고 price 문자열은 fallback. 무료 카드는 미지정(price='무료' 유지).
+   */
+  priceKey?: PriceKey;
   href: string;
   /**
    * 12간지 chip 키 (rat/ox/.../pig). chipKind 가 'zodiac' (또는 미지정) 일 때 렌더.
@@ -163,6 +169,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     title: '사주',
     desc: '내 사주 풀이',
     price: '9,900원',
+    priceKey: 'saju_entry',
     href: '/saju/new',
     zodiac: 'dragon',
     category: 'saju',
@@ -177,6 +184,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     // 2026-06-24 — 대운 풀이(올해 핵심, year-core)는 9,900원. /daewoon 은 무료 예시 허브 +
     //   year-core 9,900원 결제 CTA(daewoon/page.tsx). catalog year-core=9,900 과 표시 일치.
     price: '9,900원',
+    priceKey: 'taste_year_core',
     href: '/daewoon',
     zodiac: 'tiger',
     category: 'saju',
@@ -191,6 +199,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     // 2026-06-24 — 택일(월간 좋은날 캘린더, monthly-calendar)은 9,900원. /taekil 은 무료 도구 +
     //   monthly-calendar 9,900원 결제 CTA(taekil-client.tsx). catalog monthly-calendar=9,900 과 일치.
     price: '9,900원',
+    priceKey: 'taste_monthly_calendar',
     href: '/taekil',
     zodiac: 'ox',
     category: 'fortune',
@@ -201,7 +210,10 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'gunghap',
     title: '궁합',
     desc: '두 사람의 흐름',
+    // 2026-07-07 Phase 2 — 궁합 과금 경로 = love-question(taste_love_question). 리졸버가
+    //   product_prices 오버라이드(프로덕션 990) 를 반영해 표시가 자동 정합.
     price: '9,900원',
+    priceKey: 'taste_love_question',
     href: '/compatibility/input',
     zodiac: 'sheep',
     category: 'saju',

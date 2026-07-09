@@ -1,12 +1,14 @@
 // 2026-05-20 Phase 8-E — 무료 SEO 콘텐츠 페이지 → 유료 상품 funnel grid (DRY).
 //   Phase 8-B/C/D 에서 별자리/띠/꿈해몽 detail 의 마지막 CTA section 에 inline 으로
-//   사주 (550원~) + 궁합 (990원) link grid 가 추가됐는데, 동일 패턴을
+//   사주 (9,900원~) + 궁합 (990원) link grid 가 추가됐는데, 동일 패턴을
 //   today-fortune / tarot result 페이지에도 적용하면서 컴포넌트로 추출.
 //
 //   from 매개변수로 UTM 식별 (?from=star-sign | zodiac | dream | today-fortune | tarot).
 //   tone variant 로 dark surface (별자리/띠) 와 light surface (꿈/오늘운세) 모두 지원.
 
 import Link from 'next/link';
+import { Price } from '@/components/payments/price-provider';
+import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export interface PaidFunnelGridProps {
   /** UTM source identifier — analytics 추적용 (?from={from}). */
@@ -28,6 +30,7 @@ const ITEMS: ReadonlyArray<{
   eyebrow: string;
   body: string;
   price: string;
+  priceKey?: PriceKey;
 }> = [
   {
     key: 'saju',
@@ -35,6 +38,7 @@ const ITEMS: ReadonlyArray<{
     eyebrow: '사주 상세 풀이',
     body: '14 섹션 · A4 5~7p 리포트',
     price: '9,900원',
+    priceKey: 'saju_entry',
   },
   {
     key: 'gunghap',
@@ -42,6 +46,7 @@ const ITEMS: ReadonlyArray<{
     eyebrow: '궁합 풀이',
     body: '두 사람 사주 결합 분석',
     price: '9,900원',
+    priceKey: 'taste_love_question',
   },
   {
     key: 'membership',
@@ -108,7 +113,7 @@ export function PaidFunnelGrid({
             className="ml-2 shrink-0 rounded-full px-2 py-1 text-[12.6px] font-extrabold text-white"
             style={pillStyle}
           >
-            {item.price}
+            {item.priceKey ? <Price priceKey={item.priceKey} /> : item.price}
           </span>
         </Link>
       ))}

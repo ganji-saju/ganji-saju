@@ -174,7 +174,7 @@ export async function getTasteProductEntitlement(
 }
 
 // reading 단위로 monthly-calendar 결제가 한 번이라도 있었는지 — 어떤 (year,month) 든 무관.
-// premium/page.tsx 의 분기에서 "1,900원 단독 구매자도 상세 화면" 처리를 위해 사용한다.
+// premium/page.tsx 의 분기에서 "9,900원 단독 구매자도 상세 화면" 처리를 위해 사용한다.
 export async function hasAnyMonthlyCalendarForReading(
   userId: string | null | undefined,
   readingKey: string | null | undefined
