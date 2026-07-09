@@ -428,10 +428,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
       eventProduct: 'today-detail',
     },
     {
-      // 2026-07-07 Phase 2 — /premium 진입가(9,900부터) 추종. 풀팩(lifetime 49,000) 재매핑은 P2-6 검토.
+      // 2026-07-09 — '깊은 사주 풀이'는 평생 리포트 풀팩(lifetime) 대표가로 매핑(사용자 확정).
+      //   desc('큰 흐름 한 번에')와 일치. 청구가는 /premium 의 lifetime 결제 경로와 동일.
       label: '깊은 사주 풀이',
-      price: '9,900원',
-      priceKey: 'saju_entry',
+      price: '49,000원',
+      priceKey: 'lifetime_report',
       desc: '성격·일·관계·재물의 큰 흐름 한 번에',
       href: `/saju/${encodeURIComponent(slug)}/premium`,
       eventProduct: 'saju-premium',
