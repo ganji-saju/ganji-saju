@@ -33,8 +33,9 @@ import {
   hasAnyMonthlyCalendarForReading,
 } from '@/lib/product-entitlements';
 import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
-import { Price } from '@/components/payments/price-provider';
-import { tasteProductPriceKey } from '@/lib/payments/price-display-shared';
+import { Price, ComparePrice } from '@/components/payments/price-provider';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
+import { priceLabelFromMap, tasteProductPriceKey } from '@/lib/payments/price-display-shared';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import {
@@ -289,6 +290,11 @@ export default async function SajuPremiumPage({ params }: Props) {
   const readingKey = toSlug(reading.input);
   const encodedSlug = encodeURIComponent(slug);
   const targetYear = new Date().getFullYear();
+  // 2026-07-07 Phase 2 — 프로즈에 섞인 가격을 리졸버(admin product_prices) 값으로 단일화.
+  const priceMap = await getPriceDisplayMap();
+  const monthlyLabel = priceLabelFromMap(priceMap, 'taste_monthly_calendar');
+  const yearCoreLabel = priceLabelFromMap(priceMap, 'taste_year_core');
+  const lifetimeLabel = priceLabelFromMap(priceMap, 'lifetime_report');
   let hasLifetimeAccess = false;
   let yearlyAccessLabel: string | null = null;
   // 2026-05-18 — 1,900원 monthly-calendar 단독 구매자도 상세 화면(캘린더 + 잠금 1·2 preview)
@@ -641,7 +647,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 tone="indigo"
                 eyebrow="월별 흐름"
                 title="해금한 달의 흐름부터 봅니다"
-                description="달별 좋은 흐름·확인할 흐름·정리할 흐름을 살펴봅니다. 결제하지 않은 달은 9,900원으로 하나씩 열거나, 49,000원 풀팩으로 한꺼번에 보실 수 있어요."
+                description={`달별 좋은 흐름·확인할 흐름·정리할 흐름을 살펴봅니다. 결제하지 않은 달은 ${monthlyLabel}으로 하나씩 열거나, ${lifetimeLabel} 풀팩으로 한꺼번에 보실 수 있어요.`}
                 highlight="월별 타이밍 캘린더"
               />
               <div id="premium-calendar" className="premium-ai-panel scroll-mt-28">
@@ -658,7 +664,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 eyebrow="1장 · 큰 흐름 (잠금)"
                 title="10년 단위 대운으로 인생의 흐름을 봅니다"
                 description="타고난 성향과 관계·일의 패턴을 정리한 뒤, 10년씩 흐르는 큰 운을 차례로 짚어드립니다. 결제 후 본문이 열립니다."
-                aside="49,000원 풀팩에 포함"
+                aside={`${lifetimeLabel} 풀팩에 포함`}
               />
               <section id="premium-locked-lifetime" className="scroll-mt-28 px-1">
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
@@ -674,7 +680,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                       className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
-                      🔒 49,000원 결제 후 열림
+                      🔒 {lifetimeLabel} 결제 후 열림
                     </span>
                   </div>
                 </article>
@@ -686,7 +692,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 eyebrow={`2장 · ${targetYear} 올해 흐름 (잠금)`}
                 title={`${targetYear}년 어떤 선택이 가벼울지 먼저 봅니다`}
                 description="올해의 큰 주제와 분야별(일·돈·관계·생활) 선택 힌트를 정리합니다. 결제 후 본문이 열립니다."
-                aside="9,900원 단독 또는 49,000원 풀팩"
+                aside={`${yearCoreLabel} 단독 또는 ${lifetimeLabel} 풀팩`}
               />
               <section id="premium-locked-yearly" className="scroll-mt-28 px-1">
                 <article className="relative overflow-hidden rounded-[18px] border border-[var(--app-line)] bg-white p-5">
@@ -735,16 +741,18 @@ export default async function SajuPremiumPage({ params }: Props) {
                   한 번에 열기
                 </h2>
                 <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ color: 'rgba(255,255,255,0.78)' }}>
-                  월별 흐름은 이미 열려 있어요. 49,000원 풀팩으로 큰 흐름과 올해 흐름이
+                  월별 흐름은 이미 열려 있어요. {lifetimeLabel} 풀팩으로 큰 흐름과 올해 흐름이
                   바로 함께 열립니다.
                 </p>
                 <div className="mt-4 flex items-end gap-2.5">
-                  <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
+                  <div className="text-[26.5px] font-extrabold tracking-tight">
+                    <Price priceKey="lifetime_report" />
+                  </div>
                   <div
                     className="mb-1.5 text-[12.6px] line-through"
                     style={{ opacity: 0.5 }}
                   >
-                    69,000원
+                    <ComparePrice priceKey="lifetime_report" />
                   </div>
                 </div>
                 <p className="mt-1.5 text-[12.6px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -761,7 +769,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
                     className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                   >
-                    올해 핵심 3줄만 9,900원
+                    올해 핵심 3줄만 {yearCoreLabel}
                   </Link>
                 </div>
               </article>
@@ -867,12 +875,14 @@ export default async function SajuPremiumPage({ params }: Props) {
                   ))}
                 </ul>
                 <div className="mt-4 flex items-end gap-2.5">
-                  <div className="text-[26.5px] font-extrabold tracking-tight">49,000원</div>
+                  <div className="text-[26.5px] font-extrabold tracking-tight">
+                    <Price priceKey="lifetime_report" />
+                  </div>
                   <div
                     className="mb-1.5 text-[12.6px] line-through"
                     style={{ opacity: 0.5 }}
                   >
-                    69,000원
+                    <ComparePrice priceKey="lifetime_report" />
                   </div>
                 </div>
                 <p className="mt-1.5 text-[12.6px] leading-[1.5]" style={{ color: 'rgba(255,255,255,0.6)' }}>

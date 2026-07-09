@@ -43,6 +43,8 @@ import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section'
 import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
+import { priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -361,6 +363,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   if (!reading) notFound();
 
   const { input, sajuData, grounding } = reading;
+  // 2026-07-07 Phase 2 — 가격 표시 리졸버 맵(admin product_prices 반영).
+  const priceMap = await getPriceDisplayMap();
   // 2026-05-21 Phase 6~7 — 사주 종합 점수(순수·서버, 비용 0).
   const sajuScore = computeSajuScoreFromData(sajuData);
   // 2026-06-07 — 점수 단일 언락(score-total 550원). 미해제 시 점수 블록을 블러-락.
@@ -410,6 +414,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const SMALL_PICKS: Array<{
     label: string;
     price: string;
+    priceKey?: PriceKey;
     href: string;
     desc: string;
     eventProduct: string;
@@ -417,13 +422,16 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     {
       label: '오늘 자세히 보기',
       price: '9,900원',
+      priceKey: 'saju_entry',
       desc: '지금 흐름과 조심해야 할 시간대',
       href: todayDetailHref,
       eventProduct: 'today-detail',
     },
     {
+      // 2026-07-07 Phase 2 — /premium 진입가(9,900부터) 추종. 풀팩(lifetime 49,000) 재매핑은 P2-6 검토.
       label: '깊은 사주 풀이',
       price: '9,900원',
+      priceKey: 'saju_entry',
       desc: '성격·일·관계·재물의 큰 흐름 한 번에',
       href: `/saju/${encodeURIComponent(slug)}/premium`,
       eventProduct: 'saju-premium',
@@ -615,7 +623,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                         border: '1px solid var(--app-pink-line)',
                       }}
                     >
-                      {pick.price}
+                      {pick.priceKey ? priceLabelFromMap(priceMap, pick.priceKey) : pick.price}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
@@ -680,7 +688,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     memberFreeEligible: false,
                   }}
                   unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
-                  unpaidLabel="오늘 자세히 · 9,900원"
+                  unpaidLabel={`오늘 자세히 · ${priceLabelFromMap(priceMap, 'saju_entry')}`}
                   ownedLabel="구매한 풀이 열기"
                   className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 />
