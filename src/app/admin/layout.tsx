@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/');
   }
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--app-bg)] md:flex-row">
+    <div className="admin-shell flex min-h-dvh flex-col bg-[var(--app-bg)] md:flex-row">
       <AdminNav role={guard.role} />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

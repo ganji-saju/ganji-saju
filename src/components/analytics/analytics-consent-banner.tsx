@@ -41,7 +41,7 @@ export function AnalyticsConsentBanner() {
       innerClassName="max-w-[34rem] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >
       <p
-        className="text-[12.5px] leading-relaxed text-[var(--app-copy-soft)]"
+        className="text-[15px] leading-relaxed text-[var(--app-copy-soft)]"
         role="region"
         aria-label="쿠키 동의"
       >
@@ -56,14 +56,14 @@ export function AnalyticsConsentBanner() {
         <button
           type="button"
           onClick={() => choose('denied')}
-          className="rounded-[10px] border border-[var(--app-line)] px-4 py-2 text-[13px] font-bold text-[var(--app-copy-soft)] hover:bg-[var(--app-line)]/30"
+          className="rounded-[10px] border border-[var(--app-line)] px-4 py-2.5 text-[15px] font-bold text-[var(--app-copy-soft)] hover:bg-[var(--app-line)]/30"
         >
           거부
         </button>
         <button
           type="button"
           onClick={() => choose('granted')}
-          className="rounded-[10px] bg-[var(--app-ink)] px-4 py-2 text-[13px] font-bold text-white hover:opacity-90"
+          className="rounded-[10px] bg-[var(--app-ink)] px-4 py-2.5 text-[15px] font-bold text-white hover:opacity-90"
         >
           동의
         </button>

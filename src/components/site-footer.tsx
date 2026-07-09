@@ -182,7 +182,7 @@ export default function SiteFooter() {
                 <div
                   style={{
                     color: 'var(--app-pink)',
-                    fontSize: 12.6,
+                    fontSize: 15,
                     fontWeight: 700,
                     letterSpacing: '0.04em',
                   }}
@@ -245,9 +245,9 @@ export default function SiteFooter() {
 
                 {/* Desktop: 정적 헤더 */}
                 <h4
-                  className="hidden sm:block"
-                  style={{
-                    fontSize: 13.8,
+                className="hidden sm:block"
+                style={{
+                    fontSize: 15,
                     fontWeight: 800,
                     color: '#fff',
                     margin: '0 0 14px',
@@ -281,7 +281,7 @@ export default function SiteFooter() {
           className="mt-6 grid gap-x-6 gap-y-2 pt-5 sm:grid-cols-2 lg:grid-cols-3"
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
-            fontSize: 13.8,
+            fontSize: 15,
           }}
         >
           {companyItems.map((item) => (
@@ -318,7 +318,7 @@ export default function SiteFooter() {
           style={{
             borderTop: '1px solid rgba(255,255,255,0.08)',
             color: 'rgba(255,255,255,0.46)',
-            fontSize: 13.2,
+            fontSize: 15,
             lineHeight: 1.7,
           }}
         >
@@ -336,7 +336,7 @@ export default function SiteFooter() {
         {/* Bottom */}
         <div
           className="mt-6 flex flex-wrap items-center justify-between gap-2"
-          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 13.2 }}
+          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 15 }}
         >
           <span>
             © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
