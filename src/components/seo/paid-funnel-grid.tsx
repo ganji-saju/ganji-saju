@@ -7,6 +7,8 @@
 //   tone variant 로 dark surface (별자리/띠) 와 light surface (꿈/오늘운세) 모두 지원.
 
 import Link from 'next/link';
+import { Price } from '@/components/payments/price-provider';
+import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export interface PaidFunnelGridProps {
   /** UTM source identifier — analytics 추적용 (?from={from}). */
@@ -28,6 +30,7 @@ const ITEMS: ReadonlyArray<{
   eyebrow: string;
   body: string;
   price: string;
+  priceKey?: PriceKey;
 }> = [
   {
     key: 'saju',
@@ -35,6 +38,7 @@ const ITEMS: ReadonlyArray<{
     eyebrow: '사주 상세 풀이',
     body: '14 섹션 · A4 5~7p 리포트',
     price: '9,900원',
+    priceKey: 'saju_entry',
   },
   {
     key: 'gunghap',
@@ -42,6 +46,7 @@ const ITEMS: ReadonlyArray<{
     eyebrow: '궁합 풀이',
     body: '두 사람 사주 결합 분석',
     price: '9,900원',
+    priceKey: 'taste_love_question',
   },
   {
     key: 'membership',
@@ -108,7 +113,7 @@ export function PaidFunnelGrid({
             className="ml-2 shrink-0 rounded-full px-2 py-1 text-[12.6px] font-extrabold text-white"
             style={pillStyle}
           >
-            {item.price}
+            {item.priceKey ? <Price priceKey={item.priceKey} /> : item.price}
           </span>
         </Link>
       ))}

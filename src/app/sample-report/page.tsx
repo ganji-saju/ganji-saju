@@ -18,6 +18,8 @@ import {
   REPORT_PREVIEW_VALUE_POINTS,
   TASTE_PRODUCTS,
 } from '@/content/moonlight';
+import { Price } from '@/components/payments/price-provider';
+import { tasteProductPriceKey } from '@/lib/payments/price-display-shared';
 import {
   SAMPLE_REPORT_HERO,
   SAMPLE_REPORT_TEASERS,
@@ -378,7 +380,7 @@ export default function SampleReportPage() {
                   className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
                   style={{ color: 'var(--app-pink-strong)' }}
                 >
-                  {product.price}
+                  <Price priceKey={tasteProductPriceKey(product.slug)} />
                 </div>
                 <h3
                   className="mt-1 text-[16.1px] font-extrabold leading-snug tracking-tight"
