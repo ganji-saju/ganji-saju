@@ -138,24 +138,23 @@
   /* 한자 인장용 serif 폰트 (layout.tsx 에서 Noto Serif KR 로드) */
   --font-han: var(--font-dalbit-serif), "Noto Serif KR", "Source Han Serif K", serif;
   --app-ivory: #111114;
-  --app-copy: rgba(17, 17, 20, 0.76);
-  --app-copy-muted: rgba(53, 54, 60, 0.7);
+  --app-copy: rgba(17, 17, 20, 0.84);
+  --app-copy-muted: rgba(43, 44, 50, 0.78);
   /* 2026-06-22 가독성: 0.82(3.99:1, WCAG AA 미달) → 0.88(4.52:1 통과). 보조 텍스트 223+곳 동시 개선. */
-  --app-copy-soft: rgba(98, 99, 108, 0.88);
+  --app-copy-soft: rgba(71, 72, 80, 0.9);
   --app-type-title: 700;
   --app-type-emphasis: 600;
   --app-type-body: 450;
   --app-type-caption: 400;
   --app-type-button: 650;
-  /* 2026-06-22 가독성: 타입스케일·행간 토큰(단일 출처). 한국어 모바일 기준
-     — 본문 ≥15px·보조 ≥13px·캡션 ≥12px. 이후 ad-hoc text-[Npx] 정리의 기준값. */
-  --app-text-caption: 0.75rem;   /* 12px — 최소 캡션 */
-  --app-text-sm: 0.8125rem;      /* 13px — 보조 텍스트 최소 */
-  --app-text-body: 0.9375rem;    /* 15px — 본문 */
-  --app-text-lg: 1.0625rem;      /* 17px — 강조 본문 */
+  /* 2026-07-10 readability pass: Korean body copy now starts at 17px. */
+  --app-text-caption: 0.875rem;  /* 14px */
+  --app-text-sm: 0.9375rem;      /* 15px */
+  --app-text-body: 1.0625rem;    /* 17px */
+  --app-text-lg: 1.1875rem;      /* 19px */
   --app-leading-tight: 1.3;      /* 제목·라벨 */
-  --app-leading-snug: 1.5;       /* 카드 내 보조 */
-  --app-leading-normal: 1.65;    /* 본문 단락(한국어 장문 호흡) */
+  --app-leading-snug: 1.58;
+  --app-leading-normal: 1.78;
   --app-shadow: 0 18px 52px rgba(216, 27, 114, 0.12);
   /* 2026-06-27 — full-width dock 실측 가림으로 6.75→8rem 상향(footer/콘텐츠 하단 여백). */
   --app-mobile-dock-clearance: calc(8rem + env(safe-area-inset-bottom));

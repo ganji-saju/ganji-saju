@@ -238,7 +238,7 @@ export function GangiSeasonBanner({
               <p
                 className="m-0"
                 style={{
-                  fontSize: 13.2,
+                  fontSize: 16,
                   fontWeight: 800,
                   letterSpacing: '0.06em',
                   opacity: 0.85,
@@ -249,7 +249,7 @@ export function GangiSeasonBanner({
               <h2
                 className="m-0 mt-1.5"
                 style={{
-                  fontSize: 23,
+                  fontSize: 26,
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.35,
@@ -260,9 +260,9 @@ export function GangiSeasonBanner({
               <p
                 className="m-0 mt-3"
                 style={{
-                  fontSize: 14.4,
+                  fontSize: 16.5,
                   opacity: 0.9,
-                  lineHeight: 1.5,
+                  lineHeight: 1.62,
                 }}
               >
                 {banner.description}
@@ -275,9 +275,9 @@ export function GangiSeasonBanner({
                       ? 'var(--app-pink-strong)'
                       : 'rgba(255,255,255,0.22)',
                   color: '#fff',
-                  fontSize: 13.8,
+                  fontSize: 15.5,
                   fontWeight: 800,
-                  padding: '7px 12px',
+                  padding: '9px 14px',
                 }}
               >
                 {banner.cta}
@@ -352,10 +352,10 @@ export function GangiQuickActionCard({
           style={{
             background: 'var(--app-ink)',
             color: '#fff',
-            fontSize: 10.9,
+            fontSize: 14,
             fontWeight: 800,
             letterSpacing: '0.02em',
-            height: 18,
+            height: 22,
           }}
         >
           {label || 'FREE'}
@@ -363,7 +363,7 @@ export function GangiQuickActionCard({
         <div
           className="mt-1 truncate"
           style={{
-            fontSize: 15.5,
+            fontSize: 17,
             fontWeight: 800,
             letterSpacing: '-0.01em',
           }}
@@ -374,7 +374,7 @@ export function GangiQuickActionCard({
           <div
             className="mt-0.5 truncate"
             style={{
-              fontSize: 13.2,
+              fontSize: 15,
               color: 'var(--app-copy-muted)',
             }}
           >
@@ -409,11 +409,11 @@ export function GangiCategoryTabs({
             data-active={isActive ? 'true' : 'false'}
             onClick={() => onChange(category.key)}
             className={cn(
-              'inline-flex shrink-0 items-center rounded-[999px] border px-3 text-[14.4px] font-semibold transition-colors',
+              'inline-flex shrink-0 items-center rounded-[999px] border px-4 text-[15.5px] font-semibold transition-colors',
               'whitespace-nowrap'
             )}
             style={{
-              height: 30,
+              height: 42,
               background: isActive ? 'var(--app-ink)' : 'var(--app-surface-muted)',
               borderColor: isActive ? 'var(--app-ink)' : 'var(--app-line)',
               color: isActive ? '#fff' : 'var(--app-copy)',
@@ -495,10 +495,10 @@ export function GangiServiceCardLink({
           style={{
             background: card.tag === 'HOT' ? 'var(--app-coral)' : 'var(--app-pink)',
             color: '#fff',
-            fontSize: 10.9,
+            fontSize: 14,
             fontWeight: 900,
             letterSpacing: '0.03em',
-            height: 18,
+            height: 22,
           }}
         >
           {card.tag}
@@ -522,7 +522,7 @@ export function GangiServiceCardLink({
         </span>
         <span
           className="mt-1 block"
-          style={{ fontSize: 12.6, fontWeight: 700, color: '#fff', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+          style={{ fontSize: 15.2, fontWeight: 750, color: '#fff', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
         >
           {card.desc}
         </span>
@@ -531,7 +531,7 @@ export function GangiServiceCardLink({
           style={{
             background: isFree ? 'rgba(255,255,255,0.92)' : 'var(--app-pink)',
             color: isFree ? 'var(--app-jade)' : '#fff',
-            fontSize: 12.6,
+            fontSize: 15,
             fontWeight: 900,
           }}
         >
@@ -556,7 +556,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
         <div className="min-w-0 flex-1">
           <div
             style={{
-              fontSize: 12.6,
+              fontSize: 15,
               fontWeight: 800,
               color: 'var(--app-pink)',
               letterSpacing: '0.04em',
@@ -567,7 +567,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
           <div
             className="mt-1"
             style={{
-              fontSize: 18.4,
+              fontSize: 20,
               fontWeight: 800,
               letterSpacing: '-0.02em',
               lineHeight: 1.35,
@@ -583,9 +583,9 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
           style={{
             background: 'var(--app-pink)',
             color: '#fff',
-            fontSize: 12.6,
+            fontSize: 15,
             fontWeight: 800,
-            padding: '7px 11px',
+            padding: '9px 13px',
           }}
         >
           시작 →

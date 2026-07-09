@@ -1,0 +1,608 @@
+/* 2026-07-10 readability redesign.
+   Imported last on purpose: this layer separates the larger, calmer UI pass
+   from feature work so it can be reverted independently. */
+
+:root {
+  --readable-page-max: 34rem;
+  --readable-result-max: 33rem;
+  --readable-home-max: 30rem;
+  --readable-section-gap: clamp(1.25rem, 4vw, 2rem);
+  --readable-card-gap: clamp(0.9rem, 3vw, 1.25rem);
+  --readable-card-pad: clamp(1.2rem, 4.5vw, 1.75rem);
+  --readable-control-height: 3.1rem;
+  --readable-soft-border: rgba(17, 17, 20, 0.11);
+  --readable-shadow: 0 18px 44px -30px rgba(17, 17, 20, 0.42);
+}
+
+body {
+  font-size: var(--app-text-body);
+  line-height: var(--app-leading-normal);
+}
+
+body :where(input, select, textarea) {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 2.85rem;
+}
+
+.app-shell,
+.gangi-subpage-shell,
+.admin-shell {
+  color: var(--app-ink);
+}
+
+.app-shell :where(p, li, dt, dd, label, legend, summary),
+.gangi-subpage-shell :where(p, li, dt, dd, label, legend, summary) {
+  font-size: var(--app-text-body);
+  line-height: var(--app-leading-normal);
+}
+
+.app-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]),
+.gangi-subpage-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]) {
+  font-size: var(--app-text-sm) !important;
+  line-height: 1.58 !important;
+}
+
+.app-shell :where(.text-sm, [class*="text-[13"], [class*="text-[14"]),
+.gangi-subpage-shell :where(.text-sm, [class*="text-[13"], [class*="text-[14"]) {
+  font-size: 1rem !important;
+  line-height: 1.66 !important;
+}
+
+.app-shell :where(.text-base, [class*="text-[15"]),
+.gangi-subpage-shell :where(.text-base, [class*="text-[15"]) {
+  font-size: var(--app-text-body) !important;
+  line-height: 1.7 !important;
+}
+
+.app-shell :where(.text-muted-foreground, .text-neutral-500, .text-neutral-600),
+.gangi-subpage-shell :where(.text-muted-foreground, .text-neutral-500, .text-neutral-600) {
+  color: var(--app-copy-muted) !important;
+}
+
+.app-page {
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+.app-page-spacious {
+  padding-top: clamp(3rem, 7vw, 5rem);
+  padding-bottom: max(6rem, calc(var(--app-mobile-dock-clearance) + 1.75rem));
+}
+
+.app-section-stack,
+.app-reading-layout,
+.app-reading-stack {
+  gap: var(--readable-section-gap);
+}
+
+.app-card-grid,
+.app-reading-rail,
+.app-action-cluster {
+  gap: var(--readable-card-gap);
+}
+
+.app-section-frame,
+.app-section-frame-lg,
+.app-feature-card,
+.app-feature-card-muted,
+.app-feature-card-soft,
+.app-panel,
+.app-panel-muted,
+.app-hero-card {
+  padding: var(--readable-card-pad);
+  border-color: var(--readable-soft-border);
+  box-shadow: var(--readable-shadow);
+}
+
+.app-caption {
+  font-size: var(--app-text-caption);
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+}
+
+.app-hero-title {
+  font-size: clamp(2.35rem, 7vw, 3.45rem);
+  line-height: 1.15;
+}
+
+.app-hero-description,
+.app-section-copy,
+.app-feature-copy,
+.app-body-copy {
+  font-size: var(--app-text-body);
+  line-height: var(--app-leading-normal);
+}
+
+.app-feature-title {
+  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  line-height: 1.38;
+}
+
+.app-bullet-list {
+  gap: 0.85rem;
+}
+
+.app-bullet-item {
+  gap: 0.72rem;
+  font-size: var(--app-text-body);
+}
+
+.app-top-header-main,
+[data-app-layout="horizontal"] .app-top-header-main {
+  min-height: 3.95rem !important;
+  padding-block: 0.65rem !important;
+}
+
+.app-top-brand-title,
+[data-app-layout="horizontal"] .app-top-brand-title {
+  font-size: 1.16rem !important;
+  line-height: 1.18 !important;
+}
+
+.app-top-context-note,
+[data-app-layout="horizontal"] .app-top-context-note {
+  font-size: 0.86rem !important;
+  line-height: 1.5 !important;
+}
+
+.app-top-context-chip,
+.app-top-service-label,
+.app-top-credit-chip,
+.app-top-action-link,
+.app-mobile-menu-trigger {
+  font-size: 0.92rem !important;
+  line-height: 1.25 !important;
+}
+
+.app-mobile-menu-panel {
+  max-height: calc(100dvh - 6rem - max(6.2rem, env(safe-area-inset-bottom)));
+}
+
+.app-mobile-menu-title {
+  font-size: 1.35rem;
+}
+
+.app-mobile-menu-subtitle,
+.app-mobile-feature-copy em,
+.app-mobile-shortcut-label {
+  font-size: var(--app-text-sm);
+  line-height: 1.5;
+}
+
+.app-mobile-feature-card,
+.app-mobile-shortcut-card,
+.app-mobile-menu-utility {
+  min-height: 4.1rem;
+  padding: 0.95rem;
+}
+
+.app-mobile-feature-copy strong {
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.app-mobile-dock-inner {
+  gap: 0.2rem;
+  padding-top: 0.48rem !important;
+}
+
+.app-mobile-dock-link {
+  min-height: 3.95rem !important;
+}
+
+.app-mobile-dock-label {
+  font-size: 0.875rem !important;
+  line-height: 1.18 !important;
+}
+
+.mega-nav-logo-tag,
+.mega-nav-caret,
+.mega-nav-coin-pill,
+.mega-nav-login,
+.mega-nav-signup {
+  font-size: 0.94rem !important;
+  line-height: 1.25 !important;
+}
+
+.mega-nav-login,
+.mega-nav-signup,
+.mega-nav-coin-pill {
+  min-height: 2.75rem !important;
+  padding-inline: 1.05rem !important;
+}
+
+.mega-nav-chip {
+  min-height: 2.75rem !important;
+  font-size: 1rem !important;
+}
+
+.gangi-home {
+  max-width: min(100%, var(--readable-home-max));
+}
+
+.gangi-season-carousel {
+  margin: 1.25rem clamp(0.85rem, 3.8vw, 1.25rem) 0;
+}
+
+.gangi-season-banner {
+  min-height: 13rem;
+  padding: clamp(1.45rem, 5vw, 1.9rem);
+}
+
+.gangi-banner-copy {
+  width: min(100%, 18rem);
+}
+
+.gangi-banner-kicker {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.gangi-season-banner h1 {
+  font-size: clamp(1.7rem, 6.2vw, 2.3rem);
+  line-height: 1.25;
+}
+
+.gangi-banner-desc {
+  max-width: 15.5rem;
+  font-size: 1.02rem;
+  line-height: 1.66;
+  opacity: 0.86;
+}
+
+.gangi-banner-button {
+  min-height: var(--readable-control-height);
+  font-size: 1rem;
+  padding-inline: 1.2rem;
+}
+
+.gangi-category-tabs,
+.app-subnav {
+  gap: 0.5rem;
+  margin-inline: clamp(0.85rem, 3.8vw, 1.25rem);
+  padding: 0.45rem;
+}
+
+.gangi-category-tabs button,
+.app-subnav-link {
+  min-height: 2.85rem;
+  padding-inline: 1rem;
+  font-size: 0.98rem;
+}
+
+.gangi-service-grid,
+.gangi-star-sign-grid,
+.gangi-free-actions {
+  gap: 0.9rem;
+  padding-inline: clamp(0.9rem, 3.8vw, 1.25rem);
+}
+
+.gangi-service-card,
+.gangi-free-action,
+.gangi-star-sign-card {
+  min-height: 10.5rem;
+  padding: 1.08rem;
+  border-color: var(--readable-soft-border);
+  box-shadow: var(--readable-shadow);
+}
+
+.gangi-card-tag {
+  padding: 0.25rem 0.62rem;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.gangi-card-body h2,
+.gangi-free-action strong,
+.gangi-star-sign-card strong {
+  font-size: 1.08rem;
+  line-height: 1.38;
+}
+
+.gangi-card-body p,
+.gangi-card-body span,
+.gangi-free-action em,
+.gangi-free-label,
+.gangi-star-sign-card em {
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.gangi-subpage-shell {
+  --gangi-subpage-max: var(--readable-page-max);
+  --gangi-subpage-card-shadow: var(--readable-shadow);
+}
+
+.gangi-subpage,
+.app-page.gangi-subpage {
+  width: min(calc(100vw - 1rem), var(--readable-page-max)) !important;
+  max-width: min(calc(100vw - 1rem), var(--readable-page-max)) !important;
+}
+
+.app-page.gangi-subpage.saju-result-page {
+  width: min(calc(100vw - 1rem), var(--readable-result-max)) !important;
+  max-width: min(calc(100vw - 1rem), var(--readable-result-max)) !important;
+}
+
+.gangi-subpage-shell .app-shell-content {
+  align-items: flex-start;
+}
+
+.gangi-sub-header {
+  height: 3.75rem;
+  grid-template-columns: 3rem 1fr 3rem;
+  font-size: 1.12rem;
+}
+
+.gangi-sub-back {
+  height: 2.65rem;
+  width: 2.65rem;
+}
+
+.gangi-sub-intro,
+.gangi-subpage-shell .gangi-sub-intro {
+  padding: clamp(1.65rem, 5vw, 2.1rem) clamp(1rem, 4vw, 1.35rem) 1.25rem;
+}
+
+.gangi-sub-eyebrow,
+.gangi-pill {
+  padding: 0.45rem 0.85rem;
+  font-size: var(--app-text-caption);
+  line-height: 1.25;
+}
+
+.gangi-sub-intro h1,
+.gangi-subpage-shell .gangi-sub-intro h1 {
+  max-width: none;
+  font-size: clamp(1.78rem, 6vw, 2.35rem);
+  line-height: 1.28;
+}
+
+.gangi-sub-desc,
+.gangi-subpage-shell .gangi-sub-desc,
+.gangi-section-desc {
+  max-width: 32rem;
+  color: var(--app-copy);
+  font-size: var(--app-text-body);
+  line-height: var(--app-leading-normal);
+}
+
+.gangi-subpage-shell .gangi-subpage > * + * {
+  margin-top: var(--readable-section-gap);
+}
+
+.gangi-section,
+.gangi-subpage-shell :where(.gangi-section, .app-panel, .app-panel-muted) {
+  margin-inline: clamp(0.75rem, 3vw, 1.25rem);
+  padding: var(--readable-card-pad);
+}
+
+.gangi-section-title {
+  font-size: clamp(1.4rem, 4vw, 1.78rem);
+  line-height: 1.35;
+}
+
+.gangi-section-body {
+  margin-top: 1.2rem;
+}
+
+.gangi-card-panel,
+.gangi-pink-panel,
+.gangi-purchase-summary {
+  border-color: var(--readable-soft-border);
+  border-radius: 1.45rem;
+  box-shadow: var(--readable-shadow);
+}
+
+.gangi-subpage .gangi-card-panel,
+.gangi-subpage .gangi-pink-panel,
+.gangi-subpage .gangi-purchase-summary {
+  padding: var(--readable-card-pad);
+}
+
+.gangi-list-link,
+.gangi-subpage-shell :where(.gangi-list-link, .gangi-vault-link, .gangi-checkout-method-card) {
+  min-height: 5.35rem;
+  gap: 1rem;
+  padding: 1.1rem 1.2rem;
+}
+
+.gangi-list-copy strong,
+.gangi-mini-card strong,
+.gangi-vault-copy strong {
+  font-size: 1.08rem;
+  line-height: 1.4;
+}
+
+.gangi-list-copy em,
+.gangi-list-price,
+.gangi-mini-card p,
+.gangi-vault-copy small {
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.gangi-mini-grid,
+.gangi-topic-grid,
+.gangi-subpage-shell :where(.gangi-mini-grid, .gangi-topic-grid) {
+  gap: 0.95rem;
+}
+
+.gangi-mini-card {
+  min-height: 5.8rem;
+  padding: 1rem;
+}
+
+.gangi-mini-card > span {
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.gangi-metric-bar {
+  padding: 1rem 1.08rem;
+}
+
+.gangi-metric-bar span,
+.gangi-metric-bar strong {
+  font-size: 1rem;
+}
+
+.gangi-primary-button,
+.gangi-secondary-button,
+.gangi-tarot-result-actions a {
+  min-height: 3.35rem;
+  padding-inline: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.gangi-form-control {
+  min-height: 3.25rem;
+  padding: 0.8rem 1rem;
+  font-size: 1.05rem;
+}
+
+.site-footer-inner {
+  font-size: 0.95rem;
+}
+
+.site-footer-brand {
+  font-size: 1.12rem;
+}
+
+.site-footer-links a,
+.site-footer-company dt,
+.site-footer-company dd,
+.site-footer-notice,
+.site-footer-bottom {
+  font-size: 0.92rem;
+}
+
+.admin-shell {
+  font-size: 1rem;
+  line-height: 1.65;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fff8fc 54%, #ffffff 100%);
+}
+
+.admin-shell main {
+  padding: clamp(1.25rem, 3vw, 2rem) !important;
+}
+
+.admin-shell main > header {
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.admin-shell main > header h1 {
+  font-size: clamp(1.65rem, 3vw, 2.15rem) !important;
+  line-height: 1.22;
+}
+
+.admin-shell main > header p {
+  margin-top: 0.35rem;
+  font-size: 0.98rem !important;
+  line-height: 1.6;
+  color: var(--app-copy-muted) !important;
+}
+
+.admin-shell aside {
+  width: 17rem;
+  padding: 1.35rem 1rem;
+}
+
+.admin-shell nav {
+  gap: 1.15rem;
+}
+
+.admin-shell nav p,
+.admin-shell :where(.text-xs, [class*="text-[9"], [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]) {
+  font-size: 0.9rem !important;
+  line-height: 1.45 !important;
+}
+
+.admin-shell :where(.text-sm, [class*="text-[13"], [class*="text-[14"]) {
+  font-size: 0.98rem !important;
+  line-height: 1.55 !important;
+}
+
+.admin-shell :where(.text-base, [class*="text-[15"]) {
+  font-size: 1.04rem !important;
+  line-height: 1.6 !important;
+}
+
+.admin-shell :where(a, button) {
+  min-height: 2.65rem;
+}
+
+.admin-shell :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 2.8rem;
+  font-size: 1rem;
+}
+
+.admin-shell :where(section, article, main > div > div, main > section) {
+  border-color: var(--readable-soft-border);
+}
+
+.admin-shell :where(table) {
+  width: 100%;
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.admin-shell :where(th, td) {
+  padding-block: 0.65rem;
+}
+
+.admin-shell :where(canvas, svg) {
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --readable-page-max: 40rem;
+    --readable-result-max: 38rem;
+    --readable-home-max: 34rem;
+  }
+
+  .gangi-subpage-shell .app-page.gangi-subpage,
+  .gangi-subpage-shell .app-page.gangi-subpage.saju-intake-page,
+  .gangi-subpage-shell .app-page.gangi-subpage.gangi-checkout-page,
+  .gangi-subpage-shell .app-page.gangi-subpage.saju-result-page {
+    width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+    max-width: min(calc(100vw - 3rem), var(--gangi-subpage-max)) !important;
+  }
+
+  .gangi-service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --readable-page-max: 44rem;
+    --readable-result-max: 42rem;
+  }
+
+  .app-page {
+    width: min(100%, 94rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .gangi-season-banner {
+    min-height: 12.5rem;
+  }
+
+  .gangi-service-grid,
+  .gangi-free-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .app-mobile-dock-label {
+    font-size: 0.82rem !important;
+  }
+}
