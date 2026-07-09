@@ -16,6 +16,7 @@ import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { HeaderLogoutButton } from '@/features/account/header-logout-button';
 import { MEGA_NAV, resolveActiveGroup, type MegaNavGroup, type MegaNavItem } from './mega-nav-data';
+import { Price } from '@/components/payments/price-provider';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import './mega-nav.css';
 
@@ -82,7 +83,7 @@ function MegaNavItemLink({ item }: { item: MegaNavItem }) {
               className="mega-nav-tag"
               data-strong={item.tag === 'FREE' || item.tag === 'VIP' || item.tag === 'TOP'}
             >
-              {item.tag}
+              {item.tagPriceKey ? <Price priceKey={item.tagPriceKey} /> : item.tag}
             </span>
           ) : null}
         </div>
@@ -120,7 +121,15 @@ function MegaPanelColumn3({ block }: { block: NonNullable<MegaNavGroup['c3']> })
       <Link href={block.href} className="mega-nav-featured">
         <div className="mega-nav-featured-glyph" aria-hidden="true">運</div>
         <div className="mega-nav-featured-body">
-          <div className="mega-nav-featured-title">{block.title}</div>
+          <div className="mega-nav-featured-title">
+            {block.title}
+            {block.titlePriceKey ? (
+              <>
+                {' '}
+                <Price priceKey={block.titlePriceKey} />
+              </>
+            ) : null}
+          </div>
           <div className="mega-nav-featured-desc">{block.description}</div>
           <span className="mega-nav-featured-cta">{block.cta} →</span>
         </div>

@@ -16,6 +16,7 @@ import type {
   GangiServiceCard,
 } from '@/content/gangi-market';
 import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
+import { Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
@@ -534,7 +535,7 @@ export function GangiServiceCardLink({
             fontWeight: 900,
           }}
         >
-          {card.price}
+          {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
         </span>
       </span>
     </Link>
