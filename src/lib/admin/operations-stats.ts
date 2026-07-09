@@ -32,7 +32,7 @@ export interface OperationsSnapshot {
   windowDays: number;
   /** 오늘 (KST 자정 단위). */
   today: {
-    /** 오늘 순방문자(자체 핑 기반, 하한치). 미집계(마이그레이션 062 미적용 등)면 null. */
+    /** 오늘 자체 순방문자(KST 일별 visitor_hash distinct). 미집계면 null. */
     visitors: number | null;
     /** 오늘 신규 가입 수. */
     newSignups: number;

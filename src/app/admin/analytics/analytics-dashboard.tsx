@@ -473,7 +473,7 @@ function ExternalComparison({
         <div>
           <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">외부 분석 비교</h2>
           <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
-            자체 집계 · GA4 Data API · Vercel Web Analytics를 같은 KST 날짜축으로 비교
+            자체 순방문/PV · GA4 Data API · Vercel Web Analytics를 같은 KST 날짜축으로 비교
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -488,9 +488,9 @@ function ExternalComparison({
 
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <SummaryCard
-          label="자체 방문자"
+          label="자체 순방문"
           value={formatNum(snap.totals.visitors)}
-          sub={`PV ${formatNum(snap.totals.pageViews)}`}
+          sub={`자체 PV ${formatNum(snap.totals.pageViews)}`}
         />
         <SummaryCard
           label="GA4 활성 사용자"
@@ -512,7 +512,7 @@ function ExternalComparison({
       <div className="grid gap-3 lg:grid-cols-2">
         <ComparisonLineChart
           title="방문자 비교"
-          subtitle="자체 방문자 vs GA4 activeUsers"
+          subtitle="자체 순방문 vs GA4 activeUsers"
           series={visitorSeries}
         />
         <ComparisonLineChart
@@ -532,7 +532,7 @@ function ExternalComparison({
             <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
               <tr>
                 <th className={`${th} text-left`}>날짜</th>
-                <th className={th}>자체 방문</th>
+                <th className={th}>자체 순방문</th>
                 <th className={th}>GA4 사용자</th>
                 <th className={th}>자체 PV</th>
                 <th className={th}>GA4 PV</th>
@@ -657,7 +657,7 @@ export function AnalyticsDashboard() {
 
           {/* 요약 */}
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-            <SummaryCard label="방문자" value={formatNum(snap.totals.visitors)} sub={`PV ${formatNum(snap.totals.pageViews)}`} />
+            <SummaryCard label="자체 순방문" value={formatNum(snap.totals.visitors)} sub={`자체 PV ${formatNum(snap.totals.pageViews)}`} />
             <SummaryCard label="신규가입" value={formatNum(snap.totals.newSignups)} />
             <SummaryCard label="결제 건수" value={formatNum(snap.totals.paidOrders)} />
             <SummaryCard label="매출" value={fmtWon(snap.totals.revenueWon)} />
@@ -669,8 +669,8 @@ export function AnalyticsDashboard() {
 
           {/* 방문자·PV 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
-            <MetricsLineChart title="방문자" points={series((d) => d.visitors)} color="var(--app-pink-strong)" />
-            <MetricsLineChart title="페이지뷰(PV)" points={series((d) => d.pageViews)} color="#7C5CBF" />
+            <MetricsLineChart title="자체 순방문" points={series((d) => d.visitors)} color="var(--app-pink-strong)" />
+            <MetricsLineChart title="자체 페이지뷰(PV)" points={series((d) => d.pageViews)} color="#7C5CBF" />
           </div>
 
           {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
@@ -688,7 +688,7 @@ export function AnalyticsDashboard() {
             <MetricsLineChart title="결제 건수" points={series((d) => d.paidOrders)} color="#C6537B" />
             <MetricsLineChart
               title="결제건 ÷ 방문자 (참고)"
-              subtitle="방문자는 하한 집계라 100% 초과 가능 · 무트래픽일은 선 끊김"
+              subtitle="방문자는 자체 순방문 기준 · 무트래픽일은 선 끊김"
               points={series((d) => (d.visitorToPaidRate == null ? null : d.visitorToPaidRate * 100))}
               color="#3F8796"
               format={(v) => `${v.toFixed(1)}%`}
@@ -719,7 +719,8 @@ export function AnalyticsDashboard() {
           </div>
 
           <p className="text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
-            ※ 방문자는 자체 집계(1일 1기기 익명 핑) — 광고차단·JS 미실행은 미포함 하한치입니다.
+            ※ 자체 순방문은 KST 일별 익명 visitor 기준, 자체 PV는 라우트별 page_view 기준입니다.
+            admin·preview·내부 IP 트래픽은 제외합니다.
             매출·전환은 payment_orders(완료 상태) 원장 기준. KST 일 단위.
           </p>
         </>

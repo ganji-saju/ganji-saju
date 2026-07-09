@@ -317,15 +317,14 @@ export function OperationsDashboard() {
               · KST 시간대)
             </h2>
 
-            {/* 2026-07-04 — 자체 순방문(유입) 카드. 클라 일1회 핑 기반 하한치.
-                migration 062 미적용이면 '—' 표시. */}
+            {/* 2026-07-10 — 자체 순방문 카드. 내부/admin/preview 제외, PV 는 page_view 별도 집계. */}
             <article
               className="rounded-[16px] border bg-white p-4"
               style={{ borderColor: 'var(--app-line)' }}
             >
               <div className="flex items-baseline justify-between gap-2">
                 <div className="text-[12.6px] font-bold text-[var(--app-copy-soft)]">
-                  🚪 방문자 (순, 자체 집계) · 오늘
+                  🚪 자체 순방문 · 오늘
                 </div>
                 <div className="text-[25.3px] font-extrabold tabular-nums text-[var(--app-ink)]">
                   {snap.today.visitors == null ? '—' : formatNum(snap.today.visitors)}
@@ -338,7 +337,7 @@ export function OperationsDashboard() {
               ) : (
                 <p className="mt-2 text-[12.1px] text-[var(--app-copy-soft)]">
                   집계 대기 — migration 062(site_visits) 적용 후 수집 시작. 광고차단/JS 미실행
-                  방문은 미포함(하한치), 전체 트래픽은 Vercel Analytics 참조.
+                  방문은 미포함, 전체 트래픽은 Vercel Analytics 참조.
                 </p>
               )}
               {/* 기간별 순방문자(distinct) — migration 065 미적용이면 '—'. */}
@@ -651,8 +650,8 @@ export function OperationsDashboard() {
                 )
               </li>
               <li>
-                • 방문자(순): site_visits — 클라 일 1회 익명 핑(KST) 기반 하한치. 광고차단/JS
-                미실행 방문 미포함, 전체 트래픽은 Vercel Analytics 참조
+                • 자체 순방문: site_visits — KST 일별 익명 visitor_hash distinct. page_views 는
+                라우트별 page_view 호출마다 증가. admin/preview/내부 IP 는 제외
               </li>
               <li>
                 • 활동 사용자: readings + today_fortune_feedback + dialogue_messages 의 distinct

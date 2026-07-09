@@ -211,9 +211,9 @@ export default async function AdminDashboardPage({
       >
         {ops ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
-            {/* 2026-07-04 — 자체 순방문(하한치). 미집계(062 미적용)면 '—'. */}
+            {/* 2026-07-10 — 자체 순방문. 내부/admin/preview 제외 + page_view 별도 집계. */}
             <Stat
-              label="방문자"
+              label="자체 순방문"
               value={ops.today.visitors == null ? '—' : fmtNum(ops.today.visitors)}
             />
             <Stat label="신규 가입" value={fmtNum(ops.today.newSignups)} />
@@ -246,7 +246,7 @@ export default async function AdminDashboardPage({
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Stat
-            label="자체 방문자"
+            label="자체 순방문"
             value={fmtMaybeNum(periodVisitors)}
             sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)}`}
           />
