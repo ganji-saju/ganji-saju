@@ -2,7 +2,7 @@
 //   조회 계층. 외부 키가 없어도 admin 화면은 자체 지표만 정상 렌더링해야 하므로
 //   source별 configured/ok/error 상태와 null gap-fill 을 명시한다.
 import { createSign } from 'node:crypto';
-import { recentKstDateKeys } from './analytics-rollup';
+import { recentKstDateKeys, shiftDateKey } from './analytics-rollup';
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_ANALYTICS_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
@@ -33,6 +33,9 @@ export interface ExternalAnalyticsSourceStatus {
   configured: boolean;
   ok: boolean;
   error: string | null;
+  warning?: string | null;
+  from?: string | null;
+  to?: string | null;
 }
 
 export interface ExternalAnalyticsSnapshot {
@@ -59,6 +62,7 @@ interface VercelAnalyticsConfig {
   projectId: string;
   teamId: string | null;
   teamSlug: string | null;
+  maxDays: number | null;
 }
 
 export interface GoogleAnalyticsDay {
@@ -69,6 +73,23 @@ export interface GoogleAnalyticsDay {
 export interface VercelAnalyticsDay {
   visitors: number | null;
   pageViews: number | null;
+}
+
+interface VercelAnalyticsResult {
+  rows: Map<string, VercelAnalyticsDay>;
+  fromKey: string;
+  toKey: string;
+  warning: string | null;
+}
+
+class ExternalAnalyticsHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number
+  ) {
+    super(message);
+    this.name = 'ExternalAnalyticsHttpError';
+  }
 }
 
 function envValue(env: EnvMap, key: string): string | null {
@@ -97,12 +118,17 @@ function vercelAnalyticsConfig(env: EnvMap): VercelAnalyticsConfig | null {
   const token = envValue(env, 'VERCEL_ANALYTICS_TOKEN') ?? envValue(env, 'VERCEL_TOKEN');
   const projectId = envValue(env, 'VERCEL_PROJECT_ID');
   if (!token || !projectId) return null;
+  const maxDaysRaw = Number(envValue(env, 'VERCEL_ANALYTICS_MAX_DAYS') ?? '');
+  const maxDays = Number.isFinite(maxDaysRaw) && maxDaysRaw > 0
+    ? Math.max(1, Math.min(365, Math.floor(maxDaysRaw)))
+    : null;
 
   return {
     token,
     projectId,
     teamId: envValue(env, 'VERCEL_TEAM_ID'),
     teamSlug: envValue(env, 'VERCEL_TEAM_SLUG'),
+    maxDays,
   };
 }
 
@@ -218,7 +244,7 @@ export function parseVercelAnalyticsRows(payload: unknown): Map<string, VercelAn
 async function responseError(label: string, response: Response): Promise<Error> {
   const body = await response.text().catch(() => '');
   const details = body ? `: ${body.slice(0, 180)}` : '';
-  return new Error(`${label} HTTP ${response.status}${details}`);
+  return new ExternalAnalyticsHttpError(`${label} HTTP ${response.status}${details}`, response.status);
 }
 
 async function fetchGoogleAccessToken(
@@ -279,6 +305,80 @@ async function fetchVercelAnalyticsDaily(
   config: VercelAnalyticsConfig,
   fromKey: string,
   toKey: string,
+  fetcher: FetchLike,
+  now: Date
+): Promise<VercelAnalyticsResult> {
+  const attempts = buildVercelRangeAttempts(fromKey, toKey, now, config.maxDays);
+  let lastErr: unknown = null;
+
+  for (let i = 0; i < attempts.length; i += 1) {
+    const range = attempts[i]!;
+    try {
+      const rows = await fetchVercelAnalyticsRange(config, range.fromKey, range.toKey, fetcher);
+      const warning =
+        range.fromKey !== fromKey || range.toKey !== toKey
+          ? `Vercel 조회 가능 기간 제한으로 ${range.fromKey}~${range.toKey}만 표시`
+          : null;
+      return { rows, fromKey: range.fromKey, toKey: range.toKey, warning };
+    } catch (err) {
+      lastErr = err;
+      if (!isRetryableVercelRangeError(err) || i === attempts.length - 1) throw err;
+    }
+  }
+
+  throw lastErr instanceof Error ? lastErr : new Error('Vercel Web Analytics request failed');
+}
+
+function isRetryableVercelRangeError(err: unknown): boolean {
+  return err instanceof ExternalAnalyticsHttpError && (err.status === 400 || err.status === 422);
+}
+
+function utcDateKey(now: Date): string {
+  return now.toISOString().slice(0, 10);
+}
+
+function clampVercelRange(
+  fromKey: string,
+  toKey: string,
+  now: Date,
+  maxDays: number | null
+): { fromKey: string; toKey: string } {
+  const safeToKey = toKey > utcDateKey(now) ? utcDateKey(now) : toKey;
+  const safeMaxDays = maxDays && maxDays > 0 ? maxDays : null;
+  const minFromForMax = safeMaxDays ? shiftDateKey(safeToKey, -(safeMaxDays - 1)) : fromKey;
+  let safeFromKey = fromKey > minFromForMax ? fromKey : minFromForMax;
+  if (safeFromKey > safeToKey) safeFromKey = safeToKey;
+  return { fromKey: safeFromKey, toKey: safeToKey };
+}
+
+export function buildVercelRangeAttempts(
+  fromKey: string,
+  toKey: string,
+  now: Date,
+  maxDays: number | null = null
+): Array<{ fromKey: string; toKey: string }> {
+  const primary = clampVercelRange(fromKey, toKey, now, maxDays);
+  const fallbackWindows = [30, 7, 1];
+  const attempts: Array<{ fromKey: string; toKey: string }> = [];
+  const seen = new Set<string>();
+
+  for (const range of [
+    primary,
+    ...fallbackWindows.map((days) => clampVercelRange(fromKey, toKey, now, days)),
+  ]) {
+    const key = `${range.fromKey}:${range.toKey}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    attempts.push(range);
+  }
+
+  return attempts;
+}
+
+async function fetchVercelAnalyticsRange(
+  config: VercelAnalyticsConfig,
+  fromKey: string,
+  toKey: string,
   fetcher: FetchLike
 ): Promise<Map<string, VercelAnalyticsDay>> {
   const url = new URL(VERCEL_WEB_ANALYTICS_AGGREGATE_URL);
@@ -335,6 +435,9 @@ export async function getExternalAnalyticsSnapshot(
   let vercelRows: Map<string, VercelAnalyticsDay> | null = null;
   let gaError: string | null = null;
   let vercelError: string | null = null;
+  let vercelWarning: string | null = null;
+  let vercelFromKey: string | null = null;
+  let vercelToKey: string | null = null;
 
   await Promise.all([
     gaConfig
@@ -347,9 +450,12 @@ export async function getExternalAnalyticsSnapshot(
           })
       : Promise.resolve(),
     vercelConfig
-      ? fetchVercelAnalyticsDaily(vercelConfig, fromKey, toKey, fetcher)
-          .then((rows) => {
-            vercelRows = rows;
+      ? fetchVercelAnalyticsDaily(vercelConfig, fromKey, toKey, fetcher, now)
+          .then((result) => {
+            vercelRows = result.rows;
+            vercelWarning = result.warning;
+            vercelFromKey = result.fromKey;
+            vercelToKey = result.toKey;
           })
           .catch((err) => {
             vercelError = errorMessage(err);
@@ -384,6 +490,9 @@ export async function getExternalAnalyticsSnapshot(
         configured: Boolean(vercelConfig),
         ok: Boolean(vercelRows),
         error: vercelError,
+        warning: vercelWarning,
+        from: vercelFromKey,
+        to: vercelToKey,
       },
     },
     daily,

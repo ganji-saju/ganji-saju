@@ -212,7 +212,7 @@ function SourceStatus({
   label: string;
   status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
 }) {
-  const text = !status.configured ? '미설정' : status.ok ? '연동됨' : '오류';
+  const text = !status.configured ? '미설정' : status.ok ? (status.warning ? '부분' : '연동됨') : '오류';
   const color = !status.configured
     ? 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
     : status.ok
@@ -221,10 +221,26 @@ function SourceStatus({
   return (
     <span
       className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`}
-      title={status.error ?? undefined}
+      title={status.error ?? status.warning ?? undefined}
     >
       {label} {text}
     </span>
+  );
+}
+
+function SourceNotice({
+  label,
+  status,
+}: {
+  label: string;
+  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
+}) {
+  const message = status.error ?? status.warning;
+  if (!message) return null;
+  return (
+    <p className="text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+      {label}: {message}
+    </p>
   );
 }
 
@@ -464,6 +480,10 @@ function ExternalComparison({
           <SourceStatus label="GA4" status={external.sources.googleAnalytics} />
           <SourceStatus label="Vercel" status={external.sources.vercel} />
         </div>
+      </div>
+      <div className="space-y-0.5">
+        <SourceNotice label="GA4" status={external.sources.googleAnalytics} />
+        <SourceNotice label="Vercel" status={external.sources.vercel} />
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">

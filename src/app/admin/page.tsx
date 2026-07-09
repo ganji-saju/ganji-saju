@@ -64,16 +64,32 @@ function SourceBadge({
   label: string;
   status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
 }) {
-  const text = !status.configured ? '미설정' : status.ok ? '연동됨' : '오류';
+  const text = !status.configured ? '미설정' : status.ok ? (status.warning ? '부분' : '연동됨') : '오류';
   const color = !status.configured
     ? 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
     : status.ok
       ? 'border-[var(--app-jade,#3F8796)] text-[var(--app-jade,#3F8796)]'
       : 'border-[var(--app-coral)] text-[var(--app-coral)]';
   return (
-    <span className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`} title={status.error ?? undefined}>
+    <span className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`} title={status.error ?? status.warning ?? undefined}>
       {label} {text}
     </span>
+  );
+}
+
+function SourceNotice({
+  label,
+  status,
+}: {
+  label: string;
+  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
+}) {
+  const message = status.error ?? status.warning;
+  if (!message) return null;
+  return (
+    <p className="text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
+      {label}: {message}
+    </p>
   );
 }
 
@@ -223,6 +239,10 @@ export default async function AdminDashboardPage({
         <div className="mb-3 flex flex-wrap gap-1.5">
           <SourceBadge label="GA4" status={externalAnalytics.sources.googleAnalytics} />
           <SourceBadge label="Vercel" status={externalAnalytics.sources.vercel} />
+        </div>
+        <div className="mb-3 space-y-0.5">
+          <SourceNotice label="GA4" status={externalAnalytics.sources.googleAnalytics} />
+          <SourceNotice label="Vercel" status={externalAnalytics.sources.vercel} />
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Stat

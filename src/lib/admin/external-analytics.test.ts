@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  buildVercelRangeAttempts,
   getExternalAnalyticsSnapshot,
   normalizeExternalDate,
   parseGoogleAnalyticsRows,
@@ -90,4 +91,51 @@ test('getExternalAnalyticsSnapshot: Vercel만 설정되면 일별 PV를 축에 �
     [0, 10, 20]
   );
   assert.equal(snap.totals.vercelPageViews, 30);
+});
+
+test('buildVercelRangeAttempts: KST 오늘이 UTC 기준 미래면 Vercel until을 UTC 오늘로 제한', () => {
+  const attempts = buildVercelRangeAttempts(
+    '2026-07-08',
+    '2026-07-10',
+    new Date('2026-07-09T16:00:00Z')
+  );
+
+  assert.deepEqual(attempts[0], { fromKey: '2026-07-08', toKey: '2026-07-09' });
+});
+
+test('getExternalAnalyticsSnapshot: Vercel reporting window 오류면 30일 fallback으로 재시도', async () => {
+  const calls: string[] = [];
+  const snap = await getExternalAnalyticsSnapshot(
+    90,
+    NOW,
+    {
+      VERCEL_ANALYTICS_TOKEN: 'token',
+      VERCEL_PROJECT_ID: 'project',
+      VERCEL_TEAM_ID: 'team',
+    },
+    async (input) => {
+      calls.push(String(input));
+      if (calls.length === 1) {
+        return new Response(JSON.stringify({ error: { message: 'outside reporting window' } }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          data: [{ timestamp: '2026-07-07T00:00:00.000Z', pageviews: 7, visitors: 3 }],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  );
+
+  assert.equal(calls.length, 2);
+  assert.match(calls[0]!, /since=2026-04-09/);
+  assert.match(calls[1]!, /since=2026-06-08/);
+  assert.match(calls[1]!, /teamId=team/);
+  assert.equal(snap.sources.vercel.ok, true);
+  assert.equal(snap.sources.vercel.error, null);
+  assert.equal(snap.sources.vercel.warning, 'Vercel 조회 가능 기간 제한으로 2026-06-08~2026-07-07만 표시');
+  assert.equal(snap.totals.vercelPageViews, 7);
 });
