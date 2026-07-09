@@ -9,6 +9,10 @@ import {
   getAdminDashboardSummary,
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
+import {
+  getExternalAnalyticsSnapshot,
+  type ExternalAnalyticsSnapshot,
+} from '@/lib/admin/external-analytics';
 import { getVisibleNavGroups } from '@/lib/admin/nav';
 import type { DailySeries } from '@/lib/admin/operations-stats';
 
@@ -18,6 +22,7 @@ export const metadata: Metadata = {
 };
 
 const fmtNum = (n: number | null | undefined) => (n ?? 0).toLocaleString('ko-KR');
+const fmtMaybeNum = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('ko-KR'));
 // 2026-07-04 — 반올림 대신 소수 1자리: 0.5% 미만 전환율이 전부 '0%'로 보이던 문제.
 const fmtPct = (rate: number | null | undefined) => `${((rate ?? 0) * 100).toFixed(1)}%`;
 const fmtUsd = (n: number | null | undefined) => `$${(n ?? 0).toFixed(2)}`;
@@ -36,6 +41,39 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       <p className="mt-0.5 text-[20px] font-extrabold text-[var(--app-ink)]">{value}</p>
       {sub ? <p className="text-[11px] text-[var(--app-copy-muted)]">{sub}</p> : null}
     </div>
+  );
+}
+
+function sumSeries(series: DailySeries[] | undefined): number | null {
+  if (!series || series.length === 0) return null;
+  return series.reduce((sum, row) => sum + row.value, 0);
+}
+
+function fmtVsInternal(source: number | null | undefined, internal: number | null | undefined): string {
+  if (source == null) return '데이터 없음';
+  if (internal == null) return '자체 기준 없음';
+  const diff = source - internal;
+  const pct = internal > 0 ? ` · ${diff > 0 ? '+' : ''}${((diff / internal) * 100).toFixed(1)}%` : '';
+  return `자체 대비 ${diff > 0 ? '+' : ''}${diff.toLocaleString('ko-KR')}${pct}`;
+}
+
+function SourceBadge({
+  label,
+  status,
+}: {
+  label: string;
+  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
+}) {
+  const text = !status.configured ? '미설정' : status.ok ? '연동됨' : '오류';
+  const color = !status.configured
+    ? 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
+    : status.ok
+      ? 'border-[var(--app-jade,#3F8796)] text-[var(--app-jade,#3F8796)]'
+      : 'border-[var(--app-coral)] text-[var(--app-coral)]';
+  return (
+    <span className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`} title={status.error ?? undefined}>
+      {label} {text}
+    </span>
   );
 }
 
@@ -76,13 +114,16 @@ export default async function AdminDashboardPage({
   const windowDays = normalizeDashboardWindow(params.days);
 
   const supabase = await createClient();
-  const [roleCheck, summary] = await Promise.all([
+  const [roleCheck, summary, externalAnalytics] = await Promise.all([
     getCurrentAdminRole(supabase),
     getAdminDashboardSummary(windowDays),
+    getExternalAnalyticsSnapshot(windowDays),
   ]);
   const role = roleCheck.role ?? 'admin';
 
   const ops = summary.operations;
+  const periodVisitors = sumSeries(ops?.trends.visitors);
+  const todayExternal = externalAnalytics.daily[externalAnalytics.daily.length - 1] ?? null;
   const navGroups = getVisibleNavGroups(role).filter((g) => g.title !== '개요');
 
   return (
@@ -173,6 +214,38 @@ export default async function AdminDashboardPage({
             부재 또는 집계 쿼리 오류).
           </p>
         )}
+      </Card>
+
+      <Card
+        title={`GA4 · Vercel 비교 (${windowDays}일)`}
+        action={<Link href="/admin/analytics" className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">누적 지표 분석 →</Link>}
+      >
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          <SourceBadge label="GA4" status={externalAnalytics.sources.googleAnalytics} />
+          <SourceBadge label="Vercel" status={externalAnalytics.sources.vercel} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Stat
+            label="자체 방문자"
+            value={fmtMaybeNum(periodVisitors)}
+            sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)}`}
+          />
+          <Stat
+            label="GA4 활성 사용자"
+            value={fmtMaybeNum(externalAnalytics.totals.gaActiveUsers)}
+            sub={fmtVsInternal(externalAnalytics.totals.gaActiveUsers, periodVisitors)}
+          />
+          <Stat
+            label="GA4 PV"
+            value={fmtMaybeNum(externalAnalytics.totals.gaPageViews)}
+            sub={`오늘 ${fmtMaybeNum(todayExternal?.gaPageViews)}`}
+          />
+          <Stat
+            label="Vercel PV"
+            value={fmtMaybeNum(externalAnalytics.totals.vercelPageViews)}
+            sub={`오늘 ${fmtMaybeNum(todayExternal?.vercelPageViews)}`}
+          />
+        </div>
       </Card>
 
       {/* 누적 + 결제/LLM 요약 */}

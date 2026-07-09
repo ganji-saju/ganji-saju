@@ -13,6 +13,7 @@ import {
   runDailyMetricsRollup,
   type RollupResult,
 } from '@/lib/admin/analytics-rollup';
+import { getExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 
 export const runtime = 'nodejs';
@@ -68,9 +69,12 @@ export async function GET(req: NextRequest) {
     const service = await createServiceClient();
     const now = new Date();
     const autoRefresh = await ensureDailyMetricsFresh(service, now);
-    const snapshot = await getDailyMetrics(service, windowDays, now);
+    const [snapshot, external] = await Promise.all([
+      getDailyMetrics(service, windowDays, now),
+      getExternalAnalyticsSnapshot(windowDays, now),
+    ]);
     return NextResponse.json(
-      { ok: true, snapshot, autoRefresh },
+      { ok: true, snapshot, external, autoRefresh },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (err: unknown) {
