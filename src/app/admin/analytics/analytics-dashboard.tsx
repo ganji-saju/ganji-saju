@@ -2,13 +2,15 @@
 //   윈도우(30/90/365일)로 조회해 방문자·전환·유입·결제 그래프로 표시.
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type PointerEvent } from 'react';
 import type { AnalyticsSnapshot, InflowAggEntry } from '@/lib/admin/analytics-metrics';
+import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
 
 interface ApiResponse {
   ok: boolean;
   snapshot?: AnalyticsSnapshot;
+  external?: ExternalAnalyticsSnapshot;
   error?: string;
 }
 
@@ -20,7 +22,20 @@ const WINDOW_OPTIONS = [
 
 const AUTO_REFRESH_MS = 10 * 60 * 1000;
 const formatNum = (n: number) => n.toLocaleString();
+const formatMaybeNum = (n: number | null | undefined) => (n == null ? '—' : formatNum(n));
 const formatPct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(1)}%`);
+
+function formatSignedNum(n: number): string {
+  return `${n > 0 ? '+' : ''}${n.toLocaleString()}`;
+}
+
+function formatVsInternal(source: number | null | undefined, internal: number | null | undefined): string {
+  if (source == null) return '데이터 없음';
+  if (internal == null) return '자체 기준 없음';
+  const diff = source - internal;
+  const pct = internal > 0 ? ` · ${diff > 0 ? '+' : ''}${((diff / internal) * 100).toFixed(1)}%` : '';
+  return `자체 대비 ${formatSignedNum(diff)}${pct}`;
+}
 
 function fmtWon(won: number): string {
   if (won >= 100_000_000) return `${(won / 100_000_000).toFixed(won % 100_000_000 === 0 ? 0 : 1)}억`;
@@ -183,9 +198,350 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
   );
 }
 
+interface ComparisonSeries {
+  key: string;
+  label: string;
+  color: string;
+  points: MetricPoint[];
+}
+
+function SourceStatus({
+  label,
+  status,
+}: {
+  label: string;
+  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
+}) {
+  const text = !status.configured ? '미설정' : status.ok ? '연동됨' : '오류';
+  const color = !status.configured
+    ? 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
+    : status.ok
+      ? 'border-[var(--app-jade,#3F8796)] text-[var(--app-jade,#3F8796)]'
+      : 'border-[var(--app-coral)] text-[var(--app-coral)]';
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`}
+      title={status.error ?? undefined}
+    >
+      {label} {text}
+    </span>
+  );
+}
+
+function ComparisonLineChart({
+  title,
+  subtitle,
+  series,
+  format = formatMaybeNum,
+}: {
+  title: string;
+  subtitle?: string;
+  series: ComparisonSeries[];
+  format?: (v: number | null | undefined) => string;
+}) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const dates = series[0]?.points.map((p) => p.date) ?? [];
+  const numeric = series
+    .flatMap((s) => s.points.map((p) => p.value))
+    .filter((v): v is number => typeof v === 'number');
+  const hasData = numeric.some((v) => v > 0);
+
+  const height = 116;
+  const vbWidth = 100;
+  const pad = 5;
+  const usableH = height - pad * 2;
+  const max = Math.max(...numeric, 1);
+  const min = Math.min(...numeric, 0);
+  const range = max - min || 1;
+  const stepX = dates.length > 1 ? vbWidth / (dates.length - 1) : vbWidth;
+
+  const coordinates = series.map((s) =>
+    s.points.map((p, i) =>
+      p.value == null
+        ? null
+        : { x: i * stepX, y: pad + usableH - ((p.value - min) / range) * usableH }
+    )
+  );
+
+  const activeX =
+    activeIndex == null
+      ? 0
+      : dates.length > 1
+        ? (activeIndex / (dates.length - 1)) * 100
+        : 50;
+  const tooltipLeft =
+    activeX > 72
+      ? `calc(${activeX}% - 8px)`
+      : activeX < 28
+        ? `calc(${activeX}% + 8px)`
+        : `${activeX}%`;
+  const tooltipTransform =
+    activeX > 72 ? 'translateX(-100%)' : activeX < 28 ? 'translateX(0)' : 'translateX(-50%)';
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (dates.length === 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = rect.width > 0 ? (event.clientX - rect.left) / rect.width : 0;
+    setActiveIndex(Math.min(dates.length - 1, Math.max(0, Math.round(ratio * (dates.length - 1)))));
+  };
+
+  return (
+    <article className="rounded-[12px] border border-[var(--app-line)] bg-white p-3.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <div className="text-[13px] font-extrabold text-[var(--app-ink)]">{title}</div>
+          {subtitle && <div className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">{subtitle}</div>}
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          {series.map((s) => (
+            <span key={s.key} className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {hasData ? (
+        <div className="relative mt-2" style={{ height }}>
+          <svg
+            viewBox={`0 0 ${vbWidth} ${height}`}
+            height={height}
+            preserveAspectRatio="none"
+            aria-label={`${title} 일별 비교 그래프`}
+            className="block h-full w-full"
+          >
+            {series.map((s, si) => {
+              const coords = coordinates[si] ?? [];
+              const segments: Array<Array<{ x: number; y: number }>> = [];
+              let run: Array<{ x: number; y: number }> = [];
+              for (const coord of coords) {
+                if (coord) {
+                  run.push(coord);
+                } else if (run.length) {
+                  segments.push(run);
+                  run = [];
+                }
+              }
+              if (run.length) segments.push(run);
+
+              return (
+                <g key={s.key}>
+                  {segments.map((seg, segIndex) => {
+                    const line = seg.map((c) => `${c.x.toFixed(2)},${c.y.toFixed(1)}`).join(' ');
+                    return seg.length > 1 ? (
+                      <polyline
+                        key={segIndex}
+                        points={line}
+                        fill="none"
+                        stroke={s.color}
+                        strokeWidth={1.8}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    ) : (
+                      <circle key={segIndex} cx={seg[0]!.x} cy={seg[0]!.y} r={1.4} fill={s.color} />
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </svg>
+
+          {activeIndex != null && dates[activeIndex] && (
+            <div className="pointer-events-none absolute inset-0 z-10">
+              <div className="absolute bottom-0 top-0 w-px bg-[var(--app-ink)]/20" style={{ left: `${activeX}%` }} />
+              <div
+                className="absolute top-1 min-w-[178px] rounded-[8px] border border-[var(--app-line)] bg-white/95 px-2.5 py-2 text-[11.5px] shadow-[0_8px_24px_rgba(30,22,20,0.14)]"
+                style={{ left: tooltipLeft, transform: tooltipTransform }}
+              >
+                <div className="font-bold text-[var(--app-ink)]">{dates[activeIndex]}</div>
+                <div className="mt-1 space-y-0.5">
+                  {series.map((s) => (
+                    <div key={s.key} className="flex items-center justify-between gap-3 tabular-nums">
+                      <span className="inline-flex items-center gap-1.5 text-[var(--app-copy-soft)]">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+                        {s.label}
+                      </span>
+                      <span className="font-bold text-[var(--app-ink)]">{format(s.points[activeIndex]?.value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div
+            className="absolute inset-0 z-20 cursor-crosshair"
+            onPointerMove={handlePointerMove}
+            onPointerLeave={() => setActiveIndex(null)}
+          />
+        </div>
+      ) : (
+        <div className="mt-2 grid h-20 place-items-center text-[12px] text-[var(--app-copy-soft)]">
+          비교 데이터 없음
+        </div>
+      )}
+      <div className="mt-1 flex justify-between text-[10.9px] text-[var(--app-copy-soft)]">
+        <span>{dates[0]}</span>
+        <span>{dates[dates.length - 1]}</span>
+      </div>
+    </article>
+  );
+}
+
+function ExternalComparison({
+  snap,
+  external,
+}: {
+  snap: AnalyticsSnapshot;
+  external: ExternalAnalyticsSnapshot;
+}) {
+  const externalByDate = new Map(external.daily.map((d) => [d.date, d]));
+  const latestRows = [...snap.daily]
+    .reverse()
+    .slice(0, 12)
+    .map((internal) => ({ internal, external: externalByDate.get(internal.date) }));
+
+  const visitorSeries: ComparisonSeries[] = [
+    {
+      key: 'internal',
+      label: '자체',
+      color: 'var(--app-pink-strong)',
+      points: snap.daily.map((d) => ({ date: d.date, value: d.visitors })),
+    },
+    {
+      key: 'ga',
+      label: 'GA4',
+      color: 'var(--app-jade,#3F8796)',
+      points: external.daily.map((d) => ({ date: d.date, value: d.gaActiveUsers })),
+    },
+  ];
+  if (external.totals.vercelVisitors != null) {
+    visitorSeries.push({
+      key: 'vercel',
+      label: 'Vercel',
+      color: '#7C5CBF',
+      points: external.daily.map((d) => ({ date: d.date, value: d.vercelVisitors })),
+    });
+  }
+
+  const pageViewSeries: ComparisonSeries[] = [
+    {
+      key: 'internal',
+      label: '자체',
+      color: 'var(--app-pink-strong)',
+      points: snap.daily.map((d) => ({ date: d.date, value: d.pageViews })),
+    },
+    {
+      key: 'ga',
+      label: 'GA4',
+      color: 'var(--app-jade,#3F8796)',
+      points: external.daily.map((d) => ({ date: d.date, value: d.gaPageViews })),
+    },
+    {
+      key: 'vercel',
+      label: 'Vercel',
+      color: '#7C5CBF',
+      points: external.daily.map((d) => ({ date: d.date, value: d.vercelPageViews })),
+    },
+  ];
+
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">외부 분석 비교</h2>
+          <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
+            자체 집계 · GA4 Data API · Vercel Web Analytics를 같은 KST 날짜축으로 비교
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <SourceStatus label="GA4" status={external.sources.googleAnalytics} />
+          <SourceStatus label="Vercel" status={external.sources.vercel} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <SummaryCard
+          label="자체 방문자"
+          value={formatNum(snap.totals.visitors)}
+          sub={`PV ${formatNum(snap.totals.pageViews)}`}
+        />
+        <SummaryCard
+          label="GA4 활성 사용자"
+          value={formatMaybeNum(external.totals.gaActiveUsers)}
+          sub={formatVsInternal(external.totals.gaActiveUsers, snap.totals.visitors)}
+        />
+        <SummaryCard
+          label="GA4 화면 PV"
+          value={formatMaybeNum(external.totals.gaPageViews)}
+          sub={formatVsInternal(external.totals.gaPageViews, snap.totals.pageViews)}
+        />
+        <SummaryCard
+          label="Vercel PV"
+          value={formatMaybeNum(external.totals.vercelPageViews)}
+          sub={formatVsInternal(external.totals.vercelPageViews, snap.totals.pageViews)}
+        />
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <ComparisonLineChart
+          title="방문자 비교"
+          subtitle="자체 방문자 vs GA4 activeUsers"
+          series={visitorSeries}
+        />
+        <ComparisonLineChart
+          title="PV 비교"
+          subtitle="자체 PV vs GA4 screenPageViews vs Vercel PV"
+          series={pageViewSeries}
+        />
+      </div>
+
+      <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">최근 일별 비교</h2>
+          <span className="text-[11.5px] text-[var(--app-copy-soft)]">최신 12일</span>
+        </div>
+        <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
+          <table className="w-full border-collapse text-[12.5px]">
+            <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+              <tr>
+                <th className={`${th} text-left`}>날짜</th>
+                <th className={th}>자체 방문</th>
+                <th className={th}>GA4 사용자</th>
+                <th className={th}>자체 PV</th>
+                <th className={th}>GA4 PV</th>
+                <th className={th}>Vercel PV</th>
+              </tr>
+            </thead>
+            <tbody>
+              {latestRows.map(({ internal, external: ext }) => (
+                <tr key={internal.date} className="border-t border-[var(--app-line)]">
+                  <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{internal.date}</td>
+                  <td className={td}>{formatNum(internal.visitors)}</td>
+                  <td className={td}>{formatMaybeNum(ext?.gaActiveUsers)}</td>
+                  <td className={`${td} text-[var(--app-copy-soft)]`}>{formatNum(internal.pageViews)}</td>
+                  <td className={`${td} text-[var(--app-copy-soft)]`}>{formatMaybeNum(ext?.gaPageViews)}</td>
+                  <td className={`${td} text-[var(--app-copy-soft)]`}>{formatMaybeNum(ext?.vercelPageViews)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function AnalyticsDashboard() {
   const [days, setDays] = useState(30);
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
+  const [external, setExternal] = useState<ExternalAnalyticsSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -207,6 +563,7 @@ export function AnalyticsDashboard() {
         if (res.ok && res.snapshot) {
           loadedOnce = true;
           setSnap(res.snapshot);
+          setExternal(res.external ?? null);
           setError(null);
         } else if (initial || !loadedOnce) {
           setError(res.error ?? '불러오기 실패');
@@ -287,6 +644,8 @@ export function AnalyticsDashboard() {
             <SummaryCard label="결제/방문(참고)" value={formatPct(snap.totals.visitorToPaidRate)} sub="결제건÷방문자" />
             <SummaryCard label="결제창 전환" value={formatPct(snap.totals.checkoutConversionRate)} sub="성공÷시도" />
           </div>
+
+          {external && <ExternalComparison snap={snap} external={external} />}
 
           {/* 방문자·PV 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
