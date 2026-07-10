@@ -4,6 +4,7 @@
 // saju-intake-page.tsx submit() (saju-intake-page.tsx:793-954) 를
 // UnifiedBirthProfile 입력 버전으로 이식한 것 — 동일 요청 계약(POST /api/readings 바디,
 // 성공/실패 href 규칙, 로그인 프로필 자동저장)을 유지한다. from 파라미터만 'start' 로 교체.
+import type { TasteProductId } from '@/lib/payments/catalog';
 import { toSlug } from '@/lib/saju/pillars';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import {
@@ -12,8 +13,22 @@ import {
   toUserSituation,
 } from '@/features/saju-intake/onboarding-storage';
 import { applyProfileToSajuDraft, saveBirthProfile, type UnifiedBirthProfile } from './birth-profile-store';
+import { buildSajuPostSubmitHref } from './saju-post-submit-href';
 
-export async function submitSajuFromProfile(profile: UnifiedBirthProfile): Promise<string> {
+export interface SubmitSajuOptions {
+  product?: TasteProductId | null;
+  plan?: 'lifetime' | null;
+  from?: string;
+}
+
+export async function submitSajuFromProfile(
+  profile: UnifiedBirthProfile,
+  opts?: SubmitSajuOptions
+): Promise<string> {
+  // from 기본값 'start' — /start 허브 기존 동작 보존. /saju/new 는 from='saju-new' 를 넘긴다.
+  const product = opts?.product ?? null;
+  const plan = opts?.plan ?? null;
+  const from = opts?.from ?? 'start';
   // 제출 시점 재확정 — UnifiedIntake 가 이미 저장했지만 여기서도 공용 키를 갱신한다.
   saveBirthProfile(profile);
 
@@ -61,7 +76,12 @@ export async function submitSajuFromProfile(profile: UnifiedBirthProfile): Promi
     });
   } catch {
     const fallbackId = toSlug(readingInput);
-    return `/saju/${fallbackId}?from=start&topic=${draft.focusTopic}`;
+    return buildSajuPostSubmitHref(fallbackId, {
+      focusTopic: draft.focusTopic,
+      product,
+      plan,
+      from,
+    });
   }
 
   const data = await response.json();
@@ -93,5 +113,10 @@ export async function submitSajuFromProfile(profile: UnifiedBirthProfile): Promi
     }).catch(() => undefined);
   }
 
-  return `/saju/${data.id}?from=start&topic=${draft.focusTopic}`;
+  return buildSajuPostSubmitHref(data.id, {
+    focusTopic: draft.focusTopic,
+    product,
+    plan,
+    from,
+  });
 }
