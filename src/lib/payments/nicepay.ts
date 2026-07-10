@@ -139,6 +139,43 @@ export async function getNicepayPayment(tid: string): Promise<NicepayPaymentObje
 }
 
 /**
+ * 2026-07-10 — 자격증명 프로브(돈이 움직이지 않음).
+ *
+ * 존재하지 않는 tid 로 조회를 1회 던진다. 인가(Basic clientKey:secretKey)가 잘못됐으면
+ * 나이스페이가 가맹점을 못 찾아 인가성 오류로 답하고, 인가가 정상이면 "거래 없음" 류로 답한다.
+ * 즉 **실결제 없이 키 짝이 유효한지** 판별할 수 있다. throw 하지 않고 응답을 그대로 보고한다.
+ */
+export async function probeNicepayCredentials(): Promise<{
+  httpStatus: number;
+  resultCode: string | null;
+  resultMsg: string | null;
+  transportError: string | null;
+}> {
+  const tid = 'credential-probe-nonexistent-tid';
+  try {
+    const response = await fetch(`${getApiBase()}/v1/payments/${encodeURIComponent(tid)}`, {
+      method: 'GET',
+      headers: { Authorization: getNicepayAuthorizationHeader() },
+    });
+    const body = (await response.json().catch(() => ({}))) as Partial<NicepayPaymentObject>;
+    return {
+      httpStatus: response.status,
+      resultCode: typeof body.resultCode === 'string' ? body.resultCode : null,
+      resultMsg: typeof body.resultMsg === 'string' ? body.resultMsg : null,
+      transportError: null,
+    };
+  } catch (err) {
+    // 키 자체가 없으면 getSecretKey/getClientKey 가 throw 한다 — 그것도 진단 결과다.
+    return {
+      httpStatus: 0,
+      resultCode: null,
+      resultMsg: null,
+      transportError: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
  * 결제 취소/부분취소 — POST {API_BASE}/v1/payments/{tid}/cancel.
  * cancelAmt 생략 시 전체취소. reason 필수(≤100). Idempotency 로 이중취소 방지(toss 패턴 동일).
  */
