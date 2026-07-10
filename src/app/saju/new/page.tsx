@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SajuIntakePage from '@/features/saju-intake/saju-intake-page';
+import SajuNewClient from './saju-new-client';
 
 export const metadata: Metadata = {
   title: '사주풀이 시작 — 생년월일로 내 사주 보기',
@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <SajuIntakePage step="birth" />;
+  return <SajuNewClient />;
 }
