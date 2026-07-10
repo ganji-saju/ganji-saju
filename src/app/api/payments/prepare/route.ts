@@ -7,6 +7,8 @@ import {
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
 import { getPaymentProvider } from '@/lib/payments/provider';
+import { auditNicepayKeyPair } from '@/lib/payments/nicepay-config-audit';
+import { resolveNicepayPrepareBlock } from '@/lib/payments/nicepay-prepare-guard';
 import {
   buildPurchasedProductHref,
   resolvePaymentProductScope,
@@ -147,6 +149,27 @@ export async function POST(req: NextRequest) {
         loginHref: `/login?next=${encodeURIComponent(checkoutPath)}`,
       },
       { status: 401 }
+    );
+  }
+
+  // 2026-07-10 — 나이스페이 키 짝 가드. clientKey/secretKey 가 서로 다른 출처로 폴백하면
+  //   결제창은 정상으로 뜨고 **승인(마지막 단계)에서만** 인가 실패한다(2026-06-27 4건).
+  //   사용자가 카드정보를 다 넣은 뒤 깨지는 것보다, 결제창을 띄우기 전에 막는 편이 낫다.
+  const keyPairBlock = resolveNicepayPrepareBlock(getPaymentProvider(), auditNicepayKeyPair());
+  if (keyPairBlock) {
+    console.error('[payments/prepare] 나이스페이 키 짝 이상', {
+      packageId,
+      detail: keyPairBlock.detail,
+    });
+    await logPaymentFunnelEvent(supabase, {
+      stage: 'prepare_blocked',
+      userId: user.id,
+      packageId,
+      reason: keyPairBlock.reason,
+    });
+    return NextResponse.json(
+      { ok: false, error: '결제 설정에 문제가 있어 결제를 시작할 수 없습니다.' },
+      { status: 503 }
     );
   }
 
