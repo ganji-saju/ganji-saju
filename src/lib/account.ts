@@ -311,7 +311,7 @@ export async function getAccountDashboardData(
         .map((run) => ({
           id: run.id,
           title: '오늘의 운세',
-          summary: buildTodayFortuneRunSummary(run.occurredOn),
+          summary: buildTodayFortuneRunSummary(run.occurredOn, run.generatedAt),
           productId: 'today-run',
           scopeKey: `today-run:${run.id}`,
           href: `/today-fortune/runs/${run.id}`,

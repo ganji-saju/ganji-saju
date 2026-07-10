@@ -11,6 +11,7 @@
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { normalizeMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
+import { getKstParts } from '@/shared/utils/kst';
 import type { ConcernId, TodayCalendarType, TodayTimeRule } from '@/lib/today-fortune/types';
 import type { BirthInput } from '@/lib/saju/types';
 
@@ -63,8 +64,22 @@ interface TodayFortuneRunRow {
 const RUN_SELECT =
   'id, reading_id, source_session_id, occurred_on, generated_at, concern_id, counselor_id, calendar_type, time_rule, display_name, input_json, created_at';
 
-export function buildTodayFortuneRunSummary(occurredOn: string) {
-  return `${occurredOn}에 본 오늘운세 무료 풀이`;
+/**
+ * 보관함 목록 문구. 유니크 키에 source_session_id 가 들어가서 같은 날·같은 고민이라도
+ * 세션이 다르면 별도 행이 된다(예: time_rule 을 바꿔 재실행). 날짜만 쓰면 제목이 같아
+ * 구분이 안 되므로 생성 시각(KST)을 함께 보여준다.
+ */
+export function buildTodayFortuneRunSummary(occurredOn: string, generatedAt: string) {
+  const generated = new Date(generatedAt);
+  if (Number.isNaN(generated.getTime())) return `${occurredOn}에 본 오늘운세 무료 풀이`;
+
+  const { hour, minute } = getKstParts(generated);
+  const meridiem = hour < 12 ? '오전' : '오후';
+  // 0시·12시 모두 '12시'로 (0시로 표기하면 자정이 오전 0시가 돼 어색하다).
+  const clockHour = hour % 12 === 0 ? 12 : hour % 12;
+  const time = minute === 0 ? `${clockHour}시` : `${clockHour}시 ${minute}분`;
+
+  return `${occurredOn} ${meridiem} ${time}에 본 오늘운세 무료 풀이`;
 }
 
 function normalizeCalendarType(value: unknown): TodayCalendarType {
