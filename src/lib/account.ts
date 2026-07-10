@@ -17,6 +17,10 @@ import {
   listTodayFortuneResultSnapshotsForUser,
 } from '@/lib/today-fortune/result-snapshots';
 import {
+  buildTodayFortuneRunSummary,
+  listTodayFortuneRunsForUser,
+} from '@/lib/today-fortune/run-log';
+import {
   buildTarotResultSnapshotHref,
   listTarotResultSnapshotsForUser,
 } from '@/lib/tarot/result-snapshots';
@@ -191,6 +195,7 @@ export async function getAccountDashboardData(
     purchasedResults,
     todayFortuneSnapshots,
     tarotSnapshots,
+    todayFortuneRuns,
   ] =
     await Promise.all([
       supabase
@@ -230,6 +235,8 @@ export async function getAccountDashboardData(
         limit: Math.max(readingLimit, 10),
         offset: readingOffset,
       }),
+      // 2026-07-10 — 무료 오늘운세 실행기록(결정론 재현용). 유료 스냅샷과 같은 날짜면 아래에서 제거.
+      listTodayFortuneRunsForUser(user.id, Math.max(readingLimit, 10)),
     ]);
 
   assertAccountQueryOk(creditsResponse.error, '재화');
@@ -296,6 +303,21 @@ export async function getAccountDashboardData(
         createdAt: snapshot.createdAt,
         occurredOn: snapshot.occurredOn,
       })),
+      // 2026-07-10 — 무료 오늘운세는 결과 본문을 저장하지 않고 실행기록만 남긴다.
+      //   '다시보기'는 /today-fortune/runs/[id] 에서 생성 당시 now 로 결정론 재계산.
+      //   같은 날 유료 '오늘 자세히 보기'가 있으면 그쪽이 상위 호환이라 무료 항목은 숨긴다.
+      ...todayFortuneRuns
+        .filter((run) => !todayFortuneSnapshots.some((snap) => snap.occurredOn === run.occurredOn))
+        .map((run) => ({
+          id: run.id,
+          title: '오늘의 운세',
+          summary: buildTodayFortuneRunSummary(run.occurredOn),
+          productId: 'today-run',
+          scopeKey: `today-run:${run.id}`,
+          href: `/today-fortune/runs/${run.id}`,
+          createdAt: run.createdAt,
+          occurredOn: run.occurredOn,
+        })),
       ...purchasedResults
         .filter((snapshot) => {
           const identity = paidSnapshotIdentity(snapshot);

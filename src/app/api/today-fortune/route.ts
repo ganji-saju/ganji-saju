@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildFreshTodaySajuData } from '@/server/today-fortune/fresh-saju-data';
 import { buildSajuInterpretationGrounding, buildSajuReport } from '@/domain/saju/report';
 import { createClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
-import { createReading, findReadingByInput, resolveReading } from '@/lib/saju/readings';
+import {
+  createReading,
+  findReadingByInput,
+  isReadingId,
+  resolveReading,
+} from '@/lib/saju/readings';
+import { recordTodayFortuneRun } from '@/lib/today-fortune/run-log';
 import { toSlug } from '@/lib/saju/pillars';
 import { normalizeMoonlightCounselor } from '@/lib/counselors';
 import { buildTodayFortuneFreeResult } from '@/server/today-fortune/build-today-fortune';
@@ -96,7 +102,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  const sajuData = buildFreshTodaySajuData(parsed.input);
+  // 2026-07-10 — 보관함 재현('다시보기')의 앵커. 요청 시작 시각을 한 번만 고정해
+  //   sajuData 계산과 결과 빌드가 같은 `now` 를 보도록 하고, 그 값을 실행기록에 남긴다.
+  //   (기존엔 두 빌더가 각자 new Date() 를 호출 → 자정 경계에서 미세하게 어긋날 수 있었다.)
+  const now = new Date();
+  const sajuData = buildFreshTodaySajuData(parsed.input, { now });
   const supabase = await createClient();
   const {
     data: { user },
@@ -168,7 +178,31 @@ export async function POST(req: NextRequest) {
     counselorId,
     grounding: persistedGrounding,
     kasiComparison: persistedKasiComparison,
+    now,
   });
+
+  // 2026-07-10 — 보관함 '다시보기' 재현용 실행기록. 결과 본문은 저장하지 않고,
+  //   재계산에 필요한 입력(now·input·표시이름·옵션)만 남긴다(run-log.ts 주석 참조).
+  //   비차단: 기록 실패가 무료 결과 응답을 막지 않는다.
+  if (user?.id) {
+    try {
+      await recordTodayFortuneRun({
+        userId: user.id,
+        readingId: isReadingId(sourceSessionId) ? sourceSessionId : null,
+        sourceSessionId,
+        occurredOn: result.dateKey,
+        generatedAt: now,
+        concernId: result.concernId,
+        counselorId,
+        calendarType: payload.calendarType,
+        timeRule: payload.timeRule,
+        displayName: resolvedDisplayName ?? null,
+        input: parsed.input,
+      });
+    } catch {
+      // silent — 실행기록은 부가 기능.
+    }
+  }
 
   // 오늘운세 무료 LLM 풀이(플래그 ON + 로그인 시). null 이면 결정론 유지.
   if (user?.id) {
