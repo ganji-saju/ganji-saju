@@ -100,7 +100,11 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
     detail:
       '내 정보와 가족 프로필을 불러와 같은 입력 블록으로 읽고, unified birth schema를 거쳐 기본 사주 결과를 생성합니다.',
     continuity: '공통 입력 → 읽기 생성 → 사주 결과',
-    sourceRefs: ['/src/features/saju-intake/saju-intake-page.tsx', '/src/app/api/readings/route.ts'],
+    sourceRefs: [
+      '/src/app/saju/new/saju-new-client.tsx',
+      '/src/features/unified-intake/submit-saju.ts',
+      '/src/app/api/readings/route.ts',
+    ],
   },
   {
     key: 'saju-result',

@@ -542,12 +542,15 @@ export function GangiServiceCardLink({
   );
 }
 
-// ─── 5) Bottom CTA — 사주 시작 (mockup 5번 섹션, 신규) ──────────────────────
+// ─── 5) Bottom CTA — 홈 대표 진입(미결정) CTA (mockup 5번 섹션, 신규) ──────
+// Task8 — "생년월일만 알면 3초 안에 시작"은 상품(사주/오늘운세)을 특정하지 않는
+//   홈의 대표 시작 버튼이라 통합 허브(/start)로 보낸다. 상품이 명확한 카드
+//   (GANGI_HOME_CARDS 등)는 각자 라우트를 그대로 유지한다.
 export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
   return (
-    <section className="px-4 pt-4 pb-3" aria-label="사주 시작 CTA">
+    <section className="px-4 pt-4 pb-3" aria-label="운세 시작 CTA">
       <Link
-        href="/saju/new"
+        href="/start"
         onClick={onTrack}
         className="flex items-center gap-3.5 rounded-[20px] p-4 no-underline"
         style={{ background: 'var(--app-ink)', color: '#fff' }}

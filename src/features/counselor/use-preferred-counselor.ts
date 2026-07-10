@@ -37,7 +37,7 @@ function writeStoredCounselorPreference(counselorId: MoonlightCounselorId) {
   );
 }
 
-async function fetchProfileCounselorPreference() {
+export async function fetchProfileCounselorPreference() {
   try {
     const response = await fetch('/api/profile', { cache: 'no-store' });
     const payload = (await response.json().catch(() => null)) as ProfileCounselorPayload | null;
