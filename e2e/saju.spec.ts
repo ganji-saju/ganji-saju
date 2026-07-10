@@ -169,13 +169,13 @@ test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
     await page.waitForLoadState('networkidle');
     const sajuScores = await extractAreaScores(page);
 
-    // 2. /today-fortune 은 입력 form 페이지 → "무료 결과 보기" 클릭해서 결과 페이지로 이동.
+    // 2. /today-fortune 은 입력 form 페이지 → "오늘 운세 보기" 클릭해서 결과 페이지로 이동.
     //    (form 은 logged-in 사용자의 MY 프로필이 자동 채워짐)
     await page.goto('/today-fortune');
     await page.waitForLoadState('networkidle');
 
-    const submitButton = page.getByRole('button', { name: '무료 결과 보기' });
-    await expect(submitButton, '/today-fortune 의 "무료 결과 보기" 버튼').toBeVisible({
+    const submitButton = page.getByRole('button', { name: '오늘 운세 보기' });
+    await expect(submitButton, '/today-fortune 의 "오늘 운세 보기" 버튼').toBeVisible({
       timeout: 10_000,
     });
     await submitButton.click();
