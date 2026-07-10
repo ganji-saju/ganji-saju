@@ -164,9 +164,11 @@ function formatBirthProfileSummary(profile: UnifiedBirthProfile) {
 }
 
 export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted }: UnifiedIntakeProps) {
-  const [profile, setProfile] = useState<UnifiedBirthProfile>(() => loadBirthProfile() ?? createEmptyBirthProfile());
-  // 마운트 시 완전한 프로필로 프리필됐으면 요약카드부터 보여주고, 아니면 바로 입력폼을 편다.
-  const [formExpanded, setFormExpanded] = useState<boolean>(() => !hasCompleteBirthProfile(profile));
+  // SSR 안전: 초기 state 는 서버·클라 동일한 빈 프로필로 결정론적 렌더(localStorage 는 마운트 후 effect 에서 seed).
+  //   render-time 에 localStorage 를 읽으면 서버(null)↔클라(저장값) 불일치로 hydration mismatch 발생.
+  const [profile, setProfile] = useState<UnifiedBirthProfile>(createEmptyBirthProfile);
+  // 기본은 입력폼 펼침(빈 폼). 저장된 완전한 프로필이 마운트 후 로드되면 effect 가 요약카드(false)로 전환.
+  const [formExpanded, setFormExpanded] = useState(true);
   const [showInterests, setShowInterests] = useState(false);
   const [error, setError] = useState('');
 
@@ -184,12 +186,22 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     onStarted?.();
   }
 
-  // 프리필 우선순위: (1) 로그인 시 /api/profile silent 조회, (2) 없으면 loadBirthProfile() 이미 초기 state 로 반영됨.
+  // 프리필 우선순위(마운트 후, hydration mismatch 방지 위해 render-time 이 아닌 effect 에서):
+  //   (1) 게스트 로컬 프로필(localStorage)을 먼저 sync seed,
+  //   (2) 로그인 사용자면 /api/profile 결과가 로컬 값을 override.
   // birth-info-stepper.tsx loadProfile({ silent: true }) 패턴 이식.
   useEffect(() => {
     if (profileFetchAttemptedRef.current) return;
     profileFetchAttemptedRef.current = true;
 
+    // (1) localStorage seed — sync 이므로 아래 async /api/profile override 보다 항상 먼저 반영된다.
+    const stored = loadBirthProfile();
+    if (stored && hasCompleteBirthProfile(stored) && !hasUserEditedRef.current) {
+      setProfile(stored);
+      setFormExpanded(false);
+    }
+
+    // (2) 로그인 사용자면 /api/profile 이 localStorage 값을 덮어쓴다.
     (async () => {
       try {
         const response = await fetch('/api/profile', { cache: 'no-store' });
