@@ -11,7 +11,9 @@ const PUBLIC_CORE_COPY_FILES = [
   'src/app/today-fortune/page.tsx',
   'src/app/today-fortune/loading.tsx',
   'src/features/today-fortune/today-fortune-experience.tsx',
-  'src/components/today-fortune/birth-info-stepper.tsx',
+  // 2026-07-10 — 죽은 birth-info-stepper.tsx 제거. 오늘운세 입력 표면은 UnifiedIntake 로
+  //   옮겨갔으므로 정직성 가드 스캔 대상도 함께 이동한다(구멍 방지).
+  'src/features/unified-intake/unified-intake.tsx',
   'src/app/membership/page.tsx',
   'src/content/moonlight.ts',
   'src/components/seo/paid-funnel-grid.tsx',
