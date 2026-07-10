@@ -3017,7 +3017,7 @@ Vercel 대시보드: https://vercel.com/ganji-sajus-projects/ganji-saju
 
 ---
 
-## 2026-07-10 세션 — 보관함 오늘운세 다시보기 (PR #627) + main E2E red 복구 (PR #628)
+## 2026-07-10 세션 — 보관함 오늘운세 다시보기 (PR #627·#629) + main E2E red 복구 (PR #628)
 
 ### PR #627 — 보관함 '오늘운세 다시보기' 결정론적 재현
 
