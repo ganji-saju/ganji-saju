@@ -3124,9 +3124,58 @@ migration 069 적용 후 운영 DB 실측에서 드러난 UX 워트. `today_fort
 
 06-27 실패는 결제창이 멀쩡히 뜨고 **사용자가 카드정보를 다 넣은 마지막 단계**에서 났다. 한 시간 동안 아무도 몰랐다. `prepare` 에서 `auditNicepayKeyPair()` 를 돌려 짝이 깨졌으면 주문 생성 전에 503 + `prepare_blocked(reason=nicepay_key_pair_invalid)`. `prepare_attempt` **뒤**에 둬서 `blocked ⊆ attempt` 불변식 유지(#593 교훈). 구 단일키 구성은 양쪽 출처가 같아 계속 통과.
 
-### 후속
-- **`webhook/toss` 에는 취소 회수 로직이 아예 없다.** 현재 PG 가 나이스페이라 실노출 0이지만 PG 되돌리면 같은 사고.
-- **`NICEPAY_API_BASE` 제거 권고** — 모드를 무시하고 덮어쓰는 지뢰(#506 단일 토글 설계를 깬다). 제거 전까지는 `api_base_mode_mismatch` 가 방어.
+---
+
+## 2026-07-10 세션 — 지표 계측 복구 (PR #634·#635)
+
+**발단**: "가입 병목을 보자"(방문 2,540건 / 가입 0명). 파보니 **병목이 아니라 지표가 얼어 있었다.**
+
+### PR #634 — canonical 301 이 **모든 Vercel 크론**을 막고 있었다
+
+Vercel Cron 은 프로덕션 배포의 `*.vercel.app` URL 로 핸들러를 호출한다. `proxy.ts` 의 canonical redirect 가 그 호스트를 **301** 로 `ganjisaju.kr` 에 튕겼고(`site.ts` `shouldRedirectHost`), 크론은 리다이렉트를 따라가지 않는다. → `CRON_SECRET` 을 검사하는 핸들러에 **도달조차 못 했다.**
+
+프로덕션 로그 실측:
+```
+11:00:10 GET /api/admin/users/summary/refresh  301
+11:10:04 GET /api/admin/metrics/rollup         301
+11:00:25 GET /api/payments/reconcile           301
+```
+
+**영향**: 알림 발송(6회/일) · 결제 대사 · 지표 롤업 · 가입자 요약 갱신 · 멱등성 감사 **전부 사망**.
+
+`admin_user_summary` 가 2026-07-07 06:52 이후 정지 → 거기서 파생되는 `metrics_daily.new_signups` 가 얼어붙어 **"최근 7일 가입 0명"이라는 거짓 지표**를 만들었다(`auth.users` 직접 조회 시 07-08 가입 1명). 지금까지 지표가 갱신된 건 super_admin 콘솔 **수동 트리거**였고, 그 운영 관행 자체가 이 버그의 우회책이었다.
+
+**수정**: `/api/*` 를 canonical redirect 에서 제외(`isCanonicalRedirectExemptPath`). API 는 SEO 정규화 대상이 아니고 크론/웹훅은 각자 `CRON_SECRET`·서명으로 보호된다. 페이지 정규화(www·punycode·apex)는 유지.
+
+**배포 후 실측**: `.vercel.app` 의 `/api/admin/metrics/rollup` 이 **301 → 401**(핸들러 도달, 시크릿 없어 거부). `/`·`/today-fortune` 은 여전히 301, `ganjisaju.kr` 200. 부수 발견: `/api/notifications/dispatch` 는 401이 아니라 **503** — 웹푸시 VAPID env 미설정이라 크론이 살아나도 알림은 안 나간다(별건).
+
+### PR #635 — 방문 지표가 크롤러를 사람으로 세고 있었다
+
+`site_visits` 2,540행이 전부 서로 다른 `vid` 에 `page_views=1`, 진입 경로가 `/zodiac`·`/star-sign`·`/dialogue` 각 57, `/help`·`/support/faq` 각 56 으로 균일. 런타임 로그도 6시간 동안 페이지마다 55~139회 균등. 사이트맵 스윕이다.
+
+`shouldSkipVisitAnalytics` 는 admin 경로·프리뷰 호스트·제외 IP 만 걸렀다 → JS 실행 크롤러는 그대로 집계. `isBotUserAgent()` 추가(서버 `/api/visit` 에서만 검사, 클라 `VisitPing` 은 UA 미전달 → 기존 동작 불변).
+
+**⚠️ 오탐이 치명적**: 인스타 유입 223건이 현재 유일하게 식별되는 사람 유입이다. 실제 UA 문자열로 실행해 확인 — 인스타·카카오·네이버 인앱은 HUMAN, Googlebot·HeadlessChrome·GPTBot·ClaudeBot·빈 UA 는 BOT.
+
+기존 2,540행은 **소급 삭제하지 않았다**(과거 비교가 깨진다). 필터 적용 후 며칠치로 실제 사람 트래픽 규모를 다시 잰다.
+
+### "가입 병목"은 없었다
+
+가입은 결제·MY 화면에서만 요구된다. 무료 풀이는 게스트로 가능(2026-07-10 생성 37건 중 31건 게스트). 결제 퍼널에 `prepare_blocked(reason=unauthenticated)` **0건** — 아무도 로그인 벽에 부딪힌 적이 없다. **결제 버튼 자체를 안 누른다.** 방문→가입 전환이 낮은 게 아니라, 가입할 이유가 결제 직전에만 생기는 설계다.
+
+---
+
+## 2026-07-10 세션 — 결제·지표 조사 종합 후속
+
+**결제**
+- **`webhook/toss` 에는 취소 회수 로직이 아예 없다.** 현재 PG 가 나이스페이라 실노출 0이지만 PG 되돌리면 같은 사고(#632 와 동일 유형).
+- **`NICEPAY_API_BASE` 제거 권고** — 모드를 무시하고 덮어쓰는 지뢰(#506 단일 토글 설계를 깬다). 제거 전까지는 `api_base_mode_mismatch` 가 방어(#633).
 - `nicepay-checkout.ts:10` SDK URL 이 라이브 하드코딩 — 샌드박스 모드에서도 라이브 JS 로드.
-- 클라이언트 퍼널(`premium_teaser_viewed`→`unlock_clicked`)과 서버 퍼널(`payment_funnel_events`)이 조인되지 않아 **무료 조회 대비 결제 전환율을 계산할 수 없다.** 페이월을 바꾸기 전에 이어야 효과 측정이 가능.
-- 페이월 재구성은 결제 수리 → 가입 병목 → 측정 연결 **다음**. 무료를 깎지 말고 **지금 안 보이는 유료 증분을 블러로 드러내는** 방향(제안서 §4 참조).
+
+**계측**
+- `/api/notifications/dispatch` 는 크론 복구 후에도 **503**(웹푸시 VAPID env 미설정). 알림은 여전히 안 나간다.
+- 클라이언트 퍼널(`premium_teaser_viewed`→`unlock_clicked`)과 서버 퍼널(`payment_funnel_events`)이 조인되지 않아 **무료 조회 대비 결제 전환율을 계산할 수 없다.**
+- 봇 필터 적용 후 며칠치 숫자로 **실제 사람 트래픽 규모**를 다시 잰다(기존 2,540행은 소급 삭제 안 함).
+
+**페이월 (순서 주의)**
+결제 수리 ✅ → 계측 복구 ✅ → **측정 연결** → 그다음 페이월. 무료를 깎지 말고 **지금 안 보이는 유료 증분을 블러로 드러내는** 방향(제안서 §4). 점수 산출내역은 유료로 잠그지 말고 숫자 합산식만 기본 접힘(§5).
