@@ -5,7 +5,8 @@ export type VisitAnalyticsSkipReason =
   | 'admin_path'
   | 'non_production_deployment'
   | 'non_canonical_host'
-  | 'excluded_ip';
+  | 'excluded_ip'
+  | 'bot_user_agent';
 
 export interface VisitAnalyticsFilterInput {
   path: string | null | undefined;
@@ -14,6 +15,30 @@ export interface VisitAnalyticsFilterInput {
   deploymentEnv?: string | null;
   clientIp?: string | null;
   excludedIps?: string | null;
+  /** 서버(/api/visit)만 안다. 클라이언트(VisitPing)는 전달하지 않으므로 undefined = 검사 안 함. */
+  userAgent?: string | null;
+}
+
+// 2026-07-10 — 봇 UA 패턴. JS 를 실행해 비콘까지 쏘는 크롤러가 방문 지표를 오염시켰다
+//   (site_visits 2,540행이 전부 다른 vid·page_views=1, 진입 경로가 페이지마다 균일).
+//   ⚠️ 인스타/카카오 인앱 브라우저는 사람이다. UA 에 'Instagram'·'KAKAOTALK' 이 들어가지만
+//     아래 패턴엔 걸리지 않는다(테스트로 고정).
+const BOT_UA_PATTERNS: readonly RegExp[] = [
+  /bot\b/i, // Googlebot, bingbot, PetalBot, AhrefsBot, SemrushBot, Twitterbot …
+  /\bbots?\b/i,
+  /crawler|spider|slurp|scrapy/i,
+  /baiduspider|yandex/i,
+  /headless|phantomjs|puppeteer|playwright|selenium|lighthouse/i,
+  /curl\/|wget\/|python-requests|node-fetch|axios\/|go-http-client|okhttp|java\//i,
+  /facebookexternalhit|whatsapp\/|telegram|discord|applebot|embedly|preview/i,
+  /pingdom|uptimerobot|gtmetrix|newrelic|datadog/i,
+];
+
+/** 정상 브라우저는 UA 를 항상 보낸다 → 없거나 빈 값이면 봇으로 본다. */
+export function isBotUserAgent(userAgent: string | null | undefined): boolean {
+  const ua = String(userAgent ?? '').trim();
+  if (!ua) return true;
+  return BOT_UA_PATTERNS.some((pattern) => pattern.test(ua));
 }
 
 function normalizePath(value: string | null | undefined): string {
@@ -116,6 +141,9 @@ export function clientIpFromHeaders(headers: Headers): string | null {
 
 export function shouldSkipVisitAnalytics(input: VisitAnalyticsFilterInput): VisitAnalyticsSkipReason | null {
   if (isAdminAnalyticsPath(input.path)) return 'admin_path';
+
+  // userAgent 를 넘긴 호출부(서버)에서만 검사. 클라이언트는 UA 를 모른다.
+  if (input.userAgent !== undefined && isBotUserAgent(input.userAgent)) return 'bot_user_agent';
 
   const deploymentEnv = String(input.deploymentEnv ?? '').trim();
   if (deploymentEnv && deploymentEnv !== 'production') return 'non_production_deployment';
