@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
     deploymentEnv: process.env.VERCEL_ENV,
     clientIp: clientIpFromHeaders(req.headers),
     excludedIps: process.env.ANALYTICS_EXCLUDED_IPS,
+    // 2026-07-10 — JS 를 실행해 비콘까지 쏘는 크롤러가 방문 지표를 오염시켰다.
+    //   UA 는 서버만 볼 수 있으므로 여기서만 검사한다.
+    userAgent: req.headers.get('user-agent'),
   });
   if (skipReason) return NextResponse.json({ ok: true, skipped: skipReason });
 
