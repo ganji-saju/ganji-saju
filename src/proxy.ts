@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CANONICAL_REDIRECT_STATUS, CANONICAL_SITE_URL, shouldRedirectHost } from '@/lib/site';
+import {
+  CANONICAL_REDIRECT_STATUS,
+  CANONICAL_SITE_URL,
+  isCanonicalRedirectExemptPath,
+  shouldRedirectHost,
+} from '@/lib/site';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 const supabaseProxyUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -54,7 +59,10 @@ export async function proxy(req: NextRequest) {
   let response = NextResponse.next({ request: req });
   const { pathname } = req.nextUrl;
 
-  if (shouldRedirectToCanonicalHost(req)) {
+  // Vercel Cron 은 프로덕션 배포의 *.vercel.app URL 로 호출된다. canonical 301 이 그걸 튕기면
+  //   크론은 리다이렉트를 따라가지 않아 핸들러가 영영 실행되지 않는다(2026-07-10 발견).
+  //   API 는 SEO 정규화 대상이 아니므로 제외한다 — 각 라우트가 CRON_SECRET·서명으로 보호된다.
+  if (!isCanonicalRedirectExemptPath(pathname) && shouldRedirectToCanonicalHost(req)) {
     return NextResponse.redirect(buildCanonicalUrl(req), CANONICAL_REDIRECT_STATUS);
   }
 

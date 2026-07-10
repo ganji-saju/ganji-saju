@@ -120,3 +120,18 @@ export function shouldRedirectHost(hostname: string): boolean {
   if (hostname.endsWith('.vercel.app')) return true;
   return LEGACY_SITE_HOSTS.has(hostname);
 }
+
+/**
+ * canonical(301) redirect 를 건너뛸 경로인지 판정.
+ *
+ * 2026-07-10 — Vercel Cron 은 프로덕션 배포의 `*.vercel.app` URL 로 핸들러를 호출한다.
+ *   그런데 shouldRedirectHost 가 그 호스트를 301 로 ganjisaju.kr 에 튕겼고, 크론은
+ *   리다이렉트를 따라가지 않는다 → **모든 크론이 한 번도 실행되지 않았다**
+ *   (알림 발송·결제 대사·지표 롤업·가입자 요약 갱신·멱등성 감사).
+ *
+ *   API 경로는 검색엔진 정규화 대상이 아니고, 크론/웹훅 라우트는 각자
+ *   CRON_SECRET·서명 검증으로 보호된다. 따라서 /api/* 는 redirect 에서 제외한다.
+ */
+export function isCanonicalRedirectExemptPath(pathname: string): boolean {
+  return pathname.startsWith('/api/');
+}
