@@ -3074,3 +3074,59 @@ migration 069 적용 후 운영 DB 실측에서 드러난 UX 워트. `today_fort
 
 ### 후속
 - `docs/audit/incomplete-ui-inventory.md` 등 문서의 birth-info-stepper 참조는 **시점 기록**이라 의도적으로 유지
+
+---
+
+## 2026-07-10 세션 — 결제 전수 진단 (PR #631·#632·#633)
+
+**발단**: "무료 오늘운세가 너무 잘 나와서 결제를 안 하는 것 같다. 블러 처리하고 결제 팝업을 띄우면 어떨까?"
+
+**데이터가 가설을 뒤집었다.** 운영 DB 실측:
+
+| 항목 | 값 |
+|---|---|
+| `payment_orders` | 24건, `paid` **0건**, 누적 매출 **0원** |
+| `payment_failed` 4건 | 전부 `last_error = "사용자 정보가 존재하지 않습니다."` (2026-06-27 19:25~20:23 KST) |
+| 최근 7일 | 방문 2,540건 · 가입 **0** · 결제 시도 **1** · 결제 성공 **0** |
+
+퍼널은 무료 콘텐츠가 아니라 **가입·진입**에서 무너진다. 페이월을 조이는 결정은 (a) 결제가 한 번도 성공한 적 없고 (b) 효과를 측정할 표본이 없어 지금 내릴 수 없다. 전체 분석 → [`docs/proposals/2026-07-10-today-fortune-paywall-and-payment-diagnosis.md`](docs/proposals/2026-07-10-today-fortune-paywall-and-payment-diagnosis.md)
+
+⚠️ `metrics_daily.visitors` 는 `page_views` 와 항상 같다 — **고유 방문자가 아니라 방문 행 수**다. 방문 기록은 2026-07-04부터만 존재.
+
+### 근본원인 — 06-27 승인 실패
+
+`nicepay-env.getNicepayClientKey()` 와 `nicepay.getSecretKey()` 가 모드별 키가 없으면 **각각 독립적으로** 공용 키로 폴백한다 → `live clientKey + 공용(샌드박스) secretKey` 같은 짝이 조용히 만들어지고, 나이스페이는 그 Basic 인가를 "사용자 정보가 존재하지 않습니다." 로 거절한다. 같은 날 **18:06 #506(모드별 키 이름 도입)** 직후 1시간에만 실패가 몰린 것과 정합적이다. 이후 env 를 채우자 실패가 멎었다.
+
+**PR #631** — 추측으로 고치지 않고 증거를 얻는 도구:
+- `nicepay-config-audit.ts` — 키 출처(`mode`/`fallback`/`missing`)·접두사(`R2_`=live, `S2_`=sandbox)·`NICEPAY_API_BASE` 의 모드 덮어쓰기 감사. secretKey 값 미노출(길이만)
+- `probeNicepayCredentials()` — 존재하지 않는 tid 조회 1회로 **실결제 없이** Basic 인가 유효성 판별
+- `GET /api/admin/payments/nicepay-health` (super_admin 전용)
+
+**프로덕션 실측 결과**: `audit.ok=true`, `problems=[]`, probe `resultCode=U120`("TID가 유효하지 않습니다") → **인가는 정상**. 즉 지금 결제는 깨져 있지 않다.
+
+### 실결제 검증에서 잡은 진짜 버그 — PR #632
+
+서비스 **첫 성공 결제**(2026-07-10 17:29, `taste_score_total` 9,900원)로 승인·지급을 증명했고, PG 취소로 환불까지 확인했다. 그런데:
+
+```
+17:29:39  score-total 이용권 지급
+17:31:03  나이스페이 취소 통보 → 주문 canceled
+이후      product_entitlements 행이 그대로 남음 → 환불 후에도 유료 콘텐츠 열람 가능
+```
+
+`webhook/nicepay` 의 회수 분기가 `pkg.credits > 0` 였다. `score-total`·`today-detail`·`year-core`·`lifetime` 은 `credits=0` 이라 걸리지 않는다. `revokeProductEntitlement` 는 `/api/admin/refund` 에서만 호출됐다 → **PG·카드사 취소 시 돈은 돌려주고 상품은 영구히 남는다.**
+
+수정: 회수를 패키지 정의가 아니라 **실제 지급 기록**(`order_id` 로 열거)에 맞춘다. 번들이면 구성품 전부. 순수 함수 `buildCancellationRevokePlan()` + `listProductEntitlementsByOrder()`. 테스트 7 케이스 TDD.
+
+(테스트로 남은 이용권 1건은 운영 DB 에서 제거 — 16 → 15)
+
+### 조용히 새지 않게 — PR #633
+
+06-27 실패는 결제창이 멀쩡히 뜨고 **사용자가 카드정보를 다 넣은 마지막 단계**에서 났다. 한 시간 동안 아무도 몰랐다. `prepare` 에서 `auditNicepayKeyPair()` 를 돌려 짝이 깨졌으면 주문 생성 전에 503 + `prepare_blocked(reason=nicepay_key_pair_invalid)`. `prepare_attempt` **뒤**에 둬서 `blocked ⊆ attempt` 불변식 유지(#593 교훈). 구 단일키 구성은 양쪽 출처가 같아 계속 통과.
+
+### 후속
+- **`webhook/toss` 에는 취소 회수 로직이 아예 없다.** 현재 PG 가 나이스페이라 실노출 0이지만 PG 되돌리면 같은 사고.
+- **`NICEPAY_API_BASE` 제거 권고** — 모드를 무시하고 덮어쓰는 지뢰(#506 단일 토글 설계를 깬다). 제거 전까지는 `api_base_mode_mismatch` 가 방어.
+- `nicepay-checkout.ts:10` SDK URL 이 라이브 하드코딩 — 샌드박스 모드에서도 라이브 JS 로드.
+- 클라이언트 퍼널(`premium_teaser_viewed`→`unlock_clicked`)과 서버 퍼널(`payment_funnel_events`)이 조인되지 않아 **무료 조회 대비 결제 전환율을 계산할 수 없다.** 페이월을 바꾸기 전에 이어야 효과 측정이 가능.
+- 페이월 재구성은 결제 수리 → 가입 병목 → 측정 연결 **다음**. 무료를 깎지 말고 **지금 안 보이는 유료 증분을 블러로 드러내는** 방향(제안서 §4 참조).
