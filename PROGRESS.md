@@ -3044,6 +3044,19 @@ Vercel 대시보드: https://vercel.com/ganji-sajus-projects/ganji-saju
 
 **교훈**: UI 카피를 바꾸는 PR 은 e2e 셀렉터 grep 을 동반해야 한다. CI red 를 "원래 그런 것"으로 넘기면 다음 PR 이 남의 회귀를 뒤집어쓴다.
 
+### PR #629 — 보관함 목록 문구에 생성 시각 표기
+
+migration 069 적용 후 운영 DB 실측에서 드러난 UX 워트. `today_fortune_runs` 유니크 키에 `source_session_id` 가 들어가서 **같은 날·같은 고민이라도 세션이 다르면 별도 행**이 된다(실제로 2026-07-10 하루에 `standard` / `trueSolarTime` 두 행). 목록 문구가 날짜만 써서 제목이 똑같은 '오늘의 운세' 항목 두 개가 구분되지 않았다.
+
+- `buildTodayFortuneRunSummary(occurredOn, generatedAt)` → `2026-07-10 오후 2시 52분에 본 오늘운세 무료 풀이`
+- 0시·12시는 `12시`(자정을 `0시` 로 쓰면 어색), 0분은 생략, `generatedAt` 무효 시 날짜-only 폴백
+- 기존 `getKstParts` 재사용(새 포맷 유틸 안 만듦)
+- TDD: `run-log.test.ts` 4 케이스 red 확인 후 구현. 커스텀 176 pass · vitest 144/144 · tsc 클린
+
+### migration 069 — 적용 완료 (2026-07-10)
+
+운영 DB 실측 검증: 13 컬럼 · RLS on · 본인 SELECT 정책 1 · 인덱스 3. 배포 직후 실행기록이 정상 적재됐고, `generated_at`(요청 시작) < `created_at`(INSERT) 형태 확인 — 재현 앵커가 저장 시점이 아니라 요청 시점으로 박혔다는 뜻.
+
 ### 후속
-- migration 069 적용(운영 DB)
 - 죽은 `birth-info-stepper.tsx` 제거 (`profile-linkage-audit.ts`, `public-commercialization-copy.test.ts` 참조도 함께 정리)
+- 보관함 '다시보기' 실제 화면 확인(로그인 필요 — 자동 검증 미커버 구간)
