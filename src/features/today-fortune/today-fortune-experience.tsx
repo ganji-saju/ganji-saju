@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiLoadingOverlay, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
-import { BirthInfoStepper } from '@/components/today-fortune/birth-info-stepper';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
 import { HitMemoWidget } from '@/components/today-fortune/hit-memo-widget';
 import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-risk-cards';
@@ -15,7 +14,9 @@ import { TodayConcernSelector } from '@/components/today-fortune/today-concern-s
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneScoreGrid } from '@/components/today-fortune/today-fortune-score-grid';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
-import { usePreferredCounselor } from '@/features/counselor/use-preferred-counselor';
+import { UnifiedIntake } from '@/features/unified-intake/unified-intake';
+import { submitTodayFromProfile } from '@/features/unified-intake/submit-today';
+import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneFeedbackAccuracyLabel } from '@/lib/fortune-feedback';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
@@ -26,28 +27,7 @@ import {
   type StoredHitMemoSession,
 } from '@/lib/today-fortune/hit-memo';
 import { markPendingUnlock } from '@/lib/today-fortune/unlock-marker';
-import type {
-  ConcernId,
-  TodayFortuneBirthPayload,
-  TodayFortuneFreeResult,
-} from '@/lib/today-fortune/types';
-
-const INITIAL_DRAFT: TodayFortuneBirthPayload = {
-  concernId: 'general',
-  calendarType: 'solar',
-  timeRule: 'standard',
-  year: '',
-  month: '',
-  day: '',
-  hour: '',
-  minute: '',
-  unknownBirthTime: false,
-  gender: '',
-  birthLocationCode: '',
-  birthLocationLabel: '',
-  birthLatitude: '',
-  birthLongitude: '',
-};
+import type { ConcernId, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 
 const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body: string }>> = {
   love_contact: [
@@ -77,35 +57,14 @@ const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body
 };
 
 
-interface TodayFortuneApiResponse {
-  ok?: boolean;
-  result?: TodayFortuneFreeResult;
-  error?: string;
-}
-
-// PR #166 — prefix 버전업. PR #165 점수 통일 / PR #166 이름 주입 이전의 옛 캐시는 자동 무효화.
-const TODAY_RESULT_STORAGE_PREFIX = 'moonlight:today-fortune:result:v3:';
-
-// 2026-05-15: 일자별 캐시 분리 — 어제 결과가 오늘 화면에 그대로 보이지 않도록
-// sourceSessionId 만 키로 쓰던 sessionStorage 에 dateKey 를 함께 붙인다.
-function buildResultStorageKey(sourceSessionId: string, dateKey: string) {
-  return `${TODAY_RESULT_STORAGE_PREFIX}${sourceSessionId}:${dateKey}`;
-}
-
 export function TodayFortuneExperience({
   initialConcernId,
 }: {
   initialConcernId?: string;
 }) {
   const router = useRouter();
-  const { counselorId } = usePreferredCounselor();
   const [expanded, setExpanded] = useState(false);
   const [concernId, setConcernId] = useState<ConcernId>(normalizeConcernId(initialConcernId));
-  const [draft, setDraft] = useState<TodayFortuneBirthPayload>({
-    ...INITIAL_DRAFT,
-    concernId: normalizeConcernId(initialConcernId),
-  });
-  const [hasTrackedBirthStart, setHasTrackedBirthStart] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
@@ -135,84 +94,24 @@ export function TodayFortuneExperience({
     setPendingHitMemo(getPendingHitMemoSession());
   }, []);
 
-  function updateDraft(patch: Partial<TodayFortuneBirthPayload>) {
-    setDraft((current) => ({ ...current, ...patch, concernId }));
-  }
-
-  function handleStarted() {
-    if (hasTrackedBirthStart) return;
-    trackMoonlightEvent('birth_form_started', {
-      from: 'today-fortune',
-      concern: concernId,
-    });
-    setHasTrackedBirthStart(true);
-  }
-
-  async function handleSubmit() {
+  // Task6 — BirthInfoStepper + handleSubmit(구 POST /api/today-fortune 바디+결과캐시+네비게이션)를
+  // UnifiedIntake(intent="today") + submitTodayFromProfile 로 교체. 요청 계약(캐시 키·결과 href)은
+  // submitTodayFromProfile(src/features/unified-intake/submit-today.ts) 이 동일하게 이식해 보존한다.
+  // /saju/new (saju-new-client.tsx handleResolve) 와 동일한 submitting 가드 패턴: 성공 시 loading 을
+  // 되돌리지 않고(페이지 전환 완료까지 overlay 유지), 실패 시에만 복귀.
+  async function handleResolve(profile: UnifiedBirthProfile) {
+    if (loading) return;
     setLoading(true);
     setErrorMessage(null);
-    // PR #162 — 12간지 모션 최소 노출 시간 가드 (intake 와 동일 패턴).
-    // 결과 페이지의 loading.tsx 가 같은 모션을 이어받으므로 짧게.
-    const MIN_LOADING_MS = 600;
-    const loadingStartedAt = Date.now();
-    let didNavigate = false;
 
     try {
-      const response = await fetch('/api/today-fortune', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...draft,
-          concernId,
-          counselorId,
-        }),
-      });
-      const data = (await response.json().catch(() => null)) as TodayFortuneApiResponse | null;
-
-      if (!response.ok || !data?.ok || !data.result) {
-        setErrorMessage(data?.error ?? '무료 결과를 만드는 중 오류가 있었습니다.');
-        return;
-      }
-
-      // PR #162 — setFreeResult 제거. 이전 코드는 router.push 직전에 freeResult 를
-      // state 에 set 해서 현재 페이지에 inline 카드들이 잠깐 노출됐다 사라지는 어색한
-      // 흐름이 있었음. 이제 sessionStorage 만 저장 → 결과 페이지가 읽어서 표시.
-      try {
-        window.localStorage.setItem('moonlight:fortune-session:last', data.result.sourceSessionId);
-        window.sessionStorage.setItem(
-          buildResultStorageKey(data.result.sourceSessionId, data.result.dateKey),
-          JSON.stringify(data.result)
-        );
-      } catch {
-        // Private browsing can block storage; navigation still continues.
-      }
-      trackMoonlightEvent('birth_form_completed', {
-        from: 'today-fortune',
-        concern: concernId,
-      });
-      trackMoonlightEvent('today_free_result_viewed', {
-        from: 'today-fortune',
-        concern: data.result.concernId,
-        sourceSessionId: data.result.sourceSessionId,
-      });
-
-      const nextHref = `/today-fortune/result?sourceSessionId=${encodeURIComponent(data.result.sourceSessionId)}&concern=${encodeURIComponent(data.result.concernId)}`;
-      router.prefetch(nextHref);
-
-      // 모션 최소 노출 시간 보장.
-      const elapsed = Date.now() - loadingStartedAt;
-      if (elapsed < MIN_LOADING_MS) {
-        await new Promise((resolve) => setTimeout(resolve, MIN_LOADING_MS - elapsed));
-      }
-      router.push(nextHref);
-      didNavigate = true;
-    } catch {
-      setErrorMessage('무료 결과를 만드는 중 네트워크 오류가 있었습니다.');
-    } finally {
-      // 페이지 전환 완료까지 overlay 유지 (intake 와 동일 패턴 — didNavigate 가드).
-      if (!didNavigate) {
-        setLoading(false);
-      }
+      const href = await submitTodayFromProfile(profile, { concernId });
+      router.push(href);
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : '무료 결과를 만드는 중 오류가 있었습니다.'
+      );
+      setLoading(false);
     }
   }
 
@@ -289,7 +188,6 @@ export function TodayFortuneExperience({
           value={concernId}
           onChange={(next) => {
             setConcernId(next);
-            setDraft((current) => ({ ...current, concernId: next }));
             setFreeResult(null);
             trackMoonlightEvent('today_concern_selected', {
               from: 'today-fortune',
@@ -309,14 +207,13 @@ export function TodayFortuneExperience({
           />
         ) : null}
 
-        <BirthInfoStepper
-          draft={draft}
-          onChange={updateDraft}
-          onStarted={handleStarted}
-          onSubmit={handleSubmit}
-          loading={loading}
-          errorMessage={errorMessage}
-        />
+        <UnifiedIntake intent="today" submitting={loading} onResolve={handleResolve} />
+
+        {errorMessage ? (
+          <p role="alert" className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">
+            {errorMessage}
+          </p>
+        ) : null}
 
         {freeResult ? (
           <>
