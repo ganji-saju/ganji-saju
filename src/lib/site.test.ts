@@ -9,6 +9,7 @@ import {
   getCanonicalUrl,
   getSiteUrl,
   isCanonicalHost,
+  isCanonicalRedirectExemptPath,
   shouldRedirectHost,
 } from './site';
 
@@ -57,6 +58,28 @@ test('shouldRedirectHost — canonical (apex) / localhost 는 false', () => {
   assert.equal(shouldRedirectHost('ganjisaju.kr'), false);
   assert.equal(shouldRedirectHost('localhost'), false);
   assert.equal(shouldRedirectHost('127.0.0.1'), false);
+});
+
+// 2026-07-10 — Vercel Cron 은 프로덕션 배포의 *.vercel.app URL 로 호출되는데,
+//   canonical redirect(301)가 그걸 ganjisaju.kr 로 튕겼다. 크론은 리다이렉트를 따라가지
+//   않으므로 **모든 크론 핸들러가 한 번도 실행되지 않았다**(알림·결제대사·지표롤업·요약갱신).
+//   API 경로는 SEO 정규화 대상이 아니므로 canonical redirect 에서 제외한다.
+test('isCanonicalRedirectExemptPath — /api/* 는 canonical redirect 대상에서 제외', () => {
+  assert.equal(isCanonicalRedirectExemptPath('/api/admin/metrics/rollup'), true);
+  assert.equal(isCanonicalRedirectExemptPath('/api/admin/users/summary/refresh'), true);
+  assert.equal(isCanonicalRedirectExemptPath('/api/payments/reconcile'), true);
+  assert.equal(isCanonicalRedirectExemptPath('/api/notifications/dispatch'), true);
+});
+
+test('isCanonicalRedirectExemptPath — 페이지 경로는 계속 정규화한다', () => {
+  assert.equal(isCanonicalRedirectExemptPath('/'), false);
+  assert.equal(isCanonicalRedirectExemptPath('/today-fortune'), false);
+  assert.equal(isCanonicalRedirectExemptPath('/saju/new'), false);
+});
+
+test('isCanonicalRedirectExemptPath — /api 를 접두사로 가진 페이지는 제외하지 않는다', () => {
+  assert.equal(isCanonicalRedirectExemptPath('/apidocs'), false, '세그먼트 경계로만 매칭');
+  assert.equal(isCanonicalRedirectExemptPath('/api'), false, '/api 단독은 라우트가 아니다');
 });
 
 test('shouldRedirectHost — www.ganjisaju.kr 는 true (www → apex 통일)', () => {
