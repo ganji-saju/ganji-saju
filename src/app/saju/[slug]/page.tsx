@@ -693,6 +693,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   ownedLabel="구매한 풀이 열기"
                   className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 />
+                {/* Task 7 — 크로스링크: 저장된 공통 프로필로 재입력 없이 오늘운세로 전환.
+                    위 TodayDetailResultCta 와 동일한 ghost pill 스타일. */}
+                <Link
+                  href="/today-fortune"
+                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                >
+                  이 정보로 오늘의 운세 보기
+                </Link>
               </div>
             </article>
             {/* 2026-05-15 handoff 52 m-reveal 닫음 — §1 ~ §5 카드만 stagger. 하단 details 는 접힘 기본이라 모션 대상 외. */}

@@ -289,6 +289,16 @@ export function TodayFortuneResultClient({
               {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
               <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
 
+              {/* §7.5 — Task 7 크로스링크: 저장된 공통 프로필로 재입력 없이 사주로 전환.
+                  TodayDaewoonCtaCard 버튼과 동일한 pink pill 스타일 · 시니어 UI 대형 터치 영역. */}
+              <Link
+                href="/saju/new"
+                className="flex items-center justify-center gap-2 rounded-full bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
+              >
+                이 정보로 내 사주 보기
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </Link>
+
               {/* 친구에게 공유 — 2026-07-03 공개 티저(/today-fortune/share/[slug]?d=날짜):
                   수신자가 로그인 없이 같은 날 무료 결과(한 줄+점수)를 재계산해 봄. 유료 미포함.
                   shareSlug 는 신규 결과부터 존재(구 sessionStorage payload 는 미노출). */}
