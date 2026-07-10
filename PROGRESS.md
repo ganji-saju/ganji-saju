@@ -3017,7 +3017,7 @@ Vercel 대시보드: https://vercel.com/ganji-sajus-projects/ganji-saju
 
 ---
 
-## 2026-07-10 세션 — 보관함 오늘운세 다시보기 (PR #627·#629) + main E2E red 복구 (PR #628)
+## 2026-07-10 세션 — 보관함 오늘운세 다시보기 (PR #627·#629) + main E2E red 복구 (PR #628·#630)
 
 ### PR #627 — 보관함 '오늘운세 다시보기' 결정론적 재현
 
@@ -3057,6 +3057,17 @@ migration 069 적용 후 운영 DB 실측에서 드러난 UX 워트. `today_fort
 
 운영 DB 실측 검증: 13 컬럼 · RLS on · 본인 SELECT 정책 1 · 인덱스 3. 배포 직후 실행기록이 정상 적재됐고, `generated_at`(요청 시작) < `created_at`(INSERT) 형태 확인 — 재현 앵커가 저장 시점이 아니라 요청 시점으로 박혔다는 뜻.
 
+### PR #630 — 죽은 birth-info-stepper 제거 + 가드/감사 참조 이전
+
+#625 이후 `BirthInfoStepper`(288줄)는 아무도 import 하지 않았다. 무해하지 않았다 — **#628 의 원인이 이 파일**이었다. e2e 가 죽은 컴포넌트의 옛 CTA(`무료 결과 보기`)를 잡고 있었고, grep 하면 "코드에 존재"로 나와 원인 파악이 늦어졌다.
+
+단순 삭제가 아니라 참조 두 곳을 후속 표면으로 **이전**(그냥 지우면 구멍):
+- `public-commercialization-copy.test.ts` 금지문구 스캔 대상 → `features/unified-intake/unified-intake.tsx` (삭제 **전에** 새 대상이 가드 통과함을 먼저 확인)
+- `profile-linkage-audit.ts` today-fortune `sourceRefs` → `unified-intake.tsx` + `submit-today.ts`. `detail` 의 '불러오기 버튼' 서술도 실제 동작(자동 프리필)로 교정 — 이 문자열은 `/verification` 에 그대로 노출된다.
+- 삭제 파일을 줄번호까지 인용하던 주석 5곳 정리. `CompactBirthFields` 는 궁합·프로필 관리자가 써서 유지.
+
+검증: tsc 클린 · next build 성공 · 커스텀 172 · vitest 144/144 · 렌더 확인(`/today-fortune` CTA 유지, `/start` 200).
+
 ### 후속
-- 죽은 `birth-info-stepper.tsx` 제거 (`profile-linkage-audit.ts`, `public-commercialization-copy.test.ts` 참조도 함께 정리)
 - 보관함 '다시보기' 실제 화면 확인(로그인 필요 — 자동 검증 미커버 구간)
+- `docs/audit/incomplete-ui-inventory.md` 등 문서의 birth-info-stepper 참조는 **시점 기록**이라 의도적으로 유지
