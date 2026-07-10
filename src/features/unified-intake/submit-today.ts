@@ -8,7 +8,9 @@ import {
   DEFAULT_MOONLIGHT_COUNSELOR,
   MOONLIGHT_COUNSELOR_STORAGE_KEY,
   normalizeMoonlightCounselor,
+  type MoonlightCounselorId,
 } from '@/lib/counselors';
+import { fetchProfileCounselorPreference } from '@/features/counselor/use-preferred-counselor';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { TodayFortuneBirthPayload, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import { applyProfileToTodayPayload, type UnifiedBirthProfile } from './birth-profile-store';
@@ -30,15 +32,22 @@ const INITIAL_TODAY_PAYLOAD: TodayFortuneBirthPayload = {
   birthLongitude: '',
 };
 
-// use-preferred-counselor.ts readStoredCounselorPreference 이식.
-// 이 헬퍼는 훅이 아니라 일반 함수라 usePreferredCounselor() 훅을 그대로 쓸 수 없어,
-// 훅이 읽는 것과 동일한 localStorage 키를 직접 읽는다(요청 바디 계약 동일 유지).
-function readStoredCounselorPreference() {
-  if (typeof window === 'undefined') return DEFAULT_MOONLIGHT_COUNSELOR;
-  return (
-    normalizeMoonlightCounselor(window.localStorage.getItem(MOONLIGHT_COUNSELOR_STORAGE_KEY)) ??
-    DEFAULT_MOONLIGHT_COUNSELOR
-  );
+// usePreferredCounselor() 훅(use-preferred-counselor.ts:82-113)의 우선순위를 이식.
+// 이 헬퍼는 훅이 아니라 일반 async 함수라 훅을 직접 쓸 수 없어, 훅과 동일한 순서로 해석한다:
+//   (1) localStorage 값이 있으면 그대로 사용,
+//   (2) 없으면 /api/profile GET 으로 저장된 preferredCounselor 조회(다른 기기 설정/로컬 초기화 대응),
+//   (3) 둘 다 없을 때만 DEFAULT 로 폴백.
+// (2)는 훅의 fetchProfileCounselorPreference 를 그대로 재사용 — 인증 안 됐거나 없으면 null 반환.
+async function resolveCounselorPreference(): Promise<MoonlightCounselorId> {
+  if (typeof window !== 'undefined') {
+    const stored = normalizeMoonlightCounselor(
+      window.localStorage.getItem(MOONLIGHT_COUNSELOR_STORAGE_KEY)
+    );
+    if (stored) return stored;
+  }
+
+  const profileCounselor = await fetchProfileCounselorPreference();
+  return profileCounselor ?? DEFAULT_MOONLIGHT_COUNSELOR;
 }
 
 interface TodayFortuneApiResponse {
@@ -59,7 +68,7 @@ export async function submitTodayFromProfile(
 ): Promise<string> {
   const concernId = normalizeConcernId(opts?.concernId ?? 'general');
   const payload = applyProfileToTodayPayload(INITIAL_TODAY_PAYLOAD, profile);
-  const counselorId = readStoredCounselorPreference();
+  const counselorId = await resolveCounselorPreference();
 
   const response = await fetch('/api/today-fortune', {
     method: 'POST',
