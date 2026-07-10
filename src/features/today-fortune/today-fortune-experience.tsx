@@ -207,7 +207,13 @@ export function TodayFortuneExperience({
           />
         ) : null}
 
-        <UnifiedIntake intent="today" submitting={loading} onResolve={handleResolve} />
+        <UnifiedIntake
+          intent="today"
+          submitting={loading}
+          onResolve={handleResolve}
+          // Task6b — 인입 퍼널 회귀 수정: 폼 최초 상호작용 시 birth_form_started 복원.
+          onStarted={() => trackMoonlightEvent('birth_form_started', { from: 'today-fortune', concern: concernId })}
+        />
 
         {errorMessage ? (
           <p role="alert" className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">

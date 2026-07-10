@@ -9,6 +9,7 @@ import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profil
 import type { IntakeIntent } from '@/features/unified-intake/intake-intent';
 import { submitSajuFromProfile } from '@/features/unified-intake/submit-saju';
 import { submitTodayFromProfile } from '@/features/unified-intake/submit-today';
+import { trackMoonlightEvent } from '@/lib/analytics';
 
 export default function StartPage() {
   const router = useRouter();
@@ -57,7 +58,12 @@ export default function StartPage() {
                 오늘의 운세와 내 사주를 한 번의 입력으로 바로 볼 수 있어요.
               </p>
             </div>
-            <UnifiedIntake intent={null} onResolve={setResolved} />
+            <UnifiedIntake
+              intent={null}
+              onResolve={setResolved}
+              // Task6b — 인입 퍼널 회귀 수정: 폼 최초 상호작용 시 birth_form_started 복원.
+              onStarted={() => trackMoonlightEvent('birth_form_started', { from: 'start' })}
+            />
           </div>
         )}
       </AppPage>

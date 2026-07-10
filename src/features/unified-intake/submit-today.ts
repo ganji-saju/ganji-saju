@@ -14,6 +14,7 @@ import { fetchProfileCounselorPreference } from '@/features/counselor/use-prefer
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import type { TodayFortuneBirthPayload, TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import { applyProfileToTodayPayload, type UnifiedBirthProfile } from './birth-profile-store';
+import { trackMoonlightEvent } from '@/lib/analytics';
 
 const INITIAL_TODAY_PAYLOAD: TodayFortuneBirthPayload = {
   concernId: 'general',
@@ -84,6 +85,17 @@ export async function submitTodayFromProfile(
   if (!response.ok || !data?.ok || !data.result) {
     throw new Error(data?.error ?? '무료 결과를 만드는 중 오류가 있었습니다.');
   }
+
+  // Task6b — 인입 퍼널 회귀 수정: 제출 성공 시 birth_form_completed + today_free_result_viewed 복원.
+  trackMoonlightEvent('birth_form_completed', {
+    from: 'today-fortune',
+    concern: concernId,
+  });
+  trackMoonlightEvent('today_free_result_viewed', {
+    from: 'today-fortune',
+    concern: data.result.concernId,
+    sourceSessionId: data.result.sourceSessionId,
+  });
 
   try {
     window.localStorage.setItem('moonlight:fortune-session:last', data.result.sourceSessionId);

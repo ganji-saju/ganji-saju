@@ -7,6 +7,7 @@
 import type { TasteProductId } from '@/lib/payments/catalog';
 import { toSlug } from '@/lib/saju/pillars';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
+import { trackMoonlightEvent } from '@/lib/analytics';
 import {
   createInitialOnboardingDraft,
   shouldAutoSavePersonalProfile,
@@ -76,6 +77,16 @@ export async function submitSajuFromProfile(
     });
   } catch {
     const fallbackId = toSlug(readingInput);
+    // Task6b — fetch 자체가 실패해도(fallback 경로) 폼 제출은 완료된 것이므로 동일하게 발화.
+    trackMoonlightEvent('birth_form_completed', {
+      from,
+      sourceSessionId: fallbackId,
+      focusTopic: profile.focusTopic,
+      calendarType: profile.calendarType,
+      timeRule: profile.timeRule,
+      unknownBirthTime: profile.unknownBirthTime,
+      layout: 'single',
+    });
     return buildSajuPostSubmitHref(fallbackId, {
       focusTopic: draft.focusTopic,
       product,
@@ -112,6 +123,17 @@ export async function submitSajuFromProfile(
       }),
     }).catch(() => undefined);
   }
+
+  // Task6b — 인입 퍼널 회귀 수정: 제출 성공 시 birth_form_completed 복원.
+  trackMoonlightEvent('birth_form_completed', {
+    from,
+    sourceSessionId: data.id,
+    focusTopic: profile.focusTopic,
+    calendarType: profile.calendarType,
+    timeRule: profile.timeRule,
+    unknownBirthTime: profile.unknownBirthTime,
+    layout: 'single',
+  });
 
   return buildSajuPostSubmitHref(data.id, {
     focusTopic: draft.focusTopic,

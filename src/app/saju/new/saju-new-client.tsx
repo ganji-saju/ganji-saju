@@ -14,6 +14,7 @@ import { UnifiedIntake } from '@/features/unified-intake/unified-intake';
 import { submitSajuFromProfile } from '@/features/unified-intake/submit-saju';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import type { TasteProductId } from '@/lib/payments/catalog';
+import { trackMoonlightEvent } from '@/lib/analytics';
 
 // 구 위저드가 지원하던 /saju/new?product=/?plan= 유료 퍼널 딥링크 화이트리스트.
 // (money-pattern/work-flow/monthly-calendar/year-core add-on, life-standard lifetime)
@@ -80,7 +81,13 @@ export default function SajuNewClient() {
           description="생년월일, 성별, 태어난 시간만 먼저 알려주세요."
         />
 
-        <UnifiedIntake intent="saju" submitting={submitting} onResolve={handleResolve} />
+        <UnifiedIntake
+          intent="saju"
+          submitting={submitting}
+          onResolve={handleResolve}
+          // Task6b — 인입 퍼널 회귀 수정: 폼 최초 상호작용 시 birth_form_started 복원.
+          onStarted={() => trackMoonlightEvent('birth_form_started', { from: 'saju-new', layout: 'single' })}
+        />
 
         {error ? (
           <p role="alert" className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">

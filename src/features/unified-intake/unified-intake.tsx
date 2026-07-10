@@ -32,6 +32,8 @@ export interface UnifiedIntakeProps {
   intent: IntakeIntent | null;
   submitting?: boolean;
   onResolve: (profile: UnifiedBirthProfile) => void;
+  // Task6b — 인입 퍼널 회귀 수정: 폼 최초 상호작용 시 1회 호출(호출부가 자기 payload로 발화).
+  onStarted?: () => void;
 }
 
 const CTA_LABEL: Record<IntakeIntent, string> = {
@@ -161,7 +163,7 @@ function formatBirthProfileSummary(profile: UnifiedBirthProfile) {
   return `${calendarLabel} ${dateLabel} · ${hourLabel} · ${genderLabel}${locationLabel}`;
 }
 
-export function UnifiedIntake({ intent, submitting = false, onResolve }: UnifiedIntakeProps) {
+export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted }: UnifiedIntakeProps) {
   const [profile, setProfile] = useState<UnifiedBirthProfile>(() => loadBirthProfile() ?? createEmptyBirthProfile());
   // 마운트 시 완전한 프로필로 프리필됐으면 요약카드부터 보여주고, 아니면 바로 입력폼을 편다.
   const [formExpanded, setFormExpanded] = useState<boolean>(() => !hasCompleteBirthProfile(profile));
@@ -174,6 +176,13 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
 
   const hasUserEditedRef = useRef(false);
   const profileFetchAttemptedRef = useRef(false);
+  // Task6b — birth_form_started once-guard: 마운트당 최초 상호작용 1회만 onStarted 호출.
+  const startedFiredRef = useRef(false);
+  function fireStarted() {
+    if (startedFiredRef.current) return;
+    startedFiredRef.current = true;
+    onStarted?.();
+  }
 
   // 프리필 우선순위: (1) 로그인 시 /api/profile silent 조회, (2) 없으면 loadBirthProfile() 이미 초기 state 로 반영됨.
   // birth-info-stepper.tsx loadProfile({ silent: true }) 패턴 이식.
@@ -402,6 +411,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
               autoComplete="off"
               onChange={(event) => {
                 hasUserEditedRef.current = true;
+                fireStarted();
                 const value = event.target.value.slice(0, 20);
                 setProfile((cur) => ({ ...cur, name: value }));
               }}
@@ -414,6 +424,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
             onChange={patchBirth}
             onStarted={() => {
               hasUserEditedRef.current = true;
+              fireStarted();
             }}
             visibleSections={['date', 'gender', 'location-time']}
             /* 분(minute) 은 UnifiedBirthProfile 에 없어 내장 시간 picker 의 분 입력이 깨짐.
@@ -438,6 +449,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
               value={profile.unknownBirthTime ? '' : profile.hour}
               onChange={(event) => {
                 hasUserEditedRef.current = true;
+                fireStarted();
                 const value = event.target.value;
                 setProfile((cur) => ({
                   ...cur,
@@ -459,6 +471,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
                 checked={profile.unknownBirthTime}
                 onChange={(event) => {
                   hasUserEditedRef.current = true;
+                  fireStarted();
                   const checked = event.target.checked;
                   setProfile((cur) => ({
                     ...cur,
