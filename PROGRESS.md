@@ -3014,3 +3014,36 @@ Vercel 대시보드: https://vercel.com/ganji-sajus-projects/ganji-saju
 **프로세스**: brainstorming→writing-plans→격리 워크트리→subagent-driven(태스크별 구현+독립 리뷰, 최종 전체 리뷰). 리뷰가 잡은 실회귀 3건(유료 딥링크 유실·counselorId 폴백·하이드레이션) 수정.
 
 **후속(비차단)**: 체크박스/버튼 스타일 정합, 죽은 birth-info-stepper 정리, 홈 애널리틱스 라벨, time-rule 허브 편집(의도적 생략). DB 마이그레이션 없음.
+
+---
+
+## 2026-07-10 세션 — 보관함 오늘운세 다시보기 (PR #627) + main E2E red 복구 (PR #628)
+
+### PR #627 — 보관함 '오늘운세 다시보기' 결정론적 재현
+
+**문제**: 무료 오늘운세는 결과를 저장하지 않고 `readings` 행만 남겼다. 그 행은 사주 풀이와 공유되고 날짜 정보도 없어, 보관함 '다시보기'가 `/saju/{id}` 로 새어 사주 화면을 열고 총평 LLM 을 재실행했다.
+
+**해법**: 결과 본문 대신 **재현 입력만** 저장하는 경량 실행기록. `buildTodayFortuneFreeResult` 는 `(input, sajuData, options)` 고정 시 결정론적(LLM·난수 없음)이므로, 유일한 암묵 입력 `now` 를 `generated_at` 앵커로 남겨 그날의 일진을 그대로 재계산한다. 본문 스냅샷을 안 남기므로 빌더 개선 시 과거 결과가 낡은 포맷으로 굳지 않는다.
+
+- migration **069**: `today_fortune_runs` (RLS 본인 SELECT·service 쓰기, `(user, session, 날짜, 고민)` 유니크로 최초 `generated_at` 보존)
+- `lib/today-fortune/run-log.ts`: record/list/get. 조회는 테이블 부재 시 빈 값, 기록은 비차단 try/catch → **069 미적용 상태에서도 앱은 안 깨지고 기능만 잠잠**
+- `api/today-fortune`: 요청 시작 시각을 `now` 로 한 번만 고정해 두 빌더에 동일 주입(자정 경계 미세 어긋남도 제거)
+- `/today-fortune/runs/[id]`: `generated_at` 을 `now` 로 재계산하는 읽기 전용 재현 페이지
+- 재현 뷰: 결정론 본문만. 프리미엄 언락 CTA·푸시 prompt·피드백 카드 제외(과거 날짜에서 오늘 상세를 결제하는 경로 차단)
+- 보관함: '오늘의 운세' 항목 추가. 같은 날 유료 스냅샷 있으면 숨김, 무료 항목엔 PAID 배지·후기 버튼 미노출
+
+**⚠️ migration 069 수동 적용 필요** (`create table if not exists` 계열이라 재실행 안전).
+
+### PR #628 — main Playwright E2E red 복구 (#625 선행 회귀)
+
+`#625` 가 `/today-fortune` 의 `BirthInfoStepper` → `UnifiedIntake(intent="today")` 로 교체하면서 제출 CTA 가 `무료 결과 보기` → `오늘 운세 보기` 로 바뀌었는데 e2e 셀렉터는 옛 문구를 잡고 있었다. **main E2E 는 #625 머지 이후 계속 red**(마지막 green 은 #624). `#627` 의 CI 실패도 이 선행 회귀였고 #627 코드 탓이 아니었다.
+
+- 근본원인 확정 절차: 렌더 출력 검증(`curl /today-fortune` → `오늘 운세 보기` 1건, `무료 결과 보기` 0건) + main E2E 이력 대조(green→red 전환점 = #625)
+- `무료 결과 보기` 는 이제 아무도 import 하지 않는 `birth-info-stepper.tsx` 에만 잔존 → **죽은 컴포넌트 정리는 여전히 후속 과제**
+- 제품 코드 변경 0, 셀렉터 문구 1곳만 갱신
+
+**교훈**: UI 카피를 바꾸는 PR 은 e2e 셀렉터 grep 을 동반해야 한다. CI red 를 "원래 그런 것"으로 넘기면 다음 PR 이 남의 회귀를 뒤집어쓴다.
+
+### 후속
+- migration 069 적용(운영 DB)
+- 죽은 `birth-info-stepper.tsx` 제거 (`profile-linkage-audit.ts`, `public-commercialization-copy.test.ts` 참조도 함께 정리)
