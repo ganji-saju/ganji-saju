@@ -83,6 +83,8 @@ function getTagForReading(_reading: AccountReading): VaultTag {
 }
 
 function getTagForPurchased(item: AccountPurchasedResult): VaultTag {
+  // 2026-07-10 — 무료 오늘운세 실행기록도 이 목록에 섞인다. PAID 배지를 붙이면 안 된다.
+  if (item.productId === 'today-run') return null;
   if (item.title?.includes('VIP') || item.title?.includes('평생')) return 'VIP';
   return 'PAID';
 }
@@ -243,6 +245,8 @@ export default function SavedReadingsList({
         <div className="grid gap-3">
           {purchasedResults.map((item) => {
             const tag = getTagForPurchased(item);
+            // 무료 실행기록엔 결제가 없어 상품 후기 대상이 아니다 — 후기 버튼을 숨긴다.
+            const isFreeRun = item.productId === 'today-run';
             const existingReview =
               reviewByKey[reviewKey({ productId: item.productId, scopeKey: item.scopeKey })] ??
               null;
@@ -271,23 +275,27 @@ export default function SavedReadingsList({
                 {/* 2026-07-03 공유 전수감사 — onClick 없는 죽은 "↗ 공유" 버튼 제거(grid 3→2).
                     구매 상품 href 는 입력 페이지(/compatibility/input 등)인 경우가 있어
                     공유 대상 URL 로 부적합 — 상품별 공유 경로가 정리되면 재도입. */}
-                <div className="grid grid-cols-2 gap-1 border-t border-[var(--app-line)] p-1.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setReviewDialog({
-                        productId: item.productId,
-                        scopeKey: item.scopeKey,
-                        productTitle: item.title,
-                        existing: existingReview,
-                      })
-                    }
-                    className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
-                  >
-                    {existingReview
-                      ? `✎ 후기 · ${statusLabel(existingReview.moderationStatus)}`
-                      : '✎ 후기 작성'}
-                  </button>
+                <div
+                  className={`grid ${isFreeRun ? 'grid-cols-1' : 'grid-cols-2'} gap-1 border-t border-[var(--app-line)] p-1.5`}
+                >
+                  {isFreeRun ? null : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReviewDialog({
+                          productId: item.productId,
+                          scopeKey: item.scopeKey,
+                          productTitle: item.title,
+                          existing: existingReview,
+                        })
+                      }
+                      className="h-8 rounded-[8px] text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:bg-[var(--app-pink-soft)]"
+                    >
+                      {existingReview
+                        ? `✎ 후기 · ${statusLabel(existingReview.moderationStatus)}`
+                        : '✎ 후기 작성'}
+                    </button>
+                  )}
                   <Link
                     href={item.href}
                     className="grid h-8 place-items-center rounded-[8px] text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
