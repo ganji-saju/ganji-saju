@@ -10,6 +10,7 @@ import {
 } from '@/components/saju/shared/unified-birth-info-fields';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
+import { HOUR_OPTIONS } from '@/features/home/content';
 import { cn } from '@/lib/utils';
 import type {
   OnboardingConcern,
@@ -373,7 +374,16 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
                 {formatBirthProfileSummary(profile)}
               </p>
             </div>
-            <Button type="button" onClick={() => setFormExpanded(true)} variant="secondary" size="sm">
+            <Button
+              type="button"
+              onClick={() => {
+                // 늦게 도착한 /api/profile 응답이 편집 의도를 덮어써 다시 접히지 않도록 편집 플래그를 세운다.
+                hasUserEditedRef.current = true;
+                setFormExpanded(true);
+              }}
+              variant="secondary"
+              size="sm"
+            >
               정보 바꾸기
             </Button>
           </div>
@@ -406,6 +416,10 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
               hasUserEditedRef.current = true;
             }}
             visibleSections={['date', 'gender', 'location-time']}
+            /* 분(minute) 은 UnifiedBirthProfile 에 없어 내장 시간 picker 의 분 입력이 깨짐.
+               앱 전역 분 제거 관례(birth-info-stepper.tsx:91-99)를 따라 내장 시간 picker 를 숨기고
+               아래 시(hour) 전용 picker 를 직접 렌더한다(saju-intake-page.tsx renderBirthStep 이식). */
+            hideTimePicker
             locationLoading={locationLoading}
             locationMessage={locationMessage}
             locationResults={locationResults}
@@ -413,6 +427,50 @@ export function UnifiedIntake({ intent, submitting = false, onResolve }: Unified
             onPresetSelect={handlePresetSelect}
             onLocationResultSelect={handleLocationResultSelect}
           />
+
+          {/* 시(hour) 전용 picker — 분 입력 없이 시각만 선택. HOUR_OPTIONS 로 '모름' + 0~23시. */}
+          <div className="gangi-birth-field">
+            <Label htmlFor="unified-intake-hour" className="gangi-birth-label">
+              태어난 시각
+            </Label>
+            <select
+              id="unified-intake-hour"
+              value={profile.unknownBirthTime ? '' : profile.hour}
+              onChange={(event) => {
+                hasUserEditedRef.current = true;
+                const value = event.target.value;
+                setProfile((cur) => ({
+                  ...cur,
+                  hour: value,
+                  unknownBirthTime: value === '',
+                }));
+              }}
+              className="gangi-form-control gangi-birth-input px-3 text-base"
+            >
+              {HOUR_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label className="mt-2.5 flex items-center gap-2 text-[15px] text-[var(--app-copy-muted)]">
+              <input
+                type="checkbox"
+                checked={profile.unknownBirthTime}
+                onChange={(event) => {
+                  hasUserEditedRef.current = true;
+                  const checked = event.target.checked;
+                  setProfile((cur) => ({
+                    ...cur,
+                    unknownBirthTime: checked,
+                    hour: checked ? '' : cur.hour,
+                  }));
+                }}
+                className="h-4 w-4 rounded border-[var(--app-line)] accent-[var(--app-pink)]"
+              />
+              태어난 시간을 정확히 모르겠어요
+            </label>
+          </div>
         </>
       )}
 
