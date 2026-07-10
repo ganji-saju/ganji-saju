@@ -94,9 +94,7 @@ export function TodayFortuneExperience({
     setPendingHitMemo(getPendingHitMemoSession());
   }, []);
 
-  // Task6 — BirthInfoStepper + handleSubmit(구 POST /api/today-fortune 바디+결과캐시+네비게이션)를
-  // UnifiedIntake(intent="today") + submitTodayFromProfile 로 교체. 요청 계약(캐시 키·결과 href)은
-  // submitTodayFromProfile(src/features/unified-intake/submit-today.ts) 이 동일하게 이식해 보존한다.
+  // 요청 계약(캐시 키·결과 href)은 submitTodayFromProfile(src/features/unified-intake/submit-today.ts) 이 소유한다.
   // /saju/new (saju-new-client.tsx handleResolve) 와 동일한 submitting 가드 패턴: 성공 시 loading 을
   // 되돌리지 않고(페이지 전환 완료까지 overlay 유지), 실패 시에만 복귀.
   async function handleResolve(profile: UnifiedBirthProfile) {

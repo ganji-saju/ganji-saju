@@ -81,10 +81,11 @@ const SERVICES: ProfileLinkageServiceAudit[] = [
     usesSharedBirthSchema: true,
     usesSajuEngine: true,
     detail:
-      '로그인 사용자는 MY 프로필을 자동 기본값 또는 불러오기 버튼으로 가져오고, 공통 birth schema를 거쳐 실제 사주 계산 흐름으로 무료/유료 결과를 만듭니다.',
+      '로그인 사용자는 MY 프로필이 입력 폼에 자동으로 채워지고, 공통 birth schema를 거쳐 실제 사주 계산 흐름으로 무료/유료 결과를 만듭니다.',
     continuity: '공통 입력 → 공통 계산 → 오늘운세 결과',
     sourceRefs: [
-      '/src/components/today-fortune/birth-info-stepper.tsx',
+      '/src/features/unified-intake/unified-intake.tsx',
+      '/src/features/unified-intake/submit-today.ts',
       '/src/features/today-fortune/today-fortune-experience.tsx',
       '/src/app/api/today-fortune/route.ts',
     ],

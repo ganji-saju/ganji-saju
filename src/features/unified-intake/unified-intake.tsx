@@ -41,7 +41,6 @@ const CTA_LABEL: Record<IntakeIntent, string> = {
   today: '오늘 운세 보기',
 };
 
-// birth-info-stepper.tsx 의 /api/profile silent 조회 응답 shape 이식.
 interface ProfileApiResponse {
   authenticated: boolean;
   profile: {
@@ -189,7 +188,6 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
   // 프리필 우선순위(마운트 후, hydration mismatch 방지 위해 render-time 이 아닌 effect 에서):
   //   (1) 게스트 로컬 프로필(localStorage)을 먼저 sync seed,
   //   (2) 로그인 사용자면 /api/profile 결과가 로컬 값을 override.
-  // birth-info-stepper.tsx loadProfile({ silent: true }) 패턴 이식.
   useEffect(() => {
     if (profileFetchAttemptedRef.current) return;
     profileFetchAttemptedRef.current = true;
@@ -303,7 +301,6 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     }));
   }
 
-  // birth-info-stepper.tsx handleLocationSearch 이식.
   async function handleLocationSearch() {
     hasUserEditedRef.current = true;
     const query = profile.birthLocationLabel.trim();
@@ -342,7 +339,6 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     }
   }
 
-  // birth-info-stepper.tsx applyPresetLocation 이식.
   function handlePresetSelect(code: string) {
     hasUserEditedRef.current = true;
     const preset = BIRTH_LOCATION_PRESETS.find((item) => item.code === code);
@@ -440,8 +436,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
             }}
             visibleSections={['date', 'gender', 'location-time']}
             /* 분(minute) 은 UnifiedBirthProfile 에 없어 내장 시간 picker 의 분 입력이 깨짐.
-               앱 전역 분 제거 관례(birth-info-stepper.tsx:91-99)를 따라 내장 시간 picker 를 숨기고
-               아래 시(hour) 전용 picker 를 직접 렌더한다(saju-intake-page.tsx renderBirthStep 이식). */
+               앱 전역이 분을 버리는 관례를 따라 내장 picker 를 숨기고 시(hour) 전용 picker 를 직접 렌더한다. */
             hideTimePicker
             locationLoading={locationLoading}
             locationMessage={locationMessage}
