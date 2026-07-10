@@ -22,6 +22,11 @@ import {
   recordPaymentWebhookEvent,
 } from '@/lib/payments/order-ledger';
 import { revokeCredits } from '@/lib/credits/deduct';
+import { buildCancellationRevokePlan } from '@/lib/payments/cancellation';
+import {
+  listProductEntitlementsByOrder,
+  revokeProductEntitlement,
+} from '@/lib/product-entitlements';
 
 export const runtime = 'nodejs';
 
@@ -114,14 +119,41 @@ export async function POST(req: NextRequest) {
       source: 'webhook',
     });
 
-    // 5) 전 회수 — 이미 지급(fulfilled)된 주문만, deduct_credits 로 잔액 범위 차감.
+    // 5) 지급분 회수 — 전(코인) + 상품 이용권. 회수는 지급과 대칭이어야 한다.
+    //    2026-07-10 사고: 여기서 `pkg.credits > 0` 만 보고 회수해서, credits=0 인 단품
+    //      (score-total·today-detail·year-core·lifetime)은 환불 후에도 이용권이 남았다.
+    //      실제 지급 기록(order_id 로 열거)에 맞춰 회수한다 — 번들이면 구성품 전부.
     //    ⚠️ 음수 잔액(이미 사용한 전)·부분취소 비례 회수는 정책 확정 후 보강(docs §6).
     const pkg = getPackage(order.packageId);
-    if (pkg && pkg.credits > 0 && order.status === 'fulfilled') {
-      const revokeResult = await revokeCredits(order.userId, pkg.credits, 'nicepay-cancel');
+    const plan = buildCancellationRevokePlan({
+      orderStatus: order.status,
+      packageCredits: pkg?.credits ?? 0,
+      entitlements: await listProductEntitlementsByOrder(orderId),
+    });
+
+    if (plan.revokeCredits > 0) {
+      const revokeResult = await revokeCredits(order.userId, plan.revokeCredits, 'nicepay-cancel');
       // 회수 실패(잔액 부족 등)는 운영 추적용으로 남긴다 — 수동 보정 대상.
       if (!revokeResult.success) {
         console.error('[nicepay-webhook] 전 회수 실패', { orderId, error: revokeResult.error });
+      }
+    }
+
+    // 이용권 회수 실패가 취소 통보 처리를 막지 않게 개별 try — 남은 행은 수동 보정 대상.
+    for (const entitlement of plan.revokeEntitlements) {
+      try {
+        await revokeProductEntitlement(
+          entitlement.userId,
+          entitlement.productId as Parameters<typeof revokeProductEntitlement>[1],
+          entitlement.scopeKey,
+          { reason: 'nicepay-cancel', actor: 'webhook', paymentKey: order.paymentKey }
+        );
+      } catch (revokeError) {
+        console.error('[nicepay-webhook] 이용권 회수 실패', {
+          orderId,
+          productId: entitlement.productId,
+          error: revokeError instanceof Error ? revokeError.message : String(revokeError),
+        });
       }
     }
 

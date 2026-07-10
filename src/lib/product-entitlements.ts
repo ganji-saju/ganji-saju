@@ -471,6 +471,31 @@ export async function grantTasteProductEntitlement(
   return entitlement as TasteProductEntitlement;
 }
 
+/**
+ * 2026-07-10 — PG 취소 통보 회수용. 주문이 실제로 지급한 이용권을 order_id 로 열거한다.
+ * 지급(grantProductEntitlement)이 order_id 를 남기므로 번들이면 구성품이 여러 행으로 나온다.
+ * 회수를 패키지 정의가 아니라 **실제 지급 기록**에 맞추기 위한 조회다.
+ */
+export async function listProductEntitlementsByOrder(
+  orderId: string
+): Promise<Array<{ userId: string; productId: PaidProductId; scopeKey: string | null }>> {
+  if (!orderId) return [];
+  const service = await createServiceClient();
+  const { data, error } = await service
+    .from('product_entitlements')
+    .select('user_id, product_id, scope_key')
+    .eq('order_id', orderId);
+
+  if (error || !data) return [];
+  return (data as Array<{ user_id: string; product_id: string; scope_key: string | null }>).map(
+    (row) => ({
+      userId: row.user_id,
+      productId: row.product_id as PaidProductId,
+      scopeKey: row.scope_key,
+    })
+  );
+}
+
 export interface EntitlementRevokeQuery {
   legacyFeature: 'lifetime_report' | 'taste_product';
   legacyMatch: Record<string, unknown>;
