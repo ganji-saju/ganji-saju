@@ -2993,3 +2993,24 @@ Vercel 대시보드: https://vercel.com/ganji-sajus-projects/ganji-saju
 - ~3,000+ lines (코드 + 테스트 + 작업 자료)
 - npm test 65 → 72 (신규 invariant 30+ 케이스)
 - typecheck 0 error 유지, vitest spec 64/64 회귀 0
+
+---
+
+## 2026-07-10 세션 — 단일 출생정보 입력 허브 (PR #625)
+
+**배경**: 시니어 사용성 피드백 — "오늘운세·사주 입력창이 각각이라 불편 / 사주 3번 넘기기 불편 / 입력창 너무 많다".
+
+**결과물** (브랜치 `feat/unified-birth-intake-hub`, 15커밋, PR #625, 미머지):
+- `/start` 허브 신설: 출생정보 1화면 → `[오늘의 운세][내 사주]` 선택화면. `?next=saju|today` 딥링크는 선택화면 스킵.
+- 공유 입력 컴포넌트 `UnifiedIntake`(이름 선택·생년월일·시각·성별·출생지 1화면 + 관심주제 접이식). 세 진입점 공유.
+- 사주 3스텝 스와이프 위저드(`saju-intake-page.tsx` 1713줄) 삭제 → 1화면.
+- 재입력 제거: 게스트 공용키(`moonlight:birth-profile:last`, 레거시 흡수) + `/api/profile` 프리필. 결과 화면 크로스링크.
+- 홈 대표 CTA → `/start`(상품 의도 링크는 보존).
+
+**안전성**: 리졸버/slug/제출 API 불변. 유료 딥링크(`?product=`/`?plan=`→checkout) 순수 빌더+스펙으로 복원. 퍼널 이벤트 3종 공유 지점 재발화. 하이드레이션 초기 read→effect 이동.
+
+**검증**: tsc 클린 · next build 성공 · 커스텀 172/172 · vitest 144/144 · e2e(unified-intake) 통과. 최종 전체 리뷰(opus) = 머지 가능(Critical/데이터손실 0).
+
+**프로세스**: brainstorming→writing-plans→격리 워크트리→subagent-driven(태스크별 구현+독립 리뷰, 최종 전체 리뷰). 리뷰가 잡은 실회귀 3건(유료 딥링크 유실·counselorId 폴백·하이드레이션) 수정.
+
+**후속(비차단)**: 체크박스/버튼 스타일 정합, 죽은 birth-info-stepper 정리, 홈 애널리틱스 라벨, time-rule 허브 편집(의도적 생략). DB 마이그레이션 없음.
