@@ -49,6 +49,8 @@
 
 `src/features/unified-intake/birth-profile-store.spec.ts`:
 
+> **중요(vitest 환경=node)**: `vitest.config.ts`는 `environment: 'node'`라 `window`가 없다. 저장소는 `typeof window === 'undefined'`면 no-op이므로, 테스트에서 인메모리 `window.localStorage` shim을 심어야 save/load가 실제로 동작한다(jsdom 의존성 추가 금지).
+
 ```ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
@@ -67,6 +69,21 @@ import {
   RECENT_GUEST_INPUT_STORAGE_KEY,
 } from '@/features/saju-intake/onboarding-storage';
 
+class MemStorage {
+  private m = new Map<string, string>();
+  getItem(k: string) { return this.m.has(k) ? this.m.get(k)! : null; }
+  setItem(k: string, v: string) { this.m.set(k, String(v)); }
+  removeItem(k: string) { this.m.delete(k); }
+  clear() { this.m.clear(); }
+}
+
+beforeEach(() => {
+  // 저장소 모듈이 window.localStorage 를 읽으므로 node 환경에 shim 주입.
+  (globalThis as unknown as { window: { localStorage: MemStorage } }).window = {
+    localStorage: new MemStorage(),
+  };
+});
+
 function completeProfile() {
   return normalizeBirthProfile({
     name: '홍길동',
@@ -79,8 +96,6 @@ function completeProfile() {
 }
 
 describe('birth-profile-store', () => {
-  beforeEach(() => window.localStorage.clear());
-
   it('normalize fills defaults and clamps unknowns', () => {
     const p = normalizeBirthProfile({ calendarType: 'bogus' as never, focusTopic: 'nope' as never });
     expect(p.calendarType).toBe('solar');
