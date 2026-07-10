@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  createInitialOnboardingDraft,
   loadRecentGuestInput,
   type SajuOnboardingDraft,
   type OnboardingFocusTopic,

@@ -65,9 +65,12 @@ function buildResultStorageKey(sourceSessionId: string, dateKey: string) {
 
 export async function submitTodayFromProfile(
   profile: UnifiedBirthProfile,
-  opts?: { concernId?: string }
+  opts?: { concernId?: string; from?: string }
 ): Promise<string> {
   const concernId = normalizeConcernId(opts?.concernId ?? 'general');
+  // from 기본값 'today-fortune' — 기존 today-fortune-experience 호출부 귀속 보존.
+  // /start 딥링크(?next=today)는 from='start' 를 넘겨 인입 출처를 구분한다.
+  const from = opts?.from ?? 'today-fortune';
   const payload = applyProfileToTodayPayload(INITIAL_TODAY_PAYLOAD, profile);
   const counselorId = await resolveCounselorPreference();
 
@@ -88,11 +91,11 @@ export async function submitTodayFromProfile(
 
   // Task6b — 인입 퍼널 회귀 수정: 제출 성공 시 birth_form_completed + today_free_result_viewed 복원.
   trackMoonlightEvent('birth_form_completed', {
-    from: 'today-fortune',
+    from,
     concern: concernId,
   });
   trackMoonlightEvent('today_free_result_viewed', {
-    from: 'today-fortune',
+    from,
     concern: data.result.concernId,
     sourceSessionId: data.result.sourceSessionId,
   });
