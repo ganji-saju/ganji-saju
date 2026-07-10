@@ -81,6 +81,10 @@ export async function submitTodayFromProfile(
       ...payload,
       concernId,
       counselorId,
+      // UnifiedIntake 이름 입력을 API 로 전달 — /api/today-fortune 이 rawPayload.name 을
+      // resolveTodayDisplayName 의 clientName 으로 사용(우선순위: 프로필 display_name → 소셜 → 클라이언트입력).
+      // 없으면 hero 가 '달빛이' fallback 으로 표시되던 문제(UnifiedIntake 이름 필드 유실) 수정.
+      name: profile.name,
     }),
   });
   const data = (await response.json().catch(() => null)) as TodayFortuneApiResponse | null;
