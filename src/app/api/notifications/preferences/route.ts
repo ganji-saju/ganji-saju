@@ -32,6 +32,8 @@ function parsePayload(value: unknown) {
 
   return {
     enabled: typeof data.enabled === 'boolean' ? data.enabled : defaults.enabled,
+    emailEnabled:
+      typeof data.emailEnabled === 'boolean' ? data.emailEnabled : defaults.emailEnabled,
     slots: parseSlots(data.slots),
     style:
       data.style === 'quiet' || data.style === 'normal' || data.style === 'sound'
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
     const current = await getNotificationPreferencesForUser(user.id);
     await upsertNotificationPreferences(user.id, {
       enabled: payload.enabled,
+      emailEnabled: payload.emailEnabled,
       slots: payload.slots,
       style: payload.style,
       widgetSize: payload.widgetSize,

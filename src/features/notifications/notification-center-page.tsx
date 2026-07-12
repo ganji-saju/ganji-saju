@@ -30,6 +30,7 @@ type WidgetSize = 'small' | 'medium' | 'large';
 
 interface NotificationPreferences {
   enabled: boolean;
+  emailEnabled: boolean;
   slots: Record<NotificationSlotKey, boolean>;
   style: NotificationStyle;
   widgetSize: WidgetSize;
@@ -76,6 +77,7 @@ const notificationRoutes: Record<NotificationSlotKey, { href: string; desc: stri
 function createDefaultPreferences(): NotificationPreferences {
   return {
     enabled: true,
+    emailEnabled: false,
     slots: Object.fromEntries(
       NOTIFICATION_SCHEDULE_BLUEPRINT.map((slot) => [slot.key, true])
     ) as Record<NotificationSlotKey, boolean>,
@@ -113,6 +115,8 @@ function loadPreferences(): NotificationPreferences {
 
     return {
       enabled: typeof parsed.enabled === 'boolean' ? parsed.enabled : defaults.enabled,
+      emailEnabled:
+        typeof parsed.emailEnabled === 'boolean' ? parsed.emailEnabled : defaults.emailEnabled,
       slots: normalizeSlots(parsed.slots),
       style:
         parsed.style === 'quiet' || parsed.style === 'normal' || parsed.style === 'sound'
@@ -149,6 +153,8 @@ function normalizeServerPreferences(value: unknown): NotificationPreferences {
 
   return {
     enabled: typeof data.enabled === 'boolean' ? data.enabled : defaults.enabled,
+    emailEnabled:
+      typeof data.emailEnabled === 'boolean' ? data.emailEnabled : defaults.emailEnabled,
     slots: normalizeSlots(data.slots),
     style:
       data.style === 'quiet' || data.style === 'normal' || data.style === 'sound'
@@ -887,7 +893,10 @@ export default function NotificationCenterPage({
                     설정
                   </span>
                 </Link>
-                <div className="flex items-center gap-3 px-4 py-3.5">
+                <label
+                  data-testid="email-notification-channel"
+                  className="flex items-center gap-3 px-4 py-3.5"
+                >
                   <div
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"
                     aria-hidden="true"
@@ -897,19 +906,27 @@ export default function NotificationCenterPage({
                   <div className="min-w-0 flex-1">
                     <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">이메일</div>
                     <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
-                      등록한 이메일로 받기 · 출시 예정
+                      가입한 이메일로 알림 받기
                     </div>
                   </div>
-                  <span
-                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
-                  >
-                    출시 예정
-                  </span>
-                </div>
+                  <input
+                    type="checkbox"
+                    aria-label="이메일 알림 받기"
+                    checked={preferences.emailEnabled}
+                    disabled={!isLoggedIn}
+                    onChange={(event) =>
+                      updatePreferences((current) => ({
+                        ...current,
+                        emailEnabled: event.target.checked,
+                      }))
+                    }
+                    className="h-5 w-5 accent-[var(--app-coral)] disabled:opacity-50"
+                  />
+                </label>
               </article>
 
               {/* 테스트 발송 */}
-              {isCurrentDeviceSubscribed ? (
+              {isCurrentDeviceSubscribed || preferences.emailEnabled ? (
                 <button
                   type="button"
                   onClick={sendTestPush}

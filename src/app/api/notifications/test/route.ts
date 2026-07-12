@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import {
   createNotificationDeliveryLog,
+  createEmailDeliveryLog,
   getActivePushSubscriptionsForUser,
+  getNotificationPreferencesForUser,
   markPushDeliveryResult,
 } from '@/lib/notification-preferences';
 import { getNotificationSnapshot } from '@/lib/notifications';
@@ -11,11 +13,15 @@ import {
   isWebPushConfigured,
   sendWebPushNotification,
 } from '@/lib/web-push';
+import {
+  isEmailNotificationConfigured,
+  sendNotificationEmail,
+} from '@/lib/email/notification-email';
 
 export async function POST() {
-  if (!isWebPushConfigured()) {
+  if (!isWebPushConfigured() && !isEmailNotificationConfigured()) {
     return NextResponse.json(
-      { error: '웹 푸시 VAPID 환경변수가 아직 설정되지 않았습니다.' },
+      { error: '웹 푸시 또는 이메일 발송 환경변수가 아직 설정되지 않았습니다.' },
       { status: 503 }
     );
   }
@@ -30,13 +36,21 @@ export async function POST() {
   }
 
   try {
-    const [subscriptions, snapshot] = await Promise.all([
+    const [subscriptions, snapshot, preferences] = await Promise.all([
       getActivePushSubscriptionsForUser(user.id),
       getNotificationSnapshot(),
+      getNotificationPreferencesForUser(user.id),
     ]);
 
-    if (subscriptions.length === 0) {
-      return NextResponse.json({ error: '연결된 브라우저 푸시 구독이 없습니다.' }, { status: 400 });
+    const canSendPush = isWebPushConfigured() && subscriptions.length > 0;
+    const canSendEmail =
+      isEmailNotificationConfigured() && preferences.emailEnabled && Boolean(user.email);
+
+    if (!canSendPush && !canSendEmail) {
+      return NextResponse.json(
+        { error: '연결된 브라우저 푸시 또는 수신 동의한 이메일이 없습니다.' },
+        { status: 400 }
+      );
     }
 
     const payload = buildPushPayload({
@@ -48,8 +62,9 @@ export async function POST() {
       url: snapshot.latestReading?.href ?? '/notifications',
     });
 
-    const results = await Promise.all(
-      subscriptions.map(async (subscription) => {
+    const pushResults = canSendPush
+      ? await Promise.all(
+          subscriptions.map(async (subscription) => {
         try {
           const response = await sendWebPushNotification(subscription, payload);
           await Promise.all([
@@ -109,10 +124,51 @@ export async function POST() {
             failureReason,
           };
         }
-      })
-    );
+          })
+        )
+      : [];
 
-    return NextResponse.json({ success: true, results });
+    let emailResult: { success: boolean; id?: string; failureReason?: string } | null = null;
+    if (canSendEmail && user.email) {
+      try {
+        const email = await sendNotificationEmail({
+          to: user.email,
+          displayName: snapshot.displayName,
+          title: payload.title,
+          body: payload.body,
+          url: payload.url,
+        });
+        await createEmailDeliveryLog({
+          userId: user.id,
+          slotKey: 'test',
+          recipientEmail: user.email,
+          providerMessageId: email.id,
+          title: payload.title,
+          body: payload.body,
+          status: 'sent',
+        });
+        emailResult = { success: true, id: email.id };
+      } catch (error) {
+        const failureReason =
+          error instanceof Error ? error.message : '테스트 이메일 발송에 실패했습니다.';
+        await createEmailDeliveryLog({
+          userId: user.id,
+          slotKey: 'test',
+          recipientEmail: user.email,
+          title: payload.title,
+          body: payload.body,
+          status: 'failed',
+          failureReason,
+        });
+        emailResult = { success: false, failureReason };
+      }
+    }
+
+    return NextResponse.json({
+      success: pushResults.every((result) => result.success) && emailResult?.success !== false,
+      pushResults,
+      emailResult,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : '테스트 알림을 보내지 못했습니다.' },
