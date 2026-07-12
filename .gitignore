@@ -61,6 +61,7 @@ e2e/.auth/
 
 # superpowers SDD 스크래치 (진행 원장·태스크 브리프·리뷰 패키지 — 로컬 전용)
 /.superpowers/
+/.worktrees/
 
 # generated progress report (PROGRESS.md → HTML via scripts/render-progress.mjs)
 PROGRESS.html
