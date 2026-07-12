@@ -60,6 +60,7 @@ export function KakaoContactCard() {
 
   return (
     <article
+      id="kakao-contact"
       className="mt-2 rounded-[14px] border bg-white p-4"
       style={{ borderColor: 'var(--app-line)' }}
     >

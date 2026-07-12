@@ -864,28 +864,29 @@ export default function NotificationCenterPage({
                         : '연결'}
                   </button>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--app-line)]">
+                <Link
+                  href="/my/settings#kakao-contact"
+                  aria-label="카카오 알림톡 설정"
+                  className="flex items-center gap-3 border-b border-[var(--app-line)] px-4 py-3.5 no-underline"
+                >
                   <div
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"
                     aria-hidden="true"
                   >
                     💬
                   </div>
-                  {/* 2026-05-18 Phase 5-B: "준비 중" → "출시 예정" 명확화 — 사용자 directive 부합 */}
                   <div className="min-w-0 flex-1">
                     <div className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                       카카오톡 알림톡
                     </div>
                     <div className="mt-0.5 text-[12.6px] text-[var(--app-copy-soft)]">
-                      출시 예정
+                      전화번호 등록 후 결제·구독 안내 받기
                     </div>
                   </div>
-                  <span
-                    className="rounded-full border border-[var(--app-line)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-copy-soft)]"
-                  >
-                    출시 예정
+                  <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
+                    설정
                   </span>
-                </div>
+                </Link>
                 <div className="flex items-center gap-3 px-4 py-3.5">
                   <div
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] bg-[var(--app-pink-soft)] text-[18.4px]"

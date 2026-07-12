@@ -25,6 +25,7 @@ export interface VendorSendResult {
 }
 
 const SOLAPI_SEND_URL = 'https://api.solapi.com/messages/v4/send';
+const SOLAPI_SEND_DETAIL_URL = 'https://api.solapi.com/messages/v4/send-many/detail';
 
 /** Solapi HMAC-SHA256 인증 헤더: signature = HMAC(secret, date+salt) */
 function solapiAuthHeader(): string {
@@ -39,27 +40,40 @@ function solapiAuthHeader(): string {
 
 export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<VendorSendResult> {
   try {
-    const res = await fetch(SOLAPI_SEND_URL, {
+    const res = await fetch(SOLAPI_SEND_DETAIL_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: solapiAuthHeader(),
       },
       body: JSON.stringify({
-        message: {
-          to: input.to,
-          from: kakaoConfig.sender || undefined,
-          kakaoOptions: {
-            pfId: kakaoConfig.pfId,
-            templateId: input.templateCode,
-            variables: input.variables,
-            disableSms: !(input.enableSmsFallback ?? false),
+        messages: [
+          {
+            to: input.to,
+            ...(kakaoConfig.sender ? { from: kakaoConfig.sender } : {}),
+            kakaoOptions: {
+              pfId: kakaoConfig.pfId,
+              templateId: input.templateCode,
+              variables: input.variables,
+              disableSms: !(input.enableSmsFallback ?? false),
+            },
           },
-        },
+        ],
+        showMessageList: true,
       }),
     });
     const data = (await res.json().catch(() => null)) as
-      | { messageId?: string; groupId?: string; errorMessage?: string; errorCode?: string }
+      | {
+          groupId?: string;
+          errorCount?: number;
+          resultList?: Array<{
+            messageId?: string;
+            statusCode?: string;
+            statusMessage?: string;
+          }>;
+          errorMessage?: string;
+          errorCode?: string;
+        }
       | null;
     if (!res.ok) {
       return {
@@ -68,7 +82,20 @@ export async function solapiSendAlimtalk(input: SendAlimtalkInput): Promise<Vend
         error: data?.errorMessage ?? data?.errorCode ?? `HTTP ${res.status}`,
       };
     }
-    return { ok: true, status: 'sent', vendorMsgId: data?.messageId ?? data?.groupId };
+    const first = data?.resultList?.[0];
+    if ((data?.errorCount ?? 0) > 0 || (first?.statusCode && first.statusCode !== '2000')) {
+      const detail = [first?.statusCode, first?.statusMessage].filter(Boolean).join(': ');
+      return {
+        ok: false,
+        status: 'failed',
+        error: detail || data?.errorMessage || data?.errorCode || 'send_failed',
+      };
+    }
+    return {
+      ok: true,
+      status: 'sent',
+      vendorMsgId: first?.messageId ?? data?.groupId,
+    };
   } catch (e) {
     return { ok: false, status: 'failed', error: (e as Error).message };
   }
