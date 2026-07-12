@@ -47,6 +47,15 @@ export function isEmailNotificationConfigured() {
   return Boolean(process.env.RESEND_API_KEY?.trim());
 }
 
+export function getTestNotificationDeliveryStatus(
+  pushResults: Array<{ success: boolean }>,
+  emailResult: { success: boolean } | null
+) {
+  return pushResults.some((result) => !result.success) || emailResult?.success === false
+    ? 502
+    : 200;
+}
+
 export async function sendNotificationEmail(
   input: NotificationEmailInput,
   options: EmailOptions = {}

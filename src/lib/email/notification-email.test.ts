@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { sendNotificationEmail } from './notification-email';
+import {
+  getTestNotificationDeliveryStatus,
+  sendNotificationEmail,
+} from './notification-email';
 
 test('sendNotificationEmail sends a branded transactional email through Resend', async () => {
   const payloads: Record<string, unknown>[] = [];
@@ -51,4 +54,13 @@ test('sendNotificationEmail exposes provider errors as failures', async () => {
       ),
     /domain not verified/
   );
+});
+
+test('getTestNotificationDeliveryStatus returns an error status when any channel fails', () => {
+  assert.equal(
+    getTestNotificationDeliveryStatus([{ success: true }], { success: false }),
+    502
+  );
+  assert.equal(getTestNotificationDeliveryStatus([{ success: true }], { success: true }), 200);
+  assert.equal(getTestNotificationDeliveryStatus([], null), 200);
 });

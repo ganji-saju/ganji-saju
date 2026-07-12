@@ -468,17 +468,28 @@ export async function hasEmailAlreadySentToday(
   slotKey: NotificationSlotKey
 ) {
   const service = await createServiceClient();
-  const start = new Date();
-  start.setUTCHours(0, 0, 0, 0);
+  const startIso = getKstDayStartIso();
   const { count, error } = await service
     .from('notification_email_delivery_logs')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('slot_key', slotKey)
     .eq('status', 'sent')
-    .gte('created_at', start.toISOString());
+    .gte('created_at', startIso);
   if (error) throw new Error(error.message);
   return (count ?? 0) > 0;
+}
+
+export function getKstDayStartIso(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return new Date(`${read('year')}-${read('month')}-${read('day')}T00:00:00+09:00`).toISOString();
 }
 
 /** PR #137 — 사용자 클릭 시각 기록. */

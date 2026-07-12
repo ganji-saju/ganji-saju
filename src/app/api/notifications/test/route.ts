@@ -14,6 +14,7 @@ import {
   sendWebPushNotification,
 } from '@/lib/web-push';
 import {
+  getTestNotificationDeliveryStatus,
   isEmailNotificationConfigured,
   sendNotificationEmail,
 } from '@/lib/email/notification-email';
@@ -164,11 +165,16 @@ export async function POST() {
       }
     }
 
-    return NextResponse.json({
-      success: pushResults.every((result) => result.success) && emailResult?.success !== false,
-      pushResults,
-      emailResult,
-    });
+    const status = getTestNotificationDeliveryStatus(pushResults, emailResult);
+    return NextResponse.json(
+      {
+        success: status === 200,
+        pushResults,
+        emailResult,
+        ...(status === 200 ? {} : { error: '일부 알림 채널 발송에 실패했습니다.' }),
+      },
+      { status }
+    );
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : '테스트 알림을 보내지 못했습니다.' },
