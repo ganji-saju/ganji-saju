@@ -36,9 +36,21 @@ export function GangiSeasonBanner({
   const dragRef = useRef<{
     pointerId: number | null;
     startX: number;
+    startY: number;
+    startWindowScrollY: number;
     startScrollLeft: number;
     moved: boolean;
-  }>({ pointerId: null, startX: 0, startScrollLeft: 0, moved: false });
+    axis: 'horizontal' | 'vertical' | null;
+  }>({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    startWindowScrollY: 0,
+    startScrollLeft: 0,
+    moved: false,
+    axis: null,
+  });
+  const suppressClickRef = useRef(false);
 
   const goToBanner = useCallback(
     (index: number, behavior: ScrollBehavior = 'smooth') => {
@@ -123,8 +135,8 @@ export function GangiSeasonBanner({
     <section className="px-4 pt-3" aria-label="추천 운세 배너">
       <div
         ref={viewportRef}
-        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink-strong)] focus-visible:ring-offset-2"
-        style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
+        className="flex w-full snap-x snap-mandatory overflow-x-hidden scrollbar-none rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink-strong)] focus-visible:ring-offset-2"
+        style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none', touchAction: 'pan-y' }}
         tabIndex={0}
         role="region"
         aria-roledescription="carousel"
@@ -136,32 +148,49 @@ export function GangiSeasonBanner({
           //   기존 'mouse only' 가드 제거 → mouse + touch + pen 모두 drag 허용.
           //   mouse 의 경우만 left button 체크 (right click 등 제외).
           if (event.pointerType === 'mouse' && event.button !== 0) return;
-          const target = event.target as HTMLElement;
-          if (target.closest('a, button')) return;
           const viewport = viewportRef.current;
           if (!viewport) return;
+          suppressClickRef.current = false;
           dragRef.current = {
             pointerId: event.pointerId,
             startX: event.clientX,
+            startY: event.clientY,
+            startWindowScrollY: window.scrollY,
             startScrollLeft: viewport.scrollLeft,
             moved: false,
+            axis: null,
           };
-          viewport.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
           const drag = dragRef.current;
           const viewport = viewportRef.current;
           if (!viewport || drag.pointerId !== event.pointerId) return;
           const deltaX = event.clientX - drag.startX;
-          if (Math.abs(deltaX) > 4) drag.moved = true;
+          const deltaY = event.clientY - drag.startY;
+          if (!drag.axis && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 6) {
+            drag.axis = Math.abs(deltaX) > Math.abs(deltaY) ? 'horizontal' : 'vertical';
+          }
+          if (drag.axis === 'vertical') {
+            // 일부 Android 인앱 WebView는 가로 캐러셀에서 시작한 세로 제스처를
+            // 페이지로 넘기지 않는다. native pan이 시작되면 pointercancel 되므로,
+            // 이벤트가 계속 오는 WebView에서만 이 값이 안전망으로 작동한다.
+            window.scrollTo({ top: drag.startWindowScrollY - deltaY, behavior: 'auto' });
+            return;
+          }
+          if (drag.axis !== 'horizontal') return;
+          if (!viewport.hasPointerCapture(event.pointerId)) {
+            viewport.setPointerCapture(event.pointerId);
+          }
+          drag.moved = true;
           viewport.scrollLeft = drag.startScrollLeft - deltaX;
-          if (drag.moved) event.preventDefault();
+          event.preventDefault();
         }}
         onPointerUp={(event) => {
           const viewport = viewportRef.current;
           if (viewport?.hasPointerCapture(event.pointerId)) {
             viewport.releasePointerCapture(event.pointerId);
           }
+          suppressClickRef.current = dragRef.current.moved;
           dragRef.current.pointerId = null;
         }}
         onPointerCancel={(event) => {
@@ -169,6 +198,7 @@ export function GangiSeasonBanner({
           if (viewport?.hasPointerCapture(event.pointerId)) {
             viewport.releasePointerCapture(event.pointerId);
           }
+          suppressClickRef.current = dragRef.current.moved;
           dragRef.current.pointerId = null;
         }}
       >
@@ -194,13 +224,18 @@ export function GangiSeasonBanner({
                   }
             }
             aria-label={banner.image ? banner.alt ?? banner.title : undefined}
-            onClick={() =>
+            onClick={(event) => {
+              if (suppressClickRef.current) {
+                event.preventDefault();
+                suppressClickRef.current = false;
+                return;
+              }
               onTrack?.({
                 from: 'home_banner',
                 banner: banner.id,
                 menu: banner.cta,
-              })
-            }
+              });
+            }}
           >
             {/* 2026-06-26 — 완성형 이미지 배너(3:1). 지정 시 이미지만 풀블리드, 텍스트 레이어 대체. */}
             {banner.image ? (
