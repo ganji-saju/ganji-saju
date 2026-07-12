@@ -6,6 +6,8 @@ import {
 import { createServiceClient } from '@/lib/supabase/server';
 import {
   createNotificationDeliveryLog,
+  createEmailDeliveryLog,
+  hasEmailAlreadySentToday,
   listNotificationRecipients,
   markPushDeliveryResult,
 } from '@/lib/notification-preferences';
@@ -36,6 +38,10 @@ import {
   personalizeNotificationBody,
   sendWebPushNotification,
 } from '@/lib/web-push';
+import {
+  isEmailNotificationConfigured,
+  sendNotificationEmail,
+} from '@/lib/email/notification-email';
 
 // PR #137 — URL 에 ?notif=<logId> 첨부. 이미 query string 있으면 & 로 이어붙임.
 // 외부 절대 URL 인 경우도 지원 (URL 생성자 사용 X — 상대 경로 그대로 유지).
@@ -93,9 +99,9 @@ async function handleDispatch(
   req: NextRequest,
   body?: { slotKey?: NotificationSlotKey; dryRun?: boolean } | null
 ) {
-  if (!isWebPushConfigured()) {
+  if (!isWebPushConfigured() && !isEmailNotificationConfigured()) {
     return NextResponse.json(
-      { error: '웹 푸시 VAPID 환경변수가 아직 설정되지 않았습니다.' },
+      { error: '웹 푸시 또는 이메일 발송 환경변수가 아직 설정되지 않았습니다.' },
       { status: 503 }
     );
   }
@@ -127,11 +133,12 @@ async function handleDispatch(
     userId: string;
     slotKey: NotificationSlotKey;
     sent: number;
+    emailSent: boolean;
     variant?: PushVariant | null;
   }> = [];
 
   for (const recipient of recipients) {
-    if (!recipient.preferences.enabled || recipient.subscriptions.length === 0) {
+    if (!recipient.preferences.enabled) {
       continue;
     }
 
@@ -229,6 +236,7 @@ async function handleDispatch(
           userId: recipient.userId,
           slotKey,
           sent: recipient.subscriptions.length,
+          emailSent: recipient.preferences.emailEnabled && Boolean(recipient.email),
           variant,
         });
         continue;
@@ -302,10 +310,51 @@ async function handleDispatch(
         }
       }
 
+      let emailSent = false;
+      if (
+        recipient.preferences.emailEnabled &&
+        recipient.email &&
+        isEmailNotificationConfigured() &&
+        !(await hasEmailAlreadySentToday(recipient.userId, slotKey))
+      ) {
+        try {
+          const email = await sendNotificationEmail({
+            to: recipient.email,
+            displayName: recipient.displayName,
+            title: titleText,
+            body: bodyText,
+            url,
+          });
+          emailSent = true;
+          await createEmailDeliveryLog({
+            userId: recipient.userId,
+            slotKey,
+            recipientEmail: recipient.email,
+            providerMessageId: email.id,
+            title: titleText,
+            body: bodyText,
+            status: 'sent',
+          });
+        } catch (error) {
+          const failureReason =
+            error instanceof Error ? error.message : '이메일 발송에 실패했습니다.';
+          await createEmailDeliveryLog({
+            userId: recipient.userId,
+            slotKey,
+            recipientEmail: recipient.email,
+            title: titleText,
+            body: bodyText,
+            status: 'failed',
+            failureReason,
+          });
+        }
+      }
+
       results.push({
         userId: recipient.userId,
         slotKey,
         sent,
+        emailSent,
         variant,
       });
     }

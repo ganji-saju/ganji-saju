@@ -13,6 +13,7 @@ export type WidgetSize = 'small' | 'medium' | 'large';
 
 export interface NotificationPreferencesRecord {
   enabled: boolean;
+  emailEnabled: boolean;
   slots: Record<NotificationSlotKey, boolean>;
   style: NotificationStyle;
   widgetSize: WidgetSize;
@@ -48,6 +49,7 @@ function createDefaultSlots() {
 export function createDefaultNotificationPreferences(): NotificationPreferencesRecord {
   return {
     enabled: true,
+    emailEnabled: false,
     slots: createDefaultSlots(),
     style: 'normal',
     widgetSize: 'medium',
@@ -116,7 +118,7 @@ export async function getNotificationPreferencesForUser(
     service
       .from('notification_preferences')
       .select(
-        'enabled, style, widget_size, inactivity_reminder_days, slot_preferences, updated_at, last_seen_at'
+        'enabled, email_enabled, style, widget_size, inactivity_reminder_days, slot_preferences, updated_at, last_seen_at'
       )
       .eq('user_id', userId)
       .maybeSingle(),
@@ -132,6 +134,8 @@ export async function getNotificationPreferencesForUser(
 
   return {
     enabled: typeof row?.enabled === 'boolean' ? row.enabled : defaults.enabled,
+    emailEnabled:
+      typeof row?.email_enabled === 'boolean' ? row.email_enabled : defaults.emailEnabled,
     slots: normalizeSlots(row?.slot_preferences),
     style: normalizeStyle(row?.style),
     widgetSize: normalizeWidgetSize(row?.widget_size),
@@ -152,6 +156,7 @@ export async function upsertNotificationPreferences(
   const payload = {
     user_id: userId,
     enabled: preferences.enabled,
+    email_enabled: preferences.emailEnabled,
     style: preferences.style,
     widget_size: preferences.widgetSize,
     inactivity_reminder_days: preferences.inactivityReminderDays,
@@ -171,6 +176,7 @@ export async function ensureNotificationPreferences(userId: string) {
   const current = await getNotificationPreferencesForUser(userId);
   await upsertNotificationPreferences(userId, {
     enabled: current.enabled,
+    emailEnabled: current.emailEnabled,
     slots: current.slots,
     style: current.style,
     widgetSize: current.widgetSize,
@@ -184,6 +190,7 @@ export async function markNotificationHeartbeat(userId: string, seenAt: string) 
   const current = await getNotificationPreferencesForUser(userId);
   await upsertNotificationPreferences(userId, {
     enabled: current.enabled,
+    emailEnabled: current.emailEnabled,
     slots: current.slots,
     style: current.style,
     widgetSize: current.widgetSize,
@@ -276,7 +283,7 @@ export async function listNotificationRecipients() {
     service
       .from('notification_preferences')
       .select(
-        'user_id, enabled, style, widget_size, inactivity_reminder_days, slot_preferences, updated_at, last_seen_at'
+        'user_id, enabled, email_enabled, style, widget_size, inactivity_reminder_days, slot_preferences, updated_at, last_seen_at'
       ),
     service.from('profiles').select('user_id, display_name, birth_month, birth_day'),
     service
@@ -311,6 +318,16 @@ export async function listNotificationRecipients() {
   );
   const subscriptionMap = new Map<string, StoredPushSubscription[]>();
 
+  const emailMap = new Map<string, string>();
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await service.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw new Error(error.message);
+    for (const user of data.users) {
+      if (user.email) emailMap.set(user.id, user.email);
+    }
+    if (data.users.length < 200) break;
+  }
+
   for (const item of subscriptionsResponse.data ?? []) {
     const subscriptions = subscriptionMap.get(item.user_id) ?? [];
     subscriptions.push({
@@ -331,11 +348,13 @@ export async function listNotificationRecipients() {
 
   return (preferencesResponse.data ?? []).map((item) => ({
     userId: item.user_id,
+    email: emailMap.get(item.user_id) ?? null,
     displayName: profileMap.get(item.user_id)?.displayName ?? '',
     birthMonth: profileMap.get(item.user_id)?.birthMonth ?? null,
     birthDay: profileMap.get(item.user_id)?.birthDay ?? null,
     preferences: {
       enabled: item.enabled,
+      emailEnabled: item.email_enabled === true,
       slots: normalizeSlots(item.slot_preferences),
       style: normalizeStyle(item.style),
       widgetSize: normalizeWidgetSize(item.widget_size),
@@ -418,6 +437,59 @@ export async function createNotificationDeliveryLog(input: {
     throw new Error(error.message);
   }
   return (data?.id as string | undefined) ?? null;
+}
+
+export async function createEmailDeliveryLog(input: {
+  userId: string;
+  slotKey: string;
+  recipientEmail: string;
+  providerMessageId?: string;
+  title: string;
+  body: string;
+  status: 'sent' | 'failed';
+  failureReason?: string;
+}) {
+  const service = await createServiceClient();
+  const { error } = await service.from('notification_email_delivery_logs').insert({
+    user_id: input.userId,
+    slot_key: input.slotKey,
+    recipient_email: input.recipientEmail,
+    provider_message_id: input.providerMessageId ?? null,
+    title: input.title,
+    body: input.body,
+    status: input.status,
+    failure_reason: input.failureReason ?? null,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function hasEmailAlreadySentToday(
+  userId: string,
+  slotKey: NotificationSlotKey
+) {
+  const service = await createServiceClient();
+  const startIso = getKstDayStartIso();
+  const { count, error } = await service
+    .from('notification_email_delivery_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('slot_key', slotKey)
+    .eq('status', 'sent')
+    .gte('created_at', startIso);
+  if (error) throw new Error(error.message);
+  return (count ?? 0) > 0;
+}
+
+export function getKstDayStartIso(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return new Date(`${read('year')}-${read('month')}-${read('day')}T00:00:00+09:00`).toISOString();
 }
 
 /** PR #137 — 사용자 클릭 시각 기록. */
