@@ -4,6 +4,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, Clock, MoonStar, Sparkles, X } from 'lucide-react';
 import { useFocusTrap } from '@/components/common/use-focus-trap';
 // 2026-05-15 handoff PR-G3: m-modal + m-push motion 효과.
@@ -136,12 +137,12 @@ export function PushPermissionModal({
     }
   }
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="push-modal-title"
-      className="fixed inset-0 z-50 flex items-end justify-center px-3 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center px-3 py-3 sm:items-center"
     >
       {/* §dim — 2026-05-15 handoff 56 m-modal: backdrop fade-in */}
       <button
@@ -155,7 +156,7 @@ export function PushPermissionModal({
       <article
         ref={trapRef}
         tabIndex={-1}
-        className="motion-modal-sheet relative w-full max-w-md overflow-hidden rounded-t-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:rounded-[22px] sm:p-6 focus:outline-none"
+        className="motion-modal-sheet relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-x-hidden overflow-y-auto overscroll-contain rounded-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] sm:p-6 focus:outline-none"
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         <button
@@ -277,6 +278,7 @@ export function PushPermissionModal({
           언제든 MY → 알림 센터 → 알림 끄기 에서 끌 수 있어요.
         </p>
       </article>
-    </div>
+    </div>,
+    document.body
   );
 }
