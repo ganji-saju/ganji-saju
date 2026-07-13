@@ -86,7 +86,10 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
 
   if (!open || !mounted) return null;
 
-  const activeGroup = MEGA_NAV.find((g) => g.label === activeLabel) ?? MEGA_NAV[0]!;
+  const requestedActiveGroup = MEGA_NAV.find((g) => g.label === activeLabel);
+  const activeGroup = requestedActiveGroup && !requestedActiveGroup.simple
+    ? requestedActiveGroup
+    : MEGA_NAV.find((group) => !group.simple) ?? MEGA_NAV[0]!;
   const items: MegaNavItem[] = [
     ...(activeGroup.c1?.items ?? []),
     ...(activeGroup.c2?.items ?? []),
@@ -175,7 +178,7 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
         {/* 4 group tabs */}
         <div className="mobile-nav-sheet-tabs" role="tablist" aria-label="메뉴 그룹">
           {MEGA_NAV.filter((group) => group.label !== '사용방법').map((group) => {
-            const isActive = group.label === activeLabel;
+            const isActive = group.label === activeGroup.label;
             // simple 그룹 (멤버십) 은 클릭 시 바로 이동.
             if (group.simple && group.href) {
               return (

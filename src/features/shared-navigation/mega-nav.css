@@ -146,6 +146,50 @@
   gap: 10px;
 }
 
+/* 5개 주 메뉴가 모두 유지되는 desktop 시작 구간. 회원가입은 로그인에서 다시
+   진입할 수 있으므로 숨기고, 나머지 간격/치수만 기존 토큰과 비율 안에서 압축한다. */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .mega-nav-header {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .mega-nav-logo img {
+    height: 26px !important;
+  }
+
+  .mega-nav-list {
+    gap: 0;
+  }
+
+  .mega-nav-chip {
+    min-width: 0;
+    padding: 9px clamp(8px, 1vw, 12px);
+    font-size: 13px;
+  }
+
+  .mega-nav-actions {
+    gap: 6px;
+  }
+
+  .mega-nav-icon-btn,
+  .mega-nav-avatar-link {
+    width: 34px;
+    height: 34px;
+  }
+
+  .mega-nav-login,
+  .mega-nav-coin-pill {
+    height: 34px;
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+
+  .mega-nav-actions .mega-nav-signup {
+    display: none;
+  }
+}
+
 .mega-nav-icon-btn {
   width: 38px;
   height: 38px;

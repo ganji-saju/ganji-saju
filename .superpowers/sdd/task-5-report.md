@@ -18,7 +18,7 @@
 - `src/features/shared-navigation/mega-nav.tsx`
 - `src/features/shared-navigation/mobile-nav-sheet.tsx`
 - `src/features/shared-navigation/mobile-nav-sheet.css`
-- `src/features/shared-navigation/system-guide-navigation.test.ts`
+- `src/features/shared-navigation/system-guide-navigation.test.tsx`
 
 ## Self-review
 
@@ -33,5 +33,43 @@
 - `feat: 주 메뉴에 사용방법 진입점 추가`
 
 ## 우려사항
+
+- 없음.
+
+## 리뷰 findings 후속 수정
+
+### RED
+
+- 명령: `npm run test:spec -- src/features/shared-navigation/system-guide-navigation.test.tsx`
+- 결과: 실제 `MobileNavSheet` portal 렌더에서 `/guide`의 상세 목록 0개로 실패.
+- 원인: `initialActiveLabel="사용방법"`인 simple group을 상세 `activeGroup`으로 선택.
+
+### 변경
+
+- 기존 source 문자열 검사를 jsdom 실제 `MegaNavBar`/`MobileNavSheet` 렌더 테스트로 교체.
+- 데스크톱 `/guide` accessible 링크 및 hover 시 panel 미노출 검증.
+- 모바일 `/guide` href, `onClose`, 검색→사용방법→tablist DOM 순서, 기존 tab 4개 검증.
+- 렌더된 `.mobile-nav-sheet-guide`의 computed `min-height: 44px` 검증.
+- simple group을 모바일 상세 그룹으로 선택하지 않고 첫 non-simple 그룹인 운세로 fallback.
+- 1024~1199px 구간 header/chip/actions 치수 압축 및 중복 진입 가능한 회원가입 CTA 숨김.
+
+### GREEN
+
+- 명령: `npm run test:spec && npm run typecheck && git diff --check`
+- 결과: Vitest 20 files / 181 tests 통과, TypeScript 검사 통과, diff whitespace 검사 통과.
+
+### 실제 viewport 검증
+
+- 실행: Playwright Chromium, `/guide`, viewport 1024 / 1100 / 1199px.
+- 1024px: header client/scroll width `1024/1024`, logo-nav gap `186px`, nav-actions gap `186px`.
+- 1100px: header client/scroll width `1100/1100`, logo-nav gap `220px`, nav-actions gap `220px`.
+- 1199px: header client/scroll width `1199/1199`, logo-nav gap `264px`, nav-actions gap `264px`.
+- 전 구간 `/guide` 링크 width > 0 및 href `/guide`, signup computed display `none` 확인.
+
+### 후속 커밋
+
+- `fix: 사용방법 메뉴 반응형과 렌더 테스트 보강`
+
+### 후속 우려사항
 
 - 없음.
