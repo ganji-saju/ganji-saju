@@ -6,7 +6,6 @@ import {
   normalizeSystemGuideState,
   readSystemGuideState,
   readSystemGuideStateResult,
-  shouldAutoOpenSystemGuide,
   writeSystemGuideState,
   tryWriteSystemGuideState,
 } from './system-guide-state';
@@ -40,14 +39,6 @@ test('normalization recovers invalid values and clamps valid step indexes', () =
     status: 'completed',
     stepIndex: 5,
   });
-});
-
-test('only authenticated new or in-progress users auto-open the guide', () => {
-  for (const status of ['new', 'in_progress', 'dismissed', 'completed'] as const) {
-    const state = { version: 1 as const, status, stepIndex: 0 };
-    assert.equal(shouldAutoOpenSystemGuide(false, state), false);
-    assert.equal(shouldAutoOpenSystemGuide(true, state), status === 'new' || status === 'in_progress');
-  }
 });
 
 test('reading storage recovers null, broken JSON, and access errors', () => {

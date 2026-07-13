@@ -47,13 +47,6 @@ export function normalizeSystemGuideState(value: unknown): SystemGuideState {
   };
 }
 
-export function shouldAutoOpenSystemGuide(
-  authenticated: boolean,
-  state: SystemGuideState,
-): boolean {
-  return authenticated && (state.status === 'new' || state.status === 'in_progress');
-}
-
 export function readSystemGuideState(storage: Pick<Storage, 'getItem'>): SystemGuideState {
   return readSystemGuideStateResult(storage).state;
 }
