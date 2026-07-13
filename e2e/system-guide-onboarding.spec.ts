@@ -12,7 +12,19 @@ function isAuthGuideProject(testInfo: TestInfo) {
 async function openGuideManually(page: Page) {
   await page.goto('/guide');
   await page.getByRole('button', { name: '처음부터 안내 보기' }).click();
-  return page.getByRole('dialog', { name: /사용방법/ });
+  return expectCurrentStepDialog(page);
+}
+
+async function expectCurrentStepDialog(page: Page) {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toHaveCount(1);
+  await expect(dialog).toHaveAttribute('aria-labelledby', 'system-guide-title');
+  const currentStepTitle = dialog.locator('#system-guide-title');
+  await expect(currentStepTitle).toHaveCount(1);
+  await expect(currentStepTitle).toBeVisible();
+  await expect(currentStepTitle).toHaveAttribute('id', 'system-guide-title');
+  expect(await currentStepTitle.evaluate((element) => element.tagName)).toBe('H2');
+  return dialog;
 }
 
 async function swipeUpInside(page: Page, target: ReturnType<Page['locator']>) {
@@ -45,7 +57,7 @@ test.describe('public system guide', () => {
     await page.goto('/guide');
     await expect(page.getByRole('heading', { name: '사용방법' })).toBeVisible();
     await page.getByRole('button', { name: '처음부터 안내 보기' }).click();
-    await expect(page.getByRole('dialog', { name: /사용방법/ })).toBeVisible();
+    await expectCurrentStepDialog(page);
   });
 
   test('desktop walkthrough keeps its natural height without mobile clipping', async ({ page }) => {
@@ -119,9 +131,9 @@ test.describe('Galaxy S25 Kakao in-app browser', () => {
     await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
 
     await page.reload();
-    await expect(page.getByRole('dialog', { name: /사용방법/ })).toHaveCount(0);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button', { name: '처음부터 안내 보기' }).click();
-    await expect(page.getByRole('dialog', { name: /사용방법/ })).toBeVisible();
+    await expectCurrentStepDialog(page);
   });
 });
 
@@ -155,8 +167,7 @@ test.describe('authenticated system guide', () => {
 
   test('first authenticated visit auto-opens once and dismissal persists', async ({ page }) => {
     await page.goto('/guide');
-    const dialog = page.getByRole('dialog', { name: /사용방법/ });
-    await expect(dialog).toBeVisible();
+    const dialog = await expectCurrentStepDialog(page);
     await dialog.getByRole('button', { name: '닫기', exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), SYSTEM_GUIDE_STORAGE_KEY))
