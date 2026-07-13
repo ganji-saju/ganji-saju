@@ -72,6 +72,21 @@ test.describe('public system guide', () => {
     expect(dimensions.scrollHeight).toBe(dimensions.clientHeight);
   });
 
+  test('public feature CTA returns to the same walkthrough step with browser back', async ({ page }) => {
+    const dialog = await openGuideManually(page);
+    await dialog.getByRole('button', { name: '다음' }).click();
+    await expect(dialog.locator('#system-guide-title')).toHaveText('오늘 흐름부터 가볍게 보세요');
+
+    await dialog.getByRole('link', { name: '오늘운세 보기' }).click();
+    await expect(page).toHaveURL(/\/today-fortune$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.goBack();
+    const restoredDialog = await expectCurrentStepDialog(page);
+    await expect(restoredDialog.locator('#system-guide-title')).toHaveText('오늘 흐름부터 가볍게 보세요');
+    await expect(restoredDialog).toContainText('2 / 6');
+  });
+
   test('mobile menu links to the guide page', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 780 });
     await page.goto('/');

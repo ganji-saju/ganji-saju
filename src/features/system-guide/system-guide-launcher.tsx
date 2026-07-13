@@ -7,9 +7,11 @@ import { SYSTEM_GUIDE_STEPS } from './system-guide-content';
 import { SYSTEM_GUIDE_OPEN_EVENT } from './system-guide-events';
 import { SystemGuideOnboarding } from './system-guide-onboarding';
 import {
+  createDefaultSystemGuideState,
   readSystemGuideStateResult,
   shouldAutoOpenSystemGuide,
   tryWriteSystemGuideState,
+  type SystemGuideState,
 } from './system-guide-state';
 
 const AUTO_EXCLUDED_PATHS = [
@@ -58,6 +60,7 @@ export function SystemGuideLauncher() {
   const [stepIndex, setStepIndex] = useState(0);
   const [launchKey, setLaunchKey] = useState(0);
   const autoOpenedRef = useRef(false);
+  const inMemoryStateRef = useRef<SystemGuideState>(createDefaultSystemGuideState());
   const openSourceRef = useRef<'auto' | 'manual' | null>(null);
   const navigationRef = useRef<{
     originPathname: string;
@@ -95,10 +98,11 @@ export function SystemGuideLauncher() {
       if (navigation.reachedDestination && currentPathname === navigation.originPathname) {
         const readResult = readSystemGuideStateResult(window.localStorage);
         navigationRef.current = null;
-        if (readResult.available && readResult.state.status === 'in_progress') {
+        const resumeState = readResult.available ? readResult.state : inMemoryStateRef.current;
+        if (resumeState.status === 'in_progress') {
           autoOpenedRef.current = true;
           openSourceRef.current = 'auto';
-          setStepIndex(readResult.state.stepIndex);
+          setStepIndex(resumeState.stepIndex);
           setLaunchKey((current) => current + 1);
           setOpen(true);
         }
@@ -127,11 +131,13 @@ export function SystemGuideLauncher() {
         isSystemGuideAutoExcludedPath(pathname)
       ) return;
       const readResult = readSystemGuideStateResult(window.localStorage);
-      if (!readResult.available || !shouldAutoOpenSystemGuide(authenticated, readResult.state)) return;
-      if (!tryWriteSystemGuideState(window.localStorage, readResult.state)) return;
+      const initialState = readResult.available ? readResult.state : createDefaultSystemGuideState();
+      if (!shouldAutoOpenSystemGuide(authenticated, initialState)) return;
+      inMemoryStateRef.current = initialState;
+      tryWriteSystemGuideState(window.localStorage, initialState);
       autoOpenedRef.current = true;
       openSourceRef.current = 'auto';
-      setStepIndex(readResult.state.stepIndex);
+      setStepIndex(initialState.stepIndex);
       setLaunchKey((current) => current + 1);
       setOpen(true);
     }
@@ -161,11 +167,13 @@ export function SystemGuideLauncher() {
   }, [pathname]);
 
   function persist(status: 'in_progress' | 'dismissed' | 'completed', nextStepIndex: number) {
-    tryWriteSystemGuideState(window.localStorage, {
+    const nextState: SystemGuideState = {
       version: 1,
       status,
       stepIndex: nextStepIndex,
-    });
+    };
+    inMemoryStateRef.current = nextState;
+    tryWriteSystemGuideState(window.localStorage, nextState);
   }
 
   return (

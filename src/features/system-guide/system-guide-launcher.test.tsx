@@ -276,23 +276,25 @@ describe('SystemGuideLauncher', () => {
     expect(guide()?.getAttribute('data-step')).toBe('2');
   });
 
-  it('localStorage 읽기가 실패하면 자동 실행은 닫고 수동 실행은 허용한다', async () => {
+  it('localStorage 읽기가 실패해도 default 단계로 자동 실행하고 dismiss 후 같은 mount 인증 이벤트에 재노출하지 않는다', async () => {
     const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
     mocks.user = { id: 'user-1' };
     await renderLauncher();
+    expect(guide()?.getAttribute('data-step')).toBe('0');
+    click('dismiss');
     expect(guide()).toBeNull();
-    act(() => openSystemGuide(1));
-    expect(guide()).not.toBeNull();
+    await act(async () => mocks.authCallback?.('SIGNED_IN', { user: { id: 'user-1' } }));
+    expect(guide()).toBeNull();
     getItem.mockRestore();
   });
 
-  it('localStorage 쓰기가 실패하면 자동 실행은 닫고 수동 실행은 허용한다', async () => {
+  it('localStorage 쓰기가 실패해도 default 단계로 자동 실행하고 UI를 닫을 수 있다', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
     mocks.user = { id: 'user-1' };
     await renderLauncher();
+    expect(guide()?.getAttribute('data-step')).toBe('0');
+    click('dismiss');
     expect(guide()).toBeNull();
-    act(() => openSystemGuide(1));
-    expect(guide()).not.toBeNull();
     setItem.mockRestore();
   });
 
