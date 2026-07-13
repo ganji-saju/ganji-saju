@@ -41,6 +41,11 @@ export function isSystemGuideAutoExcludedPath(pathname: string): boolean {
   );
 }
 
+function normalizeSystemGuidePathname(pathOrHref: string): string {
+  const pathname = new URL(pathOrHref, 'https://ganjisaju.kr').pathname;
+  return pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+}
+
 function validManualStep(value: unknown) {
   return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < SYSTEM_GUIDE_STEPS.length
     ? value
@@ -73,14 +78,21 @@ export function SystemGuideLauncher() {
   }, []);
 
   useEffect(() => {
+    const currentPathname = normalizeSystemGuidePathname(pathname);
     const navigation = navigationRef.current;
     if (navigation) {
-      if (pathname === navigation.destinationHref) {
+      if (
+        currentPathname !== navigation.originPathname &&
+        (currentPathname !== navigation.destinationHref ||
+          isSystemGuideAutoExcludedPath(currentPathname))
+      ) {
+        navigationRef.current = null;
+      } else if (currentPathname === navigation.destinationHref) {
         navigation.reachedDestination = true;
         setOpen(false);
         return;
       }
-      if (navigation.reachedDestination && pathname === navigation.originPathname) {
+      if (navigation.reachedDestination && currentPathname === navigation.originPathname) {
         const readResult = readSystemGuideStateResult(window.localStorage);
         navigationRef.current = null;
         if (readResult.available && readResult.state.status === 'in_progress') {
@@ -167,11 +179,11 @@ export function SystemGuideLauncher() {
       }}
       onNavigate={(currentStepIndex, href) => {
         persist('in_progress', currentStepIndex);
-        navigationRef.current = {
-          originPathname: pathname,
-          destinationHref: href,
-          reachedDestination: false,
-        };
+        const originPathname = normalizeSystemGuidePathname(pathname);
+        const destinationHref = normalizeSystemGuidePathname(href);
+        navigationRef.current = originPathname === destinationHref
+          ? null
+          : { originPathname, destinationHref, reachedDestination: false };
         openSourceRef.current = null;
         setOpen(false);
       }}

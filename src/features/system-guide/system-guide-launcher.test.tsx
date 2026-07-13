@@ -39,6 +39,7 @@ vi.mock('./system-guide-onboarding', () => ({
     <div data-testid="guide" data-step={props.initialStepIndex}>
       <button onClick={() => props.onStepChange(3)}>step</button>
       <button onClick={() => props.onNavigate(3, '/saju/new')}>navigate</button>
+      <button onClick={() => props.onNavigate(2, '/guide?source=guide')}>same-route</button>
       <button onClick={() => props.onDismiss(props.initialStepIndex)}>dismiss</button>
       <button onClick={props.onComplete}>complete</button>
     </div>
@@ -196,6 +197,42 @@ describe('SystemGuideLauncher', () => {
     expect(guide()).toBeNull();
 
     await navigate('/');
+    expect(guide()?.getAttribute('data-step')).toBe('3');
+  });
+
+  it('query가 포함된 같은 pathname CTA는 pending을 만들지 않아 이후 자동 실행을 막지 않는다', async () => {
+    mocks.pathname = '/guide';
+    await renderLauncher();
+    act(() => openSystemGuide(2));
+    click('same-route');
+    expect(guide()).toBeNull();
+
+    await act(async () => mocks.authCallback?.('SIGNED_IN', { user: { id: 'user-1' } }));
+    expect(guide()?.getAttribute('data-step')).toBe('2');
+  });
+
+  it('/guide 수동 CTA가 /login으로 redirect되면 pending을 해제해 다음 일반 경로에서 자동 실행한다', async () => {
+    mocks.pathname = '/guide';
+    await renderLauncher();
+    act(() => openSystemGuide(3));
+    click('navigate');
+
+    await navigate('/login');
+    await act(async () => mocks.authCallback?.('SIGNED_IN', { user: { id: 'user-1' } }));
+    expect(guide()).toBeNull();
+
+    mocks.user = { id: 'user-1' };
+    await navigate('/free');
+    expect(guide()?.getAttribute('data-step')).toBe('3');
+  });
+
+  it('예상하지 않은 non-excluded redirect도 pending을 해제해 SIGNED_IN 자동 실행을 허용한다', async () => {
+    await renderLauncher();
+    act(() => openSystemGuide(3));
+    click('navigate');
+
+    await navigate('/free');
+    await act(async () => mocks.authCallback?.('SIGNED_IN', { user: { id: 'user-1' } }));
     expect(guide()?.getAttribute('data-step')).toBe('3');
   });
 
