@@ -116,6 +116,28 @@
   font-size: 15px;
 }
 
+.mobile-nav-sheet-guide {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 20px 0;
+  padding: 0 14px;
+  border: 1px solid var(--app-line);
+  border-radius: 12px;
+  color: var(--app-copy);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.mobile-nav-sheet-guide:hover {
+  background: var(--app-pink-soft);
+  color: var(--app-pink-strong);
+  border-color: var(--app-pink-line);
+}
+
 /* tabs — 2026-05-16: 사용자 보고 (사이즈/위치 불일치). 4 pill 을 동일 너비로 채워
    행 전체를 균등 분배. flex:1 + min-height 36 로 터치 친화 크기 보장. */
 .mobile-nav-sheet-tabs {
