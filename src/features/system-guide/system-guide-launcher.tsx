@@ -1,15 +1,18 @@
 'use client';
 
+// 2026-07-13 — 사용방법 안내는 **수동 실행 전용**이다. 첫 방문/로그인 시 자동으로 뜨던 온보딩
+//   모달은 불편하다는 피드백으로 제거했다(인증 감지 auto-open 삭제). 이제 안내는 오직
+//   `/guide` 메뉴 페이지의 '처음부터 안내 보기'(openSystemGuide 이벤트)로만 열린다.
+//   아래 navigationRef 로직은 그 수동 워크스루 도중 스텝 CTA 를 눌러 기능으로 이동했다가
+//   브라우저 back 으로 돌아오면 보던 단계를 복원하는 용도(자동 최초 노출과 무관).
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { SYSTEM_GUIDE_STEPS } from './system-guide-content';
 import { SYSTEM_GUIDE_OPEN_EVENT } from './system-guide-events';
 import { SystemGuideOnboarding } from './system-guide-onboarding';
 import {
   createDefaultSystemGuideState,
   readSystemGuideStateResult,
-  shouldAutoOpenSystemGuide,
   tryWriteSystemGuideState,
   type SystemGuideState,
 } from './system-guide-state';
@@ -59,7 +62,6 @@ export function SystemGuideLauncher() {
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [launchKey, setLaunchKey] = useState(0);
-  const autoOpenedRef = useRef(false);
   const inMemoryStateRef = useRef<SystemGuideState>(createDefaultSystemGuideState());
   const memoryStateAuthoritativeRef = useRef(false);
   const openSourceRef = useRef<'auto' | 'manual' | null>(null);
@@ -103,7 +105,6 @@ export function SystemGuideLauncher() {
           ? inMemoryStateRef.current
           : readResult.state;
         if (resumeState.status === 'in_progress') {
-          autoOpenedRef.current = true;
           openSourceRef.current = 'auto';
           setStepIndex(resumeState.stepIndex);
           setLaunchKey((current) => current + 1);
@@ -117,59 +118,6 @@ export function SystemGuideLauncher() {
       openSourceRef.current = null;
       setOpen(false);
     }
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!hasSupabaseBrowserEnv) return;
-
-    let cancelled = false;
-    let authGeneration = 0;
-    const supabase = createClient();
-
-    function maybeAutoOpen(authenticated: boolean) {
-      if (
-        cancelled ||
-        autoOpenedRef.current ||
-        navigationRef.current ||
-        isSystemGuideAutoExcludedPath(pathname)
-      ) return;
-      const readResult = readSystemGuideStateResult(window.localStorage);
-      const initialState = readResult.available ? readResult.state : createDefaultSystemGuideState();
-      if (!shouldAutoOpenSystemGuide(authenticated, initialState)) return;
-      inMemoryStateRef.current = initialState;
-      memoryStateAuthoritativeRef.current = !tryWriteSystemGuideState(
-        window.localStorage,
-        initialState,
-      );
-      autoOpenedRef.current = true;
-      openSourceRef.current = 'auto';
-      setStepIndex(initialState.stepIndex);
-      setLaunchKey((current) => current + 1);
-      setOpen(true);
-    }
-
-    const getUserGeneration = authGeneration;
-    void supabase.auth.getUser()
-      .then(({ data: { user } }) => {
-        if (getUserGeneration !== authGeneration) return;
-        maybeAutoOpen(Boolean(user));
-      })
-      .catch(() => {
-        // Network/auth failures leave the optional guide closed.
-      });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION') return;
-      authGeneration += 1;
-      maybeAutoOpen(Boolean(session?.user));
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
   }, [pathname]);
 
   function persist(status: 'in_progress' | 'dismissed' | 'completed', nextStepIndex: number) {

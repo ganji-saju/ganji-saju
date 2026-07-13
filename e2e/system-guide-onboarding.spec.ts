@@ -1,13 +1,9 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-const SYSTEM_GUIDE_STORAGE_KEY = 'ganji-saju:system-guide:v1';
-const SYSTEM_GUIDE_INIT_MARKER = 'e2e:system-guide:init:v1';
+// 2026-07-13 — 사용방법 안내는 수동 실행 전용이다. 첫 방문/로그인 자동 노출은 제거됐으므로
+//   (불편 피드백) auto-open 시나리오 spec 도 함께 삭제했다. '/guide' 메뉴에서만 연다.
 const KAKAO_GALAXY_S25_UA =
   'Mozilla/5.0 (Linux; Android 15; SM-S931N) AppleWebKit/537.36 Mobile Safari/537.36 KAKAOTALK';
-
-function isAuthGuideProject(testInfo: TestInfo) {
-  return testInfo.project.name === 'chromium-auth-guide';
-}
 
 async function openGuideManually(page: Page) {
   await page.goto('/guide');
@@ -49,8 +45,12 @@ async function swipeUpInside(page: Page, target: ReturnType<Page['locator']>) {
 }
 
 test.describe('public system guide', () => {
-  test.beforeEach(async ({}, testInfo) => {
-    test.skip(isAuthGuideProject(testInfo), '인증 project는 자동 실행 시나리오만 검증');
+  test('마운트만으로는 자동 실행되지 않는다(자동 온보딩 제거)', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.goto('/guide');
+    await expect(page.getByRole('heading', { name: '사용방법' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test('guide page opens the six-step walkthrough manually', async ({ page }) => {
@@ -107,10 +107,6 @@ test.describe('Galaxy S25 Kakao in-app browser', () => {
     userAgent: KAKAO_GALAXY_S25_UA,
   });
 
-  test.beforeEach(async ({}, testInfo) => {
-    test.skip(isAuthGuideProject(testInfo), '인증 project는 자동 실행 시나리오만 검증');
-  });
-
   test('walkthrough remains usable, scrollable, and persistent across reload', async ({ page }) => {
     const dialog = await openGuideManually(page);
     await expect(dialog).toBeVisible();
@@ -149,45 +145,5 @@ test.describe('Galaxy S25 Kakao in-app browser', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button', { name: '처음부터 안내 보기' }).click();
     await expectCurrentStepDialog(page);
-  });
-});
-
-test.describe('authenticated system guide', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    test.skip(!isAuthGuideProject(testInfo), '인증 전용 project에서만 실행');
-    test.skip(
-      !process.env.E2E_TEST_USER_EMAIL || !process.env.E2E_TEST_USER_PASSWORD,
-      'E2E_TEST_USER_EMAIL / E2E_TEST_USER_PASSWORD 미설정 — 인증 안내 spec skip',
-    );
-    await page.addInitScript(
-      ({ storageKey, markerKey }) => {
-        if (sessionStorage.getItem(markerKey)) return;
-        localStorage.removeItem(storageKey);
-        sessionStorage.setItem(markerKey, '1');
-      },
-      { storageKey: SYSTEM_GUIDE_STORAGE_KEY, markerKey: SYSTEM_GUIDE_INIT_MARKER },
-    );
-  });
-
-  test.afterEach(async ({ page }, testInfo) => {
-    if (!isAuthGuideProject(testInfo)) return;
-    await page.evaluate(
-      ({ storageKey, markerKey }) => {
-        localStorage.removeItem(storageKey);
-        sessionStorage.removeItem(markerKey);
-      },
-      { storageKey: SYSTEM_GUIDE_STORAGE_KEY, markerKey: SYSTEM_GUIDE_INIT_MARKER },
-    ).catch(() => {});
-  });
-
-  test('first authenticated visit auto-opens once and dismissal persists', async ({ page }) => {
-    await page.goto('/guide');
-    const dialog = await expectCurrentStepDialog(page);
-    await dialog.getByRole('button', { name: '닫기', exact: true }).click();
-    await expect(dialog).toBeHidden();
-    await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), SYSTEM_GUIDE_STORAGE_KEY))
-      .toContain('dismissed');
-    await page.reload();
-    await expect(dialog).toHaveCount(0);
   });
 });

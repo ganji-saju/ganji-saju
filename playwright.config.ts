@@ -65,17 +65,9 @@ export default defineConfig({
       dependencies: ['auth-setup'],
       testMatch: /saju\.spec\.ts/,
     },
-    // 사용방법 첫 진입 자동 실행 검증. 기존 auth setup/storage state를 재사용하고,
-    // credentials 미설정 환경에서는 spec이 사유를 명시해 skip한다.
-    {
-      name: 'chromium-auth-guide',
-      use: {
-        ...devices['Desktop Chrome'],
-        ...(HAS_TEST_USER ? { storageState: AUTH_STORAGE_PATH } : {}),
-      },
-      dependencies: ['auth-setup'],
-      testMatch: /system-guide-onboarding\.spec\.ts/,
-    },
+    // 사용방법 안내(system-guide-onboarding.spec.ts)는 수동 실행 전용이라 인증이 필요 없다 —
+    //   기본 chromium(인증 X) 프로젝트가 실행한다. 과거 자동 실행 검증용 chromium-auth-guide
+    //   project 는 자동 온보딩 제거(2026-07-13)로 함께 삭제했다.
     // Phase 2C 활성 entitlement 사용자 결제 차단 spec.
     // service_role + test user 양쪽 필요. 미설정 시 beforeEach 가 skip 처리.
     {
