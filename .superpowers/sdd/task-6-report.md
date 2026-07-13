@@ -59,3 +59,41 @@
 - 현재 셸에 `E2E_TEST_USER_EMAIL` / `E2E_TEST_USER_PASSWORD`가 없어 실제 로그인 자동 실행은 수행하지 못했고, 의도된 명시 skip 경로를 검증함.
 - 개발 서버에서 `NO_COLOR`/`FORCE_COLOR` 경고와 CSP report-only 로그가 출력됐으나 테스트 실패나 타입 오류는 없었음.
 - repo에 ESLint dependency/config가 없어 `npx eslint ...`는 최신 ESLint 임시 설치 후 config 부재로 실행되지 않았으며, 대신 TypeScript와 관련 Vitest/E2E 및 `git diff --check`를 통과함.
+
+## Important 리뷰 수정 (2026-07-13)
+
+### Red
+
+- 명령: `npx playwright test e2e/system-guide-onboarding.spec.ts --project=chromium --grep "desktop walkthrough"`
+- 결과: 1 failed. 데스크톱 article `clientHeight`가 382px로 24rem 모바일 제한에 잘리는 회귀를 확인함.
+
+### 변경
+
+- 인증 init script에 `sessionStorage` marker를 추가해 동일 browser context의 최초 document에서만 guide localStorage key를 제거함. dismiss 상태와 marker는 reload에서 유지되고, afterEach는 guide key와 marker만 정리함.
+- 모바일 기본 max-height는 24rem로 유지하되 `sm` 이상은 기존 `calc(100dvh - 1.5rem)` 제한으로 복원함. 데스크톱 natural height/비스크롤 회귀 E2E를 추가함.
+- Galaxy 내부 스크롤 검증을 `mouse.wheel`에서 CDP `Input.dispatchTouchEvent` 기반 article 내부 터치 스와이프로 교체함.
+
+### Green 및 실제 실행 결과
+
+- 명령: `npx playwright test e2e/system-guide-onboarding.spec.ts --project=chromium`
+  - 결과: 4 passed, 1 skipped.
+- 명령: `npx playwright test e2e/system-guide-onboarding.spec.ts --project=chromium-auth-guide`
+  - 결과: credentials 미설정으로 6 skipped. 실제 인증 로그인 경로는 환경 제약상 미실행.
+- 명령: `npm run typecheck`
+  - 결과: exit 0.
+- 명령: `npx vitest run src/features/system-guide/system-guide-onboarding.test.tsx src/features/system-guide/system-guide-launcher.test.tsx src/features/system-guide/system-guide-page.test.tsx src/features/shared-navigation/system-guide-navigation.test.tsx`
+  - 결과: 4 files passed, 38 tests passed.
+- 명령: `git diff --check`
+  - 결과: exit 0.
+
+### Self-review
+
+- init marker는 sessionStorage에만 있어 storageState로 유출되지 않고 reload에는 유지됨.
+- dismiss 직후 localStorage가 `dismissed`를 포함하는지 확인한 뒤 reload 후 dialog 0개를 단언하므로, marker가 없던 기존 구현은 credentials 환경에서 실패함.
+- 터치 helper는 article bounding box 내부에서 시작/종료하며 8단계 touchMove 후 실제 `scrollTop > 0`을 기다림.
+- 데스크톱 테스트는 article 높이가 384px보다 크고 `scrollHeight === clientHeight`임을 확인해 모바일 제한 누출을 검출함.
+
+### 커밋
+
+- 코드 및 E2E: `7cb28b70` (`test: 온보딩 회귀 시나리오 보강`).
+- 이 append 기록은 후속 보고서 커밋에 포함.
