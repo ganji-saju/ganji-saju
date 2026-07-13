@@ -73,3 +73,37 @@
 ### 후속 우려사항
 
 - 없음.
+
+## Important 회원가입 CTA 유지 수정
+
+### RED
+
+- 명령: `npm run test:spec -- src/features/shared-navigation/system-guide-navigation.test.tsx`
+- 결과: 6개 중 1개 실패. 1024~1199px media query의 `.mega-nav-signup { display: none }` 검출.
+
+### 변경
+
+- compact desktop media query에서 회원가입 CTA 숨김 규칙 제거.
+- 1024px 대응은 기존 header/chip/action 간격과 치수 압축만 유지.
+- 회원가입 CTA 비노출 회귀 테스트 추가.
+
+### GREEN
+
+- 명령: `npm run test:spec && npm run typecheck && git diff --check`
+- 결과: Vitest 20 files / 182 tests 통과, TypeScript 검사 통과, diff whitespace 검사 통과.
+
+### 실제 Chromium 측정
+
+- 실행 경로: `/guide`, 비로그인 상태, viewport 1024 / 1100 / 1199px.
+- 1024px: header client/scroll `1024/1024`, signup display/width `flex/91px`, guide display/width `block/79px`.
+- 1100px: header client/scroll `1100/1100`, signup display/width `flex/91px`, guide display/width `block/81px`.
+- 1199px: header client/scroll `1199/1199`, signup display/width `flex/91px`, guide display/width `block/83px`.
+- 세 viewport 모두 guide href `/guide` 확인.
+
+### 커밋
+
+- `fix: compact desktop 회원가입 CTA 유지`
+
+### 우려사항
+
+- 없음.

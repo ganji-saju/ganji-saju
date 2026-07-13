@@ -75,6 +75,19 @@ describe('system guide navigation', () => {
     expect(document.querySelector('.mega-nav-panel')).toBeNull();
   });
 
+  it('1024px desktop 대응 CSS도 기존 회원가입 CTA를 숨기지 않는다', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src/features/shared-navigation/mega-nav.css'),
+      'utf8',
+    );
+    const compactDesktop = source.match(
+      /@media \(min-width: 1024px\) and \(max-width: 1199px\) \{([\s\S]*?)\n\}/,
+    )?.[1];
+
+    expect(compactDesktop).toBeDefined();
+    expect(compactDesktop).not.toMatch(/mega-nav-signup[\s\S]*?display:\s*none/);
+  });
+
   it('모바일 전체 메뉴는 /guide 독립 행을 검색과 4개 tab 사이에 렌더한다', async () => {
     await render(<MobileNavSheet open onClose={mocks.onClose} initialActiveLabel="사용방법" />);
     const dialog = document.querySelector('[role="dialog"][aria-label="전체 메뉴"]');

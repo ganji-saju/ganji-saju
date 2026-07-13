@@ -146,8 +146,8 @@
   gap: 10px;
 }
 
-/* 5개 주 메뉴가 모두 유지되는 desktop 시작 구간. 회원가입은 로그인에서 다시
-   진입할 수 있으므로 숨기고, 나머지 간격/치수만 기존 토큰과 비율 안에서 압축한다. */
+/* 5개 주 메뉴와 기존 actions가 모두 유지되는 desktop 시작 구간.
+   간격/치수만 기존 토큰과 비율 안에서 압축한다. */
 @media (min-width: 1024px) and (max-width: 1199px) {
   .mega-nav-header {
     padding: 12px 16px;
@@ -183,10 +183,6 @@
     height: 34px;
     padding-inline: 12px;
     font-size: 12px;
-  }
-
-  .mega-nav-actions .mega-nav-signup {
-    display: none;
   }
 }
 
