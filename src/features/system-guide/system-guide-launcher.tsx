@@ -61,6 +61,7 @@ export function SystemGuideLauncher() {
   const [launchKey, setLaunchKey] = useState(0);
   const autoOpenedRef = useRef(false);
   const inMemoryStateRef = useRef<SystemGuideState>(createDefaultSystemGuideState());
+  const memoryStateAuthoritativeRef = useRef(false);
   const openSourceRef = useRef<'auto' | 'manual' | null>(null);
   const navigationRef = useRef<{
     originPathname: string;
@@ -98,7 +99,9 @@ export function SystemGuideLauncher() {
       if (navigation.reachedDestination && currentPathname === navigation.originPathname) {
         const readResult = readSystemGuideStateResult(window.localStorage);
         navigationRef.current = null;
-        const resumeState = readResult.available ? readResult.state : inMemoryStateRef.current;
+        const resumeState = memoryStateAuthoritativeRef.current || !readResult.available
+          ? inMemoryStateRef.current
+          : readResult.state;
         if (resumeState.status === 'in_progress') {
           autoOpenedRef.current = true;
           openSourceRef.current = 'auto';
@@ -134,7 +137,10 @@ export function SystemGuideLauncher() {
       const initialState = readResult.available ? readResult.state : createDefaultSystemGuideState();
       if (!shouldAutoOpenSystemGuide(authenticated, initialState)) return;
       inMemoryStateRef.current = initialState;
-      tryWriteSystemGuideState(window.localStorage, initialState);
+      memoryStateAuthoritativeRef.current = !tryWriteSystemGuideState(
+        window.localStorage,
+        initialState,
+      );
       autoOpenedRef.current = true;
       openSourceRef.current = 'auto';
       setStepIndex(initialState.stepIndex);
@@ -173,7 +179,7 @@ export function SystemGuideLauncher() {
       stepIndex: nextStepIndex,
     };
     inMemoryStateRef.current = nextState;
-    tryWriteSystemGuideState(window.localStorage, nextState);
+    memoryStateAuthoritativeRef.current = !tryWriteSystemGuideState(window.localStorage, nextState);
   }
 
   return (

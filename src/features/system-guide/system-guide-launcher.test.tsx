@@ -298,6 +298,23 @@ describe('SystemGuideLauncher', () => {
     setItem.mockRestore();
   });
 
+  it('localStorage 쓰기 실패 뒤 CTA 왕복은 stale storage보다 memory의 in_progress 단계를 복원하고 중복 자동 실행하지 않는다', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });
+    mocks.user = { id: 'user-1' };
+    await renderLauncher();
+    click('step');
+    click('navigate');
+
+    await navigate('/saju/new');
+    expect(guide()).toBeNull();
+    await navigate('/');
+    expect(guide()?.getAttribute('data-step')).toBe('3');
+
+    await act(async () => mocks.authCallback?.('SIGNED_IN', { user: { id: 'user-1' } }));
+    expect(guide()?.getAttribute('data-step')).toBe('3');
+    setItem.mockRestore();
+  });
+
   it('getUser rejection을 처리해 unhandled rejection을 만들지 않는다', async () => {
     const unhandled = vi.fn();
     window.addEventListener('unhandledrejection', unhandled);
