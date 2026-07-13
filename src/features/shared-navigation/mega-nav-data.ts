@@ -131,6 +131,11 @@ export const MEGA_NAV: MegaNavGroup[] = [
     simple: true,
     href: '/membership',
   },
+  {
+    label: '사용방법',
+    simple: true,
+    href: '/guide',
+  },
 ];
 
 /** pathname 으로 현재 active group label 판정. 운세 default. */
@@ -157,6 +162,9 @@ export function resolveActiveGroup(pathname: string): string {
   }
   if (pathname.startsWith('/membership')) {
     return '멤버십';
+  }
+  if (pathname.startsWith('/guide')) {
+    return '사용방법';
   }
   return '운세'; // 홈/기본은 운세 활성
 }

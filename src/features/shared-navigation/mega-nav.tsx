@@ -1,6 +1,6 @@
 // 2026-05-16 PR #155 — PC 메가 메뉴 (sticky top horizontal nav).
 // 첨부 desktop.jsx 의 mega-menu 디자인을 우리 토큰/라우트로 재구현.
-// - 4 group: 운세 / 사주 / 대화 / 멤버십
+// - 주 메뉴: 운세 / 사주 / 대화 / 멤버십 / 사용방법
 // - 운세/사주/대화 호버 시 3컬럼 풀폭 패널
 // - 멤버십은 simple 링크 (패널 없음)
 // - 운세 기본 활성 (pathname 분기, resolveActiveGroup)

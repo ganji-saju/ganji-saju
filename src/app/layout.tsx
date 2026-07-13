@@ -26,6 +26,7 @@ import { ANALYTICS_CONSENT_KEY } from "@/components/analytics/analytics-consent"
 // 2026-07-07 Phase 2 — 전역 가격 표시 단일화. 서버에서 리졸버 맵 1회 로드 → 클라 전파.
 import { PriceProvider } from "@/components/payments/price-provider";
 import { getPriceDisplayMap } from "@/lib/payments/price-display";
+import { SystemGuideLauncher } from "@/features/system-guide/system-guide-launcher";
 import "@/components/motion/motion-primitives.css";
 
 // 2026-05-16 PR E1 — 모바일 LCP 개선. 이전엔 6 weight (400/500/600/700/800/900)
@@ -271,6 +272,7 @@ export default async function RootLayout({
         <NotificationClickTracker />
         <ScrollResetOnNavigate />
         <PriceProvider map={priceMap}>{children}</PriceProvider>
+        <SystemGuideLauncher />
         <KakaoSdkLoader />
         <VisitPing />
         <AnalyticsConsentBanner />

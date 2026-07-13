@@ -8,6 +8,7 @@
 // 실패가 아닌 skip 으로 흘러간다 (Playwright dependency + skip 의도 동작).
 
 import { test as setup, expect } from '@playwright/test';
+import { SYSTEM_GUIDE_STORAGE_KEY } from '../src/features/system-guide/system-guide-state';
 import { getTestUser } from './fixtures/test-user';
 
 const AUTH_STORAGE_PATH = 'e2e/.auth/test-user.json';
@@ -39,6 +40,16 @@ setup('authenticate as test user', async ({ page }) => {
   const cookies = await page.context().cookies();
   const hasSupabaseToken = cookies.some((c) => /^sb-.*-auth-token/.test(c.name));
   expect(hasSupabaseToken, '로그인 후 Supabase auth cookie 가 설정돼야 한다').toBe(true);
+
+  // 일반 인증/결제 E2E는 첫 실행 안내와 독립적으로 검증한다.
+  // chromium-auth-guide는 addInitScript에서 이 key를 제거해 자동 실행을 별도 검증한다.
+  await page.evaluate((storageKey) => {
+    localStorage.setItem(storageKey, JSON.stringify({
+      version: 1,
+      status: 'dismissed',
+      stepIndex: 0,
+    }));
+  }, SYSTEM_GUIDE_STORAGE_KEY);
 
   // storage state 저장 — 후속 spec 들이 storageState 옵션으로 재사용.
   await page.context().storageState({ path: AUTH_STORAGE_PATH });

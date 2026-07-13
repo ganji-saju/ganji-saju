@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'src/**/*.test.tsx'],
     // 기존 .test.ts 는 scripts/run-unit-tests.mjs 에서 별도 실행.
     exclude: ['node_modules', '.next', 'dist', 'src/**/*.test.ts'],
   },
