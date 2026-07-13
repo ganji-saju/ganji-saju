@@ -8,7 +8,10 @@
 // 회수는 **지급과 대칭**이어야 한다. 지급이 order_id 로 entitlement 를 남기므로,
 // 회수도 order_id 로 열거해 전부 제거한다(번들이면 구성품 전부).
 import assert from 'node:assert/strict';
-import { buildCancellationRevokePlan } from './cancellation';
+import {
+  buildCancellationRevokePlan,
+  resolveCancellationTerminalStatus,
+} from './cancellation';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -85,4 +88,66 @@ test('회수할 게 없으면 hasWork=false', () => {
     entitlements: [],
   });
   assert.equal(plan.hasWork, false);
+});
+
+// 2026-07-13 — 취소 통보 시 종료 상태 판정.
+//   결제까지 간 주문을 취소하면 = 환불이다 → 'refunded'(매출 이력 보존).
+//   결제 전에 창을 닫은 주문은 = 단순 취소 → 'canceled'.
+//   과거엔 둘 다 'canceled' 로 뭉개져 결제 성공분이 매출에서 사라졌다.
+//   '결제까지 갔다'의 신호 = confirmedAt/fulfilledAt 존재 또는 지급 상태.
+
+test('결제 승인된 주문의 취소는 refunded (confirmedAt 존재)', () => {
+  assert.equal(
+    resolveCancellationTerminalStatus({ status: 'fulfilled', confirmedAt: '2026-07-13T00:00:00Z', fulfilledAt: '2026-07-13T00:00:01Z' }),
+    'refunded'
+  );
+});
+
+test('지급은 실패했어도 결제 승인됐으면 refunded (돈은 받았다)', () => {
+  assert.equal(
+    resolveCancellationTerminalStatus({ status: 'fulfillment_failed', confirmedAt: '2026-07-13T00:00:00Z', fulfilledAt: null }),
+    'refunded'
+  );
+});
+
+test('지급 상태(confirmed/fulfilling/fulfilled)면 timestamp 없어도 refunded', () => {
+  for (const status of ['confirmed', 'fulfilling', 'fulfilled'] as const) {
+    assert.equal(
+      resolveCancellationTerminalStatus({ status, confirmedAt: null, fulfilledAt: null }),
+      'refunded',
+      status
+    );
+  }
+});
+
+test('결제 전 취소는 canceled (prepared·승인시각 없음)', () => {
+  assert.equal(
+    resolveCancellationTerminalStatus({ status: 'prepared', confirmedAt: null, fulfilledAt: null }),
+    'canceled'
+  );
+});
+
+test('결제 실패분의 취소통보는 canceled (돈을 받지 않았다)', () => {
+  assert.equal(
+    resolveCancellationTerminalStatus({ status: 'payment_failed', confirmedAt: null, fulfilledAt: null }),
+    'canceled'
+  );
+});
+
+// 2026-07-13 — admin 환불 경로 대칭화. 전액환불만 원주문을 refunded 로 표시한다.
+//   부분환불을 전액으로 오판하면 나머지 매출까지 통째로 사라진다 → 애매하면 표시 안 함(보수).
+import { isFullRefund } from './cancellation';
+
+test('isFullRefund: 환불액 == 원결제액 → 전액', () => {
+  assert.equal(isFullRefund({ amount: 9900, originalAmount: 9900 }), true);
+});
+
+test('isFullRefund: 환불액 < 원결제액 → 부분(false)', () => {
+  assert.equal(isFullRefund({ amount: 5000, originalAmount: 9900 }), false);
+});
+
+test('isFullRefund: 정보 부족(어느 쪽 null)이면 보수적으로 false', () => {
+  assert.equal(isFullRefund({ amount: null, originalAmount: 9900 }), false);
+  assert.equal(isFullRefund({ amount: 9900, originalAmount: null }), false);
+  assert.equal(isFullRefund({ amount: null, originalAmount: null }), false);
 });

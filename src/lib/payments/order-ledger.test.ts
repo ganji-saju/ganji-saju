@@ -37,6 +37,7 @@ function baseOrder(overrides: Partial<PaymentOrder> = {}): PaymentOrder {
     confirmedAt: null,
     fulfilledAt: null,
     failedAt: null,
+    refundedAt: null,
     lastReconciledAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

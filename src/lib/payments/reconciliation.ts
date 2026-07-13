@@ -3,11 +3,13 @@ import {
   attachPaymentKeyToOrder,
   markPaymentOrderConfirmed,
   markPaymentOrderFailed,
+  markPaymentOrderRefunded,
   type PaymentOrder,
   type PaymentOrderSource,
   type TossPaymentObject,
   validateTossPaymentAgainstOrder,
 } from '@/lib/payments/order-ledger';
+import { resolveCancellationTerminalStatus } from '@/lib/payments/cancellation';
 import { fulfillPaymentOrder, type PaymentFulfillmentResult } from '@/lib/payments/fulfillment';
 // 2026-07-04 admin 지표 감사 — 웹훅/정산 경유 fulfillment 가 퍼널에 전무해, confirm 라우트를
 // 못 탄 성공 건(결제 후 브라우저 이탈)이 원장에는 있는데 confirm_success 는 0 이던 괴리 수정.
@@ -66,6 +68,24 @@ export async function settlePaymentOrderFromToss(input: {
   const closedStatus = terminalFailureStatus(input.payment.status);
   if (closedStatus) {
     if (order.status === 'fulfilled') {
+      return { status: 'closed', reason: input.payment.status ?? closedStatus };
+    }
+    // PG 취소(CANCELED)인데 결제 승인까지 갔던 주문이면 환불로 기록(매출 이력 보존).
+    //   webhook·admin 경로와 대칭. expired/payment_failed(결제 미완)는 그대로 둔다.
+    if (
+      closedStatus === 'canceled' &&
+      resolveCancellationTerminalStatus({
+        status: input.order.status,
+        confirmedAt: order.confirmedAt,
+        fulfilledAt: order.fulfilledAt,
+      }) === 'refunded'
+    ) {
+      await markPaymentOrderRefunded({
+        orderId: order.orderId,
+        reason: `Toss payment status: ${input.payment.status}`,
+        source: input.source,
+        payment: input.payment,
+      });
       return { status: 'closed', reason: input.payment.status ?? closedStatus };
     }
     await markPaymentOrderFailed({

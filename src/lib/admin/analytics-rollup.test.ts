@@ -7,6 +7,7 @@ import {
   kstMidnightIso,
   paymentAttributionIso,
   computeDailyMetrics,
+  REVENUE_ORDER_STATUSES,
 } from './analytics-rollup';
 
 declare const test: (name: string, fn: () => void) => void;
@@ -108,6 +109,46 @@ test('computeDailyMetrics: KST 버킷 + 전환 카운트 + 유입 파싱 + 윈�
 
   // 순서 보존
   assert.deepEqual(rows.map((r) => r.date_key), dateKeys);
+});
+
+test('computeDailyMetrics: 환불은 refunded_won 에 환불 시각 기준으로 집계, 매출과 분리', () => {
+  // 판 날(07-06)의 매출은 유지, 환불한 날(07-07)에 환불액 기록 — 표준 회계.
+  const rows = computeDailyMetrics({
+    dateKeys: ['2026-07-06', '2026-07-07'],
+    sourceRows: [],
+    signupIsos: [],
+    funnelRows: [],
+    paymentRows: [
+      { amount: 9900, confirmed_at: '2026-07-06T01:00:00Z', fulfilled_at: null, created_at: '2026-07-06T01:00:00Z' },
+    ],
+    refundRows: [{ amount: 9900, refunded_at: '2026-07-07T01:00:00Z' }],
+  });
+  const byKey = Object.fromEntries(rows.map((r) => [r.date_key, r]));
+  assert.equal(byKey['2026-07-06']!.revenue_won, 9900, '판 날 매출은 그대로');
+  assert.equal(byKey['2026-07-06']!.refunded_won, 0);
+  assert.equal(byKey['2026-07-07']!.refunded_won, 9900, '환불한 날에 환불액');
+  assert.equal(byKey['2026-07-07']!.refunded_orders, 1);
+  assert.equal(byKey['2026-07-07']!.revenue_won, 0, '환불은 매출을 깎지 않는다(총매출 유지)');
+});
+
+test('REVENUE_ORDER_STATUSES: refunded 포함 — 환불 주문도 판 날 총매출에 보존(gross fetch)', () => {
+  // 회귀 가드: 이 집합에서 refunded 를 빼면 재롤업 시 판 날 revenue_won 이 사라져
+  //   net 이 이중 차감된다(gross 는 유지, 환불액은 refunds fetch 로 별도 집계).
+  assert.ok(REVENUE_ORDER_STATUSES.includes('refunded'), 'gross fetch 는 refunded 를 포함해야 한다');
+  assert.ok(REVENUE_ORDER_STATUSES.includes('confirmed'));
+  assert.ok(REVENUE_ORDER_STATUSES.includes('fulfilled'));
+});
+
+test('computeDailyMetrics: refundRows 없이 호출해도 refunded_won=0 (하위호환)', () => {
+  const rows = computeDailyMetrics({
+    dateKeys: ['2026-07-06'],
+    sourceRows: [],
+    signupIsos: [],
+    paymentRows: [],
+    funnelRows: [],
+  });
+  assert.equal(rows[0]!.refunded_won, 0);
+  assert.equal(rows[0]!.refunded_orders, 0);
 });
 
 test('computeDailyMetrics: 빈 날짜는 0으로 채워짐', () => {

@@ -8,7 +8,15 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { cancelPayment, getPayment } from '@/lib/payments/toss';
 import { cancelNicepayPayment } from '@/lib/payments/nicepay';
-import { getOrderProviderByPaymentKey } from '@/lib/payments/order-ledger';
+import {
+  getOrderProviderByPaymentKey,
+  getPaymentOrderByPaymentKey,
+  markPaymentOrderRefunded,
+} from '@/lib/payments/order-ledger';
+import {
+  isFullRefund,
+  resolveCancellationTerminalStatus,
+} from '@/lib/payments/cancellation';
 import { revokeProductEntitlement } from '@/lib/product-entitlements';
 import {
   buildCreditRefundItem,
@@ -432,6 +440,41 @@ export async function POST(req: NextRequest) {
   };
 
   const result = await executeRefund({ requestId, approvedBy: check.userId }, deps);
+
+  // 2026-07-13 — 전액환불 완료 시 원주문을 refunded 로 표기(webhook 취소통보 경로와 대칭).
+  //   이게 없으면 admin 환불한 주문이 fulfilled 로 남아 매출에 과대계상된다.
+  //   부분환불은 나머지 매출을 지키기 위해 건드리지 않는다(비차단 — 실패해도 환불 자체는 완료).
+  if (result.status === 'completed') {
+    try {
+      const snapshot = await deps.loadRequest(requestId);
+      if (
+        snapshot?.payment_key &&
+        isFullRefund({ amount: snapshot.amount, originalAmount: snapshot.original_amount })
+      ) {
+        const order = await getPaymentOrderByPaymentKey(snapshot.payment_key);
+        if (
+          order &&
+          resolveCancellationTerminalStatus({
+            status: order.status,
+            confirmedAt: order.confirmedAt,
+            fulfilledAt: order.fulfilledAt,
+          }) === 'refunded'
+        ) {
+          await markPaymentOrderRefunded({
+            orderId: order.orderId,
+            reason: '관리자 환불 승인',
+            source: 'admin-refund',
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[admin/refund] 원주문 refunded 표기 실패', {
+        requestId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
   return NextResponse.json({
     ok: result.status === 'completed',
     status: result.status,
