@@ -168,23 +168,13 @@ export function SystemGuideOnboarding({
         </div>
 
         <div className="mt-7 grid gap-2">
-          {isLast ? (
-            <button
-              type="button"
-              onClick={onComplete}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
-            >
-              홈으로 가기
-            </button>
-          ) : (
-            <Link
-              href={step.primaryHref}
-              onClick={dismiss}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
-            >
-              {step.primaryLabel}
-            </Link>
-          )}
+          <Link
+            href={step.primaryHref}
+            onClick={dismiss}
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
+          >
+            {step.primaryLabel}
+          </Link>
 
           {step.secondaryHref && step.secondaryLabel ? (
             <Link
@@ -217,7 +207,15 @@ export function SystemGuideOnboarding({
             >
               다음
             </button>
-          ) : null}
+          ) : (
+            <Link
+              href="/"
+              onClick={onComplete}
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-[var(--app-pink)] px-4 font-extrabold text-white"
+            >
+              간지사주 시작하기
+            </Link>
+          )}
         </div>
       </article>
     </div>,

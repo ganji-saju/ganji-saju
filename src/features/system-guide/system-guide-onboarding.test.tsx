@@ -47,6 +47,12 @@ function button(name: string) {
   );
 }
 
+function link(name: string) {
+  return Array.from(document.querySelectorAll('a')).find(
+    (element) => element.textContent?.trim() === name,
+  );
+}
+
 beforeEach(() => {
   host = document.createElement('div');
   document.body.append(host);
@@ -62,7 +68,7 @@ afterEach(() => {
 describe('SystemGuideOnboarding', () => {
   it('현재 단계 제목과 진행 정보를 보여준다', () => {
     renderOnboarding();
-    expect(document.body.textContent).toContain('내 정보를 등록해요');
+    expect(document.body.textContent).toContain('내 정보를 먼저 등록해 보세요');
     expect(document.body.textContent).toContain('1 / 6');
   });
 
@@ -76,10 +82,11 @@ describe('SystemGuideOnboarding', () => {
     expect(button('다음')).toBeDefined();
   });
 
-  it('마지막 단계에는 홈 완료 버튼과 멤버십 링크를 제공한다', () => {
+  it('마지막 단계에는 알림, 멤버십, 홈 완료 링크를 모두 제공한다', () => {
     renderOnboarding({ initialStepIndex: 5 });
-    expect(button('홈으로 가기')).toBeDefined();
-    expect(document.querySelector('a[href="/membership"]')?.textContent).toContain('멤버십 알아보기');
+    expect(document.querySelector('a[href="/notifications"]')?.textContent).toContain('알림 설정');
+    expect(document.querySelector('a[href="/membership"]')?.textContent).toContain('멤버십 보기');
+    expect(document.querySelector('a[href="/"]')?.textContent).toContain('간지사주 시작하기');
   });
 
   it.each([
@@ -97,7 +104,7 @@ describe('SystemGuideOnboarding', () => {
   it('마지막 단계 완료는 onComplete를 호출한다', () => {
     const onComplete = vi.fn();
     renderOnboarding({ initialStepIndex: 5, onComplete });
-    click(button('홈으로 가기'));
+    click(link('간지사주 시작하기'));
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
@@ -118,7 +125,7 @@ describe('SystemGuideOnboarding', () => {
       );
     });
 
-    expect(document.body.textContent).toContain('오늘의 운세를 확인해요');
+    expect(document.body.textContent).toContain('오늘 흐름부터 가볍게 보세요');
     expect(onStepChange).toHaveBeenCalledWith(1);
   });
 });
