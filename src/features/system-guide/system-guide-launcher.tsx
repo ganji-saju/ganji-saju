@@ -7,9 +7,9 @@ import { SYSTEM_GUIDE_STEPS } from './system-guide-content';
 import { SYSTEM_GUIDE_OPEN_EVENT } from './system-guide-events';
 import { SystemGuideOnboarding } from './system-guide-onboarding';
 import {
-  readSystemGuideState,
+  readSystemGuideStateResult,
   shouldAutoOpenSystemGuide,
-  writeSystemGuideState,
+  tryWriteSystemGuideState,
 } from './system-guide-state';
 
 function isAuthPath(pathname: string) {
@@ -28,12 +28,14 @@ export function SystemGuideLauncher() {
   const [stepIndex, setStepIndex] = useState(0);
   const [launchKey, setLaunchKey] = useState(0);
   const autoOpenedRef = useRef(false);
+  const openSourceRef = useRef<'auto' | 'manual' | null>(null);
 
   useEffect(() => {
     const handleManualOpen = (event: Event) => {
       const detail = (event as CustomEvent<{ stepIndex?: unknown }>).detail;
       setStepIndex(validManualStep(detail?.stepIndex));
       setLaunchKey((current) => current + 1);
+      openSourceRef.current = 'manual';
       setOpen(true);
     };
     window.addEventListener(SYSTEM_GUIDE_OPEN_EVENT, handleManualOpen);
@@ -41,29 +43,46 @@ export function SystemGuideLauncher() {
   }, []);
 
   useEffect(() => {
+    if (isAuthPath(pathname) && openSourceRef.current === 'auto') {
+      openSourceRef.current = null;
+      setOpen(false);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     if (!hasSupabaseBrowserEnv) return;
 
     let cancelled = false;
+    let authGeneration = 0;
     const supabase = createClient();
 
     function maybeAutoOpen(authenticated: boolean) {
       if (cancelled || autoOpenedRef.current || isAuthPath(pathname)) return;
-      const storedState = readSystemGuideState(window.localStorage);
-      if (!shouldAutoOpenSystemGuide(authenticated, storedState)) return;
+      const readResult = readSystemGuideStateResult(window.localStorage);
+      if (!readResult.available || !shouldAutoOpenSystemGuide(authenticated, readResult.state)) return;
+      if (!tryWriteSystemGuideState(window.localStorage, readResult.state)) return;
       autoOpenedRef.current = true;
-      setStepIndex(storedState.stepIndex);
+      openSourceRef.current = 'auto';
+      setStepIndex(readResult.state.stepIndex);
       setLaunchKey((current) => current + 1);
       setOpen(true);
     }
 
-    void supabase.auth.getUser().then(({ data: { user } }) => {
-      maybeAutoOpen(Boolean(user));
-    });
+    const getUserGeneration = authGeneration;
+    void supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        if (getUserGeneration !== authGeneration) return;
+        maybeAutoOpen(Boolean(user));
+      })
+      .catch(() => {
+        // Network/auth failures leave the optional guide closed.
+      });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'INITIAL_SESSION') return;
+      authGeneration += 1;
       maybeAutoOpen(Boolean(session?.user));
     });
 
@@ -74,7 +93,7 @@ export function SystemGuideLauncher() {
   }, [pathname]);
 
   function persist(status: 'in_progress' | 'dismissed' | 'completed', nextStepIndex: number) {
-    writeSystemGuideState(window.localStorage, {
+    tryWriteSystemGuideState(window.localStorage, {
       version: 1,
       status,
       stepIndex: nextStepIndex,
@@ -92,10 +111,12 @@ export function SystemGuideLauncher() {
       }}
       onDismiss={(currentStepIndex) => {
         persist('dismissed', currentStepIndex);
+        openSourceRef.current = null;
         setOpen(false);
       }}
       onComplete={() => {
         persist('completed', SYSTEM_GUIDE_STEPS.length - 1);
+        openSourceRef.current = null;
         setOpen(false);
       }}
     />

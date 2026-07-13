@@ -5,8 +5,10 @@ import {
   createDefaultSystemGuideState,
   normalizeSystemGuideState,
   readSystemGuideState,
+  readSystemGuideStateResult,
   shouldAutoOpenSystemGuide,
   writeSystemGuideState,
+  tryWriteSystemGuideState,
 } from './system-guide-state';
 
 const DEFAULT_STATE = { version: 1, status: 'new', stepIndex: 0 } as const;
@@ -58,6 +60,24 @@ test('reading storage recovers null, broken JSON, and access errors', () => {
       },
     }),
     DEFAULT_STATE,
+  );
+});
+
+test('result storage APIs distinguish unavailable access from recoverable content', () => {
+  assert.deepEqual(readSystemGuideStateResult({ getItem: () => null }), {
+    available: true,
+    state: DEFAULT_STATE,
+  });
+  assert.deepEqual(
+    readSystemGuideStateResult({ getItem: () => { throw new Error('privacy mode'); } }),
+    { available: false, state: DEFAULT_STATE },
+  );
+  assert.equal(
+    tryWriteSystemGuideState(
+      { setItem: () => { throw new Error('privacy mode'); } },
+      DEFAULT_STATE,
+    ),
+    false,
   );
 });
 

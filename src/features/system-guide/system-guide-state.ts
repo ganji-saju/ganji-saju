@@ -55,13 +55,27 @@ export function shouldAutoOpenSystemGuide(
 }
 
 export function readSystemGuideState(storage: Pick<Storage, 'getItem'>): SystemGuideState {
+  return readSystemGuideStateResult(storage).state;
+}
+
+export interface SystemGuideStateReadResult {
+  available: boolean;
+  state: SystemGuideState;
+}
+
+export function readSystemGuideStateResult(
+  storage: Pick<Storage, 'getItem'>,
+): SystemGuideStateReadResult {
   try {
     const storedValue = storage.getItem(SYSTEM_GUIDE_STORAGE_KEY);
-    return storedValue === null
-      ? createDefaultSystemGuideState()
-      : normalizeSystemGuideState(JSON.parse(storedValue));
+    return {
+      available: true,
+      state: storedValue === null
+        ? createDefaultSystemGuideState()
+        : normalizeSystemGuideState(JSON.parse(storedValue)),
+    };
   } catch {
-    return createDefaultSystemGuideState();
+    return { available: false, state: createDefaultSystemGuideState() };
   }
 }
 
@@ -69,9 +83,17 @@ export function writeSystemGuideState(
   storage: Pick<Storage, 'setItem'>,
   state: SystemGuideState,
 ): void {
+  void tryWriteSystemGuideState(storage, state);
+}
+
+export function tryWriteSystemGuideState(
+  storage: Pick<Storage, 'setItem'>,
+  state: SystemGuideState,
+): boolean {
   try {
     storage.setItem(SYSTEM_GUIDE_STORAGE_KEY, JSON.stringify(normalizeSystemGuideState(state)));
+    return true;
   } catch {
-    // Storage may be unavailable in privacy mode. The in-memory caller state remains valid.
+    return false;
   }
 }
