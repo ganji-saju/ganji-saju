@@ -111,7 +111,7 @@ export function SystemGuideOnboarding({
       <article
         ref={trapRef}
         tabIndex={-1}
-        className="relative max-h-[min(calc(100dvh-1.5rem),24rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] focus:outline-none sm:p-6"
+        className="relative max-h-[min(calc(100dvh-1.5rem),24rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-[22px] border bg-white p-5 shadow-[0_-22px_50px_-18px_rgba(17,17,20,0.32)] focus:outline-none sm:max-h-[calc(100dvh-1.5rem)] sm:p-6"
         style={{
           borderColor: 'var(--app-pink-line)',
           paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))',
