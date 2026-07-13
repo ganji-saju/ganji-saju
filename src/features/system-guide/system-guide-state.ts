@@ -66,16 +66,21 @@ export interface SystemGuideStateReadResult {
 export function readSystemGuideStateResult(
   storage: Pick<Storage, 'getItem'>,
 ): SystemGuideStateReadResult {
+  let storedValue: string | null;
   try {
-    const storedValue = storage.getItem(SYSTEM_GUIDE_STORAGE_KEY);
-    return {
-      available: true,
-      state: storedValue === null
-        ? createDefaultSystemGuideState()
-        : normalizeSystemGuideState(JSON.parse(storedValue)),
-    };
+    storedValue = storage.getItem(SYSTEM_GUIDE_STORAGE_KEY);
   } catch {
     return { available: false, state: createDefaultSystemGuideState() };
+  }
+
+  if (storedValue === null) {
+    return { available: true, state: createDefaultSystemGuideState() };
+  }
+
+  try {
+    return { available: true, state: normalizeSystemGuideState(JSON.parse(storedValue)) };
+  } catch {
+    return { available: true, state: createDefaultSystemGuideState() };
   }
 }
 

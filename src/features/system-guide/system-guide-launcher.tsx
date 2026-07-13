@@ -12,8 +12,33 @@ import {
   tryWriteSystemGuideState,
 } from './system-guide-state';
 
-function isAuthPath(pathname: string) {
-  return pathname === '/login' || pathname === '/signup' || pathname.startsWith('/auth/');
+const AUTO_EXCLUDED_PATHS = [
+  '/login',
+  '/signup',
+  '/auth',
+  '/pay',
+  '/membership/checkout',
+  '/membership/complete',
+  '/membership/success',
+  '/credits/success',
+  '/credits/fail',
+  '/legal',
+  '/privacy',
+  '/terms',
+  '/commerce-disclosure',
+  '/coin-policy',
+  '/digital-content-policy',
+  '/ai-disclaimer',
+  '/subscription-policy',
+  '/refund-policy',
+  '/appointment-policy',
+  '/admin',
+] as const;
+
+export function isSystemGuideAutoExcludedPath(pathname: string): boolean {
+  return AUTO_EXCLUDED_PATHS.some(
+    (excludedPath) => pathname === excludedPath || pathname.startsWith(`${excludedPath}/`),
+  );
 }
 
 function validManualStep(value: unknown) {
@@ -29,6 +54,11 @@ export function SystemGuideLauncher() {
   const [launchKey, setLaunchKey] = useState(0);
   const autoOpenedRef = useRef(false);
   const openSourceRef = useRef<'auto' | 'manual' | null>(null);
+  const navigationRef = useRef<{
+    originPathname: string;
+    destinationHref: string;
+    reachedDestination: boolean;
+  } | null>(null);
 
   useEffect(() => {
     const handleManualOpen = (event: Event) => {
@@ -43,7 +73,28 @@ export function SystemGuideLauncher() {
   }, []);
 
   useEffect(() => {
-    if (isAuthPath(pathname) && openSourceRef.current === 'auto') {
+    const navigation = navigationRef.current;
+    if (navigation) {
+      if (pathname === navigation.destinationHref) {
+        navigation.reachedDestination = true;
+        setOpen(false);
+        return;
+      }
+      if (navigation.reachedDestination && pathname === navigation.originPathname) {
+        const readResult = readSystemGuideStateResult(window.localStorage);
+        navigationRef.current = null;
+        if (readResult.available && readResult.state.status === 'in_progress') {
+          autoOpenedRef.current = true;
+          openSourceRef.current = 'auto';
+          setStepIndex(readResult.state.stepIndex);
+          setLaunchKey((current) => current + 1);
+          setOpen(true);
+        }
+        return;
+      }
+    }
+
+    if (isSystemGuideAutoExcludedPath(pathname) && openSourceRef.current === 'auto') {
       openSourceRef.current = null;
       setOpen(false);
     }
@@ -57,7 +108,12 @@ export function SystemGuideLauncher() {
     const supabase = createClient();
 
     function maybeAutoOpen(authenticated: boolean) {
-      if (cancelled || autoOpenedRef.current || isAuthPath(pathname)) return;
+      if (
+        cancelled ||
+        autoOpenedRef.current ||
+        navigationRef.current ||
+        isSystemGuideAutoExcludedPath(pathname)
+      ) return;
       const readResult = readSystemGuideStateResult(window.localStorage);
       if (!readResult.available || !shouldAutoOpenSystemGuide(authenticated, readResult.state)) return;
       if (!tryWriteSystemGuideState(window.localStorage, readResult.state)) return;
@@ -109,8 +165,13 @@ export function SystemGuideLauncher() {
         setStepIndex(nextStepIndex);
         persist('in_progress', nextStepIndex);
       }}
-      onNavigate={(currentStepIndex) => {
+      onNavigate={(currentStepIndex, href) => {
         persist('in_progress', currentStepIndex);
+        navigationRef.current = {
+          originPathname: pathname,
+          destinationHref: href,
+          reachedDestination: false,
+        };
         openSourceRef.current = null;
         setOpen(false);
       }}

@@ -68,6 +68,10 @@ test('result storage APIs distinguish unavailable access from recoverable conten
     available: true,
     state: DEFAULT_STATE,
   });
+  assert.deepEqual(readSystemGuideStateResult({ getItem: () => '{broken' }), {
+    available: true,
+    state: DEFAULT_STATE,
+  });
   assert.deepEqual(
     readSystemGuideStateResult({ getItem: () => { throw new Error('privacy mode'); } }),
     { available: false, state: DEFAULT_STATE },

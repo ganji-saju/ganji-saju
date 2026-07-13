@@ -32,13 +32,13 @@ vi.mock('./system-guide-onboarding', () => ({
     open: boolean;
     initialStepIndex: number;
     onStepChange: (index: number) => void;
-    onNavigate: (index: number) => void;
+    onNavigate: (index: number, href: string) => void;
     onDismiss: (index: number) => void;
     onComplete: () => void;
   }) => props.open ? (
     <div data-testid="guide" data-step={props.initialStepIndex}>
       <button onClick={() => props.onStepChange(3)}>step</button>
-      <button onClick={() => props.onNavigate(3)}>navigate</button>
+      <button onClick={() => props.onNavigate(3, '/saju/new')}>navigate</button>
       <button onClick={() => props.onDismiss(props.initialStepIndex)}>dismiss</button>
       <button onClick={props.onComplete}>complete</button>
     </div>
@@ -46,7 +46,7 @@ vi.mock('./system-guide-onboarding', () => ({
 }));
 
 import { openSystemGuide } from './system-guide-events';
-import { SystemGuideLauncher } from './system-guide-launcher';
+import { isSystemGuideAutoExcludedPath, SystemGuideLauncher } from './system-guide-launcher';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -93,6 +93,22 @@ afterEach(() => {
 });
 
 describe('SystemGuideLauncher', () => {
+  it.each([
+    ['/login', true], ['/login/help', true], ['/signup', true], ['/signup/confirm', true],
+    ['/auth', true], ['/auth/callback', true], ['/pay', true], ['/pay/return', true],
+    ['/membership/checkout', true], ['/membership/checkout/confirm', true],
+    ['/membership/complete', true], ['/membership/success', true],
+    ['/credits/success', true], ['/credits/fail', true],
+    ['/legal', true], ['/privacy', true], ['/terms', true], ['/commerce-disclosure', true],
+    ['/coin-policy', true],
+    ['/digital-content-policy', true], ['/ai-disclaimer', true], ['/subscription-policy', true],
+    ['/refund-policy', true], ['/appointment-policy', true],
+    ['/admin', true], ['/admin/analytics', true],
+    ['/', false], ['/guide', false], ['/membership', false], ['/saju/new', false],
+  ])('자동 실행 제외 경로 %s => %s', (pathname, expected) => {
+    expect(isSystemGuideAutoExcludedPath(pathname)).toBe(expected);
+  });
+
   it('비로그인 초기 상태에서는 자동으로 열지 않는다', async () => {
     await renderLauncher();
     expect(guide()).toBeNull();
@@ -171,6 +187,18 @@ describe('SystemGuideLauncher', () => {
     expect(guide()?.getAttribute('data-step')).toBe('3');
   });
 
+  it('기능 목적지에서는 닫힌 채 유지하고 browser back으로 origin에 돌아오면 같은 인스턴스에서 저장 단계를 재개한다', async () => {
+    mocks.user = { id: 'user-1' };
+    await renderLauncher();
+    click('navigate');
+
+    await navigate('/saju/new');
+    expect(guide()).toBeNull();
+
+    await navigate('/');
+    expect(guide()?.getAttribute('data-step')).toBe('3');
+  });
+
   it('수동 이벤트는 인증과 저장 상태에 관계없이 유효한 지정 단계에서 연다', async () => {
     state('completed', 5);
     await renderLauncher();
@@ -180,7 +208,7 @@ describe('SystemGuideLauncher', () => {
     expect(guide()?.getAttribute('data-step')).toBe('0');
   });
 
-  it.each(['/login', '/signup', '/auth/callback'])('%s에서는 자동 실행을 막고 수동 실행은 허용한다', async (pathname) => {
+  it.each(['/login', '/signup', '/auth', '/auth/callback', '/pay', '/membership/checkout', '/privacy', '/admin/analytics'])('%s에서는 자동 실행을 막고 수동 실행은 허용한다', async (pathname) => {
     mocks.pathname = pathname;
     mocks.user = { id: 'user-1' };
     await renderLauncher();
@@ -196,7 +224,7 @@ describe('SystemGuideLauncher', () => {
     expect(guide()?.getAttribute('data-step')).toBe('0');
   });
 
-  it.each(['/login', '/signup', '/auth/callback'])('자동 실행 모달은 %s로 이동하면 닫힌다', async (pathname) => {
+  it.each(['/login', '/signup', '/auth', '/auth/callback', '/pay', '/membership/checkout', '/privacy', '/admin/analytics'])('자동 실행 모달은 %s로 이동하면 닫힌다', async (pathname) => {
     mocks.user = { id: 'user-1' };
     await renderLauncher();
     expect(guide()).not.toBeNull();

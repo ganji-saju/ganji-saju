@@ -12,7 +12,7 @@ interface RenderOptions {
   open?: boolean;
   initialStepIndex?: number;
   onStepChange?: (stepIndex: number) => void;
-  onNavigate?: (stepIndex: number) => void;
+  onNavigate?: (stepIndex: number, href: string) => void;
   onDismiss?: (stepIndex: number) => void;
   onComplete?: () => void;
 }
@@ -74,6 +74,15 @@ describe('SystemGuideOnboarding', () => {
     expect(document.body.textContent).toContain('1 / 6');
   });
 
+  it('dialog의 접근 가능한 이름을 현재 단계 제목에 연결한다', () => {
+    renderOnboarding({ initialStepIndex: 2 });
+    const dialog = document.querySelector('[role="dialog"]');
+    const title = document.querySelector('#system-guide-title');
+    expect(dialog?.getAttribute('aria-labelledby')).toBe('system-guide-title');
+    expect(dialog?.hasAttribute('aria-label')).toBe(false);
+    expect(title?.textContent).toContain('내 사주풀이를 만들어 보세요');
+  });
+
   it('첫 단계에는 이전 버튼이 없고 다음 단계에서 이전과 다음 버튼을 제공한다', () => {
     renderOnboarding();
     expect(button('이전')).toBeUndefined();
@@ -101,7 +110,10 @@ describe('SystemGuideOnboarding', () => {
     click(featureLink);
 
     expect(onNavigate).toHaveBeenCalledOnce();
-    expect(onNavigate).toHaveBeenCalledWith(5);
+    expect(onNavigate).toHaveBeenCalledWith(
+      5,
+      label === '알림 설정' ? '/notifications' : '/membership',
+    );
     expect(onDismiss).not.toHaveBeenCalled();
   });
 
