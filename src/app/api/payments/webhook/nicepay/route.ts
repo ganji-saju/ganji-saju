@@ -18,11 +18,15 @@ import {
   getPaymentOrderByOrderId,
   hashWebhookPayload,
   markPaymentOrderFailed,
+  markPaymentOrderRefunded,
   markPaymentWebhookEvent,
   recordPaymentWebhookEvent,
 } from '@/lib/payments/order-ledger';
 import { revokeCredits } from '@/lib/credits/deduct';
-import { buildCancellationRevokePlan } from '@/lib/payments/cancellation';
+import {
+  buildCancellationRevokePlan,
+  resolveCancellationTerminalStatus,
+} from '@/lib/payments/cancellation';
 import {
   listProductEntitlementsByOrder,
   revokeProductEntitlement,
@@ -111,13 +115,27 @@ export async function POST(req: NextRequest) {
       await getNicepayPayment(tid).catch(() => null);
     }
 
-    // 4) 주문 취소 기록.
-    await markPaymentOrderFailed({
-      orderId,
-      status: 'canceled',
-      error: '나이스페이 결제 취소(통보)',
-      source: 'webhook',
+    // 4) 종료 상태 기록. 결제 승인까지 간 주문의 취소는 환불(refunded)이라 매출 이력을
+    //    보존한다. 결제 전 취소만 canceled. (과거엔 둘 다 canceled 로 뭉개져 매출이 사라졌다.)
+    const terminalStatus = resolveCancellationTerminalStatus({
+      status: order.status,
+      confirmedAt: order.confirmedAt,
+      fulfilledAt: order.fulfilledAt,
     });
+    if (terminalStatus === 'refunded') {
+      await markPaymentOrderRefunded({
+        orderId,
+        reason: '나이스페이 결제 취소(통보)',
+        source: 'webhook',
+      });
+    } else {
+      await markPaymentOrderFailed({
+        orderId,
+        status: 'canceled',
+        error: '나이스페이 결제 취소(통보)',
+        source: 'webhook',
+      });
+    }
 
     // 5) 지급분 회수 — 전(코인) + 상품 이용권. 회수는 지급과 대칭이어야 한다.
     //    2026-07-10 사고: 여기서 `pkg.credits > 0` 만 보고 회수해서, credits=0 인 단품

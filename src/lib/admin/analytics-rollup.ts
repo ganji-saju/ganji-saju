@@ -61,6 +61,9 @@ export interface MetricsDailyRow {
   new_signups: number;
   paid_orders: number;
   revenue_won: number;
+  /** 환불 발생일(refunded_at) 기준 환불 건수·금액. 매출과 분리 — net = revenue − refunded. */
+  refunded_orders: number;
+  refunded_won: number;
   prepare_attempts: number;
   checkout_starts: number;
   confirm_success: number;
@@ -90,12 +93,19 @@ export interface FunnelRow {
   created_at: string;
 }
 
+export interface RefundRow {
+  amount: number | null;
+  refunded_at: string | null;
+}
+
 export interface ComputeDailyMetricsInput {
   /** 계산 대상 KST 날짜키(각각 1행 생성). */
   dateKeys: string[];
   sourceRows: SourceRow[];
   /** 완료 결제 건(윈도우로 사전 필터됨). */
   paymentRows: PaymentRow[];
+  /** 환불(status='refunded') 건. refunded_at 기준 귀속. 없으면 refunded_won=0. */
+  refundRows?: RefundRow[];
   /** 가입 시각 ISO 목록(admin_user_summary.signup_at). */
   signupIsos: string[];
   funnelRows: FunnelRow[];
@@ -148,6 +158,8 @@ export function computeDailyMetrics(input: ComputeDailyMetricsInput): MetricsDai
       new_signups: 0,
       paid_orders: 0,
       revenue_won: 0,
+      refunded_orders: 0,
+      refunded_won: 0,
       prepare_attempts: 0,
       checkout_starts: 0,
       confirm_success: 0,
@@ -176,6 +188,17 @@ export function computeDailyMetrics(input: ComputeDailyMetricsInput): MetricsDai
     const r = rows.get(dk)!;
     r.paid_orders += 1;
     r.revenue_won += Math.max(0, num(p.amount));
+  }
+
+  // 환불은 발생일(refunded_at)에 별도 집계. 매출(revenue_won)은 판 날 그대로 두고,
+  //   net = revenue − refunded 는 조회 시점에 계산한다(총매출·환불액을 둘 다 보존).
+  for (const rf of input.refundRows ?? []) {
+    if (!rf.refunded_at) continue;
+    const dk = kstDateKey(rf.refunded_at);
+    if (!keySet.has(dk)) continue;
+    const r = rows.get(dk)!;
+    r.refunded_orders += 1;
+    r.refunded_won += Math.max(0, num(rf.amount));
   }
 
   for (const f of input.funnelRows) {
@@ -281,11 +304,24 @@ export async function runDailyMetricsRollup(
       .range(from, to)
   );
 
+  // 환불은 발생일(refunded_at) 기준으로 별도 집계 — 판 날 매출은 그대로 두고 환불한 날에 계상.
+  const refundRows = await fetchAllPages<RefundRow>('refunds', (from, to) =>
+    service
+      .from('payment_orders')
+      .select('amount, refunded_at')
+      .eq('status', 'refunded')
+      .gte('refunded_at', windowStartIso)
+      .lt('refunded_at', windowEndIso)
+      .order('refunded_at', { ascending: true })
+      .range(from, to)
+  );
+
   const rows = computeDailyMetrics({
     dateKeys,
     sourceRows,
     signupIsos: signupRows.map((r) => r.signup_at).filter(Boolean),
     paymentRows,
+    refundRows,
     funnelRows,
   });
 

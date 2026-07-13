@@ -13,6 +13,7 @@ export type PaymentOrderStatus =
   | 'payment_failed'
   | 'fulfillment_failed'
   | 'canceled'
+  | 'refunded'
   | 'expired';
 
 export type PaymentOrderSource =
@@ -20,7 +21,8 @@ export type PaymentOrderSource =
   | 'confirm'
   | 'webhook'
   | 'reconciliation'
-  | 'nicepay-return'; // 2026-06-26 나이스페이 서버승인 returnUrl 핸들러
+  | 'nicepay-return' // 2026-06-26 나이스페이 서버승인 returnUrl 핸들러
+  | 'admin-refund'; // 2026-07-13 관리자 환불 승인 시 원주문 refunded 표기
 
 export interface TossPaymentObject {
   paymentKey?: string | null;
@@ -62,6 +64,7 @@ export interface PaymentOrder {
   confirmedAt: string | null;
   fulfilledAt: string | null;
   failedAt: string | null;
+  refundedAt: string | null;
   lastReconciledAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -158,6 +161,7 @@ function mapPaymentOrder(row: PaymentOrderRow): PaymentOrder {
     confirmedAt: readString(row.confirmed_at),
     fulfilledAt: readString(row.fulfilled_at),
     failedAt: readString(row.failed_at),
+    refundedAt: readString(row.refunded_at),
     lastReconciledAt: readString(row.last_reconciled_at),
     createdAt: readString(row.created_at) ?? '',
     updatedAt: readString(row.updated_at) ?? '',
@@ -260,6 +264,19 @@ export async function getPaymentOrderForUser(orderId: string, userId: string) {
   const order = await getPaymentOrderByOrderId(orderId);
   if (!order || order.userId !== userId) return null;
   return order;
+}
+
+/** payment_key 로 주문 로드(환불 완료 시 원주문 status 갱신용). */
+export async function getPaymentOrderByPaymentKey(
+  paymentKey: string
+): Promise<PaymentOrder | null> {
+  const service = await createServiceClient();
+  const { data } = await service
+    .from('payment_orders')
+    .select('*')
+    .eq('payment_key', paymentKey)
+    .maybeSingle();
+  return data ? mapPaymentOrder(data as PaymentOrderRow) : null;
 }
 
 export async function attachPaymentKeyToOrder(input: {
@@ -391,6 +408,42 @@ export async function markPaymentOrderFailed(input: {
 
   if (error || !data) {
     throw new Error(error?.message ?? '결제 실패 상태를 저장하지 못했습니다.');
+  }
+
+  return mapPaymentOrder(data as PaymentOrderRow);
+}
+
+/**
+ * 2026-07-13 — 결제 성공분의 환불. 'canceled'(결제 전 취소)와 구분해 매출 이력을 보존한다.
+ *   결제 시점 amount 는 그대로 두고 status='refunded' + refunded_at 만 기록 →
+ *   집계에서 총매출(결제분)과 환불액을 분리해 낼 수 있다.
+ */
+export async function markPaymentOrderRefunded(input: {
+  orderId: string;
+  reason: string;
+  source: PaymentOrderSource;
+  payment?: TossPaymentObject | null;
+}) {
+  const service = await createServiceClient();
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    status: 'refunded',
+    last_error: input.reason,
+    refunded_at: now,
+  };
+  if (input.payment) {
+    patch.toss_status = input.payment.status ?? null;
+    patch.toss_payment = input.payment;
+  }
+  const { data, error } = await service
+    .from('payment_orders')
+    .update(patch)
+    .eq('order_id', input.orderId)
+    .select('*')
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? '환불 상태를 저장하지 못했습니다.');
   }
 
   return mapPaymentOrder(data as PaymentOrderRow);
