@@ -435,18 +435,30 @@ export async function markPaymentOrderRefunded(input: {
     patch.toss_status = input.payment.status ?? null;
     patch.toss_payment = input.payment;
   }
+  // 멱등: 이미 refunded 인 주문은 다시 스탬프하지 않는다(neq 로 제외). 재호출(관리자 재승인·
+  //   통보 재수신)마다 refunded_at 을 now 로 덮으면 환불 귀속일이 미래로 드리프트해 마감된
+  //   과거 지표가 사후에 바뀐다. 최초 1회만 stamp 하고, 이미 refunded 면 기존 행을 반환한다.
   const { data, error } = await service
     .from('payment_orders')
     .update(patch)
     .eq('order_id', input.orderId)
+    .neq('status', 'refunded')
     .select('*')
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    throw new Error(error?.message ?? '환불 상태를 저장하지 못했습니다.');
+  if (error) {
+    throw new Error(error.message ?? '환불 상태를 저장하지 못했습니다.');
+  }
+  if (data) {
+    return mapPaymentOrder(data as PaymentOrderRow);
   }
 
-  return mapPaymentOrder(data as PaymentOrderRow);
+  // 갱신된 행이 없음 = 이미 refunded(멱등 재호출). 기존 행을 그대로 반환.
+  const existing = await getPaymentOrderByOrderId(input.orderId);
+  if (!existing) {
+    throw new Error('환불 상태를 저장하지 못했습니다.');
+  }
+  return existing;
 }
 
 export async function touchPaymentOrderReconciled(orderId: string) {

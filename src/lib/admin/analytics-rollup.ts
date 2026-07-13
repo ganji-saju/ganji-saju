@@ -215,6 +215,11 @@ export function computeDailyMetrics(input: ComputeDailyMetricsInput): MetricsDai
 // ---- I/O 오케스트레이션 ----
 
 const COMPLETED_ORDER_STATUSES = ['confirmed', 'fulfilling', 'fulfilled'];
+// 총매출(revenue_won) fetch 에는 'refunded' 도 포함한다 — 환불된 주문도 판 날 매출은 보존되어야
+//   한다(gross). refunded 주문은 confirmed_at/fulfilled_at 이 남아 판 날에 귀속되고, 환불액은
+//   아래 refunds fetch 로 refunded_at 기준 별도 집계된다. 'refunded' 를 빼면 재롤업 시 판 날
+//   매출이 사라져 net 이 이중 차감된다.
+export const REVENUE_ORDER_STATUSES = [...COMPLETED_ORDER_STATUSES, 'refunded'];
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 200; // 백필(전체 기간) 대비 넉넉히.
 
@@ -285,7 +290,7 @@ export async function runDailyMetricsRollup(
     service
       .from('payment_orders')
       .select('amount, confirmed_at, fulfilled_at, created_at')
-      .in('status', COMPLETED_ORDER_STATUSES)
+      .in('status', REVENUE_ORDER_STATUSES)
       .or(
         `confirmed_at.gte.${windowStartIso},fulfilled_at.gte.${windowStartIso},created_at.gte.${windowStartIso}`
       )
