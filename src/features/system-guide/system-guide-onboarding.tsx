@@ -23,6 +23,7 @@ export interface SystemGuideOnboardingProps {
   open: boolean;
   initialStepIndex: number;
   onStepChange: (stepIndex: number) => void;
+  onNavigate: (stepIndex: number) => void;
   onDismiss: (stepIndex: number) => void;
   onComplete: () => void;
 }
@@ -46,6 +47,7 @@ export function SystemGuideOnboarding({
   open,
   initialStepIndex,
   onStepChange,
+  onNavigate,
   onDismiss,
   onComplete,
 }: SystemGuideOnboardingProps) {
@@ -170,7 +172,7 @@ export function SystemGuideOnboarding({
         <div className="mt-7 grid gap-2">
           <Link
             href={step.primaryHref}
-            onClick={dismiss}
+            onClick={() => onNavigate(stepIndex)}
             className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
           >
             {step.primaryLabel}
@@ -179,7 +181,7 @@ export function SystemGuideOnboarding({
           {step.secondaryHref && step.secondaryLabel ? (
             <Link
               href={step.secondaryHref}
-              onClick={dismiss}
+              onClick={() => onNavigate(stepIndex)}
               className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
             >
               {step.secondaryLabel}

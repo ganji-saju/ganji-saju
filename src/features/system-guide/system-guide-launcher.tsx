@@ -109,6 +109,11 @@ export function SystemGuideLauncher() {
         setStepIndex(nextStepIndex);
         persist('in_progress', nextStepIndex);
       }}
+      onNavigate={(currentStepIndex) => {
+        persist('in_progress', currentStepIndex);
+        openSourceRef.current = null;
+        setOpen(false);
+      }}
       onDismiss={(currentStepIndex) => {
         persist('dismissed', currentStepIndex);
         openSourceRef.current = null;

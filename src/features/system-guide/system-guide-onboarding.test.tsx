@@ -12,6 +12,7 @@ interface RenderOptions {
   open?: boolean;
   initialStepIndex?: number;
   onStepChange?: (stepIndex: number) => void;
+  onNavigate?: (stepIndex: number) => void;
   onDismiss?: (stepIndex: number) => void;
   onComplete?: () => void;
 }
@@ -24,6 +25,7 @@ function renderOnboarding(options: RenderOptions = {}) {
     open: true,
     initialStepIndex: 0,
     onStepChange: vi.fn(),
+    onNavigate: vi.fn(),
     onDismiss: vi.fn(),
     onComplete: vi.fn(),
     ...options,
@@ -89,6 +91,20 @@ describe('SystemGuideOnboarding', () => {
     expect(document.querySelector('a[href="/"]')?.textContent).toContain('간지사주 시작하기');
   });
 
+  it.each(['알림 설정', '멤버십 보기'])('%s 기능 이동은 닫기가 아니라 진행 저장 콜백을 호출한다', (label) => {
+    const onNavigate = vi.fn();
+    const onDismiss = vi.fn();
+    renderOnboarding({ initialStepIndex: 5, onNavigate, onDismiss });
+
+    const featureLink = link(label);
+    featureLink?.addEventListener('click', (event) => event.preventDefault(), { once: true });
+    click(featureLink);
+
+    expect(onNavigate).toHaveBeenCalledOnce();
+    expect(onNavigate).toHaveBeenCalledWith(5);
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['닫기 버튼', () => click(button('닫기'))],
     ['Escape', () => act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })))],
@@ -104,7 +120,9 @@ describe('SystemGuideOnboarding', () => {
   it('마지막 단계 완료는 onComplete를 호출한다', () => {
     const onComplete = vi.fn();
     renderOnboarding({ initialStepIndex: 5, onComplete });
-    click(link('간지사주 시작하기'));
+    const homeLink = link('간지사주 시작하기');
+    homeLink?.addEventListener('click', (event) => event.preventDefault(), { once: true });
+    click(homeLink);
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
@@ -119,6 +137,7 @@ describe('SystemGuideOnboarding', () => {
           open
           initialStepIndex={0}
           onStepChange={onStepChange}
+          onNavigate={vi.fn()}
           onDismiss={vi.fn()}
           onComplete={vi.fn()}
         />,

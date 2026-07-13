@@ -32,11 +32,13 @@ vi.mock('./system-guide-onboarding', () => ({
     open: boolean;
     initialStepIndex: number;
     onStepChange: (index: number) => void;
+    onNavigate: (index: number) => void;
     onDismiss: (index: number) => void;
     onComplete: () => void;
   }) => props.open ? (
     <div data-testid="guide" data-step={props.initialStepIndex}>
       <button onClick={() => props.onStepChange(3)}>step</button>
+      <button onClick={() => props.onNavigate(3)}>navigate</button>
       <button onClick={() => props.onDismiss(props.initialStepIndex)}>dismiss</button>
       <button onClick={props.onComplete}>complete</button>
     </div>
@@ -145,6 +147,28 @@ describe('SystemGuideLauncher', () => {
     act(() => openSystemGuide(5));
     click('complete');
     expect(JSON.parse(localStorage.getItem(SYSTEM_GUIDE_STORAGE_KEY)!)).toMatchObject({ status: 'completed', stepIndex: 5 });
+  });
+
+  it('기능 이동은 현재 단계를 진행 중으로 저장하고 닫으며 다음 로그인 마운트에서 복원한다', async () => {
+    mocks.user = { id: 'user-1' };
+    await renderLauncher();
+
+    click('navigate');
+
+    expect(guide()).toBeNull();
+    expect(JSON.parse(localStorage.getItem(SYSTEM_GUIDE_STORAGE_KEY)!)).toMatchObject({
+      status: 'in_progress',
+      stepIndex: 3,
+    });
+
+    act(() => root.unmount());
+    host.remove();
+    host = document.createElement('div');
+    document.body.append(host);
+    root = createRoot(host);
+    await renderLauncher();
+
+    expect(guide()?.getAttribute('data-step')).toBe('3');
   });
 
   it('수동 이벤트는 인증과 저장 상태에 관계없이 유효한 지정 단계에서 연다', async () => {
