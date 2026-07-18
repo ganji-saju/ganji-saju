@@ -98,14 +98,20 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     tone: 'soft',
   },
   {
+    // 2026-07-19 — 배너 이미지의 가격을 9,900 → 3,300 으로 재작업(이벤트 정합).
+    //   ⚠️ 가격이 **이미지에 그려져** 있어 리졸버가 못 고친다. 가격을 다시 바꾸면
+    //   public/images/gangi/banners/saju-9900.{png,webp,avif} 도 함께 갱신해야 한다.
+    //   id·파일명은 추적 연속성 때문에 'saju-9900' 유지(가격이 아니라 배너 식별자).
+    //   alt/title 은 이미지에 실제로 적힌 문구와 일치시킨다(기존엔 "내 사주 풀이"로 불일치).
     id: 'saju-9900',
     image: 'saju-9900',
-    alt: '9,900원 내 사주 풀이 — 사주·명리 상담',
+    alt: '3,300원 내 운명 확인 — 사주·명리 상담',
     kicker: '사주·명리',
-    title: '9,900원 내 사주 풀이',
+    title: '3,300원 내 운명 확인',
     description: '복잡한 고민, 방향이 필요할 때 부담 없이 시작하세요.',
     cta: '지금 확인하기',
-    href: '/saju/new',
+    // 배너가 3,300원을 광고하므로 카드와 같은 결제 직행 경로로 보낸다(중간 맛보기 없음).
+    href: '/saju/new?product=today-detail',
     tone: 'pink',
   },
   {

@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { getFeatureCost } from '@/lib/credits/costs';
 import type { FortuneCalendarMonthReport, FortuneCalendarTone } from '@/domain/saju/report';
 // 2026-05-16 — 같은 slug+년월에 대해 이미 monthly-calendar 구매한 사용자가
 //   다시 결제 link 를 보지 않도록 entitlement 확인.
@@ -1023,7 +1024,12 @@ export default function FortuneCalendarPanel({
                           variant="outline"
                           className="h-11 rounded-full text-[14.4px] font-extrabold"
                         >
-                          {unlocking ? '여는 중...' : `${selectedMonth}월 캘린더 2전으로 열기`}
+                          {/* 2026-07-19 — "2전" 하드코딩이었는데 실제 차감은 calendar 상수(당시 10전)라
+                              5배 과소표시였다. 서버가 이미 payload.coinCost 로 실제 차감량을 내려주므로
+                              그 값을 쓴다(가격 이벤트로 차감량이 바뀌어도 자동 정합). */}
+                          {unlocking
+                            ? '여는 중...'
+                            : `${selectedMonth}월 캘린더 ${data?.coinCost ?? getFeatureCost('calendar')}전으로 열기`}
                         </Button>
                       ) : null}
                     </>

@@ -1,4 +1,5 @@
 import { loadSajuDataV2 } from '@/domain/saju/engine';
+import { getFeatureCost } from '@/lib/credits/costs';
 import { parseBirthInputDraft } from '@/domain/saju/validators/birth-input';
 import { MOONLIGHT_ANALYTICS_EVENTS } from '@/lib/analytics-events';
 import { normalizeMoonlightCounselor, type MoonlightCounselorId } from '@/lib/counselors';
@@ -194,7 +195,10 @@ export async function getTodayFortuneVerificationAudit({
           selected.free.groundingSummary.factLines.length >= 3 &&
           selected.free.groundingSummary.evidenceLines.length >= 2 &&
           selected.free.nextAction.product === 'TODAY_DEEP_READING' &&
-          selected.free.nextAction.coinCost === 1,
+          // 2026-07-19 — 기존 `=== 1` 은 2026-06-26 에 실제값이 10 으로 바뀐 뒤 갱신되지 않아
+          //   이 체크가 계속 red 였다(테스트가 checks[].ok 를 단언하지 않아 은폐됨).
+          //   리터럴로 다시 박으면 같은 방식으로 또 썩으므로 차감 상수에서 파생시킨다.
+          selected.free.nextAction.coinCost === getFeatureCost('detail_report'),
         detail: `scores ${selected.free.scores.length}개 · grounding facts ${selected.free.groundingSummary.factLines.length}개 · follow-up ${selected.free.followUpQuestions.length}개 · CTA ${selected.free.nextAction.coinCost}전`,
       },
       {
@@ -202,7 +206,7 @@ export async function getTodayFortuneVerificationAudit({
         label: '심화 결과 구조',
         ok:
           selected.premium.productCode === 'TODAY_DEEP_READING' &&
-          selected.premium.coinCost === 1 &&
+          selected.premium.coinCost === getFeatureCost('detail_report') &&
           selected.premium.groundingSummary.factLines.length >= 3 &&
           selected.premium.groundingSummary.evidenceLines.length >= 2 &&
           selected.premium.favorableWindows.length >= 2 &&

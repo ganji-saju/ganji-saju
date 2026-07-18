@@ -1,32 +1,26 @@
 import { createServiceClient } from '@/lib/supabase/server';
 import { sumNonExpiredLots, type CreditLotRow } from '@/lib/credits/lot-balance';
 
-export type Feature =
-  | 'detail_report'   // 10 크레딧 (9,900원 / 전단가 990)
-  | 'compat'          // 10 크레딧 (궁합 9,900원)
-  | 'ai_chat'         // 3 크레딧 / 3회 묶음 (대화상담 = 무료 시작, 9,900 정책 대상 아님)
-  | 'daewoon'         // 3 크레딧 (미사용 — 유지)
-  | 'calendar';       // 10 크레딧 (월간 캘린더 9,900원)
-
 // 2026-06-23 — 소액상품 9,900원 단일가 통일. 전 1개 = 990원 기준이라 9,900원 상품 = 10전 차감.
-//   9,900 대상 상품과 연결된 feature(detail_report·compat·calendar)만 적용. ai_chat(대화상담=무료
-//   시작)·daewoon(미사용)은 유지. 전팩은 9,900원 = 15전(50% 보너스)이라 한 번 충전으로
-//   상품 1개(10전) + 5전 여유 → 전 결제 = 직접결제 대비 우대(재방문 유인).
-const CREDIT_COSTS: Record<Feature, number> = {
-  detail_report: 10,
-  compat: 10,
-  ai_chat: 3,
-  daewoon: 3,
-  calendar: 10,
-};
+//   전팩은 9,900원 = 15전(50% 보너스)이라 한 번 충전으로 상품 1개(10전) + 5전 여유
+//   → 전 결제 = 직접결제 대비 우대(재방문 유인).
+// 2026-07-19 — 위 매핑이 **리터럴로 박혀 있어** 2026-07-18 카드가 인하(9,900 → 3,300)를
+//   따라가지 못했다(같은 상품이 카드 3,300원 vs 전 10개 = 9,900원 상당으로 3배 괴리,
+//   "전이 더 유리하다"는 설계 의도가 정반대로 뒤집힘). 이제 상수 정의를 순수 모듈
+//   `./costs` 로 옮겨 **카탈로그 가격에서 파생**시킨다 — 이벤트가 끝나 가격이 9,900 으로
+//   복귀하면 전 차감량도 자동으로 10 으로 돌아온다. 파생 규칙·근거는 costs.ts 주석 참조.
+//   (이 파일은 server-only createServiceClient 를 import 하므로 클라 컴포넌트는
+//    표시용 값을 costs.ts 에서 직접 가져가야 한다.)
+import { CREDIT_COSTS, type Feature } from './costs';
 
-export function isFeature(value: unknown): value is Feature {
-  return typeof value === 'string' && value in CREDIT_COSTS;
-}
-
-export function getFeatureCost(feature: Feature) {
-  return CREDIT_COSTS[feature];
-}
+export {
+  CREDIT_COSTS,
+  COIN_UNIT_KRW,
+  coinCostForPackage,
+  getFeatureCost,
+  isFeature,
+  type Feature,
+} from './costs';
 
 export interface IdempotentCreditUnlockResult {
   success: boolean;

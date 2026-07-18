@@ -164,9 +164,11 @@ function printEntryPointVerdicts(subSummary, productMap, legacyRows) {
     lifetimeEnts.length > 0 || lifetimeLegacy.length > 0
       ? '🟢 "✓ 구매한 풀이 보기"' : '⚪ 결제 가능');
 
-  // 6. premium-lock-card (today-detail 550원, PR #178)
+  // 6. premium-lock-card (today-detail, PR #178)
+  //   2026-07-19 — 라벨에서 금액 제거. 550원 → 9,900원 → 3,300원(이벤트)으로 두 세대 stale 이었고,
+  //   /admin/pricing 런타임 오버라이드도 가능해 어떤 숫자를 박아도 다시 썩는다.
   const todayEnts = productMap.get('today-detail') ?? [];
-  console.log('  [6] premium-lock-card today-detail 550원 (PR #178)');
+  console.log('  [6] premium-lock-card today-detail (PR #178)');
   row('   product_entitlements', `${todayEnts.length}건`);
   if (todayEnts.length > 0) {
     const scopes = todayEnts.map((e) => e.scope_key).filter(Boolean);
@@ -176,17 +178,17 @@ function printEntryPointVerdicts(subSummary, productMap, legacyRows) {
     row('   예상', '⚪ 결제 button 노출 (coin unlock 별도 확인 필요)');
   }
 
-  // 7. compatibility/result manual (love-question 990원, PR #178)
+  // 7. compatibility/result manual (love-question, PR #178)
   const loveEnts = productMap.get('love-question') ?? [];
-  console.log('  [7] /compatibility/result manual love-question 990원 (PR #178)');
+  console.log('  [7] /compatibility/result manual love-question (PR #178)');
   row('   product_entitlements', `${loveEnts.length}건`);
   row('   예상', loveEnts.length > 0
     ? '🟢 manual 분기에서 결제 link 제거 + 보유 노출'
     : '⚪ 결제 가능');
 
-  // 8. fortune-calendar-panel (monthly-calendar 1,900원, PR #178)
+  // 8. fortune-calendar-panel (monthly-calendar, PR #178)
   const calendarEnts = productMap.get('monthly-calendar') ?? [];
-  console.log('  [8] fortune-calendar-panel monthly-calendar 1,900원 (PR #178)');
+  console.log('  [8] fortune-calendar-panel monthly-calendar (PR #178)');
   row('   product_entitlements', `${calendarEnts.length}건`);
   if (calendarEnts.length > 0) {
     const scopes = calendarEnts.map((e) => e.scope_key).filter(Boolean);
