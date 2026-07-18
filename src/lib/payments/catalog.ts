@@ -178,12 +178,16 @@ export const PAYMENT_PACKAGES = [
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
     // 2026-06-26 — 묶음열기 9,900원 → 19,800원.
+    // 2026-07-19 — 할인특가 9,900원(취소선 19,800). 단품 today-detail 이 3,300원으로 내려가
+    //   19,800 묶음이 단품 6개 값보다 비싸 보이는 역전이 생겼다(페이월이 단품·묶음을 나란히
+    //   노출해 사용자가 즉시 계산함). 단품 3,300 × 3 = 묶음 9,900 으로 배수를 정리.
     id: 'bundle_today_set',
     name: '오늘 풀세트',
     credits: 0,
-    price: 19800,
+    price: 9900,
     kind: 'bundle',
     requiresSlug: true,
+    compareAt: 19800,
     components: [
       { tasteProductId: 'today-detail' },
       { tasteProductId: 'score-factor', scope: 'F1' },

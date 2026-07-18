@@ -9,7 +9,7 @@ import {
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
-// 오늘 풀세트(990원) = today-detail + score-factor F1~F5 를 6개 구성품 grant 입력으로
+// 오늘 풀세트 = today-detail + score-factor F1~F5 를 6개 구성품 grant 입력으로
 // 분해한다. confirm 이 이 목록을 순회하며 각 구성품을 resolvePaymentProductScope +
 // grantTasteProductEntitlement 한다(1결제 = N권한). 분해가 어긋나면 결제했는데 일부
 // 권한이 안 열리거나 환불 회수가 누락된다.

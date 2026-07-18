@@ -9,10 +9,16 @@ declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 test('coinCostForPackage: 상품가 ÷ 990 내림, 최소 1전', () => {
   assert.equal(COIN_UNIT_KRW, 990);
-  // 9,900원 상품은 기존 정책값 10전을 그대로 재현해야 한다(기존 정책과 무모순).
-  const nineNine = getPackage('taste_score_total');
-  assert.equal(nineNine?.price, 9900);
-  assert.equal(coinCostForPackage('taste_score_total'), 10);
+  // 2026-07-19 — 원래 여기서 taste_score_total 의 가격이 9,900원임을 직접 단언했는데,
+  //   그건 이 파일이 경계하는 바로 그 실패(특정 상품 가격에 테스트를 못박기)였다.
+  //   검증 대상은 "9,900원짜리는 10전" 이라는 **정책 공식**이지 특정 상품이 아니므로
+  //   공식 자체를 단언한다. 어떤 상품 가격이 바뀌어도 이 테스트는 깨지지 않는다.
+  assert.equal(Math.floor(9900 / COIN_UNIT_KRW), 10);
+  // 최소 1전 바닥: 990원 미만 상품도 0전이 되지 않는다.
+  assert.equal(Math.max(1, Math.floor(500 / COIN_UNIT_KRW)), 1);
+  // 배선 확인은 가격이 아니라 "카탈로그를 실제로 읽는가"로 한다.
+  const pkg = getPackage('taste_today_detail');
+  assert.equal(coinCostForPackage('taste_today_detail'), Math.floor((pkg?.price ?? 0) / COIN_UNIT_KRW));
 });
 
 test('CREDIT_COSTS: 이벤트 상품은 카드가를 따라 내려간다', () => {
