@@ -484,14 +484,17 @@ function MobileChrome({
         <div className="app-top-header-inner app-top-header-main px-3 py-2 sm:px-4">
           <div className="flex items-center justify-between gap-3">
             {/* §Brand — 2026-05-14 리디자인: 컨텍스트 설명 제거, 한 줄 lockup */}
-            {/* 2026-06-24 — 붓글씨 로고 이미지(간지사주 9,900원). picture(avif/webp/png 폴백). */}
+            {/* 2026-06-24 — 붓글씨 로고 이미지. picture(avif/webp/png 폴백).
+                2026-07-18 — 로고에 박혀 있던 "9,900원"을 이미지에서 크롭 제거(20260718 PPTX
+                slide3 "메인 이거 가격 삭제"). 가격 이벤트로 표시가가 바뀌어도 로고가 stale 가격을
+                고정 노출하던 문제도 함께 해소. */}
             <Link href="/" className="app-top-brand min-w-0 flex items-center" aria-label="간지사주 홈">
               <picture>
                 <source srcSet="/images/gangi/logo.avif" type="image/avif" />
                 <source srcSet="/images/gangi/logo.webp" type="image/webp" />
                 <img
                   src="/images/gangi/logo.png"
-                  alt="간지사주 9,900원"
+                  alt="간지사주"
                   className="w-auto"
                   style={{ height: 28 }}
                   decoding="async"

@@ -1,14 +1,21 @@
-// 2026-05-20 Phase 8-E — 무료 SEO 콘텐츠 페이지 → 유료 상품 funnel grid (DRY).
+// 2026-05-20 Phase 8-E — 무료 SEO 콘텐츠 페이지 → 유료 상품 funnel (DRY).
 //   Phase 8-B/C/D 에서 별자리/띠/꿈해몽 detail 의 마지막 CTA section 에 inline 으로
-//   사주 (9,900원~) + 궁합 (990원) link grid 가 추가됐는데, 동일 패턴을
+//   사주 + 궁합 link grid 가 추가됐는데, 동일 패턴을
 //   today-fortune / tarot result 페이지에도 적용하면서 컴포넌트로 추출.
 //
 //   from 매개변수로 UTM 식별 (?from=star-sign | zodiac | dream | today-fortune | tarot).
 //   tone variant 로 dark surface (별자리/띠) 와 light surface (꿈/오늘운세) 모두 지원.
+//
+// 2026-07-18 — 텍스트 리스트 → **썸네일 + 질문형 카피** 리스트로 교체
+//   (20260718 PPTX slide9 "하단 메뉴가 헷갈림. 다른 메뉴처럼 보임, 텍스트 보다는 이미지").
+//   기존 형태(작은 글씨 2줄 + 가격 pill)가 결과 페이지 하단에서 전역 내비게이션처럼 보여
+//   "추천 상품"으로 읽히지 않았다. 인물 썸네일로 시각적 무게를 주고, 카피를 상품명이 아니라
+//   **사용자가 품는 질문**("우리 사이는 몇점?")으로 바꿔 클릭 동기를 만든다.
+//   가격 pill 은 시안대로 제거 — 여기서는 흥미 유발만 하고 금액은 각 상품 페이지에서 본다.
+//   ⚠️ 이 파일 경로는 public-commercialization-copy.test.ts 의 정직성 스캔 대상이라 유지.
 
 import Link from 'next/link';
-import { Price } from '@/components/payments/price-provider';
-import type { PriceKey } from '@/lib/payments/price-display-shared';
+import { ChevronRight } from 'lucide-react';
 
 export interface PaidFunnelGridProps {
   /** UTM source identifier — analytics 추적용 (?from={from}). */
@@ -18,105 +25,136 @@ export interface PaidFunnelGridProps {
    * 'light' = 일반 라이트 배경 (꿈해몽/오늘운세 본문 — border var(--app-line))
    */
   tone?: 'dark' | 'light';
-  /** 멤버십 link 도 함께 노출. 기본 false (사주 + 궁합 2 grid). */
+  /** 멤버십 link 도 함께 노출. 기본 false. */
   includeMembership?: boolean;
+  /**
+   * 섹션 제목. 기본 '이런 운세는 어때요?'.
+   * false 면 제목 없이 리스트만 — 이미 자체 제목이 있는 CTA article 안(별자리/띠)에서 사용.
+   */
+  heading?: string | false;
   /** 추가 className (margin 등). */
   className?: string;
 }
 
+// 카피는 "상품 설명"이 아니라 "사용자가 품는 질문". 이미지는 홈 카드와 같은
+//   /images/gangi/people 자산을 재사용해 메뉴 인지가 홈과 이어지게 한다.
+// NOTE: 시안에는 '연도별 운세' 행도 있으나 우리 앱에는 해당 기능/라우트가 없다(대운의
+//   year-core 와 동일 상품). 없는 메뉴를 만들지 않기 위해 제외 — 별도 상품이 생기면 추가.
 const ITEMS: ReadonlyArray<{
   key: string;
   href: string;
-  eyebrow: string;
+  image: string;
+  title: string;
   body: string;
-  price: string;
-  priceKey?: PriceKey;
 }> = [
   {
     key: 'saju',
     href: '/saju/new',
-    eyebrow: '사주 상세 풀이',
-    body: '14 섹션 · A4 5~7p 리포트',
-    price: '9,900원',
-    priceKey: 'saju_entry',
+    image: 'saju',
+    title: '친구나 가족의 사주도 궁금하다면?',
+    body: '결과를 공유해줄 수 있어요!',
   },
   {
     key: 'gunghap',
     href: '/compatibility/input',
-    eyebrow: '궁합 풀이',
-    body: '두 사람 사주 결합 분석',
-    price: '9,900원',
-    priceKey: 'taste_love_question',
+    image: 'gunghap',
+    title: '우리 사이는 몇점?',
+    body: 'SNS에서 소문난 궁합 맛집',
   },
   {
-    key: 'membership',
-    href: '/membership',
-    eyebrow: '멤버십',
-    body: '일 30회·월 120턴 공정사용',
-    price: '월정액',
+    key: 'daewoon',
+    href: '/daewoon',
+    image: 'daewoon',
+    title: '대운을 아직 모르신다구요?',
+    body: '언제 물 들어오는지 한번 확인해보자구요',
+  },
+  {
+    key: 'taekil',
+    href: '/taekil',
+    image: 'taekil',
+    title: '중요한 일일수록 좋은 날에!',
+    body: 'Top 3 길일을 골라드려요',
   },
 ];
+
+const MEMBERSHIP_ITEM = {
+  key: 'membership',
+  href: '/membership',
+  image: 'consult',
+  title: '매일 물어보고 싶다면?',
+  body: '멤버십으로 선생님과 계속 이어서 대화해요',
+};
 
 export function PaidFunnelGrid({
   from,
   tone = 'light',
   includeMembership = false,
+  heading = '이런 운세는 어때요?',
   className = '',
 }: PaidFunnelGridProps) {
-  const visibleItems = includeMembership ? ITEMS : ITEMS.slice(0, 2);
-  const colsClass =
-    visibleItems.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2';
+  const visibleItems = includeMembership ? [...ITEMS, MEMBERSHIP_ITEM] : ITEMS;
 
-  // tone 별 스타일 — surface 와 일관성 유지.
-  const cardStyle: React.CSSProperties =
-    tone === 'dark'
-      ? {
-          borderColor: 'rgba(255,255,255,0.16)',
-          background: 'rgba(255,255,255,0.08)',
-          color: 'rgba(255,255,255,0.90)',
-        }
-      : {
-          borderColor: 'var(--app-line)',
-          background: '#ffffff',
-          color: 'var(--app-ink)',
-        };
-  const eyebrowColor =
-    tone === 'dark' ? 'rgba(255,255,255,0.65)' : 'var(--app-copy-soft)';
-  const bodyColor =
-    tone === 'dark' ? 'rgba(255,255,255,0.90)' : 'var(--app-copy)';
-  const pillStyle: React.CSSProperties =
-    tone === 'dark'
-      ? { background: 'rgba(236, 72, 153, 0.85)' }
-      : { background: 'var(--app-pink)' };
+  const dark = tone === 'dark';
+  const rowStyle: React.CSSProperties = dark
+    ? { borderColor: 'rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)' }
+    : { borderColor: 'var(--app-line)', background: '#ffffff' };
+  const titleColor = dark ? '#fff' : 'var(--app-ink)';
+  const bodyColor = dark ? 'rgba(255,255,255,0.72)' : 'var(--app-copy-soft)';
 
   return (
-    <div className={`grid gap-2 ${colsClass} ${className}`.trim()}>
-      {visibleItems.map((item) => (
-        <Link
-          key={item.key}
-          href={`${item.href}?from=${from}`}
-          className="inline-flex items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[13.8px] font-bold no-underline"
-          style={cardStyle}
+    <section className={className.trim()} aria-label="추천 운세">
+      {heading === false ? null : (
+        <h2
+          className="px-1 text-[17.3px] font-extrabold"
+          style={{ color: titleColor }}
         >
-          <span className="flex flex-col text-left">
-            <span
-              className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
-              style={{ color: eyebrowColor }}
-            >
-              {item.eyebrow}
-            </span>
-            <span className="mt-0.5" style={{ color: bodyColor }}>
-              {item.body}
-            </span>
-          </span>
-          <span
-            className="ml-2 shrink-0 rounded-full px-2 py-1 text-[12.6px] font-extrabold text-white"
-            style={pillStyle}
+          {heading}
+        </h2>
+      )}
+      <div className={heading === false ? 'grid gap-2' : 'mt-2.5 grid gap-2'}>
+        {visibleItems.map((item) => (
+          <Link
+            key={item.key}
+            href={`${item.href}?from=${from}`}
+            className="flex items-center gap-3 rounded-[16px] border p-2.5 no-underline"
+            style={rowStyle}
           >
-            {item.priceKey ? <Price priceKey={item.priceKey} /> : item.price}
-          </span>
-        </Link>
-      ))}
-    </div>
+            {/* 썸네일 — 홈 카드와 동일 자산. object-top 으로 인물 얼굴이 잘리지 않게. */}
+            <picture>
+              <source srcSet={`/images/gangi/people/${item.image}.avif`} type="image/avif" />
+              <source srcSet={`/images/gangi/people/${item.image}.webp`} type="image/webp" />
+              <img
+                src={`/images/gangi/people/${item.image}.png`}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                className="h-14 w-14 shrink-0 rounded-[12px] object-cover object-top"
+                style={{ background: dark ? 'rgba(255,255,255,0.10)' : 'var(--app-pink-soft)' }}
+              />
+            </picture>
+            <span className="min-w-0 flex-1">
+              <span
+                className="block text-[15.2px] font-extrabold leading-[1.35] tracking-tight"
+                style={{ color: titleColor }}
+              >
+                {item.title}
+              </span>
+              <span
+                className="mt-0.5 block text-[13.2px] leading-[1.45]"
+                style={{ color: bodyColor }}
+              >
+                {item.body}
+              </span>
+            </span>
+            <ChevronRight
+              className="h-5 w-5 shrink-0"
+              style={{ color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(17,17,20,0.4)' }}
+              aria-hidden="true"
+            />
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

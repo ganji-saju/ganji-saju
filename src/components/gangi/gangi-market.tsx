@@ -16,7 +16,7 @@ import type {
   GangiServiceCard,
 } from '@/content/gangi-market';
 import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
-import { Price } from '@/components/payments/price-provider';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
@@ -540,37 +540,57 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 하단 강조 텍스트 — 외곽선·그림자로 가독성. 제목 + 부제 + 가격 배지. */}
-      <span className="absolute inset-x-0 bottom-0 block p-3.5">
+      {/* 하단 강조 텍스트 — 제목/부제 배지. 2026-07-18(20260718 PPTX slide4): 50대 이상 타깃
+          가독성 요구("더 크게, 잘 보이는 색깔로"). 흰 글씨+그림자만으로는 인물 사진 위에서
+          대비가 들쭉날쭉해 **불투명 배경판**으로 고정 대비를 만든다(제목=먹빛 판/흰 글씨,
+          부제=노란 판/먹빛 글씨). 제목 글자수가 2자("사주")~9자("질문 하나 대화상담")로
+          편차가 커서 길이별로 크기를 단계 조절 — 고정 크기면 긴 제목이 카드를 넘친다. */}
+      <span className="absolute inset-x-0 bottom-0 block p-3">
         <span
-          className="block"
+          className="inline-block rounded-[9px] px-2 py-1"
           style={{
-            fontSize: 21,
-            fontWeight: 900,
-            letterSpacing: '-0.02em',
+            background: 'rgba(20,14,26,0.86)',
             color: '#fff',
-            WebkitTextStroke: '0.5px rgba(0,0,0,0.35)',
-            textShadow: '0 2px 10px rgba(0,0,0,0.65)',
+            fontSize: card.title.length <= 3 ? 29 : card.title.length <= 5 ? 23 : 18,
+            fontWeight: 900,
+            lineHeight: 1.15,
+            letterSpacing: '-0.02em',
           }}
         >
           {card.title}
         </span>
         <span
-          className="mt-1 block"
-          style={{ fontSize: 15.2, fontWeight: 750, color: '#fff', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+          className="mt-1.5 inline-block rounded-[8px] px-2 py-0.5"
+          style={{
+            background: '#ffd83d',
+            color: '#241a08',
+            fontSize: 14.4,
+            fontWeight: 850,
+            lineHeight: 1.3,
+            letterSpacing: '-0.01em',
+          }}
         >
           {card.desc}
         </span>
-        <span
-          className="mt-2 inline-flex items-center rounded-[8px] px-2 py-0.5"
-          style={{
-            background: isFree ? 'rgba(255,255,255,0.92)' : 'var(--app-pink)',
-            color: isFree ? 'var(--app-jade)' : '#fff',
-            fontSize: 15,
-            fontWeight: 900,
-          }}
-        >
-          {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+        <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <span
+            className="inline-flex items-center rounded-[8px] px-2 py-0.5"
+            style={{
+              background: isFree ? 'rgba(255,255,255,0.94)' : 'var(--app-pink)',
+              color: isFree ? 'var(--app-jade)' : '#fff',
+              fontSize: 15,
+              fontWeight: 900,
+            }}
+          >
+            {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+          </span>
+          {/* 이벤트 원가 취소선 — compare 값 없으면 ComparePrice 가 스스로 null 렌더. */}
+          {card.priceKey ? (
+            <ComparePrice
+              priceKey={card.priceKey}
+              className="text-[12.5px] font-bold text-white line-through [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]"
+            />
+          ) : null}
         </span>
       </span>
     </Link>

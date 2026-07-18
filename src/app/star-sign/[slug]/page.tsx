@@ -707,7 +707,7 @@ export default async function StarSignDetailPage({ params }: Props) {
               </Link>
             </div>
             {/* 2026-05-20 Phase 8-E — PaidFunnelGrid 공통 컴포넌트로 추출 (DRY). */}
-            <PaidFunnelGrid from="star-sign" tone="dark" className="mt-3" />
+            <PaidFunnelGrid from="star-sign" tone="dark" heading={false} className="mt-3" />
           </article>
 
           {/* §12 친구에게 공유 — 2026-07-03: highlight 는 오늘(KST) 시드 기반이라

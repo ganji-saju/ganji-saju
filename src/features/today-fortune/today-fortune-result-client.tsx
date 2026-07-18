@@ -2,28 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
+import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
-import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
-import { OpportunityRiskCards } from '@/components/today-fortune/opportunity-risk-cards';
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
-import { SajuReasonSnippet } from '@/components/today-fortune/saju-reason-snippet';
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
-import { SituationReflectionCard } from '@/components/saju/situation-reflection-card';
-// 2026-05-15 PR 1 — 운세톡톡 벤치마크 적용 (간지사주_무료일진운세_적용방안.md).
-// 카테고리 카드 stacked 풀이 + 사주 명식 신뢰 카드 + 대운 CTA.
-import { TodayCategoryReadings } from '@/components/today-fortune/today-category-readings';
-import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-card';
-import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
-// 2026-05-15 PR 2 — 운세톡톡 벤치마크: 행운 패키지 12종 + 로또 번호 오행색 시각화.
-import { TodayLuckyPackageCard } from '@/components/today-fortune/today-lucky-package-card';
-// 2026-05-15 PR 3 — 운세톡톡 벤치마크: 일진 점수 산출 내역 + 발동 케이스 메시지.
-import { TodayIljinBreakdownCard } from '@/components/today-fortune/today-iljin-breakdown-card';
-// 2026-05-15 PR 9 — 03 ML 가중치 학습: 사용자 피드백 카드.
-import { TodayFeedbackCard } from '@/components/today-fortune/today-feedback-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
@@ -97,32 +82,6 @@ function findLatestStoredResult(
   }
 }
 
-const RELATED_LINKS: Record<ConcernId, Array<{ label: string; href: string; body: string }>> = {
-  love_contact: [
-    { label: '궁합으로 이어보기', href: '/compatibility', body: '상대와의 거리와 속도를 더 넓게 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 어떤 말투가 편한지 바로 물어볼 수 있어요.' },
-  ],
-  money_spend: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '돈이 새는 습관과 선택 패턴을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 결제해도 되는지 짧게 물어볼 수 있어요.' },
-  ],
-  work_meeting: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '일과 역할의 큰 흐름을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '미팅에서 꺼낼 말과 줄일 말을 물어볼 수 있어요.' },
-  ],
-  relationship_conflict: [
-    { label: '궁합으로 이어보기', href: '/compatibility', body: '상대와 부딪히는 지점을 같이 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오해를 줄이는 한마디를 바로 물어볼 수 있어요.' },
-  ],
-  energy_health: [
-    { label: '사주로 더 보기', href: '/saju/new', body: '생활 리듬과 회복 패턴을 이어서 봅니다.' },
-    { label: '대화로 더 묻기', href: '/dialogue', body: '오늘 무리하지 않는 선택을 물어볼 수 있어요.' },
-  ],
-  general: [
-    { label: '타로로 보완하기', href: '/tarot/daily', body: '지금 마음의 흐름을 카드 세 장으로 가볍게 봅니다.' },
-    { label: '사주로 더 보기', href: '/saju/new', body: '오늘을 넘어서 내 기본 흐름까지 이어서 봅니다.' },
-  ],
-};
 
 function readStoredResult(sourceSessionId: string | undefined) {
   if (!sourceSessionId) return null;
@@ -164,10 +123,7 @@ export function TodayFortuneResultClient({
 }) {
   const router = useRouter();
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
-  // 2026-05-15 PR 9: 피드백 카드 dwell 측정용 — 결과 페이지 mount 시점.
-  const [enterAt] = useState(() => Date.now());
   const concernId = normalizeConcernId(concern);
-  const relatedLinks = useMemo(() => RELATED_LINKS[freeResult?.concernId ?? concernId], [concernId, freeResult]);
 
   useEffect(() => {
     const stored = readStoredResult(sourceSessionId);
@@ -200,8 +156,8 @@ export function TodayFortuneResultClient({
           PushPermissionModal 자동 prompt. 7일 cooldown. */}
       <PushPermissionPrompt delayMs={20_000} webPushPublicKey={WEB_PUSH_PUBLIC_KEY} />
 
-      {/* Redesign 2026-05-13: mockup screens-a.jsx ScreenToday 의 4 핵심 섹션을 상단에 배치하고,
-          기존 추가 무료 콘텐츠(기회/주의 / 사주 단서 / 후속 질문 / 관련 링크)는 하단 details 로 접어 보존. */}
+      {/* 2026-07-18 — 무료는 1장 요약(총운·점수·언락 CTA·내 사주·공유·추천)만.
+          기회/주의 · 사주 단서 · 후속 질문 · 관련 링크 접힘 블록은 제거됐다. */}
       <div className="grid gap-4 px-4 py-5">
         {!freeResult ? (
           <section className="rounded-[1.8rem] border border-[var(--app-line)] bg-white p-6 text-center shadow-[0_14px_42px_rgba(0,0,0,0.06)]">
@@ -220,56 +176,25 @@ export function TodayFortuneResultClient({
           </section>
         ) : (
           <>
-            {/* 2026-05-15 handoff 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
-                PR 1: 운세톡톡 벤치마크 적용으로 §3 카테고리 stacked + §5 사주 명식
-                + §7 대운 CTA 추가. 기존 §1·§2·§4·§6 unlock 은 유지. */}
+            {/* 2026-07-18 — 무료 오늘운세를 **1장짜리 요약본**으로 축소(20260718 PPTX slide6).
+                기존엔 총운·상황칩·점수·일진산출내역·카테고리별 풀이·행운패키지 12종·사주 명식·
+                대운 CTA·피드백·접힘 추가콘텐츠까지 13개 섹션이 쌓여 무료만으로 배가 불렀다.
+                남기는 것: ①총운 헤드라인 ②종합점수 ③유료 언락 CTA ④내 사주 보기 ⑤공유 ⑥하단 추천.
+                걷어낸 섹션들의 로직·컴포넌트는 삭제하지 않았다 —
+                  · 일진 산출내역/카테고리별/행운패키지/명식은 **유료 '오늘 자세히 보기'** 화면의
+                    가치로 유지(무료에서 다 보여주던 것을 유료로 되돌리는 것이 이번 변경의 취지).
+                  · 대운 CTA 는 하단 PaidFunnelGrid 의 '대운' 행이 대체.
+                  · TodayFeedbackCard(ML 가중치 학습 수집)는 무료 화면에서 제거 —
+                    ⚠️ today_fortune_feedback 유입이 끊기므로 학습 데이터가 필요하면
+                    유료 detail 화면으로 옮겨 붙일 것. */}
             <MotionResultReveal staggerSeconds={0.08}>
               {/* §1 — date eyebrow + 총운 헤드라인 */}
               <TodayFortuneSummaryCard result={freeResult} />
 
-              {/* §1.2 — PR #149 (Part C) — 사용자 상황 chip strip (compact).
-                  미입력이면 silent null, 입력 있으면 "✓ 반영 · 💼 직장인 · ..." 한 줄. */}
-              {freeResult.userSituation ? (
-                <div className="px-1">
-                  <SituationReflectionCard
-                    situation={freeResult.userSituation}
-                    variant="compact"
-                    fallbackInputHref="/saju/new"
-                  />
-                </div>
-              ) : null}
-
-              {/* §2 — 핑크 banner 큰 점수 + 등급 이모지 (PR 1: 🌟😊🙂😐😕⚠️) */}
+              {/* §2 — 핑크 banner 큰 점수 + 등급 이모지 */}
               <TodayScoreReveal result={freeResult} />
 
-              {/* §2.5 — 일진 점수 산출 내역 (PR 3 신설): 8영역 +/- 점수 + 발동 케이스 메시지.
-                  운세톡톡 6-2: "총점뿐 아니라 영역별 점수도 보여주면 명리 신뢰도가 올라간다". */}
-              {freeResult.iljinScore ? (
-                <TodayIljinBreakdownCard
-                  iljinScore={freeResult.iljinScore}
-                  iljinMessages={freeResult.iljinMessages ?? null}
-                />
-              ) : null}
-
-              {/* §3 — 카테고리별 자세히 (PR 1 신설): 직장/재물/애정/관계/컨디션
-                  블루 헤드라인 + 4~6줄 본문. 운세톡톡 핵심 차용.
-                  2026-05-16 — §4 한눈에 보기 2x3 grid 는 §3 와 같은 영역 점수를
-                    중복 노출해 사용자 혼란 유발. 제거. */}
-              <TodayCategoryReadings result={freeResult} />
-
-              {/* §4.5 — 행운 패키지 12종 (PR 2 신설): 색/숫자/방향/시간/음식/향/보석/음악/성씨/띠
-                  + 로또 번호 6개 오행색 원 + 피해야 할 것. 운세톡톡 5종 대비 압도적 차별화. */}
-              {freeResult.luckyPackage ? (
-                <TodayLuckyPackageCard luckyPackage={freeResult.luckyPackage} />
-              ) : null}
-
-              {/* §5 — 사주 명식 신뢰 카드 (PR 1 신설): 4기둥 + 오행 분포 + 일주 강약 + 격국.
-                  운세톡톡의 "신뢰 장치" 패턴 + 한자/한글 병기. */}
-              {freeResult.sajuChart ? (
-                <TodaySajuChartCard chart={freeResult.sajuChart} />
-              ) : null}
-
-              {/* §6 — 9,900원 자세히 보기 unlock + 990원 묶음 비교 CTA(사주 결과 있을 때만) */}
+              {/* §3 — 자세히 보기 unlock + 묶음 비교 CTA(사주 결과 있을 때만) */}
               <PremiumLockCard
                 copy={freeResult.nextAction.copy}
                 coinCost={freeResult.nextAction.coinCost}
@@ -286,11 +211,8 @@ export function TodayFortuneResultClient({
                 }
               />
 
-              {/* §7 — 대운 CTA (PR 1 신설): 무료 일진 → 무료 대운 풀이 (8단) 로 자연 연결. */}
-              <TodayDaewoonCtaCard sajuSlug={freeResult.sajuSlug ?? null} />
-
-              {/* §7.5 — Task 7 크로스링크: 저장된 공통 프로필로 재입력 없이 사주로 전환.
-                  TodayDaewoonCtaCard 버튼과 동일한 pink pill 스타일 · 시니어 UI 대형 터치 영역. */}
+              {/* §4 — Task 7 크로스링크: 저장된 공통 프로필로 재입력 없이 사주로 전환.
+                  시니어 UI 대형 터치 영역 pink pill. */}
               <Link
                 href="/saju/new"
                 className="flex items-center justify-center gap-2 rounded-full bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
@@ -319,57 +241,13 @@ export function TodayFortuneResultClient({
                 </section>
               ) : null}
 
-              {/* 2026-05-20 Phase 8-E — 무료 오늘운세 → 유료 cross-product funnel (사주 + 궁합 + 멤버십). PremiumLockCard 의 unlock 과 별개로 다른 상품 진입점. */}
+              {/* §6 — 하단 추천(썸네일 리스트). 사주·궁합·대운·택일 + 멤버십 진입점.
+                  2026-07-18: 접혀 있던 '더 깊이 들여다보기'(기회/주의 · 사주 단서 · 후속 질문 ·
+                  관련 링크) 블록을 제거하면서, 다음 행동 진입점은 이 리스트로 일원화했다. */}
               <PaidFunnelGrid from="today-fortune" tone="light" includeMembership />
-
-              {/* §8 — ML 피드백 카드 (PR 9 신설): 30초 dwell 후 노출.
-                  사용자 평가 → today_fortune_feedback 테이블 → 추후 가중치 학습. */}
-              <TodayFeedbackCard result={freeResult} enterAt={enterAt} />
             </MotionResultReveal>
-
-            {/* 하단 — 추가 무료 콘텐츠 (기존 가치 보존, 접힘 상태가 기본) */}
-            <details className="group rounded-[20px] border border-[var(--app-line)] bg-white">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-[16.1px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
-                <span>더 깊이 들여다보기</span>
-                <span
-                  aria-hidden="true"
-                  className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
-                >
-                  ▾
-                </span>
-              </summary>
-              <div className="grid gap-4 border-t border-[var(--app-line)] px-4 py-5">
-                <OpportunityRiskCards result={freeResult} />
-                <SajuReasonSnippet result={freeResult} />
-
-                <section className="app-panel p-5">
-                  <FollowUpQuestionChips
-                    questions={freeResult.followUpQuestions}
-                    sourceSessionId={freeResult.sourceSessionId}
-                    concernId={freeResult.concernId}
-                  />
-                </section>
-
-                <GangiSection
-                  eyebrow="더 보고 싶을 때"
-                  title="궁금한 부분만 이어보세요"
-                  description="오늘운세는 빠른 체크입니다. 더 보고 싶을 때만 사주, 타로, 대화로 이어가면 됩니다."
-                >
-                  <div className="grid gap-3">
-                    {relatedLinks.map((item) => (
-                      <Link key={item.label} href={item.href} className="gangi-list-link">
-                        <span className="gangi-list-copy">
-                          <strong>{item.label}</strong>
-                          <em>{item.body}</em>
-                        </span>
-                        <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
-                      </Link>
-                    ))}
-                  </div>
-                </GangiSection>
-              </div>
-            </details>
           </>
+
         )}
       </div>
     </div>

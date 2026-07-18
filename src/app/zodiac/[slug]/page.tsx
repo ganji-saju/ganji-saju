@@ -683,7 +683,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
               </Link>
             </div>
             {/* 2026-05-20 Phase 8-E — PaidFunnelGrid 공통 컴포넌트로 추출 (DRY). */}
-            <PaidFunnelGrid from="zodiac" tone="dark" className="mt-3" />
+            <PaidFunnelGrid from="zodiac" tone="dark" heading={false} className="mt-3" />
           </article>
 
           {/* §7 다른 띠 보기 — horizontal scroll */}

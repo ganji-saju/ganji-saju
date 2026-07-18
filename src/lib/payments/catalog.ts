@@ -83,22 +83,28 @@ export const PAYMENT_PACKAGES = [
     // 2026-07-07 — premium/deep VIP 카드의 취소선 원가(마케팅 앵커, 기존 하드코딩 69,000).
     compareAt: 69000,
   },
+  // 2026-07-18 — 3,300원 런칭 이벤트(20260718 PPTX slide5). 메인 카드 4종(사주·대운·택일·궁합)
+  //   의 결제 상품만 3,300원으로 내리고 compareAt 9,900 으로 취소선 앵커를 남긴다.
+  //   product_prices 오버라이드는 현재 0행이라 이 카탈로그 값이 곧 라이브 청구가.
+  //   이벤트 종료는 price 9900 복귀 + compareAt 삭제, 또는 /admin/pricing 에서 런타임 조정.
   {
     id: 'taste_today_detail',
     name: '오늘 자세히 보기',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'today-detail',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     id: 'taste_love_question',
     name: '연애 마음 확인',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'love-question',
+    compareAt: 9900,
   },
   {
     id: 'taste_money_pattern',
@@ -120,19 +126,21 @@ export const PAYMENT_PACKAGES = [
     id: 'taste_monthly_calendar',
     name: '월간 달력',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'monthly-calendar',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     id: 'taste_year_core',
     name: '올해 핵심 3줄',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'year-core',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
