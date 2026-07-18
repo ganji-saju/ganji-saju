@@ -142,21 +142,25 @@ test('ai chat billing policy charges only successful OpenAI replies', () => {
   });
 });
 
-test('ai chat turn plan gives first three turns for free before paid bundles start', () => {
+// 2026-07-18 — "평생 3턴 무료"를 폐지하고 하루 1턴 무료로 옮겼다(free_dialogue_daily).
+//   따라서 turn plan 은 도입 무료 없이 곧바로 3턴 묶음 과금 사이클을 돈다.
+test('ai chat turn plan starts paid bundles immediately (도입 무료 턴 없음)', () => {
+  assert.equal(AI_CHAT_FREE_TURNS, 0);
+
   assert.deepEqual(getAiChatTurnPlan(0), {
-    status: 'free_intro',
-    cost: 0,
+    status: 'charged_bundle',
+    cost: AI_CHAT_BUNDLE_COST,
     turnNumber: 1,
-    freeTurnsRemaining: AI_CHAT_FREE_TURNS - 1,
-    bundleTurnsRemaining: 0,
+    freeTurnsRemaining: 0,
+    bundleTurnsRemaining: 2,
   });
 
-  assert.deepEqual(getAiChatTurnPlan(2), {
-    status: 'free_intro',
+  assert.deepEqual(getAiChatTurnPlan(1), {
+    status: 'bundle_included',
     cost: 0,
-    turnNumber: 3,
+    turnNumber: 2,
     freeTurnsRemaining: 0,
-    bundleTurnsRemaining: 0,
+    bundleTurnsRemaining: 1,
   });
 
   assert.deepEqual(getAiChatTurnPlan(3), {

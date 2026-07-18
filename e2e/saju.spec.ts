@@ -158,8 +158,12 @@ test.describe('3. /membership 결제 진입점 (PR #177/#178 회귀 차단)', ()
   });
 });
 
+// 2026-07-18 — 무료 오늘운세가 1장 요약으로 축소되면서(20260718 PPTX slide6) 결과 페이지에서
+//   6 영역 카드(TodayCategoryReadings)가 빠졌다. 6영역 상세는 유료 '오늘 자세히 보기'로 이동.
+//   따라서 무료 화면에서 검증 가능한 불변식은 **총운(종합점수) 일치**로 좁힌다.
+//   (사주 페이지의 6영역 카드 자체는 위 describe 1 이 계속 지킨다.)
 test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
-  test('/saju/[slug] 의 6 영역 score 가 /today-fortune 결과 페이지와 1:1 일치', async ({
+  test('/saju/[slug] 의 총운 score 가 /today-fortune 결과 페이지 종합점수와 일치', async ({
     page,
   }) => {
     // 1. 사주 메인 페이지 점수 추출. 슬러그는 프로필에서 유도 → /today-fortune(같은
@@ -186,14 +190,23 @@ test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
     });
     await page.waitForLoadState('networkidle');
 
-    const todayScores = await extractAreaScores(page);
+    // 3. 결과 페이지의 종합점수를 읽어 사주 페이지 '총운' 과 대조.
+    //    TodayScoreReveal 은 section[aria-label="오늘운세 점수"] 안 원형에 숫자만 렌더하고,
+    //    0 → 목표값 카운트업 애니메이션이 있다. 중간값을 읽지 않도록 poll 로 최종값을 기다린다.
+    const scoreSection = page.locator('section[aria-label="오늘운세 점수"]');
+    await expect(scoreSection, '오늘운세 점수 섹션').toBeVisible({ timeout: 10_000 });
 
-    // 3. 6 영역 모두 1:1 일치.
-    for (const label of UNIFIED_AREA_LABELS) {
-      expect(
-        sajuScores[label],
-        `"${label}" 점수가 사주 페이지 vs 운세 페이지 불일치 (사주 ${sajuScores[label]} / 운세 ${todayScores[label]})`
-      ).toBe(todayScores[label]);
-    }
+    await expect
+      .poll(
+        async () => {
+          const found = (await scoreSection.innerText()).match(/\b(\d{1,3})\b/);
+          return found ? Number.parseInt(found[1], 10) : -1;
+        },
+        {
+          timeout: 10_000,
+          message: `총운 점수가 사주 페이지(${sajuScores['총운']})와 운세 결과 페이지에서 불일치`,
+        }
+      )
+      .toBe(sajuScores['총운']);
   });
 });

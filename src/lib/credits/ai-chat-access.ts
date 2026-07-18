@@ -1,12 +1,19 @@
 import { createServiceClient } from '@/lib/supabase/server';
 import type { AiGenerationSource } from '@/server/ai/openai-text';
 
-export const AI_CHAT_FREE_TURNS = 3;
+// 2026-07-18 — "평생 3턴 무료" 폐지 → **하루 1턴 무료**(20260718 PPTX slide3
+//   "질문 하나 대화상담 / 다 하루 1번으로 제한"). 평생 3턴은 한 번 소진되면 영영 끝이라
+//   재방문 동기가 없었고, 매일 1턴은 누적으로는 더 후하면서 하루 사용량은 묶인다.
+//   무료 턴 판정은 free-usage/daily-limit(free_dialogue_daily)로 옮겼고, 이 상수는
+//   "도입 무료 턴 없음"을 뜻하는 0 이다 — 번들 과금 로직(3턴 묶음)은 그대로.
+export const AI_CHAT_FREE_TURNS = 0;
 export const AI_CHAT_BUNDLE_SIZE = 3;
 export const AI_CHAT_BUNDLE_COST = 3;
 
 export type AiChatBillingStatus =
   | 'free_intro'
+  /** 2026-07-18 — 비멤버 하루 1턴 무료. */
+  | 'free_daily'
   | 'result_intro_free'
   | 'member_daily_free'
   | 'charged_bundle'

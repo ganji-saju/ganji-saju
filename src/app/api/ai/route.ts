@@ -37,6 +37,7 @@ import {
 } from '@/lib/credits/ai-chat-access';
 import { deductCreditsAmount, getCredits } from '@/lib/credits/deduct';
 import { isPremiumMember } from '@/lib/subscription';
+import { consumeFreeDaily } from '@/lib/free-usage/daily-limit';
 import {
   MEMBER_BENEFITS,
   consumeMemberBenefit,
@@ -897,6 +898,29 @@ async function handleDialogue(request: DialogueAiRequest) {
       profileContext,
       ...dialogueResult,
     });
+  }
+
+  // 2026-07-18 — 비멤버 하루 1턴 무료(free_dialogue_daily). 멤버는 위/아래 멤버 혜택 경로를 탄다.
+  //   소비는 답변을 성공적으로 만든 뒤 이 지점에서 — 생성 실패 시 오늘 기회를 잃지 않게.
+  //   소진되면 그대로 아래 번들 과금(3전/3턴)으로 폴백한다.
+  if (!isMember) {
+    const freeDaily = await consumeFreeDaily('dialogue', user.id);
+    if (freeDaily.allowed) {
+      await recordAiChatIncludedTurn(user.id, turnPlan);
+      return NextResponse.json({
+        ok: true,
+        mode: request.mode,
+        configured,
+        expertId,
+        expertLabel: expert.label,
+        billing: createAiChatBillingSummary('free_daily', availableCredits, {
+          turnNumber: turnPlan.turnNumber,
+          freeTurnsRemaining: 0,
+        }),
+        profileContext,
+        ...dialogueResult,
+      });
+    }
   }
 
   // 프리미엄 멤버 일일 무료(5턴/일) — 전 차감 없이 통과. 한도 초과(원자적 false) 시 기존 과금 폴백.
