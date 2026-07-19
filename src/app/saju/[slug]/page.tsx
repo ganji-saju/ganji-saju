@@ -93,6 +93,7 @@ function TotalReviewSkeleton() {
       </div>
       <div className="mt-2.5 flex items-center gap-2">
         <span
+          // 스피너는 원형이어야 한다(모서리 둥근 사각형으로 바꾸면 회전이 어색해진다).
           className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-[var(--app-pink-line)] border-t-[var(--app-pink-strong)]"
           aria-hidden="true"
         />
@@ -481,7 +482,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   {summaryChips.map((point) => (
                     <span
                       key={point}
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 py-1 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                     >
                       {point}
                     </span>
@@ -618,8 +619,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     }}
                     className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
+                    {/* 2026-07-19 — 가격 배지가 h-12 w-12 **고정 정사각**이라 글자가 박스를
+                        벗어났다("49,000원"은 48px 안에 들어갈 수 없다). 전역 폰트 확대 이후
+                        더 심해졌다. 폭을 내용에 맞추고(고정폭 제거) 세로 여백만 유지한다.
+                        whitespace-nowrap 으로 금액이 줄바꿈되지 않게 한다. */}
                     <div
-                      className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[10px] px-2.5 py-2 text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
                       style={{
                         background: 'var(--app-pink-soft)',
                         border: '1px solid var(--app-pink-line)',
@@ -662,7 +667,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <br />
                 이어가 보세요
               </h2>
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+              {/* 2026-07-19 — 가로 배치에서 버튼이 눌려 **글자가 버튼 안에서 두 줄로 꺾이던** 문제.
+                  버튼은 내용 폭을 지키고(shrink-0 + nowrap), 자리가 부족하면 글자가 아니라
+                  **버튼 단위로** 줄바꿈되게 flex-wrap 을 준다. */}
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <TrackedLink
                   href="/dialogue"
                   eventName="report_deep_report_click"
@@ -671,7 +679,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     product: 'dialogue',
                     from: 'result_next_step',
                   }}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   선생님과 대화하기 →
                 </TrackedLink>
@@ -692,13 +700,13 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   unpaidHref={buildSajuTodayDetailCheckoutHref(slug)}
                   unpaidLabel={`오늘 자세히 · ${priceLabelFromMap(priceMap, 'saju_entry')}`}
                   ownedLabel="구매한 풀이 열기"
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 />
                 {/* Task 7 — 크로스링크: 저장된 공통 프로필로 재입력 없이 오늘운세로 전환.
                     위 TodayDetailResultCta 와 동일한 ghost pill 스타일. */}
                 <Link
                   href="/today-fortune"
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   이 정보로 오늘의 운세 보기
                 </Link>

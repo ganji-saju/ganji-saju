@@ -558,7 +558,9 @@ export function GangiServiceCardLink({
             color: '#fff',
             // 전 카드 통일 크기. 상한은 가장 긴 제목(4자: 간단운세·대화상담)이 한 줄에
             //   들어가는 값 — 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
-            fontSize: 'clamp(21px, 24cqw, 50px)',
+            // 2026-07-19 — 24cqw 는 393px 뷰포트에서 4자 제목이 3px 넘쳤다(154>151).
+            //   22.5cqw 로 낮춰 여유를 준다. 이 값을 올릴 땐 4자 제목 실측 필수.
+            fontSize: 'clamp(20px, 22.5cqw, 48px)',
             fontWeight: 900,
             lineHeight: 1.1,
             letterSpacing: '-0.04em',
