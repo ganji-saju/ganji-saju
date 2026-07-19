@@ -465,6 +465,8 @@ function MobileChrome({
   // 2026-06-30 — 포커스 체크아웃: 결제 화면에서는 하단 dock 을 숨겨(결제 CTA 만 노출)
   //   이탈/주의분산을 줄인다.
   const focusedCheckout = isFocusedCheckoutRoute(pathname);
+  // 결제 축약 헤더의 뒤로가기용(히스토리 back). 결제 화면에서만 쓴다.
+  const headerRouter = useRouter();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -488,6 +490,24 @@ function MobileChrome({
                 2026-07-18 — 로고에 박혀 있던 "9,900원"을 이미지에서 크롭 제거(20260718 PPTX
                 slide3 "메인 이거 가격 삭제"). 가격 이벤트로 표시가가 바뀌어도 로고가 stale 가격을
                 고정 노출하던 문제도 함께 해소. */}
+            {/* 2026-07-19 — 결제 화면 전용 축약 헤더(옵션 C).
+                결제 단계에선 로고(브랜드=신뢰)와 뒤로가기만 남기고 검색·알림·로그인·햄버거·
+                주요메뉴를 전부 걷는다. 헤더를 통째로 없애면 로고가 사라져 카드 입력 직전
+                브랜드 신호를 잃고(2026-07-18 실제 회귀), 그대로 두면 이탈 경로가 17개 열린다.
+                하단 dock 을 이미 숨기는 focused-checkout 정책과 방향을 맞춘 형태다. */}
+            {focusedCheckout ? (
+              <button
+                type="button"
+                onClick={() => headerRouter.back()}
+                aria-label="뒤로 가기"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[12px] border bg-white text-[var(--app-ink)] transition-colors hover:bg-[var(--app-pink-soft)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+            ) : null}
             <Link href="/" className="app-top-brand min-w-0 flex items-center" aria-label="간지사주 홈">
               <picture>
                 <source srcSet="/images/gangi/logo.avif" type="image/avif" />
@@ -502,9 +522,12 @@ function MobileChrome({
               </picture>
             </Link>
 
-            {/* §Desktop primary nav — 라운드 underline 형 */}
+            {/* §Desktop primary nav — 라운드 underline 형. 결제 화면에선 숨긴다. */}
             <nav
-              className="app-top-primary-nav hidden min-w-0 items-center gap-0.5 md:flex"
+              className={cn(
+                'app-top-primary-nav hidden min-w-0 items-center gap-0.5',
+                focusedCheckout ? 'md:hidden' : 'md:flex'
+              )}
               aria-label="주요 메뉴"
             >
               {PRIMARY_NAV_ITEMS.map((item) => {
@@ -528,7 +551,11 @@ function MobileChrome({
               })}
             </nav>
 
-            {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼 */}
+            {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼.
+                결제 화면에선 렌더하지 않고 뒤로가기와 같은 폭(36px)의 빈 칸만 둬 로고를 가운데 정렬한다. */}
+            {focusedCheckout ? (
+              <span className="h-9 w-9 shrink-0" aria-hidden="true" />
+            ) : (
             <div className="app-top-actions flex items-center gap-1.5">
               {/* 전 chip — desktop only, pink-soft */}
               <Link
@@ -619,6 +646,7 @@ function MobileChrome({
                 {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
               </button>
             </div>
+            )}
           </div>
 
         </div>

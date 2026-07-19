@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
-import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   CHECKOUT_PLAN_GUIDE,
@@ -303,7 +302,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     //   **설명·안내를 접어두는 방식**으로 해결한다(아래 §접이식 상세 참조).
     <AppShell footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <GangiPageHeader title="결제" backHref="/membership" />
+        {/* 2026-07-19 — "결제" 서브헤더 제거. 뒤로가기가 상단 축약 헤더로 올라가면서
+            같은 기능이 두 줄을 차지할 이유가 없어졌다(첫 콘텐츠 192px → 64px). */}
 
         <section className="space-y-5 px-1">
           {/* §1 주문 요약 — pink-soft + ZodiacChip + 상품 */}
