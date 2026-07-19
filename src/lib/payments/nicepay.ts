@@ -102,6 +102,46 @@ export interface NicepayPaymentObject {
   [key: string]: unknown;
 }
 
+/**
+ * 나이스페이 결제객체 → 환불 백스톱이 이해하는 토스 모양으로 정규화.
+ *
+ * 2026-07-19 — 환불 백스톱(isCanceledForRefundRequest)은 토스 스키마
+ *   (`status:'CANCELED'` + `balanceAmount`)만 알아본다. 나이스페이는 소문자
+ *   `canceled`/`partialCancelled` 에 잔액 필드명도 달라 그대로 넘기면 "취소 안 됨"으로
+ *   판정돼, 돈이 이미 환불됐는데도 요청이 failed 로 남는다(실제로 그렇게 됐다).
+ *
+ * ⚠️ 나이스페이 응답 필드명은 이 어댑터에서 아직 전수 확인되지 않았다(스캐폴드).
+ *   그래서 status 는 대소문자 무시 부분일치로, 잔액은 알려진 후보 키를 순서대로 본다.
+ *   확인되면 후보 목록을 줄일 것.
+ */
+export function normalizeNicepayPaymentForRefund(payment: NicepayPaymentObject): {
+  status: string | null;
+  balanceAmount: number | null;
+  totalAmount: number | null;
+} {
+  const rawStatus = typeof payment.status === 'string' ? payment.status : '';
+  const canceled = /cancel/i.test(rawStatus);
+  const partial = /partial/i.test(rawStatus);
+
+  const pickNumber = (...keys: string[]): number | null => {
+    for (const key of keys) {
+      const value = payment[key];
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+    }
+    return null;
+  };
+
+  const total = pickNumber('amount', 'totalAmt', 'totalAmount');
+  // 전액취소면 잔액 0. 부분취소는 남은 금액을 그대로 본다.
+  const balance = pickNumber('balanceAmt', 'balanceAmount');
+
+  return {
+    status: canceled ? 'CANCELED' : rawStatus || null,
+    balanceAmount: balance ?? (canceled && !partial ? 0 : null),
+    totalAmount: total,
+  };
+}
+
 async function parseNicepayResponse(
   response: Response,
   fallbackMessage: string

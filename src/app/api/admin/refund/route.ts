@@ -7,7 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { cancelPayment, getPayment } from '@/lib/payments/toss';
-import { cancelNicepayPayment } from '@/lib/payments/nicepay';
+import {
+  cancelNicepayPayment,
+  getNicepayPayment,
+  normalizeNicepayPaymentForRefund,
+} from '@/lib/payments/nicepay';
 import {
   getOrderProviderByPaymentKey,
   getPaymentOrderByPaymentKey,
@@ -418,7 +422,23 @@ export async function POST(req: NextRequest) {
       }
     },
     async loadTossPayment(paymentKey) {
-      // 나이스페이는 already-canceled backstop 을 cancelNicepayPayment 멱등으로 흡수하므로 토스만 조회.
+      // 2026-07-19 — 기존 주석: "나이스페이는 멱등으로 흡수하므로 토스만 조회".
+      //   그 가정이 틀렸다 — 나이스페이가 재취소를 "해당거래 취소실패(기취소성공)" 으로 거절해
+      //   백스톱이 필요했는데 여기서 토스를 조회하는 바람에 확인이 불가능했다.
+      //   결과: 돈은 환불됐는데 요청은 failed 로 남고 주문이 refunded 로 표기되지 않았다.
+      const provider = await getOrderProviderByPaymentKey(paymentKey);
+      if (provider === 'nicepay') {
+        try {
+          const raw = await getNicepayPayment(paymentKey);
+          // 백스톱 판정기는 토스 스키마만 이해한다 — 정규화해서 넘긴다.
+          return { ok: true, payment: { ...raw, ...normalizeNicepayPaymentForRefund(raw) } };
+        } catch (err) {
+          return {
+            ok: false,
+            error: err instanceof Error ? err.message : '나이스페이 결제 조회 실패',
+          };
+        }
+      }
       try {
         return { ok: true, payment: await getPayment(paymentKey) };
       } catch (err) {

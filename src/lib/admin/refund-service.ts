@@ -81,9 +81,24 @@ export function canRoleActOnRefund(role: AdminRole, action: RefundAction): boole
   return false;
 }
 
+/**
+ * "이미 취소된 결제" 응답인지 — PG 별 문구가 다르다.
+ *
+ * 2026-07-19 — 나이스페이 문구를 못 알아봐서 **돈은 환불됐는데 기록은 실패**로 남았다.
+ *   실제 응답: "해당거래 취소실패(기취소성공) : 전화 문의(1661-0808)"
+ *   기존 패턴('이미 취소된 결제' / already cancelled)은 토스 문구만 알았다.
+ *   이 백스톱이 안 걸리면 executeRefund 가 하드 실패로 끝나 revoke·refunded 표기를 건너뛴다
+ *   → 주문이 refunded 가 아닌 상태로 남아 매출/환불 집계가 어긋난다.
+ */
 export function isAlreadyCanceledTossError(error: string | undefined | null): boolean {
   if (!error) return false;
-  return error.includes('이미 취소된 결제') || /already\s+cancell?ed/i.test(error);
+  return (
+    error.includes('이미 취소된 결제') ||
+    // 나이스페이: 기취소(=이미 취소) 성공/거래 문구 계열
+    error.includes('기취소') ||
+    error.includes('이미 취소') ||
+    /already\s+cancell?ed/i.test(error)
+  );
 }
 
 export function isFullyCanceledTossPayment(payment: TossRefundPaymentSnapshot | null): boolean {
