@@ -7,9 +7,7 @@
 // 우상단 avatar(메가 메뉴) → /my → /my/settings 경로로 통합하기 위해
 // 본 페이지에 ReadingComfortControl 카드와 LogoutButton 을 합류시킨다.
 import Link from 'next/link';
-import { SETTINGS_BLUEPRINT } from '@/content/moonlight';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
-import { ReadingComfortControl } from '@/features/layout-preference/reading-comfort-control';
 import { LogoutButton } from '@/features/account/logout-button';
 import { KakaoContactCard } from '@/features/account/kakao-contact-card';
 
@@ -103,7 +101,7 @@ export default function MySettingsPage() {
           className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          알림 · 글자 · 레이아웃을
+          알림 · 레이아웃을
           <br />
           편한 대로 맞춰주세요
         </h1>
@@ -111,7 +109,7 @@ export default function MySettingsPage() {
           className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          자주 읽기 어렵다면 글자 크기를, 시간대가 안 맞으면 알림 시간을 바꿔보세요.
+          시간대가 안 맞으면 알림 시간을, 화면이 불편하면 레이아웃을 바꿔보세요.
         </p>
       </article>
 
@@ -174,59 +172,9 @@ export default function MySettingsPage() {
         <KakaoContactCard />
       </section>
 
-      {/* §읽기 경험 — 글자 / 말투 / 톤 */}
-      {SETTINGS_BLUEPRINT && SETTINGS_BLUEPRINT.length > 0 ? (
-        <section>
-          <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-            읽기 경험
-          </h2>
-          {/* 글자 크기 — 모바일 · PC 공통 토글. SETTINGS_BLUEPRINT 카드(텍스트
-              설명)와 짝을 이루도록 맨 앞에 실제 컨트롤 카드를 둔다. */}
-          <article
-            className="mt-2 rounded-[14px] border bg-white p-4"
-            style={{ borderColor: 'var(--app-line)' }}
-          >
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              글자 크기
-            </div>
-            <p
-              className="mt-1 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              읽기 어렵다면 큰글씨로 두 단계만 키워보세요. 본문·버튼·줄간격이
-              한 번에 넓어집니다.
-            </p>
-            <div className="mt-3 max-w-xs">
-              <ReadingComfortControl />
-            </div>
-          </article>
-          <div className="mt-2 grid gap-2">
-            {SETTINGS_BLUEPRINT.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-[14px] border bg-white p-3.5"
-                style={{ borderColor: 'var(--app-line)' }}
-              >
-                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  {item.title}
-                </div>
-                <div
-                  className="mt-1 text-[15.5px] font-extrabold text-[var(--app-ink)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  {item.options}
-                </div>
-                <p
-                  className="mt-1.5 text-[13.8px] leading-[1.65] text-[var(--app-copy-muted)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  {item.reason}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      {/* 2026-07-20 — §읽기 경험 섹션 숨김(사용자 요청).
+          글자 크기 토글(ReadingComfortControl)과 SETTINGS_BLUEPRINT 안내 카드가 여기 있었다.
+          컴포넌트·데이터는 남겨 두었으므로 이 블록만 되살리면 원복된다. */}
 
       {/* §고객센터 — 자주하는 질문 / 1:1 문의 (08-4 신규 진입점, 페이지는 후속 PR) */}
       <section>
