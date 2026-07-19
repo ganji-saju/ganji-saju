@@ -683,6 +683,47 @@ export async function upsertProfile(userId: string, profile: UserProfile) {
   await upsertProfileWithClient(userId, profile, service);
 }
 
+/**
+ * 소셜 가입자에게 **최소 profiles 행**을 보장한다(생년월일 없이 user_id 만이라도).
+ *
+ * 2026-07-19 — 실유저 10명 중 8명이 가입 후 아무것도 안 하고 사라진 원인 중 하나.
+ *   가입은 profiles 행을 만들지 않는다: handle_new_user() 는 user_credits 만 넣고(057),
+ *   카카오/구글 콜백도 행이 **이미 있을 때만** display_name 을 UPDATE 했다.
+ *   신규 소셜 가입자는 행이 없으므로 그 UPDATE 가 통째로 no-op 이었고,
+ *   카카오 심의까지 받아 수집한 이름이 매번 버려졌다.
+ *
+ * 003_profiles.sql 기준 user_id(PK) 외 전 컬럼 nullable 이라 최소 행 생성이 스키마상 합법이다.
+ * 기존 display_name 은 절대 덮지 않는다(사용자가 직접 고친 이름이 우선).
+ * 로그인 흐름을 막으면 안 되므로 실패해도 throw 하지 않는다.
+ */
+export async function ensureProfileRow(
+  userId: string,
+  displayName: string | null
+): Promise<void> {
+  try {
+    const service = await createServiceClient();
+    const { data: existing } = await service
+      .from('profiles')
+      .select('user_id, display_name')
+      .eq('user_id', userId)
+      .maybeSingle<{ user_id: string; display_name: string | null }>();
+
+    if (!existing) {
+      await service
+        .from('profiles')
+        .insert({ user_id: userId, display_name: displayName })
+        .select('user_id');
+      return;
+    }
+
+    if (displayName && !existing.display_name) {
+      await service.from('profiles').update({ display_name: displayName }).eq('user_id', userId);
+    }
+  } catch {
+    // best-effort — 프로필 부트스트랩 실패가 로그인을 막아서는 안 된다.
+  }
+}
+
 export async function updatePreferredCounselor(
   userId: string,
   preferredCounselor: MoonlightCounselorId

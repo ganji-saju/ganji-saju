@@ -15,6 +15,7 @@ import {
 // 2026-06-29 — 총평 LLM 캐시 프리워밍(생성 직후 백그라운드). 결과 재조회·동시조회 시 캐시 hit.
 import { generateTotalReview } from '@/server/ai/saju-total-review-service';
 import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-cache';
+import { rememberAnonymousReading } from '@/lib/saju/anonymous-reading-claim';
 import {
   isUnifiedBirthEntryDraft,
   resolveUnifiedBirthInput,
@@ -155,7 +156,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ id });
+    const response = NextResponse.json({ id });
+
+    // 2026-07-19 — 비로그인 사용자가 만든 사주는 user_id 가 NULL 이라 "누가 만들었는지"가
+    //   DB 에 남지 않는다. 나중에 이 사람이 벽(유료 언락)에서 가입할 때 그 사주를 계정에
+    //   붙여주려면 증거가 필요하다 → 이 브라우저에만 httpOnly 영수증을 남긴다.
+    //   (로그인 사용자는 이미 user_id 가 박히므로 대상 아님)
+    if (!user) rememberAnonymousReading(req, response, id);
+
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (

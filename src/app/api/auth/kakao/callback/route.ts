@@ -13,6 +13,8 @@ import {
   supabaseServerUrl,
 } from '@/lib/supabase/server';
 import { normalizeKoreanMobile } from '@/lib/kakao/phone';
+import { ensureProfileRow } from '@/lib/profile';
+import { claimAnonymousReadings } from '@/lib/saju/anonymous-reading-claim';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,19 +68,7 @@ async function saveKakaoContact(
       }
     }
 
-    if (contact.name) {
-      const { data: profile } = await service
-        .from('profiles')
-        .select('user_id, display_name')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (profile && !profile.display_name) {
-        await service
-          .from('profiles')
-          .update({ display_name: contact.name })
-          .eq('user_id', userId);
-      }
-    }
+    // 이름 저장은 프로필 부트스트랩(ensureProfileRow)이 담당한다 — 호출부 참조.
   } catch {
     // best-effort — 실패 시 설정/온보딩에서 재수집.
   }
@@ -180,11 +170,23 @@ export async function GET(req: NextRequest) {
   if (error) return fail(error.message);
 
   // 2026-07-03 — 전화번호(알림톡 대상)·이름 자동 수집. 실패해도 로그인은 그대로 진행.
-  if (accessToken && signInData?.user?.id) {
-    const contact = await fetchKakaoContact(accessToken);
+  if (signInData?.user?.id) {
+    const contact = accessToken
+      ? await fetchKakaoContact(accessToken)
+      : { phone: null as string | null, name: null as string | null };
+
     if (contact.phone || contact.name) {
       await saveKakaoContact(signInData.user.id, contact);
     }
+
+    // 2026-07-19 — 프로필 부트스트랩은 **연락처 수집 성공과 무관하게** 항상 실행한다.
+    //   ⚠️ 위 if 블록 안에 넣으면 안 된다: 현재 카카오 scope 는 openid 뿐이라
+    //   (KOE205 핫픽스 #596) fetchKakaoContact 는 거의 항상 {phone:null, name:null} 을
+    //   돌려주고, 그러면 신규 가입자 대부분이 여전히 profiles 행 없이 남는다.
+    await ensureProfileRow(signInData.user.id, contact.name);
+
+    // 익명으로 만든 사주를 이 계정에 귀속시킨다(이 브라우저 쿠키에 영수증이 있는 것만).
+    await claimAnonymousReadings(req, response, signInData.user.id);
   }
 
   return response;

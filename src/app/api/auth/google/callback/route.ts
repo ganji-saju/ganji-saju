@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { supabaseAnonKey, supabaseServerUrl } from '@/lib/supabase/server';
+import { ensureProfileRow } from '@/lib/profile';
+import { claimAnonymousReadings } from '@/lib/saju/anonymous-reading-claim';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,12 +98,23 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.signInWithIdToken({
+  const { data: signInData, error } = await supabase.auth.signInWithIdToken({
     provider: 'google',
     token: idToken,
     nonce,
   });
   if (error) return fail(error.message);
+
+  // 2026-07-19 — 카카오 콜백과 동일: 가입만으로는 profiles 행이 생기지 않아 계정이 텅 비고,
+  //   가입 직전 익명으로 만든 사주도 계정에 붙지 않았다. 둘 다 로그인 흐름은 막지 않는다.
+  if (signInData?.user?.id) {
+    const displayName =
+      typeof signInData.user.user_metadata?.name === 'string'
+        ? signInData.user.user_metadata.name
+        : null;
+    await ensureProfileRow(signInData.user.id, displayName);
+    await claimAnonymousReadings(req, response, signInData.user.id);
+  }
 
   return response;
 }
