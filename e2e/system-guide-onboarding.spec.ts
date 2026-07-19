@@ -5,8 +5,22 @@ import { expect, test, type Page } from '@playwright/test';
 const KAKAO_GALAXY_S25_UA =
   'Mozilla/5.0 (Linux; Android 15; SM-S931N) AppleWebKit/537.36 Mobile Safari/537.36 KAKAOTALK';
 
+// 2026-07-19 — 첫 방문 동의 배너를 먼저 닫는다.
+//   배너는 StickyBottomBar(body 포털·fixed·z-50)라 **공간을 확보하지 않고 콘텐츠 위에 덮인다**(설계).
+//   좁은 모바일 뷰포트(360×780)에서는 '처음부터 안내 보기' 버튼이 배너 아래로 들어가
+//   클릭이 배너에 가로채여 타임아웃 났다. 배너는 이 스펙의 검증 대상이 아니라 부수 상태이므로
+//   테스트 시작 시 정리한다(스크롤·워크스루 동작만 보기 위함).
+async function dismissConsentBanner(page: Page) {
+  const agree = page.getByRole('button', { name: '동의' });
+  if (await agree.count()) {
+    await agree.first().click();
+    await expect(agree).toHaveCount(0);
+  }
+}
+
 async function openGuideManually(page: Page) {
   await page.goto('/guide');
+  await dismissConsentBanner(page);
   await page.getByRole('button', { name: '처음부터 안내 보기' }).click();
   return expectCurrentStepDialog(page);
 }
