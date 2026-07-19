@@ -297,11 +297,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
 
   return (
-    // 2026-07-18 — 결제창 단순화(20260718 PPTX slide7 "위에 상단 불필요함 중복").
-    //   SiteHeader(전역 내비) + GangiPageHeader("결제") 가 세로로 겹쳐 포커스 체크아웃을 방해했다.
-    //   focused-checkout 이 이미 하단 전역 chrome(dock·FAB)을 걷어내고 있으므로 상단도 동일하게
-    //   header={false} 로 걷고 "결제" 서브헤더만 남긴다(뒤로가기는 GangiPageHeader 가 제공).
-    <AppShell header={false} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
+    // 2026-07-18 — PPTX slide7 "위에 상단 불필요함 중복" 에 따라 header={false} 로 전역 헤더를
+    //   걷었으나, **로고와 메뉴가 통째로 사라져** 결제 중 브랜드·내비 이탈 경로가 없어졌다(사용자 제보).
+    // 2026-07-19 — 헤더는 되살린다. 화면 단순화는 상단 chrome 을 없애는 방식이 아니라
+    //   **설명·안내를 접어두는 방식**으로 해결한다(아래 §접이식 상세 참조).
+    <AppShell footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="결제" backHref="/membership" />
 
@@ -324,28 +324,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                 <div className="mt-1 text-[17.8px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
                   {selected.title}
                 </div>
-                <p className="mt-1.5 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
-                  {selected.reassurance}
-                </p>
               </div>
             </div>
-            {selected.opens.length > 0 ? (
-              <ul className="mt-3 grid gap-1.5">
-                {selected.opens.slice(0, 3).map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-center gap-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]"
-                  >
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ background: 'var(--app-pink)' }}
-                      aria-hidden="true"
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
           </article>
 
           {/* §2 결제 금액 breakdown */}
@@ -385,22 +365,6 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다.
             </p>
           ) : null}
-
-          {/* §4 결제 안내 */}
-          <section>
-            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 안내</h2>
-            <ul className="mt-3 grid gap-1.5">
-              {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-2 text-[14.4px] leading-[1.55] text-[var(--app-copy-muted)]"
-                >
-                  <span aria-hidden="true">·</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
 
           {/* §5 결제 액션 — TossMembershipCheckout 또는 empty-state */}
           <section>
@@ -524,6 +488,65 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               )}
             </article>
           </section>
+
+          {/* §6 접이식 상세 — 2026-07-19 사용자 요청("설명·결제 안내를 하단으로 내리거나 접어두기").
+              결제 화면 상단은 **상품명 · 금액 · 결제 수단**만 남기고, 읽을거리는 전부 여기로 내렸다.
+              닫힘이 기본이라 결제까지의 시선 이동이 짧아지고, 필요한 사람만 펼쳐 본다.
+              법적으로 결제 전 고지가 필요한 약관 동의는 §5(TossMembershipCheckout) 안에 그대로 있다 —
+              여기로 내리지 않는다. */}
+          <details className="group rounded-[14px] border border-[var(--app-line)] bg-white">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[15.5px] font-bold text-[var(--app-ink)] [&::-webkit-details-marker]:hidden">
+              <span>상품 설명과 결제 안내 보기</span>
+              <span
+                aria-hidden="true"
+                className="text-[var(--app-copy-muted)] transition-transform group-open:rotate-180"
+              >
+                ▾
+              </span>
+            </summary>
+            <div className="grid gap-4 border-t border-[var(--app-line)] px-4 py-4">
+              <div>
+                <h2 className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
+                  {selected.title}
+                </h2>
+                <p className="mt-1.5 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]">
+                  {selected.reassurance}
+                </p>
+                {selected.opens.length > 0 ? (
+                  <ul className="mt-2.5 grid gap-1.5">
+                    {selected.opens.slice(0, 3).map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-center gap-2 text-[13.8px] leading-[1.55] text-[var(--app-copy)]"
+                      >
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ background: 'var(--app-pink)' }}
+                          aria-hidden="true"
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+
+              <div>
+                <h2 className="text-[15.5px] font-extrabold text-[var(--app-ink)]">결제 안내</h2>
+                <ul className="mt-2 grid gap-1.5">
+                  {[...CHECKOUT_FLOW_POINTS, ...selected.notices.slice(0, 2)].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]"
+                    >
+                      <span aria-hidden="true">·</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </details>
         </section>
       </AppPage>
     </AppShell>
