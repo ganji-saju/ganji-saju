@@ -28,6 +28,7 @@ import {
 } from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
@@ -249,6 +250,10 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
             </section>
           );
         })()}
+
+        {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
+            from="gunghap" 이 목록에서 궁합 자신을 제외한다. */}
+        <PaidFunnelGrid from="gunghap" tone="light" />
       </AppPage>
     </AppShell>
   );

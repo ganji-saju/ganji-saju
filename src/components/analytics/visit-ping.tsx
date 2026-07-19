@@ -13,7 +13,6 @@ import { sanitizePath, sanitizeQuery } from './ga-sanitize';
 const VID_KEY = 'moonlight:vid';
 const GATE_PREFIX = 'moonlight:visit-ping:';
 const UTM_GATE_PREFIX = 'moonlight:visit-utm:';
-const PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? '';
 const PUBLIC_VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV ?? '';
 
 function readUtm(): {
@@ -60,7 +59,6 @@ export function VisitPing() {
       const skipReason = shouldSkipVisitAnalytics({
         path: pathname,
         host: window.location.host,
-        siteUrl: PUBLIC_SITE_URL,
         deploymentEnv: PUBLIC_VERCEL_ENV,
       });
       if (skipReason) return;

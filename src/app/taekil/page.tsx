@@ -7,6 +7,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { TaekilClient } from '@/features/taekil/taekil-client';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 
 export const metadata: Metadata = {
   title: '좋은 날 택일',
@@ -20,6 +21,9 @@ export default function TaekilPage() {
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="좋은 날 택일" backHref="/" />
         <TaekilClient />
+        {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
+            from="taekil" 이 목록에서 택일 자신을 제외한다. */}
+        <PaidFunnelGrid from="taekil" tone="light" />
       </AppPage>
     </AppShell>
   );

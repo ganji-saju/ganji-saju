@@ -13,7 +13,6 @@ test('shouldSkipVisitAnalytics: /admin 경로는 제외', () => {
     shouldSkipVisitAnalytics({
       path: '/admin/analytics',
       host: 'ganjisaju.kr',
-      siteUrl: 'https://ganjisaju.kr',
     }),
     'admin_path'
   );
@@ -24,7 +23,6 @@ test('shouldSkipVisitAnalytics: Vercel preview/development 배포는 제외', ()
     shouldSkipVisitAnalytics({
       path: '/',
       host: 'ganjisaju.kr',
-      siteUrl: 'https://ganjisaju.kr',
       deploymentEnv: 'preview',
     }),
     'non_production_deployment'
@@ -36,7 +34,6 @@ test('shouldSkipVisitAnalytics: canonical 운영 host만 집계', () => {
     shouldSkipVisitAnalytics({
       path: '/',
       host: 'ganjisaju.kr',
-      siteUrl: 'https://ganjisaju.kr',
       deploymentEnv: 'production',
     }),
     null
@@ -45,7 +42,6 @@ test('shouldSkipVisitAnalytics: canonical 운영 host만 집계', () => {
     shouldSkipVisitAnalytics({
       path: '/',
       host: 'ganji-saju-git-feature.vercel.app',
-      siteUrl: 'https://ganjisaju.kr',
       deploymentEnv: 'production',
     }),
     'non_canonical_host'
@@ -54,10 +50,49 @@ test('shouldSkipVisitAnalytics: canonical 운영 host만 집계', () => {
     shouldSkipVisitAnalytics({
       path: '/',
       host: 'localhost:3000',
-      siteUrl: 'https://ganjisaju.kr',
     }),
     'non_canonical_host'
   );
+});
+
+// 2026-07-19 🔴 실제 프로덕션 장애 재현.
+//   NEXT_PUBLIC_SITE_URL 이 `https://xn--s39at50bo6fmwa.kr`(간지사주.kr 퓨니코드)로 설정돼
+//   있었다. 사용자는 canonical(ganjisaju.kr)에 있으므로 host !== expectedHost 가 되어
+//   **모든 실사용자 방문이 non_canonical_host 로 폐기**됐다. 클라이언트(VisitPing)도 같은
+//   env 를 보므로 비콘 자체가 발사되지 않았다 — site_visits 는 사람을 한 명도 센 적이 없다.
+//   (남아 있던 2,540행은 퓨니코드 도메인을 긁던 크롤러였고, 봇 필터(#635) 후 0행이 됐다.)
+//
+//   교훈: "우리 사이트인가"는 **코드가 아는 사실**이지 배포 환경변수가 정할 문제가 아니다.
+//   env 가 드리프트해도 집계가 죽지 않도록 SITE_CONFIG canonical + 별칭 목록으로 판정한다.
+test('shouldSkipVisitAnalytics: canonical host 의 실사용자를 집계한다(env 무관)', () => {
+  assert.equal(
+    shouldSkipVisitAnalytics({
+      path: '/',
+      host: 'ganjisaju.kr',
+      deploymentEnv: 'production',
+    }),
+    null
+  );
+});
+
+test('shouldSkipVisitAnalytics: 별칭 도메인(www·퓨니코드) 방문도 사람으로 집계', () => {
+  for (const host of ['www.ganjisaju.kr', 'xn--s39at50bo6fmwa.kr', '간지사주.kr']) {
+    assert.equal(
+      shouldSkipVisitAnalytics({ path: '/', host, deploymentEnv: 'production' }),
+      null,
+      `${host} 는 우리 도메인이므로 집계돼야 함`
+    );
+  }
+});
+
+test('shouldSkipVisitAnalytics: 우리 도메인이 아닌 host 는 여전히 제외', () => {
+  for (const host of ['evil.example.com', 'ganji-saju-git-feature.vercel.app', 'localhost:3000']) {
+    assert.equal(
+      shouldSkipVisitAnalytics({ path: '/', host, deploymentEnv: 'production' }),
+      'non_canonical_host',
+      `${host} 는 제외돼야 함`
+    );
+  }
 });
 
 test('isExcludedAnalyticsIp: exact IPv4와 CIDR 제외 규칙 지원', () => {

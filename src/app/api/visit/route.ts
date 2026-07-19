@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
   const skipReason = shouldSkipVisitAnalytics({
     path,
     host: req.headers.get('host'),
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
     deploymentEnv: process.env.VERCEL_ENV,
     clientIp: clientIpFromHeaders(req.headers),
     excludedIps: process.env.ANALYTICS_EXCLUDED_IPS,

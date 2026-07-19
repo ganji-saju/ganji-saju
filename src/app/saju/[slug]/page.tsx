@@ -46,6 +46,7 @@ import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -749,6 +750,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </p>
             </article>
           </section>
+
+          {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
+              from="saju" 가 목록에서 사주 자신을 제외한다. */}
+          <PaidFunnelGrid from="saju" tone="light" className="mt-6" />
         </div>
       </AppPage>
     </AppShell>

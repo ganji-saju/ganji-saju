@@ -1,3 +1,5 @@
+import { isOwnSiteHost } from '@/lib/site';
+
 // 자체 방문/페이지뷰 수집에서 GA/Vercel 비교를 흐리는 내부 트래픽을 제외하는 순수 helper.
 // client(VisitPing)와 server(/api/visit)가 같은 규칙을 공유한다.
 
@@ -11,7 +13,6 @@ export type VisitAnalyticsSkipReason =
 export interface VisitAnalyticsFilterInput {
   path: string | null | undefined;
   host?: string | null;
-  siteUrl?: string | null;
   deploymentEnv?: string | null;
   clientIp?: string | null;
   excludedIps?: string | null;
@@ -68,21 +69,6 @@ function normalizeHost(value: string | null | undefined): string | null {
   if (raw.startsWith('[')) return raw.replace(/^\[|\](?::\d+)?$/g, '') || null;
   const colonCount = raw.split(':').length - 1;
   return colonCount === 1 ? raw.replace(/:\d+$/, '') || null : raw;
-}
-
-function canonicalHost(siteUrl: string | null | undefined): string | null {
-  return normalizeHost(siteUrl);
-}
-
-function isLocalOrPreviewHost(host: string | null): boolean {
-  if (!host) return false;
-  return (
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host === '::1' ||
-    host.endsWith('.localhost') ||
-    host.endsWith('.vercel.app')
-  );
 }
 
 function parseCsv(value: string | null | undefined): string[] {
@@ -148,11 +134,14 @@ export function shouldSkipVisitAnalytics(input: VisitAnalyticsFilterInput): Visi
   const deploymentEnv = String(input.deploymentEnv ?? '').trim();
   if (deploymentEnv && deploymentEnv !== 'production') return 'non_production_deployment';
 
+  // 2026-07-19 🔴 여기서 실사용자를 전부 버리고 있었다.
+  //   기존: `host !== normalizeHost(NEXT_PUBLIC_SITE_URL)` 이면 제외.
+  //   그런데 프로덕션 env 는 `https://xn--s39at50bo6fmwa.kr`(간지사주.kr 퓨니코드)이고
+  //   사용자는 canonical(ganjisaju.kr)에 있으므로 **항상 불일치** → 모든 방문이 폐기됐다.
+  //   클라이언트(VisitPing)도 같은 env 로 선판정해 비콘조차 쏘지 않았다.
+  //   → "우리 사이트인가"는 env 가 아니라 코드의 도메인 목록(isOwnSiteHost)으로 판정한다.
   const host = normalizeHost(input.host);
-  const expectedHost = canonicalHost(input.siteUrl);
-  if (host && (isLocalOrPreviewHost(host) || (expectedHost && host !== expectedHost))) {
-    return 'non_canonical_host';
-  }
+  if (host && !isOwnSiteHost(host)) return 'non_canonical_host';
 
   if (isExcludedAnalyticsIp(input.clientIp, input.excludedIps)) return 'excluded_ip';
 

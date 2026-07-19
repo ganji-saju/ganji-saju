@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { SafetyNotice } from '@/components/common/safety-notice';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -163,6 +164,10 @@ export default async function DialoguePage({
 
           {/* §4 안전 안내 */}
           <SafetyNotice variant="crisis" />
+
+          {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
+              안전 안내 **뒤**에 둔다 — 위기 안내가 상품 추천에 밀리지 않게. */}
+          <PaidFunnelGrid from="consult" tone="light" />
         </section>
       </AppPage>
     </AppShell>

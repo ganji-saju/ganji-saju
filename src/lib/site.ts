@@ -114,6 +114,22 @@ export function isCanonicalHost(hostname: string): boolean {
  * 호스트가 LEGACY (301 redirect 대상) 인지 판정.
  * Vercel 자동 도메인 (*.vercel.app) 도 포함.
  */
+/**
+ * 우리 사이트의 호스트인지 — canonical + 301 대상 별칭(www·퓨니코드) 전부 포함.
+ *
+ * 2026-07-19 — 방문 집계가 "우리 사이트인가"를 `NEXT_PUBLIC_SITE_URL` 로 판정하다
+ *   실사용자를 전부 버렸다(env 가 퓨니코드 도메인을 가리키는데 사용자는 canonical 에 있었음).
+ *   그 판정은 **코드가 아는 사실**이므로 env 가 아니라 이 목록으로 한다.
+ *   *.vercel.app(프리뷰·내부)과 localhost 는 여기 포함되지 않는다 = 집계 제외 유지.
+ */
+export function isOwnSiteHost(hostname: string): boolean {
+  const host = hostname.trim().toLowerCase();
+  if (!host) return false;
+  if (isCanonicalHost(host)) return true;
+  if (host.endsWith('.vercel.app')) return false;
+  return LEGACY_SITE_HOSTS.has(host);
+}
+
 export function shouldRedirectHost(hostname: string): boolean {
   if (isCanonicalHost(hostname)) return false;
   if (hostname === 'localhost' || hostname === '127.0.0.1') return false;

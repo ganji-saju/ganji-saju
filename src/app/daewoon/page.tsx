@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { AppShell } from '@/shared/layout/app-shell';
 import {
   GangiIntro,
@@ -96,6 +97,10 @@ export default function DaewoonPage() {
           <Link href="/saju/new?focus=year&product=year-core" className="mt-5 flex h-12 items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-base font-bold text-white">
             내 생년월일로 올해 흐름 보기
           </Link>
+
+          {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
+              from="daewoon" 이 목록에서 대운 자신을 제외한다. */}
+          <PaidFunnelGrid from="daewoon" tone="light" className="mt-6" />
         </section>
       </div>
     </AppShell>
