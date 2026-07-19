@@ -490,11 +490,21 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative block aspect-[3/4] overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
+      className="block no-underline transition-transform active:scale-[0.98]"
       // containerType: 제목 크기를 카드 폭(cqw)에 비례시키기 위한 컨테이너 지정.
       //   고정 px 로 두면 모바일 2열(≈174px)에 맞춘 크기가 데스크톱 넓은 카드에서 작아 보인다.
-      style={{ background: tintBg, color: 'var(--app-ink)', containerType: 'inline-size' }}
+      style={{ color: 'var(--app-ink)', containerType: 'inline-size' }}
     >
+      {/* 2026-07-19 5차 — 사진은 **정사각**, 그 위엔 제목만. 가격·부제는 사진 밖(아래)으로.
+          기존 3:4 카드에서는 텍스트 스택이 카드 높이의 54%(125/233px)를 덮어 인물 사진값을
+          절반밖에 못 썼다. 사진을 정사각으로 줄이고 글자를 밖으로 빼면
+          **총 높이를 유지하면서 사진은 온전히** 보인다.
+          원본이 전부 560×720 이라 object-top 정사각 크롭은 위 77.8% 를 보여준다 —
+          얼굴(머리끝~턱 ≈ 0.8~29%)은 잘리지 않는다(8장 전수 확인). */}
+      <span
+        className="relative block aspect-square overflow-hidden rounded-[20px]"
+        style={{ background: tintBg }}
+      >
       {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
       {card.image ? (
         <picture>
@@ -546,38 +556,36 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 하단 스택 — 2026-07-19 4차 요청: 제목을 **금액 위에, 배경 없이, 가운데 정렬**로.
-          앞선 시안들(하단 배지 / 사진 위 오버레이 밴드 / 독립 헤더 행)을 모두 걷어낸 형태다.
-          배경판이 없으므로 대비는 위쪽 비네팅 + 글자 그림자/외곽선으로만 만든다 —
-          사진이 밝은 카드(간단운세·대화상담)에서도 읽히도록 그림자를 두껍게 준다.
-          제목이 가운데 정렬이라 가격·부제도 함께 중앙 정렬해야 축이 맞는다. */}
-      <span className="absolute inset-x-0 bottom-0 block p-3 text-center">
+      {/* 사진 위에는 **제목만**. 색은 카드별(titleColor) — 각 사진에서 제목이 놓이는 밴드의
+          평균색을 샘플링해 WCAG 대비를 계산하고, 8색이 서로 겹치지 않는 배정 중
+          최저 대비가 최대가 되는 조합을 골랐다(최저 3.82:1, 큰 글씨 기준 3:1 충족).
+          밴드 안에서도 밝기 편차가 있어 그림자·외곽선은 보조로 남긴다. */}
+      <span className="absolute inset-x-0 bottom-0 block p-2.5 text-center">
         <span
           className="block"
           style={{
-            color: '#fff',
-            // 전 카드 통일 크기. 상한은 가장 긴 제목(4자: 간단운세·대화상담)이 한 줄에
-            //   들어가는 값 — 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
-            // 2026-07-19 — 24cqw 는 393px 뷰포트에서 4자 제목이 3px 넘쳤다(154>151).
-            //   22.5cqw 로 낮춰 여유를 준다. 이 값을 올릴 땐 4자 제목 실측 필수.
+            color: card.titleColor ?? '#fff',
             fontSize: 'clamp(20px, 22.5cqw, 48px)',
             fontWeight: 900,
             lineHeight: 1.1,
             letterSpacing: '-0.04em',
             whiteSpace: 'nowrap',
-            textShadow:
-              '0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,0.8)',
-            WebkitTextStroke: '0.6px rgba(0,0,0,0.30)',
+            textShadow: '0 2px 8px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5)',
+            WebkitTextStroke: '0.5px rgba(0,0,0,0.22)',
           }}
         >
           {card.title}
         </span>
+      </span>
+      </span>
 
-        <span className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+      {/* 사진 밖 — 가격·부제. 흰 배경이라 대비 장치가 필요 없고, 8개 가격을 훑기 쉽다. */}
+      <span className="mt-2 block px-0.5 text-center">
+        <span className="flex flex-wrap items-center justify-center gap-1.5">
           <span
             className="inline-flex items-center rounded-[8px] px-2 py-0.5"
             style={{
-              background: isFree ? 'rgba(255,255,255,0.94)' : 'var(--app-pink)',
+              background: isFree ? 'var(--app-pink-soft)' : 'var(--app-pink)',
               color: isFree ? 'var(--app-jade)' : '#fff',
               fontSize: 15,
               fontWeight: 900,
@@ -585,24 +593,21 @@ export function GangiServiceCardLink({
           >
             {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
           </span>
-          {/* 이벤트 원가 취소선 — compare 값 없으면 ComparePrice 가 스스로 null 렌더. */}
           {card.priceKey ? (
             <ComparePrice
               priceKey={card.priceKey}
-              className="text-[12.5px] font-bold text-white line-through [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]"
+              className="text-[12.5px] font-bold text-[var(--app-copy-soft)] line-through"
             />
           ) : null}
         </span>
-
         <span
           className="mt-1 block"
           style={{
-            color: 'rgba(255,255,255,0.92)',
+            color: 'var(--app-copy-soft)',
             fontSize: 12.6,
             fontWeight: 700,
             lineHeight: 1.35,
             letterSpacing: '-0.01em',
-            textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8)',
             wordBreak: 'keep-all',
           }}
         >

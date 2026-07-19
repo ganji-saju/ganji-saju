@@ -48,6 +48,14 @@ export type GangiServiceCard = {
   /** 후킹 카피(시안). 있으면 카드 본문에 desc 대신 headline 노출. */
   headline?: string;
   /**
+   * 2026-07-19 — 카드별 제목 글자색(사용자 요청: "카드마다 다양하게 눈에 띄게").
+   *   값은 임의로 고른 게 아니라, 각 인물 사진에서 **제목이 놓이는 하단 밴드의 평균색**을
+   *   샘플링해 WCAG 대비를 계산하고, 8색이 서로 겹치지 않는 배정 중 최저 대비가
+   *   최대가 되는 조합을 골랐다(최저 3.82:1, 큰 글씨 기준 3:1 충족).
+   *   사진이나 제목 위치를 바꾸면 대비를 다시 계산할 것.
+   */
+  titleColor?: string;
+  /**
    * 2026-06-23 — 메인 리디자인(간지사주 메인 리디자인.html). 카드 파스텔 틴트 배경.
    *   가로 레이아웃(원형 아바타 + 텍스트)에서 카드별 부드러운 배경색·가격색 결정.
    */
@@ -171,6 +179,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: 'HOT',
     image: 'saju',
+    titleColor: '#12285A',
     tint: 'pink',
   },
   {
@@ -186,6 +195,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: 'HOT',
     image: 'daewoon',
+    titleColor: '#5FE6B4',
     tint: 'plum',
   },
   {
@@ -201,6 +211,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
     tag: '추천',
     image: 'taekil',
+    titleColor: '#FFD24D',
     tint: 'sky',
   },
   {
@@ -217,6 +228,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: '추천',
     image: 'gunghap',
+    titleColor: '#FFFFFF',
     tint: 'coral',
   },
   // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
@@ -229,6 +241,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'rooster',
     category: 'fortune',
     image: 'today',
+    titleColor: '#3A1E7A',
     tint: 'pink',
   },
   {
@@ -240,6 +253,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'rabbit',
     category: 'fortune',
     image: 'tarot',
+    titleColor: '#FF8FC7',
     tint: 'jade',
   },
   {
@@ -251,6 +265,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'dragon',
     category: 'fortune',
     image: 'dream',
+    titleColor: '#6E0B33',
     tint: 'indigo',
   },
   {
@@ -262,6 +277,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'snake',
     category: 'consult',
     image: 'consult',
+    titleColor: '#7ED8FF',
     tint: 'amber',
   },
 ] as const;
