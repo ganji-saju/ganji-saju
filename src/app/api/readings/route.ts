@@ -105,6 +105,18 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 2026-07-19 진단 — 가설 H-B("로그인했는데 세션이 요청에 안 실린다") 판별용.
+  //   한 실유저는 가입 21분 뒤에도 익명으로 사주를 만들었다. 카카오 인앱 브라우저에서
+  //   OAuth 가 외부 브라우저로 넘어가면 세션 쿠키가 그쪽에 남아 이런 일이 생길 수 있다.
+  //   '진짜 비로그인'과 '세션 쿠키는 있는데 안 풀리는 상태'는 겉보기가 같아 구분이 안 됐다.
+  //   → 인증 쿠키가 있는데 user 가 null 인 경우에만 경고를 남긴다(값·PII 는 기록하지 않음).
+  if (!user) {
+    const hasAuthCookie = req.cookies.getAll().some((c) => /^sb-.*-auth-token/.test(c.name));
+    if (hasAuthCookie) {
+      console.warn('[auth-diag] 인증 쿠키가 있는데 세션이 없음 — 익명으로 처리됨 (H-B 후보)');
+    }
+  }
+
   if (!user && !hasSupabaseServiceEnv) {
     return NextResponse.json(
       {
