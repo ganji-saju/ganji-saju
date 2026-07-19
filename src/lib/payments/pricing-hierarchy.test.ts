@@ -52,6 +52,40 @@ test('묶음이 따로 사는 것보다 비싸지 않다', () => {
   );
 });
 
+// 2026-07-19 — 3,300원 이벤트가 이 6개 중 **2개(money_pattern·work_flow)를 건너뛰어**
+//   /pricing 에서 나란히 놓인 같은 등급 상품이 3,300 / 9,900 으로 섞여 보였다.
+//   사용자가 화면을 보고 발견했다 — 즉 리스트를 손으로 훑는 방식은 실패한다.
+//   "형제는 같은 값"을 불변식으로 박아 다음 가격 변경 때 누락이 red 로 잡히게 한다.
+const SIBLING_TASTE_PRODUCTS = [
+  'taste_today_detail',
+  'taste_love_question',
+  'taste_money_pattern',
+  'taste_work_flow',
+  'taste_monthly_calendar',
+  'taste_year_core',
+] as const;
+
+test('같은 등급 단품은 전부 같은 가격·같은 취소선', () => {
+  const [head, ...rest] = SIBLING_TASTE_PRODUCTS;
+  const base = getPackage(head);
+  assert.ok(base, `${head} 가 카탈로그에 있어야 함`);
+
+  for (const id of rest) {
+    const pkg = getPackage(id);
+    assert.ok(pkg, `${id} 가 카탈로그에 있어야 함`);
+    assert.equal(
+      pkg.price,
+      base.price,
+      `${id}(${pkg.price}) 가 형제 ${head}(${base.price}) 와 다르다 — 가격 변경 시 누락된 것 아닌가?`
+    );
+    assert.equal(
+      pkg.compareAt ?? null,
+      base.compareAt ?? null,
+      `${id} 의 취소선이 형제 ${head} 와 다르다 — 한쪽만 할인 표시되면 나란히 놓였을 때 어색하다`
+    );
+  }
+});
+
 test('취소선 원가는 현재가보다 높다', () => {
   // compareAt <= price 면 "할인"이 자기모순이 된다. 취소선을 가진 전 상품에 적용.
   for (const id of [

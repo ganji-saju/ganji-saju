@@ -179,11 +179,18 @@ export async function probeNicepayCredentials(): Promise<{
  * 결제 취소/부분취소 — POST {API_BASE}/v1/payments/{tid}/cancel.
  * cancelAmt 생략 시 전체취소. reason 필수(≤100). Idempotency 로 이중취소 방지(toss 패턴 동일).
  */
+/**
+ * 나이스페이 결제 취소.
+ *
+ * ⚠️ `orderId` 는 **필수**다(선택 아님). 2026-07-19 관리자 환불이 연속 실패했고
+ *   PG 응답이 "orderId 필수입력항목이 누락되었습니다." 였다 — 호출부가 orderId 를 빼먹어도
+ *   타입이 잡아주지 못했던 게 원인이다. 그래서 선택 필드에서 필수로 올렸다.
+ */
 export async function cancelNicepayPayment(
   tid: string,
   options: {
     reason: string;
-    orderId?: string;
+    orderId: string;
     cancelAmt?: number;
     idempotencyKey?: string;
   }

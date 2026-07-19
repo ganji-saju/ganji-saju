@@ -106,21 +106,26 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'love-question',
     compareAt: 9900,
   },
+  // 2026-07-19 — 3,300원 이벤트에서 **누락돼 있던 두 건**(사용자 제보: /pricing 에서 이 둘만
+  //   9,900원으로 떴다). 형제 단품(오늘 자세히·연애·월간달력·올해핵심)과 같은 등급이므로
+  //   같은 가격·같은 취소선이어야 한다. product_prices 는 0행이라 이 값이 곧 청구가다.
   {
     id: 'taste_money_pattern',
     name: '돈이 새는 패턴',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'money-pattern',
+    compareAt: 9900,
   },
   {
     id: 'taste_work_flow',
     name: '일/직장 흐름',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'work-flow',
+    compareAt: 9900,
   },
   {
     id: 'taste_monthly_calendar',

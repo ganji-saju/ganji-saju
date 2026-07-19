@@ -390,8 +390,18 @@ export async function POST(req: NextRequest) {
       const provider = await getOrderProviderByPaymentKey(paymentKey);
       if (provider === 'nicepay') {
         try {
+          // 2026-07-19 🔴 나이스페이 취소는 orderId 가 **필수**인데 넘기지 않고 있었다.
+          //   실패한 환불 요청에 남은 PG 응답: "orderId 필수입력항목이 누락되었습니다."
+          //   (refund_requests.error_message, 2026-07-19 13:04 관리자 환불 2건 연속 실패)
+          //   payment_key 로 원주문을 찾아 orderId 를 실어 보낸다.
+          const order = await getPaymentOrderByPaymentKey(paymentKey);
+          if (!order?.orderId) {
+            // orderId 없이 보내면 PG 가 거절한다. 조용히 진행하지 말고 사유를 남긴다.
+            return { ok: false, error: '원주문을 찾지 못해 결제취소를 보낼 수 없습니다(orderId 없음).' };
+          }
           const response = await cancelNicepayPayment(paymentKey, {
             reason: options.cancelReason,
+            orderId: order.orderId,
             idempotencyKey: options.idempotencyKey,
             ...(typeof options.cancelAmount === 'number' ? { cancelAmt: options.cancelAmount } : {}),
           });
