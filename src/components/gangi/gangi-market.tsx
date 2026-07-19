@@ -490,67 +490,46 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
+      className="relative block aspect-[3/4] overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
       // containerType: 제목 크기를 카드 폭(cqw)에 비례시키기 위한 컨테이너 지정.
       //   고정 px 로 두면 모바일 2열(≈174px)에 맞춘 크기가 데스크톱 넓은 카드에서 작아 보인다.
       style={{ background: tintBg, color: 'var(--app-ink)', containerType: 'inline-size' }}
     >
-      {/* 제목 헤더 — 2026-07-19 3차. 사진 **위에 겹치지 않는 독립 행**이다.
-          앞서 사진 위 오버레이 밴드로 뒀더니 인물 얼굴을 가렸다(사진마다 얼굴 높이가 달라
-          위치를 조정해도 어떤 카드는 반드시 가린다). 헤더를 흐름에서 분리하면 구조적으로
-          얼굴을 가릴 수 없다.
-          글자 크기는 **전 카드 통일**(길이별 단계 제거). 통일 크기의 상한은 가장 긴 제목이
-          한 줄에 들어가는 값이다 — 즉 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
-          2026-07-19 '딱 3장 타로'→'타로' 로 최장 제목이 6자→4자(간단운세·대화상담)가 되면서
-          통일을 유지한 채 한 단계 키울 수 있었다. 제목을 더 늘릴 땐 이 상한을 먼저 확인할 것. */}
-      <span
-        className="block shrink-0 px-1.5 py-1.5 text-center"
-        style={{
-          background: 'rgba(20,14,26,0.92)',
-          color: '#fff',
-          fontSize: 'clamp(20px, 22.5cqw, 48px)',
-          fontWeight: 900,
-          lineHeight: 1.12,
-          letterSpacing: '-0.04em',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {card.title}
-      </span>
+      {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
+      {card.image ? (
+        <picture>
+          <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
+          <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
+          <img
+            src={`/images/gangi/people/${card.image}.png`}
+            alt={card.title}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-top"
+          />
+        </picture>
+      ) : (
+        <span className="absolute inset-0 grid place-items-center">
+          {card.chipKind === 'star-sign' ? (
+            <StarSignChip kind={card.starSign} size="lg" />
+          ) : (
+            <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
+          )}
+        </span>
+      )}
 
-      {/* 사진 영역 — 헤더 아래. 이 안에서만 오버레이(비네팅·태그·가격·부제)가 겹친다. */}
-      <span className="relative block min-h-0 flex-1">
-        {/* 인물 사진 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
-        {card.image ? (
-          <picture>
-            <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
-            <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
-            <img
-              src={`/images/gangi/people/${card.image}.png`}
-              alt={card.title}
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover object-top"
-            />
-          </picture>
-        ) : (
-          <span className="absolute inset-0 grid place-items-center">
-            {card.chipKind === 'star-sign' ? (
-              <StarSignChip kind={card.starSign} size="lg" />
-            ) : (
-              <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
-            )}
-          </span>
-        )}
-
-      {/* 비네팅 — 가장자리만 은은하게 어둡게(글씨 가독성). */}
+      {/* 비네팅 — 하단을 어둡게. 제목·부제가 배경판 없이 사진 위에
+          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다. */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(120% 80% at 50% 16%, transparent 38%, rgba(15,8,16,0.58) 100%)' }}
+        style={{
+          background:
+            'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
+        }}
       />
 
-      {/* 태그 (HOT / 추천) — 사진 영역 우상단. 제목이 헤더로 빠져 이 자리가 다시 비었다. */}
+      {/* 태그 (HOT / 추천) — 사진 우상단. */}
       {card.tag ? (
         <span
           className="absolute right-2.5 top-2.5 z-10 inline-flex items-center rounded-[6px] px-1.5"
@@ -567,15 +546,32 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 하단 — 부제(노란 판) + 가격. 2026-07-18(PPTX slide4) 가독성 요구로 도입한
-          불투명 배경판은 유지한다(인물 사진 위 흰 글씨는 대비가 들쭉날쭉해서).
-          2026-07-19 — 제목은 상단 밴드로 이동했으므로 여기서는 제거(중복 방지). */}
-      <span className="absolute inset-x-0 bottom-0 block p-3">
-        {/* 가격이 먼저, 부제는 그 아래 작게 — 2026-07-19 2차 요청.
-            제목을 최대로 키운 만큼 부제는 보조 정보로 내리고, 노란 강조판도 뗀다
-            (작은 글씨에 큰 색판을 두르면 카드가 산만해진다). 대비는 비네팅 위
-            흰 글씨 + 그림자로 확보. */}
-        <span className="flex flex-wrap items-center gap-1.5">
+      {/* 하단 스택 — 2026-07-19 4차 요청: 제목을 **금액 위에, 배경 없이, 가운데 정렬**로.
+          앞선 시안들(하단 배지 / 사진 위 오버레이 밴드 / 독립 헤더 행)을 모두 걷어낸 형태다.
+          배경판이 없으므로 대비는 위쪽 비네팅 + 글자 그림자/외곽선으로만 만든다 —
+          사진이 밝은 카드(간단운세·대화상담)에서도 읽히도록 그림자를 두껍게 준다.
+          제목이 가운데 정렬이라 가격·부제도 함께 중앙 정렬해야 축이 맞는다. */}
+      <span className="absolute inset-x-0 bottom-0 block p-3 text-center">
+        <span
+          className="block"
+          style={{
+            color: '#fff',
+            // 전 카드 통일 크기. 상한은 가장 긴 제목(4자: 간단운세·대화상담)이 한 줄에
+            //   들어가는 값 — 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
+            fontSize: 'clamp(21px, 24cqw, 50px)',
+            fontWeight: 900,
+            lineHeight: 1.1,
+            letterSpacing: '-0.04em',
+            whiteSpace: 'nowrap',
+            textShadow:
+              '0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,0.8)',
+            WebkitTextStroke: '0.6px rgba(0,0,0,0.30)',
+          }}
+        >
+          {card.title}
+        </span>
+
+        <span className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
           <span
             className="inline-flex items-center rounded-[8px] px-2 py-0.5"
             style={{
@@ -595,21 +591,21 @@ export function GangiServiceCardLink({
             />
           ) : null}
         </span>
+
         <span
           className="mt-1 block"
           style={{
-            color: '#fff',
+            color: 'rgba(255,255,255,0.92)',
             fontSize: 12.6,
             fontWeight: 700,
             lineHeight: 1.35,
             letterSpacing: '-0.01em',
-            textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
+            textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8)',
             wordBreak: 'keep-all',
           }}
         >
           {card.desc}
         </span>
-      </span>
       </span>
     </Link>
   );
