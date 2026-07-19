@@ -25,7 +25,6 @@ interface PremiumLockCardProps {
   errorMessage?: string | null;
   // 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
   // {singleLabel} 단품 옆에 묶음 비교 CTA 노출. 없으면 기존 단품 레이아웃 유지.
-  bundleHref?: string | null;
 }
 
 export function PremiumLockCard({
@@ -36,7 +35,6 @@ export function PremiumLockCard({
   sourceSessionId,
   concernId,
   errorMessage,
-  bundleHref,
 }: PremiumLockCardProps) {
   const { hasEntitlement, openHref, memberFreeEligible, hasLegacyCoins, loading: entitlementLoading } = useProductEntitlement({
     productId: 'today-detail',
@@ -47,7 +45,6 @@ export function PremiumLockCard({
 
   // 2026-07-07 Phase 2 — 단품(오늘 자세히=saju_entry)·묶음(오늘 풀세트) 가격을 리졸버로 단일화.
   const singleLabel = usePriceLabel('saju_entry');
-  const bundleLabel = usePriceLabel('bundle_today_set');
 
   function handleUnlockClick() {
     trackMoonlightEvent('unlock_clicked', {
@@ -198,77 +195,9 @@ export function PremiumLockCard({
         </Button>
       </Link>
 
-      {bundleHref ? (
-        <>
-          {/* 단품 vs 묶음 비교 — 두 라벨 모두 리졸버(usePriceLabel)에서 오므로
-              가격이 바뀌어도 자동 정합. 주석에 금액을 적어두지 않는다(과거 stale 원인). */}
-          <div className="mt-2 grid grid-cols-[1fr_1.35fr] gap-2">
-            <Link href={singleHref} className="min-w-0">
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] border-[var(--app-pink-line)] bg-white px-2 text-[var(--app-pink-strong)] hover:bg-[var(--app-pink-soft)]"
-              >
-                <span className="text-[15px] font-extrabold leading-tight">{singleLabel} 단품</span>
-                <span className="text-[12.1px] font-semibold text-[var(--app-copy-muted)]">오늘 자세히만</span>
-              </Button>
-            </Link>
-            <Link href={bundleHref} className="min-w-0">
-              <Button
-                type="button"
-                size="lg"
-                className="flex h-[3.25rem] w-full flex-col gap-0 rounded-[16px] bg-[var(--app-pink)] px-2 text-white hover:bg-[var(--app-pink)]"
-                style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
-              >
-                <span className="flex items-center gap-1.5 leading-tight">
-                  {/* 2026-07-19 — 할인특가 전환에 맞춰 취소선 원가 노출. 이게 없으면
-                      compareAt(19,800)이 카탈로그에만 있고 화면에는 안 보여 "할인"이 전달되지 않는다. */}
-                  <ComparePrice
-                    priceKey="bundle_today_set"
-                    className="text-[12.6px] font-bold text-white/70 line-through"
-                  />
-                  <span className="text-[16.7px] font-extrabold">{bundleLabel} 묶음</span>
-                  {/* 실제 구성품: entitlement 6개(today-detail 1 + score-factor F1~F5 5개) =
-                      점수는 5항목. 기존 '7종'·'점수 6종'은 오표기였다(checkout BUNDLE_GUIDE 기준). */}
-                  <span className="text-[11.5px] font-semibold text-white/85">6종</span>
-                </span>
-                <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 5항목 한 번에</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* 레거시 전 보유자에게만 전 열기 노출 */}
-          {hasLegacyCoins ? (
-            <button
-              type="button"
-              onClick={handleUnlockClick}
-              disabled={loading}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-[12px] border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
-            >
-              {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
-              {loading ? '여는 중' : `${coinCost}전 열기`}
-            </button>
-          ) : null}
-
-          {/* 옵션 설명 */}
-          <ul className="mt-3 grid gap-1 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
-            {hasLegacyCoins ? (
-              <li>
-                <b className="font-bold text-[var(--app-ink)]">{coinCost}전 열기</b> — 보유 전으로 오늘 자세히 보기
-              </li>
-            ) : null}
-            <li>
-              <b className="font-bold text-[var(--app-ink)]">{singleLabel} 단품</b> — 오늘 자세히 보기만 바로 결제
-            </li>
-            <li>
-              <b className="font-bold text-[var(--app-pink-strong)]">{bundleLabel} 묶음</b> — 오늘 자세히 + 점수 5항목까지 한 번에
-            </li>
-          </ul>
-        </>
-      ) : (
-        /* 묶음 없는 케이스 — 단품 보조 CTA */
-        <div className="mt-2 grid gap-2">
+      {/* 2026-07-20 — 묶음(bundle_today_set) 판매 중단으로 '단품 vs 묶음' 비교 블록 제거.
+          단품 단독 CTA 만 남긴다(원래 bundleHref 없을 때의 분기와 동일). */}
+      <div className="mt-2 grid gap-2">
           <Link href={singleHref} className="min-w-0">
             <Button
               type="button"
@@ -292,8 +221,7 @@ export function PremiumLockCard({
               {loading ? '여는 중' : `${coinCost}전 열기`}
             </button>
           ) : null}
-        </div>
-      )}
+      </div>
 
       <p className="mt-3 text-[15px] leading-relaxed text-[var(--app-copy-muted)]">
         <Lock className="mr-1 inline h-3 w-3 align-[-1px]" />

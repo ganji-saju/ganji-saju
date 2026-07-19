@@ -113,6 +113,29 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-07-20 묶음(bundle_today_set) 판매 중단. 점수 언락을 3,300 으로 내리면서
+  //   따로 사기 합계(6,600)가 묶음(9,900)보다 싸져 묶음이 오히려 손해가 됐다 → 단품 단일로 정리.
+  //   ⚠️ 기존 구매자의 **열람**은 그대로다 — 여기서 막는 건 신규 결제뿐.
+  if (pkg.id === 'bundle_today_set') {
+    const retiredBundleClient = await createClient();
+    await logPaymentFunnelEvent(retiredBundleClient, {
+      stage: 'prepare_attempt',
+      packageId,
+      amount: pkg.price ?? null,
+      metadata: { product, plan, slug, scope, from },
+    });
+    await logPaymentFunnelEvent(retiredBundleClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'bundle_retired',
+    });
+    return NextResponse.json(
+      { ok: false, error: '묶음 상품은 판매하지 않습니다. 필요한 항목을 단품으로 선택해 주세요.' },
+      { status: 410 }
+    );
+  }
+
   // 2026-07-20 궁합 전역권(love-question) 판매 중단. 커플 1회권(compat-reading) 단일로 통일.
   //   전역권은 1회 결제로 **모든 커플 영구** 해제라, 계속 팔면 커플 단위 과금이 무의미해진다
   //   (hasCompatibilityAccess 의 grandfather 가 전역권 보유자를 무조건 통과시킨다).

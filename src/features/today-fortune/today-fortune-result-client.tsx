@@ -202,13 +202,6 @@ export function TodayFortuneResultClient({
                 loading={false}
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
-                bundleHref={
-                  freeResult.sajuSlug
-                    ? `/membership/checkout?product=bundle_today_set&slug=${encodeURIComponent(
-                        freeResult.sajuSlug
-                      )}&from=today-fortune`
-                    : undefined
-                }
               />
 
               {/* §4 — Task 7 크로스링크: 저장된 공통 프로필로 재입력 없이 사주로 전환.

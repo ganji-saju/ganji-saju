@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { getPackage } from './catalog';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
@@ -21,84 +23,28 @@ function price(id: Parameters<typeof getPackage>[0]): number {
   return pkg.price;
 }
 
-test('가격 서열: 단품 < 점수 언락 < 묶음', () => {
+// 2026-07-20 — 묶음(bundle_today_set) **판매 중단** + 점수 언락 6,600 → 3,300.
+//   기존 3개 테스트(서열 / 묶음 비지배 / 묶음 ≤ 합계)는 묶음을 파는 전제였으므로 폐기한다.
+//   대신 단품 전 상품이 같은 값이라는 것과, 묶음이 되살아나면 알아채도록 하는 가드만 남긴다.
+test('단품은 점수 언락까지 전부 같은 가격', () => {
   const detail = price('taste_today_detail');
   const scoreTotal = price('taste_score_total');
-  const bundle = price('bundle_today_set');
-
-  assert.ok(detail < scoreTotal, `단품(${detail}) < score-total(${scoreTotal}) 이어야 함`);
-  assert.ok(scoreTotal < bundle, `score-total(${scoreTotal}) < 묶음(${bundle}) 이어야 함`);
-});
-
-test('묶음이 score-total 을 지배하지 않는다', () => {
-  // 묶음 가격이 score-total 이하면, 같은 값(이하)에 점수 언락 + today-detail 을 주는 셈이라
-  // score-total 을 사는 게 비합리적이 된다(strictly dominated).
-  const scoreTotal = price('taste_score_total');
-  const bundle = price('bundle_today_set');
-  assert.ok(
-    bundle > scoreTotal,
-    `묶음(${bundle})이 score-total(${scoreTotal}) 이하면 score-total 이 완전 열위가 된다`
+  assert.equal(
+    scoreTotal,
+    detail,
+    `점수 언락(${scoreTotal})이 단품(${detail})과 다르다 — 단품 단일가 체계가 깨졌다`
   );
 });
 
-test('묶음이 따로 사는 것보다 비싸지 않다', () => {
-  // 반대 방향 가드: 묶음이 구성품 합계보다 비싸면 묶음을 살 이유가 사라진다.
-  // (2026-07-18~19 사이 실제로 이 상태였다 — 묶음 19,800 vs 따로 13,200.)
-  const parts = price('taste_today_detail') + price('taste_score_total');
-  const bundle = price('bundle_today_set');
-  assert.ok(
-    bundle <= parts,
-    `묶음(${bundle})이 따로 사기 합계(${parts})보다 비싸면 묶음이 무의미하다`
+test('묶음은 판매하지 않는다(되살아나면 서열 재설계 필요)', () => {
+  // 정의 자체는 남아 있다(기존 이용권·과거 주문 조회). 판매 재개는 prepare 가드를 걷어야 가능하다.
+  const guard = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/api/payments/prepare/route.ts'),
+    'utf8'
   );
-});
-
-// 2026-07-19 — 3,300원 이벤트가 이 6개 중 **2개(money_pattern·work_flow)를 건너뛰어**
-//   /pricing 에서 나란히 놓인 같은 등급 상품이 3,300 / 9,900 으로 섞여 보였다.
-//   사용자가 화면을 보고 발견했다 — 즉 리스트를 손으로 훑는 방식은 실패한다.
-//   "형제는 같은 값"을 불변식으로 박아 다음 가격 변경 때 누락이 red 로 잡히게 한다.
-const SIBLING_TASTE_PRODUCTS = [
-  'taste_today_detail',
-  'taste_love_question',
-  'taste_money_pattern',
-  'taste_work_flow',
-  'taste_monthly_calendar',
-  'taste_year_core',
-] as const;
-
-test('같은 등급 단품은 전부 같은 가격·같은 취소선', () => {
-  const [head, ...rest] = SIBLING_TASTE_PRODUCTS;
-  const base = getPackage(head);
-  assert.ok(base, `${head} 가 카탈로그에 있어야 함`);
-
-  for (const id of rest) {
-    const pkg = getPackage(id);
-    assert.ok(pkg, `${id} 가 카탈로그에 있어야 함`);
-    assert.equal(
-      pkg.price,
-      base.price,
-      `${id}(${pkg.price}) 가 형제 ${head}(${base.price}) 와 다르다 — 가격 변경 시 누락된 것 아닌가?`
-    );
-    assert.equal(
-      pkg.compareAt ?? null,
-      base.compareAt ?? null,
-      `${id} 의 취소선이 형제 ${head} 와 다르다 — 한쪽만 할인 표시되면 나란히 놓였을 때 어색하다`
-    );
-  }
-});
-
-// 2026-07-20 — 사용자 제보: "3,300원 궁합 깊은 풀이 결제하기를 눌렀는데 9,900원 결제화면".
-//   원인 둘: ① 표시가는 love-question, 청구는 compat-reading 으로 **분기가 어긋남**
-//   ② compat-reading 이 3,300원 이벤트에서 누락돼 9,900원으로 남아 있었음.
-//   두 상품은 같은 '깊은 궁합 풀이'를 주는데 scope 만 다르다 —
-//   love-question = 전역(아무 커플), compat-reading = 커플 1쌍.
-//   좁은 쪽이 더 비싸면 아무도 살 이유가 없다(완전 열위).
-test('궁합: 커플 1회권이 전역권보다 비싸지 않다', () => {
-  const global = getPackage('taste_love_question');
-  const perCouple = getPackage('taste_compat_reading');
-  assert.ok(global && perCouple, '두 궁합 상품이 카탈로그에 있어야 함');
   assert.ok(
-    perCouple.price <= global.price,
-    `커플 1회권(${perCouple.price})이 전역권(${global.price})보다 비싸다 — 좁은 권한이 더 비싸면 완전 열위다`
+    guard.includes("pkg.id === 'bundle_today_set'"),
+    '묶음 판매 차단 가드가 사라졌다 — 묶음을 다시 팔려면 단품과의 서열부터 다시 정해야 한다'
   );
 });
 
