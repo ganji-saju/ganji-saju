@@ -716,39 +716,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* 2026-05-15 handoff 52 m-reveal 닫음 — §1 ~ §5 카드만 stagger. 하단 details 는 접힘 기본이라 모션 대상 외. */}
             </MotionResultReveal>
 
-            {/* 2026-05-15 cleanup — 기존 하단 details + SajuV2InsightPanel 제거.
-                위 §1.5 일주 / §1.6 narrative / §1.7 격국·용신 / §1.8 합충·공망 카드와
-                내용이 중복되어 사용자가 오해할 수 있었음. 깊은/상세 풀이는 별도 탭으로 분기 안내. */}
-            <article
-              className="rounded-[18px] border bg-white p-4"
-              style={{ borderColor: 'var(--app-line)' }}
-            >
-              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                더 들여다볼 곳
-              </div>
-              <h3
-                className="mt-1 text-[17.3px] font-extrabold leading-[1.4] text-[var(--app-ink)]"
-                style={{ wordBreak: 'keep-all' }}
-              >
-                같은 풀이를 다른 시각으로 보고 싶다면
-              </h3>
-              <ul
-                className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-copy)]"
-                style={{ wordBreak: 'keep-all' }}
-              >
-                <li>· <strong>성향</strong> 탭 — <em>내 타고난 성향</em> (일주 캐릭터 풀이)</li>
-                <li>· <strong>오행</strong> 탭 — <em>다섯 기운 균형</em> 차트</li>
-                <li>· <strong>명식</strong> 탭 — <em>반복되는 역할 후보 · 잘 풀리게 도와주는 기운 · 지금 흐르는 기운</em> (격국·용신·강약 + 합충·공망·신살)</li>
-                <li>· <strong>대운</strong> 탭 — 10년 단위 큰 흐름 + 시기별 8단 풀이 (12운성·원진·교운기)</li>
-                <li>· <strong>상세</strong> 탭 — 올해 전략·월간 타이밍·평생 흐름 (유료 심화 풀이)</li>
-              </ul>
-              <p
-                className="mt-2 text-[12.6px] leading-[1.55] text-[var(--app-copy-soft)]"
-                style={{ wordBreak: 'keep-all' }}
-              >
-                모든 탭은 같은 사주 데이터를 다르게 보여줍니다 — 풀이는 동일합니다.
-              </p>
-            </article>
+            {/* 2026-07-20 — '더 들여다볼 곳'(탭 안내 카드) 제거(사용자 요청).
+                바로 아래 PaidFunnelGrid 가 메뉴 리스트를 이미 보여주고 있어 역할이 겹쳤다.
+                탭 자체는 상단 탭바에 그대로 있으므로 진입 경로는 잃지 않는다. */}
           </section>
 
           {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
