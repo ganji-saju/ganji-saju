@@ -231,7 +231,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     //   2026-07-18 실측: product_prices 는 0행(오버라이드 없음) → catalog 값이 곧 라이브 청구가.
     //   구 주석의 "프로덕션 990 오버라이드"는 stale 이라 정정.
     price: '3,300원',
-    priceKey: 'taste_love_question',
+    priceKey: 'taste_compat_reading',
     href: '/compatibility/input',
     zodiac: 'sheep',
     category: 'saju',

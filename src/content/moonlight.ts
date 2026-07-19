@@ -258,17 +258,11 @@ export const TASTE_PRODUCTS: readonly MoonlightTasteProduct[] = [
     status: '오늘운 결과 후 연결',
     teacherSlug: 'saju-yong',
   },
-  {
-    slug: 'love-question',
-    title: '연애 마음 확인',
-    price: '9,900원',
-    question: '상대와 다시 이어질 수 있을까',
-    result: '상대의 속도, 내 마음, 다시 말 걸 타이밍을 짧게 봅니다.',
-    href: '/membership/checkout?product=love-question&from=taste-product',
-    status: '연애 질문으로 연결',
-    teacherSlug: 'compat-yang',
-    compatibilityOnly: true,
-  },
+  // 2026-07-20 — '연애 마음 확인'(love-question) **판매 중단**.
+  //   이 상품은 이름만 달랐지 궁합 깊은 풀이와 같은 권한이었고,
+  //   사면 grandfather 판정으로 **모든 커플이 영구 해제**돼 커플 단위 과금을 무력화했다.
+  //   궁합 유료는 커플 1회권(compat-reading) 단일로 통일.
+  //   기존 보유자 접근은 compatibility-access.ts 의 grandfather 로 유지된다.
   {
     slug: 'money-pattern',
     title: '돈이 새는 패턴',

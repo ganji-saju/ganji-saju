@@ -95,12 +95,19 @@ export function CompatibilityResultView({
   //   여기서 상품이 분기하는데 **가격 표시는 taste_love_question 으로 고정**돼 있었다.
   //   per-couple 이 켜지면 결제는 compat-reading(9,900) 인데 버튼엔 3,300 이 찍힌다.
   //   → 표시가와 청구가가 다른 상태. 분기를 하나로 묶어 같은 조건에서 갈리게 한다.
-  const usePerCouplePricing = Boolean(perCouplePricingEnabled && compatibilityCoupleKey);
-  const checkoutProduct = usePerCouplePricing ? 'compat-reading' : 'love-question';
-  const checkoutPriceKey = usePerCouplePricing ? 'taste_compat_reading' : 'taste_love_question';
-  const checkoutHref = usePerCouplePricing
-    ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey!)}&from=compatibility-result`
-    : '/membership/checkout?product=love-question&from=compatibility-result';
+  //
+  // 2026-07-20 — 전역권(love-question) **판매 중단**. 궁합 유료는 커플 1회권 단일이다.
+  //   전역권은 "1회 결제로 모든 커플 영구"라 커플 단위 과금을 통째로 무력화했다
+  //   (같은 3,300원에 권한만 넓어 커플권이 완전 열위. hasCompatibilityAccess 의
+  //    grandfather 가 전역권 보유자를 무조건 통과시키므로 계속 팔면 중단의 의미가 없다).
+  //   ⚠️ 기존 보유자 접근은 grandfather 로 유지된다(compatibility-access.ts — 건드리지 말 것).
+  //   중단 시점 실측: 전역권 보유자 0명(product_entitlements·credit_transactions 양쪽).
+  //
+  //   커플키가 없으면 살 대상을 특정할 수 없으므로 **구매 CTA 를 노출하지 않는다.**
+  //   예전엔 이때 전역권으로 빠졌는데, 그게 바로 우회로였다.
+  const checkoutHref = compatibilityCoupleKey
+    ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey)}&from=compatibility-result`
+    : null;
   const selfZodiac = getYearZodiac(compatibility.selfData);
   const partnerZodiac = getYearZodiac(compatibility.partnerData);
   const selfYear = getBirthYear(compatibility.selfData);
@@ -477,12 +484,14 @@ export function CompatibilityResultView({
               >
                 멤버십이면 궁합 매달 무료 →
               </Link>
-              <Link
-                href={checkoutHref}
-                className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
-              >
-                <Price priceKey={checkoutPriceKey} /> · 깊은 궁합 풀이 보기
-              </Link>
+              {checkoutHref ? (
+                <Link
+                  href={checkoutHref}
+                  className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
+                >
+                  <Price priceKey="taste_compat_reading" /> · 깊은 궁합 풀이 보기
+                </Link>
+              ) : null}
               <Link
                 href={retakeHref}
                 className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-2.5 text-[15px] font-bold text-white/80"

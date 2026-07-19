@@ -113,6 +113,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-07-20 궁합 전역권(love-question) 판매 중단. 커플 1회권(compat-reading) 단일로 통일.
+  //   전역권은 1회 결제로 **모든 커플 영구** 해제라, 계속 팔면 커플 단위 과금이 무의미해진다
+  //   (hasCompatibilityAccess 의 grandfather 가 전역권 보유자를 무조건 통과시킨다).
+  //   UI 에서 진입점을 걷어냈지만 구 링크·캐시·직접 URL 로 들어올 수 있어 서버에서도 막는다.
+  //   ⚠️ 기존 보유자의 **열람**은 계속 허용된다 — 여기서 막는 건 신규 '결제'뿐이다.
+  if (pkg.id === 'taste_love_question') {
+    const retiredClient = await createClient();
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_attempt',
+      packageId,
+      amount: pkg.price ?? null,
+      metadata: { product, plan, slug, scope, from },
+    });
+    await logPaymentFunnelEvent(retiredClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      amount: pkg.price ?? null,
+      reason: 'love_question_retired',
+    });
+    return NextResponse.json(
+      { ok: false, error: '이 상품은 판매하지 않습니다. 궁합은 결과 화면에서 구매해 주세요.' },
+      { status: 410 }
+    );
+  }
+
   if ((pkg.kind === 'lifetime_report' || pkg.requiresSlug) && !slug) {
     return NextResponse.json(
       { error: '이 상품은 먼저 풀이 결과를 만든 뒤 결제할 수 있습니다.' },
