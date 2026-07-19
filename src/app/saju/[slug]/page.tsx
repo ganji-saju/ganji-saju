@@ -367,7 +367,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const priceMap = await getPriceDisplayMap();
   // 2026-05-21 Phase 6~7 — 사주 종합 점수(순수·서버, 비용 0).
   const sajuScore = computeSajuScoreFromData(sajuData);
-  // 2026-06-07 — 점수 단일 언락(score-total 9,900원). 미해제 시 점수 블록을 블러-락.
+  // 2026-06-07 — 점수 단일 언락(score-total). 미해제 시 점수 블록을 블러-락.
+  //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
   //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
   const scoreUnlocked = await getScoreUnlockEntitlement(slug);
   const rawReport = buildSajuReport(input, sajuData, topic);

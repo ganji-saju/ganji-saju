@@ -155,13 +155,25 @@ export const PAYMENT_PACKAGES = [
   },
   {
     // 2026-06-07 — 사주 점수 단일 언락. 종합점수+5요소 전체를 reading 단위로 한 번에.
+    // 2026-07-19 — 9,900 → 6,600(취소선 9,900). 묶음(bundle_today_set)이 9,900원이 되면서
+    //   **score-total 이 완전 열위**가 됐다: 묶음은 score-factor F1~F5 를 전량 grant 하고
+    //   score-unlock-access 의 grandfather 가 그걸 점수 언락으로 인정하므로,
+    //   같은 9,900원에 묶음 = 점수 언락 + today-detail(3,300 상당) 이었다.
+    //   서열 복원: 단품 3,300 < score-total 6,600 < 묶음 9,900.
+    //
+    //   ⚠️ 6,600 은 **정확히 손익분기**다. 묶음(9,900) ≡ today-detail(3,300) + 점수 언락 이므로
+    //   따로 사면 3,300 + 6,600 = 9,900 = 묶음가. 즉 묶음은 "더 싸서"가 아니라
+    //   "한 번 결제로 둘 다"라는 편의로 존재한다(묶음 CTA 문구도 편의 소구).
+    //   묶음에 실제 할인폭을 주려면 이 값이 6,600보다 커야 하고(예: 7,700 → 묶음 10% 절약),
+    //   반대로 6,600 미만으로 내리면 이번엔 **묶음이 따로 사는 것보다 비싸져** 열위가 뒤집힌다.
     id: 'taste_score_total',
     name: '사주 점수 공개',
     credits: 0,
-    price: 9900,
+    price: 6600,
     kind: 'taste_product',
     tasteProductId: 'score-total',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     // 2026-05-23 ① — 궁합 1회권(커플 단위). slug 에 커플 키를 실어 compat:{coupleKey} scope 로 grant.
