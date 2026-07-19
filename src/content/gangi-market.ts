@@ -151,6 +151,12 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
 //   무료 카드 문구는 "제한적·간단함"을 제목에서 드러내고(간단운세 / 딱 3장 타로 /
 //   한 단어 꿈해몽 / 질문 하나 대화상담) 부제는 "언제 쓰는가"로 통일.
 //   유료 카드 부제는 "이걸 통해 뭘 얻는가"로 통일(slide4).
+// 2026-07-19 — 제목을 카드 **상단 밴드**로 올리고 크게 키우면서(사용자 요청) 제목을 짧게 정리.
+//   '한 단어 꿈해몽'→'꿈해몽', '질문 하나 대화상담'→'대화상담', '딱 3장 타로'→'타로'.
+//   제목 크기를 전 카드 통일했기 때문에 **가장 긴 제목이 전체 크기의 상한**이 된다 —
+//   긴 제목 하나가 나머지 7개를 함께 작게 만든다. 그래서 짧게
+//   오히려 짧은 제목보다 작아져 "크게"의 취지가 깨진다. 제한 뉘앙스(한 단어/질문 하나)는
+//   제목에서 빠졌으니 되살리려면 desc 로 옮길 것.
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'saju',
@@ -227,7 +233,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'tarot',
-    title: '딱 3장 타로',
+    title: '타로',
     desc: '지금 급할 때',
     price: '무료',
     href: '/tarot/daily',
@@ -238,7 +244,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'dream',
-    title: '한 단어 꿈해몽',
+    title: '꿈해몽',
     desc: '마음이 찜찜할 때',
     price: '무료',
     href: '/dream',
@@ -249,7 +255,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
   {
     id: 'consult',
-    title: '질문 하나 대화상담',
+    title: '대화상담',
     desc: '당장 답답할 때',
     price: '무료',
     href: '/dialogue',

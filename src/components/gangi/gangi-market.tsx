@@ -490,31 +490,58 @@ export function GangiServiceCardLink({
       href={card.href}
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
-      className="relative block aspect-[3/4] overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
-      style={{ background: tintBg, color: 'var(--app-ink)' }}
+      className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
+      // containerType: 제목 크기를 카드 폭(cqw)에 비례시키기 위한 컨테이너 지정.
+      //   고정 px 로 두면 모바일 2열(≈174px)에 맞춘 크기가 데스크톱 넓은 카드에서 작아 보인다.
+      style={{ background: tintBg, color: 'var(--app-ink)', containerType: 'inline-size' }}
     >
-      {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
-      {card.image ? (
-        <picture>
-          <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
-          <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
-          <img
-            src={`/images/gangi/people/${card.image}.png`}
-            alt={card.title}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-top"
-          />
-        </picture>
-      ) : (
-        <span className="absolute inset-0 grid place-items-center">
-          {card.chipKind === 'star-sign' ? (
-            <StarSignChip kind={card.starSign} size="lg" />
-          ) : (
-            <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
-          )}
-        </span>
-      )}
+      {/* 제목 헤더 — 2026-07-19 3차. 사진 **위에 겹치지 않는 독립 행**이다.
+          앞서 사진 위 오버레이 밴드로 뒀더니 인물 얼굴을 가렸다(사진마다 얼굴 높이가 달라
+          위치를 조정해도 어떤 카드는 반드시 가린다). 헤더를 흐름에서 분리하면 구조적으로
+          얼굴을 가릴 수 없다.
+          글자 크기는 **전 카드 통일**(길이별 단계 제거). 통일 크기의 상한은 가장 긴 제목이
+          한 줄에 들어가는 값이다 — 즉 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
+          2026-07-19 '딱 3장 타로'→'타로' 로 최장 제목이 6자→4자(간단운세·대화상담)가 되면서
+          통일을 유지한 채 한 단계 키울 수 있었다. 제목을 더 늘릴 땐 이 상한을 먼저 확인할 것. */}
+      <span
+        className="block shrink-0 px-1.5 py-1.5 text-center"
+        style={{
+          background: 'rgba(20,14,26,0.92)',
+          color: '#fff',
+          fontSize: 'clamp(20px, 22.5cqw, 48px)',
+          fontWeight: 900,
+          lineHeight: 1.12,
+          letterSpacing: '-0.04em',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {card.title}
+      </span>
+
+      {/* 사진 영역 — 헤더 아래. 이 안에서만 오버레이(비네팅·태그·가격·부제)가 겹친다. */}
+      <span className="relative block min-h-0 flex-1">
+        {/* 인물 사진 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
+        {card.image ? (
+          <picture>
+            <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
+            <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
+            <img
+              src={`/images/gangi/people/${card.image}.png`}
+              alt={card.title}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-top"
+            />
+          </picture>
+        ) : (
+          <span className="absolute inset-0 grid place-items-center">
+            {card.chipKind === 'star-sign' ? (
+              <StarSignChip kind={card.starSign} size="lg" />
+            ) : (
+              <ZodiacChip kind={card.zodiac as ZodiacKey} size="lg" />
+            )}
+          </span>
+        )}
 
       {/* 비네팅 — 가장자리만 은은하게 어둡게(글씨 가독성). */}
       <span
@@ -523,7 +550,7 @@ export function GangiServiceCardLink({
         style={{ background: 'radial-gradient(120% 80% at 50% 16%, transparent 38%, rgba(15,8,16,0.58) 100%)' }}
       />
 
-      {/* 태그 (HOT / 추천) */}
+      {/* 태그 (HOT / 추천) — 사진 영역 우상단. 제목이 헤더로 빠져 이 자리가 다시 비었다. */}
       {card.tag ? (
         <span
           className="absolute right-2.5 top-2.5 z-10 inline-flex items-center rounded-[6px] px-1.5"
@@ -540,39 +567,15 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 하단 강조 텍스트 — 제목/부제 배지. 2026-07-18(20260718 PPTX slide4): 50대 이상 타깃
-          가독성 요구("더 크게, 잘 보이는 색깔로"). 흰 글씨+그림자만으로는 인물 사진 위에서
-          대비가 들쭉날쭉해 **불투명 배경판**으로 고정 대비를 만든다(제목=먹빛 판/흰 글씨,
-          부제=노란 판/먹빛 글씨). 제목 글자수가 2자("사주")~9자("질문 하나 대화상담")로
-          편차가 커서 길이별로 크기를 단계 조절 — 고정 크기면 긴 제목이 카드를 넘친다. */}
+      {/* 하단 — 부제(노란 판) + 가격. 2026-07-18(PPTX slide4) 가독성 요구로 도입한
+          불투명 배경판은 유지한다(인물 사진 위 흰 글씨는 대비가 들쭉날쭉해서).
+          2026-07-19 — 제목은 상단 밴드로 이동했으므로 여기서는 제거(중복 방지). */}
       <span className="absolute inset-x-0 bottom-0 block p-3">
-        <span
-          className="inline-block rounded-[9px] px-2 py-1"
-          style={{
-            background: 'rgba(20,14,26,0.86)',
-            color: '#fff',
-            fontSize: card.title.length <= 3 ? 29 : card.title.length <= 5 ? 23 : 18,
-            fontWeight: 900,
-            lineHeight: 1.15,
-            letterSpacing: '-0.02em',
-          }}
-        >
-          {card.title}
-        </span>
-        <span
-          className="mt-1.5 inline-block rounded-[8px] px-2 py-0.5"
-          style={{
-            background: '#ffd83d',
-            color: '#241a08',
-            fontSize: 14.4,
-            fontWeight: 850,
-            lineHeight: 1.3,
-            letterSpacing: '-0.01em',
-          }}
-        >
-          {card.desc}
-        </span>
-        <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        {/* 가격이 먼저, 부제는 그 아래 작게 — 2026-07-19 2차 요청.
+            제목을 최대로 키운 만큼 부제는 보조 정보로 내리고, 노란 강조판도 뗀다
+            (작은 글씨에 큰 색판을 두르면 카드가 산만해진다). 대비는 비네팅 위
+            흰 글씨 + 그림자로 확보. */}
+        <span className="flex flex-wrap items-center gap-1.5">
           <span
             className="inline-flex items-center rounded-[8px] px-2 py-0.5"
             style={{
@@ -592,6 +595,21 @@ export function GangiServiceCardLink({
             />
           ) : null}
         </span>
+        <span
+          className="mt-1 block"
+          style={{
+            color: '#fff',
+            fontSize: 12.6,
+            fontWeight: 700,
+            lineHeight: 1.35,
+            letterSpacing: '-0.01em',
+            textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
+            wordBreak: 'keep-all',
+          }}
+        >
+          {card.desc}
+        </span>
+      </span>
       </span>
     </Link>
   );
