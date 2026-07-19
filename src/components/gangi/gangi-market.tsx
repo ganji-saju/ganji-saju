@@ -556,10 +556,10 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 사진 위에는 **제목만**. 색은 카드별(titleColor) — 각 사진에서 제목이 놓이는 밴드의
-          평균색을 샘플링해 WCAG 대비를 계산하고, 8색이 서로 겹치지 않는 배정 중
-          최저 대비가 최대가 되는 조합을 골랐다(최저 3.82:1, 큰 글씨 기준 3:1 충족).
-          밴드 안에서도 밝기 편차가 있어 그림자·외곽선은 보조로 남긴다. */}
+      {/* 사진 위에는 **제목만**. 색은 카드별(titleColor).
+          대비는 위 비네팅을 **합성한 뒤**의 배경에 대고 계산한다 — 산출 근거와
+          한 번 틀렸던 이력은 gangi-market.ts 의 titleColor 주석 참조.
+          8색 모두 밝은색이라 아래 어두운 그림자·외곽선이 실제로 글자를 띄워준다. */}
       <span className="absolute inset-x-0 bottom-0 block p-2.5 text-center">
         <span
           className="block"

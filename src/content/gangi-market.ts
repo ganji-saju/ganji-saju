@@ -49,10 +49,19 @@ export type GangiServiceCard = {
   headline?: string;
   /**
    * 2026-07-19 — 카드별 제목 글자색(사용자 요청: "카드마다 다양하게 눈에 띄게").
-   *   값은 임의로 고른 게 아니라, 각 인물 사진에서 **제목이 놓이는 하단 밴드의 평균색**을
-   *   샘플링해 WCAG 대비를 계산하고, 8색이 서로 겹치지 않는 배정 중 최저 대비가
-   *   최대가 되는 조합을 골랐다(최저 3.82:1, 큰 글씨 기준 3:1 충족).
-   *   사진이나 제목 위치를 바꾸면 대비를 다시 계산할 것.
+   *
+   * ⚠️ 대비는 **원본 사진이 아니라 비네팅(scrim) 합성 후 배경**에 대고 계산할 것.
+   *   처음엔 원본 사진 밴드 평균색에 대고 최적화했는데, 사진 위에는 이미
+   *   `to top, rgba(12,7,14,.86) → transparent 62%` 스크림이 깔려 있다.
+   *   그래서 배경이 밝은 사진(꿈해몽·간단운세·사주)에는 "어두운 글씨"가 최적이라고
+   *   나왔고, 실제 렌더에서는 **어두운 스크림 위 어두운 글씨** = 안 보였다.
+   *   사용자가 지목한 3개가 정확히 대비 최하위 3개(2.23·2.32·2.65)였다.
+   *
+   * 현재 값: 스크림 합성 후 배경(글자가 놓이는 하단 6~28% 띠의 밝은쪽 85퍼센타일)에
+   *   대해 대비를 계산하고, **8색 전부 밝은색 + 서로 다른 색상 계열**(흰/노랑/주황/분홍/
+   *   보라/하늘/민트/라임) 제약 아래 최저 대비가 최대가 되는 배정을 골랐다.
+   *   최저 4.27:1 (큰 글씨 기준 3:1 충족).
+   *   사진·제목 위치·스크림 중 하나라도 바꾸면 대비를 다시 계산할 것.
    */
   titleColor?: string;
   /**
@@ -179,7 +188,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: 'HOT',
     image: 'saju',
-    titleColor: '#12285A',
+    titleColor: '#FFFFFF',
     tint: 'pink',
   },
   {
@@ -195,7 +204,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: 'HOT',
     image: 'daewoon',
-    titleColor: '#5FE6B4',
+    titleColor: '#FFC08A',
     tint: 'plum',
   },
   {
@@ -211,7 +220,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
     tag: '추천',
     image: 'taekil',
-    titleColor: '#FFD24D',
+    titleColor: '#7CF0C4',
     tint: 'sky',
   },
   {
@@ -228,7 +237,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'saju',
     tag: '추천',
     image: 'gunghap',
-    titleColor: '#FFFFFF',
+    titleColor: '#9FE4FF',
     tint: 'coral',
   },
   // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
@@ -241,7 +250,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'rooster',
     category: 'fortune',
     image: 'today',
-    titleColor: '#3A1E7A',
+    titleColor: '#FFE066',
     tint: 'pink',
   },
   {
@@ -253,7 +262,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'rabbit',
     category: 'fortune',
     image: 'tarot',
-    titleColor: '#FF8FC7',
+    titleColor: '#FFB3DA',
     tint: 'jade',
   },
   {
@@ -265,7 +274,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'dragon',
     category: 'fortune',
     image: 'dream',
-    titleColor: '#6E0B33',
+    titleColor: '#D6FF6E',
     tint: 'indigo',
   },
   {
@@ -277,7 +286,7 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'snake',
     category: 'consult',
     image: 'consult',
-    titleColor: '#7ED8FF',
+    titleColor: '#D9BFFF',
     tint: 'amber',
   },
 ] as const;
