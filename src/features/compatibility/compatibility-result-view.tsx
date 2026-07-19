@@ -90,10 +90,17 @@ export function CompatibilityResultView({
   const premiumExpansion = COMPATIBILITY_PREMIUM_EXPANSION[selected.slug];
   const score = clampScore(compatibility.score);
   // ① per-couple 가격이 켜지고 커플 키가 있으면 compat-reading(커플 1회권) 결제, 아니면 기존 love-question.
-  const checkoutHref =
-    perCouplePricingEnabled && compatibilityCoupleKey
-      ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey)}&from=compatibility-result`
-      : '/membership/checkout?product=love-question&from=compatibility-result';
+  //
+  // 2026-07-20 🔴 사용자 제보: "3,300원 궁합 깊은 풀이 결제하기를 눌렀는데 9,900원 결제화면".
+  //   여기서 상품이 분기하는데 **가격 표시는 taste_love_question 으로 고정**돼 있었다.
+  //   per-couple 이 켜지면 결제는 compat-reading(9,900) 인데 버튼엔 3,300 이 찍힌다.
+  //   → 표시가와 청구가가 다른 상태. 분기를 하나로 묶어 같은 조건에서 갈리게 한다.
+  const usePerCouplePricing = Boolean(perCouplePricingEnabled && compatibilityCoupleKey);
+  const checkoutProduct = usePerCouplePricing ? 'compat-reading' : 'love-question';
+  const checkoutPriceKey = usePerCouplePricing ? 'taste_compat_reading' : 'taste_love_question';
+  const checkoutHref = usePerCouplePricing
+    ? `/membership/checkout?product=compat-reading&slug=${encodeURIComponent(compatibilityCoupleKey!)}&from=compatibility-result`
+    : '/membership/checkout?product=love-question&from=compatibility-result';
   const selfZodiac = getYearZodiac(compatibility.selfData);
   const partnerZodiac = getYearZodiac(compatibility.partnerData);
   const selfYear = getBirthYear(compatibility.selfData);
@@ -474,7 +481,7 @@ export function CompatibilityResultView({
                 href={checkoutHref}
                 className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
               >
-                <Price priceKey="taste_love_question" /> · 깊은 궁합 풀이 보기
+                <Price priceKey={checkoutPriceKey} /> · 깊은 궁합 풀이 보기
               </Link>
               <Link
                 href={retakeHref}

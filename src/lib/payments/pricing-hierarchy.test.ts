@@ -86,6 +86,22 @@ test('같은 등급 단품은 전부 같은 가격·같은 취소선', () => {
   }
 });
 
+// 2026-07-20 — 사용자 제보: "3,300원 궁합 깊은 풀이 결제하기를 눌렀는데 9,900원 결제화면".
+//   원인 둘: ① 표시가는 love-question, 청구는 compat-reading 으로 **분기가 어긋남**
+//   ② compat-reading 이 3,300원 이벤트에서 누락돼 9,900원으로 남아 있었음.
+//   두 상품은 같은 '깊은 궁합 풀이'를 주는데 scope 만 다르다 —
+//   love-question = 전역(아무 커플), compat-reading = 커플 1쌍.
+//   좁은 쪽이 더 비싸면 아무도 살 이유가 없다(완전 열위).
+test('궁합: 커플 1회권이 전역권보다 비싸지 않다', () => {
+  const global = getPackage('taste_love_question');
+  const perCouple = getPackage('taste_compat_reading');
+  assert.ok(global && perCouple, '두 궁합 상품이 카탈로그에 있어야 함');
+  assert.ok(
+    perCouple.price <= global.price,
+    `커플 1회권(${perCouple.price})이 전역권(${global.price})보다 비싸다 — 좁은 권한이 더 비싸면 완전 열위다`
+  );
+});
+
 test('취소선 원가는 현재가보다 높다', () => {
   // compareAt <= price 면 "할인"이 자기모순이 된다. 취소선을 가진 전 상품에 적용.
   for (const id of [

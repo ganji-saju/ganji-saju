@@ -186,10 +186,15 @@ export const PAYMENT_PACKAGES = [
     id: 'taste_compat_reading',
     name: '궁합 깊은 풀이',
     credits: 0,
-    price: 9900,
+    // 2026-07-20 — 3,300원 이벤트에서 누락돼 있었다(money_pattern·work_flow 와 같은 사고).
+    //   같은 '깊은 궁합 풀이'를 주는 love-question(전역·아무 커플)이 3,300원인데
+    //   이쪽은 **커플 1쌍 한정인데 9,900원** 이었다 — 좁은 권한이 3배 비싼 완전 열위.
+    //   per-couple 플래그가 켜져 있어 사용자가 그 열위 상품으로 보내지고 있었다.
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'compat-reading',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
