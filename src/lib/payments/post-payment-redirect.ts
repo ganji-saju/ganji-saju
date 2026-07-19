@@ -64,5 +64,12 @@ export function buildTasteProductHref(
   if (slug && (product === 'score-total' || product === 'score-factor')) {
     return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
   }
+  // 2026-07-19 — 주제 단품(재물·일). 여기서 null 을 돌려주는 바람에 결제 후 착지가 없어
+  //   빈 생년월일 입력폼으로 떨어졌다(전달물 0). today-detail 화면을 해당 주제로 연다 —
+  //   두 상품은 today-detail 이 이미 계산하는 5개 주제 중 재물/직장 슬라이스다.
+  if (slug && (product === 'money-pattern' || product === 'work-flow')) {
+    const topic = product === 'money-pattern' ? 'wealth' : 'career';
+    return `/saju/${encodeURIComponent(slug)}/today-detail?topic=${topic}&payment=confirmed&product=${product}`;
+  }
   return null;
 }

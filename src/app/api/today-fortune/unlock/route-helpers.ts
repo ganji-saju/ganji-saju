@@ -18,11 +18,19 @@ export interface TodayFortuneUnlockScope {
   scopeKey: string;
   // 2026-05-17 — KST 'YYYY-MM-DD'. 같은 날 broadest fallback 용.
   todayKey: string;
+  /** 2026-07-19 — 요청 주제(wealth/career/…). 주제 단품 접근 판정에만 쓴다. */
+  concern?: string | null;
 }
 
 export interface TodayFortuneUnlockDeps {
   // productId 는 'today-detail' 로 고정 — caller 가 closure 로 주입.
   getTodayDetailEntitlement: (userId: string, scopeKey: string) => Promise<unknown>;
+  /**
+   * 2026-07-19 — 주제 단품(money-pattern=재물 / work-flow=일·직장) 보유 여부.
+   *   두 상품은 global 스코프라 1회 구매로 전역 접근이며, **해당 주제일 때만** 연다.
+   *   caller 가 productId 를 closure 로 주입한다.
+   */
+  getTopicProductEntitlement?: (userId: string, productId: string) => Promise<unknown>;
   hasTodayFortunePremiumAccess: (userId: string, sourceSessionId: string) => Promise<boolean>;
   hasDetailReportAccess: (userId: string, readingKey: string) => Promise<boolean>;
   // 2026-05-17 PR #200 — 올바른 kind 로 readingKey 매치 (today_fortune_premium_access).
@@ -38,10 +46,29 @@ export interface TodayFortuneUnlockDeps {
 
 export type TodayFortuneAccessSource =
   | 'taste-product'
+  | 'topic-product'
   | 'coin-session'
   | 'coin-reading'
   | 'coin-daily'
   | null;
+
+/**
+ * 주제(concern) → 그 주제를 여는 단품 상품 id.
+ *
+ * 2026-07-19 — money-pattern·work-flow 는 결제만 되고 **여는 게이트가 앱 전체에 0곳**이었다
+ *   (getTasteProductEntitlement 호출 26곳 중 두 상품을 읽는 곳이 없었다). 결제 후 착지도
+ *   빈 입력폼이었다. 두 상품은 today-detail 이 이미 계산하는 5개 주제 중 재물/직장 슬라이스이므로,
+ *   같은 화면을 해당 주제로만 열어주는 방식으로 전달물을 붙인다.
+ */
+export const TOPIC_PRODUCT_BY_CONCERN: Readonly<Record<string, string>> = {
+  wealth: 'money-pattern',
+  career: 'work-flow',
+};
+
+export function topicProductForConcern(concern: string | null | undefined): string | null {
+  const key = String(concern ?? '').trim();
+  return TOPIC_PRODUCT_BY_CONCERN[key] ?? null;
+}
 
 export async function resolveTodayFortuneUnlockAccess(
   userId: string,
@@ -51,6 +78,12 @@ export async function resolveTodayFortuneUnlockAccess(
   // 1) entitlement (taste product DB row — 9,900원 카드 직접 결제).
   const entitlement = await deps.getTodayDetailEntitlement(userId, scope.scopeKey);
   if (entitlement) return 'taste-product';
+
+  // 1-b) 주제 단품(재물·일). 요청 주제와 일치할 때만 연다 — 재물을 샀는데 일 화면이 열리면 안 된다.
+  const topicProduct = topicProductForConcern(scope.concern);
+  if (topicProduct && deps.getTopicProductEntitlement) {
+    if (await deps.getTopicProductEntitlement(userId, topicProduct)) return 'topic-product';
+  }
 
   // 2) coin unlock by sourceSessionId — PR #178 신규 키 (today_fortune_premium_access).
   if (await deps.hasTodayFortunePremiumAccess(userId, scope.sourceSessionId)) {

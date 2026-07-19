@@ -27,6 +27,8 @@ import {
   upsertTodayFortuneResultSnapshot,
 } from '@/lib/today-fortune/result-snapshots';
 import { resolveTodayFortuneUnlockAccess } from './route-helpers';
+import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import type { TasteProductId } from '@/lib/payments/catalog';
 
 export const runtime = 'nodejs';
 
@@ -141,6 +143,7 @@ export async function GET(req: NextRequest) {
       readingKey,
       scopeKey: buildTodayDetailScopeKey(sourceSessionId),
       todayKey,
+      concern: concernId,
     },
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
@@ -149,6 +152,9 @@ export async function GET(req: NextRequest) {
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
         hasTodayDetailEntitlementForDay(userId, todayKey),
+      // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
+      getTopicProductEntitlement: (userId, productId) =>
+        getTasteProductEntitlement(userId, productId as TasteProductId, null),
       hasTodayFortunePremiumAccess: (userId, sid) =>
         hasTodayFortunePremiumAccess(userId, sid, todayKey),
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>
@@ -235,6 +241,7 @@ export async function POST(req: NextRequest) {
       readingKey,
       scopeKey: buildTodayDetailScopeKey(sourceSessionId),
       todayKey,
+      concern: concernId,
     },
     {
       // 2026-06-05 — today-detail 일일 만료 fix(영구 접근 버그). 모든 접근 체크를
@@ -243,6 +250,9 @@ export async function POST(req: NextRequest) {
       //   coin 체크는 todayKey 를 created_at 필터로 주입(당일 unlock 만 reused).
       getTodayDetailEntitlement: async (userId) =>
         hasTodayDetailEntitlementForDay(userId, todayKey),
+      // 2026-07-19 — 주제 단품(재물·일). global 스코프라 당일 제한 없이 보유 여부만 본다.
+      getTopicProductEntitlement: (userId, productId) =>
+        getTasteProductEntitlement(userId, productId as TasteProductId, null),
       hasTodayFortunePremiumAccess: (userId, sid) =>
         hasTodayFortunePremiumAccess(userId, sid, todayKey),
       hasTodayFortunePremiumAccessByReading: (userId, rk) =>

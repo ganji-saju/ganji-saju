@@ -147,8 +147,13 @@ function buildPurchasedResultHref(snapshot: PaidReadingSnapshot) {
   }
 
   if (snapshot.productId === 'love-question') return '/compatibility/input';
-  if (snapshot.productId === 'money-pattern') return '/saju/new?topic=wealth';
-  if (snapshot.productId === 'work-flow') return '/saju/new?topic=career';
+  // 2026-07-19 — 주제 단품은 today-detail 화면을 해당 주제로 연다(재물=wealth, 일=career).
+  //   기존 `/saju/new?topic=...` 은 **입력폼**이고 그 폼은 topic 을 읽지도 않아
+  //   구매자가 빈 화면을 만났다.
+  if ((snapshot.productId === 'money-pattern' || snapshot.productId === 'work-flow') && slug) {
+    const topic = snapshot.productId === 'money-pattern' ? 'wealth' : 'career';
+    return `/saju/${encodeURIComponent(slug)}/today-detail?topic=${topic}`;
+  }
 
   return '/my/results';
 }

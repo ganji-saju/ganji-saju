@@ -11,6 +11,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { TodayFortuneDetailClient } from '@/features/today-fortune/today-fortune-detail-client';
 import { resolveReading } from '@/lib/saju/readings';
 import { AppShell } from '@/shared/layout/app-shell';
+import { topicProductForConcern } from '@/app/api/today-fortune/unlock/route-helpers';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -37,7 +38,10 @@ export default async function SajuTodayDetailPage({ params, searchParams }: Prop
       <TodayFortuneDetailClient
         sourceSessionId={slug}
         concern={concern ?? topic}
-        paidProduct="today-detail"
+        // 2026-07-19 — 주제 단품(재물·일)로 들어온 경우 그 상품으로 표기해야
+        //   미로그인 복귀(`/login?next=...&paid=`)와 재구매 안내가 맞는 상품을 가리킨다.
+        //   today-detail 로 고정돼 있으면 재물 단품 구매자가 오늘 상세 결제 화면으로 튄다.
+        paidProduct={topicProductForConcern(concern ?? topic) ?? 'today-detail'}
         backHref={`/saju/${encodeURIComponent(slug)}`}
       />
     </AppShell>
