@@ -46,38 +46,51 @@ const TODAY_POPULAR: Array<{ rank: number; keyword: string; description: string 
 ];
 
 export default function DreamPage() {
-  const [query, setQuery] = useState('이빨');
+  // 2026-07-18 — 하루 1회 제한(20260718 PPTX slide3 "한 단어 꿈해몽 / 다 하루 1번으로 제한").
+  //   기존엔 입력할 때마다 디바운스 검색이 나갔고 마운트 시 '이빨'을 자동 검색했다.
+  //   그 구조에 제한을 걸면 **페이지를 여는 것만으로 오늘 기회가 소진**되므로,
+  //   자동검색을 없애고 **명시적 제출(버튼/엔터) 1회**로 바꾼다. 제한 판정은 서버가 한다.
+  const [query, setQuery] = useState('');
   const [data, setData] = useState<DreamApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [limitMessage, setLimitMessage] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  // term 을 넘기면 그 단어로 즉시 조회(관련어·인기 꿈 칩). 없으면 입력창 값.
+  //   칩은 setQuery 직후 state 가 아직 갱신 전이라 인자로 받아야 stale 값을 안 쓴다.
+  async function runSearch(term?: string) {
+    const word = (term ?? query).trim();
+    if (!word || loading) return;
+
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    setLoading(true);
+    setLimitMessage(null);
 
-    const timeout = setTimeout(() => {
-      setLoading(true);
-      fetch(`/api/dream/search?q=${encodeURIComponent(query)}`, {
+    try {
+      const response = await fetch(`/api/dream/search?q=${encodeURIComponent(word)}`, {
         signal: controller.signal,
-      })
-        .then(async (response) => (response.ok ? response.json() : null))
-        .then((json: DreamApiResponse | null) => {
-          if (json) setData(json);
-        })
-        .catch((error: unknown) => {
-          if ((error as { name?: string } | null)?.name !== 'AbortError') {
-            // 네트워크 에러는 조용히 무시 — placeholder 유지
-          }
-        })
-        .finally(() => setLoading(false));
-    }, 200);
+      });
+      const json = (await response.json().catch(() => null)) as
+        | (DreamApiResponse & { error?: string })
+        | null;
 
-    return () => {
-      controller.abort();
-      clearTimeout(timeout);
-    };
-  }, [query]);
+      if (response.status === 429) {
+        setLimitMessage(json?.error ?? '오늘은 이미 꿈해몽을 보셨어요. 내일 다시 만나요.');
+        return;
+      }
+      if (response.ok && json) setData(json);
+    } catch (error: unknown) {
+      if ((error as { name?: string } | null)?.name !== 'AbortError') {
+        // 네트워크 에러는 조용히 무시 — placeholder 유지
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const meaning = data?.match;
 
@@ -97,30 +110,62 @@ export default function DreamPage() {
             </h1>
           </div>
 
-          {/* §2 검색 바 */}
-          <div className="relative">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="예) 이빨, 뱀, 물, 죽음"
-              className="h-[54px] w-full rounded-[14px] border border-[var(--app-line)] bg-white pl-11 pr-11 text-[17.8px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
-            />
-            <span
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-[20.7px] text-[var(--app-pink-strong)]"
-              aria-hidden="true"
-            >
-              ⌕
-            </span>
-            {query ? (
-              <button
-                type="button"
-                onClick={() => setQuery('')}
-                className="absolute right-3.5 top-1/2 grid h-[22px] w-[22px] -translate-y-1/2 place-items-center rounded-full bg-[var(--app-line)] text-[12.6px] text-white"
+          {/* §2 검색 바 — 명시적 제출. 엔터 또는 '풀이 보기' 버튼으로만 조회한다. */}
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void runSearch();
+            }}
+            className="space-y-2.5"
+          >
+            <div className="relative">
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="예) 이빨, 뱀, 물, 죽음"
+                enterKeyHint="search"
+                className="h-[54px] w-full rounded-[14px] border border-[var(--app-line)] bg-white pl-11 pr-11 text-[17.8px] font-semibold text-[var(--app-ink)] outline-none placeholder:text-[var(--app-copy-soft)] focus:border-[var(--app-pink)]"
+              />
+              <span
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[20.7px] text-[var(--app-pink-strong)]"
+                aria-hidden="true"
               >
-                ✕
-              </button>
-            ) : null}
-          </div>
+                ⌕
+              </span>
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  aria-label="입력 지우기"
+                  className="absolute right-3.5 top-1/2 grid h-[22px] w-[22px] -translate-y-1/2 place-items-center rounded-full bg-[var(--app-line)] text-[12.6px] text-white"
+                >
+                  ✕
+                </button>
+              ) : null}
+            </div>
+
+            <button
+              type="submit"
+              disabled={!query.trim() || loading}
+              className="h-[52px] w-full rounded-[14px] bg-[var(--app-pink)] text-[17px] font-extrabold text-white disabled:opacity-45"
+            >
+              {loading ? '풀이 찾는 중…' : '꿈 풀이 보기'}
+            </button>
+
+            <p className="text-[13.2px] leading-[1.5] text-[var(--app-copy-soft)]">
+              꿈해몽은 하루에 한 단어씩 볼 수 있어요.
+            </p>
+          </form>
+
+          {limitMessage ? (
+            <p
+              className="rounded-[12px] border px-3.5 py-3 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
+              style={{ background: 'var(--app-pink-soft)', borderColor: 'var(--app-pink-line)' }}
+              role="status"
+            >
+              {limitMessage}
+            </p>
+          ) : null}
 
           {/* §3 결과 카드 */}
           {meaning ? (
@@ -247,7 +292,10 @@ export default function DreamPage() {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => setQuery(tag)}
+                    onClick={() => {
+                      setQuery(tag);
+                      void runSearch(tag);
+                    }}
                     className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
                   >
                     {tag}
@@ -296,7 +344,10 @@ export default function DreamPage() {
                 <button
                   key={item.rank}
                   type="button"
-                  onClick={() => setQuery(item.keyword)}
+                  onClick={() => {
+                    setQuery(item.keyword);
+                    void runSearch(item.keyword);
+                  }}
                   className={
                     'flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-[var(--app-pink-soft)]' +
                     (index < TODAY_POPULAR.length - 1 ? ' border-b border-[var(--app-line)]' : '')

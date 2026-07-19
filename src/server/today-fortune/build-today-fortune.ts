@@ -1,4 +1,5 @@
 import { Solar } from 'lunar-typescript';
+import { getFeatureCost } from '@/lib/credits/costs';
 import {
   buildSajuReport,
   type ReportEvidenceCard,
@@ -2811,8 +2812,10 @@ export function buildTodayFortuneFreeResult(
     nextAction: {
       copy: upsell.copy,
       product: 'TODAY_DEEP_READING',
-      // 2026-06-26 — 실제 차감(detail_report=10전)과 표시 일치. 기존 1 은 표시≠실제 불일치였음.
-      coinCost: 10,
+      // 2026-06-26 — 실제 차감과 표시 일치. 기존 1 은 표시≠실제 불일치였음.
+      // 2026-07-19 — 리터럴 10 을 제거하고 차감 상수에서 파생(가격 이벤트로 카드가가 바뀌면
+      //   전 차감량도 따라 바뀌는데, 표시가 리터럴이면 다시 어긋난다).
+      coinCost: getFeatureCost('detail_report'),
     },
     followUpQuestions: concern.followUpQuestions,
     // 2026-05-15 PR 1 — 운세톡톡 벤치마크: 사주 명식 신뢰 카드 + 대운 CTA 데이터.
@@ -2964,8 +2967,9 @@ export function buildTodayFortunePremiumResult(
 
   return {
     productCode: 'TODAY_DEEP_READING',
-    // 2026-06-26 — 실제 차감(detail_report=10전)과 표시 일치(기존 1 은 표시≠실제 불일치).
-    coinCost: 10,
+    // 2026-06-26 — 실제 차감과 표시 일치(기존 1 은 표시≠실제 불일치).
+    // 2026-07-19 — 파생으로 전환(위 nextAction 과 동일 이유).
+    coinCost: getFeatureCost('detail_report'),
     dateKey: todayPillar.dateKey,
     groundingSummary: buildTodayGroundingSummary(
       grounding,

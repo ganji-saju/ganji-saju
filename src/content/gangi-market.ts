@@ -98,14 +98,20 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     tone: 'soft',
   },
   {
+    // 2026-07-19 — 배너 이미지의 가격을 9,900 → 3,300 으로 재작업(이벤트 정합).
+    //   ⚠️ 가격이 **이미지에 그려져** 있어 리졸버가 못 고친다. 가격을 다시 바꾸면
+    //   public/images/gangi/banners/saju-9900.{png,webp,avif} 도 함께 갱신해야 한다.
+    //   id·파일명은 추적 연속성 때문에 'saju-9900' 유지(가격이 아니라 배너 식별자).
+    //   alt/title 은 이미지에 실제로 적힌 문구와 일치시킨다(기존엔 "내 사주 풀이"로 불일치).
     id: 'saju-9900',
     image: 'saju-9900',
-    alt: '9,900원 내 사주 풀이 — 사주·명리 상담',
+    alt: '3,300원 내 운명 확인 — 사주·명리 상담',
     kicker: '사주·명리',
-    title: '9,900원 내 사주 풀이',
+    title: '3,300원 내 운명 확인',
     description: '복잡한 고민, 방향이 필요할 때 부담 없이 시작하세요.',
     cta: '지금 확인하기',
-    href: '/saju/new',
+    // 배너가 3,300원을 광고하므로 카드와 같은 결제 직행 경로로 보낸다(중간 맛보기 없음).
+    href: '/saju/new?product=today-detail',
     tone: 'pink',
   },
   {
@@ -139,91 +145,107 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
 //   price 라벨은 기존값 유지(페이월 정합 — 결제 오해 방지).
 // 2026-07-04 — 무료 진입점 우선 배치(사용자 지시): 상단 무료운세·무료타로(HOT) /
 //   사주·대운(추천)은 한 줄 아래로 / 이후 택일·궁합·꿈해몽·대화상담.
+// 2026-07-18 — 위 배치를 되돌림(20260718 PPTX slide2·3, 사주아이 벤치마크). 무료를 먼저 보면
+//   결제 욕구가 떨어진다는 진단 → **유료(사주·대운·택일·궁합) 상단 / 무료 4종 하단**.
+//   HOT 배지도 무료 → 유료로 이동해 시선 우선순위 1번을 유료에 둔다.
+//   무료 카드 문구는 "제한적·간단함"을 제목에서 드러내고(간단운세 / 딱 3장 타로 /
+//   한 단어 꿈해몽 / 질문 하나 대화상담) 부제는 "언제 쓰는가"로 통일.
+//   유료 카드 부제는 "이걸 통해 뭘 얻는가"로 통일(slide4).
+// 2026-07-19 — 제목을 카드 **상단 밴드**로 올리고 크게 키우면서(사용자 요청) 제목을 짧게 정리.
+//   '한 단어 꿈해몽'→'꿈해몽', '질문 하나 대화상담'→'대화상담', '딱 3장 타로'→'타로'.
+//   제목 크기를 전 카드 통일했기 때문에 **가장 긴 제목이 전체 크기의 상한**이 된다 —
+//   긴 제목 하나가 나머지 7개를 함께 작게 만든다. 그래서 짧게
+//   오히려 짧은 제목보다 작아져 "크게"의 취지가 깨진다. 제한 뉘앙스(한 단어/질문 하나)는
+//   제목에서 빠졌으니 되살리려면 desc 로 옮길 것.
 export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
-  {
-    id: 'today',
-    title: '무료운세',
-    desc: '오늘 한 줄',
-    price: '무료',
-    href: '/today-fortune?concern=general',
-    zodiac: 'rooster',
-    category: 'fortune',
-    tag: 'HOT',
-    image: 'today',
-    tint: 'pink',
-  },
-  {
-    id: 'tarot',
-    title: '무료타로',
-    desc: '세 장 뽑기',
-    price: '무료',
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
-    category: 'fortune',
-    tag: 'HOT',
-    image: 'tarot',
-    tint: 'jade',
-  },
   {
     id: 'saju',
     title: '사주',
-    desc: '내 사주 풀이',
-    price: '9,900원',
+    desc: '불안한 앞날, 준비하기',
+    price: '3,300원',
     priceKey: 'saju_entry',
-    href: '/saju/new',
+    // 2026-07-18 — slide7 "중간맛보기 필요없음": 정보입력 후 곧바로 결제로 보낸다.
+    //   product 딥링크는 buildSajuPostSubmitHref 가 /membership/checkout 으로 라우팅.
+    href: '/saju/new?product=today-detail',
     zodiac: 'dragon',
     category: 'saju',
-    tag: '추천',
+    tag: 'HOT',
     image: 'saju',
     tint: 'pink',
   },
   {
     id: 'daewoon',
     title: '대운',
-    desc: '10년 큰 흐름',
-    // 2026-06-24 — 대운 풀이(올해 핵심, year-core)는 9,900원. /daewoon 은 무료 예시 허브 +
-    //   year-core 9,900원 결제 CTA(daewoon/page.tsx). catalog year-core=9,900 과 표시 일치.
-    price: '9,900원',
+    desc: '인생 반전의 순간',
+    // 2026-06-24 — 대운 풀이(올해 핵심, year-core) 결제 CTA 는 /daewoon(무료 예시 허브)에서.
+    //   2026-07-18 이벤트로 catalog year-core=3,300(취소선 9,900). price 는 폴백 문자열.
+    price: '3,300원',
     priceKey: 'taste_year_core',
     href: '/daewoon',
     zodiac: 'tiger',
     category: 'saju',
-    tag: '추천',
+    tag: 'HOT',
     image: 'daewoon',
     tint: 'plum',
   },
   {
     id: 'taekil',
     title: '택일',
-    desc: '좋은 날 찾기',
-    // 2026-06-24 — 택일(월간 좋은날 캘린더, monthly-calendar)은 9,900원. /taekil 은 무료 도구 +
-    //   monthly-calendar 9,900원 결제 CTA(taekil-client.tsx). catalog monthly-calendar=9,900 과 일치.
-    price: '9,900원',
+    desc: '놓치면 안 될 길일',
+    // 2026-06-24 — 택일(월간 좋은날 캘린더, monthly-calendar) 결제 CTA 는 /taekil(무료 도구)에서.
+    //   2026-07-18 이벤트로 catalog monthly-calendar=3,300(취소선 9,900). price 는 폴백 문자열.
+    price: '3,300원',
     priceKey: 'taste_monthly_calendar',
     href: '/taekil',
     zodiac: 'ox',
     category: 'fortune',
+    tag: '추천',
     image: 'taekil',
     tint: 'sky',
   },
   {
     id: 'gunghap',
     title: '궁합',
-    desc: '두 사람의 흐름',
-    // 2026-07-07 Phase 2 — 궁합 과금 경로 = love-question(taste_love_question). 리졸버가
-    //   product_prices 오버라이드(프로덕션 990) 를 반영해 표시가 자동 정합.
-    price: '9,900원',
+    desc: '나와 맞는 사람은?',
+    // 2026-07-07 Phase 2 — 궁합 과금 경로 = love-question(taste_love_question).
+    //   2026-07-18 실측: product_prices 는 0행(오버라이드 없음) → catalog 값이 곧 라이브 청구가.
+    //   구 주석의 "프로덕션 990 오버라이드"는 stale 이라 정정.
+    price: '3,300원',
     priceKey: 'taste_love_question',
     href: '/compatibility/input',
     zodiac: 'sheep',
     category: 'saju',
+    tag: '추천',
     image: 'gunghap',
     tint: 'coral',
+  },
+  // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
+  {
+    id: 'today',
+    title: '간단운세',
+    desc: '짧은 운세풀이',
+    price: '무료',
+    href: '/today-fortune?concern=general',
+    zodiac: 'rooster',
+    category: 'fortune',
+    image: 'today',
+    tint: 'pink',
+  },
+  {
+    id: 'tarot',
+    title: '타로',
+    desc: '지금 급할 때',
+    price: '무료',
+    href: '/tarot/daily',
+    zodiac: 'rabbit',
+    category: 'fortune',
+    image: 'tarot',
+    tint: 'jade',
   },
   {
     id: 'dream',
     title: '꿈해몽',
-    desc: '꿈 한 단어 풀이',
+    desc: '마음이 찜찜할 때',
     price: '무료',
     href: '/dream',
     zodiac: 'dragon',
@@ -234,8 +256,8 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'consult',
     title: '대화상담',
-    desc: '선생님께 묻기',
-    price: '무료 시작',
+    desc: '당장 답답할 때',
+    price: '무료',
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',

@@ -135,7 +135,10 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
 
   switch (billing.status) {
     case 'free_intro':
-      return `첫 3회 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음`;
+      return `무료 · ${billing.freeTurnsRemaining ?? 0}회 남음`;
+    // 2026-07-18 — 비멤버 하루 1턴 무료(평생 3턴 대체).
+    case 'free_daily':
+      return '오늘 무료 질문 1회 사용 · 전 차감 없음';
     case 'result_intro_free':
       return '오늘 결과 기반 첫 질문 무료 · 전 차감 없음';
     case 'member_daily_free':

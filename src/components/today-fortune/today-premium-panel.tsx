@@ -211,15 +211,9 @@ export function TodayPremiumPanel({
               12 시진(時辰) 풀이 + 추천/회피 행동 + 고민될 때 시나리오
             </p>
           </div>
-          <span
-            className="shrink-0 rounded-full px-3 py-1.5 text-[12.6px] font-extrabold text-white"
-            style={{
-              background: 'var(--app-pink)',
-              boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
-            }}
-          >
-            ✦ 10전
-          </span>
+          {/* 2026-07-19 — '✦ 10전' 가격 배지 제거. 이 패널은 **언락을 마친 뒤에만** 렌더되는
+              결제 완료 화면이라 가격을 다시 붙일 이유가 없고, 리터럴이라 가격 이벤트 후
+              stale 이었다(실제 3전). 형제 배지들도 이미 비가격 라벨이다. */}
         </div>
       </article>
 

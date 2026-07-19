@@ -3,6 +3,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import { getFeatureCost } from '@/lib/credits/costs';
 import { useSearchParams } from 'next/navigation';
 import { createClient, getCurrentBrowserUser, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -168,8 +169,12 @@ function CreditsPageContent() {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <div className="font-extrabold text-[var(--app-ink)]">보유 전 사용 안내</div>
+                {/* 2026-07-19 — 값이 리터럴이라 가격 이벤트 후 stale(10전 → 실제 3전)이었고,
+                    '연애 마음 확인'은 전 차감 경로 자체가 없다(deductCredits(_, 'compat') 호출부 0건).
+                    실제로 전이 쓰이는 항목만 차감 상수에서 파생해 노출한다. */}
                 <p className="mt-1 text-[13.8px]">
-                  오늘 자세히 보기 10전 · 연애 마음 확인 10전
+                  오늘 자세히 보기 {getFeatureCost('detail_report')}전 · 월간 달력{' '}
+                  {getFeatureCost('calendar')}전
                 </p>
               </article>
             ) : (

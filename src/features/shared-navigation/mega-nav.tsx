@@ -211,7 +211,7 @@ export function MegaNavBar() {
             <source srcSet="/images/gangi/logo.webp" type="image/webp" />
             <img
               src="/images/gangi/logo.png"
-              alt="간지사주 9,900원"
+              alt="간지사주"
               className="w-auto"
               style={{ height: 30 }}
               decoding="async"

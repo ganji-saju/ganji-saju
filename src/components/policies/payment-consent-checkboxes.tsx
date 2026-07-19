@@ -3,16 +3,24 @@
 /**
  * 결제 전 동의 체크박스 — Phase 3-C-1 (2026-05-18).
  *
- * 사용처: credits / membership/checkout / saju 페이지의 lifetime-report 결제 / today-detail 결제 등
+ * 사용처: membership/checkout 의 TossMembershipCheckout (현재 유일 소비처).
  * 결제 prepare API 호출 전 사용자가 필수 동의 체크해야 결제 진행 가능.
  *
  * 검증은 src/lib/payments/consent.ts 의 findMissingConsents 에서.
  * prepare API 가 acceptedKinds 받아서 서버에서도 한 번 더 검증.
+ *
+ * 2026-07-18 — 체크박스 5개(전체동의 + 필수 4종) → **1개**로 통합(20260718 PPTX slide8,
+ *   사주아이 벤치마크 "이렇게 짧게 가능?").
+ *   ⚠️ 핵심 제약: UI 만 줄이고 **법적 감사기록은 그대로 4종을 남긴다**. 체크 1회가 필수 항목
+ *   전체에 대한 동의로 간주되어 onValidChange 로 kinds 전체가 올라가고, prepare 가 각
+ *   policy_version 별로 user_policy_consents 행을 기록한다(전자상거래법상 청약철회·디지털
+ *   콘텐츠 고지 동의 입증 유지). 그래서 각 항목의 "전문 보기" 링크도 문안 안에 모두 남긴다 —
+ *   동의 대상을 화면에서 확인할 수 없으면 통합 동의의 유효성이 약해진다.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { POLICY_URLS, type PolicyKind } from '@/shared/policies/types';
+import { POLICY_LABELS, POLICY_URLS, type PolicyKind } from '@/shared/policies/types';
 import {
   findMissingConsents,
   getConsentItems,
@@ -62,23 +70,12 @@ export function PaymentConsentCheckboxes({
     notify(missing.length === 0, Array.from(accepted));
   }, [accepted, pkg]);
 
-  const allAccepted = items.every((it) => accepted.has(it.kind));
+  const allAccepted = items.length > 0 && items.every((it) => accepted.has(it.kind));
 
+  // 단일 체크 = 필수 항목 전체 동의/해제. 개별 토글은 UI 에서 사라졌지만 상태는 여전히
+  //   kind 집합이라 서버 계약(acceptedKinds[])과 감사기록은 이전과 동일하다.
   const toggleAll = () => {
-    if (allAccepted) {
-      setAccepted(new Set());
-    } else {
-      setAccepted(new Set(items.map((it) => it.kind)));
-    }
-  };
-
-  const toggle = (kind: PolicyKind) => {
-    setAccepted((prev) => {
-      const next = new Set(prev);
-      if (next.has(kind)) next.delete(kind);
-      else next.add(kind);
-      return next;
-    });
+    setAccepted(allAccepted ? new Set() : new Set(items.map((it) => it.kind)));
   };
 
   return (
@@ -100,56 +97,42 @@ export function PaymentConsentCheckboxes({
         </ul>
       ) : null}
 
-      <label className="flex cursor-pointer items-start gap-2 border-b pb-2.5">
+      <label className="flex cursor-pointer items-start gap-2.5">
         <input
           type="checkbox"
           checked={allAccepted}
           onChange={toggleAll}
-          className="mt-0.5 h-4 w-4"
-          aria-label="모든 항목 확인 및 동의"
+          className="mt-0.5 h-[18px] w-[18px] shrink-0"
+          aria-label="주문 내용 확인 및 필수 약관 전체 동의"
+          required
         />
-        <span className="text-[15px] font-bold text-[var(--app-ink)]">
-          아래 항목 모두 확인 및 동의
+        <span className="flex-1 text-[14.4px] font-semibold leading-[1.55] text-[var(--app-ink)]">
+          {/* it.label 은 "이용약관 확인 및 동의"처럼 서술어가 붙어 있어 문장에 이어 붙이면
+              "…확인 및 동의에 동의합니다"가 된다. 문장에는 정책 이름(POLICY_LABELS)만 쓴다. */}
+          위 주문 내용을 확인하였으며,{' '}
+          {items.map((it) => POLICY_LABELS[it.kind]).join(', ')} 및 결제에 동의합니다.
         </span>
       </label>
 
-      <ul className="space-y-2.5">
+      {/* 동의 대상 전문 링크 — 통합 동의라도 각 정책을 화면에서 열람할 수 있어야 한다. */}
+      <ul className="flex flex-wrap gap-x-3 gap-y-1 pl-[28px]">
         {items.map((it) => (
           <li key={it.kind}>
-            <label className="flex cursor-pointer items-start gap-2">
-              <input
-                type="checkbox"
-                checked={accepted.has(it.kind)}
-                onChange={() => toggle(it.kind)}
-                className="mt-0.5 h-4 w-4"
-                aria-label={it.label}
-                required
-              />
-              <span className="flex-1">
-                <span className="block text-[15px] font-bold text-[var(--app-ink)]">
-                  [필수] {it.label}{' '}
-                  <Link
-                    href={POLICY_URLS[it.kind]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-1 text-[12.6px] font-normal text-[var(--app-pink-strong)] underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    전문 보기
-                  </Link>
-                </span>
-                <span className="mt-0.5 block text-[13.2px] leading-[1.5] text-[var(--app-copy-muted)]">
-                  {it.description}
-                </span>
-              </span>
-            </label>
+            <Link
+              href={POLICY_URLS[it.kind]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[12.6px] text-[var(--app-pink-strong)] underline"
+            >
+              {POLICY_LABELS[it.kind]} 전문
+            </Link>
           </li>
         ))}
       </ul>
 
       <p className="text-[12.6px] leading-[1.5] text-[var(--app-copy-muted)]">
-        모든 필수 항목 확인 후 결제 버튼이 활성화됩니다. 동의 시점은 본인 식별 정보와 함께
-        안전하게 기록됩니다 (IP 원문은 저장하지 않습니다).
+        동의 후 결제 버튼이 활성화됩니다. 동의 시점은 본인 식별 정보와 함께 항목별로 안전하게
+        기록됩니다 (IP 원문은 저장하지 않습니다).
       </p>
 
       {/* 선택 — 결제완료 알림톡 도달률용 전화번호 수집. 결제를 막지 않음(필수 아님). */}

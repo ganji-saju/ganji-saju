@@ -77,7 +77,7 @@ test('플래그 OFF 일 때 generateTodayFortuneNarrative 는 null 반환', asyn
         evidenceLines: [],
         kasi: { available: false, ok: false, summary: '' },
       },
-      nextAction: { copy: '', product: 'TODAY_DEEP_READING', coinCost: 1 },
+      nextAction: { copy: '', product: 'TODAY_DEEP_READING', coinCost: 3 },
       followUpQuestions: [],
     },
     sajuData: {

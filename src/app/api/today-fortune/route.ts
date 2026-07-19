@@ -18,6 +18,12 @@ import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-nam
 import { generateTodayFortuneNarrative } from '@/server/ai/today-fortune/service';
 import { buildTodayCaseSummaries } from '@/server/today-fortune/today-case-summaries';
 import type { UserSituation } from '@/lib/saju/types';
+import {
+  consumeFreeDaily,
+  freeDailyLimitMessage,
+  isFreeDailyExempt,
+  isFreeDailyUsed,
+} from '@/lib/free-usage/daily-limit';
 
 /**
  * 사용자 상황 객체를 한 줄 한국어 요약으로 변환.
@@ -111,6 +117,21 @@ export async function POST(req: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // 2026-07-18 — 무료 하루 1회 제한(20260718 PPTX slide3 "다 하루 1번으로 제한").
+  //   비로그인=쿠키 / 로그인=계정(consume_member_benefit) 병행. 멤버십 회원은 면제.
+  //   2단계로 나눈다: 여기서는 **읽기 판정만** 하고(무거운 사주 계산·LLM 비용을 미리 차단),
+  //   실제 소비는 결과를 성공적으로 만든 뒤에 한다. 한 번에 consume 하면 이후 계산이
+  //   실패했을 때 사용자가 결과도 못 받고 오늘 기회만 잃는다.
+  //   (검사~소비 사이 동시 요청이 둘 다 통과할 수 있으나, 무료 티어 제한이라 감수.)
+  const memberExempt = await isFreeDailyExempt(user?.id ?? null);
+  if (!memberExempt && (await isFreeDailyUsed('today', user?.id ?? null))) {
+    return NextResponse.json(
+      { error: freeDailyLimitMessage('today'), code: 'free_daily_limit' },
+      { status: 429 }
+    );
+  }
+
   const counselorId = normalizeMoonlightCounselor(rawPayload?.counselorId);
 
   // PR #166 + 2026-06-05 — 오늘운세 입력엔 이름 필드가 없어 hero 가 "달빛이" fallback 으로
@@ -223,8 +244,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     ok: true,
     result,
   });
+
+  // 결과를 성공적으로 만든 뒤에야 하루 1회를 소비한다(위 판정과 짝).
+  //   쿠키는 응답에 실어야 브라우저에 남고, 계정 카운트는 RPC 가 원자적으로 올린다.
+  if (!memberExempt) {
+    const spent = await consumeFreeDaily('today', user?.id ?? null);
+    response.cookies.set(spent.cookie.name, spent.cookie.value, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: spent.cookie.maxAge,
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
+  return response;
 }

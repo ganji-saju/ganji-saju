@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import { useProductEntitlement } from '@/lib/payments/use-product-entitlement';
-import { usePriceLabel } from '@/components/payments/price-provider';
+import { ComparePrice, usePriceLabel } from '@/components/payments/price-provider';
 
 interface PremiumLockCardProps {
   copy: string;
@@ -23,7 +23,7 @@ interface PremiumLockCardProps {
   sourceSessionId: string;
   concernId: string;
   errorMessage?: string | null;
-  // 9,900원 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
+  // 묶음(오늘 풀세트) 결제 링크. 사주 결과(sajuSlug)가 있을 때만 전달 →
   // {singleLabel} 단품 옆에 묶음 비교 CTA 노출. 없으면 기존 단품 레이아웃 유지.
   bundleHref?: string | null;
 }
@@ -200,7 +200,8 @@ export function PremiumLockCard({
 
       {bundleHref ? (
         <>
-          {/* 단품(9,900) vs 묶음(19,800) 비교 */}
+          {/* 단품 vs 묶음 비교 — 두 라벨 모두 리졸버(usePriceLabel)에서 오므로
+              가격이 바뀌어도 자동 정합. 주석에 금액을 적어두지 않는다(과거 stale 원인). */}
           <div className="mt-2 grid grid-cols-[1fr_1.35fr] gap-2">
             <Link href={singleHref} className="min-w-0">
               <Button
@@ -221,10 +222,18 @@ export function PremiumLockCard({
                 style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
               >
                 <span className="flex items-center gap-1.5 leading-tight">
+                  {/* 2026-07-19 — 할인특가 전환에 맞춰 취소선 원가 노출. 이게 없으면
+                      compareAt(19,800)이 카탈로그에만 있고 화면에는 안 보여 "할인"이 전달되지 않는다. */}
+                  <ComparePrice
+                    priceKey="bundle_today_set"
+                    className="text-[12.6px] font-bold text-white/70 line-through"
+                  />
                   <span className="text-[16.7px] font-extrabold">{bundleLabel} 묶음</span>
-                  <span className="text-[11.5px] font-semibold text-white/85">7종</span>
+                  {/* 실제 구성품: entitlement 6개(today-detail 1 + score-factor F1~F5 5개) =
+                      점수는 5항목. 기존 '7종'·'점수 6종'은 오표기였다(checkout BUNDLE_GUIDE 기준). */}
+                  <span className="text-[11.5px] font-semibold text-white/85">6종</span>
                 </span>
-                <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 6종 한 번에</span>
+                <span className="text-[12.1px] font-semibold text-white/85">오늘 + 점수 5항목 한 번에</span>
               </Button>
             </Link>
           </div>
@@ -253,7 +262,7 @@ export function PremiumLockCard({
               <b className="font-bold text-[var(--app-ink)]">{singleLabel} 단품</b> — 오늘 자세히 보기만 바로 결제
             </li>
             <li>
-              <b className="font-bold text-[var(--app-pink-strong)]">{bundleLabel} 묶음</b> — 오늘 자세히 + 점수 6종까지 한 번에
+              <b className="font-bold text-[var(--app-pink-strong)]">{bundleLabel} 묶음</b> — 오늘 자세히 + 점수 5항목까지 한 번에
             </li>
           </ul>
         </>

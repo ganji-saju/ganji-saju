@@ -16,7 +16,7 @@ import type {
   GangiServiceCard,
 } from '@/content/gangi-market';
 import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
-import { Price } from '@/components/payments/price-provider';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
@@ -491,7 +491,9 @@ export function GangiServiceCardLink({
       onClick={() => onTrack?.(card)}
       data-free={isFree ? 'true' : 'false'}
       className="relative block aspect-[3/4] overflow-hidden rounded-[20px] no-underline transition-transform active:scale-[0.98]"
-      style={{ background: tintBg, color: 'var(--app-ink)' }}
+      // containerType: 제목 크기를 카드 폭(cqw)에 비례시키기 위한 컨테이너 지정.
+      //   고정 px 로 두면 모바일 2열(≈174px)에 맞춘 크기가 데스크톱 넓은 카드에서 작아 보인다.
+      style={{ background: tintBg, color: 'var(--app-ink)', containerType: 'inline-size' }}
     >
       {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
       {card.image ? (
@@ -516,14 +518,18 @@ export function GangiServiceCardLink({
         </span>
       )}
 
-      {/* 비네팅 — 가장자리만 은은하게 어둡게(글씨 가독성). */}
+      {/* 비네팅 — 하단을 어둡게. 제목·부제가 배경판 없이 사진 위에
+          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다. */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
-        style={{ background: 'radial-gradient(120% 80% at 50% 16%, transparent 38%, rgba(15,8,16,0.58) 100%)' }}
+        style={{
+          background:
+            'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
+        }}
       />
 
-      {/* 태그 (HOT / 추천) */}
+      {/* 태그 (HOT / 추천) — 사진 우상단. */}
       {card.tag ? (
         <span
           className="absolute right-2.5 top-2.5 z-10 inline-flex items-center rounded-[6px] px-1.5"
@@ -540,37 +546,65 @@ export function GangiServiceCardLink({
         </span>
       ) : null}
 
-      {/* 하단 강조 텍스트 — 외곽선·그림자로 가독성. 제목 + 부제 + 가격 배지. */}
-      <span className="absolute inset-x-0 bottom-0 block p-3.5">
+      {/* 하단 스택 — 2026-07-19 4차 요청: 제목을 **금액 위에, 배경 없이, 가운데 정렬**로.
+          앞선 시안들(하단 배지 / 사진 위 오버레이 밴드 / 독립 헤더 행)을 모두 걷어낸 형태다.
+          배경판이 없으므로 대비는 위쪽 비네팅 + 글자 그림자/외곽선으로만 만든다 —
+          사진이 밝은 카드(간단운세·대화상담)에서도 읽히도록 그림자를 두껍게 준다.
+          제목이 가운데 정렬이라 가격·부제도 함께 중앙 정렬해야 축이 맞는다. */}
+      <span className="absolute inset-x-0 bottom-0 block p-3 text-center">
         <span
           className="block"
           style={{
-            fontSize: 21,
-            fontWeight: 900,
-            letterSpacing: '-0.02em',
             color: '#fff',
-            WebkitTextStroke: '0.5px rgba(0,0,0,0.35)',
-            textShadow: '0 2px 10px rgba(0,0,0,0.65)',
+            // 전 카드 통일 크기. 상한은 가장 긴 제목(4자: 간단운세·대화상담)이 한 줄에
+            //   들어가는 값 — 긴 제목 하나가 나머지 카드까지 함께 작게 만든다.
+            fontSize: 'clamp(21px, 24cqw, 50px)',
+            fontWeight: 900,
+            lineHeight: 1.1,
+            letterSpacing: '-0.04em',
+            whiteSpace: 'nowrap',
+            textShadow:
+              '0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,0.8)',
+            WebkitTextStroke: '0.6px rgba(0,0,0,0.30)',
           }}
         >
           {card.title}
         </span>
+
+        <span className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
+          <span
+            className="inline-flex items-center rounded-[8px] px-2 py-0.5"
+            style={{
+              background: isFree ? 'rgba(255,255,255,0.94)' : 'var(--app-pink)',
+              color: isFree ? 'var(--app-jade)' : '#fff',
+              fontSize: 15,
+              fontWeight: 900,
+            }}
+          >
+            {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+          </span>
+          {/* 이벤트 원가 취소선 — compare 값 없으면 ComparePrice 가 스스로 null 렌더. */}
+          {card.priceKey ? (
+            <ComparePrice
+              priceKey={card.priceKey}
+              className="text-[12.5px] font-bold text-white line-through [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]"
+            />
+          ) : null}
+        </span>
+
         <span
           className="mt-1 block"
-          style={{ fontSize: 15.2, fontWeight: 750, color: '#fff', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
-        >
-          {card.desc}
-        </span>
-        <span
-          className="mt-2 inline-flex items-center rounded-[8px] px-2 py-0.5"
           style={{
-            background: isFree ? 'rgba(255,255,255,0.92)' : 'var(--app-pink)',
-            color: isFree ? 'var(--app-jade)' : '#fff',
-            fontSize: 15,
-            fontWeight: 900,
+            color: 'rgba(255,255,255,0.92)',
+            fontSize: 12.6,
+            fontWeight: 700,
+            lineHeight: 1.35,
+            letterSpacing: '-0.01em',
+            textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.8)',
+            wordBreak: 'keep-all',
           }}
         >
-          {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+          {card.desc}
         </span>
       </span>
     </Link>

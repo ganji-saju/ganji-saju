@@ -83,22 +83,28 @@ export const PAYMENT_PACKAGES = [
     // 2026-07-07 — premium/deep VIP 카드의 취소선 원가(마케팅 앵커, 기존 하드코딩 69,000).
     compareAt: 69000,
   },
+  // 2026-07-18 — 3,300원 런칭 이벤트(20260718 PPTX slide5). 메인 카드 4종(사주·대운·택일·궁합)
+  //   의 결제 상품만 3,300원으로 내리고 compareAt 9,900 으로 취소선 앵커를 남긴다.
+  //   product_prices 오버라이드는 현재 0행이라 이 카탈로그 값이 곧 라이브 청구가.
+  //   이벤트 종료는 price 9900 복귀 + compareAt 삭제, 또는 /admin/pricing 에서 런타임 조정.
   {
     id: 'taste_today_detail',
     name: '오늘 자세히 보기',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'today-detail',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     id: 'taste_love_question',
     name: '연애 마음 확인',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'love-question',
+    compareAt: 9900,
   },
   {
     id: 'taste_money_pattern',
@@ -120,19 +126,21 @@ export const PAYMENT_PACKAGES = [
     id: 'taste_monthly_calendar',
     name: '월간 달력',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'monthly-calendar',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     id: 'taste_year_core',
     name: '올해 핵심 3줄',
     credits: 0,
-    price: 9900,
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'year-core',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     // 2026-05-22 — 점수 산출내역 per-factor 풀이(F1~F5). factor 는 scope 로 인코딩.
@@ -147,13 +155,25 @@ export const PAYMENT_PACKAGES = [
   },
   {
     // 2026-06-07 — 사주 점수 단일 언락. 종합점수+5요소 전체를 reading 단위로 한 번에.
+    // 2026-07-19 — 9,900 → 6,600(취소선 9,900). 묶음(bundle_today_set)이 9,900원이 되면서
+    //   **score-total 이 완전 열위**가 됐다: 묶음은 score-factor F1~F5 를 전량 grant 하고
+    //   score-unlock-access 의 grandfather 가 그걸 점수 언락으로 인정하므로,
+    //   같은 9,900원에 묶음 = 점수 언락 + today-detail(3,300 상당) 이었다.
+    //   서열 복원: 단품 3,300 < score-total 6,600 < 묶음 9,900.
+    //
+    //   ⚠️ 6,600 은 **정확히 손익분기**다. 묶음(9,900) ≡ today-detail(3,300) + 점수 언락 이므로
+    //   따로 사면 3,300 + 6,600 = 9,900 = 묶음가. 즉 묶음은 "더 싸서"가 아니라
+    //   "한 번 결제로 둘 다"라는 편의로 존재한다(묶음 CTA 문구도 편의 소구).
+    //   묶음에 실제 할인폭을 주려면 이 값이 6,600보다 커야 하고(예: 7,700 → 묶음 10% 절약),
+    //   반대로 6,600 미만으로 내리면 이번엔 **묶음이 따로 사는 것보다 비싸져** 열위가 뒤집힌다.
     id: 'taste_score_total',
     name: '사주 점수 공개',
     credits: 0,
-    price: 9900,
+    price: 6600,
     kind: 'taste_product',
     tasteProductId: 'score-total',
     requiresSlug: true,
+    compareAt: 9900,
   },
   {
     // 2026-05-23 ① — 궁합 1회권(커플 단위). slug 에 커플 키를 실어 compat:{coupleKey} scope 로 grant.
@@ -170,12 +190,16 @@ export const PAYMENT_PACKAGES = [
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
     // 2026-06-26 — 묶음열기 9,900원 → 19,800원.
+    // 2026-07-19 — 할인특가 9,900원(취소선 19,800). 단품 today-detail 이 3,300원으로 내려가
+    //   19,800 묶음이 단품 6개 값보다 비싸 보이는 역전이 생겼다(페이월이 단품·묶음을 나란히
+    //   노출해 사용자가 즉시 계산함). 단품 3,300 × 3 = 묶음 9,900 으로 배수를 정리.
     id: 'bundle_today_set',
     name: '오늘 풀세트',
     credits: 0,
-    price: 19800,
+    price: 9900,
     kind: 'bundle',
     requiresSlug: true,
+    compareAt: 19800,
     components: [
       { tasteProductId: 'today-detail' },
       { tasteProductId: 'score-factor', scope: 'F1' },

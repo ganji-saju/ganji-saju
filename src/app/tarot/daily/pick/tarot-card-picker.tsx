@@ -132,6 +132,11 @@ export function TarotCardPicker({ cards, question }: TarotCardPickerProps) {
         const next = [...current, card];
         if (next.length === SPREAD_SIZE) {
           setNavigating(true);
+          // 2026-07-18 — 뽑기 확정 = 오늘 1회 소비. 서버에 기록만 남기고(카드 내용 미전송)
+          //   결과 이동은 기다리지 않는다 — 기록 실패로 결과를 못 보는 일이 없게 비차단.
+          void fetch('/api/tarot/daily-draw', { method: 'POST', keepalive: true }).catch(
+            () => {}
+          );
           router.push(buildSpreadHref(question, next));
         }
         return next;

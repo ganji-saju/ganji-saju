@@ -1,10 +1,10 @@
-// 2026-06-07 — 사주 종합점수 블러-락 게이트(단일 9,900원 언락, score-total).
+// 2026-06-07 — 사주 종합점수 블러-락 게이트(단일 언락, score-total). 가격은 리졸버 렌더.
 //   해제: children(SajuScoreCard+ScoreBreakdownCard) 그대로.
 //   잠금: ⚠️ children 을 렌더하지 않는다(실제 숫자가 DOM 에 남지 않도록 — #311 교훈).
 //        등급명 + 장식 블러 스켈레톤(가짜 형태, 숫자 없음) + 중앙 결제 CTA 만.
 //   서버 컴포넌트: 잠금 분기가 서버에서 결정되어 민감값(총점/요소 숫자)이 번들에 미포함.
 import type { ReactNode } from 'react';
-import { Price } from '@/components/payments/price-provider';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
 
 interface ScoreLockGateProps {
   isUnlocked: boolean;
@@ -85,6 +85,15 @@ export function ScoreLockGate({
             종합점수와 일주·격국·용신·오행·신살 5요소 산출 내역을 한 번에 열어 드려요.
           </p>
           <div className="mt-4 flex items-center justify-center gap-2.5">
+            {/* 2026-07-19 — 6,600원 인하에 맞춰 취소선 원가 노출. compareAt 을 카탈로그에만 넣고
+                렌더를 안 붙이면 "할인"이 화면에 전달되지 않는다(묶음에서 같은 함정이 있었다).
+                price prop 이 명시로 넘어온 경우는 호출부가 표시를 통제하는 것이라 취소선을 붙이지 않는다. */}
+            {price ? null : (
+              <ComparePrice
+                priceKey="taste_score_total"
+                className="text-[13.2px] font-bold text-[var(--app-copy-soft)] line-through"
+              />
+            )}
             <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1.5 text-[15px] font-bold text-[var(--app-pink-strong)]">
               {price ?? <Price priceKey="taste_score_total" />}
             </span>

@@ -276,7 +276,12 @@ export default function SiteFooter() {
           })}
         </div>
 
-        {/* 회사 정보 — 법적 고지 */}
+        {/* 회사 정보 — 법적 고지.
+            2026-07-19 레이아웃 수정(표시 문구는 무수정): 좁은 화면(≤360px)에서 이 행들이
+            가로로 19px 넘쳤다. dt 가 minWidth 106 + nowrap 인데 dd 에 min-width:0 이 없어
+            flex 아이템이 콘텐츠 폭 아래로 줄지 못한 것(flex 기본 min-width:auto).
+            그 넘침을 가리려고 넣었던 `html, body { overflow-x: hidden }` 이 모바일 세로
+            터치 스크롤을 통째로 죽이고 있었다 — 이 오버플로가 그 버그의 근본 원인이다. */}
         <dl
           className="mt-6 grid gap-x-6 gap-y-2 pt-5 sm:grid-cols-2 lg:grid-cols-3"
           style={{
@@ -285,7 +290,7 @@ export default function SiteFooter() {
           }}
         >
           {companyItems.map((item) => (
-            <div key={item.label} className="flex gap-2">
+            <div key={item.label} className="flex min-w-0 gap-2">
               <dt
                 style={{
                   color: 'rgba(255,255,255,0.46)',
@@ -296,7 +301,10 @@ export default function SiteFooter() {
               >
                 {item.label}
               </dt>
-              <dd className="m-0" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <dd
+                className="m-0 min-w-0"
+                style={{ color: 'rgba(255,255,255,0.7)', overflowWrap: 'anywhere' }}
+              >
                 {item.href ? (
                   <a
                     href={item.href}

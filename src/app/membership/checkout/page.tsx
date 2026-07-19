@@ -10,7 +10,6 @@ import {
   CHECKOUT_PLAN_GUIDE,
   type PlanSlug,
 } from '@/content/moonlight';
-import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   formatWon,
   getMembershipPackage,
@@ -298,7 +297,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
 
   return (
-    <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
+    // 2026-07-18 — 결제창 단순화(20260718 PPTX slide7 "위에 상단 불필요함 중복").
+    //   SiteHeader(전역 내비) + GangiPageHeader("결제") 가 세로로 겹쳐 포커스 체크아웃을 방해했다.
+    //   focused-checkout 이 이미 하단 전역 chrome(dock·FAB)을 걷어내고 있으므로 상단도 동일하게
+    //   header={false} 로 걷고 "결제" 서브헤더만 남긴다(뒤로가기는 GangiPageHeader 가 제공).
+    <AppShell header={false} footer={false} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="결제" backHref="/membership" />
 
@@ -355,12 +358,9 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   {displayPrice}
                 </span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-[15px] text-[var(--app-copy)]">할인 / 쿠폰</span>
-                <span className="text-[15.5px] font-bold text-[var(--app-copy-soft)]">
-                  결제창에서 적용
-                </span>
-              </div>
+              {/* 2026-07-18 — "할인 / 쿠폰" 행 삭제. 쿠폰 기능이 실제로 없어서 값이 늘
+                  "결제창에서 적용" 고정 문구였고, 상품금액과 최종금액이 항상 같은 화면에서
+                  중간에 낀 빈 행이 오해만 키웠다(slide7 "결제 페이지 창 단순화"). */}
               <div
                 className="mt-2 flex items-center justify-between pt-3"
                 style={{ borderTop: '1px solid var(--app-ink)' }}
@@ -375,38 +375,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             </article>
           </section>
 
-          {/* §3 결제 수단 안내 */}
-          <section>
-            <h2 className="text-[18.4px] font-extrabold text-[var(--app-ink)]">결제 수단</h2>
-            <article
-              className="mt-3 flex items-center gap-3 rounded-[14px] border-2 p-3.5"
-              style={{
-                borderColor: 'var(--app-pink)',
-                background: 'var(--app-pink-soft)',
-              }}
-            >
-              <div
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-[16.1px] font-black text-white"
-                style={{ background: 'var(--app-pink)' }}
-                aria-hidden="true"
-              >
-                💳
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
-                  카드 · 계좌이체 결제
-                </div>
-                <p className="mt-0.5 text-[13.2px] text-[var(--app-copy-soft)]">
-                  결제창에서 카드 · 계좌이체 · 간편결제 중 선택
-                </p>
-              </div>
-              <span
-                className="grid h-5 w-5 place-items-center rounded-full"
-                style={{ border: '6px solid var(--app-pink)', background: '#fff' }}
-                aria-hidden="true"
-              />
-            </article>
-          </section>
+          {/* §3 결제 수단 — 2026-07-18 삭제. 여기 있던 카드는 라디오처럼 생겼지만 아무것도
+              선택되지 않는 순수 장식이었고, 진짜 선택기(TossPaymentMethodPicker "결제 방식")가
+              바로 아래 §5 안에 또 있었다. 같은 화면에 결제수단 UI 가 둘 — 하나는 먹통 —
+              이라 slide7 "결제 페이지 창 단순화 · 중복" 지적의 핵심. 실제 선택기만 남긴다. */}
 
           {error === 'payment' ? (
             <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]">
