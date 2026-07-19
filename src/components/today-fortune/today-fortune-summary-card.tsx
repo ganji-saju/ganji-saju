@@ -56,10 +56,10 @@ export function TodayFortuneSummaryCard({
         으로 시작
       </h2>
       <div className="mt-3 flex items-center gap-2">
-        <span className="rounded-full border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-pink-strong)]">
+        <span className="rounded-[12px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-bold text-[var(--app-pink-strong)]">
           {result.oneLine.eyebrow}
         </span>
-        <span className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1 text-[12.6px] font-medium text-[var(--app-copy-muted)]">
+        <span className="rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-1 text-[12.6px] font-medium text-[var(--app-copy-muted)]">
           무료 결과
         </span>
       </div>
@@ -76,7 +76,7 @@ export function TodayFortuneSummaryCard({
       {showAiDisclosure ? (
         <Link
           href="/ai-disclaimer"
-          className="mt-2 inline-flex items-center gap-1 rounded-full border border-[var(--app-line)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[12.6px] text-[var(--app-copy-soft)] hover:text-[var(--app-copy-muted)]"
+          className="mt-2 inline-flex items-center gap-1 rounded-[12px] border border-[var(--app-line)] bg-[var(--app-surface)] px-2.5 py-0.5 text-[12.6px] text-[var(--app-copy-soft)] hover:text-[var(--app-copy-muted)]"
         >
           <span aria-hidden="true">ℹ</span>
           AI 생성 풀이 · 참고용

@@ -278,7 +278,7 @@ function MomentumSummaryRow({
             <a
               key={`${tone}-${flow.month}`}
               href={`#yearly-month-${flow.month}`}
-              className="inline-flex h-7 items-center rounded-full bg-white/70 px-2.5 text-[13.2px] font-extrabold backdrop-blur-sm transition-colors"
+              className="inline-flex h-7 items-center rounded-[8px] bg-white/70 px-2.5 text-[13.2px] font-extrabold backdrop-blur-sm transition-colors"
             >
               {flow.month}월
             </a>
@@ -371,7 +371,7 @@ function YearlyVisualMap({ report }: { report: SajuYearlyReport }) {
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[16.1px] font-extrabold">{flow.month}월</span>
-                  <span className="rounded-full bg-white/70 px-1.5 py-0.5 text-[10.9px] font-extrabold backdrop-blur-sm">
+                  <span className="rounded-[12px] bg-white/70 px-1.5 py-0.5 text-[10.9px] font-extrabold backdrop-blur-sm">
                     {meta.shortLabel}
                   </span>
                 </div>
@@ -428,7 +428,7 @@ function MonthlyFlowCard({
               {/* 2026-05-15 PR 7 응답 2 — Peak/Pitfall 시각 강조 (PR 5 데이터 활용) */}
               {flow.peakKind === 'peak' ? (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
+                  className="inline-flex items-center gap-0.5 rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink-strong)' }}
                 >
                   🚨 PEAK
@@ -436,7 +436,7 @@ function MonthlyFlowCard({
               ) : null}
               {flow.peakKind === 'pitfall' ? (
                 <span
-                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[12.1px] font-extrabold"
+                  className="inline-flex items-center gap-0.5 rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold"
                   style={{ background: '#fff3d6', color: 'var(--app-amber)', border: '1px solid var(--app-amber)' }}
                 >
                   ⚠️ PITFALL
@@ -451,7 +451,7 @@ function MonthlyFlowCard({
             </p>
             <div className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]">{areaLabel}</div>
           </div>
-          <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[12.1px] font-extrabold ${momentumMeta.badgeClassName}`}>
+          <span className={`shrink-0 inline-flex h-7 items-center gap-1 rounded-[8px] border px-2.5 text-[12.1px] font-extrabold ${momentumMeta.badgeClassName}`}>
             <MomentumIcon className="h-3 w-3" aria-hidden="true" />
             {momentumMeta.shortLabel}
           </span>
@@ -507,7 +507,7 @@ function MonthlyFlowCard({
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span
-          className="rounded-full border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
+          className="rounded-[12px] border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           {flow.monthlyGanji ?? `${flow.month}월`}
@@ -590,7 +590,7 @@ function CoreAreaCard({
           </div>
           {item.scoreLabel ? (
             <span
-              className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
+              className="shrink-0 rounded-[12px] border bg-white px-2.5 py-1 text-[12.6px] font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               {item.scoreLabel}
@@ -955,7 +955,7 @@ function ChapterNavigation({
         <button
           type="button"
           onClick={() => onChange((chapter - 1) as YearlyChapter)}
-          className="inline-flex h-10 items-center rounded-full border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
+          className="inline-flex h-10 items-center rounded-[12px] border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           ← 이전
@@ -970,7 +970,7 @@ function ChapterNavigation({
         <button
           type="button"
           onClick={() => onChange((chapter + 1) as YearlyChapter)}
-          className="inline-flex h-10 items-center rounded-full px-4 text-[14.4px] font-extrabold text-white"
+          className="inline-flex h-10 items-center rounded-[12px] px-4 text-[14.4px] font-extrabold text-white"
           style={{
             background: 'var(--app-pink)',
             boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
@@ -1181,7 +1181,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-full border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-[12px] border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           다시 불러오기
@@ -1255,13 +1255,13 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
+                className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
                 style={{ borderColor: 'rgba(184,122,20,0.28)', color: '#b87a14' }}
               >
                 {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {data.cached ? '✓ 저장됨' : '✦ 새로 정리'}
@@ -1287,7 +1287,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           <button
             type="button"
             onClick={() => setReloadToken((value) => value + 1)}
-            className="inline-flex h-8 items-center gap-1 rounded-full border bg-white px-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-8 items-center gap-1 rounded-[8px] border bg-white px-2.5 text-[13.2px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             ↻ 다시 생성
@@ -1354,7 +1354,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
               {interpretation.keywords.map((keyword) => (
                 <span
                   key={keyword}
-                  className="rounded-full border bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy)]"
+                  className="rounded-[12px] border bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy)]"
                   style={{ borderColor: 'var(--app-line)', wordBreak: 'keep-all' }}
                 >
                   {keyword}
@@ -1489,7 +1489,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
           >
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full px-2.5 py-1 text-[12.1px] font-extrabold text-white"
+                className="rounded-[12px] px-2.5 py-1 text-[12.1px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
                   boxShadow: '0 4px 10px rgba(216,27,114,0.28)',
@@ -1498,7 +1498,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 프리미엄 이용권
               </span>
               <span
-                className="rounded-full border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-[12px] border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 별도 열림

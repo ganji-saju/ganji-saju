@@ -161,7 +161,7 @@ export default async function TodayFortuneSharePage({ params, searchParams }: Pr
           {/* 내 운세 CTA */}
           <Link
             href="/today-fortune"
-            className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             내 오늘운세 보러가기 →
           </Link>

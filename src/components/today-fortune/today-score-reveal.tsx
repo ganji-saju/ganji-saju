@@ -117,7 +117,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
           </div>
           {/* 2026-05-15 PR 1 — 등급 라벨 노출 ("무난한 날" / "신중해야 할 날" 등). */}
           <div
-            className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12.6px] font-extrabold"
+            className="mt-0.5 inline-flex items-center gap-1 rounded-[12px] px-2 py-0.5 text-[12.6px] font-extrabold"
             style={{ background: 'rgba(255,255,255,0.22)' }}
           >
             <span aria-hidden="true">{grade.emoji}</span>

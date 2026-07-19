@@ -90,7 +90,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
           {/* §1 Drawn card + 메타 — mockup §3 side-by-side */}
           <article className="rounded-[18px] border border-[var(--app-line)] bg-white p-4">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-[var(--app-ink)] px-2 py-0.5 text-[11.5px] font-extrabold uppercase tracking-[0.04em] text-white">
+              <span className="rounded-[12px] bg-[var(--app-ink)] px-2 py-0.5 text-[11.5px] font-extrabold uppercase tracking-[0.04em] text-white">
                 DRAWN
               </span>
               <span className="text-[13.8px] text-[var(--app-copy-soft)]">
@@ -154,7 +154,7 @@ export default async function TarotResultPage({ searchParams }: Props) {
             <article className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
               <div className="flex items-center gap-1.5 text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                 이 카드가 말하는 것
-                <span className="rounded-full bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10.4px] font-bold normal-case tracking-normal text-[var(--app-pink-strong)]">
+                <span className="rounded-[12px] bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10.4px] font-bold normal-case tracking-normal text-[var(--app-pink-strong)]">
                   {reading.orientation === 'reversed' ? '역방향' : '정방향'}
                 </span>
               </div>
@@ -209,14 +209,14 @@ export default async function TarotResultPage({ searchParams }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={pickHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-4 py-3 text-[15px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] border border-[var(--app-line)] bg-white px-4 py-3 text-[15px] font-bold text-[var(--app-copy-muted)]"
             >
               <RotateCcw className="h-4 w-4" />
               다시 뽑기
             </Link>
             <Link
               href={sajuHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               <Bookmark className="h-4 w-4" />
               사주로 이어보기

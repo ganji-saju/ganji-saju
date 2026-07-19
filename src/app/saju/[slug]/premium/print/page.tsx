@@ -137,7 +137,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
               </span>
               <div className="min-w-0 flex-1">
                 <span
-                  className="rounded-full border bg-white px-2.5 py-0.5 text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
+                  className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{ borderColor: 'var(--app-pink-line)' }}
                 >
                   🔒 PDF 저장 권한 필요
@@ -176,13 +176,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             <div className="relative mt-5 grid gap-2">
               <Link
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 깊은 사주풀이 열기 →
               </Link>
               <Link
                 href={backHref}
-                className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 ← 풀이 화면으로 돌아가기

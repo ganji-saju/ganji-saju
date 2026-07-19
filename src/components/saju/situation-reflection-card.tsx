@@ -84,7 +84,7 @@ export function SituationReflectionCard({
         {items.map((item) => (
           <span
             key={item.key}
-            className="inline-flex items-center gap-0.5 rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[15px] font-bold text-[var(--app-pink-strong)] border"
+            className="inline-flex items-center gap-0.5 rounded-[12px] bg-[var(--app-pink-soft)] px-2 py-0.5 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             <span aria-hidden="true">{item.emoji}</span>
@@ -117,7 +117,7 @@ export function SituationReflectionCard({
         </p>
         <Link
           href={fallbackInputHref}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-full border bg-white px-4 py-2 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-[12px] border bg-white px-4 py-2 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
           현재 상황 입력하기 →
@@ -141,7 +141,7 @@ export function SituationReflectionCard({
         {items.map((item) => (
           <span
             key={item.key}
-            className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[15px] font-bold text-[var(--app-pink-strong)] border"
+            className="inline-flex items-center gap-1 rounded-[12px] bg-white px-3 py-1 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             <span aria-hidden="true">{item.emoji}</span>

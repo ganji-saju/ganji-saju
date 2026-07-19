@@ -69,7 +69,7 @@ export function GroundingKasiSummary({
         {factLines.map((line) => (
           <span
             key={line}
-            className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm leading-6 text-[var(--app-copy-soft)]"
+            className="rounded-[12px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm leading-6 text-[var(--app-copy-soft)]"
           >
             {line}
           </span>

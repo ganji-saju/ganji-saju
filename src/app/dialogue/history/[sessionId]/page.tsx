@@ -52,7 +52,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             <p className="mt-2 text-[15px] text-[var(--app-copy-muted)]">로그인 후 다시 시도해주세요.</p>
             <Link
               href={`/login?next=%2Fdialogue%2Fhistory%2F${sessionId}`}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
             >
               로그인 →
             </Link>
@@ -163,7 +163,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             </h2>
             <Link
               href={`/dialogue/${expertId}`}
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white"
             >
               대화방 열기 →
             </Link>

@@ -204,7 +204,7 @@ function ChapterIntro({
             </p>
             {highlight ? (
               <p
-                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[13.2px] font-extrabold"
+                className="mt-2.5 inline-block rounded-[12px] border px-3 py-1 text-[13.2px] font-extrabold"
                 style={{
                   background: '#fff',
                   borderColor: palette.border,
@@ -216,7 +216,7 @@ function ChapterIntro({
             ) : null}
             {aside ? (
               <p
-                className="mt-2.5 inline-block rounded-full border px-3 py-1 text-[12.6px] font-extrabold"
+                className="mt-2.5 inline-block rounded-[12px] border px-3 py-1 text-[12.6px] font-extrabold"
                 style={{
                   background: 'var(--app-pink-soft)',
                   borderColor: 'var(--app-pink-line)',
@@ -526,7 +526,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 {/* 결제 권한 ✓ 배지 (paid 일 때만) */}
                 {hasLifetimeAccess || yearlyAccessLabel || monthlyAccessLabel ? (
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12.1px] font-extrabold text-white"
+                    className="inline-flex items-center gap-1.5 rounded-[12px] px-2.5 py-1 text-[12.1px] font-extrabold text-white"
                     style={{
                       background: 'var(--app-pink)',
                       boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
@@ -582,7 +582,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 href={`/saju/${slug}/premium/print`}
                 eventName="report_pdf_click"
                 eventParams={{ slug, from: 'premium_hero', status: 'available' }}
-                className="relative mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="relative mt-3 inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 📄 PDF로 저장하기
               </TrackedLink>
@@ -677,7 +677,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span
-                      className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
+                      className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
                       🔒 {lifetimeLabel} 결제 후 열림
@@ -705,7 +705,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span
-                      className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
+                      className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
                       🔒 결제 후 열림
@@ -723,7 +723,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
+                    className="rounded-[12px] px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                     style={{ background: 'var(--app-pink)' }}
                   >
                     VIP
@@ -761,13 +761,13 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium-monthly`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                   >
                     1·2장 함께 열기 →
                   </Link>
                   <Link
                     href={`/membership/checkout?product=year-core&slug=${encodedSlug}&scope=${targetYear}&from=saju-premium-monthly`}
-                    className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
+                    className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                   >
                     올해 핵심 3줄만 {yearCoreLabel}
                   </Link>
@@ -806,7 +806,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span
-                        className="rounded-full px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
+                        className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                         style={{ background: 'rgba(17,17,20,0.78)' }}
                       >
                         🔒 결제 후 열림
@@ -841,7 +841,7 @@ export default async function SajuPremiumPage({ params }: Props) {
               >
                 <div className="flex items-center gap-2">
                   <span
-                    className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
+                    className="rounded-[12px] px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                     style={{ background: 'var(--app-pink)' }}
                   >
                     VIP
@@ -891,7 +891,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href={`/membership/checkout?plan=lifetime&slug=${encodedSlug}&from=saju-premium`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                   >
                     풀이 열기 →
                   </Link>
@@ -900,21 +900,21 @@ export default async function SajuPremiumPage({ params }: Props) {
                     {activeMembershipPlan === 'premium_monthly' ? (
                       <Link
                         href="/my/billing"
-                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
+                        className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                       >
                         ✓ 멤버십 이용 중
                       </Link>
                     ) : (
                       <Link
                         href={`/membership/checkout?plan=premium&slug=${encodedSlug}&from=saju-premium`}
-                        className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
+                        className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                       >
                         멤버십으로 먼저
                       </Link>
                     )}
                     <Link
                       href={REPORT_SAMPLE_HREF}
-                      className="inline-flex items-center justify-center rounded-full border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
+                      className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-3 py-2.5 text-[14.4px] font-bold text-white/85"
                     >
                       샘플 보기
                     </Link>

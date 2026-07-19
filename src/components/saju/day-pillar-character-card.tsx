@@ -32,7 +32,7 @@ export function DayPillarCharacterCard({
           나의 일주
         </div>
         <div
-          className="rounded-full px-2 py-0.5 text-[15px] font-bold"
+          className="rounded-[12px] px-2 py-0.5 text-[15px] font-bold"
           style={{
             background: 'var(--app-pink-soft)',
             color: 'var(--app-pink-strong)',
@@ -101,7 +101,7 @@ export function DayPillarCharacterCard({
                 {profile.strengths.map((strength) => (
                   <li
                     key={strength}
-                    className="rounded-full border px-2.5 py-1 text-[15px] font-bold text-[var(--app-ink)]"
+                    className="rounded-[12px] border px-2.5 py-1 text-[15px] font-bold text-[var(--app-ink)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       borderColor: 'var(--app-pink-line)',

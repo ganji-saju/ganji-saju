@@ -534,7 +534,7 @@ function MobileChrome({
               <Link
                 href="/credits"
                 aria-label={`보유 전 ${creditLabel(user, credits)}`}
-                className="hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13.8px] font-extrabold md:inline-flex"
+                className="hidden h-9 items-center gap-1.5 rounded-[12px] px-3 text-[13.8px] font-extrabold md:inline-flex"
                 style={{
                   background: 'var(--app-pink-soft)',
                   color: 'var(--app-pink-strong)',
@@ -584,7 +584,7 @@ function MobileChrome({
                 <button
                   type="button"
                   onClick={onSignOut}
-                  className="hidden h-9 items-center rounded-full border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)] md:inline-flex"
+                  className="hidden h-9 items-center rounded-[12px] border bg-white px-3.5 text-[14.4px] font-extrabold text-[var(--app-copy-muted)] md:inline-flex"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   로그아웃
@@ -592,7 +592,7 @@ function MobileChrome({
               ) : (
                 <Link
                   href={authHref}
-                  className="hidden h-9 items-center rounded-full px-3.5 text-[14.4px] font-extrabold text-white md:inline-flex"
+                  className="hidden h-9 items-center rounded-[12px] px-3.5 text-[14.4px] font-extrabold text-white md:inline-flex"
                   style={{
                     background: 'var(--app-pink)',
                     boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
@@ -634,7 +634,7 @@ function MobileChrome({
                   href={item.href}
                   data-active={active}
                   className={cn(
-                    'app-top-category-chip shrink-0 rounded-full border px-3 py-1.5 text-base transition-colors',
+                    'app-top-category-chip shrink-0 rounded-[12px] border px-3 py-1.5 text-base transition-colors',
                     active
                       ? 'border-[var(--app-gold)]/40 bg-[var(--app-gold)]/12 text-[var(--app-gold-text)]'
                       : 'border-[var(--app-line)] bg-[var(--app-surface-muted)] text-[var(--app-copy-muted)] hover:border-[var(--app-line-strong)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'

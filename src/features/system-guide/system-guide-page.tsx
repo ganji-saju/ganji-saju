@@ -74,7 +74,7 @@ export function SystemGuidePage() {
                 <div className="mt-auto flex flex-wrap gap-2 pt-5">
                   <Link
                     href={step.primaryHref}
-                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 text-[14px] font-extrabold text-white"
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-4 text-[14px] font-extrabold text-white"
                   >
                     {step.primaryLabel}
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -82,7 +82,7 @@ export function SystemGuidePage() {
                   {step.secondaryHref && step.secondaryLabel ? (
                     <Link
                       href={step.secondaryHref}
-                      className="inline-flex min-h-11 items-center justify-center rounded-full border bg-white px-4 text-[14px] font-extrabold text-[var(--app-copy-muted)]"
+                      className="inline-flex min-h-11 items-center justify-center rounded-[12px] border bg-white px-4 text-[14px] font-extrabold text-[var(--app-copy-muted)]"
                       style={{ borderColor: 'var(--app-line)' }}
                     >
                       {step.secondaryLabel}
@@ -102,7 +102,7 @@ export function SystemGuidePage() {
           <button
             type="button"
             onClick={() => openSystemGuide(0)}
-            className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--app-pink)] px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.26)]"
+            className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.26)]"
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             처음부터 안내 보기

@@ -83,7 +83,7 @@ export default function SampleReportPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -93,7 +93,7 @@ export default function SampleReportPage() {
               {SAMPLE_REPORT_HERO.eyebrow}
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -138,7 +138,7 @@ export default function SampleReportPage() {
             href="/saju/new"
             eventName="sample_report_start_click"
             eventParams={{ from: 'sample_report_hero' }}
-            className="mt-4 inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
+            className="mt-4 inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold"
             style={PRIMARY_BUTTON_STYLE}
           >
             내 깊은 사주풀이 만들기
@@ -187,14 +187,14 @@ export default function SampleReportPage() {
                   href="/saju/new"
                   eventName="sample_report_start_click"
                   eventParams={{ from: 'sample_report_preview_value' }}
-                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
+                  className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold"
                   style={PRIMARY_BUTTON_STYLE}
                 >
                   질문으로 시작하기
                 </TrackedLink>
                 <Link
                   href="/membership"
-                  className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
+                  className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold"
                   style={SECONDARY_BUTTON_STYLE}
                 >
                   상품 보기
@@ -499,14 +499,14 @@ export default function SampleReportPage() {
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Link
               href="/refund-policy"
-              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[14.4px] font-extrabold"
+              className="inline-flex h-10 items-center justify-center rounded-[12px] px-4 text-[14.4px] font-extrabold"
               style={SECONDARY_BUTTON_STYLE}
             >
               환불 정책 자세히
             </Link>
             <Link
               href="/support/faq"
-              className="inline-flex h-10 items-center justify-center rounded-full px-4 text-[14.4px] font-extrabold"
+              className="inline-flex h-10 items-center justify-center rounded-[12px] px-4 text-[14.4px] font-extrabold"
               style={SECONDARY_BUTTON_STYLE}
             >
               자주 묻는 질문
@@ -539,14 +539,14 @@ export default function SampleReportPage() {
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <Link
               href="/saju/new"
-              className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold"
               style={PRIMARY_BUTTON_STYLE}
             >
               내 깊은 사주풀이 만들기
             </Link>
             <Link
               href="/membership"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white/10 px-5 text-[15.5px] font-extrabold text-white backdrop-blur"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-white/10 px-5 text-[15.5px] font-extrabold text-white backdrop-blur"
               style={{ border: '1px solid rgba(255, 255, 255, 0.18)' }}
             >
               상품 보기

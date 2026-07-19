@@ -80,7 +80,7 @@ export function ReadingComfortControl({
             title={item.description}
             onClick={() => selectMode(item.value)}
             className={cn(
-              'inline-flex h-9 items-center justify-center rounded-full px-3 text-sm font-semibold transition-colors',
+              'inline-flex h-9 items-center justify-center rounded-[12px] px-3 text-sm font-semibold transition-colors',
               selected
                 ? 'bg-[var(--app-gold)] text-[var(--app-bg)]'
                 : 'text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]'

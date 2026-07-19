@@ -114,7 +114,7 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href="/membership"
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           멤버십으로 돌아가기
         </Link>
@@ -164,7 +164,7 @@ function SuccessState({
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href={completeHref}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           다음으로 이동 →
         </Link>

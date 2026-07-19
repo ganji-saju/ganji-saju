@@ -204,7 +204,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
             type="button"
             onClick={submit}
             disabled={state === 'submitting'}
-            className="mt-3 w-full rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white disabled:opacity-60"
+            className="mt-3 w-full rounded-[12px] bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white disabled:opacity-60"
           >
             {state === 'submitting' ? '전송 중…' : '피드백 보내기'}
           </button>

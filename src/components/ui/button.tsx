@@ -3,8 +3,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// 2026-07-19 — 공용 버튼을 알약(rounded-full) → **모서리만 살짝 둥근 박스**로.
+//   사용자 요청("타원형 말고 모서리만 살짝 둥근 박스"). 이 컴포넌트가 앱 전역 버튼의
+//   기본값이라 여기를 안 바꾸면 화면마다 알약/사각이 섞인다.
+//   ⚠️ icon* 사이즈는 정사각이라 rounded-full 이 곧 **원형 아이콘 버튼**이다 —
+//   각 size 변형에 rounded-full 을 남겨 원형을 유지한다(cn=twMerge 라 뒤 클래스가 이긴다).
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-all outline-none select-none focus-visible:border-[var(--app-pink)]/55 focus-visible:ring-3 focus-visible:ring-[var(--app-pink)]/24 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-[12px] border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-all outline-none select-none focus-visible:border-[var(--app-pink)]/55 focus-visible:ring-3 focus-visible:ring-[var(--app-pink)]/24 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -26,12 +31,12 @@ const buttonVariants = cva(
         xs: "h-9 gap-1.5 px-3 text-[0.92rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 [&_svg:not([class*='size-'])]:size-3.5",
         sm: "h-10 gap-1.5 px-4 text-[0.96rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 [&_svg:not([class*='size-'])]:size-4",
         lg: "h-[3.35rem] gap-2 px-6 text-[1.08rem] has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
-        icon: "size-12",
+        icon: "size-12 rounded-full",
         "icon-xs":
-          "size-9 in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3.5",
+          "size-9 rounded-full in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3.5",
         "icon-sm":
-          "size-10 in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-[3.35rem]",
+          "size-10 rounded-full in-data-[slot=button-group]:rounded-lg",
+        "icon-lg": "size-[3.35rem] rounded-full",
       },
     },
     defaultVariants: {

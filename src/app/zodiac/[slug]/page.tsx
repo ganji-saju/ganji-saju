@@ -339,7 +339,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
 
             {isPersonalizedMatch ? (
               <div
-                className="relative mt-3 inline-flex rounded-full px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
+                className="relative mt-3 inline-flex rounded-[12px] px-2.5 py-1 text-[11.5px] font-extrabold uppercase tracking-[0.04em]"
                 style={{ background: 'rgba(255,255,255,0.18)' }}
               >
                 ★ 내 띠로 맞춤 표시
@@ -368,7 +368,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                   href={href}
                   // 2026-05-25 — 같은 화면 내 기간 탭 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
                   scroll={false}
-                  className="flex-1 rounded-full border px-2 py-1.5 text-center text-[13.8px] font-bold transition-transform active:scale-95"
+                  className="flex-1 rounded-[12px] border px-2 py-1.5 text-center text-[13.8px] font-bold transition-transform active:scale-95"
                   style={
                     isActive
                       ? {
@@ -511,7 +511,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                       // 2026-05-25 — 같은 화면 내 연생 칩 전환 시 스크롤 위치 유지(맨 위로 튐 방지).
                       scroll={false}
                       aria-pressed={isActive}
-                      className="rounded-full border px-3 py-1.5 text-[14.4px] font-bold transition-transform active:scale-95 no-underline"
+                      className="rounded-[12px] border px-3 py-1.5 text-[14.4px] font-bold transition-transform active:scale-95 no-underline"
                       style={
                         isActive
                           ? {
@@ -544,7 +544,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                       {selectedYear}년생 · {item.label}
                     </div>
                     <span
-                      className="rounded-full bg-white px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-pink-strong)] border"
+                      className="rounded-[12px] bg-white px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-pink-strong)] border"
                       style={{ borderColor: 'var(--app-pink-line)' }}
                     >
                       {selectedByYear.element}
@@ -616,7 +616,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                         <Link
                           key={slug}
                           href={`/zodiac/${slug}`}
-                          className="rounded-full bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)] border no-underline"
+                          className="rounded-[12px] bg-[var(--app-pink-soft)] px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)] border no-underline"
                           style={{ borderColor: 'var(--app-pink-line)' }}
                         >
                           {slugToLabel(slug)}
@@ -639,7 +639,7 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
                         <Link
                           key={slug}
                           href={`/zodiac/${slug}`}
-                          className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-copy-soft)] border no-underline"
+                          className="rounded-[12px] bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-copy-soft)] border no-underline"
                           style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                         >
                           {slugToLabel(slug)}
@@ -671,13 +671,13 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}?from=zodiac` : '/saju/new?from=zodiac'}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 {readingSlug ? '내 사주로 이어보기' : '맞춤 사주로 이어보기'} →
               </Link>
               <Link
                 href="/zodiac"
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 내 띠 다시 확인
               </Link>

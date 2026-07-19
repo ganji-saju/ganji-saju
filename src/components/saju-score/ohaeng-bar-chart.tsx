@@ -69,12 +69,12 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
               <span className="w-8 shrink-0 text-right text-base tabular-nums text-gray-500">{count}개</span>
               <div className="min-w-16 shrink-0">
                 {isLack && (
-                  <span className="whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-sm font-medium text-amber-600">
+                  <span className="whitespace-nowrap rounded-[12px] bg-amber-50 px-2 py-0.5 text-sm font-medium text-amber-600">
                     보강 필요
                   </span>
                 )}
                 {isExcess && (
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium text-gray-500">과다</span>
+                  <span className="rounded-[12px] bg-gray-100 px-2 py-0.5 text-sm font-medium text-gray-500">과다</span>
                 )}
               </div>
             </div>

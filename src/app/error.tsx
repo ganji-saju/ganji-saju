@@ -80,14 +80,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             <RotateCcw className="h-4 w-4" />
             다시 시도하기
           </button>
           <Link
             href="/"
-            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <Home className="h-4 w-4" />

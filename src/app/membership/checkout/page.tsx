@@ -415,7 +415,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   </p>
                   <Link
                     href="/saju/new"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기
                   </Link>
@@ -430,13 +430,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   </p>
                   <Link
                     href={`/saju/new?product=${selectedProduct}`}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기
                   </Link>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     상품 목록으로
                   </Link>
@@ -451,13 +451,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   </p>
                   <Link
                     href={alreadyPurchasedHref}
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     구매한 풀이 열기
                   </Link>
                   <Link
                     href="/my/billing"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     결제 상태 확인
                   </Link>
@@ -474,13 +474,13 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   </p>
                   <Link
                     href="/my/billing"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     결제 내역 보기
                   </Link>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
+                    className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-5 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
                   >
                     멤버십 화면으로
                   </Link>
@@ -516,7 +516,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                   </p>
                   <Link
                     href="/membership"
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
+                    className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     상품 다시 선택
                   </Link>

@@ -227,13 +227,13 @@ export default async function StarSignDetailPage({ params }: Props) {
               </p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 <span
-                  className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold"
+                  className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold"
                   style={{ background: elementHex, color: 'white' }}
                 >
                   {elementLabel}
                 </span>
                 <span
-                  className="rounded-full px-2 py-0.5 text-[12.1px] font-bold"
+                  className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-bold"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1px solid rgba(255,255,255,0.22)',
@@ -242,7 +242,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                   {qualityLabel}
                 </span>
                 <span
-                  className="rounded-full px-2 py-0.5 text-[12.1px] font-bold"
+                  className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-bold"
                   style={{
                     background: 'rgba(255,255,255,0.1)',
                     border: '1px solid rgba(255,255,255,0.22)',
@@ -388,7 +388,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                   {content.strengths.map((s) => (
                     <span
                       key={s}
-                      className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)] border"
+                      className="rounded-[12px] bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)] border"
                       style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                     >
                       {s}
@@ -410,7 +410,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                   {content.weaknesses.map((w) => (
                     <span
                       key={w}
-                      className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-coral)] border"
+                      className="rounded-[12px] bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-coral)] border"
                       style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                     >
                       {w}
@@ -453,7 +453,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-full bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-pink-strong)] border"
+                        className="rounded-[12px] bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-pink-strong)] border"
                         style={{ borderColor: 'var(--app-pink-line)' }}
                       >
                         {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
@@ -471,7 +471,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-full bg-white px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)] border"
+                        className="rounded-[12px] bg-white px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)] border"
                         style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                       >
                         {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
@@ -484,7 +484,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             {/* 2026-05-20 Phase 8-B — 연애 영역 cross-link: 오늘 연애 타로 세 장 */}
             <Link
               href="/tarot/daily?topic=love"
-              className="mt-3 inline-flex w-full items-center justify-between rounded-full border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[14.4px] font-extrabold text-[var(--app-pink-strong)] no-underline"
+              className="mt-3 inline-flex w-full items-center justify-between rounded-[12px] border bg-[var(--app-pink-soft)] px-4 py-2.5 text-[14.4px] font-extrabold text-[var(--app-pink-strong)] no-underline"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
               <span>오늘의 연애 타로 세 장 뽑기</span>
@@ -513,7 +513,7 @@ export default async function StarSignDetailPage({ params }: Props) {
               {content.careerSuggestions.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-ink)] border"
+                  className="rounded-[12px] bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-ink)] border"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   {c}
@@ -695,13 +695,13 @@ export default async function StarSignDetailPage({ params }: Props) {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={`/star-sign/${item.slug}/cross`}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 별자리 × 사주 크로스 보기 →
               </Link>
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 {readingSlug ? '내 사주 풀이' : '사주 입력'}
               </Link>

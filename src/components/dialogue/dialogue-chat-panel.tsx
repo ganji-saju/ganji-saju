@@ -566,13 +566,13 @@ export function DialogueChatPanel({
                   <p className="mt-1 text-sm leading-5 opacity-85">{profileConnection.detail}</p>
                 </div>
                 {profileConnection.status === 'ready' ? (
-                  <span className="w-fit rounded-full border border-current/20 px-3 py-1 text-[12.6px] font-medium">
+                  <span className="w-fit rounded-[12px] border border-current/20 px-3 py-1 text-[12.6px] font-medium">
                     자동 적용
                   </span>
                 ) : (
                   <Link
                     href="/my/profile"
-                    className="w-fit rounded-full border border-[var(--app-gold)]/30 bg-[var(--app-gold)]/10 px-3 py-1 text-[12.6px] font-medium text-[var(--app-gold-text)] transition hover:border-[var(--app-gold)]/55 hover:bg-[var(--app-gold)]/16"
+                    className="w-fit rounded-[12px] border border-[var(--app-gold)]/30 bg-[var(--app-gold)]/10 px-3 py-1 text-[12.6px] font-medium text-[var(--app-gold-text)] transition hover:border-[var(--app-gold)]/55 hover:bg-[var(--app-gold)]/16"
                   >
                     MY 정보 저장
                   </Link>
@@ -702,7 +702,7 @@ export function DialogueChatPanel({
                   key={preset.question}
                   type="button"
                   onClick={() => applyPreset(preset.question)}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-all duration-200 ${
+                  className={`rounded-[12px] border px-3 py-1.5 text-sm transition-all duration-200 ${
                     active
                       ? 'border-[var(--app-gold)]/50 bg-[var(--app-gold)]/14 text-[var(--app-ivory)] shadow-[0_0_0_1px_rgba(210,176,114,0.12)]'
                       : 'border-[var(--app-line)] bg-[var(--app-surface-strong)] text-[var(--app-copy)] hover:-translate-y-0.5 hover:border-[var(--app-gold)]/32 hover:bg-[var(--app-surface)] hover:text-[var(--app-ivory)]'
@@ -728,7 +728,7 @@ export function DialogueChatPanel({
                 <span className="text-sm text-[var(--app-copy-soft)]">멤버십이면 매일 대화를 이어갈 수 있어요.</span>
                 <Link
                   href="/membership"
-                  className="inline-flex items-center gap-1 rounded-full bg-[var(--app-gold)] px-4 py-2 text-sm font-bold text-[var(--app-ink)] transition-transform duration-200 hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-1 rounded-[12px] bg-[var(--app-gold)] px-4 py-2 text-sm font-bold text-[var(--app-ink)] transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   멤버십 보기
                   <span aria-hidden>→</span>

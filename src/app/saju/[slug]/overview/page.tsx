@@ -319,7 +319,7 @@ export default async function SajuOverviewPage({ params }: Props) {
                       </div>
                     </div>
                     <span
-                      className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                       style={{
                         background: 'var(--app-pink-soft)',
                         border: '1px solid var(--app-pink-line)',
@@ -370,13 +370,13 @@ export default async function SajuOverviewPage({ params }: Props) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/deep`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   대운 풀이 열기 →
                 </Link>
                 <Link
                   href="/membership"
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   멤버십 가격 보기
                 </Link>

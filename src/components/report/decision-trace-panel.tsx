@@ -137,7 +137,7 @@ export function DecisionTracePanel({
             <div className="text-base font-semibold text-[var(--app-ivory)]">{title}</div>
             <p className="mt-1 text-sm leading-6 text-[var(--app-copy-soft)]">{description}</p>
           </div>
-          <span className="rounded-full border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm text-[var(--app-copy-soft)]">
+          <span className="rounded-[12px] border border-[var(--app-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-sm text-[var(--app-copy-soft)]">
             펼쳐서 보기
           </span>
         </div>
@@ -158,7 +158,7 @@ export function DecisionTracePanel({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="text-base font-semibold text-[var(--app-ivory)]">{item.title}</div>
-                    <span className={cn('rounded-full border px-3 py-1 text-sm leading-6', confidence.className)}>
+                    <span className={cn('rounded-[12px] border px-3 py-1 text-sm leading-6', confidence.className)}>
                       {confidence.label}
                     </span>
                   </div>

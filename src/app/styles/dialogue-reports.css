@@ -135,7 +135,7 @@
   width: 100%;
   resize: vertical;
   border: 1px solid var(--app-line);
-  border-radius: 9999px;
+  border-radius: 10px;
   background: #fafafb;
   padding: 0.76rem 1rem;
   color: var(--app-ink);
@@ -158,7 +158,7 @@
 .gangi-chat-send {
   min-height: 2.85rem;
   border: 0;
-  border-radius: 9999px;
+  border-radius: 10px;
   background: var(--app-pink);
   padding-inline: 1rem;
   color: #ffffff;

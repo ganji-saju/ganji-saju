@@ -68,7 +68,7 @@ export default function InterpretationPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -78,7 +78,7 @@ export default function InterpretationPage() {
               해석 허브
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',

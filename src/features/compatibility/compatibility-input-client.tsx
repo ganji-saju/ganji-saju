@@ -273,8 +273,8 @@ function SavedProfileQuickFill({
                   title={profile.detail}
                   className={
                     group.tone === 'jade'
-                      ? 'shrink-0 rounded-full border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-base font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
-                      : 'shrink-0 rounded-full border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-base font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
+                      ? 'shrink-0 rounded-[12px] border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-base font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
+                      : 'shrink-0 rounded-[12px] border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-base font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
                   }
                 >
                   {profile.nickname}
@@ -859,7 +859,7 @@ export function CompatibilityInputClient({
           <button
             type="button"
             onClick={submitManualCompatibility}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             style={{ background: 'var(--app-pink)' }}
           >
             이 정보로 궁합 보기 →
@@ -874,7 +874,7 @@ export function CompatibilityInputClient({
           <button
             type="button"
             onClick={submitManualCompatibility}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             style={{ background: 'var(--app-pink)' }}
           >
             이 정보로 궁합 보기 →

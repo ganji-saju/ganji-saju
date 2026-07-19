@@ -169,7 +169,7 @@ export function TodayFortuneResultClient({
               개인정보가 담긴 결과라 공개 URL로 다시 불러오지 않습니다. 오늘운세에서 한 번 더 눌러주세요.
             </p>
             <Link href={`/today-fortune?concern=${concernId}`} className="mt-5 inline-flex">
-              <span className="rounded-full bg-[var(--app-pink)] px-5 py-3 text-base font-bold text-white">
+              <span className="rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-base font-bold text-white">
                 오늘운세 다시 보기
               </span>
             </Link>
@@ -215,7 +215,7 @@ export function TodayFortuneResultClient({
                   시니어 UI 대형 터치 영역 pink pill. */}
               <Link
                 href="/saju/new"
-                className="flex items-center justify-center gap-2 rounded-full bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
+                className="flex items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
               >
                 이 정보로 내 사주 보기
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />

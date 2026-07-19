@@ -42,7 +42,7 @@ export function SajuNarrativeCard({ narrative }: { narrative: SajuNarrative }) {
           {narrative.chips.map((chip) => (
             <li
               key={`${chip.label}-${chip.value}`}
-              className="rounded-full border px-2.5 py-1 text-[15px] font-bold"
+              className="rounded-[12px] border px-2.5 py-1 text-[15px] font-bold"
               style={{
                 background: 'var(--app-pink-soft)',
                 borderColor: 'var(--app-pink-line)',

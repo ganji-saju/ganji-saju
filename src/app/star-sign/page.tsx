@@ -87,7 +87,7 @@ export default async function StarSignPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-sky)',
                 background: 'rgba(56, 189, 248, 0.1)',
@@ -97,7 +97,7 @@ export default async function StarSignPage() {
               별자리
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -187,13 +187,13 @@ export default async function StarSignPage() {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link
                   href={`/star-sign/${featured.slug}`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-4 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   상세 흐름 보기 →
                 </Link>
                 <Link
                   href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-4 py-2.5 text-[15px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-4 py-2.5 text-[15px] font-bold text-white/85"
                 >
                   {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'}
                 </Link>
@@ -431,7 +431,7 @@ export default async function StarSignPage() {
                       <Link
                         key={m.slug}
                         href={`/star-sign/${m.slug}`}
-                        className="rounded-full border bg-white px-2.5 py-0.5 text-[12.6px] font-bold text-[var(--app-ink)]"
+                        className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[12.6px] font-bold text-[var(--app-ink)]"
                         style={{ borderColor: 'var(--app-line)' }}
                       >
                         {m.meta.symbol} {m.item.label.replace('자리', '')}
@@ -468,13 +468,13 @@ export default async function StarSignPage() {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
               </Link>
               <Link
                 href="/star-sign/compat"
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 12×12 매트릭스
               </Link>

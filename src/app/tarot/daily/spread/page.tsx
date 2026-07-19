@@ -145,7 +145,7 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
                       <span className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
                         {entry.position}
                       </span>
-                      <span className="rounded-full bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10.4px] font-bold text-[var(--app-pink-strong)]">
+                      <span className="rounded-[12px] bg-[var(--app-pink-soft)] px-1.5 py-0.5 text-[10.4px] font-bold text-[var(--app-pink-strong)]">
                         {entry.reading.orientation === 'reversed' ? '역방향' : '정방향'}
                       </span>
                     </div>
@@ -208,14 +208,14 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={pickHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-4 py-3 text-[15px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] border border-[var(--app-line)] bg-white px-4 py-3 text-[15px] font-bold text-[var(--app-copy-muted)]"
             >
               <RotateCcw className="h-4 w-4" />
               다시 뽑기
             </Link>
             <Link
               href={sajuHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               <Bookmark className="h-4 w-4" />
               사주로 이어보기

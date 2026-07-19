@@ -630,7 +630,7 @@
 .gangi-sub-eyebrow {
   display: inline-flex;
   margin: 0 0 0.75rem;
-  border-radius: 9999px;
+  border-radius: 10px;
   background: var(--app-pink-soft);
   padding: 0.38rem 0.75rem;
   color: var(--app-pink-strong);
@@ -701,7 +701,7 @@
 .gangi-pill {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  border-radius: 10px;
   border: 1px solid var(--app-pink-line);
   background: var(--app-pink-soft);
   padding: 0.35rem 0.72rem;
@@ -1040,7 +1040,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border-radius: 9999px;
+  border-radius: 10px;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
   font-weight: var(--app-type-button);
@@ -1419,7 +1419,7 @@
 
 .gangi-result-card span {
   display: inline-flex;
-  border-radius: 9999px;
+  border-radius: 10px;
   background: var(--app-pink-soft);
   padding: 0.28rem 0.6rem;
   color: var(--app-pink-strong);
@@ -1549,7 +1549,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--app-line);
-  border-radius: 9999px;
+  border-radius: 10px;
   background: #ffffff;
   padding-inline: 1.05rem;
   color: rgba(17, 17, 20, 0.62);

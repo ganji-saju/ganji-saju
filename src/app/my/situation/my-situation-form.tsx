@@ -62,7 +62,7 @@ function ChipGroup<T extends string>({
               key={option.value}
               type="button"
               onClick={() => onChange(selected ? null : option.value)}
-              className="rounded-full border px-3.5 py-1.5 text-[14.4px] font-bold transition-all active:scale-95"
+              className="rounded-[12px] border px-3.5 py-1.5 text-[14.4px] font-bold transition-all active:scale-95"
               style={
                 selected
                   ? {
@@ -232,7 +232,7 @@ export function MySituationForm({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-full border px-4 py-3 text-[16.1px] font-extrabold text-white transition-transform active:scale-95 disabled:opacity-60"
+          className="rounded-[12px] border px-4 py-3 text-[16.1px] font-extrabold text-white transition-transform active:scale-95 disabled:opacity-60"
           style={{
             background: 'var(--app-pink-strong)',
             borderColor: 'var(--app-pink-strong)',
@@ -245,7 +245,7 @@ export function MySituationForm({
             type="button"
             onClick={handleClear}
             disabled={saving}
-            className="rounded-full border bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
+            className="rounded-[12px] border bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             저장된 정보 모두 지우기

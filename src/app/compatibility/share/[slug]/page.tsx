@@ -117,7 +117,7 @@ export default async function CompatibilitySharePage({ params, searchParams }: P
         <section className="px-1">
           <Link
             href={`/compatibility/input?relationship=${selected.slug}`}
-            className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             우리 궁합도 보러가기 →
           </Link>

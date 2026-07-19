@@ -138,7 +138,7 @@ function MonthChip({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-8 items-center justify-center rounded-full px-3 text-[13.8px] font-extrabold transition-all"
+      className="inline-flex h-8 items-center justify-center rounded-[8px] px-3 text-[13.8px] font-extrabold transition-all"
       style={{
         background: active ? 'var(--app-pink)' : '#fff',
         borderWidth: 1,
@@ -235,7 +235,7 @@ function ToneSummaryCard({
               key={`${tone}-${entry.isoDate}`}
               type="button"
               onClick={() => onSelect(entry.day)}
-              className={`rounded-full border px-2.5 py-1 text-[13.2px] font-extrabold transition-transform active:scale-95 ${meta.badgeClassName}`}
+              className={`rounded-[12px] border px-2.5 py-1 text-[13.2px] font-extrabold transition-transform active:scale-95 ${meta.badgeClassName}`}
             >
               {formatCompactDay(entry)}
             </button>
@@ -332,7 +332,7 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
           </h3>
           {/* 2026-05-15 — 그 날의 일진 ganzi 노출 (한자 + 한글 병기). 매일 다름. */}
           {entry.iljinGanzi ? (
-            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-ink)]" style={{ border: '1px solid var(--app-pink-line)' }}>
+            <div className="mt-1 inline-flex items-center gap-1 rounded-[12px] bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-ink)]" style={{ border: '1px solid var(--app-pink-line)' }}>
               <span>일진</span>
               <span style={{ fontFamily: 'var(--font-han)' }}>
                 {entry.iljinKorean ? `${entry.iljinKorean}(${entry.iljinGanzi})` : entry.iljinGanzi}
@@ -357,7 +357,7 @@ function DayFocusPanel({ entry }: { entry: FortuneCalendarMonthReport['days'][nu
             return (
               <span
                 key={`${s.name}-${idx}`}
-                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold"
+                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold"
                 style={{ background: tone.bg, borderColor: tone.border, color: tone.color }}
               >
                 {s.name}
@@ -430,7 +430,7 @@ function CalendarHintGroup({
         <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
           {title}
         </div>
-        <span className={`rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold ${TONE_META[tone].badgeClassName}`}>
+        <span className={`rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold ${TONE_META[tone].badgeClassName}`}>
           {TONE_META[tone].label}
         </span>
       </div>
@@ -643,7 +643,7 @@ export default function FortuneCalendarPanel({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full px-2.5 py-0.5 text-[11.5px] font-extrabold text-white"
+                className="rounded-[12px] px-2.5 py-0.5 text-[11.5px] font-extrabold text-white"
                 style={{
                   background: hasLifetimeAccess ? 'var(--app-pink)' : '#4a5cb8',
                   boxShadow: hasLifetimeAccess
@@ -654,12 +654,12 @@ export default function FortuneCalendarPanel({
                 {hasLifetimeAccess ? '✓ 소장권' : calendarMemberFree ? '멤버십 포함' : <>월 <Price priceKey="taste_monthly_calendar" /></>}
               </span>
               {data?.access === 'month_unlock' ? (
-                <span className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
+                <span className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
                   ✓ 해제된 달
                 </span>
               ) : null}
               {data?.access === 'product_unlock' ? (
-                <span className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
+                <span className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-jade)]" style={{ borderColor: 'rgba(45,135,88,0.28)' }}>
                   ✓ 구매한 달
                 </span>
               ) : null}
@@ -698,7 +698,7 @@ export default function FortuneCalendarPanel({
           {(['decision', 'good', 'average', 'caution'] as FortuneCalendarTone[]).map((tone) => (
             <span
               key={tone}
-              className={`rounded-full border px-2.5 py-1 text-[12.1px] font-extrabold ${TONE_META[tone].badgeClassName}`}
+              className={`rounded-[12px] border px-2.5 py-1 text-[12.1px] font-extrabold ${TONE_META[tone].badgeClassName}`}
             >
               {TONE_META[tone].label}
             </span>
@@ -774,7 +774,7 @@ export default function FortuneCalendarPanel({
                 </p>
               </div>
               {remaining !== null ? (
-                <div className="shrink-0 rounded-full border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]" style={{ borderColor: 'var(--app-line)' }}>
+                <div className="shrink-0 rounded-[12px] border bg-white px-2.5 py-1 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]" style={{ borderColor: 'var(--app-line)' }}>
                   잔여 전 {remaining}
                 </div>
               ) : null}

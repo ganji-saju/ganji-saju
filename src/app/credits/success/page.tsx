@@ -106,7 +106,7 @@ function ErrorState({ errorMessage }: { errorMessage: string }) {
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href="/credits"
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           전 잔액으로
         </Link>
@@ -142,7 +142,7 @@ function SuccessState({ coins }: { coins: number }) {
       <div className="mx-auto grid w-full max-w-md gap-2 px-4 pt-2">
         <Link
           href="/today-fortune"
-          className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
         >
           오늘 운세 보러 가기 →
         </Link>

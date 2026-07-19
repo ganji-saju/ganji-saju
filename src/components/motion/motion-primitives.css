@@ -377,7 +377,7 @@
 .motion-modal-close {
   margin-top: 0.5rem;
   padding: 0.4rem 0.8rem;
-  border-radius: 999px;
+  border-radius: 10px;
   border: 1px solid var(--app-line);
   background: #fff;
   font-size: 12px;

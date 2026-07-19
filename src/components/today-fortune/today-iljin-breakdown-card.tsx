@@ -117,7 +117,7 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
                 <div className="text-[12.1px] text-[var(--app-copy-soft)]">{row.detail}</div>
               </div>
               <div
-                className="shrink-0 rounded-full px-2.5 py-0.5 text-[14.4px] font-extrabold tabular-nums"
+                className="shrink-0 rounded-[12px] px-2.5 py-0.5 text-[14.4px] font-extrabold tabular-nums"
                 style={{
                   background: val > 0 ? 'rgba(45,135,88,0.10)' : val < 0 ? 'rgba(220,79,79,0.10)' : 'transparent',
                   color: valueColor(val),

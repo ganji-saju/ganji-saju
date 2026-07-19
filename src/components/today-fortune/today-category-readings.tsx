@@ -186,7 +186,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
                   </span>
                 </div>
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-[13.8px] font-extrabold text-white"
+                  className="rounded-[12px] px-2.5 py-0.5 text-[13.8px] font-extrabold text-white"
                   style={{ background: meta.accent }}
                 >
                   {value}

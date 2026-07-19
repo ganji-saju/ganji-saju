@@ -173,7 +173,7 @@ export function SystemGuideOnboarding({
           <Link
             href={step.primaryHref}
             onClick={() => onNavigate(stepIndex, step.primaryHref)}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
+            className="inline-flex min-h-11 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16px] font-extrabold text-white"
           >
             {step.primaryLabel}
           </Link>
@@ -182,7 +182,7 @@ export function SystemGuideOnboarding({
             <Link
               href={step.secondaryHref}
               onClick={() => onNavigate(stepIndex, step.secondaryHref!)}
-              className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
+              className="inline-flex min-h-11 items-center justify-center rounded-[12px] px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
             >
               {step.secondaryLabel}
             </Link>
@@ -194,7 +194,7 @@ export function SystemGuideOnboarding({
             <button
               type="button"
               onClick={() => moveTo(stepIndex - 1)}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border bg-white px-4 font-extrabold text-[var(--app-copy-muted)]"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-[12px] border bg-white px-4 font-extrabold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               이전
@@ -204,7 +204,7 @@ export function SystemGuideOnboarding({
             <button
               type="button"
               onClick={() => moveTo(stepIndex + 1)}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full border bg-white px-4 font-extrabold text-[var(--app-ink)]"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-[12px] border bg-white px-4 font-extrabold text-[var(--app-ink)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               다음
@@ -213,7 +213,7 @@ export function SystemGuideOnboarding({
             <Link
               href="/"
               onClick={onComplete}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-[var(--app-pink)] px-4 font-extrabold text-white"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 font-extrabold text-white"
             >
               간지사주 시작하기
             </Link>

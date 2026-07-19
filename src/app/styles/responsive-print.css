@@ -560,7 +560,7 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  border-radius: 9999px;
+  border-radius: 10px;
   border: 1px solid rgba(212, 176, 114, 0.24);
   background: rgba(212, 176, 114, 0.1);
   padding-inline: 0.75rem;

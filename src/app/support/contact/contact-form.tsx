@@ -61,7 +61,7 @@ export function ContactForm() {
             setTitle('');
             setBody('');
           }}
-          className="mt-4 inline-flex items-center justify-center rounded-full border px-5 py-2 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
+          className="mt-4 inline-flex items-center justify-center rounded-[12px] border px-5 py-2 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           새 문의 작성
@@ -87,7 +87,7 @@ export function ContactForm() {
                 key={c.value}
                 type="button"
                 onClick={() => setCategory(c.value)}
-                className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
+                className="rounded-[12px] border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
                 style={{
                   background: isActive ? 'var(--app-pink)' : 'white',
                   color: isActive ? 'white' : 'var(--app-copy-muted)',
@@ -153,7 +153,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={submitState === 'submitting' || !title.trim() || !body.trim() || !email.trim()}
-        className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white disabled:opacity-60"
+        className="mt-2 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white disabled:opacity-60"
       >
         {submitState === 'submitting' ? '여는 중…' : '문의 보내기 →'}
       </button>

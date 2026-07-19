@@ -37,7 +37,7 @@ function LuckyRow({ icon, label, items, accent }: RowProps) {
           {items.map((item, idx) => (
             <span
               key={`${item}-${idx}`}
-              className="rounded-full border px-2.5 py-0.5 text-[13.2px] font-bold"
+              className="rounded-[12px] border px-2.5 py-0.5 text-[13.2px] font-bold"
               style={{
                 borderColor: accent ? `${accent}33` : 'var(--app-line)',
                 background: accent ? `${accent}10` : 'white',
@@ -81,7 +81,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
         </div>
         {unlucky ? (
           <span
-            className="rounded-full border px-2 py-0.5 text-[11.5px] font-extrabold"
+            className="rounded-[12px] border px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{
               borderColor: 'rgba(220,79,79,0.32)',
               background: 'rgba(220,79,79,0.08)',

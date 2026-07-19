@@ -68,7 +68,7 @@ export function TodaySajuChartCard({ chart }: Props) {
         </div>
         {chart.todayGanzi ? (
           <span
-            className="rounded-full px-2.5 py-1 text-[12.1px] font-extrabold text-white"
+            className="rounded-[12px] px-2.5 py-1 text-[12.1px] font-extrabold text-white"
             style={{ background: 'var(--app-ink)' }}
           >
             오늘 일진 · {todayKor || chart.todayGanzi}({chart.todayGanzi})
@@ -215,7 +215,7 @@ export function TodaySajuChartCard({ chart }: Props) {
               return (
                 <span
                   key={`${s.name}-${idx}`}
-                  className="rounded-full border px-2 py-0.5 text-[12.6px] font-bold"
+                  className="rounded-[12px] border px-2 py-0.5 text-[12.6px] font-bold"
                   style={{ background: tone.bg, borderColor: tone.border, color: tone.color }}
                   title={s.hint}
                 >

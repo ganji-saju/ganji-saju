@@ -237,7 +237,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                   {cross.combinedKeywords.map((kw) => (
                     <span
                       key={kw}
-                      className="rounded-full border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-pink-strong)]"
                       style={{ borderColor: 'var(--app-pink-line)' }}
                     >
                       {kw}
@@ -333,7 +333,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 </p>
                 <Link
                   href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   내 사주 풀이로 이어보기 →
                 </Link>
@@ -376,7 +376,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                   {content.strengths.map((s) => (
                     <span
                       key={s}
-                      className="rounded-full border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)]"
+                      className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[13.2px] font-bold text-[var(--app-jade)]"
                       style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                     >
                       {s}
@@ -407,7 +407,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 </p>
                 <Link
                   href="/saju/new"
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   사주 정보 입력하기 →
                 </Link>
@@ -418,7 +418,7 @@ export default async function StarSignCrossPage({ params }: Props) {
           {/* §Back to detail */}
           <Link
             href={`/star-sign/${item.slug}`}
-            className="block rounded-full border bg-white px-4 py-2.5 text-center text-[15px] font-bold text-[var(--app-copy-muted)]"
+            className="block rounded-[12px] border bg-white px-4 py-2.5 text-center text-[15px] font-bold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             ← {item.label} 별자리로 돌아가기

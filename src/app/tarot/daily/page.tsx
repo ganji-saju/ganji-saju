@@ -89,7 +89,7 @@ export default async function DailyTarotPage() {
               세 장을 골라 탭하세요
             </p>
             <div className="relative mt-4 flex justify-center">
-              <span className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">
+              <span className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">
                 카드 뽑으러 가기 →
               </span>
             </div>

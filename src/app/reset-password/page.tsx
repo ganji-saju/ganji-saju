@@ -290,7 +290,7 @@ function ResetPasswordContent() {
             type="submit"
             form="reset-password-form"
             disabled={!isReady || isSubmitting || isSaved}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
           >
             {isSubmitting ? '저장 중...' : isSaved ? '저장됨' : '비밀번호 변경 완료'}
           </button>

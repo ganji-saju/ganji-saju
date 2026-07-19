@@ -174,7 +174,7 @@ function BannerBody({
           <p className="mt-2 text-[14.4px] leading-[1.65] text-white/85">{description}</p>
         ) : null}
         {ctaLabel ? (
-          <span className="mt-3.5 inline-flex h-9 items-center rounded-full bg-white/20 px-3.5 text-[15px] font-extrabold backdrop-blur-sm">
+          <span className="mt-3.5 inline-flex h-9 items-center rounded-[12px] bg-white/20 px-3.5 text-[15px] font-extrabold backdrop-blur-sm">
             {ctaLabel} →
           </span>
         ) : null}

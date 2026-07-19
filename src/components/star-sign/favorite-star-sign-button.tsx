@@ -46,7 +46,7 @@ export function FavoriteStarSignButton({
     return (
       <Link
         href={`/login?next=${encodeURIComponent(`/star-sign/${slug}`)}`}
-        className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[13.2px] font-bold text-[var(--app-copy-muted)]"
+        className="inline-flex items-center gap-1.5 rounded-[12px] border bg-white px-3.5 py-1.5 text-[13.2px] font-bold text-[var(--app-copy-muted)]"
         style={{ borderColor: 'var(--app-line)' }}
       >
         <span aria-hidden="true">♡</span>
@@ -81,7 +81,7 @@ export function FavoriteStarSignButton({
       type="button"
       onClick={handleToggle}
       disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13.2px] font-bold transition-transform active:scale-95 disabled:opacity-60"
+      className="inline-flex items-center gap-1.5 rounded-[12px] border px-3.5 py-1.5 text-[13.2px] font-bold transition-transform active:scale-95 disabled:opacity-60"
       style={
         isFavorited
           ? {

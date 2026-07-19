@@ -156,7 +156,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
           <div className="grid gap-2">
             <Link
               href={primaryHref}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               {slug && planSlug === 'lifetime' ? '열린 보관형 리포트 보기 →' : `${completeGuide.primaryLabel} →`}
             </Link>

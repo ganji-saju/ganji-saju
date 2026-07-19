@@ -186,7 +186,7 @@ export default async function MembershipPage({
                       </div>
                       {isActive ? (
                         <span
-                          className="rounded-full px-1.5 py-0.5 text-[10.9px] font-extrabold text-white"
+                          className="rounded-[12px] px-1.5 py-0.5 text-[10.9px] font-extrabold text-white"
                           style={{ background: 'var(--app-jade)' }}
                         >
                           이용 중
@@ -304,7 +304,7 @@ export default async function MembershipPage({
                     </p>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       border: '1px solid var(--app-pink-line)',
@@ -349,7 +349,7 @@ export default async function MembershipPage({
                     </p>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                    className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                     style={{
                       background: 'var(--app-pink-soft)',
                       border: '1px solid var(--app-pink-line)',
@@ -366,7 +366,7 @@ export default async function MembershipPage({
           <div>
             <Link
               href={`/membership/checkout?plan=${featuredPlan?.slug ?? 'premium'}&from=membership`}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               {featuredPlanLabel} 시작 →
             </Link>

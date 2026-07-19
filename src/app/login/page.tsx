@@ -466,7 +466,7 @@ function GatewayView({
           <button
             type="button"
             onClick={onOpenSignup}
-            className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
+            className="inline-flex h-11 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
             처음 오셨나요? 이메일로 회원가입 →
@@ -474,7 +474,7 @@ function GatewayView({
           <button
             type="button"
             onClick={onOpenRecover}
-            className="inline-flex h-10 items-center justify-center rounded-full border bg-white px-5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
+            className="inline-flex h-10 items-center justify-center rounded-[12px] border bg-white px-5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
             style={{ borderColor: 'var(--app-line)' }}
           >
             비밀번호를 잊으셨나요?
@@ -1008,7 +1008,7 @@ function LoginContent({
             setErrorMessage('');
             setStatusMessage('');
           }}
-          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
         >
           ← SNS 로그인으로 돌아가기
         </button>
@@ -1020,7 +1020,7 @@ function LoginContent({
             setErrorMessage('');
             setStatusMessage('');
           }}
-          className="mb-2 inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
+          className="mb-2 inline-flex h-9 items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-4 text-sm font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink)]/35 hover:text-[var(--app-pink-strong)]"
         >
           로그인 화면으로 돌아가기
         </button>

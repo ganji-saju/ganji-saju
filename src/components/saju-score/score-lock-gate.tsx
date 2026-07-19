@@ -94,12 +94,12 @@ export function ScoreLockGate({
                 className="text-[13.2px] font-bold text-[var(--app-copy-soft)] line-through"
               />
             )}
-            <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1.5 text-[15px] font-bold text-[var(--app-pink-strong)]">
+            <span className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-1.5 text-[15px] font-bold text-[var(--app-pink-strong)]">
               {price ?? <Price priceKey="taste_score_total" />}
             </span>
             <a
               href={checkoutHref}
-              className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-11 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
             >
               점수 공개하고 보기
             </a>

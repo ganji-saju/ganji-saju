@@ -188,7 +188,7 @@ function CreditsPageContent() {
                 </p>
                 <Link
                   href="/membership"
-                  className="mt-2 inline-flex rounded-full bg-[var(--app-pink)] px-4 py-2 text-[13.8px] font-extrabold text-white"
+                  className="mt-2 inline-flex rounded-[12px] bg-[var(--app-pink)] px-4 py-2 text-[13.8px] font-extrabold text-white"
                 >
                   멤버십 알아보기
                 </Link>
@@ -205,7 +205,7 @@ function CreditsPageContent() {
               <div className="font-extrabold text-[var(--app-ink)]">로그인하면 잔액을 확인할 수 있습니다</div>
               <Link
                 href={`/login?next=${encodeURIComponent(`/credits?from=${entrySource}`)}`}
-                className="mt-2 inline-flex rounded-full bg-[var(--app-pink)] px-4 py-2 text-[13.8px] font-extrabold text-white"
+                className="mt-2 inline-flex rounded-[12px] bg-[var(--app-pink)] px-4 py-2 text-[13.8px] font-extrabold text-white"
               >
                 로그인하기
               </Link>

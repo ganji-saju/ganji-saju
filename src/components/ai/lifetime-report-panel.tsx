@@ -376,20 +376,20 @@ function MajorLuckTimeline({
               <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span
-                    className="rounded-full border bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
+                    className="rounded-[12px] border bg-white px-2 py-0.5 text-[12.1px] font-extrabold text-[var(--app-copy-muted)]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     {cycle.ageLabel}
                   </span>
                   <span
-                    className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
+                    className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                     style={{ background: palette.accent }}
                   >
                     {cycle.phase}
                   </span>
                   {cycle.isCurrent ? (
                     <span
-                      className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold text-white"
+                      className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                       style={{
                         background: 'var(--app-ink)',
                         boxShadow: '0 4px 10px rgba(15,23,42,0.22)',
@@ -401,7 +401,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 2 — 12운성 chip (PR 6 산출 활용) */}
                   {cycle.twelveStage ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
+                      className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#eef0f8',
                         borderColor: 'rgba(82, 102, 162, 0.22)',
@@ -414,7 +414,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 2 — 원진 chip (사주 원국 자리와 원진 페어 발생 시) */}
                   {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
+                      className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#fff3d6',
                         borderColor: 'rgba(212, 148, 38, 0.32)',
@@ -428,7 +428,7 @@ function MajorLuckTimeline({
                   {/* 2026-05-15 PR 7 응답 3 — 교운기(交運期) chip. 대운 진입/퇴장 ±1년 사용자. */}
                   {cycle.transitionPhase === 'entering' ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
+                      className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#e8f5ee',
                         borderColor: 'rgba(45, 135, 88, 0.32)',
@@ -441,7 +441,7 @@ function MajorLuckTimeline({
                   ) : null}
                   {cycle.transitionPhase === 'leaving' ? (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold"
+                      className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold"
                       style={{
                         background: '#fdecec',
                         borderColor: 'rgba(198, 69, 69, 0.32)',
@@ -657,7 +657,7 @@ function LifetimeSectionBody({
               {report.strengthBalance.balanceGuide.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
+                  className="rounded-[12px] border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   {simplifySajuCopy(item)}
@@ -687,7 +687,7 @@ function LifetimeSectionBody({
                 {report.patternAndYongsin.supportSymbols.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border px-2.5 py-1 text-[13.2px] font-extrabold"
+                    className="rounded-[12px] border px-2.5 py-1 text-[13.2px] font-extrabold"
                     style={{
                       background: '#e8f5ee',
                       borderColor: 'rgba(45,135,88,0.22)',
@@ -710,7 +710,7 @@ function LifetimeSectionBody({
                 {report.patternAndYongsin.cautionSymbols.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border px-2.5 py-1 text-[13.2px] font-extrabold"
+                    className="rounded-[12px] border px-2.5 py-1 text-[13.2px] font-extrabold"
                     style={{
                       background: '#fdecec',
                       borderColor: 'rgba(198,69,69,0.22)',
@@ -763,7 +763,7 @@ function LifetimeSectionBody({
             {report.healthRhythm.habitPoints.map((item) => (
               <span
                 key={item}
-                className="rounded-full border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
+                className="rounded-[12px] border bg-white px-3 py-1.5 text-[13.2px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {item}
@@ -928,7 +928,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="mt-4 inline-flex h-11 items-center justify-center gap-1.5 rounded-full border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
+          className="mt-4 inline-flex h-11 items-center justify-center gap-1.5 rounded-[12px] border bg-white px-4 text-[15px] font-extrabold text-[var(--app-ink)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <RefreshCw className="h-4 w-4" />
@@ -973,13 +973,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
+                className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 {data.counselorId === 'male' ? '남선생' : '여선생'}
               </span>
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
+                className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 ✦ 깊은 풀이
@@ -1005,7 +1005,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <button
           type="button"
           onClick={() => setReloadToken((value) => value + 1)}
-          className="relative mt-4 inline-flex h-9 items-center gap-1.5 rounded-full border bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy-muted)]"
+          className="relative mt-4 inline-flex h-9 items-center gap-1.5 rounded-[12px] border bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy-muted)]"
           style={{ borderColor: 'var(--app-line)' }}
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -1044,7 +1044,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             {interpretation.keywords.slice(0, 6).map((keyword) => (
               <span
                 key={keyword}
-                className="rounded-full border bg-white px-2.5 py-1 text-[13.2px] font-bold text-[var(--app-copy)]"
+                className="rounded-[12px] border bg-white px-2.5 py-1 text-[13.2px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {keyword}
@@ -1195,13 +1195,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
       >
         <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
+            className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{ borderColor: 'rgba(74,92,184,0.22)', color: '#4a5cb8' }}
           >
             부록
           </span>
           <span
-            className="rounded-full border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
+            className="rounded-[12px] border bg-white px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{ borderColor: 'rgba(74,92,184,0.22)', color: '#4a5cb8' }}
           >
             {report.yearlyAppendix.yearLabel} · {report.yearlyAppendix.yearGanji}
@@ -1225,7 +1225,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="mt-4">
           <Link
             href={report.yearlyAppendix.ctaAnchor}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-11 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
             {report.yearlyAppendix.ctaLabel}
           </Link>

@@ -112,7 +112,7 @@ function VerificationBadge({ report }: { report: SajuVerificationReport }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[15px] font-extrabold"
+      className="inline-flex items-center gap-1 rounded-[12px] border px-2.5 py-1 text-[15px] font-extrabold"
       style={{ background: palette.bg, color: palette.fg, borderColor: palette.border }}
     >
       <span aria-hidden="true">
@@ -137,7 +137,7 @@ function ClaimRow({
     >
       <div className="flex items-start gap-2">
         <span
-          className="grid h-5 shrink-0 items-center rounded-full border bg-white px-2 text-[12.6px] font-extrabold"
+          className="grid h-5 shrink-0 items-center rounded-[8px] border bg-white px-2 text-[12.6px] font-extrabold"
           style={{ borderColor: tone.border, color: tone.accent }}
         >
           {FRIENDLY_UI_LABEL.confidenceLabel} · {CONFIDENCE_LABEL[claim.confidence]}
@@ -336,7 +336,7 @@ export function SajuV2InsightPanel({ data, now, failPolicy = 'warn-only' }: Prop
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className="rounded-full border bg-white px-2 py-0.5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
+                className="rounded-[12px] border bg-white px-2 py-0.5 text-[15px] font-extrabold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 ✦ 한 줄 요약

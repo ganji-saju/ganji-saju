@@ -223,13 +223,13 @@ export default async function CompatibilityPage() {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href="/membership"
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 멤버십으로 더 깊게 열기 →
               </Link>
               <Link
                 href="/compatibility/input?relationship=lover"
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
               >
                 먼저 한 번 보기
               </Link>

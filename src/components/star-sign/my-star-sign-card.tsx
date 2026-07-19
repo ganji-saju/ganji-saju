@@ -116,7 +116,7 @@ export function MyStarSignCard({ profile, variant = 'default' }: Props) {
           {fortune.highlight}
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-white/12 px-2.5 py-0.5 text-[12.1px] font-bold text-white/90 ring-1 ring-white/15">
+          <span className="rounded-[12px] bg-white/12 px-2.5 py-0.5 text-[12.1px] font-bold text-white/90 ring-1 ring-white/15">
             ☘ {fortune.boost.slice(0, 24)}
             {fortune.boost.length > 24 ? '…' : ''}
           </span>

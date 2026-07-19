@@ -168,7 +168,7 @@ export default async function SajuElementsPage({ params }: Props) {
                   </h2>
                 </div>
                 <span
-                  className="rounded-full border px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                  className="rounded-[12px] border px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{
                     background: 'var(--app-pink-soft)',
                     borderColor: 'var(--app-pink-line)',
@@ -318,13 +318,13 @@ export default async function SajuElementsPage({ params }: Props) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/deep`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   대운 풀이 보기 →
                 </Link>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/nature`}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   성향으로 돌아가기
                 </Link>

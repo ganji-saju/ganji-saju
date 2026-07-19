@@ -115,7 +115,7 @@ export default async function MyPage() {
           </div>
           <Link
             href="/my/profile"
-            className="rounded-full border border-white/20 px-3 py-1.5 text-[12.6px] font-bold text-white/75"
+            className="rounded-[12px] border border-white/20 px-3 py-1.5 text-[12.6px] font-bold text-white/75"
           >
             편집
           </Link>

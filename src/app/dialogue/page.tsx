@@ -103,7 +103,7 @@ export default async function DialoguePage({
                     </div>
                   </div>
                   <span
-                    className="shrink-0 rounded-full px-3 py-1 text-[12.6px] font-extrabold"
+                    className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold"
                     style={
                       active
                         ? {

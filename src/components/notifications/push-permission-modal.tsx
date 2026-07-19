@@ -257,14 +257,14 @@ export function PushPermissionModal({
             type="button"
             onClick={handleAllow}
             disabled={busy}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
           >
             {busy ? '연결 중...' : '알림 허용하기'}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-12 items-center justify-center rounded-full border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
+            className="inline-flex h-12 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
             style={{ borderColor: 'var(--app-line)' }}
           >
             다음에 받기

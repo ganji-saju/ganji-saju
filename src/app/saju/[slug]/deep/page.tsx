@@ -141,14 +141,14 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
+              className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
               style={{ background: phaseColor }}
             >
               {cycle.phase}
             </span>
             {cycle.isCurrent ? (
               <span
-                className="rounded-full px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
+                className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
                 style={{ background: 'var(--app-pink)' }}
               >
                 지금
@@ -156,7 +156,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {transitionChip ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold"
+                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold"
                 style={{
                   background: '#fff7e6',
                   borderColor: 'rgba(212,148,38,0.32)',
@@ -168,7 +168,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {cycle.twelveStage ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-copy)]"
+                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-copy)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {cycle.twelveStage}지
@@ -176,7 +176,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
             ) : null}
             {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-coral)]"
+                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-coral)]"
                 style={{ borderColor: 'rgba(220,79,79,0.22)' }}
               >
                 원진 · {cycle.wonjinWith.join(', ')}
@@ -460,7 +460,7 @@ export default async function SajuDeepPage({ params }: Props) {
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="rounded-full px-2 py-0.5 text-[11.5px] font-extrabold text-white"
+                  className="rounded-[12px] px-2 py-0.5 text-[11.5px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink)' }}
                 >
                   VIP

@@ -66,7 +66,7 @@ export function TodayFortuneReplayView({ result }: { result: TodayFortuneFreeRes
 
         <Link
           href="/today-fortune"
-          className="flex items-center justify-center gap-2 rounded-full bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
+          className="flex items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
         >
           오늘의 운세 새로 보기
           <ArrowRight className="h-5 w-5" aria-hidden="true" />

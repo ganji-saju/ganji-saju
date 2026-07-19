@@ -198,7 +198,7 @@ export default function DreamPage() {
                     </span>
                     {meaning.fortune ? (
                       <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[12.6px] font-extrabold"
+                        className="inline-flex items-center rounded-[12px] px-2 py-0.5 text-[12.6px] font-extrabold"
                         style={{
                           background: FORTUNE_DECOR[meaning.fortune].bg,
                           border: `1px solid ${FORTUNE_DECOR[meaning.fortune].border}`,
@@ -296,7 +296,7 @@ export default function DreamPage() {
                       setQuery(tag);
                       void runSearch(tag);
                     }}
-                    className="rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
+                    className="rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition hover:border-[var(--app-pink-line)] hover:text-[var(--app-pink-strong)]"
                   >
                     {tag}
                   </button>
@@ -404,7 +404,7 @@ export default function DreamPage() {
             </p>
             <Link
               href="/saju/new"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
             >
               사주 풀이로 이어보기 →
             </Link>

@@ -90,7 +90,7 @@ export default async function DialogueHistoryPage() {
               </p>
               <Link
                 href="/login?next=%2Fdialogue%2Fhistory"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
+                className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
               >
                 로그인 →
               </Link>
@@ -109,7 +109,7 @@ export default async function DialogueHistoryPage() {
               </p>
               <Link
                 href="/dialogue"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
+                className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
               >
                 대화 시작하기 →
               </Link>

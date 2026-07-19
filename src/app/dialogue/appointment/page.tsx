@@ -235,7 +235,7 @@ export default function AppointmentPage() {
             <div className="grid gap-2">
               <Link
                 href="/dialogue"
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 대화방으로 이동 →
               </Link>
@@ -325,7 +325,7 @@ export default function AppointmentPage() {
                       key={t.key}
                       type="button"
                       onClick={() => setTopic(t.key)}
-                      className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition"
+                      className="rounded-[12px] border px-3 py-1.5 text-[13.8px] font-bold transition"
                       style={
                         active
                           ? {
@@ -540,7 +540,7 @@ export default function AppointmentPage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit || submitting}
-                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
+                className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-50"
               >
                 {submitting ? '예약 중...' : '예약 확정 →'}
               </button>

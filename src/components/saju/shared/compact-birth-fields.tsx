@@ -194,7 +194,7 @@ export function CompactBirthFields({
                     onChange({ calendarType: opt.v as UnifiedCalendarType });
                   }}
                   className={cn(
-                    'rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition',
+                    'rounded-[12px] border px-3 py-1.5 text-[13.8px] font-bold transition',
                     active
                       ? 'border-transparent bg-[var(--app-pink)] text-white'
                       : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'
@@ -387,7 +387,7 @@ export function CompactBirthFields({
                     type="button"
                     onClick={() => onLocationPresetSelect(preset.code)}
                     className={cn(
-                      'rounded-full border px-3 py-1.5 text-[13.2px] font-bold transition',
+                      'rounded-[12px] border px-3 py-1.5 text-[13.2px] font-bold transition',
                       active
                         ? 'border-transparent bg-[var(--app-pink)] text-white'
                         : 'border-[var(--app-line)] bg-white text-[var(--app-copy-muted)]'

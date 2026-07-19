@@ -363,14 +363,14 @@ export default async function StarSignCompatPage({ params }: Props) {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Link
                 href={`/star-sign/compat/${b}/${a}`}
-                className="rounded-full border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-pink-strong)]"
+                className="rounded-[12px] border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 {bItem.label} → {aItem.label}
               </Link>
               <Link
                 href={`/star-sign/${a}`}
-                className="rounded-full border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-copy-muted)]"
+                className="rounded-[12px] border bg-white px-3 py-2 text-center text-[13.2px] font-bold text-[var(--app-copy-muted)]"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 {aItem.label} 상세
@@ -401,7 +401,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             </p>
             <Link
               href="/compatibility"
-              className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
             >
               사주 궁합 입력하기 →
             </Link>

@@ -84,7 +84,7 @@ export function LayoutModeControl({
             title={item.description}
             onClick={() => selectMode(item.value)}
             className={cn(
-              'inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-2.5 text-[12.6px] font-medium transition-colors',
+              'inline-flex h-8 items-center justify-center gap-1.5 rounded-[8px] px-2.5 text-[12.6px] font-medium transition-colors',
               selected
                 ? 'bg-[var(--app-gold)] text-[var(--app-bg)]'
                 : 'text-[var(--app-copy-muted)] hover:bg-[var(--app-surface-strong)] hover:text-[var(--app-ivory)]',

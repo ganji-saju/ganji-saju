@@ -154,7 +154,7 @@
   align-items: center;
   justify-content: center;
   padding: 6px 8px;
-  border-radius: 999px;
+  border-radius: 10px;
   border: 1px solid var(--app-line);
   background: white;
   color: var(--app-copy);
@@ -315,7 +315,7 @@
   display: inline-flex;
   margin-top: 10px;
   padding: 6px 11px;
-  border-radius: 999px;
+  border-radius: 10px;
   background: var(--app-pink, #ec4899);
   color: white;
   font-size: 11px;

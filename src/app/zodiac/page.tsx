@@ -40,7 +40,7 @@ export default async function ZodiacPage() {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -50,7 +50,7 @@ export default async function ZodiacPage() {
               띠운세
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -169,7 +169,7 @@ export default async function ZodiacPage() {
             {featured ? (
               <Link
                 href={`/zodiac/${featured.slug}`}
-                className="inline-flex h-12 items-center justify-center rounded-full px-5 text-[15.5px] font-extrabold text-white"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
                   boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
@@ -181,7 +181,7 @@ export default async function ZodiacPage() {
             {readingSlug ? (
               <Link
                 href={`/saju/${readingSlug}`}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-white px-5 text-[15.5px] font-extrabold"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-white px-5 text-[15.5px] font-extrabold"
                 style={{
                   border: '1px solid var(--app-line)',
                   color: 'var(--app-ink)',

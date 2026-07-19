@@ -209,7 +209,7 @@ export function TodayConcernSelector({
           <button
             type="button"
             onClick={onToggleExpanded}
-            className="inline-flex items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[15px] font-extrabold transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-[12px] border bg-white px-3.5 py-1.5 text-[15px] font-extrabold transition-colors"
             style={{
               borderColor: 'var(--app-line)',
               color: 'var(--app-copy-muted)',

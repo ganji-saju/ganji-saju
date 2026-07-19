@@ -268,7 +268,7 @@ export default async function MyBillingPage() {
                           {formatDate(entry.date)}
                         </span>
                         <span
-                          className="rounded-full px-1.5 py-0.5 text-[11.5px] font-extrabold"
+                          className="rounded-[12px] px-1.5 py-0.5 text-[11.5px] font-extrabold"
                           style={{ background: badgeStyle.bg, color: badgeStyle.color }}
                         >
                           {entry.category}

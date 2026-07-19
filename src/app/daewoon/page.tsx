@@ -74,7 +74,7 @@ export default function DaewoonPage() {
                     <strong className="text-base font-bold text-[var(--app-ink)]">{period.age}</strong>
                     <span className="ml-2 text-sm font-medium text-[var(--app-copy-muted)]">{period.years}</span>
                     {period.current ? (
-                      <span className="ml-2 rounded-full bg-[var(--app-pink)] px-2 py-0.5 text-[11.5px] font-bold text-white">
+                      <span className="ml-2 rounded-[12px] bg-[var(--app-pink)] px-2 py-0.5 text-[11.5px] font-bold text-white">
                         NOW
                       </span>
                     ) : null}

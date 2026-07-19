@@ -444,7 +444,7 @@ export function GangiCategoryTabs({
             data-active={isActive ? 'true' : 'false'}
             onClick={() => onChange(category.key)}
             className={cn(
-              'inline-flex shrink-0 items-center rounded-[999px] border px-4 text-[15.5px] font-semibold transition-colors',
+              'inline-flex shrink-0 items-center rounded-[10px] border px-4 text-[15.5px] font-semibold transition-colors',
               'whitespace-nowrap'
             )}
             style={{
@@ -653,7 +653,7 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
           </div>
         </div>
         <span
-          className="shrink-0 inline-flex items-center rounded-full"
+          className="shrink-0 inline-flex items-center rounded-[10px]"
           style={{
             background: 'var(--app-pink)',
             color: '#fff',

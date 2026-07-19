@@ -82,7 +82,7 @@ export function CounselorSelector({
                     {selected ? (
                       <span
                         className={cn(
-                          'rounded-full border px-2 py-0.5 text-[11.5px] font-semibold',
+                          'rounded-[12px] border px-2 py-0.5 text-[11.5px] font-semibold',
                           counselor.borderClassName,
                           counselor.accentClassName,
                           counselor.surfaceClassName

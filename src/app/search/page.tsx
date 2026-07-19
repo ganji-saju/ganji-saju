@@ -235,7 +235,7 @@ function SearchContent() {
                       key={tag}
                       type="button"
                       onClick={() => applyQuery(tag)}
-                      className="flex items-center gap-1.5 rounded-full border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)]"
+                      className="flex items-center gap-1.5 rounded-[12px] border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-copy-muted)]"
                     >
                       {tag}
                       <span className="text-[11.5px] text-[var(--app-copy-soft)]" aria-hidden="true">
@@ -354,7 +354,7 @@ function SearchContent() {
                       key={tag}
                       type="button"
                       onClick={() => applyQuery(tag)}
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
+                      className="rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                     >
                       {tag}
                     </button>
@@ -363,7 +363,7 @@ function SearchContent() {
               </article>
               <Link
                 href="/saju/new"
-                className="mt-5 inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] px-6 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-6 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 사주 시작하기 →
               </Link>

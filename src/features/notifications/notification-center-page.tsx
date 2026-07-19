@@ -724,7 +724,7 @@ export default function NotificationCenterPage({
                     return (
                       <span
                         key={time}
-                        className="rounded-full border px-3 py-1.5 text-[13.2px] font-bold transition"
+                        className="rounded-[12px] border px-3 py-1.5 text-[13.2px] font-bold transition"
                         style={
                           active
                             ? {
@@ -849,7 +849,7 @@ export default function NotificationCenterPage({
                     type="button"
                     onClick={isCurrentDeviceSubscribed ? disconnectPush : connectPush}
                     disabled={isConnectingPush || !pushReady}
-                    className="rounded-full px-3 py-1.5 text-[12.6px] font-extrabold transition disabled:opacity-50"
+                    className="rounded-[12px] px-3 py-1.5 text-[12.6px] font-extrabold transition disabled:opacity-50"
                     style={
                       isCurrentDeviceSubscribed
                         ? {
@@ -889,7 +889,7 @@ export default function NotificationCenterPage({
                       전화번호 등록 후 결제·구독 안내 받기
                     </div>
                   </div>
-                  <span className="rounded-full bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
+                  <span className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]">
                     설정
                   </span>
                 </Link>

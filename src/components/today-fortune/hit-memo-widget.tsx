@@ -38,10 +38,10 @@ export function HitMemoWidget({ session, onSubmit }: HitMemoWidgetProps) {
   return (
     <section className="app-panel border-[var(--app-gold)]/20 p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 px-3 py-1 text-sm text-[var(--app-gold-text)]">
+        <span className="rounded-[12px] border border-[var(--app-gold)]/25 bg-[var(--app-gold)]/10 px-3 py-1 text-sm text-[var(--app-gold-text)]">
           Hit Memo
         </span>
-        <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-sm text-[var(--app-copy-soft)]">
+        <span className="rounded-[12px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-sm text-[var(--app-copy-soft)]">
           {concern.label} · {concern.hanja}
         </span>
       </div>

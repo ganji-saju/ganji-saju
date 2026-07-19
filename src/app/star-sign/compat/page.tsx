@@ -283,7 +283,7 @@ export default async function StarSignCompatMatrixPage() {
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Link
                 href="/star-sign"
-                className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-pink-strong)]"
+                className="rounded-[12px] border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-pink-strong)]"
                 style={{ borderColor: 'var(--app-pink-line)' }}
               >
                 12 별자리 메인
@@ -291,7 +291,7 @@ export default async function StarSignCompatMatrixPage() {
               {mySlug ? (
                 <Link
                   href={`/star-sign/${mySlug}`}
-                  className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
+                  className="rounded-[12px] border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   내 별자리 상세
@@ -299,7 +299,7 @@ export default async function StarSignCompatMatrixPage() {
               ) : (
                 <Link
                   href="/compatibility"
-                  className="rounded-full border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
+                  className="rounded-[12px] border bg-white px-3 py-2 text-center text-[13.8px] font-bold text-[var(--app-ink)]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   사주 궁합

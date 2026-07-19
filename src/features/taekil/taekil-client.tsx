@@ -153,13 +153,13 @@ export function TaekilClient() {
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
               href="/saju/new"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
+              className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15px] font-extrabold text-white"
             >
               사주 시작하기 →
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-full border bg-white px-5 py-3 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex items-center justify-center rounded-[12px] border bg-white px-5 py-3 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
               로그인
@@ -232,7 +232,7 @@ export function TaekilClient() {
                       {day.positiveSinsals.map((s) => (
                         <span
                           key={`pos-${s}`}
-                          className="rounded-full border px-2 py-0.5 text-[11.5px] font-bold"
+                          className="rounded-[12px] border px-2 py-0.5 text-[11.5px] font-bold"
                           style={{
                             background: 'rgba(45,135,88,0.08)',
                             borderColor: 'rgba(45,135,88,0.28)',
@@ -245,7 +245,7 @@ export function TaekilClient() {
                       {day.negativeSinsals.map((s) => (
                         <span
                           key={`neg-${s}`}
-                          className="rounded-full border px-2 py-0.5 text-[11.5px] font-bold"
+                          className="rounded-[12px] border px-2 py-0.5 text-[11.5px] font-bold"
                           style={{
                             background: 'rgba(220,79,79,0.06)',
                             borderColor: 'rgba(220,79,79,0.28)',

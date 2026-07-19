@@ -159,7 +159,7 @@
   min-height: 3.15rem;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
+  border-radius: 10px;
   background: var(--app-pink);
   padding: 0.85rem 1.45rem;
   color: #ffffff;
@@ -258,7 +258,7 @@
 .gangi-today-detail-hero > span {
   width: max-content;
   border: 1px solid var(--app-pink-line);
-  border-radius: 9999px;
+  border-radius: 10px;
   background: #ffffff;
   padding: 0.55rem 0.85rem;
   color: var(--app-pink-strong);
@@ -299,7 +299,7 @@
 
 .gangi-detail-chip-row span {
   border: 1px solid rgba(216, 27, 114, 0.14);
-  border-radius: 9999px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.76);
   padding: 0.38rem 0.62rem;
   color: var(--app-pink-strong);
@@ -747,7 +747,7 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 0.38rem;
-  border-radius: 9999px;
+  border-radius: 10px;
   background: var(--app-surface-muted);
   padding: 0.55rem 0.85rem;
   color: var(--app-copy);

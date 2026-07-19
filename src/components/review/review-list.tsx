@@ -51,7 +51,7 @@ function ReviewCard({ review }: { review: PublicReview }) {
         </div>
         {review.isVerifiedPurchase ? (
           <span
-            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-extrabold"
+            className="inline-flex items-center gap-1 rounded-[12px] px-2 py-0.5 text-[11.5px] font-extrabold"
             style={{
               background: 'var(--app-pink-soft)',
               color: 'var(--app-pink-strong)',

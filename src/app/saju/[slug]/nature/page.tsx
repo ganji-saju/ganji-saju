@@ -171,7 +171,7 @@ export default async function SajuNaturePage({ params }: Props) {
                   {traits.map((trait) => (
                     <span
                       key={trait}
-                      className="rounded-full px-3 py-1 text-[13.8px] font-extrabold text-white"
+                      className="rounded-[12px] px-3 py-1 text-[13.8px] font-extrabold text-white"
                       style={{ background: elementColor }}
                     >
                       {trait}
@@ -241,13 +241,13 @@ export default async function SajuNaturePage({ params }: Props) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}/elements`}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
                 >
                   기운 균형 보기 →
                 </Link>
                 <Link
                   href={`/saju/${encodeURIComponent(slug)}`}
-                  className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
+                  className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-3 text-[15px] font-bold text-white/85"
                 >
                   사주 총평으로
                 </Link>

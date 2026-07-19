@@ -112,7 +112,7 @@ export default function AccountDeletePage() {
               </p>
               <Link
                 href="/login"
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
               >
                 로그인 화면으로
               </Link>
@@ -215,13 +215,13 @@ export default function AccountDeletePage() {
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     <Link
                       href="/notifications"
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
                     >
                       알림 끄기
                     </Link>
                     <Link
                       href="/my"
-                      className="rounded-full border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
+                      className="rounded-[12px] border border-[var(--app-pink-line)] bg-white px-3 py-1.5 text-[13.2px] font-extrabold text-[var(--app-pink-strong)]"
                     >
                       3개월 일시정지
                     </Link>
@@ -419,7 +419,7 @@ export default function AccountDeletePage() {
                     setStep(((step as number) + 1) as Step);
                   }}
                   disabled={step === 2 && !canProceedStep2}
-                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white transition disabled:opacity-50"
+                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-[12px] px-5 text-[16.1px] font-extrabold text-white transition disabled:opacity-50"
                   style={{ background: 'var(--app-ink)' }}
                 >
                   계속 진행하기
@@ -429,7 +429,7 @@ export default function AccountDeletePage() {
                   type="button"
                   onClick={handleFinalSubmit}
                   disabled={!canSubmit || isSubmitting}
-                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-full px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-12 flex-[2] items-center justify-center rounded-[12px] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(248,113,113,0.32)] transition disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
                     background: canSubmit ? 'var(--app-coral)' : 'var(--app-line)',
                   }}

@@ -159,7 +159,7 @@ export function ChapterFeedbackCard({
           onClick={() => handleHelpfulClick(true)}
           disabled={state === 'saving'}
           aria-pressed={helpful === true}
-          className="rounded-full border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
+          className="rounded-[12px] border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
           style={{
             borderColor: helpful === true ? 'var(--app-pink-strong)' : 'var(--app-line)',
             background: helpful === true ? 'var(--app-pink-soft)' : 'white',
@@ -173,7 +173,7 @@ export function ChapterFeedbackCard({
           onClick={() => handleHelpfulClick(false)}
           disabled={state === 'saving'}
           aria-pressed={helpful === false}
-          className="rounded-full border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
+          className="rounded-[12px] border px-3 py-1 text-[15px] font-bold transition-colors disabled:opacity-50"
           style={{
             borderColor: helpful === false ? 'var(--app-pink-strong)' : 'var(--app-line)',
             background: helpful === false ? 'var(--app-pink-soft)' : 'white',
@@ -221,7 +221,7 @@ export function ChapterFeedbackCard({
                   type="button"
                   onClick={handleCommentSubmit}
                   disabled={state === 'saving' || comment.trim().length === 0}
-                  className="rounded-full bg-[var(--app-pink-strong)] px-3 py-1 text-[15px] font-bold text-white disabled:opacity-50"
+                  className="rounded-[12px] bg-[var(--app-pink-strong)] px-3 py-1 text-[15px] font-bold text-white disabled:opacity-50"
                 >
                   의견 보내기
                 </button>

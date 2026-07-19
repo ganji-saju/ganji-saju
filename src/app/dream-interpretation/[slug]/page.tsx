@@ -140,7 +140,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
         <section className="px-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-extrabold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -150,7 +150,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               꿈해몽
             </span>
             <span
-              className="inline-flex items-center rounded-full px-2.5 py-1 text-[12.6px] font-bold"
+              className="inline-flex items-center rounded-[12px] px-2.5 py-1 text-[12.6px] font-bold"
               style={{
                 border: '1px solid var(--app-line)',
                 background: '#ffffff',
@@ -348,7 +348,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <Link
               href="/today-fortune?from=dream"
-              className="inline-flex h-12 items-center justify-center rounded-full px-4 text-[15px] font-extrabold text-white"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] px-4 text-[15px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
                 boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
@@ -358,7 +358,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </Link>
             <Link
               href="/tarot/daily?from=dream"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[15px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-white px-4 text-[15px] font-extrabold"
               style={{
                 border: '1px solid var(--app-pink-line)',
                 background: 'var(--app-pink-soft)',
@@ -369,7 +369,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             </Link>
             <Link
               href="/dream"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-[15px] font-extrabold"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-white px-4 text-[15px] font-extrabold"
               style={{
                 border: '1px solid var(--app-line)',
                 color: 'var(--app-ink)',

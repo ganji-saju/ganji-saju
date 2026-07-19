@@ -22,7 +22,7 @@ function ModeBadge({ mode }: { mode: SpecialistMentorMode }) {
   if (mode === 'ai-report') {
     return (
       <span
-        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
+        className="inline-flex items-center gap-1 rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
         style={{
           background: 'var(--app-pink-soft)',
           borderColor: 'var(--app-pink-line)',
@@ -35,7 +35,7 @@ function ModeBadge({ mode }: { mode: SpecialistMentorMode }) {
   }
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
+      className="inline-flex items-center gap-1 rounded-[12px] border px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
       style={{
         background: 'rgba(17, 17, 20, 0.06)',
         borderColor: 'rgba(17, 17, 20, 0.18)',
@@ -86,7 +86,7 @@ export function SpecialistMentorGrid({
               </>
             }
             badge={
-              <span className="rounded-full border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-[12.6px] text-[var(--app-copy-muted)]">
+              <span className="rounded-[12px] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-3 py-1 text-[12.6px] text-[var(--app-copy-muted)]">
                 {mentor.statusLabel}
               </span>
             }
@@ -132,13 +132,13 @@ export function SpecialistMentorGrid({
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href="/refund-policy"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             환불 / 취소 정책
           </Link>
           <Link
             href="/appointment-policy"
-            className="inline-flex h-9 items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
+            className="inline-flex h-9 items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-3 text-[13.8px] font-extrabold text-[var(--app-copy)] hover:bg-[var(--app-pink-soft)]"
           >
             예약 상담 정책 (예정)
           </Link>

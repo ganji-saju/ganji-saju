@@ -421,7 +421,7 @@ export function CompatibilityResultView({
                 동일한 폭으로 확장. text-overflow 발생 시 ellipsis. */}
             <Link
               href={retakeHref}
-              className="inline-flex h-12 w-full items-center justify-center rounded-full border border-[var(--app-line)] bg-white px-5 text-[15px] font-bold text-[var(--app-copy-muted)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] border border-[var(--app-line)] bg-white px-5 text-[15px] font-bold text-[var(--app-copy-muted)]"
             >
               <span className="truncate">다른 사람과 다시 보기</span>
             </Link>
@@ -466,19 +466,19 @@ export function CompatibilityResultView({
             <div className="mt-4 grid gap-2">
               <Link
                 href="/membership"
-                className="inline-flex items-center justify-center rounded-full bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
               >
                 멤버십이면 궁합 매달 무료 →
               </Link>
               <Link
                 href={checkoutHref}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
+                className="inline-flex items-center justify-center rounded-[12px] border border-[var(--app-pink)] px-5 py-2.5 text-[15px] font-bold text-[var(--app-pink)]"
               >
                 <Price priceKey="taste_love_question" /> · 깊은 궁합 풀이 보기
               </Link>
               <Link
                 href={retakeHref}
-                className="inline-flex items-center justify-center rounded-full border border-white/24 px-5 py-2.5 text-[15px] font-bold text-white/80"
+                className="inline-flex items-center justify-center rounded-[12px] border border-white/24 px-5 py-2.5 text-[15px] font-bold text-white/80"
               >
                 다른 사람과 다시 보기
               </Link>

@@ -117,7 +117,7 @@ export function PremiumLockCard({
             </div>
           </div>
           <span
-            className="shrink-0 inline-flex items-center rounded-full bg-[var(--app-jade)] px-3 py-2 text-[13.8px] font-extrabold text-white"
+            className="shrink-0 inline-flex items-center rounded-[12px] bg-[var(--app-jade)] px-3 py-2 text-[13.8px] font-extrabold text-white"
           >
             바로 열기 →
           </span>
@@ -152,7 +152,7 @@ export function PremiumLockCard({
             </div>
           </div>
           <span
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[var(--app-jade)] px-3 py-2 text-[13.8px] font-extrabold text-white"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-[12px] bg-[var(--app-jade)] px-3 py-2 text-[13.8px] font-extrabold text-white"
           >
             {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
             {loading ? '여는 중' : '바로 열기 →'}
@@ -244,7 +244,7 @@ export function PremiumLockCard({
               type="button"
               onClick={handleUnlockClick}
               disabled={loading}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-[12px] border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
             >
               {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
               {loading ? '여는 중' : `${coinCost}전 열기`}
@@ -286,7 +286,7 @@ export function PremiumLockCard({
               type="button"
               onClick={handleUnlockClick}
               disabled={loading}
-              className="flex w-full items-center justify-center gap-1.5 rounded-full border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-1.5 rounded-[12px] border border-[rgba(17,17,20,0.12)] bg-white px-4 py-2.5 text-[14.4px] font-bold text-[var(--app-copy-muted)] hover:bg-[rgba(17,17,20,0.04)] disabled:opacity-70"
             >
               {loading ? <span className="motion-spinner-inline" aria-hidden="true" /> : null}
               {loading ? '여는 중' : `${coinCost}전 열기`}
