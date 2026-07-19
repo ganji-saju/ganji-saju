@@ -73,6 +73,19 @@ function buildApproveSignData(tid: string, amount: number, ediDate: string): str
   return nicepaySha256Hex(`${tid}${amount}${ediDate}${getSecretKey()}`);
 }
 
+/**
+ * 취소 요청 signData = hex(sha256(tid + ediDate + secretKey)) — **금액이 들어가지 않는다.**
+ *
+ * 2026-07-19 — 승인용 공식을 재사용하다 실패했다. 관리자 환불에서 PG 가
+ *   "SIGN DATA 검증에 실패하였습니다." 를 돌려줬고, 공식 V2 매뉴얼(api/cancel.md)의
+ *   취소 규칙도 `hex(sha256(tid + ediDate + SecretKey))` 로 amount 가 없다.
+ *   기존 코드는 전액취소 시 cancelAmt 가 없어 **0 을 끼워 넣고** 서명하고 있었다.
+ *   승인(buildApproveSignData)과 규칙이 다르므로 절대 합치지 말 것.
+ */
+function buildCancelSignData(tid: string, ediDate: string): string {
+  return nicepaySha256Hex(`${tid}${ediDate}${getSecretKey()}`);
+}
+
 // ⚠️ ediDate 포맷은 공식 확정 필요. 일단 ISO 8601.
 function buildEdiDate(now: Date = new Date()): string {
   return now.toISOString();
@@ -196,9 +209,8 @@ export async function cancelNicepayPayment(
   }
 ): Promise<NicepayPaymentObject> {
   const ediDate = buildEdiDate();
-  // ⚠️ 취소 signData 규칙도 공식 확정 필요(승인과 동일 가정 — tid+amount+ediDate+secretKey).
-  const amountForSign = options.cancelAmt ?? 0;
-  const signData = buildApproveSignData(tid, amountForSign, ediDate);
+  // 취소 서명은 승인과 규칙이 다르다(금액 없음) — buildCancelSignData 주석 참조.
+  const signData = buildCancelSignData(tid, ediDate);
 
   const headers: Record<string, string> = {
     Authorization: getNicepayAuthorizationHeader(),
