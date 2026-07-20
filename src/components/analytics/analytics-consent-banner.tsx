@@ -41,18 +41,20 @@ export function AnalyticsConsentBanner() {
 
   return (
     <div
-      className="border-b bg-[var(--app-bg,#fff)] px-4 py-3"
+      className="border-b bg-[var(--app-bg,#fff)] px-4 py-2.5"
       style={{ borderColor: 'var(--app-line)' }}
     >
       <div className="mx-auto flex max-w-[34rem] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* 2026-07-20 — 문구·글씨 축소(사용자 요청). ⚠️ 법적 고지라 **의미 요소 4개는 유지**한다:
+          ① 쿠키를 쓴다 ② 목적(분석·마케팅) ③ 제3자(Google Analytics) ④ 거부해도 이용 가능.
+          더 줄이려면 이 중 무엇을 뺄지 먼저 정할 것 — 길이만 보고 자르면 고지 의무가 깨진다. */}
       <p
-        className="text-[15px] leading-relaxed text-[var(--app-copy-soft)]"
+        className="text-[12.6px] leading-[1.55] text-[var(--app-copy-soft)]"
         role="region"
         aria-label="쿠키 동의"
       >
-        간지사주는 서비스 개선과 방문 분석을 위해 쿠키 및 유사 기술을 사용합니다. 동의하시면
-        Google Analytics 등 분석·마케팅 쿠키가 함께 사용되며, 거부하셔도 서비스 이용에는 지장이
-        없습니다.{' '}
+        서비스 개선을 위해 분석·마케팅 쿠키(Google Analytics 등)를 사용합니다. 거부해도 이용에
+        지장 없어요.{' '}
         <Link href="/privacy" className="font-semibold text-[var(--app-ink)] underline">
           개인정보처리방침
         </Link>
@@ -61,14 +63,14 @@ export function AnalyticsConsentBanner() {
         <button
           type="button"
           onClick={() => choose('denied')}
-          className="rounded-[10px] border border-[var(--app-line)] px-4 py-2.5 text-[15px] font-bold text-[var(--app-copy-soft)] hover:bg-[var(--app-line)]/30"
+          className="rounded-[10px] border border-[var(--app-line)] px-3.5 py-2 text-[13.2px] font-bold text-[var(--app-copy-soft)] hover:bg-[var(--app-line)]/30"
         >
           거부
         </button>
         <button
           type="button"
           onClick={() => choose('granted')}
-          className="rounded-[10px] bg-[var(--app-ink)] px-4 py-2.5 text-[15px] font-bold text-white hover:opacity-90"
+          className="rounded-[10px] bg-[var(--app-ink)] px-3.5 py-2 text-[13.2px] font-bold text-white hover:opacity-90"
         >
           동의
         </button>
