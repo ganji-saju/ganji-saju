@@ -9,10 +9,6 @@ import {
   getAdminDashboardSummary,
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
-import {
-  getExternalAnalyticsSnapshot,
-  type ExternalAnalyticsSnapshot,
-} from '@/lib/admin/external-analytics';
 import { getVisibleNavGroups } from '@/lib/admin/nav';
 import type { DailySeries } from '@/lib/admin/operations-stats';
 
@@ -47,42 +43,6 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 function sumSeries(series: DailySeries[] | undefined): number | null {
   if (!series || series.length === 0) return null;
   return series.reduce((sum, row) => sum + row.value, 0);
-}
-
-function SourceBadge({
-  label,
-  status,
-}: {
-  label: string;
-  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
-}) {
-  const text = !status.configured ? '미설정' : status.ok ? (status.warning ? '부분' : '연동됨') : '오류';
-  const color = !status.configured
-    ? 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
-    : status.ok
-      ? 'border-[var(--app-jade,#3F8796)] text-[var(--app-jade,#3F8796)]'
-      : 'border-[var(--app-coral)] text-[var(--app-coral)]';
-  return (
-    <span className={`rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${color}`} title={status.error ?? status.warning ?? undefined}>
-      {label} {text}
-    </span>
-  );
-}
-
-function SourceNotice({
-  label,
-  status,
-}: {
-  label: string;
-  status: ExternalAnalyticsSnapshot['sources']['googleAnalytics'];
-}) {
-  const message = status.error ?? status.warning;
-  if (!message) return null;
-  return (
-    <p className="text-[11.5px] leading-relaxed text-[var(--app-copy-soft)]">
-      {label}: {message}
-    </p>
-  );
 }
 
 function Sparkline({ series }: { series: DailySeries[] }) {
@@ -122,10 +82,11 @@ export default async function AdminDashboardPage({
   const windowDays = normalizeDashboardWindow(params.days);
 
   const supabase = await createClient();
-  const [roleCheck, summary, externalAnalytics] = await Promise.all([
+  // 2026-07-20 — GA4·Vercel 스냅샷 조회 제거. 이 화면은 자체 순방문만 보여준다.
+  //   외부 지표 원본이 필요하면 /admin/analytics 에서 본다(수집은 계속된다).
+  const [roleCheck, summary] = await Promise.all([
     getCurrentAdminRole(supabase),
     getAdminDashboardSummary(windowDays),
-    getExternalAnalyticsSnapshot(windowDays),
   ]);
   const role = roleCheck.role ?? 'admin';
 
@@ -224,38 +185,28 @@ export default async function AdminDashboardPage({
       </Card>
 
       <Card
-        title={`GA4 · Vercel 비교 (${windowDays}일)`}
+        title={`방문 (${windowDays}일)`}
         action={<Link href="/admin/analytics" className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">누적 지표 분석 →</Link>}
       >
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          <SourceBadge label="GA4" status={externalAnalytics.sources.googleAnalytics} />
-          <SourceBadge label="Vercel" status={externalAnalytics.sources.vercel} />
-        </div>
-        <div className="mb-3 space-y-0.5">
-          <SourceNotice label="GA4" status={externalAnalytics.sources.googleAnalytics} />
-          <SourceNotice label="Vercel" status={externalAnalytics.sources.vercel} />
-        </div>
-        {/* 2026-07-20 — 4개를 나란히 놓으니 "어느 게 맞는 값이냐"만 유발했다(사용자 제보).
-            넷은 **서로 다른 것을 센다** — 같아질 수 없다:
-              자체 순방문 = 하루 1인 1회(사람), 봇·admin·프리뷰·내부IP 제외
-              GA4 활성 사용자 = 동의를 누른 사람 중 유의미하게 머문 사람
+        {/* 2026-07-20 — 방문 지표를 **자체 순방문 하나**로 정리(사용자 요청).
+            원래 자체순방문·GA4 활성사용자·GA4 PV·Vercel PV 4개를 나란히 놨는데,
+            넷이 서로 다른 것을 세는 탓에 "어느 게 맞는 값이냐"만 유발했다:
+              자체 순방문 = 하루 1인 1회(**사람**), 봇·admin·프리뷰·내부IP 제외
+              GA4 활성 사용자 = 동의를 누른 사람 **중** 유의미하게 머문 사람(이중 필터)
               GA4 PV / Vercel PV = 사람이 아니라 **열람 횟수**(1인 3~4회라 배수로 벌어짐)
-            기준값은 자체 순방문 하나로 못 박고 PV 2종은 숨긴다.
-            GA4·Vercel 수집은 그대로 유지된다 — 화면에서만 내렸다(원본은 /admin/analytics).
-            ⚠️ GA4 절대값을 자체 집계와 맞추려 하지 말 것. 동의 기본값이 denied 라
-            구조적으로 적게 잡히는 게 정상이다(개인정보 설정이 제대로 된 결과). */}
-        <div className="grid grid-cols-2 gap-2">
-          <Stat
-            label="자체 순방문 (기준)"
-            value={fmtMaybeNum(periodVisitors)}
-            sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)} · 봇 제외 순방문`}
-          />
-          <Stat
-            label="GA4 활성 사용자 (참고)"
-            value={fmtMaybeNum(externalAnalytics.totals.gaActiveUsers)}
-            sub="동의한 사용자만 집계 · 절대값 비교 금지"
-          />
-        </div>
+
+            자체 순방문을 기준으로 삼은 이유:
+              ① 동의와 무관하게 전원 집계(GA4 는 Consent Mode 기본 denied 라 구조적으로 적다)
+              ② 봇·내부 트래픽 제외(Vercel 은 미제외)
+              ③ 결제·가입과 **같은 DB** 라 퍼널을 이어서 볼 수 있다 — 이게 결정적이다.
+
+            ⚠️ GA4·Vercel 수집은 그대로 살아 있다. 화면에서만 내렸고 원본은 /admin/analytics.
+            ⚠️ GA4 절대값을 자체 집계와 맞추려고 동의 기본값을 granted 로 바꾸지 말 것. */}
+        <Stat
+          label="자체 순방문"
+          value={fmtMaybeNum(periodVisitors)}
+          sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)} · 봇·내부 제외 순방문`}
+        />
       </Card>
 
       {/* 누적 + 결제/LLM 요약 */}
