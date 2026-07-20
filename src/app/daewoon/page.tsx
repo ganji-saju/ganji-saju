@@ -104,7 +104,11 @@ export default function DaewoonPage() {
               페이지가 길어 스크롤 중엔 위 CTA 가 화면 밖으로 나간다.
               ⚠️ 그냥 fixed 금지 — 상위 transform 이 containing block 을 가로챈다.
               StickyBottomBar 가 body portal + dock 높이 실측을 처리한다. */}
-          <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+          <StickyBottomBar
+            variant="above-dock"
+            revealOn="scroll-down"
+            innerClassName="flex items-center gap-3"
+          >
             <span className="flex shrink-0 items-baseline gap-1.5">
               <ComparePrice
                 priceKey="taste_year_core"

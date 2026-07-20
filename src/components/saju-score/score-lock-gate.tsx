@@ -122,7 +122,11 @@ export function ScoreLockGate({
           을 가로채 콘텐츠 끝에 붙는다. StickyBottomBar 가 body portal + dock 높이 실측을 처리한다
           (배경: 메모리 project_fixed-cta-needs-body-portal).
           ScoreLockGate 는 사주 결과 화면 1곳에서만 쓰여 바가 중복되지 않는다(전수 확인). */}
-      <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+      <StickyBottomBar
+            variant="above-dock"
+            revealOn="scroll-down"
+            innerClassName="flex items-center gap-3"
+          >
         <span className="flex min-w-0 shrink-0 items-baseline gap-1.5">
           {price ? null : (
             <ComparePrice

@@ -284,7 +284,11 @@ export function TaekilClient() {
 
           {/* 2026-07-20 — 결제 CTA 하단 상시 노출(사용자 요청). 길일 목록이 길어
               위 업셀 카드가 스크롤 밖으로 나간다. body portal + dock 높이 실측은 StickyBottomBar 담당. */}
-          <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+          <StickyBottomBar
+            variant="above-dock"
+            revealOn="scroll-down"
+            innerClassName="flex items-center gap-3"
+          >
             <span className="flex shrink-0 items-baseline gap-1.5">
               <ComparePrice
                 priceKey="taste_monthly_calendar"

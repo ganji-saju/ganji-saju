@@ -24,6 +24,13 @@ interface Props {
   className?: string;
   /** 안쪽 max-width 컨테이너 추가 클래스(예: 'flex gap-2'). */
   innerClassName?: string;
+  /**
+   * 2026-07-20 — 'scroll-down': **아래로 스크롤할 때만** 노출(사용자 요청).
+   *   결제 CTA 처럼 화면을 계속 차지하면 답답한 바에만 opt-in 으로 쓴다.
+   *   기본(미지정)은 항상 노출 — 체크아웃·예약·계정삭제 같은 "지금 해야 하는" 바는
+   *   숨으면 안 되므로 동작을 바꾸지 않는다.
+   */
+  revealOn?: 'always' | 'scroll-down';
 }
 
 export function StickyBottomBar({
@@ -31,11 +38,14 @@ export function StickyBottomBar({
   variant = 'above-dock',
   className,
   innerClassName,
+  revealOn = 'always',
 }: Props) {
   // SSR/CSR hydration mismatch 방지 — body portal 은 client-only.
   const [mounted, setMounted] = useState(false);
   // dock 실측 높이(px). null=측정 전. 0=dock 없음/숨김(데스크탑).
   const [dockHeight, setDockHeight] = useState<number | null>(null);
+  // revealOn='scroll-down' 일 때만 쓰인다. 최상단에서는 숨김에서 시작.
+  const [revealed, setRevealed] = useState(revealOn === 'always');
 
   useEffect(() => {
     setMounted(true);
@@ -65,6 +75,23 @@ export function StickyBottomBar({
     };
   }, [mounted, variant]);
 
+  // 아래로 스크롤 → 노출 / 위로 스크롤·최상단 → 숨김.
+  //   ⚠️ 방향만 보면 손가락 미세 떨림에 깜빡인다 → 8px 임계값으로 무시한다.
+  //   최상단 근처(<120px)에서는 무조건 숨김 — 인라인 카드가 아직 화면에 있어 중복이다.
+  useEffect(() => {
+    if (!mounted || revealOn !== 'scroll-down') return;
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (Math.abs(delta) < 8) return;
+      lastY = y;
+      setRevealed(y > 120 && delta > 0);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [mounted, revealOn]);
+
   if (!mounted) return null;
 
   const aboveDock = variant === 'above-dock';
@@ -82,6 +109,10 @@ export function StickyBottomBar({
       )}
       style={{
         bottom,
+        // 숨김은 unmount 가 아니라 transform — 나타날 때 레이아웃이 튀지 않는다.
+        transform: revealed ? 'translateY(0)' : 'translateY(120%)',
+        transition: 'transform 220ms ease',
+        visibility: revealed ? 'visible' : 'hidden',
         // above-dock: dock 이 하단 safe-area 를 처리하므로 바 자체엔 추가 불필요.
         // bottom: dock 없음 → safe-area 직접 확보.
         paddingBottom: aboveDock ? '14px' : 'calc(14px + env(safe-area-inset-bottom))',
