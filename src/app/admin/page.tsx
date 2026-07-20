@@ -49,14 +49,6 @@ function sumSeries(series: DailySeries[] | undefined): number | null {
   return series.reduce((sum, row) => sum + row.value, 0);
 }
 
-function fmtVsInternal(source: number | null | undefined, internal: number | null | undefined): string {
-  if (source == null) return '데이터 없음';
-  if (internal == null) return '자체 기준 없음';
-  const diff = source - internal;
-  const pct = internal > 0 ? ` · ${diff > 0 ? '+' : ''}${((diff / internal) * 100).toFixed(1)}%` : '';
-  return `자체 대비 ${diff > 0 ? '+' : ''}${diff.toLocaleString('ko-KR')}${pct}`;
-}
-
 function SourceBadge({
   label,
   status,
@@ -139,7 +131,6 @@ export default async function AdminDashboardPage({
 
   const ops = summary.operations;
   const periodVisitors = sumSeries(ops?.trends.visitors);
-  const todayExternal = externalAnalytics.daily[externalAnalytics.daily.length - 1] ?? null;
   const navGroups = getVisibleNavGroups(role).filter((g) => g.title !== '개요');
 
   return (
@@ -244,26 +235,25 @@ export default async function AdminDashboardPage({
           <SourceNotice label="GA4" status={externalAnalytics.sources.googleAnalytics} />
           <SourceNotice label="Vercel" status={externalAnalytics.sources.vercel} />
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {/* 2026-07-20 — 4개를 나란히 놓으니 "어느 게 맞는 값이냐"만 유발했다(사용자 제보).
+            넷은 **서로 다른 것을 센다** — 같아질 수 없다:
+              자체 순방문 = 하루 1인 1회(사람), 봇·admin·프리뷰·내부IP 제외
+              GA4 활성 사용자 = 동의를 누른 사람 중 유의미하게 머문 사람
+              GA4 PV / Vercel PV = 사람이 아니라 **열람 횟수**(1인 3~4회라 배수로 벌어짐)
+            기준값은 자체 순방문 하나로 못 박고 PV 2종은 숨긴다.
+            GA4·Vercel 수집은 그대로 유지된다 — 화면에서만 내렸다(원본은 /admin/analytics).
+            ⚠️ GA4 절대값을 자체 집계와 맞추려 하지 말 것. 동의 기본값이 denied 라
+            구조적으로 적게 잡히는 게 정상이다(개인정보 설정이 제대로 된 결과). */}
+        <div className="grid grid-cols-2 gap-2">
           <Stat
-            label="자체 순방문"
+            label="자체 순방문 (기준)"
             value={fmtMaybeNum(periodVisitors)}
-            sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)}`}
+            sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)} · 봇 제외 순방문`}
           />
           <Stat
-            label="GA4 활성 사용자"
+            label="GA4 활성 사용자 (참고)"
             value={fmtMaybeNum(externalAnalytics.totals.gaActiveUsers)}
-            sub={fmtVsInternal(externalAnalytics.totals.gaActiveUsers, periodVisitors)}
-          />
-          <Stat
-            label="GA4 PV"
-            value={fmtMaybeNum(externalAnalytics.totals.gaPageViews)}
-            sub={`오늘 ${fmtMaybeNum(todayExternal?.gaPageViews)}`}
-          />
-          <Stat
-            label="Vercel PV"
-            value={fmtMaybeNum(externalAnalytics.totals.vercelPageViews)}
-            sub={`오늘 ${fmtMaybeNum(todayExternal?.vercelPageViews)}`}
+            sub="동의한 사용자만 집계 · 절대값 비교 금지"
           />
         </div>
       </Card>
