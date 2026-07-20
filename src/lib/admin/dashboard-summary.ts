@@ -8,6 +8,7 @@ import {
   type PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
 import { getLlmCostStats, type LlmCostStats } from '@/lib/admin/llm-cost-stats';
+import { getDailyMetrics, type InflowAggEntry } from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
 
 export interface PendingCounts {
@@ -30,6 +31,12 @@ export interface RecentAdminActivity {
 export interface AdminDashboardSummary {
   windowDays: number;
   operations: OperationsSnapshot | null;
+  /**
+   * 2026-07-20 — 유입 상위(referrer). 사용자 요청으로 /admin 요약에 노출.
+   *   집계는 getDailyMetrics(=/admin/analytics 와 같은 경로)를 재사용한다 —
+   *   따로 구현하면 두 화면 숫자가 갈라진다.
+   */
+  topReferrers: InflowAggEntry[];
   funnel: PaymentFunnelSnapshot | null;
   llm: LlmCostStats | null;
   pending: PendingCounts;
@@ -71,6 +78,7 @@ export async function getAdminDashboardSummary(
   const base: AdminDashboardSummary = {
     windowDays,
     operations: null,
+    topReferrers: [],
     funnel: null,
     llm: null,
     pending: { refundRequested: 0, reviewPending: 0 },
@@ -81,7 +89,7 @@ export async function getAdminDashboardSummary(
   try {
     const supabase = await createServiceClient();
 
-    const [operations, funnel, llm, refundRes, reviewRes, activityRes] = await Promise.all([
+    const [operations, funnel, llm, analytics, refundRes, reviewRes, activityRes] = await Promise.all([
       // 2026-07-04 감사 — 실패를 조용히 null 로 삼키면 'env 문제'로 오도됨 → 원인 로그.
       buildOperationsSnapshot(supabase, { windowDays }).catch((e) => {
         console.error('[admin-dashboard] operations snapshot failed:', e);
@@ -92,6 +100,11 @@ export async function getAdminDashboardSummary(
         return null;
       }),
       getLlmCostStats(windowDays).catch(() => null),
+      // 유입 상위 — /admin/analytics 와 동일 집계를 재사용(숫자 갈림 방지). 실패해도 카드만 빈다.
+      getDailyMetrics(supabase, windowDays).catch((e: unknown) => {
+        console.error('[admin-dashboard] analytics(inflow) failed:', e);
+        return null;
+      }),
       supabase
         .from('refund_requests')
         .select('id', { count: 'exact', head: true })
@@ -132,6 +145,7 @@ export async function getAdminDashboardSummary(
       operations,
       funnel,
       llm,
+      topReferrers: analytics?.topReferrers ?? [],
       pending: {
         refundRequested: refundRes.count ?? 0,
         reviewPending: reviewRes.count ?? 0,

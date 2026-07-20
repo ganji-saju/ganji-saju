@@ -202,11 +202,37 @@ export default async function AdminDashboardPage({
 
             ⚠️ GA4·Vercel 수집은 그대로 살아 있다. 화면에서만 내렸고 원본은 /admin/analytics.
             ⚠️ GA4 절대값을 자체 집계와 맞추려고 동의 기본값을 granted 로 바꾸지 말 것. */}
-        <Stat
-          label="자체 순방문"
-          value={fmtMaybeNum(periodVisitors)}
-          sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)} · 봇·내부 제외 순방문`}
-        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Stat
+            label="자체 순방문"
+            value={fmtMaybeNum(periodVisitors)}
+            sub={`오늘 ${fmtMaybeNum(ops?.today.visitors)} · 봇·내부 제외 순방문`}
+          />
+          {/* 2026-07-20 — 유입 상위(사용자 요청). "몇 명 왔나" 바로 옆에 "어디서 왔나"를 둔다.
+              집계는 /admin/analytics 와 **같은 함수**(getDailyMetrics)를 재사용한다 —
+              따로 구현하면 두 화면 숫자가 갈라진다. */}
+          <div>
+            <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+              유입 상위
+            </div>
+            {summary.topReferrers.length === 0 ? (
+              <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">아직 데이터가 없어요</p>
+            ) : (
+              <ol className="mt-1 space-y-0.5">
+                {summary.topReferrers.slice(0, 4).map((entry, i) => (
+                  <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
+                    <span className="min-w-0 truncate text-[var(--app-copy)]">
+                      {i + 1}. {entry.label}
+                    </span>
+                    <span className="shrink-0 font-bold text-[var(--app-ink)]">
+                      {fmtNum(entry.visitors)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </div>
       </Card>
 
       {/* 누적 + 결제/LLM 요약 */}
