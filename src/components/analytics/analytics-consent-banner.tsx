@@ -1,13 +1,18 @@
 // 2026-07-06 — 자체 쿠키/분석 동의 배너.
 //   첫 방문(미선택) 시 하단에 노출. 동의→Consent Mode granted, 거부→denied(둘 다 저장해
 //   재노출 안 함). GA4/GTM 은 layout 에서 기본 denied 로 로드되므로, 이 선택 전까지는
-//   쿠키·식별자 없이 익명 상태다. 하단 고정은 StickyBottomBar(body portal — 조상 transform
-//   에 안 막힘, 메모리 project_fixed-cta-needs-body-portal).
+//   쿠키·식별자 없이 익명 상태다.
+//
+// 2026-07-20 — 하단 고정(StickyBottomBar above-dock) → **최상단 인플로우**로 전환(사용자 요청).
+//   이유 둘: ① 결제 CTA 들이 같은 above-dock 자리를 쓰기 시작해 **서로 겹쳤다**
+//   (사주 점수·대운·택일·궁합 결제 바). 하단은 매출 경로에 양보한다.
+//   ② 고정 배너는 선택 전까지 콘텐츠를 계속 가리는데, 인플로우면 선택하는 순간
+//   그 공간이 통째로 사라져 화면이 원래대로 돌아온다(사용자 표현: "해당 공간이 사라지도록").
+//   ⚠️ 인플로우라 body portal 이 필요 없다 — 조상 transform 문제도 애초에 발생하지 않는다.
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import {
   applyConsent,
   readConsent,
@@ -35,11 +40,11 @@ export function AnalyticsConsentBanner() {
   };
 
   return (
-    <StickyBottomBar
-      variant="above-dock"
-      className="z-50"
-      innerClassName="max-w-[34rem] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+    <div
+      className="border-b bg-[var(--app-bg,#fff)] px-4 py-3"
+      style={{ borderColor: 'var(--app-line)' }}
     >
+      <div className="mx-auto flex max-w-[34rem] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p
         className="text-[15px] leading-relaxed text-[var(--app-copy-soft)]"
         role="region"
@@ -68,6 +73,7 @@ export function AnalyticsConsentBanner() {
           동의
         </button>
       </div>
-    </StickyBottomBar>
+      </div>
+    </div>
   );
 }

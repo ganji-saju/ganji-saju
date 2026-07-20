@@ -271,11 +271,14 @@ export default async function RootLayout({
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
         <ScrollResetOnNavigate />
+        {/* 2026-07-20 — 동의 배너를 **페이지 최상단 인플로우**로 이동(사용자 요청).
+            선택하면 이 자리가 통째로 사라져 화면이 원래대로 돌아온다.
+            하단 고정이었을 땐 결제 CTA(above-dock)들과 자리가 겹쳤다. */}
+        <AnalyticsConsentBanner />
         <PriceProvider map={priceMap}>{children}</PriceProvider>
         <SystemGuideLauncher />
         <KakaoSdkLoader />
         <VisitPing />
-        <AnalyticsConsentBanner />
         <AppToaster />
         <Analytics />
         <SpeedInsights />

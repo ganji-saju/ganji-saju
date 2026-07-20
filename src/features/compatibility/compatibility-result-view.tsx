@@ -14,7 +14,8 @@ import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { CompatibilityDeepSections } from '@/features/compatibility/compatibility-deep-sections';
-import { Price } from '@/components/payments/price-provider';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
 interface CompatibilityResultViewProps {
   selected: CompatibilityRelationship;
@@ -491,6 +492,28 @@ export function CompatibilityResultView({
                 >
                   <Price priceKey="taste_compat_reading" /> · 깊은 궁합 풀이 보기
                 </Link>
+              ) : null}
+
+              {/* 2026-07-20 — 결제 CTA 하단 상시 노출(사용자 요청).
+                  궁합 결과가 길어 이 CTA 가 스크롤 밖으로 나간다. */}
+              {checkoutHref ? (
+                <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+                  <span className="flex shrink-0 items-baseline gap-1.5">
+                    <ComparePrice
+                      priceKey="taste_compat_reading"
+                      className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
+                    />
+                    <span className="whitespace-nowrap text-[17px] font-extrabold text-[var(--app-pink-strong)]">
+                      <Price priceKey="taste_compat_reading" />
+                    </span>
+                  </span>
+                  <Link
+                    href={checkoutHref}
+                    className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+                  >
+                    깊은 궁합 풀이 보기
+                  </Link>
+                </StickyBottomBar>
               ) : null}
               <Link
                 href={retakeHref}

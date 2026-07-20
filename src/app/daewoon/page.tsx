@@ -4,6 +4,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { AppShell } from '@/shared/layout/app-shell';
 import {
   GangiIntro,
@@ -97,6 +99,28 @@ export default function DaewoonPage() {
           <Link href="/saju/new?focus=year&product=year-core" className="mt-5 flex h-12 items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-base font-bold text-white">
             내 생년월일로 올해 흐름 보기
           </Link>
+
+          {/* 2026-07-20 — 결제 CTA 를 하단에 상시 노출(사용자 요청).
+              페이지가 길어 스크롤 중엔 위 CTA 가 화면 밖으로 나간다.
+              ⚠️ 그냥 fixed 금지 — 상위 transform 이 containing block 을 가로챈다.
+              StickyBottomBar 가 body portal + dock 높이 실측을 처리한다. */}
+          <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+            <span className="flex shrink-0 items-baseline gap-1.5">
+              <ComparePrice
+                priceKey="taste_year_core"
+                className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
+              />
+              <span className="whitespace-nowrap text-[17px] font-extrabold text-[var(--app-pink-strong)]">
+                <Price priceKey="taste_year_core" />
+              </span>
+            </span>
+            <Link
+              href="/saju/new?focus=year&product=year-core"
+              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+            >
+              올해 흐름 보기
+            </Link>
+          </StickyBottomBar>
 
           {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
               from="daewoon" 이 목록에서 대운 자신을 제외한다. */}

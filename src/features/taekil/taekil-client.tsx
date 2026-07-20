@@ -2,13 +2,15 @@
 // 사용자가 목적을 선택하면 서버 API 가 사주 + 다음 60일 → 길일 7개 산출 → 노출.
 'use client';
 
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { TaekilDayResult, TaekilPurpose } from '@/lib/taekil/find-good-days';
 import { TAEKIL_PURPOSES } from '@/lib/taekil/find-good-days';
 // 2026-05-18 Phase 5-E: 결과 없음 시 표준 EmptyState + 4 CTA (사용자 directive).
 import { EmptyState } from '@/components/state/empty-state';
-import { Price } from '@/components/payments/price-provider';
+import { ComparePrice, Price } from '@/components/payments/price-provider';
+import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -279,6 +281,26 @@ export function TaekilClient() {
             </span>
             <span aria-hidden="true" className="text-[var(--app-pink-strong)]">→</span>
           </Link>
+
+          {/* 2026-07-20 — 결제 CTA 하단 상시 노출(사용자 요청). 길일 목록이 길어
+              위 업셀 카드가 스크롤 밖으로 나간다. body portal + dock 높이 실측은 StickyBottomBar 담당. */}
+          <StickyBottomBar variant="above-dock" innerClassName="flex items-center gap-3">
+            <span className="flex shrink-0 items-baseline gap-1.5">
+              <ComparePrice
+                priceKey="taste_monthly_calendar"
+                className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
+              />
+              <span className="whitespace-nowrap text-[17px] font-extrabold text-[var(--app-pink-strong)]">
+                <Price priceKey="taste_monthly_calendar" />
+              </span>
+            </span>
+            <Link
+              href="/saju/new?product=monthly-calendar"
+              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+            >
+              달력으로 보기
+            </Link>
+          </StickyBottomBar>
         </section>
       ) : (
         // 2026-05-18 Phase 5-E: "결과가 없습니다" 단순 문구 → EmptyState + 4 CTA.
