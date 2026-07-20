@@ -1,6 +1,7 @@
 // 2026-07-07 — /admin/analytics 읽기 경로. metrics_daily 를 윈도우로 조회해 결측일 gap-fill,
 //   전환율 파생, 윈도우 상위 유입 집계. service 클라이언트 전용(metrics_daily RLS deny-all).
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { isOwnSiteHost } from '@/lib/site';
 import {
   kstMidnightIso,
   recentKstDateKeys,
@@ -235,7 +236,13 @@ export async function getDailyMetrics(
     }
   }
 
+  // 2026-07-20 — self-referral 제외(사용자 요청). 우리 도메인에서 온 건 **유입이 아니라
+  //   내부 이동**이다. "어디서 왔나" 목록에 우리 사이트가 뜨면 판단을 흐린다.
+  //   isOwnSiteHost 는 canonical + 별칭(www·퓨니코드)까지 인지한다 — 목록을 여기서 다시
+  //   나열하면 도메인이 늘 때 또 어긋난다(오늘 NEXT_PUBLIC_SITE_URL 사고와 같은 계열).
+  //   '(direct)'(referrer 없음)는 **남긴다** — 링크 없이 직접 들어온 실제 유입 신호다.
   const topReferrers: InflowAggEntry[] = Array.from(refAgg.entries())
+    .filter(([host]) => !isOwnSiteHost(host))
     .map(([host, visitors]) => ({ key: host, label: host, visitors }))
     .sort((a, b) => b.visitors - a.visitors)
     .slice(0, TOP_N);
