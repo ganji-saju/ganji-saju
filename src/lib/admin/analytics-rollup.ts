@@ -31,6 +31,24 @@ export function dateAxis(fromKey: string, toKey: string): string[] {
   return out;
 }
 
+/**
+ * 방문 집계가 **실제로 사람을 세기 시작한 날**(KST).
+ *
+ * 2026-07-19 커밋 5a06e9c3 이전에는 호스트 판정이 NEXT_PUBLIC_SITE_URL(퓨니코드 도메인)과
+ * 비교돼 canonical(ganjisaju.kr) 실사용자가 **전량 폐기**됐다. 그래서 그 이전 구간의
+ * visitors 는 "사람이 0명이었다"가 아니라 **"세지 못했다"** 이고, 복원할 원본도 없다
+ * (남아 있던 2,540행은 퓨니코드 도메인을 긁던 크롤러였고 2026-07-20 에 정리했다 —
+ *  근거: 2,540명 중 2페이지 이상 본 사람이 **0명**, 인당 페이지뷰가 정확히 1.000).
+ *
+ * 관리자 차트는 이 날짜부터만 그린다 — 앞쪽 0 은 정보가 아니라 노이즈이고,
+ * "7월 초엔 잘 됐는데 지금 죽었다"는 정반대의 착시를 만든다.
+ * ⚠️ 이 상수를 앞당기면 그 착시가 되살아난다. 집계 방식이 또 바뀌면 그때 날짜를 옮길 것.
+ * ⚠️ 자르는 건 **표시 계층뿐**이다. getDailyMetrics·buildOperationsSnapshot 은 전체 축을
+ *   그대로 반환한다 — 데이터 함수에 넣었더니 고정 NOW 를 쓰는 테스트 4건이 깨졌고,
+ *   무엇보다 "데이터가 날짜에 종속되는" 함수가 되어 재사용이 어려워진다.
+ */
+export const VISIT_TRACKING_START_KEY = '2026-07-19';
+
 /** 최근 n일(오늘 포함) KST 날짜키. 크론용. */
 export function recentKstDateKeys(n: number, now: Date = new Date()): string[] {
   const todayKey = kstDateKey(now.toISOString());

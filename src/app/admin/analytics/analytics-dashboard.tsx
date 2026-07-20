@@ -4,6 +4,7 @@
 
 import { useEffect, useState, type PointerEvent } from 'react';
 import type { AnalyticsSnapshot, InflowAggEntry } from '@/lib/admin/analytics-metrics';
+import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
 
@@ -414,8 +415,14 @@ function ExternalComparison({
   snap: AnalyticsSnapshot;
   external: ExternalAnalyticsSnapshot;
 }) {
+  // 2026-07-20 — 방문 집계가 실제로 사람을 세기 시작한 날 이전은 화면에서 자른다(사용자 요청).
+  //   그 이전 visitors 는 "0명"이 아니라 **"세지 못함"**(호스트 판정 버그로 실사용자 전량 폐기,
+  //   커밋 5a06e9c3). 0 을 길게 그리면 "예전엔 잘 됐는데 지금 죽었다"는 정반대 착시를 만든다.
+  //   ⚠️ 자르는 건 **표시**뿐이다 — getDailyMetrics 는 순수하게 두어(전체 축 유지)
+  //   날짜에 종속되지 않게 한다. 데이터 함수에 넣었더니 고정 NOW 를 쓰는 테스트 4건이 깨졌다.
+  const snapDaily = snap.daily.filter((d) => d.date >= VISIT_TRACKING_START_KEY);
   const externalByDate = new Map(external.daily.map((d) => [d.date, d]));
-  const latestRows = [...snap.daily]
+  const latestRows = [...snapDaily]
     .reverse()
     .slice(0, 12)
     .map((internal) => ({ internal, external: externalByDate.get(internal.date) }));
@@ -425,7 +432,7 @@ function ExternalComparison({
       key: 'internal',
       label: '자체',
       color: 'var(--app-pink-strong)',
-      points: snap.daily.map((d) => ({ date: d.date, value: d.visitors })),
+      points: snapDaily.map((d) => ({ date: d.date, value: d.visitors })),
     },
     {
       key: 'ga',
@@ -448,7 +455,7 @@ function ExternalComparison({
       key: 'internal',
       label: '자체',
       color: 'var(--app-pink-strong)',
-      points: snap.daily.map((d) => ({ date: d.date, value: d.pageViews })),
+      points: snapDaily.map((d) => ({ date: d.date, value: d.pageViews })),
     },
     {
       key: 'ga',
@@ -561,6 +568,9 @@ function ExternalComparison({
 export function AnalyticsDashboard() {
   const [days, setDays] = useState(30);
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
+  // 2026-07-20 — 실측 시작일 이전(집계가 사람을 못 세던 구간)은 표에서 제외.
+  //   상세 근거는 VISIT_TRACKING_START_KEY 주석 참조.
+  const visibleDaily = (snap?.daily ?? []).filter((d) => d.date >= VISIT_TRACKING_START_KEY);
   const [external, setExternal] = useState<ExternalAnalyticsSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -674,7 +684,7 @@ export function AnalyticsDashboard() {
           </div>
 
           {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
-          <DailyTable rows={snap.daily} />
+          <DailyTable rows={visibleDaily} />
 
           {/* 나머지 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
