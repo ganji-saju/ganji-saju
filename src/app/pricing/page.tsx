@@ -17,6 +17,7 @@ import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import {
   priceLabelFromMap,
+  compareLabelFromMap,
   tasteProductPriceKey,
   planPriceKey,
 } from '@/lib/payments/price-display-shared';
@@ -109,6 +110,7 @@ export default async function PricingPage() {
                   title={product.title}
                   desc={product.question}
                   price={priceLabelFromMap(priceMap, tasteProductPriceKey(product.slug))}
+                  compareLabel={compareLabelFromMap(priceMap, tasteProductPriceKey(product.slug))}
                 />
               );
             })}

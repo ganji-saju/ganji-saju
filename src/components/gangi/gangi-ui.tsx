@@ -101,12 +101,15 @@ export function GangiListLink({
   title,
   desc,
   price,
+  compareLabel,
 }: {
   href: string;
   zodiac: GangiZodiacKey;
   title: string;
   desc: string;
   price?: string;
+  /** 취소선 원가(compareLabelFromMap 결과). null 이면 렌더 안 함. */
+  compareLabel?: string | null;
 }) {
   return (
     <Link href={href} className="gangi-list-link">
@@ -115,7 +118,18 @@ export function GangiListLink({
         <strong>{title}</strong>
         <em>{desc}</em>
       </span>
-      {price ? <span className="gangi-list-price">{price}</span> : <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />}
+      {price ? (
+        <span className="flex shrink-0 flex-col items-end leading-tight">
+          {compareLabel ? (
+            <span className="text-[0.68rem] font-bold text-[var(--app-copy-soft)] line-through">
+              {compareLabel}
+            </span>
+          ) : null}
+          <span className="gangi-list-price">{price}</span>
+        </span>
+      ) : (
+        <ArrowRight className="h-5 w-5 text-[rgba(17,17,20,0.44)]" />
+      )}
     </Link>
   );
 }

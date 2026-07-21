@@ -17,8 +17,9 @@ const WINDOW_OPTIONS = [
   { value: 60, label: '60일' },
 ];
 
-function formatPct(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
+// 분모 없음(null)은 0%가 아니라 '—' — 활동자 0명을 '전환 0.0%'로 오표시하지 않는다.
+function formatPct(value: number | null): string {
+  return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
 }
 
 function formatNum(n: number): string {
@@ -233,11 +234,11 @@ export function OperationsDashboard() {
 
   const snap = data?.snapshot;
 
-  // 결제 전환율 = 결제 건수 / DAU.
+  // 결제 전환율 = 결제 건수 / DAU. 활동자 0명이면 분모 없음 → null(화면 '—', 0% 아님).
   const todayConversionRate =
     snap && snap.today.activeUsers > 0
       ? snap.today.purchaseCount / snap.today.activeUsers
-      : 0;
+      : null;
 
   return (
     <section className="space-y-5 px-1">
