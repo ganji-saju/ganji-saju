@@ -496,6 +496,25 @@ export async function listProductEntitlementsByOrder(
   );
 }
 
+// 특정 사용자의 특정 상품 이용권 전체(최신순). 정확일치(scope_key)로 못 잡는 스코프를
+// 후처리 매칭(예: lifetime-report 의 이름 해시 드리프트 보정)하기 위한 소스.
+export async function listProductEntitlementsByProduct(
+  userId: string | null | undefined,
+  productId: PaidProductId
+): Promise<ProductEntitlement[]> {
+  if (!userId || !hasSupabaseServiceEnv) return [];
+  const service = await createServiceClient();
+  const { data, error } = await service
+    .from('product_entitlements')
+    .select('id, user_id, product_id, scope_key, order_id, payment_key, package_id, amount, created_at')
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return (data as ProductEntitlementRow[]).map(mapProductTableEntitlement);
+}
+
 export interface EntitlementRevokeQuery {
   legacyFeature: 'lifetime_report' | 'taste_product';
   legacyMatch: Record<string, unknown>;

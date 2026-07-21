@@ -5,11 +5,15 @@ import {
 import {
   getProductEntitlement,
   grantProductEntitlement,
+  listProductEntitlementsByProduct,
   revokeProductEntitlement,
   type ProductEntitlement,
   type RevokeProductEntitlementResult,
 } from '@/lib/product-entitlements';
-import { buildLifetimeReportScopeKey } from '@/lib/payments/product-scope';
+import {
+  buildLifetimeReportScopeKey,
+  parseLifetimeReportReadingKey,
+} from '@/lib/payments/product-scope';
 
 export interface LifetimeReportEntitlement {
   id: string;
@@ -47,6 +51,28 @@ export function matchesEntitlementReadingKey(
   acceptedKeys: string[]
 ) {
   return typeof candidate === 'string' && acceptedKeys.includes(candidate.trim());
+}
+
+// toSlug 의 해시 토큰(-key<hash>)만 제거 — 이름을 뺀 "같은 차트" prefix.
+function stripBirthSlugHash(key: string): string {
+  return key.replace(/-key[0-9a-z]+$/i, '');
+}
+
+// lifetime-report 이용권의 readingKey 매칭. 정확일치가 우선이고, 실패하면 이름 해시
+// 드리프트를 흡수한다: toSlug 의 해시가 이름을 포함하므로 구매(이름 있음)와 열람(이름 없음)
+// 에서 -key<hash> 가 갈린다. 같은 출생정보면 사주 차트·풀이 내용은 이름과 무관하게 동일하니
+// 해시를 벗긴 prefix 가 같으면 같은 리포트로 본다. 단 해시 없는 키는 정확일치만 인정해
+// 너무 짧은 prefix 로 인한 광역 오탐을 막는다(생년월일이 다르면 prefix 가 달라 매칭 안 됨).
+export function lifetimeReadingKeyMatches(
+  storedReadingKey: string | null | undefined,
+  acceptedKeys: string[]
+): boolean {
+  const stored = storedReadingKey?.trim();
+  if (!stored) return false;
+  if (acceptedKeys.includes(stored)) return true;
+  const storedPrefix = stripBirthSlugHash(stored);
+  if (storedPrefix === stored) return false; // 해시 없는 키 → 정확일치만
+  return acceptedKeys.some((key) => Boolean(key) && stripBirthSlugHash(key) === storedPrefix);
 }
 
 function mapEntitlement(row: EntitlementTransactionRow): LifetimeReportEntitlement {
@@ -96,6 +122,17 @@ export async function getLifetimeReportEntitlement(
     if (productEntitlement) return mapProductEntitlement(productEntitlement, acceptedKey);
   }
 
+  // 이름 해시 드리프트 보정 — 정확일치가 MISS 여도 같은 차트(prefix)의 저장 이용권을 잡는다.
+  //   구매(이름 있는 readingId/어드민 grant) vs 열람(이름 없는 raw slug) 조합에서 readingKey
+  //   의 -key<hash> 가 갈려 "구매했는데 상세 PDF·본문이 안 보이던" 문제.
+  const storedEntitlements = await listProductEntitlementsByProduct(userId, 'lifetime-report');
+  for (const stored of storedEntitlements) {
+    const storedReadingKey = parseLifetimeReportReadingKey(stored.scopeKey);
+    if (lifetimeReadingKeyMatches(storedReadingKey, acceptedKeys)) {
+      return mapProductEntitlement(stored, storedReadingKey ?? readingKey);
+    }
+  }
+
   const service = await createServiceClient();
   const { data, error } = await service
     .from('credit_transactions')
@@ -113,7 +150,10 @@ export async function getLifetimeReportEntitlement(
     const metadata = row.metadata ?? {};
     return (
       metadata.kind === 'lifetime_report' &&
-      matchesEntitlementReadingKey(metadata.readingKey, acceptedKeys)
+      lifetimeReadingKeyMatches(
+        typeof metadata.readingKey === 'string' ? metadata.readingKey : null,
+        acceptedKeys
+      )
     );
   });
 
