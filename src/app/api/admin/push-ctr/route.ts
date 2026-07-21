@@ -2,7 +2,11 @@
 // GET /api/admin/push-ctr?days=30 → { slot, variant, sent, clicked, ctr }
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
-import { createClient } from '@/lib/supabase/server';
+import {
+  createClient,
+  createServiceClient,
+  hasSupabaseServiceEnv,
+} from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
   const daysParam = req.nextUrl.searchParams.get('days');
@@ -17,10 +21,20 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // 집계는 service role 로. notification_delivery_logs 의 RLS 는 auth.uid()=user_id
+  // (본인 로그만) 이라, 인증 가드용 anon 클라이언트로 조회하면 관리자 본인 행만 보여 0 이 된다.
+  if (!hasSupabaseServiceEnv) {
+    return NextResponse.json(
+      { ok: false, error: 'service env missing (SUPABASE_SERVICE_ROLE_KEY)' },
+      { status: 500 }
+    );
+  }
+  const service = await createServiceClient();
+
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
 
-  const { data, error } = await supabase
+  const { data, error } = await service
     .from('notification_delivery_logs')
     .select('slot_key, variant, status, clicked_at')
     .gte('created_at', cutoff.toISOString())
