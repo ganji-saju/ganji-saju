@@ -139,6 +139,8 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
               <th className={th}>신규가입</th>
               <th className={th}>결제</th>
               <th className={th}>매출</th>
+              <th className={th}>환불</th>
+              <th className={th}>순매출</th>
               <th className={th}>결제/방문</th>
             </tr>
           </thead>
@@ -151,6 +153,12 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
                 <td className={td}>{formatNum(d.newSignups)}</td>
                 <td className={td}>{formatNum(d.paidOrders)}</td>
                 <td className={td}>{d.revenueWon > 0 ? fmtWon(d.revenueWon) : '—'}</td>
+                <td className={`${td} text-[var(--app-coral)]`}>
+                  {d.refundedWon > 0 ? `-${fmtWon(d.refundedWon)}` : '—'}
+                </td>
+                <td className={`${td} font-semibold text-[var(--app-ink)]`}>
+                  {d.revenueWon > 0 || d.refundedWon > 0 ? fmtWon(d.netRevenueWon) : '—'}
+                </td>
                 <td className={`${td} text-[var(--app-copy-soft)]`}>{formatPct(d.visitorToPaidRate)}</td>
               </tr>
             ))}
@@ -670,7 +678,18 @@ export function AnalyticsDashboard() {
             <SummaryCard label="자체 순방문" value={formatNum(snap.totals.visitors)} sub={`자체 PV ${formatNum(snap.totals.pageViews)}`} />
             <SummaryCard label="신규가입" value={formatNum(snap.totals.newSignups)} />
             <SummaryCard label="결제 건수" value={formatNum(snap.totals.paidOrders)} />
-            <SummaryCard label="매출" value={fmtWon(snap.totals.revenueWon)} />
+            {/* 2026-07-21 — 매출 → **순매출**(매출 − 환불). 환불은 sub 로 부기.
+                metrics_daily 가 refunded_won 을 별도로 기록하는데 조회가 revenue_won 만
+                읽어 환불이 화면에 안 잡히던 버그(사용자 제보: 환불했는데 매출에 그대로). */}
+            <SummaryCard
+              label="순매출"
+              value={fmtWon(snap.totals.netRevenueWon)}
+              sub={
+                snap.totals.refundedWon > 0
+                  ? `매출 ${fmtWon(snap.totals.revenueWon)} · 환불 -${fmtWon(snap.totals.refundedWon)}`
+                  : undefined
+              }
+            />
             <SummaryCard label="결제/방문(참고)" value={formatPct(snap.totals.visitorToPaidRate)} sub="결제건÷방문자" />
             <SummaryCard label="결제창 전환" value={formatPct(snap.totals.checkoutConversionRate)} sub="성공÷시도" />
           </div>
@@ -690,8 +709,8 @@ export function AnalyticsDashboard() {
           <div className="grid gap-3 lg:grid-cols-2">
             <MetricsLineChart title="신규가입" points={series((d) => d.newSignups)} color="var(--app-jade,#3F8796)" />
             <MetricsLineChart
-              title="매출(원)"
-              points={series((d) => d.revenueWon)}
+              title="순매출(원)"
+              points={series((d) => d.netRevenueWon)}
               color="#D59B2E"
               format={fmtWon}
             />

@@ -16,6 +16,12 @@ export interface DailyMetricPoint {
   newSignups: number;
   paidOrders: number;
   revenueWon: number;
+  /** 2026-07-21 — 환불(refunded_at 귀속). metrics_daily 가 별도 컬럼에 기록해두는데
+   *   조회가 revenue_won 만 읽어 환불이 화면에 반영 안 되던 버그(사용자 제보). */
+  refundedOrders: number;
+  refundedWon: number;
+  /** 순매출 = 매출 − 환불. 화면은 이걸 매출로 보여준다. */
+  netRevenueWon: number;
   prepareAttempts: number;
   checkoutStarts: number;
   confirmSuccess: number;
@@ -37,6 +43,9 @@ export interface AnalyticsTotals {
   newSignups: number;
   paidOrders: number;
   revenueWon: number;
+  refundedOrders: number;
+  refundedWon: number;
+  netRevenueWon: number;
   prepareAttempts: number;
   checkoutStarts: number;
   confirmSuccess: number;
@@ -78,6 +87,8 @@ interface MetricsDailyDbRow {
   new_signups: number;
   paid_orders: number;
   revenue_won: number;
+  refunded_orders: number;
+  refunded_won: number;
   prepare_attempts: number;
   checkout_starts: number;
   confirm_success: number;
@@ -160,7 +171,7 @@ export async function getDailyMetrics(
   const { data, error } = await service
     .from('metrics_daily')
     .select(
-      'date_key, visitors, page_views, new_signups, paid_orders, revenue_won, prepare_attempts, checkout_starts, confirm_success, inflow_referrers, inflow_utm, refreshed_at'
+      'date_key, visitors, page_views, new_signups, paid_orders, revenue_won, refunded_orders, refunded_won, prepare_attempts, checkout_starts, confirm_success, inflow_referrers, inflow_utm, refreshed_at'
     )
     .gte('date_key', fromKey)
     .lte('date_key', toKey)
@@ -183,6 +194,9 @@ export async function getDailyMetrics(
       newSignups: r?.new_signups ?? 0,
       paidOrders,
       revenueWon: r?.revenue_won ?? 0,
+      refundedOrders: r?.refunded_orders ?? 0,
+      refundedWon: r?.refunded_won ?? 0,
+      netRevenueWon: (r?.revenue_won ?? 0) - (r?.refunded_won ?? 0),
       prepareAttempts,
       checkoutStarts: r?.checkout_starts ?? 0,
       confirmSuccess,
@@ -198,6 +212,9 @@ export async function getDailyMetrics(
       acc.newSignups += d.newSignups;
       acc.paidOrders += d.paidOrders;
       acc.revenueWon += d.revenueWon;
+      acc.refundedOrders += d.refundedOrders;
+      acc.refundedWon += d.refundedWon;
+      acc.netRevenueWon += d.netRevenueWon;
       acc.prepareAttempts += d.prepareAttempts;
       acc.checkoutStarts += d.checkoutStarts;
       acc.confirmSuccess += d.confirmSuccess;
@@ -209,6 +226,9 @@ export async function getDailyMetrics(
       newSignups: 0,
       paidOrders: 0,
       revenueWon: 0,
+      refundedOrders: 0,
+      refundedWon: 0,
+      netRevenueWon: 0,
       prepareAttempts: 0,
       checkoutStarts: 0,
       confirmSuccess: 0,
