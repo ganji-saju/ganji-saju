@@ -11,6 +11,7 @@ import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import {
   priceLabelFromMap,
+  compareLabelFromMap,
   tasteProductPriceKey,
   planPriceKey,
   type PriceKey,
@@ -285,35 +286,46 @@ export default async function MembershipPage({
               큰 결제 전에 오늘 궁금한 질문 하나를 짧게 확인하는 입구입니다.
             </p>
             <div className="mt-3 grid gap-2.5">
-              {TASTE_PRODUCTS.map((product, index) => (
-                <Link
-                  key={product.slug}
-                  href={product.href}
-                  className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
-                >
-                  <ZodiacChip
-                    kind={TASTE_ZODIACS[index % TASTE_ZODIACS.length]}
-                    size="sm"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                      {product.title}
-                    </div>
-                    <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
-                      {product.question}
-                    </p>
-                  </div>
-                  <span
-                    className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
-                    style={{
-                      background: 'var(--app-pink-soft)',
-                      border: '1px solid var(--app-pink-line)',
-                    }}
+              {TASTE_PRODUCTS.map((product, index) => {
+                const priceKey = tasteProductPriceKey(product.slug);
+                const compareLabel = compareLabelFromMap(priceMap, priceKey);
+                return (
+                  <Link
+                    key={product.slug}
+                    href={product.href}
+                    className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
-                    {priceLabelFromMap(priceMap, tasteProductPriceKey(product.slug))}
-                  </span>
-                </Link>
-              ))}
+                    <ZodiacChip
+                      kind={TASTE_ZODIACS[index % TASTE_ZODIACS.length]}
+                      size="sm"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                        {product.title}
+                      </div>
+                      <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
+                        {product.question}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {compareLabel ? (
+                        <span className="text-[12px] font-bold text-[var(--app-copy-soft)] line-through">
+                          {compareLabel}
+                        </span>
+                      ) : null}
+                      <span
+                        className="rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                        style={{
+                          background: 'var(--app-pink-soft)',
+                          border: '1px solid var(--app-pink-line)',
+                        }}
+                      >
+                        {priceLabelFromMap(priceMap, priceKey)}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
@@ -326,39 +338,51 @@ export default async function MembershipPage({
               오래 다시 볼 내용은 리포트로
             </h2>
             <div className="mt-3 grid gap-2.5">
-              {ACTIVE_COLLECTIBLE_REPORTS.map((report) => (
-                <Link
-                  key={report.slug}
-                  href={report.href}
-                  className="flex items-center gap-3 rounded-[14px] border bg-white p-3.5"
-                  style={{
-                    borderColor:
-                      focus === report.slug ? 'var(--app-pink-line)' : 'var(--app-line)',
-                    background:
-                      focus === report.slug ? 'var(--app-pink-soft)' : '#fff',
-                  }}
-                  data-active={focus === report.slug ? 'true' : undefined}
-                >
-                  <ZodiacChip kind={report.zodiac} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                      {report.title}
-                    </div>
-                    <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
-                      {report.summary}
-                    </p>
-                  </div>
-                  <span
-                    className="shrink-0 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+              {ACTIVE_COLLECTIBLE_REPORTS.map((report) => {
+                const compareLabel = report.priceKey
+                  ? compareLabelFromMap(priceMap, report.priceKey)
+                  : null;
+                return (
+                  <Link
+                    key={report.slug}
+                    href={report.href}
+                    className="flex items-center gap-3 rounded-[14px] border bg-white p-3.5"
                     style={{
-                      background: 'var(--app-pink-soft)',
-                      border: '1px solid var(--app-pink-line)',
+                      borderColor:
+                        focus === report.slug ? 'var(--app-pink-line)' : 'var(--app-line)',
+                      background:
+                        focus === report.slug ? 'var(--app-pink-soft)' : '#fff',
                     }}
+                    data-active={focus === report.slug ? 'true' : undefined}
                   >
-                    {report.priceKey ? priceLabelFromMap(priceMap, report.priceKey) : report.price}
-                  </span>
-                </Link>
-              ))}
+                    <ZodiacChip kind={report.zodiac} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[16.1px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                        {report.title}
+                      </div>
+                      <p className="mt-0.5 text-[13.8px] text-[var(--app-copy-soft)]">
+                        {report.summary}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {compareLabel ? (
+                        <span className="text-[12px] font-bold text-[var(--app-copy-soft)] line-through">
+                          {compareLabel}
+                        </span>
+                      ) : null}
+                      <span
+                        className="rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold text-[var(--app-pink-strong)]"
+                        style={{
+                          background: 'var(--app-pink-soft)',
+                          border: '1px solid var(--app-pink-line)',
+                        }}
+                      >
+                        {report.priceKey ? priceLabelFromMap(priceMap, report.priceKey) : report.price}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
