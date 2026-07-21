@@ -22,14 +22,14 @@ export interface PaymentFunnelDailyPoint {
 export interface PaymentFunnelTotals {
   /** 단계별 누적 합. */
   counts: Record<PaymentFunnelStage, number>;
-  /** prepare_attempt → confirm_success 전환율 (0~1). prepare_attempt 가 0 이면 0. */
-  overallConversionRate: number;
-  /** confirm_attempt → confirm_success 결제 시도 성공률 (0~1). */
-  confirmSuccessRate: number;
-  /** prepare_attempt → prepare_blocked 비율 (이미 구매·미로그인 등 차단). */
-  prepareBlockRate: number;
-  /** confirm_attempt → confirm_failed 실패율. */
-  confirmFailRate: number;
+  /** prepare_attempt → confirm_success 전환율 (0~1). 분모(prepare_attempt) 0 이면 null. */
+  overallConversionRate: number | null;
+  /** confirm_attempt → confirm_success 결제 시도 성공률 (0~1). 분모 0 이면 null. */
+  confirmSuccessRate: number | null;
+  /** prepare_attempt → prepare_blocked 비율 (이미 구매·미로그인 등 차단). 분모 0 이면 null. */
+  prepareBlockRate: number | null;
+  /** confirm_attempt → confirm_failed 실패율. 분모 0 이면 null. */
+  confirmFailRate: number | null;
 }
 
 export interface PaymentFunnelBlockReason {
@@ -41,7 +41,7 @@ export interface PaymentFunnelByPackage {
   packageId: string;
   prepareAttempt: number;
   confirmSuccess: number;
-  conversionRate: number;
+  conversionRate: number | null;
 }
 
 export interface PaymentFunnelSnapshot {
@@ -81,6 +81,12 @@ function emptyCounts(): Record<PaymentFunnelStage, number> {
     acc[s] = 0;
     return acc;
   }, {} as Record<PaymentFunnelStage, number>);
+}
+
+// 분모가 0 이면 전환율은 정의되지 않음 → null. 0 으로 강등하면 시도 없는 구간이
+// '전환 0%' 처럼 보여 판단을 흐린다(analytics-metrics.ts 의 rate() 와 동일 계약).
+function rate(numer: number, denom: number): number | null {
+  return denom > 0 ? numer / denom : null;
 }
 
 function buildDateAxis(windowDays: number): string[] {
@@ -163,22 +169,10 @@ export async function buildPaymentFunnelSnapshot(
     }
   }
 
-  const overallConversionRate =
-    totals.prepare_attempt > 0
-      ? totals.confirm_success / totals.prepare_attempt
-      : 0;
-  const confirmSuccessRate =
-    totals.confirm_attempt > 0
-      ? totals.confirm_success / totals.confirm_attempt
-      : 0;
-  const prepareBlockRate =
-    totals.prepare_attempt > 0
-      ? totals.prepare_blocked / totals.prepare_attempt
-      : 0;
-  const confirmFailRate =
-    totals.confirm_attempt > 0
-      ? totals.confirm_failed / totals.confirm_attempt
-      : 0;
+  const overallConversionRate = rate(totals.confirm_success, totals.prepare_attempt);
+  const confirmSuccessRate = rate(totals.confirm_success, totals.confirm_attempt);
+  const prepareBlockRate = rate(totals.prepare_blocked, totals.prepare_attempt);
+  const confirmFailRate = rate(totals.confirm_failed, totals.confirm_attempt);
 
   const daily: PaymentFunnelDailyPoint[] = dateAxis.map((date) => ({
     date,
@@ -198,7 +192,7 @@ export async function buildPaymentFunnelSnapshot(
       packageId,
       prepareAttempt: s.prepareAttempt,
       confirmSuccess: s.confirmSuccess,
-      conversionRate: s.prepareAttempt > 0 ? s.confirmSuccess / s.prepareAttempt : 0,
+      conversionRate: rate(s.confirmSuccess, s.prepareAttempt),
     }))
     .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
 

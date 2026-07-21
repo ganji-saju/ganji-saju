@@ -37,8 +37,9 @@ const BLOCK_REASON_LABEL: Record<string, string> = {
   existing_credit_unlock: '이미 전 잠금 해제',
 };
 
-function fmtPct(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
+// 분모 없음(null)은 0%가 아니라 '—' — 시도 0건을 '전환 0.0%'로 오표시하지 않는다.
+function fmtPct(value: number | null): string {
+  return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
 }
 
 function fmtNum(n: number): string {

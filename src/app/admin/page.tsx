@@ -20,7 +20,9 @@ export const metadata: Metadata = {
 const fmtNum = (n: number | null | undefined) => (n ?? 0).toLocaleString('ko-KR');
 const fmtMaybeNum = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('ko-KR'));
 // 2026-07-04 — 반올림 대신 소수 1자리: 0.5% 미만 전환율이 전부 '0%'로 보이던 문제.
-const fmtPct = (rate: number | null | undefined) => `${((rate ?? 0) * 100).toFixed(1)}%`;
+// 2026-07-21 — 분모 없음(null)은 0%가 아니라 '—'. 시도 0건을 '전환 0.0%'로 오표시하던 문제.
+const fmtPct = (rate: number | null | undefined) =>
+  rate == null ? '—' : `${(rate * 100).toFixed(1)}%`;
 const fmtUsd = (n: number | null | undefined) => `$${(n ?? 0).toFixed(2)}`;
 function fmtDateTime(iso: string | null) {
   if (!iso) return '—';
