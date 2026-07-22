@@ -10,8 +10,7 @@ import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
-import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
+import { hasYearCoreEntitlementForReading } from '@/lib/product-entitlements';
 
 export const runtime = 'nodejs';
 export const maxDuration = 75;
@@ -108,11 +107,7 @@ export async function POST(req: NextRequest) {
   const [lifetime, subscription, yearCore] = await Promise.all([
     getLifetimeReportEntitlement(user.id, readingKey, [parsed.readingId]),
     getManagedSubscription(user.id),
-    getTasteProductEntitlement(
-      user.id,
-      'year-core',
-      buildYearCoreScopeKey(readingKey, targetYear)
-    ),
+    hasYearCoreEntitlementForReading(user.id, readingKey, targetYear),
   ]);
   const subscriptionUnlocks =
     subscription != null &&

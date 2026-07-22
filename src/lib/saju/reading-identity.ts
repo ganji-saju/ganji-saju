@@ -35,3 +35,22 @@ export function sajuIdentityFromReadingKey(readingKey: string | null | undefined
   if (!input) return null;
   return sajuIdentityKey(input);
 }
+
+/**
+ * 저장된 readingKey 가 현재 reading 과 같은 사주(=같은 이용권)인지 판정.
+ *   정확일치 우선, 실패 시 사주 정체성(4기둥+성별)으로 매칭 → 이름 해시·분·경로 차이를 흡수한다.
+ *   생년월일/시가 실제로 다르면(기둥이 다르면) 정체성이 달라 매칭되지 않는다(오탐 방지).
+ *   (score-total·score-factor 가 쓰던 패턴을 lifetime/year-core/monthly 공용으로 추출.)
+ */
+export function readingKeyMatchesCurrentSaju(
+  storedReadingKey: string | null | undefined,
+  currentReadingKeys: Array<string | null | undefined>,
+  currentIdentity: string | null
+): boolean {
+  const stored = storedReadingKey?.trim();
+  if (!stored) return false;
+  for (const current of currentReadingKeys) {
+    if (current && current.trim() === stored) return true;
+  }
+  return currentIdentity !== null && sajuIdentityFromReadingKey(stored) === currentIdentity;
+}

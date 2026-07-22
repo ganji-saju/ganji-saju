@@ -9,9 +9,15 @@ import {
   buildTodayDetailScopeKey,
   normalizeEntitlementScopeKey,
   parseLifetimeReportReadingKey,
+  parseMonthlyCalendarScopeKey,
+  parseYearCoreScopeKey,
   resolvePaymentProductScope,
   type PaidProductId,
 } from '@/lib/payments/product-scope';
+import {
+  readingKeyMatchesCurrentSaju,
+  sajuIdentityFromReadingKey,
+} from '@/lib/saju/reading-identity';
 import { revokeBundleComponents, type BundleRevokeResult } from '@/lib/payments/bundle';
 
 export {
@@ -181,40 +187,60 @@ export async function hasAnyMonthlyCalendarForReading(
 ): Promise<boolean> {
   if (!userId || !readingKey || !hasSupabaseServiceEnv) return false;
 
-  const scopePrefix = `calendar:${readingKey}:`;
-  const service = await createServiceClient();
+  // 이름 해시 드리프트 보정 — 정확 readingKey prefix(LIKE)로만 잡으면 구매(이름 있음)와
+  // 열람(이름 없음)에서 readingKey 가 갈려 MISS 한다. 사주 정체성(4기둥+성별)으로 매칭한다
+  // (score-total 패턴). listTaste… 는 product_entitlements + legacy credit_transactions 를 함께 본다.
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
+  const scopeKeys = await listTasteProductEntitlementScopeKeys(userId, 'monthly-calendar');
+  return scopeKeys.some((scopeKey) => {
+    const parsed = parseMonthlyCalendarScopeKey(scopeKey);
+    return parsed
+      ? readingKeyMatchesCurrentSaju(parsed.readingKey, [readingKey], currentIdentity)
+      : false;
+  });
+}
 
-  // 1) product_entitlements: scope_key LIKE 'calendar:{readingKey}:%'
-  const { data: productRows } = await service
-    .from('product_entitlements')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('product_id', 'monthly-calendar')
-    .like('scope_key', `${scopePrefix}%`)
-    .limit(1);
-  if (productRows && productRows.length > 0) return true;
+// 특정 (year, month) 의 월간달력 이용권을 사주 정체성으로 매칭 — 이름 해시 드리프트 흡수.
+export async function hasMonthlyCalendarForReading(
+  userId: string | null | undefined,
+  readingKey: string | null | undefined,
+  year: number,
+  month: number
+): Promise<boolean> {
+  if (!userId || !readingKey || !hasSupabaseServiceEnv) return false;
 
-  // 2) credit_transactions legacy: feature='taste_product' + metadata.productId='monthly-calendar'
-  //    + metadata.scopeKey 가 scopePrefix 로 시작.
-  const { data: legacyRows } = await service
-    .from('credit_transactions')
-    .select('metadata')
-    .eq('user_id', userId)
-    .eq('type', 'purchase')
-    .eq('feature', 'taste_product')
-    .order('created_at', { ascending: false });
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
+  const scopeKeys = await listTasteProductEntitlementScopeKeys(userId, 'monthly-calendar');
+  return scopeKeys.some((scopeKey) => {
+    const parsed = parseMonthlyCalendarScopeKey(scopeKey);
+    return (
+      parsed !== null &&
+      parsed.year === year &&
+      parsed.month === month &&
+      readingKeyMatchesCurrentSaju(parsed.readingKey, [readingKey], currentIdentity)
+    );
+  });
+}
 
-  if (legacyRows && legacyRows.length > 0) {
-    for (const row of legacyRows as { metadata: Record<string, unknown> | null }[]) {
-      const meta = row.metadata ?? {};
-      const scopeKey = typeof meta.scopeKey === 'string' ? meta.scopeKey : '';
-      if (meta.kind === 'taste_product' && meta.productId === 'monthly-calendar' && scopeKey.startsWith(scopePrefix)) {
-        return true;
-      }
-    }
-  }
+// year-core(올해 핵심) 이용권을 사주 정체성으로 매칭 — 이름 해시 드리프트 흡수.
+//   정확 readingKey 일치 실패해도 같은 사주(4기둥+성별) + 같은 year 면 인정.
+export async function hasYearCoreEntitlementForReading(
+  userId: string | null | undefined,
+  readingKey: string | null | undefined,
+  year: number
+): Promise<boolean> {
+  if (!userId || !readingKey || !hasSupabaseServiceEnv) return false;
 
-  return false;
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
+  const scopeKeys = await listTasteProductEntitlementScopeKeys(userId, 'year-core');
+  return scopeKeys.some((scopeKey) => {
+    const parsed = parseYearCoreScopeKey(scopeKey);
+    return (
+      parsed !== null &&
+      parsed.year === year &&
+      readingKeyMatchesCurrentSaju(parsed.readingKey, [readingKey], currentIdentity)
+    );
+  });
 }
 
 // 2026-06-22 — 사용자의 특정 taste_product 이용권 scope_key 전부 회수(product_entitlements +

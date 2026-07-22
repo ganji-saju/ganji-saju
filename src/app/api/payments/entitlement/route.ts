@@ -13,11 +13,17 @@ import {
   getMembershipPackage,
   isTasteProductId,
 } from '@/lib/payments/catalog';
-import { getTasteProductEntitlement } from '@/lib/product-entitlements';
+import {
+  getTasteProductEntitlement,
+  hasMonthlyCalendarForReading,
+  hasYearCoreEntitlementForReading,
+} from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { getManagedSubscription, getMemberTier } from '@/lib/subscription';
 import {
   buildPurchasedProductHref,
+  parseMonthlyCalendarScopeKey,
+  parseYearCoreScopeKey,
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
@@ -143,13 +149,42 @@ export async function GET(req: NextRequest) {
   }
 
   const paymentScope = await resolvePaymentProductScope({ pkg, slug, scope });
-  const entitlement = await getTasteProductEntitlement(
-    user.id,
-    productId,
-    paymentScope?.scopeKey ?? null
-  );
 
-  const has = Boolean(entitlement);
+  // monthly-calendar / year-core 는 readingKey scope 라 이름 해시 드리프트가 있다 — 정확 scope
+  // 매칭 대신 사주 정체성(identity)으로 판정(today-detail 의 checkTodayDetailAccess 와 같은 취지).
+  let has: boolean;
+  if (productId === 'monthly-calendar') {
+    const parsedScope = parseMonthlyCalendarScopeKey(paymentScope?.scopeKey);
+    has = Boolean(
+      paymentScope?.readingKey &&
+        parsedScope &&
+        (await hasMonthlyCalendarForReading(
+          user.id,
+          paymentScope.readingKey,
+          parsedScope.year,
+          parsedScope.month
+        ))
+    );
+  } else if (productId === 'year-core') {
+    const parsedScope = parseYearCoreScopeKey(paymentScope?.scopeKey);
+    has = Boolean(
+      paymentScope?.readingKey &&
+        parsedScope &&
+        (await hasYearCoreEntitlementForReading(
+          user.id,
+          paymentScope.readingKey,
+          parsedScope.year
+        ))
+    );
+  } else {
+    const entitlement = await getTasteProductEntitlement(
+      user.id,
+      productId,
+      paymentScope?.scopeKey ?? null
+    );
+    has = Boolean(entitlement);
+  }
+
   const memberFreeEligible = await computeMemberFreeEligible(user.id, productId, tier);
   return NextResponse.json({
     hasEntitlement: has,
