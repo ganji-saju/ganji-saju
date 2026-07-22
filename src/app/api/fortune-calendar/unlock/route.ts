@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildFortuneCalendarMonth } from '@/domain/saju/report';
 import { unlockFortuneCalendarMonth } from '@/lib/credits/calendar-access';
 import { getFeatureCost } from '@/lib/credits/deduct';
-import {
-  buildMonthlyCalendarScopeKey,
-  getTasteProductEntitlement,
-} from '@/lib/product-entitlements';
+import { hasMonthlyCalendarForReading } from '@/lib/product-entitlements';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
@@ -73,12 +70,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const productEntitlement = await getTasteProductEntitlement(
+  const hasMonthlyProduct = await hasMonthlyCalendarForReading(
     user.id,
-    'monthly-calendar',
-    buildMonthlyCalendarScopeKey(readingKey, parsed.targetYear, parsed.month)
+    readingKey,
+    parsed.targetYear,
+    parsed.month
   );
-  if (productEntitlement) {
+  if (hasMonthlyProduct) {
     const report = buildFortuneCalendarMonth(
       namedInput,
       reading.sajuData,

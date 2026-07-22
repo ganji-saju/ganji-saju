@@ -130,6 +130,36 @@ export function parseYearScope(scope: string | null | undefined) {
   return Number.isInteger(year) ? year : null;
 }
 
+// 합성 스코프 키에서 readingKey 를 뽑는다. readingKey(toSlug)는 '-' 구분이라 ':' 를 포함하지 않으므로
+// split(':') 의 가운데가 readingKey, 마지막이 기간이다. 이름 해시 드리프트 보정(사주 정체성 매칭)에 필요.
+// year:{readingKey}:{year} → { readingKey, year }
+export function parseYearCoreScopeKey(
+  scopeKey: string | null | undefined
+): { readingKey: string; year: number } | null {
+  const trimmed = scopeKey?.trim() ?? '';
+  if (!trimmed.startsWith('year:')) return null;
+  const parts = trimmed.split(':');
+  if (parts.length < 3) return null;
+  const year = parseYearScope(parts[parts.length - 1]);
+  if (year === null) return null;
+  const readingKey = parts.slice(1, -1).join(':');
+  return readingKey ? { readingKey, year } : null;
+}
+
+// calendar:{readingKey}:{year}-{month} → { readingKey, year, month }
+export function parseMonthlyCalendarScopeKey(
+  scopeKey: string | null | undefined
+): { readingKey: string; year: number; month: number } | null {
+  const trimmed = scopeKey?.trim() ?? '';
+  if (!trimmed.startsWith('calendar:')) return null;
+  const parts = trimmed.split(':');
+  if (parts.length < 3) return null;
+  const ym = parseYearMonthScope(parts[parts.length - 1]);
+  if (!ym) return null;
+  const readingKey = parts.slice(1, -1).join(':');
+  return readingKey ? { readingKey, year: ym.year, month: ym.month } : null;
+}
+
 export function getKoreaYear(now: Date = new Date()) {
   return Number(
     new Intl.DateTimeFormat('en-CA', {

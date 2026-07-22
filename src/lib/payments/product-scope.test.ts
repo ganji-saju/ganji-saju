@@ -7,6 +7,8 @@ import {
   buildYearCoreScopeKey,
   getKoreaYear,
   parseLifetimeReportReadingKey,
+  parseMonthlyCalendarScopeKey,
+  parseYearCoreScopeKey,
   parseYearMonthScope,
   parseYearScope,
 } from './product-scope';
@@ -19,6 +21,26 @@ test('payment scope keys isolate today detail, month, year, and lifetime product
   assert.equal(buildMonthlyCalendarScopeKey('reading-abc', 2026, 6), 'calendar:reading-abc:2026-06');
   assert.equal(buildYearCoreScopeKey('reading-abc', 2026), 'year:reading-abc:2026');
   assert.equal(buildYearCoreScopeKey('reading-abc', 2027), 'year:reading-abc:2027');
+});
+
+// 🔴 회귀 가드(2026-07-22) — 이름 해시 드리프트 보정용 파서. 합성 스코프 키에서 readingKey 추출.
+//   readingKey(toSlug)는 '-' 구분이라 ':' 를 포함하지 않으므로 가운데가 readingKey, 마지막이 기간.
+test('parseYearCoreScopeKey / parseMonthlyCalendarScopeKey — build 역함수 + readingKey 추출', () => {
+  const rk = '1990-5-20-14-m30-male-key1abc234'; // 해시 접미사 포함 realistic readingKey
+  assert.deepEqual(parseYearCoreScopeKey(buildYearCoreScopeKey(rk, 2026)), {
+    readingKey: rk,
+    year: 2026,
+  });
+  assert.deepEqual(parseMonthlyCalendarScopeKey(buildMonthlyCalendarScopeKey(rk, 2026, 5)), {
+    readingKey: rk,
+    year: 2026,
+    month: 5,
+  });
+  // 잘못된 prefix/형식은 null
+  assert.equal(parseYearCoreScopeKey('lifetime:xxx'), null);
+  assert.equal(parseYearCoreScopeKey('year:rk'), null); // 기간 세그먼트 없음
+  assert.equal(parseMonthlyCalendarScopeKey('calendar:rk:2026'), null); // month 없음(YYYY-MM 아님)
+  assert.equal(parseMonthlyCalendarScopeKey(null), null);
   assert.equal(buildLifetimeReportScopeKey('reading-abc'), 'lifetime:reading-abc');
 });
 

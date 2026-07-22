@@ -29,10 +29,9 @@ import { toSlug } from '@/lib/saju/pillars';
 import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
-  getTasteProductEntitlement,
+  hasYearCoreEntitlementForReading,
   hasAnyMonthlyCalendarForReading,
 } from '@/lib/product-entitlements';
-import { buildYearCoreScopeKey } from '@/lib/payments/product-scope';
 import { Price, ComparePrice } from '@/components/payments/price-provider';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { priceLabelFromMap, tasteProductPriceKey } from '@/lib/payments/price-display-shared';
@@ -314,11 +313,7 @@ export default async function SajuPremiumPage({ params }: Props) {
       const [entitlement, subscription, yearCoreEntitlement, hasMonthlyCalendar] = await Promise.all([
         getLifetimeReportEntitlement(user.id, readingKey, [slug]),
         getManagedSubscription(user.id),
-        getTasteProductEntitlement(
-          user.id,
-          'year-core',
-          buildYearCoreScopeKey(readingKey, targetYear)
-        ),
+        hasYearCoreEntitlementForReading(user.id, readingKey, targetYear),
         hasAnyMonthlyCalendarForReading(user.id, readingKey),
       ]);
 

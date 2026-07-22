@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { sajuIdentityKey, sajuIdentityFromReadingKey } from './reading-identity';
-import { fromSlug } from './pillars';
+import {
+  sajuIdentityKey,
+  sajuIdentityFromReadingKey,
+  readingKeyMatchesCurrentSaju,
+} from './reading-identity';
+import { fromSlug, toSlug } from './pillars';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -40,4 +44,26 @@ test('파싱 불가 readingKey → null', () => {
   assert.equal(sajuIdentityFromReadingKey('garbage'), null);
   assert.equal(sajuIdentityFromReadingKey(''), null);
   assert.equal(sajuIdentityFromReadingKey(null), null);
+});
+
+// 🔴 회귀 가드(2026-07-22) — lifetime/월간달력/올해핵심 이용권 매칭 공용 로직.
+//   구매(이름 있는 readingId)와 열람(이름 없는 raw slug)에서 readingKey 해시가 갈려도
+//   같은 사주면 이용권이 이어져야 한다("구매했는데 안 보임" 방지). 다른 사주는 거부.
+test('readingKeyMatchesCurrentSaju — 정확일치 / 이름 해시 드리프트 흡수 / 다른 사주 거부', () => {
+  const base = { year: 1990, month: 5, day: 20, hour: 14, minute: 30, gender: 'male' as const };
+  const withName = toSlug({ ...base, name: '홍길동' }); // 저장 키(이름 포함 해시)
+  const noName = toSlug(base); // 열람 키(이름 없음 → 다른 해시)
+  const identity = sajuIdentityFromReadingKey(noName);
+
+  assert.notEqual(withName, noName); // 드리프트 전제
+  // 정확일치
+  assert.equal(readingKeyMatchesCurrentSaju(withName, [withName], identity), true);
+  // 이름 드리프트: 저장(withName) vs 현재(noName) — 정확일치 실패해도 사주 정체성으로 매칭
+  assert.equal(readingKeyMatchesCurrentSaju(withName, [noName], identity), true);
+  // 다른 사주(생년 다름 → 다른 기둥)는 거부
+  const other = toSlug({ ...base, year: 1991 });
+  assert.equal(readingKeyMatchesCurrentSaju(other, [noName], identity), false);
+  // identity 없고 정확일치도 아니면 false(방어)
+  assert.equal(readingKeyMatchesCurrentSaju(withName, [noName], null), false);
+  assert.equal(readingKeyMatchesCurrentSaju(null, [noName], identity), false);
 });
