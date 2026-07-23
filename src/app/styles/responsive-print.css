@@ -2538,6 +2538,7 @@
   .app-desktop-sidebar,
   .app-top-header,
   .mega-nav-root,
+  .site-footer-redesign,
   .app-mobile-dock {
     display: none !important;
   }
