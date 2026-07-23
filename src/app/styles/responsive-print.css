@@ -2563,25 +2563,51 @@
     display: block !important;
   }
 
+  /* 2026-07-23 — 연속 흐름 전환. 챕터마다 강제 새 장(break-after)이 짧은 챕터 아래에 큰
+     빈 여백을 남기던 것을 해소한다. 표지만 독립 페이지로 두고 나머지는 이어서 흐른다.
+     (사용자 선택: '여백 줄이기 — 짧은 챕터를 이어 흐르게'.) */
   .report-page {
     width: 210mm !important;
-    /* 고정 height(297mm)는 page-break-after 와 겹쳐 빈 페이지를 만든다.
-       콘텐츠가 1장에 들어오도록 두고 break-after 만으로 분할. */
     height: auto !important;
     min-height: 0 !important;
-    max-height: 297mm !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    padding: 12mm 13mm 9mm !important;
-    overflow: hidden;
-    break-inside: avoid;
+    padding: 8mm 13mm !important;
+    overflow: visible !important;
+  }
+
+  /* 표지는 독립 페이지 유지(챕터가 표지에 붙지 않도록). */
+  .report-page[data-page="1"] {
     break-after: page;
     page-break-after: always;
   }
 
-  .report-page:last-child {
-    break-after: auto;
-    page-break-after: auto;
+  /* 흐름에서는 페이지별 러닝 헤더/푸터가 페이지 중간에 끼어 어색하므로 인쇄에서 숨긴다.
+     표지 자체 헤더(.rp-cover-head)와 마무리 브랜드 서명(.rp-final-foot)은 유지.
+     → 맨 마지막장 푸터도 함께 사라진다(사용자 요청). */
+  .rp-runhead,
+  .rp-foot {
+    display: none !important;
+  }
+
+  /* 블록·카드·헤딩은 페이지 경계에서 쪼개지지 않게(어색한 분할 방지). */
+  .report-page .rp-chaphead,
+  .report-page .rp-block,
+  .report-page .rp-twocol,
+  .report-page .rp-summary,
+  .report-page .rp-pillars,
+  .report-page .rp-chart-card,
+  .report-page .rp-tengod-row,
+  .report-page .rp-area-grid,
+  .report-page .rp-now-hero,
+  .report-page .rp-best-hero,
+  .report-page .rp-ilju-hero,
+  .report-page .rp-gyeokguk-hero,
+  .report-page .rp-closing,
+  .report-page .rp-notice,
+  .report-page .rp-next-grid,
+  .report-page .rp-final-foot {
+    break-inside: avoid;
   }
 
   /* 인쇄 시 세로 여백 압축 — 각 페이지가 A4 1장 안에 들어오도록. */
