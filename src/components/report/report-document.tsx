@@ -880,38 +880,9 @@ export function ReportDocument({
                   </div>
                 </div>
 
-                {/* 분야별 풀이 2-col cards */}
-                <div className="rp-block">
-                  <div className="rp-eyebrow">해석</div>
-                  <h3 className="rp-block-title">분야별 풀이</h3>
-                  <div className="rp-fld-grid">
-                    {data.fieldNotes.map((note) => (
-                      <div key={note.label} className="rp-fld-card">
-                        <div className="rp-fld-label">{note.label}</div>
-                        <p>{note.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 大運 10년 단위 row */}
-                <div className="rp-block">
-                  <div className="rp-eyebrow">대운 · 10년 단위</div>
-                  <div className="rp-daewoon-row">
-                    {data.daewoon.map((c) => (
-                      <div
-                        key={c.age}
-                        className={`rp-daewoon-cell${c.isCurrent ? ' is-current' : ''}`}
-                      >
-                        <div className="rp-daewoon-age">
-                          {c.age}
-                          <span>세</span>
-                        </div>
-                        <div className="rp-daewoon-ganzi">{c.ganzi}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* 2026-07-23 — 표지를 A4 1장에 맞추기 위해 '분야별 풀이'(전문은 CHAPTER 05)와
+                    '대운 10년 단위'(동일 칩+차트는 CHAPTER 04) 프리뷰 블록을 표지에서 제거.
+                    두 블록 모두 바로 뒤 챕터에 전체가 실리므로 정보 손실은 없다. */}
 
                 <div className="rp-cover-foot">
                   <p>
