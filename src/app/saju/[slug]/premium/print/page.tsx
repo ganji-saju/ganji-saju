@@ -211,7 +211,11 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
   const data = buildPdfModel(reading, report, reportNo, targetYear, interpretation);
 
   return (
-    <AppShell>
+    // 인쇄 문서 페이지라 사이트 헤더/푸터(전역 SiteHeader·SiteFooter)를 싣지 않는다.
+    // header/footer 를 안 넘기면 AppShell 이 기본값으로 SiteHeader·SiteFooter 를 렌더해
+    // PDF 에 사이트 네비/회사정보 푸터가 통째로 찍히던 문제(2026-07-23). MegaNavBar 는
+    // AppShell 이 무조건 렌더하지만 @media print 에서 .mega-nav-root 로 숨긴다.
+    <AppShell header={false} footer={false}>
       {/* 2026-05-16 A7 — lifetime 환불/만료 등으로 권한 잃은 경우 focus 시 감지 →
           router.refresh() 로 gated view 로 자동 전환. */}
       <EntitlementRefresher productId="lifetime-report" slug={slug} initialHasEntitlement />
