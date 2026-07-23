@@ -22,8 +22,10 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
   return (
     <div className="pdf-print-actions sticky top-4 z-20 mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-[rgba(8,10,18,0.92)] p-3 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur">
       <div>
-        <div className="app-caption text-[var(--app-gold-soft)]">PDF 저장</div>
-        <p className="mt-1 text-base text-[var(--app-copy-muted)]">
+        {/* 바 배경이 어두운 rgba(8,10,18,.92) 라 라이트 테마 변수(gold-soft·copy-muted)는
+            어두운 글씨→안 보인다. 어두운 바 전용 밝은 색으로 고정. */}
+        <div className="app-caption font-bold text-[#f7a8cc]">PDF 저장</div>
+        <p className="mt-1 text-base text-white/75">
           버튼을 누른 뒤 인쇄 창에서 “PDF로 저장”을 선택하세요.
         </p>
       </div>
