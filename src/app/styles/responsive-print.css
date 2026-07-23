@@ -2537,6 +2537,7 @@
   .pdf-print-actions,
   .app-desktop-sidebar,
   .app-top-header,
+  .mega-nav-root,
   .app-mobile-dock {
     display: none !important;
   }
