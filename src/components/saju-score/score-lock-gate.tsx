@@ -80,13 +80,13 @@ export function ScoreLockGate({
             className="mt-1 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            내 사주 종합점수 공개
+            무료에서는 볼 수 없는 내 사주의 핵심 결과
           </h3>
           <p
             className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
             style={{ wordBreak: 'keep-all' }}
           >
-            종합점수와 일주·격국·용신·오행·신살 5요소 산출 내역을 한 번에 열어 드려요.
+            종합점수 · 사주등급 · 용신 · 격국 · 오행 · 신살까지 한 번에 공개됩니다.
           </p>
           {/* 2026-07-20 — 취소선·가격·버튼을 한 줄에 넣었더니 좁은 화면(max-w-xs=320px)에서
               "9,90/0원", "점수/공개하고/보기" 처럼 글자가 쪼개졌다(사용자 제보).
@@ -108,7 +108,7 @@ export function ScoreLockGate({
             href={checkoutHref}
             className="mt-3 inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
           >
-            점수 공개하고 보기
+            내 결과 확인하기
           </a>
           <p className="mt-3 text-[15px] text-[var(--app-copy-soft)]">
             결제 후 보관함에서 다시 볼 수 있어요
@@ -142,7 +142,7 @@ export function ScoreLockGate({
           href={checkoutHref}
           className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
         >
-          점수 공개하고 보기
+          내 결과 확인하기
         </a>
       </StickyBottomBar>
     </section>
