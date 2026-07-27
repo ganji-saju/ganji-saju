@@ -6,7 +6,7 @@
  */
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { BUSINESS_INFO } from '@/lib/business-info';
+import { KAKAO_INQUIRY_URL } from '@/lib/kakao/channel';
 
 interface FeatureUnavailableProps {
   /** 기능명 (예: "락스크린 위젯"). */
@@ -69,14 +69,14 @@ export function FeatureUnavailable({
       ) : null}
       <footer className="flex flex-wrap gap-2 pt-1">
         {alternate}
-        {BUSINESS_INFO.email ? (
-          <a
-            href={`mailto:${BUSINESS_INFO.email}?subject=${encodeURIComponent(`[기능 문의] ${featureName}`)}`}
-            className="text-[13.2px] font-bold text-[var(--app-pink-strong)] underline"
-          >
-            문의하기
-          </a>
-        ) : null}
+        <a
+          href={KAKAO_INQUIRY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[13.2px] font-bold text-[var(--app-pink-strong)] underline"
+        >
+          카카오톡 문의
+        </a>
         <Link
           href="/legal"
           className="text-[13.2px] font-bold text-[var(--app-copy-muted)] underline"

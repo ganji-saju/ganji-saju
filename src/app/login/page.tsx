@@ -9,7 +9,7 @@ import {
   UnifiedBirthInfoFields,
   type BirthLocationSearchResultLike,
 } from '@/components/saju/shared/unified-birth-info-fields';
-import { BUSINESS_INFO } from '@/lib/business-info';
+import { KAKAO_INQUIRY_URL } from '@/lib/kakao/channel';
 import { BIRTH_LOCATION_PRESETS, getBirthLocationPreset } from '@/lib/saju/birth-location';
 import {
   resolveUnifiedBirthInput,
@@ -22,7 +22,6 @@ import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
-const SUPPORT_EMAIL = BUSINESS_INFO.email || 'support@ganjisaju.kr';
 
 type LoginMode = 'gateway' | 'signup' | 'login' | 'recover' | 'reset';
 type GenderValue = 'male' | 'female' | '';
@@ -489,10 +488,12 @@ function GatewayView({
           <br />
           로그인 실패 또는 계정 확인이 필요하면{' '}
           <a
-            href={`mailto:${SUPPORT_EMAIL}`}
+            href={KAKAO_INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-bold text-[var(--app-pink-strong)] underline"
           >
-            {SUPPORT_EMAIL}
+            카카오톡 문의
           </a>
           {' '}또는{' '}
           <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
@@ -1360,10 +1361,12 @@ function LoginContent({
       <p className="text-[13.2px] leading-6 text-[var(--app-copy-muted)]">
         로그인 실패 또는 계정 안내가 필요하시면{' '}
         <a
-          href={`mailto:${SUPPORT_EMAIL}`}
+          href={KAKAO_INQUIRY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-bold text-[var(--app-pink-strong)] underline"
         >
-          {SUPPORT_EMAIL}
+          카카오톡 문의
         </a>
         {' '}또는{' '}
         <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
@@ -1493,12 +1496,12 @@ function LoginPageFallback() {
         </a>
       </div>
       <p className="text-center text-[13.2px] leading-6 text-[var(--app-copy-muted)]">
-        고객센터 이메일:{' '}
-        <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-[var(--app-pink-strong)] underline">
-          {SUPPORT_EMAIL}
+        고객센터:{' '}
+        <a href={KAKAO_INQUIRY_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[var(--app-pink-strong)] underline">
+          카카오톡 문의
         </a>
         <br />
-        로그인 실패 시 위 이메일 또는 고객센터로 문의해 주세요.
+        로그인 실패 시 카카오톡 또는 고객센터로 문의해 주세요.
       </p>
     </div>
   );

@@ -5,7 +5,7 @@
  * 사용자 directive: "로딩 상태와 오류 상태가 구분".
  */
 import type { ReactNode } from 'react';
-import { BUSINESS_INFO } from '@/lib/business-info';
+import { KAKAO_INQUIRY_URL } from '@/lib/kakao/channel';
 
 interface ErrorStateProps {
   /** 사용자에게 보일 제목 (예: "일시적인 오류가 발생했습니다"). */
@@ -59,12 +59,14 @@ export function ErrorState({
           </button>
         ) : null}
         {extraActions}
-        {showSupportLink && BUSINESS_INFO.email ? (
+        {showSupportLink ? (
           <a
-            href={`mailto:${BUSINESS_INFO.email}`}
+            href={KAKAO_INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[13.8px] font-bold text-[var(--app-copy-muted)] underline"
           >
-            고객센터 문의
+            카카오톡 문의
           </a>
         ) : null}
       </div>

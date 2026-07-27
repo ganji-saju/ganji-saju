@@ -31,6 +31,13 @@ if (process.env.NODE_ENV !== 'production' && rawChannelId && !kakaoChannelId) {
   );
 }
 
+/**
+ * 카카오톡 '문의하기' 채널 URL — 모든 메일 문의를 이 링크로 대체(단일 소스).
+ * 2026-07-27 사용자 지정 채널(_QVQxbX). '채널 추가(친구톡)'용 env 채널 ID 와는 별개로,
+ * 문의는 항상 이 공개 채널로 연결한다(env 오설정에 영향받지 않도록 고정).
+ */
+export const KAKAO_INQUIRY_URL = 'https://pf.kakao.com/_QVQxbX';
+
 /** 채널 추가 실행. 채널 ID 미설정(또는 형식 오류)이면 false. */
 export function addKakaoChannel(): boolean {
   if (!kakaoChannelId || typeof window === 'undefined') return false;
