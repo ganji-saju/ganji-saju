@@ -10,7 +10,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 // 정책/CS 링크
 import Link from 'next/link';
-import { BUSINESS_INFO } from '@/lib/business-info';
+import { KAKAO_INQUIRY_URL } from '@/lib/kakao/channel';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 function CreditsPageContent() {
@@ -227,11 +227,14 @@ function CreditsPageContent() {
           <Link href="/help" className="underline">
             고객센터
           </Link>
-          {BUSINESS_INFO.email ? (
-            <a href={`mailto:${BUSINESS_INFO.email}`} className="underline">
-              {BUSINESS_INFO.email}
-            </a>
-          ) : null}
+          <a
+            href={KAKAO_INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            카카오톡 문의
+          </a>
         </section>
       </AppPage>
     </AppShell>

@@ -85,7 +85,7 @@ test('login page exposes the minimum paid-service auth surface', () => {
     'Google 로그인',
     '/terms',
     '/privacy',
-    'SUPPORT_EMAIL',
+    '카카오톡 문의',
     '로그인 실패',
   ]) {
     assert.ok(source.includes(required), `missing login surface copy: ${required}`);

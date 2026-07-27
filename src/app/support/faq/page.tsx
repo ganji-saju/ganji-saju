@@ -5,6 +5,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { KakaoInquiryButton } from '@/components/support/kakao-inquiry-button';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { buildFAQPageSchema, serializeStructuredData } from '@/lib/seo/structured-data';
@@ -244,7 +245,7 @@ export default async function FaqPage() {
             못 찾으셨다면
           </div>
           <h2 className="mt-1.5 text-[19.5px] font-extrabold leading-snug tracking-tight">
-            1:1 문의로 직접 보내주세요
+            카카오톡으로 문의해 주세요
           </h2>
           <p
             className="mt-2 text-[14.4px] leading-[1.6]"
@@ -252,12 +253,9 @@ export default async function FaqPage() {
           >
             평일 9~18시 사이 답변 드립니다. 결제 영수증·캡처가 있다면 함께 첨부해 주세요.
           </p>
-          <Link
-            href="/support/contact"
-            className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-          >
-            1:1 문의 보내기 →
-          </Link>
+          <div className="mt-4">
+            <KakaoInquiryButton label="카카오톡으로 문의하기" fullWidth={false} className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-[#FEE500] px-5 text-[15.5px] font-extrabold text-[#191919] shadow-[0_8px_20px_rgba(0,0,0,0.18)]" />
+          </div>
         </article>
       </AppPage>
     </AppShell>

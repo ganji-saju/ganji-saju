@@ -9,6 +9,7 @@
 
 import Link from 'next/link';
 import { BUSINESS_INFO } from '@/lib/business-info';
+import { KAKAO_INQUIRY_URL } from '@/lib/kakao/channel';
 import { POLICY_LABELS, type PolicyKind } from '@/shared/policies/types';
 
 interface PolicyNotReadyProps {
@@ -51,17 +52,17 @@ export function PolicyNotReady({ kind }: PolicyNotReadyProps) {
             </a>
           </div>
         )}
-        {BUSINESS_INFO.email && (
-          <div>
-            <span className="text-[var(--app-copy-muted)]">이메일 </span>
-            <a
-              href={`mailto:${BUSINESS_INFO.email}`}
-              className="font-bold text-[var(--app-ink)]"
-            >
-              {BUSINESS_INFO.email}
-            </a>
-          </div>
-        )}
+        <div>
+          <span className="text-[var(--app-copy-muted)]">카카오톡 </span>
+          <a
+            href={KAKAO_INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-[var(--app-ink)]"
+          >
+            문의하기
+          </a>
+        </div>
         {BUSINESS_INFO.csHours && (
           <div>
             <span className="text-[var(--app-copy-muted)]">운영시간 </span>

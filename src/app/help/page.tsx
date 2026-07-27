@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { KakaoInquiryButton } from '@/components/support/kakao-inquiry-button';
 import { BUSINESS_INFO } from '@/lib/business-info';
 
 export const metadata: Metadata = {
@@ -55,22 +56,25 @@ export default function HelpCenterShellPage() {
             지금은 카카오/전화로 받아드려요
           </h1>
           <p className="mt-2 text-[15px] leading-[1.7] text-[var(--app-copy-muted)]">
-            1:1 문의 시스템은 아직 개발 중이에요. 급한 일은 아래 채널로 바로 보내주시면 빠르게 답변드립니다.
+            결제·계정·풀이 관련 문의는 카카오톡으로 바로 보내주시면 빠르게 답변드립니다.
           </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <a
-              href="tel:010-8123-9184"
-              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
-            >
-              ☎ 010-8123-9184
-            </a>
-            <Link
-              href="/dialogue"
-              className="inline-flex h-12 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
-              style={{ borderColor: 'var(--app-line)' }}
-            >
-              풀이 관련 질문은 대화방
-            </Link>
+          <div className="mt-3 grid gap-2">
+            <KakaoInquiryButton label="카카오톡으로 문의하기" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <a
+                href="tel:010-8123-9184"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              >
+                ☎ 010-8123-9184
+              </a>
+              <Link
+                href="/dialogue"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-copy-muted)]"
+                style={{ borderColor: 'var(--app-line)' }}
+              >
+                풀이 관련 질문은 대화방
+              </Link>
+            </div>
           </div>
         </article>
 
