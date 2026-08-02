@@ -17,6 +17,18 @@ test('isChannelFriend — 대상 채널이 added 면 true', () => {
   assert.equal(isChannelFriend(json, TARGET), true);
 });
 
+test('isChannelFriend — 실 API 대문자 relation "ADDED" 도 true(문서≠실응답, 대소문자 무시)', () => {
+  // 2026-08-03 프로덕션 실측: 카카오는 relation 을 대문자("ADDED")로 반환.
+  const json = {
+    channels: [{ channel_public_id: TARGET, channel_uuid: '@간지사주', relation: 'ADDED' }],
+  };
+  assert.equal(isChannelFriend(json, TARGET), true);
+  assert.equal(
+    isChannelFriend({ channels: [{ channel_public_id: TARGET, relation: 'NONE' }] }, TARGET),
+    false
+  );
+});
+
 test('isChannelFriend — 대상 채널은 있지만 relation 이 none 이면 false', () => {
   const json = { channels: [{ channel_public_id: TARGET, relation: 'none' }] };
   assert.equal(isChannelFriend(json, TARGET), false);

@@ -129,11 +129,6 @@ export async function GET(req: NextRequest) {
     if (!channelsRes.ok) return fail('channels_fetch');
     const channelsJson = await channelsRes.json();
     isFriend = isChannelFriend(channelsJson, kakaoChannelId);
-    // ⚠️ 임시 진단(B: channel_public_id ≠ NEXT_PUBLIC_KAKAO_CHANNEL_ID 확인용). 원인 파악 후 제거.
-    console.log(
-      '[kakao-coupon][debug] channelsRaw=', JSON.stringify(channelsJson),
-      '| targetChannelId=', kakaoChannelId, '| isFriend=', isFriend
-    );
   } catch {
     return fail('channels_fetch');
   }
