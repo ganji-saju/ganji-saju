@@ -227,9 +227,9 @@ export function TodayFortuneDetailClient({
       <div className="space-y-4 px-1 py-4">
         {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA. 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면
             컴포넌트 자체가 아무것도 렌더하지 않는다. */}
-        {sourceSessionId ? (
-          <KakaoFriendCouponCta slug={sourceSessionId} scope={concernId} />
-        ) : null}
+        {/* 이 페이지는 이미 언락 상태 → redeem(slug/scope) 은 안 넘김(쿠폰 낭비 방지).
+            redeem 은 페이월(today-fortune-result-client)에서만. 여기선 발급 안내만. */}
+        <KakaoFriendCouponCta />
 
         {/* §결과 없음 — 무료 결과 만들러 안내 */}
         {!sourceSessionId ? (

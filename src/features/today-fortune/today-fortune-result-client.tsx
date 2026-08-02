@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { PremiumLockCard } from '@/components/today-fortune/premium-lock-card';
+import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
 import { TodayScoreReveal } from '@/components/today-fortune/today-score-reveal';
 import { TodayFortuneSummaryCard } from '@/components/today-fortune/today-fortune-summary-card';
 // 2026-05-15 handoff PR-C: 52 m-reveal — 오늘운세 결과 카드 stagger 등장.
@@ -203,6 +204,9 @@ export function TodayFortuneResultClient({
                 sourceSessionId={freeResult.sourceSessionId}
                 concernId={freeResult.concernId}
               />
+
+              {/* 카카오 무료쿠폰 보유 시 페이월에서 0원 무료 적용(redeem). 휴면(env off)이면 미렌더. */}
+              <KakaoFriendCouponCta slug={freeResult.sourceSessionId} scope={freeResult.concernId} />
 
               {/* §4 — Task 7 크로스링크: 저장된 공통 프로필로 재입력 없이 사주로 전환.
                   시니어 UI 대형 터치 영역 pink pill. */}
