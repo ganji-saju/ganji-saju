@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { createClient } from '@/lib/supabase/server';
-import { isKakaoFriendCouponEnabled } from '@/lib/coupons/kakao-friend-coupon';
+import { isKakaoFriendCouponEnabled, issueKakaoFriendCoupon } from '@/lib/coupons/kakao-friend-coupon';
 import { kakaoChannelId } from '@/lib/kakao/channel';
 import { isChannelFriend } from '@/lib/kakao/channel-friendship';
 
@@ -135,15 +135,13 @@ export async function GET(req: NextRequest) {
 
   if (!isFriend) return fail('not_friend');
 
-  // 4) 친구 확인됨 → 쿠폰 발급.
-  //    🔴 TODO Task 6: 여기서 issueKakaoFriendCoupon(user.id, kakaoUid) 를 호출해
-  //    user_coupons 를 멱등 발급한다(Task 2 에 이미 구현되어 있음 — 이 라우트는 아직 호출하지
-  //    않는다. Task 6 이 발급 책임을 진다). kakaoUid 는 감사용 verified_kakao_uid 로 넘긴다.
+  // 4) 친구 확인됨 → 쿠폰 멱등 발급(계정당 1회, user_coupons UNIQUE 강제). kakaoUid=감사용 verified_kakao_uid.
   const kakaoUid = await fetchKakaoUid(accessToken);
-  console.info('[kakao-coupon] channel friend verified — issuance pending Task 6', {
-    userId: user.id,
-    kakaoUid,
-  });
+  const issued = await issueKakaoFriendCoupon(user.id, kakaoUid ?? '');
+  if (!issued.ok) {
+    console.error('[kakao-coupon] issuance failed after friend verification', { userId: user.id });
+    return fail('issue_failed');
+  }
 
-  return clearCookies(NextResponse.redirect(`${origin}${RESULT_PATH}?kakaoCoupon=verified`));
+  return clearCookies(NextResponse.redirect(`${origin}${RESULT_PATH}?kakaoCoupon=issued`));
 }
