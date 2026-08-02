@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-03 세션 (Claude) — main E2E red 회귀 수정 (무료 하루1회 제한 → test 계정 쿼터 리셋)
+
+> 앞 세션에서 발견한 main Playwright E2E red 를 **별도 조사·수정**. 브랜치 fix/e2e-today-fortune-daily-limit-reset (PR #665).
+
+### 진짜 근본원인 (내 첫 추정 "#660 result-client 회귀"는 틀림)
+실패 테스트 `e2e/saju.spec.ts › 4. 점수 일치` — `waitForURL('/today-fortune/result')` 15s 타임아웃. CI 실패 스냅샷을 받아보니(playwright-report artifact) 페이지에 alert **"간단운세는 하루 한 번 볼 수 있어요. 내일 다시 만나요."** = `freeDailyLimitMessage('today')`. 즉 **무료 하루 1회 제한**(daily-limit.ts, 2026-07-18 도입)이 원인. saju.spec:166 은 **무료(비멤버) 공유 test 계정**으로 today-fortune 을 제출 → 계정당 1/일(`membership_benefit_usage.free_today_daily`) 소진 시 `POST /api/today-fortune` 가 429(free_daily_limit) → `submitTodayFromProfile` throw → `router.push` 안 됨 → 네비 없음 → 타임아웃.
+
+### 왜 #660처럼 보였나 (오진 기록)
+08-02 에 쿠폰 PR(#659~#663) 연속 머지로 **하루에 E2E run 이 여러 번** 겹침. 6fdf347c(08:19, 그날 첫 run)=pass → 7b0448a5(#660, 09:07)부터 fail. #660 은 무죄, 단지 그날 2번째 run(첫 run 이 이미 계정 쿼터 소진). 07-18 제한 도입 후 계속 잠재(하루 1 run 인 날은 우연히 pass).
+
+### 수정 (제품 코드 아님 = 테스트 격리)
+- `e2e/fixtures/entitlement-helpers.ts`: `resetFreeDailyUsage(userId, benefit='free_today_daily')` 신규 — service_role 로 `membership_benefit_usage` 해당 행 삭제. test 계정 user_id 스코프.
+- `e2e/saju.spec.ts` describe 4: retry-safe `beforeEach` 로 매 시도 전 계정 쿼터 리셋(service_role 없으면 skip=로컬 관용). payment-blocks.spec 의 seed/cleanup(service_role) 패턴 미러. 쿠키 gj_free_today 는 매 run fresh context 라 사전 존재 X → 계정 리셋만으로 충분.
+
+### 검증
+playwright --list(파싱)·typecheck 0. **결정적 증거=같은 KST 날짜 E2E 연속 2회 green**(run1이 쿼터 소진, run2가 리셋으로 통과 — 수정 없으면 run2는 실패). ⚠️ 같은 run 의 `payment-blocks:69 이용중 배지` 실패는 별개·flaky(subscription seed 타이밍), daily-limit 무관.
+
+---
+
 ## 2026-08-03 세션 (Claude) — /admin 카카오 친구추가 쿠폰 발급/사용 현황 카드
 
 > 카카오 무료쿠폰 라이브(#659·660·661·663) 후속으로 요청됐던 **어드민 현황 카드** 구현. 브랜치 feat/admin-kakao-coupon-stats-card.

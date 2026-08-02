@@ -17,8 +17,9 @@
 // → 본 spec 도 dependency 로 자동 skip (CI 안전).
 
 import { test, expect, type Page } from '@playwright/test';
-import { hasTestUser } from './fixtures/test-user';
+import { hasTestUser, getTestUser } from './fixtures/test-user';
 import { resolveProfileReadingSlug } from './fixtures/reading-slug';
+import { resolveTestUserId, resetFreeDailyUsage } from './fixtures/entitlement-helpers';
 
 // 2026-06-27 — 슬러그는 더 이상 영속 reading(E2E_TEST_READING_SLUG)에 의존하지 않고
 // 테스트 유저 프로필에서 런타임 유도한다(#484 데이터 초기화로 readings 삭제돼도 안전).
@@ -163,6 +164,19 @@ test.describe('3. /membership 결제 진입점 (PR #177/#178 회귀 차단)', ()
 //   따라서 무료 화면에서 검증 가능한 불변식은 **총운(종합점수) 일치**로 좁힌다.
 //   (사주 페이지의 6영역 카드 자체는 위 describe 1 이 계속 지킨다.)
 test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
+  // 2026-08-03 — 무료 하루 1회 제한(daily-limit.ts, 2026-07-18)이 공유 test 계정의
+  //   today-fortune 쿼터를 소진시켜, 같은 KST 날짜에 CI 가 두 번째로 돌면 아래 제출이
+  //   free_daily_limit 으로 막혀 결과 페이지로 넘어가지 못했다(#660 머지 후 main red 의
+  //   실제 원인 — 08-02 쿠폰 PR 연속 머지로 하루 여러 run 이 겹쳤다). 매 시도 전에 계정
+  //   쿼터를 리셋해 결정론화. service_role 미설정(로컬)이면 리셋 skip(기존 동작 유지).
+  //   (쿠키 gj_free_today 는 매 run fresh context 라 사전 존재 X → 계정 리셋만으로 충분.)
+  test.beforeEach(async () => {
+    const credentials = getTestUser();
+    if (!credentials || !process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+    const userId = await resolveTestUserId(credentials.email);
+    await resetFreeDailyUsage(userId);
+  });
+
   test('/saju/[slug] 의 총운 score 가 /today-fortune 결과 페이지 종합점수와 일치', async ({
     page,
   }) => {
