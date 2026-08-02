@@ -113,3 +113,20 @@ test('causal: 조사 받침 일치 — 모음 종결 지지/신살에 가/과 �
   assert.doesNotMatch(n.full, /자수이|인목와/);
   assert.match(n.full, /자리\)가/); // 공망살(…자리) → 가
 });
+
+test('causal: 비-오행 관계(충/육합/형/해/파/원진)도 지지 레이어를 서술한다', () => {
+  for (const kind of ['충', '육합', '형', '해', '파', '원진'] as const) {
+    const rel: CausalInput = {
+      ...FIXTURE,
+      todayBranch: '申',
+      topRelation: { kind, element: null, natalBranches: ['寅'] },
+    };
+    const n = buildCausalNarrative(rel, { seed: kind });
+    assert.match(n.full, new RegExp(kind), `${kind} 관계어 누락`);
+    assert.match(n.full, /인목과/); // 寅=인목, josa 과
+    assert.doesNotMatch(n.full, /[㐀-鿿]/, `${kind} 본문 한자`);
+    for (const re of FORBIDDEN_PATTERNS) {
+      assert.equal(n.full.match(re), null, `${kind} 금지어: ${n.full.match(re)}`);
+    }
+  }
+});

@@ -172,14 +172,32 @@ function slotCause(i: CausalInput, ink: TermInk, seed: number): string {
   );
 }
 
+// 비-오행 관계(육합/충/형/해/파/원진)용 서술 절. 삼합/방합은 오행 결과가 있어 별도 템플릿을 쓴다.
+const RELATION_CLAUSE: Record<JijiRelation['kind'], string> = {
+  삼합: '만나 어우러지는데',
+  방합: '만나 힘을 보태는데',
+  육합: '육합으로 부드럽게 맞물리는데',
+  충: '충으로 부딪히는데',
+  형: '형으로 어긋나기 쉬운데',
+  해: '해로 살짝 어그러지는데',
+  파: '파로 어긋나 깨지기 쉬운데',
+  원진: '원진으로 서로 껄끄럽게 얽히는데',
+};
+
 // 슬롯 2 — 겹침(합충 + 용신/기신)
 function slotOverlap(i: CausalInput, ink: TermInk): string {
   const parts: string[] = [];
-  if (i.topRelation && i.topRelation.element) {
+  if (i.topRelation) {
     const natal = i.topRelation.natalBranches.map((b) => BRANCH_KOR[b]).join('·');
-    parts.push(
-      `오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} 만나 ${ink.element(i.topRelation.element)}으로 ${josa(i.topRelation.kind, '을', '를')} 이루는데,`,
-    );
+    if (i.topRelation.element) {
+      parts.push(
+        `오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} 만나 ${ink.element(i.topRelation.element)}으로 ${josa(i.topRelation.kind, '을', '를')} 이루는데,`,
+      );
+    } else {
+      parts.push(
+        `오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} ${RELATION_CLAUSE[i.topRelation.kind]},`,
+      );
+    }
   }
   const focusEl = i.topRelation?.element ?? STEM_ELEMENT[i.todayStem];
   const dir =
