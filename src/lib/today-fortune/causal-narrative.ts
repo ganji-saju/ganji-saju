@@ -77,6 +77,18 @@ export class TermInk {
   }
 }
 
+// 받침(batchim) 인식 조사 헬퍼 — 마지막 한글 음절 기준(괄호 설명 등 뒤 문장부호 무시).
+function hasBatchim(word: string): boolean {
+  for (let i = word.length - 1; i >= 0; i--) {
+    const ch = word.charCodeAt(i);
+    if (ch >= 0xac00 && ch <= 0xd7a3) return (ch - 0xac00) % 28 !== 0;
+  }
+  return false;
+}
+function josa(word: string, withBatchim: string, withoutBatchim: string): string {
+  return `${word}${hasBatchim(word) ? withBatchim : withoutBatchim}`;
+}
+
 // ── 지지 관계 랭킹 ──────────────────────────────────────
 const RELATION_RANK: Record<string, number> = {
   삼합: 6, 충: 6, 방합: 4, 육합: 4, 형: 3, 해: 2, 파: 2, 원진: 2,
@@ -166,7 +178,7 @@ function slotOverlap(i: CausalInput, ink: TermInk): string {
   if (i.topRelation && i.topRelation.element) {
     const natal = i.topRelation.natalBranches.map((b) => BRANCH_KOR[b]).join('·');
     parts.push(
-      `오늘 ${BRANCH_KOR[i.todayBranch]}이 사주의 ${natal}와 만나 ${ink.element(i.topRelation.element)}으로 ${i.topRelation.kind}을 이루는데,`,
+      `오늘 ${josa(BRANCH_KOR[i.todayBranch], '이', '가')} 사주의 ${josa(natal, '과', '와')} 만나 ${ink.element(i.topRelation.element)}으로 ${josa(i.topRelation.kind, '을', '를')} 이루는데,`,
     );
   }
   const focusEl = i.topRelation?.element ?? STEM_ELEMENT[i.todayStem];
@@ -200,8 +212,8 @@ function slotSinsal(i: CausalInput, ink: TermInk): string | null {
   if (!i.topSinsal) return null;
   const s = ink.sinsal(i.topSinsal.name);
   return i.topSinsal.category === '길신'
-    ? `${s}이 함께라 내미는 도움을 잘 잡으면 하루가 한결 수월해요.`
-    : `${s}이 함께라 예민해지거나 서두르기 쉬우니 한 박자 쉬어 가세요.`;
+    ? `${josa(s, '이', '가')} 함께라 내미는 도움을 잘 잡으면 하루가 한결 수월해요.`
+    : `${josa(s, '이', '가')} 함께라 예민해지거나 서두르기 쉬우니 한 박자 쉬어 가세요.`;
 }
 
 // 슬롯 5 — 조언(용신 + 십성 대응)

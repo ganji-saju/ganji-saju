@@ -99,3 +99,17 @@ test('causal: 폴백 — 관계·세운·신살 없어도 brief/full 비어있�
   const n = buildCausalNarrative(bare, { seed: 'x' });
   assert.ok(n.brief.length > 0 && n.full.length > 0);
 });
+
+test('causal: 조사 받침 일치 — 모음 종결 지지/신살에 가/과 적용', () => {
+  const vowel: CausalInput = {
+    ...FIXTURE,
+    todayBranch: '子',
+    topRelation: { kind: '삼합', element: '수', natalBranches: ['寅'] },
+    topSinsal: { name: '공망살', category: '흉신' },
+  };
+  const n = buildCausalNarrative(vowel, { seed: 'josa' });
+  assert.match(n.full, /자수가/);   // 子=자수(모음) → 가
+  assert.match(n.full, /인목과/);   // 寅=인목(받침) → 과
+  assert.doesNotMatch(n.full, /자수이|인목와/);
+  assert.match(n.full, /자리\)가/); // 공망살(…자리) → 가
+});
