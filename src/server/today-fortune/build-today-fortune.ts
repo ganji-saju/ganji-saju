@@ -29,7 +29,14 @@ import { pickIljinMessages } from '@/lib/today-fortune/iljin-case-picker';
 import type { Branch as IljinBranch, Stem as IljinStem } from '@/lib/today-fortune/iljin-rules';
 // 2026-05-15 PR — 02 신살 spec doc: 종합 신살 탐지 (20종).
 import { applyActiveSinsalWeights } from '@/lib/sinsal-active-weights';
-import { detectComprehensiveSinsals } from '@/lib/today-fortune/sinsal-comprehensive';
+import { detectComprehensiveSinsals, type SinsalHit } from '@/lib/today-fortune/sinsal-comprehensive';
+// Task 4 — 인과 서사 조립기 입력 파생 헬퍼 (detectTodaySinsals/buildCausalInput).
+import {
+  buildCausalNarrative,
+  rankJijiRelations,
+  type CausalInput,
+} from '@/lib/today-fortune/causal-narrative';
+import { calculateSipsung } from '@/lib/today-fortune/iljin-rules';
 // 2026-05-16 PR #149 (Part C) — 사용자 상황 기반 영역 점수 재정렬.
 import { reorderTodayScoresBySituation } from '@/lib/today-fortune/situation-score-priority';
 // 2026-05-16 PR #179 — 사주 페이지 ↔ 운세 페이지 점수 단일화 helper.
@@ -2880,6 +2887,87 @@ export function buildTodayFortuneFreeResult(
       );
       return { caseIds: picked.caseIds, messages: picked.messages };
     })(),
+  };
+}
+
+// Task 4 — 오늘 일진 기준 신살 탐지 (free 의 buildSajuChartSnapshot 블록과 동일 로직을 재사용 가능하게 추출).
+export function detectTodaySinsals(
+  sajuData: SajuDataV1 | SajuDataV2,
+  todayStem: string | null,
+  todayBranch: string | null,
+  currentYearBranch?: string,
+): SinsalHit[] {
+  if (!todayStem || !todayBranch) return [];
+  try {
+    const dayGanziIndex = computeDayGanziIndex(
+      sajuData.pillars.day.stem,
+      sajuData.pillars.day.branch,
+    );
+    const rawHits = detectComprehensiveSinsals(
+      {
+        dayMaster: sajuData.pillars.day.stem as IljinStem,
+        yearBranch: sajuData.pillars.year.branch as IljinBranch,
+        monthBranch: sajuData.pillars.month.branch as IljinBranch,
+        dayBranch: sajuData.pillars.day.branch as IljinBranch,
+        hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
+        dayGanziIndex,
+      },
+      {
+        iljin: { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch },
+        currentYearBranch: currentYearBranch as IljinBranch | undefined,
+      },
+    );
+    return applyActiveSinsalWeights(rawHits);
+  } catch {
+    return [];
+  }
+}
+
+function pickTopSinsal(hits: SinsalHit[]): SinsalHit | null {
+  if (hits.length === 0) return null;
+  return [...hits].sort((a, b) => {
+    const ai = a.positions.includes('iljin') ? 1 : 0;
+    const bi = b.positions.includes('iljin') ? 1 : 0;
+    if (ai !== bi) return bi - ai; // 오늘과 상호작용하는 신살 우선
+    return Math.abs(b.scoreHint) - Math.abs(a.scoreHint);
+  })[0];
+}
+
+// Task 4 — CausalInput 파생 (십성/세운월운/지지관계/용신기신/우세오행/최상위 신살).
+export function buildCausalInput(
+  sajuData: SajuDataV1 | SajuDataV2,
+  todayPillar: { stem: string | null; branch: string | null },
+  detectedSinsals: SinsalHit[],
+): CausalInput | null {
+  if (!todayPillar.stem || !todayPillar.branch) return null;
+  const dayMaster = sajuData.pillars.day.stem as IljinStem;
+  const todayStem = todayPillar.stem as IljinStem;
+  const todayBranch = todayPillar.branch as IljinBranch;
+  const { lucky, unlucky } = deriveLuckyElements(sajuData);
+  const natal = [
+    sajuData.pillars.year.branch,
+    sajuData.pillars.month.branch,
+    sajuData.pillars.day.branch,
+    sajuData.pillars.hour?.branch,
+  ].filter(Boolean) as IljinBranch[];
+  const cl = sajuData.currentLuck;
+  const tenGodOf = (ganzi?: string | null) =>
+    ganzi ? calculateSipsung(dayMaster, ganzi[0] as IljinStem) : null;
+  const top = pickTopSinsal(detectedSinsals);
+  return {
+    dayMaster,
+    todayStem,
+    todayBranch,
+    iljinTenGod: calculateSipsung(dayMaster, todayStem),
+    saewoonTenGod: tenGodOf(cl?.saewoon?.ganzi),
+    wolwoonTenGod: tenGodOf(cl?.wolwoon?.ganzi),
+    topRelation: rankJijiRelations(todayBranch, natal),
+    yongsin: lucky,
+    kishin: unlucky,
+    dominantElement: sajuData.fiveElements.dominant as CausalInput['dominantElement'],
+    weakestElement: sajuData.fiveElements.weakest as CausalInput['weakestElement'],
+    topSinsal: top ? { name: top.name, category: top.category } : null,
+    strengthLevel: (sajuData.strength?.level as CausalInput['strengthLevel']) ?? null,
   };
 }
 
