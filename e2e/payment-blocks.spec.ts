@@ -22,7 +22,7 @@
 // - monthly-calendar entitlement (fortune-calendar-panel)
 // - subscription-expiring notification feed
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type Locator } from '@playwright/test';
 import { hasTestUser, getTestUser } from './fixtures/test-user';
 import { resolveProfileReadingSlug } from './fixtures/reading-slug';
 import {
@@ -36,6 +36,22 @@ import {
 
 // auth.setup.ts 가 저장하는 storageState — beforeAll 에서 인증 컨텍스트로 슬러그 유도용.
 const AUTH_STORAGE_PATH = 'e2e/.auth/test-user.json';
+
+// 2026-08-03 — 활성 구독/이용권 배지·CTA flake 견고화.
+//   이 spec 의 게이트된 배지는 서버 컴포넌트가 렌더마다 auth.getUser()(= Supabase Auth 로
+//   네트워크 검증)로 판정하는데, preview 서버리스에서 이 왕복이 드물게 일시 실패하면 서버가
+//   사용자를 비로그인으로 보고 배지를 아예 빼버린다(계정 seed 정상·페이지는 완전 렌더 — 배지만
+//   DOM 누락). 관측: 같은 serial 그룹에서 매번 다른 test(:69/:93)가 간헐 red. 새 요청이면 회복돼
+//   1회 reload 후 재확인한다(제품 로직 결함이 아닌 일시적 SSR read 완화 — 여전히 없으면 실패).
+async function expectVisibleResilient(page: Page, locator: Locator, message: string) {
+  try {
+    await expect(locator, message).toBeVisible({ timeout: 8_000 });
+  } catch {
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await expect(locator, `${message} (reload 후 재확인)`).toBeVisible({ timeout: 8_000 });
+  }
+}
 
 // 모든 spec 이 service_role + test user 의존. 미설정 환경은 skip.
 test.beforeEach(async () => {
@@ -72,10 +88,11 @@ test.describe('1-3. Active subscription 활성 사용자 (PR #177 회귀 차단)
 
     // "이용 중" 텍스트 1개 이상 — 활성 plan 의 배지.
     const inUseBadge = page.getByText('이용 중', { exact: false });
-    await expect(
+    await expectVisibleResilient(
+      page,
       inUseBadge.first(),
       '/membership 활성 plan 카드에 "이용 중" 배지'
-    ).toBeVisible({ timeout: 10_000 });
+    );
   });
 
   test('/pricing 에 활성 구독 plan "✓ 이용 중 · 결제 내역" CTA', async ({ page }) => {
@@ -84,10 +101,11 @@ test.describe('1-3. Active subscription 활성 사용자 (PR #177 회귀 차단)
 
     // 결제 button 대체 CTA — "✓ 이용 중 · 결제 내역" 또는 유사 텍스트.
     const altCta = page.getByText(/이용\s*중.*결제\s*내역/);
-    await expect(
+    await expectVisibleResilient(
+      page,
       altCta.first(),
       '/pricing 활성 plan "✓ 이용 중 · 결제 내역" CTA'
-    ).toBeVisible({ timeout: 10_000 });
+    );
   });
 
   test('/membership/checkout?plan=premium 에 "이미 이용 중인 멤버십입니다" 안내', async ({
@@ -98,10 +116,11 @@ test.describe('1-3. Active subscription 활성 사용자 (PR #177 회귀 차단)
     await page.waitForLoadState('networkidle');
 
     const blockMessage = page.getByText(/이미 이용 중인 멤버십/);
-    await expect(
+    await expectVisibleResilient(
+      page,
       blockMessage.first(),
       '/membership/checkout 이미 이용 중 안내'
-    ).toBeVisible({ timeout: 10_000 });
+    );
   });
 });
 
@@ -143,9 +162,10 @@ test.describe('4. Lifetime report 보유 사용자 (PR #177 회귀 차단)', () 
     await page.waitForLoadState('networkidle');
 
     const ownedCta = page.getByText(/구매한 풀이 보기/);
-    await expect(
+    await expectVisibleResilient(
+      page,
       ownedCta.first(),
       'lifetime 보유 사용자의 deep 페이지 CTA'
-    ).toBeVisible({ timeout: 10_000 });
+    );
   });
 });
