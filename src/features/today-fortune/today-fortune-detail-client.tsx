@@ -343,6 +343,32 @@ export function TodayFortuneDetailClient({
               </MotionResultReveal>
             ) : null}
 
+            {/* §5.5 — 인과 서사 카드: 오늘 이 흐름인 이유 (Task 5 배선 causalNarrative).
+                결제 전용, 프리미엄 패널 진입 전 "왜" 를 먼저 보여주는 리드인.
+                생성 실패/미배선 시 null → 카드 자체 미노출(graceful degrade). */}
+            {result.causalNarrative ? (
+              <article
+                className="rounded-[18px] border p-5"
+                style={{
+                  background: 'var(--app-pink-soft)',
+                  borderColor: 'var(--app-pink-line)',
+                }}
+              >
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+                  결제 전용 풀이
+                </div>
+                <h2
+                  className="mt-1.5 text-[20.7px] font-extrabold leading-[1.4] tracking-tight text-[var(--app-ink)]"
+                  style={{ wordBreak: 'keep-all' }}
+                >
+                  {result.causalNarrative.title}
+                </h2>
+                <p className="mt-2 text-[15px] leading-[1.65] text-[var(--app-copy)]">
+                  {result.causalNarrative.body}
+                </p>
+              </article>
+            ) : null}
+
             {/* §6 — 결제 전용 프리미엄 패널 (시간대 windows / 시나리오 / 행동)
                 2026-05-16 — unlock 직후 자동 스크롤 anchor.
                   Q1/Q2/Q3 클릭으로 대화방 prefill 흐름 위해 sourceSessionId/concernId 전달. */}

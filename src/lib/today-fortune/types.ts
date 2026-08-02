@@ -233,6 +233,12 @@ export interface TodayFortunePremiumResult {
    * 근인: 일진 메시지 라이브러리를 free 만 쓰고 premium 은 안 써서 매일 거의 동일했음.
    * 매일 다른 60갑자 → 발동 케이스 → 메시지로 결제 풀이가 오늘 위주로 변동. ganzi 한글 독음은 UI.
    */
+  /**
+   * 2026-08-02 Task 5 — 결정론적 다층 인과 서사 조립기(causal-narrative) 유료 배선.
+   * 원국/오늘 일진/십성/지지관계/신살을 조합한 full 인과 문단. buildCausalInput 이
+   * null 이면(시 미입력 등 필수 인자 부족) null.
+   */
+  causalNarrative: { title: string; body: string } | null;
   todayIljinReading?: {
     ganzi: string;
     score: number | null;
