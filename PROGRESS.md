@@ -7,6 +7,37 @@
 
 ---
 
+## 2026-08-02 세션 (Claude) — 카카오 친구추가 무료쿠폰 구현 (휴면 배포)
+
+> 이전 세션(clear 전)에서 채팅으로만 확정했다가 유실된 설계를, Claude Code 트랜스크립트(`0bb952dd`)에서 **복구**해 스펙화 → 전체 구현. 브랜치 feat/kakao-friend-coupon, 11커밋, 최종 opus 리뷰 **MERGE-READY(휴면)**. **전 기능 `KAKAO_FRIEND_COUPON_ENABLED` env 게이트로 휴면 배포**(카카오 콘솔 세팅 전까진 무동작).
+
+### 무엇
+카카오 채널 친구추가(검증형 `plus_friends`) → **오늘 자세히보기(3,300원) 무료쿠폰 1회**(계정당 1회·7일 만료) → 결제창에서 **0원 직접 지급**. 신규 `user_coupons` 테이블(migration 072, UNIQUE(user_id,type)·RLS select-own).
+
+### 머니패스(핵심, opus 검증)
+- **유일 지급 = `recordTodayFortunePremiumAccess`**(credit_transactions amount:0 type:use feature:detail_report) — 전 차감·결제원장·매출 **0**. ⚠️`unlockTodayFortunePremium`은 전 차감하므로 금지, `grantTasteProductEntitlement`·payment_orders도 미사용(045 amount>0 CHECK).
+- **단일사용=원자적 mark-first**: `markCouponRedeemed`(status='issued'→'redeemed' CAS, 0행=중복차단) 를 지급보다 **먼저**(리뷰서 grant-before-mark TOCTOU=쿠폰1개 N reading 무료 발견→수정), 지급 throw 시 `rollbackCouponRedeemed`(redemption_reading_key 스코프 CAS).
+- 소유검증(unlock route 동일 403)·만료차단(couponAvailability 게이트가 mark 이전).
+
+### 구조 (8 태스크, TDD)
+1 migration+env게이트·상수 / 2 쿠폰 스토어(순수 couponAvailability + issue/mark/rollback) / 3 redeem API(0원) / 4 status API / 5 카카오 plus_friends 채널검증(순수 isChannelFriend 방어파서 + 별도 coupon-verify OAuth, 로그인 스코프 불변) / 6 검증→발급(멱등) / 7 OAuth start(scope=plus_friends·kc_oauth 쿠키) + 상태기반 CTA(휴면 시 미렌더) / 8 CTA 4곳 배치.
+
+### OAuth 격리
+로그인 start/callback **zero-diff**. 쿠폰은 별도 쿠키(kc_oauth_*)·scope(plus_friends)·redirect_uri(coupon-verify). 메인 로그인(openid) 불변.
+
+### 검증
+순수 유닛(couponAvailability·redeemPreconditions·isChannelFriend) + 전 스위트 0 실패·typecheck 0. 최종 opus whole-branch: 머니패스 견고·완전 휴면·격리·RLS 확인. 머지-가시 회귀(홈 휴면 빈여백) fix.
+
+### 🔴 플래그 켜기 전 필수 (docs/superpowers/plans/2026-08-02-kakao-friend-coupon.md 하단·SDD 레지스터)
+1. **redeem CTA를 실제 페이월(PremiumLockCard)에 배치** — 현재 detail-client(미결제 시 리다이렉트)라 결제결정 지점서 안 뜸.
+2. **Kakao 콘솔** plus_friends 동의항목+채널 앱연결(미설정=KOE205) + channels API 스키마·channel_public_id 실응답 검증.
+3. **migration 072 수동 적용**.
+
+### 문서
+스펙(복구) `docs/superpowers/specs/2026-08-02-kakao-friend-coupon-recovered-design.md`, 플랜 `docs/superpowers/plans/2026-08-02-kakao-friend-coupon.md`.
+
+---
+
 ## 2026-08-02 세션 (Claude) — 오늘운세 다층 인과 조립기 구현 (PR #658)
 
 > 위 갭 검증의 최대 갭("계산은 하는데 서술을 안 함")을 해소. 브레인스토밍→스펙→플랜→서브에이전트 구동(subagent-driven-development, 태스크당 구현+2단계 리뷰) 전과정 실행. 브랜치 feat/today-causal-narrative, 10커밋, opus 최종 whole-branch 리뷰 MERGE-READY.
