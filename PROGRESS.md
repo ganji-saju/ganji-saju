@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-03 세션 (Claude) — /admin 카카오 친구추가 쿠폰 발급/사용 현황 카드
+
+> 카카오 무료쿠폰 라이브(#659·660·661·663) 후속으로 요청됐던 **어드민 현황 카드** 구현. 브랜치 feat/admin-kakao-coupon-stats-card.
+
+### 무엇
+`/admin` 랜딩에 **super_admin 전용** 카드 1개: 발급/사용/미사용·유효/만료 카운트 + 사용률 + 최근 발급·사용 목록 8건(user_id 링크·발급/사용 시각).
+
+### 구조
+- 신규 `src/lib/admin/coupon-stats.ts` — `getKakaoFriendCouponStats()`. **llm-cost-stats/dashboard-summary 패턴 미러**(service_role 필수: `user_coupons` RLS 는 본인행만 select). type 상수는 `@/lib/coupons/kakao-friend-coupon` 재사용(하드코딩 금지).
+- 집계: `count(head:true) filter` 4쿼리 — total / redeemed / active(issued·미만료) / expired(issued·now≥expires_at). **불변식 total = redeemed + active + expired**.
+- 순수 헬퍼(테스트 고정): `couponRecentStatus`(사용/유효/만료, `couponAvailability` 와 동일 경계 semantics=만료시각 == now 는 만료), `couponRedeemRate`(발급 0건이면 null → '—', 0% 오표시 방지).
+- `page.tsx`: role 확정 후 **super_admin 일 때만 fetch**(최근 목록에 user_id 실려 조회 자체를 게이트) + `role === 'super_admin'` 조건부 렌더.
+
+### 검증
+순수 유닛 4건 green(경계·null 포함)·typecheck 0·전 스위트 green. ⚠️라이브 count 스모크는 auto-mode DB 가드로 차단(우회 안 함) — 스키마(migration 072)·쿼리 로직으로만 확인.
+
+---
+
 ## 2026-08-02 세션 (Claude) — 카카오 친구추가 무료쿠폰 구현 (휴면 배포)
 
 > 이전 세션(clear 전)에서 채팅으로만 확정했다가 유실된 설계를, Claude Code 트랜스크립트(`0bb952dd`)에서 **복구**해 스펙화 → 전체 구현. 브랜치 feat/kakao-friend-coupon, 11커밋, 최종 opus 리뷰 **MERGE-READY(휴면)**. **전 기능 `KAKAO_FRIEND_COUPON_ENABLED` env 게이트로 휴면 배포**(카카오 콘솔 세팅 전까진 무동작).

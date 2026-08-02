@@ -9,6 +9,7 @@ import {
   getAdminDashboardSummary,
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
+import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
 import { getVisibleNavGroups } from '@/lib/admin/nav';
 import type { DailySeries } from '@/lib/admin/operations-stats';
 
@@ -30,6 +31,13 @@ function fmtDateTime(iso: string | null) {
   if (Number.isNaN(d.getTime())) return '—';
   const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(5, 16).replace('T', ' ');
+}
+
+// 쿠폰 상태칩 색(사용=강조 핑크, 유효=중립, 만료=흐림).
+function couponStatusChip(key: 'redeemed' | 'active' | 'expired'): string {
+  if (key === 'redeemed') return 'bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]';
+  if (key === 'active') return 'bg-[var(--app-line)] text-[var(--app-ink)]';
+  return 'bg-transparent text-[var(--app-copy-muted)] line-through';
 }
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -91,6 +99,10 @@ export default async function AdminDashboardPage({
     getAdminDashboardSummary(windowDays),
   ]);
   const role = roleCheck.role ?? 'admin';
+
+  // 카카오 친구추가 무료쿠폰 현황 — super_admin 전용. 발급/사용 목록에 user_id 가 실려
+  //   fetch 자체를 super_admin 으로 게이트한다(불필요한 조회·노출 방지).
+  const couponStats = role === 'super_admin' ? await getKakaoFriendCouponStats() : null;
 
   const ops = summary.operations;
   const periodVisitors = sumSeries(ops?.trends.visitors);
@@ -303,6 +315,71 @@ export default async function AdminDashboardPage({
           )}
         </Card>
       </div>
+
+      {/* 카카오 친구추가 무료쿠폰(오늘 자세히보기 0원) — super_admin 전용.
+          발급/사용/만료 카운트 + 최근 목록(user_id 노출). */}
+      {role === 'super_admin' && (
+        <Card
+          title="카카오 친구추가 무료쿠폰"
+          action={
+            <span className="text-[12px] text-[var(--app-copy-muted)]">
+              오늘 자세히보기 0원 · 계정당 1회
+            </span>
+          }
+        >
+          {couponStats ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+                <Stat label="발급" value={fmtNum(couponStats.total)} />
+                <Stat
+                  label="사용"
+                  value={fmtNum(couponStats.redeemed)}
+                  sub={`사용률 ${fmtPct(couponStats.redeemRate)}`}
+                />
+                <Stat label="미사용·유효" value={fmtNum(couponStats.active)} />
+                <Stat label="만료" value={fmtNum(couponStats.expired)} />
+              </div>
+
+              <div>
+                <p className="mb-1 text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                  최근 발급/사용
+                </p>
+                {couponStats.recent.length === 0 ? (
+                  <p className="text-[13px] text-[var(--app-copy-soft)]">아직 발급된 쿠폰이 없어요</p>
+                ) : (
+                  <ul className="divide-y divide-[var(--app-line)]">
+                    {couponStats.recent.map((c) => (
+                      <li key={c.id} className="flex items-center justify-between gap-2 py-2 text-[12.5px]">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${couponStatusChip(c.statusKey)}`}>
+                            {c.statusLabel}
+                          </span>
+                          <Link
+                            href={`/admin/users/${c.userId}`}
+                            className="truncate font-mono text-[12px] text-[var(--app-copy)] underline decoration-dotted underline-offset-2"
+                            title={c.userId}
+                          >
+                            {c.userId.slice(0, 8)}
+                          </Link>
+                        </span>
+                        <span className="shrink-0 text-right text-[var(--app-copy-soft)]">
+                          발급 {fmtDateTime(c.issuedAt)}
+                          {c.redeemedAt ? ` · 사용 ${fmtDateTime(c.redeemedAt)}` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-[13px] text-[var(--app-copy-soft)]">
+              쿠폰 현황 집계 실패 — 서버 로그의 [admin-coupon-stats] 항목 확인 (service env 부재
+              또는 집계 쿼리 오류).
+            </p>
+          )}
+        </Card>
+      )}
 
       {/* 최근 어드민 활동 */}
       <Card title="최근 관리 활동">
