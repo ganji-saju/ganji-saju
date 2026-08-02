@@ -2897,7 +2897,8 @@ export function detectTodaySinsals(
   todayBranch: string | null,
   currentYearBranch?: string,
 ): SinsalHit[] {
-  if (!todayStem || !todayBranch) return [];
+  // 오늘 천간/지지가 없어도(예: getTodayPillarSnapshot 실패 시 '' 반환) 원국 신살은 탐지해야 한다
+  // (원 buildSajuChartSnapshot 인라인 블록과 동등: iljin=undefined 로 여전히 호출).
   try {
     const dayGanziIndex = computeDayGanziIndex(
       sajuData.pillars.day.stem,
@@ -2913,7 +2914,10 @@ export function detectTodaySinsals(
         dayGanziIndex,
       },
       {
-        iljin: { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch },
+        iljin:
+          todayStem && todayBranch
+            ? { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch }
+            : undefined,
         currentYearBranch: currentYearBranch as IljinBranch | undefined,
       },
     );

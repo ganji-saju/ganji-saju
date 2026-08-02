@@ -26,3 +26,10 @@ test('causal-input: 시간 미입력(일진 없음) → null', () => {
   const input = buildCausalInput(data, { stem: null, branch: null } as never, []);
   assert.equal(input, null);
 });
+
+test('causal-input: detectTodaySinsals 는 오늘 천간/지지 없어도 원국 신살을 탐지한다', () => {
+  const data = calculateSajuDataV1(birth); // 원국에 귀문관살 등 존재
+  const hits = detectTodaySinsals(data, '', '');
+  assert.ok(hits.length > 0, '오늘 일진 없이도 원국 신살은 나와야 함(원 인라인 블록 동등)');
+  assert.ok(hits.every((h) => !h.positions.includes('iljin')), '일진 미제공 시 iljin 포지션 없어야');
+});
