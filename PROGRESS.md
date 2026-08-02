@@ -7,6 +7,51 @@
 
 ---
 
+## 2026-08-02 세션 (Claude) — 오늘운세 다층 인과 조립기 구현 (PR #658)
+
+> 위 갭 검증의 최대 갭("계산은 하는데 서술을 안 함")을 해소. 브레인스토밍→스펙→플랜→서브에이전트 구동(subagent-driven-development, 태스크당 구현+2단계 리뷰) 전과정 실행. 브랜치 feat/today-causal-narrative, 10커밋, opus 최종 whole-branch 리뷰 MERGE-READY.
+
+### 무엇
+신규 순수 결정론 모듈 `src/lib/today-fortune/causal-narrative.ts`(`buildCausalNarrative`)가 이미 계산되던 재료(일진 십성·지지 합충·용신/기신·세운/월운·신살)를 **5슬롯 인과 문단**(원인→겹침→다층→신살→조언)으로 조립. 무료 `reasonSnippet.body`←brief(1~2문장)·유료 `causalNarrative`←full(4~6문장) 배선. LLM·DB 없음.
+
+### 실측 (1982-01-29 남 진시)
+- 무료: "편관(밀어붙이는 별) 기운이 겹쳐… 화 기운(말·밝게 퍼짐)을 곁들이면…" (이전 명리 근거 0)
+- 유료: 편관→신금+자수·진토 삼합 수→올해 편재·이번 달 상관→망신살→화 기운 조언 = 카나나식 다층 인과.
+
+### 리뷰서 잡은 실결함(구현 중 수정)
+1. 조사 받침 불일치(하드코딩 이/와 → 모음종결서 "인목와"·"자리이" 비문) → `hasBatchim`/`josa` 헬퍼(no-gloss 사이트 전량 교정). ⚠️단 오행 `을/으로`는 head '기운'(받침) 기준 방어가능이라 미교정(fast-follow).
+2. `detectTodaySinsals` 가 오늘 일진 빈문자열 시 조기 return[] → 원 인라인 블록(iljin=undefined 로 원국신살 탐지)과 비동등, DRY 교체 시 시간미입력 원국신살 회귀 → 게이트를 iljin 옵션으로만 이동.
+3. 식신 flavor/advice 의 "표현" 이 legacy 카피 가드(/표현|기준/, visibleFreeResultText⊃reasonSnippet.body) 위반 → 나눔/베풂 교체.
+4. 기존 "keeps grounding" 테스트가 bare 기운 금지 → naming-policy §2 "X 기운" 정식표기와 모순 → 그 축에서만 기운 제거(강약/격국/용신/대운/세운/월운/공식달력 유지; §12 가드가 표현의기운류는 계속 잡음).
+5. (최종리뷰 후) slotOverlap 이 element 있는 삼합/방합만 서술 → 충/육합 등 비-합 관계 지지레이어 누락 → RELATION_CLAUSE 8종 추가.
+
+### 검증
+신규 유닛 16(causal-narrative 11·causal-input 3·causal-wiring 2), 전 스위트 0 실패, typecheck 0. DRY 교체 후 free `sajuChart.detectedSinsals` byte-identical 확인. 권한 누출 없음(인과 카드가 기존 언락 게이트 상속). **DB 마이그레이션 없음**(main 머지=Vercel 자동배포만).
+
+### 문서
+스펙 `docs/superpowers/specs/2026-08-02-multilayer-causal-assembler-design.md`, 플랜 `docs/superpowers/plans/2026-08-02-multilayer-causal-narrative.md`, 갭검증 `docs/today-fortune-vs-kanana-gap-2026-08-02.md`.
+
+### Fast-follow (비차단)
+오행 을/으로 배치조사·Element/STEM_ELEMENT 중복·RELATION_RANK 타입강화·자형(辰-辰) 미도달·미사용 입력필드(weakestElement/strengthLevel).
+
+---
+
+## 2026-08-02 세션 (Claude) — 오늘운세 카나나(ChatGPT) 갭 검증 (분석, 코드변경 없음)
+
+> 요청: 1982-01-29 남 진시 오늘운세를 카나나 출력과 대조해 간지사주 오늘운세·자세히보기의 부족점 검증.
+> 방법: 결정론 엔진을 이 입력으로 **실제 구동**(`calculateSajuDataV1`→free/premium 빌더, `now=2026-08-02`, LLM 플래그 OFF=프로덕션)해 실측 출력을 1:1 대조.
+
+### 핵심 발견
+- **원국 사실 일치**: 일간 壬水·금33.6%/수27.3% 최다·화0%·용신=화/기신=금·오늘 일진 천간 戊(편관)·귀문관살 — 카나나 근거를 간지사주도 **전부 계산·탐지**. 월운은 간지사주(乙未)가 카나나(丙申, 입추 8/7 후 시작)보다 절기상 **더 정확**.
+- **갭은 데이터가 아니라 서술**: `reasonSnippet`("사주 근거 한 줄")에 명리어 0개, `iljinMessages`는 申子辰 삼합을 포착하고도 "팀 프로젝트"로만 순화. 유료 `evidenceLines`는 대운/세운/월운(丁酉/丙午/乙未)·용신을 **칩으로 노출하나 서사화 안 함**.
+- **LLM은 해법 아님**: 무료 프롬프트는 십성/신살 미전달(grounding.ts), 유료는 명리어 금지(`FORBIDDEN_MYEONGRI=/기운|강약|격국|용신|대운|세운|월운|일진/`). 둘 다 기본 OFF.
+- **미구현 확정**: 현침살은 엔진 신살 17종에 없음(카나나가 든 신살 하나를 모름). 카나나 대비 부재 섹션 = 다층 인과 1문단·감정 예보·귀인/주의 인물.
+- 권고: 신규 명리계산 불필요, **결정론 서사 조립기**(일진 십성+삼합+용신+세/월운 → 1문단)로 `reasonSnippet` 교체 + 감정예보/인물 라이브러리 추가. 명리어 노출 수위는 `docs/claude-specs/02-naming-policy.md` 우선.
+
+상세: **`docs/today-fortune-vs-kanana-gap-2026-08-02.md`** (실측 표·항목대조·우선순위·권고).
+
+---
+
 ## 2026-07-22 세션 (Claude) — 이름 해시 드리프트: 월간달력·올해핵심 확장
 
 > 직전 세션에서 lifetime 만 고친 readingKey 이름 해시 드리프트를, 같은 스코프를 쓰는
