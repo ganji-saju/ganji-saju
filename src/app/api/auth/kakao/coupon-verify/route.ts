@@ -1,12 +1,12 @@
-// 2026-08-02 — 카카오 plus_friends 채널 친구여부 검증 전용 OAuth(coupon-verify).
+// 2026-08-02 — 카카오 plusfriends 채널 친구여부 검증 전용 OAuth(coupon-verify).
 //   메인 로그인 콜백(/api/auth/kakao/callback, scope=openid)과 완전히 분리된 별도 플로우다
 //   (로그인 전환율 보호 — 로그인 스코프는 절대 건드리지 않는다). 흐름:
-//     (Task 7/8 CTA가) 사용자를 카카오 인가화면(scope=plus_friends)으로 보냄
+//     (Task 7/8 CTA가) 사용자를 카카오 인가화면(scope=plusfriends)으로 보냄
 //       → 카카오가 이 라우트로 code 를 돌려줌 → 토큰교환 → GET /v1/api/talk/channels(Bearer)
 //       → isChannelFriend(...) 로 우리 채널(kakaoChannelId) 친구여부 판정.
 //   ⚠️ 이 라우트는 "수신(콜백)" 측만 구현한다. 카카오로 보내는 "시작(authorize 리다이렉트)"
 //   라우트는 아직 없다 — Task 7/8(CTA 배치)에서 kc_oauth_state/kc_oauth_nonce 쿠키를 심고
-//   scope=plus_friends 로 카카오 인가화면에 리다이렉트하는 start 라우트를 배선해야
+//   scope=plusfriends 로 카카오 인가화면에 리다이렉트하는 start 라우트를 배선해야
 //   이 콜백이 실제로 도달한다. 그 전까지는 env 게이트로 휴면(도달 자체가 불가능).
 //
 // ⚠️ 검증필요 — 카카오 GET /v1/api/talk/channels 응답 스키마는 문서 기준(공식 문서/기존
