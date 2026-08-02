@@ -57,6 +57,32 @@ export async function cleanupSubscription(userId: string): Promise<void> {
   if (error) throw new Error(`subscriptions cleanup 실패: ${error.message}`);
 }
 
+// ---------- free daily usage (무료 하루 1회 제한 리셋) ----------
+// src/lib/free-usage/daily-limit.ts FREE_DAILY_SURFACES.today.benefit 와 동기화.
+//   (e2e 는 src import 를 피하려 사본 유지 — 파일 상단 scope key builder 주석과 동일 방침.)
+export const FREE_TODAY_DAILY_BENEFIT = 'free_today_daily';
+
+/**
+ * 공유 test 계정의 무료 하루 1회 사용량(membership_benefit_usage)을 리셋한다.
+ *
+ * 배경: today-fortune 무료 요약은 계정당 하루 1회(056 consume_member_benefit). 같은 KST
+ *   날짜에 CI 가 여러 번 돌면 첫 run 이 쿼터를 소진해, 이후 run 은 제출이 free_daily_limit
+ *   으로 막히고 결과 페이지로 넘어가지 못한다(#660 머지 후 main E2E red 의 실제 원인).
+ *   해당 benefit 행을 지워 매 실행을 결정론적으로 만든다. test 계정 user_id 로만 스코프.
+ */
+export async function resetFreeDailyUsage(
+  userId: string,
+  benefit: string = FREE_TODAY_DAILY_BENEFIT
+): Promise<void> {
+  const admin = getSupabaseAdmin();
+  const { error } = await admin
+    .from('membership_benefit_usage')
+    .delete()
+    .eq('user_id', userId)
+    .eq('benefit', benefit);
+  if (error) throw new Error(`membership_benefit_usage reset 실패: ${error.message}`);
+}
+
 // ---------- product_entitlements ----------
 
 export async function seedProductEntitlement(
