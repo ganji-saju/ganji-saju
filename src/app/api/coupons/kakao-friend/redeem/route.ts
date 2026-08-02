@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   try {
     await recordTodayFortunePremiumAccess(user.id, readingKey, sourceSessionId, todayKey);
   } catch (error) {
-    await rollbackCouponRedeemed(user.id);
+    await rollbackCouponRedeemed(user.id, readingKey);
     console.error('[kakao-friend-coupon] grant failed after claim — rolled back', error);
     return NextResponse.json(
       { error: '지급 처리에 실패했습니다. 잠시 후 다시 시도해주세요.' },
