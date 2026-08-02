@@ -122,7 +122,11 @@ test('causal: 비-오행 관계(충/육합/형/해/파/원진)도 지지 레이�
       topRelation: { kind, element: null, natalBranches: ['寅'] },
     };
     const n = buildCausalNarrative(rel, { seed: kind });
-    assert.match(n.full, new RegExp(kind), `${kind} 관계어 누락`);
+    const clauseMark: Record<string, RegExp> = {
+      충: /충으로 부딪/, 육합: /육합으로 부드럽게/, 형: /형으로 어긋나/,
+      해: /해로 살짝/, 파: /파로 어긋나 깨/, 원진: /원진으로 서로/,
+    };
+    assert.match(n.full, clauseMark[kind], `${kind} 관계 절 누락/오배치`);
     assert.match(n.full, /인목과/); // 寅=인목, josa 과
     assert.doesNotMatch(n.full, /[㐀-鿿]/, `${kind} 본문 한자`);
     for (const re of FORBIDDEN_PATTERNS) {
