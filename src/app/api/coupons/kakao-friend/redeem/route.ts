@@ -7,7 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveReading } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 import { createClient } from '@/lib/supabase/server';
-import { getKoreaAccessDay, recordTodayFortunePremiumAccess } from '@/lib/credits/detail-report-access';
+import {
+  getKoreaAccessDay,
+  hasTodayFortunePremiumAccess,
+  recordTodayFortunePremiumAccess,
+} from '@/lib/credits/detail-report-access';
 import { buildPurchasedProductHref } from '@/lib/payments/product-scope';
 import {
   couponAvailability,
@@ -15,6 +19,7 @@ import {
   isKakaoFriendCouponEnabled,
   markCouponRedeemed,
   redeemPreconditions,
+  rollbackCouponRedeemed,
 } from '@/lib/coupons/kakao-friend-coupon';
 
 export const runtime = 'nodejs';
@@ -74,17 +79,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: pre.error }, { status: pre.status });
   }
 
-  // 5) 0원 지급 — payment_orders/PG/전차감 전부 미경유. amount:0 credit_transactions 기록만.
-  await recordTodayFortunePremiumAccess(user.id, readingKey, sourceSessionId, todayKey);
-
-  // 6) 원자적 redeemed 마킹. 경쟁으로 이미 사용된 경우(false) 방금의 access 기록은
-  //    무해(같은 reading 재기록 = 중복 0원 use 행, 접근 판정은 ≥1행이면 참)하므로 200 유지.
+  // 5) claim 먼저(원자적 단일사용) — 지급을 마킹 전에 하면 동시요청 시 쿠폰 1개로 여러 reading 무료지급(TOCTOU).
   const marked = await markCouponRedeemed(user.id, { readingKey, entitlementId: null });
   if (!marked) {
-    console.warn('[kakao-friend-coupon] markCouponRedeemed race — already redeemed', {
-      userId: user.id,
-      readingKey,
-    });
+    // 이미 소비됨. 같은 slug 동시요청의 승자가 이 reading 을 이미 지급했으면 멱등 200, 아니면 다른 reading 에 쓰인 것 → 409.
+    const already = await hasTodayFortunePremiumAccess(user.id, sourceSessionId, todayKey);
+    if (already) {
+      return NextResponse.json({
+        ok: true,
+        redirect: buildPurchasedProductHref('today-detail', slug, { scope: scope || null }),
+      });
+    }
+    return NextResponse.json({ error: 'not_redeemable' }, { status: 409 });
+  }
+
+  // 6) claim 성공 → 0원 지급(recordTodayFortunePremiumAccess, amount:0). 지급 throw 시 쿠폰 롤백(lost coupon 방지).
+  try {
+    await recordTodayFortunePremiumAccess(user.id, readingKey, sourceSessionId, todayKey);
+  } catch (error) {
+    await rollbackCouponRedeemed(user.id);
+    console.error('[kakao-friend-coupon] grant failed after claim — rolled back', error);
+    return NextResponse.json(
+      { error: '지급 처리에 실패했습니다. 잠시 후 다시 시도해주세요.' },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({

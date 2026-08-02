@@ -113,3 +113,11 @@ export async function markCouponRedeemed(
     .select('id');
   return Array.isArray(data) && data.length > 0;
 }
+
+// 지급 실패 시 되돌림: 방금 redeemed 로 마킹한 쿠폰을 issued 로 복원(재시도 가능).
+export async function rollbackCouponRedeemed(userId: string): Promise<void> {
+  const svc = await createServiceClient();
+  await svc.from('user_coupons')
+    .update({ status: 'issued', redeemed_at: null, redemption_reading_key: null, entitlement_id: null })
+    .eq('user_id', userId).eq('type', KAKAO_FRIEND_COUPON_TYPE).eq('status', 'redeemed');
+}
