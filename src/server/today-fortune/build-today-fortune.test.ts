@@ -225,7 +225,10 @@ test('today fortune free result keeps grounding public and action-oriented', () 
   assert.ok(result.groundingSummary.factLines.length >= 3);
   assert.ok(result.groundingSummary.evidenceLines.length >= 2);
   assert.match(result.reasonSnippet.body, /오늘|먼저|챙기|말|정리|선택|원칙/);
-  assert.doesNotMatch(result.reasonSnippet.body, /강약|격국|용신|대운|세운|월운|기운|공식 달력/);
+  // Task 5 — reasonSnippet.body 는 이제 causal-narrative 의 brief(십성/오행 명리 근거)를 사용.
+  // "X 기운"(오행/십성 + 기운)은 naming-policy §2·§3 권장 표기라 금지 목록에서 제외.
+  // 나머지 실제 전문용어(강약/격국/용신/대운/세운/월운/공식 달력)는 여전히 금지.
+  assert.doesNotMatch(result.reasonSnippet.body, /강약|격국|용신|대운|세운|월운|공식 달력/);
   assert.doesNotMatch(result.reasonSnippet.body, /중화은/);
   assert.doesNotMatch(result.reasonSnippet.body, /66점로/);
   assert.doesNotMatch(result.groundingSummary.factLines.join(' '), /[甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥]|\([가-힣]+\)\([가-힣]+\)/);

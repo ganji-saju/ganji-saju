@@ -2671,43 +2671,16 @@ function buildSajuChartSnapshot(
     strengthLabel: sajuData.strength?.level ?? null,
     patternName: sajuData.pattern?.name ?? null,
     todayGanzi,
-    detectedSinsals: (() => {
-      try {
-        const dayGanziIndex = computeDayGanziIndex(
-          sajuData.pillars.day.stem,
-          sajuData.pillars.day.branch
-        );
-        const iljinInput = todayStem && todayBranch
-          ? { stem: todayStem as IljinStem, branch: todayBranch as IljinBranch }
-          : undefined;
-        const rawHits = detectComprehensiveSinsals(
-          {
-            dayMaster: sajuData.pillars.day.stem as IljinStem,
-            yearBranch: sajuData.pillars.year.branch as IljinBranch,
-            monthBranch: sajuData.pillars.month.branch as IljinBranch,
-            dayBranch: sajuData.pillars.day.branch as IljinBranch,
-            hourBranch: (sajuData.pillars.hour?.branch ?? null) as IljinBranch | null,
-            dayGanziIndex,
-          },
-          {
-            iljin: iljinInput,
-            currentYearBranch: currentYearBranch as IljinBranch | undefined,
-          }
-        );
-        // PR #140 — active sinsal_weight_version 이 있으면 scoreHint override.
-        // cache 가 비어있으면 background refresh + 이번 요청은 hardcoded 그대로.
-        const hits = applyActiveSinsalWeights(rawHits);
-        return hits.map((h) => ({
-          name: h.name,
-          category: h.category,
-          positions: h.positions,
-          scoreHint: h.scoreHint,
-          hint: h.hint,
-        }));
-      } catch {
-        return [];
-      }
-    })(),
+    // Task 5 (3d, DRY) — 인라인 IIFE를 detectTodaySinsals 헬퍼 호출로 대체(Task 4 에서 추출,
+    // buildTodayFortunePremiumResult/buildCausalInput 배선과 로직 공유). 반환 필드(name/
+    // category/positions/scoreHint/hint) 및 값 동일 — currentYearBranch 만 string | null →
+    // string | undefined 로 좁혀 전달(둘 다 IljinBranch | undefined 로 캐스팅되어 동등).
+    detectedSinsals: detectTodaySinsals(
+      sajuData,
+      todayStem,
+      todayBranch,
+      currentYearBranch ?? undefined
+    ),
   };
 }
 
@@ -2767,7 +2740,14 @@ export function buildTodayFortuneFreeResult(
   const userSituation =
     options.grounding?.personalizationContext?.userSituation ?? null;
   const scores = reorderTodayScoresBySituation(unifiedScores, userSituation);
-  const reasonBody = buildPublicReasonBody(profile, Boolean(input.unknownTime));
+  // Task 5 — 인과 서사 조립기 배선. buildCausalInput 이 파생 가능하면(십성/오행 등)
+  // brief 요약을 무료 reasonSnippet.body 로 사용, 실패 시(시 미입력 등) 기존 정적 문구로 폴백.
+  const causalDetectedSinsals = detectTodaySinsals(sajuData, todayPillar.stem, todayPillar.branch);
+  const causalInput = buildCausalInput(sajuData, todayPillar, causalDetectedSinsals);
+  const causal = causalInput
+    ? buildCausalNarrative(causalInput, { seed: todayPillar.dateKey })
+    : null;
+  const reasonBody = causal?.brief || buildPublicReasonBody(profile, Boolean(input.unknownTime));
   const groundingSummary = buildPublicGroundingSummary(profile, options.kasiComparison);
   const upsell = selectUpsell({ scores }, options.concernId);
   const opportunity = buildPublicOpportunity(options.concernId, profile);
@@ -3104,6 +3084,15 @@ export function buildTodayFortunePremiumResult(
         score: iljinScore?.totalScore ?? null,
         messages: picked.messages,
       };
+    })(),
+    // Task 5 — 인과 서사 조립기 유료 배선. free 와 별도 seed('premium::' prefix)로
+    // 결제 화면 전용 variant 노출, full 문단(brief 보다 상세).
+    causalNarrative: (() => {
+      const sinsals = detectTodaySinsals(sajuData, todayPillar.stem, todayPillar.branch);
+      const ci = buildCausalInput(sajuData, todayPillar, sinsals);
+      if (!ci) return null;
+      const c = buildCausalNarrative(ci, { seed: `premium::${todayPillar.dateKey}` });
+      return { title: '오늘 이 흐름인 이유', body: c.full };
     })(),
   };
 }
