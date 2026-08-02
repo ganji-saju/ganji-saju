@@ -140,3 +140,110 @@ export interface CausalNarrative {
   brief: string;
   terms: string[];
 }
+
+// 슬롯 1 — 원인(일진 십성)
+function slotCause(i: CausalInput, ink: TermInk, seed: number): string {
+  const tg = ink.sipsung(i.iljinTenGod);
+  const flavor: Record<SipSung, string> = {
+    편관: '책임과 압박이 커지는', 정관: '규칙과 책임을 챙기게 되는',
+    편재: '기회와 씀씀이가 커지는', 정재: '살림과 실속을 따지는',
+    식신: '표현과 여유가 살아나는', 상관: '재능과 말이 튀는',
+    편인: '혼자 파고들고 싶어지는', 정인: '배우고 기대고 싶어지는',
+    비견: '내 페이스를 지키게 되는', 겁재: '경쟁심이 올라오는',
+  };
+  return pickVariant(
+    [
+      `오늘은 ${tg} 기운이 들어와 ${flavor[i.iljinTenGod]} 날이에요.`,
+      `오늘 하루에는 ${tg} 기운이 겹쳐 ${flavor[i.iljinTenGod]} 흐름이 돌아요.`,
+    ],
+    seed, 0,
+  );
+}
+
+// 슬롯 2 — 겹침(합충 + 용신/기신)
+function slotOverlap(i: CausalInput, ink: TermInk): string {
+  const parts: string[] = [];
+  if (i.topRelation && i.topRelation.element) {
+    const natal = i.topRelation.natalBranches.map((b) => BRANCH_KOR[b]).join('·');
+    parts.push(
+      `오늘 ${BRANCH_KOR[i.todayBranch]}이 사주의 ${natal}와 만나 ${ink.element(i.topRelation.element)}으로 ${i.topRelation.kind}을 이루는데,`,
+    );
+  }
+  const focusEl = i.topRelation?.element ?? STEM_ELEMENT[i.todayStem];
+  const dir =
+    focusEl === i.yongsin
+      ? `모자란 ${ink.element(i.yongsin)}을 채워 주는 반가운 흐름이에요.`
+      : focusEl === i.dominantElement || (i.kishin != null && focusEl === i.kishin)
+        ? `원래 강한 ${ink.element(i.dominantElement)}을 더 키워 흐름이 무거워질 수 있어요.`
+        : `기운이 한쪽으로 쏠리기 쉬우니 균형을 챙기는 게 좋아요.`;
+  parts.push(dir);
+  return parts.join(' ');
+}
+
+// 슬롯 3 — 다층(세운/월운)
+function slotLayers(i: CausalInput, ink: TermInk, seed: number): string | null {
+  const layers: string[] = [];
+  if (i.saewoonTenGod) layers.push(`올해 흐름은 ${ink.sipsung(i.saewoonTenGod)}`);
+  if (i.wolwoonTenGod) layers.push(`이번 달은 ${ink.sipsung(i.wolwoonTenGod)}`);
+  if (layers.length === 0) return null;
+  return pickVariant(
+    [
+      `여기에 ${layers.join(', ')}이라, 여러 흐름이 겹쳐 마음이 복잡해지기 쉬워요.`,
+      `${layers.join(', ')}까지 맞물려, 하루가 조금 더 묵직하게 느껴질 수 있어요.`,
+    ],
+    seed, 1,
+  );
+}
+
+// 슬롯 4 — 신살 색채
+function slotSinsal(i: CausalInput, ink: TermInk): string | null {
+  if (!i.topSinsal) return null;
+  const s = ink.sinsal(i.topSinsal.name);
+  return i.topSinsal.category === '길신'
+    ? `${s}이 함께라 내미는 도움을 잘 잡으면 하루가 한결 수월해요.`
+    : `${s}이 함께라 예민해지거나 서두르기 쉬우니 한 박자 쉬어 가세요.`;
+}
+
+// 슬롯 5 — 조언(용신 + 십성 대응)
+function slotAdvice(i: CausalInput, ink: TermInk, seed: number): string {
+  const yong = ink.element(i.yongsin);
+  const perTenGod: Record<SipSung, string> = {
+    편관: '큰 결정보다 정리와 기록으로', 정관: '원칙을 먼저 정하고',
+    편재: '벌이기보다 나갈 것부터 챙기고', 정재: '실속을 확인하며',
+    식신: '가볍게 표현하고 나누며', 상관: '한 박자 눌러 담아 말하고',
+    편인: '혼자 정리하는 시간을 두고', 정인: '기대고 배우는 쪽으로',
+    비견: '내 페이스를 지키며', 겁재: '경쟁보다 협력으로',
+  };
+  return pickVariant(
+    [
+      `그래서 오늘은 ${yong}을 채우듯, ${perTenGod[i.iljinTenGod]} 천천히 가면 좋아요.`,
+      `오늘은 ${perTenGod[i.iljinTenGod]}, ${yong}을 곁들이면 흐름이 한결 부드러워져요.`,
+    ],
+    seed, 2,
+  );
+}
+
+export function buildCausalNarrative(
+  input: CausalInput,
+  opts: { seed?: string } = {},
+): CausalNarrative {
+  const seed = hashSeed(opts.seed ?? `${input.dayMaster}${input.todayStem}${input.todayBranch}`);
+
+  const briefInk = new TermInk();
+  const brief = [slotCause(input, briefInk, seed), slotAdvice(input, briefInk, seed)]
+    .filter((s): s is string => Boolean(s))
+    .join(' ');
+
+  const fullInk = new TermInk();
+  const full = [
+    slotCause(input, fullInk, seed),
+    slotOverlap(input, fullInk),
+    slotLayers(input, fullInk, seed),
+    slotSinsal(input, fullInk),
+    slotAdvice(input, fullInk, seed),
+  ]
+    .filter((s): s is string => Boolean(s))
+    .join(' ');
+
+  return { full, brief, terms: fullInk.terms };
+}
