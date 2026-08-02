@@ -51,7 +51,7 @@ export function GangiHomeClient({
         />
 
         {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너). 휴면이면 slot 은 truthy 여도 내부에서 null 렌더. */}
-        {couponCtaSlot ? <div className="px-4 pt-2">{couponCtaSlot}</div> : null}
+        {couponCtaSlot}
 
         {/* 카테고리 칩 (전체 · 사주·명리 · 운세·택일 · 상담) */}
         <GangiCategoryTabs
