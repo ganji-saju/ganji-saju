@@ -7,6 +7,21 @@
 
 ---
 
+## 2026-08-03 세션 (Claude) — payment-blocks 활성구독 배지 flake 견고화 (전 회귀수정 후속)
+
+> 앞 수정에서 "별개·flaky"로 남겨둔 `payment-blocks:69 이용중 배지` 실패를 별도 조사. 브랜치 fix/e2e-membership-badge-flake-reload (PR #666).
+
+### 조사 (근본원인 클래스 = 일시적 SSR read, 결정적 재현 X)
+최근 red run 실측: 이 flake 는 "1-3. Active subscription" **serial 그룹에서 매번 다른 test(:69 /membership · :93 /checkout)** 를 간헐히 친다(6런 중 2). CI 는 `workers:1`(레이스 없음)이고 배지 로직·계정 seed 는 정상. 실패 스냅샷=페이지 완전 렌더인데 **배지만 DOM 누락** → 렌더 시점에 서버가 활성 구독을 못 봄. 서버 컴포넌트가 렌더마다 `auth.getUser()`(= Supabase Auth 로 **네트워크 검증** 왕복)로 게이트를 판정하는데, preview 서버리스에서 이 왕복이 일시 실패하면 사용자를 비로그인으로 보고 배지를 뺀다(재시도 없음). 새 요청(reload)이면 회복 → 결정적 product 버그 아님.
+
+### 수정 (테스트 견고화)
+`payment-blocks.spec.ts` 에 `expectVisibleResilient(page, locator, msg)` 추가 — 첫 확인 실패 시 **1회 reload 후 재확인**(새 요청이 getUser 재실행). 게이트 배지·CTA 4곳(:69·:81·:93·:139)에 적용. daily-limit·전 세션 리셋과 무관한 별개 완화.
+
+### 검증
+playwright --list(파싱)·typecheck 0. ⚠️ 저빈도 flake라 "green"만으로 완치 단정 불가 — reload 재확인이 일시적 getUser 실패를 흡수하는 설계. 재발 시 서버 getUser 실패를 로깅해 재확인 권장.
+
+---
+
 ## 2026-08-03 세션 (Claude) — main E2E red 회귀 수정 (무료 하루1회 제한 → test 계정 쿼터 리셋)
 
 > 앞 세션에서 발견한 main Playwright E2E red 를 **별도 조사·수정**. 브랜치 fix/e2e-today-fortune-daily-limit-reset (PR #665).
