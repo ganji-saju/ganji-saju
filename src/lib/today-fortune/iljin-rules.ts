@@ -83,7 +83,7 @@ export function isYukhap(a: string, b: string): boolean {
 }
 
 // 지지 방합 (4계절).
-const BANGHAP_GROUPS: Array<{ element: Elem; branches: Branch[] }> = [
+export const BANGHAP_GROUPS: Array<{ element: Elem; branches: Branch[] }> = [
   { element: '목', branches: ['寅', '卯', '辰'] }, // 봄
   { element: '화', branches: ['巳', '午', '未'] }, // 여름
   { element: '금', branches: ['申', '酉', '戌'] }, // 가을

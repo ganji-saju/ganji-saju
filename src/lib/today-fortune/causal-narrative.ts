@@ -1,4 +1,9 @@
 import type { Stem, Branch, SipSung } from '@/lib/today-fortune/iljin-rules';
+import {
+  SAMHAP_GROUPS, BANGHAP_GROUPS,
+  isSamhap, isBanghap, isYukhap,
+  isBranchChung, isBranchHyung, isBranchHae, isBranchPa, isBranchWonjin,
+} from '@/lib/today-fortune/iljin-rules';
 
 export type Element = '목' | '화' | '토' | '금' | '수';
 
@@ -70,6 +75,36 @@ export class TermInk {
     this.terms.push(name);
     return `${name}(${desc})`;
   }
+}
+
+// ── 지지 관계 랭킹 ──────────────────────────────────────
+const RELATION_RANK: Record<string, number> = {
+  삼합: 6, 충: 6, 방합: 4, 육합: 4, 형: 3, 해: 2, 파: 2, 원진: 2,
+};
+
+export function rankJijiRelations(today: Branch, natal: Branch[]): JijiRelation | null {
+  const found: JijiRelation[] = [];
+  const collect = (
+    kind: JijiRelation['kind'],
+    matcher: (a: string, b: string) => boolean,
+    element: Element | null,
+  ) => {
+    const matches = natal.filter((b) => b !== today && matcher(today, b));
+    if (matches.length > 0) found.push({ kind, element, natalBranches: matches });
+  };
+  const samEl = (SAMHAP_GROUPS.find((g) => g.branches.includes(today))?.element ?? null) as Element | null;
+  const bangEl = (BANGHAP_GROUPS.find((g) => g.branches.includes(today))?.element ?? null) as Element | null;
+  collect('삼합', isSamhap, samEl);
+  collect('방합', isBanghap, bangEl);
+  collect('육합', isYukhap, null);
+  collect('충', isBranchChung, null);
+  collect('형', isBranchHyung, null);
+  collect('해', isBranchHae, null);
+  collect('파', isBranchPa, null);
+  collect('원진', isBranchWonjin, null);
+  if (found.length === 0) return null;
+  found.sort((a, b) => RELATION_RANK[b.kind] - RELATION_RANK[a.kind]);
+  return found[0];
 }
 
 // ── 타입 ────────────────────────────────────────────────

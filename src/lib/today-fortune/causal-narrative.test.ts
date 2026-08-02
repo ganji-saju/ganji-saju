@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { hashSeed, pickVariant, TermInk } from '@/lib/today-fortune/causal-narrative';
+import { hashSeed, pickVariant, TermInk, rankJijiRelations } from '@/lib/today-fortune/causal-narrative';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -19,4 +19,18 @@ test('causal: TermInk 는 첫 등장에만 괄호 설명을 붙인다', () => {
   assert.equal(ink.element('화'), '화 기운(말·밝게 퍼짐)');
   assert.equal(ink.element('화'), '화 기운');
   assert.deepEqual(ink.terms, ['편관', '화 기운']);
+});
+
+test('causal: rankJijiRelations 는 오늘 지지의 최강 관계를 고른다(申子辰 삼합 수)', () => {
+  // 1982-01-29 남 진시 원국 지지: 酉(년) 丑(월) 子(일) 辰(시), 오늘 일진 지지 申
+  const rel = rankJijiRelations('申', ['酉', '丑', '子', '辰']);
+  assert.ok(rel, '관계 미탐지');
+  assert.equal(rel!.kind, '삼합');
+  assert.equal(rel!.element, '수');
+  // 申子辰 → 자수·진토와 만남
+  assert.deepEqual(rel!.natalBranches.sort(), ['子', '辰'].sort());
+});
+
+test('causal: rankJijiRelations 는 관계 없으면 null', () => {
+  assert.equal(rankJijiRelations('午', ['申']), null);
 });
