@@ -77,6 +77,20 @@ export async function issueKakaoFriendCoupon(
   return { ok: true as const, row: data as UserCouponRow };
 }
 
+// redeem API(Task 3)의 순수 가드 — env/인증/가용성 3가지를 우선순위대로 판정한다.
+// (env off → 404, 미인증 → 401, availability≠redeemable → 409, 통과 → ok:true).
+// 라우트는 이 판정을 마킹(markCouponRedeemed) 이전에 반드시 통과해야 한다.
+export function redeemPreconditions(
+  enabled: boolean,
+  authed: boolean,
+  availability: 'issuable' | 'redeemable' | 'redeemed' | 'expired'
+): { ok: true } | { ok: false; status: number; error: string } {
+  if (!enabled) return { ok: false, status: 404, error: 'disabled' };
+  if (!authed) return { ok: false, status: 401, error: 'unauthorized' };
+  if (availability !== 'redeemable') return { ok: false, status: 409, error: 'not_redeemable' };
+  return { ok: true };
+}
+
 // 원자적 사용 마킹: status='issued' 인 행만 redeemed 로 전이(동시성/중복사용 방어).
 // 0행 update = 이미 사용됨/만료행이 아님(조건 불일치) = 중복 → false.
 // 만료 자체는 redeem API(Task 3)가 couponAvailability 로 사전 차단한다.
