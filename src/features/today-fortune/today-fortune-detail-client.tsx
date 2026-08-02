@@ -30,6 +30,10 @@ import { TodaySajuChartCard } from '@/components/today-fortune/today-saju-chart-
 import { TodayDaewoonCtaCard } from '@/components/today-fortune/today-daewoon-cta-card';
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
+// Task 8 — 카카오 친구추가 무료쿠폰 CTA. redeem API 는 { slug: sourceSessionId, scope: concernId } 를
+// 기대한다(레딤 성공 시 이 페이지로 그대로 redirect). 이 파일은 두 값을 모두 이미 갖고 있는
+// 결제/언락 화면이라 CTA 진입점 4곳 중 slug+scope 를 넘기는 유일한 배치점이다.
+import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
 
 interface TodayFortuneUnlockResponse {
   ok?: boolean;
@@ -221,6 +225,12 @@ export function TodayFortuneDetailClient({
       <GangiPageHeader title="오늘 자세히 보기" backHref={resultHref} />
 
       <div className="space-y-4 px-1 py-4">
+        {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA. 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면
+            컴포넌트 자체가 아무것도 렌더하지 않는다. */}
+        {sourceSessionId ? (
+          <KakaoFriendCouponCta slug={sourceSessionId} scope={concernId} />
+        ) : null}
+
         {/* §결과 없음 — 무료 결과 만들러 안내 */}
         {!sourceSessionId ? (
           <article

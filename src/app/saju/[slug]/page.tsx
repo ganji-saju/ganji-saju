@@ -47,6 +47,10 @@ import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
+// Task 8 — 카카오 친구추가 무료쿠폰 CTA(사주 결과 하단). slug 없이 렌더 —
+// 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면 컴포넌트 자체가 아무것도 렌더하지 않는다.
+// 서버 컴포넌트 안에서 'use client' 컴포넌트를 그대로 import+렌더 — client island.
+import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -724,6 +728,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           {/* 2026-07-19 — 하단 추천을 8개 메뉴 전 화면에 동일 노출(사용자 요청).
               from="saju" 가 목록에서 사주 자신을 제외한다. */}
           <PaidFunnelGrid from="saju" tone="light" className="mt-6" />
+
+          {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA. 사주 결과 화면 맨 아래. */}
+          <div className="px-1">
+            <KakaoFriendCouponCta />
+          </div>
         </div>
       </AppPage>
     </AppShell>

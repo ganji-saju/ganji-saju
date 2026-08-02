@@ -19,10 +19,13 @@ import { AppShell } from '@/shared/layout/app-shell';
 export function GangiHomeClient({
   initialBanners,
   myStarSignSlot,
+  couponCtaSlot,
 }: {
   initialBanners: readonly GangiHomeBanner[];
   /** server-rendered MyStarSignCard (profile 있을 때만 truthy). client 는 그대로 노출. */
   myStarSignSlot?: ReactNode;
+  /** Task 8 — KakaoFriendCouponCta(휴면 게이트, slug 없음). 자체적으로 무동작 렌더 가능. */
+  couponCtaSlot?: ReactNode;
 }) {
   // 2026-06-23 — 메인 리디자인(간지사주 메인 리디자인.html): 배너 캐러셀 → 카테고리 칩 →
   //   8 캐릭터 카드(가로 레이아웃·파스텔 틴트) → 신규 유저 CTA. 라우팅·데이터·이벤트 불변.
@@ -46,6 +49,9 @@ export function GangiHomeClient({
           banners={initialBanners}
           onTrack={(payload) => trackMoonlightEvent('home_service_menu_click', payload)}
         />
+
+        {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너). 휴면이면 slot 은 truthy 여도 내부에서 null 렌더. */}
+        {couponCtaSlot ? <div className="px-4 pt-2">{couponCtaSlot}</div> : null}
 
         {/* 카테고리 칩 (전체 · 사주·명리 · 운세·택일 · 상담) */}
         <GangiCategoryTabs

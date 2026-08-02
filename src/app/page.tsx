@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { MyStarSignCard } from '@/components/star-sign/my-star-sign-card';
 import { GangiHomeClient } from '@/features/home/gangi-home-client';
+// Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너 진입점). slug 없이 렌더 —
+// 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면 컴포넌트 자체가 아무것도 렌더하지 않는다.
+import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
 import { getOptionalSignedInProfile } from '@/lib/profile';
 import { getHomeBanners } from '@/server/home/home-banners';
 
@@ -34,6 +37,7 @@ export default async function HomePage() {
     <GangiHomeClient
       initialBanners={banners}
       myStarSignSlot={myStarSignSlot}
+      couponCtaSlot={<KakaoFriendCouponCta />}
     />
   );
 }
