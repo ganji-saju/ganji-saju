@@ -10,6 +10,9 @@ import Link from 'next/link';
 import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
 import { LogoutButton } from '@/features/account/logout-button';
 import { KakaoContactCard } from '@/features/account/kakao-contact-card';
+// Task 8 — 카카오 친구추가 무료쿠폰 CTA(마이/설정 진입점). slug 없이 렌더 —
+// 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면 컴포넌트 자체가 아무것도 렌더하지 않는다.
+import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
 
 const QUICK_LINK_TONE = {
   pink: {
@@ -112,6 +115,10 @@ export default function MySettingsPage() {
           시간대가 안 맞으면 알림 시간을, 화면이 불편하면 레이아웃을 바꿔보세요.
         </p>
       </article>
+
+      {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA. 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면
+          컴포넌트 자체가 아무것도 렌더하지 않는다. */}
+      <KakaoFriendCouponCta />
 
       {/* §정보 관리 — 가족·다른 사람 정보 / 내 정보 편집 */}
       <section>
