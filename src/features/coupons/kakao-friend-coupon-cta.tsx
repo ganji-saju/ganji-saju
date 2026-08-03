@@ -5,7 +5,7 @@
 // 4곳 모두 코드 변경 없이 통째로 안 보이게 되는 것이 이 컴포넌트의 핵심 계약이다.
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 type CouponCtaState = 'issuable' | 'redeemable' | 'redeemed' | 'expired';
 
@@ -28,6 +28,47 @@ const kakaoButtonStyle = {
   borderColor: 'rgba(0,0,0,0.06)',
   color: '#191919',
 } as const;
+
+// 무료쿠폰 상태 카드 — 받기 버튼(카카오 옐로)과 같은 시각 계열을 카드로 통일.
+//   옅은 크림 배경 + 카카오 옐로 아이콘 배지. 상태별로 아이콘·문구만 다르다
+//   (있어요=티켓 / 사용완료=체크). 활성 CTA(redeem 옐로 버튼)는 별개로 유지.
+function CouponCard({ icon, title, subtitle }: { icon: ReactNode; title: string; subtitle: string }) {
+  return (
+    <div
+      className="mt-2 flex w-full items-center gap-3 rounded-[12px] border px-3.5 py-3"
+      style={{ background: '#fffbe6', borderColor: 'rgba(0,0,0,0.06)' }}
+    >
+      <span
+        aria-hidden="true"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+        style={{ background: '#fee500', color: '#191919' }}
+      >
+        {icon}
+      </span>
+      <div className="min-w-0 leading-tight">
+        <p className="text-[14px] font-extrabold" style={{ color: '#191919' }}>
+          {title}
+        </p>
+        <p className="mt-0.5 text-[12px] font-semibold text-[var(--app-copy-muted)]">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+const TICKET_ICON = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+    <path d="M13 5v2" />
+    <path d="M13 11v2" />
+    <path d="M13 17v2" />
+  </svg>
+);
+
+const CHECK_ICON = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
 
 export function KakaoFriendCouponCta({ slug, scope }: KakaoFriendCouponCtaProps) {
   const [status, setStatus] = useState<CouponStatusResponse | null>(null);
@@ -99,38 +140,21 @@ export function KakaoFriendCouponCta({ slug, scope }: KakaoFriendCouponCtaProps)
       );
     }
     return (
-      <p className="mt-2 text-[12.6px] font-bold text-[var(--app-copy-muted)]">
-        무료 쿠폰이 있어요 · 오늘 자세히보기에서 사용
-      </p>
+      <CouponCard
+        icon={TICKET_ICON}
+        title="무료 쿠폰이 있어요"
+        subtitle="오늘 자세히보기에서 0원으로 사용하세요"
+      />
     );
   }
 
   if (status.state === 'redeemed') {
-    // 받기 버튼(카카오 옐로)과 같은 시각 계열을 유지하되 '완료(사용됨)' 톤으로 정착시킨다.
-    //   옅은 크림 배경 + 카카오 옐로 체크 배지 → 같은 쿠폰이 이미 쓰였음을 한눈에.
     return (
-      <div
-        className="mt-2 flex w-full items-center gap-3 rounded-[12px] border px-3.5 py-3"
-        style={{ background: '#fffbe6', borderColor: 'rgba(0,0,0,0.06)' }}
-      >
-        <span
-          aria-hidden="true"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-          style={{ background: '#fee500', color: '#191919' }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-        </span>
-        <div className="min-w-0 leading-tight">
-          <p className="text-[14px] font-extrabold" style={{ color: '#191919' }}>
-            무료 쿠폰 사용 완료
-          </p>
-          <p className="mt-0.5 text-[12px] font-semibold text-[var(--app-copy-muted)]">
-            오늘 자세히보기에 적용했어요
-          </p>
-        </div>
-      </div>
+      <CouponCard
+        icon={CHECK_ICON}
+        title="무료 쿠폰 사용 완료"
+        subtitle="오늘 자세히보기에 적용했어요"
+      />
     );
   }
 

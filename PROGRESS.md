@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-08-03 세션 (Claude) — 무료쿠폰 '있어요'(redeemable no-slug) 상태도 카드로 통일
+
+> 앞 PR #667(사용완료 카드)에 이어 사용자 요청: redeemable "무료 쿠폰이 있어요"(회색 텍스트) 상태도 카드로 통일. 브랜치 feat/coupon-available-card-unify (PR #668).
+
+### 무엇
+`kakao-friend-coupon-cta.tsx` 리팩터: 공유 `CouponCard({icon,title,subtitle})` 추출 → redeemable(no-slug)·redeemed 두 상태를 같은 카드 셸(옅은 크림 + 카카오 옐로 아이콘 배지)로 통일. 상태별로 **아이콘·문구만** 다르다: 있어요=티켓 아이콘 + "무료 쿠폰이 있어요 / 오늘 자세히보기에서 0원으로 사용하세요", 사용완료=체크 + "무료 쿠폰 사용 완료 / 오늘 자세히보기에 적용했어요". redeem 옐로 버튼(활성 CTA)·issuable 받기 버튼·휴면 계약은 미변경.
+
+### 검증
+typecheck 0. 렌더 확인=faithful HTML 프리뷰를 로컬 playwright 스크린샷(받기버튼·있어요 before/after·사용완료 나란히) — 두 카드가 동일 계열로 통일됨 확인.
+
+---
+
 ## 2026-08-03 세션 (Claude) — 무료쿠폰 '사용 완료' 상태 카드 디자인
 
 > 사용자 요청: 카카오 무료쿠폰 CTA 의 `redeemed`(사용완료) 상태가 성의없는 회색 텍스트 한 줄이라 '받기 버튼'처럼 꾸며달라. 브랜치 feat/coupon-redeemed-card-styling (PR #667).
