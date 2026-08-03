@@ -106,8 +106,31 @@ export function KakaoFriendCouponCta({ slug, scope }: KakaoFriendCouponCtaProps)
   }
 
   if (status.state === 'redeemed') {
+    // 받기 버튼(카카오 옐로)과 같은 시각 계열을 유지하되 '완료(사용됨)' 톤으로 정착시킨다.
+    //   옅은 크림 배경 + 카카오 옐로 체크 배지 → 같은 쿠폰이 이미 쓰였음을 한눈에.
     return (
-      <p className="mt-2 text-[12.6px] font-bold text-[var(--app-copy-muted)]">무료 쿠폰 사용 완료</p>
+      <div
+        className="mt-2 flex w-full items-center gap-3 rounded-[12px] border px-3.5 py-3"
+        style={{ background: '#fffbe6', borderColor: 'rgba(0,0,0,0.06)' }}
+      >
+        <span
+          aria-hidden="true"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+          style={{ background: '#fee500', color: '#191919' }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+        <div className="min-w-0 leading-tight">
+          <p className="text-[14px] font-extrabold" style={{ color: '#191919' }}>
+            무료 쿠폰 사용 완료
+          </p>
+          <p className="mt-0.5 text-[12px] font-semibold text-[var(--app-copy-muted)]">
+            오늘 자세히보기에 적용했어요
+          </p>
+        </div>
+      </div>
     );
   }
 

@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-08-03 세션 (Claude) — 무료쿠폰 '사용 완료' 상태 카드 디자인
+
+> 사용자 요청: 카카오 무료쿠폰 CTA 의 `redeemed`(사용완료) 상태가 성의없는 회색 텍스트 한 줄이라 '받기 버튼'처럼 꾸며달라. 브랜치 feat/coupon-redeemed-card-styling (PR #667).
+
+### 무엇
+`src/features/coupons/kakao-friend-coupon-cta.tsx` 의 `redeemed` 상태를 기존 `<p>무료 쿠폰 사용 완료</p>`(12.6px 회색) → **full-width 사용완료 카드**로. 옅은 크림 배경(#fffbe6) + 카카오 옐로(#fee500) 체크 배지 + 굵은 제목 + 서브텍스트("오늘 자세히보기에 적용했어요"). 받기 버튼(옐로 pill)과 같은 시각 계열·presence 를 유지하되 '완료(정착)' 톤. issuable/redeemable(옐로 버튼) 상태는 미변경.
+
+### 검증
+typecheck 0. **렌더 확인**=토큰값(--app-copy-muted 등) 반영한 faithful HTML 프리뷰를 로컬 playwright 로 스크린샷(before/after/받기버튼 비교) — 사용완료 카드가 받기 버튼과 동일 계열로 정착 확인. ⚠️ 실제 앱은 KAKAO_FRIEND_COUPON_ENABLED 게이트+redeemed 계정 필요라 프리뷰로 대체.
+
+---
+
 ## 2026-08-03 세션 (Claude) — payment-blocks 활성구독 배지 flake 견고화 (전 회귀수정 후속)
 
 > 앞 수정에서 "별개·flaky"로 남겨둔 `payment-blocks:69 이용중 배지` 실패를 별도 조사. 브랜치 fix/e2e-membership-badge-flake-reload (PR #666).
