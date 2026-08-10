@@ -73,13 +73,21 @@ export async function generateTotalReviewSection<S extends TotalReviewSectionId>
 ): Promise<TotalReviewSectionResult<S>> {
   const maxRetries = options.maxRetries ?? 2;
   const userMessage = buildSectionUserMessage(sectionId, input);
+  /** 최종 fallback 에 보고할 사유 (호출 실패·파싱 실패·검증 실패 전부). */
   let lastReasons: string[] = [];
+  /**
+   * 재시도 프롬프트에 되먹일 사유 — **모델이 고칠 수 있는 것만**.
+   * 전송 오류(fetch failed 등)를 넣으면 "직전 출력이 아래 규칙을 어겼습니다: LLM 호출 실패"
+   * 라는 무의미한 지시가 되고, 애초에 그 시도엔 출력 자체가 없었다.
+   */
+  let lastCorrectableReasons: string[] = [];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     // 2026-08-10 — 재시도에 직전 실패 사유를 되먹인다. 예전에는 동일 프롬프트를 그대로
     //   재전송해 재시도가 주사위 굴리기였다(리포트당 8콜/최대 9). 꼬리말은 user message
     //   **끝**에 붙여 앞 프리픽스를 보존한다(프롬프트 캐시).
-    const correction = attempt === 0 ? '' : buildRetryCorrectionNote(lastReasons);
+    const correction =
+      attempt === 0 ? '' : buildRetryCorrectionNote(lastCorrectableReasons);
     const message = correction ? `${userMessage}\n\n${correction}` : userMessage;
 
     let raw = '';
@@ -89,12 +97,14 @@ export async function generateTotalReviewSection<S extends TotalReviewSectionId>
       lastReasons = [
         `LLM 호출 실패: ${error instanceof Error ? error.message : String(error)}`,
       ];
+      lastCorrectableReasons = [];
       continue;
     }
 
     const parsed = parseLooseJson(raw);
     if (!parsed) {
       lastReasons = ['JSON 파싱 실패'];
+      lastCorrectableReasons = lastReasons;
       continue;
     }
 
@@ -109,6 +119,7 @@ export async function generateTotalReviewSection<S extends TotalReviewSectionId>
       };
     }
     lastReasons = validation.reasons;
+    lastCorrectableReasons = validation.reasons;
   }
 
   return {

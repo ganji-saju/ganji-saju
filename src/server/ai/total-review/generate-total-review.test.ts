@@ -135,3 +135,27 @@ test('재시도: 직전 검증 실패 사유가 다음 프롬프트에 주입된
   assert.ok(seen[1].includes('금지 용어: 일주'), '구체적 실패 사유가 전달된다');
   assert.ok(seen[1].startsWith(seen[0]), '앞 프리픽스 보존(프롬프트 캐시 유지)');
 });
+
+test('재시도: 전송 오류는 재작성 지시로 되먹이지 않는다', async () => {
+  // "직전 출력이 아래 규칙을 어겼습니다: - LLM 호출 실패" 는 모델에게 무의미하고,
+  // 애초에 그 시도에는 고칠 출력 자체가 없었다.
+  const seen: string[] = [];
+  let call = 0;
+  const client: ChapterLLMClient = {
+    async generate(_system: string, user: string) {
+      call += 1;
+      seen.push(user);
+      if (call === 1) throw new Error('fetch failed');
+      return GOOD_ONE_LINE;
+    },
+  };
+
+  const result = await generateTotalReviewSection('one_line_summary', fixtureInput(), client, {
+    fallback: { one_line_summary: '결정론 요약' },
+  });
+
+  assert.equal(result.source, 'llm');
+  assert.equal(seen.length, 2);
+  assert.ok(!seen[1].includes('재작성 지시'), '전송 오류 뒤 시도엔 꼬리말이 없어야 한다');
+  assert.equal(seen[1], seen[0], '프롬프트가 그대로여야 한다');
+});
