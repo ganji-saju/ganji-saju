@@ -3,6 +3,7 @@ import {
   validateTotalReview,
   validateTotalReviewSection,
   hasHardTotalReviewViolation,
+  hardTextReasons,
 } from './total-review-validator';
 import type { TotalReviewOutput } from '@/server/ai/total-review/total-review-types';
 
@@ -141,4 +142,38 @@ test('validateTotalReview: "결과" 같은 복합어는 오탐 없이 통과', (
     !r.reasons.some((x) => x.includes('어휘 정책')),
     `"결과"는 오탐이면 안 됨: ${r.reasons.join(' / ')}`
   );
+});
+
+// 2026-08-10 — 금지 명리어 판정을 includes() 부분일치 → 독립 명사 판정으로 교체한 회귀 가드.
+//   부분일치 시절엔 아래 "통과" 문장들이 전부 폐기돼 총평 재생성 비용의 주범이었다.
+
+test('금지 명리어: 무해한 복합어는 통과한다 (부분일치 오탐 방지)', () => {
+  const innocent = [
+    '남의 평가에 크게 상관없이 본인 기준으로 움직입니다',   // 상관(傷官)
+    '실수에도 관대한 편이라 사람들이 편하게 다가옵니다',     // 관대(冠帶)
+    '악기를 연주하듯 리듬을 맞추는 방식이 잘 맞아요',        // 연주(年柱)
+    '이미 결정인 사안은 빠르게 넘어가는 편입니다',           // 정인(正印)
+    '일주일에 한 번은 혼자 정리하는 시간을 두세요',          // 일주(日柱)
+    '도화지에 그리듯 넓게 펼쳐놓는 편이에요',                // 도화(桃花)
+  ];
+  for (const text of innocent) {
+    const reasons = hardTextReasons(text, '본문').filter((r) => r.includes('금지 용어'));
+    assert.deepEqual(reasons, [], `오탐: ${text}`);
+  }
+});
+
+test('금지 명리어: 독립 명사로 쓰이면 그대로 폐기한다', () => {
+  const cases: Array<[string, string]> = [
+    ['이 사주는 일주가 단단한 편입니다', '일주'],
+    ['천간이 강하게 뻗어 있습니다', '천간'],
+    ['대운 흐름이 바뀌는 시기예요', '대운'],
+    ['용신을 보강하면 안정됩니다', '용신'],
+  ];
+  for (const [text, term] of cases) {
+    const reasons = hardTextReasons(text, '본문');
+    assert.ok(
+      reasons.some((r) => r === `본문 금지 용어: ${term}`),
+      `미검출: ${text} (기대 ${term}) → ${JSON.stringify(reasons)}`
+    );
+  }
 });

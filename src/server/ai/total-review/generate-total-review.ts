@@ -5,6 +5,7 @@ import type { ChapterLLMClient } from '../chapters/generate-chapter';
 import { validateTotalReviewSection } from '@/lib/saju/total-review-validator';
 import {
   TOTAL_REVIEW_SYSTEM_PROMPT,
+  buildRetryCorrectionNote,
   buildSectionUserMessage,
 } from './total-review-prompts';
 import type {
@@ -75,9 +76,15 @@ export async function generateTotalReviewSection<S extends TotalReviewSectionId>
   let lastReasons: string[] = [];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // 2026-08-10 — 재시도에 직전 실패 사유를 되먹인다. 예전에는 동일 프롬프트를 그대로
+    //   재전송해 재시도가 주사위 굴리기였다(리포트당 8콜/최대 9). 꼬리말은 user message
+    //   **끝**에 붙여 앞 프리픽스를 보존한다(프롬프트 캐시).
+    const correction = attempt === 0 ? '' : buildRetryCorrectionNote(lastReasons);
+    const message = correction ? `${userMessage}\n\n${correction}` : userMessage;
+
     let raw = '';
     try {
-      raw = await client.generate(TOTAL_REVIEW_SYSTEM_PROMPT, userMessage);
+      raw = await client.generate(TOTAL_REVIEW_SYSTEM_PROMPT, message);
     } catch (error) {
       lastReasons = [
         `LLM 호출 실패: ${error instanceof Error ? error.message : String(error)}`,
