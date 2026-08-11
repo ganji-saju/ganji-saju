@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BUSINESS_INFO } from '@/lib/business-info';
+import { keepVisible } from '@/lib/paywall-lockdown';
 // 2026-07-06 — 동의 배너 재노출(재선택·철회 경로). PIPA: 철회는 동의만큼 쉬워야 한다.
 import { openConsentBanner } from '@/components/analytics/analytics-consent';
 
@@ -60,7 +61,7 @@ function buildCompanyItems(): CompanyItem[] {
   return items.filter((item) => item.value);
 }
 
-const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string]> }[] = [
+const ALL_FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string]> }[] = [
   {
     title: '운세',
     items: [
@@ -100,6 +101,12 @@ const FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string
     ],
   },
 ];
+
+// 2026-08-11 전면 유료화 잠금 — 무료 링크 제거. 링크가 하나도 안 남는 칼럼('운세')은 통째로 뺀다.
+const FOOTER_NAV = ALL_FOOTER_NAV.map((col) => ({
+  ...col,
+  items: keepVisible(col.items, ([, href]) => href),
+})).filter((col) => col.items.length > 0);
 
 function buildContactNavItem(): readonly [string, string] | null {
   if (BUSINESS_INFO.phone) return [`☎ ${BUSINESS_INFO.phone}`, `tel:${BUSINESS_INFO.phone}`];

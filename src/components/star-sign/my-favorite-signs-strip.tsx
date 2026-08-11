@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { STAR_SIGN_META } from '@/content/moonlight';
 import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { getDailyFortune, toKstDateKey } from '@/lib/star-sign/daily-fortune';
 import {
   ELEMENT_HEX,
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export function MyFavoriteSignsStrip({ favorites }: Props) {
+  // 잠금 중엔 카드의 모든 링크(/star-sign/*)가 /pricing 으로 튕긴다 → 카드째 숨김.
+  if (isPaywallLockdown()) return null;
   if (favorites.length === 0) return null;
   const dateKey = toKstDateKey();
 

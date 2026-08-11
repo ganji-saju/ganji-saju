@@ -23,6 +23,11 @@ jobs:
       # 로그인 후 storage state 재사용. credentials 미설정 시 자동 skip.
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # 2026-08-11 전면 유료화 잠금(src/lib/paywall-lockdown.ts)은 프로덕션 기본 ON 이다.
+      #   E2E 는 잠금 OFF 로 돌린다 — 무료 흐름(오늘운세·타로·띠운세…) 회귀 감시망을
+      #   잠금 기간에도 살려두어야 되돌릴 때 안전하다. 잠금 자체는 spec 으로 검증한다.
+      #   ⚠️ NEXT_PUBLIC_* 는 빌드 타임 인라인이라 build 스텝에 반드시 걸려 있어야 한다.
+      NEXT_PUBLIC_PAYWALL_LOCKDOWN: 'false'
       E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
       E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
       E2E_TEST_READING_SLUG: ${{ secrets.E2E_TEST_READING_SLUG }}

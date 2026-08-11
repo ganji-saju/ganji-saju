@@ -19,6 +19,7 @@ import { submitTodayFromProfile } from '@/features/unified-intake/submit-today';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { FortuneFeedbackAccuracyLabel } from '@/lib/fortune-feedback';
+import { isPaywallLockdown, keepVisible } from '@/lib/paywall-lockdown';
 import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import {
   getPendingHitMemoSession,
@@ -70,7 +71,11 @@ export function TodayFortuneExperience({
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
   const [pendingHitMemo, setPendingHitMemo] = useState<StoredHitMemoSession | null>(null);
 
-  const relatedLinks = useMemo(() => RELATED_LINKS[concernId], [concernId]);
+  // 잠금 중엔 '타로로 보완하기' 같은 무료 추천이 /pricing 으로 튕긴다 → 목록에서 제외.
+  const relatedLinks = useMemo(
+    () => keepVisible(RELATED_LINKS[concernId], (item) => item.href),
+    [concernId]
+  );
 
   useEffect(() => {
     if (freeResult) {
@@ -214,9 +219,17 @@ export function TodayFortuneExperience({
         />
 
         {errorMessage ? (
-          <p role="alert" className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">
-            {errorMessage}
-          </p>
+          <div role="alert" className="grid gap-3">
+            <p className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">
+              {errorMessage}
+            </p>
+            {/* 잠금 중엔 무료 결과가 아예 안 나온다 — 안내만 남기면 막다른 길이라 결제 경로를 붙인다. */}
+            {isPaywallLockdown() ? (
+              <Link href="/saju/new?product=today-detail" className="gangi-primary-button">
+                오늘 자세히 보기
+              </Link>
+            ) : null}
+          </div>
         ) : null}
 
         {freeResult ? (

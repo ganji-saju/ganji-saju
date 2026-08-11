@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { getEngineMethodEntriesBySlug } from '@/lib/engine-method-pages';
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 
 interface Props {
   title: string;
@@ -19,6 +20,10 @@ export function EngineMethodLinks({
   ctaLabel = '읽을거리 더 보기',
   compact = false,
 }: Props) {
+  // /method/* 는 /interpretation 리다이렉트 스텁이고 그 허브가 잠겨 있다 → 전부 /pricing 행.
+  //   유료 리포트 안에서 결제 안내로 되돌리는 링크 뭉치는 무의미하므로 블록째 숨긴다.
+  if (isPaywallLockdown()) return null;
+
   const entries = getEngineMethodEntriesBySlug(slugs);
 
   if (entries.length === 0) return null;

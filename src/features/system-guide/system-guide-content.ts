@@ -1,3 +1,5 @@
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
+
 export type SystemGuideStepId =
   | 'profile'
   | 'fortune'
@@ -30,7 +32,10 @@ export const SYSTEM_GUIDE_STEPS: readonly SystemGuideStep[] = [
     id: 'fortune',
     eyebrow: '2단계',
     title: '오늘 흐름부터 가볍게 보세요',
-    description: '오늘운세·타로·띠운세·별자리로 오늘 흐름부터 무료로 확인하세요.',
+    // 2026-08-11 전면 유료화 잠금 — 타로·띠운세·별자리는 잠겨 있고 오늘운세도 무료가 아니다.
+    description: isPaywallLockdown()
+      ? '오늘 가장 걸리는 고민 하나를 골라 오늘운세로 흐름부터 확인하세요.'
+      : '오늘운세·타로·띠운세·별자리로 오늘 흐름부터 무료로 확인하세요.',
     primaryLabel: '오늘운세 보기',
     primaryHref: '/today-fortune',
   },

@@ -1,6 +1,7 @@
 // 2026-05-16 — 오늘 별자리 일진 다이제스트 카드.
 // /notifications 페이지 등에서 사용 — 12 sign 의 오늘 운세 한눈 (TOP 3 + caution + 원소 흐름).
 import Link from 'next/link';
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { computeStarSignDailyDigest } from '@/lib/star-sign/daily-digest';
 import {
   ELEMENT_HEX,
@@ -15,6 +16,9 @@ const MOOD_LABEL: Record<'warm' | 'calm' | 'dynamic' | 'sensitive', string> = {
 };
 
 export function StarSignDailyDigestCard() {
+  // 잠금 중엔 카드의 모든 링크(/star-sign/*)가 /pricing 으로 튕긴다 → 카드째 숨김.
+  if (isPaywallLockdown()) return null;
+
   const digest = computeStarSignDailyDigest();
   const bestElementHex = ELEMENT_HEX[digest.bestElement.element];
 

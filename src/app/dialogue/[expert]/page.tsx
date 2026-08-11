@@ -14,6 +14,7 @@ import {
   getDialogueExpertMeta,
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
+import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -56,6 +57,10 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
   const expertId = normalizeDialogueExpertId(expert);
 
   if (!expertId) notFound();
+
+  // 전면 유료화 잠금 — 채팅방 진입 차단(멤버십·이용권·전 잔액 있으면 통과).
+  //   ⚠️ 여기가 유료 대화(전 차감)도 일어나는 화면이라, 결제자 통과가 반드시 붙어야 한다.
+  await guardLockedFreeEntry();
 
   const meta = getDialogueExpertMeta(expertId);
 
