@@ -61,8 +61,14 @@ export interface AiTextResult {
   outputTokens?: number;
 }
 
-const DEFAULT_OPENAI_MODEL = 'gpt-5.2';
-const DEFAULT_OPENAI_INTERPRETATION_MODEL = 'gpt-5.2-chat-latest';
+// ⚠️ Responses API 는 `*-chat-latest` 별칭을 **서빙하지 않는다**.
+//   `/v1/models` 목록에는 보이지만 client.responses.create() 로 호출하면
+//   `404 Model not found` 가 난다. 2026-08-10 19:00 UTC 부터 전 LLM 기능
+//   (총평·오늘운세·대화상담·연간·평생·챕터)이 이걸로 죽었다 — 실측 확인:
+//     gpt-5.2-chat-latest → 404 / gpt-5.2 → 200 / gpt-5.4 → 200
+//   기본값에 chat-latest 계열을 넣지 말 것. 테스트로 고정돼 있다.
+const DEFAULT_OPENAI_MODEL = 'gpt-5.6-luna';
+const DEFAULT_OPENAI_INTERPRETATION_MODEL = 'gpt-5.6-luna';
 const OPENAI_TIMEOUT_MS = 15_000;
 
 function getOpenAIKey() {
@@ -226,7 +232,8 @@ async function runGenerateAiText(
       ? (error as { status?: unknown }).status
       : null;
     const errorMessage =
-      error instanceof Error ? error.message : 'OpenAI 요청에 실패했습니다.';
+      // 벤더명 미노출 — errorMessage 는 일부 경로에서 사용자에게 닿는다.
+      error instanceof Error ? error.message : 'AI 답변 요청에 실패했습니다.';
     const fallbackReason =
       status === 429 && /quota|billing|plan|한도/i.test(errorMessage)
         ? 'quota_exceeded'

@@ -48,12 +48,24 @@ export interface BuildLlmRunInput {
   fallbackReason?: string | null;
 }
 
-/** OpenAI Responses 모델별 단가 (USD per 1M tokens). chapter-telemetry 와 동일. */
+/**
+ * OpenAI Responses 모델별 단가 (USD per 1M tokens). chapter-telemetry 와 동일.
+ *
+ * 2026-08-11 — gpt-5.6 세대 추가. 표기값은 **short context 단가**다. long context
+ *   구간은 입력·출력이 약 2배(luna 기준 $0.40/$1.80)라 대용량 프롬프트가 많은
+ *   yearly·lifetime(입력 2만~2.8만 토큰)은 과소집계될 수 있다.
+ *   ⚠️ 과거 gpt-5.x 행 단가는 시기 비교를 위해 유지 — 지우면 옛 비용이 default 로 뭉개진다.
+ */
 const MODEL_PRICING_PER_M_TOKENS: Record<string, { input: number; output: number }> = {
+  'gpt-5.6-luna': { input: 0.2, output: 1.2 },
+  'gpt-5.6-terra': { input: 2.0, output: 12.0 },
+  'gpt-5.6-sol': { input: 5.0, output: 30.0 },
+  'gpt-5.4': { input: 1.25, output: 10.0 },
   'gpt-5.2': { input: 1.25, output: 10.0 },
   'gpt-5.2-chat-latest': { input: 1.25, output: 10.0 },
   'gpt-5-chat-latest': { input: 1.25, output: 10.0 },
 };
+/** 표에 없는 모델은 과소집계보다 과대집계가 안전하다 — 이전 세대 단가를 기본으로 둔다. */
 const DEFAULT_PRICING = { input: 1.25, output: 10.0 };
 
 /** LLM 호출 비용(USD). 토큰 정보 없으면 0. 알 수 없는 모델은 default 단가. */
