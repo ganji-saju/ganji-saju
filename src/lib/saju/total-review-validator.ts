@@ -57,9 +57,48 @@ const OCCUPATION_KEYWORDS: Record<string, string[]> = {
   '기타 활동': [],
 };
 
+/**
+ * 한국어 조사 목록 — "독립 명사 뒤에 붙을 수 있는 것"의 단일 소스.
+ * 긴 것부터 나열해야 `에`가 `에서`를 가로채지 않는다.
+ * 여기서 빠진 조사는 **false negative**(진짜 명리어를 놓침)가 되므로 추가는 신중히, 누락은 즉시 보완.
+ */
+const TERM_PARTICLES = [
+  '이라는', '이라도', '입니다', '에서', '에는', '에도', '에만', '까지', '부터',
+  '처럼', '보다', '마다', '조차', '밖에', '만큼', '대로', '한테', '에게', '이랑',
+  '이라', '이다', '이며', '이나', '이든', '든지', '께서',
+  '이', '가', '을', '를', '은', '는', '의', '에', '와', '과', '도', '만',
+  '로', '라', '들', '랑', '며', '나', '든',
+].join('|');
+
+/** 앞이 한글이 아니고, 뒤가 (조사 +) 공백/문장부호/문자열 끝일 때만 "독립 사용". */
+const TERM_TRAILING_BOUNDARY = '(?=[\\s.,!?。、]|$|[^가-힣])';
+
 // chapter-validator 의 GYEOL_STANDALONE_PATTERN 동등 — 복합명사(결단/결과/결혼) 제외, 단독 "결"만.
-const GYEOL_STANDALONE_PATTERN =
-  /결(?:(?:이|가|을|를|은|는|의|에|와|과|도|만|로|라|들|에서|에는|에도|에만|이라|이라는|이다|입니다)(?=[\s.,!?。、]|$|[^가-힣])|(?=[\s.,!?。、]|$|[^가-힣]))/gu;
+const GYEOL_STANDALONE_PATTERN = new RegExp(
+  `결(?:(?:${TERM_PARTICLES})${TERM_TRAILING_BOUNDARY}|${TERM_TRAILING_BOUNDARY})`,
+  'gu'
+);
+
+// 2026-08-10 — 금지 명리어를 `includes()` 부분일치로 검사하던 것을 **독립 명사 판정**으로 교체.
+//   한글에는 \b 가 없어 부분일치는 무해한 복합어까지 폐기시켰다. 실측 오탐:
+//     지지받는·상관없이·관대한·연주하듯·결정인·일주일·제왕절개·도화지
+//   총평 LLM 이 정상적인 한국어를 썼다는 이유로 재생성돼 리포트당 8콜(최대 9)까지 치솟은
+//   주 원인. 판정 규칙은 GYEOL_STANDALONE_PATTERN 과 동일: 앞이 한글이 아니고,
+//   뒤가 (조사 +) 공백/문장부호/문자열 끝.
+//   ⚠️ 잔존 동음이의어: '지지'(地支/支持)·'목욕'(沐浴/목욕) 는 독립형이 겹쳐 이 방식으로 못 거른다.
+//      금지어 목록에서 뺄지는 품질·정책 판단이라 코드에서 임의로 바꾸지 않았다.
+
+/** 명리어가 독립 명사로 쓰였는지 판정하는 정규식. g 플래그 없음 → test() 무상태. */
+function standaloneTermPattern(term: string): RegExp {
+  return new RegExp(
+    `(?<![가-힣])${term}(?:${TERM_PARTICLES})?${TERM_TRAILING_BOUNDARY}`,
+    'u'
+  );
+}
+
+/** 모듈 로드 시 1회 컴파일 (호출마다 42개 정규식을 새로 만들지 않도록). */
+const BANNED_MYEONGRI_PATTERNS: ReadonlyArray<readonly [string, RegExp]> =
+  BANNED_MYEONGRI_TERMS.map((term) => [term, standaloneTermPattern(term)] as const);
 
 export interface TotalReviewValidationContext {
   relationshipStatus?: string | null;
@@ -81,8 +120,8 @@ export function hardTextReasons(text: string, where: string): string[] {
   if (hanja?.length) {
     reasons.push(`${where} 한자 누출: ${[...new Set(hanja)].join(', ')}`);
   }
-  for (const term of BANNED_MYEONGRI_TERMS) {
-    if (text.includes(term)) reasons.push(`${where} 금지 용어: ${term}`);
+  for (const [term, pattern] of BANNED_MYEONGRI_PATTERNS) {
+    if (pattern.test(text)) reasons.push(`${where} 금지 용어: ${term}`);
   }
   for (const pattern of DAILY_TONE_PATTERNS) {
     const m = text.match(pattern);
