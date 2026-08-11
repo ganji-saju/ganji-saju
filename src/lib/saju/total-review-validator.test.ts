@@ -4,8 +4,10 @@ import {
   validateTotalReviewSection,
   hasHardTotalReviewViolation,
   hardTextReasons,
+  BANNED_MYEONGRI_TERMS_LABELED,
 } from './total-review-validator';
 import type { TotalReviewOutput } from '@/server/ai/total-review/total-review-types';
+import { MYEONGRI_GLOSSARY } from './terminology';
 
 // 2026-05-21 — 총평 검증 §7 10항목. GOOD = 28문장 모범 답안(0 한자·0 명리어·일일톤 0·
 //   컨텍스트 반영·문장수 28·카드 3). BAD = 한자/일일톤/컨텍스트 미반영.
@@ -164,10 +166,10 @@ test('금지 명리어: 무해한 복합어는 통과한다 (부분일치 오탐
 
 test('금지 명리어: 독립 명사로 쓰이면 그대로 폐기한다', () => {
   const cases: Array<[string, string]> = [
-    ['이 사주는 일주가 단단한 편입니다', '일주'],
-    ['천간이 강하게 뻗어 있습니다', '천간'],
-    ['대운 흐름이 바뀌는 시기예요', '대운'],
-    ['용신을 보강하면 안정됩니다', '용신'],
+    ['이 사주는 일주가 단단한 편입니다', '일주(日柱)'],
+    ['천간이 강하게 뻗어 있습니다', '천간(天干)'],
+    ['대운 흐름이 바뀌는 시기예요', '대운(大運)'],
+    ['용신을 보강하면 안정됩니다', '용신(用神)'],
   ];
   for (const [text, term] of cases) {
     const reasons = hardTextReasons(text, '본문');
@@ -182,11 +184,11 @@ test('금지 명리어: 조사가 붙어도 잡는다 (false negative 가드)', 
   // 조사 목록에서 빠진 조사는 진짜 명리어를 놓치게 만든다 — 비용을 아끼려다
   // 전문용어가 사용자에게 새면 교환이 잘못된 것이다.
   const cases: Array<[string, string]> = [
-    ['대운까지 흐름이 이어집니다', '대운'],
-    ['용신처럼 쓰이는 기운이에요', '용신'],
-    ['일주보다 강한 자리입니다', '일주'],
-    ['격국마다 다릅니다', '격국'],
-    ['천간이랑 부딪히는 자리', '천간'],
+    ['대운까지 흐름이 이어집니다', '대운(大運)'],
+    ['용신처럼 쓰이는 기운이에요', '용신(用神)'],
+    ['일주보다 강한 자리입니다', '일주(日柱)'],
+    ['격국마다 다릅니다', '격국(格局)'],
+    ['천간이랑 부딪히는 자리', '천간(天干)'],
   ];
   for (const [text, term] of cases) {
     assert.ok(
@@ -194,4 +196,19 @@ test('금지 명리어: 조사가 붙어도 잡는다 (false negative 가드)', 
       `조사 뒤 미검출: ${text} (기대 ${term})`
     );
   }
+});
+
+test('금지어 한자 병기가 중앙 글로서리(MYEONGRI_GLOSSARY)와 일치한다', () => {
+  // terminology.ts 가 명리 용어의 단일 소스다. 여기서 다른 한자를 쓰면
+  // 검증 사유·PDF·리포트가 서로 다른 표기를 내보낸다.
+  // (글로서리에 없는 용어는 이 목록이 자체 보유 — 겹치는 것만 검사.)
+  let checked = 0;
+  for (const labeled of BANNED_MYEONGRI_TERMS_LABELED.split(', ')) {
+    const [, term, hanja] = labeled.match(/^(.+)\((.+)\)$/) ?? [];
+    const canonical = MYEONGRI_GLOSSARY[term]?.hanja;
+    if (!canonical) continue;
+    checked += 1;
+    assert.equal(hanja, canonical, `'${term}' 한자 불일치: 금지어 목록 ${hanja} ≠ 글로서리 ${canonical}`);
+  }
+  assert.ok(checked >= 15, `교차 검증된 용어가 ${checked}개뿐 — 글로서리 연결이 끊겼는지 확인`);
 });

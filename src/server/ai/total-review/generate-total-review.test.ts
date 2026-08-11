@@ -132,7 +132,7 @@ test('재시도: 직전 검증 실패 사유가 다음 프롬프트에 주입된
   assert.equal(seen.length, 2);
   assert.ok(!seen[0].includes('재작성 지시'), '첫 시도에는 꼬리말이 붙지 않는다');
   assert.ok(seen[1].includes('재작성 지시'), '재시도에는 꼬리말이 붙는다');
-  assert.ok(seen[1].includes('금지 용어: 일주'), '구체적 실패 사유가 전달된다');
+  assert.ok(seen[1].includes('금지 용어: 일주(日柱)'), '구체적 실패 사유가 전달된다');
   assert.ok(seen[1].startsWith(seen[0]), '앞 프리픽스 보존(프롬프트 캐시 유지)');
 });
 

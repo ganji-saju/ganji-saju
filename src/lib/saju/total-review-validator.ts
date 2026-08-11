@@ -11,14 +11,31 @@ import type {
 
 const HANJA_RE = /[一-鿿]/g;
 
-// spec §7 의 bannedTerms. (§3 보다 짧은 §7 코드 원칙 — 본문 노출 0건 대상)
-const BANNED_MYEONGRI_TERMS = [
-  '천간', '지지', '일간', '일주', '월주', '시주', '연주', '시지', '월지', '연지',
-  '격국', '식신격', '정인격', '편관격', '용신', '신강', '신약', '대운', '세운', '월운',
-  '비견', '겁재', '식신', '상관', '편재', '정재', '편관', '정관', '편인', '정인',
-  '원진', '공망', '신살', '양인', '도화', '역마', '화개',
-  '장생', '목욕', '관대', '건록', '제왕',
+/**
+ * spec §7 의 bannedTerms. (§3 보다 짧은 §7 코드 원칙 — 본문 노출 0건 대상)
+ *
+ * 2026-08-11 — 각 용어에 **한자를 병기**한다. 한글만으로는 어느 뜻을 금지하는지 알 수 없어,
+ *   실패 사유가 `금지 용어: 지지` 로만 나가면 모델이 支持(지지하다) 를 썼는지 地支 를 썼는지
+ *   구분하지 못해 재시도가 엉뚱한 곳을 고친다. `지지(地支)` 로 알려주면 한 번에 수렴한다.
+ *   ⚠️ 한자는 **사유 메시지·프롬프트 설명용**일 뿐이다. 검출 자체는 여전히 한글 표기 기준이라
+ *      '지지'(地支/支持)·'목욕'(沐浴/목욕) 동음이의어의 오탐은 남는다.
+ */
+const BANNED_MYEONGRI_TERMS: ReadonlyArray<readonly [term: string, hanja: string]> = [
+  ['천간', '天干'], ['지지', '地支'], ['일간', '日干'], ['일주', '日柱'], ['월주', '月柱'],
+  ['시주', '時柱'], ['연주', '年柱'], ['시지', '時支'], ['월지', '月支'], ['연지', '年支'],
+  ['격국', '格局'], ['식신격', '食神格'], ['정인격', '正印格'], ['편관격', '偏官格'],
+  ['용신', '用神'], ['신강', '身强'], ['신약', '身弱'], ['대운', '大運'], ['세운', '歲運'],
+  ['월운', '月運'], ['비견', '比肩'], ['겁재', '劫財'], ['식신', '食神'], ['상관', '傷官'],
+  ['편재', '偏財'], ['정재', '正財'], ['편관', '偏官'], ['정관', '正官'], ['편인', '偏印'],
+  ['정인', '正印'], ['원진', '怨嗔'], ['공망', '空亡'], ['신살', '神煞'], ['양인', '羊刃'],
+  ['도화', '桃花'], ['역마', '驛馬'], ['화개', '華蓋'], ['장생', '長生'], ['목욕', '沐浴'],
+  ['관대', '冠帶'], ['건록', '建祿'], ['제왕', '帝旺'],
 ];
+
+/** 금지 명리어를 `한글(한자)` 로 나열 — 프롬프트 §2 의 단일 소스. */
+export const BANNED_MYEONGRI_TERMS_LABELED = BANNED_MYEONGRI_TERMS.map(
+  ([term, hanja]) => `${term}(${hanja})`
+).join(', ');
 
 // spec §7 dailyTonePatterns — 일일 톤 누출 (총평의 핵심 가드)
 const DAILY_TONE_PATTERNS: RegExp[] = [
@@ -97,8 +114,10 @@ function standaloneTermPattern(term: string): RegExp {
 }
 
 /** 모듈 로드 시 1회 컴파일 (호출마다 42개 정규식을 새로 만들지 않도록). */
-const BANNED_MYEONGRI_PATTERNS: ReadonlyArray<readonly [string, RegExp]> =
-  BANNED_MYEONGRI_TERMS.map((term) => [term, standaloneTermPattern(term)] as const);
+const BANNED_MYEONGRI_PATTERNS: ReadonlyArray<readonly [label: string, pattern: RegExp]> =
+  BANNED_MYEONGRI_TERMS.map(
+    ([term, hanja]) => [`${term}(${hanja})`, standaloneTermPattern(term)] as const
+  );
 
 export interface TotalReviewValidationContext {
   relationshipStatus?: string | null;
@@ -120,8 +139,9 @@ export function hardTextReasons(text: string, where: string): string[] {
   if (hanja?.length) {
     reasons.push(`${where} 한자 누출: ${[...new Set(hanja)].join(', ')}`);
   }
-  for (const [term, pattern] of BANNED_MYEONGRI_PATTERNS) {
-    if (pattern.test(text)) reasons.push(`${where} 금지 용어: ${term}`);
+  for (const [label, pattern] of BANNED_MYEONGRI_PATTERNS) {
+    // label 은 `지지(地支)` 형태 — 재시도 프롬프트에서 어느 뜻이 걸렸는지 모델이 알 수 있어야 한다.
+    if (pattern.test(text)) reasons.push(`${where} 금지 용어: ${label}`);
   }
   for (const pattern of DAILY_TONE_PATTERNS) {
     const m = text.match(pattern);
