@@ -132,11 +132,14 @@ export async function generateTotalReview(
     .sort()[0];
 
   // 계측: 캐시로 아낀 섹션을 섹션 단위로 기록해야 openai(섹션콜)와 같은 축에서 비교된다.
-  for (const sectionId of TOTAL_REVIEW_SECTION_IDS) {
-    const hit = cached[sectionId];
-    if (!hit) continue;
-    await recordLlmRun({ feature: 'total_review', source: 'cache', model: hit.model, userId: null });
-  }
+  //   ⚠️ 병렬 — 순차로 await 하면 **완전 캐시 hit(가장 흔한 경로)** 에 DB 왕복 3번이 직렬로 붙는다.
+  await Promise.all(
+    TOTAL_REVIEW_SECTION_IDS.flatMap((sectionId) => {
+      const hit = cached[sectionId];
+      if (!hit) return [];
+      return [recordLlmRun({ feature: 'total_review', source: 'cache', model: hit.model, userId: null })];
+    })
+  );
 
   const missing = TOTAL_REVIEW_SECTION_IDS.filter((sectionId) => !cached[sectionId]);
 
@@ -178,11 +181,21 @@ export async function generateTotalReview(
     Record<TotalReviewSectionId, { source: 'llm' | 'fallback'; value: Partial<TotalReviewOutput> }>
   >;
 
-  // 새로 만든 섹션 중 llm 통과분만 즉시 적재 — 다른 섹션이 실패해도 이건 살아남는다.
-  for (const [sectionId, result] of generatedList) {
-    if (result.source !== 'llm') continue;
-    await cacheStore.setSection(cacheKey, sectionId, { fragment: result.value });
-  }
+  // 새로 만든 섹션 중 llm 통과분만 적재 — 다른 섹션이 실패해도 이건 살아남는다(병렬).
+  //   ⚠️ 이 적재는 아래 hasHardTotalReviewViolation 검사보다 **먼저** 와야 한다.
+  //     한 섹션이 실패하면 그 자리는 deterministic 문구로 메워지는데, 그 문구는 LLM 검증기
+  //     기준으로 깨끗하지 않아 **조립 검사가 거의 항상 걸린다**. 검사 뒤로 옮기면 정확히
+  //     "부분 실패" 상황에서만 적재가 안 되어 이 PR 이 고치려는 낭비가 그대로 되살아난다
+  //     (회귀 테스트가 잡았다: main_narrative 재생성 2회).
+  //     조립 위반은 *빠진 섹션* 때문이지 캐시된 조각 때문이 아니라, 그 섹션이 나중에 성공하면
+  //     저절로 해소된다 — 고착되지 않는다.
+  await Promise.all(
+    generatedList
+      .filter(([, result]) => result.source === 'llm')
+      .map(([sectionId, result]) =>
+        cacheStore.setSection(cacheKey, sectionId, { fragment: result.value })
+      )
+  );
 
   const output = assembleOutput(cached, generated, deterministic);
 
