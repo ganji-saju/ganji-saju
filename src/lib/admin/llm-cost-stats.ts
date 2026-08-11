@@ -7,6 +7,7 @@
 //   - 일별 버킷을 UTC 날짜 → KST 날짜로 교체(KST 00~09시 호출이 전날로 집계되던 문제).
 //   - 윈도우 시작을 KST (오늘-N+1일) 자정으로 스냅(첫 날 부분일 과소집계 방지).
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
+import { estimateLlmCostUsd } from '@/server/ai/llm-telemetry';
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
@@ -22,7 +23,25 @@ export interface LlmRunRow {
   input_tokens: number | null;
   output_tokens: number | null;
   cost_usd: number | null;
+  /** 2026-08-11 — 단가 재계산용. 없으면 저장값(cost_usd)으로 폴백. */
+  model?: string | null;
   user_id_hash: string | null;
+}
+
+/**
+ * 행 1건의 비용 — **현재 단가표로 다시 계산한다.**
+ *
+ * 2026-08-11 — 기존에는 저장된 cost_usd 를 그대로 합산했다. cost_usd 는 *기록 시점* 에
+ *   계산돼 박히므로, 단가표를 고쳐도 대시보드 숫자가 따라오지 않았다. 실제로 모델을
+ *   gpt-5.6-luna 로 바꾼 직후 행들이 옛 default 단가(1.25/10)로 박혀 약 8배 과대집계됐다.
+ *   행마다 model 이 남아 있어 model 기준 재계산이 시기 구분까지 정확하다.
+ *   토큰이 없는 행(cache·fallback)은 재계산 대상이 아니라 저장값(0)을 그대로 쓴다.
+ */
+export function rowCostUsd(r: LlmRunRow): number {
+  if (typeof r.input_tokens === 'number' && typeof r.output_tokens === 'number') {
+    return estimateLlmCostUsd(r.model, r.input_tokens, r.output_tokens);
+  }
+  return r.cost_usd ?? 0;
 }
 
 export interface DayStat {
@@ -65,7 +84,7 @@ export function aggregateByDay(rows: ReadonlyArray<LlmRunRow>): DayStat[] {
       map.set(date, d);
     }
     d.calls += 1;
-    d.costUsd += r.cost_usd ?? 0;
+    d.costUsd += rowCostUsd(r);
     if (r.user_id_hash) d.users.add(r.user_id_hash);
   }
   return [...map.entries()]
@@ -103,7 +122,7 @@ export function aggregateByFeature(rows: ReadonlyArray<LlmRunRow>): FeatureStat[
     else if (r.source === 'fallback') f.fallback += 1;
     f.inputTokens += r.input_tokens ?? 0;
     f.outputTokens += r.output_tokens ?? 0;
-    f.costUsd += r.cost_usd ?? 0;
+    f.costUsd += rowCostUsd(r);
   }
   for (const f of map.values()) {
     f.cacheHitRate = f.calls > 0 ? round3(f.cache / f.calls) : 0;
@@ -122,7 +141,7 @@ export function overallSummary(rows: ReadonlyArray<LlmRunRow>): LlmCostSummary {
   const users = new Set<string>();
   for (const r of rows) {
     totalCalls += 1;
-    totalCost += r.cost_usd ?? 0;
+    totalCost += rowCostUsd(r);
     if (r.source === 'cache') cacheCount += 1;
     if (r.user_id_hash) users.add(r.user_id_hash);
   }
@@ -170,7 +189,7 @@ export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
       const from = page * PAGE_SIZE;
       const { data, error } = await supabase
         .from('ai_llm_runs')
-        .select('created_at, feature, source, input_tokens, output_tokens, cost_usd, user_id_hash')
+        .select('created_at, feature, source, input_tokens, output_tokens, cost_usd, model, user_id_hash')
         .gte('created_at', since)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
