@@ -226,7 +226,8 @@ async function runGenerateAiText(
       ? (error as { status?: unknown }).status
       : null;
     const errorMessage =
-      error instanceof Error ? error.message : 'OpenAI 요청에 실패했습니다.';
+      // 벤더명 미노출 — errorMessage 는 일부 경로에서 사용자에게 닿는다.
+      error instanceof Error ? error.message : 'AI 답변 요청에 실패했습니다.';
     const fallbackReason =
       status === 429 && /quota|billing|plan|한도/i.test(errorMessage)
         ? 'quota_exceeded'
