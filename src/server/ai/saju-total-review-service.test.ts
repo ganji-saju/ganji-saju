@@ -109,10 +109,19 @@ test('generateTotalReview: 플래그 ON + 한자 누출 → hard 위반 determin
 function countingClient(map: { oneLine: string; main: string; keys: string }) {
   const client = {
     calls: 0,
+    /** 섹션별 호출 수 — "성공한 섹션은 재생성되지 않는다"를 정확히 단언하기 위함. */
+    bySection: { oneLine: 0, main: 0, keys: 0 } as Record<'oneLine' | 'main' | 'keys', number>,
     async generate(_systemPrompt: string, userMessage: string) {
       client.calls += 1;
-      if (userMessage.includes('단락 1')) return map.main;
-      if (userMessage.includes('카드 1')) return map.keys;
+      if (userMessage.includes('단락 1')) {
+        client.bySection.main += 1;
+        return map.main;
+      }
+      if (userMessage.includes('카드 1')) {
+        client.bySection.keys += 1;
+        return map.keys;
+      }
+      client.bySection.oneLine += 1;
       return map.oneLine;
     },
   };
@@ -171,11 +180,17 @@ test('generateTotalReview: 같은 사주라도 이름이 다르면 캐시를 공
   assert.equal(client.calls, callsAfterSecond, '같은 이름의 반복 조회만 캐시 hit');
 });
 
-test('generateTotalReview: fallback 결과는 캐시하지 않는다 (다음 호출 재생성)', async () => {
+// 2026-08-12 회귀가드 — 이 파일에서 가장 비싼 버그를 막는 테스트.
+//   이전 구현은 전체 출력을 1행으로 캐시하면서 "3섹션 전부 llm" 일 때만 썼다. 그래서 한 섹션이
+//   검증에 걸리면 성공한 나머지 두 섹션까지 버려지고, 그 사주는 **조회할 때마다 3콜**을 다시
+//   태웠다(프로덕션 실측: openai 섹션콜 1,075 누적에 캐시행 84).
+//   실패한 섹션만 재시도되고 성공한 섹션은 0콜이어야 한다.
+test('generateTotalReview: 한 섹션이 실패해도 성공한 섹션은 캐시되어 재생성되지 않는다', async () => {
   const { sajuData, personalizationContext } = fixture();
   const cacheStore = createInMemoryTotalReviewCacheStore();
   const client = countingClient({
     ...SECTIONS_GOOD,
+    // 한자 포함 → validator hard 위반으로 one_line_summary 만 계속 실패.
     oneLine: JSON.stringify({ one_line_summary: '癸未 사주' }),
   });
   const common = {
@@ -189,10 +204,57 @@ test('generateTotalReview: fallback 결과는 캐시하지 않는다 (다음 호
   };
 
   const r1 = await generateTotalReview(common);
-  assert.equal(r1.source, 'fallback');
-  const callsAfterFirst = client.calls;
+  assert.equal(r1.source, 'fallback', '실패 섹션이 있으면 화면은 deterministic 으로 degrade');
+  assert.ok(client.bySection.main > 0 && client.bySection.keys > 0);
+
+  const mainAfterFirst = client.bySection.main;
+  const keysAfterFirst = client.bySection.keys;
+  const oneLineAfterFirst = client.bySection.oneLine;
 
   const r2 = await generateTotalReview(common);
   assert.equal(r2.source, 'fallback');
-  assert.ok(client.calls > callsAfterFirst, '캐시되지 않아 재호출이 발생해야 함');
+  // 핵심: 성공했던 두 섹션은 캐시에서 나와 **추가 호출 0**.
+  assert.equal(client.bySection.main, mainAfterFirst, 'main_narrative 는 재생성되면 안 된다');
+  assert.equal(client.bySection.keys, keysAfterFirst, 'lifetime_keys 는 재생성되면 안 된다');
+  // 실패한 섹션만 다시 시도한다(고착 방지 — 원 설계 의도 유지).
+  assert.ok(
+    client.bySection.oneLine > oneLineAfterFirst,
+    '실패한 섹션은 다음 조회에 재시도되어야 한다'
+  );
+});
+
+test('generateTotalReview: 실패 섹션이 나중에 성공하면 전체가 캐시된다', async () => {
+  const { sajuData, personalizationContext } = fixture();
+  const cacheStore = createInMemoryTotalReviewCacheStore();
+  let oneLinePayload = JSON.stringify({ one_line_summary: '癸未 사주' });
+  const client = {
+    calls: 0,
+    async generate(_systemPrompt: string, userMessage: string) {
+      client.calls += 1;
+      if (userMessage.includes('단락 1')) return SECTIONS_GOOD.main;
+      if (userMessage.includes('카드 1')) return SECTIONS_GOOD.keys;
+      return oneLinePayload;
+    },
+  };
+  const common = {
+    sajuData,
+    personalizationContext,
+    userName: '테스트',
+    env: ENV_ON,
+    maxRetries: 1,
+    client,
+    cacheStore,
+  };
+
+  assert.equal((await generateTotalReview(common)).source, 'fallback');
+
+  oneLinePayload = SECTIONS_GOOD.oneLine; // 다음 시도에 정상 응답
+  const r2 = await generateTotalReview(common);
+  assert.equal(r2.source, 'llm', '남은 섹션이 통과하면 캐시 조각과 합쳐 llm 으로 승격');
+
+  const callsAfterRecovery = client.calls;
+  const r3 = await generateTotalReview(common);
+  assert.equal(r3.source, 'cache');
+  assert.equal(client.calls, callsAfterRecovery, '완전 캐시 후에는 추가 호출 0');
+  assert.deepEqual(r3.output, r2.output);
 });
