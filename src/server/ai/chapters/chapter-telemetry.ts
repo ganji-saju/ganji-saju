@@ -45,7 +45,16 @@ export function hashUserId(rawId: string | null | undefined): string | undefined
  *   2026-05-20 당시 OpenAI 공식 단가. 모델 변경 시 갱신.
  *   알려지지 않은 모델은 default fallback 단가 (gpt-5.2 원칙 보수적 추정).
  */
+// ponytail: llm-telemetry.ts 와 단가표가 이중으로 존재한다. 지금은 행만 맞춰두고,
+//   통합은 별도 정리로 미룬다(챕터 비용 회계를 장애 대응 중에 건드리지 않기 위해).
+//   업그레이드 경로: estimateLlmCostUsd 를 llm-telemetry 에서 import 해 이 표를 삭제.
+//   2026-08-11 — gpt-5.6 세대 추가. 없으면 default(1.25/10) 로 계산돼 luna(0.2/1.2)
+//   사용분이 6~8배 과대집계된다. short context 기준(long 은 약 2배).
 const MODEL_PRICING_PER_M_TOKENS: Record<string, { input: number; output: number }> = {
+  'gpt-5.6-luna': { input: 0.2, output: 1.2 },
+  'gpt-5.6-terra': { input: 2.0, output: 12.0 },
+  'gpt-5.6-sol': { input: 5.0, output: 30.0 },
+  'gpt-5.4': { input: 1.25, output: 10.0 },
   'gpt-5.2': { input: 1.25, output: 10.0 },
   'gpt-5.2-chat-latest': { input: 1.25, output: 10.0 },
   'gpt-5-chat-latest': { input: 1.25, output: 10.0 },
