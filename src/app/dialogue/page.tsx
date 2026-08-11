@@ -14,6 +14,7 @@ import {
   MENU_DIALOGUE_EXPERTS,
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
+import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
 
 export const metadata: Metadata = {
   title: '대화',
@@ -33,6 +34,9 @@ export default async function DialoguePage({
     expert?: string;
   }>;
 }) {
+  // 전면 유료화 잠금 — 무료 1문답 진입 차단(결제 이력 있으면 통과).
+  await guardLockedFreeEntry();
+
   const params = await searchParams;
   const selectedExpertId = normalizeDialogueExpertId(params.expert) ?? 'dragon';
   const shouldOpenRoom = Boolean(

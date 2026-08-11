@@ -11,6 +11,10 @@ export default defineConfig({
     },
   },
   test: {
+    // 2026-08-11 — 전면 유료화 잠금은 프로덕션 기본 ON 이지만, 기존 스펙은 **잠금 이전 제품**을
+    //   검증한다. 여기서 OFF 로 고정해 복원 시 안전망을 유지하고, 잠금 동작 자체는
+    //   src/lib/paywall-lockdown.spec.ts 가 env 를 직접 켜서 검증한다.
+    env: { NEXT_PUBLIC_PAYWALL_LOCKDOWN: 'false' },
     environment: 'node',
     include: ['src/**/*.spec.ts', 'src/**/*.test.tsx'],
     // 기존 .test.ts 는 scripts/run-unit-tests.mjs 에서 별도 실행.

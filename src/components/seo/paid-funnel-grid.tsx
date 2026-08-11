@@ -16,6 +16,7 @@
 
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { keepVisible } from '@/lib/paywall-lockdown';
 
 export interface PaidFunnelGridProps {
   /** UTM source identifier — analytics 추적용 (?from={from}). */
@@ -113,7 +114,11 @@ export function PaidFunnelGrid({
 }: PaidFunnelGridProps) {
   // 보고 있는 메뉴 자신은 목록에서 뺀다 — 타로 결과에서 "타로 보러가기"를 권하는 꼴을 막는다.
   //   그래서 `from` 은 UTM 값이면서 동시에 **자기 식별자**다(item.key 와 같은 어휘를 쓸 것).
-  const base = ITEMS.filter((item) => item.key !== from);
+  // 잠금 중엔 무료 항목(타로 등)이 /pricing 으로 튕기므로 교차추천에서 뺀다.
+  const base = keepVisible(
+    ITEMS.filter((item) => item.key !== from),
+    (item) => item.href
+  );
   const visibleItems = includeMembership ? [...base, MEMBERSHIP_ITEM] : base;
 
   const dark = tone === 'dark';

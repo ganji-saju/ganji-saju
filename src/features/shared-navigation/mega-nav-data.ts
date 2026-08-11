@@ -2,6 +2,7 @@
 // 첨부 desktop.jsx MEGA_NAV 를 바탕으로 우리 실제 라우트에 맞춰 정리.
 
 import type { ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { isMenuHiddenHref, isPaywallLockdown, keepVisible } from '@/lib/paywall-lockdown';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export interface MegaNavItem {
@@ -37,7 +38,7 @@ export interface MegaNavGroup {
   c3?: MegaNavFeatured;
 }
 
-export const MEGA_NAV: MegaNavGroup[] = [
+const ALL_MEGA_NAV: MegaNavGroup[] = [
   {
     label: '운세',
     c1: {
@@ -138,7 +139,62 @@ export const MEGA_NAV: MegaNavGroup[] = [
   },
 ];
 
-/** pathname 으로 현재 active group label 판정. 운세 default. */
+// 2026-08-11 전면 유료화 잠금 — 메가 메뉴 정리.
+//   · (A)잠긴 링크 제거. c1 이 통째로 비면 그룹을 드롭한다 — c1 은 패널의 본 그리드라
+//     그게 빈 메가 패널은 깨져 보인다.
+//   · 'FREE' 배지와 '무료…' 카피는 전부 걷어낸다. 잠금 중엔 전부 빈말이 된다.
+//     (섹션 heading '무료 운세'도 포함 — 남은 항목이 유료면 제목이 거짓말이 된다.)
+function applyLockdown(groups: MegaNavGroup[]): MegaNavGroup[] {
+  if (!isPaywallLockdown()) return groups;
+
+  const cleanItems = (items: MegaNavItem[] | undefined) =>
+    keepVisible(items ?? [], (item) => item.href).map(({ tag, ...item }) => ({
+      ...item,
+      desc: unfree(item.desc),
+      // 'FREE' 배지는 떼고, 가격 배지(9,900원·VIP·TOP 등)는 그대로 둔다.
+      ...(tag && tag !== 'FREE' ? { tag } : {}),
+    }));
+
+  const cleanColumn = (column: { heading: string; items: MegaNavItem[] } | undefined) => {
+    const items = cleanItems(column?.items);
+    if (!column || items.length === 0) return undefined;
+    return { heading: unfreeHeading(column.heading), items };
+  };
+
+  return groups.flatMap((group) => {
+    if (group.simple) return [group];
+
+    const c1 = cleanColumn(group.c1);
+    if (!c1) return [];
+
+    const c3 =
+      group.c3 && !isMenuHiddenHref(group.c3.href)
+        ? {
+            ...group.c3,
+            description: unfree(group.c3.description),
+            cta: unfree(group.c3.cta),
+          }
+        : undefined;
+
+    return [{ ...group, c1, c2: cleanColumn(group.c2), c3 }];
+  });
+}
+
+/** '무료로 시작' 류 카피 → 잠금 중에도 참인 문구로 교체. */
+function unfree(copy: string): string {
+  return copy.includes('무료') ? '결제 후 이용' : copy;
+}
+
+/** 섹션 제목은 '무료 ' 수식만 떼어낸다('무료 운세' → '운세'). */
+function unfreeHeading(heading: string): string {
+  return heading.replace(/무료\s*/g, '').trim() || heading;
+}
+
+export const MEGA_NAV: MegaNavGroup[] = applyLockdown(ALL_MEGA_NAV);
+
+const DEFAULT_GROUP = MEGA_NAV.find((group) => !group.simple)?.label ?? MEGA_NAV[0]?.label ?? '';
+
+/** pathname 으로 현재 active group label 판정. 첫 메가 그룹 default. */
 export function resolveActiveGroup(pathname: string): string {
   if (
     pathname.startsWith('/today-fortune') ||
@@ -148,7 +204,8 @@ export function resolveActiveGroup(pathname: string): string {
     pathname.startsWith('/dream') ||
     pathname.startsWith('/taekil')
   ) {
-    return '운세';
+    // 잠금으로 '운세' 그룹이 사라졌으면 하이라이트할 대상이 없다 → 기본 그룹.
+    return MEGA_NAV.some((group) => group.label === '운세') ? '운세' : DEFAULT_GROUP;
   }
   if (
     pathname.startsWith('/saju') ||
@@ -166,5 +223,5 @@ export function resolveActiveGroup(pathname: string): string {
   if (pathname.startsWith('/guide')) {
     return '사용방법';
   }
-  return '운세'; // 홈/기본은 운세 활성
+  return DEFAULT_GROUP; // 홈/기본은 첫 메가 그룹 활성
 }

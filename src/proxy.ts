@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isFreeEntryPath, isLockedPath } from '@/lib/paywall-lockdown';
 import {
   CANONICAL_REDIRECT_STATUS,
   CANONICAL_SITE_URL,
@@ -49,6 +50,15 @@ function shouldRedirectToCanonicalHost(req: NextRequest) {
   return shouldRedirectHost(req.nextUrl.hostname);
 }
 
+/**
+ * Supabase 세션 쿠키가 하나라도 있는가(= 로그인했을 가능성).
+ * 이름은 `sb-<projectRef>-auth-token`(+ 청크 `.0`/`.1`)이지만, 이름 규칙이 바뀌어도
+ * 로그인 사용자를 잘못 막지 않도록 **`sb-` 접두사 존재만** 본다(fail-open).
+ */
+function hasSupabaseSessionCookie(req: NextRequest) {
+  return req.cookies.getAll().some((cookie) => cookie.name.startsWith('sb-'));
+}
+
 function buildCanonicalUrl(req: NextRequest) {
   const canonicalUrl = new URL(req.nextUrl.pathname, CANONICAL_SITE_ORIGIN);
   canonicalUrl.search = req.nextUrl.search;
@@ -68,6 +78,27 @@ export async function proxy(req: NextRequest) {
 
   if (shouldForwardAuthCallback(req)) {
     return NextResponse.redirect(buildAuthCallbackUrl(req));
+  }
+
+  // 2026-08-11 — 전면 유료화 잠금. 무료 전용 콘텐츠 라우트를 결제 안내로 보낸다.
+  //   · 307(임시)인 이유: 잠금은 되돌릴 수 있어야 한다. 301 은 브라우저·CDN 이 영구
+  //     캐시해서 env 를 꺼도 사용자 단말에서 계속 튕긴다.
+  //   · /api 는 제외 — 각 라우트가 자체 권한·무료할당량으로 판정한다(결제 사용자 열람 보존).
+  if (!pathname.startsWith('/api/') && isLockedPath(pathname)) {
+    return NextResponse.redirect(new URL('/pricing', req.nextUrl.origin), 307);
+  }
+
+  // (B)갈래 무료 진입 경로 — **비로그인 방문자·크롤러만** 여기서 끊는다.
+  //   결제엔 로그인이 필요하므로 비로그인은 결제 이력이 있을 수 없다 = DB 조회 없이 확정 판정.
+  //   로그인 사용자는 통과시키고, 페이지의 guardLockedFreeEntry() 가 결제 이력을 판정한다.
+  //   ⚠️ 세션 쿠키가 조금이라도 보이면 통과(fail-open) — 결제자를 잘못 막는 쪽이 훨씬 비싸다.
+  //   ⚠️ 결제 복귀(`?paid=…`)는 무조건 통과 — 결제 직후 사용자를 튕기면 안 된다.
+  if (
+    isFreeEntryPath(pathname) &&
+    !req.nextUrl.searchParams.has('paid') &&
+    !hasSupabaseSessionCookie(req)
+  ) {
+    return NextResponse.redirect(new URL('/pricing', req.nextUrl.origin), 307);
   }
 
   if (process.env.NODE_ENV !== 'production') {

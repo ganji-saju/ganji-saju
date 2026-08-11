@@ -3,6 +3,7 @@
 // 모두 정적이므로 클라이언트가 무한 fetch 해도 비용은 거의 0.
 
 import { DREAM_DICTIONARY } from '@/lib/dream-dictionary';
+import { keepVisible } from '@/lib/paywall-lockdown';
 import {
   priceLabelFromMap,
   type PriceDisplay,
@@ -200,12 +201,12 @@ const DREAM_HITS: SearchHit[] = Object.values(DREAM_DICTIONARY).map((entry) => (
   keywords: [entry.keyword, ...entry.related],
 }));
 
-const ALL_HITS: SearchHit[] = [
-  ...MENU_HITS,
-  ...ZODIAC_HITS,
-  ...STAR_SIGN_HITS,
-  ...DREAM_HITS,
-];
+// 2026-08-11 전면 유료화 잠금 — 잠긴 경로(띠/별자리/꿈해몽/타로…)는 검색결과에서도 뺀다.
+//   안 빼면 검색은 되는데 클릭하면 /pricing 으로 튕기는 유령 결과가 된다.
+const ALL_HITS: SearchHit[] = keepVisible(
+  [...MENU_HITS, ...ZODIAC_HITS, ...STAR_SIGN_HITS, ...DREAM_HITS],
+  (hit) => hit.href
+);
 
 export function runSearch(
   query: string,

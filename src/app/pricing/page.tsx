@@ -14,6 +14,7 @@ import {
 } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import {
   priceLabelFromMap,
@@ -34,7 +35,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const entry = priceLabelFromMap(await getPriceDisplayMap(), 'saju_entry');
   return {
     title: '가격 한눈보기',
-    description: `간지사주의 무료 운세, ${entry} 단품 풀이, 멤버십을 한 화면에서 비교합니다.`,
+    description: isPaywallLockdown()
+      ? `간지사주의 ${entry} 단품 풀이와 멤버십을 한 화면에서 비교합니다.`
+      : `간지사주의 무료 운세, ${entry} 단품 풀이, 멤버십을 한 화면에서 비교합니다.`,
     alternates: {
       canonical: '/pricing',
     },
@@ -72,31 +75,60 @@ export default async function PricingPage() {
       <AppPage className="gangi-subpage space-y-5">
         <GangiPageHeader title="가격" backHref="/" />
 
-        <GangiIntro
-          eyebrow="가격 한눈보기"
-          title={
-            <>
-              무료로 먼저 보고
-              <br />
-              필요한 풀이만 열어요
-            </>
-          }
-          description={`오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 ${entryLabel} 단품으로 이어볼 수 있습니다.`}
-        >
-          <GangiActionRow>
-            <Link href="/today-fortune?concern=general" className="gangi-primary-button">
-              무료 오늘운세 보기
-            </Link>
-            <Link href="/tarot/daily" className="gangi-secondary-button">
-              무료 타로 보기
-            </Link>
-          </GangiActionRow>
-        </GangiIntro>
+        {/* 2026-08-11 — /pricing 은 잠긴 무료 경로가 전부 착지하는 곳이다. 여기에 "무료로
+            먼저 보기" 히어로가 남아 있으면 눌러도 다시 이 페이지로 되돌아오는 루프가 된다. */}
+        {isPaywallLockdown() ? (
+          <GangiIntro
+            eyebrow="가격 한눈보기"
+            title={
+              <>
+                필요한 풀이만
+                <br />
+                하나씩 열어요
+              </>
+            }
+            description={`궁금한 질문 하나부터 ${entryLabel} 단품으로 확인하고, 자주 보신다면 멤버십으로 이어가실 수 있습니다.`}
+          >
+            <GangiActionRow>
+              <Link href="/saju/new?product=today-detail" className="gangi-primary-button">
+                내 사주 풀이 시작
+              </Link>
+              <Link href="/membership" className="gangi-secondary-button">
+                멤버십 보기
+              </Link>
+            </GangiActionRow>
+          </GangiIntro>
+        ) : (
+          <GangiIntro
+            eyebrow="가격 한눈보기"
+            title={
+              <>
+                무료로 먼저 보고
+                <br />
+                필요한 풀이만 열어요
+              </>
+            }
+            description={`오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 ${entryLabel} 단품으로 이어볼 수 있습니다.`}
+          >
+            <GangiActionRow>
+              <Link href="/today-fortune?concern=general" className="gangi-primary-button">
+                무료 오늘운세 보기
+              </Link>
+              <Link href="/tarot/daily" className="gangi-secondary-button">
+                무료 타로 보기
+              </Link>
+            </GangiActionRow>
+          </GangiIntro>
+        )}
 
         <GangiSection
           eyebrow="작게 열어보기"
           title="지금 질문 하나만 짧게 확인"
-          description="전문 상품명보다 사용자가 실제로 묻는 질문으로 정리했습니다. 무료 결과를 본 뒤 자연스럽게 이어지는 상품입니다."
+          description={
+            isPaywallLockdown()
+              ? '전문 상품명보다 사용자가 실제로 묻는 질문으로 정리했습니다. 궁금한 질문 하나만 골라 여실 수 있습니다.'
+              : '전문 상품명보다 사용자가 실제로 묻는 질문으로 정리했습니다. 무료 결과를 본 뒤 자연스럽게 이어지는 상품입니다.'
+          }
           tone="pink"
         >
           <div className="grid gap-3">

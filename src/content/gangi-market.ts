@@ -1,5 +1,6 @@
 import type { GangiZodiacKey } from '@/components/gangi/gangi-ui';
 import type { StarSignKey } from '@/components/gangi/star-sign-chip';
+import { isPaywallLockdown, keepVisible } from '@/lib/paywall-lockdown';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export const GANGI_HOME_CATEGORIES = [
@@ -91,7 +92,7 @@ export type GangiHomeBanner = {
 
 // 2026-06-26 — 완성형 이미지 배너로 교체(사용자 제작 배너1·3·도사·2). 3:1 이미지가 문구를
 //   포함하므로 캐러셀은 이미지만 풀블리드 렌더. kicker/title/cta 는 추적·폴백용으로 유지.
-export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
+const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   {
     id: 'consult-pro',
     image: 'consult-pro',
@@ -155,6 +156,14 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   },
 ] as const;
 
+// 2026-08-11 전면 유료화 잠금 — 무료 콘텐츠로 보내는 배너 제거.
+//   ⚠️ 배너는 문구가 **이미지에 그려져** 있다. 잠금 중 '공짜로 보는 운세·타로'(tarot-free)나
+//     '꿈해몽'(dream) 배너가 남으면 클릭 → /pricing 으로 튕겨 낚시가 된다. 링크 기준으로 건다.
+export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
+  ALL_GANGI_HOME_BANNERS,
+  (banner) => banner.href
+);
+
 // 2026-06-23 — 메인 캐릭터 카드 개편(20260623 시안 slide3). 8카드 그리드.
 //   각 카드 = 캐릭터 일러스트(image) + 메뉴명(title) + 후킹 카피(headline) + "바로 확인하기".
 //   별자리(star-sign)·띠운세(zodiac)는 시안에서 빠짐 → 그리드 제외, 진입점은 상단 별자리 slot +
@@ -174,7 +183,7 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
 //   긴 제목 하나가 나머지 7개를 함께 작게 만든다. 그래서 짧게
 //   오히려 짧은 제목보다 작아져 "크게"의 취지가 깨진다. 제한 뉘앙스(한 단어/질문 하나)는
 //   제목에서 빠졌으니 되살리려면 desc 로 옮길 것.
-export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
+const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'saju',
     title: '사주',
@@ -291,7 +300,19 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   },
 ] as const;
 
-export const GANGI_FREE_ACTIONS = [
+// 2026-08-11 전면 유료화 잠금 — 홈 그리드에서 무료 카드를 뺀다.
+//   두 조건 모두 제거 대상이다:
+//     · price === '무료'  → 값 자체가 무료라고 광고하는 카드(간단운세·타로·꿈해몽·대화상담)
+//     · 링크가 잠긴 경로  → 눌러도 /pricing 으로 튕기는 카드
+//   '대화상담'은 라우트(/dialogue)가 살아 있어 메가 메뉴 '대화' 그룹과 푸터로는 계속 닿는다.
+export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = keepVisible(
+  isPaywallLockdown()
+    ? ALL_GANGI_HOME_CARDS.filter((card) => card.price !== '무료')
+    : ALL_GANGI_HOME_CARDS,
+  (card) => card.href
+);
+
+const ALL_GANGI_FREE_ACTIONS = [
   {
     id: 'today',
     href: '/today-fortune?concern=general',
@@ -312,7 +333,15 @@ export const GANGI_FREE_ACTIONS = [
   },
 ] as const;
 
-export const GANGI_FREE_HUB_ITEMS = [
+/**
+ * 무료 액션 스트립('FREE' 배지 고정). 잠금 시 통째로 비운다 —
+ * 링크 필터만 걸면 오늘운세가 살아남아 유료 메뉴에 'FREE' 배지가 붙는다.
+ */
+export const GANGI_FREE_ACTIONS = isPaywallLockdown()
+  ? ([] as typeof ALL_GANGI_FREE_ACTIONS[number][])
+  : [...ALL_GANGI_FREE_ACTIONS];
+
+const ALL_GANGI_FREE_HUB_ITEMS = [
   {
     href: '/today-fortune?concern=general',
     zodiac: 'rooster',
@@ -339,3 +368,11 @@ export const GANGI_FREE_HUB_ITEMS = [
     desc: '꿈으로 보는 길흉',
   },
 ] as const;
+
+/**
+ * /free 허브 목록('FREE' 가격표 고정). 잠금 시 /free 라우트 자체가 막히지만
+ * 데이터도 통째로 비운다(오늘운세가 남아 'FREE'로 표시되는 것 방지).
+ */
+export const GANGI_FREE_HUB_ITEMS = isPaywallLockdown()
+  ? ([] as typeof ALL_GANGI_FREE_HUB_ITEMS[number][])
+  : [...ALL_GANGI_FREE_HUB_ITEMS];

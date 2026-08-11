@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { DREAM_ENTRIES, STAR_SIGN_FORTUNES, ZODIAC_FORTUNES } from '@/lib/free-content-pages';
+import { isAnonymousBlockedPath } from '@/lib/paywall-lockdown';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 
 /**
@@ -46,7 +47,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.4 },
   ];
 
-  return [
+  // 2026-08-11 전면 유료화 잠금 — 익명(=크롤러)에게 안 보이는 경로는 색인 제출에서 뺀다.
+  //   잠금 중엔 이 URL 들이 /pricing 으로 리다이렉트되므로, 그대로 두면 GSC 가 전부
+  //   "리다이렉트 포함 페이지" 오류로 잡는다. (A)라우트 차단 + (B)결제자 전용 게이트 둘 다 해당.
+  //   잠금 해제하면 자동 복귀.
+  const all: MetadataRoute.Sitemap = [
     ...staticEntries,
     ...ZODIAC_FORTUNES.map((item) => ({
       url: `${siteUrl}/zodiac/${item.slug}`,
@@ -76,4 +81,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     })),
   ];
+
+  return all.filter((entry) => !isAnonymousBlockedPath(new URL(entry.url).pathname));
 }

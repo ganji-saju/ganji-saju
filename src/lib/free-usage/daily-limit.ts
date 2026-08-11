@@ -23,6 +23,7 @@ import {
   dailyPeriodKey,
   getMemberBenefitUsed,
 } from '@/lib/credits/member-benefits';
+import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { getMemberTier } from '@/lib/subscription';
 
 export const FREE_DAILY_LIMIT = 1;
@@ -66,6 +67,10 @@ export async function isFreeDailyUsed(
   surface: FreeSurface,
   userId: string | null | undefined
 ): Promise<boolean> {
+  // 전면 유료화 잠금 — 무료 할당량 자체가 0. 멤버 면제(isFreeDailyExempt)는 그대로 살아 있어
+  //   결제한 사용자는 호출부에서 이 검사를 건너뛴다.
+  if (isPaywallLockdown()) return true;
+
   const conf = FREE_DAILY_SURFACES[surface];
   const periodKey = dailyPeriodKey();
 
@@ -98,6 +103,9 @@ export async function consumeFreeDaily(
     value: periodKey,
     maxAge: secondsUntilKstMidnight(),
   };
+
+  // 전면 유료화 잠금 — 소비 자체를 막는다(쿠키/계정 카운트를 태우지 않아 복원 시 흔적 없음).
+  if (isPaywallLockdown()) return { allowed: false, cookie };
 
   // 쿠키 선판정 — 익명/로그인 공통. 같은 기기에서 오늘 이미 썼으면 계정 카운트를 태우지 않는다.
   let cookieBlocked = false;
@@ -134,5 +142,9 @@ function topicParticle(word: string): '은' | '는' {
 /** 차단 응답 본문 — 클라가 그대로 노출할 수 있는 한국어 문구. */
 export function freeDailyLimitMessage(surface: FreeSurface): string {
   const { label } = FREE_DAILY_SURFACES[surface];
+  if (isPaywallLockdown()) {
+    // 잠금 중엔 "내일 다시" 가 거짓말이 된다 — 내일도 무료로는 못 본다.
+    return `${label}${topicParticle(label)} 이제 결제 후 이용하실 수 있어요.`;
+  }
   return `${label}${topicParticle(label)} 하루 한 번 볼 수 있어요. 내일 다시 만나요.`;
 }
