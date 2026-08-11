@@ -22,11 +22,16 @@ import {
   isTotalReviewLLMEnabled,
 } from './total-review/total-review-cache';
 import {
+  TOTAL_REVIEW_SECTION_IDS,
   createSupabaseTotalReviewCacheStore,
+  type CachedTotalReviewSections,
   type TotalReviewCacheStore,
 } from './total-review/total-review-cache-store';
 import { recordLlmRun } from './llm-telemetry';
-import type { TotalReviewOutput } from './total-review/total-review-types';
+import type {
+  TotalReviewOutput,
+  TotalReviewSectionId,
+} from './total-review/total-review-types';
 
 export interface GenerateTotalReviewArgs {
   sajuData: SajuDataV1 | SajuDataV2;
@@ -55,6 +60,26 @@ export interface TotalReviewResult {
 
 // main_narrative(4단락 5~8문장)가 가장 큼 — 넉넉히. 작은 섹션은 조기 종료.
 const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 1500;
+
+/** 캐시 조각 + 신규 조각을 합쳐 완성 출력으로. 둘 다 없으면 deterministic 으로 메운다. */
+function assembleOutput(
+  cached: CachedTotalReviewSections,
+  generated: Partial<Record<TotalReviewSectionId, { value: Partial<TotalReviewOutput> }>>,
+  deterministic: TotalReviewOutput
+): TotalReviewOutput {
+  const pick = <K extends keyof TotalReviewOutput>(key: K): TotalReviewOutput[K] => {
+    const fromCache = cached[key as TotalReviewSectionId]?.fragment[key];
+    if (fromCache !== undefined) return fromCache as TotalReviewOutput[K];
+    const fromNew = generated[key as TotalReviewSectionId]?.value[key];
+    if (fromNew !== undefined) return fromNew as TotalReviewOutput[K];
+    return deterministic[key];
+  };
+  return {
+    one_line_summary: pick('one_line_summary'),
+    main_narrative: pick('main_narrative'),
+    lifetime_keys: pick('lifetime_keys'),
+  };
+}
 
 function buildDeterministicOutput(narrative: SajuNarrative): TotalReviewOutput {
   return {
@@ -96,16 +121,34 @@ export async function generateTotalReview(
     return { source: 'fallback', output: deterministic, reasons: ['llm_disabled'], meta };
   }
 
-  // 영속 캐시 read-through: 동일 사주+컨텍스트는 1회만 OpenAI 호출 (페이지 조회마다 차감 방지).
+  // 영속 캐시 read-through(**섹션 단위**): 이미 적재된 섹션은 다시 생성하지 않는다.
+  //   2026-08-12 — 이전엔 전체 출력 1행 + "3섹션 전부 llm" 일 때만 쓰기였다. 한 섹션만 검증에
+  //   걸려도 성공한 나머지까지 버려져 캐시가 안 남았고, 그 사주는 조회할 때마다 3콜을 다시 태웠다.
   const cacheStore = args.cacheStore ?? createSupabaseTotalReviewCacheStore();
-  const cached = await cacheStore.get(cacheKey);
-  if (cached) {
-    await recordLlmRun({ feature: 'total_review', source: 'cache', model: cached.model, userId: null });
+  const cached = await cacheStore.getSections(cacheKey);
+
+  const cachedGeneratedAt = TOTAL_REVIEW_SECTION_IDS.map((id) => cached[id]?.generatedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort()[0];
+
+  // 계측: 캐시로 아낀 섹션을 섹션 단위로 기록해야 openai(섹션콜)와 같은 축에서 비교된다.
+  //   ⚠️ 병렬 — 순차로 await 하면 **완전 캐시 hit(가장 흔한 경로)** 에 DB 왕복 3번이 직렬로 붙는다.
+  await Promise.all(
+    TOTAL_REVIEW_SECTION_IDS.flatMap((sectionId) => {
+      const hit = cached[sectionId];
+      if (!hit) return [];
+      return [recordLlmRun({ feature: 'total_review', source: 'cache', model: hit.model, userId: null })];
+    })
+  );
+
+  const missing = TOTAL_REVIEW_SECTION_IDS.filter((sectionId) => !cached[sectionId]);
+
+  if (missing.length === 0) {
     return {
       source: 'cache',
-      output: cached.output,
+      output: assembleOutput(cached, {}, deterministic),
       reasons: [],
-      meta: { ...meta, generatedAt: cached.generatedAt },
+      meta: { ...meta, generatedAt: cachedGeneratedAt ?? meta.generatedAt },
     };
   }
 
@@ -119,26 +162,42 @@ export async function generateTotalReview(
     createOpenAITotalReviewClient({ maxOutputTokens: TOTAL_REVIEW_MAX_OUTPUT_TOKENS });
   const maxRetries = args.maxRetries ?? 2;
 
-  const [oneLine, main, keys] = await Promise.all([
-    generateTotalReviewSection('one_line_summary', input, client, {
-      maxRetries,
-      fallback: { one_line_summary: deterministic.one_line_summary },
-    }),
-    generateTotalReviewSection('main_narrative', input, client, {
-      maxRetries,
-      fallback: { main_narrative: deterministic.main_narrative },
-    }),
-    generateTotalReviewSection('lifetime_keys', input, client, {
-      maxRetries,
-      fallback: { lifetime_keys: deterministic.lifetime_keys },
-    }),
-  ]);
+  const sectionFallbacks = {
+    one_line_summary: { one_line_summary: deterministic.one_line_summary },
+    main_narrative: { main_narrative: deterministic.main_narrative },
+    lifetime_keys: { lifetime_keys: deterministic.lifetime_keys },
+  } as const;
 
-  const output: TotalReviewOutput = {
-    one_line_summary: oneLine.value.one_line_summary,
-    main_narrative: main.value.main_narrative,
-    lifetime_keys: keys.value.lifetime_keys,
-  };
+  const generatedList = await Promise.all(
+    missing.map((sectionId) =>
+      generateTotalReviewSection(sectionId, input, client, {
+        maxRetries,
+        // 섹션별 fallback 타입이 sectionId 에 종속이라 여기서만 좁힌다.
+        fallback: sectionFallbacks[sectionId] as never,
+      }).then((result) => [sectionId, result] as const)
+    )
+  );
+  const generated = Object.fromEntries(generatedList) as Partial<
+    Record<TotalReviewSectionId, { source: 'llm' | 'fallback'; value: Partial<TotalReviewOutput> }>
+  >;
+
+  // 새로 만든 섹션 중 llm 통과분만 적재 — 다른 섹션이 실패해도 이건 살아남는다(병렬).
+  //   ⚠️ 이 적재는 아래 hasHardTotalReviewViolation 검사보다 **먼저** 와야 한다.
+  //     한 섹션이 실패하면 그 자리는 deterministic 문구로 메워지는데, 그 문구는 LLM 검증기
+  //     기준으로 깨끗하지 않아 **조립 검사가 거의 항상 걸린다**. 검사 뒤로 옮기면 정확히
+  //     "부분 실패" 상황에서만 적재가 안 되어 이 PR 이 고치려는 낭비가 그대로 되살아난다
+  //     (회귀 테스트가 잡았다: main_narrative 재생성 2회).
+  //     조립 위반은 *빠진 섹션* 때문이지 캐시된 조각 때문이 아니라, 그 섹션이 나중에 성공하면
+  //     저절로 해소된다 — 고착되지 않는다.
+  await Promise.all(
+    generatedList
+      .filter(([, result]) => result.source === 'llm')
+      .map(([sectionId, result]) =>
+        cacheStore.setSection(cacheKey, sectionId, { fragment: result.value })
+      )
+  );
+
+  const output = assembleOutput(cached, generated, deterministic);
 
   // 조립 결과에 한자/금지어/일일톤/자극어가 섞이면 통째로 deterministic 으로 교체.
   if (hasHardTotalReviewViolation(output)) {
@@ -156,14 +215,11 @@ export async function generateTotalReview(
     concern: input.context.concern,
     userName: args.userName ?? null,
   });
-  const allLlm =
-    oneLine.source === 'llm' && main.source === 'llm' && keys.source === 'llm';
+  // 캐시에서 온 섹션은 이미 llm 통과분이다. 새로 만든 섹션만 성패를 본다.
+  const allLlm = TOTAL_REVIEW_SECTION_IDS.every(
+    (sectionId) => cached[sectionId] || generated[sectionId]?.source === 'llm'
+  );
   const source: 'llm' | 'fallback' = allLlm ? 'llm' : 'fallback';
-
-  // 'llm' 통과 결과만 캐시 (fallback 은 캐시하지 않아 일시 실패가 고착되지 않게).
-  if (source === 'llm') {
-    await cacheStore.set(cacheKey, { output, reasons: full.reasons });
-  }
 
   return { source, output, reasons: full.reasons, meta };
 }
