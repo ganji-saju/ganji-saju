@@ -4,8 +4,10 @@ import {
   validateTotalReviewSection,
   hasHardTotalReviewViolation,
   hardTextReasons,
+  BANNED_MYEONGRI_TERMS_LABELED,
 } from './total-review-validator';
 import type { TotalReviewOutput } from '@/server/ai/total-review/total-review-types';
+import { MYEONGRI_GLOSSARY } from './terminology';
 
 // 2026-05-21 — 총평 검증 §7 10항목. GOOD = 28문장 모범 답안(0 한자·0 명리어·일일톤 0·
 //   컨텍스트 반영·문장수 28·카드 3). BAD = 한자/일일톤/컨텍스트 미반영.
@@ -194,4 +196,19 @@ test('금지 명리어: 조사가 붙어도 잡는다 (false negative 가드)', 
       `조사 뒤 미검출: ${text} (기대 ${term})`
     );
   }
+});
+
+test('금지어 한자 병기가 중앙 글로서리(MYEONGRI_GLOSSARY)와 일치한다', () => {
+  // terminology.ts 가 명리 용어의 단일 소스다. 여기서 다른 한자를 쓰면
+  // 검증 사유·PDF·리포트가 서로 다른 표기를 내보낸다.
+  // (글로서리에 없는 용어는 이 목록이 자체 보유 — 겹치는 것만 검사.)
+  let checked = 0;
+  for (const labeled of BANNED_MYEONGRI_TERMS_LABELED.split(', ')) {
+    const [, term, hanja] = labeled.match(/^(.+)\((.+)\)$/) ?? [];
+    const canonical = MYEONGRI_GLOSSARY[term]?.hanja;
+    if (!canonical) continue;
+    checked += 1;
+    assert.equal(hanja, canonical, `'${term}' 한자 불일치: 금지어 목록 ${hanja} ≠ 글로서리 ${canonical}`);
+  }
+  assert.ok(checked >= 15, `교차 검증된 용어가 ${checked}개뿐 — 글로서리 연결이 끊겼는지 확인`);
 });
