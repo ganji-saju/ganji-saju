@@ -1,7 +1,9 @@
 ﻿import { Suspense, type ComponentProps } from 'react';
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { logPaywallImpression } from '@/lib/payments/funnel-log';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { TrackedLink } from '@/components/common/tracked-link';
@@ -377,6 +379,18 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
   //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
   const scoreUnlocked = await getScoreUnlockEntitlement(slug);
+
+  // 2026-08-12 — 페이월 노출을 퍼널에 기록한다(migration 073).
+  //   지금까지 퍼널의 첫 칸이 비어 있어 "결과를 본 사람 중 몇 %가 결제창까지 갔나"를
+  //   계산할 수 없었다(무료 조회는 readings, 결제는 payment_funnel_events 로 테이블이 갈림).
+  //   60일 실측상 실제로 팔리는 건 이 종합점수 언락 하나(결제 성공 9건 중 5건)라,
+  //   여기 분모를 세우는 게 페이월 판단의 전제다.
+  //   ⚠️ after() — 렌더 경로에서 await 하면 응답이 그만큼 느려진다.
+  if (!scoreUnlocked) {
+    after(() =>
+      logPaywallImpression({ packageId: 'taste_score_total', surface: 'saju-result', slug })
+    );
+  }
   const rawReport = buildSajuReport(input, sajuData, topic);
   // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
   //   iljinScore 산출 가능하면 (시 입력 등) overall+영역별을 iljinScore.totalScore 바탕으로 통일.
