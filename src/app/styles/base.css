@@ -147,9 +147,11 @@
   }
 
   :where(h1, h2, h3) {
-    font-weight: var(--app-type-title);
+    /* 2026-08-25 Phase 2 리브랜드(B안) — 제목은 바탕체(전통의 목소리), 본문은 고딕 유지. */
+    font-family: var(--font-batang), "Gowun Batang", "Noto Serif KR", serif;
+    font-weight: 700;
     letter-spacing: 0;
-    line-height: 1.28;
+    line-height: 1.32;
   }
 
   :where(h4, h5, h6, strong, b, summary) {
