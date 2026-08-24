@@ -43,12 +43,10 @@ import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores
 import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
 import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
-import { ComprehensiveToc } from '@/components/saju/comprehensive-toc';
-import { buildLifetimeReport } from '@/domain/saju/report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
-import { compareLabelFromMap, priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
+import { priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 // Task 8 — 카카오 친구추가 무료쿠폰 CTA(사주 결과 하단). slug 없이 렌더 —
@@ -389,11 +387,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   여기 분모를 세우는 게 페이월 판단의 전제다.
   //   ⚠️ after() — 렌더 경로에서 await 하면 응답이 그만큼 느려진다.
   if (!scoreUnlocked) {
-    after(() => {
-      logPaywallImpression({ packageId: 'taste_score_total', surface: 'saju-result', slug });
-      // 2026-08-24 Phase 1 — 간판(종합 리포트) 목차 노출도 같은 분모로 기록.
-      logPaywallImpression({ packageId: 'bundle_comprehensive', surface: 'saju-result-toc', slug });
-    });
+    after(() =>
+      logPaywallImpression({ packageId: 'taste_score_total', surface: 'saju-result', slug })
+    );
   }
   const rawReport = buildSajuReport(input, sajuData, topic);
   // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
@@ -410,25 +406,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext, {
     userName: input.name?.trim() || null,
   });
-
-  // 2026-08-24 Phase 1 — 종합 리포트 목차의 개인화 훅. 대운 타임라인(결정론, 무료 deep 챕터와
-  //   동일 빌더)에서 '다음 대운 시작 나이'를 뽑는다. 연도 환산은 만나이/세는나이 모호성 때문에
-  //   하지 않는다(ageLabel 그대로만 인용 — 틀린 숫자를 약속하지 않는 원칙).
-  let comprehensiveHook: string | null = null;
-  if (!scoreUnlocked) {
-    try {
-      const cycles = buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles;
-      const currentIdx = cycles.findIndex((cycle) => cycle.isCurrent);
-      const next = currentIdx >= 0 ? cycles[currentIdx + 1] : null;
-      const nextStartAge = next?.ageLabel?.match(/^(\d+)/)?.[1] ?? null;
-      if (nextStartAge) {
-        const who = input.name?.trim() ? `${input.name.trim()}님의` : '당신의';
-        comprehensiveHook = `${who} 다음 대운 전환은 ${nextStartAge}세 — 그 10년의 흐름이 잠긴 항목 안에 있습니다.`;
-      }
-    } catch {
-      comprehensiveHook = null; // 훅은 장식 — 계산 실패가 페이지를 못 깨게 한다.
-    }
-  }
 
   // 2026-05-22 — 총평 LLM 풀이는 아래 JSX 의 <TotalReviewSection>(Suspense 경계) 안에서 await 한다.
   //   여기서 직접 await 하면 LLM(수 초) 동안 페이지 전체 HTML 이 막혀 새로고침 시 흰 화면이 떴다.
@@ -607,18 +584,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {report.focusBadge} 시점
               </p>
             </section>
-
-            {/* §2.4 종합사주 리포트 목차 — Phase 1 간판(bundle_comprehensive) 업셀.
-                만신령식 "무료 ✓ + 잠김 🔒" 리스트. 점수 미해제(=종합 미구매의 근사)일 때만.
-                개인화 훅은 대운 타임라인(무료 deep 와 동일 결정론 빌더)에서 다음 전환 나이를 뽑는다. */}
-            {!scoreUnlocked ? (
-              <ComprehensiveToc
-                slug={slug}
-                hookLine={comprehensiveHook}
-                priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
-                compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
-              />
-            ) : null}
 
             {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
             <section className="space-y-4">

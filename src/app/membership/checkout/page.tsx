@@ -184,20 +184,6 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
 // 묶음(bundle) 상품 안내. packageId 키. TASTE_PRODUCT_GUIDE 는 단일 TasteProductId 만
 // 다루므로 묶음은 별도 맵으로 분리(타입 충돌 회피).
 const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
-  // 2026-08-24 Phase 1 — 간판 상품. 할인율 표기 금지('출시 기념가' 고정) — catalog 주석 참조.
-  bundle_comprehensive: {
-    title: '종합사주 리포트',
-    reassurance:
-      '출시 기념가 9,900원(정가 33,000원). 사주 종합점수와 5요소 풀이, 오늘의 상세 리포트, 돈 패턴, 일·직장 흐름, 올해 핵심까지 17항목을 한 번에 엽니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
-    nextRange: '결제 즉시 사주 결과 화면에서 잠긴 항목이 전부 열립니다.',
-    opens: ['사주 종합점수 + 5요소 풀이', '오늘의 상세 리포트', '돈이 새는 패턴 · 일/직장 흐름 · 올해 핵심'],
-    notices: [
-      '이 리포트는 현재 사주 결과에 연결됩니다.',
-      '이미 구매한 항목은 중복 결제하지 않습니다.',
-      // today-detail 은 일일 상품(2026-06-05 일일 만료 정책) — 당일 한정을 결제 전에 고지한다.
-      "'오늘의 상세 리포트'는 결제일 당일 기준 풀이입니다.",
-    ],
-  },
   bundle_today_set: {
     title: '오늘 풀세트',
     reassurance:
@@ -399,7 +385,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     사주 결과 먼저 만들기
                   </Link>
                 </div>
-              ) : needsResultFirst && (selectedProduct || selectedBundle) ? (
+              ) : needsResultFirst && selectedProduct ? (
                 <div className="grid gap-3 text-center">
                   <strong className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                     먼저 결과를 만들어 주세요
@@ -408,7 +394,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     단품 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
                   </p>
                   <Link
-                    href={selectedProduct ? `/saju/new?product=${selectedProduct}` : '/saju/new'}
+                    href={`/saju/new?product=${selectedProduct}`}
                     className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기

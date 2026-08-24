@@ -15,7 +15,7 @@ import type {
   GangiHomeCategoryKey,
   GangiServiceCard,
 } from '@/content/gangi-market';
-import { GANGI_HOME_BANNERS, GANGI_HOME_CARDS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
+import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
 
@@ -435,13 +435,7 @@ export function GangiCategoryTabs({
       aria-label="운세 카테고리"
       style={{ scrollbarWidth: 'none' }}
     >
-      {GANGI_HOME_CATEGORIES.filter(
-        // 2026-08-24 Phase 1 — 카드가 없는 카테고리 탭은 숨긴다. 단품 강등·잠금으로 카드가
-        //   줄면 빈 탭(누르면 빈 그리드)이 생기던 것 방지. '전체'는 항상.
-        (category) =>
-          category.key === 'all' ||
-          GANGI_HOME_CARDS.some((card) => card.category === category.key && card.price !== '출시 예정')
-      ).map((category) => {
+      {GANGI_HOME_CATEGORIES.map((category) => {
         const isActive = active === category.key;
         return (
           <button

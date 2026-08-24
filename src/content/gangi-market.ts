@@ -101,10 +101,8 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     kicker: '사주·명리',
     title: '내 앞날을 조금이라도 알 수 있다면',
     description: '다가올 기회는 놓치지 않고, 조심해야 할 순간은 미리 준비하세요.',
-    cta: '무료로 내 사주 확인하기',
-    // 2026-08-24 Phase 1 — 결제 직행(?product=today-detail) → 무료 맛보기 경유로 전환.
-    //   무료 결과(/saju/[slug])의 17항목 목차(ComprehensiveToc)가 종합 리포트 업셀을 담당한다.
-    href: '/saju/new',
+    cta: '내 사주 확인하기',
+    href: '/saju/new?product=today-detail',
     tone: 'pink',
   },
   {
@@ -184,24 +182,48 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
 //   제목에서 빠졌으니 되살리려면 desc 로 옮길 것.
 // 2026-08-24 전면 개편 Phase 0 — 실사 인물 사진(image)·사진용 titleColor 전량 제거(사용자 지시).
 //   카드가 chip 폴백(띠 문양)으로 렌더된다. Phase 2 에서 12지신 수호신 캐릭터가 image 로 복귀 예정.
-// 2026-08-24 Phase 1 — 단품 강등(사용자 결정): 대운·택일 카드를 홈에서 내린다. 두 상품은
-//   결과·구매 후 화면의 교차추천(paid-funnel-grid)과 /daewoon·/taekil 랜딩으로 계속 판다.
-//   홈 간판은 종합 리포트(사주 카드) 하나 + 대상이 다른 궁합만 남긴다.
 const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'saju',
     title: '사주',
-    // 2026-08-24 Phase 1 — 간판 상품 전환: 오늘상세(3,300) 직행 → 무료 맛보기 → 종합 리포트
-    //   (bundle_comprehensive, 출시 기념가 9,900·compareAt 33,000). 2026-07-18 "중간맛보기
-    //   필요없음" 지시는 이번 개편 결정(무료 맛보기 재개방, 수정요청 PPT 1차)으로 뒤집혔다.
-    desc: '17항목 종합 리포트',
-    price: '9,900원',
-    priceKey: 'bundle_comprehensive',
-    href: '/saju/new',
+    desc: '불안한 앞날, 준비하기',
+    price: '3,300원',
+    priceKey: 'saju_entry',
+    // 2026-07-18 — slide7 "중간맛보기 필요없음": 정보입력 후 곧바로 결제로 보낸다.
+    //   product 딥링크는 buildSajuPostSubmitHref 가 /membership/checkout 으로 라우팅.
+    href: '/saju/new?product=today-detail',
     zodiac: 'dragon',
     category: 'saju',
     tag: 'HOT',
     tint: 'pink',
+  },
+  {
+    id: 'daewoon',
+    title: '대운',
+    desc: '인생 반전의 순간',
+    // 2026-06-24 — 대운 풀이(올해 핵심, year-core) 결제 CTA 는 /daewoon(무료 예시 허브)에서.
+    //   2026-07-18 이벤트로 catalog year-core=3,300(취소선 9,900). price 는 폴백 문자열.
+    price: '3,300원',
+    priceKey: 'taste_year_core',
+    href: '/daewoon',
+    zodiac: 'tiger',
+    category: 'saju',
+    tag: 'HOT',
+    tint: 'plum',
+  },
+  {
+    id: 'taekil',
+    title: '택일',
+    desc: '놓치면 안 될 길일',
+    // 2026-06-24 — 택일(월간 좋은날 캘린더, monthly-calendar) 결제 CTA 는 /taekil(무료 도구)에서.
+    //   2026-07-18 이벤트로 catalog monthly-calendar=3,300(취소선 9,900). price 는 폴백 문자열.
+    price: '3,300원',
+    priceKey: 'taste_monthly_calendar',
+    href: '/taekil',
+    zodiac: 'ox',
+    category: 'fortune',
+    tag: '추천',
+    tint: 'sky',
   },
   {
     id: 'gunghap',

@@ -127,23 +127,22 @@ export function ScoreLockGate({
             revealOn="scroll-down"
             innerClassName="flex items-center gap-3"
           >
-        {/* 2026-08-24 Phase 1 — 하단 고정 바는 간판(종합 리포트 9,900)을 판다. 같은 화면에
-            3,300(점수)과 9,900(종합) CTA 가 경쟁하면 간판이 흐려진다 — 고정 바(가장 강한 자리)는
-            종합, 점수 단품은 위 블러 카드 안 CTA 로만 남긴다. */}
         <span className="flex min-w-0 shrink-0 items-baseline gap-1.5">
-          <ComparePrice
-            priceKey="bundle_comprehensive"
-            className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
-          />
+          {price ? null : (
+            <ComparePrice
+              priceKey="taste_score_total"
+              className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
+            />
+          )}
           <span className="whitespace-nowrap text-[17px] font-extrabold text-[var(--app-pink-strong)]">
-            <Price priceKey="bundle_comprehensive" />
+            {price ?? <Price priceKey="taste_score_total" />}
           </span>
         </span>
         <a
-          href={`/membership/checkout?product=bundle_comprehensive&slug=${encodeURIComponent(slug)}&from=saju-sticky`}
+          href={checkoutHref}
           className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
         >
-          17항목 전부 열기
+          내 결과 확인하기
         </a>
       </StickyBottomBar>
     </section>
