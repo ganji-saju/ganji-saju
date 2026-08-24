@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
-import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   CHECKOUT_PLAN_GUIDE,
@@ -470,8 +469,6 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                       entrySource={from ?? 'membership'}
                     />
                   </div>
-                  {/* 2026-08-24 Phase 0 — 결제 직전 신뢰 요소(자격·샘플·환불). PPT 의문 ②③⑤ 대응. */}
-                  <ReportTrustNotes className="mt-4" />
                 </>
               ) : (
                 <div className="grid gap-3 text-center">

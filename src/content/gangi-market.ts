@@ -90,34 +90,13 @@ export type GangiHomeBanner = {
   alt?: string;
 };
 
-// 2026-08-24 전면 개편 Phase 0 — 이미지 배너 폐지, 텍스트 배너 복귀(수정요청 PPT 1차).
-//   이유: ① 가격·문구가 이미지에 그려져 있어 가격 이벤트마다 이미지 재작업 ② 정체성 없는
-//   실사 스톡톤(사용자 지시: 전량 삭제). 카피는 PPT 5·6안 — 히어로(가치 제안)와
-//   신뢰(자격 5종·17항목)가 캐러셀 1·2번을 차지한다.
+// 2026-06-26 — 완성형 이미지 배너로 교체(사용자 제작 배너1·3·도사·2). 3:1 이미지가 문구를
+//   포함하므로 캐러셀은 이미지만 풀블리드 렌더. kicker/title/cta 는 추적·폴백용으로 유지.
 const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   {
-    // PPT 5안 히어로 카피. id 'saju-9900' 은 추적 연속성 때문에 유지(가격 아님, 배너 식별자).
-    id: 'saju-9900',
-    kicker: '사주·명리',
-    title: '내 앞날을 조금이라도 알 수 있다면',
-    description: '다가올 기회는 놓치지 않고, 조심해야 할 순간은 미리 준비하세요.',
-    cta: '내 사주 확인하기',
-    href: '/saju/new?product=today-detail',
-    tone: 'pink',
-  },
-  {
-    // PPT 6안 신뢰 카피 — "왜 여기서 봐야 하나"에 첫 화면에서 답한다.
-    id: 'trust-creds',
-    kicker: '왜 간지사주인가',
-    title: '자격을 갖춘 17가지 항목 분석',
-    description:
-      '명리심리상담사 1급 등 전문 자격 5종 보유. 용어 나열이 아니라 "앞으로 어떻게"를 알려드립니다.',
-    cta: '풀이 방식 보기',
-    href: '/verification',
-    tone: 'soft',
-  },
-  {
     id: 'consult-pro',
+    image: 'consult-pro',
+    alt: '사주·명리·타로 전문 상담사 — 경험과 해석력을 갖춘 상담사와 상담하세요',
     kicker: '전문 상담',
     title: '사주·명리·타로 전문 상담사',
     description: '경험과 해석력을 갖춘 상담사와 믿고 상담하세요.',
@@ -126,16 +105,9 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     tone: 'soft',
   },
   {
-    id: 'talk',
-    kicker: '대화상담',
-    title: '말 못 할 고민, 바로 상담',
-    description: '연애·진로·인간관계·마음고민, 혼자 끌어안지 말고 편하게 이야기해요.',
-    cta: '바로 상담하기',
-    href: '/dialogue',
-    tone: 'soft',
-  },
-  {
     id: 'tarot-free',
+    image: 'tarot-free',
+    alt: '공짜로 보는 운세·타로 — 오늘의 운세와 타로를 무료로 시작',
     kicker: '무료',
     title: '공짜로 보는 운세·타로',
     description: '오늘의 운세와 타로를 무료로 가볍게 시작해보세요.',
@@ -144,7 +116,37 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     tone: 'soft',
   },
   {
+    // 2026-07-19 — 배너 이미지의 가격을 9,900 → 3,300 으로 재작업(이벤트 정합).
+    //   ⚠️ 가격이 **이미지에 그려져** 있어 리졸버가 못 고친다. 가격을 다시 바꾸면
+    //   public/images/gangi/banners/saju-9900.{png,webp,avif} 도 함께 갱신해야 한다.
+    //   id·파일명은 추적 연속성 때문에 'saju-9900' 유지(가격이 아니라 배너 식별자).
+    //   alt/title 은 이미지에 실제로 적힌 문구와 일치시킨다(기존엔 "내 사주 풀이"로 불일치).
+    id: 'saju-9900',
+    image: 'saju-9900',
+    alt: '3,300원 내 운명 확인 — 사주·명리 상담',
+    kicker: '사주·명리',
+    title: '3,300원 내 운명 확인',
+    description: '복잡한 고민, 방향이 필요할 때 부담 없이 시작하세요.',
+    cta: '지금 확인하기',
+    // 배너가 3,300원을 광고하므로 카드와 같은 결제 직행 경로로 보낸다(중간 맛보기 없음).
+    href: '/saju/new?product=today-detail',
+    tone: 'pink',
+  },
+  {
+    id: 'talk',
+    image: 'talk',
+    alt: '말 못 할 고민 바로 상담 — 연애·진로·인간관계',
+    kicker: '대화상담',
+    title: '말 못 할 고민, 바로 상담',
+    description: '연애·진로·인간관계·마음고민, 혼자 끌어안지 말고 편하게 이야기해요.',
+    cta: '바로 상담하기',
+    href: '/dialogue',
+    tone: 'soft',
+  },
+  {
     id: 'dream',
+    image: 'dream',
+    alt: '꿈해몽 — 당신의 꿈, 어떤 메시지를 담고 있을까요? 꿈 한 단어 풀이',
     kicker: '꿈해몽',
     title: '꿈자리가 도대체 왜 이래',
     description: '당신의 꿈, 어떤 메시지를 담고 있을까요?',
@@ -154,8 +156,9 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
   },
 ] as const;
 
-// 2026-08-11 전면 유료화 잠금 — 무료 콘텐츠로 보내는 배너 제거(tarot-free·dream).
-//   잠금 중 무료 배너가 남으면 클릭 → /pricing 으로 튕겨 낚시가 된다. 링크 기준으로 건다.
+// 2026-08-11 전면 유료화 잠금 — 무료 콘텐츠로 보내는 배너 제거.
+//   ⚠️ 배너는 문구가 **이미지에 그려져** 있다. 잠금 중 '공짜로 보는 운세·타로'(tarot-free)나
+//     '꿈해몽'(dream) 배너가 남으면 클릭 → /pricing 으로 튕겨 낚시가 된다. 링크 기준으로 건다.
 export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
   ALL_GANGI_HOME_BANNERS,
   (banner) => banner.href
@@ -180,8 +183,6 @@ export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
 //   긴 제목 하나가 나머지 7개를 함께 작게 만든다. 그래서 짧게
 //   오히려 짧은 제목보다 작아져 "크게"의 취지가 깨진다. 제한 뉘앙스(한 단어/질문 하나)는
 //   제목에서 빠졌으니 되살리려면 desc 로 옮길 것.
-// 2026-08-24 전면 개편 Phase 0 — 실사 인물 사진(image)·사진용 titleColor 전량 제거(사용자 지시).
-//   카드가 chip 폴백(띠 문양)으로 렌더된다. Phase 2 에서 12지신 수호신 캐릭터가 image 로 복귀 예정.
 const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
   {
     id: 'saju',
@@ -195,6 +196,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'dragon',
     category: 'saju',
     tag: 'HOT',
+    image: 'saju',
+    titleColor: '#FFFFFF',
     tint: 'pink',
   },
   {
@@ -209,6 +212,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'tiger',
     category: 'saju',
     tag: 'HOT',
+    image: 'daewoon',
+    titleColor: '#FFC08A',
     tint: 'plum',
   },
   {
@@ -223,6 +228,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'ox',
     category: 'fortune',
     tag: '추천',
+    image: 'taekil',
+    titleColor: '#7CF0C4',
     tint: 'sky',
   },
   {
@@ -238,6 +245,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'sheep',
     category: 'saju',
     tag: '추천',
+    image: 'gunghap',
+    titleColor: '#9FE4FF',
     tint: 'coral',
   },
   // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
@@ -249,6 +258,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/today-fortune?concern=general',
     zodiac: 'rooster',
     category: 'fortune',
+    image: 'today',
+    titleColor: '#FFE066',
     tint: 'pink',
   },
   {
@@ -259,6 +270,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/tarot/daily',
     zodiac: 'rabbit',
     category: 'fortune',
+    image: 'tarot',
+    titleColor: '#FFB3DA',
     tint: 'jade',
   },
   {
@@ -269,6 +282,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/dream',
     zodiac: 'dragon',
     category: 'fortune',
+    image: 'dream',
+    titleColor: '#D6FF6E',
     tint: 'indigo',
   },
   {
@@ -279,6 +294,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',
+    image: 'consult',
+    titleColor: '#D9BFFF',
     tint: 'amber',
   },
 ] as const;

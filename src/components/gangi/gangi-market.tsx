@@ -529,19 +529,15 @@ export function GangiServiceCardLink({
       )}
 
       {/* 비네팅 — 하단을 어둡게. 제목·부제가 배경판 없이 사진 위에
-          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다.
-          2026-08-24 Phase 0 — 사진이 없는 chip 폴백에서는 스크림이 파스텔 카드 위의
-          얼룩이 되므로 사진이 있을 때만 렌더한다(제목은 아래에서 잉크색으로 전환). */}
-      {card.image ? (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
-          }}
-        />
-      ) : null}
+          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
+        }}
+      />
 
       {/* 태그 (HOT / 추천) — 사진 우상단. */}
       {card.tag ? (
@@ -563,24 +559,19 @@ export function GangiServiceCardLink({
       {/* 사진 위에는 **제목만**. 색은 카드별(titleColor).
           대비는 위 비네팅을 **합성한 뒤**의 배경에 대고 계산한다 — 산출 근거와
           한 번 틀렸던 이력은 gangi-market.ts 의 titleColor 주석 참조.
-          2026-08-24 Phase 0 — chip 폴백(사진 없음)에서는 파스텔 배경 위라 스크림·그림자
-          없이 잉크색 제목이 정답이다(밝은 titleColor 는 파스텔 위에서 대비 미달). */}
+          8색 모두 밝은색이라 아래 어두운 그림자·외곽선이 실제로 글자를 띄워준다. */}
       <span className="absolute inset-x-0 bottom-0 block p-2.5 text-center">
         <span
           className="block"
           style={{
-            color: card.image ? card.titleColor ?? '#fff' : 'var(--app-ink)',
+            color: card.titleColor ?? '#fff',
             fontSize: 'clamp(20px, 22.5cqw, 48px)',
             fontWeight: 900,
             lineHeight: 1.1,
             letterSpacing: '-0.04em',
             whiteSpace: 'nowrap',
-            ...(card.image
-              ? {
-                  textShadow: '0 2px 8px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5)',
-                  WebkitTextStroke: '0.5px rgba(0,0,0,0.22)',
-                }
-              : null),
+            textShadow: '0 2px 8px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5)',
+            WebkitTextStroke: '0.5px rgba(0,0,0,0.22)',
           }}
         >
           {card.title}
