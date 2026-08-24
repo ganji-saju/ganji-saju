@@ -191,6 +191,30 @@ export const PAYMENT_PACKAGES = [
     compareAt: 9900,
   },
   {
+    // 2026-08-24 전면 개편 Phase 1 — 간판 상품(수정요청 PPT 7·8안). 17항목 종합 리포트.
+    //   구성 5종: 점수 언락(reading) + 오늘 상세(today) + 돈 패턴·일 흐름(global) + 올해 핵심(year).
+    //   ⚠️ monthly-calendar 는 구성품 금지 — scope(연-월)가 정적으로 파생 불가라 미지정 시
+    //     reading: scope 로 grant 되는데 조회측은 calendar: scope 만 인정 = 죽은 권한이 된다.
+    //     달력은 리포트 열람 화면의 크로스셀(3,300 단품)로 판다.
+    //   가격: 출시 기념가 9,900 / 정가(compareAt) 33,000. 단품가 합계(3,300×5=16,500) 대비도
+    //     40% 저렴해 앵커가 허수가 아니다. ⚠️ "70% 할인" 같은 할인율 표기는 금지
+    //     (표시광고법 — 33,000원 판매 이력 없음). 문구는 '출시 기념가'로 고정(BUNDLE_GUIDE·홈 카드).
+    id: 'bundle_comprehensive',
+    name: '종합사주 리포트',
+    credits: 0,
+    price: 9900,
+    kind: 'bundle',
+    requiresSlug: true,
+    compareAt: 33000,
+    components: [
+      { tasteProductId: 'score-total' },
+      { tasteProductId: 'today-detail' },
+      { tasteProductId: 'money-pattern' },
+      { tasteProductId: 'work-flow' },
+      { tasteProductId: 'year-core' },
+    ],
+  },
+  {
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
     // 2026-06-26 — 묶음열기 9,900원 → 19,800원.

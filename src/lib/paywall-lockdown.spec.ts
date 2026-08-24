@@ -36,6 +36,14 @@ describe('paywall lockdown', () => {
     expect(keepVisible([{ href: '/free' }], (i) => i.href)).toHaveLength(1);
   });
 
+  it('샘플 리포트는 잠그지 않는다 — 유료 리포트의 설득 자산(2026-08-24 Phase 0 해제)', async () => {
+    // "결과가 얼마나 자세하지?"에 답하는 유일한 무료 지면. 다시 잠그면 결제 전환을 스스로 깎는다.
+    //   입력 화면·결제 화면의 ReportTrustNotes 가 /sample-report 로 링크한다 — 잠그면 그 링크가
+    //   /pricing 으로 튕기는 낚시가 된다.
+    const { isLockedPath } = await load(undefined);
+    expect(isLockedPath('/sample-report')).toBe(false);
+  });
+
   it('결제·계정·법정고지·유료 랜딩은 잠그지 않는다', async () => {
     const { isLockedPath } = await load(undefined);
     for (const open of [
@@ -183,12 +191,8 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       '@/content/gangi-market',
       true
     );
-    expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual([
-      'saju',
-      'daewoon',
-      'taekil',
-      'gunghap',
-    ]);
+    // 2026-08-24 Phase 1 — 단품 강등: 대운·택일 카드는 홈에서 내려갔다(교차추천으로 이동).
+    expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual(['saju', 'gunghap']);
     expect(locked.GANGI_HOME_CARDS.every((c) => c.price !== '무료')).toBe(true);
     expect(locked.GANGI_HOME_BANNERS.map((b) => b.id)).not.toContain('tarot-free');
     expect(locked.GANGI_HOME_BANNERS.map((b) => b.id)).not.toContain('dream');
@@ -199,7 +203,7 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       '@/content/gangi-market',
       false
     );
-    expect(open.GANGI_HOME_CARDS).toHaveLength(8);
+    expect(open.GANGI_HOME_CARDS).toHaveLength(6);
     expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(4);
   });
 
