@@ -112,7 +112,7 @@ export default async function SajuSharePage({ params }: Props) {
             style={{
               aspectRatio: '4 / 5',
               background:
-                'linear-gradient(160deg, var(--app-pink-soft) 0%, #ecd6ca 60%, #d29184 100%)',
+                'linear-gradient(160deg, #fff0f7 0%, #ffd9eb 60%, #ff9bc6 100%)',
               boxShadow: '0 18px 40px rgba(216,27,114,0.2)',
             }}
           >

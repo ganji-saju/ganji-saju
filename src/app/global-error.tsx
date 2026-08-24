@@ -122,7 +122,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               padding: '0 20px',
               borderRadius: '9999px',
               border: 'none',
-              background: '#b3372a',
+              background: '#ff4f9a',
               color: '#fff',
               fontSize: 16.1,
               fontWeight: 800,

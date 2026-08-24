@@ -173,7 +173,7 @@
   width: min(100%, 21rem);
   border: 1px solid rgba(255, 79, 154, 0.22);
   border-radius: 1.55rem;
-  background: linear-gradient(180deg, #ffffff 0%, var(--app-pink-soft) 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fff0f7 100%);
   padding: 1.35rem;
   text-align: center;
   box-shadow: 0 22px 54px -24px rgba(216, 27, 114, 0.38);
@@ -199,7 +199,7 @@
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 9999px;
-  background: var(--app-pink-soft);
+  background: #fff0f7;
 }
 
 .gangi-loading-moon i {
@@ -667,7 +667,7 @@
 }
 
 .gangi-section-pink {
-  background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
 }
 
 .gangi-section-title {
@@ -721,7 +721,7 @@
 .gangi-pink-panel {
   border: 1px solid var(--app-line);
   border-radius: 1.375rem;
-  background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
   box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 8px 24px -12px rgba(17, 17, 20, 0.1);
 }
 
@@ -747,7 +747,7 @@
 
 .gangi-list-link[data-active="true"] {
   border-color: var(--app-pink);
-  background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
   box-shadow: 0 12px 28px rgba(216, 27, 114, 0.12);
 }
 
@@ -965,7 +965,7 @@
 .gangi-purchase-summary {
   border: 1px solid var(--app-line);
   border-radius: 1.375rem;
-  background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
+  background: linear-gradient(135deg, #fff0f7, #ffffff);
   padding: 1.25rem;
   box-shadow: 0 1px 0 rgba(17, 17, 20, 0.04), 0 8px 24px -12px rgba(17, 17, 20, 0.1);
 }

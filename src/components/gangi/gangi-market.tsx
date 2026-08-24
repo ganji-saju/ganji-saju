@@ -481,7 +481,7 @@ export function GangiServiceCardLink({
   // 2026-06-26 메인 카드 시안 C(20260625 PPTX): 인물 사진 풀블리드 + 비네팅 + 하단 외곽선 강조 텍스트.
   //   파스텔 틴트는 인물 사진의 투명 영역(배경 제거 PNG) 채움색. 인물 이미지는 추후 교체 예정.
   const TINT: Record<NonNullable<GangiServiceCard['tint']>, string> = {
-    pink: 'var(--app-pink-soft)',
+    pink: '#fff0f7',
     plum: '#f6eefe',
     sky: '#eaf4fd',
     coral: '#fff0ee',
