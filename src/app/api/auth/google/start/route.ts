@@ -14,6 +14,10 @@ function resolveOrigin(req: NextRequest): string {
   try {
     const url = new URL(req.url);
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return url.origin;
+    // 2026-08-24 — 고정 스테이징 도메인. 콘솔(구글/카카오)에 콜백이 등록된 유일한 비운영
+    //   도메인이라 origin 을 유지해야 세션이 스테이징에 남는다(임의 *.vercel.app 프리뷰는
+    //   콜백 등록이 불가해 여전히 canonical 로 보낸다 — 소셜 로그인 테스트는 스테이징에서).
+    if (url.hostname === 'staging.ganjisaju.kr') return url.origin;
   } catch {
     // fall through
   }
