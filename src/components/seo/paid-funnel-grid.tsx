@@ -17,7 +17,6 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { keepVisible } from '@/lib/paywall-lockdown';
-import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 
 export interface PaidFunnelGridProps {
   /** UTM source identifier — analytics 추적용 (?from={from}). */
@@ -39,8 +38,7 @@ export interface PaidFunnelGridProps {
 }
 
 // 카피는 "상품 설명"이 아니라 "사용자가 품는 질문". 이미지는 홈 카드와 같은
-//   (2026-08-24 Phase 0 — 실사 썸네일 삭제 후) 홈 카드와 동일한 띠 문양 chip 을 재사용해
-//   메뉴 인지가 홈과 이어지게 한다.
+//   /images/gangi/people 자산을 재사용해 메뉴 인지가 홈과 이어지게 한다.
 // NOTE: 시안에는 '연도별 운세' 행도 있으나 우리 앱에는 해당 기능/라우트가 없다(대운의
 //   year-core 와 동일 상품). 없는 메뉴를 만들지 않기 위해 제외 — 별도 상품이 생기면 추가.
 // 2026-07-19 — `label`(메뉴 이름) 추가. 사용자 제보: "인물 사진 아래 사주·궁합·대운·택일·타로
@@ -50,8 +48,7 @@ export interface PaidFunnelGridProps {
 const ITEMS: ReadonlyArray<{
   key: string;
   href: string;
-  /** 홈 카드와 동일한 띠 문양 chip — 메뉴 인지가 홈과 이어지게 같은 zodiac 키를 쓴다. */
-  zodiac: ZodiacKey;
+  image: string;
   /** 썸네일 아래 표기하는 메뉴 이름 — 홈 카드 제목과 동일 어휘. */
   label: string;
   title: string;
@@ -60,7 +57,7 @@ const ITEMS: ReadonlyArray<{
   {
     key: 'saju',
     href: '/saju/new',
-    zodiac: 'dragon',
+    image: 'saju',
     label: '사주',
     title: '친구나 가족의 사주도 궁금하다면?',
     body: '결과를 공유해줄 수 있어요!',
@@ -68,7 +65,7 @@ const ITEMS: ReadonlyArray<{
   {
     key: 'gunghap',
     href: '/compatibility/input',
-    zodiac: 'sheep',
+    image: 'gunghap',
     label: '궁합',
     title: '우리 사이는 몇점?',
     body: 'SNS에서 소문난 궁합 맛집',
@@ -76,7 +73,7 @@ const ITEMS: ReadonlyArray<{
   {
     key: 'daewoon',
     href: '/daewoon',
-    zodiac: 'tiger',
+    image: 'daewoon',
     label: '대운',
     title: '대운을 아직 모르신다구요?',
     body: '언제 물 들어오는지 한번 확인해보자구요',
@@ -84,7 +81,7 @@ const ITEMS: ReadonlyArray<{
   {
     key: 'taekil',
     href: '/taekil',
-    zodiac: 'ox',
+    image: 'taekil',
     label: '택일',
     title: '중요한 일일수록 좋은 날에!',
     body: 'Top 3 길일을 골라드려요',
@@ -92,7 +89,7 @@ const ITEMS: ReadonlyArray<{
   {
     key: 'tarot',
     href: '/tarot/daily',
-    zodiac: 'rabbit',
+    image: 'tarot',
     label: '타로',
     title: '지금 이 고민, 카드는 뭐라고 할까?',
     body: '3장으로 보는 오늘의 흐름',
@@ -102,7 +99,7 @@ const ITEMS: ReadonlyArray<{
 const MEMBERSHIP_ITEM = {
   key: 'membership',
   href: '/membership',
-  zodiac: 'snake' as ZodiacKey,
+  image: 'consult',
   label: '멤버십',
   title: '매일 물어보고 싶다면?',
   body: '멤버십으로 선생님과 계속 이어서 대화해요',
@@ -152,9 +149,19 @@ export function PaidFunnelGrid({
             {/* 썸네일 + 그 아래 메뉴 이름. 홈 카드와 동일 자산·동일 어휘라 인지가 이어진다.
                 object-top 으로 인물 얼굴이 잘리지 않게. */}
             <span className="flex shrink-0 flex-col items-center gap-1">
-              {/* 2026-08-24 Phase 0 — 실사 인물 썸네일 제거(사용자 지시), 홈 카드와 동일한
-                  띠 문양 chip 으로 교체(md = 기존 썸네일과 같은 h-14 w-14). */}
-              <ZodiacChip kind={item.zodiac} size="md" className="shrink-0" />
+              <picture>
+                <source srcSet={`/images/gangi/people/${item.image}.avif`} type="image/avif" />
+                <source srcSet={`/images/gangi/people/${item.image}.webp`} type="image/webp" />
+                <img
+                  src={`/images/gangi/people/${item.image}.png`}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-14 w-14 rounded-[12px] object-cover object-top"
+                  style={{ background: dark ? 'rgba(255,255,255,0.10)' : 'var(--app-pink-soft)' }}
+                />
+              </picture>
               <span
                 className="block text-[12.4px] font-extrabold leading-none tracking-tight"
                 style={{ color: titleColor }}

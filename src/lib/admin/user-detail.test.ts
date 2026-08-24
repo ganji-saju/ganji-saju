@@ -150,7 +150,7 @@ test('번들 주문은 주문 단위로 환불 목록에 잡힌다', () => {
     {
       id: 'order-row-1',
       order_id: 'ord_20260824_1',
-      package_id: 'bundle_comprehensive',
+      package_id: 'bundle_today_set',
       amount: 9900,
       payment_key: 'tid-sandbox-1',
       created_at: '2026-08-24T12:00:00Z',
@@ -167,7 +167,7 @@ test('번들 주문은 주문 단위로 환불 목록에 잡힌다', () => {
   ]);
   assert.equal(refund.items.length, 1);
   assert.equal(refund.items[0].kind, 'bundle-order');
-  assert.equal(refund.items[0].productName, '종합사주 리포트');
+  assert.equal(refund.items[0].productName, '오늘 풀세트');
   assert.equal(refund.items[0].amountWon, 9900);
   assert.equal(refund.items[0].paymentKey, 'tid-sandbox-1');
   assert.equal(refund.totalProductRefundableWon, 9900);

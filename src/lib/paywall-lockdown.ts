@@ -53,9 +53,7 @@ export const LOCKED_PATH_PREFIXES = [
   '/interpretation', // 무료 해석 허브
   '/about-engine', // → /interpretation 리다이렉트 스텁
   '/method', // 허브·[slug] 모두 /interpretation 리다이렉트 스텁(실콘텐츠 없음)
-  // '/sample-report' — 2026-08-24 전면 개편 Phase 0 에서 잠금 해제. 유료 리포트의 무료 샘플은
-  //   "결과가 얼마나 자세하지?"에 답하는 설득 자산이라 잠그면 결제 전환을 스스로 깎는다
-  //   (수정요청 PPT 1차 의문 ③). 무료 '콘텐츠'가 아니라 유료 상품의 광고 지면으로 취급한다.
+  '/sample-report', // 유료 리포트 무료 샘플
   '/myeongri', // 명리 소개/십신 무료 읽을거리
 ] as const;
 
