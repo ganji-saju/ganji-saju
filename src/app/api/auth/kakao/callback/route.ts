@@ -78,6 +78,10 @@ function resolveOrigin(req: NextRequest): string {
   try {
     const url = new URL(req.url);
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return url.origin;
+    // 2026-08-25 — 고정 스테이징 도메인은 origin 유지(#679 는 start 만 고쳐 callback 이
+    //   canonical 로 새는 걸 놓쳤다 — 토큰 교환 redirect_uri 불일치 + 최종 리다이렉트가
+    //   본사이트로 가서 세션이 스테이징에 안 남았다). start/callback/logout 전부 동일 규칙.
+    if (url.hostname === 'staging.ganjisaju.kr') return url.origin;
   } catch {
     // fall through
   }
