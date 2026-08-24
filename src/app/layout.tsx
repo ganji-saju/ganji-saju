@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
+import { Gowun_Batang, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -50,6 +50,15 @@ const brandSerif = Noto_Serif_KR({
   display: "swap",
   preload: false,
   variable: "--font-dalbit-serif",
+});
+
+// 2026-08-25 Phase 2 리브랜드(B안) — 제목 전용 바탕체. 전통의 목소리는 제목이 내고
+//   본문은 Noto Sans 유지(가독성). 두 weight 만 로드해 비용 최소화.
+const brandBatang = Gowun_Batang({
+  weight: ["400", "700"],
+  display: "swap",
+  preload: false,
+  variable: "--font-batang",
 });
 
 // 2026-07-06 — Google Analytics 4 (gtag.js). measurement id 는 공개값(클라 노출 정상).
@@ -226,7 +235,7 @@ export default async function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${brandSans.variable} ${brandSerif.variable} h-full antialiased`}
+      className={`${brandSans.variable} ${brandSerif.variable} h-full antialiased ${brandBatang.variable}`}
       data-app-layout="vertical"
       data-motion-preference="standard"
       data-performance-mode="standard"

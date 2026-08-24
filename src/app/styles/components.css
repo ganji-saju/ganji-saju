@@ -1569,7 +1569,7 @@
 
   .gangi-plan-card[data-featured="true"] {
     border-color: var(--app-pink-line);
-    background: linear-gradient(135deg, #fff0f7, #ffffff);
+    background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
   }
 
   .gangi-payment-row {
@@ -2593,7 +2593,7 @@
   .dalbit-market-card[data-theme="year"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 44% 28%, rgba(255, 255, 255, 0.88), transparent 24%),
-      linear-gradient(145deg, #ffffff, #e9edff 50%, #ff4f9a);
+      linear-gradient(145deg, #ffffff, #e9edff 50%, var(--app-pink));
   }
 
   .dalbit-market-card[data-theme="wave"] .dalbit-market-card-art {
@@ -2617,7 +2617,7 @@
   .dalbit-market-card[data-theme="tarot"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.22), transparent 24%),
-      linear-gradient(145deg, #17121f, #ff4f9a);
+      linear-gradient(145deg, #17121f, var(--app-pink));
   }
 
   .dalbit-market-card[data-theme="zodiac"] .dalbit-market-card-art {
@@ -2629,7 +2629,7 @@
   .dalbit-market-card[data-theme="consult"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.72), transparent 20%),
-      linear-gradient(145deg, #111114, #3d2032 52%, #ff4f9a);
+      linear-gradient(145deg, #111114, #3d2032 52%, var(--app-pink));
   }
 
   .dalbit-card-character {

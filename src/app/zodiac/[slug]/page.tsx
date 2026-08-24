@@ -52,13 +52,13 @@ const ZODIAC_GRADIENT: Record<string, string> = {
   rat: 'linear-gradient(135deg, #5b58d6 0%, #353399 100%)',
   ox: 'linear-gradient(135deg, #0f9f7a 0%, #07654c 100%)',
   tiger: 'linear-gradient(135deg, #ff6b6b 0%, #c4423a 100%)',
-  rabbit: 'linear-gradient(135deg, #ff4f9a 0%, #d81b72 100%)',
+  rabbit: 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
   dragon: 'linear-gradient(135deg, #c04de0 0%, #9636af 100%)',
   snake: 'linear-gradient(135deg, #d99020 0%, #a06c14 100%)',
   horse: 'linear-gradient(135deg, #ff6b6b 0%, #c4423a 100%)',
   goat: 'linear-gradient(135deg, #0f9f7a 0%, #0d7a5e 100%)',
   monkey: 'linear-gradient(135deg, #d99020 0%, #a06c14 100%)',
-  rooster: 'linear-gradient(135deg, #d81b72 0%, #a31354 100%)',
+  rooster: 'linear-gradient(135deg, var(--app-pink-strong) 0%, #a31354 100%)',
   dog: 'linear-gradient(135deg, #368ee8 0%, #1e6cbb 100%)',
   pig: 'linear-gradient(135deg, #5b58d6 0%, #353399 100%)',
 };
@@ -174,7 +174,7 @@ function getGenerationYears(item: ZodiacFortune): number[] {
 }
 
 const LUCKY_COLOR_TABLE: Array<{ name: string; hex: string }> = [
-  { name: '핑크', hex: '#ff4f9a' },
+  { name: '핑크', hex: 'var(--app-pink)' },
   { name: '코랄', hex: '#ff6b6b' },
   { name: '터쿼이즈', hex: '#0f9f7a' },
   { name: '하늘', hex: '#368ee8' },

@@ -105,43 +105,45 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --app-bg: #ffffff;
-  --app-ink: #111114;
-  --app-ink-strong: #050507;
-  --app-surface: #ffffff;
-  --app-surface-strong: #ffffff;
-  --app-surface-soft: #fff0f7;
-  --app-surface-muted: #fafafb;
-  --app-line: rgba(17, 17, 20, 0.08);
-  --app-line-strong: rgba(17, 17, 20, 0.16);
-  --app-pink: #ff4f9a;
-  --app-pink-strong: #d81b72;
-  --app-pink-soft: #fff0f7;
-  --app-pink-soft-strong: #a41258;
-  --app-pink-line: rgba(255, 79, 154, 0.26);
-  --app-gold: var(--app-pink);
-  --app-gold-bright: #ff7bb8;
-  --app-gold-soft: #f59bc2;
-  --app-gold-text: var(--app-pink-strong);
-  --app-jade: #0f9f7a;
-  --app-coral: #ff6b6b;
-  --app-plum: #c04de0;
-  --app-sky: #368ee8;
+  /* 2026-08-25 전면 개편 Phase 2 — B안 리브랜드(한지·먹·인주·금박). 제안서 §7 확정.
+     토큰명(--app-pink 등)은 소비처 수백 곳 때문에 유지 — 값이 브랜드다. */
+  --app-bg: #f5efe3; /* 한지 */
+  --app-ink: #1c1a17; /* 먹 */
+  --app-ink-strong: #0f0e0c;
+  --app-surface: #fbf7ee;
+  --app-surface-strong: #fffdf7;
+  --app-surface-soft: #f3e7de;
+  --app-surface-muted: #efe8d9;
+  --app-line: rgba(28, 26, 23, 0.12);
+  --app-line-strong: rgba(28, 26, 23, 0.22);
+  --app-pink: #b3372a; /* 인주(印朱) — 토큰명은 역사적 이유로 유지, 값이 브랜드 */
+  --app-pink-strong: #8e2a20;
+  --app-pink-soft: #f3e4dd;
+  --app-pink-soft-strong: #7a2118;
+  --app-pink-line: rgba(179, 55, 42, 0.28);
+  --app-gold: #a5813c; /* 금박 복원(B안) — 핑크 별칭 해제 */
+  --app-gold-bright: #c09b54;
+  --app-gold-soft: #dcc79a;
+  --app-gold-text: #7e6027;
+  --app-jade: #2e6b44;
+  --app-coral: #c25438;
+  --app-plum: #8e4a8b;
+  --app-sky: #2c5f8a; /* 쪽빛 */
   /* Redesign 2026-05-13 (Claude Design): 십이간지 액센트 보강 + 라운드/폰트 통일.
      기존 토큰은 절대 수정하지 않음 — 신규만 add-only. */
-  --app-amber: #d99020;
-  --app-indigo: #5b58d6;
+  --app-amber: #b07c22;
+  --app-indigo: #4a4a94;
   /* Radius 통일 (가이드 1단계) */
   --app-r-card: 18px;
   --app-r-btn: 14px;
   --app-r-chip: 999px;
   /* 한자 인장용 serif 폰트 (layout.tsx 에서 Noto Serif KR 로드) */
   --font-han: var(--font-dalbit-serif), "Noto Serif KR", "Source Han Serif K", serif;
-  --app-ivory: #111114;
-  --app-copy: rgba(17, 17, 20, 0.84);
-  --app-copy-muted: rgba(43, 44, 50, 0.78);
+  --app-ivory: #1c1a17;
+  --app-copy: rgba(28, 26, 23, 0.86);
+  --app-copy-muted: rgba(52, 48, 42, 0.8);
   /* 2026-06-22 가독성: 0.82(3.99:1, WCAG AA 미달) → 0.88(4.52:1 통과). 보조 텍스트 223+곳 동시 개선. */
-  --app-copy-soft: rgba(71, 72, 80, 0.9);
+  --app-copy-soft: rgba(64, 58, 50, 0.92);
   --app-type-title: 700;
   --app-type-emphasis: 600;
   --app-type-body: 450;
