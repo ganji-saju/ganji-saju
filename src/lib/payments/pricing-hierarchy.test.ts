@@ -57,6 +57,7 @@ test('취소선 원가는 현재가보다 높다', () => {
     'taste_year_core',
     'taste_score_total',
     'bundle_today_set',
+    'bundle_comprehensive',
     'lifetime_report',
   ] as const) {
     const pkg = getPackage(id);
@@ -66,4 +67,44 @@ test('취소선 원가는 현재가보다 높다', () => {
       `${id}: 취소선 ${pkg.compareAt} 이 현재가 ${pkg.price} 이하다`
     );
   }
+});
+
+// 2026-08-24 Phase 1 — 간판 상품(bundle_comprehensive) 서열·정합 가드.
+//   구묶음(bundle_today_set)이 죽은 이유(단품 합계 < 묶음가 역전)를 반복하지 않도록
+//   '묶음가 < 구성품 단품가 합계'와 상품 층위(단품 < 종합 < 평생)를 고정한다.
+test('종합 리포트는 단품과 평생 사이에 선다', () => {
+  const single = price('taste_today_detail');
+  const comprehensive = price('bundle_comprehensive');
+  const lifetime = price('lifetime_report');
+  assert.ok(
+    single < comprehensive && comprehensive < lifetime,
+    `서열 붕괴: 단품 ${single} < 종합 ${comprehensive} < 평생 ${lifetime} 이어야 한다`
+  );
+});
+
+test('종합 리포트는 구성품 따로 사기보다 싸다', () => {
+  const pkg = getPackage('bundle_comprehensive');
+  assert.ok(pkg?.kind === 'bundle' && pkg.components?.length, '종합 리포트는 bundle 이어야 함');
+  let sum = 0;
+  for (const component of pkg.components) {
+    const singleId = `taste_${component.tasteProductId.replace(/-/g, '_')}` as Parameters<
+      typeof getPackage
+    >[0];
+    sum += price(singleId);
+  }
+  assert.ok(
+    pkg.price < sum,
+    `종합(${pkg.price})이 구성품 합계(${sum}) 이상이다 — 구묶음이 죽은 그 역전이다`
+  );
+});
+
+test('종합 리포트 구성품에 월간달력은 금지', () => {
+  // monthly-calendar 의 scope(연-월)는 번들에서 정적으로 파생 불가 — scope 미지정 grant 는
+  // reading: scope 가 되는데 조회측은 calendar: scope 만 인정해 **죽은 권한**이 된다.
+  const pkg = getPackage('bundle_comprehensive');
+  assert.ok(pkg?.kind === 'bundle');
+  assert.ok(
+    !pkg.components?.some((component) => component.tasteProductId === 'monthly-calendar'),
+    '월간달력이 종합 구성품에 들어갔다 — 결제해도 열리지 않는 죽은 권한이 된다(product-scope 참조)'
+  );
 });
