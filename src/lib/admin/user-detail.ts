@@ -1,6 +1,7 @@
 // 2026-05-25 Phase 1 — 어드민 사용자 상세 + 검색 데이터 레이어.
 //   /admin/users, /admin/users/[id] 가 사용. service_role 로 own-row RLS 우회.
 //   순수 로직(팔자 추출·LLM 통계·환불 가능 판정)은 단위 테스트로 고정.
+import { getPackage, isBundlePackage } from '@/lib/payments/catalog';
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import {
   buildPaymentHistory,
@@ -81,6 +82,9 @@ export function buildUserLlmStats(
 }
 
 export interface RefundEligibleItem {
+  /** 'entitlement' = product_entitlements 행 / 'bundle-order' = payment_orders 행(번들 결제).
+   *  번들 grant 는 구성품 amount=null 이라 entitlement 기준으로는 잡히지 않는다 — 주문 단위로 잡는다. */
+  kind: 'entitlement' | 'bundle-order';
   id: string;
   productName: string;
   amountWon: number;
@@ -103,17 +107,30 @@ export interface RefundEligibility {
  * 활성 product_entitlements 중 amount>0(현금 결제분)을 환불 대상으로 본다.
  * hasPaymentKey=true 여야 Phase 2 Toss cancel 가능.
  */
+export interface BundleOrderRefundCandidate {
+  id: string;
+  order_id: string | null;
+  package_id: string;
+  amount: number | null;
+  payment_key: string | null;
+  created_at: string;
+}
+
 export function determineRefundEligibility(
   entitlements: ReadonlyArray<ProductEntitlementHistoryRow>,
   creditEligibility: CreditRefundEligibility = {
     items: [],
     refundableItems: [],
     totalRefundableWon: 0,
-  }
+  },
+  // 2026-08-24 — 번들 주문(결제 완료 상태만 전달할 것). 구성품 entitlement 는 amount=null 이라
+  //   entitlement 필터에 절대 안 잡힌다 — 주문 원장이 번들 환불의 유일한 금액 실체다.
+  paidOrders: ReadonlyArray<BundleOrderRefundCandidate> = []
 ): RefundEligibility {
   const items: RefundEligibleItem[] = entitlements
     .filter((e) => typeof e.amount === 'number' && e.amount > 0)
     .map((e) => ({
+      kind: 'entitlement' as const,
       id: e.id,
       productName: resolveProductEntitlementName(e.product_id),
       amountWon: e.amount as number,
@@ -122,6 +139,22 @@ export function determineRefundEligibility(
       orderId: e.order_id,
       createdAt: e.created_at,
     }));
+  for (const order of paidOrders) {
+    const pkg = getPackage(order.package_id);
+    if (!pkg || !isBundlePackage(pkg)) continue; // 단품 주문은 entitlement 항목으로 이미 잡힌다
+    if (typeof order.amount !== 'number' || order.amount <= 0) continue;
+    items.push({
+      kind: 'bundle-order',
+      id: order.id,
+      productName: pkg.name,
+      amountWon: order.amount,
+      hasPaymentKey: Boolean(order.payment_key),
+      paymentKey: order.payment_key,
+      orderId: order.order_id,
+      createdAt: order.created_at,
+    });
+  }
+  items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   const totalProductRefundableWon = items.reduce((sum, i) => sum + i.amountWon, 0);
   const totalCreditRefundableWon = creditEligibility.totalRefundableWon;
   return {
@@ -316,7 +349,7 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
   // 코인 sunset 이후 멤버십 결제는 credit_transactions 에 없음 → 완료 주문 원장 보강(orderId dedupe).
   const { data: orderHistoryRows } = await supabase
     .from('payment_orders')
-    .select('id, order_id, package_id, amount, status, created_at')
+    .select('id, order_id, package_id, amount, status, created_at, payment_key')
     .eq('user_id', userId)
     .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
   const productEntitlements = (entitlementRows ?? []) as unknown as ProductEntitlementHistoryRow[];
@@ -363,7 +396,11 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     allCreditTransactions,
     (creditLotRows ?? []) as unknown as CreditRefundLotRow[]
   );
-  const refund = determineRefundEligibility(productEntitlements, creditRefundEligibility);
+  const refund = determineRefundEligibility(
+    productEntitlements,
+    creditRefundEligibility,
+    (orderHistoryRows ?? []) as unknown as BundleOrderRefundCandidate[]
+  );
 
   const { data: refundRows } = await supabase
     .from('refund_requests')

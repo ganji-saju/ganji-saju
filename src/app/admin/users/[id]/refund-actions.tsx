@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface EligibleItem {
+  /** user-detail RefundEligibleItem.kind — 'bundle-order' 는 주문 단위 환불. */
+  kind?: 'entitlement' | 'bundle-order';
   id: string;
   productName: string;
   amountWon: number;
@@ -126,8 +128,11 @@ export function RefundActions({
   function requestRefund(item: EligibleItem) {
     const reason = window.prompt(`"${item.productName}" 환불 사유`, '고객 요청');
     if (!reason || !reason.trim()) return;
+    // 번들 결제는 주문 단위로 요청한다(구성품 entitlement 는 amount=null — user-detail 참조).
+    const idField =
+      item.kind === 'bundle-order' ? { bundleOrderId: item.id } : { entitlementId: item.id };
     void post(
-      { action: 'request', kind: 'product', entitlementId: item.id, reason: reason.trim() },
+      { action: 'request', kind: 'product', ...idField, reason: reason.trim() },
       `req-${item.id}`
     );
   }
