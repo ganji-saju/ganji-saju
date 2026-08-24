@@ -141,3 +141,34 @@ test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 전 
   assert.equal(result.items.find((i) => i.id === 'tx-empty')?.status, 'none');
   assert.equal(result.totalRefundableWon, 13200);
 });
+
+// 2026-08-24 — 번들 주문 환불 가시성 가드. 번들 grant 는 구성품 amount=null 이라
+//   entitlement 기준으로는 환불 목록에 절대 안 잡힌다(실제로 종합 리포트 테스트 주문이
+//   admin 환불 탭에 안 떠서 발견). 주문 원장 기반 항목이 이를 대신한다.
+test('번들 주문은 주문 단위로 환불 목록에 잡힌다', () => {
+  const refund = determineRefundEligibility([], undefined, [
+    {
+      id: 'order-row-1',
+      order_id: 'ord_20260824_1',
+      package_id: 'bundle_comprehensive',
+      amount: 9900,
+      payment_key: 'tid-sandbox-1',
+      created_at: '2026-08-24T12:00:00Z',
+    },
+    {
+      // 단품 주문은 entitlement 항목으로 이미 잡히므로 주문 기반으로는 제외돼야 한다(중복 방지).
+      id: 'order-row-2',
+      order_id: 'ord_20260824_2',
+      package_id: 'taste_today_detail',
+      amount: 3300,
+      payment_key: 'tid-sandbox-2',
+      created_at: '2026-08-24T13:00:00Z',
+    },
+  ]);
+  assert.equal(refund.items.length, 1);
+  assert.equal(refund.items[0].kind, 'bundle-order');
+  assert.equal(refund.items[0].productName, '종합사주 리포트');
+  assert.equal(refund.items[0].amountWon, 9900);
+  assert.equal(refund.items[0].paymentKey, 'tid-sandbox-1');
+  assert.equal(refund.totalProductRefundableWon, 9900);
+});

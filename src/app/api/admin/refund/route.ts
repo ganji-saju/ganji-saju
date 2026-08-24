@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { cancelPayment, getPayment } from '@/lib/payments/toss';
+import { getPackage, isBundlePackage } from '@/lib/payments/catalog';
 import {
   cancelNicepayPayment,
   getNicepayPayment,
@@ -21,7 +22,7 @@ import {
   isFullRefund,
   resolveCancellationTerminalStatus,
 } from '@/lib/payments/cancellation';
-import { revokeProductEntitlement } from '@/lib/product-entitlements';
+import { revokeBundleEntitlement, revokeProductEntitlement } from '@/lib/product-entitlements';
 import {
   buildCreditRefundItem,
   type CreditRefundLotRow,
@@ -160,6 +161,7 @@ export async function POST(req: NextRequest) {
     action?: RefundAction;
     kind?: RefundKind;
     entitlementId?: string;
+    bundleOrderId?: string;
     creditTransactionId?: string;
     reason?: string;
     requestId?: string;
@@ -257,6 +259,88 @@ export async function POST(req: NextRequest) {
         if (error.code === '23505') {
           return NextResponse.json(
             { ok: false, error: '이미 같은 결제 또는 전 충전건의 환불 요청이 있습니다.' },
+            { status: 409 }
+          );
+        }
+        return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ ok: true, requestId: (inserted as { id: string }).id, status: 'requested' });
+    }
+
+    // 2026-08-24 — 번들(종합 리포트 등) 환불 요청은 **주문(payment_orders) 단위**.
+    //   번들 grant 는 구성품별 amount=null(묶음가가 총액)이라 entitlement 기준 환불 목록에
+    //   잡히지 않는다 — 유일한 금액 실체가 주문 원장이다. scope_key 에는 주문의 slug 를
+    //   싣는다(승인 시 revokeBundleEntitlement 가 confirm 의 grant 와 동일 분해로 회수할 때 필요).
+    const bundleOrderId = typeof body?.bundleOrderId === 'string' ? body.bundleOrderId : null;
+    if (bundleOrderId) {
+      const { data: orderRow } = await service
+        .from('payment_orders')
+        .select('id, user_id, order_id, package_id, amount, status, payment_key, slug')
+        .eq('id', bundleOrderId)
+        .maybeSingle();
+      const order = orderRow as {
+        id: string;
+        user_id: string;
+        order_id: string | null;
+        package_id: string;
+        amount: number | null;
+        status: string;
+        payment_key: string | null;
+        slug: string | null;
+      } | null;
+      const bundlePkg = order ? getPackage(order.package_id) : undefined;
+      if (!order || !bundlePkg || !isBundlePackage(bundlePkg)) {
+        return NextResponse.json({ ok: false, error: '번들 주문을 찾을 수 없습니다.' }, { status: 404 });
+      }
+      if (!['confirmed', 'fulfilling', 'fulfilled'].includes(order.status)) {
+        return NextResponse.json(
+          { ok: false, error: `환불 가능한 주문 상태가 아닙니다(${order.status}).` },
+          { status: 400 }
+        );
+      }
+      const v = validateRefundRequest({ amount: order.amount, paymentKey: order.payment_key, reason });
+      if (!v.ok) {
+        return NextResponse.json({ ok: false, error: v.errors.join(' / ') }, { status: 400 });
+      }
+      const existing = await findExistingRefundRequest(service, { paymentKey: order.payment_key });
+      if (existing) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: `이미 환불 요청이 있습니다. 기존 요청 상태: ${existing.status}`,
+            existingRequest: existing,
+          },
+          { status: 409 }
+        );
+      }
+      const { data: inserted, error } = await service
+        .from('refund_requests')
+        .insert({
+          user_id: order.user_id,
+          refund_kind: 'product',
+          product_id: order.package_id,
+          scope_key: order.slug,
+          payment_key: order.payment_key,
+          amount: order.amount,
+          original_amount: order.amount,
+          credit_amount: null,
+          reason,
+          requested_by: check.userId,
+          status: 'requested',
+          refund_metadata: {
+            bundle: true,
+            bundleOrderRowId: order.id,
+            orderId: order.order_id,
+            packageId: order.package_id,
+            slug: order.slug,
+          },
+        })
+        .select('id')
+        .single();
+      if (error) {
+        if (error.code === '23505') {
+          return NextResponse.json(
+            { ok: false, error: '이미 같은 결제의 환불 요청이 있습니다.' },
             { status: 409 }
           );
         }
@@ -457,6 +541,18 @@ export async function POST(req: NextRequest) {
           actor: args.actor,
         });
         return { revoked: result.revoked };
+      }
+
+      // 2026-08-24 — 번들 환불: 구성품 전체를 confirm 의 grant 와 동일 분해로 일괄 회수(#632 대칭).
+      //   scope_key 에는 요청 생성 시 주문의 slug 를 실어뒀다(scope 해석 입력).
+      const maybeBundle = args.productId ? getPackage(args.productId) : undefined;
+      if (maybeBundle && isBundlePackage(maybeBundle)) {
+        const results = await revokeBundleEntitlement(maybeBundle.id, args.userId, args.scopeKey, {
+          reason: args.reason,
+          actor: args.actor,
+          paymentKey: args.paymentKey,
+        });
+        return { revoked: results.some((r) => r.revoked) };
       }
 
       const result = await revokeProductEntitlement(
