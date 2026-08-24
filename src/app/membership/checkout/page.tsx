@@ -194,6 +194,8 @@ const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
     notices: [
       '이 리포트는 현재 사주 결과에 연결됩니다.',
       '이미 구매한 항목은 중복 결제하지 않습니다.',
+      // today-detail 은 일일 상품(2026-06-05 일일 만료 정책) — 당일 한정을 결제 전에 고지한다.
+      "'오늘의 상세 리포트'는 결제일 당일 기준 풀이입니다.",
     ],
   },
   bundle_today_set: {

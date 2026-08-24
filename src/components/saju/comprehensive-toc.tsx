@@ -106,6 +106,8 @@ export function ComprehensiveToc({ slug, hookLine, priceLabel, compareLabel, cla
         </Link>
         <p className="mt-2 text-[12.8px] text-[var(--app-copy-soft)]">
           열람 전엔 전액 환불 · 이미 구매한 항목은 중복 결제하지 않아요
+          <br />
+          &lsquo;오늘&rsquo; 항목 4가지는 결제일 당일 기준 풀이예요
         </p>
       </div>
     </section>
