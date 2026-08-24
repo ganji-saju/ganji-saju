@@ -11,6 +11,7 @@ import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ZodiacWheelLoading } from '@/components/saju/zodiac-wheel-loading';
 import { UnifiedIntake } from '@/features/unified-intake/unified-intake';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { submitSajuFromProfile } from '@/features/unified-intake/submit-saju';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import type { TasteProductId } from '@/lib/payments/catalog';
@@ -94,6 +95,10 @@ export default function SajuNewClient() {
             {error}
           </p>
         ) : null}
+
+        {/* 2026-08-24 Phase 0 — 입력 전 신뢰 요소(수정요청 PPT 1차 의문 ②③⑤).
+            "이걸 보면 뭘 알 수 있지?"는 입력 화면이 결제로 이어지는 첫 관문이라 여기서 답한다. */}
+        <ReportTrustNotes />
 
         {/* 구 위저드(saju-intake-page.tsx)의 법정 고지 disclosure 를 비차단 footer 로 이식.
             제출 자체를 막지 않고, 제출 시 이용약관/개인정보처리방침에 동의한 것으로 안내만 한다. */}
