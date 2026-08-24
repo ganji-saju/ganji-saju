@@ -46,8 +46,8 @@ const CONCERN_VISUAL: Record<ConcernId, ConcernVisual> = {
     label: '연애·연락',
     desc: '오늘 연락해도 될까',
     accent: '#ec4899',
-    soft: 'var(--app-pink-soft)',
-    iconColor: 'var(--app-pink-strong)',
+    soft: '#fff0f7',
+    iconColor: '#d81b72',
   },
   money_spend: {
     Icon: Wallet,

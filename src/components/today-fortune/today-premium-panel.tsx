@@ -230,7 +230,7 @@ export function TodayPremiumPanel({
           <div
             className="inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-white"
             style={{
-              background: 'linear-gradient(135deg, #6c5ce7 0%, var(--app-pink-strong) 100%)',
+              background: 'linear-gradient(135deg, #6c5ce7 0%, #d81b72 100%)',
               boxShadow: '0 6px 14px rgba(108,92,231,0.24)',
             }}
           >
@@ -265,7 +265,7 @@ export function TodayPremiumPanel({
             <div
               className="inline-flex items-center gap-1.5 rounded-[12px] px-3 py-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-white"
               style={{
-                background: 'linear-gradient(135deg, #0f9f7a 0%, var(--app-pink-strong) 100%)',
+                background: 'linear-gradient(135deg, #0f9f7a 0%, #d81b72 100%)',
                 boxShadow: '0 6px 14px rgba(15,159,122,0.22)',
               }}
             >

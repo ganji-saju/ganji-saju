@@ -786,10 +786,10 @@
 }
 
 .report-doc {
-  --rp-pink: var(--app-pink-strong);
-  --rp-pink-strong: var(--app-pink);
+  --rp-pink: #d81b72;
+  --rp-pink-strong: #ff4f9a;
   --rp-pink-bright: #ff7bb8;
-  --rp-pink-soft: var(--app-pink-soft);
+  --rp-pink-soft: #fff0f7;
   --rp-ink: #111114;
   --rp-ink-soft: rgba(17, 17, 20, 0.76);
   --rp-ink-muted: rgba(17, 17, 20, 0.56);
@@ -886,7 +886,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--app-pink), var(--app-pink-strong));
+  background: linear-gradient(135deg, #ff4f9a, #d81b72);
   color: #fff;
   font-family: var(--font-han, serif);
   font-size: 20px;
@@ -1138,7 +1138,7 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--app-pink), var(--app-pink-strong));
+  background: linear-gradient(90deg, #ff4f9a, #d81b72);
 }
 
 /* ── 분야별 풀이 카드 ── */
@@ -1480,7 +1480,7 @@
   margin-top: 18px;
   border-radius: 16px;
   padding: 18px 20px;
-  background: linear-gradient(135deg, #ff7bb8, var(--app-pink-strong));
+  background: linear-gradient(135deg, #ff7bb8, #d81b72);
   color: #fff;
 }
 
@@ -1846,7 +1846,7 @@
   margin-top: 18px;
   border-radius: 16px;
   padding: 18px 20px;
-  background: linear-gradient(135deg, #ff7bb8, var(--app-pink-strong));
+  background: linear-gradient(135deg, #ff7bb8, #d81b72);
   color: #fff;
 }
 
@@ -1903,7 +1903,7 @@
   margin-top: 16px;
   border-radius: 16px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, var(--app-pink), var(--app-pink-strong));
+  background: linear-gradient(135deg, #ff4f9a, #d81b72);
   color: #fff;
 }
 
