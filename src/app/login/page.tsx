@@ -1392,14 +1392,17 @@ function LoginScaffold() {
         </div>
       ) : (
         <>
-          {/* 2026-08-26 — '달' 칩 lockup → 붓글씨 로고(게이트웨이와 통일). */}
-          <img
-            src="/images/gangi/logo.png"
-            alt="간지사주"
-            className="mx-auto w-auto"
-            style={{ height: 28 }}
-            decoding="async"
-          />
+          {/* 2026-08-26 — '달' 칩 lockup → 붓글씨 로고(게이트웨이와 통일).
+              ⚠️ .gangi-auth-page > * 가 직계 자식 폭을 100%로 강제 → div 로 감싼다. */}
+          <div className="text-center">
+            <img
+              src="/images/gangi/logo.png"
+              alt="간지사주"
+              className="mx-auto inline-block w-auto"
+              style={{ height: 28 }}
+              decoding="async"
+            />
+          </div>
           <div className="w-full min-w-0 px-4">
             <LoginContent mode={mode} setMode={setMode} />
           </div>
