@@ -3,9 +3,12 @@
    from feature work so it can be reverted independently. */
 
 :root {
+  /* 2026-08-25 전면 개편 — PC 가로폭 일괄화(도령 벤치마크, 사용자 지시 "서브마다 제각각").
+     page/result/home 3변수가 브레이크포인트마다 34/40/44 로 벌어지던 것을 **전 페이지·
+     전 구간 34rem 단일값**으로 통일. 세 변수는 소비처가 많아 이름은 유지하고 값만 맞춘다. */
   --readable-page-max: 34rem;
-  --readable-result-max: 33rem;
-  --readable-home-max: 30rem;
+  --readable-result-max: 34rem;
+  --readable-home-max: 34rem;
   --readable-section-gap: clamp(1.25rem, 4vw, 2rem);
   --readable-card-gap: clamp(0.9rem, 3vw, 1.25rem);
   --readable-card-pad: clamp(1.2rem, 4.5vw, 1.75rem);
@@ -562,11 +565,7 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 @media (min-width: 768px) {
-  :root {
-    --readable-page-max: 40rem;
-    --readable-result-max: 38rem;
-    --readable-home-max: 34rem;
-  }
+  /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem, :root 기본값 그대로. */
 
   .gangi-subpage-shell .app-page.gangi-subpage,
   .gangi-subpage-shell .app-page.gangi-subpage.saju-intake-page,
@@ -582,11 +581,7 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 @media (min-width: 1024px) {
-  :root {
-    --readable-page-max: 44rem;
-    --readable-result-max: 42rem;
-  }
-
+  /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem. */
   .app-page {
     width: min(100%, 94rem);
   }

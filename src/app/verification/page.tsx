@@ -327,7 +327,7 @@ export default async function VerificationPage({ searchParams }: VerificationPag
 
   return (
     <AppShell header={<SiteHeader />}>
-      <AppPage className="space-y-6">
+      <AppPage className="gangi-subpage space-y-6">
         <PageHero
           badges={
             <>
