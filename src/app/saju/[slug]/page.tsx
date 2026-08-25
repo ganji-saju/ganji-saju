@@ -48,6 +48,7 @@ import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
 import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate } from '@/components/saju-score';
 import { ComprehensiveToc } from '@/components/saju/comprehensive-toc';
+import { TodayFortuneDetailClient } from '@/features/today-fortune/today-fortune-detail-client';
 // 2026-08-25 Phase 2 — 수호신 배정: 연주 지지 → 자기 띠 수호신이 전담 해설자로.
 import { GuardianAssignmentCard } from '@/components/saju/guardian-assignment-card';
 import { guardianFromYearBranch } from '@/lib/guardians';
@@ -504,6 +505,29 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     },
   ];
 
+  // 2026-08-25 — 점수 섹션을 상수로: 미구매자는 목차 아래(잠금 게이트), 구매자는 결제 복귀
+  //   직후 최상단(수호신·요약 바로 뒤)에서 본다("결제한 보람" — 사용자 확정 순서).
+  const scoreSection = (
+    <section className="space-y-4">
+      <div>
+        <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          타고난 사주 점수
+        </div>
+        <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
+        <p
+          className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값이에요.
+        </p>
+      </div>
+      <ScoreLockGate isUnlocked={scoreUnlocked} slug={slug} gradeLabel={sajuScore.label.title}>
+        <SajuScoreCard score={sajuScore} />
+        <ScoreBreakdownCard score={sajuScore} />
+      </ScoreLockGate>
+    </section>
+  );
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
@@ -557,6 +581,33 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {formatBirthSummary(input)}
               </p>
             </article>
+
+            {/* 2026-08-25 사용자 확정 — 결제 복귀 직후 "바로 보람": 구매자는 점수·대운·상세가
+                최상단(요약 바로 뒤)에 온다. 상세는 오늘 자세히 화면과 동일 컴포넌트 인라인. */}
+            {scoreUnlocked ? (
+              <>
+                {scoreSection}
+                {lifetimeCycles.length > 0 ? (
+                  <section id="daewoon" className="scroll-mt-24 space-y-4">
+                    <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      대운 — 10년 단위 큰 흐름
+                    </h2>
+                    <DaewoonSection cycles={lifetimeCycles} />
+                  </section>
+                ) : null}
+                <section id="today-detail-inline" className="scroll-mt-24 space-y-4">
+                  <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                    상세 풀이 — 오늘 자세히
+                  </h2>
+                  <TodayFortuneDetailClient
+                    sourceSessionId={slug}
+                    concern={topic}
+                    paidProduct="today-detail"
+                    backHref={`/saju/${encodeURIComponent(slug)}`}
+                  />
+                </section>
+              </>
+            ) : null}
 
             {/* §1.55 PR #148 (Part B) — 사용자 입력 상황이 풀이에 반영됐음을 명시.
                 personalizationContext.userSituation 이 있으면 chip 카드,
@@ -669,40 +720,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </div>
             ) : null}
 
-            {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
-            <section className="space-y-4">
-              <div>
-                <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  타고난 사주 점수
-                </div>
-                <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
-                <p
-                  className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값이에요.
-                </p>
-              </div>
-              <ScoreLockGate
-                isUnlocked={scoreUnlocked}
-                slug={slug}
-                gradeLabel={sajuScore.label.title}
-              >
-                <SajuScoreCard score={sajuScore} />
-                <ScoreBreakdownCard score={sajuScore} />
-              </ScoreLockGate>
-            </section>
-
-            {/* 대운 — 2026-08-25 사용자 확정: 9,900 결제자 전용. 미구매자에겐 목차 훅
-                ("다음 대운 전환은 N세 — 그 10년의 흐름이 잠긴 항목 안에")이 예고한다. */}
-            {scoreUnlocked && lifetimeCycles.length > 0 ? (
-              <section id="daewoon" className="scroll-mt-24 space-y-4">
-                <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                  대운 — 10년 단위 큰 흐름
-                </h2>
-                <DaewoonSection cycles={lifetimeCycles} />
-              </section>
-            ) : null}
+            {/* §2.5 사주 종합 점수 — 미구매자 위치(잠금 게이트+스티키 CTA). 구매자는 최상단. */}
+            {!scoreUnlocked ? scoreSection : null}
 
             {/* 결제 동선(2026-08-25 확정) — 미구매자에겐 페이지 전체에서 가격 오퍼는
                 9,900 종합 리포트 **하나**: 중간 목차(설득) + 하단 고정 CTA(기존

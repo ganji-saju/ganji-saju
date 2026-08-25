@@ -70,6 +70,11 @@ export function buildTasteProductHref(
   if (slug && product === 'bundle_today_set') {
     return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
   }
+  // 2026-08-25 — 종합 리포트(9,900): 사주 결과로 복귀. 결과 페이지가 구매자에겐 점수·대운을
+  //   최상단에 올리고 상세(오늘 자세히)를 아래 인라인으로 잇는다(사용자: "결제한 보람").
+  if (slug && product === 'bundle_comprehensive') {
+    return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
+  }
   // 2026-06-27 — 종합점수(score-total)·요소(score-factor): 결제 후 사주 결과 화면에서 점수 블록이
   //   엔타이틀먼트로 열린다. 분기가 없어 buildCompleteHref(/membership/complete)로 새던 회귀 차단.
   if (slug && (product === 'score-total' || product === 'score-factor')) {
