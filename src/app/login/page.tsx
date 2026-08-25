@@ -4,7 +4,6 @@ import { Suspense, useMemo, useState, type FormEvent, type ReactNode } from 'rea
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
-import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import {
   UnifiedBirthInfoFields,
   type BirthLocationSearchResultLike,
@@ -347,44 +346,27 @@ function GatewayView({
   onOpenRecover: () => void;
 }) {
   return (
-    <div className="gangi-auth-gateway relative isolate w-full overflow-hidden">
-      {/* Floating zodiac decorations — 시각 전용 (aria 라벨은 ZodiacChip 내부) */}
-      <div className="pointer-events-none absolute -right-5 top-3 opacity-60" aria-hidden="true">
-        <ZodiacChip kind="rabbit" size="xl" />
-      </div>
-      <div className="pointer-events-none absolute -left-3 top-1 opacity-50" aria-hidden="true">
-        <ZodiacChip kind="dragon" size="lg" />
-      </div>
-      <div className="pointer-events-none absolute right-24 top-1 opacity-50" aria-hidden="true">
-        <ZodiacChip kind="snake" size="sm" />
-      </div>
-
-      {/* 2026-06-27 — 상단 여백 180→64px 축소 + z-10(장식 위로 올려 '간지사주' 텍스트가 안 가리도록). */}
-      <div className="relative z-10 pt-[64px]">
-        <div
-          className="mb-4 flex h-14 w-14 items-center justify-center rounded-[18px] text-white"
-          style={{
-            background:
-              'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-            fontFamily: 'var(--font-han)',
-            fontSize: 34.5,
-            fontWeight: 800,
-            boxShadow: '0 14px 28px rgba(216,27,114,0.32)',
-          }}
-        >
-          干
-        </div>
-        <h1
-          className="text-[32.2px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]"
-          style={{ fontFamily: 'var(--font-han)' }}
-        >
-          간지사주
+    // 2026-08-26 — 도령(doryeong.app/login) 벤치마크 단순화(사용자 지시 "정신없고 복잡").
+    //   걷어낸 것: 12간지 장식 칩 3개·서비스 설명 2줄·보관 안내문·'로그인 없이도' 배지 카드·
+    //   카카오톡 문의 문단. 남긴 것: 브랜드 → 로그인 타이틀 → 한 줄 카피 → 소셜 2 → 또는 →
+    //   이메일 → 비번/가입 텍스트 링크 → 약관 한 줄. 핸들러·모드 전환·상태 메시지는 무수정.
+    <div className="gangi-auth-gateway w-full">
+      <div className="pt-6 text-center">
+        <img
+          src="/images/gangi/logo.png"
+          alt="간지사주"
+          className="mx-auto w-auto"
+          style={{ height: 30 }}
+          decoding="async"
+        />
+        <h1 className="mt-5 text-[28.8px] font-extrabold leading-tight tracking-tight text-[var(--app-ink)]">
+          로그인
         </h1>
-        <div className="mt-1 text-[15px] font-bold text-[var(--app-pink-strong)]">
-          간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
-        </div>
+        <p className="mt-2 text-[14.4px] leading-relaxed text-[var(--app-copy-muted)]">
+          사주 결과와 이용 내역을 저장하고 언제든 다시 볼 수 있어요.
+        </p>
 
-        <div className="mt-9 flex flex-col gap-2.5">
+        <div className="mt-8 flex flex-col gap-2.5">
           <button
             type="button"
             onClick={() => onProvider('kakao')}
@@ -402,7 +384,7 @@ function GatewayView({
             >
               K
             </span>
-            카카오 로그인
+            카카오로 시작하기
           </button>
 
           <button
@@ -418,89 +400,63 @@ function GatewayView({
             >
               G
             </span>
-            Google 로그인
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenEmailLogin}
-            className="flex h-[52px] items-center justify-center gap-2.5 rounded-[14px] bg-transparent text-[16.7px] font-bold text-[var(--app-ink)]"
-            style={{ border: '1.5px solid var(--app-line)' }}
-          >
-            <span
-              className="grid h-[22px] w-[22px] place-items-center rounded-full text-[12.6px] font-black"
-              style={{
-                background: 'var(--app-pink-soft)',
-                color: 'var(--app-pink-strong)',
-              }}
-            >
-              @
-            </span>
-            이메일로 로그인
+            Google로 시작하기
           </button>
         </div>
 
-        {/* 2026-05-22 — 결제 직전 게이트웨이 진입자가 "왜 로그인?"을 납득하도록 신뢰 문구 한 줄.
-            내 풀이·결제내역·환불이 계정에 안전 보관됨을 명시해 결제 직전 이탈을 줄인다. */}
-        <p className="mt-[18px] text-center text-[13.2px] leading-relaxed text-[var(--app-copy-soft)]">
-          로그인하면 <strong className="font-bold text-[var(--app-copy-muted)]">내 풀이·결제내역·환불</strong>이 한 계정에 안전하게 보관돼요.
-        </p>
+        <div className="mt-5 flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-[var(--app-line)]" />
+          <span className="text-[12.6px] text-[var(--app-copy-soft)]">또는</span>
+          <span className="h-px flex-1 bg-[var(--app-line)]" />
+        </div>
 
-        <div
-          className="mt-3 flex items-center gap-2.5 rounded-[14px] px-3.5 py-3.5"
-          style={{
-            background: 'rgba(255,255,255,0.7)',
-            border: '1px solid var(--app-line)',
-          }}
+        <button
+          type="button"
+          onClick={onOpenEmailLogin}
+          className="mt-5 flex h-[52px] w-full items-center justify-center rounded-[14px] bg-transparent text-[16.1px] font-bold text-[var(--app-ink)]"
+          style={{ border: '1.5px solid var(--app-line)' }}
         >
-          <ZodiacChip kind="rooster" size="sm" />
-          <div className="text-[13.8px] leading-relaxed text-[var(--app-copy-muted)]">
-            <strong className="text-[var(--app-ink)]">로그인 없이도</strong> 오늘운세·타로는 무료로 볼 수 있어요
-          </div>
-        </div>
+          이메일로 로그인
+        </button>
 
-        {/* 2026-05-15 — 회원가입/비번찾기 진입점 prominent CTA. 2026-06-27: 약관동의 위로 올림
-            (모바일에서 회원가입/비번 진입이 먼저 보이도록). */}
-        <div className="mt-[18px] grid gap-2">
-          <button
-            type="button"
-            onClick={onOpenSignup}
-            className="inline-flex h-11 items-center justify-center rounded-[12px] border bg-white px-5 text-[15px] font-extrabold text-[var(--app-pink-strong)] transition-transform active:scale-95"
-            style={{ borderColor: 'var(--app-pink-line)' }}
-          >
-            처음 오셨나요? 이메일로 회원가입 →
-          </button>
+        <div className="mt-5 flex flex-col items-center gap-2 text-[13.8px]">
           <button
             type="button"
             onClick={onOpenRecover}
-            className="inline-flex h-10 items-center justify-center rounded-[12px] border bg-white px-5 text-[13.8px] font-bold text-[var(--app-copy-muted)] transition-transform active:scale-95"
-            style={{ borderColor: 'var(--app-line)' }}
+            className="font-bold text-[var(--app-copy-muted)] underline underline-offset-4"
           >
             비밀번호를 잊으셨나요?
           </button>
+          <p className="text-[var(--app-copy-soft)]">
+            처음 오셨나요?{' '}
+            <button
+              type="button"
+              onClick={onOpenSignup}
+              className="font-extrabold text-[var(--app-pink-strong)] underline underline-offset-4"
+            >
+              이메일로 회원가입
+            </button>
+          </p>
         </div>
 
-        {/* 2026-06-27 — 시작 시 약관 동의 + 로그인 실패 문의를 회원가입/비번 아래로 이동. */}
-        <div className="mt-4 text-center text-[12.6px] leading-relaxed text-[var(--app-copy-soft)]">
-          시작 시{' '}
-          <LegalLinks className="text-[var(--app-pink-strong)]" />
-          에 동의합니다.
+        <p className="mt-6 text-[12.1px] leading-relaxed text-[var(--app-copy-soft)]">
+          시작 시 <LegalLinks className="text-[var(--app-copy-muted)]" />에 동의합니다.
           <br />
-          로그인 실패 또는 계정 확인이 필요하면{' '}
+          로그인 실패 시{' '}
           <a
             href={KAKAO_INQUIRY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold text-[var(--app-pink-strong)] underline"
+            className="underline underline-offset-2"
           >
             카카오톡 문의
           </a>
           {' '}또는{' '}
-          <a href="/help" className="font-bold text-[var(--app-pink-strong)] underline">
+          <a href="/help" className="underline underline-offset-2">
             고객센터
           </a>
-          로 문의해 주세요.
-        </div>
+          로 알려주세요.
+        </p>
 
         {!hasSupabaseBrowserEnv ? (
           <p className="mt-4 rounded-2xl border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-4 py-3 text-left text-sm leading-6 text-[var(--app-ink)]">
@@ -1334,7 +1290,7 @@ function LoginContent({
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#191919">
                 <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.709 1.6 5.09 4.008 6.535l-.96 3.584a.3.3 0 0 0 .448.328L9.74 19.05A11.6 11.6 0 0 0 12 19.2c5.523 0 10-3.358 10-7.5S17.523 3 12 3z" />
               </svg>
-              카카오 로그인
+              카카오로 시작하기
             </Button>
 
             <Button
@@ -1348,7 +1304,7 @@ function LoginContent({
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Google 로그인
+              Google로 시작하기
             </Button>
           </div>
         </>
@@ -1394,14 +1350,8 @@ function LoginScaffold() {
       }`}
     >
       {isGateway ? (
-        <div
-          className="mx-auto flex w-full max-w-[420px] flex-col items-stretch px-6 py-10"
-          style={{
-            background:
-              'linear-gradient(180deg, #fff 0%, var(--app-pink-soft) 100%)',
-            borderRadius: 28,
-          }}
-        >
+        /* 2026-08-26 도령식 단순화 — 그라데이션 카드 제거, 한지 배경 위에 바로. */
+        <div className="mx-auto flex w-full max-w-[400px] flex-col items-stretch px-6 pb-10">
           <LoginContent mode={mode} setMode={setMode} />
         </div>
       ) : (
@@ -1440,25 +1390,11 @@ function LoginPageFallback() {
       className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md flex-col justify-center gap-5 px-5 py-8"
     >
       <div className="flex flex-col items-center gap-3 text-center">
-        <div
-          className="flex h-14 w-14 items-center justify-center rounded-[18px] text-4xl font-extrabold text-white shadow-[0_14px_28px_rgba(216,27,114,0.32)]"
-          style={{
-            background:
-              'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-            fontFamily: 'var(--font-han)',
-          }}
-        >
-          干
-        </div>
+        <img src="/images/gangi/logo.png" alt="간지사주" className="w-auto" style={{ height: 30 }} />
         <div>
-          <div
-            className="text-[32.2px] font-extrabold leading-tight text-[var(--app-ink)]"
-            style={{ fontFamily: 'var(--font-han)' }}
-          >
-            간지사주
-          </div>
-          <p className="mt-2 text-[15px] font-semibold leading-6 text-[var(--app-copy-muted)]">
-            간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.
+          <div className="text-[28.8px] font-extrabold leading-tight text-[var(--app-ink)]">로그인</div>
+          <p className="mt-2 text-[14.4px] leading-relaxed text-[var(--app-copy-muted)]">
+            사주 결과와 이용 내역을 저장하고 언제든 다시 볼 수 있어요.
           </p>
         </div>
       </div>
@@ -1473,7 +1409,7 @@ function LoginPageFallback() {
             border: '1px solid rgba(0,0,0,0.06)',
           }}
         >
-          카카오 로그인
+          카카오로 시작하기
         </button>
         <button
           type="button"
@@ -1481,7 +1417,7 @@ function LoginPageFallback() {
           className="h-[52px] w-full rounded-[14px] bg-white text-[16.7px] font-bold text-[#1f1f1f] opacity-80"
           style={{ border: '1.5px solid var(--app-line)' }}
         >
-          Google 로그인
+          Google로 시작하기
         </button>
       </div>
       <div className="flex justify-center gap-3 text-[13.2px] text-[var(--app-copy-muted)]">

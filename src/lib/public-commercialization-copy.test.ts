@@ -80,9 +80,10 @@ test('login page exposes the minimum paid-service auth surface', () => {
   const source = fs.readFileSync(path.join(process.cwd(), 'src/app/login/page.tsx'), 'utf8');
 
   for (const required of [
-    '간지사주는 사주, 오늘운세, 보관함과 유료 이용내역을 한 계정에서 이어 보는 서비스입니다.',
-    '카카오 로그인',
-    'Google 로그인',
+    // 2026-08-26 — 도령식 로그인 단순화: 서비스 설명은 한 줄 카피로 대체(취지 유지).
+    '사주 결과와 이용 내역을 저장하고 언제든 다시 볼 수 있어요.',
+    '카카오로 시작하기',
+    'Google로 시작하기',
     '/terms',
     '/privacy',
     '카카오톡 문의',
