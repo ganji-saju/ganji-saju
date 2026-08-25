@@ -79,6 +79,19 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   padding-inline: clamp(1rem, 4vw, 2rem);
 }
 
+/* 2026-08-26 — 사이트 전역 세로 호흡(사용자 지시: 단락·구분 사이 최소 50~80px, 시원시원하게).
+   서브페이지(AppPage) 최상위 단락 간격을 이 한 곳에서 강제 — 페이지별 space-y-* 를 덮는다
+   (48px, sm+ 56px; 홈은 gangi-home-client 의 pt-* 가 담당). 채팅방은 대화 UI 라 제외.
+   답답/과함 조정은 여기 두 값만 바꾸면 전 페이지에 적용된다. */
+.app-page.gangi-subpage:not(.gangi-chat-room-page) > :not([hidden]) ~ :not([hidden]) {
+  margin-block-start: 3rem !important;
+}
+@media (min-width: 640px) {
+  .app-page.gangi-subpage:not(.gangi-chat-room-page) > :not([hidden]) ~ :not([hidden]) {
+    margin-block-start: 3.5rem !important;
+  }
+}
+
 .app-page-spacious {
   padding-top: clamp(3rem, 7vw, 5rem);
   padding-bottom: max(6rem, calc(var(--app-mobile-dock-clearance) + 1.75rem));

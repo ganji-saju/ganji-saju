@@ -52,8 +52,8 @@ export function GangiHomeClient({
 
         {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너). 휴면이면 slot 은 truthy 여도 내부에서
             null 렌더 → empty:hidden 으로 래퍼 여백까지 사라진다. px-4 로 배너와 좌우 정렬,
-            pt-3 로 배너와의 간격 확보(2026-08-26 사용자 지시 — 배너 바로 아래 간격 확대). */}
-        <div className="px-4 pt-3 empty:hidden">{couponCtaSlot}</div>
+            pt-6 로 배너와의 간격 확보(2026-08-26 사용자 지시 — 배너 바로 아래 간격 확대). */}
+        <div className="px-4 pt-6 empty:hidden">{couponCtaSlot}</div>
 
         {/* 카테고리 칩 (전체 · 사주·명리 · 운세·택일 · 상담) */}
         <GangiCategoryTabs
@@ -77,7 +77,7 @@ export function GangiHomeClient({
           group.cards.length === 0 ? null : (
             <section
               key={group.key}
-              className={`grid grid-cols-2 gap-3 px-4 ${group.extraGap ? 'pt-8' : 'pt-3'}`}
+              className={`grid grid-cols-2 gap-x-3 gap-y-5 px-4 ${group.extraGap ? 'pt-14' : 'pt-6'}`}
               aria-label={group.label}
             >
               {group.cards.map((card) => (
@@ -99,7 +99,7 @@ export function GangiHomeClient({
 
         {/* 2026-06-28 — MY 별자리 slot 을 신규 유저 CTA 바로 위로 이동. profile 없으면 null. */}
         {myStarSignSlot ? (
-          <section className="px-4 pb-1 pt-3" aria-label="MY 별자리 오늘 운세">
+          <section className="px-4 pb-0 pt-14" aria-label="MY 별자리 오늘 운세">
             {myStarSignSlot}
           </section>
         ) : null}

@@ -141,8 +141,8 @@ export default async function SajuDeepPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
-        <div className="space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
+        <div className="space-y-12 sm:space-y-14">
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME} · 대운 풀이`} backHref={`/saju/${slug}`} />
 
           <section className="space-y-5 px-1">

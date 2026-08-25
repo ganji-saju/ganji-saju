@@ -76,7 +76,7 @@ const SECONDARY_BUTTON_STYLE = {
 export default function SampleReportPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage space-y-12 sm:space-y-14">
         <GangiPageHeader title="샘플 리포트" backHref="/free" />
 
         {/* §Hero — gold badge + sample badge + title + description */}

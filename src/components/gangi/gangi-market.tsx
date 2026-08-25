@@ -132,7 +132,7 @@ export function GangiSeasonBanner({
   );
 
   return (
-    <section className="px-4 pt-3" aria-label="추천 운세 배너">
+    <section className="px-4 pt-4" aria-label="추천 운세 배너">
       <div
         ref={viewportRef}
         className="flex w-full snap-x snap-mandatory overflow-x-hidden scrollbar-none rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink-strong)] focus-visible:ring-offset-2"
@@ -441,7 +441,7 @@ export function GangiCategoryTabs({
 }) {
   return (
     <nav
-      className="flex gap-1.5 overflow-x-auto px-4 pt-4 pb-1"
+      className="flex gap-1.5 overflow-x-auto px-4 pt-14 pb-1"
       aria-label="운세 카테고리"
       style={{ scrollbarWidth: 'none' }}
     >
@@ -649,7 +649,7 @@ export function GangiServiceCardLink({
 //   (GANGI_HOME_CARDS 등)는 각자 라우트를 그대로 유지한다.
 export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
   return (
-    <section className="px-4 pt-4 pb-3" aria-label="운세 시작 CTA">
+    <section className="px-4 pt-14 pb-16" aria-label="운세 시작 CTA">
       <Link
         href="/start"
         onClick={onTrack}

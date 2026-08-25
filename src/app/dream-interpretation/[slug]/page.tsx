@@ -116,7 +116,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage space-y-12 sm:space-y-14">
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger

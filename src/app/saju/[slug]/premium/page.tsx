@@ -474,8 +474,8 @@ export default async function SajuPremiumPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
-        <div className="space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
+        <div className="space-y-12 sm:space-y-14">
           {/* 2026-05-16 A7 — 다른 탭/창에서 결제 완료 후 본 페이지로 돌아오면
               focus 이벤트 → /api/payments/entitlement 재요청 → server SSR 결과와
               다르면 router.refresh() 로 페이지 전체 재렌더 (hero / sections / CTAs

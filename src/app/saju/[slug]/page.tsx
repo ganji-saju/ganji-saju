@@ -530,11 +530,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
         <SajuResultViewTracker slug={slug} />
 
 
-        <div className="space-y-5 sm:space-y-6">
+        <div className="space-y-12 sm:space-y-14">
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
               input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
