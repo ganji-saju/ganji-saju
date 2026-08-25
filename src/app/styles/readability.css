@@ -93,7 +93,10 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 .app-page-spacious {
-  padding-top: clamp(3rem, 7vw, 5rem);
+  /* 2026-08-26 — 상단메뉴~첫 콘텐츠(서브타이틀) 간격 통일(사용자 지시: 페이지마다 제각각).
+     clamp(3rem,7vw,5rem)=48~80px 이던 것을 전 구간 20px 단일값으로. components.css 의
+     미디어 오버라이드도 같은 값 — 바꿀 땐 두 곳을 함께. */
+  padding-top: 1.25rem;
   padding-bottom: max(6rem, calc(var(--app-mobile-dock-clearance) + 1.75rem));
 }
 

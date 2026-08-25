@@ -572,7 +572,7 @@
   }
 
   .app-page-spacious {
-    padding-top: 2.5rem;
+    padding-top: 1.25rem; /* 2026-08-26 — readability.css 와 동일값(상단 간격 통일) */
     padding-bottom: max(5rem, calc(var(--app-mobile-dock-clearance) + 1rem));
   }
 

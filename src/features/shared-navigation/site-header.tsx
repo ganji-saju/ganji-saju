@@ -494,7 +494,9 @@ function MobileChrome({
                 결제 단계에선 로고(브랜드=신뢰)와 뒤로가기만 남기고 검색·알림·로그인·햄버거·
                 주요메뉴를 전부 걷는다. 헤더를 통째로 없애면 로고가 사라져 카드 입력 직전
                 브랜드 신호를 잃고(2026-07-18 실제 회귀), 그대로 두면 이탈 경로가 17개 열린다.
-                하단 dock 을 이미 숨기는 focused-checkout 정책과 방향을 맞춘 형태다. */}
+                하단 dock 을 이미 숨기는 focused-checkout 정책과 방향을 맞춘 형태다.
+                2026-08-26 — 사용자 제보(결제화면 메뉴 소실 오류)로 메뉴·검색·로그인은 복원.
+                결제 화면 추가분은 이 뒤로가기 버튼뿐, 하단 dock·FAB 숨김은 유지(고정 결제 CTA 충돌). */}
             {focusedCheckout ? (
               <button
                 type="button"
@@ -526,7 +528,7 @@ function MobileChrome({
             <nav
               className={cn(
                 'app-top-primary-nav hidden min-w-0 items-center gap-0.5',
-                focusedCheckout ? 'md:hidden' : 'md:flex'
+                'md:flex'
               )}
               aria-label="주요 메뉴"
             >
@@ -553,9 +555,6 @@ function MobileChrome({
 
             {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼.
                 결제 화면에선 렌더하지 않고 뒤로가기와 같은 폭(36px)의 빈 칸만 둬 로고를 가운데 정렬한다. */}
-            {focusedCheckout ? (
-              <span className="h-9 w-9 shrink-0" aria-hidden="true" />
-            ) : (
             <div className="app-top-actions flex items-center gap-1.5">
               {/* 전 chip — desktop only, pink-soft */}
               <Link
@@ -646,7 +645,6 @@ function MobileChrome({
                 {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
               </button>
             </div>
-            )}
           </div>
 
         </div>

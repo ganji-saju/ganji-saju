@@ -11,7 +11,6 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { isFocusedCheckoutRoute } from '@/shared/layout/focused-checkout';
 import { useEffect, useState } from 'react';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
@@ -197,11 +196,10 @@ export function MegaNavBar() {
   }, []);
 
   const hoverGroup = hoverIdx !== null ? MEGA_NAV_BAR[hoverIdx] : null;
-  // 2026-07-19 — 결제 화면(포커스 체크아웃) 축약 헤더: 로고만 남기고 메뉴·검색·전·로그인을 걷는다.
-  //   데스크톱(lg+)에서는 이 메가내브가 로고를 담당하므로 SiteHeader 와 짝을 맞춰야
-  //   결제 단계 이탈 경로가 실제로 줄어든다.
-  const focusedCheckout = isFocusedCheckoutRoute(pathname);
-  const showPanel = hoverGroup && !hoverGroup.simple && !focusedCheckout;
+  // 2026-07-19 결제 화면 축약 헤더(메뉴 숨김)였으나 2026-08-26 사용자 제보("결제화면에서
+  //   상단 메뉴가 다 사라진다")로 상단 크롬은 상시 복원. 포커스 체크아웃 축소는 하단
+  //   (dock·FAB, site-header/scroll-to-top-button)에만 유지 — 고정 결제 CTA 와의 충돌 방지용.
+  const showPanel = hoverGroup && !hoverGroup.simple;
 
   return (
     <div
@@ -224,7 +222,6 @@ export function MegaNavBar() {
           </picture>
         </Link>
 
-        {focusedCheckout ? null : (
         <nav className="mega-nav-list" aria-label="주 메뉴">
           {MEGA_NAV_BAR.map((group, idx) => {
             const isActive = group.label === activeLabel;
@@ -242,9 +239,7 @@ export function MegaNavBar() {
             );
           })}
         </nav>
-        )}
 
-        {focusedCheckout ? null : (
         <div className="mega-nav-actions">
           <button
             type="button"
@@ -293,7 +288,6 @@ export function MegaNavBar() {
             </>
           )}
         </div>
-        )}
       </header>
 
       {showPanel && hoverGroup ? (
