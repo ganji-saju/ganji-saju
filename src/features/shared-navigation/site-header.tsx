@@ -679,11 +679,13 @@ function MobileChrome({
       {/* 2026-05-14: 하단 dock 리디자인 — 중앙 FAB (무료운세) 형광 글로우 +
           나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터.
           2026-05-20 (portal): body 직접 mount — 부모 transform 영향 차단.
-          2026-06-30: 포커스 체크아웃 라우트에서는 dock 숨김. */}
+          2026-06-30: 포커스 체크아웃 라우트에서는 dock 숨김.
+          2026-08-25 전면 개편 — md:hidden 제거: 도령식으로 데스크톱에서도 상시 노출
+          (아이템은 중앙 클러스터 정렬 — app-shell.css @media(min-width:768px) dock 블록). */}
       {portalMounted && !focusedCheckout
         ? createPortal(
             <nav
-              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 md:hidden"
+              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40"
               aria-label="주 메뉴"
             >
               <div className="app-mobile-dock-inner grid w-full grid-cols-5">

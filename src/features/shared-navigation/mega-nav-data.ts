@@ -162,7 +162,10 @@ function applyLockdown(groups: MegaNavGroup[]): MegaNavGroup[] {
   };
 
   return groups.flatMap((group) => {
-    if (group.simple) return [group];
+    // simple 링크도 잠긴 경로(/free 등)면 숨긴다 — 죽은 링크 방지.
+    if (group.simple) {
+      return group.href && isMenuHiddenHref(group.href) ? [] : [group];
+    }
 
     const c1 = cleanColumn(group.c1);
     if (!c1) return [];
@@ -191,6 +194,18 @@ function unfreeHeading(heading: string): string {
 }
 
 export const MEGA_NAV: MegaNavGroup[] = applyLockdown(ALL_MEGA_NAV);
+
+// 2026-08-25 전면 개편 — 데스크톱 상단 바 간소화(도령 벤치마크): 드롭다운 패널 없이
+//   단순 링크 5개. 하단 dock 데스크톱 상시 노출로 패널의 탐색 역할이 중복돼서다.
+//   ⚠️ MEGA_NAV(패널 데이터)는 모바일 햄버거 시트(mobile-nav-sheet)가 계속 쓴다 —
+//   여기만 바꾸고 MEGA_NAV 를 건드리면 모바일 메뉴가 텅 빈다(2026-08-25 실회귀 경험).
+export const MEGA_NAV_BAR: MegaNavGroup[] = applyLockdown([
+  { label: '운세', simple: true, href: '/free' },
+  { label: '사주', simple: true, href: '/saju/new' },
+  { label: '대화', simple: true, href: '/dialogue' },
+  { label: '멤버십', simple: true, href: '/membership' },
+  { label: '사용방법', simple: true, href: '/guide' },
+]);
 
 const DEFAULT_GROUP = MEGA_NAV.find((group) => !group.simple)?.label ?? MEGA_NAV[0]?.label ?? '';
 

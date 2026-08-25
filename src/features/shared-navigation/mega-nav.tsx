@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { HeaderLogoutButton } from '@/features/account/header-logout-button';
-import { MEGA_NAV, resolveActiveGroup, type MegaNavGroup, type MegaNavItem } from './mega-nav-data';
+import { MEGA_NAV_BAR, resolveActiveGroup, type MegaNavGroup, type MegaNavItem } from './mega-nav-data';
 import { Price } from '@/components/payments/price-provider';
 import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import './mega-nav.css';
@@ -196,7 +196,7 @@ export function MegaNavBar() {
     };
   }, []);
 
-  const hoverGroup = hoverIdx !== null ? MEGA_NAV[hoverIdx] : null;
+  const hoverGroup = hoverIdx !== null ? MEGA_NAV_BAR[hoverIdx] : null;
   // 2026-07-19 — 결제 화면(포커스 체크아웃) 축약 헤더: 로고만 남기고 메뉴·검색·전·로그인을 걷는다.
   //   데스크톱(lg+)에서는 이 메가내브가 로고를 담당하므로 SiteHeader 와 짝을 맞춰야
   //   결제 단계 이탈 경로가 실제로 줄어든다.
@@ -226,7 +226,7 @@ export function MegaNavBar() {
 
         {focusedCheckout ? null : (
         <nav className="mega-nav-list" aria-label="주 메뉴">
-          {MEGA_NAV.map((group, idx) => {
+          {MEGA_NAV_BAR.map((group, idx) => {
             const isActive = group.label === activeLabel;
             const isHover = hoverIdx === idx;
             return (

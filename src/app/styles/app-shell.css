@@ -186,17 +186,18 @@
   pointer-events: auto;
   grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   overflow: visible !important;
-  border-top: 1px solid rgba(255, 79, 154, 0.10) !important;
+  /* 2026-08-25 전면 개편 — 핑크 잔재 → 한지+인주 톤(B안). */
+  border-top: 1px solid rgba(179, 55, 42, 0.12) !important;
   /* 2026-06-27 — 하단 full-width bar 로: 좌우/하단 딱 붙이고 상단만 둥글게(여백 0). */
   border-radius: 1.1rem 1.1rem 0 0 !important;
   background:
-    radial-gradient(circle at 50% -20%, rgba(255, 79, 154, 0.06), transparent 55%),
-    rgba(255, 255, 255, 0.98) !important;
+    radial-gradient(circle at 50% -20%, rgba(179, 55, 42, 0.05), transparent 55%),
+    rgba(251, 247, 238, 0.97) !important;
   padding: 0.4rem 0.3rem max(0.35rem, env(safe-area-inset-bottom)) !important;
   box-shadow:
-    0 -2px 0 rgba(255, 255, 255, 0.8) inset,
-    0 22px 44px -12px rgba(17, 17, 20, 0.18),
-    0 4px 14px -6px rgba(216, 27, 114, 0.16) !important;
+    0 -2px 0 rgba(255, 255, 255, 0.6) inset,
+    0 22px 44px -12px rgba(28, 26, 23, 0.18),
+    0 4px 14px -6px rgba(179, 55, 42, 0.12) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -607,12 +608,21 @@
 }
 
 @media (min-width: 768px) {
+  /* 2026-08-25 전면 개편 — dock 데스크톱 상시 노출로 clearance 복원(기존 0).
+     dock 이 fixed 라 footer 마지막 줄이 가려지던 것을 막는다. */
   .app-shell.app-shell-with-navigation {
-    padding-bottom: 0 !important;
+    padding-bottom: var(--app-mobile-dock-clearance) !important;
   }
 
   .app-shell-with-navigation .app-shell-content {
     padding-bottom: 0 !important;
+  }
+
+  /* dock 아이템을 도령식 중앙 클러스터로 — 바(배경)는 풀폭 유지, 5탭만 가운데. */
+  .app-mobile-dock-inner {
+    grid-template-columns: repeat(5, 7.5rem) !important;
+    justify-content: center;
+    border-radius: 0 !important;
   }
 }
 
