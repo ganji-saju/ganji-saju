@@ -604,6 +604,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     concern={topic}
                     paidProduct="today-detail"
                     backHref={`/saju/${encodeURIComponent(slug)}`}
+                    embedded
                   />
                 </section>
               </>

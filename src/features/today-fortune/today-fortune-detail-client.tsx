@@ -72,6 +72,11 @@ export function TodayFortuneDetailClient({
   // 2026-05-18 — /saju/[slug]/today-detail 진입 시에는 사주 페이지로 돌아가도록 override.
   // 미지정 시 today-fortune 무료 결과 경로로 기본 동작.
   backHref: backHrefOverride,
+  // 2026-08-26 — 사주 결과 페이지 인라인용. true 면 이 컴포넌트는 **절대 페이지 이동을
+  //   일으키지 않는다**(하이재킹 금지): 401/미보유는 인라인 안내 카드로만 처리.
+  //   배경: today-detail 은 당일 상품이라 다음날 접근이 사라지는데, 기존 redirect 가
+  //   사주 화면 전체를 오늘운세 결과 URL 로 끌고 가 "브라우저에 결과 없음" 오류를 띄웠다.
+  embedded = false,
   initialFreeResult = null,
   initialResult = null,
   initialNotice = null,
@@ -80,6 +85,7 @@ export function TodayFortuneDetailClient({
   concern?: string;
   paidProduct?: string;
   backHref?: string;
+  embedded?: boolean;
   initialFreeResult?: TodayFortuneFreeResult | null;
   initialResult?: TodayFortunePremiumResult | null;
   initialNotice?: string | null;
@@ -150,13 +156,25 @@ export function TodayFortuneDetailClient({
         if (cancelled) return;
 
         if (response.status === 401) {
+          if (embedded) {
+            setError('로그인하면 구매한 상세 풀이를 이어서 볼 수 있어요.');
+            return;
+          }
           const next = `/today-fortune/detail?sourceSessionId=${encodeURIComponent(activeSourceSessionId)}&concern=${encodeURIComponent(concernId)}${paidProduct ? `&paid=${encodeURIComponent(paidProduct)}` : ''}`;
           window.location.href = `/login?next=${encodeURIComponent(next)}`;
           return;
         }
 
         // GET 응답에서 hasAccess: false → 결제 안 함. 무료 페이지로 redirect.
+        //   단 embedded(사주 결과 인라인)에서는 이동 금지 — 당일 상품 만료가 정상 경로라
+        //   안내 카드만 남긴다(사주 화면을 오늘운세 오류로 끌고 가던 버그의 근본 수정).
         if (!isFirstTimeUnlock && data?.ok && data.hasAccess === false) {
+          if (embedded) {
+            setError(
+              '오늘 자세히 풀이는 열람한 당일 기준 콘텐츠예요. 오늘 흐름은 간단운세에서 새로 확인할 수 있어요.'
+            );
+            return;
+          }
           const next = `/today-fortune/result?sourceSessionId=${encodeURIComponent(activeSourceSessionId)}&concern=${encodeURIComponent(concernId)}`;
           window.location.replace(next);
           return;
@@ -190,7 +208,7 @@ export function TodayFortuneDetailClient({
     return () => {
       cancelled = true;
     };
-  }, [concernId, counselorId, hasInitialResult, paidProduct, sourceSessionId]);
+  }, [concernId, counselorId, embedded, hasInitialResult, paidProduct, sourceSessionId]);
 
   // 2026-05-16 — 로드 완료 + DOM 안정화 후 프리미엄 패널 위치로 스크롤.
   // unlock 직후 사용자가 "방금 산 컨텐츠" 를 바로 볼 수 있도록 보장.
@@ -212,7 +230,7 @@ export function TodayFortuneDetailClient({
   const resultHref = backHrefOverride ?? defaultResultHref;
 
   return (
-    <div className="gangi-subpage saju-result-page pb-8">
+    <div className={embedded ? 'space-y-4' : 'gangi-subpage saju-result-page pb-8'}>
       {/* §전체 로딩 — 다른 페이지와 동일한 GangiLoadingOverlay 사용.
           unlock API 응답 → setResult 가 완료될 때까지 풀스크린 유지. */}
       {loading ? (
@@ -222,7 +240,8 @@ export function TodayFortuneDetailClient({
         />
       ) : null}
 
-      <GangiPageHeader title="오늘 자세히 보기" backHref={resultHref} />
+      {/* embedded(사주 결과 인라인)에서는 섹션 제목이 이미 밖에 있어 중첩 헤더를 걷는다. */}
+      {embedded ? null : <GangiPageHeader title="오늘 자세히 보기" backHref={resultHref} />}
 
       <div className="space-y-4 px-1 py-4">
         {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA. 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면
