@@ -45,9 +45,8 @@ import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortun
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (총운/직장/재물/연애/관계/컨디션).
 //   사주 메인/상세 + 운세 페이지에서 공유하는 SajuAreaCardsSection 사용.
-import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
-import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
+import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate } from '@/components/saju-score';
 import { ComprehensiveToc } from '@/components/saju/comprehensive-toc';
 // 2026-08-25 Phase 2 — 수호신 배정: 연주 지지 → 자기 띠 수호신이 전담 해설자로.
 import { GuardianAssignmentCard } from '@/components/saju/guardian-assignment-card';
@@ -634,6 +633,31 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* §2.4 종합사주 리포트 목차 — Phase 1 간판(bundle_comprehensive) 업셀.
                 만신령식 "무료 ✓ + 잠김 🔒" 리스트. 점수 미해제(=종합 미구매의 근사)일 때만.
                 개인화 훅은 대운 타임라인(무료 deep 와 동일 결정론 빌더)에서 다음 전환 나이를 뽑는다. */}
+            {/* 2026-08-25 단일 페이지 합성(사용자 확정 순서) — 무료 섹션(명식·성향·오행)을
+                9,900 결제 영역(목차·점수 잠금) **위**에 둔다: 무료 가치를 다 보여준 뒤 결제.
+                대운은 결제자 전용(아래) — 훅("그 10년의 흐름이 잠긴 항목 안에")과 정합.
+                구 탭 라우트는 앵커로 리다이렉트(id 변경 시 리다이렉트도 같이). */}
+            <section id="myeongsik" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                명식 — 내 사주의 뼈대
+              </h2>
+              <MyeongsikSection sajuData={sajuData} grounding={grounding} />
+            </section>
+
+            <section id="nature" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                성향 — 타고난 기질
+              </h2>
+              <NatureSection sajuData={sajuData} grounding={grounding} />
+            </section>
+
+            <section id="elements" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                오행 — 기운의 균형
+              </h2>
+              <ElementsSection sajuData={sajuData} />
+            </section>
+
             {!scoreUnlocked ? (
               <div id="comprehensive-toc">
                 <ComprehensiveToc
@@ -667,39 +691,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 <SajuScoreCard score={sajuScore} />
                 <ScoreBreakdownCard score={sajuScore} />
               </ScoreLockGate>
-              <OhaengChart
-                data={sajuScore.ohaengChart}
-                guidanceText={sajuScore.ohaengChart.guidanceText}
-              />
             </section>
 
-            {/* §3 분야별 흐름 — 6 영역 통일 카드 (PR #181, 공유 컴포넌트). */}
-            <SajuAreaCardsSection input={input} sajuData={sajuData} />
-
-            {/* 2026-08-25 단일 페이지 합성 — 구 명식/성향/오행/대운 탭을 섹션으로.
-                구 탭 라우트는 아래 앵커로 리다이렉트한다(id 변경 시 리다이렉트도 같이). */}
-            <section id="myeongsik" className="scroll-mt-24 space-y-4">
-              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                명식 — 내 사주의 뼈대
-              </h2>
-              <MyeongsikSection sajuData={sajuData} grounding={grounding} />
-            </section>
-
-            <section id="nature" className="scroll-mt-24 space-y-4">
-              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                성향 — 타고난 기질
-              </h2>
-              <NatureSection sajuData={sajuData} grounding={grounding} />
-            </section>
-
-            <section id="elements" className="scroll-mt-24 space-y-4">
-              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                오행 — 기운의 균형
-              </h2>
-              <ElementsSection sajuData={sajuData} />
-            </section>
-
-            {lifetimeCycles.length > 0 ? (
+            {/* 대운 — 2026-08-25 사용자 확정: 9,900 결제자 전용. 미구매자에겐 목차 훅
+                ("다음 대운 전환은 N세 — 그 10년의 흐름이 잠긴 항목 안에")이 예고한다. */}
+            {scoreUnlocked && lifetimeCycles.length > 0 ? (
               <section id="daewoon" className="scroll-mt-24 space-y-4">
                 <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
                   대운 — 10년 단위 큰 흐름
