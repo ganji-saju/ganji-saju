@@ -204,7 +204,9 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'dragon',
     category: 'saju',
     tag: 'HOT',
-    image: 't6', // 寅 인장 든 역동 포즈 — 수호신 1차분(호랑이)
+    // 2026-08-25 Phase 2 — 12지신 수호신 2차분 적용: 카드마다 자기 zodiac 키의 수호신.
+    //   임시로 쓰던 호랑이(t6)를 내리고 카드 chip 과 같은 용(辰)으로 정렬.
+    image: 'dragon',
     tint: 'pink',
   },
   {
@@ -220,6 +222,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'sheep',
     category: 'saju',
     tag: '추천',
+    image: 'sheep',
     tint: 'coral',
   },
   // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
@@ -231,6 +234,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/today-fortune?concern=general',
     zodiac: 'rooster',
     category: 'fortune',
+    image: 'rooster',
     tint: 'pink',
   },
   {
@@ -241,6 +245,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/tarot/daily',
     zodiac: 'rabbit',
     category: 'fortune',
+    image: 'rabbit',
     tint: 'jade',
   },
   {
@@ -249,8 +254,11 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     desc: '마음이 찜찜할 때',
     price: '무료',
     href: '/dream',
-    zodiac: 'dragon',
+    // 2026-08-25 Phase 2 — dragon → pig: 사주 카드와 chip 중복 해소 + 돼지꿈(재물꿈)이
+    //   꿈해몽의 한국적 아이콘이라 수호신도 돼지(亥)로 정렬.
+    zodiac: 'pig',
     category: 'fortune',
+    image: 'pig',
     tint: 'indigo',
   },
   {
@@ -261,6 +269,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',
+    image: 'snake',
     tint: 'amber',
   },
 ] as const;
