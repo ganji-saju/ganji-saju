@@ -118,7 +118,9 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     description:
       '명리심리상담사 1급 등 전문 자격 5종 보유. 용어 나열이 아니라 "앞으로 어떻게"를 알려드립니다.',
     cta: '풀이 방식 보기',
-    href: '/verification',
+    // 2026-08-26 — 착지를 기술 감사 페이지(/verification)에서 설득 스토리(WhyGangiStory,
+    //   사주 입력 하단 #why-gangi)로: 30~60대 방문자에게 맞는 '왜 여기서 봐야 하나' 화면.
+    href: '/saju/new#why-gangi',
     tone: 'soft',
   },
   {
