@@ -43,6 +43,15 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   line-height: var(--app-leading-normal);
 }
 
+/* 2026-08-26 — 푸터(법정 고지)는 위 본문 최소 크기 부양에서 제외: footer 루트의
+   인라인 폰트(10px 이하, 사용자 지시)를 상속받게 한다. 이 규칙이 없으면 상호·사업자
+   정보(dt/dd)·면책(p)만 본문 크기로 남아 푸터 축소가 절반만 적용된다. */
+.app-shell footer.site-footer-redesign :where(p, dt, dd),
+.gangi-subpage-shell footer.site-footer-redesign :where(p, dt, dd) {
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .app-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]),
 .gangi-subpage-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]) {
   font-size: var(--app-text-sm) !important;
