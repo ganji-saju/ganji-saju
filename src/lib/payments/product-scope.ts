@@ -3,6 +3,7 @@ import {
   type PaymentPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
+import { getKoreaAccessDay } from '@/lib/credits/detail-report-access';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 
@@ -16,7 +17,9 @@ export type PaymentProductScopeKind =
   | 'year'
   | 'lifetime-reading'
   // 2026-05-23 ① — 궁합 1회권. slug 가 커플 키(사주 reading 아님)라 별도 kind.
-  | 'compat';
+  | 'compat'
+  // 2026-08-25 — 990원 라이트 언락 당일권(KST 날짜 단위).
+  | 'day-pass';
 
 export interface PaymentProductScope {
   productId: PaidProductId;
@@ -67,6 +70,15 @@ export function buildLifetimeReportScopeKey(readingKey: string) {
 // 2026-05-23 ① — 궁합 per-couple scope. coupleKey 는 buildCompatibilityCoupleKey(두 생년월일).
 export function buildCompatScopeKey(coupleKey: string) {
   return `compat:${coupleKey}`;
+}
+
+// 2026-08-25 — 990원 라이트 언락 **당일권** scope. product_entitlements 엔 만료 컬럼이
+//   없어(오늘상세도 created_at/scope 로 일일성 구현) KST 날짜를 scope_key 에 인코딩한다.
+//   결제(resolver)와 게이트(menu-pass)가 반드시 이 한 함수를 공유할 것 — 갈리면
+//   결제했는데 못 보는 사고가 난다. 자정 직전 결제는 prepare/confirm 시각차로
+//   다음날 키가 될 수 있다(구매자에게 유리한 방향이라 허용).
+export function buildDayPassScopeKey(now: Date = new Date()) {
+  return `day:${getKoreaAccessDay(now)}`;
 }
 
 // buildLifetimeReportScopeKey 의 역함수 — 환불 회수 시 legacy credit_transactions
@@ -206,16 +218,21 @@ export async function resolvePaymentProductScope({
     productId === 'love-question' ||
     productId === 'money-pattern' ||
     productId === 'work-flow' ||
-    // 2026-08-25 — 990원 라이트 언락 4종: 계정 단위 global 영구 언락.
     productId === 'today-basic' ||
     productId === 'tarot-daily' ||
     productId === 'dream-search' ||
     productId === 'dialogue-entry'
   ) {
+    // 2026-08-25 — 990원 라이트 언락 4종: **당일권**(KST 날짜 scope). global 3종은 유지.
+    const isDayPass =
+      productId === 'today-basic' ||
+      productId === 'tarot-daily' ||
+      productId === 'dream-search' ||
+      productId === 'dialogue-entry';
     return {
       productId,
-      scopeKey: null,
-      kind: 'global',
+      scopeKey: isDayPass ? buildDayPassScopeKey(now) : null,
+      kind: isDayPass ? 'day-pass' : 'global',
       reading: null,
       readingKey: null,
       slug: slug?.trim() || null,

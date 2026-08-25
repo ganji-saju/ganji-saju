@@ -21,9 +21,10 @@ export type TasteProductId =
   | 'score-total'
   // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.
   | 'compat-reading'
-  // 2026-08-25 전면 개편 — 구 무료 메뉴 4종의 990원 라이트 언락(계정 단위 global).
-  //   별자리·띠운세만 무료로 남긴다(사용자 확정). scope 는 love-question 과 동일한
-  //   global 영구 언락 — 당일권/회당 과금이 필요해지면 product-scope 에 day scope 승격.
+  // 2026-08-25 전면 개편 — 구 무료 메뉴 4종의 990원 라이트 언락 **당일권**
+  //   (KST 날짜 scope 'day:{YYYY-MM-DD}', product-scope.buildDayPassScopeKey).
+  //   별자리·띠운세만 무료로 남긴다(사용자 확정). 처음 global 영구권으로 냈다가
+  //   같은 날 당일권으로 전환(사용자 확정).
   | 'today-basic'
   | 'tarot-daily'
   | 'dream-search'
@@ -104,10 +105,10 @@ export const PAYMENT_PACKAGES = [
     requiresSlug: true,
     compareAt: 9900,
   },
-  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). global 영구 언락.
+  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). **당일권**.
   {
     id: 'taste_today_basic',
-    name: '간단운세',
+    name: '간단운세 당일권',
     credits: 0,
     price: 990,
     kind: 'taste_product',
@@ -115,7 +116,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'taste_tarot_daily',
-    name: '타로 세 장',
+    name: '타로 세 장 당일권',
     credits: 0,
     price: 990,
     kind: 'taste_product',
@@ -123,7 +124,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'taste_dream_search',
-    name: '꿈해몽',
+    name: '꿈해몽 당일권',
     credits: 0,
     price: 990,
     kind: 'taste_product',
@@ -131,7 +132,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'taste_dialogue_entry',
-    name: '대화상담',
+    name: '대화상담 당일권',
     credits: 0,
     price: 990,
     kind: 'taste_product',

@@ -1,7 +1,8 @@
 // 2026-08-25 전면 개편 — 990원 라이트 언락 게이트.
 //   구 무료 메뉴 4종(간단운세·타로·꿈해몽·대화상담)은 이제 990원 결제 후 이용한다
-//   (별자리·띠운세만 무료 유지 — 사용자 확정). 통과 기준:
-//   ① 멤버십(활성/해지유예 — 오늘운세 무제한 등 혜택 보유)  ② 해당 990원 이용권.
+//   (별자리·띠운세만 무료 유지 — 사용자 확정). **당일권**(2026-08-25 사용자 확정):
+//   결제일 KST 당일만 유효 — scope_key 'day:{YYYY-MM-DD}' 정확 일치로 판정한다.
+//   통과 기준: ① 멤버십(활성/해지유예)  ② 오늘 날짜의 해당 990원 당일권.
 //   비로그인·미결제는 체크아웃으로 보낸다(체크아웃이 로그인 흐름을 이미 처리).
 //
 //   ⚠️ guardLockedFreeEntry(전면 잠금 (B)게이트)와 별개다 — 그쪽은 잠금 스위치용
@@ -11,6 +12,7 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
 import type { PackageId, TasteProductId } from '@/lib/payments/catalog';
+import { buildDayPassScopeKey } from '@/lib/payments/product-scope';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getMemberTier } from '@/lib/subscription';
 import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
@@ -54,7 +56,10 @@ export async function viewerHasMenuPass(key: MenuPassKey): Promise<boolean> {
   if ((await getMemberTier(userId)) !== null) return true;
 
   try {
-    return Boolean(await getTasteProductEntitlement(userId, MENU_PASSES[key].productId));
+    // 당일권 — 오늘(KST) 날짜 scope 정확 일치. 어제 산 권한은 자연 소멸.
+    return Boolean(
+      await getTasteProductEntitlement(userId, MENU_PASSES[key].productId, buildDayPassScopeKey())
+    );
   } catch {
     // 조회 실패 시엔 통과 — 결제자를 잘못 막는 오류가 무료 열람 한 번보다 비싸다
     // (guardLockedFreeEntry 와 동일 원칙).
