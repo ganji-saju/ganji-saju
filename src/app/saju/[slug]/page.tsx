@@ -389,6 +389,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
   //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
   const scoreUnlocked = await getScoreUnlockEntitlement(slug);
+  // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
+  //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
+  //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
+  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
+  const todayDetailUnlocked = scoreUnlocked && todayDetailEntitlement;
 
   // 2026-08-12 — 페이월 노출을 퍼널에 기록한다(migration 073).
   //   지금까지 퍼널의 첫 칸이 비어 있어 "결과를 본 사람 중 몇 %가 결제창까지 갔나"를
@@ -457,7 +462,6 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   (입춘 경계를 엔진이 이미 처리). 매핑 실패 시 카드 생략(null 안전).
   const guardian = guardianFromYearBranch(sajuData.pillars.year.branch);
   const punchReading = buildPunchReading(report);
-  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
   const todayDetailHref = todayDetailEntitlement
     ? buildSajuTodayDetailHref(slug)
     : buildSajuTodayDetailCheckoutHref(slug);
@@ -595,18 +599,20 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     <DaewoonSection cycles={lifetimeCycles} />
                   </section>
                 ) : null}
-                <section id="today-detail-inline" className="scroll-mt-24 space-y-4">
-                  <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
-                    상세 풀이 — 오늘 자세히
-                  </h2>
-                  <TodayFortuneDetailClient
-                    sourceSessionId={slug}
-                    concern={topic}
-                    paidProduct="today-detail"
-                    backHref={`/saju/${encodeURIComponent(slug)}`}
-                    embedded
-                  />
-                </section>
+                {todayDetailUnlocked ? (
+                  <section id="today-detail-inline" className="scroll-mt-24 space-y-4">
+                    <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      상세 풀이 — 오늘 자세히
+                    </h2>
+                    <TodayFortuneDetailClient
+                      sourceSessionId={slug}
+                      concern={topic}
+                      paidProduct="today-detail"
+                      backHref={`/saju/${encodeURIComponent(slug)}`}
+                      embedded
+                    />
+                  </section>
+                ) : null}
               </>
             ) : null}
 
