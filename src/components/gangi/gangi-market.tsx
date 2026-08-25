@@ -279,7 +279,7 @@ export function GangiSeasonBanner({
               {banner.character ? '' : '運'}
             </span>
 
-            <div className="relative">
+            <div className="relative" style={banner.character ? { paddingRight: '34%' } : undefined}>
               <p
                 className="m-0"
                 style={{
