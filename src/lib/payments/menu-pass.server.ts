@@ -30,7 +30,9 @@ export const MENU_PASSES = {
 export type MenuPassKey = keyof typeof MENU_PASSES;
 
 function checkoutHref(pass: MenuPass, from: string) {
-  return `/membership/checkout?product=${pass.packageId}&from=${encodeURIComponent(from)}`;
+  // ⚠️ 체크아웃의 product 파라미터는 packageId 가 아니라 **tasteProductId** 를 받는다
+  //   (isTasteProductId 판정 — packageId 를 넘기면 멤버십 기본값으로 폴백하는 실버그 냄).
+  return `/membership/checkout?product=${pass.productId}&from=${encodeURIComponent(from)}`;
 }
 
 /** 게이트 없이 판정만 — 라벨 분기(이용권 보유 표시 등)에 사용. */
