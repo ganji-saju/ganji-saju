@@ -120,6 +120,11 @@
   opacity: 0;
   transform: translateY(10px);
   will-change: opacity, transform;
+  /* 2026-08-25 단일 페이지화 — grid item 기본 min-width:auto 함정: min-content 가 넓은
+     슬롯(명식 도식·대운 스트립) 하나가 전체 트랙을 컬럼(34rem) 밖 892px 로 벌렸다.
+     0 으로 풀면 전 슬롯이 트랙 폭에 맞춰 정상 줄바꿈된다(실측: overflow 잔존 0). */
+  min-width: 0;
+  max-width: 100%;
 }
 .motion-result-reveal-children[data-active="true"] > .motion-reveal-slot {
   animation: motion-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
