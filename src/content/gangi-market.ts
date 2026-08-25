@@ -88,6 +88,8 @@ export type GangiHomeBanner = {
   image?: string;
   /** 이미지 배너 접근성 대체텍스트. */
   alt?: string;
+  /** 2026-08-25 — 수호신 캐릭터 id(guardians/{id}.jpg). 텍스트 배너 우측 초상. */
+  character?: string;
 };
 
 // 2026-08-24 전면 개편 Phase 0 — 이미지 배너 폐지, 텍스트 배너 복귀(수정요청 PPT 1차).
@@ -102,6 +104,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '내 앞날을 조금이라도 알 수 있다면',
     description: '다가올 기회는 놓치지 않고, 조심해야 할 순간은 미리 준비하세요.',
     cta: '무료로 내 사주 확인하기',
+    character: 't7', // 손 내미는 환영 포즈 — 히어로
     // 2026-08-24 Phase 1 — 결제 직행(?product=today-detail) → 무료 맛보기 경유로 전환.
     //   무료 결과(/saju/[slug])의 17항목 목차(ComprehensiveToc)가 종합 리포트 업셀을 담당한다.
     href: '/saju/new',
@@ -201,6 +204,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     zodiac: 'dragon',
     category: 'saju',
     tag: 'HOT',
+    image: 't6', // 寅 인장 든 역동 포즈 — 수호신 1차분(호랑이)
     tint: 'pink',
   },
   {

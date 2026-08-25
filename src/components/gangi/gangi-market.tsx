@@ -253,6 +253,16 @@ export function GangiSeasonBanner({
               </picture>
             ) : (
             <>
+            {/* 2026-08-25 — 수호신 캐릭터(우측 초상). 있으면 한자 장식 대신 캐릭터가 선다. */}
+            {banner.character ? (
+              <img
+                src={`/images/gangi/guardians/${banner.character}.jpg`}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
+                style={{ objectFit: 'contain', objectPosition: 'right bottom' }}
+              />
+            ) : null}
             {/* 한자 배경 (운/緣 등) */}
             <span
               aria-hidden="true"
@@ -266,7 +276,7 @@ export function GangiSeasonBanner({
                 color: banner.tone === 'soft' ? 'var(--app-pink-strong)' : '#fff',
               }}
             >
-              運
+              {banner.character ? '' : '運'}
             </span>
 
             <div className="relative">
@@ -514,10 +524,10 @@ export function GangiServiceCardLink({
       {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
       {card.image ? (
         <picture>
-          <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
-          <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
+          {/* 2026-08-25 Phase 2 — 12지신 수호신 캐릭터(guardians/, 힉스필드 1차분).
+              avif/webp 파생은 자산 확정 후 일괄 생성 예정 — 지금은 jpg 단일 소스. */}
           <img
-            src={`/images/gangi/people/${card.image}.png`}
+            src={`/images/gangi/guardians/${card.image}.jpg`}
             alt={card.title}
             loading="lazy"
             decoding="async"
