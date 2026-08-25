@@ -117,23 +117,6 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-12 sm:space-y-14">
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
-        />
-        {faqSchema ? (
-          <script
-            type="application/ld+json"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: serializeStructuredData(faqSchema) }}
-          />
-        ) : null}
         <GangiPageHeader title="꿈해몽" backHref="/dream-interpretation" />
 
         {/* Hero — badge + title + description */}
@@ -435,6 +418,25 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
             })}
           />
         </section>
+        {/* JSON-LD — AppPage 마지막에 둔다: 첫 자식이면 space-y·간격 규칙이 스크립트를
+            형제로 세어 첫 가시 콘텐츠 위에 여백이 얹힌다(2026-08-26 상단 간격 전수검사). */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
+        {faqSchema ? (
+          <script
+            type="application/ld+json"
+            // eslint-disable-next-line react/no-danger
+            dangerouslySetInnerHTML={{ __html: serializeStructuredData(faqSchema) }}
+          />
+        ) : null}
       </AppPage>
     </AppShell>
   );
