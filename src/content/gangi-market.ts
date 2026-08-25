@@ -277,6 +277,34 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     image: 'snake',
     tint: 'amber',
   },
+  // ── 진짜 무료 2종 (2026-08-25 사용자 지적 "띠운세가 노출이 안 된다") ──
+  //   2026-06-23 개편이 띠운세·별자리를 그리드에서 빼고 FREE 스트립·무료 허브로 옮겼는데,
+  //   FREE 스트립은 렌더 코드가 사라진 죽은 데이터였고 /free 허브도 홈 직링크가 없었다.
+  //   990원 전환(별자리·띠운세만 무료 유지) 후엔 홈 카드가 유일하게 성한 무료 진입점이라
+  //   카드로 복귀시킨다. 잠금(lockdown) 중엔 price '무료' 필터가 이 둘을 감춘다(의도).
+  {
+    id: 'zodiac',
+    title: '띠운세',
+    desc: '내 띠 오늘 흐름',
+    price: '무료',
+    href: '/zodiac',
+    zodiac: 'horse',
+    category: 'fortune',
+    image: 'horse',
+    tint: 'amber',
+  },
+  {
+    id: 'star-sign',
+    title: '별자리',
+    desc: '12자리 오늘 메시지',
+    price: '무료',
+    href: '/star-sign',
+    // 서양 별자리라 12지신 수호신 대신 밤하늘 StarSignChip — chipKind 분기 재사용.
+    chipKind: 'star-sign',
+    zodiac: 'pig',
+    category: 'fortune',
+    tint: 'sky',
+  },
 ] as const;
 
 // 2026-08-11 전면 유료화 잠금 — 홈 그리드에서 무료 카드를 뺀다.
