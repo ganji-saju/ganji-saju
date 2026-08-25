@@ -67,9 +67,11 @@ export function MyStarSignCard({ profile, variant = 'default' }: Props) {
   return (
     <Link
       href={`/star-sign/${slug}`}
-      className="relative block overflow-hidden rounded-[18px] p-4 text-white shadow-[0_8px_24px_-12px_rgba(49,46,129,0.6)]"
+      className="relative block overflow-hidden rounded-[18px] p-4 text-white shadow-[0_8px_24px_-12px_rgba(28,26,23,0.55)]"
       style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4f46e5 100%)',
+        // 2026-08-25 — 인디고 밤하늘 → 먹 톤(B안): 바로 아래 NEW USER 배너(var(--app-ink))와
+        //   컬러톤 일치(사용자 지시). 별 점광 오버레이는 유지 — 먹빛 밤하늘.
+        background: 'linear-gradient(135deg, #1c1a17 0%, #2b2721 55%, #3a332a 100%)',
       }}
     >
       {/* 별 모티프 — 밤하늘 점광 오버레이 */}

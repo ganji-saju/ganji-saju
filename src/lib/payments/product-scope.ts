@@ -223,12 +223,11 @@ export async function resolvePaymentProductScope({
     productId === 'dream-search' ||
     productId === 'dialogue-entry'
   ) {
-    // 2026-08-25 — 990원 라이트 언락 4종: **당일권**(KST 날짜 scope). global 3종은 유지.
-    const isDayPass =
-      productId === 'today-basic' ||
-      productId === 'tarot-daily' ||
-      productId === 'dream-search' ||
-      productId === 'dialogue-entry';
+    // 2026-08-25 — 타로만 당일권(KST 날짜 scope). dialogue-entry(질문 3회)는 전달물이
+    //   전 3개(fulfillment)라 entitlement 를 만들지 않는다 — scope 는 global-null 로 두고
+    //   prepare 중복차단에 걸리지 않게 해 재구매(질문 추가 구매)를 허용한다.
+    //   today-basic·dream-search 는 무료 복귀로 판매 경로가 없다(카탈로그만 잔존).
+    const isDayPass = productId === 'today-basic' || productId === 'tarot-daily' || productId === 'dream-search';
     return {
       productId,
       scopeKey: isDayPass ? buildDayPassScopeKey(now) : null,

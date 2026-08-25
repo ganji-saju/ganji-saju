@@ -132,7 +132,7 @@ export const PAYMENT_PACKAGES = [
   },
   {
     id: 'taste_dialogue_entry',
-    name: '대화상담 당일권',
+    name: '대화상담 질문 3회',
     credits: 0,
     price: 990,
     kind: 'taste_product',

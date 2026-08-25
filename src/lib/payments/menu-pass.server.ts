@@ -15,6 +15,7 @@ import type { PackageId, TasteProductId } from '@/lib/payments/catalog';
 import { buildDayPassScopeKey } from '@/lib/payments/product-scope';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { getMemberTier } from '@/lib/subscription';
+import { getNonExpiredLotBalance } from '@/lib/credits/deduct';
 import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 
 export interface MenuPass {
@@ -66,7 +67,11 @@ export async function viewerHasMenuPass(key: MenuPassKey): Promise<boolean> {
   if ((await getMemberTier(userId)) !== null) return true;
 
   try {
-    // 당일권 — 오늘(KST) 날짜 scope 정확 일치. 어제 산 권한은 자연 소멸.
+    // 대화상담(질문 3회)은 이용권이 아니라 전 잔액이 전달물 — 잔액>0 이면 통과
+    //   (레거시 전 보유자 포함). 나머지는 당일권: 오늘(KST) scope 정확 일치.
+    if (key === 'dialogue') {
+      return (await getNonExpiredLotBalance(userId)) > 0;
+    }
     return Boolean(
       await getTasteProductEntitlement(userId, MENU_PASSES[key].productId, buildDayPassScopeKey())
     );

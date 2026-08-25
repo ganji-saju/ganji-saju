@@ -192,12 +192,11 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       true
     );
     // 2026-08-24 Phase 1 — 단품 강등: 대운·택일 카드는 홈에서 내려갔다(교차추천으로 이동).
-    // 2026-08-25 — 990원 당일권 전환으로 간단운세(today)·대화상담(consult)은 유료 카드가 돼
-    //   잠금 중에도 남는다(타로·꿈해몽은 (A)잠금 라우트라 keepVisible 이 제거).
+    // 2026-08-25 재확정 — 유료는 타로·대화상담(질문 3회)만. 잠금 중 남는 유료 카드는
+    //   saju·gunghap·consult (타로는 (A)잠금 라우트라 keepVisible 이 제거, 무료 4종은 price 필터).
     expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual([
       'saju',
       'gunghap',
-      'today',
       'consult',
     ]);
     expect(locked.GANGI_HOME_CARDS.every((c) => c.price !== '무료')).toBe(true);
@@ -210,9 +209,9 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       '@/content/gangi-market',
       false
     );
-    // 2026-08-25 — 990원 4종 + 무료 2종(띠운세·별자리) 복귀로 8카드, 허브는 진짜 무료 2종.
+    // 2026-08-25 재확정 — 유료 4(사주·궁합·타로·대화상담) + 무료 4(간단운세·꿈해몽·띠·별자리).
     expect(open.GANGI_HOME_CARDS).toHaveLength(8);
-    expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(2);
+    expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(4);
   });
 
   it('사용방법 2단계가 잠긴 무료 메뉴를 약속하지 않는다', async () => {

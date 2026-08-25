@@ -225,20 +225,7 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     image: 'sheep',
     tint: 'coral',
   },
-  // ── 무료 4종 (하단) — 하루 1번 제한. 제목이 "얼마나 주는지"를 그대로 말한다. ──
-  {
-    id: 'today',
-    title: '간단운세',
-    desc: '짧은 운세풀이',
-    // 2026-08-25 전면 개편 — 무료 4종 → 990원 라이트 언락(별자리·띠운세만 무료 유지).
-    price: '990원',
-    priceKey: 'taste_today_basic',
-    href: '/today-fortune?concern=general',
-    zodiac: 'rooster',
-    category: 'fortune',
-    image: 'rooster',
-    tint: 'pink',
-  },
+  // ── 990원 유료 2종 — 타로·대화상담을 한 줄로(2026-08-25 사용자 지시). ──
   {
     id: 'tarot',
     title: '타로',
@@ -252,23 +239,10 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     tint: 'jade',
   },
   {
-    id: 'dream',
-    title: '꿈해몽',
-    desc: '마음이 찜찜할 때',
-    price: '990원',
-    priceKey: 'taste_dream_search',
-    href: '/dream',
-    // 2026-08-25 Phase 2 — dragon → pig: 사주 카드와 chip 중복 해소 + 돼지꿈(재물꿈)이
-    //   꿈해몽의 한국적 아이콘이라 수호신도 돼지(亥)로 정렬.
-    zodiac: 'pig',
-    category: 'fortune',
-    image: 'pig',
-    tint: 'indigo',
-  },
-  {
     id: 'consult',
     title: '대화상담',
-    desc: '당장 답답할 때',
+    // 2026-08-25 — 당일권 → **질문 3회**(사용자 확정). 전달물=전 3개(ai_chat 3턴 묶음).
+    desc: '선생님께 질문 3회',
     price: '990원',
     priceKey: 'taste_dialogue_entry',
     href: '/dialogue',
@@ -277,11 +251,30 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     image: 'snake',
     tint: 'amber',
   },
-  // ── 진짜 무료 2종 (2026-08-25 사용자 지적 "띠운세가 노출이 안 된다") ──
-  //   2026-06-23 개편이 띠운세·별자리를 그리드에서 빼고 FREE 스트립·무료 허브로 옮겼는데,
-  //   FREE 스트립은 렌더 코드가 사라진 죽은 데이터였고 /free 허브도 홈 직링크가 없었다.
-  //   990원 전환(별자리·띠운세만 무료 유지) 후엔 홈 카드가 유일하게 성한 무료 진입점이라
-  //   카드로 복귀시킨다. 잠금(lockdown) 중엔 price '무료' 필터가 이 둘을 감춘다(의도).
+  // ── 무료 4종 (2026-08-25 사용자 확정: 간단운세·꿈해몽 무료 복귀 / 다음 줄 띠·별자리) ──
+  //   잠금(lockdown) 중엔 price '무료' 필터가 이 넷을 감춘다.
+  {
+    id: 'today',
+    title: '간단운세',
+    desc: '짧은 운세풀이',
+    price: '무료',
+    href: '/today-fortune?concern=general',
+    zodiac: 'rooster',
+    category: 'fortune',
+    image: 'rooster',
+    tint: 'pink',
+  },
+  {
+    id: 'dream',
+    title: '꿈해몽',
+    desc: '마음이 찜찜할 때',
+    price: '무료',
+    href: '/dream',
+    zodiac: 'pig',
+    category: 'fortune',
+    image: 'pig',
+    tint: 'indigo',
+  },
   {
     id: 'zodiac',
     title: '띠운세',
@@ -299,10 +292,11 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     desc: '12자리 오늘 메시지',
     price: '무료',
     href: '/star-sign',
-    // 서양 별자리라 12지신 수호신 대신 밤하늘 StarSignChip — chipKind 분기 재사용.
-    chipKind: 'star-sign',
-    zodiac: 'pig',
+    // 2026-08-25 — 미사용 수호신 중 원숭이(申): 윤도(천문 방위 나침반) 소지가
+    //   별자리(하늘 관측)와 가장 맞다(사용자 지시: 중복 없는 것 중 어울리는 이미지).
+    zodiac: 'monkey',
     category: 'fortune',
+    image: 'monkey',
     tint: 'sky',
   },
 ] as const;
@@ -350,9 +344,20 @@ export const GANGI_FREE_ACTIONS = isPaywallLockdown()
   ? ([] as typeof ALL_GANGI_FREE_ACTIONS[number][])
   : [...ALL_GANGI_FREE_ACTIONS];
 
-// 2026-08-25 전면 개편 — 무료 허브도 진짜 무료(띠운세·별자리)만.
-//   오늘운세·타로·꿈해몽은 990원 라이트 언락으로 전환돼 여기서 제외.
+// 2026-08-25 — 무료 4종(간단운세·꿈해몽·띠운세·별자리). 타로·대화상담만 990원 유료.
 const ALL_GANGI_FREE_HUB_ITEMS = [
+  {
+    href: '/today-fortune?concern=general',
+    zodiac: 'rooster',
+    title: '간단운세',
+    desc: '지금 한 줄로 보는 흐름',
+  },
+  {
+    href: '/dream',
+    zodiac: 'pig',
+    title: '꿈해몽',
+    desc: '꿈으로 보는 길흉',
+  },
   {
     href: '/zodiac',
     zodiac: 'horse',
@@ -361,7 +366,7 @@ const ALL_GANGI_FREE_HUB_ITEMS = [
   },
   {
     href: '/star-sign',
-    zodiac: 'pig',
+    zodiac: 'monkey',
     title: '별자리 운세',
     desc: '12자리 오늘 메시지',
   },

@@ -113,6 +113,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // 2026-08-25 — 간단운세·꿈해몽 무료 복귀(사용자 확정: 유료는 타로·대화상담만).
+  //   두 상품은 게이트가 없어져 결제해도 열리는 게 없다 — 구 링크·직접 URL 결제를 서버에서 차단
+  //   (돈 받고 전달물 없는 상태 방지, topic-product 교훈).
+  if (pkg.id === 'taste_today_basic' || pkg.id === 'taste_dream_search') {
+    const retiredFreeClient = await createClient();
+    await logPaymentFunnelEvent(retiredFreeClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      reason: 'retired_free_menu',
+    });
+    return NextResponse.json(
+      { ok: false, error: '이 메뉴는 무료로 이용할 수 있습니다. 결제 없이 이용해 주세요.' },
+      { status: 410 }
+    );
+  }
+
   // 2026-07-20 묶음(bundle_today_set) 판매 중단. 점수 언락을 3,300 으로 내리면서
   //   따로 사기 합계(6,600)가 묶음(9,900)보다 싸져 묶음이 오히려 손해가 됐다 → 단품 단일로 정리.
   //   ⚠️ 기존 구매자의 **열람**은 그대로다 — 여기서 막는 건 신규 결제뿐.

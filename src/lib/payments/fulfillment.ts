@@ -206,8 +206,26 @@ export async function fulfillPaymentOrder(input: {
           )
         : null;
 
+    // 2026-08-25 — 대화상담 질문 3회(taste_dialogue_entry): 전달물은 이용권이 아니라
+    //   **전 3개**(ai_chat 3턴 묶음=3전 고정 → 3전=질문 3회). 코인충전 중단
+    //   (COIN_TOPUP_ENABLED=false)과 별개의 상품 전달물이라 addCredits 를 직접 호출한다.
+    //   entitlement 를 만들지 않는 이유: 만들면 prepare 중복차단이 재구매(질문 추가)를 막는다.
+    //   ⚠️ 환불 시 전 회수는 credit_purchase 경로(revokeCreditPurchaseLots)로 처리해야 한다.
+    const isDialogueQuestionPack =
+      isTasteProductPackage(pkg) && pkg.tasteProductId === 'dialogue-entry';
+    if (isDialogueQuestionPack) {
+      await addCredits(claimed.userId, 3, 'purchase', {
+        orderId: claimed.orderId,
+        packageId: pkg.id,
+        paymentKey,
+      });
+      const updatedCredits = await getCredits(claimed.userId);
+      totalCredits =
+        (updatedCredits?.balance ?? 0) + (updatedCredits?.subscription_balance ?? 0);
+    }
+
     const productEntitlement =
-      isTasteProductPackage(pkg)
+      isTasteProductPackage(pkg) && !isDialogueQuestionPack
         ? await grantTasteProductEntitlement(claimed.userId, pkg.tasteProductId, {
             scopeKey: paymentScope?.scopeKey ?? null,
             orderId: claimed.orderId,
