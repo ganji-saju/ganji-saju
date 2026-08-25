@@ -83,11 +83,18 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
    서브페이지(AppPage) 최상위 단락 간격을 이 한 곳에서 강제 — 페이지별 space-y-* 를 덮는다
    (48px, sm+ 56px; 홈은 gangi-home-client 의 pt-* 가 담당). 채팅방은 대화 UI 라 제외.
    답답/과함 조정은 여기 두 값만 바꾸면 전 페이지에 적용된다. */
-.app-page.gangi-subpage:not(.gangi-chat-room-page) > :not([hidden]) ~ :not([hidden]) {
+/* :not() 목록에 script 등 비렌더 요소 필수 — zodiac/star-sign/dream-interpretation 은
+   AppPage 첫 자식이 JSON-LD <script> 라, 이를 세면 첫 가시 콘텐츠 위에 간격이 얹혀
+   상단이 페이지마다 벌어진다(2026-08-26 사용자 적발, /zodiac/pig). */
+.app-page.gangi-subpage:not(.gangi-chat-room-page)
+  > :not([hidden], script, style, link, template)
+  ~ :not([hidden], script, style, link, template) {
   margin-block-start: 3rem !important;
 }
 @media (min-width: 640px) {
-  .app-page.gangi-subpage:not(.gangi-chat-room-page) > :not([hidden]) ~ :not([hidden]) {
+  .app-page.gangi-subpage:not(.gangi-chat-room-page)
+    > :not([hidden], script, style, link, template)
+    ~ :not([hidden], script, style, link, template) {
     margin-block-start: 3.5rem !important;
   }
 }
