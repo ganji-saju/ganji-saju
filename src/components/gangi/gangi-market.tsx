@@ -207,7 +207,7 @@ export function GangiSeasonBanner({
             key={banner.id}
             href={banner.href}
             className={`relative block w-full shrink-0 snap-start overflow-hidden rounded-[22px] no-underline${
-              banner.image ? '' : ' p-5 text-white'
+              banner.image ? '' : ' p-4 text-white'
             }`}
             style={
               banner.image
@@ -220,7 +220,7 @@ export function GangiSeasonBanner({
                         ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
                         : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
                     color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
-                    minHeight: 160,
+                    minHeight: 128,
                   }
             }
             aria-label={banner.image ? banner.alt ?? banner.title : undefined}
@@ -269,7 +269,7 @@ export function GangiSeasonBanner({
               className="pointer-events-none absolute -top-3 -right-3 select-none"
               style={{
                 fontFamily: 'var(--font-han)',
-                fontSize: 161,
+                fontSize: 140,
                 fontWeight: 700,
                 lineHeight: 1,
                 opacity: 0.08,
@@ -283,7 +283,7 @@ export function GangiSeasonBanner({
               <p
                 className="m-0"
                 style={{
-                  fontSize: 16,
+                  fontSize: 14.5,
                   fontWeight: 800,
                   letterSpacing: '0.06em',
                   opacity: 0.85,
@@ -294,7 +294,7 @@ export function GangiSeasonBanner({
               <h2
                 className="m-0 mt-1.5"
                 style={{
-                  fontSize: 26,
+                  fontSize: 22.5,
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.35,
@@ -303,11 +303,11 @@ export function GangiSeasonBanner({
                 {banner.title}
               </h2>
               <p
-                className="m-0 mt-3"
+                className="m-0 mt-1.5"
                 style={{
-                  fontSize: 16.5,
+                  fontSize: 15,
                   opacity: 0.9,
-                  lineHeight: 1.62,
+                  lineHeight: 1.55,
                 }}
               >
                 {banner.description}
@@ -320,9 +320,9 @@ export function GangiSeasonBanner({
                       ? 'var(--app-pink-strong)'
                       : 'rgba(255,255,255,0.22)',
                   color: '#fff',
-                  fontSize: 15.5,
+                  fontSize: 14.5,
                   fontWeight: 800,
-                  padding: '9px 14px',
+                  padding: '7px 12px',
                 }}
               >
                 {banner.cta}
