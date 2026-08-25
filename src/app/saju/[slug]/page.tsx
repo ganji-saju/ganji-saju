@@ -25,7 +25,6 @@ import { MyeongsikSection } from '@/features/saju-detail/sections/myeongsik-sect
 import { NatureSection } from '@/features/saju-detail/sections/nature-section';
 import { ElementsSection } from '@/features/saju-detail/sections/elements-section';
 import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section';
-import { ComprehensiveCtaLayer } from '@/components/saju/comprehensive-cta-layer';
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
@@ -510,14 +509,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <SajuResultViewTracker slug={slug} />
-        {!scoreUnlocked ? (
-          <ComprehensiveCtaLayer
-            checkoutHref={`/membership/checkout?product=bundle_comprehensive&slug=${encodeURIComponent(slug)}&from=saju-sticky`}
-            priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
-            compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
-            watchTargetId="comprehensive-toc"
-          />
-        ) : null}
+
 
         <div className="space-y-5 sm:space-y-6">
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
@@ -717,9 +709,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             ) : null}
 
             {/* 결제 동선(2026-08-25 확정) — 미구매자에겐 페이지 전체에서 가격 오퍼는
-                9,900 종합 리포트 **하나**: 중간 목차(설득) + 아래 스티키 레이어(목차를
-                지나쳐 무료 콘텐츠를 다 읽은 시점의 두 번째 접점, 같은 상품). 상세(평생
-                리포트 49,000)는 **구매자에게만** 다음 단계로 — 한 화면에 가격 하나 원칙. */}
+                9,900 종합 리포트 **하나**: 중간 목차(설득) + 하단 고정 CTA(기존
+                ScoreLockGate 스티키 바 '17항목 전부 열기'가 담당 — 별도 레이어를 새로
+                만들었다가 중복이라 제거했다). 상세(평생 리포트 49,000)는 **구매자에게만**
+                다음 단계로 — 한 화면에 가격 하나 원칙. */}
             {scoreUnlocked ? (
               <article
                 className="rounded-[18px] p-5 text-white"
