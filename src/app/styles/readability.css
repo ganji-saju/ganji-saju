@@ -668,3 +668,16 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 .gangi-home {
   background: transparent !important;
 }
+
+/* 서브페이지 셸/컬럼 — subpages.css 의 흰색 강제(#fff !important)를 한지 톤으로 되돌린다
+   (.app-shell 한지 그라데이션과 동일값). 컬럼(.gangi-subpage)은 투명. */
+.gangi-subpage-shell {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(179, 55, 42, 0.05), transparent 34%),
+    linear-gradient(180deg, #fbf7ee 0%, #f5efe3 52%, #faf6ec 100%) !important;
+}
+
+.gangi-subpage,
+.app-shell .app-page.gangi-subpage {
+  background: transparent !important;
+}
