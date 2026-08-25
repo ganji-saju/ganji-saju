@@ -1,8 +1,10 @@
 /* Dalbit Life app-style reset: keep every page on the white/black/pink system. */
 .app-shell {
+  /* 2026-08-25 전면 개편 — 핑크 앰비언트(구 브랜드 잔재) → 한지 톤(B안, 도령식 종이 배경).
+     상단에 인주 기운만 아주 옅게. */
   background:
-    radial-gradient(circle at 50% -10%, rgba(255, 79, 154, 0.09), transparent 34%),
-    linear-gradient(180deg, #ffffff 0%, #fff8fc 52%, #ffffff 100%) !important;
+    radial-gradient(circle at 50% -10%, rgba(179, 55, 42, 0.05), transparent 34%),
+    linear-gradient(180deg, #fbf7ee 0%, #f5efe3 52%, #faf6ec 100%) !important;
   color: var(--app-ink) !important;
 }
 
@@ -30,8 +32,9 @@
   inset: auto !important;
   top: 0 !important;
   display: block !important;
-  border-bottom: 1px solid rgba(17, 17, 20, 0.07) !important;
-  background: rgba(255, 255, 255, 0.97) !important;
+  border-bottom: 1px solid rgba(28, 26, 23, 0.08) !important;
+  /* 2026-08-25 전면 개편 — 헤더도 한지 톤(B안): 흰 바가 종이 배경 위에서 붕 뜨던 것. */
+  background: rgba(251, 247, 238, 0.96) !important;
   color: var(--app-ink) !important;
   box-shadow: 0 10px 24px rgba(17, 17, 20, 0.07) !important;
   backdrop-filter: blur(18px);

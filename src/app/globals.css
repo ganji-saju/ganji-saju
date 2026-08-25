@@ -15,12 +15,13 @@
 @import "./styles/performance.css";
 @import "./styles/readability.css";
 
-/* 2026-05-18: 푸터 배경 완전 흑색 강제 — 사용자 여러 번 요청.
-   inline style 의 #000000 + 본 !important override 이중 강제. */
+/* 2026-08-25 전면 개편 — 푸터 배경 흑색 → 한지 톤(B안, 도령 벤치마크 압축 푸터와 세트).
+   (구 2026-05-18 "완전 흑색" 지시는 구 디자인 시절 — 개편 B안에서 대체됐다.) */
 footer.site-footer-redesign {
-  background: #000000 !important;
-  background-color: #000000 !important;
+  background: #efe8d8 !important;
+  background-color: #efe8d8 !important;
   background-image: none !important;
+  border-top: 1px solid rgba(28, 26, 23, 0.1);
   /* 2026-05-24: 푸터가 회색으로 보이던 원인 — 배경이 아니라 body/main 의 fixed
      핑크 그라데이션 앰비언트 가상요소(::before/::after, z-index:0)가 in-flow 푸터
      위에 페인트되어 순검정(#000)을 ~rgb(89,89,89) 로 덮던 것. 푸터를 자체 stacking

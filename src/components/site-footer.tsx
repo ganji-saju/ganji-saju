@@ -1,21 +1,20 @@
-// Redesign 2026-05-13 (Claude Design / 가이드 §4): 다크 풀 푸터.
-// 모든 라우팅(`href`) 은 사이트 기존 라우트만 사용 — 신규 URL 0건.
-// 회사 정보(사업자번호 / 주소 / 대표자) 및 면책 문구는 법적 고지 — 절대 수정 X.
-// 모바일은 4 column nav 를 accordion (옵션 D) 으로 collapse 가능.
+// 2026-08-25 전면 개편 Phase 2 — 푸터 압축(도령 벤치마크, 사용자 지시 "푸터 내용이 너무 많다").
+//   구 다크 풀 푸터(브랜드 소개문 + 4칼럼 내비 20링크 + 아코디언)를 걷어내고
+//   도령 수준으로: 브랜드 1줄 → 법정 표기 → 면책 → 필수 링크 1줄 → ©.
+//   · 4칼럼 내비 제거 근거: 헤더 메가내브 + 모바일 dock 과 전량 중복이었다.
+//   · 회사 정보(사업자번호/주소/대표자)와 면책 문구는 **법적 고지 — 절대 수정 X**
+//     (전자상거래법 표시 의무). 압축은 표현·구조만, 항목은 전부 유지한다.
+//   · 배경: 흑색 → 한지 톤(B안). globals.css 의 footer override 와 한 몸으로 움직인다.
+//   · className "site-footer-redesign" 은 유지 — app-shell.css 의 dock-clearance
+//     :has() 셀렉터가 이 클래스를 조준한다(바꾸면 모바일 하단 여백 회귀).
 //
-// 2026-05-18 Phase 3-A: hardcoded 사업자 정보 → BUSINESS_INFO env 기반.
-//   통신판매업 신고번호 + CS 이메일/운영시간 + 개인정보보호책임자 신규 노출.
-//   production 빌드 시 누락 env 검출 → throw (src/lib/business-info.ts 가드).
+// 2026-05-18 Phase 3-A: 사업자 정보는 BUSINESS_INFO env 기반(누락 시 빌드 가드).
 
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { BUSINESS_INFO } from '@/lib/business-info';
-import { keepVisible } from '@/lib/paywall-lockdown';
-// 2026-07-06 — 동의 배너 재노출(재선택·철회 경로). PIPA: 철회는 동의만큼 쉬워야 한다.
+// 동의 배너 재노출(재선택·철회 경로). PIPA: 철회는 동의만큼 쉬워야 한다.
 import { openConsentBanner } from '@/components/analytics/analytics-consent';
 
 interface CompanyItem {
@@ -26,8 +25,8 @@ interface CompanyItem {
 
 function buildCompanyItems(): CompanyItem[] {
   const items: CompanyItem[] = [
-    { label: '회사명', value: BUSINESS_INFO.companyName },
-    { label: '대표자', value: BUSINESS_INFO.ceoName },
+    { label: '상호', value: BUSINESS_INFO.companyName },
+    { label: '대표', value: BUSINESS_INFO.ceoName },
     { label: '사업자등록번호', value: BUSINESS_INFO.businessRegistrationNumber },
     { label: '통신판매업', value: BUSINESS_INFO.mailOrderRegistrationNumber },
     { label: '주소', value: BUSINESS_INFO.address },
@@ -61,262 +60,61 @@ function buildCompanyItems(): CompanyItem[] {
   return items.filter((item) => item.value);
 }
 
-const ALL_FOOTER_NAV: { title: string; items: ReadonlyArray<readonly [string, string]> }[] = [
-  {
-    title: '운세',
-    items: [
-      ['오늘운세', '/today-fortune'],
-      ['타로 세 장', '/tarot/daily'],
-      ['띠운세', '/zodiac'],
-      ['별자리', '/star-sign'],
-      ['꿈해몽', '/dream'],
-    ],
-  },
-  {
-    title: '사주',
-    items: [
-      ['내 사주', '/saju/new'],
-      ['궁합', '/compatibility/input'],
-      ['올해 흐름', '/daewoon'],
-      ['택일', '/taekil'],
-      ['대화 상담', '/dialogue'],
-    ],
-  },
-  {
-    title: '계정',
-    items: [
-      ['로그인', '/login'],
-      ['MY', '/my'],
-      ['보관함', '/my/results'],
-      ['결제내역', '/my/billing'],
-      ['멤버십', '/membership'],
-    ],
-  },
-  {
-    // 2026-05-18: 9 정책 줄줄이 → 통합 hub (/legal) 한 줄.
-    title: '정책',
-    items: [
-      ['정책 모아보기', '/legal'],
-      ['가격 안내', '/pricing'],
-    ],
-  },
+/** 필수 링크 한 줄 — 내비가 아니라 법정/정책 접근 경로만 남긴다. */
+const ESSENTIAL_LINKS: ReadonlyArray<readonly [string, string]> = [
+  ['이용약관', '/terms'],
+  ['개인정보처리방침', '/privacy'],
+  ['정책 모아보기', '/legal'],
+  ['가격 안내', '/pricing'],
 ];
 
-// 2026-08-11 전면 유료화 잠금 — 무료 링크 제거. 링크가 하나도 안 남는 칼럼('운세')은 통째로 뺀다.
-const FOOTER_NAV = ALL_FOOTER_NAV.map((col) => ({
-  ...col,
-  items: keepVisible(col.items, ([, href]) => href),
-})).filter((col) => col.items.length > 0);
-
-function buildContactNavItem(): readonly [string, string] | null {
-  if (BUSINESS_INFO.phone) return [`☎ ${BUSINESS_INFO.phone}`, `tel:${BUSINESS_INFO.phone}`];
-  if (BUSINESS_INFO.email) return [`✉ ${BUSINESS_INFO.email}`, `mailto:${BUSINESS_INFO.email}`];
-  return null;
-}
-
-const LINK_STYLE: React.CSSProperties = {
-  color: 'rgba(255,255,255,0.62)',
-  textDecoration: 'none',
-  display: 'block',
-  padding: '4px 0',
-};
-
-function NavLink({ label, href }: { label: string; href: string }) {
-  if (href.startsWith('tel:') || href.startsWith('mailto:')) {
-    return (
-      <a href={href} style={LINK_STYLE}>
-        {label}
-      </a>
-    );
-  }
-  return (
-    <Link href={href} style={LINK_STYLE}>
-      {label}
-    </Link>
-  );
-}
+const MUTED = 'rgba(28, 26, 23, 0.6)';
+const FAINT = 'rgba(28, 26, 23, 0.48)';
 
 export default function SiteFooter() {
-  // 모바일 accordion: 한 번에 한 column 만 열림. 기본은 모두 닫힘 (사용자 의도: 짧게)
-  const [openSection, setOpenSection] = useState<string | null>(null);
-
   const companyItems = buildCompanyItems();
-  const contactNavItem = buildContactNavItem();
-  const navWithContact = FOOTER_NAV.map((col) =>
-    col.title === '고객센터' && contactNavItem
-      ? { ...col, items: [contactNavItem, ...col.items] as ReadonlyArray<readonly [string, string]> }
-      : col
-  );
 
   return (
     <footer
       className="site-footer-redesign mt-auto"
       aria-label="회사 및 서비스 안내"
       style={{
-        // 사용자 피드백 (2026-05-14, 2026-05-18 재요청): 완전한 흑색 #000000.
-        // shorthand + longhand 모두 명시 + globals.css 의 !important override 로 강제.
-        background: '#000000',
-        backgroundColor: '#000000',
-        backgroundImage: 'none',
-        color: 'rgba(255,255,255,0.72)',
-        padding: '48px 24px 28px',
-        fontSize: 15,
-        lineHeight: 1.7,
+        color: MUTED,
+        padding: '36px 24px 28px',
+        fontSize: 14,
+        lineHeight: 1.65,
       }}
     >
-      <div className="mx-auto" style={{ maxWidth: 1180 }}>
-        {/* 사용자 피드백 (2026-05-13): column gap 36px → 24/28px 로 축소 */}
-        <div className="grid gap-6 lg:gap-7 sm:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
-          {/* 브랜드 lockup */}
-          <div>
-            <div className="mb-4 flex items-center gap-3">
-              <span
-                aria-hidden="true"
-                className="grid h-9 w-9 place-items-center rounded-[10px] text-white"
-                style={{
-                  background:
-                    'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-                  fontFamily: 'var(--font-han)',
-                  fontWeight: 700,
-                  fontSize: 23,
-                  letterSpacing: '-0.02em',
-                  boxShadow: '0 4px 12px rgba(216,27,114,0.32)',
-                }}
-              >
-                干
-              </span>
-              <div className="leading-tight">
-                <div
-                  style={{
-                    color: 'var(--app-pink)',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  간지사주
-                </div>
-                <div
-                  style={{
-                    fontSize: 25.3,
-                    fontWeight: 800,
-                    letterSpacing: '-0.03em',
-                    color: '#fff',
-                  }}
-                >
-                  간지사주
-                </div>
-              </div>
-            </div>
-            <p style={{ maxWidth: 280, color: 'rgba(255,255,255,0.62)' }}>
-              오늘운세, 사주, 타로, 궁합을 쉽고 빠르게 보는 운세 서비스입니다.
-            </p>
-          </div>
-
-          {/* 4 column nav — desktop: 항상 펼침 / mobile: accordion */}
-          {navWithContact.map((col) => {
-            const isOpen = openSection === col.title;
-            return (
-              <div key={col.title} className="border-b border-white/8 sm:border-b-0">
-                {/* Mobile: 클릭 가능한 헤더 (accordion trigger) */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setOpenSection((prev) => (prev === col.title ? null : col.title))
-                  }
-                  aria-expanded={isOpen}
-                  aria-controls={`footer-nav-${col.title}`}
-                  className="flex w-full items-center justify-between py-3 text-left sm:hidden"
-                >
-                  <h4
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 800,
-                      color: '#fff',
-                      margin: 0,
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {col.title}
-                  </h4>
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 transition-transform',
-                      isOpen && 'rotate-180'
-                    )}
-                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                    aria-hidden="true"
-                  />
-                </button>
-
-                {/* Desktop: 정적 헤더 */}
-                <h4
-                className="hidden sm:block"
-                style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: '#fff',
-                    margin: '0 0 14px',
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {col.title}
-                </h4>
-
-                {/* nav 컨텐츠 — desktop 항상 보임 / mobile 은 isOpen 시만 */}
-                <nav
-                  id={`footer-nav-${col.title}`}
-                  aria-label={col.title}
-                  className={cn(
-                    'sm:block',
-                    isOpen ? 'block pb-3' : 'hidden'
-                  )}
-                >
-                  {col.items.map(([label, href]) => (
-                    <NavLink key={label} label={label} href={href} />
-                  ))}
-                </nav>
-              </div>
-            );
-          })}
+      <div className="mx-auto" style={{ maxWidth: 560 }}>
+        {/* 브랜드 — 로고 칩 + 이름 한 줄. 소개 문단·중복 표기는 제거(도령식). */}
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="grid h-7 w-7 place-items-center rounded-[8px] text-white"
+            style={{
+              background: 'var(--app-pink)',
+              fontFamily: 'var(--font-han)',
+              fontWeight: 700,
+              fontSize: 17,
+            }}
+          >
+            干
+          </span>
+          <span style={{ color: 'var(--app-ink)', fontSize: 16, fontWeight: 800 }}>
+            간지사주
+          </span>
         </div>
 
-        {/* 회사 정보 — 법적 고지.
-            2026-07-19 레이아웃 수정(표시 문구는 무수정): 좁은 화면(≤360px)에서 이 행들이
-            가로로 19px 넘쳤다. dt 가 minWidth 106 + nowrap 인데 dd 에 min-width:0 이 없어
-            flex 아이템이 콘텐츠 폭 아래로 줄지 못한 것(flex 기본 min-width:auto).
-            그 넘침을 가리려고 넣었던 `html, body { overflow-x: hidden }` 이 모바일 세로
-            터치 스크롤을 통째로 죽이고 있었다 — 이 오버플로가 그 버그의 근본 원인이다. */}
-        <dl
-          className="mt-6 grid gap-x-6 gap-y-2 pt-5 sm:grid-cols-2 lg:grid-cols-3"
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            fontSize: 15,
-          }}
-        >
+        {/* 회사 정보 — 법적 고지(항목 전부 유지). 한 칼럼 라벨/값 행. */}
+        <dl className="m-0 mt-5 grid gap-y-1">
           {companyItems.map((item) => (
-            <div key={item.label} className="flex min-w-0 gap-2">
-              <dt
-                style={{
-                  color: 'rgba(255,255,255,0.46)',
-                  minWidth: 106,
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                }}
-              >
+            <div key={item.label} className="flex min-w-0 gap-2.5">
+              <dt style={{ color: FAINT, minWidth: 118, whiteSpace: 'nowrap' }}>
                 {item.label}
               </dt>
-              <dd
-                className="m-0 min-w-0"
-                style={{ color: 'rgba(255,255,255,0.7)', overflowWrap: 'anywhere' }}
-              >
+              <dd className="m-0 min-w-0" style={{ overflowWrap: 'anywhere' }}>
                 {item.href ? (
-                  <a
-                    href={item.href}
-                    style={{ color: 'inherit', textDecoration: 'none' }}
-                  >
+                  <a href={item.href} style={{ color: 'inherit', textDecoration: 'none' }}>
                     {item.value}
                   </a>
                 ) : (
@@ -327,16 +125,8 @@ export default function SiteFooter() {
           ))}
         </dl>
 
-        {/* 면책 */}
-        <div
-          className="mt-6 grid gap-2 pt-6"
-          style={{
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.46)',
-            fontSize: 15,
-            lineHeight: 1.7,
-          }}
-        >
+        {/* 면책 — 법적 고지 문구, 무수정 유지. */}
+        <div className="mt-5 grid gap-1.5" style={{ color: FAINT, fontSize: 13.2 }}>
           <p className="m-0">
             결제, 환불, 보관함, 계정 관련 문의는 위 연락처로 접수해 주세요. 유료
             풀이와 전 이용 내역은 로그인 계정별로 확인됩니다.
@@ -348,26 +138,42 @@ export default function SiteFooter() {
           </p>
         </div>
 
-        {/* Bottom */}
-        <div
-          className="mt-6 flex flex-wrap items-center justify-between gap-2"
-          style={{ color: 'rgba(255,255,255,0.42)', fontSize: 15 }}
+        {/* 필수 링크 + 쿠키 설정 — 한 줄. */}
+        <nav
+          aria-label="약관 및 정책"
+          className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-4"
+          style={{ borderTop: '1px solid rgba(28, 26, 23, 0.12)' }}
         >
-          <span>
-            © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
-          </span>
-          <span className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={openConsentBanner}
-              className="underline underline-offset-2 hover:text-white"
-              style={{ color: 'inherit', background: 'none', border: 0, padding: 0, cursor: 'pointer', fontSize: 'inherit' }}
+          {ESSENTIAL_LINKS.map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className="hover:underline"
+              style={{ color: MUTED, textDecoration: 'none' }}
             >
-              쿠키 설정
-            </button>
-            서비스명 간지사주
-          </span>
-        </div>
+              {label}
+            </Link>
+          ))}
+          <button
+            type="button"
+            onClick={openConsentBanner}
+            className="hover:underline"
+            style={{
+              color: MUTED,
+              background: 'none',
+              border: 0,
+              padding: 0,
+              cursor: 'pointer',
+              fontSize: 'inherit',
+            }}
+          >
+            쿠키 설정
+          </button>
+        </nav>
+
+        <p className="m-0 mt-4" style={{ color: FAINT, fontSize: 13.2 }}>
+          © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
+        </p>
       </div>
     </footer>
   );
