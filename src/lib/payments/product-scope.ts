@@ -202,7 +202,16 @@ export async function resolvePaymentProductScope({
   const productId = getPaidProductIdFromPackage(pkg);
   if (!productId) return null;
 
-  if (productId === 'love-question' || productId === 'money-pattern' || productId === 'work-flow') {
+  if (
+    productId === 'love-question' ||
+    productId === 'money-pattern' ||
+    productId === 'work-flow' ||
+    // 2026-08-25 — 990원 라이트 언락 4종: 계정 단위 global 영구 언락.
+    productId === 'today-basic' ||
+    productId === 'tarot-daily' ||
+    productId === 'dream-search' ||
+    productId === 'dialogue-entry'
+  ) {
     return {
       productId,
       scopeKey: null,
@@ -374,6 +383,11 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
+  // 2026-08-25 — 990원 라이트 언락: 결제 후 해당 메뉴로 복귀.
+  if (productId === 'today-basic') return '/today-fortune?concern=general';
+  if (productId === 'tarot-daily') return '/tarot/daily';
+  if (productId === 'dream-search') return '/dream';
+  if (productId === 'dialogue-entry') return '/dialogue';
   if (productId === 'compat-reading') return '/compatibility/input';
   // 2026-07-19 — 주제 단품은 today-detail 화면을 해당 주제로 연다(재물=wealth, 일=career).
   //   기존 `/saju/new?topic=...` 은 **입력폼**이고 그 폼은 topic 을 읽지도 않아

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { guardianForZodiac, guardianFromYearBranch } from './guardians';
-import { ZODIAC, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { ZODIAC, type ZodiacKey } from '@/components/gangi/zodiac-data';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 

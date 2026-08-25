@@ -15,6 +15,7 @@ import {
   normalizeDialogueExpertId,
 } from '@/lib/dialogue-experts';
 import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 
 export const metadata: Metadata = {
   title: '대화',
@@ -36,6 +37,8 @@ export default async function DialoguePage({
 }) {
   // 전면 유료화 잠금 — 무료 1문답 진입 차단(결제 이력 있으면 통과).
   await guardLockedFreeEntry();
+  // 2026-08-25 — 990원 라이트 언락(대화상담).
+  await guardMenuPassEntry('dialogue', 'dialogue-hub');
 
   const params = await searchParams;
   const selectedExpertId = normalizeDialogueExpertId(params.expert) ?? 'dragon';

@@ -42,10 +42,12 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
   {
     label: '운세',
     c1: {
-      heading: '무료 운세',
+      // 2026-08-25 전면 개편 — 오늘운세·타로가 990원 라이트 언락으로 전환.
+      //   FREE 배지는 진짜 무료(띠운세·별자리)에만 남긴다(사용자 확정).
+      heading: '운세',
       items: [
-        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: 'FREE' },
-        { label: '타로 세 장', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: 'FREE' },
+        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: '990원', tagPriceKey: 'taste_today_basic' },
+        { label: '타로 세 장', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: '990원', tagPriceKey: 'taste_tarot_daily' },
         { label: '띠운세', desc: '내 띠 오늘 흐름', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
         { label: '별자리', desc: '12자리 메시지', href: '/star-sign', zodiac: 'pig', tag: 'FREE' },
       ],
@@ -53,7 +55,7 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c2: {
       heading: '인기 운세',
       items: [
-        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream' },
+        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream', tag: '990원', tagPriceKey: 'taste_dream_search' },
         { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat' },
         { label: '좋은 날', desc: '큰 결정 D-day', href: '/taekil' },
       ],

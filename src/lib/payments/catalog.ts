@@ -20,7 +20,14 @@ export type TasteProductId =
   //   per-factor(score-factor) 모델 통합. reading scope(reading:{readingKey})로 grant.
   | 'score-total'
   // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.
-  | 'compat-reading';
+  | 'compat-reading'
+  // 2026-08-25 전면 개편 — 구 무료 메뉴 4종의 990원 라이트 언락(계정 단위 global).
+  //   별자리·띠운세만 무료로 남긴다(사용자 확정). scope 는 love-question 과 동일한
+  //   global 영구 언락 — 당일권/회당 과금이 필요해지면 product-scope 에 day scope 승격.
+  | 'today-basic'
+  | 'tarot-daily'
+  | 'dream-search'
+  | 'dialogue-entry';
 
 // 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
 // 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
@@ -96,6 +103,39 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'today-detail',
     requiresSlug: true,
     compareAt: 9900,
+  },
+  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). global 영구 언락.
+  {
+    id: 'taste_today_basic',
+    name: '간단운세',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'today-basic',
+  },
+  {
+    id: 'taste_tarot_daily',
+    name: '타로 세 장',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'tarot-daily',
+  },
+  {
+    id: 'taste_dream_search',
+    name: '꿈해몽',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'dream-search',
+  },
+  {
+    id: 'taste_dialogue_entry',
+    name: '대화상담',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'dialogue-entry',
   },
   {
     id: 'taste_love_question',
@@ -260,6 +300,10 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'score-factor': 'taste_score_factor',
   'score-total': 'taste_score_total',
   'compat-reading': 'taste_compat_reading',
+  'today-basic': 'taste_today_basic',
+  'tarot-daily': 'taste_tarot_daily',
+  'dream-search': 'taste_dream_search',
+  'dialogue-entry': 'taste_dialogue_entry',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -272,7 +316,11 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'year-core' ||
     value === 'score-factor' ||
     value === 'score-total' ||
-    value === 'compat-reading'
+    value === 'compat-reading' ||
+    value === 'today-basic' ||
+    value === 'tarot-daily' ||
+    value === 'dream-search' ||
+    value === 'dialogue-entry'
   );
 }
 

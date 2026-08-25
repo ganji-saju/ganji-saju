@@ -65,6 +65,11 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'score-factor': 'dragon',
   'score-total': 'dragon',
   'compat-reading': 'pig',
+  // 2026-08-25 — 990원 라이트 언락 4종(홈 카드 zodiac 와 동일 키).
+  'today-basic': 'rooster',
+  'tarot-daily': 'rabbit',
+  'dream-search': 'pig',
+  'dialogue-entry': 'snake',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -82,6 +87,39 @@ type CheckoutGuide = {
 };
 
 const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
+  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). 계정 단위 1회 결제.
+  'today-basic': {
+    title: '간단운세',
+    reassurance:
+      '오늘의 흐름을 짧게 짚는 간단운세 이용권입니다. 한 번 결제하면 계정에 남아 다시 결제하지 않습니다.',
+    nextRange: '생년월일 기준 오늘의 흐름 요약이 열립니다.',
+    opens: ['간단운세 이용', '이미 구매한 계정 재이용'],
+    notices: ['이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'tarot-daily': {
+    title: '타로 세 장',
+    reassurance:
+      '세 장의 카드로 지금 흐름을 보는 타로 이용권입니다. 한 번 결제하면 계정에 남아 다시 결제하지 않습니다.',
+    nextRange: '카드 세 장 선택과 풀이가 열립니다.',
+    opens: ['타로 세 장 이용', '이미 구매한 계정 재이용'],
+    notices: ['이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'dream-search': {
+    title: '꿈해몽',
+    reassurance:
+      '꿈 상징 검색과 풀이를 여는 꿈해몽 이용권입니다. 한 번 결제하면 계정에 남아 다시 결제하지 않습니다.',
+    nextRange: '단어별 꿈풀이 검색과 상황별 해석이 열립니다.',
+    opens: ['꿈해몽 검색·풀이 이용', '이미 구매한 계정 재이용'],
+    notices: ['이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'dialogue-entry': {
+    title: '대화상담',
+    reassurance:
+      '선생님과의 대화상담 입장을 여는 이용권입니다. 한 번 결제하면 계정에 남아 다시 결제하지 않습니다.',
+    nextRange: '대화방 입장이 열립니다. 대화 진행에 따른 전 차감은 별도입니다.',
+    opens: ['대화상담 입장', '이미 구매한 계정 재이용'],
+    notices: ['이용권은 로그인 계정 단위로 연결됩니다.', '긴 대화는 전(재화) 차감이 별도로 안내됩니다.'],
+  },
   'today-detail': {
     title: '오늘 자세히 보기',
     reassurance:

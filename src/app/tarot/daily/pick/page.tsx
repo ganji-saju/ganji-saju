@@ -1,6 +1,7 @@
 // Redesign 2026-05-17 — design system component (GangiIntro / GangiPageHeader) 기반
 // 타로 카드 픽 페이지. UI 가 design system component 안에 있어 시각 일관 — sibling
 // /tarot/daily / /tarot 와 통일.
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -33,6 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarotPickPage({ searchParams }: Props) {
+  // 2026-08-25 — 990원 라이트 언락(타로). 멤버십·이용권 없으면 체크아웃으로.
+  await guardMenuPassEntry('tarot', 'tarot-pick');
   const { question } = await searchParams;
   const currentQuestion = normalizeQuestion(question);
 

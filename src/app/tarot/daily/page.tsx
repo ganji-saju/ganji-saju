@@ -1,6 +1,7 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenTarot):
 // 타로 진입 화면 — 다크 카드 stage + 질문 list + 직접 입력 + 무료 안내.
 // 라우팅·이벤트 무수정.
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -20,6 +21,8 @@ export const metadata: Metadata = {
 const CARD_FAN_INDICES = [0, 1, 2, 3, 4] as const;
 
 export default async function DailyTarotPage() {
+  // 2026-08-25 — 990원 라이트 언락(타로). 멤버십·이용권 없으면 체크아웃으로.
+  await guardMenuPassEntry('tarot', 'tarot-daily');
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">

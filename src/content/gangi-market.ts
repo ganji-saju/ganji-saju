@@ -230,7 +230,9 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'today',
     title: '간단운세',
     desc: '짧은 운세풀이',
-    price: '무료',
+    // 2026-08-25 전면 개편 — 무료 4종 → 990원 라이트 언락(별자리·띠운세만 무료 유지).
+    price: '990원',
+    priceKey: 'taste_today_basic',
     href: '/today-fortune?concern=general',
     zodiac: 'rooster',
     category: 'fortune',
@@ -241,7 +243,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'tarot',
     title: '타로',
     desc: '지금 급할 때',
-    price: '무료',
+    price: '990원',
+    priceKey: 'taste_tarot_daily',
     href: '/tarot/daily',
     zodiac: 'rabbit',
     category: 'fortune',
@@ -252,7 +255,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'dream',
     title: '꿈해몽',
     desc: '마음이 찜찜할 때',
-    price: '무료',
+    price: '990원',
+    priceKey: 'taste_dream_search',
     href: '/dream',
     // 2026-08-25 Phase 2 — dragon → pig: 사주 카드와 chip 중복 해소 + 돼지꿈(재물꿈)이
     //   꿈해몽의 한국적 아이콘이라 수호신도 돼지(亥)로 정렬.
@@ -265,7 +269,8 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     id: 'consult',
     title: '대화상담',
     desc: '당장 답답할 때',
-    price: '무료',
+    price: '990원',
+    priceKey: 'taste_dialogue_entry',
     href: '/dialogue',
     zodiac: 'snake',
     category: 'consult',
@@ -286,24 +291,26 @@ export const GANGI_HOME_CARDS: readonly GangiServiceCard[] = keepVisible(
   (card) => card.href
 );
 
+// 2026-08-25 전면 개편 — 오늘운세·타로가 990원 유료로 전환되며 FREE 스트립은
+//   진짜 무료로 남는 둘(띠운세·별자리)만 노출한다(사용자 확정).
 const ALL_GANGI_FREE_ACTIONS = [
   {
-    id: 'today',
-    href: '/today-fortune?concern=general',
+    id: 'zodiac',
+    href: '/zodiac',
     label: 'FREE',
-    title: '오늘운세',
-    desc: '지금 바로 한 줄',
+    title: '띠운세',
+    desc: '내 띠 오늘 흐름',
     mark: 'sun',
-    zodiac: 'rooster',
+    zodiac: 'horse',
   },
   {
-    id: 'tarot',
-    href: '/tarot/daily',
+    id: 'star-sign',
+    href: '/star-sign',
     label: 'FREE',
-    title: '타로 세 장',
-    desc: '마음이 시키는 카드',
+    title: '별자리 운세',
+    desc: '12자리 오늘 메시지',
     mark: 'card',
-    zodiac: 'rabbit',
+    zodiac: 'pig',
   },
 ] as const;
 
@@ -315,19 +322,9 @@ export const GANGI_FREE_ACTIONS = isPaywallLockdown()
   ? ([] as typeof ALL_GANGI_FREE_ACTIONS[number][])
   : [...ALL_GANGI_FREE_ACTIONS];
 
+// 2026-08-25 전면 개편 — 무료 허브도 진짜 무료(띠운세·별자리)만.
+//   오늘운세·타로·꿈해몽은 990원 라이트 언락으로 전환돼 여기서 제외.
 const ALL_GANGI_FREE_HUB_ITEMS = [
-  {
-    href: '/today-fortune?concern=general',
-    zodiac: 'rooster',
-    title: '오늘운세',
-    desc: '지금 한 줄로 보는 흐름',
-  },
-  {
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
-    title: '타로 세 장',
-    desc: '마음이 시키는 카드',
-  },
   {
     href: '/zodiac',
     zodiac: 'horse',
@@ -335,11 +332,10 @@ const ALL_GANGI_FREE_HUB_ITEMS = [
     desc: '내 띠 오늘 흐름',
   },
   {
-    // 2026-05-15 — 무료 hub 에서 검색 작동하는 /dream 으로.
-    href: '/dream',
-    zodiac: 'dragon',
-    title: '꿈해몽',
-    desc: '꿈으로 보는 길흉',
+    href: '/star-sign',
+    zodiac: 'pig',
+    title: '별자리 운세',
+    desc: '12자리 오늘 메시지',
   },
 ] as const;
 

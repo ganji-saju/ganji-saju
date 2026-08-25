@@ -1,6 +1,7 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenTarot §3):
 // 카드 + 메타 side-by-side hero · 조언 카드 · 풀이 stack · 액션 row.
 // 라우팅·데이터·이벤트 무수정.
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Bookmark, RotateCcw } from 'lucide-react';
@@ -44,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarotResultPage({ searchParams }: Props) {
+  // 2026-08-25 — 990원 라이트 언락(타로). 멤버십·이용권 없으면 체크아웃으로.
+  await guardMenuPassEntry('tarot', 'tarot-result');
   const { question, cardId, orientation, shared } = await searchParams;
   const profile = await getOptionalSignedInProfile();
   const readingSlug = buildProfileReadingSlug(profile);

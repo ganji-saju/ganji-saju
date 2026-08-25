@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { TodayFortuneResultClient } from '@/features/today-fortune/today-fortune-result-client';
 import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import { AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -32,6 +33,8 @@ export default async function TodayFortuneResultPage({
   // 전면 유료화 잠금 — 무료 요약 결과 차단(결제 이력 있으면 통과).
   //   ⚠️ 위 `paid=today-detail` 복귀 리다이렉트 **뒤**에 있어야 한다.
   await guardLockedFreeEntry();
+  // 2026-08-25 — 990원 라이트 언락(간단운세).
+  await guardMenuPassEntry('today', 'today-fortune-result');
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">

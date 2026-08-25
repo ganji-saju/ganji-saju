@@ -6,7 +6,7 @@
 //   입춘 경계(양력 2월 초 출생의 전년도 띠)를 엔진이 이미 정확히 처리하므로
 //   여기서 달력을 다시 구현하지 않는다 — 지지 한자 → ZodiacKey 매핑이 전부다.
 
-import { ZODIAC, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { ZODIAC, type ZodiacKey } from '@/components/gangi/zodiac-data';
 
 export interface GuardianProfile {
   key: ZodiacKey;
