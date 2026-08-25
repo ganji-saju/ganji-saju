@@ -28,7 +28,7 @@ export function GuardianAssignmentCard({
         decoding="async"
         className="h-16 w-16 shrink-0 rounded-full border border-[rgba(28,26,23,0.14)] object-cover object-top bg-white"
       />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="m-0 text-[12.6px] font-extrabold uppercase tracking-[0.05em] text-[var(--app-pink-strong)]">
           {viewerName}님의 수호신
         </p>
@@ -39,6 +39,18 @@ export function GuardianAssignmentCard({
           {guardian.persona}
         </p>
       </div>
+      {/* 2026-08-26 — 인장 낙관(스펙 §2): 배정을 도장 찍듯 확정하는 시각 신호. */}
+      <img
+        src={guardian.seal}
+        alt=""
+        aria-hidden="true"
+        width={52}
+        height={52}
+        loading="lazy"
+        decoding="async"
+        className="h-13 w-13 shrink-0 self-start object-contain opacity-95"
+        style={{ transform: 'rotate(-6deg)', height: 52, width: 52 }}
+      />
     </article>
   );
 }

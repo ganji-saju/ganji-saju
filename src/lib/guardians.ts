@@ -18,6 +18,8 @@ export interface GuardianProfile {
   persona: string;
   /** 캐릭터 이미지 경로 (2026-08-25 힉스필드 2차분, jpg 단일 소스). */
   image: string;
+  /** 인장(도장) 문양 경로 (2026-08-26 스펙 §2 인장 세트, 투명 png). */
+  seal: string;
 }
 
 /** 스펙 §3 "성격 키워드(풀이 톤과 연동)" 를 사용자에게 보이는 한 줄로 옮긴 것. */
@@ -50,6 +52,7 @@ export function guardianForZodiac(key: ZodiacKey): GuardianProfile {
     animalKo: meta.ko,
     persona: GUARDIAN_PERSONA[key],
     image: `/images/gangi/guardians/${key}.jpg`,
+    seal: `/images/gangi/guardians/seals/${key}.png`,
   };
 }
 

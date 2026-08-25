@@ -37,28 +37,25 @@ export function ZodiacChip({
   shine = true,
 }: ZodiacChipProps) {
   const z = ZODIAC[kind] ?? ZODIAC.rat;
+  const validKind = ZODIAC[kind] ? kind : 'rat';
+  // 2026-08-26 — 스펙 §4 배선: 컬러 사각+한자 칩 → 12지신 인장(도장) 문양 이미지.
+  //   호출부 42곳 계약(kind/size/className) 불변 — 내부 렌더만 교체. shine 은 이미지에선
+  //   무의미해 무시(시그니처 유지). 인장 자산: public/images/gangi/guardians/seals/{key}.png.
   return (
     <span
       role="img"
       aria-label={`${z.ko}(${z.han})`}
-      className={cn(
-        'relative inline-flex items-center justify-center font-bold text-white',
-        shine && [
-          'before:pointer-events-none before:absolute before:inset-0',
-          'before:rounded-[inherit] before:bg-gradient-to-b',
-          'before:from-white/20 before:to-transparent',
-        ],
-        SIZE[size],
-        className
-      )}
-      style={{
-        background: z.color,
-        fontFamily: 'var(--font-han)',
-        letterSpacing: '-0.02em',
-      }}
+      className={cn('relative inline-flex items-center justify-center', SIZE[size], className)}
     >
-      {/* 2026-05-15 handoff 59 m-hanja — 한자 글자에 mount 시 entry morph 적용. */}
-      <span className="motion-hanja-entry">{z.han}</span>
+      <img
+        src={`/images/gangi/guardians/seals/${validKind}.png`}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-contain"
+        draggable={false}
+      />
     </span>
   );
 }

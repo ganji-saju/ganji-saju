@@ -18,6 +18,7 @@ test('12지지 전수가 자기 띠 수호신으로 배정된다', () => {
     assert.equal(guardian.han, meta.han);
     assert.equal(guardian.animalKo, meta.ko);
     assert.equal(guardian.image, `/images/gangi/guardians/${key}.jpg`);
+    assert.equal(guardian.seal, `/images/gangi/guardians/seals/${key}.png`);
     assert.ok(guardian.persona.length > 0, `${key} persona 누락`);
   }
 });
