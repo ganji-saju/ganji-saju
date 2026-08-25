@@ -80,8 +80,8 @@ export default function SiteFooter() {
       aria-label="회사 및 서비스 안내"
       style={{
         color: MUTED,
-        padding: '36px 24px 28px',
-        fontSize: 14,
+        padding: '32px 24px 24px',
+        fontSize: 12.5,
         lineHeight: 1.65,
       }}
     >
@@ -90,17 +90,17 @@ export default function SiteFooter() {
         <div className="flex items-center gap-2.5">
           <span
             aria-hidden="true"
-            className="grid h-7 w-7 place-items-center rounded-[8px] text-white"
+            className="grid h-6 w-6 place-items-center rounded-[7px] text-white"
             style={{
               background: 'var(--app-pink)',
               fontFamily: 'var(--font-han)',
               fontWeight: 700,
-              fontSize: 17,
+              fontSize: 15,
             }}
           >
             干
           </span>
-          <span style={{ color: 'var(--app-ink)', fontSize: 16, fontWeight: 800 }}>
+          <span style={{ color: 'var(--app-ink)', fontSize: 14, fontWeight: 800 }}>
             간지사주
           </span>
         </div>
@@ -109,7 +109,7 @@ export default function SiteFooter() {
         <dl className="m-0 mt-5 grid gap-y-1">
           {companyItems.map((item) => (
             <div key={item.label} className="flex min-w-0 gap-2.5">
-              <dt style={{ color: FAINT, minWidth: 118, whiteSpace: 'nowrap' }}>
+              <dt style={{ color: FAINT, minWidth: 104, whiteSpace: 'nowrap' }}>
                 {item.label}
               </dt>
               <dd className="m-0 min-w-0" style={{ overflowWrap: 'anywhere' }}>
@@ -126,7 +126,7 @@ export default function SiteFooter() {
         </dl>
 
         {/* 면책 — 법적 고지 문구, 무수정 유지. */}
-        <div className="mt-5 grid gap-1.5" style={{ color: FAINT, fontSize: 13.2 }}>
+        <div className="mt-5 grid gap-1.5" style={{ color: FAINT, fontSize: 11.5 }}>
           <p className="m-0">
             결제, 환불, 보관함, 계정 관련 문의는 위 연락처로 접수해 주세요. 유료
             풀이와 전 이용 내역은 로그인 계정별로 확인됩니다.
@@ -171,7 +171,7 @@ export default function SiteFooter() {
           </button>
         </nav>
 
-        <p className="m-0 mt-4" style={{ color: FAINT, fontSize: 13.2 }}>
+        <p className="m-0 mt-4" style={{ color: FAINT, fontSize: 11.5 }}>
           © 2026 {BUSINESS_INFO.companyName || '간지사주'}. All rights reserved.
         </p>
       </div>
