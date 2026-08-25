@@ -7,13 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import {
   Bell,
-  BookOpenText,
   CreditCard,
   Menu,
   LogOut,
-  MessageCircleMore,
-  MoonStar,
-  Plus,
   Sparkles,
   UserRound,
   X,
@@ -100,22 +96,31 @@ function findActiveItem(items: readonly NavItem[], pathname: string) {
   return items.find((item) => matchesPath(item, pathname)) ?? null;
 }
 
-function DockIcon({ label }: { label: string }) {
-  // 2026-05-14: 일관된 5x5 사이즈, center(무료운세) 만 6x6 → CSS 가 흰색 + 글로우 처리.
-  switch (label) {
-    case '홈':
-      return <MoonStar className="h-[20px] w-[20px]" strokeWidth={2} />;
-    case '사주추가':
-      return <Plus className="h-[20px] w-[20px]" strokeWidth={2.4} />;
-    case '무료운세':
-      return <Sparkles className="h-[22px] w-[22px]" strokeWidth={2} />;
-    case '대화방':
-      return <MessageCircleMore className="h-[20px] w-[20px]" strokeWidth={2} />;
-    case '보관함':
-      return <BookOpenText className="h-[20px] w-[20px]" strokeWidth={2} />;
-    default:
-      return <UserRound className="h-[20px] w-[20px]" strokeWidth={2} />;
-  }
+// 2026-08-26 — 하단 독 아이콘을 3D 클레이 세트로 교체(사용자 지시 "아이콘 허접" + 입체감).
+//   힉스필드 gpt_image_2 클레이 스타일(한지 크림+인주+금, 앵커=한옥) → 흰배경 제거 후 160px.
+//   재생성 절차는 PROGRESS 2026-08-26 세션 참조.
+const DOCK_ICON_SRC: Record<string, string> = {
+  홈: '/images/gangi/dock/home.png',
+  사주추가: '/images/gangi/dock/add.png',
+  무료운세: '/images/gangi/dock/fortune.png',
+  대화방: '/images/gangi/dock/chat.png',
+  보관함: '/images/gangi/dock/vault.png',
+};
+
+function DockIcon({ label, size = 27 }: { label: string; size?: number }) {
+  const src = DOCK_ICON_SRC[label];
+  if (!src) return <UserRound className="h-[20px] w-[20px]" strokeWidth={2} />;
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      className="object-contain"
+      decoding="async"
+    />
+  );
 }
 
 function creditLabel(user: User | null, credits: number | null) {
@@ -707,7 +712,7 @@ function MobileChrome({
                         className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
                       >
                         <span className="app-mobile-dock-icon">
-                          {fanMenuOpen ? <X className="h-7 w-7" strokeWidth={2.6} /> : <DockIcon label={item.label} />}
+                          {fanMenuOpen ? <X className="h-7 w-7" strokeWidth={2.6} /> : <DockIcon label={item.label} size={38} />}
                         </span>
                         <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
                           <Sparkles className="h-2.5 w-2.5" />

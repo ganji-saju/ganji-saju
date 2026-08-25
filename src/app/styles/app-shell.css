@@ -250,55 +250,55 @@
 
 /* §Center FAB — 무료운세 (2026-05-20: 핑크 → 보랏빛 그라데이션, 부채꼴 메뉴 토글). */
 .app-mobile-dock-link[data-center="true"] {
-  transform: translateY(-1.35rem);
+  /* 2026-08-26 — 버튼 전체 translateY(-1.35rem) 제거(사용자 제보: 라벨이 원과 겹침).
+     원형 아이콘만 margin-top 음수로 위로 확장해, 라벨은 형제 메뉴와 같은 줄에 남는다. */
   background: transparent !important;
   border: 0 !important;
 }
 
 .app-mobile-dock-link[data-center="true"]:active {
-  transform: translateY(-1.35rem) scale(0.94);
+  transform: scale(0.94);
 }
 
 .app-mobile-dock-link[data-center="true"] .app-mobile-dock-icon {
   position: relative;
+  /* 원 높이(3.85) − 기본 아이콘 높이(2.1) 만큼 위로 — 원 하단이 형제 아이콘 하단과 맞고
+     라벨 줄이 정렬된다. */
+  margin-top: -1.75rem;
   height: 3.85rem !important;
   width: 3.85rem !important;
   border: 4px solid #ffffff;
   border-radius: 9999px;
-  /* 2026-05-20 — 사용자 보고 "핑크 그레이 컬러가 전체 분위기랑 안어울림".
-     pink + plum + indigo 의 mystical purple 그라데이션으로 변경.
-     별빛 느낌의 mystical 톤이라 운세 컨셉에 더 잘 어울림. */
-  background:
-    radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.55), transparent 32%),
-    linear-gradient(135deg, var(--app-pink-strong) 0%, var(--app-plum, #6d2a72) 55%, var(--app-indigo, #2a2470) 100%) !important;
-  color: #ffffff !important;
+  /* 2026-08-26 — 3D 클레이 아이콘 세트 도입에 맞춰 보라 그라데이션 → 한지 크림 + 인주 링.
+     달 아이콘(클레이)이 원 안에 그대로 얹히는 구성. */
+  background: #fdf8ee !important;
+  color: var(--app-ink) !important;
   box-shadow:
-    0 0 0 3px rgba(180, 90, 200, 0.16),
-    0 14px 28px rgba(80, 30, 140, 0.42),
-    0 4px 10px rgba(216, 27, 114, 0.22) !important;
+    0 0 0 3px rgba(179, 55, 42, 0.22),
+    0 12px 24px rgba(60, 40, 20, 0.22) !important;
   animation: app-dock-center-pulse 3.6s ease-in-out infinite;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-mobile-dock-link[data-center="true"][data-fan-open="true"] .app-mobile-dock-icon {
-  /* 열린 상태: FAB 살짝 회전 + 인디고 톤 강조 */
+  /* 열린 상태: FAB 살짝 회전 + 인주 링 강조 */
   transform: rotate(180deg);
-  background:
-    radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.55), transparent 32%),
-    linear-gradient(135deg, var(--app-indigo, #2a2470) 0%, var(--app-plum, #6d2a72) 55%, var(--app-pink-strong) 100%) !important;
+  background: #fdf8ee !important;
+  box-shadow:
+    0 0 0 4px rgba(179, 55, 42, 0.34),
+    0 12px 24px rgba(60, 40, 20, 0.24) !important;
 }
 
 .app-mobile-dock-link[data-center="true"][data-active="true"] .app-mobile-dock-icon {
   box-shadow:
-    0 0 0 5px rgba(180, 90, 200, 0.20),
-    0 14px 28px rgba(80, 30, 140, 0.50),
-    0 4px 12px rgba(216, 27, 114, 0.32) !important;
+    0 0 0 4px rgba(179, 55, 42, 0.30),
+    0 14px 26px rgba(60, 40, 20, 0.26) !important;
 }
 
 /* 우측 상단 sparkle accent */
 .app-mobile-dock-center-sparkle {
   position: absolute;
-  top: -0.6rem;
+  top: -2.35rem; /* 원이 margin-top 으로 올라간 만큼 따라 올림 */
   right: 1.1rem;
   display: grid;
   place-items: center;
@@ -332,7 +332,7 @@
 }
 
 .app-mobile-dock-link[data-center="true"] .app-mobile-dock-label {
-  margin-top: -0.05rem !important;
+  margin-top: 0.18rem !important; /* 형제 라벨(.app-mobile-dock-label)과 동일 줄 */
   color: var(--app-pink-strong) !important;
   font-weight: 800 !important;
 }

@@ -633,3 +633,38 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
     font-size: 0.82rem !important;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2026-08-26 — 한지 개방(사용자 지시 "모든 페이지의 흰 배경·박스를 걷어내고
+   로그인 화면처럼"). 콘텐츠 표면의 흰 상자를 전면 투명화한다 — 테두리는 남겨
+   구획만 유지, 채움과 그림자는 제거. 되돌리기 = 이 블록 삭제.
+   · 대상: Tailwind bg-white(및 /90 등 변형)·인라인 background 흰색·패널 유틸.
+   · 제외: 컨트롤(button/input/select — 어포던스), 헤더/메뉴 시트 등 크롬,
+     채팅 말풍선(dialogue-reports 자체 클래스라 애초에 안 걸림).
+   · 특정 요소만 흰 배경을 유지해야 하면 해당 요소에 .keep-white 를 붙인다. */
+.app-shell :where(div, section, article, aside, li, details, summary, figure, blockquote, a, p, span):where(
+    .bg-white,
+    [class*="bg-white/"],
+    [style*="background: white"],
+    [style*="background:#fff"],
+    [style*="background: #fff"],
+    [style*="background: rgb(255, 255, 255"],
+    [style*="background-color: white"],
+    [style*="background-color: #fff"]
+  ):not(.keep-white) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-shell :where(.app-panel, .app-panel-muted, .app-feature-card, .app-feature-card-soft,
+    .app-feature-card-muted, .app-section-frame, .app-section-frame-lg, .app-hero-card,
+    .gangi-payment-row, .gangi-plan-card):not(.keep-white) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 홈 컬럼 — 430px 흰 기둥을 한지 위로 개방. */
+.gangi-home {
+  background: transparent !important;
+}
