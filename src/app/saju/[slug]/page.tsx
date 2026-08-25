@@ -44,6 +44,9 @@ import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section'
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
 import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
 import { ComprehensiveToc } from '@/components/saju/comprehensive-toc';
+// 2026-08-25 Phase 2 — 수호신 배정: 연주 지지 → 자기 띠 수호신이 전담 해설자로.
+import { GuardianAssignmentCard } from '@/components/saju/guardian-assignment-card';
+import { guardianFromYearBranch } from '@/lib/guardians';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
@@ -441,6 +444,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     { label: '일', pillar: sajuData.pillars.day },
     { label: '시', pillar: sajuData.pillars.hour },
   ];
+  // 2026-08-25 Phase 2 — 수호신 배정. 띠는 연도 계산이 아니라 연주 지지에서 파생
+  //   (입춘 경계를 엔진이 이미 처리). 매핑 실패 시 카드 생략(null 안전).
+  const guardian = guardianFromYearBranch(sajuData.pillars.year.branch);
   const punchReading = buildPunchReading(report);
   const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
   const todayDetailHref = todayDetailEntitlement
@@ -505,13 +511,21 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {/* 2026-05-15 handoff 52 m-reveal — 결과 카드 7개 stagger 등장.
                 children 의 각 카드를 0.08s 간격으로 stagger reveal. useReducedMotion 자동 폴백. */}
             <MotionResultReveal staggerSeconds={0.08}>
-            {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips */}
+            {/* §0 수호신 배정 — "내 띠의 수호신이 읽어주는 사주"(스펙 콘셉트)의 첫 카드. */}
+            {guardian ? (
+              <GuardianAssignmentCard
+                guardian={guardian}
+                viewerName={input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}
+              />
+            ) : null}
+            {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips.
+                chip 은 장식용 dragon 고정이었다가 2026-08-25 사용자 띠로 정렬. */}
             <article
               className="rounded-[18px] border border-[var(--app-line)] p-5"
               style={{ background: 'var(--app-pink-soft)' }}
             >
               <div className="flex items-center gap-2.5">
-                <ZodiacChip kind="dragon" size="sm" />
+                <ZodiacChip kind={guardian?.key ?? 'dragon'} size="sm" />
                 <div className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
                   한 줄 요약
                 </div>
