@@ -49,16 +49,19 @@
    bg-score-* / text-score-* / ring-score-* / from-score-* / border-score-* / bg-ohaeng-* 생성.
    naming-policy: 점수 5단계 + 오행 5종("X 기운"). */
 @theme {
-  --color-score-excellent: #ec4899;
-  --color-score-excellent-soft: #fdf2f8;
-  --color-score-good: #10b981;
-  --color-score-good-soft: #ecfdf5;
-  --color-score-neutral: #3b82f6;
-  --color-score-neutral-soft: #eff6ff;
-  --color-score-mindful: #f59e0b;
-  --color-score-mindful-soft: #fffbeb;
-  --color-score-potential: #a855f7;
-  --color-score-potential-soft: #faf5ff;
+  /* 2026-08-26 — 점수 등급 팔레트를 사이트 톤(한지·인주 계열)으로 교체(사용자 지시:
+     "타고난 사주 점수 카드가 하늘색" — 구 stock 팔레트의 neutral 파랑이 원인).
+     인주(excellent)·옥(good)·먹남(neutral)·호박(mindful)·자두(potential), soft 는 한지 위 옅은 톤. */
+  --color-score-excellent: #b3372a;
+  --color-score-excellent-soft: #f3e4dd;
+  --color-score-good: #2e6b44;
+  --color-score-good-soft: #e8f1ea;
+  --color-score-neutral: #4a4a94;
+  --color-score-neutral-soft: #ebebf4;
+  --color-score-mindful: #b07c22;
+  --color-score-mindful-soft: #f6efdf;
+  --color-score-potential: #8e4a8b;
+  --color-score-potential-soft: #f3e9f3;
 
   --color-ohaeng-mok: #10b981;
   --color-ohaeng-mok-soft: #d1fae5;
