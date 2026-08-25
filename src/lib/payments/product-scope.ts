@@ -400,8 +400,16 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
-  // 2026-08-25 — 990원 라이트 언락: 결제 후 해당 메뉴로 복귀.
-  if (productId === 'today-basic') return '/today-fortune?concern=general';
+  // 2026-08-25 — 990원 당일권: 결제 후 해당 메뉴로 복귀. 간단운세는 결제 직전 보던
+  //   결과(sourceSessionId=slug)로 — 입력창 재진입 제보의 수정(post-payment-redirect 와 동일 규칙).
+  if (productId === 'today-basic') {
+    const params = new URLSearchParams({ concern: options.scope?.trim() || 'general' });
+    if (normalizedSlug) {
+      params.set('sourceSessionId', normalizedSlug);
+      return `/today-fortune/result?${params.toString()}`;
+    }
+    return `/today-fortune?${params.toString()}`;
+  }
   if (productId === 'tarot-daily') return '/tarot/daily';
   if (productId === 'dream-search') return '/dream';
   if (productId === 'dialogue-entry') return '/dialogue';

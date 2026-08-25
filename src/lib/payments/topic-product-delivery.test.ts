@@ -12,6 +12,21 @@ declare const test: (name: string, fn: () => void) => void;
 //
 //   전달물 = today-detail 화면의 해당 주제 슬라이스. 아래는 그 연결이 끊기면 red 가 되는 가드다.
 
+// 2026-08-25 — 990원 당일권(간단운세): 결제 후 착지가 **입력창이 아니라 결과 화면**이어야
+//   한다(사용자 제보: 입력창 복귀 → '풀이' 재클릭 필요). slug=sourceSessionId 복원 가드.
+test('간단운세 당일권: 결제 후 착지가 결과 화면(sourceSessionId 복원)', () => {
+  const withSession = buildTasteProductHref('today-basic', 'sess-123', 'love', null);
+  assert.ok(withSession);
+  assert.match(withSession, /^\/today-fortune\/result\?/);
+  assert.match(withSession, /sourceSessionId=sess-123/);
+  assert.match(withSession, /concern=love/);
+
+  // 세션 좌표가 없으면(입력 전 결제 등) 입력창 폴백 — 결과 URL 을 지어내면 안 된다.
+  const withoutSession = buildTasteProductHref('today-basic', null, null, null);
+  assert.ok(withoutSession);
+  assert.match(withoutSession, /^\/today-fortune\?/);
+});
+
 test('주제 단품: 결제 후 착지가 today-detail 의 해당 주제로 간다', () => {
   const money = buildTasteProductHref('money-pattern', 'abc', null, null);
   assert.ok(money, 'money-pattern 착지가 null 이면 구매자가 갈 곳이 없다');

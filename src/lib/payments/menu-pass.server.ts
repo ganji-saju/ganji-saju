@@ -31,10 +31,20 @@ export const MENU_PASSES = {
 
 export type MenuPassKey = keyof typeof MENU_PASSES;
 
-function checkoutHref(pass: MenuPass, from: string) {
+export interface MenuPassGateContext {
+  /** 결제 후 복귀 좌표 — 간단운세는 sourceSessionId. 주문(order.slug)에 실려 PG 왕복을 넘는다. */
+  slug?: string | null;
+  /** 간단운세의 concern 등 — order.scope 로 전달. */
+  scope?: string | null;
+}
+
+function checkoutHref(pass: MenuPass, from: string, context?: MenuPassGateContext) {
   // ⚠️ 체크아웃의 product 파라미터는 packageId 가 아니라 **tasteProductId** 를 받는다
   //   (isTasteProductId 판정 — packageId 를 넘기면 멤버십 기본값으로 폴백하는 실버그 냄).
-  return `/membership/checkout?product=${pass.productId}&from=${encodeURIComponent(from)}`;
+  const params = new URLSearchParams({ product: pass.productId, from });
+  if (context?.slug) params.set('slug', context.slug);
+  if (context?.scope) params.set('scope', context.scope);
+  return `/membership/checkout?${params.toString()}`;
 }
 
 /** 게이트 없이 판정만 — 라벨 분기(이용권 보유 표시 등)에 사용. */
@@ -71,8 +81,12 @@ export async function viewerHasMenuPass(key: MenuPassKey): Promise<boolean> {
  * 메뉴 진입 페이지 상단에 건다. 이용권·멤버십이 없으면 해당 상품 체크아웃으로 redirect.
  * Supabase env 부재(로컬 빌드 등)에서는 무동작 — 게이트가 빌드를 깨면 안 된다.
  */
-export async function guardMenuPassEntry(key: MenuPassKey, from: string): Promise<void> {
+export async function guardMenuPassEntry(
+  key: MenuPassKey,
+  from: string,
+  context?: MenuPassGateContext
+): Promise<void> {
   if (!hasSupabaseServerEnv) return;
   if (await viewerHasMenuPass(key)) return;
-  redirect(checkoutHref(MENU_PASSES[key], from));
+  redirect(checkoutHref(MENU_PASSES[key], from, context));
 }

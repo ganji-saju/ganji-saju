@@ -34,6 +34,17 @@ export function buildTasteProductHref(
     if (slug) params.set('sourceSessionId', slug);
     return `/today-fortune/detail?${params.toString()}`;
   }
+  // 2026-08-25 — 990원 당일권(간단운세): 결제 직전 보던 **결과 화면으로 복귀**.
+  //   사용자 제보: 결제 후 입력창으로 돌아가 '풀이'를 다시 눌러야 했다. 게이트가
+  //   slug=sourceSessionId·scope=concern 을 주문에 실어 보내면 여기서 결과 URL 복원.
+  if (product === 'today-basic') {
+    const params = new URLSearchParams({ concern: scope || 'general', paid: product });
+    if (slug) {
+      params.set('sourceSessionId', slug);
+      return `/today-fortune/result?${params.toString()}`;
+    }
+    return `/today-fortune?${params.toString()}`;
+  }
   // 궁합 소액 풀이 — 글로벌 love-question 과 per-couple compat-reading 은 동일하게
   // 궁합 결과(깊은 풀이)로 복귀시킨다. compat-reading 분기 누락이 결제 후 사주
   // 프리미엄 오라우팅(404)의 근인이었다. result page 가 paid=love-question /

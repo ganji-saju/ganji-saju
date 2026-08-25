@@ -4,7 +4,6 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { TodayFortuneExperience } from '@/features/today-fortune/today-fortune-experience';
 import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
-import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import { AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
@@ -34,8 +33,9 @@ export default async function TodayFortunePage({
   // 전면 유료화 잠금 — 무료 요약 진입 차단(결제 이력 있으면 통과).
   //   ⚠️ 위 `paid=today-detail` 복귀 리다이렉트 **뒤**에 있어야 한다.
   await guardLockedFreeEntry();
-  // 2026-08-25 — 990원 라이트 언락(간단운세). 멤버십·이용권 없으면 체크아웃으로.
-  await guardMenuPassEntry('today', 'today-fortune');
+  // 2026-08-25 — 990원 당일권 게이트는 **입력이 아니라 결과**(/today-fortune/result)에 있다.
+  //   입력창에서 막으면 결제 후 입력창으로 돌아와 '풀이'를 다시 눌러야 했다(사용자 제보).
+  //   입력·제출은 열어 두고, 결과 게이트가 복귀 좌표를 실어 결제로 보낸다.
 
   return (
     <AppShell header={<SiteHeader />} footer={false} className="gangi-subpage-shell pb-24 md:pb-0">
