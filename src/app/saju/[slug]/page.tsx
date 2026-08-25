@@ -680,7 +680,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
                   style={{ wordBreak: 'keep-all' }}
                 >
-                  아래 &lsquo;오늘의 분야별 흐름&rsquo;과 다른 점수예요. 이건 타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값입니다.
+                  타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값이에요.
                 </p>
               </div>
               <ScoreLockGate
