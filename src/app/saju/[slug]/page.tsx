@@ -20,7 +20,13 @@ import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-c
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
-import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
+// 2026-08-25 전면 개편 — 탭(총평/대운/상세/명식/성향/오행) 제거, 단일 페이지 합성(사용자 지시).
+import { MyeongsikSection } from '@/features/saju-detail/sections/myeongsik-section';
+import { NatureSection } from '@/features/saju-detail/sections/nature-section';
+import { ElementsSection } from '@/features/saju-detail/sections/elements-section';
+import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section';
+import { ComprehensiveCtaLayer } from '@/components/saju/comprehensive-cta-layer';
+import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
@@ -417,19 +423,23 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   // 2026-08-24 Phase 1 — 종합 리포트 목차의 개인화 훅. 대운 타임라인(결정론, 무료 deep 챕터와
   //   동일 빌더)에서 '다음 대운 시작 나이'를 뽑는다. 연도 환산은 만나이/세는나이 모호성 때문에
   //   하지 않는다(ageLabel 그대로만 인용 — 틀린 숫자를 약속하지 않는 원칙).
+  //   2026-08-25 단일 페이지화 — 같은 빌더 결과를 대운 섹션(DaewoonSection)도 쓰므로 1회만 계산.
+  let lifetimeCycles: LifetimeMajorLuckCycle[] = [];
+  try {
+    lifetimeCycles = buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles.filter(
+      (cycle) => cycle.ganzi !== '대운 미산정'
+    );
+  } catch {
+    lifetimeCycles = []; // 대운 섹션·훅은 장식 — 계산 실패가 페이지를 못 깨게 한다.
+  }
   let comprehensiveHook: string | null = null;
   if (!scoreUnlocked) {
-    try {
-      const cycles = buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles;
-      const currentIdx = cycles.findIndex((cycle) => cycle.isCurrent);
-      const next = currentIdx >= 0 ? cycles[currentIdx + 1] : null;
-      const nextStartAge = next?.ageLabel?.match(/^(\d+)/)?.[1] ?? null;
-      if (nextStartAge) {
-        const who = input.name?.trim() ? `${input.name.trim()}님의` : '당신의';
-        comprehensiveHook = `${who} 다음 대운 전환은 ${nextStartAge}세 — 그 10년의 흐름이 잠긴 항목 안에 있습니다.`;
-      }
-    } catch {
-      comprehensiveHook = null; // 훅은 장식 — 계산 실패가 페이지를 못 깨게 한다.
+    const currentIdx = lifetimeCycles.findIndex((cycle) => cycle.isCurrent);
+    const next = currentIdx >= 0 ? lifetimeCycles[currentIdx + 1] : null;
+    const nextStartAge = next?.ageLabel?.match(/^(\d+)/)?.[1] ?? null;
+    if (nextStartAge) {
+      const who = input.name?.trim() ? `${input.name.trim()}님의` : '당신의';
+      comprehensiveHook = `${who} 다음 대운 전환은 ${nextStartAge}세 — 그 10년의 흐름이 잠긴 항목 안에 있습니다.`;
     }
   }
 
@@ -500,12 +510,19 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
         <SajuResultViewTracker slug={slug} />
+        {!scoreUnlocked ? (
+          <ComprehensiveCtaLayer
+            checkoutHref={`/membership/checkout?product=bundle_comprehensive&slug=${encodeURIComponent(slug)}&from=saju-sticky`}
+            priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
+            compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
+            watchTargetId="comprehensive-toc"
+          />
+        ) : null}
 
         <div className="space-y-5 sm:space-y-6">
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
               input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
-          <SajuScreenNav slug={slug} current="result" />
 
           <section className="space-y-4 px-1">
             {/* 2026-05-15 handoff 52 m-reveal — 결과 카드 7개 stagger 등장.
@@ -626,12 +643,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 만신령식 "무료 ✓ + 잠김 🔒" 리스트. 점수 미해제(=종합 미구매의 근사)일 때만.
                 개인화 훅은 대운 타임라인(무료 deep 와 동일 결정론 빌더)에서 다음 전환 나이를 뽑는다. */}
             {!scoreUnlocked ? (
-              <ComprehensiveToc
-                slug={slug}
-                hookLine={comprehensiveHook}
-                priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
-                compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
-              />
+              <div id="comprehensive-toc">
+                <ComprehensiveToc
+                  slug={slug}
+                  hookLine={comprehensiveHook}
+                  priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
+                  compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
+                />
+              </div>
             ) : null}
 
             {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
@@ -664,6 +683,68 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
             {/* §3 분야별 흐름 — 6 영역 통일 카드 (PR #181, 공유 컴포넌트). */}
             <SajuAreaCardsSection input={input} sajuData={sajuData} />
+
+            {/* 2026-08-25 단일 페이지 합성 — 구 명식/성향/오행/대운 탭을 섹션으로.
+                구 탭 라우트는 아래 앵커로 리다이렉트한다(id 변경 시 리다이렉트도 같이). */}
+            <section id="myeongsik" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                명식 — 내 사주의 뼈대
+              </h2>
+              <MyeongsikSection sajuData={sajuData} grounding={grounding} />
+            </section>
+
+            <section id="nature" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                성향 — 타고난 기질
+              </h2>
+              <NatureSection sajuData={sajuData} grounding={grounding} />
+            </section>
+
+            <section id="elements" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                오행 — 기운의 균형
+              </h2>
+              <ElementsSection sajuData={sajuData} />
+            </section>
+
+            {lifetimeCycles.length > 0 ? (
+              <section id="daewoon" className="scroll-mt-24 space-y-4">
+                <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                  대운 — 10년 단위 큰 흐름
+                </h2>
+                <DaewoonSection cycles={lifetimeCycles} />
+              </section>
+            ) : null}
+
+            {/* 결제 동선(2026-08-25 확정) — 미구매자에겐 페이지 전체에서 가격 오퍼는
+                9,900 종합 리포트 **하나**: 중간 목차(설득) + 아래 스티키 레이어(목차를
+                지나쳐 무료 콘텐츠를 다 읽은 시점의 두 번째 접점, 같은 상품). 상세(평생
+                리포트 49,000)는 **구매자에게만** 다음 단계로 — 한 화면에 가격 하나 원칙. */}
+            {scoreUnlocked ? (
+              <article
+                className="rounded-[18px] p-5 text-white"
+                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(15,23,42,0.18)' }}
+              >
+                <div
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
+                  style={{ color: 'var(--app-pink)' }}
+                >
+                  다음 단계
+                </div>
+                <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
+                  상세 풀이 — 평생 소장 리포트
+                </h2>
+                <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.72 }}>
+                  대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관까지, 평생 다시 꺼내 보는 상세판.
+                </p>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/premium`}
+                  className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white no-underline"
+                >
+                  상세 풀이 보기 →
+                </Link>
+              </article>
+            ) : null}
 
 
             {/* §4 더 보고 싶은 질문 — 가격 pill + 제목 + 한 줄 */}
