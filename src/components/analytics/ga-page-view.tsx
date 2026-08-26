@@ -12,6 +12,8 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { sanitizePath, sanitizeQuery } from './ga-sanitize';
+import { captureLandingCampaign, readLandingCampaign } from './landing-campaign';
+import { CONSENT_GRANTED_EVENT } from './analytics-consent';
 
 declare global {
   interface Window {
@@ -33,9 +35,14 @@ function sanitizeReferrer(): string | undefined {
   }
 }
 
-function sendSanitizedPageView(pathname: string) {
+function sendSanitizedPageView(pathname: string, options: { forceCampaign?: boolean } = {}) {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
-  const path = sanitizePath(pathname) + sanitizeQuery(window.location.search);
+  // 2026-08-26 — 동의 승격 재발사에서는 **최초 랜딩의 캠페인**을 다시 실어 보낸다.
+  //   현재 URL 에 UTM 이 없어도(내부 이동 뒤 동의) 캠페인이 유실되지 않게.
+  const search = options.forceCampaign
+    ? readLandingCampaign() || window.location.search
+    : window.location.search;
+  const path = sanitizePath(pathname) + sanitizeQuery(search);
   const isRedacted = path.includes('/redacted');
   window.gtag('event', 'page_view', {
     page_path: path,
@@ -53,8 +60,23 @@ function sendSanitizedPageView(pathname: string) {
  */
 export function GaPageView() {
   const pathname = usePathname();
+
   useEffect(() => {
+    // 랜딩 캠페인 보관 — 동의 승격 재발사와 결제 시작 시점에 쓴다(체크아웃 URL 엔 UTM 이 없다).
+    captureLandingCampaign(window.location.search);
     sendSanitizedPageView(pathname);
   }, [pathname]);
+
+  // 2026-08-26 — 🔴 캠페인 유실 수정. Consent Mode 기본이 denied 라 첫 page_view 는 저장소
+  //   없이 나가고 그 시점 캠페인은 남지 않는다. 사용자가 '동의' 를 누르면 그때 쿠키가 생기며
+  //   세션이 시작되는데, 새 page_view 가 없으면 GA4 는 그 세션을 **(direct) 로 처리**한다 —
+  //   UTM 을 붙여 들어와도 (direct) 로 찍히던 실제 증상이 이것이다.
+  //   동의 직후 랜딩 캠페인을 실은 page_view 를 한 번 더 보내 세션에 출처를 각인한다.
+  useEffect(() => {
+    const onGranted = () => sendSanitizedPageView(pathname, { forceCampaign: true });
+    window.addEventListener(CONSENT_GRANTED_EVENT, onGranted);
+    return () => window.removeEventListener(CONSENT_GRANTED_EVENT, onGranted);
+  }, [pathname]);
+
   return null;
 }
