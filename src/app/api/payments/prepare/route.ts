@@ -29,6 +29,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getManagedSubscription } from '@/lib/subscription';
 // 2026-05-16 PR (B1) — funnel 단계 기록. admin/payment-funnel 대시보드 데이터 source.
 import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
+import { readGaIdentifiers } from '@/lib/analytics/ga-identifiers';
+import { GA4_MEASUREMENT_ID } from '@/lib/analytics/ga-config';
 // 2026-05-18 Phase 3-C-1 — 결제 전 동의 검증 + DB 기록.
 import { findMissingConsents, recordConsentsForPayment } from '@/lib/payments/consent';
 import { POLICY_KINDS, type PolicyKind } from '@/shared/policies/types';
@@ -83,6 +85,17 @@ export async function POST(req: NextRequest) {
   const scope = readString(payload, 'scope') || null;
   const from = readString(payload, 'from') || null;
   const paymentMethodCode = readString(payload, 'paymentMethod') || null;
+  // 2026-08-26 — GA4 귀속 스냅샷. 식별자는 요청 쿠키에서 읽는다(클라이언트가 보낸 값보다
+  //   신뢰 가능). 동의 상태는 localStorage 라 서버가 못 읽어 body 로만 온다.
+  const { clientId: gaClientId, sessionId: gaSessionId } = readGaIdentifiers(
+    req.headers.get('cookie'),
+    GA4_MEASUREMENT_ID
+  );
+  const analyticsConsentRaw = readString(payload, 'analyticsConsent');
+  const analyticsConsent =
+    analyticsConsentRaw === 'granted' || analyticsConsentRaw === 'denied'
+      ? analyticsConsentRaw
+      : null;
   const pkg = getPackage(packageId);
 
   if (!pkg) {
@@ -359,6 +372,9 @@ export async function POST(req: NextRequest) {
     product,
     plan,
     entrySource: from,
+    gaClientId,
+    gaSessionId,
+    analyticsConsent,
     paymentMethodCode,
     acceptedKinds,
     recordedPolicyVersionIds: [],

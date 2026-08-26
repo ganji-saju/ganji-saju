@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
+import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import type { PolicyKind } from '@/shared/policies/types';
 
@@ -182,6 +183,11 @@ export async function createPaymentOrder(
     acceptedKinds: PolicyKind[];
     recordedPolicyVersionIds: string[];
     metadata?: Record<string, unknown>;
+    /** 2026-08-26 — 결제 확정(서버)이 원래 세션·채널에 귀속되도록 시작 시점에 스냅샷. */
+    gaClientId?: string | null;
+    gaSessionId?: string | null;
+    /** 분석 동의 상태. 'denied' 면 확정 시 GA 전송을 건너뛴다(Consent Mode 우회 금지). */
+    analyticsConsent?: string | null;
   },
   service?: SupabaseClient
 ) {
@@ -204,6 +210,9 @@ export async function createPaymentOrder(
       payment_method_code: input.paymentMethodCode ?? null,
       accepted_policy_kinds: input.acceptedKinds,
       recorded_policy_version_ids: input.recordedPolicyVersionIds,
+      ga_client_id: input.gaClientId ?? null,
+      ga_session_id: input.gaSessionId ?? null,
+      analytics_consent: input.analyticsConsent ?? null,
       metadata: input.metadata ?? {},
     })
     .select('*')
@@ -450,7 +459,11 @@ export async function markPaymentOrderRefunded(input: {
     throw new Error(error.message ?? '환불 상태를 저장하지 못했습니다.');
   }
   if (data) {
-    return mapPaymentOrder(data as PaymentOrderRow);
+    const order = mapPaymentOrder(data as PaymentOrderRow);
+    // 2026-08-26 — GA4 refund. 원거래와 같은 transaction_id 로 보내야 그 거래의 매출이
+    //   차감된다. 여기(원장 함수)에 두면 admin·웹훅·정산 세 경로가 한 번에 커버된다.
+    await dispatchGaRefund(order.orderId, order.amount).catch(() => undefined);
+    return order;
   }
 
   // 갱신된 행이 없음 = 이미 refunded(멱등 재호출). 기존 행을 그대로 반환.
