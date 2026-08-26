@@ -514,25 +514,13 @@ export default function SampleReportPage() {
           </div>
         </article>
 
-        {/* §다음 단계 — ink-dark hero (PR #198 패턴 같은 진한 결제 유도 카드) */}
-        <article
-          className="mx-[0.25rem] text-white"
-          style={{
-            borderRadius: '1.25rem',
-            background: 'var(--app-ink)',
-            padding: '1.5rem 1.2rem',
-            boxShadow: '0 18px 44px rgba(15, 23, 42, 0.18)',
-          }}
-        >
-          <div
-            className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
-            style={{ color: 'var(--app-pink)' }}
-          >
-            다음 단계
-          </div>
+        {/* §다음 단계 — 2026-08-26 먹색 카드 → 한지 패널(사용자 제보: 먹 배경 위 먹색 토큰
+            글자(멘토 그리드 포함)가 묻혀 안 보임 + 한지 개방 방향과 부조화). */}
+        <article className="mx-[0.25rem]" style={PANEL_STYLE}>
+          <div style={KICKER_STYLE}>다음 단계</div>
           <h2
             className="mt-1.5 text-[23px] font-extrabold leading-snug tracking-tight"
-            style={{ wordBreak: 'keep-all' }}
+            style={{ color: 'var(--app-ink)', wordBreak: 'keep-all' }}
           >
             샘플 구조가 마음에 드셨다면, 이제 선생님의 풀이를 직접 만들어보셔도 좋습니다
           </h2>
@@ -546,8 +534,8 @@ export default function SampleReportPage() {
             </Link>
             <Link
               href="/membership"
-              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-white/10 px-5 text-[15.5px] font-extrabold text-white backdrop-blur"
-              style={{ border: '1px solid rgba(255, 255, 255, 0.18)' }}
+              className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold"
+              style={SECONDARY_BUTTON_STYLE}
             >
               상품 보기
             </Link>
@@ -555,10 +543,7 @@ export default function SampleReportPage() {
 
           <div
             className="mt-5 rounded-[18px] px-4 py-4 sm:px-5"
-            style={{
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              background: 'rgba(255, 255, 255, 0.04)',
-            }}
+            style={{ border: '1px solid var(--app-line)' }}
           >
             <SpecialistMentorGrid showHeader={false} className="text-left" />
           </div>
