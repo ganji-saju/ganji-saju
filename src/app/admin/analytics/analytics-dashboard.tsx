@@ -8,11 +8,14 @@ import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
 import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import type { RefundBreakdown } from '@/lib/admin/refund-breakdown';
 
 interface ApiResponse {
   ok: boolean;
   snapshot?: AnalyticsSnapshot;
   external?: ExternalAnalyticsSnapshot;
+  /** 2026-08-26 — 환불 건별 원 결제일(해설용). 집계는 snapshot 이 정본. */
+  refunds?: RefundBreakdown;
   error?: string;
 }
 
@@ -151,7 +154,13 @@ function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
                 <td className={`${td} text-[var(--app-coral)]`}>
                   {d.refundedWon > 0 ? `-${fmtWon(d.refundedWon)}` : '—'}
                 </td>
-                <td className={`${td} font-semibold text-[var(--app-ink)]`}>
+                {/* 2026-08-26 — 순매출 음수는 대개 '예전에 판 걸 오늘 환불'이다. 색만 바꾸고
+                    이유는 아래 §환불 내역이 건별 원 결제일로 답한다. */}
+                <td
+                  className={`${td} font-semibold`}
+                  style={{ color: d.netRevenueWon < 0 ? 'var(--app-coral)' : 'var(--app-ink)' }}
+                  title={d.netRevenueWon < 0 ? '과거 결제분 환불이 오늘 계상됨 — 아래 환불 내역 참조' : undefined}
+                >
                   {d.revenueWon > 0 || d.refundedWon > 0 ? fmtWon(d.netRevenueWon) : '—'}
                 </td>
                 <td className={`${td} text-[var(--app-copy-soft)]`}>{formatPct(d.visitorToPaidRate)}</td>
@@ -568,6 +577,67 @@ function ExternalComparison({
   );
 }
 
+function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) {
+  if (!refunds || refunds.items.length === 0) return null;
+
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+
+  return (
+    <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">환불 내역</h2>
+        <span className="text-[11.5px] text-[var(--app-copy-soft)]">
+          {refunds.items.length}건 · {fmtWon(refunds.totalWon)}
+          {refunds.truncated > 0 ? ` (최신 ${refunds.items.length}건만 표시 · +${refunds.truncated}건)` : ''}
+        </span>
+      </div>
+      <p
+        className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        매출은 <strong>판 날</strong>, 환불은 <strong>환불한 날</strong>에 계상합니다. 그래서 예전에 판
+        상품을 오늘 환불하면 오늘 순매출이 마이너스로 보일 수 있습니다 — 잘못된 수치가 아니라 귀속일이
+        다른 것입니다(귀속을 원 결제일로 옮기면 마감된 과거 매출이 사후에 바뀝니다).
+        {refunds.outsideWindowWon > 0 ? (
+          <>
+            {' '}
+            이 기간 환불 중 <strong>{fmtWon(refunds.outsideWindowWon)}</strong> 은 원 결제가 기간 밖이라
+            기간 순매출을 그대로 깎습니다.
+          </>
+        ) : null}
+      </p>
+      <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+            <tr>
+              <th className={`${th} text-left`}>환불일</th>
+              <th className={`${th} text-left`}>원 결제일</th>
+              <th className={`${th} text-left`}>상품</th>
+              <th className={th}>환불액</th>
+            </tr>
+          </thead>
+          <tbody>
+            {refunds.items.map((item) => (
+              <tr key={item.orderId || `${item.refundedOn}-${item.productName}`} className="border-t border-[var(--app-line)]">
+                <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{item.refundedOn}</td>
+                <td className={`${td} text-left`}>
+                  {item.paidOn ?? '—'}
+                  {item.paidOn && !item.sameDay ? (
+                    <span className="ml-1 text-[11px] text-[var(--app-coral)]">다른 날 결제분</span>
+                  ) : null}
+                </td>
+                <td className={`${td} text-left text-[var(--app-copy-soft)]`}>{item.productName}</td>
+                <td className={`${td} text-[var(--app-coral)]`}>-{fmtWon(item.amountWon)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export function AnalyticsDashboard() {
   const [days, setDays] = useState(30);
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
@@ -575,6 +645,7 @@ export function AnalyticsDashboard() {
   //   상세 근거는 VISIT_TRACKING_START_KEY 주석 참조.
   const visibleDaily = (snap?.daily ?? []).filter((d) => d.date >= VISIT_TRACKING_START_KEY);
   const [external, setExternal] = useState<ExternalAnalyticsSnapshot | null>(null);
+  const [refunds, setRefunds] = useState<RefundBreakdown | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -597,6 +668,7 @@ export function AnalyticsDashboard() {
           loadedOnce = true;
           setSnap(res.snapshot);
           setExternal(res.external ?? null);
+          setRefunds(res.refunds ?? null);
           setError(null);
         } else if (initial || !loadedOnce) {
           setError(res.error ?? '불러오기 실패');
@@ -684,6 +756,9 @@ export function AnalyticsDashboard() {
 
           {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
           <DailyTable rows={visibleDaily} />
+
+          {/* 2026-08-26 — 환불 내역(건별 원 결제일). '오늘 매출 990인데 환불 9,900' 제보의 답. */}
+          <RefundBreakdownTable refunds={refunds} />
 
           {/* 나머지 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
