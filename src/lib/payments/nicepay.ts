@@ -9,7 +9,7 @@
 //      승인 signData sha256(tid+amount+ediDate+secretKey)
 //   4) ediDate 정확한 포맷(ISO 8601 vs yyyyMMddHHmmss) — 공식 파라미터표
 //   5) 결과/상태 코드표(0000=정상만 확정)
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import {
   getNicepayApiBase,
   getNicepayClientKey,
@@ -84,6 +84,29 @@ function buildApproveSignData(tid: string, amount: number, ediDate: string): str
  */
 function buildCancelSignData(tid: string, ediDate: string): string {
   return nicepaySha256Hex(`${tid}${ediDate}${getSecretKey()}`);
+}
+
+/**
+ * 취소 요청의 orderId.
+ *
+ * 🔴 2026-08-27 — 나이스페이 취소 API 의 `orderId` 는 **취소 요청 자체의 고유 주문번호**다.
+ *   원결제 orderId 를 그대로 보내면 승인 때 이미 소진된 값이라 무조건
+ *   **"이미 사용된 OrderId 입니다."** 로 거부된다. 재시도해도 같은 값이라 영원히 실패한다
+ *   (실제로 990원 환불 1건이 14:46~20:33 동안 계속 실패했다).
+ *
+ *   이력 주의 — 이 필드는 두 번 틀렸다(nicepay-cancel-sign.test.ts 주석 참조):
+ *     1차: 아예 안 보냄        → "orderId 필수입력항목이 누락되었습니다."
+ *     2차: 원결제 orderId 보냄 → "이미 사용된 OrderId 입니다."   ← 지금 고치는 것
+ *   원결제 번호는 **추적용으로만** 붙인다(PG 콘솔에서 원거래를 찾기 쉽게).
+ *
+ *   ⚠️ 시도마다 새 값이어야 한다. 재시도에서 값을 재사용하면 같은 거부로 되돌아간다.
+ *      중복 취소 방지는 orderId 가 아니라 Idempotency-Key 헤더와, 나이스페이의
+ *      "이미 취소된 거래" 응답 처리(isAlreadyCanceledTossError)가 맡는다.
+ */
+export function buildCancelOrderId(originalOrderId: string): string {
+  const unique = randomUUID().replace(/-/g, '').slice(0, 12);
+  // 고유 접두 → 64자 제한에 걸려 잘리더라도 고유성이 먼저 살아남는다.
+  return `cxl${unique}_${originalOrderId}`.slice(0, 64);
 }
 
 // ⚠️ ediDate 포맷은 공식 확정 필요. 일단 ISO 8601.
@@ -243,6 +266,7 @@ export async function cancelNicepayPayment(
   tid: string,
   options: {
     reason: string;
+    /** 원결제 주문번호. 그대로 전송하지 않는다 — buildCancelOrderId 로 취소 전용 번호를 만든다. */
     orderId: string;
     cancelAmt?: number;
     idempotencyKey?: string;
@@ -265,7 +289,7 @@ export async function cancelNicepayPayment(
       reason: options.reason,
       ediDate,
       signData,
-      ...(options.orderId ? { orderId: options.orderId } : {}),
+      ...(options.orderId ? { orderId: buildCancelOrderId(options.orderId) } : {}),
       ...(typeof options.cancelAmt === 'number' && options.cancelAmt > 0
         ? { cancelAmt: options.cancelAmt }
         : {}),

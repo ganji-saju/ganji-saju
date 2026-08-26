@@ -90,5 +90,45 @@ test('취소 signData 에 승인용 공식(금액 포함)을 쓰면 안 된다',
 
 test('취소 요청 본문에 orderId 가 반드시 실린다', async () => {
   const body = await captureCancelBody({ reason: '관리자 환불', orderId: 'ord_test_3' });
-  assert.equal(body.orderId, 'ord_test_3', 'orderId 누락은 PG 가 필수항목 오류로 거절한다');
+  assert.ok(body.orderId, 'orderId 누락은 PG 가 필수항목 오류로 거절한다');
+});
+
+// 🔴 2026-08-27 3차 관문 — 이 파일이 기록한 1·2차에 이어 같은 필드가 또 틀렸다.
+//   3차: "이미 사용된 OrderId 입니다."
+//   나이스페이 취소의 orderId 는 **취소 요청 자체의 고유 주문번호**다. 원결제 orderId 를
+//   그대로 보내면 승인 때 이미 소진된 값이라 무조건 거부되고, 재시도해도 같은 값이라
+//   영원히 실패한다(실제로 990원 환불 1건이 약 6시간 동안 계속 실패).
+//   ⚠️ 직전 버전의 이 테스트는 `body.orderId === 원결제 orderId` 를 단언해서
+//      **틀린 계약을 지키고 있었다.** 계약을 뒤집는다.
+test('취소 orderId 는 원결제 orderId 를 그대로 쓰지 않는다', async () => {
+  const body = await captureCancelBody({ reason: '관리자 환불', orderId: 'ord_reuse_check' });
+  assert.notEqual(
+    body.orderId,
+    'ord_reuse_check',
+    '원결제 orderId 재사용 → PG 가 "이미 사용된 OrderId 입니다." 로 거절한다'
+  );
+});
+
+test('취소 orderId 는 시도마다 새 값이다 — 재시도가 같은 거부로 되돌아가면 안 된다', async () => {
+  const first = await captureCancelBody({ reason: '관리자 환불', orderId: 'ord_retry' });
+  const second = await captureCancelBody({ reason: '관리자 환불', orderId: 'ord_retry' });
+  assert.notEqual(first.orderId, second.orderId, '같은 값을 재사용하면 재시도가 영구히 실패한다');
+});
+
+test('취소 orderId 는 원결제 번호를 품고 64자를 넘지 않는다(PG 콘솔 추적용)', async () => {
+  const body = await captureCancelBody({
+    reason: '관리자 환불',
+    orderId: 'ord_7632af45-eb8e-4b3d-98f6-96f6c633d780',
+  });
+  assert.ok(body.orderId.length <= 64, `orderId 가 ${body.orderId.length}자 — PG 제한 초과`);
+  assert.ok(
+    body.orderId.includes('ord_7632af45'),
+    '원거래를 콘솔에서 찾을 수 있도록 원결제 번호 일부를 남긴다'
+  );
+});
+
+test('취소 orderId 는 서명에 영향을 주지 않는다 — signData 는 tid+ediDate+secret 뿐', async () => {
+  const body = await captureCancelBody({ reason: '관리자 환불', orderId: 'ord_sign_indep' });
+  const expected = createHash('sha256').update(`${TID}${body.ediDate}${SECRET}`).digest('hex');
+  assert.equal(body.signData, expected);
 });
