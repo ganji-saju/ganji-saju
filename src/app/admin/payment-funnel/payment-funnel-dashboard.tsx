@@ -400,6 +400,10 @@ export function PaymentFunnelDashboard() {
               <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 진입점 별 전환 (사이트 안)
               </h2>
+              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+                결제창으로 넘어온 화면. `(미지정)` = 결제 요청에 진입점이 없었고 주문 원장에도
+                안 남은 건(구 링크·수동 정산분).
+              </p>
               <div className="mt-2 grid gap-1.5">
                 {snap.byEntry.map((e) => (
                   <article
@@ -499,7 +503,10 @@ export function PaymentFunnelDashboard() {
               <li>• prepare 단계: POST /api/payments/prepare 진입 / 차단 / 준비 완료</li>
               <li>• confirm 단계: POST /api/payments/confirm 진입 / 성공 / 실패</li>
               <li>• 전체 전환 = confirm_success / prepare_attempt</li>
-              <li>• 진입점 = `metadata.from` (결제창으로 넘어온 사이트 안 화면)</li>
+              <li>
+                • 진입점 = `metadata.from`, 없으면 `payment_orders.entry_source` 를 `order_id` 로
+                조인해 보강 (confirm 계열 3경로는 from 을 안 싣는다)
+              </li>
               <li>• 페이월 노출 화면 = `paywall_viewed.metadata.surface`</li>
               <li>• 유입 채널 = `site_visits` 를 `user_id` 로 조인, 사용자별 최초 방문 행의
                 utm_source → referrer_host → &lsquo;직접 유입&rsquo; 순</li>

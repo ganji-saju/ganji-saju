@@ -93,6 +93,7 @@ interface FunnelRow {
   package_id: string | null;
   reason: string | null;
   created_at: string;
+  order_id: string | null;
   user_id: string | null;
   metadata: Record<string, unknown> | null;
 }
@@ -134,6 +135,39 @@ function buildDateAxis(windowDays: number): string[] {
     dates.push(d.toISOString().slice(0, 10));
   }
   return dates;
+}
+
+/**
+ * 2026-08-26 — 진입점 보강. `payment_orders.entry_source` 는 prepare 가 주문을 만들 때
+ * 항상 남기므로(prepare/route.ts `entrySource: from`), confirm 계열 이벤트가 metadata 에
+ * from 을 안 실어도 order_id 로 되찾을 수 있다. 과거 행까지 같이 살아난다.
+ */
+async function resolveOrderEntrySources(
+  supabase: SupabaseClient,
+  orderIds: readonly string[]
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const unique = Array.from(new Set(orderIds));
+  if (unique.length === 0) return map;
+
+  // .in() 은 URL 길이 제약이 있어 청크로 나눈다.
+  const CHUNK = 200;
+  for (let i = 0; i < unique.length; i += CHUNK) {
+    const chunk = unique.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('payment_orders')
+      .select('order_id, entry_source')
+      .in('order_id', chunk);
+
+    if (error) {
+      console.error('[funnel-stats] payment_orders entry_source lookup failed:', error.message);
+      return map;
+    }
+    for (const row of (data ?? []) as Array<{ order_id: string | null; entry_source: string | null }>) {
+      if (row.order_id && row.entry_source) map.set(row.order_id, row.entry_source);
+    }
+  }
+  return map;
 }
 
 /**
@@ -208,7 +242,7 @@ export async function buildPaymentFunnelSnapshot(
     const from = page * PAGE_SIZE;
     const { data, error } = await supabase
       .from('payment_funnel_events')
-      .select('stage, package_id, reason, created_at, user_id, metadata')
+      .select('stage, package_id, reason, created_at, order_id, user_id, metadata')
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -233,6 +267,11 @@ export async function buildPaymentFunnelSnapshot(
   const failedReasonCount = new Map<string, number>();
   const packageStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
   const entryStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
+  const pendingEntries: Array<{
+    stage: 'prepare_attempt' | 'confirm_success';
+    from: string | null;
+    orderId: string | null;
+  }> = [];
   const surfaceCount = new Map<string, number>();
   const payerIds = new Set<string>();
 
@@ -264,12 +303,16 @@ export async function buildPaymentFunnelSnapshot(
       packageStats.set(row.package_id, slot);
     }
     if (stage === 'prepare_attempt' || stage === 'confirm_success') {
-      // from 이 없으면 '(미지정)' 으로 모은다 — 버리면 합이 안 맞아 표를 못 믿는다.
-      const entry = readMetaString(row.metadata, 'from') ?? '(미지정)';
-      const slot = entryStats.get(entry) ?? { prepareAttempt: 0, confirmSuccess: 0 };
-      if (stage === 'prepare_attempt') slot.prepareAttempt += 1;
-      if (stage === 'confirm_success') slot.confirmSuccess += 1;
-      entryStats.set(entry, slot);
+      // 2026-08-26 — confirm_success 를 쓰는 3경로(confirm route·nicepay return·reconciliation)가
+      //   모두 metadata 에 from 을 안 싣는다. 게다가 reconciliation 은 **예전 결제**를 지금
+      //   confirm_success 로 기록해서, 짝이 되는 prepare 가 윈도우 밖이면 그 결제는 통째로
+      //   진입점 미상이 된다(=진입점 카드가 '(미지정)' 하나로만 채워지던 원인).
+      //   그래서 여기서 즉시 세지 않고, 아래 2패스에서 payment_orders.entry_source 로 보강한다.
+      pendingEntries.push({
+        stage,
+        from: readMetaString(row.metadata, 'from'),
+        orderId: row.order_id,
+      });
     }
     if (stage === 'confirm_success' && row.user_id) payerIds.add(row.user_id);
   }
@@ -300,6 +343,20 @@ export async function buildPaymentFunnelSnapshot(
       conversionRate: rate(s.confirmSuccess, s.prepareAttempt),
     }))
     .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
+
+  const orderEntrySources = await resolveOrderEntrySources(
+    supabase,
+    pendingEntries.filter((e) => !e.from && e.orderId).map((e) => e.orderId as string)
+  );
+  for (const pending of pendingEntries) {
+    // from 도 entry_source 도 없으면 '(미지정)' 으로 모은다 — 버리면 합이 안 맞아 표를 못 믿는다.
+    const entry =
+      pending.from ?? (pending.orderId ? orderEntrySources.get(pending.orderId) : null) ?? '(미지정)';
+    const slot = entryStats.get(entry) ?? { prepareAttempt: 0, confirmSuccess: 0 };
+    if (pending.stage === 'prepare_attempt') slot.prepareAttempt += 1;
+    if (pending.stage === 'confirm_success') slot.confirmSuccess += 1;
+    entryStats.set(entry, slot);
+  }
 
   const byEntry: PaymentFunnelByEntry[] = Array.from(entryStats.entries())
     .map(([entry, s]) => ({
