@@ -408,6 +408,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             </article>
           </section>
 
+          {/* 2026-08-26 — 신뢰 요소를 결제 흐름 **끝**(약관 동의·알림 입력 뒤, doc-y 1459)에서
+              금액 요약 바로 아래로 이동. 결제 버튼은 하단 고정 바라 늘 보이는데, '왜 사도 되는지'만
+              판단이 끝난 뒤에 나오던 배치였다. */}
+          <ReportTrustNotes />
+
           {/* §3 결제 수단 — 2026-07-18 삭제. 여기 있던 카드는 라디오처럼 생겼지만 아무것도
               선택되지 않는 순수 장식이었고, 진짜 선택기(TossPaymentMethodPicker "결제 방식")가
               바로 아래 §5 안에 또 있었다. 같은 화면에 결제수단 UI 가 둘 — 하나는 먹통 —
@@ -522,8 +527,6 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                       entrySource={from ?? 'membership'}
                     />
                   </div>
-                  {/* 2026-08-24 Phase 0 — 결제 직전 신뢰 요소(자격·샘플·환불). PPT 의문 ②③⑤ 대응. */}
-                  <ReportTrustNotes className="mt-4" />
                 </>
               ) : (
                 <div className="grid gap-3 text-center">
