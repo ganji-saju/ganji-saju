@@ -357,6 +357,8 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     productEntitlements,
     creditTransactions,
     paymentOrders: (orderHistoryRows ?? []) as unknown as PaymentOrderHistoryRow[],
+    // 환불 감사 행은 isCashCreditTransaction 이 걸러내므로 **필터 전 원본**을 따로 넘긴다.
+    creditRefunds: allCreditTransactions,
   });
 
   const { count: dialogueCount } = await supabase

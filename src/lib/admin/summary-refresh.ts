@@ -89,6 +89,8 @@ async function computeUserSummary(
     productEntitlements,
     creditTransactions: cashCredit,
     paymentOrders,
+    // 환불 감사 행(feature='credit_refund')은 cashCredit 에서 빠지므로 원본을 넘긴다.
+    creditRefunds: allCredit,
   });
 
   const { data: lotRows } = await service
