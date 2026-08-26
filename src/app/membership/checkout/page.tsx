@@ -37,6 +37,7 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { GtmViewItem } from '@/components/analytics/gtm-view-item';
 
 interface Props {
   searchParams: Promise<{
@@ -359,6 +360,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             같은 기능이 두 줄을 차지할 이유가 없어졌다(첫 콘텐츠 192px → 64px). */}
 
         <section className="space-y-5 px-1">
+          {/* 2026-08-26 — GA4 view_item. 결제창 도달 = 상품 상세 도달이다.
+              begin_checkout(버튼 클릭)보다 한 칸 앞이라 상세→시작→완료 퍼널이 완성된다. */}
+          {paymentPackage ? (
+            <GtmViewItem
+              productType={paymentPackage.id}
+              value={chargeAmount ?? paymentPackage.price}
+              itemName={selected.title}
+              itemCategory={paymentPackage.kind}
+            />
+          ) : null}
+
           {/* §1 주문 요약 — pink-soft + ZodiacChip + 상품 */}
           <article
             className="rounded-[18px] border border-[var(--app-line)] p-5"

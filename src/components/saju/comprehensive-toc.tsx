@@ -16,6 +16,7 @@ import {
   COMPREHENSIVE_FREE_ITEMS,
   COMPREHENSIVE_LOCKED_ITEMS,
 } from './comprehensive-toc-items';
+import { GtmViewItem } from '@/components/analytics/gtm-view-item';
 
 export interface ComprehensiveTocProps {
   slug: string;
@@ -81,6 +82,15 @@ export function ComprehensiveToc({ slug, hookLine, priceLabel, compareLabel, cla
           </li>
         ))}
       </ul>
+
+      {/* 2026-08-26 — GA4 view_item. 이 목차가 곧 '상품 상세'다(가격·구성·잠금 항목을 보여주는
+          유일한 화면). 여기서 안 쏘면 상세→결제 퍼널의 첫 칸이 영원히 0 이다. */}
+      <GtmViewItem
+        productType="bundle_comprehensive"
+        value={Number(priceLabel.replace(/[^\d]/g, '')) || 0}
+        itemName="종합 리포트"
+        itemCategory="bundle"
+      />
 
       {hookLine ? (
         <p className="mt-4 rounded-[12px] bg-[var(--app-ink)] px-4 py-3 text-center text-[15.2px] font-bold leading-relaxed text-white">
