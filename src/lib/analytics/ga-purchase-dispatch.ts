@@ -24,6 +24,29 @@ interface GaOrderRow {
 const ORDER_COLUMNS =
   'order_id, user_id, package_id, amount, payment_method_code, ga_client_id, ga_session_id, analytics_consent';
 
+/** 결제 이력이 있는 것으로 보는 종료 상태. 환불된 과거 결제도 '첫 구매 아님' 으로 센다. */
+const PURCHASED_STATUSES = ['confirmed', 'fulfilling', 'fulfilled', 'refunded'];
+
+/**
+ * 이번 결제가 이 사용자의 첫 결제인가. 모르면 **null 을 그대로 둔다** —
+ * 추측해서 true 를 넣으면 신규 CAC 가 부풀고, false 를 넣으면 신규가 사라진다.
+ */
+async function resolveIsFirstPurchase(
+  service: Awaited<ReturnType<typeof createServiceClient>>,
+  userId: string | null,
+  orderId: string
+): Promise<boolean | null> {
+  if (!userId) return null;
+  const { count, error } = await service
+    .from('payment_orders')
+    .select('order_id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .in('status', PURCHASED_STATUSES)
+    .neq('order_id', orderId);
+  if (error) return null;
+  return (count ?? 0) === 0;
+}
+
 /** 상품 계열 — item_id 와 같은 값을 넣으면 계열별 매출 분해가 안 된다. */
 function resolveItemCategory(packageId: string): string {
   const pkg = getPackage(packageId);
@@ -73,6 +96,8 @@ export async function dispatchGaPurchase(orderId: string): Promise<GaSendResult>
     const packageId = row.package_id ?? '(unknown)';
     const amount = Math.max(0, Number(row.amount) || 0);
 
+    const isFirstPurchase = await resolveIsFirstPurchase(service, row.user_id, row.order_id);
+
     const result = await sendGaPurchase({
       clientId: row.ga_client_id,
       sessionId: row.ga_session_id,
@@ -81,7 +106,7 @@ export async function dispatchGaPurchase(orderId: string): Promise<GaSendResult>
       value: amount,
       paymentMethod: row.payment_method_code,
       productType: packageId,
-      isFirstPurchase: null,
+      isFirstPurchase,
       items: buildItems(packageId, amount),
       consent: row.analytics_consent,
     });

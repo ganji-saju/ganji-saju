@@ -18,6 +18,14 @@ const REQUEST_TIMEOUT_MS = 8_000;
 /** MP 가 이벤트를 폐기하는 경계. 이보다 오래된 확정은 보내도 사라진다. */
 export const MP_MAX_EVENT_AGE_MS = 72 * 60 * 60 * 1000;
 
+/**
+ * GA4 맞춤 측정기준 값 정규화. GA4 는 대소문자를 구분해 'CARD'/'card' 를 다른 값으로 센다 —
+ * 소스가 하나여도 나중에 다른 경로가 붙으면 리포트가 조용히 쪼개진다.
+ */
+export function normalizeGaDimension(value: string): string {
+  return value.trim().toLowerCase();
+}
+
 export interface GaPurchaseItem {
   itemId: string;
   itemName: string;
@@ -134,7 +142,12 @@ export function buildPurchaseEvent(input: GaPurchaseInput): MpEvent {
       // value 는 항상 Σ(price × quantity) 와 일치시킨다. 쿠폰 할인은 value 를 실결제액으로
       // 낮추고 coupon 파라미터를 따로 넣는 것이 GA4 표준이다.
       value: input.value,
-      ...(input.paymentMethod ? { payment_method: input.paymentMethod } : {}),
+      // 2026-08-26 — GA4 는 대소문자를 구분한다. 'CARD' 와 'card' 가 섞이면 리포트가 두 행으로
+      //   갈려 결제수단별 전환율을 못 본다. **전송 시점**에만 정규화한다 —
+      //   payment_orders.payment_method_code 는 PG 어휘 스냅샷이라 건드리지 않는다.
+      ...(input.paymentMethod
+        ? { payment_method: normalizeGaDimension(input.paymentMethod) }
+        : {}),
       product_type: input.productType,
       ...(input.isFirstPurchase == null
         ? {}

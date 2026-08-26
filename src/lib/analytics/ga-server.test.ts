@@ -1,7 +1,7 @@
 // 2026-08-26 회귀 가드 — MP purchase/refund 페이로드.
 //   문서(설계)가 "가장 흔한 실패" 로 지목한 항목들을 그대로 단언한다.
 import assert from 'node:assert/strict';
-import { buildPurchaseEvent, buildRefundEvent } from './ga-server';
+import { buildPurchaseEvent, buildRefundEvent, normalizeGaDimension } from './ga-server';
 
 declare const test: (name: string, fn: () => void) => void;
 
@@ -74,4 +74,21 @@ test('refund: 원거래와 같은 transaction_id 여야 매출이 차감된다',
   assert.equal(e.params.transaction_id, 'ord_abc');
   assert.equal(e.params.value, 3300, '부분 환불이면 환불 금액만');
   assert.equal(e.params.currency, 'KRW');
+});
+
+// 2026-08-26 실결제 관통 테스트 피드백 반영 — 수신 페이로드에서 잡힌 두 결함.
+test('purchase: payment_method 는 소문자로 정규화 — GA4 는 CARD/card 를 다른 값으로 센다', () => {
+  const e = buildPurchaseEvent({ ...BASE, paymentMethod: 'CARD' });
+  assert.equal(e.params.payment_method, 'card');
+  assert.equal(normalizeGaDimension('  KakaoPay '), 'kakaopay');
+});
+
+test('purchase: is_first_purchase 는 문자열로 실린다(GA4 맞춤 측정기준은 문자열 범위)', () => {
+  assert.equal(buildPurchaseEvent({ ...BASE, isFirstPurchase: true }).params.is_first_purchase, 'true');
+  assert.equal(buildPurchaseEvent({ ...BASE, isFirstPurchase: false }).params.is_first_purchase, 'false');
+});
+
+test('purchase: 첫 구매 여부를 모르면 키를 넣지 않는다 — 추측하면 신규 CAC 가 틀어진다', () => {
+  const e = buildPurchaseEvent({ ...BASE, isFirstPurchase: null });
+  assert.ok(!('is_first_purchase' in e.params));
 });
