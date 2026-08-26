@@ -144,7 +144,7 @@ export default function SampleReportPage() {
             내 깊은 사주풀이 만들기
           </TrackedLink>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid gap-2.5">
             {SAMPLE_REPORT_TEASERS.map((item) => (
               <div key={item.label} style={SOFT_FEATURE_STYLE}>
                 <div
@@ -166,7 +166,7 @@ export default function SampleReportPage() {
 
         {/* §결제 전 확인 — 좌측 안내 + 우측 grid */}
         <article className="mx-[0.25rem]" style={PANEL_STYLE}>
-          <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+          <div className="grid gap-4">
             <div>
               <div style={KICKER_STYLE}>결제 전 확인</div>
               <h2
@@ -201,7 +201,7 @@ export default function SampleReportPage() {
                 </Link>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2.5">
               {REPORT_PREVIEW_VALUE_POINTS.map((item) => (
                 <div key={item.title} style={SOFT_FEATURE_STYLE}>
                   <h3
@@ -231,7 +231,7 @@ export default function SampleReportPage() {
           >
             사용자는 상품명이 아니라, 자기 문제의 이름으로 들어옵니다
           </h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid gap-2.5">
             {QUESTION_ENTRY_POINTS.map((entry) => (
               <div key={entry.slug} style={SOFT_FEATURE_STYLE}>
                 <div
@@ -266,7 +266,7 @@ export default function SampleReportPage() {
           >
             리포트 첫 1분 안에 무엇을 확인하게 되는지 먼저 보여드립니다
           </h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5">
             <div style={SOFT_FEATURE_STYLE}>
               <div
                 className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
@@ -373,7 +373,7 @@ export default function SampleReportPage() {
           >
             처음부터 큰 리포트가 부담스러우면 작은 풀이로 먼저 확인합니다
           </h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-2.5">
             {TASTE_PRODUCTS.filter((product) => !product.compatibilityOnly).map((product) => (
               <div key={product.slug} style={SOFT_FEATURE_STYLE}>
                 <div
@@ -414,7 +414,7 @@ export default function SampleReportPage() {
           >
             과장 없이 실제 제공되는 형태를 그대로 표시합니다.
           </p>
-          <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+          <dl className="mt-4 grid gap-2.5">
             <div style={SOFT_FEATURE_STYLE}>
               <dt
                 className="text-[12.1px] font-extrabold uppercase tracking-[0.04em]"
