@@ -175,6 +175,39 @@ test('executeRefund: 전액 환불이면 cancelAmount 를 보내지 않는다(�
 
 // 위험 방향이 비대칭이다 — 과다환불이 환불 실패보다 훨씬 비싸다.
 //   원결제액을 모르면 전액이라고 단정하지 않고 부분취소로 보낸다.
+// 2026-08-27 — cancelAmt 규칙을 refund_kind 가 아니라 **금액**으로만 가른다.
+//   종류로 갈랐을 때의 잠재 결함: product 가 부분환불을 도입하면 조건이 false 가 되어
+//   cancelAmt 없이 나가고 **전액취소 = 과다환불**이 된다. 오늘은 product 가 항상 전액이라
+//   드러나지 않을 뿐이라, 값이 아니라 규칙을 고정한다.
+test('executeRefund: product 부분환불도 cancelAmount 를 보낸다(종류로 가르지 않는다)', async () => {
+  const { deps, tossArgs } = makeDeps({
+    refundKind: 'product',
+    amount: 3300,
+    originalAmount: 9900,
+    tossOk: true,
+    revokeOk: true,
+  });
+  await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(
+    (tossArgs[0] as { cancelAmount: number }).cancelAmount,
+    3300,
+    'product 라는 이유로 생략하면 9,900 전액이 취소된다 = 과다환불'
+  );
+});
+
+// 오늘 성공한 product 환불 4건(번들 9,900 ×2 · 점수 3,300 · 궁합 3,300)의 실동작 보존.
+test('executeRefund: product 전액환불은 지금처럼 cancelAmount 없이 나간다', async () => {
+  const { deps, tossArgs } = makeDeps({
+    refundKind: 'product',
+    amount: 9900,
+    originalAmount: 9900,
+    tossOk: true,
+    revokeOk: true,
+  });
+  await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.ok(!('cancelAmount' in (tossArgs[0] as Record<string, unknown>)));
+});
+
 test('executeRefund: 원결제액을 모르면 전액이라 단정하지 않고 cancelAmount 를 보낸다', async () => {
   const { deps, tossArgs } = makeDeps({
     refundKind: 'credit_purchase',
