@@ -19,6 +19,7 @@ import { CANONICAL_SITE_URL } from '@/lib/site';
 import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { getOAuthLoginError } from '@/lib/auth/oauth-login-error';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 
@@ -130,38 +131,6 @@ function getRedirectOrigin() {
   }
 
   return CANONICAL_SITE_ORIGIN;
-}
-
-function getProviderLabel(value: string | null) {
-  if (value === 'google') return 'Google';
-  if (value === 'kakao') return '카카오';
-  return '소셜';
-}
-
-function getOAuthLoginError(error: string | null, provider: string | null, reason: string | null) {
-  const providerLabel = getProviderLabel(provider);
-
-  if (error === 'oauth_config') {
-    return '로그인 환경변수가 비어 있습니다. Supabase URL과 공개 키를 운영 환경에 설정해 주세요.';
-  }
-
-  if (error === 'oauth_provider') {
-    return `${providerLabel} 로그인 제공자 설정이 아직 완료되지 않았습니다. Supabase Provider와 ${providerLabel} 개발자 콘솔의 콜백 주소를 확인해 주세요.`;
-  }
-
-  if (error === 'oauth_exchange') {
-    const normalizedReason = reason?.toLowerCase() ?? '';
-    if (normalizedReason.includes('code verifier')) {
-      return `${providerLabel} 로그인 세션 연결이 완료되지 않았습니다. 로그인 시작 주소와 콜백 주소가 달라졌을 수 있어요. 현재 창에서 다시 로그인해 주세요.`;
-    }
-    return `${providerLabel} 로그인 세션 연결이 완료되지 않았습니다. 브라우저 쿠키 허용과 Supabase Redirect URL 설정을 확인해 주세요.${reason ? ` (${reason})` : ''}`;
-  }
-
-  if (error === 'oauth') {
-    return `${providerLabel} 로그인 연결이 완료되지 않았습니다. Provider 설정과 리다이렉트 주소를 확인해 주세요.`;
-  }
-
-  return '';
 }
 
 function getPasswordLoginError(message?: string) {
