@@ -15,18 +15,40 @@ import { sendGaPurchase } from '@/lib/analytics/ga-server';
 
 export const dynamic = 'force-dynamic';
 
-/** 미전송 감시 — 확정됐는데 GA로 안 나간 주문. 문서 10번 '웹훅 지연 > 72시간' 대응. */
+const CONFIRMED_STATUSES = ['confirmed', 'fulfilling', 'fulfilled'];
+
+/**
+ * 미전송 감시 — 문서 10번 '웹훅 지연 > 72시간' 대응.
+ *
+ * ⚠️ 2026-08-26 정정: 처음엔 '확정됐는데 미전송' 을 통째로 셌는데, 계측 도입 **이전** 주문은
+ *   ga_client_id 가 없어 애초에 전송 대상이 아니다. 그걸 섞으면 이 숫자가 영원히 0 이 되지
+ *   않고, 0 이 안 되는 경보는 아무도 보지 않는다. 실제로 조치 가능한 것만 pending 으로 세고,
+ *   전송 불가분은 따로 보여준다.
+ */
 async function countPendingGaPurchases() {
   if (!hasSupabaseServiceEnv) return { available: false as const };
   try {
     const service = await createServiceClient();
-    const { count, error } = await service
-      .from('payment_orders')
-      .select('order_id', { count: 'exact', head: true })
-      .in('status', ['confirmed', 'fulfilling', 'fulfilled'])
-      .is('ga_purchase_sent_at', null);
-    if (error) return { available: true as const, error: error.message };
-    return { available: true as const, pending: count ?? 0 };
+    const base = () =>
+      service
+        .from('payment_orders')
+        .select('order_id', { count: 'exact', head: true })
+        .in('status', CONFIRMED_STATUSES)
+        .is('ga_purchase_sent_at', null);
+
+    // 조치 가능: 식별자가 있는데 아직 안 나간 것 → 0 이 정상이고, 쌓이면 진짜 문제다.
+    const pendingRes = await base().not('ga_client_id', 'is', null);
+    if (pendingRes.error) return { available: true as const, error: pendingRes.error.message };
+
+    // 귀속 불가: 계측 이전 주문 등. 전송하면 남의 세션에 매출이 붙으므로 의도적으로 안 보낸다.
+    const unattributedRes = await base().is('ga_client_id', null);
+
+    return {
+      available: true as const,
+      pending: pendingRes.count ?? 0,
+      unattributed: unattributedRes.error ? null : unattributedRes.count ?? 0,
+      note: 'pending 만 조치 대상입니다. unattributed 는 계측 이전 주문이라 전송하지 않습니다.',
+    };
   } catch (err) {
     return { available: true as const, error: err instanceof Error ? err.message : 'unknown' };
   }
