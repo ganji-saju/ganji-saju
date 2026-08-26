@@ -75,9 +75,19 @@ export async function viewerHasMenuPass(key: MenuPassKey): Promise<boolean> {
     return Boolean(
       await getTasteProductEntitlement(userId, MENU_PASSES[key].productId, buildDayPassScopeKey())
     );
-  } catch {
+  } catch (error) {
     // 조회 실패 시엔 통과 — 결제자를 잘못 막는 오류가 무료 열람 한 번보다 비싸다
     // (guardLockedFreeEntry 와 동일 원칙).
+    //
+    // ⚠️ 2026-08-26 — 그런데 이 catch 가 **아무 로그도 안 남겨서**, "990원 메뉴가 왜 무료로
+    //   열리지" 를 조사할 때 로그가 없다는 게 무죄의 증거처럼 보였다. 실제로는 조용히 전원
+    //   통과시키고 있었을 수 있다. 정책(통과)은 유지하되 반드시 관측 가능하게 남긴다 —
+    //   이 로그가 쌓이면 그게 곧 무료 유출의 증거다.
+    console.error('[menu-pass] 게이트 조회 실패 → 통과 처리(무료 열람 가능)', {
+      key,
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return true;
   }
 }
