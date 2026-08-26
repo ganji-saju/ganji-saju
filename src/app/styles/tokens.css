@@ -4,7 +4,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-body: var(--font-dalbit-sans), "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-body: var(--font-dalbit-sans), "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
   --font-sans: var(--font-body);
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -147,8 +147,10 @@
   --app-copy-muted: rgba(52, 48, 42, 0.8);
   /* 2026-06-22 가독성: 0.82(3.99:1, WCAG AA 미달) → 0.88(4.52:1 통과). 보조 텍스트 223+곳 동시 개선. */
   --app-copy-soft: rgba(64, 58, 50, 0.92);
-  --app-type-title: 700;
-  --app-type-emphasis: 600;
+  /* 2026-08-26 — Pretendard 전환과 함께 한 단계 완화(가변축이라 중간값 렌더 가능).
+     코드의 font-extrabold(800) 1,022곳은 mobile-polish 가 이 두 값으로 눌러 렌더한다. */
+  --app-type-title: 650;
+  --app-type-emphasis: 560;
   --app-type-body: 450;
   --app-type-caption: 400;
   --app-type-button: 650;

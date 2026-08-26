@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Gowun_Batang, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
+import { Gowun_Batang, Noto_Serif_KR } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import SupabaseRecoveryRedirect from "@/components/auth/supabase-recovery-redirect";
 import { DEFAULT_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
@@ -36,10 +37,15 @@ import "@/components/motion/motion-primitives.css";
 // → 400/500/700/800 4 weight 만 로드. 600/900/300 은 브라우저가 가장 가까운
 // 인접 weight 로 렌더 (semibold→700, black→800, light→400) — 한국어 글리프
 // 인지 차이 미미. 1022+71+317+4=1414/1602 (88%) 정확 매칭.
-const brandSans = Noto_Sans_KR({
-  weight: ["400", "500", "700", "800"],
+// 2026-08-26 — 기본 고딕 전면 교체(사용자 지시 "고딕이 너무 굵고 사이트 느낌을 해침"):
+//   Noto Sans KR → Pretendard Variable(셀프호스팅 woff2 1개, CSP 'self' 유지).
+//   같은 굵기에서 확연히 가볍고 자간·속공간이 시원해 한지 톤과 어울린다.
+//   가변축(45~920)이라 위 4-weight 페이로드 최적화 주석은 대체됨 — 파일 1개가 전 굵기 담당.
+const brandSans = localFont({
+  src: "./fonts/PretendardVariable.woff2",
   display: "swap",
   preload: false,
+  weight: "45 920",
   variable: "--font-dalbit-sans",
 });
 
