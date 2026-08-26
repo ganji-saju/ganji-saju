@@ -213,13 +213,12 @@ export function GangiSeasonBanner({
               banner.image
                 ? undefined
                 : {
+                    // 2026-08-26 — 배너 배경을 수호신 캐릭터 jpg 의 한지 종이톤(#f2e7d9 계열)과
+                    //   같은 계열로 통일(사용자 지시: 이미지와 배경이 안 어울림). 우상단 인주 기운.
                     background:
-                      banner.tone === 'soft'
-                        ? 'var(--app-pink-soft)'
-                        : banner.tone === 'night'
-                        ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
-                        : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-                    color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
+                      'radial-gradient(circle at 84% 16%, rgba(179, 55, 42, 0.08), transparent 44%), linear-gradient(160deg, #f8efe2 0%, #f2e7d8 62%, #ecdfcc 100%)',
+                    color: 'var(--app-ink)',
+                    border: '1px solid rgba(28, 26, 23, 0.08)',
                     minHeight: 128,
                   }
             }
@@ -260,7 +259,13 @@ export function GangiSeasonBanner({
                 alt=""
                 aria-hidden="true"
                 className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
-                style={{ objectFit: 'contain', objectPosition: 'right bottom' }}
+                style={{
+                  objectFit: 'contain',
+                  objectPosition: 'right bottom',
+                  // 좌측 페이드 — jpg 종이톤과 배너 한지톤의 미세한 경계를 지운다.
+                  WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
+                  maskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
+                }}
               />
             ) : null}
             {/* 한자 배경 (운/緣 등) */}
@@ -273,7 +278,7 @@ export function GangiSeasonBanner({
                 fontWeight: 700,
                 lineHeight: 1,
                 opacity: 0.08,
-                color: banner.tone === 'soft' ? 'var(--app-pink-strong)' : '#fff',
+                color: 'var(--app-pink-strong)',
               }}
             >
               {banner.character ? '' : '運'}
@@ -315,10 +320,7 @@ export function GangiSeasonBanner({
               <span
                 className="mt-3 inline-flex items-center gap-1 rounded-full"
                 style={{
-                  background:
-                    banner.tone === 'soft'
-                      ? 'var(--app-pink-strong)'
-                      : 'rgba(255,255,255,0.22)',
+                  background: 'var(--app-pink)',
                   color: '#fff',
                   fontSize: 14.5,
                   fontWeight: 800,

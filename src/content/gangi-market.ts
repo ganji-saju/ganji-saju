@@ -118,6 +118,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     description:
       '명리심리상담사 1급 등 전문 자격 5종 보유. 용어 나열이 아니라 "앞으로 어떻게"를 알려드립니다.',
     cta: '풀이 방식 보기',
+    character: 'ox', // 丑 우직·신뢰 — '왜 믿을 수 있나' 배너와 정합
     // 2026-08-26 — 착지를 기술 감사 페이지(/verification)에서 설득 스토리(WhyGangiStory,
     //   사주 입력 하단 #why-gangi)로: 30~60대 방문자에게 맞는 '왜 여기서 봐야 하나' 화면.
     href: '/saju/new#why-gangi',
@@ -129,6 +130,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '사주·명리·타로 전문 상담사',
     description: '경험과 해석력을 갖춘 상담사와 믿고 상담하세요.',
     cta: '전문 상담 보기',
+    character: 'dog', // 戌 충직·수호 — 상담사 신뢰 톤
     href: '/dialogue',
     tone: 'soft',
   },
@@ -138,6 +140,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '말 못 할 고민, 바로 상담',
     description: '연애·진로·인간관계·마음고민, 혼자 끌어안지 말고 편하게 이야기해요.',
     cta: '바로 상담하기',
+    character: 'snake', // 巳 — 대화상담 카드와 동일 정체성
     href: '/dialogue',
     tone: 'soft',
   },
@@ -147,6 +150,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '공짜로 보는 운세·타로',
     description: '오늘의 운세와 타로를 무료로 가볍게 시작해보세요.',
     cta: '무료로 보기',
+    character: 'rabbit', // 卯 — 타로 카드와 동일 정체성
     href: '/tarot/daily',
     tone: 'soft',
   },
@@ -156,6 +160,7 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '꿈자리가 도대체 왜 이래',
     description: '당신의 꿈, 어떤 메시지를 담고 있을까요?',
     cta: '꿈 풀이 보기',
+    character: 'pig', // 亥 — 꿈해몽 카드와 동일 정체성
     href: '/dream',
     tone: 'night',
   },
