@@ -393,6 +393,97 @@ export function PaymentFunnelDashboard() {
             </section>
           ) : null}
 
+          {/* 2026-08-26 — '어디서 들어와 뭘 보고 결제했나'. 계측은 2026-05-16 부터 metadata 에
+              쌓이고 있었는데 집계기가 metadata 를 아예 안 읽어 화면이 없었다. */}
+          {snap.byEntry.length > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                진입점 별 전환 (사이트 안)
+              </h2>
+              <div className="mt-2 grid gap-1.5">
+                {snap.byEntry.map((e) => (
+                  <article
+                    key={e.entry}
+                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    style={{ borderColor: 'var(--app-line)' }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-extrabold text-[var(--app-ink)]">{e.entry}</span>
+                      <span className="tabular-nums text-[var(--app-copy-muted)]">
+                        {fmtNum(e.prepareAttempt)} → {fmtNum(e.confirmSuccess)}
+                      </span>
+                      <span
+                        className="tabular-nums font-extrabold"
+                        style={{ color: 'var(--app-jade)' }}
+                      >
+                        {fmtPct(e.conversionRate)}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {snap.paywallSurfaces.length > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                뭘 보고 결제했나 — 페이월 노출 화면
+              </h2>
+              <div className="mt-2 grid gap-1.5">
+                {snap.paywallSurfaces.map((s) => (
+                  <article
+                    key={s.surface}
+                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    style={{ borderColor: 'var(--app-line)' }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-extrabold text-[var(--app-ink)]">{s.surface}</span>
+                      <span className="tabular-nums text-[var(--app-copy-muted)]">
+                        노출 {fmtNum(s.views)}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {snap.payerChannelCoverage.total > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                결제자 유입 채널 (사이트 밖)
+              </h2>
+              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+                결제자 {fmtNum(snap.payerChannelCoverage.total)}명 중{' '}
+                {fmtNum(snap.payerChannelCoverage.matched)}명만 채널이 확인됩니다 — 첫 방문이
+                비로그인이면 그 방문 기록에 계정이 안 붙어 조인되지 않습니다.
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {snap.payerChannels.length > 0 ? (
+                  snap.payerChannels.map((c) => (
+                    <article
+                      key={c.channel}
+                      className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                      style={{ borderColor: 'var(--app-line)' }}
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-extrabold text-[var(--app-ink)]">{c.channel}</span>
+                        <span className="tabular-nums text-[var(--app-copy-muted)]">
+                          결제자 {fmtNum(c.payers)}명
+                        </span>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <p className="px-1 text-[13px] text-[var(--app-copy-muted)]">
+                    조인된 방문 기록이 없습니다.
+                  </p>
+                )}
+              </div>
+            </section>
+          ) : null}
+
           <article
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
@@ -408,6 +499,10 @@ export function PaymentFunnelDashboard() {
               <li>• prepare 단계: POST /api/payments/prepare 진입 / 차단 / 준비 완료</li>
               <li>• confirm 단계: POST /api/payments/confirm 진입 / 성공 / 실패</li>
               <li>• 전체 전환 = confirm_success / prepare_attempt</li>
+              <li>• 진입점 = `metadata.from` (결제창으로 넘어온 사이트 안 화면)</li>
+              <li>• 페이월 노출 화면 = `paywall_viewed.metadata.surface`</li>
+              <li>• 유입 채널 = `site_visits` 를 `user_id` 로 조인, 사용자별 최초 방문 행의
+                utm_source → referrer_host → &lsquo;직접 유입&rsquo; 순</li>
               <li>• KST(UTC+9) 자정 단위 일별 집계 · best-effort 로깅</li>
             </ul>
           </article>

@@ -44,6 +44,26 @@ export interface PaymentFunnelByPackage {
   conversionRate: number | null;
 }
 
+/** 2026-08-26 — 사이트 **안** 진입점(metadata.from). 어느 화면에서 결제창으로 왔나. */
+export interface PaymentFunnelByEntry {
+  entry: string;
+  prepareAttempt: number;
+  confirmSuccess: number;
+  conversionRate: number | null;
+}
+
+/** 2026-08-26 — 어떤 화면의 페이월을 봤나(paywall_viewed.metadata.surface). */
+export interface PaymentFunnelSurfaceView {
+  surface: string;
+  views: number;
+}
+
+/** 2026-08-26 — 결제자의 사이트 **밖** 유입 채널(site_visits 를 user_id 로 조인). */
+export interface PaymentFunnelByChannel {
+  channel: string;
+  payers: number;
+}
+
 export interface PaymentFunnelSnapshot {
   /** ISO timestamp generated. */
   generatedAt: string;
@@ -58,13 +78,28 @@ export interface PaymentFunnelSnapshot {
   failedReasons: PaymentFunnelBlockReason[];
   /** 패키지 별 전환 (prepareAttempt desc). */
   byPackage: PaymentFunnelByPackage[];
+  /** 사이트 안 진입점 별 전환 (prepareAttempt desc). */
+  byEntry: PaymentFunnelByEntry[];
+  /** 페이월 노출 화면 별 (views desc). */
+  paywallSurfaces: PaymentFunnelSurfaceView[];
+  /** 결제자 유입 채널 (payers desc). site_visits 조인 실패/미매칭이면 빈 배열. */
+  payerChannels: PaymentFunnelByChannel[];
+  /** 채널을 찾아낸 결제자 수 / 전체 결제자 수 — 커버리지를 숨기지 않는다. */
+  payerChannelCoverage: { matched: number; total: number };
 }
 
 interface FunnelRow {
-  stage: PaymentFunnelStage;
+  stage: PaymentFunnelStage | 'paywall_viewed';
   package_id: string | null;
   reason: string | null;
   created_at: string;
+  user_id: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+function readMetaString(metadata: Record<string, unknown> | null, key: string): string | null {
+  const value = metadata?.[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -101,6 +136,57 @@ function buildDateAxis(windowDays: number): string[] {
   return dates;
 }
 
+/**
+ * 2026-08-26 — 결제자의 **사이트 밖** 유입 채널. payment_funnel_events 에는 utm 이 없고
+ * site_visits 에만 있어서, 결제는 항상 로그인이 필요하다는 점을 이용해 `user_id` 로 잇는다.
+ * 채널은 사용자별 **가장 이른 방문 행** 기준(utm_source > referrer_host > '직접 유입').
+ *
+ * ⚠️ 한계: 첫 유입이 비로그인이면 그 행의 user_id 는 null 이라 이 조인에 안 잡힌다.
+ *   그래서 커버리지(matched/total)를 같이 돌려주고 화면에 그대로 적는다 — 분모를 숨기면
+ *   "채널 상위 3개"가 전체처럼 보인다.
+ */
+async function resolvePayerChannels(
+  supabase: SupabaseClient,
+  payerIds: ReadonlySet<string>
+): Promise<{ payerChannels: PaymentFunnelByChannel[]; matchedPayers: number }> {
+  if (payerIds.size === 0) return { payerChannels: [], matchedPayers: 0 };
+  // .in() 은 URL 길이 제약이 있어 상한을 둔다(결제자 수가 이 규모면 별도 집계가 맞다).
+  const ids = Array.from(payerIds).slice(0, 500);
+
+  const { data, error } = await supabase
+    .from('site_visits')
+    .select('user_id, date_key, utm_source, referrer_host')
+    .in('user_id', ids)
+    .order('date_key', { ascending: true });
+
+  if (error) {
+    console.error('[funnel-stats] site_visits join failed:', error.message);
+    return { payerChannels: [], matchedPayers: 0 };
+  }
+
+  const firstByUser = new Map<string, string>();
+  for (const row of (data ?? []) as Array<{
+    user_id: string | null;
+    utm_source: string | null;
+    referrer_host: string | null;
+  }>) {
+    if (!row.user_id || firstByUser.has(row.user_id)) continue; // date_key asc → 첫 행이 최초 방문
+    firstByUser.set(row.user_id, row.utm_source || row.referrer_host || '직접 유입');
+  }
+
+  const channelCount = new Map<string, number>();
+  for (const channel of firstByUser.values()) {
+    channelCount.set(channel, (channelCount.get(channel) ?? 0) + 1);
+  }
+
+  return {
+    payerChannels: Array.from(channelCount.entries())
+      .map(([channel, payers]) => ({ channel, payers }))
+      .sort((a, b) => b.payers - a.payers),
+    matchedPayers: firstByUser.size,
+  };
+}
+
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 50;
 
@@ -122,7 +208,7 @@ export async function buildPaymentFunnelSnapshot(
     const from = page * PAGE_SIZE;
     const { data, error } = await supabase
       .from('payment_funnel_events')
-      .select('stage, package_id, reason, created_at')
+      .select('stage, package_id, reason, created_at, user_id, metadata')
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -146,9 +232,19 @@ export async function buildPaymentFunnelSnapshot(
   const blockedReasonCount = new Map<string, number>();
   const failedReasonCount = new Map<string, number>();
   const packageStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
+  const entryStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
+  const surfaceCount = new Map<string, number>();
+  const payerIds = new Set<string>();
 
   for (const row of rows) {
     const stage = row.stage;
+    // 2026-08-26 — paywall_viewed 는 STAGES 밖(퍼널 분모 전용 stage)이라 아래 guard 에서
+    //   잘려나갔다. totals 를 건드리지 않도록 guard **앞**에서 surface 만 집계한다.
+    if (stage === 'paywall_viewed') {
+      const surface = readMetaString(row.metadata, 'surface');
+      if (surface) surfaceCount.set(surface, (surfaceCount.get(surface) ?? 0) + 1);
+      continue;
+    }
     if (!STAGES.includes(stage)) continue;
     totals[stage] += 1;
     const dateKey = toKstDateKey(row.created_at);
@@ -167,6 +263,15 @@ export async function buildPaymentFunnelSnapshot(
       if (stage === 'confirm_success') slot.confirmSuccess += 1;
       packageStats.set(row.package_id, slot);
     }
+    if (stage === 'prepare_attempt' || stage === 'confirm_success') {
+      // from 이 없으면 '(미지정)' 으로 모은다 — 버리면 합이 안 맞아 표를 못 믿는다.
+      const entry = readMetaString(row.metadata, 'from') ?? '(미지정)';
+      const slot = entryStats.get(entry) ?? { prepareAttempt: 0, confirmSuccess: 0 };
+      if (stage === 'prepare_attempt') slot.prepareAttempt += 1;
+      if (stage === 'confirm_success') slot.confirmSuccess += 1;
+      entryStats.set(entry, slot);
+    }
+    if (stage === 'confirm_success' && row.user_id) payerIds.add(row.user_id);
   }
 
   const overallConversionRate = rate(totals.confirm_success, totals.prepare_attempt);
@@ -196,6 +301,21 @@ export async function buildPaymentFunnelSnapshot(
     }))
     .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
 
+  const byEntry: PaymentFunnelByEntry[] = Array.from(entryStats.entries())
+    .map(([entry, s]) => ({
+      entry,
+      prepareAttempt: s.prepareAttempt,
+      confirmSuccess: s.confirmSuccess,
+      conversionRate: rate(s.confirmSuccess, s.prepareAttempt),
+    }))
+    .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
+
+  const paywallSurfaces: PaymentFunnelSurfaceView[] = Array.from(surfaceCount.entries())
+    .map(([surface, views]) => ({ surface, views }))
+    .sort((a, b) => b.views - a.views);
+
+  const { payerChannels, matchedPayers } = await resolvePayerChannels(supabase, payerIds);
+
   return {
     generatedAt: new Date().toISOString(),
     windowDays,
@@ -210,5 +330,9 @@ export async function buildPaymentFunnelSnapshot(
     blockedReasons,
     failedReasons,
     byPackage,
+    byEntry,
+    paywallSurfaces,
+    payerChannels,
+    payerChannelCoverage: { matched: matchedPayers, total: payerIds.size },
   };
 }

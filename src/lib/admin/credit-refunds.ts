@@ -92,10 +92,15 @@ export function buildCreditRefundItem(
   const packageId = readString(row.metadata, 'packageId');
   const orderId = readString(row.metadata, 'orderId');
   const pkg = getPackage(packageId);
-  // 2026-07-04 감사 — 카탈로그에서 폐지된 구 전팩(credit_1/3/7 등)은 pkg=null 이라
-  // 환불 대상 판정 자체가 안 되던 문제: packageId 접두사로도 전팩 판정.
-  const isCreditPack = pkg ? pkg.kind === 'credits' : Boolean(packageId?.startsWith('credit_'));
-  if (!paymentKey || !isCreditPack) return null;
+  // 2026-08-26 — 전팩(kind==='credits') 여부 게이트를 제거한다. 대화상담 질문 3회
+  //   (taste_dialogue_entry, 990원)는 전달물이 이용권이 아니라 **전 3개**라 이용권 행을
+  //   안 만드는데(재구매 허용 목적), 여기서 taste_product 라는 이유로 잘려 나가 결제·번들·
+  //   전 3경로 **어디에도** 안 잡혔다 = 실결제를 관리자 화면에서 환불할 수 없었다.
+  //   같은 함수를 /api/admin/refund 실행 경로도 쓰므로 id 를 알아도 실행 불가였다.
+  //   판정 근거는 이미 충분하다: type==='purchase' + amount>0 + paymentKey 가 있으면
+  //   그 자체로 '돈 내고 받은 전'이다. 멤버십 적립은 type==='subscription'(getCreditGrantType)
+  //   이라 위 `row.type !== 'purchase'` 가드에서 이미 걸러져 중복 계상되지 않는다.
+  if (!paymentKey) return null;
 
   const matchedLots = lots.filter((lot) => matchLotToPayment(lot, paymentKey, now));
   const coinsPurchased =
