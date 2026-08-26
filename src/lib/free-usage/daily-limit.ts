@@ -14,6 +14,9 @@
 //   · 로그인 사용자는 쿠키·계정 **둘 다** 소비한다. 계정 기록이 진실이고, 쿠키는 같은 기기에서
 //     로그아웃 후 이어 쓰는 것을 막는 보조 장치.
 //
+// 2026-08-26 정정 — 위 "보조 장치" 가 **차단에도** 쓰이고 있었다(아래 deviceCookieBlocks 참고).
+//   그 결과 기기 하나 = 계정 하나가 되어, 다른 아이디로 로그인해도 무료 1회를 못 썼다.
+//
 // 멤버십 회원은 제한 대상이 아니다 — 이미 결제한 사용자를 무료 요약에서 막는 건 순수 손해라
 //   호출부에서 isPremiumMember 등으로 선판정해 skip 한다(이 모듈은 판정하지 않는다).
 
@@ -40,6 +43,26 @@ export const FREE_DAILY_SURFACES = {
 } as const;
 
 export type FreeSurface = keyof typeof FREE_DAILY_SURFACES;
+
+/**
+ * 기기 쿠키가 무료 1회를 막는가.
+ *
+ * 2026-08-26 🔴 사용자 제보: "같은 컴퓨터에서 다른 아이디로 로그인해도 한 번밖에 못 본다."
+ *   원인이 여기였다 — 쿠키 판정이 **로그인 사용자에게도** 걸려서, 계정 쪽에 기록이 하나도
+ *   없어도 기기에 남은 쿠키가 먼저 막았다. 무료 할당량이 사실상 기기 단위가 된다.
+ *   로그인 사용자는 membership_benefit_usage(계정)가 진실이고, 쿠키는 **익명 전용** 장치다.
+ *
+ *   ⚠️ 쿠키 '쓰기'는 로그인 사용자에게도 그대로 둔다 — 로그아웃 후 익명으로 이어 쓰는
+ *      우회는 여전히 막아야 하고, 그 판정은 익명 경로라 이 함수가 정상 동작한다.
+ */
+export function deviceCookieBlocks(
+  userId: string | null | undefined,
+  cookieValue: string | undefined,
+  periodKey: string
+): boolean {
+  if (userId) return false;
+  return cookieValue === periodKey;
+}
 
 /**
  * 하루 1회 제한 면제 여부. 유료 멤버(프리미엄·라이트 모두)는 면제한다 —
@@ -81,7 +104,7 @@ export async function isFreeDailyUsed(
 
   try {
     const store = await cookies();
-    return store.get(conf.cookie)?.value === periodKey;
+    return deviceCookieBlocks(userId, store.get(conf.cookie)?.value, periodKey);
   } catch {
     // cookies() 사용 불가 컨텍스트 — 쿠키 판정만 건너뛴다(계정 판정은 위에서 끝).
     return false;
@@ -107,11 +130,12 @@ export async function consumeFreeDaily(
   // 전면 유료화 잠금 — 소비 자체를 막는다(쿠키/계정 카운트를 태우지 않아 복원 시 흔적 없음).
   if (isPaywallLockdown()) return { allowed: false, cookie };
 
-  // 쿠키 선판정 — 익명/로그인 공통. 같은 기기에서 오늘 이미 썼으면 계정 카운트를 태우지 않는다.
+  // 쿠키 선판정 — **익명 전용**(deviceCookieBlocks). 로그인 사용자는 아래 계정 RPC 가 진실이라
+  //   기기 쿠키로 막지 않는다. 쿠키 set 은 아래에서 로그인 여부와 무관하게 그대로 나간다.
   let cookieBlocked = false;
   try {
     const store = await cookies();
-    cookieBlocked = store.get(conf.cookie)?.value === periodKey;
+    cookieBlocked = deviceCookieBlocks(userId, store.get(conf.cookie)?.value, periodKey);
   } catch {
     cookieBlocked = false;
   }
