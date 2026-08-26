@@ -264,10 +264,27 @@ export async function executeRefund(
 
   await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
 
+  // 🔴 2026-08-27 — cancelAmt 를 실으면 나이스페이는 그 요청을 **부분취소**로 처리한다.
+  //   전액 환불(990원 환불 ↔ 원결제 990원)에도 실어 보내고 있었고, 샌드박스는 부분취소를
+  //   제공하지 않아 "부분취소는 운영 환경에서 이용 가능" 으로 거부됐다. 운영에서도 가맹점에
+  //   부분취소가 열려 있지 않으면 같은 벽이다.
+  //   같은 계정의 product 환불 4건(번들·점수·궁합)이 전부 성공한 건 cancelAmt 를 안 보냈기 때문.
+  //
+  //   ⚠️ 위험 방향이 비대칭이다 — 과다환불(돈이 더 나감)이 환불 실패보다 훨씬 비싸다.
+  //      그래서 **전액임이 증명될 때만** 생략한다. 원결제액을 모르면(original_amount null)
+  //      부분취소로 보낸다. 실패는 되돌릴 수 있지만 더 나간 돈은 그렇지 않다.
+  const isProvenFullRefund =
+    typeof req.original_amount === 'number' &&
+    req.original_amount > 0 &&
+    typeof req.amount === 'number' &&
+    req.amount >= req.original_amount;
+
   const toss = await deps.tossCancel(req.payment_key, {
     cancelReason: req.reason,
     idempotencyKey: req.idempotency_key,
-    ...(req.refund_kind === 'credit_purchase' && req.amount ? { cancelAmount: req.amount } : {}),
+    ...(req.refund_kind === 'credit_purchase' && req.amount && !isProvenFullRefund
+      ? { cancelAmount: req.amount }
+      : {}),
   });
   if (!toss.ok) {
     if (isAlreadyCanceledTossError(toss.error) && deps.loadTossPayment) {

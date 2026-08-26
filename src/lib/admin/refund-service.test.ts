@@ -80,6 +80,8 @@ function makeDeps(opts: {
   status?: RefundStatus;
   refundKind?: RefundKind;
   amount?: number | null;
+  /** 원결제액. 환불액과 분리해야 '부분취소'가 표현된다(기본: 환불액과 동일 = 전액). */
+  originalAmount?: number | null;
   tossOk?: boolean;
   tossError?: string;
   revokeOk?: boolean;
@@ -100,7 +102,8 @@ function makeDeps(opts: {
         product_id: 'lifetime-report',
         scope_key: null,
         amount: opts.amount ?? 49000,
-        original_amount: opts.amount ?? 49000,
+        original_amount:
+          opts.originalAmount === undefined ? (opts.amount ?? 49000) : opts.originalAmount,
         credit_amount: opts.refundKind === 'credit_purchase' ? 2 : null,
         credit_transaction_id: opts.refundKind === 'credit_purchase' ? 'tx1' : null,
         reason: '고객 변심',
@@ -141,6 +144,7 @@ test('executeRefund: 전 부분환불은 Toss cancelAmount 를 전달', async ()
   const { deps, statuses, tossArgs } = makeDeps({
     refundKind: 'credit_purchase',
     amount: 571,
+    originalAmount: 990, // 990원 중 571원만 = 진짜 부분취소
     tossOk: true,
     revokeOk: true,
   });
@@ -148,6 +152,39 @@ test('executeRefund: 전 부분환불은 Toss cancelAmount 를 전달', async ()
   assert.equal(result.status, 'completed');
   assert.deepEqual(statuses, ['processing', 'completed']);
   assert.equal((tossArgs[0] as { cancelAmount: number }).cancelAmount, 571);
+});
+
+// 🔴 2026-08-27 — cancelAmt 를 실으면 나이스페이는 그 요청을 **부분취소**로 처리한다.
+//   전액 환불(990원 ↔ 원결제 990원)에도 실어 보내 샌드박스에서
+//   "부분취소는 운영 환경에서 이용 가능(샌드박스는 부분취소 미제공)" 으로 거부됐다.
+//   같은 계정의 product 환불 4건이 전부 성공한 건 cancelAmt 를 안 보냈기 때문.
+test('executeRefund: 전액 환불이면 cancelAmount 를 보내지 않는다(부분취소로 처리되면 거부된다)', async () => {
+  const { deps, tossArgs } = makeDeps({
+    refundKind: 'credit_purchase',
+    amount: 990,
+    originalAmount: 990,
+    tossOk: true,
+    revokeOk: true,
+  });
+  await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.ok(
+    !('cancelAmount' in (tossArgs[0] as Record<string, unknown>)),
+    '전액인데 cancelAmt 를 실으면 PG 가 부분취소로 보고 거부한다'
+  );
+});
+
+// 위험 방향이 비대칭이다 — 과다환불이 환불 실패보다 훨씬 비싸다.
+//   원결제액을 모르면 전액이라고 단정하지 않고 부분취소로 보낸다.
+test('executeRefund: 원결제액을 모르면 전액이라 단정하지 않고 cancelAmount 를 보낸다', async () => {
+  const { deps, tossArgs } = makeDeps({
+    refundKind: 'credit_purchase',
+    amount: 990,
+    originalAmount: null,
+    tossOk: true,
+    revokeOk: true,
+  });
+  await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal((tossArgs[0] as { cancelAmount: number }).cancelAmount, 990);
 });
 
 test('executeRefund: Toss 실패 → failed (재시도 가능)', async () => {
