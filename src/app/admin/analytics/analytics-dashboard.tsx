@@ -56,10 +56,12 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
 
 function InflowTable({
   title,
+  subtitle,
   entries,
   emptyHint,
 }: {
   title: string;
+  subtitle?: string;
   entries: InflowAggEntry[];
   emptyHint: string;
 }) {
@@ -67,6 +69,14 @@ function InflowTable({
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
       <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+      {subtitle ? (
+        <p
+          className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {subtitle}
+        </p>
+      ) : null}
       {entries.length === 0 ? (
         <p className="mt-2 text-[13px] text-[var(--app-copy-soft)]">{emptyHint}</p>
       ) : (
@@ -792,6 +802,7 @@ export function AnalyticsDashboard() {
           <div className="grid gap-3 lg:grid-cols-2">
             <InflowTable
               title="유입 상위 (referrer)"
+              subtitle="직전 한 단계만 보입니다 — 링크인바이오(인포크링크 등)를 거치면 그 위 채널은 UTM 없이는 알 수 없습니다."
               entries={snap.topReferrers}
               emptyHint="referrer 데이터가 아직 없습니다."
             />
