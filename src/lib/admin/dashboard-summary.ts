@@ -10,6 +10,7 @@ import {
 import { getLlmCostStats, type LlmCostStats } from '@/lib/admin/llm-cost-stats';
 import { getDailyMetrics, type InflowAggEntry } from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
+import { normalizeAdminRange } from './metric-ranges';
 
 export interface PendingCounts {
   /** 환불 요청 대기(status='requested'). */
@@ -63,13 +64,14 @@ export function labelForAdminAction(action: string): string {
   return ACTION_LABELS[action] ?? action;
 }
 
-const VALID_WINDOWS = [7, 14, 30] as const;
-export type DashboardWindow = (typeof VALID_WINDOWS)[number];
+export type DashboardWindow = number;
 
-/** ?days= 입력을 허용된 윈도우(7/14/30)로 정규화. 기본 14. */
+/**
+ * ?days= 입력을 공용 프리셋(일·주·월·분기·6개월·1년)으로 정규화. 기본 30(월).
+ * 2026-08-26 — 화면마다 갈라져 있던 프리셋을 metric-ranges.ts 단일 정본으로 합쳤다.
+ */
 export function normalizeDashboardWindow(raw: unknown): DashboardWindow {
-  const n = typeof raw === 'string' ? Number(raw) : typeof raw === 'number' ? raw : NaN;
-  return (VALID_WINDOWS as readonly number[]).includes(n) ? (n as DashboardWindow) : 14;
+  return normalizeAdminRange(raw, 30);
 }
 
 export async function getAdminDashboardSummary(

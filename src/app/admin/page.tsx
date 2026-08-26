@@ -12,6 +12,7 @@ import {
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
 import { getVisibleNavGroups } from '@/lib/admin/nav';
 import type { DailySeries } from '@/lib/admin/operations-stats';
+import { ADMIN_RANGE_OPTIONS, adminRangeLabel } from '@/lib/admin/metric-ranges';
 
 export const metadata: Metadata = {
   title: '관리자 콘솔',
@@ -114,22 +115,24 @@ export default async function AdminDashboardPage({
         <div>
           <h1 className="text-[22px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>
           <p className="text-[12.5px] text-[var(--app-copy-soft)]">
-            기준 {windowDays}일 · {role === 'super_admin' ? 'super_admin' : 'admin'}
+            기준 {adminRangeLabel(windowDays)} · {role === 'super_admin' ? 'super_admin' : 'admin'}
             {ops ? ` · 생성 ${fmtDateTime(ops.generatedAt)}` : ''}
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          {[7, 14, 30].map((d) => (
+        {/* 2026-08-26 — 프리셋 공용 정본(일·주·월·분기·6개월·1년). 서버 컴포넌트라 링크로 둔다. */}
+        <div className="flex flex-wrap items-center gap-1">
+          {ADMIN_RANGE_OPTIONS.map((opt) => (
             <Link
-              key={d}
-              href={`/admin?days=${d}`}
+              key={opt.value}
+              href={`/admin?days=${opt.value}`}
+              title={opt.hint}
               className={`rounded-full px-3 py-1.5 text-[12.5px] font-bold ${
-                d === windowDays
+                opt.value === windowDays
                   ? 'bg-[var(--app-pink-strong)] text-white'
                   : 'border border-[var(--app-line)] text-[var(--app-ink)]'
               }`}
             >
-              {d}일
+              {opt.label}
             </Link>
           ))}
         </div>

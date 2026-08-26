@@ -7,6 +7,7 @@ import type { AnalyticsSnapshot, InflowAggEntry } from '@/lib/admin/analytics-me
 import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
+import { AdminRangePills } from '@/components/admin/admin-range-pills';
 
 interface ApiResponse {
   ok: boolean;
@@ -14,12 +15,6 @@ interface ApiResponse {
   external?: ExternalAnalyticsSnapshot;
   error?: string;
 }
-
-const WINDOW_OPTIONS = [
-  { value: 30, label: '30일' },
-  { value: 90, label: '90일' },
-  { value: 365, label: '365일' },
-];
 
 const AUTO_REFRESH_MS = 10 * 60 * 1000;
 const formatNum = (n: number) => n.toLocaleString();
@@ -634,22 +629,7 @@ export function AnalyticsDashboard() {
     <div className="flex flex-col gap-5">
       {/* 윈도우 선택 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1.5">
-          {WINDOW_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setDays(opt.value)}
-              className={`rounded-[10px] border px-3 py-1.5 text-[13px] font-bold ${
-                days === opt.value
-                  ? 'border-[var(--app-ink)] bg-[var(--app-ink)] text-white'
-                  : 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <AdminRangePills value={days} onChange={setDays} />
         {snap?.refreshedAt && (
           <div className="text-[11.5px] text-[var(--app-copy-soft)]">
             {new Date(snap.refreshedAt).toLocaleString('ko-KR')} 기준

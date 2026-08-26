@@ -82,13 +82,19 @@ test('buildOperationsSnapshot - 빈 데이터셋', async () => {
   assert.equal(snap.trends.newSignups.length, 14);
 });
 
-test('buildOperationsSnapshot - windowDays clamp', async () => {
+// 2026-08-26 — 프리셋이 일(1)·1년(365)까지 넓어졌다. 하한 7·상한 60 이 '오늘'과
+//   분기·6개월·1년을 조용히 잘라내던 것을 고친 뒤의 계약.
+test('buildOperationsSnapshot - windowDays clamp (1~365)', async () => {
   const client = createMockClient({});
-  const tooSmall = await buildOperationsSnapshot(client, { windowDays: 1 });
-  assert.equal(tooSmall.windowDays, 7);
+  const oneDay = await buildOperationsSnapshot(client, { windowDays: 1 });
+  assert.equal(oneDay.windowDays, 1);
+  assert.equal(oneDay.trends.newSignups.length, 1);
   const client2 = createMockClient({});
-  const tooLarge = await buildOperationsSnapshot(client2, { windowDays: 9999 });
-  assert.equal(tooLarge.windowDays, 60);
+  const year = await buildOperationsSnapshot(client2, { windowDays: 365 });
+  assert.equal(year.windowDays, 365);
+  const client3 = createMockClient({});
+  const tooLarge = await buildOperationsSnapshot(client3, { windowDays: 9999 });
+  assert.equal(tooLarge.windowDays, 365);
 });
 
 test('buildOperationsSnapshot - 시리즈 축 마지막 날짜 = KST 오늘', async () => {
@@ -334,7 +340,7 @@ test('buildOperationsSnapshot - 방문자: RPC 결과 반영', async () => {
   );
   const snap = await buildOperationsSnapshot(client);
   assert.equal(snap.today.visitors, 123);
-  assert.equal(snap.trends.visitors.length, 14);
+  assert.equal(snap.trends.visitors.length, 30, '기본 윈도우는 30(월) 로 통일');
   assert.equal(snap.trends.visitors[snap.trends.visitors.length - 1].value, 123);
 });
 
