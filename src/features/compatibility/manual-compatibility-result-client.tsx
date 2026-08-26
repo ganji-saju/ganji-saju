@@ -22,7 +22,6 @@ interface ManualCompatibilityResultClientProps {
   relationship?: string;
   hasLoveQuestionPurchase?: boolean;
   deepLlmEnabled?: boolean;
-  perCouplePricingEnabled?: boolean;
 }
 
 function resolveRelationship(value: string | undefined): CompatibilityRelationshipSlug {
@@ -73,7 +72,6 @@ export function ManualCompatibilityResultClient({
   relationship,
   hasLoveQuestionPurchase = false,
   deepLlmEnabled = false,
-  perCouplePricingEnabled = false,
 }: ManualCompatibilityResultClientProps) {
   const [payload, setPayload] = useState<ManualCompatibilityPayload | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -123,8 +121,16 @@ export function ManualCompatibilityResultClient({
     [payload]
   );
 
+  // 2026-08-26 🔴 사용자 제보: "3,300원 궁합을 결제했는데 무료와 같은 내용이 나온다."
+  //   원인이 여기였다 — **파는 스위치와 여는 스위치가 달랐다.**
+  //   결제 CTA 는 플래그와 무관하게 compat-reading(커플 1회권)을 팔고 있는데,
+  //   이 접근 확인만 COMPAT_PER_COUPLE_PRICING 뒤에 숨어 있었다. 그 플래그가 꺼진 환경
+  //   (= 스테이징. 프로덕션에만 등록돼 있었다)에서는 방금 산 커플권을 **아예 조회하지 않고**
+  //   판매 중단된 전역권(love-question)만 보므로, 결제해도 유료 §8 이 그대로 잠긴다.
+  //   플래그는 원래 '가격 표시'용이었고 가격은 이미 커플권 단일로 정리됐다(전역권 판매 중단).
+  //   권한 조회는 조건 없이 돈다 — 서버 라우트가 grandfather 까지 포함해 판정한다.
   useEffect(() => {
-    if (!perCouplePricingEnabled || !coupleKey) return;
+    if (!coupleKey) return;
     let cancelled = false;
     fetch('/api/compatibility/access', {
       method: 'POST',
@@ -139,13 +145,10 @@ export function ManualCompatibilityResultClient({
     return () => {
       cancelled = true;
     };
-  }, [perCouplePricingEnabled, coupleKey]);
+  }, [coupleKey]);
 
-  // 플래그 ON: per-couple 접근(grandfather 포함, 서버 라우트 판정) 또는 낙관적 paid 프롭.
-  // 플래그 OFF: 서버가 넘긴 love-question 글로벌 값 그대로.
-  const effectiveAccess = perCouplePricingEnabled
-    ? perCoupleAccess || hasLoveQuestionPurchase
-    : hasLoveQuestionPurchase;
+  // per-couple 접근(서버 라우트 판정, grandfather 포함) 또는 서버가 넘긴 전역권 값.
+  const effectiveAccess = perCoupleAccess || hasLoveQuestionPurchase;
 
   if (!isLoaded) {
     return (
@@ -190,7 +193,6 @@ export function ManualCompatibilityResultClient({
           partnerBirthInput={payload.partnerBirthInput}
           deepLlmEnabled={deepLlmEnabled}
           compatibilityCoupleKey={coupleKey ?? undefined}
-          perCouplePricingEnabled={perCouplePricingEnabled}
         />
 
         {/* 친구에게 공유 — 공개 스냅샷(/compatibility/share/[slug]) */}

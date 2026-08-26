@@ -15,7 +15,6 @@ import {
 import { parseCompatibilityShareSlug } from '@/lib/compatibility/share-slug';
 import {
   hasCompatibilityAccess,
-  isCompatibilityPerCouplePricingEnabled,
 } from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
@@ -110,7 +109,6 @@ export default async function CompatibilitySharePage({ params, searchParams }: P
           partnerBirthInput={parsed.partner}
           deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
           compatibilityCoupleKey={coupleKey}
-          perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
         {/* 내 궁합 CTA */}

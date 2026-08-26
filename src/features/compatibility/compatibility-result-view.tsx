@@ -32,7 +32,6 @@ interface CompatibilityResultViewProps {
   deepLlmEnabled?: boolean;
   /** ①: per-couple 1회권. 플래그 ON + 커플 키가 있으면 CTA 가 compat-reading(커플 단위)을 판매. */
   compatibilityCoupleKey?: string;
-  perCouplePricingEnabled?: boolean;
 }
 
 const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
@@ -86,7 +85,6 @@ export function CompatibilityResultView({
   partnerBirthInput,
   deepLlmEnabled = false,
   compatibilityCoupleKey,
-  perCouplePricingEnabled = false,
 }: CompatibilityResultViewProps) {
   const premiumExpansion = COMPATIBILITY_PREMIUM_EXPANSION[selected.slug];
   const score = clampScore(compatibility.score);

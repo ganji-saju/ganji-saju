@@ -23,7 +23,6 @@ import {
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import {
   hasCompatibilityAccess,
-  isCompatibilityPerCouplePricingEnabled,
   tryConsumeMemberCompatAccess,
 } from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
@@ -128,7 +127,6 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
         //   entitlement 를 동기 기록하므로 결제 직후에도 이 값이 곧바로 true.
         hasLoveQuestionPurchase={manualLoveEntitlement}
         deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
-        perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
       />
     );
   }
@@ -216,7 +214,6 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           partnerBirthInput={partnerBirthInput}
           deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
           compatibilityCoupleKey={coupleKey}
-          perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
         {/* 친구에게 공유 — 2026-07-03 공개 스냅샷: 두 사람 생년을 slug 로 인코딩한
