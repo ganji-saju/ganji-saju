@@ -214,7 +214,7 @@ export function TodayFortuneExperience({
 
   if (loading) {
     return (
-      <div className="gangi-subpage pb-8">
+      <div className="gangi-subpage pb-8 pt-5">
         <GangiPageHeader title="오늘운세" />
         <GangiLoadingOverlay
           title="오늘 운세를 풀어드리고 있어요"
@@ -225,7 +225,7 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage pb-8 pt-5">
       <GangiPageHeader title="오늘운세" />
 
       {/* 2026-05-14: intro 는 TodayConcernSelector 가 pink-soft hero 로 자체 렌더. */}

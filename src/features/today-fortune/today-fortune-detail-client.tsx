@@ -230,7 +230,7 @@ export function TodayFortuneDetailClient({
   const resultHref = backHrefOverride ?? defaultResultHref;
 
   return (
-    <div className={embedded ? 'space-y-4' : 'gangi-subpage saju-result-page pb-8'}>
+    <div className={embedded ? 'space-y-4' : 'gangi-subpage saju-result-page pb-8 pt-5'}>
       {/* §전체 로딩 — 다른 페이지와 동일한 GangiLoadingOverlay 사용.
           unlock API 응답 → setResult 가 완료될 때까지 풀스크린 유지. */}
       {loading ? (

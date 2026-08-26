@@ -21,13 +21,7 @@ export default function FreeFortunePage() {
       <AppPage className="gangi-subpage">
         <GangiPageHeader title="무료운세" />
         <GangiIntro
-          title={
-            <>
-              무료로 바로 보는
-              <br />
-              운세
-            </>
-          }
+          title="무료로 바로 보는 운세"
           description="가입 없이도 오늘운세, 타로, 내 띠 흐름을 먼저 확인할 수 있어요."
         />
         <div className="gangi-action-list">
