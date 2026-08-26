@@ -337,9 +337,12 @@ export function GangiSeasonBanner({
         ))}
       </div>
 
-      {/* dots */}
+      {/* dots — 2026-08-26 사용자 제보 "동그라미가 너무 작아 클릭하기 힘들다".
+          버튼 자체가 점(6×6px)이라 탭 타깃이 점 크기였다. 버튼은 44px 투명 히트영역으로 넓히고
+          점은 안쪽 span 으로 분리(보이는 크기와 누를 수 있는 크기를 분리한다).
+          바깥 여백(mt-3)은 히트영역이 대신 먹으므로 줄여 세로 증가를 최소화. */}
       {safeBanners.length > 1 ? (
-        <div className="mt-3 flex justify-center gap-1.5" aria-label="배너 선택">
+        <div className="mt-0.5 flex justify-center" aria-label="배너 선택">
           {safeBanners.map((banner, index) => (
             <button
               key={banner.id}
@@ -347,15 +350,21 @@ export function GangiSeasonBanner({
               aria-label={String(index + 1) + '번째 배너 보기'}
               aria-current={activeIndex === index ? 'true' : undefined}
               onClick={() => goToBanner(index)}
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: activeIndex === index ? 16 : 6,
-                background:
-                  activeIndex === index
-                    ? 'var(--app-pink-strong)'
-                    : 'var(--app-line-strong)',
-              }}
-            />
+              className="flex h-11 w-9 items-center justify-center"
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            >
+              <span
+                aria-hidden="true"
+                className="block h-2 rounded-full transition-all"
+                style={{
+                  width: activeIndex === index ? 18 : 8,
+                  background:
+                    activeIndex === index
+                      ? 'var(--app-pink-strong)'
+                      : 'var(--app-line-strong)',
+                }}
+              />
+            </button>
           ))}
         </div>
       ) : null}
