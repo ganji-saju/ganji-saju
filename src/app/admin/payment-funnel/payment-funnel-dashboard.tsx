@@ -8,6 +8,7 @@ import type {
   PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
 import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { getPackage } from '@/lib/payments/catalog';
 
 interface ApiResponse {
   ok: boolean;
@@ -34,6 +35,10 @@ const BLOCK_REASON_LABEL: Record<string, string> = {
 // 분모 없음(null)은 0%가 아니라 '—' — 시도 0건을 '전환 0.0%'로 오표시하지 않는다.
 function fmtPct(value: number | null): string {
   return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
+}
+
+function fmtWon(n: number): string {
+  return `${Math.round(n).toLocaleString('ko-KR')}원`;
 }
 
 function fmtNum(n: number): string {
@@ -102,6 +107,112 @@ const STAGE_ORDER: Array<keyof typeof STAGE_LABEL> = [
   'confirm_success',
   'confirm_failed',
 ];
+
+
+/**
+ * 2026-08-26 — 유입 채널 × 상품 결제 교차표(사용자 지시: "GA4 말고 자체 퍼널 강화").
+ * 정확한 값을 읽는 표라 차트가 아니라 표로 둔다. 크기는 셀 농담으로 거들되,
+ * 숫자를 항상 같이 적어 색만으로 정보를 전달하지 않는다.
+ */
+function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channelProduct'] }) {
+  if (!matrix || matrix.totalOrders === 0) return null;
+
+  const cellMap = new Map(matrix.cells.map((c) => [`${c.channel} ${c.packageId}`, c]));
+  const maxOrders = Math.max(...matrix.cells.map((c) => c.orders), 1);
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+  const productName = (id: string) => getPackage(id)?.name ?? id;
+
+  return (
+    <section>
+      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        유입 채널 × 상품 결제
+      </h2>
+      <p
+        className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        어느 경로로 들어온 사람이 무엇을 샀는지. 채널은 결제자의{' '}
+        <strong className="font-extrabold text-[var(--app-ink)]">최초 방문</strong> 기준이며, 링크에
+        utm 을 붙인 만큼만 갈립니다(안 붙이면 인포크링크·직접 유입으로 뭉칩니다).
+        {matrix.foldedChannels > 0 || matrix.foldedPackages > 0 ? (
+          <>
+            {' '}
+            상위 항목만 표시 — 채널 {matrix.foldedChannels}개 · 상품 {matrix.foldedPackages}개는
+            &lsquo;기타&rsquo;로 접혔습니다(합계는 그대로).
+          </>
+        ) : null}
+      </p>
+      <div className="mt-2 overflow-x-auto rounded-[12px] border border-[var(--app-line)] bg-white">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+            <tr>
+              <th className={`${th} text-left`}>채널</th>
+              {matrix.packages.map((pkg) => (
+                <th key={pkg} className={th} title={pkg}>
+                  {productName(pkg)}
+                </th>
+              ))}
+              <th className={th}>합계</th>
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.channels.map((channel, rowIndex) => {
+              const rowTotal = matrix.channelTotals[rowIndex];
+              return (
+                <tr key={channel} className="border-t border-[var(--app-line)]">
+                  <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{channel}</td>
+                  {matrix.packages.map((pkg) => {
+                    const cell = cellMap.get(`${channel} ${pkg}`);
+                    const orders = cell?.orders ?? 0;
+                    return (
+                      <td
+                        key={pkg}
+                        className={td}
+                        title={orders > 0 ? `${productName(pkg)} · ${fmtWon(cell?.amountWon ?? 0)}` : undefined}
+                        style={{
+                          background:
+                            orders > 0
+                              ? `rgba(179,55,42,${(0.06 + 0.34 * (orders / maxOrders)).toFixed(3)})`
+                              : undefined,
+                        }}
+                      >
+                        {orders > 0 ? fmtNum(orders) : '—'}
+                      </td>
+                    );
+                  })}
+                  <td className={`${td} font-extrabold text-[var(--app-ink)]`}>
+                    {fmtNum(rowTotal?.orders ?? 0)}
+                    <span className="ml-1 font-semibold text-[var(--app-copy-soft)]">
+                      {fmtWon(rowTotal?.amountWon ?? 0)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+            <tr className="border-t-2 border-[var(--app-ink)]">
+              <td className={`${td} text-left font-extrabold text-[var(--app-ink)]`}>합계</td>
+              {matrix.packages.map((pkg, colIndex) => {
+                const colTotal = matrix.packageTotals[colIndex];
+                return (
+                  <td key={pkg} className={`${td} font-bold text-[var(--app-ink)]`}>
+                    {fmtNum(colTotal?.orders ?? 0)}
+                  </td>
+                );
+              })}
+              <td className={`${td} font-extrabold text-[var(--app-ink)]`}>
+                {fmtNum(matrix.totalOrders)}
+                <span className="ml-1 font-semibold text-[var(--app-copy-soft)]">
+                  {fmtWon(matrix.totalAmountWon)}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
 
 export function PaymentFunnelDashboard() {
   const [windowDays, setWindowDays] = useState(30);
@@ -223,6 +334,8 @@ export function PaymentFunnelDashboard() {
               </div>
             </section>
           ) : null}
+
+          <ChannelProductTable matrix={snap.channelProduct} />
 
           {/* §전환율 4 카드 */}
           <section>

@@ -3,6 +3,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PaymentFunnelStage } from '@/lib/payments/funnel-log';
 import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
+import { resolveReferrerGroup } from './referrer-labels';
+import {
+  buildChannelProductMatrix,
+  type ChannelProductMatrix,
+  type ChannelProductPayment,
+} from './channel-product-matrix';
 
 const STAGES: readonly PaymentFunnelStage[] = [
   'prepare_attempt',
@@ -87,12 +93,15 @@ export interface PaymentFunnelSnapshot {
   payerChannels: PaymentFunnelByChannel[];
   /** 채널을 찾아낸 결제자 수 / 전체 결제자 수 — 커버리지를 숨기지 않는다. */
   payerChannelCoverage: { matched: number; total: number };
+  /** 2026-08-26 — 유입 채널 × 상품 결제 교차표(GA4 로는 볼 수 없는 것). */
+  channelProduct: ChannelProductMatrix;
 }
 
 interface FunnelRow {
   stage: PaymentFunnelStage | 'paywall_viewed';
   package_id: string | null;
   reason: string | null;
+  amount: number | null;
   created_at: string;
   order_id: string | null;
   user_id: string | null;
@@ -183,8 +192,13 @@ async function resolveOrderEntrySources(
 async function resolvePayerChannels(
   supabase: SupabaseClient,
   payerIds: ReadonlySet<string>
-): Promise<{ payerChannels: PaymentFunnelByChannel[]; matchedPayers: number }> {
-  if (payerIds.size === 0) return { payerChannels: [], matchedPayers: 0 };
+): Promise<{
+  payerChannels: PaymentFunnelByChannel[];
+  matchedPayers: number;
+  channelByUser: Map<string, string>;
+}> {
+  if (payerIds.size === 0)
+    return { payerChannels: [], matchedPayers: 0, channelByUser: new Map() };
   // .in() 은 URL 길이 제약이 있어 상한을 둔다(결제자 수가 이 규모면 별도 집계가 맞다).
   const ids = Array.from(payerIds).slice(0, 500);
 
@@ -196,7 +210,7 @@ async function resolvePayerChannels(
 
   if (error) {
     console.error('[funnel-stats] site_visits join failed:', error.message);
-    return { payerChannels: [], matchedPayers: 0 };
+    return { payerChannels: [], matchedPayers: 0, channelByUser: new Map() };
   }
 
   const firstByUser = new Map<string, string>();
@@ -206,7 +220,9 @@ async function resolvePayerChannels(
     referrer_host: string | null;
   }>) {
     if (!row.user_id || firstByUser.has(row.user_id)) continue; // date_key asc → 첫 행이 최초 방문
-    firstByUser.set(row.user_id, row.utm_source || row.referrer_host || '직접 유입');
+    // 라벨은 유입 카드와 같은 규칙(referrer-labels)을 쓴다 — 화면마다 채널명이 달라지면 못 맞춘다.
+    const raw = row.utm_source || row.referrer_host || '';
+    firstByUser.set(row.user_id, raw ? resolveReferrerGroup(raw).label : '직접 유입');
   }
 
   const channelCount = new Map<string, number>();
@@ -219,6 +235,7 @@ async function resolvePayerChannels(
       .map(([channel, payers]) => ({ channel, payers }))
       .sort((a, b) => b.payers - a.payers),
     matchedPayers: firstByUser.size,
+    channelByUser: firstByUser,
   };
 }
 
@@ -245,7 +262,7 @@ export async function buildPaymentFunnelSnapshot(
     const from = page * PAGE_SIZE;
     const { data, error } = await supabase
       .from('payment_funnel_events')
-      .select('stage, package_id, reason, created_at, order_id, user_id, metadata')
+      .select('stage, package_id, reason, amount, created_at, order_id, user_id, metadata')
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -277,6 +294,7 @@ export async function buildPaymentFunnelSnapshot(
   }> = [];
   const surfaceCount = new Map<string, number>();
   const payerIds = new Set<string>();
+  const payments: ChannelProductPayment[] = [];
 
   for (const row of rows) {
     const stage = row.stage;
@@ -317,7 +335,14 @@ export async function buildPaymentFunnelSnapshot(
         orderId: row.order_id,
       });
     }
-    if (stage === 'confirm_success' && row.user_id) payerIds.add(row.user_id);
+    if (stage === 'confirm_success') {
+      if (row.user_id) payerIds.add(row.user_id);
+      payments.push({
+        userId: row.user_id,
+        packageId: row.package_id,
+        amountWon: row.amount,
+      });
+    }
   }
 
   const overallConversionRate = rate(totals.confirm_success, totals.prepare_attempt);
@@ -374,7 +399,11 @@ export async function buildPaymentFunnelSnapshot(
     .map(([surface, views]) => ({ surface, views }))
     .sort((a, b) => b.views - a.views);
 
-  const { payerChannels, matchedPayers } = await resolvePayerChannels(supabase, payerIds);
+  const { payerChannels, matchedPayers, channelByUser } = await resolvePayerChannels(
+    supabase,
+    payerIds
+  );
+  const channelProduct = buildChannelProductMatrix(payments, channelByUser);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -394,5 +423,6 @@ export async function buildPaymentFunnelSnapshot(
     paywallSurfaces,
     payerChannels,
     payerChannelCoverage: { matched: matchedPayers, total: payerIds.size },
+    channelProduct,
   };
 }
