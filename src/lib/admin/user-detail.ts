@@ -12,11 +12,11 @@ import {
   type PaymentOrderHistoryRow,
   type ProductEntitlementHistoryRow,
 } from '@/lib/billing/payment-history';
+import { loadPurchaseCreditLots } from '@/lib/admin/credit-lots';
 import {
   determineCreditRefundEligibility,
   type CreditRefundEligibleItem,
   type CreditRefundEligibility,
-  type CreditRefundLotRow,
 } from '@/lib/admin/credit-refunds';
 import { hashUserId } from '@/server/ai/llm-telemetry';
 import { calculateSajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
@@ -341,11 +341,7 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
     .eq('user_id', userId)
     .in('type', ['purchase', 'subscription'])
     .order('created_at', { ascending: false });
-  const { data: creditLotRows } = await supabase
-    .from('credit_lots')
-    .select('id, user_id, amount_remaining, amount_initial, expires_at, source, metadata, created_at')
-    .eq('user_id', userId)
-    .eq('source', 'purchase');
+  const creditLotRows = await loadPurchaseCreditLots(supabase, userId);
   // 코인 sunset 이후 멤버십 결제는 credit_transactions 에 없음 → 완료 주문 원장 보강(orderId dedupe).
   const { data: orderHistoryRows } = await supabase
     .from('payment_orders')
@@ -394,7 +390,7 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
 
   const creditRefundEligibility = determineCreditRefundEligibility(
     allCreditTransactions,
-    (creditLotRows ?? []) as unknown as CreditRefundLotRow[]
+    creditLotRows
   );
   const refund = determineRefundEligibility(
     productEntitlements,
