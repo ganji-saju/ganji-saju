@@ -19,6 +19,8 @@ import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-
 import { getPackage } from '@/lib/payments/catalog';
 import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
 import type { PolicyKind } from '@/shared/policies/types';
+import { readConsent } from '@/components/analytics/analytics-consent';
+import { gtmAddPaymentInfo, gtmBeginCheckout } from '@/lib/analytics/gtm';
 
 interface Props {
   packageId: string;
@@ -114,6 +116,19 @@ export default function TossMembershipCheckout({
     setIsLoading(true);
     setErrorMessage('');
 
+    // GA4 전자상거래 — 결제창 호출 직전. purchase 는 서버가 보내고, 여기까지가 클라이언트 몫.
+    const gtmItems = [
+      {
+        item_id: packageId,
+        item_name: orderName,
+        item_category: 'checkout',
+        price: amount,
+        quantity: 1,
+      },
+    ];
+    gtmAddPaymentInfo(packageId, paymentMethod, amount, gtmItems);
+    gtmBeginCheckout(packageId, amount, gtmItems);
+
     try {
       const prepareResponse = await fetch('/api/payments/prepare', {
         method: 'POST',
@@ -125,6 +140,9 @@ export default function TossMembershipCheckout({
           slug,
           scope,
           from: entrySource,
+          // 2026-08-26 — 동의 상태는 localStorage 라 서버가 못 읽는다. denied 면 확정 시
+          //   GA 서버 전송을 건너뛴다(브라우저만 막고 서버로 우회하면 동의 배너가 거짓말이 된다).
+          analyticsConsent: readConsent(),
           paymentMethod,
           // Phase 3-C-1: 결제 전 동의 정책 종류. prepare API 가 활성 PolicyVersion 으로 변환 후 DB insert.
           acceptedKinds,
