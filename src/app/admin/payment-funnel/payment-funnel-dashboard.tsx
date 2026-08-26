@@ -212,6 +212,43 @@ export function PaymentFunnelDashboard() {
         </article>
       ) : snap ? (
         <>
+          {/* 2026-08-26 사용자 지시 — '결제자 유입 채널'을 최상단으로. 돈이 어디서
+              들어오는지가 이 화면에서 가장 먼저 봐야 할 숫자다. */}
+          {snap.payerChannelCoverage.total > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                결제자 유입 채널 (사이트 밖)
+              </h2>
+              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+                결제자 {fmtNum(snap.payerChannelCoverage.total)}명 중{' '}
+                {fmtNum(snap.payerChannelCoverage.matched)}명만 채널이 확인됩니다 — 첫 방문이
+                비로그인이면 그 방문 기록에 계정이 안 붙어 조인되지 않습니다.
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {snap.payerChannels.length > 0 ? (
+                  snap.payerChannels.map((c) => (
+                    <article
+                      key={c.channel}
+                      className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                      style={{ borderColor: 'var(--app-line)' }}
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-extrabold text-[var(--app-ink)]">{c.channel}</span>
+                        <span className="tabular-nums text-[var(--app-copy-muted)]">
+                          결제자 {fmtNum(c.payers)}명
+                        </span>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <p className="px-1 text-[13px] text-[var(--app-copy-muted)]">
+                    조인된 방문 기록이 없습니다.
+                  </p>
+                )}
+              </div>
+            </section>
+          ) : null}
+
           {/* §전환율 4 카드 */}
           <section>
             <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
@@ -449,41 +486,6 @@ export function PaymentFunnelDashboard() {
                     </div>
                   </article>
                 ))}
-              </div>
-            </section>
-          ) : null}
-
-          {snap.payerChannelCoverage.total > 0 ? (
-            <section>
-              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-                결제자 유입 채널 (사이트 밖)
-              </h2>
-              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
-                결제자 {fmtNum(snap.payerChannelCoverage.total)}명 중{' '}
-                {fmtNum(snap.payerChannelCoverage.matched)}명만 채널이 확인됩니다 — 첫 방문이
-                비로그인이면 그 방문 기록에 계정이 안 붙어 조인되지 않습니다.
-              </p>
-              <div className="mt-2 grid gap-1.5">
-                {snap.payerChannels.length > 0 ? (
-                  snap.payerChannels.map((c) => (
-                    <article
-                      key={c.channel}
-                      className="rounded-[12px] border bg-white p-3 text-[13.8px]"
-                      style={{ borderColor: 'var(--app-line)' }}
-                    >
-                      <div className="flex items-baseline justify-between gap-3">
-                        <span className="font-extrabold text-[var(--app-ink)]">{c.channel}</span>
-                        <span className="tabular-nums text-[var(--app-copy-muted)]">
-                          결제자 {fmtNum(c.payers)}명
-                        </span>
-                      </div>
-                    </article>
-                  ))
-                ) : (
-                  <p className="px-1 text-[13px] text-[var(--app-copy-muted)]">
-                    조인된 방문 기록이 없습니다.
-                  </p>
-                )}
               </div>
             </section>
           ) : null}
