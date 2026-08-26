@@ -4,6 +4,10 @@
 //   refund_requests 상태로 실패 안전·재시도. 결정 로직(아래 순수 함수)은 단위 테스트로 고정.
 //   ※ 실제 Toss 환불 실행은 라이브 super_admin(사람). 여기 코드는 DI 로 mock 테스트.
 
+// 전액/부분 판정은 결제 취소 도메인의 isFullRefund 하나만 쓴다 — 주문을 refunded 로 표기하는
+//   판정(admin refund 라우트)과 같은 함수여야 'PG 엔 전액취소, 장부엔 부분' 같은 어긋남이 없다.
+import { isFullRefund } from '@/lib/payments/cancellation';
+
 export type RefundStatus =
   | 'requested'
   | 'processing'
@@ -264,10 +268,25 @@ export async function executeRefund(
 
   await deps.setStatus(req.id, 'processing', { approvedBy: params.approvedBy });
 
+  // 🔴 2026-08-27 — cancelAmt 를 실으면 나이스페이는 그 요청을 **부분취소**로 처리한다.
+  //   전액 환불(990원 환불 ↔ 원결제 990원)에도 실어 보내고 있었고, 샌드박스는 부분취소를
+  //   제공하지 않아 "부분취소는 운영 환경에서 이용 가능" 으로 거부됐다. 운영에서도 가맹점에
+  //   부분취소가 열려 있지 않으면 같은 벽이다.
+  //   같은 계정의 product 환불 4건(번들·점수·궁합)이 전부 성공한 건 cancelAmt 를 안 보냈기 때문.
+  //
+  //   ⚠️ 규칙은 **금액 하나로만** 갈린다 — refund_kind 로 나누지 않는다. 종류로 나누면
+  //      product 가 부분환불을 도입하는 순간 cancelAmt 없이 나가 **전액취소 = 과다환불**이 된다
+  //      (방어가 "오늘 product 는 항상 전액"이라는 사실에 기대게 된다).
+  //      product 실동작은 지금과 같다 — 전액이라 그대로 생략된다.
+  //
+  //   ⚠️ 위험 방향이 비대칭이다(과다환불 ≫ 환불실패). isFullRefund 는 원결제액을 모르면
+  //      false 를 돌려주므로, 모를 땐 부분취소로 나간다. 실패는 되돌릴 수 있지만 더 나간 돈은 아니다.
+  const fullRefund = isFullRefund({ amount: req.amount, originalAmount: req.original_amount });
+
   const toss = await deps.tossCancel(req.payment_key, {
     cancelReason: req.reason,
     idempotencyKey: req.idempotency_key,
-    ...(req.refund_kind === 'credit_purchase' && req.amount ? { cancelAmount: req.amount } : {}),
+    ...(req.amount && !fullRefund ? { cancelAmount: req.amount } : {}),
   });
   if (!toss.ok) {
     if (isAlreadyCanceledTossError(toss.error) && deps.loadTossPayment) {
