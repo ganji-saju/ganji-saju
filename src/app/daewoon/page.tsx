@@ -6,7 +6,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
-import { AppShell } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import {
   GangiIntro,
   GangiMetricBar,
@@ -39,7 +39,8 @@ const PERIODS = [
 export default function DaewoonPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <div className="gangi-subpage">
+      {/* 2026-08-26 — 맨 div 는 상단 패딩(app-page-spacious 20px)이 없어 서브타이틀이 메뉴에 붙는다(사용자 제보 /free). 표준 AppPage 로 통일. */}
+      <AppPage className="gangi-subpage">
         <GangiPageHeader title="대운" />
         <GangiIntro
           eyebrow="10년 흐름"
@@ -130,7 +131,7 @@ export default function DaewoonPage() {
               from="daewoon" 이 목록에서 대운 자신을 제외한다. */}
           <PaidFunnelGrid from="daewoon" tone="light" className="mt-6" />
         </section>
-      </div>
+      </AppPage>
     </AppShell>
   );
 }

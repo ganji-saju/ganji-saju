@@ -4,7 +4,7 @@
 // component 의 일관 시각 사용 — sibling /free 흐름 (사주 / 타로 / 띠) 들과 통일.
 import type { Metadata } from 'next';
 import SiteHeader from '@/features/shared-navigation/site-header';
-import { AppShell } from '@/shared/layout/app-shell';
+import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiIntro, GangiListLink, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { GANGI_FREE_HUB_ITEMS } from '@/content/gangi-market';
 
@@ -17,7 +17,8 @@ export const metadata: Metadata = {
 export default function FreeFortunePage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <div className="gangi-subpage">
+      {/* 2026-08-26 — 맨 div 는 상단 패딩(app-page-spacious 20px)이 없어 서브타이틀이 메뉴에 붙는다(사용자 제보 /free). 표준 AppPage 로 통일. */}
+      <AppPage className="gangi-subpage">
         <GangiPageHeader title="무료운세" />
         <GangiIntro
           title={
@@ -41,7 +42,7 @@ export default function FreeFortunePage() {
             />
           ))}
         </div>
-      </div>
+      </AppPage>
     </AppShell>
   );
 }
