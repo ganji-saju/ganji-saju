@@ -18,9 +18,10 @@ export function GuardianAssignmentCard({
       className="flex items-center gap-4 overflow-hidden rounded-[18px] border border-[var(--app-line)] p-4"
       style={{ background: '#efe8d8' }}
     >
-      {/* 캐릭터 초상 — 4:5 원본의 상단(얼굴+인장)만 원형 크롭. */}
+      {/* 캐릭터 초상 — 4:5 원본의 상단(얼굴+인장)만 원형 크롭.
+          2026-08-26 — 배정은 '맞이하는' 순간이라 미소 표정을 쓴다(스펙 §2 2차 표정 변형). */}
       <img
-        src={guardian.image}
+        src={guardian.moods.smile}
         alt={`${guardian.animalKo} 수호신`}
         width={64}
         height={64}

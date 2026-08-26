@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { GuardianAvatar } from '@/components/gangi/guardian-avatar';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { AiChatBillingSummary } from '@/lib/credits/ai-chat-access';
@@ -600,9 +601,12 @@ export function DialogueChatPanel({
               key={message.id}
               className={`flex ${roomMode && !isUser ? 'items-start gap-3' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
             >
+              {/* 2026-08-26 — 말풍선 화자 아바타를 인장에서 수호신 초상으로. 풀이를 들려주는
+                  자리라 진지한 표정을 쓴다(헤더 인사는 미소). */}
               {roomMode && !isUser ? (
-                <ZodiacChip
-                  kind={(message.expertId ?? selectedExpert.id) as ZodiacKey}
+                <GuardianAvatar
+                  zodiac={(message.expertId ?? selectedExpert.id) as ZodiacKey}
+                  mood="serious"
                   size="sm"
                   className="mt-1"
                 />

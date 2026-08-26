@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
-import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { GuardianAvatar } from '@/components/gangi/guardian-avatar';
 import { DIALOGUE_PRESETS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
@@ -85,7 +86,8 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           >
             <ArrowLeft className="h-4 w-4 text-[var(--app-copy)]" />
           </Link>
-          <ZodiacChip kind={expertId as ZodiacKey} size="sm" />
+          {/* 2026-08-26 — 대화 상대는 '표식'이 아니라 '얼굴'이다. 인장 chip → 수호신 초상(미소). */}
+          <GuardianAvatar zodiac={expertId as ZodiacKey} mood="smile" size="sm" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">
               {meta.teacherName}

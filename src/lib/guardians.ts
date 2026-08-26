@@ -20,6 +20,15 @@ export interface GuardianProfile {
   image: string;
   /** 인장(도장) 문양 경로 (2026-08-26 스펙 §2 인장 세트, 투명 png). */
   seal: string;
+  /**
+   * 표정 변형 (2026-08-26 힉스필드 2차분 잔여 24장). 각 지지의 전신 이미지를 참조로 고정해
+   * 표정만 바꾼 것이라 세계관·소지품·인장 한자는 동일하다.
+   * 자리의 성격에 맞춰 고른다 — serious = 풀이·집중, smile = 맞이·배정.
+   */
+  moods: {
+    serious: string;
+    smile: string;
+  };
 }
 
 /** 스펙 §3 "성격 키워드(풀이 톤과 연동)" 를 사용자에게 보이는 한 줄로 옮긴 것. */
@@ -53,6 +62,10 @@ export function guardianForZodiac(key: ZodiacKey): GuardianProfile {
     persona: GUARDIAN_PERSONA[key],
     image: `/images/gangi/guardians/${key}.jpg`,
     seal: `/images/gangi/guardians/seals/${key}.png`,
+    moods: {
+      serious: `/images/gangi/guardians/${key}-serious.jpg`,
+      smile: `/images/gangi/guardians/${key}-smile.jpg`,
+    },
   };
 }
 
