@@ -74,8 +74,9 @@ test('getDailyMetrics: 결측일 gap-fill + 전환율 파생(0 분모 null) + �
   assert.equal(snap.totals.checkoutConversionRate, 0.5);
 
   // 유입 집계(윈도우 합산)
-  assert.deepEqual(snap.topReferrers[0], { key: 'google.com', label: 'google.com', visitors: 8 });
-  assert.deepEqual(snap.topReferrers[1], { key: 'naver.com', label: 'naver.com', visitors: 3 });
+  // 2026-08-26 — raw host 대신 서비스 그룹 + 한글 라벨(referrer-labels.ts).
+  assert.deepEqual(snap.topReferrers[0], { key: 'google', label: '구글', visitors: 8 });
+  assert.deepEqual(snap.topReferrers[1], { key: 'naver', label: '네이버', visitors: 3 });
   assert.equal(snap.topUtm[0]!.label, 'naver / cpc / promo');
   // 2026-07-20 — self-referral 제외 가드. 우리 도메인은 유입이 아니라 **내부 이동**이라
   //   "어디서 왔나" 목록에 뜨면 판단을 흐린다. canonical·별칭(www·퓨니코드) 모두 제외 대상.
@@ -179,7 +180,9 @@ test('getDailyMetrics: 자기 도메인은 유입에서 빼고 (direct) 는 남�
     NOW
   );
   const keys = snap.topReferrers.map((r) => r.key);
-  assert.deepEqual(keys, ['link.inpock.co.kr', '(direct)'], `실제: ${keys.join(', ')}`);
+  // 인포크링크 계열 도메인은 'inpock' 한 그룹으로 접힌다. ⚠️ 그 **위** 채널(인스타 등)은
+  //   referrer 로 알 수 없으므로 라벨을 인스타로 둔갑시키지 않는다.
+  assert.deepEqual(keys, ['inpock', '(direct)'], `실제: ${keys.join(', ')}`);
 });
 
 // 2026-07-21 — 🔴 환불 반영 가드. 사용자 제보: "환불했는데 관리자 매출에 그대로 잡힌다".

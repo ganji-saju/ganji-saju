@@ -8,8 +8,13 @@ import {
   type PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
 import { getLlmCostStats, type LlmCostStats } from '@/lib/admin/llm-cost-stats';
-import { getDailyMetrics, type InflowAggEntry } from '@/lib/admin/analytics-metrics';
+import {
+  getDailyMetrics,
+  type DailyMetricPoint,
+  type InflowAggEntry,
+} from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
+import { normalizeAdminRange } from './metric-ranges';
 
 export interface PendingCounts {
   /** 환불 요청 대기(status='requested'). */
@@ -37,6 +42,17 @@ export interface AdminDashboardSummary {
    *   따로 구현하면 두 화면 숫자가 갈라진다.
    */
   topReferrers: InflowAggEntry[];
+  /**
+   * 2026-08-27 — 유입 상위(UTM 캠페인). referrer 만으로는 링크인바이오(인포크링크 등)를
+   *   거친 유입의 **원래 채널**을 알 수 없다 — referrer 는 직전 한 단계만 보인다.
+   *   같은 getDailyMetrics 집계라 /admin/analytics 와 숫자가 갈라지지 않는다.
+   */
+  topUtm: InflowAggEntry[];
+  /**
+   * 2026-08-27 — 일별 지표 원본. getDailyMetrics 는 유입 카드 때문에 **이미 부르고 있었고**
+   *   일별 행을 버리고 있었다 — 추가 쿼리 없이 그대로 싣는다. 화면에서 일/주(월~일)로 묶는다.
+   */
+  daily: DailyMetricPoint[];
   funnel: PaymentFunnelSnapshot | null;
   llm: LlmCostStats | null;
   pending: PendingCounts;
@@ -63,13 +79,14 @@ export function labelForAdminAction(action: string): string {
   return ACTION_LABELS[action] ?? action;
 }
 
-const VALID_WINDOWS = [7, 14, 30] as const;
-export type DashboardWindow = (typeof VALID_WINDOWS)[number];
+export type DashboardWindow = number;
 
-/** ?days= 입력을 허용된 윈도우(7/14/30)로 정규화. 기본 14. */
+/**
+ * ?days= 입력을 공용 프리셋(일·주·월·분기·6개월·1년)으로 정규화. 기본 30(월).
+ * 2026-08-26 — 화면마다 갈라져 있던 프리셋을 metric-ranges.ts 단일 정본으로 합쳤다.
+ */
 export function normalizeDashboardWindow(raw: unknown): DashboardWindow {
-  const n = typeof raw === 'string' ? Number(raw) : typeof raw === 'number' ? raw : NaN;
-  return (VALID_WINDOWS as readonly number[]).includes(n) ? (n as DashboardWindow) : 14;
+  return normalizeAdminRange(raw, 30);
 }
 
 export async function getAdminDashboardSummary(
@@ -79,6 +96,8 @@ export async function getAdminDashboardSummary(
     windowDays,
     operations: null,
     topReferrers: [],
+    topUtm: [],
+    daily: [],
     funnel: null,
     llm: null,
     pending: { refundRequested: 0, reviewPending: 0 },
@@ -146,6 +165,8 @@ export async function getAdminDashboardSummary(
       funnel,
       llm,
       topReferrers: analytics?.topReferrers ?? [],
+      topUtm: analytics?.topUtm ?? [],
+      daily: analytics?.daily ?? [],
       pending: {
         refundRequested: refundRes.count ?? 0,
         reviewPending: reviewRes.count ?? 0,

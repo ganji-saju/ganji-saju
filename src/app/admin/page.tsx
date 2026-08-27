@@ -1,5 +1,5 @@
 // 2026-06-28 — 관리자 콘솔 랜딩 대시보드(/admin). 관리자 콘솔 2/2.
-//   기존 스냅샷(운영·결제퍼널·LLM) 통합 KPI + 대기 작업 + 최근 활동 + 기간 토글 + 바로가기.
+//   기존 스냅샷(운영·결제퍼널·LLM) 통합 KPI + 대기 작업 + 최근 활동 + 기간 토글 + 날짜별 표.
 //   진입점이 없던 문제(G1) 해결. 데이터는 getAdminDashboardSummary 1회 호출.
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -10,8 +10,10 @@ import {
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
-import { getVisibleNavGroups } from '@/lib/admin/nav';
+import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
+import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { DailySeries } from '@/lib/admin/operations-stats';
+import { ADMIN_RANGE_OPTIONS, adminRangeLabel } from '@/lib/admin/metric-ranges';
 
 export const metadata: Metadata = {
   title: '관리자 콘솔',
@@ -71,6 +73,42 @@ function Sparkline({ series }: { series: DailySeries[] }) {
   );
 }
 
+/**
+ * 요약용 유입 상위 미니 목록(상위 4개).
+ * referrer 와 UTM 이 같은 모양이라 한 컴포넌트로 쓴다 — 따로 두면 한쪽만 고쳐져 어긋난다.
+ */
+function InflowMini({
+  title,
+  entries,
+  emptyHint = '아직 데이터가 없어요',
+}: {
+  title: string;
+  entries: Array<{ key: string; label: string; visitors: number }>;
+  emptyHint?: string;
+}) {
+  return (
+    <div className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
+      <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        {title}
+      </div>
+      {entries.length === 0 ? (
+        <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">{emptyHint}</p>
+      ) : (
+        <ol className="mt-1 space-y-0.5">
+          {entries.slice(0, 4).map((entry, i) => (
+            <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
+              <span className="min-w-0 truncate text-[var(--app-copy)]">
+                {i + 1}. {entry.label}
+              </span>
+              <span className="shrink-0 font-bold text-[var(--app-ink)]">{fmtNum(entry.visitors)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 function Card({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
@@ -106,7 +144,10 @@ export default async function AdminDashboardPage({
 
   const ops = summary.operations;
   const periodVisitors = sumSeries(ops?.trends.visitors);
-  const navGroups = getVisibleNavGroups(role).filter((g) => g.title !== '개요');
+  // 2026-08-27 사용자 지시 — 하단 '바로가기'를 걷어내고 그 자리에 날짜별 데이터를 둔다.
+  //   좌측 레일이 2단으로 정리되면서 바로가기는 같은 링크를 한 번 더 나열할 뿐이었다.
+  //   실측 시작일 이전(집계가 사람을 못 세던 구간)은 /admin/analytics 와 같은 규칙으로 자른다.
+  const visibleDaily = summary.daily.filter((d) => d.date >= VISIT_TRACKING_START_KEY);
 
   return (
     <main className="w-full space-y-5 px-4 py-5 md:px-6">
@@ -114,22 +155,24 @@ export default async function AdminDashboardPage({
         <div>
           <h1 className="text-[22px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>
           <p className="text-[12.5px] text-[var(--app-copy-soft)]">
-            기준 {windowDays}일 · {role === 'super_admin' ? 'super_admin' : 'admin'}
+            기준 {adminRangeLabel(windowDays)} · {role === 'super_admin' ? 'super_admin' : 'admin'}
             {ops ? ` · 생성 ${fmtDateTime(ops.generatedAt)}` : ''}
           </p>
         </div>
-        <div className="flex items-center gap-1">
-          {[7, 14, 30].map((d) => (
+        {/* 2026-08-26 — 프리셋 공용 정본(일·주·월·분기·6개월·1년). 서버 컴포넌트라 링크로 둔다. */}
+        <div className="flex flex-wrap items-center gap-1">
+          {ADMIN_RANGE_OPTIONS.map((opt) => (
             <Link
-              key={d}
-              href={`/admin?days=${d}`}
+              key={opt.value}
+              href={`/admin?days=${opt.value}`}
+              title={opt.hint}
               className={`rounded-full px-3 py-1.5 text-[12.5px] font-bold ${
-                d === windowDays
+                opt.value === windowDays
                   ? 'bg-[var(--app-pink-strong)] text-white'
                   : 'border border-[var(--app-line)] text-[var(--app-ink)]'
               }`}
             >
-              {d}일
+              {opt.label}
             </Link>
           ))}
         </div>
@@ -216,7 +259,7 @@ export default async function AdminDashboardPage({
 
             ⚠️ GA4·Vercel 수집은 그대로 살아 있다. 화면에서만 내렸고 원본은 /admin/analytics.
             ⚠️ GA4 절대값을 자체 집계와 맞추려고 동의 기본값을 granted 로 바꾸지 말 것. */}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Stat
             label="자체 순방문"
             value={fmtMaybeNum(periodVisitors)}
@@ -224,28 +267,15 @@ export default async function AdminDashboardPage({
           />
           {/* 2026-07-20 — 유입 상위(사용자 요청). "몇 명 왔나" 바로 옆에 "어디서 왔나"를 둔다.
               집계는 /admin/analytics 와 **같은 함수**(getDailyMetrics)를 재사용한다 —
-              따로 구현하면 두 화면 숫자가 갈라진다. */}
-          <div>
-            <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              유입 상위
-            </div>
-            {summary.topReferrers.length === 0 ? (
-              <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">아직 데이터가 없어요</p>
-            ) : (
-              <ol className="mt-1 space-y-0.5">
-                {summary.topReferrers.slice(0, 4).map((entry, i) => (
-                  <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
-                    <span className="min-w-0 truncate text-[var(--app-copy)]">
-                      {i + 1}. {entry.label}
-                    </span>
-                    <span className="shrink-0 font-bold text-[var(--app-ink)]">
-                      {fmtNum(entry.visitors)}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
+              따로 구현하면 두 화면 숫자가 갈라진다.
+              2026-08-27 — UTM 캠페인 추가(사용자 요청). referrer 는 **직전 한 단계**만 보여
+              링크인바이오(인포크링크 등)를 거친 유입의 원래 채널을 알 수 없다. 둘을 나란히 둔다. */}
+          <InflowMini title="유입 상위 (referrer)" entries={summary.topReferrers} />
+          <InflowMini
+            title="유입 상위 (UTM)"
+            entries={summary.topUtm}
+            emptyHint="UTM 태그 유입이 아직 없어요"
+          />
         </div>
       </Card>
 
@@ -399,32 +429,10 @@ export default async function AdminDashboardPage({
         )}
       </Card>
 
-      {/* 섹션 바로가기 */}
-      <Card title="바로가기">
-        <div className="space-y-3">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <p className="text-[11.5px] font-extrabold uppercase tracking-wide text-[var(--app-copy-muted)]">
-                {group.title}
-              </p>
-              <div className="mt-1.5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {group.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="flex flex-col gap-0.5 rounded-[12px] border border-[var(--app-line)] bg-white p-3 transition-colors hover:bg-[var(--app-pink-soft)]"
-                  >
-                    <span className="text-[14px] font-extrabold text-[var(--app-ink)]">{item.label}</span>
-                    {item.description ? (
-                      <span className="text-[12px] text-[var(--app-copy-soft)]">{item.description}</span>
-                    ) : null}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {/* 2026-08-27 사용자 지시 — 하단 '바로가기' 자리에 날짜별 데이터.
+          일별은 날짜+요일, 주별은 달력 주(월~일)로 묶는다. 표 컴포넌트는
+          /admin/analytics 와 **같은 것**을 쓴다 — 주 경계와 비율 계산이 갈라지면 안 된다. */}
+      <MetricsPeriodTable rows={visibleDaily} title="날짜별 · 주별 상세" />
     </main>
   );
 }

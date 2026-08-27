@@ -7,19 +7,18 @@ import type { AnalyticsSnapshot, InflowAggEntry } from '@/lib/admin/analytics-me
 import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
+import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
+import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import type { RefundBreakdown } from '@/lib/admin/refund-breakdown';
 
 interface ApiResponse {
   ok: boolean;
   snapshot?: AnalyticsSnapshot;
   external?: ExternalAnalyticsSnapshot;
+  /** 2026-08-26 — 환불 건별 원 결제일(해설용). 집계는 snapshot 이 정본. */
+  refunds?: RefundBreakdown;
   error?: string;
 }
-
-const WINDOW_OPTIONS = [
-  { value: 30, label: '30일' },
-  { value: 90, label: '90일' },
-  { value: 365, label: '365일' },
-];
 
 const AUTO_REFRESH_MS = 10 * 60 * 1000;
 const formatNum = (n: number) => n.toLocaleString();
@@ -58,10 +57,12 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
 
 function InflowTable({
   title,
+  subtitle,
   entries,
   emptyHint,
 }: {
   title: string;
+  subtitle?: string;
   entries: InflowAggEntry[];
   emptyHint: string;
 }) {
@@ -69,6 +70,14 @@ function InflowTable({
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
       <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+      {subtitle ? (
+        <p
+          className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          {subtitle}
+        </p>
+      ) : null}
       {entries.length === 0 ? (
         <p className="mt-2 text-[13px] text-[var(--app-copy-soft)]">{emptyHint}</p>
       ) : (
@@ -95,117 +104,8 @@ function InflowTable({
   );
 }
 
-const DAILY_PAGE_SIZE = 15; // 한 페이지 15일.
-const DAILY_PAGE_WINDOW = 5; // 숫자 버튼 최대 노출 개수(1,2,3,4,5 …).
-
-function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
-  const [page, setPage] = useState(0);
-  // 윈도우(30/90/365) 전환 등 rows 갱신 시 첫 페이지로.
-  useEffect(() => {
-    setPage(0);
-  }, [rows]);
-
-  const ordered = [...rows].reverse(); // 최신 날짜 먼저.
-  const totalPages = Math.max(1, Math.ceil(ordered.length / DAILY_PAGE_SIZE));
-  const current = Math.min(page, totalPages - 1); // 방어적 clamp.
-  const start = current * DAILY_PAGE_SIZE;
-  const pageRows = ordered.slice(start, start + DAILY_PAGE_SIZE);
-
-  // 현재 페이지를 가운데 두는 슬라이딩 숫자 윈도우.
-  let winStart = Math.max(0, current - Math.floor(DAILY_PAGE_WINDOW / 2));
-  winStart = Math.min(winStart, Math.max(0, totalPages - DAILY_PAGE_WINDOW));
-  const winEnd = Math.min(totalPages, winStart + DAILY_PAGE_WINDOW);
-  const pageNumbers: number[] = [];
-  for (let i = winStart; i < winEnd; i += 1) pageNumbers.push(i);
-
-  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
-  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
-  const navBtn =
-    'flex h-8 min-w-8 items-center justify-center rounded-[9px] border px-2.5 text-[13px] font-bold disabled:cursor-not-allowed disabled:opacity-40';
-
-  return (
-    <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">날짜별 상세</h2>
-        <span className="text-[11.5px] text-[var(--app-copy-soft)]">총 {ordered.length}일</span>
-      </div>
-      <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
-        <table className="w-full border-collapse text-[12.5px]">
-          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
-            <tr>
-              <th className={`${th} text-left`}>날짜</th>
-              <th className={th}>방문자</th>
-              <th className={th}>PV</th>
-              <th className={th}>신규가입</th>
-              <th className={th}>결제</th>
-              <th className={th}>매출</th>
-              <th className={th}>환불</th>
-              <th className={th}>순매출</th>
-              <th className={th}>결제/방문</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageRows.map((d) => (
-              <tr key={d.date} className="border-t border-[var(--app-line)]">
-                <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{d.date}</td>
-                <td className={td}>{formatNum(d.visitors)}</td>
-                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatNum(d.pageViews)}</td>
-                <td className={td}>{formatNum(d.newSignups)}</td>
-                <td className={td}>{formatNum(d.paidOrders)}</td>
-                <td className={td}>{d.revenueWon > 0 ? fmtWon(d.revenueWon) : '—'}</td>
-                <td className={`${td} text-[var(--app-coral)]`}>
-                  {d.refundedWon > 0 ? `-${fmtWon(d.refundedWon)}` : '—'}
-                </td>
-                <td className={`${td} font-semibold text-[var(--app-ink)]`}>
-                  {d.revenueWon > 0 || d.refundedWon > 0 ? fmtWon(d.netRevenueWon) : '—'}
-                </td>
-                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatPct(d.visitorToPaidRate)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPage(Math.max(0, current - 1))}
-            disabled={current === 0}
-            aria-label="이전 페이지"
-            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
-          >
-            ‹
-          </button>
-          {pageNumbers.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPage(p)}
-              aria-current={p === current ? 'page' : undefined}
-              className={`${navBtn} ${
-                p === current
-                  ? 'border-[var(--app-ink)] bg-[var(--app-ink)] text-white'
-                  : 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
-              }`}
-            >
-              {p + 1}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setPage(Math.min(totalPages - 1, current + 1))}
-            disabled={current === totalPages - 1}
-            aria-label="다음 페이지"
-            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
-          >
-            ›
-          </button>
-        </div>
-      )}
-    </section>
-  );
-}
+// 2026-08-27 — 날짜별 표는 components/admin/metrics-period-table 로 옮겼다(일/주 토글).
+//   /admin 대시보드와 **같은 컴포넌트**를 쓴다 — 따로 두면 주 경계·비율 계산이 갈라진다.
 
 interface ComparisonSeries {
   key: string;
@@ -573,6 +473,67 @@ function ExternalComparison({
   );
 }
 
+function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) {
+  if (!refunds || refunds.items.length === 0) return null;
+
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+
+  return (
+    <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">환불 내역</h2>
+        <span className="text-[11.5px] text-[var(--app-copy-soft)]">
+          {refunds.items.length}건 · {fmtWon(refunds.totalWon)}
+          {refunds.truncated > 0 ? ` (최신 ${refunds.items.length}건만 표시 · +${refunds.truncated}건)` : ''}
+        </span>
+      </div>
+      <p
+        className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        매출은 <strong>판 날</strong>, 환불은 <strong>환불한 날</strong>에 계상합니다. 그래서 예전에 판
+        상품을 오늘 환불하면 오늘 순매출이 마이너스로 보일 수 있습니다 — 잘못된 수치가 아니라 귀속일이
+        다른 것입니다(귀속을 원 결제일로 옮기면 마감된 과거 매출이 사후에 바뀝니다).
+        {refunds.outsideWindowWon > 0 ? (
+          <>
+            {' '}
+            이 기간 환불 중 <strong>{fmtWon(refunds.outsideWindowWon)}</strong> 은 원 결제가 기간 밖이라
+            기간 순매출을 그대로 깎습니다.
+          </>
+        ) : null}
+      </p>
+      <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+            <tr>
+              <th className={`${th} text-left`}>환불일</th>
+              <th className={`${th} text-left`}>원 결제일</th>
+              <th className={`${th} text-left`}>상품</th>
+              <th className={th}>환불액</th>
+            </tr>
+          </thead>
+          <tbody>
+            {refunds.items.map((item) => (
+              <tr key={item.orderId || `${item.refundedOn}-${item.productName}`} className="border-t border-[var(--app-line)]">
+                <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{item.refundedOn}</td>
+                <td className={`${td} text-left`}>
+                  {item.paidOn ?? '—'}
+                  {item.paidOn && !item.sameDay ? (
+                    <span className="ml-1 text-[11px] text-[var(--app-coral)]">다른 날 결제분</span>
+                  ) : null}
+                </td>
+                <td className={`${td} text-left text-[var(--app-copy-soft)]`}>{item.productName}</td>
+                <td className={`${td} text-[var(--app-coral)]`}>-{fmtWon(item.amountWon)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export function AnalyticsDashboard() {
   const [days, setDays] = useState(30);
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
@@ -580,6 +541,7 @@ export function AnalyticsDashboard() {
   //   상세 근거는 VISIT_TRACKING_START_KEY 주석 참조.
   const visibleDaily = (snap?.daily ?? []).filter((d) => d.date >= VISIT_TRACKING_START_KEY);
   const [external, setExternal] = useState<ExternalAnalyticsSnapshot | null>(null);
+  const [refunds, setRefunds] = useState<RefundBreakdown | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -602,6 +564,7 @@ export function AnalyticsDashboard() {
           loadedOnce = true;
           setSnap(res.snapshot);
           setExternal(res.external ?? null);
+          setRefunds(res.refunds ?? null);
           setError(null);
         } else if (initial || !loadedOnce) {
           setError(res.error ?? '불러오기 실패');
@@ -634,22 +597,7 @@ export function AnalyticsDashboard() {
     <div className="flex flex-col gap-5">
       {/* 윈도우 선택 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1.5">
-          {WINDOW_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setDays(opt.value)}
-              className={`rounded-[10px] border px-3 py-1.5 text-[13px] font-bold ${
-                days === opt.value
-                  ? 'border-[var(--app-ink)] bg-[var(--app-ink)] text-white'
-                  : 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <AdminRangePills value={days} onChange={setDays} />
         {snap?.refreshedAt && (
           <div className="text-[11.5px] text-[var(--app-copy-soft)]">
             {new Date(snap.refreshedAt).toLocaleString('ko-KR')} 기준
@@ -694,6 +642,23 @@ export function AnalyticsDashboard() {
             <SummaryCard label="결제창 전환" value={formatPct(snap.totals.checkoutConversionRate)} sub="성공÷시도" />
           </div>
 
+          {/* 유입 — 2026-08-27 사용자 요청으로 **요약 바로 아래**로 올렸다.
+              원래 그래프 5개 밑 맨 끝에 있어 스크롤하지 않으면 안 보였다.
+              "몇 명 왔나" 다음 질문이 "어디서 왔나" 다 — /admin 요약도 같은 순서로 둔다. */}
+          <div className="grid gap-3 lg:grid-cols-2">
+            <InflowTable
+              title="유입 상위 (referrer)"
+              subtitle="직전 한 단계만 보입니다 — 링크인바이오(인포크링크 등)를 거치면 그 위 채널은 UTM 없이는 알 수 없습니다."
+              entries={snap.topReferrers}
+              emptyHint="referrer 데이터가 아직 없습니다."
+            />
+            <InflowTable
+              title="유입 상위 (UTM 캠페인)"
+              entries={snap.topUtm}
+              emptyHint="UTM 태그 유입이 아직 없습니다(배포 후부터 수집)."
+            />
+          </div>
+
           {external && <ExternalComparison snap={snap} external={external} />}
 
           {/* 방문자·PV 그래프 */}
@@ -703,7 +668,10 @@ export function AnalyticsDashboard() {
           </div>
 
           {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
-          <DailyTable rows={visibleDaily} />
+          <MetricsPeriodTable rows={visibleDaily} title="날짜별 상세" />
+
+          {/* 2026-08-26 — 환불 내역(건별 원 결제일). '오늘 매출 990인데 환불 9,900' 제보의 답. */}
+          <RefundBreakdownTable refunds={refunds} />
 
           {/* 나머지 그래프 */}
           <div className="grid gap-3 lg:grid-cols-2">
@@ -730,20 +698,6 @@ export function AnalyticsDashboard() {
               )}
               color="#8A6D3B"
               format={(v) => `${v.toFixed(1)}%`}
-            />
-          </div>
-
-          {/* 유입 */}
-          <div className="grid gap-3 lg:grid-cols-2">
-            <InflowTable
-              title="유입 상위 (referrer)"
-              entries={snap.topReferrers}
-              emptyHint="referrer 데이터가 아직 없습니다."
-            />
-            <InflowTable
-              title="유입 상위 (UTM 캠페인)"
-              entries={snap.topUtm}
-              emptyHint="UTM 태그 유입이 아직 없습니다(배포 후부터 수집)."
             />
           </div>
 

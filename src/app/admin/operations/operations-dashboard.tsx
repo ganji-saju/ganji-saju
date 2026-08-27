@@ -3,19 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import type { DailySeries, OperationsSnapshot } from '@/lib/admin/operations-stats';
+import { AdminRangePills } from '@/components/admin/admin-range-pills';
 
 interface ApiResponse {
   ok: boolean;
   snapshot?: OperationsSnapshot;
   error?: string;
 }
-
-const WINDOW_OPTIONS = [
-  { value: 7, label: '7일' },
-  { value: 14, label: '14일' },
-  { value: 30, label: '30일' },
-  { value: 60, label: '60일' },
-];
 
 // 분모 없음(null)은 0%가 아니라 '—' — 활동자 0명을 '전환 0.0%'로 오표시하지 않는다.
 function formatPct(value: number | null): string {
@@ -201,7 +195,7 @@ function PeriodRow({
 }
 
 export function OperationsDashboard() {
-  const [windowDays, setWindowDays] = useState(14);
+  const [windowDays, setWindowDays] = useState(30);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
 
@@ -264,27 +258,8 @@ export function OperationsDashboard() {
         </p>
       </article>
 
-      {/* §Window selector */}
-      <div className="flex flex-wrap gap-1.5">
-        {WINDOW_OPTIONS.map((opt) => {
-          const isActive = opt.value === windowDays;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
-              style={{
-                background: isActive ? 'var(--app-pink)' : 'white',
-                color: isActive ? 'white' : 'var(--app-copy-muted)',
-                borderColor: isActive ? 'var(--app-pink)' : 'var(--app-line)',
-              }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* §Window selector — 2026-08-26 프리셋을 공용 정본으로(일·주·월·분기·6개월·1년). */}
+      <AdminRangePills value={windowDays} onChange={setWindowDays} />
 
       {state === 'loading' ? (
         <article

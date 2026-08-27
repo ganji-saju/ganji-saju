@@ -7,19 +7,14 @@ import type {
   PaymentFunnelDailyPoint,
   PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
+import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { getPackage } from '@/lib/payments/catalog';
 
 interface ApiResponse {
   ok: boolean;
   snapshot?: PaymentFunnelSnapshot;
   error?: string;
 }
-
-const WINDOW_OPTIONS = [
-  { value: 7, label: '7일' },
-  { value: 14, label: '14일' },
-  { value: 30, label: '30일' },
-  { value: 60, label: '60일' },
-];
 
 const STAGE_LABEL = {
   prepare_attempt: 'prepare 진입',
@@ -40,6 +35,10 @@ const BLOCK_REASON_LABEL: Record<string, string> = {
 // 분모 없음(null)은 0%가 아니라 '—' — 시도 0건을 '전환 0.0%'로 오표시하지 않는다.
 function fmtPct(value: number | null): string {
   return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
+}
+
+function fmtWon(n: number): string {
+  return `${Math.round(n).toLocaleString('ko-KR')}원`;
 }
 
 function fmtNum(n: number): string {
@@ -109,8 +108,216 @@ const STAGE_ORDER: Array<keyof typeof STAGE_LABEL> = [
   'confirm_failed',
 ];
 
+
+/**
+ * 2026-08-26 — 유입 채널 × 상품 결제 교차표(사용자 지시: "GA4 말고 자체 퍼널 강화").
+ * 정확한 값을 읽는 표라 차트가 아니라 표로 둔다. 크기는 셀 농담으로 거들되,
+ * 숫자를 항상 같이 적어 색만으로 정보를 전달하지 않는다.
+ */
+/**
+ * 2026-08-27 사용자 지시 — "결제된 것만 보여주면 안 될 것 같다".
+ *   이 화면의 돈은 여태 payment_funnel_events(confirm_success)만 봤다. 환불은 그 테이블에
+ *   **아예 없다**(payment_orders.status='refunded') — 그래서 판 돈만 보이고 돌려준 돈은
+ *   어디에도 안 나왔다. 아래 '유입 채널 × 상품 결제' 합계도 같은 이유로 gross 다.
+ *
+ *   ⚠️ 두 숫자의 귀속일이 다르다 — 결제는 **판 날**, 환불은 **환불한 날**(#641 설계).
+ *      예전에 판 것을 오늘 환불하면 이 기간 순액이 그만큼 더 깎여 보인다. 귀속을 원 결제일로
+ *      바꾸면 이미 마감된 과거 매출이 사후에 변하므로, 숫자를 고치지 않고 그 금액을 따로
+ *      적어 **화면이 그 사실을 말하게** 한다(refund-breakdown.ts 와 같은 규칙).
+ */
+function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
+  const gross = snap.grossAmountWon;
+  const refunded = snap.refunds.totalWon;
+  const net = gross - refunded;
+  const outside = snap.refunds.outsideWindowWon;
+  const items = snap.refunds.items;
+  const SHOWN = 8;
+
+  const card = 'rounded-[12px] border bg-white p-3';
+  const cardStyle = { borderColor: 'var(--app-line)' } as const;
+  const label = 'text-[11.5px] font-semibold text-[var(--app-copy-soft)]';
+  const value = 'mt-0.5 text-[20px] font-extrabold tabular-nums';
+
+  return (
+    <section>
+      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        결제액 · 환불액
+      </h2>
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
+        <article className={card} style={cardStyle}>
+          <p className={label}>결제액 (기간)</p>
+          <p className={`${value} text-[var(--app-ink)]`}>{fmtWon(gross)}</p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">
+            결제 성공 {fmtNum(snap.totals.counts.confirm_success)}건 · 나중에 환불된 주문도 포함
+          </p>
+        </article>
+        <article className={card} style={cardStyle}>
+          <p className={label}>환불액 (기간)</p>
+          <p className={`${value} ${refunded > 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
+            {refunded > 0 ? `-${fmtWon(refunded)}` : fmtWon(0)}
+          </p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">
+            {fmtNum(items.length + snap.refunds.truncated)}건 · 환불한 날 기준
+          </p>
+        </article>
+        <article className={card} style={cardStyle}>
+          <p className={label}>순액</p>
+          <p className={`${value} ${net < 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
+            {fmtWon(net)}
+          </p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">결제액 − 환불액</p>
+        </article>
+      </div>
+
+      {outside > 0 ? (
+        <p
+          className="mt-1.5 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          이 중 <strong className="font-extrabold text-[var(--app-coral)]">{fmtWon(outside)}</strong>{' '}
+          은 원 결제가 이 기간 <strong className="font-extrabold text-[var(--app-ink)]">밖</strong>인
+          환불입니다 — 위 결제액에 대응 금액이 없어 순액만 그만큼 눌립니다(기간을 넓히면 짝이
+          맞습니다).
+        </p>
+      ) : null}
+
+      {items.length > 0 ? (
+        <div className="mt-2 overflow-hidden rounded-[12px] border" style={cardStyle}>
+          {items.slice(0, SHOWN).map((item, i) => (
+            <div
+              key={`${item.orderId}-${i}`}
+              className={`flex items-baseline justify-between gap-3 bg-white px-3 py-2 text-[12.5px] ${
+                i > 0 ? 'border-t border-[var(--app-line)]' : ''
+              }`}
+            >
+              <span className="min-w-0 truncate font-semibold text-[var(--app-ink)]">
+                {item.productName}
+              </span>
+              <span className="shrink-0 tabular-nums text-[var(--app-copy-muted)]">
+                {item.refundedOn}
+                {item.paidInWindow ? '' : ` · 원 결제 ${item.paidOn ?? '미상'}`}
+                <strong className="ml-2 font-extrabold text-[var(--app-coral)]">
+                  -{fmtWon(item.amountWon)}
+                </strong>
+              </span>
+            </div>
+          ))}
+          {items.length > SHOWN || snap.refunds.truncated > 0 ? (
+            <div className="border-t border-[var(--app-line)] bg-white px-3 py-2 text-[12.1px] text-[var(--app-copy-muted)]">
+              외 {fmtNum(items.length - SHOWN + snap.refunds.truncated)}건 — 전체 내역은{' '}
+              <a className="font-bold underline" href="/admin/analytics">
+                /admin/analytics
+              </a>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channelProduct'] }) {
+  if (!matrix || matrix.totalOrders === 0) return null;
+
+  const cellMap = new Map(matrix.cells.map((c) => [`${c.channel} ${c.packageId}`, c]));
+  const maxOrders = Math.max(...matrix.cells.map((c) => c.orders), 1);
+  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
+  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
+  const productName = (id: string) => getPackage(id)?.name ?? id;
+
+  return (
+    <section>
+      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        유입 채널 × 상품 결제
+      </h2>
+      <p
+        className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+        style={{ wordBreak: 'keep-all' }}
+      >
+        어느 경로로 들어온 사람이 무엇을 샀는지. 채널은 결제자의{' '}
+        <strong className="font-extrabold text-[var(--app-ink)]">최초 방문</strong> 기준이며, 링크에
+        utm 을 붙인 만큼만 갈립니다(안 붙이면 인포크링크·직접 유입으로 뭉칩니다).
+        {matrix.foldedChannels > 0 || matrix.foldedPackages > 0 ? (
+          <>
+            {' '}
+            상위 항목만 표시 — 채널 {matrix.foldedChannels}개 · 상품 {matrix.foldedPackages}개는
+            &lsquo;기타&rsquo;로 접혔습니다(합계는 그대로).
+          </>
+        ) : null}
+      </p>
+      <div className="mt-2 overflow-x-auto rounded-[12px] border border-[var(--app-line)] bg-white">
+        <table className="w-full border-collapse text-[12.5px]">
+          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
+            <tr>
+              <th className={`${th} text-left`}>채널</th>
+              {matrix.packages.map((pkg) => (
+                <th key={pkg} className={th} title={pkg}>
+                  {productName(pkg)}
+                </th>
+              ))}
+              <th className={th}>합계</th>
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.channels.map((channel, rowIndex) => {
+              const rowTotal = matrix.channelTotals[rowIndex];
+              return (
+                <tr key={channel} className="border-t border-[var(--app-line)]">
+                  <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{channel}</td>
+                  {matrix.packages.map((pkg) => {
+                    const cell = cellMap.get(`${channel} ${pkg}`);
+                    const orders = cell?.orders ?? 0;
+                    return (
+                      <td
+                        key={pkg}
+                        className={td}
+                        title={orders > 0 ? `${productName(pkg)} · ${fmtWon(cell?.amountWon ?? 0)}` : undefined}
+                        style={{
+                          background:
+                            orders > 0
+                              ? `rgba(179,55,42,${(0.06 + 0.34 * (orders / maxOrders)).toFixed(3)})`
+                              : undefined,
+                        }}
+                      >
+                        {orders > 0 ? fmtNum(orders) : '—'}
+                      </td>
+                    );
+                  })}
+                  <td className={`${td} font-extrabold text-[var(--app-ink)]`}>
+                    {fmtNum(rowTotal?.orders ?? 0)}
+                    <span className="ml-1 font-semibold text-[var(--app-copy-soft)]">
+                      {fmtWon(rowTotal?.amountWon ?? 0)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+            <tr className="border-t-2 border-[var(--app-ink)]">
+              <td className={`${td} text-left font-extrabold text-[var(--app-ink)]`}>합계</td>
+              {matrix.packages.map((pkg, colIndex) => {
+                const colTotal = matrix.packageTotals[colIndex];
+                return (
+                  <td key={pkg} className={`${td} font-bold text-[var(--app-ink)]`}>
+                    {fmtNum(colTotal?.orders ?? 0)}
+                  </td>
+                );
+              })}
+              <td className={`${td} font-extrabold text-[var(--app-ink)]`}>
+                {fmtNum(matrix.totalOrders)}
+                <span className="ml-1 font-semibold text-[var(--app-copy-soft)]">
+                  {fmtWon(matrix.totalAmountWon)}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 export function PaymentFunnelDashboard() {
-  const [windowDays, setWindowDays] = useState(14);
+  const [windowDays, setWindowDays] = useState(30);
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
 
@@ -168,27 +375,8 @@ export function PaymentFunnelDashboard() {
         </p>
       </article>
 
-      {/* §Window selector */}
-      <div className="flex flex-wrap gap-1.5">
-        {WINDOW_OPTIONS.map((opt) => {
-          const isActive = opt.value === windowDays;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
-              style={{
-                background: isActive ? 'var(--app-pink)' : 'white',
-                color: isActive ? 'white' : 'var(--app-copy-muted)',
-                borderColor: isActive ? 'var(--app-pink)' : 'var(--app-line)',
-              }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* §Window selector — 2026-08-26 프리셋을 공용 정본으로(일·주·월·분기·6개월·1년). */}
+      <AdminRangePills value={windowDays} onChange={setWindowDays} />
 
       {state === 'loading' ? (
         <article
@@ -212,6 +400,47 @@ export function PaymentFunnelDashboard() {
         </article>
       ) : snap ? (
         <>
+          {/* 2026-08-26 사용자 지시 — '결제자 유입 채널'을 최상단으로. 돈이 어디서
+              들어오는지가 이 화면에서 가장 먼저 봐야 할 숫자다. */}
+          {snap.payerChannelCoverage.total > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                결제자 유입 채널 (사이트 밖)
+              </h2>
+              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+                결제자 {fmtNum(snap.payerChannelCoverage.total)}명 중{' '}
+                {fmtNum(snap.payerChannelCoverage.matched)}명만 채널이 확인됩니다 — 첫 방문이
+                비로그인이면 그 방문 기록에 계정이 안 붙어 조인되지 않습니다.
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {snap.payerChannels.length > 0 ? (
+                  snap.payerChannels.map((c) => (
+                    <article
+                      key={c.channel}
+                      className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                      style={{ borderColor: 'var(--app-line)' }}
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="font-extrabold text-[var(--app-ink)]">{c.channel}</span>
+                        <span className="tabular-nums text-[var(--app-copy-muted)]">
+                          결제자 {fmtNum(c.payers)}명
+                        </span>
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <p className="px-1 text-[13px] text-[var(--app-copy-muted)]">
+                    조인된 방문 기록이 없습니다.
+                  </p>
+                )}
+              </div>
+            </section>
+          ) : null}
+
+          <MoneySection snap={snap} />
+
+          <ChannelProductTable matrix={snap.channelProduct} />
+
           {/* §전환율 4 카드 */}
           <section>
             <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
@@ -393,6 +622,66 @@ export function PaymentFunnelDashboard() {
             </section>
           ) : null}
 
+          {/* 2026-08-26 — '어디서 들어와 뭘 보고 결제했나'. 계측은 2026-05-16 부터 metadata 에
+              쌓이고 있었는데 집계기가 metadata 를 아예 안 읽어 화면이 없었다. */}
+          {snap.byEntry.length > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                진입점 별 전환 (사이트 안)
+              </h2>
+              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+                결제창으로 넘어온 화면. `(미지정)` = 결제 요청에 진입점이 없었고 주문 원장에도
+                안 남은 건(구 링크·수동 정산분).
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {snap.byEntry.map((e) => (
+                  <article
+                    key={e.entry}
+                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    style={{ borderColor: 'var(--app-line)' }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-extrabold text-[var(--app-ink)]">{e.entry}</span>
+                      <span className="tabular-nums text-[var(--app-copy-muted)]">
+                        {fmtNum(e.prepareAttempt)} → {fmtNum(e.confirmSuccess)}
+                      </span>
+                      <span
+                        className="tabular-nums font-extrabold"
+                        style={{ color: 'var(--app-jade)' }}
+                      >
+                        {fmtPct(e.conversionRate)}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {snap.paywallSurfaces.length > 0 ? (
+            <section>
+              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+                뭘 보고 결제했나 — 페이월 노출 화면
+              </h2>
+              <div className="mt-2 grid gap-1.5">
+                {snap.paywallSurfaces.map((s) => (
+                  <article
+                    key={s.surface}
+                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    style={{ borderColor: 'var(--app-line)' }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-extrabold text-[var(--app-ink)]">{s.surface}</span>
+                      <span className="tabular-nums text-[var(--app-copy-muted)]">
+                        노출 {fmtNum(s.views)}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <article
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
@@ -408,6 +697,13 @@ export function PaymentFunnelDashboard() {
               <li>• prepare 단계: POST /api/payments/prepare 진입 / 차단 / 준비 완료</li>
               <li>• confirm 단계: POST /api/payments/confirm 진입 / 성공 / 실패</li>
               <li>• 전체 전환 = confirm_success / prepare_attempt</li>
+              <li>
+                • 진입점 = `metadata.from`, 없으면 `payment_orders.entry_source` 를 `order_id` 로
+                조인해 보강 (confirm 계열 3경로는 from 을 안 싣는다)
+              </li>
+              <li>• 페이월 노출 화면 = `paywall_viewed.metadata.surface`</li>
+              <li>• 유입 채널 = `site_visits` 를 `user_id` 로 조인, 사용자별 최초 방문 행의
+                utm_source → referrer_host → &lsquo;직접 유입&rsquo; 순</li>
               <li>• KST(UTC+9) 자정 단위 일별 집계 · best-effort 로깅</li>
             </ul>
           </article>

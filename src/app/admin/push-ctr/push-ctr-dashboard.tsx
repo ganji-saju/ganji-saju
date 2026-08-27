@@ -2,6 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { AdminRangePills } from '@/components/admin/admin-range-pills';
 
 interface CtrRow {
   slot: string;
@@ -39,13 +40,6 @@ interface PolicyResponse {
   refreshed: boolean;
   error?: string;
 }
-
-const WINDOW_OPTIONS = [
-  { value: 7, label: '7일' },
-  { value: 14, label: '14일' },
-  { value: 30, label: '30일' },
-  { value: 90, label: '90일' },
-];
 
 const VARIANT_LABEL: Record<'A' | 'B' | 'C', string> = {
   A: 'A · 점수+highlight',
@@ -183,24 +177,7 @@ export function PushCtrDashboard() {
 
       {/* §Window selector */}
       <div className="flex flex-wrap items-center gap-1.5">
-        {WINDOW_OPTIONS.map((opt) => {
-          const isActive = opt.value === windowDays;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setWindowDays(opt.value)}
-              className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
-              style={{
-                background: isActive ? 'var(--app-pink)' : 'white',
-                color: isActive ? 'white' : 'var(--app-copy-muted)',
-                borderColor: isActive ? 'var(--app-pink)' : 'var(--app-line)',
-              }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
+        <AdminRangePills value={windowDays} onChange={setWindowDays} />
         <button
           type="button"
           onClick={handleForceRefresh}

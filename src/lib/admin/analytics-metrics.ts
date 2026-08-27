@@ -8,6 +8,7 @@ import {
   type InflowReferrer,
   type InflowUtm,
 } from './analytics-rollup';
+import { groupReferrers } from './referrer-labels';
 
 export interface DailyMetricPoint {
   date: string;
@@ -261,11 +262,14 @@ export async function getDailyMetrics(
   //   isOwnSiteHost 는 canonical + 별칭(www·퓨니코드)까지 인지한다 — 목록을 여기서 다시
   //   나열하면 도메인이 늘 때 또 어긋난다(오늘 NEXT_PUBLIC_SITE_URL 사고와 같은 계열).
   //   '(direct)'(referrer 없음)는 **남긴다** — 링크 없이 직접 들어온 실제 유입 신호다.
-  const topReferrers: InflowAggEntry[] = Array.from(refAgg.entries())
-    .filter(([host]) => !isOwnSiteHost(host))
-    .map(([host, visitors]) => ({ key: host, label: host, visitors }))
-    .sort((a, b) => b.visitors - a.visitors)
-    .slice(0, TOP_N);
+  //   2026-08-26 — raw host 를 서비스 단위로 접고 한글 라벨을 붙인다(사용자 질문: 인포크링크
+  //   유입 확인). ⚠️ 라벨은 **직전 한 단계**만 말한다 — 인포크링크를 거쳐 온 유입의 그 위
+  //   채널(인스타 프로필 등)은 브라우저가 안 넘겨줘서 알 수 없다. 나누려면 링크별 UTM 이 필요.
+  const topReferrers: InflowAggEntry[] = groupReferrers(
+    Array.from(refAgg.entries())
+      .filter(([host]) => !isOwnSiteHost(host))
+      .map(([host, visitors]) => ({ host, visitors }))
+  ).slice(0, TOP_N);
 
   const topUtm: InflowAggEntry[] = Array.from(utmAgg.entries())
     .map(([key, v]) => ({ key, label: v.label, visitors: v.visitors }))
