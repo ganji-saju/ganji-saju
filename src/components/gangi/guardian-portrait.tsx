@@ -40,6 +40,10 @@ const MOTION_IDS = new Set([
   'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake',
   'horse', 'sheep', 'monkey', 'rooster', 'dog', 'pig',
   't7', // 히어로 배너(손 내미는 환영 포즈) — 배너용이라 560px 로 인코딩했다.
+  // 2026-08-28 — 미소 표정(서브페이지 아바타 전용). 배정·인사 자리라 표정이 의도된 것이고,
+  //   기본 표정 모션으로 대체하면 콘텐츠가 바뀐다. 64px 원형이라 200px 로 작게 인코딩했다.
+  'rat-smile', 'ox-smile', 'tiger-smile', 'rabbit-smile', 'dragon-smile', 'snake-smile',
+  'horse-smile', 'sheep-smile', 'monkey-smile', 'rooster-smile', 'dog-smile', 'pig-smile',
 ]);
 
 export function GuardianPortrait({
@@ -48,6 +52,7 @@ export function GuardianPortrait({
   className,
   style,
   decorative = false,
+  still = false,
 }: {
   /** guardians/{id}.jpg 의 id — 12지신 키. */
   id: string;
@@ -57,6 +62,15 @@ export function GuardianPortrait({
   style?: React.CSSProperties;
   /** 배너 우측 초상처럼 **장식**인 경우 — 스크린리더에서 감춘다(제목이 이미 내용을 말한다). */
   decorative?: boolean;
+  /**
+   * 🔴 2026-08-28 — 모션을 쓰지 않고 정지컷으로 그린다.
+   * 원본 초상은 대부분 580×720(0.806)인데 생성물은 **항상 3:4(0.750)** 로 나온다.
+   * 즉 생성 과정에서 좌우가 잘린다 — 뱀 꼬리·양 소매가 프레임 밖으로 나갔다.
+   * 카드는 정사각으로 위쪽만 잘라 써서 안 보이지만, 배너는 object-fit:contain 으로
+   * **전체를 보여주기 때문에** 잘린 게 그대로 드러난다(사용자 제보: 궁합·대화상담 배너).
+   * 배너용 소스를 3:4 로 미리 패딩해 재생성하기 전까지는 정지컷을 쓴다.
+   */
+  still?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [allowMotion, setAllowMotion] = useState(false);
@@ -90,15 +104,13 @@ export function GuardianPortrait({
     return () => observer.disconnect();
   }, [allowMotion, id]);
 
-  // 모션 자산이 없는 캐릭터는 지금까지처럼 정지컷으로 그린다.
-  if (!MOTION_IDS.has(id)) {
+  // 모션 자산이 없거나 정지컷을 강제한 경우.
+  if (still || !MOTION_IDS.has(id)) {
     return (
       <img
         src={`/images/gangi/guardians/${id}.jpg`}
         alt={decorative ? '' : (alt ?? '')}
         aria-hidden={decorative || undefined}
-        width={RATIO_W}
-        height={RATIO_H}
         loading="lazy"
         decoding="async"
         className={className}

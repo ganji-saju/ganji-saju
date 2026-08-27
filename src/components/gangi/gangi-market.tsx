@@ -259,6 +259,7 @@ export function GangiSeasonBanner({
               <GuardianPortrait
                 id={banner.character}
                 decorative
+                still
                 className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
                 style={{
                   objectFit: 'contain',
