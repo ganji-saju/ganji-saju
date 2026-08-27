@@ -285,3 +285,25 @@ test('executeRefund: 이미 completed 면 승인 불가 (상태 불변)', async 
   assert.ok(result.error);
   assert.deepEqual(statuses, []); // setStatus 호출 안 됨
 });
+
+// 🔴 2026-08-27 — "revoke failed after toss success". 고아 주문(이용권이 이미 사라진 결제)은
+//   지울 행이 없어 revoked:false 인데, 그걸 실패로 올리면 **PG 취소는 성공했는데** 장부만
+//   revoke_pending 에 갇힌다. 돈이 나간 뒤라 이 오판은 비싸다.
+//   회수할 게 '없는 것'과 회수에 '실패한 것'은 다르다.
+test('executeRefund: 회수할 게 없으면(nothingToRevoke) 실패가 아니라 완료다', async () => {
+  const { deps, statuses } = makeDeps({ tossOk: true, revokeOk: false });
+  const original = deps.revoke;
+  deps.revoke = async (args) => {
+    await original(args);
+    return { revoked: false, nothingToRevoke: true };
+  };
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.equal(result.status, 'completed');
+  assert.deepEqual(statuses, ['processing', 'completed']);
+});
+
+test('executeRefund: 진짜 회수 실패는 여전히 revoke_pending 으로 남는다', async () => {
+  const { deps } = makeDeps({ tossOk: true, revokeOk: false });
+  const result = await executeRefund({ requestId: 'req1', approvedBy: 'super1' }, deps);
+  assert.notEqual(result.status, 'completed');
+});

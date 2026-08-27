@@ -187,7 +187,7 @@ export interface RefundExecutionDeps {
     originalAmount: number | null;
     creditAmount: number | null;
     creditTransactionId: string | null;
-  }): Promise<{ revoked: boolean }>;
+  }): Promise<{ revoked: boolean; nothingToRevoke?: boolean }>;
 }
 
 export interface RefundExecutionResult {
@@ -218,7 +218,12 @@ async function finishRefundWithRevoke(
       creditAmount: req.credit_amount,
       creditTransactionId: req.credit_transaction_id,
     });
-    revoked = r.revoked;
+    // 🔴 2026-08-27 — 회수할 게 **없는 것**과 회수에 **실패한 것**은 다르다.
+    //   revokeProductEntitlement 는 DB 오류면 throw 하고, 지울 행이 없으면 revoked:false 를
+    //   돌려준다. 고아 주문(이용권이 이미 사라진 결제)은 후자인데 실패로 처리돼
+    //   "revoke failed after toss success" 로 막혔다 — **돈은 이미 나간 뒤**라 장부만
+    //   revoke_pending 에 갇힌다. 호출부가 '없음'을 명시하면 완료로 넘긴다.
+    revoked = r.revoked || r.nothingToRevoke === true;
   } catch {
     revoked = false;
   }
