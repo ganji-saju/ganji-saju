@@ -255,15 +255,15 @@ export function GangiSeasonBanner({
             <>
             {/* 2026-08-25 — 수호신 캐릭터(우측 초상). 있으면 한자 장식 대신 캐릭터가 선다. */}
             {banner.character ? (
-              <img
-                src={`/images/gangi/guardians/${banner.character}.jpg`}
-                alt=""
-                aria-hidden="true"
+              /* 2026-08-28 — 카드와 같은 idle 루프를 배너 초상에도. 장식이라 스크린리더에서 감춘다. */
+              <GuardianPortrait
+                id={banner.character}
+                decorative
                 className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
                 style={{
                   objectFit: 'contain',
                   objectPosition: 'right bottom',
-                  // 좌측 페이드 — jpg 종이톤과 배너 한지톤의 미세한 경계를 지운다.
+                  // 좌측 페이드 — 초상의 종이톤과 배너 한지톤의 미세한 경계를 지운다.
                   WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
                   maskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
                 }}

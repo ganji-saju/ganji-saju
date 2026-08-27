@@ -22,15 +22,32 @@ import { useEffect, useRef, useState } from 'react';
 
 const MOTION_BASE = '/images/gangi/guardians/motion';
 
+/**
+ * idle 루프를 가진 캐릭터. **자산이 있는 것만** 적는다 —
+ * 없는 id 로 video 를 그리면 poster 404 라 초상이 통째로 비어 보인다(t7 히어로에서 잡았다).
+ * 새 캐릭터를 애니메이션하면 자산과 이 목록을 같이 추가한다.
+ */
+const MOTION_IDS = new Set([
+  'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake',
+  'horse', 'sheep', 'monkey', 'rooster', 'dog', 'pig',
+  't7', // 히어로 배너(손 내미는 환영 포즈) — 배너용이라 560px 로 인코딩했다.
+]);
+
 export function GuardianPortrait({
   id,
   alt,
   className,
+  style,
+  decorative = false,
 }: {
   /** guardians/{id}.jpg 의 id — 12지신 키. */
   id: string;
-  alt: string;
+  /** decorative 면 무시된다. */
+  alt?: string;
   className?: string;
+  style?: React.CSSProperties;
+  /** 배너 우측 초상처럼 **장식**인 경우 — 스크린리더에서 감춘다(제목이 이미 내용을 말한다). */
+  decorative?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [allowMotion, setAllowMotion] = useState(false);
@@ -64,6 +81,21 @@ export function GuardianPortrait({
     return () => observer.disconnect();
   }, [allowMotion, id]);
 
+  // 모션 자산이 없는 캐릭터는 지금까지처럼 정지컷으로 그린다.
+  if (!MOTION_IDS.has(id)) {
+    return (
+      <img
+        src={`/images/gangi/guardians/${id}.jpg`}
+        alt={decorative ? '' : (alt ?? '')}
+        aria-hidden={decorative || undefined}
+        loading="lazy"
+        decoding="async"
+        className={className}
+        style={style}
+      />
+    );
+  }
+
   return (
     <video
       ref={videoRef}
@@ -72,10 +104,12 @@ export function GuardianPortrait({
       muted
       loop
       playsInline
-      // 장식이 아니라 카드의 주 이미지다 — 스크린리더에 이름을 준다.
-      role="img"
-      aria-label={alt}
+      // 카드 초상은 주 이미지라 이름을 주고, 배너 초상은 장식이라 감춘다.
+      {...(decorative
+        ? { 'aria-hidden': true as const }
+        : { role: 'img' as const, 'aria-label': alt })}
       className={className}
+      style={style}
     />
   );
 }
