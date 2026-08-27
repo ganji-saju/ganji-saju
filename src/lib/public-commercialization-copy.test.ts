@@ -96,8 +96,18 @@ test('login page exposes the minimum paid-service auth surface', () => {
     source.includes('next=${encodeURIComponent(afterLoginHref)}'),
     'OAuth callback must preserve the safe next parameter'
   );
+  // 🔴 2026-08-27 — 이 가드는 원래 `router.replace(afterLoginHref)` 라는 **구현 문자열**을
+  //   박아 두고 있었다. 그런데 바로 그 replace+refresh 조합이 "로그인은 됐는데 화면이
+  //   그대로" 버그의 원인이었다(refresh 가 진행 중인 replace 를 취소). 가드가 버그를
+  //   지키고 있었던 셈이라, 검사 대상을 **의도**로 바꾼다 — 어떤 방식으로 이동하든
+  //   목적지가 afterLoginHref 이기만 하면 된다.
   assert.ok(
-    source.includes('router.replace(afterLoginHref)'),
+    /redirectAfterLogin\(\s*(data\.next \?\? )?afterLoginHref\s*\)/.test(source),
     'password login must return to the safe next destination'
+  );
+  // 하드 내비게이션이어야 서버 컴포넌트가 방금 발급된 세션 쿠키를 본다(결제는 서버 판정).
+  assert.ok(
+    source.includes('window.location.replace(href)'),
+    'post-login navigation must be a hard navigation so the server sees the new session'
   );
 });

@@ -79,16 +79,40 @@ export default function TossMembershipCheckout({
     return `/membership/checkout?${params.toString()}`;
   }, [entrySource, plan, product, scope, slug]);
 
+  // 🔴 2026-08-27 — 마운트 1회 판정 + onAuthStateChange 미구독이면 세션 state 가 stale 해진다.
+  //   이 저장소가 이미 같은 방식으로 데였다(2026-07-01 메가내브 로그아웃 버튼 '작동 안 함' —
+  //   getUser 를 한 번만 부르고 구독을 안 해서 로그인/로그아웃이 반영되지 않았다).
+  //   여기서 stale 이면 결제 버튼이 `isLoggedIn === null` 로 **disabled 에 갇히거나**,
+  //   이미 로그인한 사람을 다시 /login 으로 보낸다 — 둘 다 "눌러도 아무 반응 없음"으로 보인다.
   useEffect(() => {
     if (!hasSupabaseBrowserEnv) {
       setIsLoggedIn(false);
       return;
     }
 
+    let isActive = true;
     const supabase = createClient();
-    void getCurrentBrowserUser(supabase).then((user) => {
-      setIsLoggedIn(Boolean(user));
+    void getCurrentBrowserUser(supabase)
+      .then((user) => {
+        if (isActive) setIsLoggedIn(Boolean(user));
+      })
+      .catch(() => {
+        // 조회 실패를 null 로 남기면 버튼이 영구 disabled 가 된다 — 미로그인으로 확정해
+        // 최소한 로그인 경로는 열어 준다.
+        if (isActive) setIsLoggedIn(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isActive) return;
+      setIsLoggedIn(Boolean(session?.user));
     });
+
+    return () => {
+      isActive = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function handlePayment() {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
 import {
@@ -164,6 +164,24 @@ function getRecoveryError(message?: string) {
     return '이메일 형식을 확인해 주세요.';
   }
   return message;
+}
+
+/**
+ * 로그인 성공 후 이동.
+ *
+ * 🔴 2026-08-27 사용자 제보: "로그인을 완료하면 결제창이 열려야 하는데 아무런 반응이 없어."
+ *   기존 코드는 `router.replace(href)` 직후 같은 틱에 `router.refresh()` 를 불렀다.
+ *   refresh() 는 **현재 라우트**를 다시 가져오므로 진행 중인 replace 를 취소할 수 있다
+ *   — 그러면 로그인은 됐는데 화면은 그대로 남는다(정확히 제보된 증상).
+ *
+ *   여기서는 **하드 내비게이션**으로 간다. 느려 보여도 이 경로에서는 그게 맞다:
+ *     · 서버 컴포넌트가 방금 발급된 세션 쿠키를 확실히 본다(결제 페이지는 서버에서 권한을 판정한다)
+ *     · 영속 마운트된 클라이언트 컴포넌트의 stale 세션 state 문제가 통째로 사라진다
+ *     · replace 라 뒤로가기로 로그인 화면에 다시 갇히지 않는다
+ *   돈이 걸린 경로에서는 SPA 감보다 정확성이 먼저다.
+ */
+function redirectAfterLogin(href: string) {
+  window.location.replace(href);
 }
 
 function getAfterLoginHref(next: string) {
@@ -456,7 +474,6 @@ function LoginContent({
   mode: LoginMode;
   setMode: (next: LoginMode) => void;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = getSafeNext(searchParams.get('next'));
   const callbackError = searchParams.get('error');
@@ -630,8 +647,7 @@ function LoginContent({
     }
 
     if (options.redirect !== false) {
-      router.replace(afterLoginHref);
-      router.refresh();
+      redirectAfterLogin(afterLoginHref);
     }
     return true;
   }
@@ -745,8 +761,8 @@ function LoginContent({
       }
     }
 
-    router.replace(data.next ?? afterLoginHref);
-    router.refresh();
+    // 회원가입 직후도 같은 경로 — replace+refresh 경쟁을 피해 하드 내비게이션으로 간다.
+    redirectAfterLogin(data.next ?? afterLoginHref);
     setIsSubmittingSignup(false);
   }
 
@@ -853,8 +869,7 @@ function LoginContent({
     }
 
     setStatusMessage('새 비밀번호가 저장됐습니다. 바로 내 사주 입력 화면으로 이동합니다.');
-    router.replace(afterLoginHref);
-    router.refresh();
+    redirectAfterLogin(afterLoginHref);
   }
 
   const disabled = !hasSupabaseBrowserEnv;
