@@ -18,6 +18,7 @@ import type {
 import { GANGI_HOME_BANNERS, GANGI_HOME_CARDS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
+import { GuardianPortrait } from '@/components/gangi/guardian-portrait';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
 
@@ -534,17 +535,16 @@ export function GangiServiceCardLink({
       >
       {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
       {card.image ? (
-        <picture>
-          {/* 2026-08-25 Phase 2 — 12지신 수호신 캐릭터(guardians/, 힉스필드 1차분).
-              avif/webp 파생은 자산 확정 후 일괄 생성 예정 — 지금은 jpg 단일 소스. */}
-          <img
-            src={`/images/gangi/guardians/${card.image}.jpg`}
-            alt={card.title}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-top"
-          />
-        </picture>
+        /* 2026-08-25 Phase 2 — 12지신 수호신 캐릭터(guardians/, 힉스필드 1차분).
+           2026-08-28 — 같은 캐릭터의 idle 루프(motion/)로 교체. 정지 이미지가 진실이고
+           영상은 얹는 것이다 — reduced-motion·데이터절약이면 영상을 아예 받지 않고,
+           화면 밖이면 재생하지 않는다. 상세는 GuardianPortrait 주석 참조.
+           ⚠️ 카드당 무게는 오히려 줄었다(정지컷 155KB → 포스터 25KB + 영상 56KB). */
+        <GuardianPortrait
+          id={card.image}
+          alt={card.title}
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
       ) : (
         <span className="absolute inset-0 grid place-items-center">
           {card.chipKind === 'star-sign' ? (
