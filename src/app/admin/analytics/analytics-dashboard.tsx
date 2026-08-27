@@ -756,6 +756,23 @@ export function AnalyticsDashboard() {
             <SummaryCard label="결제창 전환" value={formatPct(snap.totals.checkoutConversionRate)} sub="성공÷시도" />
           </div>
 
+          {/* 유입 — 2026-08-27 사용자 요청으로 **요약 바로 아래**로 올렸다.
+              원래 그래프 5개 밑 맨 끝에 있어 스크롤하지 않으면 안 보였다.
+              "몇 명 왔나" 다음 질문이 "어디서 왔나" 다 — /admin 요약도 같은 순서로 둔다. */}
+          <div className="grid gap-3 lg:grid-cols-2">
+            <InflowTable
+              title="유입 상위 (referrer)"
+              subtitle="직전 한 단계만 보입니다 — 링크인바이오(인포크링크 등)를 거치면 그 위 채널은 UTM 없이는 알 수 없습니다."
+              entries={snap.topReferrers}
+              emptyHint="referrer 데이터가 아직 없습니다."
+            />
+            <InflowTable
+              title="유입 상위 (UTM 캠페인)"
+              entries={snap.topUtm}
+              emptyHint="UTM 태그 유입이 아직 없습니다(배포 후부터 수집)."
+            />
+          </div>
+
           {external && <ExternalComparison snap={snap} external={external} />}
 
           {/* 방문자·PV 그래프 */}
@@ -795,21 +812,6 @@ export function AnalyticsDashboard() {
               )}
               color="#8A6D3B"
               format={(v) => `${v.toFixed(1)}%`}
-            />
-          </div>
-
-          {/* 유입 */}
-          <div className="grid gap-3 lg:grid-cols-2">
-            <InflowTable
-              title="유입 상위 (referrer)"
-              subtitle="직전 한 단계만 보입니다 — 링크인바이오(인포크링크 등)를 거치면 그 위 채널은 UTM 없이는 알 수 없습니다."
-              entries={snap.topReferrers}
-              emptyHint="referrer 데이터가 아직 없습니다."
-            />
-            <InflowTable
-              title="유입 상위 (UTM 캠페인)"
-              entries={snap.topUtm}
-              emptyHint="UTM 태그 유입이 아직 없습니다(배포 후부터 수집)."
             />
           </div>
 
