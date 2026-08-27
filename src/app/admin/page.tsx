@@ -86,7 +86,7 @@ function InflowMini({
   emptyHint?: string;
 }) {
   return (
-    <div>
+    <div className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
       <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
         {title}
       </div>
