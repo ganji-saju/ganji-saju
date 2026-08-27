@@ -14,6 +14,7 @@
 @import "./styles/flow-polish.css";
 @import "./styles/performance.css";
 @import "./styles/readability.css";
+@import "./styles/admin.css";
 
 /* 2026-08-25 전면 개편 — 푸터 배경 흑색 → 한지 톤(B안, 도령 벤치마크 압축 푸터와 세트).
    (구 2026-05-18 "완전 흑색" 지시는 구 디자인 시절 — 개편 B안에서 대체됐다.) */

@@ -10,7 +10,7 @@ import {
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
-import { getVisibleNavGroups } from '@/lib/admin/nav';
+import { getVisibleNavGroups, flattenNavItems } from '@/lib/admin/nav';
 import type { DailySeries } from '@/lib/admin/operations-stats';
 import { ADMIN_RANGE_OPTIONS, adminRangeLabel } from '@/lib/admin/metric-ranges';
 
@@ -143,7 +143,11 @@ export default async function AdminDashboardPage({
 
   const ops = summary.operations;
   const periodVisitors = sumSeries(ops?.trends.visitors);
-  const navGroups = getVisibleNavGroups(role).filter((g) => g.title !== '개요');
+  // 2026-08-27 — 내비가 2단이 되면서 부모 행(지표·사주·명리 검증)은 href 가 없다.
+  //   바로가기는 '누를 수 있는 것'만 실어야 하므로 그룹 안에서 잎만 펼친다.
+  const navGroups = getVisibleNavGroups(role)
+    .filter((g) => g.title !== '개요')
+    .map((g) => ({ title: g.title, items: flattenNavItems([g]) }));
 
   return (
     <main className="w-full space-y-5 px-4 py-5 md:px-6">

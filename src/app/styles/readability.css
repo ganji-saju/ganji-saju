@@ -543,85 +543,14 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   font-size: 0.92rem;
 }
 
-.admin-shell {
-  font-size: 1rem;
-  line-height: 1.65;
-  background:
-    linear-gradient(180deg, #ffffff 0%, #fff8fc 54%, #ffffff 100%);
-}
+/* 2026-08-27 — 관리자 전용 규칙을 styles/admin.css 로 옮겼다.
+   여기 있던 블록이 관리자 타이포를 **!important 로 3단으로 뭉개고** 있었다:
+   9~12px → 0.9rem / 13~14px → 0.98rem / 15px → 1.04rem.
+   즉 각 페이지가 정해둔 크기 차이가 런타임에 전부 지워져, 라벨·본문·제목이
+   같은 크기로 보였다("구분이 안 된다"의 실제 원인). 배경도 옛 핑크 그라데이션이라
+   흰 카드가 배경에서 떠오르지 않았다.
+   대체 규칙은 admin.css 에 있고, 크기는 페이지 소스를 존중한다(덮어쓰지 않는다). */
 
-.admin-shell main {
-  padding: clamp(1.25rem, 3vw, 2rem) !important;
-}
-
-.admin-shell main > header {
-  gap: 1rem;
-  padding-bottom: 1rem;
-}
-
-.admin-shell main > header h1 {
-  font-size: clamp(1.65rem, 3vw, 2.15rem) !important;
-  line-height: 1.22;
-}
-
-.admin-shell main > header p {
-  margin-top: 0.35rem;
-  font-size: 0.98rem !important;
-  line-height: 1.6;
-  color: var(--app-copy-muted) !important;
-}
-
-.admin-shell aside {
-  width: 17rem;
-  padding: 1.35rem 1rem;
-}
-
-.admin-shell nav {
-  gap: 1.15rem;
-}
-
-.admin-shell nav p,
-.admin-shell :where(.text-xs, [class*="text-[9"], [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]) {
-  font-size: 0.9rem !important;
-  line-height: 1.45 !important;
-}
-
-.admin-shell :where(.text-sm, [class*="text-[13"], [class*="text-[14"]) {
-  font-size: 0.98rem !important;
-  line-height: 1.55 !important;
-}
-
-.admin-shell :where(.text-base, [class*="text-[15"]) {
-  font-size: 1.04rem !important;
-  line-height: 1.6 !important;
-}
-
-.admin-shell :where(a, button) {
-  min-height: 2.65rem;
-}
-
-.admin-shell :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
-  min-height: 2.8rem;
-  font-size: 1rem;
-}
-
-.admin-shell :where(section, article, main > div > div, main > section) {
-  border-color: var(--readable-soft-border);
-}
-
-.admin-shell :where(table) {
-  width: 100%;
-  font-size: 0.98rem;
-  line-height: 1.55;
-}
-
-.admin-shell :where(th, td) {
-  padding-block: 0.65rem;
-}
-
-.admin-shell :where(canvas, svg) {
-  max-width: 100%;
-}
 
 @media (min-width: 768px) {
   /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem, :root 기본값 그대로. */
