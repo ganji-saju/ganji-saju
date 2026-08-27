@@ -164,6 +164,23 @@ export interface CompatibilityInterpretation {
   currentFlowSummary: string;
   evidence: CompatibilityEvidenceItem[];
   practicalCards: CompatibilityPracticalCard[];
+  /**
+   * 2026-08-27 — 총점(score)을 만드는 네 신호. 용도별 적합성(couple-fit.ts)이 **같은 숫자를
+   * 다르게 가중**해 쓴다. 총점만 노출하면 "결혼엔 좋은데 동업엔 아닌" 조합을 구분할 수 없다.
+   *   stem   = 일간 관계(-5~6)      · element = 오행 생극
+   *   branch = 일지 합충형파해 합   · balance = 용신·오행 균형
+   */
+  signals: {
+    stem: number;
+    element: number;
+    branch: number;
+    balance: number;
+    stemKind: 'same' | 'harmony' | 'clash' | 'complement';
+    /** 일지에 형충파해가 걸렸으면 그 이름. 없으면 null. */
+    branchCaution: string | null;
+    /** 일지에 합·반합이 있으면 그 이름. 없으면 null. */
+    branchSupport: string | null;
+  };
   deepSections: CompatibilityDeepSection[];
   dataNote: string | null;
   relationshipLensTitle: string;
@@ -361,7 +378,9 @@ function summarizeElementInteraction(selfData: SajuDataV1 | SajuDataV2, partnerD
   };
 }
 
-function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
+// 2026-08-27 export — 커플 시간축(couple-timing.ts)이 **점수·종류만** 재사용한다.
+//   ⚠️ body/title 은 사람 대 사람 어투("두 분 모두 …")라 세운 대 개인에 쓰면 비문이 된다.
+export function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
   const selfKo = stemKo(selfStem);
   const partnerKo = stemKo(partnerStem);
 
@@ -403,7 +422,8 @@ function summarizeStemInteraction(selfStem: Stem, partnerStem: Stem) {
   };
 }
 
-function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
+// 2026-08-27 export — 위와 같은 이유로 totalScore·supportive·caution 만 재사용할 것.
+export function summarizeBranchInteraction(selfBranch: Branch, partnerBranch: Branch) {
   const pairKey = canonicalPairKey(selfBranch, partnerBranch, BRANCH_SEQUENCE);
   const selfKo = branchKo(selfBranch);
   const partnerKo = branchKo(partnerBranch);
@@ -959,10 +979,17 @@ function buildDeterministicDeepSections(
   const band = resolveScoreBand(ctx.score);
   const frame = DEEP_SECTION_FRAME[ctx.stemInteraction.kind][band];
 
-  return practicalCards.map((card) => {
+  return practicalCards.map((card, index) => {
     const coupleLine =
       `${ctx.selfName}님과 ${ctx.partnerName}님은 ${DEEP_SECTION_AXIS_LEAD[card.key]} ${card.practice}`.trim();
-    const body = [frame, coupleLine].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+    // 2026-08-26 🔴 사용자 제보("결제해도 같은 내용이 나온다"): frame 은 관계유형×점수대 **공통**
+    //   문장이라 4개 섹션 머리에 똑같이 붙고 있었다. 3,300원을 내고 같은 문장을 네 번 읽는 셈이라
+    //   유료 섹션 전체가 한 덩어리로 보였다. 관계 전체를 여는 문장이므로 **첫 섹션에만** 둔다.
+    const body = [index === 0 ? frame : '', coupleLine]
+      .filter(Boolean)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
     return {
       key: card.key,
@@ -1125,6 +1152,15 @@ export function buildCompatibilityInterpretation(
       partnerData
     ),
     practicalCards,
+    signals: {
+      stem: stemInteraction.score,
+      element: elementInteraction.score,
+      branch: branchInteraction.totalScore,
+      balance: balanceInteraction.score,
+      stemKind: stemInteraction.kind,
+      branchCaution: branchInteraction.caution?.label ?? null,
+      branchSupport: branchInteraction.supportive?.label ?? null,
+    },
     deepSections: buildDeterministicDeepSections(practicalCards, {
       stemInteraction,
       elementInteraction,

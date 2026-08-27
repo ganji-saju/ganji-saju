@@ -14,6 +14,12 @@ import type { BirthInput } from '@/lib/saju/types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { CompatibilityDeepSections } from '@/features/compatibility/compatibility-deep-sections';
+import {
+  CoupleFitSection,
+  CoupleTimingSection,
+} from '@/features/compatibility/compatibility-deep-extras';
+import type { CoupleFitItem } from '@/lib/compatibility/couple-fit';
+import type { CoupleTimingReport } from '@/lib/compatibility/couple-timing';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
@@ -30,9 +36,16 @@ interface CompatibilityResultViewProps {
   selfBirthInput?: BirthInput;
   partnerBirthInput?: BirthInput;
   deepLlmEnabled?: boolean;
+  /** 유료 §9 — 용도별 적합성(결혼·동업·돈거래·오래보는사이). 계산이 가벼워 어디서든 만든다. */
+  coupleFit?: CoupleFitItem[];
+  /**
+   * 유료 §10 — 좋은 달·조심할 달·연 전망.
+   * 계산이 무거워(~320ms) 서버에서 만들거나 /api/compatibility/timing 으로 받아 넣는다.
+   * 아직 도착 전이면 null — 없는 값을 지어내지 않고 그 블록만 비운다.
+   */
+  coupleTiming?: CoupleTimingReport | null;
   /** ①: per-couple 1회권. 플래그 ON + 커플 키가 있으면 CTA 가 compat-reading(커플 단위)을 판매. */
   compatibilityCoupleKey?: string;
-  perCouplePricingEnabled?: boolean;
 }
 
 const BRANCH_TO_ZODIAC: Record<string, ZodiacKey> = {
@@ -85,8 +98,9 @@ export function CompatibilityResultView({
   selfBirthInput,
   partnerBirthInput,
   deepLlmEnabled = false,
+  coupleFit = [],
+  coupleTiming = null,
   compatibilityCoupleKey,
-  perCouplePricingEnabled = false,
 }: CompatibilityResultViewProps) {
   const premiumExpansion = COMPATIBILITY_PREMIUM_EXPANSION[selected.slug];
   const score = clampScore(compatibility.score);
@@ -430,6 +444,12 @@ export function CompatibilityResultView({
                 ))}
               </div>
             )}
+
+            {/* §9·§10 — 2026-08-27 사용자 제보로 신설.
+                "무엇에 맞는가" 와 "언제 하면 좋은가" 가 유료 궁합에서 가장 많이 묻는 두 질문인데
+                기존 §8 은 4축 실천 조언뿐이라 둘 다 답이 없었다. */}
+            <CoupleFitSection items={coupleFit} />
+            {coupleTiming ? <CoupleTimingSection timing={coupleTiming} /> : null}
 
             {/* 2026-05-16 — 사용자 보고: 버튼이 텍스트 길이만큼만 좁게 그려져
                 좌측에 외롭게 놓였다. w-full + 적절한 가로 padding 으로 위 카드들과

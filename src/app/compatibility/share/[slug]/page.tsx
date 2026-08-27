@@ -7,6 +7,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { COMPATIBILITY_RELATIONSHIPS } from '@/content/moonlight';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
+import { buildCoupleFit } from '@/lib/compatibility/couple-fit';
+import { buildCoupleTimingReport } from '@/lib/compatibility/couple-timing';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   buildCompatibilityCoupleKey,
@@ -15,7 +17,6 @@ import {
 import { parseCompatibilityShareSlug } from '@/lib/compatibility/share-slug';
 import {
   hasCompatibilityAccess,
-  isCompatibilityPerCouplePricingEnabled,
 } from '@/lib/payments/compatibility-access';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { formatBirthSummary } from '@/features/saju-detail/saju-screen-helpers';
@@ -106,11 +107,26 @@ export default async function CompatibilitySharePage({ params, searchParams }: P
           partnerBirthSummary={formatBirthSummary(parsed.partner)}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
           hasLoveQuestionPurchase={viewerHasDeepAccess}
+          coupleFit={
+            viewerHasDeepAccess ? buildCoupleFit(compatibility, selfName, partnerName) : []
+          }
+          coupleTiming={
+            // 공개 스냅샷이라도 시간축은 구매자에게만 — 미구매자에겐 계산도 하지 않는다.
+            viewerHasDeepAccess
+              ? buildCoupleTimingReport({
+                  self: { name: selfName, birthInput: parsed.self, data: compatibility.selfData },
+                  partner: {
+                    name: partnerName,
+                    birthInput: parsed.partner,
+                    data: compatibility.partnerData,
+                  },
+                })
+              : null
+          }
           selfBirthInput={parsed.self}
           partnerBirthInput={parsed.partner}
           deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
           compatibilityCoupleKey={coupleKey}
-          perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
         {/* 내 궁합 CTA */}
