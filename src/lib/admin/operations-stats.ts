@@ -13,6 +13,7 @@
 //   - admin_user_summary 최신 refreshed_at 을 스냅샷에 포함(요약 갱신 지연 관측).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
 
 export interface DailySeries {
   /** YYYY-MM-DD */
@@ -236,7 +237,10 @@ export async function buildOperationsSnapshot(
   client: SupabaseClient,
   options: { windowDays?: number } = {}
 ): Promise<OperationsSnapshot> {
-  const windowDays = Math.max(7, Math.min(60, options.windowDays ?? 14));
+  // 2026-08-26 — 하한 7 이 '일(오늘)' 프리셋을, 상한 60 이 분기·6개월·1년을 막고 있었다.
+  //   주간/월간 파생 지표(weeklyStartKey·monthly)는 이 윈도우와 무관하게 고정 7/30 이라
+  //   윈도우를 넓혀도 그 숫자의 의미는 변하지 않는다.
+  const windowDays = Math.max(1, Math.min(ADMIN_RANGE_MAX_DAYS, options.windowDays ?? 30));
   const now = new Date();
   const todayKey = toLocalDateKey(now.toISOString());
 

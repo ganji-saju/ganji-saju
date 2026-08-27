@@ -15,6 +15,7 @@ import {
 } from '@/lib/admin/analytics-rollup';
 import { getExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
+import { getRefundBreakdown } from '@/lib/admin/refund-breakdown';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -69,12 +70,15 @@ export async function GET(req: NextRequest) {
     const service = await createServiceClient();
     const now = new Date();
     const autoRefresh = await ensureDailyMetricsFresh(service, now);
-    const [snapshot, external] = await Promise.all([
+    const [snapshot, external, refunds] = await Promise.all([
       getDailyMetrics(service, windowDays, now),
       getExternalAnalyticsSnapshot(windowDays, now),
+      // 2026-08-26 — 환불 건별 원 결제일. '오늘 매출 990 / 환불 9,900' 이 왜 그런지
+      //   화면이 스스로 답하게 한다(집계는 그대로, 해설만 추가).
+      getRefundBreakdown(service, windowDays, now),
     ]);
     return NextResponse.json(
-      { ok: true, snapshot, external, autoRefresh },
+      { ok: true, snapshot, external, refunds, autoRefresh },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (err: unknown) {

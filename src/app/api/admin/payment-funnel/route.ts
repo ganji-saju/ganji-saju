@@ -7,8 +7,8 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
   const daysParam = req.nextUrl.searchParams.get('days');
-  const parsed = parseInt(daysParam ?? '14', 10);
-  const windowDays = Number.isFinite(parsed) ? parsed : 14;
+  const parsed = parseInt(daysParam ?? '30', 10);
+  const windowDays = Number.isFinite(parsed) ? parsed : 30;
 
   const supabase = await createClient();
   const guard = await getCurrentAdminCheck(supabase);

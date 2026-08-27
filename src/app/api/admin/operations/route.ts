@@ -11,8 +11,8 @@ import {
 
 export async function GET(req: NextRequest) {
   const daysParam = req.nextUrl.searchParams.get('days');
-  const parsed = parseInt(daysParam ?? '14', 10);
-  const windowDays = Number.isFinite(parsed) ? parsed : 14;
+  const parsed = parseInt(daysParam ?? '30', 10);
+  const windowDays = Number.isFinite(parsed) ? parsed : 30;
 
   const supabase = await createClient();
   // PR #141 — admin 화이트리스트 가드. env ADMIN_USER_IDS 또는 admin_users 테이블 통과.

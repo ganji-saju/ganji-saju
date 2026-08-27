@@ -2,6 +2,14 @@
 // /admin/payment-funnel 페이지의 단일 데이터 source.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PaymentFunnelStage } from '@/lib/payments/funnel-log';
+import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
+import { resolveReferrerGroup } from './referrer-labels';
+import {
+  buildChannelProductMatrix,
+  type ChannelProductMatrix,
+  type ChannelProductPayment,
+} from './channel-product-matrix';
+import { getRefundBreakdown, type RefundBreakdown } from './refund-breakdown';
 
 const STAGES: readonly PaymentFunnelStage[] = [
   'prepare_attempt',
@@ -44,6 +52,26 @@ export interface PaymentFunnelByPackage {
   conversionRate: number | null;
 }
 
+/** 2026-08-26 — 사이트 **안** 진입점(metadata.from). 어느 화면에서 결제창으로 왔나. */
+export interface PaymentFunnelByEntry {
+  entry: string;
+  prepareAttempt: number;
+  confirmSuccess: number;
+  conversionRate: number | null;
+}
+
+/** 2026-08-26 — 어떤 화면의 페이월을 봤나(paywall_viewed.metadata.surface). */
+export interface PaymentFunnelSurfaceView {
+  surface: string;
+  views: number;
+}
+
+/** 2026-08-26 — 결제자의 사이트 **밖** 유입 채널(site_visits 를 user_id 로 조인). */
+export interface PaymentFunnelByChannel {
+  channel: string;
+  payers: number;
+}
+
 export interface PaymentFunnelSnapshot {
   /** ISO timestamp generated. */
   generatedAt: string;
@@ -58,13 +86,40 @@ export interface PaymentFunnelSnapshot {
   failedReasons: PaymentFunnelBlockReason[];
   /** 패키지 별 전환 (prepareAttempt desc). */
   byPackage: PaymentFunnelByPackage[];
+  /** 사이트 안 진입점 별 전환 (prepareAttempt desc). */
+  byEntry: PaymentFunnelByEntry[];
+  /** 페이월 노출 화면 별 (views desc). */
+  paywallSurfaces: PaymentFunnelSurfaceView[];
+  /** 결제자 유입 채널 (payers desc). site_visits 조인 실패/미매칭이면 빈 배열. */
+  payerChannels: PaymentFunnelByChannel[];
+  /** 채널을 찾아낸 결제자 수 / 전체 결제자 수 — 커버리지를 숨기지 않는다. */
+  payerChannelCoverage: { matched: number; total: number };
+  /** 2026-08-26 — 유입 채널 × 상품 결제 교차표(GA4 로는 볼 수 없는 것). */
+  channelProduct: ChannelProductMatrix;
+  /**
+   * 2026-08-27 — 기간 내 confirm_success 결제액 합(원). **환불된 주문도 포함**한다
+   * (판 날 매출은 보존 — analytics-rollup 의 REVENUE_ORDER_STATUSES 와 같은 규칙).
+   * 그래서 이 숫자만 보면 순매출을 모른다 → 아래 refunds 와 **항상 같이** 보여준다.
+   */
+  grossAmountWon: number;
+  /** 기간 내 환불(refunded_at 귀속). /admin/analytics 와 같은 함수를 쓴다. */
+  refunds: RefundBreakdown;
 }
 
 interface FunnelRow {
-  stage: PaymentFunnelStage;
+  stage: PaymentFunnelStage | 'paywall_viewed';
   package_id: string | null;
   reason: string | null;
+  amount: number | null;
   created_at: string;
+  order_id: string | null;
+  user_id: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+function readMetaString(metadata: Record<string, unknown> | null, key: string): string | null {
+  const value = metadata?.[key];
+  return typeof value === 'string' && value.length > 0 ? value : null;
 }
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -101,6 +156,98 @@ function buildDateAxis(windowDays: number): string[] {
   return dates;
 }
 
+/**
+ * 2026-08-26 — 진입점 보강. `payment_orders.entry_source` 는 prepare 가 주문을 만들 때
+ * 항상 남기므로(prepare/route.ts `entrySource: from`), confirm 계열 이벤트가 metadata 에
+ * from 을 안 실어도 order_id 로 되찾을 수 있다. 과거 행까지 같이 살아난다.
+ */
+async function resolveOrderEntrySources(
+  supabase: SupabaseClient,
+  orderIds: readonly string[]
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const unique = Array.from(new Set(orderIds));
+  if (unique.length === 0) return map;
+
+  // .in() 은 URL 길이 제약이 있어 청크로 나눈다.
+  const CHUNK = 200;
+  for (let i = 0; i < unique.length; i += CHUNK) {
+    const chunk = unique.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('payment_orders')
+      .select('order_id, entry_source')
+      .in('order_id', chunk);
+
+    if (error) {
+      console.error('[funnel-stats] payment_orders entry_source lookup failed:', error.message);
+      return map;
+    }
+    for (const row of (data ?? []) as Array<{ order_id: string | null; entry_source: string | null }>) {
+      if (row.order_id && row.entry_source) map.set(row.order_id, row.entry_source);
+    }
+  }
+  return map;
+}
+
+/**
+ * 2026-08-26 — 결제자의 **사이트 밖** 유입 채널. payment_funnel_events 에는 utm 이 없고
+ * site_visits 에만 있어서, 결제는 항상 로그인이 필요하다는 점을 이용해 `user_id` 로 잇는다.
+ * 채널은 사용자별 **가장 이른 방문 행** 기준(utm_source > referrer_host > '직접 유입').
+ *
+ * ⚠️ 한계: 첫 유입이 비로그인이면 그 행의 user_id 는 null 이라 이 조인에 안 잡힌다.
+ *   그래서 커버리지(matched/total)를 같이 돌려주고 화면에 그대로 적는다 — 분모를 숨기면
+ *   "채널 상위 3개"가 전체처럼 보인다.
+ */
+async function resolvePayerChannels(
+  supabase: SupabaseClient,
+  payerIds: ReadonlySet<string>
+): Promise<{
+  payerChannels: PaymentFunnelByChannel[];
+  matchedPayers: number;
+  channelByUser: Map<string, string>;
+}> {
+  if (payerIds.size === 0)
+    return { payerChannels: [], matchedPayers: 0, channelByUser: new Map() };
+  // .in() 은 URL 길이 제약이 있어 상한을 둔다(결제자 수가 이 규모면 별도 집계가 맞다).
+  const ids = Array.from(payerIds).slice(0, 500);
+
+  const { data, error } = await supabase
+    .from('site_visits')
+    .select('user_id, date_key, utm_source, referrer_host')
+    .in('user_id', ids)
+    .order('date_key', { ascending: true });
+
+  if (error) {
+    console.error('[funnel-stats] site_visits join failed:', error.message);
+    return { payerChannels: [], matchedPayers: 0, channelByUser: new Map() };
+  }
+
+  const firstByUser = new Map<string, string>();
+  for (const row of (data ?? []) as Array<{
+    user_id: string | null;
+    utm_source: string | null;
+    referrer_host: string | null;
+  }>) {
+    if (!row.user_id || firstByUser.has(row.user_id)) continue; // date_key asc → 첫 행이 최초 방문
+    // 라벨은 유입 카드와 같은 규칙(referrer-labels)을 쓴다 — 화면마다 채널명이 달라지면 못 맞춘다.
+    const raw = row.utm_source || row.referrer_host || '';
+    firstByUser.set(row.user_id, raw ? resolveReferrerGroup(raw).label : '직접 유입');
+  }
+
+  const channelCount = new Map<string, number>();
+  for (const channel of firstByUser.values()) {
+    channelCount.set(channel, (channelCount.get(channel) ?? 0) + 1);
+  }
+
+  return {
+    payerChannels: Array.from(channelCount.entries())
+      .map(([channel, payers]) => ({ channel, payers }))
+      .sort((a, b) => b.payers - a.payers),
+    matchedPayers: firstByUser.size,
+    channelByUser: firstByUser,
+  };
+}
+
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 50;
 
@@ -108,7 +255,9 @@ export async function buildPaymentFunnelSnapshot(
   supabase: SupabaseClient,
   options: { windowDays?: number } = {}
 ): Promise<PaymentFunnelSnapshot> {
-  const windowDays = Math.max(1, Math.min(120, options.windowDays ?? 14));
+  // 2026-08-26 — 상한 120 이 프리셋 180·365 를 조용히 잘라내고 있었다(화면은 '1년',
+  //   데이터는 120일). 프리셋 최대값과 같은 상한을 쓴다.
+  const windowDays = Math.max(1, Math.min(ADMIN_RANGE_MAX_DAYS, options.windowDays ?? 30));
 
   // 2026-07-04 감사 — 윈도우 시작을 날짜축 첫날의 KST 자정으로 스냅.
   //   기존엔 '지금-24h×N'(UTC 롤링)이라 축 밖 행이 totals 에만 섞여 totals≠Σdaily.
@@ -122,7 +271,7 @@ export async function buildPaymentFunnelSnapshot(
     const from = page * PAGE_SIZE;
     const { data, error } = await supabase
       .from('payment_funnel_events')
-      .select('stage, package_id, reason, created_at')
+      .select('stage, package_id, reason, amount, created_at, order_id, user_id, metadata')
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -146,9 +295,26 @@ export async function buildPaymentFunnelSnapshot(
   const blockedReasonCount = new Map<string, number>();
   const failedReasonCount = new Map<string, number>();
   const packageStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
+  const entryStats = new Map<string, { prepareAttempt: number; confirmSuccess: number }>();
+  const pendingEntries: Array<{
+    stage: 'prepare_attempt' | 'confirm_success';
+    from: string | null;
+    orderId: string | null;
+  }> = [];
+  const surfaceCount = new Map<string, number>();
+  const payerIds = new Set<string>();
+  const payments: ChannelProductPayment[] = [];
+  let grossAmountWon = 0;
 
   for (const row of rows) {
     const stage = row.stage;
+    // 2026-08-26 — paywall_viewed 는 STAGES 밖(퍼널 분모 전용 stage)이라 아래 guard 에서
+    //   잘려나갔다. totals 를 건드리지 않도록 guard **앞**에서 surface 만 집계한다.
+    if (stage === 'paywall_viewed') {
+      const surface = readMetaString(row.metadata, 'surface');
+      if (surface) surfaceCount.set(surface, (surfaceCount.get(surface) ?? 0) + 1);
+      continue;
+    }
     if (!STAGES.includes(stage)) continue;
     totals[stage] += 1;
     const dateKey = toKstDateKey(row.created_at);
@@ -166,6 +332,27 @@ export async function buildPaymentFunnelSnapshot(
       if (stage === 'prepare_attempt') slot.prepareAttempt += 1;
       if (stage === 'confirm_success') slot.confirmSuccess += 1;
       packageStats.set(row.package_id, slot);
+    }
+    if (stage === 'prepare_attempt' || stage === 'confirm_success') {
+      // 2026-08-26 — confirm_success 를 쓰는 3경로(confirm route·nicepay return·reconciliation)가
+      //   모두 metadata 에 from 을 안 싣는다. 게다가 reconciliation 은 **예전 결제**를 지금
+      //   confirm_success 로 기록해서, 짝이 되는 prepare 가 윈도우 밖이면 그 결제는 통째로
+      //   진입점 미상이 된다(=진입점 카드가 '(미지정)' 하나로만 채워지던 원인).
+      //   그래서 여기서 즉시 세지 않고, 아래 2패스에서 payment_orders.entry_source 로 보강한다.
+      pendingEntries.push({
+        stage,
+        from: readMetaString(row.metadata, 'from'),
+        orderId: row.order_id,
+      });
+    }
+    if (stage === 'confirm_success') {
+      if (row.user_id) payerIds.add(row.user_id);
+      grossAmountWon += Math.max(0, Number(row.amount) || 0);
+      payments.push({
+        userId: row.user_id,
+        packageId: row.package_id,
+        amountWon: row.amount,
+      });
     }
   }
 
@@ -196,6 +383,42 @@ export async function buildPaymentFunnelSnapshot(
     }))
     .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
 
+  const orderEntrySources = await resolveOrderEntrySources(
+    supabase,
+    pendingEntries.filter((e) => !e.from && e.orderId).map((e) => e.orderId as string)
+  );
+  for (const pending of pendingEntries) {
+    // from 도 entry_source 도 없으면 '(미지정)' 으로 모은다 — 버리면 합이 안 맞아 표를 못 믿는다.
+    const entry =
+      pending.from ?? (pending.orderId ? orderEntrySources.get(pending.orderId) : null) ?? '(미지정)';
+    const slot = entryStats.get(entry) ?? { prepareAttempt: 0, confirmSuccess: 0 };
+    if (pending.stage === 'prepare_attempt') slot.prepareAttempt += 1;
+    if (pending.stage === 'confirm_success') slot.confirmSuccess += 1;
+    entryStats.set(entry, slot);
+  }
+
+  const byEntry: PaymentFunnelByEntry[] = Array.from(entryStats.entries())
+    .map(([entry, s]) => ({
+      entry,
+      prepareAttempt: s.prepareAttempt,
+      confirmSuccess: s.confirmSuccess,
+      conversionRate: rate(s.confirmSuccess, s.prepareAttempt),
+    }))
+    .sort((a, b) => b.prepareAttempt - a.prepareAttempt);
+
+  const paywallSurfaces: PaymentFunnelSurfaceView[] = Array.from(surfaceCount.entries())
+    .map(([surface, views]) => ({ surface, views }))
+    .sort((a, b) => b.views - a.views);
+
+  const { payerChannels, matchedPayers, channelByUser } = await resolvePayerChannels(
+    supabase,
+    payerIds
+  );
+  const channelProduct = buildChannelProductMatrix(payments, channelByUser);
+  // 환불은 결제와 **다른 테이블**(payment_orders.status='refunded')에 있다 — 퍼널 이벤트에는
+  // 환불이 없어서, 이 화면은 여태 '판 돈'만 보여주고 '돌려준 돈'은 못 보여줬다.
+  const refunds = await getRefundBreakdown(supabase, windowDays);
+
   return {
     generatedAt: new Date().toISOString(),
     windowDays,
@@ -210,5 +433,12 @@ export async function buildPaymentFunnelSnapshot(
     blockedReasons,
     failedReasons,
     byPackage,
+    byEntry,
+    paywallSurfaces,
+    payerChannels,
+    payerChannelCoverage: { matched: matchedPayers, total: payerIds.size },
+    channelProduct,
+    grossAmountWon,
+    refunds,
   };
 }
