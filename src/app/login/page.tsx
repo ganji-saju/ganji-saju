@@ -20,6 +20,7 @@ import { CANONICAL_SITE_URL } from '@/lib/site';
 import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { gtmLogin, gtmSignUp } from '@/lib/analytics/gtm';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 
@@ -705,6 +706,9 @@ function LoginContent({
     }
 
     if (options.redirect !== false) {
+      // 가입 흐름은 redirect:false 로 이 함수를 재사용한다 — 거기서는 sign_up 만 쏘고
+      //   login 은 쏘지 않는다(같은 행동이 두 이벤트로 세어지면 퍼널이 부풀어 보인다).
+      gtmLogin('email');
       router.replace(afterLoginHref);
       router.refresh();
     }
@@ -797,6 +801,7 @@ function LoginContent({
     }
 
     setStatusMessage('회원가입이 완료됐습니다. 사주 기본정보를 저장하는 중입니다.');
+    gtmSignUp('email');
     const signedIn = await signInWithPassword(signupForm.email, signupForm.password, {
       redirect: false,
       allowConfirmRetry: true,
