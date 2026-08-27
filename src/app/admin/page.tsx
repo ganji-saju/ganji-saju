@@ -46,7 +46,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   return (
     <div className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
       <p className="text-[11.5px] font-semibold text-[var(--app-copy-soft)]">{label}</p>
-      <p className="mt-0.5 text-[20px] font-extrabold text-[var(--app-ink)]">{value}</p>
+      <p className="mt-0.5 text-[16px] font-extrabold text-[var(--app-ink)]">{value}</p>
       {sub ? <p className="text-[11px] text-[var(--app-copy-muted)]">{sub}</p> : null}
     </div>
   );
@@ -88,15 +88,15 @@ function InflowMini({
 }) {
   return (
     <div className="rounded-[12px] border border-[var(--app-line)] bg-white p-3">
-      <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+      <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
         {title}
       </div>
       {entries.length === 0 ? (
-        <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">{emptyHint}</p>
+        <p className="mt-1 text-[11px] text-[var(--app-copy-soft)]">{emptyHint}</p>
       ) : (
         <ol className="mt-1 space-y-0.5">
           {entries.slice(0, 4).map((entry, i) => (
-            <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
+            <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13px]">
               <span className="min-w-0 truncate text-[var(--app-copy)]">
                 {i + 1}. {entry.label}
               </span>
@@ -113,7 +113,7 @@ function Card({ title, action, children }: { title: string; action?: React.React
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+        <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">{title}</h2>
         {action}
       </div>
       {children}
@@ -153,8 +153,8 @@ export default async function AdminDashboardPage({
     <main className="w-full space-y-5 px-4 py-5 md:px-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>
-          <p className="text-[12.5px] text-[var(--app-copy-soft)]">
+          <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>
+          <p className="text-[13px] text-[var(--app-copy-soft)]">
             기준 {adminRangeLabel(windowDays)} · {role === 'super_admin' ? 'super_admin' : 'admin'}
             {ops ? ` · 생성 ${fmtDateTime(ops.generatedAt)}` : ''}
           </p>
@@ -166,7 +166,7 @@ export default async function AdminDashboardPage({
               key={opt.value}
               href={`/admin?days=${opt.value}`}
               title={opt.hint}
-              className={`rounded-full px-3 py-1.5 text-[12.5px] font-bold ${
+              className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${
                 opt.value === windowDays
                   ? 'bg-[var(--app-pink-strong)] text-white'
                   : 'border border-[var(--app-line)] text-[var(--app-ink)]'
@@ -199,14 +199,14 @@ export default async function AdminDashboardPage({
             href="/admin/reviews?status=pending"
             className="flex items-center gap-2 rounded-[10px] border border-[var(--app-line)] bg-white px-3 py-2.5"
           >
-            <span className="text-[12px] text-[var(--app-copy-soft)]">후기 대기</span>
-            <span className="text-[16px] font-extrabold text-[var(--app-pink-strong)]">
+            <span className="text-[11.5px] text-[var(--app-copy-soft)]">후기 대기</span>
+            <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
               {fmtNum(summary.pending.reviewPending)}
             </span>
           </Link>
           <div className="flex items-center gap-2 rounded-[10px] border border-[var(--app-line)] bg-white px-3 py-2.5">
-            <span className="text-[12px] text-[var(--app-copy-soft)]">환불 대기</span>
-            <span className="text-[16px] font-extrabold text-[var(--app-pink-strong)]">
+            <span className="text-[11.5px] text-[var(--app-copy-soft)]">환불 대기</span>
+            <span className="text-[14px] font-extrabold text-[var(--app-pink-strong)]">
               {fmtNum(summary.pending.refundRequested)}
             </span>
           </div>
@@ -216,7 +216,7 @@ export default async function AdminDashboardPage({
       {/* 오늘 KPI */}
       <Card
         title="오늘"
-        action={<Link href="/admin/operations" className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">운영 지표 →</Link>}
+        action={<Link href="/admin/operations" className="text-[13px] font-bold text-[var(--app-pink-strong)]">운영 지표 →</Link>}
       >
         {ops ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-7">
@@ -243,7 +243,7 @@ export default async function AdminDashboardPage({
 
       <Card
         title={`방문 (${windowDays}일)`}
-        action={<Link href="/admin/analytics" className="text-[12.5px] font-bold text-[var(--app-pink-strong)]">누적 지표 분석 →</Link>}
+        action={<Link href="/admin/analytics" className="text-[13px] font-bold text-[var(--app-pink-strong)]">누적 지표 분석 →</Link>}
       >
         {/* 2026-07-20 — 방문 지표를 **자체 순방문 하나**로 정리(사용자 요청).
             원래 자체순방문·GA4 활성사용자·GA4 PV·Vercel PV 4개를 나란히 놨는데,
@@ -307,7 +307,7 @@ export default async function AdminDashboardPage({
               sub={`호출 ${fmtNum(summary.llm?.summary.totalCalls)} · 캐시 ${fmtPct(summary.llm?.summary.cacheHitRate)}`}
             />
           </div>
-          <div className="mt-3 flex gap-3 text-[12.5px] font-bold">
+          <div className="mt-3 flex gap-3 text-[13px] font-bold">
             <Link href="/admin/payment-funnel" className="text-[var(--app-pink-strong)]">결제 퍼널 →</Link>
             <Link href="/admin/llm-cost" className="text-[var(--app-pink-strong)]">LLM 비용 →</Link>
           </div>
@@ -352,7 +352,7 @@ export default async function AdminDashboardPage({
         <Card
           title="카카오 친구추가 무료쿠폰"
           action={
-            <span className="text-[12px] text-[var(--app-copy-muted)]">
+            <span className="text-[11.5px] text-[var(--app-copy-muted)]">
               오늘 자세히보기 0원 · 계정당 1회
             </span>
           }
@@ -371,22 +371,22 @@ export default async function AdminDashboardPage({
               </div>
 
               <div>
-                <p className="mb-1 text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                   최근 발급/사용
                 </p>
                 {couponStats.recent.length === 0 ? (
-                  <p className="text-[13px] text-[var(--app-copy-soft)]">아직 발급된 쿠폰이 없어요</p>
+                  <p className="text-[11px] text-[var(--app-copy-soft)]">아직 발급된 쿠폰이 없어요</p>
                 ) : (
                   <ul className="divide-y divide-[var(--app-line)]">
                     {couponStats.recent.map((c) => (
-                      <li key={c.id} className="flex items-center justify-between gap-2 py-2 text-[12.5px]">
+                      <li key={c.id} className="flex items-center justify-between gap-2 py-2 text-[13px]">
                         <span className="flex min-w-0 items-center gap-2">
                           <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold ${couponStatusChip(c.statusKey)}`}>
                             {c.statusLabel}
                           </span>
                           <Link
                             href={`/admin/users/${c.userId}`}
-                            className="truncate font-mono text-[12px] text-[var(--app-copy)] underline decoration-dotted underline-offset-2"
+                            className="truncate font-mono text-[11.5px] text-[var(--app-copy)] underline decoration-dotted underline-offset-2"
                             title={c.userId}
                           >
                             {c.userId.slice(0, 8)}
@@ -418,7 +418,7 @@ export default async function AdminDashboardPage({
         ) : (
           <ul className="divide-y divide-[var(--app-line)]">
             {summary.recentActivity.map((a) => (
-              <li key={a.id} className="flex items-center justify-between gap-2 py-2 text-[12.5px]">
+              <li key={a.id} className="flex items-center justify-between gap-2 py-2 text-[13px]">
                 <span className="font-semibold text-[var(--app-ink)]">{a.actionLabel}</span>
                 <span className="text-[var(--app-copy-soft)]">
                   {a.actorRole} · {fmtDateTime(a.createdAt)}

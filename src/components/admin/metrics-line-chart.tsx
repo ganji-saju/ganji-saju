@@ -171,11 +171,11 @@ export function MetricsLineChart({
           />
         </div>
       ) : (
-        <div className="mt-2 grid h-16 place-items-center text-[12px] text-[var(--app-copy-soft)]">
+        <div className="mt-2 grid h-16 place-items-center text-[11.5px] text-[var(--app-copy-soft)]">
           데이터 없음
         </div>
       )}
-      <div className="mt-1 flex justify-between text-[10.9px] text-[var(--app-copy-soft)]">
+      <div className="mt-1 flex justify-between text-[11px] text-[var(--app-copy-soft)]">
         <span>{points[0]?.date}</span>
         <span>{points[points.length - 1]?.date}</span>
       </div>

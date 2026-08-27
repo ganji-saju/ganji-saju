@@ -41,12 +41,12 @@ export function RefreshSummaryButton() {
         onClick={handleClick}
         disabled={busy}
         aria-busy={busy}
-        className="rounded-[10px] border px-3 py-1 text-[13.8px] font-bold disabled:opacity-60"
+        className="rounded-[10px] border px-3 py-1 text-[13px] font-bold disabled:opacity-60"
       >
         {busy ? '갱신 중…' : '지금 갱신'}
       </button>
       {message ? (
-        <span className="text-[12.1px] text-[var(--app-copy-soft)]">{message}</span>
+        <span className="text-[11.5px] text-[var(--app-copy-soft)]">{message}</span>
       ) : null}
     </span>
   );

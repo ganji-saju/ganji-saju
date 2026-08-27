@@ -27,7 +27,7 @@ export function AdminRangePills({
             onClick={() => onChange(opt.value)}
             aria-pressed={isActive}
             title={opt.hint}
-            className="rounded-full border px-3 py-1.5 text-[13.8px] font-bold transition-transform active:scale-95"
+            className="rounded-full border px-3 py-1.5 text-[13px] font-bold transition-transform active:scale-95"
             style={{
               background: isActive ? 'var(--app-pink)' : 'white',
               color: isActive ? 'white' : 'var(--app-copy-muted)',

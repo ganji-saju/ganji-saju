@@ -66,14 +66,14 @@ export function AccountManagementActions({
   }
 
   const inputCls =
-    'w-full rounded-[8px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13.8px]';
+    'w-full rounded-[8px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13px]';
 
   return (
-    <div className="space-y-4 text-[13.8px]">
+    <div className="space-y-4 text-[13px]">
       {/* 상태 + 사유 */}
       <div className="flex flex-wrap items-center gap-2">
         <span
-          className={`rounded px-2 py-0.5 text-[12.1px] font-extrabold ${
+          className={`rounded px-2 py-0.5 text-[11.5px] font-extrabold ${
             banned
               ? 'bg-[var(--app-coral)] text-white'
               : 'bg-[var(--app-pink-soft)] text-[var(--app-ink)]'
@@ -114,7 +114,7 @@ export function AccountManagementActions({
       {/* 정보 수정 */}
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
-          <span className="text-[12.1px] text-[var(--app-copy-soft)]">표시명(이름)</span>
+          <span className="text-[11.5px] text-[var(--app-copy-soft)]">표시명(이름)</span>
           <input
             type="text"
             value={displayName}
@@ -124,7 +124,7 @@ export function AccountManagementActions({
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[12.1px] text-[var(--app-copy-soft)]">
+          <span className="text-[11.5px] text-[var(--app-copy-soft)]">
             전화번호(비우면 삭제 · 광고동의는 불변)
           </span>
           <input
@@ -159,9 +159,9 @@ export function AccountManagementActions({
         style={{ borderColor: 'var(--app-coral)' }}
       >
         <div className="font-extrabold text-[var(--app-coral)]">계정 삭제 (복구 불가)</div>
-        <p className="mt-1 text-[12.6px] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
+        <p className="mt-1 text-[13px] text-[var(--app-copy-soft)]" style={{ wordBreak: 'keep-all' }}>
           사주·결제·전 잔액 등 연결 데이터가 함께 삭제됩니다. 확인을 위해 대상 이메일
-          (<code className="text-[12.1px]">{email ?? userId}</code>)을 정확히 입력하세요.
+          (<code className="text-[11.5px]">{email ?? userId}</code>)을 정확히 입력하세요.
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <input
@@ -187,7 +187,7 @@ export function AccountManagementActions({
         </div>
       </div>
 
-      {msg ? <p className="text-[12.6px] text-[var(--app-copy-soft)]">{msg}</p> : null}
+      {msg ? <p className="text-[13px] text-[var(--app-copy-soft)]">{msg}</p> : null}
     </div>
   );
 }

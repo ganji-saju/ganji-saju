@@ -82,7 +82,7 @@ function Sparkline({ daily, stage, color }: { daily: PaymentFunnelDailyPoint[]; 
           points={points}
         />
       </svg>
-      <div className="flex shrink-0 flex-col text-[10.9px] leading-tight text-[var(--app-copy-soft)]">
+      <div className="flex shrink-0 flex-col text-[11px] leading-tight text-[var(--app-copy-soft)]">
         <span>오늘 {fmtNum(lastVal)}</span>
         <span>합 {fmtNum(total)}</span>
       </div>
@@ -133,25 +133,30 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
   const items = snap.refunds.items;
   const SHOWN = 8;
 
-  const card = 'rounded-[12px] border bg-white p-3';
+  // 2026-08-27 — 카드 3장을 띄우면 셋이 남남으로 보인다. 결제액·환불액·순액은
+  //   **같은 계산의 항들**이라 한 덩어리를 선으로 나눈다. 결론 칸(순액)에만 인주 바.
+  const card = 'flex-1 p-3';
   const cardStyle = { borderColor: 'var(--app-line)' } as const;
-  const label = 'text-[11.5px] font-semibold text-[var(--app-copy-soft)]';
-  const value = 'mt-0.5 text-[20px] font-extrabold tabular-nums';
+  const label = 'text-[11px] font-semibold text-[var(--app-copy-soft)]';
+  const value = 'mt-0.5 text-[22px] font-extrabold tabular-nums';
 
   return (
     <section>
-      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+      <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
         결제액 · 환불액
       </h2>
-      <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
-        <article className={card} style={cardStyle}>
+      <div
+        className="mt-2 flex flex-col overflow-hidden rounded-[10px] border bg-white sm:flex-row"
+        style={cardStyle}
+      >
+        <article className={`${card} border-b sm:border-b-0 sm:border-r`} style={cardStyle}>
           <p className={label}>결제액 (기간)</p>
           <p className={`${value} text-[var(--app-ink)]`}>{fmtWon(gross)}</p>
           <p className="text-[11px] text-[var(--app-copy-muted)]">
             결제 성공 {fmtNum(snap.totals.counts.confirm_success)}건 · 나중에 환불된 주문도 포함
           </p>
         </article>
-        <article className={card} style={cardStyle}>
+        <article className={`${card} border-b sm:border-b-0 sm:border-r`} style={cardStyle}>
           <p className={label}>환불액 (기간)</p>
           <p className={`${value} ${refunded > 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
             {refunded > 0 ? `-${fmtWon(refunded)}` : fmtWon(0)}
@@ -160,7 +165,10 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
             {fmtNum(items.length + snap.refunds.truncated)}건 · 환불한 날 기준
           </p>
         </article>
-        <article className={card} style={cardStyle}>
+        <article
+          className={card}
+          style={{ ...cardStyle, background: 'var(--app-pink-soft)', boxShadow: 'inset 2px 0 0 var(--app-pink)' }}
+        >
           <p className={label}>순액</p>
           <p className={`${value} ${net < 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
             {fmtWon(net)}
@@ -171,7 +179,7 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
 
       {outside > 0 ? (
         <p
-          className="mt-1.5 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+          className="mt-1.5 px-1 text-[11.5px] leading-[1.6] text-[var(--app-copy-soft)]"
           style={{ wordBreak: 'keep-all' }}
         >
           이 중 <strong className="font-extrabold text-[var(--app-coral)]">{fmtWon(outside)}</strong>{' '}
@@ -186,7 +194,7 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
           {items.slice(0, SHOWN).map((item, i) => (
             <div
               key={`${item.orderId}-${i}`}
-              className={`flex items-baseline justify-between gap-3 bg-white px-3 py-2 text-[12.5px] ${
+              className={`flex items-baseline justify-between gap-3 bg-white px-3 py-2 text-[13px] ${
                 i > 0 ? 'border-t border-[var(--app-line)]' : ''
               }`}
             >
@@ -203,7 +211,7 @@ function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
             </div>
           ))}
           {items.length > SHOWN || snap.refunds.truncated > 0 ? (
-            <div className="border-t border-[var(--app-line)] bg-white px-3 py-2 text-[12.1px] text-[var(--app-copy-muted)]">
+            <div className="border-t border-[var(--app-line)] bg-white px-3 py-2 text-[11.5px] text-[var(--app-copy-muted)]">
               외 {fmtNum(items.length - SHOWN + snap.refunds.truncated)}건 — 전체 내역은{' '}
               <a className="font-bold underline" href="/admin/analytics">
                 /admin/analytics
@@ -227,11 +235,11 @@ function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channe
 
   return (
     <section>
-      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+      <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
         유입 채널 × 상품 결제
       </h2>
       <p
-        className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+        className="mt-1 px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]"
         style={{ wordBreak: 'keep-all' }}
       >
         어느 경로로 들어온 사람이 무엇을 샀는지. 채널은 결제자의{' '}
@@ -246,7 +254,7 @@ function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channe
         ) : null}
       </p>
       <div className="mt-2 overflow-x-auto rounded-[12px] border border-[var(--app-line)] bg-white">
-        <table className="w-full border-collapse text-[12.5px]">
+        <table className="w-full border-collapse text-[13px]">
           <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
             <tr>
               <th className={`${th} text-left`}>채널</th>
@@ -360,15 +368,15 @@ export function PaymentFunnelDashboard() {
           borderColor: 'var(--app-pink-line)',
         }}
       >
-        <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           💳 결제 Funnel
         </div>
         {/* 2026-07-04 — 코인충전(/credits) 표기는 폐지된 상품 기준이라 현행(멤버십·단건)으로 정정. */}
-        <h1 className="mt-1.5 text-[25.3px] font-extrabold leading-snug text-[var(--app-ink)]">
+        <h1 className="mt-1.5 text-[20px] font-extrabold leading-snug text-[var(--app-ink)]">
           상품 결제 prepare → confirm
         </h1>
         <p
-          className="mt-2 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
+          className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
           단계별 진입·차단·전환·실패 추세와 reason / 패키지 별 전환율을 봅니다. KST 시간대.
@@ -384,7 +392,7 @@ export function PaymentFunnelDashboard() {
           style={{ borderColor: 'var(--app-line)' }}
         >
           <div className="motion-spinner-inline mx-auto" aria-hidden="true" />
-          <p className="mt-3 text-[15px] text-[var(--app-copy-muted)]">집계 중...</p>
+          <p className="mt-3 text-[14px] text-[var(--app-copy-muted)]">집계 중...</p>
         </article>
       ) : state === 'error' ? (
         <article
@@ -394,7 +402,7 @@ export function PaymentFunnelDashboard() {
             borderColor: 'rgba(220,79,79,0.28)',
           }}
         >
-          <p className="text-[15px] text-[var(--app-coral)]">
+          <p className="text-[14px] text-[var(--app-coral)]">
             {data?.error ?? '데이터를 불러오지 못했습니다.'}
           </p>
         </article>
@@ -404,10 +412,10 @@ export function PaymentFunnelDashboard() {
               들어오는지가 이 화면에서 가장 먼저 봐야 할 숫자다. */}
           {snap.payerChannelCoverage.total > 0 ? (
             <section>
-              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 결제자 유입 채널 (사이트 밖)
               </h2>
-              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+              <p className="mt-1 px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
                 결제자 {fmtNum(snap.payerChannelCoverage.total)}명 중{' '}
                 {fmtNum(snap.payerChannelCoverage.matched)}명만 채널이 확인됩니다 — 첫 방문이
                 비로그인이면 그 방문 기록에 계정이 안 붙어 조인되지 않습니다.
@@ -417,7 +425,7 @@ export function PaymentFunnelDashboard() {
                   snap.payerChannels.map((c) => (
                     <article
                       key={c.channel}
-                      className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                      className="rounded-[12px] border bg-white p-3 text-[13px]"
                       style={{ borderColor: 'var(--app-line)' }}
                     >
                       <div className="flex items-baseline justify-between gap-3">
@@ -443,7 +451,7 @@ export function PaymentFunnelDashboard() {
 
           {/* §전환율 4 카드 */}
           <section>
-            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               전환율 ({snap.windowDays}일)
             </h2>
             <div className="mt-2 grid grid-cols-2 gap-2.5">
@@ -451,13 +459,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   전체 전환
                 </div>
-                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-jade)]">
+                <div className="mt-1 text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-jade)]">
                   {fmtPct(snap.totals.overallConversionRate)}
                 </div>
-                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                   prepare → 결제 성공
                 </div>
               </article>
@@ -465,13 +473,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   confirm 성공률
                 </div>
-                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
+                <div className="mt-1 text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-ink)]">
                   {fmtPct(snap.totals.confirmSuccessRate)}
                 </div>
-                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                   confirm 진입 중 성공
                 </div>
               </article>
@@ -479,13 +487,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   prepare 차단율
                 </div>
-                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-copy-muted)]">
+                <div className="mt-1 text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-copy-muted)]">
                   {fmtPct(snap.totals.prepareBlockRate)}
                 </div>
-                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                   미로그인·중복 구매 등
                 </div>
               </article>
@@ -493,13 +501,13 @@ export function PaymentFunnelDashboard() {
                 className="rounded-[14px] border bg-white p-3.5"
                 style={{ borderColor: 'var(--app-line)' }}
               >
-                <div className="text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
                   confirm 실패율
                 </div>
-                <div className="mt-1 text-[23px] font-extrabold tabular-nums leading-none text-[var(--app-coral)]">
+                <div className="mt-1 text-[22px] font-extrabold tabular-nums leading-none text-[var(--app-coral)]">
                   {fmtPct(snap.totals.confirmFailRate)}
                 </div>
-                <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                   결제 승인 또는 후속 실패
                 </div>
               </article>
@@ -508,7 +516,7 @@ export function PaymentFunnelDashboard() {
 
           {/* §단계별 카드 + sparkline */}
           <section>
-            <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+            <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
               단계별 추세
             </h2>
             <div className="mt-2 grid gap-2">
@@ -519,11 +527,11 @@ export function PaymentFunnelDashboard() {
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <div className="text-[13.8px] font-bold text-[var(--app-copy)]">
+                    <div className="text-[13px] font-bold text-[var(--app-copy)]">
                       {STAGE_LABEL[stage]}
                     </div>
                     <div
-                      className="text-[20.7px] font-extrabold tabular-nums"
+                      className="text-[22px] font-extrabold tabular-nums"
                       style={{ color: STAGE_COLOR[stage] }}
                     >
                       {fmtNum(snap.totals.counts[stage])}
@@ -545,14 +553,14 @@ export function PaymentFunnelDashboard() {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
-                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
                     prepare 차단 사유
                   </div>
                   <ul className="mt-2 grid gap-1.5">
                     {snap.blockedReasons.map((r) => (
                       <li
                         key={r.reason}
-                        className="flex items-center justify-between text-[13.8px]"
+                        className="flex items-center justify-between text-[13px]"
                       >
                         <span className="text-[var(--app-copy)]">
                           {BLOCK_REASON_LABEL[r.reason] ?? r.reason}
@@ -570,14 +578,14 @@ export function PaymentFunnelDashboard() {
                   className="rounded-[14px] border bg-white p-4"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
-                  <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
+                  <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
                     confirm 실패 사유
                   </div>
                   <ul className="mt-2 grid gap-1.5">
                     {snap.failedReasons.map((r) => (
                       <li
                         key={r.reason}
-                        className="flex items-center justify-between text-[13.8px]"
+                        className="flex items-center justify-between text-[13px]"
                       >
                         <span className="text-[var(--app-copy)]">{r.reason}</span>
                         <span className="font-extrabold tabular-nums text-[var(--app-coral)]">
@@ -594,14 +602,14 @@ export function PaymentFunnelDashboard() {
           {/* §패키지 별 전환 */}
           {snap.byPackage.length > 0 ? (
             <section>
-              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 패키지 별 전환
               </h2>
               <div className="mt-2 grid gap-1.5">
                 {snap.byPackage.map((p) => (
                   <article
                     key={p.packageId}
-                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    className="rounded-[12px] border bg-white p-3 text-[13px]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     <div className="flex items-baseline justify-between gap-3">
@@ -626,10 +634,10 @@ export function PaymentFunnelDashboard() {
               쌓이고 있었는데 집계기가 metadata 를 아예 안 읽어 화면이 없었다. */}
           {snap.byEntry.length > 0 ? (
             <section>
-              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 진입점 별 전환 (사이트 안)
               </h2>
-              <p className="mt-1 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]">
+              <p className="mt-1 px-1 text-[11px] leading-[1.6] text-[var(--app-copy-soft)]">
                 결제창으로 넘어온 화면. `(미지정)` = 결제 요청에 진입점이 없었고 주문 원장에도
                 안 남은 건(구 링크·수동 정산분).
               </p>
@@ -637,7 +645,7 @@ export function PaymentFunnelDashboard() {
                 {snap.byEntry.map((e) => (
                   <article
                     key={e.entry}
-                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    className="rounded-[12px] border bg-white p-3 text-[13px]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     <div className="flex items-baseline justify-between gap-3">
@@ -660,14 +668,14 @@ export function PaymentFunnelDashboard() {
 
           {snap.paywallSurfaces.length > 0 ? (
             <section>
-              <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+              <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
                 뭘 보고 결제했나 — 페이월 노출 화면
               </h2>
               <div className="mt-2 grid gap-1.5">
                 {snap.paywallSurfaces.map((s) => (
                   <article
                     key={s.surface}
-                    className="rounded-[12px] border bg-white p-3 text-[13.8px]"
+                    className="rounded-[12px] border bg-white p-3 text-[13px]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     <div className="flex items-baseline justify-between gap-3">
@@ -686,11 +694,11 @@ export function PaymentFunnelDashboard() {
             className="rounded-[14px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
               📚 산출 방식
             </div>
             <ul
-              className="mt-1.5 grid gap-1 text-[12.6px] leading-[1.65] text-[var(--app-copy)]"
+              className="mt-1.5 grid gap-1 text-[11px] leading-[1.65] text-[var(--app-copy)]"
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 데이터: `payment_funnel_events` 테이블 (PR B1 신설)</li>

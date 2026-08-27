@@ -22,9 +22,9 @@ export function AdminPage({
     <main className={`w-full space-y-5 px-4 py-5 md:px-6 ${className ?? ''}`}>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--app-line)] pb-3">
         <div>
-          <h1 className="text-[22px] font-extrabold text-[var(--app-ink)]">{title}</h1>
+          <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">{title}</h1>
           {description ? (
-            <p className="mt-0.5 text-[12.5px] text-[var(--app-copy-soft)]">{description}</p>
+            <p className="mt-0.5 text-[13px] text-[var(--app-copy-soft)]">{description}</p>
           ) : null}
         </div>
         {actions ? <div className="flex items-center gap-2">{actions}</div> : null}

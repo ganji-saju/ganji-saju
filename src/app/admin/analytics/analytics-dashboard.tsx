@@ -46,11 +46,11 @@ function fmtWon(won: number): string {
 function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-[12px] border border-[var(--app-line)] bg-white p-3.5">
-      <div className="text-[11.8px] font-extrabold uppercase tracking-[0.05em] text-[var(--app-copy-soft)]">
+      <div className="text-[11px] font-extrabold uppercase tracking-[0.05em] text-[var(--app-copy-soft)]">
         {label}
       </div>
-      <div className="mt-1 text-[20px] font-extrabold text-[var(--app-ink)]">{value}</div>
-      {sub && <div className="mt-0.5 text-[11.8px] text-[var(--app-copy-soft)]">{sub}</div>}
+      <div className="mt-1 text-[16px] font-extrabold text-[var(--app-ink)]">{value}</div>
+      {sub && <div className="mt-0.5 text-[11px] text-[var(--app-copy-soft)]">{sub}</div>}
     </div>
   );
 }
@@ -69,10 +69,10 @@ function InflowTable({
   const max = Math.max(...entries.map((e) => e.visitors), 1);
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">{title}</h2>
+      <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">{title}</h2>
       {subtitle ? (
         <p
-          className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+          className="mt-1 text-[11.5px] leading-[1.6] text-[var(--app-copy-soft)]"
           style={{ wordBreak: 'keep-all' }}
         >
           {subtitle}
@@ -84,7 +84,7 @@ function InflowTable({
         <ul className="mt-3 flex flex-col gap-2">
           {entries.map((e) => (
             <li key={e.key} className="flex items-center gap-3">
-              <span className="w-[42%] shrink-0 truncate text-[12.5px] text-[var(--app-ink)]" title={e.label}>
+              <span className="w-[42%] shrink-0 truncate text-[13px] text-[var(--app-ink)]" title={e.label}>
                 {e.label}
               </span>
               <span className="relative h-[18px] flex-1 overflow-hidden rounded-[6px] bg-[var(--app-line)]/40">
@@ -93,7 +93,7 @@ function InflowTable({
                   style={{ width: `${Math.max(4, (e.visitors / max) * 100)}%` }}
                 />
               </span>
-              <span className="w-14 shrink-0 text-right text-[12.5px] font-bold text-[var(--app-ink)]">
+              <span className="w-14 shrink-0 text-right text-[13px] font-bold text-[var(--app-ink)]">
                 {formatNum(e.visitors)}
               </span>
             </li>
@@ -304,11 +304,11 @@ function ComparisonLineChart({
           />
         </div>
       ) : (
-        <div className="mt-2 grid h-20 place-items-center text-[12px] text-[var(--app-copy-soft)]">
+        <div className="mt-2 grid h-20 place-items-center text-[11.5px] text-[var(--app-copy-soft)]">
           비교 데이터 없음
         </div>
       )}
-      <div className="mt-1 flex justify-between text-[10.9px] text-[var(--app-copy-soft)]">
+      <div className="mt-1 flex justify-between text-[11px] text-[var(--app-copy-soft)]">
         <span>{dates[0]}</span>
         <span>{dates[dates.length - 1]}</span>
       </div>
@@ -386,7 +386,7 @@ function ExternalComparison({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">외부 분석 비교</h2>
+          <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">외부 분석 비교</h2>
           <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-soft)]">
             자체 순방문/PV · GA4 Data API · Vercel Web Analytics를 같은 KST 날짜축으로 비교
           </p>
@@ -439,11 +439,11 @@ function ExternalComparison({
 
       <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">최근 일별 비교</h2>
+          <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">최근 일별 비교</h2>
           <span className="text-[11.5px] text-[var(--app-copy-soft)]">최신 12일</span>
         </div>
         <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
-          <table className="w-full border-collapse text-[12.5px]">
+          <table className="w-full border-collapse text-[13px]">
             <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
               <tr>
                 <th className={`${th} text-left`}>날짜</th>
@@ -482,14 +482,14 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">환불 내역</h2>
+        <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">환불 내역</h2>
         <span className="text-[11.5px] text-[var(--app-copy-soft)]">
           {refunds.items.length}건 · {fmtWon(refunds.totalWon)}
           {refunds.truncated > 0 ? ` (최신 ${refunds.items.length}건만 표시 · +${refunds.truncated}건)` : ''}
         </span>
       </div>
       <p
-        className="mt-1 text-[11.8px] leading-[1.6] text-[var(--app-copy-soft)]"
+        className="mt-1 text-[11.5px] leading-[1.6] text-[var(--app-copy-soft)]"
         style={{ wordBreak: 'keep-all' }}
       >
         매출은 <strong>판 날</strong>, 환불은 <strong>환불한 날</strong>에 계상합니다. 그래서 예전에 판
@@ -504,7 +504,7 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
         ) : null}
       </p>
       <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
-        <table className="w-full border-collapse text-[12.5px]">
+        <table className="w-full border-collapse text-[13px]">
           <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
             <tr>
               <th className={`${th} text-left`}>환불일</th>
