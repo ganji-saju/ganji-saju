@@ -146,31 +146,70 @@ test('determineCreditRefundEligibility: 미사용/일부사용/전부사용 전 
 //   entitlement 기준으로는 환불 목록에 절대 안 잡힌다(실제로 종합 리포트 테스트 주문이
 //   admin 환불 탭에 안 떠서 발견). 주문 원장 기반 항목이 이를 대신한다.
 test('번들 주문은 주문 단위로 환불 목록에 잡힌다', () => {
+  const refund = determineRefundEligibility(
+    [
+      // 🔴 2026-08-27 — 중복 방지는 "단품이라서" 가 아니라 **이미 잡혔기 때문**이다.
+      //   직전 테스트는 이용권을 비워둔 채 단품 주문이 빠지는 걸 단언해, 이용권이 사라진
+      //   주문(고아 주문)까지 영영 못 잡는 동작을 고정하고 있었다. 실제 중복 상황으로 바꾼다.
+      {
+        id: 'ent-dup',
+        product_id: 'today-detail',
+        scope_key: null,
+        amount: 3300,
+        payment_key: 'tid-sandbox-2',
+        order_id: 'ord_20260824_2',
+        created_at: '2026-08-24T13:00:00Z',
+      } as never,
+    ],
+    undefined,
+    [
+      {
+        id: 'order-row-1',
+        order_id: 'ord_20260824_1',
+        package_id: 'bundle_today_set',
+        amount: 9900,
+        payment_key: 'tid-sandbox-1',
+        created_at: '2026-08-24T12:00:00Z',
+      },
+      {
+        // 같은 주문이 이용권으로 이미 잡혔으므로 주문 기반으로는 제외돼야 한다.
+        id: 'order-row-2',
+        order_id: 'ord_20260824_2',
+        package_id: 'taste_today_detail',
+        amount: 3300,
+        payment_key: 'tid-sandbox-2',
+        created_at: '2026-08-24T13:00:00Z',
+      },
+    ]
+  );
+  assert.equal(refund.items.filter((i) => i.kind === 'bundle-order').length, 1);
+  assert.equal(refund.items.find((i) => i.kind === 'bundle-order')?.kind, 'bundle-order');
+  const bundleItem = refund.items.find((i) => i.kind === 'bundle-order');
+  assert.equal(bundleItem?.productName, '오늘 풀세트');
+  assert.equal(bundleItem?.amountWon, 9900);
+  assert.equal(bundleItem?.paymentKey, 'tid-sandbox-1');
+  assert.equal(refund.totalProductRefundableWon, 9900 + 3300);
+});
+
+// 🔴 2026-08-27 실측(test1111): product_entitlements 0행인데 taste_tarot_daily·
+//   taste_today_basic 주문이 status='fulfilled' 로 남아 있었다. 이용권이 사라져
+//   환불 목록 어디에도 안 잡히니 **환불할 방법이 없고**, LTV 에는 계속 잡혀
+//   "환불했는데 금액이 안 사라진다" 로 보였다. 금액은 이용권이 아니라 주문에 있다.
+test('이용권이 사라진 단품 주문도 환불 목록에 잡힌다(고아 주문)', () => {
   const refund = determineRefundEligibility([], undefined, [
     {
-      id: 'order-row-1',
-      order_id: 'ord_20260824_1',
-      package_id: 'bundle_today_set',
-      amount: 9900,
-      payment_key: 'tid-sandbox-1',
-      created_at: '2026-08-24T12:00:00Z',
-    },
-    {
-      // 단품 주문은 entitlement 항목으로 이미 잡히므로 주문 기반으로는 제외돼야 한다(중복 방지).
-      id: 'order-row-2',
-      order_id: 'ord_20260824_2',
-      package_id: 'taste_today_detail',
-      amount: 3300,
-      payment_key: 'tid-sandbox-2',
-      created_at: '2026-08-24T13:00:00Z',
+      id: 'order-orphan',
+      order_id: 'ord_orphan_1',
+      package_id: 'taste_tarot_daily',
+      amount: 990,
+      payment_key: 'tid-orphan',
+      created_at: '2026-08-25T17:26:20Z',
     },
   ]);
-  assert.equal(refund.items.length, 1);
-  assert.equal(refund.items[0].kind, 'bundle-order');
-  assert.equal(refund.items[0].productName, '오늘 풀세트');
-  assert.equal(refund.items[0].amountWon, 9900);
-  assert.equal(refund.items[0].paymentKey, 'tid-sandbox-1');
-  assert.equal(refund.totalProductRefundableWon, 9900);
+  assert.equal(refund.items.length, 1, '이용권이 없다고 환불 자체를 못 하면 안 된다');
+  assert.equal(refund.items[0].amountWon, 990);
+  assert.equal(refund.items[0].paymentKey, 'tid-orphan');
+  assert.equal(refund.totalProductRefundableWon, 990);
 });
 
 // 2026-08-26 회귀 가드 — 🔴 사용자 제보: "990원 결제하고 대화 3번 안 했는데 이미 사용된 거라고

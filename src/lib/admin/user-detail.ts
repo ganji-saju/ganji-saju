@@ -139,14 +139,28 @@ export function determineRefundEligibility(
       orderId: e.order_id,
       createdAt: e.created_at,
     }));
+  // 🔴 2026-08-27 — 직전 조건은 **번들만** 주문 원장으로 잡고, 단품은 "entitlement 로 이미
+  //   잡힌다"고 전제했다. 그 전제는 **이용권이 사라지면 깨진다.**
+  //   실측(test1111): product_entitlements 0행인데 taste_tarot_daily·taste_today_basic 주문은
+  //   status='fulfilled' 로 남아 있었다 → 환불 목록 어디에도 안 잡혀 환불이 불가능하고,
+  //   LTV 에는 계속 잡혀 "환불했는데 금액이 안 사라진다" 로 보였다.
+  //   번들 여부가 아니라 **이미 다른 소스로 잡혔는지**로 가른다 — 금액은 이용권이 아니라
+  //   주문에 있다(2026-08-24 번들 수정과 같은 이유).
+  const seenOrderIds = new Set<string>();
+  for (const e of entitlements) if (e.order_id) seenOrderIds.add(e.order_id);
+  for (const c of creditEligibility.items) if (c.orderId) seenOrderIds.add(c.orderId);
+
   for (const order of paidOrders) {
     const pkg = getPackage(order.package_id);
-    if (!pkg || !isBundlePackage(pkg)) continue; // 단품 주문은 entitlement 항목으로 이미 잡힌다
+    // ⚠️ 카탈로그에 없는 상품이라고 건너뛰지 않는다 — 프로덕션 카탈로그에 없는(개편 전용·폐지)
+    //   상품의 결제가 실재하고, 그걸 못 잡으면 **돈을 받아 놓고 환불할 방법이 없다.**
+    //   이름만 없을 뿐 금액·paymentKey 는 주문에 다 있다.
+    if (order.order_id && seenOrderIds.has(order.order_id)) continue; // 중복 방지
     if (typeof order.amount !== 'number' || order.amount <= 0) continue;
     items.push({
       kind: 'bundle-order',
       id: order.id,
-      productName: pkg.name,
+      productName: pkg?.name ?? order.package_id,
       amountWon: order.amount,
       hasPaymentKey: Boolean(order.payment_key),
       paymentKey: order.payment_key,
