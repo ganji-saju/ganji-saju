@@ -31,6 +31,8 @@ export function GuardianAvatar({
   const guardian = guardianForZodiac(zodiac);
   const px = SIZE_PX[size];
   const src = mood === 'default' ? guardian.image : guardian.moods[mood];
+  const shape =
+    `shrink-0 rounded-full border border-[rgba(28,26,23,0.14)] bg-white object-cover object-top ${className}`.trim();
 
   return (
     <img
@@ -40,7 +42,7 @@ export function GuardianAvatar({
       height={px}
       loading="lazy"
       decoding="async"
-      className={`shrink-0 rounded-full border border-[rgba(28,26,23,0.14)] bg-white object-cover object-top ${className}`.trim()}
+      className={shape}
       style={{ width: px, height: px }}
     />
   );
