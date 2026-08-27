@@ -27,7 +27,7 @@ function RoleBadge() {
   return (
     <span
       title="super_admin 전용"
-      className="ml-auto shrink-0 rounded-[3px] border border-white/20 px-1 text-[9px] font-bold tracking-[.04em] text-[var(--admin-rail-ink-2)]"
+      className="ml-auto shrink-0 rounded-[3px] border border-white/20 px-1 text-[11px] font-bold tracking-[.04em] text-[var(--admin-rail-ink-2)]"
     >
       S
     </span>
@@ -67,7 +67,7 @@ function LeafLink({
   touch: boolean;
 }) {
   const height = touch ? 'min-h-[48px]' : depth === 1 ? 'h-[27px]' : 'h-[29px]';
-  const size = depth === 1 ? 'text-[12px] font-normal' : 'text-[12.5px] font-medium';
+  const size = depth === 1 ? 'text-[11.5px] font-normal' : 'text-[13px] font-medium';
   return (
     <Link
       href={item.href!}
@@ -75,7 +75,7 @@ function LeafLink({
       title={item.description}
       aria-current={active ? 'page' : undefined}
       className={`relative flex items-center gap-2 rounded-[6px] px-2.5 ${height} ${
-        touch ? 'text-[15px] font-medium' : size
+        touch ? 'text-[14px] font-medium' : size
       } transition-colors ${
         active
           ? 'bg-[var(--admin-rail-active)] font-semibold text-white'
@@ -90,7 +90,7 @@ function LeafLink({
       ) : null}
       <span className="truncate">{item.label}</span>
       {item.badge ? (
-        <span className="ml-auto flex h-4 min-w-[17px] shrink-0 items-center justify-center rounded-full bg-[var(--app-coral)] px-1.5 text-[10px] font-bold text-white">
+        <span className="ml-auto flex h-4 min-w-[17px] shrink-0 items-center justify-center rounded-full bg-[var(--app-coral)] px-1.5 text-[11px] font-bold text-white">
           {item.badge}
         </span>
       ) : item.minRole === 'super_admin' ? (
@@ -120,7 +120,7 @@ function NavList({
       {groups.map((group) => (
         <div key={group.title} className="flex flex-col gap-0.5">
           <p
-            className={`px-2.5 ${touch ? 'flex h-[38px] items-center' : 'mt-2.5 mb-0.5'} text-[10.5px] font-semibold uppercase tracking-[.09em] text-[var(--admin-rail-label)]`}
+            className={`px-2.5 ${touch ? 'flex h-[38px] items-center' : 'mt-2.5 mb-0.5'} text-[11px] font-semibold uppercase tracking-[.09em] text-[var(--admin-rail-label)]`}
           >
             {group.title}
           </p>
@@ -145,7 +145,7 @@ function NavList({
                   aria-expanded={open}
                   onClick={() => setToggled((prev) => ({ ...prev, [item.label]: !open }))}
                   className={`flex w-full items-center gap-2 rounded-[6px] px-2.5 ${
-                    touch ? 'min-h-[48px] text-[15px]' : 'h-[29px] text-[12.5px]'
+                    touch ? 'min-h-[48px] text-[14px]' : 'h-[29px] text-[13px]'
                   } font-semibold text-[var(--admin-rail-ink-strong)] transition-colors hover:bg-[var(--admin-rail-hover)]`}
                 >
                   <span className="truncate">{item.label}</span>
@@ -181,10 +181,10 @@ function Brand({ role }: { role: AdminRole }) {
         간
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="text-[12.5px] font-semibold tracking-[-.01em] text-[var(--admin-rail-ink-strong)]">
+        <span className="text-[13px] font-semibold tracking-[-.01em] text-[var(--admin-rail-ink-strong)]">
           관리자 콘솔
         </span>
-        <span className="text-[9.5px] text-[var(--admin-rail-label)]">
+        <span className="text-[11px] text-[var(--admin-rail-label)]">
           {role === 'super_admin' ? 'super_admin' : 'admin'}
         </span>
       </span>

@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
 import { createClient } from '@/lib/supabase/server';
 import { AdminNav } from '@/components/admin/admin-nav';
+import { AdminSectionTabs } from '@/components/admin/admin-section-tabs';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,7 +21,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="admin-shell flex min-h-dvh flex-col bg-[var(--app-bg)] md:flex-row">
       <AdminNav role={guard.role} />
-      <div className="min-w-0 flex-1">{children}</div>
+      {/* 2026-08-27 — 형제 화면 탭은 레이아웃 한 곳에서만 렌더한다. 페이지마다 붙이면
+          어떤 화면엔 있고 어떤 화면엔 없는 상태가 조용히 생긴다. 부모가 없는 화면에서는
+          컴포넌트가 스스로 null 을 돌려준다. */}
+      <div className="min-w-0 flex-1">
+        <AdminSectionTabs role={guard.role} />
+        {children}
+      </div>
     </div>
   );
 }

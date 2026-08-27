@@ -153,6 +153,23 @@ export function getActiveNavHref(currentPath: string, hrefs: string[] = allNavHr
   return best;
 }
 
+/**
+ * 지금 열린 화면을 품고 있는 부모 행. 페이지 상단 탭(서브메뉴)의 정본이다 —
+ * 탭 목록을 화면에 따로 적으면 레일과 갈라진다(메뉴엔 있는데 탭엔 없는 항목이 생긴다).
+ */
+export function findNavParent(
+  groups: readonly AdminNavGroup[],
+  activeHref: string | null
+): AdminNavItem | null {
+  if (!activeHref) return null;
+  for (const group of groups) {
+    for (const item of group.items) {
+      if (item.children?.some((child) => child.href === activeHref)) return item;
+    }
+  }
+  return null;
+}
+
 /** 부모 행이 지금 열린 화면을 품고 있나(펼침 기본값 계산용). */
 export function navItemContainsHref(item: AdminNavItem, activeHref: string | null): boolean {
   if (!activeHref) return false;
