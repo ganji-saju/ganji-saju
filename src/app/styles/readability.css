@@ -481,13 +481,140 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   font-size: 0.92rem;
 }
 
-/* 2026-08-27 — 관리자 전용 규칙을 styles/admin.css 로 옮겼다.
-   여기 있던 블록이 관리자 타이포를 **!important 로 3단으로 뭉개고** 있었다:
-   9~12px → 0.9rem / 13~14px → 0.98rem / 15px → 1.04rem.
-   즉 각 페이지가 정해둔 크기 차이가 런타임에 전부 지워져, 라벨·본문·제목이
-   같은 크기로 보였다("구분이 안 된다"의 실제 원인). 배경도 옛 핑크 그라데이션이라
-   흰 카드가 배경에서 떠오르지 않았다.
-   대체 규칙은 admin.css 에 있고, 크기는 페이지 소스를 존중한다(덮어쓰지 않는다). */
+/* ── 관리자 콘솔 디자인 시스템 (B안) ──────────────────────────────────────────
+   2026-08-27 ① 여기 있던 옛 관리자 블록이 타이포를 **!important 로 3단으로 뭉개고** 있었다:
+   9~12px → 0.9rem / 13~14px → 0.98rem / 15px → 1.04rem. 각 페이지가 정해둔 크기 차이가
+   런타임에 전부 지워져 라벨·본문·제목이 같은 크기로 보였다("구분이 안 된다"의 실제 원인).
+   배경도 옛 핑크 그라데이션이라 흰 카드가 배경에서 떠오르지 않았다. 그 블록은 삭제했다.
+
+   2026-08-27 ② 대체 규칙을 별도 파일(styles/admin.css)로 뺐다가 **여기로 되돌렸다**.
+   그 파일은 프로덕션 번들에 통째로 누락됐다 — 같은 배포에서 admin-nav.tsx(신규 유틸리티)와
+   이 파일의 변경은 반영됐는데 **새로 추가한 @import 대상만** 빠졌다. 결과로 --admin-rail 이
+   정의되지 않아 레일 배경이 투명해지고 활성 항목의 흰 글씨가 밝은 배경 위에 얹혀 안 보였다.
+   ⚠️ 관리자 스타일을 새 파일로 다시 쪼개지 마라 — 신규 CSS 파일은 배포에서 누락될 수 있다.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.admin-shell {
+  /* ── 면 ── */
+  --app-bg: #eff1f4;
+  --app-surface: #ffffff;
+  --app-surface-strong: #ffffff;
+  --app-surface-soft: #f7f8fa;
+  --app-surface-muted: #e9edf2;
+
+  /* ── 선: 굵기가 곧 위계다(옅은 행선 → 경계선 → 합계 먹선) ── */
+  --app-line: #e3e7ec;
+  --app-line-strong: #d3d9e0;
+  --admin-line-soft: #f1f3f6;
+
+  /* ── 글 ── */
+  --app-ink: #0f1115;
+  --app-ink-strong: #05060a;
+  --app-copy: #242a33;
+  --app-copy-soft: #4b5361;
+  --app-copy-muted: #8b93a0;
+  --admin-ink-faint: #c3c8d0;
+
+  /* ── 인주: 값은 그대로, 연한 면만 회청 쪽으로 맞춘다 ── */
+  --app-pink-soft: #fbf4f3;
+  --app-pink-line: rgba(179, 55, 42, 0.22);
+
+  /* ── 레일(어두운 면) ──
+     인주 #b3372a 는 어두운 배경 위에서 가라앉는다. --admin-accent-lift 는 다른 색이
+     아니라 **같은 색의 어두운 배경용 단계**다. 레일 밖에서는 절대 쓰지 않는다. */
+  --admin-rail: #1b1e24;
+  --admin-rail-line: rgba(255, 255, 255, 0.07);
+  --admin-rail-hover: rgba(255, 255, 255, 0.06);
+  --admin-rail-active: rgba(214, 74, 58, 0.2);
+  --admin-rail-ink: #c7ccd4;
+  --admin-rail-ink-2: #8b93a0;
+  --admin-rail-ink-strong: #e8eaee;
+  --admin-rail-label: #5d6673;
+  --admin-accent-lift: #d64a3a;
+
+  /* ── 모양 ── */
+  --app-r-card: 8px;
+  --app-r-btn: 6px;
+  --app-shadow: 0 1px 2px rgba(15, 17, 21, 0.05);
+
+  /* ── 타입 램프(7단) ──
+     지금 페이지들엔 11.5/12.1/12.6/13.2/13.8/15/25.3px 이 섞여 있다. 페이지를 옮길 때
+     이 변수로 바꾼다 — 값을 여기 모아두면 다음에 한 곳에서 조인다. */
+  --admin-t-title: 20px;
+  --admin-t-metric: 22px;
+  --admin-t-section: 14px;
+  --admin-t-body: 13px;
+  --admin-t-caption: 11.5px;
+  --admin-t-label: 11px;
+
+  /* ── 서체 ──
+     브랜드 서체(달빛 산스)를 관리자에서만 걷어낸다. 감성 서체는 표·숫자에서 자릿수가
+     흔들린다. Pretendard 는 이미 기존 폴백 스택에 있어 새로 받는 파일이 없다. */
+  --font-body: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo",
+    "Noto Sans KR", system-ui, sans-serif;
+  --font-sans: var(--font-body);
+
+  font-family: var(--font-body);
+  /* 금액·건수·비율이 세로로 정렬된다. 표가 있는 화면에서 이게 가장 크게 먹는다. */
+  font-variant-numeric: tabular-nums;
+  font-size: var(--admin-t-body);
+  line-height: 1.55;
+  letter-spacing: -0.003em;
+  background: var(--app-bg);
+  color: var(--app-ink);
+}
+
+/* ── 요소 기본값: 클래스가 없을 때만 적용된다(명시도 0) ── */
+:where(.admin-shell h1) {
+  font-size: var(--admin-t-title);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.25;
+}
+
+:where(.admin-shell h2) {
+  font-size: var(--admin-t-section);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+:where(.admin-shell table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--admin-t-body);
+}
+
+:where(.admin-shell thead th) {
+  height: 28px;
+  padding: 0 12px;
+  background: var(--app-surface-soft);
+  border-bottom: 1px solid var(--app-line);
+  font-size: var(--admin-t-label);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  color: var(--app-copy-muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:where(.admin-shell tbody td) {
+  height: 29px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--admin-line-soft);
+}
+
+:where(.admin-shell canvas, .admin-shell svg) {
+  max-width: 100%;
+}
+
+/* 데스크톱 밀도(행 29px)를 손가락에까지 내리지 않는다.
+   이전 규칙은 화면 종류와 무관하게 a/button 을 42px 로 키워 밀도를 통째로 무너뜨렸다. */
+@media (pointer: coarse) {
+  :where(.admin-shell a, .admin-shell button) {
+    min-height: 44px;
+  }
+}
+
 
 @media (min-width: 768px) {
   :root {
