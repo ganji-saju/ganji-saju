@@ -23,6 +23,15 @@ import { useEffect, useRef, useState } from 'react';
 const MOTION_BASE = '/images/gangi/guardians/motion';
 
 /**
+ * 🔴 2026-08-28 — 고유 비율을 **속성으로 못박는다**. video 는 소스가 붙기 전
+ * 기본 고유크기가 300×150(2:1)이라, 배너처럼 `h-full w-auto` 로 놓인 자리에서
+ * 폭이 2:1 로 계산돼 초상이 박스 밖으로 삐져나왔다(대화상담 뱀 배너에서 잡았다).
+ * 모션 자산은 전부 3:4(400×534 · t7 560×746)라 300×400 으로 고정한다.
+ */
+const RATIO_W = 300;
+const RATIO_H = 400;
+
+/**
  * idle 루프를 가진 캐릭터. **자산이 있는 것만** 적는다 —
  * 없는 id 로 video 를 그리면 poster 404 라 초상이 통째로 비어 보인다(t7 히어로에서 잡았다).
  * 새 캐릭터를 애니메이션하면 자산과 이 목록을 같이 추가한다.
@@ -88,6 +97,8 @@ export function GuardianPortrait({
         src={`/images/gangi/guardians/${id}.jpg`}
         alt={decorative ? '' : (alt ?? '')}
         aria-hidden={decorative || undefined}
+        width={RATIO_W}
+        height={RATIO_H}
         loading="lazy"
         decoding="async"
         className={className}
@@ -100,6 +111,8 @@ export function GuardianPortrait({
     <video
       ref={videoRef}
       poster={`${MOTION_BASE}/${id}.webp`}
+      width={RATIO_W}
+      height={RATIO_H}
       preload="none"
       muted
       loop
