@@ -40,10 +40,19 @@ const MOTION_IDS = new Set([
   'rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake',
   'horse', 'sheep', 'monkey', 'rooster', 'dog', 'pig',
   't7', // 히어로 배너(손 내미는 환영 포즈) — 배너용이라 560px 로 인코딩했다.
+  // 2026-08-28 — 배너 전용 파생. 원본(대부분 580×720=0.806)을 **3:4 로 미리 패딩한 뒤**
+  //   생성해서 캐릭터가 프레임 안에 온전히 들어온다. 패딩 없이 뽑으면 출력이 항상 3:4 라
+  //   좌우가 잘려 뱀 꼬리·개 꼬리가 사라졌다(배너는 contain 이라 그게 그대로 보인다).
+  't7-banner', 'ox-banner', 'dog-banner', 'snake-banner', 'rabbit-banner', 'pig-banner',
   // 2026-08-28 — 미소 표정(서브페이지 아바타 전용). 배정·인사 자리라 표정이 의도된 것이고,
   //   기본 표정 모션으로 대체하면 콘텐츠가 바뀐다. 64px 원형이라 200px 로 작게 인코딩했다.
-  'rat-smile', 'ox-smile', 'tiger-smile', 'rabbit-smile', 'dragon-smile', 'snake-smile',
-  'horse-smile', 'sheep-smile', 'monkey-smile', 'rooster-smile', 'dog-smile', 'pig-smile',
+  'rabbit-smile',
+  'dragon-smile',
+  'snake-smile',
+  'sheep-smile',
+  'monkey-smile',
+  'rooster-smile',
+  'dog-smile',
 ]);
 
 export function GuardianPortrait({

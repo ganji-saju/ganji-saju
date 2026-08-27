@@ -257,9 +257,8 @@ export function GangiSeasonBanner({
             {banner.character ? (
               /* 2026-08-28 — 카드와 같은 idle 루프를 배너 초상에도. 장식이라 스크린리더에서 감춘다. */
               <GuardianPortrait
-                id={banner.character}
+                id={`${banner.character}-banner`}
                 decorative
-                still
                 className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
                 style={{
                   objectFit: 'contain',
