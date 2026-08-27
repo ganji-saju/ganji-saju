@@ -551,7 +551,10 @@ export async function POST(req: NextRequest) {
           actor: args.actor,
           paymentKey: args.paymentKey,
         });
-        return { revoked: results.some((r) => r.revoked) };
+        // 지울 구성품이 하나도 없으면 '회수 실패' 가 아니라 '회수할 게 없음' 이다.
+        //   (DB 오류는 throw 되므로 여기까지 오지 않는다.)
+        const anyRevoked = results.some((r) => r.revoked);
+        return { revoked: anyRevoked, nothingToRevoke: !anyRevoked };
       }
 
       const result = await revokeProductEntitlement(
@@ -560,7 +563,9 @@ export async function POST(req: NextRequest) {
         args.scopeKey,
         { reason: args.reason, actor: args.actor, paymentKey: args.paymentKey }
       );
-      return { revoked: result.revoked };
+      // 🔴 2026-08-27 — 고아 주문(이용권이 이미 사라진 결제)은 지울 행이 없어 revoked:false 다.
+      //   그걸 실패로 올리면 **PG 취소는 됐는데** 장부가 revoke_pending 에 갇힌다.
+      return { revoked: result.revoked, nothingToRevoke: !result.revoked };
     },
   };
 
