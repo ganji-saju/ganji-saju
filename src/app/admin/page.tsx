@@ -72,6 +72,42 @@ function Sparkline({ series }: { series: DailySeries[] }) {
   );
 }
 
+/**
+ * 요약용 유입 상위 미니 목록(상위 4개).
+ * referrer 와 UTM 이 같은 모양이라 한 컴포넌트로 쓴다 — 따로 두면 한쪽만 고쳐져 어긋난다.
+ */
+function InflowMini({
+  title,
+  entries,
+  emptyHint = '아직 데이터가 없어요',
+}: {
+  title: string;
+  entries: Array<{ key: string; label: string; visitors: number }>;
+  emptyHint?: string;
+}) {
+  return (
+    <div>
+      <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
+        {title}
+      </div>
+      {entries.length === 0 ? (
+        <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">{emptyHint}</p>
+      ) : (
+        <ol className="mt-1 space-y-0.5">
+          {entries.slice(0, 4).map((entry, i) => (
+            <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
+              <span className="min-w-0 truncate text-[var(--app-copy)]">
+                {i + 1}. {entry.label}
+              </span>
+              <span className="shrink-0 font-bold text-[var(--app-ink)]">{fmtNum(entry.visitors)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 function Card({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
@@ -219,7 +255,7 @@ export default async function AdminDashboardPage({
 
             ⚠️ GA4·Vercel 수집은 그대로 살아 있다. 화면에서만 내렸고 원본은 /admin/analytics.
             ⚠️ GA4 절대값을 자체 집계와 맞추려고 동의 기본값을 granted 로 바꾸지 말 것. */}
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Stat
             label="자체 순방문"
             value={fmtMaybeNum(periodVisitors)}
@@ -227,28 +263,15 @@ export default async function AdminDashboardPage({
           />
           {/* 2026-07-20 — 유입 상위(사용자 요청). "몇 명 왔나" 바로 옆에 "어디서 왔나"를 둔다.
               집계는 /admin/analytics 와 **같은 함수**(getDailyMetrics)를 재사용한다 —
-              따로 구현하면 두 화면 숫자가 갈라진다. */}
-          <div>
-            <div className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              유입 상위
-            </div>
-            {summary.topReferrers.length === 0 ? (
-              <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">아직 데이터가 없어요</p>
-            ) : (
-              <ol className="mt-1 space-y-0.5">
-                {summary.topReferrers.slice(0, 4).map((entry, i) => (
-                  <li key={entry.key} className="flex items-baseline justify-between gap-2 text-[13.2px]">
-                    <span className="min-w-0 truncate text-[var(--app-copy)]">
-                      {i + 1}. {entry.label}
-                    </span>
-                    <span className="shrink-0 font-bold text-[var(--app-ink)]">
-                      {fmtNum(entry.visitors)}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
+              따로 구현하면 두 화면 숫자가 갈라진다.
+              2026-08-27 — UTM 캠페인 추가(사용자 요청). referrer 는 **직전 한 단계**만 보여
+              링크인바이오(인포크링크 등)를 거친 유입의 원래 채널을 알 수 없다. 둘을 나란히 둔다. */}
+          <InflowMini title="유입 상위 (referrer)" entries={summary.topReferrers} />
+          <InflowMini
+            title="유입 상위 (UTM)"
+            entries={summary.topUtm}
+            emptyHint="UTM 태그 유입이 아직 없어요"
+          />
         </div>
       </Card>
 

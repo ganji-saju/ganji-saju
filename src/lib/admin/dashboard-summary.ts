@@ -38,6 +38,12 @@ export interface AdminDashboardSummary {
    *   따로 구현하면 두 화면 숫자가 갈라진다.
    */
   topReferrers: InflowAggEntry[];
+  /**
+   * 2026-08-27 — 유입 상위(UTM 캠페인). referrer 만으로는 링크인바이오(인포크링크 등)를
+   *   거친 유입의 **원래 채널**을 알 수 없다 — referrer 는 직전 한 단계만 보인다.
+   *   같은 getDailyMetrics 집계라 /admin/analytics 와 숫자가 갈라지지 않는다.
+   */
+  topUtm: InflowAggEntry[];
   funnel: PaymentFunnelSnapshot | null;
   llm: LlmCostStats | null;
   pending: PendingCounts;
@@ -81,6 +87,7 @@ export async function getAdminDashboardSummary(
     windowDays,
     operations: null,
     topReferrers: [],
+    topUtm: [],
     funnel: null,
     llm: null,
     pending: { refundRequested: 0, reviewPending: 0 },
@@ -148,6 +155,7 @@ export async function getAdminDashboardSummary(
       funnel,
       llm,
       topReferrers: analytics?.topReferrers ?? [],
+      topUtm: analytics?.topUtm ?? [],
       pending: {
         refundRequested: refundRes.count ?? 0,
         reviewPending: reviewRes.count ?? 0,
