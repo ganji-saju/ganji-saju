@@ -13,6 +13,11 @@
 //
 //   iOS 저전력 모드는 autoplay 를 막는다. play() 가 거부되면 포스터가 그대로 남는 게
 //   정상 동작이라 따로 처리하지 않는다(에러를 삼키되 화면은 깨지지 않는다).
+//
+//   ⚠️ video 는 **SSR 부터 항상** 그린다. 처음엔 조건 판정 전이라 img 를 그리고 하이드레이션에서
+//      video 로 바꿨는데, 배포본 HTML 을 실측하니 video 태그가 0개였다 — 즉 모든 방문자가
+//      picture→video DOM 교체를 겪었다(깜빡임 + 불필요한 재레이아웃). 포스터는 video 의
+//      poster 속성만으로도 JS 없이 그려지므로, 요소는 고정하고 **src 만** 조건부로 붙인다.
 import { useEffect, useRef, useState } from 'react';
 
 const MOTION_BASE = '/images/gangi/guardians/motion';
@@ -58,16 +63,6 @@ export function GuardianPortrait({
     observer.observe(el);
     return () => observer.disconnect();
   }, [allowMotion, id]);
-
-  // 움직임을 안 쓰는 경우엔 video 를 만들지 않는다(디코더도, 요청도 없다).
-  if (!allowMotion) {
-    return (
-      <picture>
-        <source srcSet={`${MOTION_BASE}/${id}.webp`} type="image/webp" />
-        <img src={`/images/gangi/guardians/${id}.jpg`} alt={alt} loading="lazy" decoding="async" className={className} />
-      </picture>
-    );
-  }
 
   return (
     <video
