@@ -36,6 +36,7 @@ import {
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { GtmViewItem } from '@/components/analytics/gtm-view-item';
 
 interface Props {
   searchParams: Promise<{

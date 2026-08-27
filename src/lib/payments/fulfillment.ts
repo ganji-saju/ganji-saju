@@ -35,6 +35,7 @@ import { normalizeConcernId } from '@/lib/today-fortune/concerns';
 import { upsertTodayFortuneResultSnapshot } from '@/lib/today-fortune/result-snapshots';
 import { activateMembershipSubscription, getManagedSubscription } from '@/lib/subscription';
 import { shouldGrantCredits } from '@/lib/payments/coin-sunset';
+import { dispatchGaPurchase } from '@/lib/analytics/ga-purchase-dispatch';
 
 async function attachOwnedReading(
   paymentScope: PaymentProductScope | null,
@@ -285,6 +286,11 @@ export async function fulfillPaymentOrder(input: {
       payment: input.payment,
       source: input.source,
     });
+
+    // 2026-08-26 — GA4 purchase(서버 정본). 지급이 끝난 이 지점이 유일한 확정 순간이라
+    //   confirm 라우트·나이스페이 return·정산 크론 어느 경로로 와도 여기를 지난다.
+    //   디스패처가 DB 플래그를 선점해 멱등을 보장하고, 실패해도 예외를 던지지 않는다.
+    await dispatchGaPurchase(claimed.orderId);
 
     return {
       success: true,
