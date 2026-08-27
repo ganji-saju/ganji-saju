@@ -11,6 +11,7 @@
 //   ⚠️ 동의: 브라우저는 Consent Mode 로 막아 놓고 서버로 우회하면 동의 배너가 거짓말이 된다.
 //   analytics_consent === 'denied' 인 주문은 전송하지 않는다(호출부 판정, 여기서도 방어).
 import { GA4_MEASUREMENT_ID, GA4_API_SECRET, hasGa4ServerEnv } from './ga-config';
+import { isProductionAnalyticsServer } from './ga-environment';
 
 const MP_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 const MP_DEBUG_ENDPOINT = 'https://www.google-analytics.com/debug/mp/collect';
@@ -61,7 +62,11 @@ export interface GaRefundInput {
 
 export type GaSendResult =
   | { sent: true; debug?: unknown }
-  | { sent: false; skipped: 'no_env' | 'no_client_id' | 'consent_denied' | 'error'; error?: string };
+  | {
+      sent: false;
+      skipped: 'no_env' | 'no_client_id' | 'consent_denied' | 'non_production' | 'error';
+      error?: string;
+    };
 
 interface MpEvent {
   name: string;
@@ -71,8 +76,12 @@ interface MpEvent {
 function skipReason(input: {
   clientId: string | null;
   consent?: string | null;
-}): 'no_env' | 'no_client_id' | 'consent_denied' | null {
+}): 'no_env' | 'no_client_id' | 'consent_denied' | 'non_production' | null {
   if (!hasGa4ServerEnv) return 'no_env';
+  // 🔴 2026-08-27 — 스테이징 테스트 결제가 프로덕션 GA4 매출에 섞여 들어갔다.
+  //   가짜 매출은 되돌릴 수 없다(GA4 는 과거 데이터를 지울 수단이 사실상 없다).
+  //   화면 이벤트와 달리 매출은 표식만으로 부족하다 — 아예 보내지 않는다.
+  if (!isProductionAnalyticsServer()) return 'non_production';
   if (input.consent === 'denied') return 'consent_denied';
   // 귀속 불가능한 데이터는 보내지 않는다 — 임의 client_id 를 만들어 넣으면 Direct 가 부풀고
   // 남의 세션에 매출이 붙는다.

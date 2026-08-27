@@ -7,6 +7,8 @@
 //   purchase 는 여기 없다 — 결제 확정은 서버가 정본이다(ga-server.ts). 브라우저에서 쏘면
 //   완료 페이지 이탈·새로고침·광고차단으로 누락되고 가상계좌는 전량 빠진다.
 
+import { trafficTypeParams } from '@/lib/analytics/ga-environment';
+
 // dataLayer 타입은 src/lib/analytics.ts 가 이미 전역 선언한다 — 여기서 다시 선언하면
 // 두 선언의 타입이 어긋나 TS2717 이 난다.
 
@@ -23,7 +25,9 @@ export function pushDataLayer(payload: Record<string, unknown>): void {
   try {
     window.dataLayer = window.dataLayer ?? [];
     window.dataLayer.push({ ecommerce: null });
-    window.dataLayer.push(payload);
+    // 스테이징·프리뷰 이벤트는 internal 로 표식한다(ga-environment.ts 참고).
+    //   여기서 막지 않는 이유: GTM 미리보기로 퍼널을 검증할 수 있어야 한다.
+    window.dataLayer.push({ ...payload, ...trafficTypeParams() });
   } catch {
     // 계측 실패가 화면을 막지 않는다.
   }
