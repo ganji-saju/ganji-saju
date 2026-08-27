@@ -202,12 +202,46 @@ export interface BuildPaymentHistoryInput {
   creditTransactions: CreditTransactionHistoryRow[];
   /** 완료된 주문 원장(선택) — 기존 두 소스에 없는 주문(코인 sunset 이후 멤버십 등)만 합산. */
   paymentOrders?: PaymentOrderHistoryRow[];
+  /**
+   * 전(錢) 결제 환불 감사 행(선택). **필터 전 원본**을 그대로 넘기면 된다 —
+   * feature='credit_refund' 만 골라 쓴다(sumCreditRefundedWon).
+   */
+  creditRefunds?: ReadonlyArray<CreditRefundAuditRow>;
+}
+
+export interface CreditRefundAuditRow {
+  feature?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface PaymentHistoryResult {
   entries: PaymentHistoryEntry[];
+  /** 순결제액(총결제 − 환불). LTV 는 이 값을 쓴다. */
   totalSpentWon: number;
+  /** 총결제액(환불 차감 전). 매출/환불을 나눠 보려면 이 값. */
+  grossSpentWon: number;
+  refundedWon: number;
   count: number;
+}
+
+/**
+ * 전(錢) 결제 환불액 합계.
+ *
+ * 🔴 2026-08-27 사용자 제보: "환불했는데 결제 LTV 가 0원으로 안 바뀐다."
+ *   `revoke_credit_purchase_lots`(047)는 lot 을 0 으로 만들고 감사 행만 남길 뿐
+ *   **원 결제 행(credit_transactions)은 그대로 둔다.** 그래서 환불해도 합계가 안 줄었다.
+ *   같은 상황에서 상품(product) 환불은 이용권 행이 **삭제**되고 주문이 refunded 로 빠져
+ *   항목 자체가 사라진다 — 두 경로가 비대칭이었다.
+ *
+ *   ⚠️ entitlement_revoke(상품 환불)는 여기서 세지 않는다. 그쪽은 이미 항목이 사라졌으므로
+ *      또 빼면 **이중 차감**이 된다.
+ */
+export function sumCreditRefundedWon(rows: ReadonlyArray<CreditRefundAuditRow>): number {
+  return rows.reduce((sum, row) => {
+    if (row.feature !== 'credit_refund') return sum;
+    const amount = readMetaNumber(row.metadata ?? null, 'refundAmount');
+    return sum + (amount && amount > 0 ? amount : 0);
+  }, 0);
 }
 
 // 두 소스를 합쳐 날짜 역순 정렬 + 총 결제액(₩) 집계. 순수 함수(테스트 고정).
@@ -244,10 +278,15 @@ export function buildPaymentHistory(
     return a.id < b.id ? 1 : a.id > b.id ? -1 : 0;
   });
 
-  const totalSpentWon = entries.reduce(
-    (sum, entry) => sum + (entry.amountWon ?? 0),
-    0
-  );
+  const grossSpentWon = entries.reduce((sum, entry) => sum + (entry.amountWon ?? 0), 0);
+  const refundedWon = sumCreditRefundedWon(input.creditRefunds ?? []);
 
-  return { entries, totalSpentWon, count: entries.length };
+  return {
+    entries,
+    // 환불이 총결제를 넘는 일은 없어야 하지만, 데이터가 어긋나도 음수 LTV 를 만들지는 않는다.
+    totalSpentWon: Math.max(0, grossSpentWon - refundedWon),
+    grossSpentWon,
+    refundedWon,
+    count: entries.length,
+  };
 }

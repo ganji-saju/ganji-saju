@@ -172,3 +172,56 @@ test('번들 주문은 주문 단위로 환불 목록에 잡힌다', () => {
   assert.equal(refund.items[0].paymentKey, 'tid-sandbox-1');
   assert.equal(refund.totalProductRefundableWon, 9900);
 });
+
+// 2026-08-26 회귀 가드 — 🔴 사용자 제보: "990원 결제하고 대화 3번 안 했는데 이미 사용된 거라고
+//   환불이 안 된다"(실측 전 잔액 6전 그대로). lot 을 못 이었을 뿐인데 '전부 사용됨'으로 뒤집혔다.
+test('creditRefund: lot 을 못 이으면 "전부 사용됨"이 아니라 "연결 실패"로 표기한다', () => {
+  const now = new Date('2026-08-26T00:00:00.000Z');
+  const tx = {
+    id: 'tx-1',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-08-26T00:00:00.000Z',
+    metadata: { paymentKey: 'pk-990', orderId: 'ord-990', packageId: 'taste_dialogue_entry', amount: 990 },
+  };
+  // lot 은 존재하지만 metadata 가 끊겨 paymentKey·orderId 어느 쪽으로도 안 이어진다.
+  const orphan = {
+    id: 'lot-x',
+    amount_remaining: 3,
+    amount_initial: 3,
+    expires_at: '2027-08-26T00:00:00.000Z',
+    source: 'purchase',
+    created_at: '2026-08-26T00:00:00.000Z',
+    metadata: {},
+  };
+  const [item] = determineCreditRefundEligibility([tx], [orphan], now).items;
+  assert.equal(item.lotsLinked, false);
+  assert.equal(item.coinsUsed, 0, '못 이은 것을 사용으로 세면 안 된다');
+  assert.ok(!item.statusLabel.includes('전부 사용됨'), item.statusLabel);
+  assert.ok(item.statusLabel.includes('확인 필요'), item.statusLabel);
+});
+
+// paymentKey 가 한쪽에서 비어도 orderId 로 이어지면 잔여 전이 그대로 읽혀야 한다.
+test('creditRefund: paymentKey 가 끊겨도 orderId 로 이어 전액 환불을 살린다', () => {
+  const now = new Date('2026-08-26T00:00:00.000Z');
+  const tx = {
+    id: 'tx-2',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-08-26T00:00:00.000Z',
+    metadata: { paymentKey: 'pk-990', orderId: 'ord-990', packageId: 'taste_dialogue_entry', amount: 990 },
+  };
+  const lot = {
+    id: 'lot-y',
+    amount_remaining: 3,
+    amount_initial: 3,
+    expires_at: '2027-08-26T00:00:00.000Z',
+    source: 'purchase',
+    created_at: '2026-08-26T00:00:00.000Z',
+    metadata: { orderId: 'ord-990' },
+  };
+  const [item] = determineCreditRefundEligibility([tx], [lot], now).items;
+  assert.equal(item.lotsLinked, true);
+  assert.equal(item.status, 'full');
+  assert.equal(item.refundAmountWon, 990);
+});
