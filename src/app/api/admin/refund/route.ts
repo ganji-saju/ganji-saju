@@ -281,10 +281,16 @@ export async function POST(req: NextRequest) {
         payment_key: string | null;
         slug: string | null;
       } | null;
-      const bundlePkg = order ? getPackage(order.package_id) : undefined;
-      if (!order || !bundlePkg || !isBundlePackage(bundlePkg)) {
-        return NextResponse.json({ ok: false, error: '번들 주문을 찾을 수 없습니다.' }, { status: 404 });
+      // 🔴 2026-08-27 — 이 분기는 원래 번들 전용이었는데, 목록 쪽이 **이용권이 사라진 단품 주문**
+      //   (고아 주문)도 같은 종류로 내보내게 바뀌었다(#689). 여기서 번들만 통과시키면
+      //   "목록엔 뜨는데 누르면 실패" 가 된다 — 오늘 lot 조회에서 겪은 것과 같은,
+      //   **목록과 실행이 서로 다른 조건을 보는** 어긋남이다.
+      //   카탈로그에 없는 상품(개편 전용·폐지)도 막지 않는다. 돈은 실제로 받았고
+      //   금액·paymentKey 는 주문에 다 있다 — 이름을 모른다고 환불을 막으면 안 된다.
+      if (!order) {
+        return NextResponse.json({ ok: false, error: '주문을 찾을 수 없습니다.' }, { status: 404 });
       }
+      const bundlePkg = getPackage(order.package_id);
       if (!['confirmed', 'fulfilling', 'fulfilled'].includes(order.status)) {
         return NextResponse.json(
           { ok: false, error: `환불 가능한 주문 상태가 아닙니다(${order.status}).` },
