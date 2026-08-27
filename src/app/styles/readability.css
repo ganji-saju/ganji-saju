@@ -604,10 +604,13 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
      이 변수로 바꾼다 — 값을 여기 모아두면 다음에 한 곳에서 조인다. */
   --admin-t-title: 20px;
   --admin-t-metric: 22px;
+  --admin-t-subsection: 16px;
   --admin-t-section: 14px;
   --admin-t-body: 13px;
   --admin-t-caption: 11.5px;
   --admin-t-label: 11px;
+  /* 빈 상태 이모지 등 장식 — 타이포 위계가 아니다. */
+  --admin-t-decoration: 28px;
 
   /* ── 서체 ──
      브랜드 서체(달빛 산스)를 관리자에서만 걷어낸다. 감성 서체는 표·숫자에서 자릿수가

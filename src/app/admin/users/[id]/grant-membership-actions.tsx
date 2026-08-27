@@ -76,7 +76,7 @@ export function GrantMembershipActions({
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-3">
-      <p className="text-[12.1px] text-[var(--app-copy-soft)]">
+      <p className="text-[11.5px] text-[var(--app-copy-soft)]">
         현재: {isPremiumActive ? `프리미엄 활성 (${currentStatus})` : `프리미엄 아님${currentStatus ? ` (${currentPlan ?? '—'}/${currentStatus})` : ''}`}
       </p>
       <div className="flex flex-wrap items-center gap-2">

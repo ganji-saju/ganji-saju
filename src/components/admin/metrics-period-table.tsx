@@ -112,7 +112,7 @@ export function MetricsPeriodTable({
 
   const th = 'h-7 px-3 text-right text-[11px] font-semibold uppercase tracking-[.05em] whitespace-nowrap';
   const td = 'h-[29px] px-3 text-right whitespace-nowrap';
-  const unitBtn = 'h-7 px-3 text-[12px] font-semibold transition-colors';
+  const unitBtn = 'h-7 px-3 text-[11px] font-semibold transition-colors';
 
   return (
     <section className="rounded-[8px] border border-[var(--app-line)] bg-white">
@@ -165,7 +165,7 @@ export function MetricsPeriodTable({
                   {r.partial ? (
                     <span
                       title="이 주는 조회 기간에 잘렸거나 아직 진행 중입니다 — 온전한 주와 나란히 비교하지 마세요"
-                      className="ml-1.5 rounded-[4px] bg-[var(--app-surface-muted)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--app-copy-muted)]"
+                      className="ml-1.5 rounded-[4px] bg-[var(--app-surface-muted)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--app-copy-muted)]"
                     >
                       부분
                     </span>
@@ -193,7 +193,7 @@ export function MetricsPeriodTable({
             ))}
             {visible.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-[12.5px] text-[var(--app-copy-muted)]">
+                <td colSpan={9} className="px-4 py-6 text-center text-[13px] text-[var(--app-copy-muted)]">
                   이 기간에는 집계된 날이 없습니다.
                 </td>
               </tr>
@@ -232,7 +232,7 @@ export function MetricsPeriodTable({
             onClick={() => setPage(Math.max(0, current - 1))}
             disabled={current === 0}
             aria-label="이전 페이지"
-            className="flex h-7 min-w-7 items-center justify-center rounded-[6px] border border-[var(--app-line)] px-2 text-[12px] font-semibold text-[var(--app-ink)] disabled:opacity-40"
+            className="flex h-7 min-w-7 items-center justify-center rounded-[6px] border border-[var(--app-line)] px-2 text-[11.5px] font-semibold text-[var(--app-ink)] disabled:opacity-40"
           >
             ‹
           </button>
@@ -242,7 +242,7 @@ export function MetricsPeriodTable({
               type="button"
               onClick={() => setPage(p)}
               aria-current={p === current ? 'page' : undefined}
-              className={`flex h-7 min-w-7 items-center justify-center rounded-[6px] border px-2 text-[12px] font-semibold ${
+              className={`flex h-7 min-w-7 items-center justify-center rounded-[6px] border px-2 text-[11.5px] font-semibold ${
                 p === current
                   ? 'border-[var(--app-pink)] bg-[var(--app-pink-soft)] text-[var(--app-pink)]'
                   : 'border-[var(--app-line)] text-[var(--app-ink)]'
@@ -256,7 +256,7 @@ export function MetricsPeriodTable({
             onClick={() => setPage(Math.min(totalPages - 1, current + 1))}
             disabled={current >= totalPages - 1}
             aria-label="다음 페이지"
-            className="flex h-7 min-w-7 items-center justify-center rounded-[6px] border border-[var(--app-line)] px-2 text-[12px] font-semibold text-[var(--app-ink)] disabled:opacity-40"
+            className="flex h-7 min-w-7 items-center justify-center rounded-[6px] border border-[var(--app-line)] px-2 text-[11.5px] font-semibold text-[var(--app-ink)] disabled:opacity-40"
           >
             ›
           </button>

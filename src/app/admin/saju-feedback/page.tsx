@@ -55,17 +55,17 @@ function StatsTable({ stats }: { stats: ChapterFeedbackStats[] }) {
   const totalResponses = stats.reduce((sum, s) => sum + s.totalResponses, 0);
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">챕터별 집계</h2>
-      <p className="mt-1 text-[13.2px] text-[var(--app-copy-soft)]">
+      <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">챕터별 집계</h2>
+      <p className="mt-1 text-[13px] text-[var(--app-copy-soft)]">
         총 응답 {totalResponses}건 · 9 챕터 평균 별점/helpful 비율
       </p>
       {totalResponses === 0 ? (
-        <p className="mt-4 text-[14.4px] text-[var(--app-copy-soft)]">
+        <p className="mt-4 text-[14px] text-[var(--app-copy-soft)]">
           아직 응답이 없습니다. (DB 마이그레이션 적용 + 사용자 피드백 누적 후 표시)
         </p>
       ) : (
         <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-[13.8px]">
+          <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b text-left text-[var(--app-copy-soft)]">
                 <th className="px-2 py-1.5">챕터</th>
@@ -89,13 +89,13 @@ function StatsTable({ stats }: { stats: ChapterFeedbackStats[] }) {
                     <td className="px-2 py-1.5">{s.totalResponses}</td>
                     <td className="px-2 py-1.5">
                       {formatRating(s.averageRating)}
-                      <span className="ml-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                      <span className="ml-1 text-[11.5px] text-[var(--app-copy-soft)]">
                         ({s.ratingResponses})
                       </span>
                     </td>
                     <td className="px-2 py-1.5">
                       {formatPercent(s.helpfulRate)}
-                      <span className="ml-1 text-[12.1px] text-[var(--app-copy-soft)]">
+                      <span className="ml-1 text-[11.5px] text-[var(--app-copy-soft)]">
                         ({s.helpfulYes}/{s.helpfulYes + s.helpfulNo})
                       </span>
                     </td>
@@ -119,9 +119,9 @@ function StatsTable({ stats }: { stats: ChapterFeedbackStats[] }) {
 function RecentStream({ items }: { items: ChapterFeedbackRecord[] }) {
   return (
     <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <h2 className="text-[16.1px] font-extrabold text-[var(--app-ink)]">최근 응답 (최신 50개)</h2>
+      <h2 className="text-[14px] font-extrabold text-[var(--app-ink)]">최근 응답 (최신 50개)</h2>
       {items.length === 0 ? (
-        <p className="mt-3 text-[14.4px] text-[var(--app-copy-soft)]">
+        <p className="mt-3 text-[14px] text-[var(--app-copy-soft)]">
           아직 응답이 없습니다.
         </p>
       ) : (
@@ -131,7 +131,7 @@ function RecentStream({ items }: { items: ChapterFeedbackRecord[] }) {
               key={item.id}
               className="rounded-[10px] border border-[var(--app-line)] bg-[var(--app-pink-soft)] p-2.5"
             >
-              <div className="flex flex-wrap items-center gap-2 text-[13.2px]">
+              <div className="flex flex-wrap items-center gap-2 text-[13px]">
                 <span className="font-bold text-[var(--app-ink)]">
                   {item.chapter_id}장 {CHAPTER_TITLES[item.chapter_id]}
                 </span>
@@ -152,11 +152,11 @@ function RecentStream({ items }: { items: ChapterFeedbackRecord[] }) {
                 )}
                 <span className="text-[var(--app-copy-soft)]">{formatTime(item.created_at)}</span>
               </div>
-              <div className="mt-1 text-[12.1px] text-[var(--app-copy-soft)]">
+              <div className="mt-1 text-[11.5px] text-[var(--app-copy-soft)]">
                 reading_id: {item.reading_id.slice(0, 16)}{item.reading_id.length > 16 ? '…' : ''}
               </div>
               {item.comment && (
-                <div className="mt-1.5 text-[14.4px] text-[var(--app-ink)]">"{item.comment}"</div>
+                <div className="mt-1.5 text-[14px] text-[var(--app-ink)]">"{item.comment}"</div>
               )}
             </li>
           ))}
@@ -177,7 +177,7 @@ export default async function SajuFeedbackAdminPage() {
 
   return (
     <AdminPage title="챕터 피드백">
-        <p className="rounded-[10px] border border-[var(--app-line)] bg-white p-3 text-[13.2px] text-[var(--app-copy-soft)]">
+        <p className="rounded-[10px] border border-[var(--app-line)] bg-white p-3 text-[13px] text-[var(--app-copy-soft)]">
           chapter_feedback 테이블 (migration 035) 의 챕터별 집계.
           평균 별점·helpful 비율로 LLM 품질 신호를 빠르게 확인하세요.
           부정 비율 30%+ 챕터는 prompt 튜닝 우선순위 ↑.
