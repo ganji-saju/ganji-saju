@@ -114,6 +114,108 @@ const STAGE_ORDER: Array<keyof typeof STAGE_LABEL> = [
  * 정확한 값을 읽는 표라 차트가 아니라 표로 둔다. 크기는 셀 농담으로 거들되,
  * 숫자를 항상 같이 적어 색만으로 정보를 전달하지 않는다.
  */
+/**
+ * 2026-08-27 사용자 지시 — "결제된 것만 보여주면 안 될 것 같다".
+ *   이 화면의 돈은 여태 payment_funnel_events(confirm_success)만 봤다. 환불은 그 테이블에
+ *   **아예 없다**(payment_orders.status='refunded') — 그래서 판 돈만 보이고 돌려준 돈은
+ *   어디에도 안 나왔다. 아래 '유입 채널 × 상품 결제' 합계도 같은 이유로 gross 다.
+ *
+ *   ⚠️ 두 숫자의 귀속일이 다르다 — 결제는 **판 날**, 환불은 **환불한 날**(#641 설계).
+ *      예전에 판 것을 오늘 환불하면 이 기간 순액이 그만큼 더 깎여 보인다. 귀속을 원 결제일로
+ *      바꾸면 이미 마감된 과거 매출이 사후에 변하므로, 숫자를 고치지 않고 그 금액을 따로
+ *      적어 **화면이 그 사실을 말하게** 한다(refund-breakdown.ts 와 같은 규칙).
+ */
+function MoneySection({ snap }: { snap: PaymentFunnelSnapshot }) {
+  const gross = snap.grossAmountWon;
+  const refunded = snap.refunds.totalWon;
+  const net = gross - refunded;
+  const outside = snap.refunds.outsideWindowWon;
+  const items = snap.refunds.items;
+  const SHOWN = 8;
+
+  const card = 'rounded-[12px] border bg-white p-3';
+  const cardStyle = { borderColor: 'var(--app-line)' } as const;
+  const label = 'text-[11.5px] font-semibold text-[var(--app-copy-soft)]';
+  const value = 'mt-0.5 text-[20px] font-extrabold tabular-nums';
+
+  return (
+    <section>
+      <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
+        결제액 · 환불액
+      </h2>
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
+        <article className={card} style={cardStyle}>
+          <p className={label}>결제액 (기간)</p>
+          <p className={`${value} text-[var(--app-ink)]`}>{fmtWon(gross)}</p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">
+            결제 성공 {fmtNum(snap.totals.counts.confirm_success)}건 · 나중에 환불된 주문도 포함
+          </p>
+        </article>
+        <article className={card} style={cardStyle}>
+          <p className={label}>환불액 (기간)</p>
+          <p className={`${value} ${refunded > 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
+            {refunded > 0 ? `-${fmtWon(refunded)}` : fmtWon(0)}
+          </p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">
+            {fmtNum(items.length + snap.refunds.truncated)}건 · 환불한 날 기준
+          </p>
+        </article>
+        <article className={card} style={cardStyle}>
+          <p className={label}>순액</p>
+          <p className={`${value} ${net < 0 ? 'text-[var(--app-coral)]' : 'text-[var(--app-ink)]'}`}>
+            {fmtWon(net)}
+          </p>
+          <p className="text-[11px] text-[var(--app-copy-muted)]">결제액 − 환불액</p>
+        </article>
+      </div>
+
+      {outside > 0 ? (
+        <p
+          className="mt-1.5 px-1 text-[12.1px] leading-[1.6] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          이 중 <strong className="font-extrabold text-[var(--app-coral)]">{fmtWon(outside)}</strong>{' '}
+          은 원 결제가 이 기간 <strong className="font-extrabold text-[var(--app-ink)]">밖</strong>인
+          환불입니다 — 위 결제액에 대응 금액이 없어 순액만 그만큼 눌립니다(기간을 넓히면 짝이
+          맞습니다).
+        </p>
+      ) : null}
+
+      {items.length > 0 ? (
+        <div className="mt-2 overflow-hidden rounded-[12px] border" style={cardStyle}>
+          {items.slice(0, SHOWN).map((item, i) => (
+            <div
+              key={`${item.orderId}-${i}`}
+              className={`flex items-baseline justify-between gap-3 bg-white px-3 py-2 text-[12.5px] ${
+                i > 0 ? 'border-t border-[var(--app-line)]' : ''
+              }`}
+            >
+              <span className="min-w-0 truncate font-semibold text-[var(--app-ink)]">
+                {item.productName}
+              </span>
+              <span className="shrink-0 tabular-nums text-[var(--app-copy-muted)]">
+                {item.refundedOn}
+                {item.paidInWindow ? '' : ` · 원 결제 ${item.paidOn ?? '미상'}`}
+                <strong className="ml-2 font-extrabold text-[var(--app-coral)]">
+                  -{fmtWon(item.amountWon)}
+                </strong>
+              </span>
+            </div>
+          ))}
+          {items.length > SHOWN || snap.refunds.truncated > 0 ? (
+            <div className="border-t border-[var(--app-line)] bg-white px-3 py-2 text-[12.1px] text-[var(--app-copy-muted)]">
+              외 {fmtNum(items.length - SHOWN + snap.refunds.truncated)}건 — 전체 내역은{' '}
+              <a className="font-bold underline" href="/admin/analytics">
+                /admin/analytics
+              </a>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channelProduct'] }) {
   if (!matrix || matrix.totalOrders === 0) return null;
 
@@ -334,6 +436,8 @@ export function PaymentFunnelDashboard() {
               </div>
             </section>
           ) : null}
+
+          <MoneySection snap={snap} />
 
           <ChannelProductTable matrix={snap.channelProduct} />
 

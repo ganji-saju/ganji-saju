@@ -8,34 +8,60 @@ declare const test: (name: string, fn: () => void | Promise<void>) => void;
 // 최소 fake — .from().select().gte().order().range(from,to) 체인.
 // buildPaymentFunnelSnapshot 은 range 페이지네이션이라 rows(<1000) 는 첫 페이지에서 한 번에
 // 반환하고 break 한다. 두 번째 페이지 이후는 빈 배열.
-function fakeFunnelService(rows: unknown[]): SupabaseClient {
-  const chain: Record<string, unknown> = {};
-  chain.select = () => chain;
-  chain.gte = () => chain;
-  chain.order = () => chain;
-  chain.range = (from: number) =>
+//
+// 2026-08-27 — 테이블 별로 다른 체인을 준다. 예전엔 어느 테이블이든 같은 객체를 돌려줬는데,
+//   환불액 합산(getRefundBreakdown → payment_orders)이 붙으면서 .eq/.lt/.limit 이 없어
+//   TypeError 로 스냅샷 전체가 죽었다. 실제 클라이언트는 테이블마다 같은 빌더를 주므로
+//   fake 도 '없는 메서드는 없다'가 아니라 '쿼리가 성립한다'를 흉내내야 한다.
+function fakeFunnelService(rows: unknown[], refundRows: unknown[] = []): SupabaseClient {
+  const funnel: Record<string, unknown> = {};
+  funnel.select = () => funnel;
+  funnel.gte = () => funnel;
+  funnel.order = () => funnel;
+  funnel.range = (from: number) =>
     Promise.resolve({ data: from === 0 ? rows : [], error: null });
-  return { from: () => chain } as unknown as SupabaseClient;
+
+  // payment_orders — 환불 집계(.eq.gte.lt.order.limit) + entry_source 역추적(.in).
+  const orders: Record<string, unknown> = {};
+  orders.select = () => orders;
+  orders.eq = () => orders;
+  orders.gte = () => orders;
+  orders.lt = () => orders;
+  orders.order = () => orders;
+  orders.limit = () => Promise.resolve({ data: refundRows, error: null });
+  orders.in = () => Promise.resolve({ data: [], error: null });
+
+  return {
+    from: (table: string) => (table === 'payment_orders' ? orders : funnel),
+  } as unknown as SupabaseClient;
 }
 
 // stage 를 n 개 만든다. created_at 은 totals 집계에 무관(날짜는 dayMap 만 사용)하므로 고정값.
 function events(
-  spec: Array<{ stage: PaymentFunnelStage; n: number; packageId?: string; reason?: string }>
+  spec: Array<{
+    stage: PaymentFunnelStage;
+    n: number;
+    packageId?: string;
+    reason?: string;
+    amount?: number;
+  }>
 ) {
   const rows: Array<{
     stage: string;
     package_id: string | null;
     reason: string | null;
     created_at: string;
+    amount: number | null;
   }> = [];
   const iso = '2026-07-15T00:00:00.000Z';
-  for (const { stage, n, packageId, reason } of spec) {
+  for (const { stage, n, packageId, reason, amount } of spec) {
     for (let i = 0; i < n; i += 1) {
       rows.push({
         stage,
         package_id: packageId ?? null,
         reason: reason ?? null,
         created_at: iso,
+        amount: amount ?? null,
       });
     }
   }
@@ -85,4 +111,34 @@ test('buildPaymentFunnelSnapshot: 패키지 시도 0건이면 conversionRate nul
   const ghost = snap.byPackage.find((p) => p.packageId === 'ghost')!;
   assert.equal(ghost.prepareAttempt, 0);
   assert.equal(ghost.conversionRate, null);
+});
+
+// 🔴 회귀 가드 — 사용자 지시(2026-08-27): "결제된 것만 보여주면 안 될 것 같다".
+//   결제액(gross)은 퍼널 이벤트, 환불액은 payment_orders 로 **출처가 다르다**. 둘 중
+//   하나만 살아 있어도 화면은 그럴듯해 보이므로(=환불 0원), 같은 스냅샷에서 함께 단언한다.
+//   gross 에 환불분이 남아 있는 것도 의도다 — 판 날 매출은 보존하고 순액에서만 뺀다(#641).
+test('buildPaymentFunnelSnapshot: 결제액과 환불액을 함께 싣는다(gross 는 환불분 포함)', async () => {
+  const todayIso = new Date().toISOString();
+  const snap = await buildPaymentFunnelSnapshot(
+    fakeFunnelService(
+      events([{ stage: 'confirm_success', n: 2, packageId: 'p1', amount: 3300 }]),
+      [
+        {
+          order_id: 'o1',
+          package_id: 'p1',
+          amount: 3300,
+          refunded_at: todayIso,
+          confirmed_at: todayIso,
+          fulfilled_at: null,
+          created_at: todayIso,
+        },
+      ]
+    ),
+    { windowDays: 30 }
+  );
+  assert.equal(snap.grossAmountWon, 6600);
+  assert.equal(snap.refunds.totalWon, 3300);
+  assert.equal(snap.refunds.items.length, 1);
+  // 원 결제가 기간 안이면 순액만 깎이고 '기간 밖' 경고 금액은 0.
+  assert.equal(snap.refunds.outsideWindowWon, 0);
 });

@@ -9,6 +9,7 @@ import {
   type ChannelProductMatrix,
   type ChannelProductPayment,
 } from './channel-product-matrix';
+import { getRefundBreakdown, type RefundBreakdown } from './refund-breakdown';
 
 const STAGES: readonly PaymentFunnelStage[] = [
   'prepare_attempt',
@@ -95,6 +96,14 @@ export interface PaymentFunnelSnapshot {
   payerChannelCoverage: { matched: number; total: number };
   /** 2026-08-26 — 유입 채널 × 상품 결제 교차표(GA4 로는 볼 수 없는 것). */
   channelProduct: ChannelProductMatrix;
+  /**
+   * 2026-08-27 — 기간 내 confirm_success 결제액 합(원). **환불된 주문도 포함**한다
+   * (판 날 매출은 보존 — analytics-rollup 의 REVENUE_ORDER_STATUSES 와 같은 규칙).
+   * 그래서 이 숫자만 보면 순매출을 모른다 → 아래 refunds 와 **항상 같이** 보여준다.
+   */
+  grossAmountWon: number;
+  /** 기간 내 환불(refunded_at 귀속). /admin/analytics 와 같은 함수를 쓴다. */
+  refunds: RefundBreakdown;
 }
 
 interface FunnelRow {
@@ -295,6 +304,7 @@ export async function buildPaymentFunnelSnapshot(
   const surfaceCount = new Map<string, number>();
   const payerIds = new Set<string>();
   const payments: ChannelProductPayment[] = [];
+  let grossAmountWon = 0;
 
   for (const row of rows) {
     const stage = row.stage;
@@ -337,6 +347,7 @@ export async function buildPaymentFunnelSnapshot(
     }
     if (stage === 'confirm_success') {
       if (row.user_id) payerIds.add(row.user_id);
+      grossAmountWon += Math.max(0, Number(row.amount) || 0);
       payments.push({
         userId: row.user_id,
         packageId: row.package_id,
@@ -404,6 +415,9 @@ export async function buildPaymentFunnelSnapshot(
     payerIds
   );
   const channelProduct = buildChannelProductMatrix(payments, channelByUser);
+  // 환불은 결제와 **다른 테이블**(payment_orders.status='refunded')에 있다 — 퍼널 이벤트에는
+  // 환불이 없어서, 이 화면은 여태 '판 돈'만 보여주고 '돌려준 돈'은 못 보여줬다.
+  const refunds = await getRefundBreakdown(supabase, windowDays);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -424,5 +438,7 @@ export async function buildPaymentFunnelSnapshot(
     payerChannels,
     payerChannelCoverage: { matched: matchedPayers, total: payerIds.size },
     channelProduct,
+    grossAmountWon,
+    refunds,
   };
 }
