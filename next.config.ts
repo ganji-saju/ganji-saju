@@ -40,14 +40,21 @@ const CSP_DIRECTIVES = [
   // 결제창 제출 대상(PG). PAYMENT_PROVIDER 토글로 토스↔나이스페이가 바뀌므로 둘 다 유지.
   "form-action 'self' https://*.nicepay.co.kr https://*.tosspayments.com https://*.tosspay.com",
   // Google Analytics 4 (gtag.js) — 스크립트는 googletagmanager, 수집 비콘은 google-analytics/analytics.google.com.
-  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://*.nicepay.co.kr https://t1.kakaocdn.net https://va.vercel-scripts.com https://www.googletagmanager.com",
+  // 2026-08-27 — 광고 전환 픽셀(Meta·카카오·네이버·Google Ads). GTM 컨테이너가 태그로 주입하므로
+  //   여기 출처가 없으면 enforce 승격 순간 전환 추적이 통째로 죽는다(현재는 Report-Only 라 통과).
+  //     connect.facebook.net  ← Meta 픽셀 fbevents.js
+  //     t1.daumcdn.net        ← 카카오 픽셀 (kakaoPixel)
+  //     wcs.naver.net         ← 네이버 공통측정 wcslog.js
+  //     googleadservices / googleads.g.doubleclick.net ← Google Ads 전환(AW-)
+  "script-src 'self' 'unsafe-inline' https://js.tosspayments.com https://*.nicepay.co.kr https://t1.kakaocdn.net https://t1.daumcdn.net https://va.vercel-scripts.com https://www.googletagmanager.com https://connect.facebook.net https://wcs.naver.net https://www.googleadservices.com https://googleads.g.doubleclick.net",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://*.nicepay.co.kr https://*.kakao.com https://t1.kakaocdn.net https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.google.com https://www.google.co.kr",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.tosspayments.com https://*.nicepay.co.kr https://*.kakao.com https://t1.kakaocdn.net https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.google.com https://www.google.co.kr https://www.facebook.com https://analytics.kakao.com https://wcs.naver.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://td.doubleclick.net",
   // GTM noscript iframe(googletagmanager.com/ns.html) 허용. ⚠️ GTM 컨테이너가 추가
   //   태그(광고 픽셀 등)를 붙이면 그 출처는 컨테이너별로 CSP 에 별도 추가 필요.
-  "frame-src 'self' https://*.nicepay.co.kr https://*.tosspayments.com https://*.tosspay.com https://www.googletagmanager.com",
+  // Meta·Google Ads 는 전환 확인용 iframe 을 띄운다. 막히면 전환이 조용히 누락된다.
+  "frame-src 'self' https://*.nicepay.co.kr https://*.tosspayments.com https://*.tosspay.com https://www.googletagmanager.com https://www.facebook.com https://td.doubleclick.net",
   // 2026-06-21 — 위반 보고를 /api/csp-report 로 수집(enforce 승격 전 관찰용).
   'report-uri /api/csp-report',
 ].join('; ');

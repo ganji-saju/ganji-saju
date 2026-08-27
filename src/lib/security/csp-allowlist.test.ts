@@ -59,3 +59,37 @@ test('CSP: 관측된 광고 전환 출처 허용', () => {
 test('CSP: report-uri 는 유지된다(enforce 승격 전 관찰 경로)', () => {
   assert.ok(CONFIG.includes('report-uri /api/csp-report'), 'report-uri 가 사라지면 관찰이 끊긴다');
 });
+
+// 2026-08-27 — 광고 전환 픽셀 4채널(Meta·카카오·네이버·Google Ads).
+//   GTM 컨테이너가 태그로 주입하므로 코드에는 스크립트가 없다. 그래서 **CSP 에서 조용히 빠지기
+//   쉽다** — 지금은 Report-Only 라 통과하지만 CSP_MODE=enforce 로 켜는 순간 전환 추적이
+//   통째로 죽고, 죽어도 화면은 멀쩡해 아무도 못 느낀다(위 결제 사고와 같은 구조).
+test('CSP: 광고 전환 픽셀 4채널 출처가 script-src 에 있다', () => {
+  const scriptSrc = directive('script-src');
+  for (const [channel, origin] of [
+    ['Meta 픽셀', 'https://connect.facebook.net'],
+    ['카카오 픽셀', 'https://t1.daumcdn.net'],
+    ['네이버 공통측정', 'https://wcs.naver.net'],
+    ['Google Ads 전환', 'https://www.googleadservices.com'],
+  ] as const) {
+    assert.ok(scriptSrc.includes(origin), `${channel}(${origin}) 이 script-src 에 없다`);
+  }
+});
+
+test('CSP: 픽셀 비콘 수신 출처가 connect-src 에 있다', () => {
+  const connectSrc = directive('connect-src');
+  for (const [channel, origin] of [
+    ['Meta', 'https://www.facebook.com'],
+    ['카카오', 'https://analytics.kakao.com'],
+    ['네이버', 'https://wcs.naver.com'],
+    ['Google Ads', 'https://googleads.g.doubleclick.net'],
+  ] as const) {
+    assert.ok(connectSrc.includes(origin), `${channel}(${origin}) 이 connect-src 에 없다`);
+  }
+});
+
+test('CSP: 전환 확인 iframe(Meta·Google Ads) 출처가 frame-src 에 있다', () => {
+  const frameSrc = directive('frame-src');
+  assert.ok(frameSrc.includes('https://www.facebook.com'));
+  assert.ok(frameSrc.includes('https://td.doubleclick.net'));
+});
