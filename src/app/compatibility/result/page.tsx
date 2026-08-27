@@ -23,9 +23,10 @@ import {
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import {
   hasCompatibilityAccess,
-  isCompatibilityPerCouplePricingEnabled,
   tryConsumeMemberCompatAccess,
 } from '@/lib/payments/compatibility-access';
+import { buildCoupleFit } from '@/lib/compatibility/couple-fit';
+import { buildCoupleTimingReport } from '@/lib/compatibility/couple-timing';
 import { isCompatibilityInterpretationLLMEnabled } from '@/server/ai/compatibility/compatibility-interpretation-cache';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
@@ -128,7 +129,6 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
         //   entitlement 를 동기 기록하므로 결제 직후에도 이 값이 곧바로 true.
         hasLoveQuestionPurchase={manualLoveEntitlement}
         deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
-        perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
       />
     );
   }
@@ -200,6 +200,22 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
     (data.user.id ? await hasCompatibilityAccess(data.user.id, coupleKey) : false) ||
     (data.user.id ? await tryConsumeMemberCompatAccess(data.user.id, coupleKey) : false);
 
+  // 유료 §9·§10. 미구매자에겐 계산 자체를 하지 않는다 — 시간축은 ~320ms 라
+  //   무료 열람에서 태우면 순수 손해다.
+  const coupleFit = hasDeepReadingAccess
+    ? buildCoupleFit(compatibility, displayName, selectedFamily.label)
+    : [];
+  const coupleTiming = hasDeepReadingAccess
+    ? buildCoupleTimingReport({
+        self: { name: displayName, birthInput: selfBirthInput, data: compatibility.selfData },
+        partner: {
+          name: selectedFamily.label,
+          birthInput: partnerBirthInput,
+          data: compatibility.partnerData,
+        },
+      })
+    : null;
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage space-y-5">
@@ -212,11 +228,12 @@ export default async function CompatibilityResultPage({ searchParams }: Props) {
           partnerBirthSummary={formatBirthSummary(selectedFamily)}
           retakeHref={`/compatibility/input?relationship=${selected.slug}`}
           hasLoveQuestionPurchase={hasDeepReadingAccess}
+          coupleFit={coupleFit}
+          coupleTiming={coupleTiming}
           selfBirthInput={selfBirthInput}
           partnerBirthInput={partnerBirthInput}
           deepLlmEnabled={isCompatibilityInterpretationLLMEnabled()}
           compatibilityCoupleKey={coupleKey}
-          perCouplePricingEnabled={isCompatibilityPerCouplePricingEnabled()}
         />
 
         {/* 친구에게 공유 — 2026-07-03 공개 스냅샷: 두 사람 생년을 slug 로 인코딩한

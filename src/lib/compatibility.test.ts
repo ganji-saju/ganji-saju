@@ -265,3 +265,22 @@ test('deep section body never repeats a caution sentence for same-element couple
     }
   }
 });
+
+// 2026-08-26 회귀 가드 — 🔴 사용자 제보: "3,300원 궁합을 결제해도 같은 내용이 나온다."
+//   유료 §8 deepSections 4개가 **관계유형×점수대 공통 문장(frame)** 으로 전부 시작하고 있었다.
+//   돈을 내고 같은 문장을 네 번 읽는 셈이라 유료 구간 전체가 한 덩어리로 보인다.
+test('deepSections: 같은 문장으로 모든 섹션이 시작하지 않는다(유료 구간 중복)', () => {
+  for (const slug of ['lover', 'family', 'friend', 'partner'] as CompatibilityRelationshipSlug[]) {
+    const sections = makeCompat(slug, 1988, 1985).deepSections;
+    assert.ok(sections.length >= 2, slug);
+    const openers = sections.map((s) => s.body.split('다.')[0]);
+    assert.equal(new Set(openers).size > 1, true, `${slug}: 모든 섹션이 같은 문장으로 시작한다`);
+  }
+});
+
+// 유료 본문이 커플과 무관하면 "결제 = 관계유형별 정적 텍스트" 가 된다.
+test('deepSections: 서로 다른 커플이면 유료 본문도 달라진다', () => {
+  const a = makeCompat('lover', 1988, 1985).deepSections.map((s) => s.body).join('\n');
+  const b = makeCompat('lover', 1996, 1972).deepSections.map((s) => s.body).join('\n');
+  assert.notEqual(a, b);
+});

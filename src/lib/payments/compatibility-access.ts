@@ -8,22 +8,17 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { monthlyPeriodKey, MEMBER_QUOTAS } from '@/lib/credits/member-benefits';
 import { getMemberTier } from '@/lib/subscription';
 
-/**
- * env COMPAT_PER_COUPLE_PRICING=1 일 때만 궁합 CTA 가 compat-reading(커플 1회권)을 판매.
- * 기본 OFF → 기존처럼 love-question(글로벌) 판매. 게이트(hasCompatibilityAccess)는 플래그와
- * 무관하게 항상 grandfather 를 포함하므로, 플래그 전환이 기존 구매자를 깨지 않는다.
- */
-export function isCompatibilityPerCouplePricingEnabled(
-  env: NodeJS.ProcessEnv = process.env
-): boolean {
-  return env.COMPAT_PER_COUPLE_PRICING === '1';
-}
+// 2026-08-26 — COMPAT_PER_COUPLE_PRICING 플래그 제거.
+//   원래는 "CTA 가 커플권을 팔지 전역권을 팔지" 를 고르는 가격 스위치였는데,
+//   2026-07-20 전역권 판매 중단으로 가격 분기는 사라지고 **접근 확인만** 이 플래그 뒤에 남았다.
+//   그 결과 플래그가 꺼진 환경에서는 커플권을 팔면서 커플권을 조회하지 않는 상태가 됐다
+//   (스테이징에서 "결제해도 무료와 같은 내용" 으로 재현). 스위치를 없애 파는 것과 여는 것을 일치시킨다.
 
 /**
  * 궁합 깊은 풀이(유료 §8) 접근 권한.
  *   1) grandfather: love-question 글로벌 보유 → 모든 커플 접근(기존·연애확인 구매자 보호).
  *   2) per-couple: compat-reading @ compat:{coupleKey} 보유 → 해당 커플만 접근.
- * 플래그 OFF 환경에서는 compat-reading 구매가 발생하지 않으므로 (1)만 동작 = 기존과 동일.
+ * 두 경로 모두 조건 없이 판정한다 — 파는 상품(커플권)과 여는 권한이 같아야 한다.
  */
 export async function hasCompatibilityAccess(
   userId: string | null | undefined,
