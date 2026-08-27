@@ -12,6 +12,8 @@ import {
 } from '@/features/compatibility/manual-compatibility-storage';
 import { CompatibilityResultView } from '@/features/compatibility/compatibility-result-view';
 import { buildCompatibilityCoupleKey, buildCompatibilityInterpretation } from '@/lib/compatibility';
+import { buildCoupleFit } from '@/lib/compatibility/couple-fit';
+import type { CoupleTimingReport } from '@/lib/compatibility/couple-timing';
 import { buildCompatibilityShareSlug } from '@/lib/compatibility/share-slug';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
@@ -150,6 +152,41 @@ export function ManualCompatibilityResultClient({
   // per-couple 접근(서버 라우트 판정, grandfather 포함) 또는 서버가 넘긴 전역권 값.
   const effectiveAccess = perCoupleAccess || hasLoveQuestionPurchase;
 
+  // 용도별 적합성(§9)은 signals 산술이라 가볍다 — 여기서 바로 만든다.
+  const coupleFit = useMemo(
+    () => (compatibility && effectiveAccess
+      ? buildCoupleFit(compatibility, payload?.selfName ?? '', payload?.partnerName ?? '')
+      : []),
+    [compatibility, effectiveAccess, payload?.selfName, payload?.partnerName]
+  );
+
+  // 시간축(§10)은 두 사람 12개월 명식이라 ~320ms — **클라이언트 번들에 넣지 않는다.**
+  //   수동 입력은 생년월일이 이 브라우저에만 있어 서버 페이지가 미리 계산할 수 없으므로
+  //   전용 라우트로 받아 온다(그 라우트도 구매 여부를 다시 판정한다).
+  const [coupleTiming, setCoupleTiming] = useState<CoupleTimingReport | null>(null);
+  useEffect(() => {
+    if (!effectiveAccess || !payload) return;
+    let cancelled = false;
+    fetch('/api/compatibility/timing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        self: { name: payload.selfName, birthInput: payload.selfBirthInput },
+        partner: { name: payload.partnerName, birthInput: payload.partnerBirthInput },
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.ok && data.timing) setCoupleTiming(data.timing as CoupleTimingReport);
+      })
+      .catch(() => {
+        // 실패해도 나머지 풀이는 그대로 보여준다 — 없는 값을 지어내지 않고 블록만 비운다.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveAccess, payload]);
+
   if (!isLoaded) {
     return (
       <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
@@ -192,6 +229,8 @@ export function ManualCompatibilityResultClient({
           selfBirthInput={payload.selfBirthInput}
           partnerBirthInput={payload.partnerBirthInput}
           deepLlmEnabled={deepLlmEnabled}
+          coupleFit={coupleFit}
+          coupleTiming={coupleTiming}
           compatibilityCoupleKey={coupleKey ?? undefined}
         />
 
