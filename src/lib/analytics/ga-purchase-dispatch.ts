@@ -8,6 +8,7 @@
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { getPackage, isBundlePackage, isSubscriptionPackage } from '@/lib/payments/catalog';
 import { sendGaPurchase, sendGaRefund, type GaPurchaseItem, type GaSendResult } from './ga-server';
+import { isProductionAnalyticsServer } from './ga-environment';
 import { hasGa4ServerEnv } from './ga-config';
 
 interface GaOrderRow {
@@ -78,6 +79,11 @@ function buildItems(packageId: string, amount: number): GaPurchaseItem[] {
 export async function dispatchGaPurchase(orderId: string): Promise<GaSendResult> {
   if (!hasGa4ServerEnv || !hasSupabaseServiceEnv) return { sent: false, skipped: 'no_env' };
 
+  // 🔴 2026-08-27 — 비프로덕션은 **플래그를 선점하기 전에** 빠져나간다.
+  //   스테이징·프로덕션이 같은 Supabase 를 쓰므로, 여기서 먼저 스탬프를 찍으면
+  //   그 주문은 프로덕션에서도 '이미 보냄' 으로 보여 **영영 전송되지 않는다.**
+  if (!isProductionAnalyticsServer()) return { sent: false, skipped: 'non_production' };
+
   try {
     const service = await createServiceClient();
     // 선점: ga_purchase_sent_at 이 비어 있는 행만 잡는다 → 재전송·동시호출에도 1회.
@@ -140,6 +146,11 @@ export async function dispatchGaRefund(
   refundedAmount: number
 ): Promise<GaSendResult> {
   if (!hasGa4ServerEnv || !hasSupabaseServiceEnv) return { sent: false, skipped: 'no_env' };
+
+  // 🔴 2026-08-27 — 비프로덕션은 **플래그를 선점하기 전에** 빠져나간다.
+  //   스테이징·프로덕션이 같은 Supabase 를 쓰므로, 여기서 먼저 스탬프를 찍으면
+  //   그 주문은 프로덕션에서도 '이미 보냄' 으로 보여 **영영 전송되지 않는다.**
+  if (!isProductionAnalyticsServer()) return { sent: false, skipped: 'non_production' };
 
   try {
     const service = await createServiceClient();

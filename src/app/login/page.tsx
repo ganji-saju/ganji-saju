@@ -20,6 +20,7 @@ import { normalizeKoreanMobile } from '@/lib/kakao/phone';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { getOAuthLoginError } from '@/lib/auth/oauth-login-error';
+import { markAuthEvent } from '@/components/analytics/auth-event-tracker';
 
 const CANONICAL_SITE_ORIGIN = CANONICAL_SITE_URL;
 
@@ -647,6 +648,11 @@ function LoginContent({
     }
 
     if (options.redirect !== false) {
+      // 가입 흐름은 redirect:false 로 이 함수를 재사용한다 — 거기서는 sign_up 만 표시하고
+      //   login 은 표시하지 않는다(같은 행동이 두 이벤트로 세어지면 퍼널이 부풀어 보인다).
+      //   ⚠️ 여기서 dataLayer 로 직접 쏘지 않는다 — 아래 이동이 하드 내비게이션이라
+      //      GTM 이 태그를 발사하기 전에 페이지가 언로드될 수 있다. 목적지에서 쏘게 넘긴다.
+      markAuthEvent('login', 'email');
       redirectAfterLogin(afterLoginHref);
     }
     return true;
@@ -738,6 +744,7 @@ function LoginContent({
     }
 
     setStatusMessage('회원가입이 완료됐습니다. 사주 기본정보를 저장하는 중입니다.');
+    markAuthEvent('sign_up', 'email');
     const signedIn = await signInWithPassword(signupForm.email, signupForm.password, {
       redirect: false,
       allowConfirmRetry: true,

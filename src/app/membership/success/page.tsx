@@ -12,6 +12,7 @@ import {
   readPendingLifetimeReportSlug,
 } from '@/lib/payments/lifetime-report';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { gtmPurchaseCompleteView } from '@/lib/analytics/gtm';
 import {
   buildCompleteHref,
   buildPremiumResultHref,
@@ -254,6 +255,12 @@ function SuccessContent() {
           amount: Number(amount),
           plan: nextPlan,
         });
+        // 2026-08-27 — 광고 전환 픽셀 트리거(GTM: CE - purchase_complete_view).
+        //   ⚠️ 완료 '화면' 렌더 시점이 아니라 **승인 직후**여야 한다. 아래에서 대부분의 결제가
+        //      location.replace 로 결과 화면으로 곧장 넘어가 완료 화면을 보지 않고 지나간다.
+        //   ⚠️ GA4 purchase 는 여기서 쏘지 않는다 — 서버(Measurement Protocol)가 보낸다.
+        //      같은 transaction_id 를 클라이언트에서 또 보내면 매출이 이중 계상된다.
+        gtmPurchaseCompleteView(orderId, Number(amount));
 
         if (productHref) {
           location.replace(productHref);

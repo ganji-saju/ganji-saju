@@ -21,6 +21,7 @@ import { KakaoSdkLoader } from "@/components/kakao/kakao-sdk-loader";
 import { VisitPing } from "@/components/analytics/visit-ping";
 // 2026-07-06 — 개인정보 제거 GA4 page_view(사주/공유 URL 의 생년월일·이름 미전송).
 import { GaPageView } from "@/components/analytics/ga-page-view";
+import { AuthEventTracker } from "@/components/analytics/auth-event-tracker";
 // 2026-07-06 — 자체 쿠키/분석 동의 배너 + Consent Mode v2 키 공유.
 import { AnalyticsConsentBanner } from "@/components/analytics/analytics-consent-banner";
 import { ANALYTICS_CONSENT_KEY } from "@/components/analytics/analytics-consent";
@@ -283,6 +284,7 @@ export default async function RootLayout({
           />
         </noscript>
         <GaPageView />
+        <AuthEventTracker />
         <SupabaseRecoveryRedirect />
         <NotificationClickTracker />
         <ScrollResetOnNavigate />

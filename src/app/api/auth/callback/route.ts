@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       return NextResponse.redirect(
         buildLoginRedirect({
@@ -149,6 +149,20 @@ export async function GET(req: NextRequest) {
         })
       );
     }
+
+    // 2026-08-27 — GTM 로그인/가입 이벤트 마커.
+    //   OAuth 는 전체 리다이렉트라 클라이언트가 성공 시점을 알 방법이 없다. 복귀 URL 에
+    //   파라미터를 붙이면 목적지 쿼리가 오염되므로 단명 쿠키로 넘긴다
+    //   (AuthEventTracker 가 읽고 즉시 지운다). httpOnly 아님 — JS 가 읽어야 한다.
+    //   가입/로그인 구분은 계정 생성 시각으로 본다. 판단이 안 서면 login 으로 둔다 —
+    //   신규를 재방문으로 세는 쪽이, 재방문을 신규로 부풀리는 쪽보다 덜 해롭다.
+    const createdAt = data?.user?.created_at ? Date.parse(data.user.created_at) : NaN;
+    const isNewUser = Number.isFinite(createdAt) && Date.now() - createdAt < 60_000;
+    response.cookies.set(
+      'gj_auth_event',
+      `${isNewUser ? 'sign_up' : 'login'}:${provider ?? 'oauth'}`,
+      { path: '/', maxAge: 120, sameSite: 'lax', httpOnly: false }
+    );
 
     return response;
   }
