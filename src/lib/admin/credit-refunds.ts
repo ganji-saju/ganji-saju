@@ -34,6 +34,8 @@ export interface CreditRefundEligibleItem {
   coinsRemaining: number;
   coinsUsed: number;
   hasPaymentKey: boolean;
+  /** 이 결제에 해당하는 credit_lots 행을 실제로 찾았는가. false 면 사용량은 **모르는 것**이다. */
+  lotsLinked: boolean;
   status: CreditRefundPolicyStatus;
   statusLabel: string;
   createdAt: string;
@@ -61,17 +63,26 @@ function isNonExpiredLot(lot: CreditRefundLotRow, now: Date) {
   return Date.parse(lot.expires_at) > now.getTime();
 }
 
-function matchLotToPayment(lot: CreditRefundLotRow, paymentKey: string, now: Date) {
-  return (
-    lot.source === 'purchase' &&
-    isNonExpiredLot(lot, now) &&
-    readString(lot.metadata, 'paymentKey') === paymentKey
-  );
+// 2026-08-26 — 2차 키로 orderId 를 함께 본다.
+//   lot 과 거래는 add_credits RPC 가 **같은 metadata** 로 함께 쓰므로 원래 paymentKey 하나로
+//   이어져야 하지만, 한쪽이 비어 들어오면(PG·재시도 경로에 따라) 조용히 끊긴다.
+//   끊기면 아래 계산이 "안 쓴 결제"를 "전부 사용됨"으로 뒤집으므로, 이을 수 있는 키는 다 쓴다.
+function matchLotToPayment(
+  lot: CreditRefundLotRow,
+  paymentKey: string,
+  orderId: string | null,
+  now: Date
+) {
+  if (lot.source !== 'purchase' || !isNonExpiredLot(lot, now)) return false;
+  if (readString(lot.metadata, 'paymentKey') === paymentKey) return true;
+  return Boolean(orderId) && readString(lot.metadata, 'orderId') === orderId;
 }
 
-function statusLabel(status: CreditRefundPolicyStatus, coinsUsed: number) {
+function statusLabel(status: CreditRefundPolicyStatus, coinsUsed: number, lotsLinked: boolean) {
   if (status === 'full') return '미사용 · 전액 환불 가능';
   if (status === 'partial') return `${coinsUsed}전 사용됨 · 부분 환불 가능`;
+  // 🔴 2026-08-26 — 못 이은 것을 '사용'이라고 부르지 않는다(아래 buildCreditRefundItem 참고).
+  if (!lotsLinked) return '전 적립 내역을 결제와 연결하지 못함 · 수동 확인 필요';
   return coinsUsed > 0 ? '전부 사용됨 · 환불 불가' : '환불 가능 잔여 전 없음';
 }
 
@@ -92,16 +103,31 @@ export function buildCreditRefundItem(
   const packageId = readString(row.metadata, 'packageId');
   const orderId = readString(row.metadata, 'orderId');
   const pkg = getPackage(packageId);
-  // 2026-07-04 감사 — 카탈로그에서 폐지된 구 전팩(credit_1/3/7 등)은 pkg=null 이라
-  // 환불 대상 판정 자체가 안 되던 문제: packageId 접두사로도 전팩 판정.
-  const isCreditPack = pkg ? pkg.kind === 'credits' : Boolean(packageId?.startsWith('credit_'));
-  if (!paymentKey || !isCreditPack) return null;
+  // 2026-08-26 — 전팩(kind==='credits') 여부 게이트를 제거한다. 대화상담 질문 3회
+  //   (taste_dialogue_entry, 990원)는 전달물이 이용권이 아니라 **전 3개**라 이용권 행을
+  //   안 만드는데(재구매 허용 목적), 여기서 taste_product 라는 이유로 잘려 나가 결제·번들·
+  //   전 3경로 **어디에도** 안 잡혔다 = 실결제를 관리자 화면에서 환불할 수 없었다.
+  //   같은 함수를 /api/admin/refund 실행 경로도 쓰므로 id 를 알아도 실행 불가였다.
+  //   판정 근거는 이미 충분하다: type==='purchase' + amount>0 + paymentKey 가 있으면
+  //   그 자체로 '돈 내고 받은 전'이다. 멤버십 적립은 type==='subscription'(getCreditGrantType)
+  //   이라 위 `row.type !== 'purchase'` 가드에서 이미 걸러져 중복 계상되지 않는다.
+  if (!paymentKey) return null;
 
-  const matchedLots = lots.filter((lot) => matchLotToPayment(lot, paymentKey, now));
-  const coinsPurchased =
-    matchedLots.reduce((sum, lot) => sum + Math.max(0, lot.amount_initial ?? 0), 0) || row.amount;
-  const coinsRemaining = matchedLots.reduce((sum, lot) => sum + Math.max(0, lot.amount_remaining ?? 0), 0);
-  const coinsUsed = Math.max(0, coinsPurchased - coinsRemaining);
+  const matchedLots = lots.filter((lot) => matchLotToPayment(lot, paymentKey, orderId, now));
+  const lotsLinked = matchedLots.length > 0;
+  // 🔴 2026-08-26 사용자 제보: "990원 결제하고 대화 3번 안 했는데 이미 사용된 거라고 환불이 안 된다."
+  //   (실측: 전 잔액 6전 그대로) 원인은 여기 **폴백의 비대칭**이었다.
+  //   lot 을 하나도 못 이었을 때 coinsPurchased 만 row.amount 로 폴백하고 coinsRemaining 은
+  //   0 으로 남겨, "3전 샀고 0전 남음 = 전부 사용됨 · 환불 불가" 라는 결론이 나왔다.
+  //   못 이은 것은 사용한 것이 아니다 — 모르면 모른다고 표기하고 사람이 보게 한다.
+  const coinsPurchased = lotsLinked
+    ? matchedLots.reduce((sum, lot) => sum + Math.max(0, lot.amount_initial ?? 0), 0)
+    : row.amount;
+  const coinsRemaining = matchedLots.reduce(
+    (sum, lot) => sum + Math.max(0, lot.amount_remaining ?? 0),
+    0
+  );
+  const coinsUsed = lotsLinked ? Math.max(0, coinsPurchased - coinsRemaining) : 0;
   // 실결제액(metadata.amount) 우선 — 정가 우선이면 가격 개정 시 과거 결제가 소급 왜곡.
   const originalAmountWon = readNumber(row.metadata, 'amount') ?? pkg?.price ?? null;
   const refundAmountWon = resolveRefundAmount(originalAmountWon, coinsPurchased, coinsRemaining);
@@ -128,8 +154,9 @@ export function buildCreditRefundItem(
     coinsRemaining,
     coinsUsed,
     hasPaymentKey: Boolean(paymentKey),
+    lotsLinked,
     status,
-    statusLabel: statusLabel(status, coinsUsed),
+    statusLabel: statusLabel(status, coinsUsed, lotsLinked),
     createdAt: row.created_at,
     expiresAt,
     lotIds: matchedLots.map((lot) => lot.id),

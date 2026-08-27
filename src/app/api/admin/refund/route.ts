@@ -39,6 +39,7 @@ import {
   type RefundRequestSnapshot,
 } from '@/lib/admin/refund-service';
 import { revokeCreditPurchaseLots } from '@/lib/credits/refunds';
+import { loadPurchaseCreditLots } from '@/lib/admin/credit-lots';
 
 type RevokeProductId = Parameters<typeof revokeProductEntitlement>[1];
 type ServiceClient = Awaited<ReturnType<typeof createServiceClient>>;
@@ -66,20 +67,12 @@ async function buildCreditRefundRequestItem(service: ServiceClient, creditTransa
     return { row, item: null };
   }
 
-  const { data: lots } = await service
-    .from('credit_lots')
-    .select('id, user_id, amount_remaining, amount_initial, expires_at, source, metadata, created_at')
-    .eq('user_id', row.user_id)
-    .eq('source', 'purchase')
-    .contains('metadata', { paymentKey });
+  // ⚠️ SQL 로 paymentKey 를 미리 거르지 않는다 — 못 거르면 '잔여 0전 = 전부 사용됨'으로
+  //   뒤집혀 멀쩡한 결제의 환불이 막힌다(credit-lots.ts 주석 참고). 목록 화면과 **같은 후보 집합**을
+  //   넘기고, 좁히는 일은 판정 함수에 맡긴다.
+  const lots = await loadPurchaseCreditLots(service, row.user_id);
 
-  return {
-    row,
-    item: buildCreditRefundItem(
-      row as CreditRefundTransactionRow,
-      (lots ?? []) as unknown as CreditRefundLotRow[]
-    ),
-  };
+  return { row, item: buildCreditRefundItem(row as CreditRefundTransactionRow, lots) };
 }
 
 async function findExistingRefundRequest(

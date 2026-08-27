@@ -325,3 +325,76 @@ test('isCashCreditTransaction excludes admin manual grants', () => {
   );
   assert.equal(isCashCreditTransaction({ type: 'purchase', feature: null }), true);
 });
+
+// 2026-08-27 회귀 가드 — 🔴 사용자 제보: "환불했는데 결제 LTV 가 0원으로 안 바뀐다."
+//   revoke_credit_purchase_lots(047)는 lot 만 0 으로 만들고 **원 결제 행은 그대로 둔다.**
+//   상품 환불은 이용권 행이 삭제돼 항목이 사라지는데 전(錢) 환불만 남아 비대칭이었다.
+test('LTV: 전 결제를 환불하면 totalSpentWon 에서 빠진다', () => {
+  const purchase = {
+    id: 'tx1',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-08-26T13:11:40Z',
+    metadata: { paymentKey: 'pk1', orderId: 'ord1', packageId: 'taste_dialogue_entry', amount: 990 },
+  } as unknown as CreditTransactionHistoryRow;
+  const refundAudit = {
+    feature: 'credit_refund',
+    metadata: { kind: 'credit_refund', paymentKey: 'pk1', refundAmount: 990 },
+  };
+
+  const before = buildPaymentHistory({ productEntitlements: [], creditTransactions: [purchase] });
+  assert.equal(before.totalSpentWon, 990);
+
+  const after = buildPaymentHistory({
+    productEntitlements: [],
+    creditTransactions: [purchase],
+    creditRefunds: [refundAudit],
+  });
+  assert.equal(after.totalSpentWon, 0, '환불했는데 LTV 가 그대로면 순매출이 부풀어 보인다');
+  assert.equal(after.grossSpentWon, 990, '총결제는 보존 — 판 사실 자체는 사라지지 않는다');
+  assert.equal(after.refundedWon, 990);
+  assert.equal(after.entries.length, 1, '이력에서는 결제가 있었던 사실이 남는다');
+});
+
+test('LTV: 부분 환불은 환불액만 빠진다', () => {
+  const purchase = {
+    id: 'tx2',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-08-26T13:11:40Z',
+    metadata: { paymentKey: 'pk2', packageId: 'taste_dialogue_entry', amount: 990 },
+  } as unknown as CreditTransactionHistoryRow;
+  const result = buildPaymentHistory({
+    productEntitlements: [],
+    creditTransactions: [purchase],
+    creditRefunds: [{ feature: 'credit_refund', metadata: { refundAmount: 330 } }],
+  });
+  assert.equal(result.totalSpentWon, 660);
+});
+
+// 상품 환불은 이용권 행 삭제 + 주문 refunded 로 이미 항목이 사라진다 → 또 빼면 이중 차감.
+test('LTV: entitlement_revoke 감사 행은 차감하지 않는다(이중 차감 방지)', () => {
+  const purchase = {
+    id: 'tx3',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-08-26T13:11:40Z',
+    metadata: { paymentKey: 'pk3', packageId: 'taste_dialogue_entry', amount: 990 },
+  } as unknown as CreditTransactionHistoryRow;
+  const result = buildPaymentHistory({
+    productEntitlements: [],
+    creditTransactions: [purchase],
+    creditRefunds: [{ feature: 'entitlement_revoke', metadata: { amount: 9900 } }],
+  });
+  assert.equal(result.totalSpentWon, 990);
+  assert.equal(result.refundedWon, 0);
+});
+
+test('LTV: 데이터가 어긋나도 음수가 되지 않는다', () => {
+  const result = buildPaymentHistory({
+    productEntitlements: [],
+    creditTransactions: [],
+    creditRefunds: [{ feature: 'credit_refund', metadata: { refundAmount: 9900 } }],
+  });
+  assert.equal(result.totalSpentWon, 0);
+});
