@@ -7,6 +7,7 @@ import type { AnalyticsSnapshot, InflowAggEntry } from '@/lib/admin/analytics-me
 import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
+import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
 import { AdminRangePills } from '@/components/admin/admin-range-pills';
 import type { RefundBreakdown } from '@/lib/admin/refund-breakdown';
 
@@ -103,123 +104,8 @@ function InflowTable({
   );
 }
 
-const DAILY_PAGE_SIZE = 15; // 한 페이지 15일.
-const DAILY_PAGE_WINDOW = 5; // 숫자 버튼 최대 노출 개수(1,2,3,4,5 …).
-
-function DailyTable({ rows }: { rows: AnalyticsSnapshot['daily'] }) {
-  const [page, setPage] = useState(0);
-  // 윈도우(30/90/365) 전환 등 rows 갱신 시 첫 페이지로.
-  useEffect(() => {
-    setPage(0);
-  }, [rows]);
-
-  const ordered = [...rows].reverse(); // 최신 날짜 먼저.
-  const totalPages = Math.max(1, Math.ceil(ordered.length / DAILY_PAGE_SIZE));
-  const current = Math.min(page, totalPages - 1); // 방어적 clamp.
-  const start = current * DAILY_PAGE_SIZE;
-  const pageRows = ordered.slice(start, start + DAILY_PAGE_SIZE);
-
-  // 현재 페이지를 가운데 두는 슬라이딩 숫자 윈도우.
-  let winStart = Math.max(0, current - Math.floor(DAILY_PAGE_WINDOW / 2));
-  winStart = Math.min(winStart, Math.max(0, totalPages - DAILY_PAGE_WINDOW));
-  const winEnd = Math.min(totalPages, winStart + DAILY_PAGE_WINDOW);
-  const pageNumbers: number[] = [];
-  for (let i = winStart; i < winEnd; i += 1) pageNumbers.push(i);
-
-  const th = 'px-2.5 py-2 text-right font-bold whitespace-nowrap';
-  const td = 'px-2.5 py-1.5 text-right tabular-nums whitespace-nowrap';
-  const navBtn =
-    'flex h-8 min-w-8 items-center justify-center rounded-[9px] border px-2.5 text-[13px] font-bold disabled:cursor-not-allowed disabled:opacity-40';
-
-  return (
-    <section className="rounded-[14px] border border-[var(--app-line)] bg-white p-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[15px] font-extrabold text-[var(--app-ink)]">날짜별 상세</h2>
-        <span className="text-[11.5px] text-[var(--app-copy-soft)]">총 {ordered.length}일</span>
-      </div>
-      <div className="mt-3 overflow-x-auto rounded-[10px] border border-[var(--app-line)]">
-        <table className="w-full border-collapse text-[12.5px]">
-          <thead className="bg-[var(--app-pink-soft)] text-[var(--app-ink)]">
-            <tr>
-              <th className={`${th} text-left`}>날짜</th>
-              <th className={th}>방문자</th>
-              <th className={th}>PV</th>
-              <th className={th}>신규가입</th>
-              <th className={th}>결제</th>
-              <th className={th}>매출</th>
-              <th className={th}>환불</th>
-              <th className={th}>순매출</th>
-              <th className={th}>결제/방문</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageRows.map((d) => (
-              <tr key={d.date} className="border-t border-[var(--app-line)]">
-                <td className={`${td} text-left font-semibold text-[var(--app-ink)]`}>{d.date}</td>
-                <td className={td}>{formatNum(d.visitors)}</td>
-                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatNum(d.pageViews)}</td>
-                <td className={td}>{formatNum(d.newSignups)}</td>
-                <td className={td}>{formatNum(d.paidOrders)}</td>
-                <td className={td}>{d.revenueWon > 0 ? fmtWon(d.revenueWon) : '—'}</td>
-                <td className={`${td} text-[var(--app-coral)]`}>
-                  {d.refundedWon > 0 ? `-${fmtWon(d.refundedWon)}` : '—'}
-                </td>
-                {/* 2026-08-26 — 순매출 음수는 대개 '예전에 판 걸 오늘 환불'이다. 색만 바꾸고
-                    이유는 아래 §환불 내역이 건별 원 결제일로 답한다. */}
-                <td
-                  className={`${td} font-semibold`}
-                  style={{ color: d.netRevenueWon < 0 ? 'var(--app-coral)' : 'var(--app-ink)' }}
-                  title={d.netRevenueWon < 0 ? '과거 결제분 환불이 오늘 계상됨 — 아래 환불 내역 참조' : undefined}
-                >
-                  {d.revenueWon > 0 || d.refundedWon > 0 ? fmtWon(d.netRevenueWon) : '—'}
-                </td>
-                <td className={`${td} text-[var(--app-copy-soft)]`}>{formatPct(d.visitorToPaidRate)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPage(Math.max(0, current - 1))}
-            disabled={current === 0}
-            aria-label="이전 페이지"
-            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
-          >
-            ‹
-          </button>
-          {pageNumbers.map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPage(p)}
-              aria-current={p === current ? 'page' : undefined}
-              className={`${navBtn} ${
-                p === current
-                  ? 'border-[var(--app-ink)] bg-[var(--app-ink)] text-white'
-                  : 'border-[var(--app-line)] text-[var(--app-copy-soft)]'
-              }`}
-            >
-              {p + 1}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setPage(Math.min(totalPages - 1, current + 1))}
-            disabled={current === totalPages - 1}
-            aria-label="다음 페이지"
-            className={`${navBtn} border-[var(--app-line)] text-[var(--app-ink)]`}
-          >
-            ›
-          </button>
-        </div>
-      )}
-    </section>
-  );
-}
+// 2026-08-27 — 날짜별 표는 components/admin/metrics-period-table 로 옮겼다(일/주 토글).
+//   /admin 대시보드와 **같은 컴포넌트**를 쓴다 — 따로 두면 주 경계·비율 계산이 갈라진다.
 
 interface ComparisonSeries {
   key: string;
@@ -782,7 +668,7 @@ export function AnalyticsDashboard() {
           </div>
 
           {/* 날짜별 상세 테이블 — 방문자·PV 바로 아래 */}
-          <DailyTable rows={visibleDaily} />
+          <MetricsPeriodTable rows={visibleDaily} title="날짜별 상세" />
 
           {/* 2026-08-26 — 환불 내역(건별 원 결제일). '오늘 매출 990인데 환불 9,900' 제보의 답. */}
           <RefundBreakdownTable refunds={refunds} />

@@ -1,5 +1,5 @@
 // 2026-06-28 — 관리자 콘솔 랜딩 대시보드(/admin). 관리자 콘솔 2/2.
-//   기존 스냅샷(운영·결제퍼널·LLM) 통합 KPI + 대기 작업 + 최근 활동 + 기간 토글 + 바로가기.
+//   기존 스냅샷(운영·결제퍼널·LLM) 통합 KPI + 대기 작업 + 최근 활동 + 기간 토글 + 날짜별 표.
 //   진입점이 없던 문제(G1) 해결. 데이터는 getAdminDashboardSummary 1회 호출.
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -10,7 +10,8 @@ import {
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
-import { getVisibleNavGroups, flattenNavItems } from '@/lib/admin/nav';
+import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
+import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { DailySeries } from '@/lib/admin/operations-stats';
 import { ADMIN_RANGE_OPTIONS, adminRangeLabel } from '@/lib/admin/metric-ranges';
 
@@ -143,11 +144,10 @@ export default async function AdminDashboardPage({
 
   const ops = summary.operations;
   const periodVisitors = sumSeries(ops?.trends.visitors);
-  // 2026-08-27 — 내비가 2단이 되면서 부모 행(지표·사주·명리 검증)은 href 가 없다.
-  //   바로가기는 '누를 수 있는 것'만 실어야 하므로 그룹 안에서 잎만 펼친다.
-  const navGroups = getVisibleNavGroups(role)
-    .filter((g) => g.title !== '개요')
-    .map((g) => ({ title: g.title, items: flattenNavItems([g]) }));
+  // 2026-08-27 사용자 지시 — 하단 '바로가기'를 걷어내고 그 자리에 날짜별 데이터를 둔다.
+  //   좌측 레일이 2단으로 정리되면서 바로가기는 같은 링크를 한 번 더 나열할 뿐이었다.
+  //   실측 시작일 이전(집계가 사람을 못 세던 구간)은 /admin/analytics 와 같은 규칙으로 자른다.
+  const visibleDaily = summary.daily.filter((d) => d.date >= VISIT_TRACKING_START_KEY);
 
   return (
     <main className="w-full space-y-5 px-4 py-5 md:px-6">
@@ -429,32 +429,10 @@ export default async function AdminDashboardPage({
         )}
       </Card>
 
-      {/* 섹션 바로가기 */}
-      <Card title="바로가기">
-        <div className="space-y-3">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <p className="text-[11.5px] font-extrabold uppercase tracking-wide text-[var(--app-copy-muted)]">
-                {group.title}
-              </p>
-              <div className="mt-1.5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {group.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="flex flex-col gap-0.5 rounded-[12px] border border-[var(--app-line)] bg-white p-3 transition-colors hover:bg-[var(--app-pink-soft)]"
-                  >
-                    <span className="text-[14px] font-extrabold text-[var(--app-ink)]">{item.label}</span>
-                    {item.description ? (
-                      <span className="text-[12px] text-[var(--app-copy-soft)]">{item.description}</span>
-                    ) : null}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {/* 2026-08-27 사용자 지시 — 하단 '바로가기' 자리에 날짜별 데이터.
+          일별은 날짜+요일, 주별은 달력 주(월~일)로 묶는다. 표 컴포넌트는
+          /admin/analytics 와 **같은 것**을 쓴다 — 주 경계와 비율 계산이 갈라지면 안 된다. */}
+      <MetricsPeriodTable rows={visibleDaily} title="날짜별 · 주별 상세" />
     </main>
   );
 }

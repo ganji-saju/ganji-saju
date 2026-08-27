@@ -8,7 +8,11 @@ import {
   type PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
 import { getLlmCostStats, type LlmCostStats } from '@/lib/admin/llm-cost-stats';
-import { getDailyMetrics, type InflowAggEntry } from '@/lib/admin/analytics-metrics';
+import {
+  getDailyMetrics,
+  type DailyMetricPoint,
+  type InflowAggEntry,
+} from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
 import { normalizeAdminRange } from './metric-ranges';
 
@@ -44,6 +48,11 @@ export interface AdminDashboardSummary {
    *   같은 getDailyMetrics 집계라 /admin/analytics 와 숫자가 갈라지지 않는다.
    */
   topUtm: InflowAggEntry[];
+  /**
+   * 2026-08-27 — 일별 지표 원본. getDailyMetrics 는 유입 카드 때문에 **이미 부르고 있었고**
+   *   일별 행을 버리고 있었다 — 추가 쿼리 없이 그대로 싣는다. 화면에서 일/주(월~일)로 묶는다.
+   */
+  daily: DailyMetricPoint[];
   funnel: PaymentFunnelSnapshot | null;
   llm: LlmCostStats | null;
   pending: PendingCounts;
@@ -88,6 +97,7 @@ export async function getAdminDashboardSummary(
     operations: null,
     topReferrers: [],
     topUtm: [],
+    daily: [],
     funnel: null,
     llm: null,
     pending: { refundRequested: 0, reviewPending: 0 },
@@ -156,6 +166,7 @@ export async function getAdminDashboardSummary(
       llm,
       topReferrers: analytics?.topReferrers ?? [],
       topUtm: analytics?.topUtm ?? [],
+      daily: analytics?.daily ?? [],
       pending: {
         refundRequested: refundRes.count ?? 0,
         reviewPending: reviewRes.count ?? 0,
