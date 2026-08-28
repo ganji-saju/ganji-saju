@@ -421,7 +421,9 @@ const FAN_MENU_ITEMS: ReadonlyArray<{
   angleDeg: number;
 }> = [
   { label: '운세',   href: '/today-fortune?concern=general', glyph: '☀', angleDeg: -170 },
-  { label: '사주',   href: '/saju/new',                       glyph: '辰', angleDeg: -130 },
+  // 2026-08-28 — 사주 → 타로(사용자 지시). 사주는 상단 첫 메뉴·홈 첫 카드·하단 2번 칸까지
+  //   진입로가 셋이라 이 자리에서 겹쳤다. glyph 卯 = 토끼 = 타로선생(앱 전역에서 타로의 띠).
+  { label: '타로',   href: '/tarot/daily',                    glyph: '卯', angleDeg: -130 },
   { label: '별자리', href: '/star-sign',                      glyph: '✦', angleDeg: -90  },
   { label: '띠운세', href: '/zodiac',                         glyph: '午', angleDeg: -50  },
   { label: '꿈해몽', href: '/dream',                          glyph: '☾', angleDeg: -10  },
