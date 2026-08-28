@@ -731,6 +731,12 @@ function LoginContent({
         unknownBirthTime: signupForm.unknownBirthTime,
         birthHour: signupForm.birthHour,
         birthLocationCode: signupForm.birthLocationCode,
+        // 🔴 2026-08-29 — 좌표를 안 보내고 code 만 보냈다. '좌표 찾기'로 고르면 code 가
+        //   'custom' 이라 서버가 프리셋 표에서 못 찾고 가입을 거절했다(화면엔 좌표가
+        //   버젓이 떠 있는데). 프리셋일 땐 서버가 코드로 덮어쓰므로 같이 보내도 안전하다.
+        birthLocationLabel: signupForm.birthLocationLabel,
+        birthLatitude: signupForm.birthLatitude,
+        birthLongitude: signupForm.birthLongitude,
         timeRule: signupForm.timeRule,
       }),
     });

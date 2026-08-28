@@ -45,6 +45,51 @@ export interface BirthTimeCorrection {
   };
 }
 
+/**
+ * 🔴 2026-08-29 — 출생지는 **프리셋 표 밖에서도 온다.**
+ *
+ *   '좌표 찾기'(/api/geo/birth-location)로 고른 지역은 code 가 'custom' 이고 좌표만 있다.
+ *   그런데 회원가입 API 는 `getBirthLocationPreset(code)` 하나로만 판정해서, 검색으로 고른
+ *   사용자는 **"출생지를 선택해 주세요."** 를 맞았다(프리셋 14개 칩을 누르면 통과).
+ *   검색 결과를 화면에 띄워놓고 그걸로는 가입이 안 되는 상태였다.
+ *
+ *   프리셋 우선, 없으면 label+좌표로 받는다. 좌표는 신뢰 경계라 범위까지 본다.
+ */
+export function resolveBirthLocationInput(input: {
+  code?: string | null;
+  label?: string | null;
+  latitude?: unknown;
+  longitude?: unknown;
+}): BirthLocation | null {
+  const preset = getBirthLocationPreset(input.code);
+  if (preset) return preset;
+
+  const label = String(input.label ?? '').trim();
+  const latitude = toFiniteCoordinate(input.latitude);
+  const longitude = toFiniteCoordinate(input.longitude);
+  if (!label || latitude === null || longitude === null) return null;
+  if (latitude < -90 || latitude > 90) return null;
+  if (longitude < -180 || longitude > 180) return null;
+
+  return {
+    code: String(input.code ?? '').trim() || 'custom',
+    label,
+    latitude,
+    longitude,
+    timezone: DEFAULT_BIRTH_TIMEZONE,
+  };
+}
+
+/** 숫자 또는 숫자 문자열만 받는다. '' · null · NaN · Infinity 는 전부 미입력으로 본다. */
+function toFiniteCoordinate(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export function getBirthLocationPreset(code: string | null | undefined): BirthLocation | null {
   const preset = BIRTH_LOCATION_PRESETS.find((item) => item.code === code);
   if (!preset) return null;

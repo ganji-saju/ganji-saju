@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBirthLocationPreset } from '@/lib/saju/birth-location';
+import { resolveBirthLocationInput } from '@/lib/saju/birth-location';
 import type { UnifiedCalendarType, UnifiedTimeRule } from '@/lib/saju/unified-birth-entry';
 import {
   createServiceClient,
@@ -45,7 +45,14 @@ function parseSignupPayload(payload: unknown) {
   const unknownBirthTime = data.unknownBirthTime === true;
   const birthHour = unknownBirthTime ? null : parseIntInRange(data.birthHour, 0, 23);
   const birthMinute = unknownBirthTime ? null : parseIntInRange(data.birthMinute, 0, 59);
-  const birthLocation = getBirthLocationPreset(readString(data.birthLocationCode));
+  // 2026-08-29 — 프리셋 칩(14개)뿐 아니라 '좌표 찾기'로 고른 지역도 받는다.
+  //   그전엔 프리셋 표에서만 찾아, 검색으로 고른 사용자가 "출생지를 선택해 주세요."를 맞았다.
+  const birthLocation = resolveBirthLocationInput({
+    code: readString(data.birthLocationCode),
+    label: readString(data.birthLocationLabel),
+    latitude: data.birthLatitude,
+    longitude: data.birthLongitude,
+  });
 
   if (!email.includes('@')) {
     return { ok: false as const, error: '이메일 주소를 확인해 주세요.' };
