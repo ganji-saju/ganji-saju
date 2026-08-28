@@ -43,7 +43,7 @@ const MOTION_IDS = new Set([
   // 2026-08-28 — 배너 전용 파생. 원본(대부분 580×720=0.806)을 **3:4 로 미리 패딩한 뒤**
   //   생성해서 캐릭터가 프레임 안에 온전히 들어온다. 패딩 없이 뽑으면 출력이 항상 3:4 라
   //   좌우가 잘려 뱀 꼬리·개 꼬리가 사라졌다(배너는 contain 이라 그게 그대로 보인다).
-  't7-banner', 'ox-banner', 'dog-banner', 'snake-banner', 'rabbit-banner', 'pig-banner',
+  't7-banner', 'ox-banner', 'dog-banner', 'snake-banner', 'rabbit-banner', 'pig-banner', 'rooster-banner',
 ]);
 
 export function GuardianPortrait({
