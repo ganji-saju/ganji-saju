@@ -12,6 +12,7 @@
 //   - 활성 구독에 renews_at > now 조건 추가(만료 lazy 처리로 인한 과대집계 방지).
 //   - admin_user_summary 최신 refreshed_at 을 스냅샷에 포함(요약 갱신 지연 관측).
 
+import { isRealRevenueOrder } from '@/lib/payments/payment-origin';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
 
@@ -215,14 +216,16 @@ async function fetchLifetimeOrderTotals(
       };
     }
   }
-  const rows = await fetchAllPages<{ amount: number | null }>('orders-lifetime', (from, to) =>
+  const rows = (
+    await fetchAllPages<{ amount: number | null; metadata: unknown }>('orders-lifetime', (from, to) =>
     client
       .from('payment_orders')
-      .select('amount')
+      .select('amount, metadata')
       .in('status', COMPLETED_ORDER_STATUSES)
       .order('id', { ascending: true })
       .range(from, to)
-  );
+    )
+  ).filter(isRealRevenueOrder);
   return {
     count: rows.length,
     amountWon: rows.reduce((sum, r) => sum + (r.amount ?? 0), 0),
@@ -289,12 +292,17 @@ export async function buildOperationsSnapshot(
     ),
 
     // 결제 (payment_orders 완료 상태, 윈도우 내) — 카드 단건·멤버십·PG 공통 원장.
-    fetchAllPages<{ user_id: string | null; amount: number | null; created_at: string }>(
+    fetchAllPages<{
+      user_id: string | null;
+      amount: number | null;
+      created_at: string;
+      metadata: unknown;
+    }>(
       'orders-window',
       (from, to) =>
         client
           .from('payment_orders')
-          .select('user_id, amount, created_at')
+          .select('user_id, amount, created_at, metadata')
           .in('status', COMPLETED_ORDER_STATUSES)
           // 월간(30일) 버킷까지 커버하도록 시리즈 윈도우보다 넓게 fetch 가능.
           .gte('created_at', ordersStartIso)
@@ -393,7 +401,9 @@ export async function buildOperationsSnapshot(
 
   // signup_at → created_at 로 매핑해 countByDate / toLocalDateKey 공통 인터페이스를 유지한다.
   const signupRows = signupRowsRaw.map((r) => ({ user_id: r.user_id, created_at: r.signup_at }));
-  const purchaseRows = orderRows.map((r) => ({
+  // 2026-08-29 — 테스트 결제 제외(staging·프리뷰·로컬). 출처 기록 전 주문('unknown')은
+  //   남긴다 — 소급 판정이 불가능해서, 빼면 과거 매출이 근거 없이 줄어든다.
+  const purchaseRows = orderRows.filter(isRealRevenueOrder).map((r) => ({
     user_id: r.user_id ?? '',
     amount: r.amount ?? 0,
     created_at: r.created_at,

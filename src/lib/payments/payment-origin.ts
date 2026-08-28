@@ -80,3 +80,14 @@ const LABELS: Record<PaymentOriginEnv, string> = {
 export function paymentOriginLabel(env: PaymentOriginEnv): string {
   return LABELS[env];
 }
+
+/**
+ * 2026-08-29 — 매출 집계에 넣을 주문인가.
+ *
+ * ⚠️ **DB 쿼리로 거르지 마라.** `metadata->origin->>env` 는 이 필드가 생기기 전 주문에서
+ * NULL 이고, `not in (...)` 은 NULL 을 만나면 행을 통째로 떨어뜨린다 — 과거 매출이
+ * 조용히 사라진다. JS 에서 걸러야 'unknown' 을 **매출로 남길** 수 있다.
+ */
+export function isRealRevenueOrder(row: { metadata?: unknown } | null | undefined): boolean {
+  return isRealRevenueOrigin(readPaymentOrigin(row?.metadata).env);
+}

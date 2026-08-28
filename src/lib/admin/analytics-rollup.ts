@@ -3,6 +3,7 @@
 //   에 멱등 upsert. 순수 계산(computeDailyMetrics)과 I/O(runDailyMetricsRollup)를 분리 —
 //   전자는 주입 raw 로 단위 테스트, 후자는 service 클라이언트로 조회+upsert.
 //   설계: docs/superpowers/specs/2026-07-07-admin-analytics-daily-design.md
+import { isRealRevenueOrder } from '@/lib/payments/payment-origin';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -104,6 +105,8 @@ export interface PaymentRow {
   confirmed_at: string | null;
   fulfilled_at: string | null;
   created_at: string;
+  /** 2026-08-29 — 결제 출처(테스트 결제 제외 판정). 없으면 'unknown' = 매출로 센다. */
+  metadata?: unknown;
 }
 
 export interface FunnelRow {
@@ -114,6 +117,8 @@ export interface FunnelRow {
 export interface RefundRow {
   amount: number | null;
   refunded_at: string | null;
+  /** 2026-08-29 — 매출에서 뺀 주문의 환불을 계상하면 음수가 샌다. 같은 기준으로 거른다. */
+  metadata?: unknown;
 }
 
 export interface ComputeDailyMetricsInput {
@@ -307,7 +312,7 @@ export async function runDailyMetricsRollup(
   const paymentRows = await fetchAllPages<PaymentRow>('payments', (from, to) =>
     service
       .from('payment_orders')
-      .select('amount, confirmed_at, fulfilled_at, created_at')
+      .select('amount, confirmed_at, fulfilled_at, created_at, metadata')
       .in('status', REVENUE_ORDER_STATUSES)
       .or(
         `confirmed_at.gte.${windowStartIso},fulfilled_at.gte.${windowStartIso},created_at.gte.${windowStartIso}`
@@ -316,6 +321,13 @@ export async function runDailyMetricsRollup(
       .order('created_at', { ascending: true })
       .range(from, to)
   );
+
+  // 🔴 2026-08-29 — 테스트 결제 제외. staging 과 프로덕션이 **같은 Supabase** 라 스테이징
+  //   주문이 일별 매출에 그대로 섞였다(사용자 제보: "매출에 반영되니 헷갈려 죽겠어").
+  //   ⚠️ DB 쿼리(`metadata->origin->>env`)로 거르면 안 된다 — 출처 필드가 생기기 전 주문은
+  //   NULL 이라 `not in` 이 통째로 떨어뜨려 **과거 매출이 조용히 사라진다**. JS 로 거른다.
+  //   환불도 같은 기준으로 걸러야 한다 — 매출에서 뺀 주문의 환불을 계상하면 음수가 샌다.
+  const realPaymentRows = paymentRows.filter(isRealRevenueOrder);
 
   const funnelRows = await fetchAllPages<FunnelRow>('funnel', (from, to) =>
     service
@@ -331,7 +343,7 @@ export async function runDailyMetricsRollup(
   const refundRows = await fetchAllPages<RefundRow>('refunds', (from, to) =>
     service
       .from('payment_orders')
-      .select('amount, refunded_at')
+      .select('amount, refunded_at, metadata')
       .eq('status', 'refunded')
       .gte('refunded_at', windowStartIso)
       .lt('refunded_at', windowEndIso)
@@ -339,12 +351,14 @@ export async function runDailyMetricsRollup(
       .range(from, to)
   );
 
+  const realRefundRows = refundRows.filter(isRealRevenueOrder);
+
   const rows = computeDailyMetrics({
     dateKeys,
     sourceRows,
     signupIsos: signupRows.map((r) => r.signup_at).filter(Boolean),
-    paymentRows,
-    refundRows,
+    paymentRows: realPaymentRows,
+    refundRows: realRefundRows,
     funnelRows,
   });
 
