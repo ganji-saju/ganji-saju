@@ -125,7 +125,6 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
         {/* 2026-05-26 — MY(계정) 섹션을 검색창 위로 이동(사용자 보고: MY가 가장 잘 보이도록).
             비로그인: 로그인 + 회원가입 + 아이디/비밀번호 찾기 / 로그인: 내 정보 + 로그아웃. */}
         <div className="mobile-nav-sheet-account" aria-label="계정">
-          <div className="mobile-nav-sheet-account-eyebrow">MY</div>
           {user ? (
             <div className="mobile-nav-sheet-account-row">
               <Link href="/my" onClick={onClose} className="mobile-nav-sheet-account-primary">
