@@ -58,9 +58,9 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c2: {
       heading: '인기 운세',
       items: [
-        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream', tag: 'FREE' },
-        { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat' },
-        { label: '좋은 날', desc: '큰 결정 D-day', href: '/taekil' },
+        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream', tag: 'FREE' , icon: 'dream' },
+        { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat' , icon: 'starcompat' },
+        { label: '좋은 날', desc: '큰 결정 D-day', href: '/taekil' , icon: 'day' },
       ],
     },
     c3: {
@@ -94,10 +94,10 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c2: {
       heading: '전문 분야',
       items: [
-        { label: '재물 풀이', desc: '돈이 새는 패턴', href: '/saju/new' },
-        { label: '연애 풀이', desc: '감정과 타이밍', href: '/saju/new' },
-        { label: '직장 풀이', desc: '성과·이직 판단', href: '/saju/new' },
-        { label: '택일', desc: '좋은 날 고르기', href: '/taekil' },
+        { label: '재물 풀이', desc: '돈이 새는 패턴', href: '/saju/new' , icon: 'money' },
+        { label: '연애 풀이', desc: '감정과 타이밍', href: '/saju/new' , icon: 'love' },
+        { label: '직장 풀이', desc: '성과·이직 판단', href: '/saju/new' , icon: 'work' },
+        { label: '택일', desc: '좋은 날 고르기', href: '/taekil' , icon: 'day' },
       ],
     },
     c3: {
@@ -130,9 +130,9 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c2: {
       heading: '상담 유형',
       items: [
-        { label: '1:1 채팅', desc: '무료로 시작', href: '/dialogue' },
-        { label: '대화 기록', desc: '예전 대화 다시 보기', href: '/dialogue/history' },
-        { label: '예약 상담', desc: '캘린더에서 선택', href: '/dialogue/appointment' },
+        { label: '1:1 채팅', desc: '무료로 시작', href: '/dialogue' , icon: 'chat' },
+        { label: '대화 기록', desc: '예전 대화 다시 보기', href: '/dialogue/history' , icon: 'history' },
+        { label: '예약 상담', desc: '캘린더에서 선택', href: '/dialogue/appointment' , icon: 'appointment' },
       ],
     },
     c3: {
