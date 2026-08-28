@@ -68,10 +68,7 @@ test('home banner still changes slides with a horizontal swipe', async ({ page }
       { x: box!.x + box!.width * 0.85, y: box!.y + box!.height / 2 },
       { x: box!.x + box!.width * 0.15, y: box!.y + box!.height / 2 }
     );
-    // 2026-08-24 — 배너 총수를 하드코딩(…\/5)했다가 배너 추가(trust-creds, 5→6)에 깨졌다.
-    //   이 테스트의 의도는 "스와이프로 1번 슬라이드를 벗어났다"이지 총수 검증이 아니다 —
-    //   분모 불문, 분자가 2 이상이면 통과하도록 개수 불변으로 고정한다.
-    await expect(carousel).toHaveAttribute('aria-label', /추천 운세 배너 [2-9]\/\d+/, {
+    await expect(carousel).toHaveAttribute('aria-label', /추천 운세 배너 [2-5]\/5/, {
       timeout: 1500,
     });
   }).toPass({ timeout: 20_000 });

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ANONYMOUS, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { readConsent } from '@/components/analytics/analytics-consent';
+import { gtmAddPaymentInfo, gtmBeginCheckout } from '@/lib/analytics/gtm';
 import TossPaymentMethodPicker from '@/components/payments/toss-payment-method-picker';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import {
@@ -19,8 +21,6 @@ import { PaymentConsentCheckboxes } from '@/components/policies/payment-consent-
 import { getPackage } from '@/lib/payments/catalog';
 import { requestNicepayPayment, toNicepayMethod } from '@/lib/payments/nicepay-checkout';
 import type { PolicyKind } from '@/shared/policies/types';
-import { readConsent } from '@/components/analytics/analytics-consent';
-import { gtmAddPaymentInfo, gtmBeginCheckout } from '@/lib/analytics/gtm';
 
 interface Props {
   packageId: string;

@@ -681,6 +681,15 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 
+@media (min-width: 768px) {
+  :root {
+    --readable-page-max: 40rem;
+    --readable-result-max: 38rem;
+    --readable-home-max: 34rem;
+  }
+}
+
+
 
 @media (min-width: 768px) {
   /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem, :root 기본값 그대로. */

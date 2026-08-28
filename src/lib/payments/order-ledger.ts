@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
+import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import type { PolicyKind } from '@/shared/policies/types';
-import { dispatchGaRefund } from '@/lib/analytics/ga-purchase-dispatch';
 
 export type PaymentOrderStatus =
   | 'prepared'
