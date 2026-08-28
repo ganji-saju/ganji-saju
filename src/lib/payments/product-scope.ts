@@ -3,6 +3,7 @@ import {
   type PaymentPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
+import { getKoreaAccessDay } from '@/lib/credits/detail-report-access';
 import { resolveReading, type ReadingRecord } from '@/lib/saju/readings';
 import { toSlug } from '@/lib/saju/pillars';
 
@@ -16,7 +17,9 @@ export type PaymentProductScopeKind =
   | 'year'
   | 'lifetime-reading'
   // 2026-05-23 ① — 궁합 1회권. slug 가 커플 키(사주 reading 아님)라 별도 kind.
-  | 'compat';
+  | 'compat'
+  // 2026-08-25 — 990원 라이트 언락 당일권(KST 날짜 단위).
+  | 'day-pass';
 
 export interface PaymentProductScope {
   productId: PaidProductId;
@@ -67,6 +70,15 @@ export function buildLifetimeReportScopeKey(readingKey: string) {
 // 2026-05-23 ① — 궁합 per-couple scope. coupleKey 는 buildCompatibilityCoupleKey(두 생년월일).
 export function buildCompatScopeKey(coupleKey: string) {
   return `compat:${coupleKey}`;
+}
+
+// 2026-08-25 — 990원 라이트 언락 **당일권** scope. product_entitlements 엔 만료 컬럼이
+//   없어(오늘상세도 created_at/scope 로 일일성 구현) KST 날짜를 scope_key 에 인코딩한다.
+//   결제(resolver)와 게이트(menu-pass)가 반드시 이 한 함수를 공유할 것 — 갈리면
+//   결제했는데 못 보는 사고가 난다. 자정 직전 결제는 prepare/confirm 시각차로
+//   다음날 키가 될 수 있다(구매자에게 유리한 방향이라 허용).
+export function buildDayPassScopeKey(now: Date = new Date()) {
+  return `day:${getKoreaAccessDay(now)}`;
 }
 
 // buildLifetimeReportScopeKey 의 역함수 — 환불 회수 시 legacy credit_transactions
@@ -202,11 +214,29 @@ export async function resolvePaymentProductScope({
   const productId = getPaidProductIdFromPackage(pkg);
   if (!productId) return null;
 
-  if (productId === 'love-question' || productId === 'money-pattern' || productId === 'work-flow') {
+  if (
+    productId === 'love-question' ||
+    productId === 'money-pattern' ||
+    productId === 'work-flow' ||
+    productId === 'today-basic' ||
+    productId === 'tarot-daily' ||
+    productId === 'dream-search' ||
+    productId === 'dialogue-entry' ||
+    productId === 'taekil'
+  ) {
+    // 2026-08-25 — 타로만 당일권(KST 날짜 scope). dialogue-entry(질문 3회)는 전달물이
+    //   전 3개(fulfillment)라 entitlement 를 만들지 않는다 — scope 는 global-null 로 두고
+    //   prepare 중복차단에 걸리지 않게 해 재구매(질문 추가 구매)를 허용한다.
+    //   today-basic·dream-search 는 무료 복귀로 판매 경로가 없다(카탈로그만 잔존).
+    const isDayPass =
+      productId === 'today-basic' ||
+      productId === 'tarot-daily' ||
+      productId === 'dream-search' ||
+      productId === 'taekil';
     return {
       productId,
-      scopeKey: null,
-      kind: 'global',
+      scopeKey: isDayPass ? buildDayPassScopeKey(now) : null,
+      kind: isDayPass ? 'day-pass' : 'global',
       reading: null,
       readingKey: null,
       slug: slug?.trim() || null,
@@ -374,6 +404,20 @@ export function buildPurchasedProductHref(
   }
 
   if (productId === 'love-question') return '/compatibility/input';
+  // 2026-08-25 — 990원 당일권: 결제 후 해당 메뉴로 복귀. 간단운세는 결제 직전 보던
+  //   결과(sourceSessionId=slug)로 — 입력창 재진입 제보의 수정(post-payment-redirect 와 동일 규칙).
+  if (productId === 'today-basic') {
+    const params = new URLSearchParams({ concern: options.scope?.trim() || 'general' });
+    if (normalizedSlug) {
+      params.set('sourceSessionId', normalizedSlug);
+      return `/today-fortune/result?${params.toString()}`;
+    }
+    return `/today-fortune?${params.toString()}`;
+  }
+  if (productId === 'tarot-daily') return '/tarot/daily';
+  if (productId === 'dream-search') return '/dream';
+  if (productId === 'taekil') return '/taekil';
+  if (productId === 'dialogue-entry') return '/dialogue';
   if (productId === 'compat-reading') return '/compatibility/input';
   // 2026-07-19 — 주제 단품은 today-detail 화면을 해당 주제로 연다(재물=wealth, 일=career).
   //   기존 `/saju/new?topic=...` 은 **입력폼**이고 그 폼은 topic 을 읽지도 않아

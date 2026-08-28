@@ -10,22 +10,10 @@ import { cn } from '@/lib/utils';
 // 2026-05-15 handoff PR-G1: 59 m-hanja — ZodiacChip 한자 mount 시 entry morph.
 import '@/components/motion/motion-primitives.css';
 
-export const ZODIAC = {
-  rat:     { ko: '쥐',    han: '子', color: 'var(--app-indigo)' },
-  ox:      { ko: '소',    han: '丑', color: 'var(--app-jade)' },
-  tiger:   { ko: '범',    han: '寅', color: 'var(--app-coral)' },
-  rabbit:  { ko: '토끼',  han: '卯', color: 'var(--app-pink)' },
-  dragon:  { ko: '용',    han: '辰', color: 'var(--app-plum)' },
-  snake:   { ko: '뱀',    han: '巳', color: 'var(--app-amber)' },
-  horse:   { ko: '말',    han: '午', color: 'var(--app-coral)' },
-  sheep:   { ko: '양',    han: '未', color: 'var(--app-jade)' },
-  monkey:  { ko: '원숭이', han: '申', color: 'var(--app-amber)' },
-  rooster: { ko: '닭',    han: '酉', color: 'var(--app-pink-strong)' },
-  dog:     { ko: '개',    han: '戌', color: 'var(--app-sky)' },
-  pig:     { ko: '돼지',  han: '亥', color: 'var(--app-indigo)' },
-} as const;
-
-export type ZodiacKey = keyof typeof ZODIAC;
+// ZODIAC 데이터는 zodiac-data.ts 로 분리(테스트 러너 .tsx 임포트 불가) — 재수출로 호환 유지.
+export { ZODIAC, type ZodiacKey } from './zodiac-data';
+import { ZODIAC } from './zodiac-data';
+import type { ZodiacKey } from './zodiac-data';
 
 const SIZE = {
   sm: 'h-10 w-10 rounded-[13px] text-[21.8px]',
@@ -49,28 +37,25 @@ export function ZodiacChip({
   shine = true,
 }: ZodiacChipProps) {
   const z = ZODIAC[kind] ?? ZODIAC.rat;
+  const validKind = ZODIAC[kind] ? kind : 'rat';
+  // 2026-08-26 — 스펙 §4 배선: 컬러 사각+한자 칩 → 12지신 인장(도장) 문양 이미지.
+  //   호출부 42곳 계약(kind/size/className) 불변 — 내부 렌더만 교체. shine 은 이미지에선
+  //   무의미해 무시(시그니처 유지). 인장 자산: public/images/gangi/guardians/seals/{key}.png.
   return (
     <span
       role="img"
       aria-label={`${z.ko}(${z.han})`}
-      className={cn(
-        'relative inline-flex items-center justify-center font-bold text-white',
-        shine && [
-          'before:pointer-events-none before:absolute before:inset-0',
-          'before:rounded-[inherit] before:bg-gradient-to-b',
-          'before:from-white/20 before:to-transparent',
-        ],
-        SIZE[size],
-        className
-      )}
-      style={{
-        background: z.color,
-        fontFamily: 'var(--font-han)',
-        letterSpacing: '-0.02em',
-      }}
+      className={cn('relative inline-flex items-center justify-center', SIZE[size], className)}
     >
-      {/* 2026-05-15 handoff 59 m-hanja — 한자 글자에 mount 시 entry morph 적용. */}
-      <span className="motion-hanja-entry">{z.han}</span>
+      <img
+        src={`/images/gangi/guardians/seals/${validKind}.png`}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-contain"
+        draggable={false}
+      />
     </span>
   );
 }

@@ -24,6 +24,27 @@ import {
   isFreeDailyExempt,
   isFreeDailyUsed,
 } from '@/lib/free-usage/daily-limit';
+import { dailyPeriodKey } from '@/lib/credits/member-benefits';
+
+// 2026-08-26 — "오늘 본 운세 다시 열어보기"(사용자 지시). 성공 소비 시 입력 서명을 쿠키로
+//   남기고, 같은 날 같은 입력이 다시 오면 하루 1회에 걸려도 **소비 없이** 재계산해 돌려준다
+//   (엔진이 결정론이라 같은 날 같은 입력 = 같은 결과). 다른 사람 입력은 서명이 달라 여전히 차단.
+const FREE_TODAY_REPLAY_COOKIE = 'gj_free_today_sig';
+
+function freeTodayReplaySignature(payload: TodayFortuneBirthPayload): string {
+  const core = JSON.stringify([
+    payload.year, payload.month, payload.day,
+    payload.unknownBirthTime ? '' : payload.hour,
+    payload.unknownBirthTime ? '' : payload.minute,
+    payload.unknownBirthTime ? 1 : 0,
+    payload.gender ?? '',
+    payload.calendarType ?? 'solar',
+    payload.timeRule ?? 'standard',
+  ]);
+  let h = 5381;
+  for (let i = 0; i < core.length; i += 1) h = ((h * 33) ^ core.charCodeAt(i)) >>> 0;
+  return h.toString(16);
+}
 
 /**
  * 사용자 상황 객체를 한 줄 한국어 요약으로 변환.
@@ -125,11 +146,18 @@ export async function POST(req: NextRequest) {
   //   실패했을 때 사용자가 결과도 못 받고 오늘 기회만 잃는다.
   //   (검사~소비 사이 동시 요청이 둘 다 통과할 수 있으나, 무료 티어 제한이라 감수.)
   const memberExempt = await isFreeDailyExempt(user?.id ?? null);
+  const replaySignature = `${dailyPeriodKey()}:${freeTodayReplaySignature(payload)}`;
+  let replayGranted = false;
   if (!memberExempt && (await isFreeDailyUsed('today', user?.id ?? null))) {
-    return NextResponse.json(
-      { error: freeDailyLimitMessage('today'), code: 'free_daily_limit' },
-      { status: 429 }
-    );
+    // 같은 날 같은 입력의 재요청이면 소비 없이 통과(다시 열어보기).
+    if (req.cookies.get(FREE_TODAY_REPLAY_COOKIE)?.value === replaySignature) {
+      replayGranted = true;
+    } else {
+      return NextResponse.json(
+        { error: freeDailyLimitMessage('today'), code: 'free_daily_limit' },
+        { status: 429 }
+      );
+    }
   }
 
   const counselorId = normalizeMoonlightCounselor(rawPayload?.counselorId);
@@ -251,15 +279,19 @@ export async function POST(req: NextRequest) {
 
   // 결과를 성공적으로 만든 뒤에야 하루 1회를 소비한다(위 판정과 짝).
   //   쿠키는 응답에 실어야 브라우저에 남고, 계정 카운트는 RPC 가 원자적으로 올린다.
-  if (!memberExempt) {
+  //   replayGranted(오늘 이미 소비한 같은 입력의 재열람)면 소비도 서명 갱신도 하지 않는다.
+  if (!memberExempt && !replayGranted) {
     const spent = await consumeFreeDaily('today', user?.id ?? null);
-    response.cookies.set(spent.cookie.name, spent.cookie.value, {
+    const cookieAttrs = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: spent.cookie.maxAge,
       secure: process.env.NODE_ENV === 'production',
-    });
+    };
+    response.cookies.set(spent.cookie.name, spent.cookie.value, cookieAttrs);
+    // 재열람 서명 — 오늘 소비한 입력을 기억해 같은 입력의 재요청만 무소비 통과시킨다.
+    response.cookies.set(FREE_TODAY_REPLAY_COOKIE, replaySignature, cookieAttrs);
   }
   return response;
 }

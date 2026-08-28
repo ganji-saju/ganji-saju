@@ -5,7 +5,7 @@ import path from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MEGA_NAV, resolveActiveGroup } from './mega-nav-data';
+import { MEGA_NAV, resolveActiveGroup, MEGA_NAV_BAR } from './mega-nav-data';
 
 const mocks = vi.hoisted(() => ({ push: vi.fn(), onClose: vi.fn() }));
 
@@ -106,11 +106,17 @@ describe('system guide navigation', () => {
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
-  it('/guide에서 모바일 상세 콘텐츠는 운세로 fallback되어 목록과 활성 tab을 유지한다', async () => {
+  it('/guide에서 모바일 상세 콘텐츠는 첫 그룹으로 fallback되어 목록과 활성 tab을 유지한다', async () => {
     await render(<MobileNavSheet open onClose={mocks.onClose} initialActiveLabel="사용방법" />);
 
+    // 지키려는 계약: 항목이 있는 그룹으로 떨어져 **목록이 비지 않고 탭이 하나 선택된다**.
+    // 2026-08-28 — 그전엔 '운세'를 박아뒀는데, 그건 당시 첫 그룹이라 우연히 맞았을 뿐이다.
+    // 탭 순서는 GROUP_ORDER 가 소유한다 — 순서를 바꿀 때마다 이 테스트가 깨지면 안 된다.
+    const firstListed = MEGA_NAV.find((group) => !group.simple)?.label;
     expect(document.querySelectorAll('.mobile-nav-sheet-item').length).toBeGreaterThan(0);
-    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe('운세');
+    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(
+      firstListed,
+    );
   });
 
   it('모바일 사용방법 링크는 렌더 스타일에서 최소 44px 터치 영역을 가진다', async () => {
@@ -124,5 +130,32 @@ describe('system guide navigation', () => {
 
     const guide = document.querySelector('.mobile-nav-sheet-guide');
     expect(getComputedStyle(guide!).minHeight).toBe('44px');
+  });
+});
+
+// 🔴 회귀 가드(2026-08-28) — 상단바 순서는 **상품 축**이다. 하단 dock 이 이미 '어디로 가나'를
+//   담당하므로 상단이 같은 축이면 겹친다. 그리고 궁합은 홈에서 '추천' 배지를 단 2번째
+//   상품인데 상단 진입로가 없었다 — 다시 빠지면 여기서 실패한다.
+describe('상단바 우선순위', () => {
+  it('주력(사주)이 첫 칸이고 궁합에 진입로가 있다', () => {
+    const labels = MEGA_NAV_BAR.map((g) => g.label);
+    expect(labels[0]).toBe('사주');
+    expect(labels).toContain('궁합');
+    // 무료 허브는 유입용이라 결제 메뉴 뒤. 잠금 ON 이면 통째로 사라지므로 앞자리에 두면
+    // 환경마다 첫 메뉴가 달라진다.
+    const free = labels.indexOf('운세');
+    if (free >= 0) expect(free).toBeGreaterThan(labels.indexOf('대화'));
+    // 도움말은 마지막.
+    expect(labels[labels.length - 1]).toBe('사용방법');
+  });
+
+  it('홈에서는 아무 메뉴도 강조하지 않는다', () => {
+    // 홈은 어느 메뉴에도 속하지 않는다. 기본값으로 첫 그룹을 칠하면 거짓 강조가 된다.
+    expect(resolveActiveGroup('/')).toBe('');
+  });
+
+  it('궁합 경로는 궁합 메뉴를 활성화한다(사주로 흡수되지 않는다)', () => {
+    expect(resolveActiveGroup('/compatibility')).toBe('궁합');
+    expect(resolveActiveGroup('/saju/new')).toBe('사주');
   });
 });

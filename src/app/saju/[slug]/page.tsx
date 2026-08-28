@@ -20,7 +20,12 @@ import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-c
 // 2026-05-15 handoff PR-C: 52 m-reveal — 결과 카드 stagger 등장.
 import { MotionResultReveal } from '@/components/motion/motion-primitives';
 import '@/components/motion/motion-primitives.css';
-import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
+// 2026-08-25 전면 개편 — 탭(총평/대운/상세/명식/성향/오행) 제거, 단일 페이지 합성(사용자 지시).
+import { MyeongsikSection } from '@/features/saju-detail/sections/myeongsik-section';
+import { NatureSection } from '@/features/saju-detail/sections/nature-section';
+import { ElementsSection } from '@/features/saju-detail/sections/elements-section';
+import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section';
+import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { getSajuTodayDetailEntitlement } from '@/lib/saju/today-detail-access';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
@@ -40,13 +45,18 @@ import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortun
 import { unifyScoresWithIljinScore } from '@/lib/today-fortune/unify-saju-scores';
 // 2026-05-16 PR #181 — 6 영역 카드 통일 (총운/직장/재물/연애/관계/컨디션).
 //   사주 메인/상세 + 운세 페이지에서 공유하는 SajuAreaCardsSection 사용.
-import { SajuAreaCardsSection } from '@/components/saju/saju-area-cards-section';
 // 2026-05-22 Phase 2+3 스펙 — 사주 점수 컴포넌트(원형 점수 + 5요소 산출내역 + 오행 막대).
-import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate, OhaengChart } from '@/components/saju-score';
+import { SajuScoreCard, ScoreBreakdownCard, ScoreLockGate } from '@/components/saju-score';
+import { ComprehensiveToc } from '@/components/saju/comprehensive-toc';
+import { TodayFortuneDetailClient } from '@/features/today-fortune/today-fortune-detail-client';
+// 2026-08-25 Phase 2 — 수호신 배정: 연주 지지 → 자기 띠 수호신이 전담 해설자로.
+import { GuardianAssignmentCard } from '@/components/saju/guardian-assignment-card';
+import { guardianFromYearBranch } from '@/lib/guardians';
+import { buildLifetimeReport } from '@/domain/saju/report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
-import { priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
+import { compareLabelFromMap, priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
 // Task 8 — 카카오 친구추가 무료쿠폰 CTA(사주 결과 하단). slug 없이 렌더 —
@@ -379,6 +389,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
   //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
   const scoreUnlocked = await getScoreUnlockEntitlement(slug);
+  // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
+  //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
+  //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
+  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
+  const todayDetailUnlocked = scoreUnlocked && todayDetailEntitlement;
 
   // 2026-08-12 — 페이월 노출을 퍼널에 기록한다(migration 073).
   //   지금까지 퍼널의 첫 칸이 비어 있어 "결과를 본 사람 중 몇 %가 결제창까지 갔나"를
@@ -387,9 +402,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   여기 분모를 세우는 게 페이월 판단의 전제다.
   //   ⚠️ after() — 렌더 경로에서 await 하면 응답이 그만큼 느려진다.
   if (!scoreUnlocked) {
-    after(() =>
-      logPaywallImpression({ packageId: 'taste_score_total', surface: 'saju-result', slug })
-    );
+    after(() => {
+      logPaywallImpression({ packageId: 'taste_score_total', surface: 'saju-result', slug });
+      // 2026-08-24 Phase 1 — 간판(종합 리포트) 목차 노출도 같은 분모로 기록.
+      logPaywallImpression({ packageId: 'bundle_comprehensive', surface: 'saju-result-toc', slug });
+    });
   }
   const rawReport = buildSajuReport(input, sajuData, topic);
   // 2026-05-16 PR #179 — 오늘 운세 페이지와 점수 일치 보장.
@@ -407,6 +424,29 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     userName: input.name?.trim() || null,
   });
 
+  // 2026-08-24 Phase 1 — 종합 리포트 목차의 개인화 훅. 대운 타임라인(결정론, 무료 deep 챕터와
+  //   동일 빌더)에서 '다음 대운 시작 나이'를 뽑는다. 연도 환산은 만나이/세는나이 모호성 때문에
+  //   하지 않는다(ageLabel 그대로만 인용 — 틀린 숫자를 약속하지 않는 원칙).
+  //   2026-08-25 단일 페이지화 — 같은 빌더 결과를 대운 섹션(DaewoonSection)도 쓰므로 1회만 계산.
+  let lifetimeCycles: LifetimeMajorLuckCycle[] = [];
+  try {
+    lifetimeCycles = buildLifetimeReport(input, sajuData).majorLuckTimeline.cycles.filter(
+      (cycle) => cycle.ganzi !== '대운 미산정'
+    );
+  } catch {
+    lifetimeCycles = []; // 대운 섹션·훅은 장식 — 계산 실패가 페이지를 못 깨게 한다.
+  }
+  let comprehensiveHook: string | null = null;
+  if (!scoreUnlocked) {
+    const currentIdx = lifetimeCycles.findIndex((cycle) => cycle.isCurrent);
+    const next = currentIdx >= 0 ? lifetimeCycles[currentIdx + 1] : null;
+    const nextStartAge = next?.ageLabel?.match(/^(\d+)/)?.[1] ?? null;
+    if (nextStartAge) {
+      const who = input.name?.trim() ? `${input.name.trim()}님의` : '당신의';
+      comprehensiveHook = `${who} 다음 대운 전환은 ${nextStartAge}세 — 그 10년의 흐름이 잠긴 항목 안에 있습니다.`;
+    }
+  }
+
   // 2026-05-22 — 총평 LLM 풀이는 아래 JSX 의 <TotalReviewSection>(Suspense 경계) 안에서 await 한다.
   //   여기서 직접 await 하면 LLM(수 초) 동안 페이지 전체 HTML 이 막혀 새로고침 시 흰 화면이 떴다.
   //   flag(OPENAI_INTERPRET_TOTAL_REVIEW) + personalizationContext 있을 때만 LLM, 아니면 결정론 narrative.
@@ -418,8 +458,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     { label: '일', pillar: sajuData.pillars.day },
     { label: '시', pillar: sajuData.pillars.hour },
   ];
+  // 2026-08-25 Phase 2 — 수호신 배정. 띠는 연도 계산이 아니라 연주 지지에서 파생
+  //   (입춘 경계를 엔진이 이미 처리). 매핑 실패 시 카드 생략(null 안전).
+  const guardian = guardianFromYearBranch(sajuData.pillars.year.branch);
   const punchReading = buildPunchReading(report);
-  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
   const todayDetailHref = todayDetailEntitlement
     ? buildSajuTodayDetailHref(slug)
     : buildSajuTodayDetailCheckoutHref(slug);
@@ -467,28 +509,59 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     },
   ];
 
+  // 2026-08-25 — 점수 섹션을 상수로: 미구매자는 목차 아래(잠금 게이트), 구매자는 결제 복귀
+  //   직후 최상단(수호신·요약 바로 뒤)에서 본다("결제한 보람" — 사용자 확정 순서).
+  const scoreSection = (
+    <section className="space-y-4">
+      <div>
+        <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
+          타고난 사주 점수
+        </div>
+        <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
+        <p
+          className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
+          style={{ wordBreak: 'keep-all' }}
+        >
+          타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값이에요.
+        </p>
+      </div>
+      <ScoreLockGate isUnlocked={scoreUnlocked} slug={slug} gradeLabel={sajuScore.label.title}>
+        <SajuScoreCard score={sajuScore} />
+        <ScoreBreakdownCard score={sajuScore} />
+      </ScoreLockGate>
+    </section>
+  );
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
         <SajuResultViewTracker slug={slug} />
 
-        <div className="space-y-5 sm:space-y-6">
+
+        <div className="space-y-12 sm:space-y-14">
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
               input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
-          <SajuScreenNav slug={slug} current="result" />
 
           <section className="space-y-4 px-1">
             {/* 2026-05-15 handoff 52 m-reveal — 결과 카드 7개 stagger 등장.
                 children 의 각 카드를 0.08s 간격으로 stagger reveal. useReducedMotion 자동 폴백. */}
             <MotionResultReveal staggerSeconds={0.08}>
-            {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips */}
+            {/* §0 수호신 배정 — "내 띠의 수호신이 읽어주는 사주"(스펙 콘셉트)의 첫 카드. */}
+            {guardian ? (
+              <GuardianAssignmentCard
+                guardian={guardian}
+                viewerName={input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}
+              />
+            ) : null}
+            {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips.
+                chip 은 장식용 dragon 고정이었다가 2026-08-25 사용자 띠로 정렬. */}
             <article
               className="rounded-[18px] border border-[var(--app-line)] p-5"
               style={{ background: 'var(--app-pink-soft)' }}
             >
               <div className="flex items-center gap-2.5">
-                <ZodiacChip kind="dragon" size="sm" />
+                <ZodiacChip kind={guardian?.key ?? 'dragon'} size="sm" />
                 <div className="text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
                   한 줄 요약
                 </div>
@@ -512,6 +585,36 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {formatBirthSummary(input)}
               </p>
             </article>
+
+            {/* 2026-08-25 사용자 확정 — 결제 복귀 직후 "바로 보람": 구매자는 점수·대운·상세가
+                최상단(요약 바로 뒤)에 온다. 상세는 오늘 자세히 화면과 동일 컴포넌트 인라인. */}
+            {scoreUnlocked ? (
+              <>
+                {scoreSection}
+                {lifetimeCycles.length > 0 ? (
+                  <section id="daewoon" className="scroll-mt-24 space-y-4">
+                    <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      대운 — 10년 단위 큰 흐름
+                    </h2>
+                    <DaewoonSection cycles={lifetimeCycles} />
+                  </section>
+                ) : null}
+                {todayDetailUnlocked ? (
+                  <section id="today-detail-inline" className="scroll-mt-24 space-y-4">
+                    <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                      상세 풀이 — 오늘 자세히
+                    </h2>
+                    <TodayFortuneDetailClient
+                      sourceSessionId={slug}
+                      concern={topic}
+                      paidProduct="today-detail"
+                      backHref={`/saju/${encodeURIComponent(slug)}`}
+                      embedded
+                    />
+                  </section>
+                ) : null}
+              </>
+            ) : null}
 
             {/* §1.55 PR #148 (Part B) — 사용자 입력 상황이 풀이에 반영됐음을 명시.
                 personalizationContext.userSituation 이 있으면 chip 카드,
@@ -585,36 +688,78 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </p>
             </section>
 
-            {/* §2.5 사주 종합 점수 — Phase 2+3 스펙(원형 점수 + 5요소 산출내역 per-factor 잠금 + 오행 막대) */}
-            <section className="space-y-4">
-              <div>
-                <div className="text-[13.8px] font-bold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  타고난 사주 점수
-                </div>
-                <h2 className="mt-1 text-[20.7px] font-extrabold text-[var(--app-ink)]">내 사주 종합 점수</h2>
-                <p
-                  className="mt-1 text-[13.8px] leading-[1.5] text-[var(--app-copy-soft)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  아래 &lsquo;오늘의 분야별 흐름&rsquo;과 다른 점수예요. 이건 타고난 사주 구조(일주·격국·용신·오행·관계)를 점수화한 값입니다.
-                </p>
-              </div>
-              <ScoreLockGate
-                isUnlocked={scoreUnlocked}
-                slug={slug}
-                gradeLabel={sajuScore.label.title}
-              >
-                <SajuScoreCard score={sajuScore} />
-                <ScoreBreakdownCard score={sajuScore} />
-              </ScoreLockGate>
-              <OhaengChart
-                data={sajuScore.ohaengChart}
-                guidanceText={sajuScore.ohaengChart.guidanceText}
-              />
+            {/* §2.4 종합사주 리포트 목차 — Phase 1 간판(bundle_comprehensive) 업셀.
+                만신령식 "무료 ✓ + 잠김 🔒" 리스트. 점수 미해제(=종합 미구매의 근사)일 때만.
+                개인화 훅은 대운 타임라인(무료 deep 와 동일 결정론 빌더)에서 다음 전환 나이를 뽑는다. */}
+            {/* 2026-08-25 단일 페이지 합성(사용자 확정 순서) — 무료 섹션(명식·성향·오행)을
+                9,900 결제 영역(목차·점수 잠금) **위**에 둔다: 무료 가치를 다 보여준 뒤 결제.
+                대운은 결제자 전용(아래) — 훅("그 10년의 흐름이 잠긴 항목 안에")과 정합.
+                구 탭 라우트는 앵커로 리다이렉트(id 변경 시 리다이렉트도 같이). */}
+            <section id="myeongsik" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                명식 — 내 사주의 뼈대
+              </h2>
+              <MyeongsikSection sajuData={sajuData} grounding={grounding} />
             </section>
 
-            {/* §3 분야별 흐름 — 6 영역 통일 카드 (PR #181, 공유 컴포넌트). */}
-            <SajuAreaCardsSection input={input} sajuData={sajuData} />
+            <section id="nature" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                성향 — 타고난 기질
+              </h2>
+              <NatureSection sajuData={sajuData} grounding={grounding} />
+            </section>
+
+            <section id="elements" className="scroll-mt-24 space-y-4">
+              <h2 className="border-t border-[var(--app-line)] pt-6 text-[22.5px] font-extrabold tracking-tight text-[var(--app-ink)]">
+                오행 — 기운의 균형
+              </h2>
+              <ElementsSection sajuData={sajuData} />
+            </section>
+
+            {!scoreUnlocked ? (
+              <div id="comprehensive-toc">
+                <ComprehensiveToc
+                  slug={slug}
+                  hookLine={comprehensiveHook}
+                  priceLabel={priceLabelFromMap(priceMap, 'bundle_comprehensive')}
+                  compareLabel={compareLabelFromMap(priceMap, 'bundle_comprehensive')}
+                />
+              </div>
+            ) : null}
+
+            {/* §2.5 사주 종합 점수 — 미구매자 위치(잠금 게이트+스티키 CTA). 구매자는 최상단. */}
+            {!scoreUnlocked ? scoreSection : null}
+
+            {/* 결제 동선(2026-08-25 확정) — 미구매자에겐 페이지 전체에서 가격 오퍼는
+                9,900 종합 리포트 **하나**: 중간 목차(설득) + 하단 고정 CTA(기존
+                ScoreLockGate 스티키 바 '17항목 전부 열기'가 담당 — 별도 레이어를 새로
+                만들었다가 중복이라 제거했다). 상세(평생 리포트 49,000)는 **구매자에게만**
+                다음 단계로 — 한 화면에 가격 하나 원칙. */}
+            {scoreUnlocked ? (
+              <article
+                className="rounded-[18px] p-5 text-white"
+                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(15,23,42,0.18)' }}
+              >
+                <div
+                  className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
+                  style={{ color: 'var(--app-pink)' }}
+                >
+                  다음 단계
+                </div>
+                <h2 className="mt-1.5 text-[20.7px] font-extrabold leading-snug tracking-tight">
+                  상세 풀이 — 평생 소장 리포트
+                </h2>
+                <p className="mt-2 text-[14.4px] leading-[1.55]" style={{ opacity: 0.72 }}>
+                  대운 8단 + 세운 30년 + 십성 디테일 + PDF 보관까지, 평생 다시 꺼내 보는 상세판.
+                </p>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/premium`}
+                  className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white no-underline"
+                >
+                  상세 풀이 보기 →
+                </Link>
+              </article>
+            ) : null}
 
 
             {/* §4 더 보고 싶은 질문 — 가격 pill + 제목 + 한 줄 */}

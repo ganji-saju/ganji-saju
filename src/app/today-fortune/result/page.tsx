@@ -32,6 +32,7 @@ export default async function TodayFortuneResultPage({
   // 전면 유료화 잠금 — 무료 요약 결과 차단(결제 이력 있으면 통과).
   //   ⚠️ 위 `paid=today-detail` 복귀 리다이렉트 **뒤**에 있어야 한다.
   await guardLockedFreeEntry();
+  // 2026-08-25 — 간단운세는 무료 복귀(사용자 확정: 유료는 타로·대화상담만).
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">

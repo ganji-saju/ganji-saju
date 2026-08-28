@@ -90,7 +90,13 @@ export async function submitTodayFromProfile(
   const data = (await response.json().catch(() => null)) as TodayFortuneApiResponse | null;
 
   if (!response.ok || !data?.ok || !data.result) {
-    throw new Error(data?.error ?? '무료 결과를 만드는 중 오류가 있었습니다.');
+    // 2026-08-26 — 하루 1회 차단(free_daily_limit)을 클라가 구분해 "다시 열어보기" 버튼을
+    //   붙일 수 있게 code 를 함께 던진다(문구 매칭 금지 — 카피가 바뀌면 깨진다).
+    const error = new Error(data?.error ?? '무료 결과를 만드는 중 오류가 있었습니다.') as Error & {
+      code?: string;
+    };
+    error.code = (data as { code?: string } | null)?.code;
+    throw error;
   }
 
   // Task6b — 인입 퍼널 회귀 수정: 제출 성공 시 birth_form_completed + today_free_result_viewed 복원.

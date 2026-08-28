@@ -11,9 +11,12 @@ import {
   parseYearCoreScopeKey,
   parseYearMonthScope,
   parseYearScope,
+  buildDayPassScopeKey,
+  resolvePaymentProductScope,
 } from './product-scope';
+import { getPackage } from './catalog';
 
-declare const test: (name: string, fn: () => void) => void;
+declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 test('payment scope keys isolate today detail, month, year, and lifetime products', () => {
   assert.equal(buildTodayDetailScopeKey('reading-abc'), 'today:reading-abc');
@@ -86,4 +89,24 @@ test('buildPurchasedProductHref: today-detail from=saju 는 사주 경로 유지
     buildPurchasedProductHref('today-detail', 'sess-1', { from: 'saju', scope: 'love_play' }),
     '/saju/sess-1/today-detail'
   );
+});
+
+// 🔴 2026-08-28 — 택일 3,300원 당일권 신설. scope 를 틀리면 돈이 틀린다:
+//   global(null)로 새면 3,300원 한 번에 **영구권**이 나가고, 반대로 날짜가 안 맞으면
+//   같은 날 재진입에 또 청구된다. 새 당일권을 붙일 때 여기부터 확인한다.
+test('택일은 당일권(KST 날짜 scope)으로 결제된다', async () => {
+  const pkg = getPackage('taste_taekil');
+  assert.ok(pkg, 'taste_taekil 패키지가 있어야 함');
+  assert.equal(pkg.price, 3300, '메뉴·체크아웃이 3,300원이라고 말한다');
+
+  const now = new Date('2026-08-28T02:00:00Z'); // KST 11:00 — 같은 날
+  const scope = await resolvePaymentProductScope({ pkg, slug: null, scope: null, now });
+  assert.ok(scope, '택일 결제 scope 가 null 이면 권한이 안 생긴다');
+  assert.equal(scope.productId, 'taekil');
+  assert.equal(scope.kind, 'day-pass', 'global 로 새면 3,300원에 영구권이 나간다');
+  assert.equal(scope.scopeKey, buildDayPassScopeKey(now));
+});
+
+test('buildPurchasedProductHref: 택일 결제 후 복귀는 /taekil', () => {
+  assert.equal(buildPurchasedProductHref('taekil', null), '/taekil');
 });

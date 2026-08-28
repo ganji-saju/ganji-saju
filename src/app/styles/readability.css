@@ -3,9 +3,12 @@
    from feature work so it can be reverted independently. */
 
 :root {
+  /* 2026-08-25 전면 개편 — PC 가로폭 일괄화(도령 벤치마크, 사용자 지시 "서브마다 제각각").
+     page/result/home 3변수가 브레이크포인트마다 34/40/44 로 벌어지던 것을 **전 페이지·
+     전 구간 34rem 단일값**으로 통일. 세 변수는 소비처가 많아 이름은 유지하고 값만 맞춘다. */
   --readable-page-max: 34rem;
-  --readable-result-max: 33rem;
-  --readable-home-max: 30rem;
+  --readable-result-max: 34rem;
+  --readable-home-max: 34rem;
   --readable-section-gap: clamp(1.25rem, 4vw, 2rem);
   --readable-card-gap: clamp(0.9rem, 3vw, 1.25rem);
   --readable-card-pad: clamp(1.2rem, 4.5vw, 1.75rem);
@@ -40,6 +43,15 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   line-height: var(--app-leading-normal);
 }
 
+/* 2026-08-26 — 푸터(법정 고지)는 위 본문 최소 크기 부양에서 제외: footer 루트의
+   인라인 폰트(10px 이하, 사용자 지시)를 상속받게 한다. 이 규칙이 없으면 상호·사업자
+   정보(dt/dd)·면책(p)만 본문 크기로 남아 푸터 축소가 절반만 적용된다. */
+.app-shell footer.site-footer-redesign :where(p, dt, dd, summary, li),
+.gangi-subpage-shell footer.site-footer-redesign :where(p, dt, dd, summary, li) {
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .app-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]),
 .gangi-subpage-shell :where(.text-xs, [class*="text-[10"], [class*="text-[11"], [class*="text-[12"]) {
   font-size: var(--app-text-sm) !important;
@@ -67,8 +79,31 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   padding-inline: clamp(1rem, 4vw, 2rem);
 }
 
+/* 2026-08-26 — 사이트 전역 세로 호흡(사용자 지시: 단락·구분 사이 최소 50~80px, 시원시원하게).
+   서브페이지(AppPage) 최상위 단락 간격을 이 한 곳에서 강제 — 페이지별 space-y-* 를 덮는다
+   (48px, sm+ 56px; 홈은 gangi-home-client 의 pt-* 가 담당). 채팅방은 대화 UI 라 제외.
+   답답/과함 조정은 여기 두 값만 바꾸면 전 페이지에 적용된다. */
+/* :not() 목록에 script 등 비렌더 요소 필수 — zodiac/star-sign/dream-interpretation 은
+   AppPage 첫 자식이 JSON-LD <script> 라, 이를 세면 첫 가시 콘텐츠 위에 간격이 얹혀
+   상단이 페이지마다 벌어진다(2026-08-26 사용자 적발, /zodiac/pig). */
+.app-page.gangi-subpage:not(.gangi-chat-room-page)
+  > :not([hidden], script, style, link, template)
+  ~ :not([hidden], script, style, link, template) {
+  margin-block-start: 3rem !important;
+}
+@media (min-width: 640px) {
+  .app-page.gangi-subpage:not(.gangi-chat-room-page)
+    > :not([hidden], script, style, link, template)
+    ~ :not([hidden], script, style, link, template) {
+    margin-block-start: 3.5rem !important;
+  }
+}
+
 .app-page-spacious {
-  padding-top: clamp(3rem, 7vw, 5rem);
+  /* 2026-08-26 — 상단메뉴~첫 콘텐츠(서브타이틀) 간격 통일(사용자 지시: 페이지마다 제각각).
+     clamp(3rem,7vw,5rem)=48~80px 이던 것을 전 구간 20px 단일값으로. components.css 의
+     미디어 오버라이드도 같은 값 — 바꿀 땐 두 곳을 함께. */
+  padding-top: 1.25rem;
   padding-bottom: max(6rem, calc(var(--app-mobile-dock-clearance) + 1.75rem));
 }
 
@@ -274,15 +309,20 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 .gangi-service-grid,
-.gangi-star-sign-grid,
 .gangi-free-actions {
   gap: 0.9rem;
   padding-inline: clamp(0.9rem, 3.8vw, 1.25rem);
 }
 
+/* 별자리 12칸 그리드 — 패널(p-5) 안이라 추가 좌우 패딩 불필요: 걷어서 트랙을 넓힌다
+   (4열 트랙 91px 에 5글자 이름이 꽉 차 어긋나 보이던 것, 2026-08-26 사용자 재제보). */
+.gangi-star-sign-grid {
+  gap: 0.55rem;
+  padding-inline: 0;
+}
+
 .gangi-service-card,
-.gangi-free-action,
-.gangi-star-sign-card {
+.gangi-free-action {
   min-height: 10.5rem;
   padding: 1.08rem;
   border-color: var(--readable-soft-border);
@@ -296,8 +336,7 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 .gangi-card-body h2,
-.gangi-free-action strong,
-.gangi-star-sign-card strong {
+.gangi-free-action strong {
   font-size: 1.08rem;
   line-height: 1.38;
 }
@@ -305,10 +344,33 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 .gangi-card-body p,
 .gangi-card-body span,
 .gangi-free-action em,
-.gangi-free-label,
-.gangi-star-sign-card em {
+.gangi-free-label {
   font-size: 0.95rem;
   line-height: 1.55;
+}
+
+/* 2026-08-26 — 별자리 12칸 카드를 위 공유 확대에서 분리(사용자 제보: 글자가 박스를
+   넘치고 줄이 안 맞음). 4열 트랙(~110px)에 5글자 이름·날짜가 들어가야 하므로 전용
+   크기 + 이름/날짜 모두 한 줄 고정(nowrap) → 카드 높이가 통일돼 아이콘 줄이 맞는다. */
+.gangi-star-sign-card {
+  min-height: 8.2rem;
+  padding: 0.85rem 0.3rem;
+  border-color: var(--readable-soft-border);
+  box-shadow: var(--readable-shadow);
+}
+
+.gangi-star-sign-card strong {
+  max-width: 100%;
+  font-size: 0.86rem;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.gangi-star-sign-card em {
+  max-width: 100%;
+  font-size: 0.73rem;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .gangi-subpage-shell {
@@ -625,6 +687,12 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
     --readable-result-max: 38rem;
     --readable-home-max: 34rem;
   }
+}
+
+
+
+@media (min-width: 768px) {
+  /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem, :root 기본값 그대로. */
 
   .gangi-subpage-shell .app-page.gangi-subpage,
   .gangi-subpage-shell .app-page.gangi-subpage.saju-intake-page,
@@ -640,11 +708,7 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
 }
 
 @media (min-width: 1024px) {
-  :root {
-    --readable-page-max: 44rem;
-    --readable-result-max: 42rem;
-  }
-
+  /* 폭 확장 삭제(가로폭 일괄화) — 전 구간 34rem. */
   .app-page {
     width: min(100%, 94rem);
   }
@@ -663,4 +727,52 @@ body :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) 
   .app-mobile-dock-label {
     font-size: 0.82rem !important;
   }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2026-08-26 — 한지 개방(사용자 지시 "모든 페이지의 흰 배경·박스를 걷어내고
+   로그인 화면처럼"). 콘텐츠 표면의 흰 상자를 전면 투명화한다 — 테두리는 남겨
+   구획만 유지, 채움과 그림자는 제거. 되돌리기 = 이 블록 삭제.
+   · 대상: Tailwind bg-white(및 /90 등 변형)·인라인 background 흰색·패널 유틸.
+   · 제외: 컨트롤(button/input/select — 어포던스), 헤더/메뉴 시트 등 크롬,
+     채팅 말풍선(dialogue-reports 자체 클래스라 애초에 안 걸림).
+   · 특정 요소만 흰 배경을 유지해야 하면 해당 요소에 .keep-white 를 붙인다. */
+.app-shell :where(div, section, article, aside, li, details, summary, figure, blockquote, a, p, span):where(
+    .bg-white,
+    [class*="bg-white/"],
+    [style*="background: white"],
+    [style*="background:#fff"],
+    [style*="background: #fff"],
+    [style*="background: rgb(255, 255, 255"],
+    [style*="background-color: white"],
+    [style*="background-color: #fff"]
+  ):not(.keep-white) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-shell :where(.app-panel, .app-panel-muted, .app-feature-card, .app-feature-card-soft,
+    .app-feature-card-muted, .app-section-frame, .app-section-frame-lg, .app-hero-card,
+    .gangi-payment-row, .gangi-plan-card):not(.keep-white) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 홈 컬럼 — 430px 흰 기둥을 한지 위로 개방. */
+.gangi-home {
+  background: transparent !important;
+}
+
+/* 서브페이지 셸/컬럼 — subpages.css 의 흰색 강제(#fff !important)를 한지 톤으로 되돌린다
+   (.app-shell 한지 그라데이션과 동일값). 컬럼(.gangi-subpage)은 투명. */
+.gangi-subpage-shell {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(179, 55, 42, 0.05), transparent 34%),
+    linear-gradient(180deg, #fbf7ee 0%, #f5efe3 52%, #faf6ec 100%) !important;
+}
+
+.gangi-subpage,
+.app-shell .app-page.gangi-subpage {
+  background: transparent !important;
 }

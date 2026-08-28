@@ -34,6 +34,17 @@ export function buildTasteProductHref(
     if (slug) params.set('sourceSessionId', slug);
     return `/today-fortune/detail?${params.toString()}`;
   }
+  // 2026-08-25 — 990원 당일권(간단운세): 결제 직전 보던 **결과 화면으로 복귀**.
+  //   사용자 제보: 결제 후 입력창으로 돌아가 '풀이'를 다시 눌러야 했다. 게이트가
+  //   slug=sourceSessionId·scope=concern 을 주문에 실어 보내면 여기서 결과 URL 복원.
+  if (product === 'today-basic') {
+    const params = new URLSearchParams({ concern: scope || 'general', paid: product });
+    if (slug) {
+      params.set('sourceSessionId', slug);
+      return `/today-fortune/result?${params.toString()}`;
+    }
+    return `/today-fortune?${params.toString()}`;
+  }
   // 궁합 소액 풀이 — 글로벌 love-question 과 per-couple compat-reading 은 동일하게
   // 궁합 결과(깊은 풀이)로 복귀시킨다. compat-reading 분기 누락이 결제 후 사주
   // 프리미엄 오라우팅(404)의 근인이었다. result page 가 paid=love-question /
@@ -57,6 +68,11 @@ export function buildTasteProductHref(
   // 오늘 풀세트(묶음) — 점수 풀이 5항목은 사주 결과 화면에서 직접 열리고 오늘 자세히도
   // 여기서 이어진다. 구성품을 모두 볼 수 있는 허브(사주 결과)로 보낸다.
   if (slug && product === 'bundle_today_set') {
+    return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
+  }
+  // 2026-08-25 — 종합 리포트(9,900): 사주 결과로 복귀. 결과 페이지가 구매자에겐 점수·대운을
+  //   최상단에 올리고 상세(오늘 자세히)를 아래 인라인으로 잇는다(사용자: "결제한 보람").
+  if (slug && product === 'bundle_comprehensive') {
     return `/saju/${encodeURIComponent(slug)}?payment=confirmed&product=${product}`;
   }
   // 2026-06-27 — 종합점수(score-total)·요소(score-factor): 결제 후 사주 결과 화면에서 점수 블록이

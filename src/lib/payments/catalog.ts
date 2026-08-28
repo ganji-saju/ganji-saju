@@ -20,7 +20,18 @@ export type TasteProductId =
   //   per-factor(score-factor) 모델 통합. reading scope(reading:{readingKey})로 grant.
   | 'score-total'
   // 2026-05-23 ① — 궁합 1회권(커플 단위). love-question(글로벌·연애 마음 확인)과 분리.
-  | 'compat-reading';
+  | 'compat-reading'
+  // 2026-08-25 전면 개편 — 구 무료 메뉴 4종의 990원 라이트 언락 **당일권**
+  //   (KST 날짜 scope 'day:{YYYY-MM-DD}', product-scope.buildDayPassScopeKey).
+  //   별자리·띠운세만 무료로 남긴다(사용자 확정). 처음 global 영구권으로 냈다가
+  //   같은 날 당일권으로 전환(사용자 확정).
+  | 'today-basic'
+  | 'tarot-daily'
+  | 'dream-search'
+  | 'dialogue-entry'
+  // 2026-08-28 — 택일(좋은 날) 유료화. 990원 4종과 같은 **당일권** 모델이지만 값은 3,300원:
+  //   하루치 운세가 아니라 '결혼·이사·계약 날짜를 고르는' 결정 도구라 단품 라인(3,300)에 붙인다.
+  | 'taekil';
 
 // 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
 // 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
@@ -96,6 +107,48 @@ export const PAYMENT_PACKAGES = [
     tasteProductId: 'today-detail',
     requiresSlug: true,
     compareAt: 9900,
+  },
+  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). **당일권**.
+  {
+    id: 'taste_today_basic',
+    name: '간단운세 당일권',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'today-basic',
+  },
+  {
+    id: 'taste_tarot_daily',
+    name: '타로 세 장 당일권',
+    credits: 0,
+    // 2026-08-28 — 990 → 3,300(사용자 지시). 단품 라인(3,300)에 합류.
+    price: 3300,
+    kind: 'taste_product',
+    tasteProductId: 'tarot-daily',
+  },
+  {
+    id: 'taste_dream_search',
+    name: '꿈해몽 당일권',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'dream-search',
+  },
+  {
+    id: 'taste_dialogue_entry',
+    name: '대화상담 질문 3회',
+    credits: 0,
+    price: 990,
+    kind: 'taste_product',
+    tasteProductId: 'dialogue-entry',
+  },
+  {
+    id: 'taste_taekil',
+    name: '택일 당일권',
+    credits: 0,
+    price: 3300,
+    kind: 'taste_product',
+    tasteProductId: 'taekil',
   },
   {
     id: 'taste_love_question',
@@ -191,6 +244,30 @@ export const PAYMENT_PACKAGES = [
     compareAt: 9900,
   },
   {
+    // 2026-08-24 전면 개편 Phase 1 — 간판 상품(수정요청 PPT 7·8안). 17항목 종합 리포트.
+    //   구성 5종: 점수 언락(reading) + 오늘 상세(today) + 돈 패턴·일 흐름(global) + 올해 핵심(year).
+    //   ⚠️ monthly-calendar 는 구성품 금지 — scope(연-월)가 정적으로 파생 불가라 미지정 시
+    //     reading: scope 로 grant 되는데 조회측은 calendar: scope 만 인정 = 죽은 권한이 된다.
+    //     달력은 리포트 열람 화면의 크로스셀(3,300 단품)로 판다.
+    //   가격: 출시 기념가 9,900 / 정가(compareAt) 33,000. 단품가 합계(3,300×5=16,500) 대비도
+    //     40% 저렴해 앵커가 허수가 아니다. ⚠️ "70% 할인" 같은 할인율 표기는 금지
+    //     (표시광고법 — 33,000원 판매 이력 없음). 문구는 '출시 기념가'로 고정(BUNDLE_GUIDE·홈 카드).
+    id: 'bundle_comprehensive',
+    name: '종합사주 리포트',
+    credits: 0,
+    price: 9900,
+    kind: 'bundle',
+    requiresSlug: true,
+    compareAt: 33000,
+    components: [
+      { tasteProductId: 'score-total' },
+      { tasteProductId: 'today-detail' },
+      { tasteProductId: 'money-pattern' },
+      { tasteProductId: 'work-flow' },
+      { tasteProductId: 'year-core' },
+    ],
+  },
+  {
     // 2026-05-23 — 티어 A 묶음. today-detail + 점수 풀이 F1~F5 전체.
     // confirm 이 components 를 순회해 6개 entitlement 를 개별 grant(1결제 = N권한).
     // 2026-06-26 — 묶음열기 9,900원 → 19,800원.
@@ -236,6 +313,11 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'score-factor': 'taste_score_factor',
   'score-total': 'taste_score_total',
   'compat-reading': 'taste_compat_reading',
+  'today-basic': 'taste_today_basic',
+  'tarot-daily': 'taste_tarot_daily',
+  'dream-search': 'taste_dream_search',
+  'dialogue-entry': 'taste_dialogue_entry',
+  taekil: 'taste_taekil',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -248,7 +330,12 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'year-core' ||
     value === 'score-factor' ||
     value === 'score-total' ||
-    value === 'compat-reading'
+    value === 'compat-reading' ||
+    value === 'today-basic' ||
+    value === 'tarot-daily' ||
+    value === 'dream-search' ||
+    value === 'dialogue-entry' ||
+    value === 'taekil'
   );
 }
 

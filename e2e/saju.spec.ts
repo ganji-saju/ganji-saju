@@ -16,7 +16,7 @@
 // 들이 storageState 로 재사용. credentials 미설정 환경에서는 auth-setup 이 skip
 // → 본 spec 도 dependency 로 자동 skip (CI 안전).
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { hasTestUser, getTestUser } from './fixtures/test-user';
 import { resolveProfileReadingSlug } from './fixtures/reading-slug';
 import { resolveTestUserId, resetFreeDailyUsage } from './fixtures/entitlement-helpers';
@@ -31,55 +31,36 @@ test.beforeEach(async () => {
   test.skip(!hasTestUser(), 'E2E_TEST_USER_EMAIL/PASSWORD 미설정 — Phase 2B skip');
 });
 
-// 6 영역 카드 라벨 — UNIFIED_AREA_LABELS 와 동기화.
-// src/lib/today-fortune/compute-saju-area-scores.ts 변경 시 본 배열도 갱신 필요.
-const UNIFIED_AREA_LABELS = [
-  '총운',
-  '직장·사업운',
-  '재물운',
-  '애정·연애운',
-  '인간관계운',
-  '컨디션·건강운',
-] as const;
+// 2026-08-29 — 6 영역 카드 라벨 상수와 extractAreaScores 헬퍼를 걷어냈다.
+//   그 UI 는 1035cd6d 로 사라졌고(사용자 확정), 산식 계약은 단위 테스트가 지킨다:
+//   src/server/today-fortune/saju-data-entry-invariant.test.ts
 
-// 6 영역 score 추출 — 페이지마다 DOM 구조가 다르므로 (사주 페이지 = SajuAreaCardsSection
-// vs 운세 페이지 = today-category-readings.tsx), heading/section 에 의존하지 않고
-// label 텍스트가 정확히 매칭되는 article 을 찾아 그 안의 첫 번째 숫자를 score 로 사용.
+// 🔴 2026-08-29 — 이 자리에 있던 '6 영역 카드' 가드(PR #181)를 **계약이 바뀌어** 교체한다.
+//   `1035cd6d` (사용자 확정: "중복·군더더기 제거 — '오늘의 분야별 흐름' 카드")이 사주
+//   결과에서 SajuAreaCardsSection 을 내렸고, 지금은 앱 어디에서도 렌더되지 않는다.
+//   즉 없는 UI 를 계속 단언하고 있었다 — 통과할 수 없는 가드는 가드가 아니다.
 //
-// 안전장치:
-// - exact text 매칭 (`label` 이 다른 article 본문에 substring 으로 포함돼도 무시)
-// - 0-100 범위 정수 검증
-async function extractAreaScores(page: Page): Promise<Record<string, number>> {
-  const scores: Record<string, number> = {};
-  for (const label of UNIFIED_AREA_LABELS) {
-    const article = page
-      .locator('article')
-      .filter({ has: page.getByText(label, { exact: true }) })
-      .first();
-    await expect(article, `${label} 카드 visible`).toBeVisible({ timeout: 10_000 });
-
-    const text = (await article.innerText()).trim();
-    // 첫 1-3 자리 정수 = score. (label 이 한국어 텍스트라 숫자와 충돌 없음)
-    const match = text.match(/\b(\d{1,3})\b/);
-    expect(match, `${label} 카드에서 score 추출 실패. innerText: "${text}"`).not.toBeNull();
-    const score = Number.parseInt(match![1], 10);
-    expect(score, `${label} score 0-100 범위`).toBeGreaterThanOrEqual(0);
-    expect(score, `${label} score 0-100 범위`).toBeLessThanOrEqual(100);
-    scores[label] = score;
-  }
-  return scores;
-}
-
-test.describe('1. 사주 메인 페이지 — 6 영역 카드 (PR #181 회귀 차단)', () => {
-  test('/saju/[slug] 가 6 영역 카드를 모두 노출', async ({ page }) => {
+//   6 영역 **산식**은 사라지지 않았고 단위 테스트가 지킨다:
+//     src/server/today-fortune/saju-data-entry-invariant.test.ts
+//   여기서는 개편이 실제로 약속하는 것 — 무료로 보이는 것과 잠기는 것 — 을 고정한다.
+test.describe('1. 사주 결과 — 무료 지면과 결제 경계 (개편 계약)', () => {
+  test('/saju/[slug] 는 종합 리포트 목차를 열어두고 점수는 잠근다', async ({ page }) => {
     const slug = await resolveProfileReadingSlug(page);
     await page.goto(`/saju/${slug}`);
     await page.waitForLoadState('networkidle');
 
-    // extractAreaScores 가 6 label 각각의 article 존재 + score 0-100 범위 자동 검증.
-    // 누락 / 회귀 시 즉시 fail.
-    const scores = await extractAreaScores(page);
-    expect(Object.keys(scores).length, '6 영역 카드 모두 추출').toBe(UNIFIED_AREA_LABELS.length);
+    // 간판 상품(bundle_comprehensive) 업셀 목차 — 무료로 보여야 결제로 이어진다.
+    await expect(
+      page.locator('[aria-label="종합사주 리포트 안내"]'),
+      '종합 리포트 목차(무료 지면)'
+    ).toBeVisible({ timeout: 10_000 });
+
+    // 🔴 돈줄 가드 — 종합점수는 무료가 아니다(score-total 3,300원). 미결제 계정에서
+    //   잠금이 풀려 보이면 상품을 공짜로 내주는 것이다.
+    await expect(
+      page.locator('[aria-label="사주 점수 (잠금)"]'),
+      '미결제 계정에서 점수 잠금'
+    ).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -177,18 +158,22 @@ test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
     await resetFreeDailyUsage(userId);
   });
 
-  test('/saju/[slug] 의 총운 score 가 /today-fortune 결과 페이지 종합점수와 일치', async ({
-    page,
-  }) => {
-    // 1. 사주 메인 페이지 점수 추출. 슬러그는 프로필에서 유도 → /today-fortune(같은
-    //    프로필 자동완성)과 동일 입력이므로 점수가 일치해야 함.
+  // 🔴 2026-08-29 — 원래 이 테스트는 사주 페이지의 '총운' 카드 점수와 오늘운세 결과의
+  //   종합점수를 **화면끼리** 대조했다. 개편으로 두 전제가 다 사라졌다:
+  //     ① 사주 페이지의 6 영역 카드 제거(1035cd6d) → 읽을 '총운' 숫자가 없다
+  //     ② 종합점수는 유료(score-total) → 미결제 계정에는 애초에 숫자가 안 보인다
+  //   점수 일치(#179~#181)는 **산식**의 계약이므로 단위 테스트로 지킨다
+  //   (saju-data-entry-invariant.test.ts — 저장된 V1 ↔ 재계산이 6 영역 동일).
+  //   E2E 에는 브라우저라야 확인되는 것만 남긴다: 두 화면이 살아 있고, 유료 경계가 지켜진다.
+  test('오늘운세 결과는 종합점수를 렌더하고, 사주 페이지 점수는 잠겨 있다', async ({ page }) => {
     const slug = await resolveProfileReadingSlug(page);
     await page.goto(`/saju/${slug}`);
     await page.waitForLoadState('networkidle');
-    const sajuScores = await extractAreaScores(page);
+    await expect(
+      page.locator('[aria-label="사주 점수 (잠금)"]'),
+      '미결제 계정에서 사주 점수 잠금'
+    ).toBeVisible({ timeout: 10_000 });
 
-    // 2. /today-fortune 은 입력 form 페이지 → "오늘 운세 보기" 클릭해서 결과 페이지로 이동.
-    //    (form 은 logged-in 사용자의 MY 프로필이 자동 채워짐)
     await page.goto('/today-fortune');
     await page.waitForLoadState('networkidle');
 
@@ -198,29 +183,22 @@ test.describe('4. 점수 일치 (PR #179-#181 회귀 차단)', () => {
     });
     await submitButton.click();
 
-    // 결과 페이지 (/today-fortune/result) 로 이동 + 6 카드 렌더 대기.
     await page.waitForURL((url) => url.pathname.startsWith('/today-fortune/result'), {
       timeout: 15_000,
     });
     await page.waitForLoadState('networkidle');
 
-    // 3. 결과 페이지의 종합점수를 읽어 사주 페이지 '총운' 과 대조.
-    //    TodayScoreReveal 은 section[aria-label="오늘운세 점수"] 안 원형에 숫자만 렌더하고,
-    //    0 → 목표값 카운트업 애니메이션이 있다. 중간값을 읽지 않도록 poll 로 최종값을 기다린다.
+    // TodayScoreReveal 은 0 → 목표값 카운트업이라 최종값을 poll 로 기다린다.
     const scoreSection = page.locator('section[aria-label="오늘운세 점수"]');
     await expect(scoreSection, '오늘운세 점수 섹션').toBeVisible({ timeout: 10_000 });
-
     await expect
       .poll(
         async () => {
           const found = (await scoreSection.innerText()).match(/\b(\d{1,3})\b/);
           return found ? Number.parseInt(found[1], 10) : -1;
         },
-        {
-          timeout: 10_000,
-          message: `총운 점수가 사주 페이지(${sajuScores['총운']})와 운세 결과 페이지에서 불일치`,
-        }
+        { timeout: 10_000, message: '오늘운세 종합점수가 0-100 범위로 렌더되지 않음' }
       )
-      .toBe(sajuScores['총운']);
+      .toBeGreaterThanOrEqual(0);
   });
 });

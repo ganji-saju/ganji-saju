@@ -25,6 +25,18 @@ function clearCookie(name: string) {
   document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
+/**
+ * 로그인/가입 결과를 다음 화면으로 넘긴다.
+ *
+ * 이메일 경로도 이 쿠키를 쓴다 — 로그인 성공 후 이동이 **하드 내비게이션**이라
+ * dataLayer.push 직후 페이지가 언로드되면 GTM 이 태그를 발사하기 전에 끊길 수 있다.
+ * 이동 뒤 목적지에서 쏘면 그 경합이 사라진다(OAuth 와 같은 방식으로 통일).
+ */
+export function markAuthEvent(kind: 'login' | 'sign_up', method: 'kakao' | 'google' | 'email') {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${COOKIE}=${encodeURIComponent(`${kind}:${method}`)}; Path=/; Max-Age=120; SameSite=Lax`;
+}
+
 function parseMethod(value: string): 'kakao' | 'google' | 'email' {
   if (value === 'kakao' || value === 'google') return value;
   return 'email';

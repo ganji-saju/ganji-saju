@@ -4,9 +4,11 @@
     position: relative;
     min-height: 100svh;
     color: var(--app-ink);
+    /* 2026-08-25 전면 개편 — 핑크 앰비언트 → 한지+인주(B안). app-shell.css 의
+       !important 정의와 같은 팔레트로 유지할 것. */
     background:
-      radial-gradient(ellipse at 50% -12%, rgba(255, 79, 154, 0.12) 0%, transparent 42%),
-      linear-gradient(180deg, #ffffff 0%, #fff8fc 56%, #ffffff 100%);
+      radial-gradient(ellipse at 50% -12%, rgba(179, 55, 42, 0.06) 0%, transparent 42%),
+      linear-gradient(180deg, #fbf7ee 0%, #f5efe3 56%, #faf6ec 100%);
     isolation: isolate;
   }
 
@@ -17,9 +19,9 @@
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(circle at 14% 0%, rgba(255, 79, 154, 0.1), transparent 24%),
-      radial-gradient(circle at 87% 16%, rgba(255, 79, 154, 0.06), transparent 18%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 248, 252, 0.84));
+      radial-gradient(circle at 14% 0%, rgba(179, 55, 42, 0.05), transparent 24%),
+      radial-gradient(circle at 87% 16%, rgba(165, 129, 60, 0.05), transparent 18%),
+      linear-gradient(180deg, rgba(251, 247, 238, 0.82), rgba(245, 239, 227, 0.84));
   }
 
   .app-shell::after {
@@ -29,8 +31,8 @@
     z-index: 0;
     pointer-events: none;
     background:
-      linear-gradient(120deg, transparent 0%, rgba(255, 79, 154, 0.028) 20%, transparent 38%),
-      radial-gradient(circle at 74% 16%, rgba(255, 79, 154, 0.07), transparent 16%);
+      linear-gradient(120deg, transparent 0%, rgba(179, 55, 42, 0.02) 20%, transparent 38%),
+      radial-gradient(circle at 74% 16%, rgba(165, 129, 60, 0.05), transparent 16%);
     opacity: 0.55;
   }
 
@@ -570,7 +572,7 @@
   }
 
   .app-page-spacious {
-    padding-top: 2.5rem;
+    padding-top: 1.25rem; /* 2026-08-26 — readability.css 와 동일값(상단 간격 통일) */
     padding-bottom: max(5rem, calc(var(--app-mobile-dock-clearance) + 1rem));
   }
 
@@ -1569,7 +1571,7 @@
 
   .gangi-plan-card[data-featured="true"] {
     border-color: var(--app-pink-line);
-    background: linear-gradient(135deg, #fff0f7, #ffffff);
+    background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
   }
 
   .gangi-payment-row {
@@ -2593,7 +2595,7 @@
   .dalbit-market-card[data-theme="year"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 44% 28%, rgba(255, 255, 255, 0.88), transparent 24%),
-      linear-gradient(145deg, #ffffff, #e9edff 50%, #ff4f9a);
+      linear-gradient(145deg, #ffffff, #e9edff 50%, var(--app-pink));
   }
 
   .dalbit-market-card[data-theme="wave"] .dalbit-market-card-art {
@@ -2617,7 +2619,7 @@
   .dalbit-market-card[data-theme="tarot"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.22), transparent 24%),
-      linear-gradient(145deg, #17121f, #ff4f9a);
+      linear-gradient(145deg, #17121f, var(--app-pink));
   }
 
   .dalbit-market-card[data-theme="zodiac"] .dalbit-market-card-art {
@@ -2629,7 +2631,7 @@
   .dalbit-market-card[data-theme="consult"] .dalbit-market-card-art {
     background:
       radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.72), transparent 20%),
-      linear-gradient(145deg, #111114, #3d2032 52%, #ff4f9a);
+      linear-gradient(145deg, #111114, #3d2032 52%, var(--app-pink));
   }
 
   .dalbit-card-character {

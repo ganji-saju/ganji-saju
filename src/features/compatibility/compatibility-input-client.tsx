@@ -15,6 +15,7 @@ import {
 import { BIRTH_LOCATION_PRESETS } from '@/lib/saju/birth-location';
 import { resolveUnifiedBirthInput, type UnifiedBirthEntryDraft } from '@/lib/saju/unified-birth-entry';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 
@@ -572,6 +573,10 @@ export function CompatibilityInputClient({
             관계를 고르고, 두 사람의 정보를 넣으면 바로 결과로 이어집니다.
           </p>
         </article>
+
+        {/* 2026-08-26 — /saju/new 와 같은 입력 화면인데 신뢰 요소가 없었다. 3단계 폼(3,293px)
+            앞에서 '왜 정보를 넣어도 되는지'에 먼저 답한다. */}
+        <ReportTrustNotes />
 
         {hasLoveQuestionPurchase ? (
           <div

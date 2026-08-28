@@ -423,6 +423,63 @@ export async function markPaymentOrderFailed(input: {
 }
 
 /**
+ * 2026-08-26 — PG 가 **실제로 취소한 시각**. 환불 귀속일(refunded_at)의 정본이다.
+ *
+ * 그전엔 항상 `now()` 를 찍었다. 그러면 예전에 PG 에서 취소된 결제를 정산 크론
+ * (reconciliation)이나 웹훅 재수신이 **오늘 처음 감지했을 때 그 환불이 오늘로 귀속**되어,
+ * 결제가 없던 날에 환불만 꽂히고 순매출이 마이너스가 된다(사용자 제보로 드러난 경로).
+ *
+ * 취소가 여러 번(부분취소 누적)이면 **가장 마지막** 취소 시각을 쓴다 — 주문이 refunded 로
+ * 넘어간 순간이 그때다.
+ *
+ * ⚠️ 파싱은 보수적으로: `YYYY-MM-DD` 로 시작하는 ISO-8601 형태만 받는다. 나이스페이가
+ *   `20260826...` 같은 압축 표기를 줄 때 엔진마다 다르게 해석되는 걸 막는다. 미래 시각도
+ *   거부한다(시계 오차·오염된 응답이 지표를 미래로 밀지 않게). 못 믿으면 null → 호출부가 now().
+ */
+export function resolvePgCancelledAt(
+  payment: TossPaymentObject | null | undefined,
+  now: Date = new Date()
+): string | null {
+  if (!payment) return null;
+
+  const ISO_PREFIX = /^\d{4}-\d{2}-\d{2}[T ]/;
+  const CANCEL_TIME_KEYS = [
+    'canceledAt',
+    'cancelledAt',
+    'canceledTimestamp',
+    'cancelledTimestamp',
+  ] as const;
+
+  const parse = (value: unknown): number | null => {
+    if (typeof value !== 'string' || !ISO_PREFIX.test(value)) return null;
+    const t = Date.parse(value);
+    if (!Number.isFinite(t)) return null;
+    // 60초 여유 — 서버 간 시계 오차는 허용하되 진짜 미래 값은 버린다.
+    if (t > now.getTime() + 60_000) return null;
+    return t;
+  };
+
+  const candidates: number[] = [];
+  const cancels = payment.cancels;
+  if (Array.isArray(cancels)) {
+    for (const entry of cancels) {
+      if (!entry || typeof entry !== 'object') continue;
+      for (const key of CANCEL_TIME_KEYS) {
+        const t = parse((entry as Record<string, unknown>)[key]);
+        if (t != null) candidates.push(t);
+      }
+    }
+  }
+  for (const key of CANCEL_TIME_KEYS) {
+    const t = parse(payment[key]);
+    if (t != null) candidates.push(t);
+  }
+
+  if (candidates.length === 0) return null;
+  return new Date(Math.max(...candidates)).toISOString();
+}
+
+/**
  * 2026-07-13 — 결제 성공분의 환불. 'canceled'(결제 전 취소)와 구분해 매출 이력을 보존한다.
  *   결제 시점 amount 는 그대로 두고 status='refunded' + refunded_at 만 기록 →
  *   집계에서 총매출(결제분)과 환불액을 분리해 낼 수 있다.
@@ -434,11 +491,14 @@ export async function markPaymentOrderRefunded(input: {
   payment?: TossPaymentObject | null;
 }) {
   const service = await createServiceClient();
-  const now = new Date().toISOString();
+  const now = new Date();
+  // 2026-08-26 — 귀속일은 **PG 가 실제로 취소한 시각**. 못 읽으면 지금(감지 시각)으로 폴백.
+  //   항상 now() 를 쓰면 뒤늦게 감지된 과거 취소가 오늘 환불로 잡혀 그날 순매출이 마이너스가 된다.
+  const refundedAt = resolvePgCancelledAt(input.payment, now) ?? now.toISOString();
   const patch: Record<string, unknown> = {
     status: 'refunded',
     last_error: input.reason,
-    refunded_at: now,
+    refunded_at: refundedAt,
   };
   if (input.payment) {
     patch.toss_status = input.payment.status ?? null;
@@ -462,6 +522,7 @@ export async function markPaymentOrderRefunded(input: {
     const order = mapPaymentOrder(data as PaymentOrderRow);
     // 2026-08-26 — GA4 refund. 원거래와 같은 transaction_id 로 보내야 그 거래의 매출이
     //   차감된다. 여기(원장 함수)에 두면 admin·웹훅·정산 세 경로가 한 번에 커버된다.
+    //   ⚠️ 방금 refunded 로 바뀐 경우에만 — 멱등 재호출은 위 neq 가드로 여기 안 온다.
     await dispatchGaRefund(order.orderId, order.amount).catch(() => undefined);
     return order;
   }

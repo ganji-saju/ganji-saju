@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { SafetyNotice } from '@/components/common/safety-notice';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
@@ -150,6 +151,10 @@ export default async function MembershipPage({
               상세 풀이·운세 달력 무제한, 매일 대화 5건·궁합 월 3회·가족 사주 5명까지 함께 열립니다.
             </p>
           </div>
+
+          {/* 2026-08-26 — 요금제 카드 앞 신뢰 요소(자격·샘플·환불). 결제 화면(checkout)에만
+              있고 정작 선택 화면엔 0건이었다. */}
+          <ReportTrustNotes />
 
           {/* §2 Plan 2-col 카드 (basic / premium).
               2026-05-16 — 활성 멤버십이면 "이용 중" 배지 + 결제 링크 비활성. */}

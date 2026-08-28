@@ -15,9 +15,10 @@ import type {
   GangiHomeCategoryKey,
   GangiServiceCard,
 } from '@/content/gangi-market';
-import { GANGI_HOME_BANNERS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
+import { GANGI_HOME_BANNERS, GANGI_HOME_CARDS, GANGI_HOME_CATEGORIES } from '@/content/gangi-market';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { cn } from '@/lib/utils';
+import { GuardianPortrait } from '@/components/gangi/guardian-portrait';
 
 type TrackHandler = (payload: Record<string, unknown>) => void;
 
@@ -132,7 +133,7 @@ export function GangiSeasonBanner({
   );
 
   return (
-    <section className="px-4 pt-3" aria-label="추천 운세 배너">
+    <section className="px-4 pt-4" aria-label="추천 운세 배너">
       <div
         ref={viewportRef}
         className="flex w-full snap-x snap-mandatory overflow-x-hidden scrollbar-none rounded-[22px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-pink-strong)] focus-visible:ring-offset-2"
@@ -207,20 +208,19 @@ export function GangiSeasonBanner({
             key={banner.id}
             href={banner.href}
             className={`relative block w-full shrink-0 snap-start overflow-hidden rounded-[22px] no-underline${
-              banner.image ? '' : ' p-5 text-white'
+              banner.image ? '' : ' p-4 text-white'
             }`}
             style={
               banner.image
                 ? undefined
                 : {
+                    // 2026-08-26 — 배너 배경을 수호신 캐릭터 jpg 의 한지 종이톤(#f2e7d9 계열)과
+                    //   같은 계열로 통일(사용자 지시: 이미지와 배경이 안 어울림). 우상단 인주 기운.
                     background:
-                      banner.tone === 'soft'
-                        ? 'var(--app-pink-soft)'
-                        : banner.tone === 'night'
-                        ? 'linear-gradient(135deg, #1a1a20 0%, #3a1530 100%)'
-                        : 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-                    color: banner.tone === 'soft' ? 'var(--app-ink)' : '#fff',
-                    minHeight: 160,
+                      'radial-gradient(circle at 84% 16%, rgba(179, 55, 42, 0.08), transparent 44%), linear-gradient(160deg, #f8efe2 0%, #f2e7d8 62%, #ecdfcc 100%)',
+                    color: 'var(--app-ink)',
+                    border: '1px solid rgba(28, 26, 23, 0.08)',
+                    minHeight: 128,
                   }
             }
             aria-label={banner.image ? banner.alt ?? banner.title : undefined}
@@ -253,27 +253,43 @@ export function GangiSeasonBanner({
               </picture>
             ) : (
             <>
+            {/* 2026-08-25 — 수호신 캐릭터(우측 초상). 있으면 한자 장식 대신 캐릭터가 선다. */}
+            {banner.character ? (
+              /* 2026-08-28 — 카드와 같은 idle 루프를 배너 초상에도. 장식이라 스크린리더에서 감춘다. */
+              <GuardianPortrait
+                id={`${banner.character}-banner`}
+                decorative
+                className="pointer-events-none absolute bottom-0 right-0 h-full w-auto select-none"
+                style={{
+                  objectFit: 'contain',
+                  objectPosition: 'right bottom',
+                  // 좌측 페이드 — 초상의 종이톤과 배너 한지톤의 미세한 경계를 지운다.
+                  WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
+                  maskImage: 'linear-gradient(to right, transparent 0%, black 26%)',
+                }}
+              />
+            ) : null}
             {/* 한자 배경 (운/緣 등) */}
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -top-3 -right-3 select-none"
               style={{
                 fontFamily: 'var(--font-han)',
-                fontSize: 161,
+                fontSize: 140,
                 fontWeight: 700,
                 lineHeight: 1,
                 opacity: 0.08,
-                color: banner.tone === 'soft' ? 'var(--app-pink-strong)' : '#fff',
+                color: 'var(--app-pink-strong)',
               }}
             >
-              運
+              {banner.character ? '' : '運'}
             </span>
 
-            <div className="relative">
+            <div className="relative" style={banner.character ? { paddingRight: '34%' } : undefined}>
               <p
                 className="m-0"
                 style={{
-                  fontSize: 16,
+                  fontSize: 14.5,
                   fontWeight: 800,
                   letterSpacing: '0.06em',
                   opacity: 0.85,
@@ -284,7 +300,7 @@ export function GangiSeasonBanner({
               <h2
                 className="m-0 mt-1.5"
                 style={{
-                  fontSize: 26,
+                  fontSize: 22.5,
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.35,
@@ -293,11 +309,11 @@ export function GangiSeasonBanner({
                 {banner.title}
               </h2>
               <p
-                className="m-0 mt-3"
+                className="m-0 mt-1.5"
                 style={{
-                  fontSize: 16.5,
+                  fontSize: 15,
                   opacity: 0.9,
-                  lineHeight: 1.62,
+                  lineHeight: 1.55,
                 }}
               >
                 {banner.description}
@@ -305,14 +321,11 @@ export function GangiSeasonBanner({
               <span
                 className="mt-3 inline-flex items-center gap-1 rounded-full"
                 style={{
-                  background:
-                    banner.tone === 'soft'
-                      ? 'var(--app-pink-strong)'
-                      : 'rgba(255,255,255,0.22)',
+                  background: 'var(--app-pink)',
                   color: '#fff',
-                  fontSize: 15.5,
+                  fontSize: 14.5,
                   fontWeight: 800,
-                  padding: '9px 14px',
+                  padding: '7px 12px',
                 }}
               >
                 {banner.cta}
@@ -325,9 +338,12 @@ export function GangiSeasonBanner({
         ))}
       </div>
 
-      {/* dots */}
+      {/* dots — 2026-08-26 사용자 제보 "동그라미가 너무 작아 클릭하기 힘들다".
+          버튼 자체가 점(6×6px)이라 탭 타깃이 점 크기였다. 버튼은 44px 투명 히트영역으로 넓히고
+          점은 안쪽 span 으로 분리(보이는 크기와 누를 수 있는 크기를 분리한다).
+          바깥 여백(mt-3)은 히트영역이 대신 먹으므로 줄여 세로 증가를 최소화. */}
       {safeBanners.length > 1 ? (
-        <div className="mt-3 flex justify-center gap-1.5" aria-label="배너 선택">
+        <div className="mt-0.5 flex justify-center" aria-label="배너 선택">
           {safeBanners.map((banner, index) => (
             <button
               key={banner.id}
@@ -335,15 +351,21 @@ export function GangiSeasonBanner({
               aria-label={String(index + 1) + '번째 배너 보기'}
               aria-current={activeIndex === index ? 'true' : undefined}
               onClick={() => goToBanner(index)}
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: activeIndex === index ? 16 : 6,
-                background:
-                  activeIndex === index
-                    ? 'var(--app-pink-strong)'
-                    : 'var(--app-line-strong)',
-              }}
-            />
+              className="flex h-11 w-9 items-center justify-center"
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            >
+              <span
+                aria-hidden="true"
+                className="block h-2 rounded-full transition-all"
+                style={{
+                  width: activeIndex === index ? 18 : 8,
+                  background:
+                    activeIndex === index
+                      ? 'var(--app-pink-strong)'
+                      : 'var(--app-line-strong)',
+                }}
+              />
+            </button>
           ))}
         </div>
       ) : null}
@@ -431,11 +453,17 @@ export function GangiCategoryTabs({
 }) {
   return (
     <nav
-      className="flex gap-1.5 overflow-x-auto px-4 pt-4 pb-1"
+      className="flex gap-1.5 overflow-x-auto px-4 pt-14 pb-1"
       aria-label="운세 카테고리"
       style={{ scrollbarWidth: 'none' }}
     >
-      {GANGI_HOME_CATEGORIES.map((category) => {
+      {GANGI_HOME_CATEGORIES.filter(
+        // 2026-08-24 Phase 1 — 카드가 없는 카테고리 탭은 숨긴다. 단품 강등·잠금으로 카드가
+        //   줄면 빈 탭(누르면 빈 그리드)이 생기던 것 방지. '전체'는 항상.
+        (category) =>
+          category.key === 'all' ||
+          GANGI_HOME_CARDS.some((card) => card.category === category.key && card.price !== '출시 예정')
+      ).map((category) => {
         const isActive = active === category.key;
         return (
           <button
@@ -475,7 +503,7 @@ export function GangiServiceCardLink({
   // 2026-06-26 메인 카드 시안 C(20260625 PPTX): 인물 사진 풀블리드 + 비네팅 + 하단 외곽선 강조 텍스트.
   //   파스텔 틴트는 인물 사진의 투명 영역(배경 제거 PNG) 채움색. 인물 이미지는 추후 교체 예정.
   const TINT: Record<NonNullable<GangiServiceCard['tint']>, string> = {
-    pink: '#fff0f7',
+    pink: 'var(--app-pink-soft)',
     plum: '#f6eefe',
     sky: '#eaf4fd',
     coral: '#fff0ee',
@@ -484,6 +512,86 @@ export function GangiServiceCardLink({
     jade: '#e9f7f2',
   };
   const tintBg = TINT[card.tint ?? 'pink'];
+
+  // ── 2026-08-28 와이드 배너(두 칸) ────────────────────────────────────────────
+  //   나머지 카드는 '정사각 초상 + 아래 가격'이라 세로가 길다. 대화상담만 가로로 눕히는
+  //   건 장식이 아니라 **다른 상품이기 때문**이다 — 나머지는 읽는 풀이고 이건 주고받는
+  //   대화다. 어두운 잉크 바탕이 파스텔 정사각들 사이에서 그 차이를 만든다.
+  //   말줄임 점 셋은 대화방 로딩 인디케이터와 같은 모양이다(장식이 아니라 같은 언어).
+  if (card.wide) {
+    return (
+      <Link
+        href={card.href}
+        onClick={() => onTrack?.(card)}
+        data-free={isFree ? 'true' : 'false'}
+        className="col-span-2 block no-underline transition-transform active:scale-[0.99]"
+      >
+        <span
+          className="relative flex items-center gap-3.5 overflow-hidden rounded-[20px] py-3 pl-3.5 pr-4"
+          style={{
+            background:
+              'linear-gradient(105deg, var(--app-ink) 0%, #241a2e 52%, #35203a 100%)',
+            boxShadow: '0 14px 34px rgba(15,10,20,0.22)',
+          }}
+        >
+          {/* 좌측 초상 — 원형 크롭. 정사각 카드와 같은 소스를 같은 규칙(object-top)으로 쓴다. */}
+          <span
+            className="relative block h-[68px] w-[68px] shrink-0 overflow-hidden rounded-full"
+            style={{ background: tintBg, boxShadow: '0 0 0 2px rgba(255,255,255,0.16)' }}
+          >
+            {card.image ? (
+              <GuardianPortrait
+                id={card.image}
+                alt={card.title}
+                className="absolute inset-0 h-full w-full object-cover object-top"
+              />
+            ) : (
+              <span className="absolute inset-0 grid place-items-center">
+                <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+              </span>
+            )}
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span
+              className="flex items-center gap-1.5 text-[11.5px] font-extrabold tracking-[0.06em]"
+              style={{ color: 'var(--app-gold, #d9b46a)' }}
+            >
+              1:1 대화
+              <span aria-hidden="true" className="inline-flex gap-[3px] align-middle">
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-90" />
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-60" />
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-35" />
+              </span>
+            </span>
+            <span
+              className="mt-0.5 block truncate text-[21px] font-black leading-tight tracking-[-0.03em] text-white"
+            >
+              {card.title}
+            </span>
+            <span
+              className="mt-0.5 block truncate text-[12.6px] font-bold"
+              style={{ color: 'rgba(255,255,255,0.62)' }}
+            >
+              {card.desc}
+            </span>
+          </span>
+
+          <span className="flex shrink-0 items-center gap-2">
+            <span
+              className="inline-flex items-center rounded-[8px] px-2.5 py-1 text-[15px] font-black"
+              style={{ background: 'var(--app-pink)', color: '#fff' }}
+            >
+              {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+            </span>
+            <span aria-hidden="true" className="text-[18px] font-bold text-white/45">
+              ›
+            </span>
+          </span>
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -507,17 +615,16 @@ export function GangiServiceCardLink({
       >
       {/* 인물 사진 풀블리드 — picture(avif/webp/png) object-top. 없으면 chip 폴백. */}
       {card.image ? (
-        <picture>
-          <source srcSet={`/images/gangi/people/${card.image}.avif`} type="image/avif" />
-          <source srcSet={`/images/gangi/people/${card.image}.webp`} type="image/webp" />
-          <img
-            src={`/images/gangi/people/${card.image}.png`}
-            alt={card.title}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-top"
-          />
-        </picture>
+        /* 2026-08-25 Phase 2 — 12지신 수호신 캐릭터(guardians/, 힉스필드 1차분).
+           2026-08-28 — 같은 캐릭터의 idle 루프(motion/)로 교체. 정지 이미지가 진실이고
+           영상은 얹는 것이다 — reduced-motion·데이터절약이면 영상을 아예 받지 않고,
+           화면 밖이면 재생하지 않는다. 상세는 GuardianPortrait 주석 참조.
+           ⚠️ 카드당 무게는 오히려 줄었다(정지컷 155KB → 포스터 25KB + 영상 56KB). */
+        <GuardianPortrait
+          id={card.image}
+          alt={card.title}
+          className="absolute inset-0 h-full w-full object-cover object-top"
+        />
       ) : (
         <span className="absolute inset-0 grid place-items-center">
           {card.chipKind === 'star-sign' ? (
@@ -529,15 +636,19 @@ export function GangiServiceCardLink({
       )}
 
       {/* 비네팅 — 하단을 어둡게. 제목·부제가 배경판 없이 사진 위에
-          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
-        }}
-      />
+          바로 얹히므로(2026-07-19 4차 요청) 이 그라데이션이 유일한 대비 장치다.
+          2026-08-24 Phase 0 — 사진이 없는 chip 폴백에서는 스크림이 파스텔 카드 위의
+          얼룩이 되므로 사진이 있을 때만 렌더한다(제목은 아래에서 잉크색으로 전환). */}
+      {card.image ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to top, rgba(12,7,14,0.86) 0%, rgba(12,7,14,0.55) 26%, rgba(12,7,14,0.12) 46%, transparent 62%)',
+          }}
+        />
+      ) : null}
 
       {/* 태그 (HOT / 추천) — 사진 우상단. */}
       {card.tag ? (
@@ -559,19 +670,24 @@ export function GangiServiceCardLink({
       {/* 사진 위에는 **제목만**. 색은 카드별(titleColor).
           대비는 위 비네팅을 **합성한 뒤**의 배경에 대고 계산한다 — 산출 근거와
           한 번 틀렸던 이력은 gangi-market.ts 의 titleColor 주석 참조.
-          8색 모두 밝은색이라 아래 어두운 그림자·외곽선이 실제로 글자를 띄워준다. */}
+          2026-08-24 Phase 0 — chip 폴백(사진 없음)에서는 파스텔 배경 위라 스크림·그림자
+          없이 잉크색 제목이 정답이다(밝은 titleColor 는 파스텔 위에서 대비 미달). */}
       <span className="absolute inset-x-0 bottom-0 block p-2.5 text-center">
         <span
           className="block"
           style={{
-            color: card.titleColor ?? '#fff',
+            color: card.image ? card.titleColor ?? '#fff' : 'var(--app-ink)',
             fontSize: 'clamp(20px, 22.5cqw, 48px)',
             fontWeight: 900,
             lineHeight: 1.1,
             letterSpacing: '-0.04em',
             whiteSpace: 'nowrap',
-            textShadow: '0 2px 8px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5)',
-            WebkitTextStroke: '0.5px rgba(0,0,0,0.22)',
+            ...(card.image
+              ? {
+                  textShadow: '0 2px 8px rgba(0,0,0,0.42), 0 1px 2px rgba(0,0,0,0.5)',
+                  WebkitTextStroke: '0.5px rgba(0,0,0,0.22)',
+                }
+              : null),
           }}
         >
           {card.title}
@@ -624,7 +740,7 @@ export function GangiServiceCardLink({
 //   (GANGI_HOME_CARDS 등)는 각자 라우트를 그대로 유지한다.
 export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
   return (
-    <section className="px-4 pt-4 pb-3" aria-label="운세 시작 CTA">
+    <section className="px-4 pt-14 pb-16" aria-label="운세 시작 CTA">
       <Link
         href="/start"
         onClick={onTrack}

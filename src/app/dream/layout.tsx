@@ -1,5 +1,6 @@
 // 2026-06-21 SEO(P2 Part B) — /dream 은 'use client' 페이지라 metadata 를 직접 export 할 수
 // 없어, 서버 layout 에서 고유 메타데이터를 부여한다(루트 기본 title 중복 해소). 색인 대상.
+// 2026-08-25 — 990원 게이트를 걸었다가 같은 날 무료 복귀(사용자 확정: 유료는 타로·대화상담만).
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 

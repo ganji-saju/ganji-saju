@@ -210,6 +210,27 @@
   background: var(--app-pink-soft);
 }
 
+/* 2026-08-28 — 하위 항목(12×12 별자리 궁합). 부모 아래 들여쓴 행으로,
+   좌측 세로선이 소속을 보여준다. 아이콘/글자를 한 단계 줄여 부모와 서열을 만든다. */
+.mobile-nav-sheet-item[data-sub='true'] {
+  margin-left: 26px;
+  padding: 8px 8px 8px 14px;
+  border-left: 1.5px solid var(--app-line, rgba(28, 26, 23, 0.12));
+  border-radius: 0 14px 14px 0;
+  gap: 10px;
+}
+
+.mobile-nav-sheet-item[data-sub='true'] .mobile-nav-sheet-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.mobile-nav-sheet-item[data-sub='true'] .mobile-nav-sheet-item-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .mobile-nav-sheet-item-icon {
   width: 36px;
   height: 36px;
@@ -325,21 +346,12 @@
 /* 2026-05-20 — MY (계정) 섹션. featured 카드 아래에 위치.
    비로그인: 로그인 + 회원가입 짝꿍 CTA / 로그인: 내 정보 + 로그아웃. */
 .mobile-nav-sheet-account {
-  /* 2026-05-26 — 검색창 위(시트 상단)로 이동: 좌우 마진으로 검색·탭과 정렬, 하단 간격 확보. */
-  margin: 8px 20px 10px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(17, 17, 20, 0.04);
-  border: 1px solid rgba(17, 17, 20, 0.06);
-}
-
-.mobile-nav-sheet-account-eyebrow {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--app-copy-muted, rgba(17, 17, 20, 0.55));
-  text-transform: uppercase;
-  margin-bottom: 10px;
+  /* 2026-05-26 — 검색창 위(시트 상단)로 이동: 좌우 마진으로 검색·탭과 정렬.
+     2026-08-28 — 블록이 시트 상단 1/4(약 125px)을 먹어 **메뉴가 화면 절반 아래에서
+     시작**했다(사용자 제보). 카드 껍데기(배경·테두리·안쪽 여백)와 'MY' 아이브로우를
+     걷어낸다 — 버튼이 이미 무엇인지 말하므로 라벨은 정보를 더하지 않았다.
+     터치 타깃(42px)은 건드리지 않는다. */
+  margin: 6px 20px 10px;
 }
 
 .mobile-nav-sheet-account-row {
@@ -381,13 +393,13 @@
 .mobile-nav-sheet-account-ghost:hover {
   background: var(--app-pink-soft, rgba(255, 79, 154, 0.08));
   border-color: var(--app-pink-line, rgba(255, 79, 154, 0.24));
-  color: var(--app-pink-strong, #d81b72);
+  color: var(--app-pink-strong);
 }
 
 /* 2026-05-26 — 비로그인 시 아이디·비밀번호 찾기 (로그인/회원가입 아래 보조 링크). */
 .mobile-nav-sheet-account-find {
   display: block;
-  margin-top: 10px;
+  margin-top: 7px;
   text-align: center;
   font-size: 12px;
   font-weight: 600;

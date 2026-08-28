@@ -6,6 +6,7 @@ import {
   isTasteProductPackage,
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
+import { buildPaymentOrigin } from '@/lib/payments/payment-origin';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { auditNicepayKeyPair } from '@/lib/payments/nicepay-config-audit';
 import { resolveNicepayPrepareBlock } from '@/lib/payments/nicepay-prepare-guard';
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
   const scope = readString(payload, 'scope') || null;
   const from = readString(payload, 'from') || null;
   const paymentMethodCode = readString(payload, 'paymentMethod') || null;
-  // 2026-08-26 — GA4 귀속 스냅샷. 식별자는 요청 쿠키에서 읽는다(클라이언트가 보낸 값보다
+  // 2026-08-26 — GA4 귀속 스냅샷. 식별자는 **요청 쿠키**에서 읽는다(클라이언트가 보낸 값보다
   //   신뢰 가능). 동의 상태는 localStorage 라 서버가 못 읽어 body 로만 온다.
   const { clientId: gaClientId, sessionId: gaSessionId } = readGaIdentifiers(
     req.headers.get('cookie'),
@@ -122,6 +123,22 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(
       { ok: false, error: '전 충전은 현재 제공하지 않습니다.' },
+      { status: 410 }
+    );
+  }
+
+  // 2026-08-25 — 간단운세·꿈해몽 무료 복귀(사용자 확정: 유료는 타로·대화상담만).
+  //   두 상품은 게이트가 없어져 결제해도 열리는 게 없다 — 구 링크·직접 URL 결제를 서버에서 차단
+  //   (돈 받고 전달물 없는 상태 방지, topic-product 교훈).
+  if (pkg.id === 'taste_today_basic' || pkg.id === 'taste_dream_search') {
+    const retiredFreeClient = await createClient();
+    await logPaymentFunnelEvent(retiredFreeClient, {
+      stage: 'prepare_blocked',
+      packageId,
+      reason: 'retired_free_menu',
+    });
+    return NextResponse.json(
+      { ok: false, error: '이 메뉴는 무료로 이용할 수 있습니다. 결제 없이 이용해 주세요.' },
       { status: 410 }
     );
   }
@@ -379,7 +396,14 @@ export async function POST(req: NextRequest) {
     acceptedKinds,
     recordedPolicyVersionIds: [],
     // 2026-06-26 — 환불 시 PG 분기용 provider 저장(admin refund 가 toss/nicepay 취소 선택).
-    metadata: { checkoutPath, provider: getPaymentProvider() },
+    // 2026-08-29 — 결제가 일어난 **환경**을 주문에 박는다. staging 과 프로덕션이 같은
+    //   Supabase 를 쓰기 때문에, 이걸 안 남기면 테스트 결제가 실매출과 한 표에 섞여
+    //   관리자에서 구별이 불가능하다(사용자 제보).
+    metadata: {
+      checkoutPath,
+      provider: getPaymentProvider(),
+      origin: buildPaymentOrigin(req.headers.get('host')),
+    },
   });
 
   // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.

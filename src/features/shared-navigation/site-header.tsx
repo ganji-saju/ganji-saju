@@ -7,13 +7,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import {
   Bell,
-  BookOpenText,
   CreditCard,
   Menu,
   LogOut,
-  MessageCircleMore,
-  MoonStar,
-  Plus,
   Sparkles,
   UserRound,
   X,
@@ -100,22 +96,31 @@ function findActiveItem(items: readonly NavItem[], pathname: string) {
   return items.find((item) => matchesPath(item, pathname)) ?? null;
 }
 
-function DockIcon({ label }: { label: string }) {
-  // 2026-05-14: 일관된 5x5 사이즈, center(무료운세) 만 6x6 → CSS 가 흰색 + 글로우 처리.
-  switch (label) {
-    case '홈':
-      return <MoonStar className="h-[20px] w-[20px]" strokeWidth={2} />;
-    case '사주추가':
-      return <Plus className="h-[20px] w-[20px]" strokeWidth={2.4} />;
-    case '무료운세':
-      return <Sparkles className="h-[22px] w-[22px]" strokeWidth={2} />;
-    case '대화방':
-      return <MessageCircleMore className="h-[20px] w-[20px]" strokeWidth={2} />;
-    case '보관함':
-      return <BookOpenText className="h-[20px] w-[20px]" strokeWidth={2} />;
-    default:
-      return <UserRound className="h-[20px] w-[20px]" strokeWidth={2} />;
-  }
+// 2026-08-26 — 하단 독 아이콘을 3D 클레이 세트로 교체(사용자 지시 "아이콘 허접" + 입체감).
+//   힉스필드 gpt_image_2 클레이 스타일(한지 크림+인주+금, 앵커=한옥) → 흰배경 제거 후 160px.
+//   재생성 절차는 PROGRESS 2026-08-26 세션 참조.
+const DOCK_ICON_SRC: Record<string, string> = {
+  홈: '/images/gangi/dock/home.png',
+  사주추가: '/images/gangi/dock/add.png',
+  무료운세: '/images/gangi/dock/fortune.png',
+  대화방: '/images/gangi/dock/chat.png',
+  보관함: '/images/gangi/dock/vault.png',
+};
+
+function DockIcon({ label, size = 27 }: { label: string; size?: number }) {
+  const src = DOCK_ICON_SRC[label];
+  if (!src) return <UserRound className="h-[20px] w-[20px]" strokeWidth={2} />;
+  return (
+    <img
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      className="object-contain"
+      decoding="async"
+    />
+  );
 }
 
 function creditLabel(user: User | null, credits: number | null) {
@@ -416,7 +421,9 @@ const FAN_MENU_ITEMS: ReadonlyArray<{
   angleDeg: number;
 }> = [
   { label: '운세',   href: '/today-fortune?concern=general', glyph: '☀', angleDeg: -170 },
-  { label: '사주',   href: '/saju/new',                       glyph: '辰', angleDeg: -130 },
+  // 2026-08-28 — 사주 → 타로(사용자 지시). 사주는 상단 첫 메뉴·홈 첫 카드·하단 2번 칸까지
+  //   진입로가 셋이라 이 자리에서 겹쳤다. glyph 卯 = 토끼 = 타로선생(앱 전역에서 타로의 띠).
+  { label: '타로',   href: '/tarot/daily',                    glyph: '卯', angleDeg: -130 },
   { label: '별자리', href: '/star-sign',                      glyph: '✦', angleDeg: -90  },
   { label: '띠운세', href: '/zodiac',                         glyph: '午', angleDeg: -50  },
   { label: '꿈해몽', href: '/dream',                          glyph: '☾', angleDeg: -10  },
@@ -494,7 +501,9 @@ function MobileChrome({
                 결제 단계에선 로고(브랜드=신뢰)와 뒤로가기만 남기고 검색·알림·로그인·햄버거·
                 주요메뉴를 전부 걷는다. 헤더를 통째로 없애면 로고가 사라져 카드 입력 직전
                 브랜드 신호를 잃고(2026-07-18 실제 회귀), 그대로 두면 이탈 경로가 17개 열린다.
-                하단 dock 을 이미 숨기는 focused-checkout 정책과 방향을 맞춘 형태다. */}
+                하단 dock 을 이미 숨기는 focused-checkout 정책과 방향을 맞춘 형태다.
+                2026-08-26 — 사용자 제보(결제화면 메뉴 소실 오류)로 메뉴·검색·로그인은 복원.
+                결제 화면 추가분은 이 뒤로가기 버튼뿐, 하단 dock·FAB 숨김은 유지(고정 결제 CTA 충돌). */}
             {focusedCheckout ? (
               <button
                 type="button"
@@ -526,7 +535,7 @@ function MobileChrome({
             <nav
               className={cn(
                 'app-top-primary-nav hidden min-w-0 items-center gap-0.5',
-                focusedCheckout ? 'md:hidden' : 'md:flex'
+                'md:flex'
               )}
               aria-label="주요 메뉴"
             >
@@ -553,9 +562,6 @@ function MobileChrome({
 
             {/* §Actions — 2026-05-14 리디자인: 일관된 36px 원형/캡슐 버튼.
                 결제 화면에선 렌더하지 않고 뒤로가기와 같은 폭(36px)의 빈 칸만 둬 로고를 가운데 정렬한다. */}
-            {focusedCheckout ? (
-              <span className="h-9 w-9 shrink-0" aria-hidden="true" />
-            ) : (
             <div className="app-top-actions flex items-center gap-1.5">
               {/* 전 chip — desktop only, pink-soft */}
               <Link
@@ -646,7 +652,6 @@ function MobileChrome({
                 {mobileMenuOpen ? <X className="h-[18px] w-[18px]" /> : <Menu className="h-[18px] w-[18px]" />}
               </button>
             </div>
-            )}
           </div>
 
         </div>
@@ -679,11 +684,13 @@ function MobileChrome({
       {/* 2026-05-14: 하단 dock 리디자인 — 중앙 FAB (무료운세) 형광 글로우 +
           나머지 아이콘 통일된 크기 + 활성 시 상단 핑크 점 인디케이터.
           2026-05-20 (portal): body 직접 mount — 부모 transform 영향 차단.
-          2026-06-30: 포커스 체크아웃 라우트에서는 dock 숨김. */}
+          2026-06-30: 포커스 체크아웃 라우트에서는 dock 숨김.
+          2026-08-25 전면 개편 — md:hidden 제거: 도령식으로 데스크톱에서도 상시 노출
+          (아이템은 중앙 클러스터 정렬 — app-shell.css @media(min-width:768px) dock 블록). */}
       {portalMounted && !focusedCheckout
         ? createPortal(
             <nav
-              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40 md:hidden"
+              className="app-mobile-dock fixed inset-x-0 bottom-0 z-40"
               aria-label="주 메뉴"
             >
               <div className="app-mobile-dock-inner grid w-full grid-cols-5">
@@ -707,7 +714,7 @@ function MobileChrome({
                         className="app-mobile-dock-link flex flex-col items-center justify-center px-2 py-2 text-center"
                       >
                         <span className="app-mobile-dock-icon">
-                          {fanMenuOpen ? <X className="h-7 w-7" strokeWidth={2.6} /> : <DockIcon label={item.label} />}
+                          {fanMenuOpen ? <X className="h-7 w-7" strokeWidth={2.6} /> : <DockIcon label={item.label} size={38} />}
                         </span>
                         <span className="app-mobile-dock-center-sparkle" aria-hidden="true">
                           <Sparkles className="h-2.5 w-2.5" />

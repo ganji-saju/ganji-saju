@@ -70,7 +70,7 @@ export default async function MyeongriPage() {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage space-y-12 sm:space-y-14">
         <GangiPageHeader title="명리" backHref="/" />
 
         {/* Hero */}

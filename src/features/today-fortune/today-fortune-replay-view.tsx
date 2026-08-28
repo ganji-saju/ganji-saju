@@ -28,7 +28,7 @@ function formatOccurredOn(dateKey: string): string {
 
 export function TodayFortuneReplayView({ result }: { result: TodayFortuneFreeResult }) {
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage pb-8 pt-5">
       <GangiPageHeader title="보관된 오늘의 운세" backHref="/my/results" />
 
       <div className="grid gap-4 px-4 py-5">

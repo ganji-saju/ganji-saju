@@ -12,6 +12,7 @@ import {
   GangiPageHeader,
   GangiSection,
 } from '@/components/gangi/gangi-ui';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { PLAN_BLUEPRINT, TASTE_PRODUCTS } from '@/content/moonlight';
 import { isPaywallLockdown } from '@/lib/paywall-lockdown';
@@ -120,6 +121,10 @@ export default async function PricingPage() {
             </GangiActionRow>
           </GangiIntro>
         )}
+
+        {/* 2026-08-26 — 잠금 중 모든 잠긴 경로가 여기 착지하는데 '왜 여기서 사야 하나'가
+            한 줄도 없었다(자격·환불·샘플 0건). 가격 카드보다 먼저 답한다. */}
+        <ReportTrustNotes />
 
         <GangiSection
           eyebrow="작게 열어보기"

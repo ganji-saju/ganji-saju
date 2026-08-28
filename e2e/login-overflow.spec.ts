@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test';
 
 const MODES = [
   { name: 'signup', path: '/login?mode=signup', ready: '기본 사주 정보' },
-  { name: 'gateway', path: '/login', ready: '카카오 로그인' },
+  { name: 'gateway', path: '/login', ready: '카카오로 시작하기' },
 ];
 
 // 좁은 폭일수록 잘 터진다. 아이폰15 Pro(393)·SE(375)·소형 안드로이드(360).

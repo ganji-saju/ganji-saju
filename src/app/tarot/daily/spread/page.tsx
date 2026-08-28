@@ -1,6 +1,7 @@
 // 2026-06-21 P1·A4 — 3-card 스프레드. 피커에서 직접 고른 3장(URL cards/orientations)으로
 // 렌더하며, 그 3장이 결과를 결정하므로 같은 URL = 같은 스프레드(URL로 replay·공유 가능).
 // cards 파라미터가 없으면(레거시 진입) 질문 시드 스프레드로 폴백.
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Bookmark, RotateCcw } from 'lucide-react';
@@ -61,6 +62,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TarotSpreadPage({ searchParams }: Props) {
+  // 2026-08-25 — 990원 라이트 언락(타로). 멤버십·이용권 없으면 체크아웃으로.
+  await guardMenuPassEntry('tarot', 'tarot-spread');
   const { question, cards, orientations, shared } = await searchParams;
   const currentQuestion = normalizeQuestion(question);
   const picks = parseSpreadPicks(cards, orientations);

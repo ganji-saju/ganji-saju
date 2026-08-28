@@ -11,6 +11,9 @@ import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ZodiacWheelLoading } from '@/components/saju/zodiac-wheel-loading';
 import { UnifiedIntake } from '@/features/unified-intake/unified-intake';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
+// 2026-08-26 — '왜 여기서 봐야 하나' 설득 스토리(PPT 4p~, 홈 배너 앵커 착지 #why-gangi).
+import { WhyGangiStory } from '@/components/trust/why-gangi-story';
 import { submitSajuFromProfile } from '@/features/unified-intake/submit-saju';
 import type { UnifiedBirthProfile } from '@/features/unified-intake/birth-profile-store';
 import type { TasteProductId } from '@/lib/payments/catalog';
@@ -81,6 +84,22 @@ export default function SajuNewClient() {
           description="생년월일, 성별, 태어난 시간만 먼저 알려주세요."
         />
 
+        {/* 2026-08-26 사용자 지시 — '봐야 하는 이유'를 입력 폼 위로. 다만 4챕터 스토리를
+            통째로 올리면 폼이 3~4스크롤 아래로 밀려 인입 전환을 깎으므로, 위에는 신뢰 3줄
+            요약과 본문 앵커만 두고 illustrated 스토리는 폼 아래에 그대로 둔다. */}
+        <section aria-label="간지사주에서 보는 이유" className="space-y-2.5">
+          <h2 className="text-[18.4px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
+            왜 간지사주에서 보나요
+          </h2>
+          <ReportTrustNotes />
+          <a
+            href="#why-gangi"
+            className="inline-block text-[13.6px] font-bold text-[var(--app-pink-strong)]"
+          >
+            여기서 사주를 봐야 하는 이유 자세히 보기 ↓
+          </a>
+        </section>
+
         <UnifiedIntake
           intent="saju"
           submitting={submitting}
@@ -94,6 +113,8 @@ export default function SajuNewClient() {
             {error}
           </p>
         ) : null}
+
+        <WhyGangiStory className="px-1" />
 
         {/* 구 위저드(saju-intake-page.tsx)의 법정 고지 disclosure 를 비차단 footer 로 이식.
             제출 자체를 막지 않고, 제출 시 이용약관/개인정보처리방침에 동의한 것으로 안내만 한다. */}

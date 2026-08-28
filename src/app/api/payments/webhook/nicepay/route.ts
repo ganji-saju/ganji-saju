@@ -12,8 +12,10 @@
 //   3) 취소 상태 문자열(cancelled/canceled/...) + 부분취소(PARTIAL) 처리
 //   4) 전 회수 정책 — 음수 잔액 허용 여부(이미 사용한 전), 부분취소 비례 회수
 import { NextRequest, NextResponse } from 'next/server';
+import type { NicepayPaymentObject } from '@/lib/payments/nicepay';
 import { getNicepayPayment } from '@/lib/payments/nicepay';
 import { getPackage } from '@/lib/payments/catalog';
+import type { TossPaymentObject } from '@/lib/payments/order-ledger';
 import {
   getPaymentOrderByOrderId,
   hashWebhookPayload,
@@ -111,8 +113,11 @@ export async function POST(req: NextRequest) {
 
   try {
     // 3) backstop — 통보 서명 대신 결제 재조회로 취소 진위 확인(가능 시). 조회 실패해도 통보 진행.
+    //    2026-08-26 — 조회 결과를 버리지 않고 보관한다. 이 응답의 취소 시각이 환불 귀속일의
+    //    정본이다(통보가 재시도로 늦게 도착해도 그날로 밀리지 않게).
+    let canceledPayment: NicepayPaymentObject | null = null;
     if (tid) {
-      await getNicepayPayment(tid).catch(() => null);
+      canceledPayment = await getNicepayPayment(tid).catch(() => null);
     }
 
     // 4) 종료 상태 기록. 결제 승인까지 간 주문의 취소는 환불(refunded)이라 매출 이력을
@@ -127,6 +132,8 @@ export async function POST(req: NextRequest) {
         orderId,
         reason: '나이스페이 결제 취소(통보)',
         source: 'webhook',
+        // 재조회 실패 시엔 통보 본문을 넘긴다 — 파싱은 보수적이라 못 읽으면 조용히 now() 폴백.
+        payment: canceledPayment ?? (payload as TossPaymentObject),
       });
     } else {
       await markPaymentOrderFailed({

@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import {
   SPECIALIST_MENTORS,
@@ -64,7 +63,8 @@ export function SpecialistMentorGrid({
         />
       ) : null}
 
-      <ProductGrid columns={2} className={showHeader && title ? 'mt-5' : ''}>
+      {/* 2026-08-26 — 월령·세운·인연·가문 선생을 한 줄씩(1열) — 좁은 칼럼에서 2열이 답답(사용자 지시). */}
+      <div className={`grid gap-2.5 ${showHeader && title ? 'mt-5' : ''}`}>
         {SPECIALIST_MENTORS.map((mentor) => (
           <FeatureCard
             key={mentor.slug}
@@ -111,7 +111,7 @@ export function SpecialistMentorGrid({
           >
           </FeatureCard>
         ))}
-      </ProductGrid>
+      </div>
 
       {/* Phase 7c — AI/사람 구분 명시 + 환불·취소 정책 link */}
       <div className="mt-5 rounded-[14px] border border-[var(--app-line)] bg-white p-4 text-[14.4px] leading-[1.7] text-[var(--app-copy)]">

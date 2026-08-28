@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GangiLoadingOverlay, GangiPageHeader, GangiSection } from '@/components/gangi/gangi-ui';
 import { FollowUpQuestionChips } from '@/components/today-fortune/follow-up-question-chips';
@@ -68,6 +68,9 @@ export function TodayFortuneExperience({
   const [concernId, setConcernId] = useState<ConcernId>(normalizeConcernId(initialConcernId));
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 2026-08-26 — 하루 1회 차단 시 "다시 열어보기"(사용자 지시). 코드로 구분(카피 매칭 금지).
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const lastProfileRef = useRef<UnifiedBirthProfile | null>(null);
   const [freeResult, setFreeResult] = useState<TodayFortuneFreeResult | null>(null);
   const [pendingHitMemo, setPendingHitMemo] = useState<StoredHitMemoSession | null>(null);
 
@@ -104,8 +107,10 @@ export function TodayFortuneExperience({
   // 되돌리지 않고(페이지 전환 완료까지 overlay 유지), 실패 시에만 복귀.
   async function handleResolve(profile: UnifiedBirthProfile) {
     if (loading) return;
+    lastProfileRef.current = profile;
     setLoading(true);
     setErrorMessage(null);
+    setErrorCode(null);
 
     try {
       const href = await submitTodayFromProfile(profile, { concernId });
@@ -114,7 +119,45 @@ export function TodayFortuneExperience({
       setErrorMessage(
         err instanceof Error ? err.message : '무료 결과를 만드는 중 오류가 있었습니다.'
       );
+      setErrorCode(err instanceof Error ? ((err as Error & { code?: string }).code ?? null) : null);
       setLoading(false);
+    }
+  }
+
+  // 오늘(KST) 브라우저에 남아 있는 무료 결과 → 결과 페이지 링크. 없으면 null.
+  function findTodayStoredResultHref(): string | null {
+    try {
+      const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+      for (let i = 0; i < window.sessionStorage.length; i += 1) {
+        const key = window.sessionStorage.key(i);
+        if (!key || !key.startsWith('moonlight:today-fortune:result:v3:')) continue;
+        const raw = window.sessionStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw) as {
+          dateKey?: string;
+          sourceSessionId?: string;
+          concernId?: string;
+        };
+        if (parsed?.dateKey === todayKey && parsed.sourceSessionId) {
+          return `/today-fortune/result?sourceSessionId=${encodeURIComponent(parsed.sourceSessionId)}&concern=${encodeURIComponent(parsed.concernId ?? 'general')}`;
+        }
+      }
+    } catch {
+      // sessionStorage 접근 불가(프라이빗 모드 등) — 재제출 경로가 대신 처리.
+    }
+    return null;
+  }
+
+  // "다시 열어보기" — ① 브라우저에 오늘 결과가 남아 있으면 바로 그 페이지로,
+  // ② 없으면 같은 입력을 재제출(서버가 같은 날 같은 입력이면 소비 없이 재계산 — replay 쿠키).
+  function handleReopenToday() {
+    const storedHref = findTodayStoredResultHref();
+    if (storedHref) {
+      router.push(storedHref);
+      return;
+    }
+    if (lastProfileRef.current) {
+      void handleResolve(lastProfileRef.current);
     }
   }
 
@@ -171,7 +214,7 @@ export function TodayFortuneExperience({
 
   if (loading) {
     return (
-      <div className="gangi-subpage pb-8">
+      <div className="gangi-subpage pb-8 pt-5">
         <GangiPageHeader title="오늘운세" />
         <GangiLoadingOverlay
           title="오늘 운세를 풀어드리고 있어요"
@@ -182,7 +225,7 @@ export function TodayFortuneExperience({
   }
 
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage pb-8 pt-5">
       <GangiPageHeader title="오늘운세" />
 
       {/* 2026-05-14: intro 는 TodayConcernSelector 가 pink-soft hero 로 자체 렌더. */}
@@ -223,6 +266,17 @@ export function TodayFortuneExperience({
             <p className="text-[14.4px] font-medium text-[var(--app-coral,#e11d48)]">
               {errorMessage}
             </p>
+            {/* 2026-08-26 — 하루 1회 안내 바로 아래 "다시 열어보기"(사용자 지시).
+                오늘 본 결과 재열람은 무료 제한과 무관 — 저장분 링크 또는 무소비 재계산(replay). */}
+            {errorCode === 'free_daily_limit' ? (
+              <button
+                type="button"
+                onClick={handleReopenToday}
+                className="inline-flex w-fit items-center justify-center rounded-[12px] border border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] px-4 py-2.5 text-[14.4px] font-extrabold text-[var(--app-pink-strong)]"
+              >
+                오늘 본 운세 다시 열어보기
+              </button>
+            ) : null}
             {/* 잠금 중엔 무료 결과가 아예 안 나온다 — 안내만 남기면 막다른 길이라 결제 경로를 붙인다. */}
             {isPaywallLockdown() ? (
               <Link href="/saju/new?product=today-detail" className="gangi-primary-button">

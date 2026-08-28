@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
+import { GuardianAvatar } from '@/components/gangi/guardian-avatar';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { AiChatBillingSummary } from '@/lib/credits/ai-chat-access';
@@ -600,9 +601,12 @@ export function DialogueChatPanel({
               key={message.id}
               className={`flex ${roomMode && !isUser ? 'items-start gap-3' : ''} ${isUser ? 'justify-end' : 'justify-start'}`}
             >
+              {/* 2026-08-26 — 말풍선 화자 아바타를 인장에서 수호신 초상으로. 풀이를 들려주는
+                  자리라 진지한 표정을 쓴다(헤더 인사는 미소). */}
               {roomMode && !isUser ? (
-                <ZodiacChip
-                  kind={(message.expertId ?? selectedExpert.id) as ZodiacKey}
+                <GuardianAvatar
+                  zodiac={(message.expertId ?? selectedExpert.id) as ZodiacKey}
+                  mood="serious"
                   size="sm"
                   className="mt-1"
                 />
@@ -639,7 +643,11 @@ export function DialogueChatPanel({
         {status === 'loading' ? (
           <div className="flex justify-start">
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-base leading-7 text-[var(--app-copy-muted)]">
-              <span>간지사주이 답변을 정리하고 있습니다</span>
+              {/* 🔴 2026-08-28 — 여기 브랜드명 뒤 조사가 틀려 있었다. 옛 이름 **'달빛이'**
+                  (달빛+이)를 브랜드명으로 치환하면서 이름 끝의 '이'를 조사로 착각해 남긴
+                  자국이다(같은 자국 3곳). 말하는 주체는 브랜드가 아니라 그 방의 선생이므로
+                  이름을 쓴다 — 조사 문제도 같이 사라진다. 스캔: content/brand-josa.test.ts */}
+              <span>{selectedExpert.teacherName}님이 답변을 정리하고 있습니다</span>
               <span className="ml-2 inline-flex gap-1 align-middle">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/70" />
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/55 [animation-delay:120ms]" />

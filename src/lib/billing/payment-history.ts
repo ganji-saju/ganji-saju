@@ -11,6 +11,10 @@
 // 이 모듈은 두 소스를 한 모양(PaymentHistoryEntry)으로 합쳐 날짜 역순 정렬하고
 // 총 결제액(₩)을 더한다. Supabase 의존성이 없는 순수 매퍼라서 단위 테스트로 고정한다.
 import {
+  readPaymentOrigin,
+  type PaymentOriginEnv,
+} from '@/lib/payments/payment-origin';
+import {
   getPackage,
   getTasteProductPackage,
   isTasteProductId,
@@ -38,6 +42,12 @@ export interface PaymentHistoryEntry {
   receipt: string | null;
   /** 소스 구분(디버깅/필터용). */
   source: 'product_entitlements' | 'credit_transactions' | 'payment_orders';
+  /**
+   * 2026-08-29 — 결제가 일어난 환경. 주문 원장(payment_orders.metadata.origin)에서 읽어
+   * **주문번호(receipt)로 이어 붙인다** — 이용권/전 거래에는 이 값이 없기 때문이다.
+   * 이 필드가 생기기 전 주문은 전부 'unknown'(소급 불가).
+   */
+  originEnv: PaymentOriginEnv;
 }
 
 // ── 입력 행(서버에서 select 한 raw shape) ─────────────────────────────
@@ -73,6 +83,8 @@ export interface PaymentOrderHistoryRow {
   amount: number | null;
   status: string;
   created_at: string;
+  /** 2026-08-29 — origin 판정용. 조회에서 빠뜨리면 전부 'unknown' 이 된다. */
+  metadata?: Record<string, unknown> | null;
 }
 
 function readMetaNumber(metadata: Record<string, unknown> | null, key: string): number | null {
@@ -122,6 +134,7 @@ export function mapProductEntitlementToHistory(
     coins: null,
     receipt: row.order_id ?? row.payment_key ?? null,
     source: 'product_entitlements',
+    originEnv: 'unknown',
   };
 }
 
@@ -151,6 +164,7 @@ export function mapCreditTransactionToHistory(
       readMetaString(row.metadata, 'paymentKey') ??
       null,
     source: 'credit_transactions',
+    originEnv: 'unknown',
   };
 }
 
@@ -194,6 +208,7 @@ export function mapPaymentOrderToHistory(row: PaymentOrderHistoryRow): PaymentHi
     coins: null,
     receipt: row.order_id,
     source: 'payment_orders',
+    originEnv: readPaymentOrigin(row.metadata).env,
   };
 }
 
@@ -268,6 +283,20 @@ export function buildPaymentHistory(
       if (!seenOrderIds.has(order.order_id)) {
         entries.push(mapPaymentOrderToHistory(order));
       }
+    }
+  }
+
+  // 2026-08-29 — 출처는 **주문 원장에만** 있다. 이용권·전 거래 엔트리는 주문번호(receipt)로
+  //   이어 붙인다. 못 이으면 'unknown' 으로 남는다 — 실결제로 뭉뚱그리지 않는다.
+  if (input.paymentOrders && input.paymentOrders.length > 0) {
+    const originByOrderId = new Map<string, PaymentOriginEnv>();
+    for (const order of input.paymentOrders) {
+      originByOrderId.set(order.order_id, readPaymentOrigin(order.metadata).env);
+    }
+    for (const entry of entries) {
+      if (entry.originEnv !== 'unknown') continue;
+      const env = entry.receipt ? originByOrderId.get(entry.receipt) : undefined;
+      if (env) entry.originEnv = env;
     }
   }
 

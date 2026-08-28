@@ -150,7 +150,7 @@ export function TodayFortuneResultClient({
   }
 
   return (
-    <div className="gangi-subpage pb-8">
+    <div className="gangi-subpage pb-8 pt-5">
       <GangiPageHeader title="오늘의 운세" backHref="/today-fortune" />
 
       {/* 2026-05-15 handoff PR-G3: 오늘운세 결과 진입 + 20초 dwell + 권한 미허용 시

@@ -159,16 +159,6 @@ export default async function StarSignDetailPage({ params }: Props) {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
-        />
         <GangiPageHeader title={`${item.label} 별자리`} backHref="/star-sign" />
 
         <section className="space-y-5 px-1">
@@ -727,6 +717,18 @@ export default async function StarSignDetailPage({ params }: Props) {
             />
           </section>
         </section>
+        {/* JSON-LD — AppPage 마지막에 둔다: 첫 자식이면 space-y·간격 규칙이 스크립트를
+            형제로 세어 첫 가시 콘텐츠 위에 여백이 얹힌다(2026-08-26 상단 간격 전수검사). */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
       </AppPage>
     </AppShell>
   );

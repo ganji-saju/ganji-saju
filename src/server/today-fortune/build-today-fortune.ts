@@ -673,6 +673,15 @@ interface PublicTodayProfile {
   // 시드 의존 strength/role 변주 1문장 (매일 흐름 따라 다른 후보).
   strengthVariant: string;
   roleBodyVariant: string;
+  // 2026-08-26 — 무료 본문 개인화 개편: 오늘 천간↔내 일간 관계(10종) + 오늘 지지↔내 일지
+  //   관계(충/합/형/해/파)로 사람마다 갈라지는 구체 조언. 산출 불가 시 null(레거시 조립 폴백).
+  personalToday: {
+    opening: string;
+    focus: string;
+    doOne: string;
+    caution: string;
+    branchNote: string | null;
+  } | null;
 }
 
 function clampScore(value: number) {
@@ -1368,6 +1377,197 @@ function buildLocationCue(input: BirthInput) {
   return `${input.birthLocation.label} 출생 정보까지 함께 두고 봤어요.`;
 }
 
+// ═══ 2026-08-26 — 무료 본문 개인화 개편(사용자 지시 "내용이 사람마다 달라야") ═══
+//   기존 본문은 오행 5톤 × 강약 3단이 사람 축의 전부라 같은 날 거의 동일하게 읽혔다.
+//   오늘 천간↔내 일간의 관계 10종(고전 일진 해석의 핵심 축)과 오늘 지지↔내 일지의
+//   관계(충·합·형·해·파)를 생활 언어로 옮겨, 같은 날에도 사주마다 본문이 갈라진다.
+//   ⚠️ plain 티어 — 한자·명리어(기운/일진/십성명 등) 금지(vocab-quality 가드),
+//   단정/doom 어휘 금지(daily-variety 가드). 결정론: signatureSeed(사람+날) 로만 변주.
+
+type PersonalDayRelation =
+  | '비견' | '겁재' | '식신' | '상관' | '편재'
+  | '정재' | '편관' | '정관' | '편인' | '정인';
+
+const PERSONAL_YANG_STEMS = new Set(['甲', '丙', '戊', '庚', '壬']);
+const PERSONAL_STEM_ELEMENTS: Record<string, Element> = {
+  甲: '목', 乙: '목', 丙: '화', 丁: '화', 戊: '토',
+  己: '토', 庚: '금', 辛: '금', 壬: '수', 癸: '수',
+};
+const PERSONAL_GENERATES: Record<Element, Element> = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+const PERSONAL_CONTROLS: Record<Element, Element> = { 목: '토', 화: '금', 토: '수', 금: '목', 수: '화' };
+
+function resolvePersonalDayRelation(myStem: string, todayStem: string): PersonalDayRelation | null {
+  const myEl = PERSONAL_STEM_ELEMENTS[myStem];
+  const dayEl = PERSONAL_STEM_ELEMENTS[todayStem];
+  if (!myEl || !dayEl) return null;
+  const samePolarity = PERSONAL_YANG_STEMS.has(myStem) === PERSONAL_YANG_STEMS.has(todayStem);
+  if (myEl === dayEl) return samePolarity ? '비견' : '겁재';
+  if (PERSONAL_GENERATES[myEl] === dayEl) return samePolarity ? '식신' : '상관';
+  if (PERSONAL_CONTROLS[myEl] === dayEl) return samePolarity ? '편재' : '정재';
+  if (PERSONAL_CONTROLS[dayEl] === myEl) return samePolarity ? '편관' : '정관';
+  return samePolarity ? '편인' : '정인';
+}
+
+// 명리 용어 없이, 그 관계의 하루가 실제로 어떻게 느껴지는지로 옮긴 카피.
+//   opening 2변주(사람+날 시드 선택) · focus(오늘 실전 조언) · doOne(오늘 하나만) · caution.
+const PERSONAL_DAY_COPY: Record<
+  PersonalDayRelation,
+  { opening: readonly string[]; focus: string; doOne: string; caution: string }
+> = {
+  비견: {
+    opening: [
+      '오늘은 내 페이스가 또렷해지고, 비슷한 처지의 사람이 눈에 들어오는 날입니다.',
+      '오늘은 남의 눈치보다 내 기준이 또렷해지는 날입니다.',
+    ],
+    focus: '혼자 끙끙대던 일을 동료나 친구와 나누면 생각보다 쉽게 정리됩니다.',
+    doOne: '오늘 하나만 한다면, 미뤄둔 일 중 혼자 시작할 수 있는 것 하나를 먼저 여세요.',
+    caution: '다만 고집이 세지기 쉬운 날이라, 다른 의견도 한 번은 끝까지 들어보세요.',
+  },
+  겁재: {
+    opening: [
+      '오늘은 승부욕과 지출 욕구가 같이 올라오기 쉬운 날입니다.',
+      '오늘은 주변과 비교하는 마음이 커지기 쉬운 날입니다.',
+    ],
+    focus:
+      '누가 뭘 샀다더라, 어디에 넣었다더라 하는 말에 흔들리기 쉬우니 큰돈 결정은 하루 미루는 편이 좋습니다.',
+    doOne: '오늘 하나만 한다면, 저녁에 오늘 나간 돈을 한 번만 적어보세요.',
+    caution: '내기나 즉흥 약속은 오늘은 가볍게 웃고 넘기는 편이 낫습니다.',
+  },
+  식신: {
+    opening: [
+      '오늘은 말과 아이디어가 순하게 풀리는 날입니다.',
+      '오늘은 만들고 표현하는 일에 힘이 실리는 날입니다.',
+    ],
+    focus:
+      '미뤄둔 제안, 하고 싶던 말, 써두고 싶던 글이 있다면 오늘 꺼내기 좋습니다. 식사 자리나 가벼운 대화에서 일이 풀리기도 해요.',
+    doOne: '오늘 하나만 한다면, 말하려다 삼켰던 것 하나를 편한 자리에서 꺼내보세요.',
+    caution: '다만 편한 분위기에 과식이나 충동구매가 따라오기 쉬우니 마무리는 가볍게 하세요.',
+  },
+  상관: {
+    opening: [
+      '오늘은 말이 빨라지고 하고 싶은 말이 많아지는 날입니다.',
+      '오늘은 재치가 살아나는 대신 말끝이 날카로워지기 쉬운 날입니다.',
+    ],
+    focus:
+      '아이디어와 순발력은 좋은데, 답답한 규칙이나 윗사람 얘기가 말로 튀어나오기 쉽습니다. 보내기 전에 한 번 읽어보는 것만으로 오늘 문제의 절반이 줄어요.',
+    doOne: '오늘 하나만 한다면, 중요한 답장은 쓰고 나서 십 분 뒤에 보내세요.',
+    caution: '옳은 말이라도 오늘은 순서와 표현을 골라서 하는 편이 좋습니다.',
+  },
+  편재: {
+    opening: [
+      '오늘은 기회와 돈 얘기가 밖에서 굴러 들어오기 쉬운 날입니다.',
+      '오늘은 움직인 만큼 소득이 생기는, 발이 바쁜 날입니다.',
+    ],
+    focus:
+      '사람을 만나고 자리를 옮길수록 정보와 기회가 붙습니다. 다만 들어오는 만큼 나가기도 쉬운 날이라, 즉흥 결제는 장바구니에 하루 재워두세요.',
+    doOne: '오늘 하나만 한다면, 오늘 들어온 제안이나 정보 중 하나를 메모로 남겨두세요.',
+    caution: '좋아 보이는 얘기일수록 숫자를 한 번 확인하고 움직이세요.',
+  },
+  정재: {
+    opening: [
+      '오늘은 꼼꼼하게 챙긴 만큼 정직하게 돌아오는 날입니다.',
+      '오늘은 화려한 것보다 실속이 어울리는 날입니다.',
+    ],
+    focus:
+      '가계부, 정기결제, 미뤄둔 정산처럼 숫자를 만지는 일이 잘 풀립니다. 약속과 시간도 평소보다 정확하게 맞아 들어가는 흐름이에요.',
+    doOne: '오늘 하나만 한다면, 안 쓰는 자동이체나 구독 하나를 정리해보세요.',
+    caution: '다만 너무 아끼려다 사람에게 박해 보일 수 있으니, 밥값 한 번은 기분 좋게 내세요.',
+  },
+  편관: {
+    opening: [
+      '오늘은 급한 요청이나 부담스러운 일이 훅 들어오기 쉬운 날입니다.',
+      '오늘은 갑자기 일이 몰리며 어깨가 무거워지기 쉬운 날입니다.',
+    ],
+    focus:
+      '예정에 없던 일이 끼어들 수 있습니다. 전부 받아내려 하지 말고 순서를 정해 하나씩 쳐내면 오히려 인정받는 날이 됩니다.',
+    doOne: '오늘 하나만 한다면, 쌓인 일을 급한 것 세 개만 남기고 나머지는 내일로 미루세요.',
+    caution: '몸이 먼저 지치는 날이라, 무리한 저녁 약속은 줄이는 편이 좋습니다.',
+  },
+  정관: {
+    opening: [
+      '오늘은 절차와 예의를 지킨 만큼 신뢰가 쌓이는 날입니다.',
+      '오늘은 공적인 일, 서류, 윗사람과의 자리가 잘 풀리는 날입니다.',
+    ],
+    focus:
+      '미뤄둔 신청서·계약·보고처럼 격식이 필요한 일을 오늘 처리하면 순조롭습니다. 단정한 차림과 정확한 시간이 평소보다 크게 작용해요.',
+    doOne: '오늘 하나만 한다면, 미뤄둔 공적인 처리 하나(서류·예약·신고)를 끝내세요.',
+    caution: '다만 원칙만 앞세우면 딱딱해 보일 수 있으니 말투는 부드럽게 가져가세요.',
+  },
+  편인: {
+    opening: [
+      '오늘은 생각이 많아지고 혼자 있는 시간이 필요한 날입니다.',
+      '오늘은 감이 예민해지는 대신 몸이 처지기 쉬운 날입니다.',
+    ],
+    focus:
+      '결정을 미루고 정보를 더 모으고 싶어지는 날인데, 오늘은 그게 맞습니다. 다만 걱정을 키우는 검색은 삼십 분에서 끊으세요.',
+    doOne: '오늘 하나만 한다면, 머릿속에 맴도는 걱정 하나를 종이에 적어 내려놓으세요.',
+    caution: '끼니를 거르기 쉬운 날이라 식사만은 챙기세요.',
+  },
+  정인: {
+    opening: [
+      '오늘은 배우고 도움받는 흐름이 들어오는 날입니다.',
+      '오늘은 어른이나 경험자의 말이 힘이 되는 날입니다.',
+    ],
+    focus:
+      '혼자 애쓰기보다 물어보면 빨리 풀립니다. 문서·공부·자격처럼 차곡차곡 쌓아두는 일에도 좋은 흐름이에요.',
+    doOne: '오늘 하나만 한다면, 막혀 있던 일 하나를 아는 사람에게 물어보세요.',
+    caution: '받기만 하는 날이 되지 않게, 고맙다는 표현은 바로바로 하세요.',
+  },
+};
+
+// 오늘 지지↔내 일지 관계 — 부딪히거나 맞물리는 날의 실전 노트. 해당 없으면 null.
+const PERSONAL_BRANCH_CLASHES = new Set(['子午', '丑未', '寅申', '卯酉', '辰戌', '巳亥']);
+const PERSONAL_BRANCH_HARMONIES = new Set(['子丑', '寅亥', '卯戌', '辰酉', '巳申', '午未']);
+const PERSONAL_BRANCH_HARMS = new Set(['子未', '丑午', '寅巳', '卯辰', '申亥', '酉戌']);
+const PERSONAL_BRANCH_BREAKS = new Set(['子酉', '卯午', '辰丑', '未戌', '寅亥', '巳申']);
+const PERSONAL_BRANCH_PUNISH = new Set(['寅巳', '巳申', '寅申', '丑戌', '戌未', '丑未', '子卯']);
+
+function personalBranchPair(a: string, b: string): string {
+  return [a, b].sort().join('');
+}
+
+function resolvePersonalBranchNote(myDayBranch: string | null, todayBranch: string): string | null {
+  if (!myDayBranch || !todayBranch) return null;
+  const pair = personalBranchPair(myDayBranch, todayBranch);
+  // 합이 충돌 표보다 우선 — 寅亥·巳申은 합이자 파(破)라, 부드러운 쪽을 먼저 알려준다.
+  if (PERSONAL_BRANCH_HARMONIES.has(pair)) {
+    return '오늘은 손발이 잘 맞는 사람이 나타나는 날이라, 부탁과 협업이 평소보다 부드럽게 통합니다.';
+  }
+  if (PERSONAL_BRANCH_CLASHES.has(pair)) {
+    return '다만 오늘은 정해둔 일정이 한 번 뒤집히기 쉬운 날이라, 중요한 약속은 미리 한 번 확인해두면 흔들림이 적습니다.';
+  }
+  if (PERSONAL_BRANCH_PUNISH.has(pair)) {
+    return '가까운 사이일수록 사소한 신경전이 생기기 쉬운 날이라, 농담과 지적은 평소의 반으로 줄이면 편합니다.';
+  }
+  if (PERSONAL_BRANCH_HARMS.has(pair)) {
+    return '사소한 어긋남이 생기기 쉬운 날이라, 시간과 장소 같은 기본 확인을 한 번 더 하면 하루가 순해집니다.';
+  }
+  if (PERSONAL_BRANCH_BREAKS.has(pair)) {
+    return '해둔 약속이나 계획에 잔금이 가기 쉬운 날이라, 오늘은 새 판을 벌리기보다 기존 것을 지키는 쪽이 낫습니다.';
+  }
+  return null;
+}
+
+function buildPersonalToday(
+  sajuData: SajuDataV1 | SajuDataV2,
+  todayPillar: TodayPillarSnapshot,
+  signatureSeed: number
+): PublicTodayProfile['personalToday'] {
+  const myStem = sajuData.dayMaster?.stem ?? null;
+  if (!myStem || !todayPillar.stem) return null;
+  const relation = resolvePersonalDayRelation(myStem, todayPillar.stem);
+  if (!relation) return null;
+  const copy = PERSONAL_DAY_COPY[relation];
+  const myDayBranch = sajuData.pillars?.day?.branch ?? null;
+  return {
+    opening: pickVariant([...copy.opening], signatureSeed, 3),
+    focus: copy.focus,
+    doOne: copy.doOne,
+    caution: copy.caution,
+    branchNote: resolvePersonalBranchNote(myDayBranch, todayPillar.branch),
+  };
+}
+
 function buildPublicTodayProfile(
   input: BirthInput,
   sajuData: SajuDataV1 | SajuDataV2,
@@ -1435,6 +1635,7 @@ function buildPublicTodayProfile(
     todayGanzi: todayPillar.ganzi,
     strengthVariant: pickStrengthVariant(sajuData.strength?.level, signatureSeed),
     roleBodyVariant: pickRoleBodyVariant(baseRoleBody, dayLabel, signatureSeed),
+    personalToday: buildPersonalToday(sajuData, todayPillar, signatureSeed),
   };
 }
 
@@ -1515,26 +1716,43 @@ function buildPublicTodayBody(
   //   - 성향은 strengthVariant 하나로(roleBodyVariant 와 중복이라 제거)
   //   - actionBody 의 "오늘은" 접두 제거(반복 완화), 각 조각 asSentence 로 끝맺음 통일
   const concernLine = pickConcernBodyVariant(concernId, profile.signatureSeed);
-  const flowSignal = profile.todayFlowSignal;
-  const todayDateMarker = formatTodayDateMarker(profile.todayGanzi);
 
+  // 2026-08-26 개인화 개편 — 오늘 천간↔일간(10종)·지지↔일지 관계 기반 본문.
+  //   같은 날에도 사주마다 갈라진다(기존: 오행 5톤 × 강약 3단뿐이라 거의 동일하게 읽힘).
+  //   산출 기준 안내(양력/시간모름/날짜표기)는 본문에서 뺐다 — reasonSnippet·groundingSummary 가
+  //   이미 담당하고, 본문에 꼬리로 붙으면 "누구나 같은 문장"이라는 인상만 키운다(사용자 지적).
+  if (profile.personalToday) {
+    const personal = profile.personalToday;
+    return joinUniqueSentences([
+      // 1) 오늘 선언 — 나와 오늘의 관계(사람×날짜로 갈라짐)
+      asSentence(personal.opening),
+      // 2) 부딪힘/맞물림 노트 — 내 일지×오늘 지지(해당자만)
+      personal.branchNote ? asSentence(personal.branchNote) : null,
+      // 3) 내 성향 — 강약 변주(사람 축)
+      asSentence(profile.strengthVariant || profile.strengthBody),
+      // 4) 오늘 실전 조언 — 관계 유형별 구체 행동
+      asSentence(personal.focus),
+      // 5) 고민별 한 줄
+      asSentence(concernLine),
+      // 6) 오늘 하나만 — 바로 할 수 있는 행동
+      asSentence(personal.doOne),
+      // 7) 주의 — 관계 유형별
+      asSentence(personal.caution),
+      // 8) 시간대 행동 — 태어난 시간을 아는 사람에게만(개인 신호)
+      unknownBirthTime ? null : asSentence(profile.hourAction),
+    ]);
+  }
+
+  // 레거시 폴백 — 일간/오늘 천간을 못 읽는 비정상 데이터에서만.
+  const flowSignal = profile.todayFlowSignal;
   return joinUniqueSentences([
-    // 1) 오늘 흐름 — 겉·바탕 통합 종합
     asSentence(flowSignal) || null,
-    // 2) 내 성향 — 강약 변주 한 줄
     asSentence(profile.strengthVariant || profile.strengthBody),
-    // 3) 오늘 핵심 포인트 — 고민별
     asSentence(concernLine),
-    // 4) 행동 조언 — 먼저 할 일 + 시간대 행동
     asSentence(profile.actionBody),
     asSentence(profile.hourAction),
-    // 5) 오늘 주의 — 끝맺음 통일된 cautionBody
     asSentence(profile.cautionBody),
-    // 6) 마무리 흐름 + 기준 안내
     asSentence(profile.hourSummary),
-    asSentence(profile.calendarCue),
-    todayDateMarker ? `${todayDateMarker}로 본 흐름입니다.` : null,
-    unknownBirthTime ? '태어난 시간이 정확하지 않아 시간대 해석은 넓게만 봅니다.' : null,
   ]);
 }
 

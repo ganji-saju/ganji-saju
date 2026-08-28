@@ -41,7 +41,7 @@ const RAW_ENGINE_METHOD_ENTRIES: EngineMethodEntry[] = [
     eyebrow: 'AI 사주 해설',
     question: '왜 같은 질문인데 AI마다 사주풀이가 달라질까요?',
     lead:
-      '대화형 AI는 문장을 잘 쓰지만, 명식 계산과 격국·용신 해석까지 동시에 맡기면 원칙이 흔들릴 수 있습니다. 간지사주이 계산과 설명을 분리하는 이유도 여기에 있습니다.',
+      '대화형 AI는 문장을 잘 쓰지만, 명식 계산과 격국·용신 해석까지 동시에 맡기면 원칙이 흔들릴 수 있습니다. 간지사주가 계산과 설명을 분리하는 이유도 여기에 있습니다.',
     keywords: ['AI 사주', '사주 계산 정보', '격국 해석', '용신 해석'],
     relatedSlugs: [
       'why-ai-saju-differs-from-calendar-apps',

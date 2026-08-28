@@ -35,10 +35,10 @@ export function josa(value: string, consonantParticle: string, vowelParticle: st
 
 /** 리포트 기본 핑크 / 잉크 / 보조 톤. */
 export const PDF_COLORS = {
-  pink: '#d81b72',
-  pinkStrong: '#ff4f9a',
+  pink: 'var(--app-pink-strong)',
+  pinkStrong: 'var(--app-pink)',
   pinkBright: '#ff7bb8',
-  pinkSoft: '#fff0f7',
+  pinkSoft: 'var(--app-pink-soft)',
   ink: '#111114',
   inkSoft: 'rgba(17,17,20,0.76)',
   inkMuted: 'rgba(17,17,20,0.56)',
@@ -72,8 +72,8 @@ export const ELEMENT_HANJA: Record<Element, string> = {
 export const PDF_TEN_GOD_COLORS: Record<TenGodCode, string> = {
   비견: '#5b58d6',
   겁재: '#d99020',
-  식신: '#ff4f9a',
-  상관: '#d81b72',
+  식신: 'var(--app-pink)',
+  상관: 'var(--app-pink-strong)',
   편재: '#d99020',
   정재: '#0f9f7a',
   편관: '#ff6b6b',
@@ -286,31 +286,31 @@ export interface TraitSeed {
 /** 일간 오행별 4개 성격 키워드(라벨·부제·칩 색). 점수는 별도 산출. */
 const TRAIT_SEEDS_BY_ELEMENT: Record<Element, TraitSeed[]> = {
   목: [
-    { label: '추진력', sub: '쉬지 않고 앞으로', color: '#ff4f9a' },
+    { label: '추진력', sub: '쉬지 않고 앞으로', color: 'var(--app-pink)' },
     { label: '성장 욕구', sub: '계속 자라려는 힘', color: '#d99020' },
     { label: '기획력', sub: '큰 그림을 그림', color: '#0f9f7a' },
     { label: '인자함', sub: '품어주는 따뜻함', color: '#5b58d6' },
   ],
   화: [
-    { label: '전달력', sub: '밝게 드러냄', color: '#ff4f9a' },
+    { label: '전달력', sub: '밝게 드러냄', color: 'var(--app-pink)' },
     { label: '열정', sub: '한번 붙으면 끝까지', color: '#d99020' },
     { label: '직관력', sub: '빠르게 알아챔', color: '#0f9f7a' },
     { label: '사교성', sub: '주변을 환하게', color: '#5b58d6' },
   ],
   토: [
-    { label: '안정감', sub: '흔들리지 않는 중심', color: '#ff4f9a' },
+    { label: '안정감', sub: '흔들리지 않는 중심', color: 'var(--app-pink)' },
     { label: '신뢰', sub: '믿고 맡길 수 있음', color: '#d99020' },
     { label: '포용력', sub: '두루 품어줌', color: '#0f9f7a' },
     { label: '중재력', sub: '갈등을 풀어냄', color: '#5b58d6' },
   ],
   금: [
-    { label: '결단력', sub: '한 번 정하면 끝까지', color: '#ff4f9a' },
+    { label: '결단력', sub: '한 번 정하면 끝까지', color: 'var(--app-pink)' },
     { label: '추진력', sub: '쉬지 않고 앞으로', color: '#d99020' },
     { label: '분석력', sub: '본질을 보는 눈', color: '#0f9f7a' },
     { label: '독립성', sub: '혼자 해내는 힘', color: '#5b58d6' },
   ],
   수: [
-    { label: '지혜', sub: '깊이 생각함', color: '#ff4f9a' },
+    { label: '지혜', sub: '깊이 생각함', color: 'var(--app-pink)' },
     { label: '유연성', sub: '상황에 맞게', color: '#d99020' },
     { label: '통찰력', sub: '흐름을 읽음', color: '#0f9f7a' },
     { label: '공감력', sub: '마음을 잘 읽음', color: '#5b58d6' },
@@ -357,12 +357,12 @@ export interface SinsalMeaning {
 
 /** 목업에 노출되는 신살 6종 (천을귀인·문창귀인·역마·도화·화개·홍염). */
 export const SINSAL_DISPLAY: SinsalMeaning[] = [
-  { names: ['천을귀인'], hanja: '天乙', label: '천을귀인', meaning: '귀인의 도움', color: '#ff4f9a' },
+  { names: ['천을귀인'], hanja: '天乙', label: '천을귀인', meaning: '귀인의 도움', color: 'var(--app-pink)' },
   { names: ['문창귀인'], hanja: '文昌', label: '문창귀인', meaning: '학문·문서운', color: '#0f9f7a' },
   { names: ['역마', '역마살'], hanja: '驛馬', label: '역마', meaning: '이동·변동', color: '#d99020' },
   { names: ['도화', '도화살'], hanja: '桃花', label: '도화', meaning: '인기·매력', color: '#c04de0' },
   { names: ['화개', '화개살'], hanja: '華蓋', label: '화개', meaning: '예술·종교', color: '#5b58d6' },
-  { names: ['홍염', '홍염살'], hanja: '紅艶', label: '홍염', meaning: '이성·매혹', color: '#d81b72' },
+  { names: ['홍염', '홍염살'], hanja: '紅艶', label: '홍염', meaning: '이성·매혹', color: 'var(--app-pink-strong)' },
 ];
 
 // ──────────────────────────────────────────────────────────────────────────

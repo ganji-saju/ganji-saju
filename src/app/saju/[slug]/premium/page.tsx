@@ -26,7 +26,6 @@ import {
   TRUST_SIGNALS,
 } from '@/content/moonlight';
 import { toSlug } from '@/lib/saju/pillars';
-import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import {
   hasYearCoreEntitlementForReading,
@@ -475,8 +474,8 @@ export default async function SajuPremiumPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
-        <div className="space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
+        <div className="space-y-12 sm:space-y-14">
           {/* 2026-05-16 A7 — 다른 탭/창에서 결제 완료 후 본 페이지로 돌아오면
               focus 이벤트 → /api/payments/entitlement 재요청 → server SSR 결과와
               다르면 router.refresh() 로 페이지 전체 재렌더 (hero / sections / CTAs
@@ -487,7 +486,6 @@ export default async function SajuPremiumPage({ params }: Props) {
             initialHasEntitlement={hasLifetimeAccess}
           />
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
-          <SajuScreenNav slug={slug} current="premium" />
 
           {/* 2026-05-22 — '오늘의 분야별 흐름'(SajuAreaCardsSection)은 사주 메인 페이지에만 노출.
              상세(이 페이지)에서 중복 렌더되어 같은 내용 반복으로 느껴져 제거(메인 요약 유지). */}

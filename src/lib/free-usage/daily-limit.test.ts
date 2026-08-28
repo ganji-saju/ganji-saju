@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
-import { FREE_DAILY_SURFACES, freeDailyLimitMessage, type FreeSurface } from './daily-limit';
+import {
+  deviceCookieBlocks,
+  FREE_DAILY_SURFACES,
+  freeDailyLimitMessage,
+  type FreeSurface,
+} from './daily-limit';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
@@ -76,4 +81,21 @@ test('FREE_DAILY_SURFACES: 쿠키·benefit 키가 표면마다 고유', () => {
   const benefits = Object.values(FREE_DAILY_SURFACES).map((s) => s.benefit);
   assert.equal(new Set(cookies).size, cookies.length);
   assert.equal(new Set(benefits).size, benefits.length);
+});
+
+// 2026-08-26 회귀 가드 — 🔴 사용자 제보: "같은 컴퓨터에서 다른 아이디로 로그인해도 한 번밖에 못 본다."
+//   기기 쿠키가 로그인 사용자까지 막으면 무료 할당량이 계정이 아니라 **기기 단위**가 된다.
+test('deviceCookieBlocks: 로그인 사용자는 기기 쿠키로 막지 않는다(계정이 진실)', () => {
+  const key = '2026-08-26';
+  // 익명 — 오늘 쿠키가 있으면 막힌다.
+  assert.equal(deviceCookieBlocks(null, key, key), true);
+  assert.equal(deviceCookieBlocks(undefined, key, key), true);
+  // 같은 기기·같은 쿠키라도 로그인했으면 막지 않는다(계정 RPC 가 판정).
+  assert.equal(deviceCookieBlocks('user-a', key, key), false);
+  assert.equal(deviceCookieBlocks('user-b', key, key), false);
+});
+
+test('deviceCookieBlocks: 어제 쿠키·쿠키 없음은 익명도 막지 않는다', () => {
+  assert.equal(deviceCookieBlocks(null, '2026-08-25', '2026-08-26'), false);
+  assert.equal(deviceCookieBlocks(null, undefined, '2026-08-26'), false);
 });

@@ -4,7 +4,6 @@ import { TrackedButton } from '@/components/common/tracked-button';
 import { TrackedLink } from '@/components/common/tracked-link';
 import { ActionCluster } from '@/components/layout/action-cluster';
 import { FeatureCard } from '@/components/layout/feature-card';
-import { ProductGrid } from '@/components/layout/product-grid';
 import { SectionHeader } from '@/components/layout/section-header';
 import { SectionSurface } from '@/components/layout/section-surface';
 import type { MoonlightAnalyticsEvent } from '@/lib/analytics-events';
@@ -102,7 +101,8 @@ export function ReportKeepsakeSection({
         descriptionClassName="text-[var(--app-copy)]"
       />
 
-      <ProductGrid columns={4} className="mt-6">
+      {/* 2026-08-26 — 34rem 칼럼에서 4열이 한 글자 폭으로 부서짐(사용자 제보) → 1열 세로 흐름. */}
+      <div className="mt-5 grid gap-2.5">
         {items.map((item) => {
           const Icon = item.icon;
           return (
@@ -138,7 +138,7 @@ export function ReportKeepsakeSection({
             </FeatureCard>
           );
         })}
-      </ProductGrid>
+      </div>
 
       {actions && actions.length > 0 ? (
         <ActionCluster className="mt-6">

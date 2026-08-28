@@ -9,6 +9,7 @@ import { getAdminUserDetail } from '@/lib/admin/user-detail';
 import { getMemberExtras } from '@/lib/admin/member-extras';
 import { buildMemberHeader, formatBirth } from '@/lib/admin/detail-view';
 import { logAdminAccess } from '@/lib/admin/access-log';
+import { isRealRevenueOrigin, paymentOriginLabel } from '@/lib/payments/payment-origin';
 import { MemberDetailTabs, type DetailTab } from './member-detail-tabs';
 import { RefundActions } from './refund-actions';
 import { GrantCreditsActions } from './grant-credits-actions';
@@ -127,6 +128,27 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const refundTargetCount = refund.items.length + refund.creditItems.filter((i) => i.status !== 'none').length;
   const apptSummary = Object.entries(extras.appointments.byStatus).map(([k, v]) => `${k} ${v}`).join(' · ') || '—';
 
+  // 2026-08-29 — 실매출로 볼 수 없는 결제(스테이징·프리뷰·로컬) 합계.
+
+  //   'unknown'(출처 기록 전 주문)은 뺀다 — 그땐 스테이징 결제 경로가 있었는지조차
+
+  //   알 수 없어, 테스트로 몰면 과거 매출이 근거 없이 줄어든다.
+
+  const nonProductionSpend = payment.entries.reduce(
+
+    (acc, entry) =>
+
+      isRealRevenueOrigin(entry.originEnv)
+
+        ? acc
+
+        : { count: acc.count + 1, won: acc.won + (entry.amountWon ?? 0) },
+
+    { count: 0, won: 0 }
+
+  );
+
+
   const tabs: DetailTab[] = [
     {
       key: 'member',
@@ -164,8 +186,16 @@ export default async function AdminUserDetailPage({ params }: Props) {
     {
       key: 'payment',
       label: '결제·크레딧',
+      // 2026-08-29 — staging 과 프로덕션이 같은 DB 를 쓴다. 테스트 결제가 실매출과
+      //   한 표에 섞여 구별이 안 됐다(사용자 제보). 제목에서 바로 갈라 보여준다.
       content: (
-        <Card title={`결제 이력 · 총 ${fmtWon(payment.totalSpentWon)} (${payment.count}건)`}>
+        <Card
+          title={
+            nonProductionSpend.count > 0
+              ? `결제 이력 · 총 ${fmtWon(payment.totalSpentWon)} (${payment.count}건) · 이 중 테스트 ${nonProductionSpend.count}건 ${fmtWon(nonProductionSpend.won)}`
+              : `결제 이력 · 총 ${fmtWon(payment.totalSpentWon)} (${payment.count}건)`
+          }
+        >
           {payment.entries.length === 0 ? (
             <p className="text-[13px] text-[var(--app-copy-soft)]">현금 결제 내역이 없습니다.</p>
           ) : (
@@ -174,8 +204,24 @@ export default async function AdminUserDetailPage({ params }: Props) {
                 <li key={e.id} className="flex items-center justify-between gap-2 rounded-[10px] border border-[var(--app-line)] px-3 py-2">
                   <div className="flex flex-col">
                     <span className="text-[13px] font-extrabold text-[var(--app-ink)]">{e.productName}</span>
-                    <span className="text-[11.5px] text-[var(--app-copy-soft)]">
-                      {e.category} · {fmtDate(e.date)}{header.isSuper ? ` · 영수증 ${maskReceipt(e.receipt)}` : ''}
+                    <span className="flex flex-wrap items-center gap-1.5 text-[11.5px] text-[var(--app-copy-soft)]">
+                      <span>
+                        {e.category} · {fmtDate(e.date)}{header.isSuper ? ` · 영수증 ${maskReceipt(e.receipt)}` : ''}
+                      </span>
+                      {/* 실결제(production)엔 배지를 붙이지 않는다 — 대부분이 실결제라
+                          거기에 배지를 달면 눈에 띄어야 할 테스트 건이 묻힌다. */}
+                      {e.originEnv !== 'production' ? (
+                        <span
+                          className="inline-flex items-center rounded-[5px] px-1.5 py-0.5 text-[11px] font-extrabold"
+                          style={
+                            e.originEnv === 'unknown'
+                              ? { background: 'var(--app-surface-muted)', color: 'var(--app-copy-soft)' }
+                              : { background: 'var(--app-coral)', color: '#fff' }
+                          }
+                        >
+                          {paymentOriginLabel(e.originEnv)}
+                        </span>
+                      ) : null}
                     </span>
                   </div>
                   <span className="text-[14px] font-extrabold text-[var(--app-ink)]">

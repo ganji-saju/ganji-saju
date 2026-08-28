@@ -36,6 +36,14 @@ describe('paywall lockdown', () => {
     expect(keepVisible([{ href: '/free' }], (i) => i.href)).toHaveLength(1);
   });
 
+  it('샘플 리포트는 잠그지 않는다 — 유료 리포트의 설득 자산(2026-08-24 Phase 0 해제)', async () => {
+    // "결과가 얼마나 자세하지?"에 답하는 유일한 무료 지면. 다시 잠그면 결제 전환을 스스로 깎는다.
+    //   입력 화면·결제 화면의 ReportTrustNotes 가 /sample-report 로 링크한다 — 잠그면 그 링크가
+    //   /pricing 으로 튕기는 낚시가 된다.
+    const { isLockedPath } = await load(undefined);
+    expect(isLockedPath('/sample-report')).toBe(false);
+  });
+
   it('결제·계정·법정고지·유료 랜딩은 잠그지 않는다', async () => {
     const { isLockedPath } = await load(undefined);
     for (const open of [
@@ -172,8 +180,11 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
     expect(copy).toContain('/today-fortune');
     expect(copy).toContain('/saju/new');
 
-    // 활성 판정은 실존하는 라벨만 돌려줘야 한다(하이라이트 유실 방지).
-    const labels = locked.MEGA_NAV.map((g) => g.label);
+    // 활성 판정은 **실존하는 라벨이거나 빈 문자열**이어야 한다.
+    //   지키려는 건 "메뉴에 없는 라벨을 돌려주지 마라"(하이라이트 유실 방지)이지
+    //   "항상 무언가를 강조하라"가 아니다. 2026-08-28 — 홈은 어느 메뉴에도 속하지 않아
+    //   ''(강조 없음)을 돌려준다. 그전엔 첫 그룹을 칠해 홈에서 '운세'가 활성으로 보였다.
+    const labels = ['', ...locked.MEGA_NAV.map((g) => g.label)];
     expect(labels).toContain(locked.resolveActiveGroup('/zodiac'));
     expect(labels).toContain(locked.resolveActiveGroup('/'));
   });
@@ -183,11 +194,16 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       '@/content/gangi-market',
       true
     );
+    // 2026-08-24 Phase 1 — 단품 강등: 대운·택일 카드는 홈에서 내려갔다(교차추천으로 이동).
+    // 2026-08-25 재확정 — 유료는 타로·대화상담(질문 3회)만. 잠금 중 남는 유료 카드는
+    //   saju·gunghap·consult (타로는 (A)잠금 라우트라 keepVisible 이 제거, 무료 4종은 price 필터).
+    // 2026-08-28 — 택일이 홈으로 복귀(3,300원 부분 유료). /taekil 은 잠금 (A)숨김이
+    //   아니라 결제 CTA 랜딩이라 잠금 중에도 남는다.
     expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual([
       'saju',
-      'daewoon',
-      'taekil',
       'gunghap',
+      'taekil',
+      'consult',
     ]);
     expect(locked.GANGI_HOME_CARDS.every((c) => c.price !== '무료')).toBe(true);
     expect(locked.GANGI_HOME_BANNERS.map((b) => b.id)).not.toContain('tarot-free');
@@ -199,7 +215,8 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       '@/content/gangi-market',
       false
     );
-    expect(open.GANGI_HOME_CARDS).toHaveLength(8);
+    // 2026-08-25 재확정 — 유료 4(사주·궁합·타로·대화상담) + 무료 4(간단운세·꿈해몽·띠·별자리).
+    expect(open.GANGI_HOME_CARDS).toHaveLength(9);
     expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(4);
   });
 

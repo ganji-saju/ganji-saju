@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   alternates: { canonical: '/taekil' },
 };
 
+// 2026-08-28 — 택일은 **부분 유료**다: 페이지는 열어 두고 상위 3일까지 보여준 뒤
+//   나머지를 잠근다(자르는 곳은 /api/taekil/find-good-days). 전면 게이트를 걸었다가
+//   되돌린 이유 — /taekil 은 sitemap priority 0.78 의 검색 유입 페이지라,
+//   첫 화면이 결제창이면 유입이 그대로 이탈이 된다.
 export default function TaekilPage() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">

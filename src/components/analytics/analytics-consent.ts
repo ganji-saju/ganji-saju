@@ -16,12 +16,13 @@ export const ANALYTICS_CONSENT_KEY = 'ganji:analytics-consent:v1';
 export const CONSENT_REOPEN_EVENT = 'ganji:analytics-consent-reopen';
 
 /**
- * 2026-08-26 — 동의가 'granted' 로 승격된 순간. GaPageView 가 이걸 듣고 최초 랜딩 URL 의
- * UTM 을 실은 page_view 를 다시 보낸다.
+ * 2026-08-26 — 동의가 'granted' 로 승격된 순간. GaPageView 가 이걸 듣고 **최초 랜딩 URL 의
+ * UTM 을 실은 page_view 를 다시 보낸다**.
  *
- * 왜: 기본이 denied 라 첫 page_view 는 저장소 없이 나간다. 그 시점의 캠페인은 어디에도
- * 남지 않는다. '동의' 를 누르면 그때 쿠키가 생기며 세션이 시작되는데, 같은 라우트라 새
- * page_view 가 발사되지 않아 **캠페인이 유실되고 (direct) 로 잡힌다.**
+ * 왜 필요한가: 기본이 denied 라 첫 page_view 는 저장소 없이(cookieless) 나간다. 그 시점의
+ * 캠페인 정보는 어디에도 남지 않는다. 사용자가 배너에서 '동의' 를 누르면 그때 쿠키가 생기며
+ * 세션이 시작되는데, 그 순간의 URL 에는 이미 UTM 이 없거나(내부 이동) 있어도 새 page_view 가
+ * 발사되지 않아 **캠페인이 통째로 유실되고 (direct) 로 잡힌다.**
  */
 export const CONSENT_GRANTED_EVENT = 'ganji:analytics-consent-granted';
 

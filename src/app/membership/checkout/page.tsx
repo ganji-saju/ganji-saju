@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
+import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import {
   CHECKOUT_PLAN_GUIDE,
@@ -65,6 +66,13 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'score-factor': 'dragon',
   'score-total': 'dragon',
   'compat-reading': 'pig',
+  // 2026-08-25 — 990원 라이트 언락 4종(홈 카드 zodiac 와 동일 키).
+  'today-basic': 'rooster',
+  'tarot-daily': 'rabbit',
+  'dream-search': 'pig',
+  'dialogue-entry': 'snake',
+  // 2026-08-28 — 택일은 길일선생(말).
+  taekil: 'horse',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -82,6 +90,47 @@ type CheckoutGuide = {
 };
 
 const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
+  // 2026-08-25 전면 개편 — 990원 라이트 언락 4종(구 무료 메뉴). **당일권**(KST 당일 자정까지).
+  'today-basic': {
+    title: '간단운세 당일권',
+    reassurance:
+      '오늘의 흐름을 짧게 짚는 간단운세 당일권입니다. 결제일 당일(한국시간 자정까지) 이용할 수 있어요.',
+    nextRange: '생년월일 기준 오늘의 흐름 요약이 열립니다.',
+    opens: ['오늘 하루 간단운세 이용', '같은 날 재이용(중복 결제 없음)'],
+    notices: ['당일권은 결제일 당일(한국시간 기준)까지 유효합니다.', '이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'tarot-daily': {
+    title: '타로 세 장 당일권',
+    reassurance:
+      '세 장의 카드로 지금 흐름을 보는 타로 당일권입니다. 결제일 당일(한국시간 자정까지) 이용할 수 있어요.',
+    nextRange: '카드 세 장 선택과 풀이가 열립니다.',
+    opens: ['오늘 하루 타로 세 장 이용', '같은 날 재이용(중복 결제 없음)'],
+    notices: ['당일권은 결제일 당일(한국시간 기준)까지 유효합니다.', '이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'dream-search': {
+    title: '꿈해몽 당일권',
+    reassurance:
+      '꿈 상징 검색과 풀이를 여는 꿈해몽 당일권입니다. 결제일 당일(한국시간 자정까지) 이용할 수 있어요.',
+    nextRange: '단어별 꿈풀이 검색과 상황별 해석이 열립니다.',
+    opens: ['오늘 하루 꿈해몽 검색·풀이 이용', '같은 날 재이용(중복 결제 없음)'],
+    notices: ['당일권은 결제일 당일(한국시간 기준)까지 유효합니다.', '이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
+  'dialogue-entry': {
+    title: '대화상담 질문 3회',
+    reassurance:
+      '선생님께 질문 3회를 드릴 수 있는 이용권입니다. 결제하면 전 3개가 적립되고, 남은 횟수는 사라지지 않고 이어집니다.',
+    nextRange: '대화방에서 선생님과 질문 3회(전 3개 분량)를 주고받을 수 있어요.',
+    opens: ['선생님께 질문 3회', '남은 횟수 이월(소멸 없음)', '추가 구매로 횟수 충전'],
+    notices: ['질문 3회는 전 3개로 적립되어 대화에서 차감됩니다.'],
+  },
+  taekil: {
+    title: '택일 당일권',
+    reassurance:
+      '결혼·이사·개업·계약 같은 큰 결정의 날짜를 본인 사주로 골라보는 이용권입니다. 결제일 당일(한국시간 자정까지) 이용할 수 있어요.',
+    nextRange: '앞으로 60일 중 목적별로 맞는 날이 순서대로 열립니다.',
+    opens: ['오늘 하루 택일 이용', '목적(결혼·이사·개업·계약·여행)별 길일', '같은 날 재이용(중복 결제 없음)'],
+    notices: ['당일권은 결제일 당일(한국시간 기준)까지 유효합니다.', '이용권은 로그인 계정 단위로 연결됩니다.'],
+  },
   'today-detail': {
     title: '오늘 자세히 보기',
     reassurance:
@@ -184,6 +233,20 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
 // 묶음(bundle) 상품 안내. packageId 키. TASTE_PRODUCT_GUIDE 는 단일 TasteProductId 만
 // 다루므로 묶음은 별도 맵으로 분리(타입 충돌 회피).
 const BUNDLE_GUIDE: Record<string, CheckoutGuide> = {
+  // 2026-08-24 Phase 1 — 간판 상품. 할인율 표기 금지('출시 기념가' 고정) — catalog 주석 참조.
+  bundle_comprehensive: {
+    title: '종합사주 리포트',
+    reassurance:
+      '출시 기념가 9,900원(정가 33,000원). 사주 종합점수와 5요소 풀이, 오늘의 상세 리포트, 돈 패턴, 일·직장 흐름, 올해 핵심까지 17항목을 한 번에 엽니다. 이미 구매한 항목은 다시 결제하지 않습니다.',
+    nextRange: '결제 즉시 사주 결과 화면에서 잠긴 항목이 전부 열립니다.',
+    opens: ['사주 종합점수 + 5요소 풀이', '오늘의 상세 리포트', '돈이 새는 패턴 · 일/직장 흐름 · 올해 핵심'],
+    notices: [
+      '이 리포트는 현재 사주 결과에 연결됩니다.',
+      '이미 구매한 항목은 중복 결제하지 않습니다.',
+      // today-detail 은 일일 상품(2026-06-05 일일 만료 정책) — 당일 한정을 결제 전에 고지한다.
+      "'오늘의 상세 리포트'는 결제일 당일 기준 풀이입니다.",
+    ],
+  },
   bundle_today_set: {
     title: '오늘 풀세트',
     reassurance:
@@ -307,6 +370,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             같은 기능이 두 줄을 차지할 이유가 없어졌다(첫 콘텐츠 192px → 64px). */}
 
         <section className="space-y-5 px-1">
+          {/* 2026-08-26 — GA4 view_item. 결제창 도달 = 상품 상세 도달이다.
+              begin_checkout(버튼 클릭)보다 한 칸 앞이라 상세→시작→완료 퍼널이 완성된다. */}
+          {paymentPackage ? (
+            <GtmViewItem
+              productType={paymentPackage.id}
+              value={chargeAmount ?? paymentPackage.price}
+              itemName={selected.title}
+              itemCategory={paymentPackage.kind}
+            />
+          ) : null}
+
           {/* §1 주문 요약 — pink-soft + ZodiacChip + 상품 */}
           <article
             className="rounded-[18px] border border-[var(--app-line)] p-5"
@@ -356,6 +430,11 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
             </article>
           </section>
 
+          {/* 2026-08-26 — 신뢰 요소를 결제 흐름 **끝**(약관 동의·알림 입력 뒤, doc-y 1459)에서
+              금액 요약 바로 아래로 이동. 결제 버튼은 하단 고정 바라 늘 보이는데, '왜 사도 되는지'만
+              판단이 끝난 뒤에 나오던 배치였다. */}
+          <ReportTrustNotes />
+
           {/* §3 결제 수단 — 2026-07-18 삭제. 여기 있던 카드는 라디오처럼 생겼지만 아무것도
               선택되지 않는 순수 장식이었고, 진짜 선택기(TossPaymentMethodPicker "결제 방식")가
               바로 아래 §5 안에 또 있었다. 같은 화면에 결제수단 UI 가 둘 — 하나는 먹통 —
@@ -385,7 +464,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     사주 결과 먼저 만들기
                   </Link>
                 </div>
-              ) : needsResultFirst && selectedProduct ? (
+              ) : needsResultFirst && (selectedProduct || selectedBundle) ? (
                 <div className="grid gap-3 text-center">
                   <strong className="text-[17.3px] font-extrabold text-[var(--app-ink)]">
                     먼저 결과를 만들어 주세요
@@ -394,7 +473,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     단품 풀이는 결과 화면에 연결됩니다. 결과를 만든 뒤 해당 버튼으로 오면 중복 결제를 막습니다.
                   </p>
                   <Link
-                    href={`/saju/new?product=${selectedProduct}`}
+                    href={selectedProduct ? `/saju/new?product=${selectedProduct}` : '/saju/new'}
                     className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white"
                   >
                     사주 결과 먼저 만들기

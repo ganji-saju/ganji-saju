@@ -50,8 +50,10 @@ export function GangiHomeClient({
           onTrack={(payload) => trackMoonlightEvent('home_service_menu_click', payload)}
         />
 
-        {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너). 휴면이면 slot 은 truthy 여도 내부에서 null 렌더. */}
-        {couponCtaSlot}
+        {/* Task 8 — 카카오 친구추가 무료쿠폰 CTA(메인 배너). 휴면이면 slot 은 truthy 여도 내부에서
+            null 렌더 → empty:hidden 으로 래퍼 여백까지 사라진다. px-4 로 배너와 좌우 정렬,
+            pt-6 로 배너와의 간격 확보(2026-08-26 사용자 지시 — 배너 바로 아래 간격 확대). */}
+        <div className="px-4 pt-6 empty:hidden">{couponCtaSlot}</div>
 
         {/* 카테고리 칩 (전체 · 사주·명리 · 운세·택일 · 상담) */}
         <GangiCategoryTabs
@@ -65,29 +67,39 @@ export function GangiHomeClient({
           }}
         />
 
-        {/* 8 캐릭터 카드 그리드 — 가로 레이아웃 + 원형 아바타 + 파스텔 틴트. */}
-        <section
-          className="grid grid-cols-2 gap-3 px-4 pt-3"
-          aria-label="간지사주 운세 메뉴"
-        >
-          {visibleCards.map((card) => (
-            <GangiServiceCardLink
-              key={card.id}
-              card={card}
-              onTrack={(selected) =>
-                trackMoonlightEvent('home_service_menu_click', {
-                  from: 'home_card_grid',
-                  menu: selected.title,
-                  price: selected.price,
-                })
-              }
-            />
-          ))}
-        </section>
+        {/* 8 캐릭터 카드 그리드 — 유료(사주·궁합·타로·대화상담) / 무료(간단운세·꿈해몽·
+            띠운세·별자리) 두 그룹으로 나눠 그 사이를 넓게 벌린다(2026-08-25 사용자 지시).
+            카테고리 필터로 한쪽이 비면 해당 그룹 섹션은 통째로 생략. */}
+        {[
+          { key: 'paid', label: '간지사주 유료 메뉴', cards: visibleCards.filter((card) => card.price !== '무료'), extraGap: false },
+          { key: 'free', label: '간지사주 무료 메뉴', cards: visibleCards.filter((card) => card.price === '무료'), extraGap: true },
+        ].map((group) =>
+          group.cards.length === 0 ? null : (
+            <section
+              key={group.key}
+              className={`grid grid-cols-2 gap-x-3 gap-y-5 px-4 ${group.extraGap ? 'pt-14' : 'pt-6'}`}
+              aria-label={group.label}
+            >
+              {group.cards.map((card) => (
+                <GangiServiceCardLink
+                  key={card.id}
+                  card={card}
+                  onTrack={(selected) =>
+                    trackMoonlightEvent('home_service_menu_click', {
+                      from: 'home_card_grid',
+                      menu: selected.title,
+                      price: selected.price,
+                    })
+                  }
+                />
+              ))}
+            </section>
+          )
+        )}
 
         {/* 2026-06-28 — MY 별자리 slot 을 신규 유저 CTA 바로 위로 이동. profile 없으면 null. */}
         {myStarSignSlot ? (
-          <section className="px-4 pb-1 pt-3" aria-label="MY 별자리 오늘 운세">
+          <section className="px-4 pb-0 pt-14" aria-label="MY 별자리 오늘 운세">
             {myStarSignSlot}
           </section>
         ) : null}

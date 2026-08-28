@@ -20,13 +20,11 @@ import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { LifetimeDeepCta } from '@/components/saju/lifetime-deep-cta';
 import { Price, ComparePrice } from '@/components/payments/price-provider';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
-import SajuScreenNav from '@/features/saju-detail/saju-screen-nav';
 // 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
-import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
+import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { resolveReading } from '@/lib/saju/readings';
 import { buildLifetimeReport } from '@/domain/saju/report';
-import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -104,224 +102,7 @@ function formatBirthMeta(data: SajuDataV1 | SajuDataV2): string {
   return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')} · ${cal}${hourLabel}`;
 }
 
-function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defaultOpen: boolean }) {
-  const ganziLabel = withKoreanGanzi(cycle.ganzi);
-  const phaseColor =
-    cycle.phase === '성장기'
-      ? 'var(--app-jade)'
-      : cycle.phase === '전달기'
-        ? 'var(--app-pink-strong)'
-        : cycle.phase === '결정기'
-          ? 'var(--app-amber)'
-          : cycle.phase === '기반기'
-            ? 'var(--app-indigo)'
-            : cycle.phase === '준비기'
-              ? 'var(--app-plum)'
-              : 'var(--app-copy-muted)';
-  const transitionChip =
-    cycle.transitionPhase === 'entering'
-      ? '교운기 진입'
-      : cycle.transitionPhase === 'leaving'
-        ? '교운기 마무리'
-        : null;
-
-  return (
-    <details
-      className="group rounded-[16px] border bg-white"
-      style={{
-        borderColor: cycle.isCurrent ? 'var(--app-pink-line)' : 'var(--app-line)',
-        background: cycle.isCurrent ? 'var(--app-pink-soft)' : 'white',
-      }}
-      open={defaultOpen}
-    >
-      <summary
-        className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5"
-        style={{ outline: 'none' }}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
-              style={{ background: phaseColor }}
-            >
-              {cycle.phase}
-            </span>
-            {cycle.isCurrent ? (
-              <span
-                className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold uppercase tracking-[0.04em] text-white"
-                style={{ background: 'var(--app-pink)' }}
-              >
-                지금
-              </span>
-            ) : null}
-            {transitionChip ? (
-              <span
-                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold"
-                style={{
-                  background: '#fff7e6',
-                  borderColor: 'rgba(212,148,38,0.32)',
-                  color: 'var(--app-amber)',
-                }}
-              >
-                {transitionChip}
-              </span>
-            ) : null}
-            {cycle.twelveStage ? (
-              <span
-                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-copy)]"
-                style={{ borderColor: 'var(--app-line)' }}
-              >
-                {cycle.twelveStage}지
-              </span>
-            ) : null}
-            {cycle.wonjinWith && cycle.wonjinWith.length > 0 ? (
-              <span
-                className="rounded-[12px] border px-2 py-0.5 text-[12.1px] font-bold text-[var(--app-coral)]"
-                style={{ borderColor: 'rgba(220,79,79,0.22)' }}
-              >
-                원진 · {cycle.wonjinWith.join(', ')}
-              </span>
-            ) : null}
-          </div>
-          <div
-            className="mt-1.5 text-[17.3px] font-extrabold leading-tight text-[var(--app-ink)]"
-            style={{ wordBreak: 'keep-all' }}
-          >
-            {cycle.chapterTitle ?? `${ganziLabel} · ${cycle.ageLabel}`}
-          </div>
-          <div className="mt-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)]">
-            {ganziLabel} · {cycle.ageLabel}
-          </div>
-        </div>
-        <span
-          className="text-[var(--app-copy-soft)] transition-transform group-open:rotate-180"
-          aria-hidden="true"
-        >
-          ▾
-        </span>
-      </summary>
-
-      <div className="space-y-4 border-t border-[var(--app-line)] px-4 py-4">
-        {cycle.hook ? (
-          <p
-            className="rounded-[12px] bg-white p-3 text-[15px] font-medium leading-[1.65] text-[var(--app-ink)]"
-            style={{
-              border: '1px solid var(--app-pink-line)',
-              background: 'var(--app-pink-soft)',
-              wordBreak: 'keep-all',
-            }}
-          >
-            {cycle.hook}
-          </p>
-        ) : null}
-
-        {cycle.chapterBody ? (
-          <section>
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-              본문
-            </div>
-            <p
-              className="mt-1.5 text-[15.5px] leading-[1.75] text-[var(--app-copy)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              {cycle.chapterBody}
-            </p>
-          </section>
-        ) : null}
-
-        {cycle.mental ? (
-          <section>
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-indigo)]">
-              멘탈 · 내면
-            </div>
-            <p
-              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              {cycle.mental}
-            </p>
-          </section>
-        ) : null}
-
-        {cycle.relationship ? (
-          <section>
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-              관계
-            </div>
-            <p
-              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              {cycle.relationship}
-            </p>
-          </section>
-        ) : null}
-
-        {cycle.wealthCareer ? (
-          <section>
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
-              돈 · 커리어
-            </div>
-            <p
-              className="mt-1.5 text-[15px] leading-[1.7] text-[var(--app-copy)]"
-              style={{ wordBreak: 'keep-all' }}
-            >
-              {cycle.wealthCareer}
-            </p>
-          </section>
-        ) : null}
-
-        {cycle.practicalActions && cycle.practicalActions.length > 0 ? (
-          <section>
-            <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-              실천 4단 · 왜 / 무엇을 / 어떻게
-            </div>
-            <ul className="mt-2 grid gap-2">
-              {cycle.practicalActions.map((action, idx) => (
-                <li
-                  key={idx}
-                  className="rounded-[12px] border border-[var(--app-line)] bg-white p-3"
-                >
-                  <div
-                    className="text-[13.8px] font-extrabold leading-tight text-[var(--app-ink)]"
-                    style={{ wordBreak: 'keep-all' }}
-                  >
-                    {idx + 1}. {action.what}
-                  </div>
-                  <div
-                    className="mt-1 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
-                    style={{ wordBreak: 'keep-all' }}
-                  >
-                    <strong className="text-[var(--app-copy)]">왜 ·</strong> {action.reason}
-                  </div>
-                  <div
-                    className="mt-0.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
-                    style={{ wordBreak: 'keep-all' }}
-                  >
-                    <strong className="text-[var(--app-copy)]">어떻게 ·</strong> {action.how}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        {cycle.closingNote ? (
-          <p
-            className="rounded-[12px] p-3 text-[14.4px] leading-[1.7] text-[var(--app-ink)]"
-            style={{
-              background: 'rgba(15,23,42,0.04)',
-              border: '1px solid var(--app-line)',
-              wordBreak: 'keep-all',
-            }}
-          >
-            <strong className="text-[var(--app-pink-strong)]">마무리 ·</strong> {cycle.closingNote}
-          </p>
-        ) : null}
-      </div>
-    </details>
-  );
-}
+// 2026-08-25 — CycleCard·8단 풀이는 sections/daewoon-section.tsx 로 이동(결과 페이지와 공유).
 
 export default async function SajuDeepPage({ params }: Props) {
   const { slug } = await params;
@@ -360,10 +141,9 @@ export default async function SajuDeepPage({ params }: Props) {
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
-      <AppPage className="gangi-subpage saju-result-page space-y-5 sm:space-y-6">
-        <div className="space-y-5 sm:space-y-6">
+      <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
+        <div className="space-y-12 sm:space-y-14">
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME} · 대운 풀이`} backHref={`/saju/${slug}`} />
-          <SajuScreenNav slug={slug} current="deep" />
 
           <section className="space-y-5 px-1">
             {/* §1 Hero — 일주 + 현재 만 나이 + 진행 중 대운 */}
@@ -406,49 +186,8 @@ export default async function SajuDeepPage({ params }: Props) {
               )}
             </article>
 
-            {/* §2 대운 timeline strip — 한눈에 보는 모든 대운.
-                2026-05-16 — 현재 cycle 이 화면 오른쪽 끝에 있던 회귀.
-                DaewoonTimelineStrip 으로 client 측에서 mount 시 active 카드
-                중앙 정렬 scrollBy 처리. */}
-            {cycles.length > 0 ? (
-              <section>
-                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  大運 · 대운 흐름
-                </div>
-                <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
-                  내 인생의 10년 단위 챕터
-                </h2>
-                <DaewoonTimelineStrip cycles={cycles} />
-              </section>
-            ) : null}
-
-            {/* §3 cycle 8단 풀이 — 현재 cycle 은 펼친 상태, 나머지는 접힌 카드 */}
-            {cycles.length > 0 ? (
-              <section>
-                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                  시기별 8단 풀이
-                </div>
-                <h2 className="mt-1 text-[19.5px] font-extrabold text-[var(--app-ink)]">
-                  각 대운에서 일어나는 변화
-                </h2>
-                <p
-                  className="mt-1.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
-                  style={{ wordBreak: 'keep-all' }}
-                >
-                  대운마다 8가지 시각 — 호명 · 챕터 제목 · 본문 · 멘탈 · 관계 · 돈/커리어 · 실천 4단 · 마무리 — 으로 풀었습니다.
-                  카드를 눌러 펼쳐보세요.
-                </p>
-                <div className="mt-3 grid gap-2.5">
-                  {cycles.map((cycle, idx) => (
-                    <CycleCard
-                      key={`${cycle.ganzi}-${cycle.ageLabel}-${idx}`}
-                      cycle={cycle}
-                      defaultOpen={cycle.isCurrent || (currentCycleIndex < 0 && idx === 0)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ) : null}
+            {/* §2·§3 — 결과 페이지와 공유하는 DaewoonSection(타임라인+8단 풀이). */}
+            <DaewoonSection cycles={cycles} />
 
             {/* §4 Premium upsell — 평생리포트 49,000원 (AI 깊은 풀이 + 세운 30년) */}
             <article

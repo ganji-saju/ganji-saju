@@ -52,13 +52,13 @@ const ZODIAC_GRADIENT: Record<string, string> = {
   rat: 'linear-gradient(135deg, #5b58d6 0%, #353399 100%)',
   ox: 'linear-gradient(135deg, #0f9f7a 0%, #07654c 100%)',
   tiger: 'linear-gradient(135deg, #ff6b6b 0%, #c4423a 100%)',
-  rabbit: 'linear-gradient(135deg, #ff4f9a 0%, #d81b72 100%)',
+  rabbit: 'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
   dragon: 'linear-gradient(135deg, #c04de0 0%, #9636af 100%)',
   snake: 'linear-gradient(135deg, #d99020 0%, #a06c14 100%)',
   horse: 'linear-gradient(135deg, #ff6b6b 0%, #c4423a 100%)',
   goat: 'linear-gradient(135deg, #0f9f7a 0%, #0d7a5e 100%)',
   monkey: 'linear-gradient(135deg, #d99020 0%, #a06c14 100%)',
-  rooster: 'linear-gradient(135deg, #d81b72 0%, #a31354 100%)',
+  rooster: 'linear-gradient(135deg, var(--app-pink-strong) 0%, #a31354 100%)',
   dog: 'linear-gradient(135deg, #368ee8 0%, #1e6cbb 100%)',
   pig: 'linear-gradient(135deg, #5b58d6 0%, #353399 100%)',
 };
@@ -174,7 +174,7 @@ function getGenerationYears(item: ZodiacFortune): number[] {
 }
 
 const LUCKY_COLOR_TABLE: Array<{ name: string; hex: string }> = [
-  { name: '핑크', hex: '#ff4f9a' },
+  { name: '핑크', hex: 'var(--app-pink)' },
   { name: '코랄', hex: '#ff6b6b' },
   { name: '터쿼이즈', hex: '#0f9f7a' },
   { name: '하늘', hex: '#368ee8' },
@@ -270,16 +270,6 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
-        />
         <GangiPageHeader title={`${item.label} 운세`} backHref="/zodiac" />
 
         <section className="space-y-5 px-1">
@@ -737,6 +727,18 @@ export default async function ZodiacDetailPage({ params, searchParams }: Props) 
             );
           })()}
         </section>
+        {/* JSON-LD — AppPage 마지막에 둔다: 첫 자식이면 space-y·간격 규칙이 스크립트를
+            형제로 세어 첫 가시 콘텐츠 위에 여백이 얹힌다(2026-08-26 상단 간격 전수검사). */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(breadcrumbSchema) }}
+        />
       </AppPage>
     </AppShell>
   );
