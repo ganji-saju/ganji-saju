@@ -159,7 +159,12 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     title: '공짜로 보는 오늘의 운세',
     description: '오늘의 흐름을 무료로 가볍게 확인해보세요.',
     cta: '무료로 보기',
-    character: 'rooster', // 酉 — 간단운세 카드와 동일 정체성
+    // 🔴 2026-08-28 — 여기서 정체성을 맞추려고 'rooster'(酉, 간단운세 카드와 동일)로
+    //   바꿨다가 배너가 깨졌다. **배너 초상은 `{character}-banner` 전용 에셋을 쓰고,
+    //   그건 6종(t7·ox·dog·snake·rabbit·pig)뿐이다.** rooster-banner.jpg 가 404 나면서
+    //   초상이 통째로 빠지고 우측 34% 자리만 비었다(텍스트는 그 폭을 계속 비워 둔다).
+    //   에셋이 있는 rabbit 으로 되돌린다. 이 조합은 home-banner-assets.test.ts 가 잡는다.
+    character: 'rabbit', // 卯 — 배너 에셋 보유 6종 중 이 배너 전용(다른 배너와 겹치지 않음)
     href: '/today-fortune?concern=general',
     tone: 'soft',
   },
