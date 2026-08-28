@@ -17,6 +17,7 @@ import type { User } from '@supabase/supabase-js';
 import { ZodiacChip } from '@/components/gangi/zodiac-chip';
 import { createClient, hasSupabaseBrowserEnv } from '@/lib/supabase/client';
 import { MEGA_NAV, type MegaNavItem } from './mega-nav-data';
+import { NavIcon } from './nav-icons';
 import { Price } from '@/components/payments/price-provider';
 import './mobile-nav-sheet.css';
 
@@ -220,8 +221,12 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
                 onClick={onClose}
                 className="mobile-nav-sheet-item"
               >
+                {/* 인장(ZodiacChip)은 **대화 그룹 전용** — 거기선 선생 = 그 띠의 수호신이라
+                    인장이 곧 정체성이다. 나머지는 내용을 가리키는 아이콘을 쓴다. */}
                 {it.zodiac ? (
                   <ZodiacChip kind={it.zodiac} size="sm" />
+                ) : it.icon ? (
+                  <NavIcon name={it.icon} />
                 ) : (
                   <span className="mobile-nav-sheet-item-icon" aria-hidden="true">
                     ✦

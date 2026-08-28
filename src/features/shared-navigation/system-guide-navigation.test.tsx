@@ -106,11 +106,17 @@ describe('system guide navigation', () => {
     expect(mocks.onClose).toHaveBeenCalledOnce();
   });
 
-  it('/guide에서 모바일 상세 콘텐츠는 운세로 fallback되어 목록과 활성 tab을 유지한다', async () => {
+  it('/guide에서 모바일 상세 콘텐츠는 첫 그룹으로 fallback되어 목록과 활성 tab을 유지한다', async () => {
     await render(<MobileNavSheet open onClose={mocks.onClose} initialActiveLabel="사용방법" />);
 
+    // 지키려는 계약: 항목이 있는 그룹으로 떨어져 **목록이 비지 않고 탭이 하나 선택된다**.
+    // 2026-08-28 — 그전엔 '운세'를 박아뒀는데, 그건 당시 첫 그룹이라 우연히 맞았을 뿐이다.
+    // 탭 순서는 GROUP_ORDER 가 소유한다 — 순서를 바꿀 때마다 이 테스트가 깨지면 안 된다.
+    const firstListed = MEGA_NAV.find((group) => !group.simple)?.label;
     expect(document.querySelectorAll('.mobile-nav-sheet-item').length).toBeGreaterThan(0);
-    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe('운세');
+    expect(document.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toBe(
+      firstListed,
+    );
   });
 
   it('모바일 사용방법 링크는 렌더 스타일에서 최소 44px 터치 영역을 가진다', async () => {

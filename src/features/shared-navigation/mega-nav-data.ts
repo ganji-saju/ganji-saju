@@ -3,6 +3,7 @@
 
 import type { ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { isMenuHiddenHref, isPaywallLockdown, keepVisible } from '@/lib/paywall-lockdown';
+import type { NavIconName } from './nav-icons';
 import type { PriceKey } from '@/lib/payments/price-display-shared';
 
 export interface MegaNavItem {
@@ -13,6 +14,8 @@ export interface MegaNavItem {
   tag?: 'FREE' | 'VIP' | 'TOP' | string;
   /** 2026-07-07 Phase 2 — 지정 시 tag 를 리졸버 가격(admin product_prices)으로 렌더. */
   tagPriceKey?: PriceKey;
+  /** 2026-08-28 — 내용을 가리키는 아이콘. 인장(zodiac)은 대화 그룹 전용이다. */
+  icon?: NavIconName;
 }
 
 export interface MegaNavFeatured {
@@ -46,10 +49,10 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
       //   (같은 날 재확정 — 처음 4종 유료화에서 축소).
       heading: '운세',
       items: [
-        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', zodiac: 'rooster', tag: 'FREE' },
-        { label: '타로 세 장', desc: '마음이 시키는 카드', href: '/tarot/daily', zodiac: 'rabbit', tag: '990원', tagPriceKey: 'taste_tarot_daily' },
-        { label: '띠운세', desc: '내 띠 오늘 흐름', href: '/zodiac', zodiac: 'horse', tag: 'FREE' },
-        { label: '별자리', desc: '12자리 메시지', href: '/star-sign', zodiac: 'pig', tag: 'FREE' },
+        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', icon: 'today', tag: 'FREE' },
+        { label: '타로 세 장', desc: '마음이 시키는 카드', href: '/tarot/daily', icon: 'tarot', tag: '990원', tagPriceKey: 'taste_tarot_daily' },
+        { label: '띠운세', desc: '내 띠 오늘 흐름', href: '/zodiac', icon: 'zodiac', tag: 'FREE' },
+        { label: '별자리', desc: '12자리 메시지', href: '/star-sign', icon: 'star', tag: 'FREE' },
       ],
     },
     c2: {
@@ -72,10 +75,10 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '사주 풀이',
       items: [
-        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', zodiac: 'dragon', tag: '9,900원', tagPriceKey: 'saju_entry' },
-        { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', zodiac: 'snake', tag: 'VIP' },
-        { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', zodiac: 'sheep' },
-        { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', zodiac: 'tiger' },
+        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', icon: 'saju', tag: '9,900원', tagPriceKey: 'saju_entry' },
+        { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', icon: 'report', tag: 'VIP' },
+        { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', icon: 'compat', tag: '3,300원', tagPriceKey: 'taste_compat_reading' },
+        { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', icon: 'cross' },
       ],
     },
     c2: {
@@ -195,7 +198,20 @@ function unfreeHeading(heading: string): string {
   return heading.replace(/무료\s*/g, '').trim() || heading;
 }
 
-export const MEGA_NAV: MegaNavGroup[] = applyLockdown(ALL_MEGA_NAV);
+// 2026-08-28 — 모바일 시트 탭 순서를 상단바와 맞춘다. 그전엔 '운세'(무료 허브)가 첫 탭이라
+//   메뉴를 열면 무료부터 보였고, 상단바(사주 우선)와도 어긋났다. 배열을 직접 옮기지 않고
+//   순서표로 정렬한다 — 그룹 정의는 그대로 두고 순서만 한 곳에서 조인다.
+const GROUP_ORDER = ['사주', '대화', '운세', '멤버십', '사용방법'];
+
+function byMenuOrder(groups: MegaNavGroup[]): MegaNavGroup[] {
+  return [...groups].sort((a, b) => {
+    const ai = GROUP_ORDER.indexOf(a.label);
+    const bi = GROUP_ORDER.indexOf(b.label);
+    return (ai < 0 ? GROUP_ORDER.length : ai) - (bi < 0 ? GROUP_ORDER.length : bi);
+  });
+}
+
+export const MEGA_NAV: MegaNavGroup[] = applyLockdown(byMenuOrder(ALL_MEGA_NAV));
 
 // 2026-08-25 전면 개편 — 데스크톱 상단 바 간소화(도령 벤치마크): 드롭다운 패널 없이
 //   단순 링크 5개. 하단 dock 데스크톱 상시 노출로 패널의 탐색 역할이 중복돼서다.
