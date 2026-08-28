@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {
   buildPaymentOrigin,
+  isRealRevenueOrder,
   isRealRevenueOrigin,
   readPaymentOrigin,
   resolvePaymentOriginEnv,
@@ -47,4 +48,18 @@ test('결제 출처: 저장 → 복원이 같은 값이다', () => {
 test('결제 출처: env 가 깨져 있으면 host 로 다시 판정한다', () => {
   // 과거 값·수기 수정으로 env 만 이상해질 수 있다. host 가 남아 있으면 그게 진실이다.
   assert.equal(readPaymentOrigin({ origin: { env: 'nonsense', host: 'ganjisaju.kr' } }).env, 'production');
+});
+
+// 🔴 2026-08-29 — 매출 집계 필터. 이 판정이 틀리면 돈이 틀린다.
+test('매출 집계: 테스트 결제는 빼고, 출처 미기록은 남긴다', () => {
+  const staging = { metadata: { origin: { env: 'staging', host: 'staging.ganjisaju.kr' } } };
+  const prod = { metadata: { origin: { env: 'production', host: 'ganjisaju.kr' } } };
+  const legacy = { metadata: { checkoutPath: '/x' } }; // 출처 필드 생기기 전 주문
+
+  assert.equal(isRealRevenueOrder(staging), false, '스테이징 결제가 매출에 남으면 안 된다');
+  assert.equal(isRealRevenueOrder(prod), true);
+  // 소급 판정이 불가능하다 — 테스트로 몰면 과거 매출이 근거 없이 줄어든다.
+  assert.equal(isRealRevenueOrder(legacy), true, '출처 미기록을 빼면 과거 매출이 사라진다');
+  assert.equal(isRealRevenueOrder(null), true);
+  assert.equal(isRealRevenueOrder({}), true);
 });
