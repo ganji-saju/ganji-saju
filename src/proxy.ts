@@ -65,7 +65,65 @@ function buildCanonicalUrl(req: NextRequest) {
   return canonicalUrl;
 }
 
+/**
+ * 🔴 2026-08-29 — staging 접근 차단(Basic 인증).
+ *
+ *   Vercel Deployment Protection 은 Pro 전용($150/월)이라 쓰지 않는다. 같은 목적을
+ *   미들웨어에서 무료로 달성한다: staging 호스트로 들어오면 비밀번호를 요구한다.
+ *
+ *   왜 필요한가 — staging 은 프로덕션과 **같은 Supabase** 를 쓴다. 실사용자가 흘러들어와
+ *   결제하면 그 주문이 실매출 원장에 남고(#696 이 집계에서 걸러주지만 원장은 더러워진다),
+ *   크롤러가 훑으면 staging URL 이 색인된다(robots.txt 는 Allow: / 로 열려 있다).
+ *
+ *   ⚠️ env 미설정이면 **잠그지 않는다.** 비밀번호 없이 잠그면 아무도 못 들어간다 —
+ *   빈 값으로 자물쇠를 채우는 것보다 열어두고 눈에 띄게 두는 편이 낫다(opt-in).
+ *   ⚠️ `/api/` 는 제외한다. PG 웹훅·크론은 브라우저 프롬프트를 이해하지 못하고,
+ *   각 라우트가 이미 CRON_SECRET·HMAC·세션으로 스스로를 지킨다.
+ */
+const STAGING_HOSTS = new Set(['staging.ganjisaju.kr']);
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function stagingGateResponse(req: NextRequest): NextResponse | null {
+  const password = process.env.STAGING_ACCESS_PASSWORD;
+  if (!password) return null; // opt-in — 미설정이면 무동작
+  if (!STAGING_HOSTS.has(req.nextUrl.hostname)) return null;
+  if (req.nextUrl.pathname.startsWith('/api/')) return null;
+
+  const header = req.headers.get('authorization') ?? '';
+  if (header.startsWith('Basic ')) {
+    try {
+      const decoded = atob(header.slice(6));
+      // user 는 무엇이든 좋다 — 비밀번호만 본다(브라우저 프롬프트에 아이디 칸이 있을 뿐).
+      const supplied = decoded.slice(decoded.indexOf(':') + 1);
+      if (timingSafeEqual(supplied, password)) return null;
+    } catch {
+      // 잘못된 base64 → 아래에서 재요구
+    }
+  }
+
+  return new NextResponse('staging — 관리자 전용', {
+    status: 401,
+    headers: {
+      'WWW-Authenticate': 'Basic realm="ganjisaju staging", charset="UTF-8"',
+      // 401 이라도 색인 시도를 확실히 끊는다.
+      'X-Robots-Tag': 'noindex, nofollow',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
 export async function proxy(req: NextRequest) {
+  // staging 접근 차단은 **가장 먼저** — 잠금 리다이렉트·canonical 보다 앞이어야
+  //   비인증 요청이 내부 경로를 한 걸음도 밟지 않는다.
+  const gate = stagingGateResponse(req);
+  if (gate) return gate;
+
   let response = NextResponse.next({ request: req });
   const { pathname } = req.nextUrl;
 
