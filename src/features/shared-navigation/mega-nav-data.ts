@@ -16,6 +16,11 @@ export interface MegaNavItem {
   tagPriceKey?: PriceKey;
   /** 2026-08-28 — 내용을 가리키는 아이콘. 인장(zodiac)은 대화 그룹 전용이다. */
   icon?: NavIconName;
+  /**
+   * 2026-08-28 — 한 단계 하위 항목. 부모 바로 아래 들여쓴 행으로 렌더한다.
+   * 부모가 잠겨 사라지면 자식도 함께 사라진다(applyLockdown).
+   */
+  children?: MegaNavItem[];
 }
 
 export interface MegaNavFeatured {
@@ -41,35 +46,16 @@ export interface MegaNavGroup {
   c3?: MegaNavFeatured;
 }
 
+// 2026-08-28 — 사용자 지시로 **메뉴를 셋으로 압축**했다.
+//   그전엔 사주 8개(전문 분야 4개 포함) + 대화 12개(선생 9명) + 운세 7개 = 27개였고,
+//   그 대부분이 같은 라우트(/saju/new, /dialogue)로 떨어지는 이름만 다른 행이었다.
+//   같은 곳으로 가는 항목을 늘리는 건 선택지가 아니라 소음이다.
+//   · 사주 = **정체성 기반 유료 풀이**(내 사주·궁합·타로·별자리×사주)
+//   · 대화 = 선생 목록 대신 **행동**(새 대화 / 지난 대화). 선생은 /dialogue 안에서 고른다.
+//   · 운세 = 매일 보는 무료 4종. 12×12 별자리 궁합은 별자리의 하위 항목이다.
+//   featured(c3) 카드는 전부 뺐다 — '2026년 신년 운세'(8월에 신년), '평생 리포트'(목록에서
+//   내린 상품)처럼 셋 다 만료된 프로모였다.
 const ALL_MEGA_NAV: MegaNavGroup[] = [
-  {
-    label: '운세',
-    c1: {
-      // 2026-08-25 — 유료는 타로·대화상담(질문 3회)만 990원. 간단운세·꿈해몽·띠·별자리 무료
-      //   (같은 날 재확정 — 처음 4종 유료화에서 축소).
-      heading: '운세',
-      items: [
-        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', icon: 'today', tag: 'FREE' },
-        { label: '타로 세 장', desc: '마음이 시키는 카드', href: '/tarot/daily', icon: 'tarot', tag: '990원', tagPriceKey: 'taste_tarot_daily' },
-        { label: '띠운세', desc: '내 띠 오늘 흐름', href: '/zodiac', icon: 'zodiac', tag: 'FREE' },
-        { label: '별자리', desc: '12자리 메시지', href: '/star-sign', icon: 'star', tag: 'FREE' },
-      ],
-    },
-    c2: {
-      heading: '인기 운세',
-      items: [
-        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream', tag: 'FREE' , icon: 'dream' },
-        { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat' , icon: 'starcompat' },
-        { label: '좋은 날', desc: '큰 결정 D-day', href: '/taekil' , icon: 'day' },
-      ],
-    },
-    c3: {
-      title: '2026년 신년 운세',
-      description: '올해의 흐름을 미리 받아보세요',
-      cta: '무료로 시작',
-      href: '/today-fortune',
-    },
-  },
   {
     label: '사주',
     c1: {
@@ -86,60 +72,58 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
           //   홈 사주 카드와 같은 키를 쓴다 — 두 곳이 다른 상품을 가리키면 또 갈라진다.
           tagPriceKey: 'bundle_comprehensive',
         },
-        { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', icon: 'report', tag: 'VIP' },
-        { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', icon: 'compat', tag: '3,300원', tagPriceKey: 'taste_compat_reading' },
+        {
+          label: '궁합',
+          desc: '두 사람의 흐름',
+          href: '/compatibility',
+          icon: 'compat',
+          tag: '3,300원',
+          tagPriceKey: 'taste_compat_reading',
+        },
+        {
+          label: '타로카드',
+          desc: '마음이 시키는 카드',
+          href: '/tarot/daily',
+          icon: 'tarot',
+          tag: '990원',
+          tagPriceKey: 'taste_tarot_daily',
+        },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', icon: 'cross' },
       ],
-    },
-    c2: {
-      heading: '전문 분야',
-      items: [
-        { label: '재물 풀이', desc: '돈이 새는 패턴', href: '/saju/new' , icon: 'money' },
-        { label: '연애 풀이', desc: '감정과 타이밍', href: '/saju/new' , icon: 'love' },
-        { label: '직장 풀이', desc: '성과·이직 판단', href: '/saju/new' , icon: 'work' },
-        { label: '택일', desc: '좋은 날 고르기', href: '/taekil' , icon: 'day' },
-      ],
-    },
-    c3: {
-      title: '평생 리포트',
-      titlePriceKey: 'lifetime_report',
-      description: '대운 30년 · 평생 소장',
-      cta: 'VIP 자세히',
-      href: '/pricing',
     },
   },
   {
     label: '대화',
     c1: {
-      // 2026-06-28 — 홈 8캐릭터 카드 대응 8명 + 별자리(별닭선생) = 9명 노출. /dialogue 허브
-      //   (MENU_DIALOGUE_EXPERTS)와 동일 구성. 나머지 3명(엠지쥐 성향·관상원 관상·복돼지 행운)은
-      //   /dialogue/<id> 라우트는 유지하고 이 메뉴에서만 숨긴다.
-      heading: '선생님과 대화',
+      // 2026-08-28 — 선생 9명 목록을 걷어냈다. 전부 /dialogue/<id> 로 갈라지는 같은 대화방이고,
+      //   고르는 일은 /dialogue 허브가 이미 한다. 메뉴는 '새로 걸까 / 지난 걸 볼까'만 묻는다.
+      //   '예약 상담'은 뺐다 — 캘린더 예약은 아직 없다.
+      heading: '대화',
       items: [
-        { label: '사주선생', desc: '내 흐름 보기', href: '/dialogue/dragon', zodiac: 'dragon' },
-        { label: '명리선생', desc: '조금 더 깊게', href: '/dialogue/tiger', zodiac: 'tiger', tag: 'TOP' },
-        { label: '길일선생', desc: '좋은 날 고르기', href: '/dialogue/horse', zodiac: 'horse' },
-        { label: '궁합선생', desc: '상대와의 합', href: '/dialogue/sheep', zodiac: 'sheep' },
-        { label: '꿈해몽선생', desc: '마음 신호', href: '/dialogue/snake', zodiac: 'snake' },
-        { label: '대화상담선생', desc: '편하게 고민', href: '/dialogue/dog', zodiac: 'dog' },
-        { label: '타로선생', desc: '지금 마음 보기', href: '/dialogue/rabbit', zodiac: 'rabbit' },
-        { label: '오늘운세선생', desc: '오늘 루틴', href: '/dialogue/ox', zodiac: 'ox' },
-        { label: '별자리선생', desc: '별자리 흐름', href: '/dialogue/rooster', zodiac: 'rooster' },
+        { label: '1:1 채팅', desc: '선생님과 바로 대화', href: '/dialogue', icon: 'chat' },
+        { label: '대화 기록', desc: '예전 대화 다시 보기', href: '/dialogue/history', icon: 'history' },
       ],
     },
-    c2: {
-      heading: '상담 유형',
+  },
+  {
+    label: '운세',
+    c1: {
+      heading: '운세',
       items: [
-        { label: '1:1 채팅', desc: '무료로 시작', href: '/dialogue' , icon: 'chat' },
-        { label: '대화 기록', desc: '예전 대화 다시 보기', href: '/dialogue/history' , icon: 'history' },
-        { label: '예약 상담', desc: '캘린더에서 선택', href: '/dialogue/appointment' , icon: 'appointment' },
+        { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', icon: 'today', tag: 'FREE' },
+        { label: '띠운세', desc: '내 띠 오늘 흐름', href: '/zodiac', icon: 'zodiac', tag: 'FREE' },
+        {
+          label: '별자리',
+          desc: '12자리 메시지',
+          href: '/star-sign',
+          icon: 'star',
+          tag: 'FREE',
+          children: [
+            { label: '12×12 별자리 궁합', desc: '한눈에 매트릭스', href: '/star-sign/compat', icon: 'starcompat' },
+          ],
+        },
+        { label: '꿈해몽', desc: '한 단어 검색', href: '/dream', icon: 'dream', tag: 'FREE' },
       ],
-    },
-    c3: {
-      title: '선생님과 1:1 대화',
-      description: '처음 3회 무료로 시작',
-      cta: '대화방 열기',
-      href: '/dialogue',
     },
   },
   {
@@ -162,12 +146,18 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
 function applyLockdown(groups: MegaNavGroup[]): MegaNavGroup[] {
   if (!isPaywallLockdown()) return groups;
 
-  const cleanItems = (items: MegaNavItem[] | undefined) =>
-    keepVisible(items ?? [], (item) => item.href).map(({ tag, ...item }) => ({
+  const cleanItems = (items: MegaNavItem[] | undefined): MegaNavItem[] =>
+    keepVisible(items ?? [], (item) => item.href).map(({ tag, children, ...item }) => ({
       ...item,
       desc: unfree(item.desc),
       // 'FREE' 배지는 떼고, 가격 배지(9,900원·VIP·TOP 등)는 그대로 둔다.
       ...(tag && tag !== 'FREE' ? { tag } : {}),
+      // 하위 항목도 같은 규칙으로 거른다. 남는 게 없으면 키 자체를 뺀다 —
+      // 빈 배열이 남으면 잠금 검사(JSON 문자열)엔 안 걸려도 렌더가 빈 들여쓰기를 그린다.
+      ...(() => {
+        const kept = cleanItems(children);
+        return kept.length > 0 ? { children: kept } : {};
+      })(),
     }));
 
   const cleanColumn = (column: { heading: string; items: MegaNavItem[] } | undefined) => {

@@ -213,12 +213,13 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
         {/* active group items */}
         <div className="mobile-nav-sheet-body">
           <div className="mobile-nav-sheet-list">
-            {items.map((it) => (
+            {items.flatMap((it) => [it, ...(it.children ?? []).map((c) => ({ ...c, sub: true }))]).map((it) => (
               <Link
                 key={it.label}
                 href={it.href}
                 onClick={onClose}
                 className="mobile-nav-sheet-item"
+                data-sub={'sub' in it ? 'true' : undefined}
               >
                 {/* 인장(ZodiacChip)은 **대화 그룹 전용** — 거기선 선생 = 그 띠의 수호신이라
                     인장이 곧 정체성이다. 나머지는 내용을 가리키는 아이콘을 쓴다. */}
