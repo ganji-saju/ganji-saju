@@ -71,6 +71,8 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
   'tarot-daily': 'rabbit',
   'dream-search': 'pig',
   'dialogue-entry': 'snake',
+  // 2026-08-28 — 택일은 길일선생(말).
+  taekil: 'horse',
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
@@ -120,6 +122,14 @@ const TASTE_PRODUCT_GUIDE: Record<TasteProductId, CheckoutGuide> = {
     nextRange: '대화방에서 선생님과 질문 3회(전 3개 분량)를 주고받을 수 있어요.',
     opens: ['선생님께 질문 3회', '남은 횟수 이월(소멸 없음)', '추가 구매로 횟수 충전'],
     notices: ['질문 3회는 전 3개로 적립되어 대화에서 차감됩니다.'],
+  },
+  taekil: {
+    title: '택일 당일권',
+    reassurance:
+      '결혼·이사·개업·계약 같은 큰 결정의 날짜를 본인 사주로 골라보는 이용권입니다. 결제일 당일(한국시간 자정까지) 이용할 수 있어요.',
+    nextRange: '앞으로 60일 중 목적별로 맞는 날이 순서대로 열립니다.',
+    opens: ['오늘 하루 택일 이용', '목적(결혼·이사·개업·계약·여행)별 길일', '같은 날 재이용(중복 결제 없음)'],
+    notices: ['당일권은 결제일 당일(한국시간 기준)까지 유효합니다.', '이용권은 로그인 계정 단위로 연결됩니다.'],
   },
   'today-detail': {
     title: '오늘 자세히 보기',

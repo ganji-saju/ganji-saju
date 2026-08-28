@@ -221,13 +221,18 @@ export async function resolvePaymentProductScope({
     productId === 'today-basic' ||
     productId === 'tarot-daily' ||
     productId === 'dream-search' ||
-    productId === 'dialogue-entry'
+    productId === 'dialogue-entry' ||
+    productId === 'taekil'
   ) {
     // 2026-08-25 — 타로만 당일권(KST 날짜 scope). dialogue-entry(질문 3회)는 전달물이
     //   전 3개(fulfillment)라 entitlement 를 만들지 않는다 — scope 는 global-null 로 두고
     //   prepare 중복차단에 걸리지 않게 해 재구매(질문 추가 구매)를 허용한다.
     //   today-basic·dream-search 는 무료 복귀로 판매 경로가 없다(카탈로그만 잔존).
-    const isDayPass = productId === 'today-basic' || productId === 'tarot-daily' || productId === 'dream-search';
+    const isDayPass =
+      productId === 'today-basic' ||
+      productId === 'tarot-daily' ||
+      productId === 'dream-search' ||
+      productId === 'taekil';
     return {
       productId,
       scopeKey: isDayPass ? buildDayPassScopeKey(now) : null,
@@ -411,6 +416,7 @@ export function buildPurchasedProductHref(
   }
   if (productId === 'tarot-daily') return '/tarot/daily';
   if (productId === 'dream-search') return '/dream';
+  if (productId === 'taekil') return '/taekil';
   if (productId === 'dialogue-entry') return '/dialogue';
   if (productId === 'compat-reading') return '/compatibility/input';
   // 2026-07-19 — 주제 단품은 today-detail 화면을 해당 주제로 연다(재물=wealth, 일=career).

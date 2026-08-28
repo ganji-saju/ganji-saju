@@ -28,7 +28,10 @@ export type TasteProductId =
   | 'today-basic'
   | 'tarot-daily'
   | 'dream-search'
-  | 'dialogue-entry';
+  | 'dialogue-entry'
+  // 2026-08-28 — 택일(좋은 날) 유료화. 990원 4종과 같은 **당일권** 모델이지만 값은 3,300원:
+  //   하루치 운세가 아니라 '결혼·이사·계약 날짜를 고르는' 결정 도구라 단품 라인(3,300)에 붙인다.
+  | 'taekil';
 
 // 묶음(bundle) 구성품. kind='bundle' 패키지가 결제되면 confirm 이 components 를
 // 순회하며 각 구성품을 개별 taste_product 로 grant 한다(1결제 = N권한). scope 는
@@ -137,6 +140,14 @@ export const PAYMENT_PACKAGES = [
     price: 990,
     kind: 'taste_product',
     tasteProductId: 'dialogue-entry',
+  },
+  {
+    id: 'taste_taekil',
+    name: '택일 당일권',
+    credits: 0,
+    price: 3300,
+    kind: 'taste_product',
+    tasteProductId: 'taekil',
   },
   {
     id: 'taste_love_question',
@@ -305,6 +316,7 @@ const TASTE_PACKAGE_BY_PRODUCT: Record<TasteProductId, PackageId> = {
   'tarot-daily': 'taste_tarot_daily',
   'dream-search': 'taste_dream_search',
   'dialogue-entry': 'taste_dialogue_entry',
+  taekil: 'taste_taekil',
 };
 
 export function isTasteProductId(value: unknown): value is TasteProductId {
@@ -321,7 +333,8 @@ export function isTasteProductId(value: unknown): value is TasteProductId {
     value === 'today-basic' ||
     value === 'tarot-daily' ||
     value === 'dream-search' ||
-    value === 'dialogue-entry'
+    value === 'dialogue-entry' ||
+    value === 'taekil'
   );
 }
 

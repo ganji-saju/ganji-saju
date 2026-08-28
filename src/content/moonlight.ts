@@ -127,9 +127,13 @@ export interface MoonlightTasteProduct {
 const ALL_PRIMARY_TABS: readonly MoonlightNavItem[] = [
   { label: '홈', href: '/' },
   {
-    label: '사주추가',
-    href: '/saju/new',
-    matchPrefixes: ['/saju'],
+    // 2026-08-28 — '사주추가' 자리를 타로로 교체(사용자 지시). 사주는 상단 첫 메뉴이자
+    //   홈 첫 카드라 진입로가 둘 더 있고, 하단은 '가볍게 한 장 뽑는' 재방문 동선이 맞다.
+    //   ⚠️ /tarot 은 전면 유료화 잠금의 (A)숨김 경로다 — 잠금 ON 이면 keepVisible 이
+    //   이 칸을 통째로 지운다(잠금 중 하단은 홈·대화방·보관함 3칸).
+    label: '타로',
+    href: '/tarot/daily',
+    matchPrefixes: ['/tarot'],
   },
   {
     label: '무료운세',
@@ -157,9 +161,20 @@ const ALL_HEADER_SHORTCUTS: readonly MoonlightNavItem[] = [
 ] as const;
 
 // 2026-08-11 전면 유료화 잠금 — 무료 진입점 탭/숏컷 제거. 잠금 OFF 면 원본 그대로.
-export const PRIMARY_TABS: readonly MoonlightNavItem[] = keepVisible(
-  ALL_PRIMARY_TABS,
-  (item) => item.href
+//
+// 🔴 2026-08-28 — 2번 칸을 타로로 바꾸면서 **잠금 ON 이면 그 칸이 통째로 증발**했다
+//   (/tarot 은 (A)숨김 경로). 그러면 하단이 홈·대화방·보관함 3칸이 되고 유료 진입로가
+//   하단에서 0개가 된다 — 잠금 스펙이 지키려던 것과 정반대다.
+//   타로가 살아 있으면 타로(사용자 지시), 잠금으로 지워졌으면 그 자리에 사주를 되돌린다.
+const SAJU_TAB: MoonlightNavItem = { label: '사주추가', href: '/saju/new', matchPrefixes: ['/saju'] };
+
+function withPaidEntryTab(tabs: readonly MoonlightNavItem[]): readonly MoonlightNavItem[] {
+  if (tabs.some((tab) => tab.href === '/tarot/daily' || tab.href === SAJU_TAB.href)) return tabs;
+  return [tabs[0]!, SAJU_TAB, ...tabs.slice(1)];
+}
+
+export const PRIMARY_TABS: readonly MoonlightNavItem[] = withPaidEntryTab(
+  keepVisible(ALL_PRIMARY_TABS, (item) => item.href)
 );
 
 export const HEADER_SHORTCUTS: readonly MoonlightNavItem[] = keepVisible(

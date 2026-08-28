@@ -28,6 +28,8 @@ export const MENU_PASSES = {
   tarot: { packageId: 'taste_tarot_daily', productId: 'tarot-daily' },
   dream: { packageId: 'taste_dream_search', productId: 'dream-search' },
   dialogue: { packageId: 'taste_dialogue_entry', productId: 'dialogue-entry' },
+  // 2026-08-28 — 택일 3,300원 당일권.
+  taekil: { packageId: 'taste_taekil', productId: 'taekil' },
 } as const satisfies Record<string, MenuPass>;
 
 export type MenuPassKey = keyof typeof MENU_PASSES;

@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { SafetyNotice } from '@/components/common/safety-notice';
 import { DialogueChatPanel } from '@/components/dialogue/dialogue-chat-panel';
 import { type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { GuardianAvatar } from '@/components/gangi/guardian-avatar';
@@ -79,9 +80,12 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           className="gangi-chat-room-top sticky top-0 z-20 flex items-center gap-3 border-b border-[var(--app-line)] bg-white"
           style={{ padding: '12px 14px' }}
         >
+          {/* 🔴 2026-08-28 — 전엔 href="/dialogue"(선생 목록)였다. 허브를 없애고 /dialogue 를
+              이 방으로 보내는 리다이렉트로 바꿨으므로, 그대로 두면 뒤로가기가 같은 방으로
+              되돌아온다. 목록이 없어졌으니 뒤는 홈이다. */}
           <Link
-            href="/dialogue"
-            aria-label="대화방 목록으로"
+            href="/"
+            aria-label="홈으로"
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--app-line)] bg-white"
           >
             <ArrowLeft className="h-4 w-4 text-[var(--app-copy)]" />
@@ -119,6 +123,12 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           initialExpertId={expertId}
           roomMode
         />
+
+        {/* 🔴 2026-08-28 — 위기 안내(SafetyNotice crisis)는 없앤 허브가 **유일한 노출처**였다.
+            대화가 실제로 일어나는 곳은 여기라, 허브와 함께 사라지게 두면 안 된다. */}
+        <div className="px-3 pb-4 pt-3">
+          <SafetyNotice variant="crisis" />
+        </div>
       </AppPage>
     </AppShell>
   );

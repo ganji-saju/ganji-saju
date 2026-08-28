@@ -8,6 +8,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { TaekilClient } from '@/features/taekil/taekil-client';
 import { PaidFunnelGrid } from '@/components/seo/paid-funnel-grid';
+import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 
 export const metadata: Metadata = {
   title: '좋은 날 택일',
@@ -15,7 +16,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/taekil' },
 };
 
-export default function TaekilPage() {
+export default async function TaekilPage() {
+  // 2026-08-28 — 택일 3,300원 당일권 게이트. 멤버십·당일권이 없으면 체크아웃으로 보낸다.
+  //   (990원 4종과 같은 자리·같은 방식 — 값만 단품 라인 3,300원.)
+  await guardMenuPassEntry('taekil', 'taekil');
+
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">

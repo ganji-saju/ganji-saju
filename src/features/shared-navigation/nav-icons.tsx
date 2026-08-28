@@ -13,6 +13,7 @@ export type NavIconName =
   | 'star'
   | 'dream'
   | 'saju'
+  | 'day'
   | 'compat'
   | 'cross'
   | 'chat'
@@ -26,6 +27,7 @@ const PATHS: Record<NavIconName, React.ReactNode> = {
   star: <><path d="M12 3l2.4 5.6 6 .5-4.6 4 1.4 5.9L12 15.9 6.8 19l1.4-5.9-4.6-4 6-.5z" /></>,
   dream: <><path d="M20 14a8 8 0 1 1-9-9 6.5 6.5 0 0 0 9 9z" /><path d="M15 4.5h2M16 3.5v2" /></>,
   saju: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M8 4v16M16 4v16M3 12h18" /></>,
+  day: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /><path d="M10 15l1.5 1.5L15 13" /></>,
   compat: <><path d="M8.5 20C4 16.5 2 13.9 2 11a4 4 0 0 1 6.5-3.1" /><path d="M15.5 20C20 16.5 22 13.9 22 11a4 4 0 0 0-6.5-3.1" /><path d="M12 8.5v11" /></>,
   cross: <><circle cx="9" cy="9" r="5" /><path d="M15 15l5 5M13.5 6.5l4-4M17.5 6.5h-4v-4" /></>,
   chat: <><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z" /></>,
