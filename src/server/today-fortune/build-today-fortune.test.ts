@@ -282,17 +282,25 @@ test('today fortune free result reflects time calendar and location differences 
   });
   const firstData = calculateSajuDataV1(first.input);
   const secondData = calculateSajuDataV1(second.input);
+  // 🔴 2026-08-29 — 날짜를 고정한다. 그전엔 `now` 를 안 넘겨 **오늘 날짜의 일진**으로
+  //   본문을 만들었고, 그날 뽑힌 문장 변형에 출생정보 단서(음력/부산/시간대)가 없으면
+  //   아래 assert 가 깨졌다. 실제로 2026-08-29 자정에 깨져 CI 가 막혔다 —
+  //   코드가 아니라 달력이 바꾼 실패다. 검사하려는 건 "출생정보가 본문에 반영되는가"지
+  //   "오늘 어떤 변형이 뽑히는가"가 아니다.
+  const FIXED_NOW = new Date('2026-08-28T03:00:00Z'); // KST 2026-08-28 12:00
   const firstResult = buildTodayFortuneFreeResult(first.input, firstData, {
     concernId: 'general',
     sourceSessionId: 'solar-seoul-morning',
     calendarType: first.calendarType,
     timeRule: first.timeRule,
+    now: FIXED_NOW,
   });
   const secondResult = buildTodayFortuneFreeResult(second.input, secondData, {
     concernId: 'general',
     sourceSessionId: 'lunar-busan-night',
     calendarType: second.calendarType,
     timeRule: second.timeRule,
+    now: FIXED_NOW,
   });
 
   assert.notEqual(firstResult.oneLine.body, secondResult.oneLine.body);
