@@ -6,6 +6,7 @@ import {
   isTasteProductPackage,
 } from '@/lib/payments/catalog';
 import { areAllBundleComponentsOwned } from '@/lib/payments/bundle';
+import { buildPaymentOrigin } from '@/lib/payments/payment-origin';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { auditNicepayKeyPair } from '@/lib/payments/nicepay-config-audit';
 import { resolveNicepayPrepareBlock } from '@/lib/payments/nicepay-prepare-guard';
@@ -395,7 +396,14 @@ export async function POST(req: NextRequest) {
     acceptedKinds,
     recordedPolicyVersionIds: [],
     // 2026-06-26 — 환불 시 PG 분기용 provider 저장(admin refund 가 toss/nicepay 취소 선택).
-    metadata: { checkoutPath, provider: getPaymentProvider() },
+    // 2026-08-29 — 결제가 일어난 **환경**을 주문에 박는다. staging 과 프로덕션이 같은
+    //   Supabase 를 쓰기 때문에, 이걸 안 남기면 테스트 결제가 실매출과 한 표에 섞여
+    //   관리자에서 구별이 불가능하다(사용자 제보).
+    metadata: {
+      checkoutPath,
+      provider: getPaymentProvider(),
+      origin: buildPaymentOrigin(req.headers.get('host')),
+    },
   });
 
   // 동의 기록 — 활성 PolicyVersion fetch 후 user_policy_consents insert.

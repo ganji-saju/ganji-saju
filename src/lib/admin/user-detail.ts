@@ -359,7 +359,9 @@ export async function getAdminUserDetail(userId: string): Promise<AdminUserDetai
   // 코인 sunset 이후 멤버십 결제는 credit_transactions 에 없음 → 완료 주문 원장 보강(orderId dedupe).
   const { data: orderHistoryRows } = await supabase
     .from('payment_orders')
-    .select('id, order_id, package_id, amount, status, created_at, payment_key')
+    // 2026-08-29 — metadata 를 함께 읽는다. 결제 출처(origin)가 여기 들어 있어서,
+    //   빼먹으면 화면이 전부 '출처 미기록'으로 보인다.
+    .select('id, order_id, package_id, amount, status, created_at, payment_key, metadata')
     .eq('user_id', userId)
     .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
   const productEntitlements = (entitlementRows ?? []) as unknown as ProductEntitlementHistoryRow[];

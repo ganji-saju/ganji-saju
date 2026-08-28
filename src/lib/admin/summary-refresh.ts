@@ -80,7 +80,7 @@ async function computeUserSummary(
   // LTV/결제수에서 누락되던 문제: 완료 주문 원장을 세 번째 소스로(orderId dedupe).
   const { data: orderRows } = await service
     .from('payment_orders')
-    .select('id, order_id, package_id, amount, status, created_at')
+    .select('id, order_id, package_id, amount, status, created_at, metadata')
     .eq('user_id', userId)
     .in('status', ['confirmed', 'fulfilling', 'fulfilled']);
   const paymentOrders = (orderRows ?? []) as unknown as PaymentOrderHistoryRow[];
