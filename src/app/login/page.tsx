@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { Suspense, useMemo, useState, type FormEvent, type ReactNode, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import LegalLinks from '@/components/legal-links';
@@ -1373,6 +1373,34 @@ function LoginScaffold() {
     getInitialLoginMode(searchParams.get('mode'))
   );
   const isGateway = mode === 'gateway';
+
+  // 🔴 2026-08-29 사용자 제보: "로그인하면 로그인완료 화면이 아니라 계속 로그인창이 떠서
+  //   로그인이 안된거로 착각하게되네."
+  //
+  //   이 페이지에는 **'로그인된 상태'가 아예 없었다.** 이미 로그인한 사용자가 어떤 경로로든
+  //   /login 에 닿으면(뒤로가기, 헤더의 로그인 버튼, 만료된 링크, OAuth 왕복 중 되돌아옴)
+  //   똑같은 로그인 폼을 200 으로 받는다 — 실패와 화면상 구별이 불가능하다.
+  //   원인이 무엇이든 **증상은 여기서 끝난다**: 세션이 있으면 폼을 보여주지 말고 보낸다.
+  //
+  //   ⚠️ 비밀번호 재설정·계정찾기(reset/recover)는 제외한다. 로그인 상태로 들어오는 게
+  //   정상인 화면이라, 여기서 튕기면 비밀번호를 못 바꾼다.
+  useEffect(() => {
+    if (!hasSupabaseBrowserEnv) return;
+    if (mode === 'reset' || mode === 'recover') return;
+
+    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (cancelled || !data.session) return;
+        redirectAfterLogin(getAfterLoginHref(getSafeNext(searchParams.get('next'))));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, searchParams]);
 
   // 리디자인 2026-05-13: gateway 모드는 자체 그라데이션 + 干 hero 사용.
   // 카드 모드(login/signup/recover/reset)는 기존 달 lockup + card 보존.
