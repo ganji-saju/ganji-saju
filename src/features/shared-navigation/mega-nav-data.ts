@@ -112,14 +112,14 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '운세',
       items: [
-        // 2026-08-28 — 타로를 이 탭 맨 앞으로. 990원이지만 '오늘 뭐 볼까' 로 들어오는
+        // 2026-08-28 — 타로를 이 탭 맨 앞으로. 유료(3,300원)지만 '오늘 뭐 볼까' 로 들어오는
         //   사람이 가장 먼저 만나는 카드다(무료 4종과 나란히 두는 게 사용자 결정).
         {
           label: '타로카드',
           desc: '마음이 시키는 카드',
           href: '/tarot/daily',
           icon: 'tarot',
-          tag: '990원',
+          tag: '3,300원',
           tagPriceKey: 'taste_tarot_daily',
         },
         { label: '오늘운세', desc: '지금 핵심 한 줄', href: '/today-fortune?concern=general', icon: 'today', tag: 'FREE' },

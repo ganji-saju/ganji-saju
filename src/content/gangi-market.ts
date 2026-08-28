@@ -70,6 +70,11 @@ export type GangiServiceCard = {
    *   가로 레이아웃(원형 아바타 + 텍스트)에서 카드별 부드러운 배경색·가격색 결정.
    */
   tint?: 'pink' | 'plum' | 'sky' | 'coral' | 'indigo' | 'amber' | 'jade';
+  /**
+   * 2026-08-28 — 두 칸을 합친 가로 배너로 렌더(정사각 초상 대신 좌측 원형 + 우측 텍스트).
+   *   2열 그리드에서 홀수 번째 카드가 남기는 빈 칸을 메우는 자리이기도 하다.
+   */
+  wide?: boolean;
 };
 
 export type GangiHomeBanner = {
@@ -145,13 +150,17 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
     tone: 'soft',
   },
   {
+    // 🔴 2026-08-28 — '공짜로 보는 운세·타로' + '무료로 보기' 인데 링크가 **/tarot/daily**
+    //   였다. 타로는 2026-08-25 에 이미 유료가 됐고(오늘 3,300원으로 인상) 그 라우트는
+    //   결제 게이트다 — 무료라고 적힌 버튼이 결제창으로 보내고 있었다.
+    //   진짜 무료로 남은 간단운세로 돌린다. 배너 id 는 추적 연속성 때문에 유지.
     id: 'tarot-free',
     kicker: '무료',
-    title: '공짜로 보는 운세·타로',
-    description: '오늘의 운세와 타로를 무료로 가볍게 시작해보세요.',
+    title: '공짜로 보는 오늘의 운세',
+    description: '오늘의 흐름을 무료로 가볍게 확인해보세요.',
     cta: '무료로 보기',
-    character: 'rabbit', // 卯 — 타로 카드와 동일 정체성
-    href: '/tarot/daily',
+    character: 'rooster', // 酉 — 간단운세 카드와 동일 정체성
+    href: '/today-fortune?concern=general',
     tone: 'soft',
   },
   {
@@ -167,9 +176,21 @@ const ALL_GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = [
 ] as const;
 
 // 2026-08-11 전면 유료화 잠금 — 무료 콘텐츠로 보내는 배너 제거(tarot-free·dream).
-//   잠금 중 무료 배너가 남으면 클릭 → /pricing 으로 튕겨 낚시가 된다. 링크 기준으로 건다.
+//   잠금 중 무료 배너가 남으면 클릭 → /pricing 으로 튕겨 낚시가 된다.
+//
+// 🔴 2026-08-28 — **링크 기준만으로는 부족했다.** tarot-free 배너를 (A)잠금 경로에서
+//   /today-fortune 로 돌리자마자 잠금 필터를 그냥 통과했다 — '무료로 보기' 라고 적힌
+//   배너가 잠금 중에도 남는다. 홈 카드는 이미 `price !== '무료'` 로 **문구 기준**으로
+//   거른다. 배너도 같은 규칙으로 올린다: 링크가 살아 있어도 무료를 광고하면 뺀다.
+const FREE_WORDS = /무료|공짜/;
+
 export const GANGI_HOME_BANNERS: readonly GangiHomeBanner[] = keepVisible(
-  ALL_GANGI_HOME_BANNERS,
+  isPaywallLockdown()
+    ? ALL_GANGI_HOME_BANNERS.filter(
+        (banner) =>
+          !FREE_WORDS.test(`${banner.kicker} ${banner.title} ${banner.description} ${banner.cta}`)
+      )
+    : ALL_GANGI_HOME_BANNERS,
   (banner) => banner.href
 );
 
@@ -250,6 +271,19 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     tint: 'plum',
   },
   {
+    id: 'tarot',
+    title: '타로',
+    desc: '지금 급할 때',
+    // 2026-08-28 — 990 → 3,300(사용자 지시). 실청구가는 catalog(taste_tarot_daily)다.
+    price: '3,300원',
+    priceKey: 'taste_tarot_daily',
+    href: '/tarot/daily',
+    zodiac: 'rabbit',
+    category: 'fortune',
+    image: 'rabbit',
+    tint: 'jade',
+  },
+  {
     id: 'consult',
     title: '대화상담',
     // 2026-08-25 — 당일권 → **질문 3회**(사용자 확정). 전달물=전 3개(ai_chat 3턴 묶음).
@@ -261,6 +295,10 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'consult',
     image: 'snake',
     tint: 'amber',
+    // 2026-08-28 — 유료 블록 마지막 칸이 늘 혼자 남았다(유료 5장 = 2+2+1). 그 자리를
+    //   **두 칸짜리 가로 배너**로 채운다. 대화상담만 다른 모양인 건 실제로 다른 상품이라
+    //   맞다 — 나머지는 '읽는 풀이'고 이것만 '주고받는 대화'다.
+    wide: true,
   },
   // ── 무료 4종 (2026-08-25 사용자 확정: 간단운세·꿈해몽 무료 복귀 / 다음 줄 띠·별자리) ──
   //   잠금(lockdown) 중엔 price '무료' 필터가 이 넷을 감춘다.
@@ -274,18 +312,6 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
     image: 'rooster',
     tint: 'pink',
-  },
-  {
-    id: 'tarot',
-    title: '타로',
-    desc: '지금 급할 때',
-    price: '990원',
-    priceKey: 'taste_tarot_daily',
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
-    category: 'fortune',
-    image: 'rabbit',
-    tint: 'jade',
   },
   {
     id: 'dream',

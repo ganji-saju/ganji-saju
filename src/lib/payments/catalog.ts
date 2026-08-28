@@ -121,7 +121,8 @@ export const PAYMENT_PACKAGES = [
     id: 'taste_tarot_daily',
     name: '타로 세 장 당일권',
     credits: 0,
-    price: 990,
+    // 2026-08-28 — 990 → 3,300(사용자 지시). 단품 라인(3,300)에 합류.
+    price: 3300,
     kind: 'taste_product',
     tasteProductId: 'tarot-daily',
   },

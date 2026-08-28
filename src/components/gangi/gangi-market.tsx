@@ -513,6 +513,86 @@ export function GangiServiceCardLink({
   };
   const tintBg = TINT[card.tint ?? 'pink'];
 
+  // ── 2026-08-28 와이드 배너(두 칸) ────────────────────────────────────────────
+  //   나머지 카드는 '정사각 초상 + 아래 가격'이라 세로가 길다. 대화상담만 가로로 눕히는
+  //   건 장식이 아니라 **다른 상품이기 때문**이다 — 나머지는 읽는 풀이고 이건 주고받는
+  //   대화다. 어두운 잉크 바탕이 파스텔 정사각들 사이에서 그 차이를 만든다.
+  //   말줄임 점 셋은 대화방 로딩 인디케이터와 같은 모양이다(장식이 아니라 같은 언어).
+  if (card.wide) {
+    return (
+      <Link
+        href={card.href}
+        onClick={() => onTrack?.(card)}
+        data-free={isFree ? 'true' : 'false'}
+        className="col-span-2 block no-underline transition-transform active:scale-[0.99]"
+      >
+        <span
+          className="relative flex items-center gap-3.5 overflow-hidden rounded-[20px] py-3 pl-3.5 pr-4"
+          style={{
+            background:
+              'linear-gradient(105deg, var(--app-ink) 0%, #241a2e 52%, #35203a 100%)',
+            boxShadow: '0 14px 34px rgba(15,10,20,0.22)',
+          }}
+        >
+          {/* 좌측 초상 — 원형 크롭. 정사각 카드와 같은 소스를 같은 규칙(object-top)으로 쓴다. */}
+          <span
+            className="relative block h-[68px] w-[68px] shrink-0 overflow-hidden rounded-full"
+            style={{ background: tintBg, boxShadow: '0 0 0 2px rgba(255,255,255,0.16)' }}
+          >
+            {card.image ? (
+              <GuardianPortrait
+                id={card.image}
+                alt={card.title}
+                className="absolute inset-0 h-full w-full object-cover object-top"
+              />
+            ) : (
+              <span className="absolute inset-0 grid place-items-center">
+                <ZodiacChip kind={card.zodiac as ZodiacKey} size="md" />
+              </span>
+            )}
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span
+              className="flex items-center gap-1.5 text-[11.5px] font-extrabold tracking-[0.06em]"
+              style={{ color: 'var(--app-gold, #d9b46a)' }}
+            >
+              1:1 대화
+              <span aria-hidden="true" className="inline-flex gap-[3px] align-middle">
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-90" />
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-60" />
+                <span className="h-[3px] w-[3px] rounded-full bg-current opacity-35" />
+              </span>
+            </span>
+            <span
+              className="mt-0.5 block truncate text-[21px] font-black leading-tight tracking-[-0.03em] text-white"
+            >
+              {card.title}
+            </span>
+            <span
+              className="mt-0.5 block truncate text-[12.6px] font-bold"
+              style={{ color: 'rgba(255,255,255,0.62)' }}
+            >
+              {card.desc}
+            </span>
+          </span>
+
+          <span className="flex shrink-0 items-center gap-2">
+            <span
+              className="inline-flex items-center rounded-[8px] px-2.5 py-1 text-[15px] font-black"
+              style={{ background: 'var(--app-pink)', color: '#fff' }}
+            >
+              {card.priceKey ? <Price priceKey={card.priceKey} /> : card.price}
+            </span>
+            <span aria-hidden="true" className="text-[18px] font-bold text-white/45">
+              ›
+            </span>
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={card.href}
