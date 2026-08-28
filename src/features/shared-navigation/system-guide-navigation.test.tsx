@@ -5,7 +5,7 @@ import path from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MEGA_NAV, resolveActiveGroup } from './mega-nav-data';
+import { MEGA_NAV, resolveActiveGroup, MEGA_NAV_BAR } from './mega-nav-data';
 
 const mocks = vi.hoisted(() => ({ push: vi.fn(), onClose: vi.fn() }));
 
@@ -124,5 +124,27 @@ describe('system guide navigation', () => {
 
     const guide = document.querySelector('.mobile-nav-sheet-guide');
     expect(getComputedStyle(guide!).minHeight).toBe('44px');
+  });
+});
+
+// 🔴 회귀 가드(2026-08-28) — 상단바 순서는 **상품 축**이다. 하단 dock 이 이미 '어디로 가나'를
+//   담당하므로 상단이 같은 축이면 겹친다. 그리고 궁합은 홈에서 '추천' 배지를 단 2번째
+//   상품인데 상단 진입로가 없었다 — 다시 빠지면 여기서 실패한다.
+describe('상단바 우선순위', () => {
+  it('주력(사주)이 첫 칸이고 궁합에 진입로가 있다', () => {
+    const labels = MEGA_NAV_BAR.map((g) => g.label);
+    expect(labels[0]).toBe('사주');
+    expect(labels).toContain('궁합');
+    // 무료 허브는 유입용이라 결제 메뉴 뒤. 잠금 ON 이면 통째로 사라지므로 앞자리에 두면
+    // 환경마다 첫 메뉴가 달라진다.
+    const free = labels.indexOf('운세');
+    if (free >= 0) expect(free).toBeGreaterThan(labels.indexOf('대화'));
+    // 도움말은 마지막.
+    expect(labels[labels.length - 1]).toBe('사용방법');
+  });
+
+  it('궁합 경로는 궁합 메뉴를 활성화한다(사주로 흡수되지 않는다)', () => {
+    expect(resolveActiveGroup('/compatibility')).toBe('궁합');
+    expect(resolveActiveGroup('/saju/new')).toBe('사주');
   });
 });

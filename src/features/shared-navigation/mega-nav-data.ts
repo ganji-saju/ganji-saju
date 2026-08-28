@@ -201,10 +201,21 @@ export const MEGA_NAV: MegaNavGroup[] = applyLockdown(ALL_MEGA_NAV);
 //   단순 링크 5개. 하단 dock 데스크톱 상시 노출로 패널의 탐색 역할이 중복돼서다.
 //   ⚠️ MEGA_NAV(패널 데이터)는 모바일 햄버거 시트(mobile-nav-sheet)가 계속 쓴다 —
 //   여기만 바꾸고 MEGA_NAV 를 건드리면 모바일 메뉴가 텅 빈다(2026-08-25 실회귀 경험).
+// 2026-08-28 — 순서를 **상품 축**으로 다시 잡았다. 근거:
+//   · 하단 dock 이 이미 '어디로 가나'(홈·보관함·사주추가·대화방)를 담당한다 — 상단이
+//     같은 축으로 정렬되면 3개가 겹친다. 상단은 '무엇을 사러 왔나'로 나눈다.
+//   · 홈 카드가 곧 사용자가 정한 우선순위다: 사주(HOT·9,900) → 궁합(추천·3,300) →
+//     대화상담(990). 상단바 순서를 여기에 맞춘다.
+//   · 🔴 궁합은 홈에서 '추천' 배지를 단 2번째 상품인데 **상단 진입로가 아예 없었다**.
+//     /compatibility 는 잠금 대상도 아니다(결제 CTA 랜딩) — 넣지 않을 이유가 없었다.
+//   · '운세'(/free)는 무료 허브라 뒤로 뺀다. 잠금 ON 이면 applyLockdown 이 통째로
+//     지우므로, 앞자리에 두면 환경마다 첫 메뉴가 달라진다(프로덕션은 잠금 기본 ON).
+//   · '사용방법'은 도움말이라 마지막. 데스크톱 링크 존재를 단언하는 spec 이 있어 뺴지 않는다.
 export const MEGA_NAV_BAR: MegaNavGroup[] = applyLockdown([
-  { label: '운세', simple: true, href: '/free' },
   { label: '사주', simple: true, href: '/saju/new' },
+  { label: '궁합', simple: true, href: '/compatibility' },
   { label: '대화', simple: true, href: '/dialogue' },
+  { label: '운세', simple: true, href: '/free' },
   { label: '멤버십', simple: true, href: '/membership' },
   { label: '사용방법', simple: true, href: '/guide' },
 ]);
@@ -224,11 +235,16 @@ export function resolveActiveGroup(pathname: string): string {
     // 잠금으로 '운세' 그룹이 사라졌으면 하이라이트할 대상이 없다 → 기본 그룹.
     return MEGA_NAV.some((group) => group.label === '운세') ? '운세' : DEFAULT_GROUP;
   }
-  if (
-    pathname.startsWith('/saju') ||
-    pathname.startsWith('/compatibility') ||
-    pathname.startsWith('/pricing')
-  ) {
+  // 2026-08-28 — 궁합이 독립 메뉴가 됐다. 단 MEGA_NAV(모바일 시트)에는 '궁합' 그룹이
+  //   없으므로, 없으면 '사주'로 떨어뜨린다('운세' 잠금 폴백과 같은 방식) — 안 그러면
+  //   모바일 시트에서 아무 것도 활성화되지 않는다.
+  if (pathname.startsWith('/compatibility')) {
+    const hasCompat =
+      MEGA_NAV_BAR.some((group) => group.label === '궁합') ||
+      MEGA_NAV.some((group) => group.label === '궁합');
+    return hasCompat ? '궁합' : '사주';
+  }
+  if (pathname.startsWith('/saju') || pathname.startsWith('/pricing')) {
     return '사주';
   }
   if (pathname.startsWith('/dialogue')) {
