@@ -37,13 +37,26 @@ async function topEdgeContact(file: string): Promise<number> {
   return (hits / (rows * width)) * 100;
 }
 
-test('홈에 걸린 수호신 모션은 위가 잘리지 않는다', async () => {
+/**
+ * 검사에서 빼는 에셋. **쓰이지 않는 잔재만** 여기 넣는다 — 화면에 걸리는 걸 넣으면
+ * 가드가 무력해진다.
+ *   t7: 히어로가 t7-banner 를 쓰게 되면서 남은 구 카드 변형(560×746, 참조 0곳).
+ */
+const UNUSED_LEGACY = new Set(['t7']);
+
+test('수호신 모션 에셋은 위가 잘리지 않는다', async () => {
+  // 홈에 걸리는 키는 반드시 포함되고, 그 밖에 디스크에 있는 모션도 전부 훑는다 —
+  // 오늘 잘려 있던 tiger 는 홈에 안 쓰였지만 MOTION_IDS 에 있어 언제든 화면에 설 수 있었다.
   const ids = new Set<string>();
   for (const card of GANGI_HOME_CARDS) if (card.image) ids.add(card.image);
   for (const banner of GANGI_HOME_BANNERS) if (banner.character) ids.add(`${banner.character}-banner`);
+  for (const file of fs.readdirSync(MOTION_DIR)) {
+    if (file.endsWith('.webp')) ids.add(file.slice(0, -5));
+  }
 
   const clipped: string[] = [];
   for (const id of [...ids].sort()) {
+    if (UNUSED_LEGACY.has(id)) continue;
     const poster = path.join(MOTION_DIR, `${id}.webp`);
     if (!fs.existsSync(poster)) continue; // 존재 여부는 home-banner-assets.test.ts 담당
     const contact = await topEdgeContact(poster);
