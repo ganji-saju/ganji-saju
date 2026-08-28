@@ -197,9 +197,12 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
     // 2026-08-24 Phase 1 — 단품 강등: 대운·택일 카드는 홈에서 내려갔다(교차추천으로 이동).
     // 2026-08-25 재확정 — 유료는 타로·대화상담(질문 3회)만. 잠금 중 남는 유료 카드는
     //   saju·gunghap·consult (타로는 (A)잠금 라우트라 keepVisible 이 제거, 무료 4종은 price 필터).
+    // 2026-08-28 — 택일이 홈으로 복귀(3,300원 부분 유료). /taekil 은 잠금 (A)숨김이
+    //   아니라 결제 CTA 랜딩이라 잠금 중에도 남는다.
     expect(locked.GANGI_HOME_CARDS.map((c) => c.id)).toEqual([
       'saju',
       'gunghap',
+      'taekil',
       'consult',
     ]);
     expect(locked.GANGI_HOME_CARDS.every((c) => c.price !== '무료')).toBe(true);
@@ -213,7 +216,7 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
       false
     );
     // 2026-08-25 재확정 — 유료 4(사주·궁합·타로·대화상담) + 무료 4(간단운세·꿈해몽·띠·별자리).
-    expect(open.GANGI_HOME_CARDS).toHaveLength(8);
+    expect(open.GANGI_HOME_CARDS).toHaveLength(9);
     expect(open.GANGI_FREE_HUB_ITEMS).toHaveLength(4);
   });
 

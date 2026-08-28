@@ -232,18 +232,22 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     image: 'sheep',
     tint: 'coral',
   },
-  // ── 990원 유료 2종 — 타로·대화상담을 한 줄로(2026-08-25 사용자 지시). ──
+  // ── 2026-08-28 배치(사용자 지시): 택일·대화상담 / 간단운세·타로 / 꿈해몽·별자리 / 띠운세 ──
+  // 2026-08-28 — 택일 홈 복귀(사용자 지시). 2026-08-24 Phase 1 에서 '단품 강등'으로
+  //   내렸는데, 같은 날 3,300원 부분 유료(상위 3일 무료 → 나머지 잠금)로 상품이 바뀌면서
+  //   맛보기가 생겼다 — 홈 간판으로 다시 세울 근거가 그때와 다르다.
+  //   zodiac ox = 교차추천(paid-funnel-grid)의 택일 카드와 같은 띠. 중복 없다.
   {
-    id: 'tarot',
-    title: '타로',
-    desc: '지금 급할 때',
-    price: '990원',
-    priceKey: 'taste_tarot_daily',
-    href: '/tarot/daily',
-    zodiac: 'rabbit',
+    id: 'taekil',
+    title: '택일',
+    desc: '큰 결정 좋은 날',
+    price: '3,300원',
+    priceKey: 'taste_taekil',
+    href: '/taekil',
+    zodiac: 'ox',
     category: 'fortune',
-    image: 'rabbit',
-    tint: 'jade',
+    image: 'ox',
+    tint: 'plum',
   },
   {
     id: 'consult',
@@ -272,6 +276,18 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     tint: 'pink',
   },
   {
+    id: 'tarot',
+    title: '타로',
+    desc: '지금 급할 때',
+    price: '990원',
+    priceKey: 'taste_tarot_daily',
+    href: '/tarot/daily',
+    zodiac: 'rabbit',
+    category: 'fortune',
+    image: 'rabbit',
+    tint: 'jade',
+  },
+  {
     id: 'dream',
     title: '꿈해몽',
     desc: '마음이 찜찜할 때',
@@ -281,17 +297,6 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
     image: 'pig',
     tint: 'indigo',
-  },
-  {
-    id: 'zodiac',
-    title: '띠운세',
-    desc: '내 띠 오늘 흐름',
-    price: '무료',
-    href: '/zodiac',
-    zodiac: 'horse',
-    category: 'fortune',
-    image: 'horse',
-    tint: 'amber',
   },
   {
     id: 'star-sign',
@@ -305,6 +310,17 @@ const ALL_GANGI_HOME_CARDS: readonly GangiServiceCard[] = [
     category: 'fortune',
     image: 'monkey',
     tint: 'sky',
+  },
+  {
+    id: 'zodiac',
+    title: '띠운세',
+    desc: '내 띠 오늘 흐름',
+    price: '무료',
+    href: '/zodiac',
+    zodiac: 'horse',
+    category: 'fortune',
+    image: 'horse',
+    tint: 'amber',
   },
 ] as const;
 

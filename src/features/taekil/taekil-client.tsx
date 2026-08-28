@@ -36,6 +36,9 @@ export function TaekilClient() {
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'no-profile' | 'error'>('idle');
   const [results, setResults] = useState<TaekilDayResult[] | null>(null);
   const [lockedCount, setLockedCount] = useState(0);
+  // 2026-08-28 — 전량이 보일 때 **왜** 보이는지 화면에 남긴다. 그전엔 멤버십으로 통과한
+  //   것과 게이트가 고장난 것이 화면상 구별이 안 됐다("왜 다 보이지?" 제보의 원인).
+  const [hasPass, setHasPass] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -66,6 +69,7 @@ export function TaekilClient() {
         }
         setResults(data.results ?? []);
         setLockedCount(data.lockedCount ?? 0);
+        setHasPass(Boolean(data.hasPass));
         setState('success');
       })
       .catch((err: unknown) => {
@@ -188,6 +192,11 @@ export function TaekilClient() {
           <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
             추천 {results.length}일 — 점수 높은 순
           </h2>
+          {hasPass ? (
+            <p className="mt-1 px-1 text-[12.1px] font-bold text-[var(--app-jade)]">
+              멤버십·이용권으로 전량 열람 중입니다
+            </p>
+          ) : null}
           <div className="mt-2 grid gap-2.5">
             {results.map((day, idx) => (
               <article
