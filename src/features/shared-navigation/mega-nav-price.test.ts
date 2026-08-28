@@ -45,12 +45,21 @@ test('가격 배지 문자열 = 그 키의 카탈로그 가격', () => {
 });
 
 // 택일 3,300원(2026-08-28 신설) — 메뉴에 값을 붙였으면 실제로 받아야 한다.
-test('택일은 메뉴 가격표대로 게이트가 걸려 있다', async () => {
+//   2026-08-28 부분 유료화로 게이트가 **페이지 → API** 로 옮겨갔다: 상위 3일은 열고
+//   나머지는 응답에서 잘라낸다. 자르는 곳이 서버가 아니면 잠금이 아니라 그림이다.
+test('택일은 응답에서 잘라 잠근다(화면 블러가 아니라)', async () => {
   const fs = await import('node:fs');
   const path = await import('node:path');
-  const page = fs.readFileSync(path.join(process.cwd(), 'src/app/taekil/page.tsx'), 'utf8');
+  const api = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/api/taekil/find-good-days/route.ts'),
+    'utf8'
+  );
   assert.ok(
-    page.includes("guardMenuPassEntry('taekil'"),
-    '/taekil 에 결제 게이트가 없다 — 메뉴가 3,300원이라고 광고하는데 무료로 열린다'
+    api.includes("viewerHasMenuPass('taekil')"),
+    '택일 API 가 이용권을 안 본다 — 메뉴가 3,300원이라고 광고하는데 전량 무료로 나간다'
+  );
+  assert.ok(
+    api.includes('results.slice(0, FREE_TOP_N)'),
+    '이용권 없는 응답이 전량을 내려보낸다 — 화면에서 가려도 JSON 에 답이 실린다'
   );
 });

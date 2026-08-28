@@ -18,8 +18,13 @@ interface TaekilApiResponse {
   ok: boolean;
   hasProfile?: boolean;
   results?: TaekilDayResult[];
+  /** 2026-08-28 — 잠긴 일수. 날짜·점수는 서버가 아예 안 내려준다. */
+  lockedCount?: number;
+  hasPass?: boolean;
   error?: string;
 }
+
+const TAEKIL_CHECKOUT_HREF = '/membership/checkout?product=taekil&from=taekil';
 
 function formatDate(iso: string, weekday: number): string {
   const [, m, d] = iso.split('-');
@@ -30,6 +35,7 @@ export function TaekilClient() {
   const [purpose, setPurpose] = useState<TaekilPurpose>('wedding');
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'no-profile' | 'error'>('idle');
   const [results, setResults] = useState<TaekilDayResult[] | null>(null);
+  const [lockedCount, setLockedCount] = useState(0);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -59,6 +65,7 @@ export function TaekilClient() {
           return;
         }
         setResults(data.results ?? []);
+        setLockedCount(data.lockedCount ?? 0);
         setState('success');
       })
       .catch((err: unknown) => {
@@ -94,6 +101,7 @@ export function TaekilClient() {
           style={{ wordBreak: 'keep-all' }}
         >
           본인 사주 + 다음 60일 일진을 분석해 목적에 가장 좋은 7일을 찾아드립니다.
+          상위 3일은 무료로 보실 수 있습니다.
         </p>
       </article>
 
@@ -264,6 +272,28 @@ export function TaekilClient() {
             ))}
           </div>
 
+          {/* 🔴 2026-08-28 부분 유료화 — 나머지 N일 잠금.
+              날짜·점수는 서버가 안 내려주므로 여기서 가릴 것 자체가 없다. 몇 일이
+              남았는지와 값만 말한다(가짜 블러 카드로 있는 척하지 않는다). */}
+          {lockedCount > 0 ? (
+            <Link
+              href={TAEKIL_CHECKOUT_HREF}
+              className="mt-2.5 flex items-center gap-3 rounded-[16px] border p-4 no-underline"
+              style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
+            >
+              <span aria-hidden="true" className="text-[23px]">🔒</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-extrabold text-[var(--app-ink)]">
+                  나머지 {lockedCount}일이 더 있습니다
+                </span>
+                <span className="block text-[13.2px] font-bold text-[var(--app-copy-soft)]">
+                  택일 당일권 · <Price priceKey="taste_taekil" /> · 오늘 하루 전량 열람
+                </span>
+              </span>
+              <span aria-hidden="true" className="text-[var(--app-pink-strong)]">→</span>
+            </Link>
+          ) : null}
+
           {/* 2026-06-07 업셀: 월간 좋은날 캘린더(9,900원)로 넘기는 자리.
               ⚠️ 2026-08-28 — 전엔 여기 '택일은 무료'라고 적혀 있었다. 이제 택일도
               3,300원 당일권이다(guardMenuPassEntry('taekil')). 업셀은 '하루치 → 한 달치'다. */}
@@ -291,20 +321,24 @@ export function TaekilClient() {
             revealOn="scroll-down"
             innerClassName="flex items-center gap-3"
           >
+            {/* 2026-08-28 — 잠긴 날이 있으면 하단 CTA 도 **지금 막힌 것**(택일 3,300원)을
+                가리킨다. 눈앞이 잠겨 있는데 9,900원 달력을 먼저 미는 건 순서가 거꾸로다. */}
             <span className="flex shrink-0 items-baseline gap-1.5">
-              <ComparePrice
-                priceKey="taste_monthly_calendar"
-                className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
-              />
+              {lockedCount > 0 ? null : (
+                <ComparePrice
+                  priceKey="taste_monthly_calendar"
+                  className="whitespace-nowrap text-[12.6px] font-bold text-[var(--app-copy-soft)] line-through"
+                />
+              )}
               <span className="whitespace-nowrap text-[17px] font-extrabold text-[var(--app-pink-strong)]">
-                <Price priceKey="taste_monthly_calendar" />
+                <Price priceKey={lockedCount > 0 ? 'taste_taekil' : 'taste_monthly_calendar'} />
               </span>
             </span>
             <Link
-              href="/saju/new?product=monthly-calendar"
+              href={lockedCount > 0 ? TAEKIL_CHECKOUT_HREF : '/saju/new?product=monthly-calendar'}
               className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
             >
-              달력으로 보기
+              {lockedCount > 0 ? `나머지 ${lockedCount}일 열기` : '달력으로 보기'}
             </Link>
           </StickyBottomBar>
         </section>
@@ -368,7 +402,7 @@ export function TaekilClient() {
           <li>① 사용자 사주 원국 + 다음 60일 각 날짜의 일진 ganzi 산출</li>
           <li>② 8영역 점수 (천간·지지·용신·신살·오행 균형·일주 강약·12운성·특수 조합)</li>
           <li>③ 목적별 가중 — 결혼/이사/개업/계약마다 다른 신살에 가산·감점</li>
-          <li>④ 상위 7일 점수 순으로 정렬해 노출</li>
+          <li>④ 상위 7일 점수 순으로 정렬해 노출 — 무료는 상위 3일까지</li>
         </ul>
       </article>
     </section>
