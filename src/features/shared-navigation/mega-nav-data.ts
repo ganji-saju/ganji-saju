@@ -75,7 +75,17 @@ const ALL_MEGA_NAV: MegaNavGroup[] = [
     c1: {
       heading: '사주 풀이',
       items: [
-        { label: '내 사주', desc: '생년월일로 시작', href: '/saju/new', icon: 'saju', tag: '9,900원', tagPriceKey: 'saju_entry' },
+        {
+          label: '내 사주',
+          desc: '생년월일로 시작',
+          href: '/saju/new',
+          icon: 'saju',
+          tag: '9,900원',
+          // 🔴 2026-08-28 — 'saju_entry' 였는데 그 키는 taste_today_detail(현재 3,300원
+          //   이벤트가)로 매핑돼, 메뉴에 **3,300원**이 찍히고 궁합과 같은 값으로 보였다.
+          //   홈 사주 카드와 같은 키를 쓴다 — 두 곳이 다른 상품을 가리키면 또 갈라진다.
+          tagPriceKey: 'bundle_comprehensive',
+        },
         { label: '깊은 풀이', desc: '평생 리포트', href: '/saju/new', icon: 'report', tag: 'VIP' },
         { label: '궁합', desc: '두 사람의 흐름', href: '/compatibility', icon: 'compat', tag: '3,300원', tagPriceKey: 'taste_compat_reading' },
         { label: '별자리 × 사주', desc: '동서양 크로스', href: '/star-sign', icon: 'cross' },
