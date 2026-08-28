@@ -643,7 +643,11 @@ export function DialogueChatPanel({
         {status === 'loading' ? (
           <div className="flex justify-start">
             <div className="rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-muted)] px-4 py-3 text-base leading-7 text-[var(--app-copy-muted)]">
-              <span>간지사주이 답변을 정리하고 있습니다</span>
+              {/* 🔴 2026-08-28 — 여기 브랜드명 뒤 조사가 틀려 있었다. 옛 이름 **'달빛이'**
+                  (달빛+이)를 브랜드명으로 치환하면서 이름 끝의 '이'를 조사로 착각해 남긴
+                  자국이다(같은 자국 3곳). 말하는 주체는 브랜드가 아니라 그 방의 선생이므로
+                  이름을 쓴다 — 조사 문제도 같이 사라진다. 스캔: content/brand-josa.test.ts */}
+              <span>{selectedExpert.teacherName}님이 답변을 정리하고 있습니다</span>
               <span className="ml-2 inline-flex gap-1 align-middle">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/70" />
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--app-gold)]/55 [animation-delay:120ms]" />
