@@ -180,8 +180,11 @@ describe('lockdown이 켜지면 메뉴 데이터에서 무료 항목이 사라�
     expect(copy).toContain('/today-fortune');
     expect(copy).toContain('/saju/new');
 
-    // 활성 판정은 실존하는 라벨만 돌려줘야 한다(하이라이트 유실 방지).
-    const labels = locked.MEGA_NAV.map((g) => g.label);
+    // 활성 판정은 **실존하는 라벨이거나 빈 문자열**이어야 한다.
+    //   지키려는 건 "메뉴에 없는 라벨을 돌려주지 마라"(하이라이트 유실 방지)이지
+    //   "항상 무언가를 강조하라"가 아니다. 2026-08-28 — 홈은 어느 메뉴에도 속하지 않아
+    //   ''(강조 없음)을 돌려준다. 그전엔 첫 그룹을 칠해 홈에서 '운세'가 활성으로 보였다.
+    const labels = ['', ...locked.MEGA_NAV.map((g) => g.label)];
     expect(labels).toContain(locked.resolveActiveGroup('/zodiac'));
     expect(labels).toContain(locked.resolveActiveGroup('/'));
   });

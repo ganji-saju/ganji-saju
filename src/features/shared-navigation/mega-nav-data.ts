@@ -220,8 +220,6 @@ export const MEGA_NAV_BAR: MegaNavGroup[] = applyLockdown([
   { label: '사용방법', simple: true, href: '/guide' },
 ]);
 
-const DEFAULT_GROUP = MEGA_NAV.find((group) => !group.simple)?.label ?? MEGA_NAV[0]?.label ?? '';
-
 /** pathname 으로 현재 active group label 판정. 첫 메가 그룹 default. */
 export function resolveActiveGroup(pathname: string): string {
   if (
@@ -232,8 +230,8 @@ export function resolveActiveGroup(pathname: string): string {
     pathname.startsWith('/dream') ||
     pathname.startsWith('/taekil')
   ) {
-    // 잠금으로 '운세' 그룹이 사라졌으면 하이라이트할 대상이 없다 → 기본 그룹.
-    return MEGA_NAV.some((group) => group.label === '운세') ? '운세' : DEFAULT_GROUP;
+    // 잠금으로 '운세' 그룹이 사라졌으면 하이라이트할 대상이 없다 → 아무것도 강조하지 않는다.
+    return MEGA_NAV.some((group) => group.label === '운세') ? '운세' : '';
   }
   // 2026-08-28 — 궁합이 독립 메뉴가 됐다. 단 MEGA_NAV(모바일 시트)에는 '궁합' 그룹이
   //   없으므로, 없으면 '사주'로 떨어뜨린다('운세' 잠금 폴백과 같은 방식) — 안 그러면
@@ -256,5 +254,8 @@ export function resolveActiveGroup(pathname: string): string {
   if (pathname.startsWith('/guide')) {
     return '사용방법';
   }
-  return DEFAULT_GROUP; // 홈/기본은 첫 메가 그룹 활성
+  // 2026-08-28 — 홈에서는 **아무것도 강조하지 않는다**. 그전엔 '첫 메가 그룹'을 기본값으로
+  //   돌려줘 홈에서 '운세'가 칠해져 있었다 — 상단바를 상품 축으로 재정렬하면서 '운세'는
+  //   4번째 메뉴가 됐고, 홈은 어느 메뉴에도 속하지 않으므로 거짓 강조다.
+  return '';
 }
