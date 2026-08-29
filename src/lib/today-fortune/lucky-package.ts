@@ -22,7 +22,7 @@ const ELEMENT_COLORS_MAIN: Record<Elem, string[]> = {
 
 const ELEMENT_HEX: Record<Elem, string> = {
   목: '#3F8796',
-  화: '#E05298',
+  화: '#B3372A', // 적(赤). 개편 전 핑크 잔재였다.
   토: '#D59B2E',
   금: '#A6A6A6',
   수: '#3B4F6B',

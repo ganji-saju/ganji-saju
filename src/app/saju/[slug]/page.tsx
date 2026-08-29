@@ -263,7 +263,7 @@ const COMPACT_RESULT_CARD_FALLBACKS: Array<{
   scoreKey?: ReportScore['key'];
 }> = [
   { key: 'wealth', label: '재물', color: '#D59B2E', fallback: '지출 정리 먼저', scoreKey: 'wealth' },
-  { key: 'love', label: '연애', color: '#E05298', fallback: '천천히 맞추기', scoreKey: 'love' },
+  { key: 'love', label: '연애', color: '#C25438', fallback: '천천히 맞추기', scoreKey: 'love' },
   { key: 'career', label: '직업', color: '#3F8796', fallback: '말 정리부터', scoreKey: 'career' },
   { key: 'health', label: '건강', color: '#5C8A63', fallback: '수면 챙기기' },
 ];
