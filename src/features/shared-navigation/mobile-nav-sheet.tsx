@@ -11,6 +11,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { User } from '@supabase/supabase-js';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }: Props) {
+  const pathname = usePathname();
   const [activeLabel, setActiveLabel] = useState(initialActiveLabel);
   // PR #158 — Portal mount 가드. SSR/CSR hydration mismatch 방지.
   const [mounted, setMounted] = useState(false);
@@ -141,7 +143,14 @@ export function MobileNavSheet({ open, onClose, initialActiveLabel = '운세' }:
           ) : (
             <>
               <div className="mobile-nav-sheet-account-row">
-                <Link href="/login" onClick={onClose} className="mobile-nav-sheet-account-primary">
+                {/* 2026-08-30 — next 를 안 붙이면 로그인 뒤 무조건 /saju/new 로 튄다
+                    (getSafeNext(null)='/' → getAfterLoginHref('/')='/saju/new').
+                    보던 화면으로 돌아가야 한다 — SiteHeader 와 같은 규칙. */}
+                <Link
+                  href={`/login?next=${encodeURIComponent(pathname || '/')}`}
+                  onClick={onClose}
+                  className="mobile-nav-sheet-account-primary"
+                >
                   로그인
                 </Link>
                 <Link href="/signup" onClick={onClose} className="mobile-nav-sheet-account-ghost">

@@ -282,7 +282,14 @@ export function MegaNavBar() {
               <Link href="/signup" className="mega-nav-signup">
                 회원가입
               </Link>
-              <Link href="/login" className="mega-nav-login">
+              {/* 2026-08-30 — next 를 안 붙이면 로그인 뒤 무조건 /saju/new 로 튄다.
+                  (login 의 getSafeNext(null)='/' → getAfterLoginHref('/')='/saju/new')
+                  사용자 제보: "띠운세 보다가 로그인했는데 사주 페이지로 넘어간다."
+                  SiteHeader 는 이미 pathname 을 넘기고 있었다 — 여기만 빠져 있었다. */}
+              <Link
+                href={`/login?next=${encodeURIComponent(pathname || '/')}`}
+                className="mega-nav-login"
+              >
                 로그인
               </Link>
             </>
