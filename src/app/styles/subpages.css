@@ -599,7 +599,10 @@
 
 .gangi-sub-header {
   position: sticky;
-  top: 0;
+  /* 상단 메뉴 아래에 붙는다. 실제 헤더 높이는 StickyHeaderOffset 이 --app-header-height 로
+     흘려준다(모바일 64 / 태블릿 69 / PC 77px + '읽기 크기'에 따라 변동). JS 가 아직 안 돌았을
+     때만 fallback. */
+  top: var(--app-header-height, 4rem);
   z-index: 20;
   display: grid;
   height: 3.25rem;
@@ -1885,10 +1888,20 @@
 }
 
 .gangi-subpage-shell .gangi-sub-header {
-  top: 3.25rem;
   margin-inline: calc(clamp(0.5rem, 2vw, 0.75rem) * -1);
   border-bottom-color: rgba(17, 17, 20, 0.08);
   box-shadow: 0 12px 28px -26px rgba(17, 17, 20, 0.34);
+}
+
+/* 모바일에선 좌우 여백 없이 화면 끝까지. 부모(.gangi-subpage)가 가운데 정렬이라
+   `50% - 50vw` 음수 마진이면 폭이 정확히 100vw 가 된다(width 를 100vw 로 박으면
+   PC 스크롤바 폭만큼 가로 넘침이 생기므로 모바일에만 적용). */
+@media (max-width: 767px) {
+  .gangi-subpage-shell .gangi-sub-header {
+    margin-inline: calc(50% - 50vw);
+    border-radius: 0;
+    padding-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
+  }
 }
 
 .gangi-subpage-shell .gangi-sub-intro {
