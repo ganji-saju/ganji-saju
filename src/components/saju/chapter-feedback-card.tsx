@@ -238,7 +238,7 @@ export function ChapterFeedbackCard({
         </div>
       )}
       {state === 'error' && errorMsg && (
-        <div className="mt-2.5 text-[15px] text-[var(--app-coral,#E05298)]" role="alert">
+        <div className="mt-2.5 text-[15px] text-[var(--app-coral,#c25438)]" role="alert">
           {errorMsg}
         </div>
       )}
