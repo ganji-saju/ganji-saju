@@ -90,10 +90,13 @@ test('수정: lifetimeReadingKeyMatches 가 이름 해시 드리프트를 흡수
 });
 
 // 2026-08-29 — 사용자 제보 "깊은 풀이에서 PDF 메뉴가 사라졌다" 회귀 가드.
-//   실측 원인: 이용권은 `-loccustom-lat<4자리>-lon<4자리>` 로 발급됐는데, 같은 사람의 최근
-//   사주는 ①프리셋 선택(`-locseoul`) ②검색 선택(좌표 6자리) 로 **prefix 자체가 달라져** 있었다.
-//   -key<hash> 만 벗기는 prefix 보정으로는 못 잡는다 → 사주 정체성(4기둥+성별) 매칭이 필요.
-test('수정: 출생지 입력 경로/좌표 정밀도가 달라도 같은 팔자면 이용권이 이어진다', () => {
+//   실측 원인은 **출생지 입력 경로** 하나다: 이용권은 검색/직접입력으로 만들어져
+//   `-loccustom-lat…-lon…` 인데, 같은 사주를 프리셋으로 다시 보면 `-locseoul` 이라
+//   **prefix 자체가 달라진다.** -key<hash> 만 벗기는 보정으로는 못 잡는다
+//   → 사주 정체성(4기둥+성별) 매칭이 필요.
+//   (좌표 정밀도는 원인이 아니었다 — toSlug 가 항상 소수 4자리로 반올림한다. 아래 ②는
+//    그래도 좌표가 다른 경우까지 정체성이 흡수하는지 확인하는 방어 케이스다.)
+test('수정: 출생지 입력 경로가 달라도 같은 팔자면 이용권이 이어진다', () => {
   const stored = '1975-6-11-14-male-loccustom-lat35p1796-lon129p0756-solarlongitude-keyaaaa1';
 
   // ① 같은 사람이 프리셋(부산)으로 다시 본 경우 — loc 토큰 자체가 다르다.
@@ -112,13 +115,13 @@ test('수정: 출생지 입력 경로/좌표 정밀도가 달라도 같은 팔�
     true
   );
 
-  // ② 검색으로 고른 좌표(정밀도가 더 길다) — lat/lon 문자열이 다르다.
-  const precise = '1975-6-11-14-male-loccustom-lat35p179554-lon129p075642-solarlongitude-keycccc3';
+  // ② 방어: 좌표 자체가 다른 경우(다른 지점을 골랐다)도 같은 팔자면 이어진다.
+  const nearby = '1975-6-11-14-male-loccustom-lat35p1533-lon129p1189-solarlongitude-keycccc3';
   assert.equal(
     lifetimeReadingKeyMatches(
       stored,
-      normalizeEntitlementReadingKeys(precise, []),
-      sajuIdentityFromReadingKey(precise)
+      normalizeEntitlementReadingKeys(nearby, []),
+      sajuIdentityFromReadingKey(nearby)
     ),
     true
   );
