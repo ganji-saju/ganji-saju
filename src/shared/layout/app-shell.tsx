@@ -3,6 +3,7 @@ import SiteFooter from '@/components/site-footer';
 import { MegaNavBar } from '@/features/shared-navigation/mega-nav';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { ScrollToTopButton } from '@/shared/layout/scroll-to-top-button';
+import { StickyHeaderOffset } from '@/shared/layout/sticky-header-offset';
 import { cn } from '@/lib/utils';
 
 interface AppShellProps {
@@ -37,6 +38,8 @@ export function AppShell({ children, header, dock, footer, className }: AppShell
           mobile/tablet 은 기존 SiteHeader 가 그대로 노출. */}
       <MegaNavBar />
       {headerNode}
+      {/* 스티키 서브헤더가 헤더 밑에 정확히 붙도록 실제 헤더 높이를 CSS 변수로 흘린다. */}
+      <StickyHeaderOffset />
       <div className="app-shell-content">{children}</div>
       {footerNode}
       {dock}
