@@ -158,25 +158,46 @@ function joinDistinctSentences(parts: Array<string | null | undefined>) {
   return kept.join(' ');
 }
 
+/** 조각 목록을 문장으로 잇는다. 공백으로만 이으면 '혼자 짊어지는 일 줄이기 결정 전 한 번
+ *  더 조율하기 …' 처럼 끊긴 조각이 줄줄이 붙어 문장으로 읽히지 않는다(PDF 9장 실측). */
+function joinPhrases(items: string[]): string {
+  const kept = items.map((item) => item.trim().replace(/[.]$/, '')).filter(Boolean);
+  if (kept.length === 0) return '';
+  if (kept.length === 1) return `${kept[0]}입니다.`;
+  return `${kept.slice(0, -1).join(', ')}, 그리고 ${kept[kept.length - 1]}입니다.`;
+}
+
 function buildSectionFallback(
   report: SajuLifetimeReport,
   key: SajuLifetimeAiSectionKey,
   counselorId: MoonlightCounselorId
 ) {
-  const prefix =
-    counselorId === 'male' ? '핵심부터 보면' : '차분히 흐름을 읽어보면';
+  // 2026-08-30 — 이 말머리를 9개 섹션 **전부**에 붙이고 있었다. PDF 9장을 뽑아 보면
+  //   "차분히 흐름을 읽어보면"이 아홉 번 연달아 나와 고장 난 레코드처럼 읽힌다.
+  //   섹션 리드를 강조하는 새 레이아웃에서는 그 반복이 첫 글자 자리에 그대로 박혀 더 두드러진다.
+  //   → 상담사 말투는 **첫 섹션에서 한 번만** 세운다. 나머지는 본문 요약으로 바로 들어간다.
+  const isFirstSection = key === 'coreIdentity';
+  const prefix = !isFirstSection
+    ? ''
+    : counselorId === 'male'
+      ? '핵심부터 보면'
+      : '차분히 흐름을 읽어보면';
+
+  /** 말머리를 붙인다. prefix 가 비면 앞 공백이 남지 않게. */
+  const withOpener = (sentence: string): string =>
+    prefix ? `${prefix} ${sentence}` : sentence;
 
   switch (key) {
     case 'coreIdentity':
       return [
-        `${prefix} ${report.coreIdentity.summary}`,
+        withOpener(report.coreIdentity.summary),
         report.coreIdentity.reactionStyle,
         report.coreIdentity.bestEnvironment,
         report.coreIdentity.weakPattern,
       ].join(' ');
     case 'strengthBalance':
       return [
-        `${prefix} ${report.strengthBalance.summary}`,
+        withOpener(report.strengthBalance.summary),
         report.strengthBalance.strongAxis,
         report.strengthBalance.weakAxis,
         `에너지가 새는 지점은 ${report.strengthBalance.energyDrain}`,
@@ -186,14 +207,14 @@ function buildSectionFallback(
       // 2026-05-23: summary·patternRole·yongsinDirection 중 동일 문장이 겹쳐
       //   노출되던 버그(반복) 차단 — 문장 단위 중복 제거 후 합친다.
       return joinDistinctSentences([
-        `${prefix} ${report.patternAndYongsin.summary}`,
+        withOpener(report.patternAndYongsin.summary),
         report.patternAndYongsin.patternRole,
         report.patternAndYongsin.yongsinDirection,
         report.patternAndYongsin.choiceRule,
       ]);
     case 'relationshipPattern':
       return [
-        `${prefix} ${report.relationshipPattern.summary}`,
+        withOpener(report.relationshipPattern.summary),
         report.relationshipPattern.distanceStyle,
         report.relationshipPattern.expressionStyle,
         report.relationshipPattern.conflictTriggers,
@@ -201,7 +222,7 @@ function buildSectionFallback(
       ].join(' ');
     case 'wealthStyle':
       return [
-        `${prefix} ${report.wealthStyle.summary}`,
+        withOpener(report.wealthStyle.summary),
         report.wealthStyle.earningStyle,
         report.wealthStyle.keepingStyle,
         report.wealthStyle.spendingMistakes,
@@ -209,7 +230,7 @@ function buildSectionFallback(
       ].join(' ');
     case 'careerDirection':
       return [
-        `${prefix} ${report.careerDirection.summary}`,
+        withOpener(report.careerDirection.summary),
         report.careerDirection.fitStructure,
         report.careerDirection.endureVsShine,
         report.careerDirection.independenceStyle,
@@ -217,14 +238,14 @@ function buildSectionFallback(
       ].join(' ');
     case 'healthRhythm':
       return [
-        `${prefix} ${report.healthRhythm.summary}`,
+        withOpener(report.healthRhythm.summary),
         report.healthRhythm.warningSignals,
         report.healthRhythm.recoveryRoutine,
-        report.healthRhythm.habitPoints.join(' '),
+        joinPhrases(report.healthRhythm.habitPoints),
       ].join(' ');
     case 'majorLuckTimeline':
       return [
-        `${prefix} ${report.majorLuckTimeline.summary}`,
+        withOpener(report.majorLuckTimeline.summary),
         report.majorLuckTimeline.currentMeaning,
         ...report.majorLuckTimeline.cycles
           .slice(0, 3)
@@ -232,9 +253,9 @@ function buildSectionFallback(
       ].join(' ');
     case 'lifetimeStrategy':
       return [
-        `${prefix} ${report.lifetimeStrategy.summary}`,
-        `좋을 때는 ${report.lifetimeStrategy.useWhenStrong.join(' ')}`,
-        `흔들릴 때는 ${report.lifetimeStrategy.defendWhenShaken.join(' ')}`,
+        withOpener(report.lifetimeStrategy.summary),
+        `좋을 때는 ${joinPhrases(report.lifetimeStrategy.useWhenStrong)}`,
+        `흔들릴 때는 ${joinPhrases(report.lifetimeStrategy.defendWhenShaken)}`,
       ].join(' ');
   }
 }
