@@ -14,6 +14,14 @@
 // 로컬: npm run e2e
 // CI: Vercel preview URL 또는 next dev webServer
 import { defineConfig, devices } from '@playwright/test';
+import { config as loadLocalEnv } from 'dotenv';
+
+// 2026-08-29 — 로컬 env 파일을 직접 읽는다.
+//   그동안은 direnv(.envrc)가 셸에 export 해줘서 개발자 터미널에서만 동작했다. direnv 훅이
+//   없는 셸(스크립트·자동화·비대화형 실행)에서는 E2E_TEST_USER_* 가 안 보여 인증 setup 이
+//   조용히 skip 되고, 그에 딸린 인증 spec 까지 통째로 안 돌았다 — 실패가 아니라 skip 이라
+//   눈치채기 어렵다. 파일이 없으면 no-op 이므로 CI 동작은 그대로다.
+loadLocalEnv({ path: '.env.local', quiet: true });
 
 const PORT = Number(process.env.PORT ?? 3000);
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;

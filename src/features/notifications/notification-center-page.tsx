@@ -572,10 +572,14 @@ export default function NotificationCenterPage({
     return (
       <Link
         href={item.href ?? '/notifications'}
-        className="relative flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
+        // min-w-0: 이 행은 부모의 grid/flex 아이템이라 기본 min-width:auto 로 min-content
+        //   까지 부풀어, 320px 화면에서 행 전체가 112px 밖으로 밀려나갔다(로그인 상태 실측).
+        className="relative flex min-w-0 items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3"
       >
         {item.zodiac ? (
-          <ZodiacChip kind={item.zodiac} size="sm" />
+          <span className="shrink-0">
+            <ZodiacChip kind={item.zodiac} size="sm" />
+          </span>
         ) : (
           <div
             className="grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[18.4px] font-extrabold"
