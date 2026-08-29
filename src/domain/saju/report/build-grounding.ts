@@ -11,6 +11,7 @@ import type {
 } from './grounding-types';
 import { SAJU_EVIDENCE_JSON_V1, SAJU_FACT_JSON_V1 } from './grounding-types';
 import { buildSajuPersonalizationContext } from './personalization-context';
+import { koreanizeGanzi } from '@/lib/saju/terminology';
 
 function getPrimaryConcept(report: SajuReport) {
   const primaryEvidence = report.evidenceCards.find((card) => card.key === 'yongsin') ?? report.evidenceCards[0];
@@ -180,11 +181,17 @@ function buildEvidenceJson(data: SajuDataV1 | SajuDataV2, report: SajuReport): S
       wolwoonNotes: data.currentLuck?.wolwoon?.notes ?? [],
     },
     relations: {
+      // 2026-08-30 — 사용자에게 보이는 문자열이라 간지 한자를 한글로 바꾼다.
+      //   글로서리(FRIENDLY_TERM_MAP)는 술어만 바꿔서 "육합 · 태어난 시간 己未" 처럼
+      //   간지가 그대로 남았다("한자 때문에 풀이가 어렵다" 피드백의 재발 지점).
+      //   4기둥 카드는 이 경로를 타지 않으므로 거기 한자는 그대로다.
       relations:
         data.extensions?.orrery?.relations?.map((item) =>
-          [item.label, item.source, item.target, item.detail].filter(Boolean).join(' · ')
+          koreanizeGanzi([item.label, item.source, item.target, item.detail].filter(Boolean).join(' · '))
         ) ?? [],
-      gongmang: data.extensions?.orrery?.gongmang?.branches ?? [],
+      gongmang: (data.extensions?.orrery?.gongmang?.branches ?? []).map((branch) =>
+        koreanizeGanzi(branch)
+      ),
       specialSals: [
         ...(data.extensions?.orrery?.specialSals?.yangin?.map((item) => `양인 ${item}`) ?? []),
         ...(data.extensions?.orrery?.specialSals?.dohwa?.map((item) => `도화 ${item}`) ?? []),
