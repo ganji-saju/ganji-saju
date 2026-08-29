@@ -171,8 +171,9 @@ export function TaekilClient() {
             >
               사주 시작하기 →
             </Link>
+            {/* 택일을 보다 로그인하면 택일로 돌아와야 한다. next 가 없으면 /saju/new 로 튄다. */}
             <Link
-              href="/login"
+              href="/login?next=%2Ftaekil"
               className="inline-flex items-center justify-center rounded-[12px] border bg-white px-5 py-3 text-[14.4px] font-bold text-[var(--app-copy-muted)]"
               style={{ borderColor: 'var(--app-line)' }}
             >
