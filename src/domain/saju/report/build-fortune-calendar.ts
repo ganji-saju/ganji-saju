@@ -22,22 +22,10 @@ import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
 // 2026-05-19 fix — 일진 ganzi 기반 통일 점수 helper (사주 메인/상세/오늘 운세와 동일).
 //   PR #179/#180/#181 의 통일에서 fortune-calendar 만 누락된 경로를 fix.
 import { computeSajuIljinScore } from '@/server/today-fortune/build-today-fortune';
+import { ganziToKorean } from '@/lib/saju/terminology';
 
 // 한자 ganzi → 한글.
-const STEM_KOR: Record<string, string> = {
-  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
-  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
-};
-const BRANCH_KOR: Record<string, string> = {
-  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
-  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
-};
 
-function ganziToKorean(ganzi: string): string {
-  const s = STEM_KOR[ganzi.charAt(0) ?? ''] ?? '';
-  const b = BRANCH_KOR[ganzi.charAt(1) ?? ''] ?? '';
-  return `${s}${b}`;
-}
 
 function computeDayIljin(year: number, month: number, day: number): { ganzi: string; stem: string; branch: string } | null {
   try {

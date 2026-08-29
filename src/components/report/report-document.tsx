@@ -29,6 +29,7 @@ import {
   josa,
 } from '@/lib/saju/pdf-report-maps';
 import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
+import { ganziToKorean } from '@/lib/saju/terminology';
 import {
   resolvePdfSubjectName,
   pickInterpretationText,
@@ -390,13 +391,6 @@ const AREA_META: Record<
 const PILLAR_LABELS = ['시주', '일주', '월주', '연주'] as const;
 
 // 한자 ganzi(庚午) → 2글자 한글(경오). STEM/BRANCH_PROFILES.korean 의 첫 음절 조합.
-function ganziToKorean(ganzi: string): string {
-  const stem = ganzi[0] as Stem | undefined;
-  const branch = ganzi[1] as Branch | undefined;
-  const stemKo = stem && STEM_PROFILES[stem] ? STEM_PROFILES[stem].korean[0] : '';
-  const branchKo = branch && BRANCH_PROFILES[branch] ? BRANCH_PROFILES[branch].korean[0] : '';
-  return `${stemKo}${branchKo}`;
-}
 
 export function buildPdfModel(
   reading: ReadingRecord,
