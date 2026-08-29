@@ -3,6 +3,7 @@ import test from 'node:test';
 import type { BirthInput } from '@/lib/saju/types';
 import { toSlug } from '@/lib/saju/pillars';
 import { buildLifetimeReportScopeKey } from '@/lib/payments/product-scope';
+import { sajuIdentityFromReadingKey } from '@/lib/saju/reading-identity';
 import {
   matchesEntitlementReadingKey,
   normalizeEntitlementReadingKeys,
@@ -86,4 +87,56 @@ test('수정: lifetimeReadingKeyMatches 가 이름 해시 드리프트를 흡수
   // 다른 차트(생년월일 다름)는 매칭되면 안 된다(권한 오탐 방지).
   const otherKey = toSlug({ ...REPRO_BASE, year: 1991 });
   assert.equal(lifetimeReadingKeyMatches(otherKey, acceptedKeys), false);
+});
+
+// 2026-08-29 — 사용자 제보 "깊은 풀이에서 PDF 메뉴가 사라졌다" 회귀 가드.
+//   실측 원인: 이용권은 `-loccustom-lat<4자리>-lon<4자리>` 로 발급됐는데, 같은 사람의 최근
+//   사주는 ①프리셋 선택(`-locseoul`) ②검색 선택(좌표 6자리) 로 **prefix 자체가 달라져** 있었다.
+//   -key<hash> 만 벗기는 prefix 보정으로는 못 잡는다 → 사주 정체성(4기둥+성별) 매칭이 필요.
+test('수정: 출생지 입력 경로/좌표 정밀도가 달라도 같은 팔자면 이용권이 이어진다', () => {
+  const stored = '1975-6-11-14-male-loccustom-lat35p1796-lon129p0756-solarlongitude-keyaaaa1';
+
+  // ① 같은 사람이 프리셋(부산)으로 다시 본 경우 — loc 토큰 자체가 다르다.
+  const preset = '1975-6-11-14-male-locbusan-solarlongitude-keybbbb2';
+  assert.equal(
+    lifetimeReadingKeyMatches(stored, normalizeEntitlementReadingKeys(preset, []), null),
+    false,
+    'prefix 보정만으로는 못 잡는다(수정 전 상태)'
+  );
+  assert.equal(
+    lifetimeReadingKeyMatches(
+      stored,
+      normalizeEntitlementReadingKeys(preset, []),
+      sajuIdentityFromReadingKey(preset)
+    ),
+    true
+  );
+
+  // ② 검색으로 고른 좌표(정밀도가 더 길다) — lat/lon 문자열이 다르다.
+  const precise = '1975-6-11-14-male-loccustom-lat35p179554-lon129p075642-solarlongitude-keycccc3';
+  assert.equal(
+    lifetimeReadingKeyMatches(
+      stored,
+      normalizeEntitlementReadingKeys(precise, []),
+      sajuIdentityFromReadingKey(precise)
+    ),
+    true
+  );
+});
+
+test('가드: 다른 사주(생년월일·성별)는 정체성 매칭으로도 거부한다', () => {
+  const stored = '1975-6-11-14-male-loccustom-lat35p1796-lon129p0756-solarlongitude-keyaaaa1';
+
+  const otherDate = '1990-5-3-14-male-locbusan-solarlongitude-keydddd4';
+  const otherGender = '1975-6-11-14-female-locbusan-solarlongitude-keyeeee5';
+  for (const key of [otherDate, otherGender]) {
+    assert.equal(
+      lifetimeReadingKeyMatches(
+        stored,
+        normalizeEntitlementReadingKeys(key, []),
+        sajuIdentityFromReadingKey(key)
+      ),
+      false
+    );
+  }
 });

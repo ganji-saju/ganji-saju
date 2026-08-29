@@ -14,6 +14,10 @@ import {
   buildLifetimeReportScopeKey,
   parseLifetimeReportReadingKey,
 } from '@/lib/payments/product-scope';
+import {
+  readingKeyMatchesCurrentSaju,
+  sajuIdentityFromReadingKey,
+} from '@/lib/saju/reading-identity';
 
 export interface LifetimeReportEntitlement {
   id: string;
@@ -63,16 +67,29 @@ function stripBirthSlugHash(key: string): string {
 // 에서 -key<hash> 가 갈린다. 같은 출생정보면 사주 차트·풀이 내용은 이름과 무관하게 동일하니
 // 해시를 벗긴 prefix 가 같으면 같은 리포트로 본다. 단 해시 없는 키는 정확일치만 인정해
 // 너무 짧은 prefix 로 인한 광역 오탐을 막는다(생년월일이 다르면 prefix 가 달라 매칭 안 됨).
+// 2026-08-29 — prefix 로는 못 잡는 드리프트가 실제로 났다(사용자 제보: "깊은 풀이에서 PDF
+//   메뉴가 사라졌다"). 실측: 이용권은 `…-loccustom-lat37p5667-lon126p9783-…` 로 발급됐는데
+//   같은 사람의 최근 사주는 ①프리셋 선택이면 `…-locseoul-…` ②검색 선택이면 좌표 정밀도가
+//   달라 `…-lat37p566679-lon126p978291-…`. **해시가 아니라 prefix 자체가 달라져** 이름 해시
+//   보정이 통하지 않는다. 다른 상품(월간달력·올해핵심·score)은 이미 사주 정체성(4기둥+성별)
+//   매칭으로 옮겼고 lifetime 만 남아 있었다(2026-07-22 후속 과제로 기록돼 있던 것).
+//   → 3순위로 정체성 매칭을 붙인다. 생년월일·시가 실제로 다르면 기둥이 달라 매칭 안 된다.
 export function lifetimeReadingKeyMatches(
   storedReadingKey: string | null | undefined,
-  acceptedKeys: string[]
+  acceptedKeys: string[],
+  currentIdentity: string | null = null
 ): boolean {
   const stored = storedReadingKey?.trim();
   if (!stored) return false;
   if (acceptedKeys.includes(stored)) return true;
   const storedPrefix = stripBirthSlugHash(stored);
-  if (storedPrefix === stored) return false; // 해시 없는 키 → 정확일치만
-  return acceptedKeys.some((key) => Boolean(key) && stripBirthSlugHash(key) === storedPrefix);
+  // 해시 없는 키는 prefix 보정을 건너뛴다(너무 짧은 prefix 로 인한 광역 오탐 방지).
+  if (storedPrefix !== stored) {
+    if (acceptedKeys.some((key) => Boolean(key) && stripBirthSlugHash(key) === storedPrefix)) {
+      return true;
+    }
+  }
+  return readingKeyMatchesCurrentSaju(stored, acceptedKeys, currentIdentity);
 }
 
 function mapEntitlement(row: EntitlementTransactionRow): LifetimeReportEntitlement {
@@ -112,6 +129,8 @@ export async function getLifetimeReportEntitlement(
   if (!userId || !hasSupabaseServiceEnv) return null;
 
   const acceptedKeys = normalizeEntitlementReadingKeys(readingKey, legacyKeys);
+  // 지금 보고 있는 사주의 정체성(4기둥+성별) — 문자열 매칭이 전부 MISS 했을 때의 마지막 기준.
+  const currentIdentity = sajuIdentityFromReadingKey(readingKey);
 
   for (const acceptedKey of acceptedKeys) {
     const productEntitlement = await getProductEntitlement(
@@ -128,7 +147,7 @@ export async function getLifetimeReportEntitlement(
   const storedEntitlements = await listProductEntitlementsByProduct(userId, 'lifetime-report');
   for (const stored of storedEntitlements) {
     const storedReadingKey = parseLifetimeReportReadingKey(stored.scopeKey);
-    if (lifetimeReadingKeyMatches(storedReadingKey, acceptedKeys)) {
+    if (lifetimeReadingKeyMatches(storedReadingKey, acceptedKeys, currentIdentity)) {
       return mapProductEntitlement(stored, storedReadingKey ?? readingKey);
     }
   }
@@ -152,7 +171,8 @@ export async function getLifetimeReportEntitlement(
       metadata.kind === 'lifetime_report' &&
       lifetimeReadingKeyMatches(
         typeof metadata.readingKey === 'string' ? metadata.readingKey : null,
-        acceptedKeys
+        acceptedKeys,
+        currentIdentity
       )
     );
   });
