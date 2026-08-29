@@ -252,7 +252,8 @@ export function GangiPurchaseSummary({
 //  today-fortune-detail-client.tsx) 가 자동으로 회전 12간지 모션을 표시.
 //
 // 이전: 月 배지 + bullets + shimmer bars (gangi-loading-overlay)
-// 이후: 회전 12간지 + 진행 단계 fade cycle + 4기둥 dots (zodiac-wheel-overlay)
+// 이후: ZodiacWheelLoading — 2026-08-29 재설계로 한지 톤 + 가운데 12지신 힉스필드 모션
+//       (.zodiac-loading*). 이 함수는 얇은 wrapper 라 props 만 흘린다.
 //
 // 디자인 통일 + 로딩 화면 sequential 중복 문제 해소.
 

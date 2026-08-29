@@ -1,328 +1,276 @@
-/* 2026-05-16 PR #154 — 12간지 회전 로딩 모션.
- * 첨부된 After Effects 6초 시퀀스의 핵심 시각 요소 (회전하는 12간지) 를 우리 디자인
- * 시스템 토큰 + CSS 만으로 재현.
+/* 12간지 로딩 화면 — 2026-08-29 재설계.
  *
- * 구조:
- * - 외곽 원: 12개 한자 (子丑寅卯辰巳午未申酉戌亥) 가 30° 간격으로 배치
- * - 외곽 원 자체가 시계방향으로 천천히 회전 (한 바퀴 16s)
- * - 한자들은 반시계로 자기보정 회전 (글자가 거꾸로 안 보이게)
- * - 중앙: 진행 단계 텍스트 fade-in/out 사이클 (1.5s 씩 4 단계)
- * - 안쪽 광원 ring 이 외곽 보다 빠르게 (8s) 반대방향 회전
- * - 점 4개 (사주 4기둥 상징) 가 좌우로 호흡
+ * 개편(2026-08-25) 이후 사이트는 한지(#FBF7EE) + 인주(#B3372A) 톤인데 로딩만 보라
+ * 그라데이션 + 별입자로 남아 있었다. 페이지가 뜨는 순간 색이 튀었다.
  *
- * 무한 loop. 작업 완료 시 호출자가 컴포넌트 unmount → fade-out 으로 사라짐.
- * 최소 노출 시간(1.8s) 가드는 호출자(saju-intake-page) 측에서 처리.
+ * 규칙 셋:
+ *   1) 바탕은 한지. 인주는 **지금 도는 지지 한 곳**에만 쓴다(강조가 하나여야 강조다).
+ *   2) 회전·순환은 prefers-reduced-motion 에서 전부 멈춘다.
+ *   3) 색은 토큰으로만. 로딩은 앱보다 먼저 뜨므로 토큰이 없을 때를 대비해 fallback 을 준다.
  */
 
-.zodiac-wheel-overlay {
+.zodiac-loading {
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  animation: zw-overlay-in 0.32s ease-out;
+  padding: 1.25rem;
+  background: color-mix(in srgb, var(--app-surface, #fbf7ee) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: zl-fade-in 0.28s ease-out;
 }
 
-@keyframes zw-overlay-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes zl-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.zodiac-wheel-card {
+.zodiac-loading-card {
+  position: relative;
   display: grid;
-  place-items: center;
-  gap: 1.5rem;
-  padding: 2rem 1.75rem 1.75rem;
-  border-radius: 24px;
-  background: linear-gradient(160deg, #1a0a2e 0%, #2e1156 55%, #45178a 100%);
-  box-shadow:
-    0 24px 60px rgba(15, 23, 42, 0.32),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-  width: min(86vw, 360px);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-/* 별 입자 배경 */
-.zodiac-wheel-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.55;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 18% 22%, #fff 1px, transparent 1.5px),
-    radial-gradient(circle at 72% 18%, #fff 0.5px, transparent 1px),
-    radial-gradient(circle at 88% 62%, #fff 1px, transparent 1.5px),
-    radial-gradient(circle at 32% 76%, #fff 0.5px, transparent 1px),
-    radial-gradient(circle at 60% 84%, #fff 0.5px, transparent 1px),
-    radial-gradient(circle at 12% 88%, #fff 1px, transparent 1.5px);
-  animation: zw-stars 6s ease-in-out infinite;
-}
-
-@keyframes zw-stars {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* eyebrow */
-.zodiac-wheel-eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.7;
-  position: relative;
-  z-index: 2;
-}
-
-/* 휠 박스 */
-.zodiac-wheel-stage {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  z-index: 2;
-}
-
-/* 외곽 회전 컨테이너 */
-.zodiac-wheel-ring-outer {
-  position: absolute;
-  inset: 0;
-  animation: zw-rotate-cw 16s linear infinite;
-}
-
-@keyframes zw-rotate-cw {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 12간지 각 글자 (transform 으로 위치) */
-.zodiac-wheel-char {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  font-family: 'Noto Serif KR', serif;
-  font-size: 20px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
-  /* 자기보정 — 컨테이너가 회전해도 글자는 똑바로 */
-  animation: zw-char-counter 16s linear infinite;
-}
-
-@keyframes zw-char-counter {
-  to {
-    transform: translate(-50%, -50%) rotate(-360deg);
-  }
-}
-
-/* 안쪽 광원 ring — 반대방향, 더 빠르게 */
-.zodiac-wheel-ring-inner {
-  position: absolute;
-  inset: 28px;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  border-top-color: rgba(236, 72, 153, 0.85);
-  border-right-color: rgba(236, 72, 153, 0.35);
-  animation: zw-rotate-ccw 6s linear infinite;
-  box-shadow:
-    0 0 24px rgba(236, 72, 153, 0.25),
-    inset 0 0 16px rgba(236, 72, 153, 0.12);
-}
-
-@keyframes zw-rotate-ccw {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(-360deg);
-  }
-}
-
-/* 중앙 코어 */
-.zodiac-wheel-core {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 88px;
-  height: 88px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(236, 72, 153, 0.18) 45%,
-    transparent 75%
-  );
-  display: grid;
-  place-items: center;
-  animation: zw-core-pulse 3s ease-in-out infinite;
-}
-
-@keyframes zw-core-pulse {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.85;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.08);
-    opacity: 1;
-  }
-}
-
-.zodiac-wheel-core-glyph {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 28px;
-  font-weight: 900;
-  color: white;
-  text-shadow: 0 0 12px rgba(236, 72, 153, 0.8);
-}
-
-/* 진행 단계 텍스트 사이클 (절대 위치 stack) */
-.zodiac-wheel-step-stack {
-  position: relative;
-  z-index: 2;
-  min-height: 44px;
+  justify-items: center;
+  gap: 1.15rem;
+  width: min(88vw, 24rem);
+  padding: 1.9rem 1.5rem 1.6rem;
+  border: 1px solid var(--app-line, rgba(28, 26, 23, 0.12));
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(circle at 50% -25%, rgba(179, 55, 42, 0.07), transparent 62%),
+    var(--app-surface-strong, #fffdf7);
+  box-shadow: 0 28px 64px -32px rgba(28, 26, 23, 0.36);
+  color: var(--app-ink, #1c1a17);
   text-align: center;
-  width: 100%;
 }
 
-.zodiac-wheel-step {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
+.zodiac-loading-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: white;
-  opacity: 0;
-  animation: zw-step-fade 6s ease-in-out infinite;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em; /* letter-spacing 이 만든 오른쪽 여백 보정 */
+  color: var(--app-gold-text, #7e6027);
 }
 
-/* 4 단계 — 각 1.5초씩 (6초 사이클) */
-.zodiac-wheel-step:nth-child(1) {
-  animation-delay: 0s;
-}
-.zodiac-wheel-step:nth-child(2) {
-  animation-delay: 1.5s;
-}
-.zodiac-wheel-step:nth-child(3) {
-  animation-delay: 3s;
-}
-.zodiac-wheel-step:nth-child(4) {
-  animation-delay: 4.5s;
+/* ── 무대: 12지 고리 + 가운데 수호신 ─────────────────────────────── */
+
+.zodiac-loading-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* 좁은 폰에서 카드 밖으로 넘치지 않게 유동. vw 가 아니라 **카드 content 폭** 기준이어야
+     패딩까지 셈에 들어간다(74vw 로 잡았더니 320px 에서 5px 넘쳤다).
+     고리는 % 배치라 무대가 줄면 함께 준다. */
+  width: min(16.5rem, 100%);
+  aspect-ratio: 1;
 }
 
-@keyframes zw-step-fade {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  6%,
-  22% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  28% {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  100% {
-    opacity: 0;
-  }
+.zodiac-loading-ring {
+  position: absolute;
+  inset: 0;
+  animation: zl-spin 44s linear infinite;
 }
 
-/* 사주 4기둥 dots */
-.zodiac-wheel-dots {
-  display: flex;
-  gap: 10px;
-  z-index: 2;
+@keyframes zl-spin {
+  to { transform: rotate(360deg); }
 }
 
-.zodiac-wheel-dots > span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--app-pink, #ec4899);
-  opacity: 0.45;
-  animation: zw-dot-breathe 1.4s ease-in-out infinite;
+.zodiac-loading-branch {
+  position: absolute;
+  display: grid;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 9999px;
+  color: color-mix(in srgb, var(--app-ink, #1c1a17) 38%, transparent);
+  transition: color 420ms ease, background-color 420ms ease, box-shadow 420ms ease;
 }
 
-.zodiac-wheel-dots > span:nth-child(1) {
-  animation-delay: 0s;
-}
-.zodiac-wheel-dots > span:nth-child(2) {
-  animation-delay: 0.18s;
-}
-.zodiac-wheel-dots > span:nth-child(3) {
-  animation-delay: 0.36s;
-}
-.zodiac-wheel-dots > span:nth-child(4) {
-  animation-delay: 0.54s;
+/* 고리와 같은 주기로 반대로 돌아 글자가 항상 똑바로 선다. */
+.zodiac-loading-glyph {
+  display: block;
+  font-family: var(--font-han, serif);
+  font-size: 1.05rem;
+  line-height: 1;
+  animation: zl-spin-back 44s linear infinite;
 }
 
-@keyframes zw-dot-breathe {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.5);
-    box-shadow: 0 0 8px rgba(236, 72, 153, 0.6);
-  }
+@keyframes zl-spin-back {
+  to { transform: rotate(-360deg); }
 }
 
-/* title + desc */
-.zodiac-wheel-copy {
-  text-align: center;
-  z-index: 2;
+/* 지금 도는 지지 — 인주 도장처럼 찍힌다. */
+.zodiac-loading-branch[data-active='true'] {
+  color: var(--app-surface-strong, #fffdf7);
+  background: var(--app-pink, #b3372a);
+  box-shadow: 0 6px 16px -6px rgba(179, 55, 42, 0.66);
 }
 
-.zodiac-wheel-title {
-  font-size: 18px;
+.zodiac-loading-orb {
+  position: relative;
+  width: min(9.5rem, 43vw);
+  height: min(9.5rem, 43vw);
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid var(--app-pink-line, rgba(179, 55, 42, 0.28));
+  background: var(--app-surface-soft, #f3e7de);
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--app-surface, #fbf7ee) 70%, transparent),
+    0 18px 38px -20px rgba(28, 26, 23, 0.42);
+}
+
+.zodiac-loading-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 지지가 바뀔 때 key 로 새 <video> 가 들어온다 — 툭 튀지 않게 받아준다. */
+  animation: zl-orb-in 520ms ease-out;
+}
+
+@keyframes zl-orb-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── 카피 ──────────────────────────────────────────────────────── */
+
+.zodiac-loading-guardian {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--app-copy-muted, rgba(52, 48, 42, 0.8));
+}
+
+.zodiac-loading-guardian-char {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.42rem;
+  background: color-mix(in srgb, var(--app-pink, #b3372a) 12%, transparent);
+  font-family: var(--font-han, serif);
+  font-size: 0.82rem;
+  color: var(--app-pink-strong, #8e2a20);
+}
+
+.zodiac-loading-copy {
+  display: grid;
+  gap: 0.34rem;
+}
+
+.zodiac-loading-title {
+  margin: 0;
+  font-size: 1.12rem;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: white;
-  margin: 0;
-}
-
-.zodiac-wheel-desc {
-  margin: 0.5rem 0 0;
-  font-size: 12.5px;
-  line-height: 1.55;
-  opacity: 0.75;
+  line-height: 1.4;
   word-break: keep-all;
 }
 
-/* reduced motion 폴백 */
+.zodiac-loading-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--app-copy-muted, rgba(52, 48, 42, 0.8));
+  word-break: keep-all;
+}
+
+/* ── 진행 단계: 4개가 1.6s 씩 교대 ─────────────────────────────── */
+
+.zodiac-loading-steps {
+  position: relative;
+  width: 100%;
+  height: 1.2rem;
+}
+
+.zodiac-loading-step {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--app-gold-text, #7e6027);
+  opacity: 0;
+  animation: zl-step 6.4s ease-in-out infinite;
+}
+
+.zodiac-loading-step:nth-child(1) { animation-delay: 0s; }
+.zodiac-loading-step:nth-child(2) { animation-delay: 1.6s; }
+.zodiac-loading-step:nth-child(3) { animation-delay: 3.2s; }
+.zodiac-loading-step:nth-child(4) { animation-delay: 4.8s; }
+
+@keyframes zl-step {
+  0%, 3% { opacity: 0; transform: translateY(4px); }
+  8%, 22% { opacity: 1; transform: none; }
+  27%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ── 진행 바 — 남은 시간을 모르니 '진행 중'만 말한다(가짜 퍼센트 금지) ── */
+
+.zodiac-loading-bar {
+  position: relative;
+  width: 68%;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--app-line, rgba(28, 26, 23, 0.12));
+}
+
+.zodiac-loading-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 38%;
+  border-radius: inherit;
+  background: var(--app-pink, #b3372a);
+  animation: zl-bar 1.7s ease-in-out infinite;
+}
+
+@keyframes zl-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(268%); }
+}
+
+/* ── 모션을 줄여달라고 한 사용자 ───────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
-  .zodiac-wheel-ring-outer,
-  .zodiac-wheel-char,
-  .zodiac-wheel-ring-inner,
-  .zodiac-wheel-core,
-  .zodiac-wheel-step,
-  .zodiac-wheel-dots > span,
-  .zodiac-wheel-card::before {
-    animation: none !important;
+  .zodiac-loading,
+  .zodiac-loading-ring,
+  .zodiac-loading-glyph,
+  .zodiac-loading-video,
+  .zodiac-loading-bar span {
+    animation: none;
   }
-  .zodiac-wheel-step:nth-child(1) {
+
+  /* 단계 텍스트는 움직임 없이 전부 세로로 세운다(정보는 남기고 깜빡임만 제거). */
+  .zodiac-loading-steps {
+    height: auto;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .zodiac-loading-step {
+    position: static;
+    animation: none;
     opacity: 1;
+    transform: none;
+  }
+
+  .zodiac-loading-bar span {
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* 인쇄물에 로딩 오버레이가 찍히면 안 된다. */
+@media print {
+  .zodiac-loading {
+    display: none !important;
   }
 }
