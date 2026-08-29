@@ -51,6 +51,47 @@ const DEEP_SECTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'lifetimeStrategy', label: '평생 활용 전략' },
 ];
 
+// 2026-08-30 — 9장(깊은 풀이 전문) 가독성.
+//   실측: 9장 736mm · 4,349자로 다른 장(평균 500자)의 **7배**였고, 9개 섹션이 각각
+//   '작은 라벨 + 긴 문단 한 덩어리'라 통째로 글벽이었다("글밥 싫어하는 사람은 거부감").
+//   글을 줄이는 건(=산 내용을 깎는 것) 답이 아니므로 **읽는 리듬**을 만든다:
+//   첫 문장을 리드로 띄우고, 나머지를 2문장씩 끊어 문단으로 앉힌다.
+
+/** 문장 경계로 끊어 2문장씩 묶는다. 문장부호가 없으면 통째로 한 덩어리(안전). */
+function splitIntoParagraphs(text: string, perParagraph = 2): string[] {
+  const sentences = text
+    .split(/(?<=[.!?。])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (sentences.length <= 1) return text.trim() ? [text.trim()] : [];
+  const out: string[] = [];
+  for (let i = 0; i < sentences.length; i += perParagraph) {
+    out.push(sentences.slice(i, i + perParagraph).join(' '));
+  }
+  return out;
+}
+
+function DeepSection({ no, label, text }: { no: number; label: string; text: string }) {
+  const paragraphs = splitIntoParagraphs(text);
+  if (paragraphs.length === 0) return null;
+  // 첫 문단은 리드 — 눈이 들어올 자리를 만든다. 나머지는 본문 리듬.
+  const [lead, ...rest] = paragraphs;
+  return (
+    <section className="rp-deep-sec">
+      <div className="rp-deep-head">
+        <span className="rp-deep-no">{String(no).padStart(2, '0')}</span>
+        <span className="rp-deep-label">{label}</span>
+      </div>
+      <p className="rp-deep-lead">{lead}</p>
+      {rest.map((paragraph, i) => (
+        <p key={i} className="rp-deep-body">
+          {paragraph}
+        </p>
+      ))}
+    </section>
+  );
+}
+
 // 2026-05-23 사주 리포트 PDF 8페이지 문서 (말 전용 컴포넌트).
 //   실제 인쇄 화면(premium/print)과 /dev 미리보기가 동일 마크업을 공유한다.
 //   데이터 갭은 src/lib/saju/pdf-report-maps.ts 의 결정적 매핑으로 채움.
@@ -1352,25 +1393,22 @@ export function ReportDocument({
                     lead="결제하신 깊은 사주풀이 본문입니다. 앞의 요약과 함께 평생 참고하세요."
                   />
                   {data.deepReading.opening ? (
-                    <div className="rp-block">
-                      <p>{data.deepReading.opening}</p>
-                    </div>
+                    <p className="rp-deep-opening">{data.deepReading.opening}</p>
                   ) : null}
-                  {data.deepReading.sections.map((s) => (
-                    <div key={s.label} className="rp-block">
-                      <div className="rp-eyebrow">{s.label}</div>
-                      <p>{s.text}</p>
-                    </div>
-                  ))}
+                  {data.deepReading.sections
+                    .filter((s) => s.text.trim().length > 0)
+                    .map((s, i) => (
+                      <DeepSection key={s.label} no={i + 1} label={s.label} text={s.text} />
+                    ))}
                   {data.deepReading.rememberRules.length > 0 ? (
-                    <div className="rp-block">
-                      <div className="rp-eyebrow">기억할 규칙</div>
+                    <section className="rp-deep-rules">
+                      <div className="rp-deep-rules-title">기억할 규칙</div>
                       <ul className="rp-remember-list">
                         {data.deepReading.rememberRules.map((r, i) => (
                           <li key={i}>{r}</li>
                         ))}
                       </ul>
-                    </div>
+                    </section>
                   ) : null}
                   <PageFooter page={9} total={totalPages} />
                 </section>
