@@ -334,7 +334,7 @@ export default async function DreamInterpretationDetailPage({ params }: Props) {
               className="inline-flex h-12 items-center justify-center rounded-[12px] px-4 text-[15px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
-                boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
+                boxShadow: '0 12px 28px rgba(142, 42, 32, 0.32)',
               }}
             >
               오늘운세 보기

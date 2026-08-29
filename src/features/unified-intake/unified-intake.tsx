@@ -98,7 +98,7 @@ function IntakeChipGroup<T extends string>({
               className={cn(
                 'rounded-[12px] border px-3.5 py-1.5 text-[14.4px] font-bold transition-all active:scale-95',
                 selected
-                  ? 'border-[var(--app-pink-strong)] bg-[var(--app-pink-strong)] text-white shadow-[0_4px_12px_rgba(236,72,153,0.25)]'
+                  ? 'border-[var(--app-pink-strong)] bg-[var(--app-pink-strong)] text-white shadow-[0_4px_12px_rgba(179,55,42,0.25)]'
                   : 'border-[var(--app-line)] bg-white text-[var(--app-copy)] hover:border-[var(--app-pink)]/40 hover:bg-[var(--app-pink-soft)]'
               )}
             >

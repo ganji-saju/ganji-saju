@@ -19,13 +19,13 @@ export default function NotFound() {
           style={{
             background: 'linear-gradient(180deg, var(--app-pink-soft) 0%, #fff 100%)',
             borderColor: 'var(--app-pink-line)',
-            boxShadow: '0 22px 50px -28px rgba(216,27,114,0.22)',
+            boxShadow: '0 22px 50px -28px rgba(142,42,32,0.22)',
           }}
         >
           <span
             aria-hidden="true"
             className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(179,55,42,0.18), transparent 70%)' }}
           />
           <div
             className="mx-auto grid h-16 w-16 place-items-center rounded-full text-[41.4px] font-extrabold"
@@ -34,7 +34,7 @@ export default function NotFound() {
               color: 'var(--app-pink-strong)',
               border: '1px solid var(--app-pink-line)',
               fontFamily: 'var(--font-han)',
-              boxShadow: '0 14px 28px rgba(216,27,114,0.16)',
+              boxShadow: '0 14px 28px rgba(142,42,32,0.16)',
             }}
             aria-hidden="true"
           >
@@ -56,7 +56,7 @@ export default function NotFound() {
           <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <Link
               href="/"
-              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             >
               홈으로 →
             </Link>

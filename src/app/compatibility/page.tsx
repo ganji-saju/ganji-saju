@@ -200,7 +200,7 @@ export default async function CompatibilityPage() {
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -223,7 +223,7 @@ export default async function CompatibilityPage() {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href="/membership"
-                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
               >
                 멤버십으로 더 깊게 열기 →
               </Link>

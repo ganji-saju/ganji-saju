@@ -69,7 +69,7 @@ function ChipGroup<T extends string>({
                       background: 'var(--app-pink-strong)',
                       color: 'white',
                       borderColor: 'var(--app-pink-strong)',
-                      boxShadow: '0 4px 12px rgba(236,72,153,0.25)',
+                      boxShadow: '0 4px 12px rgba(179,55,42,0.25)',
                     }
                   : {
                       background: 'white',

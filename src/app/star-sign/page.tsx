@@ -126,7 +126,7 @@ export default async function StarSignPage() {
           <article
             className="relative overflow-hidden rounded-[22px] p-5 text-white"
             style={{
-              background: 'linear-gradient(160deg, #1a0a2e 0%, #2e1156 50%, #45178a 100%)',
+              background: 'linear-gradient(160deg, #1c1a17 0%, #2a2622 50%, #3f352b 100%)',
             }}
           >
             <div
@@ -187,7 +187,7 @@ export default async function StarSignPage() {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Link
                   href={`/star-sign/${featured.slug}`}
-                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-4 py-2.5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
                 >
                   상세 흐름 보기 →
                 </Link>
@@ -215,7 +215,9 @@ export default async function StarSignPage() {
                 <Link
                   key={d.slug}
                   href={`/star-sign/${d.slug}`}
-                  className="rounded-[16px] border bg-white p-4 transition-transform active:scale-[0.98]"
+                  // min-w-0: grid 아이템의 기본 min-width:auto 가 이 링크를 min-content(419px)
+                  //   까지 부풀려 320px 화면에서 점수(87)를 밖으로 밀어냈다.
+                  className="min-w-0 rounded-[16px] border bg-white p-4 transition-transform active:scale-[0.98]"
                   style={{ borderColor: 'var(--app-line)' }}
                 >
                   <div className="flex items-center gap-3">
@@ -233,7 +235,7 @@ export default async function StarSignPage() {
                       {d.meta.symbol}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
+                      <div className="truncate text-[16.1px] font-extrabold text-[var(--app-ink)]">
                         {d.item.label}
                       </div>
                       <div
@@ -243,7 +245,7 @@ export default async function StarSignPage() {
                         {d.fortune.highlight}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-right">
                       <div className="text-[23px] font-extrabold tabular-nums" style={{ color: rankColor }}>
                         {d.fortune.scores.overall}
                       </div>
@@ -450,7 +452,7 @@ export default async function StarSignPage() {
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -468,7 +470,7 @@ export default async function StarSignPage() {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               <Link
                 href={readingSlug ? `/saju/${readingSlug}` : '/saju/new'}
-                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
               >
                 {readingSlug ? '내 사주와 함께 보기' : '사주와 함께 보기'} →
               </Link>

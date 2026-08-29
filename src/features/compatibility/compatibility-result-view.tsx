@@ -164,7 +164,7 @@ export function CompatibilityResultView({
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[25.3px] font-extrabold text-white"
               style={{
                 background: 'var(--app-pink)',
-                boxShadow: '0 6px 14px rgba(216,27,114,0.32)',
+                boxShadow: '0 6px 14px rgba(142,42,32,0.32)',
               }}
               aria-hidden="true"
             >
@@ -378,7 +378,7 @@ export function CompatibilityResultView({
                   className="grid h-6 w-6 place-items-center rounded-full text-white"
                   style={{
                     background: 'var(--app-pink)',
-                    boxShadow: '0 4px 10px rgba(216,27,114,0.35)',
+                    boxShadow: '0 4px 10px rgba(142,42,32,0.35)',
                   }}
                   aria-hidden="true"
                 >
@@ -466,7 +466,7 @@ export function CompatibilityResultView({
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -501,7 +501,7 @@ export function CompatibilityResultView({
             <div className="mt-4 grid gap-2">
               <Link
                 href="/membership"
-                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
               >
                 멤버십이면 궁합 매달 무료 →
               </Link>
@@ -533,7 +533,7 @@ export function CompatibilityResultView({
                   </span>
                   <Link
                     href={checkoutHref}
-                    className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+                    className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(142,42,32,0.30)]"
                   >
                     깊은 궁합 풀이 보기
                   </Link>

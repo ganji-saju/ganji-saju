@@ -165,7 +165,7 @@ export function PremiumLockCard({
   return (
     <section
       className="relative overflow-hidden rounded-[20px] border border-[var(--app-pink-line)] bg-white p-4"
-      style={{ boxShadow: '0 14px 36px rgba(216,27,114,0.10)' }}
+      style={{ boxShadow: '0 14px 36px rgba(142,42,32,0.10)' }}
     >
       {/* 헤더: snake chip + 헤드라인 + 설명 */}
       <div className="flex items-center gap-3.5">
@@ -189,7 +189,7 @@ export function PremiumLockCard({
           type="button"
           size="lg"
           className="h-12 w-full rounded-[16px] bg-[var(--app-pink)] text-[15.5px] font-extrabold text-white hover:bg-[var(--app-pink)]"
-          style={{ boxShadow: '0 10px 24px rgba(216,27,114,0.30)' }}
+          style={{ boxShadow: '0 10px 24px rgba(142,42,32,0.30)' }}
         >
           멤버십으로 매일 더 보기
         </Button>

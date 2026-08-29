@@ -72,7 +72,7 @@ export function DaewoonTimelineStrip({ cycles }: Props) {
                 ? {
                     width: CARD_WIDTH,
                     background: 'var(--app-pink)',
-                    boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
+                    boxShadow: '0 8px 18px rgba(142,42,32,0.28)',
                   }
                 : { width: CARD_WIDTH }
             }

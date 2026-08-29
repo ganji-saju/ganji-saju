@@ -262,7 +262,7 @@ export default function DreamPage() {
                   className="mt-2.5 flex items-center justify-between rounded-[12px] px-3.5 py-3 text-[14.4px] font-extrabold text-white transition"
                   style={{
                     background: 'var(--app-pink-strong)',
-                    boxShadow: '0 10px 24px rgba(216, 27, 114, 0.28)',
+                    boxShadow: '0 10px 24px rgba(142, 42, 32, 0.28)',
                   }}
                 >
                   <span>이 꿈 자세히 풀어보기</span>
@@ -384,7 +384,7 @@ export default function DreamPage() {
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -404,7 +404,7 @@ export default function DreamPage() {
             </p>
             <Link
               href="/saju/new"
-              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
             >
               사주 풀이로 이어보기 →
             </Link>

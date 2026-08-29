@@ -60,7 +60,7 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--app-pink, #ec4899), var(--app-pink-strong, #db2777));
+  background: linear-gradient(135deg, var(--app-pink, #b3372a), var(--app-pink-strong, #db2777));
   color: #fff;
   display: grid;
   place-items: center;
@@ -302,12 +302,12 @@
   border-color: var(--app-pink-line);
   color: var(--app-pink-strong);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -8px rgba(216, 27, 114, 0.32);
+  box-shadow: 0 8px 18px -8px rgba(142, 42, 32, 0.32);
 }
 
 .mega-nav-signup:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px -2px rgba(216, 27, 114, 0.24);
+  box-shadow: 0 2px 6px -2px rgba(142, 42, 32, 0.24);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -515,7 +515,7 @@
   margin-top: 14px;
   padding: 7px 12px;
   border-radius: 10px;
-  background: var(--app-pink, #ec4899);
+  background: var(--app-pink, #b3372a);
   color: #fff;
   font-size: 11.5px;
   font-weight: 800;

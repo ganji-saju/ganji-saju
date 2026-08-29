@@ -395,7 +395,7 @@ export default async function MembershipPage({
           <div>
             <Link
               href={`/membership/checkout?plan=${featuredPlan?.slug ?? 'premium'}&from=membership`}
-              className="inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3.5 text-[17.3px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             >
               {featuredPlanLabel} 시작 →
             </Link>

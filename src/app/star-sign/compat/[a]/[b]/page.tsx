@@ -49,7 +49,7 @@ const TONE_STYLE: Record<
     bg: 'var(--app-pink-soft)',
     color: 'var(--app-pink-strong)',
     border: 'var(--app-pink-line)',
-    gradient: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+    gradient: 'linear-gradient(135deg, #b3372a 0%, #db2777 100%)',
   },
   mid: {
     bg: 'rgba(0,0,0,0.04)',
@@ -383,7 +383,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -401,7 +401,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             </p>
             <Link
               href="/compatibility"
-              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+              className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
             >
               사주 궁합 입력하기 →
             </Link>

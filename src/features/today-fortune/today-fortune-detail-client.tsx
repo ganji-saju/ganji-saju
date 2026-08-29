@@ -275,7 +275,7 @@ export function TodayFortuneDetailClient({
             </p>
             <Link
               href={`/today-fortune?concern=${encodeURIComponent(concernId)}`}
-              className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             >
               오늘운세 보러가기 →
             </Link>
@@ -318,7 +318,7 @@ export function TodayFortuneDetailClient({
               </Link>
               <Link
                 href="/membership"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--app-pink)] text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
               >
                 멤버십 보기 →
               </Link>
@@ -431,7 +431,7 @@ export function TodayFortuneDetailClient({
               className="inline-flex h-12 items-center justify-center gap-1.5 rounded-[12px] px-5 text-[15.5px] font-extrabold text-white"
               style={{
                 background: 'var(--app-ink)',
-                boxShadow: '0 12px 28px rgba(15,23,42,0.22)',
+                boxShadow: '0 12px 28px rgba(28,26,23,0.22)',
               }}
             >
               <MessageCircleMore className="h-4 w-4" />

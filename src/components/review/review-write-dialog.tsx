@@ -256,7 +256,7 @@ export function ReviewWriteDialog({
             className="flex-1 rounded-full py-2.5 text-[15px] font-extrabold text-white disabled:opacity-60"
             style={{
               background: 'var(--app-pink)',
-              boxShadow: canSubmit ? '0 8px 18px rgba(216, 27, 114, 0.32)' : 'none',
+              boxShadow: canSubmit ? '0 8px 18px rgba(142, 42, 32, 0.32)' : 'none',
             }}
           >
             {submitting ? '저장 중...' : existing ? '수정 제출' : '등록 제출'}

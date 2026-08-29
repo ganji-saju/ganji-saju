@@ -628,7 +628,7 @@ function MobileChrome({
                   className="hidden h-9 items-center rounded-[12px] px-3.5 text-[14.4px] font-extrabold text-white md:inline-flex"
                   style={{
                     background: 'var(--app-pink)',
-                    boxShadow: '0 6px 14px rgba(216,27,114,0.26)',
+                    boxShadow: '0 6px 14px rgba(142,42,32,0.26)',
                   }}
                 >
                   로그인

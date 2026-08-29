@@ -98,7 +98,7 @@ function getBannerStyle(kind: GangiBannerKind): React.CSSProperties {
         padding: 22,
         background:
           'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-        boxShadow: '0 22px 50px -28px rgba(216,27,114,0.42)',
+        boxShadow: '0 22px 50px -28px rgba(142,42,32,0.42)',
         textDecoration: 'none',
       };
     case 'soft':
@@ -111,7 +111,7 @@ function getBannerStyle(kind: GangiBannerKind): React.CSSProperties {
     case 'cosmic':
       return {
         padding: 20,
-        background: 'linear-gradient(135deg, #1a0a2e 0%, #2e1156 100%)',
+        background: 'linear-gradient(135deg, #1c1a17 0%, #2a2622 100%)',
         boxShadow: '0 22px 50px -28px rgba(46,17,86,0.42)',
         textDecoration: 'none',
       };

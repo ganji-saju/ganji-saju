@@ -79,7 +79,7 @@ export default async function DailyTarotPage() {
                       transform: `rotate(${offset * 6}deg) translateY(${Math.abs(offset) * 4}px)`,
                       color: isCenter ? '#fff' : 'rgba(255,255,255,0.32)',
                       fontFamily: 'var(--font-han)',
-                      boxShadow: isCenter ? '0 8px 20px rgba(255,79,154,0.45)' : 'none',
+                      boxShadow: isCenter ? '0 8px 20px rgba(179,55,42,0.45)' : 'none',
                     }}
                     aria-hidden="true"
                   >
@@ -92,7 +92,7 @@ export default async function DailyTarotPage() {
               세 장을 골라 탭하세요
             </p>
             <div className="relative mt-4 flex justify-center">
-              <span className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_8px_20px_rgba(255,79,154,0.45)]">
+              <span className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-2.5 text-[15px] font-extrabold text-white shadow-[0_8px_20px_rgba(179,55,42,0.45)]">
                 카드 뽑으러 가기 →
               </span>
             </div>
@@ -158,7 +158,7 @@ export default async function DailyTarotPage() {
               />
               <button
                 type="submit"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--app-pink)] text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
               >
                 이 질문으로 카드 뽑기 →
               </button>

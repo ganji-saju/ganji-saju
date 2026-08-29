@@ -40,7 +40,7 @@ export function PushModalShowcaseClient() {
             setLastEvent(null);
             setOpen(true);
           }}
-          className="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+          className="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
         >
           <Bell className="h-4 w-4" />
           모달 열기

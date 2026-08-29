@@ -263,7 +263,7 @@ const COMPACT_RESULT_CARD_FALLBACKS: Array<{
   scoreKey?: ReportScore['key'];
 }> = [
   { key: 'wealth', label: '재물', color: '#D59B2E', fallback: '지출 정리 먼저', scoreKey: 'wealth' },
-  { key: 'love', label: '연애', color: '#E05298', fallback: '천천히 맞추기', scoreKey: 'love' },
+  { key: 'love', label: '연애', color: '#C25438', fallback: '천천히 맞추기', scoreKey: 'love' },
   { key: 'career', label: '직업', color: '#3F8796', fallback: '말 정리부터', scoreKey: 'career' },
   { key: 'health', label: '건강', color: '#5C8A63', fallback: '수면 챙기기' },
 ];
@@ -738,7 +738,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {scoreUnlocked ? (
               <article
                 className="rounded-[18px] p-5 text-white"
-                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(15,23,42,0.18)' }}
+                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(28,26,23,0.18)' }}
               >
                 <div
                   className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
@@ -817,7 +817,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               className="rounded-[18px] p-5 text-white"
               style={{
                 background: 'var(--app-ink)',
-                boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+                boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
               }}
             >
               <div
@@ -843,7 +843,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     product: 'dialogue',
                     from: 'result_next_step',
                   }}
-                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
                 >
                   선생님과 대화하기 →
                 </TrackedLink>
