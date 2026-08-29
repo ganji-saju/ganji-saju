@@ -13,6 +13,42 @@
 import type { Element } from '@/lib/saju/types';
 
 /** 한자/술어 → 일상어 매핑. simplifySajuCopy 가 사용. */
+// 2026-08-30 — 간지(干支) 한자를 한글로. 사용자 제보: "관계·신살 신호에 합충 한자가 나온다."
+//
+//   2026-05-20 정책은 "본문·칩은 한글만, **사주팔자 4기둥 카드만** 한자 정체성 유지"였다.
+//   그런데 그 정책은 서술문(build-narrative)에만 적용됐고, evidence 로 조립되는
+//   관계·신살 카드는 정책 밖에 있었다(카드는 5일 먼저 만들어졌다).
+//   FRIENDLY_TERM_MAP 은 **술어**(육합·형 …)만 바꾼다 — 간지 글자는 손대지 않으므로
+//   "육합 · 태어난 시간 己未 · 태어난 해 庚午" 처럼 한자가 그대로 남았다.
+//
+//   ⚠️ 4기둥 카드처럼 한자를 **의도적으로** 보여주는 자리에는 쓰지 마라.
+
+const STEM_KOREAN: Record<string, string> = {
+  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
+  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
+};
+
+const BRANCH_KOREAN: Record<string, string> = {
+  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
+  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
+};
+
+const STEMS = Object.keys(STEM_KOREAN).join('');
+const BRANCHES = Object.keys(BRANCH_KOREAN).join('');
+const GANZI_PAIR = new RegExp(`[${STEMS}][${BRANCHES}]`, 'g');
+const LONE_GANZI = new RegExp(`[${STEMS}${BRANCHES}]`, 'g');
+
+/**
+ * 문자열 안의 간지 한자를 한글 음으로 바꾼다(己未 → 기미, 戌 → 술).
+ * 쌍을 먼저 처리해 '기미'가 '기'+'미' 로 쪼개지지 않게 한다.
+ */
+export function koreanizeGanzi(value: string | null | undefined): string {
+  if (!value) return '';
+  return value
+    .replace(GANZI_PAIR, (pair) => `${STEM_KOREAN[pair[0]!]}${BRANCH_KOREAN[pair[1]!]}`)
+    .replace(LONE_GANZI, (ch) => STEM_KOREAN[ch] ?? BRANCH_KOREAN[ch] ?? ch);
+}
+
 export const FRIENDLY_TERM_MAP: ReadonlyArray<[term: RegExp, replacement: string]> = [
   // §사주 구조 단위 (위계 큰 단어 먼저)
   [/팔자/gu, '내 사주'],
