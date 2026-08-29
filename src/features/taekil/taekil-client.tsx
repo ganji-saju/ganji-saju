@@ -126,7 +126,7 @@ export function TaekilClient() {
                 style={{
                   borderColor: isActive ? 'var(--app-pink)' : 'var(--app-line)',
                   background: isActive ? 'var(--app-pink-soft)' : 'white',
-                  boxShadow: isActive ? '0 4px 12px rgba(216,27,114,0.16)' : 'none',
+                  boxShadow: isActive ? '0 4px 12px rgba(142,42,32,0.16)' : 'none',
                 }}
               >
                 <div className="text-[25.3px] leading-none">{p.emoji}</div>
@@ -345,7 +345,7 @@ export function TaekilClient() {
             </span>
             <Link
               href={lockedCount > 0 ? TAEKIL_CHECKOUT_HREF : '/saju/new?product=monthly-calendar'}
-              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(142,42,32,0.30)]"
             >
               {lockedCount > 0 ? `나머지 ${lockedCount}일 열기` : '달력으로 보기'}
             </Link>

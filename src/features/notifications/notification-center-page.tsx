@@ -959,7 +959,7 @@ export default function NotificationCenterPage({
                   : {
                       background: 'var(--app-pink)',
                       color: '#fff',
-                      boxShadow: '0 12px 28px rgba(216,27,114,0.32)',
+                      boxShadow: '0 12px 28px rgba(142,42,32,0.32)',
                     }
               }
             >

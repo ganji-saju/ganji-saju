@@ -63,7 +63,7 @@ const SOFT_FEATURE_STYLE = {
 const PRIMARY_BUTTON_STYLE = {
   background: 'var(--app-pink)',
   color: '#ffffff',
-  boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
+  boxShadow: '0 12px 28px rgba(142, 42, 32, 0.32)',
 } as const;
 
 const SECONDARY_BUTTON_STYLE = {

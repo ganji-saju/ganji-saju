@@ -575,7 +575,7 @@ function CoreAreaCard({
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white"
               style={{
                 background: 'var(--app-pink)',
-                boxShadow: '0 6px 14px rgba(216,27,114,0.28)',
+                boxShadow: '0 6px 14px rgba(142,42,32,0.28)',
               }}
               aria-hidden="true"
             >
@@ -973,7 +973,7 @@ function ChapterNavigation({
           className="inline-flex h-10 items-center rounded-[12px] px-4 text-[14.4px] font-extrabold text-white"
           style={{
             background: 'var(--app-pink)',
-            boxShadow: '0 8px 18px rgba(216,27,114,0.28)',
+            boxShadow: '0 8px 18px rgba(142,42,32,0.28)',
           }}
         >
           다음 →
@@ -1492,7 +1492,7 @@ export default function YearlyReportPanel({ slug, targetYear }: Props) {
                 className="rounded-[12px] px-2.5 py-1 text-[12.1px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
-                  boxShadow: '0 4px 10px rgba(216,27,114,0.28)',
+                  boxShadow: '0 4px 10px rgba(142,42,32,0.28)',
                 }}
               >
                 프리미엄 이용권

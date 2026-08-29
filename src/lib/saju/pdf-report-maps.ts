@@ -37,7 +37,7 @@ export function josa(value: string, consonantParticle: string, vowelParticle: st
 export const PDF_COLORS = {
   pink: 'var(--app-pink-strong)',
   pinkStrong: 'var(--app-pink)',
-  pinkBright: '#ff7bb8',
+  pinkBright: '#c9553f',
   pinkSoft: 'var(--app-pink-soft)',
   ink: '#111114',
   inkSoft: 'rgba(17,17,20,0.76)',

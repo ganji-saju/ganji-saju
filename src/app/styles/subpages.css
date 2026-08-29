@@ -43,11 +43,11 @@
   border: 1px solid var(--app-pink-line);
   border-radius: 1.55rem;
   background:
-    radial-gradient(circle at 20% -10%, rgba(255, 79, 154, 0.16), transparent 55%),
+    radial-gradient(circle at 20% -10%, rgba(179, 55, 42, 0.16), transparent 55%),
     linear-gradient(180deg, #ffffff 0%, var(--app-pink-soft) 100%);
   padding: 1.7rem 1.5rem 1.5rem;
   text-align: center;
-  box-shadow: 0 24px 60px -28px rgba(216, 27, 114, 0.36);
+  box-shadow: 0 24px 60px -28px rgba(142, 42, 32, 0.36);
 }
 
 .gangi-loading-han-badge {
@@ -69,7 +69,7 @@
   border-radius: 9999px;
   background: linear-gradient(160deg, #ffffff 0%, var(--app-pink-soft) 100%);
   border: 1px solid var(--app-pink-line);
-  box-shadow: 0 14px 28px rgba(216, 27, 114, 0.16);
+  box-shadow: 0 14px 28px rgba(142, 42, 32, 0.16);
   font-family: var(--font-han);
   font-size: 1.85rem;
   font-weight: 700;
@@ -81,7 +81,7 @@
 .gangi-loading-han-ring {
   position: absolute;
   inset: 0;
-  border: 2px solid rgba(255, 79, 154, 0.16);
+  border: 2px solid rgba(179, 55, 42, 0.16);
   border-left-color: var(--app-pink);
   border-top-color: var(--app-pink);
   border-radius: 9999px;
@@ -162,21 +162,21 @@
 
 @keyframes gangi-pulse-dot {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 79, 154, 0.45);
+    box-shadow: 0 0 0 0 rgba(179, 55, 42, 0.45);
   }
   50% {
-    box-shadow: 0 0 0 0.4rem rgba(255, 79, 154, 0);
+    box-shadow: 0 0 0 0.4rem rgba(179, 55, 42, 0);
   }
 }
 
 .gangi-loading-card {
   width: min(100%, 21rem);
-  border: 1px solid rgba(255, 79, 154, 0.22);
+  border: 1px solid rgba(179, 55, 42, 0.22);
   border-radius: 1.55rem;
   background: linear-gradient(180deg, #ffffff 0%, var(--app-pink-soft) 100%);
   padding: 1.35rem;
   text-align: center;
-  box-shadow: 0 22px 54px -24px rgba(216, 27, 114, 0.38);
+  box-shadow: 0 22px 54px -24px rgba(142, 42, 32, 0.38);
 }
 
 .gangi-loading-moon {
@@ -188,7 +188,7 @@
   place-items: center;
   border-radius: 9999px;
   background: radial-gradient(circle at 34% 28%, #fff8d8, #ffd76f 68%);
-  box-shadow: 0 0 0 0.6rem rgba(255, 79, 154, 0.08), 0 16px 34px rgba(17, 17, 20, 0.08);
+  box-shadow: 0 0 0 0.6rem rgba(179, 55, 42, 0.08), 0 16px 34px rgba(17, 17, 20, 0.08);
   animation: gangi-float-y 3s ease-in-out infinite;
 }
 
@@ -205,7 +205,7 @@
 .gangi-loading-moon i {
   position: absolute;
   inset: -0.7rem;
-  border: 2px solid rgba(255, 79, 154, 0.16);
+  border: 2px solid rgba(179, 55, 42, 0.16);
   border-left-color: var(--app-pink);
   border-radius: 9999px;
   animation: gangi-spin-slow 1.8s linear infinite;
@@ -236,7 +236,7 @@
 .gangi-loading-lines span {
   height: 0.56rem;
   border-radius: 9999px;
-  background: linear-gradient(90deg, rgba(255, 79, 154, 0.12), rgba(255, 79, 154, 0.34), rgba(255, 79, 154, 0.12));
+  background: linear-gradient(90deg, rgba(179, 55, 42, 0.12), rgba(179, 55, 42, 0.34), rgba(179, 55, 42, 0.12));
   background-size: 200% 100%;
   animation: gangi-shimmer 1.3s ease-in-out infinite;
 }
@@ -283,7 +283,7 @@
   color: #ffffff;
   font-size: 1.3rem;
   font-weight: 700;
-  box-shadow: 0 12px 24px rgba(216, 27, 114, 0.22);
+  box-shadow: 0 12px 24px rgba(142, 42, 32, 0.22);
 }
 
 .gangi-checkout-method-card strong {
@@ -413,7 +413,7 @@
 .gangi-tarot-result-art {
   width: min(13.2rem, 64vw) !important;
   border-color: var(--app-pink) !important;
-  box-shadow: 0 18px 54px rgba(216, 27, 114, 0.22) !important;
+  box-shadow: 0 18px 54px rgba(142, 42, 32, 0.22) !important;
 }
 
 .gangi-tarot-draw-result h1 {
@@ -435,7 +435,7 @@
 
 .gangi-tarot-advice-card {
   margin-inline: 1.25rem;
-  border: 1px solid rgba(216, 27, 114, 0.14);
+  border: 1px solid rgba(142, 42, 32, 0.14);
   border-radius: 1.4rem;
   background: var(--app-pink-soft);
   padding: 1.2rem 1.25rem;
@@ -751,7 +751,7 @@
 .gangi-list-link[data-active="true"] {
   border-color: var(--app-pink);
   background: linear-gradient(135deg, var(--app-pink-soft), #ffffff);
-  box-shadow: 0 12px 28px rgba(216, 27, 114, 0.12);
+  box-shadow: 0 12px 28px rgba(142, 42, 32, 0.12);
 }
 
 .gangi-list-copy {
@@ -1059,7 +1059,7 @@
   border: 1px solid var(--app-pink);
   background: var(--app-pink);
   color: #ffffff;
-  box-shadow: 0 14px 30px rgba(216, 27, 114, 0.2);
+  box-shadow: 0 14px 30px rgba(142, 42, 32, 0.2);
 }
 
 .gangi-secondary-button {
@@ -1088,7 +1088,7 @@
   gap: 1.15rem;
   border-radius: 1.6rem;
   background:
-    radial-gradient(circle at 50% 16%, rgba(255, 79, 154, 0.12), transparent 44%),
+    radial-gradient(circle at 50% 16%, rgba(179, 55, 42, 0.12), transparent 44%),
     linear-gradient(180deg, #1a0a1f 0%, #2a0d2f 100%);
   padding: 1.25rem 0.85rem 1.5rem;
   overflow: hidden;
@@ -1125,7 +1125,7 @@
   display: block;
   aspect-ratio: 7 / 10;
   border-radius: 0.5rem;
-  border: 1.5px solid rgba(255, 79, 154, 0.6);
+  border: 1.5px solid rgba(179, 55, 42, 0.6);
   overflow: hidden;
   color: rgba(210, 176, 114, 0.85); /* 만다라 currentColor */
   transform: rotate(var(--card-tilt, 0deg));
@@ -1246,7 +1246,7 @@
 
 .gangi-tarot-grid-card.is-selected {
   border-color: rgba(210, 176, 114, 1);
-  box-shadow: 0 0 0 2px rgba(210, 176, 114, 0.9), 0 16px 30px rgba(216, 27, 114, 0.4);
+  box-shadow: 0 0 0 2px rgba(210, 176, 114, 0.9), 0 16px 30px rgba(142, 42, 32, 0.4);
   filter: brightness(1.16) saturate(1.1);
   z-index: 25;
 }
@@ -1636,7 +1636,7 @@
 .gangi-expert-chip[data-active="true"] {
   border-color: var(--app-pink);
   background: var(--app-pink-soft);
-  box-shadow: 0 10px 24px rgba(216, 27, 114, 0.12);
+  box-shadow: 0 10px 24px rgba(142, 42, 32, 0.12);
 }
 
 /* 2026-05-16 — 사용자 보고: 6개 탭(총평·대운·상세·명식·성향·오행) 이 옆으로 밀려
@@ -1705,7 +1705,7 @@
     radial-gradient(circle at right 18%, rgba(255, 218, 235, 0.7), transparent 34%),
     #fff7fb;
   padding: 1.2rem 1.1rem 1.35rem;
-  box-shadow: 0 14px 34px rgba(236, 72, 153, 0.08);
+  box-shadow: 0 14px 34px rgba(179, 55, 42, 0.08);
 }
 
 .gangi-reading-chapters {
@@ -1860,7 +1860,7 @@
   --gangi-subpage-card-shadow: 0 1px 0 rgba(17, 17, 20, 0.04),
     0 18px 46px -30px rgba(17, 17, 20, 0.36);
   --gangi-subpage-card-shadow-hover: 0 1px 0 rgba(17, 17, 20, 0.04),
-    0 22px 52px -30px rgba(216, 27, 114, 0.34);
+    0 22px 52px -30px rgba(142, 42, 32, 0.34);
 }
 
 .gangi-subpage-shell .app-shell-content {
@@ -1963,7 +1963,7 @@
 }
 
 .gangi-subpage-shell :where(.gangi-list-link, .gangi-vault-link, .gangi-checkout-method-card):hover {
-  border-color: rgba(255, 79, 154, 0.28) !important;
+  border-color: rgba(179, 55, 42, 0.28) !important;
   box-shadow: var(--gangi-subpage-card-shadow-hover) !important;
   transform: translateY(-1px);
 }

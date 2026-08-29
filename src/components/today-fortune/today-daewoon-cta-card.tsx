@@ -18,7 +18,7 @@ export function TodayDaewoonCtaCard({ sajuSlug }: Props) {
       className="rounded-[18px] p-5 text-white"
       style={{
         background: 'linear-gradient(135deg, #1a1f3b 0%, #2a2f5a 100%)',
-        boxShadow: '0 18px 44px rgba(15,23,42,0.22)',
+        boxShadow: '0 18px 44px rgba(28,26,23,0.22)',
       }}
     >
       <div className="flex items-center gap-2">
@@ -78,7 +78,7 @@ export function TodayDaewoonCtaCard({ sajuSlug }: Props) {
       </ul>
       <Link
         href={href}
-        className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+        className="mt-4 inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[15.5px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
       >
         {sajuSlug ? '내 대운 풀이 열기 →' : '사주 등록하고 대운 보기 →'}
       </Link>

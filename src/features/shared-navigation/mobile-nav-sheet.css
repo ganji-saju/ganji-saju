@@ -8,7 +8,7 @@
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(28, 26, 23, 0.5);
   animation: mns-overlay-in 0.22s ease-out;
 }
 
@@ -337,7 +337,7 @@
   margin-top: 10px;
   padding: 6px 11px;
   border-radius: 10px;
-  background: var(--app-pink, #ec4899);
+  background: var(--app-pink, #b3372a);
   color: white;
   font-size: 11px;
   font-weight: 800;
@@ -375,9 +375,9 @@
 }
 
 .mobile-nav-sheet-account-primary {
-  background: var(--app-pink, #ec4899);
+  background: var(--app-pink, #b3372a);
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(216, 27, 114, 0.26);
+  box-shadow: 0 6px 14px rgba(142, 42, 32, 0.26);
 }
 
 .mobile-nav-sheet-account-primary:active {
@@ -391,8 +391,8 @@
 }
 
 .mobile-nav-sheet-account-ghost:hover {
-  background: var(--app-pink-soft, rgba(255, 79, 154, 0.08));
-  border-color: var(--app-pink-line, rgba(255, 79, 154, 0.24));
+  background: var(--app-pink-soft, rgba(179, 55, 42, 0.08));
+  border-color: var(--app-pink-line, rgba(179, 55, 42, 0.24));
   color: var(--app-pink-strong);
 }
 

@@ -129,7 +129,7 @@ function ZodiacWheel({ hero, ariaLabel }: { hero: string; ariaLabel: string }) {
           transform: 'translate(-50%, -50%)',
           background:
             'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-          boxShadow: '0 18px 40px rgba(216,27,114,0.32)',
+          boxShadow: '0 18px 40px rgba(142,42,32,0.32)',
         }}
         aria-hidden="true"
       >
@@ -300,7 +300,7 @@ export function OnboardingCarousel({
           <form action={finishAction}>
             <button
               type="submit"
-              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)] transition-transform active:scale-[0.98]"
             >
               사주 입력하고 시작 →
             </button>
@@ -309,7 +309,7 @@ export function OnboardingCarousel({
           <button
             type="button"
             onClick={() => setIdx((i) => Math.min(i + 1, SLIDES.length - 1))}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] transition-transform active:scale-[0.98]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)] transition-transform active:scale-[0.98]"
           >
             다음 →
           </button>

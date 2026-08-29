@@ -106,7 +106,7 @@ export function ScoreLockGate({
           </div>
           <a
             href={checkoutHref}
-            className="mt-3 inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="mt-3 inline-flex h-12 w-full items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
           >
             내 결과 확인하기
           </a>
@@ -141,7 +141,7 @@ export function ScoreLockGate({
         </span>
         <a
           href={`/membership/checkout?product=bundle_comprehensive&slug=${encodeURIComponent(slug)}&from=saju-sticky`}
-          className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+          className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white shadow-[0_10px_24px_rgba(142,42,32,0.30)]"
         >
           17항목 전부 열기
         </a>

@@ -52,7 +52,7 @@ export function DayPillarCharacterCard({
             fontSize: 34.5,
             fontWeight: 700,
             letterSpacing: '0.04em',
-            boxShadow: '0 10px 22px rgba(216,27,114,0.28)',
+            boxShadow: '0 10px 22px rgba(142,42,32,0.28)',
           }}
           aria-hidden="true"
         >

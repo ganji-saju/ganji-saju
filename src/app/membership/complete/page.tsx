@@ -63,7 +63,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
               className="mx-auto grid h-24 w-24 place-items-center rounded-full"
               style={{
                 background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-                boxShadow: '0 16px 40px rgba(216,27,114,0.32)',
+                boxShadow: '0 16px 40px rgba(142,42,32,0.32)',
               }}
               aria-hidden="true"
             >
@@ -156,7 +156,7 @@ export default async function MembershipCompletePage({ searchParams }: Props) {
           <div className="grid gap-2">
             <Link
               href={primaryHref}
-              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             >
               {slug && planSlug === 'lifetime' ? '열린 보관형 리포트 보기 →' : `${completeGuide.primaryLabel} →`}
             </Link>

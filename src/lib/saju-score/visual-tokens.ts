@@ -21,7 +21,7 @@ export const SCORE_LEVEL_TOKENS: Record<ScoreLevel, ScoreLevelToken> = {
   excellent: {
     bg: 'bg-pink-500', bgSoft: 'bg-pink-50', text: 'text-pink-600',
     textOnDark: 'text-pink-100', ring: 'ring-pink-300',
-    gradient: 'from-pink-400 to-pink-600', hex: '#ec4899',
+    gradient: 'from-pink-400 to-pink-600', hex: '#b3372a',
   },
   good: {
     bg: 'bg-emerald-500', bgSoft: 'bg-emerald-50', text: 'text-emerald-700',

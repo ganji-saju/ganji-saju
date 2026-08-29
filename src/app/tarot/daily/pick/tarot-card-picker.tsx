@@ -239,7 +239,7 @@ function getCardBackStyle(card: TarotPickerCardDraw, selected: boolean): CSSProp
     '--card-glow': tone.light,
     '--card-glow-strength': (0.4 + card.backGlow * 0.12).toFixed(2),
     background: tone.background,
-    borderColor: selected ? 'rgba(255,79,154,0.95)' : 'rgba(255,79,154,0.6)',
+    borderColor: selected ? 'rgba(179,55,42,0.95)' : 'rgba(179,55,42,0.6)',
     zIndex: selected ? 30 : undefined,
   } as CSSProperties;
 }

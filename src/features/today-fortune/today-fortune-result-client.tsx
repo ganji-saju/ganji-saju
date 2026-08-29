@@ -212,7 +212,7 @@ export function TodayFortuneResultClient({
                   시니어 UI 대형 터치 영역 pink pill. */}
               <Link
                 href="/saju/new"
-                className="flex items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(216,27,114,0.28)]"
+                className="flex items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-5 py-4 text-[17px] font-extrabold text-white shadow-[0_14px_32px_rgba(142,42,32,0.28)]"
               >
                 이 정보로 내 사주 보기
                 <ArrowRight className="h-5 w-5" aria-hidden="true" />

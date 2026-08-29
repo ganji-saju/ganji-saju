@@ -76,7 +76,7 @@ export default async function ZodiacPage() {
             borderRadius: '1.25rem',
             background: 'var(--app-pink-soft)',
             padding: '1.1rem 1rem',
-            boxShadow: '0 14px 32px -28px rgba(216, 27, 114, 0.32)',
+            boxShadow: '0 14px 32px -28px rgba(142, 42, 32, 0.32)',
           }}
         >
           <div
@@ -172,7 +172,7 @@ export default async function ZodiacPage() {
                 className="inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold text-white"
                 style={{
                   background: 'var(--app-pink)',
-                  boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)',
+                  boxShadow: '0 12px 28px rgba(142, 42, 32, 0.32)',
                 }}
               >
                 내 띠 바로 보기 →

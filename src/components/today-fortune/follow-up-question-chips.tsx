@@ -19,9 +19,9 @@ export function FollowUpQuestionChips({
   const router = useRouter();
 
   return (
-    <section className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[linear-gradient(180deg,#fff4fa_0%,#ffffff_100%)] p-5 shadow-[0_16px_38px_rgba(216,27,114,0.08)]">
+    <section className="rounded-[1.6rem] border border-[var(--app-pink-line)] bg-[linear-gradient(180deg,#fff4fa_0%,#ffffff_100%)] p-5 shadow-[0_16px_38px_rgba(142,42,32,0.08)]">
       <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--app-pink)] text-white shadow-[0_12px_28px_rgba(216,27,114,0.2)]">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--app-pink)] text-white shadow-[0_12px_28px_rgba(142,42,32,0.2)]">
           <MessageCircle className="h-5 w-5" />
         </span>
         <div className="min-w-0">
@@ -53,7 +53,7 @@ export function FollowUpQuestionChips({
                 `/dialogue?question=${encodeURIComponent(question)}&sourceSessionId=${encodeURIComponent(sourceSessionId)}&concern=${encodeURIComponent(concernId)}&from=today-fortune`
               );
             }}
-            className="w-full rounded-[1rem] border border-[rgba(216,27,114,0.16)] bg-white px-4 py-3.5 text-left text-[0.95rem] font-normal leading-6 text-[var(--app-ink)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-pink)] hover:bg-[var(--app-pink-soft)]"
+            className="w-full rounded-[1rem] border border-[rgba(142,42,32,0.16)] bg-white px-4 py-3.5 text-left text-[0.95rem] font-normal leading-6 text-[var(--app-ink)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--app-pink)] hover:bg-[var(--app-pink-soft)]"
           >
             {question}
           </button>

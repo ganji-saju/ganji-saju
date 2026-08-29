@@ -174,7 +174,7 @@ export function PushPermissionModal({
             className="motion-push-bell grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-white"
             style={{
               background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-              boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
+              boxShadow: '0 10px 22px rgba(142,42,32,0.32)',
             }}
             aria-hidden="true"
           >
@@ -257,7 +257,7 @@ export function PushPermissionModal({
             type="button"
             onClick={handleAllow}
             disabled={busy}
-            className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)] disabled:opacity-60"
           >
             {busy ? '연결 중...' : '알림 허용하기'}
           </button>

@@ -114,13 +114,13 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             style={{
               background: 'linear-gradient(180deg, var(--app-pink-soft) 0%, #fff 100%)',
               borderColor: 'var(--app-pink-line)',
-              boxShadow: '0 22px 50px -28px rgba(216,27,114,0.22)',
+              boxShadow: '0 22px 50px -28px rgba(142,42,32,0.22)',
             }}
           >
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
-              style={{ background: 'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)' }}
+              style={{ background: 'radial-gradient(circle, rgba(179,55,42,0.18), transparent 70%)' }}
             />
 
             <div className="relative flex items-start gap-3">
@@ -128,7 +128,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
                 className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
                 style={{
                   background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-                  boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
+                  boxShadow: '0 10px 22px rgba(142,42,32,0.32)',
                   fontFamily: 'var(--font-han)',
                 }}
                 aria-hidden="true"
@@ -176,7 +176,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
             <div className="relative mt-5 grid gap-2">
               <Link
                 href={`/membership/checkout?plan=lifetime&slug=${encodeURIComponent(slug)}&from=pdf-print`}
-                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
               >
                 깊은 사주풀이 열기 →
               </Link>

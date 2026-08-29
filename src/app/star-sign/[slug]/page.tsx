@@ -167,7 +167,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="relative overflow-hidden rounded-[22px] p-5 text-white"
             style={{
               background:
-                'linear-gradient(160deg, #1a0a2e 0%, #2e1156 50%, #45178a 100%)',
+                'linear-gradient(160deg, #1c1a17 0%, #2a2622 50%, #3f352b 100%)',
             }}
           >
             <div
@@ -643,7 +643,7 @@ export default async function StarSignDetailPage({ params }: Props) {
           <article
             className="rounded-[16px] border p-4"
             style={{
-              background: 'linear-gradient(135deg, #1a0a2e 0%, #2e1156 100%)',
+              background: 'linear-gradient(135deg, #1c1a17 0%, #2a2622 100%)',
               borderColor: 'rgba(255,255,255,0.08)',
               color: 'white',
             }}
@@ -667,7 +667,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             className="rounded-[18px] p-5 text-white"
             style={{
               background: 'var(--app-ink)',
-              boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+              boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
             }}
           >
             <div
@@ -685,7 +685,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
                 href={`/star-sign/${item.slug}/cross`}
-                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                className="inline-flex items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
               >
                 별자리 × 사주 크로스 보기 →
               </Link>

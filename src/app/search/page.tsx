@@ -363,7 +363,7 @@ function SearchContent() {
               </article>
               <Link
                 href="/saju/new"
-                className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-6 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+                className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-6 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
               >
                 사주 시작하기 →
               </Link>

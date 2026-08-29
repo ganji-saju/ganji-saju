@@ -143,7 +143,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
             style={{
               borderColor: accuracy === opt.key ? 'var(--app-pink-strong)' : 'var(--app-line)',
               background: accuracy === opt.key ? 'var(--app-pink-soft)' : 'white',
-              boxShadow: accuracy === opt.key ? '0 4px 12px rgba(216,27,114,0.18)' : 'none',
+              boxShadow: accuracy === opt.key ? '0 4px 12px rgba(142,42,32,0.18)' : 'none',
             }}
           >
             <div className="text-[27.6px] leading-none">{opt.emoji}</div>

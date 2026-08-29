@@ -212,7 +212,7 @@ export default async function SajuVerifyPage({ searchParams }: PageProps) {
 
           <button
             type="submit"
-            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--app-pink)] px-5 text-[14px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
           >
             계산하기 →
           </button>

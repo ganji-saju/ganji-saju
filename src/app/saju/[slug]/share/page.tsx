@@ -113,7 +113,7 @@ export default async function SajuSharePage({ params }: Props) {
               aspectRatio: '4 / 5',
               background:
                 'linear-gradient(160deg, var(--app-pink-soft) 0%, #ecd6ca 60%, #d29184 100%)',
-              boxShadow: '0 18px 40px rgba(216,27,114,0.2)',
+              boxShadow: '0 18px 40px rgba(142,42,32,0.2)',
             }}
           >
             {/* 큰 한자 배경 — 運 */}
@@ -168,7 +168,7 @@ export default async function SajuSharePage({ params }: Props) {
             {/* 하단 워터마크 — 2026-07-03: 스캔 불가능한 가짜 QR(CSS 패턴) 제거, 도메인 표기는 canonical. */}
             <div
               className="relative flex items-center justify-between pt-3"
-              style={{ borderTop: '1px dashed rgba(216,27,114,0.32)' }}
+              style={{ borderTop: '1px dashed rgba(142,42,32,0.32)' }}
             >
               <div className="text-[11.5px] font-bold leading-tight text-[var(--app-copy-soft)]">
                 내 운세 보기

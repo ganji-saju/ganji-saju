@@ -45,7 +45,7 @@ const CONCERN_VISUAL: Record<ConcernId, ConcernVisual> = {
     Icon: Heart,
     label: '연애·연락',
     desc: '오늘 연락해도 될까',
-    accent: '#ec4899',
+    accent: '#b3372a',
     soft: 'var(--app-pink-soft)',
     iconColor: 'var(--app-pink-strong)',
   },
@@ -149,7 +149,7 @@ export function TodayConcernSelector({
                 borderWidth: active ? 2 : 1,
                 padding: active ? 'calc(0.875rem - 1px)' : '0.875rem',
                 boxShadow: active
-                  ? '0 12px 26px rgba(216,27,114,0.18), 0 2px 6px rgba(216,27,114,0.10)'
+                  ? '0 12px 26px rgba(142,42,32,0.18), 0 2px 6px rgba(142,42,32,0.10)'
                   : '0 1px 0 rgba(17,17,20,0.03)',
                 transform: active ? 'translateY(-1px)' : 'translateY(0)',
               }}
@@ -160,7 +160,7 @@ export function TodayConcernSelector({
                   className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full text-white"
                   style={{
                     background: 'var(--app-pink)',
-                    boxShadow: '0 4px 10px rgba(216,27,114,0.35)',
+                    boxShadow: '0 4px 10px rgba(142,42,32,0.35)',
                     border: '2px solid #fff',
                   }}
                   aria-hidden="true"
