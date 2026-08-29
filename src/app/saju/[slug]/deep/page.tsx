@@ -32,6 +32,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 //   중복 결제 진입을 유도하던 회귀. entitlement 확인 후 CTA 분기.
 import { toSlug } from '@/lib/saju/pillars';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
+import { formatGanziWithHanja } from '@/lib/saju/terminology';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -62,23 +63,6 @@ const ZODIAC_KOR: Record<ZodiacKey, string> = {
 };
 
 // 한자 ganzi → 한글 발음. "丁酉" → "정유".
-const STEM_HANJA_TO_KOREAN: Record<string, string> = {
-  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
-  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
-};
-const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
-  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
-  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
-};
-function ganziToKorean(ganzi: string): string {
-  const stem = STEM_HANJA_TO_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
-  const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
-  return `${stem}${branch}`;
-}
-function withKoreanGanzi(ganzi: string): string {
-  const korean = ganziToKorean(ganzi);
-  return korean ? `${korean}(${ganzi})` : ganzi;
-}
 
 function getYearZodiac(data: SajuDataV1 | SajuDataV2): ZodiacKey {
   return BRANCH_TO_ZODIAC[data.pillars.year.branch] ?? 'dragon';
@@ -135,7 +119,7 @@ export default async function SajuDeepPage({ params }: Props) {
   const yearZodiac = getYearZodiac(sajuData);
   const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
   const dayGanziHanja = sajuData.pillars.day.ganzi;
-  const dayGanziLabel = withKoreanGanzi(dayGanziHanja);
+  const dayGanziLabel = formatGanziWithHanja(dayGanziHanja);
   const birthMeta = formatBirthMeta(sajuData);
   const currentAge = getCurrentAge(sajuData);
 
@@ -176,7 +160,7 @@ export default async function SajuDeepPage({ params }: Props) {
                     wordBreak: 'keep-all',
                   }}
                 >
-                  지금은 <strong className="text-[var(--app-pink-strong)]">{withKoreanGanzi(currentCycle.ganzi)} 대운</strong> ·{' '}
+                  지금은 <strong className="text-[var(--app-pink-strong)]">{formatGanziWithHanja(currentCycle.ganzi)} 대운</strong> ·{' '}
                   {currentCycle.ageLabel} · <strong>{currentCycle.phase}</strong> 구간을 지나고 있어요.
                 </p>
               ) : (

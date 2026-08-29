@@ -16,6 +16,7 @@ import {
   buildSituationActionLine,
   buildSituationClosing,
 } from './situation-honor';
+import { ganziToKorean } from '@/lib/saju/terminology';
 
 export interface SajuNarrativeChip {
   label: string;
@@ -249,19 +250,6 @@ function buildYongsinSentence({
 // 2026-05-20 V2-5 PR V — 사용자 본문 노출 시 한자 제거. 한글만 표시.
 //   이전 `'경오(庚午)'` 가 본문 한자 범벅 + 가독성 ↓ + spec §3 룰 1 (한자 금지) 위반.
 //   chip 등 메타 영역은 한자 보존 가능하나 narrative 본문 *문장 안* 에는 한글만.
-const STEM_HANJA_TO_KOREAN: Record<string, string> = {
-  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
-  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
-};
-const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
-  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
-  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
-};
-function ganziToKorean(ganzi: string): string {
-  const stem = STEM_HANJA_TO_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
-  const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
-  return `${stem}${branch}`;
-}
 /**
  * 본문 인용용 — 한글만 (한자 괄호 X). chip 메타 영역 분리.
  *   "경오 대운" 형태로 자연 한국어. dayKorean 미산정 시 ganzi raw 표시.

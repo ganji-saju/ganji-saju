@@ -18,6 +18,7 @@ import {
   type SinsalHit,
 } from '@/lib/today-fortune/sinsal-comprehensive';
 import type { Branch, Stem } from '@/lib/today-fortune/iljin-rules';
+import { ganziToKorean } from '@/lib/saju/terminology';
 
 export type TaekilPurpose =
   | 'wedding' // 결혼·약혼
@@ -115,10 +116,6 @@ const KOR_BRANCH: Record<string, string> = {
   子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
   午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
 };
-
-function ganziToKorean(ganzi: string): string {
-  return (KOR_STEM[ganzi.charAt(0)] ?? '') + (KOR_BRANCH[ganzi.charAt(1)] ?? '');
-}
 
 function getGradeFromScore(score: number): TaekilDayResult['grade'] {
   if (score >= 90) return '최고';

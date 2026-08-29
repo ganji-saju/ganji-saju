@@ -4,28 +4,12 @@
 
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
+import { formatGanziWithHanja } from '@/lib/saju/terminology';
 
 // 한자 ganzi → 한글 발음. "丁酉" → "정유".
-const STEM_HANJA_TO_KOREAN: Record<string, string> = {
-  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
-  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
-};
-const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
-  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
-  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
-};
-function ganziToKorean(ganzi: string): string {
-  const stem = STEM_HANJA_TO_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
-  const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
-  return `${stem}${branch}`;
-}
-function withKoreanGanzi(ganzi: string): string {
-  const korean = ganziToKorean(ganzi);
-  return korean ? `${korean}(${ganzi})` : ganzi;
-}
 
 function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defaultOpen: boolean }) {
-  const ganziLabel = withKoreanGanzi(cycle.ganzi);
+  const ganziLabel = formatGanziWithHanja(cycle.ganzi);
   const phaseColor =
     cycle.phase === '성장기'
       ? 'var(--app-jade)'
@@ -262,7 +246,7 @@ export function DaewoonSection({ cycles }: { cycles: LifetimeMajorLuckCycle[] })
         >
           지금은{' '}
           <strong className="text-[var(--app-pink-strong)]">
-            {withKoreanGanzi(currentCycle.ganzi)} 대운
+            {formatGanziWithHanja(currentCycle.ganzi)} 대운
           </strong>{' '}
           · {currentCycle.ageLabel} · <strong>{currentCycle.phase}</strong> 구간을 지나고 있어요.
         </p>

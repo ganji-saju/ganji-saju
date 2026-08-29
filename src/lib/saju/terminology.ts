@@ -42,6 +42,22 @@ const LONE_GANZI = new RegExp(`[${STEMS}${BRANCHES}]`, 'g');
  * 문자열 안의 간지 한자를 한글 음으로 바꾼다(己未 → 기미, 戌 → 술).
  * 쌍을 먼저 처리해 '기미'가 '기'+'미' 로 쪼개지지 않게 한다.
  */
+/** 간지 → 한글 음만(己未 → 기미). 모르는 글자면 빈 문자열(호출부가 원본으로 폴백). */
+export function ganziToKorean(ganzi: string): string {
+  const stem = STEM_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
+  const branch = BRANCH_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
+  return `${stem}${branch}`;
+}
+
+/**
+ * 간지 → `한글(한자)`(己未 → 기미(己未)). 대운·일주처럼 **한자 정체성을 같이 보여주는**
+ * 자리 전용이다. 2026-05-20 "본문·칩은 한글만" 정책의 예외라 새로 쓰기 전에 정책을 확인할 것.
+ */
+export function formatGanziWithHanja(ganzi: string): string {
+  const korean = ganziToKorean(ganzi);
+  return korean ? `${korean}(${ganzi})` : ganzi;
+}
+
 export function koreanizeGanzi(value: string | null | undefined): string {
   if (!value) return '';
   return value

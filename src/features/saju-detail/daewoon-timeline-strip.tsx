@@ -5,25 +5,10 @@
 
 import { useEffect, useRef } from 'react';
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
+import { ganziToKorean } from '@/lib/saju/terminology';
 
 interface Props {
   cycles: LifetimeMajorLuckCycle[];
-}
-
-// 한자 ganzi → 한글 라벨. server 와 동일 매핑을 client 측에 inline (서버 함수는
-// client 컴포넌트 prop 으로 직렬화 불가).
-const STEM_HANJA_TO_KOREAN: Record<string, string> = {
-  甲: '갑', 乙: '을', 丙: '병', 丁: '정', 戊: '무',
-  己: '기', 庚: '경', 辛: '신', 壬: '임', 癸: '계',
-};
-const BRANCH_HANJA_TO_KOREAN: Record<string, string> = {
-  子: '자', 丑: '축', 寅: '인', 卯: '묘', 辰: '진', 巳: '사',
-  午: '오', 未: '미', 申: '신', 酉: '유', 戌: '술', 亥: '해',
-};
-function ganziToKorean(ganzi: string): string {
-  const stem = STEM_HANJA_TO_KOREAN[ganzi.charAt(0) ?? ''] ?? '';
-  const branch = BRANCH_HANJA_TO_KOREAN[ganzi.charAt(1) ?? ''] ?? '';
-  return `${stem}${branch}`;
 }
 
 const CARD_WIDTH = 82;
