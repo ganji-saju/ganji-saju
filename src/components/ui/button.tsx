@@ -14,7 +14,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-[var(--app-pink)]/70 bg-[var(--app-pink)] text-white shadow-[0_14px_34px_rgba(216,27,114,0.22)] hover:-translate-y-0.5 hover:bg-[var(--app-pink-strong)] hover:shadow-[0_18px_42px_rgba(216,27,114,0.28)]",
+          "border-[var(--app-pink)]/70 bg-[var(--app-pink)] text-white shadow-[0_14px_34px_rgba(142,42,32,0.22)] hover:-translate-y-0.5 hover:bg-[var(--app-pink-strong)] hover:shadow-[0_18px_42px_rgba(142,42,32,0.28)]",
         outline:
           "border-[var(--app-pink)]/32 bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)] hover:-translate-y-0.5 hover:bg-white hover:text-[var(--app-ink)] aria-expanded:bg-[var(--app-pink-soft)] aria-expanded:text-[var(--app-pink-strong)]",
         secondary:

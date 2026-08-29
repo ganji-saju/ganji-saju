@@ -230,7 +230,7 @@ function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defa
           <p
             className="rounded-[12px] p-3 text-[14.4px] leading-[1.7] text-[var(--app-ink)]"
             style={{
-              background: 'rgba(15,23,42,0.04)',
+              background: 'rgba(28,26,23,0.04)',
               border: '1px solid var(--app-line)',
               wordBreak: 'keep-all',
             }}

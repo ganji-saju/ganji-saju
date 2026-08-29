@@ -76,7 +76,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
       style={{
         background:
           'linear-gradient(135deg, var(--app-pink) 0%, var(--app-pink-strong) 100%)',
-        boxShadow: '0 18px 40px rgba(216,27,114,0.28)',
+        boxShadow: '0 18px 40px rgba(142,42,32,0.28)',
         padding: 22,
       }}
     >

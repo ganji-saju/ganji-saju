@@ -87,7 +87,7 @@ const TONES: Record<ToneKey, {
   border: string;
   innerBorder: string;
 }> = {
-  pink: { accent: 'var(--app-pink-strong)', soft: 'var(--app-pink-soft)', border: 'var(--app-pink-line)', innerBorder: 'rgba(216,27,114,0.18)' },
+  pink: { accent: 'var(--app-pink-strong)', soft: 'var(--app-pink-soft)', border: 'var(--app-pink-line)', innerBorder: 'rgba(142,42,32,0.18)' },
   jade: { accent: 'var(--app-jade)', soft: '#e8f5ee', border: 'rgba(45,135,88,0.22)', innerBorder: 'rgba(45,135,88,0.18)' },
   amber: { accent: '#b87a14', soft: '#fdf6e7', border: 'rgba(184,122,20,0.22)', innerBorder: 'rgba(184,122,20,0.18)' },
   coral: { accent: 'var(--app-coral)', soft: '#fdecec', border: 'rgba(198,69,69,0.22)', innerBorder: 'rgba(198,69,69,0.18)' },
@@ -210,7 +210,7 @@ function LifetimeSummaryCard({
   return (
     <Link
       href={href}
-      className="group block rounded-[16px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(216,27,114,0.12)]"
+      className="group block rounded-[16px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(142,42,32,0.12)]"
       style={{ borderColor: palette.innerBorder }}
     >
       <div className="flex items-start gap-3">
@@ -359,7 +359,7 @@ function MajorLuckTimeline({
               style={{
                 background: cycle.isCurrent ? palette.accent : '#fff',
                 border: `2px solid ${cycle.isCurrent ? palette.accent : 'var(--app-pink-line)'}`,
-                boxShadow: cycle.isCurrent ? '0 4px 12px rgba(216,27,114,0.35)' : undefined,
+                boxShadow: cycle.isCurrent ? '0 4px 12px rgba(142,42,32,0.35)' : undefined,
               }}
             >
               {cycle.isCurrent ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
@@ -370,7 +370,7 @@ function MajorLuckTimeline({
               style={{
                 borderColor: cycle.isCurrent ? palette.accent : 'var(--app-line)',
                 background: cycle.isCurrent ? palette.soft : '#fff',
-                boxShadow: cycle.isCurrent ? '0 14px 28px -16px rgba(216,27,114,0.22)' : undefined,
+                boxShadow: cycle.isCurrent ? '0 14px 28px -16px rgba(142,42,32,0.22)' : undefined,
               }}
             >
               <summary className="flex cursor-pointer list-none flex-col gap-2 p-4 [&::-webkit-details-marker]:hidden">
@@ -392,7 +392,7 @@ function MajorLuckTimeline({
                       className="rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                       style={{
                         background: 'var(--app-ink)',
-                        boxShadow: '0 4px 10px rgba(15,23,42,0.22)',
+                        boxShadow: '0 4px 10px rgba(28,26,23,0.22)',
                       }}
                     >
                       ✦ 현재 흐름
@@ -949,13 +949,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         style={{
           background: 'linear-gradient(180deg, var(--app-pink-soft) 0%, #fff 100%)',
           borderColor: 'var(--app-pink-line)',
-          boxShadow: '0 22px 50px -28px rgba(216,27,114,0.22)',
+          boxShadow: '0 22px 50px -28px rgba(142,42,32,0.22)',
         }}
       >
         <span
           aria-hidden="true"
           className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(255,79,154,0.18), transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(179,55,42,0.18), transparent 70%)' }}
         />
 
         <div className="relative flex items-start gap-3">
@@ -963,7 +963,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
             className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[25.3px] font-extrabold text-white"
             style={{
               background: 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))',
-              boxShadow: '0 10px 22px rgba(216,27,114,0.32)',
+              boxShadow: '0 10px 22px rgba(142,42,32,0.32)',
               fontFamily: 'var(--font-han)',
             }}
             aria-hidden="true"
@@ -1225,7 +1225,7 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
         <div className="mt-4">
           <Link
             href={report.yearlyAppendix.ctaAnchor}
-            className="inline-flex h-11 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-11 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
           >
             {report.yearlyAppendix.ctaLabel}
           </Link>

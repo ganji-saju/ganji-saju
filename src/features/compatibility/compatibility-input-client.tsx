@@ -616,7 +616,7 @@ export function CompatibilityInputClient({
                     borderWidth: active ? 2 : 1,
                     padding: active ? 'calc(0.875rem - 1px)' : '0.875rem',
                     boxShadow: active
-                      ? '0 12px 26px rgba(216,27,114,0.18), 0 2px 6px rgba(216,27,114,0.10)'
+                      ? '0 12px 26px rgba(142,42,32,0.18), 0 2px 6px rgba(142,42,32,0.10)'
                       : '0 1px 0 rgba(17,17,20,0.03)',
                     transform: active ? 'translateY(-1px)' : 'translateY(0)',
                   }}
@@ -626,7 +626,7 @@ export function CompatibilityInputClient({
                       className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full text-white"
                       style={{
                         background: 'var(--app-pink)',
-                        boxShadow: '0 4px 10px rgba(216,27,114,0.35)',
+                        boxShadow: '0 4px 10px rgba(142,42,32,0.35)',
                         border: '2px solid #fff',
                       }}
                       aria-hidden="true"
@@ -642,7 +642,7 @@ export function CompatibilityInputClient({
                     style={{
                       background: active ? 'var(--app-pink)' : 'rgba(0,0,0,0.04)',
                       filter: active ? undefined : 'grayscale(0.05)',
-                      boxShadow: active ? '0 6px 14px rgba(216,27,114,0.28)' : undefined,
+                      boxShadow: active ? '0 6px 14px rgba(142,42,32,0.28)' : undefined,
                     }}
                     aria-hidden="true"
                   >
@@ -864,7 +864,7 @@ export function CompatibilityInputClient({
           <button
             type="button"
             onClick={submitManualCompatibility}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             style={{ background: 'var(--app-pink)' }}
           >
             이 정보로 궁합 보기 →
@@ -879,7 +879,7 @@ export function CompatibilityInputClient({
           <button
             type="button"
             onClick={submitManualCompatibility}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             style={{ background: 'var(--app-pink)' }}
           >
             이 정보로 궁합 보기 →

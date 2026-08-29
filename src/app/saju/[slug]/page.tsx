@@ -738,7 +738,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {scoreUnlocked ? (
               <article
                 className="rounded-[18px] p-5 text-white"
-                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(15,23,42,0.18)' }}
+                style={{ background: 'var(--app-ink)', boxShadow: '0 18px 44px rgba(28,26,23,0.18)' }}
               >
                 <div
                   className="text-[12.6px] font-extrabold uppercase tracking-[0.04em]"
@@ -817,7 +817,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               className="rounded-[18px] p-5 text-white"
               style={{
                 background: 'var(--app-ink)',
-                boxShadow: '0 18px 44px rgba(15,23,42,0.18)',
+                boxShadow: '0 18px 44px rgba(28,26,23,0.18)',
               }}
             >
               <div
@@ -843,7 +843,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                     product: 'dialogue',
                     from: 'result_next_step',
                   }}
-                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(236,72,153,0.32)]"
+                  className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
                 >
                   선생님과 대화하기 →
                 </TrackedLink>

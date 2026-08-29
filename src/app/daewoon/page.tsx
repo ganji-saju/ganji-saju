@@ -94,7 +94,7 @@ export default function DaewoonPage() {
           </div>
 
           <div className="mt-5 gangi-card-panel p-4">
-            <GangiMetricBar label="올해 움직임" value={88} color="#e6549a" />
+            <GangiMetricBar label="올해 움직임" value={88} color="var(--app-pink)" />
           </div>
 
           <Link href="/saju/new?focus=year&product=year-core" className="mt-5 flex h-12 items-center justify-center rounded-[0.9rem] bg-[var(--app-pink)] text-base font-bold text-white">
@@ -121,7 +121,7 @@ export default function DaewoonPage() {
             </span>
             <Link
               href="/saju/new?focus=year&product=year-core"
-              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(216,27,114,0.30)]"
+              className="inline-flex h-12 flex-1 items-center justify-center whitespace-nowrap rounded-[12px] bg-[var(--app-pink)] px-4 text-[16.1px] font-extrabold text-white no-underline shadow-[0_10px_24px_rgba(142,42,32,0.30)]"
             >
               올해 흐름 보기
             </Link>

@@ -24,12 +24,13 @@ export function ReportPrintActions({ slug, backHref }: ReportPrintActionsProps) 
     //   밑으로 파고들어 버튼이 잘렸다(서브헤더 #698 과 같은 원인). 이 페이지는
     //   header={false} 라 모바일엔 헤더가 없고 PC 에만 mega-nav 가 선다 —
     //   StickyHeaderOffset 이 흘리는 실측 높이를 쓰면 두 경우가 한 식으로 맞는다.
-    <div className="pdf-print-actions sticky top-[calc(var(--app-header-height,0px)+1rem)] z-20 mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-[rgba(8,10,18,0.92)] p-3 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur">
+    // 2026-08-29 — 이 바만 개편 전 어두운 슬래브(rgba(8,10,18,.92)) + 옛 핑크 글씨(#f7a8cc)로
+    //   남아 있었다. 문서는 한지 톤인데 바만 검어서 화면에서 이물처럼 떴다. 주변과 같은
+    //   한지 카드로 맞추고 강조는 인주 한 곳(라벨)에만 둔다.
+    <div className="pdf-print-actions sticky top-[calc(var(--app-header-height,0px)+1rem)] z-20 mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-[1.25rem] border border-[var(--app-line)] bg-[var(--app-surface-strong)] p-3 shadow-[0_18px_42px_-24px_rgba(28,26,23,0.38)] backdrop-blur">
       <div>
-        {/* 바 배경이 어두운 rgba(8,10,18,.92) 라 라이트 테마 변수(gold-soft·copy-muted)는
-            어두운 글씨→안 보인다. 어두운 바 전용 밝은 색으로 고정. */}
-        <div className="app-caption font-bold text-[#f7a8cc]">PDF 저장</div>
-        <p className="mt-1 text-base text-white/75">
+        <div className="app-caption font-bold text-[var(--app-pink-strong)]">PDF 저장</div>
+        <p className="mt-1 text-base text-[var(--app-copy-muted)]">
           버튼을 누른 뒤 인쇄 창에서 “PDF로 저장”을 선택하세요.
         </p>
       </div>

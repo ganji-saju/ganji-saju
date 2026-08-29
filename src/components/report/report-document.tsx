@@ -200,8 +200,8 @@ function LineChart({
     >
       <defs>
         <linearGradient id="rpLineFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(216,27,114,0.18)" />
-          <stop offset="100%" stopColor="rgba(216,27,114,0)" />
+          <stop offset="0%" stopColor="rgba(142,42,32,0.18)" />
+          <stop offset="100%" stopColor="rgba(142,42,32,0)" />
         </linearGradient>
       </defs>
       <path d={areaPath} fill="url(#rpLineFill)" />
@@ -268,7 +268,7 @@ function MonthChart({
       role="img"
       aria-label="12개월 흐름 그래프"
     >
-      <path d={linePath} fill="none" stroke="rgba(216,27,114,0.55)" strokeWidth={1.6} />
+      <path d={linePath} fill="none" stroke="rgba(142,42,32,0.55)" strokeWidth={1.6} />
       {scores.map((s, i) => {
         const isBest = s.month === bestMonth;
         const isPeak = s.month === peakMonth;
@@ -278,7 +278,7 @@ function MonthChart({
               cx={x(i)}
               cy={y(s.score)}
               r={isBest ? 3.4 : 2.4}
-              fill={isBest ? PDF_COLORS.pink : isPeak ? PDF_COLORS.pinkStrong : 'rgba(216,27,114,0.5)'}
+              fill={isBest ? PDF_COLORS.pink : isPeak ? PDF_COLORS.pinkStrong : 'rgba(142,42,32,0.5)'}
             />
             {isBest ? (
               <text x={x(i)} y={y(s.score) - 8} textAnchor="middle" fontSize={10} fill={PDF_COLORS.pink}>

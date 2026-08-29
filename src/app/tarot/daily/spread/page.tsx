@@ -218,7 +218,7 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
             </Link>
             <Link
               href={sajuHref}
-              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[12px] bg-[var(--app-pink)] px-4 py-3 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)]"
             >
               <Bookmark className="h-4 w-4" />
               사주로 이어보기

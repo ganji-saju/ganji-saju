@@ -54,7 +54,7 @@ const TONE_META: Record<
   decision: {
     label: '결정일',
     description: '계약, 신청, 발표처럼 방향을 정하기 좋은 날',
-    cellClassName: 'border-[var(--app-pink)]/55 bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)] shadow-[0_4px_12px_rgba(216,27,114,0.18)]',
+    cellClassName: 'border-[var(--app-pink)]/55 bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)] shadow-[0_4px_12px_rgba(142,42,32,0.18)]',
     badgeClassName: 'border-[var(--app-pink-line)] bg-[var(--app-pink-soft)] text-[var(--app-pink-strong)]',
     railClassName: 'bg-[var(--app-pink)]',
     icon: Target,
@@ -145,7 +145,7 @@ function MonthChip({
         borderStyle: 'solid',
         borderColor: active ? 'var(--app-pink)' : 'var(--app-line)',
         color: active ? '#fff' : 'var(--app-copy-muted)',
-        boxShadow: active ? '0 6px 14px rgba(216,27,114,0.28)' : undefined,
+        boxShadow: active ? '0 6px 14px rgba(142,42,32,0.28)' : undefined,
       }}
     >
       {month}월
@@ -647,7 +647,7 @@ export default function FortuneCalendarPanel({
                 style={{
                   background: hasLifetimeAccess ? 'var(--app-pink)' : '#4a5cb8',
                   boxShadow: hasLifetimeAccess
-                    ? '0 4px 10px rgba(216,27,114,0.28)'
+                    ? '0 4px 10px rgba(142,42,32,0.28)'
                     : '0 4px 10px rgba(74,92,184,0.28)',
                 }}
               >
@@ -841,7 +841,7 @@ export default function FortuneCalendarPanel({
                                 outline: '2px solid var(--app-pink)',
                                 outlineOffset: 2,
                                 transform: 'translateY(-1px)',
-                                boxShadow: '0 8px 18px rgba(216,27,114,0.22)',
+                                boxShadow: '0 8px 18px rgba(142,42,32,0.22)',
                               }
                             : undefined
                         }

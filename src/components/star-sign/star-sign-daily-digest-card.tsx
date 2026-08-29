@@ -95,7 +95,7 @@ export function StarSignDailyDigestCard() {
               <Link
                 key={entry.slug}
                 href={`/star-sign/${entry.slug}`}
-                className="flex items-center gap-2 rounded-[10px] border bg-white px-2.5 py-2"
+                className="flex min-w-0 items-center gap-2 rounded-[10px] border bg-white px-2.5 py-2"
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <span
@@ -104,11 +104,11 @@ export function StarSignDailyDigestCard() {
                 >
                   {idx + 1}
                 </span>
-                <span className="text-[20.7px]" style={{ color: elementHex }} aria-hidden="true">
+                <span className="shrink-0 text-[20.7px]" style={{ color: elementHex }} aria-hidden="true">
                   {entry.symbol}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14.4px] font-extrabold text-[var(--app-ink)]">
+                  <div className="truncate text-[14.4px] font-extrabold text-[var(--app-ink)]">
                     {entry.label}
                   </div>
                   <div
@@ -119,7 +119,7 @@ export function StarSignDailyDigestCard() {
                   </div>
                 </div>
                 <div
-                  className="text-[17.3px] font-extrabold tabular-nums"
+                  className="shrink-0 text-[17.3px] font-extrabold tabular-nums"
                   style={{ color: rankColor }}
                 >
                   {entry.overall}

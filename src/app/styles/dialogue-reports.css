@@ -109,11 +109,11 @@
 }
 
 .gangi-chat-bubble-user {
-  border-color: rgba(255, 79, 154, 0.2);
+  border-color: rgba(179, 55, 42, 0.2);
   border-top-right-radius: 0.45rem;
   background: var(--app-pink);
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(255, 79, 154, 0.18);
+  box-shadow: 0 10px 24px rgba(179, 55, 42, 0.18);
 }
 
 .gangi-chat-composer {
@@ -150,9 +150,9 @@
 }
 
 .gangi-chat-input:focus {
-  border-color: rgba(255, 79, 154, 0.6);
+  border-color: rgba(179, 55, 42, 0.6);
   background: #ffffff;
-  box-shadow: 0 0 0 0.2rem rgba(255, 79, 154, 0.1);
+  box-shadow: 0 0 0 0.2rem rgba(179, 55, 42, 0.1);
 }
 
 .gangi-chat-send {
@@ -164,7 +164,7 @@
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 700;
-  box-shadow: 0 10px 24px rgba(255, 79, 154, 0.18);
+  box-shadow: 0 10px 24px rgba(179, 55, 42, 0.18);
 }
 
 .gangi-chat-send:disabled {

@@ -41,7 +41,7 @@ export function ZodiacBirthCheck() {
         type="button"
         onClick={() => setOpen(true)}
         className="mt-5 inline-flex h-12 items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold text-white"
-        style={{ background: 'var(--app-pink)', boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)' }}
+        style={{ background: 'var(--app-pink)', boxShadow: '0 12px 28px rgba(142, 42, 32, 0.32)' }}
       >
         생년월일로 내 띠 확인
       </button>
@@ -125,7 +125,7 @@ export function ZodiacBirthCheck() {
         type="submit"
         disabled={!canSubmit}
         className="inline-flex h-12 w-full items-center justify-center rounded-[12px] px-5 text-[15.5px] font-extrabold text-white transition disabled:opacity-50"
-        style={{ background: 'var(--app-pink)', boxShadow: '0 12px 28px rgba(216, 27, 114, 0.32)' }}
+        style={{ background: 'var(--app-pink)', boxShadow: '0 12px 28px rgba(142, 42, 32, 0.32)' }}
       >
         내 띠 보기 →
       </button>

@@ -127,7 +127,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               fontSize: 16.1,
               fontWeight: 800,
               cursor: 'pointer',
-              boxShadow: '0 12px 28px rgba(216,27,114,0.32)',
+              boxShadow: '0 12px 28px rgba(142,42,32,0.32)',
             }}
           >
             다시 시도하기

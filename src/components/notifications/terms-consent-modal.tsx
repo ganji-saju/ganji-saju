@@ -213,7 +213,7 @@ export function TermsConsentModal({
             onClick={handleConfirmClick}
             disabled={!requiredAllChecked}
             aria-disabled={!requiredAllChecked}
-            className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.32)] disabled:bg-[var(--app-copy-soft)] disabled:opacity-60 disabled:shadow-none"
+            className="inline-flex h-12 items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 text-[16.7px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.32)] disabled:bg-[var(--app-copy-soft)] disabled:opacity-60 disabled:shadow-none"
           >
             {confirmLabel}
           </button>

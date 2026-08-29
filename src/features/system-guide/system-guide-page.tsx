@@ -102,7 +102,7 @@ export function SystemGuidePage() {
           <button
             type="button"
             onClick={() => openSystemGuide(0)}
-            className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(216,27,114,0.26)]"
+            className="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-[12px] bg-[var(--app-pink)] px-6 text-[15px] font-extrabold text-white shadow-[0_12px_28px_rgba(142,42,32,0.26)]"
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             처음부터 안내 보기
