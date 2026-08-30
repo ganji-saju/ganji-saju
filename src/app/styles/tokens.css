@@ -124,6 +124,10 @@
   --app-pink-soft: #f3e4dd;
   --app-pink-soft-strong: #7a2118;
   --app-pink-line: rgba(179, 55, 42, 0.28);
+  /* 2026-08-31 — **먹 배경 위** 인주. --app-pink(#b3372a)를 --app-ink(#1c1a17) 위에 올리면
+     대비 2.89 로 본문 기준(4.5) 미달이다(렌더 스윕이 홈 "NEW USER" 배너에서 검출).
+     색조는 인주 그대로 두고 명도만 올려 4.74 를 만든다. 어두운 면 위의 인주는 이걸 쓴다. */
+  --app-pink-on-ink: #d9604f;
   --app-gold: #a5813c; /* 금박 복원(B안) — 핑크 별칭 해제 */
   --app-gold-bright: #c09b54;
   --app-gold-soft: #dcc79a;

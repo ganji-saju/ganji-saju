@@ -753,7 +753,8 @@ export function GangiHomeBottomCta({ onTrack }: { onTrack?: () => void }) {
             style={{
               fontSize: 15,
               fontWeight: 800,
-              color: 'var(--app-pink)',
+              // 먹 배경 위라 인주 원색은 대비 2.89 로 미달이다(15px 은 큰 글씨가 아니라 4.5 필요).
+              color: 'var(--app-pink-on-ink)',
               letterSpacing: '0.04em',
             }}
           >
