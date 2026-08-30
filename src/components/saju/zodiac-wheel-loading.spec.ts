@@ -1,6 +1,8 @@
-// 2026-08-29 — 로딩 화면이 12지신 모션 에셋을 직접 참조한다. 파일이 하나라도 없으면
-//   로딩 한가운데가 404 로 비고, 로딩은 그 자체로 "화면이 멈춘 것처럼" 보이는 자리다.
-//   에셋을 옮기거나 이름을 바꾸면 여기서 먼저 걸린다(home-banner-assets 와 같은 취지).
+// 2026-08-29 — 로딩 화면이 모션 에셋을 직접 참조한다. 파일이 없으면 로딩 한가운데가 404 로
+//   비고, 로딩은 그 자체로 "화면이 멈춘 것처럼" 보이는 자리다. 에셋을 옮기거나 이름을
+//   바꾸면 여기서 먼저 걸린다(home-banner-assets 와 같은 취지).
+// 2026-08-30 — 12종 순환에서 **12지신이 함께 선 원반 1개**로 바뀌었다. 지킬 것도 바뀐다:
+//   에셋 2개(mp4·poster)와, 모바일에서 자동재생을 살려주는 속성 3개.
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -8,28 +10,30 @@ import { describe, expect, it } from 'vitest';
 const SOURCE = 'src/components/saju/zodiac-wheel-loading.tsx';
 const MOTION_DIR = 'public/images/gangi/guardians/motion';
 
-/** 컴포넌트가 들고 있는 12지 id 목록(BRANCHES 의 id 필드). */
-function branchIds(): string[] {
-  const src = fs.readFileSync(path.join(process.cwd(), SOURCE), 'utf8');
-  const block = src.match(/const BRANCHES = \[([\s\S]*?)\] as const;/)?.[1];
-  if (!block) throw new Error('BRANCHES 배열을 못 찾았다 — 테스트가 소스 구조를 따라가야 한다');
-  return [...block.matchAll(/id:\s*'([a-z0-9-]+)'/g)].map((m) => m[1]!);
-}
+const source = fs.readFileSync(path.join(process.cwd(), SOURCE), 'utf8');
 
 describe('12지신 로딩 화면', () => {
-  const ids = branchIds();
-
-  it('12지가 빠짐없이 12개다', () => {
-    expect(ids).toHaveLength(12);
-    expect(new Set(ids).size).toBe(12);
+  it('원반 모션과 포스터가 실제로 있다', () => {
+    for (const file of ['zodiac-wheel.mp4', 'zodiac-wheel.webp']) {
+      const full = path.join(process.cwd(), MOTION_DIR, file);
+      expect(fs.existsSync(full), `${MOTION_DIR}/${file} 없음 — 로딩 한가운데가 404`).toBe(true);
+    }
   });
 
-  it('각 지지의 모션 영상과 포스터가 실제로 있다', () => {
-    for (const id of ids) {
-      for (const ext of ['mp4', 'webp']) {
-        const file = path.join(process.cwd(), MOTION_DIR, `${id}.${ext}`);
-        expect(fs.existsSync(file), `${MOTION_DIR}/${id}.${ext} 없음 — 로딩 가운데가 404`).toBe(true);
-      }
+  it('컴포넌트가 참조하는 경로가 그 파일들이다', () => {
+    // 상수만 바꾸고 파일은 안 옮긴 경우를 잡는다(위 테스트는 파일만 본다).
+    for (const ref of ['zodiac-wheel.mp4', 'zodiac-wheel.webp']) {
+      expect(source).toContain(ref);
+    }
+  });
+
+  it('모바일 자동재생 속성(muted·playsInline·loop)이 살아 있다', () => {
+    // 셋 중 하나만 빠져도 iOS Safari 는 재생을 거부한다 — 화면엔 포스터가 굳어 있고
+    // 에러도 안 난다. "모션이 안 도는데 원인이 안 보이는" 대표 유형이라 값으로 잡는다.
+    const video = source.match(/<video[\s\S]*?\/>/)?.[0];
+    expect(video, '<video> 를 못 찾았다 — 테스트가 소스 구조를 따라가야 한다').toBeTruthy();
+    for (const attr of ['muted', 'playsInline', 'loop']) {
+      expect(video).toContain(attr);
     }
   });
 
