@@ -66,3 +66,30 @@ export function pillarCellLabels(pillar: SajuPillar | null, isDayPillar: boolean
     branch: `${koreanizeGanzi(pillar.branch)} · ${branchGod}`,
   };
 }
+
+// 2026-08-30 #714 — 네 기둥을 화면에 늘어놓는 순서.
+//
+//   같은 결과 페이지 안에서 사주팔자 블록은 연→월→일→시, 바로 아래 도식은 시→일→월→연
+//   으로 **반대**였다(사용자 제보). 평생리포트 패널도 연→시 방향이었다.
+//   만세력 관례이자 도식·PDF 가 이미 쓰던 **시→일→월→연** 으로 통일한다.
+//
+//   ⚠️ 새로 네 기둥을 늘어놓는 화면을 만들면 이 상수를 써라. 배열을 또 손으로 적으면
+//      순서가 갈리고, 갈려도 각 화면만 보면 멀쩡해 보인다(그래서 오래 안 잡혔다).
+export const PILLAR_DISPLAY_ORDER = ['시', '일', '월', '연'] as const;
+export type PillarKey = (typeof PILLAR_DISPLAY_ORDER)[number];
+
+export function pillarByKey(
+  pillars: SajuDataV1['pillars'] | SajuDataV2['pillars'],
+  key: PillarKey
+): SajuPillar | null {
+  switch (key) {
+    case '시':
+      return pillars.hour ?? null;
+    case '일':
+      return pillars.day;
+    case '월':
+      return pillars.month;
+    case '연':
+      return pillars.year;
+  }
+}

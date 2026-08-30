@@ -5,14 +5,20 @@
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import type { ReadingRecord } from '@/lib/saju/readings';
 import { SajuRelationsSymbolsCard } from '@/components/saju/saju-relations-symbols-card';
-import { pillarCellLabels } from '../saju-screen-helpers';
+import {
+  PILLAR_DISPLAY_ORDER,
+  pillarByKey,
+  pillarCellLabels,
+  type PillarKey,
+} from '../saju-screen-helpers';
 
-const PILLAR_LABELS: Array<{ key: '시' | '일' | '월' | '년'; label: string; meaning: string }> = [
-  { key: '시', label: '시주', meaning: '자식·말년·결과' },
-  { key: '일', label: '일주', meaning: '나·배우자·중심' },
-  { key: '월', label: '월주', meaning: '직장·부모·현재' },
-  { key: '년', label: '연주', meaning: '조상·어린 시절' },
-];
+/** 기둥별 의미. 순서는 PILLAR_DISPLAY_ORDER 가 정한다(여기서 또 적지 않는다). */
+const PILLAR_MEANING: Record<PillarKey, string> = {
+  시: '자식·말년·결과',
+  일: '나·배우자·중심',
+  월: '직장·부모·현재',
+  연: '조상·어린 시절',
+};
 
 export function MyeongsikSection({
   sajuData,
@@ -40,15 +46,8 @@ export function MyeongsikSection({
           각 글자 밑은 <strong>읽는 음</strong>과 <strong>일간에서 본 역할</strong>이에요.
         </p>
         <div className="mt-3 grid grid-cols-4 gap-2">
-          {PILLAR_LABELS.map((item) => {
-            const pillar =
-              item.key === '시'
-                ? sajuData.pillars.hour
-                : item.key === '일'
-                  ? sajuData.pillars.day
-                  : item.key === '월'
-                    ? sajuData.pillars.month
-                    : sajuData.pillars.year;
+          {PILLAR_DISPLAY_ORDER.map((key) => {
+            const pillar = pillarByKey(sajuData.pillars, key);
             const stemColor = pillar?.stemElement
               ? ELEMENT_INFO[pillar.stemElement].textColor
               : 'var(--app-ink)';
@@ -56,17 +55,17 @@ export function MyeongsikSection({
               ? ELEMENT_INFO[pillar.branchElement].textColor
               : 'var(--app-ink)';
             // 한자 밑 라벨 = 한글 음 · 십신. 기둥마다 다르다(예전엔 '천간'·'지지' 가 4열 반복).
-            const cell = pillarCellLabels(pillar ?? null, item.key === '일');
+            const cell = pillarCellLabels(pillar, key === '일');
             return (
               <article
-                key={item.key}
+                key={key}
                 className="overflow-hidden rounded-[14px] border border-[var(--app-line)] bg-white text-center"
               >
                 <div
                   className="border-b border-[var(--app-line)] py-1.5 text-[12.1px] font-extrabold text-[var(--app-copy-soft)]"
                   style={{ background: 'rgba(0,0,0,0.02)' }}
                 >
-                  {item.label}
+                  {key}주
                 </div>
                 <div className="py-2.5">
                   <div
@@ -87,7 +86,7 @@ export function MyeongsikSection({
                   <div className="mt-0.5 text-[10.9px] text-[var(--app-copy-soft)]">{cell.branch}</div>
                 </div>
                 <div className="border-t border-[var(--app-line)] py-1.5 text-[10.9px] font-extrabold text-[var(--app-copy-muted)]">
-                  {item.meaning}
+                  {PILLAR_MEANING[key]}
                 </div>
               </article>
             );

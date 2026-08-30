@@ -35,6 +35,10 @@ import {
 } from '@/lib/saju/today-detail-links';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
 import { ganziToKorean } from '@/lib/saju/terminology';
+import {
+  PILLAR_DISPLAY_ORDER,
+  pillarByKey,
+} from '@/features/saju-detail/saju-screen-helpers';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Element } from '@/lib/saju/types';
 import { resolveReading } from '@/lib/saju/readings';
@@ -453,14 +457,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   flag(OPENAI_INTERPRET_TOTAL_REVIEW) + personalizationContext 있을 때만 LLM, 아니면 결정론 narrative.
   const totalReviewLLMActive = isTotalReviewLLMEnabled() && Boolean(personalizationContext);
 
-  const pillars = [
-    // 2026-08-30 #713 — '년주' → '연주'. 같은 페이지 아래 도식은 '연주' 라 한 화면에 두
-    //   표기가 섞여 있었다. 두음법칙상 年柱 는 '연주' 가 맞다.
-    { label: '연', pillar: sajuData.pillars.year },
-    { label: '월', pillar: sajuData.pillars.month },
-    { label: '일', pillar: sajuData.pillars.day },
-    { label: '시', pillar: sajuData.pillars.hour },
-  ];
+  // 2026-08-30 #713 — '년주' → '연주'(두음법칙). #714 — 순서를 도식·PDF 와 같은
+  //   시→일→월→연 으로. 이 블록만 반대라 한 화면에 두 방향이 섞여 있었다.
+  const pillars = PILLAR_DISPLAY_ORDER.map((key) => ({
+    label: key,
+    pillar: pillarByKey(sajuData.pillars, key),
+  }));
   // 2026-08-25 Phase 2 — 수호신 배정. 띠는 연도 계산이 아니라 연주 지지에서 파생
   //   (입춘 경계를 엔진이 이미 처리). 매핑 실패 시 카드 생략(null 안전).
   const guardian = guardianFromYearBranch(sajuData.pillars.year.branch);

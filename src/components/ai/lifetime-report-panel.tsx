@@ -1014,11 +1014,13 @@ export default function LifetimeReportPanel({ slug, targetYear }: Props) {
 
         {/* 4기둥 */}
         <div className="relative mt-4 grid grid-cols-4 gap-2">
+          {/* 2026-08-30 #714 — 연→시 였다. 결과 페이지 도식·PDF 와 같은 시→일→월→연 으로.
+              '년주' 도 두음법칙상 '연주' 가 맞다(결과 페이지와 표기 통일). */}
           {[
-            ['년주', report.pillars.year],
-            ['월주', report.pillars.month],
-            ['일주', report.pillars.day],
             ['시주', report.pillars.hour ?? '미입력'],
+            ['일주', report.pillars.day],
+            ['월주', report.pillars.month],
+            ['연주', report.pillars.year],
           ].map(([label, value]) => (
             <div
               key={label}
