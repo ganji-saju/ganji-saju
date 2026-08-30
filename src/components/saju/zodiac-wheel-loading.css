@@ -103,7 +103,8 @@
   to { transform: rotate(-360deg); }
 }
 
-/* 고리 한가운데 — 비어 있으면 미완성으로 보인다. 옅은 먹선 한 줄이 축을 만든다. */
+/* 고리 한가운데 — 옅은 먹선 원이 축을 만들고, 그 위에 12지 한자가 하나씩 박힌다.
+   #711 직후 제보: "가운데가 너무 밋밋해서 아무것도 안 나오는 것처럼 보인다." */
 .zodiac-loading-hub {
   position: absolute;
   left: 50%;
@@ -113,6 +114,55 @@
   transform: translate(-50%, -50%);
   border-radius: 9999px;
   border: 1px solid color-mix(in srgb, var(--app-ink, #1c1a17) 11%, transparent);
+}
+
+/* 한자 하나가 제 지지 방향(--fx/--fy)에서 날아와 살짝 눌렸다가(0.86) 펴지며 박힌다.
+   12개가 같은 keyframe 을 쓰고 animation-delay 로만 순서를 만든다 — JS 타이머가 없다.
+   ⚠️ duration 은 12칸 전체이고 보이는 구간은 앞 8.3%(=한 칸)뿐이다. 나머지는 opacity 0
+   으로 대기한다. 이렇게 해야 **항상 하나만** 떠 있다. */
+.zodiac-loading-stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-family: var(--font-han, serif);
+  font-size: 2.05rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--app-pink, #b3372a);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation-name: zl-stamp;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  animation-iteration-count: infinite;
+}
+
+@keyframes zl-stamp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--fx), var(--fy)) scale(1.7);
+  }
+  /* 1.2%(0.17s) 만에 또렷해진다 — 2% 로 뒀더니 앞 글자가 사라지고 다음 글자가 보이기까지
+     0.28초 동안 가운데가 비어 깜빡였다. "밋밋하다"를 고치러 온 자리라 그 공백이 제일 아깝다. */
+  1.2% { opacity: 0.9; }
+  /* 3.2%(0.44s) 에 도착. 처음엔 4.6%(0.64s)를 줬는데 한 칸 1.15초 중 **절반 이상을 날아오는
+     데 써서** 박혀 있는 시간이 0.36초뿐이었다 — 글자를 읽기도 전에 사라졌다. 비행을 줄이고
+     머무는 시간을 0.6초로 늘렸다. */
+  3.2% {
+    opacity: 1;
+    /* 박히는 순간 — 살짝 눌린다. */
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+  4.2% { transform: translate(-50%, -50%) scale(1.03); }
+  5% { transform: translate(-50%, -50%) scale(1); }
+  7.6% { opacity: 1; }
+  8.3% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 /* ── 카피 ──────────────────────────────────────────────────────── */
@@ -201,8 +251,14 @@
   .zodiac-loading,
   .zodiac-loading-ring,
   .zodiac-loading-face-img,
+  .zodiac-loading-stamp,
   .zodiac-loading-bar span {
     animation: none;
+  }
+
+  /* 애니메이션을 끄면 12개가 전부 opacity 0 이라 가운데가 다시 빈다 — 하나만 세워둔다. */
+  .zodiac-loading-stamp:first-child {
+    opacity: 1;
   }
 
   /* 단계 텍스트는 움직임 없이 전부 세로로 세운다(정보는 남기고 깜빡임만 제거). */

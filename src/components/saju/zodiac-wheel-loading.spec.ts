@@ -46,6 +46,29 @@ describe('12지신 로딩 화면', () => {
     expect(face).toBe(ring);
   });
 
+  it('한자 도장의 노출 구간이 12칸과 맞는다', () => {
+    // 도장 12개는 같은 keyframe 을 쓰고 animation-delay 로만 순서를 만든다. duration 은
+    // **12칸 전체**이고 보이는 구간은 앞 1/12(=8.3%)뿐이다. 지지를 늘리거나 줄이면
+    // duration 은 따라 변하는데 keyframe 의 8.3% 는 안 변한다 —
+    //   칸이 늘면 글자가 사라진 뒤 가운데가 오래 비고(밋밋해진다),
+    //   칸이 줄면 두 글자가 겹쳐 뜬다.
+    // 둘 다 에러 없이 "보기 이상한" 상태라 값으로 잡는다.
+    const block = css.match(/@keyframes zl-stamp\s*\{([\s\S]*?)\n\}/)?.[1];
+    expect(block, 'zl-stamp keyframe 을 못 찾았다').toBeTruthy();
+    // opacity 0 인 지점은 0%(출발) · 사라지는 지점 · 100%(대기) 셋이다. 가운데를 고른다.
+    const zeros = [...block!.matchAll(/([\d.]+)%\s*\{[^}]*opacity:\s*0[;\s}]/g)]
+      .map((m) => Number(m[1]))
+      .filter((n) => n > 0 && n < 100);
+    expect(zeros, '사라지는 지점을 못 찾았다').toHaveLength(1);
+    expect(zeros[0]).toBeCloseTo(100 / ids.length, 1);
+  });
+
+  it('도장 한자가 12지 순서 그대로다', () => {
+    const block = source.match(/const BRANCHES = \[([\s\S]*?)\] as const;/)![1];
+    const chars = [...block.matchAll(/char:\s*'(.)'/g)].map((m) => m[1]);
+    expect(chars.join('')).toBe('子丑寅卯辰巳午未申酉戌亥');
+  });
+
   it('보라 구버전 잔재(별입자·보라 그라데이션)가 남아 있지 않다', () => {
     // 개편 전 카드 색. 다시 들어오면 로딩만 옛 브랜드로 튄다.
     for (const stale of ['#1a0a2e', '#2e1156', '#45178a']) {
