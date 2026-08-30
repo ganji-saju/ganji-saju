@@ -830,7 +830,11 @@ async function handleDialogue(request: DialogueAiRequest) {
   const result = await generateAiText({
     ...prompt,
     fallbackText,
-    maxOutputTokens: yearlyBridge ? 420 : 600,
+    // 2026-08-31 — 600 은 한국어 답변에 모자랐다(실제 잘림 제보). 한국어는 토큰을 많이
+    //   먹어 600 토큰이 900자 남짓에서 끊긴다. 1000 으로 올린다.
+    //   ⚠️ 상한을 올려도 잘림은 없어지지 않는다 — openai-text 가 잘린 응답을 마지막 완결
+    //      문장까지 자르는 게 실제 방어선이다. 상한은 그 일이 **덜 일어나게** 할 뿐이다.
+    maxOutputTokens: yearlyBridge ? 420 : 1000,
     timeoutMs: yearlyBridge ? 12_000 : undefined,
     feature: 'chat',
     userId: user.id,

@@ -195,9 +195,27 @@ async function runGenerateAiText(
       return fallbackResult(request, 'empty_ai_response');
     }
 
+    // 2026-08-31 — **출력 상한에 걸려 잘린 응답**을 그대로 내보내지 않는다.
+    //   제보(캡처): 대화방 답변이 "…알려주시면 그 조건에 맞" 처럼 **단어 중간에서** 끊겼다.
+    //   원인: Responses API 의 status/incomplete_details 를 아무도 확인하지 않고
+    //   output_text 를 그대로 썼다. 한국어는 토큰을 많이 먹어 상한에 자주 닿는다.
+    //   → 잘렸으면 **마지막 완결 문장까지만** 남긴다. 문장 하나를 잃더라도 말이 끊긴 것보다 낫다.
+    const meta = response as unknown as {
+      status?: string;
+      incomplete_details?: { reason?: string } | null;
+    };
+    const truncated =
+      meta.status === 'incomplete' && meta.incomplete_details?.reason === 'max_output_tokens';
+    if (truncated) {
+      console.warn('[openai-text] 출력 상한에 걸려 잘렸다', {
+        maxOutputTokens: request.maxOutputTokens ?? 700,
+        chars: raw.length,
+      });
+    }
+
     // JSON mode 인 경우 { body } 파싱. 파싱 실패 시 raw 그대로 (defensive — schema strict
     // 이라 정상 응답은 항상 JSON 이지만 future API 변경에 대비).
-    let text = raw;
+    let text = truncated ? trimToLastSentence(raw) : raw;
     if (wantsJsonBody) {
       try {
         const parsed = JSON.parse(raw) as { body?: unknown };
@@ -245,4 +263,19 @@ async function runGenerateAiText(
       errorMessage
     );
   }
+}
+
+/**
+ * 잘린 응답을 **마지막 완결 문장까지만** 남긴다.
+ *
+ * 2026-08-31 — 대화방 답변이 "…알려주시면 그 조건에 맞" 처럼 단어 중간에서 끊겨 나갔다.
+ *   출력 상한에 걸린 응답을 그대로 내보낸 탓이다. 문장 하나를 잃더라도 말이 끊긴 것보다 낫다.
+ *
+ * ⚠️ 종결 부호가 없거나 너무 많이 잘려나가면(원문의 40% 미만) **원문을 그대로** 돌려준다 —
+ *    짧은 답을 통째로 버리면 아무 말도 안 하는 것보다 나쁘다.
+ *    한국어 문장은 '다.' '요.' '까?' 로 끝나므로 . ! ? 만 봐도 충분하다.
+ */
+export function trimToLastSentence(text: string): string {
+  const cut = text.match(/^[\s\S]*[.!?]/)?.[0]?.trim();
+  return cut && cut.length >= Math.floor(text.length * 0.4) ? cut : text;
 }
