@@ -16,7 +16,7 @@ import {
   buildSituationActionLine,
   buildSituationClosing,
 } from './situation-honor';
-import { ganziToKorean } from '@/lib/saju/terminology';
+import { ganziForBody, ganziToKorean } from '@/lib/saju/terminology';
 
 export interface SajuNarrativeChip {
   label: string;
@@ -254,9 +254,6 @@ function buildYongsinSentence({
  * 본문 인용용 — 한글만 (한자 괄호 X). chip 메타 영역 분리.
  *   "경오 대운" 형태로 자연 한국어. dayKorean 미산정 시 ganzi raw 표시.
  */
-function ganziForBody(ganzi: string): string {
-  return ganziToKorean(ganzi) || ganzi;
-}
 
 // 2026-05-20 V2-5 PR X — `withKoreanGanzi` 함수 제거 (chip 한자 정책 변경).
 //   chip 도 한글만 표시 (사주팔자 4 pillars 카드만 한자 정체성 유지).

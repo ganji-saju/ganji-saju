@@ -32,7 +32,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 //   중복 결제 진입을 유도하던 회귀. entitlement 확인 후 CTA 분기.
 import { toSlug } from '@/lib/saju/pillars';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
-import { formatGanziWithHanja } from '@/lib/saju/terminology';
+import { ganziForBody } from '@/lib/saju/terminology';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -119,7 +119,7 @@ export default async function SajuDeepPage({ params }: Props) {
   const yearZodiac = getYearZodiac(sajuData);
   const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
   const dayGanziHanja = sajuData.pillars.day.ganzi;
-  const dayGanziLabel = formatGanziWithHanja(dayGanziHanja);
+  const dayGanziLabel = ganziForBody(dayGanziHanja);
   const birthMeta = formatBirthMeta(sajuData);
   const currentAge = getCurrentAge(sajuData);
 
@@ -160,7 +160,7 @@ export default async function SajuDeepPage({ params }: Props) {
                     wordBreak: 'keep-all',
                   }}
                 >
-                  지금은 <strong className="text-[var(--app-pink-strong)]">{formatGanziWithHanja(currentCycle.ganzi)} 대운</strong> ·{' '}
+                  지금은 <strong className="text-[var(--app-pink-strong)]">{ganziForBody(currentCycle.ganzi)} 대운</strong> ·{' '}
                   {currentCycle.ageLabel} · <strong>{currentCycle.phase}</strong> 구간을 지나고 있어요.
                 </p>
               ) : (
