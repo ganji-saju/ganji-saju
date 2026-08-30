@@ -53,115 +53,40 @@
   color: var(--app-gold-text, #7e6027);
 }
 
-/* ── 무대: 12지 고리 + 가운데 수호신 ─────────────────────────────── */
+/* ── 무대: 12지신 원반 ─────────────────────────────── */
 
 .zodiac-loading-stage {
   position: relative;
   display: grid;
   place-items: center;
   /* 좁은 폰에서 카드 밖으로 넘치지 않게 유동. vw 가 아니라 **카드 content 폭** 기준이어야
-     패딩까지 셈에 들어간다(74vw 로 잡았더니 320px 에서 5px 넘쳤다).
-     고리는 % 배치라 무대가 줄면 함께 준다. */
+     패딩까지 셈에 들어간다(74vw 로 잡았더니 320px 에서 5px 넘쳤다). */
   width: min(16.5rem, 100%);
   aspect-ratio: 1;
 }
 
-.zodiac-loading-ring {
-  position: absolute;
-  inset: 0;
-  animation: zl-spin 44s linear infinite;
-}
-
-@keyframes zl-spin {
-  to { transform: rotate(360deg); }
-}
-
-.zodiac-loading-branch {
-  position: absolute;
-  display: grid;
-  transform: translate(-50%, -50%);
-  place-items: center;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 9999px;
-  color: color-mix(in srgb, var(--app-ink, #1c1a17) 38%, transparent);
-  transition: color 420ms ease, background-color 420ms ease, box-shadow 420ms ease;
-}
-
-/* 고리와 같은 주기로 반대로 돌아 글자가 항상 똑바로 선다. */
-.zodiac-loading-glyph {
-  display: block;
-  font-family: var(--font-han, serif);
-  font-size: 1.05rem;
-  line-height: 1;
-  animation: zl-spin-back 44s linear infinite;
-}
-
-@keyframes zl-spin-back {
-  to { transform: rotate(-360deg); }
-}
-
-/* 지금 도는 지지 — 인주 도장처럼 찍힌다. */
-.zodiac-loading-branch[data-active='true'] {
-  color: var(--app-surface-strong, #fffdf7);
-  background: var(--app-pink, #b3372a);
-  box-shadow: 0 6px 16px -6px rgba(179, 55, 42, 0.66);
-}
-
-.zodiac-loading-orb {
-  position: relative;
-  width: min(9.5rem, 43vw);
-  height: min(9.5rem, 43vw);
-  overflow: hidden;
-  border-radius: 9999px;
-  border: 1px solid var(--app-pink-line, rgba(179, 55, 42, 0.28));
-  background: var(--app-surface-soft, #f3e7de);
-  box-shadow:
-    0 0 0 7px color-mix(in srgb, var(--app-surface, #fbf7ee) 70%, transparent),
-    0 18px 38px -20px rgba(28, 26, 23, 0.42);
-}
-
-.zodiac-loading-video {
+.zodiac-loading-wheel {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  /* 소스가 3:4 라 원형(1:1)에 cover 하면 위아래가 잘린다. 기본 center(50%)는 위쪽 12.5%
-     를 먹어 **12지신 전원의 얼굴·뿔·볏이 잘렸다**(실측). 10% 면 12개 모두 머리 위 여유까지
-     들어온다 — 0% 는 머리가 원 맨 위 곡률에 닿고, 16% 부터 닭 볏·용 뿔이 다시 잘린다. */
-  object-position: center 10%;
-  /* 지지가 바뀔 때 key 로 새 <video> 가 들어온다 — 툭 튀지 않게 받아준다. */
-  animation: zl-orb-in 520ms ease-out;
+  /* 무대도 소스도 1:1 이라 contain == cover. 무대 비율이 틀어져도 절대 안 잘리게 contain. */
+  object-fit: contain;
+  border-radius: 9999px;
+  /* 영상 종이(#E8D8C7)가 카드(#FFFDF7)보다 어둡다 — 사각으로 두면 이음매가 보인다.
+     내접원은 12지신을 하나도 자르지 않는다(닭 꼬리 93%, 소 지팡이 89% — 실측). */
+  border: 1px solid var(--app-pink-line, rgba(179, 55, 42, 0.28));
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--app-surface, #fbf7ee) 70%, transparent),
+    0 18px 38px -20px rgba(28, 26, 23, 0.42);
+  animation: zl-wheel-in 620ms ease-out;
 }
 
-@keyframes zl-orb-in {
-  from { opacity: 0; transform: scale(1.04); }
+@keyframes zl-wheel-in {
+  from { opacity: 0; transform: scale(0.965); }
   to { opacity: 1; transform: none; }
 }
 
 /* ── 카피 ──────────────────────────────────────────────────────── */
-
-.zodiac-loading-guardian {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.42rem;
-  margin: 0;
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: var(--app-copy-muted, rgba(52, 48, 42, 0.8));
-}
-
-.zodiac-loading-guardian-char {
-  display: grid;
-  place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  border-radius: 0.42rem;
-  background: color-mix(in srgb, var(--app-pink, #b3372a) 12%, transparent);
-  font-family: var(--font-han, serif);
-  font-size: 0.82rem;
-  color: var(--app-pink-strong, #8e2a20);
-}
 
 .zodiac-loading-copy {
   display: grid;
@@ -245,9 +170,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .zodiac-loading,
-  .zodiac-loading-ring,
-  .zodiac-loading-glyph,
-  .zodiac-loading-video,
+  .zodiac-loading-wheel,
   .zodiac-loading-bar span {
     animation: none;
   }
