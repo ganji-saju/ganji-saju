@@ -1,0 +1,45 @@
+# 2026-08-30 — CodeQL 코드 스캐닝.
+#   저장소가 PUBLIC 이라 무료다(비공개면 GitHub Advanced Security 가 필요해 실패한다 —
+#   나중에 비공개로 바꾸면 이 워크플로부터 끄거나 GHAS 를 켜라).
+#   메인 CI 와 **분리**한다: 몇 분 걸려서 배포 게이트를 늦추면 안 된다.
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # 매주 월 09:00 KST(=월 00:00 UTC). 새로 발표된 룰이 옛 코드를 잡는 경우가 있다.
+    #   (월 09:00 KST 에서 9시간을 빼면 자정을 안 넘어 요일이 그대로다 — dow=1 이 맞다.)
+    - cron: '0 0 * * 1'
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze JS/TS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      # 빌드는 하지 않는다 — JS/TS 는 소스만으로 분석된다(npm ci 는 시간만 먹는다).
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'

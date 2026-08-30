@@ -63,6 +63,13 @@ jobs:
         if: ${{ env.KASI_SERVICE_KEY != '' }}
         run: npm run validate:kasi
 
+      # 2026-08-30 — 의존성 취약점. 이 저장소는 **PUBLIC** 이라 취약한 버전이 그대로 노출된다.
+      #   high 이상에서만 실패시킨다(low/moderate 권고 하나로 전 작업이 막히면 무시하게 된다).
+      #   ⚠️ DB 감사 스크립트(payment-idempotency 류)는 여기 넣지 마라 — prod service_role 이
+      #      필요하고, 그건 위 주석의 "CI 반입 금지" 정책 위반이다.
+      - name: Audit dependencies (high 이상)
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Typecheck
         run: npm run typecheck
 
