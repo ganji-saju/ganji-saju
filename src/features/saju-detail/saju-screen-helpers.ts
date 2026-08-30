@@ -54,7 +54,7 @@ export function formatElementPercent(value: number) {
 //   PDF(report-document)는 처음부터 기둥별 십신을 찍고 있었다 — 웹 도식만 버리고 있었다.
 //
 //   ⚠️ 지지의 십신은 **지장간 본기(정기)** 기준이다. BRANCH_HIDDEN_STEMS 는 12지 전부
-//      정기를 첫 번째로 두므로 hiddenStems[0] 이 본기다(hidden-stem-order.spec.ts 가 고정).
+//      정기를 첫 번째로 두므로 hiddenStems[0] 이 본기다(pillar-cell-labels.spec.ts 가 12지 정기 테이블을 고정한다).
 //      순서가 뒤집히면 도식에 **틀린 십신**이 조용히 박힌다 — 화면은 멀쩡해 보인다.
 export function pillarCellLabels(pillar: SajuPillar | null, isDayPillar: boolean) {
   if (!pillar) return { stem: '-', branch: '-' };
