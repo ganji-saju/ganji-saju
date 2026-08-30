@@ -402,7 +402,7 @@
   --tarot-main-size: clamp(1.08rem, 4.5vw, 1.34rem);
   --tarot-body-size: 0.95rem;
   --tarot-caption-size: 0.88rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fff8fc 100%);
+  background: linear-gradient(180deg, var(--app-surface-strong) 0%, var(--app-bg) 100%);
 }
 
 .gangi-tarot-draw-result {
@@ -477,7 +477,7 @@
 .gangi-tarot-reading-stack article {
   border: 1px solid var(--app-line);
   border-radius: 1.2rem;
-  background: #ffffff;
+  background: var(--app-surface-strong);
   padding: 1rem 1.05rem;
   box-shadow: 0 12px 30px rgba(17, 17, 20, 0.05);
 }
@@ -1080,7 +1080,8 @@
 }
 
 /* 타로 피커 — 한 화면 78장 부채 그리드 (2026-06 리디자인: 5스프레드 캐러셀 폐기)
-   sibling /tarot/daily 의 다크 카드 stage 와 톤 통일. 뒷면은 CSS+SVG(이미지 0바이트). */
+   sibling /tarot/daily 의 다크 카드 stage 와 톤 통일. 뒷면은 CSS+SVG(이미지 0바이트).
+   2026-08-31 민화 덱 리브랜드 — 퍼플 밤하늘 → 따뜻한 먹 바탕 + 금박 별빛(다크는 이 의식 패널까지만). */
 .gangi-tarot-stage {
   position: relative;
   display: grid;
@@ -1088,24 +1089,24 @@
   gap: 1.15rem;
   border-radius: 1.6rem;
   background:
-    radial-gradient(circle at 50% 16%, rgba(179, 55, 42, 0.12), transparent 44%),
-    linear-gradient(180deg, #1a0a1f 0%, #2a0d2f 100%);
+    radial-gradient(circle at 50% 16%, rgba(179, 55, 42, 0.14), transparent 44%),
+    linear-gradient(180deg, #26211b 0%, #17140f 100%);
   padding: 1.25rem 0.85rem 1.5rem;
   overflow: hidden;
 }
 
-/* 밤하늘 별빛 */
+/* 금박 별빛 */
 .gangi-tarot-stage::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.22;
+  opacity: 0.3;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 18% 26%, #fff 0.6px, transparent 1.2px),
-    radial-gradient(circle at 82% 68%, #fff 0.6px, transparent 1.2px),
-    radial-gradient(circle at 48% 52%, #fff 0.6px, transparent 1.2px),
-    radial-gradient(circle at 34% 86%, #fff 0.5px, transparent 1px);
+    radial-gradient(circle at 18% 26%, #dcc79a 0.6px, transparent 1.2px),
+    radial-gradient(circle at 82% 68%, #dcc79a 0.6px, transparent 1.2px),
+    radial-gradient(circle at 48% 52%, #dcc79a 0.6px, transparent 1.2px),
+    radial-gradient(circle at 34% 86%, #dcc79a 0.5px, transparent 1px);
   background-size: 64px 64px, 84px 84px, 42px 42px, 104px 104px;
 }
 

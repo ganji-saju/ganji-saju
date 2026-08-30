@@ -17,16 +17,18 @@ export interface TarotCardVisualTone {
   motifClassName: string;
 }
 
+// 2026-08-31 민화 덱 리브랜드 — 카드 아트가 한지 바탕이 되면서 프레임·폴백도 한지 세계로.
+// 가문별 안료: 메이저=금박 · 완드=인주 · 컵=쪽빛 · 펜타클=먹빛초록 · 소드=먹.
 const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
   major: {
     family: 'major',
     label: 'Major Arcana',
     marker: '✦',
-    accentClassName: 'text-[var(--app-gold)]',
+    accentClassName: 'text-[var(--app-gold-text)]',
     backgroundClassName:
-      'bg-[radial-gradient(circle_at_50%_18%,rgba(210,176,114,0.22),transparent_36%),linear-gradient(160deg,rgba(86,62,122,0.98),rgba(19,23,47,0.98))]',
+      'bg-[radial-gradient(circle_at_50%_18%,rgba(165,129,60,0.16),transparent_40%),linear-gradient(160deg,#fbf7ee,#efe4cd)]',
     borderClassName: 'border-[var(--app-gold)]/60',
-    motifClassName: 'border-[var(--app-gold)]/35 bg-[rgba(210,176,114,0.12)]',
+    motifClassName: 'border-[var(--app-gold)]/40 bg-[rgba(165,129,60,0.1)]',
   },
   cups: {
     family: 'cups',
@@ -34,9 +36,9 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
     marker: '💧',
     accentClassName: 'text-[var(--app-sky)]',
     backgroundClassName:
-      'bg-[radial-gradient(circle_at_50%_18%,rgba(108,173,205,0.24),transparent_36%),linear-gradient(160deg,rgba(42,79,116,0.98),rgba(12,24,45,0.98))]',
-    borderClassName: 'border-[var(--app-sky)]/55',
-    motifClassName: 'border-[var(--app-sky)]/35 bg-[rgba(108,173,205,0.12)]',
+      'bg-[radial-gradient(circle_at_50%_18%,rgba(44,95,138,0.12),transparent_40%),linear-gradient(160deg,#fbf7ee,#e9e8dc)]',
+    borderClassName: 'border-[var(--app-sky)]/45',
+    motifClassName: 'border-[var(--app-sky)]/35 bg-[rgba(44,95,138,0.08)]',
   },
   pentacles: {
     family: 'pentacles',
@@ -44,29 +46,29 @@ const VISUAL_TONES: Record<TarotCardVisualFamily, TarotCardVisualTone> = {
     marker: '🪙',
     accentClassName: 'text-[var(--app-jade)]',
     backgroundClassName:
-      'bg-[radial-gradient(circle_at_50%_18%,rgba(121,178,139,0.22),transparent_36%),linear-gradient(160deg,rgba(45,86,72,0.98),rgba(16,31,37,0.98))]',
-    borderClassName: 'border-[var(--app-jade)]/55',
-    motifClassName: 'border-[var(--app-jade)]/35 bg-[rgba(121,178,139,0.12)]',
+      'bg-[radial-gradient(circle_at_50%_18%,rgba(46,107,68,0.12),transparent_40%),linear-gradient(160deg,#fbf7ee,#e7e8d8)]',
+    borderClassName: 'border-[var(--app-jade)]/45',
+    motifClassName: 'border-[var(--app-jade)]/35 bg-[rgba(46,107,68,0.08)]',
   },
   swords: {
     family: 'swords',
     label: 'Swords',
     marker: '🌬',
-    accentClassName: 'text-[var(--app-ivory)]',
+    accentClassName: 'text-[var(--app-ink)]/75',
     backgroundClassName:
-      'bg-[radial-gradient(circle_at_50%_18%,rgba(232,229,214,0.16),transparent_36%),linear-gradient(160deg,rgba(57,67,88,0.98),rgba(15,19,32,0.98))]',
-    borderClassName: 'border-[var(--app-ivory)]/45',
-    motifClassName: 'border-[var(--app-ivory)]/25 bg-[rgba(232,229,214,0.08)]',
+      'bg-[radial-gradient(circle_at_50%_18%,rgba(28,26,23,0.08),transparent_40%),linear-gradient(160deg,#fbf7ee,#e8e5db)]',
+    borderClassName: 'border-[var(--app-ink)]/35',
+    motifClassName: 'border-[var(--app-ink)]/25 bg-[rgba(28,26,23,0.05)]',
   },
   wands: {
     family: 'wands',
     label: 'Wands',
     marker: '🔥',
-    accentClassName: 'text-[var(--app-coral)]',
+    accentClassName: 'text-[var(--app-pink-strong)]',
     backgroundClassName:
-      'bg-[radial-gradient(circle_at_50%_18%,rgba(211,129,103,0.24),transparent_36%),linear-gradient(160deg,rgba(116,62,58,0.98),rgba(34,19,31,0.98))]',
-    borderClassName: 'border-[var(--app-coral)]/55',
-    motifClassName: 'border-[var(--app-coral)]/35 bg-[rgba(211,129,103,0.12)]',
+      'bg-[radial-gradient(circle_at_50%_18%,rgba(179,55,42,0.12),transparent_40%),linear-gradient(160deg,#fbf7ee,#f0e2d6)]',
+    borderClassName: 'border-[var(--app-pink)]/45',
+    motifClassName: 'border-[var(--app-pink)]/35 bg-[rgba(179,55,42,0.08)]',
   },
 };
 

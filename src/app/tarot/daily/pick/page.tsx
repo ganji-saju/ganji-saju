@@ -5,7 +5,7 @@ import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import {
   freeDailyLimitMessage,
   isFreeDailyExempt,
@@ -42,9 +42,13 @@ export default async function TarotPickPage({ searchParams }: Props) {
   // 2026-07-18 — 타로 하루 1회 제한. 뽑기 화면 진입 시점에 판정한다(소비는 뽑기 확정 시
   //   /api/tarot/daily-draw 가 한다). 이미 뽑았으면 덱을 아예 렌더하지 않아
   //   "고르고 나서 막히는" 헛수고를 만들지 않는다.
+  // Supabase env 부재(로컬 빌드 등)에서는 무동작 — 게이트가 빌드를 깨면 안 된다
+  // (menu-pass.server 와 같은 원칙; env 없이 createClient 가 throw 해 페이지가 500 나던 것 수정)
   const {
     data: { user },
-  } = await (await createClient()).auth.getUser();
+  } = hasSupabaseServerEnv
+    ? await (await createClient()).auth.getUser()
+    : { data: { user: null } };
   const memberExempt = await isFreeDailyExempt(user?.id ?? null);
   const alreadyDrew =
     !memberExempt && (await isFreeDailyUsed('tarot', user?.id ?? null));

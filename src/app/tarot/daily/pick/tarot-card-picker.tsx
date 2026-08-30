@@ -20,6 +20,8 @@ interface TarotCardPickerProps {
 const SPREAD_SIZE = 3;
 const SPREAD_POSITION_LABELS = ['현재 흐름', '숨은 원인', '오늘의 조언'] as const;
 
+// 2026-08-31 민화 덱 리브랜드 — 다섯 안료 뒷면: 먹·쪽빛·먹빛초록·금박·인주.
+// 키 이름(plum/indigo/…)은 tarot-picker-random 의 타입과 묶여 있어 역사적 이름 그대로 둔다.
 const CARD_BACK_TONES: Record<
   TarotCardBackTone,
   {
@@ -30,39 +32,39 @@ const CARD_BACK_TONES: Record<
   }
 > = {
   plum: {
-    accent: 'rgba(210,176,114,0.78)',
-    border: 'rgba(166,124,181,0.46)',
+    accent: 'rgba(220,199,154,0.82)',
+    border: 'rgba(165,129,60,0.4)',
     background:
-      'linear-gradient(160deg,rgba(166,124,181,0.92),rgba(31,29,57,0.96) 56%,rgba(11,14,29,0.98))',
-    light: 'rgba(166,124,181,0.18)',
+      'linear-gradient(160deg,rgba(74,68,58,0.95),rgba(30,27,22,0.97) 56%,rgba(17,15,12,0.99))',
+    light: 'rgba(165,129,60,0.16)',
   },
   indigo: {
-    accent: 'rgba(210,176,114,0.74)',
-    border: 'rgba(99,123,188,0.42)',
+    accent: 'rgba(220,199,154,0.78)',
+    border: 'rgba(44,95,138,0.5)',
     background:
-      'linear-gradient(160deg,rgba(73,86,151,0.9),rgba(24,31,72,0.96) 58%,rgba(9,14,32,0.98))',
-    light: 'rgba(99,123,188,0.18)',
+      'linear-gradient(160deg,rgba(44,95,138,0.88),rgba(22,44,62,0.96) 58%,rgba(12,22,31,0.98))',
+    light: 'rgba(108,155,193,0.18)',
   },
   jade: {
-    accent: 'rgba(210,176,114,0.76)',
-    border: 'rgba(121,178,139,0.4)',
+    accent: 'rgba(220,199,154,0.8)',
+    border: 'rgba(46,107,68,0.5)',
     background:
-      'linear-gradient(160deg,rgba(65,115,94,0.88),rgba(23,57,57,0.96) 58%,rgba(9,22,30,0.98))',
-    light: 'rgba(121,178,139,0.16)',
+      'linear-gradient(160deg,rgba(46,107,68,0.86),rgba(24,54,36,0.96) 58%,rgba(13,27,19,0.98))',
+    light: 'rgba(110,168,130,0.16)',
   },
   gold: {
-    accent: 'rgba(245,216,149,0.82)',
-    border: 'rgba(210,176,114,0.48)',
+    accent: 'rgba(240,219,170,0.88)',
+    border: 'rgba(192,155,84,0.52)',
     background:
-      'linear-gradient(160deg,rgba(150,111,59,0.86),rgba(60,46,50,0.96) 56%,rgba(18,17,27,0.98))',
-    light: 'rgba(210,176,114,0.17)',
+      'linear-gradient(160deg,rgba(165,129,60,0.86),rgba(84,66,36,0.96) 56%,rgba(34,28,18,0.98))',
+    light: 'rgba(210,176,114,0.18)',
   },
   rose: {
-    accent: 'rgba(241,191,172,0.78)',
-    border: 'rgba(211,129,103,0.42)',
+    accent: 'rgba(240,206,190,0.82)',
+    border: 'rgba(179,55,42,0.5)',
     background:
-      'linear-gradient(160deg,rgba(141,75,83,0.88),rgba(61,30,55,0.96) 58%,rgba(20,13,30,0.98))',
-    light: 'rgba(211,129,103,0.16)',
+      'linear-gradient(160deg,rgba(179,55,42,0.88),rgba(96,30,23,0.96) 58%,rgba(41,15,12,0.98))',
+    light: 'rgba(217,96,79,0.17)',
   },
 };
 
