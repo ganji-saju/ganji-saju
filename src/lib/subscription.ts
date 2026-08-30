@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient, hasSupabaseServerEnv } from '@/lib/supabase/server';
 import type { SubscriptionPlan } from '@/lib/payments/catalog';
 
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired';
@@ -121,6 +121,20 @@ export async function getMemberTier(userId: string): Promise<'premium' | 'plus' 
   if (sub.plan === 'premium_monthly') return 'premium';
   if (sub.plan === 'plus_monthly') return 'plus';
   return null;
+}
+
+// 2026-08-31 — 현재 세션 사용자의 등급. 페이지가 "멤버십으로 이미 열려 있음" 고지를
+//   분기할 때 사용(중복결제 안내). env 부재·비로그인·조회 오류는 전부 null(고지 생략).
+export async function getViewerMemberTier(): Promise<'premium' | 'plus' | null> {
+  if (!hasSupabaseServerEnv) return null;
+  try {
+    const {
+      data: { user },
+    } = await (await createClient()).auth.getUser();
+    return user ? await getMemberTier(user.id) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function activatePlusSubscription(

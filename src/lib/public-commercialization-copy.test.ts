@@ -76,6 +76,57 @@ test('public commercialization pages do not expose forbidden copy', () => {
   assert.deepEqual(findings, []);
 });
 
+// 2026-08-31 — 유료 전환(타로·오늘운세 당일권, 2026-08-25~28) 뒤 남은 "무료" 카피가
+//   "무료타로처럼 열려요" 제보를 만들었다. 유료 표면별 금지 카피를 파일 단위로 잠근다.
+//   (타로 4면은 '무료' 전면 금지, 홈·프라이싱은 타로/오늘운세를 무료라 부르는 조합만 금지)
+const PAID_SURFACE_FORBIDDEN: ReadonlyArray<{ file: string; patterns: RegExp[] }> = [
+  { file: 'src/app/tarot/daily/page.tsx', patterns: [/무료/g] },
+  { file: 'src/app/tarot/daily/pick/page.tsx', patterns: [/무료\s*타로/g] },
+  { file: 'src/app/tarot/daily/result/page.tsx', patterns: [/무료\s*타로/g] },
+  { file: 'src/app/tarot/daily/spread/page.tsx', patterns: [/무료\s*타로/g] },
+  { file: 'src/app/page.tsx', patterns: [/무료\s*타로/g] },
+  { file: 'src/app/pricing/page.tsx', patterns: [/무료\s*타로/g, /무료\s*오늘운세/g] },
+];
+
+test('paid-converted surfaces do not call tarot/today free', () => {
+  const findings: string[] = [];
+  for (const { file, patterns } of PAID_SURFACE_FORBIDDEN) {
+    const searchable = stripCommentsAndImplementationOnlyText(
+      fs.readFileSync(path.join(process.cwd(), file), 'utf8')
+    );
+    for (const pattern of patterns) {
+      pattern.lastIndex = 0;
+      const matches = searchable.match(pattern) ?? [];
+      if (matches.length > 0) findings.push(`${file}: ${matches.join(', ')}`);
+    }
+  }
+  assert.deepEqual(findings, []);
+});
+
+// 2026-08-31 — 🔴돈줄 가드: 멤버십 보유자에게 종합(9,900) 결제를 안내 없이 받으면
+//   구성품 겹침(오늘 자세히·올해 핵심) 중복결제가 된다. 겹침 고지 분기가 사라지면 실패.
+test('membership overlap notices stay wired on comprehensive-bundle surfaces', () => {
+  const sajuPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/saju/[slug]/page.tsx'),
+    'utf8'
+  );
+  assert.ok(sajuPage.includes('getViewerMemberTier'), 'saju 결과 페이지가 멤버십 등급을 조회해야 한다');
+  assert.ok(sajuPage.includes('멤버십 이용 중'), 'saju 결과 페이지에 멤버십 고지 카피가 있어야 한다');
+
+  const checkoutPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/membership/checkout/page.tsx'),
+    'utf8'
+  );
+  assert.ok(
+    checkoutPage.includes('bundleMembershipOverlap'),
+    '체크아웃이 종합 번들 × 멤버십 겹침을 판정해야 한다'
+  );
+  assert.ok(
+    checkoutPage.includes("paymentPackage.id === 'bundle_comprehensive'"),
+    '겹침 판정은 bundle_comprehensive 결제에 걸려야 한다'
+  );
+});
+
 test('login page exposes the minimum paid-service auth surface', () => {
   const source = fs.readFileSync(path.join(process.cwd(), 'src/app/login/page.tsx'), 'utf8');
 

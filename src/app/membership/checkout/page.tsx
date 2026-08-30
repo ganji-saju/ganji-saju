@@ -29,7 +29,7 @@ import {
   resolvePaymentProductScope,
 } from '@/lib/payments/product-scope';
 // 2026-05-16 — 멤버십 구독 중복 결제 차단을 위해 현재 활성 구독 조회.
-import { getManagedSubscription } from '@/lib/subscription';
+import { getManagedSubscription, getMemberTier } from '@/lib/subscription';
 import { isSubscriptionPackage } from '@/lib/payments/catalog';
 import {
   createClient,
@@ -305,6 +305,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   "no healthy upstream" 류 회귀가 발생하는 사용자 보고. checkout 단계에서
   //   현재 활성 멤버십 plan 을 미리 확인해 중복 결제 시도 자체를 차단한다.
   let activeMembershipPlan: string | null = null;
+  // 2026-08-31 — 종합 리포트(bundle_comprehensive)를 멤버십 보유자가 결제하려는 경우.
+  //   구성 5종 중 오늘 자세히·올해 핵심은 멤버십 혜택과 겹친다(깊은풀이·상세 무제한).
+  //   결제는 막지 않되(종합점수는 멤버십 미포함) 겹침을 결제 전에 명시한다 — 중복결제 CS 방지.
+  let bundleMembershipOverlap = false;
 
   if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
@@ -353,6 +357,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
         if (subscription && subscription.status === 'active' && subscription.plan === paymentPackage.subscriptionPlan) {
           activeMembershipPlan = subscription.plan;
         }
+      } else if (paymentPackage.id === 'bundle_comprehensive') {
+        bundleMembershipOverlap = (await getMemberTier(user.id)) !== null;
       }
     }
   }
@@ -443,6 +449,17 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           {error === 'payment' ? (
             <p className="rounded-[12px] border border-[var(--app-coral)]/30 bg-[var(--app-coral)]/10 px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-ink)]">
               결제가 완료되지 않았습니다. 결제창을 닫으셨거나 승인에 실패했을 수 있습니다.
+            </p>
+          ) : null}
+
+          {/* 2026-08-31 — 멤버십 보유자 + 종합 리포트 결제: 겹침 고지(결제 차단 아님).
+              멤버십으로 이미 열려 있는 항목이 구성에 포함돼 "또 결제"가 될 수 있어 결제 전에 밝힌다. */}
+          {bundleMembershipOverlap ? (
+            <p className="rounded-[12px] border border-[var(--app-gold)]/45 bg-[var(--app-surface-strong)] px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-copy)]">
+              <strong className="font-extrabold text-[var(--app-gold-text)]">멤버십 이용 중이에요.</strong>{' '}
+              깊은 사주풀이·오늘 자세히 보기는 멤버십으로 이미 열려 있어요. 이 종합 리포트에서
+              멤버십에 없는 것은 사주 종합점수·5요소 풀이, 돈 패턴, 일·직장 흐름입니다. 구성 중
+              ‘오늘 자세히 보기’·‘올해 핵심 3줄’은 멤버십 혜택과 겹칠 수 있으니 확인 후 결제해 주세요.
             </p>
           ) : null}
 
