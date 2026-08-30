@@ -261,17 +261,21 @@ export function GangiLoadingOverlay({
   title = '풀이를 준비하고 있어요',
   description = '생년월일과 오늘 흐름을 맞춰보는 중입니다.',
   steps,
+  estimateMs,
 }: {
   title?: string;
   description?: string;
   /** caller 가 컨텍스트에 맞게 진행 단계 라벨 주입 가능 (4개로 정규화됨). */
   steps?: string[];
+  /** 이 화면이 보통 걸리는 시간(ms). 2.2초 넘게 걸릴 때만 경과 표시가 뜬다. */
+  estimateMs?: number;
 }) {
   return (
     <ZodiacWheelLoading
       title={title}
       description={description}
       steps={steps}
+      estimateMs={estimateMs}
     />
   );
 }

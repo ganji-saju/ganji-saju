@@ -17,6 +17,7 @@ export default function TodayFortuneLoading() {
             '오늘 일진 확인',
             '핵심 한 줄 정리',
           ]}
+          estimateMs={6000}
         />
       </AppPage>
     </AppShell>

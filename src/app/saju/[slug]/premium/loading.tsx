@@ -12,6 +12,7 @@ export default function SajuPremiumLoading() {
           title="프리미엄 풀이를 준비하고 있어요"
           description="평생 리포트와 깊은 풀이를 정리하는 중입니다. 잠시만 기다려 주세요."
           steps={['원국·격국 정리', '용신·대운 흐름 분석', '영역별 풀이 도출', '리포트 정리']}
+          estimateMs={6000}
         />
       </AppPage>
     </AppShell>
