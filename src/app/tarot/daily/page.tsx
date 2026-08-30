@@ -49,17 +49,18 @@ export default async function DailyTarotPage() {
             href="/tarot/daily/pick"
             className="relative block overflow-hidden rounded-[22px] px-4 py-7"
             style={{
-              background: 'linear-gradient(180deg, #1a0a1f 0%, #2a0d2f 100%)',
+              // 2026-08-31 민화 덱 리브랜드 — 퍼플 밤하늘 → 따뜻한 먹 바탕 + 금박 별빛
+              background: 'linear-gradient(180deg, #26211b 0%, #17140f 100%)',
             }}
             aria-label="카드 뽑으러 가기"
           >
-            {/* 별빛 배경 */}
+            {/* 금박 별빛 배경 */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 opacity-20"
+              className="pointer-events-none absolute inset-0 opacity-30"
               style={{
                 backgroundImage:
-                  'radial-gradient(circle at 20% 30%, #fff 0.5px, transparent 1px), radial-gradient(circle at 80% 70%, #fff 0.5px, transparent 1px), radial-gradient(circle at 50% 50%, #fff 0.5px, transparent 1px)',
+                  'radial-gradient(circle at 20% 30%, #dcc79a 0.5px, transparent 1px), radial-gradient(circle at 80% 70%, #dcc79a 0.5px, transparent 1px), radial-gradient(circle at 50% 50%, #dcc79a 0.5px, transparent 1px)',
                 backgroundSize: '60px 60px, 80px 80px, 40px 40px',
               }}
             />
@@ -74,10 +75,10 @@ export default async function DailyTarotPage() {
                     style={{
                       background: isCenter
                         ? 'linear-gradient(135deg, var(--app-pink), var(--app-pink-strong))'
-                        : 'linear-gradient(135deg, #4a1538, #2a0d2f)',
-                      borderColor: 'rgba(255,255,255,0.16)',
+                        : 'linear-gradient(135deg, #3a332a, #221d17)',
+                      borderColor: 'rgba(220,199,154,0.28)',
                       transform: `rotate(${offset * 6}deg) translateY(${Math.abs(offset) * 4}px)`,
-                      color: isCenter ? '#fff' : 'rgba(255,255,255,0.32)',
+                      color: isCenter ? '#fff' : 'rgba(220,199,154,0.45)',
                       fontFamily: 'var(--font-han)',
                       boxShadow: isCenter ? '0 8px 20px rgba(179,55,42,0.45)' : 'none',
                     }}
@@ -116,7 +117,7 @@ export default async function DailyTarotPage() {
                   <div
                     className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] text-[20.7px]"
                     style={{
-                      background: '#2a0d2f',
+                      background: 'var(--app-ink)',
                       color: '#fff',
                     }}
                   >
