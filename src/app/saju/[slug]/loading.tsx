@@ -5,21 +5,18 @@
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GangiPageHeader, GangiLoadingOverlay } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
+import { SAJU_RESULT_LOADING } from '@/components/saju/loading-copy';
 
 export default function SajuResultLoading() {
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
         <GangiPageHeader title="사주 결과를 불러오는 중" />
+        {/* 제출 화면(/saju/new)과 **같은 문구**를 쓴다 — 문구가 다르면 로딩이 두 번 뜬 것처럼
+            읽힌다. 실제로는 대기가 둘(POST → 서버 렌더)이라 화면 자체는 합칠 수 없다. */}
         <GangiLoadingOverlay
-          title="사주 풀이를 준비하고 있어요"
-          description="원국과 오늘 흐름을 맞춰보는 중입니다."
-          steps={[
-            '사주 4기둥 정리',
-            '오행 흐름 분석',
-            '격국·용신 도출',
-            '오늘 운 매칭',
-          ]}
+          {...SAJU_RESULT_LOADING}
+          steps={[...SAJU_RESULT_LOADING.steps]}
           estimateMs={6000}
         />
       </AppPage>

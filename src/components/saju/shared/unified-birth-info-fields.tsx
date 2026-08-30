@@ -289,7 +289,12 @@ export function UnifiedBirthInfoFields({
                     }}
                     className={cn('gangi-birth-card-choice', draft.gender === item.value && 'is-selected')}
                   >
-                    <span className="block text-lg font-bold text-[var(--app-ink)] sm:text-xl">{item.label}</span>
+                    {/* 2026-08-30 #716 — 색을 여기서 박으면 안 된다. components.css 는 전부
+                        `@layer components` 안이라 **Tailwind utilities 레이어가 나중에 와서
+                        특이도와 무관하게 이긴다** — `.is-selected * { color:#fff }` 가 지고
+                        선택된 버튼이 인주 배경에 먹색 글씨가 됐다(대비 2.89, 실측).
+                        색은 CSS 가 상태별로 잡는다. */}
+                    <span className="block text-lg font-bold sm:text-xl">{item.label}</span>
                   </button>
                 ))}
               </div>
