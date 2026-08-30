@@ -69,6 +69,8 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
   const weakest = sajuData.fiveElements.weakest;
   const dominantPercent = Math.round(sajuData.fiveElements.byElement[dominant]?.percentage ?? 0);
   const dominantColor = ELEMENT_INFO[dominant].color;
+  // 글자에는 원색 대신 대비를 맞춘 변형을 쓴다(도넛 조각·범례 점은 원색 유지).
+  const dominantTextColor = ELEMENT_INFO[dominant].textColor;
   const donutGradient = buildDonutGradient(sajuData);
   const supportGuide = ELEMENT_SUPPORT_GUIDE[weakest];
 
@@ -105,7 +107,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
                 <div className="text-center">
                   <div
                     className="text-[29.9px] font-bold leading-none"
-                    style={{ fontFamily: 'var(--font-han)', color: dominantColor }}
+                    style={{ fontFamily: 'var(--font-han)', color: dominantTextColor }}
                   >
                     {ELEMENT_HAN[dominant]}
                   </div>
@@ -169,7 +171,7 @@ export function ElementsSection({ sajuData }: { sajuData: ReadingRecord['sajuDat
             <div className="text-[12.6px] font-bold text-[var(--app-pink-strong)]">강한 쪽</div>
             <div
               className="mt-1 text-[17.3px] font-extrabold tracking-tight"
-              style={{ color: dominantColor }}
+              style={{ color: dominantTextColor }}
             >
               {ELEMENT_INFO[dominant].name}
             </div>
