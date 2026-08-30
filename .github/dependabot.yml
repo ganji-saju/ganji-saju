@@ -26,5 +26,12 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # 2026-08-31 — npm 쪽에만 major 무시를 걸어 두었더니 actions 가 4 → 7 처럼 두 단계
+    #   이상 뛰는 PR 을 올렸다(checkout·setup-node·upload-artifact). 액션 major 는
+    #   **CI 자체의 동작**을 바꾸고, 실패 경로(예: upload-artifact)는 초록 CI 로도
+    #   검증되지 않는다 — 사람이 릴리스 노트를 보고 결정할 일이다.
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: 'chore(ci)'
