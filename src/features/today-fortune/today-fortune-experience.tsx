@@ -219,6 +219,7 @@ export function TodayFortuneExperience({
         <GangiLoadingOverlay
           title="오늘 운세를 풀어드리고 있어요"
           description="네 기둥과 오늘 흐름을 맞춰보는 중입니다."
+          estimateMs={6_000}
         />
       </div>
     );

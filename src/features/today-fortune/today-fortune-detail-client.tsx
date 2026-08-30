@@ -237,6 +237,7 @@ export function TodayFortuneDetailClient({
         <GangiLoadingOverlay
           title="오늘 자세히 보기를 여는 중"
           description="결제·전 사용 이력을 확인하고 풀이를 정리하는 중입니다."
+          estimateMs={6_000}
         />
       ) : null}
 

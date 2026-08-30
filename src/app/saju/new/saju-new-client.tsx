@@ -69,6 +69,7 @@ export default function SajuNewClient() {
         <ZodiacWheelLoading
           title="사주를 풀어드리고 있어요"
           description="네 기둥(年月日時)을 정리하고 오늘 흐름과 맞춰보는 중입니다."
+          estimateMs={6_000}
         />
       ) : null}
       <AppPage className="gangi-subpage saju-intake-page space-y-4 sm:space-y-6">

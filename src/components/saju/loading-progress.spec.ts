@@ -96,22 +96,30 @@ describe('로딩 화면 배선', () => {
     expect(fs.readFileSync(path.join(process.cwd(), file), 'utf8')).toContain('estimateMs');
   });
 
-  it('모든 로딩 화면이 estimateMs 를 넘긴다', () => {
-    const dir = path.join(process.cwd(), 'src/app');
+  it('로딩 화면을 그리는 **모든** 곳이 estimateMs 를 넘긴다', () => {
+    // 🔴 처음엔 `loading.tsx` 만 훑었다가 프로덕션에서 표시가 안 떴다.
+    //    /saju/new 제출 로딩처럼 **loading.tsx 가 아닌 클라이언트 컴포넌트가 직접 그리는
+    //    자리**가 3곳 더 있었다(오늘운세 2곳 포함). 파일 이름이 아니라 **렌더하는 곳**을
+    //    기준으로 세야 한다 — 안 그러면 가드가 초록인데 화면엔 안 나온다.
     const missing: string[] = [];
     const walk = (d: string) => {
       for (const e of fs.readdirSync(d, { withFileTypes: true })) {
         const full = path.join(d, e.name);
-        if (e.isDirectory()) walk(full);
-        else if (e.name === 'loading.tsx') {
-          const src = fs.readFileSync(full, 'utf8');
-          if (src.includes('GangiLoadingOverlay') && !src.includes('estimateMs')) {
-            missing.push(path.relative(process.cwd(), full));
-          }
+        if (e.name === 'node_modules' || e.name === '.next') continue;
+        if (e.isDirectory()) {
+          walk(full);
+          continue;
         }
+        if (!/\.tsx$/.test(e.name)) continue;
+        const rel = path.relative(process.cwd(), full);
+        // 정의부와 얇은 wrapper 는 소비처가 아니다.
+        if (rel.includes('zodiac-wheel-loading') || rel.endsWith('gangi/gangi-ui.tsx')) continue;
+        const src = fs.readFileSync(full, 'utf8');
+        if (!/<(ZodiacWheelLoading|GangiLoadingOverlay)\b/.test(src)) continue;
+        if (!src.includes('estimateMs')) missing.push(rel);
       }
     };
-    walk(dir);
+    walk(path.join(process.cwd(), 'src'));
     expect(
       missing,
       `estimateMs 를 안 넘기면 느려져도 경과 표시가 안 뜬다:\n  ${missing.join('\n  ')}`
