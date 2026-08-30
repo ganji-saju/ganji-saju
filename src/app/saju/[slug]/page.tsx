@@ -60,6 +60,7 @@ import { guardianFromYearBranch } from '@/lib/guardians';
 import { buildLifetimeReport } from '@/domain/saju/report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
+import { getViewerMemberTier } from '@/lib/subscription';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { compareLabelFromMap, priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -394,6 +395,11 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
   //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
   const scoreUnlocked = await getScoreUnlockEntitlement(slug);
+  // 2026-08-31 — 멤버십 보유자 제보: 깊은풀이(멤버십 혜택)는 열리는데 이 페이지는
+  //   9,900 종합 CTA만 보여 "또 결제하라"로 읽힌다(중복결제 위험 — 종합 구성 중
+  //   오늘 자세히·올해 핵심은 멤버십 혜택과 겹침). 종합은 멤버십 미포함 단품이라
+  //   CTA 자체는 유지하되, 멤버에게는 "왜 겹치는지" 고지를 목차 위에 붙인다.
+  const memberTier = !scoreUnlocked ? await getViewerMemberTier() : null;
   // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
   //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
   //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
@@ -726,6 +732,28 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
               </h2>
               <ElementsSection sajuData={sajuData} />
             </section>
+
+            {/* 2026-08-31 — 멤버십 보유자 고지(중복결제 방지). 깊은풀이·오늘 자세히는
+                멤버십으로 이미 열려 있는데 이 화면엔 9,900 오퍼만 보여 "또 결제"로
+                읽혔다(사용자 제보). 종합은 멤버십 미포함 단품 — 겹침을 먼저 밝힌다. */}
+            {!scoreUnlocked && memberTier ? (
+              <section className="rounded-[16px] border border-[var(--app-gold)]/45 bg-[var(--app-surface-strong)] p-4">
+                <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-gold-text)]">
+                  멤버십 이용 중
+                </div>
+                <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
+                  깊은 사주풀이와 오늘 자세히 보기는 멤버십으로 이미 열려 있어요. 아래 종합
+                  리포트는 멤버십에 포함되지 않는 별도 단품이며, 구성 항목 중 ‘오늘 자세히
+                  보기’와 ‘올해 핵심 3줄’은 멤버십 혜택과 겹칠 수 있어요.
+                </p>
+                <Link
+                  href={`/saju/${encodeURIComponent(slug)}/premium`}
+                  className="mt-3 inline-flex items-center gap-1 text-[15px] font-extrabold text-[var(--app-pink-strong)] no-underline"
+                >
+                  깊은 사주풀이 바로 보기 →
+                </Link>
+              </section>
+            ) : null}
 
             {!scoreUnlocked ? (
               <div id="comprehensive-toc">

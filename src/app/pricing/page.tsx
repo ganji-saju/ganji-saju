@@ -104,19 +104,20 @@ export default async function PricingPage() {
             eyebrow="가격 한눈보기"
             title={
               <>
-                무료로 먼저 보고
+                가볍게 먼저 보고
                 <br />
                 필요한 풀이만 열어요
               </>
             }
-            description={`오늘운세와 타로는 무료로 시작하고, 더 궁금한 질문만 ${entryLabel} 단품으로 이어볼 수 있습니다.`}
+            // 2026-08-31 — 오늘운세·타로는 당일권 유료(8/25~28 전환). "무료" 카피는 거짓이라 제거.
+            description={`오늘운세와 타로는 당일권으로 가볍게 시작하고, 더 궁금한 질문만 ${entryLabel} 단품으로 이어볼 수 있습니다.`}
           >
             <GangiActionRow>
               <Link href="/today-fortune?concern=general" className="gangi-primary-button">
-                무료 오늘운세 보기
+                오늘운세 보기
               </Link>
               <Link href="/tarot/daily" className="gangi-secondary-button">
-                무료 타로 보기
+                타로 보기
               </Link>
             </GangiActionRow>
           </GangiIntro>

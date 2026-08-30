@@ -1,7 +1,12 @@
 // Redesign 2026-05-13 (Claude Design / screens-a.jsx ScreenTarot):
-// 타로 진입 화면 — 다크 카드 stage + 질문 list + 직접 입력 + 무료 안내.
+// 타로 진입 화면 — 다크 카드 stage + 질문 list + 직접 입력.
+// 2026-08-31 — 8/28 유료 전환(당일권 3,300) 뒤에도 남아 있던 "무료" 카피 제거 +
+//   멤버십·당일권 통과 시 "왜 열려 있는지" 한 줄 고지(택일 사건에서 확립한 원칙:
+//   통과 화면과 고장 화면이 똑같으면 정상 동작이 버그로 신고된다).
 // 라우팅·이벤트 무수정.
-import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
+import { guardMenuPassEntry, viewerHasMenuPass } from '@/lib/payments/menu-pass.server';
+import { getPriceDisplayMap } from '@/lib/payments/price-display';
+import { priceLabelFromMap } from '@/lib/payments/price-display-shared';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
@@ -10,9 +15,9 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 export const metadata: Metadata = {
-  title: '오늘의 타로 — 무료 타로 카드 3장 뽑기',
+  title: '오늘의 타로 — 타로 카드 3장 뽑기',
   description:
-    '무료 타로점을 지금 바로. 질문을 고르고 타로 카드 세 장을 뽑아 현재·원인·조언으로 오늘의 흐름을 읽어보세요.',
+    '질문을 고르고 타로 카드 세 장을 뽑아 현재·원인·조언으로 오늘의 흐름을 읽어보세요.',
   alternates: {
     canonical: '/tarot/daily',
   },
@@ -21,8 +26,14 @@ export const metadata: Metadata = {
 const CARD_FAN_INDICES = [0, 1, 2, 3, 4] as const;
 
 export default async function DailyTarotPage() {
-  // 2026-08-25 — 990원 라이트 언락(타로). 멤버십·이용권 없으면 체크아웃으로.
+  // 2026-08-25 — 라이트 언락(타로, 2026-08-28 3,300원). 멤버십·이용권 없으면 체크아웃으로.
   await guardMenuPassEntry('tarot', 'tarot-daily');
+  // 가드를 통과했다면 멤버십 or 오늘 당일권 보유(또는 supabase env 부재 로컬).
+  //   가격은 리졸버가 렌더한다 — 프로즈에 금액 리터럴 금지(가격 변경 시 stale 방지).
+  const hasPass = await viewerHasMenuPass('tarot');
+  const passLabel = hasPass
+    ? '멤버십·당일권으로 이용 중'
+    : `당일권 ${priceLabelFromMap(await getPriceDisplayMap(), 'taste_tarot_daily')}`;
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-5">
@@ -32,7 +43,7 @@ export default async function DailyTarotPage() {
           {/* §1 Eyebrow + headline */}
           <div>
             <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-              세 장 타로 · 무료
+              세 장 타로 · {passLabel}
             </div>
             <h1 className="mt-1.5 text-[27.6px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]">
               마음에 떠오르는
