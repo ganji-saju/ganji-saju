@@ -67,13 +67,15 @@ export const ADMIN_GRANT_PRODUCTS: readonly AdminGrantProduct[] = [
     packageId: 'bundle_comprehensive',
     label: '종합사주 리포트 (묶음)',
     need: 'reading',
-    note: '구성품 5종(점수·오늘·돈·일·올해)을 한 번에 부여한다.',
+    // ⚠️ 구성품 중 today-detail 만 당일권이다(결제와 동일한 성질). 이걸 안 적으면
+    //    "묶음을 줬는데 내일 오늘풀이가 잠긴다" 로 되돌아온다.
+    note: '구성품 5종(점수·오늘자세히·돈·일·올해)을 한 번에 부여한다. 이 중 오늘자세히만 당일권이라 내일은 잠긴다.',
   },
   {
     packageId: 'bundle_today_set',
     label: '오늘 풀세트 (묶음)',
     need: 'reading',
-    note: '구성품 6종을 부여한다.',
+    note: '구성품 6종(오늘자세히 + 점수 F1~F5). 오늘자세히는 당일권이라 내일은 잠긴다.',
     retired: true,
   },
 
