@@ -53,7 +53,7 @@
   color: var(--app-gold-text, #7e6027);
 }
 
-/* ── 무대: 12지신 원반 ─────────────────────────────── */
+/* ── 무대: 12지신 얼굴 고리 ─────────────────────────────── */
 
 .zodiac-loading-stage {
   position: relative;
@@ -65,25 +65,54 @@
   aspect-ratio: 1;
 }
 
-.zodiac-loading-wheel {
+.zodiac-loading-ring {
+  position: absolute;
+  inset: 0;
+  /* 서서히 — 한 바퀴 48초(9°/s). 66초로 잡았더니 3초짜리 로딩에서 16°밖에 안 돌아
+     **멈춘 것처럼 보였다.** 48초면 3초에 얼굴 한 칸(30°)만큼 움직여 눈에 잡히면서도
+     조급해 보이지 않는다. ⚠️ 아래 얼굴 역회전과 **주기가 같아야** 얼굴이 똑바로 선다. */
+  animation: zl-spin 48s linear infinite;
+}
+
+@keyframes zl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.zodiac-loading-face {
+  position: absolute;
+  /* % 는 무대 기준 — 무대가 줄면 얼굴도 함께 준다(320px 폰에서 고리가 안 터진다).
+     18% 이므로 반지름 38% + 9% = 47% < 50%: 무대 안에 딱 들어온다. */
+  width: 18%;
+  height: 18%;
+  transform: translate(-50%, -50%);
+}
+
+/* 고리와 같은 주기로 반대로 돌아 얼굴이 항상 똑바로 선다. */
+.zodiac-loading-face-img {
   display: block;
   width: 100%;
   height: 100%;
-  /* 무대도 소스도 1:1 이라 contain == cover. 무대 비율이 틀어져도 절대 안 잘리게 contain. */
-  object-fit: contain;
   border-radius: 9999px;
-  /* 영상 종이(#E8D8C7)가 카드(#FFFDF7)보다 어둡다 — 사각으로 두면 이음매가 보인다.
-     내접원은 12지신을 하나도 자르지 않는다(닭 꼬리 93%, 소 지팡이 89% — 실측). */
   border: 1px solid var(--app-pink-line, rgba(179, 55, 42, 0.28));
-  box-shadow:
-    0 0 0 7px color-mix(in srgb, var(--app-surface, #fbf7ee) 70%, transparent),
-    0 18px 38px -20px rgba(28, 26, 23, 0.42);
-  animation: zl-wheel-in 620ms ease-out;
+  background: var(--app-surface-soft, #f3e7de);
+  box-shadow: 0 6px 14px -8px rgba(28, 26, 23, 0.45);
+  animation: zl-spin-back 48s linear infinite;
 }
 
-@keyframes zl-wheel-in {
-  from { opacity: 0; transform: scale(0.965); }
-  to { opacity: 1; transform: none; }
+@keyframes zl-spin-back {
+  to { transform: rotate(-360deg); }
+}
+
+/* 고리 한가운데 — 비어 있으면 미완성으로 보인다. 옅은 먹선 한 줄이 축을 만든다. */
+.zodiac-loading-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--app-ink, #1c1a17) 11%, transparent);
 }
 
 /* ── 카피 ──────────────────────────────────────────────────────── */
@@ -170,7 +199,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .zodiac-loading,
-  .zodiac-loading-wheel,
+  .zodiac-loading-ring,
+  .zodiac-loading-face-img,
   .zodiac-loading-bar span {
     animation: none;
   }
