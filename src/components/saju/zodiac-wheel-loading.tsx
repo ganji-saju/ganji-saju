@@ -52,6 +52,12 @@ const RADIUS_PCT = 38;
 /** 한자 하나가 날아와 박히고 사라지기까지. 12개가 이 간격으로 이어져 한 바퀴를 돈다. */
 const STAMP_MS = 1150;
 
+/** 하단 바를 채우는 규칙. 자세한 근거는 elapsedProgress 주석 참고. */
+const BAR_CEILING = 0.94;
+/** 경과 표시가 나타나기까지. 1초 만에 끝나는 화면에서 "0초 경과" 가 깜빡이면 소음이다.
+ *  느린 화면(PDF)에서만 자연스럽게 등장하고, 빠른 화면에선 아무도 못 본다. */
+const REVEAL_AFTER_MS = 2200;
+
 const DEFAULT_STEPS = [
   '네 기둥(年月日時) 세우는 중',
   '오행 균형 재는 중',
@@ -64,12 +70,45 @@ interface Props {
   description?: string;
   /** 진행 단계. 4개로 정규화된다(애니메이션 delay 가 4개 고정). */
   steps?: string[];
+  /**
+   * 이 화면이 **보통** 걸리는 시간(ms). 주면 하단에 "N초 경과 · 보통 …쯤" 을 띄운다.
+   *
+   * 2026-08-30 #715 제보: "로딩이 너무 길어서 풀이가 안 나오는 건가 오류가 난 건가
+   * 오해하기 쉽다." 진짜 진행률은 못 만든다 — PDF 는 서버 컴포넌트가 LLM 생성을 통째로
+   * await 하고, 그동안 서버→클라이언트로 진행을 알릴 통로가 없다(챕터 캐시도 한 요청
+   * 안에서는 마지막 것만 남아 밖에서 셀 수 없다).
+   * 🔴 그래서 **가짜 %를 쓰지 않는다.** 99% 에 멈춰 있으면 지금보다 더 고장 같아 보인다.
+   * 진실을 말하는 건 **경과 초**이고, 바는 "살아 있다"는 신호일 뿐이다.
+   */
+  estimateMs?: number;
+}
+
+/**
+ * 경과 시간 → 바 채움(0~BAR_CEILING).
+ *
+ * 지수 감쇠라 **항상 움직이지만 끝에 닿지 않는다.** 이게 핵심이다:
+ *   · 예상이 짧게 잡혔어도 바가 100% 에서 멈춰 "끝났는데 안 넘어간다" 로 안 보인다.
+ *   · 예상이 길게 잡혔어도 초반에 눈에 띄게 움직여 "멈췄다" 로 안 보인다.
+ * 즉 **예상치가 틀려도 화면이 거짓말을 하지 않는다.** 정확한 값은 옆의 경과 초가 든다.
+ */
+export function elapsedProgress(elapsedMs: number, estimateMs: number): number {
+  if (estimateMs <= 0) return 0;
+  return BAR_CEILING * (1 - Math.exp(-elapsedMs / estimateMs));
+}
+
+/** "1분쯤" · "40초쯤" — 예상 시간을 사람 말로. */
+function estimateLabel(ms: number): string {
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) return `${sec}초`;
+  const min = Math.round(sec / 30) / 2; // 0.5분 단위
+  return Number.isInteger(min) ? `${min}분` : `${Math.floor(min)}분 30초`;
 }
 
 export function ZodiacWheelLoading({
   title = '사주를 풀어드리고 있어요',
   description = '네 기둥(年月日時)을 세우고 오늘 흐름과 맞춰보는 중입니다.',
   steps,
+  estimateMs,
 }: Props) {
   const normalizedSteps = useMemo(() => {
     const list = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
@@ -81,7 +120,16 @@ export function ZodiacWheelLoading({
 
   // SSR 엔 document 가 없다. portal 은 mount 후에만.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [elapsedMs, setElapsedMs] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+    if (!estimateMs) return;
+    const startedAt = Date.now();
+    // 500ms 틱 + CSS transition 으로 바는 부드럽게, 초 표시는 1초 단위로 또렷하게.
+    const timer = window.setInterval(() => setElapsedMs(Date.now() - startedAt), 500);
+    return () => window.clearInterval(timer);
+  }, [estimateMs]);
 
   const ring = useMemo(
     () =>
@@ -166,9 +214,29 @@ export function ZodiacWheelLoading({
           ))}
         </div>
 
-        <div className="zodiac-loading-bar" aria-hidden="true">
-          <span />
-        </div>
+        {estimateMs && elapsedMs >= REVEAL_AFTER_MS ? (
+          <div className="zodiac-loading-progress">
+            <div className="zodiac-loading-bar" aria-hidden="true">
+              <span
+                className="zodiac-loading-bar-fill"
+                style={{ width: `${(elapsedProgress(elapsedMs, estimateMs) * 100).toFixed(1)}%` }}
+              />
+            </div>
+            <p className="zodiac-loading-elapsed">
+              {/* ⚠️ 오버레이 전체가 aria-live="polite" 다. 0.5초마다 바뀌는 숫자를 그대로 두면
+                  스크린리더가 "2초 경과…3초 경과…" 를 끝없이 읽는다 — 안심시키러 만든 화면이
+                  가장 시끄러워진다. 숫자는 숨기고, **한 번만 바뀌는 안내 문구**만 읽힌다. */}
+              <span aria-hidden="true">{Math.floor(elapsedMs / 1000)}초 경과 &middot; </span>
+              {elapsedMs > estimateMs * 1.6
+                ? '생각보다 오래 걸리고 있어요. 그대로 두시면 이어서 나와요'
+                : `보통 ${estimateLabel(estimateMs)}쯤 걸려요`}
+            </p>
+          </div>
+        ) : (
+          <div className="zodiac-loading-bar" aria-hidden="true">
+            <span />
+          </div>
+        )}
       </div>
     </div>
   );

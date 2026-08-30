@@ -12,6 +12,7 @@ export default function SajuDeepLoading() {
           title="상세 사주 풀이를 준비하고 있어요"
           description="평생 흐름을 깊이 있게 정리하는 중입니다. 잠시만 기다려 주세요."
           steps={['원국·격국 정리', '용신·대운 흐름 분석', '장단점·시기 도출', '풀이 문장 정리']}
+          estimateMs={6000}
         />
       </AppPage>
     </AppShell>

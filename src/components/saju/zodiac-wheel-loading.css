@@ -245,6 +245,39 @@
   100% { transform: translateX(268%); }
 }
 
+/* ── 경과 시간 표시(estimateMs 를 준 화면만) ───────────────────── */
+
+.zodiac-loading-progress {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* 채움은 **끝에 닿지 않는다**(BAR_CEILING 0.94). 100% 에서 멈춰 있으면
+   "끝났는데 안 넘어간다" 로 읽혀 지금보다 더 고장 같아 보인다. */
+/* ⚠️ 선택자가 `.zodiac-loading-bar span`(0,1,1) 보다 세야 한다. 처음엔 클래스 하나
+   (0,1,0)로 뒀더니 **옛 무한 왕복 애니메이션(zl-bar)이 이겨서** 채움 막대를 좌우로
+   밀고 다녔다 — width 는 정상이라 수치로는 안 잡히고 화면을 봐야 보였다. */
+.zodiac-loading-bar .zodiac-loading-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--app-pink, #b3372a);
+  /* 틱이 500ms 라 같은 길이로 이어 붙여야 끊겨 보이지 않는다. */
+  transition: width 500ms linear;
+  animation: none;
+}
+
+.zodiac-loading-elapsed {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--app-copy-muted, rgba(52, 48, 42, 0.8));
+  font-variant-numeric: tabular-nums;
+  word-break: keep-all;
+}
+
 /* ── 모션을 줄여달라고 한 사용자 ───────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -259,6 +292,11 @@
   /* 애니메이션을 끄면 12개가 전부 opacity 0 이라 가운데가 다시 빈다 — 하나만 세워둔다. */
   .zodiac-loading-stamp:first-child {
     opacity: 1;
+  }
+
+  /* 경과 초는 정보라 남기고, 바의 부드러운 이동만 끈다. */
+  .zodiac-loading-bar .zodiac-loading-bar-fill {
+    transition: none;
   }
 
   /* 단계 텍스트는 움직임 없이 전부 세로로 세운다(정보는 남기고 깜빡임만 제거). */

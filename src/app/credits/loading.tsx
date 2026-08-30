@@ -16,6 +16,7 @@ export default function CreditsLoading() {
             '잔액 확인',
             '사용 내역 정리',
           ]}
+          estimateMs={6000}
         />
       </AppPage>
     </AppShell>

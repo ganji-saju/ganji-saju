@@ -20,6 +20,7 @@ export default function SajuResultLoading() {
             '격국·용신 도출',
             '오늘 운 매칭',
           ]}
+          estimateMs={6000}
         />
       </AppPage>
     </AppShell>
