@@ -14,6 +14,8 @@
 //     "카메라 완전 고정" 을 건 이유). CSS 회전은 무한 선형이라 이음매도 없다.
 //   · 그래서 영상이 필요 없다 — webp 12장 92KB 로 끝난다(원반 영상은 140KB 였다).
 //   · 고리가 돌면 얼굴도 같이 기울므로 **안쪽에서 같은 주기로 되돌린다**(항상 똑바로 선다).
+//   · 고리 안쪽이 비어 "아무것도 안 나오는 것처럼" 보인다는 제보(#712) — 12지 한자가
+//     **자기 지지 방향에서 날아와 도장처럼 박히게** 했다. 고리는 그림, 가운데는 글자다.
 //   · 얼굴 크롭은 캐릭터마다 다르다 — 용 뿔·토끼 귀·닭 볏이 잘려서 폭과 시작 y 를 따로
 //     잡았다. 다시 만들 땐 `tools` 가 아니라 PROGRESS 2026-08-30 항목의 표를 봐라.
 //
@@ -23,7 +25,7 @@
 //     containing block 을 만들어 오버레이가 엉뚱한 자리에 뜨던 회귀(2026-05-16).
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import './zodiac-wheel-loading.css';
 
@@ -47,6 +49,8 @@ const FACE_BASE = '/images/gangi/guardians/faces';
 /** 고리 반지름 — 무대 크기 대비 %. px 로 박으면 좁은 폰(320px)에서 카드 밖으로 넘친다.
  *  얼굴이 무대의 18% 이므로 38 + 9 = 47% < 50% — 무대 안에 딱 들어온다. */
 const RADIUS_PCT = 38;
+/** 한자 하나가 날아와 박히고 사라지기까지. 12개가 이 간격으로 이어져 한 바퀴를 돈다. */
+const STAMP_MS = 1150;
 
 const DEFAULT_STEPS = [
   '네 기둥(年月日時) 세우는 중',
@@ -88,6 +92,10 @@ export function ZodiacWheelLoading({
           // left/top 의 % 는 부모(무대) 기준이라 무대가 줄면 고리도 같이 준다.
           x: Math.cos(rad) * RADIUS_PCT,
           y: Math.sin(rad) * RADIUS_PCT,
+          // 한자가 날아오는 시작점 — **자기 지지 방향**에서 온다. em 이라 카드가 줄어도
+          // 비율이 유지된다(% 로 쓰면 글자 자신의 크기 기준이라 엉뚱한 곳에서 온다).
+          fx: `${(Math.cos(rad) * 3.1).toFixed(2)}em`,
+          fy: `${(Math.sin(rad) * 3.1).toFixed(2)}em`,
         };
       }),
     []
@@ -123,7 +131,26 @@ export function ZodiacWheelLoading({
               </span>
             ))}
           </div>
-          <span className="zodiac-loading-hub" aria-hidden="true" />
+          {/* 고리 한가운데 — 12지 한자가 자기 방향에서 날아와 인주처럼 박힌다.
+              고리는 그림, 가운데는 글자. 한자는 DOM 이라 렌더가 항상 정확하다. */}
+          <span className="zodiac-loading-hub" aria-hidden="true">
+            {ring.map((branch, i) => (
+              <span
+                key={branch.char}
+                className="zodiac-loading-stamp"
+                style={
+                  {
+                    '--fx': branch.fx,
+                    '--fy': branch.fy,
+                    animationDelay: `${i * STAMP_MS}ms`,
+                    animationDuration: `${BRANCHES.length * STAMP_MS}ms`,
+                  } as CSSProperties
+                }
+              >
+                {branch.char}
+              </span>
+            ))}
+          </span>
         </div>
 
         <div className="zodiac-loading-copy">
