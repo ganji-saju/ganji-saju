@@ -25,6 +25,8 @@ export interface LlmRunRow {
   cost_usd: number | null;
   /** 2026-08-11 — 단가 재계산용. 없으면 저장값(cost_usd)으로 폴백. */
   model?: string | null;
+  /** 2026-08-31 — source='fallback' 일 때의 사유. 한도 초과 감지에 쓴다. */
+  fallback_reason?: string | null;
   user_id_hash: string | null;
 }
 
@@ -44,11 +46,22 @@ export function rowCostUsd(r: LlmRunRow): number {
   return r.cost_usd ?? 0;
 }
 
+/** 한도 초과로 실패한 행인가. openai-text 가 fallback_reason='quota_exceeded' 로 기록한다. */
+export function isQuotaFallbackRow(r: LlmRunRow): boolean {
+  return r.source === 'fallback' && r.fallback_reason === 'quota_exceeded';
+}
+
 export interface DayStat {
   date: string;
   calls: number;
   costUsd: number;
   distinctUsers: number;
+  /**
+   * 2026-08-31 — 그날 **한도 초과로 실패한** 호출 수.
+   *   8/31 장애는 사용자가 제보할 때까지 아무도 몰랐다. 이 숫자가 0 이 아니면
+   *   그 시점에 이미 사용자가 답변을 못 받고 있었다는 뜻이다(llm-quota-alert 가 읽는다).
+   */
+  quotaFallbacks: number;
 }
 
 export interface FeatureStat {
@@ -75,16 +88,20 @@ const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 /** 일별 비용·호출·LLM 활성 사용자(고유 user_id_hash). 날짜 오름차순. */
 export function aggregateByDay(rows: ReadonlyArray<LlmRunRow>): DayStat[] {
-  const map = new Map<string, { calls: number; costUsd: number; users: Set<string> }>();
+  const map = new Map<
+    string,
+    { calls: number; costUsd: number; users: Set<string>; quotaFallbacks: number }
+  >();
   for (const r of rows) {
     const date = toKstDateKey(r.created_at);
     let d = map.get(date);
     if (!d) {
-      d = { calls: 0, costUsd: 0, users: new Set() };
+      d = { calls: 0, costUsd: 0, users: new Set(), quotaFallbacks: 0 };
       map.set(date, d);
     }
     d.calls += 1;
     d.costUsd += rowCostUsd(r);
+    if (isQuotaFallbackRow(r)) d.quotaFallbacks += 1;
     if (r.user_id_hash) d.users.add(r.user_id_hash);
   }
   return [...map.entries()]
@@ -93,6 +110,7 @@ export function aggregateByDay(rows: ReadonlyArray<LlmRunRow>): DayStat[] {
       calls: d.calls,
       costUsd: round6(d.costUsd),
       distinctUsers: d.users.size,
+      quotaFallbacks: d.quotaFallbacks,
     }))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
@@ -189,7 +207,9 @@ export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
       const from = page * PAGE_SIZE;
       const { data, error } = await supabase
         .from('ai_llm_runs')
-        .select('created_at, feature, source, input_tokens, output_tokens, cost_usd, model, user_id_hash')
+        .select(
+          'created_at, feature, source, input_tokens, output_tokens, cost_usd, model, fallback_reason, user_id_hash'
+        )
         .gte('created_at', since)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })

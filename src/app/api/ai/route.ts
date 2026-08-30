@@ -60,6 +60,7 @@ import {
   getOpenAIInterpretationModel,
   isOpenAIConfigured,
 } from '@/server/ai/openai-text';
+import { aiFallbackCopy } from '@/server/ai/fallback-copy';
 
 export const runtime = 'nodejs';
 export const maxDuration = 20;
@@ -842,15 +843,12 @@ async function handleDialogue(request: DialogueAiRequest) {
 
   if (!shouldChargeAiChat(result.source)) {
     const statusCode = result.fallbackReason === 'ai_not_configured' ? 503 : 502;
-    // 2026-08-11 — 사용자 문구에서 벤더명·내부 운영 상태를 뺀다.
-    //   이전 문구: 'OpenAI 연결 설정이…' / 'OpenAI 계정의 사용량 또는 결제 한도가 초과되어…'
-    //   고객에게 어떤 LLM 업체를 쓰는지, 우리 결제 한도가 어떤 상태인지 알릴 이유가 없다
-    //   (특히 결제 한도 초과는 그대로 노출하면 서비스 신뢰를 깎는다).
+    // 2026-08-11 — 사용자 문구에서 벤더명·내부 운영 상태를 뺀다(fallback-copy 가 강제).
+    // 2026-08-31 — 문구를 fallback-copy 로 옮겼다. 이전엔 한도 초과에도 "잠시 후 다시
+    //   질문해 주세요" 가 나갔는데, 한도는 기다린다고 풀리지 않아 **거짓 안내**였다.
     //   진단은 응답 본문의 fallbackReason 과 아래 서버 로그로 그대로 유지된다.
-    const error =
-      result.fallbackReason === 'ai_not_configured'
-        ? 'AI 답변 기능이 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.'
-        : 'AI 답변을 가져오지 못했어요. 잠시 후 다시 질문해 주세요.';
+    const fallbackCopy = aiFallbackCopy(result.fallbackReason);
+    const error = fallbackCopy.message;
 
     console.error('[ai/dialogue] LLM generation did not complete', {
       fallbackReason: result.fallbackReason,

@@ -73,6 +73,10 @@ const ACTION_LABELS: Record<string, string> = {
   refund_approve: '환불 승인',
   batch_refund_request: '일괄 환불 요청',
   purge_deleted_user: '탈퇴 회원 파기',
+  // 2026-08-31 — 부여 계열 라벨이 빠져 있어 최근 활동에 'grant_membership' 원문이 찍혔다.
+  grant_membership: '멤버십 부여',
+  grant_lifetime_report: '평생 리포트 부여',
+  grant_product: '유료상품 권한 부여',
 };
 
 export function labelForAdminAction(action: string): string {
