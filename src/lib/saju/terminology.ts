@@ -50,12 +50,15 @@ export function ganziToKorean(ganzi: string): string {
 }
 
 /**
- * 간지 → `한글(한자)`(己未 → 기미(己未)). 대운·일주처럼 **한자 정체성을 같이 보여주는**
- * 자리 전용이다. 2026-05-20 "본문·칩은 한글만" 정책의 예외라 새로 쓰기 전에 정책을 확인할 것.
+ * 간지 → 한글만(己未 → 기미). 모르는 글자면 원본을 그대로 돌려준다.
+ *
+ * 2026-08-30 — 대운·일주 화면이 쓰던 `한글(한자)` 형식(formatGanziWithHanja)을 없애고
+ *   여기로 통일했다. 2026-05-20 정책이 "본문·칩은 한글만, 사주팔자 4기둥 카드만 한자"인데
+ *   대운·일주만 예외로 남아 정책과 실제가 어긋나 있었다(사용자 지시로 정리).
+ *   4기둥 카드는 이 함수를 타지 않으므로 거기 한자는 그대로다.
  */
-export function formatGanziWithHanja(ganzi: string): string {
-  const korean = ganziToKorean(ganzi);
-  return korean ? `${korean}(${ganzi})` : ganzi;
+export function ganziForBody(ganzi: string): string {
+  return ganziToKorean(ganzi) || ganzi;
 }
 
 export function koreanizeGanzi(value: string | null | undefined): string {

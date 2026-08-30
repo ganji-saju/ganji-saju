@@ -54,7 +54,7 @@ describe('간지 변환기는 한 곳에만 있다', () => {
       const rel = path.relative(process.cwd(), file);
       if (rel === 'src/lib/saju/terminology.ts') continue;
       const text = fs.readFileSync(file, 'utf8');
-      if (/function\s+(ganziToKorean|withKoreanGanzi|formatGanziWithHanja)\s*\(/.test(text)) {
+      if (/function\s+(ganziToKorean|withKoreanGanzi|formatGanziWithHanja|ganziForBody)\s*\(/.test(text)) {
         offenders.push(rel);
       }
     }

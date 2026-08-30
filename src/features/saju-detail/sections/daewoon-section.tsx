@@ -4,12 +4,12 @@
 
 import type { LifetimeMajorLuckCycle } from '@/domain/saju/report/lifetime-types';
 import { DaewoonTimelineStrip } from '@/features/saju-detail/daewoon-timeline-strip';
-import { formatGanziWithHanja } from '@/lib/saju/terminology';
+import { ganziForBody } from '@/lib/saju/terminology';
 
 // 한자 ganzi → 한글 발음. "丁酉" → "정유".
 
 function CycleCard({ cycle, defaultOpen }: { cycle: LifetimeMajorLuckCycle; defaultOpen: boolean }) {
-  const ganziLabel = formatGanziWithHanja(cycle.ganzi);
+  const ganziLabel = ganziForBody(cycle.ganzi);
   const phaseColor =
     cycle.phase === '성장기'
       ? 'var(--app-jade)'
@@ -246,7 +246,7 @@ export function DaewoonSection({ cycles }: { cycles: LifetimeMajorLuckCycle[] })
         >
           지금은{' '}
           <strong className="text-[var(--app-pink-strong)]">
-            {formatGanziWithHanja(currentCycle.ganzi)} 대운
+            {ganziForBody(currentCycle.ganzi)} 대운
           </strong>{' '}
           · {currentCycle.ageLabel} · <strong>{currentCycle.phase}</strong> 구간을 지나고 있어요.
         </p>
