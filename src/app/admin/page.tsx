@@ -10,6 +10,8 @@ import {
   normalizeDashboardWindow,
 } from '@/lib/admin/dashboard-summary';
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
+import { getLlmQuotaAlert } from '@/lib/admin/llm-quota-alert';
+import { LlmQuotaBanner } from '@/components/admin/llm-quota-banner';
 import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
 import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { DailySeries } from '@/lib/admin/operations-stats';
@@ -132,9 +134,12 @@ export default async function AdminDashboardPage({
   const supabase = await createClient();
   // 2026-07-20 — GA4·Vercel 스냅샷 조회 제거. 이 화면은 자체 순방문만 보여준다.
   //   외부 지표 원본이 필요하면 /admin/analytics 에서 본다(수집은 계속된다).
-  const [roleCheck, summary] = await Promise.all([
+  const [roleCheck, summary, quotaAlert] = await Promise.all([
     getCurrentAdminRole(supabase),
     getAdminDashboardSummary(windowDays),
+    // 2026-08-31 — LLM 한도 경보. 8/31 장애는 사용자가 제보할 때까지 아무도 몰랐다.
+    //   조회 실패가 콘솔 전체를 깨뜨리면 안 되니 여기서 삼킨다(배너만 사라진다).
+    getLlmQuotaAlert().catch(() => null),
   ]);
   const role = roleCheck.role ?? 'admin';
 
@@ -151,6 +156,9 @@ export default async function AdminDashboardPage({
 
   return (
     <main className="w-full space-y-5 px-4 py-5 md:px-6">
+      {/* 2026-08-31 — 한도 경보는 접히지 않는 맨 위. 'ok' 일 때도 남겨 둔다:
+          배너가 사라지면 "경보 기능이 있는지" 자체를 잊는다. */}
+      {quotaAlert ? <LlmQuotaBanner alert={quotaAlert} /> : null}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>

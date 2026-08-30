@@ -15,6 +15,7 @@ import { RefundActions } from './refund-actions';
 import { GrantCreditsActions } from './grant-credits-actions';
 import { GrantMembershipActions } from './grant-membership-actions';
 import { GrantLifetimeReportActions } from './grant-lifetime-report-actions';
+import { GrantProductActions } from './grant-product-actions';
 import { AccountManagementActions } from './account-management-actions';
 import { getManagedSubscription } from '@/lib/subscription';
 import { listUserReadingsForAdmin } from '@/lib/admin/user-readings';
@@ -313,6 +314,19 @@ export default async function AdminUserDetailPage({ params }: Props) {
               userId={id}
               currentPlan={subscription?.plan ?? null}
               currentStatus={subscription?.status ?? null}
+            />
+          </Card>
+          {/* 2026-08-31 — 유료 메뉴 전 상품 수동 부여(궁합 깊은 풀이 포함).
+              전·멤버십·평생리포트만 줄 수 있어 나머지는 CS 대응이 불가능했다. */}
+          <Card title="유료상품 권한 부여 (super_admin)">
+            <p className="mb-2 text-[11.5px] text-[var(--app-copy-soft)]">
+              결제와 동일한 이용권을 무료(0원)로 부여. 상품마다 유효 범위가 다르니 선택 후
+              아래 설명을 확인할 것. 평생 리포트는 아래 전용 카드에서 부여.
+            </p>
+            <GrantProductActions
+              role={role}
+              userId={id}
+              readings={lifetimeReadings.map((r) => ({ id: r.id, label: r.label }))}
             />
           </Card>
           <Card title="평생 리포트 권한 부여 (super_admin)">

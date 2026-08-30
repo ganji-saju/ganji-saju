@@ -4,6 +4,8 @@
 import type { Metadata } from 'next';
 import { AdminPage } from '@/components/admin/admin-page';
 import { getLlmCostStats } from '@/lib/admin/llm-cost-stats';
+import { getLlmQuotaAlert } from '@/lib/admin/llm-quota-alert';
+import { LlmQuotaBanner } from '@/components/admin/llm-quota-banner';
 
 export const metadata: Metadata = {
   title: 'LLM 비용 (admin)',
@@ -25,12 +27,15 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export default async function LlmCostPage() {
-  const stats = await getLlmCostStats(30);
+  const [stats, quotaAlert] = await Promise.all([getLlmCostStats(30), getLlmQuotaAlert()]);
   const { summary, byFeature, daily } = stats;
   const maxDayCost = Math.max(0.000001, ...daily.map((d) => d.costUsd));
 
   return (
     <AdminPage title="LLM 비용">
+
+        {/* 2026-08-31 — 한도 경보. 여기선 이미 LLM 화면이라 링크는 뺀다. */}
+        <LlmQuotaBanner alert={quotaAlert} withLink={false} />
 
         {/* 요약 */}
         <Card title={`최근 ${stats.windowDays}일 요약`}>
@@ -112,8 +117,14 @@ export default async function LlmCostPage() {
                       style={{ width: `${Math.round((d.costUsd / maxDayCost) * 100)}%` }}
                     />
                   </span>
-                  <span className="w-[120px] shrink-0 text-right text-[13px] text-[var(--app-ink)]">
+                  <span className="w-[160px] shrink-0 text-right text-[13px] text-[var(--app-ink)]">
                     {usd(d.costUsd)} · {num(d.distinctUsers)}인
+                    {d.quotaFallbacks > 0 ? (
+                      <span className="font-extrabold text-[var(--app-coral)]">
+                        {' '}
+                        · 한도 {num(d.quotaFallbacks)}
+                      </span>
+                    ) : null}
                   </span>
                 </li>
               ))}
