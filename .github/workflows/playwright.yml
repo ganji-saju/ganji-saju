@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Node 22 — Supabase admin client 의 @supabase/supabase-js@^2.103.1 이
           # Node 20 에선 native WebSocket 부재로 실패 ("Node.js 20 detected without
