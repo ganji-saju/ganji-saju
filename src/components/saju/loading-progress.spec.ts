@@ -63,6 +63,31 @@ describe('채움 막대가 실제로 채워진다', () => {
   });
 });
 
+describe('경과 표시가 스크린리더를 도배하지 않는다', () => {
+  it('틱하는 숫자는 aria-hidden 이고 안내 문구는 남는다', () => {
+    // 🔴 오버레이 전체가 role="status" aria-live="polite" 다. 0.5초마다 바뀌는 숫자를
+    //    그대로 두면 "2초 경과…3초 경과…" 가 끝없이 읽힌다 — **안심시키러 만든 화면이
+    //    가장 시끄러워진다.** 숫자만 숨기고, 한 번만 바뀌는 안내 문구는 읽히게 둔다.
+    const src = fs.readFileSync(
+      path.join(process.cwd(), 'src/components/saju/zodiac-wheel-loading.tsx'),
+      'utf8'
+    );
+    const p = src.match(/<p className="zodiac-loading-elapsed">[\s\S]*?<\/p>/)?.[0];
+    expect(p, '경과 표시 문단을 못 찾았다 — 테스트가 소스 구조를 따라가야 한다').toBeTruthy();
+    expect(p).toMatch(/<span aria-hidden="true">[^<]*초 경과/);
+    // 안내 문구는 span 밖(= 읽히는 자리)에 있어야 한다.
+    expect(p!.split('</span>')[1]).toContain('걸려요');
+  });
+
+  it('오버레이는 여전히 status 라이브 리전이다', () => {
+    const src = fs.readFileSync(
+      path.join(process.cwd(), 'src/components/saju/zodiac-wheel-loading.tsx'),
+      'utf8'
+    );
+    expect(src).toContain('role="status"');
+  });
+});
+
 describe('로딩 화면 배선', () => {
   it('PDF 인쇄 화면은 자기 loading.tsx 를 갖는다', () => {
     // premium/loading.tsx 를 공유하면 /premium(빠름)에도 긴 예상이 걸려 거짓말이 된다.

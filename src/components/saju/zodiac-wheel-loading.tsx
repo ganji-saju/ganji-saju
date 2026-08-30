@@ -223,7 +223,10 @@ export function ZodiacWheelLoading({
               />
             </div>
             <p className="zodiac-loading-elapsed">
-              {Math.floor(elapsedMs / 1000)}초 경과 &middot;{' '}
+              {/* ⚠️ 오버레이 전체가 aria-live="polite" 다. 0.5초마다 바뀌는 숫자를 그대로 두면
+                  스크린리더가 "2초 경과…3초 경과…" 를 끝없이 읽는다 — 안심시키러 만든 화면이
+                  가장 시끄러워진다. 숫자는 숨기고, **한 번만 바뀌는 안내 문구**만 읽힌다. */}
+              <span aria-hidden="true">{Math.floor(elapsedMs / 1000)}초 경과 &middot; </span>
               {elapsedMs > estimateMs * 1.6
                 ? '생각보다 오래 걸리고 있어요. 그대로 두시면 이어서 나와요'
                 : `보통 ${estimateLabel(estimateMs)}쯤 걸려요`}
