@@ -24,10 +24,8 @@ describe('선택 버튼 안에서 글자색을 하드코딩하지 않는다', ()
     const offenders: string[] = [];
     // `is-selected` 로 토글되는 <button> 블록 안의 text 색 유틸리티를 찾는다.
     for (const m of src.matchAll(/is-selected'\)\}([\s\S]{0,600}?)<\/button>/g)) {
-      const block = m.group ? '' : m[1]!;
-      const body = block || m[1]!;
       // 주석은 설명하느라 클래스명을 그대로 쓴다 — 걷어내고 본다.
-      const code = body.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+      const code = m[1]!.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
       const hits = code.match(/\btext-\[[^\]]*\]|\btext-(?:white|black|slate-\d+|gray-\d+)\b/g);
       if (hits) offenders.push(hits.join(', '));
     }
