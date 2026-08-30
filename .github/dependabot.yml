@@ -1,0 +1,30 @@
+# 2026-08-30 — 의존성 업데이트 자동화.
+#   저장소가 PUBLIC 이라 취약한 버전이 그대로 보인다. 주 1회 PR 로 올라온다.
+#   ⚠️ 여기서 켜지는 건 **버전 업데이트**다. "Dependabot security updates"(취약점 자동 PR)는
+#      저장소 설정의 별도 토글이라 GitHub 웹에서 한 번 켜야 한다(현재 disabled).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    # 한 번에 우르르 올라오면 아무도 안 본다. 패치는 묶고, major 는 사람이 판단한다.
+    groups:
+      patch-and-minor:
+        update-types: ['patch', 'minor']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: 'chore(ci)'
