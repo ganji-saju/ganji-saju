@@ -10,6 +10,7 @@ import LegalLinks from '@/components/legal-links';
 import { GangiIntro, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ZodiacWheelLoading } from '@/components/saju/zodiac-wheel-loading';
+import { SAJU_RESULT_LOADING } from '@/components/saju/loading-copy';
 import { UnifiedIntake } from '@/features/unified-intake/unified-intake';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 // 2026-08-26 — '왜 여기서 봐야 하나' 설득 스토리(PPT 4p~, 홈 배너 앵커 착지 #why-gangi).
@@ -67,8 +68,8 @@ export default function SajuNewClient() {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-0">
       {submitting ? (
         <ZodiacWheelLoading
-          title="사주를 풀어드리고 있어요"
-          description="네 기둥(年月日時)을 정리하고 오늘 흐름과 맞춰보는 중입니다."
+          {...SAJU_RESULT_LOADING}
+          steps={[...SAJU_RESULT_LOADING.steps]}
           estimateMs={6_000}
         />
       ) : null}

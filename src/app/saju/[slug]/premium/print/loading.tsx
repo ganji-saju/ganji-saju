@@ -30,6 +30,9 @@ export default function SajuPremiumPrintLoading() {
             '문서 형태로 정리',
           ]}
           estimateMs={50_000}
+          // 실측: 두 번째 열람은 10초 미만(챕터 캐시 히트). 그 사람에게 "보통 50초쯤" 은
+          // 틀린 말이라, 캐시 히트 구간을 지난 뒤에만 예상치를 말한다.
+          revealAfterMs={12_000}
         />
       </AppPage>
     </AppShell>

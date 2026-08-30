@@ -54,8 +54,7 @@ const STAMP_MS = 1150;
 
 /** 하단 바를 채우는 규칙. 자세한 근거는 elapsedProgress 주석 참고. */
 const BAR_CEILING = 0.94;
-/** 경과 표시가 나타나기까지. 1초 만에 끝나는 화면에서 "0초 경과" 가 깜빡이면 소음이다.
- *  느린 화면(PDF)에서만 자연스럽게 등장하고, 빠른 화면에선 아무도 못 본다. */
+/** 경과 표시가 나타나기까지(기본). 1초 만에 끝나는 화면에서 "0초 경과" 가 깜빡이면 소음이다. */
 const REVEAL_AFTER_MS = 2200;
 
 const DEFAULT_STEPS = [
@@ -81,6 +80,15 @@ interface Props {
    * 진실을 말하는 건 **경과 초**이고, 바는 "살아 있다"는 신호일 뿐이다.
    */
   estimateMs?: number;
+  /**
+   * 경과 표시가 뜨기까지(ms). 기본 2.2초.
+   *
+   * 2026-08-30 실측 제보: PDF 를 **두 번째로** 열었더니 10초도 안 걸렸다(챕터 캐시 히트).
+   * 그런데 2.2초에 표시가 떠서 "보통 50초쯤 걸려요" 를 보여줬다 — **그 사람에겐 틀린 말**이다.
+   * 예상치가 유효한 건 캐시 미스(처음 만드는 사람)뿐이라, PDF 는 이 값을 캐시 히트 구간보다
+   * 뒤로 미뤄 **이미 오래 기다린 사람에게만** 예상치를 말한다.
+   */
+  revealAfterMs?: number;
 }
 
 /**
@@ -109,6 +117,7 @@ export function ZodiacWheelLoading({
   description = '네 기둥(年月日時)을 세우고 오늘 흐름과 맞춰보는 중입니다.',
   steps,
   estimateMs,
+  revealAfterMs = REVEAL_AFTER_MS,
 }: Props) {
   const normalizedSteps = useMemo(() => {
     const list = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
@@ -214,7 +223,7 @@ export function ZodiacWheelLoading({
           ))}
         </div>
 
-        {estimateMs && elapsedMs >= REVEAL_AFTER_MS ? (
+        {estimateMs && elapsedMs >= revealAfterMs ? (
           <div className="zodiac-loading-progress">
             <div className="zodiac-loading-bar" aria-hidden="true">
               <span
