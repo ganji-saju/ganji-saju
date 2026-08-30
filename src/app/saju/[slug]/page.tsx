@@ -34,6 +34,7 @@ import {
   buildSajuTodayDetailHref,
 } from '@/lib/saju/today-detail-links';
 import { ELEMENT_INFO } from '@/lib/saju/elements';
+import { ganziToKorean } from '@/lib/saju/terminology';
 import { simplifySajuCopy } from '@/lib/saju/public-copy';
 import type { Element } from '@/lib/saju/types';
 import { resolveReading } from '@/lib/saju/readings';
@@ -453,7 +454,9 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const totalReviewLLMActive = isTotalReviewLLMEnabled() && Boolean(personalizationContext);
 
   const pillars = [
-    { label: '년', pillar: sajuData.pillars.year },
+    // 2026-08-30 #713 — '년주' → '연주'. 같은 페이지 아래 도식은 '연주' 라 한 화면에 두
+    //   표기가 섞여 있었다. 두음법칙상 年柱 는 '연주' 가 맞다.
+    { label: '연', pillar: sajuData.pillars.year },
     { label: '월', pillar: sajuData.pillars.month },
     { label: '일', pillar: sajuData.pillars.day },
     { label: '시', pillar: sajuData.pillars.hour },
@@ -678,6 +681,12 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       >
                         {pillar?.stem ?? '-'}
                         {pillar?.branch ?? ''}
+                      </div>
+                      {/* 2026-08-30 #713 — 한글 음. 위 주석은 처음부터 "한자 + 한국명" 이라고
+                          적혀 있었는데 렌더에서 빠져 있어 한자만 덩그러니 남아 있었다
+                          (사용자: "사주팔자 아래에도 한글음을 써줘"). */}
+                      <div className="mt-1 text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+                        {pillar ? ganziToKorean(pillar.ganzi) : ''}
                       </div>
                     </article>
                   );
