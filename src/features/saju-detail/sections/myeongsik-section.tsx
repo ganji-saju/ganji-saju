@@ -44,10 +44,10 @@ export function MyeongsikSection({
                     ? sajuData.pillars.month
                     : sajuData.pillars.year;
             const stemColor = pillar?.stemElement
-              ? ELEMENT_INFO[pillar.stemElement].color
+              ? ELEMENT_INFO[pillar.stemElement].textColor
               : 'var(--app-ink)';
             const branchColor = pillar?.branchElement
-              ? ELEMENT_INFO[pillar.branchElement].color
+              ? ELEMENT_INFO[pillar.branchElement].textColor
               : 'var(--app-ink)';
             return (
               <article

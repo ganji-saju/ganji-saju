@@ -16,7 +16,13 @@ export const ELEMENT_INFO: Record<Element, {
   name: string;
   /** 한 단어 키워드 (예: '금') — 본문 합성용 ("금 기운이 강하다") */
   keyword: string;
+  /** 마크(도넛 조각·범례 점·배경)용 원색. **글자에는 쓰지 마라** — 흰 배경 대비가
+   *  2.16~3.68:1 로 본문 최소치(4.5)는 물론 큰 글씨 기준(3)도 셋이 미달이다. */
   color: string;
+  /** 글자용. 색상(hue)은 그대로 두고 명도만 낮춰 흰 배경에서 4.6:1 이상을 맞춘 값.
+   *  2026-08-30 사용자 제보: "오행 원형도표 가운데 한자가 회색이라 안 보인다(금 #9E9E9E)."
+   *  드래그하면 보였다는 건 글자가 있긴 한데 대비가 없다는 뜻이다. */
+  textColor: string;
   traits: string[];
   keywords: string[];
 }> = {
@@ -24,6 +30,7 @@ export const ELEMENT_INFO: Record<Element, {
     name: '목 기운',
     keyword: '목',
     color: '#4CAF50',
+    textColor: '#3A843D',
     traits: ['성장', '발전', '창의성', '인자함'],
     keywords: ['새 시작', '추진력', '도전', '관계 확장', '봄'],
   },
@@ -31,6 +38,7 @@ export const ELEMENT_INFO: Record<Element, {
     name: '화 기운',
     keyword: '화',
     color: '#F44336',
+    textColor: '#E61C0D',
     traits: ['열정', '예의', '전달력', '통찰력'],
     keywords: ['열정', '활기', '말', '결정', '여름'],
   },
@@ -38,6 +46,7 @@ export const ELEMENT_INFO: Record<Element, {
     name: '토 기운',
     keyword: '토',
     color: '#FF9800',
+    textColor: '#A96500',
     traits: ['신뢰', '안정', '중재력', '포용력'],
     keywords: ['안정감', '중심', '신뢰', '균형', '기반'],
   },
@@ -45,6 +54,7 @@ export const ELEMENT_INFO: Record<Element, {
     name: '금 기운',
     keyword: '금',
     color: '#9E9E9E',
+    textColor: '#757575',
     traits: ['결단력', '의리', '정의감', '추진력'],
     keywords: ['결단력', '마무리', '판단', '원칙', '가을'],
   },
@@ -52,6 +62,7 @@ export const ELEMENT_INFO: Record<Element, {
     name: '수 기운',
     keyword: '수',
     color: '#2196F3',
+    textColor: '#0B77CE',
     traits: ['지혜', '유연성', '직관력', '깊이'],
     keywords: ['지혜', '유연함', '깊이', '회복', '겨울'],
   },

@@ -659,7 +659,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                 {pillars.map((item) => {
                   const pillar = item.pillar;
                   const stemColor = pillar?.stemElement
-                    ? ELEMENT_INFO[pillar.stemElement].color
+                    ? ELEMENT_INFO[pillar.stemElement].textColor
                     : 'var(--app-ink)';
                   return (
                     <article
