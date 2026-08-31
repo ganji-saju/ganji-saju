@@ -127,6 +127,33 @@ test('membership overlap notices stay wired on comprehensive-bundle surfaces', (
   );
 });
 
+// 2026-08-31 — 🔴돈줄 가드 2: 멤버십 깊은풀이 열람은 본인·가족 사주(등록 5명)로 한정한다
+//   (대표 결정). 구독 패스가 가족 매칭 없이 되살아나면(=blanket 회귀) 실패해야 한다.
+//   범위를 좁히고 침묵하면 "멤버십인데 안 열려" 제보가 되므로 안내 배선도 같이 잠근다.
+test('membership premium-report pass stays family-scoped', () => {
+  const premiumPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/saju/[slug]/premium/page.tsx'),
+    'utf8'
+  );
+  assert.ok(
+    premiumPage.includes('isReadingInMemberFamily'),
+    '구독 패스는 본인·가족 사주 정체성 매칭을 거쳐야 한다'
+  );
+  assert.ok(
+    premiumPage.includes('멤버십 열람 범위'),
+    '가족 범위 밖일 때 등록 안내가 있어야 한다(침묵 금지)'
+  );
+
+  const sajuPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/saju/[slug]/page.tsx'),
+    'utf8'
+  );
+  assert.ok(
+    sajuPage.includes('가족 사주 바로가기'),
+    '사주 화면에 가족 사주 바로가기 내비가 있어야 한다'
+  );
+});
+
 test('login page exposes the minimum paid-service auth surface', () => {
   const source = fs.readFileSync(path.join(process.cwd(), 'src/app/login/page.tsx'), 'utf8');
 

@@ -457,9 +457,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
           {bundleMembershipOverlap ? (
             <p className="rounded-[12px] border border-[var(--app-gold)]/45 bg-[var(--app-surface-strong)] px-3.5 py-2.5 text-[14.4px] leading-relaxed text-[var(--app-copy)]">
               <strong className="font-extrabold text-[var(--app-gold-text)]">멤버십 이용 중이에요.</strong>{' '}
-              깊은 사주풀이·오늘 자세히 보기는 멤버십으로 이미 열려 있어요. 이 종합 리포트에서
-              멤버십에 없는 것은 사주 종합점수·5요소 풀이, 돈 패턴, 일·직장 흐름입니다. 구성 중
-              ‘오늘 자세히 보기’·‘올해 핵심 3줄’은 멤버십 혜택과 겹칠 수 있으니 확인 후 결제해 주세요.
+              멤버십으로 깊은 사주풀이(본인·등록 가족 사주 최대 5명)와 오늘 자세히 보기가 이미
+              열려 있어요. 이 종합 리포트에서 멤버십에 없는 것은 사주 종합점수·5요소 풀이,
+              돈 패턴, 일·직장 흐름입니다. 구성 중 ‘오늘 자세히 보기’·‘올해 핵심 3줄’은
+              멤버십 혜택과 겹칠 수 있으니 확인 후 결제해 주세요.
             </p>
           ) : null}
 

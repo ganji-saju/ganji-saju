@@ -61,6 +61,8 @@ import { buildLifetimeReport } from '@/domain/saju/report';
 import { computeSajuScoreFromData } from '@/lib/saju-score';
 import { getScoreUnlockEntitlement } from '@/lib/saju/score-unlock-access';
 import { getViewerMemberTier } from '@/lib/subscription';
+import { getViewerFamilySajuNav } from '@/lib/saju/family-access';
+import { sajuIdentityKey } from '@/lib/saju/reading-identity';
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { compareLabelFromMap, priceLabelFromMap, type PriceKey } from '@/lib/payments/price-display-shared';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
@@ -400,6 +402,10 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   오늘 자세히·올해 핵심은 멤버십 혜택과 겹침). 종합은 멤버십 미포함 단품이라
   //   CTA 자체는 유지하되, 멤버에게는 "왜 겹치는지" 고지를 목차 위에 붙인다.
   const memberTier = !scoreUnlocked ? await getViewerMemberTier() : null;
+  // 2026-08-31 — 가족 사주 바로가기(대표 요청): 가족이 등록돼 있으면 사주 화면에서
+  //   클릭 한 번으로 그 가족의 사주로 이동한다. 멤버십 열람 범위(본인·가족 5명)와 한 세트.
+  const familyNav = await getViewerFamilySajuNav();
+  const currentIdentity = sajuIdentityKey(input);
   // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
   //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
   //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
@@ -553,6 +559,45 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
           {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
               input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
           <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
+
+          {/* 2026-08-31 — 가족 사주 바로가기. 등록된 본인·가족(최대 5명) 칩을 눌러
+              바로 그 사주로 이동한다. 현재 보는 사주는 정체성(4기둥+성별) 매칭으로 표시. */}
+          {familyNav.length > 0 ? (
+            <nav aria-label="가족 사주 바로가기" className="px-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-copy-soft)]">
+                  가족 사주
+                </span>
+                {familyNav.map((member) => {
+                  const isCurrent =
+                    currentIdentity !== null && member.identity === currentIdentity;
+                  return isCurrent ? (
+                    <span
+                      key={member.id}
+                      className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-pink)] bg-[var(--app-pink-soft)] px-3 py-1.5 text-[13.8px] font-extrabold text-[var(--app-pink-strong)]"
+                      aria-current="page"
+                    >
+                      {member.label}
+                      <span className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+                        {member.relationship}
+                      </span>
+                    </span>
+                  ) : (
+                    <Link
+                      key={member.id}
+                      href={`/saju/${encodeURIComponent(member.slug)}`}
+                      className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-line)] bg-white px-3 py-1.5 text-[13.8px] font-bold text-[var(--app-ink)] no-underline"
+                    >
+                      {member.label}
+                      <span className="text-[11.5px] font-bold text-[var(--app-copy-soft)]">
+                        {member.relationship}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </nav>
+          ) : null}
 
           <section className="space-y-4 px-1">
             {/* 2026-05-15 handoff 52 m-reveal — 결과 카드 7개 stagger 등장.
@@ -742,8 +787,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   멤버십 이용 중
                 </div>
                 <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
-                  깊은 사주풀이와 오늘 자세히 보기는 멤버십으로 이미 열려 있어요. 아래 종합
-                  리포트는 멤버십에 포함되지 않는 별도 단품이며, 구성 항목 중 ‘오늘 자세히
+                  멤버십 깊은 사주풀이 열람은 본인·등록 가족 사주(최대 5명)에 적용돼요. 아래
+                  종합 리포트는 멤버십에 포함되지 않는 별도 단품이며, 구성 항목 중 ‘오늘 자세히
                   보기’와 ‘올해 핵심 3줄’은 멤버십 혜택과 겹칠 수 있어요.
                 </p>
                 <Link
