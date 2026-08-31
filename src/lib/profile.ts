@@ -610,6 +610,37 @@ export async function getUserProfileById(userId: string): Promise<UserProfile> {
   return mapUserProfile(profileResponse.data as ProfileRow | null);
 }
 
+// 2026-08-31 — 멤버십 가족 열람 범위·가족 사주 바로가기용 목록 조회(서비스 클라이언트,
+//   userId 기준). 테이블 미적용 DB(레거시)는 빈 목록으로 흡수한다.
+export async function listFamilyProfilesForUser(userId: string): Promise<FamilyProfile[]> {
+  if (!hasSupabaseServerEnv || !hasSupabaseServiceEnv || !userId) return [];
+
+  const service = await createServiceClient();
+  const loadFamilyProfiles = (columns: string) =>
+    service
+      .from('family_profiles')
+      .select(columns)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+  const familyResponse = await loadWithProfileSelectFallback(loadFamilyProfiles, [
+    FAMILY_PROFILE_SELECT_WITH_BIRTH_RULES,
+    FAMILY_PROFILE_SELECT_FULL,
+    FAMILY_PROFILE_SELECT_WITH_LOCATION,
+    FAMILY_PROFILE_SELECT_WITH_MINUTE,
+    FAMILY_PROFILE_SELECT,
+  ]);
+
+  if (familyResponse.error) {
+    if (isMissingFamilyProfilesTableError(familyResponse.error)) return [];
+    throw new Error(getErrorMessage(familyResponse.error));
+  }
+
+  return ((familyResponse.data ?? []) as unknown as FamilyProfileRow[]).map((item) =>
+    mapFamilyProfile(item)
+  );
+}
+
 export async function getOptionalSignedInProfile(): Promise<UserProfile | null> {
   if (!hasSupabaseServerEnv || !hasSupabaseServiceEnv) {
     return null;

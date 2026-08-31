@@ -36,6 +36,7 @@ import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { priceLabelFromMap, tasteProductPriceKey } from '@/lib/payments/price-display-shared';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
 import { resolveReading } from '@/lib/saju/readings';
+import { isReadingInMemberFamily } from '@/lib/saju/family-access';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -301,6 +302,9 @@ export default async function SajuPremiumPage({ params }: Props) {
   // 2026-05-16 — 활성 멤버십 plan 을 추적해 plan=premium 결제 CTA 가 중복 결제로
   //   이어지지 않도록 분기. checkout 단계에서도 차단되지만 진입 button 에서도 안내.
   let activeMembershipPlan: string | null = null;
+  // 2026-08-31 — 멤버십인데 이 사주가 본인·가족(등록 5명) 범위 밖이라 열람이 막힌 상태.
+  //   좁히기만 하고 침묵하면 "멤버십인데 왜 안 열려" 제보가 된다 — 등록 안내를 같이 띄운다.
+  let membershipFamilyScopeBlocked = false;
 
   if (hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
@@ -316,16 +320,30 @@ export default async function SajuPremiumPage({ params }: Props) {
         hasAnyMonthlyCalendarForReading(user.id, readingKey),
       ]);
 
+      // 2026-08-31 — 멤버십 열람 blanket 축소(대표 결정): 활성 구독이어도 본인·등록 가족
+      //   사주(정체성=4기둥+성별 매칭)일 때만 깊은풀이를 연다. 카피가 약속해 온
+      //   "가족 사주 5명까지"와 코드가 이제 일치한다.
+      const subscriptionEligible = Boolean(
+        subscription && canUseSubscriptionForPremiumReport(subscription)
+      );
+      const subscriptionInFamily =
+        subscriptionEligible && (await isReadingInMemberFamily(user.id, reading.input));
+
       if (entitlement) {
         hasLifetimeAccess = true;
         yearlyAccessLabel = '평생 소장 권한';
-      } else if (subscription && canUseSubscriptionForPremiumReport(subscription)) {
-        yearlyAccessLabel = subscription.plan === 'premium_monthly' ? 'Premium 이용권' : '라이트 이용권';
+      } else if (subscriptionInFamily) {
+        yearlyAccessLabel =
+          subscription!.plan === 'premium_monthly'
+            ? 'Premium 이용권 · 가족 사주'
+            : '라이트 이용권 · 가족 사주';
       } else if (yearCoreEntitlement) {
         yearlyAccessLabel = '올해 핵심 3줄 구매';
       } else if (hasMonthlyCalendar) {
         monthlyAccessLabel = '월간 달력 구매';
       }
+      membershipFamilyScopeBlocked =
+        subscriptionEligible && !subscriptionInFamily && !hasLifetimeAccess;
       if (subscription && isEntitledStatus(subscription.status)) {
         activeMembershipPlan = subscription.plan;
       }
@@ -486,6 +504,25 @@ export default async function SajuPremiumPage({ params }: Props) {
             initialHasEntitlement={hasLifetimeAccess}
           />
           <GangiPageHeader title="상세" backHref={`/saju/${slug}`} />
+
+          {/* 2026-08-31 — 멤버십 가족 범위 밖 안내. 침묵하면 "멤버십인데 안 열려" 제보가 된다. */}
+          {membershipFamilyScopeBlocked ? (
+            <section className="rounded-[16px] border border-[var(--app-gold)]/45 bg-[var(--app-surface-strong)] p-4">
+              <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-gold-text)]">
+                멤버십 열람 범위 안내
+              </div>
+              <p className="mt-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]">
+                멤버십 깊은 사주풀이 열람은 본인과 등록한 가족 사주(최대 5명)에 적용돼요.
+                이 사주를 가족으로 등록하면 멤버십으로 바로 볼 수 있어요.
+              </p>
+              <Link
+                href="/my/profile"
+                className="mt-3 inline-flex items-center gap-1 text-[15px] font-extrabold text-[var(--app-pink-strong)] no-underline"
+              >
+                가족 사주 등록하러 가기 →
+              </Link>
+            </section>
+          ) : null}
 
           {/* 2026-05-22 — '오늘의 분야별 흐름'(SajuAreaCardsSection)은 사주 메인 페이지에만 노출.
              상세(이 페이지)에서 중복 렌더되어 같은 내용 반복으로 느껴져 제거(메인 요약 유지). */}
