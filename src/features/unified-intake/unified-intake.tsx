@@ -415,7 +415,8 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
   //   이후 늦게 도착하는 /api/profile 본인 응답이 덮어쓰지 않게 편집 플래그를 세운다.
   function applyLoadedFields(
     fields: NonNullable<ProfileApiResponse['profile']> | IntakeFamilyOption,
-    name: string
+    name: string,
+    source: 'self' | 'family'
   ) {
     hasUserEditedRef.current = true;
     fireStarted();
@@ -436,7 +437,8 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
       timeRule: fields.timeRule ?? 'standard',
       solarTimeMode: fields.solarTimeMode ?? 'standard',
     });
-    setProfile((cur) => ({ ...cur, ...filled }));
+    // 🔴 소스 표기 — 'family' 면 제출 시 본인 프로필 자동저장을 건너뛴다(덮어쓰기 사고 방지).
+    setProfile((cur) => ({ ...cur, ...filled, loadedProfileSource: source }));
     setError('');
     // 성별 등 미입력이 남았으면 폼을 펼쳐 바로 채우게, 완성이면 요약 카드로.
     setFormExpanded(!hasCompleteBirthProfile(filled));
@@ -458,7 +460,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
             {hasApiBirthCore(ownOption) && ownOption ? (
               <button
                 type="button"
-                onClick={() => applyLoadedFields(ownOption, ownOption.displayName || '')}
+                onClick={() => applyLoadedFields(ownOption, ownOption.displayName || '', 'self')}
                 className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-pink)]/45 bg-[var(--app-pink-soft)] px-3.5 py-1.5 text-[14.5px] font-extrabold text-[var(--app-pink-strong)]"
               >
                 {ownOption.displayName || '내 정보'}
@@ -470,7 +472,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
                 <button
                   key={member.id}
                   type="button"
-                  onClick={() => applyLoadedFields(member, member.label)}
+                  onClick={() => applyLoadedFields(member, member.label, 'family')}
                   className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-line)] bg-white px-3.5 py-1.5 text-[14.5px] font-bold text-[var(--app-ink)]"
                 >
                   {member.label}
