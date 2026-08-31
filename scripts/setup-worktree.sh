@@ -6,7 +6,6 @@
 #   1) .env.local 등 로컬 전용 파일        → 메인 체크아웃 것을 링크
 #   2) .claude/settings.local.json (훅 설정) → 메인 체크아웃 것을 링크
 #   3) ~/.claude/projects/<이 워크트리>/memory → 메인 프로젝트 memory 를 링크
-# node_modules 는 워크트리 생성기가 이미 만들어 주므로 없을 때만 링크한다.
 set -eu
 
 main_root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
@@ -31,7 +30,9 @@ for f in .env.local .env.development.local; do
   link "$main_root/$f" "$here/$f"
 done
 link "$main_root/.claude/settings.local.json" "$here/.claude/settings.local.json"
-link "$main_root/node_modules" "$here/node_modules"
+# ⚠️node_modules 는 링크하지 않는다 — Turbopack 이 저장소 밖을 가리키는 심링크를 거부해
+#   `npm run build` 가 "Symlink node_modules is invalid" 로 죽는다(2026-09-01 실측).
+#   워크트리에서는 `npm install` 로 실제 설치한다.
 
 # Claude 메모리 공유 — 프로젝트 디렉터리 이름 규칙: 경로의 '/'와 '.'을 '-'로 치환.
 munged=$(printf '%s' "$here" | tr '/.' '--')

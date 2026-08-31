@@ -269,6 +269,23 @@
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.08), 0 8px 18px rgba(17, 17, 20, 0.08);
 }
 
+/* 2026-09-01 — 이모지 칩 → 민화 띠 동물 그림. 그림이 칩을 꽉 채우고 테마색은 링으로만 남긴다. */
+.gangi-character .gangi-character-art {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+  display: block;
+}
+
+.gangi-character:has(.gangi-character-art) {
+  padding: 2px;
+}
+
+.gangi-character:has(.gangi-character-art) .gangi-character-face {
+  display: none;
+}
+
 .gangi-character-face {
   display: grid;
   width: 72%;
@@ -315,7 +332,26 @@
     0 10px 22px rgba(142, 42, 32, 0.12);
 }
 
-.gangi-star-sign-icon span {
+/* 2026-09-01 — 기호 칩 → 민화 별자리 그림. 그림이 원형 칩을 꽉 채우고, 테마 그라데이션은
+   가장자리 링으로만 남겨 12궁 색 구분을 유지한다. 이미지가 뜨면 기호 폴백은 감춘다. */
+.gangi-star-sign-icon .gangi-star-sign-art {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+  display: block;
+}
+
+.gangi-star-sign-icon:has(.gangi-star-sign-art) {
+  padding: 2px;
+  color: transparent;
+}
+
+.gangi-star-sign-icon:has(.gangi-star-sign-art) .gangi-star-sign-fallback {
+  display: none;
+}
+
+.gangi-star-sign-icon .gangi-star-sign-fallback {
   display: grid;
   width: 72%;
   height: 72%;

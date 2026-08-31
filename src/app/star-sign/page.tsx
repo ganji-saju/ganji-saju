@@ -4,7 +4,7 @@
 // 별자리별 일별 점수·하이라이트는 src/lib/star-sign/daily-fortune.ts 와 공유.
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { GangiStarSignIcon } from '@/components/gangi/gangi-star-sign';
+import { GangiStarSignIcon, StarSignArt } from '@/components/gangi/gangi-star-sign';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -159,7 +159,7 @@ export default async function StarSignPage() {
                   }}
                   aria-hidden="true"
                 >
-                  {featured.meta.symbol}
+                  <StarSignArt slug={featured.item.slug} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[25.3px] font-extrabold tracking-tight">
