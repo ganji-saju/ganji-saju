@@ -398,3 +398,68 @@ test('LTV: 데이터가 어긋나도 음수가 되지 않는다', () => {
   });
   assert.equal(result.totalSpentWon, 0);
 });
+
+// 🔴 2026-09-01 실사고 — 관리자 사용자조회가 9,900원 번들 결제를 **49,500원 5건**으로 표시했다.
+//   원인: 번들 구성품 이용권 5행은 amount=null 인데 금액 폴백이 패키지 정가를 행마다 붙였다.
+//   프로덕션 실측 데이터 모양(같은 order_id · amount=null · package_id=bundle_comprehensive)을 그대로 재현한다.
+function bundleComponent(id: string, productId: string): ProductEntitlementHistoryRow {
+  return {
+    id,
+    product_id: productId,
+    amount: null,
+    order_id: 'ord_fa9c72b6',
+    payment_key: 'pk_1',
+    package_id: 'bundle_comprehensive',
+    created_at: '2026-08-30T04:00:00.000Z',
+    metadata: null,
+  };
+}
+
+test('번들 구성품 5행은 주문 금액을 한 번만 계상한다(5배 부풀림 방지)', () => {
+  const components = [
+    bundleComponent('e1', 'score-total'),
+    bundleComponent('e2', 'work-flow'),
+    bundleComponent('e3', 'today-detail'),
+    bundleComponent('e4', 'money-pattern'),
+    bundleComponent('e5', 'year-core'),
+  ];
+  const result = buildPaymentHistory({
+    productEntitlements: components,
+    creditTransactions: [],
+    paymentOrders: [
+      {
+        id: 'o1',
+        order_id: 'ord_fa9c72b6',
+        package_id: 'bundle_comprehensive',
+        amount: 9900,
+        status: 'fulfilled',
+        created_at: '2026-08-30T04:00:00.000Z',
+        metadata: null,
+      },
+    ],
+  });
+
+  const price = getPackage('bundle_comprehensive')?.price ?? 9900;
+  assert.equal(result.totalSpentWon, price, '번들 정가를 한 번만 세야 한다');
+  assert.equal(
+    result.entries.filter((e) => (e.amountWon ?? 0) > 0).length,
+    1,
+    '결제 건수도 1건이어야 한다(구성품 수만큼 세면 안 된다)'
+  );
+  // 지급 내역 자체는 사라지지 않는다 — 무엇을 받았는지 계속 보여야 한다.
+  assert.equal(result.entries.length, 5);
+});
+
+test('구성품이 자기 금액을 가지면 그대로 계상한다(단건 결제 회귀 방지)', () => {
+  const rows: ProductEntitlementHistoryRow[] = [
+    { ...bundleComponent('e1', 'score-total'), amount: 3300, package_id: null, order_id: 'ord_a' },
+    { ...bundleComponent('e2', 'today-detail'), amount: 3300, package_id: null, order_id: 'ord_b' },
+  ];
+  const result = buildPaymentHistory({
+    productEntitlements: rows,
+    creditTransactions: [],
+    paymentOrders: [],
+  });
+  assert.equal(result.totalSpentWon, 6600);
+  assert.equal(result.entries.filter((e) => (e.amountWon ?? 0) > 0).length, 2);
+});
