@@ -11,6 +11,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { getUserSituationForUser } from '@/lib/profile/user-situation';
 import { createClient } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkLanternMark } from '@/components/gangi/ink-marks';
 
 export const metadata: Metadata = {
   title: '궁합',
@@ -21,7 +22,6 @@ export const metadata: Metadata = {
 const RELATIONSHIP_TONES: Record<
   string,
   {
-    icon: string;
     badge: string;
     accent: string;
     soft: string;
@@ -29,28 +29,24 @@ const RELATIONSHIP_TONES: Record<
   }
 > = {
   lover: {
-    icon: '💕',
     badge: '연인·배우자',
     accent: 'var(--app-coral)',
     soft: 'rgba(220,79,79,0.08)',
     line: 'rgba(220,79,79,0.22)',
   },
   family: {
-    icon: '🌿',
     badge: '부모·자녀',
     accent: 'var(--app-jade)',
     soft: 'rgba(45,135,88,0.08)',
     line: 'rgba(45,135,88,0.22)',
   },
   friend: {
-    icon: '🌊',
     badge: '형제·친구',
     accent: 'var(--app-sky)',
     soft: 'rgba(55,142,232,0.08)',
     line: 'rgba(55,142,232,0.22)',
   },
   partner: {
-    icon: '✦',
     badge: '동업·파트너',
     accent: 'var(--app-amber)',
     soft: '#fdf6e7',
@@ -126,15 +122,25 @@ export default async function CompatibilityPage() {
                     className="flex items-start gap-3 rounded-[16px] border bg-white p-4 transition-transform active:scale-[0.98]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
+                    {/* 2026-09-01 — 이모지(💕🌿🌊✦) → 민화 도상(원앙·학 가족·까치 한 쌍·쌍잉어).
+                        48px 타일을 그림이 채우고, 관계색은 테두리로 유지한다. */}
                     <div
-                      className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[29.9px]"
+                      className="h-12 w-12 shrink-0 overflow-hidden rounded-[14px]"
                       style={{
                         background: tone?.soft ?? 'var(--app-pink-soft)',
                         border: `1px solid ${tone?.line ?? 'var(--app-pink-line)'}`,
                       }}
                       aria-hidden="true"
                     >
-                      {tone?.icon ?? item.icon}
+                      <img
+                        src={`/images/gangi/icons/relationship/${item.slug}.webp`}
+                        alt=""
+                        aria-hidden="true"
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div
@@ -174,7 +180,7 @@ export default async function CompatibilityPage() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-              💡 어떻게 진행되나요?
+              <InkLanternMark size={15} /> 어떻게 진행되나요?
             </div>
             <ul
               className="mt-2 grid gap-1.5 text-[13.8px] leading-[1.65] text-[var(--app-copy)]"

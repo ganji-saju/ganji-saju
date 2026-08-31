@@ -31,8 +31,42 @@ test('별자리 그림 12종이 모두 존재한다', () => {
   }
 });
 
+test('궁합 관계 그림 4종이 모두 존재한다', () => {
+  for (const key of ['lover', 'family', 'friend', 'partner']) {
+    const file = path.join(ICONS, 'relationship', `${key}.webp`);
+    assert.ok(fs.existsSync(file), `관계 자산 누락: ${key}.webp`);
+  }
+});
+
+test('궁합 표면에 장식 이모지가 남아 있지 않다', () => {
+  // 2026-09-01 대표 지시: "지금 이모지는 촌스러워 전체 분위기와 안 어울린다" → 그림/먹선으로 교체.
+  const files = [
+    'src/app/compatibility/page.tsx',
+    'src/app/star-sign/compat/[a]/[b]/page.tsx',
+    'src/features/compatibility/compatibility-input-client.tsx',
+  ];
+  // 컬러 이모지만 잡는다 — ✓ ✦ › 같은 타이포그래피 기호는 먹 톤과 어울려 유지한다.
+  const TYPOGRAPHIC = new Set(['✓', '✦', '✧', '›', '·', '→', '↑', '⚠']);
+  const decorative = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+    const offenders = source
+      .split('\n')
+      .filter((line) => {
+        if (line.trim().startsWith('//') || line.includes('*')) return false;
+        const hits = [...line].filter((ch) => decorative.test(ch));
+        return hits.some((ch) => !TYPOGRAPHIC.has(ch));
+      });
+    assert.equal(
+      offenders.length,
+      0,
+      `${file} 에 장식 이모지가 남았다: ${offenders.map((l) => l.trim()).join(' | ')}`
+    );
+  }
+});
+
 test('칩 자산은 작게 유지한다(장당 40KB 이하 — 목록에 12개가 한 번에 뜬다)', () => {
-  for (const group of ['zodiac', 'star-sign']) {
+  for (const group of ['zodiac', 'star-sign', 'relationship']) {
     for (const file of fs.readdirSync(path.join(ICONS, group))) {
       const size = fs.statSync(path.join(ICONS, group, file)).size;
       assert.ok(size <= 40 * 1024, `${group}/${file} 가 ${Math.round(size / 1024)}KB — 재인코딩 필요`);

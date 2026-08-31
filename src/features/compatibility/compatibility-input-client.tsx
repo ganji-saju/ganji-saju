@@ -18,6 +18,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
+import { InkBrushMark } from '@/components/gangi/ink-marks';
 
 type PersonKey = 'self' | 'partner';
 type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'anonymous' | 'empty' | 'error';
@@ -734,7 +735,7 @@ export function CompatibilityInputClient({
                 color: 'var(--app-pink-strong)',
               }}
             >
-              📝 {selfSummary}
+              <InkBrushMark size={14} /> {selfSummary}
             </div>
           ) : null}
 
@@ -812,7 +813,7 @@ export function CompatibilityInputClient({
                 color: '#1f6a44',
               }}
             >
-              📝 {partnerSummary}
+              <InkBrushMark size={14} /> {partnerSummary}
             </div>
           ) : null}
 
