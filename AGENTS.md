@@ -8,6 +8,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+# 워크트리 세션(Orca 포함): 시작 전에 `./scripts/setup-worktree.sh` 1회 실행
+
+워크트리에는 gitignore 파일(.env.local, .claude/settings.local.json)이 없고, Claude 메모리도
+폴더 경로별로 갈려서 빈 상태로 시작한다(2026-08-31 실측 — PROGRESS 기록이 세션 간에 갈린 원인).
+이 스크립트가 셋 다 메인 체크아웃에 심링크로 붙여 터미널 세션과 같은 환경을 만든다(멱등).
+그리고 substantive 작업을 마치면 PROGRESS.md 맨 위에 세션 항목을 추가해 **PR에 같이 커밋**한다
+(워크트리에서만 남긴 기록은 워크트리 정리와 함께 사라진다).
+
 # GitHub 계정: 이 저장소는 항상 `ganji-saju` 로만 작업
 
 이 저장소의 push/PR/머지는 **반드시 `ganji-saju` 계정**으로 해야 한다(기본 활성 계정 `kionya` 는 비협업자라 실패). `gh` 는 전역 활성 계정을 공유하므로 다른 프로젝트/프로세스가 계정을 바꾸면 여기도 깨진다 — 아래로 격리한다.
