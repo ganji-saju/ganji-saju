@@ -178,8 +178,9 @@ warn(80%) 은 $40 에서 뜬다 — 처음에 "23% 여유" 라고 한 건 틀렸
    / 실패 뒤 호출 없음 → warn(확인 필요). 원본 3쿼리(head·limit 1), 조회 실패 시 옛 규칙으로 보수적. 8/31 실제
    상황을 테스트로 고정. 밤에 트래픽 0 이면 warn 이었다가 아침 첫 실패로 critical → 1시간 내 메일.
 
-🔜 **사용자 작업**: Vercel Production 에 `ADMIN_ALERT_EMAILS=…` 추가 → 재배포 → 같은 URL 재확인
-(기대 `level: warn`·`outcome: sent`·메일 1통). 크론은 등록만 믿지 말 것(#634 canonical 301 전멸 이력).
+✅ **완료 확인(10:20 KST 첫 크론)**: 사용자가 `ADMIN_ALERT_EMAILS` 추가+재배포 → `notification_delivery_logs` 에
+`level=warn · sent 200 · "한도 초과 복구됨 — 오늘·어제 415건 실패 이력"` 1행. 수신자 반영·Resend 발송·#734 복구 판정
+(긴급 아님)이 한 번에 검증됐다. 크론이 실제로 돈 것도 이 행이 증거(#634 이력 때문에 등록만으로는 안 믿기로 했던 것).
 CodeQL 이 **테스트의** `html.includes('https://…')` 를 URL 검증 미흡(high)으로 오탐 → href 등호 비교로 교체.
 
 ### 수동 부여 회수 (#729)
