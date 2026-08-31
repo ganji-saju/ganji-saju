@@ -59,6 +59,24 @@ test('compat interpretation: 캐시 키는 두 사람 순서에 무관(A↔B 동
   );
 });
 
+// 2026-08-31 — 회귀 가드: 본문에 이름이 들어가므로 이름이 다르면 다른 캐시여야 한다.
+//   이전엔 명식만 키라서 같은 두 명식의 다른 커플이 앞 사람 이름이 박힌 본문을 받았다.
+test('compat interpretation: 같은 두 명식이라도 이름이 다르면 캐시 키가 다르다', () => {
+  const named = buildCompatibilityInterpretationInput(interp('lover', PERSON_A, PERSON_B), '가영', '나준');
+  const renamed = buildCompatibilityInterpretationInput(interp('lover', PERSON_A, PERSON_B), '가영', '남편');
+  assert.notEqual(
+    buildCompatibilityInterpretationCacheKey(named),
+    buildCompatibilityInterpretationCacheKey(renamed),
+    '이름이 달라도 키가 같다 — 앞 사람 이름이 박힌 본문이 캐시로 나간다'
+  );
+  // 공백·앞뒤 트림 차이는 같은 이름이다(불필요한 재생성 방지).
+  const spaced = buildCompatibilityInterpretationInput(interp('lover', PERSON_A, PERSON_B), ' 가영 ', '나준');
+  assert.equal(
+    buildCompatibilityInterpretationCacheKey(named),
+    buildCompatibilityInterpretationCacheKey(spaced)
+  );
+});
+
 test('compat interpretation: 파서가 코드펜스/머리말이 섞인 응답에서도 sections 를 추출', () => {
   const wrapped = '```json\n' + validLlmJson() + '\n```';
   const parsed = parseCompatibilitySections(wrapped);

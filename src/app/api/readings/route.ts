@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, after } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import {
   createClient,
   hasSupabaseServerEnv,
@@ -10,11 +10,8 @@ import {
   createReading,
   deleteReadingForUser,
   getReadingCountForUser,
-  resolveReading,
 } from '@/lib/saju/readings';
 // 2026-06-29 — 총평 LLM 캐시 프리워밍(생성 직후 백그라운드). 결과 재조회·동시조회 시 캐시 hit.
-import { generateTotalReview } from '@/server/ai/saju-total-review-service';
-import { isTotalReviewLLMEnabled } from '@/server/ai/total-review/total-review-cache';
 import { rememberAnonymousReading } from '@/lib/saju/anonymous-reading-claim';
 import {
   isUnifiedBirthEntryDraft,
@@ -142,31 +139,13 @@ export async function POST(req: NextRequest) {
   try {
     const id = await createReading(parsed.input, user?.id ?? null, effectiveSituation);
 
-    // 총평 LLM 캐시 프리워밍 — 응답 후 백그라운드(after)로 생성해 캐시를 데운다.
-    //   같은 사주+컨텍스트는 1회만 생성되므로(read-through 캐시), 결과 재조회·동시 조회가 빨라진다.
-    //   resolveReading 으로 페이지와 동일한 sajuData/grounding 을 재사용(인자 중복 없음).
-    if (isTotalReviewLLMEnabled()) {
-      after(async () => {
-        try {
-          const reading = await resolveReading(id);
-          const personalizationContext = reading?.grounding?.personalizationContext;
-          if (!reading || !personalizationContext) return;
-          await generateTotalReview({
-            sajuData: reading.sajuData,
-            personalizationContext,
-            userName: reading.input.name?.trim() || null,
-            gender:
-              reading.input.gender === 'female'
-                ? 'F'
-                : reading.input.gender === 'male'
-                  ? 'M'
-                  : null,
-          });
-        } catch {
-          // 프리워밍 실패는 무시 — 결과 페이지가 어차피 on-demand 생성/표시한다.
-        }
-      });
-    }
+    // 2026-08-31 — 총평 프리워밍(after → generateTotalReview) **제거**.
+    //   의도는 "응답 직후 백그라운드로 캐시를 데워 결과 페이지가 빨라진다" 였는데, 실제로는
+    //   제출 → 즉시 /saju/[id] 이동 → 페이지의 <TotalReviewSection> 이 같은 키로 generateTotalReview
+    //   를 부른다. 캐시 스토어에 in-flight 잠금이 없어 **둘 다 miss → 3섹션을 두 번 생성**했다
+    //   (프리워밍이 끝나기 전에 페이지가 먼저 조회한다 — LLM 은 수 초, 페이지 이동은 1초 안).
+    //   보지 않고 떠나는 사용자에겐 순수 낭비, 보는 사용자에겐 2배. 어느 쪽에도 이득이 없다.
+    //   페이지가 어차피 on-demand 로 생성하므로 지우기만 하면 된다(가드: total-review-prewarm.spec.ts).
 
     const response = NextResponse.json({ id });
 
