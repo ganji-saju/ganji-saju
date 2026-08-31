@@ -265,7 +265,9 @@ function SavedProfileQuickFill({
             >
               {group.label}
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* 2026-08-31 — 숨은 가로 스크롤(스크롤바 hidden)이라 4번째 이후 칩(배우자 등)이
+                화면 밖에 있어도 표시가 전혀 없었다("배우자가 안 나와요" 제보) → 줄바꿈으로 전원 노출. */}
+            <div className="flex flex-wrap gap-2">
               {profiles.map((profile) => (
                 <button
                   key={`${group.key}-${profile.id}`}
