@@ -260,11 +260,38 @@ export function sumCreditRefundedWon(rows: ReadonlyArray<CreditRefundAuditRow>):
 }
 
 // 두 소스를 합쳐 날짜 역순 정렬 + 총 결제액(₩) 집계. 순수 함수(테스트 고정).
+/**
+ * 🔴 2026-09-01 — 번들 1주문이 구성품 이용권 N개를 만든다(종합 번들 = 5종).
+ *   구성품 행은 `amount = null` 이라 금액 폴백이 **패키지 정가를 N번** 붙였고,
+ *   9,900원 결제가 사용자조회에서 **49,500원 5건**으로 부풀었다(원장은 9,900원 1건 — 실측).
+ *   같은 주문의 amount 없는 구성품 중 **첫 행만** 금액을 갖게 하고 나머지는 0원 항목으로 남긴다
+ *   (행 자체를 지우지 않는 이유: 무엇이 지급됐는지 내역에 계속 보여야 한다).
+ */
+function bundlePriceCarrierIds(
+  rows: readonly ProductEntitlementHistoryRow[]
+): Set<string> {
+  const carrierByOrder = new Map<string, string>();
+  for (const row of rows) {
+    if (row.amount !== null && row.amount !== undefined) continue; // 자기 금액이 있으면 그대로 둔다
+    if (!row.order_id) continue; // 주문번호가 없으면 묶을 근거가 없다
+    if (!carrierByOrder.has(row.order_id)) carrierByOrder.set(row.order_id, row.id);
+  }
+  return new Set(carrierByOrder.values());
+}
+
 export function buildPaymentHistory(
   input: BuildPaymentHistoryInput
 ): PaymentHistoryResult {
+  const carriers = bundlePriceCarrierIds(input.productEntitlements);
   const entries: PaymentHistoryEntry[] = [
-    ...input.productEntitlements.map(mapProductEntitlementToHistory),
+    ...input.productEntitlements.map((row) => {
+      const entry = mapProductEntitlementToHistory(row);
+      const isBundleComponent =
+        (row.amount === null || row.amount === undefined) &&
+        Boolean(row.order_id) &&
+        !carriers.has(row.id);
+      return isBundleComponent ? { ...entry, amountWon: null } : entry;
+    }),
     ...input.creditTransactions.map(mapCreditTransactionToHistory),
   ];
 
