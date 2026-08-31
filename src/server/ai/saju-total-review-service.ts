@@ -59,7 +59,18 @@ export interface TotalReviewResult {
 }
 
 // main_narrative(4단락 5~8문장)가 가장 큼 — 넉넉히. 작은 섹션은 조기 종료.
-const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 1500;
+// 2026-08-31 — 프로덕션 실측(ai_llm_runs 최근 7일)으로 고친 두 숫자.
+//   ① 출력 상한 1500 → 2600: 성공 호출의 **12% 가 정확히 1500 토큰**에서 끝났다 = 잘림.
+//      프롬프트 자체가 본문 4단락 28~32문장(≈2,000~2,900자)을 요구하므로 main_narrative 는
+//      1500 토큰에 **구조적으로** 안 들어간다. 잘린 JSON 은 parseLooseJson 이 실패 → 재시도
+//      꼬리말("JSON 파싱 실패")은 길이를 못 고치니 같은 자리에서 또 잘림 → 3콜 낭비 후 fallback.
+//      상한을 올려도 모델은 프롬프트 길이 규칙을 따르므로 짧은 섹션 비용은 그대로다.
+//   ② 타임아웃 15s(openai-text 기본) → 40s: 실패 25건 전부 15,00x ms 에서 끊겼고(=SDK timeout),
+//      성공 호출 p50 12s·p90 14s·max 14.9s 로 **성공이 타임아웃 벽에 붙어 있었다.**
+//      상한을 올리면 출력이 길어져 더 자주 걸린다 — ①과 ②는 한 세트다.
+//   ⚠️ 이 값들을 내리려면 먼저 /admin/llm-cost 의 total_review fallback 이 왜 늘지 않는지 확인할 것.
+export const TOTAL_REVIEW_MAX_OUTPUT_TOKENS = 2600;
+export const TOTAL_REVIEW_TIMEOUT_MS = 40_000;
 
 /** 캐시 조각 + 신규 조각을 합쳐 완성 출력으로. 둘 다 없으면 deterministic 으로 메운다. */
 function assembleOutput(
@@ -159,7 +170,10 @@ export async function generateTotalReview(
   });
   const client =
     args.client ??
-    createOpenAITotalReviewClient({ maxOutputTokens: TOTAL_REVIEW_MAX_OUTPUT_TOKENS });
+    createOpenAITotalReviewClient({
+      maxOutputTokens: TOTAL_REVIEW_MAX_OUTPUT_TOKENS,
+      timeoutMs: TOTAL_REVIEW_TIMEOUT_MS,
+    });
   const maxRetries = args.maxRetries ?? 2;
 
   const sectionFallbacks = {
