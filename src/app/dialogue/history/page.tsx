@@ -10,6 +10,7 @@ import { listDialogueSessions } from '@/lib/dialogue/history';
 import { getDialogueExpertMeta, normalizeDialogueExpertId } from '@/lib/dialogue-experts';
 import { createClient } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export const metadata: Metadata = {
   title: '대화 기록',
@@ -81,7 +82,7 @@ export default async function DialogueHistoryPage() {
               className="rounded-[18px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-pink-line)' }}
             >
-              <div className="text-[36.8px]">💬</div>
+              <div className="text-[36.8px]"><InkIcon name="chat" size={22} /></div>
               <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                 로그인하면 대화 기록을 볼 수 있어요
               </h2>
@@ -100,7 +101,7 @@ export default async function DialogueHistoryPage() {
               className="rounded-[18px] border bg-white p-5 text-center"
               style={{ borderColor: 'var(--app-line)' }}
             >
-              <div className="text-[36.8px]">🌱</div>
+              <div className="text-[36.8px]"><InkIcon name="flower" size={22} /></div>
               <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                 아직 나눈 대화가 없어요
               </h2>

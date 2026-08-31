@@ -23,6 +23,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   searchParams: Promise<{
@@ -193,7 +194,7 @@ export default async function TarotSpreadPage({ searchParams }: Props) {
           {spread.closing ? (
             <article className="rounded-[16px] border border-[var(--app-line)] bg-white p-4">
               <div className="flex items-center gap-1.5 text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-                <span aria-hidden="true">🌙</span>
+                <span aria-hidden="true"><InkIcon name="moon" size={22} /></span>
                 오늘 마음에 둘 한 가지
               </div>
               <p className="mt-1.5 text-[15.5px] font-semibold leading-[1.7] text-[var(--app-ink)]">

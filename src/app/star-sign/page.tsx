@@ -40,10 +40,10 @@ const ELEMENT_ORDER: SignElement[] = ['fire', 'earth', 'air', 'water'];
 const QUALITY_ORDER: SignQuality[] = ['cardinal', 'fixed', 'mutable'];
 
 const MOOD_EMOJI: Record<string, string> = {
-  warm: '🌤',
-  calm: '🌿',
-  dynamic: '🔥',
-  sensitive: '💧',
+  warm: 'today',
+  calm: 'flower',
+  dynamic: 'business',
+  sensitive: 'health',
 };
 
 export default async function StarSignPage() {

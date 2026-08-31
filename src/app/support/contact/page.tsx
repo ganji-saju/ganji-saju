@@ -6,6 +6,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ContactForm } from './contact-form';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export const metadata: Metadata = {
   title: '1:1 문의',
@@ -27,7 +28,7 @@ export default function ContactPage() {
           }}
         >
           <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-            💬 1:1 문의
+            <InkIcon name="chat" size={15} /> 1:1 문의
           </div>
           <h1
             className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"

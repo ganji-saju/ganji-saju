@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   result: TodayFortuneFreeResult;
@@ -28,17 +29,17 @@ interface Props {
 type AccuracyLabel = 'correct' | 'partial' | 'miss';
 
 const ACCURACY_OPTIONS: Array<{ key: AccuracyLabel; emoji: string; label: string; rating: -1 | 0 | 1 }> = [
-  { key: 'correct', emoji: '😊', label: '정확했어요', rating: 1 },
-  { key: 'partial', emoji: '🤷', label: '보통이에요', rating: 0 },
-  { key: 'miss', emoji: '😞', label: '안 맞아요', rating: -1 },
+  { key: 'correct', emoji: 'face-good', label: '정확했어요', rating: 1 },
+  { key: 'partial', emoji: 'face-so', label: '보통이에요', rating: 0 },
+  { key: 'miss', emoji: 'face-bad', label: '안 맞아요', rating: -1 },
 ];
 
 const AREA_LABELS: Array<{ key: string; icon: string; label: string }> = [
-  { key: 'wealth', icon: '💰', label: '재물' },
-  { key: 'love', icon: '💞', label: '애정' },
-  { key: 'career', icon: '💼', label: '직장' },
-  { key: 'health', icon: '🏥', label: '건강' },
-  { key: 'relationship', icon: '👥', label: '관계' },
+  { key: 'wealth', icon: 'wealth', label: '재물' },
+  { key: 'love', icon: 'love', label: '애정' },
+  { key: 'career', icon: 'office', label: '직장' },
+  { key: 'health', icon: 'health', label: '건강' },
+  { key: 'relationship', icon: 'relationship', label: '관계' },
 ];
 
 export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Props) {
@@ -110,7 +111,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
         className="rounded-[18px] border bg-white p-4 text-center"
         style={{ borderColor: 'var(--app-line)' }}
       >
-        <div className="text-[27.6px]">🙏</div>
+        <div className="text-[27.6px]"><InkIcon name="bless" size={22} /></div>
         <p className="mt-1 text-[15.5px] font-extrabold text-[var(--app-ink)]">
           소중한 피드백 감사합니다
         </p>
@@ -127,7 +128,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
       style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
     >
       <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-        💬 피드백
+        <InkIcon name="chat" size={15} /> 피드백
       </div>
       <h3 className="mt-0.5 text-[16.7px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
         오늘 운세가 얼마나 맞았나요?
@@ -146,7 +147,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
               boxShadow: accuracy === opt.key ? '0 4px 12px rgba(142,42,32,0.18)' : 'none',
             }}
           >
-            <div className="text-[27.6px] leading-none">{opt.emoji}</div>
+            <div className="leading-none"><InkIcon name={opt.emoji} size={26} /></div>
             <div className="mt-1 text-[15px] font-bold text-[var(--app-ink)]">{opt.label}</div>
           </button>
         ))}
@@ -167,7 +168,7 @@ export function TodayFeedbackCard({ result, enterAt, minDwellSeconds = 30 }: Pro
               {AREA_LABELS.map((area) => (
                 <div key={area.key} className="flex items-center justify-between">
                   <span className="text-[15px] font-bold text-[var(--app-ink)]">
-                    {area.icon} {area.label}
+                    <InkIcon name={area.icon} size={15} /> {area.label}
                   </span>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (

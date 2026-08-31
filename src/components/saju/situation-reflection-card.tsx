@@ -2,31 +2,32 @@
 // /saju/[slug] hero 아래 + /today-fortune 결과에서 재사용.
 import Link from 'next/link';
 import type { UserSituation } from '@/lib/saju/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 // PR #147 의 *_PREVIEW 매핑과 동일 — 입력 페이지 chip 톤과 결과 페이지 chip 톤 일치.
 const RELATIONSHIP_PREVIEW: Record<string, { label: string; emoji: string }> = {
-  single: { label: '솔로', emoji: '💛' },
-  dating: { label: '연애 중', emoji: '💑' },
-  married: { label: '기혼', emoji: '💍' },
-  separated: { label: '이별·정리 중', emoji: '🍂' },
+  single: { label: '솔로', emoji: 'solo' },
+  dating: { label: '연애 중', emoji: 'dating' },
+  married: { label: '기혼', emoji: 'married' },
+  separated: { label: '이별·정리 중', emoji: 'parted' },
 };
 
 const OCCUPATION_PREVIEW: Record<string, { label: string; emoji: string }> = {
-  employee: { label: '직장인', emoji: '💼' },
-  'self-employed': { label: '자영업·프리랜서', emoji: '🛠' },
-  student: { label: '학생', emoji: '📚' },
-  homemaker: { label: '주부', emoji: '🏠' },
-  'job-seeking': { label: '구직 중', emoji: '🔎' },
-  other: { label: '기타', emoji: '✨' },
+  employee: { label: '직장인', emoji: 'office' },
+  'self-employed': { label: '자영업·프리랜서', emoji: 'self-employed' },
+  student: { label: '학생', emoji: 'student' },
+  homemaker: { label: '주부', emoji: 'homemaker' },
+  'job-seeking': { label: '구직 중', emoji: 'job-seeking' },
+  other: { label: '기타', emoji: 'sparkle' },
 };
 
 const CONCERN_PREVIEW: Record<string, { label: string; emoji: string }> = {
-  business: { label: '사업·이직', emoji: '🚀' },
-  romance: { label: '결혼·연애', emoji: '💞' },
-  family: { label: '자녀·가족', emoji: '👨‍👩‍👧' },
-  health: { label: '건강·멘탈', emoji: '🩺' },
-  wealth: { label: '재물·투자', emoji: '💰' },
-  other: { label: '직접 입력', emoji: '✍️' },
+  business: { label: '사업·이직', emoji: 'business' },
+  romance: { label: '결혼·연애', emoji: 'love' },
+  family: { label: '자녀·가족', emoji: 'family' },
+  health: { label: '건강·멘탈', emoji: 'health' },
+  wealth: { label: '재물·투자', emoji: 'wealth' },
+  other: { label: '직접 입력', emoji: 'pen' },
 };
 
 interface Props {
@@ -87,7 +88,7 @@ export function SituationReflectionCard({
             className="inline-flex items-center gap-0.5 rounded-[12px] bg-[var(--app-pink-soft)] px-2 py-0.5 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <span aria-hidden="true">{item.emoji}</span>
+            <InkIcon name={item.emoji} size={16} />
             <span>{item.label}</span>
           </span>
         ))}
@@ -106,7 +107,7 @@ export function SituationReflectionCard({
         }}
       >
         <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-amber)]">
-          💡 더 정확한 풀이를 받으시려면
+          <InkIcon name="lantern" size={15} /> 더 정확한 풀이를 받으시려면
         </div>
         <p
           className="mt-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
@@ -144,7 +145,7 @@ export function SituationReflectionCard({
             className="inline-flex items-center gap-1 rounded-[12px] bg-white px-3 py-1 text-[15px] font-bold text-[var(--app-pink-strong)] border"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <span aria-hidden="true">{item.emoji}</span>
+            <InkIcon name={item.emoji} size={16} />
             <span>{item.label}</span>
           </span>
         ))}

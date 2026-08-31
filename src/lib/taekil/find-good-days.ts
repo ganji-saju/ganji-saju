@@ -29,12 +29,12 @@ export type TaekilPurpose =
   | 'etc'; // 기타
 
 export const TAEKIL_PURPOSES: Array<{ key: TaekilPurpose; label: string; emoji: string; hint: string }> = [
-  { key: 'wedding', label: '결혼·약혼', emoji: '💑', hint: '정관·정인이 안정적이고 충·원진을 피한 날' },
-  { key: 'open', label: '개업·오픈', emoji: '🏪', hint: '식신·편재·장생이 강하고 백호·공망을 피한 날' },
-  { key: 'move', label: '이사·입주', emoji: '🏡', hint: '역마·장생이 살아나고 충·형을 피한 날' },
-  { key: 'contract', label: '계약·서명', emoji: '📝', hint: '정관·문창귀인이 살아나고 형·원진을 피한 날' },
-  { key: 'trip', label: '여행·출발', emoji: '✈️', hint: '역마가 살아나고 충·형을 피한 날' },
-  { key: 'etc', label: '기타 중요한 날', emoji: '✨', hint: '천을귀인·길신 위주, 흉신을 피한 날' },
+  { key: 'wedding', label: '결혼·약혼', emoji: 'dating', hint: '정관·정인이 안정적이고 충·원진을 피한 날' },
+  { key: 'open', label: '개업·오픈', emoji: 'shop', hint: '식신·편재·장생이 강하고 백호·공망을 피한 날' },
+  { key: 'move', label: '이사·입주', emoji: 'move-house', hint: '역마·장생이 살아나고 충·형을 피한 날' },
+  { key: 'contract', label: '계약·서명', emoji: 'contract', hint: '정관·문창귀인이 살아나고 형·원진을 피한 날' },
+  { key: 'trip', label: '여행·출발', emoji: 'travel', hint: '역마가 살아나고 충·형을 피한 날' },
+  { key: 'etc', label: '기타 중요한 날', emoji: 'sparkle', hint: '천을귀인·길신 위주, 흉신을 피한 날' },
 ];
 
 interface PurposeWeight {

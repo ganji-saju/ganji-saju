@@ -15,6 +15,7 @@
 //   + 기본점 50 = 합계 67점
 
 import type { TodayIljinScoreSnapshot, TodayIljinMessages } from '@/lib/today-fortune/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   iljinScore: TodayIljinScoreSnapshot;
@@ -68,7 +69,7 @@ export function TodayIljinBreakdownCard({ iljinScore, iljinMessages }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            📊 점수 산출 내역
+            <InkIcon name="chart" size={15} /> 점수 산출 내역
           </div>
           <h2
             className="mt-0.5 text-[17.8px] font-extrabold text-[var(--app-ink)]"

@@ -16,6 +16,7 @@ import {
 } from '@/lib/supabase/server';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 // 2026-05-23 PDF 8페이지 정확 복제 리디자인 — 사용자 목업(8장 A4)을 픽셀 단위 복제.
 //   인쇄(window.print) → 브라우저 "PDF로 저장" 플로우 그대로. 8페이지 문서 마크업은
@@ -140,7 +141,7 @@ export default async function LifetimeReportPrintPage({ params }: Props) {
                   className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[12.1px] font-extrabold text-[var(--app-pink-strong)]"
                   style={{ borderColor: 'var(--app-pink-line)' }}
                 >
-                  🔒 PDF 저장 권한 필요
+                  <InkIcon name="lock" size={15} /> PDF 저장 권한 필요
                 </span>
                 <h1
                   className="mt-2 text-[25.3px] font-extrabold leading-[1.3] tracking-tight text-[var(--app-ink)]"

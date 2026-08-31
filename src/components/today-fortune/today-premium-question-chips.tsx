@@ -6,6 +6,7 @@
 
 import { useRouter } from 'next/navigation';
 import { trackMoonlightEvent } from '@/lib/analytics';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface TodayPremiumQuestionChipsProps {
   questions: string[];
@@ -28,7 +29,7 @@ export function TodayPremiumQuestionChips({
       style={{ borderColor: 'var(--app-pink-line)' }}
     >
       <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-        💭 깊이 들어갈 만한 질문
+        <InkIcon name="chat" size={15} /> 깊이 들어갈 만한 질문
       </div>
       <h3
         className="mt-1 text-[17.3px] font-extrabold leading-tight text-[var(--app-ink)]"

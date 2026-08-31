@@ -127,14 +127,14 @@ export default function MySettingsPage() {
         </h2>
         <div className="mt-2 grid gap-2">
           <QuickLink
-            icon="✎"
+            icon="pen"
             label="내 정보 편집"
             desc="이름·생년월일·시간 룰을 수정합니다"
             href="/my/profile"
             tone="pink"
           />
           <QuickLink
-            icon="♥"
+            icon="love"
             label="가족·다른 사람 정보"
             desc="궁합·가족 리포트에 함께 쓰일 사람들을 등록·관리합니다"
             href="/my/profile#family"
@@ -150,7 +150,7 @@ export default function MySettingsPage() {
         </h2>
         <div className="mt-2 grid gap-2">
           <QuickLink
-            icon="🔔"
+            icon="bell"
             label="알림 센터"
             desc="푸시·위젯·재방문 리마인더 시간 조정"
             href="/notifications"
@@ -190,14 +190,14 @@ export default function MySettingsPage() {
         </h2>
         <div className="mt-2 grid gap-2">
           <QuickLink
-            icon="📚"
+            icon="student"
             label="자주하는 질문 (FAQ)"
             desc="결제·구독·결과·환불 자주 묻는 질문"
             href="/support/faq"
             tone="jade"
           />
           <QuickLink
-            icon="💬"
+            icon="chat"
             label="1:1 문의"
             desc="개별 질문이 있다면 직접 보내주세요"
             href="/support/contact"

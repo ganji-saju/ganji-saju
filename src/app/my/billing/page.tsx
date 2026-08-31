@@ -13,6 +13,7 @@ import SubscriptionManager from '@/components/my/subscription-manager';
 import { getAccountDashboardData, getPaymentHistory } from '@/lib/account';
 import { formatWon } from '@/lib/payments/catalog';
 import type { PaymentHistoryEntry } from '@/lib/billing/payment-history';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
@@ -481,7 +482,7 @@ export default async function MyBillingPage() {
         style={{ borderColor: 'var(--app-line)' }}
       >
         <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-          📚 결제·환불 정책
+          <InkIcon name="student" size={15} /> 결제·환불 정책
         </div>
         <ul
           className="mt-1.5 grid gap-1 text-[13.2px] leading-[1.65] text-[var(--app-copy)]"

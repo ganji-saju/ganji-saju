@@ -5,6 +5,7 @@
 //       18-21px 제목 / 14px 본문 / 1.7 line-height 가독성 강화.
 import type { TodayFortunePremiumResult } from '@/lib/today-fortune/types';
 import { TodayPremiumQuestionChips } from './today-premium-question-chips';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 function trimEasySentence(value: string) {
   // 2026-05-16 — "흐름→분위기", "원칙→생각할 점" 치환이 오히려 사주 풀이 본문에서
@@ -305,7 +306,7 @@ export function TodayPremiumPanel({
         style={{ borderColor: 'var(--app-pink-line)' }}
       >
         <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-          💡 이렇게 활용하세요
+          <InkIcon name="lantern" size={15} /> 이렇게 활용하세요
         </div>
         <ul
           className="mt-2 grid gap-1.5 text-[15px] leading-[1.65] text-[var(--app-copy)]"
@@ -444,7 +445,7 @@ export function TodayPremiumPanel({
           <summary
             className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-[14.4px] font-extrabold text-[var(--app-copy-muted)]"
           >
-            <span>📋 풀이 근거 ({evidenceLines.length}개)</span>
+            <span><InkIcon name="doc" size={15} /> 풀이 근거 ({evidenceLines.length}개)</span>
             <span
               className="text-[11.5px] transition-transform group-open:rotate-180"
               aria-hidden="true"

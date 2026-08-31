@@ -13,6 +13,7 @@ import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { TAROT_QUESTION_OPTIONS } from '@/content/moonlight';
 import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export const metadata: Metadata = {
   title: '오늘의 타로 — 타로 카드 3장 뽑기',
@@ -95,7 +96,7 @@ export default async function DailyTarotPage() {
                     }}
                     aria-hidden="true"
                   >
-                    {isCenter ? '♥' : '☾'}
+                    {isCenter ? <InkIcon name="love" size={16} /> : <InkIcon name="moon" size={16} />}
                   </div>
                 );
               })}

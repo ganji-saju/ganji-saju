@@ -38,6 +38,7 @@ import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
 import { StarSignArt, StarSignArtChip } from '@/components/gangi/gangi-star-sign';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -288,7 +289,7 @@ export default async function StarSignDetailPage({ params }: Props) {
               style={{ borderColor: 'rgba(45,135,88,0.22)' }}
             >
               <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-                ☘ 오늘의 부스터
+                <InkIcon name="clover" size={15} /> 오늘의 부스터
               </div>
               <p className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]">
                 {fortune.boost}
@@ -313,7 +314,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              🍀 오늘의 럭키
+              <InkIcon name="clover" size={15} /> 오늘의 럭키
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>
@@ -495,7 +496,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-              💼 직업·재능
+              <InkIcon name="office" size={15} /> 직업·재능
             </div>
             <p
               className="mt-1.5 text-[15px] leading-[1.55] text-[var(--app-ink)]"
@@ -590,7 +591,7 @@ export default async function StarSignDetailPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              ✨ 라이프스타일
+              <InkIcon name="sparkle" size={15} /> 라이프스타일
             </div>
             <div className="mt-2.5 grid grid-cols-2 gap-3">
               <div>

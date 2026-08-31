@@ -9,6 +9,7 @@ import { getDialogueSessionMessages } from '@/lib/dialogue/history';
 import { getDialogueExpertMeta, normalizeDialogueExpertId } from '@/lib/dialogue-experts';
 import { createClient } from '@/lib/supabase/server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -47,7 +48,7 @@ export default async function DialogueHistorySessionPage({ params }: Props) {
             className="rounded-[18px] border bg-white p-5 text-center"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <div className="text-[36.8px]">🔒</div>
+            <div className="text-[36.8px]"><InkIcon name="lock" size={22} /></div>
             {/* audit-mockup: intentional — `if (!user)` 비로그인 분기 안의 fallback. */}
             <p className="mt-2 text-[15px] text-[var(--app-copy-muted)]">로그인 후 다시 시도해주세요.</p>
             <Link
