@@ -13,6 +13,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GANGI_ZODIAC, GangiCharacter, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacBirthCheck } from './zodiac-birth-check';
 import { ZodiacArtChip } from '@/components/gangi/gangi-star-sign';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export const metadata: Metadata = {
   title: '내 띠 운세',
@@ -140,7 +141,7 @@ export default async function ZodiacPage() {
               // ⚠️/zodiac 경로는 양띠를 'goat' 로 쓰는데 자산 키는 'sheep' 이다(칩 키 규약).
               <ZodiacArtChip zodiac={featured.slug === 'goat' ? 'sheep' : featured.slug} size={96} />
             ) : (
-              <span className="text-[55.2px]">🎂</span>
+              <span className="text-[55.2px]"><InkIcon name="flower" size={22} /></span>
             )}
           </div>
           {featured && featuredMeta ? (

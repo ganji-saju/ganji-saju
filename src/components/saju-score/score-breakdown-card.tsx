@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import type { SajuScore } from '@/lib/saju-score';
 import { getScoreColorClasses } from '@/lib/saju-score';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 type FactorId = 'F1' | 'F2' | 'F3' | 'F4' | 'F5';
 
@@ -41,7 +42,7 @@ export function ScoreBreakdownCard({ score, className = '' }: ScoreBreakdownCard
       <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
         <div>
           <p className="mb-0.5 text-[15px] text-gray-400">왜 이 점수가 나왔는지</p>
-          <h3 className="text-lg font-bold text-gray-900">📊 점수 산출 내역</h3>
+          <h3 className="text-lg font-bold text-gray-900"><InkIcon name="chart" size={15} /> 점수 산출 내역</h3>
         </div>
         <div className="text-right">
           <span className={`text-3xl font-bold ${colors.text}`}>{score.total}</span>

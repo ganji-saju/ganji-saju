@@ -343,7 +343,7 @@ export const TRUST_SIGNALS = [
 export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   {
     slug: 'saju',
-    hanja: '🐲',
+    hanja: 'compass',
     title: '사주',
     hook: '나는 어떤 사람으로 태어난 걸까',
     description: '태어난 때에 깃든 하늘의 뜻을 읽어, 선생님의 본성과 큰 흐름을 차분히 짚어드립니다.',
@@ -352,7 +352,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'myeongri',
-    hanja: '🐯',
+    hanja: 'doc',
     title: '명리',
     hook: '왜 유독 이 부분에서 늘 걸리는 걸까',
     description: '오행과 십신의 움직임으로, 자꾸 반복되는 삶의 장면이 왜 생기는지 들려드립니다.',
@@ -361,7 +361,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'tarot',
-    hanja: '🐰',
+    hanja: 'tarot-card',
     title: '타로',
     hook: '지금 이 선택, 괜찮은 걸까',
     description: '지금 이 순간 마음 위로 스치는 기운을 세 장의 그림으로 읽어드립니다.',
@@ -370,7 +370,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'compatibility',
-    hanja: '🐑',
+    hanja: 'love',
     title: '궁합',
     hook: '우리, 정말 잘 맞는 사이일까',
     description: '두 사람이 어디에서 닮고 어디에서 어긋나는지, 살가운 말로 풀어드립니다.',
@@ -388,7 +388,7 @@ export const WISDOM_CARDS: readonly MoonlightWisdomCard[] = [
   },
   {
     slug: 'zodiac',
-    hanja: '🐾',
+    hanja: 'compass',
     title: '띠별 운세',
     hook: '올해 내 띠의 흐름은 어떠한가',
     description: '익숙한 띠의 흐름으로 오늘과 올 한 해의 기운을 부드럽게 짚어드립니다.',
@@ -1116,21 +1116,21 @@ export const COMPLETE_PLAN_GUIDE: Record<
 
 export const TAROT_QUESTION_OPTIONS: readonly MoonlightTarotQuestionOption[] = [
   {
-    emoji: '✨',
+    emoji: 'sparkle',
     label: '오늘 하루 어떤 메시지가 있을까',
     intent: '마음 정리',
     description: '딱히 큰 사건은 없지만 오늘 조심할 말, 붙잡을 기회, 마음의 온도를 알고 싶을 때 봅니다.',
     when: '아침이나 외출 전',
   },
   {
-    emoji: '💗',
+    emoji: 'love',
     label: '지금 고민 중인 관계에 대하여',
     intent: '상대와 관계',
     description: '그 사람 마음, 연락해도 되는지, 관계가 왜 어색해졌는지처럼 마음이 계속 걸릴 때 봅니다.',
     when: '연락 전이나 대화 후',
   },
   {
-    emoji: '✅',
+    emoji: 'face-good',
     label: '지금 결정해야 할 선택에 대하여',
     intent: '결정과 타이밍',
     description: '지금 바로 진행해도 되는지, 한 번 더 확인해야 하는지 선택의 수위를 정하고 싶을 때 봅니다.',

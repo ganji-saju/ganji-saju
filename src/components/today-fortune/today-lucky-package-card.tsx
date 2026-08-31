@@ -4,6 +4,7 @@
 // 운세톡톡은 5종(색·숫자·방향·성씨·로또) 제공. 간지사주는 12종 (운세톡톡 5종 + 차별화 7종
 // 시간·음식·향·보석·동물·음악·피해야할것). 핵심 시각화는 로또 번호 6개를 오행 색상 원으로 표시.
 import type { TodayLuckyPackage } from '@/lib/today-fortune/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   luckyPackage: TodayLuckyPackage;
@@ -66,7 +67,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
       <div className="flex items-baseline justify-between gap-2">
         <div>
           <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-            🍀 오늘의 행운 패키지
+            <InkIcon name="clover" size={15} /> 오늘의 행운 패키지
           </div>
           <h2
             className="mt-0.5 text-[17.8px] font-extrabold text-[var(--app-ink)]"
@@ -98,7 +99,7 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
       {luckyPackage.lottoNumbers.length > 0 ? (
         <div className="mt-3.5">
           <div className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-            🎰 추천 로또 번호 (오행 색상)
+            <InkIcon name="lot" size={15} /> 추천 로또 번호 (오행 색상)
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {luckyPackage.lottoNumbers.map((circle, idx) => (
@@ -124,19 +125,19 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
       {/* 행운 12종 리스트 */}
       <ul className="mt-3 grid">
         <LuckyRow
-          icon="🎨"
+          icon="palette"
           label="행운의 색상"
           items={luckyPackage.colors}
           accent="var(--app-pink-strong)"
         />
         <LuckyRow
-          icon="🔢"
+          icon="numbers"
           label="행운의 숫자"
           items={luckyPackage.numbers.map(String)}
           accent="var(--app-amber)"
         />
         <LuckyRow
-          icon="🧭"
+          icon="compass"
           label="행운의 방향"
           items={luckyPackage.directions}
           accent="var(--app-jade)"
@@ -148,37 +149,37 @@ export function TodayLuckyPackageCard({ luckyPackage }: Props) {
           accent="var(--app-indigo)"
         />
         <LuckyRow
-          icon="🍽️"
+          icon="meal"
           label="행운의 음식"
           items={luckyPackage.foods}
           accent="var(--app-coral)"
         />
         <LuckyRow
-          icon="🌸"
+          icon="flower"
           label="행운의 향기"
           items={luckyPackage.aromas}
           accent="var(--app-plum)"
         />
         <LuckyRow
-          icon="💎"
+          icon="gem"
           label="행운의 보석"
           items={luckyPackage.gemstones}
           accent="var(--app-sky)"
         />
         <LuckyRow
-          icon="🎵"
+          icon="music"
           label="행운의 음악 장르"
           items={luckyPackage.musicGenres}
           accent="var(--app-indigo)"
         />
         <LuckyRow
-          icon="👤"
+          icon="user"
           label="행운의 성씨 자음"
           items={luckyPackage.surnameInitials}
           accent="var(--app-copy)"
         />
         <LuckyRow
-          icon="🐾"
+          icon="compass"
           label="궁합 좋은 띠 (오늘 일진 三合)"
           items={luckyPackage.zodiacFriends}
           accent="var(--app-jade)"

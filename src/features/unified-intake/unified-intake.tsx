@@ -28,6 +28,7 @@ import {
   type UnifiedBirthProfile,
 } from './birth-profile-store';
 import type { IntakeIntent } from './intake-intent';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export interface UnifiedIntakeProps {
   intent: IntakeIntent | null;
@@ -125,9 +126,7 @@ function IntakeChipGroup<T extends string>({
               )}
             >
               {option.emoji ? (
-                <span aria-hidden="true" className="mr-1">
-                  {option.emoji}
-                </span>
+                <InkIcon name={option.emoji} size={15} className="mr-1" />
               ) : null}
               {option.label}
             </button>
@@ -139,36 +138,36 @@ function IntakeChipGroup<T extends string>({
 }
 
 const FOCUS_TOPIC_OPTIONS: ReadonlyArray<{ value: OnboardingFocusTopic; label: string; emoji: string }> = [
-  { value: 'today', label: '오늘 조언', emoji: '🌤' },
-  { value: 'love', label: '연애', emoji: '💑' },
-  { value: 'wealth', label: '재물', emoji: '💰' },
-  { value: 'career', label: '일·커리어', emoji: '💼' },
-  { value: 'relationship', label: '관계', emoji: '🤝' },
+  { value: 'today', label: '오늘 조언', emoji: 'today' },
+  { value: 'love', label: '연애', emoji: 'dating' },
+  { value: 'wealth', label: '재물', emoji: 'wealth' },
+  { value: 'career', label: '일·커리어', emoji: 'office' },
+  { value: 'relationship', label: '관계', emoji: 'relationship' },
 ];
 
 const RELATIONSHIP_OPTIONS: ReadonlyArray<{ value: OnboardingRelationshipStatus; label: string; emoji: string }> = [
-  { value: 'single', label: '솔로', emoji: '💛' },
-  { value: 'dating', label: '연애 중', emoji: '💑' },
-  { value: 'married', label: '기혼', emoji: '💍' },
-  { value: 'separated', label: '이별·정리 중', emoji: '🍂' },
+  { value: 'single', label: '솔로', emoji: 'solo' },
+  { value: 'dating', label: '연애 중', emoji: 'dating' },
+  { value: 'married', label: '기혼', emoji: 'married' },
+  { value: 'separated', label: '이별·정리 중', emoji: 'parted' },
 ];
 
 const OCCUPATION_OPTIONS: ReadonlyArray<{ value: OnboardingOccupation; label: string; emoji: string }> = [
-  { value: 'employee', label: '직장인', emoji: '💼' },
-  { value: 'self-employed', label: '자영업·프리랜서', emoji: '🛠' },
-  { value: 'student', label: '학생', emoji: '📚' },
-  { value: 'homemaker', label: '주부', emoji: '🏠' },
-  { value: 'job-seeking', label: '구직 중', emoji: '🔎' },
-  { value: 'other', label: '기타', emoji: '✨' },
+  { value: 'employee', label: '직장인', emoji: 'office' },
+  { value: 'self-employed', label: '자영업·프리랜서', emoji: 'self-employed' },
+  { value: 'student', label: '학생', emoji: 'student' },
+  { value: 'homemaker', label: '주부', emoji: 'homemaker' },
+  { value: 'job-seeking', label: '구직 중', emoji: 'job-seeking' },
+  { value: 'other', label: '기타', emoji: 'sparkle' },
 ];
 
 const CONCERN_OPTIONS: ReadonlyArray<{ value: OnboardingConcern; label: string; emoji: string }> = [
-  { value: 'business', label: '사업·이직', emoji: '🚀' },
-  { value: 'romance', label: '결혼·연애', emoji: '💞' },
-  { value: 'family', label: '자녀·가족', emoji: '👨‍👩‍👧' },
-  { value: 'health', label: '건강·멘탈', emoji: '🩺' },
-  { value: 'wealth', label: '재물·투자', emoji: '💰' },
-  { value: 'other', label: '직접 입력', emoji: '✍️' },
+  { value: 'business', label: '사업·이직', emoji: 'business' },
+  { value: 'romance', label: '결혼·연애', emoji: 'love' },
+  { value: 'family', label: '자녀·가족', emoji: 'family' },
+  { value: 'health', label: '건강·멘탈', emoji: 'health' },
+  { value: 'wealth', label: '재물·투자', emoji: 'wealth' },
+  { value: 'other', label: '직접 입력', emoji: 'pen' },
 ];
 
 // saju-intake-page.tsx formatRecentGuestDetail 이식 — UnifiedBirthProfile 요약 문구.
@@ -638,7 +637,7 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
           <div className="grid gap-3.5 border-t border-[var(--app-line)] px-4 py-4">
             <IntakeChipGroup
               label="관심 주제"
-              icon="🎯"
+              icon="compass"
               value={profile.focusTopic}
               onChange={(next) =>
                 setProfile((cur) => ({ ...cur, focusTopic: next === '' ? 'today' : next }))
@@ -647,21 +646,21 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
             />
             <IntakeChipGroup
               label="현재 관계"
-              icon="💑"
+              icon="dating"
               value={profile.relationshipStatus}
               onChange={(next) => setProfile((cur) => ({ ...cur, relationshipStatus: next }))}
               options={RELATIONSHIP_OPTIONS}
             />
             <IntakeChipGroup
               label="현재 하시는 일"
-              icon="💼"
+              icon="office"
               value={profile.occupation}
               onChange={(next) => setProfile((cur) => ({ ...cur, occupation: next }))}
               options={OCCUPATION_OPTIONS}
             />
             <IntakeChipGroup
               label="요즘 가장 큰 고민"
-              icon="💭"
+              icon="chat"
               value={profile.currentConcern}
               onChange={(next) => setProfile((cur) => ({ ...cur, currentConcern: next }))}
               options={CONCERN_OPTIONS}

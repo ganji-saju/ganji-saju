@@ -13,6 +13,7 @@ import { getAccountDashboardData } from '@/lib/account';
 import { getOptionalSignedInProfile, hasCoreBirthProfile } from '@/lib/profile';
 import { listFavoriteStarSigns } from '@/lib/star-sign/favorites';
 import { createClient } from '@/lib/supabase/server';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import {
   getSubscriptionPlanLabel,
   getSubscriptionStatusLabel,
@@ -42,15 +43,15 @@ function formatRenewalLabel(value: string | null) {
 
 // 바로가기 메뉴 - mockup §2 패턴 (정사각 icon + 라벨 + 부제)
 const MY_MENU_ICONS: Record<string, { icon: string; tone: 'pink' | 'neutral' }> = {
-  '내 정보 편집': { icon: '✎', tone: 'pink' },
-  '내 사주 원국': { icon: '☰', tone: 'neutral' },
+  '내 정보 편집': { icon: 'pen', tone: 'pink' },
+  '내 사주 원국': { icon: 'doc', tone: 'neutral' },
   '저장한 해석': { icon: '◐', tone: 'neutral' },
-  '가족·다른 사람 정보': { icon: '♥', tone: 'pink' },
-  '내 현재 상황': { icon: '🎯', tone: 'pink' },
-  '대화 기록': { icon: '💬', tone: 'pink' },
+  '가족·다른 사람 정보': { icon: 'love', tone: 'pink' },
+  '내 현재 상황': { icon: 'compass', tone: 'pink' },
+  '대화 기록': { icon: 'chat', tone: 'pink' },
   '대화 플랜': { icon: '◆', tone: 'neutral' },
-  '알림 센터': { icon: '🔔', tone: 'neutral' },
-  '설정': { icon: '⚙', tone: 'neutral' },
+  '알림 센터': { icon: 'bell', tone: 'neutral' },
+  '설정': { icon: 'gear', tone: 'neutral' },
   '문의': { icon: '?', tone: 'neutral' },
 };
 
@@ -208,7 +209,7 @@ export default async function MyPage() {
                   }
                   aria-hidden="true"
                 >
-                  {meta.icon}
+                  <InkIcon name={meta.icon} size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[16.7px] font-extrabold tracking-tight text-[var(--app-ink)]">

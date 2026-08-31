@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 function clampScore(score: number) {
   if (!Number.isFinite(score)) return 70;
@@ -32,12 +33,12 @@ function getScoreMessage(score: number) {
 // 2026-05-15 PR 1 → PR 3 — 운세톡톡 벤치마크 (일진_점수산출_알고리즘_정교화.md 6-1):
 // 7단계 등급으로 확장 (90+ 🌟 / 80+ ✨ / 70+ 😊 / 60+ 🙂 / 45+ 😐 / 30+ 😕 / ⚠️).
 function getScoreGrade(score: number): { emoji: string; label: string } {
-  if (score >= 90) return { emoji: '🌟', label: '최고의 날' };
-  if (score >= 80) return { emoji: '✨', label: '매우 좋은 날' };
-  if (score >= 70) return { emoji: '😊', label: '좋은 날' };
-  if (score >= 60) return { emoji: '🙂', label: '무난한 날' };
-  if (score >= 45) return { emoji: '😐', label: '평범한 날' };
-  if (score >= 30) return { emoji: '😕', label: '신중해야 할 날' };
+  if (score >= 90) return { emoji: 'star', label: '최고의 날' };
+  if (score >= 80) return { emoji: 'sparkle', label: '매우 좋은 날' };
+  if (score >= 70) return { emoji: 'face-good', label: '좋은 날' };
+  if (score >= 60) return { emoji: 'face-good', label: '무난한 날' };
+  if (score >= 45) return { emoji: 'face-so', label: '평범한 날' };
+  if (score >= 30) return { emoji: 'face-bad', label: '신중해야 할 날' };
   return { emoji: '⚠️', label: '매우 조심해야 할 날' };
 }
 
@@ -105,7 +106,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
             aria-hidden="true"
             title={grade.label}
           >
-            {grade.emoji}
+            <InkIcon name={grade.emoji} size={26} />
           </div>
         </div>
         <div>
@@ -120,7 +121,7 @@ export function TodayScoreReveal({ result }: { result: TodayFortuneFreeResult })
             className="mt-0.5 inline-flex items-center gap-1 rounded-[12px] px-2 py-0.5 text-[12.6px] font-extrabold"
             style={{ background: 'rgba(255,255,255,0.22)' }}
           >
-            <span aria-hidden="true">{grade.emoji}</span>
+            <InkIcon name={grade.emoji} size={15} />
             <span>{grade.label}</span>
           </div>
           <div className="mt-1.5 text-[18.4px] font-extrabold leading-snug">

@@ -30,6 +30,7 @@ import {
 } from '@/lib/saju/pdf-report-maps';
 import type { SajuLifetimeAiInterpretation } from '@/server/ai/saju-lifetime-interpretation';
 import { ganziToKorean } from '@/lib/saju/terminology';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import {
   resolvePdfSubjectName,
   pickInterpretationText,
@@ -1173,7 +1174,7 @@ export function ReportDocument({
                       </div>
                       <div className="rp-area-tip">
                         <div className="rp-area-tip-label" style={{ color: a.color }}>
-                          💡 조언
+                          <InkIcon name="lantern" size={15} /> 조언
                         </div>
                         <p>{a.advice}</p>
                       </div>
@@ -1227,7 +1228,7 @@ export function ReportDocument({
                   <p>{data.gyeokguk.summary}</p>
                 </div>
                 <div className="rp-tip">
-                  <span aria-hidden="true">💡</span>
+                  <span aria-hidden="true"><InkIcon name="lantern" size={22} /></span>
                   <p>{data.gyeokguk.tip}</p>
                 </div>
 

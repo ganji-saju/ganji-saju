@@ -5,6 +5,7 @@
 // 데이터 출처: 같은 result.scores. summary 를 블루 헤드라인으로, 추가 body 라인은
 // concern/score 의 조합으로 룰 기반 생성. 운세톡톡 벤치마크처럼 4~6줄 분량.
 import type { TodayFortuneFreeResult, TodayScoreItem } from '@/lib/today-fortune/types';
+import { InkIcon } from '@/components/gangi/ink-icons';
 // 2026-05-15 PR 7 — 04 카테고리 1,200문장 라이브러리 적용. 점수 등급 분기 + 시드 라운드-로빈.
 import {
   pickCategoryMessage,
@@ -25,7 +26,7 @@ interface CategoryMeta {
 
 const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
   overall: {
-    icon: '🌅',
+    icon: 'sun',
     label: '총운',
     accent: 'var(--app-pink-strong)',
     bodyHints: {
@@ -38,7 +39,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     },
   },
   career: {
-    icon: '💼',
+    icon: 'office',
     label: '직장·사업운',
     accent: 'var(--app-jade)',
     bodyHints: {
@@ -51,7 +52,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     },
   },
   wealth: {
-    icon: '💰',
+    icon: 'wealth',
     label: '재물운',
     accent: 'var(--app-amber)',
     bodyHints: {
@@ -64,7 +65,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     },
   },
   love: {
-    icon: '💞',
+    icon: 'love',
     label: '애정·연애운',
     accent: 'var(--app-coral)',
     bodyHints: {
@@ -77,7 +78,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     },
   },
   relationship: {
-    icon: '🤝',
+    icon: 'relationship',
     label: '인간관계운',
     accent: 'var(--app-sky)',
     bodyHints: {
@@ -90,7 +91,7 @@ const CATEGORY_META: Record<TodayScoreItem['key'], CategoryMeta> = {
     },
   },
   condition: {
-    icon: '🏥',
+    icon: 'health',
     label: '컨디션·건강운',
     accent: 'var(--app-plum)',
     bodyHints: {
@@ -179,7 +180,7 @@ export function TodayCategoryReadings({ result }: { result: TodayFortuneFreeResu
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span aria-hidden="true" className="text-[23px] leading-tight">
-                    {meta.icon}
+                    <InkIcon name={meta.icon} size={18} />
                   </span>
                   <span className="text-[15.5px] font-extrabold text-[var(--app-ink)]">
                     {meta.label}

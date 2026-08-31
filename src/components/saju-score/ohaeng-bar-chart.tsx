@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import type { OhaengChartData, Ohaeng } from '@/lib/saju-score';
 import { OHAENG_COLOR_CLASSES } from '@/lib/saju-score';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface OhaengChartProps {
   data: OhaengChartData;
@@ -43,7 +44,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
   return (
     <div className={`overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm ${className}`}>
       <div className="border-b border-gray-100 px-5 py-4">
-        <h3 className="text-lg font-bold text-gray-900">🍃 다섯 기운 분포</h3>
+        <h3 className="text-lg font-bold text-gray-900"><InkIcon name="flower" size={15} /> 다섯 기운 분포</h3>
       </div>
 
       <div className="space-y-3 px-5 py-4">
@@ -97,7 +98,7 @@ export function OhaengChart({ data, showGuidance = true, guidanceText, className
 
       {guidance && (
         <div className="mx-5 mb-5 rounded-xl border border-amber-100 bg-amber-50/60 p-4">
-          <p className="mb-1.5 text-[15px] font-semibold text-amber-700">✨ 보강할 기운</p>
+          <p className="mb-1.5 text-[15px] font-semibold text-amber-700"><InkIcon name="sparkle" size={15} /> 보강할 기운</p>
           <p className="text-base leading-relaxed text-gray-700" style={{ wordBreak: 'keep-all' }}>
             {guidance}
           </p>

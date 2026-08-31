@@ -3,6 +3,7 @@
 'use client';
 
 import Link from 'next/link';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import { useState } from 'react';
 import type { UserSituation } from '@/lib/saju/types';
 
@@ -11,28 +12,28 @@ type Occupation = NonNullable<UserSituation['occupation']>;
 type Concern = NonNullable<UserSituation['currentConcern']>;
 
 const REL_OPTIONS: Array<{ value: Relationship; label: string; emoji: string }> = [
-  { value: 'single', label: '솔로', emoji: '💛' },
-  { value: 'dating', label: '연애 중', emoji: '💑' },
-  { value: 'married', label: '기혼', emoji: '💍' },
-  { value: 'separated', label: '이별·정리 중', emoji: '🍂' },
+  { value: 'single', label: '솔로', emoji: 'solo' },
+  { value: 'dating', label: '연애 중', emoji: 'dating' },
+  { value: 'married', label: '기혼', emoji: 'married' },
+  { value: 'separated', label: '이별·정리 중', emoji: 'parted' },
 ];
 
 const OCC_OPTIONS: Array<{ value: Occupation; label: string; emoji: string }> = [
-  { value: 'employee', label: '직장인', emoji: '💼' },
-  { value: 'self-employed', label: '자영업·프리랜서', emoji: '🛠' },
-  { value: 'student', label: '학생', emoji: '📚' },
-  { value: 'homemaker', label: '주부', emoji: '🏠' },
-  { value: 'job-seeking', label: '구직 중', emoji: '🔎' },
-  { value: 'other', label: '기타', emoji: '✨' },
+  { value: 'employee', label: '직장인', emoji: 'office' },
+  { value: 'self-employed', label: '자영업·프리랜서', emoji: 'self-employed' },
+  { value: 'student', label: '학생', emoji: 'student' },
+  { value: 'homemaker', label: '주부', emoji: 'homemaker' },
+  { value: 'job-seeking', label: '구직 중', emoji: 'job-seeking' },
+  { value: 'other', label: '기타', emoji: 'sparkle' },
 ];
 
 const CON_OPTIONS: Array<{ value: Concern; label: string; emoji: string }> = [
-  { value: 'business', label: '사업·이직', emoji: '🚀' },
-  { value: 'romance', label: '결혼·연애', emoji: '💞' },
-  { value: 'family', label: '자녀·가족', emoji: '👨‍👩‍👧' },
-  { value: 'health', label: '건강·멘탈', emoji: '🩺' },
-  { value: 'wealth', label: '재물·투자', emoji: '💰' },
-  { value: 'other', label: '직접 입력', emoji: '✍️' },
+  { value: 'business', label: '사업·이직', emoji: 'business' },
+  { value: 'romance', label: '결혼·연애', emoji: 'love' },
+  { value: 'family', label: '자녀·가족', emoji: 'family' },
+  { value: 'health', label: '건강·멘탈', emoji: 'health' },
+  { value: 'wealth', label: '재물·투자', emoji: 'wealth' },
+  { value: 'other', label: '직접 입력', emoji: 'pen' },
 ];
 
 function ChipGroup<T extends string>({
@@ -79,7 +80,7 @@ function ChipGroup<T extends string>({
               }
             >
               <span aria-hidden="true" className="mr-1">
-                {option.emoji}
+                <InkIcon name={option.emoji} size={17} />
               </span>
               {option.label}
             </button>
@@ -174,7 +175,7 @@ export function MySituationForm({
         }}
       >
         <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-          🎯 내 default 상황
+          <InkIcon name="compass" size={15} /> 내 default 상황
         </div>
         <h1 className="mt-1.5 text-[23px] font-extrabold leading-snug text-[var(--app-ink)]">
           매번 입력하지 않아도 자동 반영
@@ -195,21 +196,21 @@ export function MySituationForm({
       >
         <ChipGroup
           label="현재 관계"
-          icon="💑"
+          icon="dating"
           value={relationshipStatus}
           onChange={setRelationshipStatus}
           options={REL_OPTIONS}
         />
         <ChipGroup
           label="현재 하시는 일"
-          icon="💼"
+          icon="office"
           value={occupation}
           onChange={setOccupation}
           options={OCC_OPTIONS}
         />
         <ChipGroup
           label="요즘 가장 큰 고민"
-          icon="💭"
+          icon="chat"
           value={currentConcern}
           onChange={setCurrentConcern}
           options={CON_OPTIONS}

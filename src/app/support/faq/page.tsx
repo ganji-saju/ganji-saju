@@ -12,6 +12,7 @@ import { buildFAQPageSchema, serializeStructuredData } from '@/lib/seo/structure
 import { getPriceDisplayMap } from '@/lib/payments/price-display';
 import { priceValueFromMap } from '@/lib/payments/price-display-shared';
 import { formatWon } from '@/lib/payments/catalog';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 export const metadata: Metadata = {
   title: '자주하는 질문 (FAQ)',
@@ -36,7 +37,7 @@ function buildFaqGroups(p: { taste: string; premium: string; lifetime: string })
   return [
   {
     title: '결제·전',
-    emoji: '💳',
+    emoji: 'card',
     items: [
       {
         q: '결제 후 풀이나 멤버십이 바로 반영되지 않으면 어떻게 하나요?',
@@ -58,7 +59,7 @@ function buildFaqGroups(p: { taste: string; premium: string; lifetime: string })
   },
   {
     title: '구독·멤버십',
-    emoji: '💎',
+    emoji: 'gem',
     items: [
       {
         q: '프리미엄 멤버십에는 무엇이 포함되나요?',
@@ -76,7 +77,7 @@ function buildFaqGroups(p: { taste: string; premium: string; lifetime: string })
   },
   {
     title: '풀이·해석',
-    emoji: '🔮',
+    emoji: 'crystal',
     items: [
       {
         q: '내 이름이 다르게 나와요',
@@ -98,7 +99,7 @@ function buildFaqGroups(p: { taste: string; premium: string; lifetime: string })
   },
   {
     title: '계정·로그인',
-    emoji: '👤',
+    emoji: 'user',
     items: [
       {
         q: '비밀번호를 잊었어요',
@@ -116,7 +117,7 @@ function buildFaqGroups(p: { taste: string; premium: string; lifetime: string })
   },
   {
     title: '기타',
-    emoji: '❓',
+    emoji: 'question',
     items: [
       {
         q: '풀이 결과가 맘에 안 들어요',
@@ -165,7 +166,7 @@ export default async function FaqPage() {
           }}
         >
           <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
-            📚 FAQ
+            <InkIcon name="student" size={15} /> FAQ
           </div>
           <h1
             className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
@@ -189,7 +190,7 @@ export default async function FaqPage() {
               className="px-1 text-[16.7px] font-extrabold text-[var(--app-ink)]"
               style={{ wordBreak: 'keep-all' }}
             >
-              {group.emoji} {group.title}
+              <InkIcon name={group.emoji} size={16} /> {group.title}
             </h2>
             <div className="mt-2 grid gap-2">
               {group.items.map((item, idx) => (

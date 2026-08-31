@@ -11,6 +11,7 @@ import { TAEKIL_PURPOSES } from '@/lib/taekil/find-good-days';
 import { EmptyState } from '@/components/state/empty-state';
 import { ComparePrice, Price } from '@/components/payments/price-provider';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -129,7 +130,7 @@ export function TaekilClient() {
                   boxShadow: isActive ? '0 4px 12px rgba(142,42,32,0.16)' : 'none',
                 }}
               >
-                <div className="text-[25.3px] leading-none">{p.emoji}</div>
+                <div className="leading-none"><InkIcon name={p.emoji} size={24} /></div>
                 <div className="mt-1.5 text-[13.8px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
                   {p.label}
                 </div>
@@ -156,7 +157,7 @@ export function TaekilClient() {
           className="rounded-[18px] border bg-white p-5 text-center"
           style={{ borderColor: 'var(--app-pink-line)' }}
         >
-          <div className="text-[36.8px]">📅</div>
+          <div className="text-[36.8px]"><InkIcon name="calendar" size={22} /></div>
           <h2 className="mt-2 text-[18.4px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
             먼저 내 사주 정보를 등록해 주세요
           </h2>
@@ -291,7 +292,7 @@ export function TaekilClient() {
               className="mt-2.5 flex items-center gap-3 rounded-[16px] border p-4 no-underline"
               style={{ borderColor: 'var(--app-pink-line)', background: 'var(--app-pink-soft)' }}
             >
-              <span aria-hidden="true" className="text-[23px]">🔒</span>
+              <span aria-hidden="true" className="text-[23px]"><InkIcon name="lock" size={22} /></span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[15px] font-extrabold text-[var(--app-ink)]">
                   나머지 {lockedCount}일이 더 있습니다
@@ -312,7 +313,7 @@ export function TaekilClient() {
             className="mt-3 flex items-center gap-3 rounded-[16px] border bg-white p-4 no-underline"
             style={{ borderColor: 'var(--app-pink-line)' }}
           >
-            <span aria-hidden="true" className="text-[23px]">🗓️</span>
+            <span aria-hidden="true" className="text-[23px]"><InkIcon name="calendar" size={22} /></span>
             <span className="min-w-0 flex-1">
               <span className="block text-[15px] font-extrabold text-[var(--app-ink)]">
                 이번 달 좋은 날을 달력으로 한눈에
@@ -358,7 +359,7 @@ export function TaekilClient() {
         <EmptyState
           title="현재 조건에 맞는 좋은 날을 찾지 못했습니다"
           description={`선택하신 목적(${TAEKIL_PURPOSES.find((p) => p.key === purpose)?.label ?? ''})과 사주 원국, 향후 60일 일진을 비교한 결과 추천 가능한 길일이 없습니다. 다른 목적을 선택하시거나 사주 정보를 확인해 주세요.`}
-          icon="🗓️"
+          icon="calendar"
           actions={
             <>
               <button
@@ -403,7 +404,7 @@ export function TaekilClient() {
         style={{ borderColor: 'var(--app-line)' }}
       >
         <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-          💡 어떻게 산출되나요?
+          <InkIcon name="lantern" size={15} /> 어떻게 산출되나요?
         </div>
         <ul
           className="mt-2 grid gap-1 text-[13.2px] leading-[1.65] text-[var(--app-copy)]"

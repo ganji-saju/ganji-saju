@@ -7,6 +7,7 @@ import { buildPerspectiveLine } from '@/lib/today-fortune/situation-score-priori
 import type { TodayFortuneFreeResult } from '@/lib/today-fortune/types';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
 import { shouldShowAiDisclosure } from './ai-disclosure';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric',
@@ -69,7 +70,7 @@ export function TodayFortuneSummaryCard({
           className="mt-2 text-[15px] font-bold leading-[1.4] text-[var(--app-pink-strong)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          🎯 {perspective} 오늘
+          <InkIcon name="compass" size={15} /> {perspective} 오늘
         </p>
       ) : null}
       {/* spec §8 safety — AI 생성 시 고지 배지. 결정론(fallback/미설정)은 미노출. */}

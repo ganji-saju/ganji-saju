@@ -1,3 +1,4 @@
+import { InkIcon } from '@/components/gangi/ink-icons';
 // 2026-05-22 — Phase 2+3 스펙 §10: 평생 활용 3가지 (총평 LLM lifetime_keys).
 //   모바일 가로 스크롤 / 데스크탑 세로 스택. scrollbar-none(globals.css).
 export interface LifetimeKey {
@@ -21,7 +22,7 @@ export function LifetimeKeysCarousel({ keys, className = '' }: LifetimeKeysCarou
   if (!keys || keys.length === 0) return null;
   return (
     <div className={className}>
-      <h3 className="mb-3 px-1 text-lg font-bold text-gray-900">🎯 평생 활용 핵심 3가지</h3>
+      <h3 className="mb-3 px-1 text-lg font-bold text-gray-900"><InkIcon name="compass" size={15} /> 평생 활용 핵심 3가지</h3>
       <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none sm:flex-col sm:overflow-visible">
         {keys.map((key, i) => {
           const colors = KEY_CARD_COLORS[i % KEY_CARD_COLORS.length];

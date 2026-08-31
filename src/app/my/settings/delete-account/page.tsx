@@ -12,6 +12,7 @@ import SiteHeader from '@/features/shared-navigation/site-header';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StickyBottomBar } from '@/components/ui/sticky-bottom-bar';
 import { cn } from '@/lib/utils';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 type Step = 1 | 2 | 3 | 'done';
 
@@ -27,9 +28,9 @@ const REASONS: Array<{ key: string; label: string; description: string }> = [
 
 const LOSS_ITEMS: Array<{ icon: string; label: string; description: string }> = [
   { icon: '✦', label: '보유 전 전부', description: '환불 불가, 즉시 소멸' },
-  { icon: '☰', label: '저장된 풀이', description: '복구 불가능' },
+  { icon: 'doc', label: '저장된 풀이', description: '복구 불가능' },
   { icon: '◐', label: '대화 상담 기록', description: '선생님과 나눈 대화 모두 삭제' },
-  { icon: '♥', label: '멤버십 / 결제내역', description: '결제 기록은 5년 보관' },
+  { icon: 'love', label: '멤버십 / 결제내역', description: '결제 기록은 5년 보관' },
 ];
 
 export default function AccountDeletePage() {
@@ -183,7 +184,7 @@ export default function AccountDeletePage() {
                           }}
                           aria-hidden="true"
                         >
-                          {item.icon}
+                          <InkIcon name={item.icon} size={17} />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-[15px] font-extrabold text-white">

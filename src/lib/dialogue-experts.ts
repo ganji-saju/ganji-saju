@@ -49,7 +49,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'ox',
-    glyph: '🐮',
+    glyph: 'today',
     animal: '소',
     teacherName: '오늘운세선생',
     label: '오늘운',
@@ -60,7 +60,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'tiger',
-    glyph: '🐯',
+    glyph: 'doc',
     animal: '호랑이',
     teacherName: '명리선생',
     label: '깊은 사주',
@@ -71,7 +71,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'rabbit',
-    glyph: '🐰',
+    glyph: 'tarot-card',
     animal: '토끼',
     teacherName: '타로선생',
     label: '타로 마음',
@@ -82,7 +82,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'dragon',
-    glyph: '🐲',
+    glyph: 'compass',
     animal: '용',
     teacherName: '사주선생',
     label: '사주 종합',
@@ -115,7 +115,7 @@ export const DIALOGUE_EXPERTS: readonly DialogueExpertMeta[] = [
   },
   {
     id: 'sheep',
-    glyph: '🐑',
+    glyph: 'love',
     animal: '양',
     teacherName: '궁합선생',
     label: '궁합과 관계',

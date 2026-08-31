@@ -46,6 +46,7 @@ import { getManagedSubscription, isEntitledStatus } from '@/lib/subscription';
 import type { SajuDataV1 } from '@/domain/saju/engine/saju-data-v1';
 import type { SajuDataV2 } from '@/domain/saju/engine/saju-data-v2-upgrade';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -614,7 +615,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                 eventParams={{ slug, from: 'premium_hero', status: 'available' }}
                 className="relative mt-3 inline-flex w-full items-center justify-center rounded-[12px] bg-[var(--app-pink)] px-5 py-3 text-[16.1px] font-extrabold text-white shadow-[0_12px_28px_rgba(179,55,42,0.32)]"
               >
-                📄 PDF로 저장하기
+                <InkIcon name="doc" size={15} /> PDF로 저장하기
               </TrackedLink>
             ) : null}
           </article>
@@ -710,7 +711,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                       className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
-                      🔒 {lifetimeLabel} 결제 후 열림
+                      <InkIcon name="lock" size={15} /> {lifetimeLabel} 결제 후 열림
                     </span>
                   </div>
                 </article>
@@ -738,7 +739,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                       className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                       style={{ background: 'rgba(17,17,20,0.78)' }}
                     >
-                      🔒 결제 후 열림
+                      <InkIcon name="lock" size={15} /> 결제 후 열림
                     </span>
                   </div>
                 </article>
@@ -839,7 +840,7 @@ export default async function SajuPremiumPage({ params }: Props) {
                         className="rounded-[12px] px-3.5 py-1.5 text-[13.8px] font-extrabold text-white"
                         style={{ background: 'rgba(17,17,20,0.78)' }}
                       >
-                        🔒 결제 후 열림
+                        <InkIcon name="lock" size={15} /> 결제 후 열림
                       </span>
                     </div>
                   </div>

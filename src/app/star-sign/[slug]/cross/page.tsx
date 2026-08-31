@@ -23,6 +23,7 @@ import {
 } from '@/lib/star-sign/cross-saju';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -223,7 +224,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  🔮 통합 인사이트
+                  <InkIcon name="crystal" size={15} /> 통합 인사이트
                 </div>
                 <h2
                   className="mt-1.5 text-[18.4px] font-extrabold leading-[1.45] tracking-tight text-[var(--app-ink)]"
@@ -254,7 +255,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                   style={{ borderColor: 'rgba(45,135,88,0.22)' }}
                 >
                   <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-                    ☘ 시너지
+                    <InkIcon name="clover" size={15} /> 시너지
                   </div>
                   <p
                     className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]"
@@ -268,7 +269,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                   style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                 >
                   <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-                    ⚡ 갈등 가능성
+                    <InkIcon name="business" size={15} /> 갈등 가능성
                   </div>
                   <p
                     className="mt-1 text-[15px] leading-[1.55] text-[var(--app-ink)]"
@@ -285,7 +286,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  ✨ 두 기운을 함께 살리는 법
+                  <InkIcon name="sparkle" size={15} /> 두 기운을 함께 살리는 법
                 </div>
                 <div className="mt-2 grid gap-2">
                   {cross.actionSuggestions.map((act, idx) => (
@@ -348,7 +349,7 @@ export default async function StarSignCrossPage({ params }: Props) {
                 style={{ borderColor: 'var(--app-line)' }}
               >
                 <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-                  🔮 일반 매핑
+                  <InkIcon name="crystal" size={15} /> 일반 매핑
                 </div>
                 <p
                   className="mt-2 text-[15px] leading-[1.6] text-[var(--app-ink)]"

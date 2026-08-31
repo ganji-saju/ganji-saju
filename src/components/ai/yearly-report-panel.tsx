@@ -36,6 +36,7 @@ import type {
   SajuYearlyAiMonthlyFlow,
 } from '@/server/ai/saju-yearly-interpretation';
 import { limitSajuSentences, simplifySajuCopy } from '@/lib/saju/public-copy';
+import { InkIcon } from '@/components/gangi/ink-icons';
 
 interface Props {
   slug: string;
@@ -431,7 +432,7 @@ function MonthlyFlowCard({
                   className="inline-flex items-center gap-0.5 rounded-[12px] px-2 py-0.5 text-[12.1px] font-extrabold text-white"
                   style={{ background: 'var(--app-pink-strong)' }}
                 >
-                  🚨 PEAK
+                  <InkIcon name="bell" size={15} /> PEAK
                 </span>
               ) : null}
               {flow.peakKind === 'pitfall' ? (

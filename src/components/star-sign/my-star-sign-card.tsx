@@ -8,6 +8,7 @@ import type { UserProfile } from '@/lib/profile';
 import { buildStarSignSlugFromProfile } from '@/lib/profile-personalization';
 import { getDailyFortune, toKstDateKey } from '@/lib/star-sign/daily-fortune';
 import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import {
   ELEMENT_HEX,
   STAR_SIGN_CONTENT,
@@ -120,7 +121,7 @@ export function MyStarSignCard({ profile, variant = 'default' }: Props) {
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           <span className="rounded-[12px] bg-white/12 px-2.5 py-0.5 text-[12.1px] font-bold text-white/90 ring-1 ring-white/15">
-            ☘ {fortune.boost.slice(0, 24)}
+            <InkIcon name="clover" size={15} /> {fortune.boost.slice(0, 24)}
             {fortune.boost.length > 24 ? '…' : ''}
           </span>
         </div>
