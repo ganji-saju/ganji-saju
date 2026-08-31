@@ -283,14 +283,22 @@ export function buildPaymentHistory(
   input: BuildPaymentHistoryInput
 ): PaymentHistoryResult {
   const carriers = bundlePriceCarrierIds(input.productEntitlements);
+  // 🔴 2026-09-01 — 금액이 없는 이용권은 **주문이 완료로 확인될 때만** 정가로 계상한다.
+  //   호출부는 완료 상태(confirmed/fulfilling/fulfilled)만 paymentOrders 로 넘긴다 → 여기에
+  //   없는 주문은 취소·환불·만료·실패다. 실측: 취소된 19,800원 주문의 이용권 6행이 회수되지
+  //   않은 채 남아 LTV 59,400원을 만들었다(실제 매출 0원). 금액을 **추측하지 않는 쪽**이 맞다.
+  //   ⚠️paymentOrders 를 안 넘기는 호출부에서는 이 판정을 하지 않는다(근거가 없으므로 기존 동작 유지).
+  const hasOrderLedger = Boolean(input.paymentOrders && input.paymentOrders.length > 0);
+  const completedOrderIds = new Set((input.paymentOrders ?? []).map((o) => o.order_id));
   const entries: PaymentHistoryEntry[] = [
     ...input.productEntitlements.map((row) => {
       const entry = mapProductEntitlementToHistory(row);
-      const isBundleComponent =
-        (row.amount === null || row.amount === undefined) &&
-        Boolean(row.order_id) &&
-        !carriers.has(row.id);
-      return isBundleComponent ? { ...entry, amountWon: null } : entry;
+      const guessedPrice = row.amount === null || row.amount === undefined;
+      if (!guessedPrice) return entry;
+      const isBundleComponent = Boolean(row.order_id) && !carriers.has(row.id);
+      const orderUnconfirmed =
+        hasOrderLedger && Boolean(row.order_id) && !completedOrderIds.has(row.order_id as string);
+      return isBundleComponent || orderUnconfirmed ? { ...entry, amountWon: null } : entry;
     }),
     ...input.creditTransactions.map(mapCreditTransactionToHistory),
   ];
