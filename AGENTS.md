@@ -15,3 +15,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **gh 명령(PR 생성·머지·조회 등)**: `./scripts/gh-ganji <args>` 래퍼를 사용한다(전역 활성 계정과 무관하게 keyring 의 ganji-saju 토큰을 런타임 조회해 실행). 예: `./scripts/gh-ganji pr create ...`, `./scripts/gh-ganji pr merge <n> --squash`.
 - **git push/fetch**: repo-local credential helper 로 이미 ganji-saju 고정. 새로 clone 하면 `./scripts/setup-project-account.sh` 를 1회 실행.
 - 토큰은 파일에 저장하지 않는다(keyring 런타임 조회). `env -u GH_TOKEN -u GITHUB_TOKEN` 관례는 유지(잘못된 env 토큰 간섭 방지).
+
+# PROGRESS.md 는 항상 커밋한다 (2026-08-31 결정)
+
+작업 기록은 루트 `PROGRESS.md` **맨 위에 새 섹션**으로만 추가하고 옛 섹션은 건드리지 않는다. 그 기록은 **그 작업의 PR 에 같이 커밋**한다(미커밋으로 두지 않는다). 세션 시작 시 `git pull` 로 최신 PROGRESS 를 먼저 받는다.
+
+- 이유: 세션이 여러 폴더(git worktree — Orca 세션 포함)에서 돌면 미커밋 기록은 서로 안 보여 갈린다. 2026-08-31 에 실제로 갈렸고(커밋본 4,277줄 vs 작업본 5,761줄), 일주일치 기록이 노트북 한 곳에만 있었다.
+- 갈렸으면: 원격이 추가한 섹션을 작업본 상단에 끼워 넣는다(작업본이 상위집합인지 `## 20` 헤더 목록으로 대조).
