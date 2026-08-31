@@ -13,8 +13,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 워크트리에는 gitignore 파일(.env.local, .claude/settings.local.json)이 없고, Claude 메모리도
 폴더 경로별로 갈려서 빈 상태로 시작한다(2026-08-31 실측 — PROGRESS 기록이 세션 간에 갈린 원인).
 이 스크립트가 셋 다 메인 체크아웃에 심링크로 붙여 터미널 세션과 같은 환경을 만든다(멱등).
-그리고 substantive 작업을 마치면 PROGRESS.md 맨 위에 세션 항목을 추가해 **PR에 같이 커밋**한다
-(워크트리에서만 남긴 기록은 워크트리 정리와 함께 사라진다).
+작업 기록은 아래 "PROGRESS.md 는 항상 커밋한다" 규칙을 따른다.
 
 # GitHub 계정: 이 저장소는 항상 `ganji-saju` 로만 작업
 
