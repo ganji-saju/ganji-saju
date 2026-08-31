@@ -72,3 +72,39 @@ test('성별이 다르면 같은 생년월일시라도 다른 사주로 판정�
   const differentGender = sajuIdentityKey(readingInput({ gender: 'male' }));
   assert.notEqual(familyIdentity, differentGender);
 });
+
+// 2026-08-31 제보 — 가족 칩 slug 는 이름을 해시로만 담아 /saju/[slug] 복원 시 input.name 이
+// 비고, 화면 호명이 전부 '달빛이님'으로 떨어졌다. 수정 = 정체성 매칭으로 subjectName 해석.
+// 배선이 input.name 단독으로 되돌아가면 재발하므로 소스 스캔으로 고정한다.
+import fs from 'node:fs';
+import path from 'node:path';
+
+test('사주 화면 호명은 subjectName(정체성 매칭) 배선을 유지한다', () => {
+  const resultPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/saju/[slug]/page.tsx'),
+    'utf8'
+  );
+  assert.ok(
+    resultPage.includes('`${subjectName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`'),
+    '/saju/[slug] 헤더가 subjectName 을 쓰지 않으면 가족 사주가 달빛이님으로 재발한다'
+  );
+  assert.ok(
+    resultPage.includes('viewerName={subjectName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}'),
+    '수호신 카드 호명이 subjectName 배선을 잃었다'
+  );
+
+  const deepPage = fs.readFileSync(
+    path.join(process.cwd(), 'src/app/saju/[slug]/deep/page.tsx'),
+    'utf8'
+  );
+  assert.ok(
+    deepPage.includes('resolveFamilySubjectName(input)'),
+    '대운 페이지가 정체성 매칭 호명을 잃었다'
+  );
+
+  // LLM 총평에는 뷰어 의존 이름 주입 금지(캐시 키가 slug 파생 — 남의 이름 든 본문 서빙 위험).
+  assert.ok(
+    resultPage.includes('userName: input.name?.trim() || null'),
+    'LLM 총평 userName 은 input.name 유지가 정본 — subjectName 주입은 캐시 오염'
+  );
+});

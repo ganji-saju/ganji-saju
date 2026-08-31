@@ -20,6 +20,7 @@ import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { LifetimeDeepCta } from '@/components/saju/lifetime-deep-cta';
 import { Price, ComparePrice } from '@/components/payments/price-provider';
 import { MOONLIGHT_FALLBACK_DISPLAY_NAME } from '@/lib/today-fortune/resolve-display-name';
+import { resolveFamilySubjectName } from '@/lib/saju/family-access';
 // 2026-05-16 — 대운 timeline 현재 위치 중앙 스크롤 client 컴포넌트.
 import { DaewoonSection } from '@/features/saju-detail/sections/daewoon-section';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -116,6 +117,9 @@ export default async function SajuDeepPage({ params }: Props) {
   const currentCycleIndex = cycles.findIndex((cycle) => cycle.isCurrent);
   const currentCycle = currentCycleIndex >= 0 ? cycles[currentCycleIndex] : null;
 
+  // 2026-08-31 — 가족 칩 slug 는 이름이 해시로만 담겨 input.name 이 빈다 → 정체성 매칭으로 호명.
+  const subjectName = await resolveFamilySubjectName(input);
+
   const yearZodiac = getYearZodiac(sajuData);
   const yearZodiacLabel = ZODIAC_KOR[yearZodiac];
   const dayGanziHanja = sajuData.pillars.day.ganzi;
@@ -127,7 +131,7 @@ export default async function SajuDeepPage({ params }: Props) {
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell pb-24 md:pb-12">
       <AppPage className="gangi-subpage saju-result-page space-y-12 sm:space-y-14">
         <div className="space-y-12 sm:space-y-14">
-          <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME} · 대운 풀이`} backHref={`/saju/${slug}`} />
+          <GangiPageHeader title={`${subjectName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME} · 대운 풀이`} backHref={`/saju/${slug}`} />
 
           <section className="space-y-5 px-1">
             {/* §1 Hero — 일주 + 현재 만 나이 + 진행 중 대운 */}

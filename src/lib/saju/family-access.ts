@@ -61,6 +61,11 @@ export interface FamilySajuNavLink {
   relationship: string;
   slug: string;
   identity: string;
+  /**
+   * 화면이 "OOO님"으로 호명할 사람 이름. 칩 라벨과 분리한 이유: 본인 칩 라벨은
+   * displayName 이 비면 '내 사주' 플레이스홀더라 호명에 쓰면 "내 사주님"이 된다.
+   */
+  personName: string | null;
 }
 
 /**
@@ -87,6 +92,7 @@ export async function getViewerFamilySajuNav(): Promise<FamilySajuNavLink[]> {
         id: 'own',
         label: own.displayName || '내 사주',
         relationship: '본인',
+        personName: own.displayName?.trim() || null,
         ...ownDerived,
       });
     }
@@ -97,6 +103,7 @@ export async function getViewerFamilySajuNav(): Promise<FamilySajuNavLink[]> {
         id: profile.id,
         label: profile.label,
         relationship: profile.relationship,
+        personName: profile.label.trim() || null,
         ...derived,
       });
     }
@@ -104,4 +111,18 @@ export async function getViewerFamilySajuNav(): Promise<FamilySajuNavLink[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * 사주 정체성(4기둥+성별)이 등록된 본인·가족과 일치하면 그 사람 이름을 돌려준다.
+ *   배경(2026-08-31 제보): 가족 칩의 slug 는 이름을 해시로만 담아(#722 관례) /saju/[slug] 가
+ *   slug 복원 시 이름을 잃고 '달빛이' 폴백으로 떨어졌다. input.name 이 이미 있으면 그게 우선.
+ */
+export async function resolveFamilySubjectName(input: BirthInput): Promise<string | null> {
+  const named = input.name?.trim();
+  if (named) return named;
+  const identity = sajuIdentityKey(input);
+  if (!identity) return null;
+  const nav = await getViewerFamilySajuNav();
+  return nav.find((member) => member.identity === identity)?.personName ?? null;
 }

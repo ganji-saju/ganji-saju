@@ -420,6 +420,14 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   //   CTA 자체는 유지하되, 멤버에게는 "왜 겹치는지" 고지를 목차 위에 붙인다.
   const memberTier = !scoreUnlocked ? await getViewerMemberTier() : null;
   const currentIdentity = sajuIdentityKey(input);
+  // 2026-08-31 제보 — 가족 칩 slug 는 이름을 해시로만 담아 복원 시 input.name 이 비고,
+  //   가족 사주 화면이 전부 "달빛이님"으로 호명됐다. slug 에 이름을 넣는 대신(#722 드리프트
+  //   재발 금지) 정체성 매칭으로 등록된 본인·가족 이름을 찾아 호명에 쓴다.
+  const subjectName =
+    input.name?.trim() ||
+    (currentIdentity !== null
+      ? (familyNav.find((member) => member.identity === currentIdentity)?.personName ?? null)
+      : null);
   const todayDetailUnlocked = scoreUnlocked && todayDetailEntitlement;
 
   // 2026-08-12 — 페이월 노출을 퍼널에 기록한다(migration 073).
@@ -448,7 +456,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
   const personalizationContext = grounding?.personalizationContext ?? null;
   // PR #150 (B1) — userName 전달하면 narrative 가 "[직장인이신 김영민님, ]" prefix + closing 호명.
   const sajuNarrative = buildSajuNarrative(sajuData, personalizationContext, {
-    userName: input.name?.trim() || null,
+    userName: subjectName,
   });
 
   // 2026-08-24 Phase 1 — 종합 리포트 목차의 개인화 훅. 대운 타임라인(결정론, 무료 deep 챕터와
@@ -469,7 +477,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
     const next = currentIdx >= 0 ? lifetimeCycles[currentIdx + 1] : null;
     const nextStartAge = next?.ageLabel?.match(/^(\d+)/)?.[1] ?? null;
     if (nextStartAge) {
-      const who = input.name?.trim() ? `${input.name.trim()}님의` : '당신의';
+      const who = subjectName ? `${subjectName}님의` : '당신의';
       comprehensiveHook = `${who} 다음 대운 전환은 ${nextStartAge}세 — 그 10년의 흐름이 잠긴 항목 안에 있습니다.`;
     }
   }
@@ -566,9 +574,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
 
 
         <div className="space-y-12 sm:space-y-14">
-          {/* 2026-05-15 — 사용자 이름이 입력되어도 항상 "달빛이님 사주" 가 보이던 회귀 fix.
-              input.name 이 있으면 그대로 사용, 없을 때만 "달빛이" fallback. */}
-          <GangiPageHeader title={`${input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
+          {/* 이름 우선순위: input.name → 등록된 본인·가족 정체성 매칭(subjectName) → '달빛이'. */}
+          <GangiPageHeader title={`${subjectName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}님 사주`} backHref="/saju/new" />
 
           {/* 2026-08-31 — 가족 사주 바로가기. 등록된 본인·가족(최대 5명) 칩을 눌러
               바로 그 사주로 이동한다. 현재 보는 사주는 정체성(4기둥+성별) 매칭으로 표시. */}
@@ -617,7 +624,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
             {guardian ? (
               <GuardianAssignmentCard
                 guardian={guardian}
-                viewerName={input.name ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}
+                viewerName={subjectName ?? MOONLIGHT_FALLBACK_DISPLAY_NAME}
               />
             ) : null}
             {/* §1 Hero summary — ZodiacChip + "한 줄 요약" eyebrow + 헤드라인 + chips.
@@ -700,6 +707,8 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                   args={{
                     sajuData,
                     personalizationContext,
+                    // ⚠️subjectName(뷰어 의존) 주입 금지 — LLM 캐시 키는 slug 파생이라 같은
+                    // slug 를 다른 뷰어가 열면 남의 이름 든 본문이 캐시로 서빙된다(궁합 사고 클래스).
                     userName: input.name?.trim() || null,
                     gender: input.gender === 'female' ? 'F' : input.gender === 'male' ? 'M' : null,
                   }}
