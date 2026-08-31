@@ -100,7 +100,9 @@ export async function submitSajuFromProfile(
     throw new Error(data.error ?? '사주 결과를 생성하지 못했습니다.');
   }
 
-  if (shouldAutoSavePersonalProfile(draft.loadedProfileSource)) {
+  // 2026-08-31 — draft 는 createInitialOnboardingDraft(source 'manual') 기반이라 소스가 유실됨.
+  //   가족 칩으로 채운 제출이 본인 프로필을 덮어쓴 실사고 → 원본 profile 의 소스로 판정한다.
+  if (shouldAutoSavePersonalProfile(profile.loadedProfileSource)) {
     void fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

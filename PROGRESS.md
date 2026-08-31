@@ -25,6 +25,18 @@
 
 typecheck 0 · unit 191파일(신규 가드 2건 포함) green · 렌더 검증(타로/프라이싱/체크아웃 200 + 카피 실측).
 
+### 후속 3 (같은 날, 🔴실사고) — 가족 사주 제출이 본인 프로필을 덮어씀
+
+제보: "배우자로 바꿔 본 다음 다시 내 사주를 보려니 배우자가 본인이 되어 있다."
+
+- 근본원인: 구 saju-intake 에는 `shouldAutoSavePersonalProfile(source !== 'family')` 가드가 있었으나,
+  **unified-intake 경로는 소스 정보가 유실**(UnifiedBirthProfile 에 필드 없음 + submit 이 초기 draft 의
+  'manual' 로 판정) → 가족 칩 제출마다 본인 프로필(profiles 행) 자동저장이 발화해 덮어썼다.
+- 수정: UnifiedBirthProfile 에 `loadedProfileSource`(manual/self/family) 추가(normalize 왕복 보존),
+  칩 채움 시 소스 표기, submit 은 draft 가 아닌 **원본 profile 의 소스**로 자동저장 판정.
+- 가드 3건(birth-profile-store.test.ts): 소스 왕복 보존·family 비저장·판정 배선 소스스캔.
+- ⚠️이미 덮어써진 본인 프로필은 코드로 복구 불가 — MY > 프로필에서 본인 정보 재입력 필요(사용자 안내).
+
 ### 후속 2 (같은 날, 실사용 제보) — 궁합 배우자 칩 실종 · 사주 입력 가족 불러오기 부재
 
 제보: "가족 등록 후 궁합을 눌렀는데 배우자는 안 뜨고 자녀만 나온다. 사주에서 가족 정보를 불러오는 화면도 없다."

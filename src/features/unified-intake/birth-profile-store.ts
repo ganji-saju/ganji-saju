@@ -32,6 +32,10 @@ export interface UnifiedBirthProfile {
   occupation: OnboardingOccupation;
   currentConcern: OnboardingConcern;
   concernNote: string;
+  // 2026-08-31 — 폼이 어디서 채워졌는지. 'family' 면 제출 시 본인 프로필 자동저장을 건너뛴다
+  //   (구 saju-intake 의 shouldAutoSavePersonalProfile 가드가 unified 경로에서 유실돼
+  //    가족 사주 제출이 본인 프로필을 덮어쓴 실사고 — 2026-08-31 대표 제보).
+  loadedProfileSource: 'manual' | 'self' | 'family';
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
@@ -42,6 +46,7 @@ export function createEmptyBirthProfile(): UnifiedBirthProfile {
     unknownBirthTime: false, gender: '', birthLocationCode: '', birthLocationLabel: '',
     birthLatitude: '', birthLongitude: '', timeRule: 'standard', solarTimeMode: 'standard',
     focusTopic: 'today', relationshipStatus: '', occupation: '', currentConcern: '', concernNote: '',
+    loadedProfileSource: 'manual',
   };
 }
 
@@ -78,6 +83,10 @@ export function normalizeBirthProfile(parsed: Partial<UnifiedBirthProfile>): Uni
     occupation: normOcc(parsed.occupation),
     currentConcern: normConcern(parsed.currentConcern),
     concernNote: str(parsed.concernNote).slice(0, 80),
+    loadedProfileSource:
+      parsed.loadedProfileSource === 'self' || parsed.loadedProfileSource === 'family'
+        ? parsed.loadedProfileSource
+        : 'manual',
   };
 }
 
