@@ -59,7 +59,7 @@ jobs:
 
       - name: Install dependencies
         # --legacy-peer-deps: @tosspayments/payment-widget-sdk peer (typescript 4.x) vs package.json (typescript ^5) 충돌 우회
-        run: npm ci --legacy-peer-deps
+        run: npm ci --legacy-peer-deps --engine-strict
 
       - name: Install Playwright browsers (chromium only)
         run: npx playwright install --with-deps chromium
