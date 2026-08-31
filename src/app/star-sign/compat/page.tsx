@@ -17,6 +17,7 @@ import {
   type StarSignSlug,
 } from '@/lib/star-sign/sign-content';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 
 export const metadata: Metadata = {
   title: '별자리 12×12 궁합 매트릭스',
@@ -155,19 +156,14 @@ export default async function StarSignCompatMatrixPage() {
                         key={`h-${b}`}
                         scope="col"
                         className="px-0.5"
-                        style={{ minWidth: '28px' }}
+                        style={{ minWidth: '40px' }}
                       >
                         <Link
                           href={`/star-sign/${b}`}
-                          className="grid h-7 w-7 place-items-center rounded-full mx-auto"
-                          style={{
-                            background: 'rgba(0,0,0,0.03)',
-                            color: ELEMENT_HEX[content.element],
-                            fontSize: '14px',
-                          }}
+                          className="mx-auto grid place-items-center"
                           aria-label={`${STAR_SIGN_FORTUNES.find((s) => s.slug === b)?.label} 상세`}
                         >
-                          {meta?.symbol ?? ''}
+                          <StarSignArtChip slug={b} size={36} ring={ELEMENT_HEX[content.element]} />
                         </Link>
                       </th>
                     );
@@ -184,20 +180,18 @@ export default async function StarSignCompatMatrixPage() {
                       <th
                         scope="row"
                         className="pr-0.5"
-                        style={{ minWidth: '28px' }}
+                        style={{ minWidth: '40px' }}
                       >
                         <Link
                           href={`/star-sign/${a}`}
-                          className="grid h-7 w-7 place-items-center rounded-full mx-auto"
-                          style={{
-                            background: isMyRow ? 'var(--app-pink-soft)' : 'rgba(0,0,0,0.03)',
-                            color: ELEMENT_HEX[aContent.element],
-                            fontSize: '14px',
-                            border: isMyRow ? '1.5px solid var(--app-pink)' : 'none',
-                          }}
+                          className="mx-auto grid place-items-center"
                           aria-label={`${STAR_SIGN_FORTUNES.find((s) => s.slug === a)?.label} 상세`}
                         >
-                          {aMeta?.symbol ?? ''}
+                          <StarSignArtChip
+                            slug={a}
+                            size={36}
+                            ring={isMyRow ? 'var(--app-pink)' : ELEMENT_HEX[aContent.element]}
+                          />
                         </Link>
                       </th>
                       {SIGN_ORDER.map((b) => {

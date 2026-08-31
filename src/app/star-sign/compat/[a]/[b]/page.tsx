@@ -14,6 +14,7 @@ import {
   type StarSignSlug,
 } from '@/lib/star-sign/sign-content';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StarSignArt } from '@/components/gangi/gangi-star-sign';
 
 interface Props {
   params: Promise<{ a: string; b: string }>;
@@ -154,7 +155,7 @@ export default async function StarSignCompatPage({ params }: Props) {
                     }}
                     aria-hidden="true"
                   >
-                    {aMeta.symbol}
+                    <StarSignArt slug={a} />
                   </div>
                   <div className="mt-1.5 text-[13.8px] font-extrabold">{aItem.label}</div>
                 </Link>
@@ -170,7 +171,7 @@ export default async function StarSignCompatPage({ params }: Props) {
                     }}
                     aria-hidden="true"
                   >
-                    {bMeta.symbol}
+                    <StarSignArt slug={b} />
                   </div>
                   <div className="mt-1.5 text-[13.8px] font-extrabold">{bItem.label}</div>
                 </Link>

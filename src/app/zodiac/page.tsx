@@ -12,6 +12,7 @@ import { buildProfileReadingSlug, buildZodiacSlugFromProfile } from '@/lib/profi
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { GANGI_ZODIAC, GangiCharacter, GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { ZodiacBirthCheck } from './zodiac-birth-check';
+import { ZodiacArtChip } from '@/components/gangi/gangi-star-sign';
 
 export const metadata: Metadata = {
   title: '내 띠 운세',
@@ -134,8 +135,13 @@ export default async function ZodiacPage() {
           >
             {hasPersonalizedProfile && featured ? `내 띠는 ${featured.label}` : '내 띠를 자동으로 맞춰볼까요?'}
           </h2>
-          <div className="mt-4 text-[55.2px]" aria-hidden="true">
-            {featuredMeta?.symbol ?? '🎂'}
+          <div className="mt-4 flex justify-center" aria-hidden="true">
+            {featured ? (
+              // ⚠️/zodiac 경로는 양띠를 'goat' 로 쓰는데 자산 키는 'sheep' 이다(칩 키 규약).
+              <ZodiacArtChip zodiac={featured.slug === 'goat' ? 'sheep' : featured.slug} size={96} />
+            ) : (
+              <span className="text-[55.2px]">🎂</span>
+            )}
           </div>
           {featured && featuredMeta ? (
             <article

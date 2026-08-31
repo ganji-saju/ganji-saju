@@ -74,3 +74,78 @@ export function StarSignArt({ slug, className = '' }: { slug: string; className?
     />
   );
 }
+
+/**
+ * 2026-09-01 — 인라인 기호(♈) 자리를 대체하는 **크기 지정형** 민화 별자리 칩.
+ *   ⚠️최소 40px — 그 아래로 줄이면 민화 디테일이 뭉개져 색 덩어리가 된다(대표 지시로 확대 통일).
+ *   ring 은 기호가 색으로 전달하던 원소(불·흙·바람·물) 정보를 대신 담는다 — 그림으로 바꾸면서
+ *   그 단서를 잃지 않도록 테두리로 보존한다.
+ */
+export function StarSignArtChip({
+  slug,
+  size = 44,
+  ring,
+  className = '',
+}: {
+  slug: string;
+  size?: number;
+  ring?: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ${className}`}
+      style={{
+        width: size,
+        height: size,
+        boxShadow: ring ? `inset 0 0 0 2px ${ring}` : 'inset 0 0 0 1px var(--app-line)',
+      }}
+      aria-hidden="true"
+    >
+      <img
+        src={`/images/gangi/icons/star-sign/${slug}.webp`}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className="h-full w-full rounded-full object-cover"
+      />
+    </span>
+  );
+}
+
+/** 띠(12지) 그림 칩 — 별자리와 같은 규격. */
+export function ZodiacArtChip({
+  zodiac,
+  size = 44,
+  ring,
+  className = '',
+}: {
+  zodiac: string;
+  size?: number;
+  ring?: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ${className}`}
+      style={{
+        width: size,
+        height: size,
+        boxShadow: ring ? `inset 0 0 0 2px ${ring}` : 'inset 0 0 0 1px var(--app-line)',
+      }}
+      aria-hidden="true"
+    >
+      <img
+        src={`/images/gangi/icons/zodiac/${zodiac}.webp`}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className="h-full w-full rounded-full object-cover"
+      />
+    </span>
+  );
+}

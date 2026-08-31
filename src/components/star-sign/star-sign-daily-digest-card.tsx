@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { computeStarSignDailyDigest } from '@/lib/star-sign/daily-digest';
+import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 import {
   ELEMENT_HEX,
   type SignElement,
@@ -105,7 +106,7 @@ export function StarSignDailyDigestCard() {
                   {idx + 1}
                 </span>
                 <span className="shrink-0 text-[20.7px]" style={{ color: elementHex }} aria-hidden="true">
-                  {entry.symbol}
+                  <StarSignArtChip slug={entry.slug} size={40} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[14.4px] font-extrabold text-[var(--app-ink)]">

@@ -7,6 +7,7 @@ import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import type { UserProfile } from '@/lib/profile';
 import { buildStarSignSlugFromProfile } from '@/lib/profile-personalization';
 import { getDailyFortune, toKstDateKey } from '@/lib/star-sign/daily-fortune';
+import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 import {
   ELEMENT_HEX,
   STAR_SIGN_CONTENT,
@@ -42,7 +43,7 @@ export function MyStarSignCard({ profile, variant = 'default' }: Props) {
           style={{ background: `${elementHex}33` }}
           aria-hidden="true"
         >
-          {meta.symbol}
+          <StarSignArtChip slug={slug} size={44} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[12.6px] font-bold" style={{ color: 'var(--app-indigo)' }}>
@@ -96,7 +97,7 @@ export function MyStarSignCard({ profile, variant = 'default' }: Props) {
             style={{ background: `${elementHex}40` }}
             aria-hidden="true"
           >
-            {meta.symbol}
+            <StarSignArtChip slug={slug} size={44} />
           </span>
           <div className="min-w-0 flex-1">
             <div className="text-[17.3px] font-extrabold text-white">{item.label}</div>
