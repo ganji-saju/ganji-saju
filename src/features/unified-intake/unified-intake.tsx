@@ -18,6 +18,7 @@ import type {
   OnboardingOccupation,
   OnboardingRelationshipStatus,
 } from '@/features/saju-intake/onboarding-storage';
+import { shouldAutoSavePersonalProfile } from '@/features/saju-intake/onboarding-storage';
 import {
   createEmptyBirthProfile,
   hasCompleteBirthProfile,
@@ -407,7 +408,10 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
       return;
     }
     setError('');
-    saveBirthProfile(profile);
+    // 2026-08-31 — 가족 사주를 본 뒤 재방문하면 폼이 '가족이름님 정보로 볼게요'로 뜨던 문제.
+    //   이 저장소(localStorage)는 "내 정보" 자동채움용이라 가족 제출은 남기지 않는다
+    //   (서버 프로필 자동저장이 같은 가드를 쓰는 것과 대칭 — submit-saju.ts).
+    if (shouldAutoSavePersonalProfile(profile.loadedProfileSource)) saveBirthProfile(profile);
     onResolve(profile);
   }
 

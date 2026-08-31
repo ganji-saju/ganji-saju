@@ -41,16 +41,40 @@ function resolveBackfillUserName(currentUserName, resolvedName) {
   return null;
 }
 
+/**
+ * 2026-08-31 — 이 스냅샷이 **계정 주인 본인의 사주**인지 확인한다.
+ *   가족 사주 스냅샷(userName 이 비어 있는 과거 행 포함)에 계정 주인 이름을 각인하면
+ *   되돌릴 수 없다(본문 문자열·LLM 산문에 굳음). 확인 못 하면 건드리지 않는다.
+ *   정체성 엔진 대신 생년월일시·성별 원시 비교를 쓴다(스크립트에 TS 엔진을 끌어오지 않음).
+ *   ⚠️ profiles 는 사용자가 입력한 **원본**(음력 가능) 날짜를 저장하고 스냅샷 input_json 은
+ *   **양력 변환 후** 값이라, 음력 가입자는 원시 비교가 성립하지 않는다 → 확인 불가로 보고 skip
+ *   한다(각인하지 않는 쪽이 안전). 그 계정을 백필하려면 음력→양력 변환을 붙여야 한다.
+ */
+function isOwnersOwnSaju(inputJson, profile) {
+  if (!inputJson || !profile) return false;
+  // 음력 저장 프로필은 양력 스냅샷과 직접 비교 불가 — 확인 불가로 처리.
+  if (profile.birth_calendar_type === 'lunar') return false;
+  const num = (v) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v) : null);
+  const same = (a, b) => a !== null && b !== null && a === b;
+  if (!same(num(inputJson.year), num(profile.birth_year))) return false;
+  if (!same(num(inputJson.month), num(profile.birth_month))) return false;
+  if (!same(num(inputJson.day), num(profile.birth_day))) return false;
+  if (num(inputJson.hour) !== num(profile.birth_hour)) return false;
+  const gender = typeof inputJson.gender === 'string' ? inputJson.gender : null;
+  return Boolean(gender) && gender === profile.gender;
+}
+
 /** profile.display_name → 소셜 메타데이터(name/full_name/nickname/user_name) 순으로 이름 해석. */
-async function resolveUserName(supabase, userId, cache) {
+async function resolveUserName(supabase, userId, cache, profileCache) {
   if (cache.has(userId)) return cache.get(userId);
   let resolved = '';
   try {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('display_name')
+      .select('display_name, birth_year, birth_month, birth_day, birth_hour, gender, birth_calendar_type')
       .eq('user_id', userId)
       .maybeSingle();
+    profileCache.set(userId, profile ?? null);
     const displayName = (profile?.display_name ?? '').trim();
     if (displayName) resolved = displayName;
   } catch {
@@ -78,9 +102,11 @@ async function resolveUserName(supabase, userId, cache) {
 async function main() {
   const supabase = createSupabaseServiceClient();
   const nameCache = new Map();
+  const profileCache = new Map();
   let scanned = 0;
   let patched = 0;
   let skipped = 0;
+  let foreign = 0;
   let offset = 0;
 
   console.log(`\n[backfill] ${APPLY ? '*** APPLY (실제 update) ***' : 'dry-run (미적용)'} — today_fortune_result_snapshots\n`);
@@ -88,7 +114,7 @@ async function main() {
   for (;;) {
     const { data: rows, error } = await supabase
       .from('today_fortune_result_snapshots')
-      .select('id, user_id, free_result_json')
+      .select('id, user_id, free_result_json, input_json')
       .order('created_at', { ascending: true })
       .range(offset, offset + BATCH - 1);
 
@@ -110,7 +136,13 @@ async function main() {
         continue;
       }
 
-      const resolved = await resolveUserName(supabase, row.user_id, nameCache);
+      const resolved = await resolveUserName(supabase, row.user_id, nameCache, profileCache);
+      // 계정 주인 본인의 사주로 확인된 행만 각인한다(가족 스냅샷 오염 방지).
+      if (!isOwnersOwnSaju(row.input_json, profileCache.get(row.user_id))) {
+        foreign += 1;
+        skipped += 1;
+        continue;
+      }
       const nextName = resolveBackfillUserName(current, resolved);
       if (!nextName) {
         skipped += 1;
@@ -137,7 +169,7 @@ async function main() {
   }
 
   console.log(
-    `\n[backfill] 완료 — 스캔 ${scanned} · 교정 ${patched} · 스킵 ${skipped} ${APPLY ? '(적용됨)' : '(dry-run: 미적용)'}`
+    `\n[backfill] 완료 — 스캔 ${scanned} · 교정 ${patched} · 스킵 ${skipped}(본인 사주로 확인 안 됨 ${foreign} — 가족 사주이거나 음력 프로필) ${APPLY ? '(적용됨)' : '(dry-run: 미적용)'}`
   );
   if (!APPLY && patched > 0) {
     console.log('적용하려면: node scripts/backfill-snapshot-display-name.mjs --apply\n');
