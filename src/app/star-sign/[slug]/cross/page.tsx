@@ -22,6 +22,7 @@ import {
   type CrossSynthesis,
 } from '@/lib/star-sign/cross-saju';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
+import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -154,8 +155,8 @@ export default async function StarSignCrossPage({ params }: Props) {
                   <div className="text-[11.5px] uppercase font-bold" style={{ opacity: 0.6 }}>
                     서양 별자리
                   </div>
-                  <div className="mt-1 flex items-baseline gap-1.5">
-                    <span className="text-[23px]">{meta.symbol}</span>
+                  <div className="mt-1 flex items-center gap-2">
+                    <StarSignArtChip slug={item.slug} size={40} />
                     <span className="text-[16.1px] font-extrabold">{item.label}</span>
                   </div>
                   <div className="mt-1 text-[12.1px]" style={{ opacity: 0.75 }}>

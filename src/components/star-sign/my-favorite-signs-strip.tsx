@@ -5,6 +5,7 @@ import { STAR_SIGN_META } from '@/content/moonlight';
 import { STAR_SIGN_FORTUNES } from '@/lib/free-content-pages';
 import { isPaywallLockdown } from '@/lib/paywall-lockdown';
 import { getDailyFortune, toKstDateKey } from '@/lib/star-sign/daily-fortune';
+import { StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 import {
   ELEMENT_HEX,
   STAR_SIGN_CONTENT,
@@ -56,7 +57,7 @@ export function MyFavoriteSignsStrip({ favorites }: Props) {
                 style={{ color: elementHex }}
                 aria-hidden="true"
               >
-                {meta?.symbol ?? ''}
+                {meta ? <StarSignArtChip slug={slug} size={40} /> : null}
               </span>
               <div className="mt-0.5 text-[12.6px] font-extrabold text-[var(--app-ink)]">
                 {item?.label.replace('자리', '') ?? slug}

@@ -40,6 +40,33 @@ test('칩 자산은 작게 유지한다(장당 40KB 이하 — 목록에 12개�
   }
 });
 
+test('별자리 표면에 유니코드 기호 렌더가 남아 있지 않다(전면 그림 통일)', () => {
+  // 2026-09-01 대표 지시: 작은 자리도 크기를 키워 전부 그림으로 통일.
+  //   symbol 을 화면에 직접 찍는 자리가 되살아나면 통일이 깨진다(폴백 prop 전달은 허용).
+  const files = [
+    'src/app/star-sign/page.tsx',
+    'src/app/star-sign/[slug]/page.tsx',
+    'src/app/star-sign/[slug]/cross/page.tsx',
+    'src/app/star-sign/compat/page.tsx',
+    'src/app/star-sign/compat/[a]/[b]/page.tsx',
+    'src/components/star-sign/my-star-sign-card.tsx',
+    'src/components/star-sign/my-favorite-signs-strip.tsx',
+    'src/components/star-sign/star-sign-daily-digest-card.tsx',
+  ];
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+    // 폴백 prop 전달(symbol={meta.symbol})은 허용 — 화면에 직접 찍는 줄만 잡는다.
+    const offenders = source
+      .split('\n')
+      .filter((line) => /\{[^}]*\bsymbol\b[^}]*\}/.test(line) && !/symbol=\{/.test(line));
+    assert.equal(
+      offenders.length,
+      0,
+      `${file} 에 기호 직접 렌더가 남았다: ${offenders.map((l) => l.trim()).join(' | ')}`
+    );
+  }
+});
+
 test('배선 가드 — 칩이 이모지/기호 렌더로 되돌아가지 않는다', () => {
   const read = (p: string) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
   assert.ok(

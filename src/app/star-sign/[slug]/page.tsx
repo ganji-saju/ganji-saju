@@ -37,7 +37,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
-import { StarSignArt } from '@/components/gangi/gangi-star-sign';
+import { StarSignArt, StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -437,17 +437,20 @@ export default async function StarSignDetailPage({ params }: Props) {
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div>
                 <div className="text-[12.1px] font-bold text-[var(--app-jade)]">잘 맞는 별자리</div>
-                <div className="mt-1 flex flex-wrap gap-1">
+                <div className="mt-1 flex flex-wrap gap-2">
                   {content.idealMatches.map((m) => {
                     const ms = STAR_SIGN_META[m];
                     return (
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-[12px] bg-[var(--app-pink-soft)] px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-pink-strong)] border"
+                        className="flex w-[62px] flex-col items-center gap-1 rounded-[12px] bg-[var(--app-pink-soft)] px-1 py-1.5 text-[12.6px] font-bold text-[var(--app-pink-strong)] border"
                         style={{ borderColor: 'var(--app-pink-line)' }}
                       >
-                        {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
+                        {ms ? <StarSignArtChip slug={m} size={40} /> : null}
+                        <span style={{ color: 'var(--app-pink-strong)' }}>
+                          {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label?.replace('자리', '')}
+                        </span>
                       </Link>
                     );
                   })}
@@ -455,17 +458,20 @@ export default async function StarSignDetailPage({ params }: Props) {
               </div>
               <div>
                 <div className="text-[12.1px] font-bold text-[var(--app-coral)]">신중한 별자리</div>
-                <div className="mt-1 flex flex-wrap gap-1">
+                <div className="mt-1 flex flex-wrap gap-2">
                   {content.loveBeware.map((m) => {
                     const ms = STAR_SIGN_META[m];
                     return (
                       <Link
                         key={m}
                         href={`/star-sign/${m}`}
-                        className="rounded-[12px] bg-white px-2 py-0.5 text-[12.6px] font-bold text-[var(--app-copy-soft)] border"
+                        className="flex w-[62px] flex-col items-center gap-1 rounded-[12px] bg-white px-1 py-1.5 text-[12.6px] font-bold text-[var(--app-copy-soft)] border"
                         style={{ borderColor: 'rgba(220,79,79,0.22)' }}
                       >
-                        {ms?.symbol ?? ''} {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label}
+                        {ms ? <StarSignArtChip slug={m} size={40} /> : null}
+                        <span style={{ color: 'var(--app-copy-soft)' }}>
+                          {STAR_SIGN_FORTUNES.find((s) => s.slug === m)?.label?.replace('자리', '')}
+                        </span>
                       </Link>
                     );
                   })}
@@ -558,7 +564,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                       }}
                       aria-hidden="true"
                     >
-                      {targetMeta?.symbol ?? ''}
+                      {targetMeta ? <StarSignArtChip slug={c.slug} size={44} /> : null}
                     </div>
                     <div
                       className="mt-1 text-[12.1px] font-bold"

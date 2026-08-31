@@ -96,8 +96,21 @@ export function StarSignChip({
         letterSpacing: '-0.01em',
       }}
     >
-      {/* ZodiacChip 과 동일하게 motion-hanja-entry mount morph 재사용 (글리프 entry 효과 통일). */}
-      <span className="motion-hanja-entry">{glyph}</span>
+      {/* 2026-09-01 — 기호 → 민화 별자리 그림(ZodiacChip 이 인장 그림을 쓰는 것과 대칭).
+          generic(kind 미지정) 은 12별자리 통합 대표라 밤하늘 ✦ 를 유지한다. */}
+      {kind ? (
+        <img
+          src={`/images/gangi/icons/star-sign/${kind}.webp`}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className="absolute inset-0 h-full w-full rounded-[inherit] object-cover"
+        />
+      ) : (
+        <span className="motion-hanja-entry">{glyph}</span>
+      )}
     </span>
   );
 }

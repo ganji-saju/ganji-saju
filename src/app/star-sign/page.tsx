@@ -4,7 +4,7 @@
 // 별자리별 일별 점수·하이라이트는 src/lib/star-sign/daily-fortune.ts 와 공유.
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { GangiStarSignIcon, StarSignArt } from '@/components/gangi/gangi-star-sign';
+import { GangiStarSignIcon, StarSignArt, StarSignArtChip } from '@/components/gangi/gangi-star-sign';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -227,13 +227,11 @@ export default async function StarSignPage() {
                     >
                       {idx + 1}
                     </div>
-                    <span
-                      className="text-[25.3px]"
-                      style={{ color: ELEMENT_HEX[d.content.element] }}
-                      aria-hidden="true"
-                    >
-                      {d.meta.symbol}
-                    </span>
+                    <StarSignArtChip
+                      slug={d.slug}
+                      size={44}
+                      ring={ELEMENT_HEX[d.content.element]}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[16.1px] font-extrabold text-[var(--app-ink)]">
                         {d.item.label}
@@ -271,11 +269,14 @@ export default async function StarSignPage() {
             </div>
             <Link href={`/star-sign/${cautionOne.slug}`} className="mt-2 flex items-center gap-3">
               <span
-                className="text-[29.9px]"
-                style={{ color: ELEMENT_HEX[cautionOne.content.element] }}
+                className="inline-flex"
                 aria-hidden="true"
               >
-                {cautionOne.meta.symbol}
+                <StarSignArtChip
+                  slug={cautionOne.slug}
+                  size={48}
+                  ring={ELEMENT_HEX[cautionOne.content.element]}
+                />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]">
@@ -321,9 +322,7 @@ export default async function StarSignPage() {
                   }}
                 >
                   <div className="flex items-center justify-center gap-1">
-                    <span className="text-[20.7px]" style={{ color: elHex }} aria-hidden="true">
-                      {d.meta.symbol}
-                    </span>
+                    <StarSignArtChip slug={d.slug} size={40} ring={elHex} />
                     <span className="text-[11.5px]" aria-hidden="true">
                       {MOOD_EMOJI[d.fortune.mood] ?? ''}
                     </span>
@@ -387,8 +386,8 @@ export default async function StarSignPage() {
                         className="rounded-[10px] border bg-white px-2 py-1.5 text-center"
                         style={{ borderColor: 'var(--app-line)' }}
                       >
-                        <div className="text-[16.1px]" style={{ color: elHex }} aria-hidden="true">
-                          {m.meta.symbol}
+                        <div className="flex justify-center">
+                          <StarSignArtChip slug={m.slug} size={40} ring={elHex} />
                         </div>
                         <div className="mt-0.5 text-[12.1px] font-bold text-[var(--app-ink)]">
                           {m.item.label.replace('자리', '')}
@@ -428,15 +427,22 @@ export default async function StarSignPage() {
                       ({members.length}개)
                     </span>
                   </div>
-                  <div className="mt-1.5 flex flex-wrap gap-1">
+                  <div className="mt-1.5 flex flex-wrap gap-2">
                     {members.map((m) => (
                       <Link
                         key={m.slug}
                         href={`/star-sign/${m.slug}`}
-                        className="rounded-[12px] border bg-white px-2.5 py-0.5 text-[12.6px] font-bold text-[var(--app-ink)]"
+                        className="flex w-[62px] flex-col items-center gap-1 rounded-[12px] border bg-white px-1 py-1.5"
                         style={{ borderColor: 'var(--app-line)' }}
                       >
-                        {m.meta.symbol} {m.item.label.replace('자리', '')}
+                        <StarSignArtChip
+                          slug={m.slug}
+                          size={40}
+                          ring={ELEMENT_HEX[m.content.element]}
+                        />
+                        <span className="text-[12.1px] font-bold text-[var(--app-ink)]">
+                          {m.item.label.replace('자리', '')}
+                        </span>
                       </Link>
                     ))}
                   </div>
