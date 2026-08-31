@@ -51,6 +51,9 @@ export function GangiCharacter({
   const data = GANGI_ZODIAC.find((item) => item.key === zodiac) ?? GANGI_ZODIAC[0];
   const [from, to] = data.colors;
 
+  // 2026-09-01 — 🐭 이모지 → 민화 띠 동물 그림(한지·먹·인주·금박, 타로 덱과 같은 세계).
+  //   자산: public/images/gangi/icons/zodiac/{key}.webp (256², 장당 ~8KB).
+  //   이모지는 이미지가 안 뜰 때만 보이는 폴백으로 남긴다(호출부 계약 불변).
   return (
     <span
       className={`gangi-character ${className}`}
@@ -59,6 +62,15 @@ export function GangiCharacter({
       style={{ background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` } as CSSProperties}
       aria-hidden="true"
     >
+      <img
+        src={`/images/gangi/icons/zodiac/${data.key}.webp`}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className="gangi-character-art"
+      />
       <span className="gangi-character-face">{data.glyph}</span>
     </span>
   );

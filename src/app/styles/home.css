@@ -269,6 +269,29 @@
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.08), 0 8px 18px rgba(17, 17, 20, 0.08);
 }
 
+/* 2026-09-01 — 이모지 칩 → 민화 띠 동물 그림. 그림이 칩을 꽉 채우고 테마색은 링으로만 남긴다. */
+.gangi-character {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ⚠️폴백 숨김을 :has() 에만 맡기지 않는다 — 미지원 브라우저(구형 사파리·인앱 웹뷰)에서
+   그림과 이모지가 둘 다 그리드 줄을 차지해 칩이 찌그러진다. 그림을 절대배치로 덮어
+   :has() 없이도 항상 그림만 보이게 한다. */
+.gangi-character .gangi-character-art {
+  position: absolute;
+  inset: 2px;
+  width: auto;
+  height: auto;
+  border-radius: 9999px;
+  object-fit: cover;
+  display: block;
+}
+
+.gangi-character:has(.gangi-character-art) .gangi-character-face {
+  display: none;
+}
+
 .gangi-character-face {
   display: grid;
   width: 72%;
@@ -315,7 +338,29 @@
     0 10px 22px rgba(142, 42, 32, 0.12);
 }
 
-.gangi-star-sign-icon span {
+/* 2026-09-01 — 기호 칩 → 민화 별자리 그림. 그림이 원형 칩을 꽉 채우고, 테마 그라데이션은
+   가장자리 링으로만 남겨 12궁 색 구분을 유지한다. 이미지가 뜨면 기호 폴백은 감춘다. */
+.gangi-star-sign-icon {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 위와 같은 이유로 절대배치 — :has() 미지원에서도 그림이 기호를 덮는다. */
+.gangi-star-sign-icon .gangi-star-sign-art {
+  position: absolute;
+  inset: 2px;
+  width: auto;
+  height: auto;
+  border-radius: 9999px;
+  object-fit: cover;
+  display: block;
+}
+
+.gangi-star-sign-icon:has(.gangi-star-sign-art) .gangi-star-sign-fallback {
+  display: none;
+}
+
+.gangi-star-sign-icon .gangi-star-sign-fallback {
   display: grid;
   width: 72%;
   height: 72%;

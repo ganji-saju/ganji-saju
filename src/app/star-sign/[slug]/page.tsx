@@ -37,6 +37,7 @@ import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { ShareActions } from '@/features/saju-detail/share-actions';
 import { buildKakaoShare } from '@/lib/kakao/share';
 import { getCanonicalUrl } from '@/lib/site';
+import { StarSignArt } from '@/components/gangi/gangi-star-sign';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -200,7 +201,7 @@ export default async function StarSignDetailPage({ params }: Props) {
                   }}
                   aria-hidden="true"
                 >
-                  {meta.symbol}
+                  <StarSignArt slug={item.slug} />
                 </div>
                 <div>
                   <div className="text-[27.6px] font-extrabold tracking-tight">{item.label}</div>
