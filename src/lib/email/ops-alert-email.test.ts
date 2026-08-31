@@ -48,5 +48,8 @@ test('sendOpsAlertEmail — 본문 줄을 이스케이프해 HTML 로 보내고 
   assert.deepEqual(payload.to, ['ops@x.kr']);
   assert.ok(payload.html.includes('LLM 한도 &lt;초과&gt;'));
   assert.ok(payload.html.includes('지금 막혔다 &amp; 결제 필요'));
-  assert.ok(payload.html.includes('https://ganjisaju.kr/admin/llm-cost'));
+  // href 를 정확히 추출해 등호 비교 — 부분 문자열 포함 검사는 CodeQL 이 "URL 검증 미흡" 으로
+  // 오탐하고, 실제로도 절대 URL 이 **정확히** 만들어졌는지가 검증 대상이다.
+  const href = payload.html.match(/<a href="([^"]+)"/)?.[1];
+  assert.equal(href, 'https://ganjisaju.kr/admin/llm-cost');
 });
