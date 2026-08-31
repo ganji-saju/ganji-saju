@@ -463,3 +463,44 @@ test('구성품이 자기 금액을 가지면 그대로 계상한다(단건 결�
   assert.equal(result.totalSpentWon, 6600);
   assert.equal(result.entries.filter((e) => (e.amountWon ?? 0) > 0).length, 2);
 });
+
+// 🔴 2026-09-01 실측 — 취소된 19,800원 주문의 이용권 6행이 회수되지 않은 채 남아
+//   LTV 59,400원을 만들었다(원장 완료 0건 = 실제 매출 0원). 금액을 모르는 이용권은
+//   주문이 완료로 확인될 때만 정가로 계상해야 한다.
+test('취소·환불된 주문의 이용권은 매출로 세지 않는다(금액 추측 금지)', () => {
+  const rows: ProductEntitlementHistoryRow[] = [
+    { ...bundleComponent('e1', 'today-detail'), order_id: 'ord_canceled', package_id: 'bundle_today_set' },
+    { ...bundleComponent('e2', 'score-factor'), order_id: 'ord_canceled', package_id: 'bundle_today_set' },
+  ];
+  const result = buildPaymentHistory({
+    productEntitlements: rows,
+    creditTransactions: [],
+    // 호출부는 완료 주문만 넘긴다 — 취소 주문은 목록에 없다.
+    paymentOrders: [
+      {
+        id: 'o9',
+        order_id: 'ord_other_completed',
+        package_id: 'bundle_comprehensive',
+        amount: 9900,
+        status: 'fulfilled',
+        created_at: '2026-08-30T04:00:00.000Z',
+        metadata: null,
+      },
+    ],
+  });
+  const fromCanceled = result.entries.filter((e) => e.receipt === 'ord_canceled');
+  assert.equal(fromCanceled.length, 2, '지급 내역은 남아야 한다');
+  assert.equal(
+    fromCanceled.reduce((sum, e) => sum + (e.amountWon ?? 0), 0),
+    0,
+    '취소된 주문은 0원으로 계상해야 한다'
+  );
+});
+
+test('원장을 넘기지 않는 호출부는 기존 동작(정가 폴백)을 유지한다', () => {
+  const result = buildPaymentHistory({
+    productEntitlements: [bundleComponent('e1', 'score-total')],
+    creditTransactions: [],
+  });
+  assert.ok((result.totalSpentWon ?? 0) > 0, '근거가 없을 땐 기존처럼 정가로 보강한다');
+});
