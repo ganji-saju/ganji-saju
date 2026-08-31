@@ -649,16 +649,27 @@ export function CompatibilityInputClient({
                     </span>
                   ) : null}
 
+                  {/* 2026-09-01 — 이모지(💑👨‍👩‍👧🤝💼) → 민화 도상. /compatibility 진입 카드와 같은 자산.
+                      ⚠️선택 상태의 진한 배경 위에 얹으면 그림이 죽어, 선택 시엔 링으로 강조한다. */}
                   <span
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[20.7px]"
+                    className="h-16 w-16 shrink-0 overflow-hidden rounded-full"
                     style={{
-                      background: active ? 'var(--app-pink)' : 'rgba(0,0,0,0.04)',
-                      filter: active ? undefined : 'grayscale(0.05)',
-                      boxShadow: active ? '0 6px 14px rgba(142,42,32,0.28)' : undefined,
+                      background: '#faf5e6',
+                      boxShadow: active
+                        ? '0 0 0 2px var(--app-pink), 0 6px 14px rgba(142,42,32,0.28)'
+                        : 'inset 0 0 0 1px var(--app-line)',
                     }}
                     aria-hidden="true"
                   >
-                    {item.icon}
+                    <img
+                      src={`/images/gangi/icons/relationship/${item.slug}.webp`}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className="h-full w-full object-cover"
+                    />
                   </span>
                   <div className="min-w-0">
                     <div

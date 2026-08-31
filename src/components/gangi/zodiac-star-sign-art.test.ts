@@ -40,16 +40,26 @@ test('궁합 관계 그림 4종이 모두 존재한다', () => {
 
 test('궁합 표면에 장식 이모지가 남아 있지 않다', () => {
   // 2026-09-01 대표 지시: "지금 이모지는 촌스러워 전체 분위기와 안 어울린다" → 그림/먹선으로 교체.
+  // ⚠️2026-09-01 실측 — 이모지가 **콘텐츠 데이터**(moonlight.ts)에 숨어 있어 화면 파일만 훑었을 때
+  //   /compatibility/input 이 그대로 남았다(대표 재제보). 데이터 파일도 스캔 대상에 넣는다.
   const files = [
     'src/app/compatibility/page.tsx',
+    'src/app/compatibility/input/page.tsx',
     'src/app/star-sign/compat/[a]/[b]/page.tsx',
     'src/features/compatibility/compatibility-input-client.tsx',
+    'src/content/moonlight.ts',
   ];
   // 컬러 이모지만 잡는다 — ✓ ✦ › 같은 타이포그래피 기호는 먹 톤과 어울려 유지한다.
   const TYPOGRAPHIC = new Set(['✓', '✦', '✧', '›', '·', '→', '↑', '⚠']);
   const decorative = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
   for (const file of files) {
-    const source = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+    let source = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+    // 콘텐츠 데이터 파일은 궁합 관계 정의 블록만 본다 — 다른 표면(꿈·타로·FAQ)의 이모지는 별건이다.
+    if (file.endsWith('moonlight.ts')) {
+      const start = source.indexOf('export const COMPATIBILITY_RELATIONSHIPS');
+      assert.ok(start >= 0, 'COMPATIBILITY_RELATIONSHIPS 블록을 찾지 못했다');
+      source = source.slice(start, source.indexOf('] as const;', start));
+    }
     const offenders = source
       .split('\n')
       .filter((line) => {
