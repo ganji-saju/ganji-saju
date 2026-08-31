@@ -333,6 +333,16 @@ const TarotCard = (p: InkIconProps) => (
   <S {...p}><rect x="5.6" y="3.4" width="12.8" height="17.2" rx="2.2" /><path d="M12 8.2 13.4 11l2.8.4-2 2 .5 2.8-2.7-1.4-2.7 1.4.5-2.8-2-2 2.8-.4Z" opacity={0.8} /></S>
 );
 
+
+/** 사주 추가 — 더하기. */
+const Plus = (p: InkIconProps) => (
+  <S {...p}><path d="M12 4.6v14.8M4.6 12h14.8" /></S>
+);
+/** 별자리 — 사방으로 뻗는 별빛. */
+const StarSpark = (p: InkIconProps) => (
+  <S {...p}><path d="M12 3.2v17.6M3.2 12h17.6M6.2 6.2l11.6 11.6M17.8 6.2 6.2 17.8" opacity={0.85} /></S>
+);
+
 const ICONS = {
   // 관계 상태
   solo: Solo, dating: Dating, married: Married, parted: Parted,
@@ -346,6 +356,7 @@ const ICONS = {
   moon: Moon, sparkle: Sparkle, chat: Chat, archive: Archive, chart: Chart,
   compass: Compass, bell: Bell, gear: Gear, pen: Pen, lock: Lock, doc: Doc,
   card: Card, question: Question, lantern: Lantern, clover: Clover, crystal: Crystal,
+  plus: Plus, 'star-spark': StarSpark,
   // 2차 스윕
   user: User, gem: Gem, calendar: Calendar, sun: Sun, shop: Shop,
   'move-house': MoveHouse, contract: Contract, travel: Travel, bless: Bless,
@@ -361,8 +372,24 @@ export function isInkIconName(value: unknown): value is InkIconName {
   return typeof value === 'string' && value in ICONS;
 }
 
-/** 이름으로 먹선 아이콘을 렌더한다. 모르는 이름이면 아무것도 그리지 않는다(빈 자리가 깨진 글리프보다 낫다). */
+/**
+ * 이름으로 먹선 아이콘을 렌더한다.
+ *
+ * 🔴 모르는 이름이면 **그 문자열을 그대로 그린다**(빈 자리로 삼키지 않는다).
+ *   2026-09-01 실사고: 하단 부채꼴 메뉴는 라벨 첫 글자('무'·'타')와 '+' '?' '✦' 를 글리프로
+ *   쓰는데, null 을 돌려주는 구현이 그걸 전부 삼켜 **아이콘이 통째로 사라졌다**(대표 제보).
+ *   글자 글리프는 이 앱에서 정당한 표기이고, 오타로 들어온 이름도 눈에 보여야 고칠 수 있다.
+ */
 export function InkIcon({ name, size = 16, className }: InkIconProps & { name: string }) {
   const Cmp = ICONS[name as InkIconName];
-  return Cmp ? <Cmp size={size} className={className} /> : null;
+  if (Cmp) return <Cmp size={size} className={className} />;
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-flex items-center justify-center leading-none ${className ?? ''}`}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.92) }}
+    >
+      {name}
+    </span>
+  );
 }

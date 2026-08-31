@@ -48,7 +48,7 @@ let creditCacheVersion = 0;
 
 const NAV_META: Record<string, { glyph: string; accent: string; description: string }> = {
   홈: { glyph: 'moon', accent: 'var(--app-pink)', description: '오늘의 시작' },
-  사주추가: { glyph: '+', accent: 'var(--app-pink)', description: '생년월일 입력' },
+  사주추가: { glyph: 'plus', accent: 'var(--app-pink)', description: '생년월일 입력' },
   무료운세: { glyph: 'sparkle', accent: 'var(--app-pink-strong)', description: '오늘운·타로' },
   대화방: { glyph: 'chat', accent: 'var(--app-pink)', description: '궁금한 것 묻기' },
   보관함: { glyph: 'archive', accent: 'var(--app-copy-muted)', description: '기록과 전' },
@@ -57,9 +57,9 @@ const NAV_META: Record<string, { glyph: string; accent: string; description: str
   명리: { glyph: 'doc', accent: 'var(--app-pink-soft-strong)', description: '깊은 풀이' },
   타로: { glyph: 'tarot-card', accent: 'var(--app-pink-strong)', description: '마음이 끌리는 카드' },
   궁합: { glyph: 'love', accent: 'var(--app-pink)', description: '둘 사이 흐름' },
-  별자리: { glyph: '✦', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
+  별자리: { glyph: 'star-spark', accent: 'var(--app-pink-soft-strong)', description: '이번 주 감정선' },
   띠운세: { glyph: 'compass', accent: 'var(--app-pink)', description: '내 띠 오늘 흐름' },
-  안내: { glyph: '?', accent: 'var(--app-copy-muted)', description: '이용 안내' },
+  안내: { glyph: 'question', accent: 'var(--app-copy-muted)', description: '이용 안내' },
 };
 
 const MOBILE_DOCK_LABELS: Record<string, string> = {
