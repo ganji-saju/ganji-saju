@@ -16,6 +16,8 @@ import { GrantCreditsActions } from './grant-credits-actions';
 import { GrantMembershipActions } from './grant-membership-actions';
 import { GrantLifetimeReportActions } from './grant-lifetime-report-actions';
 import { GrantProductActions } from './grant-product-actions';
+import { RevokeProductActions } from './revoke-product-actions';
+import { listAdminGrantedEntitlements } from '@/lib/admin/granted-entitlements';
 import { AccountManagementActions } from './account-management-actions';
 import { getManagedSubscription } from '@/lib/subscription';
 import { listUserReadingsForAdmin } from '@/lib/admin/user-readings';
@@ -89,13 +91,17 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const check = await getCurrentAdminRole(supabase);
   const role: 'admin' | 'super_admin' = check.role ?? 'admin';
 
-  const [detail, extras, summaryRow, subscription, lifetimeReadings] = await Promise.all([
-    getAdminUserDetail(id),
-    getMemberExtras(id),
-    fetchSummaryRow(id),
-    getManagedSubscription(id).catch(() => null),
-    listUserReadingsForAdmin(id).catch(() => [] as Awaited<ReturnType<typeof listUserReadingsForAdmin>>),
-  ]);
+  const [detail, extras, summaryRow, subscription, lifetimeReadings, grantedEntitlements] =
+    await Promise.all([
+      getAdminUserDetail(id),
+      getMemberExtras(id),
+      fetchSummaryRow(id),
+      getManagedSubscription(id).catch(() => null),
+      listUserReadingsForAdmin(id).catch(
+        () => [] as Awaited<ReturnType<typeof listUserReadingsForAdmin>>
+      ),
+      listAdminGrantedEntitlements(id).catch(() => []),
+    ]);
   if (!detail) notFound();
 
   if (check.userId) {
@@ -328,6 +334,15 @@ export default async function AdminUserDetailPage({ params }: Props) {
               userId={id}
               readings={lifetimeReadings.map((r) => ({ id: r.id, label: r.label }))}
             />
+            {/* 회수 — 수동 부여분만 나온다. 결제분은 환불 카드로(PG 취소 없는 회수 방지). */}
+            <h3 className="mb-1 mt-4 text-[13px] font-extrabold text-[var(--app-ink)]">
+              수동 부여 이용권 · {grantedEntitlements.length}건
+            </h3>
+            <p className="mb-2 text-[11.5px] text-[var(--app-copy-soft)]">
+              이 회원이 가진 이용권 중 결제 흔적이 없는 것(평생 리포트 수동 부여 포함). 결제분은 여기
+              나오지 않으며 환불 카드에서만 회수된다.
+            </p>
+            <RevokeProductActions role={role} userId={id} items={grantedEntitlements} />
           </Card>
           <Card title="평생 리포트 권한 부여 (super_admin)">
             <p className="mb-2 text-[11.5px] text-[var(--app-copy-soft)]">
