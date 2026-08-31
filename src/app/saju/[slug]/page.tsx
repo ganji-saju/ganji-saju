@@ -384,32 +384,42 @@ function buildCompactResultCards(report: SajuReport) {
 export default async function SajuResultPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const { topic } = await searchParams;
-  const reading = await resolveReading(slug);
+
+  // 2026-08-31 — 첫 화면 전 DB 호출을 **병렬**로. 이전엔 6개를 직렬로 기다렸다(reading →
+  //   가격맵 → 점수언락 → 멤버십 → 가족 → 오늘상세). 이 페이지엔 이제 loading.tsx 가 없어서
+  //   (제출 오버레이가 결과가 올 때까지 남는다 — 아래 주석) 이 대기가 곧 사용자가 보는 시간이다.
+  //   서로 독립인 5개는 한 번에, 멤버십(점수 미해제 때만 필요)만 뒤에.
+  //   ⚠️ /saju/[slug]/loading.tsx 를 다시 만들면 "로딩 두 번" 이 재발한다: Next 는 이동 대상
+  //      세그먼트에 loading.tsx 가 있으면 제출 오버레이를 즉시 그 폴백으로 갈아끼운다.
+  //      (2026-08-30 엔 "대기가 둘이라 합칠 수 없다" 고 잘못 진단했다 — 가드 no-segment-loading.spec.ts)
+  const [reading, priceMap, scoreUnlocked, familyNav, todayDetailEntitlement] = await Promise.all([
+    resolveReading(slug),
+    // 2026-07-07 Phase 2 — 가격 표시 리졸버 맵(admin product_prices 반영).
+    getPriceDisplayMap(),
+    // 2026-06-07 — 점수 단일 언락(score-total). 미해제 시 점수 블록을 블러-락.
+    //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
+    //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
+    getScoreUnlockEntitlement(slug),
+    // 2026-08-31 — 가족 사주 바로가기(대표 요청): 가족이 등록돼 있으면 사주 화면에서
+    //   클릭 한 번으로 그 가족의 사주로 이동한다. 멤버십 열람 범위(본인·가족 5명)와 한 세트.
+    getViewerFamilySajuNav(),
+    // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
+    //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
+    //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
+    getSajuTodayDetailEntitlement(slug),
+  ]);
 
   if (!reading) notFound();
 
   const { input, sajuData, grounding } = reading;
-  // 2026-07-07 Phase 2 — 가격 표시 리졸버 맵(admin product_prices 반영).
-  const priceMap = await getPriceDisplayMap();
   // 2026-05-21 Phase 6~7 — 사주 종합 점수(순수·서버, 비용 0).
   const sajuScore = computeSajuScoreFromData(sajuData);
-  // 2026-06-07 — 점수 단일 언락(score-total). 미해제 시 점수 블록을 블러-락.
-  //   가격은 리졸버가 렌더하므로 주석에 금액을 적지 않는다(2026-07-19 6,600원 인하 시 stale 이었음).
-  //   grandfather: 과거 score-factor 5개/today-set 번들 보유자도 해제.
-  const scoreUnlocked = await getScoreUnlockEntitlement(slug);
   // 2026-08-31 — 멤버십 보유자 제보: 깊은풀이(멤버십 혜택)는 열리는데 이 페이지는
   //   9,900 종합 CTA만 보여 "또 결제하라"로 읽힌다(중복결제 위험 — 종합 구성 중
   //   오늘 자세히·올해 핵심은 멤버십 혜택과 겹침). 종합은 멤버십 미포함 단품이라
   //   CTA 자체는 유지하되, 멤버에게는 "왜 겹치는지" 고지를 목차 위에 붙인다.
   const memberTier = !scoreUnlocked ? await getViewerMemberTier() : null;
-  // 2026-08-31 — 가족 사주 바로가기(대표 요청): 가족이 등록돼 있으면 사주 화면에서
-  //   클릭 한 번으로 그 가족의 사주로 이동한다. 멤버십 열람 범위(본인·가족 5명)와 한 세트.
-  const familyNav = await getViewerFamilySajuNav();
   const currentIdentity = sajuIdentityKey(input);
-  // 2026-08-26 — 오늘 자세히 열람권(당일 상품). 구매/열람 당일에만 인라인 상세를 합성하고,
-  //   만료되면 섹션 자체를 렌더하지 않는다(만료를 실패 카드로 보여주던 것이 "사주가
-  //   오늘운세와 연동돼 오류난다"는 인상을 만든 원인 — 사용자 제보 2회). 아래 CTA href 와 공유.
-  const todayDetailEntitlement = await getSajuTodayDetailEntitlement(slug);
   const todayDetailUnlocked = scoreUnlocked && todayDetailEntitlement;
 
   // 2026-08-12 — 페이월 노출을 퍼널에 기록한다(migration 073).
