@@ -119,13 +119,13 @@ export default async function CompatibilityPage() {
                   <Link
                     key={item.slug}
                     href={`/compatibility/input?relationship=${item.slug}`}
-                    className="flex items-start gap-3 rounded-[16px] border bg-white p-4 transition-transform active:scale-[0.98]"
+                    className="flex items-center gap-3.5 rounded-[16px] border bg-white p-4 transition-transform active:scale-[0.98]"
                     style={{ borderColor: 'var(--app-line)' }}
                   >
                     {/* 2026-09-01 — 이모지(💕🌿🌊✦) → 민화 도상(원앙·학 가족·까치 한 쌍·쌍잉어).
                         48px 타일을 그림이 채우고, 관계색은 테두리로 유지한다. */}
                     <div
-                      className="h-12 w-12 shrink-0 overflow-hidden rounded-[14px]"
+                      className="h-16 w-16 shrink-0 overflow-hidden rounded-[18px]"
                       style={{
                         background: tone?.soft ?? 'var(--app-pink-soft)',
                         border: `1px solid ${tone?.line ?? 'var(--app-pink-line)'}`,

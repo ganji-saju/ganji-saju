@@ -37,7 +37,6 @@ export interface MoonlightWisdomCard {
 
 export interface CompatibilityRelationship {
   slug: CompatibilityRelationshipSlug;
-  icon: string;
   title: string;
   hook: string;
 }
@@ -453,25 +452,21 @@ export const SAJU_PREMIUM_SECTIONS = [
 export const COMPATIBILITY_RELATIONSHIPS: readonly CompatibilityRelationship[] = [
   {
     slug: 'lover',
-    icon: '💑',
     title: '연인 · 배우자',
     hook: '우리, 정말 잘 맞는 사이일까',
   },
   {
     slug: 'family',
-    icon: '👨‍👩‍👧',
     title: '부모 · 자녀',
     hook: '왜 저 아이와는 늘 부딪힐까',
   },
   {
     slug: 'friend',
-    icon: '🤝',
     title: '형제 · 친구',
     hook: '오래도록 편한 사이일까',
   },
   {
     slug: 'partner',
-    icon: '💼',
     title: '동업 · 파트너',
     hook: '함께 일해도 괜찮을 사이일까',
   },
