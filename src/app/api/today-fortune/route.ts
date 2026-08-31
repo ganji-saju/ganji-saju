@@ -16,6 +16,7 @@ import type { TodayFortuneBirthPayload } from '@/lib/today-fortune/types';
 import { resolveUnifiedBirthInput } from '@/lib/saju/unified-birth-entry';
 import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
 import { generateTodayFortuneNarrative } from '@/server/ai/today-fortune/service';
+import { sajuIdentityKey } from '@/lib/saju/reading-identity';
 import { buildTodayCaseSummaries } from '@/server/today-fortune/today-case-summaries';
 import type { UserSituation } from '@/lib/saju/types';
 import {
@@ -265,6 +266,8 @@ export async function POST(req: NextRequest) {
       caseSummaries,
       situation,
       userId: user.id,
+      // 같은 계정이 같은 날 다른 가족을 조회할 때 첫 사람 본문이 캐시로 서빙되던 것 차단.
+      subjectKey: sajuIdentityKey(parsed.input),
     });
     if (narrative) {
       result.oneLine = { ...result.oneLine, headline: narrative.headline, body: narrative.body };

@@ -181,3 +181,31 @@ export async function getTodayFortuneRunById(
   if (error || !data) return null;
   return mapRow(data as unknown as TodayFortuneRunRow);
 }
+
+/**
+ * 2026-08-31 — 그 오늘운세를 **실행할 때 쓴 이름**(폼이 보낸 이름). 유료 스냅샷은 이름 없는
+ *   reading.input 으로 재빌드되므로, 등록 가족이 아닌 대상(직접 입력)일 때 무료 결과와
+ *   결제 후 상세의 호명이 갈리는 것을 막는 다리다. 실패·부재는 null(계정 표시명 폴백).
+ */
+export async function getTodayFortuneRunDisplayName(
+  userId: string | null | undefined,
+  sourceSessionId: string | null | undefined
+): Promise<string | null> {
+  if (!userId || !sourceSessionId || !hasSupabaseServiceEnv) return null;
+  try {
+    const service = await createServiceClient();
+    const { data } = await service
+      .from('today_fortune_runs')
+      .select('display_name')
+      .eq('user_id', userId)
+      .eq('source_session_id', sourceSessionId)
+      .not('display_name', 'is', null)
+      .order('occurred_on', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const name = (data as { display_name?: string | null } | null)?.display_name?.trim();
+    return name || null;
+  } catch {
+    return null;
+  }
+}

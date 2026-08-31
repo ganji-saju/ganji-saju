@@ -17,16 +17,22 @@ import {
 } from '@/server/today-fortune/build-today-fortune';
 import { attachTodayPremiumNarrative } from '@/server/ai/today-premium-service';
 import { getUserProfileById } from '@/lib/profile';
+import { getTodayFortuneRunDisplayName } from '@/lib/today-fortune/run-log';
+import { resolveFamilySubjectNameForUser } from '@/lib/saju/family-access';
 import { resolveTodayDisplayName } from '@/lib/today-fortune/resolve-display-name';
 import type { BirthInput } from '@/lib/saju/types';
 
 // 2026-06-05 Bug A(detail page) — 오늘 payload 엔 이름 필드가 없어 persisted reading.input.name
 //   이 undefined → snapshot 으로 빌드되는 detail hero 가 항상 '달빛이' fallback.
 //   snapshot 시점에 profile.display_name 을 input.name 으로 보강(순수). 빈 값이면 원본 유지.
+//   2026-08-31 — 원본에 이름이 있으면 그게 대상자 본인의 이름이므로 **덮어쓰지 않는다**.
+//   (/saju/new 가족 제출은 reading.input.name 에 가족 이름을 담는데, 계정 주인 표시명으로
+//    무조건 치환돼 유료 상세·달력이 남의 이름으로 호명하던 원인.)
 export function applyDisplayNameToInput(
   input: BirthInput,
   displayName: string | null | undefined
 ): BirthInput {
+  if (input.name?.trim()) return input;
   const trimmed = displayName?.trim();
   return trimmed ? { ...input, name: trimmed } : input;
 }
@@ -38,6 +44,18 @@ export function applyDisplayNameToInput(
 export interface SnapshotDisplayNameDeps {
   loadProfileDisplayName: (userId: string) => Promise<string | null | undefined>;
   loadAuthMetadata: (userId: string) => Promise<Record<string, unknown> | null>;
+  /**
+   * 2026-08-31 — 이 사주가 등록된 본인·가족 중 누구인지(정체성 매칭) 이름으로 답한다.
+   *   프로필·소셜보다 먼저 본다: 계정 주인 이름은 "이 계정의 이름"일 뿐 "이 사주 주인의
+   *   이름"이 아니라서, 가족 오늘운세·달력이 전부 계정 주인으로 호명되던 원인이었다.
+   */
+  loadSubjectName?: (userId: string, input: BirthInput) => Promise<string | null>;
+  /**
+   * 그 오늘운세를 실행할 때 폼이 보낸 이름(today_fortune_runs.display_name).
+   *   등록 가족이 아닌 대상(폼 직접 입력)에서 무료 결과와 결제 후 상세의 호명이
+   *   갈리지 않게 하는 다리 — 계정 표시명 폴백보다 앞선다.
+   */
+  loadRunDisplayName?: (userId: string, sourceSessionId: string) => Promise<string | null>;
 }
 
 export async function resolveSnapshotInputName(
@@ -68,6 +86,9 @@ export const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
     const { data } = await service.auth.admin.getUserById(userId);
     return data?.user?.user_metadata ?? null;
   },
+  loadSubjectName: (userId, input) => resolveFamilySubjectNameForUser(userId, input),
+  loadRunDisplayName: (userId, sourceSessionId) =>
+    getTodayFortuneRunDisplayName(userId, sourceSessionId),
 };
 
 // 2026-07-07 — reading.input(오늘 payload)은 이름을 안 담으므로, 표시 이름(프로필→소셜 메타)을
@@ -75,12 +96,36 @@ export const DEFAULT_SNAPSHOT_NAME_DEPS: SnapshotDisplayNameDeps = {
 //   fallback 으로 새지 않도록 today detail·운세 달력 등 모든 소비 지점이 이걸 거쳐야 한다.
 //   ⚠️ toSlug(pillars.ts)는 input.name 을 포함하므로, readingKey/entitlement 계산엔 원본
 //   reading.input 을 쓰고(슬러그 안정), 이 named 사본은 메시지 빌더에만 넘긴다.
+/**
+ * 이 사주를 누구로 호명할지 해석한다.
+ *   우선순위: ①원본 input.name ②등록된 본인·가족(정체성 매칭) ③그 실행에 쓴 폼 이름(run 기록)
+ *   ④계정 표시명(프로필→소셜). ④까지 비면 호출부가 '달빛이' 폴백.
+ *   ③이 있어야 "무료는 철수 · 결제 후 상세는 계정 주인 이름"으로 갈리지 않는다.
+ */
 export async function resolveNamedReadingInput(
   input: BirthInput,
   userId: string | null | undefined,
-  deps: SnapshotDisplayNameDeps = DEFAULT_SNAPSHOT_NAME_DEPS
+  deps: SnapshotDisplayNameDeps = DEFAULT_SNAPSHOT_NAME_DEPS,
+  sourceSessionId?: string | null
 ): Promise<BirthInput> {
-  const name = await resolveSnapshotInputName(userId, deps);
+  // 이미 이름이 있으면 조회 자체가 불필요(그게 대상자 이름이다).
+  if (input.name?.trim()) return input;
+  let subjectName: string | null = null;
+  if (userId && deps.loadSubjectName) {
+    try {
+      subjectName = await deps.loadSubjectName(userId, input);
+    } catch {
+      // 가족 조회 실패는 비차단 — 다음 후보로 진행.
+    }
+  }
+  if (!subjectName && userId && sourceSessionId && deps.loadRunDisplayName) {
+    try {
+      subjectName = await deps.loadRunDisplayName(userId, sourceSessionId);
+    } catch {
+      // 실행기록 조회 실패도 비차단 — 계정 표시명 폴백으로 진행.
+    }
+  }
+  const name = subjectName ?? (await resolveSnapshotInputName(userId, deps));
   return applyDisplayNameToInput(input, name);
 }
 
@@ -247,10 +292,16 @@ export async function buildTodayFortuneSnapshotContent({
 }: BuildTodayFortuneSnapshotContentInput) {
   const todaySajuData = buildFreshTodaySajuData(reading.input, { now });
   // 2026-06-05 Bug A — reading.input(오늘 payload)엔 이름이 없어 detail hero 가 '달빛이' 로
-  //   나오던 이슈. snapshot 시점에 profile.display_name → 소셜 메타데이터 순으로 보강(없으면
-  //   fallback 유지). 이름은 사주 계산과 무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
-  const resolvedName = await resolveSnapshotInputName(reading.userId, nameDeps);
-  const namedInput = applyDisplayNameToInput(reading.input, resolvedName);
+  //   나오던 이슈. snapshot 시점에 이름을 보강한다(없으면 fallback 유지). 이름은 사주 계산과
+  //   무관(userName 표기에만 영향)하므로 saju data 는 reading.input 그대로.
+  //   2026-08-31 — 보강 순서를 "원본 이름 → 등록 가족 정체성 매칭 → 계정 표시명"으로 통일.
+  //   ⚠️여기서 만든 이름은 본문 문자열(iljin 메시지·LLM 산문)에 굳어 사후 교정이 어렵다.
+  const namedInput = await resolveNamedReadingInput(
+    reading.input,
+    reading.userId,
+    nameDeps,
+    sourceSessionId
+  );
   const freeResult = buildTodayFortuneFreeResult(namedInput, todaySajuData, {
     concernId,
     sourceSessionId,

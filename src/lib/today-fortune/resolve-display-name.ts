@@ -7,7 +7,7 @@ export interface TodayDisplayNameSources {
   profileDisplayName?: string | null;
   /** Supabase user.user_metadata (소셜 로그인 제공 이름). */
   authMetadata?: Record<string, unknown> | null;
-  /** 클라이언트가 직접 보낸 이름(비로그인 닉네임 입력 대비). */
+  /** 이번 폼이 명시한 이름(가족 칩으로 채우면 그 가족 이름) — 대상자 지목이라 최우선. */
   clientName?: unknown;
 }
 
@@ -22,16 +22,20 @@ export const MOONLIGHT_FALLBACK_DISPLAY_NAME = '달빛이';
 
 /**
  * 오늘운세 hero 인사말용 표시 이름 resolution(순수).
- * 우선순위: profile.display_name → 소셜 메타데이터 → 클라이언트 입력.
+ * 우선순위: **이번 폼이 보낸 이름 → profile.display_name → 소셜 메타데이터.**
  * 모두 비면 undefined → hero 는 '달빛이' fallback.
+ *
+ * 2026-08-31 순서 반전 — 폼 이름이 최후순위라 가족 사주를 조회해도 계정 주인 이름이
+ *   이겼다("가족 오늘운세인데 내 이름이 뜬다" 제보). 2026-06-05 의 '달빛이' 회귀는
+ *   순서 문제가 아니라 payload 에 이름 필드가 아예 없어서였고, 지금도 빈 값은 건너뛰므로
+ *   폼 이름이 없으면 그대로 프로필→소셜로 폴백한다(그 가드는 유지된다).
  */
 export function resolveTodayDisplayName(sources: TodayDisplayNameSources): string | undefined {
-  const candidates: unknown[] = [sources.profileDisplayName];
+  const candidates: unknown[] = [sources.clientName, sources.profileDisplayName];
   const meta = sources.authMetadata;
   if (meta) {
     for (const key of AUTH_NAME_KEYS) candidates.push(meta[key]);
   }
-  candidates.push(sources.clientName);
 
   for (const candidate of candidates) {
     if (typeof candidate === 'string') {

@@ -19,6 +19,7 @@ import {
 } from '@/server/ai/today-fortune/prompt';
 import {
   readTodayFortuneAi,
+  todayFortuneCacheVersion,
   writeTodayFortuneAi,
   type TodayFortuneCacheKey,
 } from '@/server/ai/today-fortune/cache';
@@ -89,8 +90,10 @@ export async function generateTodayFortuneNarrative(args: {
   caseSummaries: string[];
   situation: string | null;
   userId: string;
+  /** 이 본문이 누구 사주인지(4기둥+성별). 캐시 교차 서빙 방지 — cache.ts 주석 참고. */
+  subjectKey?: string | null;
 }): Promise<TodayFortuneNarrative | null> {
-  const { result, sajuData, caseSummaries, situation, userId } = args;
+  const { result, sajuData, caseSummaries, situation, userId, subjectKey } = args;
 
   // Step 1: 플래그 OFF → 결정론 유지.
   if (!isTodayFortuneLlmEnabled()) return null;
@@ -100,7 +103,7 @@ export async function generateTodayFortuneNarrative(args: {
     userId,
     dateKey: result.dateKey,
     concernId: result.concernId,
-    promptVersion: TODAY_FORTUNE_PROMPT_VERSION,
+    promptVersion: todayFortuneCacheVersion(TODAY_FORTUNE_PROMPT_VERSION, subjectKey),
   };
 
   const cached = await readTodayFortuneAi(key);

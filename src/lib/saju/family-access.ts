@@ -69,6 +69,42 @@ export interface FamilySajuNavLink {
 }
 
 /**
+ * 계정 소유자(userId)의 본인·가족 사주 목록. 쿠키 세션이 아니라 userId 로 조회하므로
+ *   서버 라우트(스냅샷·달력 생성 등 "누구의 요청인지"가 아니라 "누구의 데이터인지"가
+ *   기준인 경로)에서도 쓸 수 있다.
+ */
+export async function listFamilySajuNavForUser(userId: string): Promise<FamilySajuNavLink[]> {
+  const [own, family] = await Promise.all([
+    getUserProfileById(userId),
+    listFamilyProfilesForUser(userId),
+  ]);
+
+  const links: FamilySajuNavLink[] = [];
+  const ownDerived = profileIdentityAndSlug(own);
+  if (ownDerived) {
+    links.push({
+      id: 'own',
+      label: own.displayName || '내 사주',
+      relationship: '본인',
+      personName: own.displayName?.trim() || null,
+      ...ownDerived,
+    });
+  }
+  for (const profile of family) {
+    const derived = profileIdentityAndSlug(profile);
+    if (!derived) continue;
+    links.push({
+      id: profile.id,
+      label: profile.label,
+      relationship: profile.relationship,
+      personName: profile.label.trim() || null,
+      ...derived,
+    });
+  }
+  return links;
+}
+
+/**
  * 사주 화면 "가족 사주 바로가기" 링크 목록(본인 포함, 출생정보 완성분만).
  *   비로그인·env 부재·가족 0명이면 빈 배열 — 호출부는 길이로 렌더 분기.
  */
@@ -79,37 +115,28 @@ export async function getViewerFamilySajuNav(): Promise<FamilySajuNavLink[]> {
       data: { user },
     } = await (await createClient()).auth.getUser();
     if (!user) return [];
-
-    const [own, family] = await Promise.all([
-      getUserProfileById(user.id),
-      listFamilyProfilesForUser(user.id),
-    ]);
-
-    const links: FamilySajuNavLink[] = [];
-    const ownDerived = profileIdentityAndSlug(own);
-    if (ownDerived) {
-      links.push({
-        id: 'own',
-        label: own.displayName || '내 사주',
-        relationship: '본인',
-        personName: own.displayName?.trim() || null,
-        ...ownDerived,
-      });
-    }
-    for (const profile of family) {
-      const derived = profileIdentityAndSlug(profile);
-      if (!derived) continue;
-      links.push({
-        id: profile.id,
-        label: profile.label,
-        relationship: profile.relationship,
-        personName: profile.label.trim() || null,
-        ...derived,
-      });
-    }
-    return links;
+    return await listFamilySajuNavForUser(user.id);
   } catch {
     return [];
+  }
+}
+
+/**
+ * 이 사주가 userId 의 본인·가족 중 누구인지 이름으로 답한다(정체성 4기둥+성별 매칭).
+ *   ⚠️계정 주인 이름으로 답하지 않는다 — 그게 "가족 사주를 봤는데 내 이름이 뜬다"의 원인이었다.
+ *   미등록·계산 불가·조회 실패는 null(호출부가 프로필→소셜 폴백을 이어간다).
+ */
+export async function resolveFamilySubjectNameForUser(
+  userId: string,
+  input: BirthInput
+): Promise<string | null> {
+  const identity = sajuIdentityKey(input);
+  if (!identity) return null;
+  try {
+    const nav = await listFamilySajuNavForUser(userId);
+    return nav.find((member) => member.identity === identity)?.personName ?? null;
+  } catch {
+    return null;
   }
 }
 
