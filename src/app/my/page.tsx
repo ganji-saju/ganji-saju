@@ -10,7 +10,7 @@ import { MY_MENU_BLUEPRINT } from '@/content/moonlight';
 import { getAccountDashboardData } from '@/lib/account';
 // 2026-05-15 — MY hero 가 email.split('@')[0] 로 사용자 표시했던 회귀 fix.
 // 실제 nickname (profile.displayName) 우선 사용.
-import { getOptionalSignedInProfile } from '@/lib/profile';
+import { getOptionalSignedInProfile, hasCoreBirthProfile } from '@/lib/profile';
 import { listFavoriteStarSigns } from '@/lib/star-sign/favorites';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -107,10 +107,21 @@ export default async function MyPage() {
           <ZodiacChip kind={userZodiac} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="text-[19.5px] font-extrabold tracking-tight">{displayName}님</div>
+            {/* 2026-08-31 — 이 부제는 "최근 본 사주"였는데 본인 카드처럼 생겨서, 가족 사주를
+                본 직후엔 "내 정보가 배우자로 바뀌었다"는 오인 제보가 됐다(실사례). 본인
+                프로필 출생정보를 우선 표시하고, 최근 사주는 라벨을 붙여 구분한다. */}
             <div className="mt-0.5 text-[13.8px]" style={{ opacity: 0.65 }}>
-              {mostRecentReading
-                ? formatBirthLabel(mostRecentReading)
-                : '아직 저장된 사주가 없어요'}
+              {hasCoreBirthProfile(profile)
+                ? formatBirthLabel({
+                    birthYear: profile.birthYear,
+                    birthMonth: profile.birthMonth,
+                    birthDay: profile.birthDay,
+                    birthHour: profile.birthHour,
+                    gender: profile.gender,
+                  })
+                : mostRecentReading
+                  ? `최근 본 사주 · ${formatBirthLabel(mostRecentReading)}`
+                  : '아직 저장된 사주가 없어요'}
             </div>
           </div>
           <Link
