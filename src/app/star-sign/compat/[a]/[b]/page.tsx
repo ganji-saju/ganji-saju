@@ -15,6 +15,7 @@ import {
 } from '@/lib/star-sign/sign-content';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 import { StarSignArt } from '@/components/gangi/gangi-star-sign';
+import { InkCycleMark, InkFractureMark, InkKnotMark, InkMoonMark, InkShieldMark } from '@/components/gangi/ink-marks';
 
 interface Props {
   params: Promise<{ a: string; b: string }>;
@@ -261,7 +262,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-              ☘ 잘 맞는 점
+              <InkKnotMark size={15} /> 잘 맞는 점
             </div>
             <ul
               className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
@@ -285,7 +286,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-coral)]">
-              ⚡ 부딪칠 수 있는 점
+              <InkFractureMark size={15} /> 부딪칠 수 있는 점
             </div>
             <ul
               className="mt-2 grid gap-1.5 text-[14.4px] leading-[1.55] text-[var(--app-ink)]"
@@ -306,7 +307,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-pink-strong)]">
-              💝 함께하면 좋은 시간
+              <InkMoonMark size={15} /> 함께하면 좋은 시간
             </div>
             <div className="mt-2 grid gap-1.5">
               {report.dateIdeas.map((d, idx) => (
@@ -338,7 +339,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-jade)]">
-              🛡 갈등이 생기면
+              <InkShieldMark size={15} /> 갈등이 생기면
             </div>
             <ul
               className="mt-2 grid gap-1.5 text-[13.8px] leading-[1.5] text-[var(--app-ink)]"
@@ -359,7 +360,7 @@ export default async function StarSignCompatPage({ params }: Props) {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              🔄 다른 조합도 보기
+              <InkCycleMark size={15} /> 다른 조합도 보기
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Link
