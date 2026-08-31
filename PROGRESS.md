@@ -263,7 +263,8 @@ legacy 감사행 **둘 다** — 한쪽만 지우면 2순위 조회에서 되살
   규칙은 **AGENTS.md 로 옮겼다(#743)** — 실측: Orca 세션은 `.claude/worktrees/*` 별도 워크트리라 이 머신의 Claude
   메모리(62개)를 **못 본다**(워크트리 프로젝트 dir 은 memory 0개), env 파일·node_modules·`.claude/settings.local.json`
   도 없다(gitignore). 세션 간 공유되는 건 repo 파일뿐 → **세션 간 규칙은 메모리가 아니라 AGENTS.md/PROGRESS 에**.
-  env 가 필요한 작업(프로덕션 집계·인증 E2E·로컬 결제)은 이 터미널 폴더에서만 된다.
+  env 가 필요한 작업(프로덕션 집계·인증 E2E·로컬 결제)도 워크트리에선 원래 안 됐으나, **#744 로 해소** —
+  `./scripts/setup-worktree.sh` 를 워크트리에서 1회 실행하면 env·settings·메모리가 메인에 심링크로 붙는다.
 
 ### 남은 것
 
