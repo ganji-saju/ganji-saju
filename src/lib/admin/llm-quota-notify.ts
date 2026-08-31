@@ -88,9 +88,11 @@ export async function runLlmQuotaNotification(now: Date = new Date()): Promise<L
       subject: `${label} 간지사주 LLM — ${alert.headline}`,
       lines: [
         alert.detail,
-        alert.recentQuotaFallbacks > 0
-          ? `최근 이틀 한도 실패 ${alert.recentQuotaFallbacks}건 — 지금 사용자가 AI 답변을 받지 못하고 있습니다.`
-          : '아직 사용자 실패 기록은 없습니다. 벤더 한도에 걸리기 전에 조치하세요.',
+        alert.activeNow
+          ? `최근 2시간 안에 실패가 있습니다 — 지금 사용자가 AI 답변을 받지 못하고 있습니다. (오늘·어제 누적 ${alert.recentQuotaFallbacks}건)`
+          : alert.recentQuotaFallbacks > 0
+            ? `오늘·어제 한도 실패 ${alert.recentQuotaFallbacks}건이 있었지만 최근 2시간은 실패가 없습니다.`
+            : '아직 사용자 실패 기록은 없습니다. 벤더 한도에 걸리기 전에 조치하세요.',
         `이 메일은 같은 단계(${alert.level})로는 하루 한 번만 옵니다. 단계가 올라가면 다시 옵니다.`,
       ],
       url: '/admin/llm-cost',
