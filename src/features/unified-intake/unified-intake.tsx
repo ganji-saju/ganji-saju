@@ -189,8 +189,11 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
   const [profile, setProfile] = useState<UnifiedBirthProfile>(createEmptyBirthProfile);
   // 기본은 입력폼 펼침(빈 폼). 저장된 완전한 프로필이 마운트 후 로드되면 effect 가 요약카드(false)로 전환.
   const [formExpanded, setFormExpanded] = useState(true);
-  // 가족 사주 불러오기 — 출생정보가 완성된 가족만 칩으로 노출.
+  // 가족 사주 불러오기 — 2026-08-31 v2: 미완성 가족도 '숨기지 말고' 비활성으로 보여준다
+  //   (배우자가 조용히 사라져 "왜 누락되지" 제보가 된 원인 = 침묵 필터). 본인 칩도 추가
+  //   (가족을 눌렀다가 내 정보로 돌아오는 길).
   const [familyOptions, setFamilyOptions] = useState<IntakeFamilyOption[]>([]);
+  const [ownOption, setOwnOption] = useState<ProfileApiResponse['profile']>(null);
   const [showInterests, setShowInterests] = useState(false);
   const [error, setError] = useState('');
 
@@ -229,12 +232,10 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
         const data = (await response.json().catch(() => null)) as ProfileApiResponse | null;
 
         // 가족 목록은 본인 프로필 완성 여부와 무관하게 채운다(불러오기 칩 노출용).
+        //   미완성(출생정보 결손) 가족도 목록에 남긴다 — 렌더에서 비활성+안내로 표시.
         if (response.ok && data?.authenticated) {
-          setFamilyOptions(
-            (data.familyProfiles ?? []).filter(
-              (member) => member.birthYear && member.birthMonth && member.birthDay
-            )
-          );
+          setFamilyOptions(data.familyProfiles ?? []);
+          setOwnOption(data.profile);
         }
 
         if (
@@ -410,27 +411,30 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     onResolve(profile);
   }
 
-  // 2026-08-31 — 가족 칩 클릭 = 그 가족의 출생정보로 폼을 채운다(본인 자동입력과 같은 매핑).
+  // 2026-08-31 — 칩 클릭 = 그 사람(본인/가족)의 출생정보로 폼을 채운다(자동입력과 같은 매핑).
   //   이후 늦게 도착하는 /api/profile 본인 응답이 덮어쓰지 않게 편집 플래그를 세운다.
-  function applyFamilyProfile(member: IntakeFamilyOption) {
+  function applyLoadedFields(
+    fields: NonNullable<ProfileApiResponse['profile']> | IntakeFamilyOption,
+    name: string
+  ) {
     hasUserEditedRef.current = true;
     fireStarted();
     const filled = normalizeBirthProfile({
       ...createEmptyBirthProfile(),
-      name: member.label,
-      calendarType: member.calendarType ?? 'solar',
-      year: String(member.birthYear ?? ''),
-      month: String(member.birthMonth ?? ''),
-      day: String(member.birthDay ?? ''),
-      hour: member.birthHour === null ? '' : String(member.birthHour),
-      unknownBirthTime: member.birthHour === null,
-      gender: member.gender ?? '',
-      birthLocationCode: member.birthLocationCode ?? '',
-      birthLocationLabel: member.birthLocationLabel ?? '',
-      birthLatitude: member.birthLatitude === null ? '' : String(member.birthLatitude),
-      birthLongitude: member.birthLongitude === null ? '' : String(member.birthLongitude),
-      timeRule: member.timeRule ?? 'standard',
-      solarTimeMode: member.solarTimeMode ?? 'standard',
+      name,
+      calendarType: fields.calendarType ?? 'solar',
+      year: String(fields.birthYear ?? ''),
+      month: String(fields.birthMonth ?? ''),
+      day: String(fields.birthDay ?? ''),
+      hour: fields.birthHour === null ? '' : String(fields.birthHour),
+      unknownBirthTime: fields.birthHour === null,
+      gender: fields.gender ?? '',
+      birthLocationCode: fields.birthLocationCode ?? '',
+      birthLocationLabel: fields.birthLocationLabel ?? '',
+      birthLatitude: fields.birthLatitude === null ? '' : String(fields.birthLatitude),
+      birthLongitude: fields.birthLongitude === null ? '' : String(fields.birthLongitude),
+      timeRule: fields.timeRule ?? 'standard',
+      solarTimeMode: fields.solarTimeMode ?? 'standard',
     });
     setProfile((cur) => ({ ...cur, ...filled }));
     setError('');
@@ -438,28 +442,64 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     setFormExpanded(!hasCompleteBirthProfile(filled));
   }
 
+  const hasApiBirthCore = (
+    fields: { birthYear: number | null; birthMonth: number | null; birthDay: number | null } | null
+  ) => Boolean(fields?.birthYear && fields.birthMonth && fields.birthDay);
+  const incompleteFamilyExists = familyOptions.some((member) => !hasApiBirthCore(member));
+
   return (
     <div className="unified-intake grid gap-5">
-      {familyOptions.length > 0 ? (
+      {familyOptions.length > 0 || hasApiBirthCore(ownOption) ? (
         <div className="rounded-[1.1rem] border border-[var(--app-gold)]/40 bg-[var(--app-surface-strong)] px-4 py-3.5">
           <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-gold-text)]">
             가족 사주 불러오기
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            {familyOptions.map((member) => (
+            {hasApiBirthCore(ownOption) && ownOption ? (
               <button
-                key={member.id}
                 type="button"
-                onClick={() => applyFamilyProfile(member)}
-                className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-line)] bg-white px-3.5 py-1.5 text-[14.5px] font-bold text-[var(--app-ink)]"
+                onClick={() => applyLoadedFields(ownOption, ownOption.displayName || '')}
+                className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-pink)]/45 bg-[var(--app-pink-soft)] px-3.5 py-1.5 text-[14.5px] font-extrabold text-[var(--app-pink-strong)]"
               >
-                {member.label}
-                <span className="text-[12px] font-bold text-[var(--app-copy-soft)]">
-                  {member.relationship}
-                </span>
+                {ownOption.displayName || '내 정보'}
+                <span className="text-[12px] font-bold text-[var(--app-copy-soft)]">본인</span>
               </button>
-            ))}
+            ) : null}
+            {familyOptions.map((member) =>
+              hasApiBirthCore(member) ? (
+                <button
+                  key={member.id}
+                  type="button"
+                  onClick={() => applyLoadedFields(member, member.label)}
+                  className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-line)] bg-white px-3.5 py-1.5 text-[14.5px] font-bold text-[var(--app-ink)]"
+                >
+                  {member.label}
+                  <span className="text-[12px] font-bold text-[var(--app-copy-soft)]">
+                    {member.relationship}
+                  </span>
+                </button>
+              ) : (
+                // 미완성 가족을 숨기면 "왜 누락되지"가 된다 — 비활성으로 보여주고 채울 곳을 알려준다.
+                <span
+                  key={member.id}
+                  className="inline-flex items-center gap-1 rounded-[999px] border border-dashed border-[var(--app-line-strong)] bg-[var(--app-surface-muted)] px-3.5 py-1.5 text-[14.5px] font-bold text-[var(--app-copy-soft)]"
+                  title="출생정보가 비어 있어 불러올 수 없어요"
+                >
+                  {member.label}
+                  <span className="text-[12px] font-bold">{member.relationship} · 정보 미완성</span>
+                </span>
+              )
+            )}
           </div>
+          {incompleteFamilyExists ? (
+            <p className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-soft)]">
+              ‘정보 미완성’ 가족은{' '}
+              <a href="/my/profile" className="font-extrabold text-[var(--app-pink-strong)] underline">
+                MY &gt; 프로필
+              </a>
+              에서 생년월일을 채우면 바로 불러올 수 있어요.
+            </p>
+          ) : null}
         </div>
       ) : null}
       {!formExpanded ? (

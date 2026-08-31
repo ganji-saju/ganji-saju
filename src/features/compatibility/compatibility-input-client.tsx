@@ -69,7 +69,8 @@ interface SavedBirthProfile {
   relationship: string;
   nickname: string;
   detail: string;
-  draft: UnifiedBirthEntryDraft;
+  // 2026-08-31 — 출생정보 미완성 가족은 draft 없이 비활성 칩으로 노출한다(숨기면 "누락" 제보가 됨).
+  draft: UnifiedBirthEntryDraft | null;
 }
 
 interface LocationState {
@@ -170,16 +171,17 @@ function buildSavedProfileOptions(data: ProfileApiResponse): SavedBirthProfile[]
   }
 
   data.familyProfiles.forEach((profile) => {
-    if (!hasBirthFields(profile)) return;
-
+    const complete = hasBirthFields(profile);
     options.push({
       id: `family-${profile.id}`,
       source: 'family',
       label: `${profile.label} · ${profile.relationship}`,
       relationship: profile.relationship,
       nickname: profile.label,
-      detail: formatSavedProfileDetail(profile),
-      draft: profileToDraft(profile),
+      detail: complete
+        ? formatSavedProfileDetail(profile)
+        : '출생정보 미완성 — MY > 프로필에서 생년월일을 채워주세요',
+      draft: complete ? profileToDraft(profile) : null,
     });
   });
 
@@ -272,15 +274,18 @@ function SavedProfileQuickFill({
                 <button
                   key={`${group.key}-${profile.id}`}
                   type="button"
+                  disabled={profile.draft === null}
                   onClick={() => onApply(group.key, profile)}
                   title={profile.detail}
                   className={
-                    group.tone === 'jade'
-                      ? 'shrink-0 rounded-[12px] border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-base font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
-                      : 'shrink-0 rounded-[12px] border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-base font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
+                    profile.draft === null
+                      ? 'shrink-0 cursor-not-allowed rounded-[12px] border border-dashed border-[var(--app-line-strong)] bg-[var(--app-surface-muted)] px-4 py-2 text-base font-semibold text-[var(--app-copy-soft)]'
+                      : group.tone === 'jade'
+                        ? 'shrink-0 rounded-[12px] border border-[var(--app-jade)]/25 bg-[var(--app-jade)]/10 px-4 py-2 text-base font-semibold text-[var(--app-jade)] transition-colors hover:bg-[var(--app-jade)]/16'
+                        : 'shrink-0 rounded-[12px] border border-[var(--app-pink)]/25 bg-white px-4 py-2 text-base font-semibold text-[var(--app-pink-strong)] transition-colors hover:bg-[var(--app-pink)]/12'
                   }
                 >
-                  {profile.nickname}
+                  {profile.draft === null ? `${profile.nickname} · 정보 미완성` : profile.nickname}
                 </button>
               ))}
             </div>
@@ -377,9 +382,12 @@ export function CompatibilityInputClient({
         setSavedProfiles(options);
         setProfileLoadStatus(options.length > 0 ? 'ready' : 'empty');
 
-        const selfProfile = options.find((profile) => profile.source === 'self');
-        if (selfProfile && !hasReusableCompatibilityDraft(selfDraft)) {
-          setSelfDraft((current) => applyUnifiedBirthPatch(current, selfProfile.draft));
+        const selfProfile = options.find(
+          (profile) => profile.source === 'self' && profile.draft !== null
+        );
+        const selfProfileDraft = selfProfile?.draft ?? null;
+        if (selfProfile && selfProfileDraft && !hasReusableCompatibilityDraft(selfDraft)) {
+          setSelfDraft((current) => applyUnifiedBirthPatch(current, selfProfileDraft));
           setSelfName(selfProfile.nickname || '나');
           setProfileLoadMessage('로그인된 내 정보를 내 정보 칸에 자동으로 불러왔습니다.');
         }
@@ -503,6 +511,7 @@ export function CompatibilityInputClient({
   }
 
   function applySavedProfile(target: PersonKey, profile: SavedBirthProfile) {
+    if (profile.draft === null) return; // 미완성 칩은 disabled — 방어적 이중 가드.
     updateDraft(target, profile.draft);
 
     if (target === 'self') {
