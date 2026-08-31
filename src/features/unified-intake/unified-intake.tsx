@@ -58,7 +58,28 @@ interface ProfileApiResponse {
     timeRule: 'standard' | 'trueSolarTime' | 'nightZi' | 'earlyZi';
     gender: 'male' | 'female' | null;
   } | null;
+  // 2026-08-31 — 가족 사주 불러오기(대표 제보: "가족 등록했는데 사주에서 불러오는 화면이 없다").
+  //   /api/profile 이 이미 내려주던 가족 목록을 인테이크에서도 소비한다.
+  familyProfiles?: Array<{
+    id: string;
+    label: string;
+    relationship: string;
+    birthYear: number | null;
+    birthMonth: number | null;
+    birthDay: number | null;
+    birthHour: number | null;
+    birthLocationCode: string | null;
+    birthLocationLabel: string;
+    birthLatitude: number | null;
+    birthLongitude: number | null;
+    solarTimeMode: 'standard' | 'longitude';
+    calendarType: 'solar' | 'lunar';
+    timeRule: 'standard' | 'trueSolarTime' | 'nightZi' | 'earlyZi';
+    gender: 'male' | 'female' | null;
+  }>;
 }
+
+type IntakeFamilyOption = NonNullable<ProfileApiResponse['familyProfiles']>[number];
 
 interface BirthLocationSearchResponse {
   ok: boolean;
@@ -168,6 +189,8 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
   const [profile, setProfile] = useState<UnifiedBirthProfile>(createEmptyBirthProfile);
   // 기본은 입력폼 펼침(빈 폼). 저장된 완전한 프로필이 마운트 후 로드되면 effect 가 요약카드(false)로 전환.
   const [formExpanded, setFormExpanded] = useState(true);
+  // 가족 사주 불러오기 — 출생정보가 완성된 가족만 칩으로 노출.
+  const [familyOptions, setFamilyOptions] = useState<IntakeFamilyOption[]>([]);
   const [showInterests, setShowInterests] = useState(false);
   const [error, setError] = useState('');
 
@@ -204,6 +227,15 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
       try {
         const response = await fetch('/api/profile', { cache: 'no-store' });
         const data = (await response.json().catch(() => null)) as ProfileApiResponse | null;
+
+        // 가족 목록은 본인 프로필 완성 여부와 무관하게 채운다(불러오기 칩 노출용).
+        if (response.ok && data?.authenticated) {
+          setFamilyOptions(
+            (data.familyProfiles ?? []).filter(
+              (member) => member.birthYear && member.birthMonth && member.birthDay
+            )
+          );
+        }
 
         if (
           !response.ok ||
@@ -378,8 +410,58 @@ export function UnifiedIntake({ intent, submitting = false, onResolve, onStarted
     onResolve(profile);
   }
 
+  // 2026-08-31 — 가족 칩 클릭 = 그 가족의 출생정보로 폼을 채운다(본인 자동입력과 같은 매핑).
+  //   이후 늦게 도착하는 /api/profile 본인 응답이 덮어쓰지 않게 편집 플래그를 세운다.
+  function applyFamilyProfile(member: IntakeFamilyOption) {
+    hasUserEditedRef.current = true;
+    fireStarted();
+    const filled = normalizeBirthProfile({
+      ...createEmptyBirthProfile(),
+      name: member.label,
+      calendarType: member.calendarType ?? 'solar',
+      year: String(member.birthYear ?? ''),
+      month: String(member.birthMonth ?? ''),
+      day: String(member.birthDay ?? ''),
+      hour: member.birthHour === null ? '' : String(member.birthHour),
+      unknownBirthTime: member.birthHour === null,
+      gender: member.gender ?? '',
+      birthLocationCode: member.birthLocationCode ?? '',
+      birthLocationLabel: member.birthLocationLabel ?? '',
+      birthLatitude: member.birthLatitude === null ? '' : String(member.birthLatitude),
+      birthLongitude: member.birthLongitude === null ? '' : String(member.birthLongitude),
+      timeRule: member.timeRule ?? 'standard',
+      solarTimeMode: member.solarTimeMode ?? 'standard',
+    });
+    setProfile((cur) => ({ ...cur, ...filled }));
+    setError('');
+    // 성별 등 미입력이 남았으면 폼을 펼쳐 바로 채우게, 완성이면 요약 카드로.
+    setFormExpanded(!hasCompleteBirthProfile(filled));
+  }
+
   return (
     <div className="unified-intake grid gap-5">
+      {familyOptions.length > 0 ? (
+        <div className="rounded-[1.1rem] border border-[var(--app-gold)]/40 bg-[var(--app-surface-strong)] px-4 py-3.5">
+          <div className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-gold-text)]">
+            가족 사주 불러오기
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {familyOptions.map((member) => (
+              <button
+                key={member.id}
+                type="button"
+                onClick={() => applyFamilyProfile(member)}
+                className="inline-flex items-center gap-1 rounded-[999px] border border-[var(--app-line)] bg-white px-3.5 py-1.5 text-[14.5px] font-bold text-[var(--app-ink)]"
+              >
+                {member.label}
+                <span className="text-[12px] font-bold text-[var(--app-copy-soft)]">
+                  {member.relationship}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       {!formExpanded ? (
         <div className="rounded-[1.1rem] border border-[var(--app-pink)]/28 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,17,20,0.08)]">
           <div className="flex flex-wrap items-start justify-between gap-3">

@@ -17,11 +17,17 @@ import { toSlug } from './pillars';
 import type { BirthInput } from './types';
 
 function profileIdentityAndSlug(profile: UserProfile | FamilyProfile) {
-  if (!hasCoreBirthProfile(profile)) return null;
-  const input = toBirthInputFromProfile(profile);
-  const identity = sajuIdentityKey(input);
-  if (!identity) return null;
-  return { identity, slug: toSlug(input) };
+  // 한 프로필의 파생 실패(비정상 데이터로 toSlug throw 등)가 나머지 가족 칩까지
+  // 죽이지 않게 프로필 단위로 흡수한다.
+  try {
+    if (!hasCoreBirthProfile(profile)) return null;
+    const input = toBirthInputFromProfile(profile);
+    const identity = sajuIdentityKey(input);
+    if (!identity) return null;
+    return { identity, slug: toSlug(input) };
+  } catch {
+    return null;
+  }
 }
 
 /** 본인 + 가족 프로필의 사주 정체성 키 집합(출생정보 미완성 항목은 제외). */
