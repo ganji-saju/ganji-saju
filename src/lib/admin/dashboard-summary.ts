@@ -77,6 +77,7 @@ const ACTION_LABELS: Record<string, string> = {
   grant_membership: '멤버십 부여',
   grant_lifetime_report: '평생 리포트 부여',
   grant_product: '유료상품 권한 부여',
+  revoke_product: '유료상품 권한 회수',
 };
 
 export function labelForAdminAction(action: string): string {

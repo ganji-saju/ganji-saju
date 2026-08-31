@@ -11,6 +11,7 @@ export type AdminAction =
   | 'grant_lifetime_report'
   // 2026-08-31 — 유료상품 이용권 수동 부여(궁합·점수·달력·당일권 등 전 상품).
   | 'grant_product'
+  | 'revoke_product'
   // 2026-07-04 — 계정 관리(이용정지/해제·정보수정·삭제).
   | 'ban_user' | 'unban_user' | 'update_user_info' | 'delete_user';
 
