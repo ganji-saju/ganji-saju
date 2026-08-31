@@ -54,6 +54,31 @@ test('InkIcon 에 넘기는 리터럴 이름은 모두 세트에 존재한다', 
   assert.deepEqual(missing, [], `세트에 없는 아이콘 이름: ${missing.join(', ')}`);
 });
 
+// 🔴 2026-09-01 실사고 — 하단 부채꼴 메뉴 아이콘이 통째로 사라졌다(대표 제보).
+//   원인: InkIcon 이 모르는 이름을 null 로 삼켰는데, 그 메뉴는 라벨 첫 글자('무'·'타')와
+//   '+' '?' '✦' 를 글리프로 쓴다. 이제는 모르는 이름이면 그 문자열을 그대로 그린다.
+test('InkIcon 은 모르는 이름을 삼키지 않고 글리프로 그린다', () => {
+  const impl = ICON_SOURCE.slice(ICON_SOURCE.indexOf('export function InkIcon'));
+  assert.ok(
+    !/return\s+Cmp\s*\?[^;]*:\s*null/.test(impl),
+    'null 폴백이 되살아났다 — 라벨 첫 글자 글리프를 쓰는 메뉴가 통째로 사라진다'
+  );
+  assert.ok(impl.includes('{name}'), '모르는 이름을 그대로 그리는 폴백이 사라졌다');
+});
+
+test('네비게이션 글리프는 모두 아이콘 세트에 존재한다(폴백에 기대지 않는다)', () => {
+  const names = iconNames();
+  const nav = fs.readFileSync(
+    path.join(ROOT, 'src/features/shared-navigation/site-header.tsx'),
+    'utf8'
+  );
+  const block = nav.slice(nav.indexOf('const NAV_META'), nav.indexOf('};', nav.indexOf('const NAV_META')));
+  const missing = [...block.matchAll(/glyph:\s*'([^']+)'/g)]
+    .map((m) => m[1])
+    .filter((g) => !names.has(g));
+  assert.deepEqual(missing, [], `세트에 없는 네비 글리프: ${missing.join(', ')}`);
+});
+
 test('🔴 아이콘 이름이 글자 그대로 렌더되지 않는다', () => {
   // 실사고: 스윕이 `{isCenter ? '♥' : '☾'}` 를 `: 'moon'` 으로 바꿔 화면에 moon 이 찍혔다.
   const names = iconNames();
