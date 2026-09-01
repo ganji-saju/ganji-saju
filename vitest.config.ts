@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      // 서버 전용 모듈도 단위 테스트할 수 있게 한다 — 'server-only' 는 번들 가드일 뿐
+      //   런타임 동작이 없어 no-op 로 대체해도 검증 내용이 달라지지 않는다.
+      'server-only': path.resolve(__dirname, 'test/server-only-stub.ts'),
     },
   },
   test: {

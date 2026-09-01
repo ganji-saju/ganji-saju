@@ -4,6 +4,8 @@
 //   조회해 전화번호→user_contact(알림톡 대상), 이름→profiles.display_name(비어있을 때만)
 //   자동 저장. 전부 best-effort — 실패해도 로그인은 진행.
 import { NextRequest, NextResponse } from 'next/server';
+import { kakaoUidHashFromUserMetadata } from '@/lib/kakao/uid-hash';
+import { restoreFreeDailyUsage } from '@/lib/free-usage/withdrawal-ledger';
 import { createServerClient } from '@supabase/ssr';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import {
@@ -188,6 +190,14 @@ export async function GET(req: NextRequest) {
     //   (KOE205 핫픽스 #596) fetchKakaoContact 는 거의 항상 {phone:null, name:null} 을
     //   돌려주고, 그러면 신규 가입자 대부분이 여전히 profiles 행 없이 남는다.
     await ensureProfileRow(signInData.user.id, contact.name);
+
+    // 🔴 2026-09-01 — 같은 카카오 계정이 탈퇴 전에 쓴 무료 사용량을 되돌린다(076 원장).
+    //   탈퇴하면 membership_benefit_usage 가 cascade 로 지워져 무료 하루 1회가 리셋됐다.
+    //   원장이 비어 있으면(대부분의 정상 로그인) 셀렉트 한 번으로 끝난다.
+    await restoreFreeDailyUsage(
+      signInData.user.id,
+      kakaoUidHashFromUserMetadata(signInData.user.user_metadata)
+    );
 
     // 익명으로 만든 사주를 이 계정에 귀속시킨다(이 브라우저 쿠키에 영수증이 있는 것만).
     await claimAnonymousReadings(req, response, signInData.user.id);
