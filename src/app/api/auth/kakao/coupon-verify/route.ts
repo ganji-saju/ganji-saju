@@ -146,10 +146,24 @@ export async function GET(req: NextRequest) {
 
   // 4) 친구 확인됨 → 쿠폰 멱등 발급(계정당 1회, user_coupons UNIQUE 강제). kakaoUid=감사용 verified_kakao_uid.
   const kakaoUid = await fetchKakaoUid(accessToken);
+  if (!kakaoUid) {
+    // 대조 키가 없으면 재발급 차단이 불가능하다(막지는 않되 반드시 보이게 남긴다).
+    console.warn('[kakao-coupon] kakao uid 조회 실패 — 재발급 차단 대조 없이 발급', {
+      userId: user.id,
+    });
+  }
   const issued = await issueKakaoFriendCoupon(user.id, kakaoUid ?? '');
   if (!issued.ok) {
-    console.error('[kakao-coupon] issuance failed after friend verification', { userId: user.id });
-    return fail('issue_failed');
+    console.error('[kakao-coupon] issuance failed after friend verification', {
+      userId: user.id,
+      reason: issued.reason,
+    });
+    // 탈퇴/재가입으로 다시 받으려는 경우는 오류가 아니라 **정책**이다 — 그대로 말해준다.
+    return fail(
+      issued.reason === 'already_issued_for_kakao_account'
+        ? 'already_issued_for_kakao_account'
+        : 'issue_failed'
+    );
   }
 
   return clearCookies(NextResponse.redirect(`${origin}${RESULT_PATH}?kakaoCoupon=issued`));
