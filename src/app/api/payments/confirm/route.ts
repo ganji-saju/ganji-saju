@@ -15,7 +15,7 @@ import {
   fulfillPaymentOrder,
 } from '@/lib/payments/fulfillment';
 // 2026-05-16 PR (B1) — 결제 funnel 단계 기록.
-import { logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
+import { formatPgFailReason, logPaymentFunnelEvent } from '@/lib/payments/funnel-log';
 
 export async function POST(req: NextRequest) {
   const validation = validatePaymentConfirmationPayload(await req.json().catch(() => null));
@@ -91,10 +91,18 @@ export async function POST(req: NextRequest) {
   order = await attachPaymentKeyToOrder({ order, paymentKey, source: 'confirm' });
 
   // 토스페이먼츠 결제 승인
+  let confirmFailReason: string | null = null;
   const payment =
     order.status === 'confirmed' && order.tossPayment
       ? order.tossPayment
       : await confirmPayment(paymentKey, orderId, parsedAmount).catch(async (err) => {
+          // PG 사유(code+message)를 퍼널까지 들고 간다 — 'toss_confirm_error' 한 덩어리로는
+          //   카드 거절인지 키 문제인지 구분이 안 됐다.
+          confirmFailReason = formatPgFailReason(
+            'toss_confirm_error',
+            (err as { code?: string } | null)?.code,
+            err instanceof Error ? err.message : '결제 승인 실패'
+          );
           await markPaymentOrderFailed({
             orderId,
             status: 'payment_failed',
@@ -114,7 +122,7 @@ export async function POST(req: NextRequest) {
       packageId: pkg.id,
       amount: parsedAmount,
       orderId,
-      reason: 'toss_confirm_error',
+      reason: confirmFailReason ?? 'toss_confirm_error',
     });
     return payment;
   }

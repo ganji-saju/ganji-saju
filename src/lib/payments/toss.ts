@@ -20,7 +20,13 @@ async function parseTossResponse(response: Response, fallbackMessage: string) {
 
   if (!response.ok) {
     const error = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
-    throw new Error(typeof error.message === 'string' ? error.message : fallbackMessage);
+    // 2026-09-01 — 토스는 {code, message} 를 주는데 code 를 버리고 있었다.
+    //   퍼널 실패 사유가 'toss_confirm_error' 한 덩어리라 원인 분해가 불가능했다.
+    const thrown = new Error(
+      typeof error.message === 'string' ? error.message : fallbackMessage
+    ) as Error & { code?: string };
+    if (typeof error.code === 'string') thrown.code = error.code;
+    throw thrown;
   }
 
   return body as TossPaymentObject;
