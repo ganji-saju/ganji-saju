@@ -1,4 +1,5 @@
-// 2026-07-07 — /admin/analytics 읽기 API. metrics_daily 누적 시계열(윈도우 30/90/365일).
+// 2026-07-07 — /admin/analytics 읽기 API. metrics_daily 누적 시계열.
+// 2026-09-01 — 롤링 days= 를 달력 기간(unit+period)으로 교체. /admin 과 축을 맞춘다.
 //   admin 가드 후 service 클라이언트로 조회(metrics_daily RLS deny-all).
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
@@ -16,6 +17,7 @@ import {
 import { getExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { createClient, createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { getRefundBreakdown } from '@/lib/admin/refund-breakdown';
+import { kstNoonDate, resolveAdminPeriod } from '@/lib/admin/metric-periods';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,8 +49,11 @@ async function ensureDailyMetricsFresh(
 }
 
 export async function GET(req: NextRequest) {
-  const parsed = parseInt(req.nextUrl.searchParams.get('days') ?? '30', 10);
-  const windowDays = Number.isFinite(parsed) ? parsed : 30;
+  const period = resolveAdminPeriod(
+    req.nextUrl.searchParams.get('unit'),
+    req.nextUrl.searchParams.get('period')
+  );
+  const windowDays = period.days;
 
   const supabase = await createClient();
   const guard = await getCurrentAdminCheck(supabase);
@@ -69,16 +74,19 @@ export async function GET(req: NextRequest) {
   try {
     const service = await createServiceClient();
     const now = new Date();
+    // 신선도 판정은 **진짜 오늘** 기준(지난 기간을 본다고 오늘 롤업을 건너뛰면 안 된다).
     const autoRefresh = await ensureDailyMetricsFresh(service, now);
+    // 집계 끝점은 **기간 마지막 날**. now 만 받는 함수엔 그 날 정오를 넘긴다.
+    const periodEnd = kstNoonDate(period.endKey);
     const [snapshot, external, refunds] = await Promise.all([
-      getDailyMetrics(service, windowDays, now),
-      getExternalAnalyticsSnapshot(windowDays, now),
+      getDailyMetrics(service, windowDays, periodEnd),
+      getExternalAnalyticsSnapshot(windowDays, periodEnd),
       // 2026-08-26 — 환불 건별 원 결제일. '오늘 매출 990 / 환불 9,900' 이 왜 그런지
       //   화면이 스스로 답하게 한다(집계는 그대로, 해설만 추가).
-      getRefundBreakdown(service, windowDays, now),
+      getRefundBreakdown(service, windowDays, periodEnd),
     ]);
     return NextResponse.json(
-      { ok: true, snapshot, external, refunds, autoRefresh },
+      { ok: true, snapshot, external, refunds, autoRefresh, period },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (err: unknown) {

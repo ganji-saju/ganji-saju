@@ -5,17 +5,20 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getCurrentAdminRole } from '@/lib/admin-auth';
-import {
-  getAdminDashboardSummary,
-  normalizeDashboardWindow,
-} from '@/lib/admin/dashboard-summary';
+import { getAdminDashboardSummary } from '@/lib/admin/dashboard-summary';
 import { getKakaoFriendCouponStats } from '@/lib/admin/coupon-stats';
 import { getLlmQuotaAlert } from '@/lib/admin/llm-quota-alert';
 import { LlmQuotaBanner } from '@/components/admin/llm-quota-banner';
 import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
 import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { DailySeries } from '@/lib/admin/operations-stats';
-import { ADMIN_RANGE_OPTIONS, adminRangeLabel } from '@/lib/admin/metric-ranges';
+import {
+  ADMIN_PERIOD_UNITS,
+  adminPeriodChoices,
+  kstTodayKey,
+  resolveAdminPeriod,
+  shiftAdminPeriod,
+} from '@/lib/admin/metric-periods';
 
 export const metadata: Metadata = {
   title: '관리자 콘솔',
@@ -126,17 +129,26 @@ function Card({ title, action, children }: { title: string; action?: React.React
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ days?: string }>;
+  searchParams: Promise<{ unit?: string; period?: string }>;
 }) {
   const params = await searchParams;
-  const windowDays = normalizeDashboardWindow(params.days);
+  // 2026-09-01 사용자 지시 — 기본은 **오늘 하루**. 종전 기본이 '30일(월)'이라
+  //   대시보드를 열 때마다 한 달 뭉갠 숫자부터 보였다.
+  const period = resolveAdminPeriod(params.unit, params.period);
+  const windowDays = period.days;
+  const todayKey = kstTodayKey();
+  const prevAnchor = shiftAdminPeriod(period, -1);
+  const nextAnchor = shiftAdminPeriod(period, 1);
+  const periodChoices = adminPeriodChoices(period.unit);
+  const periodHref = (unit: string, anchor?: string) =>
+    `/admin?unit=${unit}${anchor ? `&period=${encodeURIComponent(anchor)}` : ''}`;
 
   const supabase = await createClient();
   // 2026-07-20 — GA4·Vercel 스냅샷 조회 제거. 이 화면은 자체 순방문만 보여준다.
   //   외부 지표 원본이 필요하면 /admin/analytics 에서 본다(수집은 계속된다).
   const [roleCheck, summary, quotaAlert] = await Promise.all([
     getCurrentAdminRole(supabase),
-    getAdminDashboardSummary(windowDays),
+    getAdminDashboardSummary(period),
     // 2026-08-31 — LLM 한도 경보. 8/31 장애는 사용자가 제보할 때까지 아무도 몰랐다.
     //   조회 실패가 콘솔 전체를 깨뜨리면 안 되니 여기서 삼킨다(배너만 사라진다).
     getLlmQuotaAlert().catch(() => null),
@@ -163,26 +175,81 @@ export default async function AdminDashboardPage({
         <div>
           <h1 className="text-[20px] font-extrabold text-[var(--app-ink)]">관리자 콘솔</h1>
           <p className="text-[13px] text-[var(--app-copy-soft)]">
-            기준 {adminRangeLabel(windowDays)} · {role === 'super_admin' ? 'super_admin' : 'admin'}
+            기준 {period.label}
+            {period.days > 1 ? ` (${period.startKey}~${period.endKey}, ${period.days}일)` : ''} ·{' '}
+            {role === 'super_admin' ? 'super_admin' : 'admin'}
             {ops ? ` · 생성 ${fmtDateTime(ops.generatedAt)}` : ''}
           </p>
         </div>
-        {/* 2026-08-26 — 프리셋 공용 정본(일·주·월·분기·6개월·1년). 서버 컴포넌트라 링크로 둔다. */}
-        <div className="flex flex-wrap items-center gap-1">
-          {ADMIN_RANGE_OPTIONS.map((opt) => (
-            <Link
-              key={opt.value}
-              href={`/admin?days=${opt.value}`}
-              title={opt.hint}
-              className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${
-                opt.value === windowDays
-                  ? 'bg-[var(--app-pink-strong)] text-white'
-                  : 'border border-[var(--app-line)] text-[var(--app-ink)]'
-              }`}
-            >
-              {opt.label}
-            </Link>
-          ))}
+        {/* 2026-09-01 사용자 지시 — 롤링 N일이 아니라 **달력 기간을 지정**한다:
+            일=날짜 선택 · 주=월~일 · 월=1~12월 · 분기=1~3/4~6/7~9/10~12 · 년=연도.
+            서버 컴포넌트라 단위는 링크, 기간 선택은 JS 없는 GET 폼(네이티브 date/select). */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="집계 단위">
+            {ADMIN_PERIOD_UNITS.map((opt) => (
+              <Link
+                key={opt.unit}
+                href={periodHref(opt.unit)}
+                className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${
+                  opt.unit === period.unit
+                    ? 'bg-[var(--app-pink-strong)] text-white'
+                    : 'border border-[var(--app-line)] text-[var(--app-ink)]'
+                }`}
+              >
+                {opt.label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex items-center gap-1">
+            {prevAnchor ? (
+              <Link
+                href={periodHref(period.unit, prevAnchor)}
+                aria-label="이전 기간"
+                className="rounded-[10px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13px] font-bold text-[var(--app-ink)]"
+              >
+                ←
+              </Link>
+            ) : null}
+            <form action="/admin" method="get" className="flex items-center gap-1">
+              <input type="hidden" name="unit" value={period.unit} />
+              {period.unit === 'day' ? (
+                <input
+                  type="date"
+                  name="period"
+                  defaultValue={period.anchor}
+                  max={todayKey}
+                  className="rounded-[10px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13px]"
+                />
+              ) : (
+                <select
+                  name="period"
+                  defaultValue={period.anchor}
+                  className="rounded-[10px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13px]"
+                >
+                  {periodChoices.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="submit"
+                className="rounded-[10px] bg-[var(--app-ink)] px-3 py-1.5 text-[13px] font-bold text-white"
+              >
+                조회
+              </button>
+            </form>
+            {nextAnchor ? (
+              <Link
+                href={periodHref(period.unit, nextAnchor)}
+                aria-label="다음 기간"
+                className="rounded-[10px] border border-[var(--app-line)] px-2.5 py-1.5 text-[13px] font-bold text-[var(--app-ink)]"
+              >
+                →
+              </Link>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -223,7 +290,7 @@ export default async function AdminDashboardPage({
 
       {/* 오늘 KPI */}
       <Card
-        title="오늘"
+        title={period.endKey === todayKey ? '오늘' : `${period.endKey} (기간 마지막 날)`}
         action={<Link href="/admin/operations" className="text-[13px] font-bold text-[var(--app-pink-strong)]">운영 지표 →</Link>}
       >
         {ops ? (
@@ -250,7 +317,7 @@ export default async function AdminDashboardPage({
       </Card>
 
       <Card
-        title={`방문 (${windowDays}일)`}
+        title={`방문 (${period.label})`}
         action={<Link href="/admin/analytics" className="text-[13px] font-bold text-[var(--app-pink-strong)]">누적 지표 분석 →</Link>}
       >
         {/* 2026-07-20 — 방문 지표를 **자체 순방문 하나**로 정리(사용자 요청).
@@ -310,7 +377,7 @@ export default async function AdminDashboardPage({
               sub={`승인 성공률 ${fmtPct(summary.funnel?.totals.confirmSuccessRate)}`}
             />
             <Stat
-              label={`LLM 비용 (${windowDays}일)`}
+              label={`LLM 비용 (${period.label})`}
               value={fmtUsd(summary.llm?.summary.totalCostUsd)}
               sub={`호출 ${fmtNum(summary.llm?.summary.totalCalls)} · 캐시 ${fmtPct(summary.llm?.summary.cacheHitRate)}`}
             />
@@ -336,7 +403,7 @@ export default async function AdminDashboardPage({
             <p className="text-[13px] text-[var(--app-copy-soft)]">—</p>
           )}
         </Card>
-        <Card title={`추이 (${windowDays}일)`}>
+        <Card title={`추이 (${period.label})`}>
           {ops ? (
             <div className="space-y-2">
               <div>

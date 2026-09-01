@@ -2,7 +2,12 @@
 // /admin/payment-funnel 페이지의 단일 데이터 source.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PaymentFunnelStage } from '@/lib/payments/funnel-log';
-import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
+import {
+  ADMIN_PERIOD_MAX_DAYS,
+  kstExclusiveEndIso,
+  kstNoonDate,
+  kstTodayKey,
+} from './metric-periods';
 import { resolveReferrerGroup } from './referrer-labels';
 import {
   buildChannelProductMatrix,
@@ -144,12 +149,12 @@ function rate(numer: number, denom: number): number | null {
   return denom > 0 ? numer / denom : null;
 }
 
-function buildDateAxis(windowDays: number): string[] {
-  const today = new Date();
-  const todayKst = new Date(today.getTime() + KST_OFFSET_MS);
+// endKey = 기간의 마지막 날(KST 날짜키). 없으면 오늘 — 종전 동작.
+function buildDateAxis(windowDays: number, endKey?: string): string[] {
+  const last = new Date(Date.parse(`${endKey ?? kstTodayKey()}T00:00:00Z`));
   const dates: string[] = [];
   for (let i = windowDays - 1; i >= 0; i--) {
-    const d = new Date(todayKst);
+    const d = new Date(last);
     d.setUTCDate(d.getUTCDate() - i);
     dates.push(d.toISOString().slice(0, 10));
   }
@@ -253,16 +258,18 @@ const MAX_PAGES = 50;
 
 export async function buildPaymentFunnelSnapshot(
   supabase: SupabaseClient,
-  options: { windowDays?: number } = {}
+  options: { windowDays?: number; endKey?: string } = {}
 ): Promise<PaymentFunnelSnapshot> {
   // 2026-08-26 — 상한 120 이 프리셋 180·365 를 조용히 잘라내고 있었다(화면은 '1년',
   //   데이터는 120일). 프리셋 최대값과 같은 상한을 쓴다.
-  const windowDays = Math.max(1, Math.min(ADMIN_RANGE_MAX_DAYS, options.windowDays ?? 30));
+  const windowDays = Math.max(1, Math.min(ADMIN_PERIOD_MAX_DAYS, options.windowDays ?? 30));
 
   // 2026-07-04 감사 — 윈도우 시작을 날짜축 첫날의 KST 자정으로 스냅.
   //   기존엔 '지금-24h×N'(UTC 롤링)이라 축 밖 행이 totals 에만 섞여 totals≠Σdaily.
-  const dateAxis = buildDateAxis(windowDays);
+  const dateAxis = buildDateAxis(windowDays, options.endKey);
   const sinceIso = new Date(Date.parse(`${dateAxis[0]}T00:00:00+09:00`)).toISOString();
+  // 축 밖(기간 이후) 행이 totals 에만 섞여 totals≠Σdaily 가 되지 않게 상한도 건다.
+  const untilIso = kstExclusiveEndIso(dateAxis[dateAxis.length - 1]!);
 
   // 2026-07-04 감사 — PostgREST 기본 1000행 캡으로 최신 데이터가 조용히 잘리던 문제
   //   → range 페이지네이션으로 전량 수집(퍼널은 시도당 2~3행이라 윈도우에서 쉽게 초과).
@@ -273,6 +280,7 @@ export async function buildPaymentFunnelSnapshot(
       .from('payment_funnel_events')
       .select('stage, package_id, reason, amount, created_at, order_id, user_id, metadata')
       .gte('created_at', sinceIso)
+      .lt('created_at', untilIso)
       .order('created_at', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
 
@@ -417,7 +425,11 @@ export async function buildPaymentFunnelSnapshot(
   const channelProduct = buildChannelProductMatrix(payments, channelByUser);
   // 환불은 결제와 **다른 테이블**(payment_orders.status='refunded')에 있다 — 퍼널 이벤트에는
   // 환불이 없어서, 이 화면은 여태 '판 돈'만 보여주고 '돌려준 돈'은 못 보여줬다.
-  const refunds = await getRefundBreakdown(supabase, windowDays);
+  const refunds = await getRefundBreakdown(
+    supabase,
+    windowDays,
+    options.endKey ? kstNoonDate(options.endKey) : undefined
+  );
 
   return {
     generatedAt: new Date().toISOString(),

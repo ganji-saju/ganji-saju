@@ -8,6 +8,7 @@
 //   - 윈도우 시작을 KST (오늘-N+1일) 자정으로 스냅(첫 날 부분일 과소집계 방지).
 import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/server';
 import { estimateLlmCostUsd } from '@/server/ai/llm-telemetry';
+import { kstExclusiveEndIso } from './metric-periods';
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
@@ -179,7 +180,8 @@ export interface LlmCostStats {
 }
 
 /** 최근 windowDays 일 ai_llm_runs 집계. service env 없으면 빈 결과(방어적). */
-export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
+// endKey = 기간 마지막 날(KST 날짜키). 없으면 오늘 — 종전 동작.
+export async function getLlmCostStats(windowDays = 30, endKey?: string): Promise<LlmCostStats> {
   const empty: LlmCostStats = {
     daily: [],
     byFeature: [],
@@ -190,13 +192,15 @@ export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
   try {
     const supabase = await createServiceClient();
     // 윈도우 시작 = KST (오늘 - windowDays + 1)일의 자정.
-    const todayKey = toKstDateKey(new Date().toISOString());
+    const todayKey = endKey ?? toKstDateKey(new Date().toISOString());
     const startKey = new Date(
       Date.parse(`${todayKey}T00:00:00Z`) - (windowDays - 1) * 86_400_000
     )
       .toISOString()
       .slice(0, 10);
     const since = new Date(Date.parse(`${startKey}T00:00:00+09:00`)).toISOString();
+    // 기간 밖(마지막 날 이후) 실행이 비용 합계에 섞이지 않게 상한.
+    const until = kstExclusiveEndIso(todayKey);
 
     // PostgREST 기본 max-rows(1000)가 .limit 을 클램프 — range 페이지네이션으로 전량 수집.
     // 정렬 tiebreak(id)로 페이지 경계 중복/누락 방지.
@@ -211,6 +215,7 @@ export async function getLlmCostStats(windowDays = 30): Promise<LlmCostStats> {
           'created_at, feature, source, input_tokens, output_tokens, cost_usd, model, fallback_reason, user_id_hash'
         )
         .gte('created_at', since)
+        .lt('created_at', until)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
         .range(from, from + PAGE_SIZE - 1);

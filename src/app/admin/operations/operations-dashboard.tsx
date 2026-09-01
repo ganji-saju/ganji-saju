@@ -3,7 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import type { DailySeries, OperationsSnapshot } from '@/lib/admin/operations-stats';
-import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { AdminPeriodPicker } from '@/components/admin/admin-period-picker';
+import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
 
 interface ApiResponse {
   ok: boolean;
@@ -195,14 +196,18 @@ function PeriodRow({
 }
 
 export function OperationsDashboard() {
-  const [windowDays, setWindowDays] = useState(30);
+  // 2026-09-01 — 롤링 일수 → 달력 기간. 기본은 오늘 하루(/admin 과 같은 기본값).
+  const [period, setPeriod] = useState(() => resolveAdminPeriod('day', undefined));
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
     setState('loading');
-    fetch(`/api/admin/operations?days=${windowDays}`, { signal: controller.signal })
+    fetch(
+      `/api/admin/operations?unit=${period.unit}&period=${encodeURIComponent(period.anchor)}`,
+      { signal: controller.signal }
+    )
       .then(async (response) => {
         if (response.status === 401) {
           setState('error');
@@ -224,7 +229,7 @@ export function OperationsDashboard() {
         setState('error');
       });
     return () => controller.abort();
-  }, [windowDays]);
+  }, [period]);
 
   const snap = data?.snapshot;
 
@@ -254,12 +259,12 @@ export function OperationsDashboard() {
           className="mt-2 text-[13px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          오늘 신규/활동 사용자/결제·만족도 평균과 14일 추이를 한 화면에서 점검. KST 자정 단위.
+          신규/활동 사용자/결제·만족도 평균과 추이를 한 화면에서 점검. 기간은 아래에서 고른다(KST 자정 단위).
         </p>
       </article>
 
-      {/* §Window selector — 2026-08-26 프리셋을 공용 정본으로(일·주·월·분기·6개월·1년). */}
-      <AdminRangePills value={windowDays} onChange={setWindowDays} />
+      {/* §Window selector — 2026-09-01 달력 기간(일·주(월~일)·월·분기·년) 공용 정본. */}
+      <AdminPeriodPicker period={period} onChange={setPeriod} />
 
       {state === 'loading' ? (
         <article
@@ -442,13 +447,13 @@ export function OperationsDashboard() {
             </article>
           </section>
 
-          {/* §만족도 ({windowDays}일) */}
+          {/* §만족도 (기간 전체) */}
           <section
             className="rounded-[16px] border bg-white p-4"
             style={{ borderColor: 'var(--app-line)' }}
           >
             <h2 className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-              😊 만족도 ({snap.windowDays}일 윈도우 · 표본 {formatNum(snap.satisfaction.sampleSize)}건)
+              😊 만족도 ({period.label} · 표본 {formatNum(snap.satisfaction.sampleSize)}건)
             </h2>
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <div

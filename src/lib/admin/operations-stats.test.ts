@@ -8,6 +8,9 @@ declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 type Row = Record<string, unknown>;
 
+/** 직전 createMockClient 이후의 rpc 호출 기록. */
+const rpcArgs: Array<{ fn: string; args: Record<string, unknown> }> = [];
+
 interface MockResponse {
   data?: Row[] | Row | null;
   count?: number;
@@ -24,6 +27,8 @@ function createMockClient(
   rpc?: Record<string, MockResponse>
 ) {
   const counters: Record<string, number> = {};
+  // rpc 호출 인자 기록 — 어떤 날짜키로 물었는지 검증한다.
+  rpcArgs.length = 0;
   const builder = (tableName: string) => {
     const responses = (() => {
       const v = table[tableName];
@@ -59,12 +64,14 @@ function createMockClient(
   return {
     from: (tableName: string) => builder(tableName),
     // rpc 미정의 함수는 error 반환(마이그레이션 미적용 시뮬레이션 — null-graceful 경로).
-    rpc: (fnName: string) =>
-      Promise.resolve(
+    rpc: (fnName: string, args?: Record<string, unknown>) => {
+      rpcArgs.push({ fn: fnName, args: args ?? {} });
+      return Promise.resolve(
         rpc?.[fnName]
           ? { error: null, ...rpc[fnName] }
           : { data: null, error: { message: `function ${fnName} does not exist` } }
-      ),
+      );
+    },
   } as unknown as Parameters<typeof buildOperationsSnapshot>[0];
 }
 
@@ -82,19 +89,20 @@ test('buildOperationsSnapshot - 빈 데이터셋', async () => {
   assert.equal(snap.trends.newSignups.length, 14);
 });
 
-// 2026-08-26 — 프리셋이 일(1)·1년(365)까지 넓어졌다. 하한 7·상한 60 이 '오늘'과
+// 2026-08-26 — 프리셋이 일(1)·1년까지 넓어졌다. 하한 7·상한 60 이 '오늘'과
 //   분기·6개월·1년을 조용히 잘라내던 것을 고친 뒤의 계약.
-test('buildOperationsSnapshot - windowDays clamp (1~365)', async () => {
+// 2026-09-01 — 상한 366(윤년 1년). 365 는 윤년의 마지막 하루를 조용히 잘랐다.
+test('buildOperationsSnapshot - windowDays clamp (1~366)', async () => {
   const client = createMockClient({});
   const oneDay = await buildOperationsSnapshot(client, { windowDays: 1 });
   assert.equal(oneDay.windowDays, 1);
   assert.equal(oneDay.trends.newSignups.length, 1);
   const client2 = createMockClient({});
-  const year = await buildOperationsSnapshot(client2, { windowDays: 365 });
-  assert.equal(year.windowDays, 365);
+  const year = await buildOperationsSnapshot(client2, { windowDays: 366 });
+  assert.equal(year.windowDays, 366, '윤년 1년');
   const client3 = createMockClient({});
   const tooLarge = await buildOperationsSnapshot(client3, { windowDays: 9999 });
-  assert.equal(tooLarge.windowDays, 365);
+  assert.equal(tooLarge.windowDays, 366);
 });
 
 test('buildOperationsSnapshot - 시리즈 축 마지막 날짜 = KST 오늘', async () => {
@@ -364,4 +372,30 @@ test('buildOperationsSnapshot - lifetime count 반영', async () => {
   assert.equal(snap.lifetime.totalUsers, 1234);
   assert.equal(snap.lifetime.totalReadings, 5678);
   assert.equal(snap.lifetime.summaryRefreshedAt, '2026-07-04T00:00:00.000Z');
+});
+
+// 2026-09-01 — 달력 기간(지난 달·지난 분기) 지원. endKey 가 없으면 종전대로 '오늘까지'.
+test('buildOperationsSnapshot - endKey 는 축의 마지막 날이 된다(지난 기간 조회)', async () => {
+  const client = createMockClient({});
+  const snap = await buildOperationsSnapshot(client, { windowDays: 31, endKey: '2026-03-31' });
+  const axis = snap.trends.newSignups;
+  assert.equal(axis[axis.length - 1].date, '2026-03-31');
+  assert.equal(axis[0].date, '2026-03-01', '31일 창 = 3월 한 달');
+});
+
+// 2026-09-01 — 순방문 주간/월간은 RPC(site_visit_unique_counts)에 상한이 없어
+//   기간 끝(과거)을 주면 '주간(7일)' 라벨로 그 뒤 몇 달치를 세게 된다.
+//   이 두 값만 실제 오늘 기준으로 고정한 계약을 고정한다.
+test('buildOperationsSnapshot - 순방문 주간/월간 키는 지난 기간을 봐도 오늘 기준', async () => {
+  const client = createMockClient({});
+  await buildOperationsSnapshot(client, { windowDays: 31, endKey: '2026-03-31' });
+  const call = rpcArgs.find((c) => c.fn === 'site_visit_unique_counts');
+  const todayKey = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  const expectWeek = new Date(Date.parse(`${todayKey}T00:00:00Z`) - 6 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  assert.equal(call?.args.week_key, expectWeek);
+  // 반대로 일별 집계(축)는 기간을 따른다.
+  const daily = rpcArgs.find((c) => c.fn === 'site_visit_daily_counts');
+  assert.equal(daily?.args.to_key, '2026-03-31');
 });
