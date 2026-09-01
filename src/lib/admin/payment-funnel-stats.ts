@@ -2,8 +2,12 @@
 // /admin/payment-funnel 페이지의 단일 데이터 source.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PaymentFunnelStage } from '@/lib/payments/funnel-log';
-import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
-import { kstExclusiveEndIso, kstNoonDate, kstTodayKey } from './metric-periods';
+import {
+  ADMIN_PERIOD_MAX_DAYS,
+  kstExclusiveEndIso,
+  kstNoonDate,
+  kstTodayKey,
+} from './metric-periods';
 import { resolveReferrerGroup } from './referrer-labels';
 import {
   buildChannelProductMatrix,
@@ -258,7 +262,7 @@ export async function buildPaymentFunnelSnapshot(
 ): Promise<PaymentFunnelSnapshot> {
   // 2026-08-26 — 상한 120 이 프리셋 180·365 를 조용히 잘라내고 있었다(화면은 '1년',
   //   데이터는 120일). 프리셋 최대값과 같은 상한을 쓴다.
-  const windowDays = Math.max(1, Math.min(ADMIN_RANGE_MAX_DAYS, options.windowDays ?? 30));
+  const windowDays = Math.max(1, Math.min(ADMIN_PERIOD_MAX_DAYS, options.windowDays ?? 30));
 
   // 2026-07-04 감사 — 윈도우 시작을 날짜축 첫날의 KST 자정으로 스냅.
   //   기존엔 '지금-24h×N'(UTC 롤링)이라 축 밖 행이 totals 에만 섞여 totals≠Σdaily.

@@ -82,19 +82,20 @@ test('buildOperationsSnapshot - 빈 데이터셋', async () => {
   assert.equal(snap.trends.newSignups.length, 14);
 });
 
-// 2026-08-26 — 프리셋이 일(1)·1년(365)까지 넓어졌다. 하한 7·상한 60 이 '오늘'과
+// 2026-08-26 — 프리셋이 일(1)·1년까지 넓어졌다. 하한 7·상한 60 이 '오늘'과
 //   분기·6개월·1년을 조용히 잘라내던 것을 고친 뒤의 계약.
-test('buildOperationsSnapshot - windowDays clamp (1~365)', async () => {
+// 2026-09-01 — 상한 366(윤년 1년). 365 는 윤년의 마지막 하루를 조용히 잘랐다.
+test('buildOperationsSnapshot - windowDays clamp (1~366)', async () => {
   const client = createMockClient({});
   const oneDay = await buildOperationsSnapshot(client, { windowDays: 1 });
   assert.equal(oneDay.windowDays, 1);
   assert.equal(oneDay.trends.newSignups.length, 1);
   const client2 = createMockClient({});
-  const year = await buildOperationsSnapshot(client2, { windowDays: 365 });
-  assert.equal(year.windowDays, 365);
+  const year = await buildOperationsSnapshot(client2, { windowDays: 366 });
+  assert.equal(year.windowDays, 366, '윤년 1년');
   const client3 = createMockClient({});
   const tooLarge = await buildOperationsSnapshot(client3, { windowDays: 9999 });
-  assert.equal(tooLarge.windowDays, 365);
+  assert.equal(tooLarge.windowDays, 366);
 });
 
 test('buildOperationsSnapshot - 시리즈 축 마지막 날짜 = KST 오늘', async () => {
@@ -364,4 +365,13 @@ test('buildOperationsSnapshot - lifetime count 반영', async () => {
   assert.equal(snap.lifetime.totalUsers, 1234);
   assert.equal(snap.lifetime.totalReadings, 5678);
   assert.equal(snap.lifetime.summaryRefreshedAt, '2026-07-04T00:00:00.000Z');
+});
+
+// 2026-09-01 — 달력 기간(지난 달·지난 분기) 지원. endKey 가 없으면 종전대로 '오늘까지'.
+test('buildOperationsSnapshot - endKey 는 축의 마지막 날이 된다(지난 기간 조회)', async () => {
+  const client = createMockClient({});
+  const snap = await buildOperationsSnapshot(client, { windowDays: 31, endKey: '2026-03-31' });
+  const axis = snap.trends.newSignups;
+  assert.equal(axis[axis.length - 1].date, '2026-03-31');
+  assert.equal(axis[0].date, '2026-03-01', '31일 창 = 3월 한 달');
 });

@@ -2,7 +2,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { AdminPeriodPicker } from '@/components/admin/admin-period-picker';
+import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
 
 interface CtrRow {
   slot: string;
@@ -67,7 +68,9 @@ function formatPct(value: number): string {
 }
 
 export function PushCtrDashboard() {
-  const [windowDays, setWindowDays] = useState(30);
+  // 2026-09-01 — 롤링 일수 → 달력 기간(다른 지표 화면과 같은 축).
+  const [period, setPeriod] = useState(() => resolveAdminPeriod('day', undefined));
+  const windowDays = period.days;
   const [ctrState, setCtrState] = useState<'loading' | 'success' | 'error'>('loading');
   const [ctrData, setCtrData] = useState<CtrResponse | null>(null);
   const [policy, setPolicy] = useState<PolicyResponse | null>(null);
@@ -76,9 +79,10 @@ export function PushCtrDashboard() {
   const fetchCtr = useCallback(async (controller?: AbortController) => {
     setCtrState('loading');
     try {
-      const res = await fetch(`/api/admin/push-ctr?days=${windowDays}`, {
-        signal: controller?.signal,
-      });
+      const res = await fetch(
+        `/api/admin/push-ctr?unit=${period.unit}&period=${encodeURIComponent(period.anchor)}`,
+        { signal: controller?.signal }
+      );
       if (res.status === 401 || res.status === 403) {
         setCtrState('error');
         setCtrData({
@@ -102,7 +106,7 @@ export function PushCtrDashboard() {
       if ((err as { name?: string } | null)?.name === 'AbortError') return;
       setCtrState('error');
     }
-  }, [windowDays]);
+  }, [period]);
 
   const fetchPolicy = useCallback(async (refresh = false) => {
     try {
@@ -177,7 +181,7 @@ export function PushCtrDashboard() {
 
       {/* §Window selector */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <AdminRangePills value={windowDays} onChange={setWindowDays} />
+        <AdminPeriodPicker period={period} onChange={setPeriod} />
         <button
           type="button"
           onClick={handleForceRefresh}
@@ -291,7 +295,7 @@ export function PushCtrDashboard() {
             style={{ borderColor: 'var(--app-line)' }}
           >
             <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-              지난 {ctrData.windowDays}일 전체
+              {period.label} 전체
             </div>
             <div className="mt-2 grid grid-cols-3 gap-3">
               <div>

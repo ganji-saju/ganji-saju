@@ -1,8 +1,10 @@
 // 2026-05-15 — 운영 모니터링 메트릭 API (admin).
-// GET /api/admin/operations?days=14 — DAU·결제·만족도·구독 등 통합 스냅샷.
+// GET /api/admin/operations?unit=month&period=2026-08 — DAU·결제·만족도·구독 등 통합 스냅샷.
+// 2026-09-01 — 롤링 days= 를 달력 기간(unit+period)으로 교체. /admin 과 축을 맞춘다.
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
 import { buildOperationsSnapshot } from '@/lib/admin/operations-stats';
+import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
 import {
   createClient,
   createServiceClient,
@@ -10,9 +12,10 @@ import {
 } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
-  const daysParam = req.nextUrl.searchParams.get('days');
-  const parsed = parseInt(daysParam ?? '30', 10);
-  const windowDays = Number.isFinite(parsed) ? parsed : 30;
+  const period = resolveAdminPeriod(
+    req.nextUrl.searchParams.get('unit'),
+    req.nextUrl.searchParams.get('period')
+  );
 
   const supabase = await createClient();
   // PR #141 — admin 화이트리스트 가드. env ADMIN_USER_IDS 또는 admin_users 테이블 통과.
@@ -36,8 +39,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const service = await createServiceClient();
-    const snapshot = await buildOperationsSnapshot(service, { windowDays });
-    return NextResponse.json({ ok: true, snapshot });
+    const snapshot = await buildOperationsSnapshot(service, {
+      windowDays: period.days,
+      endKey: period.endKey,
+    });
+    return NextResponse.json({ ok: true, snapshot, period });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'failed to build snapshot';
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

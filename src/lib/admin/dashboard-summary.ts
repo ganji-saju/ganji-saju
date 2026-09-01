@@ -14,7 +14,6 @@ import {
   type InflowAggEntry,
 } from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
-import { normalizeAdminRange } from './metric-ranges';
 import {
   kstNoonDate,
   resolveAdminPeriod,
@@ -91,21 +90,9 @@ export function labelForAdminAction(action: string): string {
   return ACTION_LABELS[action] ?? action;
 }
 
+/** 종전 호출 계약(오늘까지 N일). 새 코드는 AdminPeriod 를 넘긴다. */
 export type DashboardWindow = number;
 
-/**
- * ?days= 입력을 공용 프리셋(일·주·월·분기·6개월·1년)으로 정규화. 기본 30(월).
- * 2026-08-26 — 화면마다 갈라져 있던 프리셋을 metric-ranges.ts 단일 정본으로 합쳤다.
- */
-export function normalizeDashboardWindow(raw: unknown): DashboardWindow {
-  return normalizeAdminRange(raw, 30);
-}
-
-/**
- * 2026-09-01 — 인자를 **달력 기간**으로 바꿨다(사용자 지시).
- *   종전엔 windowDays 만 받아 언제나 '오늘까지 N일'이었고, 지난 달·지난 분기를
- *   지정할 방법이 없었다. 숫자를 그대로 넘기면 종전대로 '오늘까지 N일'.
- */
 export async function getAdminDashboardSummary(
   input: AdminPeriod | DashboardWindow = 14
 ): Promise<AdminDashboardSummary> {

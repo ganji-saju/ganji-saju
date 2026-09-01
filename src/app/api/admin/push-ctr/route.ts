@@ -1,7 +1,9 @@
 // 2026-05-16 PR #137 — 별자리 push 의 variant 별 CTR 집계.
-// GET /api/admin/push-ctr?days=30 → { slot, variant, sent, clicked, ctr }
+// GET /api/admin/push-ctr?unit=month&period=2026-08 → { slot, variant, sent, clicked, ctr }
+// 2026-09-01 — 롤링 days= 를 달력 기간(unit+period)으로 교체. 다른 지표 화면과 축을 맞춘다.
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAdminCheck } from '@/lib/admin-auth';
+import { kstExclusiveEndIso, resolveAdminPeriod } from '@/lib/admin/metric-periods';
 import {
   createClient,
   createServiceClient,
@@ -9,8 +11,11 @@ import {
 } from '@/lib/supabase/server';
 
 export async function GET(req: NextRequest) {
-  const daysParam = req.nextUrl.searchParams.get('days');
-  const days = Math.max(1, Math.min(180, parseInt(daysParam ?? '30', 10)));
+  const period = resolveAdminPeriod(
+    req.nextUrl.searchParams.get('unit'),
+    req.nextUrl.searchParams.get('period')
+  );
+  const days = period.days;
 
   const supabase = await createClient();
   const guard = await getCurrentAdminCheck(supabase);
@@ -31,13 +36,15 @@ export async function GET(req: NextRequest) {
   }
   const service = await createServiceClient();
 
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
+  // 기간의 KST 자정~다음날 자정. 종전엔 '지금-N×24h'(UTC 롤링)이라 날짜 경계가 어긋났다.
+  const startIso = new Date(Date.parse(`${period.startKey}T00:00:00+09:00`)).toISOString();
+  const endIso = kstExclusiveEndIso(period.endKey);
 
   const { data, error } = await service
     .from('notification_delivery_logs')
     .select('slot_key, variant, status, clicked_at')
-    .gte('created_at', cutoff.toISOString())
+    .gte('created_at', startIso)
+    .lt('created_at', endIso)
     .eq('status', 'sent')
     .limit(50_000);
 
@@ -87,6 +94,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     windowDays: days,
+    period,
     totalSent: rows.reduce((s, r) => s + r.sent, 0),
     totalClicked: rows.reduce((s, r) => s + r.clicked, 0),
     rows,

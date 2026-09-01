@@ -22,9 +22,14 @@
   지난 기간인데 '오늘'이라고 적혀 있으면 그 숫자를 오늘 값으로 오해한다.
 - 회귀 가드 `metric-periods.test.ts` 9종(윤년 2월 말일·분기 경계·연말 경계·주 정규화 등).
 
-**남은 것 (같은 불편이 남아 있는 화면)**: `/admin/operations`, `/admin/payment-funnel`,
-`/admin/analytics` 는 아직 롤링 `days=` 칩이다(클라이언트 대시보드 + API 라 `days` 계약을
-`unit`/`period` 로 같이 바꿔야 한다). 지금은 /admin 과 축이 다르므로 **숫자를 나란히 비교하지 말 것.**
+**나머지 지표 화면도 같은 축으로** (사용자 지시 "같이 맞춰줘"):
+- `/admin/operations` · `/admin/payment-funnel` · `/admin/analytics` · `/admin/push-ctr` 4개
+  화면과 각 API 를 `days=` → `unit=`+`period=` 로 교체. 공용 클라이언트 선택기
+  `components/admin/admin-period-picker.tsx`(서버 컴포넌트인 /admin 과 **계산은 같은 정본**을 쓴다).
+- push-ctr 은 덤으로 날짜 경계가 고쳐졌다 — 종전 `지금-N×24h`(UTC 롤링)이라 KST 날짜와 어긋났다.
+- **삭제**: `metric-ranges.ts`(+테스트), `admin-range-pills.tsx`, `normalizeDashboardWindow`.
+  롤링 프리셋을 남겨 두면 축이 다시 둘로 갈린다 — 그게 2026-08-26 에 한 번 합쳤던 이유다.
+- clamp 상한 365 → **366**(윤년 1년의 마지막 하루가 조용히 잘리고 있었다).
 
 
 ## 2026-09-01 세션 마감 (Claude) — 컴플레인 3건 추적 · 무료 재화 구멍 2개 차단 · 방침 정정

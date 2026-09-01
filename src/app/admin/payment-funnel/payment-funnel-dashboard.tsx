@@ -7,7 +7,8 @@ import type {
   PaymentFunnelDailyPoint,
   PaymentFunnelSnapshot,
 } from '@/lib/admin/payment-funnel-stats';
-import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { AdminPeriodPicker } from '@/components/admin/admin-period-picker';
+import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
 import { getPackage } from '@/lib/payments/catalog';
 
 interface ApiResponse {
@@ -325,14 +326,18 @@ function ChannelProductTable({ matrix }: { matrix: PaymentFunnelSnapshot['channe
 }
 
 export function PaymentFunnelDashboard() {
-  const [windowDays, setWindowDays] = useState(30);
+  // 2026-09-01 — 롤링 일수 → 달력 기간. 기본은 오늘 하루(/admin 과 같은 기본값).
+  const [period, setPeriod] = useState(() => resolveAdminPeriod('day', undefined));
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [data, setData] = useState<ApiResponse | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
     setState('loading');
-    fetch(`/api/admin/payment-funnel?days=${windowDays}`, { signal: controller.signal })
+    fetch(
+      `/api/admin/payment-funnel?unit=${period.unit}&period=${encodeURIComponent(period.anchor)}`,
+      { signal: controller.signal }
+    )
       .then(async (response) => {
         if (response.status === 401) {
           setState('error');
@@ -354,7 +359,7 @@ export function PaymentFunnelDashboard() {
         setState('error');
       });
     return () => controller.abort();
-  }, [windowDays]);
+  }, [period]);
 
   const snap = data?.snapshot;
 
@@ -383,8 +388,8 @@ export function PaymentFunnelDashboard() {
         </p>
       </article>
 
-      {/* §Window selector — 2026-08-26 프리셋을 공용 정본으로(일·주·월·분기·6개월·1년). */}
-      <AdminRangePills value={windowDays} onChange={setWindowDays} />
+      {/* §Window selector — 2026-09-01 달력 기간(일·주(월~일)·월·분기·년) 공용 정본. */}
+      <AdminPeriodPicker period={period} onChange={setPeriod} />
 
       {state === 'loading' ? (
         <article
@@ -452,7 +457,7 @@ export function PaymentFunnelDashboard() {
           {/* §전환율 4 카드 */}
           <section>
             <h2 className="px-1 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-              전환율 ({snap.windowDays}일)
+              전환율 ({period.label})
             </h2>
             <div className="mt-2 grid grid-cols-2 gap-2.5">
               <article

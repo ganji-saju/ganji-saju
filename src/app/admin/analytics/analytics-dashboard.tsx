@@ -8,7 +8,8 @@ import { VISIT_TRACKING_START_KEY } from '@/lib/admin/analytics-rollup';
 import type { ExternalAnalyticsSnapshot } from '@/lib/admin/external-analytics';
 import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-line-chart';
 import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
-import { AdminRangePills } from '@/components/admin/admin-range-pills';
+import { AdminPeriodPicker } from '@/components/admin/admin-period-picker';
+import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
 import type { RefundBreakdown } from '@/lib/admin/refund-breakdown';
 
 interface ApiResponse {
@@ -535,7 +536,8 @@ function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) 
 }
 
 export function AnalyticsDashboard() {
-  const [days, setDays] = useState(30);
+  // 2026-09-01 — 롤링 일수 → 달력 기간. 기본은 오늘 하루(/admin 과 같은 기본값).
+  const [period, setPeriod] = useState(() => resolveAdminPeriod('day', undefined));
   const [snap, setSnap] = useState<AnalyticsSnapshot | null>(null);
   // 2026-07-20 — 실측 시작일 이전(집계가 사람을 못 세던 구간)은 표에서 제외.
   //   상세 근거는 VISIT_TRACKING_START_KEY 주석 참조.
@@ -556,9 +558,10 @@ export function AnalyticsDashboard() {
       }
 
       try {
-        const res = (await fetch(`/api/admin/analytics?days=${days}`, {
-          cache: 'no-store',
-        }).then((r) => r.json())) as ApiResponse;
+        const res = (await fetch(
+          `/api/admin/analytics?unit=${period.unit}&period=${encodeURIComponent(period.anchor)}`,
+          { cache: 'no-store' }
+        ).then((r) => r.json())) as ApiResponse;
         if (!alive) return;
         if (res.ok && res.snapshot) {
           loadedOnce = true;
@@ -587,7 +590,7 @@ export function AnalyticsDashboard() {
       alive = false;
       window.clearInterval(timer);
     };
-  }, [days]);
+  }, [period]);
 
   const series = (
     pick: (d: AnalyticsSnapshot['daily'][number]) => number | null
@@ -597,7 +600,7 @@ export function AnalyticsDashboard() {
     <div className="flex flex-col gap-5">
       {/* 윈도우 선택 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <AdminRangePills value={days} onChange={setDays} />
+        <AdminPeriodPicker period={period} onChange={setPeriod} />
         {snap?.refreshedAt && (
           <div className="text-[11.5px] text-[var(--app-copy-soft)]">
             {new Date(snap.refreshedAt).toLocaleString('ko-KR')} 기준

@@ -9,6 +9,12 @@
 
 export type AdminPeriodUnit = 'day' | 'week' | 'month' | 'quarter' | 'year';
 
+/**
+ * 집계 상한(일). 가장 긴 기간 = 윤년 1년 = 366일.
+ * (구 metric-ranges.ts 의 365 는 윤년 1년의 마지막 하루를 조용히 잘랐다.)
+ */
+export const ADMIN_PERIOD_MAX_DAYS = 366;
+
 export interface AdminPeriodUnitOption {
   unit: AdminPeriodUnit;
   /** 칩 라벨. */
