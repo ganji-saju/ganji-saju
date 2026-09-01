@@ -175,7 +175,11 @@ async function parseNicepayResponse(
   if (!response.ok || (body.resultCode && body.resultCode !== '0000')) {
     const message =
       typeof body.resultMsg === 'string' && body.resultMsg ? body.resultMsg : fallbackMessage;
-    throw new Error(message);
+    // 2026-09-01 — 문구만 던지고 resultCode 를 버리고 있었다(인증 실패는 반대로 코드만
+    //   남았다). 사유는 **코드+문구 둘 다** 남아야 코드표를 안 찾는다. 호출부가 집어 쓴다.
+    const error = new Error(message) as Error & { resultCode?: string };
+    if (typeof body.resultCode === 'string') error.resultCode = body.resultCode;
+    throw error;
   }
 
   return body;

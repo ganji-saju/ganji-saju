@@ -37,7 +37,11 @@ import {
 // 2026-07-04 admin 지표 감사 — 나이스페이 경로에 confirm_* 퍼널 로그가 전무해
 // (Toss 전용 confirm 라우트에만 있었음) 프로덕션 퍼널이 prepare 까지만 기록되던
 // 문제 수정. funnel-log 는 내부에서 service 클라이언트로 기록(비차단).
-import { logPaymentFunnelEvent, type PaymentFunnelEventInput } from '@/lib/payments/funnel-log';
+import {
+  formatPgFailReason,
+  logPaymentFunnelEvent,
+  type PaymentFunnelEventInput,
+} from '@/lib/payments/funnel-log';
 import { createClient } from '@/lib/supabase/server';
 
 // 결제 후 결과 페이지 결정 — toss(membership/success)의 분기를 서버(nicepay return)에서 재사용.
@@ -142,6 +146,8 @@ export async function POST(req: NextRequest) {
   if (!form) return failRedirect('결제 응답을 해석하지 못했습니다.');
 
   const authResultCode = String(form.get('authResultCode') ?? '');
+  // 나이스가 같이 보내주는 사유 문구(최대 500byte). 실패 사유에 코드와 함께 남긴다.
+  const authResultMsg = String(form.get('authResultMsg') ?? '');
   const tid = String(form.get('tid') ?? '');
   const orderId = String(form.get('orderId') ?? '');
   const amountRaw = String(form.get('amount') ?? '');
@@ -154,7 +160,7 @@ export async function POST(req: NextRequest) {
   if (authResultCode !== '0000') {
     const failedOrder = await lookupOrder(orderId);
     await logFailPair({
-      reason: `auth_failed:${authResultCode || 'unknown'}`.slice(0, 200),
+      reason: formatPgFailReason('auth_failed', authResultCode, authResultMsg),
       order: failedOrder,
       orderId,
       amount: Number.isFinite(amount) ? amount : null,
@@ -235,8 +241,13 @@ export async function POST(req: NextRequest) {
   try {
     nicePayment = await approveNicepayPayment(tid, amount);
   } catch (err) {
-    // 실패 사유(나이스페이 resultMsg)는 서버 로그·주문 error 에만 보존, 사용자에겐 일반 문구.
-    const reason = err instanceof Error && err.message ? err.message : '결제 승인 실패';
+    // 실패 사유(나이스페이 resultCode+resultMsg)는 서버 로그·주문 error·퍼널에만 보존,
+    // 사용자에겐 일반 문구(PG 원문을 그대로 보여주지 않는다).
+    const reason = formatPgFailReason(
+      'approve_failed',
+      (err as { resultCode?: string } | null)?.resultCode,
+      err instanceof Error && err.message ? err.message : '결제 승인 실패'
+    );
     console.error('[nicepay-return] 승인 실패', { orderId, tid, amount, reason });
     await markPaymentOrderFailed({
       orderId,
@@ -250,7 +261,7 @@ export async function POST(req: NextRequest) {
       packageId: order.packageId,
       amount,
       orderId,
-      reason: reason.slice(0, 200),
+      reason,
     });
     // ⚠️ 승인 호출 타임아웃 시 망취소(net-cancel) 처리 필요(docs §2). 운영 검증 후 추가.
     return failRedirect('결제 승인에 실패했습니다.', readRetryPath(order.metadata));

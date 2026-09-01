@@ -29,6 +29,27 @@ export interface PaymentFunnelEventInput {
   metadata?: Record<string, unknown> | null;
 }
 
+/** reason 컬럼 저장 상한. 대시보드는 이 문자열을 그대로 그룹핑 키로 쓴다. */
+const REASON_MAX = 200;
+
+/**
+ * PG 실패 사유를 `코드 문구` 로 합친다.
+ *
+ * 2026-09-01 — 나이스페이 인증 실패를 코드만(`auth_failed:I002`) 남기고 있어서,
+ *   무슨 일이 났는지 알려면 매번 PG 코드표를 찾아야 했다(I002 = 사용자가 결제 취소).
+ *   나이스는 사유 문구(authResultMsg, 최대 500byte)를 **같이 보내주고 있었다** — 버리지 않는다.
+ *   문구는 줄바꿈이 섞여 오므로 한 줄로 정규화하고, 그룹핑 키가 잘게 쪼개지지 않게 자른다.
+ */
+export function formatPgFailReason(
+  prefix: string,
+  code: string | null | undefined,
+  message?: string | null
+): string {
+  const head = `${prefix}:${code || 'unknown'}`;
+  const tail = (message ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  return (tail ? `${head} ${tail}` : head).slice(0, REASON_MAX);
+}
+
 /**
  * Insert one funnel event. Errors are logged but never thrown — payment flow
  * must not be interrupted by analytics logging.
