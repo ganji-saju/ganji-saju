@@ -8,7 +8,8 @@
 //   호출조차 안 된다 — 즉 한 건도 나간 적이 없다.
 //   그래서 발송 가능 여부(sendingLive)를 서버에서 받아, 불가능하면 **약속을 하지 않고
 //   신규 수집도 멈춘다**. 이미 등록한 사람에게는 지울 수 있게 폼을 남긴다.
-//   env(SOLAPI_* + KAKAO_TPL_*)를 채우면 자동으로 원래 문구로 돌아온다.
+//   env(SOLAPI_* + KAKAO_TPL_*)를 채우고 **재배포하면** 원래 문구로 돌아온다
+//   (서버 컴포넌트가 읽는 값이라 배포 시점에 고정된다).
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -91,7 +92,7 @@ export function KakaoContactCard({ sendingLive }: KakaoContactCardProps) {
       >
         {sendingLive
           ? '휴대폰 번호를 등록하면 결제 완료·구독 만료 안내를 카카오 알림톡으로 받을 수 있어요.'
-          : '카카오 알림톡 발송은 아직 준비 중이라, 지금은 이 번호로 아무것도 발송되지 않아요. 지우시려면 비운 뒤 저장해 주세요.'}
+          : '지금은 이 번호로 알림톡이 발송되지 않아요. 번호를 지우시려면 비운 뒤 저장해 주세요.'}
       </p>
 
       <label className="mt-3 block text-[12.6px] font-bold text-[var(--app-copy)]" htmlFor="kakao-phone">
@@ -110,24 +111,24 @@ export function KakaoContactCard({ sendingLive }: KakaoContactCardProps) {
         style={{ borderColor: 'var(--app-line)' }}
       />
 
-      {/* 광고(친구톡) 동의 — 발송이 살아 있을 때만 새로 받는다. 준비 중일 땐 이미 동의한
+      {/* 광고(친구톡) 동의 — 발송이 살아 있을 때만 새로 받는다. 그렇지 않을 땐 이미 동의한
           사람의 해제 경로만 남긴다(동의는 언제든 뺄 수 있어야 한다). */}
       {sendingLive || adConsent ? (
-      <label className="mt-3 flex items-start gap-2.5">
-        <input
-          type="checkbox"
-          checked={adConsent}
-          disabled={!ready || saving}
-          onChange={(e) => setAdConsent(e.target.checked)}
-          className="mt-0.5 h-4 w-4"
-        />
-        <span
-          className="text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
-          style={{ wordBreak: 'keep-all' }}
-        >
-          (선택) 오늘의 운세·이벤트 등 광고성 정보 수신에 동의합니다. 동의는 언제든 여기서 해제할 수 있어요.
-        </span>
-      </label>
+        <label className="mt-3 flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            checked={adConsent}
+            disabled={!ready || saving}
+            onChange={(e) => setAdConsent(e.target.checked)}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span
+            className="text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]"
+            style={{ wordBreak: 'keep-all' }}
+          >
+            (선택) 오늘의 운세·이벤트 등 광고성 정보 수신에 동의합니다. 동의는 언제든 여기서 해제할 수 있어요.
+          </span>
+        </label>
       ) : null}
 
       <button
@@ -141,7 +142,7 @@ export function KakaoContactCard({ sendingLive }: KakaoContactCardProps) {
       </button>
 
       {/* 친구톡(광고) 소식은 채널 친구에게만 도달 → 채널 추가 유도. 채널 ID 없으면 버튼 자체가
-          렌더 안 됨. 발송이 준비 중이면 '소식 받기' 도 거짓말이라 감춘다. */}
+          렌더 안 됨. 발송이 안 되는 상태면 '소식 받기' 도 거짓말이라 감춘다. */}
       {sendingLive ? <KakaoChannelAddButton /> : null}
     </article>
   );

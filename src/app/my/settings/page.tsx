@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { InkIcon } from '@/components/gangi/ink-icons';
 import { LogoutButton } from '@/features/account/logout-button';
 import { KakaoContactCard } from '@/features/account/kakao-contact-card';
-import { isKakaoSendConfigured, kakaoConfig } from '@/lib/kakao/config';
+import { isKakaoAlimtalkLive } from '@/lib/kakao/config';
 // Task 8 — 카카오 친구추가 무료쿠폰 CTA(마이/설정 진입점). slug 없이 렌더 —
 // 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면 컴포넌트 자체가 아무것도 렌더하지 않는다.
 import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
@@ -171,9 +171,7 @@ export default function MySettingsPage() {
             컴포넌트(layout-preference)는 남겨 뒀으므로 되살리려면 이 블록만 복구하면 된다. */}
         {/* 카카오 알림톡 수신용 전화번호 + 광고(친구톡) 수신동의.
             발송 설정이 안 돼 있으면 카드가 약속을 하지 않는다(아래 sendingLive). */}
-        <KakaoContactCard
-          sendingLive={isKakaoSendConfigured() && Boolean(kakaoConfig.templates.paymentComplete)}
-        />
+        <KakaoContactCard sendingLive={isKakaoAlimtalkLive()} />
       </section>
 
       {/* 2026-07-20 — §읽기 경험 섹션 숨김(사용자 요청).
