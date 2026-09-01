@@ -30,8 +30,18 @@
 계정당 한 번만 드릴 수 있어요" — **재시도 버튼을 주지 않는다**(눌러봐야 같은 화면으로
 돌아오는 게 어제 그 루프였다).
 
-⚠️ **남은 작업 2개**: ①migration 075 수동 적용 ②`scripts/backfill-kakao-coupon-ledger.mjs`
-(기본 dry-run, `--apply` 로 반영) — 기존 발급자 4명이 원장에 없으면 그들은 한 번 더 받을 수 있다.
+**적용 완료(2026-09-01).** migration 075 는 **사용자가 대시보드 SQL Editor 로 적용**했고, 백필
+4건은 스크립트로 반영한 뒤 실제 차단까지 확인했다(기존 발급자 uid → 원장 hit = 재발급 불가,
+미수령 uid → miss = 정상 발급 가능).
+
+🔴 **왜 내가 마이그레이션을 못 돌렸나 — 경로가 셋 다 막혀 있다(이번에 실측).**
+①Supabase MCP 는 `list_projects` 에 **`richdoc-ops`(trmbkdrzvtolvolchoad) 하나만** 나온다.
+그대로 `apply_migration` 을 눌렀으면 **남의 프로젝트에 테이블을 만들 뻔했다**(메모리에 적어둔
+"MCP 타깃 재확인" 경고가 실제로 걸렸다). ②`supabase` CLI 는 ref 링크는 맞지만 로그인 계정이
+이 프로젝트를 못 본다(`projects list` 에 `gwm-saas` 만). ③env 의 `POSTGRES_URL`·
+`POSTGRES_URL_NON_POOLING` 은 **빈 값**이라 직접 접속도 안 된다(`POSTGRES_HOST` 만 채워져 있다).
+→ **스키마 변경은 사용자 대시보드가 유일한 경로**, 데이터 백필은 service 키로 내가 가능.
+
 ⚠️ 같은 CASCADE 구멍이 **무료 하루 1회 제한**(`membership_benefit_usage`)에도 있다 — 이번 범위 밖.
 
 검증: `npm test` 191 pass / `vitest` 293 pass / `tsc` clean / `next build` 성공.
