@@ -34,6 +34,16 @@ const RETRY_LABELS: Record<string, { title: string; body: string }> = {
   },
 };
 
+/** 재시도해도 결과가 같은 사유 — 버튼을 다시 주면 같은 실패만 반복시킨다. */
+const TERMINAL_LABELS: Record<string, { title: string; body: string }> = {
+  // 2026-09-01 — 탈퇴/재가입으로 다시 받으려는 경우. 오류가 아니라 정책이라 재시도 버튼을
+  //   주지 않는다(눌러봐야 같은 화면으로 돌아온다).
+  already_issued_for_kakao_account: {
+    title: '이미 받으신 쿠폰이에요',
+    body: '무료 쿠폰은 카카오 계정당 한 번만 드릴 수 있어요.',
+  },
+};
+
 /**
  * `?kakaoCoupon=issued` / `?kakaoCoupon=error&reason=...` → 화면에 띄울 안내.
  * 해당 쿼리가 없으면 null(평소 화면 그대로).
@@ -63,6 +73,11 @@ export function readCouponVerifyResult(search: string): CouponVerifyResult | nul
       body: '카카오톡 채널을 먼저 추가한 뒤, 다시 확인을 눌러주세요.',
       action: 'add-channel',
     };
+  }
+
+  const terminal = TERMINAL_LABELS[reason];
+  if (terminal) {
+    return { tone: 'notice', title: terminal.title, body: terminal.body, action: 'none' };
   }
 
   const known = RETRY_LABELS[reason];

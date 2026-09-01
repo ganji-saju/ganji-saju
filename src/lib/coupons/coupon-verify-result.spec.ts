@@ -30,6 +30,12 @@ describe('readCouponVerifyResult', () => {
     );
   });
 
+  it('이미 받은 카카오 계정은 재시도 버튼을 주지 않는다 — 눌러도 결과가 같다', () => {
+    const r = readCouponVerifyResult('?kakaoCoupon=error&reason=already_issued_for_kakao_account');
+    expect(r?.action).toBe('none');
+    expect(r?.title).toContain('이미');
+  });
+
   it('모르는 사유도 빈 화면 대신 재시도 안내로 떨어진다', () => {
     const r = readCouponVerifyResult('?kakaoCoupon=error&reason=channels_fetch');
     expect(r?.action).toBe('retry');
