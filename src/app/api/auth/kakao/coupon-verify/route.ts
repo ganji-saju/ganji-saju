@@ -79,12 +79,17 @@ export async function GET(req: NextRequest) {
     res.cookies.delete('kc_oauth_nonce');
     return res;
   };
-  const fail = (reason: string) =>
-    clearCookies(
+  // 🔴 2026-09-01 — 실패를 **반드시 로그로 남긴다**. 전엔 리다이렉트만 하고 아무 기록이
+  //   없어서 "쿠폰이 안 와요" 컴플레인이 들어와도 어느 단계에서 죽는지 알 방법이 없었다
+  //   (menu-pass 의 조용한 catch 와 같은 함정 — 로그가 없는 게 무죄의 증거처럼 보인다).
+  const fail = (reason: string) => {
+    console.error('[kakao-coupon] verification failed', { reason });
+    return clearCookies(
       NextResponse.redirect(
         `${origin}${RESULT_PATH}?kakaoCoupon=error&reason=${encodeURIComponent(reason.slice(0, 120))}`
       )
     );
+  };
 
   if (providerError && !code) return fail(providerError);
   if (!code || !state || !cookieState || state !== cookieState) return fail('state_mismatch');

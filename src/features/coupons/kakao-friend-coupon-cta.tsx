@@ -6,6 +6,11 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { addKakaoChannel } from '@/lib/kakao/channel';
+import {
+  readCouponVerifyResult,
+  type CouponVerifyResult,
+} from '@/lib/coupons/coupon-verify-result';
 
 type CouponCtaState = 'issuable' | 'redeemable' | 'redeemed' | 'expired';
 
@@ -73,6 +78,13 @@ const CHECK_ICON = (
 export function KakaoFriendCouponCta({ slug, scope }: KakaoFriendCouponCtaProps) {
   const [status, setStatus] = useState<CouponStatusResponse | null>(null);
   const [redeeming, setRedeeming] = useState(false);
+  // 검증 콜백이 실어 보낸 결과(?kakaoCoupon=...). useSearchParams 대신 location 을 읽는다 —
+  //   이 컴포넌트는 정적 페이지에도 박히고, useSearchParams 는 Suspense 경계를 요구한다.
+  const [result, setResult] = useState<CouponVerifyResult | null>(null);
+
+  useEffect(() => {
+    setResult(readCouponVerifyResult(window.location.search));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,17 +123,78 @@ export function KakaoFriendCouponCta({ slug, scope }: KakaoFriendCouponCtaProps)
   }
 
   // 휴면(enabled:false)·미로드·fetch 실패 → 무동작. 이 한 줄이 "휴면 시 어디서도 안 보임" 계약.
+  //   ⚠️ 결과 안내(result)도 이 뒤에 둔다 — 휴면 중엔 결과 자체가 생길 수 없다.
   if (!status?.enabled) return null;
+
+  // 검증 결과가 있으면 그것부터 말한다. 전엔 성공/실패 모두 조용히 설정 페이지로 떨궈서
+  //   사용자가 "쿠폰이 안 왔다" 고 할 수밖에 없었다.
+  if (result) {
+    return (
+      <div
+        className="mt-2 w-full rounded-[12px] border px-3.5 py-3"
+        style={{
+          background: result.tone === 'success' ? '#fffbe6' : 'var(--app-surface-muted)',
+          borderColor: result.tone === 'success' ? 'rgba(0,0,0,0.06)' : 'var(--app-line)',
+        }}
+      >
+        <p className="text-[14px] font-extrabold text-[var(--app-ink)]">{result.title}</p>
+        <p className="mt-0.5 text-[12.5px] font-semibold leading-[1.6] text-[var(--app-copy-muted)]">
+          {result.body}
+        </p>
+
+        {result.action === 'add-channel' ? (
+          <div className="mt-2.5 grid gap-2">
+            <button
+              type="button"
+              onClick={() => addKakaoChannel()}
+              className="w-full rounded-[10px] border px-3 py-2.5 text-[14px] font-extrabold"
+              style={kakaoButtonStyle}
+            >
+              카카오톡 채널 추가하기
+            </button>
+            <a
+              href={START_URL}
+              className="w-full rounded-[10px] border bg-white px-3 py-2.5 text-center text-[13.5px] font-extrabold text-[var(--app-copy)]"
+              style={{ borderColor: 'var(--app-line)' }}
+            >
+              추가했어요 · 다시 확인
+            </a>
+          </div>
+        ) : null}
+
+        {result.action === 'retry' ? (
+          <a
+            href={START_URL}
+            className="mt-2.5 block w-full rounded-[10px] border px-3 py-2.5 text-center text-[14px] font-extrabold"
+            style={kakaoButtonStyle}
+          >
+            다시 시도하기
+          </a>
+        ) : null}
+      </div>
+    );
+  }
 
   if (status.state === 'issuable') {
     return (
-      <a
-        href={START_URL}
-        className="mt-2 block w-full rounded-[10px] border px-3 py-2.5 text-center text-[14px] font-extrabold"
-        style={kakaoButtonStyle}
-      >
-        카카오 친구추가하고 무료쿠폰 받기
-      </a>
+      <div className="mt-2 grid gap-1.5">
+        <a
+          href={START_URL}
+          className="block w-full rounded-[10px] border px-3 py-2.5 text-center text-[14px] font-extrabold"
+          style={kakaoButtonStyle}
+        >
+          카카오 친구추가하고 무료쿠폰 받기
+        </a>
+        {/* 이 버튼은 친구여부를 **확인만** 한다 — 아직 추가 안 한 사람은 not_friend 로
+            떨어지므로, 추가 경로를 미리 옆에 둔다(실패 후 복구보다 싸다). */}
+        <button
+          type="button"
+          onClick={() => addKakaoChannel()}
+          className="text-[12.5px] font-bold text-[var(--app-copy-muted)] underline underline-offset-2"
+        >
+          아직 채널을 추가하지 않으셨나요? 먼저 추가하기
+        </button>
+      </div>
     );
   }
 
