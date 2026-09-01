@@ -32,6 +32,8 @@ export interface AiChatBillingSummary {
   freeTurnsRemaining: number | null;
   bundleTurnsRemaining: number | null;
   bundleSize: number;
+  /** 이 턴 이후 **더 물어볼 수 있는 질문 수**. 대화방 하단 표시·소진 모달의 단일 소스. */
+  questionsRemaining: number;
 }
 
 export interface AiChatTurnPlan {
@@ -114,6 +116,25 @@ export async function recordAiChatIncludedTurn(
   }
 }
 
+/**
+ * 남은 질문 수 — 무료분 + 이번 묶음 잔여 + 전 잔액으로 살 수 있는 묶음.
+ *
+ * 전은 3개 단위(AI_CHAT_BUNDLE_COST)로만 쓰인다 — 잔액 2개로는 한 질문도 못 하므로
+ * **버림**이 정답이다(잔액을 그대로 회수로 보여주면 못 쓰는 횟수를 약속하게 된다).
+ *
+ * ⚠️ 여기 넘기는 plan 은 **턴 처리 전** 계획이다. charged_bundle 턴이 끝난 시점의
+ * "이번 묶음 잔여" 는 그 계획의 bundleTurnsRemaining 과 정확히 같아서 그대로 쓴다.
+ */
+export function getAiChatQuestionsRemaining(
+  remainingCredits: number | null,
+  plan?: Partial<AiChatTurnPlan>
+): number {
+  const fromBundle = (plan?.freeTurnsRemaining ?? 0) + (plan?.bundleTurnsRemaining ?? 0);
+  const fromCredits =
+    Math.floor(Math.max(0, remainingCredits ?? 0) / AI_CHAT_BUNDLE_COST) * AI_CHAT_BUNDLE_SIZE;
+  return fromBundle + fromCredits;
+}
+
 export function createAiChatBillingSummary(
   status: AiChatBillingStatus,
   remaining: number | null,
@@ -131,6 +152,10 @@ export function createAiChatBillingSummary(
     freeTurnsRemaining: plan?.freeTurnsRemaining ?? null,
     bundleTurnsRemaining: plan?.bundleTurnsRemaining ?? null,
     bundleSize: AI_CHAT_BUNDLE_SIZE,
+    questionsRemaining:
+      status === 'auth_required' || status === 'insufficient_credits'
+        ? 0
+        : getAiChatQuestionsRemaining(remaining, plan),
   };
 }
 

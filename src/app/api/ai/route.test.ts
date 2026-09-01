@@ -139,6 +139,8 @@ test('ai chat billing policy charges only successful OpenAI replies', () => {
     freeTurnsRemaining: null,
     bundleTurnsRemaining: null,
     bundleSize: AI_CHAT_BUNDLE_SIZE,
+    // 2026-09-01 — 대화방 "남은 질문 N회" 표시용. 잔액 4전 = 묶음 하나(3전)만 살 수 있다.
+    questionsRemaining: 3,
   });
 });
 
