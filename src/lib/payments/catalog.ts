@@ -6,7 +6,7 @@ export type PaymentPackageKind =
   | 'lifetime_report'
   | 'taste_product'
   | 'bundle';
-export type SubscriptionPlan = 'plus_monthly' | 'premium_monthly';
+export type SubscriptionPlan = 'premium_monthly';
 export type CreditGrantType = 'purchase' | 'subscription';
 export type TasteProductId =
   | 'today-detail'
@@ -65,15 +65,6 @@ export const PAYMENT_PACKAGES = [
   // 2026-06-23 — 대용량 전팩(벌크 우대). 전당 단가: 15전 660원 > 40전 495원 > 100전 449원.
   { id: 'credit_40', name: '40 전', credits: 40, price: 19800, kind: 'credits' },
   { id: 'credit_100', name: '100 전 (최대 혜택)', credits: 100, price: 44900, kind: 'credits' },
-  {
-    id: 'membership_plus',
-    name: '라이트 대화 멤버십',
-    credits: 2,
-    price: 4900,
-    kind: 'subscription',
-    planSlug: 'basic',
-    subscriptionPlan: 'plus_monthly',
-  },
   {
     id: 'membership_premium',
     name: '프리미엄 대화 멤버십',
@@ -298,7 +289,6 @@ export const PAYMENT_PACKAGES = [
 export type PackageId = (typeof PAYMENT_PACKAGES)[number]['id'];
 
 const MEMBERSHIP_PACKAGE_BY_PLAN: Record<PlanSlug, PackageId> = {
-  basic: 'membership_plus',
   premium: 'membership_premium',
   lifetime: 'lifetime_report',
 };

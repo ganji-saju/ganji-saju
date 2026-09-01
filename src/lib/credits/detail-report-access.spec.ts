@@ -111,38 +111,6 @@ describe('unlockTodayFortunePremium — 멤버십 게이트', () => {
     expect(deductCredits).not.toHaveBeenCalled();
   });
 
-  // ── (3) 플러스 멤버 — 한도 내 ───────────────────────────────────────────
-  it('plus 멤버(한도 내): viaMembership:true, 전 미호출', async () => {
-    vi.mocked(getMemberTier).mockResolvedValue('plus');
-    vi.mocked(consumeMemberBenefit).mockResolvedValue(true);
-
-    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
-
-    expect(result.success).toBe(true);
-    expect(result.reused).toBe(false);
-    expect(result.viaMembership).toBe(true);
-    expect(consumeMemberBenefit).toHaveBeenCalledOnce();
-    // 전 경로 미호출
-    expect(unlockCreditsOnce).not.toHaveBeenCalled();
-    expect(deductCredits).not.toHaveBeenCalled();
-  });
-
-  // ── (4) 플러스 멤버 — 한도 초과 → 전 폴스루 ──────────────────────────
-  it('plus 멤버(한도 초과): 전 경로로 폴스루(unlockCreditsOnce/deductCredits 호출)', async () => {
-    vi.mocked(getMemberTier).mockResolvedValue('plus');
-    vi.mocked(consumeMemberBenefit).mockResolvedValue(false);
-    vi.mocked(unlockCreditsOnce).mockResolvedValue(null);
-    vi.mocked(deductCredits).mockResolvedValue({ success: true, remaining: 0 });
-
-    const result = await unlockTodayFortunePremium(USER, READING_KEY, SESSION_ID, DAY_KEY);
-
-    expect(result.viaMembership).toBeUndefined();
-    expect(consumeMemberBenefit).toHaveBeenCalledOnce();
-    // 전 경로 호출됨
-    expect(unlockCreditsOnce).toHaveBeenCalledOnce();
-    expect(deductCredits).toHaveBeenCalledOnce();
-  });
-
   // ── (5) 비회원(tier=null) — 전 경로 ───────────────────────────────────
   it('비회원: 멤버십 판별만, consumeMemberBenefit 미호출, 전 경로 진입', async () => {
     vi.mocked(getMemberTier).mockResolvedValue(null);

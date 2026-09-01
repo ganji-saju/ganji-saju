@@ -68,15 +68,10 @@ export async function GET(req: NextRequest) {
 
   // === 멤버십 구독 ===
   if (productId === 'subscription') {
-    if (plan !== 'basic' && plan !== 'premium' && plan !== 'plus') {
-      return NextResponse.json(
-        { error: 'plan must be basic | premium | plus' },
-        { status: 400 }
-      );
+    if (plan !== 'premium') {
+      return NextResponse.json({ error: 'plan must be premium' }, { status: 400 });
     }
-    const normalizedPlan = plan === 'plus' ? 'basic' : plan;
-    const subscriptionPlanId =
-      normalizedPlan === 'premium' ? 'premium_monthly' : 'plus_monthly';
+    const subscriptionPlanId = 'premium_monthly';
     const subscription = await getManagedSubscription(user.id);
     const isActive =
       subscription &&

@@ -725,7 +725,7 @@ export function DialogueChatPanel({
           </div>
         </div>
         <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-sm leading-6 text-[var(--app-copy-soft)]'}>
-          멤버십 매일 무료 · 비회원 첫 3회 무료
+          멤버십 매일 5건 · 그 외 990원 질문 3회권
         </p>
 
         {errorMessage ? (

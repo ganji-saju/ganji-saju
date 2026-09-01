@@ -19,10 +19,11 @@ export const MEMBER_BENEFIT_KEYS = {
   compatMonthly: { benefit: 'compat_monthly', period: 'month' },
 } as const;
 
-/** 2026-06-30 사용자 승인 확정 쿼터. null = 무제한(소비추적 없이 등급 게이트만으로 통과). */
+/** 2026-06-30 사용자 승인 확정 쿼터. null = 무제한(소비추적 없이 등급 게이트만으로 통과).
+ *  2026-09-01 — 라이트(plus) 등급 삭제. 신규판매는 2026-06-23 에 중단됐고 프로덕션
+ *  subscriptions 에 plus_monthly 행이 0건(전수 5행 전부 premium_monthly)임을 확인했다. */
 export const MEMBER_QUOTAS = {
   premium: { detailMonthly: null, calendarMonthly: null, dialogueDaily: 5, compatMonthly: 3 },
-  plus: { detailMonthly: 3, calendarMonthly: 1, dialogueDaily: 2, compatMonthly: 1 },
 } as const;
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -75,30 +76,12 @@ export async function getMemberBenefitUsed(
 
 /** 멤버십 무료 개방 가능 여부 판정.
  *  today-detail / monthly-calendar 만 커버 상품. 나머지 → false.
- *  premium → 무제한(true). plus → 월 쿼터 잔여분 확인. non-member → false. */
+ *  premium → 무제한(true). non-member → false. */
 export async function computeMemberFreeEligible(
-  userId: string,
+  _userId: string,
   productId: string,
-  tier: 'premium' | 'plus' | null
+  tier: 'premium' | null
 ): Promise<boolean> {
   if (productId !== 'today-detail' && productId !== 'monthly-calendar') return false;
-  if (tier === null) return false;
-  if (tier === 'premium') return true;
-  // plus: 월 쿼터 잔여 확인 (DB 조회 1회).
-  const periodKey = monthlyPeriodKey();
-  if (productId === 'today-detail') {
-    const used = await getMemberBenefitUsed(
-      userId,
-      MEMBER_BENEFIT_KEYS.detailMonthly.benefit,
-      periodKey
-    );
-    return used < (MEMBER_QUOTAS.plus.detailMonthly as number);
-  }
-  // monthly-calendar
-  const used = await getMemberBenefitUsed(
-    userId,
-    MEMBER_BENEFIT_KEYS.calendarMonthly.benefit,
-    periodKey
-  );
-  return used < (MEMBER_QUOTAS.plus.calendarMonthly as number);
+  return tier === 'premium';
 }

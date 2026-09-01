@@ -1,5 +1,34 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-01 대화방 무료 안내 문구 정정 + 라이트(plus) 멤버십 등급 삭제
+
+**증상.** 대화방 하단에 "멤버십 매일 무료 · 비회원 첫 3회 무료"가 떠 있었는데 둘 다 사실이 아니다.
+`/dialogue` 는 `guardMenuPassEntry('dialogue')` 로 **멤버십 또는 전 잔액>0** 만 통과시키고 나머지는
+990원 체크아웃으로 redirect 한다 — 비회원은 그 화면에 도달조차 못 한다. 멤버십도 무제한이 아니라
+`MEMBER_QUOTAS.premium.dialogueDaily = 5`(하루 5건)다. → "멤버십 매일 5건 · 그 외 990원 질문 3회권".
+
+**그 김에 발견한 것 — 등급이 둘인데 하나는 유령이었다.**
+
+| 등급 | 가격 | 상태 |
+|---|---|---|
+| 프리미엄(`premium_monthly`) | 월 49,000원 | 판매중 |
+| 라이트(`plus_monthly`, slug `basic`) | 월 4,900원 | 2026-06-23 신규판매 중단 — 카드 미노출 |
+
+프로덕션 실측(사용자 승인 후 읽기 전용 집계): `subscriptions` 전수 5행이 **전부 `premium_monthly`**
+(active 4 · expired 1), `plus_monthly` **0건**. `credit_transactions`·`payment_orders` 의
+`membership_plus` 결제도 **0건**. 즉 레거시 호환으로 남겨둔 코드가 지킬 사용자가 없었다.
+
+**삭제한 것.** `SubscriptionPlan`/`PlanSlug` 에서 plus·basic 제거, `membership_plus` 카탈로그 항목,
+`isPlusMember`/`activatePlusSubscription`, `MEMBER_QUOTAS.plus`, CHECKOUT/COMPLETE_PLAN_GUIDE 의
+basic 항목, entitlement 라우트의 plan 3분기 → premium 단일. `getMemberTier` 는 `'premium' | null` 로
+좁혔다(레거시 plus 행이 남아 있어도 멤버로 승격되지 않는다는 회귀 테스트로 대체).
+
+**같이 죽은 코드.** 상세풀이·달력의 "월쿼터 소진 후 전 폴스루" 분기는 **plus 전용**이었다
+(premium 은 limit=null 무제한이라 절대 안 탄다). 등급이 사라지며 도달 불가가 되어 함께 지웠다 —
+`consumeMemberBenefit` 호출 2곳과 그 테스트 4개. 궁합 월 3회(premium)는 실제 한도라 그대로 둔다.
+
+검증: `npm test` 191 pass / `vitest` 272 pass / `tsc --noEmit` clean / `next build` 성공.
+
 ## 2026-09-01 세션 마감 (Claude) — 배포 11건 · 결제 집계 검증 · 아이콘 리브랜딩 완료
 
 이 세션에서 머지·배포한 것(전부 프로덕션 반영·실측 확인):

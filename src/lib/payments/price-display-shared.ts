@@ -21,8 +21,7 @@ export function tasteProductPriceKey(slug: string): PriceKey {
   return `taste_${slug.replace(/-/g, '_')}` as PriceKey;
 }
 /** 멤버십 플랜 slug → 카탈로그 키. */
-export function planPriceKey(plan: 'basic' | 'premium' | 'lifetime'): PriceKey {
-  if (plan === 'basic') return 'membership_plus';
+export function planPriceKey(plan: 'premium' | 'lifetime'): PriceKey {
   if (plan === 'premium') return 'membership_premium';
   return 'lifetime_report';
 }
