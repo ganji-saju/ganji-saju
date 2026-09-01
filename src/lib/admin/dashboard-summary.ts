@@ -15,6 +15,11 @@ import {
 } from '@/lib/admin/analytics-metrics';
 import type { AdminAction } from '@/lib/admin/access-log';
 import { normalizeAdminRange } from './metric-ranges';
+import {
+  kstNoonDate,
+  resolveAdminPeriod,
+  type AdminPeriod,
+} from './metric-periods';
 
 export interface PendingCounts {
   /** 환불 요청 대기(status='requested'). */
@@ -35,6 +40,8 @@ export interface RecentAdminActivity {
 
 export interface AdminDashboardSummary {
   windowDays: number;
+  /** 조회한 달력 기간(일·주·월·분기·년). 화면 표기와 링크 생성에 쓴다. */
+  period: AdminPeriod;
   operations: OperationsSnapshot | null;
   /**
    * 2026-07-20 — 유입 상위(referrer). 사용자 요청으로 /admin 요약에 노출.
@@ -94,11 +101,23 @@ export function normalizeDashboardWindow(raw: unknown): DashboardWindow {
   return normalizeAdminRange(raw, 30);
 }
 
+/**
+ * 2026-09-01 — 인자를 **달력 기간**으로 바꿨다(사용자 지시).
+ *   종전엔 windowDays 만 받아 언제나 '오늘까지 N일'이었고, 지난 달·지난 분기를
+ *   지정할 방법이 없었다. 숫자를 그대로 넘기면 종전대로 '오늘까지 N일'.
+ */
 export async function getAdminDashboardSummary(
-  windowDays: DashboardWindow = 14
+  input: AdminPeriod | DashboardWindow = 14
 ): Promise<AdminDashboardSummary> {
+  const period =
+    typeof input === 'number'
+      ? { ...resolveAdminPeriod('day', undefined), days: input, label: `최근 ${input}일` }
+      : input;
+  const windowDays = period.days;
+  const endKey = period.endKey;
   const base: AdminDashboardSummary = {
     windowDays,
+    period,
     operations: null,
     topReferrers: [],
     topUtm: [],
@@ -115,17 +134,17 @@ export async function getAdminDashboardSummary(
 
     const [operations, funnel, llm, analytics, refundRes, reviewRes, activityRes] = await Promise.all([
       // 2026-07-04 감사 — 실패를 조용히 null 로 삼키면 'env 문제'로 오도됨 → 원인 로그.
-      buildOperationsSnapshot(supabase, { windowDays }).catch((e) => {
+      buildOperationsSnapshot(supabase, { windowDays, endKey }).catch((e) => {
         console.error('[admin-dashboard] operations snapshot failed:', e);
         return null;
       }),
-      buildPaymentFunnelSnapshot(supabase, { windowDays }).catch((e) => {
+      buildPaymentFunnelSnapshot(supabase, { windowDays, endKey }).catch((e) => {
         console.error('[admin-dashboard] funnel snapshot failed:', e);
         return null;
       }),
-      getLlmCostStats(windowDays).catch(() => null),
+      getLlmCostStats(windowDays, endKey).catch(() => null),
       // 유입 상위 — /admin/analytics 와 동일 집계를 재사용(숫자 갈림 방지). 실패해도 카드만 빈다.
-      getDailyMetrics(supabase, windowDays).catch((e: unknown) => {
+      getDailyMetrics(supabase, windowDays, kstNoonDate(endKey)).catch((e: unknown) => {
         console.error('[admin-dashboard] analytics(inflow) failed:', e);
         return null;
       }),
@@ -166,6 +185,7 @@ export async function getAdminDashboardSummary(
 
     return {
       windowDays,
+      period,
       operations,
       funnel,
       llm,

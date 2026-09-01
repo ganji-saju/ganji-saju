@@ -5,7 +5,7 @@ import { buildPaymentFunnelSnapshot } from './payment-funnel-stats';
 
 declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
-// 최소 fake — .from().select().gte().order().range(from,to) 체인.
+// 최소 fake — .from().select().gte().lt().order().range(from,to) 체인.
 // buildPaymentFunnelSnapshot 은 range 페이지네이션이라 rows(<1000) 는 첫 페이지에서 한 번에
 // 반환하고 break 한다. 두 번째 페이지 이후는 빈 배열.
 //
@@ -17,6 +17,8 @@ function fakeFunnelService(rows: unknown[], refundRows: unknown[] = []): Supabas
   const funnel: Record<string, unknown> = {};
   funnel.select = () => funnel;
   funnel.gte = () => funnel;
+  // 2026-09-01 — 기간 상한(.lt). 달력 기간 선택이 붙으면서 축 밖 행을 잘라낸다.
+  funnel.lt = () => funnel;
   funnel.order = () => funnel;
   funnel.range = (from: number) =>
     Promise.resolve({ data: from === 0 ? rows : [], error: null });

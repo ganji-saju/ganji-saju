@@ -15,6 +15,7 @@
 import { isRealRevenueOrder } from '@/lib/payments/payment-origin';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ADMIN_RANGE_MAX_DAYS } from './metric-ranges';
+import { kstExclusiveEndIso } from './metric-periods';
 
 export interface DailySeries {
   /** YYYY-MM-DD */
@@ -238,14 +239,19 @@ async function fetchLifetimeOrderTotals(
  */
 export async function buildOperationsSnapshot(
   client: SupabaseClient,
-  options: { windowDays?: number } = {}
+  options: { windowDays?: number; endKey?: string } = {}
 ): Promise<OperationsSnapshot> {
   // 2026-08-26 — 하한 7 이 '일(오늘)' 프리셋을, 상한 60 이 분기·6개월·1년을 막고 있었다.
   //   주간/월간 파생 지표(weeklyStartKey·monthly)는 이 윈도우와 무관하게 고정 7/30 이라
   //   윈도우를 넓혀도 그 숫자의 의미는 변하지 않는다.
   const windowDays = Math.max(1, Math.min(ADMIN_RANGE_MAX_DAYS, options.windowDays ?? 30));
   const now = new Date();
-  const todayKey = toLocalDateKey(now.toISOString());
+  // 2026-09-01 — endKey 는 **기간의 마지막 날**(달력 기간 선택). 없으면 오늘 = 종전 동작.
+  //   지난 기간을 보려면 끝점이 필요하다 — windowDays 만으로는 언제나 '오늘까지'였다.
+  //   아래에서 todayKey 로 쓰는 값이 곧 '기간 마지막 날'이다(오늘 카드 = 그 날의 카드).
+  const todayKey = options.endKey ?? toLocalDateKey(now.toISOString());
+  // 기간 밖(마지막 날 이후) 행이 윈도우 집계(만족도·활동 등)에 섞이지 않게 상한을 건다.
+  const windowEndIso = kstExclusiveEndIso(todayKey);
 
   // 시리즈 축(KST) 먼저 만들고, 윈도우 시작을 축 첫날의 KST 자정으로 스냅.
   const seriesSkeleton = buildEmptySeries(windowDays, todayKey);
@@ -285,6 +291,7 @@ export async function buildOperationsSnapshot(
         .from('admin_user_summary')
         .select('user_id, signup_at')
         .gte('signup_at', windowStartIso)
+        .lt('signup_at', windowEndIso)
         // 정렬 tiebreak(유니크 키) — 타임스탬프 동률 시 페이지 경계 중복/누락 방지.
         .order('signup_at', { ascending: true })
         .order('user_id', { ascending: true })
@@ -306,6 +313,7 @@ export async function buildOperationsSnapshot(
           .in('status', COMPLETED_ORDER_STATUSES)
           // 월간(30일) 버킷까지 커버하도록 시리즈 윈도우보다 넓게 fetch 가능.
           .gte('created_at', ordersStartIso)
+          .lt('created_at', windowEndIso)
           .order('created_at', { ascending: true })
           .order('id', { ascending: true })
           .range(from, to)
@@ -321,6 +329,7 @@ export async function buildOperationsSnapshot(
         .select('user_id, created_at')
         .not('user_id', 'is', null)
         .gte('created_at', windowStartIso)
+        .lt('created_at', windowEndIso)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
         .range(from, to)
@@ -343,6 +352,7 @@ export async function buildOperationsSnapshot(
           'overall_rating, wealth_rating, love_rating, career_rating, health_rating, relationship_rating, created_at, user_id'
         )
         .gte('created_at', windowStartIso)
+        .lt('created_at', windowEndIso)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
         .range(from, to)
@@ -354,6 +364,7 @@ export async function buildOperationsSnapshot(
         .from('dialogue_messages')
         .select('user_id, created_at')
         .gte('created_at', windowStartIso)
+        .lt('created_at', windowEndIso)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
         .range(from, to)
