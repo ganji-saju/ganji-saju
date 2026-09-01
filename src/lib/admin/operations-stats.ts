@@ -34,7 +34,7 @@ export interface OperationsSnapshot {
   windowDays: number;
   /** 오늘 (KST 자정 단위). */
   today: {
-    /** 오늘 자체 순방문자(KST 일별 visitor_hash distinct). 미집계면 null. */
+    /** 오늘(=기간 마지막 날) 자체 순방문자(KST 일별 visitor_hash distinct). 미집계면 null. */
     visitors: number | null;
     /** 오늘 신규 가입 수. */
     newSignups: number;
@@ -258,9 +258,17 @@ export async function buildOperationsSnapshot(
   const windowStartIso = windowStart.toISOString();
   const nowIso = now.toISOString();
 
-  // 주간(7일)·월간(30일) 기간 시작(오늘 포함) — KST 자정 기준 날짜키.
+  // 주간(7일)·월간(30일) 기간 시작(마지막 날 포함) — KST 자정 기준 날짜키.
   const weeklyStartKey = shiftDateKey(todayKey, -6);
   const monthlyStartKey = shiftDateKey(todayKey, -29);
+  // ⚠️ 순방문 주간/월간만 예외로 **실제 오늘** 기준이다.
+  //   RPC(site_visit_unique_counts)가 시작키만 받고 상한이 없어서(`date_key >= key`),
+  //   지난 기간의 끝(예: 3/31)을 주면 '주간(7일)' 라벨로 3/25~오늘 몇 달치를 세게 된다.
+  //   상한을 주려면 마이그레이션이 필요하므로, 그때까지 이 두 값은 기간과 무관한
+  //   '현재 트래픽' 지표로 고정한다(결제 주간/월간은 기간 끝 기준 — 행을 직접 자르므로 정확).
+  const realTodayKey = toLocalDateKey(now.toISOString());
+  const visitWeekKey = shiftDateKey(realTodayKey, -6);
+  const visitMonthKey = shiftDateKey(realTodayKey, -29);
   // 결제 기간별 집계는 월간(30일)까지 커버해야 하므로, 시리즈 윈도우와 월간 중
   // '이른 쪽'부터 결제 행을 가져온다(트렌드는 여전히 windowDays 만큼만 그려짐).
   const ordersStartKey =
@@ -404,8 +412,8 @@ export async function buildOperationsSnapshot(
     // 기간별 순방문자(distinct visitor_hash) — RPC(site_visit_unique_counts, migration 065).
     // 미적용 시 error → weekly/monthly/allTime = null(graceful). 오늘은 daily_counts 로 별도 산출.
     client.rpc('site_visit_unique_counts', {
-      week_key: weeklyStartKey,
-      month_key: monthlyStartKey,
+      week_key: visitWeekKey,
+      month_key: visitMonthKey,
     }),
   ]);
 

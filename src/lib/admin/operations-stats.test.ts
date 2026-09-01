@@ -8,6 +8,9 @@ declare const test: (name: string, fn: () => void | Promise<void>) => void;
 
 type Row = Record<string, unknown>;
 
+/** 직전 createMockClient 이후의 rpc 호출 기록. */
+const rpcArgs: Array<{ fn: string; args: Record<string, unknown> }> = [];
+
 interface MockResponse {
   data?: Row[] | Row | null;
   count?: number;
@@ -24,6 +27,8 @@ function createMockClient(
   rpc?: Record<string, MockResponse>
 ) {
   const counters: Record<string, number> = {};
+  // rpc 호출 인자 기록 — 어떤 날짜키로 물었는지 검증한다.
+  rpcArgs.length = 0;
   const builder = (tableName: string) => {
     const responses = (() => {
       const v = table[tableName];
@@ -59,12 +64,14 @@ function createMockClient(
   return {
     from: (tableName: string) => builder(tableName),
     // rpc 미정의 함수는 error 반환(마이그레이션 미적용 시뮬레이션 — null-graceful 경로).
-    rpc: (fnName: string) =>
-      Promise.resolve(
+    rpc: (fnName: string, args?: Record<string, unknown>) => {
+      rpcArgs.push({ fn: fnName, args: args ?? {} });
+      return Promise.resolve(
         rpc?.[fnName]
           ? { error: null, ...rpc[fnName] }
           : { data: null, error: { message: `function ${fnName} does not exist` } }
-      ),
+      );
+    },
   } as unknown as Parameters<typeof buildOperationsSnapshot>[0];
 }
 
@@ -374,4 +381,21 @@ test('buildOperationsSnapshot - endKey 는 축의 마지막 날이 된다(지난
   const axis = snap.trends.newSignups;
   assert.equal(axis[axis.length - 1].date, '2026-03-31');
   assert.equal(axis[0].date, '2026-03-01', '31일 창 = 3월 한 달');
+});
+
+// 2026-09-01 — 순방문 주간/월간은 RPC(site_visit_unique_counts)에 상한이 없어
+//   기간 끝(과거)을 주면 '주간(7일)' 라벨로 그 뒤 몇 달치를 세게 된다.
+//   이 두 값만 실제 오늘 기준으로 고정한 계약을 고정한다.
+test('buildOperationsSnapshot - 순방문 주간/월간 키는 지난 기간을 봐도 오늘 기준', async () => {
+  const client = createMockClient({});
+  await buildOperationsSnapshot(client, { windowDays: 31, endKey: '2026-03-31' });
+  const call = rpcArgs.find((c) => c.fn === 'site_visit_unique_counts');
+  const todayKey = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  const expectWeek = new Date(Date.parse(`${todayKey}T00:00:00Z`) - 6 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+  assert.equal(call?.args.week_key, expectWeek);
+  // 반대로 일별 집계(축)는 기간을 따른다.
+  const daily = rpcArgs.find((c) => c.fn === 'site_visit_daily_counts');
+  assert.equal(daily?.args.to_key, '2026-03-31');
 });
