@@ -1,5 +1,96 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-01 카카오 친구추가 무료쿠폰 "발송 안 된다" 컴플레인 — 원인 3개
+
+**증상.** 메인 배너로 쿠폰을 받으려는데 쿠폰이 안 생긴다는 문의가 계속 들어왔다.
+프로덕션 `user_coupons` 는 한 달간 **총 4행**(redeemed 2 · issued 2). 배너가 홈 최상단에
+붙어 있는 것치고 사실상 전멸이다.
+
+**원인 ①(주범) — 비로그인에게 배너를 보여주고, 카카오 동의를 다 받은 뒤에 죽였다.**
+상태 API 가 미인증 사용자에게도 `state:'issuable'` 을 준다(프로덕션 실측:
+`curl /api/coupons/kakao-friend/status` → `{"enabled":true,"state":"issuable"}`).
+그래서 로그아웃 방문자 전원에게 "받기" 버튼이 보이고, 누르면 카카오 인가·동의까지 정상
+진행된 다음 **콜백에서 `unauthorized`** 로 떨어진다. 쿠폰은 계정 귀속이라 콜백이 옳지만,
+막는 위치가 너무 늦었다. → 공통 시작점(`coupon-verify/start`)에서 세션을 먼저 보고
+`/login?next=...` 로 보낸다. 진입점이 4곳이라 배너마다가 아니라 **여기 한 곳**에서 막는다.
+
+**원인 ② — "친구추가하고 받기" 라고 써놓고 친구추가를 시키지 않는다.**
+이 흐름은 `scope=plusfriends` 로 친구여부를 **확인만** 한다. 채널을 아직 안 추가한 사람은
+`not_friend` 로 떨어지는데, 화면엔 같은 "받기" 버튼이 다시 보일 뿐이라 눌러도 같은 실패가
+반복된다. 정작 채널 추가 기능(`addKakaoChannel`)은 저장소에 이미 있었고 이 경로에서만
+안 쓰이고 있었다. → issuable 카드에 "먼저 추가하기" 를 붙이고, `not_friend` 결과에는
+[채널 추가하기] + [추가했어요·다시 확인] 을 준다.
+
+**원인 ③ — 성공/실패 어느 쪽도 사용자에게 말해주지 않았다.**
+콜백은 늘 `/my/settings?kakaoCoupon=issued|error&reason=...` 로 보내는데, 그 쿼리를
+**코드 어디에서도 읽지 않았다**(`grep kakaoCoupon` → 생성 3곳, 소비 0곳). 발급에
+성공해도 사용자는 설정 페이지에 조용히 떨궈질 뿐이다. → `readCouponVerifyResult`
+(순수 함수 + 테스트 6개)로 사유별 안내·다음 행동을 정하고 CTA 가 렌더한다.
+
+**부수 — 실패가 로그에 한 줄도 안 남았다.** `fail()` 이 리다이렉트만 했다. 컴플레인이
+들어와도 어느 단계에서 죽는지 볼 근거가 0이었다(menu-pass 의 조용한 catch 와 같은 함정 —
+로그가 없는 게 무죄의 증거처럼 보인다). `console.error` 를 넣었다.
+
+검증: 로컬에서 플래그 ON 후 비로그인 진입 → `307 /login?next=%2Fapi%2Fauth%2Fkakao%2Fcoupon-verify%2Fstart`
+(전엔 카카오로 갔다). `npm test` 191 pass / `vitest` 285 pass / `tsc` clean / `next build` 성공.
+⚠️ **실제 카카오 왕복(동의→콜백→발급)은 미검증** — 계정 + 카카오 세션이 필요하다. 배포 후
+`[kakao-coupon] verification failed` 로그의 reason 분포로 남은 실패를 확인할 것.
+
+## 2026-09-01 대화방 남은 질문 실시간 표시 + 소진 시 결제 창
+
+**표시.** 하단 안내가 "멤버십 매일 5건 · 그 외 990원 질문 3회권" 이라는 **정책 설명**뿐이라
+정작 "나는 몇 번 더 물어볼 수 있나" 를 답해주지 않았다. → `남은 질문 N회` 를 앞에 붙인다.
+진입 시 서버가 한 번 계산해 넘기고(`getViewerDialogueQuota`), 이후엔 매 응답의
+`billing.questionsRemaining` 이 이어받는다 — **계산식은 하나**(`getAiChatQuestionsRemaining`).
+
+**계산 함정 2개(테스트로 고정).**
+- 전 잔액을 그대로 회수로 보여주면 안 된다. 묶음 시작 비용이 3전이라 **잔액 2개로는 한 번도
+  못 묻는다** — 3전 단위로 버림해야 거짓 약속이 안 된다.
+- `AiChatTurnPlan.bundleTurnsRemaining` 은 **다음 턴 기준**이다. 응답 경로(턴 처리 후)에선
+  그대로 쓰면 맞지만, 진입 시점(턴 처리 전)엔 한 칸 어긋난다 — 묶음 첫 턴이면 0(먼저 결제),
+  묶음 중간이면 `+1`. `dialogue-quota.server.ts` 에서 맞춰 넘긴다.
+
+**소진 창.** 0회가 되면 `DialogueRechargeModal` 이 뜬다. 트리거 2곳: ① 답변을 받은 뒤 잔여가
+0 ② 402(`insufficient_credits`). 답을 다 읽은 시점에 띄우는 게 다음 질문을 쓰다 막히는 것보다
+덜 끊긴다. 버튼 = **질문 3회 990원**(`/membership/checkout?product=dialogue-entry`) / 멤버십 /
+나중에. 전엔 402 배너에 '멤버십 보기' 하나뿐이라 990원으로 이어 쓸 경로가 화면에 없었다.
+
+**같이 고친 것.** 메시지별 과금 라벨이 `잔여 4개`(전 개수)라고 말해 하단의 `남은 질문 3회` 와
+숫자가 어긋나 보였다(4전으로 살 수 있는 건 3회다). 라벨을 전부 질문 횟수로 통일.
+
+검증: `npm test` 191 pass / `vitest` 279 pass / `tsc` clean / `next build` 성공 / dev 스모크
+(`/dialogue/dragon` → 잠금 307). ⚠️ **로그인 상태의 실제 렌더는 미확인** — 계정 세션이 필요해
+자동 검증 경로가 없다. 배포 후 눈으로 한 번 볼 것.
+
+## 2026-09-01 대화방 무료 안내 문구 정정 + 라이트(plus) 멤버십 등급 삭제
+
+**증상.** 대화방 하단에 "멤버십 매일 무료 · 비회원 첫 3회 무료"가 떠 있었는데 둘 다 사실이 아니다.
+`/dialogue` 는 `guardMenuPassEntry('dialogue')` 로 **멤버십 또는 전 잔액>0** 만 통과시키고 나머지는
+990원 체크아웃으로 redirect 한다 — 비회원은 그 화면에 도달조차 못 한다. 멤버십도 무제한이 아니라
+`MEMBER_QUOTAS.premium.dialogueDaily = 5`(하루 5건)다. → "멤버십 매일 5건 · 그 외 990원 질문 3회권".
+
+**그 김에 발견한 것 — 등급이 둘인데 하나는 유령이었다.**
+
+| 등급 | 가격 | 상태 |
+|---|---|---|
+| 프리미엄(`premium_monthly`) | 월 49,000원 | 판매중 |
+| 라이트(`plus_monthly`, slug `basic`) | 월 4,900원 | 2026-06-23 신규판매 중단 — 카드 미노출 |
+
+프로덕션 실측(사용자 승인 후 읽기 전용 집계): `subscriptions` 전수 5행이 **전부 `premium_monthly`**
+(active 4 · expired 1), `plus_monthly` **0건**. `credit_transactions`·`payment_orders` 의
+`membership_plus` 결제도 **0건**. 즉 레거시 호환으로 남겨둔 코드가 지킬 사용자가 없었다.
+
+**삭제한 것.** `SubscriptionPlan`/`PlanSlug` 에서 plus·basic 제거, `membership_plus` 카탈로그 항목,
+`isPlusMember`/`activatePlusSubscription`, `MEMBER_QUOTAS.plus`, CHECKOUT/COMPLETE_PLAN_GUIDE 의
+basic 항목, entitlement 라우트의 plan 3분기 → premium 단일. `getMemberTier` 는 `'premium' | null` 로
+좁혔다(레거시 plus 행이 남아 있어도 멤버로 승격되지 않는다는 회귀 테스트로 대체).
+
+**같이 죽은 코드.** 상세풀이·달력의 "월쿼터 소진 후 전 폴스루" 분기는 **plus 전용**이었다
+(premium 은 limit=null 무제한이라 절대 안 탄다). 등급이 사라지며 도달 불가가 되어 함께 지웠다 —
+`consumeMemberBenefit` 호출 2곳과 그 테스트 4개. 궁합 월 3회(premium)는 실제 한도라 그대로 둔다.
+
+검증: `npm test` 191 pass / `vitest` 272 pass / `tsc --noEmit` clean / `next build` 성공.
+
 ## 2026-09-01 세션 마감 (Claude) — 배포 11건 · 결제 집계 검증 · 아이콘 리브랜딩 완료
 
 이 세션에서 머지·배포한 것(전부 프로덕션 반영·실측 확인):

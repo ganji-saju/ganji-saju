@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CANONICAL_SITE_URL } from '@/lib/site';
 import { isKakaoFriendCouponEnabled } from '@/lib/coupons/kakao-friend-coupon';
+import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,24 @@ export async function GET(req: NextRequest) {
   }
 
   const origin = resolveOrigin(req);
+
+  // 0-1) 🔴 2026-09-01 — 로그인 선행. 쿠폰은 계정에 귀속되므로 콜백이 비로그인이면
+  //   `unauthorized` 로 죽는데, 그 시점엔 사용자가 이미 카카오 동의까지 다 마친 뒤다.
+  //   실제로 상태 API 가 비로그인에게도 'issuable' 을 줘서 홈 배너가 방문자 전원에게
+  //   보였고(프로덕션 실측), 누른 사람은 전원 여기서 조용히 떨어졌다.
+  //   진입점이 4곳이라 배너마다 막지 않고 **공통 시작점인 여기서** 한 번 막는다.
+  try {
+    const {
+      data: { user },
+    } = await (await createClient()).auth.getUser();
+    if (!user) {
+      const next = encodeURIComponent('/api/auth/kakao/coupon-verify/start');
+      return NextResponse.redirect(`${origin}/login?next=${next}`);
+    }
+  } catch {
+    // 세션 조회 실패는 막지 않는다 — 콜백이 다시 판정한다(결제자 오차단 방지 원칙과 동일).
+  }
+
   const clientId = process.env.KAKAO_REST_API_KEY;
 
   if (!clientId) {

@@ -7,12 +7,6 @@ import {
   type Feature,
 } from './deduct';
 import { getMemberTier } from '@/lib/subscription';
-import {
-  MEMBER_QUOTAS,
-  MEMBER_BENEFIT_KEYS,
-  consumeMemberBenefit,
-  monthlyPeriodKey,
-} from './member-benefits';
 
 export const DETAIL_REPORT_ACCESS_KIND = 'detail_report_access';
 export const DETAIL_REPORT_DAILY_ACCESS_KIND = 'detail_report_daily_access';
@@ -348,19 +342,11 @@ export async function unlockTodayFortunePremium(
     };
   }
 
-  // [멤버십 게이트] 전 앞에 삽입: premium 무제한 / plus 월쿼터 소진
-  const tier = await getMemberTier(userId); // 'premium' | 'plus' | null
-  if (tier) {
-    const limit = MEMBER_QUOTAS[tier].detailMonthly; // null = 무제한(premium)
-    const granted =
-      limit === null
-        ? true
-        : await consumeMemberBenefit(userId, MEMBER_BENEFIT_KEYS.detailMonthly.benefit, monthlyPeriodKey(), limit);
-    if (granted) {
-      await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
-      return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
-    }
-    // plus 한도 초과 → 아래 레거시 전/페이월로 폴스루
+  // [멤버십 게이트] 전 앞에 삽입: premium 은 상세풀이 무제한(MEMBER_QUOTAS.premium.detailMonthly=null).
+  //   2026-09-01 — 월쿼터 소진 분기는 plus 등급 전용이었고 그 등급이 사라져 함께 삭제했다.
+  if (await getMemberTier(userId)) {
+    await recordTodayFortunePremiumAccess(userId, readingKey, sourceSessionId, dayKey);
+    return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
   }
 
   const accessMetadata = getTodayFortunePremiumAccessMetadata(sourceSessionId, readingKey, dayKey);

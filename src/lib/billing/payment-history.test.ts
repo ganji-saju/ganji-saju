@@ -124,15 +124,15 @@ test('mapCreditTransactionToHistory derives WON from package price, category fro
   const membership: CreditTransactionHistoryRow = {
     id: 'ct-2',
     type: 'subscription',
-    amount: 2,
-    metadata: { packageId: 'membership_plus', orderId: 'ORD-MEM' },
+    amount: 90,
+    metadata: { packageId: 'membership_premium', orderId: 'ORD-MEM' },
     created_at: '2026-05-17T00:00:00.000Z',
   };
   const mem = mapCreditTransactionToHistory(membership);
   assert.equal(mem.category, '멤버십/구독');
-  assert.equal(mem.productName, '라이트 대화 멤버십');
-  assert.equal(mem.amountWon, 4900);
-  assert.equal(mem.coins, 2);
+  assert.equal(mem.productName, '프리미엄 대화 멤버십');
+  assert.equal(mem.amountWon, 49000);
+  assert.equal(mem.coins, 90);
 });
 
 test('mapCreditTransactionToHistory falls back when packageId missing', () => {

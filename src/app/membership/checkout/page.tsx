@@ -76,9 +76,8 @@ const TASTE_PRODUCT_ZODIAC: Record<TasteProductId, ZodiacKey> = {
 };
 
 function normalizePlanSlug(value?: string): PlanSlug {
-  if (value === 'plus') return 'basic';
-  if (value === 'basic' || value === 'premium' || value === 'lifetime') return value;
-  return 'premium';
+  // 2026-09-01 — 라이트(basic/plus) 삭제. 구 링크는 프리미엄으로 흡수한다.
+  return value === 'lifetime' ? 'lifetime' : 'premium';
 }
 
 type CheckoutGuide = {

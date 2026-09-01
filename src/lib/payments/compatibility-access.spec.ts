@@ -128,30 +128,6 @@ describe('tryConsumeMemberCompatAccess — 등급별 월쿼터', () => {
     expect(client.insert).not.toHaveBeenCalled();
   });
 
-  // ── plus 멤버 — 0회 사용(한도 1) ─────────────────────────────────────────
-  it('plus, 0회 사용: true 반환', async () => {
-    vi.mocked(getMemberTier).mockResolvedValue('plus');
-    const client = makeCompatClient({ existingCouple: false, monthCount: 0 });
-    vi.mocked(createServiceClient).mockResolvedValue(client as never);
-
-    const result = await tryConsumeMemberCompatAccess(USER, COUPLE_KEY);
-
-    expect(result).toBe(true);
-    expect(client.insert).toHaveBeenCalledOnce();
-  });
-
-  // ── plus 멤버 — 1회 사용(한도 1 도달) ────────────────────────────────────
-  it('plus, 1회 사용(다른 커플): false 반환(limit 1 도달)', async () => {
-    vi.mocked(getMemberTier).mockResolvedValue('plus');
-    const client = makeCompatClient({ existingCouple: false, monthCount: 1 });
-    vi.mocked(createServiceClient).mockResolvedValue(client as never);
-
-    const result = await tryConsumeMemberCompatAccess(USER, COUPLE_KEY);
-
-    expect(result).toBe(false);
-    expect(client.insert).not.toHaveBeenCalled();
-  });
-
   // ── 멱등: 같은 커플 이번 달 재열람 ──────────────────────────────────────
   it('premium, 같은 커플 재열람: true 반환(카운트 미차감, insert 미호출)', async () => {
     vi.mocked(getMemberTier).mockResolvedValue('premium');
@@ -166,16 +142,4 @@ describe('tryConsumeMemberCompatAccess — 등급별 월쿼터', () => {
     expect(client.insert).not.toHaveBeenCalled();
   });
 
-  // ── plus, 같은 커플 재열람(한도 1인데도 멱등 통과) ──────────────────────
-  it('plus, 같은 커플 재열람: true 반환(한도 관계없이 멱등)', async () => {
-    vi.mocked(getMemberTier).mockResolvedValue('plus');
-    // 이미 1회 사용했지만 same couple → 멱등 체크에서 통과
-    const client = makeCompatClient({ existingCouple: true, monthCount: 1 });
-    vi.mocked(createServiceClient).mockResolvedValue(client as never);
-
-    const result = await tryConsumeMemberCompatAccess(USER, COUPLE_KEY);
-
-    expect(result).toBe(true);
-    expect(client.insert).not.toHaveBeenCalled();
-  });
 });

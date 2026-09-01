@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { MEMBER_QUOTAS, computeMemberFreeEligible } from './member-benefits';
 
-describe('확정 멤버 쿼터', () => {
+describe('확정 멤버 쿼터(premium 단일 등급)', () => {
   it('확정 멤버 쿼터', () => {
     expect(MEMBER_QUOTAS.premium).toMatchObject({ detailMonthly: null, calendarMonthly: null, dialogueDaily: 5, compatMonthly: 3 });
-    expect(MEMBER_QUOTAS.plus).toMatchObject({ detailMonthly: 3, calendarMonthly: 1, dialogueDaily: 2, compatMonthly: 1 });
   });
 });
 
@@ -13,8 +12,8 @@ describe('computeMemberFreeEligible — 단락(short-circuit) 경로 (DB 불필�
     expect(await computeMemberFreeEligible('uid', 'love-question', 'premium')).toBe(false);
   });
 
-  it('커버 안 되는 상품(year-core) + plus → false', async () => {
-    expect(await computeMemberFreeEligible('uid', 'year-core', 'plus')).toBe(false);
+  it('커버 안 되는 상품(year-core) + premium → false', async () => {
+    expect(await computeMemberFreeEligible('uid', 'year-core', 'premium')).toBe(false);
   });
 
   it('non-member(null) + today-detail → false', async () => {

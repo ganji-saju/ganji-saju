@@ -22,7 +22,7 @@ test('payment confirmation accepts a valid subscription package', () => {
 });
 
 test('managed membership packages grant subscription credits', () => {
-  const pkg = getPackage('membership_plus');
+  const pkg = getPackage('membership_premium');
 
   assert.ok(pkg);
   assert.equal(isSubscriptionPackage(pkg), true);

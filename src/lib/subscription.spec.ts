@@ -1,5 +1,5 @@
 /**
- * Task 9: isPlusMember / getMemberTier 헬퍼 단위 테스트
+ * Task 9: getMemberTier 헬퍼 단위 테스트
  *
  * getManagedSubscription 이 사용하는 createServiceClient 를 mock 하여
  * DB 없이 plan/status 조합별 반환값을 검증한다.
@@ -12,7 +12,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 import { createServiceClient } from '@/lib/supabase/server';
-import { isPlusMember, getMemberTier, isPremiumMember } from '@/lib/subscription';
+import { getMemberTier, isPremiumMember } from '@/lib/subscription';
 
 // ─── 테스트용 타입 ──────────────────────────────────────────────────
 type FakeStatus = 'active' | 'cancelled' | 'expired';
@@ -115,9 +115,10 @@ describe('getMemberTier', () => {
     expect(await getMemberTier('user-premium')).toBe('premium');
   });
 
-  it('plus_monthly + active → "plus"', async () => {
+  // 2026-09-01 — 라이트(plus) 등급 삭제. 레거시 행이 남아 있어도 멤버로 승격되면 안 된다.
+  it('plus_monthly + active → null (등급 삭제)', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeClient(plusActiveRow) as never);
-    expect(await getMemberTier('user-plus')).toBe('plus');
+    expect(await getMemberTier('user-plus')).toBeNull();
   });
 
   it('cancelled premium (해지 예약, grace 기간 내) → "premium"', async () => {
@@ -125,9 +126,9 @@ describe('getMemberTier', () => {
     expect(await getMemberTier('user-cancelled')).toBe('premium');
   });
 
-  it('cancelled plus (해지 예약, grace 기간 내) → "plus"', async () => {
+  it('cancelled plus (해지 예약, grace 기간 내) → null (등급 삭제)', async () => {
     vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledPlusRow) as never);
-    expect(await getMemberTier('user-cancelled-plus')).toBe('plus');
+    expect(await getMemberTier('user-cancelled-plus')).toBeNull();
   });
 
   it('expired → null (status !== "active")', async () => {
@@ -147,42 +148,6 @@ describe('getMemberTier', () => {
 
   it('빈 userId → null (DB 호출 없이 즉시)', async () => {
     expect(await getMemberTier('')).toBeNull();
-  });
-});
-
-// ─── isPlusMember ────────────────────────────────────────────────────
-describe('isPlusMember', () => {
-  beforeEach(() => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(null) as never);
-  });
-
-  it('plus_monthly + active → true', async () => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(plusActiveRow) as never);
-    expect(await isPlusMember('user-plus')).toBe(true);
-  });
-
-  it('premium_monthly + active → false (plan 불일치)', async () => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(premiumActiveRow) as never);
-    expect(await isPlusMember('user-premium')).toBe(false);
-  });
-
-  it('cancelled premium (plan 불일치 — plus 아님) → false', async () => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledRow) as never);
-    expect(await isPlusMember('user-cancelled')).toBe(false);
-  });
-
-  it('cancelled plus (해지 예약, grace 기간 내) → true', async () => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(cancelledPlusRow) as never);
-    expect(await isPlusMember('user-cancelled-plus')).toBe(true);
-  });
-
-  it('구독 없음(null) → false', async () => {
-    vi.mocked(createServiceClient).mockResolvedValue(makeClient(null) as never);
-    expect(await isPlusMember('user-no-sub')).toBe(false);
-  });
-
-  it('빈 userId → false (DB 호출 없이 즉시)', async () => {
-    expect(await isPlusMember('')).toBe(false);
   });
 });
 

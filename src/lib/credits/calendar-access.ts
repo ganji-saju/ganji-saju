@@ -5,12 +5,6 @@ import {
   unlockCreditsOnce,
 } from './deduct';
 import { getMemberTier } from '@/lib/subscription';
-import {
-  MEMBER_QUOTAS,
-  MEMBER_BENEFIT_KEYS,
-  consumeMemberBenefit,
-  monthlyPeriodKey,
-} from './member-benefits';
 
 export const FORTUNE_CALENDAR_MONTH_ACCESS_KIND = 'fortune_calendar_month_access';
 
@@ -111,19 +105,11 @@ export async function unlockFortuneCalendarMonth(
     };
   }
 
-  // [멤버십 게이트] 전 앞에 삽입: premium 무제한 / plus 월쿼터 소진
-  const tier = await getMemberTier(userId);
-  if (tier) {
-    const limit = MEMBER_QUOTAS[tier].calendarMonthly; // null = 무제한(premium)
-    const granted =
-      limit === null
-        ? true
-        : await consumeMemberBenefit(userId, MEMBER_BENEFIT_KEYS.calendarMonthly.benefit, monthlyPeriodKey(), limit);
-    if (granted) {
-      await recordFortuneCalendarMonthAccess(userId, readingKey, year, month);
-      return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
-    }
-    // plus 한도 초과 → 아래 레거시 전/페이월로 폴스루
+  // [멤버십 게이트] 전 앞에 삽입: premium 은 달력 무제한(MEMBER_QUOTAS.premium.calendarMonthly=null).
+  //   2026-09-01 — 월쿼터 소진 분기는 plus 등급 전용이었고 그 등급이 사라져 함께 삭제했다.
+  if (await getMemberTier(userId)) {
+    await recordFortuneCalendarMonthAccess(userId, readingKey, year, month);
+    return { success: true, remaining: await getRemainingCredits(userId), reused: false, viaMembership: true };
   }
 
   // [레거시 전 경로] 기존 잔액 보유자 소진용 — 삭제 금지

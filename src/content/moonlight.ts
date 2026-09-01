@@ -2,7 +2,7 @@ import { keepVisible } from '@/lib/paywall-lockdown';
 
 export type MoonlightTone = 'gold' | 'goldSoft' | 'jade' | 'plum' | 'sky' | 'coral';
 export type MoonlightNavTone = 'service' | 'acquisition';
-export type PlanSlug = 'basic' | 'premium' | 'lifetime';
+export type PlanSlug = 'premium' | 'lifetime';
 export type CompatibilityRelationshipSlug = 'lover' | 'family' | 'friend' | 'partner';
 export type DalbitTeacherSlug =
   | 'mg-ji'
@@ -1051,14 +1051,6 @@ export const CHECKOUT_PLAN_GUIDE: Record<
     notices: readonly string[];
   }
 > = {
-  basic: {
-    title: '라이트 대화 멤버십',
-    price: '월 4,900원',
-    nextRange: '첫 결제 후 30일 이용',
-    reassurance: '가볍게 시작해도 질문을 이어가는 흐름은 충분히 경험하실 수 있습니다.',
-    opens: ['긴 사주풀이 미리보기 월 2회', '기본 해석과 대화 상담', '광고 없는 차분한 이용'],
-    notices: ['첫 결제 후 30일 이용권으로 반영', '마이페이지에서 상태 확인 가능', '열람 전 환불 안내 함께 안내'],
-  },
   premium: {
     title: '프리미엄 대화 멤버십',
     price: '월 49,000원',
@@ -1088,14 +1080,6 @@ export const COMPLETE_PLAN_GUIDE: Record<
     primaryLabel: string;
   }
 > = {
-  basic: {
-    welcome: '가볍게 시작하셨지만, 핵심 해석을 읽기엔 충분한 첫걸음입니다.',
-    giftTitle: '이번 달 긴 사주풀이 미리보기 2회',
-    giftBody: '기본 해석을 보다가 더 깊이 보고 싶은 결과가 나오면 바로 긴 사주풀이 미리보기로 이어가실 수 있습니다.',
-    nextSteps: ['사주 기본 해석부터 저장하기', '마음에 남는 질문을 대화로 이어보기', '첫 긴 사주풀이 미리보기 1회 써보기'],
-    primaryHref: '/saju/new',
-    primaryLabel: '내 첫 해석 시작하기',
-  },
   premium: {
     welcome: '프리미엄 멤버로 모시게 되어 기쁩니다. 가장 넓은 해석 흐름이 지금부터 열립니다.',
     giftTitle: '첫 긴 사주풀이 미리보기',

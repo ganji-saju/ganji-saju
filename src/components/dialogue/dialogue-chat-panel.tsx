@@ -5,6 +5,7 @@ import { FormEvent, startTransition, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { GuardianAvatar } from '@/components/gangi/guardian-avatar';
+import { DialogueRechargeModal } from '@/components/dialogue/dialogue-recharge-modal';
 import { Button } from '@/components/ui/button';
 import { trackMoonlightEvent } from '@/lib/analytics';
 import type { AiChatBillingSummary } from '@/lib/credits/ai-chat-access';
@@ -79,6 +80,8 @@ interface DialogueChatPanelProps {
   autoStart?: boolean;
   initialExpertId?: DialogueExpertId;
   roomMode?: boolean;
+  /** 진입 시점의 남은 질문 수(서버 계산). null = 비로그인·조회 실패 → 표시 생략. */
+  initialQuestionsRemaining?: number | null;
 }
 
 interface ProfileApiProfile {
@@ -143,13 +146,13 @@ function getBillingLabel(billing: AiChatBillingSummary | null | undefined) {
     case 'result_intro_free':
       return '오늘 결과 기반 첫 질문 무료 · 전 차감 없음';
     case 'member_daily_free':
-      return `멤버십 오늘 무료 · ${billing.freeTurnsRemaining ?? 0}회 남음 · 전 차감 없음`;
+      return `멤버십 오늘 무료 · 남은 질문 ${billing.questionsRemaining}회 · 전 차감 없음`;
     case 'charged_bundle':
-      return `${billing.bundleSize}회 묶음 시작 · ${billing.cost}전 차감 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음 · 잔여 ${billing.remaining ?? 0}개`;
+      return `${billing.bundleSize}회 묶음 시작 · ${billing.cost}전 차감 · 남은 질문 ${billing.questionsRemaining}회`;
     case 'bundle_included':
-      return `결제된 ${billing.bundleSize}회 묶음 사용 중 · 이번 묶음 ${billing.bundleTurnsRemaining ?? 0}회 남음`;
+      return `결제된 ${billing.bundleSize}회 묶음 사용 중 · 남은 질문 ${billing.questionsRemaining}회`;
     case 'not_charged_fallback':
-      return `기본 답변 · 횟수/전 차감 없음 · 잔여 ${billing.remaining ?? 0}개`;
+      return `기본 답변 · 횟수/전 차감 없음 · 남은 질문 ${billing.questionsRemaining}회`;
     case 'not_charged_safe_redirect':
       return '안전 안내 전환 · 횟수/전 차감 없음';
     case 'auth_required':
@@ -270,6 +273,7 @@ export function DialogueChatPanel({
   autoStart = false,
   initialExpertId = 'dragon',
   roomMode = false,
+  initialQuestionsRemaining = null,
 }: DialogueChatPanelProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -292,6 +296,11 @@ export function DialogueChatPanel({
   ]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [needsRecharge, setNeedsRecharge] = useState(false);
+  // 남은 질문 수 — 진입 시 서버값으로 시작해 매 응답의 billing.questionsRemaining 으로 갱신.
+  const [questionsRemaining, setQuestionsRemaining] = useState<number | null>(
+    initialQuestionsRemaining ?? null
+  );
+  const [rechargeOpen, setRechargeOpen] = useState(false);
   const [profileConnection, setProfileConnection] = useState<ProfileConnectionState>({
     status: 'checking',
     summary: '내 정보 확인 중',
@@ -427,9 +436,13 @@ export function DialogueChatPanel({
         return;
       }
 
+      if (payload.billing) setQuestionsRemaining(payload.billing.questionsRemaining);
+
       if (!response.ok || !payload.ok) {
         const billingLabel = getBillingLabel(payload.billing);
-        setNeedsRecharge(payload.billing?.status === 'insufficient_credits');
+        const exhausted = payload.billing?.status === 'insufficient_credits';
+        setNeedsRecharge(exhausted);
+        if (exhausted) setRechargeOpen(true);
         throw new Error(
           [payload.error ?? 'AI 답변을 불러오지 못했습니다.', billingLabel]
             .filter(Boolean)
@@ -458,6 +471,10 @@ export function DialogueChatPanel({
         setMessages((current) => [...current, assistantMessage]);
       });
       setStatus('idle');
+
+      // 답변까지 받은 뒤 잔여가 0이면 그 자리에서 결제 창을 연다 — 다음 질문을 쓰다가
+      //   402 로 막히는 것보다, 답을 다 읽은 시점에 안내하는 편이 덜 끊긴다.
+      if ((payload.billing?.questionsRemaining ?? 1) <= 0) setRechargeOpen(true);
 
       // 2026-05-15 — AI 응답 영구 저장 (로그인 시).
       void fetch('/api/dialogue/messages', {
@@ -725,7 +742,26 @@ export function DialogueChatPanel({
           </div>
         </div>
         <p className={roomMode ? 'mt-2 text-[12.6px] font-medium leading-5 text-[var(--app-copy-muted)]' : 'mt-3 text-sm leading-6 text-[var(--app-copy-soft)]'}>
-          멤버십 매일 무료 · 비회원 첫 3회 무료
+          {questionsRemaining === null ? (
+            '멤버십 매일 5건 · 그 외 990원 질문 3회권'
+          ) : questionsRemaining > 0 ? (
+            <>
+              남은 질문{' '}
+              <b className="font-extrabold text-[var(--app-pink-strong)]">{questionsRemaining}회</b>
+              {' · 멤버십 매일 5건 · 그 외 990원 질문 3회권'}
+            </>
+          ) : (
+            <>
+              남은 질문이 없어요 ·{' '}
+              <button
+                type="button"
+                onClick={() => setRechargeOpen(true)}
+                className="font-extrabold text-[var(--app-pink-strong)] underline underline-offset-2"
+              >
+                이어서 물어보기
+              </button>
+            </>
+          )}
         </p>
 
         {errorMessage ? (
@@ -746,6 +782,12 @@ export function DialogueChatPanel({
           </div>
         ) : null}
       </form>
+
+      <DialogueRechargeModal
+        open={rechargeOpen}
+        onClose={() => setRechargeOpen(false)}
+        from={roomMode ? 'dialogue-room' : 'dialogue'}
+      />
     </article>
   );
 }

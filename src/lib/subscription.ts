@@ -104,28 +104,18 @@ export async function isPremiumMember(userId: string): Promise<boolean> {
   return !!sub && isEntitledStatus(sub.status) && sub.plan === 'premium_monthly';
 }
 
-// 2026-06-30 — 라이트(플러스) 멤버십(월 4,900원 30일권) 혜택 게이트 공통 판별.
-//   active 또는 cancelled(grace 기간) + plan='plus_monthly' 이면 멤버.
-export async function isPlusMember(userId: string): Promise<boolean> {
-  if (!userId) return false;
-  const sub = await getManagedSubscription(userId);
-  return !!sub && isEntitledStatus(sub.status) && sub.plan === 'plus_monthly';
-}
-
 // 2026-06-30 — 활성 구독의 등급(tier) 반환. 피처 게이트가 tier별 혜택 분기에 사용.
 //   entitled(active|cancelled) 아니면 null, plan 불일치도 null.
-export async function getMemberTier(userId: string): Promise<'premium' | 'plus' | null> {
+export async function getMemberTier(userId: string): Promise<'premium' | null> {
   if (!userId) return null;
   const sub = await getManagedSubscription(userId);
   if (!sub || !isEntitledStatus(sub.status)) return null;
-  if (sub.plan === 'premium_monthly') return 'premium';
-  if (sub.plan === 'plus_monthly') return 'plus';
-  return null;
+  return sub.plan === 'premium_monthly' ? 'premium' : null;
 }
 
 // 2026-08-31 — 현재 세션 사용자의 등급. 페이지가 "멤버십으로 이미 열려 있음" 고지를
 //   분기할 때 사용(중복결제 안내). env 부재·비로그인·조회 오류는 전부 null(고지 생략).
-export async function getViewerMemberTier(): Promise<'premium' | 'plus' | null> {
+export async function getViewerMemberTier(): Promise<'premium' | null> {
   if (!hasSupabaseServerEnv) return null;
   try {
     const {
@@ -135,16 +125,6 @@ export async function getViewerMemberTier(): Promise<'premium' | 'plus' | null> 
   } catch {
     return null;
   }
-}
-
-export async function activatePlusSubscription(
-  userId: string,
-  options: { customerKey?: string | null; billingKey?: string | null } = {}
-) {
-  return activateMembershipSubscription(userId, {
-    ...options,
-    plan: 'plus_monthly',
-  });
 }
 
 export async function activateMembershipSubscription(
@@ -236,10 +216,6 @@ export function getSubscriptionStatusLabel(status: SubscriptionStatus) {
 }
 
 export function getSubscriptionPlanLabel(plan: string) {
-  if (plan === 'plus_monthly') {
-    return '라이트 대화 멤버십';
-  }
-
   if (plan === 'premium_monthly') {
     return '프리미엄 대화 멤버십';
   }

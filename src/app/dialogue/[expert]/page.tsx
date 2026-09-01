@@ -18,6 +18,7 @@ import {
 } from '@/lib/dialogue-experts';
 import { guardLockedFreeEntry } from '@/lib/paywall-lockdown.server';
 import { guardMenuPassEntry } from '@/lib/payments/menu-pass.server';
+import { getViewerDialogueQuota } from '@/lib/credits/dialogue-quota.server';
 import { AppPage, AppShell } from '@/shared/layout/app-shell';
 
 interface Props {
@@ -68,6 +69,8 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
   await guardMenuPassEntry('dialogue', 'dialogue-room');
 
   const meta = getDialogueExpertMeta(expertId);
+  // 게이트를 통과한 뒤 읽는다 — 통과 못 하면 어차피 체크아웃으로 나간다.
+  const quota = await getViewerDialogueQuota();
 
   return (
     <AppShell header={<SiteHeader />} className="gangi-subpage-shell gangi-chat-room-shell pb-24 md:pb-10">
@@ -122,6 +125,7 @@ export default async function DialogueExpertRoomPage({ params, searchParams }: P
           autoStart={query.autoStart === '1'}
           initialExpertId={expertId}
           roomMode
+          initialQuestionsRemaining={quota?.remaining ?? null}
         />
 
         {/* 🔴 2026-08-28 — 위기 안내(SafetyNotice crisis)는 없앤 허브가 **유일한 노출처**였다.
