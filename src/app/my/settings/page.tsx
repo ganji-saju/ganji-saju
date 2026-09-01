@@ -7,9 +7,10 @@
 // 우상단 avatar(메가 메뉴) → /my → /my/settings 경로로 통합하기 위해
 // 본 페이지에 ReadingComfortControl 카드와 LogoutButton 을 합류시킨다.
 import Link from 'next/link';
-import { LayoutModeControl } from '@/features/layout-preference/layout-mode-control';
+import { InkIcon } from '@/components/gangi/ink-icons';
 import { LogoutButton } from '@/features/account/logout-button';
 import { KakaoContactCard } from '@/features/account/kakao-contact-card';
+import { isKakaoSendConfigured, kakaoConfig } from '@/lib/kakao/config';
 // Task 8 — 카카오 친구추가 무료쿠폰 CTA(마이/설정 진입점). slug 없이 렌더 —
 // 휴면(KAKAO_FRIEND_COUPON_ENABLED off)이면 컴포넌트 자체가 아무것도 렌더하지 않는다.
 import { KakaoFriendCouponCta } from '@/features/coupons/kakao-friend-coupon-cta';
@@ -66,7 +67,10 @@ function QuickLink({ icon, label, desc, href, tone }: QuickLinkProps) {
         }}
         aria-hidden="true"
       >
-        {icon}
+        {/* 🔴 2026-09-01 — 전엔 {icon} 을 그대로 렌더해서 화면에 'pen' 'bell' 'chat' 이
+            **영어 단어 그대로** 20px 로 찍혀 있었다(#753 먹선 아이콘 스윕이 이 파일만
+            빠뜨렸다 — 이름은 전부 ICONS 에 이미 있었다). */}
+        <InkIcon name={icon} size={21} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[16.1px] font-extrabold text-[var(--app-ink)]" style={{ wordBreak: 'keep-all' }}>
@@ -104,15 +108,15 @@ export default function MySettingsPage() {
           className="mt-1.5 text-[25.3px] font-extrabold leading-snug tracking-tight text-[var(--app-ink)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          알림 · 레이아웃을
+          내 정보와 알림을
           <br />
-          편한 대로 맞춰주세요
+          여기서 정리하세요
         </h1>
         <p
           className="mt-2 text-[14.4px] leading-[1.6] text-[var(--app-copy-muted)]"
           style={{ wordBreak: 'keep-all' }}
         >
-          시간대가 안 맞으면 알림 시간을, 화면이 불편하면 레이아웃을 바꿔보세요.
+          프로필·가족 정보부터 알림 시간, 문의와 계정 관리까지 한곳에 모았어요.
         </p>
       </article>
 
@@ -143,40 +147,33 @@ export default function MySettingsPage() {
         </div>
       </section>
 
-      {/* §알림 / 위젯 / 레이아웃 */}
+      {/* §알림 — 레이아웃 토글을 뺀 뒤로 '화면' 에 해당하는 항목이 없어 제목도 줄인다. */}
       <section>
         <h2 className="px-1 text-[12.6px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-muted)]">
-          알림 · 화면
+          알림
         </h2>
+        {/* 2026-09-01 — 전엔 '푸시·위젯·재방문 리마인더' 라고 안내했는데 알림센터에 위젯
+            UI 는 없다(탭은 '받은 알림'·'알림 설정' 둘뿐). 있는 것만 말한다. */}
         <div className="mt-2 grid gap-2">
           <QuickLink
             icon="bell"
             label="알림 센터"
-            desc="푸시·위젯·재방문 리마인더 시간 조정"
+            desc="받은 알림 확인과 푸시 알림 시간 설정"
             href="/notifications"
             tone="indigo"
           />
         </div>
-        {/* PC 레이아웃 옵션은 LayoutModeControl 컴포넌트 그대로 */}
-        <article
-          className="mt-2 rounded-[14px] border bg-white p-4"
-          style={{ borderColor: 'var(--app-line)' }}
-        >
-          <div className="text-[12.1px] font-extrabold uppercase tracking-[0.06em] text-[var(--app-copy-soft)]">
-            PC 레이아웃 보기
-          </div>
-          <p
-            className="mt-1 text-[13.8px] leading-[1.6] text-[var(--app-copy-muted)]"
-            style={{ wordBreak: 'keep-all' }}
-          >
-            모바일은 자동으로 모바일 보기. PC 에서만 사이드바·상단 네비를 고를 수 있습니다.
-          </p>
-          <div className="mt-3">
-            <LayoutModeControl />
-          </div>
-        </article>
-        {/* 카카오 알림톡 수신용 전화번호 + 광고(친구톡) 수신동의 */}
-        <KakaoContactCard />
+        {/* 🔴 2026-09-01 — 'PC 레이아웃 보기'(세로형/가로형) 카드를 뺐다. 아무것도 바꾸지
+            않는 죽은 토글이었다: `.app-desktop-sidebar` 는 app-shell.css 에서 1024px 이상일
+            때 `display:none` 이라 사이드바가 어디에도 안 뜨고, `[data-app-layout="horizontal"]`
+            셀렉터는 85곳 전부 기본 셀렉터와 **묶여 있어 두 모드의 스타일이 동일**하다.
+            "PC 에서만 고를 수 있습니다" 라고 써놓고 모바일에도 그대로 보이기까지 했다.
+            컴포넌트(layout-preference)는 남겨 뒀으므로 되살리려면 이 블록만 복구하면 된다. */}
+        {/* 카카오 알림톡 수신용 전화번호 + 광고(친구톡) 수신동의.
+            발송 설정이 안 돼 있으면 카드가 약속을 하지 않는다(아래 sendingLive). */}
+        <KakaoContactCard
+          sendingLive={isKakaoSendConfigured() && Boolean(kakaoConfig.templates.paymentComplete)}
+        />
       </section>
 
       {/* 2026-07-20 — §읽기 경험 섹션 숨김(사용자 요청).

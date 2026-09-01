@@ -149,8 +149,11 @@ export default async function MyProfilePage() {
         </div>
       </article>
 
-      {/* §4 정보 수정 — ProfileManager 폼 본체 (디자인 통일을 위해 white surface 로 래핑) */}
-      <section className="rounded-[18px] border border-[var(--app-line)] bg-white p-4 sm:p-5">
+      {/* §4 정보 수정 — ProfileManager 폼 본체 (디자인 통일을 위해 white surface 로 래핑)
+          id="family": /my/settings 의 '가족·다른 사람 정보' 링크가 /my/profile#family 로
+          보내는데 앵커가 없어 항상 페이지 맨 위에 떨어졌다(2026-09-01). 가족 프로필 폼은
+          ProfileManager 안에 있으므로 이 섹션이 그 목적지다. */}
+      <section id="family" className="scroll-mt-20 rounded-[18px] border border-[var(--app-line)] bg-white p-4 sm:p-5">
         <div className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
           수정
         </div>
