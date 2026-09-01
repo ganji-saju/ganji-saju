@@ -11,6 +11,8 @@ import {
   createServiceClient,
   hasSupabaseServiceEnv,
 } from '@/lib/supabase/server';
+import { kakaoUidHashFromUserMetadata } from '@/lib/kakao/uid-hash';
+import { snapshotFreeDailyUsage } from '@/lib/free-usage/withdrawal-ledger';
 
 const ALLOWED_REASONS = new Set([
   'not-use',
@@ -74,6 +76,13 @@ export async function POST(req: NextRequest) {
 
   const admin = await createServiceClient();
   const userId = user.id;
+
+  // 🔴 2026-09-01 — 삭제 **전에** 무료 사용량을 카카오 회원번호 해시로 떠 놓는다.
+  //   membership_benefit_usage 는 auth.users 에 cascade 로 묶여 있어 아래 deleteUser 가
+  //   오늘 쓴 기록까지 지운다. 그대로 두면 탈퇴→재로그인(10초)으로 무료 1회를 하루에
+  //   몇 번이든 다시 받을 수 있다. 되돌리기는 로그인 콜백이 한다(076 원장).
+  //   실패해도 탈퇴는 그대로 진행한다 — 탈퇴는 사용자의 권리다.
+  await snapshotFreeDailyUsage(userId, kakaoUidHashFromUserMetadata(user.user_metadata));
 
   // 최선의 정리: 명시적으로 비-cascade 흔적도 비활성화한 뒤 사용자 레코드 삭제.
   // 각각의 실패는 무시(테이블 존재/권한 차이에 강건)하고 핵심 삭제는 마지막 단계에서 강행한다.

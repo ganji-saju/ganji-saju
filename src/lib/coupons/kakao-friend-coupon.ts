@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { createServiceClient } from '@/lib/supabase/server';
+import { kakaoUidHash } from '@/lib/kakao/uid-hash';
 
 export const KAKAO_FRIEND_COUPON_TYPE = 'kakao_friend_today_detail';
 export const COUPON_EXPIRY_DAYS = 7;
@@ -49,16 +49,8 @@ export async function getUserCoupon(userId: string): Promise<UserCouponRow | nul
   return (data as UserCouponRow) ?? null;
 }
 
-/**
- * 재발급 차단 원장의 키 — 카카오 회원번호의 SHA-256.
- *
- * 원장(kakao_coupon_issue_ledger, 075)에는 탈퇴 후에도 남으므로 평문을 두지 않는다.
- * ⚠️ 카카오 회원번호는 짧은 숫자라 해시가 완전한 비가역성을 주지는 않는다 — 목적은
- *   "유출돼도 카카오 ID 가 평문으로 나가지 않는다" 까지다.
- */
-export function kakaoUidHash(verifiedKakaoUid: string): string {
-  return createHash('sha256').update(verifiedKakaoUid).digest('hex');
-}
+// 재발급 차단 원장(075)의 키. 076(무료 사용량 원장)과 같은 해시를 쓴다.
+export { kakaoUidHash };
 
 /**
  * 이 카카오 계정이 이미 쿠폰을 받았는지(계정 수명과 무관).
