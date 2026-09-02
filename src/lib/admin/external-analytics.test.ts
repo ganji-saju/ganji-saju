@@ -176,3 +176,64 @@ test('getExternalAnalyticsSnapshot: Vercel reporting window 오류면 30일 fall
   assert.equal(snap.sources.vercel.warning, 'Vercel 조회 가능 기간 제한으로 2026-06-08~2026-07-07만 표시');
   assert.equal(snap.totals.vercelPageViews, 7);
 });
+
+// 2026-09-02 회귀 가드 — GA4 JWT 는 **언제나 진짜 현재 시각**으로 서명한다.
+//
+//   2026-09-01 달력 기간(#765)에서 '기간 마지막 날 정오'를 두 번째 인자로 흘려보냈고,
+//   그 값이 날짜 축과 **JWT iat/exp 양쪽**에 쓰이는 바람에 GA4 가 전부 거부됐다:
+//     invalid_grant — "Token must be a short-lived token (60 minutes) and in a
+//     reasonable timeframe."
+//   실측(2026-09-02): 실제 시각 서명 200, 오늘 12:00 KST 서명 400, 지난 기간 서명 400.
+//   축(기간)과 시계(인증)를 다시 섞으면 여기서 걸린다.
+test('GA4: 지난 기간을 조회해도 JWT 는 현재 시각으로 서명한다(invalid_grant 회귀)', async () => {
+  // RS256 서명이 필요하므로 테스트용 키를 즉석 생성(외부 비밀 불필요).
+  const { generateKeyPairSync } = await import('node:crypto');
+  const { privateKey } = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+  });
+
+  const axisEnd = new Date('2026-03-31T03:00:00Z'); // 지난 기간(3월) 마지막 날 정오 KST
+  let assertionIat: number | null = null;
+
+  await getExternalAnalyticsSnapshot(
+    31,
+    axisEnd,
+    {
+      GOOGLE_ANALYTICS_PROPERTY_ID: '123456789',
+      GOOGLE_ANALYTICS_CLIENT_EMAIL: 'svc@example.iam.gserviceaccount.com',
+      GOOGLE_ANALYTICS_PRIVATE_KEY: privateKey,
+    },
+    async (input, init) => {
+      const url = String(input);
+      if (url.includes('oauth2.googleapis.com/token')) {
+        const body = String((init as { body?: unknown } | undefined)?.body ?? '');
+        const assertion = new URLSearchParams(body).get('assertion') ?? '';
+        const claim = JSON.parse(
+          Buffer.from(assertion.split('.')[1] ?? '', 'base64url').toString('utf8')
+        ) as { iat: number; exp: number };
+        assertionIat = claim.iat;
+        return new Response(JSON.stringify({ access_token: 'test-token' }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ rows: [] }), { status: 200 });
+    }
+  );
+
+  assert.ok(assertionIat != null, 'GA4 토큰 요청이 일어나야 한다');
+  const skewSec = Math.abs(Math.floor(Date.now() / 1000) - (assertionIat as number));
+  assert.ok(
+    skewSec < 60,
+    `JWT iat 가 현재 시각에서 ${skewSec}초 떨어져 있다 — 기간 값이 서명 시각으로 새면 Google 이 invalid_grant 로 거부한다`
+  );
+});
+
+test('GA4: 축은 여전히 요청한 기간을 따른다(회귀 수정이 기간을 망가뜨리지 않았는지)', async () => {
+  const snap = await getExternalAnalyticsSnapshot(3, new Date('2026-03-31T03:00:00Z'), {}, async () => {
+    throw new Error('fetch should not be called');
+  });
+  assert.deepEqual(
+    snap.daily.map((d) => d.date),
+    ['2026-03-29', '2026-03-30', '2026-03-31']
+  );
+});
