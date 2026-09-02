@@ -145,8 +145,17 @@ function base64UrlJson(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function createGoogleAssertion(config: GoogleAnalyticsConfig, now: Date): string {
-  const iat = Math.floor(now.getTime() / 1000);
+/**
+ * 2026-09-02 — `now` 인자를 없앴다. **JWT 서명 시각은 언제나 진짜 현재 시각**이다.
+ *   2026-09-01 달력 기간(#765)에서 '기간 마지막 날 정오'를 now 로 흘려보냈더니
+ *   그 값이 날짜 축과 **JWT iat/exp 두 곳에** 동시에 쓰여서, 지난 기간(그리고 오늘도
+ *   12~13시 KST 를 벗어나면) Google 이 토큰을 거부했다:
+ *     invalid_grant — "Token must be a short-lived token (60 minutes) and in a
+ *     reasonable timeframe. Check your iat and exp values in the JWT claim."
+ *   보고 싶은 **기간**과 인증하는 **시각**은 서로 다른 개념이다. 섞이지 않게 인자를 끊는다.
+ */
+function createGoogleAssertion(config: GoogleAnalyticsConfig): string {
+  const iat = Math.floor(Date.now() / 1000);
   const header = base64UrlJson({ alg: 'RS256', typ: 'JWT' });
   const claim = base64UrlJson({
     iss: config.clientEmail,
@@ -251,10 +260,9 @@ async function responseError(label: string, response: Response): Promise<Error> 
 
 async function fetchGoogleAccessToken(
   config: GoogleAnalyticsConfig,
-  fetcher: FetchLike,
-  now: Date
+  fetcher: FetchLike
 ): Promise<string> {
-  const assertion = createGoogleAssertion(config, now);
+  const assertion = createGoogleAssertion(config);
   const response = await fetcher(GOOGLE_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -272,14 +280,14 @@ async function fetchGoogleAccessToken(
   return accessToken;
 }
 
+// 조회 기간은 fromKey/toKey 로만 받는다 — 여기에 '시각'을 섞으면 위(createGoogleAssertion)의 사고가 재발한다.
 async function fetchGoogleAnalyticsDaily(
   config: GoogleAnalyticsConfig,
   fromKey: string,
   toKey: string,
-  fetcher: FetchLike,
-  now: Date
+  fetcher: FetchLike
 ): Promise<Map<string, GoogleAnalyticsDay>> {
-  const accessToken = await fetchGoogleAccessToken(config, fetcher, now);
+  const accessToken = await fetchGoogleAccessToken(config, fetcher);
   const response = await fetcher(
     `${GOOGLE_ANALYTICS_RUN_REPORT_BASE}/${config.propertyPath}:runReport`,
     {
@@ -455,14 +463,22 @@ function sumNullable(values: Array<number | null>): number | null {
   return hasValue ? total : null;
 }
 
+/**
+ * @param axisEnd 날짜 축의 **마지막 날**(달력 기간 조회 시 과거일 수 있다).
+ *   ⚠️ 이 값은 **오직 날짜 축**에만 쓴다. 인증(JWT 서명)·생성시각·미래날짜 clamp 처럼
+ *   '지금'이 필요한 곳에는 절대 흘려보내지 마라 — 2026-09-01 에 이걸 섞어서
+ *   GA4 가 invalid_grant 로 전부 실패했다(#765 회귀).
+ */
 export async function getExternalAnalyticsSnapshot(
   windowDays: number,
-  now: Date = new Date(),
+  axisEnd: Date = new Date(),
   env: EnvMap = process.env,
   fetcher: FetchLike = fetch
 ): Promise<ExternalAnalyticsSnapshot> {
   const days = Math.max(1, Math.min(365, Math.floor(windowDays) || 30));
-  const axis = recentKstDateKeys(days, now);
+  const axis = recentKstDateKeys(days, axisEnd);
+  // '지금' 이 필요한 자리(생성시각·미래날짜 clamp)는 실제 시계를 쓴다.
+  const generatedAt = new Date();
   const fromKey = axis[0]!;
   const toKey = axis[axis.length - 1]!;
 
@@ -479,7 +495,7 @@ export async function getExternalAnalyticsSnapshot(
 
   await Promise.all([
     gaConfig
-      ? fetchGoogleAnalyticsDaily(gaConfig, fromKey, toKey, fetcher, now)
+      ? fetchGoogleAnalyticsDaily(gaConfig, fromKey, toKey, fetcher)
           .then((rows) => {
             gaRows = rows;
           })
@@ -488,7 +504,7 @@ export async function getExternalAnalyticsSnapshot(
           })
       : Promise.resolve(),
     vercelConfig
-      ? fetchVercelAnalyticsDaily(vercelConfig, fromKey, toKey, fetcher, now)
+      ? fetchVercelAnalyticsDaily(vercelConfig, fromKey, toKey, fetcher, generatedAt)
           .then((result) => {
             vercelRows = result.rows;
             vercelWarning = result.warning;
@@ -517,7 +533,7 @@ export async function getExternalAnalyticsSnapshot(
     windowDays: days,
     from: fromKey,
     to: toKey,
-    refreshedAt: now.toISOString(),
+    refreshedAt: generatedAt.toISOString(),
     sources: {
       googleAnalytics: {
         configured: Boolean(gaConfig),

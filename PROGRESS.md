@@ -1,5 +1,42 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-02 — /admin/analytics GA4 오류 (내가 만든 회귀, #765)
+
+증상: 누적 지표 분석 화면에서 GA4 소스가 오류. **원인은 2026-09-01 달력 기간 작업(#765)이다.**
+
+`getExternalAnalyticsSnapshot(windowDays, now)` 의 `now` 가 **두 가지 일을 겸하고 있었다** —
+① 날짜 축의 끝 ② **Google JWT 의 iat/exp**. 달력 기간을 지원하면서 여기에
+`kstNoonDate(period.endKey)`(기간 마지막 날 정오)를 넘겼고, 그 값으로 서명한 토큰을
+Google 이 거부했다:
+
+```
+invalid_grant — Token must be a short-lived token (60 minutes) and in a reasonable
+timeframe. Check your iat and exp values in the JWT claim.
+```
+
+실측(2026-09-02, 같은 자격증명으로 재현):
+
+| 서명 시각 | 결과 |
+|---|---|
+| 실제 현재 시각 | 200 OK |
+| 오늘 12:00 KST(기본 기간=오늘일 때 쓰던 값) | **400 invalid_grant** |
+| 2026-03-31 12:00 KST(지난 기간 선택) | **400 invalid_grant** |
+
+→ **KST 12~13시에만 우연히 동작**하고 나머지 시간엔 전부 실패했다. 서버 로그엔 안 남는다
+(에러를 `gaError` 로 담아 화면에만 표시하는 구조).
+
+**고침(근본)**: 축(기간)과 시계(인증)를 인자 수준에서 끊었다.
+- `createGoogleAssertion` · `fetchGoogleAccessToken` · `fetchGoogleAnalyticsDaily` 에서 `now` 인자를 **삭제** — 서명은 언제나 `Date.now()`.
+- 두 번째 인자를 `axisEnd` 로 개명하고 "여기에 '지금'이 필요한 곳으로 흘려보내지 마라" 를 주석으로 못박음.
+- 생성시각·Vercel 미래날짜 clamp 는 실제 시계(`generatedAt`)를 쓰도록 분리.
+
+**회귀 가드 2종**: 지난 기간을 조회해도 JWT `iat` 가 현재에서 60초 이내인지(테스트용 RSA 키를
+즉석 생성 — 외부 비밀 불필요) · 그 수정이 날짜 축을 망가뜨리지 않았는지.
+
+**배운 것**: 한 인자가 '기간'과 '시각' 두 의미를 겸하면, 기간 기능을 넓히는 순간 인증이 조용히
+깨진다. 게다가 **화면에만 뜨는 오류는 로그에 없어서** 사용자가 말해줄 때까지 아무도 모른다.
+
+
 ## 2026-09-01 — /admin 카드별 스트리밍 (첫 픽셀이 마지막 쿼리를 기다리지 않게)
 
 리전 이동(sin1) 다음 단계. 종전 `/admin` 은 무거운 집계 4종(운영·퍼널·LLM비용·유입)을
