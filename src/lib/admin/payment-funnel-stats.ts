@@ -16,7 +16,14 @@ import {
 } from './channel-product-matrix';
 import { getRefundBreakdown, type RefundBreakdown } from './refund-breakdown';
 
+// 2026-09-03 (migration 077) — 앞 세 칸을 이어 붙였다. 그전엔 집계가 prepare_attempt 부터라
+//   "페이월은 봤는데 결제화면까지 왔나 / 왔는데 로그인 벽에 막혔나"를 화면에서 볼 수 없었다.
+//   paywall_viewed 는 2026-08-12 부터 **수집만 되고 표시되지 않던** 값이다 — 같이 세운다.
 const STAGES: readonly PaymentFunnelStage[] = [
+  'paywall_viewed',
+  'checkout_viewed',
+  'login_required',
+  'login_returned',
   'prepare_attempt',
   'prepare_blocked',
   'prepare_ready',
@@ -316,12 +323,13 @@ export async function buildPaymentFunnelSnapshot(
 
   for (const row of rows) {
     const stage = row.stage;
-    // 2026-08-26 — paywall_viewed 는 STAGES 밖(퍼널 분모 전용 stage)이라 아래 guard 에서
-    //   잘려나갔다. totals 를 건드리지 않도록 guard **앞**에서 surface 만 집계한다.
+    // 2026-08-26 — 페이월 노출 화면(surface)별 집계는 stage 카운트와 별개로 유지한다.
+    // 2026-09-03 — 종전엔 여기서 `continue` 해서 paywall_viewed 가 totals 에서 통째로
+    //   빠졌다(STAGES 밖이었기 때문). 이제 앞 네 칸이 STAGES 에 들어왔으므로 surface 만
+    //   따로 세고 **아래 공통 집계로 계속 흘려보낸다** — 안 그러면 퍼널 첫 칸이 영원히 0이다.
     if (stage === 'paywall_viewed') {
       const surface = readMetaString(row.metadata, 'surface');
       if (surface) surfaceCount.set(surface, (surfaceCount.get(surface) ?? 0) + 1);
-      continue;
     }
     if (!STAGES.includes(stage)) continue;
     totals[stage] += 1;

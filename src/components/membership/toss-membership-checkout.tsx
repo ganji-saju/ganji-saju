@@ -128,7 +128,18 @@ export default function TossMembershipCheckout({
     }
 
     if (!isLoggedIn) {
-      location.href = `/login?next=${encodeURIComponent(checkoutPath)}`;
+      // 2026-09-03 (migration 077) — 여기가 **퍼널의 사각지대**였다. prepare 를 부르지 않고
+      //   /login 으로 보내므로 "결제하려 했지만 로그인 벽에 막힌 사람"이 흔적 0으로 사라졌다.
+      //   기록은 best-effort — 실패해도 로그인 이동을 막지 않는다(await 하지 않는다).
+      void fetch('/api/payments/funnel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'login_required', packageId, product, slug, from: entrySource }),
+        keepalive: true,
+      }).catch(() => {});
+      // returned=1 로 돌아오면 결제 화면이 login_returned 를 남긴다(둘의 차이 = 로그인 벽 손실).
+      const backTo = `${checkoutPath}${checkoutPath.includes('?') ? '&' : '?'}returned=1`;
+      location.href = `/login?next=${encodeURIComponent(backTo)}`;
       return;
     }
 

@@ -2,6 +2,7 @@
 // pink-soft 주문 요약 + 금액 breakdown + 토스 결제 method + 안내 + Toss 위젯.
 // 데이터·라우팅·결제 위젯 무수정.
 import Link from 'next/link';
+import { after } from 'next/server';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
@@ -21,6 +22,7 @@ import {
   type TasteProductId,
 } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
+import { logCheckoutStage } from '@/lib/payments/funnel-log';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
@@ -47,6 +49,8 @@ interface Props {
     scope?: string;
     error?: string;
     from?: string;
+    /** 2026-09-03 — 로그인 벽에 튕겼다가 돌아온 표식(login_returned 기록용). */
+    returned?: string;
   }>;
 }
 
@@ -269,7 +273,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MembershipCheckoutPage({ searchParams }: Props) {
-  const { plan, product, slug, scope, error, from } = await searchParams;
+  const { plan, product, slug, scope, error, from, returned } = await searchParams;
   const selectedProduct = isTasteProductId(product) ? product : null;
   // 묶음(bundle)은 product param 에 packageId(예: 'bundle_today_set')로 진입한다.
   const candidateBundle = !selectedProduct && product ? getPackage(product) : undefined;
@@ -309,11 +313,15 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   결제는 막지 않되(종합점수는 멤버십 미포함) 겹침을 결제 전에 명시한다 — 중복결제 CS 방지.
   let bundleMembershipOverlap = false;
 
+  // 2026-09-03 — 퍼널 기록용으로 바깥에 보관(아래 after() 에서 쓴다).
+  let viewerId: string | null = null;
+
   if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    viewerId = user?.id ?? null;
 
     if (user) {
       const paymentScope = await resolvePaymentProductScope({ pkg: paymentPackage, slug, scope });
@@ -363,6 +371,47 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   }
 
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
+
+  // 2026-09-03 (migration 077) — 결제 화면 도달을 퍼널에 남긴다.
+  //   그전엔 페이월 노출 다음이 바로 prepare_attempt 라, "결과는 봤는데 결제화면까지 왔나"
+  //   와 "왔는데 결제를 안 눌렀나"를 구분할 수 없었다. 실측(2026-09-03)으로 페이월 노출
+  //   271~800/일 · 체크아웃 도달 1~5명/일 이 드러난 뒤 이 칸을 세운다.
+  //   ⚠️ after() — 렌더 경로에서 await 하면 결제 화면이 그만큼 느려진다.
+  //   payable=false 는 결제 버튼이 없는 상태(결과 먼저/이미 구매/판매중단)로 도달한 경우다.
+  //   이걸 안 남기면 "도달했는데 결제 안 함"에 게이트 화면이 섞여 전환율이 거짓으로 낮아진다.
+  // 결제 버튼 없이 도달한 경우의 사유. 화면 분기(469/484/505/526)와 같은 순서로 판정한다.
+  const funnelBlocked = needsResultFirst
+    ? ('needs_result' as const)
+    : alreadyPurchasedHref
+      ? ('already_purchased' as const)
+      : activeMembershipPlan
+        ? ('active_membership' as const)
+        : null;
+  if (paymentPackage) {
+    after(() => {
+      logCheckoutStage({
+        stage: 'checkout_viewed',
+        packageId: paymentPackage.id,
+        product: selectedProduct ?? selectedBundle?.id ?? selectedPlan,
+        slug: slug ?? null,
+        from: from ?? null,
+        userId: viewerId,
+        blocked: funnelBlocked,
+      });
+      // 로그인 벽에 튕겼다가 돌아온 경우. login_required 와의 차이가 곧 로그인 벽 손실이다.
+      if (returned === '1' && viewerId) {
+        logCheckoutStage({
+          stage: 'login_returned',
+          packageId: paymentPackage.id,
+          product: selectedProduct ?? selectedBundle?.id ?? selectedPlan,
+          slug: slug ?? null,
+          from: from ?? null,
+          userId: viewerId,
+          blocked: funnelBlocked,
+        });
+      }
+    });
+  }
 
   return (
     // 2026-07-18 — PPTX slide7 "위에 상단 불필요함 중복" 에 따라 header={false} 로 전역 헤더를
