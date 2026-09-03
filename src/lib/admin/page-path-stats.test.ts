@@ -51,11 +51,17 @@ test('경로 기록: /api/visit 은 sanitize 된 경로만 넘긴다', () => {
   );
 });
 
-test('경로 기록: 계측 실패가 순방문 집계를 막지 않는다(await 금지)', () => {
+test('경로 기록: 응답을 막지 않으면서 유실도 되지 않는다(after 안에서 실행)', () => {
   const route = readFileSync('src/app/api/visit/route.ts', 'utf8');
-  const block = route.slice(route.indexOf("track_site_visit_page'") - 200);
+  // 2026-09-03 머지 전 리뷰에서 잡힌 것: 처음엔 `void service.rpc(...)` 로 띄웠는데,
+  //   서버리스는 응답 직후 함수를 얼려서 그 기록이 **조용히 유실된다**.
+  //   after() 는 응답을 늦추지 않으면서 실행은 보장한다 — 그 계약을 여기서 고정한다.
   assert.ok(
-    !/await service\s*\n?\s*\.rpc\('track_site_visit_page'/.test(block),
-    '경로 기록을 await 하면 그 실패·지연이 방문 핑 전체를 물고 늘어진다'
+    /after\(async \(\) => \{[\s\S]{0,300}track_site_visit_page/.test(route),
+    "경로 기록은 after() 안에서 실행해야 한다 — 그냥 띄우면 서버리스에서 유실된다"
+  );
+  assert.ok(
+    !/await service\.rpc\('track_site_visit_page'[\s\S]{0,80}\);\n\s*if \(!error\)/.test(route),
+    '요청 경로에서 직접 await 하면 방문 핑 응답이 그만큼 늦어진다'
   );
 });

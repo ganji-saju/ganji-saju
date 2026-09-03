@@ -4,7 +4,7 @@
 // 익명 vid 를 서버에서 sha256 해시해 저장한다.
 // PII 없음(원시 vid 미저장), 실패해도 200(사용자 경험 무영향·best-effort).
 import crypto from 'node:crypto';
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 import { isAdminUser } from '@/lib/admin-auth';
 import {
   clientIpFromHeaders,
@@ -135,17 +135,18 @@ export async function POST(req: NextRequest) {
     //   데이터로 답할 수 없었다(그 질문을 GA4 에 물었다가 봇 유입을 1위로 오독했다).
     //   ⚠️ 실패해도 무시한다 — 순방문 집계(위 RPC)가 이것 때문에 막히면 안 된다.
     //   ⚠️ 078 미적용이면 함수가 없어 에러가 나는데, 그것도 조용히 넘긴다(핑은 계속 산다).
-    void service
-      .rpc('track_site_visit_page', {
+    //   ⚠️ after() 로 감싼다. 그냥 `void promise` 로 띄우면 **서버리스에서 응답 직후 함수가
+    //     얼어 기록이 조용히 유실된다** — 응답을 늦추지 않으면서 실행은 보장되는 자리가 after 다.
+    after(async () => {
+      const { error: pageError } = await service.rpc('track_site_visit_page', {
         p_date_key: dateKey,
         p_path: path,
         p_visitor_hash: visitorHash,
-      })
-      .then(({ error: pageError }) => {
-        if (pageError && !isMissingRpc(pageError)) {
-          console.error('[visit] page rpc failed:', pageError.message);
-        }
       });
+      if (pageError && !isMissingRpc(pageError)) {
+        console.error('[visit] page rpc failed:', pageError.message);
+      }
+    });
 
     if (!error) return NextResponse.json({ ok: true });
     if (!isMissingRpc(error)) {

@@ -80,14 +80,13 @@ export async function GET(req: NextRequest) {
     // 집계 끝점은 **기간 마지막 날**. now 만 받는 함수엔 그 날 정오를 넘긴다.
     const periodEnd = kstNoonDate(period.endKey);
     // 2026-09-03 (migration 078) — 경로별 방문. 축(기간)과 같은 날짜 범위로 집계한다.
-    const axisFrom = new Date(Date.parse(`${period.startKey}T00:00:00Z`)).toISOString().slice(0, 10);
     const [snapshot, external, refunds, pagePaths] = await Promise.all([
       getDailyMetrics(service, windowDays, periodEnd),
       getExternalAnalyticsSnapshot(windowDays, periodEnd),
       // 2026-08-26 — 환불 건별 원 결제일. '오늘 매출 990 / 환불 9,900' 이 왜 그런지
       //   화면이 스스로 답하게 한다(집계는 그대로, 해설만 추가).
       getRefundBreakdown(service, windowDays, periodEnd),
-      getPagePathStats(service, axisFrom, period.endKey),
+      getPagePathStats(service, period.startKey, period.endKey),
     ]);
     return NextResponse.json(
       { ok: true, snapshot, external, refunds, pagePaths, autoRefresh, period },
