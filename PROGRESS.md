@@ -1,5 +1,39 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — 의존성 취약점 4건 정리 (락파일만, 프로덕션 영향 없음)
+
+GitHub 이 high 2건을 새로 알려 확인. **4건 전부 `shadcn`(devDependency, CLI) 하나에서 나왔다.**
+
+| 심각도 | 패키지 | 경로 | → |
+|---|---|---|---|
+| high×2 | fast-uri | shadcn → @modelcontextprotocol/sdk → ajv | 3.1.5 → **3.1.7** |
+| moderate | qs | shadcn → @modelcontextprotocol/sdk → express | 6.15.3 → **6.16.0** |
+| low | postcss-selector-parser | shadcn | 7.1.1 → **7.1.6** |
+
+**프로덕션 번들과 무관하다**: `shadcn` 은 컴포넌트를 긁어오는 CLI 이고 npm scripts 어디에도
+없다. 실제 UI 컴포넌트는 이미 `src/components/ui/` 에 생성돼 들어와 있어 빌드·런타임에
+이 CLI 가 필요하지 않다. 즉 위험 노출은 개발 머신에서 CLI 를 직접 돌릴 때뿐이다.
+
+**조치**: `npm audit fix` — **`package.json` 은 손대지 않았고 `package-lock.json` 만** 바뀌었다
+(전이 의존성 범위가 이미 패치 버전을 허용하고 있었고, 락파일이 옛 버전을 붙들고 있었다).
+`npm audit` 0건, tsc 0, 테스트 1484건, 빌드 통과.
+
+**shadcn 제거는 시도했다가 되돌렸다 — 뺄 수 없다.**
+`src/app/globals.css` 3행이 `@import "shadcn/tailwind.css"` 를 하고, 그건 패키지의 export
+(`"./tailwind.css": "./dist/tailwind.css"`)다. **CLI 가 아니라 빌드 의존성**이다.
+제거 실험에서 락파일 263개가 빠졌지만 빌드가 그 import 에서 죽었다.
+
+⚠️ 그 과정에서 내가 두 번 잘못 짚었다. 기록해 둔다:
+1. "shadcn 은 CLI 라 빌드와 무관" — **틀렸다**(위 CSS import).
+2. "`^4.19.0` 이 4.20.1 로 드리프트하면 빌드가 깨진다" — **틀렸다**. 4.20.1 에도 같은 export 가
+   있다(레지스트리 확인). 그때 빌드 실패는 **`.next` 잔재**였다(메모리 project_tailwind-stale-next-scan
+   의 그 함정 그대로 — Tailwind CSS 에러가 뜨면 캐시부터 의심할 것).
+
+**덤으로 찾은 진짜 지뢰**: `playwright.config.ts` 가 `dotenv` 를 직접 import 하는데 **선언이 없었다** —
+`shadcn → @dotenvx/dotenvx → dotenv` 로 얹혀 있었다. shadcn 이 그 의존성을 바꾸면 E2E 설정이
+조용히 깨진다. devDependencies 에 명시했다(락파일 3줄 추가, 다른 드리프트 없음).
+
+
 ## 2026-09-03 — /membership 의 **가짜 후기**를 실제 후기로 교체 (사용자 지적)
 
 사용자 질문: "리뷰에 1991년생이 닭띠 맞아?" → **아니다. 1991년은 양띠(신미)** 다.
