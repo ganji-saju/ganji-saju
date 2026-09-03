@@ -1,5 +1,67 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — 전역 버튼 `width: 100%` 삭제: "버튼 나란히"가 안 되던 근본 원인
+
+#782(PDF 저장 바)를 고친 뒤 **같은 버그가 다른 화면에도 살아 있는지** 훑었다.
+근본 원인은 `subpages.css` 의 공용 버튼 규칙 한 줄이었다.
+
+```css
+.gangi-primary-button, .gangi-secondary-button { width: 100%; }
+```
+
+이게 있으면 flex row·블록 컨테이너 안에서 버튼 2개 이상이 **모든 폭에서** 세로로 쌓인다.
+
+### ⚠️ `width: auto` 로 바꾸는 건 답이 아니다 — 선언 자체를 지워야 한다
+
+`subpages.css` 는 `@layer` 밖이고, **레이어 밖 선언은 Tailwind `@layer utilities` 를 이긴다.**
+그래서 선언이 남아 있는 한 유틸리티로 못 푼다. 실측(playwright):
+
+| | 결과 |
+|---|---|
+| 레이어 밖 `width:100%` + `.w-auto` | 400px — **안 먹음** |
+| 선언 삭제 + `.w-full` | 400px — **먹음** |
+| 선언 삭제 + 아무것도 | 145px(콘텐츠 폭) |
+
+→ **선언을 삭제**해 기본값을 `auto` 로 두고, 폭이 필요한 곳만 `w-full` 로 옵트인한다.
+
+### 컨테이너 유형별 영향 (실측, 400px 컨테이너·border-box)
+
+| 컨테이너 | `width:100%` | 삭제 후 | |
+|---|---|---|---|
+| 1열 그리드 / 2열 그리드 | 398 / 195 | 398 / 195 | **변화 없음** |
+| flex column | 398 | 398 | **변화 없음** |
+| flex row (wrap) | 398·398·398 (3줄) | 105·114·102 (**1줄**) | 개선 |
+| 블록 | 398 | **102** | 폭 지정 필요 |
+
+그리드 셀·flex column 은 `stretch` 가 이미 채우고 있었다 — `width:100%` 는 **거기서 아무 일도
+안 하고 있었다.** 전 호출부 15곳이 이 경우였다.
+
+### 고친 것
+- `subpages.css` — 공용 버튼 규칙에서 `width: 100%` 삭제(이유 주석 동봉).
+- `pricing/page.tsx` — 플랜 카드 결제 CTA 2곳에 `w-full` 명시. 부모(`.gangi-card-panel`)가
+  블록이라 안 붙이면 결제 버튼이 글자 폭(~102px)으로 쪼그라든다.
+- `responsive-print.css` — PDF 바의 `width: auto` override 삭제(전역이 해결하므로 불필요).
+
+### 렌더 검증 (dev 서버, 390·1280px, 유료화 잠금 ON/OFF 양쪽)
+- `/pricing` 결제 CTA — 390px **233px / 카드 안쪽 234px**, 1280px **444 / 444** → 꽉 참 ✅
+- `/dialogue/safe-redirect` — 데스크톱에서 2버튼이 **세로 2줄 → 한 줄**(135px·193px) ✅
+- 훑은 14개 공개 라우트에서 **60px 미만으로 쪼그라든 버튼 0개**, 가로 넘침 0건.
+
+⚠️ 검증 한계: 인증·데이터가 필요한 화면(리포트 패널의 `EngineMethodLinks`,
+`/compatibility/result`, `/verification` 데이터 섹션)은 렌더로 못 봤다. 전부 flex row 안
+보조 링크라 "전체폭 → 콘텐츠 폭" 이 되는데, 그 자리는 원래 콘텐츠 폭이 맞다.
+
+### 죽은 코드로 확인된 것
+- `site-header.tsx` 의 `gangi-*-button` 4곳 — 실제 렌더되는 헤더는 `mega-nav-*` /
+  `mobile-nav-sheet-*` 클래스다. 이 파일 버튼은 화면에 안 나온다.
+- `report-keepsake-section.tsx` 의 `ActionCluster` — `/sample-report` 은 `actions` 를
+  안 넘겨 렌더되지 않는다(`.app-action-cluster` 0개).
+
+### 가드
+`src/lib/gangi-button-width.test.ts` 2개 — 공용 규칙에 `width` 선언이 없을 것 ·
+`/pricing` 플랜 CTA 에 `w-full` 이 붙어 있을 것.
+
+
 ## 2026-09-03 — PDF 저장 화면: 액션 바가 모바일에서 본문 1/3 을 가리던 문제
 
 `/saju/[slug]/premium/print` 상단 sticky 바의 버튼 3개(PDF로 저장·인쇄·리포트로 돌아가기)가

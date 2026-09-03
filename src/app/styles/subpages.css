@@ -1054,11 +1054,21 @@
 
 
 
+/* 2026-09-03 — `width: 100%` 를 **선언 자체로 삭제**했다(기본값 auto).
+   왜: 이 파일은 `@layer` 밖이라 여기서 폭을 못 박으면 Tailwind 유틸리티로 못 푼다.
+   `width: auto` 로 바꾸는 것으로는 부족하다 — 선언이 남아 있는 한 `w-full` 도 진다.
+   실측: 레이어 밖 `width:100%` + `.w-auto` → 400px(안 먹음) / 선언 삭제 + `.w-full` → 400px(먹음).
+
+   폭이 필요한 곳은 **`w-full` 을 명시**해라(예: /pricing 플랜 카드 결제 CTA).
+   그리드 셀·flex column 안에서는 아무것도 안 붙여도 stretch 가 채운다 —
+   실측으로 전 호출부 15곳이 이 경우라 변화가 없었다.
+   반대로 flex row·블록 안에서는 이제 콘텐츠 폭이 된다(그게 맞는 동작이다):
+   /sample-report·/dialogue/safe-redirect 의 ActionCluster 가 데스크톱에서
+   세로로 쌓이던 것이 이 삭제로 한 줄이 된다. */
 .gangi-primary-button,
 .gangi-secondary-button {
   display: inline-flex;
   min-height: 2.85rem;
-  width: 100%;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
