@@ -27,3 +27,19 @@ test('PDF 저장 바: 전역 width:100% 를 이기는 CSS override 가 남아 �
   assert.ok(block, '.pdf-print-actions 안쪽 버튼 override 블록이 있어야 한다');
   assert.match(block[1], /width:\s*auto/, 'width: auto 로 전역 width:100% 를 덮어야 한다');
 });
+
+// 리뷰에서 실제로 잡힌 실수(2026-09-03): 처음엔 축소 값을 `min-width: 640px` 쪽에도
+// 넣어 데스크톱 버튼까지 1.05rem → 0.92rem 으로 줄였다. 그 값은 readability.css 가
+// 의도적으로 올린 것이라 건드리면 안 된다. 축소는 모바일 전용으로 남아야 한다.
+test('PDF 저장 바: 크기 축소는 모바일에만 걸린다(데스크톱 readability 값 보존)', () => {
+  const shrink = printCss.match(
+    /@media \(max-width: 639px\) \{\s*\n\s*\.pdf-print-actions \.gangi-primary-button,/
+  );
+  assert.ok(shrink, '축소 블록은 @media (max-width: 639px) 안에 있어야 한다');
+  assert.ok(
+    !/@media \(min-width: 640px\) \{\s*\n\s*\.pdf-print-actions \.gangi-(primary|secondary)-button/.test(
+      printCss
+    ),
+    'min-width:640px 에서 .pdf-print-actions 버튼 크기를 덮으면 안 된다'
+  );
+});

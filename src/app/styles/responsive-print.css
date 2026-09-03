@@ -2880,28 +2880,28 @@ html[data-reading-comfort="large"] .saju-mobile-story-detail-link {
 }
 
 /* 2026-09-03 — PDF 저장 화면(/saju/[slug]/premium/print) 상단 액션 바.
-   전역 `.gangi-primary-button/.gangi-secondary-button` 은 `width: 100%`(subpages.css)
-   + `min-height: 3.35rem / font-size: 1.05rem`(readability.css) 이라, 버튼 3개가
-   모바일에서 3줄로 쌓여 sticky 바 하나가 화면의 1/3 을 먹고 문서를 가렸다.
-   ⚠️ 두 파일 다 `@layer` 밖이라 Tailwind 유틸리티(`w-auto` 등)로는 못 이긴다 —
-   특이도가 더 높은 CSS 로만 덮인다. 이 바 안에서만 축소하고, 태블릿 이상에서는
-   원래 크기로 되돌린다.
-   실측(2026-09-03, 320~414px): 바 높이 278px → 107px, 가장 긴 “PDF로 저장” 이
-   320px 에서 필요 77px / 칸 85px 로 여유 8px. 이 값들을 키우면 다시 넘친다. */
+   전역 `.gangi-primary-button/.gangi-secondary-button` 이 `width: 100%`(subpages.css)
+   라 버튼 3개가 **모든 폭에서** 세 줄로 쌓였다(실측: 360px 297px · 1280px 229px).
+   sticky 바라 그만큼 리포트 본문을 가린다.
+   ⚠️ subpages.css·readability.css 둘 다 `@layer` 밖이라 Tailwind 유틸리티(`w-auto`)로는
+   못 이긴다 — 특이도가 더 높은 CSS 로만 덮인다.
+
+   폭 교정(width:auto)은 전 폭 공통, **크기 축소는 모바일에만** 적용한다.
+   readability.css 가 의도적으로 올린 값(min-height 3.35rem / font-size 1.05rem)은
+   데스크톱에서 그대로 살려야 하므로 여기서 건드리지 않는다.
+   실측(Pretendard, 2026-09-03): 바 높이 360px 297→105px · 1280px 229→106px,
+   가장 긴 “PDF로 저장” 이 320px 에서 필요 75px / 칸 85px. 아래 값을 키우면 다시 넘친다. */
 .pdf-print-actions .gangi-primary-button,
 .pdf-print-actions .gangi-secondary-button {
   width: auto;
-  min-height: 2.6rem;
-  padding-inline: 0.42rem;
-  font-size: 0.78rem;
   white-space: nowrap;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 639px) {
   .pdf-print-actions .gangi-primary-button,
   .pdf-print-actions .gangi-secondary-button {
-    min-height: 2.85rem;
-    padding-inline: 1rem;
-    font-size: 0.92rem;
+    min-height: 2.6rem;
+    padding-inline: 0.42rem;
+    font-size: 0.78rem;
   }
 }

@@ -5,6 +5,9 @@
 `/saju/[slug]/premium/print` 상단 sticky 바의 버튼 3개(PDF로 저장·인쇄·리포트로 돌아가기)가
 모바일에서 **세 줄로 쌓여** 바 하나가 화면의 1/3 을 먹고 리포트 본문을 가렸다.
 
+⚠️ **모바일만의 문제가 아니었다** — 리뷰 중 실측하니 **데스크톱(1280px)도 3줄**이었다
+(바 229px). 사용자는 모바일에서만 눈치챘을 뿐 버그 자체는 전 폭 공통이다.
+
 **원인은 이 컴포넌트가 아니라 전역 버튼 규칙이다.**
 `.gangi-primary-button / .gangi-secondary-button` 이 `width: 100%`(`subpages.css`) +
 `min-height: 3.35rem / font-size: 1.05rem`(`readability.css`) 라, 그냥 나열하면
@@ -25,14 +28,34 @@ flex-wrap 이 있든 없든 한 개가 한 줄을 통째로 차지한다.
   `min-height:2.6rem` / `padding-inline:.42rem` / `font-size:.78rem` / `nowrap`,
   `min-width:640px` 에서 원래 크기로 복귀.
 
-### 실측 (playwright, 320·360·390·414px)
-- 바 높이 **278px → 107px**, 설명은 320px 에서도 1줄.
-- 가장 긴 "PDF로 저장" 이 320px 에서 필요 **77px / 칸 85px** — 여유 8px.
-  (padding-inline 을 `.6rem` 로 뒀을 땐 여유가 2px 뿐이라 `.42rem` 으로 조였다.)
+### 실측 (playwright + 실제 본문 폰트 PretendardVariable)
+| 폭 | before | after |
+|---|---|---|
+| 360px | 297px · 3줄 | **105px · 1줄** |
+| 1280px | 229px · 3줄 | **106px · 1줄** |
+
+- 설명 문구는 320px 에서도 1줄.
+- 가장 긴 "PDF로 저장" 이 320px 에서 필요 **75px / 칸 85px**. `padding-inline` 을
+  `.6rem` 으로 뒀을 땐 여유가 2px 뿐이라 `.42rem` 으로 조였다. 폰트 폴백까지 확인 —
+  Pretendard 75px · Apple SD Gothic Neo 74px · serif 81px 로 최악값도 칸 안.
+
+### 리뷰에서 잡힌 것 (머지 전 수정)
+처음 구현은 축소 값을 `min-width: 640px` 쪽에도 넣어 **데스크톱 버튼까지**
+1.05rem→0.92rem, 3.35rem→2.85rem 으로 줄였다. 그 값은 `readability.css` 가 의도적으로
+올린 것이라 건드리면 안 된다. 폭 교정(`width:auto`)만 전 폭 공통으로 두고 **축소는
+`max-width: 639px` 전용**으로 옮겼다 — 데스크톱은 원래 크기로 1줄에 들어간다(실측 106px).
 
 ### 가드
-`src/components/report/report-print-actions.test.ts` — `grid-cols-3` 유지 + CSS 의
-`width: auto` override 존재를 단언. 둘 중 하나만 지워져도 3줄로 조용히 되돌아간다.
+`src/components/report/report-print-actions.test.ts` 3개 —
+`grid-cols-3` 유지 · CSS `width: auto` override 존재 · **축소가 모바일 전용인지**.
+셋 중 하나만 무너져도 조용히 되돌아간다.
+
+### 남은 판단거리
+이 저장소의 표준 버튼 나열 패턴은 `ActionCluster`(`app-action-cluster`) 이고,
+그건 **모바일에서 일부러 세로로 쌓는다**(`/sample-report` 의 `ReportKeepsakeSection` 이 그 예).
+이 바는 sticky 라 쌓이면 본문을 가려서 예외로 뒀지만, 전역 `width: 100%` 는 앞으로도
+"버튼 2개 이상 나란히" 마다 같은 우회를 요구한다. 기본값을 `width:auto` + 옵트인
+`w-full` 로 뒤집을지는 별도 판단.
 
 
 ## 2026-09-03 — staging 제외 가드가 **조용히 무력화돼 있던** 이유: 시스템 env 미노출
