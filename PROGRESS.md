@@ -1,5 +1,25 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — 가격 행 쪼개짐 **전수 조사·수정** (사용자 지시)
+
+/membership 을 고친 뒤 사용자가 "/pricing 도 똑같다, 전수조사해서 다 바꿔라" 라고 지시.
+`src/app`·`src/features`·`src/components` 를 훑어 **같은 구조 4곳**을 고쳤다.
+판별 기준: `flex`+`items-center` 한 행에 (텍스트 블록 `min-w-0 flex-1`) + (가격 형제)가
+있고 `flex-wrap` 이 없는 것.
+
+| 위치 | 무엇 | 조치 |
+|---|---|---|
+| `styles/subpages.css` `.gangi-list-link` + `gangi-ui.tsx` | **/pricing·/free 공용 상품 행** | CSS 에 `flex-wrap`, 가격 묶음을 `.gangi-list-price-group` 로 빼고 `@media (max-width:639px)` 에서 `width:100%` |
+| `saju/[slug]/page.tsx:887` | 사주 결과 '작은 풀이' 행 | `flex-wrap` + `gap-x/gap-y` |
+| `gangi-market.tsx:530` | 홈 '1:1 대화' 와이드 배너 | 같은 처리(여기선 제목이 **truncate 로 잘리던** 자리) |
+| `gangi-banner.tsx:241` | 공용 배너 가격칩 | `h-12 w-12` 고정 정사각 → `min-w-12 px-2.5 whitespace-nowrap`. "9,900원" 이 48px 에 안 들어갔다(사주 결과에서 한 번 터진 그 형태) |
+
+**안 고친 것**: `report-document.tsx` 의 `rp-next-card`(인쇄/PDF 레이아웃, 10~11px 고정 폰트라
+쪼개질 여지가 작고 줄바꿈이 페이지네이션을 흔든다). 조건은 충족하므로 목록에는 남긴다.
+
+검증: 390px/768px 를 나란히 렌더해 확인(390 에서 가격이 아랫줄, 768 은 종전 한 줄).
+
+
 ## 2026-09-03 — 경로별 방문을 자체 집계로 (GA4 동의 배너는 그대로 둔다)
 
 사용자 질문: "구글 동의 없애고 GA4 를 쓰는 게 낫지 않나?" → **아니다. 자체 집계에 경로를 얹는다.**

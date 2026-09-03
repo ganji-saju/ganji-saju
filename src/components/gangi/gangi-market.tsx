@@ -577,7 +577,8 @@ export function GangiServiceCardLink({
             </span>
           </span>
 
-          <span className="flex shrink-0 items-center gap-2">
+          {/* 2026-09-03 — 좁은 화면에서는 가격을 아랫줄로(제목·설명이 truncate 로 잘리던 원인). */}
+          <span className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
             <span
               className="inline-flex items-center rounded-[8px] px-2.5 py-1 text-[15px] font-black"
               style={{ background: 'var(--app-pink)', color: '#fff' }}

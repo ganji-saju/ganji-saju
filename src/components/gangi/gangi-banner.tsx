@@ -238,8 +238,11 @@ function BannerBody({
   return (
     <div className="flex items-center gap-3.5">
       {pricePill ? (
+        // 2026-09-03 — h-12 w-12 고정 정사각이라 "9,900원" 같은 실제 가격이 48px 안에 안 들어갔다.
+        //   사주 결과 화면에서 같은 형태로 한 번 터진 버그다(그쪽은 이미 고침).
+        //   최소 폭만 유지하고 내용에 따라 늘어나게 한다.
         <div
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-[14.4px] font-extrabold text-white"
+          className="grid h-12 min-w-12 shrink-0 place-items-center whitespace-nowrap rounded-[14px] px-2.5 text-[14.4px] font-extrabold text-white"
           style={{ background: 'var(--app-pink)' }}
           aria-hidden="true"
         >

@@ -131,7 +131,7 @@ export function GangiListLink({
         <em>{desc}</em>
       </span>
       {price ? (
-        <span className="flex shrink-0 flex-col items-end leading-tight">
+        <span className="gangi-list-price-group">
           {compareLabel ? (
             <span className="text-[0.68rem] font-bold text-[var(--app-copy-soft)] line-through">
               {compareLabel}

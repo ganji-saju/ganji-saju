@@ -737,8 +737,11 @@
 
 .gangi-list-link {
   display: flex;
+  /* 2026-09-03 — 좁은 화면에서 가격 묶음이 폭을 먹어 제목·설명이 쪼개졌다(사용자 제보).
+     가격은 아래 .gangi-list-price-group 이 640px 미만에서 통째로 다음 줄로 내려간다. */
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.5rem 0.875rem;
   border: 1px solid var(--app-line);
   border-radius: 1rem;
   background: #ffffff;
@@ -757,6 +760,22 @@
 .gangi-list-copy {
   min-width: 0;
   flex: 1;
+}
+
+/* 가격 묶음 — 좁은 화면에서는 제 줄을 차지해 오른쪽 정렬, sm 이상은 종전대로 한 줄. */
+.gangi-list-price-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1.15;
+}
+
+@media (max-width: 639px) {
+  .gangi-list-price-group {
+    width: 100%;
+    align-items: flex-end;
+  }
 }
 
 .gangi-list-copy strong {

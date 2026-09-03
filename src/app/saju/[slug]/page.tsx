@@ -884,7 +884,7 @@ export default async function SajuResultPage({ params, searchParams }: Props) {
                       product: pick.eventProduct,
                       from: 'result_small_picks',
                     }}
-                    className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
                     {/* 2026-07-19 — 가격 배지가 h-12 w-12 **고정 정사각**이라 글자가 박스를
                         벗어났다("49,000원"은 48px 안에 들어갈 수 없다). 전역 폰트 확대 이후
