@@ -1,5 +1,24 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — staging 제외 가드가 **조용히 무력화돼 있던** 이유: 시스템 env 미노출
+
+#780 으로 퍼널 기록 3곳에 `VERCEL_ENV != production` 가드를 넣었는데, **staging 에서 열람하니
+여전히 프로덕션 퍼널에 쌓였다.** 배포는 확실히 가드가 든 preview 빌드였다
+(`staging.ganjisaju.kr` → dpl_Ft77sU, commit 53c63027, target null, READY 22:16:33 →
+기록은 22:20:01~22:20:22).
+
+**단서**: 같은 시각 `site_visit_pages` 에도 행이 있었다. 즉 **방문 계측 필터도 같이 안 걸렸다.**
+두 필터가 동시에 실패했다면 공통 전제가 틀린 것 — 둘 다 `VERCEL_ENV` 를 본다.
+
+**원인**: Vercel 프로젝트의 **"Automatically expose System Environment Variables" 가 꺼져 있었다.**
+그래서 런타임에 `VERCEL_ENV` 가 undefined 였고, 가드는 그걸 '로컬'로 해석해 전부 기록했다.
+(사용자가 설정을 켰다. env 변경은 **재배포해야** 반영되므로 이 커밋으로 양쪽을 다시 배포한다.)
+
+**남길 것**: 이 계열 가드는 *조용히* 무력화된다 — 코드도 배포도 멀쩡해 보인다.
+`funnel-log.ts` 주석에 의존 관계를 명시했다. 앞으로 "환경별로 걸러진다" 는 가정을 세울 때는
+**한 번은 실제 데이터로 확인**할 것(오늘은 site_visit_pages 교차 확인이 단서였다).
+
+
 ## 2026-09-03 — staging 트래픽이 프로덕션 퍼널에 섞이던 것 차단
 
 staging 을 main 과 동기화(20커밋)하면서 드러난 문제. **staging 은 프로덕션과 같은 Supabase 를

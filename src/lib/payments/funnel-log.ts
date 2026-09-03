@@ -88,6 +88,13 @@ export function formatPgFailReason(
  *
  * 판정은 `/lib/analytics/visit-filters` 와 같다: VERCEL_ENV 가 있고 'production' 이 아니면 제외.
  * 로컬(VERCEL_ENV 없음)은 그대로 기록한다 — 개발 중 퍼널 확인을 막지 않기 위해서다.
+ *
+ * ⚠️ **이 가드는 Vercel 프로젝트 설정 "Automatically expose System Environment Variables"
+ *   에 의존한다.** 그게 꺼져 있으면 VERCEL_ENV 가 undefined 라 여기서 '로컬'로 판단하고
+ *   **staging 트래픽을 그대로 기록한다.** 2026-09-03 에 실제로 그 상태였고, 배포·코드가
+ *   멀쩡한데 staging 열람이 프로덕션 퍼널에 쌓여서 30분을 헤맸다(같은 이유로
+ *   visit-filters 의 deploymentEnv 필터도 동시에 무력화돼 있었다 — 그게 단서였다).
+ *   env 설정을 바꾼 뒤에는 **재배포해야** 반영된다.
  */
 function isNonProductionDeployment(): boolean {
   const env = String(process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV ?? '').trim();
