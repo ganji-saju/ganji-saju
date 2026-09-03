@@ -298,7 +298,7 @@ export default async function MembershipPage({
                   <Link
                     key={product.slug}
                     href={product.href}
-                    className="flex items-center gap-3 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] border border-[var(--app-line)] bg-white p-3.5"
                   >
                     <ZodiacChip
                       kind={TASTE_ZODIACS[index % TASTE_ZODIACS.length]}
@@ -312,7 +312,11 @@ export default async function MembershipPage({
                         {product.question}
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    {/* 2026-09-03 사용자 제보 — 아이콘·제목·설명·가격을 한 줄에 다 넣으니
+                        가격 묶음(9,900원 + 3,300원)이 150px 을 먹어 제목이 "오늘 자세히 / 보기"
+                        로 쪼개지고 설명이 3줄로 흘렀다. 좁은 화면에서는 가격을 **아랫줄**로
+                        내려 글이 폭을 다 쓰게 한다(sm 이상은 종전대로 한 줄). */}
+                    <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto">
                       {compareLabel ? (
                         <span className="text-[12px] font-bold text-[var(--app-copy-soft)] line-through">
                           {compareLabel}
@@ -351,7 +355,7 @@ export default async function MembershipPage({
                   <Link
                     key={report.slug}
                     href={report.href}
-                    className="flex items-center gap-3 rounded-[14px] border bg-white p-3.5"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] border bg-white p-3.5"
                     style={{
                       borderColor:
                         focus === report.slug ? 'var(--app-pink-line)' : 'var(--app-line)',
@@ -369,7 +373,11 @@ export default async function MembershipPage({
                         {report.summary}
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    {/* 2026-09-03 사용자 제보 — 아이콘·제목·설명·가격을 한 줄에 다 넣으니
+                        가격 묶음(9,900원 + 3,300원)이 150px 을 먹어 제목이 "오늘 자세히 / 보기"
+                        로 쪼개지고 설명이 3줄로 흘렀다. 좁은 화면에서는 가격을 **아랫줄**로
+                        내려 글이 폭을 다 쓰게 한다(sm 이상은 종전대로 한 줄). */}
+                    <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto">
                       {compareLabel ? (
                         <span className="text-[12px] font-bold text-[var(--app-copy-soft)] line-through">
                           {compareLabel}
