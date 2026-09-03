@@ -10,6 +10,7 @@ import { MetricsLineChart, type MetricPoint } from '@/components/admin/metrics-l
 import { MetricsPeriodTable } from '@/components/admin/metrics-period-table';
 import { AdminPeriodPicker } from '@/components/admin/admin-period-picker';
 import { resolveAdminPeriod } from '@/lib/admin/metric-periods';
+import type { PagePathEntry } from '@/lib/admin/page-path-stats';
 import type { RefundBreakdown } from '@/lib/admin/refund-breakdown';
 
 interface ApiResponse {
@@ -18,6 +19,8 @@ interface ApiResponse {
   external?: ExternalAnalyticsSnapshot;
   /** 2026-08-26 — 환불 건별 원 결제일(해설용). 집계는 snapshot 이 정본. */
   refunds?: RefundBreakdown;
+  /** 2026-09-03 — 자체 경로별 방문(migration 078). GA4 대신 여기서 본다. */
+  pagePaths?: PagePathEntry[];
   error?: string;
 }
 
@@ -474,6 +477,47 @@ function ExternalComparison({
   );
 }
 
+// 2026-09-03 — 경로별 방문(자체 집계). GA4 를 쓰지 않는 이유는 page-path-stats.ts 주석 참조:
+//   GA4 는 봇을 못 거르고(체류 0.46초짜리 /guide 614세션을 1위로 보고했다) 동의 게이트로
+//   실제의 1/45만 잡는다. 이 표는 봇·내부·프리뷰를 걸러낸 값이다.
+function PagePathTable({ paths }: { paths: PagePathEntry[] }) {
+  if (paths.length === 0) return null;
+  return (
+    <section className="rounded-[16px] border border-[var(--app-line)] bg-white p-4">
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <h3 className="text-[16px] font-extrabold text-[var(--app-ink)]">경로별 방문 (자체 집계)</h3>
+          <p className="mt-0.5 text-[11.5px] text-[var(--app-copy-muted)]">
+            봇·내부·프리뷰 제외. 1인당 조회가 1에 가까우면 한 번 보고 떠난 화면이다.
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[420px] text-[13px]">
+          <thead>
+            <tr className="text-left text-[11.5px] text-[var(--app-copy-soft)]">
+              <th className="pb-1.5 font-semibold">경로</th>
+              <th className="pb-1.5 text-right font-semibold">순방문</th>
+              <th className="pb-1.5 text-right font-semibold">조회</th>
+              <th className="pb-1.5 text-right font-semibold">1인당</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--app-line)]">
+            {paths.map((row) => (
+              <tr key={row.path}>
+                <td className="py-1.5 pr-2 font-mono text-[11.5px] text-[var(--app-ink)]">{row.path}</td>
+                <td className="py-1.5 text-right font-extrabold">{formatNum(row.visitors)}</td>
+                <td className="py-1.5 text-right">{formatNum(row.views)}</td>
+                <td className="py-1.5 text-right text-[var(--app-copy-muted)]">{row.viewsPerVisitor}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function RefundBreakdownTable({ refunds }: { refunds: RefundBreakdown | null }) {
   if (!refunds || refunds.items.length === 0) return null;
 
@@ -544,6 +588,7 @@ export function AnalyticsDashboard() {
   const visibleDaily = (snap?.daily ?? []).filter((d) => d.date >= VISIT_TRACKING_START_KEY);
   const [external, setExternal] = useState<ExternalAnalyticsSnapshot | null>(null);
   const [refunds, setRefunds] = useState<RefundBreakdown | null>(null);
+  const [pagePaths, setPagePaths] = useState<PagePathEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -568,6 +613,7 @@ export function AnalyticsDashboard() {
           setSnap(res.snapshot);
           setExternal(res.external ?? null);
           setRefunds(res.refunds ?? null);
+          setPagePaths(res.pagePaths ?? []);
           setError(null);
         } else if (initial || !loadedOnce) {
           setError(res.error ?? '불러오기 실패');
@@ -674,6 +720,7 @@ export function AnalyticsDashboard() {
           <MetricsPeriodTable rows={visibleDaily} title="날짜별 상세" />
 
           {/* 2026-08-26 — 환불 내역(건별 원 결제일). '오늘 매출 990인데 환불 9,900' 제보의 답. */}
+          <PagePathTable paths={pagePaths} />
           <RefundBreakdownTable refunds={refunds} />
 
           {/* 나머지 그래프 */}

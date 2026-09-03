@@ -130,6 +130,23 @@ export async function POST(req: NextRequest) {
       p_utm_medium: utmMedium,
       p_utm_campaign: utmCampaign,
     });
+    // 2026-09-03 (migration 078) — 경로별 방문도 남긴다. 종전엔 그날 **첫 진입 경로**만
+    //   저장하고 이후 이동은 page_views 로 뭉개서, "결과를 보고 어디로 갔나"를 자체
+    //   데이터로 답할 수 없었다(그 질문을 GA4 에 물었다가 봇 유입을 1위로 오독했다).
+    //   ⚠️ 실패해도 무시한다 — 순방문 집계(위 RPC)가 이것 때문에 막히면 안 된다.
+    //   ⚠️ 078 미적용이면 함수가 없어 에러가 나는데, 그것도 조용히 넘긴다(핑은 계속 산다).
+    void service
+      .rpc('track_site_visit_page', {
+        p_date_key: dateKey,
+        p_path: path,
+        p_visitor_hash: visitorHash,
+      })
+      .then(({ error: pageError }) => {
+        if (pageError && !isMissingRpc(pageError)) {
+          console.error('[visit] page rpc failed:', pageError.message);
+        }
+      });
+
     if (!error) return NextResponse.json({ ok: true });
     if (!isMissingRpc(error)) {
       console.error('[visit] rpc failed:', error.message);
