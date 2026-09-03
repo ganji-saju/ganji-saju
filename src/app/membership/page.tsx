@@ -373,10 +373,8 @@ export default async function MembershipPage({
                         {report.summary}
                       </p>
                     </div>
-                    {/* 2026-09-03 사용자 제보 — 아이콘·제목·설명·가격을 한 줄에 다 넣으니
-                        가격 묶음(9,900원 + 3,300원)이 150px 을 먹어 제목이 "오늘 자세히 / 보기"
-                        로 쪼개지고 설명이 3줄로 흘렀다. 좁은 화면에서는 가격을 **아랫줄**로
-                        내려 글이 폭을 다 쓰게 한다(sm 이상은 종전대로 한 줄). */}
+                    {/* 위 소액 풀이 카드와 같은 이유로 좁은 화면에서는 가격을 아랫줄로.
+                        여기는 가격이 더 길다(49,000원 취소선 + 35,000원). */}
                     <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto">
                       {compareLabel ? (
                         <span className="text-[12px] font-bold text-[var(--app-copy-soft)] line-through">
