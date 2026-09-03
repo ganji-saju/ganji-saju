@@ -1,5 +1,40 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — PDF 저장 화면: 액션 바가 모바일에서 본문 1/3 을 가리던 문제
+
+`/saju/[slug]/premium/print` 상단 sticky 바의 버튼 3개(PDF로 저장·인쇄·리포트로 돌아가기)가
+모바일에서 **세 줄로 쌓여** 바 하나가 화면의 1/3 을 먹고 리포트 본문을 가렸다.
+
+**원인은 이 컴포넌트가 아니라 전역 버튼 규칙이다.**
+`.gangi-primary-button / .gangi-secondary-button` 이 `width: 100%`(`subpages.css`) +
+`min-height: 3.35rem / font-size: 1.05rem`(`readability.css`) 라, 그냥 나열하면
+flex-wrap 이 있든 없든 한 개가 한 줄을 통째로 차지한다.
+
+⚠️ **두 파일 다 `@layer` 밖이다** — 레이어 없는 CSS 는 Tailwind 의 `@layer utilities`
+를 이긴다. 그래서 `w-auto` 같은 유틸리티를 붙여도 폭이 안 잡힌다. 폭 override 는
+반드시 특이도가 더 높은 CSS 로 써야 한다(`.pdf-print-actions .gangi-*-button`).
+(기존 메모 [[project_css-layer-beats-specificity]] 의 **반대 방향** 사례다: 거기서는
+`components.css` 가 레이어 안이라 유틸리티가 이겼고, 여기서는 레이어 밖이라 CSS 가 이긴다.
+"레이어 소속부터 확인" 이라는 결론만 같다.)
+
+### 고친 것
+- `report-print-actions.tsx` — 버튼 묶음을 `grid grid-cols-3`(모바일) → `sm:flex`.
+  모바일에선 아이콘 숨김, "리포트로 돌아가기" → "돌아가기"(`리포트로` 만 `sm:inline`).
+  바 자체도 `p-2.5`·`gap-2`·설명 `text-[0.72rem]` 로 축소, 설명 문구도 한 줄로 단축.
+- `responsive-print.css` — `.pdf-print-actions` 안쪽 버튼만 `width:auto` /
+  `min-height:2.6rem` / `padding-inline:.42rem` / `font-size:.78rem` / `nowrap`,
+  `min-width:640px` 에서 원래 크기로 복귀.
+
+### 실측 (playwright, 320·360·390·414px)
+- 바 높이 **278px → 107px**, 설명은 320px 에서도 1줄.
+- 가장 긴 "PDF로 저장" 이 320px 에서 필요 **77px / 칸 85px** — 여유 8px.
+  (padding-inline 을 `.6rem` 로 뒀을 땐 여유가 2px 뿐이라 `.42rem` 으로 조였다.)
+
+### 가드
+`src/components/report/report-print-actions.test.ts` — `grid-cols-3` 유지 + CSS 의
+`width: auto` override 존재를 단언. 둘 중 하나만 지워져도 3줄로 조용히 되돌아간다.
+
+
 ## 2026-09-03 — staging 제외 가드가 **조용히 무력화돼 있던** 이유: 시스템 env 미노출
 
 #780 으로 퍼널 기록 3곳에 `VERCEL_ENV != production` 가드를 넣었는데, **staging 에서 열람하니
