@@ -179,6 +179,10 @@ export default async function PricingPage() {
                   ))}
                 </div>
                 {(() => {
+                  // 2026-09-03 — `w-full` 필수. 전역 버튼에서 `width: 100%` 를 뺐고
+                  //   이 CTA 의 부모(.gangi-card-panel)는 블록이라, 안 붙이면 결제 버튼이
+                  //   글자 폭(~102px)으로 쪼그라든다. 그리드/flex-column 안 버튼들과 달리
+                  //   여기만 stretch 가 안 걸린다.
                   // 2026-05-16 — 활성 멤버십 plan 이면 결제 link 대신 결제내역 link.
                   const subscriptionPlanId =
                     plan.slug === 'premium'
@@ -193,7 +197,7 @@ export default async function PricingPage() {
                     return (
                       <Link
                         href="/my/billing"
-                        className={plan.slug === 'premium' ? 'gangi-primary-button mt-4' : 'gangi-secondary-button mt-4'}
+                        className={plan.slug === 'premium' ? 'gangi-primary-button mt-4 w-full' : 'gangi-secondary-button mt-4 w-full'}
                       >
                         ✓ 이용 중 · 결제 내역
                       </Link>
@@ -202,7 +206,7 @@ export default async function PricingPage() {
                   return (
                     <Link
                       href="/membership/checkout?plan=premium&from=pricing"
-                      className="gangi-primary-button mt-4"
+                      className="gangi-primary-button mt-4 w-full"
                     >
                       프리미엄 보기
                     </Link>
