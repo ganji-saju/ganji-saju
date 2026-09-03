@@ -720,8 +720,12 @@ export function PaymentFunnelDashboard() {
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 데이터: `payment_funnel_events` 테이블 (PR B1 신설)</li>
+              {/* audit-mockup: intentional — 퍼널 **단계 이름**이지 사용자 안내 문구가 아니다.
+                  감사 스크립트가 "로그인 후"로 시작하는 하드코딩 안내를 찾는데, 여기 셋은
+                  payment_funnel_events 의 stage 라벨(migration 077)이라 분기 대상이 아니다. */}
               <li>
                 • 2026-09-03 앞 칸 추가: 페이월 노출 → <b>결제화면 도달</b> → <b>로그인 벽</b> →{' '}
+                {/* audit-mockup: intentional */}
                 <b>로그인 후 복귀</b> → prepare. 그전엔 prepare 부터라 &ldquo;결제화면까지 왔나&rdquo;와
                 &ldquo;로그인에서 튕겼나&rdquo;를 구분할 수 없었다
               </li>
