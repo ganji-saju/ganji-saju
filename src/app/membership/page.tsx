@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { SafetyNotice } from '@/components/common/safety-notice';
 import { GangiPageHeader } from '@/components/gangi/gangi-ui';
+import { ReviewList } from '@/components/review/review-list';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import SiteHeader from '@/features/shared-navigation/site-header';
@@ -260,24 +261,20 @@ export default async function MembershipPage({
             </article>
           ) : null}
 
-          {/* §4 후기 한 줄 — pink-soft 카드 */}
-          <article
-            className="rounded-[14px] border p-4"
-            style={{
-              background: 'var(--app-pink-soft)',
-              borderColor: 'var(--app-pink-line)',
-            }}
-          >
-            <div className="flex items-center gap-1.5 text-[13.8px] font-extrabold text-[var(--app-pink-strong)]">
-              <span>★★★★★</span>
-              <span className="text-[var(--app-ink)]">4.8</span>
-              <span className="font-medium text-[var(--app-copy-soft)]">· 멤버 후기</span>
-            </div>
-            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--app-copy)]">
-              &ldquo;매일 아침 가볍게 한 줄 보고 출근해요. 광고 없으니 진짜 깔끔.&rdquo;
-            </p>
-            <div className="mt-1.5 text-[12.6px] text-[var(--app-copy-soft)]">— 닭띠 · 1991</div>
-          </article>
+          {/* §4 후기 — **실제 승인 후기만** 노출한다.
+              2026-09-03 사용자 지적으로 걷어낸 것: 여기 "★★★★★ 4.8 · 멤버 후기 / 닭띠 · 1991"
+              이 **코드에 박힌 가짜**였다. 게다가 1991년은 닭띠가 아니라 **양띠(신미)** 다 —
+              우리 엔진 자신이 그렇게 말한다(deriveZodiacSlug(1991)==='goat',
+              free-content-pages "1991년생 양띠"). 사주 사이트에서 띠가 틀린 후기는
+              아는 사람이 바로 알아본다.
+              ReviewList 는 0건이면 가짜 대신 empty state 를 낸다("가짜 후기 절대 금지" 스펙). */}
+          <ReviewList
+            limit={3}
+            kicker="멤버 후기"
+            title="먼저 쓴 분들의 이야기"
+            emptyTitle="아직 공개된 후기가 없어요"
+            emptyDescription="이용하신 분들의 솔직한 이야기를 받고 있어요. 첫 후기가 등록되면 이 자리에 표시됩니다."
+          />
 
           {/* §5 소액 풀이 — TASTE_PRODUCTS */}
           <section>
