@@ -3,6 +3,7 @@
 // 데이터·라우팅·결제 위젯 무수정.
 import Link from 'next/link';
 import { after } from 'next/server';
+import { headers } from 'next/headers';
 import type { Metadata } from 'next';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
@@ -23,6 +24,7 @@ import {
 } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
+import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
 import { getLifetimeReportEntitlement } from '@/lib/report-entitlements';
@@ -377,9 +379,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   와 "왔는데 결제를 안 눌렀나"를 구분할 수 없었다. 실측(2026-09-03)으로 페이월 노출
   //   271~800/일 · 체크아웃 도달 1~5명/일 이 드러난 뒤 이 칸을 세운다.
   //   ⚠️ after() — 렌더 경로에서 await 하면 결제 화면이 그만큼 느려진다.
-  //   payable=false 는 결제 버튼이 없는 상태(결과 먼저/이미 구매/판매중단)로 도달한 경우다.
+  //
+  //   blocked 는 결제 버튼 없이 도달한 사유다(결과 먼저 / 이미 구매 / 멤버십 보유).
   //   이걸 안 남기면 "도달했는데 결제 안 함"에 게이트 화면이 섞여 전환율이 거짓으로 낮아진다.
-  // 결제 버튼 없이 도달한 경우의 사유. 화면 분기(469/484/505/526)와 같은 순서로 판정한다.
+  //   ※ 판매중단 상품은 이 목록에 없다 — 이 화면은 금액과 결제 버튼을 정상 렌더하고,
+  //     차단은 prepare API 에서만 일어난다(prepare_blocked/*_retired).
+  //   화면 분기와 같은 순서로 판정한다.
   const funnelBlocked = needsResultFirst
     ? ('needs_result' as const)
     : alreadyPurchasedHref
@@ -387,7 +392,15 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       : activeMembershipPlan
         ? ('active_membership' as const)
         : null;
-  if (paymentPackage) {
+  // 2026-09-03 — robots 는 이 경로를 disallow 하지만 지키지 않는 크롤러가 남는다.
+  //   분모가 봇으로 부풀면 "결제화면까지 왔는데 안 산다"는 결론 자체가 오염된다.
+  //   /api/payments/funnel · /api/visit 과 **같은 기준**으로 사람만 센다.
+  const funnelSkipReason = shouldSkipVisitAnalytics({
+    path: '/membership/checkout',
+    userAgent: (await headers()).get('user-agent'),
+    deploymentEnv: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
+  });
+  if (paymentPackage && !funnelSkipReason) {
     after(() => {
       logCheckoutStage({
         stage: 'checkout_viewed',
