@@ -144,3 +144,31 @@ test('buildPaymentFunnelSnapshot: 결제액과 환불액을 함께 싣는다(gro
   // 원 결제가 기간 안이면 순액만 깎이고 '기간 밖' 경고 금액은 0.
   assert.equal(snap.refunds.outsideWindowWon, 0);
 });
+
+// 2026-09-03 (migration 077) — 새 단계가 **집계에 실제로 들어오는지**.
+//   payment-funnel-stats.ts 의 `if (!STAGES.includes(stage)) continue` 가 모르는 stage 를
+//   조용히 버린다. 유니온·마이그레이션만 고치고 STAGES 를 빠뜨리면 DB 엔 쌓이는데 화면은 0 —
+//   "기록이 안 된다"고 오진하고 로깅 코드를 다시 파게 된다(paywall_viewed 가 실제로 그랬다).
+test('buildPaymentFunnelSnapshot: 페이월→체크아웃→로그인 벽 단계가 집계에 실린다', async () => {
+  const snap = await buildPaymentFunnelSnapshot(
+    fakeFunnelService(
+      events([
+        { stage: 'paywall_viewed', n: 40 },
+        { stage: 'checkout_viewed', n: 9 },
+        { stage: 'login_required', n: 6 },
+        { stage: 'login_returned', n: 2 },
+        { stage: 'prepare_attempt', n: 3 },
+        { stage: 'confirm_success', n: 1 },
+      ])
+    ),
+    { windowDays: 7 }
+  );
+  assert.equal(snap.totals.counts.paywall_viewed, 40);
+  assert.equal(snap.totals.counts.checkout_viewed, 9);
+  assert.equal(snap.totals.counts.login_required, 6);
+  assert.equal(snap.totals.counts.login_returned, 2);
+  // 로그인 벽 손실 = 벽에 튕긴 사람 − 돌아온 사람. 이 값이 이 계측을 넣은 이유다.
+  assert.equal(snap.totals.counts.login_required - snap.totals.counts.login_returned, 4);
+  // 기존 비율 계약은 그대로(분모는 여전히 prepare_attempt).
+  assert.ok(Math.abs(snap.totals.overallConversionRate! - 1 / 3) < 1e-9);
+});

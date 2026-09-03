@@ -18,6 +18,10 @@ interface ApiResponse {
 }
 
 const STAGE_LABEL = {
+  paywall_viewed: '페이월 노출',
+  checkout_viewed: '결제화면 도달',
+  login_required: '로그인 벽',
+  login_returned: '로그인 후 복귀',
   prepare_attempt: 'prepare 진입',
   prepare_blocked: 'prepare 차단',
   prepare_ready: 'prepare 준비 완료',
@@ -92,6 +96,10 @@ function Sparkline({ daily, stage, color }: { daily: PaymentFunnelDailyPoint[]; 
 }
 
 const STAGE_COLOR: Record<keyof typeof STAGE_LABEL, string> = {
+  paywall_viewed: 'var(--app-copy-muted)',
+  checkout_viewed: 'var(--app-gold)',
+  login_required: 'var(--app-coral)',
+  login_returned: 'var(--app-jade)',
   prepare_attempt: 'var(--app-pink)',
   prepare_blocked: 'var(--app-copy-soft)',
   prepare_ready: 'var(--app-indigo)',
@@ -100,7 +108,12 @@ const STAGE_COLOR: Record<keyof typeof STAGE_LABEL, string> = {
   confirm_failed: 'var(--app-coral)',
 };
 
+// 사용자가 실제로 지나가는 순서. 이 순서가 곧 "어디서 죽는지"를 읽는 순서다.
 const STAGE_ORDER: Array<keyof typeof STAGE_LABEL> = [
+  'paywall_viewed',
+  'checkout_viewed',
+  'login_required',
+  'login_returned',
   'prepare_attempt',
   'prepare_blocked',
   'prepare_ready',
@@ -707,6 +720,19 @@ export function PaymentFunnelDashboard() {
               style={{ wordBreak: 'keep-all' }}
             >
               <li>• 데이터: `payment_funnel_events` 테이블 (PR B1 신설)</li>
+              <li>
+                • 2026-09-03 앞 칸 추가: 페이월 노출 → <b>결제화면 도달</b> → <b>로그인 벽</b> →{' '}
+                <b>로그인 후 복귀</b> → prepare. 그전엔 prepare 부터라 &ldquo;결제화면까지 왔나&rdquo;와
+                &ldquo;로그인에서 튕겼나&rdquo;를 구분할 수 없었다
+              </li>
+              <li>
+                • <b>로그인 벽 손실 = 로그인 벽 − 로그인 후 복귀.</b> 결제 의사를 밝히고 로그인
+                화면으로 갔다가 돌아오지 않은 사람 수다
+              </li>
+              <li>
+                • 결제화면 도달은 <b>사람 수가 아니라 렌더 수</b>다(새로고침·뒤로가기·결제 실패
+                복귀가 각각 1행). 게이트 화면으로 도달한 경우는 `metadata.blocked` 에 사유가 남는다
+              </li>
               <li>• prepare 단계: POST /api/payments/prepare 진입 / 차단 / 준비 완료</li>
               <li>• confirm 단계: POST /api/payments/confirm 진입 / 성공 / 실패</li>
               <li>• 전체 전환 = confirm_success / prepare_attempt</li>

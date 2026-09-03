@@ -12,12 +12,34 @@ import { createServiceClient, hasSupabaseServiceEnv } from '@/lib/supabase/serve
 export type PaymentFunnelStage =
   /** 페이월이 사용자 화면에 렌더된 순간(migration 073). 퍼널의 분모. */
   | 'paywall_viewed'
+  // 2026-09-03 (migration 077) — 퍼널 가운데 두 칸이 비어 있었다. 페이월 다음이 바로
+  //   prepare_attempt 였는데, 그 사이 **결제화면 도달**과 **로그인 벽**이 있다.
+  //   특히 로그인 벽은 클라이언트가 prepare 를 부르지 않고 /login 으로 보내서
+  //   흔적이 0이었다 — "어디서 죽는지" 를 답할 수 없던 이유.
+  /** 결제 화면(/membership/checkout)이 렌더된 순간. */
+  | 'checkout_viewed'
+  /** 결제 버튼을 눌렀지만 미로그인이라 /login 으로 튕긴 순간(= 결제 의사 표명). */
+  | 'login_required'
+  /** 로그인을 마치고 결제 화면으로 돌아온 순간. login_required 와의 차이가 곧 손실. */
+  | 'login_returned'
   | 'prepare_attempt'
   | 'prepare_blocked'
   | 'prepare_ready'
   | 'confirm_attempt'
   | 'confirm_success'
   | 'confirm_failed';
+
+/**
+ * 브라우저가 직접 기록할 수 있는 단계 — **이 목록 밖은 서버만 만든다.**
+ * 위조 가능한 입력이라서다: confirm_success 를 클라이언트가 심을 수 있으면 매출 지표가
+ * 통째로 거짓말이 된다. login_required 만 예외인 이유는 그 순간을 서버가 볼 수 없기 때문이다
+ * (클라이언트가 prepare 를 부르지 않고 /login 으로 이동한다).
+ */
+export const CLIENT_EMITTABLE_STAGES: readonly PaymentFunnelStage[] = ['login_required'] as const;
+
+export function isClientEmittableStage(value: unknown): value is PaymentFunnelStage {
+  return typeof value === 'string' && CLIENT_EMITTABLE_STAGES.includes(value as PaymentFunnelStage);
+}
 
 export interface PaymentFunnelEventInput {
   stage: PaymentFunnelStage;
@@ -92,6 +114,50 @@ export async function logPaymentFunnelEvent(
  *
  * ⚠️ 호출부는 반드시 `after()` 로 감쌀 것 — 렌더 경로에서 await 하면 응답이 그만큼 늦는다.
  */
+/**
+ * 2026-09-03 — 결제 화면 도달(checkout_viewed) · 로그인 후 복귀(login_returned) 기록.
+ *   서버 컴포넌트에서 after() 로 부른다 — 렌더 경로에서 await 하면 화면이 그만큼 늦어진다.
+ *   logPaywallImpression 과 같은 방식(service 클라이언트, 실패는 로그만).
+ */
+export async function logCheckoutStage(input: {
+  stage: Extract<PaymentFunnelStage, 'checkout_viewed' | 'login_returned'>;
+  packageId: string | null;
+  /** 어떤 상품 화면인지 — product param(단품) 또는 bundle/plan id. */
+  product?: string | null;
+  slug?: string | null;
+  /** 결제화면에 어디서 왔는지(from param). 페이월 CTA 별 성과를 가른다. */
+  from?: string | null;
+  userId?: string | null;
+  /**
+   * 결제 버튼이 없는 상태로 도달했다면 그 사유. 눌릴 수 있으면 null.
+   * 'needs_result'(결과 먼저) · 'already_purchased' · 'active_membership'.
+   * 이걸 안 남기면 "도달했는데 결제 안 함"에 게이트 화면이 섞여 전환율이 거짓으로 낮아진다.
+   */
+  blocked?: 'needs_result' | 'already_purchased' | 'active_membership' | null;
+}): Promise<void> {
+  if (!hasSupabaseServiceEnv) return;
+  try {
+    const client = await createServiceClient();
+    const { error } = await client.from('payment_funnel_events').insert({
+      user_id: input.userId ?? null,
+      stage: input.stage satisfies PaymentFunnelStage,
+      package_id: input.packageId,
+      metadata: {
+        product: input.product ?? null,
+        slug: input.slug ?? null,
+        from: input.from ?? null,
+        blocked: input.blocked ?? null,
+      },
+    });
+    if (error) {
+      // 2026-09-03 — migration 077 미적용이면 stage CHECK 제약에 걸린다. 원인을 남긴다.
+      console.error(`[funnel-log] ${input.stage} insert failed:`, error.message);
+    }
+  } catch (err) {
+    console.error(`[funnel-log] ${input.stage} unexpected failure:`, err);
+  }
+}
+
 export async function logPaywallImpression(input: {
   packageId: string;
   /** 어떤 화면의 페이월인지. 예: 'saju-result' */

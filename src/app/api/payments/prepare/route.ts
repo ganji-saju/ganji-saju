@@ -220,11 +220,15 @@ export async function POST(req: NextRequest) {
       packageId,
       reason: 'unauthenticated',
     });
+    // 2026-09-03 — 로그인 후 복귀를 결제화면이 셀 수 있게 표식을 붙인다(migration 077).
+    //   클라이언트(toss-membership-checkout.tsx)도 같은 표식을 붙인다 — 한쪽만 붙이면
+    //   로그인 경로에 따라 login_returned 가 절반만 잡힌다.
+    const backTo = `${checkoutPath}${checkoutPath.includes('?') ? '&' : '?'}returned=1`;
     return NextResponse.json(
       {
         ok: false,
         authenticated: false,
-        loginHref: `/login?next=${encodeURIComponent(checkoutPath)}`,
+        loginHref: `/login?next=${encodeURIComponent(backTo)}`,
       },
       { status: 401 }
     );

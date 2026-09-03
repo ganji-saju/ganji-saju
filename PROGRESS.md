@@ -1,5 +1,39 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — 퍼널 가운데 빈 칸 3개 채움 (checkout_viewed · login_required · login_returned)
+
+"왜 아무도 결제를 안 하나"를 조사하다 **퍼널로는 답할 수 없다**는 걸 확인하고 넣은 계측.
+
+**무엇이 안 보였나**: 기록이 페이월 노출 다음 바로 `prepare_attempt` 였다. 그 사이의
+결제화면 도달과 로그인 벽이 통째로 없었고, 특히 결제 버튼을 눌러도 미로그인이면
+클라이언트가 `/login` 으로 보내며 **prepare 를 아예 호출하지 않아**(toss-membership-checkout.tsx)
+결제 의사를 밝힌 사람이 흔적 0으로 사라졌다.
+
+**이제**: `paywall_viewed → checkout_viewed → login_required → login_returned → prepare_attempt
+→ prepare_ready → confirm_attempt → confirm_success/failed`.
+**로그인 벽 손실 = login_required − login_returned** 가 곧 잃은 사람 수다.
+
+- ⚠️ **migration 077 수동 적용이 배포의 전제.** 미적용 상태로 배포하면 새 stage insert 가
+  CHECK 제약 위반으로 거부되는데 `funnel-log` 가 에러를 console 로만 삼켜 **화면엔 그냥 0건**으로
+  보인다(기존 6단계는 정상이라 장애로 인지되지 않는다).
+- 표식(`returned=1`)은 **클라이언트와 서버 두 곳**에서 붙인다(prepare 401 의 loginHref 포함) —
+  한쪽만 붙이면 로그인 경로에 따라 login_returned 가 절반만 잡힌다. login/OAuth 왕복은
+  next 쿼리를 원문 보존하므로(구글·카카오·이메일 전부) 표식이 살아 돌아온다.
+- `login_required` 는 **결제 버튼 경로 한 곳에서만** 찍는다. 오늘자세히·달력의 로그인 벽은
+  '이용권 소비'지 결제 시작이 아니라 섞으면 지표가 흐려진다. 클라 stale 세션으로 prepare 까지
+  갔다 401 나는 경로는 서버가 이미 `prepare_blocked/unauthenticated` 를 남기므로 제외(이중계상 방지).
+- 클라 창구 `POST /api/payments/funnel` 은 **위조 가능 입력**으로 취급: stage 화이트리스트
+  (`login_required` 하나) · amount 미수신 · `/api/visit` 과 같은 봇/비프로덕션/내부IP 필터 · 실패해도 200.
+- `paywall_viewed` 는 2026-08-12부터 **수집만 되고 totals 에서 빠져 있었다**(STAGES 밖 + guard 앞 continue).
+  이번에 함께 세운다 — 그래서 퍼널이 처음으로 끝에서 끝까지 이어진다.
+- 회귀 가드: SQL CHECK 목록 ↔ TS 유니온 일치 · 새 단계가 집계 STAGES/대시보드 라벨·순서에 모두
+  실렸는지 · 클라 화이트리스트가 login_required 뿐인지 · 로그인 이동을 막지 않는지(await 금지) ·
+  집계 런타임 단언(counts 에 실제로 들어오는지).
+- 안 한 것: `analytics-rollup`(metrics_daily 일별)은 새 stage 를 세지 않는다 — 넣으려면
+  migration + 컬럼 + 백필 세트라 별건. /admin/analytics 와 /admin/payment-funnel 이 서로 다른
+  퍼널을 말하게 되므로, 필요해지면 그때 맞춘다.
+
+
 ## 2026-09-02 — /admin/analytics GA4 오류 (내가 만든 회귀, #765)
 
 증상: 누적 지표 분석 화면에서 GA4 소스가 오류. **원인은 2026-09-01 달력 기간 작업(#765)이다.**
