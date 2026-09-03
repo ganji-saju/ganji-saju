@@ -74,3 +74,24 @@ test('퍼널 단계: 로그인 벽 기록이 결제 이동을 막지 않는다(a
   );
   assert.ok(block.includes('returned=1'), '복귀 표식이 없으면 login_returned 를 셀 수 없다');
 });
+
+// 2026-09-03 — staging 이 **프로덕션과 같은 DB** 를 본다(사용자 확인). 그래서 staging 트래픽이
+//   퍼널에 섞이면 "페이월 노출 → 결제화면 도달" 전환율이 실제보다 낮게 나온다
+//   (staging 노출은 분모에 더해지는데 도달은 이미 걸러지고 있었다 — 비대칭이라 더 나쁘다).
+//   방문 계측 3곳은 이미 같은 기준으로 거르고 있었고, 퍼널 기록만 빠져 있었다.
+test('퍼널 기록: staging·프리뷰는 프로덕션 퍼널에 쓰지 않는다', async () => {
+  const mod = readFileSync('src/lib/payments/funnel-log.ts', 'utf8');
+  assert.ok(mod.includes('function isNonProductionDeployment'), '배포환경 가드가 사라졌다');
+  // 세 통로 전부에 걸려야 한다 — 하나라도 빠지면 그 경로로 staging 이 새어 들어온다.
+  const guarded = mod.split('isNonProductionDeployment()').length - 1;
+  assert.ok(guarded >= 4, `가드 호출이 ${guarded}곳뿐이다(정의 1 + 통로 3 이상이어야 한다)`);
+  assert.ok(
+    /VERCEL_ENV[\s\S]{0,160}!==\s*'production'/.test(mod),
+    "판정은 VERCEL_ENV 기준이어야 한다(visit-filters 와 같은 기준)"
+  );
+  // 로컬(VERCEL_ENV 없음)은 기록을 막지 않는다 — 개발 중 퍼널 확인을 죽이면 안 된다.
+  assert.ok(
+    /env !== ''/.test(mod),
+    '빈 VERCEL_ENV(로컬)까지 막으면 개발 중 퍼널이 통째로 죽는다'
+  );
+});
