@@ -1,5 +1,24 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-03 — staging 트래픽이 프로덕션 퍼널에 섞이던 것 차단
+
+staging 을 main 과 동기화(20커밋)하면서 드러난 문제. **staging 은 프로덕션과 같은 Supabase 를
+본다**(사용자 확인). 그래서 staging 에서 사주 결과를 열거나 결제를 테스트하면
+`paywall_viewed`·`prepare_attempt` 가 **실제 퍼널에 쌓인다.**
+
+방문 계측 3곳(`/api/visit` · `/api/payments/funnel` · 결제화면)은 이미 같은 기준으로
+걸러내고 있었는데 **먼저 있던 퍼널 기록에만 그 가드가 없었다.** 비대칭이라 더 나쁘다 —
+staging 노출은 분모에 더해지는데 도달은 걸러지므로 **"페이월 → 결제화면" 전환율이 실제보다
+낮게** 나온다. 어제 세운 계측이 바로 이 숫자를 보는 것이라 그대로 두면 오독으로 이어진다.
+
+**고침**: `funnel-log.ts` 의 통로 3개(`logPaymentFunnelEvent` · `logPaywallImpression` ·
+`logCheckoutStage`)에 `isNonProductionDeployment()` 가드. 판정은 visit-filters 와 같은 기준
+(VERCEL_ENV 가 있고 'production' 이 아니면 제외). **로컬(VERCEL_ENV 없음)은 그대로 기록**한다 —
+개발 중 퍼널 확인을 막지 않기 위해서다.
+
+매출 집계는 원래 안전했다(`isRealRevenueOrder` 가 staging 결제를 이미 제외).
+
+
 ## 2026-09-03 — 가격 행 쪼개짐 **전수 조사·수정** (사용자 지시)
 
 /membership 을 고친 뒤 사용자가 "/pricing 도 똑같다, 전수조사해서 다 바꿔라" 라고 지시.

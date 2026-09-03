@@ -77,10 +77,28 @@ export function formatPgFailReason(
  * must not be interrupted by analytics logging.
  * `supabase` 인자는 service env 부재 시 폴백용으로만 사용된다(RLS 로 거부될 수 있음).
  */
+/**
+ * 2026-09-03 — **staging·프리뷰 트래픽을 프로덕션 퍼널에서 뺀다.**
+ *
+ * 왜: staging.ganjisaju.kr 이 **프로덕션과 같은 Supabase 를 본다.** 그래서 staging 에서
+ *   사주 결과를 열거나 결제를 테스트하면 paywall_viewed·prepare_attempt 가 실제 퍼널에
+ *   쌓였다. 방문 계측 3곳(/api/visit · /api/payments/funnel · 결제화면)은 이미 같은 기준으로
+ *   걸러내고 있었는데, **먼저 있던 퍼널 기록에는 그 가드가 없었다** — 특히
+ *   "페이월 노출 → 결제화면 도달" 전환율이 staging 노출만 분모에 더해져 낮게 나온다.
+ *
+ * 판정은 `/lib/analytics/visit-filters` 와 같다: VERCEL_ENV 가 있고 'production' 이 아니면 제외.
+ * 로컬(VERCEL_ENV 없음)은 그대로 기록한다 — 개발 중 퍼널 확인을 막지 않기 위해서다.
+ */
+function isNonProductionDeployment(): boolean {
+  const env = String(process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV ?? '').trim();
+  return env !== '' && env !== 'production';
+}
+
 export async function logPaymentFunnelEvent(
   supabase: SupabaseClient,
   input: PaymentFunnelEventInput
 ): Promise<void> {
+  if (isNonProductionDeployment()) return;
   try {
     const client = hasSupabaseServiceEnv ? await createServiceClient() : supabase;
     const { error } = await client.from('payment_funnel_events').insert({
@@ -135,6 +153,7 @@ export async function logCheckoutStage(input: {
    */
   blocked?: 'needs_result' | 'already_purchased' | 'active_membership' | null;
 }): Promise<void> {
+  if (isNonProductionDeployment()) return;
   if (!hasSupabaseServiceEnv) return;
   try {
     const client = await createServiceClient();
@@ -166,6 +185,7 @@ export async function logPaywallImpression(input: {
   slug?: string | null;
   userId?: string | null;
 }): Promise<void> {
+  if (isNonProductionDeployment()) return;
   if (!hasSupabaseServiceEnv) return;
   try {
     const client = await createServiceClient();
