@@ -1,5 +1,61 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-08 — 배너 글씨 압살 전수 감사: 신규 결함 0. **스캐너를 먼저 검증하지 않으면 "0건"은 아무 의미가 없다**
+
+9/7 의 1:1 대화 배너 수정(`flex-wrap` 누락) 뒤 "같은 형태 다른 배너도 전수 확인" 요청.
+**코드 변경 없음 — 이 기록이 산출물이다.**
+
+### 판별 도구: 정적 grep 이 아니라 실렌더 DOM 스캔
+
+정적으로는 `sm:w-auto` 3곳뿐이고(gangi-market 1 + membership 2), membership 2곳은 부모에
+`flex-wrap` 이 있어 정상이었다. 하지만 grep 은 "부모 체인 어딘가가 wrap 을 안 준" 다른 형태를
+못 잡는다. 그래서 390px/768px 로 실제 렌더한 뒤 **텍스트 리프 노드**를 훑어 판정했다:
+
+- `clientWidth <= 2 && scrollWidth > 8` → **SQUASH**(형제에 눌려 폭이 0)
+- `scrollWidth / clientWidth > 1.15` → clip(잘림)
+
+### 첫 판이 전 라우트 0건이었는데, 그게 스캐너 버그였다
+
+가드에 `el.clientWidth > 0` 을 넣었더니 **정확히 압살된 요소(cw=0)를 스스로 걸러냈다.**
+32개 라우트 전부 0건이 나왔고 그대로 믿을 뻔했다. 수정을 임시로 되돌린 브랜치에서 다시 돌려
+그 배너 2줄(`대화상담` cw=0/sw=73, `선생님께 질문 3회` cw=0/sw=107)만 정확히 잡히는 걸 확인한
+뒤에야 스캐너를 신뢰했다. — **검출기는 알려진 결함으로 먼저 보정하고 쓴다.**
+
+### 커버리지와 결과 (390px / 768px)
+
+| 구간 | 수 | 결과 |
+|---|---|---|
+| 비로그인 정적 라우트 | 32 | 0건 |
+| 동적 결과 (`saju/[slug]`·`/deep`·`/share`·`/tarot/daily`…) | 8 | 0건 |
+| 로그인 `/my/*`·`/notifications/*` | 10 | 1건(오탐, 아래) |
+| 로그인 잠금(미결제) 유료 화면 | 23 | 0건 |
+| **결제 후 열람(잠금 해제)** | 12 | 0건 |
+| `/admin/*` | 19 | 1건(오탐, 아래) |
+
+오탐 3종 — 전부 의도된 동작:
+- `notification-center-page.tsx:604` 알림 1줄 미리보기 `truncate`(768px 에선 안 잘림)
+- `/admin/design/push-modal` 의 `<pre overflow-x-auto>` 코드 샘플
+- `/dialogue/dragon` 의 `<label class="sr-only">`(cw=1 은 sr-only 의 정상 형태)
+
+덤: #779 가 "조건 충족하나 안 고침"으로 남긴 `rp-next-card`(인쇄 레이아웃)를 확인한 결과
+**다른 형태다.** `w-full` 형제가 없고 가격이 `white-space:nowrap` 이라 압살 경로가 없다. 유지.
+
+### 잠금 해제 화면을 보는 두 경로 (다음에 또 필요하다)
+
+1. **`/admin/*` 은 DB 를 안 건드려도 된다.** `admin-auth.ts` 의 `ADMIN_USER_IDS` env 부트스트랩에
+   테스트 계정 uuid 를 넣고 dev 서버를 띄우면 열린다(env 라 서버 종료로 소멸). `admin_users`
+   테이블에 쓰지 마라.
+2. **유료 해제는 프로덕션 seed 가 필요하다**(사용자 승인 후 진행). 함정 2개:
+   - 로컬 `NEXT_PUBLIC_SUPABASE_URL` 이 **빈 문자열**이라 `getSupabaseAdmin()` 이 못 뜬다.
+     service_role 키의 JWT `ref` 로 URL 을 조립해야 한다(ref=bgtzkjxihlbmxehmhtwg = 프로덕션).
+   - `resolveProfileReadingSlug` 는 **테스트 계정에 생년월일 프로필이 없어 실패한다**
+     (`/star-sign` 이 `/saju/new` 만 렌더). `/saju/{slug}` 는 `fromSlug` 즉석 계산이라
+     DB 행이 필요 없으니 고정 슬러그를 쓰면 된다.
+   - seed 전 상태를 먼저 읽어 `finally` 에서 그대로 복원했다(구독행이 원래 `expired` 였으므로
+     `expired` 로 되돌림, entitlement 는 DELETE). 사후 조회로 잔여 0 확인.
+   - **해제가 실제로 먹었는지는 서버 로그로 확인한다**: `/premium/print` 에서 `[openai-text]`
+     LLM 호출이 떴다 = gated early-return 을 지나 본문 생성 경로로 들어갔다는 뜻.
+
 ## 2026-09-07 — 메인 1:1 대화 배너의 제목·설명이 통째로 사라진 원인: `w-full` 은 붙이고 `flex-wrap` 은 안 붙였다
 
 사용자 신고: "1:1대화 메인화면배너에서 글씨가 안보여".
