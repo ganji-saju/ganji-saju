@@ -504,3 +504,73 @@ test('원장을 넘기지 않는 호출부는 기존 동작(정가 폴백)을 �
   });
   assert.ok((result.totalSpentWon ?? 0) > 0, '근거가 없을 땐 기존처럼 정가로 보강한다');
 });
+
+// 2026-09-08 — 실측 회귀: 실결제 44,900원 회원의 LTV 가 79,900원으로 나왔다.
+//   평생리포트 결제가 product_entitlements 와 credit_transactions 양쪽에 적히는데
+//   dedupe 가 payment_orders 에만 걸려 있어 35,000 이 두 번 세어졌다.
+test('buildPaymentHistory — 이용권과 전 거래에 같은 주문이 있으면 한 번만 센다', () => {
+  const ORDER = 'ord_48c9ad01';
+  const result = buildPaymentHistory({
+    productEntitlements: [
+      {
+        id: 'pe-life',
+        product_id: 'lifetime-report',
+        amount: 35000,
+        order_id: ORDER,
+        payment_key: 'UT003',
+        package_id: 'lifetime_report',
+        created_at: '2026-09-07T14:00:36.000Z',
+        metadata: { kind: 'lifetime_report', amount: 35000, orderId: ORDER },
+      },
+    ],
+    creditTransactions: [
+      {
+        id: 'ct-life',
+        type: 'purchase',
+        amount: 0,
+        metadata: { kind: 'lifetime_report', amount: 35000, orderId: ORDER },
+        created_at: '2026-09-07T14:00:36.000Z',
+      },
+    ],
+    paymentOrders: [
+      {
+        id: 'po-life',
+        order_id: ORDER,
+        package_id: 'lifetime_report',
+        amount: 35000,
+        status: 'fulfilled',
+        created_at: '2026-09-07T13:59:47.000Z',
+      },
+    ],
+  });
+  assert.equal(result.totalSpentWon, 35000, '35,000 이 두 번 세어지면 안 된다');
+  assert.equal(result.count, 1, '같은 주문은 이력에도 한 줄만');
+});
+
+test('buildPaymentHistory — 주문번호가 안 겹치는 전 거래는 그대로 센다', () => {
+  const result = buildPaymentHistory({
+    productEntitlements: [
+      {
+        id: 'pe-a',
+        product_id: 'lifetime-report',
+        amount: 35000,
+        order_id: 'ORD-A',
+        payment_key: null,
+        package_id: 'lifetime_report',
+        created_at: '2026-09-07T00:00:00.000Z',
+        metadata: null,
+      },
+    ],
+    creditTransactions: [
+      {
+        id: 'ct-b',
+        type: 'subscription',
+        amount: 0,
+        metadata: { amount: 49000, orderId: 'ORD-B' },
+        created_at: '2026-09-06T00:00:00.000Z',
+      },
+    ],
+  });
+  assert.equal(result.totalSpentWon, 84000, '별개 주문 2건은 합산');
+  assert.equal(result.count, 2);
+});
