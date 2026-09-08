@@ -20,15 +20,17 @@ export default function TossPaymentMethodPicker({
   className,
   provider,
 }: TossPaymentMethodPickerProps) {
-  // 2026-06-27 — 나이스페이 실시간 계좌이체(bank)가 발급 clientId 에 미연결(W004)이라 임시 숨김.
-  //   키 연결 완료 후 복구: 환경변수 NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED=true. 토스 경로는 영향 없음.
+  // 🔴 2026-09-08 — 나이스페이에서는 실시간 계좌이체를 **영구 제외**한다.
+  //   2026-06-27 엔 W004(발급 clientId 에 미연결)로 '임시' 숨김이었고, 되살릴 스위치로
+  //   NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED=true 를 남겨뒀다. 그 스위치를 삭제한다 —
+  //   나이스페이 측 안내로는 계좌이체를 넣는 순간 **결제 자체가 막힌다**. 즉 켜면 안 되는
+  //   플래그를 남겨두는 것 자체가 지뢰다(env 한 줄로 라이브 결제가 죽는다).
+  //   되살릴 일이 생기면 이 주석을 지우고 나이스페이 확인부터 받을 것.
   // provider prop(멤버십 결제창은 prepare provider 보유) 우선, 없으면(전 충전 등 결제 전
   //   클라이언트) 빌드타임 클라이언트 env 로 폴백. 서버 PAYMENT_PROVIDER 와 쌍.
   const effectiveProvider =
     provider ?? (process.env.NEXT_PUBLIC_PAYMENT_PROVIDER as 'toss' | 'nicepay' | undefined);
-  const hideTransfer =
-    effectiveProvider === 'nicepay' &&
-    process.env.NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED !== 'true';
+  const hideTransfer = effectiveProvider === 'nicepay';
   const options = useMemo(
     () =>
       hideTransfer

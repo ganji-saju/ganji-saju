@@ -55,16 +55,20 @@ function loadNicepaySdk(): Promise<void> {
   return sdkPromise;
 }
 
-/** 토스 결제수단 코드(CARD/TRANSFER) → 나이스페이 method 문자열. */
-export function toNicepayMethod(tossMethod: string): string {
-  switch (tossMethod) {
-    case 'CARD':
-      return 'cardAndEasyPay';
-    case 'TRANSFER':
-      return 'bank';
-    default:
-      return 'card';
-  }
+/** 나이스페이 결제창에 카드 + 간편결제(네이버·카카오·삼성·페이코·SSG)를 한 창에 노출. */
+export const NICEPAY_METHOD_CARD_AND_EASYPAY = 'cardAndEasyPay';
+
+/**
+ * 토스 결제수단 코드 → 나이스페이 method 문자열.
+ *
+ * 🔴 2026-09-08 — 'TRANSFER' → 'bank' 매핑을 **삭제**했다. 나이스페이 안내상 실시간
+ *   계좌이체를 넣으면 결제 자체가 막힌다. 픽커가 나이스페이에서 TRANSFER 를 아예
+ *   안 보여주지만, 혹시 새더라도 'bank' 로 나가지 않게 입력과 무관히 카드+간편결제로
+ *   떨어뜨린다(안전한 실패). → 지금 나이스페이 경로의 수단은 이것 하나뿐이다.
+ *   수단을 쪼개려면 docs/payment-easypay-picker-design.md 참조(계좌이체는 제외 대상).
+ */
+export function toNicepayMethod(_tossMethod: string): string {
+  return NICEPAY_METHOD_CARD_AND_EASYPAY;
 }
 
 /**
