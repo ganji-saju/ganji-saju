@@ -21,7 +21,7 @@
 ```
 [결제 방식]  ← TossPaymentMethodPicker (provider prop 보유)
   ( ) 카드 결제          → toNicepayMethod('CARD')     → 'cardAndEasyPay'
-  ( ) 실시간 계좌이체     → toNicepayMethod('TRANSFER') → 'bank'   ※ W004 로 현재 숨김
+  ※ 실시간 계좌이체는 2026-09-08 에 나이스페이 경로에서 영구 제거(넣으면 결제가 막힌다)
                 ↓
   requestNicepayPayment({ method })  → AUTHNICE.requestPay
 ```
@@ -53,9 +53,13 @@ export const PAYMENT_METHOD_OPTIONS = [
   { code: 'NAVERPAY',  label: '네이버페이',     nicepay: 'naverpayCard',   only: 'nicepay' },
   { code: 'SAMSUNGPAY',label: '삼성페이',       nicepay: 'samsungpayCard', only: 'nicepay' },
   { code: 'CARD',      label: '신용/체크카드',  nicepay: 'card',           only: null },
-  { code: 'TRANSFER',  label: '실시간 계좌이체', nicepay: 'bank',           only: null },
 ] as const;
 ```
+
+🔴 **실시간 계좌이체(`bank`)는 목록에 없다.** 나이스페이 안내상 계좌이체를 넣는 순간 결제
+자체가 막힌다. 2026-09-08 에 픽커·매핑 양쪽에서 영구 제거했다(복구 플래그였던
+`NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED` 도 삭제). 토스 경로에는 계좌이체가 그대로 남아
+있으므로, 이 표에 되살리는 일이 있다면 **나이스페이 확인부터** 받을 것.
 
 - **배열 순서가 곧 화면 순서다.** 간편결제 3종이 위, 카드가 아래 — 요청하신 배치.
 - `only: 'nicepay'` 인 항목은 provider 가 toss 면 픽커가 걸러낸다.
@@ -70,7 +74,7 @@ export const PAYMENT_METHOD_OPTIONS = [
 
 지금 이미 있는 것 — 재사용:
 - `provider` prop 분기
-- `NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED` 로 계좌이체 숨김(W004)
+- 나이스페이일 때 계좌이체 무조건 제외(2026-09-08 영구화)
 - 숨겨진 값이 선택돼 있으면 첫 옵션으로 폴백하는 `useEffect`
 
 추가되는 것 하나: `only: 'nicepay'` 필터. 레이아웃은 `grid sm:grid-cols-2` 가 5개도 그대로
@@ -95,16 +99,21 @@ export const PAYMENT_METHOD_OPTIONS = [
 숨기지만, 우리가 버튼을 직접 그리면 계약에 없는 수단도 버튼이 보이고 **사용자가 누른 뒤에야**
 실패한다(계좌이체 W004 와 같은 형태 — 그때도 결제창 마지막 단계에서 터졌다).
 
-→ **완화**: 각 수단을 env 플래그로 감싼다. `NEXT_PUBLIC_NICEPAY_TRANSFER_ENABLED` 가 이미
-쓰는 방식 그대로. 실결제로 확인된 수단만 켠다.
+→ **완화**: 각 수단을 env 플래그로 감싸고, **실결제로 확인된 수단만 켠 채 배포**한다.
+
+⚠️ 단, 플래그는 "켜도 되는 것"에만 단다. 계좌이체가 그 반례다 — 켜면 안 되는 수단에 복구
+플래그를 남겨뒀다가, env 한 줄로 라이브 결제가 죽는 지뢰가 됐다(2026-09-08 삭제).
+되살리면 안 되는 건 플래그가 아니라 코드에서 지우고 이유를 그 자리에 적는다.
 
 ## 5. 작업 순서
 
 1. `methods.ts` 옵션 테이블 + `PaymentMethodCode` 유니온, `only` 필터
+   (나이스페이 목록에 `TRANSFER` 를 넣지 않는다)
 2. `toNicepayMethod` 를 switch → 테이블 조회로 (매핑 정본 1곳)
 3. 픽커에 `only` 필터 추가 (기존 폴백 `useEffect` 가 자동으로 커버)
 4. 호출부 타입 확장
 5. 테스트: 토스 provider 에 간편결제 코드가 **절대 안 나온다**는 단언 + 매핑표 고정
+   + 기존 "어떤 입력에도 `bank` 로 매핑되지 않는다" 단언 유지
 6. 390px 렌더 확인(5개 옵션 2열 배치)
 
 ## 6. ⚠️ 시작 전에 확인할 것
@@ -116,3 +125,5 @@ export const PAYMENT_METHOD_OPTIONS = [
 3. **카카오페이** — `kakaopay`(카드/머니 전액) vs `kakaopayCard` vs `kakaopayMoney` 중 무엇을
    보낼지. 기본은 `kakaopay`(사용자가 카카오 창에서 카드/머니 선택).
 4. **취소/환불** — 간편결제 건이 동일 cancel API 로 되는지 원문 미대조.
+5. **가상계좌(`vbank`)·휴대폰(`cellphone`)** — 매뉴얼엔 있지만 계좌이체와 같은 이유로
+   막힐 수 있다. 넣기 전에 나이스페이 확인 필수(추측으로 추가하지 말 것).
