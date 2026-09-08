@@ -160,7 +160,7 @@ export function PaymentConsentDetails({
       {confirmationItems.length > 0 ? (
         <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2 text-[var(--app-copy-muted)]">
           {confirmationItems.map((item) => (
-            <li key={item} style={{ fontSize: '9px', lineHeight: 1.45 }} className="flex gap-1.5">
+            <li key={item} style={{ fontSize: '11px', lineHeight: 1.5 }} className="flex gap-1.5">
               <span aria-hidden="true">·</span>
               <span>{item}</span>
             </li>
