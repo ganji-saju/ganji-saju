@@ -64,14 +64,14 @@ export function KakaoContactCheckoutField() {
           클래스로 주면 조용히 17px 로 렌더된다(2026-09-09 실측). */}
       <label
         className="block font-bold text-[var(--app-ink)]"
-        style={{ fontSize: '10px', lineHeight: 1.4 }}
+        style={{ fontSize: '11.5px', lineHeight: 1.4 }}
         htmlFor="kakao-checkout-phone"
       >
         [선택] 카카오톡으로 결제 알림 받기
       </label>
       <p
         className="mt-0.5 text-[var(--app-copy-muted)]"
-        style={{ fontSize: '9px', lineHeight: 1.45 }}
+        style={{ fontSize: '10px', lineHeight: 1.5 }}
       >
         번호를 남기면 결제 완료·구독 만료 안내를 카카오 알림톡으로 받아요. 입력은 선택입니다.
       </p>
