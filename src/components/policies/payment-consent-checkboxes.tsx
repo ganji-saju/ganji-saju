@@ -84,12 +84,16 @@ export function PaymentConsentCheckboxes({
       className="payment-consent space-y-3 rounded-[14px] border bg-white p-4"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      <h3 className="text-[12px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
+      <h3 className="text-[9.5px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
 
+      {/* 🔴 readability.css(@layer 밖)가 작은 글씨를 강제로 키운다:
+            ① `:where(p, li, dt, dd, label, …)` → 본문 크기  ② `text-[10`~`text-[15`
+            로 시작하는 클래스 → !important 부양. 그래서 li 에 text-[9px] 를 줘도
+            17px 로 렌더된다(2026-09-09 실측). li 는 인라인 스타일로만 이긴다. */}
       {confirmationItems.length > 0 ? (
-        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2 text-[10.5px] leading-[1.5] text-[var(--app-copy-muted)]">
+        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2 text-[var(--app-copy-muted)]">
           {confirmationItems.map((item) => (
-            <li key={item} className="flex gap-1.5">
+            <li key={item} style={{ fontSize: '9px', lineHeight: 1.45 }} className="flex gap-1.5">
               <span aria-hidden="true">·</span>
               <span>{item}</span>
             </li>
@@ -106,11 +110,11 @@ export function PaymentConsentCheckboxes({
           type="checkbox"
           checked={allAccepted}
           onChange={toggleAll}
-          className="mt-[1px] h-[15px] w-[15px] shrink-0"
+          className="mt-[1px] h-[14px] w-[14px] shrink-0"
           aria-label="주문 내용 확인 및 필수 약관 전체 동의"
           required
         />
-        <span className="flex-1 text-[11px] font-semibold leading-[1.5] text-[var(--app-ink)]">
+        <span className="flex-1 text-[9px] font-semibold leading-[1.45] text-[var(--app-ink)]">
           주문 내용과 아래 약관을 확인했고 결제에 동의합니다.
         </span>
       </label>
@@ -123,7 +127,7 @@ export function PaymentConsentCheckboxes({
               href={POLICY_URLS[it.kind]}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-[var(--app-pink-strong)] underline"
+              className="text-[8.5px] text-[var(--app-pink-strong)] underline"
             >
               {POLICY_LABELS[it.kind]}
             </Link>
