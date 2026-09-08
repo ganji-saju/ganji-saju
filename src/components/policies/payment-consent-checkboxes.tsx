@@ -94,18 +94,25 @@ export function PaymentConsentRow({
 
   return (
     <div className="payment-consent-row mb-2">
-      <label className="flex cursor-pointer items-center gap-2">
+      {/* 🔴 탭 영역은 글자 크기와 따로 논다. 문장을 10px 로 줄였다고 체크박스까지 15px 로
+          두면 손가락으로 못 누른다(사용자 신고). 체크박스 자체를 20px 로 키우고, label 이
+          체크박스+문장을 감싸므로 **행 전체(min-height 44px)** 가 탭 영역이 된다
+          — 모바일 최소 터치 타깃 권장치(44px)를 행으로 확보한다. */}
+      <label
+        className="flex cursor-pointer items-center gap-2.5"
+        style={{ minHeight: '44px' }}
+      >
         <input
           type="checkbox"
           checked={allAccepted}
           onChange={onToggleAll}
-          className="h-[15px] w-[15px] shrink-0"
+          className="h-[20px] w-[20px] shrink-0 accent-[var(--app-pink)]"
           aria-label="주문 내용 확인 및 필수 약관 전체 동의"
           required
         />
         <span
           className="flex-1 font-semibold text-[var(--app-ink)]"
-          style={{ fontSize: '10px', lineHeight: 1.4 }}
+          style={{ fontSize: '11px', lineHeight: 1.4 }}
         >
           주문 내용과 아래 약관을 확인했고 결제에 동의합니다.
         </span>
