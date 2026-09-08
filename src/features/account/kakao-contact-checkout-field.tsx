@@ -56,16 +56,23 @@ export function KakaoContactCheckoutField() {
 
   return (
     <div
-      className="rounded-[12px] border px-3 py-3"
+      className="rounded-[12px] border px-2.5 py-2.5"
       style={{ borderColor: 'var(--app-line)', background: 'var(--app-pink-soft)' }}
     >
+      {/* 🔴 크기는 인라인으로만 준다. readability.css(@layer 밖)가 ① label·p 태그를 본문
+          크기로 되돌리고 ② text-[12·13…] 로 시작하는 클래스를 !important 로 부양한다.
+          클래스로 주면 조용히 17px 로 렌더된다(2026-09-09 실측). */}
       <label
-        className="block text-[13.2px] font-bold text-[var(--app-ink)]"
+        className="block font-bold text-[var(--app-ink)]"
+        style={{ fontSize: '10px', lineHeight: 1.4 }}
         htmlFor="kakao-checkout-phone"
       >
         [선택] 카카오톡으로 결제 알림 받기
       </label>
-      <p className="mt-0.5 text-[12.1px] leading-[1.5] text-[var(--app-copy-muted)]">
+      <p
+        className="mt-0.5 text-[var(--app-copy-muted)]"
+        style={{ fontSize: '9px', lineHeight: 1.45 }}
+      >
         번호를 남기면 결제 완료·구독 만료 안내를 카카오 알림톡으로 받아요. 입력은 선택입니다.
       </p>
       <input
@@ -78,13 +85,19 @@ export function KakaoContactCheckoutField() {
         disabled={!ready}
         onChange={(e) => setPhone(e.target.value)}
         onBlur={save}
-        className="mt-2 w-full rounded-[10px] border bg-white px-3 py-2 text-[15px] text-[var(--app-ink)]"
+        // ⚠️ 입력창 글자는 줄이지 않는다 — 16px 미만이면 iOS Safari 가 포커스 시 화면을
+        //   자동 확대한다. 지금 17px(readability 부양)이라 안전하다. 높이만 줄인다.
+        className="mt-1.5 w-full rounded-[10px] border bg-white px-2.5 py-1.5 text-[var(--app-ink)]"
         style={{ borderColor: 'var(--app-line)' }}
       />
       {msg ? (
         <p
-          className="mt-1.5 text-[12.1px]"
-          style={{ color: msg.ok ? 'var(--app-jade)' : 'var(--app-coral)' }}
+          className="mt-1"
+          style={{
+            fontSize: '9px',
+            lineHeight: 1.4,
+            color: msg.ok ? 'var(--app-jade)' : 'var(--app-coral)',
+          }}
         >
           {msg.text}
         </p>
