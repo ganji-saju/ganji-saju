@@ -59,7 +59,7 @@ function loadNicepaySdk(): Promise<void> {
 export function toNicepayMethod(tossMethod: string): string {
   switch (tossMethod) {
     case 'CARD':
-      return 'card';
+      return 'cardAndEasyPay';
     case 'TRANSFER':
       return 'bank';
     default:

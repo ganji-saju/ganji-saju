@@ -1,5 +1,47 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-08 — 나이스페이 간편결제(네이버페이·카카오페이)가 안 뜨던 이유: method 가 `card` 였다
+
+사용자 질문: "나이스페이에서 간편결제 오픈해줘서 네이버페이랑 카카오페이 결제가 가능하다고
+했는데 이건 별도로 세팅 안해도 되는거야?" → **세팅 필요했다. 콘솔에서 열어줘도 코드가 안 부르면
+결제창에 안 뜬다.**
+
+`toNicepayMethod('CARD')` 가 `'card'` 를 보내고 있었다. 나이스페이 매뉴얼
+(`payment-window-client.md`) 원문의 method 값 목록:
+
+> `card : 신용카드` / `naverpayCard : 네이버페이-신용카드 전액결제` / `kakaopay` / `kakaopayCard` /
+> `kakaopayMoney` / `samsungpayCard` / `payco` / `ssgpay` / **`cardAndEasyPay : 신용카드와 간편결제 노출`**
+
+`card` 는 **신용카드만** 여는 값이다. 카드와 간편결제를 한 창에 띄우려면 `cardAndEasyPay` 다.
+`docs/payment-nicepay-migration.md:134` 가 이미 미확인 과제로 남겨둔 항목이었다(§6-7).
+
+### 이 한 줄이 위험한 이유 = 테스트를 붙인 이유
+
+`card` 로 되돌아가도 **결제창은 정상으로 뜨고 승인도 된다. 간편결제만 조용히 사라진다.**
+에러도 로그도 한 줄 안 남는다. 그래서 `nicepay-checkout.test.ts` 로 문자열을 고정했다
+(되돌린 상태로 돌려 실제로 red 나는 것 확인).
+
+### 부수 효과: 거짓 카피가 사실이 됐다
+
+`methods.ts` 의 카드 옵션 설명은 이미 "신용카드, 체크카드와 **카드 기반 간편결제**를 이용합니다"
+였다. 지금까지 이 문장이 거짓이었고, 이 수정이 문장을 사실로 만든다.
+
+### 영향 없는 것 (확인함)
+
+- `cardAndEasyPay` 는 `cardCode`·`cardQuota`·`shopInterest`·`quotaInterest` 와 병용 불가인데,
+  `requestPay` 호출은 `clientId/method/orderId/amount/goodsName/returnUrl` 만 넘겨 넷 다 안 쓴다.
+- 승인·웹훅 경로 무관: `nicepay/return` 은 `tid` 로만 승인하고 결제수단으로 분기하지 않는다.
+- `default:` 케이스는 `'card'` 로 남겼다 — `TossPaymentMethodCode` 가 `CARD|TRANSFER` union 이라
+  현재 도달 불가. 세 번째 수단이 생기면 그때 같이 본다.
+
+### ⚠️ 검증필요 (코드로 확인 못 한 것)
+
+1. **콘솔에서 실제로 열린 수단** — `cardAndEasyPay` 는 계약에 열린 것만 노출한다(안 열린 건
+   에러가 아니라 그냥 안 보임).
+2. **간편결제 건의 취소/환불** — 동일 cancel API 인지, 부분취소 제약이 있는지 원문 미대조.
+3. **실결제 1건** — 계좌이체 W004(키에 수단 미연결) 처럼 결제창 **마지막 단계**에서만 터지는
+   형태가 이 프로젝트에 이미 있었다.
+
 ## 2026-09-08 — 배너 글씨 압살 전수 감사: 신규 결함 0. **스캐너를 먼저 검증하지 않으면 "0건"은 아무 의미가 없다**
 
 9/7 의 1:1 대화 배너 수정(`flex-wrap` 누락) 뒤 "같은 형태 다른 배너도 전수 확인" 요청.
