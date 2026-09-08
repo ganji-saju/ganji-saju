@@ -1,5 +1,60 @@
 # 간지사주 — 작업 진행 정리
 
+## 2026-09-08 — LTV 이중 계상: 같은 결제가 두 테이블에 적히는데 dedupe 가 한쪽만 걸려 있었다
+
+사용자 신고: "관리자 사용자조회 최정윤 54,800원 나이스페이 실결제인데 LTV 는 79,900원."
+
+프로덕션 읽기 전용 조회로 **재현·확정**했다(user 71a9c97f).
+
+### 숫자 해부
+
+| 소스 | 내용 | 금액 |
+|---|---|---|
+| `payment_orders` | 9/7 13:42 bundle_comprehensive `fulfilled` | 9,900 |
+| `payment_orders` | 9/7 13:59 lifetime_report `fulfilled` | 35,000 |
+| **실제 결제 합계** | 2건 | **44,900** |
+| `product_entitlements` | lifetime-report amount=35,000 | +35,000 |
+| `product_entitlements` | 번들 구성품 5행(amount=null, carrier 1개만 정가) | +9,900 |
+| `credit_transactions` | feature=`lifetime_report`, metadata.amount=35,000 | **+35,000 (중복)** |
+| **LTV 표시** | | **79,900** |
+
+`paid_count=3` 도 같은 원인(양수 엔트리 3개 = 9,900 + 35,000 + 35,000).
+
+**신고의 54,800원은 최정윤 개인이 아니라 9/7 하루 전체 매출이었다**(9,900 + 9,900 + 35,000,
+다른 회원 1명 포함). 개인 실결제는 44,900원이다.
+
+### 근본 원인
+
+`buildPaymentHistory` 의 dedupe 가 **`payment_orders` 에만** 걸려 있었다. 이용권과 전 거래가
+서로 겹치는 경우는 아무도 안 막았다. 평생리포트 결제는 두 테이블에 다 적힌다:
+
+- `product_entitlements` (amount=35,000)
+- `credit_transactions` (feature='lifetime_report', metadata.amount=35,000)
+
+번들(`taste_product`)이 안 터진 건 `isCashCreditTransaction` 이 feature 로 걸러줘서지
+구조가 달라서가 아니다 — **우연히 안 겹쳤을 뿐이다.**
+
+수정은 `payment_orders` 와 **같은 정책**: 이용권이 이미 잡은 주문번호의 전 거래는 건너뛴다.
+
+### 영향 범위
+
+- `/admin/users/[id]` 결제 이력 합계, `admin_user_summary.ltv_won`·`paid_count`(=사용자 목록
+  LTV·정렬·세그먼트·코호트 평균 LTV) 전부 이 함수를 탄다.
+- **대시보드 매출은 무관하다** — `payment_orders` 단독 집계라 처음부터 44,900 이 맞았다.
+- ⚠️ 저장된 요약은 자동으로 안 고쳐진다. `/admin/users` 의 **요약 갱신 버튼**(super_admin)
+  이나 시간별 cron 이 한 바퀴 돌아야 반영된다.
+
+### 대시보드와 사용자 상세가 원래 다른 지점 (버그 아닌 정의 차이)
+
+이번 건과 별개로, 두 화면은 아래가 다르다 — 비교할 때 착각하지 말 것:
+
+| | 사용자 상세 | 대시보드 |
+|---|---|---|
+| 환불 | net(gross−환불), `refunded` 주문 자체를 안 읽음 | gross(`REVENUE_ORDER_STATUSES` 에 `refunded` 포함) |
+| 테스트 결제 | 포함(배지로 표시만) | 제외(`isRealRevenueOrder`) |
+| 소스 | 이용권+전 거래 주, 주문은 구멍만 | 주문 원장 단독 |
+| 신선도 | 상세는 실시간 / 목록 LTV 는 cron | 실시간 |
+
 ## 2026-09-08 — 나이스페이 간편결제(네이버페이·카카오페이)가 안 뜨던 이유: method 가 `card` 였다
 
 사용자 질문: "나이스페이에서 간편결제 오픈해줘서 네이버페이랑 카카오페이 결제가 가능하다고
