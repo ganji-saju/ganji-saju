@@ -365,7 +365,7 @@ export default function TossMembershipCheckout({
         <p className="text-center text-sm leading-6 text-rose-600">{errorMessage}</p>
       ) : (
         <p className="text-center text-sm leading-6 text-[var(--app-copy-soft)]">
-          결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다. 카드와 계좌이체를 모두 지원합니다.
+          결제 완료 후 서버에서 이용권을 확인하고 바로 반영합니다.
         </p>
       )}
       {/* 2026-06-30 — 결제 버튼을 화면 하단에 진짜 고정(포커스 체크아웃). 결제수단·동의는
