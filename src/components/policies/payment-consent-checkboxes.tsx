@@ -84,7 +84,7 @@ export function PaymentConsentCheckboxes({
       className="payment-consent space-y-3 rounded-[14px] border bg-white p-4"
       style={{ borderColor: 'var(--app-line)' }}
     >
-      <h3 className="text-[9.5px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
+      <h3 className="text-[15px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
 
       {/* 🔴 readability.css(@layer 밖)가 작은 글씨를 강제로 키운다:
             ① `:where(p, li, dt, dd, label, …)` → 본문 크기  ② `text-[10`~`text-[15`
@@ -120,9 +120,11 @@ export function PaymentConsentCheckboxes({
       </label>
 
       {/* 동의 대상 전문 링크 — 통합 동의라도 각 정책을 화면에서 열람할 수 있어야 한다. */}
-      <ul className="flex flex-wrap gap-x-2.5 gap-y-1 pl-[23px]">
+      <ul className="flex flex-wrap items-center gap-x-1.5 gap-y-0 pl-[20px] leading-[1.35]">
         {items.map((it) => (
-          <li key={it.kind}>
+          /* li 도 readability 의 태그 규칙에 걸려 줄 상자가 본문 크기(17px)로 부푼다 →
+             글자는 작은데 줄 간격만 벌어진다. 인라인으로 상자까지 같이 줄인다. */
+          <li key={it.kind} style={{ fontSize: '8.5px', lineHeight: 1.35 }}>
             <Link
               href={POLICY_URLS[it.kind]}
               target="_blank"
