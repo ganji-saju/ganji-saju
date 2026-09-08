@@ -15,12 +15,25 @@
 /** 어느 PG 에서만 노출할지. null = 공용. */
 export type PaymentMethodProviderScope = 'nicepay' | null;
 
+/**
+ * 간편결제 브랜드 컬러. 사용자가 카카오/네이버/삼성 버튼을 **색으로** 먼저 알아본다.
+ * ⚠️ 공식 CI 값이다. 임의로 바꾸지 말 것(브랜드 가이드 위반이자 인지도 손실).
+ *   카카오 #FEE500 / 네이버 #03C75A / 삼성 #1428A0
+ */
+export interface PaymentMethodBrand {
+  /** 버튼 배경 */
+  bg: string;
+  /** 배경 위 글자·로고 색 */
+  fg: string;
+}
+
 export const TOSS_PAYMENT_METHOD_OPTIONS = [
   {
     code: 'KAKAOPAY',
     label: '카카오페이',
     shortLabel: '카카오페이',
     description: '카카오페이 앱에서 카드 또는 카카오페이머니로 결제합니다.',
+    brand: { bg: '#FEE500', fg: '#191600' },
     // 'kakaopay' = 카드/머니 둘 다 — 사용자가 카카오 창에서 고른다.
     //   (카드 전용은 kakaopayCard, 머니 전용은 kakaopayMoney)
     nicepayMethod: 'kakaopay',
@@ -31,6 +44,7 @@ export const TOSS_PAYMENT_METHOD_OPTIONS = [
     label: '네이버페이',
     shortLabel: '네이버페이',
     description: '네이버페이에 등록된 카드로 결제합니다.',
+    brand: { bg: '#03C75A', fg: '#FFFFFF' },
     // ⚠️ 매뉴얼: naverpayCard = "네이버페이-신용카드 전액결제(**포인트 이용불가**)".
     //   포인트 결제가 필요해지면 나이스페이에 별도 수단값을 확인할 것.
     nicepayMethod: 'naverpayCard',
@@ -41,6 +55,7 @@ export const TOSS_PAYMENT_METHOD_OPTIONS = [
     label: '삼성페이',
     shortLabel: '삼성페이',
     description: '삼성페이에 등록된 카드로 결제합니다.',
+    brand: { bg: '#1428A0', fg: '#FFFFFF' },
     nicepayMethod: 'samsungpayCard',
     only: 'nicepay',
   },
@@ -49,6 +64,7 @@ export const TOSS_PAYMENT_METHOD_OPTIONS = [
     label: '신용/체크카드',
     shortLabel: '카드',
     description: '신용카드, 체크카드로 결제합니다.',
+    brand: null,
     nicepayMethod: 'card',
     only: null,
   },
@@ -57,6 +73,7 @@ export const TOSS_PAYMENT_METHOD_OPTIONS = [
     label: '실시간 계좌이체',
     shortLabel: '실시간 계좌이체',
     description: '은행 계좌에서 실시간으로 바로 이체하는 방식입니다.',
+    brand: null,
     // 나이스페이 매핑 없음 — 위 주석 참조. 토스 전용으로만 살아 있다.
     nicepayMethod: null,
     only: null,
