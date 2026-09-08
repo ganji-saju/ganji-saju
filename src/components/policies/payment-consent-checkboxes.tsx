@@ -86,10 +86,14 @@ export function PaymentConsentCheckboxes({
     >
       <h3 className="text-[15px] font-extrabold text-[var(--app-ink)]">결제 전 확인</h3>
 
+      {/* 🔴 readability.css(@layer 밖)가 작은 글씨를 강제로 키운다:
+            ① `:where(p, li, dt, dd, label, …)` → 본문 크기  ② `text-[10`~`text-[15`
+            로 시작하는 클래스 → !important 부양. 그래서 li 에 text-[9px] 를 줘도
+            17px 로 렌더된다(2026-09-09 실측). li 는 인라인 스타일로만 이긴다. */}
       {confirmationItems.length > 0 ? (
-        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2.5 text-[13.2px] leading-[1.55] text-[var(--app-copy-muted)]">
+        <ul className="rounded-[12px] bg-[var(--app-pink-soft)] px-3 py-2 text-[var(--app-copy-muted)]">
           {confirmationItems.map((item) => (
-            <li key={item} className="flex gap-1.5">
+            <li key={item} style={{ fontSize: '9px', lineHeight: 1.45 }} className="flex gap-1.5">
               <span aria-hidden="true">·</span>
               <span>{item}</span>
             </li>
@@ -97,43 +101,41 @@ export function PaymentConsentCheckboxes({
         </ul>
       ) : null}
 
-      <label className="flex cursor-pointer items-start gap-2.5">
+      {/* 2026-09-09 — 문안 최소화(사용자 요청: "최소문장으로 확 줄여줘").
+          ⚠️ 줄인 것은 **문장뿐**이다. 동의 대상 4종 링크는 바로 아래 그대로 남는다 —
+          동의 대상을 화면에서 확인할 수 없으면 통합 동의의 유효성이 약해진다(파일 상단 주석).
+          서버 감사기록(user_policy_consents 4행)도 종전과 동일하다. */}
+      <label className="flex cursor-pointer items-start gap-2">
         <input
           type="checkbox"
           checked={allAccepted}
           onChange={toggleAll}
-          className="mt-0.5 h-[18px] w-[18px] shrink-0"
+          className="mt-[1px] h-[14px] w-[14px] shrink-0"
           aria-label="주문 내용 확인 및 필수 약관 전체 동의"
           required
         />
-        <span className="flex-1 text-[14.4px] font-semibold leading-[1.55] text-[var(--app-ink)]">
-          {/* it.label 은 "이용약관 확인 및 동의"처럼 서술어가 붙어 있어 문장에 이어 붙이면
-              "…확인 및 동의에 동의합니다"가 된다. 문장에는 정책 이름(POLICY_LABELS)만 쓴다. */}
-          위 주문 내용을 확인하였으며,{' '}
-          {items.map((it) => POLICY_LABELS[it.kind]).join(', ')} 및 결제에 동의합니다.
+        <span className="flex-1 text-[9px] font-semibold leading-[1.45] text-[var(--app-ink)]">
+          주문 내용과 아래 약관을 확인했고 결제에 동의합니다.
         </span>
       </label>
 
       {/* 동의 대상 전문 링크 — 통합 동의라도 각 정책을 화면에서 열람할 수 있어야 한다. */}
-      <ul className="flex flex-wrap gap-x-3 gap-y-1 pl-[28px]">
+      <ul className="flex flex-wrap items-center gap-x-1.5 gap-y-0 pl-[20px] leading-[1.35]">
         {items.map((it) => (
-          <li key={it.kind}>
+          /* li 도 readability 의 태그 규칙에 걸려 줄 상자가 본문 크기(17px)로 부푼다 →
+             글자는 작은데 줄 간격만 벌어진다. 인라인으로 상자까지 같이 줄인다. */
+          <li key={it.kind} style={{ fontSize: '8.5px', lineHeight: 1.35 }}>
             <Link
               href={POLICY_URLS[it.kind]}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[12.6px] text-[var(--app-pink-strong)] underline"
+              className="text-[8.5px] text-[var(--app-pink-strong)] underline"
             >
-              {POLICY_LABELS[it.kind]} 전문
+              {POLICY_LABELS[it.kind]}
             </Link>
           </li>
         ))}
       </ul>
-
-      <p className="text-[12.6px] leading-[1.5] text-[var(--app-copy-muted)]">
-        동의 후 결제 버튼이 활성화됩니다. 동의 시점은 본인 식별 정보와 함께 항목별로 안전하게
-        기록됩니다 (IP 원문은 저장하지 않습니다).
-      </p>
 
       {/* 선택 — 결제완료 알림톡 도달률용 전화번호 수집. 결제를 막지 않음(필수 아님). */}
       <KakaoContactCheckoutField />

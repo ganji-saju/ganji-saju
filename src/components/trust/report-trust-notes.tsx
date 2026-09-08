@@ -15,20 +15,24 @@ export function ReportTrustNotes({ className = '' }: { className?: string }) {
   return (
     <section
       aria-label="풀이 신뢰 안내"
-      className={`rounded-[16px] border border-[var(--app-line)] bg-white p-4 ${className}`.trim()}
+      className={`rounded-[16px] border border-[var(--app-line)] bg-white p-3 ${className}`.trim()}
     >
-      <ul className="m-0 grid list-none gap-2.5 p-0">
-        <li className="text-[14.4px] leading-[1.62] text-[var(--app-copy-soft)]">
+      {/* 🔴 readability.css(@layer 밖)가 작은 글씨를 강제로 키운다:
+              ① `:where(p, li, dt, dd, label, …)` → 본문 크기  ② `text-[10`~`text-[15`
+              로 시작하는 클래스 → !important 부양. 그래서 li 에 text-[9px] 를 줘도
+              17px 로 렌더된다(2026-09-09 실측). li 는 인라인 스타일로만 이긴다. */}
+      <ul className="m-0 grid list-none gap-1.5 p-0">
+        <li style={{ fontSize: '9px', lineHeight: 1.45 }} className="text-[var(--app-copy-soft)]">
           <strong className="font-extrabold text-[var(--app-ink)]">전문 자격 5종 보유.</strong>{' '}
           {CREDENTIALS}. 재미용 운세가 아니라 명리학 기준으로 해석합니다.
         </li>
-        <li className="text-[14.4px] leading-[1.62] text-[var(--app-copy-soft)]">
+        <li style={{ fontSize: '9px', lineHeight: 1.45 }} className="text-[var(--app-copy-soft)]">
           <strong className="font-extrabold text-[var(--app-ink)]">얼마나 자세한지 먼저 보세요.</strong>{' '}
           <Link href="/sample-report" className="font-bold text-[var(--app-pink-strong)]">
             샘플 리포트 미리 보기 →
           </Link>
         </li>
-        <li className="text-[14.4px] leading-[1.62] text-[var(--app-copy-soft)]">
+        <li style={{ fontSize: '9px', lineHeight: 1.45 }} className="text-[var(--app-copy-soft)]">
           <strong className="font-extrabold text-[var(--app-ink)]">열람 전엔 전액 환불.</strong>{' '}
           리포트를 열람하기 전에는 전액 환불을 요청할 수 있어요.{' '}
           <Link href="/refund-policy" className="font-bold text-[var(--app-pink-strong)]">
