@@ -24,6 +24,7 @@ import {
 } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
+import { getPaymentProvider } from '@/lib/payments/provider';
 import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
 import { getTasteProductEntitlement } from '@/lib/product-entitlements';
 import { checkTodayDetailAccess } from '@/lib/saju/today-detail-access';
@@ -276,6 +277,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function MembershipCheckoutPage({ searchParams }: Props) {
   const { plan, product, slug, scope, error, from, returned } = await searchParams;
+  // 결제수단 목록의 정본. 서버 PAYMENT_PROVIDER 를 그대로 클라이언트로 내린다.
+  const paymentProvider = getPaymentProvider();
   const selectedProduct = isTasteProductId(product) ? product : null;
   // 묶음(bundle)은 product param 에 packageId(예: 'bundle_today_set')로 진입한다.
   const candidateBundle = !selectedProduct && product ? getPackage(product) : undefined;
@@ -617,7 +620,12 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     {displayPrice} 결제하기 →
                   </h3>
                   <div className="mt-3">
+                    {/* 2026-09-08 — provider 를 서버(PAYMENT_PROVIDER)에서 내려준다.
+                        안 넘기면 결제수단 목록이 빌드타임 NEXT_PUBLIC_PAYMENT_PROVIDER
+                        하나에만 의존해, 그 값이 비면 나이스페이인데도 토스 목록(계좌이체
+                        포함)이 뜬다. 서버 env 가 정본이고 클라 env 는 폴백이다. */}
                     <TossMembershipCheckout
+                      provider={paymentProvider}
                       packageId={paymentPackage.id}
                       plan={selectedPlan}
                       product={selectedProduct ?? selectedBundle?.id}
