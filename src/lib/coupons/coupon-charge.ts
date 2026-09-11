@@ -10,11 +10,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
 import { resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
-import {
-  consumeMemberBenefit,
-  dailyPeriodKey,
-  getMemberBenefitUsed,
-} from '@/lib/credits/member-benefits';
+import { consumeMemberBenefit, dailyPeriodKey } from '@/lib/credits/member-benefits';
 import {
   COUPON_RECLAIM_AFTER_MS,
   applyCouponDiscount,
@@ -166,8 +162,16 @@ export async function resolveChargeForUser(
     reason = 'account_has_other';
   } else if (parsed && (!bound || parsed.code !== bound.code)) {
     const period = dailyPeriodKey(now);
-    const used = await getMemberBenefitUsed(userId, COUPON_ATTEMPT_BENEFIT, period, service);
-    if (used >= COUPON_ATTEMPT_DAILY_LIMIT) return noDiscount('rate_limited');
+    // 🔴 실패-닫힘. 공유 헬퍼 getMemberBenefitUsed 는 오류 시 0 을 돌려준다(무료 메뉴엔 그게 맞다) —
+    //   그걸 쓰면 RPC 장애 때 추측 제한이 조용히 사라진다. 막히는 건 새 코드 입력뿐, 결제는 안 막힌다.
+    const { data: used, error: usedError } = await service.rpc('get_member_benefit_used', {
+      p_user_id: userId,
+      p_benefit: COUPON_ATTEMPT_BENEFIT,
+      p_period_key: period,
+    });
+    if (usedError || typeof used !== 'number' || used >= COUPON_ATTEMPT_DAILY_LIMIT) {
+      return noDiscount('rate_limited');
+    }
     row = await selectCoupon(service, 'code', parsed.code);
     if (!row) {
       await consumeMemberBenefit(userId, COUPON_ATTEMPT_BENEFIT, period, COUPON_ATTEMPT_DAILY_LIMIT, service);

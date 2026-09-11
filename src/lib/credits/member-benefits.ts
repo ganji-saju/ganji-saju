@@ -63,11 +63,10 @@ export async function consumeMemberBenefit(
 export async function getMemberBenefitUsed(
   userId: string,
   benefit: string,
-  periodKey: string,
-  client?: SupabaseClient
+  periodKey: string
 ): Promise<number> {
   if (!userId) return 0;
-  const service = client ?? (await createServiceClient());
+  const service = await createServiceClient();
   const { data, error } = await service.rpc('get_member_benefit_used', {
     p_user_id: userId,
     p_benefit: benefit,

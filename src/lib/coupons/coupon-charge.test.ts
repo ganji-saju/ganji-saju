@@ -26,6 +26,8 @@ interface FakeDb {
   inserted: Row[];
   updates: number;
   attempts: number;
+  /** true 면 056 RPC 가 오류를 낸다(장애 흉내). */
+  rpcDown?: boolean;
 }
 
 function cmp(a: unknown, b: unknown) {
@@ -111,6 +113,7 @@ function fakeDb(seed: { coupons?: Row[]; orders?: Row[]; tiers?: Record<string, 
   db.client = {
     from: (table: string) => builder(table),
     rpc: (fn: string, params: { p_limit?: number }) => {
+      if (db.rpcDown) return Promise.resolve({ data: null, error: { message: 'rpc down' } });
       if (fn === 'get_member_benefit_used') return Promise.resolve({ data: db.attempts, error: null });
       assert.equal(fn, 'consume_member_benefit');
       if (db.attempts >= (params.p_limit ?? 0)) return Promise.resolve({ data: false, error: null });
@@ -539,4 +542,18 @@ test('coupon-charge — 동시에 1개: 새 귀속이 경합에서 지면 옛 �
   // 관리자가 배치를 되살리면 원래 쿠폰이 다시 붙는다.
   db.coupons[0].disabled_at = null;
   assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u1', null, opts(db))).couponCode, 'ganji300001');
+});
+
+// 🔴 조사 발견(2026-09-11): 공유 헬퍼 getMemberBenefitUsed 는 오류 시 0 을 돌려준다(주석은 반대로 적혀 있다).
+//   그걸 쓰면 RPC 장애 동안 추측 제한이 조용히 사라진다. 쿠폰은 실패-닫힘 — 새 코드 조회만 막고 결제는 안 막는다.
+test('coupon-charge — 시도 카운터 RPC 가 죽으면 새 코드 조회를 막는다(실패-닫힘), 등록된 쿠폰·일반 결제는 그대로', async () => {
+  const db = fakeDb({
+    coupons: [coupon('ganji300001'), coupon('ganji300002', { bound_user_id: 'u2', bound_at: ago(HOUR), bound_percent: 30 })],
+  });
+  db.rpcDown = true;
+  const probe = await resolveChargeForUser(TODAY_DETAIL, 'u1', 'ganji-30-0001', opts(db));
+  assert.equal(probe.reason, 'rate_limited');
+  assert.equal(probe.chargeAmount, 3300, '정가 결제는 가능');
+  // 이미 귀속된 본인 쿠폰은 카운터를 안 거치므로 계속 붙는다.
+  assert.equal((await resolveChargeForUser(TODAY_DETAIL, 'u2', null, opts(db))).chargeAmount, 2310);
 });
