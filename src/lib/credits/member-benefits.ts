@@ -1,6 +1,5 @@
 // 2026-06-28 — 프리미엄 멤버십 혜택 쿼터(서버). consume_member_benefit RPC(056) 래퍼 +
 //   KST 기간키 헬퍼. 멤버 판별(isPremiumMember)은 호출부에서 선행.
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 
 export const MEMBER_BENEFITS = {
@@ -44,11 +43,10 @@ export async function consumeMemberBenefit(
   userId: string,
   benefit: string,
   periodKey: string,
-  limit: number,
-  client?: SupabaseClient
+  limit: number
 ): Promise<boolean> {
   if (!userId) return false;
-  const service = client ?? (await createServiceClient());
+  const service = await createServiceClient();
   const { data, error } = await service.rpc('consume_member_benefit', {
     p_user_id: userId,
     p_benefit: benefit,

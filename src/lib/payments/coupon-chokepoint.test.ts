@@ -109,3 +109,10 @@ test('가격 표시 맵에 user/coupon 의존 값을 넣지 않는다', () => {
     'price-display 는 사용자별 값을 몰라야 한다(체크아웃에서만 할인 표기)'
   );
 });
+
+// 리뷰 발견(2026-09-11): 세션 쿠키가 SameSite=Lax 라 다른 사이트가 연 `?coupon=` 링크에도 실린다 —
+//   미리보기(조회 예산 차감)를 교차 사이트 요청에서 하면 남의 페이지가 이 사용자의 예산을 대신 태운다.
+test('체크아웃은 교차 사이트 요청에서 쿠폰 미리보기를 하지 않는다', () => {
+  const src = FILES.find((f) => f.rel === 'src/app/membership/checkout/page.tsx')!.text;
+  assert.ok(/sec-fetch-site'\)\s*===\s*'cross-site'\s*\?\s*undefined\s*:\s*coupon/.test(src));
+});
