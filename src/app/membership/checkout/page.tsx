@@ -22,7 +22,8 @@ import {
   isTasteProductPackage,
   type TasteProductId,
 } from '@/lib/payments/catalog';
-import { resolvePackagePrice } from '@/lib/payments/price-resolver';
+import { couponEnvForHost, resolveChargeForUser } from '@/lib/coupons/coupon-charge';
+import { couponRejectMessage } from '@/lib/coupons/discount-coupon';
 import { logCheckoutStage } from '@/lib/payments/funnel-log';
 import { getPaymentProvider } from '@/lib/payments/provider';
 import { shouldSkipVisitAnalytics } from '@/lib/analytics/visit-filters';
@@ -54,6 +55,8 @@ interface Props {
     from?: string;
     /** 2026-09-03 — 로그인 벽에 튕겼다가 돌아온 표식(login_returned 기록용). */
     returned?: string;
+    /** 2026-09-11 — 할인쿠폰 코드 미리보기(설계 §3-3: 입력은 GET 폼 + 서버 재렌더). */
+    coupon?: string;
   }>;
 }
 
@@ -276,7 +279,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MembershipCheckoutPage({ searchParams }: Props) {
-  const { plan, product, slug, scope, error, from, returned } = await searchParams;
+  const { plan, product, slug, scope, error, from, returned, coupon } = await searchParams;
   // 결제수단 목록의 정본. 서버 PAYMENT_PROVIDER 를 그대로 클라이언트로 내린다.
   const paymentProvider = getPaymentProvider();
   const selectedProduct = isTasteProductId(product) ? product : null;
@@ -295,16 +298,6 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     : selectedBundle
       ? selectedBundle
       : getMembershipPackage(selectedPlan);
-  // 2026-07-07 — 청구·표시 금액 모두 리졸버(카탈로그 위 DB 오버라이드)로 통일.
-  //   판매 시점 표시가 = 실제 청구액(order.amount) 이어야 하고, prop amount 도 같은 값이어야
-  //   confirm/return 의 order.amount 검증을 통과한다.
-  const chargeAmount = paymentPackage ? await resolvePackagePrice(paymentPackage.id) : null;
-  const displayPrice =
-    paymentPackage && chargeAmount != null
-      ? paymentPackage.kind === 'subscription' && paymentPackage.planSlug
-        ? `월 ${formatWon(chargeAmount)}`
-        : formatWon(chargeAmount)
-      : '';
   const headerZodiac: ZodiacKey = selectedProduct
     ? TASTE_PRODUCT_ZODIAC[selectedProduct] ?? 'dragon'
     : 'dragon';
@@ -375,6 +368,23 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
     }
   }
 
+  const requestHeaders = await headers();
+
+  // 2026-07-07 — 청구·표시 금액 모두 리졸버(카탈로그 위 DB 오버라이드)로 통일.
+  // 2026-09-11 할인쿠폰 — prepare 와 **같은 함수**(resolveChargeForUser)로 계산한다. 이 화면의
+  //   최종 결제 금액 = prepare 가 만들 order.amount = PG 청구액. 할인 표기는 **이 화면에서만** 한다
+  //   — 전역 가격 맵(getPriceDisplayMap)은 전 방문자 공유 캐시라 사용자별 값을 담을 수 없다(설계 §3-2).
+  const quote = paymentPackage
+    ? await resolveChargeForUser(paymentPackage, viewerId, coupon, {
+        env: couponEnvForHost(requestHeaders.get('host')),
+      })
+    : null;
+  const formatPrice = (won: number) =>
+    paymentPackage?.kind === 'subscription' && paymentPackage.planSlug
+      ? `월 ${formatWon(won)}`
+      : formatWon(won);
+  const displayPrice = quote ? formatPrice(quote.chargeAmount) : '';
+
   const needsResultFirst = Boolean(paymentPackage?.requiresSlug && !slug);
 
   // 2026-09-03 (migration 077) — 결제 화면 도달을 퍼널에 남긴다.
@@ -400,7 +410,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   /api/payments/funnel · /api/visit 과 **같은 기준**으로 사람만 센다.
   const funnelSkipReason = shouldSkipVisitAnalytics({
     path: '/membership/checkout',
-    userAgent: (await headers()).get('user-agent'),
+    userAgent: requestHeaders.get('user-agent'),
     deploymentEnv: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
   });
   if (paymentPackage && !funnelSkipReason) {
@@ -442,10 +452,10 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
         <section className="space-y-5 px-1">
           {/* 2026-08-26 — GA4 view_item. 결제창 도달 = 상품 상세 도달이다.
               begin_checkout(버튼 클릭)보다 한 칸 앞이라 상세→시작→완료 퍼널이 완성된다. */}
-          {paymentPackage ? (
+          {paymentPackage && quote ? (
             <GtmViewItem
               productType={paymentPackage.id}
-              value={chargeAmount ?? paymentPackage.price}
+              value={quote.chargeAmount}
               itemName={selected.title}
               itemCategory={paymentPackage.kind}
             />
@@ -480,12 +490,27 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
               <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
                 <span className="text-[15px] text-[var(--app-copy)]">상품 금액</span>
                 <span className="text-[15.5px] font-bold text-[var(--app-ink)]">
-                  {displayPrice}
+                  {quote ? formatPrice(quote.listAmount) : ''}
                 </span>
               </div>
-              {/* 2026-07-18 — "할인 / 쿠폰" 행 삭제. 쿠폰 기능이 실제로 없어서 값이 늘
-                  "결제창에서 적용" 고정 문구였고, 상품금액과 최종금액이 항상 같은 화면에서
-                  중간에 낀 빈 행이 오해만 키웠다(slide7 "결제 페이지 창 단순화"). */}
+              {/* 2026-07-18 — 늘 비어 있던 "할인 / 쿠폰" 고정 행을 삭제했다(slide7).
+                  2026-09-11 — 할인쿠폰이 생겨 **할인이 실제로 붙을 때만** 행을 그린다(빈 행 재발 금지).
+                  쿠폰 코드는 보여 주지 않는다 — 코드 숫자는 등급 라벨이라 실제 할인율과 다를 수 있다(설계 §2). */}
+              {quote && quote.discountWon > 0 ? (
+                <div className="flex items-center justify-between border-b border-[var(--app-line)] py-2">
+                  <span className="text-[15px] text-[var(--app-copy)]">
+                    쿠폰 할인 ({quote.percent}%)
+                  </span>
+                  <span className="text-[15.5px] font-bold text-[var(--app-pink-strong)]">
+                    -{formatWon(quote.discountWon)}
+                  </span>
+                </div>
+              ) : null}
+              {quote?.reason ? (
+                <p className="pt-2 text-[13.8px] leading-[1.55] text-[var(--app-copy-muted)]">
+                  {couponRejectMessage(quote.reason)}
+                </p>
+              ) : null}
               <div
                 className="mt-2 flex items-center justify-between pt-3"
                 style={{ borderTop: '1px solid var(--app-ink)' }}
@@ -611,7 +636,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                     멤버십 화면으로
                   </Link>
                 </div>
-              ) : paymentPackage ? (
+              ) : paymentPackage && quote ? (
                 <>
                   <p className="text-[12.6px] font-extrabold uppercase tracking-[0.04em] text-[var(--app-pink-strong)]">
                     결제창 열기
@@ -629,7 +654,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
                       packageId={paymentPackage.id}
                       plan={selectedPlan}
                       product={selectedProduct ?? selectedBundle?.id}
-                      amount={chargeAmount ?? paymentPackage.price}
+                      amount={quote.chargeAmount}
+                      couponCode={quote.couponCode ?? undefined}
                       orderName={paymentPackage.name}
                       slug={slug}
                       scope={scope}

@@ -172,6 +172,16 @@ update discount_coupons c
               and o.status in ('prepared','in_progress','confirmed','fulfilling','fulfillment_failed')
          ) and c.bound_at < now() - interval '24 hours' )
 ```
+> 🔴 **PR3 구현 시 정정 (2026-09-11)** — 위 SQL 을 그대로 옮기면 안 된다. 두 곳이 틀렸다.
+> 1. 막는 상태 목록에 **`fulfilled` 가 빠져 있다.** 그대로면 결제를 마친 사람의 쿠폰이 24시간 뒤 남에게 넘어간다(요구 4 위반).
+>    → 목록을 뒤집어 **"돈이 안 움직인 게 확실한 상태"(`payment_failed`·`canceled`·`expired`, 만료 지난 `prepared`)만 풀어 준다.**
+>    새 상태가 생겨도 기본값이 '붙잡음'이 된다. (`orderHoldsCoupon`)
+> 2. 본인 재사용(`bound_user_id = $user`)에서도 `bound_percent = $pct` 로 **스냅샷을 덮어쓴다.** 관리자가 요율을 내리면
+>    이미 쓰던 고객도 같이 깎인다(§2 약속 위반). → 본인 경로는 **쓰기를 하지 않는다**(`bindCouponClaim` mode `self`).
+>
+> 구현은 한 문장 SQL 대신 PostgREST 조건부 UPDATE 로 했다(마이그레이션 추가 없음). 회수의 "주문 확인 → UPDATE" 사이
+> 경합은 한 문장 SQL 에서도 똑같이 남는다(주문 insert 가 별도 트랜잭션) — §5-3 승인 직전 재검증이 닫는다.
+
 - 회수 판정을 `first_used_at` 스탬프가 아니라 **주문 원장**으로 옮긴다.
   (v1 은 "스탬프 실패는 무시한다"면서 그 스탬프를 소유권 판정의 유일 근거로 썼다 — 자기모순)
 - `fulfillment_failed` 도 **돈이 나간 주문**이므로 차단 쪽에 둔다.

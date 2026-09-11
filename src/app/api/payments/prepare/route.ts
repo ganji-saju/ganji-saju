@@ -40,7 +40,12 @@ import {
   updatePaymentOrderPolicyVersions,
 } from '@/lib/payments/order-ledger';
 import { isCreditPackage } from '@/lib/payments/coin-sunset';
-import { resolvePackagePrice } from '@/lib/payments/price-resolver';
+import {
+  bindCouponClaim,
+  couponEnvForHost,
+  resolveChargeForUser,
+} from '@/lib/coupons/coupon-charge';
+import { couponRejectMessage, type CouponRejectReason } from '@/lib/coupons/discount-coupon';
 
 function readString(data: Record<string, unknown>, key: string) {
   const value = data[key];
@@ -381,15 +386,60 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 2026-07-07 — 주문 금액을 리졸버로 스냅샷(카탈로그 기본가 위 DB 오버라이드).
-  //   이후 confirm/return 은 이 order.amount 를 authoritative 검증한다.
-  const listAmount = await resolvePackagePrice(pkg.id);
+  // 2026-09-11 할인쿠폰(설계 docs/discount-coupon-design.md §3-3·§5).
+  //   금액은 체크아웃 화면과 **같은 함수**로 낸다(표시가 = 청구가). 정가는 여전히 리졸버 스냅샷이고
+  //   (2026-07-07), confirm/return 은 이 order.amount 를 authoritative 검증한다.
+  //   귀속은 410·중복구매·동의 검증을 전부 통과한 **뒤**에만 한다(§5-1 — 막힐 결제로 코드를 태우지 않는다).
+  const origin = buildPaymentOrigin(req.headers.get('host'));
+  const couponInput = readString(payload, 'couponCode') || null;
+  // 체크아웃 화면이 표시한 최종 금액. 🔴 **대조에만** 쓴다 — 가격 계산에 쓰는 순간 클라이언트가 금액을 정한다.
+  const expectedAmount = typeof payload.expectedAmount === 'number' ? payload.expectedAmount : null;
+  const quote = await resolveChargeForUser(pkg, user.id, couponInput, {
+    env: couponEnvForHost(req.headers.get('host')),
+  });
+  const userId = user.id;
+  // 사유는 퍼널에만 남기고 응답엔 문구만 싣는다 — 사유 코드를 내보내면 화면이 일부러 뭉갠 구분을 API 가 알려 준다.
+  const blockPrepare = async (reason: string, error: string) => {
+    await logPaymentFunnelEvent(supabase, { stage: 'prepare_blocked', userId, packageId, reason });
+    return NextResponse.json({ ok: false, authenticated: true, error }, { status: 409 });
+  };
+
+  // 🔴 화면이 할인을 보여 줬으면 그 코드가 여기로 온다. 그 코드가 지금 적용되지 않으면
+  //   **조용히 정가로 청구하지 않고 멈춘다**(클라이언트 금액 폴백을 지운 것과 같은 원칙).
+  const couponReason: CouponRejectReason | null = couponInput
+    ? (quote.reason ?? (quote.claim ? null : 'not_found'))
+    : null;
+  if (couponReason) {
+    return blockPrepare(
+      `coupon_${couponReason}`,
+      `${couponRejectMessage(couponReason)} 결제는 진행되지 않았습니다.`
+    );
+  }
+  // 🔴 표시가 ≠ 청구가면 멈춘다. 미리보기 뒤 요율·가격이 바뀌었거나(→ 화면보다 비싸게 청구),
+  //   다른 탭에서 쿠폰을 귀속했거나 화면 쪽 조회만 실패한 경우다. 귀속 **전에** 본다 — 멈출 결제로 코드를 태우지 않는다.
+  //   (값을 안 보내는 옛 클라이언트는 대조를 건너뛴다 — 배포 직후 열려 있던 탭을 깨지 않기 위해)
+  if (expectedAmount !== null && expectedAmount !== quote.chargeAmount) {
+    return blockPrepare(
+      'amount_changed',
+      '결제 금액이 바뀌었습니다. 화면을 새로고침해 금액을 다시 확인해 주세요. 결제는 진행되지 않았습니다.'
+    );
+  }
+  const coupon = quote.claim
+    ? await bindCouponClaim(quote.claim, userId, { origin: origin.env })
+    : null;
+  if (quote.claim && !coupon) {
+    return blockPrepare(
+      'coupon_bind_failed',
+      `${couponRejectMessage('bind_failed')} 결제는 진행되지 않았습니다.`
+    );
+  }
+
   const order = await createPaymentOrder({
     userId: user.id,
     pkg,
-    listAmount,
-    // 쿠폰 귀속·검증은 PR3 에서 붙인다. 지금은 항상 null = 할인 0 → 기존 동작과 동일.
-    coupon: null,
+    listAmount: quote.listAmount,
+    // 귀속·검증을 마친 쿠폰. 요율은 DB(coupon_tiers / 귀속 스냅샷)에서 읽은 값뿐이다 — body 가 아니다.
+    coupon,
     slug,
     scope,
     product,
@@ -408,7 +458,7 @@ export async function POST(req: NextRequest) {
     metadata: {
       checkoutPath,
       provider: getPaymentProvider(),
-      origin: buildPaymentOrigin(req.headers.get('host')),
+      origin,
     },
   });
 
@@ -448,6 +498,8 @@ export async function POST(req: NextRequest) {
       consentRecordCount: recordedPolicyVersionIds.length,
       consentRecordError,
       paymentMethodCode,
+      couponCode: coupon?.code ?? null,
+      discountWon: quote.listAmount - order.amount,
     },
   });
 
