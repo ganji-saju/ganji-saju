@@ -29,8 +29,8 @@
 | 2 | 할인률을 관리자가 변경 | `coupon_tiers.percent` (유일 정본) | `/admin/coupons` |
 | 3 | `ganji{NN}{일련번호}`, 최대 50% | 접두는 **등급 라벨**, 상한은 계산 함수에서 clamp | 파서 + `Math.min(p,50)` |
 | 4 | 한 사람이 쓰면 타인 사용 불가 | `bound_user_id` CAS | DB |
-| 5 | 중복 적용 불가 | 계정당 1개라 **자동 성립** | 스키마 |
-| 6 | 계정당 쿠폰 1개 | `unique(bound_user_id) where not null` | DB 부분 유니크 인덱스 |
+| 5 | 중복 적용 불가 | 살아 있는 쿠폰이 계정당 1개라 **자동 성립** | 스키마 |
+| 6 | 계정당 쿠폰 **동시에 1개**(2026-09-11 확정) | 080: `unique(bound_user_id) where not null and released_at is null` + 죽은 쿠폰은 새 귀속 때 `released_at` | DB 부분 유니크 인덱스 |
 | 7 | 본인은 반복 사용 | 사용 횟수 컬럼 없음(귀속=상태) + CAS 에 `or bound_user_id = $user` | 설계 |
 | 8 | 전 유료메뉴 적용 | **현금 결제 전 표면**(§3). 전 차감 경로는 명시적 제외 | 컴파일러 + CI 가드 |
 
@@ -197,6 +197,8 @@ update discount_coupons c
 // 호출: confirm/route.ts:88(attachPaymentKeyToOrder 직전) · nicepay/return/route.ts:236(approve 직전)
 ```
 → `disabled_at`·`expires_at`·`bound_user_id === order.userId` 중 하나라도 어긋나면 **승인 거부**.
+  (2026-09-11 080 이후) 죽음 판정은 **`couponDeadReason` 을 그대로 쓴다** — `released_at`·등급 `disabled_at` 이 빠지면
+  "되살려도 부활하지 않는다"(§11 E)가 옛 `prepared` 주문에서 깨진다.
 금액 대조 때문에 "정가로 재승인"은 불가하므로 거부가 맞다.
 ⚠️ `fulfillPaymentOrder` 는 **승인 이후**라 늦다.
 
@@ -296,6 +298,7 @@ carrier 를 고르므로 금액을 넣은 행이 스캔에서 빠지고 남은 n
 | **B. 사용 조건** | **로그인 계정이면 사용 가능**(구글·카카오·이메일). 소셜 전용으로 제한하지 않음 | 신원 앵커(`identity_hash`) **미도입** |
 | **C. 인쇄물 문구** | 미정. 코드 형식만 `ganji-10-0000` 확정 | — |
 | **D. 만료일** | **2027-12-31 까지**, 관리자가 변경 | `expires_at` 기본값 + 관리자 일괄 변경 |
+| **E. 요구 6 해석** | **동시에 1개**(평생 1개 아님). 만료·회수·등급 회수된 쿠폰을 가진 계정은 새 코드를 쓸 수 있다 | migration 080 + `couponDeadReason` · `claim.releaseCode`. 옛 행은 지우지 않고 `released_at`(종료 상태) — 관리자가 되살려도 부활하지 않는다. 환경 불일치(staging-test↔실물)는 "죽음"이 아니다 — staging 이 실물 쿠폰을 비우면 안 된다 |
 
 ### 🔴 B 결정이 남기는 위험 (수용된 것)
 

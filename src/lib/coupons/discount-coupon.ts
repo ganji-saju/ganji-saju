@@ -151,7 +151,38 @@ export interface CouponRow {
   bound_max_discount_won: number | null;
   expires_at: string;
   disabled_at: string | null;
+  /** 080 — 귀속자가 새 쿠폰으로 옮기며 자리에서 뺀 시각. 종료 상태. */
+  released_at: string | null;
   coupon_tiers: { percent: number; max_discount_won: number | null; disabled_at: string | null } | null;
+}
+
+/**
+ * 이 쿠폰이 **죽었는가**(누구에게도, 다시는 — 관리자가 되살리기 전까지 — 적용되지 않는가).
+ *
+ * 요구 6 "동시에 1개"(2026-09-11 사용자 결정)의 판정 기준이기도 하다: 죽은 쿠폰을 가진 계정은 새 코드를
+ * 귀속할 수 있고, 그때 옛 행은 released_at 으로 자리에서 빠진다(080).
+ * ⚠️ env_mismatch 는 여기 넣지 않는다 — staging 에서 실물 쿠폰을 "죽었다" 고 보고 released 를 찍으면
+ *   staging 이 프로덕션 고객의 쿠폰을 지운다(같은 DB). 환경이 안 맞는 쿠폰은 자리를 계속 차지한다.
+ */
+export function couponDeadReason(row: CouponRow, now: Date): 'disabled' | 'expired' | null {
+  const tier = row.coupon_tiers;
+  // 등급 행이 없으면 요율을 모른다 → 할인하지 않는다(실패-닫힘). released 는 종료 상태.
+  if (!tier || row.disabled_at || tier.disabled_at || row.released_at) return 'disabled';
+  const expiresAt = Date.parse(row.expires_at);
+  if (!Number.isFinite(expiresAt) || expiresAt <= now.getTime()) return 'expired';
+  return null;
+}
+
+/**
+ * 이 계정의 등록 쿠폰을 **이 요청에서** 자리에서 빼도 되는가(동시에 1개).
+ * 죽었어야 하고, 그 행을 건드릴 권한이 있는 환경이어야 한다 — 🔴 staging(test)은 staging-test 행만 비울 수 있다.
+ *   죽은 **실물** 쿠폰을 staging 이 비우면 같은 DB 의 프로덕션 행이 종료 상태가 되고, 그 자리를 테스트 쿠폰이
+ *   차지해 프로덕션에서 재발행 코드를 못 쓴다(리뷰 발견 2026-09-11 — 살아 있는 쿠폰만 막고 있었다).
+ */
+export function canReleaseCoupon(row: CouponRow, now: Date, env: CouponEnv): boolean {
+  if (!couponDeadReason(row, now)) return false;
+  if (env === 'production') return true;
+  return env === 'test' && row.batch === STAGING_TEST_BATCH;
 }
 
 export type CouponEvaluation =
@@ -210,14 +241,9 @@ export function evaluateCouponRow(input: {
   holderHasLiveOrder: boolean;
 }): CouponEvaluation {
   const { row, userId, now } = input;
-  const tier = row.coupon_tiers;
-  // 등급 행이 없으면 요율을 모른다 → 할인하지 않는다(실패-닫힘).
-  if (!tier || row.disabled_at || tier.disabled_at) return { ok: false, reason: 'disabled' };
-
-  const expiresAt = Date.parse(row.expires_at);
-  if (!Number.isFinite(expiresAt) || expiresAt <= now.getTime()) {
-    return { ok: false, reason: 'expired' };
-  }
+  const dead = couponDeadReason(row, now);
+  if (dead) return { ok: false, reason: dead };
+  const tier = row.coupon_tiers!; // couponDeadReason 이 null 을 걸렀다
 
   if (!input.env || (input.env === 'production') === (row.batch === STAGING_TEST_BATCH)) {
     return { ok: false, reason: 'env_mismatch' };
@@ -251,7 +277,7 @@ export function couponRejectMessage(reason: CouponRejectReason): string {
     case 'bound_to_other':
       return '이미 다른 분이 사용 중인 쿠폰입니다.';
     case 'account_has_other':
-      return '이 계정에는 이미 다른 쿠폰이 등록되어 있어요. 쿠폰은 계정당 1개입니다.';
+      return '이 계정에는 이미 사용 중인 쿠폰이 있어요. 쿠폰은 한 번에 1개만 쓸 수 있습니다.';
     case 'not_eligible':
       return '이 상품에는 쿠폰이 적용되지 않습니다.';
     case 'rate_limited':
