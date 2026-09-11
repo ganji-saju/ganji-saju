@@ -5,7 +5,7 @@ import {
   determineRefundEligibility,
   extractPalja,
 } from './user-detail';
-import { determineCreditRefundEligibility } from './credit-refunds';
+import { buildOrderAmountMap, determineCreditRefundEligibility } from './credit-refunds';
 
 // 2026-05-25 Phase 1 — 어드민 사용자 상세 순수 로직.
 
@@ -263,4 +263,78 @@ test('creditRefund: paymentKey 가 끊겨도 orderId 로 이어 전액 환불을
   assert.equal(item.lotsLinked, true);
   assert.equal(item.status, 'full');
   assert.equal(item.refundAmountWon, 990);
+});
+
+// 🔴 2026-09-11 — 전 결제 환불이 **카탈로그 정가**로 계산되던 버그.
+//   fulfillment 가 addCredits metadata 에 amount 를 안 실어 credit-refunds 의
+//   `?? pkg?.price` 폴백이 100% 탔다. 990원 결제 = 990원 정가라 우연히 같아서 안 보였다.
+//   가격이 **다를 때** 만 드러나므로 그 조건으로 고정한다.
+test('creditRefund: metadata.amount 가 없으면 주문 원장의 실결제액을 쓴다(정가 아님)', () => {
+  const now = new Date('2026-09-11T00:00:00.000Z');
+  const tx = {
+    id: 'tx-disc',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-09-11T00:00:00.000Z',
+    // amount 없음 = 현재 프로덕션에 쌓여 있는 모든 행의 모습
+    metadata: { paymentKey: 'pk-1', orderId: 'ord-1', packageId: 'taste_dialogue_entry' },
+  };
+  const lot = {
+    id: 'lot-disc',
+    amount_remaining: 3,
+    amount_initial: 3,
+    expires_at: '2027-09-11T00:00:00.000Z',
+    source: 'purchase',
+    created_at: '2026-09-11T00:00:00.000Z',
+    metadata: { orderId: 'ord-1' },
+  };
+  // 실결제 495원(정가 990원의 50%) — 정가로 환불하면 495원을 과다환불한다.
+  const orderAmounts = buildOrderAmountMap([{ order_id: 'ord-1', amount: 495 }]);
+
+  const [withMap] = determineCreditRefundEligibility([tx], [lot], now, orderAmounts).items;
+  assert.equal(withMap.refundAmountWon, 495, '주문 원장의 실결제액이 쓰여야 한다');
+
+  // 맵이 없으면(레거시 행·주문 조회 실패) 종전대로 정가 폴백 — 기존 동작 보존.
+  const [noMap] = determineCreditRefundEligibility([tx], [lot], now).items;
+  assert.equal(noMap.refundAmountWon, 990, '폴백 제거는 기존 환불을 통째로 막으므로 최후 수단으로 남긴다');
+});
+
+test('creditRefund: metadata.amount 가 있으면 주문 원장보다 우선한다', () => {
+  const now = new Date('2026-09-11T00:00:00.000Z');
+  const tx = {
+    id: 'tx-meta',
+    type: 'purchase',
+    amount: 3,
+    created_at: '2026-09-11T00:00:00.000Z',
+    metadata: { paymentKey: 'pk-2', orderId: 'ord-2', packageId: 'taste_dialogue_entry', amount: 660 },
+  };
+  const lot = {
+    id: 'lot-meta',
+    amount_remaining: 3,
+    amount_initial: 3,
+    expires_at: '2027-09-11T00:00:00.000Z',
+    source: 'purchase',
+    created_at: '2026-09-11T00:00:00.000Z',
+    metadata: { orderId: 'ord-2' },
+  };
+  const [item] = determineCreditRefundEligibility(
+    [tx],
+    [lot],
+    now,
+    buildOrderAmountMap([{ order_id: 'ord-2', amount: 495 }])
+  ).items;
+  assert.equal(item.refundAmountWon, 660);
+});
+
+test('buildOrderAmountMap: order_id·양수 amount 인 행만 담는다', () => {
+  const map = buildOrderAmountMap([
+    { order_id: 'a', amount: 3300 },
+    { order_id: 'b', amount: 0 },
+    { order_id: null, amount: 990 },
+    { order_id: 'c', amount: null },
+  ]);
+  assert.equal(map.get('a'), 3300);
+  assert.equal(map.has('b'), false, '0원 주문은 담지 않는다');
+  assert.equal(map.has('c'), false);
+  assert.equal(map.size, 1);
 });
