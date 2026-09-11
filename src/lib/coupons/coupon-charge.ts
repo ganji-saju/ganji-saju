@@ -5,12 +5,14 @@
 // 🔴 체크아웃 화면과 prepare 가 **같은 함수**로 금액을 낸다. 둘이 따로 계산하면
 //   "화면은 할인가, 청구는 정가"(또는 그 반대)가 난다. 판정 규칙은 discount-coupon.ts 의
 //   순수 함수가 정본이고, 이 파일은 DB 를 읽고 쓰는 일만 한다.
+import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/server';
 import type { PaymentPackage } from '@/lib/payments/catalog';
 import { resolvePackagePrice } from '@/lib/payments/price-resolver';
-import { resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
-import { consumeMemberBenefit, dailyPeriodKey } from '@/lib/credits/member-benefits';
+import { isRealRevenueOrder, resolvePaymentOriginEnv } from '@/lib/payments/payment-origin';
+import { dailyPeriodKey } from '@/lib/credits/member-benefits';
+import { sendOpsAlertEmail } from '@/lib/email/ops-alert-email';
 import {
   COUPON_RECLAIM_AFTER_MS,
   applyCouponDiscount,
@@ -33,16 +35,109 @@ export function couponEnvForHost(host: string | null | undefined): CouponEnv {
 const COUPON_COLUMNS =
   'code, batch, bound_user_id, bound_at, bound_percent, bound_max_discount_won, expires_at, disabled_at, released_at, coupon_tiers(percent, max_discount_won, disabled_at)';
 
+// ─────────────────────────────────────────────────────────────
+// 새 코드 조회 예산(S2 — docs/coupon-lookup-cap-proposal.md, 사용자 채택 2026-09-11)
+//
+// 계정 생성 비용이 0 이라(B 결정) 계정당 한도만으로는 합산 상한이 없다 → 계정과 무관한 **등급별 풀**을 둔다.
+// 풀이 하나면 무료 계정 몇 개로 전 고객을 막는 DoS 가 되므로, 위조할 수 없는 신호로만 풀을 가른다:
+//   paid   = 프로덕션 실결제(fulfilled) 이력 · social = 카카오·구글 신원(user.identities[]) · open = 나머지
+// 🔴 user_metadata(카카오 해시 추출 경로)·email_confirmed_at·user_contact.phone 은 사용자가 비용 0 으로
+//   채우거나 덮어쓴다 — 등급 판정에 쓰지 않는다(auth-trust-signals 조사).
+// ─────────────────────────────────────────────────────────────
+
+/** 주체(소셜 신원, 없으면 계정)당 KST 하루. 적중 포함 — 정상 고객은 코드당 2~3회(렌더·prepare·재렌더). */
+export const COUPON_SUBJECT_DAILY_LIMIT = 10;
+/** 등급 풀 기본값(KST 하루, production·test 따로). env COUPON_POOL_OPEN/SOCIAL/PAID 로 조정 — 전단 배포일엔 올린다. */
+export const COUPON_POOL_DEFAULTS = { open: 20, social: 40, paid: 30 } as const;
+export type CouponLookupTier = keyof typeof COUPON_POOL_DEFAULTS;
+
+/** 쿠폰 판정에 필요한 만큼의 로그인 사용자. supabase `getUser()` 의 User 가 그대로 들어온다. */
+export interface CouponViewer {
+  id: string;
+  is_anonymous?: boolean;
+  /** 🔴 `getUser()` 에만 있다. `getClaims()`/JWT 로 바꾸면 사라져 전원 open 으로 강등된다(안전 쪽 실패). */
+  identities?: ReadonlyArray<{ provider: string; id: string }> | null;
+}
+
+function poolLimit(tier: CouponLookupTier): number {
+  const raw = Number(process.env[`COUPON_POOL_${tier.toUpperCase()}`]);
+  return Number.isInteger(raw) && raw >= 0 ? raw : COUPON_POOL_DEFAULTS[tier];
+}
+
 /**
- * 코드 추측 시도 한도(계정 · KST 하루). 056 `consume_member_benefit` 카운터를 재사용한다(설계 §6).
- * **없는 코드(not_found)만** 센다. 맞는 코드는 체크아웃 렌더와 prepare 에서 두 번 조회되는데,
- * 그걸 다 세면 한도 근처의 정상 고객이 "할인가를 보고 → 결제 버튼에서 rate_limited" 를 겪는다.
- * 추측은 거의 전부 빗나가므로 빗나간 것만 세도 억제력은 같다.
- * ⚠️ 한도 확인(읽기)과 차감이 원자적이지 않아 한 계정의 동시 폭주는 한도를 넘길 수 있다.
- *   계정 생성 비용이 0 이라(B 결정) 어차피 벽이 아니라 과속방지턱이다.
+ * 카카오·구글 신원 키. 계정 수명과 분리된다 — 탈퇴·재가입해도 같은 카카오/구글이면 같은 키라 한도가 초기화되지 않는다.
+ * `id` 는 제공자의 사용자 ID(`identity_id` 가 행 uuid). 카카오 회원번호는 짧은 숫자라 해시가 완전한 비가역은 아니다(uid-hash.ts 와 같은 한계).
  */
-export const COUPON_ATTEMPT_DAILY_LIMIT = 10;
-const COUPON_ATTEMPT_BENEFIT = 'coupon_code_attempt';
+function socialSubject(viewer: CouponViewer): string | null {
+  const keys = (viewer.identities ?? [])
+    .filter((identity) => identity.provider === 'kakao' || identity.provider === 'google')
+    .map((identity) => `${identity.provider}:${identity.id}`)
+    .sort();
+  return keys.length ? createHash('sha256').update(keys[0]).digest('hex') : null;
+}
+
+/** 프로덕션 실결제 이력. staging 이 같은 DB 라 샌드박스 결제는 빼고(origin), 환불은 비용을 돌려받으니 뺀다. 조회 실패 = 아님. */
+async function hasPaidHistory(service: SupabaseClient, userId: string): Promise<boolean> {
+  const { data, error } = await service
+    .from('payment_orders')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('status', 'fulfilled')
+    .gt('amount', 0)
+    .limit(20);
+  if (error || !data) return false;
+  return (data as { metadata?: unknown }[]).some((row) => isRealRevenueOrder(row));
+}
+
+/**
+ * 새 코드를 조회하기 **전에** 예산을 쓴다. 거부면 사유, 통과면 null.
+ * 🔴 조회 전이라 코드가 유효하든 아니든 같은 응답이다 — 한도 뒤에 "맞는 코드만 통과"를 두면 오라클이 다시 열린다.
+ * 🔴 실패-닫힘: RPC 오류·null 이면 거부. 막히는 건 새 코드 입력뿐, 결제·등록된 쿠폰은 이 경로를 타지 않는다.
+ * 주체 → 풀 순서 — 주체 한도가 찬 공격자가 풀을 태우지 못하게.
+ */
+async function spendLookupBudget(
+  service: SupabaseClient,
+  viewer: CouponViewer,
+  env: 'production' | 'test',
+  now: Date
+): Promise<'rate_limited' | 'busy' | null> {
+  const period = dailyPeriodKey(now);
+  const consume = async (bucket: string, limit: number) => {
+    const { data, error } = await service.rpc('consume_rate_counter', {
+      p_bucket: `coupon:${env}:${bucket}`,
+      p_period_key: period,
+      p_limit: limit,
+    });
+    return error || typeof data !== 'number' ? null : data;
+  };
+
+  const social = socialSubject(viewer);
+  if ((await consume(social ? `id:${social}` : `acct:${viewer.id}`, COUPON_SUBJECT_DAILY_LIMIT)) == null) {
+    return 'rate_limited';
+  }
+  const tier: CouponLookupTier = (await hasPaidHistory(service, viewer.id)) ? 'paid' : social ? 'social' : 'open';
+  const limit = poolLimit(tier);
+  const used = await consume(`pool:${tier}`, limit);
+  if (used == null) return 'busy';
+  // 풀이 반·전부 찼을 때 1회씩 알린다(각 값은 하루에 한 요청만 받는다). 운영 대응: 정상 급증이면 노브 상향·그날 행 삭제,
+  //   공격이면 배치 disabled_at(080 덕에 정상 고객은 재발행 코드를 쓸 수 있다).
+  //   실제 프로덕션 배포에서만 보낸다 — staging·로컬·테스트가 운영 메일함을 채우지 않게.
+  const isProductionDeploy = process.env.VERCEL_ENV === 'production';
+  if (env === 'production' && isProductionDeploy && (used === Math.ceil(limit / 2) || used === limit)) {
+    await sendOpsAlertEmail({
+      subject: `쿠폰 조회 예산 ${used === limit ? '소진' : '50%'} — ${tier} 풀`,
+      lines: [
+        `오늘(KST ${period}) ${tier} 등급의 새 쿠폰 코드 조회가 ${used}/${limit} 에 닿았습니다.`,
+        used === limit
+          ? '지금부터 이 등급 고객의 새 코드 입력은 내일 0시까지 막힙니다(등록된 쿠폰·결제는 영향 없음).'
+          : '이 속도면 오늘 안에 소진될 수 있습니다.',
+        '정상 급증이면 COUPON_POOL_* env 를 올려 재배포하거나 rate_counters 의 오늘 행을 지워 리필하세요. 공격이면 해당 배치를 disabled_at 으로 끄고 재발행하세요.',
+      ],
+      url: '/admin',
+    }).catch(() => undefined);
+  }
+  return null;
+}
 
 /** prepare 가 귀속에 쓰는 값. 화면에는 내려보내지 않는다. */
 export interface CouponClaim {
@@ -123,7 +218,8 @@ async function holderHasLiveOrder(
  */
 export async function resolveChargeForUser(
   pkg: PaymentPackage,
-  userId: string | null,
+  /** 🔴 체크아웃·prepare 가 **같은 `getUser()` 결과**를 넘긴다 — 등급(예산 풀)이 갈리면 화면·청구가 어긋난다. */
+  viewer: CouponViewer | null,
   couponInput: string | null | undefined,
   opts: { env: CouponEnv; service?: SupabaseClient; now?: Date }
 ): Promise<ChargeQuote> {
@@ -139,7 +235,9 @@ export async function resolveChargeForUser(
   });
 
   // 쿠폰은 로그인 계정에 붙는다(B 결정). 비로그인은 조회 자체를 하지 않는다 — 익명 추측 창구를 열지 않는다.
-  if (!userId) return noDiscount(null);
+  //   Supabase 익명 로그인(is_anonymous)도 같다 — 지금은 꺼져 있지만 켜지는 순간 무료 계정 공장이 된다.
+  if (!viewer || viewer.is_anonymous) return noDiscount(null);
+  const userId = viewer.id;
 
   const raw = couponInput?.trim() ? couponInput : null;
   const parsed = raw ? parseCouponCode(raw) : null;
@@ -161,22 +259,12 @@ export async function resolveChargeForUser(
   } else if (parsed && bound && parsed.code !== bound.code && !releasable) {
     reason = 'account_has_other';
   } else if (parsed && (!bound || parsed.code !== bound.code)) {
-    const period = dailyPeriodKey(now);
-    // 🔴 실패-닫힘. 공유 헬퍼 getMemberBenefitUsed 는 오류 시 0 을 돌려준다(무료 메뉴엔 그게 맞다) —
-    //   그걸 쓰면 RPC 장애 때 추측 제한이 조용히 사라진다. 막히는 건 새 코드 입력뿐, 결제는 안 막힌다.
-    const { data: used, error: usedError } = await service.rpc('get_member_benefit_used', {
-      p_user_id: userId,
-      p_benefit: COUPON_ATTEMPT_BENEFIT,
-      p_period_key: period,
-    });
-    if (usedError || typeof used !== 'number' || used >= COUPON_ATTEMPT_DAILY_LIMIT) {
-      return noDiscount('rate_limited');
-    }
+    // 새 코드 = 오라클 입구(미리보기·prepare 둘 다 여기를 지난다). 환경을 모르면 어떤 쿠폰도 안 되므로 조회하지 않는다.
+    if (!opts.env) return noDiscount('env_mismatch');
+    const blocked = await spendLookupBudget(service, viewer, opts.env, now);
+    if (blocked) return noDiscount(blocked);
     row = await selectCoupon(service, 'code', parsed.code);
-    if (!row) {
-      await consumeMemberBenefit(userId, COUPON_ATTEMPT_BENEFIT, period, COUPON_ATTEMPT_DAILY_LIMIT, service);
-      return noDiscount('not_found');
-    }
+    if (!row) return noDiscount('not_found');
   }
   if (!row) return noDiscount(reason);
 

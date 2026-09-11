@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { after } from 'next/server';
 import { headers } from 'next/headers';
 import type { Metadata } from 'next';
+import type { User } from '@supabase/supabase-js';
 import TossMembershipCheckout from '@/components/membership/toss-membership-checkout';
 import { ReportTrustNotes } from '@/components/trust/report-trust-notes';
 import { ZodiacChip, type ZodiacKey } from '@/components/gangi/zodiac-chip';
@@ -313,6 +314,8 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
 
   // 2026-09-03 — 퍼널 기록용으로 바깥에 보관(아래 after() 에서 쓴다).
   let viewerId: string | null = null;
+  // 쿠폰 등급(조회 예산 풀)은 user.identities 로 판정한다 — prepare 와 같은 getUser() 결과를 넘겨야 화면·청구가 같다.
+  let viewer: User | null = null;
 
   if (paymentPackage && hasSupabaseServerEnv && hasSupabaseServiceEnv) {
     const supabase = await createClient();
@@ -320,6 +323,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
       data: { user },
     } = await supabase.auth.getUser();
     viewerId = user?.id ?? null;
+    viewer = user ?? null;
 
     if (user) {
       const paymentScope = await resolvePaymentProductScope({ pkg: paymentPackage, slug, scope });
@@ -375,7 +379,7 @@ export default async function MembershipCheckoutPage({ searchParams }: Props) {
   //   최종 결제 금액 = prepare 가 만들 order.amount = PG 청구액. 할인 표기는 **이 화면에서만** 한다
   //   — 전역 가격 맵(getPriceDisplayMap)은 전 방문자 공유 캐시라 사용자별 값을 담을 수 없다(설계 §3-2).
   const quote = paymentPackage
-    ? await resolveChargeForUser(paymentPackage, viewerId, coupon, {
+    ? await resolveChargeForUser(paymentPackage, viewer, coupon, {
         env: couponEnvForHost(requestHeaders.get('host')),
       })
     : null;

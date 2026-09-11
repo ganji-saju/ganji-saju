@@ -106,6 +106,8 @@ export type CouponRejectReason =
   | 'account_has_other'
   | 'not_eligible'
   | 'rate_limited'
+  /** 등급 풀(S2) 소진 — 이 사람 탓이 아니다. rate_limited 와 문구를 분리한다. */
+  | 'busy'
   | 'bind_failed';
 
 /** 미결제 귀속을 풀어 다른 사람이 쓸 수 있게 되는 시간(설계 §5-2 · B 결정의 완화책 1). */
@@ -282,6 +284,8 @@ export function couponRejectMessage(reason: CouponRejectReason): string {
       return '이 상품에는 쿠폰이 적용되지 않습니다.';
     case 'rate_limited':
       return '쿠폰 입력 시도가 너무 많습니다. 내일 다시 시도해 주세요.';
+    case 'busy':
+      return '지금은 쿠폰 확인이 몰려 잠시 멈췄어요. 내일 0시에 다시 열립니다. 이미 등록된 쿠폰과 결제는 그대로 쓸 수 있어요.';
     case 'bind_failed':
       return '쿠폰을 적용하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.';
     default:
